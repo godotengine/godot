@@ -79,7 +79,7 @@ void EditorHelpSearch::_update_search() {
 	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
 */
 
-	List<String> type_list;
+	List<StringName> type_list;
 	ObjectTypeDB::get_type_list(&type_list);
 
 	DocData *doc=EditorHelp::get_doc_data();
@@ -1241,13 +1241,13 @@ void EditorHelp::_update_doc() {
 
 	class_list->clear();
 
-	List<String> type_list;
+	List<StringName> type_list;
 
 	tree_item_map.clear();
 
 	TreeItem *root = class_list->create_item();
 	class_list->set_hide_root(true);
-	List<String>::Element *I=type_list.front();
+	List<StringName>::Element *I=type_list.front();
 
 	for(Map<String,DocData::ClassDoc>::Element *E=doc->class_list.front();E;E=E->next()) {
 

@@ -157,14 +157,14 @@ void TextureButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_scale"),&TextureButton::get_scale);
 	ObjectTypeDB::bind_method(_MD("get_modulate"),&TextureButton::get_modulate);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_normal_texture"), _SCS("get_normal_texture"));
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/pressed",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_pressed_texture"), _SCS("get_pressed_texture"));
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/hover",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_hover_texture"), _SCS("get_hover_texture"));
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/disabled",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_disabled_texture"), _SCS("get_disabled_texture"));
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/focused",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_focused_texture"), _SCS("get_focused_texture"));
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/click_mask",PROPERTY_HINT_RESOURCE_TYPE,"BitMap"), _SCS("set_click_mask"), _SCS("get_click_mask")) ;
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"params/scale",PROPERTY_HINT_RANGE,"0.01,1024,0.01"), _SCS("set_scale"), _SCS("get_scale"));
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"params/modulate"), _SCS("set_modulate"), _SCS("get_modulate"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"textures/normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_normal_texture"), _SCS("get_normal_texture"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"textures/pressed",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_pressed_texture"), _SCS("get_pressed_texture"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"textures/hover",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_hover_texture"), _SCS("get_hover_texture"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"textures/disabled",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_disabled_texture"), _SCS("get_disabled_texture"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"textures/focused",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_focused_texture"), _SCS("get_focused_texture"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"textures/click_mask",PROPERTY_HINT_RESOURCE_TYPE,"BitMap"), _SCS("set_click_mask"), _SCS("get_click_mask")) ;
+	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2,"params/scale",PROPERTY_HINT_RANGE,"0.01,1024,0.01"), _SCS("set_scale"), _SCS("get_scale"));
+	ADD_PROPERTYNO(PropertyInfo(Variant::COLOR,"params/modulate"), _SCS("set_modulate"), _SCS("get_modulate"));
 
 }
 

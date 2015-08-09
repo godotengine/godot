@@ -1207,47 +1207,47 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 
 
 		r_v=Vector3(
-				data.get_slice(",",0).to_double(),
-				data.get_slice(",",1).to_double(),
-				data.get_slice(",",2).to_double()
+				data.get_slicec(',',0).to_double(),
+				data.get_slicec(',',1).to_double(),
+				data.get_slicec(',',2).to_double()
 			   );
 
 	} else if (type=="vector2") {
 
 
 		r_v=Vector2(
-				data.get_slice(",",0).to_double(),
-				data.get_slice(",",1).to_double()
+				data.get_slicec(',',0).to_double(),
+				data.get_slicec(',',1).to_double()
 			   );
 
 	} else if (type=="plane") {
 
 		r_v=Plane(
-				data.get_slice(",",0).to_double(),
-				data.get_slice(",",1).to_double(),
-				data.get_slice(",",2).to_double(),
-				data.get_slice(",",3).to_double()
+				data.get_slicec(',',0).to_double(),
+				data.get_slicec(',',1).to_double(),
+				data.get_slicec(',',2).to_double(),
+				data.get_slicec(',',3).to_double()
 			 );
 
 	} else if (type=="quaternion") {
 
 		r_v=Quat(
-				data.get_slice(",",0).to_double(),
-				data.get_slice(",",1).to_double(),
-				data.get_slice(",",2).to_double(),
-				data.get_slice(",",3).to_double()
+				data.get_slicec(',',0).to_double(),
+				data.get_slicec(',',1).to_double(),
+				data.get_slicec(',',2).to_double(),
+				data.get_slicec(',',3).to_double()
 			 );
 
 	} else if (type=="rect2") {
 
 		r_v=Rect2(
 			Vector2(
-				data.get_slice(",",0).to_double(),
-				data.get_slice(",",1).to_double()
+				data.get_slicec(',',0).to_double(),
+				data.get_slicec(',',1).to_double()
 			),
 			Vector2(
-				data.get_slice(",",2).to_double(),
-				data.get_slice(",",3).to_double()
+				data.get_slicec(',',2).to_double(),
+				data.get_slicec(',',3).to_double()
 			)
 		);
 
@@ -1256,14 +1256,14 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 
 		r_v=AABB(
 			Vector3(
-				data.get_slice(",",0).to_double(),
-				data.get_slice(",",1).to_double(),
-				data.get_slice(",",2).to_double()
+				data.get_slicec(',',0).to_double(),
+				data.get_slicec(',',1).to_double(),
+				data.get_slicec(',',2).to_double()
 			),
 			Vector3(
-				data.get_slice(",",3).to_double(),
-				data.get_slice(",",4).to_double(),
-				data.get_slice(",",5).to_double()
+				data.get_slicec(',',3).to_double(),
+				data.get_slicec(',',4).to_double(),
+				data.get_slicec(',',5).to_double()
 			)
 		);
 
@@ -1272,7 +1272,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		Matrix32 m3;
 		for (int i=0;i<3;i++) {
 			for (int j=0;j<2;j++) {
-				m3.elements[i][j]=data.get_slice(",",i*2+j).to_double();
+				m3.elements[i][j]=data.get_slicec(',',i*2+j).to_double();
 			}
 		}
 		r_v=m3;
@@ -1282,7 +1282,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		Matrix3 m3;
 		for (int i=0;i<3;i++) {
 			for (int j=0;j<3;j++) {
-				m3.elements[i][j]=data.get_slice(",",i*3+j).to_double();
+				m3.elements[i][j]=data.get_slicec(',',i*3+j).to_double();
 			}
 		}
 		r_v=m3;
@@ -1292,24 +1292,24 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		Transform tr;
 		for (int i=0;i<3;i++) {
 			for (int j=0;j<3;j++) {
-				tr.basis.elements[i][j]=data.get_slice(",",i*3+j).to_double();
+				tr.basis.elements[i][j]=data.get_slicec(',',i*3+j).to_double();
 			}
 
 		}
 		tr.origin=Vector3(
-			     data.get_slice(",",9).to_double(),
-			     data.get_slice(",",10).to_double(),
-			     data.get_slice(",",11).to_double()
+			     data.get_slicec(',',9).to_double(),
+			     data.get_slicec(',',10).to_double(),
+			     data.get_slicec(',',11).to_double()
 			   );
 		r_v=tr;
 
 	} else if (type=="color") {
 
 		r_v=Color(
-			   data.get_slice(",",0).to_double(),
-			   data.get_slice(",",1).to_double(),
-			   data.get_slice(",",2).to_double(),
-			   data.get_slice(",",3).to_double()
+			   data.get_slicec(',',0).to_double(),
+			   data.get_slicec(',',1).to_double(),
+			   data.get_slicec(',',2).to_double(),
+			   data.get_slicec(',',3).to_double()
 			 );
 
 	} else if (type=="node_path") {
@@ -1674,8 +1674,8 @@ void ResourceInteractiveLoaderXML::open(FileAccess *p_f) {
 		ERR_FAIL();
 	}
 
-	int major = version.get_slice(".",0).to_int();
-	int minor = version.get_slice(".",1).to_int();
+	int major = version.get_slicec('.',0).to_int();
+	int minor = version.get_slicec('.',1).to_int();
 
 	if (major>VERSION_MAJOR) {
 
@@ -2607,8 +2607,11 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 
 				String name = PE->get().name;
 				Variant value = res->get(name);
-				if (PE->get().usage&PROPERTY_USAGE_STORE_IF_NONZERO && value.is_zero())
+
+
+				if ((PE->get().usage&PROPERTY_USAGE_STORE_IF_NONZERO && value.is_zero())||(PE->get().usage&PROPERTY_USAGE_STORE_IF_NONONE && value.is_one()) )
 					continue;
+
 
 				write_property(name,value);
 			}

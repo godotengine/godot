@@ -1071,8 +1071,8 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("draw_rect","rect","color"),&CanvasItem::draw_rect);
 	ObjectTypeDB::bind_method(_MD("draw_circle","pos","radius","color"),&CanvasItem::draw_circle);
 	ObjectTypeDB::bind_method(_MD("draw_texture","texture:Texture","pos"),&CanvasItem::draw_texture);
-	ObjectTypeDB::bind_method(_MD("draw_texture_rect","texture:Texture","rect","tile","modulate"),&CanvasItem::draw_texture_rect,DEFVAL(false),DEFVAL(Color(1,1,1)));
-	ObjectTypeDB::bind_method(_MD("draw_texture_rect_region","texture:Texture","rect","src_rect","modulate"),&CanvasItem::draw_texture_rect_region,DEFVAL(Color(1,1,1)));
+	ObjectTypeDB::bind_method(_MD("draw_texture_rect","texture:Texture","rect","tile","modulate","transpose"),&CanvasItem::draw_texture_rect,DEFVAL(Color(1,1,1)),DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("draw_texture_rect_region","texture:Texture","rect","src_rect","modulate","transpose"),&CanvasItem::draw_texture_rect_region,DEFVAL(Color(1,1,1)),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("draw_style_box","style_box:StyleBox","rect"),&CanvasItem::draw_style_box);
 	ObjectTypeDB::bind_method(_MD("draw_primitive","points","colors","uvs","texture:Texture","width"),&CanvasItem::draw_primitive,DEFVAL(Array()),DEFVAL(Ref<Texture>()),DEFVAL(1.0));
 	ObjectTypeDB::bind_method(_MD("draw_polygon","points","colors","uvs","texture:Texture"),&CanvasItem::draw_polygon,DEFVAL(Array()),DEFVAL(Ref<Texture>()));
@@ -1103,14 +1103,14 @@ void CanvasItem::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo("_draw"));
 
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/visible"), _SCS("_set_visible_"),_SCS("_is_visible_") );
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"visibility/opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_opacity"),_SCS("get_opacity") );
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"visibility/self_opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_self_opacity"),_SCS("get_self_opacity") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visibility/visible"), _SCS("_set_visible_"),_SCS("_is_visible_") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"visibility/opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_opacity"),_SCS("get_opacity") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"visibility/self_opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_self_opacity"),_SCS("get_self_opacity") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"visibility/behind_parent"), _SCS("set_draw_behind_parent"),_SCS("is_draw_behind_parent_enabled") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/on_top",PROPERTY_HINT_NONE,"",0), _SCS("_set_on_top"),_SCS("_is_on_top") ); //compatibility
 
 	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"visibility/blend_mode",PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul,PMAlpha"), _SCS("set_blend_mode"),_SCS("get_blend_mode") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"visibility/light_mask",PROPERTY_HINT_ALL_FLAGS), _SCS("set_light_mask"),_SCS("get_light_mask") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"visibility/light_mask",PROPERTY_HINT_ALL_FLAGS), _SCS("set_light_mask"),_SCS("get_light_mask") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"material/material",PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial"), _SCS("set_material"),_SCS("get_material") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"material/use_parent"), _SCS("set_use_parent_material"),_SCS("get_use_parent_material") );
 	//exporting these two things doesn't really make much sense i think

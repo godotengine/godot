@@ -232,7 +232,7 @@ void AudioStreamOGGVorbis::seek_pos(float p_time) {
 
 	if (!playing)
 		return;
-	bool ok = ov_time_seek(&vf,p_time*1000)==0;
+	bool ok = ov_time_seek(&vf,p_time)==0;
 	ERR_FAIL_COND(!ok);
 	frames_mixed=stream_srate*p_time;
 }

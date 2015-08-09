@@ -57,7 +57,13 @@
 #include <errno.h>
 #include <assert.h>
 #include "globals.h"
+
+extern bool _print_error_enabled;
+
 void OS_Unix::print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type) {
+
+	if (!_print_error_enabled)
+		return;
 
 	if (p_rationale && p_rationale[0]) {
 
@@ -216,6 +222,14 @@ uint64_t OS_Unix::get_unix_time() const {
 
 	return time(NULL);
 };
+
+uint64_t OS_Unix::get_system_time_msec() const {
+	struct timeval tv_now;
+	gettimeofday(&tv_now, NULL);
+	localtime(&tv_now.tv_usec);
+	uint64_t msec = tv_now.tv_usec/1000;
+	return msec;
+}
 
 
 OS::Date OS_Unix::get_date(bool utc) const {

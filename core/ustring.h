@@ -153,6 +153,7 @@ public:
 
 	int get_slice_count(String p_splitter) const;
 	String get_slice(String p_splitter,int p_slice) const;
+	String get_slicec(CharType splitter,int p_slice) const;
 
 	Vector<String> split(const String &p_splitter,bool p_allow_empty=true) const;
 	Vector<String> split_spaces() const;

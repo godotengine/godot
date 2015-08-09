@@ -34,7 +34,7 @@ bool ButtonArray::_set(const StringName& p_name, const Variant& p_value) {
 	String n=String(p_name);
 	if (n.begins_with("button/")) {
 
-		String what = n.get_slice("/",1);
+		String what = n.get_slicec('/',1);
 		if (what=="count") {
 			int new_size=p_value;
 			if (new_size>0 && buttons.size()==0) {
@@ -57,7 +57,7 @@ bool ButtonArray::_set(const StringName& p_name, const Variant& p_value) {
 		} else {
 			int idx=what.to_int();
 			ERR_FAIL_INDEX_V(idx,buttons.size(),false);
-			String f = n.get_slice("/",2);
+			String f = n.get_slicec('/',2);
 			if (f=="text")
 				buttons[idx].text=p_value;
 			else if (f=="icon")
@@ -80,7 +80,7 @@ bool ButtonArray::_get(const StringName& p_name,Variant &r_ret) const {
 	String n=String(p_name);
 	if (n.begins_with("button/")) {
 
-		String what = n.get_slice("/",1);
+		String what = n.get_slicec('/',1);
 		if (what=="count") {
 			r_ret=buttons.size();
 		} else if (what=="align") {
@@ -92,7 +92,7 @@ bool ButtonArray::_get(const StringName& p_name,Variant &r_ret) const {
 		} else {
 			int idx=what.to_int();
 			ERR_FAIL_INDEX_V(idx,buttons.size(),false);
-			String f = n.get_slice("/",2);
+			String f = n.get_slicec('/',2);
 			if (f=="text")
 				r_ret=buttons[idx].text;
 			else if (f=="icon")

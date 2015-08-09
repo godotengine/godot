@@ -41,8 +41,8 @@ bool Skeleton::_set(const StringName& p_path, const Variant& p_value) {
 	if (!path.begins_with("bones/"))
 		return false;
 		
-	int which=path.get_slice("/",1).to_int();
-	String what=path.get_slice("/",2);
+	int which=path.get_slicec('/',1).to_int();
+	String what=path.get_slicec('/',2);
 
 
 	if (which==bones.size() && what=="name") {
@@ -88,8 +88,8 @@ bool Skeleton::_get(const StringName& p_name,Variant &r_ret) const {
 	if (!path.begins_with("bones/"))
 		return false;
 		
-	int which=path.get_slice("/",1).to_int();
-	String what=path.get_slice("/",2);
+	int which=path.get_slicec('/',1).to_int();
+	String what=path.get_slicec('/',2);
 		
 	ERR_FAIL_INDEX_V( which, bones.size(), false );
 	

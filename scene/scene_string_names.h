@@ -30,7 +30,7 @@
 #define SCENE_STRING_NAMES_H
 
 #include "string_db.h"
-
+#include "path_db.h"
 class SceneStringNames {
 
 friend void register_scene_types();
@@ -87,6 +87,8 @@ public:
 	StringName area_enter_shape;
 	StringName area_exit_shape;
 
+	StringName _body_inout;
+	StringName _area_inout;
 
 
 	StringName _get_gizmo_geometry;
@@ -169,6 +171,14 @@ public:
 	StringName _mouse_exit;
 
 	StringName frame_changed;
+
+	StringName playback_speed;
+	StringName playback_active;
+	StringName autoplay;
+	StringName blend_times;
+	StringName speed;
+
+	NodePath path_pp;
 
 
 };

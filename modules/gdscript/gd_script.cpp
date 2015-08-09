@@ -1977,8 +1977,16 @@ void GDScript::_bind_methods() {
 
 	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo("new"));	
 
+	ObjectTypeDB::bind_method(_MD("get_as_byte_code"),&GDScript::get_as_byte_code);
+
 }
 
+
+Vector<uint8_t> GDScript::get_as_byte_code() const {
+
+	GDTokenizerBuffer tokenizer;
+	return tokenizer.parse_code_string(source);
+};
 
 
 Error GDScript::load_byte_code(const String& p_path) {
@@ -2556,9 +2564,9 @@ void GDScriptLanguage::init() {
 
 	//populate native classes
 
-	List<String> class_list;
+	List<StringName> class_list;
 	ObjectTypeDB::get_type_list(&class_list);
-	for(List<String>::Element *E=class_list.front();E;E=E->next()) {
+	for(List<StringName>::Element *E=class_list.front();E;E=E->next()) {
 
 		StringName n = E->get();
 		String s = String(n);

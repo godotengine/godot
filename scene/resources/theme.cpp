@@ -40,9 +40,9 @@ bool Theme::_set(const StringName& p_name, const Variant& p_value) {
 
 	if (sname.find("/")!=-1) {
 
-		String type=sname.get_slice("/",1);
-		String node_type=sname.get_slice("/",0);
-		String name=sname.get_slice("/",2);
+		String type=sname.get_slicec('/',1);
+		String node_type=sname.get_slicec('/',0);
+		String name=sname.get_slicec('/',2);
 
 		if (type=="icons") {
 
@@ -75,9 +75,9 @@ bool Theme::_get(const StringName& p_name,Variant &r_ret) const {
 
 	if (sname.find("/")!=-1) {
 
-		String type=sname.get_slice("/",1);
-		String node_type=sname.get_slice("/",0);
-		String name=sname.get_slice("/",2);
+		String type=sname.get_slicec('/',1);
+		String node_type=sname.get_slicec('/',0);
+		String name=sname.get_slicec('/',2);
 
 		if (type=="icons") {
 

@@ -86,6 +86,7 @@ protected:
 
 	List<Singleton> singletons;
 
+	Error _save_custom_bnd(const String& p_file);
 
 	bool _load_resource_pack(const String& p_pack);
 

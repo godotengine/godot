@@ -1842,6 +1842,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 					if (k.mod.shift)
 						_post_shift_selection();
+					_cancel_completion();
+					completion_hint="";
 					
 				} break;
 				case KEY_END: {
@@ -1855,6 +1857,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 					if (k.mod.shift)
 						_post_shift_selection();
+
+					_cancel_completion();
+					completion_hint="";
 					
 				} break;
 #endif
@@ -1867,6 +1872,10 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 					if (k.mod.shift)
 						_post_shift_selection();
+
+					_cancel_completion();
+					completion_hint="";
+
 					
 				} break;
 				case KEY_PAGEDOWN: {
@@ -1878,6 +1887,10 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 					if (k.mod.shift)
 						_post_shift_selection();
+
+					_cancel_completion();
+					completion_hint="";
+
 					
 				} break;
 				case KEY_A: {
@@ -2064,6 +2077,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 					const CharType chr[2] = {(CharType)k.unicode, 0};
 					
+					if (completion_hint!="" && k.unicode==')') {
+						completion_hint="";
+					}
 					if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
 						_consume_pair_symbol(chr[0]);
 					} else {

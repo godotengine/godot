@@ -494,6 +494,10 @@ uint64_t _OS::get_unix_time() const {
 	return OS::get_singleton()->get_unix_time();
 };
 
+uint64_t _OS::get_system_time_msec() const {
+	return OS::get_singleton()->get_system_time_msec();
+}
+
 void _OS::delay_usec(uint32_t p_usec) const {
 
 	OS::get_singleton()->delay_usec(p_usec);
@@ -694,6 +698,17 @@ bool _OS::is_debug_build() const {
 
 }
 
+void _OS::set_screen_orientation(ScreenOrientation p_orientation) {
+
+	OS::get_singleton()->set_screen_orientation(OS::ScreenOrientation(p_orientation));
+}
+
+_OS::ScreenOrientation _OS::get_screen_orientation() const {
+
+	return ScreenOrientation(OS::get_singleton()->get_screen_orientation());
+}
+
+
 String _OS::get_system_dir(SystemDir p_dir) const {
 
 	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir));
@@ -752,6 +767,9 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_window_maximized", "enabled"),&_OS::set_window_maximized);
 	ObjectTypeDB::bind_method(_MD("is_window_maximized"),&_OS::is_window_maximized);
 
+	ObjectTypeDB::bind_method(_MD("set_screen_orientation","orientation"),&_OS::set_screen_orientation);
+	ObjectTypeDB::bind_method(_MD("get_screen_orientation"),&_OS::get_screen_orientation);
+
 
 	ObjectTypeDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_OS::set_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("get_iterations_per_second"),&_OS::get_iterations_per_second);
@@ -787,6 +805,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_time","utc"),&_OS::get_time,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_time_zone_info"),&_OS::get_time_zone_info);
 	ObjectTypeDB::bind_method(_MD("get_unix_time"),&_OS::get_unix_time);
+	ObjectTypeDB::bind_method(_MD("get_system_time_msec"), &_OS::get_system_time_msec);
 
 	ObjectTypeDB::bind_method(_MD("set_icon"),&_OS::set_icon);
 
@@ -862,6 +881,14 @@ void _OS::_bind_methods() {
 	BIND_CONSTANT( MONTH_OCTOBER );
 	BIND_CONSTANT( MONTH_NOVEMBER );
 	BIND_CONSTANT( MONTH_DECEMBER );
+
+	BIND_CONSTANT( SCREEN_ORIENTATION_LANDSCAPE );
+	BIND_CONSTANT( SCREEN_ORIENTATION_PORTRAIT );
+	BIND_CONSTANT( SCREEN_ORIENTATION_REVERSE_LANDSCAPE );
+	BIND_CONSTANT( SCREEN_ORIENTATION_REVERSE_PORTRAIT );
+	BIND_CONSTANT( SCREEN_ORIENTATION_SENSOR_LANDSCAPE );
+	BIND_CONSTANT( SCREEN_ORIENTATION_SENSOR_PORTRAIT );
+	BIND_CONSTANT( SCREEN_ORIENTATION_SENSOR );
 
 	BIND_CONSTANT( SYSTEM_DIR_DESKTOP);
 	BIND_CONSTANT( SYSTEM_DIR_DCIM );
@@ -1678,11 +1705,88 @@ Variant _Marshalls::base64_to_variant(const String& p_str) {
 	return v;
 };
 
+String _Marshalls::raw_to_base64(const DVector<uint8_t> &p_arr) {
+
+	int len = p_arr.size();
+	DVector<uint8_t>::Read r = p_arr.read();
+
+	int b64len = len / 3 * 4 + 4 + 1;
+	DVector<uint8_t> b64buff;
+	b64buff.resize(b64len);
+	DVector<uint8_t>::Write w64 = b64buff.write();
+
+	int strlen = base64_encode((char*)(&w64[0]), (char*)(&r[0]), len);
+	w64[strlen] = 0;
+	String ret = (char*)&w64[0];
+
+	return ret;
+};
+
+DVector<uint8_t> _Marshalls::base64_to_raw(const String &p_str) {
+
+	int strlen = p_str.length();
+	CharString cstr = p_str.ascii();
+
+	int arr_len;
+	DVector<uint8_t> buf;
+	{
+		buf.resize(strlen / 4 * 3 + 1);
+		DVector<uint8_t>::Write w = buf.write();
+
+		arr_len = base64_decode((char*)(&w[0]), (char*)cstr.get_data(), strlen);
+	};
+	buf.resize(arr_len);
+
+	// conversion from DVector<uint8_t> to raw array?
+	return buf;
+};
+
+String _Marshalls::utf8_to_base64(const String& p_str) {
+
+	CharString cstr = p_str.utf8();
+	int len = cstr.length();
+
+	int b64len = len / 3 * 4 + 4 + 1;
+	DVector<uint8_t> b64buff;
+	b64buff.resize(b64len);
+	DVector<uint8_t>::Write w64 = b64buff.write();
+
+	int strlen = base64_encode((char*)(&w64[0]), (char*)cstr.get_data(), len);
+
+	w64[strlen] = 0;
+	String ret = (char*)&w64[0];
+
+	return ret;
+};
+
+String _Marshalls::base64_to_utf8(const String& p_str) {
+
+	int strlen = p_str.length();
+	CharString cstr = p_str.ascii();
+
+	DVector<uint8_t> buf;
+	buf.resize(strlen / 4 * 3 + 1 + 1);
+	DVector<uint8_t>::Write w = buf.write();
+
+	int len = base64_decode((char*)(&w[0]), (char*)cstr.get_data(), strlen);
+
+	w[len] = 0;
+	String ret = String::utf8((char*)&w[0]);
+
+	return ret;
+};
+
 
 void _Marshalls::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("variant_to_base64:String","variant"),&_Marshalls::variant_to_base64);
 	ObjectTypeDB::bind_method(_MD("base64_to_variant:Variant","base64_str"),&_Marshalls::base64_to_variant);
+
+	ObjectTypeDB::bind_method(_MD("raw_to_base64:String","array"),&_Marshalls::raw_to_base64);
+	ObjectTypeDB::bind_method(_MD("base64_to_raw:RawArray","base64_str"),&_Marshalls::base64_to_raw);
+
+	ObjectTypeDB::bind_method(_MD("utf8_to_base64:String","utf8_str"),&_Marshalls::utf8_to_base64);
+	ObjectTypeDB::bind_method(_MD("base64_to_utf8:String","base64_str"),&_Marshalls::base64_to_utf8);
 
 };
 
@@ -1772,6 +1876,7 @@ void _Thread::_start_func(void *ud) {
 	memdelete(tud);
 	Variant::CallError ce;
 	const Variant* arg[1]={&t->userdata};
+
 	t->ret=t->target_instance->call(t->target_method,arg,1,ce);
 	if (ce.error!=Variant::CallError::CALL_OK) {
 
@@ -1795,6 +1900,7 @@ void _Thread::_start_func(void *ud) {
 			} break;
 			default: {}
 		}
+
 
 		ERR_EXPLAIN("Could not call function '"+t->target_method.operator String()+"'' starting thread ID: "+t->get_id()+" Reason: "+reason);
 		ERR_FAIL();

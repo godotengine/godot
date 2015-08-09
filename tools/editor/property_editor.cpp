@@ -614,9 +614,9 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 					Set<String> valid_inheritors;
 					valid_inheritors.insert(base);
-					List<String> inheritors;
+					List<StringName> inheritors;
 					ObjectTypeDB::get_inheriters_from(base.strip_edges(),&inheritors);
-					List<String>::Element *E=inheritors.front();
+					List<StringName>::Element *E=inheritors.front();
 					while(E) {
 						valid_inheritors.insert(E->get());
 						E=E->next();

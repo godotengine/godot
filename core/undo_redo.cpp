@@ -244,7 +244,12 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 				Resource* res = obj->cast_to<Resource>();
 				if (res)
 					res->set_edited(true);
+
 #endif
+
+				if (method_callback) {
+					method_callback(method_callbck_ud,obj,op.name,VARIANT_ARGS_FROM_ARRAY(op.args));
+				}
 			} break;
 			case Operation::TYPE_PROPERTY: {
 
@@ -254,6 +259,9 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 				if (res)
 					res->set_edited(true);
 #endif
+				if (property_callback) {
+					property_callback(prop_callback_ud,obj,op.name,op.args[0]);
+				}
 			} break;
 			case Operation::TYPE_REFERENCE: {
 				//do nothing
@@ -325,6 +333,19 @@ void UndoRedo::set_commit_notify_callback(CommitNotifyCallback p_callback,void* 
 	callback_ud=p_ud;
 }
 
+void UndoRedo::set_method_notify_callback(MethodNotifyCallback p_method_callback,void* p_ud) {
+
+	method_callback=p_method_callback;
+	method_callbck_ud=p_ud;
+}
+
+void UndoRedo::set_property_notify_callback(PropertyNotifyCallback p_property_callback,void* p_ud){
+
+	property_callback=p_property_callback;
+	prop_callback_ud=p_ud;
+}
+
+
 UndoRedo::UndoRedo() {
 
 	version=1;
@@ -334,6 +355,12 @@ UndoRedo::UndoRedo() {
 	merging=true;
 	callback=NULL;
 	callback_ud=NULL;
+
+	method_callbck_ud=NULL;
+	prop_callback_ud=NULL;
+	method_callback=NULL;
+	property_callback=NULL;
+
 }
 
 UndoRedo::~UndoRedo() {

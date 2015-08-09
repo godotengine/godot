@@ -228,7 +228,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	String get_package_name();
 
 	String get_project_name() const;
-	void _fix_manifest(Vector<uint8_t>& p_manifest);
+	void _fix_manifest(Vector<uint8_t>& p_manifest, bool p_give_internet);
 	void _fix_resources(Vector<uint8_t>& p_manifest);
 	static Error save_apk_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total);
 
@@ -249,11 +249,11 @@ public:
 	virtual int get_device_count() const;
 	virtual String get_device_name(int p_device) const;
 	virtual String get_device_info(int p_device) const;
-	virtual Error run(int p_device,bool p_dumb=false);
+	virtual Error run(int p_device,bool p_dumb=false,bool p_remote_debug=false);
 
 	virtual bool requieres_password(bool p_debug) const { return !p_debug; }
 	virtual String get_binary_extension() const { return "apk"; }
-	virtual Error export_project(const String& p_path,bool p_debug,bool p_dumb=false);
+	virtual Error export_project(const String& p_path, bool p_debug, bool p_dumb=false, bool p_remote_debug=false);
 
 	virtual bool can_export(String *r_error=NULL) const;
 
@@ -317,7 +317,7 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 		apk_expansion_pkey=p_value;
 	else if (n.begins_with("permissions/")) {
 
-		String what = n.get_slice("/",1).to_upper();
+		String what = n.get_slicec('/',1).to_upper();
 		bool state = p_value;
 		if (state)
 			perms.insert(what);
@@ -325,7 +325,7 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 			perms.erase(what);
 	} else if (n.begins_with("user_permissions/")) {
 
-		int which = n.get_slice("/",1).to_int();
+		int which = n.get_slicec('/',1).to_int();
 		ERR_FAIL_INDEX_V(which,MAX_USER_PERMISSIONS,false);
 		user_perms[which]=p_value;
 
@@ -390,11 +390,11 @@ bool EditorExportPlatformAndroid::_get(const StringName& p_name,Variant &r_ret) 
 		r_ret=apk_expansion_pkey;
 	else if (n.begins_with("permissions/")) {
 
-		String what = n.get_slice("/",1).to_upper();
+		String what = n.get_slicec('/',1).to_upper();
 		r_ret = perms.has(what);
 	} else if (n.begins_with("user_permissions/")) {
 
-		int which = n.get_slice("/",1).to_int();
+		int which = n.get_slicec('/',1).to_int();
 		ERR_FAIL_INDEX_V(which,MAX_USER_PERMISSIONS,false);
 		r_ret=user_perms[which];
 	} else
@@ -608,7 +608,7 @@ String EditorExportPlatformAndroid::get_project_name() const {
 }
 
 
-void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
+void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool p_give_internet) {
 
 
 	const int CHUNK_AXML_FILE = 0x00080003;
@@ -838,7 +838,10 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 
 						} else if (value.begins_with("godot.")) {
 							String perm = value.get_slice(".",1);
-							if (perms.has(perm)) {
+							print_line("PERM: "+perm+" HAS: "+itos(perms.has(perm)));
+
+							if (perms.has(perm) || (p_give_internet && perm=="INTERNET")) {
+
 								string_table[attr_value]="android.permission."+perm;
 							}
 
@@ -1011,7 +1014,7 @@ Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata,const String& 
 
 
 
-Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_debug, bool p_dumb) {
+Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_debug, bool p_dumb,bool p_remote_debug) {
 
 	String src_apk;
 
@@ -1075,7 +1078,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 		if (file=="AndroidManifest.xml") {
 
-			_fix_manifest(data);
+			_fix_manifest(data,p_dumb || p_remote_debug);
 		}
 
 		if (file=="resources.arsc") {
@@ -1153,9 +1156,11 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		}
 	}
 
+	gen_export_flags(cl,p_dumb,p_remote_debug);
+
 	if (p_dumb) {
 
-		String host = EditorSettings::get_singleton()->get("file_server/host");
+		/*String host = EditorSettings::get_singleton()->get("file_server/host");
 		int port = EditorSettings::get_singleton()->get("file_server/post");
 		String passwd = EditorSettings::get_singleton()->get("file_server/password");
 		cl.push_back("-rfs");
@@ -1163,7 +1168,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		if (passwd!="") {
 			cl.push_back("-rfs_pass");
 			cl.push_back(passwd);
-		}
+		}*/
 
 
 	} else {
@@ -1480,7 +1485,7 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 
 }
 
-Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb) {
+Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb, bool p_remote_debug) {
 
 	ERR_FAIL_INDEX_V(p_device,devices.size(),ERR_INVALID_PARAMETER);
 	device_lock->lock();
@@ -1499,7 +1504,7 @@ Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb) {
 	ep.step("Exporting APK",0);
 
 	String export_to=EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmpexport.apk";
-	Error err = export_project(export_to,true,p_dumb);
+	Error err = export_project(export_to,true,p_dumb,p_remote_debug);
 	if (err) {
 		device_lock->unlock();
 		return err;

@@ -274,6 +274,7 @@ void EditorSettings::create() {
 			print_line("EditorSettings: Load OK!");
 		}
 
+		singleton->setup_network();
 		singleton->load_favorites();
 		singleton->scan_plugins();
 
@@ -289,6 +290,7 @@ void EditorSettings::create() {
 	singleton->config_file_path=config_file_path;
 	singleton->settings_path=config_path+"/"+config_dir;
 	singleton->_load_defaults();
+	singleton->setup_network();
 	singleton->scan_plugins();
 
 
@@ -328,6 +330,35 @@ Error EditorSettings::_load_plugin(const String& p_path, Plugin &plugin) {
 		plugin.install_files=cf->get_value("plugin","install_files");
 
 	return OK;
+}
+
+void EditorSettings::setup_network() {
+
+	List<IP_Address> local_ip;
+	IP::get_singleton()->get_local_addresses(&local_ip);
+	String lip;
+	String hint;
+	String current=get("network/debug_host");
+
+	for(List<IP_Address>::Element *E=local_ip.front();E;E=E->next()) {
+
+		String ip = E->get();
+		if (ip=="127.0.0.1")
+			continue;
+
+		if (lip!="")
+			lip=ip;
+		if (ip==current)
+			lip=current; //so it saves
+		if (hint!="")
+			hint+=",";
+		hint+=ip;
+
+	}
+
+	set("network/debug_host",lip);
+	add_property_hint(PropertyInfo(Variant::STRING,"network/debug_host",PROPERTY_HINT_ENUM,hint));
+
 }
 
 void EditorSettings::scan_plugins() {
@@ -464,6 +495,7 @@ void EditorSettings::_load_defaults() {
 	set("2d_editor/bone_color2",Color(0.75,0.75,0.75,0.9));
 	set("2d_editor/bone_selected_color",Color(0.9,0.45,0.45,0.9));
 	set("2d_editor/bone_ik_color",Color(0.9,0.9,0.45,0.9));
+
 
 	set("on_save/compress_binary_resources",true);
 	set("on_save/save_modified_external_resources",true);

@@ -82,7 +82,8 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_BUNDLE=128, //used for optimized bundles
 	PROPERTY_USAGE_CATEGORY=256,
 	PROPERTY_USAGE_STORE_IF_NONZERO=512, //only store if nonzero
-	PROPERTY_USAGE_NO_INSTANCE_STATE=1024,
+	PROPERTY_USAGE_STORE_IF_NONONE=1024, //only store if false
+	PROPERTY_USAGE_NO_INSTANCE_STATE=2048,
 
 	PROPERTY_USAGE_DEFAULT=PROPERTY_USAGE_STORAGE|PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_NETWORK,
 	PROPERTY_USAGE_DEFAULT_INTL=PROPERTY_USAGE_STORAGE|PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_NETWORK|PROPERTY_USAGE_INTERNATIONALIZED,
@@ -97,6 +98,8 @@ enum PropertyUsageFlags {
 #define ADD_PROPERTYI( m_property, m_setter, m_getter, m_index ) ObjectTypeDB::add_property( get_type_static(), m_property, m_setter, m_getter, m_index )
 #define ADD_PROPERTYNZ( m_property, m_setter, m_getter ) ObjectTypeDB::add_property( get_type_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONZERO), m_setter, m_getter )
 #define ADD_PROPERTYINZ( m_property, m_setter, m_getter, m_index ) ObjectTypeDB::add_property( get_type_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONZERO), m_setter, m_getter, m_index )
+#define ADD_PROPERTYNO( m_property, m_setter, m_getter ) ObjectTypeDB::add_property( get_type_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONONE), m_setter, m_getter )
+#define ADD_PROPERTYINO( m_property, m_setter, m_getter, m_index ) ObjectTypeDB::add_property( get_type_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONONE), m_setter, m_getter, m_index )
 
 struct PropertyInfo {
 	
@@ -179,10 +182,10 @@ public:\
 virtual String get_type() const { \
 	return String(#m_type);\
 }\
-virtual StringName get_type_name() const { \
+virtual const StringName* _get_type_namev() const { \
 	if (!_type_name)\
 		_type_name=get_type_static();\
-	return _type_name;\
+	return &_type_name;\
 }\
 static _FORCE_INLINE_ void* get_type_ptr_static() { \
 	static int ptr;\
@@ -388,6 +391,8 @@ friend void postinitialize_handler(Object*);
 	ScriptInstance *script_instance;
 	RefPtr script;
 	Dictionary metadata;
+	mutable StringName _type_name;
+	mutable const StringName* _type_ptr;
 
 	void _add_user_signal(const String& p_name, const Array& p_pargs=Array());
 	bool _has_user_signal(const StringName& p_name) const;
@@ -445,7 +450,11 @@ protected:
 	Variant _call_deferred_bind(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
 
 
-
+	virtual const StringName* _get_type_namev() const {
+		if (!_type_name)
+			_type_name=get_type_static();
+		return &_type_name;
+	}
 
 	DVector<String> _get_meta_list_bind() const;
 	Array _get_property_list_bind() const;
@@ -523,11 +532,19 @@ public:
 
 	virtual String get_type() const { return "Object"; }
 	virtual String get_save_type() const { return get_type(); } //type stored when saving
-	virtual StringName get_type_name() const { return StringName("Object"); }
+
+
+
 	virtual bool is_type(const String& p_type) const { return (p_type=="Object"); }
 	virtual bool is_type_ptr(void *p_ptr) const { return get_type_ptr_static()==p_ptr; }
 
-
+	_FORCE_INLINE_ const StringName& get_type_name() const {
+		if (!_type_ptr) {
+			return *_get_type_namev();
+		} else {
+			return *_type_ptr;
+		}
+	}
 	
 	/* IAPI */
 //	void set(const String& p_name, const Variant& p_value);

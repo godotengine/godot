@@ -30,7 +30,7 @@ if (env["openssl"]=="builtin"):
 
 SConscript("rtaudio/SCsub");
 SConscript("nedmalloc/SCsub");
-SConscript("trex/SCsub");
+SConscript("nrex/SCsub");
 SConscript("chibi/SCsub");
 if (env["vorbis"]=="yes" or env["speex"]=="yes" or env["theora"]=="yes"):
         SConscript("ogg/SCsub");
