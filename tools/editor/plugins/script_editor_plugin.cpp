@@ -1907,6 +1907,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	erase_tab_confirm->connect("confirmed", this,"_close_current_tab");
 
 	script_create_dialog = memnew(ScriptCreateDialog);
+	script_create_dialog->set_title("Create Script");
 	add_child(script_create_dialog);
 	script_create_dialog->connect("script_created", this, "_script_created");
 

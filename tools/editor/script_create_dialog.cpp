@@ -363,7 +363,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	set_size(Size2(200,150));
 	set_hide_on_ok(false);
-	set_title("Create Script for Node..");;
+	set_title("Create Script for Node");
 
 	file_browse = memnew( EditorFileDialog );
 	file_browse->connect("file_selected",this,"_file_selected");
