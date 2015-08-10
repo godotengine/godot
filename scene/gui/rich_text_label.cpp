@@ -30,6 +30,8 @@
 #include "scene/scene_string_names.h"
 #include "os/keyboard.h"
 #include "os/os.h"
+#include "core/bidi.h"
+
 RichTextLabel::Item *RichTextLabel::_get_next_item(Item* p_item) {
 
 	if (p_item->subitems.size()) {
@@ -203,7 +205,8 @@ if (m_height > line_height) {\
 				if (font.is_null())
 					font=p_base_font;
 
-				const CharType *c = text->text.c_str();				
+				String bidi_text = Bidi::bidi_visual_string(text->text);
+				const CharType *c = bidi_text.c_str();				
 				const CharType *cf=c;
 				int fh=font->get_height();
 				int ascent = font->get_ascent();

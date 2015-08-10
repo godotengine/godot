@@ -30,6 +30,7 @@
 #include "text_edit.h"
 #include "os/keyboard.h"
 #include "os/os.h"
+#include "core/bidi.h"
 
 #include "globals.h"
 #include "message_queue.h"
@@ -620,7 +621,7 @@ void TextEdit::_notification(int p_what) {
 				if (line<0 || line>=(int)text.size())
 					continue;
 				
-				const String &str=text[line];
+				const String &str=Bidi::bidi_visual_string(text[line]);
 				
 				int char_margin=xmargin_beg-cursor.x_ofs;
 				int char_ofs=0;

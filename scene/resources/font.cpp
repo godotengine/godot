@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "font.h"
 
+#include "core/bidi.h"
 #include "core/os/file_access.h"
 #include "core/io/resource_loader.h"
 
@@ -466,9 +467,11 @@ void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, co
 	float ofs=0;
 	VisualServer *vs = VisualServer::get_singleton();
 	
-	for (int i=0;i<p_text.length();i++) {
+	String bidi_text = Bidi::bidi_visual_string(p_text);
+	
+	for (int i=0;i<bidi_text.length();i++) {
 
-		const Character * c = char_map.getptr(p_text[i]);
+		const Character * c = char_map.getptr(bidi_text[i]);
 
 		if (!c)
 			continue;
@@ -486,7 +489,7 @@ void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, co
 		if (c->texture_idx!=-1)
 			textures[c->texture_idx]->draw_rect_region( p_canvas_item, Rect2( cpos, c->rect.size ), c->rect, p_modulate );
 		
-		ofs+=get_char_size(p_text[i],p_text[i+1]).width;
+		ofs+=get_char_size(bidi_text[i],bidi_text[i+1]).width;
 	}
 }
 
