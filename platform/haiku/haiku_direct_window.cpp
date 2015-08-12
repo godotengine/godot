@@ -94,13 +94,9 @@ void HaikuDirectWindow::DispatchMessage(BMessage* message, BHandler* handler) {
 
 		case B_WINDOW_RESIZED:
 			HandleWindowResized(message);
-			//view->UnlockGL();
-			//BDirectWindow::DispatchMessage(message, handler);
-			//view->LockGL();
 			break;
 
 		case LOCKGL_MSG:
-			ERR_PRINT("LOCKGL");
 			view->LockGL();
 			break;
 
