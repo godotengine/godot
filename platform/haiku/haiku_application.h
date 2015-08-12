@@ -8,8 +8,6 @@ class HaikuApplication : public BApplication
 {
 public:
    HaikuApplication();
-//private:
-//   HaikuDirectWindow* window;
 };
 
 #endif

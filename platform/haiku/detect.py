@@ -27,7 +27,7 @@ def get_flags():
 	]
 
 def configure(env):
-	is64=sys.maxsize > 2**32
+	is64 = sys.maxsize > 2**32
 
 	if (env["bits"]=="default"):
 		if (is64):

@@ -55,8 +55,6 @@ void HaikuDirectWindow::DirectConnected(direct_buffer_info* info) {
 void HaikuDirectWindow::MessageReceived(BMessage* message) {
 	switch (message->what) {
 		case REDRAW_MSG:
-			Sync();
-
 			if (Main::iteration() == true) {
 				view->EnableDirectMode(false);
 				Quit();
@@ -110,8 +108,6 @@ void HaikuDirectWindow::DispatchMessage(BMessage* message, BHandler* handler) {
 }
 
 void HaikuDirectWindow::HandleMouseButton(BMessage* message) {
-	message->PrintToStream();
-
 	BPoint where;
 	if (message->FindPoint("where", &where) != B_OK) {
 		return;
@@ -236,7 +232,6 @@ void HaikuDirectWindow::HandleMouseWheelChanged(BMessage* message) {
 }
 
 void HaikuDirectWindow::HandleKeyboardEvent(BMessage* message) {
-	message->PrintToStream();
 	int32 raw_char = 0;
 	int32 key = 0;
 	int32 modifiers = 0;
@@ -278,8 +273,6 @@ void HaikuDirectWindow::HandleKeyboardEvent(BMessage* message) {
 }
 
 void HaikuDirectWindow::HandleKeyboardModifierEvent(BMessage* message) {
-	message->PrintToStream();
-
 	int32 old_modifiers = 0;
 	int32 modifiers = 0;
 
