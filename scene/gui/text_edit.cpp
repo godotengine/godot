@@ -1207,27 +1207,30 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 							update();
 						} else {
 
-							if (cursor.line<selection.from_line || (cursor.line==selection.from_line && cursor.column<=selection.from_column)) {
+							if (cursor.line<selection.selecting_line || (cursor.line==selection.selecting_line && cursor.column<selection.selecting_column)) {
+
+								if (selection.shiftclick_left) {
+									SWAP(selection.from_column,selection.to_column);
+									SWAP(selection.from_line,selection.to_line);
+									selection.shiftclick_left = !selection.shiftclick_left;
+								}
 								selection.from_column=cursor.column;
 								selection.from_line=cursor.line;
-							} else if (cursor.line>selection.to_line || (cursor.line==selection.to_line && cursor.column>=selection.to_column)) {
+
+							} else if (cursor.line>selection.selecting_line || (cursor.line==selection.selecting_line && cursor.column>selection.selecting_column)) {
+
+								if (!selection.shiftclick_left) {
+									SWAP(selection.from_column,selection.to_column);
+									SWAP(selection.from_line,selection.to_line);
+									selection.shiftclick_left = !selection.shiftclick_left;
+								}
 								selection.to_column=cursor.column;
 								selection.to_line=cursor.line;
 
-							} else if (!selection.shiftclick_left) {
-
-								selection.from_column=cursor.column;
-								selection.from_line=cursor.line;
 							} else {
-
-								selection.to_column=cursor.column;
-								selection.to_line=cursor.line;
+								selection.active=false;
 							}
 
-							if (selection.from_line>selection.to_line || (selection.from_line==selection.to_line && selection.from_column>selection.to_column)) {
-								SWAP(selection.from_column,selection.to_column);
-								SWAP(selection.from_line,selection.to_line);
-							}
 							update();
 						}
 
@@ -1252,6 +1255,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					if (!mb.doubleclick && (OS::get_singleton()->get_ticks_msec()-last_dblclk)<600 && cursor.line==prev_line) {
 						//tripleclick select line
 						select(cursor.line,0,cursor.line,text[cursor.line].length());
+						selection.selecting_column=0;
 						last_dblclk=0;
 						
 					} else if (mb.doubleclick && text[cursor.line].length()) {
@@ -1276,6 +1280,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 								end+=1;
 							
 							select(cursor.line,beg,cursor.line,end);
+
+							selection.selecting_column=beg;
 						}
 						
 						last_dblclk = OS::get_singleton()->get_ticks_msec();
@@ -1286,7 +1292,6 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				}
 			} else {
 				
-				selection.selecting_mode=Selection::MODE_NONE;
 				// notify to show soft keyboard
 				notification(NOTIFICATION_FOCUS_ENTER);
 			}
@@ -1302,7 +1307,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				if (!_get_mouse_pos(Point2i(mm.x,mm.y), row,col))
 					return;
 				
-				if (selection.selecting_mode==Selection::MODE_POINTER) {
+				if (selection.selecting_mode!=Selection::MODE_NONE) {
 					
 					select(selection.selecting_line,selection.selecting_column,row,col);
 					
@@ -1582,7 +1587,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					break;
 			}
 			
-			selection.selecting_test=false;
+			selection.selecting_text=false;
 			
 			bool scancode_handled=true;
 			
@@ -1900,15 +1905,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						break;
 					}
 					
-					if (text.size()==1 && text[0].length()==0)
-						break;
-					selection.active=true;
-					selection.from_line=0;
-					selection.from_column=0;
-					selection.to_line=text.size()-1;
-					selection.to_column=text[selection.to_line].length();
-					selection.selecting_mode=Selection::MODE_NONE;
-					update();
+					select_all();
 					
 				} break;
 				case KEY_X: {
@@ -2093,12 +2090,6 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				}
 			}
 			
-			
-			if (!selection.selecting_test) {
-				
-				selection.selecting_mode=Selection::MODE_NONE;
-			}
-			
 			return;
 		} break;
 			
@@ -2110,13 +2101,14 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 void TextEdit::_pre_shift_selection() {
 	
 	
-	if (!selection.active || selection.selecting_mode!=Selection::MODE_SHIFT) {
+	if (!selection.active || selection.selecting_mode==Selection::MODE_NONE) {
 		
 		selection.selecting_line=cursor.line;
 		selection.selecting_column=cursor.column;
 		selection.active=true;
-		selection.selecting_mode=Selection::MODE_SHIFT;
 	}
+
+	selection.selecting_mode=Selection::MODE_SHIFT;
 }
 
 void TextEdit::_post_shift_selection() {
@@ -2129,7 +2121,7 @@ void TextEdit::_post_shift_selection() {
 	}
 	
 	
-	selection.selecting_test=true;
+	selection.selecting_text=true;
 }
 
 /**** TEXT EDIT CORE API ****/
@@ -2425,7 +2417,7 @@ void TextEdit::adjust_viewport_to_cursor() {
 	
 }
 
-void TextEdit::cursor_set_column(int p_col) {
+void TextEdit::cursor_set_column(int p_col, bool p_adjust_viewport) {
 	
 	if (p_col<0)
 		p_col=0;
@@ -2436,7 +2428,8 @@ void TextEdit::cursor_set_column(int p_col) {
 	
 	cursor.last_fit_x=get_column_x_offset(cursor.column,get_line(cursor.line));
 	
-	adjust_viewport_to_cursor();
+	if (p_adjust_viewport)
+		adjust_viewport_to_cursor();
 	
 	if (!cursor_changed_dirty) {
 		if (is_inside_tree())
@@ -2447,7 +2440,7 @@ void TextEdit::cursor_set_column(int p_col) {
 }
 
 
-void TextEdit::cursor_set_line(int p_row) {
+void TextEdit::cursor_set_line(int p_row, bool p_adjust_viewport) {
 	
 	if (setting_row)
 		return;
@@ -2463,8 +2456,8 @@ void TextEdit::cursor_set_line(int p_row) {
 	cursor.line=p_row;
 	cursor.column=get_char_pos_for( cursor.last_fit_x, get_line( cursor.line) );
 	
-	
-	adjust_viewport_to_cursor();
+	if (p_adjust_viewport)
+		adjust_viewport_to_cursor();
 	
 	setting_row=false;
 	
@@ -2829,9 +2822,14 @@ void TextEdit::select_all() {
 	selection.active=true;
 	selection.from_line=0;
 	selection.from_column=0;
+	selection.selecting_line=0;
+	selection.selecting_column=0;
 	selection.to_line=text.size()-1;
 	selection.to_column=text[selection.to_line].length();
-	selection.selecting_mode=Selection::MODE_NONE;
+	selection.selecting_mode=Selection::MODE_SHIFT;
+	selection.shiftclick_left=true;
+	cursor_set_line( selection.to_line, false );
+	cursor_set_column( selection.to_column, false );
 	update();
 	
 }
@@ -2870,12 +2868,20 @@ void TextEdit::select(int p_from_line,int p_from_column,int p_to_line,int p_to_c
 			
 		} else if (selection.from_column>selection.to_column) {
 			
+			selection.shiftclick_left = false;
 			SWAP( selection.from_column, selection.to_column );
+		} else {
+
+			selection.shiftclick_left = true;
 		}
 	} else if (selection.from_line>selection.to_line) {
 		
+		selection.shiftclick_left = false;
 		SWAP( selection.from_line, selection.to_line );
 		SWAP( selection.from_column, selection.to_column );
+	} else {
+
+		selection.shiftclick_left = true;
 	}
 	
 	
@@ -3678,7 +3684,7 @@ TextEdit::TextEdit()  {
 	selection.selecting_mode=Selection::MODE_NONE;
 	selection.selecting_line=0;
 	selection.selecting_column=0;
-	selection.selecting_test=false;
+	selection.selecting_text=false;
 	selection.active=false;
 	syntax_coloring=false;
 	

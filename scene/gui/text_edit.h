@@ -55,7 +55,7 @@ class TextEdit : public Control  {
 
 		Mode selecting_mode;
 		int selecting_line,selecting_column;
-		bool selecting_test;
+		bool selecting_text;
 
 
 		bool active;
@@ -324,8 +324,8 @@ public:
 		update();
 	}
 
-	void cursor_set_column(int p_col);
-	void cursor_set_line(int p_row);
+	void cursor_set_column(int p_col, bool p_adjust_viewport=true);
+	void cursor_set_line(int p_row, bool p_adjust_viewport=true);
 
 	int cursor_get_column() const;
 	int cursor_get_line() const;
