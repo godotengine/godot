@@ -30,6 +30,8 @@
 #include "io/marshalls.h"
 #include "servers/physics_2d_server.h"
 #include "method_bind_ext.inc"
+#include "scene/resources/packed_scene.h"
+#include "tools/editor/plugins/tile_set_editor_plugin.h"
 
 int TileMap::_get_quadrant_size() const {
 
@@ -159,6 +161,24 @@ void TileMap::set_tileset(const Ref<TileSet>& p_tileset) {
 Ref<TileSet> TileMap::get_tileset() const {
 
 	return tile_set;
+}
+
+void TileMap::set_tilesetscene(const Ref<PackedScene>& p_tilesetscene) {
+
+	tile_set_scene = p_tilesetscene;
+	Ref<TileSet> t;
+	if (tile_set_scene.is_valid()){
+		Node *n = tile_set_scene->instance();
+		TileSet *ts = memnew(TileSet);
+		t = Ref<TileSet>(ts);
+		TileSetEditor::update_library_file(n, t, true);	
+	}
+	set_tileset(t);
+}
+
+Ref<PackedScene> TileMap::get_tilesetscene() const {
+
+	return tile_set_scene;
 }
 
 void TileMap::set_cell_size(Size2 p_size) {
@@ -1064,6 +1084,9 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_tileset","tileset:TileSet"),&TileMap::set_tileset);
 	ObjectTypeDB::bind_method(_MD("get_tileset:TileSet"),&TileMap::get_tileset);
 
+	ObjectTypeDB::bind_method(_MD("set_tilesetscene", "tilesetscene:PackedScene"), &TileMap::set_tilesetscene);
+	ObjectTypeDB::bind_method(_MD("get_tilesetscene:PackedScene"), &TileMap::get_tilesetscene);
+
 	ObjectTypeDB::bind_method(_MD("set_mode","mode"),&TileMap::set_mode);
 	ObjectTypeDB::bind_method(_MD("get_mode"),&TileMap::get_mode);
 
@@ -1131,6 +1154,7 @@ void TileMap::_bind_methods() {
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Square,Isometric,Custom"),_SCS("set_mode"),_SCS("get_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_set",PROPERTY_HINT_RESOURCE_TYPE,"TileSet"),_SCS("set_tileset"),_SCS("get_tileset"));
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT, "tile_set_scene", PROPERTY_HINT_RESOURCE_TYPE, "PackedScene"), _SCS("set_tilesetscene"), _SCS("get_tilesetscene"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_size",PROPERTY_HINT_RANGE,"1,8192,1",0),_SCS("_set_old_cell_size"),_SCS("_get_old_cell_size"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"cell/size",PROPERTY_HINT_RANGE,"1,8192,1"),_SCS("set_cell_size"),_SCS("get_cell_size"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell/quadrant_size",PROPERTY_HINT_RANGE,"1,128,1"),_SCS("set_quadrant_size"),_SCS("get_quadrant_size"));
