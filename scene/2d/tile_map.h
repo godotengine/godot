@@ -32,6 +32,7 @@
 #include "scene/2d/node_2d.h"
 #include "scene/2d/navigation2d.h"
 #include "scene/resources/tile_set.h"
+#include "scene/resources/packed_scene.h"
 #include "self_list.h"
 #include "vset.h"
 
@@ -61,6 +62,7 @@ public:
 private:
 
 	Ref<TileSet> tile_set;
+	Ref<PackedScene> tile_set_scene;
 	Size2i cell_size;
 	int quadrant_size;
 	bool center_x,center_y;
@@ -189,6 +191,9 @@ public:
 
 	void set_tileset(const Ref<TileSet>& p_tileset);
 	Ref<TileSet> get_tileset() const;
+
+	void set_tilesetscene(const Ref<PackedScene>& p_tilesetscene);
+	Ref<PackedScene> get_tilesetscene() const;
 
 	void set_cell_size(Size2 p_size);
 	Size2 get_cell_size() const;
