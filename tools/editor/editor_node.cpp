@@ -918,6 +918,7 @@ void EditorNode::_save_scene(String p_file) {
 		//EditorFileSystem::get_singleton()->update_file(p_file,sdata->get_type());
 		set_current_version(editor_data.get_undo_redo().get_version());
 		_update_title();
+		_update_scene_tabs();
 	} else {
 
 		_dialog_display_file_error(p_file,err);
@@ -1323,7 +1324,6 @@ void EditorNode::_dialog_action(String p_file) {
 
 		default: { //save scene?
 		
-			
 			if (file->get_mode()==FileDialog::MODE_SAVE_FILE) {
 
 				//_save_scene(p_file);
