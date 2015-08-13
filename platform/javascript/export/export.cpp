@@ -144,7 +144,7 @@ static void _fix_html(Vector<uint8_t>& html,const String& name,int max_memory) {
 	str.parse_utf8((const char*)html.ptr(),html.size());
 	Vector<String> lines=str.split("\n");
 	for(int i=0;i<lines.size();i++) {
-		if (lines[i].find("godot.js")!=-1) {
+		if (lines[i].find("src=\"godot.javascript")!=-1) {
 			strnew+="<script type=\"text/javascript\" src=\""+name+"_filesystem.js\"></script>\n";
 			strnew+="<script async type=\"text/javascript\" src=\""+name+".js\"></script>\n";
 		} else if (lines[i].find("var Module")!=-1) {
