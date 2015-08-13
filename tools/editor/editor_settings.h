@@ -113,6 +113,7 @@ public:
 
 	void scan_plugins();
 	void enable_plugins();
+	void setup_network();
 
 	void raise_order(const String& p_name);
 	static void create();

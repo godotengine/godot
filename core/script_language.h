@@ -176,6 +176,13 @@ public:
 	virtual void debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems=-1,int p_max_depth=-1)=0;
 	virtual String debug_parse_stack_level_expression(int p_level,const String& p_expression,int p_max_subitems=-1,int p_max_depth=-1)=0;
 
+	struct StackInfo {
+		Ref<Script> script;
+		int line;
+	};
+
+	virtual Vector<StackInfo> debug_get_current_stack_info() { return Vector<StackInfo>(); }
+
 	/* LOADER FUNCTIONS */
 
 	virtual void get_recognized_extensions(List<String> *p_extensions) const=0;
@@ -238,6 +245,32 @@ public:
 
 	typedef void (*RequestSceneTreeMessageFunc)(void *);
 
+	struct LiveEditFuncs {
+
+		void *udata;
+		void (*node_path_func)(void *,const NodePath &p_path,int p_id);
+		void (*res_path_func)(void *,const String &p_path,int p_id);
+
+		void (*node_set_func)(void *,int p_id,const StringName& p_prop,const Variant& p_value);
+		void (*node_set_res_func)(void *,int p_id,const StringName& p_prop,const String& p_value);
+		void (*node_call_func)(void *,int p_id,const StringName& p_method,VARIANT_ARG_DECLARE);
+		void (*res_set_func)(void *,int p_id,const StringName& p_prop,const Variant& p_value);
+		void (*res_set_res_func)(void *,int p_id,const StringName& p_prop,const String& p_value);
+		void (*res_call_func)(void *,int p_id,const StringName& p_method,VARIANT_ARG_DECLARE);
+		void (*root_func)(void*, const NodePath& p_scene_path,const String& p_scene_from);
+
+		void (*tree_create_node_func)(void*,const NodePath& p_parent,const String& p_type,const String& p_name);
+		void (*tree_instance_node_func)(void*,const NodePath& p_parent,const String& p_path,const String& p_name);
+		void (*tree_remove_node_func)(void*,const NodePath& p_at);
+		void (*tree_remove_and_keep_node_func)(void*,const NodePath& p_at,ObjectID p_keep_id);
+		void (*tree_restore_node_func)(void*,ObjectID p_id,const NodePath& p_at,int p_at_pos);
+		void (*tree_duplicate_node_func)(void*,const NodePath& p_at,const String& p_new_name);
+		void (*tree_reparent_node_func)(void*,const NodePath& p_at,const NodePath& p_new_place,const String& p_new_name,int p_at_pos);
+
+	};
+
+
+
 	_FORCE_INLINE_ static ScriptDebugger * get_singleton() { return singleton; }
 	void set_lines_left(int p_left);
 	int get_lines_left() const;
@@ -252,9 +285,11 @@ public:
 	bool is_breakpoint_line(int p_line) const;
 	void clear_breakpoints();
 
+
 	virtual void debug(ScriptLanguage *p_script,bool p_can_continue=true)=0;
 	virtual void idle_poll();
 	virtual void line_poll();
+
 
 	void set_break_language(ScriptLanguage *p_lang);
 	ScriptLanguage* get_break_language() const;
@@ -265,6 +300,7 @@ public:
 	virtual void request_quit() {}
 
 	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata) {}
+	virtual void set_live_edit_funcs(LiveEditFuncs *p_funcs) {}
 
 	ScriptDebugger();
 	virtual ~ScriptDebugger() {singleton=NULL;}

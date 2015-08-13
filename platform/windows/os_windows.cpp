@@ -1899,6 +1899,12 @@ uint64_t OS_Windows::get_unix_time() const {
 	return (*(uint64_t*)&ft - *(uint64_t*)&fep) / 10000000;
 };
 
+uint64_t OS_Windows::get_system_time_msec() const {
+	SYSTEMTIME st;
+	GetSystemTime(&st);
+	return st.wMilliseconds;
+}
+
 void OS_Windows::delay_usec(uint32_t p_usec) const {
 
         if (p_usec < 1000)

@@ -207,6 +207,8 @@ public:
 	bool is_cell_y_flipped(int p_x,int p_y) const;
 	bool is_cell_transposed(int p_x,int p_y) const;
 
+	void set_cellv(const Vector2& p_pos,int p_tile,bool p_flip_x=false,bool p_flip_y=false,bool p_transpose=false);
+
 	Rect2 get_item_rect() const;
 
 	void set_collision_layer(uint32_t p_layer);

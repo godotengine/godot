@@ -518,7 +518,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	}
 
 
-
+	GLOBAL_DEF("debug/max_remote_stdout_chars_per_second",2048);
 	if (debug_mode == "remote") {
 
 		ScriptDebuggerRemote *sdr = memnew( ScriptDebuggerRemote );
