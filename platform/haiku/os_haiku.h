@@ -11,8 +11,8 @@
 #include "servers/audio/sample_manager_sw.h"
 #include "servers/spatial_sound/spatial_sound_server_sw.h"
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
-#include "drivers/media_kit/audio_driver_media_kit.h"
 
+#include "audio_driver_media_kit.h"
 #include "context_gl_haiku.h"
 #include "haiku_application.h"
 #include "haiku_direct_window.h"

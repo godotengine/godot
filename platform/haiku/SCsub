@@ -6,7 +6,8 @@ common_haiku = [
 	'haiku_application.cpp',
 	'haiku_direct_window.cpp',
 	'haiku_gl_view.cpp',
-	'key_mapping_haiku.cpp'
+	'key_mapping_haiku.cpp',
+	'audio_driver_media_kit.cpp'
 ]
 
 env.Program(
