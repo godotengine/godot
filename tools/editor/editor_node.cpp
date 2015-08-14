@@ -3621,6 +3621,7 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("set_current_version",&EditorNode::set_current_version);
 	ObjectTypeDB::bind_method("_scene_tab_changed",&EditorNode::_scene_tab_changed);
 	ObjectTypeDB::bind_method("_scene_tab_script_edited",&EditorNode::_scene_tab_script_edited);
+	ObjectTypeDB::bind_method("_scene_tab_closed",&EditorNode::_scene_tab_closed);
 	ObjectTypeDB::bind_method("_set_main_scene_state",&EditorNode::_set_main_scene_state);
 	ObjectTypeDB::bind_method("_update_scene_tabs",&EditorNode::_update_scene_tabs);
 
@@ -4072,6 +4073,11 @@ void EditorNode::_scene_tab_script_edited(int p_tab) {
 		edit_resource(script);
 }
 
+void EditorNode::_scene_tab_closed(int p_tab) {
+	set_current_scene(p_tab);
+	_remove_edited_scene();
+}
+
 void EditorNode::_scene_tab_changed(int p_tab) {
 
 
@@ -4227,6 +4233,7 @@ EditorNode::EditorNode() {
 	scene_tabs->set_tab_align(Tabs::ALIGN_CENTER);
 	scene_tabs->connect("tab_changed",this,"_scene_tab_changed");
 	scene_tabs->connect("right_button_pressed",this,"_scene_tab_script_edited");
+	scene_tabs->connect("middle_button_pressed", this, "_scene_tab_closed");
 	top_dark_vb->add_child(scene_tabs);
 	//left
 	left_l_hsplit = memnew( HSplitContainer );

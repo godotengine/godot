@@ -107,35 +107,54 @@ void Tabs::_input_event(const InputEvent& p_event) {
 	}
 
 	if (p_event.type==InputEvent::MOUSE_BUTTON &&
-	    p_event.mouse_button.pressed &&
-	    p_event.mouse_button.button_index==BUTTON_LEFT) {
+	    p_event.mouse_button.pressed) {
 
 		// clicks
 		Point2 pos( p_event.mouse_button.x, p_event.mouse_button.y );
 
-		int found=-1;
-		for(int i=0;i<tabs.size();i++) {
+		switch (p_event.mouse_button.button_index) {
+			case BUTTON_LEFT:
+			{
 
-			if (tabs[i].rb_rect.has_point(pos)) {
-				rb_pressing=true;
-				update();
-				return;
-			}
 
-			int ofs=tabs[i].ofs_cache;
-			int size = tabs[i].ofs_cache;
-			if (pos.x >=tabs[i].ofs_cache && pos.x<tabs[i].ofs_cache+tabs[i].size_cache) {
+				int found=-1;
+				for(int i=0;i<tabs.size();i++) {
 
-				found=i;
+					if (tabs[i].rb_rect.has_point(pos)) {
+						rb_pressing=true;
+						update();
+						return;
+					}
+
+					if (pos.x >=tabs[i].ofs_cache && pos.x<tabs[i].ofs_cache+tabs[i].size_cache) {
+						found=i;
+						break;
+					}
+				}
+
+				if (found!=-1) {
+					set_current_tab(found);
+					emit_signal("tab_changed",found);
+				}
 				break;
 			}
-		}
+			case BUTTON_MIDDLE:
+			{
+				int found=-1;
+				for(int i=0;i<tabs.size();i++) {
 
+					if (pos.x >=tabs[i].ofs_cache && pos.x<tabs[i].ofs_cache+tabs[i].size_cache) {
+						found=i;
+						break;
+					}
+				}
 
-		if (found!=-1) {
-
-			set_current_tab(found);
-			emit_signal("tab_changed",found);
+				if (found!=-1) {
+					set_current_tab(found);
+					emit_signal("middle_button_pressed", found);
+				}
+				break;
+			}
 		}
 	}
 
@@ -423,6 +442,7 @@ void Tabs::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("tab_changed",PropertyInfo(Variant::INT,"tab")));
 	ADD_SIGNAL(MethodInfo("right_button_pressed",PropertyInfo(Variant::INT,"tab")));
+	ADD_SIGNAL(MethodInfo("middle_button_pressed",PropertyInfo(Variant::INT,"tab")));
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE,"-1,4096,1",PROPERTY_USAGE_EDITOR), _SCS("set_current_tab"), _SCS("get_current_tab") );
 
