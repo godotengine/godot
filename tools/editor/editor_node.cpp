@@ -4074,8 +4074,11 @@ void EditorNode::_scene_tab_script_edited(int p_tab) {
 }
 
 void EditorNode::_scene_tab_closed(int p_tab) {
-	set_current_scene(p_tab);
-	_remove_edited_scene();
+	bool p_confirmed = true;
+	if (unsaved_cache)
+		p_confirmed = false;
+
+	_menu_option_confirm(FILE_CLOSE, p_confirmed);
 }
 
 void EditorNode::_scene_tab_changed(int p_tab) {
