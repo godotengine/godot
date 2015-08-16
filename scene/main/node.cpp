@@ -911,6 +911,14 @@ Node *Node::get_node(const NodePath& p_path) const {
 	return node;
 }
 
+Node *Node::get_root_node() const {
+
+	Node *root = get_tree()->get_root();
+	Node *root_node = root->get_child(root->get_child_count() - 1);
+	ERR_FAIL_COND_V(!root_node, NULL);
+	return root_node;
+}
+
 bool Node::has_node(const NodePath& p_path) const {
 
 	return _get_node(p_path)!=NULL;
@@ -1930,6 +1938,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_child:Node","idx"),&Node::get_child);
 	ObjectTypeDB::bind_method(_MD("has_node","path"),&Node::has_node);
 	ObjectTypeDB::bind_method(_MD("get_node:Node","path"),&Node::get_node);
+	ObjectTypeDB::bind_method(_MD("get_root_node:Node"),&Node::get_root_node);
 	ObjectTypeDB::bind_method(_MD("get_parent:Parent"),&Node::get_parent);
 	ObjectTypeDB::bind_method(_MD("find_node:Node","mask","recursive","owned"),&Node::get_node,DEFVAL(true),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("has_node_and_resource","path"),&Node::has_node_and_resource);

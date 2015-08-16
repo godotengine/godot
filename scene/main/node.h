@@ -187,6 +187,7 @@ public:
 	Node *get_child(int p_index) const;
 	bool has_node(const NodePath& p_path) const;
 	Node *get_node(const NodePath& p_path) const;
+	Node *get_root_node() const;
 	Node* find_node(const String& p_mask,bool p_recursive=true,bool p_owned=true) const;
 	bool has_node_and_resource(const NodePath& p_path) const;
 	Node *get_node_and_resource(const NodePath& p_path,RES& r_res) const;
