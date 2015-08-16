@@ -918,6 +918,7 @@ void EditorNode::_save_scene(String p_file) {
 		//EditorFileSystem::get_singleton()->update_file(p_file,sdata->get_type());
 		set_current_version(editor_data.get_undo_redo().get_version());
 		_update_title();
+		_update_scene_tabs();
 	} else {
 
 		_dialog_display_file_error(p_file,err);
@@ -1323,7 +1324,6 @@ void EditorNode::_dialog_action(String p_file) {
 
 		default: { //save scene?
 		
-			
 			if (file->get_mode()==FileDialog::MODE_SAVE_FILE) {
 
 				//_save_scene(p_file);
@@ -4240,7 +4240,7 @@ EditorNode::EditorNode() {
 	scene_tabs->set_tab_align(Tabs::ALIGN_CENTER);
 	scene_tabs->connect("tab_changed",this,"_scene_tab_changed");
 	scene_tabs->connect("right_button_pressed",this,"_scene_tab_script_edited");
-	scene_tabs->connect("middle_button_pressed", this, "_scene_tab_closed");
+	scene_tabs->connect("tab_close", this, "_scene_tab_closed");
 	top_dark_vb->add_child(scene_tabs);
 	//left
 	left_l_hsplit = memnew( HSplitContainer );

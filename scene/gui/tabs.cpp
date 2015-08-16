@@ -151,7 +151,7 @@ void Tabs::_input_event(const InputEvent& p_event) {
 
 				if (found!=-1) {
 					set_current_tab(found);
-					emit_signal("middle_button_pressed", found);
+					emit_signal("tab_close", found);
 				}
 				break;
 			}
@@ -442,7 +442,7 @@ void Tabs::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("tab_changed",PropertyInfo(Variant::INT,"tab")));
 	ADD_SIGNAL(MethodInfo("right_button_pressed",PropertyInfo(Variant::INT,"tab")));
-	ADD_SIGNAL(MethodInfo("middle_button_pressed",PropertyInfo(Variant::INT,"tab")));
+	ADD_SIGNAL(MethodInfo("tab_close",PropertyInfo(Variant::INT,"tab")));
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE,"-1,4096,1",PROPERTY_USAGE_EDITOR), _SCS("set_current_tab"), _SCS("get_current_tab") );
 
