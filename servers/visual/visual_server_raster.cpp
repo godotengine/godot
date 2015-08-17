@@ -7225,18 +7225,21 @@ void VisualServerRaster::_draw_viewports() {
 			continue;
 		}
 
-		if (vp->rt_to_screen_rect!=Rect2())
-			to_blit.push_back(vp);
-
 		rasterizer->set_render_target(vp->render_target,vp->transparent_bg,vp->render_target_vflip);
-		_draw_viewport(vp,0,0,vp->rect.width,vp->rect.height);
 
-		if ( (vp->queue_capture && vp->render_target_update_mode==RENDER_TARGET_UPDATE_DISABLED) || vp->render_target_update_mode==RENDER_TARGET_UPDATE_ONCE) {
-			//was only enabled for capture
-			to_disable.push_back(vp);
-			vp->render_target_update_mode=RENDER_TARGET_UPDATE_DISABLED;
+		int viewport_w;
+		int viewport_h;
+
+		if (vp->rt_to_screen_rect!=Rect2()) {
+			to_blit.push_back(vp);
+			viewport_w = OS::get_singleton()->get_video_mode().width;
+			viewport_h = OS::get_singleton()->get_video_mode().height;
+		} else {
+			viewport_w = vp->rect.width;
+			viewport_h = vp->rect.height;
 		}
 
+		_draw_viewport(vp, 0, 0, viewport_w, viewport_h);
 	}
 
 	rasterizer->set_render_target(RID());
