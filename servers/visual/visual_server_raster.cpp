@@ -7240,6 +7240,12 @@ void VisualServerRaster::_draw_viewports() {
 		}
 
 		_draw_viewport(vp, 0, 0, viewport_w, viewport_h);
+
+		if ( (vp->queue_capture && vp->render_target_update_mode==RENDER_TARGET_UPDATE_DISABLED) || vp->render_target_update_mode==RENDER_TARGET_UPDATE_ONCE) {
+			//was only enabled for capture
+			to_disable.push_back(vp);
+			vp->render_target_update_mode=RENDER_TARGET_UPDATE_DISABLED;
+		}
 	}
 
 	rasterizer->set_render_target(RID());
