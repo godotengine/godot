@@ -779,8 +779,10 @@ EventStreamChibi::EventStreamChibi() {
 
 
 
-RES ResourceFormatLoaderChibi::load(const String &p_path,const String& p_original_path) {
+RES ResourceFormatLoaderChibi::load(const String &p_path, const String& p_original_path, Error *r_error) {
 
+	if (r_error)
+		*r_error=ERR_FILE_CANT_OPEN;
 	String el = p_path.extension().to_lower();
 
 	CPFileAccessWrapperImpl f;
@@ -791,6 +793,8 @@ RES ResourceFormatLoaderChibi::load(const String &p_path,const String& p_origina
 		CPLoader_IT loader(&f);
 		CPLoader::Error err = loader.load_song(p_path.utf8().get_data(),&esc->song,false);
 		ERR_FAIL_COND_V(err!=CPLoader::FILE_OK,RES());
+		if (r_error)
+			*r_error=OK;
 
 		return esc;
 
@@ -800,6 +804,8 @@ RES ResourceFormatLoaderChibi::load(const String &p_path,const String& p_origina
 		CPLoader_XM loader(&f);
 		CPLoader::Error err=loader.load_song(p_path.utf8().get_data(),&esc->song,false);
 		ERR_FAIL_COND_V(err!=CPLoader::FILE_OK,RES());
+		if (r_error)
+			*r_error=OK;
 		return esc;
 
 	} else if (el=="s3m") {
@@ -808,6 +814,9 @@ RES ResourceFormatLoaderChibi::load(const String &p_path,const String& p_origina
 		CPLoader_S3M loader(&f);
 		CPLoader::Error err=loader.load_song(p_path.utf8().get_data(),&esc->song,false);
 		ERR_FAIL_COND_V(err!=CPLoader::FILE_OK,RES());
+		if (r_error)
+			*r_error=OK;
+
 		return esc;
 
 	} else if (el=="mod") {
@@ -816,6 +825,8 @@ RES ResourceFormatLoaderChibi::load(const String &p_path,const String& p_origina
 		CPLoader_MOD loader(&f);
 		CPLoader::Error err=loader.load_song(p_path.utf8().get_data(),&esc->song,false);
 		ERR_FAIL_COND_V(err!=CPLoader::FILE_OK,RES());
+		if (r_error)
+			*r_error=OK;
 		return esc;
 	}
 

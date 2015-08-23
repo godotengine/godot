@@ -123,6 +123,7 @@ class EditorNode : public Node {
 		FILE_OPEN_OLD_SCENE,
 		FILE_QUICK_OPEN_SCENE,
 		FILE_QUICK_OPEN_SCRIPT,
+		FILE_QUICK_OPEN_FILE,
 		FILE_RUN_SCRIPT,
 		FILE_OPEN_PREV,
 		FILE_CLOSE,
@@ -312,6 +313,9 @@ class EditorNode : public Node {
 	ProgressDialog *progress_dialog;
 	BackgroundProgress *progress_hb;
 
+	DependencyErrorDialog *dependency_error;
+	DependencyEditor *dependency_fixer;
+
 	TabContainer *dock_slot[DOCK_SLOT_MAX];
 	Rect2 dock_select_rect[DOCK_SLOT_MAX];
 	int dock_select_rect_over;
@@ -451,6 +455,16 @@ class EditorNode : public Node {
 	void _save_scene_with_preview(String p_file);
 
 
+	Map<String,Set<String> > dependency_errors;
+
+	static void _dependency_error_report(void *ud,const String& p_path,const String& p_dep,const String& p_type) {
+		EditorNode*en=(EditorNode*)ud;
+		if (!en->dependency_errors.has(p_path))
+			en->dependency_errors[p_path]=Set<String>();
+		en->dependency_errors[p_path].insert(p_dep+"::"+p_type);
+
+	}
+
 	struct ExportDefer {
 		String platform;
 		String path;
@@ -534,9 +548,12 @@ public:
 	Viewport *get_scene_root() { return scene_root; } //root of the scene being edited
 	Error save_optimized_copy(const String& p_scene,const String& p_preset);
 
+	void fix_dependencies(const String& p_for_file);
 	void clear_scene() { _cleanup_scene(); }
-	Error load_scene(const String& p_scene);
+	Error load_scene(const String& p_scene,bool p_ignore_broken_deps=false);
 	Error load_resource(const String& p_scene);
+
+	bool is_scene_open(const String& p_path);
 
 	void set_current_version(uint64_t p_version);
 	void set_current_scene(int p_idx);

@@ -525,7 +525,9 @@ VideoStreamTheoraplayer::VideoStreamTheoraplayer() {
 };
 
 
-RES ResourceFormatLoaderVideoStreamTheoraplayer::load(const String &p_path,const String& p_original_path) {
+RES ResourceFormatLoaderVideoStreamTheoraplayer::load(const String &p_path, const String& p_original_path, Error *r_error) {
+	if (r_error)
+		*r_error=OK;
 
 	VideoStreamTheoraplayer *stream = memnew(VideoStreamTheoraplayer);
 	stream->set_file(p_path);

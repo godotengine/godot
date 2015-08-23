@@ -366,8 +366,9 @@ AudioStreamMPC::~AudioStreamMPC() {
 
 
 
-RES ResourceFormatLoaderAudioStreamMPC::load(const String &p_path,const String& p_original_path) {
-
+RES ResourceFormatLoaderAudioStreamMPC::load(const String &p_path, const String& p_original_path, Error *r_error) {
+	if (r_error)
+		*r_error=OK; //streamed so it will always work..
 	AudioStreamMPC *mpc_stream = memnew(AudioStreamMPC);
 	mpc_stream->set_file(p_path);
 	return Ref<AudioStreamMPC>(mpc_stream);

@@ -30,8 +30,9 @@
 #include "os/keyboard.h"
 
 
-void EditorQuickOpen::popup(const String& p_base, bool p_dontclear) {
+void EditorQuickOpen::popup(const StringName &p_base, bool p_dontclear, bool p_add_dirs) {
 
+	add_directories=p_add_dirs;
 	popup_centered_ratio(0.6);
 	if (p_dontclear)
 		search_box->select_all();
@@ -66,27 +67,53 @@ void EditorQuickOpen::_sbox_input(const InputEvent& p_ie) {
 
 void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd) {
 
-	for(int i=0;i<efsd->get_subdir_count();i++) {
+	if (!add_directories) {
+		for(int i=0;i<efsd->get_subdir_count();i++) {
 
-		_parse_fs(efsd->get_subdir(i));
+			_parse_fs(efsd->get_subdir(i));
+		}
 	}
 
+	TreeItem *root = search_options->get_root();
+
+	if (add_directories) {
+		String path = efsd->get_path();
+		if (!path.ends_with("/"))
+			path+="/";
+		if (path!="res://") {
+			path=path.substr(6,path.length());
+			if (path.findn(search_box->get_text())!=-1) {
+				TreeItem *ti = search_options->create_item(root);
+				ti->set_text(0,path);
+				Ref<Texture> icon = get_icon("folder","FileDialog");
+				ti->set_icon(0,icon);
+			}
+		}
+	}
 	for(int i=0;i<efsd->get_file_count();i++) {
 
 		String file = efsd->get_file_path(i);
 		file=file.substr(6,file.length());
 		if (ObjectTypeDB::is_type(efsd->get_file_type(i),base_type) && (search_box->get_text()=="" || file.findn(search_box->get_text())!=-1)) {
 
-			TreeItem *root = search_options->get_root();
 			TreeItem *ti = search_options->create_item(root);
 			ti->set_text(0,file);
-			Ref<Texture> icon = get_icon( (has_icon(efsd->get_file_type(i),"EditorIcons")?efsd->get_file_type(i):String("Object")),"EditorIcons");
+			Ref<Texture> icon = get_icon( (has_icon(efsd->get_file_type(i),ei)?efsd->get_file_type(i):ot),ei);
 			ti->set_icon(0,icon);
 			if (root->get_children()==ti)
 				ti->select(0);
 
 		}
 	}
+
+
+	if (add_directories) {
+		for(int i=0;i<efsd->get_subdir_count();i++) {
+
+			_parse_fs(efsd->get_subdir(i));
+		}
+	}
+
 }
 
 void EditorQuickOpen::_update_search() {
@@ -118,7 +145,7 @@ void EditorQuickOpen::_notification(int p_what) {
 }
 
 
-String EditorQuickOpen::get_base_type() const {
+StringName EditorQuickOpen::get_base_type() const {
 
 	return base_type;
 }
@@ -152,4 +179,7 @@ EditorQuickOpen::EditorQuickOpen() {
 	set_hide_on_ok(false);
 	search_options->connect("item_activated",this,"_confirmed");
 	search_options->set_hide_root(true);
+	ei="EditorIcons";
+	ot="Object";
+	add_directories=false;
 }
