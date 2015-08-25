@@ -1427,10 +1427,7 @@ void EditorNode::_edit_current() {
 
 		resources_dock->add_resource(Ref<Resource>(current_res));
 		//top_pallete->set_current_tab(1);
-	}
-
-
-	if (current_obj->is_type("Node")) {
+	} else if (current_obj->is_type("Node")) {
 
 		Node * current_node = current_obj->cast_to<Node>();
 		ERR_FAIL_COND(!current_node);
@@ -1444,6 +1441,12 @@ void EditorNode::_edit_current() {
 		object_menu->get_popup()->clear();
 
 		//top_pallete->set_current_tab(0);
+
+	} else {
+
+		property_editor->edit( current_obj );
+		//scene_tree_dock->set_selected(current_node);
+		//object_menu->get_popup()->clear();
 
 	}
 

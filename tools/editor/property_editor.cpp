@@ -39,6 +39,7 @@
 #include "editor_settings.h"
 #include "editor_import_export.h"
 #include "editor_node.h"
+#include "multi_node_edit.h"
 
 void CustomPropertyEditor::_notification(int p_what) {
 	
@@ -2676,7 +2677,7 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 		}
 	}
 
-	if (!undo_redo) {
+	if (!undo_redo || obj->cast_to<MultiNodeEdit>()) { //kind of hacky
 
 		obj->set(p_name,p_value);
 		_changed_callbacks(obj,p_name);
