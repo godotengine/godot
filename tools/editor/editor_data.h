@@ -45,7 +45,7 @@ class EditorHistory {
 
 	struct Obj {
 
-		RES res;
+		REF ref;
 		ObjectID object;
 		String property;
 	};
