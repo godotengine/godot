@@ -90,6 +90,23 @@ class CanvasItemEditor : public VBoxContainer {
 		UNGROUP_SELECTED,
 		ALIGN_HORIZONTAL,
 		ALIGN_VERTICAL,
+		ANCHOR_ALIGN_TOP_LEFT,
+		ANCHOR_ALIGN_TOP_RIGHT,
+		ANCHOR_ALIGN_BOTTOM_LEFT,
+		ANCHOR_ALIGN_BOTTOM_RIGHT,
+		ANCHOR_ALIGN_CENTER_LEFT,
+		ANCHOR_ALIGN_CENTER_RIGHT,
+		ANCHOR_ALIGN_CENTER_TOP,
+		ANCHOR_ALIGN_CENTER_BOTTOM,
+		ANCHOR_ALIGN_CENTER,
+		ANCHOR_ALIGN_TOP_WIDE,
+		ANCHOR_ALIGN_LEFT_WIDE,
+		ANCHOR_ALIGN_RIGHT_WIDE,
+		ANCHOR_ALIGN_BOTTOM_WIDE,
+		ANCHOR_ALIGN_VCENTER_WIDE,
+		ANCHOR_ALIGN_HCENTER_WIDE,
+		ANCHOR_ALIGN_WIDE,
+
 		SPACE_HORIZONTAL,
 		SPACE_VERTICAL,
 		EXPAND_TO_PARENT,
@@ -225,6 +242,7 @@ class CanvasItemEditor : public VBoxContainer {
 	MenuButton *view_menu;
 	HBoxContainer *animation_hb;
 	MenuButton *animation_menu;
+	MenuButton *anchor_menu;
 
 	Button *key_loc_button;
 	Button *key_rot_button;
@@ -304,6 +322,8 @@ class CanvasItemEditor : public VBoxContainer {
 
 	void _viewport_input_event(const InputEvent& p_event);
 	void _viewport_draw();
+
+	void _set_anchor(Control::AnchorType p_left,Control::AnchorType p_top,Control::AnchorType p_right,Control::AnchorType p_bottom);
 
 	HSplitContainer *palette_split;
 	VSplitContainer *bottom_split;

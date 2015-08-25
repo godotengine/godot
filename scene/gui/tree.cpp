@@ -2360,6 +2360,11 @@ void Tree::_notification(int p_what) {
 		}
 	}
 
+	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+
+		drag_touching=false;
+	}
+
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		update_cache();;
