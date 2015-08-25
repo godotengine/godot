@@ -2625,14 +2625,14 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 					Node *subexpr=NULL;
 
-					subexpr = _parse_and_reduce_expression(p_class,false);
+					subexpr = _parse_and_reduce_expression(p_class,false,autoexport);
 					if (!subexpr)
 						return;
 
 					member.expression=subexpr;
 
 					if (autoexport) {
-						if (subexpr->type==Node::TYPE_ARRAY) {
+						if (1)/*(subexpr->type==Node::TYPE_ARRAY) {
 
 							member._export.type=Variant::ARRAY;
 
@@ -2640,7 +2640,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 							member._export.type=Variant::DICTIONARY;
 
-						} else {
+						} else*/ {
 
 							if (subexpr->type!=Node::TYPE_CONSTANT) {
 
