@@ -3057,12 +3057,11 @@ String String::world_wrap(int p_chars_per_line) const {
 		if (i-from>=p_chars_per_line) {
 			if (last_space==-1) {
 				ret+=substr(from,i-from+1)+"\n";
-				from=i+1;
 			} else {
 				ret+=substr(from,last_space-from)+"\n";
-				i=last_space;
-				from=i+1;
+				i=last_space; //rewind
 			}
+			from=i+1;
 			last_space=-1;
 		} else if (operator[](i)==' ' || operator[](i)=='\t') {
 			last_space=i;

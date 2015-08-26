@@ -12,6 +12,7 @@ class ArrayPropertyEdit : public Reference {
 	StringName property;
 	String vtypes;
 	Variant get_array() const;
+	Variant::Type default_type;
 
 	void _notif_change();
 	void _notif_changev(const String& p_v);
@@ -27,7 +28,7 @@ protected:
 
 public:
 
-	void edit(Object* p_obj,const StringName& p_prop);
+	void edit(Object* p_obj, const StringName& p_prop, Variant::Type p_deftype);
 
 	ArrayPropertyEdit();
 };

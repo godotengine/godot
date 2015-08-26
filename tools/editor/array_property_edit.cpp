@@ -9,7 +9,12 @@ Variant ArrayPropertyEdit::get_array() const{
 	Object*o = ObjectDB::get_instance(obj);
 	if (!o)
 		return Array();
-	return o->get(property);
+	Variant arr=o->get(property);
+	if (!arr.is_array()) {
+		Variant::CallError ce;
+		arr=Variant::construct(default_type,NULL,0,ce);
+	}
+	return arr;
 }
 
 void ArrayPropertyEdit::_notif_change() {
@@ -195,11 +200,12 @@ void ArrayPropertyEdit::_get_property_list( List<PropertyInfo> *p_list) const{
 
 }
 
-void ArrayPropertyEdit::edit(Object* p_obj,const StringName& p_prop) {
+void ArrayPropertyEdit::edit(Object* p_obj,const StringName& p_prop,Variant::Type p_deftype) {
 
 	page=0;
 	property=p_prop;
 	obj=p_obj->get_instance_ID();
+	default_type=p_deftype;
 
 }
 
@@ -220,5 +226,6 @@ ArrayPropertyEdit::ArrayPropertyEdit()
 			vtypes+=",";
 		vtypes+=Variant::get_type_name( Variant::Type(i) );
 	}
+	default_type=Variant::NIL;
 
 }

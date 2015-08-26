@@ -3143,7 +3143,7 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 			}
 
 			Ref<ArrayPropertyEdit> ape = memnew( ArrayPropertyEdit );
-			ape->edit(obj,n);
+			ape->edit(obj,n,Variant::Type(t));
 
 			EditorNode::get_singleton()->push_item(ape.ptr());
 		}
