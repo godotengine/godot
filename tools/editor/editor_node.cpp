@@ -4835,6 +4835,7 @@ EditorNode::EditorNode() {
 	property_editor->set_autoclear(true);
 	property_editor->set_show_categories(true);
 	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	property_editor->set_use_doc_hints(true);
 	
 	property_editor->hide_top_label();
 

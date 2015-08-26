@@ -746,6 +746,25 @@ bool ObjectTypeDB::has_method(StringName p_type,StringName p_method,bool p_no_in
 
 }
 
+bool ObjectTypeDB::get_setter_and_type_for_property(const StringName& p_class, const StringName& p_prop, StringName& r_class, StringName& r_setter) {
+
+	TypeInfo *type=types.getptr(p_class);
+	TypeInfo *check=type;
+	while(check) {
+
+		if (check->property_setget.has(p_prop)) {
+			r_class=check->name;
+			r_setter=check->property_setget[p_prop].setter;
+			return true;
+		}
+
+		check=check->inherits_ptr;
+	}
+
+	return false;
+
+}
+
 #ifdef DEBUG_METHODS_ENABLED
 MethodBind* ObjectTypeDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind , const MethodDefinition &method_name, const Variant **p_defs, int p_defcount) {
 	StringName mdname=method_name.name;
