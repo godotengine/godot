@@ -91,4 +91,5 @@ func _ready():
 	# Initalization here
 	pass
 
-
+func _on_AnimationPlayer_finished():
+	queue_free()
