@@ -6656,7 +6656,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			material_shader.set_uniform(MaterialShaderGLES2::CAMERA_INVERSE_TRANSFORM, p_view_transform_inverse);
 			material_shader.set_uniform(MaterialShaderGLES2::PROJECTION_TRANSFORM, p_projection);
 			if (skeleton && use_hw_skeleton_xform) {
-				material_shader.set_uniform(MaterialShaderGLES2::SKELETON_MATRICES,GL_TEXTURE0+max_texture_units-2);
+				material_shader.set_uniform(MaterialShaderGLES2::SKELETON_MATRICES,/* GL_TEXTURE0+ */max_texture_units-2);
 				material_shader.set_uniform(MaterialShaderGLES2::SKELTEX_PIXEL_SIZE,skeleton->pixel_size);
 			}
 			if (!shadow) {
@@ -10762,6 +10762,10 @@ void RasterizerGLES2::init() {
 
 #endif
 
+	// NOTE: Uncomment the following line to test hardware skeleton transform.
+	//       Currently seems a bit glitchy, but somewhat works.
+	//use_hw_skeleton_xform = true;
+	
 	//use_rgba_shadowmaps=true;
 
 
