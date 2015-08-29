@@ -297,7 +297,7 @@ void make_default_theme() {
 	t->set_color("font_color_hover","MenuButton", control_font_color_hover );
 	t->set_color("font_color_disabled","MenuButton", Color(1,1,1,0.3) );
 
-	t->set_constant("hseparation","MenuButton", 0 );
+	t->set_constant("hseparation","MenuButton", 3 );
 
     // CheckBox
 

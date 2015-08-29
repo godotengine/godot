@@ -1477,7 +1477,6 @@ Globals::Globals() {
 	custom_prop_info["render/mipmap_policy"]=PropertyInfo(Variant::INT,"render/mipmap_policy",PROPERTY_HINT_ENUM,"Allow,Allow For Po2,Disallow");
 	custom_prop_info["render/thread_model"]=PropertyInfo(Variant::INT,"render/thread_model",PROPERTY_HINT_ENUM,"Single-Unsafe,Single-Safe,Multi-Threaded");
 	custom_prop_info["physics_2d/thread_model"]=PropertyInfo(Variant::INT,"physics_2d/thread_model",PROPERTY_HINT_ENUM,"Single-Unsafe,Single-Safe,Multi-Threaded");
-	set("display/emulate_touchscreen",false);
 
 	using_datapack=false;
 }

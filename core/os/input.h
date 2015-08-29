@@ -78,6 +78,8 @@ public:
 
 	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
 
+	virtual bool is_emulating_touchscreen() const=0;
+
 
 	Input();
 };
@@ -98,6 +100,8 @@ class InputDefault : public Input {
 	Vector3 accelerometer;
 	Vector2 mouse_pos;
 	MainLoop *main_loop;
+
+	bool emulate_touch;
 
 	struct SpeedTrack {
 
@@ -146,6 +150,9 @@ public:
 	void action_release(const StringName& p_action);
 
 	void iteration(float p_step);
+
+	void set_emulate_touch(bool p_emulate);
+	virtual bool is_emulating_touchscreen() const;
 
 	InputDefault();
 
