@@ -475,12 +475,7 @@ void main() {
 	highp float lum_accum = color.r;
 	highp float lum_max = color.g;
 
-#define LUM_REDUCE(m_uv) \
-	{\
-		vec2 val = texture2D( source,  uv_interp+m_uv ).rg;\
-		lum_accum+=val.x;\
-		lum_max=max(val.y,lum_max);\
-	}
+#define LUM_REDUCE(m_uv) { vec2 val = texture2D( source,  uv_interp+m_uv ).rg; lum_accum+=val.x; lum_max=max(val.y,lum_max); }
 
 	LUM_REDUCE( vec2(-pixel_size.x,-pixel_size.y) );
 	LUM_REDUCE( vec2(0.0,-pixel_size.y) );
