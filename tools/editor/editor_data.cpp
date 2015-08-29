@@ -523,7 +523,7 @@ Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
 	if (!edited_scene[p_idx].root)
 		return Ref<Script>();
 	Ref<Script> s=edited_scene[p_idx].root->get_script();
-	if (!s.is_valid()) {
+	if (!s.is_valid() && edited_scene[p_idx].root->get_child_count()) {
 		Node *n = edited_scene[p_idx].root->get_child(0);
 		while(!s.is_valid() && n && n->get_filename()==String()) {
 			s=n->get_script();

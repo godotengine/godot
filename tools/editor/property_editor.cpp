@@ -2403,8 +2403,10 @@ void PropertyEditor::update_tree() {
 
 
 				item->set_cell_mode( 1, TreeItem::CELL_MODE_RANGE );
+				if (p.hint==PROPERTY_HINT_SPRITE_FRAME) {
+					item->set_range_config(1,0,99999,1);
 
-				if (p.hint==PROPERTY_HINT_RANGE || p.hint==PROPERTY_HINT_EXP_RANGE) {
+				} else if (p.hint==PROPERTY_HINT_RANGE || p.hint==PROPERTY_HINT_EXP_RANGE) {
 
 					int c = p.hint_string.get_slice_count(",");
 					float min=0,max=100,step=1;
