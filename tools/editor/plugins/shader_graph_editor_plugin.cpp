@@ -2413,12 +2413,21 @@ void ShaderGraphView::_create_node(int p_id) {
 		Array colors;
 		colors.push_back("Color");
 		colors.push_back("LightColor");
+		colors.push_back("Light");
+		colors.push_back("Diffuse");
+		colors.push_back("Specular");
+		colors.push_back("Emmision");
 		Array reals;
 		reals.push_back("Alpha");
-		reals.push_back("NormapMapDepth");
+		reals.push_back("DiffuseAlpha");
+		reals.push_back("NormalMapDepth");
 		reals.push_back("SpecExp");
+		reals.push_back("Glow");
+		reals.push_back("ShadeParam");
+		reals.push_back("SpecularExp");
 		reals.push_back("LightAlpha");
 		reals.push_back("PointSize");
+		reals.push_back("Discard");
 
 		int idx=0;
 		for (List<ShaderGraph::SlotInfo>::Element *E=si.front();E;E=E->next()) {
@@ -2739,10 +2748,8 @@ const char* ShaderGraphEditor::node_names[ShaderGraph::NODE_TYPE_MAX]={
 ShaderGraphEditor::ShaderGraphEditor(bool p_2d) {
 	_2d=p_2d;
 
-	HBoxContainer *hbc = memnew( HBoxContainer );
 	popup = memnew( PopupMenu );
-	hbc->add_child(popup);
-	add_child(hbc);
+	add_child(popup);
 
 
 	tabs = memnew(TabContainer);

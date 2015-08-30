@@ -125,7 +125,7 @@ void SpinBox::_input_event(const InputEvent& p_event) {
 		if (drag.enabled) {
 
 			float diff_y = drag.mouse_pos.y - cpos.y;
-			diff_y=pow(ABS(diff_y),1.8)*SGN(diff_y);
+			diff_y=pow((float)ABS(diff_y),(float)1.8)*SGN(diff_y);
 			diff_y*=0.1;
 
 			drag.mouse_pos=cpos;
