@@ -2070,7 +2070,7 @@ void Tree::_input_event(InputEvent p_event) {
 
 					TreeItem::Cell &c=popup_edited_item->cells[popup_edited_item_col];
 					float diff_y = -b.relative_y;
-					diff_y=pow(ABS(diff_y),1.8)*SGN(diff_y);
+					diff_y=Math::pow(ABS(diff_y),1.8)*SGN(diff_y);
 					diff_y*=0.1;
 					range_drag_base=CLAMP(range_drag_base + c.step * diff_y, c.min, c.max);
 
