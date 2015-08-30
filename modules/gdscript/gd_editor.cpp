@@ -998,6 +998,44 @@ static bool _guess_identifier_type_in_block(GDCompletionContext& context,int p_l
 	return false;
 }
 
+
+static bool _guess_identifier_from_assignment_in_function(GDCompletionContext& context,const StringName& p_identifier, const StringName& p_function,GDCompletionIdentifier &r_type) {
+
+	const GDParser::FunctionNode* func=NULL;
+	for(int i=0;i<context._class->functions.size();i++) {
+		if (context._class->functions[i]->name==p_function) {
+			func=context._class->functions[i];
+			break;
+		}
+	}
+
+	if (!func)
+		return false;
+
+	for(int i=0;i<func->body->statements.size();i++) {
+
+
+
+		if (func->body->statements[i]->type==GDParser::BlockNode::TYPE_OPERATOR) {
+			const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(func->body->statements[i]);
+			if (op->op==GDParser::OperatorNode::OP_ASSIGN) {
+
+				if (op->arguments.size() && op->arguments[0]->type==GDParser::Node::TYPE_IDENTIFIER) {
+
+					const GDParser::IdentifierNode *id = static_cast<const GDParser::IdentifierNode *>(op->arguments[0]);
+
+					if (id->name==p_identifier) {
+
+						return _guess_expression_type(context,op->arguments[1],func->body->statements[i]->line,r_type);
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
 static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const StringName& p_identifier,GDCompletionIdentifier &r_type) {
 
 	//go to block first
@@ -1089,8 +1127,22 @@ static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const
 					r_type=_get_type_from_pinfo(context._class->variables[i]._export);
 					return true;
 				} else if (context._class->variables[i].expression) {
-					return _guess_expression_type(context,context._class->variables[i].expression,context._class->variables[i].line,r_type);
+
+					bool rtype = _guess_expression_type(context,context._class->variables[i].expression,context._class->variables[i].line,r_type);
+					if (rtype && r_type.type!=Variant::NIL)
+						return true;
+					//return _guess_expression_type(context,context._class->variables[i].expression,context._class->variables[i].line,r_type);
 				}
+
+				//try to guess from assignment in construtor or _ready
+				if (_guess_identifier_from_assignment_in_function(context,p_identifier,"_ready",r_type))
+					return true;
+				if (_guess_identifier_from_assignment_in_function(context,p_identifier,"_enter_tree",r_type))
+					return true;
+				if (_guess_identifier_from_assignment_in_function(context,p_identifier,"_init",r_type))
+					return true;
+
+				return false;
 			}
 		}
 	}
