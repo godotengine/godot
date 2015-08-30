@@ -2416,15 +2416,9 @@ void ShaderGraphView::_create_node(int p_id) {
 		Array reals;
 		reals.push_back("Alpha");
 		reals.push_back("NormapMapDepth");
+		reals.push_back("SpecExp");
 		reals.push_back("LightAlpha");
 		reals.push_back("PointSize");
-		Array vectors;
-		vectors.push_back("Normal");
-		vectors.push_back("NormalMap");
-		vectors.push_back("Vertex");
-		vectors.push_back("UV");
-		vectors.push_back("Var1");
-		vectors.push_back("Var2");
 
 		int idx=0;
 		for (List<ShaderGraph::SlotInfo>::Element *E=si.front();E;E=E->next()) {
@@ -2435,7 +2429,7 @@ void ShaderGraphView::_create_node(int p_id) {
 					v=Variant::COLOR;
 				else if (reals.find(s.name)>=0)
 					v=Variant::REAL;
-				else if (vectors.find(s.name)>=0)
+				else
 					v=Variant::VECTOR3;
 				gn->add_child(make_label(s.name, v));
 				gn->set_slot(idx,true,s.type,typecol[s.type],false,0,Color());
