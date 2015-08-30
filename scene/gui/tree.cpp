@@ -1299,7 +1299,7 @@ void Tree::select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col
 	
 		} else if (select_mode==SELECT_SINGLE || select_mode==SELECT_MULTI) {
 	
-			if (&selected_cell==&c) {
+			if (!r_in_range && &selected_cell==&c) {
 		
 
 				if (!selected_cell.selected) {
@@ -1308,6 +1308,7 @@ void Tree::select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col
 					
 					selected_item=p_selected;
 					selected_col=i;
+
 					emit_signal("cell_selected");
 					if (select_mode==SELECT_MULTI)
 						emit_signal("multi_selected",p_current,i,true);
@@ -1323,6 +1324,7 @@ void Tree::select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col
 			
 
 				if (r_in_range && *r_in_range) {
+
 
 					if (!c.selected && c.selectable) {
 						c.selected=true;
@@ -1474,7 +1476,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 					if (select_mode==SELECT_MULTI && p_mod.shift && selected_item && selected_item!=p_item) {
 
 						bool inrange=false;
-						print_line("SELECT MULTI AND SHIFT AND ALL");
+
 						select_single_item( p_item, root, col,selected_item,&inrange );
 					} else {
 						select_single_item( p_item, root, col );
