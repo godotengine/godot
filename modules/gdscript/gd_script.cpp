@@ -2710,7 +2710,10 @@ GDScriptLanguage::~GDScriptLanguage() {
 
 /*************** RESOURCE ***************/
 
-RES ResourceFormatLoaderGDScript::load(const String &p_path,const String& p_original_path) {
+RES ResourceFormatLoaderGDScript::load(const String &p_path, const String& p_original_path, Error *r_error) {
+
+	if (r_error)
+		*r_error=ERR_FILE_CANT_OPEN;
 
 	GDScript *script = memnew( GDScript );
 
@@ -2742,6 +2745,8 @@ RES ResourceFormatLoaderGDScript::load(const String &p_path,const String& p_orig
 
 		script->reload();
 	}
+	if (r_error)
+		*r_error=OK;
 
 	return scriptres;
 }

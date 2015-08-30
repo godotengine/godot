@@ -2315,6 +2315,17 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 								case Variant::INT: {
 
+									if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier()=="FLAGS") {
+
+										current_export.hint=PROPERTY_HINT_ALL_FLAGS;
+										tokenizer->advance();
+										if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected ')' in hint.");
+											return;
+										}
+										break;
+									}
+
 									if (tokenizer->get_token()==GDTokenizer::TK_CONSTANT && tokenizer->get_token_constant().get_type()==Variant::STRING) {
 										//enumeration
 										current_export.hint=PROPERTY_HINT_ENUM;
@@ -2542,16 +2553,23 @@ void GDParser::_parse_class(ClassNode *p_class) {
 					} else if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER) {
 
 						String identifier = tokenizer->get_token_identifier();
-						if (!ObjectTypeDB::is_type(identifier,"Resource")) {
-
-							current_export=PropertyInfo();
-							_set_error("Export hint not a type or resource.");
+						if (identifier == "flag") {
+							current_export.type=Variant::INT;
+							current_export.hint=PROPERTY_HINT_ALL_FLAGS;
+						}else if (identifier == "multiline"){
+							current_export.type=Variant::STRING;
+							current_export.hint=PROPERTY_HINT_MULTILINE_TEXT;
+						} else {
+							if (!ObjectTypeDB::is_type(identifier,"Resource")) {
+	
+								current_export=PropertyInfo();
+								_set_error("Export hint not a type or resource.");
+							}
+	
+							current_export.type=Variant::OBJECT;
+							current_export.hint=PROPERTY_HINT_RESOURCE_TYPE;
+							current_export.hint_string=identifier;
 						}
-
-						current_export.type=Variant::OBJECT;
-						current_export.hint=PROPERTY_HINT_RESOURCE_TYPE;
-						current_export.hint_string=identifier;
-
 						tokenizer->advance();
 					}
 
@@ -2607,14 +2625,14 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 					Node *subexpr=NULL;
 
-					subexpr = _parse_and_reduce_expression(p_class,false);
+					subexpr = _parse_and_reduce_expression(p_class,false,autoexport);
 					if (!subexpr)
 						return;
 
 					member.expression=subexpr;
 
 					if (autoexport) {
-						if (subexpr->type==Node::TYPE_ARRAY) {
+						if (1)/*(subexpr->type==Node::TYPE_ARRAY) {
 
 							member._export.type=Variant::ARRAY;
 
@@ -2622,7 +2640,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 							member._export.type=Variant::DICTIONARY;
 
-						} else {
+						} else*/ {
 
 							if (subexpr->type!=Node::TYPE_CONSTANT) {
 

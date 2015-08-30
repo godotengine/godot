@@ -1071,8 +1071,8 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("draw_rect","rect","color"),&CanvasItem::draw_rect);
 	ObjectTypeDB::bind_method(_MD("draw_circle","pos","radius","color"),&CanvasItem::draw_circle);
 	ObjectTypeDB::bind_method(_MD("draw_texture","texture:Texture","pos"),&CanvasItem::draw_texture);
-	ObjectTypeDB::bind_method(_MD("draw_texture_rect","texture:Texture","rect","tile","modulate"),&CanvasItem::draw_texture_rect,DEFVAL(false),DEFVAL(Color(1,1,1)));
-	ObjectTypeDB::bind_method(_MD("draw_texture_rect_region","texture:Texture","rect","src_rect","modulate"),&CanvasItem::draw_texture_rect_region,DEFVAL(Color(1,1,1)));
+	ObjectTypeDB::bind_method(_MD("draw_texture_rect","texture:Texture","rect","tile","modulate","transpose"),&CanvasItem::draw_texture_rect,DEFVAL(Color(1,1,1)),DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("draw_texture_rect_region","texture:Texture","rect","src_rect","modulate","transpose"),&CanvasItem::draw_texture_rect_region,DEFVAL(Color(1,1,1)),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("draw_style_box","style_box:StyleBox","rect"),&CanvasItem::draw_style_box);
 	ObjectTypeDB::bind_method(_MD("draw_primitive","points","colors","uvs","texture:Texture","width"),&CanvasItem::draw_primitive,DEFVAL(Array()),DEFVAL(Ref<Texture>()),DEFVAL(1.0));
 	ObjectTypeDB::bind_method(_MD("draw_polygon","points","colors","uvs","texture:Texture"),&CanvasItem::draw_polygon,DEFVAL(Array()),DEFVAL(Ref<Texture>()));

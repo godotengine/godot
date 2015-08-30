@@ -504,6 +504,23 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 	mouse_mode=p_mode;
 
 	if (mouse_mode==MOUSE_MODE_CAPTURED) {
+
+		while(true) {
+			//flush pending motion events
+
+			if (XPending(x11_display) > 0) {
+				XEvent event;
+				XPeekEvent(x11_display, &event);
+				if (event.type==MotionNotify) {
+					XNextEvent(x11_display,&event);
+				} else {
+					break;
+				}
+			} else {
+				break;
+			}
+		}
+
 		if (XGrabPointer(x11_display, x11_window, True,
 				    ButtonPressMask | ButtonReleaseMask |
 				    PointerMotionMask, GrabModeAsync, GrabModeAsync,
@@ -518,6 +535,8 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 			      0,0,0,0, (int)center.x, (int)center.y);
 
 		input->set_mouse_pos(center);
+	} else {
+		do_mouse_warp=false;
 	}
 }
 
@@ -1131,7 +1150,7 @@ void OS_X11::process_xevents() {
 
 	//printf("checking events %i\n", XPending(x11_display));
 
-	bool do_mouse_warp=false;
+	do_mouse_warp=false;
 
 	while (XPending(x11_display) > 0) {
 		XEvent event;
@@ -1244,8 +1263,38 @@ void OS_X11::process_xevents() {
 			
 		} break;	
 		case MotionNotify: {
-						
+
+			// FUCK YOU X11 API YOU SERIOUSLY GROSS ME OUT
+			// YOU ARE AS GROSS AS LOOKING AT A PUTRID PILE
+			// OF POOP STICKING OUT OF A CLOGGED TOILET
+			// HOW THE FUCK I AM SUPPOSED TO KNOW WHICH ONE
+			// OF THE MOTION NOTIFY EVENTS IS THE ONE GENERATED
+			// BY WARPING THE MOUSE POINTER?
+			// YOU ARE FORCING ME TO FILTER ONE BY ONE TO FIND IT
+			// PLEASE DO ME A FAVOR AND DIE DROWNED IN A FECAL
+			// MOUNTAIN BECAUSE THAT'S WHERE YOU BELONG.
+
 			
+			while(true) {
+				if (mouse_mode==MOUSE_MODE_CAPTURED && event.xmotion.x==current_videomode.width/2 && event.xmotion.y==current_videomode.height/2) {
+					//this is likely the warp event since it was warped here
+					center=Vector2(event.xmotion.x,event.xmotion.y);
+					break;
+				}
+
+				if (XPending(x11_display) > 0) {
+					XEvent tevent;
+					XPeekEvent(x11_display, &tevent);
+					if (tevent.type==MotionNotify) {
+						XNextEvent(x11_display,&event);
+					} else {
+						break;
+					}
+				} else {
+					break;
+				}
+			}
+
 			last_timestamp=event.xmotion.time;
 		
 			// Motion is also simple.

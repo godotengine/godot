@@ -39,7 +39,7 @@ void EditorHistory::_cleanup_history() {
 		bool fail=false;
 
 		for(int j=0;j<history[i].path.size();j++) {
-			if (!history[i].path[j].res.is_null())
+			if (!history[i].path[j].ref.is_null())
 				continue;
 
 			if (ObjectDB::get_instance(history[i].path[j].object))
@@ -70,10 +70,10 @@ void EditorHistory::_add_object(ObjectID p_object,const String& p_property,int p
 
 	Object *obj = ObjectDB::get_instance(p_object);
 	ERR_FAIL_COND(!obj);
-	Resource *r = obj->cast_to<Resource>();
+	Reference *r = obj->cast_to<Reference>();
 	Obj o;
 	if (r)
-		o.res=RES(r);
+		o.ref=REF(r);
 	o.object=p_object;
 	o.property=p_property;
 
@@ -523,7 +523,7 @@ Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
 	if (!edited_scene[p_idx].root)
 		return Ref<Script>();
 	Ref<Script> s=edited_scene[p_idx].root->get_script();
-	if (!s.is_valid()) {
+	if (!s.is_valid() && edited_scene[p_idx].root->get_child_count()) {
 		Node *n = edited_scene[p_idx].root->get_child(0);
 		while(!s.is_valid() && n && n->get_filename()==String()) {
 			s=n->get_script();

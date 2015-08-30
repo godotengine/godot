@@ -274,7 +274,7 @@ Button* AcceptDialog::add_button(const String& p_text,bool p_right,const String&
 	}
 
 	if (p_action!="") {
-		button->connect("pressed",this,"_custom_action",make_binds(p_action));
+		button->connect("pressed",this,"_custom_action",varray(p_action));
 	}
 
 	return button;

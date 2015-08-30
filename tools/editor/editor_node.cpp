@@ -93,7 +93,7 @@
 #include "plugins/light_occluder_2d_editor_plugin.h"
 #include "plugins/color_ramp_editor_plugin.h"
 #include "plugins/collision_shape_2d_editor_plugin.h"
-
+#include "os/input.h"
 // end
 #include "tools/editor/io_plugins/editor_texture_import_plugin.h"
 #include "tools/editor/io_plugins/editor_scene_import_plugin.h"
@@ -1427,10 +1427,7 @@ void EditorNode::_edit_current() {
 
 		resources_dock->add_resource(Ref<Resource>(current_res));
 		//top_pallete->set_current_tab(1);
-	}
-
-
-	if (current_obj->is_type("Node")) {
+	} else if (current_obj->is_type("Node")) {
 
 		Node * current_node = current_obj->cast_to<Node>();
 		ERR_FAIL_COND(!current_node);
@@ -1444,6 +1441,12 @@ void EditorNode::_edit_current() {
 		object_menu->get_popup()->clear();
 
 		//top_pallete->set_current_tab(0);
+
+	} else {
+
+		property_editor->edit( current_obj );
+		//scene_tree_dock->set_selected(current_node);
+		//object_menu->get_popup()->clear();
 
 	}
 
@@ -1587,7 +1590,6 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 		Node *scene = editor_data.get_edited_scene_root();
 
 		if (!scene) {
-
 			current_option=-1;
 			//accept->get_cancel()->hide();
 			accept->get_ok()->set_text("I see..");
@@ -1666,6 +1668,10 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 		}
 
 		editor_data.save_editor_external_data();
+	}
+
+	if (bool(EDITOR_DEF("run/always_clear_output_on_play", true))) {
+		log->clear();
 	}
 
 
@@ -1799,6 +1805,13 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			quick_open->popup("Script");
 			quick_open->set_title("Quick Open Script..");
+
+		} break;
+		case FILE_QUICK_OPEN_FILE: {
+
+
+			quick_open->popup("Resource",false,true);
+			quick_open->set_title("Quick Search File..");
 
 		} break;
 		case FILE_RUN_SCRIPT: {
@@ -3047,7 +3060,21 @@ void EditorNode::set_current_scene(int p_idx) {
 
 }
 
-Error EditorNode::load_scene(const String& p_scene) {
+bool EditorNode::is_scene_open(const String& p_path) {
+
+	for(int i=0;i<editor_data.get_edited_scene_count();i++) {
+		if (editor_data.get_scene_path(i)==p_path)
+			return true;
+	}
+
+	return false;
+}
+
+void EditorNode::fix_dependencies(const String& p_for_file) {
+	dependency_fixer->edit(p_for_file);
+}
+
+Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps) {
 
 	if (!is_inside_tree()) {
 		defer_load_scene = p_scene;
@@ -3093,6 +3120,8 @@ Error EditorNode::load_scene(const String& p_scene) {
 
 	//_cleanup_scene(); // i'm sorry but this MUST happen to avoid modified resources to not be reloaded.
 
+	dependency_errors.clear();
+
 	Ref<PackedScene> sdata = ResourceLoader::load(lpath,"",true);
 	if (!sdata.is_valid()) {
 
@@ -3108,6 +3137,35 @@ Error EditorNode::load_scene(const String& p_scene) {
 			editor_data.remove_scene(idx);
 		}
 		return ERR_FILE_NOT_FOUND;
+	}
+
+	if (!p_ignore_broken_deps && dependency_errors.has(lpath)) {
+
+		current_option=-1;
+		Vector<String> errors;
+		for(Set<String>::Element *E=dependency_errors[lpath].front();E;E=E->next()) {
+
+			errors.push_back(E->get());
+		}
+		dependency_error->show(lpath,errors);
+		opening_prev=false;
+
+		if (prev!=-1) {
+			set_current_scene(prev);
+			editor_data.remove_scene(idx);
+		}
+		return ERR_FILE_MISSING_DEPENDENCIES;
+	}
+
+	dependency_errors.erase(lpath); //at least not self path
+
+	for (Map<String,Set<String> >::Element *E=dependency_errors.front();E;E=E->next()) {
+
+		String txt="Scene '"+E->key()+"' has broken dependencies:\n";
+		for(Set<String>::Element *F=E->get().front();F;F=F->next()) {
+			txt+="\t"+F->get()+"\n";
+		}
+		add_io_error(txt);
 	}
 
 	sdata->set_path(lpath,true); //take over path
@@ -3405,9 +3463,12 @@ void EditorNode::hide_animation_player_editors() {
 
 void EditorNode::_quick_opened(const String& p_resource) {
 
-	print_line("quick_opened");
-	if (quick_open->get_base_type()=="PackedScene") {
+	if (current_option==FILE_QUICK_OPEN_FILE) {
+		scenes_dock->open(p_resource);
+		return;
+	}
 
+	if (quick_open->get_base_type()=="PackedScene") {
 		open_request(p_resource);
 	} else {
 		load_resource(p_resource);
@@ -4102,6 +4163,14 @@ EditorNode::EditorNode() {
 
 	EditorHelp::generate_doc(); //before any editor classes are crated
 
+	if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton()) {
+		//only if no touchscreen ui hint, set emulation
+		InputDefault *id = Input::get_singleton()->cast_to<InputDefault>();
+		if (id)
+			id->set_emulate_touch(false); //just disable just in case
+	}
+
+
 	singleton=this;
 	last_checked_version=0;
 	changing_scene=false;
@@ -4117,6 +4186,7 @@ EditorNode::EditorNode() {
 	ResourceLoader::set_abort_on_missing_resources(false);
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 	ResourceLoader::set_error_notify_func(this,_load_error_notify);
+	ResourceLoader::set_dependency_error_notify_func(this,_dependency_error_report);
 
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
@@ -4490,6 +4560,7 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_item("Quick Open Scene..",FILE_QUICK_OPEN_SCENE,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_O);
 	p->add_item("Quick Open Script..",FILE_QUICK_OPEN_SCRIPT,KEY_MASK_ALT+KEY_MASK_CMD+KEY_O);
+	p->add_item("Quick Search File..",FILE_QUICK_OPEN_FILE,KEY_MASK_ALT+KEY_MASK_CMD+KEY_P);
 	p->add_separator();
 
 	PopupMenu *pm_export = memnew(PopupMenu );
@@ -4772,6 +4843,7 @@ EditorNode::EditorNode() {
 	property_editor->set_autoclear(true);
 	property_editor->set_show_categories(true);
 	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	property_editor->set_use_doc_hints(true);
 	
 	property_editor->hide_top_label();
 
@@ -4926,7 +4998,11 @@ EditorNode::EditorNode() {
 
 
 
+	dependency_error = memnew( DependencyErrorDialog );
+	gui_base->add_child(dependency_error);
 
+	dependency_fixer = memnew( DependencyEditor );
+	gui_base->add_child( dependency_fixer );
 	
 	settings_config_dialog = memnew( EditorSettingsDialog );
 	gui_base->add_child(settings_config_dialog);

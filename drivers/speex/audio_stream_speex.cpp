@@ -530,7 +530,10 @@ AudioStreamSpeex::~AudioStreamSpeex() {
 	unload();
 }
 
-RES ResourceFormatLoaderAudioStreamSpeex::load(const String &p_path,const String& p_original_path) {
+RES ResourceFormatLoaderAudioStreamSpeex::load(const String &p_path, const String& p_original_path, Error *r_error) {
+
+	if (r_error)
+		*r_error=OK;
 
 	AudioStreamSpeex *stream = memnew(AudioStreamSpeex);
 	stream->set_file(p_path);

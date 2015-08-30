@@ -232,7 +232,7 @@ void AudioStreamOGGVorbis::seek_pos(float p_time) {
 
 	if (!playing)
 		return;
-	bool ok = ov_time_seek(&vf,p_time*1000)==0;
+	bool ok = ov_time_seek(&vf,p_time)==0;
 	ERR_FAIL_COND(!ok);
 	frames_mixed=stream_srate*p_time;
 }
@@ -385,7 +385,9 @@ AudioStreamOGGVorbis::~AudioStreamOGGVorbis() {
 
 
 
-RES ResourceFormatLoaderAudioStreamOGGVorbis::load(const String &p_path,const String& p_original_path) {
+RES ResourceFormatLoaderAudioStreamOGGVorbis::load(const String &p_path, const String& p_original_path, Error *r_error) {
+	if (r_error)
+		*r_error=OK;
 
 	AudioStreamOGGVorbis *ogg_stream = memnew(AudioStreamOGGVorbis);
 	ogg_stream->set_file(p_path);
