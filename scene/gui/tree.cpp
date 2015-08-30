@@ -31,7 +31,7 @@
 #include "os/os.h"
 #include "os/keyboard.h"
 #include "globals.h"
-
+#include "os/input.h"
 
 
 
@@ -70,6 +70,7 @@ Size2 TreeItem::Cell::get_icon_size() const {
 	else
 		return icon_region.size;
 }
+
 void TreeItem::Cell::draw_icon(const RID& p_where, const Point2& p_pos, const Size2& p_size) const{
 
 	if (icon.is_null())
@@ -728,14 +729,20 @@ TreeItem::~TreeItem() {
 		tree->root=0;
 	}
 
-	if (tree && tree->popup_edited_item==this)
+	if (tree && tree->popup_edited_item==this) {
 		tree->popup_edited_item=NULL;
+		tree->pressing_for_editor=false;
+
+	}
 
 	if (tree && tree->selected_item==this)
 		tree->selected_item=NULL;
 
-	if (tree && tree->edited_item==this)
+	if (tree && tree->edited_item==this) {
 		tree->edited_item=NULL;
+		tree->pressing_for_editor=false;
+	}
+
 
 }
 
@@ -1292,7 +1299,7 @@ void Tree::select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col
 	
 		} else if (select_mode==SELECT_SINGLE || select_mode==SELECT_MULTI) {
 	
-			if (&selected_cell==&c) {
+			if (!r_in_range && &selected_cell==&c) {
 		
 
 				if (!selected_cell.selected) {
@@ -1301,6 +1308,7 @@ void Tree::select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col
 					
 					selected_item=p_selected;
 					selected_col=i;
+
 					emit_signal("cell_selected");
 					if (select_mode==SELECT_MULTI)
 						emit_signal("multi_selected",p_current,i,true);
@@ -1316,6 +1324,7 @@ void Tree::select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col
 			
 
 				if (r_in_range && *r_in_range) {
+
 
 					if (!c.selected && c.selectable) {
 						c.selected=true;
@@ -1467,7 +1476,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 					if (select_mode==SELECT_MULTI && p_mod.shift && selected_item && selected_item!=p_item) {
 
 						bool inrange=false;
-						print_line("SELECT MULTI AND SHIFT AND ALL");
+
 						select_single_item( p_item, root, col,selected_item,&inrange );
 					} else {
 						select_single_item( p_item, root, col );
@@ -1490,7 +1499,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 
 		/* editing */
 
-		bool bring_up_editor=c.selected && already_selected;
+		bool bring_up_editor=c.selected;// && already_selected;
 		bool bring_up_value_editor=false;
 		String editor_text=c.text;
 
@@ -1605,31 +1614,14 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 			return -1;
 
 
-		click_handled=true;
+
+		click_handled=true;		
 		popup_edited_item=p_item;
 		popup_edited_item_col=col;
-		text_editor->set_pos(get_global_pos() + Point2i(col_ofs,_get_title_button_height()+y_ofs)-cache.offset );
-		text_editor->set_size( Size2(col_width,item_h));
-		text_editor->clear();
-		text_editor->set_text( editor_text );
-		text_editor->select_all();
 
-		if (bring_up_value_editor) {
-
-			value_editor->set_pos(get_global_pos() + Point2i(col_ofs,_get_title_button_height()+y_ofs)-cache.offset+Point2i(0,text_editor->get_size().height) );
-			value_editor->set_size( Size2(col_width,1));
-			value_editor->show_modal();
-			updating_value_editor=true;
-			value_editor->set_min( c.min );
-			value_editor->set_max( c.max );
-			value_editor->set_step( c.step );
-			value_editor->set_val( c.val );
-			value_editor->set_exp_unit_value( c.expr );
-			updating_value_editor=false;
-		}
-
-		text_editor->show_modal();
-		text_editor->grab_focus();
+		pressing_item_rect=Rect2(get_global_pos() + Point2i(col_ofs,_get_title_button_height()+y_ofs)-cache.offset,Size2(col_width,item_h));
+		pressing_for_editor_text=editor_text;
+		pressing_for_editor=true;
 
 		return -1; //select
 	} else {
@@ -2062,6 +2054,33 @@ void Tree::_input_event(InputEvent p_event) {
 				update();
 			}
 
+			if (pressing_for_editor && popup_edited_item && popup_edited_item->get_cell_mode(popup_edited_item_col)==TreeItem::CELL_MODE_RANGE) {
+				//range drag
+
+				if (!range_drag_enabled) {
+
+					Vector2 cpos = Vector2(b.x,b.y);
+					if (cpos.distance_to(pressing_pos)>2) {
+						range_drag_enabled=true;
+						range_drag_capture_pos=cpos;
+						range_drag_base=popup_edited_item->get_range(popup_edited_item_col);
+						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+					}
+				} else {
+
+					TreeItem::Cell &c=popup_edited_item->cells[popup_edited_item_col];
+					float diff_y = -b.relative_y;
+					diff_y=pow(ABS(diff_y),1.8)*SGN(diff_y);
+					diff_y*=0.1;
+					range_drag_base=CLAMP(range_drag_base + c.step * diff_y, c.min, c.max);
+
+					popup_edited_item->set_range(popup_edited_item_col,range_drag_base);
+					item_edited(popup_edited_item_col,popup_edited_item);
+
+				}
+
+			}
+
 			if (drag_touching && ! drag_touching_deaccel) {
 
 
@@ -2083,6 +2102,31 @@ void Tree::_input_event(InputEvent p_event) {
 			if (!b.pressed) {
 
 				if (b.button_index==BUTTON_LEFT) {
+
+					if (pressing_for_editor) {
+
+						if (range_drag_enabled) {
+
+							range_drag_enabled=false;
+							Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+							warp_mouse(range_drag_capture_pos);
+						} else {
+							text_editor->set_pos(pressing_item_rect.pos);
+							text_editor->set_size(pressing_item_rect.size);
+
+							text_editor->clear();
+							text_editor->set_text( pressing_for_editor_text );
+							text_editor->select_all();
+
+							text_editor->show_modal();
+							text_editor->grab_focus();
+
+						}
+						pressing_for_editor=false;
+
+					}
+
+
 
 					if (cache.click_type==Cache::CLICK_BUTTON) {
 						emit_signal("button_pressed",cache.click_item,cache.click_column,cache.click_id);
@@ -2145,11 +2189,15 @@ void Tree::_input_event(InputEvent p_event) {
 						break;
 
 					click_handled=false;
+					pressing_for_editor=false;
 
 					blocked++;
 					bool handled = propagate_mouse_event(pos+cache.offset,0,0,b.doubleclick,root,b.button_index,b.mod);
 					blocked--;
 
+					if (pressing_for_editor) {
+						pressing_pos=Point2(b.x,b.y);
+					}
 
 
 					if (drag_touching) {
@@ -2615,6 +2663,8 @@ void Tree::clear() {
 	selected_item=NULL;
 	edited_item=NULL;
 	popup_edited_item=NULL;
+	selected_item=NULL;
+	pressing_for_editor=false;
 
 	update();
 };
@@ -3189,6 +3239,8 @@ Tree::Tree() {
 	drag_speed=0;
 	drag_touching=false;
 	drag_touching_deaccel=false;
+	pressing_for_editor=false;
+	range_drag_enabled=false;
 
 }
 

@@ -330,6 +330,8 @@ MultiMeshEditor::MultiMeshEditor() {
 	options->set_area_as_parent_rect();
 
 	options->set_text("MultiMesh");
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MultiMeshInstance","EditorIcons"));
+
 	options->get_popup()->add_item("Populate Surface");
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 
