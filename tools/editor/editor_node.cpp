@@ -1765,6 +1765,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			int idx = editor_data.add_edited_scene(-1);
 			_scene_tab_changed(idx);
+			editor_data.clear_editor_states();
 
 			//_cleanup_scene();
 
