@@ -80,12 +80,15 @@ void ShaderGraph::_set_data(const Dictionary &p_data) {
 			ERR_FAIL_COND((conns.size()%3)!=0);
 
 			for(int j=0;j<conns.size();j+=3) {
-
 				SourceSlot ss;
 				int ls=conns[j+0];
-				ss.id=conns[j+1];
-				ss.slot=conns[j+2];
-				n.connections[ls]=ss;
+				if (ls == SLOT_DEFAULT_VALUE) {
+					n.defaults[conns[j+1]]=conns[j+2];
+				} else {
+					ss.id=conns[j+1];
+					ss.slot=conns[j+2];
+					n.connections[ls]=ss;
+				}
 			}
 			shader[t].node_map[n.id]=n;
 
@@ -114,7 +117,7 @@ Dictionary ShaderGraph::_get_data() const {
 			data[idx+4]=E->get().param2;
 
 			Array conns;
-			conns.resize(E->get().connections.size()*3);
+			conns.resize(E->get().connections.size()*3+E->get().defaults.size()*3);
 			int idx2=0;
 			for(Map<int,SourceSlot>::Element*F=E->get().connections.front();F;F=F->next()) {
 
@@ -123,6 +126,14 @@ Dictionary ShaderGraph::_get_data() const {
 				conns[idx2+2]=F->get().slot;
 				idx2+=3;
 			}
+			for(Map<int,Variant>::Element*F=E->get().defaults.front();F;F=F->next()) {
+
+				conns[idx2+0]=SLOT_DEFAULT_VALUE;
+				conns[idx2+1]=F->key();
+				conns[idx2+2]=F->get();
+				idx2+=3;
+			}
+
 			data[idx+5]=conns;
 			idx+=6;
 		}
@@ -163,6 +174,9 @@ void ShaderGraph::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("node_get_type","shader_type","id"),&ShaderGraph::node_get_type);
 
 	ObjectTypeDB::bind_method(_MD("get_node_list","shader_type"),&ShaderGraph::_get_node_list);
+
+	ObjectTypeDB::bind_method(_MD("default_set_value","shader_type","id","param_id","value"), &ShaderGraph::default_set_value);
+	ObjectTypeDB::bind_method(_MD("default_get_value","shader_type","id","param_id"), &ShaderGraph::default_get_value);
 
 	ObjectTypeDB::bind_method(_MD("scalar_const_node_set_value","shader_type","id","value"),&ShaderGraph::scalar_const_node_set_value);
 	ObjectTypeDB::bind_method(_MD("scalar_const_node_get_value","shader_type","id"),&ShaderGraph::scalar_const_node_set_value);
@@ -546,7 +560,7 @@ void ShaderGraph::node_add(ShaderType p_type, NodeType p_node_type,int p_id) {
 		case NODE_RGB_INPUT: {node.param1=_find_unique_name("Color");node.param2=Color();} break; // color uniform (assignable in material)
 		case NODE_XFORM_INPUT: {node.param1=_find_unique_name("XForm"); node.param2=Transform();} break; // mat4 uniform (assignable in material)
 		case NODE_TEXTURE_INPUT: {node.param1=_find_unique_name("Tex"); } break; // texture input (assignable in material)
-		case NODE_CUBEMAP_INPUT: {node.param1=_find_unique_name("Cube"); } break; // cubemap input (assignable in material)			
+		case NODE_CUBEMAP_INPUT: {node.param1=_find_unique_name("Cube"); } break; // cubemap input (assignable in material)
 		case NODE_DEFAULT_TEXTURE: {}; break;
 		case NODE_OUTPUT: {} break; // output (shader type dependent)
 		case NODE_COMMENT: {} break; // comment
@@ -690,6 +704,18 @@ void ShaderGraph::get_node_connections(ShaderType p_type,List<Connection> *p_con
 			p_connections->push_back(c);
 		}
 	}
+}
+
+bool ShaderGraph::is_slot_connected(ShaderGraph::ShaderType p_type, int p_dst_id, int slot_id)
+{
+	for(const Map<int,Node>::Element *E=shader[p_type].node_map.front();E;E=E->next()) {
+		for (const Map<int,SourceSlot>::Element *F=E->get().connections.front();F;F=F->next()) {
+
+			if (p_dst_id == E->key() && slot_id==F->key())
+				return true;
+		}
+	}
+	return false;
 }
 
 
@@ -1005,6 +1031,33 @@ ShaderGraph::ScalarFunc ShaderGraph::scalar_func_node_get_function(ShaderType p_
 	return ScalarFunc(func);
 }
 
+void ShaderGraph::default_set_value(ShaderGraph::ShaderType p_which, int p_id, int p_param, const Variant &p_value)
+{
+	ERR_FAIL_INDEX(p_which,3);
+	ERR_FAIL_COND(!shader[p_which].node_map.has(p_id));
+	Node& n = shader[p_which].node_map[p_id];
+	if(p_value.get_type()==Variant::NIL)
+		n.defaults.erase(n.defaults.find(p_param));
+	else
+		n.defaults[p_param]=p_value;
+
+	_request_update();
+
+}
+
+Variant ShaderGraph::default_get_value(ShaderGraph::ShaderType p_which, int p_id, int p_param)
+{
+	ERR_FAIL_INDEX_V(p_which,3,Variant());
+	ERR_FAIL_COND_V(!shader[p_which].node_map.has(p_id),Variant());
+	const Node& n = shader[p_which].node_map[p_id];
+
+	if (!n.defaults.has(p_param))
+		return Variant();
+	return n.defaults[p_param];
+}
+
+
+
 void ShaderGraph::vec_func_node_set_function(ShaderType p_type,int p_id,VecFunc p_func){
 
 	ERR_FAIL_INDEX(p_type,3);
@@ -1030,52 +1083,52 @@ ShaderGraph::VecFunc ShaderGraph::vec_func_node_get_function(ShaderType p_type, 
 
 void ShaderGraph::color_ramp_node_set_ramp(ShaderType p_type,int p_id,const DVector<Color>& p_colors, const DVector<real_t>& p_offsets){
 
-    ERR_FAIL_INDEX(p_type,3);
-    ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
-    ERR_FAIL_COND(p_colors.size()!=p_offsets.size());
-    Node& n = shader[p_type].node_map[p_id];
-    n.param1=p_colors;
-    n.param2=p_offsets;
-    _request_update();
+	ERR_FAIL_INDEX(p_type,3);
+	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
+	ERR_FAIL_COND(p_colors.size()!=p_offsets.size());
+	Node& n = shader[p_type].node_map[p_id];
+	n.param1=p_colors;
+	n.param2=p_offsets;
+	_request_update();
 
 }
 
 DVector<Color> ShaderGraph::color_ramp_node_get_colors(ShaderType p_type,int p_id) const{
 
-    ERR_FAIL_INDEX_V(p_type,3,DVector<Color>());
-    ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),DVector<Color>());
-    const Node& n = shader[p_type].node_map[p_id];
-    return n.param1;
+	ERR_FAIL_INDEX_V(p_type,3,DVector<Color>());
+	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),DVector<Color>());
+	const Node& n = shader[p_type].node_map[p_id];
+	return n.param1;
 
 
 }
 
 DVector<real_t> ShaderGraph::color_ramp_node_get_offsets(ShaderType p_type,int p_id) const{
 
-    ERR_FAIL_INDEX_V(p_type,3,DVector<real_t>());
-    ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),DVector<real_t>());
-    const Node& n = shader[p_type].node_map[p_id];
-    return n.param2;
+	ERR_FAIL_INDEX_V(p_type,3,DVector<real_t>());
+	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),DVector<real_t>());
+	const Node& n = shader[p_type].node_map[p_id];
+	return n.param2;
 
 }
 
 
 void ShaderGraph::curve_map_node_set_points(ShaderType p_type,int p_id,const DVector<Vector2>& p_points) {
 
-    ERR_FAIL_INDEX(p_type,3);
-    ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
-    Node& n = shader[p_type].node_map[p_id];
-    n.param1=p_points;
-    _request_update();
+	ERR_FAIL_INDEX(p_type,3);
+	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
+	Node& n = shader[p_type].node_map[p_id];
+	n.param1=p_points;
+	_request_update();
 
 }
 
 DVector<Vector2> ShaderGraph::curve_map_node_get_points(ShaderType p_type,int p_id) const{
 
-    ERR_FAIL_INDEX_V(p_type,3,DVector<Vector2>());
-    ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),DVector<Vector2>());
-    const Node& n = shader[p_type].node_map[p_id];
-    return n.param1;
+	ERR_FAIL_INDEX_V(p_type,3,DVector<Vector2>());
+	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),DVector<Vector2>());
+	const Node& n = shader[p_type].node_map[p_id];
+	return n.param1;
 
 }
 
@@ -1265,6 +1318,12 @@ Variant ShaderGraph::node_get_state(ShaderType p_type,int p_id) const {
 	s["pos"]=n.pos;
 	s["param1"]=n.param1;
 	s["param2"]=n.param2;
+	Array keys;
+	for (Map<int,Variant>::Element *E=n.defaults.front();E;E=E->next()) {
+		keys.append(E->key());
+		s[E->key()]=E->get();
+	}
+	s["default_keys"]=keys;
 	return s;
 
 }
@@ -1277,10 +1336,15 @@ void ShaderGraph::node_set_state(ShaderType p_type,int p_id,const Variant& p_sta
 	ERR_FAIL_COND(!d.has("pos"));
 	ERR_FAIL_COND(!d.has("param1"));
 	ERR_FAIL_COND(!d.has("param2"));
+	ERR_FAIL_COND(!d.has("default_keys"));
+
 	n.pos=d["pos"];
 	n.param1=d["param1"];
 	n.param2=d["param2"];
-
+	Array keys = d["default_keys"];
+	for(int i=0;i<keys.size();i++) {
+		n.defaults[keys[i]]=d[keys[i]];
+	}
 }
 
 ShaderGraph::ShaderGraph(Mode p_mode) : Shader(p_mode) {
@@ -1924,27 +1988,27 @@ void ShaderGraph::_plot_curve(const Vector2& p_a,const Vector2& p_b,const Vector
 	};
 
 	for (i = 0; i < 4; i++)
-	    {
-	      for (j = 0; j < 4; j++)
+		{
+		  for (j = 0; j < 4; j++)
 		{
 		  tmp1[i][j] = (CR_basis[i][0] * geometry[0][j] +
-			      CR_basis[i][1] * geometry[1][j] +
-			      CR_basis[i][2] * geometry[2][j] +
-			      CR_basis[i][3] * geometry[3][j]);
+				  CR_basis[i][1] * geometry[1][j] +
+				  CR_basis[i][2] * geometry[2][j] +
+				  CR_basis[i][3] * geometry[3][j]);
 		}
-	    }
+		}
 	/* compose the above results to get the deltas matrix */
 
 	for (i = 0; i < 4; i++)
-	    {
-	      for (j = 0; j < 4; j++)
+		{
+		  for (j = 0; j < 4; j++)
 		{
 		  deltas[i][j] = (tmp2[i][0] * tmp1[0][j] +
-			      tmp2[i][1] * tmp1[1][j] +
-			      tmp2[i][2] * tmp1[2][j] +
-			      tmp2[i][3] * tmp1[3][j]);
+				  tmp2[i][1] * tmp1[1][j] +
+				  tmp2[i][2] * tmp1[2][j] +
+				  tmp2[i][3] * tmp1[3][j]);
 		}
-	    }
+		}
 
 
 	/* extract the x deltas */

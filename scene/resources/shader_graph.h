@@ -68,7 +68,7 @@ public:
 		NODE_VEC_INTERP, // vec3 interpolation  (with optional curve)
 		NODE_COLOR_RAMP, //take scalar, output vec3
 		NODE_CURVE_MAP, //take scalar, otput scalar
-		NODE_SCALAR_INPUT, // scalar uniform (assignable in material)		
+		NODE_SCALAR_INPUT, // scalar uniform (assignable in material)
 		NODE_VEC_INPUT, // vec3 uniform (assignable in material)
 		NODE_RGB_INPUT, // color uniform (assignable in material)
 		NODE_XFORM_INPUT, // mat4 uniform (assignable in material)
@@ -120,6 +120,7 @@ private:
 
 	String _find_unique_name(const String& p_base);
 
+	enum {SLOT_DEFAULT_VALUE = 0x7FFFFFFF};
 	struct SourceSlot {
 
 		int id;
@@ -135,6 +136,7 @@ private:
 		NodeType type;
 		Variant param1;
 		Variant param2;
+		Map<int, Variant> defaults;
 		int id;
 		mutable int order; // used for sorting
 		int sort_order;
@@ -318,6 +320,9 @@ public:
 		VEC_MAX_FUNC
 	};
 
+	void default_set_value(ShaderType p_which,int p_id,int p_param, const Variant& p_value);
+	Variant default_get_value(ShaderType p_which,int p_id,int p_param);
+
 	void vec_func_node_set_function(ShaderType p_which,int p_id,VecFunc p_func);
 	VecFunc vec_func_node_get_function(ShaderType p_which,int p_id) const;
 
@@ -357,6 +362,8 @@ public:
 	void disconnect_node(ShaderType p_which,int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot);
 
 	void get_node_connections(ShaderType p_which,List<Connection> *p_connections) const;
+
+	bool is_slot_connected(ShaderType p_which,int p_dst_id,int slot_id);
 
 	void clear(ShaderType p_which);
 

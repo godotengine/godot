@@ -129,6 +129,7 @@ class ShaderGraphView : public Node {
 	GraphEdit *graph_edit;
 	Ref<ShaderGraph> graph;
 	int edited_id;
+	int edited_def;
 
 	ShaderGraph::ShaderType type;
 
@@ -136,6 +137,8 @@ class ShaderGraphView : public Node {
 	void _create_node(int p_id);
 
 
+	ToolButton *make_label(String text, Variant::Type v_type = Variant::NIL);
+	ToolButton *make_editor(String text, GraphNode* gn, int p_id, int param, Variant::Type type, String p_hint="");
 
 	void _connection_request(const String& p_from, int p_from_slot,const String& p_to,int p_to_slot);
 	void _disconnection_request(const String& p_from, int p_from_slot,const String& p_to,int p_to_slot);
@@ -148,6 +151,9 @@ class ShaderGraphView : public Node {
 	void _duplicate_nodes_request();
 	void _duplicate_nodes(Array &p_nodes);
 	void _delete_nodes_request();
+
+
+	void _default_changed(int p_id, Node* p_button, int p_param, int v_type, String p_hint);
 
 	void _scalar_const_changed(double p_value,int p_id);
 	void _vec_const_changed(double p_value, int p_id, Array p_arr);
