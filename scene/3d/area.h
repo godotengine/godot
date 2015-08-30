@@ -50,7 +50,8 @@ private:
 	real_t gravity;
 	bool gravity_is_point;
 	real_t gravity_distance_scale;
-	real_t density;
+	real_t angular_damp;
+	real_t linear_damp;
 	int priority;
 	bool monitoring;
 	bool monitorable;
@@ -139,8 +140,11 @@ public:
 	void set_gravity(real_t p_gravity);
 	real_t get_gravity() const;
 
-	void set_density(real_t p_density);
-	real_t get_density() const;
+	void set_angular_damp(real_t p_angular_damp);
+	real_t get_angular_damp() const;
+
+	void set_linear_damp(real_t p_linear_damp);
+	real_t get_linear_damp() const;
 
 	void set_priority(real_t p_priority);
 	real_t get_priority() const;
