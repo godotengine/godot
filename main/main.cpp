@@ -94,11 +94,15 @@ static FileAccessNetworkClient *file_access_network_client=NULL;
 static TranslationServer *translation_server = NULL;
 
 static OS::VideoMode video_mode;
+static bool init_maximized=false;
+static bool init_fullscreen=false;
+static bool init_use_custom_pos=false;
+static Vector2 init_custom_pos;
 static int video_driver_idx=-1;
 static int audio_driver_idx=-1;
 static String locale;
 
-static bool init_maximized=false;
+
 static int init_screen=-1;
 
 static String unescape_cmdline(const String& p_str) {
@@ -136,8 +140,10 @@ void Main::print_help(const char* p_binary) {
 	}
 	OS::get_singleton()->print(")\n");
 	
-	OS::get_singleton()->print("\t-r WIDTHxHEIGHT\t : Request Screen Resolution\n");
+	OS::get_singleton()->print("\t-r WIDTHxHEIGHT\t : Request Window Resolution\n");
+	OS::get_singleton()->print("\t-p XxY\t : Request Window Position\n");
 	OS::get_singleton()->print("\t-f\t\t : Request Fullscreen\n");
+	OS::get_singleton()->print("\t-mx\t\t Request Maximized\n");
 	OS::get_singleton()->print("\t-vd DRIVER\t : Video Driver (");
 	for (int i=0;i<OS::get_singleton()->get_video_driver_count();i++) {
 		
@@ -311,7 +317,37 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				
 			
 			}
-			
+		} else if (I->get()=="-p") { // position
+
+			if (I->next()) {
+
+				String vm=I->next()->get();
+
+				if (vm.find("x")==-1) { // invalid parameter format
+
+					goto error;
+
+
+				}
+
+				int x=vm.get_slice("x",0).to_int();
+				int y=vm.get_slice("x",1).to_int();
+
+				init_custom_pos=Point2(x,y);
+				init_use_custom_pos=true;
+				force_res=true;
+
+				N=I->next()->next();
+			} else {
+				goto error;
+
+
+			}
+
+
+		} else if (I->get()=="-mx") { // video driver
+
+			init_maximized=true;
 		} else if (I->get()=="-vd") { // video driver
 		
 			if (I->next()) {
@@ -383,7 +419,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 			
 		} else if (I->get()=="-f") { // fullscreen
 		
-			video_mode.fullscreen=true;
+			//video_mode.fullscreen=false;
+			init_fullscreen=true;
 		} else if (I->get()=="-e" || I->get()=="-editor") { // fonud editor
 
 			editor=true;
@@ -785,6 +822,14 @@ Error Main::setup2() {
 
 
 	OS::get_singleton()->initialize(video_mode,video_driver_idx,audio_driver_idx);
+	if (init_use_custom_pos) {
+		OS::get_singleton()->set_window_position(init_custom_pos);
+	}
+	if (init_maximized) {
+		OS::get_singleton()->set_window_maximized(true);
+	} else if (init_fullscreen) {
+		OS::get_singleton()->set_window_fullscreen(true);
+	}
 
 	register_core_singletons();
 
