@@ -459,17 +459,74 @@ void EditorNode::open_resource(const String& p_type) {
 	current_option=RESOURCE_LOAD;
 }
 
+
+void EditorNode::save_resource_in_path(const Ref<Resource>& p_resource,const String& p_path) {
+
+	editor_data.apply_changes_in_editors();
+	int flg=0;
+	if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
+		flg|=ResourceSaver::FLAG_COMPRESS;
+	if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
+		flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
+
+	String path = Globals::get_singleton()->localize_path(p_path);
+	Error err = ResourceSaver::save(path,p_resource,flg|ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
+
+	if (err!=OK) {
+		accept->set_text("Error saving resource!");
+		accept->popup_centered_minsize();
+	return;
+	}
+//	EditorFileSystem::get_singleton()->update_file(path,p_resource->get_type());
+
+	((Resource*)p_resource.ptr())->set_path(path);
+	emit_signal("resource_saved",p_resource);
+
+}
+
 void EditorNode::save_resource(const Ref<Resource>& p_resource) {
 
-
-	ERR_FAIL_COND(p_resource.is_null() || p_resource->get_path()=="" || p_resource->get_path().find("::")!=-1);
-	resources_dock->save_resource(p_resource->get_path(),p_resource);
+	if (p_resource->get_path().is_resource_file()) {
+		save_resource_in_path(p_resource,p_resource->get_path());
+	} else {
+		save_resource_as(p_resource);
+	}
 }
 
 void EditorNode::save_resource_as(const Ref<Resource>& p_resource) {
 
-	resources_dock->save_resource_as(p_resource);
+	file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	bool relpaths =  (p_resource->has_meta("__editor_relpaths__") && p_resource->get_meta("__editor_relpaths__").operator bool());
 
+	List<String> extensions;
+	Ref<PackedScene> sd = memnew( PackedScene );
+	ResourceSaver::get_recognized_extensions(p_resource,&extensions);
+	file->clear_filters();
+	for(int i=0;i<extensions.size();i++) {
+
+		file->add_filter("*."+extensions[i]+" ; "+extensions[i].to_upper());
+	}
+
+	//file->set_current_path(current_path);
+	if (p_resource->get_path()!="") {
+		file->set_current_path(p_resource->get_path());
+		if (extensions.size()) {
+			String ext=p_resource->get_path().extension().to_lower();
+			if (extensions.find(ext)==NULL) {
+				file->set_current_path(p_resource->get_path().replacen("."+ext,"."+extensions.front()->get()));
+			}
+		}
+	} else {
+
+		String existing;
+		if (extensions.size()) {
+			existing="new_"+p_resource->get_type().to_lower()+"."+extensions.front()->get().to_lower();
+		}
+		file->set_current_path(existing);
+
+	}
+	file->popup_centered_ratio();
+	file->set_title("Save Resource As..");
 }
 
 
@@ -1049,7 +1106,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 
 			push_item(res.operator->() );
-		} break;
+		} break;			
 		case FILE_OPEN_SCENE: {
 
 
@@ -1320,7 +1377,20 @@ void EditorNode::_dialog_action(String p_file) {
 			unzClose(pkg);
 
 		} break;
+		case RESOURCE_SAVE:
+		case RESOURCE_SAVE_AS: {
 
+
+			uint32_t current = editor_history.get_current();
+			Object *current_obj = current>0 ? ObjectDB::get_instance(current) : NULL;
+
+			ERR_FAIL_COND(!current_obj->cast_to<Resource>())
+
+			RES current_res = RES(current_obj->cast_to<Resource>());
+
+			save_resource_in_path(current_res,p_file);
+
+		} break;
 		default: { //save scene?
 		
 			
@@ -1356,6 +1426,67 @@ void EditorNode::push_item(Object *p_object,const String& p_property) {
 
 	_edit_current();
 
+}
+
+void EditorNode::_select_history(int p_idx) {
+
+	//push it to the top, it is not correct, but it's more useful
+	ObjectID id=editor_history.get_history_obj(p_idx);
+	Object* obj=ObjectDB::get_instance(id);
+	if (!obj)
+		return;
+	push_item(obj);
+}
+
+void EditorNode::_prepare_history() {
+
+	int history_to = MAX(0,editor_history.get_history_len()-25);
+
+	editor_history_menu->get_popup()->clear();
+
+	Ref<Texture> base_icon = gui_base->get_icon("Object","EditorIcons");
+	Set<ObjectID> already;
+	for(int i=editor_history.get_history_len()-1;i>=history_to;i--) {
+
+
+		ObjectID id=editor_history.get_history_obj(i);
+		Object* obj=ObjectDB::get_instance(id);
+		if (!obj || already.has(id)) {
+			if (history_to>0) {
+				history_to--;
+			}
+			continue;
+		}
+
+		already.insert(id);
+
+		Ref<Texture> icon = gui_base->get_icon("Object","EditorIcons");
+		if (gui_base->has_icon(obj->get_type(),"EditorIcons"))
+			icon=gui_base->get_icon(obj->get_type(),"EditorIcons");
+		else
+			icon=base_icon;
+
+		String text;
+		if (obj->cast_to<Resource>()) {
+			Resource *r=obj->cast_to<Resource>();
+			if (r->get_path().is_resource_file())
+				text=r->get_path().get_file();
+			else if (r->get_name()!=String()) {
+				text=r->get_name();
+			} else {
+				text=r->get_type();
+			}
+		} else if (obj->cast_to<Node>()) {
+			text=obj->cast_to<Node>()->get_name();
+		} else {
+			text=obj->get_type();
+		}
+
+		if (i==editor_history.get_history_pos()) {
+			text="["+text+"]";
+		}
+		editor_history_menu->get_popup()->add_icon_item(icon,text,i);
+	}
 }
 
 void EditorNode::_property_editor_forward() {
@@ -1402,6 +1533,9 @@ void EditorNode::_edit_current() {
 	uint32_t current = editor_history.get_current();
 	Object *current_obj = current>0 ? ObjectDB::get_instance(current) : NULL;
 
+	property_back->set_disabled( editor_history.is_at_begining() );
+	property_forward->set_disabled( editor_history.is_at_end() );
+
 	this->current=current_obj;
 	editor_path->update_path();
 
@@ -1416,7 +1550,10 @@ void EditorNode::_edit_current() {
 
 	object_menu->set_disabled(true);
 
-	if (current_obj->is_type("Resource")) {
+	bool is_resource = current_obj->is_type("Resource");
+	resource_save_button->set_disabled(!is_resource);
+
+	if (is_resource) {
 
 
 		Resource *current_res = current_obj->cast_to<Resource>();
@@ -1425,7 +1562,9 @@ void EditorNode::_edit_current() {
 		property_editor->edit( current_res );
 		object_menu->set_disabled(false);
 
-		resources_dock->add_resource(Ref<Resource>(current_res));
+		//resources_dock->add_resource(Ref<Resource>(current_res));
+
+
 		//top_pallete->set_current_tab(1);
 	} else if (current_obj->is_type("Node")) {
 
@@ -1520,7 +1659,13 @@ void EditorNode::_edit_current() {
 	p->add_item("Copy Params",OBJECT_COPY_PARAMS);
 	p->add_item("Set Params",OBJECT_PASTE_PARAMS);
 	p->add_separator();
-	p->add_item("Make Resources Unique",OBJECT_UNIQUE_RESOURCES);
+	p->add_item("Paste Resource",RESOURCE_PASTE);
+	if (is_resource) {
+		p->add_item("Copy Resource",RESOURCE_COPY);
+		p->add_item("Make Built-In",RESOURCE_UNREF);
+	}
+	p->add_separator();
+	p->add_item("Make Sub-Resources Unique",OBJECT_UNIQUE_RESOURCES);
 	p->add_separator();
 	p->add_icon_item(gui_base->get_icon("Help","EditorIcons"),"Class Reference",OBJECT_REQUEST_HELP);
 	List<MethodInfo> methods;
@@ -1551,6 +1696,20 @@ void EditorNode::_edit_current() {
 
 
 	_update_keying();
+}
+
+void EditorNode::_resource_created() {
+
+	Object *c = create_dialog->instance_selected();
+
+	ERR_FAIL_COND(!c);
+	Resource *r = c->cast_to<Resource>();
+	ERR_FAIL_COND(!r);
+
+	REF res( r );
+
+	push_item(c);
+
 }
 
 void EditorNode::_resource_selected(const RES& p_res,const String& p_property) {
@@ -2277,7 +2436,70 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		} break;
 #endif
-		
+		case RESOURCE_NEW: {
+
+			create_dialog->popup_centered_ratio();
+		} break;
+		case RESOURCE_LOAD: {
+
+			open_resource();
+		} break;
+		case RESOURCE_SAVE: {
+
+
+			uint32_t current = editor_history.get_current();
+			Object *current_obj = current>0 ? ObjectDB::get_instance(current) : NULL;
+
+			ERR_FAIL_COND(!current_obj->cast_to<Resource>())
+
+			RES current_res = RES(current_obj->cast_to<Resource>());
+
+			save_resource(current_res);
+
+		} break;
+		case RESOURCE_SAVE_AS: {
+
+			uint32_t current = editor_history.get_current();
+			Object *current_obj = current>0 ? ObjectDB::get_instance(current) : NULL;
+
+			ERR_FAIL_COND(!current_obj->cast_to<Resource>())
+
+			RES current_res = RES(current_obj->cast_to<Resource>());
+
+			save_resource_as(current_res);
+
+		} break;
+		case RESOURCE_UNREF: {
+
+			uint32_t current = editor_history.get_current();
+			Object *current_obj = current>0 ? ObjectDB::get_instance(current) : NULL;
+
+			ERR_FAIL_COND(!current_obj->cast_to<Resource>())
+
+			RES current_res = RES(current_obj->cast_to<Resource>());
+			current_res->set_path("");
+			_edit_current();
+		} break;
+		case RESOURCE_COPY: {
+
+			uint32_t current = editor_history.get_current();
+			Object *current_obj = current>0 ? ObjectDB::get_instance(current) : NULL;
+
+			ERR_FAIL_COND(!current_obj->cast_to<Resource>())
+
+			RES current_res = RES(current_obj->cast_to<Resource>());
+
+			EditorSettings::get_singleton()->set_resource_clipboard(current_res);
+
+		} break;
+		case RESOURCE_PASTE: {
+
+			RES r = EditorSettings::get_singleton()->get_resource_clipboard();
+			if (r.is_valid()) {
+				push_item(EditorSettings::get_singleton()->get_resource_clipboard().ptr(),String());
+			}
+
+		} break;
 		case OBJECT_REQUEST_HELP: {
 
 			if (current) {
@@ -3654,6 +3876,8 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("_quick_opened",&EditorNode::_quick_opened);
 	ObjectTypeDB::bind_method("_quick_run",&EditorNode::_quick_run);
 
+	ObjectTypeDB::bind_method("_resource_created",&EditorNode::_resource_created);
+
 	ObjectTypeDB::bind_method("_import_action",&EditorNode::_import_action);
 	//ObjectTypeDB::bind_method("_import",&EditorNode::_import);
 //	ObjectTypeDB::bind_method("_import_conflicts_solved",&EditorNode::_import_conflicts_solved);
@@ -3683,6 +3907,8 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("_set_main_scene_state",&EditorNode::_set_main_scene_state);
 	ObjectTypeDB::bind_method("_update_scene_tabs",&EditorNode::_update_scene_tabs);
 
+	ObjectTypeDB::bind_method("_prepare_history",&EditorNode::_prepare_history);
+	ObjectTypeDB::bind_method("_select_history",&EditorNode::_select_history);
 
 
 	ObjectTypeDB::bind_method(_MD("add_editor_import_plugin", "plugin"), &EditorNode::add_editor_import_plugin);
@@ -4804,13 +5030,14 @@ EditorNode::EditorNode() {
 	scene_tree_dock->set_name("Scene");
 	//top_pallete->add_child(scene_tree_dock);
 	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(scene_tree_dock);
-
+#if 0
 	resources_dock = memnew( ResourcesDock(this) );
 	resources_dock->set_name("Resources");
 	//top_pallete->add_child(resources_dock);
 	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(resources_dock);
 	//top_pallete->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-
+#endif
+	dock_slot[DOCK_SLOT_RIGHT_BL]->hide();
 	/*Control *editor_spacer = memnew( Control );
 	editor_spacer->set_custom_minimum_size(Size2(260,200));
 	editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -4835,28 +5062,40 @@ EditorNode::EditorNode() {
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(prop_editor_base);
 
 	HBoxContainer *prop_editor_hb = memnew( HBoxContainer );
+
 	prop_editor_base->add_child(prop_editor_hb);
-	editor_path = memnew( EditorPath(&editor_history) );
-	editor_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	prop_editor_hb->add_child(editor_path);
 
-	property_editor = memnew( PropertyEditor );
-	property_editor->set_autoclear(true);
-	property_editor->set_show_categories(true);
-	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	property_editor->set_use_doc_hints(true);
-	
-	property_editor->hide_top_label();
+	resource_new_button = memnew( ToolButton );
+	resource_new_button->set_tooltip("Create a new resource in memory and edit it");
+	resource_new_button->set_icon(gui_base->get_icon("New","EditorIcons"));
+	prop_editor_hb->add_child(resource_new_button);
+	resource_new_button->connect("pressed",this,"_menu_option",varray(RESOURCE_NEW));
+	resource_new_button->set_focus_mode(Control::FOCUS_NONE);
 
-	prop_editor_base->add_child( property_editor );
-	property_editor->set_undo_redo(&editor_data.get_undo_redo());
+	resource_load_button = memnew( ToolButton );
+	resource_load_button->set_tooltip("Load an existing resource from disk and edit it");
+	resource_load_button->set_icon(gui_base->get_icon("Load","EditorIcons"));
+	prop_editor_hb->add_child(resource_load_button);
+	resource_load_button->connect("pressed",this,"_menu_option",varray(RESOURCE_LOAD));
+	resource_load_button->set_focus_mode(Control::FOCUS_NONE);
 
+	resource_save_button = memnew( MenuButton );
+	resource_save_button->set_tooltip("Save the currently edited resource");
+	resource_save_button->set_icon(gui_base->get_icon("Save","EditorIcons"));
+	prop_editor_hb->add_child(resource_save_button);
+	resource_save_button->get_popup()->add_item("Save",RESOURCE_SAVE);
+	resource_save_button->get_popup()->add_item("Save As..",RESOURCE_SAVE_AS);
+	resource_save_button->get_popup()->connect("item_pressed",this,"_menu_option");
+	resource_save_button->set_focus_mode(Control::FOCUS_NONE);
+	resource_save_button->set_disabled(true);
 
-	
+	prop_editor_hb->add_spacer();
+
 	property_back = memnew( ToolButton );
 	property_back->set_icon( gui_base->get_icon("Back","EditorIcons") );
 	property_back->set_flat(true);
 	property_back->set_tooltip("Go to the previous edited object in history.");
+	property_back->set_disabled(true);
 
 	prop_editor_hb->add_child( property_back );
 
@@ -4864,13 +5103,47 @@ EditorNode::EditorNode() {
 	property_forward->set_icon( gui_base->get_icon("Forward","EditorIcons") );
 	property_forward->set_flat(true);
 	property_forward->set_tooltip("Go to the next edited object in history.");
+	property_forward->set_disabled(true);
 
 	prop_editor_hb->add_child( property_forward );
+
+
+	editor_history_menu = memnew( MenuButton );
+	editor_history_menu->set_icon( gui_base->get_icon("History","EditorIcons"));
+	prop_editor_hb->add_child(editor_history_menu);
+	editor_history_menu->connect("about_to_show",this,"_prepare_history");
+	editor_history_menu->get_popup()->connect("item_pressed",this,"_select_history");
+
+
+	prop_editor_hb = memnew( HBoxContainer ); //again...
+
+	prop_editor_base->add_child(prop_editor_hb);
+	editor_path = memnew( EditorPath(&editor_history) );
+	editor_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	prop_editor_hb->add_child(editor_path);
+
 
 	object_menu = memnew( MenuButton );
 	object_menu->set_icon(gui_base->get_icon("Tools","EditorIcons"));
 	prop_editor_hb->add_child( object_menu );
 	object_menu->set_tooltip("Object properties.");
+
+	create_dialog = memnew( CreateDialog );
+	gui_base->add_child(create_dialog);
+	create_dialog->set_base_type("Resource");
+	create_dialog->connect("create",this,"_resource_created");
+
+
+	property_editor = memnew( PropertyEditor );
+	property_editor->set_autoclear(true);
+	property_editor->set_show_categories(true);
+	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	property_editor->set_use_doc_hints(true);
+
+	property_editor->hide_top_label();
+
+	prop_editor_base->add_child( property_editor );
+	property_editor->set_undo_redo(&editor_data.get_undo_redo());
 
 
 	scenes_dock = memnew( ScenesDock(this) );

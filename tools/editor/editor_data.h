@@ -75,9 +75,16 @@ friend class EditorData;
 
 public:
 
+	bool is_at_begining() const;
+	bool is_at_end() const;
+
 	void add_object(ObjectID p_object);
 	void add_object(ObjectID p_object,const String& p_subprop);
 	void add_object(ObjectID p_object,int p_relevel);
+
+	int get_history_len();
+	int get_history_pos();
+	ObjectID get_history_obj(int p_obj) const;
 
 	bool next();
 	bool previous();
