@@ -5925,6 +5925,9 @@ void VisualServerRaster::_cull_portal(Camera *p_camera, Instance *p_portal,Insta
 	} else if (portal==p_from_portal) {
 
 		return; // came from this portal, don't even bother testing
+	} else if (p_portal->portal_info->portal->enabled==false) {
+
+		return; // This portal disabled
 	}
 
 	/* TEST DISABLE DISTANCE */
