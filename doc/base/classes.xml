@@ -570,7 +570,7 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="PI" value="3.149551593">
+		<constant name="PI" value="3.1415923">
 			Constant that represents how many times the diameter of a circumference fits around it's perimeter.
 		</constant>
 	</constants>
