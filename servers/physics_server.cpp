@@ -39,13 +39,18 @@ void PhysicsDirectBodyState::integrate_forces() {
 
 	Vector3 av = get_angular_velocity();
 
-	float damp = 1.0 - step * get_total_density();
+	float linear_damp = 1.0 - step * get_total_linear_damp();
 
-	if (damp<0) // reached zero in the given time
-		damp=0;
+	if (linear_damp<0) // reached zero in the given time
+		linear_damp=0;
 
-	lv*=damp;
-	av*=damp;
+	float angular_damp = 1.0 - step * get_total_angular_damp();
+
+	if (angular_damp<0) // reached zero in the given time
+		angular_damp=0;
+
+	lv*=linear_damp;
+	av*=angular_damp;
 
 	set_linear_velocity(lv);
 	set_angular_velocity(av);
@@ -70,7 +75,8 @@ PhysicsServer * PhysicsServer::get_singleton() {
 void PhysicsDirectBodyState::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_total_gravity"),&PhysicsDirectBodyState::get_total_gravity);
-	ObjectTypeDB::bind_method(_MD("get_total_density"),&PhysicsDirectBodyState::get_total_density);
+	ObjectTypeDB::bind_method(_MD("get_total_linear_damp"),&PhysicsDirectBodyState::get_total_linear_damp);
+	ObjectTypeDB::bind_method(_MD("get_total_angular_damp"),&PhysicsDirectBodyState::get_total_angular_damp);
 
 	ObjectTypeDB::bind_method(_MD("get_inverse_mass"),&PhysicsDirectBodyState::get_inverse_mass);
 	ObjectTypeDB::bind_method(_MD("get_inverse_inertia"),&PhysicsDirectBodyState::get_inverse_inertia);
@@ -683,7 +689,8 @@ void PhysicsServer::_bind_methods() {
 	BIND_CONSTANT( AREA_PARAM_GRAVITY_IS_POINT );
 	BIND_CONSTANT( AREA_PARAM_GRAVITY_DISTANCE_SCALE );
 	BIND_CONSTANT( AREA_PARAM_GRAVITY_POINT_ATTENUATION );
-	BIND_CONSTANT( AREA_PARAM_DENSITY );
+	BIND_CONSTANT( AREA_PARAM_LINEAR_DAMP );
+	BIND_CONSTANT( AREA_PARAM_ANGULAR_DAMP );
 	BIND_CONSTANT( AREA_PARAM_PRIORITY );
 
 	BIND_CONSTANT( AREA_SPACE_OVERRIDE_COMBINE );
@@ -698,6 +705,9 @@ void PhysicsServer::_bind_methods() {
 	BIND_CONSTANT( BODY_PARAM_BOUNCE );
 	BIND_CONSTANT( BODY_PARAM_FRICTION );
 	BIND_CONSTANT( BODY_PARAM_MASS );
+	BIND_CONSTANT( BODY_PARAM_GRAVITY_SCALE );
+	BIND_CONSTANT( BODY_PARAM_ANGULAR_DAMP );
+	BIND_CONSTANT( BODY_PARAM_LINEAR_DAMP );
 	BIND_CONSTANT( BODY_PARAM_MAX );
 
 	BIND_CONSTANT( BODY_STATE_TRANSFORM );

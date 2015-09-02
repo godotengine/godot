@@ -578,8 +578,8 @@ void Sprite3D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_hframes"),&Sprite3D::get_hframes);
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_texture"),_SCS("get_texture"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "vframes"), _SCS("set_vframes"),_SCS("get_vframes"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "hframes"), _SCS("set_hframes"),_SCS("get_hframes"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "vframes",PROPERTY_HINT_RANGE,"1,16384,1"), _SCS("set_vframes"),_SCS("get_vframes"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "hframes",PROPERTY_HINT_RANGE,"1,16384,1"), _SCS("set_hframes"),_SCS("get_hframes"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "region"), _SCS("set_region"),_SCS("is_region"));
 	ADD_PROPERTY( PropertyInfo( Variant::RECT2, "region_rect"), _SCS("set_region_rect"),_SCS("get_region_rect"));

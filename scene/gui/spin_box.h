@@ -44,6 +44,18 @@ class SpinBox : public Range {
 	String prefix;
 	String suffix;
 
+	void _line_edit_input(const InputEvent& p_event);
+
+
+	struct Drag {
+		float base_val;
+		bool enabled;
+		Vector2 from;
+		Vector2	mouse_pos;
+		Vector2 capture_pos;
+	} drag;
+
+
 	void _line_edit_focus_exit();
 
 protected:

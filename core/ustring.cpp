@@ -3048,6 +3048,37 @@ bool String::is_valid_identifier() const {
 
 //kind of poor should be rewritten properly
 
+String String::world_wrap(int p_chars_per_line) const {
+
+	int from=0;
+	int last_space=0;
+	String ret;
+	for(int i=0;i<length();i++) {
+		if (i-from>=p_chars_per_line) {
+			if (last_space==-1) {
+				ret+=substr(from,i-from+1)+"\n";
+			} else {
+				ret+=substr(from,last_space-from)+"\n";
+				i=last_space; //rewind
+			}
+			from=i+1;
+			last_space=-1;
+		} else if (operator[](i)==' ' || operator[](i)=='\t') {
+			last_space=i;
+		} else if (operator[](i)=='\n') {
+			ret+=substr(from,i-from);
+			from=i+1;
+			last_space=-1;
+		}
+	}
+
+	if (from<length()) {
+		ret+=substr(from,length());
+	}
+
+	return ret;
+}
+
 String String::c_unescape() const {
 
 	String escaped=*this;

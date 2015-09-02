@@ -151,6 +151,10 @@ protected:
 	static void _bind_methods();
 public:
 
+	Dictionary get_state() const;
+	void set_state(const Dictionary& p_state);
+
+
 	void ensure_visibility();
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo=p_undo_redo; }
@@ -166,6 +170,9 @@ class AnimationPlayerEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
+
+	virtual Dictionary get_state() const { return anim_editor->get_state(); }
+	virtual void set_state(const Dictionary& p_state)  { anim_editor->set_state(p_state); }
 
 	virtual String get_name() const { return "Anim"; }
 	bool has_main_screen() const { return false; }

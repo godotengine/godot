@@ -1279,7 +1279,7 @@ void OS_OSX::set_current_screen(int p_screen) {
 	current_screen = p_screen;
 };
 
-Point2 OS_OSX::get_screen_position(int p_screen) {
+Point2 OS_OSX::get_screen_position(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, screens.size(), Point2());
 	return screens[p_screen].pos;

@@ -133,6 +133,8 @@ real_t StaticBody::get_bounce() const{
 	return bounce;
 }
 
+
+
 void StaticBody::set_constant_linear_velocity(const Vector3& p_vel) {
 
 	constant_linear_velocity=p_vel;
@@ -494,6 +496,42 @@ real_t RigidBody::get_bounce() const{
 	return bounce;
 }
 
+
+void RigidBody::set_gravity_scale(real_t p_gravity_scale){
+
+	gravity_scale=p_gravity_scale;
+	PhysicsServer::get_singleton()->body_set_param(get_rid(),PhysicsServer::BODY_PARAM_GRAVITY_SCALE,gravity_scale);
+
+}
+real_t RigidBody::get_gravity_scale() const{
+
+	return gravity_scale;
+}
+
+void RigidBody::set_linear_damp(real_t p_linear_damp){
+
+	ERR_FAIL_COND(p_linear_damp<-1);
+	linear_damp=p_linear_damp;
+	PhysicsServer::get_singleton()->body_set_param(get_rid(),PhysicsServer::BODY_PARAM_LINEAR_DAMP,linear_damp);
+
+}
+real_t RigidBody::get_linear_damp() const{
+
+	return linear_damp;
+}
+
+void RigidBody::set_angular_damp(real_t p_angular_damp){
+
+	ERR_FAIL_COND(p_angular_damp<-1);
+	angular_damp=p_angular_damp;
+	PhysicsServer::get_singleton()->body_set_param(get_rid(),PhysicsServer::BODY_PARAM_ANGULAR_DAMP,angular_damp);
+
+}
+real_t RigidBody::get_angular_damp() const{
+
+	return angular_damp;
+}
+
 void RigidBody::set_axis_velocity(const Vector3& p_axis) {
 
 	Vector3 v = state? state->get_linear_velocity() : linear_velocity;
@@ -685,6 +723,16 @@ void RigidBody::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_angular_velocity","angular_velocity"),&RigidBody::set_angular_velocity);
 	ObjectTypeDB::bind_method(_MD("get_angular_velocity"),&RigidBody::get_angular_velocity);
 
+	ObjectTypeDB::bind_method(_MD("set_gravity_scale","gravity_scale"),&RigidBody::set_gravity_scale);
+	ObjectTypeDB::bind_method(_MD("get_gravity_scale"),&RigidBody::get_gravity_scale);
+
+	ObjectTypeDB::bind_method(_MD("set_linear_damp","linear_damp"),&RigidBody::set_linear_damp);
+	ObjectTypeDB::bind_method(_MD("get_linear_damp"),&RigidBody::get_linear_damp);
+
+	ObjectTypeDB::bind_method(_MD("set_angular_damp","angular_damp"),&RigidBody::set_angular_damp);
+	ObjectTypeDB::bind_method(_MD("get_angular_damp"),&RigidBody::get_angular_damp);
+
+
 	ObjectTypeDB::bind_method(_MD("set_max_contacts_reported","amount"),&RigidBody::set_max_contacts_reported);
 	ObjectTypeDB::bind_method(_MD("get_max_contacts_reported"),&RigidBody::get_max_contacts_reported);
 
@@ -722,6 +770,7 @@ void RigidBody::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"weight",PROPERTY_HINT_EXP_RANGE,"0.01,65535,0.01",PROPERTY_USAGE_EDITOR),_SCS("set_weight"),_SCS("get_weight"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_friction"),_SCS("get_friction"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_bounce"),_SCS("get_bounce"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity_scale",PROPERTY_HINT_RANGE,"-128,128,0.01"),_SCS("set_gravity_scale"),_SCS("get_gravity_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"custom_integrator"),_SCS("set_use_custom_integrator"),_SCS("is_using_custom_integrator"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"continuous_cd"),_SCS("set_use_continuous_collision_detection"),_SCS("is_using_continuous_collision_detection"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"contacts_reported"),_SCS("set_max_contacts_reported"),_SCS("get_max_contacts_reported"));
@@ -731,6 +780,8 @@ void RigidBody::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"axis_lock",PROPERTY_HINT_ENUM,"Disabled,Lock X,Lock Y,Lock Z"),_SCS("set_axis_lock"),_SCS("get_axis_lock"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"velocity/linear"),_SCS("set_linear_velocity"),_SCS("get_linear_velocity"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"velocity/angular"),_SCS("set_angular_velocity"),_SCS("get_angular_velocity"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"damp_override/linear",PROPERTY_HINT_RANGE,"-1,128,0.01"),_SCS("set_linear_damp"),_SCS("get_linear_damp"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"damp_override/angular",PROPERTY_HINT_RANGE,"-1,128,0.01"),_SCS("set_angular_damp"),_SCS("get_angular_damp"));
 
 	ADD_SIGNAL( MethodInfo("body_enter_shape",PropertyInfo(Variant::INT,"body_id"),PropertyInfo(Variant::OBJECT,"body"),PropertyInfo(Variant::INT,"body_shape"),PropertyInfo(Variant::INT,"local_shape")));
 	ADD_SIGNAL( MethodInfo("body_exit_shape",PropertyInfo(Variant::INT,"body_id"),PropertyInfo(Variant::OBJECT,"body"),PropertyInfo(Variant::INT,"body_shape"),PropertyInfo(Variant::INT,"local_shape")));
@@ -752,6 +803,10 @@ RigidBody::RigidBody() : PhysicsBody(PhysicsServer::BODY_MODE_RIGID) {
 	friction=1;
 	max_contacts_reported=0;
 	state=NULL;
+
+	gravity_scale=1;
+	linear_damp=-1;
+	angular_damp=-1;
 
 	//angular_velocity=0;
 	sleeping=false;
