@@ -2098,7 +2098,7 @@ Control *Control::find_next_valid_focus() const {
 		}
 
 
-		if (next_child==this) // no next control->
+		if (next_child==from) // no next control->
 			return (get_focus_mode()==FOCUS_ALL)?next_child:NULL;
 
 		if (next_child->get_focus_mode()==FOCUS_ALL)
