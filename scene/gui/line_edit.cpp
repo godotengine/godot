@@ -175,8 +175,10 @@ void LineEdit::_input_event(InputEvent p_event) {
 							Ref<Font> font = get_font("font");
 
 							cached_width = 0;
-							for (int i = 0; i<text.length(); i++)
-								cached_width += font->get_char_size(text[i]).width;
+							if (font != NULL) {
+								for (int i = 0; i < text.length(); i++)
+									cached_width += font->get_char_size(text[i]).width;
+							}
 
 							set_cursor_pos(0);
 							emit_signal("text_changed",text);
@@ -353,8 +355,10 @@ void LineEdit::drop_data(const Point2& p_point,const Variant& p_data){
 		int selected = selection.end - selection.begin;
 
 		Ref<Font> font = get_font("font");
-		for (int i = selection.begin; i<selection.end; i++)
-			cached_width -= font->get_char_size(text[i]).width;
+		if (font != NULL) {
+			for (int i = selection.begin; i < selection.end; i++)
+				cached_width -= font->get_char_size(text[i]).width;
+		}
 
 		text.erase(selection.begin, selected);
 
@@ -559,7 +563,10 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 
 	while (ofs<text.length()) {
 		
-		int char_w=font->get_char_size( text[ofs] ).width;
+		int char_w = 0;
+		if (font != NULL) {
+			int char_w = font->get_char_size(text[ofs]).width;
+		}
 		pixel_ofs+=char_w;
 		
 		if (pixel_ofs > p_x) { //found what we look for
@@ -593,7 +600,9 @@ void LineEdit::delete_char() {
 	if ((text.length()<=0) || (cursor_pos==0)) return;
 	
 	Ref<Font> font = get_font("font");
-	cached_width -= font->get_char_size(text[cursor_pos - 1]).width;
+	if (font != NULL) {
+		cached_width -= font->get_char_size(text[cursor_pos - 1]).width;
+	}
 	
 	text.erase( cursor_pos-1, 1 );
 	
@@ -664,13 +673,15 @@ void LineEdit::set_cursor_pos(int p_pos) {
 		int width_to_cursor=0;
 		int wp=window_pos;
 		
-		for (int i=window_pos;i<cursor_pos;i++)
-			width_to_cursor+=font->get_char_size( text[i] ).width;
+		if (font != NULL) {
+			for (int i=window_pos;i<cursor_pos;i++)
+				width_to_cursor+=font->get_char_size( text[i] ).width;
 		
-		while(width_to_cursor>=window_width && wp<text.length()) {			
-			
-			width_to_cursor-=font->get_char_size( text[ wp ] ).width;
-			wp++;
+			while (width_to_cursor >= window_width && wp < text.length()) {
+
+				width_to_cursor -= font->get_char_size(text[wp]).width;
+				wp++;
+			}
 		}
 		
 		if (wp!=window_pos)
@@ -699,9 +710,13 @@ void LineEdit::append_at_cursor(String p_text) {
 		undo_text = text;
 
 		Ref<Font> font = get_font("font");
-
-		for (int i = 0; i<p_text.length(); i++)
-			cached_width += font->get_char_size(p_text[i]).width;
+		if (font != NULL) {
+			for (int i = 0; i < p_text.length(); i++)
+				cached_width += font->get_char_size(p_text[i]).width;
+		}
+		else {
+			cached_width = 0;
+		}
 
 		String pre = text.substr( 0, cursor_pos );
 		String post = text.substr( cursor_pos, text.length()-cursor_pos );
@@ -753,10 +768,18 @@ void LineEdit::selection_delete() {
 		
 		undo_text = text;
 
-		Ref<Font> font = get_font("font");
-
-		for (int i = selection.begin; i<selection.end; i++)
-			cached_width -= font->get_char_size(text[i]).width;
+		if (text.size() > 0)
+		{
+			Ref<Font> font = get_font("font");
+			if (font != NULL) {
+				for (int i = selection.begin; i < selection.end; i++)
+					cached_width -= font->get_char_size(text[i]).width;
+			}
+		}
+		else
+		{
+			cached_width = 0;
+		}
 
 		text.erase(selection.begin,selection.end-selection.begin);
 		cursor_pos-=CLAMP( cursor_pos-selection.begin, 0, selection.end-selection.begin);
