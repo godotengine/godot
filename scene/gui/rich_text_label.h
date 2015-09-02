@@ -266,6 +266,8 @@ public:
 	void push_meta(const Variant& p_data);
 	void pop();
 
+	void remove_line(int p_line);
+
 	void clear();
 
 	void set_offset(int p_pixel);

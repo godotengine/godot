@@ -1171,6 +1171,17 @@ void RichTextLabel::pop() {
 	current=current->parent;
 }
 
+void RichTextLabel::remove_line(int p_line) {
+
+	if (p_line >= 0 && p_line < lines.size()) {
+		lines.remove(p_line);
+	}
+
+	first_invalid_line = 0; //invalidate ALL
+	update();
+}
+
+
 void RichTextLabel::clear() {
 
 	main->_clear_children();
@@ -1675,6 +1686,8 @@ void RichTextLabel::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("push_underline"),&RichTextLabel::push_underline);
 	ObjectTypeDB::bind_method(_MD("pop"),&RichTextLabel::pop);
 
+	ObjectTypeDB::bind_method(_MD("remove_line", "line"), &RichTextLabel::remove_line);
+
 	ObjectTypeDB::bind_method(_MD("clear"),&RichTextLabel::clear);
 
 	ObjectTypeDB::bind_method(_MD("set_meta_underline","enable"),&RichTextLabel::set_meta_underline);
@@ -1691,6 +1704,7 @@ void RichTextLabel::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_tab_size","spaces"),&RichTextLabel::set_tab_size);
 	ObjectTypeDB::bind_method(_MD("get_tab_size"),&RichTextLabel::get_tab_size);
 
+	ObjectTypeDB::bind_method(_MD("get_line_count"),&RichTextLabel::get_line_count);
 
 	ObjectTypeDB::bind_method(_MD("set_selection_enabled","enabled"),&RichTextLabel::set_selection_enabled);
 	ObjectTypeDB::bind_method(_MD("is_selection_enabled"),&RichTextLabel::is_selection_enabled);
