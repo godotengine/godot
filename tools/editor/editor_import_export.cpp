@@ -1187,13 +1187,17 @@ bool EditorExportPlatformPC::can_export(String *r_error) const {
 
 	String exe_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
 
-	if (!FileAccess::exists(exe_path+debug_binary32) || !FileAccess::exists(exe_path+release_binary32)) {
+	if ((!FileAccess::exists(exe_path+debug_binary32) || !FileAccess::exists(exe_path+release_binary32)) && (!FileAccess::exists(exe_path+debug_binary64) || !FileAccess::exists(exe_path+release_binary64))) {
 		valid=false;
-		err="No 32 bits export templates found.\nDownload and install export templates.\n";
+		err="No 32 or 64 bit export templates found.\nDownload and install export templates.\n";
 	}
-	if (!FileAccess::exists(exe_path+debug_binary64) || !FileAccess::exists(exe_path+release_binary64)) {
+	if ((use64) && (!FileAccess::exists(exe_path+debug_binary64) || !FileAccess::exists(exe_path+release_binary64))) {
 		valid=false;
-		err="No 64 bits export templates found.\nDownload and install export templates.\n";
+		err="No 64 bit export templates found.\nDownload and install export templates.\n";
+	}
+	if ((!use64) && (!FileAccess::exists(exe_path+debug_binary32) || !FileAccess::exists(exe_path+release_binary32))) {
+		valid=false;
+		err="No 32 bit export templates found.\nDownload and install export templates.\n";
 	}
 
 
