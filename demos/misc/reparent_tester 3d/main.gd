@@ -1,16 +1,16 @@
 # Demo for reproduce the bad behaviour of animation player when moving to another node, executes his ready again internally and stop the animation
-extends Node2D
+extends Spatial
 var traveler
 var containerA
 var containerB
 var pauseButton
 var addRemoveButton
 var travelerScn
-var collisionerScn
-var collisioner
+#var collisionerScn
+#var collisioner
 func _ready():
-	travelerScn = preload("res://traveler.scn")
-	collisionerScn = preload("res://collisioner.scn")
+	travelerScn = preload("res://traveler3d.scn")
+	#collisionerScn = preload("res://collisioner.scn")
 	pauseButton = get_node("hud/pause")
 	addRemoveButton = get_node("hud/addRemove")
 	containerA = get_node("containerA")
@@ -27,16 +27,16 @@ func _ready():
 #	print("------------------------------")
 	OS.set_window_size(Vector2(960,540))
 	
-func _input(event):
-	if(traveler != null):
-		if(event.type == InputEvent.MOUSE_BUTTON):
-			if(event.button_index == 2 && event.is_pressed()):
-				var pos = event.pos
-				if(pos.y > 50):
-					if(!collisioner):
-						collisioner = collisionerScn.instance()
-						traveler.add_child(collisioner)
-					collisioner.set_pos(pos-traveler.get_parent().get_pos())
+#func _input(event):
+#	if(traveler != null):
+#		if(event.type == InputEvent.MOUSE_BUTTON):
+#			if(event.button_index == 2 && event.is_pressed()):
+#				var pos = event.pos
+#				if(pos.y > 50):
+#					if(!collisioner):
+#						collisioner = collisionerScn.instance()
+#						traveler.add_child(collisioner)
+#					collisioner.set_pos(pos-traveler.get_parent().get_pos())
 				
 			
 func _on_move_pressed():
@@ -70,7 +70,7 @@ func _on_addRemove_pressed():
 	else:
 		traveler.queue_free()
 		traveler = null
-		collisioner = null
+#		collisioner = null
 		addRemoveButton.set_text("ADD")
 
 
