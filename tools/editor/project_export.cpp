@@ -1216,6 +1216,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_image_action->add_item("Default");
 	group_image_action->add_item("Compress Disk");
 	group_image_action->add_item("Compress RAM");
+	group_image_action->add_item("Keep Original");
 	group_options->add_margin_child("Compress Mode:",group_image_action);
 	group_image_action->connect("item_selected",this,"_group_changed");
 

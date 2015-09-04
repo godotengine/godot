@@ -206,6 +206,7 @@ void AreaSW::remove_area_from_query(AreaSW *p_area, uint32_t p_area_shape,uint32
 	monitored_areas[bk].dec();
 	if (!monitor_query_list.in_list())
 		_queue_monitor_update();
+
 }
 
 

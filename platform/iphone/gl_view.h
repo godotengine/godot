@@ -34,7 +34,7 @@
 #import <MediaPlayer/MediaPlayer.h>
 #import <AVFoundation/AVFoundation.h>
 
-#define USE_CADISPLAYLINK      1   //iOS version 3.1+ is required
+#define USE_CADISPLAYLINK      0   //iOS version 3.1+ is required
 
 @protocol GLViewDelegate;
 

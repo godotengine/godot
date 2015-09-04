@@ -83,6 +83,7 @@ public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total);
 protected:
 
+	Vector<uint8_t> get_exported_file_default(String& p_fname) const;
 	virtual Vector<uint8_t> get_exported_file(String& p_fname) const;
 	virtual Vector<StringName> get_dependencies(bool p_bundles) const;
 
@@ -227,6 +228,8 @@ public:
 		IMAGE_ACTION_NONE,
 		IMAGE_ACTION_COMPRESS_DISK,
 		IMAGE_ACTION_COMPRESS_RAM,
+		IMAGE_ACTION_KEEP //for group
+
 	};
 
 	enum ScriptAction {

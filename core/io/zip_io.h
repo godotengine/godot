@@ -34,6 +34,7 @@
 #include "os/file_access.h"
 #include "os/copymem.h"
 
+
 static void* zipio_open(void* data, const char* p_fname, int mode) {
 
 	FileAccess *&f = *(FileAccess**)data;

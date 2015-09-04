@@ -83,6 +83,10 @@ void AreaSW::set_monitor_callback(ObjectID p_id, const StringName& p_method) {
 
 	_shape_changed();
 
+	if (!moved_list.in_list() && get_space())
+		get_space()->area_add_to_moved_list(&moved_list);
+
+
 }
 
 void AreaSW::set_area_monitor_callback(ObjectID p_id, const StringName& p_method) {
@@ -102,6 +106,10 @@ void AreaSW::set_area_monitor_callback(ObjectID p_id, const StringName& p_method
 	monitored_areas.clear();
 
 	_shape_changed();
+
+	if (!moved_list.in_list() && get_space())
+		get_space()->area_add_to_moved_list(&moved_list);
+
 
 }
 
