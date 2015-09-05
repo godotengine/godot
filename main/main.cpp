@@ -335,7 +335,6 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 				init_custom_pos=Point2(x,y);
 				init_use_custom_pos=true;
-				force_res=true;
 
 				N=I->next()->next();
 			} else {
