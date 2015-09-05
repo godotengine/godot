@@ -2168,7 +2168,18 @@ void SpatialEditorViewport::set_state(const Dictionary& p_state) {
 		view_menu->get_popup()->set_item_checked( idx, listener );
 	}
 
-
+	if (p_state.has("previewing")) {
+		Node *pv = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["previewing"]);
+		if (pv && pv->cast_to<Camera>()) {
+			previewing=pv->cast_to<Camera>();
+			previewing->connect("exit_tree",this,"_preview_exited_scene");
+			VS::get_singleton()->viewport_attach_camera( viewport->get_viewport(), previewing->get_camera() ); //replace
+			view_menu->hide();
+			surface->update();
+			preview_camera->set_pressed(true);
+			preview_camera->show();
+		}
+	}
 }
 
 Dictionary SpatialEditorViewport::get_state() const {
@@ -2181,6 +2192,10 @@ Dictionary SpatialEditorViewport::get_state() const {
 	d["use_environment"]=camera->get_environment().is_valid();
 	d["use_orthogonal"]=camera->get_projection()==Camera::PROJECTION_ORTHOGONAL;
 	d["listener"]=viewport->is_audio_listener();
+	if (previewing) {
+		d["previewing"]=EditorNode::get_singleton()->get_edited_scene()->get_path_to(previewing);
+	}
+
 	return d;
 }
 

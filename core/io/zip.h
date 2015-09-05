@@ -39,6 +39,8 @@
 #ifndef _zip12_H
 #define _zip12_H
 
+#include <stdlib.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

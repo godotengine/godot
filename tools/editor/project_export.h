@@ -78,6 +78,9 @@ private:
 	HBoxContainer *plat_errors;
 	Label *platform_error_string;
 
+	StringName ei;
+	StringName ot;
+
 	Tree * tree;
 
 	EditorFileDialog *pck_export;

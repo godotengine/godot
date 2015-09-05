@@ -31,7 +31,7 @@
 #include <stdarg.h>
 #include "dir_access.h"
 #include "globals.h"
-
+#include "input.h"
 
 OS* OS::singleton=NULL;
 
@@ -363,7 +363,7 @@ Error OS::set_cwd(const String& p_cwd) {
 bool OS::has_touchscreen_ui_hint() const {
 
 	//return false;
-	return GLOBAL_DEF("display/emulate_touchscreen",false);
+	return Input::get_singleton() && Input::get_singleton()->is_emulating_touchscreen();
 }
 
 int OS::get_free_static_memory() const {

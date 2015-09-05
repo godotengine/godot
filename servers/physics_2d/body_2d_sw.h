@@ -337,9 +337,9 @@ public:
 	Body2DSW *body;
 	real_t step;
 
-	virtual Vector2 get_total_gravity() const {  return body->get_gravity();  } // get gravity vector working on this body space/area
-	virtual float get_total_angular_damp() const {  return body->get_angular_damp();  } // get density of this body space/area
-	virtual float get_total_linear_damp() const {  return body->get_linear_damp();  } // get density of this body space/area
+	virtual Vector2 get_total_gravity() const {  return body->gravity;  } // get gravity vector working on this body space/area
+	virtual float get_total_angular_damp() const {  return body->area_angular_damp;  } // get density of this body space/area
+	virtual float get_total_linear_damp() const {  return body->area_linear_damp;  } // get density of this body space/area
 
 	virtual float get_inverse_mass() const {  return body->get_inv_mass();  } // get the mass
 	virtual real_t get_inverse_inertia() const { return body->get_inv_inertia();   } // get density of this body space

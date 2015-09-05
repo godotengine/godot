@@ -123,6 +123,7 @@ class EditorNode : public Node {
 		FILE_OPEN_OLD_SCENE,
 		FILE_QUICK_OPEN_SCENE,
 		FILE_QUICK_OPEN_SCRIPT,
+		FILE_QUICK_OPEN_FILE,
 		FILE_RUN_SCRIPT,
 		FILE_OPEN_PREV,
 		FILE_CLOSE,
@@ -137,6 +138,7 @@ class EditorNode : public Node {
 		RESOURCE_SAVE_AS,
 		RESOURCE_UNREF,
 		RESOURCE_COPY,
+		RESOURCE_PASTE,
 		OBJECT_COPY_PARAMS,
 		OBJECT_PASTE_PARAMS,
 		OBJECT_UNIQUE_RESOURCES,
@@ -256,10 +258,12 @@ class EditorNode : public Node {
 	Button *property_back;
 	Button *property_forward;
 	SceneTreeDock *scene_tree_dock;
-	ResourcesDock *resources_dock;
+	//ResourcesDock *resources_dock;
 	PropertyEditor *property_editor;
 	ScenesDock *scenes_dock;
 	EditorRunNative *run_native;
+
+	CreateDialog *create_dialog;
 
 	CallDialog *call_dialog;
 	ConfirmationDialog *confirmation;
@@ -298,6 +302,10 @@ class EditorNode : public Node {
 	HBoxContainer *animation_panel_hb;
 	VBoxContainer *animation_vb;
 	EditorPath *editor_path;
+	ToolButton *resource_new_button;
+	ToolButton *resource_load_button;
+	MenuButton *resource_save_button;
+	MenuButton *editor_history_menu;
 	AnimationKeyEditor *animation_editor;
 	EditorLog *log;
 	CenterContainer *tabs_center;
@@ -311,6 +319,9 @@ class EditorNode : public Node {
 
 	ProgressDialog *progress_dialog;
 	BackgroundProgress *progress_hb;
+
+	DependencyErrorDialog *dependency_error;
+	DependencyEditor *dependency_fixer;
 
 	TabContainer *dock_slot[DOCK_SLOT_MAX];
 	Rect2 dock_select_rect[DOCK_SLOT_MAX];
@@ -367,6 +378,7 @@ class EditorNode : public Node {
 	
 	int current_option;
 	//void _animation_visibility_toggle();
+	void _resource_created();
 	void _resource_selected(const RES& p_res,const String& p_property="");
 	void _menu_option(int p_option);
 	void _menu_confirm_current();
@@ -374,6 +386,9 @@ class EditorNode : public Node {
 
 	void _property_editor_forward();
 	void _property_editor_back();
+
+	void _select_history(int p_idx);
+	void _prepare_history();
 
 	
 	void _fs_changed();
@@ -451,6 +466,16 @@ class EditorNode : public Node {
 	void _save_scene_with_preview(String p_file);
 
 
+	Map<String,Set<String> > dependency_errors;
+
+	static void _dependency_error_report(void *ud,const String& p_path,const String& p_dep,const String& p_type) {
+		EditorNode*en=(EditorNode*)ud;
+		if (!en->dependency_errors.has(p_path))
+			en->dependency_errors[p_path]=Set<String>();
+		en->dependency_errors[p_path].insert(p_dep+"::"+p_type);
+
+	}
+
 	struct ExportDefer {
 		String platform;
 		String path;
@@ -503,6 +528,8 @@ public:
 	void edit_node(Node *p_node);
 	void edit_resource(const Ref<Resource>& p_resource);
 	void open_resource(const String& p_type="");
+
+	void save_resource_in_path(const Ref<Resource>& p_resource,const String& p_path);
 	void save_resource(const Ref<Resource>& p_resource);
 	void save_resource_as(const Ref<Resource>& p_resource);
 
@@ -534,9 +561,12 @@ public:
 	Viewport *get_scene_root() { return scene_root; } //root of the scene being edited
 	Error save_optimized_copy(const String& p_scene,const String& p_preset);
 
+	void fix_dependencies(const String& p_for_file);
 	void clear_scene() { _cleanup_scene(); }
-	Error load_scene(const String& p_scene);
+	Error load_scene(const String& p_scene,bool p_ignore_broken_deps=false);
 	Error load_resource(const String& p_scene);
+
+	bool is_scene_open(const String& p_path);
 
 	void set_current_version(uint64_t p_version);
 	void set_current_scene(int p_idx);

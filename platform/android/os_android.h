@@ -41,6 +41,9 @@
 #include "servers/visual/rasterizer.h"
 
 
+//#ifdef USE_JAVA_FILE_ACCESS
+
+
 #ifdef ANDROID_NATIVE_ACTIVITY
 
 #include <android/sensor.h>

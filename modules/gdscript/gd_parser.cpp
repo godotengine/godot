@@ -170,6 +170,7 @@ void GDParser::_make_completable_call(int p_arg) {
 	completion_line=tokenizer->get_token_line();
 	completion_argument=p_arg;
 	completion_block=current_block;
+	completion_found=true;
 	tokenizer->advance();
 
 }
@@ -190,6 +191,7 @@ bool GDParser::_get_completable_identifier(CompletionType p_type,StringName& ide
 		completion_function=current_function;
 		completion_line=tokenizer->get_token_line();
 		completion_block=current_block;
+		completion_found=true;
 		tokenizer->advance();
 
 		if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER) {
@@ -1414,6 +1416,24 @@ GDParser::Node* GDParser::_parse_and_reduce_expression(Node *p_parent,bool p_sta
 	return expr;
 }
 
+bool GDParser::_recover_from_completion() {
+
+	if (!completion_found) {
+		return false; //can't recover if no completion
+	}
+	//skip stuff until newline
+	while(tokenizer->get_token()!=GDTokenizer::TK_NEWLINE && tokenizer->get_token()!=GDTokenizer::TK_EOF && tokenizer->get_token()!=GDTokenizer::TK_ERROR) {
+		tokenizer->advance();
+	}
+	completion_found=false;
+	error_set=false;
+	if(tokenizer->get_token() == GDTokenizer::TK_ERROR){
+		error_set = true;
+	}
+
+	return true;
+}
+
 void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 
 	int indent_level = tab_level.back()->get();
@@ -1511,8 +1531,14 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 					Node *subexpr=NULL;
 
 					subexpr = _parse_and_reduce_expression(p_block,p_static);
-					if (!subexpr)
+					if (!subexpr) {
+						if (_recover_from_completion()) {
+							break;
+						}
 						return;
+					}
+
+
 
 					lv->assign=subexpr;
 					assigned=subexpr;
@@ -1543,8 +1569,12 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 
 				tokenizer->advance();
 				Node *condition = _parse_and_reduce_expression(p_block,p_static);
-				if (!condition)
+				if (!condition) {
+					if (_recover_from_completion()) {
+						break;
+					}
 					return;
+				}
 
 				ControlFlowNode *cf_if = alloc_node<ControlFlowNode>();
 
@@ -1598,8 +1628,12 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 
 						//condition
 						Node *condition = _parse_and_reduce_expression(p_block,p_static);
-						if (!condition)
+						if (!condition) {
+							if (_recover_from_completion()) {
+								break;
+							}
 							return;
+						}
 						cf_else->arguments.push_back(condition);
 						cf_else->cf_type=ControlFlowNode::CF_IF;
 
@@ -1660,8 +1694,12 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 
 				tokenizer->advance();
 				Node *condition = _parse_and_reduce_expression(p_block,p_static);
-				if (!condition)
+				if (!condition) {
+					if (_recover_from_completion()) {
+						break;
+					}
 					return;
+				}
 
 				ControlFlowNode *cf_while = alloc_node<ControlFlowNode>();
 
@@ -1706,8 +1744,12 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 				tokenizer->advance();
 
 				Node *container = _parse_and_reduce_expression(p_block,p_static);
-				if (!container)
+				if (!container) {
+					if (_recover_from_completion()) {
+						break;
+					}
 					return;
+				}
 
 				ControlFlowNode *cf_for = alloc_node<ControlFlowNode>();
 
@@ -1771,8 +1813,12 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 				} else {
 					//expect expression
 					Node *retexpr = _parse_and_reduce_expression(p_block,p_static);
-					if (!retexpr)
+					if (!retexpr) {
+						if (_recover_from_completion()) {
+							break;
+						}
 						return;
+					}
 					cf_return->arguments.push_back(retexpr);
 					p_block->statements.push_back(cf_return);
 					if (!_end_statement()) {
@@ -1787,8 +1833,12 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 
 				tokenizer->advance();
 				Node *condition = _parse_and_reduce_expression(p_block,p_static);
-				if (!condition)
+				if (!condition) {
+					if (_recover_from_completion()) {
+						break;
+					}
 					return;
+				}
 				AssertNode *an = alloc_node<AssertNode>();
 				an->condition=condition;
 				p_block->statements.push_back(an);
@@ -1801,8 +1851,12 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 			default: {
 
 				Node *expression = _parse_and_reduce_expression(p_block,p_static,false,true);
-				if (!expression)
+				if (!expression) {
+					if (_recover_from_completion()) {
+						break;
+					}
 					return;
+				}
 				p_block->statements.push_back(expression);
 				if (!_end_statement()) {
 					_set_error("Expected end of statement after expression.");
@@ -2625,14 +2679,18 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 					Node *subexpr=NULL;
 
-					subexpr = _parse_and_reduce_expression(p_class,false);
-					if (!subexpr)
+					subexpr = _parse_and_reduce_expression(p_class,false,autoexport);
+					if (!subexpr) {
+						if (_recover_from_completion()) {
+							break;
+						}
 						return;
+					}
 
 					member.expression=subexpr;
 
 					if (autoexport) {
-						if (subexpr->type==Node::TYPE_ARRAY) {
+						if (1)/*(subexpr->type==Node::TYPE_ARRAY) {
 
 							member._export.type=Variant::ARRAY;
 
@@ -2640,7 +2698,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 							member._export.type=Variant::DICTIONARY;
 
-						} else {
+						} else*/ {
 
 							if (subexpr->type!=Node::TYPE_CONSTANT) {
 
@@ -2756,8 +2814,12 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				Node *subexpr=NULL;
 
 				subexpr = _parse_and_reduce_expression(p_class,true,true);
-				if (!subexpr)
+				if (!subexpr) {
+					if (_recover_from_completion()) {
+						break;
+					}
 					return;
+				}
 
 				if (subexpr->type!=Node::TYPE_CONSTANT) {
 					_set_error("Expected constant expression");
@@ -2852,6 +2914,7 @@ Error GDParser::parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p
 	completion_class=NULL;
 	completion_function=NULL;
 	completion_block=NULL;
+	completion_found=false;
 	current_block=NULL;
 	current_class=NULL;
 	current_function=NULL;
@@ -2874,6 +2937,7 @@ Error GDParser::parse(const String& p_code, const String& p_base_path, bool p_ju
 	completion_class=NULL;
 	completion_function=NULL;
 	completion_block=NULL;
+	completion_found=false;
 	current_block=NULL;
 	current_class=NULL;
 
@@ -2916,6 +2980,8 @@ void GDParser::clear() {
 	completion_block=NULL;
 	current_block=NULL;
 	current_class=NULL;
+
+	completion_found=false;
 
 	current_function=NULL;
 

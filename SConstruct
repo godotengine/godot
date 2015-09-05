@@ -220,13 +220,13 @@ if selected_platform in platform_list:
 
 	env.Append(LINKFLAGS=string.split(str(LINKFLAGS)))
 
-	detect.configure(env)
-
-
 	flag_list = platform_flags[selected_platform]
 	for f in flag_list:
 		if not (f[0] in ARGUMENTS): # allow command line to override platform flags
 			env[f[0]] = f[1]
+
+	#must happen after the flags, so when flags are used by configure, stuff happens (ie, ssl on x11)
+	detect.configure(env)
 
         #env['platform_libsuffix'] = env['LIBSUFFIX']
 

@@ -114,6 +114,7 @@ class OS_X11 : public OS_Unix {
 	bool minimized;
 	int dpad_last[2];
 
+	bool do_mouse_warp;
 
 	const char *cursor_theme;
 	int cursor_size;

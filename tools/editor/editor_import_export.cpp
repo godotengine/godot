@@ -255,7 +255,16 @@ static void _add_filter_to_list(Set<StringName>& r_list,const String& p_filter) 
 
 }
 
+Vector<uint8_t> EditorExportPlatform::get_exported_file_default(String& p_fname) const {
 
+	FileAccess *f = FileAccess::open(p_fname,FileAccess::READ);
+	ERR_FAIL_COND_V(!f,Vector<uint8_t>());
+	Vector<uint8_t> ret;
+	ret.resize(f->get_len());
+	int rbs = f->get_buffer(ret.ptr(),ret.size());
+	memdelete(f);
+	return ret;
+}
 
 Vector<uint8_t> EditorExportPlatform::get_exported_file(String& p_fname) const {
 
@@ -270,13 +279,9 @@ Vector<uint8_t> EditorExportPlatform::get_exported_file(String& p_fname) const {
 	}
 
 
-	FileAccess *f = FileAccess::open(p_fname,FileAccess::READ);
-	ERR_FAIL_COND_V(!f,Vector<uint8_t>());
-	Vector<uint8_t> ret;
-	ret.resize(f->get_len());
-	int rbs = f->get_buffer(ret.ptr(),ret.size());
-	memdelete(f);
-	return ret;
+	return get_exported_file_default(p_fname);
+
+
 }
 
 Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const {
@@ -557,6 +562,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 		group_shrink*=EditorImportExport::get_singleton()->get_export_image_shrink();
 
 		switch(EditorImportExport::get_singleton()->image_export_group_get_image_action(E->get())) {
+			case EditorImportExport::IMAGE_ACTION_KEEP:
 			case EditorImportExport::IMAGE_ACTION_NONE: {
 
 				switch(EditorImportExport::get_singleton()->get_export_image_action()) {
@@ -581,7 +587,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			} break; //use default
 			case EditorImportExport::IMAGE_ACTION_COMPRESS_RAM: {
 				group_format=EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM;
-			} break; //use default
+			} break; //use default						
 		}
 
 		String image_list_md5;
@@ -825,13 +831,32 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 
 	StringName engine_cfg="res://engine.cfg";
+	StringName boot_splash;
+	{
+		String splash=Globals::get_singleton()->get("application/boot_splash"); //avoid splash from being converted
+		splash=splash.strip_edges();
+		if (splash!=String()) {
+			if (!splash.begins_with("res://"))
+				splash="res://"+splash;
+			splash=splash.simplify_path();
+			boot_splash=splash;
+		}
+	}
+
+
+
 
 	for(int i=0;i<files.size();i++) {
 
 		if (remap_files.has(files[i]) || files[i]==engine_cfg) //gonna be remapped (happened before!)
 			continue; //from atlas?
 		String src=files[i];
-		Vector<uint8_t> buf = get_exported_file(src);
+		Vector<uint8_t> buf;
+
+		if (src==boot_splash)
+			buf = get_exported_file_default(src); //bootsplash must be kept if used
+		else
+			buf = get_exported_file(src);
 
 		ERR_CONTINUE( saved.has(src) );
 
@@ -1608,6 +1633,8 @@ void EditorImportExport::load_config() {
 					g.action=IMAGE_ACTION_COMPRESS_RAM;
 				else if (action=="compress_disk")
 					g.action=IMAGE_ACTION_COMPRESS_DISK;
+				else if (action=="keep")
+					g.action=IMAGE_ACTION_KEEP;
 			}
 
 			if (d.has("atlas"))
@@ -1735,6 +1762,7 @@ void EditorImportExport::save_config() {
 			case IMAGE_ACTION_NONE: d["action"]="default"; break;
 			case IMAGE_ACTION_COMPRESS_RAM: d["action"]="compress_ram"; break;
 			case IMAGE_ACTION_COMPRESS_DISK: d["action"]="compress_disk"; break;
+			case IMAGE_ACTION_KEEP: d["action"]="keep"; break;
 		}
 
 

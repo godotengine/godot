@@ -75,7 +75,7 @@
 #include "core/io/file_access_zip.h"
 #include "translation.h"
 #include "version.h"
-
+#include "os/input.h"
 #include "performance.h"
 
 static Globals *globals=NULL;
@@ -94,11 +94,15 @@ static FileAccessNetworkClient *file_access_network_client=NULL;
 static TranslationServer *translation_server = NULL;
 
 static OS::VideoMode video_mode;
+static bool init_maximized=false;
+static bool init_fullscreen=false;
+static bool init_use_custom_pos=false;
+static Vector2 init_custom_pos;
 static int video_driver_idx=-1;
 static int audio_driver_idx=-1;
 static String locale;
 
-static bool init_maximized=false;
+
 static int init_screen=-1;
 
 static String unescape_cmdline(const String& p_str) {
@@ -136,8 +140,10 @@ void Main::print_help(const char* p_binary) {
 	}
 	OS::get_singleton()->print(")\n");
 	
-	OS::get_singleton()->print("\t-r WIDTHxHEIGHT\t : Request Screen Resolution\n");
+	OS::get_singleton()->print("\t-r WIDTHxHEIGHT\t : Request Window Resolution\n");
+	OS::get_singleton()->print("\t-p XxY\t : Request Window Position\n");
 	OS::get_singleton()->print("\t-f\t\t : Request Fullscreen\n");
+	OS::get_singleton()->print("\t-mx\t\t Request Maximized\n");
 	OS::get_singleton()->print("\t-vd DRIVER\t : Video Driver (");
 	for (int i=0;i<OS::get_singleton()->get_video_driver_count();i++) {
 		
@@ -311,7 +317,37 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				
 			
 			}
-			
+		} else if (I->get()=="-p") { // position
+
+			if (I->next()) {
+
+				String vm=I->next()->get();
+
+				if (vm.find("x")==-1) { // invalid parameter format
+
+					goto error;
+
+
+				}
+
+				int x=vm.get_slice("x",0).to_int();
+				int y=vm.get_slice("x",1).to_int();
+
+				init_custom_pos=Point2(x,y);
+				init_use_custom_pos=true;
+				force_res=true;
+
+				N=I->next()->next();
+			} else {
+				goto error;
+
+
+			}
+
+
+		} else if (I->get()=="-mx") { // video driver
+
+			init_maximized=true;
 		} else if (I->get()=="-vd") { // video driver
 		
 			if (I->next()) {
@@ -383,7 +419,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 			
 		} else if (I->get()=="-f") { // fullscreen
 		
-			video_mode.fullscreen=true;
+			//video_mode.fullscreen=false;
+			init_fullscreen=true;
 		} else if (I->get()=="-e" || I->get()=="-editor") { // fonud editor
 
 			editor=true;
@@ -785,6 +822,14 @@ Error Main::setup2() {
 
 
 	OS::get_singleton()->initialize(video_mode,video_driver_idx,audio_driver_idx);
+	if (init_use_custom_pos) {
+		OS::get_singleton()->set_window_position(init_custom_pos);
+	}
+	if (init_maximized) {
+		OS::get_singleton()->set_window_maximized(true);
+	} else if (init_fullscreen) {
+		OS::get_singleton()->set_window_fullscreen(true);
+	}
 
 	register_core_singletons();
 
@@ -801,17 +846,29 @@ Error Main::setup2() {
 	if (init_maximized) {
 		OS::get_singleton()->set_window_maximized(true);
 	}
+	MAIN_PRINT("Main: Load Remaps");
+
+	path_remap->load_remaps();
 
 	if (show_logo) { //boot logo!
 		String boot_logo_path=GLOBAL_DEF("application/boot_splash",String());
 		bool boot_logo_scale=GLOBAL_DEF("application/boot_splash_fullsize",true);
 		Globals::get_singleton()->set_custom_property_info("application/boot_splash",PropertyInfo(Variant::STRING,"application/boot_splash",PROPERTY_HINT_FILE,"*.png"));
-
+		print_line("BOOT SPLASH: "+boot_logo_path);
 
 		Image boot_logo;
 
-		if (boot_logo_path.strip_edges()!="" && FileAccess::exists(boot_logo_path)) {
-			boot_logo.load(boot_logo_path);
+		boot_logo_path = boot_logo_path.strip_edges();
+		print_line("BOOT SPLASH IS : "+boot_logo_path);
+
+		if (boot_logo_path!=String() /*&& FileAccess::exists(boot_logo_path)*/) {
+			Error err = boot_logo.load(boot_logo_path);
+			if (err!=OK) {
+				print_line("ËRROR LOADING BOOT LOGO SPLASH :"+boot_logo_path);
+			} else {
+				print_line("BOOT SPLASH OK!");
+
+			}
 		}
 
 		if (!boot_logo.empty()) {
@@ -822,7 +879,7 @@ Error Main::setup2() {
 			VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg,boot_logo_scale);
 #ifndef TOOLS_ENABLED
 			//no tools, so free the boot logo (no longer needed)
-			Globals::get_singleton()->set("application/boot_logo",Image());
+		//	Globals::get_singleton()->set("application/boot_logo",Image());
 #endif
 
 		} else {
@@ -847,9 +904,15 @@ Error Main::setup2() {
 	GLOBAL_DEF("application/icon",String());
 	Globals::get_singleton()->set_custom_property_info("application/icon",PropertyInfo(Variant::STRING,"application/icon",PROPERTY_HINT_FILE,"*.png,*.webp"));
 
+	if (bool(GLOBAL_DEF("display/emulate_touchscreen",false))) {
+		if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton()) {
+			//only if no touchscreen ui hint, set emulation
+			InputDefault *id = Input::get_singleton()->cast_to<InputDefault>();
+			if (id)
+				id->set_emulate_touch(true);
+		}
+	}
 	MAIN_PRINT("Main: Load Remaps");
-
-	path_remap->load_remaps();
 
 	MAIN_PRINT("Main: Load Scene Types");
 

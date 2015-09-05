@@ -44,7 +44,7 @@
 #include "scene_tree_editor.h"
 #include "editor_data.h"
 #include "property_editor.h"
-
+#include "scene_tree_editor.h"
 
 class AnimationKeyEdit;
 class AnimationCurveEdit;
@@ -206,6 +206,8 @@ class AnimationKeyEditor : public VBoxContainer  {
 
 	PropertyEditor *key_editor;	
 
+	SceneTreeDialog *call_select;
+
 	Ref<Animation> animation;
 	void _update_paths();
 
@@ -298,6 +300,8 @@ class AnimationKeyEditor : public VBoxContainer  {
 
 	void _toggle_edit_curves();
 	void _animation_len_update();
+
+	void _add_call_track(const NodePath& p_base);
 
 	void _root_removed();
 protected:

@@ -271,6 +271,38 @@ void InputDefault::parse_input_event(const InputEvent& p_event) {
 				mouse_button_mask|=(1<<p_event.mouse_button.button_index);
 			else
 				mouse_button_mask&=~(1<<p_event.mouse_button.button_index);
+
+			if (main_loop && emulate_touch && p_event.mouse_button.button_index==1) {
+				InputEventScreenTouch touch_event;
+				touch_event.index=0;
+				touch_event.pressed=p_event.mouse_button.pressed;
+				touch_event.x=p_event.mouse_button.x;
+				touch_event.y=p_event.mouse_button.y;
+				InputEvent ev;
+				ev.type=InputEvent::SCREEN_TOUCH;
+				ev.screen_touch=touch_event;
+				main_loop->input_event(ev);
+			}
+		} break;
+		case InputEvent::MOUSE_MOTION: {
+
+			if (main_loop && emulate_touch && p_event.mouse_motion.button_mask&1) {
+				InputEventScreenDrag drag_event;
+				drag_event.index=0;
+				drag_event.x=p_event.mouse_motion.x;
+				drag_event.y=p_event.mouse_motion.y;
+				drag_event.relative_x=p_event.mouse_motion.relative_x;
+				drag_event.relative_y=p_event.mouse_motion.relative_y;
+				drag_event.speed_x=p_event.mouse_motion.speed_x;
+				drag_event.speed_y=p_event.mouse_motion.speed_y;
+
+				InputEvent ev;
+				ev.type=InputEvent::SCREEN_DRAG;
+				ev.screen_drag=drag_event;
+
+				main_loop->input_event(ev);
+			}
+
 		} break;
 		case InputEvent::JOYSTICK_BUTTON: {
 
@@ -362,8 +394,19 @@ void InputDefault::action_release(const StringName& p_action){
 	}
 }
 
+void InputDefault::set_emulate_touch(bool p_emulate) {
+
+	emulate_touch=p_emulate;
+}
+
+bool InputDefault::is_emulating_touchscreen() const {
+
+	return emulate_touch;
+}
+
 InputDefault::InputDefault() {
 
 	mouse_button_mask=0;
+	emulate_touch=false;
 	main_loop=NULL;
 }
