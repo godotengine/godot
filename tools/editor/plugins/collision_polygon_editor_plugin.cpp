@@ -113,6 +113,7 @@ bool CollisionPolygonEditor::forward_spatial_input_event(Camera* p_camera,const 
 		return false;
 
 	Transform gt = node->get_global_transform();
+	Transform gi = gt.affine_inverse();
 	float depth = node->get_depth()*0.5;
 	Vector3 n = gt.basis.get_axis(2).normalized();
 	Plane p(gt.origin+n*depth,n);
@@ -134,6 +135,8 @@ bool CollisionPolygonEditor::forward_spatial_input_event(Camera* p_camera,const 
 
 			if (!p.intersects_ray(ray_from,ray_dir,&spoint))
 				break;
+
+			spoint = gi.xform(spoint);
 
 			Vector2 cpoint(spoint.x,spoint.y);
 
@@ -348,6 +351,8 @@ bool CollisionPolygonEditor::forward_spatial_input_event(Camera* p_camera,const 
 
 				if (!p.intersects_ray(ray_from,ray_dir,&spoint))
 					break;
+
+				spoint = gi.xform(spoint);
 
 				Vector2 cpoint(spoint.x,spoint.y);
 
