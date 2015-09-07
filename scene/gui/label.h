@@ -115,6 +115,7 @@ public:
 	bool is_uppercase() const;
 
 	void set_visible_characters(int p_amount);
+	int get_visible_characters() const;
 	int get_total_character_count() const;
 
 	void set_clip_text(bool p_clip);

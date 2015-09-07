@@ -564,6 +564,11 @@ void Label::set_visible_characters(int p_amount) {
 	update();
 }
 
+int Label::get_visible_characters() const {
+
+	return visible_chars;
+}
+
 void Label::set_percent_visible(float p_percent) {
 
 	if (p_percent<0 || p_percent>=1) {
@@ -631,7 +636,8 @@ void Label::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_line_height"),&Label::get_line_height);
 	ObjectTypeDB::bind_method(_MD("get_line_count"),&Label::get_line_count);
 	ObjectTypeDB::bind_method(_MD("get_total_character_count"),&Label::get_total_character_count);
-	ObjectTypeDB::bind_method(_MD("set_visible_characters"),&Label::set_visible_characters);
+	ObjectTypeDB::bind_method(_MD("set_visible_characters","amount"),&Label::set_visible_characters);
+	ObjectTypeDB::bind_method(_MD("get_visible_characters"),&Label::get_visible_characters);
 	ObjectTypeDB::bind_method(_MD("set_percent_visible","percent_visible"),&Label::set_percent_visible);
 	ObjectTypeDB::bind_method(_MD("get_percent_visible"),&Label::get_percent_visible);
 	ObjectTypeDB::bind_method(_MD("set_lines_skipped","lines_skipped"),&Label::set_lines_skipped);
