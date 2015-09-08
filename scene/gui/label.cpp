@@ -70,9 +70,8 @@ void Label::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_DRAW) {
 
-		if (clip && !autowrap)
+		if (clip || autowrap)
 			VisualServer::get_singleton()->canvas_item_set_clip(get_canvas_item(),true);
-
 
 		if (word_cache_dirty)
 			regenerate_word_cache();
@@ -317,9 +316,9 @@ int Label::get_longest_line_width() const {
 	int max_line_width=0;
 	int line_width=0;
 
-	for (int i=0;i<text.size()+1;i++) {
+	for (int i=0;i<text.size();i++) {
 
-		CharType current=i<text.length()?text[i]:' '; //always a space at the end, so the algo works
+		CharType current=text[i];
 		if (uppercase)
 			current=String::char_uppercase(current);
 
@@ -486,10 +485,11 @@ void Label::regenerate_word_cache() {
 
 	if (!autowrap) {
 		minsize.width=width;
-		minsize.height=font->get_height()*line_count;
-	} else {
-	        minsize.width=0;
-	        minsize.height=0;
+		if (max_lines_visible > 0 && line_count > max_lines_visible) {
+			minsize.height=font->get_height()*max_lines_visible;
+		} else {
+			minsize.height=font->get_height()*line_count;
+		}
 	}
 
 	word_cache_dirty=false;
@@ -538,8 +538,6 @@ void Label::set_text(const String& p_string) {
 
 void Label::set_clip_text(bool p_clip) {
 
-	if (clip==p_clip)
-		return;
 	clip=p_clip;
 	update();
 	minimum_size_changed();
@@ -631,6 +629,8 @@ void Label::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_text"),&Label::get_text);
 	ObjectTypeDB::bind_method(_MD("set_autowrap","enable"),&Label::set_autowrap);
 	ObjectTypeDB::bind_method(_MD("has_autowrap"),&Label::has_autowrap);
+	ObjectTypeDB::bind_method(_MD("set_clip_text","enable"),&Label::set_clip_text);
+	ObjectTypeDB::bind_method(_MD("is_clipping_text"),&Label::is_clipping_text);
 	ObjectTypeDB::bind_method(_MD("set_uppercase","enable"),&Label::set_uppercase);
 	ObjectTypeDB::bind_method(_MD("is_uppercase"),&Label::is_uppercase);
 	ObjectTypeDB::bind_method(_MD("get_line_height"),&Label::get_line_height);
@@ -659,6 +659,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "align", PROPERTY_HINT_ENUM,"Left,Center,Right,Fill" ),_SCS("set_align"),_SCS("get_align") );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "valign", PROPERTY_HINT_ENUM,"Top,Center,Bottom,Fill" ),_SCS("set_valign"),_SCS("get_valign") );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "autowrap"),_SCS("set_autowrap"),_SCS("has_autowrap") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "clip_text"),_SCS("set_clip_text"),_SCS("is_clipping_text") );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "uppercase"),_SCS("set_uppercase"),_SCS("is_uppercase") );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE,"0,1,0.001"),_SCS("set_percent_visible"),_SCS("get_percent_visible") );
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE,"0,999,1"),_SCS("set_lines_skipped"),_SCS("get_lines_skipped") );
