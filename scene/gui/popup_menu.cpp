@@ -323,8 +323,10 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 						invalidated_click=false;
 						break;
 					}
-					if (over<0 || items[over].separator || items[over].disabled)
+					if (over<0 || items[over].separator || items[over].disabled) {
+						hide();
 						break; //non-activable
+					}
 
 					if (items[over].submenu!="") {
 
