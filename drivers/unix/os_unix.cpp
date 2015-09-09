@@ -226,7 +226,8 @@ uint64_t OS_Unix::get_unix_time() const {
 uint64_t OS_Unix::get_system_time_msec() const {
 	struct timeval tv_now;
 	gettimeofday(&tv_now, NULL);
-	localtime(&tv_now.tv_usec);
+	//localtime(&tv_now.tv_usec);
+	localtime((const long *)&tv_now.tv_usec);
 	uint64_t msec = tv_now.tv_usec/1000;
 	return msec;
 }
