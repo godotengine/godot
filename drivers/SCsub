@@ -12,6 +12,7 @@ SConscript('windows/SCsub');
 SConscript('gles2/SCsub');
 SConscript('gl_context/SCsub');
 SConscript('openssl/SCsub');
+SConscript('openal/SCsub');
 
 if (env["png"]=="yes"):
 	SConscript("png/SCsub");
@@ -91,4 +92,3 @@ env.Prepend(LIBS=lib_list)
 
 #lib = env.Library("drivers",env.drivers_sources)
 #env.Prepend(LIBS=[lib])
-
