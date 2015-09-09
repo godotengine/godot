@@ -29,7 +29,7 @@
 #ifndef GIBBERISH_STREAM_H
 #define GIBBERISH_STREAM_H
 
-
+#if 0
 #include "scene/resources/audio_stream.h"
 #include "scene/resources/sample_library.h"
 class AudioStreamGibberish : public AudioStream {
@@ -108,5 +108,7 @@ public:
 
 	AudioStreamGibberish();
 };
+
+#endif
 
 #endif // GIBBERISH_STREAM_H

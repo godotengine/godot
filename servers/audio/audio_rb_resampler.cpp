@@ -1,37 +1,7 @@
-/*************************************************************************/
-/*  audio_stream_resampled.cpp                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
-/*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
-#include "audio_stream_resampled.h"
-#include "globals.h"
+#include "audio_rb_resampler.h"
 
 
-#if 0
-int AudioStreamResampled::get_channel_count() const {
+int AudioRBResampler::get_channel_count() const {
 
 	if (!rb)
 		return 0;
@@ -41,7 +11,7 @@ int AudioStreamResampled::get_channel_count() const {
 
 
 template<int C>
-uint32_t AudioStreamResampled::_resample(int32_t *p_dest,int p_todo,int32_t p_increment) {
+uint32_t AudioRBResampler::_resample(int32_t *p_dest,int p_todo,int32_t p_increment) {
 
 	uint32_t read=offset&MIX_FRAC_MASK;
 
@@ -162,15 +132,15 @@ uint32_t AudioStreamResampled::_resample(int32_t *p_dest,int p_todo,int32_t p_in
 }
 
 
-bool AudioStreamResampled::mix(int32_t *p_dest, int p_frames) {
+bool AudioRBResampler::mix(int32_t *p_dest, int p_frames) {
 
 
-	if (!rb || !_can_mix())
+	if (!rb)
 		return false;
 
 	int write_pos_cache=rb_write_pos;
 
-	int32_t increment=(mix_rate*MIX_FRAC_LEN)/get_mix_rate();
+	int32_t increment=(src_mix_rate*MIX_FRAC_LEN)/target_mix_rate;
 
 	int rb_todo;
 
@@ -187,7 +157,7 @@ bool AudioStreamResampled::mix(int32_t *p_dest, int p_frames) {
 
 	int todo = MIN( ((int64_t(rb_todo)<<MIX_FRAC_BITS)/increment)+1, p_frames );
 #if 0
-	if (int(mix_rate)==get_mix_rate()) {
+	if (int(src_mix_rate)==target_mix_rate) {
 
 
 		if (channels==6) {
@@ -293,13 +263,13 @@ bool AudioStreamResampled::mix(int32_t *p_dest, int p_frames) {
 }
 
 
-Error AudioStreamResampled::_setup(int p_channels,int p_mix_rate,int p_minbuff_needed) {
+Error AudioRBResampler::setup(int p_channels,int p_src_mix_rate,int p_target_mix_rate,int p_buffer_msec,int p_minbuff_needed) {
 
 	ERR_FAIL_COND_V(p_channels!=1 && p_channels!=2 && p_channels!=4 && p_channels!=6,ERR_INVALID_PARAMETER);
 
 
-	float buffering_sec = int(GLOBAL_DEF("audio/stream_buffering_ms",500))/1000.0;
-	int desired_rb_bits =nearest_shift(MAX(buffering_sec*p_mix_rate,p_minbuff_needed));
+	//float buffering_sec = int(GLOBAL_DEF("audio/stream_buffering_ms",500))/1000.0;
+	int desired_rb_bits =nearest_shift(MAX((p_buffer_msec/1000.0)*p_src_mix_rate,p_minbuff_needed));
 
 	bool recreate=!rb;
 
@@ -323,7 +293,8 @@ Error AudioStreamResampled::_setup(int p_channels,int p_mix_rate,int p_minbuff_n
 
 	}
 
-	mix_rate=p_mix_rate;
+	src_mix_rate=p_src_mix_rate;
+	target_mix_rate=p_target_mix_rate;
 	offset=0;
 	rb_read_pos=0;
 	rb_write_pos=0;
@@ -339,12 +310,11 @@ Error AudioStreamResampled::_setup(int p_channels,int p_mix_rate,int p_minbuff_n
 
 }
 
-void AudioStreamResampled::_clear() {
+void AudioRBResampler::clear() {
 
 	if (!rb)
 		return;
 
-	AudioServer::get_singleton()->lock();
 	//should be stopped at this point but just in case
 	if (rb) {
 		memdelete_arr(rb);
@@ -355,11 +325,9 @@ void AudioStreamResampled::_clear() {
 	rb_read_pos=0;
 	rb_write_pos=0;
 	read_buf=NULL;
-	AudioServer::get_singleton()->unlock();
-
 }
 
-AudioStreamResampled::AudioStreamResampled() {
+AudioRBResampler::AudioRBResampler() {
 
 	rb=NULL;
 	offset=0;
@@ -372,11 +340,12 @@ AudioStreamResampled::AudioStreamResampled() {
 	rb_mask=0;
 	read_buff_len=0;
 	channels=0;
-	mix_rate=0;
+	src_mix_rate=0;
+	target_mix_rate=0;
 
 }
 
-AudioStreamResampled::~AudioStreamResampled() {
+AudioRBResampler::~AudioRBResampler() {
 
 	if (rb) {
 		memdelete_arr(rb);
@@ -385,4 +354,3 @@ AudioStreamResampled::~AudioStreamResampled() {
 
 }
 
-#endif

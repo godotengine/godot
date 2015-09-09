@@ -578,7 +578,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Sample>();
 	ObjectTypeDB::register_type<SampleLibrary>();
 	ObjectTypeDB::register_virtual_type<AudioStream>();
-	ObjectTypeDB::register_type<AudioStreamGibberish>();
+	ObjectTypeDB::register_virtual_type<AudioStreamPlayback>();
+//	ObjectTypeDB::register_type<AudioStreamGibberish>();
 	ObjectTypeDB::register_virtual_type<VideoStream>();
 
 	OS::get_singleton()->yield(); //may take time to init
