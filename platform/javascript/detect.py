@@ -80,7 +80,8 @@ def configure(env):
 	env.Append(CPPFLAGS=["-fno-exceptions",'-DNO_SAFE_CAST','-fno-rtti'])
 	env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL','-DMPC_FIXED_POINT','-DTYPED_METHOD_BIND','-DNO_THREADS'])
 	env.Append(CPPFLAGS=['-DGLES2_ENABLED'])
-	env.Append(CPPFLAGS=['-DGLES_NO_CLIENT_ARRAYS'])
+# Disabled until the WebGL code correctly handles all cases where VBOs need to be implemented.
+#	env.Append(CPPFLAGS=['-DGLES_NO_CLIENT_ARRAYS'])
 	env.Append(CPPFLAGS=['-s','ASM_JS=1'])
 	env.Append(CPPFLAGS=['-s','FULL_ES2=1'])
 #	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED','-DMPC_FIXED_POINT'])
@@ -91,6 +92,7 @@ def configure(env):
 		env.Append(LINKFLAGS=['--compression',lzma_binpath+","+lzma_decoder+","+lzma_dec])
 
 	env.Append(LINKFLAGS=['-s','ASM_JS=1'])
+	env.Append(LINKFLAGS=['-s','FULL_ES2=1'])
 	env.Append(LINKFLAGS=['-O2'])
 	#env.Append(LINKFLAGS=['-g4'])
 	

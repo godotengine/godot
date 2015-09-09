@@ -185,6 +185,30 @@ static void _fix_files(Vector<uint8_t>& html,uint64_t p_data_size) {
 
 }
 
+static void _fix_godot_js(Vector<uint8_t>& content, const String& name) {
+    
+    
+    String str;
+    String strnew;
+    str.parse_utf8((const char*)content.ptr(),content.size());
+    Vector<String> lines=str.split("\n");
+    for(int i=0;i<lines.size();i++) {
+        if (lines[i].find("godot.html.mem")!=-1) {
+            strnew+=lines[i].replace("godot.html.mem", name + ".html.mem") + "\n";
+        } else {
+            strnew+=lines[i]+"\n";
+        }
+    }
+    
+    CharString cs = strnew.utf8();
+    content.resize(cs.length());
+    for(int i=0;i<cs.length();i++) {
+        content[i]=cs[i];
+    }
+    
+}
+
+
 struct JSExportData {
 
 	EditorProgress *ep;
@@ -274,9 +298,13 @@ Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool 
 		}
 		if (file=="godot.js") {
 
-			//_fix_godot(data);
+			_fix_godot_js(data, p_path.get_file().basename());
 			file=p_path.get_file().basename()+".js";
 		}
+        if (file=="godot.html.mem") {
+            
+            file=p_path.get_file().basename()+".html.mem";
+        }
 
 		String dst = p_path.get_base_dir().plus_file(file);
 		FileAccess *f=FileAccess::open(dst,FileAccess::WRITE);
