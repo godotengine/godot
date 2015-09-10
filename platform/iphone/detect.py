@@ -11,7 +11,8 @@ def get_name():
 def can_build():
 
 	import sys
-	if sys.platform == 'darwin':
+	import os
+	if sys.platform == 'darwin' or os.environ.has_key("OSXCROSS_IOS"):
 		return True
 
 	return False
@@ -28,6 +29,7 @@ def get_opts():
 		('ios_gles22_override', 'Force GLES2.0 on iOS', 'yes'),
 		('ios_appirater', 'Enable Appirater', 'no'),
 		('ios_exceptions', 'Use exceptions when compiling on playbook', 'yes'),
+		('ios_triple', 'Triple for ios toolchain', ''),
 	]
 
 def get_flags():
@@ -48,9 +50,10 @@ def configure(env):
 
 #	env['CC'] = '$IPHONEPATH/Developer/usr/bin/gcc'
 #	env['CXX'] = '$IPHONEPATH/Developer/usr/bin/g++'
-	env['CC'] = '$IPHONEPATH/usr/bin/clang'
-	env['CXX'] = '$IPHONEPATH/usr/bin/clang++'
-	env['AR'] = 'ar'
+	env['CC'] = '$IPHONEPATH/usr/bin/${ios_triple}clang'
+	env['CXX'] = '$IPHONEPATH/usr/bin/${ios_triple}clang++'
+	env['AR'] = '$IPHONEPATH/usr/bin/${ios_triple}ar'
+	env['RANLIB'] = '$IPHONEPATH/usr/bin/${ios_triple}ranlib'
 
 	import string
 	if (env["bits"]=="64"):
