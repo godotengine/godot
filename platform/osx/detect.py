@@ -31,6 +31,7 @@ def get_flags():
 	('opengl', 'no'),
 	('legacygl', 'yes'),
 	('builtin_zlib', 'no'),
+        ("theora","no"),       	
 	('freetype','builtin'), #use builtin freetype
 	]
 
