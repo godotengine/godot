@@ -104,21 +104,21 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 	visual_server->init();
 	visual_server->cursor_set_visible(false, 0);
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	/*AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
 	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
 
 		ERR_PRINT("Initializing audio failed.");
-	}
+	}*/
 
 	print_line("Init SM");
 
-	sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerSW(sample_manager) );
+	//sample_manager = memnew( SampleManagerMallocSW );
+	audio_server = memnew( AudioServerJavascript );
 
 	print_line("Init Mixer");
 
-	audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,false);
+	//audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,false);
 	audio_server->init();
 
 	print_line("Init SoundServer");

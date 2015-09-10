@@ -857,6 +857,11 @@ void AnimationPlayer::clear_queue() {
 	queued.clear();
 };
 
+void AnimationPlayer::play_backwards(const StringName& p_name,float p_custom_blend) {
+
+	play(p_name,p_custom_blend,-1,true);
+}
+
 void AnimationPlayer::play(const StringName& p_name, float p_custom_blend, float p_custom_scale,bool p_from_end) {
 
 	//printf("animation is %ls\n", String(p_name).c_str());
@@ -1216,6 +1221,7 @@ void AnimationPlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_default_blend_time"),&AnimationPlayer::get_default_blend_time);
 
 	ObjectTypeDB::bind_method(_MD("play","name","custom_blend","custom_speed","from_end"),&AnimationPlayer::play,DEFVAL(""),DEFVAL(-1),DEFVAL(1.0),DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("play_backwards","name","custom_blend"),&AnimationPlayer::play_backwards,DEFVAL(""),DEFVAL(-1));
 	ObjectTypeDB::bind_method(_MD("stop","reset"),&AnimationPlayer::stop,DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("stop_all"),&AnimationPlayer::stop_all);
 	ObjectTypeDB::bind_method(_MD("is_playing"),&AnimationPlayer::is_playing);

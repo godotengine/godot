@@ -38,7 +38,7 @@
 #include "servers/audio/audio_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/visual/rasterizer.h"
-
+#include "audio_server_javascript.h"
 #include "audio_driver_javascript.h"
 
 typedef void (*GFXInitFunc)(void *ud,bool gl2,int w, int h, bool fs);
@@ -67,8 +67,8 @@ private:
 
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
-	AudioServerSW *audio_server;
-	SampleManagerMallocSW *sample_manager;
+	AudioServerJavascript *audio_server;
+	//SampleManagerMallocSW *sample_manager;
 	SpatialSoundServerSW *spatial_sound_server;
 	SpatialSound2DServerSW *spatial_sound_2d_server;
 	PhysicsServer *physics_server;

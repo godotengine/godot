@@ -293,6 +293,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				
 				if (vm.find("x")==-1) { // invalid parameter format
 				
+					OS::get_singleton()->print("Invalid -r argument: %s\n",vm.utf8().get_data());
 					goto error;
 					
 				
@@ -303,6 +304,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				
 				if (w==0 || h==0) {
 				
+					OS::get_singleton()->print("Invalid -r resolution, x and y must be >0\n");
 					goto error;
 					
 				}
@@ -313,6 +315,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				
 				N=I->next()->next();
 			} else {
+				OS::get_singleton()->print("Invalid -p argument, needs resolution\n");
 				goto error;
 				
 			
@@ -325,6 +328,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 				if (vm.find("x")==-1) { // invalid parameter format
 
+					OS::get_singleton()->print("Invalid -p argument: %s\n",vm.utf8().get_data());
 					goto error;
 
 
@@ -339,6 +343,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 				N=I->next()->next();
 			} else {
+				OS::get_singleton()->print("Invalid -r argument, needs position\n");
 				goto error;
 
 
@@ -355,6 +360,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				video_driver=I->next()->get();
 				N=I->next()->next();
 			} else {
+				OS::get_singleton()->print("Invalid -cd argument, needs driver name\n");
 				goto error;
 				
 			}
@@ -365,6 +371,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				locale=I->next()->get();
 				N=I->next()->next();
 			} else {
+				OS::get_singleton()->print("Invalid -lang argument, needs language code\n");
 				goto error;
 
 			}
@@ -443,7 +450,6 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				} else {
 					game_path=I->next()->get(); //use game_path instead
 				}
-
 				N=I->next()->next();
 			} else {
 				goto error;
@@ -524,8 +530,10 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 				debug_mode="remote";
 				debug_host=I->next()->get();
-				if (debug_host.find(":")==-1) //wrong host
+				if (debug_host.find(":")==-1) { //wrong host
+					OS::get_singleton()->print("Invalid debug host string\n");
 					goto error;
+				}
 				N=I->next()->next();
 			} else {
 				goto error;
@@ -768,6 +776,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 	if (p_second_phase)
 		return setup2();
+
 
 	return OK;
 

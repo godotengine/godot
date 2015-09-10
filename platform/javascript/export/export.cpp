@@ -144,12 +144,16 @@ static void _fix_html(Vector<uint8_t>& html,const String& name,int max_memory) {
 	str.parse_utf8((const char*)html.ptr(),html.size());
 	Vector<String> lines=str.split("\n");
 	for(int i=0;i<lines.size();i++) {
-		if (lines[i].find("godot.js")!=-1) {
-			strnew+="<script type=\"text/javascript\" src=\""+name+"_filesystem.js\"></script>\n";
-			strnew+="<script async type=\"text/javascript\" src=\""+name+".js\"></script>\n";
-		} else if (lines[i].find("var Module")!=-1) {
-			strnew+=lines[i];
-			strnew+="TOTAL_MEMORY:"+itos(max_memory*1024*1024)+",";
+
+		if (lines[i].find("$GODOTTMEM")!=-1) {
+
+			strnew+=lines[i].replace("$GODOTTMEM",itos(max_memory*1024*1024))+"\n";
+		} else if (lines[i].find("$GODOTFS")!=-1) {
+			strnew+=lines[i].replace("$GODOTFS",name+"fs.js")+"\n";
+		} else if (lines[i].find("$GODOTMEM")!=-1) {
+			strnew+=lines[i].replace("$GODOTMEM",name+".mem")+"\n";
+		} else if (lines[i].find("$GODOTJS")!=-1) {
+			strnew+=lines[i].replace("$GODOTJS",name+".js")+"\n";
 		} else {
 			strnew+=lines[i]+"\n";
 		}
@@ -267,15 +271,21 @@ Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool 
 			_fix_html(data,p_path.get_file().basename(),1<<(max_memory+5));
 			file=p_path.get_file();
 		}
-		if (file=="filesystem.js") {
+		if (file=="godotfs.js") {
 
 			_fix_files(data,len);
-			file=p_path.get_file().basename()+"_filesystem.js";
+			file=p_path.get_file().basename()+"fs.js";
 		}
 		if (file=="godot.js") {
 
 			//_fix_godot(data);
 			file=p_path.get_file().basename()+".js";
+		}
+
+		if (file=="godot.mem") {
+
+			//_fix_godot(data);
+			file=p_path.get_file().basename()+".mem";
 		}
 
 		String dst = p_path.get_base_dir().plus_file(file);

@@ -31,6 +31,8 @@
 #include "main/main.h"
 #include "io/resource_loader.h"
 #include "os/keyboard.h"
+
+
 OS_JavaScript *os=NULL;
 
 static void _gfx_init(void *ud,bool gl2,int w, int h,bool fs) {
