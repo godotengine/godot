@@ -1695,6 +1695,8 @@ public:
 	void reload_vram();
 
 	virtual bool has_feature(VS::Features p_feature) const;
+	
+	virtual void restore_framebuffer();
 
 	static RasterizerGLES2* get_singleton();
 
