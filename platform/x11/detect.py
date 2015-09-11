@@ -134,8 +134,14 @@ def configure(env):
 	if (env["freetype"]=="yes"):
 		env.ParseConfig('pkg-config freetype2 --cflags --libs')
 
+
 	if (env["freetype"]!="no"):
 		env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
+		if (env["freetype"]=="builtin"):
+			env.Append(CPPPATH=['#tools/freetype'])
+			env.Append(CPPPATH=['#tools/freetype/freetype/include'])
+
+
 
 	
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED','-DGLEW_ENABLED'])
