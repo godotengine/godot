@@ -131,8 +131,11 @@ def configure(env):
 		env.ParseConfig('pkg-config openssl --cflags --libs')
 
 
-	env.ParseConfig('pkg-config freetype2 --cflags --libs')
-	env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
+	if (env["freetype"]=="yes"):
+		env.ParseConfig('pkg-config freetype2 --cflags --libs')
+
+	if (env["freetype"]!="no"):
+		env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
 
 	
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED','-DGLEW_ENABLED'])
