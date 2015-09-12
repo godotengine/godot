@@ -17,7 +17,7 @@ javascript_objects=[]
 for x in javascript_files:
 	javascript_objects.append( env_javascript.Object( x ) )
 
-env.Append(LINKFLAGS=["-s","EXPORTED_FUNCTIONS=\"['_main','_audio_server_mix_function']\""])
+env.Append(LINKFLAGS=["-s","EXPORTED_FUNCTIONS=\"['_main','_audio_server_mix_function','_main_after_fs_sync']\""])
 
 prog = None
 

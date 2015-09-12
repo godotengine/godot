@@ -65,6 +65,9 @@ private:
 
 	bool use_gl2;
 
+	int64_t time_to_save_sync;
+	int64_t last_sync_time;
+
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	AudioServerJavascript *audio_server;
@@ -83,6 +86,8 @@ private:
 	OpenURIFunc open_uri_func;
 	GetDataDirFunc get_data_dir_func;
 	GetLocaleFunc get_locale_func;
+
+	static void _close_notification_funcs(const String& p_file,int p_flags);
 
 public:
 
@@ -106,7 +111,7 @@ public:
 
 	typedef int64_t ProcessID;
 
-	static OS* get_singleton();
+	//static OS* get_singleton();
 
 	virtual void vprint(const char* p_format, va_list p_list, bool p_stderr=false);
 	virtual void print(const char *p_format, ... );
