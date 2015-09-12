@@ -11188,6 +11188,12 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,boo
 	tc0_idx=0;
 };
 
+void RasterizerGLES2::restore_framebuffer() {
+
+	glBindFramebuffer(GL_FRAMEBUFFER, base_framebuffer);
+	
+}
+
 RasterizerGLES2::~RasterizerGLES2() {
 
 	memdelete_arr(skinned_buffer);

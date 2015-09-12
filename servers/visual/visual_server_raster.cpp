@@ -7427,6 +7427,8 @@ void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_col
 	if (p_image.empty())
 		return;
 
+	rasterizer->restore_framebuffer();
+
 	rasterizer->begin_frame();
 
 	int window_w = OS::get_singleton()->get_video_mode(0).width;
