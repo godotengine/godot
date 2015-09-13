@@ -779,6 +779,7 @@ public:
 
 	virtual bool has_feature(VS::Features p_feature) const;
 
+	virtual void restore_framebuffer();
 
 	RasterizerDummy();
 	virtual ~RasterizerDummy();
