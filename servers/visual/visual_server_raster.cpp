@@ -5211,7 +5211,6 @@ void VisualServerRaster::_light_instance_update_lispsm_shadow(Instance *p_light,
 
 
 	AABB proj_space_aabb;
-	float max_d,min_d;
 
 	{
 
