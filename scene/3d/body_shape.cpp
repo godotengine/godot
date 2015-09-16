@@ -43,7 +43,10 @@
 
 void CollisionShape::_update_body() {
 
-
+	if (!get_tree() || !can_update_body)
+		return;
+	if (!get_tree()->is_editor_hint())
+		return;
 	if (get_parent() && get_parent()->cast_to<CollisionObject>())
 		get_parent()->cast_to<CollisionObject>()->_update_shapes_from_children();
 
@@ -310,10 +313,13 @@ void CollisionShape::_add_to_collision_object(Object* p_cshape) {
 
 	if (shape.is_valid()) {
 
+		update_shape_index=co->get_shape_count();
 		co->add_shape(shape,get_transform());
-        if (trigger)
-            co->set_shape_as_trigger( co->get_shape_count() -1, true );
-    }
+		if (trigger)
+			co->set_shape_as_trigger( co->get_shape_count() -1, true );
+	} else {
+		update_shape_index=-1;
+	}
 }
 
 void CollisionShape::_notification(int p_what) {
@@ -322,12 +328,14 @@ void CollisionShape::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			unparenting=false;
+			can_update_body=get_tree()->is_editor_hint();
+			set_notify_local_transform(!can_update_body);
 
 			//indicator_instance = VisualServer::get_singleton()->instance_create2(indicator,get_world()->get_scenario());
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 		//	VisualServer::get_singleton()->instance_set_transform(indicator_instance,get_global_transform());
-			if (updating_body) {
+			if (can_update_body && updating_body) {
 				_update_body();
 			}
 		} break;
@@ -336,16 +344,30 @@ void CollisionShape::_notification(int p_what) {
 				VisualServer::get_singleton()->free(indicator_instance);
 				indicator_instance=RID();
 			}*/
+			can_update_body=false;
+			set_notify_local_transform(false);
 		} break;
 		case NOTIFICATION_UNPARENTED: {
 			unparenting=true;
-			if (updating_body)
+			if (can_update_body && updating_body)
 				_update_body();
 		} break;
 		case NOTIFICATION_PARENTED: {
-			if (updating_body)
+			if (can_update_body && updating_body)
 				_update_body();
 		} break;
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+
+			if (!can_update_body && update_shape_index>=0) {
+
+				CollisionObject *co = get_parent()->cast_to<CollisionObject>();
+				if (co) {
+					co->set_shape_transform(update_shape_index,get_transform());
+				}
+			}
+
+		} break;
+
 	}
 }
 
@@ -356,6 +378,18 @@ void CollisionShape::resource_changed(RES res) {
 
 
 }
+
+void CollisionShape::_set_update_shape_index(int p_index) {
+
+
+	update_shape_index=p_index;
+}
+
+int CollisionShape::_get_update_shape_index() const{
+
+	return update_shape_index;
+}
+
 
 void CollisionShape::_bind_methods() {
 
@@ -368,10 +402,14 @@ void CollisionShape::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_trigger"),&CollisionShape::is_trigger);
 	ObjectTypeDB::bind_method(_MD("make_convex_from_brothers"),&CollisionShape::make_convex_from_brothers);
 	ObjectTypeDB::set_method_flags("CollisionShape","make_convex_from_brothers",METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ObjectTypeDB::bind_method(_MD("_set_update_shape_index","index"),&CollisionShape::_set_update_shape_index);
+	ObjectTypeDB::bind_method(_MD("_get_update_shape_index"),&CollisionShape::_get_update_shape_index);
 
+	ObjectTypeDB::bind_method(_MD("get_collision_object_shape_index"),&CollisionShape::get_collision_object_shape_index);
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape"), _SCS("set_shape"), _SCS("get_shape"));
-    ADD_PROPERTY(PropertyInfo(Variant::BOOL,"trigger"),_SCS("set_trigger"),_SCS("is_trigger"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"trigger"),_SCS("set_trigger"),_SCS("is_trigger"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "_update_shape_index", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_NOEDITOR), _SCS("_set_update_shape_index"), _SCS("_get_update_shape_index"));
 }
 
 
@@ -383,8 +421,15 @@ void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
 	if (!shape.is_null())
 		shape->register_owner(this);
 	update_gizmo();
-	if (updating_body)
+	if (updating_body) {
 		_update_body();
+	} else if (can_update_body && update_shape_index>=0 && is_inside_tree()){
+		CollisionObject *co = get_parent()->cast_to<CollisionObject>();
+		if (co) {
+			co->set_shape(update_shape_index,p_shape);
+		}
+
+	}
 }
 
 Ref<Shape> CollisionShape::get_shape() const {
@@ -405,8 +450,14 @@ bool CollisionShape::is_updating_body() const {
 void CollisionShape::set_trigger(bool p_trigger) {
 
     trigger=p_trigger;
-    if (updating_body)
+    if (updating_body) {
         _update_body();
+    } else if (can_update_body && update_shape_index>=0 && is_inside_tree()){
+	    CollisionObject *co = get_parent()->cast_to<CollisionObject>();
+	    if (co) {
+		    co->set_shape_as_trigger(update_shape_index,p_trigger);
+	    }
+    }
 }
 
 bool CollisionShape::is_trigger() const{
@@ -419,7 +470,9 @@ CollisionShape::CollisionShape() {
 	//indicator = VisualServer::get_singleton()->mesh_create();
 	updating_body=true;
 	unparenting=false;
-    trigger=false;
+	update_shape_index=-1;
+	trigger=false;
+	can_update_body=false;
 }
 
 CollisionShape::~CollisionShape() {

@@ -44,9 +44,11 @@ void CollisionShape2D::_add_to_collision_object(Object *p_obj) {
 
 	CollisionObject2D *co = p_obj->cast_to<CollisionObject2D>();
 	ERR_FAIL_COND(!co);
+	update_shape_index=co->get_shape_count();
 	co->add_shape(shape,get_transform());
 	if (trigger)
 		co->set_shape_as_trigger(co->get_shape_count()-1,true);
+
 
 }
 
@@ -74,12 +76,27 @@ void CollisionShape2D::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			unparenting=false;
+			can_update_body=get_tree()->is_editor_hint();
+
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 
 			if (!is_inside_tree())
 				break;
-			_update_parent();
+			if (can_update_body) {
+				_update_parent();
+			} else if (update_shape_index>=0){
+
+				CollisionObject2D *co = get_parent()->cast_to<CollisionObject2D>();
+				if (co) {
+					co->set_shape_transform(update_shape_index,get_transform());
+				}
+
+			}
+
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			can_update_body=false;
 
 		} break;
 		/*
@@ -91,6 +108,9 @@ void CollisionShape2D::_notification(int p_what) {
 
 		} break;*/
 		case NOTIFICATION_DRAW: {
+
+			if (!get_tree()->is_editor_hint())
+				return;
 
 			rect=Rect2();
 
@@ -209,7 +229,14 @@ void CollisionShape2D::set_shape(const Ref<Shape2D>& p_shape) {
 		shape->disconnect("changed",this,"_shape_changed");
 	shape=p_shape;
 	update();
-	_update_parent();
+	if (is_inside_tree() && can_update_body)
+		_update_parent();
+	if (is_inside_tree() && !can_update_body && update_shape_index>=0) {
+		CollisionObject2D *co = get_parent()->cast_to<CollisionObject2D>();
+		if (co) {
+			co->set_shape(update_shape_index,p_shape);
+		}
+	}
 	if (shape.is_valid())
 		shape->connect("changed",this,"_shape_changed");
 
@@ -228,13 +255,33 @@ Rect2 CollisionShape2D::get_item_rect() const {
 void CollisionShape2D::set_trigger(bool p_trigger) {
 
 	trigger=p_trigger;
-	_update_parent();
+	if (can_update_body) {
+		_update_parent();
+	} else if (is_inside_tree() && update_shape_index>=0){
+		CollisionObject2D *co = get_parent()->cast_to<CollisionObject2D>();
+		if (co) {
+			co->set_shape_as_trigger(update_shape_index,p_trigger);
+		}
+	}
 }
 
 bool CollisionShape2D::is_trigger() const{
 
 	return trigger;
 }
+
+
+void CollisionShape2D::_set_update_shape_index(int p_index) {
+
+
+	update_shape_index=p_index;
+}
+
+int CollisionShape2D::_get_update_shape_index() const{
+
+	return update_shape_index;
+}
+
 
 void CollisionShape2D::_bind_methods() {
 
@@ -245,14 +292,23 @@ void CollisionShape2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_trigger","enable"),&CollisionShape2D::set_trigger);
 	ObjectTypeDB::bind_method(_MD("is_trigger"),&CollisionShape2D::is_trigger);
 
+	ObjectTypeDB::bind_method(_MD("_set_update_shape_index","index"),&CollisionShape2D::_set_update_shape_index);
+	ObjectTypeDB::bind_method(_MD("_get_update_shape_index"),&CollisionShape2D::_get_update_shape_index);
+
+	ObjectTypeDB::bind_method(_MD("get_collision_object_shape_index"),&CollisionShape2D::get_collision_object_shape_index);
+
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape2D"),_SCS("set_shape"),_SCS("get_shape"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"trigger"),_SCS("set_trigger"),_SCS("is_trigger"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "_update_shape_index", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_NOEDITOR), _SCS("_set_update_shape_index"), _SCS("_get_update_shape_index"));
+
 }
 
 CollisionShape2D::CollisionShape2D() {
 
 	rect=Rect2(-Point2(10,10),Point2(20,20));
-
+	set_notify_local_transform(true);
 	trigger=false;
 	unparenting = false;
+	can_update_body = false;
+	update_shape_index=-1;
 }
