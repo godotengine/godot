@@ -1010,6 +1010,7 @@ public:
 
 	virtual void viewport_queue_screen_capture(RID p_viewport);
 	virtual Image viewport_get_screen_capture(RID p_viewport) const;
+	virtual bool viewport_is_screen_capture_queued(RID p_viewport) const;
 
 	virtual void viewport_set_rect(RID p_viewport,const ViewportRect& p_rect);
 	virtual ViewportRect viewport_get_rect(RID p_viewport) const;

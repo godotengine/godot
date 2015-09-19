@@ -718,6 +718,7 @@ public:
 
 	virtual void viewport_queue_screen_capture(RID p_viewport)=0;
 	virtual Image viewport_get_screen_capture(RID p_viewport) const=0;
+	virtual bool viewport_is_screen_capture_queued(RID p_viewport) const = 0;
 
 
 

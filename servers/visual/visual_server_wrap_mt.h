@@ -450,6 +450,7 @@ public:
 
 	FUNC1(viewport_queue_screen_capture,RID);
 	FUNC1RC(Image,viewport_get_screen_capture,RID);
+	FUNC1RC(bool, viewport_is_screen_capture_queued, RID);
 
 	FUNC2(viewport_set_rect,RID,const ViewportRect&);
 	FUNC1RC(ViewportRect,viewport_get_rect,RID);
