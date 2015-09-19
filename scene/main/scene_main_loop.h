@@ -87,6 +87,7 @@ private:
 	uint32_t last_id;
 
 	bool editor_hint;
+	bool debug_collisions_hint;
 	bool pause;
 	int root_lock;
 
@@ -269,6 +270,9 @@ public:
 
 	void set_camera(const RID& p_camera);
 	RID get_camera() const;
+
+	void set_debug_collisions_hint(bool p_enabled);
+	bool is_debugging_collisions_hint() const;
 
 	int64_t get_frame() const;
 

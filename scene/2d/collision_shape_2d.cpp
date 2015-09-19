@@ -92,7 +92,11 @@ void CollisionShape2D::_notification(int p_what) {
 		} break;*/
 		case NOTIFICATION_DRAW: {
 
+			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint())
+				break;
+
 			rect=Rect2();
+
 
 			Color draw_col=Color(0,0.6,0.7,0.5);
 

@@ -471,6 +471,7 @@ void SceneTree::init() {
 
 
 	editor_hint=false;
+	debug_collisions_hint=false;
 	pause=false;
 
 	root->_set_tree(this);
@@ -622,6 +623,16 @@ void SceneTree::set_editor_hint(bool p_enabled) {
 bool SceneTree::is_editor_hint() const {
 
 	return editor_hint;
+}
+
+void SceneTree::set_debug_collisions_hint(bool p_enabled) {
+
+	debug_collisions_hint=p_enabled;
+}
+
+bool SceneTree::is_debugging_collisions_hint() const {
+
+	return debug_collisions_hint;
 }
 
 void SceneTree::set_pause(bool p_enabled) {
@@ -1424,6 +1435,8 @@ void SceneTree::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_editor_hint","enable"),&SceneTree::set_editor_hint);
 	ObjectTypeDB::bind_method(_MD("is_editor_hint"),&SceneTree::is_editor_hint);
+	ObjectTypeDB::bind_method(_MD("set_debug_collisions_hint","enable"),&SceneTree::set_debug_collisions_hint);
+	ObjectTypeDB::bind_method(_MD("is_debugging_collisions_hint"),&SceneTree::is_debugging_collisions_hint);
 #ifdef TOOLS_ENABLED
 	ObjectTypeDB::bind_method(_MD("set_edited_scene_root","scene"),&SceneTree::set_edited_scene_root);
 	ObjectTypeDB::bind_method(_MD("get_edited_scene_root"),&SceneTree::get_edited_scene_root);
