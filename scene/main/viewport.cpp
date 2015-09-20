@@ -319,6 +319,7 @@ void Viewport::_notification(int p_what) {
 //				update_worlds();
 			}
 
+			add_to_group("_viewports");
 			if (get_tree()->is_debugging_collisions_hint()) {
 				//2D
 				Physics2DServer::get_singleton()->space_set_debug_contacts(find_world_2d()->get_space(),get_tree()->get_collision_debug_contact_count());
