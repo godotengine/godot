@@ -904,6 +904,15 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 
 			r_ret = gdscr->_new(NULL,0,r_error);
 
+            GDInstance *ins = static_cast<GDInstance*>(static_cast<Object*>(r_ret)->get_script_instance());
+            Ref<GDScript> gd_ref = ins->get_script();
+
+            for(Map<StringName,GDScript::MemberInfo>::Element *E = gd_ref->member_indices.front(); E; E = E->next()) {
+                if(d.has(E->key())) {
+                    ins->members[E->get().index] = d[E->key()];
+                }
+            }
+
 		} break;
 		case HASH: {
 
