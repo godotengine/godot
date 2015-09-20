@@ -5970,6 +5970,10 @@ void RasterizerGLES2::_render(const Geometry *p_geometry,const Material *p_mater
 			if (element_count==0)
 				return;
 
+			if (mm->visible>=0) {
+				element_count=MIN(element_count,mm->visible);
+			}
+
 			const MultiMesh::Element *elements=&mm->elements[0];
 
 			_rinfo.vertex_count+=s->array_len*element_count;

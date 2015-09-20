@@ -77,11 +77,11 @@ public:
 	virtual int get_device_count() const { return show_run?1:0; };
 	virtual String get_device_name(int p_device) const  { return "Run in Browser"; }
 	virtual String get_device_info(int p_device) const { return "Run exported HTML in the system's default browser."; }
-	virtual Error run(int p_device,bool p_dumb=false,bool p_remote_debug=false);
+	virtual Error run(int p_device,int p_flags=0);
 
 	virtual bool requieres_password(bool p_debug) const { return false; }
 	virtual String get_binary_extension() const { return "html"; }
-	virtual Error export_project(const String& p_path,bool p_debug,bool p_dumb=false,bool p_remote_debug=false);
+	virtual Error export_project(const String& p_path,bool p_debug,int p_flags=0);
 
 	virtual bool can_export(String *r_error=NULL) const;
 
@@ -198,7 +198,7 @@ struct JSExportData {
 
 
 
-Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool p_debug, bool p_dumb, bool p_remote_debug) {
+Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool p_debug, int p_flags) {
 
 
 	String src_template;
@@ -309,10 +309,10 @@ Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool 
 }
 
 
-Error EditorExportPlatformJavaScript::run(int p_device, bool p_dumb, bool p_remote_debug) {
+Error EditorExportPlatformJavaScript::run(int p_device, int p_flags) {
 
 	String path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmp_export.html";
-	Error err = export_project(path,true,"");
+	Error err = export_project(path,true,p_flags);
 	if (err)
 		return err;
 

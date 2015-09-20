@@ -353,6 +353,8 @@ public:
 	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb)=0;
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const=0;
 
+	virtual void mesh_clear(RID p_mesh)=0;
+
 	/* MULTIMESH API */
 
 	virtual RID multimesh_create()=0;

@@ -942,11 +942,11 @@ static int _get_pad(int p_alignment, int p_n) {
 	return pad;
 };
 
-void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, bool p_dumb, bool p_remote_debug) {
+void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags) {
 
 	String host = EditorSettings::get_singleton()->get("network/debug_host");
 
-	if (p_dumb) {
+	if (p_flags&EXPORT_DUMB_CLIENT) {
 		int port = EditorSettings::get_singleton()->get("file_server/port");
 		String passwd = EditorSettings::get_singleton()->get("file_server/password");
 		r_flags.push_back("-rfs");
@@ -957,7 +957,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, bool p_dumb
 		}
 	}
 
-	if (p_remote_debug) {
+	if (p_flags&EXPORT_REMOTE_DEBUG) {
 
 		r_flags.push_back("-rdebug");
 		r_flags.push_back(host+":"+String::num(GLOBAL_DEF("debug/debug_port", 6007)));
@@ -981,6 +981,17 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, bool p_dumb
 		}
 
 	}
+
+	if (p_flags&EXPORT_VIEW_COLLISONS) {
+
+		r_flags.push_back("-debugcol");
+	}
+
+	if (p_flags&EXPORT_VIEW_NAVIGATION) {
+
+		r_flags.push_back("-debugnav");
+	}
+
 
 }
 
@@ -1097,7 +1108,7 @@ Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles, int p
 	return OK;
 }
 
-Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug, bool p_dumb,bool p_remote_debug) {
+Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug, int p_flags) {
 
 
 

@@ -102,6 +102,11 @@ public:
 	virtual void space_set_param(RID p_space,SpaceParameter p_param, real_t p_value);
 	virtual real_t space_get_param(RID p_space,SpaceParameter p_param) const;
 
+	virtual void space_set_debug_contacts(RID p_space,int p_max_contacts);
+	virtual Vector<Vector2> space_get_contacts(RID p_space) const;
+	virtual int space_get_contact_count(RID p_space) const;
+
+
 	// this function only works on fixed process, errors and returns null otherwise
 	virtual Physics2DDirectSpaceState* space_get_direct_state(RID p_space);
 

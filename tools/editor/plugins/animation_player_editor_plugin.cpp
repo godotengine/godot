@@ -1393,6 +1393,7 @@ AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
 	anim_editor = memnew( AnimationPlayerEditor(editor) );
+	anim_editor->set_undo_redo(editor->get_undo_redo());
 	editor->get_animation_panel()->add_child(anim_editor);
 	/*
 	editor->get_viewport()->add_child(anim_editor);

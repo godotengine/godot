@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "shape_line_2d.h"
 #include "servers/physics_2d_server.h"
-
+#include "servers/visual_server.h"
 void LineShape2D::_update_shape() {
 
 	Array arr;
@@ -59,6 +59,32 @@ Vector2 LineShape2D::get_normal() const {
 real_t LineShape2D::get_d() const {
 
 	return d;
+}
+
+
+void LineShape2D::draw(const RID& p_to_rid,const Color& p_color) {
+
+	Vector2 point = get_d() * get_normal();
+
+	Vector2 l1[2]={point-get_normal().tangent()*100,point+get_normal().tangent()*100};
+	VS::get_singleton()->canvas_item_add_line(p_to_rid,l1[0],l1[1],p_color,3);
+	Vector2 l2[2]={point,point+get_normal()*30};
+	VS::get_singleton()->canvas_item_add_line(p_to_rid,l2[0],l2[1],p_color,3);
+
+}
+Rect2 LineShape2D::get_rect() const{
+
+	Vector2 point = get_d() * get_normal();
+
+	Vector2 l1[2]={point-get_normal().tangent()*100,point+get_normal().tangent()*100};
+	Vector2 l2[2]={point,point+get_normal()*30};
+	Rect2 rect;
+	rect.pos=l1[0];
+	rect.expand_to(l1[1]);
+	rect.expand_to(l2[0]);
+	rect.expand_to(l2[1]);
+	return rect;
+
 }
 
 void LineShape2D::_bind_methods() {
