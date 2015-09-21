@@ -331,7 +331,7 @@ void SpatialStreamPlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_stream","stream:Stream"),&SpatialStreamPlayer::set_stream);
 	ObjectTypeDB::bind_method(_MD("get_stream:Stream"),&SpatialStreamPlayer::get_stream);
 
-	ObjectTypeDB::bind_method(_MD("play"),&SpatialStreamPlayer::play);
+	ObjectTypeDB::bind_method(_MD("play"),&SpatialStreamPlayer::play,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("stop"),&SpatialStreamPlayer::stop);
 
 	ObjectTypeDB::bind_method(_MD("is_playing"),&SpatialStreamPlayer::is_playing);
