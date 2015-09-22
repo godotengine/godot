@@ -57,7 +57,7 @@ void RectangleShape2D::draw(const RID& p_to_rid,const Color& p_color) {
 
 Rect2 RectangleShape2D::get_rect() const {
 
-	Rect2(-extents,extents*2.0);
+	return Rect2(-extents,extents*2.0);
 
 }
 
