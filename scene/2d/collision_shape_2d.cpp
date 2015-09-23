@@ -113,13 +113,14 @@ void CollisionShape2D::_notification(int p_what) {
 				break;
 			}
 
+			if (!shape.is_valid()) {
+				break;
+			}
+
 			rect=Rect2();
 
 
 			Color draw_col=get_tree()->get_debug_collisions_color();
-            if(!shape.is_valid()) {
-                break;
-            }
 			shape->draw(get_canvas_item(),draw_col);
 
 
