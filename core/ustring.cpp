@@ -3119,8 +3119,8 @@ String String::xml_escape(bool p_escape_quotes) const {
 
 	String str=*this;
 	str=str.replace("&","&amp;");
-	str=str.replace("<","&gt;");
-	str=str.replace(">","&lt;");
+	str=str.replace("<","&lt;");
+	str=str.replace(">","&gt;");
 	if (p_escape_quotes) {
 		str=str.replace("'","&apos;");
 		str=str.replace("\"","&quot;");
@@ -3172,12 +3172,12 @@ static _FORCE_INLINE_ int _xml_unescape(const CharType *p_src,int p_src_len,Char
 			} else if (p_src_len>=4 && p_src[1]=='g' && p_src[2]=='t' && p_src[3]==';') {
 
 				if (p_dst)
-					*p_dst='<';
+					*p_dst='>';
 				eat=4;
 			} else if (p_src_len>=4 && p_src[1]=='l' && p_src[2]=='t' && p_src[3]==';') {
 
 				if (p_dst)
-					*p_dst='>';
+					*p_dst='<';
 				eat=4;
 			} else if (p_src_len>=5 && p_src[1]=='a' && p_src[2]=='m' && p_src[3]=='p' && p_src[4]==';') {
 
