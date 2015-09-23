@@ -3119,8 +3119,8 @@ String String::xml_escape(bool p_escape_quotes) const {
 
 	String str=*this;
 	str=str.replace("&","&amp;");
-	str=str.replace("<","&gt;");
-	str=str.replace(">","&lt;");
+	str=str.replace("<","&lt;");
+	str=str.replace(">","&gt;");
 	if (p_escape_quotes) {
 		str=str.replace("'","&apos;");
 		str=str.replace("\"","&quot;");
