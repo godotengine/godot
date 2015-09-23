@@ -252,10 +252,6 @@ void register_driver_types() {
 	_register_etc1_compress_func();
 #endif
 	
-#ifdef TOOLS_ENABLED
-	EditorExportPlatformWindows::_add_resrc_func=pe_bliss_add_resrc;
-#endif
-	
 	initialize_chibi();
 }
 

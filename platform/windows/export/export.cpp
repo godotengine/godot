@@ -32,13 +32,12 @@
 #include "os/os.h"
 #include "globals.h"
 #include "tools/editor/editor_node.h"
+#include "tools/pe_bliss/pe_bliss_godot.h"
 
 /**
 	@author Masoud BaniHashemian <masoudbh3@gmail.com>
 */
 
-String (*EditorExportPlatformWindows::_add_resrc_func)(const char* ,int ,int ,String& ,
-																										 String& ,String& ,String& , String& ,String& , DVector<uint8_t>& )=NULL;
 
 void EditorExportPlatformWindows::store_16(DVector<uint8_t>& vector, uint16_t value) {
 	const uint8_t* bytes = reinterpret_cast<const uint8_t*>(&value);
@@ -205,123 +204,118 @@ Error EditorExportPlatformWindows::export_project(const String& p_path, bool p_d
 	{
 		return err;
 	}
-	if(!_add_resrc_func) {
-		return err;
-	} else {
-		EditorProgress ep("editexe","Edit EXE File",102);
-		ep.step("Create ico file..",0);
-		
-			DVector<uint8_t> icon_content;
-			if (this->icon_ico!="" && this->icon_ico.ends_with(".ico")) {
-				FileAccess *f = FileAccess::open(this->icon_ico,FileAccess::READ);
-				if (f) {
-					icon_content.resize(f->get_len());
-					DVector<uint8_t>::Write write = icon_content.write();
-					f->get_buffer(write.ptr(),icon_content.size());
-					f->close();
-					memdelete(f);
-				}
-			} else if (this->icon_png!="" && this->icon_png.ends_with(".png") && (icon16 || icon32 || icon48 || icon64 || icon128 || icon256)) {
-				#ifdef PNG_ENABLED
-				Vector<Image> pngs;
-				Image png;
-				Error err_png = png.load(this->icon_png);
-				if (err_png==OK && !png.empty()) {
-					if(icon256) {
-						Image icon_256(png);
-						if(!(png.get_height()==256 && png.get_width()==256)) icon_256.resize(256,256);
-						pngs.push_back(icon_256);
-					}
-					if(icon128) {
-						Image icon_128(png);
-						if(!(png.get_height()==128 && png.get_width()==128)) icon_128.resize(128,128);
-						pngs.push_back(icon_128);
-					}
-					if(icon64) {
-						Image icon_64(png);
-						if(!(png.get_height()==64 && png.get_width()==64)) icon_64.resize(64,64);
-						pngs.push_back(icon_64);
-					}
-					if(icon48) {
-						Image icon_48(png);
-						if(!(png.get_height()==48 && png.get_width()==48)) icon_48.resize(48,48);
-						pngs.push_back(icon_48);
-					}
-					if(icon32) {
-						Image icon_32(png);
-						if(!(png.get_height()==32 && png.get_width()==32)) icon_32.resize(32,32);
-						pngs.push_back(icon_32);
-					}
-					if(icon16) {
-						Image icon_16(png);
-						if(!(png.get_height()==16 && png.get_width()==16)) icon_16.resize(16,16);
-						pngs.push_back(icon_16);
-					}
-					// create icon according to https://www.daubnet.com/en/file-format-ico
-					store_16(icon_content,0); //Reserved
-					store_16(icon_content,1); //Type
-					store_16(icon_content,pngs.size()); //Count
-					int offset = 6+pngs.size()*16;
-					//List of bitmaps 
-					for(int i=0;i<pngs.size();i++) {
-						int w = pngs[i].get_width();
-						int h = pngs[i].get_height();
-						icon_content.push_back(w<256?w:0); //width
-						icon_content.push_back(h<256?h:0); //height
-						icon_content.push_back(0); //ColorCount = 0
-						icon_content.push_back(0); //Reserved
-						store_16(icon_content,1); //Planes
-						store_16(icon_content,32); //BitCount (bit per pixel)
-						int size = 40 + (w * h * 4) + (w * h / 8);
-						store_32(icon_content,size); //Size of (InfoHeader + ANDbitmap + XORbitmap) 
-						store_32(icon_content,offset); //FileOffset
-						offset += size;
-					}
-					//Write bmp files.
-					for(int i=0;i<pngs.size();i++) {
-						int w = pngs[i].get_width();
-						int h = pngs[i].get_height();
-						store_32(icon_content,40); //Size of InfoHeader structure = 40
-						store_32(icon_content,w); //Width
-						store_32(icon_content,h*2); //Height
-						store_16(icon_content,1); //Planes
-						store_16(icon_content,32); //BitCount
-						store_32(icon_content,0); //Compression
-						store_32(icon_content,w*h*4); //ImageSize = Size of Image in Bytes
-						store_32(icon_content,0); //unused = 0 
-						store_32(icon_content,0); //unused = 0 
-						store_32(icon_content,0); //unused = 0 
-						store_32(icon_content,0); //unused = 0 
-						//XORBitmap
-						for(int y=h-1;y>=0;y--) {
-							for(int x=0;x<w;x++) {
-								store_32(icon_content,pngs[i].get_pixel(x,y).to_32());
-							}
-						}
-						//ANDBitmap
-						for(int m=0;m<(w * h / 8);m+=4) store_32(icon_content,0x00000000); // Add empty ANDBitmap , TODO create full ANDBitmap Structure if need.
-					}
-				}
-				#endif
-			}
-		
-		ep.step("Add rsrc..",50);
-		
-			String basename = Globals::get_singleton()->get("application/name");
-			product_name=product_name.replace("$genname",basename);
-			String godot_version;
-			if(set_godot_version) godot_version = String( VERSION_MKSTRING );
-			String ret = EditorExportPlatformWindows::_add_resrc_func(p_path.utf8(), version_major, version_minor,
-																							company_name, file_description, legal_copyright, version_text,
-																							product_name, godot_version, icon_content);
-			if (ret.empty()) {
-				return OK;
-			} else {
-				EditorNode::add_io_error(ret);
-				return ERR_FILE_CANT_WRITE;
-			}
-	}
+	EditorProgress ep("editexe","Edit EXE File",102);
+	ep.step("Create ico file..",0);
 	
+		DVector<uint8_t> icon_content;
+		if (this->icon_ico!="" && this->icon_ico.ends_with(".ico")) {
+			FileAccess *f = FileAccess::open(this->icon_ico,FileAccess::READ);
+			if (f) {
+				icon_content.resize(f->get_len());
+				DVector<uint8_t>::Write write = icon_content.write();
+				f->get_buffer(write.ptr(),icon_content.size());
+				f->close();
+				memdelete(f);
+			}
+		} else if (this->icon_png!="" && this->icon_png.ends_with(".png") && (icon16 || icon32 || icon48 || icon64 || icon128 || icon256)) {
+			#ifdef PNG_ENABLED
+			Vector<Image> pngs;
+			Image png;
+			Error err_png = png.load(this->icon_png);
+			if (err_png==OK && !png.empty()) {
+				if(icon256) {
+					Image icon_256(png);
+					if(!(png.get_height()==256 && png.get_width()==256)) icon_256.resize(256,256);
+					pngs.push_back(icon_256);
+				}
+				if(icon128) {
+					Image icon_128(png);
+					if(!(png.get_height()==128 && png.get_width()==128)) icon_128.resize(128,128);
+					pngs.push_back(icon_128);
+				}
+				if(icon64) {
+					Image icon_64(png);
+					if(!(png.get_height()==64 && png.get_width()==64)) icon_64.resize(64,64);
+					pngs.push_back(icon_64);
+				}
+				if(icon48) {
+					Image icon_48(png);
+					if(!(png.get_height()==48 && png.get_width()==48)) icon_48.resize(48,48);
+					pngs.push_back(icon_48);
+				}
+				if(icon32) {
+					Image icon_32(png);
+					if(!(png.get_height()==32 && png.get_width()==32)) icon_32.resize(32,32);
+					pngs.push_back(icon_32);
+				}
+				if(icon16) {
+					Image icon_16(png);
+					if(!(png.get_height()==16 && png.get_width()==16)) icon_16.resize(16,16);
+					pngs.push_back(icon_16);
+				}
+				// create icon according to https://www.daubnet.com/en/file-format-ico
+				store_16(icon_content,0); //Reserved
+				store_16(icon_content,1); //Type
+				store_16(icon_content,pngs.size()); //Count
+				int offset = 6+pngs.size()*16;
+				//List of bitmaps 
+				for(int i=0;i<pngs.size();i++) {
+					int w = pngs[i].get_width();
+					int h = pngs[i].get_height();
+					icon_content.push_back(w<256?w:0); //width
+					icon_content.push_back(h<256?h:0); //height
+					icon_content.push_back(0); //ColorCount = 0
+					icon_content.push_back(0); //Reserved
+					store_16(icon_content,1); //Planes
+					store_16(icon_content,32); //BitCount (bit per pixel)
+					int size = 40 + (w * h * 4) + (w * h / 8);
+					store_32(icon_content,size); //Size of (InfoHeader + ANDbitmap + XORbitmap) 
+					store_32(icon_content,offset); //FileOffset
+					offset += size;
+				}
+				//Write bmp files.
+				for(int i=0;i<pngs.size();i++) {
+					int w = pngs[i].get_width();
+					int h = pngs[i].get_height();
+					store_32(icon_content,40); //Size of InfoHeader structure = 40
+					store_32(icon_content,w); //Width
+					store_32(icon_content,h*2); //Height
+					store_16(icon_content,1); //Planes
+					store_16(icon_content,32); //BitCount
+					store_32(icon_content,0); //Compression
+					store_32(icon_content,w*h*4); //ImageSize = Size of Image in Bytes
+					store_32(icon_content,0); //unused = 0 
+					store_32(icon_content,0); //unused = 0 
+					store_32(icon_content,0); //unused = 0 
+					store_32(icon_content,0); //unused = 0 
+					//XORBitmap
+					for(int y=h-1;y>=0;y--) {
+						for(int x=0;x<w;x++) {
+							store_32(icon_content,pngs[i].get_pixel(x,y).to_32());
+						}
+					}
+					//ANDBitmap
+					for(int m=0;m<(w * h / 8);m+=4) store_32(icon_content,0x00000000); // Add empty ANDBitmap , TODO create full ANDBitmap Structure if need.
+				}
+			}
+			#endif
+		}
+	
+	ep.step("Add rsrc..",50);
+	
+		String basename = Globals::get_singleton()->get("application/name");
+		product_name=product_name.replace("$genname",basename);
+		String godot_version;
+		if(set_godot_version) godot_version = String( VERSION_MKSTRING );
+		String ret = pe_bliss_add_resrc(p_path.utf8(), version_major, version_minor,
+																						company_name, file_description, legal_copyright, version_text,
+																						product_name, godot_version, icon_content);
+		if (ret.empty()) {
+			return OK;
+		} else {
+			EditorNode::add_io_error(ret);
+			return ERR_FILE_CANT_WRITE;
+		}
 }
 
 EditorExportPlatformWindows::EditorExportPlatformWindows() {

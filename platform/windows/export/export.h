@@ -29,7 +29,6 @@ protected:
 	void _get_property_list( List<PropertyInfo> *p_list) const;
 	
 public:
-	static String (*_add_resrc_func)(const char*,int,int,String&,String&,String&,String&,String&,String&,DVector<uint8_t>&);
 	Error export_project(const String& p_path, bool p_debug, bool p_dumb=false, bool p_remote_debug=false);
 	EditorExportPlatformWindows();
 };
