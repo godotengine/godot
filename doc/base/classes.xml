@@ -10346,7 +10346,7 @@
 			<argument index="0" name="filter" type="String">
 			</argument>
 			<description>
-			Add a custom filter. Filter format is: "mask ; description", example (C++): dialog-&lt;add_filter("*.png ; PNG Images");
+			Add a custom filter. Filter format is: "mask ; description", example (C++): dialog-&gt;add_filter("*.png ; PNG Images");
 			</description>
 		</method>
 		<method name="get_current_dir" qualifiers="const">
@@ -36726,6 +36726,7 @@
 			<argument index="0" name="to" type="Vector2">
 			</argument>
 			<description>
+			Returns the angle in radians between the two vectors.
 			</description>
 		</method>
 		<method name="angle_to_point">
@@ -36734,12 +36735,14 @@
 			<argument index="0" name="to" type="Vector2">
 			</argument>
 			<description>
+			Returns the angle in radians between the line connecting the two points and the x coordinate.
 			</description>
 		</method>
 		<method name="atan2">
 			<return type="float">
 			</return>
 			<description>
+			Returns the result of atan2 when called with the Vector's x and y as parameters.
 			</description>
 		</method>
 		<method name="cubic_interpolate">
@@ -36754,6 +36757,7 @@
 			<argument index="3" name="t" type="float">
 			</argument>
 			<description>
+			Cubicly interpolates between this Vector and "b", using "pre_a" and "post_b" as handles, and returning the result at position "t".
 			</description>
 		</method>
 		<method name="distance_squared_to">
@@ -36762,6 +36766,7 @@
 			<argument index="0" name="to" type="Vector2">
 			</argument>
 			<description>
+			Returns the squared distance to vector "b". Prefer this function over "distance_to" if you need to sort vectors or need the squared distance for some formula.
 			</description>
 		</method>
 		<method name="distance_to">
@@ -36799,6 +36804,7 @@
 			<return type="float">
 			</return>
 			<description>
+			Returns the ratio of X to Y.
 			</description>
 		</method>
 		<method name="length">
@@ -36812,6 +36818,7 @@
 			<return type="float">
 			</return>
 			<description>
+			Returns the squared length of the vector. Prefer this function over "length" if you need to sort vectors or need the squared length for some formula.
 			</description>
 		</method>
 		<method name="linear_interpolate">
@@ -36822,7 +36829,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-			Returns the result of the linear interpolation between this vector and "b", by amount "i".
+			Returns the result of the linear interpolation between this vector and "b", by amount "t".
 			</description>
 		</method>
 		<method name="normalized">
@@ -36838,6 +36845,7 @@
 			<argument index="0" name="vec" type="Vector2">
 			</argument>
 			<description>
+			Reflects/mirrors the vector around another vector.
 			</description>
 		</method>
 		<method name="rotated">
@@ -36846,6 +36854,7 @@
 			<argument index="0" name="phi" type="float">
 			</argument>
 			<description>
+			Rotates the vector by "phi" radians.
 			</description>
 		</method>
 		<method name="slide">
@@ -36854,6 +36863,7 @@
 			<argument index="0" name="vec" type="Vector2">
 			</argument>
 			<description>
+			Slides the vector by the other vector.
 			</description>
 		</method>
 		<method name="snapped">
@@ -36862,12 +36872,14 @@
 			<argument index="0" name="by" type="Vector2">
 			</argument>
 			<description>
+			Snaps the vector to a grid with the given size.
 			</description>
 		</method>
 		<method name="tangent">
 			<return type="Vector2">
 			</return>
 			<description>
+			Returns a perpendicular vector.
 			</description>
 		</method>
 		<method name="Vector2">
@@ -36878,6 +36890,7 @@
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
+			Constructs a new Vector2 from the given x and y.
 			</description>
 		</method>
 	</methods>
@@ -36896,8 +36909,10 @@
 </class>
 <class name="Vector2Array" category="Built-In Types">
 	<brief_description>
+	An Array of Vector2's.
 	</brief_description>
 	<description>
+	An Array specifically designed to hold Vector2's.
 	</description>
 	<methods>
 		<method name="get">
@@ -36906,18 +36921,21 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Get the Vector2 at the given index.
 			</description>
 		</method>
 		<method name="push_back">
 			<argument index="0" name="vector2" type="Vector2">
 			</argument>
 			<description>
+			Insert a new Vector2.
 			</description>
 		</method>
 		<method name="resize">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Set the size of the Vector2Array. If larger than the current size it will reserve some space beforehand, and if it is smaller it will cut off the array.
 			</description>
 		</method>
 		<method name="set">
@@ -36926,12 +36944,14 @@
 			<argument index="1" name="vector2" type="Vector2">
 			</argument>
 			<description>
+			Set the Vector2 at the given index.
 			</description>
 		</method>
 		<method name="size">
 			<return type="int">
 			</return>
 			<description>
+			Returns the size of the array.
 			</description>
 		</method>
 		<method name="Vector2Array">
@@ -36940,6 +36960,7 @@
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
+			Constructs a new Vector2Array. Optionally, you can pass in an Array that will be converted.
 			</description>
 		</method>
 	</methods>
