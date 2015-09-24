@@ -244,7 +244,7 @@ public:
 	virtual bool is_window_maximized() const;
 
 	virtual void move_window_to_foreground();
-
+	virtual void alert(const String& p_alert,const String& p_title="ALERT!");
 	void run();
 
 	OS_X11();

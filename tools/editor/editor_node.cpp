@@ -2677,6 +2677,20 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			run_native->set_deploy_debug_remote(!ischecked);
 
 		} break;
+		case RUN_DEBUG_COLLISONS: {
+
+			bool ischecked = debug_button->get_popup()->is_item_checked( debug_button->get_popup()->get_item_index(RUN_DEBUG_COLLISONS));
+			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_DEBUG_COLLISONS),!ischecked);
+			run_native->set_debug_collisions(!ischecked);
+			editor_run.set_debug_collisions(!ischecked);
+		} break;
+		case RUN_DEBUG_NAVIGATION: {
+
+			bool ischecked = debug_button->get_popup()->is_item_checked( debug_button->get_popup()->get_item_index(RUN_DEBUG_NAVIGATION));
+			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_DEBUG_NAVIGATION),!ischecked);
+			run_native->set_debug_navigation(!ischecked);
+			editor_run.set_debug_navigation(!ischecked);
+		} break;
 		case SETTINGS_UPDATE_ALWAYS: {
 
 			update_menu->get_popup()->set_item_checked(0,true);
@@ -4959,6 +4973,9 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_check_item("Deploy Remote Debug",RUN_DEPLOY_REMOTE_DEBUG);
 	p->add_check_item("Deploy File Server Clients",RUN_DEPLOY_DUMB_CLIENTS);
+	p->add_separator();
+	p->add_check_item("Visible Collision Shapes",RUN_DEBUG_COLLISONS);
+	p->add_check_item("Visible Navigation",RUN_DEBUG_NAVIGATION);
 	p->connect("item_pressed",this,"_menu_option");
 
 	/*

@@ -1880,6 +1880,16 @@ void OS_X11::swap_buffers() {
 	context_gl->swap_buffers();
 }
 
+void OS_X11::alert(const String& p_alert,const String& p_title) {
+
+	List<String> args;
+	args.push_back("-center");
+	args.push_back("-title");
+	args.push_back(p_title);
+	args.push_back(p_alert);
+
+	execute("/usr/bin/xmessage",args,true);
+}
 
 void OS_X11::set_icon(const Image& p_icon) {
 	if (!p_icon.empty()) {

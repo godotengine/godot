@@ -626,11 +626,14 @@ void AudioServerJavascript::finish(){
 }
 void AudioServerJavascript::update(){
 
-	for(List<Stream*>::Element *E=active_audio_streams.front();E;E=E->next()) {
+	for(List<Stream*>::Element *E=active_audio_streams.front();E;) { //stream might be removed durnig this callback
 
-		if (E->get()->audio_stream ) {
+		List<Stream*>::Element *N=E->next();
+
+		if (E->get()->audio_stream)
 			E->get()->audio_stream->update();
-		}
+
+		E=N;
 	}
 }
 
@@ -653,7 +656,7 @@ int AudioServerJavascript::get_default_mix_rate() const{
 
 void AudioServerJavascript::set_stream_global_volume_scale(float p_volume){
 
-
+	stream_volume_scale=p_volume;
 }
 void AudioServerJavascript::set_fx_global_volume_scale(float p_volume){
 

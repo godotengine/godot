@@ -37,6 +37,7 @@
 #include "main/main.h"
 
 #include "core/globals.h"
+#include "emscripten.h"
 
 int OS_JavaScript::get_video_driver_count() const {
 
@@ -270,6 +271,32 @@ bool OS_JavaScript::main_loop_iterate() {
 
 	if (!main_loop)
 		return false;
+
+	if (time_to_save_sync>=0) {
+		int64_t newtime = get_ticks_msec();
+		int64_t elapsed = newtime - last_sync_time;
+		last_sync_time=newtime;
+
+		time_to_save_sync-=elapsed;
+
+		print_line("elapsed "+itos(elapsed)+" tts "+itos(time_to_save_sync));
+
+		if (time_to_save_sync<0) {
+			//time to sync, for real
+			// run 'success'
+			print_line("DOING SYNCH!");
+			EM_ASM(
+			  FS.syncfs(function (err) {
+			    assert(!err);
+				console.log("Synched!");
+			    //ccall('success', 'v');
+			  });
+			);
+		}
+
+
+	}
+
 	return Main::iteration();
 }
 
@@ -562,14 +589,21 @@ String OS_JavaScript::get_locale() const {
 
 String OS_JavaScript::get_data_dir() const {
 
-	if (get_data_dir_func)
-		return get_data_dir_func();
-	return "/";
+	//if (get_data_dir_func)
+	//	return get_data_dir_func();
+	return "/userfs";
 	//return Globals::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 };
 
 
+void OS_JavaScript::_close_notification_funcs(const String& p_file,int p_flags) {
 
+	print_line("close "+p_file+" flags "+itos(p_flags));
+	if (p_file.begins_with("/userfs") && p_flags&FileAccess::WRITE) {
+		static_cast<OS_JavaScript*>(get_singleton())->last_sync_time=OS::get_singleton()->get_ticks_msec();
+		static_cast<OS_JavaScript*>(get_singleton())->time_to_save_sync=5000; //five seconds since last save
+	}
+}
 
 OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func) {
 
@@ -589,6 +623,9 @@ OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, Ope
 	open_uri_func=p_open_uri_func;
 	get_data_dir_func=p_get_data_dir_func;
 	get_locale_func=p_get_locale_func;
+	FileAccessUnix::close_notification_func=_close_notification_funcs;
+
+	time_to_save_sync=-1;
 
 
 }

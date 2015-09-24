@@ -49,6 +49,9 @@ public:
 	Vector2 get_a() const;
 	Vector2 get_b() const;
 
+	virtual void draw(const RID& p_to_rid,const Color& p_color);
+	virtual Rect2 get_rect() const;
+
 	SegmentShape2D();
 };
 
@@ -67,6 +70,8 @@ public:
 
 	void set_length(real_t p_length);
 	real_t get_length() const;
+	virtual void draw(const RID& p_to_rid,const Color& p_color);
+	virtual Rect2 get_rect() const;
 
 	RayShape2D();
 };

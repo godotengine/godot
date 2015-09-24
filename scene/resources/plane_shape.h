@@ -39,9 +39,9 @@ class PlaneShape : public Shape {
 protected:
 
 	static void _bind_methods();
-
 	virtual void _update_shape();
 
+	virtual Vector<Vector3> _gen_debug_mesh_lines();
 public:
 
 	void set_plane(Plane p_plane);

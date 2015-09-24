@@ -97,6 +97,8 @@ static OS::VideoMode video_mode;
 static bool init_maximized=false;
 static bool init_fullscreen=false;
 static bool init_use_custom_pos=false;
+static bool debug_collisions=false;
+static bool debug_navigation=false;
 static Vector2 init_custom_pos;
 static int video_driver_idx=-1;
 static int audio_driver_idx=-1;
@@ -514,6 +516,10 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 		} else if (I->get()=="-debug" || I->get()=="-d") {
 			debug_mode="local";
+		} else if (I->get()=="-debugcol" || I->get()=="-dc") {
+			debug_collisions=true;
+		} else if (I->get()=="-debugnav" || I->get()=="-dn") {
+			debug_navigation=true;
 		} else if (I->get()=="-editor_scene") {
 
 			if (I->next()) {
@@ -1171,7 +1177,14 @@ bool Main::start() {
 		
 		SceneTree *sml = main_loop->cast_to<SceneTree>();
 
+		if (debug_collisions) {
+			sml->set_debug_collisions_hint(true);
+		}
+		if (debug_navigation) {
+			sml->set_debug_navigation_hint(true);
+		}
 #ifdef TOOLS_ENABLED
+
 
 		EditorNode *editor_node=NULL;
 		if (editor) {

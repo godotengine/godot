@@ -41,6 +41,9 @@ public:
 	void set_segments(const DVector<Vector2>& p_segments);
 	DVector<Vector2> get_segments() const;
 
+	virtual void draw(const RID& p_to_rid,const Color& p_color);
+	virtual Rect2 get_rect() const ;
+
 	ConcavePolygonShape2D();
 };
 

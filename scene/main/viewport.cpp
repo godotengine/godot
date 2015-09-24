@@ -37,6 +37,7 @@
 #include "servers/spatial_sound_2d_server.h"
 #include "scene/gui/control.h"
 #include "scene/3d/camera.h"
+#include "scene/resources/mesh.h"
 #include "scene/3d/spatial_indexer.h"
 #include "scene/3d/collision_object.h"
 
@@ -319,6 +320,23 @@ void Viewport::_notification(int p_what) {
 			}
 
 			add_to_group("_viewports");
+			if (get_tree()->is_debugging_collisions_hint()) {
+				//2D
+				Physics2DServer::get_singleton()->space_set_debug_contacts(find_world_2d()->get_space(),get_tree()->get_collision_debug_contact_count());
+				contact_2d_debug=VisualServer::get_singleton()->canvas_item_create();
+				VisualServer::get_singleton()->canvas_item_set_parent(contact_2d_debug,find_world_2d()->get_canvas());
+				//3D
+				PhysicsServer::get_singleton()->space_set_debug_contacts(find_world()->get_space(),get_tree()->get_collision_debug_contact_count());
+				contact_3d_debug_multimesh=VisualServer::get_singleton()->multimesh_create();
+				VisualServer::get_singleton()->multimesh_set_instance_count(contact_3d_debug_multimesh,get_tree()->get_collision_debug_contact_count());
+				VisualServer::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh,0);
+				VisualServer::get_singleton()->multimesh_set_mesh(contact_3d_debug_multimesh,get_tree()->get_debug_contact_mesh()->get_rid());
+				contact_3d_debug_instance=VisualServer::get_singleton()->instance_create();
+				VisualServer::get_singleton()->instance_set_base(contact_3d_debug_instance,contact_3d_debug_multimesh);
+				VisualServer::get_singleton()->instance_set_scenario(contact_3d_debug_instance,find_world()->get_scenario());
+				VisualServer::get_singleton()->instance_geometry_set_flag(contact_3d_debug_instance,VS::INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS,true);
+
+			}
 
 		} break;
 		case NOTIFICATION_READY: {
@@ -351,10 +369,68 @@ void Viewport::_notification(int p_what) {
 			VisualServer::get_singleton()->viewport_set_scenario(viewport,RID());
 			SpatialSoundServer::get_singleton()->listener_set_space(listener,RID());
 			VisualServer::get_singleton()->viewport_remove_canvas(viewport,current_canvas);
+			if (contact_2d_debug.is_valid()) {
+				VisualServer::get_singleton()->free(contact_2d_debug);
+				contact_2d_debug=RID();
+			}
+
+			if (contact_3d_debug_multimesh.is_valid()) {
+				VisualServer::get_singleton()->free(contact_3d_debug_multimesh);
+				VisualServer::get_singleton()->free(contact_3d_debug_instance);
+				contact_3d_debug_instance=RID();
+				contact_3d_debug_multimesh=RID();
+			}
+
 			remove_from_group("_viewports");
 
 		} break;
 		case NOTIFICATION_FIXED_PROCESS: {
+
+
+			if (get_tree()->is_debugging_collisions_hint() && contact_2d_debug.is_valid()) {
+
+				VisualServer::get_singleton()->canvas_item_clear(contact_2d_debug);
+				VisualServer::get_singleton()->canvas_item_raise(contact_2d_debug);
+
+				Vector<Vector2> points = Physics2DServer::get_singleton()->space_get_contacts(find_world_2d()->get_space());
+				int point_count = Physics2DServer::get_singleton()->space_get_contact_count(find_world_2d()->get_space());
+				Color ccol = get_tree()->get_debug_collision_contact_color();
+
+
+				for(int i=0;i<point_count;i++) {
+
+					VisualServer::get_singleton()->canvas_item_add_rect(contact_2d_debug,Rect2(points[i]-Vector2(2,2),Vector2(5,5)),ccol);
+				}
+			}
+
+			if (get_tree()->is_debugging_collisions_hint() && contact_3d_debug_multimesh.is_valid()) {
+
+
+				Vector<Vector3> points = PhysicsServer::get_singleton()->space_get_contacts(find_world()->get_space());
+				int point_count = PhysicsServer::get_singleton()->space_get_contact_count(find_world()->get_space());
+
+
+				VS::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh,point_count);
+
+				if (point_count>0) {
+					AABB aabb;
+
+					Transform t;
+					for(int i=0;i<point_count;i++) {
+
+						if (i==0)
+							aabb.pos=points[i];
+						else
+							aabb.expand_to(points[i]);
+						t.origin=points[i];
+						VisualServer::get_singleton()->multimesh_instance_set_transform(contact_3d_debug_multimesh,i,t);
+					}
+					aabb.grow(aabb.get_longest_axis_size()*0.01);
+					VisualServer::get_singleton()->multimesh_set_aabb(contact_3d_debug_multimesh,aabb);
+				}
+			}
+
+
 
 			if (physics_object_picking) {
 
@@ -1447,6 +1523,8 @@ Viewport::Viewport() {
 	gui_input_group = "_vp_gui_input"+id;
 	unhandled_input_group = "_vp_unhandled_input"+id;
 	unhandled_key_input_group = "_vp_unhandled_key_input"+id;
+
+
 
 
 }
