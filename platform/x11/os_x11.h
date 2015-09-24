@@ -46,6 +46,7 @@
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
+#include "main/input_default.h"
 
 #include <X11/keysym.h>
 #include <X11/Xlib.h>

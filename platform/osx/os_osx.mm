@@ -512,12 +512,26 @@ static int button_mask=0;
 
 - (void)mouseExited:(NSEvent *)event
 {
+	if (!OS_OSX::singleton)
+		return;
+
+	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode!=OS::MOUSE_MODE_CAPTURED)
+		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
+	if (OS_OSX::singleton->input)
+		OS_OSX::singleton->input->set_mouse_in_window(false);
    // _glfwInputCursorEnter(window, GL_FALSE);
 }
 
 - (void)mouseEntered:(NSEvent *)event
 {
   //  _glfwInputCursorEnter(window, GL_TRUE);
+	if (!OS_OSX::singleton)
+		return;
+	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode!=OS::MOUSE_MODE_CAPTURED)
+		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
+	if (OS_OSX::singleton->input)
+		OS_OSX::singleton->input->set_mouse_in_window(true);
+
 }
 
 - (void)viewDidChangeBackingProperties

@@ -75,7 +75,7 @@
 #include "core/io/file_access_zip.h"
 #include "translation.h"
 #include "version.h"
-#include "os/input.h"
+#include "main/input_default.h"
 #include "performance.h"
 
 static Globals *globals=NULL;
@@ -920,6 +920,9 @@ Error Main::setup2() {
 				id->set_emulate_touch(true);
 		}
 	}
+
+
+
 	MAIN_PRINT("Main: Load Remaps");
 
 	MAIN_PRINT("Main: Load Scene Types");
@@ -927,6 +930,20 @@ Error Main::setup2() {
 	register_scene_types();
 	register_server_types();
 
+	GLOBAL_DEF("display/custom_mouse_cursor",String());
+	GLOBAL_DEF("display/custom_mouse_cursor_hotspot",Vector2());
+	Globals::get_singleton()->set_custom_property_info("display/custom_mouse_cursor",PropertyInfo(Variant::STRING,"display/custom_mouse_cursor",PROPERTY_HINT_FILE,"*.png,*.webp"));
+
+	if (String(Globals::get_singleton()->get("display/custom_mouse_cursor"))!=String()) {
+
+		print_line("use custom cursor");
+		Ref<Texture> cursor=ResourceLoader::load(Globals::get_singleton()->get("display/custom_mouse_cursor"));
+		if (cursor.is_valid()) {
+			print_line("loaded ok");
+			Vector2 hotspot = Globals::get_singleton()->get("display/custom_mouse_cursor_hotspot");
+			Input::get_singleton()->set_custom_mouse_cursor(cursor,hotspot);
+		}
+	}
 #ifdef TOOLS_ENABLED
 	EditorNode::register_editor_types();
 	ObjectTypeDB::register_type<PCKPacker>(); // todo: move somewhere else
