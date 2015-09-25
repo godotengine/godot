@@ -32,7 +32,6 @@ void FuncRef::_bind_methods() {
 	{
 		MethodInfo mi;
 		mi.name="call";
-		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
 		Vector<Variant> defargs;
 		for(int i=0;i<10;i++) {
 			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
