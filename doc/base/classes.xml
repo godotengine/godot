@@ -14976,26 +14976,28 @@
 			<argument index="0" name="align" type="int">
 			</argument>
 			<description>
-			Set the alignmend mode to any of the ALIGN_* enumeration values.
+			Sets the alignment mode to any of the ALIGN_* enumeration values.
 			</description>
 		</method>
 		<method name="get_align" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-			Return the alignmend mode (any of the ALIGN_* enumeration values).
+			Return the alignment mode (any of the ALIGN_* enumeration values).
 			</description>
 		</method>
 		<method name="set_valign">
 			<argument index="0" name="valign" type="int">
 			</argument>
 			<description>
+			Sets the vertical alignment mode to any of the VALIGN_* enumeration values.
 			</description>
 		</method>
 		<method name="get_valign" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the vertical alignment mode (any of the VALIGN_* enumeration values).
 			</description>
 		</method>
 		<method name="set_text">
@@ -15026,16 +15028,32 @@
 			Return the state of the [i]autowrap[/i] mode (see [method set_autowrap]).
 			</description>
 		</method>
+		<method name="set_clip_text">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			Cuts off the rest of the text if it is too wide.
+			</description>
+		</method>
+		<method name="is_clipping_text" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			Return true if text would be cut off if it is too wide.
+			</description>
+		</method>
 		<method name="set_uppercase">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Display text in all capitals.
 			</description>
 		</method>
 		<method name="is_uppercase" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if text is displayed in all capitals.
 			</description>
 		</method>
 		<method name="get_line_height" qualifiers="const">
@@ -15056,24 +15074,63 @@
 			<return type="int">
 			</return>
 			<description>
+			Return the total length of the text.
 			</description>
 		</method>
 		<method name="set_visible_characters">
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
+			Restricts the number of characters to display. Set to -1 to disable.
+			</description>
+		</method>
+		<method name="get_visible_characters" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			Return the restricted number of characters to display. Returns -1 if unrestricted.
 			</description>
 		</method>
 		<method name="set_percent_visible">
 			<argument index="0" name="percent_visible" type="float">
 			</argument>
 			<description>
+			Restricts the number of characters to display (as a percentage of the total text).
 			</description>
 		</method>
 		<method name="get_percent_visible" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the restricted number of characters to display (as a percentage of the total text).
+			</description>
+		</method>
+		<method name="set_max_lines_visible">
+			<argument index="0" name="lines_visible" type="int">
+			</argument>
+			<description>
+			Restricts the number of lines to display. Set to -1 to disable.
+			</description>
+		</method>
+		<method name="get_max_lines_visible" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			Return the restricted number of lines to display. Returns -1 if unrestricted.
+			</description>
+		</method>
+		<method name="set_lines_skipped">
+			<argument index="0" name="lines_skipped" type="int">
+			</argument>
+			<description>
+			Sets the number of lines to skip before displaying. Useful for scrolling text.
+			</description>
+		</method>
+		<method name="get_lines_skipped" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			Return the the number of lines to skipped before displaying.
 			</description>
 		</method>
 	</methods>
