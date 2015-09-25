@@ -5182,8 +5182,26 @@
 	Base class for Box containers. It arranges children controls vertically or horizontally, and rearranges them automatically when their minimum size changes.
 	</description>
 	<methods>
+		<method name="get_alignment" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_alignment">
+			<argument index="0" name="alignment" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
+		<constant name="ALIGN_BEGIN" value="0">
+		</constant>
+		<constant name="ALIGN_CENTER" value="1">
+		</constant>
+		<constant name="ALIGN_END" value="2">
+		</constant>
 	</constants>
 </class>
 <class name="BoxShape" inherits="Shape" category="Core">
@@ -13239,6 +13257,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_custom_mouse_cursor">
+			<argument index="0" name="image" type="Texture">
+			</argument>
+			<argument index="1" name="hotspot" type="Vector2" default="Vector2(0,0)">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="joy_connection_changed">
@@ -14375,7 +14401,7 @@
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
-			<return type="Tedture">
+			<return type="Texture">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -14964,7 +14990,7 @@
 	<constants>
 	</constants>
 </class>
-<class name="Label" inherits="Range" category="Core">
+<class name="Label" inherits="Control" category="Core">
 	<brief_description>
 	Control that displays formatted text.
 	</brief_description>
@@ -15105,20 +15131,6 @@
 			Return the restricted number of characters to display (as a percentage of the total text).
 			</description>
 		</method>
-		<method name="set_max_lines_visible">
-			<argument index="0" name="lines_visible" type="int">
-			</argument>
-			<description>
-			Restricts the number of lines to display. Set to -1 to disable.
-			</description>
-		</method>
-		<method name="get_max_lines_visible" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			Return the restricted number of lines to display. Returns -1 if unrestricted.
-			</description>
-		</method>
 		<method name="set_lines_skipped">
 			<argument index="0" name="lines_skipped" type="int">
 			</argument>
@@ -15131,6 +15143,20 @@
 			</return>
 			<description>
 			Return the the number of lines to skipped before displaying.
+			</description>
+		</method>
+		<method name="set_max_lines_visible">
+			<argument index="0" name="lines_visible" type="int">
+			</argument>
+			<description>
+			Restricts the number of lines to display. Set to -1 to disable.
+			</description>
+		</method>
+		<method name="get_max_lines_visible" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			Return the restricted number of lines to display. Returns -1 if unrestricted.
 			</description>
 		</method>
 	</methods>
@@ -15912,6 +15938,10 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="3">
+		</constant>
+		<constant name="NOTIFICATION_WM_MOUSE_EXIT" value="4">
+		</constant>
 		<constant name="NOTIFICATION_WM_FOCUS_IN" value="5">
 		</constant>
 		<constant name="NOTIFICATION_WM_FOCUS_OUT" value="6">
@@ -30272,6 +30302,12 @@
 			Return the amount of bones in the skeleton.
 			</description>
 		</method>
+		<method name="unparent_bone_and_rest">
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_bone_rest" qualifiers="const">
 			<return type="Transform">
 			</return>
@@ -30288,6 +30324,22 @@
 			</argument>
 			<description>
 			Set the rest transform for bone "bone_idx"
+			</description>
+		</method>
+		<method name="set_bone_disable_rest">
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<argument index="1" name="disable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_bone_rest_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="bind_child_node_to_bone">
@@ -34789,13 +34841,14 @@
 	</brief_description>
 	<description>
 	A TileSet is a library of tiles for a [TileMap]. It contains a list of tiles, each consisting of a sprite and optional collision shapes.
+	Tiles are referenced by a unique integer ID.
 	</description>
 	<methods>
 		<method name="create_tile">
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-			Create a new tile, the ID must be specified.
+			Create a new tile which will be referenced by the given ID.
 			</description>
 		</method>
 		<method name="tile_set_name">
@@ -34804,7 +34857,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
-			Set the name of a tile, for decriptive purposes.
+			Set the name of the tile, for descriptive purposes.
 			</description>
 		</method>
 		<method name="tile_get_name" qualifiers="const">
@@ -34813,7 +34866,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-			Return the name of a tile, for decriptive purposes.
+			Return the name of the tile.
 			</description>
 		</method>
 		<method name="tile_set_texture">
@@ -34840,6 +34893,7 @@
 			<argument index="1" name="material" type="CanvasItemMaterial">
 			</argument>
 			<description>
+			Set the material of the tile.
 			</description>
 		</method>
 		<method name="tile_get_material" qualifiers="const">
@@ -34848,6 +34902,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+			Return the material of the tile.
 			</description>
 		</method>
 		<method name="tile_set_texture_offset">
@@ -34856,6 +34911,7 @@
 			<argument index="1" name="texture_offset" type="Vector2">
 			</argument>
 			<description>
+			Set the texture offset of the tile.
 			</description>
 		</method>
 		<method name="tile_get_texture_offset" qualifiers="const">
@@ -34864,6 +34920,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+			Return the texture offset of the tile.
 			</description>
 		</method>
 		<method name="tile_set_shape_offset">
@@ -34872,6 +34929,7 @@
 			<argument index="1" name="shape_offset" type="Vector2">
 			</argument>
 			<description>
+			Set the shape offset of the tile.
 			</description>
 		</method>
 		<method name="tile_get_shape_offset" qualifiers="const">
@@ -34880,6 +34938,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+			Return the shape offset of the tile.
 			</description>
 		</method>
 		<method name="tile_set_region">
@@ -34897,7 +34956,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-			Return the tile sub-region in the texture. This is common in texture atlases.
+			Return the tile sub-region in the texture.
 			</description>
 		</method>
 		<method name="tile_set_shape">
@@ -34924,6 +34983,7 @@
 			<argument index="1" name="shapes" type="Array">
 			</argument>
 			<description>
+			Set an array of shapes for the tile, enabling physics to collide with it.
 			</description>
 		</method>
 		<method name="tile_get_shapes" qualifiers="const">
@@ -34932,6 +34992,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+			Return the array of shapes of the tile.
 			</description>
 		</method>
 		<method name="tile_set_navigation_polygon">
@@ -34940,6 +35001,7 @@
 			<argument index="1" name="navigation_polygon" type="NavigationPolygon">
 			</argument>
 			<description>
+			Set a navigation polygon for the tile.
 			</description>
 		</method>
 		<method name="tile_get_navigation_polygon" qualifiers="const">
@@ -34948,6 +35010,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+			Return the navigation polygon of the tile.
 			</description>
 		</method>
 		<method name="tile_set_navigation_polygon_offset">
@@ -34956,6 +35019,7 @@
 			<argument index="1" name="navigation_polygon_offset" type="Vector2">
 			</argument>
 			<description>
+			Set an offset for the tile's navigation polygon.
 			</description>
 		</method>
 		<method name="tile_get_navigation_polygon_offset" qualifiers="const">
@@ -34964,6 +35028,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+			Return the offset of the tile's navigation polygon.
 			</description>
 		</method>
 		<method name="tile_set_light_occluder">
@@ -34972,6 +35037,7 @@
 			<argument index="1" name="light_occluder" type="OccluderPolygon2D">
 			</argument>
 			<description>
+			Set a light occluder for the tile.
 			</description>
 		</method>
 		<method name="tile_get_light_occluder" qualifiers="const">
@@ -34980,6 +35046,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+			Return the light occluder of the tile.
 			</description>
 		</method>
 		<method name="tile_set_occluder_offset">
@@ -34988,6 +35055,7 @@
 			<argument index="1" name="occluder_offset" type="Vector2">
 			</argument>
 			<description>
+			Set an offset for the tile's light occluder.
 			</description>
 		</method>
 		<method name="tile_get_occluder_offset" qualifiers="const">
@@ -34996,13 +35064,14 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+			Return the offset of the tile's light occluder.
 			</description>
 		</method>
 		<method name="remove_tile">
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-			Remove a tile, by integer id.
+			Remove the tile referenced by the given ID.
 			</description>
 		</method>
 		<method name="clear">
@@ -35014,7 +35083,7 @@
 			<return type="int">
 			</return>
 			<description>
-			Find an empty id for creating a new tile.
+			Return the ID following the last currently used ID, useful when creating a new tile.
 			</description>
 		</method>
 		<method name="find_tile_by_name" qualifiers="const">
@@ -35023,13 +35092,14 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-			Find the first tile with the given name.
+			Find the first tile matching the given name.
 			</description>
 		</method>
 		<method name="get_tiles_ids" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
+			Return an array of all currently used tile IDs.
 			</description>
 		</method>
 	</methods>
@@ -35040,35 +35110,35 @@
 	<brief_description>
 	</brief_description>
 	<description>
-	Timer node. This is a simple node that will emit a timeout callback when the timer runs out. It can optinally be set to loop.
+	Timer node. This is a simple node that will emit a timeout callback when the timer runs out. It can optionally be set to loop.
 	</description>
 	<methods>
 		<method name="set_wait_time">
 			<argument index="0" name="time_sec" type="float">
 			</argument>
 			<description>
-			Set wait time. When the time is over, it will emit the timeout signal.
+			Set wait time in seconds. When the time is over, it will emit the timeout signal.
 			</description>
 		</method>
 		<method name="get_wait_time" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-			Return the wait time. When the time is over, it will emit the timeout signal.
+			Return the wait time in seconds.
 			</description>
 		</method>
 		<method name="set_one_shot">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			Set as one-shot. If true, timer will stop after timeout, otherwise it will automatically restart.
+			Set as one-shot. If enabled, the timer will stop after timeout, otherwise it will automatically restart.
 			</description>
 		</method>
 		<method name="is_one_shot" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-			Return true if is set as one-shot. If true, timer will stop after timeout, otherwise it will automatically restart.
+			Return true if configured as one-shot.
 			</description>
 		</method>
 		<method name="set_autostart">
@@ -35099,19 +35169,21 @@
 			<return type="float">
 			</return>
 			<description>
-			Return the time left for timeout if the timer is active.
+			Return the time left for timeout in seconds if the timer is active, 0 otherwise.
 			</description>
 		</method>
 		<method name="set_timer_process_mode">
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+			Set the timer's processing mode (fixed or idle, use TIMER_PROCESS_* constants as argument).
 			</description>
 		</method>
 		<method name="get_timer_process_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the timer's processing mode.
 			</description>
 		</method>
 	</methods>
@@ -35123,6 +35195,12 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="TIMER_PROCESS_FIXED" value="0">
+		Update the timer at fixed intervals (framerate processing).
+		</constant>
+		<constant name="TIMER_PROCESS_IDLE" value="1">
+		Update the timer during the idle time at each frame.
+		</constant>
 	</constants>
 </class>
 <class name="ToolButton" inherits="Button" category="Core">
