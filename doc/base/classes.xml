@@ -5182,8 +5182,26 @@
 	Base class for Box containers. It arranges children controls vertically or horizontally, and rearranges them automatically when their minimum size changes.
 	</description>
 	<methods>
+		<method name="get_alignment" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_alignment">
+			<argument index="0" name="alignment" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
+		<constant name="ALIGN_BEGIN" value="0">
+		</constant>
+		<constant name="ALIGN_CENTER" value="1">
+		</constant>
+		<constant name="ALIGN_END" value="2">
+		</constant>
 	</constants>
 </class>
 <class name="BoxShape" inherits="Shape" category="Core">
@@ -13239,6 +13257,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_custom_mouse_cursor">
+			<argument index="0" name="image" type="Texture">
+			</argument>
+			<argument index="1" name="hotspot" type="Vector2" default="Vector2(0,0)">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="joy_connection_changed">
@@ -14375,7 +14401,7 @@
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
-			<return type="Tedture">
+			<return type="Texture">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -14964,7 +14990,7 @@
 	<constants>
 	</constants>
 </class>
-<class name="Label" inherits="Range" category="Core">
+<class name="Label" inherits="Control" category="Core">
 	<brief_description>
 	Control that displays formatted text.
 	</brief_description>
@@ -15105,20 +15131,6 @@
 			Return the restricted number of characters to display (as a percentage of the total text).
 			</description>
 		</method>
-		<method name="set_max_lines_visible">
-			<argument index="0" name="lines_visible" type="int">
-			</argument>
-			<description>
-			Restricts the number of lines to display. Set to -1 to disable.
-			</description>
-		</method>
-		<method name="get_max_lines_visible" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			Return the restricted number of lines to display. Returns -1 if unrestricted.
-			</description>
-		</method>
 		<method name="set_lines_skipped">
 			<argument index="0" name="lines_skipped" type="int">
 			</argument>
@@ -15131,6 +15143,20 @@
 			</return>
 			<description>
 			Return the the number of lines to skipped before displaying.
+			</description>
+		</method>
+		<method name="set_max_lines_visible">
+			<argument index="0" name="lines_visible" type="int">
+			</argument>
+			<description>
+			Restricts the number of lines to display. Set to -1 to disable.
+			</description>
+		</method>
+		<method name="get_max_lines_visible" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			Return the restricted number of lines to display. Returns -1 if unrestricted.
 			</description>
 		</method>
 	</methods>
@@ -15912,6 +15938,10 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="3">
+		</constant>
+		<constant name="NOTIFICATION_WM_MOUSE_EXIT" value="4">
+		</constant>
 		<constant name="NOTIFICATION_WM_FOCUS_IN" value="5">
 		</constant>
 		<constant name="NOTIFICATION_WM_FOCUS_OUT" value="6">
@@ -30272,6 +30302,12 @@
 			Return the amount of bones in the skeleton.
 			</description>
 		</method>
+		<method name="unparent_bone_and_rest">
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_bone_rest" qualifiers="const">
 			<return type="Transform">
 			</return>
@@ -30288,6 +30324,22 @@
 			</argument>
 			<description>
 			Set the rest transform for bone "bone_idx"
+			</description>
+		</method>
+		<method name="set_bone_disable_rest">
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<argument index="1" name="disable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_bone_rest_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="bind_child_node_to_bone">
