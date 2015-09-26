@@ -265,7 +265,7 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 
 		CanvasItem *c=get_child(i)->cast_to<CanvasItem>();
 
-		if (c && c->hidden!=p_visible) //should the toplevels stop propagation? i think so but..
+		if (c && !c->hidden) //should the toplevels stop propagation? i think so but..
 			c->_propagate_visibility_changed(p_visible);
 	}
 
