@@ -58,6 +58,8 @@ class AudioDriverPulseAudio : public AudioDriverSW {
 	mutable bool exit_thread;
 	bool pcm_open;
 
+	float latency;
+
 public:
 
 	const char* get_name() const {
@@ -71,6 +73,9 @@ public:
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
+
+	virtual float get_latency();
+
 
     AudioDriverPulseAudio();
     ~AudioDriverPulseAudio();

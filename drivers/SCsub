@@ -38,8 +38,8 @@ if (env["vorbis"]=="yes"):
 if (env["tools"]=="yes"):
 	SConscript("convex_decomp/SCsub");
 
-if env["theora"]=="yes":
-	SConscript("theoraplayer/SCsub")
+#if env["theora"]=="yes":
+#	SConscript("theoraplayer/SCsub")
 if (env["theora"]=="yes"):
 	SConscript("theora/SCsub");
 if (env['speex']=='yes'):

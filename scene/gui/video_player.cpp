@@ -28,6 +28,88 @@
 /*************************************************************************/
 #include "video_player.h"
 
+
+
+int VideoPlayer::InternalStream::get_channel_count() const {
+
+	return player->sp_get_channel_count();
+}
+void VideoPlayer::InternalStream::set_mix_rate(int p_rate){
+
+	return player->sp_set_mix_rate(p_rate);
+}
+bool VideoPlayer::InternalStream::mix(int32_t *p_buffer,int p_frames){
+
+	return player->sp_mix(p_buffer,p_frames);
+}
+void VideoPlayer::InternalStream::update(){
+
+	player->sp_update();
+}
+
+
+int VideoPlayer::sp_get_channel_count() const {
+
+	return playback->get_channels();
+}
+
+void VideoPlayer::sp_set_mix_rate(int p_rate){
+
+	server_mix_rate=p_rate;
+}
+
+bool VideoPlayer::sp_mix(int32_t *p_buffer,int p_frames) {
+
+	if (resampler.is_ready()) {
+		return resampler.mix(p_buffer,p_frames);
+	}
+
+	return false;
+}
+
+void VideoPlayer::sp_update() {
+#if 0
+	_THREAD_SAFE_METHOD_
+	//update is unused
+	if (!paused && playback.is_valid()) {
+
+		if (!playback->is_playing()) {
+			//stream depleted data, but there's still audio in the ringbuffer
+			//check that all this audio has been flushed before stopping the stream
+			int to_mix = resampler.get_total() - resampler.get_todo();
+			if (to_mix==0) {
+				stop();
+				return;
+			}
+
+			return;
+		}
+
+		int todo =resampler.get_todo();
+		int wrote = playback->mix(resampler.get_write_buffer(),todo);
+		resampler.write(wrote);
+	}
+#endif
+}
+
+int VideoPlayer::_audio_mix_callback(void* p_udata,const int16_t *p_data,int p_frames) {
+
+	VideoPlayer *vp=(VideoPlayer*)p_udata;
+
+	int todo=MIN(vp->resampler.get_todo(),p_frames);
+
+	int16_t *wb = vp->resampler.get_write_buffer();
+	int c = vp->resampler.get_channel_count();
+
+	for(int i=0;i<todo*c;i++) {
+		wb[i]=p_data[i];
+	}
+	vp->resampler.write(todo);
+	return todo;
+}
+
+
+
 void VideoPlayer::_notification(int p_notification) {
 
 	switch (p_notification) {
@@ -45,16 +127,25 @@ void VideoPlayer::_notification(int p_notification) {
 				return;
 			if (paused)
 				return;
-			if (!stream->is_playing())
+			if (!playback->is_playing())
 				return;
 
-			stream->update(get_tree()->get_idle_process_time());
-			int prev_width = texture->get_width();
+			double audio_time = AudioServer::get_singleton()->get_mix_time();
+
+			double delta = last_audio_time==0?0:audio_time-last_audio_time;
+			last_audio_time=audio_time;
+			if (delta==0)
+				return;
+
+
+			playback->update(delta);
+
+			/*int prev_width = texture->get_width();
 			stream->pop_frame(texture);
 			if (prev_width == 0) {
 				update();
 				minimum_size_changed();
-			};
+			};*/
 
 		} break;
 
@@ -74,6 +165,9 @@ void VideoPlayer::_notification(int p_notification) {
 	};
 
 };
+
+
+
 
 Size2 VideoPlayer::get_minimum_size() const {
 
@@ -100,14 +194,27 @@ void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 
 	stop();
 
-	texture = Ref<ImageTexture>(memnew(ImageTexture));
-
 	stream=p_stream;
-	if (!stream.is_null()) {
+	playback=stream->instance_playback();
 
-		stream->set_loop(loops);
-		stream->set_paused(paused);
+	if (!playback.is_null()) {
+		playback->set_loop(loops);
+		playback->set_paused(paused);
+		texture=playback->get_texture();
+
+		AudioServer::get_singleton()->lock();
+		resampler.setup(playback->get_channels(),playback->get_mix_rate(),server_mix_rate,buffering_ms,0);
+		AudioServer::get_singleton()->unlock();
+		playback->set_mix_callback(_audio_mix_callback,this);
+
+	} else {
+		texture.unref();
+		AudioServer::get_singleton()->lock();
+		resampler.clear();
+		AudioServer::get_singleton()->unlock();
 	}
+
+	update();
 
 };
 
@@ -119,36 +226,41 @@ Ref<VideoStream> VideoPlayer::get_stream() const {
 void VideoPlayer::play() {
 
 	ERR_FAIL_COND(!is_inside_tree());
-	if (stream.is_null())
+	if (playback.is_null())
 		return;
-	stream->play();
+	playback->stop();
+	playback->play();
 	set_process(true);
+	AudioServer::get_singleton()->stream_set_active(stream_rid,true);
+	AudioServer::get_singleton()->stream_set_volume_scale(stream_rid,volume);
+	last_audio_time=0;
 };
 
 void VideoPlayer::stop() {
 
 	if (!is_inside_tree())
 		return;
-	if (stream.is_null())
+	if (playback.is_null())
 		return;
 
-	stream->stop();
+	playback->stop();
 	set_process(false);
+	last_audio_time=0;
 };
 
 bool VideoPlayer::is_playing() const {
 
-	if (stream.is_null())
+	if (playback.is_null())
 		return false;
 
-	return stream->is_playing();
+	return playback->is_playing();
 };
 
 void VideoPlayer::set_paused(bool p_paused) {
 
 	paused=p_paused;
-	if (stream.is_valid()) {
-		stream->set_paused(p_paused);
+	if (playback.is_valid()) {
+		playback->set_paused(p_paused);
 		set_process(!p_paused);
 	};
 };
@@ -156,7 +268,19 @@ void VideoPlayer::set_paused(bool p_paused) {
 bool VideoPlayer::is_paused() const {
 
 	return paused;
-};
+}
+
+void VideoPlayer::set_buffering_msec(int p_msec) {
+
+	buffering_ms=p_msec;
+}
+
+int VideoPlayer::get_buffering_msec() const{
+
+	return buffering_ms;
+}
+
+
 
 void VideoPlayer::set_volume(float p_vol) {
 
@@ -194,9 +318,9 @@ String VideoPlayer::get_stream_name() const {
 
 float VideoPlayer::get_stream_pos() const {
 
-	if (stream.is_null())
+	if (playback.is_null())
 		return 0;
-	return stream->get_pos();
+	return playback->get_pos();
 };
 
 
@@ -239,6 +363,8 @@ void VideoPlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_expand","enable"), &VideoPlayer::set_expand );
 	ObjectTypeDB::bind_method(_MD("has_expand"), &VideoPlayer::has_expand );
 
+	ObjectTypeDB::bind_method(_MD("set_buffering_msec","msec"),&VideoPlayer::set_buffering_msec);
+	ObjectTypeDB::bind_method(_MD("get_buffering_msec"),&VideoPlayer::get_buffering_msec);
 
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT, "stream/stream", PROPERTY_HINT_RESOURCE_TYPE,"VideoStream"), _SCS("set_stream"), _SCS("get_stream") );
 //	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/loop"), _SCS("set_loop"), _SCS("has_loop") );
@@ -257,6 +383,14 @@ VideoPlayer::VideoPlayer() {
 	autoplay = false;
 	expand = true;
 	loops = false;
+
+	buffering_ms=500;
+	server_mix_rate=44100;
+
+	internal_stream.player=this;
+	stream_rid=AudioServer::get_singleton()->audio_stream_create(&internal_stream);
+	last_audio_time=0;
+
 };
 
 VideoPlayer::~VideoPlayer() {

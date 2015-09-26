@@ -256,6 +256,8 @@ public:
 	virtual void unlock()=0;
 	virtual void finish()=0;
 
+	virtual float get_latency() { return 0; }
+
 
 
 

@@ -32,6 +32,15 @@
 #include "resource.h"
 #include "scene/main/node.h"
 
+//changes:
+//1-make the InstanceState a reference inside the resource that can be shared
+//2-make the instance "editable" with a flag, save here and load here, no need for property
+//3-properly save modifications in sub-scene
+//4-add scene inheritance
+//5-chain of instance states in editor? (to check what was modified)
+//6-saving will be hell
+
+
 class PackedScene : public Resource {
 
 	OBJ_TYPE( PackedScene, Resource );
