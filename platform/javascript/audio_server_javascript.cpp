@@ -259,12 +259,12 @@ void AudioServerJavascript::voice_play(RID p_voice, RID p_sample){
 	voice->active=true;
 }
 
-void AudioServerJavascript::voice_set_volume(RID p_voice, float p_gain){
+void AudioServerJavascript::voice_set_volume(RID p_voice, float p_volume){
 
 	Voice* voice=voice_owner.get(p_voice);
 	ERR_FAIL_COND(!voice);
 
-	voice->volume=p_gain;
+	voice->volume=p_volume;
 
 	if (voice->active) {
 		EM_ASM_( {

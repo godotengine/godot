@@ -48,8 +48,8 @@ bool SamplePlayer::_set(const StringName& p_name, const Variant& p_value) {
 		}
 	} else if (name=="config/samples")
 		set_sample_library(p_value);
-	else if (name=="config/voices")
-		set_voice_count(p_value);
+	else if (name=="config/polyphony")
+		set_polyphony(p_value);
 	else if (name.begins_with("default/")) {
 
 		String what=name.right(8);
@@ -95,14 +95,14 @@ bool SamplePlayer::_get(const StringName& p_name,Variant &r_ret) const {
 
 	if (name=="play/play") {
 		r_ret=played_back;
-	} else if (name=="config/voices") {
-		r_ret= get_voice_count();
+	} else if (name=="config/polyphony") {
+		r_ret= get_polyphony();
 	} else if (name=="config/samples") {
 
 		r_ret= get_sample_library();
 	} else if (name.begins_with("default/")) {
 
-			String what=name.get_slicec('/',1);
+			String what=name.right(8);
 
 			if (what=="volume_db")
 				r_ret= get_default_volume_db();
@@ -153,7 +153,7 @@ void SamplePlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	p_list->push_back( PropertyInfo( Variant::STRING, "play/play", PROPERTY_HINT_ENUM, en,PROPERTY_USAGE_EDITOR));
-	p_list->push_back( PropertyInfo( Variant::INT, "config/voices", PROPERTY_HINT_RANGE, "1,256,1"));
+	p_list->push_back( PropertyInfo( Variant::INT, "config/polyphony", PROPERTY_HINT_RANGE, "1,256,1"));
 	p_list->push_back( PropertyInfo( Variant::OBJECT, "config/samples", PROPERTY_HINT_RESOURCE_TYPE, "SampleLibrary"));
 	p_list->push_back( PropertyInfo( Variant::REAL, "default/volume_db", PROPERTY_HINT_RANGE, "-80,24,0.01"));
 	p_list->push_back( PropertyInfo( Variant::REAL, "default/pitch_scale", PROPERTY_HINT_RANGE, "0.01,48,0.01"));
@@ -164,7 +164,7 @@ void SamplePlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back( PropertyInfo( Variant::REAL, "default/filter/cutoff", PROPERTY_HINT_RANGE, "20,16384.0,0.01"));
 	p_list->push_back( PropertyInfo( Variant::REAL, "default/filter/resonance", PROPERTY_HINT_RANGE, "0,4,0.01"));
 	p_list->push_back( PropertyInfo( Variant::REAL, "default/filter/gain", PROPERTY_HINT_RANGE, "0,2,0.01"));
-	p_list->push_back( PropertyInfo( Variant::INT, "default/reverb_room", PROPERTY_HINT_ENUM, "Small,Medimum,Large,Hall"));
+	p_list->push_back( PropertyInfo( Variant::INT, "default/reverb_room", PROPERTY_HINT_ENUM, "Small,Medium,Large,Hall"));
 	p_list->push_back( PropertyInfo( Variant::REAL, "default/reverb_send", PROPERTY_HINT_RANGE, "0,1,0.01"));
 	p_list->push_back( PropertyInfo( Variant::REAL, "default/chorus_send", PROPERTY_HINT_RANGE, "0,1,0.01"));
 
@@ -203,14 +203,14 @@ SamplePlayer::Voice::~Voice() {
 }
 
 
-void SamplePlayer::set_voice_count(int p_voice_count) {
+void SamplePlayer::set_polyphony(int p_voice_count) {
 
 	ERR_FAIL_COND( p_voice_count <1 || p_voice_count >0xFFFE );
 
 	voices.resize(p_voice_count);
 }
 
-int SamplePlayer::get_voice_count() const {
+int SamplePlayer::get_polyphony() const {
 
 	return voices.size();
 }
@@ -606,8 +606,8 @@ void SamplePlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_sample_library","library:SampleLibrary"),&SamplePlayer::set_sample_library );
 	ObjectTypeDB::bind_method(_MD("get_sample_library:SampleLibrary"),&SamplePlayer::get_sample_library );
 
-	ObjectTypeDB::bind_method(_MD("set_voice_count","max_voices"),&SamplePlayer::set_voice_count );
-	ObjectTypeDB::bind_method(_MD("get_voice_count"),&SamplePlayer::get_voice_count );
+	ObjectTypeDB::bind_method(_MD("set_polyphony","max_voices"),&SamplePlayer::set_polyphony );
+	ObjectTypeDB::bind_method(_MD("get_polyphony"),&SamplePlayer::get_polyphony );
 
 	ObjectTypeDB::bind_method(_MD("play","name","unique"),&SamplePlayer::play, DEFVAL(false) );
 	ObjectTypeDB::bind_method(_MD("stop","voice"),&SamplePlayer::stop );
@@ -615,8 +615,8 @@ void SamplePlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_mix_rate","voice","hz"),&SamplePlayer::set_mix_rate );
 	ObjectTypeDB::bind_method(_MD("set_pitch_scale","voice","ratio"),&SamplePlayer::set_pitch_scale );
-	ObjectTypeDB::bind_method(_MD("set_volume","voice","nrg"),&SamplePlayer::set_volume );
-	ObjectTypeDB::bind_method(_MD("set_volume_db","voice","nrg"),&SamplePlayer::set_volume_db );
+	ObjectTypeDB::bind_method(_MD("set_volume","voice","volume"),&SamplePlayer::set_volume );
+	ObjectTypeDB::bind_method(_MD("set_volume_db","voice","db"),&SamplePlayer::set_volume_db );
 	ObjectTypeDB::bind_method(_MD("set_pan","voice","pan","depth","height"),&SamplePlayer::set_pan,DEFVAL(0),DEFVAL(0) );
 	ObjectTypeDB::bind_method(_MD("set_filter","voice","type","cutoff_hz","resonance","gain"),&SamplePlayer::set_filter,DEFVAL(0) );
 	ObjectTypeDB::bind_method(_MD("set_chorus","voice","send"),&SamplePlayer::set_chorus );
@@ -638,8 +638,8 @@ void SamplePlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_reverb","voice"),&SamplePlayer::get_reverb );
 
 	ObjectTypeDB::bind_method(_MD("set_default_pitch_scale","ratio"),&SamplePlayer::set_default_pitch_scale );
-	ObjectTypeDB::bind_method(_MD("set_default_volume","nrg"),&SamplePlayer::set_default_volume );
-	ObjectTypeDB::bind_method(_MD("set_default_volume_db","db"),&SamplePlayer::set_default_volume );
+	ObjectTypeDB::bind_method(_MD("set_default_volume","volume"),&SamplePlayer::set_default_volume );
+	ObjectTypeDB::bind_method(_MD("set_default_volume_db","db"),&SamplePlayer::set_default_volume_db );
 	ObjectTypeDB::bind_method(_MD("set_default_pan","pan","depth","height"),&SamplePlayer::set_default_pan,DEFVAL(0),DEFVAL(0) );
 	ObjectTypeDB::bind_method(_MD("set_default_filter","type","cutoff_hz","resonance","gain"),&SamplePlayer::set_default_filter,DEFVAL(0) );
 	ObjectTypeDB::bind_method(_MD("set_default_chorus","send"),&SamplePlayer::set_default_chorus );
@@ -647,7 +647,7 @@ void SamplePlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_default_pitch_scale"),&SamplePlayer::get_default_pitch_scale );
 	ObjectTypeDB::bind_method(_MD("get_default_volume"),&SamplePlayer::get_default_volume );
-	ObjectTypeDB::bind_method(_MD("get_default_volume_db"),&SamplePlayer::get_default_volume );
+	ObjectTypeDB::bind_method(_MD("get_default_volume_db"),&SamplePlayer::get_default_volume_db );
 	ObjectTypeDB::bind_method(_MD("get_default_pan"),&SamplePlayer::get_default_pan );
 	ObjectTypeDB::bind_method(_MD("get_default_pan_depth"),&SamplePlayer::get_default_pan_depth );
 	ObjectTypeDB::bind_method(_MD("get_default_pan_height"),&SamplePlayer::get_default_pan_height );
@@ -676,6 +676,8 @@ void SamplePlayer::_bind_methods() {
 	BIND_CONSTANT( REVERB_MEDIUM  );
 	BIND_CONSTANT( REVERB_LARGE  );
 	BIND_CONSTANT( REVERB_HALL );
+
+	BIND_CONSTANT( INVALID_VOICE_ID );
 
 }
 

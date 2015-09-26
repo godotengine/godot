@@ -210,7 +210,7 @@ public:
 
 	virtual void voice_play(RID p_voice, RID p_sample)=0;
 
-	virtual void voice_set_volume(RID p_voice, float p_gain)=0;
+	virtual void voice_set_volume(RID p_voice, float p_volume)=0;
 	virtual void voice_set_pan(RID p_voice, float p_pan, float p_depth=0,float height=0)=0; //pan and depth go from -1 to 1
 	virtual void voice_set_filter(RID p_voice, FilterType p_type, float p_cutoff, float p_resonance, float p_gain=0)=0;
 	virtual void voice_set_chorus(RID p_voice, float p_chorus )=0;
