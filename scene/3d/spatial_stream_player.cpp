@@ -100,9 +100,16 @@ void SpatialStreamPlayer::_notification(int p_what) {
 
 			//set_idle_process(false); //don't annoy
 			if (stream.is_valid() && autoplay && !get_tree()->is_editor_hint())
+			{
 				play();
+				autoplay = false;
+			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			//moved to predelete because a loss of state on remove and add to another node
+			//stop(); //wathever it may be doing, stop
+		} break;
+		case NOTIFICATION_PREDELETE: {
 
 			stop(); //wathever it may be doing, stop
 		} break;

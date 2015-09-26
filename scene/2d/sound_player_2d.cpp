@@ -42,12 +42,15 @@ void SoundPlayer2D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			//find the sound space
 
-			source_rid = SpatialSound2DServer::get_singleton()->source_create(get_world_2d()->get_sound_space());
 
-			for(int i=0;i<PARAM_MAX;i++)
-				set_param(Param(i),params[i]);
+			if (!source_rid.is_valid()) {
+				source_rid = SpatialSound2DServer::get_singleton()->source_create(get_world_2d()->get_sound_space());
 
-			SpatialSound2DServer::get_singleton()->source_set_transform(source_rid,get_global_transform());
+				for(int i=0;i<PARAM_MAX;i++)
+					set_param(Param(i),params[i]);
+
+				SpatialSound2DServer::get_singleton()->source_set_transform(source_rid,get_global_transform());
+			}
 
 
 		} break;
@@ -58,6 +61,11 @@ void SoundPlayer2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
+			//if (source_rid.is_valid())
+			//	SpatialSound2DServer::get_singleton()->free(source_rid);
+
+		} break;
+		case NOTIFICATION_PREDELETE: {
 			if (source_rid.is_valid())
 				SpatialSound2DServer::get_singleton()->free(source_rid);
 

@@ -41,12 +41,11 @@ void SpatialPlayer::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_WORLD: {
 			//find the sound space
-
-			source_rid = SpatialSoundServer::get_singleton()->source_create(get_world()->get_sound_space());
-			for(int i=0;i<PARAM_MAX;i++)
-				set_param(Param(i),params[i]);
-
-
+			if (!source_rid.is_valid()) {
+				source_rid = SpatialSoundServer::get_singleton()->source_create(get_world()->get_sound_space());
+				for(int i=0;i<PARAM_MAX;i++)
+					set_param(Param(i),params[i]);
+			}
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
@@ -55,9 +54,13 @@ void SpatialPlayer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 
+			//if (source_rid.is_valid())
+			//	SpatialSoundServer::get_singleton()->free(source_rid);
+
+		} break;
+		case NOTIFICATION_PREDELETE: {
 			if (source_rid.is_valid())
 				SpatialSoundServer::get_singleton()->free(source_rid);
-
 		} break;
 	}
 
