@@ -27974,7 +27974,7 @@
 </class>
 <class name="Sample" inherits="Resource" category="Core">
 	<brief_description>
-	Audio Sample (sound) class.
+	Audio sample (sound) class.
 	</brief_description>
 	<description>
 	Sample provides an audio sample class, containing audio data, together with some information for playback, such as format, mix rate and loop. It is used by sound playback routines.
@@ -27988,21 +27988,22 @@
 			<argument index="2" name="length" type="int">
 			</argument>
 			<description>
-			Create new data for the sample, with format "format" (see FORMAT_* enum), stereo hint, and length in frames (not samples or bytes!) "frame". Calling create overrides previous existing data if it exists. Stereo samples are interleaved pairs of left and right (in that order) points
+			Create new data for the sample, with format (see FORMAT_* constants), stereo hint, and length in frames (not samples or bytes!).
+			Calling this method overrides previously existing data. Stereo samples are interleaved pairs of left and right points (in that order).
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-			Return the sample format (see FORMAT_* enum).
+			Return the sample format.
 			</description>
 		</method>
 		<method name="is_stereo" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-			Return true if the sample was created stereo.
+			Return whether the current sample was created as stereo.
 			</description>
 		</method>
 		<method name="get_length" qualifiers="const">
@@ -28016,14 +28017,15 @@
 			<argument index="0" name="data" type="RawArray">
 			</argument>
 			<description>
-			Set sample data. Data must be little endian, no matter the host platform, and exactly as long to fit all frames. Example, if data is Stereo, 16 bits, 256 frames, it will be 1024 bytes long.
+			Set sample data. Data must be little endian, no matter the host platform, and exactly as long as to fit all frames.
+			For example, if data is stereo, 16 bits, 256 frames, it will be 1024 bytes long.
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">
 			<return type="RawArray">
 			</return>
 			<description>
-			Return sample data. Data will be little endian, no matter the host platform, and exactly as long to fit all frames. Example, if data is Stereo, 16 bits, 256 frames, it will be 1024 bytes long.
+			Return sample data as little endian.
 			</description>
 		</method>
 		<method name="set_mix_rate">
@@ -28037,28 +28039,28 @@
 			<return type="int">
 			</return>
 			<description>
-			Return the mix rate for the sample (expected playback frequency).
+			Return the mix rate for the sample.
 			</description>
 		</method>
 		<method name="set_loop_format">
 			<argument index="0" name="format" type="int">
 			</argument>
 			<description>
-			Set the loop format, see LOOP_* enum
+			Set the loop format (use LOOP_* constants as argument).
 			</description>
 		</method>
 		<method name="get_loop_format" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-			Return the loop format, see LOOP_* enum.
+			Return the loop format.
 			</description>
 		</method>
 		<method name="set_loop_begin">
 			<argument index="0" name="pos" type="int">
 			</argument>
 			<description>
-			Set the loop begin position, it must be a valid frame and less than the loop end position.
+			Set the loop begin position. It must be a valid frame and less than the loop end position.
 			</description>
 		</method>
 		<method name="get_loop_begin" qualifiers="const">
@@ -28072,23 +28074,23 @@
 			<argument index="0" name="pos" type="int">
 			</argument>
 			<description>
-			Set the loop end position, it must be a valid frame and greater than the loop begin position.
+			Set the loop end position. It must be a valid frame and greater than the loop begin position.
 			</description>
 		</method>
 		<method name="get_loop_end" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-			Return the loop begin position.
+			Return the loop end position.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="FORMAT_PCM8" value="0">
-			8-Bits signed little endian PCM audio.
+			8-bits signed little endian PCM audio.
 		</constant>
 		<constant name="FORMAT_PCM16" value="1">
-			16-Bits signed little endian PCM audio.
+			16-bits signed little endian PCM audio.
 		</constant>
 		<constant name="FORMAT_IMA_ADPCM" value="2">
 			IMA-ADPCM Audio.
@@ -28097,19 +28099,19 @@
 			No loop enabled.
 		</constant>
 		<constant name="LOOP_FORWARD" value="1">
-			Forward looping (when playback reaches loop end, goes back to loop begin)
+			Forward looping (when playback reaches loop end, goes back to loop begin).
 		</constant>
 		<constant name="LOOP_PING_PONG" value="2">
-			Ping-Pong looping (when playback reaches loop end, plays backward untilloop begin). Not available in all platforms.
+			Ping-pong looping (when playback reaches loop end, plays backward until loop begin). Not available in all platforms.
 		</constant>
 	</constants>
 </class>
 <class name="SampleLibrary" inherits="Resource" category="Core">
 	<brief_description>
-	Library that contains a collection of Samples.
+	Library that contains a collection of samples.
 	</brief_description>
 	<description>
-	Library that contains a collection of Samples, each identified by an text id. This is used as a data containeer for the majority of the SamplePlayer classes and derivatives.
+	Library that contains a collection of [Sample]s, each identified by a text ID. This is used as a data container for the majority of the SamplePlayer classes and derivatives.
 	</description>
 	<methods>
 		<method name="add_sample">
@@ -28118,7 +28120,7 @@
 			<argument index="1" name="sample" type="Sample">
 			</argument>
 			<description>
-			Add a sample to the library, with a given text id.
+			Add a sample to the library, with a given text ID.
 			</description>
 		</method>
 		<method name="get_sample" qualifiers="const">
@@ -28127,7 +28129,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-			Return a sample from the library, from a given text-id. Return null if the sample is not found.
+			Return the sample from the library matching the given text ID. Return null if the sample is not found.
 			</description>
 		</method>
 		<method name="has_sample" qualifiers="const">
@@ -28136,14 +28138,14 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-			Return true if the sample text id exists in the library.
+			Return true if the sample text ID exists in the library.
 			</description>
 		</method>
 		<method name="remove_sample">
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-			Remove a sample given a specific text id.
+			Remove the sample matching the given text ID.
 			</description>
 		</method>
 		<method name="sample_set_volume_db">
@@ -28152,6 +28154,7 @@
 			<argument index="1" name="db" type="float">
 			</argument>
 			<description>
+			Set the volume (in dB) for the given sample.
 			</description>
 		</method>
 		<method name="sample_get_volume_db" qualifiers="const">
@@ -28160,6 +28163,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+			Return the volume (in dB) for the given sample.
 			</description>
 		</method>
 		<method name="sample_set_pitch_scale">
@@ -28168,6 +28172,7 @@
 			<argument index="1" name="pitch" type="float">
 			</argument>
 			<description>
+			Set the pitch scale for the given sample.
 			</description>
 		</method>
 		<method name="sample_get_pitch_scale" qualifiers="const">
@@ -28176,6 +28181,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+			Return the pitch scale for the given sample.
 			</description>
 		</method>
 	</methods>
@@ -28194,26 +28200,28 @@
 			<argument index="0" name="library" type="SampleLibrary">
 			</argument>
 			<description>
+			Set the sample library for the player.
 			</description>
 		</method>
 		<method name="get_sample_library" qualifiers="const">
 			<return type="SampleLibrary">
 			</return>
 			<description>
+			Return the sample library used by the player.
 			</description>
 		</method>
-		<method name="set_voice_count">
+		<method name="set_polyphony">
 			<argument index="0" name="max_voices" type="int">
 			</argument>
 			<description>
-			Set the amount of simultaneous voices that will be used for playback.
+			Set the polyphony of the player (maximum amount of simultaneous voices).
 			</description>
 		</method>
-		<method name="get_voice_count" qualifiers="const">
+		<method name="get_polyphony" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-			Return the amount of simultaneous voices that will be used for playback.
+			Return the polyphony of the player.
 			</description>
 		</method>
 		<method name="play">
@@ -28224,18 +28232,20 @@
 			<argument index="1" name="unique" type="bool" default="false">
 			</argument>
 			<description>
-			Play back sample, given it's identifier "name". If "unique" is true, all othere previous samples will be stopped. The voice allocated for playback will be returned.
+			Play a sample referenced by its name.
+			Optionally, the playback can be made "unique" to force stopping all other samples currently played. The voices allocated for playback will then be returned.
 			</description>
 		</method>
 		<method name="stop">
 			<argument index="0" name="voice" type="int">
 			</argument>
 			<description>
-			Stop a voice "voice". (see [method play]).
+			Stop a given voice.
 			</description>
 		</method>
 		<method name="stop_all">
 			<description>
+			Stop all playing voices.
 			</description>
 		</method>
 		<method name="set_mix_rate">
@@ -28244,7 +28254,7 @@
 			<argument index="1" name="hz" type="int">
 			</argument>
 			<description>
-			Change the mix rate of a voice "voice" to given "hz".
+			Set the mix rate (in Hz) of a given voice.
 			</description>
 		</method>
 		<method name="set_pitch_scale">
@@ -28253,24 +28263,28 @@
 			<argument index="1" name="ratio" type="float">
 			</argument>
 			<description>
-			Scale the pitch (mix rate) of a voice by a ratio value "ratio". A ratio of 1.0 means the voice is unscaled.
+			Set the pitch scale of a given voice. A ratio of 1.0 is the normal scale.
 			</description>
 		</method>
 		<method name="set_volume">
 			<argument index="0" name="voice" type="int">
 			</argument>
-			<argument index="1" name="nrg" type="float">
+			<argument index="1" name="volume" type="float">
 			</argument>
 			<description>
-			Set the volume of a voice, 0db is maximum volume (every about -6db, volume is reduced in half). "db" does in fact go from zero to negative.
+			Set the volume of a given voice using a linear scale.
+			The "volume" argument should be a positive factor ranging from 0.0 (mute) up to 16.0 (i.e. 24 dB).
+			A factor of 1.0 means that the voice will be played at normal system volume. Factors above 1.0 might be limited by the platform's audio output.
 			</description>
 		</method>
 		<method name="set_volume_db">
 			<argument index="0" name="voice" type="int">
 			</argument>
-			<argument index="1" name="nrg" type="float">
+			<argument index="1" name="db" type="float">
 			</argument>
 			<description>
+			Set the volume of a given voice in dB.
+			The "dB" argument can range from -80 to 24 dB, 0 dB being the maximum volume. Every 6 dB (resp. -6 dB), the volume is increased (resp. reduced) by half.
 			</description>
 		</method>
 		<method name="set_pan">
@@ -28283,7 +28297,8 @@
 			<argument index="3" name="height" type="float" default="0">
 			</argument>
 			<description>
-			Set the panning of a voice. Panning goes from -1 (left) to +1 (right). Optionally, if the hardware supports 3D sound, also set depth and height (also in range -1 to +1).
+			Set the panning of a voice. Panning goes from -1.0 (left) to +1.0 (right).
+			Optionally, for hardware than support 3D sound, one can also set depth and height (also in range -1.0 to +1.0).
 			</description>
 		</method>
 		<method name="set_filter">
@@ -28298,7 +28313,8 @@
 			<argument index="4" name="gain" type="float" default="0">
 			</argument>
 			<description>
-			Set and enable a filter of a voice, with type "type" (see FILTER_* enum), cutoff (0 to 22khz) frequency and resonance (0+).
+			Set the filter for a given voice, using the given type (see FILTER_* constants), cutoff frequency (from 20 to 16,384 Hz) and resonance (from 0 to 4.0).
+			Optionally, a gain can also be given (from 0 to 2.0).
 			</description>
 		</method>
 		<method name="set_chorus">
@@ -28307,7 +28323,7 @@
 			<argument index="1" name="send" type="float">
 			</argument>
 			<description>
-			Set the chorus send level of a voice (0 to 1). For setting chorus parameters, see [AudioServer].
+			Set the chorus send level of a voice (from 0 to 1.0). For setting chorus parameters, see [AudioServer].
 			</description>
 		</method>
 		<method name="set_reverb">
@@ -28318,7 +28334,7 @@
 			<argument index="2" name="send" type="float">
 			</argument>
 			<description>
-			Set the reverb send level and type of a voice (0 to 1). (see REVERB_* enum for type).
+			Set the reverberation type (see REVERB_* constants) and send level (from 0 to 1.0) of a voice.
 			</description>
 		</method>
 		<method name="get_mix_rate" qualifiers="const">
@@ -28345,7 +28361,7 @@
 			<argument index="0" name="voice" type="int">
 			</argument>
 			<description>
-			Return the current volume (in db) for a given voice. 0db is maximum volume (every about -6db, volume is reduced in half). "db" does in fact go from zero to negative.
+			Return the current volume (on a linear scale) for a given voice.
 			</description>
 		</method>
 		<method name="get_volume_db" qualifiers="const">
@@ -28354,6 +28370,7 @@
 			<argument index="0" name="voice" type="int">
 			</argument>
 			<description>
+			Return the current volume (in dB) for a given voice.
 			</description>
 		</method>
 		<method name="get_pan" qualifiers="const">
@@ -28362,7 +28379,7 @@
 			<argument index="0" name="voice" type="int">
 			</argument>
 			<description>
-			Return the current panning for a given voice. Panning goes from -1 (left) to +1 (right).
+			Return the current panning for a given voice.
 			</description>
 		</method>
 		<method name="get_pan_depth" qualifiers="const">
@@ -28371,7 +28388,7 @@
 			<argument index="0" name="voice" type="int">
 			</argument>
 			<description>
-			Return the current pan depth for a given voice (not used unless the hardware supports 3D sound)
+			Return the current pan depth for a given voice.
 			</description>
 		</method>
 		<method name="get_pan_height" qualifiers="const">
@@ -28380,7 +28397,7 @@
 			<argument index="0" name="voice" type="int">
 			</argument>
 			<description>
-			Return the current pan height for a given voice (not used unless the hardware supports 3D sound)
+			Return the current pan height for a given voice.
 			</description>
 		</method>
 		<method name="get_filter_type" qualifiers="const">
@@ -28389,7 +28406,7 @@
 			<argument index="0" name="voice" type="int">
 			</argument>
 			<description>
-			Return the current filter type in use (see FILTER_* enum) for a given voice.
+			Return the current filter type in use (see FILTER_* constants) for a given voice.
 			</description>
 		</method>
 		<method name="get_filter_cutoff" qualifiers="const">
@@ -28398,7 +28415,7 @@
 			<argument index="0" name="voice" type="int">
 			</argument>
 			<description>
-			Return the current filter cutoff for a given voice. Cutoff goes from 0 to 22khz.
+			Return the current filter cutoff frequency for a given voice.
 			</description>
 		</method>
 		<method name="get_filter_resonance" qualifiers="const">
@@ -28407,7 +28424,7 @@
 			<argument index="0" name="voice" type="int">
 			</argument>
 			<description>
-			Return the current filter resonance for a given voice. Resonance goes from 0 up.
+			Return the current filter resonance for a given voice.
 			</description>
 		</method>
 		<method name="get_filter_gain" qualifiers="const">
@@ -28416,6 +28433,7 @@
 			<argument index="0" name="voice" type="int">
 			</argument>
 			<description>
+			Return the current filter gain for a given voice.
 			</description>
 		</method>
 		<method name="get_chorus" qualifiers="const">
@@ -28424,16 +28442,16 @@
 			<argument index="0" name="voice" type="int">
 			</argument>
 			<description>
-			Return the current chorus send level for a given voice. (0 to 1).
+			Return the current chorus send level for a given voice.
 			</description>
 		</method>
 		<method name="get_reverb_room" qualifiers="const">
-			<return type="float">
+			<return type="int">
 			</return>
 			<argument index="0" name="voice" type="int">
 			</argument>
 			<description>
-			Return the current reverb room type for a given voice (see REVERB_* enum).
+			Return the current reverberation room type for a given voice (see REVERB_* enum).
 			</description>
 		</method>
 		<method name="get_reverb" qualifiers="const">
@@ -28442,25 +28460,31 @@
 			<argument index="0" name="voice" type="int">
 			</argument>
 			<description>
-			Return the current reverb send level for a given voice. (0 to 1).
+			Return the current reverberation send level for a given voice.
 			</description>
 		</method>
 		<method name="set_default_pitch_scale">
 			<argument index="0" name="ratio" type="float">
 			</argument>
 			<description>
+			Set the default pitch scale of the player. A ratio of 1.0 is the normal scale.
 			</description>
 		</method>
 		<method name="set_default_volume">
-			<argument index="0" name="nrg" type="float">
+			<argument index="0" name="volume" type="float">
 			</argument>
 			<description>
+			Set the default volume of the player using a linear scale.
+			The "volume" argument should be a positive factor ranging from 0.0 (mute) up to 16.0 (i.e. 24 dB).
+			A factor of 1.0 means that the voice will be played at normal system volume. Factors above 1.0 might be limited by the platform's audio output.
 			</description>
 		</method>
 		<method name="set_default_volume_db">
 			<argument index="0" name="db" type="float">
 			</argument>
 			<description>
+			Set the default volume of the player in dB.
+			The "dB" argument can range from -80 to 24 dB, 0 dB being the maximum volume. Every 6 dB (resp. -6 dB), the volume is increased (resp. reduced) by half.
 			</description>
 		</method>
 		<method name="set_default_pan">
@@ -28471,6 +28495,8 @@
 			<argument index="2" name="height" type="float" default="0">
 			</argument>
 			<description>
+			Set the default panning of the player. Panning goes from -1.0 (left) to +1.0 (right).
+			Optionally, for hardware than support 3D sound, one can also set depth and height (also in range -1.0 to +1.0).
 			</description>
 		</method>
 		<method name="set_default_filter">
@@ -28483,12 +28509,15 @@
 			<argument index="3" name="gain" type="float" default="0">
 			</argument>
 			<description>
+			Set the default filter for the player, using the given type (see FILTER_* constants), cutoff frequency (from 20 to 16,384 Hz) and resonance (from 0 to 4.0).
+			Optionally, a gain can also be given (from 0 to 2.0).
 			</description>
 		</method>
 		<method name="set_default_chorus">
 			<argument index="0" name="send" type="float">
 			</argument>
 			<description>
+			Set the default chorus send level of the player (from 0 to 1.0). For setting chorus parameters, see [AudioServer].
 			</description>
 		</method>
 		<method name="set_default_reverb">
@@ -28497,90 +28526,105 @@
 			<argument index="1" name="send" type="float">
 			</argument>
 			<description>
+			Set the default reverberation type (see REVERB_* constants) and send level (from 0 to 1.0) of the player.
 			</description>
 		</method>
 		<method name="get_default_pitch_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the default pitch scale of the player.
 			</description>
 		</method>
 		<method name="get_default_volume" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the default volume (on a linear scale) of the player.
 			</description>
 		</method>
 		<method name="get_default_volume_db" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the default volume (in dB) of the player.
 			</description>
 		</method>
 		<method name="get_default_pan" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the default panning of the player.
 			</description>
 		</method>
 		<method name="get_default_pan_depth" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the default pan depth of the player.
 			</description>
 		</method>
 		<method name="get_default_pan_height" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the default pan height of the player.
 			</description>
 		</method>
 		<method name="get_default_filter_type" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the default filter type in use (see FILTER_* constants) for the player.
 			</description>
 		</method>
 		<method name="get_default_filter_cutoff" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the default filter cutoff frequency of the player.
 			</description>
 		</method>
 		<method name="get_default_filter_resonance" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the default filter resonance of the player.
 			</description>
 		</method>
 		<method name="get_default_filter_gain" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the default filter gain of the player.
 			</description>
 		</method>
 		<method name="get_default_chorus" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the default chorus send level of the player.
 			</description>
 		</method>
 		<method name="get_default_reverb_room" qualifiers="const">
-			<return type="float">
+			<return type="int">
 			</return>
 			<description>
+			Return the default reverberation room type of the player (see REVERB_* enum).
 			</description>
 		</method>
 		<method name="get_default_reverb" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the default reverberation send level of the player.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the player is currently active.
 			</description>
 		</method>
 		<method name="is_voice_active" qualifiers="const">
@@ -28589,6 +28633,7 @@
 			<argument index="0" name="voice" type="int">
 			</argument>
 			<description>
+			Return whether the given voice is currently active.
 			</description>
 		</method>
 	</methods>
@@ -28597,46 +28642,52 @@
 			Filter is disabled for voice.
 		</constant>
 		<constant name="FILTER_LOWPASS" value="1">
-			Lowpass filter is used for voice.
+			Low-pass filter is used for voice.
 		</constant>
 		<constant name="FILTER_BANDPASS" value="2">
-			Bandpass filter is used for voice.
+			Band-pass filter is used for voice.
 		</constant>
 		<constant name="FILTER_HIPASS" value="3">
-			Highpass filter is used for voice.
+			High-pass filter is used for voice.
 		</constant>
 		<constant name="FILTER_NOTCH" value="4">
 			Notch (band reject) filter is used for voice.
 		</constant>
 		<constant name="FILTER_PEAK" value="5">
+			Peak (exclusive band) filter is used for voice.
 		</constant>
 		<constant name="FILTER_BANDLIMIT" value="6">
-			Band-limit filter is used for voice, in this case resonance is the highpass cutoff. A band-limit filter has a different frequency response than a notch filter, but otherwise both are band-rejecting filters.
+			Band-limit filter is used for voice, in this case resonance is the high-pass cutoff. A band-limit filter has a different frequency response than a notch filter, but otherwise both are band-rejecting filters.
 		</constant>
 		<constant name="FILTER_LOW_SHELF" value="7">
+			Low-shelf filter is used for voice.
 		</constant>
 		<constant name="FILTER_HIGH_SHELF" value="8">
+			High-shelf filter is used for voice.
 		</constant>
 		<constant name="REVERB_SMALL" value="0">
-			Small reverb room (house room).
+			Small reverberation room (house room).
 		</constant>
 		<constant name="REVERB_MEDIUM" value="1">
-			Medium reverb room (street)
+			Medium reverberation room (street)
 		</constant>
 		<constant name="REVERB_LARGE" value="2">
-			Large reverb room (Theather)
+			Large reverberation room (theatre)
 		</constant>
 		<constant name="REVERB_HALL" value="3">
-			Huge reverb room (cathedral, warehouse).
+			Huge reverberation room (cathedral, warehouse).
+		</constant>
+		<constant name="INVALID_VOICE_ID" value="-1">
+			Value returned if the voice ID is invalid.
 		</constant>
 	</constants>
 </class>
 <class name="SamplePlayer2D" inherits="SoundPlayer2D" category="Core">
 	<brief_description>
-	Sample player for Positional 2D Sound.
+	Sample player for positional 2D Sound.
 	</brief_description>
 	<description>
-	Sample player for Positional 2D Sound. Plays sound samples positionally, left and right depending on the distance/place on the screen.
+	Sample player for positional 2D Sound. Plays sound samples positionally, left and right depending on the distance/place on the screen.
 	</description>
 	<methods>
 		<method name="set_sample_library">
@@ -28650,11 +28701,11 @@
 			<return type="SampleLibrary">
 			</return>
 			<description>
-			Return the sample library used for the player.
+			Return the sample library used by the player.
 			</description>
 		</method>
 		<method name="set_polyphony">
-			<argument index="0" name="voices" type="int">
+			<argument index="0" name="max_voices" type="int">
 			</argument>
 			<description>
 			Set the polyphony of the player (maximum amount of simultaneous voices).
@@ -28664,7 +28715,7 @@
 			<return type="int">
 			</return>
 			<description>
-			Return the polyphony of the player (maximum amount of simultaneous voices).
+			Return the polyphony of the player.
 			</description>
 		</method>
 		<method name="play">
@@ -28675,7 +28726,8 @@
 			<argument index="1" name="voice" type="int" default="-2">
 			</argument>
 			<description>
-			Play a sample, an internal polyphony id can be passed, or else it's assigned automatically. Returns a voice id which can be used to modify the voice parameters.
+			Play a sample. An internal polyphony ID can optionally be passed, or defaults to NEXT_VOICE.
+			Return a voice ID which can be used to modify the voice parameters, or INVALID_VOICE if the voice or sample are invalid.
 			</description>
 		</method>
 		<method name="voice_set_pitch_scale">
@@ -28693,7 +28745,7 @@
 			<argument index="1" name="db" type="float">
 			</argument>
 			<description>
-			Change the volume scale of a currently playing voice (using dB).
+			Change the volume scale (in dB) of a currently playing voice.
 			</description>
 		</method>
 		<method name="is_voice_active" qualifiers="const">
@@ -28702,7 +28754,7 @@
 			<argument index="0" name="voice" type="int">
 			</argument>
 			<description>
-			Return true if a voice is still active (false if it stopped playing).
+			Return whether a voice is still active or has stopped playing.
 			</description>
 		</method>
 		<method name="stop_voice">
@@ -28721,20 +28773,26 @@
 			<argument index="0" name="val" type="float">
 			</argument>
 			<description>
+			Set the amplitude for random pitch scale variations. If different from zero, the pitch scale will vary randomly around 1.0 in a range defined by val.
+			The actual pitch scale will be, with "variation" ranging from -val to val:
+			* variation &gt; 0: 1.0 + variation
+			* variation &lt; 0: 1.0/(1.0 - variation)
 			</description>
 		</method>
 		<method name="get_random_pitch_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the amplitude used for random pitch scale variations.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="INVALID_VOICE" value="-1">
-			If the voice is invalid, this is returned.
+			Value returned if the voice or sample are invalid.
 		</constant>
 		<constant name="NEXT_VOICE" value="-2">
+			Default voice for the play method. Corresponds to the first voice following the last used voice.
 		</constant>
 	</constants>
 </class>
@@ -35196,10 +35254,10 @@
 	</signals>
 	<constants>
 		<constant name="TIMER_PROCESS_FIXED" value="0">
-		Update the timer at fixed intervals (framerate processing).
+			Update the timer at fixed intervals (framerate processing).
 		</constant>
 		<constant name="TIMER_PROCESS_IDLE" value="1">
-		Update the timer during the idle time at each frame.
+			Update the timer during the idle time at each frame.
 		</constant>
 	</constants>
 </class>

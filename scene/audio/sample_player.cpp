@@ -460,9 +460,9 @@ float SamplePlayer::get_chorus(VoiceID p_voice) const {
 
 	return v.chorus_send;
 }
-float SamplePlayer::get_reverb_room(VoiceID p_voice) const {
+SamplePlayer::ReverbRoomType SamplePlayer::get_reverb_room(VoiceID p_voice) const {
 
-	_GET_VOICE_V(0);
+	_GET_VOICE_V(REVERB_SMALL);
 
 	return v.reverb_room;
 }
@@ -591,7 +591,7 @@ float SamplePlayer::get_default_chorus() const {
 
 	return _default.chorus_send;
 }
-float SamplePlayer::get_default_reverb_room() const {
+SamplePlayer::ReverbRoomType SamplePlayer::get_default_reverb_room() const {
 
 	return _default.reverb_room;
 }
