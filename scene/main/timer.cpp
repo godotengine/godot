@@ -42,7 +42,6 @@ void Timer::_notification(int p_what) {
 					break;
 #endif
 				start();
-				autostart = false;
 			}
 		} break;
 		case NOTIFICATION_PROCESS: {

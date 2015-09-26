@@ -45,11 +45,6 @@ void SpatialStreamPlayer::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
-			//moved to predelete because a loss of state on remove and add to another node
-			//stop(); //wathever it may be doing, stop
-		} break;
-
-		case NOTIFICATION_PREDELETE: {
 
 			stop(); //wathever it may be doing, stop
 		} break;
