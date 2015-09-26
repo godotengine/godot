@@ -102,7 +102,7 @@ bool SamplePlayer::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= get_sample_library();
 	} else if (name.begins_with("default/")) {
 
-			String what=name.get_slicec('/',1);
+			String what=name.right(8);
 
 			if (what=="volume_db")
 				r_ret= get_default_volume_db();
@@ -164,7 +164,7 @@ void SamplePlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back( PropertyInfo( Variant::REAL, "default/filter/cutoff", PROPERTY_HINT_RANGE, "20,16384.0,0.01"));
 	p_list->push_back( PropertyInfo( Variant::REAL, "default/filter/resonance", PROPERTY_HINT_RANGE, "0,4,0.01"));
 	p_list->push_back( PropertyInfo( Variant::REAL, "default/filter/gain", PROPERTY_HINT_RANGE, "0,2,0.01"));
-	p_list->push_back( PropertyInfo( Variant::INT, "default/reverb_room", PROPERTY_HINT_ENUM, "Small,Medimum,Large,Hall"));
+	p_list->push_back( PropertyInfo( Variant::INT, "default/reverb_room", PROPERTY_HINT_ENUM, "Small,Medium,Large,Hall"));
 	p_list->push_back( PropertyInfo( Variant::REAL, "default/reverb_send", PROPERTY_HINT_RANGE, "0,1,0.01"));
 	p_list->push_back( PropertyInfo( Variant::REAL, "default/chorus_send", PROPERTY_HINT_RANGE, "0,1,0.01"));
 
