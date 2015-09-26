@@ -130,8 +130,8 @@ public:
 	void set_sample_library(const Ref<SampleLibrary>& p_library);
 	Ref<SampleLibrary> get_sample_library() const;
 
-	void set_voice_count(int p_voice_count);
-	int get_voice_count() const;	
+	void set_polyphony(int p_voice_count);
+	int get_polyphony() const;
 
 	VoiceID play(const String& p_name,bool unique=false);
 	void stop(VoiceID p_voice);
