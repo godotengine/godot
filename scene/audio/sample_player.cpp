@@ -615,8 +615,8 @@ void SamplePlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_mix_rate","voice","hz"),&SamplePlayer::set_mix_rate );
 	ObjectTypeDB::bind_method(_MD("set_pitch_scale","voice","ratio"),&SamplePlayer::set_pitch_scale );
-	ObjectTypeDB::bind_method(_MD("set_volume","voice","nrg"),&SamplePlayer::set_volume );
-	ObjectTypeDB::bind_method(_MD("set_volume_db","voice","nrg"),&SamplePlayer::set_volume_db );
+	ObjectTypeDB::bind_method(_MD("set_volume","voice","volume"),&SamplePlayer::set_volume );
+	ObjectTypeDB::bind_method(_MD("set_volume_db","voice","db"),&SamplePlayer::set_volume_db );
 	ObjectTypeDB::bind_method(_MD("set_pan","voice","pan","depth","height"),&SamplePlayer::set_pan,DEFVAL(0),DEFVAL(0) );
 	ObjectTypeDB::bind_method(_MD("set_filter","voice","type","cutoff_hz","resonance","gain"),&SamplePlayer::set_filter,DEFVAL(0) );
 	ObjectTypeDB::bind_method(_MD("set_chorus","voice","send"),&SamplePlayer::set_chorus );
@@ -638,8 +638,8 @@ void SamplePlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_reverb","voice"),&SamplePlayer::get_reverb );
 
 	ObjectTypeDB::bind_method(_MD("set_default_pitch_scale","ratio"),&SamplePlayer::set_default_pitch_scale );
-	ObjectTypeDB::bind_method(_MD("set_default_volume","nrg"),&SamplePlayer::set_default_volume );
-	ObjectTypeDB::bind_method(_MD("set_default_volume_db","db"),&SamplePlayer::set_default_volume );
+	ObjectTypeDB::bind_method(_MD("set_default_volume","volume"),&SamplePlayer::set_default_volume );
+	ObjectTypeDB::bind_method(_MD("set_default_volume_db","db"),&SamplePlayer::set_default_volume_db );
 	ObjectTypeDB::bind_method(_MD("set_default_pan","pan","depth","height"),&SamplePlayer::set_default_pan,DEFVAL(0),DEFVAL(0) );
 	ObjectTypeDB::bind_method(_MD("set_default_filter","type","cutoff_hz","resonance","gain"),&SamplePlayer::set_default_filter,DEFVAL(0) );
 	ObjectTypeDB::bind_method(_MD("set_default_chorus","send"),&SamplePlayer::set_default_chorus );
@@ -647,7 +647,7 @@ void SamplePlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_default_pitch_scale"),&SamplePlayer::get_default_pitch_scale );
 	ObjectTypeDB::bind_method(_MD("get_default_volume"),&SamplePlayer::get_default_volume );
-	ObjectTypeDB::bind_method(_MD("get_default_volume_db"),&SamplePlayer::get_default_volume );
+	ObjectTypeDB::bind_method(_MD("get_default_volume_db"),&SamplePlayer::get_default_volume_db );
 	ObjectTypeDB::bind_method(_MD("get_default_pan"),&SamplePlayer::get_default_pan );
 	ObjectTypeDB::bind_method(_MD("get_default_pan_depth"),&SamplePlayer::get_default_pan_depth );
 	ObjectTypeDB::bind_method(_MD("get_default_pan_height"),&SamplePlayer::get_default_pan_height );
