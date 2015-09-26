@@ -5018,7 +5018,7 @@
 			<return type="bool">
 			</return>
 			<description>
-			Return when the button is pressed (only if toggle_mode is active).
+			If toggle_mode is active, return whether the button is toggled. If toggle_mode is not active, return whether the button is pressed down.
 			</description>
 		</method>
 		<method name="is_hovered" qualifiers="const">
