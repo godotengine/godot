@@ -95,6 +95,7 @@ class CustomPropertyEditor : public Popup {
 	Button *checks20[20];
 
 
+
 	Control *easing_draw;
 
 	Object* owner;
@@ -157,9 +158,13 @@ class PropertyEditor : public Control {
 	bool read_only;
 	bool show_categories;
 	float refresh_countdown;
+	bool use_doc_hints;
 
 	HashMap<String,String> pending;
 	String selected_property;
+
+	Map<StringName,Map<StringName,String> > descr_cache;
+	Map<StringName,String > class_descr_cache;
 	
 	CustomPropertyEditor *custom_editor;
 	
@@ -217,6 +222,7 @@ public:
 	void set_autoclear(bool p_enable);
 
 	void set_show_categories(bool p_show);
+	void set_use_doc_hints(bool p_enable) { use_doc_hints=p_enable; }
 	
 	PropertyEditor();	
 	~PropertyEditor();

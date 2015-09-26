@@ -50,6 +50,8 @@
 
 #include <fcntl.h>
 #include <stdio.h>
+#include "main/input_default.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

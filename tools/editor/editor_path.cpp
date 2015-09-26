@@ -73,7 +73,11 @@ void EditorPath::_notification(int p_what) {
 					if (obj->cast_to<Resource>()) {
 
 						Resource *r = obj->cast_to<Resource>();
-						name=r->get_name();
+						if (r->get_path().is_resource_file())
+							name=r->get_path().get_file();
+						else
+							name=r->get_name();
+
 						if (name=="")
 							name=r->get_type();
 					} else if (obj->cast_to<Node>()) {

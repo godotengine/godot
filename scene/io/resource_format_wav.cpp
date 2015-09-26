@@ -31,12 +31,17 @@
 #include "scene/resources/sample.h"
 
 
-RES ResourceFormatLoaderWAV::load(const String &p_path,const String& p_original_path) {
+RES ResourceFormatLoaderWAV::load(const String &p_path, const String& p_original_path, Error *r_error) {
+	if (r_error)
+		*r_error=ERR_FILE_CANT_OPEN;
 
 	Error err;
 	FileAccess *file=FileAccess::open(p_path, FileAccess::READ,&err);
 
 	ERR_FAIL_COND_V( err!=OK, RES() );
+
+	if (r_error)
+		*r_error=ERR_FILE_CORRUPT;
 
 	/* CHECK RIFF */
 	char riff[5];
@@ -243,6 +248,9 @@ RES ResourceFormatLoaderWAV::load(const String &p_path,const String& p_original_
 
 	file->close();
 	memdelete(file);
+
+	if (r_error)
+		*r_error=OK;
 
 	return sample;
 

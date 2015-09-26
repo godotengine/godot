@@ -830,10 +830,14 @@ void AudioServerSW::finish() {
 void AudioServerSW::_update_streams(bool p_thread) {
 
 	_THREAD_SAFE_METHOD_
-	for(List<Stream*>::Element *E=active_audio_streams.front();E;E=E->next()) {
+	for(List<Stream*>::Element *E=active_audio_streams.front();E;) { //stream might be removed durnig this callback
+
+		List<Stream*>::Element *N=E->next();
 
 		if (E->get()->audio_stream && p_thread == E->get()->audio_stream->can_update_mt())
 			E->get()->audio_stream->update();
+
+		E=N;
 	}
 
 }

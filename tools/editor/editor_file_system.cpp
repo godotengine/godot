@@ -94,6 +94,12 @@ bool EditorFileSystemDirectory::get_file_meta(int p_idx) const {
 	return files[p_idx].meta.enabled;
 }
 
+Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx,files.size(),Vector<String>());
+	return files[p_idx].meta.deps;
+
+}
 Vector<String> EditorFileSystemDirectory::get_missing_sources(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx,files.size(),Vector<String>());
@@ -118,7 +124,7 @@ bool EditorFileSystemDirectory::is_missing_sources(int p_idx) const {
 	return false;
 }
 
-String EditorFileSystemDirectory::get_file_type(int p_idx) const {
+StringName EditorFileSystemDirectory::get_file_type(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx,files.size(),"");
 	return files[p_idx].type;
@@ -198,6 +204,13 @@ EditorFileSystemDirectory::ImportMeta EditorFileSystem::_get_meta(const String& 
 		}
 		m.import_editor=imd->get_editor();
 	}
+
+	List<String> deps;
+	ResourceLoader::get_dependencies(p_path,&deps);
+	for(List<String>::Element *E=deps.front();E;E=E->next()) {
+		m.deps.push_back(E->get());
+	}
+
 	return m;
 }
 
@@ -358,7 +371,7 @@ void EditorFileSystem::_scan_scenes() {
 
 	String project=Globals::get_singleton()->get_resource_path();
 
-	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("file_cache");
+	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("filesystem_cache");
 	FileAccess *f =FileAccess::open(fscache,FileAccess::READ);
 
 	if (f) {
@@ -397,7 +410,7 @@ void EditorFileSystem::_scan_scenes() {
 
 			} else {
 				Vector<String> split = l.split("::");
-				ERR_CONTINUE( split.size() != 4);
+				ERR_CONTINUE( split.size() != 5);
 				String name = split[0];
 				String file;
 
@@ -429,6 +442,15 @@ void EditorFileSystem::_scan_scenes() {
 					}
 
 				}
+				String deps = split[4].strip_edges();
+				if (deps.length()) {
+					Vector<String> dp = deps.split("<>");
+					for(int i=0;i<dp.size();i++) {
+						String path=dp[i];
+						fc.meta.deps.push_back(path);
+					}
+				}
+
 				file_cache[name]=fc;
 
 				ERR_CONTINUE(!dc);
@@ -530,6 +552,7 @@ void EditorFileSystem::scan() {
 		thread = Thread::create(_thread_func,this,s);
 		//tree->hide();
 		//progress->show();
+
 	}
 
 
@@ -798,6 +821,14 @@ void EditorFileSystem::_save_type_cache_fs(DirItem *p_dir,FileAccess *p_file) {
 
 			}
 		}
+		s+="::";
+		for(int j=0;j<p_dir->files[i]->meta.deps.size();j++) {
+
+			if (j>0)
+				s+="<>";
+			s+=p_dir->files[i]->meta.deps[j];
+		}
+
 		p_file->store_line(s);
 	}
 
@@ -1037,6 +1068,13 @@ void EditorFileSystem::update_file(const String& p_file) {
 		return;
     }
 
+    if (!FileAccess::exists(p_file)) {
+	    //was removed
+	    fs->files.remove(cpos);
+	    call_deferred("emit_signal","filesystem_changed"); //update later
+	    return;
+
+    }
 
     String type = ResourceLoader::get_resource_type(p_file);
 

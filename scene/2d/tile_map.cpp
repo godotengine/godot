@@ -30,6 +30,7 @@
 #include "io/marshalls.h"
 #include "servers/physics_2d_server.h"
 #include "method_bind_ext.inc"
+#include "os/os.h"
 
 int TileMap::_get_quadrant_size() const {
 
@@ -262,6 +263,14 @@ void TileMap::_update_dirty_quadrants() {
 
 	Vector2 qofs;
 
+	SceneTree *st=SceneTree::get_singleton();
+	Color debug_collision_color;
+
+	bool debug_shapes = st && st->is_debugging_collisions_hint();
+	if (debug_shapes) {
+		debug_collision_color=st->get_debug_collisions_color();
+	}
+
 	while (dirty_quadrant_list.first()) {
 
 		Quadrant &q = *dirty_quadrant_list.first()->self();
@@ -398,10 +407,18 @@ void TileMap::_update_dirty_quadrants() {
 
 					_fix_cell_transform(xform,c,shape_ofs+center_ofs,s);
 
-					ps->body_add_shape(q.body,shape->get_rid(),xform);
+					if (debug_shapes) {
+						vs->canvas_item_add_set_transform(canvas_item,xform);
+						shape->draw(canvas_item,debug_collision_color);
+
+					}
+					ps->body_add_shape(q.body,shape->get_rid(),xform);					
 					ps->body_set_shape_metadata(q.body,shape_idx++,Vector2(E->key().x,E->key().y));
 
 				}
+			}
+			if (debug_shapes) {
+				vs->canvas_item_add_set_transform(canvas_item,Matrix32());
 			}
 
 			if (navigation) {
@@ -411,6 +428,7 @@ void TileMap::_update_dirty_quadrants() {
 					Matrix32 xform;
 					xform.set_origin(offset.floor()+q.pos);
 					_fix_cell_transform(xform,c,npoly_ofs+center_ofs,s);
+
 
 					int pid = navigation->navpoly_create(navpoly,nav_rel * xform);
 

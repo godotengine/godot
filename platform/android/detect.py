@@ -173,8 +173,7 @@ def configure(env):
 	env.Append(LDPATH=[ld_path])
 	env.Append(LIBS=['OpenSLES'])
 #	env.Append(LIBS=['c','m','stdc++','log','EGL','GLESv1_CM','GLESv2','OpenSLES','supc++','android'])
-	if (env["ndk_platform"]!="2.2"):
-		env.Append(LIBS=['EGL','OpenSLES','android'])
+	env.Append(LIBS=['EGL','OpenSLES','android'])
 	env.Append(LIBS=['c','m','stdc++','log','GLESv1_CM','GLESv2', 'z'])
 
 	env["LINKFLAGS"]= string.split(" -g --sysroot="+ld_sysroot+" -Wl,--no-undefined -Wl,-z,noexecstack ")

@@ -30,7 +30,6 @@ def get_flags():
 		('theora', 'no'),
 		('tools', 'no'),
 		('nedmalloc', 'no'),
-		('vorbis', 'no'),
 		('musepack', 'no'),
 		('squirrel', 'no'),
 		('squish', 'no'),

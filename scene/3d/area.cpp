@@ -83,15 +83,25 @@ real_t Area::get_gravity() const{
 
 	return gravity;
 }
+void Area::set_linear_damp(real_t p_linear_damp){
 
-void Area::set_density(real_t p_density){
-
-	density=p_density;
-	PhysicsServer::get_singleton()->area_set_param(get_rid(),PhysicsServer::AREA_PARAM_DENSITY,p_density);
+	linear_damp=p_linear_damp;
+	PhysicsServer::get_singleton()->area_set_param(get_rid(),PhysicsServer::AREA_PARAM_LINEAR_DAMP,p_linear_damp);
 }
-real_t Area::get_density() const{
+real_t Area::get_linear_damp() const{
 
-	return density;
+	return linear_damp;
+}
+
+void Area::set_angular_damp(real_t p_angular_damp){
+
+	angular_damp=p_angular_damp;
+	PhysicsServer::get_singleton()->area_set_param(get_rid(),PhysicsServer::AREA_PARAM_ANGULAR_DAMP,p_angular_damp);
+}
+
+real_t Area::get_angular_damp() const{
+
+	return angular_damp;
 }
 
 void Area::set_priority(real_t p_priority){
@@ -533,8 +543,11 @@ void Area::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_gravity","gravity"),&Area::set_gravity);
 	ObjectTypeDB::bind_method(_MD("get_gravity"),&Area::get_gravity);
 
-	ObjectTypeDB::bind_method(_MD("set_density","density"),&Area::set_density);
-	ObjectTypeDB::bind_method(_MD("get_density"),&Area::get_density);
+	ObjectTypeDB::bind_method(_MD("set_angular_damp","angular_damp"),&Area::set_angular_damp);
+	ObjectTypeDB::bind_method(_MD("get_angular_damp"),&Area::get_angular_damp);
+
+	ObjectTypeDB::bind_method(_MD("set_linear_damp","linear_damp"),&Area::set_linear_damp);
+	ObjectTypeDB::bind_method(_MD("get_linear_damp"),&Area::get_linear_damp);
 
 	ObjectTypeDB::bind_method(_MD("set_priority","priority"),&Area::set_priority);
 	ObjectTypeDB::bind_method(_MD("get_priority"),&Area::get_priority);
@@ -571,7 +584,8 @@ void Area::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity_distance_scale", PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_gravity_distance_scale"),_SCS("get_gravity_distance_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"gravity_vec"),_SCS("set_gravity_vector"),_SCS("get_gravity_vector"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity",PROPERTY_HINT_RANGE,"-1024,1024,0.01"),_SCS("set_gravity"),_SCS("get_gravity"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"density",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_density"),_SCS("get_density"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"linear_damp",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_linear_damp"),_SCS("get_linear_damp"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"angular_damp",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_angular_damp"),_SCS("get_angular_damp"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"priority",PROPERTY_HINT_RANGE,"0,128,1"),_SCS("set_priority"),_SCS("get_priority"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitoring"),_SCS("set_enable_monitoring"),_SCS("is_monitoring_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitorable"),_SCS("set_monitorable"),_SCS("is_monitorable"));
@@ -586,7 +600,8 @@ Area::Area() : CollisionObject(PhysicsServer::get_singleton()->area_create(),tru
 	set_gravity_vector(Vector3(0,-1,0));
 	gravity_is_point=false;
 	gravity_distance_scale=0;
-	density=0.1;
+	linear_damp=0.1;
+	angular_damp=1;
 	priority=0;
 	monitoring=false;
 	set_ray_pickable(false);

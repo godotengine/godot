@@ -441,6 +441,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
 
 
+
 	//printf("got map notify\n");
 		
 }
@@ -504,6 +505,23 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 	mouse_mode=p_mode;
 
 	if (mouse_mode==MOUSE_MODE_CAPTURED) {
+
+		while(true) {
+			//flush pending motion events
+
+			if (XPending(x11_display) > 0) {
+				XEvent event;
+				XPeekEvent(x11_display, &event);
+				if (event.type==MotionNotify) {
+					XNextEvent(x11_display,&event);
+				} else {
+					break;
+				}
+			} else {
+				break;
+			}
+		}
+
 		if (XGrabPointer(x11_display, x11_window, True,
 				    ButtonPressMask | ButtonReleaseMask |
 				    PointerMotionMask, GrabModeAsync, GrabModeAsync,
@@ -518,6 +536,8 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 			      0,0,0,0, (int)center.x, (int)center.y);
 
 		input->set_mouse_pos(center);
+	} else {
+		do_mouse_warp=false;
 	}
 }
 
@@ -652,17 +672,24 @@ void OS_X11::set_current_screen(int p_screen) {
 }
 
 Point2 OS_X11::get_screen_position(int p_screen) const {
+
 	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
-	if( !ext_okay ) return Point2i(0,0);
+	if( !ext_okay ) {
+		return Point2i(0,0);
+	}
 	
 	int count;
 	XineramaScreenInfo* xsi = XineramaQueryScreens(x11_display, &count);
-	if( p_screen >= count ) return Point2i(0,0);
+	if( p_screen >= count ) {
+		return Point2i(0,0);
+	}
 	
 	Point2i position = Point2i(xsi[p_screen].x_org, xsi[p_screen].y_org);
+
 	XFree(xsi);
+
 	return position;
 }
 
@@ -696,6 +723,7 @@ Point2 OS_X11::get_window_position() const {
 void OS_X11::set_window_position(const Point2& p_position) {
 	// Using EWMH -- Extended Window Manager Hints
 	// to get the size of the decoration 
+#if 0
 	Atom property = XInternAtom(x11_display,"_NET_FRAME_EXTENTS", True);
 	Atom type;
 	int format;
@@ -738,6 +766,9 @@ void OS_X11::set_window_position(const Point2& p_position) {
 	top -= screen_position.y;
 
 	XMoveWindow(x11_display,x11_window,p_position.x - left,p_position.y - top);
+#else
+	XMoveWindow(x11_display,x11_window,p_position.x,p_position.y);
+#endif
 }
 
 Size2 OS_X11::get_window_size() const {
@@ -1131,7 +1162,7 @@ void OS_X11::process_xevents() {
 
 	//printf("checking events %i\n", XPending(x11_display));
 
-	bool do_mouse_warp=false;
+	do_mouse_warp=false;
 
 	while (XPending(x11_display) > 0) {
 		XEvent event;
@@ -1150,8 +1181,22 @@ void OS_X11::process_xevents() {
 			XVisibilityEvent * visibility = (XVisibilityEvent *)&event;
 			minimized = (visibility->state == VisibilityFullyObscured);
 		} break;
+		case LeaveNotify: {
 
-		case FocusIn: 
+			if (main_loop && mouse_mode!=MOUSE_MODE_CAPTURED)
+				main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
+			if (input)
+				input->set_mouse_in_window(false);
+
+		} break;
+		case EnterNotify: {
+
+			if (main_loop && mouse_mode!=MOUSE_MODE_CAPTURED)
+				main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
+			if (input)
+				input->set_mouse_in_window(true);
+		} break;
+		case FocusIn:
 			minimized = false;
 #ifdef NEW_WM_API
 			if(current_videomode.fullscreen) {
@@ -1244,8 +1289,38 @@ void OS_X11::process_xevents() {
 			
 		} break;	
 		case MotionNotify: {
-						
+
+			// FUCK YOU X11 API YOU SERIOUSLY GROSS ME OUT
+			// YOU ARE AS GROSS AS LOOKING AT A PUTRID PILE
+			// OF POOP STICKING OUT OF A CLOGGED TOILET
+			// HOW THE FUCK I AM SUPPOSED TO KNOW WHICH ONE
+			// OF THE MOTION NOTIFY EVENTS IS THE ONE GENERATED
+			// BY WARPING THE MOUSE POINTER?
+			// YOU ARE FORCING ME TO FILTER ONE BY ONE TO FIND IT
+			// PLEASE DO ME A FAVOR AND DIE DROWNED IN A FECAL
+			// MOUNTAIN BECAUSE THAT'S WHERE YOU BELONG.
+
 			
+			while(true) {
+				if (mouse_mode==MOUSE_MODE_CAPTURED && event.xmotion.x==current_videomode.width/2 && event.xmotion.y==current_videomode.height/2) {
+					//this is likely the warp event since it was warped here
+					center=Vector2(event.xmotion.x,event.xmotion.y);
+					break;
+				}
+
+				if (XPending(x11_display) > 0) {
+					XEvent tevent;
+					XPeekEvent(x11_display, &tevent);
+					if (tevent.type==MotionNotify) {
+						XNextEvent(x11_display,&event);
+					} else {
+						break;
+					}
+				} else {
+					break;
+				}
+			}
+
 			last_timestamp=event.xmotion.time;
 		
 			// Motion is also simple.
@@ -1805,6 +1880,16 @@ void OS_X11::swap_buffers() {
 	context_gl->swap_buffers();
 }
 
+void OS_X11::alert(const String& p_alert,const String& p_title) {
+
+	List<String> args;
+	args.push_back("-center");
+	args.push_back("-title");
+	args.push_back(p_title);
+	args.push_back(p_alert);
+
+	execute("/usr/bin/xmessage",args,true);
+}
 
 void OS_X11::set_icon(const Image& p_icon) {
 	if (!p_icon.empty()) {

@@ -93,6 +93,8 @@ class GridMap : public Spatial {
 
 		Ref<Mesh> baked;
 		RID bake_instance;
+		RID collision_debug;
+		RID collision_debug_instance;
 
 		bool dirty;
 		RID static_body;

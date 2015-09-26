@@ -1172,6 +1172,14 @@ Matrix32 CanvasItem::get_viewport_transform() const {
 }
 
 
+void CanvasItem::set_notify_local_transform(bool p_enable) {
+	notify_local_transform=p_enable;
+}
+
+bool CanvasItem::is_local_transform_notification_enabled() const {
+	return notify_local_transform;
+}
+
 CanvasItem::CanvasItem() : xform_change(this) {
 
 
@@ -1191,6 +1199,7 @@ CanvasItem::CanvasItem() : xform_change(this) {
 	canvas_layer=NULL;
 	use_parent_material=false;
 	global_invalid=true;
+	notify_local_transform=false;
 	light_mask=1;
 
 	C=NULL;

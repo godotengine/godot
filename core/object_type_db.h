@@ -475,7 +475,9 @@ public:
 	static void get_integer_constant_list(const StringName& p_type, List<String> *p_constants, bool p_no_inheritance=false);
 	static int get_integer_constant(const StringName& p_type, const StringName &p_name, bool *p_success=NULL);
 	static StringName get_category(const StringName& p_node);
-	
+
+	static bool get_setter_and_type_for_property(const StringName& p_class, const StringName& p_prop, StringName& r_class, StringName& r_setter);
+
 	static void set_type_enabled(StringName p_type,bool p_enable);
 	static bool is_type_enabled(StringName p_type);
 

@@ -21,8 +21,8 @@
 #include "b2Triangle.h"
 #include "b2Polygon.h"
 
-#include <cmath>
-#include <climits>
+#include <math.h>
+#include <limits.h>
 #include <assert.h>
 #define b2Assert assert
 

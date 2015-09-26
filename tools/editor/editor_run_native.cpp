@@ -105,7 +105,17 @@ void EditorRunNative::_run_native(int p_idx,const String& p_platform) {
 		emit_signal("native_run");
 
 	}
-	eep->run(p_idx,deploy_dumb,deploy_debug_remote);
+	int flags=0;
+	if (deploy_debug_remote)
+		flags|=EditorExportPlatform::EXPORT_REMOTE_DEBUG;
+	if (deploy_dumb)
+		flags|=EditorExportPlatform::EXPORT_DUMB_CLIENT;
+	if (debug_collisions)
+		flags|=EditorExportPlatform::EXPORT_VIEW_COLLISONS;
+	if (debug_navigation)
+		flags|=EditorExportPlatform::EXPORT_VIEW_NAVIGATION;
+
+	eep->run(p_idx,flags);
 }
 
 void EditorRunNative::_bind_methods() {
@@ -135,6 +145,25 @@ bool EditorRunNative::is_deploy_debug_remote_enabled() const{
 	return deploy_debug_remote;
 }
 
+void EditorRunNative::set_debug_collisions(bool p_debug) {
+
+	debug_collisions=p_debug;
+}
+
+bool EditorRunNative::get_debug_collisions() const{
+
+	return debug_collisions;
+}
+
+void EditorRunNative::set_debug_navigation(bool p_debug) {
+
+	debug_navigation=p_debug;
+}
+
+bool EditorRunNative::get_debug_navigation() const{
+
+	return debug_navigation;
+}
 
 EditorRunNative::EditorRunNative()
 {
@@ -142,4 +171,7 @@ EditorRunNative::EditorRunNative()
 	first=true;
 	deploy_dumb=false;
 	deploy_debug_remote=false;
+	debug_collisions=false;
+	debug_navigation=false;
+
 }

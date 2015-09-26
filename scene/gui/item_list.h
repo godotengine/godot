@@ -41,6 +41,8 @@ private:
 
 	bool shape_changed;
 
+	bool ensure_selected_visible;
+
 	Vector<Item> items;
 	Vector<int> separators;
 

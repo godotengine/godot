@@ -454,6 +454,14 @@ AABB VisualServerRaster::mesh_get_custom_aabb(RID p_mesh) const {
 	return rasterizer->mesh_get_custom_aabb(p_mesh);
 }
 
+void VisualServerRaster::mesh_clear(RID p_mesh) {
+
+	ERR_FAIL_COND(!rasterizer->is_mesh(p_mesh));
+	while(rasterizer->mesh_get_surface_count(p_mesh)) {
+		rasterizer->mesh_remove_surface(p_mesh,0);
+	}
+}
+
 
 /* MULTIMESH */
 
@@ -7351,6 +7359,8 @@ void VisualServerRaster::_draw_cursors_and_margins() {
 		rasterizer->canvas_draw_rect(Rect2(cursors[i].pos, size), 0, Rect2(), tex, Color(1, 1, 1, 1));
 	};
 
+
+
 	if (black_image[MARGIN_LEFT].is_valid()) {
 		Size2 sz(rasterizer->texture_get_width(black_image[MARGIN_LEFT]),rasterizer->texture_get_height(black_image[MARGIN_LEFT]));
 		rasterizer->canvas_draw_rect(Rect2(0,0,black_margin[MARGIN_LEFT],window_h),0,Rect2(0,0,sz.x,sz.y),black_image[MARGIN_LEFT],Color(1,1,1));
@@ -7362,10 +7372,22 @@ void VisualServerRaster::_draw_cursors_and_margins() {
 		rasterizer->canvas_draw_rect(Rect2(window_w-black_margin[MARGIN_RIGHT],0,black_margin[MARGIN_RIGHT],window_h),0,Rect2(0,0,sz.x,sz.y),black_image[MARGIN_RIGHT],Color(1,1,1));
 	} else if (black_margin[MARGIN_RIGHT])
 		rasterizer->canvas_draw_rect(Rect2(window_w-black_margin[MARGIN_RIGHT],0,black_margin[MARGIN_RIGHT],window_h),0,Rect2(0,0,1,1),RID(),Color(0,0,0));
-	if (black_margin[MARGIN_TOP])
+
+	if (black_image[MARGIN_TOP].is_valid()) {
+		Size2 sz(rasterizer->texture_get_width(black_image[MARGIN_TOP]),rasterizer->texture_get_height(black_image[MARGIN_TOP]));
+		rasterizer->canvas_draw_rect(Rect2(0,0,window_w,black_margin[MARGIN_TOP]),0,Rect2(0,0,sz.x,sz.y),black_image[MARGIN_TOP],Color(1,1,1));
+
+	} else if (black_margin[MARGIN_TOP]) {
 		rasterizer->canvas_draw_rect(Rect2(0,0,window_w,black_margin[MARGIN_TOP]),0,Rect2(0,0,1,1),RID(),Color(0,0,0));
-	if (black_margin[MARGIN_BOTTOM])
+	}
+
+	if (black_image[MARGIN_BOTTOM].is_valid()) {
+
+		Size2 sz(rasterizer->texture_get_width(black_image[MARGIN_BOTTOM]),rasterizer->texture_get_height(black_image[MARGIN_BOTTOM]));
+		rasterizer->canvas_draw_rect(Rect2(0,window_h-black_margin[MARGIN_BOTTOM],window_w,black_margin[MARGIN_BOTTOM]),0,Rect2(0,0,sz.x,sz.y),black_image[MARGIN_BOTTOM],Color(1,1,1));
+	} else if (black_margin[MARGIN_BOTTOM]) {
 		rasterizer->canvas_draw_rect(Rect2(0,window_h-black_margin[MARGIN_BOTTOM],window_w,black_margin[MARGIN_BOTTOM]),0,Rect2(0,0,1,1),RID(),Color(0,0,0));
+	}
 
 	rasterizer->canvas_end_rect();
 };
@@ -7412,6 +7434,8 @@ void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_col
 
 	if (p_image.empty())
 		return;
+
+	rasterizer->restore_framebuffer();
 
 	rasterizer->begin_frame();
 

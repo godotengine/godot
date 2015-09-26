@@ -115,17 +115,17 @@ void RayCast2D::_notification(int p_what) {
 				set_fixed_process(false);
 
 		} break;
-#ifdef TOOLS_ENABLED
+
 		case NOTIFICATION_DRAW: {
 
-			if (!get_tree()->is_editor_hint())
+			if (!get_tree()->is_editor_hint()  && !get_tree()->is_debugging_collisions_hint())
 				break;
 			Matrix32 xf;
 			xf.rotate(cast_to.atan2());
 			xf.translate(Vector2(0,cast_to.length()));
 
 			//Vector2 tip = Vector2(0,s->get_length());
-			Color dcol(0.9,0.2,0.2,0.4);
+			Color dcol=get_tree()->get_debug_collisions_color();//0.9,0.2,0.2,0.4);
 			draw_line(Vector2(),cast_to,dcol,3);
 			Vector<Vector2> pts;
 			float tsize=4;
@@ -139,7 +139,7 @@ void RayCast2D::_notification(int p_what) {
 			draw_primitive(pts,cols,Vector<Vector2>()); //small arrow
 
 		} break;
-#endif
+
 
 		case NOTIFICATION_FIXED_PROCESS: {
 

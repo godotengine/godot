@@ -249,11 +249,11 @@ public:
 	virtual int get_device_count() const;
 	virtual String get_device_name(int p_device) const;
 	virtual String get_device_info(int p_device) const;
-	virtual Error run(int p_device,bool p_dumb=false,bool p_remote_debug=false);
+	virtual Error run(int p_device,int p_flags=0);
 
 	virtual bool requieres_password(bool p_debug) const { return !p_debug; }
 	virtual String get_binary_extension() const { return "apk"; }
-	virtual Error export_project(const String& p_path, bool p_debug, bool p_dumb=false, bool p_remote_debug=false);
+	virtual Error export_project(const String& p_path, bool p_debug, int p_flags=0);
 
 	virtual bool can_export(String *r_error=NULL) const;
 
@@ -1014,7 +1014,7 @@ Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata,const String& 
 
 
 
-Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_debug, bool p_dumb,bool p_remote_debug) {
+Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_debug, int p_flags) {
 
 	String src_apk;
 
@@ -1078,7 +1078,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 		if (file=="AndroidManifest.xml") {
 
-			_fix_manifest(data,p_dumb || p_remote_debug);
+			_fix_manifest(data,p_flags&(EXPORT_DUMB_CLIENT|EXPORT_REMOTE_DEBUG));
 		}
 
 		if (file=="resources.arsc") {
@@ -1156,9 +1156,9 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		}
 	}
 
-	gen_export_flags(cl,p_dumb,p_remote_debug);
+	gen_export_flags(cl,p_flags);
 
-	if (p_dumb) {
+	if (p_flags) {
 
 		/*String host = EditorSettings::get_singleton()->get("file_server/host");
 		int port = EditorSettings::get_singleton()->get("file_server/post");
@@ -1485,7 +1485,7 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 
 }
 
-Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb, bool p_remote_debug) {
+Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 
 	ERR_FAIL_INDEX_V(p_device,devices.size(),ERR_INVALID_PARAMETER);
 	device_lock->lock();
@@ -1504,7 +1504,7 @@ Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb, bool p_remote_
 	ep.step("Exporting APK",0);
 
 	String export_to=EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmpexport.apk";
-	Error err = export_project(export_to,true,p_dumb,p_remote_debug);
+	Error err = export_project(export_to,true,p_flags);
 	if (err) {
 		device_lock->unlock();
 		return err;

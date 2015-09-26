@@ -26,12 +26,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#include "zlib.h"
+#include "os/copymem.h"
 #include "compression.h"
 
 #include "fastlz.h"
-#include "zlib.h"
 #include "zip_io.h"
-#include "os/copymem.h"
 
 int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size,Mode p_mode) {
 

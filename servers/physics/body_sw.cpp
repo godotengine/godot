@@ -159,6 +159,17 @@ void BodySW::set_param(PhysicsServer::BodyParameter p_param, float p_value) {
 			_update_inertia();
 
 		} break;
+		case PhysicsServer::BODY_PARAM_GRAVITY_SCALE: {
+			gravity_scale=p_value;
+		} break;
+		case PhysicsServer::BODY_PARAM_LINEAR_DAMP: {
+
+			linear_damp=p_value;
+		} break;
+		case PhysicsServer::BODY_PARAM_ANGULAR_DAMP: {
+
+			angular_damp=p_value;
+		} break;
 		default:{}
 	}
 }
@@ -177,6 +188,18 @@ float BodySW::get_param(PhysicsServer::BodyParameter p_param) const {
 		case PhysicsServer::BODY_PARAM_MASS: {
 			return mass;
 		} break;
+		case PhysicsServer::BODY_PARAM_GRAVITY_SCALE: {
+			return gravity_scale;
+		} break;
+		case PhysicsServer::BODY_PARAM_LINEAR_DAMP: {
+
+			return linear_damp;
+		} break;
+		case PhysicsServer::BODY_PARAM_ANGULAR_DAMP: {
+
+			return angular_damp;
+		} break;
+
 		default:{}
 	}
 
@@ -380,6 +403,8 @@ void BodySW::integrate_forces(real_t p_step) {
 		return;
 
 	AreaSW *def_area = get_space()->get_default_area();
+	AreaSW *damp_area = def_area;
+
 	ERR_FAIL_COND(!def_area);
 
 	int ac = areas.size();
@@ -388,7 +413,7 @@ void BodySW::integrate_forces(real_t p_step) {
 	if (ac) {
 		areas.sort();
 		const AreaCMP *aa = &areas[0];
-		density = aa[ac-1].area->get_density();
+		damp_area = aa[ac-1].area;
 		for(int i=ac-1;i>=0;i--) {
 			_compute_area_gravity(aa[i].area);
 			if (aa[i].area->get_space_override_mode() == PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE) {
@@ -396,12 +421,24 @@ void BodySW::integrate_forces(real_t p_step) {
 				break;
 			}
 		}
-	} else {
-		density=def_area->get_density();
 	}
+
 	if( !replace ) {
 		_compute_area_gravity(def_area);
 	}
+
+	gravity*=gravity_scale;
+
+	if (angular_damp>=0)
+		area_angular_damp=angular_damp;
+	else
+		area_angular_damp=damp_area->get_angular_damp();
+
+	if (linear_damp>=0)
+		area_linear_damp=linear_damp;
+	else
+		area_linear_damp=damp_area->get_linear_damp();
+
 
 	Vector3 motion;
 	bool do_motion=false;
@@ -431,12 +468,12 @@ void BodySW::integrate_forces(real_t p_step) {
 			force+=applied_force;
 			Vector3 torque=applied_torque;
 
-			real_t damp = 1.0 - p_step * density;
+			real_t damp = 1.0 - p_step * area_linear_damp;
 
 			if (damp<0) // reached zero in the given time
 				damp=0;
 
-			real_t angular_damp = 1.0 - p_step * density * get_space()->get_body_angular_velocity_damp_ratio();
+			real_t angular_damp = 1.0 - p_step * area_angular_damp;
 
 			if (angular_damp<0) // reached zero in the given time
 				angular_damp=0;
@@ -695,8 +732,12 @@ BodySW::BodySW() : CollisionObjectSW(TYPE_BODY), active_list(this), inertia_upda
 	island_list_next=NULL;
 	first_time_kinematic=false;
 	_set_static(false);
-	density=0;
+
 	contact_count=0;
+	gravity_scale=1.0;
+
+	area_angular_damp=0;
+	area_linear_damp=0;
 
 	still_time=0;
 	continuous_cd=false;

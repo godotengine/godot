@@ -201,6 +201,30 @@ PhysicsDirectSpaceState* PhysicsServerSW::space_get_direct_state(RID p_space) {
 	return space->get_direct_state();
 }
 
+void PhysicsServerSW::space_set_debug_contacts(RID p_space,int p_max_contacts) {
+
+	SpaceSW *space = space_owner.get(p_space);
+	ERR_FAIL_COND(!space);
+	space->set_debug_contacts(p_max_contacts);
+
+}
+
+Vector<Vector3> PhysicsServerSW::space_get_contacts(RID p_space) const {
+
+	SpaceSW *space = space_owner.get(p_space);
+	ERR_FAIL_COND_V(!space,Vector<Vector3>());
+	return space->get_debug_contacts();
+
+}
+
+int PhysicsServerSW::space_get_contact_count(RID p_space) const {
+
+	SpaceSW *space = space_owner.get(p_space);
+	ERR_FAIL_COND_V(!space,0);
+	return space->get_debug_contact_count();
+
+}
+
 RID PhysicsServerSW::area_create() {
 
 	AreaSW *area = memnew( AreaSW );

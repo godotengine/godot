@@ -1592,9 +1592,17 @@ Variant::operator String() const {
 		} break;
 		case OBJECT: {
 
-			if (_get_obj().obj)
+			if (_get_obj().obj) {
+				#ifdef DEBUG_ENABLED
+					if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
+						//only if debugging!
+						if (!ObjectDB::instance_validate(_get_obj().obj)) {
+							return "[Deleted Object]";
+						};
+					};
+				#endif
 				return "["+_get_obj().obj->get_type()+":"+itos(_get_obj().obj->get_instance_ID())+"]";
-			else
+			} else
 				return "[Object:null]";
 
 		} break;

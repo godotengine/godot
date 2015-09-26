@@ -174,7 +174,7 @@ int cpu_info_ = kCpuInit;  // cpu_info is not initialized yet.
 #if !defined(__native_client__) && !defined(_M_ARM)
 
 static LIBYUV_BOOL TestEnv(const char* name) {
-#ifndef _WINRT
+#if !defined(_WINRT) && !defined(ORBIS_ENABLED)
   const char* var = getenv(name);
   if (var) {
     if (var[0] != '0') {

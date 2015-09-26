@@ -257,6 +257,30 @@ real_t Physics2DServerSW::space_get_param(RID p_space,SpaceParameter p_param) co
 	return space->get_param(p_param);
 }
 
+void Physics2DServerSW::space_set_debug_contacts(RID p_space,int p_max_contacts) {
+
+	Space2DSW *space = space_owner.get(p_space);
+	ERR_FAIL_COND(!space);
+	space->set_debug_contacts(p_max_contacts);
+
+}
+
+Vector<Vector2> Physics2DServerSW::space_get_contacts(RID p_space) const {
+
+	Space2DSW *space = space_owner.get(p_space);
+	ERR_FAIL_COND_V(!space,Vector<Vector2>());
+	return space->get_debug_contacts();
+
+}
+
+int Physics2DServerSW::space_get_contact_count(RID p_space) const {
+
+	Space2DSW *space = space_owner.get(p_space);
+	ERR_FAIL_COND_V(!space,0);
+	return space->get_debug_contact_count();
+
+}
+
 Physics2DDirectSpaceState* Physics2DServerSW::space_get_direct_state(RID p_space) {
 
 	Space2DSW *space = space_owner.get(p_space);
