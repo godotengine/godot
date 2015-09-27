@@ -26,6 +26,7 @@ def get_opts():
 		('IPHONESDK', 'path to the iphone SDK', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/${IOS_SDK_VERSION}.sdk/'),
 		('game_center', 'Support for game center', 'yes'),
 		('store_kit', 'Support for in-app store', 'yes'),
+		('icloud', 'Support for icloud backups', 'yes'),
 		('ios_gles22_override', 'Force GLES2.0 on iOS', 'yes'),
 		('ios_appirater', 'Enable Appirater', 'no'),
 		('ios_exceptions', 'Use exceptions when compiling on playbook', 'yes'),
@@ -108,6 +109,9 @@ def configure(env):
 	if env['store_kit'] == 'yes':
 		env.Append(CPPFLAGS=['-DSTOREKIT_ENABLED'])
 		env.Append(LINKFLAGS=['-framework', 'StoreKit'])
+	
+	if env['icloud'] == 'yes':
+		env.Append(CPPFLAGS=['-DICLOUD_ENABLED'])
 
 	env.Append(CPPPATH = ['$IPHONESDK/usr/include', '$IPHONESDK/System/Library/Frameworks/OpenGLES.framework/Headers', '$IPHONESDK/System/Library/Frameworks/AudioUnit.framework/Headers'])
 

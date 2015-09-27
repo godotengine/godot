@@ -160,6 +160,12 @@ void OSIPhone::initialize(const VideoMode& p_desired,int p_video_driver,int p_au
 	store_kit = memnew(InAppStore);
 	Globals::get_singleton()->add_singleton(Globals::Singleton("InAppStore", store_kit));
 #endif		
+
+#ifdef ICLOUD_ENABLED
+	icloud = memnew(ICloud);
+	Globals::get_singleton()->add_singleton(Globals::Singleton("ICloud", icloud));
+	//icloud->connect();
+#endif		
 };
 
 MainLoop *OSIPhone::get_main_loop() const {
