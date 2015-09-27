@@ -134,8 +134,8 @@ def can_build():
 		if (os.getenv("MINGW64_PREFIX")):
 			mingw64=os.getenv("MINGW64_PREFIX")
 			
-		test = "gcc --version >/dev/null"
-		if os.system(mingw+test) == 0 or os.system(mingw64+test) ==0 or os.system(mingw32+test) ==0 :
+		test = "gcc --version &>/dev/null"
+		if (os.system(mingw+test) == 0 or os.system(mingw64+test) == 0 or os.system(mingw32+test) == 0):
 			return True
 			
 	return False
@@ -150,7 +150,7 @@ def get_opts():
 		mingw32 = "i686-w64-mingw32-"
 		mingw64 = "x86_64-w64-mingw32-"
 		
-		if os.system(mingw32+"gcc --version >/dev/null") != 0 :
+		if os.system(mingw32+"gcc --version &>/dev/null") != 0 :
 			mingw32 = mingw
 	
 	if (os.getenv("MINGW32_PREFIX")):
