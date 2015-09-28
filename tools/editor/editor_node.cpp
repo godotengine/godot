@@ -58,6 +58,7 @@
 
 // plugins
 #include "plugins/sprite_frames_editor_plugin.h"
+#include "plugins/sprite_region_editor_plugin.h"
 #include "plugins/canvas_item_editor_plugin.h"
 #include "plugins/spatial_editor_plugin.h"
 #include "plugins/sample_editor_plugin.h"
@@ -5471,6 +5472,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( TileSetEditorPlugin(this) ) );
 	add_editor_plugin( memnew( TileMapEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SpriteFramesEditorPlugin(this) ) );
+	add_editor_plugin( memnew( SpriteRegionEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Particles2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Path2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( PathEditorPlugin(this) ) );

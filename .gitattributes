@@ -1,0 +1,4 @@
+*.cpp eol=lf
+*.h eol=lf
+*.py eol=lf
+*.hpp eol=lf

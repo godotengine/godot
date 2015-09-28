@@ -189,6 +189,7 @@ void Sprite::set_region_rect(const Rect2& p_region_rect) {
 	if (region && changed) {
 		update();
 		item_rect_changed();
+		_change_notify("region_rect");
 	}
 }
 
