@@ -26,7 +26,7 @@ def get_opts():
 		('IPHONESDK', 'path to the iphone SDK', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/${IOS_SDK_VERSION}.sdk/'),
 		('game_center', 'Support for game center', 'yes'),
 		('store_kit', 'Support for in-app store', 'yes'),
-		('icloud', 'Support for icloud backups', 'yes'),
+		('icloud', 'Support for iCloud', 'yes'),
 		('ios_gles22_override', 'Force GLES2.0 on iOS', 'yes'),
 		('ios_appirater', 'Enable Appirater', 'no'),
 		('ios_exceptions', 'Use exceptions when compiling on playbook', 'yes'),
