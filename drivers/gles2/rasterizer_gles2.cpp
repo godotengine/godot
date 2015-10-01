@@ -4160,7 +4160,6 @@ void RasterizerGLES2::begin_frame() {
 	time_delta=time-last_time;
 	last_time=time;
 	frame++;
-	clear_viewport(Color(1,0,0.5));
 
 	_rinfo.vertex_count=0;
 	_rinfo.object_count=0;
