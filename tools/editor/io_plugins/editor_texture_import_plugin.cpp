@@ -828,7 +828,7 @@ Error EditorTextureImportPlugin::import(const String& p_path, const Ref<Resource
 }
 
 
-Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &texture,int format, float quality,int flags,EditorExportPlatform::ImageCompression p_compr,int tex_flags,int shrink)  {
+Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &texture,int format, float quality,int flags,EditorExportPlatform::ImageCompression p_compr,int tex_flags,float shrink)  {
 
 
 	if (format==IMAGE_FORMAT_COMPRESS_DISK_LOSSLESS || format==IMAGE_FORMAT_COMPRESS_DISK_LOSSY) {
@@ -866,7 +866,7 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 
 			int orig_w=image.get_width();
 			int orig_h=image.get_height();
-			image.resize(orig_w/shrink,orig_h/shrink);
+			image.resize(orig_w/shrink,orig_h/shrink,Image::INTERPOLATE_CUBIC);
 			texture->create_from_image(image,tex_flags);
 			texture->set_size_override(Size2(orig_w,orig_h));
 
@@ -926,7 +926,7 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 		int orig_h=image.get_height();
 
 		if (shrink>1) {
-			image.resize(orig_w/shrink,orig_h/shrink);
+			image.resize(orig_w/shrink,orig_h/shrink,Image::INTERPOLATE_CUBIC);
 			texture->create_from_image(image,tex_flags);
 			texture->set_size_override(Size2(orig_w,orig_h));
 		}
@@ -987,7 +987,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		tex_flags|=Texture::FLAG_ANISOTROPIC_FILTER;
 
 	print_line("path: "+p_path+" flags: "+itos(tex_flags));
-	int shrink=1;
+	float shrink=1;
 	if (from->has_option("shrink"))
 		shrink=from->get_option("shrink");
 
