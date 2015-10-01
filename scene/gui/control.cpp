@@ -2700,6 +2700,16 @@ bool Control::is_stopping_mouse() const {
 	return data.stop_mouse;
 }
 
+void Control::set_text_field(bool p_enable) {
+
+	data.text_field=p_enable;
+}
+
+bool Control::is_text_field() const {
+
+	return data.text_field;
+}
+
 Control *Control::get_focus_owner() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),NULL);
@@ -2901,6 +2911,7 @@ Control::Control() {
 	data.viewport=NULL;
 	data.ignore_mouse=false;
 	data.stop_mouse=true;
+	data.text_field=false;
 	window=NULL;
 
 	data.SI=NULL;
