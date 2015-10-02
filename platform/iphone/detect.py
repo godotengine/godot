@@ -138,6 +138,14 @@ def configure(env):
 
 	env['ENV']['CODESIGN_ALLOCATE'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate'
 	env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DMPC_FIXED_POINT'])
+
+	if(env["opus"]=="yes"):
+		env.opus_fixed_point="yes"
+		if(env["bits"]=="64"):
+			env.Append(CFLAGS=["-DOPUS_ARM64_OPT"])
+		else:
+			env.Append(CFLAGS=["-DOPUS_ARM_OPT"])
+
 	if env['ios_exceptions'] == 'yes':
 		env.Append(CPPFLAGS=['-fexceptions'])
 	else:
