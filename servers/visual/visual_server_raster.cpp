@@ -6824,7 +6824,11 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 	copymem(child_items,ci->child_items.ptr(),child_item_count*sizeof(CanvasItem*));
 
 	if (ci->clip) {
-		ci->final_clip_rect=global_rect;
+		if (p_canvas_clip != NULL) {
+			ci->final_clip_rect=p_canvas_clip->final_clip_rect.clip(global_rect);
+		} else {
+			ci->final_clip_rect=global_rect;
+		}
 		ci->final_clip_owner=ci;
 
 	} else {
