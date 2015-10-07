@@ -84,7 +84,6 @@ elif not path.isdir(args.outputdir):
 
 _ = gettext.gettext
 if args.language != "none":
-    logging.info("Language changed to: " + args.language)
     lang = gettext.translation(domain="makedocs",
                                localedir="locales",
                                languages=[args.language])
