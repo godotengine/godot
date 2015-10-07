@@ -3,9 +3,7 @@
 
 #
 # makedocs.py: Generate documentation for Open Project Wiki
-#
 # Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.
-#
 # Contributor: Jorge Araya Navarro <elcorreo@deshackra.com>
 #
 
@@ -24,7 +22,7 @@
 # whitespace you may left.
 #
 # TODO:
-#  * Refactor code. Refactor strings.
+#  * Refactor code.
 #  * Adapt this script for generating content in other markup formats like
 #    DokuWiki, Markdown, etc.
 #  * Because people will translate class_list.xml, we should implement
@@ -32,16 +30,32 @@
 #
 # Also check other TODO entries in this script for more information on what is
 # left to do.
-
-import re
 import argparse
 import logging
-from os import path
+import re
 from itertools import zip_longest
+from os import path
 from xml.etree import ElementTree
+
 
 # add an option to change the verbosity
 logging.basicConfig(level=logging.INFO)
+
+# Strings
+C_LINK = ("\"<code>{gclass}</code>(Go to page of class"
+          " {gclass})\":/class_{lkclass}")
+MC_LINK = ("\"<code>{gclass}.{method}</code>(Go "
+           "to page {gclass}, section {method})\""
+           ":/class_{lkclass}#{lkmethod}")
+TM_JUMP = ("\"<code>{method}</code>(Jump to method"
+           " {method})\":#{lkmethod}")
+GTC_LINK = " \"{rtype}(Go to page of class {rtype})\":/class_{link} "
+DFN_JUMP = ("\"*{funcname}*(Jump to description for"
+            " node {funcname})\":#{link} <b>(</b> ")
+M_ARG_DEFAULT = C_LINK + " {name}={default}"
+M_ARG = C_LINK + " {name}"
+
+OPENPROJ_INH = ("h4. Inherits: " + C_LINK + "\n\n")
 
 
 def tb(string):
@@ -69,9 +83,7 @@ def sortkey(c):
 def toOP(text):
     """ Convert commands in text to Open Project commands
     """
-    # We are going to do something very complicated with all HTML commands
-    # sadly, some commands are embedded inside other commands, so some steps
-    # are needed before converting some commands to Textile markup
+    # TODO: Make this capture content between [command] ... [/command]
     groups = re.finditer((r'\[html (?P<command>/?\w+/?)(\]| |=)?(\]| |=)?(?P<a'
                           'rg>\w+)?(\]| |=)?(?P<value>"[^"]+")?/?\]'), text)
     alignstr = ""
@@ -106,27 +118,21 @@ def toOP(text):
     for group in groups:
         gd = group.groupdict()
         if gd["class"]:
-            replacewith = ("\"<code>{gclass}.{method}</code>(Go "
-                           "to page {gclass}, section {method})\""
-                           ":/class_{lkclass}#{lkmethod}".
-                           format(gclass=gd["class"],
-                                  method=gd["method"],
-                                  lkclass=gd["class"].lower(),
-                                  lkmethod=gd["method"].lower()))
+            replacewith = (MC_LINK.format(gclass=gd["class"],
+                                          method=gd["method"],
+                                          lkclass=gd["class"].lower(),
+                                          lkmethod=gd["method"].lower()))
         else:
             # The method is located in the same wiki page
-            replacewith = ("\"<code>{method}</code>(Jump to method"
-                           " {method})\":#{lkmethod}".
-                           format(method=gd["method"],
-                                  lkmethod=gd["method"].lower()))
+            replacewith = (TM_JUMP.format(method=gd["method"],
+                                          lkmethod=gd["method"].lower()))
 
         text = text.replace(group.group(0), replacewith, 1)
     # Finally, [Classes] are around brackets, make them direct links
     groups = re.finditer(r'\[(?P<class>[az0-AZ0_]+)\]', text)
     for group in groups:
         gd = group.groupdict()
-        replacewith = ("\"<code>{gclass}</code>(Go to page of class"
-                       " {gclass})\":/class_{lkclass}".
+        replacewith = (C_LINK.
                        format(gclass=gd["class"],
                               lkclass=gd["class"].lower()))
         text = text.replace(group.group(0), replacewith, 1)
@@ -149,18 +155,16 @@ def mkfn(node, is_signal=False):
     # return type
     if not is_signal:
         if rtype != "void":
-            finalstr += " \"{rtype}({title})\":/class_{link} ".format(
+            finalstr += GTC_LINK.format(
                 rtype=rtype,
-                title="Go to page of class " + rtype,
                 link=rtype.lower())
         else:
             finalstr += " void "
 
     # function name
     if not is_signal:
-        finalstr += "\"*{funcname}*({title})\":#{link} <b>(</b> ".format(
+        finalstr += DFN_JUMP.format(
             funcname=name,
-            title="Jump to description for node " + name,
             link=name.lower())
     else:
         # Signals have no description
@@ -171,31 +175,19 @@ def mkfn(node, is_signal=False):
             node.iter(tag="argument"),
             key=lambda a: int(a.attrib["index"])):
 
-        twd = "{type} {name}={default}"
-        tnd = "{type} {name}"
-        tlk = ("\"*{cls}*(Go to page of class {cls})"
-               "\":/class_{lcls}")
         ntype = arg.attrib["type"]
         nname = arg.attrib["name"]
 
         if "default" in arg.attrib:
-            args.insert(
-                -1,
-                twd.format(
-                    type=tlk.format(
-                        cls=ntype,
-                        lcls=ntype.lower()),
-                    name=nname,
-                    default=arg.attrib["default"]))
+            args.insert(-1, M_ARG_DEFAULT.format(
+                gclass=ntype,
+                lkclass=ntype.lower(),
+                name=nname,
+                default=arg.attrib["default"]))
         else:
             # No default value present
-            args.insert(
-                -1,
-                tnd.format(
-                    type=tlk.format(
-                        cls=ntype,
-                        lcls=ntype.lower()),
-                    name=nname))
+            args.insert(-1, M_ARG.format(gclass=ntype,
+                                         lkclass=ntype.lower(), name=nname))
     # join the arguments together
     finalstr += ", ".join(args)
     # and, close the function with a )
@@ -265,10 +257,9 @@ with open(path.join(args.outputdir, "class_list.txt"), "wb") as fcl:
             # empty cell
             fcl.write(tb("| |"))
         # write the class name column, left
-        fcl.write(tb("\"{name}({title})\":/class_{link}".format(
-            name=gdclassl.attrib["name"],
-            title="Go to page of class " + gdclassl.attrib["name"],
-            link="class_" + gdclassl.attrib["name"].lower())))
+        fcl.write(tb(C_LINK.format(
+            gclass=gdclassl.attrib["name"],
+            lkclass=gdclassl.attrib["name"].lower())))
 
         # write the index symbol column, right
         if isinstance(gdclassr, ElementTree.Element):
@@ -288,10 +279,9 @@ with open(path.join(args.outputdir, "class_list.txt"), "wb") as fcl:
             continue
 
         # write the class name column (if any), right
-        fcl.write(tb("\"{name}({title})\":/{link} |\n".format(
-            name=gdclassr.attrib["name"],
-            title="Go to page of class " + gdclassr.attrib["name"],
-            link=gdclassr.attrib["name"].lower())))
+        fcl.write(tb(C_LINK.format(
+            gclass=gdclassl.attrib["name"],
+            lkclass=gdclassl.attrib["name"].lower()) + "|\n"))
 
         # row written #
         # now, let's write each class page for each class
@@ -307,36 +297,28 @@ with open(path.join(args.outputdir, "class_list.txt"), "wb") as fcl:
                 # lay the attributes
                 if "inherits" in gdclass.attrib:
                     inh = gdclass.attrib["inherits"].strip()
-                    clsf.write(tb(("h4. Inherits: \"<code>{name}"
-                                   "</code>({title})\":/class_{link}\n\n").
-                                  format(
-                        name=inh,
-                        title="Go to page of class " + inh,
-                        link=classname.lower())))
+                    clsf.write(tb(OPENPROJ_INH.format(gclass=inh,
+                                                      lkclass=inh.lower())))
                 if "category" in gdclass.attrib:
                     clsf.write(tb("h4. Category: {}\n\n".
                                   format(gdclass.attrib["category"].strip())))
                 # lay child nodes
                 briefd = gdclass.find("brief_description")
-                logging.debug(
-                    "Brief description was found?: {}".format(briefd))
                 if briefd.text.strip():
-                    logging.debug(
-                        "Text: {}".format(briefd.text.strip()))
-                    clsf.write(tb("h2. Brief Description\n\n"))
+                    clsf.write(b"h2. Brief Description\n\n")
                     clsf.write(tb(toOP(briefd.text.strip()) +
                                   "\"read more\":#more\n\n"))
 
                 # Write the list of member functions of this class
                 methods = gdclass.find("methods")
                 if methods and len(methods) > 0:
-                    clsf.write(tb("\nh3. Member Functions\n\n"))
+                    clsf.write(b"\nh3. Member Functions\n\n")
                     for method in methods.iter(tag='method'):
                         clsf.write(tb(mkfn(method)))
 
                 signals = gdclass.find("signals")
                 if signals and len(signals) > 0:
-                    clsf.write(tb("\nh3. Signals\n\n"))
+                    clsf.write(b"\nh3. Signals\n\n")
                     for signal in signals.iter(tag='signal'):
                         clsf.write(tb(mkfn(signal, True)))
                 # TODO: <members> tag is necessary to process? it does not
@@ -344,7 +326,7 @@ with open(path.join(args.outputdir, "class_list.txt"), "wb") as fcl:
 
                 consts = gdclass.find("constants")
                 if consts and len(consts) > 0:
-                    clsf.write(tb("\nh3. Numeric Constants\n\n"))
+                    clsf.write(b"\nh3. Numeric Constants\n\n")
                     for const in sorted(consts, key=lambda k:
                                         k.attrib["name"]):
                         if const.text.strip():
@@ -360,15 +342,15 @@ with open(path.join(args.outputdir, "class_list.txt"), "wb") as fcl:
                                               name=const.attrib["name"],
                                               value=const.attrib["value"])))
                 descrip = gdclass.find("description")
-                clsf.write(tb("\nh3(#more). Description\n\n"))
+                clsf.write(b"\nh3(#more). Description\n\n")
                 if descrip.text:
                     clsf.write(tb(descrip.text.strip() + "\n"))
                 else:
-                    clsf.write(tb("_Nothing here, yet..._\n"))
+                    clsf.write(b"_Nothing here, yet..._\n")
 
                 # and finally, the description for each method
                 if methods and len(methods) > 0:
-                    clsf.write(tb("\nh3. Member Function Description\n\n"))
+                    clsf.write(b"\nh3. Member Function Description\n\n")
                     for method in methods.iter(tag='method'):
                         clsf.write(tb("h4(#{n}). {name}\n\n".format(
                             n=method.attrib["name"].lower(),
