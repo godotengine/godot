@@ -28,13 +28,12 @@
 #
 # Also check other TODO entries in this script for more information on what is
 # left to do.
-import gettext
 import argparse
+import gettext
 import logging
 import re
 from itertools import zip_longest
-from os import path
-from os import listdir
+from os import path, listdir
 from xml.etree import ElementTree
 
 
