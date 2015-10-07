@@ -25,43 +25,21 @@
 #  * Refactor code.
 #  * Adapt this script for generating content in other markup formats like
 #    DokuWiki, Markdown, etc.
-#  * Because people will translate class_list.xml, we should implement
-#    internalization.
 #
 # Also check other TODO entries in this script for more information on what is
 # left to do.
+import gettext
 import argparse
 import logging
 import re
 from itertools import zip_longest
 from os import path
+from os import listdir
 from xml.etree import ElementTree
 
 
 # add an option to change the verbosity
 logging.basicConfig(level=logging.INFO)
-
-# Strings
-C_LINK = ("\"<code>{gclass}</code>(Go to page of class"
-          " {gclass})\":/class_{lkclass}")
-MC_LINK = ("\"<code>{gclass}.{method}</code>(Go "
-           "to page {gclass}, section {method})\""
-           ":/class_{lkclass}#{lkmethod}")
-TM_JUMP = ("\"<code>{method}</code>(Jump to method"
-           " {method})\":#{lkmethod}")
-GTC_LINK = " \"{rtype}(Go to page of class {rtype})\":/class_{link} "
-DFN_JUMP = ("\"*{funcname}*(Jump to description for"
-            " node {funcname})\":#{link} <b>(</b> ")
-M_ARG_DEFAULT = C_LINK + " {name}={default}"
-M_ARG = C_LINK + " {name}"
-
-OPENPROJ_INH = ("h4. Inherits: " + C_LINK + "\n\n")
-
-
-def tb(string):
-    """ Return a byte representation of a string
-    """
-    return bytes(string, "UTF-8")
 
 
 def getxmlfloc():
@@ -69,6 +47,72 @@ def getxmlfloc():
     """
     filepath = path.dirname(path.abspath(__file__))
     return path.join(filepath, "class_list.xml")
+
+
+def langavailable():
+    """ Return a list of languages available for translation
+    """
+    filepath = path.join(
+        path.dirname(path.abspath(__file__)), "locales")
+    files = listdir(filepath)
+    choices = [x for x in files]
+    choices.insert(0, "none")
+    return choices
+
+
+desc = "Generates documentation from a XML file to different markup languages"
+
+parser = argparse.ArgumentParser(description=desc)
+parser.add_argument("--input", dest="xmlfp", default=getxmlfloc(),
+                    help="Input XML file, default: {}".format(getxmlfloc()))
+parser.add_argument("--output-dir", dest="outputdir", required=True,
+                    help="Output directory for generated files")
+parser.add_argument("--language", choices=langavailable(), default="none",
+                    help=("Choose the language of translation"
+                          " for the output files. Default is English (none). "
+                          "Note: This is NOT for the documentation itself!"))
+# TODO: add an option for outputting different markup formats
+
+args = parser.parse_args()
+# Let's check if the file and output directory exists
+if not path.isfile(args.xmlfp):
+    logging.critical("File not found: {}".format(args.xmlfp))
+    exit(1)
+elif not path.isdir(args.outputdir):
+    logging.critical("Path does not exist: {}".format(args.outputdir))
+    exit(1)
+
+_ = gettext.gettext
+if args.language != "none":
+    logging.info("Language changed to: " + args.language)
+    lang = gettext.translation(domain="makedocs",
+                               localedir="locales",
+                               languages=[args.language])
+    lang.install()
+
+    _ = lang.gettext
+
+# Strings
+C_LINK = _("\"<code>{gclass}</code>(Go to page of class"
+           " {gclass})\":/class_{lkclass}")
+MC_LINK = _("\"<code>{gclass}.{method}</code>(Go "
+            "to page {gclass}, section {method})\""
+            ":/class_{lkclass}#{lkmethod}")
+TM_JUMP = _("\"<code>{method}</code>(Jump to method"
+            " {method})\":#{lkmethod}")
+GTC_LINK = _(" \"{rtype}(Go to page of class {rtype})\":/class_{link} ")
+DFN_JUMP = _("\"*{funcname}*(Jump to description for"
+             " node {funcname})\":#{link} <b>(</b> ")
+M_ARG_DEFAULT = C_LINK + " {name}={default}"
+M_ARG = C_LINK + " {name}"
+
+OPENPROJ_INH = _("h4. Inherits: ") + C_LINK + "\n\n"
+
+
+def tb(string):
+    """ Return a byte representation of a string
+    """
+    return bytes(string, "UTF-8")
 
 
 def sortkey(c):
@@ -201,37 +245,17 @@ def mkfn(node, is_signal=False):
 
     return finalstr
 
-desc = "Generates documentation from a XML file to different markup languages"
-
-parser = argparse.ArgumentParser(description=desc)
-parser.add_argument("--input", dest="xmlfp", default=getxmlfloc(),
-                    help="Input XML file, default: {}".format(getxmlfloc()))
-parser.add_argument("--output-dir", dest="outputdir", required=True,
-                    help="Output directory for generated files")
-# TODO: add an option for outputting different markup formats
-
-args = parser.parse_args()
-# Let's check if the file and output directory exists
-if not path.isfile(args.xmlfp):
-    logging.critical("File not found: {}".format(args.xmlfp))
-    exit(1)
-elif not path.isdir(args.outputdir):
-    logging.critical("Path does not exist: {}".format(args.outputdir))
-    exit(1)
-
 # Let's begin
 tree = ElementTree.parse(args.xmlfp)
 root = tree.getroot()
 
 # Check version attribute exists in <doc>
 if "version" not in root.attrib:
-    logging.critical("<doc>'s version attribute missing")
+    logging.critical(_("<doc>'s version attribute missing"))
     exit(1)
 
 version = root.attrib["version"]
 classes = sorted(root, key=sortkey)
-logging.debug("Number of classes: {}".format(len(classes)))
-logging.debug("len(classes) / 2 + 1: {}".format(int(len(classes) / 2 + 1)))
 # first column is always longer, second column of classes should be shorter
 zclasses = zip_longest(classes[:int(len(classes) / 2 + 1)],
                        classes[int(len(classes) / 2 + 1):],
@@ -241,8 +265,8 @@ zclasses = zip_longest(classes[:int(len(classes) / 2 + 1)],
 with open(path.join(args.outputdir, "class_list.txt"), "wb") as fcl:
     # Write header of table
     fcl.write(tb("|^.\n"))
-    fcl.write(tb("|_. Index symbol |_. Class name "
-                 "|_. Index symbol |_. Class name |\n"))
+    fcl.write(tb(_("|_. Index symbol |_. Class name "
+                   "|_. Index symbol |_. Class name |\n")))
     fcl.write(tb("|-.\n"))
 
     indexletterl = ""
@@ -300,25 +324,25 @@ with open(path.join(args.outputdir, "class_list.txt"), "wb") as fcl:
                     clsf.write(tb(OPENPROJ_INH.format(gclass=inh,
                                                       lkclass=inh.lower())))
                 if "category" in gdclass.attrib:
-                    clsf.write(tb("h4. Category: {}\n\n".
+                    clsf.write(tb(_("h4. Category: {}\n\n").
                                   format(gdclass.attrib["category"].strip())))
                 # lay child nodes
                 briefd = gdclass.find("brief_description")
                 if briefd.text.strip():
-                    clsf.write(b"h2. Brief Description\n\n")
+                    clsf.write(tb(_("h2. Brief Description\n\n")))
                     clsf.write(tb(toOP(briefd.text.strip()) +
-                                  "\"read more\":#more\n\n"))
+                                  _("\"read more\":#more\n\n")))
 
                 # Write the list of member functions of this class
                 methods = gdclass.find("methods")
                 if methods and len(methods) > 0:
-                    clsf.write(b"\nh3. Member Functions\n\n")
+                    clsf.write(tb(_("\nh3. Member Functions\n\n")))
                     for method in methods.iter(tag='method'):
                         clsf.write(tb(mkfn(method)))
 
                 signals = gdclass.find("signals")
                 if signals and len(signals) > 0:
-                    clsf.write(b"\nh3. Signals\n\n")
+                    clsf.write(tb(_("\nh3. Signals\n\n")))
                     for signal in signals.iter(tag='signal'):
                         clsf.write(tb(mkfn(signal, True)))
                 # TODO: <members> tag is necessary to process? it does not
@@ -326,7 +350,7 @@ with open(path.join(args.outputdir, "class_list.txt"), "wb") as fcl:
 
                 consts = gdclass.find("constants")
                 if consts and len(consts) > 0:
-                    clsf.write(b"\nh3. Numeric Constants\n\n")
+                    clsf.write(tb(_("\nh3. Numeric Constants\n\n")))
                     for const in sorted(consts, key=lambda k:
                                         k.attrib["name"]):
                         if const.text.strip():
@@ -342,15 +366,15 @@ with open(path.join(args.outputdir, "class_list.txt"), "wb") as fcl:
                                               name=const.attrib["name"],
                                               value=const.attrib["value"])))
                 descrip = gdclass.find("description")
-                clsf.write(b"\nh3(#more). Description\n\n")
+                clsf.write(tb(_("\nh3(#more). Description\n\n")))
                 if descrip.text:
                     clsf.write(tb(descrip.text.strip() + "\n"))
                 else:
-                    clsf.write(b"_Nothing here, yet..._\n")
+                    clsf.write(tb(_("_Nothing here, yet..._\n")))
 
                 # and finally, the description for each method
                 if methods and len(methods) > 0:
-                    clsf.write(b"\nh3. Member Function Description\n\n")
+                    clsf.write(tb(_("\nh3. Member Function Description\n\n")))
                     for method in methods.iter(tag='method'):
                         clsf.write(tb("h4(#{n}). {name}\n\n".format(
                             n=method.attrib["name"].lower(),
