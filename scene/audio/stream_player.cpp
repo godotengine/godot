@@ -67,7 +67,7 @@ bool StreamPlayer::sp_mix(int32_t *p_buffer,int p_frames) {
 
 void StreamPlayer::sp_update() {
 
-	_THREAD_SAFE_METHOD_
+	//_THREAD_SAFE_METHOD_
 	if (!paused && resampler.is_ready() && playback.is_valid()) {
 
 		if (!playback->is_playing()) {
@@ -144,7 +144,7 @@ void StreamPlayer::play(float p_from_offset) {
 	if (playback->is_playing())
 		stop();
 
-	_THREAD_SAFE_METHOD_
+	//_THREAD_SAFE_METHOD_
 	playback->play(p_from_offset);
 	//feed the ringbuffer as long as no update callback is going on
 	sp_update();
@@ -162,7 +162,7 @@ void StreamPlayer::stop() {
 	if (playback.is_null())
 		return;
 
-	_THREAD_SAFE_METHOD_
+	//_THREAD_SAFE_METHOD_
 	AudioServer::get_singleton()->stream_set_active(stream_rid,false);
 	playback->stop();
 	//set_idle_process(false);
