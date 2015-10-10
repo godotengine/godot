@@ -170,7 +170,8 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 
 	if (!display_foreign && p_node->get_owner()!=get_scene_node() && p_node!=get_scene_node()) {
 
-		if ((show_enabled_subscene || can_open_instance) && p_node->get_owner() && p_node->get_owner()->get_owner()==get_scene_node() && p_node->get_owner()->has_meta("__editor_show_subtree")) {
+		//if ((show_enabled_subscene || can_open_instance) && p_node->get_owner() && p_node->get_owner()->get_owner()==get_scene_node() && p_node->get_owner()->has_meta("__editor_show_subtree")) {
+		if ((show_enabled_subscene || can_open_instance) && p_node->get_owner() && p_node->get_owner()->has_meta("__editor_show_subtree")) {
 
 			part_of_subscene=true;
 			//allow
@@ -223,6 +224,8 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 
 	if (p_node!=get_scene_node() && p_node->get_filename()!="" && can_open_instance) {
 
+    item->set_custom_color(0,Color(0.8,0.4,0.20));
+    
 		item->add_button(0,get_icon("InstanceOptions","EditorIcons"),BUTTON_SUBSCENE);
 		item->set_tooltip(0,"Instance: "+p_node->get_filename()+"\nType: "+p_node->get_type());
 	} else {
