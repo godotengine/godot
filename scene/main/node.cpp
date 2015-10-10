@@ -841,6 +841,20 @@ Node *Node::get_child(int p_index) const {
 	return data.children[p_index];
 }
 
+
+Node *Node::_get_child_by_name(const StringName& p_name) const {
+
+	int cc=data.children.size();
+	Node* const* cd=data.children.ptr();
+
+	for(int i=0;i<cc;i++){
+		if (cd[i]->data.name==p_name)
+			return cd[i];
+	}
+
+	return NULL;
+}
+
 Node *Node::_get_node(const NodePath& p_path) const {
 
 	ERR_FAIL_COND_V( !data.inside_tree && p_path.is_absolute(), NULL );
@@ -906,8 +920,10 @@ Node *Node::_get_node(const NodePath& p_path) const {
 Node *Node::get_node(const NodePath& p_path) const {
 
 	Node *node = _get_node(p_path);
-	ERR_EXPLAIN("Node not found: "+p_path);
-	ERR_FAIL_COND_V(!node,NULL);
+	if (!node) {
+		ERR_EXPLAIN("Node not found: "+p_path);
+		ERR_FAIL_COND_V(!node,NULL);
+	}
 	return node;
 }
 
@@ -1332,7 +1348,29 @@ String Node::get_filename() const {
 	return data.filename;
 }
 
+void Node::set_editable_instance(Node* p_node,bool p_editable) {
 
+	ERR_FAIL_NULL(p_node);
+	ERR_FAIL_COND(!is_a_parent_of(p_node));
+	NodePath p = get_path_to(p_node);
+	if (!p_editable)
+		data.editable_instances.erase(p);
+	else
+		data.editable_instances[p]=true;
+
+}
+
+bool Node::is_editable_instance(Node *p_node) const {
+
+	if (!p_node)
+		return false; //easier, null is never editable :)
+	ERR_FAIL_COND_V(!is_a_parent_of(p_node),false);
+	NodePath p = get_path_to(p_node);
+	return data.editable_instances.has(p);
+}
+
+
+#if 0
 
 void Node::generate_instance_state() {
 
@@ -1381,6 +1419,28 @@ void Node::generate_instance_state() {
 Dictionary Node::get_instance_state() const {
 
 	return data.instance_state;
+}
+
+#endif
+
+void Node::set_scene_instance_state(const Ref<SceneState>& p_state) {
+
+	data.instance_state=p_state;
+}
+
+Ref<SceneState> Node::get_scene_instance_state() const{
+
+	return data.instance_state;
+}
+
+void Node::set_scene_inherited_state(const Ref<SceneState>& p_state) {
+
+	data.inherited_state=p_state;
+}
+
+Ref<SceneState> Node::get_scene_inherited_state() const{
+
+	return data.inherited_state;
 }
 
 Vector<StringName> Node::get_instance_groups() const {

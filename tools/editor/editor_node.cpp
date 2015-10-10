@@ -1107,6 +1107,11 @@ void EditorNode::_dialog_action(String p_file) {
 
 			push_item(res.operator->() );
 		} break;			
+		case FILE_NEW_INHERITED_SCENE: {
+
+
+			load_scene(p_file,false,true);
+		} break;
 		case FILE_OPEN_SCENE: {
 
 
@@ -1930,6 +1935,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			
 		} break;
+		case FILE_NEW_INHERITED_SCENE:
 		case FILE_OPEN_SCENE: {
 			
 			
@@ -1950,7 +1956,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			if (scene) {
 				file->set_current_path(scene->get_filename());
 			};
-			file->set_title("Open Scene");
+			file->set_title(p_option==FILE_OPEN_SCENE?"Open Scene":"Open Base Scene");
 			file->popup_centered_ratio();
 			
 		} break;
@@ -3311,7 +3317,7 @@ void EditorNode::fix_dependencies(const String& p_for_file) {
 	dependency_fixer->edit(p_for_file);
 }
 
-Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps) {
+Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bool p_set_inherited) {
 
 	if (!is_inside_tree()) {
 		defer_load_scene = p_scene;
@@ -3440,6 +3446,13 @@ Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps) {
 		memdelete(old_scene);
 	}
 */
+
+	if (p_set_inherited) {
+		Ref<SceneState> state = sdata->get_state();
+		state->set_path(lpath);
+		new_scene->set_scene_inherited_state(state);
+	}
+
 
 	set_edited_scene(new_scene);
 	_get_scene_metadata();
@@ -4793,6 +4806,7 @@ EditorNode::EditorNode() {
 	file_menu->set_tooltip("Operations with scene files.");
 	p=file_menu->get_popup();
 	p->add_item("New Scene",FILE_NEW_SCENE);
+	p->add_item("New Inherited Scene..",FILE_NEW_INHERITED_SCENE);
 	p->add_item("Open Scene..",FILE_OPEN_SCENE,KEY_MASK_CMD+KEY_O);
 	p->add_separator();
 	p->add_item("Save Scene",FILE_SAVE_SCENE,KEY_MASK_CMD+KEY_S);

@@ -130,7 +130,7 @@ public:
 	void set_name(const String& p_name);
 	String get_name() const;
 
-	void set_path(const String& p_path,bool p_take_over=false);
+	virtual void set_path(const String& p_path,bool p_take_over=false);
 	String get_path() const;
 
 	void set_subindex(int p_sub_index);
