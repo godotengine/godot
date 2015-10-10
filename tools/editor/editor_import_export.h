@@ -252,7 +252,7 @@ protected:
 		ImageAction action;
 		bool make_atlas;
 		float lossy_quality;
-		int shrink;
+		float shrink;
 	};
 
 	Vector<Ref<EditorExportPlugin> > export_plugins;
@@ -260,7 +260,7 @@ protected:
 	Map<String,int> by_idx;
 	ImageAction image_action;
 	float image_action_compress_quality;
-	int image_shrink;
+	float image_shrink;
 	Set<String> image_formats;
 
 	ExportFilter export_filter;
@@ -310,8 +310,8 @@ public:
 	void set_export_image_action(ImageAction p_action);
 	ImageAction get_export_image_action() const;
 
-	void set_export_image_shrink(int p_shrink);
-	int get_export_image_shrink() const;
+	void set_export_image_shrink(float p_shrink);
+	float get_export_image_shrink() const;
 
 	void set_export_image_quality(float p_quality);
 	float get_export_image_quality() const;
@@ -326,8 +326,8 @@ public:
 	ImageAction image_export_group_get_image_action(const StringName& p_export_group) const;
 	void image_export_group_set_make_atlas(const StringName& p_export_group,bool p_make);
 	bool image_export_group_get_make_atlas(const StringName& p_export_group) const;
-	void image_export_group_set_shrink(const StringName& p_export_group,int p_amount);
-	int image_export_group_get_shrink(const StringName& p_export_group) const;
+	void image_export_group_set_shrink(const StringName& p_export_group,float p_amount);
+	float image_export_group_get_shrink(const StringName& p_export_group) const;
 	void image_export_group_set_lossy_quality(const StringName& p_export_group,float p_quality);
 	float image_export_group_get_lossy_quality(const StringName& p_export_group) const;
 

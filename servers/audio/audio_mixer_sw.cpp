@@ -765,6 +765,10 @@ AudioMixer::ChannelID AudioMixerSW::channel_alloc(RID p_sample) {
 	c.mix.increment=1;
 	//zero everything when this errors
 	for(int i=0;i<4;i++) {
+		c.mix.vol[i]=0;
+		c.mix.reverb_vol[i]=0;
+		c.mix.chorus_vol[i]=0;
+
 		c.mix.old_vol[i]=0;
 		c.mix.old_reverb_vol[i]=0;
 		c.mix.old_chorus_vol[i]=0;

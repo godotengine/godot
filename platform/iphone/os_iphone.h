@@ -46,6 +46,7 @@
 #include "main/input_default.h"
 #include "game_center.h"
 #include "in_app_store.h"
+#include "icloud.h"
 
 
 class AudioDriverIphone;
@@ -89,6 +90,9 @@ private:
 #endif
 #ifdef STOREKIT_ENABLED
 	InAppStore* store_kit;
+#endif
+#ifdef ICLOUD_ENABLED
+	ICloud* icloud;
 #endif
 
 	MainLoop *main_loop;

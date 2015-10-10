@@ -4489,6 +4489,18 @@
 	<constants>
 	</constants>
 </class>
+<class name="AudioStreamOpus" inherits="AudioStream" category="Core">
+	<brief_description>
+	Opus Codec audio stream driver.
+	</brief_description>
+	<description>
+	Opus Codec audio stream driver.
+	</description>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="AudioStreamPlayback" inherits="Reference" category="Core">
 	<brief_description>
 	</brief_description>
