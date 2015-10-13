@@ -299,6 +299,16 @@ bool BodyPairSW::setup(float p_step) {
 
 		c.active=true;
 
+#ifdef DEBUG_ENABLED
+
+
+		if (space->is_debugging_contacts()) {
+			space->add_debug_contact(global_A+offset_A);
+			space->add_debug_contact(global_B+offset_A);
+		}
+#endif
+
+
 		int gather_A = A->can_report_contacts();
 		int gather_B = B->can_report_contacts();
 

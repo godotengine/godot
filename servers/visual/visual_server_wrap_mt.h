@@ -199,6 +199,7 @@ public:
 
 	FUNC2(mesh_remove_surface,RID,int);
 	FUNC1RC(int,mesh_get_surface_count,RID);
+	FUNC1(mesh_clear,RID);
 
 
 	FUNC2(mesh_set_custom_aabb,RID,const AABB&);

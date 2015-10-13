@@ -458,7 +458,6 @@ void register_scene_types() {
 
 
 	/* disable types by default, only editors should enable them */
-	ObjectTypeDB::set_type_enabled("CollisionShape",false);
 	//ObjectTypeDB::set_type_enabled("BodyVolumeSphere",false);
 	//ObjectTypeDB::set_type_enabled("BodyVolumeBox",false);
 	//ObjectTypeDB::set_type_enabled("BodyVolumeCapsule",false);
@@ -492,9 +491,12 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<OccluderPolygon2D>();
 	ObjectTypeDB::register_type<YSort>();
 	ObjectTypeDB::register_type<BackBufferCopy>();
-
-	ObjectTypeDB::set_type_enabled("CollisionShape2D",false);
-	ObjectTypeDB::set_type_enabled("CollisionPolygon2D",false);
+	if (bool(GLOBAL_DEF("physics/remove_collision_helpers_at_runtime",false))) {
+		ObjectTypeDB::set_type_enabled("CollisionShape2D",false);
+		ObjectTypeDB::set_type_enabled("CollisionPolygon2D",false);
+		ObjectTypeDB::set_type_enabled("CollisionShape",false);
+		ObjectTypeDB::set_type_enabled("CollisionPolygon",false);
+	}
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -578,7 +580,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Sample>();
 	ObjectTypeDB::register_type<SampleLibrary>();
 	ObjectTypeDB::register_virtual_type<AudioStream>();
-	ObjectTypeDB::register_type<AudioStreamGibberish>();
+	ObjectTypeDB::register_virtual_type<AudioStreamPlayback>();
+//	ObjectTypeDB::register_type<AudioStreamGibberish>();
 	ObjectTypeDB::register_virtual_type<VideoStream>();
 
 	OS::get_singleton()->yield(); //may take time to init

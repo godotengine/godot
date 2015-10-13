@@ -28,6 +28,9 @@
 /*************************************************************************/
 #include "audio_stream_resampled.h"
 #include "globals.h"
+
+
+#if 0
 int AudioStreamResampled::get_channel_count() const {
 
 	if (!rb)
@@ -382,3 +385,4 @@ AudioStreamResampled::~AudioStreamResampled() {
 
 }
 
+#endif

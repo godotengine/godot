@@ -50,6 +50,14 @@ platform/android/libs/play_licensing/gen/*
 *.d
 *.so
 *.os
+*.Plo
+*.lo
+*.Po
+
+# Libs generated files
+.deps/*
+.dirstamp
+
 
 # QT project files
 *.config

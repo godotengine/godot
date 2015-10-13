@@ -46,6 +46,7 @@
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
+#include "main/input_default.h"
 
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
@@ -243,7 +244,7 @@ public:
 	virtual bool is_window_maximized() const;
 
 	virtual void move_window_to_foreground();
-
+	virtual void alert(const String& p_alert,const String& p_title="ALERT!");
 	void run();
 
 	OS_X11();

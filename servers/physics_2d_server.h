@@ -293,6 +293,9 @@ public:
 	// this function only works on fixed process, errors and returns null otherwise
 	virtual Physics2DDirectSpaceState* space_get_direct_state(RID p_space)=0;
 
+	virtual void space_set_debug_contacts(RID p_space,int p_max_contacts)=0;
+	virtual Vector<Vector2> space_get_contacts(RID p_space) const=0;
+	virtual int space_get_contact_count(RID p_space) const=0;
 
 	//missing space parameters
 

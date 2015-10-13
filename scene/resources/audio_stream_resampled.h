@@ -31,6 +31,7 @@
 
 #include "scene/resources/audio_stream.h"
 
+#if 0
 
 class AudioStreamResampled : public AudioStream {
 	OBJ_TYPE(AudioStreamResampled,AudioStream);
@@ -160,5 +161,5 @@ public:
 	AudioStreamResampled();
 	~AudioStreamResampled();
 };
-
+#endif
 #endif // AUDIO_STREAM_RESAMPLED_H

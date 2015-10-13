@@ -8,8 +8,6 @@ void Navigation2D::_navpoly_link(int p_id) {
 	NavMesh &nm=navpoly_map[p_id];
 	ERR_FAIL_COND(nm.linked);
 
-	print_line("LINK");
-
 	DVector<Vector2> vertices=nm.navpoly->get_vertices();
 	int len = vertices.size();
 	if (len==0)
@@ -47,7 +45,6 @@ void Navigation2D::_navpoly_link(int p_id) {
 			center+=ep;
 			e.point=_get_point(ep);
 			p.edges[j]=e;
-
 
 			int idxn = indices[(j+1)%plen];
 			if (idxn<0 || idxn>=len) {
@@ -121,7 +118,7 @@ void Navigation2D::_navpoly_unlink(int p_id) {
 	NavMesh &nm=navpoly_map[p_id];
 	ERR_FAIL_COND(!nm.linked);
 
-	print_line("UNLINK");
+	//print_line("UNLINK");
 
 	for (List<Polygon>::Element *E=nm.polygons.front();E;E=E->next()) {
 
@@ -358,7 +355,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 
 	if (!begin_poly || !end_poly) {
 
-		//print_line("No Path Path");
 		return Vector<Vector2>(); //no path
 	}
 

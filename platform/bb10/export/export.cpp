@@ -67,11 +67,11 @@ public:
 	virtual int get_device_count() const;
 	virtual String get_device_name(int p_device) const;
 	virtual String get_device_info(int p_device) const;
-	virtual Error run(int p_device,bool p_dumb=false,bool p_remote_debug=false);
+	virtual Error run(int p_device,int p_flags=0);
 
 	virtual bool requieres_password(bool p_debug) const { return !p_debug; }
 	virtual String get_binary_extension() const { return "bar"; }
-	virtual Error export_project(const String& p_path,bool p_debug,bool p_dumb=false,bool p_remote_debug=false);
+	virtual Error export_project(const String& p_path,bool p_debug,int p_flags=0);
 
 	virtual bool can_export(String *r_error=NULL) const;
 
@@ -270,7 +270,7 @@ void EditorExportPlatformBB10::_fix_descriptor(Vector<uint8_t>& p_descriptor) {
 
 
 
-Error EditorExportPlatformBB10::export_project(const String& p_path, bool p_debug, bool p_dumb, bool p_remote_debug) {
+Error EditorExportPlatformBB10::export_project(const String& p_path, bool p_debug, int p_flags) {
 
 
 	EditorProgress ep("export","Exporting for BlackBerry 10",104);
@@ -619,7 +619,7 @@ void EditorExportPlatformBB10::_device_poll_thread(void *ud) {
 
 }
 
-Error EditorExportPlatformBB10::run(int p_device, bool p_dumb, bool p_remote_debug) {
+Error EditorExportPlatformBB10::run(int p_device, int p_flags) {
 
 	ERR_FAIL_INDEX_V(p_device,devices.size(),ERR_INVALID_PARAMETER);
 
@@ -643,7 +643,7 @@ Error EditorExportPlatformBB10::run(int p_device, bool p_dumb, bool p_remote_deb
 	ep.step("Exporting APK",0);
 
 	String export_to=EditorSettings::get_singleton()->get_settings_path().plus_file("/tmp/tmpexport.bar");
-	Error err = export_project(export_to,true);
+	Error err = export_project(export_to,true,p_flags);
 	if (err) {
 		device_lock->unlock();
 		return err;

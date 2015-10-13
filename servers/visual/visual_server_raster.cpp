@@ -454,6 +454,14 @@ AABB VisualServerRaster::mesh_get_custom_aabb(RID p_mesh) const {
 	return rasterizer->mesh_get_custom_aabb(p_mesh);
 }
 
+void VisualServerRaster::mesh_clear(RID p_mesh) {
+
+	ERR_FAIL_COND(!rasterizer->is_mesh(p_mesh));
+	while(rasterizer->mesh_get_surface_count(p_mesh)) {
+		rasterizer->mesh_remove_surface(p_mesh,0);
+	}
+}
+
 
 /* MULTIMESH */
 
@@ -7426,6 +7434,8 @@ void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_col
 
 	if (p_image.empty())
 		return;
+
+	rasterizer->restore_framebuffer();
 
 	rasterizer->begin_frame();
 

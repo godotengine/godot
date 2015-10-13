@@ -11,7 +11,8 @@ def get_name():
 def can_build():
 
 	import sys
-	if sys.platform == 'darwin':
+	import os
+	if sys.platform == 'darwin' or os.environ.has_key("OSXCROSS_IOS"):
 		return True
 
 	return False
@@ -25,9 +26,11 @@ def get_opts():
 		('IPHONESDK', 'path to the iphone SDK', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/${IOS_SDK_VERSION}.sdk/'),
 		('game_center', 'Support for game center', 'yes'),
 		('store_kit', 'Support for in-app store', 'yes'),
+		('icloud', 'Support for iCloud', 'yes'),
 		('ios_gles22_override', 'Force GLES2.0 on iOS', 'yes'),
 		('ios_appirater', 'Enable Appirater', 'no'),
 		('ios_exceptions', 'Use exceptions when compiling on playbook', 'yes'),
+		('ios_triple', 'Triple for ios toolchain', ''),
 	]
 
 def get_flags():
@@ -48,9 +51,10 @@ def configure(env):
 
 #	env['CC'] = '$IPHONEPATH/Developer/usr/bin/gcc'
 #	env['CXX'] = '$IPHONEPATH/Developer/usr/bin/g++'
-	env['CC'] = '$IPHONEPATH/usr/bin/clang'
-	env['CXX'] = '$IPHONEPATH/usr/bin/clang++'
-	env['AR'] = 'ar'
+	env['CC'] = '$IPHONEPATH/usr/bin/${ios_triple}clang'
+	env['CXX'] = '$IPHONEPATH/usr/bin/${ios_triple}clang++'
+	env['AR'] = '$IPHONEPATH/usr/bin/${ios_triple}ar'
+	env['RANLIB'] = '$IPHONEPATH/usr/bin/${ios_triple}ranlib'
 
 	import string
 	if (env["bits"]=="64"):
@@ -104,6 +108,9 @@ def configure(env):
 	if env['store_kit'] == 'yes':
 		env.Append(CPPFLAGS=['-DSTOREKIT_ENABLED'])
 		env.Append(LINKFLAGS=['-framework', 'StoreKit'])
+	
+	if env['icloud'] == 'yes':
+		env.Append(CPPFLAGS=['-DICLOUD_ENABLED'])
 
 	env.Append(CPPPATH = ['$IPHONESDK/usr/include', '$IPHONESDK/System/Library/Frameworks/OpenGLES.framework/Headers', '$IPHONESDK/System/Library/Frameworks/AudioUnit.framework/Headers'])
 
@@ -130,6 +137,14 @@ def configure(env):
 
 	env['ENV']['CODESIGN_ALLOCATE'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate'
 	env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DMPC_FIXED_POINT'])
+
+	if(env["opus"]=="yes"):
+		env.opus_fixed_point="yes"
+		if(env["bits"]=="64"):
+			env.Append(CFLAGS=["-DOPUS_ARM64_OPT"])
+		else:
+			env.Append(CFLAGS=["-DOPUS_ARM_OPT"])
+
 	if env['ios_exceptions'] == 'yes':
 		env.Append(CPPFLAGS=['-fexceptions'])
 	else:

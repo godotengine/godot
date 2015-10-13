@@ -279,7 +279,7 @@ void NavigationPolygonInstance::set_enabled(bool p_enabled) {
 
 	}
 
-	if (get_tree()->is_editor_hint())
+	if (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())
 		update();
 
 //	update_gizmo();
@@ -338,7 +338,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAW: {
 
-			if (is_inside_tree() && get_tree()->is_editor_hint() && navpoly.is_valid()) {
+			if (is_inside_tree() && (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
 
 				DVector<Vector2> verts=navpoly->get_vertices();
 				int vsize = verts.size();
@@ -348,9 +348,9 @@ void NavigationPolygonInstance::_notification(int p_what) {
 
 				Color color;
 				if (enabled) {
-					color=Color(0.1,0.8,1.0,0.4);
+					color=get_tree()->get_debug_navigation_color();
 				} else {
-					color=Color(1.0,0.8,0.1,0.4);
+					color=get_tree()->get_debug_navigation_disabled_color();
 				}
 				Vector<Color> colors;
 				Vector<Vector2> vertices;
@@ -423,7 +423,7 @@ Ref<NavigationPolygon> NavigationPolygonInstance::get_navigation_polygon() const
 
 void NavigationPolygonInstance::_navpoly_changed() {
 
-	if (is_inside_tree() && get_tree()->is_editor_hint())
+	if (is_inside_tree() && (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()))
 		update();
 }
 

@@ -1181,8 +1181,22 @@ void OS_X11::process_xevents() {
 			XVisibilityEvent * visibility = (XVisibilityEvent *)&event;
 			minimized = (visibility->state == VisibilityFullyObscured);
 		} break;
+		case LeaveNotify: {
 
-		case FocusIn: 
+			if (main_loop && mouse_mode!=MOUSE_MODE_CAPTURED)
+				main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
+			if (input)
+				input->set_mouse_in_window(false);
+
+		} break;
+		case EnterNotify: {
+
+			if (main_loop && mouse_mode!=MOUSE_MODE_CAPTURED)
+				main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
+			if (input)
+				input->set_mouse_in_window(true);
+		} break;
+		case FocusIn:
 			minimized = false;
 #ifdef NEW_WM_API
 			if(current_videomode.fullscreen) {
@@ -1866,6 +1880,16 @@ void OS_X11::swap_buffers() {
 	context_gl->swap_buffers();
 }
 
+void OS_X11::alert(const String& p_alert,const String& p_title) {
+
+	List<String> args;
+	args.push_back("-center");
+	args.push_back("-title");
+	args.push_back(p_title);
+	args.push_back(p_alert);
+
+	execute("/usr/bin/xmessage",args,true);
+}
 
 void OS_X11::set_icon(const Image& p_icon) {
 	if (!p_icon.empty()) {

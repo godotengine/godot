@@ -58,6 +58,7 @@
 
 // plugins
 #include "plugins/sprite_frames_editor_plugin.h"
+#include "plugins/sprite_region_editor_plugin.h"
 #include "plugins/canvas_item_editor_plugin.h"
 #include "plugins/spatial_editor_plugin.h"
 #include "plugins/sample_editor_plugin.h"
@@ -93,7 +94,7 @@
 #include "plugins/light_occluder_2d_editor_plugin.h"
 #include "plugins/color_ramp_editor_plugin.h"
 #include "plugins/collision_shape_2d_editor_plugin.h"
-#include "os/input.h"
+#include "main/input_default.h"
 // end
 #include "tools/editor/io_plugins/editor_texture_import_plugin.h"
 #include "tools/editor/io_plugins/editor_scene_import_plugin.h"
@@ -2677,6 +2678,20 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			run_native->set_deploy_debug_remote(!ischecked);
 
 		} break;
+		case RUN_DEBUG_COLLISONS: {
+
+			bool ischecked = debug_button->get_popup()->is_item_checked( debug_button->get_popup()->get_item_index(RUN_DEBUG_COLLISONS));
+			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_DEBUG_COLLISONS),!ischecked);
+			run_native->set_debug_collisions(!ischecked);
+			editor_run.set_debug_collisions(!ischecked);
+		} break;
+		case RUN_DEBUG_NAVIGATION: {
+
+			bool ischecked = debug_button->get_popup()->is_item_checked( debug_button->get_popup()->get_item_index(RUN_DEBUG_NAVIGATION));
+			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_DEBUG_NAVIGATION),!ischecked);
+			run_native->set_debug_navigation(!ischecked);
+			editor_run.set_debug_navigation(!ischecked);
+		} break;
 		case SETTINGS_UPDATE_ALWAYS: {
 
 			update_menu->get_popup()->set_item_checked(0,true);
@@ -4390,11 +4405,15 @@ EditorNode::EditorNode() {
 
 	EditorHelp::generate_doc(); //before any editor classes are crated
 
-	if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton()) {
-		//only if no touchscreen ui hint, set emulation
-		InputDefault *id = Input::get_singleton()->cast_to<InputDefault>();
-		if (id)
+	InputDefault *id = Input::get_singleton()->cast_to<InputDefault>();
+
+	if (id) {
+
+		if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton()) {
+			//only if no touchscreen ui hint, set emulation
 			id->set_emulate_touch(false); //just disable just in case
+		}
+		id->set_custom_mouse_cursor(RES());
 	}
 
 
@@ -4955,6 +4974,9 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_check_item("Deploy Remote Debug",RUN_DEPLOY_REMOTE_DEBUG);
 	p->add_check_item("Deploy File Server Clients",RUN_DEPLOY_DUMB_CLIENTS);
+	p->add_separator();
+	p->add_check_item("Visible Collision Shapes",RUN_DEBUG_COLLISONS);
+	p->add_check_item("Visible Navigation",RUN_DEBUG_NAVIGATION);
 	p->connect("item_pressed",this,"_menu_option");
 
 	/*
@@ -5454,6 +5476,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( TileSetEditorPlugin(this) ) );
 	add_editor_plugin( memnew( TileMapEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SpriteFramesEditorPlugin(this) ) );
+	add_editor_plugin( memnew( SpriteRegionEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Particles2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Path2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( PathEditorPlugin(this) ) );

@@ -31,22 +31,50 @@
 
 #include "scene/resources/video_stream.h"
 #include "scene/gui/control.h"
+#include "servers/audio/audio_rb_resampler.h"
 
 class VideoPlayer : public Control {
 
 	OBJ_TYPE(VideoPlayer,Control);
 
+	struct InternalStream : public AudioServer::AudioStream {
+		VideoPlayer *player;
+		virtual int get_channel_count() const;
+		virtual void set_mix_rate(int p_rate); //notify the stream of the mix rate
+		virtual bool mix(int32_t *p_buffer,int p_frames);
+		virtual void update();
+	};
+
+
+	InternalStream internal_stream;
+	Ref<VideoStreamPlayback> playback;
 	Ref<VideoStream> stream;
+
+	int sp_get_channel_count() const;
+	void sp_set_mix_rate(int p_rate); //notify the stream of the mix rate
+	bool sp_mix(int32_t *p_buffer,int p_frames);
+	void sp_update();
+
+
 	RID stream_rid;
 
 	Ref<ImageTexture> texture;
 	Image last_frame;
 
+	AudioRBResampler resampler;
+
 	bool paused;
 	bool autoplay;
 	float volume;
+	double last_audio_time;
 	bool expand;
 	bool loops;
+	int buffering_ms;
+    int server_mix_rate;
+    int audio_track;
+
+	static int _audio_mix_callback(void* p_udata,const int16_t *p_data,int p_frames);
+
 
 protected:
 
@@ -81,6 +109,12 @@ public:
 
 	void set_autoplay(bool p_vol);
 	bool has_autoplay() const;
+
+    void set_audio_track(int p_track);
+    int get_audio_track() const;
+
+	void set_buffering_msec(int p_msec);
+	int get_buffering_msec() const;
 
 	VideoPlayer();
 	~VideoPlayer();

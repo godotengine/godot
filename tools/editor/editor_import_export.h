@@ -105,7 +105,7 @@ protected:
 
 	};
 
-	void gen_export_flags(Vector<String> &r_flags,bool p_dumb,bool p_remote_debug);
+	void gen_export_flags(Vector<String> &r_flags, int p_flags);
 	static Error save_pack_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total);
 
 public:
@@ -121,6 +121,13 @@ public:
 		IMAGE_COMPRESSION_ETC2, // ericsson new compression format (can handle alpha)
 	};
 
+	enum ExportFlags {
+		EXPORT_DUMB_CLIENT=1,
+		EXPORT_REMOTE_DEBUG=2,
+		EXPORT_VIEW_COLLISONS=4,
+		EXPORT_VIEW_NAVIGATION=8
+	};
+
 
 	Error export_project_files(EditorExportSaveFunction p_func, void* p_udata,bool p_make_bundles);
 
@@ -133,14 +140,14 @@ public:
 	virtual int get_device_count() const { return 0; }
 	virtual String get_device_name(int p_device) const { return ""; }
 	virtual String get_device_info(int p_device) const { return ""; }
-	virtual Error run(int p_device,bool p_dumb=false,bool p_remote_debug=false) { return OK; }
+	virtual Error run(int p_device,int p_flags) { return OK; }
 
 	virtual bool can_export(String *r_error=NULL) const=0;
 
 
 	virtual bool requieres_password(bool p_debug) const { return false; }
 	virtual String get_binary_extension() const=0;
-	virtual Error export_project(const String& p_path,bool p_debug,bool p_dumb=false,bool p_remote_debug=false)=0;
+	virtual Error export_project(const String& p_path,bool p_debug,int p_flags=0)=0;
 
 	EditorExportPlatform() {};
 };
@@ -190,7 +197,7 @@ public:
 	virtual ImageCompression get_image_compression() const { return IMAGE_COMPRESSION_BC; }
 
 	virtual String get_binary_extension() const { return binary_extension; }
-	virtual Error export_project(const String& p_path, bool p_debug, bool p_dumb=false, bool p_remote_debug=false);
+	virtual Error export_project(const String& p_path, bool p_debug, int p_flags=0);
 	virtual void set_release_binary32(const String& p_binary) { release_binary32=p_binary; }
 	virtual void set_debug_binary32(const String& p_binary) { debug_binary32=p_binary; }
 	virtual void set_release_binary64(const String& p_binary) { release_binary64=p_binary; }
@@ -245,7 +252,7 @@ protected:
 		ImageAction action;
 		bool make_atlas;
 		float lossy_quality;
-		int shrink;
+		float shrink;
 	};
 
 	Vector<Ref<EditorExportPlugin> > export_plugins;
@@ -253,7 +260,7 @@ protected:
 	Map<String,int> by_idx;
 	ImageAction image_action;
 	float image_action_compress_quality;
-	int image_shrink;
+	float image_shrink;
 	Set<String> image_formats;
 
 	ExportFilter export_filter;
@@ -303,8 +310,8 @@ public:
 	void set_export_image_action(ImageAction p_action);
 	ImageAction get_export_image_action() const;
 
-	void set_export_image_shrink(int p_shrink);
-	int get_export_image_shrink() const;
+	void set_export_image_shrink(float p_shrink);
+	float get_export_image_shrink() const;
 
 	void set_export_image_quality(float p_quality);
 	float get_export_image_quality() const;
@@ -319,8 +326,8 @@ public:
 	ImageAction image_export_group_get_image_action(const StringName& p_export_group) const;
 	void image_export_group_set_make_atlas(const StringName& p_export_group,bool p_make);
 	bool image_export_group_get_make_atlas(const StringName& p_export_group) const;
-	void image_export_group_set_shrink(const StringName& p_export_group,int p_amount);
-	int image_export_group_get_shrink(const StringName& p_export_group) const;
+	void image_export_group_set_shrink(const StringName& p_export_group,float p_amount);
+	float image_export_group_get_shrink(const StringName& p_export_group) const;
 	void image_export_group_set_lossy_quality(const StringName& p_export_group,float p_quality);
 	float image_export_group_get_lossy_quality(const StringName& p_export_group) const;
 

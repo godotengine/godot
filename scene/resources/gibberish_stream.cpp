@@ -29,6 +29,8 @@
 #include "gibberish_stream.h"
 #include "servers/audio_server.h"
 
+#if 0
+
 int AudioStreamGibberish::get_channel_count() const {
 
 	return 1;
@@ -328,3 +330,4 @@ AudioStreamGibberish::AudioStreamGibberish() {
 	paused=false;
 	active_voices=0;
 }
+#endif

@@ -126,6 +126,7 @@ private:
 	bool block_transform_notify;
 	bool behind;
 	bool use_parent_material;
+	bool notify_local_transform;
 
 	Ref<CanvasItemMaterial> material;
 
@@ -155,7 +156,7 @@ private:
 
 protected:
 
-	_FORCE_INLINE_ void _notify_transform() { if (!is_inside_tree()) return; _notify_transform(this); if (!block_transform_notify) notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED); }
+	_FORCE_INLINE_ void _notify_transform() { if (!is_inside_tree()) return; _notify_transform(this); if (!block_transform_notify && notify_local_transform) notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED); }
 
 	void item_rect_changed();
 
@@ -262,6 +263,10 @@ public:
 
 	Vector2 get_global_mouse_pos() const;
 	Vector2 get_local_mouse_pos() const;
+
+	void set_notify_local_transform(bool p_enable);
+	bool is_local_transform_notification_enabled() const;
+
 
 	CanvasItem();
 	~CanvasItem();

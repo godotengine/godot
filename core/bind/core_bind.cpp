@@ -732,6 +732,11 @@ int _OS::find_scancode_from_string(const String& p_code) const {
 	return find_keycode(p_code);
 }
 
+void _OS::alert(const String& p_alert,const String& p_title) {
+
+	OS::get_singleton()->alert(p_alert,p_title);
+}
+
 _OS *_OS::singleton=NULL;
 
 void _OS::_bind_methods() {
@@ -859,6 +864,7 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
 
+	ObjectTypeDB::bind_method(_MD("alert","text","title"),&_OS::alert,DEFVAL("Alert!"));
 
 
 	BIND_CONSTANT( DAY_SUNDAY );

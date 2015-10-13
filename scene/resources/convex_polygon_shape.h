@@ -42,6 +42,7 @@ protected:
 
 	virtual void _update_shape();
 
+	virtual Vector<Vector3> _gen_debug_mesh_lines();
 public:
 
 	void set_points(const DVector<Vector3>& p_points);

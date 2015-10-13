@@ -46,6 +46,7 @@ class Skeleton : public Spatial {
 		bool enabled;
 		int parent;
 
+		bool disable_rest;
 		Transform rest;
 		Transform rest_global_inverse;
 		 
@@ -57,7 +58,7 @@ class Skeleton : public Spatial {
 		
 		List<uint32_t> nodes_bound;
 		
-		Bone() { parent=-1; enabled=true; custom_pose_enable=false; }
+		Bone() { parent=-1; enabled=true; custom_pose_enable=false; disable_rest=false; }
 	};
 
 	bool rest_global_inverse_dirty;
@@ -110,6 +111,11 @@ public:
 	
 	void set_bone_parent(int p_bone, int p_parent);
 	int get_bone_parent(int p_bone) const;
+
+	void unparent_bone_and_rest(int p_idx);
+
+	void set_bone_disable_rest(int p_bone, bool p_disable);
+	bool is_bone_rest_disabled(int p_bone) const;
 
 	int get_bone_count() const;
 	

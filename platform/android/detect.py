@@ -38,8 +38,6 @@ def get_flags():
 		('nedmalloc', 'no'),
 		('builtin_zlib', 'no'),
                 ('openssl','builtin'), #use builtin openssl
-		('theora','no'), #use builtin openssl
-
         ]
 
 
@@ -197,6 +195,10 @@ def configure(env):
 
 	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL','-DMPC_FIXED_POINT'])
 #	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED','-DMPC_FIXED_POINT'])
+
+	if(env["opus"]=="yes"):
+		env.Append(CFLAGS=["-DOPUS_ARM_OPT"])
+		env.opus_fixed_point="yes"
 
 	if (env['android_stl']=='yes'):
 		#env.Append(CCFLAGS=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/system/include"])

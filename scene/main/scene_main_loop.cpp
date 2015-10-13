@@ -42,6 +42,8 @@
 #include "io/resource_loader.h"
 #include "viewport.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/material.h"
+#include "scene/resources/mesh.h"
 
 void SceneTree::tree_changed() {
 
@@ -470,7 +472,6 @@ void SceneTree::init() {
 	input_handled=false;
 
 
-	editor_hint=false;
 	pause=false;
 
 	root->_set_tree(this);
@@ -623,6 +624,175 @@ bool SceneTree::is_editor_hint() const {
 
 	return editor_hint;
 }
+
+void SceneTree::set_debug_collisions_hint(bool p_enabled) {
+
+	debug_collisions_hint=p_enabled;
+}
+
+bool SceneTree::is_debugging_collisions_hint() const {
+
+	return debug_collisions_hint;
+}
+
+void SceneTree::set_debug_navigation_hint(bool p_enabled) {
+
+	debug_navigation_hint=p_enabled;
+}
+
+bool SceneTree::is_debugging_navigation_hint() const {
+
+	return debug_navigation_hint;
+}
+
+void SceneTree::set_debug_collisions_color(const Color& p_color) {
+
+	debug_collisions_color=p_color;
+}
+
+Color SceneTree::get_debug_collisions_color() const {
+
+	return debug_collisions_color;
+}
+
+void SceneTree::set_debug_collision_contact_color(const Color& p_color) {
+
+	debug_collision_contact_color=p_color;
+}
+
+Color SceneTree::get_debug_collision_contact_color() const {
+
+	return debug_collision_contact_color;
+}
+
+void SceneTree::set_debug_navigation_color(const Color& p_color) {
+
+	debug_navigation_color=p_color;
+}
+
+Color SceneTree::get_debug_navigation_color() const {
+
+	return debug_navigation_color;
+}
+
+void SceneTree::set_debug_navigation_disabled_color(const Color& p_color) {
+
+	debug_navigation_disabled_color=p_color;
+}
+
+Color SceneTree::get_debug_navigation_disabled_color() const {
+
+	return debug_navigation_disabled_color;
+}
+
+Ref<Material> SceneTree::get_debug_navigation_material() {
+
+	if (navigation_material.is_valid())
+		return navigation_material;
+
+	Ref<FixedMaterial> line_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
+	line_material->set_flag(Material::FLAG_UNSHADED, true);
+	line_material->set_line_width(3.0);
+	line_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+	line_material->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY, true);
+	line_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,get_debug_navigation_color());
+
+	navigation_material=line_material;
+
+	return navigation_material;
+
+}
+
+Ref<Material> SceneTree::get_debug_navigation_disabled_material(){
+
+	if (navigation_disabled_material.is_valid())
+		return navigation_disabled_material;
+
+	Ref<FixedMaterial> line_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
+	line_material->set_flag(Material::FLAG_UNSHADED, true);
+	line_material->set_line_width(3.0);
+	line_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+	line_material->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY, true);
+	line_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,get_debug_navigation_disabled_color());
+
+	navigation_disabled_material=line_material;
+
+	return navigation_disabled_material;
+
+}
+Ref<Material> SceneTree::get_debug_collision_material() {
+
+	if (collision_material.is_valid())
+		return collision_material;
+
+
+	Ref<FixedMaterial> line_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
+	line_material->set_flag(Material::FLAG_UNSHADED, true);
+	line_material->set_line_width(3.0);
+	line_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+	line_material->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY, true);
+	line_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,get_debug_collisions_color());
+
+	collision_material=line_material;
+
+	return collision_material;
+}
+
+Ref<Mesh> SceneTree::get_debug_contact_mesh() {
+
+	if (debug_contact_mesh.is_valid())
+		return debug_contact_mesh;
+
+	debug_contact_mesh = Ref<Mesh>( memnew( Mesh ) );
+
+	Ref<FixedMaterial> mat = memnew( FixedMaterial );
+	mat->set_flag(Material::FLAG_UNSHADED,true);
+	mat->set_flag(Material::FLAG_DOUBLE_SIDED,true);
+	mat->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
+	mat->set_parameter(FixedMaterial::PARAM_DIFFUSE,get_debug_collision_contact_color());
+
+	Vector3 diamond[6]={
+		Vector3(-1, 0, 0),
+		Vector3( 1, 0, 0),
+		Vector3( 0, -1, 0),
+		Vector3( 0, 1, 0),
+		Vector3( 0, 0, -1),
+		Vector3( 0, 0, 1)
+	};
+
+	int diamond_faces[8*3]={
+		0,2,4,
+		0,3,4,
+		1,2,4,
+		1,3,4,
+		0,2,5,
+		0,3,5,
+		1,2,5,
+		1,3,5,
+	};
+
+	DVector<int> indices;
+	for(int i=0;i<8*3;i++)
+		indices.push_back(diamond_faces[i]);
+
+	DVector<Vector3> vertices;
+	for(int i=0;i<6;i++)
+		vertices.push_back(diamond[i]*0.1);
+
+	Array arr;
+	arr.resize(Mesh::ARRAY_MAX);
+	arr[Mesh::ARRAY_VERTEX]=vertices;
+	arr[Mesh::ARRAY_INDEX]=indices;
+
+
+	debug_contact_mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES,arr);
+	debug_contact_mesh->surface_set_material(0,mat);
+
+	return debug_contact_mesh;
+
+}
+
+
 
 void SceneTree::set_pause(bool p_enabled) {
 
@@ -1424,6 +1594,11 @@ void SceneTree::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_editor_hint","enable"),&SceneTree::set_editor_hint);
 	ObjectTypeDB::bind_method(_MD("is_editor_hint"),&SceneTree::is_editor_hint);
+	ObjectTypeDB::bind_method(_MD("set_debug_collisions_hint","enable"),&SceneTree::set_debug_collisions_hint);
+	ObjectTypeDB::bind_method(_MD("is_debugging_collisions_hint"),&SceneTree::is_debugging_collisions_hint);
+	ObjectTypeDB::bind_method(_MD("set_debug_navigation_hint","enable"),&SceneTree::set_debug_navigation_hint);
+	ObjectTypeDB::bind_method(_MD("is_debugging_navigation_hint"),&SceneTree::is_debugging_navigation_hint);
+
 #ifdef TOOLS_ENABLED
 	ObjectTypeDB::bind_method(_MD("set_edited_scene_root","scene"),&SceneTree::set_edited_scene_root);
 	ObjectTypeDB::bind_method(_MD("get_edited_scene_root"),&SceneTree::get_edited_scene_root);
@@ -1490,10 +1665,23 @@ void SceneTree::_bind_methods() {
 
 }
 
+SceneTree *SceneTree::singleton=NULL;
+
 SceneTree::SceneTree() {
 
+	singleton=this;
 	_quit=false;
 	initialized=false;
+	editor_hint=false;
+	debug_collisions_hint=false;
+	debug_navigation_hint=false;
+	debug_collisions_color=GLOBAL_DEF("debug/collision_shape_color",Color(0.0,0.6,0.7,0.5));
+	debug_collision_contact_color=GLOBAL_DEF("debug/collision_contact_color",Color(1.0,0.2,0.1,0.8));
+	debug_navigation_color=GLOBAL_DEF("debug/navigation_geometry_color",Color(0.1,1.0,0.7,0.4));
+	debug_navigation_disabled_color=GLOBAL_DEF("debug/navigation_disabled_geometry_color",Color(1.0,0.7,0.1,0.4));
+	collision_debug_contacts=GLOBAL_DEF("debug/collision_max_contacts_displayed",10000);
+
+
 	tree_version=1;
 	fixed_process_time=1;
 	idle_process_time=1;
