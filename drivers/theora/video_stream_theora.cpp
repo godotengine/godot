@@ -238,6 +238,8 @@ void VideoStreamPlaybackTheora::set_file(const String& p_file) {
 	/* Ogg file open; parse the headers */
 	/* Only interested in Vorbis/Theora streams */
 	int stateflag = 0;
+
+    int audio_track_skip=audio_track;
 	while(!stateflag){
 		int ret=buffer_data();
 		if(ret==0)break;
@@ -264,8 +266,14 @@ void VideoStreamPlaybackTheora::set_file(const String& p_file) {
 				theora_p=1;
 			}else if(!vorbis_p && vorbis_synthesis_headerin(&vi,&vc,&op)>=0){
 				/* it is vorbis */
-				copymem(&vo,&test,sizeof(test));
-				vorbis_p=1;
+                if (audio_track_skip) {
+                    vorbis_info_clear(&vi);
+                    vorbis_comment_clear(&vc);
+                    audio_track_skip--;
+                } else {
+                    copymem(&vo,&test,sizeof(test));
+                    vorbis_p=1;
+                }
 			}else{
 				/* whatever it is, we don't care about it */
 				ogg_stream_clear(&test);
@@ -677,7 +685,7 @@ int VideoStreamPlaybackTheora::get_channels() const{
 
 void VideoStreamPlaybackTheora::set_audio_track(int p_idx) {
 
-
+    audio_track=p_idx;
 }
 
 int VideoStreamPlaybackTheora::get_mix_rate() const{
@@ -701,6 +709,7 @@ VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
 	texture = Ref<ImageTexture>( memnew(ImageTexture ));
 	mix_callback=NULL;
 	mix_udata=NULL;
+    audio_track=0;
 	delay_compensation=0;
 };
 

@@ -195,7 +195,12 @@ void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 	stop();
 
 	stream=p_stream;
-	playback=stream->instance_playback();
+    if (stream.is_valid()) {
+        stream->set_audio_track(audio_track);
+        playback=stream->instance_playback();
+    } else {
+        playback=Ref<VideoStreamPlayback>();
+    }
 
 	if (!playback.is_null()) {
 		playback->set_loop(loops);
@@ -280,6 +285,14 @@ int VideoPlayer::get_buffering_msec() const{
 	return buffering_ms;
 }
 
+void VideoPlayer::set_audio_track(int p_track) {
+    audio_track=p_track;
+}
+
+int VideoPlayer::get_audio_track() const {
+
+    return audio_track;
+}
 
 
 void VideoPlayer::set_volume(float p_vol) {
@@ -353,6 +366,9 @@ void VideoPlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_volume_db","db"),&VideoPlayer::set_volume_db);
 	ObjectTypeDB::bind_method(_MD("get_volume_db"),&VideoPlayer::get_volume_db);
 
+    ObjectTypeDB::bind_method(_MD("set_audio_track","track"),&VideoPlayer::set_audio_track);
+    ObjectTypeDB::bind_method(_MD("get_audio_track"),&VideoPlayer::get_audio_track);
+
 	ObjectTypeDB::bind_method(_MD("get_stream_name"),&VideoPlayer::get_stream_name);
 
 	ObjectTypeDB::bind_method(_MD("get_stream_pos"),&VideoPlayer::get_stream_pos);
@@ -371,7 +387,8 @@ void VideoPlayer::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::REAL, "stream/volume_db", PROPERTY_HINT_RANGE,"-80,24,0.01"), _SCS("set_volume_db"), _SCS("get_volume_db") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/autoplay"), _SCS("set_autoplay"), _SCS("has_autoplay") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/paused"), _SCS("set_paused"), _SCS("is_paused") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
+    ADD_PROPERTY( PropertyInfo(Variant::INT, "stream/audio_track",PROPERTY_HINT_RANGE,"0,128,1"), _SCS("set_audio_track"), _SCS("get_audio_track") );
+    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
 }
 
 
@@ -383,6 +400,8 @@ VideoPlayer::VideoPlayer() {
 	autoplay = false;
 	expand = true;
 	loops = false;
+
+    audio_track=0;
 
 	buffering_ms=500;
 	server_mix_rate=44100;

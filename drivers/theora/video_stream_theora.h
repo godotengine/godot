@@ -65,6 +65,8 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	AudioMixCallback mix_callback;
 	void* mix_udata;
 
+    int audio_track;
+
 protected:
 
 	void clear();
@@ -113,15 +115,22 @@ class VideoStreamTheora : public VideoStream {
 	OBJ_TYPE(VideoStreamTheora,VideoStream);
 
 	String file;
+    int audio_track;
+
+
 public:
 
 	Ref<VideoStreamPlayback> instance_playback() {
 		Ref<VideoStreamPlaybackTheora> pb = memnew( VideoStreamPlaybackTheora );
+        pb->set_audio_track(audio_track);
 		pb->set_file(file);
 		return pb;
 	}
 
 	void set_file(const String& p_file) { file=p_file; }
+    void set_audio_track(int p_track) { audio_track=p_track; }
+
+    VideoStreamTheora() { audio_track=0; }
 
 };
 

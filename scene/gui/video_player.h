@@ -70,7 +70,8 @@ class VideoPlayer : public Control {
 	bool expand;
 	bool loops;
 	int buffering_ms;
-	int server_mix_rate;
+    int server_mix_rate;
+    int audio_track;
 
 	static int _audio_mix_callback(void* p_udata,const int16_t *p_data,int p_frames);
 
@@ -108,6 +109,9 @@ public:
 
 	void set_autoplay(bool p_vol);
 	bool has_autoplay() const;
+
+    void set_audio_track(int p_track);
+    int get_audio_track() const;
 
 	void set_buffering_msec(int p_msec);
 	int get_buffering_msec() const;
