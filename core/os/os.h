@@ -58,6 +58,7 @@ class OS {
 	float _fps;
 	int _target_fps;
 	float _time_scale;
+	bool _pixel_snap;
 
 	char *last_error;
 
@@ -393,7 +394,7 @@ public:
 	void set_time_scale(float p_scale);
 	float get_time_scale() const;
 
-
+	_FORCE_INLINE_ bool get_use_pixel_snap() const { return _pixel_snap; }
 
 	OS();	
 	virtual ~OS();
