@@ -32,7 +32,7 @@
 
 #include "os/input.h"
 #include "drivers/unix/os_unix.h"
-
+#include "main/input_default.h"
 #include "servers/visual_server.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "servers/visual/rasterizer.h"

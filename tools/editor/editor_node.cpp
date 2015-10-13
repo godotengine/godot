@@ -58,6 +58,7 @@
 
 // plugins
 #include "plugins/sprite_frames_editor_plugin.h"
+#include "plugins/sprite_region_editor_plugin.h"
 #include "plugins/canvas_item_editor_plugin.h"
 #include "plugins/spatial_editor_plugin.h"
 #include "plugins/sample_editor_plugin.h"
@@ -93,7 +94,7 @@
 #include "plugins/light_occluder_2d_editor_plugin.h"
 #include "plugins/color_ramp_editor_plugin.h"
 #include "plugins/collision_shape_2d_editor_plugin.h"
-#include "os/input.h"
+#include "main/input_default.h"
 // end
 #include "tools/editor/io_plugins/editor_texture_import_plugin.h"
 #include "tools/editor/io_plugins/editor_scene_import_plugin.h"
@@ -4404,11 +4405,15 @@ EditorNode::EditorNode() {
 
 	EditorHelp::generate_doc(); //before any editor classes are crated
 
-	if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton()) {
-		//only if no touchscreen ui hint, set emulation
-		InputDefault *id = Input::get_singleton()->cast_to<InputDefault>();
-		if (id)
+	InputDefault *id = Input::get_singleton()->cast_to<InputDefault>();
+
+	if (id) {
+
+		if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton()) {
+			//only if no touchscreen ui hint, set emulation
 			id->set_emulate_touch(false); //just disable just in case
+		}
+		id->set_custom_mouse_cursor(RES());
 	}
 
 
@@ -5471,6 +5476,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( TileSetEditorPlugin(this) ) );
 	add_editor_plugin( memnew( TileMapEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SpriteFramesEditorPlugin(this) ) );
+	add_editor_plugin( memnew( SpriteRegionEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Particles2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Path2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( PathEditorPlugin(this) ) );

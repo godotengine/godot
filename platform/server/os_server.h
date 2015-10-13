@@ -30,7 +30,7 @@
 #define OS_SERVER_H
 
 
-#include "os/input.h"
+#include "main/input_default.h"
 #include "drivers/unix/os_unix.h"
 #include "servers/visual_server.h"
 #include "servers/visual/rasterizer.h"

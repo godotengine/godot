@@ -22,7 +22,7 @@ int AudioStreamPlaybackSpeex::mix(int16_t* p_buffer,int p_frames) {
 	//printf("update, loops %i, read ofs %i\n", (int)loops, read_ofs);
 	//printf("playing %i, paused %i\n", (int)playing, (int)paused);
 
-	if (!active || !playing || paused || !data.size())
+	if (!active || !playing || !data.size())
 		return 0;
 
 	/*
@@ -490,6 +490,8 @@ AudioStreamPlaybackSpeex::AudioStreamPlaybackSpeex() {
 	stream_channels=1;
 	stream_srate=1;
 	stream_minbuff_size=1;
+	playing=false;
+
 
 }
 

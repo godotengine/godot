@@ -37,6 +37,9 @@
 #include "vorbis/audio_stream_ogg_vorbis.h"
 #endif
 
+#ifdef OPUS_ENABLED
+#include "opus/audio_stream_opus.h"
+#endif
 
 #ifdef SPEEX_ENABLED
 #include "speex/audio_stream_speex.h"
@@ -86,6 +89,10 @@ static ResourceFormatLoaderAudioStreamOGG *vorbis_stream_loader=NULL;
 
 #ifdef VORBIS_ENABLED
 static ResourceFormatLoaderAudioStreamOGGVorbis *vorbis_stream_loader=NULL;
+#endif
+
+#ifdef OPUS_ENABLED
+static ResourceFormatLoaderAudioStreamOpus *opus_stream_loader=NULL;
 #endif
 
 #ifdef SPEEX_ENABLED
@@ -175,6 +182,11 @@ void register_driver_types() {
 	ObjectTypeDB::register_type<AudioStreamOGGVorbis>();
 #endif
 
+#ifdef OPUS_ENABLED
+	opus_stream_loader=memnew( ResourceFormatLoaderAudioStreamOpus );
+	ResourceLoader::add_resource_format_loader( opus_stream_loader );
+	ObjectTypeDB::register_type<AudioStreamOpus>();
+#endif
 
 #ifdef DDS_ENABLED
 	resource_loader_dds = memnew( ResourceFormatDDS );
@@ -246,6 +258,10 @@ void unregister_driver_types() {
 
 #ifdef VORBIS_ENABLED
 	memdelete( vorbis_stream_loader );
+#endif
+
+#ifdef OPUS_ENABLED
+	memdelete( opus_stream_loader );
 #endif
 
 #ifdef SPEEX_ENABLED

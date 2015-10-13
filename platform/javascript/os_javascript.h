@@ -40,6 +40,7 @@
 #include "servers/visual/rasterizer.h"
 #include "audio_server_javascript.h"
 #include "audio_driver_javascript.h"
+#include "main/input_default.h"
 
 typedef void (*GFXInitFunc)(void *ud,bool gl2,int w, int h, bool fs);
 typedef int (*OpenURIFunc)(const String&);

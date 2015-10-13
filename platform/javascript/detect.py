@@ -76,6 +76,9 @@ def configure(env):
 		#env.Append(CCFLAGS=['-D_DEBUG', '-Wall', '-g4', '-DDEBUG_ENABLED'])
 		env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
 
+	if(env["opus"]=="yes"):
+		env.opus_fixed_point="yes"
+
 	env.Append(CPPFLAGS=["-fno-exceptions",'-DNO_SAFE_CAST','-fno-rtti'])
 	env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL','-DMPC_FIXED_POINT','-DTYPED_METHOD_BIND','-DNO_THREADS'])
 	env.Append(CPPFLAGS=['-DGLES2_ENABLED'])

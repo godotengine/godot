@@ -400,6 +400,102 @@ Image::Format Image::get_format() const{
 	return format;
 }
 
+static double _bicubic_interp_kernel( double x ) {
+
+	x = ABS(x);
+
+	double bc = 0;
+
+	if ( x <= 1 )
+		bc = ( 1.5 * x - 2.5 ) * x * x + 1;
+	else if ( x < 2 )
+		bc = ( ( -0.5 * x + 2.5 ) * x - 4 ) * x + 2;
+
+
+	return bc;
+}
+
+template<int CC>
+static void _scale_cubic(const uint8_t* p_src, uint8_t* p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
+
+
+	// get source image size
+	int width   = p_src_width;
+	int height  = p_src_height;
+	double xfac = (double) width / p_dst_width;
+	double yfac = (double) height / p_dst_height;
+	// coordinates of source points and cooefficiens
+	double  ox, oy, dx, dy, k1, k2;
+	int     ox1, oy1, ox2, oy2;
+	// destination pixel values
+	// width and height decreased by 1
+	int ymax = height - 1;
+	int xmax = width - 1;
+	// temporary pointer
+
+	for ( int y = 0; y < p_dst_height; y++ ) {
+		// Y coordinates
+		oy  = (double) y * yfac - 0.5f;
+		oy1 = (int) oy;
+		dy  = oy - (double) oy1;
+
+		for ( int x = 0; x < p_dst_width; x++ )	{
+			// X coordinates
+			ox  = (double) x * xfac - 0.5f;
+			ox1 = (int) ox;
+			dx  = ox - (double) ox1;
+
+			// initial pixel value
+
+			uint8_t *dst=p_dst + (y*p_dst_width+x)*CC;
+
+			double color[CC];
+			for(int i=0;i<CC;i++) {
+				color[i]=0;
+			}
+
+
+
+			for ( int n = -1; n < 3; n++ ) {
+				// get Y cooefficient
+				k1 = _bicubic_interp_kernel( dy - (double) n );
+
+				oy2 = oy1 + n;
+				if ( oy2 < 0 )
+					oy2 = 0;
+				if ( oy2 > ymax )
+					oy2 = ymax;
+
+				for ( int m = -1; m < 3; m++ ) {
+					// get X cooefficient
+					k2 = k1 * _bicubic_interp_kernel( (double) m - dx );
+
+					ox2 = ox1 + m;
+					if ( ox2 < 0 )
+						ox2 = 0;
+					if ( ox2 > xmax )
+						ox2 = xmax;
+
+					// get pixel of original image
+					const uint8_t *p = p_src + (oy2 * p_src_width + ox2)*CC;
+
+					for(int i=0;i<CC;i++) {
+
+						color[i]+=p[i]*k2;
+					}
+				}
+			}
+
+			for(int i=0;i<CC;i++) {
+				dst[i]=CLAMP(Math::fast_ftoi(color[i]),0,255);
+			}
+		}
+	}
+}
+
+
+
+
 template<int CC>
 static void _scale_bilinear(const uint8_t* p_src, uint8_t* p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 
@@ -559,6 +655,17 @@ void Image::resize( int p_width, int p_height, Interpolation p_interpolation ) {
 			}
 
 		} break;
+		case INTERPOLATE_CUBIC: {
+
+			switch(get_format_pixel_size(format)) {
+				case 1: _scale_cubic<1>(r_ptr,w_ptr,width,height,p_width,p_height); break;
+				case 2: _scale_cubic<2>(r_ptr,w_ptr,width,height,p_width,p_height); break;
+				case 3: _scale_cubic<3>(r_ptr,w_ptr,width,height,p_width,p_height); break;
+				case 4: _scale_cubic<4>(r_ptr,w_ptr,width,height,p_width,p_height); break;
+			}
+
+		} break;
+
 
 	}
 

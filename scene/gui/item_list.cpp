@@ -1025,7 +1025,7 @@ void ItemList::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("get_item_text","idx"),&ItemList::get_item_text);
 
 	ObjectTypeDB::bind_method(_MD("set_item_icon","idx","icon:Texture"),&ItemList::set_item_icon);
-	ObjectTypeDB::bind_method(_MD("get_item_icon:Tedture","idx"),&ItemList::get_item_icon);
+	ObjectTypeDB::bind_method(_MD("get_item_icon:Texture","idx"),&ItemList::get_item_icon);
 
 	ObjectTypeDB::bind_method(_MD("set_item_selectable","idx","selectable"),&ItemList::set_item_selectable);
 	ObjectTypeDB::bind_method(_MD("is_item_selectable","idx"),&ItemList::is_item_selectable);
