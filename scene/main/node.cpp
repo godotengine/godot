@@ -31,6 +31,7 @@
 #include "message_queue.h"
 #include "scene/scene_string_names.h"
 #include "scene/resources/packed_scene.h"
+#include "modules/gdscript/gd_script.h"
 #include "io/resource_loader.h"
 #include "viewport.h"
 
@@ -1332,7 +1333,13 @@ String Node::get_filename() const {
 	return data.filename;
 }
 
+String Node::get_default_gdscript_code() const {
+	String code = String() + "\n\n";
 
+	code += GDScriptLanguage::get_singleton()->get_template_body();
+
+	return code;
+}
 
 void Node::generate_instance_state() {
 

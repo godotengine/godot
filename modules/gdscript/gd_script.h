@@ -332,6 +332,10 @@ public:
 
 	Variant _new(const Variant** p_args,int p_argcount,Variant::CallError& r_error);
 	virtual bool can_instance() const;
+	virtual void setup_new_resource(Object* p_owner) {
+		String code = p_owner->get_default_gdscript_code();
+		set_source_code("\nextends " + p_owner->get_type_name() + code);
+	}
 
 	virtual StringName get_instance_base_type() const; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance* instance_create(Object *p_this);
@@ -520,6 +524,7 @@ public:
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
 	virtual String get_template(const String& p_class_name, const String& p_base_class_name) const;
+	String get_template_body() const;
 	virtual bool validate(const String& p_script,int &r_line_error,int &r_col_error,String& r_test_error, const String& p_path="",List<String> *r_functions=NULL) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;

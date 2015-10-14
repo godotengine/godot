@@ -46,8 +46,14 @@ void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 }
 String GDScriptLanguage::get_template(const String& p_class_name, const String& p_base_class_name) const {
 
-	String _template = String()+
-	"\nextends %BASE%\n\n"+
+	String _template = String()+"\nextends %BASE%\n\n"+get_template_body();
+
+	return _template.replace("%BASE%",p_base_class_name);
+}
+
+
+String GDScriptLanguage::get_template_body() const {
+	return String()+
 	"# member variables here, example:\n"+
 	"# var a=2\n"+
 	"# var b=\"textvar\"\n\n"+
@@ -56,8 +62,6 @@ String GDScriptLanguage::get_template(const String& p_class_name, const String& 
 	"\tpass\n"+
 	"\n"+
 	"\n";
-
-	return _template.replace("%BASE%",p_base_class_name);
 }
 
 

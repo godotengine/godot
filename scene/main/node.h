@@ -229,7 +229,9 @@ public:
 	
 	void set_filename(const String& p_filename);
 	String get_filename() const;
-	
+
+	virtual String get_default_gdscript_code() const;
+
 	/* NOTIFICATIONS */
 	
 	void propagate_notification(int p_notification);

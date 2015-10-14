@@ -120,7 +120,9 @@ protected:
 	void _set_path(const String& p_path);
 	void _take_over_path(const String& p_path);
 public:
-	
+
+	virtual void setup_new_resource(Object *p_owner) {}
+
 	virtual bool can_reload_from_file();
 	virtual void reload_from_file();
 

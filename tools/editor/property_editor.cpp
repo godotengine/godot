@@ -198,6 +198,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					Resource *res=obj->cast_to<Resource>();
 					ERR_BREAK( !res );
 
+					res->setup_new_resource(owner);
 					v=Ref<Resource>(res).get_ref_ptr();
 					emit_signal("variant_changed");
 
