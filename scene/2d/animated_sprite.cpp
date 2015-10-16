@@ -28,6 +28,8 @@
 /*************************************************************************/
 #include "animated_sprite.h"
 #include "scene/scene_string_names.h"
+#include "os/os.h"
+
 void AnimatedSprite::edit_set_pivot(const Point2& p_pivot) {
 
 	set_offset(p_pivot);
@@ -153,6 +155,9 @@ void AnimatedSprite::_notification(int p_what) {
 			if (centered)
 				ofs-=s/2;
 
+			if (OS::get_singleton()->get_use_pixel_snap()) {
+				ofs=ofs.floor();
+			}
 			Rect2 dst_rect(ofs,s);
 
 			if (hflip)

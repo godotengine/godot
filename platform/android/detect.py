@@ -38,8 +38,6 @@ def get_flags():
 		('nedmalloc', 'no'),
 		('builtin_zlib', 'no'),
                 ('openssl','builtin'), #use builtin openssl
-		('theora','no'), #use builtin openssl
-
         ]
 
 
