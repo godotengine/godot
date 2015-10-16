@@ -1254,6 +1254,11 @@ Error OS_OSX::shell_open(String p_uri) {
 	return OK;
 }
 
+String OS_OSX::get_locale() const {
+  NSString* preferredLang = [[NSLocale preferredLanguages] objectAtIndex:0];
+	return [preferredLang UTF8String];
+}
+
 void OS_OSX::swap_buffers() {
 
 	[context flushBuffer];
