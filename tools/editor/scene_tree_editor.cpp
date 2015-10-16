@@ -67,6 +67,26 @@ void SceneTreeEditor::_subscene_option(int p_idx) {
 			//node->set_instance_children_editable(editable);
 			EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node,editable);
 			instance_menu->set_item_checked(0,editable);
+			if (editable) {
+				node->set_scene_instance_load_placeholder(false);
+				instance_menu->set_item_checked(1,false);
+			}
+
+			_update_tree();
+
+		} break;
+		case SCENE_MENU_USE_PLACEHOLDER: {
+
+			bool placeholder = node->get_scene_instance_load_placeholder();
+			placeholder = !placeholder;
+
+			//node->set_instance_children_editable(editable);
+			if (placeholder) {
+				EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node,false);
+			}
+			node->set_scene_instance_load_placeholder(placeholder);
+			instance_menu->set_item_checked(0,false);
+			instance_menu->set_item_checked(1,placeholder);
 
 			_update_tree();
 
@@ -126,6 +146,15 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 				instance_menu->set_item_checked(0,true);
 			else
 				instance_menu->set_item_checked(0,false);
+
+			if (n->get_owner()==get_scene_node()) {
+				instance_menu->set_item_checked(1,n->get_scene_instance_load_placeholder());
+				instance_menu->set_item_disabled(1,false);
+			} else {
+
+				instance_menu->set_item_checked(1,false);
+				instance_menu->set_item_disabled(1,true);
+			}
 
 			instance_menu->popup();
 			instance_node=n->get_instance_ID();
@@ -520,7 +549,7 @@ void SceneTreeEditor::_notification(int p_what) {
 
 		get_tree()->connect("tree_changed",this,"_tree_changed");
 		get_tree()->connect("node_removed",this,"_node_removed");
-		instance_menu->set_item_icon(2,get_icon("Load","EditorIcons"));
+		instance_menu->set_item_icon(3,get_icon("Load","EditorIcons"));
 		tree->connect("item_collapsed",this,"_cell_collapsed");
 		inheritance_menu->set_item_icon(2,get_icon("Load","EditorIcons"));
 		clear_inherit_confirm->connect("confirmed",this,"_subscene_option",varray(SCENE_MENU_CLEAR_INHERITANCE_CONFIRM));
@@ -826,6 +855,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 
 	instance_menu = memnew( PopupMenu );
 	instance_menu->add_check_item("Editable Children",SCENE_MENU_EDITABLE_CHILDREN);
+	instance_menu->add_check_item("Load As Placeholder",SCENE_MENU_USE_PLACEHOLDER);
 	instance_menu->add_separator();
 	instance_menu->add_item("Open in Editor",SCENE_MENU_OPEN);
 	instance_menu->connect("item_pressed",this,"_subscene_option");

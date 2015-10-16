@@ -45,13 +45,9 @@ class SceneState : public Reference {
 
 	int base_scene_idx;
 
-	//missing - instances
-	//missing groups
-	//missing - owner
-	//missing - override names and values
-
 	enum {
 		FLAG_ID_IS_PATH=(1<<30),
+		FLAG_INSTANCE_IS_PLACEHOLDER=(1<<30),
 		FLAG_MASK=(1<<24)-1,
 		NO_PARENT_SAVED=0x7FFFFFFF,
 		TYPE_INSTANCED=0x7FFFFFFF,
@@ -105,7 +101,10 @@ class SceneState : public Reference {
 
 	_FORCE_INLINE_ Ref<SceneState> _get_base_scene_state() const;
 
+	static bool disable_placeholders;
 public:
+
+	static void set_disable_placeholders(bool p_disable);
 
 	int find_node_by_path(const NodePath& p_node) const;
 	Variant get_property_value(int p_node,const StringName& p_property,bool &found) const;

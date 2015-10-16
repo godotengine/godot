@@ -1052,6 +1052,7 @@ void Node::get_owned_by(Node *p_by,List<Node*> *p_owned) {
 
 void Node::_set_owner_nocheck(Node* p_owner) {
 
+	ERR_FAIL_COND(data.owner);
 	data.owner=p_owner;
 	data.owner->data.owned.push_back( this );
 	data.OW = data.owner->data.owned.back();
@@ -1443,13 +1444,14 @@ Ref<SceneState> Node::get_scene_inherited_state() const{
 	return data.inherited_state;
 }
 
-Vector<StringName> Node::get_instance_groups() const {
+void Node::set_scene_instance_load_placeholder(bool p_enable) {
 
-	return data.instance_groups;
+	data.use_placeholder=p_enable;
 }
-Vector<Node::Connection> Node::get_instance_connections() const{
 
-	return data.instance_connections;
+bool Node::get_scene_instance_load_placeholder() const{
+
+	return data.use_placeholder;
 }
 
 int Node::get_position_in_parent() const {
@@ -2109,6 +2111,7 @@ Node::Node() {
 	data.parent_owned=false;
 	data.in_constructor=true;
 	data.viewport=NULL;
+	data.use_placeholder=false;
 }
 
 Node::~Node() {
@@ -2125,3 +2128,4 @@ Node::~Node() {
 }
 
 
+////////////////////////////////

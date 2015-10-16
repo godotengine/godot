@@ -32,6 +32,7 @@
 #include "scene/3d/spatial.h"
 #include "scene/gui/control.h"
 #include "scene/2d/node_2d.h"
+#include "scene/main/instance_placeholder.h"
 
 #define PACK_VERSION 2
 
@@ -100,6 +101,7 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 
 		if (i==0 && base_scene_idx>=0) {
 			//scene inheritance on root node
+			print_line("scene inherit");
 			Ref<PackedScene> sdata = props[ base_scene_idx ];
 			ERR_FAIL_COND_V( !sdata.is_valid(), NULL);
 			node = sdata->instance(p_gen_edit_state);
@@ -110,12 +112,32 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 
 		} else if (n.instance>=0) {
 			//instance a scene into this node
-			Ref<PackedScene> sdata = props[ n.instance ];
-			ERR_FAIL_COND_V( !sdata.is_valid(), NULL);
-			node = sdata->instance(p_gen_edit_state);
-			ERR_FAIL_COND_V(!node,NULL);
+			print_line("instance");
+			if (n.instance&FLAG_INSTANCE_IS_PLACEHOLDER) {
+
+				String path = props[n.instance&FLAG_MASK];
+				if (disable_placeholders) {
+
+					Ref<PackedScene> sdata = ResourceLoader::load(path,"PackedScene");
+					ERR_FAIL_COND_V( !sdata.is_valid(), NULL);
+					node = sdata->instance(p_gen_edit_state);
+					ERR_FAIL_COND_V(!node,NULL);
+				} else {
+					InstancePlaceholder *ip = memnew( InstancePlaceholder );
+					ip->set_path(path);
+					node=ip;
+				}
+				node->set_scene_instance_load_placeholder(true);
+			} else {
+				Ref<PackedScene> sdata = props[ n.instance&FLAG_MASK ];
+				ERR_FAIL_COND_V( !sdata.is_valid(), NULL);
+				node = sdata->instance(p_gen_edit_state);
+				ERR_FAIL_COND_V(!node,NULL);
+
+			}
 
 		} else if (n.type==TYPE_INSTANCED) {
+			//print_line("instanced");
 			//get the node from somewhere, it likely already exists from another instance
 			if (parent) {
 				node=parent->_get_child_by_name(snames[n.name]);
@@ -126,6 +148,7 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 #endif
 			}
 		} else if (ObjectTypeDB::is_type_enabled(snames[n.type])) {
+			print_line("created");
 			//node belongs to this scene and must be created
 			Object * obj = ObjectTypeDB::instance(snames[ n.type ]);
 			if (!obj || !obj->cast_to<Node>()) {
@@ -339,13 +362,20 @@ Error SceneState::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<S
 				}
 
 				if (p_node->get_filename()!=String() && p_node->get_owner()==p_owner && instanced_by_owner) {
-					//must instance ourselves
-					Ref<PackedScene> instance = ResourceLoader::load(p_node->get_filename());
-					if (!instance.is_valid()) {
-						return ERR_CANT_OPEN;
-					}
 
-					nd.instance=_vm_get_variant(instance,variant_map);
+					if (p_node->get_scene_instance_load_placeholder()) {
+						//it's a placeholder, use the placeholder path
+						nd.instance=_vm_get_variant(p_node->get_filename(),variant_map);
+						nd.instance|=FLAG_INSTANCE_IS_PLACEHOLDER;
+					} else {
+						//must instance ourselves
+						Ref<PackedScene> instance = ResourceLoader::load(p_node->get_filename());
+						if (!instance.is_valid()) {
+							return ERR_CANT_OPEN;
+						}
+
+						nd.instance=_vm_get_variant(instance,variant_map);
+					}
 				}
 				n=NULL;
 			} else {
@@ -969,6 +999,13 @@ bool SceneState::is_node_in_group(int p_node,const StringName& p_group) const {
 	}
 
 	return false;
+}
+
+bool SceneState::disable_placeholders=false;
+
+void SceneState::set_disable_placeholders(bool p_disable) {
+
+	disable_placeholders=p_disable;
 }
 
 bool SceneState::is_connection(int p_node,const StringName& p_signal,int p_to_node,const StringName& p_to_method) const {

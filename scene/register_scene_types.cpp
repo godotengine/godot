@@ -36,6 +36,7 @@
 #include "resources/default_theme/default_theme.h"
 #include "object_type_db.h"
 #include "scene/main/canvas_layer.h"
+#include "scene/main/instance_placeholder.h"
 #include "scene/main/viewport.h"
 #include "scene/gui/control.h"
 #include "scene/gui/texture_progress.h"
@@ -269,6 +270,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Object>();
 
 	ObjectTypeDB::register_type<Node>();
+	ObjectTypeDB::register_virtual_type<InstancePlaceholder>();
 
 	ObjectTypeDB::register_type<Viewport>();
 	ObjectTypeDB::register_virtual_type<RenderTargetTexture>();

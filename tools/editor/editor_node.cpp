@@ -4417,6 +4417,7 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 EditorNode::EditorNode() {
 
 	EditorHelp::generate_doc(); //before any editor classes are crated
+	SceneState::set_disable_placeholders(true);
 
 	InputDefault *id = Input::get_singleton()->cast_to<InputDefault>();
 

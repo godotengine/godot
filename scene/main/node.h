@@ -75,9 +75,6 @@ private:
 
 		HashMap<NodePath,int> editable_instances;
 
-		Vector<StringName> instance_groups;
-		Vector<Connection> instance_connections;
-
 		Node *parent;
 		Node *owner;
 		Vector<Node*> children;	// list of children
@@ -111,6 +108,8 @@ private:
 
 		bool parent_owned;
 		bool in_constructor;
+		bool use_placeholder;
+
 
 	} data;
 	
@@ -241,6 +240,7 @@ public:
 	void set_editable_instance(Node* p_node,bool p_editable);
 	bool is_editable_instance(Node* p_node) const;
 
+
 	/* NOTIFICATIONS */
 	
 	void propagate_notification(int p_notification);
@@ -278,8 +278,8 @@ public:
 	void set_scene_inherited_state(const Ref<SceneState>& p_state);
 	Ref<SceneState> get_scene_inherited_state() const;
 
-	Vector<StringName> get_instance_groups() const;
-	Vector<Connection> get_instance_connections() const;
+	void set_scene_instance_load_placeholder(bool p_enable);
+	bool get_scene_instance_load_placeholder() const;
 
 	static Vector<Variant> make_binds(VARIANT_ARG_LIST);
 
@@ -320,8 +320,6 @@ public:
 
 
 typedef Set<Node*,Node::Comparator> NodeSet;
-
-
 
 
 #endif
