@@ -2571,6 +2571,17 @@ void GDParser::_parse_class(ClassNode *p_class) {
 										}
 										break;
 									}
+
+									if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier()=="MULTILINE") {
+
+										current_export.hint=PROPERTY_HINT_MULTILINE_TEXT;
+										tokenizer->advance();
+										if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected ')' in hint.");
+											return;
+										}
+										break;
+									}
 								} break;
 								case Variant::COLOR: {
 
