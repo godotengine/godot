@@ -239,7 +239,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 
 	TreeItem *item = tree->create_item(p_parent);
 	item->set_text(0, p_node->get_name() );
-	if (can_rename && (p_node->get_owner() == get_scene_node() || p_node==get_scene_node()))
+	if (can_rename && !part_of_subscene /*(p_node->get_owner() == get_scene_node() || p_node==get_scene_node())*/)
 		item->set_editable(0, true);
 
 	item->set_selectable(0,true);
