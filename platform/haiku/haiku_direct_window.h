@@ -4,15 +4,16 @@
 #include <kernel/image.h> // needed for image_id
 #include <DirectWindow.h>
 
-#include "os/input.h"
 #include "core/os/os.h"
+#include "main/input_default.h"
+
 #include "haiku_gl_view.h"
 
 #define REDRAW_MSG 'rdrw'
 #define LOCKGL_MSG 'glck'
 #define UNLOCKGL_MSG 'ulck'
 
-class HaikuDirectWindow : public BDirectWindow 
+class HaikuDirectWindow : public BDirectWindow
 {
 private:
 	unsigned int event_id;

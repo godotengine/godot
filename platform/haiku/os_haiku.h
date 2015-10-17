@@ -1,7 +1,6 @@
 #ifndef OS_HAIKU_H
 #define OS_HAIKU_H
 
-#include "os/input.h"
 #include "drivers/unix/os_unix.h"
 #include "servers/visual_server.h"
 #include "servers/visual/rasterizer.h"
@@ -11,6 +10,7 @@
 #include "servers/audio/sample_manager_sw.h"
 #include "servers/spatial_sound/spatial_sound_server_sw.h"
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
+#include "main/input_default.h"
 
 #include "audio_driver_media_kit.h"
 #include "context_gl_haiku.h"
@@ -46,7 +46,7 @@ private:
 
 protected:
 	virtual int get_video_driver_count() const;
-	virtual const char* get_video_driver_name(int p_driver) const;	
+	virtual const char* get_video_driver_name(int p_driver) const;
 	virtual VideoMode get_default_video_mode() const;
 
 	virtual void initialize(const VideoMode& p_desired, int p_video_driver, int p_audio_driver);
