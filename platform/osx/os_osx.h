@@ -157,6 +157,8 @@ public:
 	Error shell_open(String p_uri);
 	void push_input(const InputEvent& p_event);
 
+	String get_locale() const;
+
 	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0);
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;

@@ -30,6 +30,7 @@
 #include "core/core_string_names.h"
 #include "scene/scene_string_names.h"
 #include "scene/main/viewport.h"
+#include "os/os.h"
 
 void Sprite::edit_set_pivot(const Point2& p_pivot) {
 
@@ -85,6 +86,9 @@ void Sprite::_notification(int p_what) {
 			Point2 ofs=offset;
 			if (centered)
 				ofs-=s/2;
+			if (OS::get_singleton()->get_use_pixel_snap()) {
+				ofs=ofs.floor();
+			}
 
 			Rect2 dst_rect(ofs,s);
 
@@ -422,6 +426,9 @@ void ViewportSprite::_notification(int p_what) {
 			if (centered)
 				ofs-=s/2;
 
+			if (OS::get_singleton()->get_use_pixel_snap()) {
+				ofs=ofs.floor();
+			}
 			Rect2 dst_rect(ofs,s);
 			texture->draw_rect_region(ci,dst_rect,src_rect,modulate);
 

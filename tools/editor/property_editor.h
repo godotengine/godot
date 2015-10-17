@@ -121,6 +121,7 @@ class CustomPropertyEditor : public Popup {
 	void show_value_editors(int p_amount);
 	void config_value_editors(int p_amount, int p_columns,int p_label_w,const List<String>& p_strings);
 	void config_action_buttons(const List<String>& p_strings);
+
 protected:
 
 	void _notification(int p_what);
@@ -184,13 +185,17 @@ class PropertyEditor : public Control {
 	virtual void _changed_callback(Object *p_changed,const char * p_what);
 	virtual void _changed_callbacks(Object *p_changed,const String& p_callback);
 
+
 	void _edit_button(Object *p_item, int p_column, int p_button);
 	
 	void _node_removed(Node *p_node);
 	void _edit_set(const String& p_name, const Variant& p_value);
 	void _draw_flags(Object *ti,const Rect2& p_rect);
 
-	Node *get_instanced_node();
+	bool _might_be_in_instance();
+	bool _get_instanced_node_original_property(const StringName& p_prop,Variant& value);
+	bool _is_property_different(const Variant& p_current, const Variant& p_orig,int p_usage=0);
+
 	void _refresh_item(TreeItem *p_item);
 	void _set_range_def(Object *p_item, String prop, float p_frame);
 

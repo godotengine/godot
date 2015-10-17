@@ -1096,6 +1096,25 @@ RID Physics2DServerSW::damped_spring_joint_create(const Vector2& p_anchor_a,cons
 
 }
 
+void Physics2DServerSW::pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) {
+
+	Joint2DSW *j = joint_owner.get(p_joint);
+	ERR_FAIL_COND(!j);
+	ERR_FAIL_COND(j->get_type()!=JOINT_PIN);
+
+	PinJoint2DSW *pin_joint = static_cast<PinJoint2DSW*>(j);
+	pin_joint->set_param(p_param, p_value);
+}
+
+real_t Physics2DServerSW::pin_joint_get_param(RID p_joint, PinJointParam p_param) const {
+	Joint2DSW *j = joint_owner.get(p_joint);
+	ERR_FAIL_COND_V(!j,0);
+	ERR_FAIL_COND_V(j->get_type()!=JOINT_PIN,0);
+
+	PinJoint2DSW *pin_joint = static_cast<PinJoint2DSW*>(j);
+	return pin_joint->get_param(p_param);
+}
+
 void Physics2DServerSW::damped_string_joint_set_param(RID p_joint, DampedStringParam p_param, real_t p_value) {
 
 

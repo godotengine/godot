@@ -516,6 +516,7 @@ OS::OS() {
 	_target_fps=0;
 	_render_thread_mode=RENDER_THREAD_SAFE;
 	_time_scale=1.0;
+	_pixel_snap=false;
 	Math::seed(1234567);
 }
 

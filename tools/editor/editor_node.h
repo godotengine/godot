@@ -107,6 +107,7 @@ class EditorNode : public Node {
 	enum MenuOptions {
 	
 		FILE_NEW_SCENE,
+		FILE_NEW_INHERITED_SCENE,
 		FILE_OPEN_SCENE,
 		FILE_SAVE_SCENE,
 		FILE_SAVE_AS_SCENE,
@@ -565,7 +566,7 @@ public:
 
 	void fix_dependencies(const String& p_for_file);
 	void clear_scene() { _cleanup_scene(); }
-	Error load_scene(const String& p_scene,bool p_ignore_broken_deps=false);
+	Error load_scene(const String& p_scene, bool p_ignore_broken_deps=false, bool p_set_inherited=false);
 	Error load_resource(const String& p_scene);
 
 	bool is_scene_open(const String& p_path);

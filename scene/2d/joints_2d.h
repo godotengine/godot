@@ -72,13 +72,17 @@ class PinJoint2D : public Joint2D {
 
 	OBJ_TYPE(PinJoint2D,Joint2D);
 
+	real_t softness;
+
 protected:
 
 	void _notification(int p_what);
 	virtual RID _configure_joint();
+	static void _bind_methods();
 public:
 
-
+	void set_softness(real_t p_stiffness);
+	real_t get_softness() const;
 
 	PinJoint2D();
 };

@@ -42,6 +42,8 @@
 #include "multi_node_edit.h"
 #include "array_property_edit.h"
 #include "editor_help.h"
+#include "scene/resources/packed_scene.h"
+
 
 void CustomPropertyEditor::_notification(int p_what) {
 	
@@ -1655,25 +1657,101 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	menu->connect("item_pressed",this,"_menu_option");
 }
 
+bool PropertyEditor::_might_be_in_instance() {
 
-
-Node *PropertyEditor::get_instanced_node() {
-
-	//this sucks badly
 	if (!obj)
 		return NULL;
 
 	Node *node = obj->cast_to<Node>();
+
+	Node* edited_scene =EditorNode::get_singleton()->get_edited_scene();
+
+	bool might_be=false;
+
+	while(node) {
+
+		if (node->get_scene_instance_state().is_valid()) {
+			might_be=true;
+			break;
+		}
+		if (node==edited_scene) {
+			if (node->get_scene_inherited_state().is_valid()) {
+				might_be=true;
+				break;
+			}
+			might_be=false;
+			break;
+		}
+		node=node->get_owner();
+	}
+
+	return might_be;
+
+}
+
+bool PropertyEditor::_get_instanced_node_original_property(const StringName& p_prop,Variant& value) {
+
+	Node *node = obj->cast_to<Node>();
+
 	if (!node)
-		return NULL;
+		return false;
 
-	if (node->get_filename()=="")
-		return NULL;
+	Node *orig=node;
 
-	if (!node->get_owner())
-		return NULL; //scene root i guess
+	Node* edited_scene =EditorNode::get_singleton()->get_edited_scene();
 
-	return node;
+	bool found=false;
+
+//	print_line("for prop - "+String(p_prop));
+
+	while(node) {
+
+		Ref<SceneState> ss;
+
+		if (node==edited_scene) {
+			ss=node->get_scene_inherited_state();
+		} else {
+			ss=node->get_scene_instance_state();
+		}
+//		print_line("at - "+String(edited_scene->get_path_to(node)));
+
+		if (ss.is_valid()) {
+			NodePath np = node->get_path_to(orig);
+			int node_idx = ss->find_node_by_path(np);
+//			print_line("\t valid, nodeidx "+itos(node_idx));
+			if (node_idx>=0) {
+				bool lfound=false;
+				Variant lvar;
+				lvar=ss->get_property_value(node_idx,p_prop,lfound);
+				if (lfound) {
+					found=true;
+					value=lvar;
+//					print_line("\t found value "+String(value));
+				}
+			}
+		}
+		if (node==edited_scene) {
+			//just in case
+			break;
+		}
+		node=node->get_owner();
+
+	}
+
+	return found;
+}
+
+bool PropertyEditor::_is_property_different(const Variant& p_current, const Variant& p_orig,int p_usage) {
+
+	if (p_orig.get_type()==Variant::NIL) {
+		//special cases
+		if (p_current.is_zero() && p_usage&PROPERTY_USAGE_STORE_IF_NONZERO)
+			return false;
+		if (p_current.is_one() && p_usage&PROPERTY_USAGE_STORE_IF_NONONE)
+			return false;
+	}
+
+	return bool(Variant::evaluate(Variant::OP_NOT_EQUAL,p_current,p_orig));
 }
 
 TreeItem *PropertyEditor::find_item(TreeItem *p_item,const String& p_name) {
@@ -1910,6 +1988,8 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 	
 }
 
+
+
 void PropertyEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
@@ -1950,12 +2030,16 @@ void PropertyEditor::_notification(int p_what) {
 				if (!item)
 					continue;
 				
-				if (get_instanced_node()) {
+				if (_might_be_in_instance()) {
 
-					Dictionary d = get_instanced_node()->get_instance_state();
-					if (d.has(*k)) {
+
+					Variant vorig;
+					Dictionary d=item->get_metadata(0);
+					int usage = d.has("usage")?int(int(d["usage"])&(PROPERTY_USAGE_STORE_IF_NONONE|PROPERTY_USAGE_STORE_IF_NONZERO)):0;
+
+
+					if (_get_instanced_node_original_property(*k,vorig) || usage) {
 						Variant v = obj->get(*k);
-						Variant vorig = d[*k];
 
 						int found=-1;
 						for(int i=0;i<item->get_button_count(1);i++) {
@@ -1966,7 +2050,7 @@ void PropertyEditor::_notification(int p_what) {
 							}
 						}
 
-						bool changed = ! (v==vorig);
+						bool changed = _is_property_different(v,vorig,usage);
 
 						if ((found!=-1)!=changed) {
 
@@ -2049,12 +2133,14 @@ void PropertyEditor::_refresh_item(TreeItem *p_item) {
 
 	if (name!=String()) {
 
-		if (get_instanced_node()) {
+		if (_might_be_in_instance()) {
 
-			Dictionary d = get_instanced_node()->get_instance_state();
-			if (d.has(name)) {
+			Variant vorig;
+			Dictionary d=p_item->get_metadata(0);
+			int usage = d.has("usage")?int(int(d["usage"])&(PROPERTY_USAGE_STORE_IF_NONONE|PROPERTY_USAGE_STORE_IF_NONZERO)):0;
+
+			if (_get_instanced_node_original_property(name,vorig) || usage) {
 				Variant v = obj->get(name);
-				Variant vorig = d[name];
 
 				int found=-1;
 				for(int i=0;i<p_item->get_button_count(1);i++) {
@@ -2065,7 +2151,7 @@ void PropertyEditor::_refresh_item(TreeItem *p_item) {
 					}
 				}
 
-				bool changed = ! (v==vorig);
+				bool changed = _is_property_different(v,vorig,usage);
 
 				if ((found!=-1)!=changed) {
 
@@ -2326,7 +2412,8 @@ void PropertyEditor::update_tree() {
 		d["type"]=(int)p.type;
 		d["hint"]=(int)p.hint;
 		d["hint_text"]=p.hint_string;
-					
+		d["usage"]=(int)p.usage;
+
 		item->set_metadata( 0, d );
 		item->set_metadata( 1, p.name );
 
@@ -2777,14 +2864,17 @@ void PropertyEditor::update_tree() {
 			}
 		}
 
-		if (get_instanced_node()) {
+		if (_might_be_in_instance()) {
 
-			Dictionary d = get_instanced_node()->get_instance_state();
-			if (d.has(p.name)) {
+			Variant vorig;
+			Dictionary d=item->get_metadata(0);
+			int usage = d.has("usage")?int(int(d["usage"])&(PROPERTY_USAGE_STORE_IF_NONONE|PROPERTY_USAGE_STORE_IF_NONZERO)):0;
+			if (_get_instanced_node_original_property(p.name,vorig) || usage) {
 				Variant v = obj->get(p.name);
-				Variant vorig = d[p.name];
-				if (! (v==vorig)) {
+				
 
+				if (_is_property_different(v,vorig,usage)) {
+					//print_line("FOR "+String(p.name)+" RELOAD WITH: "+String(v)+"("+Variant::get_type_name(v.get_type())+")=="+String(vorig)+"("+Variant::get_type_name(vorig.get_type())+")");
 					item->add_button(1,get_icon("Reload","EditorIcons"),3);
 				}
 			}
@@ -3081,17 +3171,18 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 		call_deferred("_set_range_def",ti,prop,ti->get_range(p_column)+1.0);
 	} else if (p_button==3) {
 
-		if (!get_instanced_node())
+		if (!_might_be_in_instance())
 			return;
 		if (!d.has("name"))
 			return;
 
 		String prop=d["name"];
 
-		Dictionary d2 = get_instanced_node()->get_instance_state();
-		if (d2.has(prop)) {
+		Variant vorig;
 
-			_edit_set(prop,d2[prop]);
+		if (_get_instanced_node_original_property(prop,vorig)) {
+
+			_edit_set(prop,vorig);
 		}
 
 	} else {

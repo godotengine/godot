@@ -5905,7 +5905,7 @@
 	<description>
 	Base class of anything 2D. Canvas items are laid out in a tree and children inherit and extend the transform of their parent. CanvasItem is extended by [Control], for anything GUI related, and by [Node2D] for anything 2D engine related.
 	Any CanvasItem can draw. For this, the "update" function must be called, then NOTIFICATION_DRAW will be received on idle time to request redraw. Because of this, canvas items don't need to be redraw on every frame, improving the performance significan'tly. Several functions for drawing on the CanvasItem are provided (see draw_* functions). They can only be used inside the notification, signal or _draw() overrided function, though.
-	Canvas items are draw in tree order. By default, children are on top of their parents so a root CanvasItem will be drawn behind everything (this can be changed per item though). 
+	Canvas items are draw in tree order. By default, children are on top of their parents so a root CanvasItem will be drawn behind everything (this can be changed per item though).
 	Canvas items can also be hidden (hiding also their subtree). They provide many means for changing standard parameters such as opacity (for it and the subtree) and self opacity, blend mode.
 	Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
 	</description>
@@ -11556,8 +11556,11 @@
 </class>
 <class name="GraphEdit" inherits="Control" category="Core">
 	<brief_description>
+		GraphEdit is an area capable of showing various GraphNodes. It manages connection events between them.
 	</brief_description>
 	<description>
+		GraphEdit manages the showing of GraphNodes it contains, as well as connections an disconnections between them. Signals are sent for each of these two events. Disconnection between GraphNodes slots is disabled by default.
+		It is greatly advised to enable low processor usage mode [OS.set_low_processor_usage_mode()] when using GraphEdits.
 	</description>
 	<methods>
 		<method name="connect_node">
@@ -11572,6 +11575,7 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
+				Create a connection between 'from_port' slot of 'from' GraphNode and 'to_port' slot of 'to' GraphNode. If the connection already exists, no connection is created.
 			</description>
 		</method>
 		<method name="is_node_connected">
@@ -11586,6 +11590,7 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
+				Return true if the 'from_port' slot of 'from' GraphNode is connected to the 'to_port' slot of 'to' GraphNode.
 			</description>
 		</method>
 		<method name="disconnect_node">
@@ -11598,24 +11603,28 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
+				Remove the connection between 'from_port' slot of 'from' GraphNode and 'to_port' slot of 'to' GraphNode, if connection exists.
 			</description>
 		</method>
 		<method name="get_connection_list" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
+				Return an Array containing the list of connections. A connection consists in a structure of the form {from_slot: 0, from: "GraphNode name 0", to_slot: 1, to: "GraphNode name 1" }
 			</description>
 		</method>
 		<method name="set_right_disconnects">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Enable the disconnection of existing connections in the visual GraphEdit by left-clicking a connection and releasing into the void.
 			</description>
 		</method>
 		<method name="is_right_disconnects_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Return true is the disconnection of connections is enable in the visual GraphEdit. False otherwise.
 			</description>
 		</method>
 	</methods>
@@ -11630,6 +11639,7 @@
 			<argument index="3" name="to_slot" type="int">
 			</argument>
 			<description>
+				Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be removed.
 			</description>
 		</signal>
 		<signal name="connection_request">
@@ -11642,6 +11652,7 @@
 			<argument index="3" name="to_slot" type="int">
 			</argument>
 			<description>
+				Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be created.
 			</description>
 		</signal>
 	</signals>
@@ -11650,20 +11661,24 @@
 </class>
 <class name="GraphNode" inherits="Container" category="Core">
 	<brief_description>
+		A GraphNode is a container with several input and output slots allowing connections between GraphNodes. Slots can have different, incompatible types.
 	</brief_description>
 	<description>
+		A GraphNode is a container defined by a title. It can have 1 or more input and output slots, which can be enabled (shown) or disabled (not shown) and have different (incompatible) types. Colors can also be assigned to slots. A tuple of input and output slots is defined for each GUI element included in the GraphNode. Input and output connections are left and right slots, but only enabled slots are counted as connections.
 	</description>
 	<methods>
 		<method name="set_title">
 			<argument index="0" name="title" type="String">
 			</argument>
 			<description>
+				Set the title of the GraphNode.
 			</description>
 		</method>
 		<method name="get_title" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Return the title of the GraphNode.
 			</description>
 		</method>
 		<method name="set_slot">
@@ -11682,16 +11697,19 @@
 			<argument index="6" name="color_right" type="Color">
 			</argument>
 			<description>
+				Set the tuple of input/output slots defined by 'idx' ID. 'left' slots are input, 'right' are output. 'type' is an integer defining the type of the slot. Refer to description for the compatibility between slot types.
 			</description>
 		</method>
 		<method name="clear_slot">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Disable input and ouput slot whose index is 'idx'.
 			</description>
 		</method>
 		<method name="clear_all_slots">
 			<description>
+				Disable all input and output slots of the GraphNode.
 			</description>
 		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
@@ -11700,6 +11718,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return true if left (input) slot 'idx' is enabled. False otherwise.
 			</description>
 		</method>
 		<method name="get_slot_type_left" qualifiers="const">
@@ -11708,6 +11727,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return the (integer) type of left (input) 'idx' slot.
 			</description>
 		</method>
 		<method name="get_slot_color_left" qualifiers="const">
@@ -11716,6 +11736,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return the color set to 'idx' left (input) slot.
 			</description>
 		</method>
 		<method name="is_slot_enabled_right" qualifiers="const">
@@ -11724,6 +11745,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return true if right (output) slot 'idx' is enabled. False otherwise.
 			</description>
 		</method>
 		<method name="get_slot_type_right" qualifiers="const">
@@ -11732,6 +11754,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return the (integer) type of right (output) 'idx' slot.
 			</description>
 		</method>
 		<method name="get_slot_color_right" qualifiers="const">
@@ -11740,30 +11763,35 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return the color set to 'idx' right (output) slot.
 			</description>
 		</method>
 		<method name="set_offset">
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
+				Set the offset of the GraphNode.
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+				Return the offset of the GraphNode.
 			</description>
 		</method>
 		<method name="get_connection_output_count">
 			<return type="int">
 			</return>
 			<description>
+				Return the number of enabled output slots (connections) of the GraphNode.
 			</description>
 		</method>
 		<method name="get_connection_input_count">
 			<return type="int">
 			</return>
 			<description>
+				Return the number of enabled input slots (connections) to the GraphNode.
 			</description>
 		</method>
 		<method name="get_connection_output_pos">
@@ -11772,6 +11800,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return the position of the output connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_output_type">
@@ -11780,6 +11809,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return the type of the output connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_output_color">
@@ -11788,6 +11818,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return the color of the output connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_input_pos">
@@ -11796,6 +11827,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return the position of the input connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_input_type">
@@ -11804,6 +11836,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return the type of the input connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_input_color">
@@ -11812,28 +11845,33 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return the color of the input connection 'idx'.
 			</description>
 		</method>
 		<method name="set_show_close_button">
 			<argument index="0" name="show" type="bool">
 			</argument>
 			<description>
+				Show the close button on the GraphNode if 'show' is true (disabled by default). If enabled, a connection on the signal close_request is needed for the close button to work.
 			</description>
 		</method>
 		<method name="is_close_button_visible" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if the close button is shown. False otherwise.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="raise_request">
 			<description>
+				Signal sent when the GraphNode is requested to be displayed over other ones. Happens on focusing (clicking into) the GraphNode.
 			</description>
 		</signal>
 		<signal name="close_request">
 			<description>
+				Signal sent on closing the GraphNode.
 			</description>
 		</signal>
 		<signal name="dragged">
@@ -11842,10 +11880,12 @@
 			<argument index="1" name="to" type="Vector2">
 			</argument>
 			<description>
+				Signal sent when the GraphNode is dragged.
 			</description>
 		</signal>
 		<signal name="offset_changed">
 			<description>
+				Signal sent when the GraphNode is moved.
 			</description>
 		</signal>
 	</signals>
@@ -17934,7 +17974,7 @@
 	</brief_description>
 	<description>
 	Nodes can be set as children of other nodes, resulting in a tree arrangement. Any tree of nodes is called a "Scene".
-	Scenes can be saved to disk, and then instanced into other scenes. This allows for very high flexibility in the architecture and data model of the projects. 
+	Scenes can be saved to disk, and then instanced into other scenes. This allows for very high flexibility in the architecture and data model of the projects.
 	[SceneMainLoop] contains the "active" tree of nodes, and a node becomes active (receinving NOTIFICATION_ENTER_SCENE) when added to that tree.
 	A node can contain any number of nodes as a children (but there is only one tree root) with the requirement that no two childrens with the same name can exist.
 	Nodes can, optionally, be added to groups. This makes it easy to reach a number of nodes from the code (for example an "enemies" group).
@@ -18684,11 +18724,11 @@
 	<description>
 	Operating System functions. OS Wraps the most common functionality to communicate with the host Operating System, such as:
  -Mouse Grabbing
- -Mouse Cursors 
+ -Mouse Cursors
  -Clipboard
  -Video Mode
  -Date " Time
- -Timers 
+ -Timers
  -Environment Variables
  -Execution of Binaries
  -Command Line
@@ -27567,7 +27607,7 @@
 	Rigid body 2D node.
 	</brief_description>
 	<description>
-	Rigid body 2D node. This node is used for placing rigid bodies in the scene. It can contain a number of shapes, and also shift state between regular Rigid Body to Character or even Static. 
+	Rigid body 2D node. This node is used for placing rigid bodies in the scene. It can contain a number of shapes, and also shift state between regular Rigid Body to Character or even Static.
 	Character mode forbids the node from being rotated. This node can have a custom force integrator function, for writing complex physics motion behavior per node.
 	As a warning, don't change this node position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop will yield strange behavior.
 	</description>
@@ -37719,6 +37759,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_audio_track">
+			<argument index="0" name="track" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_audio_track" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_stream_name" qualifiers="const">
 			<return type="String">
 			</return>
@@ -37755,6 +37807,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_buffering_msec">
+			<argument index="0" name="msec" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_buffering_msec" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -37765,30 +37829,16 @@
 	<description>
 	</description>
 	<methods>
-		<method name="get_pending_frame_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="pop_frame">
-			<argument index="0" name="arg0" type="Object">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="peek_frame" qualifiers="const">
-			<return type="Image">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_audio_track">
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="VideoStreamTheora" inherits="VideoStream" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
 	</methods>
 	<constants>
 	</constants>
