@@ -68,7 +68,7 @@ public:
 		NODE_VEC_INTERP, // vec3 interpolation  (with optional curve)
 		NODE_COLOR_RAMP, //take scalar, output vec3
 		NODE_CURVE_MAP, //take scalar, otput scalar
-		NODE_SCALAR_INPUT, // scalar uniform (assignable in material)		
+		NODE_SCALAR_INPUT, // scalar uniform (assignable in material)
 		NODE_VEC_INPUT, // vec3 uniform (assignable in material)
 		NODE_RGB_INPUT, // color uniform (assignable in material)
 		NODE_XFORM_INPUT, // mat4 uniform (assignable in material)
@@ -120,6 +120,7 @@ private:
 
 	String _find_unique_name(const String& p_base);
 
+	enum {SLOT_DEFAULT_VALUE = 0x7FFFFFFF};
 	struct SourceSlot {
 
 		int id;
@@ -135,6 +136,7 @@ private:
 		NodeType type;
 		Variant param1;
 		Variant param2;
+		Map<int, Variant> defaults;
 		int id;
 		mutable int order; // used for sorting
 		int sort_order;
@@ -215,6 +217,10 @@ public:
 
 	void texture_node_set_filter_strength(ShaderType p_which,float p_id,float p_strength);
 	float texture_node_get_filter_strength(ShaderType p_which,float p_id) const;
+
+	void duplicate_nodes(ShaderType p_which, List<int> &p_nodes);
+
+	List<int> generate_ids(ShaderType p_type, int count);
 
 	enum ScalarOp {
 		SCALAR_OP_ADD,
@@ -314,6 +320,9 @@ public:
 		VEC_MAX_FUNC
 	};
 
+	void default_set_value(ShaderType p_which,int p_id,int p_param, const Variant& p_value);
+	Variant default_get_value(ShaderType p_which,int p_id,int p_param);
+
 	void vec_func_node_set_function(ShaderType p_which,int p_id,VecFunc p_func);
 	VecFunc vec_func_node_get_function(ShaderType p_which,int p_id) const;
 
@@ -354,12 +363,16 @@ public:
 
 	void get_node_connections(ShaderType p_which,List<Connection> *p_connections) const;
 
+	bool is_slot_connected(ShaderType p_which,int p_dst_id,int slot_id);
+
 	void clear(ShaderType p_which);
 
 	Variant node_get_state(ShaderType p_type, int p_node) const;
 	void node_set_state(ShaderType p_type, int p_id, const Variant& p_state);
 
 	GraphError get_graph_error(ShaderType p_type) const;
+
+	int node_count(ShaderType p_which, int p_type);
 
 	static int get_type_input_count(NodeType p_type);
 	static int get_type_output_count(NodeType p_type);
