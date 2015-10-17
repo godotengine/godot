@@ -194,7 +194,6 @@ bool BodyPairSW::_test_ccd(float p_step,BodySW *p_A, int p_shape_A,const Transfo
 
 	//cast a segment from support in motion normal, in the same direction of motion by motion length
 	//support is the worst case collision point, so real collision happened before
-	int a;
 	Vector3 s=p_A->get_shape(p_shape_A)->get_support(p_xform_A.basis.xform(mnormal).normalized());
 	Vector3 from = p_xform_A.xform(s);
 	Vector3 to = from + motion;

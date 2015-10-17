@@ -53,7 +53,6 @@ Error AudioDriverBB10::init(const char* p_name) {
 		dev_name = (char *) p_name;
 	}
 	printf("******** reconnecting to device %s\n", dev_name);
-	int card, dev;
 	int ret = snd_pcm_open_name(&pcm_handle, dev_name, SND_PCM_OPEN_PLAYBACK);
 	ERR_FAIL_COND_V(ret < 0, FAILED);
 	pcm_open = true;
