@@ -258,6 +258,9 @@ public:
 	FUNC5R(RID,groove_joint_create,const Vector2&,const Vector2&,const Vector2&,RID,RID);
 	FUNC4R(RID,damped_spring_joint_create,const Vector2&,const Vector2&,RID,RID);
 
+	FUNC3(pin_joint_set_param,RID,PinJointParam,real_t);
+	FUNC2RC(real_t,pin_joint_get_param,RID,PinJointParam);
+
 	FUNC3(damped_string_joint_set_param,RID,DampedStringParam,real_t);
 	FUNC2RC(real_t,damped_string_joint_get_param,RID,DampedStringParam);
 

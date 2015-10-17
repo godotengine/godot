@@ -279,6 +279,18 @@ void PinJoint2DSW::solve(float p_step){
 	P += impulse;
 }
 
+void PinJoint2DSW::set_param(Physics2DServer::PinJointParam p_param, real_t p_value) {
+
+	if(p_param == Physics2DServer::PIN_JOINT_SOFTNESS)
+		softness = p_value;
+}
+
+real_t PinJoint2DSW::get_param(Physics2DServer::PinJointParam p_param) const {
+
+	if(p_param == Physics2DServer::PIN_JOINT_SOFTNESS)
+		return softness;
+	ERR_FAIL_V(0);
+}
 
 PinJoint2DSW::PinJoint2DSW(const Vector2& p_pos,Body2DSW* p_body_a,Body2DSW* p_body_b) : Joint2DSW(_arr,p_body_b?2:1) {
 

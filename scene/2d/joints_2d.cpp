@@ -126,7 +126,7 @@ void Joint2D::_bind_methods() {
 
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "node_a"), _SCS("set_node_a"),_SCS("get_node_a") );
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "node_b"), _SCS("set_node_b"),_SCS("get_node_b") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "bias/bias",PROPERTY_HINT_RANGE,"0,0.9,0.01"), _SCS("set_bias"),_SCS("get_bias") );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "bias/bias",PROPERTY_HINT_RANGE,"0,0.9,0.001"), _SCS("set_bias"),_SCS("get_bias") );
 
 }
 
@@ -175,15 +175,37 @@ RID PinJoint2D::_configure_joint() {
 		//add a collision exception between both
 		Physics2DServer::get_singleton()->body_add_collision_exception(body_a->get_rid(),body_b->get_rid());
 	}
-
-	return Physics2DServer::get_singleton()->pin_joint_create(get_global_transform().get_origin(),body_a->get_rid(),body_b?body_b->get_rid():RID());
+	RID pj = Physics2DServer::get_singleton()->pin_joint_create(get_global_transform().get_origin(),body_a->get_rid(),body_b?body_b->get_rid():RID());
+	Physics2DServer::get_singleton()->pin_joint_set_param(pj, Physics2DServer::PIN_JOINT_SOFTNESS, softness);
+	return pj;
 
 }
 
+void PinJoint2D::set_softness(real_t p_softness) {
+
+	softness=p_softness;
+	update();
+	if (get_joint().is_valid())
+		Physics2DServer::get_singleton()->pin_joint_set_param(get_joint(), Physics2DServer::PIN_JOINT_SOFTNESS, p_softness);
+
+}
+
+real_t PinJoint2D::get_softness() const {
+
+	return softness;
+}
+
+void PinJoint2D::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_softness","softness"), &PinJoint2D::set_softness);
+	ObjectTypeDB::bind_method(_MD("get_softness"), &PinJoint2D::get_softness);
+
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "softness", PROPERTY_HINT_EXP_RANGE,"0.00,16,0.01"), _SCS("set_softness"), _SCS("get_softness"));
+}
 
 PinJoint2D::PinJoint2D() {
 
-
+	softness = 0;
 }
 
 
