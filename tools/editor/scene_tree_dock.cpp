@@ -875,7 +875,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 
 		}
 
-		if (edited_scene->get_scene_instance_state().is_valid() && edited_scene->get_scene_instance_state()->find_node_by_path(edited_scene->get_path_to(E->get()))>=0) {
+        if (edited_scene->get_scene_inherited_state().is_valid() && edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E->get()))>=0) {
 
 			accept->get_ok()->set_text("Makes Sense!");
 			accept->set_text("Can't operate on nodes the current scene inherits from!");
