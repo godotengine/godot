@@ -104,11 +104,6 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
             description="Export only objects on the active layers.",
             default=True,
             )
-    use_exclude_ctrl_bones = BoolProperty(
-            name="Exclude Control Bones",
-            description="Exclude skeleton bones with names that begin with 'ctrl'.",
-            default=True,
-            )
     use_anim = BoolProperty(
             name="Export Animation",
             description="Export keyframe animation",
