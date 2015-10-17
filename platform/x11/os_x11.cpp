@@ -892,7 +892,13 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 
+	XWindowAttributes xwa;
+	XGetWindowAttributes(x11_display,DefaultRootWindow(x11_display),&xwa);
+	current_videomode.width = xwa.width;
+	current_videomode.height = xwa.height;
+
 	maximized = p_enabled;
+	visual_server->init();
 }
 
 bool OS_X11::is_window_maximized() const {
