@@ -512,12 +512,26 @@ static int button_mask=0;
 
 - (void)mouseExited:(NSEvent *)event
 {
+	if (!OS_OSX::singleton)
+		return;
+
+	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode!=OS::MOUSE_MODE_CAPTURED)
+		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
+	if (OS_OSX::singleton->input)
+		OS_OSX::singleton->input->set_mouse_in_window(false);
    // _glfwInputCursorEnter(window, GL_FALSE);
 }
 
 - (void)mouseEntered:(NSEvent *)event
 {
   //  _glfwInputCursorEnter(window, GL_TRUE);
+	if (!OS_OSX::singleton)
+		return;
+	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode!=OS::MOUSE_MODE_CAPTURED)
+		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
+	if (OS_OSX::singleton->input)
+		OS_OSX::singleton->input->set_mouse_in_window(true);
+
 }
 
 - (void)viewDidChangeBackingProperties
@@ -1279,7 +1293,7 @@ void OS_OSX::set_current_screen(int p_screen) {
 	current_screen = p_screen;
 };
 
-Point2 OS_OSX::get_screen_position(int p_screen) {
+Point2 OS_OSX::get_screen_position(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, screens.size(), Point2());
 	return screens[p_screen].pos;

@@ -255,6 +255,16 @@ void BaseButton::_notification(int p_what) {
 			group->_remove_button(this);
 	}
 
+	if (p_what==NOTIFICATION_VISIBILITY_CHANGED && !is_visible()) {
+
+		if (!toggle_mode) {
+			status.pressed = false;
+		}
+		status.hovering = false;
+		status.press_attempt = false;
+		status.pressing_inside = false;
+		status.pressing_button = 0;
+	}
 }
 
 void BaseButton::pressed() {

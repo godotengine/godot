@@ -917,9 +917,9 @@ Error DocData::save(const String& p_path) {
 
 			String qualifiers;
 			if (m.qualifiers!="")
-				qualifiers+="qualifiers=\""+m.qualifiers.xml_escape()+"\"";
+				qualifiers+=" qualifiers=\""+m.qualifiers.xml_escape()+"\"";
 
-			_write_string(f,2,"<method name=\""+m.name+"\" "+qualifiers+" >");
+			_write_string(f,2,"<method name=\""+m.name+"\""+qualifiers+">");
 
 			if (m.return_type!="") {
 

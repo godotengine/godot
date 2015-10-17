@@ -496,6 +496,15 @@ void EditorSettings::_load_defaults() {
 	set("2d_editor/bone_selected_color",Color(0.9,0.45,0.45,0.9));
 	set("2d_editor/bone_ik_color",Color(0.9,0.9,0.45,0.9));
 
+	set("game_window_placement/rect",0);
+	hints["game_window_placement/rect"]=PropertyInfo(Variant::INT,"game_window_placement/rect",PROPERTY_HINT_ENUM,"Default,Centered,Custom Position,Force Maximized,Force Full Screen");
+	String screen_hints="Default (Same as Editor)";
+	for(int i=0;i<OS::get_singleton()->get_screen_count();i++) {
+		screen_hints+=",Monitor "+itos(i+1);
+	}
+	set("game_window_placement/rect_custom_position",Vector2());
+	set("game_window_placement/screen",0);
+	hints["game_window_placement/screen"]=PropertyInfo(Variant::INT,"game_window_placement/screen",PROPERTY_HINT_ENUM,screen_hints);
 
 	set("on_save/compress_binary_resources",true);
 	set("on_save/save_modified_external_resources",true);

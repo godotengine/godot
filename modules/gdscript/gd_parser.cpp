@@ -1422,11 +1422,15 @@ bool GDParser::_recover_from_completion() {
 		return false; //can't recover if no completion
 	}
 	//skip stuff until newline
-	while(tokenizer->get_token()!=GDTokenizer::TK_NEWLINE && tokenizer->get_token()!=GDTokenizer::TK_EOF) {
+	while(tokenizer->get_token()!=GDTokenizer::TK_NEWLINE && tokenizer->get_token()!=GDTokenizer::TK_EOF && tokenizer->get_token()!=GDTokenizer::TK_ERROR) {
 		tokenizer->advance();
 	}
 	completion_found=false;
 	error_set=false;
+	if(tokenizer->get_token() == GDTokenizer::TK_ERROR){
+		error_set = true;
+	}
+
 	return true;
 }
 

@@ -43,12 +43,14 @@ protected:
 
 	virtual void _update_shape();
 
+	virtual Vector<Vector3> _gen_debug_mesh_lines();
 public:
 
 	void set_radius(float p_radius);
 	float get_radius() const;
 	void set_height(float p_height);
 	float get_height() const;
+
 
 	CapsuleShape();
 };

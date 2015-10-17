@@ -31,15 +31,17 @@ SConscript("rtaudio/SCsub");
 SConscript("nedmalloc/SCsub");
 SConscript("nrex/SCsub");
 SConscript("chibi/SCsub");
-if (env["vorbis"]=="yes" or env["speex"]=="yes" or env["theora"]=="yes"):
+if (env["vorbis"]=="yes" or env["speex"]=="yes" or env["theora"]=="yes" or env["opus"]=="yes"):
         SConscript("ogg/SCsub");
 if (env["vorbis"]=="yes"):
         SConscript("vorbis/SCsub");
+if (env["opus"]=="yes"):
+		SConscript('opus/SCsub');
 if (env["tools"]=="yes"):
 	SConscript("convex_decomp/SCsub");
 
-if env["theora"]=="yes":
-	SConscript("theoraplayer/SCsub")
+#if env["theora"]=="yes":
+#	SConscript("theoraplayer/SCsub")
 if (env["theora"]=="yes"):
 	SConscript("theora/SCsub");
 if (env['speex']=='yes'):

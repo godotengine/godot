@@ -211,7 +211,6 @@ void ScriptEditorQuickOpen::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_confirmed"),&ScriptEditorQuickOpen::_confirmed);
 	ObjectTypeDB::bind_method(_MD("_sbox_input"),&ScriptEditorQuickOpen::_sbox_input);
 
-
 	ADD_SIGNAL(MethodInfo("goto_line",PropertyInfo(Variant::INT,"line")));
 
 }
@@ -547,6 +546,10 @@ void ScriptEditor::_show_debugger(bool p_show) {
 
 }
 
+void ScriptEditor::_script_created(Ref<Script> p_script) {
+	editor->push_item(p_script.operator->());
+}
+
 void ScriptEditor::_goto_script_line2(int p_line) {
 
 	int selected = tab_container->get_current_tab();
@@ -574,7 +577,7 @@ void ScriptEditor::_close_current_tab() {
 	int selected = tab_container->get_current_tab();
 	if (selected<0 || selected>=tab_container->get_child_count())
 		return;
-
+	
 	ScriptTextEditor *current = tab_container->get_child(selected)->cast_to<ScriptTextEditor>();
 	if (!current)
 		return;
@@ -753,7 +756,6 @@ void ScriptEditor::_menu_option(int p_option) {
 
 
 	if (p_option==FILE_OPEN) {
-
 		editor->open_resource("Script");
 		return;
 	}
@@ -766,8 +768,11 @@ void ScriptEditor::_menu_option(int p_option) {
 		return;
 
 	switch(p_option) {
+		case FILE_NEW: {
+			script_create_dialog->config("Node", ".gd");
+			script_create_dialog->popup_centered(Size2(300, 300));
+		} break;
 		case FILE_SAVE: {
-
 			if (!_test_script_times_on_disk())
 				return;
 			editor->save_resource( current->get_edited_script() );
@@ -1419,6 +1424,7 @@ void ScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_update_script_names",&ScriptEditor::_update_script_names);
 	ObjectTypeDB::bind_method("_tree_changed",&ScriptEditor::_tree_changed);
 	ObjectTypeDB::bind_method("_script_selected",&ScriptEditor::_script_selected);
+	ObjectTypeDB::bind_method("_script_created",&ScriptEditor::_script_created);
 	ObjectTypeDB::bind_method("_script_split_dragged",&ScriptEditor::_script_split_dragged);
 }
 
@@ -1803,6 +1809,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu = memnew( MenuButton );
 	menu_hb->add_child(file_menu);
 	file_menu->set_text("File");
+	file_menu->get_popup()->add_item("New",FILE_NEW);
 	file_menu->get_popup()->add_item("Open",FILE_OPEN);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_item("Save",FILE_SAVE,KEY_MASK_ALT|KEY_MASK_CMD|KEY_S);
@@ -1899,6 +1906,10 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	add_child(erase_tab_confirm);
 	erase_tab_confirm->connect("confirmed", this,"_close_current_tab");
 
+	script_create_dialog = memnew(ScriptCreateDialog);
+	script_create_dialog->set_title("Create Script");
+	add_child(script_create_dialog);
+	script_create_dialog->connect("script_created", this, "_script_created");
 
 	goto_line_dialog = memnew(GotoLineDialog);
 	add_child(goto_line_dialog);

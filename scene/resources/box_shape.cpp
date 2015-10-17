@@ -30,6 +30,25 @@
 #include "servers/physics_server.h"
 
 
+Vector<Vector3> BoxShape::_gen_debug_mesh_lines() {
+
+
+	Vector<Vector3> lines;
+	AABB aabb;
+	aabb.pos=-get_extents();
+	aabb.size=aabb.pos*-2;
+
+	for(int i=0;i<12;i++) {
+		Vector3 a,b;
+		aabb.get_edge(i,a,b);
+		lines.push_back(a);
+		lines.push_back(b);
+	}
+
+
+	return lines;
+}
+
 void BoxShape::_update_shape() {
 
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(),extents);

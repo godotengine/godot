@@ -710,10 +710,126 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 
 		//find largest source..
 
+		/************************/
+		/* ADD WEIGHTS IF EXIST */
+		/************************/
+
+		Map<int,Vector<Collada::Vertex::Weight> > pre_weights;
+
+		bool has_weights=false;
+
+		if (skin_controller) {
+
+			const Collada::SkinControllerData::Source *weight_src=NULL;
+			int weight_ofs=0;
+
+			if (skin_controller->weights.sources.has("WEIGHT")) {
+
+				String weight_id = skin_controller->weights.sources["WEIGHT"].source;
+				weight_ofs = skin_controller->weights.sources["WEIGHT"].offset;
+				if (skin_controller->sources.has(weight_id)) {
+
+					weight_src = &skin_controller->sources[weight_id];
+
+				}
+			}
+
+			int joint_ofs=0;
+
+			if (skin_controller->weights.sources.has("JOINT")) {
+
+				joint_ofs = skin_controller->weights.sources["JOINT"].offset;
+			}
+
+			//should be OK, given this was pre-checked.
+
+			int index_ofs=0;
+			int wstride = skin_controller->weights.sources.size();
+			for(int w_i=0;w_i<skin_controller->weights.sets.size();w_i++) {
+
+				int amount = skin_controller->weights.sets[w_i];
+
+				Vector<Collada::Vertex::Weight> weights;
+
+				for (int a_i=0;a_i<amount;a_i++) {
+
+					Collada::Vertex::Weight w;
+
+					int read_from = index_ofs+a_i*wstride;
+					ERR_FAIL_INDEX_V(read_from+wstride-1,skin_controller->weights.indices.size(),ERR_INVALID_DATA);
+					int weight_index = skin_controller->weights.indices[read_from+weight_ofs];
+					ERR_FAIL_INDEX_V(weight_index,weight_src->array.size(),ERR_INVALID_DATA);
+
+					w.weight = weight_src->array[weight_index];
+
+					int bone_index = skin_controller->weights.indices[read_from+joint_ofs];
+					if (bone_index==-1)
+						continue; //ignore this weight (refers to bind shape)
+					ERR_FAIL_INDEX_V(bone_index,bone_remap.size(),ERR_INVALID_DATA);
+
+					w.bone_idx=bone_remap[bone_index];
+
+
+					weights.push_back(w);
+				}
+
+				/* FIX WEIGHTS */
+
+
+
+				weights.sort();
+
+				if (weights.size()>4) {
+					//cap to 4 and make weights add up 1
+					weights.resize(4);
+
+				}
+
+				//make sure weights allways add up to 1
+				float total=0;
+				for(int i=0;i<weights.size();i++)
+					total+=weights[i].weight;
+				if (total)
+					for(int i=0;i<weights.size();i++)
+						weights[i].weight/=total;
+
+				if (weights.size()==0 || total==0) { //if nothing, add a weight to bone 0
+					//no weights assigned
+					Collada::Vertex::Weight w;
+					w.bone_idx=0;
+					w.weight=1.0;
+					weights.clear();
+					weights.push_back(w);
+
+				}
+
+				pre_weights[w_i]=weights;
+
+				/*
+				for(Set<int>::Element *E=vertex_map[w_i].front();E;E=E->next()) {
+
+					int dst = E->get();
+					ERR_EXPLAIN("invalid vertex index in array");
+					ERR_FAIL_INDEX_V(dst,vertex_array.size(),ERR_INVALID_DATA);
+					vertex_array[dst].weights=weights;
+
+				}*/
+
+
+
+
+				index_ofs+=wstride*amount;
+
+			}
+
+			//vertices need to be localized
+			has_weights=true;
+
+		}
 
 		Set<Collada::Vertex> vertex_set; //vertex set will be the vertices
 		List<int> indices_list; //indices will be the indices
-		Map<int,Set<int> > vertex_map; //map vertices (for setting skinning/morph)
+		//Map<int,Set<int> > vertex_map; //map vertices (for setting skinning/morph)
 
 		/**************************/
 		/* CREATE PRIMITIVE ARRAY */
@@ -753,11 +869,16 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 				if (!p_optimize)
 					vertex.uid=vertidx++;
 
+
+
 				int vertex_index=p.indices[src+vertex_ofs]; //used for index field (later used by controllers)
 				int vertex_pos = (vertex_src->stride?vertex_src->stride:3) * vertex_index;
 				ERR_FAIL_INDEX_V(vertex_pos,vertex_src->array.size(),ERR_INVALID_DATA);
 				vertex.vertex=Vector3(vertex_src->array[vertex_pos+0],vertex_src->array[vertex_pos+1],vertex_src->array[vertex_pos+2]);
 
+				if (pre_weights.has(vertex_index)) {
+					vertex.weights=pre_weights[vertex_index];
+				}
 
 				if (normal_src) {
 
@@ -836,9 +957,9 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 					vertex_set.insert(vertex);
 				}
 
-				if (!vertex_map.has(vertex_index))
+			/*	if (!vertex_map.has(vertex_index))
 					vertex_map[vertex_index]=Set<int>();
-				vertex_map[vertex_index].insert(index); //should be outside..
+				vertex_map[vertex_index].insert(index); //should be outside..*/
 				//build triangles if needed
 				if (j==0)
 					prev2[0]=index;
@@ -874,120 +995,10 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 			vertex_array[F->get().idx]=F->get();
 		}
 
-		/************************/
-		/* ADD WEIGHTS IF EXIST */
-		/************************/
 
+		if (has_weights) {
 
-		bool has_weights=false;
-
-		if (skin_controller) {
-
-			const Collada::SkinControllerData::Source *weight_src=NULL;
-			int weight_ofs=0;
-
-			if (skin_controller->weights.sources.has("WEIGHT")) {
-
-				String weight_id = skin_controller->weights.sources["WEIGHT"].source;
-				weight_ofs = skin_controller->weights.sources["WEIGHT"].offset;
-				if (skin_controller->sources.has(weight_id)) {
-
-					weight_src = &skin_controller->sources[weight_id];
-
-				}
-			}
-
-			int joint_ofs=0;
-
-			if (skin_controller->weights.sources.has("JOINT")) {
-
-				joint_ofs = skin_controller->weights.sources["JOINT"].offset;
-			}
-
-			//should be OK, given this was pre-checked.
-
-			int index_ofs=0;
-			int wstride = skin_controller->weights.sources.size();
-			for(int w_i=0;w_i<skin_controller->weights.sets.size();w_i++) {
-
-				int amount = skin_controller->weights.sets[w_i];
-
-				if (vertex_map.has(w_i)) { //vertex may no longer be here, don't bother converting
-
-					Vector<Collada::Vertex::Weight> weights;
-
-					for (int a_i=0;a_i<amount;a_i++) {
-
-						Collada::Vertex::Weight w;
-
-						int read_from = index_ofs+a_i*wstride;
-						ERR_FAIL_INDEX_V(read_from+wstride-1,skin_controller->weights.indices.size(),ERR_INVALID_DATA);
-						int weight_index = skin_controller->weights.indices[read_from+weight_ofs];
-						ERR_FAIL_INDEX_V(weight_index,weight_src->array.size(),ERR_INVALID_DATA);
-
-						w.weight = weight_src->array[weight_index];
-
-						int bone_index = skin_controller->weights.indices[read_from+joint_ofs];
-						if (bone_index==-1)
-							continue; //ignore this weight (refers to bind shape)
-						ERR_FAIL_INDEX_V(bone_index,bone_remap.size(),ERR_INVALID_DATA);
-
-						w.bone_idx=bone_remap[bone_index];
-
-
-						weights.push_back(w);
-					}
-
-					/* FIX WEIGHTS */
-
-
-
-					weights.sort();
-
-					if (weights.size()>4) {
-						//cap to 4 and make weights add up 1
-						weights.resize(4);
-
-					}
-
-					//make sure weights allways add up to 1
-					float total=0;
-					for(int i=0;i<weights.size();i++)
-						total+=weights[i].weight;
-					if (total)
-						for(int i=0;i<weights.size();i++)
-							weights[i].weight/=total;
-
-					if (weights.size()==0 || total==0) { //if nothing, add a weight to bone 0
-						//no weights assigned
-						Collada::Vertex::Weight w;
-						w.bone_idx=0;
-						w.weight=1.0;
-						weights.clear();
-						weights.push_back(w);
-
-					}
-
-
-					for(Set<int>::Element *E=vertex_map[w_i].front();E;E=E->next()) {
-
-						int dst = E->get();
-						ERR_EXPLAIN("invalid vertex index in array");
-						ERR_FAIL_INDEX_V(dst,vertex_array.size(),ERR_INVALID_DATA);
-						vertex_array[dst].weights=weights;
-
-					}
-
-				} else {
-					//zzprint_line("no vertex found for index "+itos(w_i));
-				}
-
-				index_ofs+=wstride*amount;
-
-			}
-
-			//vertices need to be localized
-
+			//if skeleton, localize
 			Transform local_xform = p_local_xform;
 			for(int i=0;i<vertex_array.size();i++) {
 
@@ -1000,10 +1011,8 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 					//vertex_array[i].tangent.normal*=-1.0;
 				}
 			}
-
-			has_weights=true;
-
 		}
+
 
 		DVector<int> index_array;
 		index_array.resize(indices_list.size());

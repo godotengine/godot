@@ -1948,6 +1948,9 @@ bool RasterizerDummy::has_feature(VS::Features p_feature) const {
 
 }
 
+void RasterizerDummy::restore_framebuffer() {
+
+}
 
 RasterizerDummy::RasterizerDummy() {
 

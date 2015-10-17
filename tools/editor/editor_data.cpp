@@ -123,6 +123,27 @@ void EditorHistory::add_object(ObjectID p_object,int p_relevel){
 	_add_object(p_object,"",p_relevel);
 }
 
+int EditorHistory::get_history_len() {
+	return history.size();
+}
+int EditorHistory::get_history_pos() {
+	return current;
+}
+
+ObjectID EditorHistory::get_history_obj(int p_obj) const {
+	ERR_FAIL_INDEX_V(p_obj,history.size(),0);
+	ERR_FAIL_INDEX_V(history[p_obj].level,history[p_obj].path.size(),0);
+	return history[p_obj].path[history[p_obj].level].object;
+}
+
+bool EditorHistory::is_at_begining() const {
+	return current<=0;
+}
+bool EditorHistory::is_at_end() const {
+
+	return ((current+1)>=history.size());
+}
+
 
 bool EditorHistory::next() {
 

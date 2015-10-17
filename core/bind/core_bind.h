@@ -256,6 +256,9 @@ public:
 
 	String get_data_dir() const;
 
+	void alert(const String& p_alert,const String& p_title="ALERT!");
+
+
 	void set_screen_orientation(ScreenOrientation p_orientation);
 	ScreenOrientation get_screen_orientation() const;
 

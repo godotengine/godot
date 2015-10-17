@@ -124,7 +124,7 @@ void MenuButton::_set_items(const Array& p_items) {
 
 void MenuButton::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_popup"),&MenuButton::get_popup);		
+	ObjectTypeDB::bind_method(_MD("get_popup:PopupMenu"),&MenuButton::get_popup);
 	ObjectTypeDB::bind_method(_MD("_unhandled_key_input"),&MenuButton::_unhandled_key_input);
 	ObjectTypeDB::bind_method(_MD("_set_items"),&MenuButton::_set_items);
 	ObjectTypeDB::bind_method(_MD("_get_items"),&MenuButton::_get_items);

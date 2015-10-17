@@ -75,7 +75,7 @@
 #include "core/io/file_access_zip.h"
 #include "translation.h"
 #include "version.h"
-#include "os/input.h"
+#include "main/input_default.h"
 #include "performance.h"
 
 static Globals *globals=NULL;
@@ -94,11 +94,17 @@ static FileAccessNetworkClient *file_access_network_client=NULL;
 static TranslationServer *translation_server = NULL;
 
 static OS::VideoMode video_mode;
+static bool init_maximized=false;
+static bool init_fullscreen=false;
+static bool init_use_custom_pos=false;
+static bool debug_collisions=false;
+static bool debug_navigation=false;
+static Vector2 init_custom_pos;
 static int video_driver_idx=-1;
 static int audio_driver_idx=-1;
 static String locale;
 
-static bool init_maximized=false;
+
 static int init_screen=-1;
 
 static String unescape_cmdline(const String& p_str) {
@@ -136,8 +142,10 @@ void Main::print_help(const char* p_binary) {
 	}
 	OS::get_singleton()->print(")\n");
 	
-	OS::get_singleton()->print("\t-r WIDTHxHEIGHT\t : Request Screen Resolution\n");
+	OS::get_singleton()->print("\t-r WIDTHxHEIGHT\t : Request Window Resolution\n");
+	OS::get_singleton()->print("\t-p XxY\t : Request Window Position\n");
 	OS::get_singleton()->print("\t-f\t\t : Request Fullscreen\n");
+	OS::get_singleton()->print("\t-mx\t\t Request Maximized\n");
 	OS::get_singleton()->print("\t-vd DRIVER\t : Video Driver (");
 	for (int i=0;i<OS::get_singleton()->get_video_driver_count();i++) {
 		
@@ -287,6 +295,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				
 				if (vm.find("x")==-1) { // invalid parameter format
 				
+					OS::get_singleton()->print("Invalid -r argument: %s\n",vm.utf8().get_data());
 					goto error;
 					
 				
@@ -297,6 +306,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				
 				if (w==0 || h==0) {
 				
+					OS::get_singleton()->print("Invalid -r resolution, x and y must be >0\n");
 					goto error;
 					
 				}
@@ -307,11 +317,43 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				
 				N=I->next()->next();
 			} else {
+				OS::get_singleton()->print("Invalid -p argument, needs resolution\n");
 				goto error;
 				
 			
 			}
-			
+		} else if (I->get()=="-p") { // position
+
+			if (I->next()) {
+
+				String vm=I->next()->get();
+
+				if (vm.find("x")==-1) { // invalid parameter format
+
+					OS::get_singleton()->print("Invalid -p argument: %s\n",vm.utf8().get_data());
+					goto error;
+
+
+				}
+
+				int x=vm.get_slice("x",0).to_int();
+				int y=vm.get_slice("x",1).to_int();
+
+				init_custom_pos=Point2(x,y);
+				init_use_custom_pos=true;
+
+				N=I->next()->next();
+			} else {
+				OS::get_singleton()->print("Invalid -r argument, needs position\n");
+				goto error;
+
+
+			}
+
+
+		} else if (I->get()=="-mx") { // video driver
+
+			init_maximized=true;
 		} else if (I->get()=="-vd") { // video driver
 		
 			if (I->next()) {
@@ -319,6 +361,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				video_driver=I->next()->get();
 				N=I->next()->next();
 			} else {
+				OS::get_singleton()->print("Invalid -cd argument, needs driver name\n");
 				goto error;
 				
 			}
@@ -329,6 +372,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				locale=I->next()->get();
 				N=I->next()->next();
 			} else {
+				OS::get_singleton()->print("Invalid -lang argument, needs language code\n");
 				goto error;
 
 			}
@@ -383,7 +427,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 			
 		} else if (I->get()=="-f") { // fullscreen
 		
-			video_mode.fullscreen=true;
+			//video_mode.fullscreen=false;
+			init_fullscreen=true;
 		} else if (I->get()=="-e" || I->get()=="-editor") { // fonud editor
 
 			editor=true;
@@ -406,7 +451,6 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				} else {
 					game_path=I->next()->get(); //use game_path instead
 				}
-
 				N=I->next()->next();
 			} else {
 				goto error;
@@ -472,6 +516,10 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 		} else if (I->get()=="-debug" || I->get()=="-d") {
 			debug_mode="local";
+		} else if (I->get()=="-debugcol" || I->get()=="-dc") {
+			debug_collisions=true;
+		} else if (I->get()=="-debugnav" || I->get()=="-dn") {
+			debug_navigation=true;
 		} else if (I->get()=="-editor_scene") {
 
 			if (I->next()) {
@@ -487,8 +535,10 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 				debug_mode="remote";
 				debug_host=I->next()->get();
-				if (debug_host.find(":")==-1) //wrong host
+				if (debug_host.find(":")==-1) { //wrong host
+					OS::get_singleton()->print("Invalid debug host string\n");
 					goto error;
+				}
 				N=I->next()->next();
 			} else {
 				goto error;
@@ -651,6 +701,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	GLOBAL_DEF("display/resizable",video_mode.resizable);
 	GLOBAL_DEF("display/test_width",0);
 	GLOBAL_DEF("display/test_height",0);
+	OS::get_singleton()->_pixel_snap=GLOBAL_DEF("display/use_2d_pixel_snap",false);
 	if (rtm==-1) {
 		rtm=GLOBAL_DEF("render/thread_model",OS::RENDER_THREAD_SAFE);
 		if (rtm>=1) //hack for now
@@ -732,6 +783,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	if (p_second_phase)
 		return setup2();
 
+
 	return OK;
 
 	error:
@@ -785,6 +837,14 @@ Error Main::setup2() {
 
 
 	OS::get_singleton()->initialize(video_mode,video_driver_idx,audio_driver_idx);
+	if (init_use_custom_pos) {
+		OS::get_singleton()->set_window_position(init_custom_pos);
+	}
+	if (init_maximized) {
+		OS::get_singleton()->set_window_maximized(true);
+	} else if (init_fullscreen) {
+		OS::get_singleton()->set_window_fullscreen(true);
+	}
 
 	register_core_singletons();
 
@@ -801,17 +861,29 @@ Error Main::setup2() {
 	if (init_maximized) {
 		OS::get_singleton()->set_window_maximized(true);
 	}
+	MAIN_PRINT("Main: Load Remaps");
+
+	path_remap->load_remaps();
 
 	if (show_logo) { //boot logo!
 		String boot_logo_path=GLOBAL_DEF("application/boot_splash",String());
 		bool boot_logo_scale=GLOBAL_DEF("application/boot_splash_fullsize",true);
 		Globals::get_singleton()->set_custom_property_info("application/boot_splash",PropertyInfo(Variant::STRING,"application/boot_splash",PROPERTY_HINT_FILE,"*.png"));
-
+		print_line("BOOT SPLASH: "+boot_logo_path);
 
 		Image boot_logo;
 
-		if (boot_logo_path.strip_edges()!="" && FileAccess::exists(boot_logo_path)) {
-			boot_logo.load(boot_logo_path);
+		boot_logo_path = boot_logo_path.strip_edges();
+		print_line("BOOT SPLASH IS : "+boot_logo_path);
+
+		if (boot_logo_path!=String() /*&& FileAccess::exists(boot_logo_path)*/) {
+			Error err = boot_logo.load(boot_logo_path);
+			if (err!=OK) {
+				print_line("ËRROR LOADING BOOT LOGO SPLASH :"+boot_logo_path);
+			} else {
+				print_line("BOOT SPLASH OK!");
+
+			}
 		}
 
 		if (!boot_logo.empty()) {
@@ -822,7 +894,7 @@ Error Main::setup2() {
 			VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg,boot_logo_scale);
 #ifndef TOOLS_ENABLED
 			//no tools, so free the boot logo (no longer needed)
-			Globals::get_singleton()->set("application/boot_logo",Image());
+		//	Globals::get_singleton()->set("application/boot_logo",Image());
 #endif
 
 		} else {
@@ -855,15 +927,30 @@ Error Main::setup2() {
 				id->set_emulate_touch(true);
 		}
 	}
-	MAIN_PRINT("Main: Load Remaps");
 
-	path_remap->load_remaps();
+
+
+	MAIN_PRINT("Main: Load Remaps");
 
 	MAIN_PRINT("Main: Load Scene Types");
 
 	register_scene_types();
 	register_server_types();
 
+	GLOBAL_DEF("display/custom_mouse_cursor",String());
+	GLOBAL_DEF("display/custom_mouse_cursor_hotspot",Vector2());
+	Globals::get_singleton()->set_custom_property_info("display/custom_mouse_cursor",PropertyInfo(Variant::STRING,"display/custom_mouse_cursor",PROPERTY_HINT_FILE,"*.png,*.webp"));
+
+	if (String(Globals::get_singleton()->get("display/custom_mouse_cursor"))!=String()) {
+
+		print_line("use custom cursor");
+		Ref<Texture> cursor=ResourceLoader::load(Globals::get_singleton()->get("display/custom_mouse_cursor"));
+		if (cursor.is_valid()) {
+			print_line("loaded ok");
+			Vector2 hotspot = Globals::get_singleton()->get("display/custom_mouse_cursor_hotspot");
+			Input::get_singleton()->set_custom_mouse_cursor(cursor,hotspot);
+		}
+	}
 #ifdef TOOLS_ENABLED
 	EditorNode::register_editor_types();
 	ObjectTypeDB::register_type<PCKPacker>(); // todo: move somewhere else
@@ -1091,7 +1178,14 @@ bool Main::start() {
 		
 		SceneTree *sml = main_loop->cast_to<SceneTree>();
 
+		if (debug_collisions) {
+			sml->set_debug_collisions_hint(true);
+		}
+		if (debug_navigation) {
+			sml->set_debug_navigation_hint(true);
+		}
 #ifdef TOOLS_ENABLED
+
 
 		EditorNode *editor_node=NULL;
 		if (editor) {

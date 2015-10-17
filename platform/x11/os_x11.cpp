@@ -441,6 +441,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
 
 
+
 	//printf("got map notify\n");
 		
 }
@@ -671,17 +672,24 @@ void OS_X11::set_current_screen(int p_screen) {
 }
 
 Point2 OS_X11::get_screen_position(int p_screen) const {
+
 	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
-	if( !ext_okay ) return Point2i(0,0);
+	if( !ext_okay ) {
+		return Point2i(0,0);
+	}
 	
 	int count;
 	XineramaScreenInfo* xsi = XineramaQueryScreens(x11_display, &count);
-	if( p_screen >= count ) return Point2i(0,0);
+	if( p_screen >= count ) {
+		return Point2i(0,0);
+	}
 	
 	Point2i position = Point2i(xsi[p_screen].x_org, xsi[p_screen].y_org);
+
 	XFree(xsi);
+
 	return position;
 }
 
@@ -715,6 +723,7 @@ Point2 OS_X11::get_window_position() const {
 void OS_X11::set_window_position(const Point2& p_position) {
 	// Using EWMH -- Extended Window Manager Hints
 	// to get the size of the decoration 
+#if 0
 	Atom property = XInternAtom(x11_display,"_NET_FRAME_EXTENTS", True);
 	Atom type;
 	int format;
@@ -757,6 +766,9 @@ void OS_X11::set_window_position(const Point2& p_position) {
 	top -= screen_position.y;
 
 	XMoveWindow(x11_display,x11_window,p_position.x - left,p_position.y - top);
+#else
+	XMoveWindow(x11_display,x11_window,p_position.x,p_position.y);
+#endif
 }
 
 Size2 OS_X11::get_window_size() const {
@@ -1169,8 +1181,22 @@ void OS_X11::process_xevents() {
 			XVisibilityEvent * visibility = (XVisibilityEvent *)&event;
 			minimized = (visibility->state == VisibilityFullyObscured);
 		} break;
+		case LeaveNotify: {
 
-		case FocusIn: 
+			if (main_loop && mouse_mode!=MOUSE_MODE_CAPTURED)
+				main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
+			if (input)
+				input->set_mouse_in_window(false);
+
+		} break;
+		case EnterNotify: {
+
+			if (main_loop && mouse_mode!=MOUSE_MODE_CAPTURED)
+				main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
+			if (input)
+				input->set_mouse_in_window(true);
+		} break;
+		case FocusIn:
 			minimized = false;
 #ifdef NEW_WM_API
 			if(current_videomode.fullscreen) {
@@ -1854,6 +1880,16 @@ void OS_X11::swap_buffers() {
 	context_gl->swap_buffers();
 }
 
+void OS_X11::alert(const String& p_alert,const String& p_title) {
+
+	List<String> args;
+	args.push_back("-center");
+	args.push_back("-title");
+	args.push_back(p_title);
+	args.push_back(p_alert);
+
+	execute("/usr/bin/xmessage",args,true);
+}
 
 void OS_X11::set_icon(const Image& p_icon) {
 	if (!p_icon.empty()) {

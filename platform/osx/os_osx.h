@@ -32,7 +32,7 @@
 
 #include "os/input.h"
 #include "drivers/unix/os_unix.h"
-
+#include "main/input_default.h"
 #include "servers/visual_server.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "servers/visual/rasterizer.h"
@@ -170,7 +170,7 @@ public:
 	virtual int get_screen_count() const;
 	virtual int get_current_screen() const;
 	virtual void set_current_screen(int p_screen);
-	virtual Point2 get_screen_position(int p_screen=0);
+	virtual Point2 get_screen_position(int p_screen=0) const;
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2& p_position);
 	virtual void set_window_size(const Size2 p_size);

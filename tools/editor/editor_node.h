@@ -107,6 +107,7 @@ class EditorNode : public Node {
 	enum MenuOptions {
 	
 		FILE_NEW_SCENE,
+		FILE_NEW_INHERITED_SCENE,
 		FILE_OPEN_SCENE,
 		FILE_SAVE_SCENE,
 		FILE_SAVE_AS_SCENE,
@@ -138,6 +139,7 @@ class EditorNode : public Node {
 		RESOURCE_SAVE_AS,
 		RESOURCE_UNREF,
 		RESOURCE_COPY,
+		RESOURCE_PASTE,
 		OBJECT_COPY_PARAMS,
 		OBJECT_PASTE_PARAMS,
 		OBJECT_UNIQUE_RESOURCES,
@@ -155,6 +157,8 @@ class EditorNode : public Node {
 		RUN_FILE_SERVER,
 		RUN_DEPLOY_DUMB_CLIENTS,
 		RUN_LIVE_DEBUG,
+		RUN_DEBUG_COLLISONS,
+		RUN_DEBUG_NAVIGATION,
 		RUN_DEPLOY_REMOTE_DEBUG,
 		SETTINGS_UPDATE_ALWAYS,
 		SETTINGS_UPDATE_CHANGES,
@@ -257,10 +261,12 @@ class EditorNode : public Node {
 	Button *property_back;
 	Button *property_forward;
 	SceneTreeDock *scene_tree_dock;
-	ResourcesDock *resources_dock;
+	//ResourcesDock *resources_dock;
 	PropertyEditor *property_editor;
 	ScenesDock *scenes_dock;
 	EditorRunNative *run_native;
+
+	CreateDialog *create_dialog;
 
 	CallDialog *call_dialog;
 	ConfirmationDialog *confirmation;
@@ -299,6 +305,10 @@ class EditorNode : public Node {
 	HBoxContainer *animation_panel_hb;
 	VBoxContainer *animation_vb;
 	EditorPath *editor_path;
+	ToolButton *resource_new_button;
+	ToolButton *resource_load_button;
+	MenuButton *resource_save_button;
+	MenuButton *editor_history_menu;
 	AnimationKeyEditor *animation_editor;
 	EditorLog *log;
 	CenterContainer *tabs_center;
@@ -371,6 +381,7 @@ class EditorNode : public Node {
 	
 	int current_option;
 	//void _animation_visibility_toggle();
+	void _resource_created();
 	void _resource_selected(const RES& p_res,const String& p_property="");
 	void _menu_option(int p_option);
 	void _menu_confirm_current();
@@ -378,6 +389,9 @@ class EditorNode : public Node {
 
 	void _property_editor_forward();
 	void _property_editor_back();
+
+	void _select_history(int p_idx);
+	void _prepare_history();
 
 	
 	void _fs_changed();
@@ -517,6 +531,8 @@ public:
 	void edit_node(Node *p_node);
 	void edit_resource(const Ref<Resource>& p_resource);
 	void open_resource(const String& p_type="");
+
+	void save_resource_in_path(const Ref<Resource>& p_resource,const String& p_path);
 	void save_resource(const Ref<Resource>& p_resource);
 	void save_resource_as(const Ref<Resource>& p_resource);
 
@@ -550,7 +566,7 @@ public:
 
 	void fix_dependencies(const String& p_for_file);
 	void clear_scene() { _cleanup_scene(); }
-	Error load_scene(const String& p_scene,bool p_ignore_broken_deps=false);
+	Error load_scene(const String& p_scene, bool p_ignore_broken_deps=false, bool p_set_inherited=false);
 	Error load_resource(const String& p_scene);
 
 	bool is_scene_open(const String& p_path);
