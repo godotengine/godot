@@ -3655,6 +3655,7 @@ TextEdit::TextEdit()  {
 	cache.row_height=1;
 	cache.line_spacing=1;
 	cache.line_number_w=1;
+	set_text_field(true);
 
 	tab_size=4;
 	text.set_tab_size(tab_size);

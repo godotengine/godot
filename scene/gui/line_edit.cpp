@@ -824,7 +824,7 @@ LineEdit::LineEdit() {
 	editable=true;
 	set_default_cursor_shape(CURSOR_IBEAM);
 	set_stop_mouse(true);
-		
+	set_text_field(true);
 	
 }
 

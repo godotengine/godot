@@ -119,6 +119,7 @@ private:
 
 		bool ignore_mouse;
 		bool stop_mouse;
+		bool text_field;
 
 		Control *parent;
 		Control *window;
@@ -339,6 +340,9 @@ public:
 
 	void set_stop_mouse(bool p_stop);
 	bool is_stopping_mouse() const;
+
+	void set_text_field(bool p_enable);
+	bool is_text_field() const;
 
 	/* SKINNING */
 	
