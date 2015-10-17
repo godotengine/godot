@@ -2196,7 +2196,6 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 				case RGB_OP_DIFFERENCE: {
 
 					code += OUTNAME(p_node->id,0)+"=abs("+p_inputs[0]+"-"+p_inputs[1]+");\n";
-					print_line(OUTNAME(p_node->id,0)+"=abs("+p_inputs[0]+"-"+p_inputs[1]+");\n");
 				} break;
 				case RGB_OP_DARKEN: {
 
@@ -2545,9 +2544,6 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 		}break;
 		case NODE_SCALAR_INPUT: {
-			DEF_SCALAR(0);
-			DEF_SCALAR(1);
-			DEF_SCALAR(2);
 			String name = p_node->param1;
 			float dv=p_node->param2;
 			code +="uniform float "+name+"="+rtos(dv)+";\n";
@@ -2631,4 +2627,8 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 		}
 	}
+#undef DEF_SCALAR
+#undef DEF_COLOR
+#undef DEF_MATRIX
+#undef DEF_VEC
 }
