@@ -1,11 +1,11 @@
 /*************************************************************************/
-/*  tabs.h                                                               */
+/*  audio_driver_media_kit.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,98 +26,47 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef TABS_H
-#define TABS_H
+#include "servers/audio/audio_server_sw.h"
 
-#include "scene/gui/control.h"
+#ifdef MEDIA_KIT_ENABLED
 
-class Tabs : public Control {
+#include "core/os/thread.h"
+#include "core/os/mutex.h"
 
-	OBJ_TYPE( Tabs, Control );
-public:
+#include <kernel/image.h> // needed for image_id
+#include <SoundPlayer.h>
 
-	enum TabAlign {
+class AudioDriverMediaKit : public AudioDriverSW {
+	Mutex* mutex;
 
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT
-	};
+	BSoundPlayer* player;
+	static int32_t* samples_in;
 
-	enum CloseButtonDisplayPolicy {
+	static void PlayBuffer(void* cookie, void* buffer, size_t size, const media_raw_audio_format& format);
 
-		SHOW_ALWAYS,
-		SHOW_ACTIVE_ONLY,
-		SHOW_HOVER,
-		SHOW_NEVER
-	};
-private:
+	unsigned int mix_rate;
+	OutputFormat output_format;
+	unsigned int buffer_size;
+	int channels;
 
-
-	struct Tab {
-
-		String text;
-		Ref<Texture> icon;
-		int ofs_cache;
-		int size_cache;
-		Ref<Texture> right_button;
-		Rect2 rb_rect;
-		Ref<Texture> close_button;
-		Rect2 cb_rect;
-	};
-
-	Vector<Tab> tabs;
-	int current;
-	Control *_get_tab(int idx) const;
-	int _get_top_margin() const;
-	TabAlign tab_align;
-	int rb_hover;
-	bool rb_pressing;
-
-	int cb_hover;
-	bool cb_pressing;
-	CloseButtonDisplayPolicy cb_displaypolicy;
-
-	int hover;	// hovered tab
-
-protected:
-
-	void _input_event(const InputEvent& p_event);
-	void _notification(int p_what);
-	static void _bind_methods();
+	bool active;
 
 public:
 
-	void add_tab(const String& p_str="",const Ref<Texture>& p_icon=Ref<Texture>());
+	const char* get_name() const {
+		return "MediaKit";
+	};
 
-	void set_tab_title(int p_tab,const String& p_title);
-	String get_tab_title(int p_tab) const;
+	virtual Error init();
+	virtual void start();
+	virtual int get_mix_rate() const;
+	virtual OutputFormat get_output_format() const;
+	virtual void lock();
+	virtual void unlock();
+	virtual void finish();
 
-	void set_tab_icon(int p_tab,const Ref<Texture>& p_icon);
-	Ref<Texture> get_tab_icon(int p_tab) const;
-
-	void set_tab_right_button(int p_tab,const Ref<Texture>& p_right_button);
-	Ref<Texture> get_tab_right_button(int p_tab) const;
-
-	void set_tab_close_button(int p_tab, const Ref<Texture>& p_close_button);
-	Ref<Texture> get_tab_close_button(int p_tab) const;
-	void set_tab_close_display_policy(CloseButtonDisplayPolicy p_cb_displaypolicy);
-
-	void set_tab_align(TabAlign p_align);
-	TabAlign get_tab_align() const;
-
-	int get_tab_count() const;
-	void set_current_tab(int p_current);
-	int get_current_tab() const;
-
-	void remove_tab(int p_idx);
-
-	void clear_tabs();
-
-	Size2 get_minimum_size() const;
-
-	Tabs();
+	AudioDriverMediaKit();
+	~AudioDriverMediaKit();
 };
 
-VARIANT_ENUM_CAST(Tabs::TabAlign);
-
-#endif // TABS_H
+#endif

@@ -220,7 +220,9 @@ void  GridMapEditor::_menu_option(int p_option) {
 
 
 		} break;
-
+		case MENU_OPTION_GRIDMAP_SETTINGS: {
+			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50));
+		} break;
 
 	}
 }
@@ -304,7 +306,7 @@ bool GridMapEditor::do_input_action(Camera* p_camera,const Point2& p_point,bool 
 	p.d=edit_floor[edit_axis]*node->get_cell_size();
 
 	Vector3 inters;
-	if (!p.intersects_segment(from,from+normal*500,&inters))
+	if (!p.intersects_segment(from, from + normal * settings_pick_distance->get_val(), &inters))
 		return false;
 
 
@@ -1248,6 +1250,24 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->get_popup()->add_item("Selection -> Clear",MENU_OPTION_SELECTION_CLEAR);
 	//options->get_popup()->add_separator();
 	//options->get_popup()->add_item("Configure",MENU_OPTION_CONFIGURE);
+
+	options->get_popup()->add_separator();
+	options->get_popup()->add_item("Settings", MENU_OPTION_GRIDMAP_SETTINGS);
+
+	settings_dialog = memnew(ConfirmationDialog);
+	settings_dialog->set_title("GridMap Settings");
+	add_child(settings_dialog);
+	settings_vbc = memnew(VBoxContainer);
+	settings_vbc->set_custom_minimum_size(Size2(200, 0));
+	settings_dialog->add_child(settings_vbc);
+	settings_dialog->set_child_rect(settings_vbc);
+
+	settings_pick_distance = memnew(SpinBox);
+	settings_pick_distance->set_max(10000.0f);
+	settings_pick_distance->set_min(500.0f);
+	settings_pick_distance->set_step(1.0f);
+	settings_pick_distance->set_val(EDITOR_DEF("gridmap_editor/pick_distance", 5000.0));
+	settings_vbc->add_margin_child("Pick Distance:", settings_pick_distance);
 
 	clip_mode=CLIP_DISABLED;
 	options->get_popup()->connect("item_pressed", this,"_menu_option");

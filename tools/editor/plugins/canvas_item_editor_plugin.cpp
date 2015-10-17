@@ -144,6 +144,9 @@ void CanvasItemEditor::_unhandled_key_input(const InputEvent& p_ev) {
 
 	if (!is_visible())
 		return;
+	if (p_ev.key.mod.control)
+		// prevent to change tool mode when control key is pressed
+		return;
 	if (p_ev.key.pressed && !p_ev.key.echo && p_ev.key.scancode==KEY_Q)
 		_tool_select(TOOL_SELECT);
 	if (p_ev.key.pressed && !p_ev.key.echo && p_ev.key.scancode==KEY_W)
