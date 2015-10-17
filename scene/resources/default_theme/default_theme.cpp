@@ -31,7 +31,7 @@ static  TexCacheMap *tex_cache;
 
 template<class T>
 static Ref<StyleBoxTexture> make_stylebox(T p_src,float p_left, float p_top, float p_right, float p_botton,float p_margin_left=-1, float p_margin_top=-1, float p_margin_right=-1, float p_margin_botton=-1, bool p_draw_center=true) {
-	
+
 	Ref<ImageTexture> texture;
 
 
@@ -56,17 +56,17 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src,float p_left, float p_top, flo
 	style->set_default_margin( MARGIN_BOTTOM, p_margin_botton );
 	style->set_default_margin( MARGIN_TOP, p_margin_top );
 	style->set_draw_center(p_draw_center);
-	
+
 	return style;
 }
 
 template<class T>
 static Ref<Texture> make_icon(T p_src) {
-	
-	
+
+
 	Ref<ImageTexture> texture( memnew( ImageTexture ) );
 	texture->create_from_image( Image(p_src),ImageTexture::FLAG_FILTER );
-		
+
 	return texture;
 }
 
@@ -75,7 +75,7 @@ static Ref<Font> make_font(int p_height,int p_ascent, int p_valign, int p_charco
 
 	Ref<Font> font( memnew( Font ) );
 	font->add_texture( p_texture );
-	
+
 	for (int i=0;i<p_charcount;i++) {
 
 		const int *c = &p_chars[i*8];
@@ -91,9 +91,9 @@ static Ref<Font> make_font(int p_height,int p_ascent, int p_valign, int p_charco
 
 
 		font->add_char( chr, 0, frect, align,advance );
-		
+
 	}
-	
+
 	font->set_height( p_height );
 	font->set_ascent( p_ascent );
 
@@ -152,12 +152,12 @@ static Ref<Font> make_font2(int p_height,int p_ascent, int p_charcount, const in
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left=-1, float p_margin_top=-1, float p_margin_right=-1, float p_margin_botton=-1) {
 
 	Ref<StyleBox> style( memnew( StyleBoxEmpty) );
-	
+
 	style->set_default_margin( MARGIN_LEFT, p_margin_left );
 	style->set_default_margin( MARGIN_RIGHT, p_margin_right );
 	style->set_default_margin( MARGIN_BOTTOM, p_margin_botton );
 	style->set_default_margin( MARGIN_TOP, p_margin_top );
-	
+
 	return style;
 }
 
@@ -299,49 +299,49 @@ void make_default_theme() {
 
 	t->set_constant("hseparation","MenuButton", 3 );
 
-    // CheckBox
+	// CheckBox
 
-    Ref<StyleBox> cbx_empty = memnew( StyleBoxEmpty );
-    cbx_empty->set_default_margin(MARGIN_LEFT,22);
-    cbx_empty->set_default_margin(MARGIN_RIGHT,4);
-    cbx_empty->set_default_margin(MARGIN_TOP,4);
-    cbx_empty->set_default_margin(MARGIN_BOTTOM,5);
-    Ref<StyleBox> cbx_focus = focus;
-    cbx_focus->set_default_margin(MARGIN_LEFT,4);
-    cbx_focus->set_default_margin(MARGIN_RIGHT,22);
-    cbx_focus->set_default_margin(MARGIN_TOP,4);
-    cbx_focus->set_default_margin(MARGIN_BOTTOM,5);
+	Ref<StyleBox> cbx_empty = memnew( StyleBoxEmpty );
+	cbx_empty->set_default_margin(MARGIN_LEFT,22);
+	cbx_empty->set_default_margin(MARGIN_RIGHT,4);
+	cbx_empty->set_default_margin(MARGIN_TOP,4);
+	cbx_empty->set_default_margin(MARGIN_BOTTOM,5);
+	Ref<StyleBox> cbx_focus = focus;
+	cbx_focus->set_default_margin(MARGIN_LEFT,4);
+	cbx_focus->set_default_margin(MARGIN_RIGHT,22);
+	cbx_focus->set_default_margin(MARGIN_TOP,4);
+	cbx_focus->set_default_margin(MARGIN_BOTTOM,5);
 
-    t->set_stylebox("normal","CheckBox", cbx_empty );
-    t->set_stylebox("pressed","CheckBox", cbx_empty );
-    t->set_stylebox("disabled","CheckBox", cbx_empty );
-    t->set_stylebox("hover","CheckBox", cbx_empty );
-    t->set_stylebox("focus","CheckBox", cbx_focus );
+	t->set_stylebox("normal","CheckBox", cbx_empty );
+	t->set_stylebox("pressed","CheckBox", cbx_empty );
+	t->set_stylebox("disabled","CheckBox", cbx_empty );
+	t->set_stylebox("hover","CheckBox", cbx_empty );
+	t->set_stylebox("focus","CheckBox", cbx_focus );
 
-    t->set_icon("checked", "CheckBox", make_icon(checked_png));
-    t->set_icon("unchecked", "CheckBox", make_icon(unchecked_png));
-    t->set_icon("radio_checked", "CheckBox", make_icon(radio_checked_png));
-    t->set_icon("radio_unchecked", "CheckBox", make_icon(radio_unchecked_png));
+	t->set_icon("checked", "CheckBox", make_icon(checked_png));
+	t->set_icon("unchecked", "CheckBox", make_icon(unchecked_png));
+	t->set_icon("radio_checked", "CheckBox", make_icon(radio_checked_png));
+	t->set_icon("radio_unchecked", "CheckBox", make_icon(radio_unchecked_png));
 
-    t->set_font("font","CheckBox", default_font );
+	t->set_font("font","CheckBox", default_font );
 
-    t->set_color("font_color","CheckBox", control_font_color );
-    t->set_color("font_color_pressed","CheckBox", control_font_color_pressed );
-    t->set_color("font_color_hover","CheckBox", control_font_color_hover );
-    t->set_color("font_color_disabled","CheckBox", control_font_color_disabled );
+	t->set_color("font_color","CheckBox", control_font_color );
+	t->set_color("font_color_pressed","CheckBox", control_font_color_pressed );
+	t->set_color("font_color_hover","CheckBox", control_font_color_hover );
+	t->set_color("font_color_disabled","CheckBox", control_font_color_disabled );
 
-    t->set_constant("hseparation","CheckBox",4);
-    t->set_constant("check_vadjust","CheckBox",0);
+	t->set_constant("hseparation","CheckBox",4);
+	t->set_constant("check_vadjust","CheckBox",0);
 
 
 
 	// CheckButton
-	
+
 	Ref<StyleBox> cb_empty = memnew( StyleBoxEmpty );
 	cb_empty->set_default_margin(MARGIN_LEFT,6);
 	cb_empty->set_default_margin(MARGIN_RIGHT,70);
 	cb_empty->set_default_margin(MARGIN_TOP,4);
-    cb_empty->set_default_margin(MARGIN_BOTTOM,4);
+	cb_empty->set_default_margin(MARGIN_BOTTOM,4);
 
 	t->set_stylebox("normal","CheckButton", cb_empty );
 	t->set_stylebox("pressed","CheckButton", cb_empty );
@@ -365,7 +365,7 @@ void make_default_theme() {
 
 
 	// Label
-	            
+
 	t->set_font("font","Label", default_font );
 
 	t->set_color("font_color","Label", Color(1,1,1) );
@@ -556,10 +556,16 @@ void make_default_theme() {
 
 	// GraphNode
 
-	Ref<StyleBoxTexture> graphsb = make_stylebox(graph_node_png,6,24,6,5,16,24,16,5);
+	Ref<StyleBoxTexture> graphsb = make_stylebox(graph_node_png,6,24,6,5,3,24,16,5);
+	Ref<StyleBoxTexture> graphsbselected = make_stylebox(graph_node_selected_png,6,24,6,5,3,24,16,5);
+	Ref<StyleBoxTexture> graphsbdefault = make_stylebox(graph_node_default_png,4,4,4,4,6,4,4,4);
+	Ref<StyleBoxTexture> graphsbdeffocus = make_stylebox(graph_node_default_focus_png,4,4,4,4,6,4,4,4);
 	//graphsb->set_expand_margin_size(MARGIN_LEFT,10);
 	//graphsb->set_expand_margin_size(MARGIN_RIGHT,10);
 	t->set_stylebox("frame","GraphNode", graphsb );
+	t->set_stylebox("selectedframe","GraphNode", graphsbselected );
+	t->set_stylebox("defaultframe", "GraphNode", graphsbdefault );
+	t->set_stylebox("defaultfocus", "GraphNode", graphsbdeffocus );
 	t->set_constant("separation","GraphNode", 1 );
 	t->set_icon("port","GraphNode", make_icon( graph_port_png ) );
 	t->set_icon("close","GraphNode", make_icon( graph_node_close_png ) );
@@ -713,7 +719,7 @@ void make_default_theme() {
 
 
 	// FileDialog
-	
+
 	t->set_icon("folder","FileDialog",make_icon(icon_folder_png));
 	t->set_color("files_disabled","FileDialog",Color(0,0,0,0.7));
 
@@ -877,10 +883,10 @@ void make_default_theme() {
 
 #endif
 void clear_default_theme() {
-	
+
 	Theme::set_default( Ref<Theme>() );
 	Theme::set_default_icon( Ref< Texture >() );
-	Theme::set_default_style( Ref< StyleBox >() );	
+	Theme::set_default_style( Ref< StyleBox >() );
 	Theme::set_default_font( Ref< Font >() );
 
 }
