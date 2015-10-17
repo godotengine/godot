@@ -1246,7 +1246,7 @@ void ShaderGraphView::_duplicate_nodes_request()
 
 }
 
-void ShaderGraphView::_duplicate_nodes(Array &p_nodes)
+void ShaderGraphView::_duplicate_nodes(const Array &p_nodes)
 {
 	List<int> n = List<int>();
 	for (int i=0; i<p_nodes.size();i++)
