@@ -3568,7 +3568,10 @@ void TextEdit::set_show_line_numbers(bool p_show) {
 	update();
 }
 
+bool TextEdit::is_text_field() const {
 
+    return true;
+}
 void TextEdit::_bind_methods() {
 	
 	

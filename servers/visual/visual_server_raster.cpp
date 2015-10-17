@@ -1375,7 +1375,7 @@ void VisualServerRaster::_update_baked_light_sampler_dp_cache(BakedLightSampler 
 
 void VisualServerRaster::baked_light_sampler_set_resolution(RID p_baked_light_sampler,int p_resolution){
 
-	ERR_FAIL_COND(p_resolution<4 && p_resolution>64);
+    ERR_FAIL_COND(p_resolution<4 || p_resolution>64);
 	VS_CHANGED;
 	BakedLightSampler * blsamp = baked_light_sampler_owner.get(p_baked_light_sampler);
 	ERR_FAIL_COND(!blsamp);
