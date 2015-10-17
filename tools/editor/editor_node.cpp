@@ -3452,6 +3452,9 @@ Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bo
 		Ref<SceneState> state = sdata->get_state();
 		state->set_path(lpath);
 		new_scene->set_scene_inherited_state(state);
+		new_scene->set_filename(String());
+		if (new_scene->get_scene_instance_state().is_valid())
+			new_scene->get_scene_instance_state()->set_path(String());
 	}
 
 
