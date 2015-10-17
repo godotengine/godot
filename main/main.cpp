@@ -1544,9 +1544,9 @@ bool Main::iteration() {
 			OS::get_singleton()->delay_usec( OS::get_singleton()->get_frame_delay()*1000 );
 	}
 
-	int taret_fps = OS::get_singleton()->get_target_fps();
-	if (taret_fps>0) {
-		uint64_t time_step = 1000000L/taret_fps;
+	int target_fps = OS::get_singleton()->get_target_fps();
+	if (target_fps>0) {
+		uint64_t time_step = 1000000L/target_fps;
 		target_ticks += time_step;
 		uint64_t current_ticks = OS::get_singleton()->get_ticks_usec();
 		if (current_ticks<target_ticks) OS::get_singleton()->delay_usec(target_ticks-current_ticks);
