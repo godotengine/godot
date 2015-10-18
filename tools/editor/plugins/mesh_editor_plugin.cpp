@@ -212,7 +212,6 @@ MeshInstanceEditor::MeshInstanceEditor() {
 
 
 	options = memnew( MenuButton );
-	//add_child(options);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text("Mesh");
@@ -232,6 +231,7 @@ MeshInstanceEditor::MeshInstanceEditor() {
 
 	outline_dialog = memnew( ConfirmationDialog );
 	outline_dialog->set_title("Create Outline Mesh");
+	outline_dialog->get_ok()->set_text("Create");
 
 	VBoxContainer *outline_dialog_vbc = memnew( VBoxContainer );
 	outline_dialog->add_child(outline_dialog_vbc);
