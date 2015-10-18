@@ -42,10 +42,10 @@ class MultiMeshEditor : public Control {
 
 	OBJ_TYPE(MultiMeshEditor, Control );
 
-        friend class MultiMeshEditorPlugin;
+friend class MultiMeshEditorPlugin;
 
 	AcceptDialog *err_dialog;
-        MenuButton * options;
+	MenuButton * options;
 	MultiMeshInstance *_last_pp_node;
 	bool browsing_source;
 
@@ -59,8 +59,8 @@ class MultiMeshEditor : public Control {
 
 	ConfirmationDialog *populate_dialog;
 	OptionButton *populate_axis;
-	HScrollBar *populate_rotate_random;
-	HScrollBar *populate_tilt_random;
+	HSlider *populate_rotate_random;
+	HSlider *populate_tilt_random;
 	SpinBox *populate_scale_random;
 	SpinBox *populate_scale;
 	SpinBox *populate_amount;
