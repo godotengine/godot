@@ -10257,7 +10257,11 @@ void RasterizerGLES2::_update_framebuffer() {
 		framebuffer.fbo=0;
 	}
 
+#ifdef TOOLS_ENABLED
+	framebuffer.active=use_fbo;
+#else
 	framebuffer.active=use_fbo && !low_memory_2d;
+#endif
 	framebuffer.width=dwidth;
 	framebuffer.height=dheight;
 	framebuffer.scale=scale;
