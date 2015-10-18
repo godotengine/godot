@@ -101,7 +101,7 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 
 		if (i==0 && base_scene_idx>=0) {
 			//scene inheritance on root node
-			print_line("scene inherit");
+            //print_line("scene inherit");
 			Ref<PackedScene> sdata = props[ base_scene_idx ];
 			ERR_FAIL_COND_V( !sdata.is_valid(), NULL);
 			node = sdata->instance(p_gen_edit_state);
@@ -112,7 +112,7 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 
 		} else if (n.instance>=0) {
 			//instance a scene into this node
-			print_line("instance");
+            //print_line("instance");
 			if (n.instance&FLAG_INSTANCE_IS_PLACEHOLDER) {
 
 				String path = props[n.instance&FLAG_MASK];
@@ -148,7 +148,7 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 #endif
 			}
 		} else if (ObjectTypeDB::is_type_enabled(snames[n.type])) {
-			print_line("created");
+            //print_line("created");
 			//node belongs to this scene and must be created
 			Object * obj = ObjectTypeDB::instance(snames[ n.type ]);
 			if (!obj || !obj->cast_to<Node>()) {

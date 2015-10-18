@@ -23,6 +23,9 @@ tools/editor/editor_icons.cpp
 make.bat
 log.txt
 
+# Doxygen generated documentation
+doc/doxygen/*
+
 # Javascript specific
 *.bc
 
@@ -81,6 +84,8 @@ platform/android/libs/play_licensing/gen/*
 *.suo
 *.user
 *.sln.docstates
+*.sln
+*.vcxproj*
 
 # Build results
 [Dd]ebug/

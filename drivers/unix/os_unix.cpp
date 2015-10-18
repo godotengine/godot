@@ -243,7 +243,7 @@ OS::Date OS_Unix::get_date(bool utc) const {
 		lt=localtime(&t);
 	Date ret;
 	ret.year=1900+lt->tm_year;
-	ret.month=(Month)lt->tm_mon;
+	ret.month=(Month)(lt->tm_mon + 1);
 	ret.day=lt->tm_mday;
 	ret.weekday=(Weekday)lt->tm_wday;
 	ret.dst=lt->tm_isdst;

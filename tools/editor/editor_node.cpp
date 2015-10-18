@@ -976,6 +976,7 @@ void EditorNode::_save_scene(String p_file) {
 		//EditorFileSystem::get_singleton()->update_file(p_file,sdata->get_type());
 		set_current_version(editor_data.get_undo_redo().get_version());
 		_update_title();
+		_update_scene_tabs();
 	} else {
 
 		_dialog_display_file_error(p_file,err);
@@ -1399,7 +1400,6 @@ void EditorNode::_dialog_action(String p_file) {
 		} break;
 		default: { //save scene?
 		
-			
 			if (file->get_mode()==FileDialog::MODE_SAVE_FILE) {
 
 				//_save_scene(p_file);
@@ -3452,6 +3452,9 @@ Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bo
 		Ref<SceneState> state = sdata->get_state();
 		state->set_path(lpath);
 		new_scene->set_scene_inherited_state(state);
+		new_scene->set_filename(String());
+		if (new_scene->get_scene_instance_state().is_valid())
+			new_scene->get_scene_instance_state()->set_path(String());
 	}
 
 
@@ -3931,6 +3934,7 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("set_current_scene",&EditorNode::set_current_scene);
 	ObjectTypeDB::bind_method("set_current_version",&EditorNode::set_current_version);
 	ObjectTypeDB::bind_method("_scene_tab_changed",&EditorNode::_scene_tab_changed);
+	ObjectTypeDB::bind_method("_scene_tab_closed",&EditorNode::_scene_tab_closed);
 	ObjectTypeDB::bind_method("_scene_tab_script_edited",&EditorNode::_scene_tab_script_edited);
 	ObjectTypeDB::bind_method("_set_main_scene_state",&EditorNode::_set_main_scene_state);
 	ObjectTypeDB::bind_method("_update_scene_tabs",&EditorNode::_update_scene_tabs);
@@ -4385,6 +4389,17 @@ void EditorNode::_scene_tab_script_edited(int p_tab) {
 		edit_resource(script);
 }
 
+void EditorNode::_scene_tab_closed(int p_tab) {
+	set_current_scene(p_tab);
+ 	bool p_confirmed = true;
+ 	if (unsaved_cache)
+ 		p_confirmed = false;
+
+ 	_menu_option_confirm(FILE_CLOSE, p_confirmed);
+	_update_scene_tabs();
+}
+
+
 void EditorNode::_scene_tab_changed(int p_tab) {
 
 
@@ -4552,8 +4567,10 @@ EditorNode::EditorNode() {
 	scene_tabs=memnew( Tabs );
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_align(Tabs::ALIGN_CENTER);
+	scene_tabs->set_tab_close_display_policy(Tabs::SHOW_HOVER);
 	scene_tabs->connect("tab_changed",this,"_scene_tab_changed");
 	scene_tabs->connect("right_button_pressed",this,"_scene_tab_script_edited");
+	scene_tabs->connect("tab_close", this, "_scene_tab_closed");
 	top_dark_vb->add_child(scene_tabs);
 	//left
 	left_l_hsplit = memnew( HSplitContainer );
@@ -4690,6 +4707,7 @@ EditorNode::EditorNode() {
 
 	main_editor_tabs  = memnew( Tabs );
 	main_editor_tabs->connect("tab_changed",this,"_editor_select");
+	main_editor_tabs->set_tab_close_display_policy(Tabs::SHOW_NEVER);
 	HBoxContainer *srth = memnew( HBoxContainer );
 	srt->add_child( srth );
 	Control *tec = memnew( Control );

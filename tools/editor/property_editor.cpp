@@ -1746,7 +1746,7 @@ bool PropertyEditor::_might_be_in_instance() {
 
 }
 
-bool PropertyEditor::_get_instanced_node_original_property(const StringName& p_prop,Variant& value) {
+bool PropertyEditor::_get_instanced_node_original_property(const StringName& p_prop, Variant& value) {
 
 	Node *node = obj->cast_to<Node>();
 
@@ -1761,29 +1761,33 @@ bool PropertyEditor::_get_instanced_node_original_property(const StringName& p_p
 
 //	print_line("for prop - "+String(p_prop));
 
+
 	while(node) {
 
 		Ref<SceneState> ss;
 
 		if (node==edited_scene) {
 			ss=node->get_scene_inherited_state();
+
 		} else {
 			ss=node->get_scene_instance_state();
 		}
-//		print_line("at - "+String(edited_scene->get_path_to(node)));
+		//		print_line("at - "+String(edited_scene->get_path_to(node)));
 
 		if (ss.is_valid()) {
+
 			NodePath np = node->get_path_to(orig);
 			int node_idx = ss->find_node_by_path(np);
-//			print_line("\t valid, nodeidx "+itos(node_idx));
+			//			print_line("\t valid, nodeidx "+itos(node_idx));
 			if (node_idx>=0) {
 				bool lfound=false;
 				Variant lvar;
 				lvar=ss->get_property_value(node_idx,p_prop,lfound);
 				if (lfound) {
+
 					found=true;
 					value=lvar;
-//					print_line("\t found value "+String(value));
+					//					print_line("\t found value "+String(value));
 				}
 			}
 		}
@@ -1800,7 +1804,47 @@ bool PropertyEditor::_get_instanced_node_original_property(const StringName& p_p
 
 bool PropertyEditor::_is_property_different(const Variant& p_current, const Variant& p_orig,int p_usage) {
 
+
+	{
+		Node *node = obj->cast_to<Node>();
+		if (!node)
+			return false;
+
+		Node* edited_scene =EditorNode::get_singleton()->get_edited_scene();
+		bool found_state=false;
+
+		//	print_line("for prop - "+String(p_prop));
+
+
+		while(node) {
+
+			Ref<SceneState> ss;
+
+			if (node==edited_scene) {
+				ss=node->get_scene_inherited_state();
+
+			} else {
+				ss=node->get_scene_instance_state();
+			}
+
+			if (ss.is_valid()) {
+				found_state=true;
+			}
+			if (node==edited_scene) {
+				//just in case
+				break;
+			}
+			node=node->get_owner();
+		}
+
+		if (!found_state)
+			return false; //pointless to check if we are not comparing against anything.
+	}
+
 	if (p_orig.get_type()==Variant::NIL) {
+
+
+
 		//special cases
 		if (p_current.is_zero() && p_usage&PROPERTY_USAGE_STORE_IF_NONZERO)
 			return false;

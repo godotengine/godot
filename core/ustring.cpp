@@ -3066,7 +3066,7 @@ String String::world_wrap(int p_chars_per_line) const {
 		} else if (operator[](i)==' ' || operator[](i)=='\t') {
 			last_space=i;
 		} else if (operator[](i)=='\n') {
-			ret+=substr(from,i-from);
+			ret+=substr(from,i-from)+"\n";
 			from=i+1;
 			last_space=-1;
 		}

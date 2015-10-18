@@ -47,8 +47,10 @@ public class PaymentsManager {
 	}
 	
 	public PaymentsManager initService(){
+		Intent intent = new Intent("com.android.vending.billing.InAppBillingService.BIND");
+		intent.setPackage("com.android.vending");
 		activity.bindService(
-				new Intent("com.android.vending.billing.InAppBillingService.BIND"), 
+				intent, 
 				mServiceConn, 
 				Context.BIND_AUTO_CREATE);
 		return this;

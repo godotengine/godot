@@ -782,6 +782,10 @@ void LineEdit::select(int p_from, int p_to) {
 	update();
 }
 
+bool LineEdit::is_text_field() const {
+
+    return true;
+}
 
 void LineEdit::_bind_methods() {
 	

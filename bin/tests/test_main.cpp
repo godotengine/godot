@@ -61,6 +61,7 @@ const char ** tests_get_names()  {
 		"gui",
 		"io",
 		"shaderlang",
+		"physics",
 		NULL
 	};
 	

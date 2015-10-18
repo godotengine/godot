@@ -40,11 +40,11 @@ struct Vector3 {
 	enum Axis {
 		AXIS_X,
 		AXIS_Y,
-		AXIS_Z,	
+		AXIS_Z,
 	};
 
 	union {
-	
+
 #ifdef USE_QUAD_VECTORS
 
 		struct {
@@ -52,7 +52,7 @@ struct Vector3 {
 			real_t y;
 			real_t z;
 			real_t _unused;
-		};		
+		};
 		real_t coord[4];
 #else
 
@@ -61,18 +61,18 @@ struct Vector3 {
 			real_t y;
 			real_t z;
 		};
-		
+
 		real_t coord[3];
 #endif
 	};
 
 	_FORCE_INLINE_ const real_t& operator[](int p_axis) const {
-	
+
 		return coord[p_axis];
 	}
 
 	_FORCE_INLINE_ real_t& operator[](int p_axis) {
-	
+
 		return coord[p_axis];
 	}
 
@@ -84,7 +84,7 @@ struct Vector3 {
 
         _FORCE_INLINE_ real_t length() const;
         _FORCE_INLINE_ real_t length_squared() const;
-        
+
         _FORCE_INLINE_ void normalize();
         _FORCE_INLINE_ Vector3 normalized() const;
         _FORCE_INLINE_ Vector3 inverse() const;
@@ -107,6 +107,8 @@ struct Vector3 {
         _FORCE_INLINE_ real_t dot(const Vector3& p_b) const;
 
         _FORCE_INLINE_ Vector3 abs() const;
+		_FORCE_INLINE_ Vector3 floor() const;
+		_FORCE_INLINE_ Vector3 ceil() const;
 
         _FORCE_INLINE_ real_t distance_to(const Vector3& p_b) const;
         _FORCE_INLINE_ real_t distance_squared_to(const Vector3& p_b) const;
@@ -172,7 +174,17 @@ real_t Vector3::dot(const Vector3& p_b) const {
 Vector3 Vector3::abs() const {
 
 	return Vector3( Math::abs(x), Math::abs(y), Math::abs(z) );
-}	
+}
+
+Vector3 Vector3::floor() const {
+
+	return Vector3( Math::floor(x), Math::floor(y), Math::floor(z) );
+}
+
+Vector3 Vector3::ceil() const {
+
+	return Vector3( Math::ceil(x), Math::ceil(y), Math::ceil(z) );
+}
 
 Vector3 Vector3::linear_interpolate(const Vector3& p_b,float p_t) const {
 
@@ -301,7 +313,7 @@ bool Vector3::operator<(const Vector3& p_v) const {
 			return y<p_v.y;
 	} else
 		return x<p_v.x;
-	
+
 }
 
 bool Vector3::operator<=(const Vector3& p_v) const {

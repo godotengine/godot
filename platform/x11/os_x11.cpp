@@ -784,8 +784,6 @@ void OS_X11::set_window_size(const Size2 p_size) {
 void OS_X11::set_window_fullscreen(bool p_enabled) {
 	set_wm_fullscreen(p_enabled);
 	current_videomode.fullscreen = p_enabled;
-
-	visual_server->init();
 }
 
 bool OS_X11::is_window_fullscreen() const {
@@ -891,8 +889,14 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 	xev.xclient.data.l[2] = wm_max_vert;
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
-
+/* sorry this does not fix it, fails on multi monitor
+	XWindowAttributes xwa;
+	XGetWindowAttributes(x11_display,DefaultRootWindow(x11_display),&xwa);
+	current_videomode.width = xwa.width;
+	current_videomode.height = xwa.height;
+*/
 	maximized = p_enabled;
+
 }
 
 bool OS_X11::is_window_maximized() const {
@@ -1201,7 +1205,6 @@ void OS_X11::process_xevents() {
 #ifdef NEW_WM_API
 			if(current_videomode.fullscreen) {
 				set_wm_fullscreen(true);
-				visual_server->init();
 			}
 #endif
 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
@@ -1218,7 +1221,6 @@ void OS_X11::process_xevents() {
 			if(current_videomode.fullscreen) {
 				set_wm_fullscreen(false);
 				set_window_minimized(true);
-				visual_server->init();
 			}
 #endif
 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);

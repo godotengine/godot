@@ -112,6 +112,8 @@ public:
 	void select(int p_from=0, int p_to=-1);
 
 	virtual Size2 get_minimum_size() const;
+
+    virtual bool is_text_field() const;
 	LineEdit();
 	~LineEdit();
 	

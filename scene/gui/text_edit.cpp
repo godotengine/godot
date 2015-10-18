@@ -709,7 +709,7 @@ void TextEdit::_notification(int p_what) {
 						if (in_region==-1 && !in_keyword && is_char && !prev_is_char) {
 							
 							int to=j;
-							while(_is_text_char(str[to]) && to<str.length())
+							while(to<str.length() && _is_text_char(str[to]))
 								to++;
 							
 							uint32_t hash = String::hash(&str[j],to-j);
@@ -3568,7 +3568,10 @@ void TextEdit::set_show_line_numbers(bool p_show) {
 	update();
 }
 
+bool TextEdit::is_text_field() const {
 
+    return true;
+}
 void TextEdit::_bind_methods() {
 	
 	
