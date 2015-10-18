@@ -4041,6 +4041,8 @@ void RasterizerGLES2::render_target_set_size(RID p_render_target,int p_width,int
 		glDeleteTextures(1,&rt->color);
 
 		rt->fbo=0;
+		rt->depth=0;
+		rt->color=0;
 		rt->width=0;
 		rt->height=0;
 		rt->texture_ptr->tex_id=0;
@@ -4059,13 +4061,17 @@ void RasterizerGLES2::render_target_set_size(RID p_render_target,int p_width,int
 	glGenFramebuffers(1, &rt->fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
 
-	//depth
-	glGenRenderbuffers(1, &rt->depth);
-	glBindRenderbuffer(GL_RENDERBUFFER, rt->depth );
+	//if you're doing low mem 2d mode, this fbo can't be for 3D, so you don't need depth
+	if (!low_memory_2d) {
+		//depth
+		glGenRenderbuffers(1, &rt->depth);
+		glBindRenderbuffer(GL_RENDERBUFFER, rt->depth );
 
-	glRenderbufferStorage(GL_RENDERBUFFER, use_depth24?_DEPTH_COMPONENT24_OES:GL_DEPTH_COMPONENT16, rt->width,rt->height);
+		glRenderbufferStorage(GL_RENDERBUFFER, use_depth24?_DEPTH_COMPONENT24_OES:GL_DEPTH_COMPONENT16, rt->width,rt->height);
 
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->depth);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->depth);
+
+	}
 
 	//color
 	glGenTextures(1, &rt->color);
@@ -10251,7 +10257,7 @@ void RasterizerGLES2::_update_framebuffer() {
 		framebuffer.fbo=0;
 	}
 
-	framebuffer.active=use_fbo;
+	framebuffer.active=use_fbo and !low_memory_2d;
 	framebuffer.width=dwidth;
 	framebuffer.height=dheight;
 	framebuffer.scale=scale;
@@ -11161,6 +11167,7 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,boo
 	use_fp16_fb=bool(GLOBAL_DEF("rasterizer/fp16_framebuffer",true));
 	use_shadow_mapping=true;
 	use_fast_texture_filter=!bool(GLOBAL_DEF("rasterizer/trilinear_mipmap_filter",true));
+	low_memory_2d=bool(GLOBAL_DEF("rasterizer/low_memory_2d_mode",false));
 	skel_default.resize(1024*4);
 	for(int i=0;i<1024/3;i++) {
 
