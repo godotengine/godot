@@ -60,6 +60,9 @@ public:
 	void set_radial_initial_angle(float p_angle);
 	float get_radial_initial_angle();
 
+	void set_fill_degrees(float p_angle);
+	float get_fill_degrees();
+
 	void set_radial_center_offset(const Point2 &p_off);
 	Point2 get_radial_center_offset();
 
@@ -80,6 +83,7 @@ private:
 
 	FillMode mode;
 	float rad_init_angle;
+	float rad_max_degrees;
 	Point2 rad_center_off;
 
 	Point2 unit_val_to_uv(float val);

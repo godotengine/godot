@@ -152,14 +152,15 @@ void TextureProgress::_notification(int p_what){
 				} break;
 				case FILL_CLOCKWISE:
 				case FILL_COUNTER_CLOCKWISE: {
-					if (get_unit_value()==1) {
+					float val=get_unit_value()*rad_max_degrees/360;
+					if (val==1) {
 						Rect2 region=Rect2(Point2(),s);
 						draw_texture_rect_region(progress,region,region);
-					} else if (get_unit_value()!=0) {
+					} else if (val!=0) {
 						Array pts;
 						float direction=mode==FILL_CLOCKWISE?1:-1;
 						float start=rad_init_angle/360;
-						float end=start+direction*get_unit_value();
+						float end=start+direction*val;
 						pts.append(start);
 						pts.append(end);
 						float from=MIN(start,end);
@@ -230,6 +231,21 @@ float TextureProgress::get_radial_initial_angle()
 	return rad_init_angle;
 }
 
+void TextureProgress::set_fill_degrees(float p_angle)
+{
+	while(p_angle>360)
+		p_angle-=360;
+	while (p_angle<0)
+		p_angle+=360;
+	rad_max_degrees=p_angle;
+	update();
+}
+
+float TextureProgress::get_fill_degrees()
+{
+	return rad_max_degrees;
+}
+
 void TextureProgress::set_radial_center_offset(const Point2 &p_off)
 {
 	rad_center_off=p_off;
@@ -257,16 +273,20 @@ void TextureProgress::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_radial_initial_angle","mode"),&TextureProgress::set_radial_initial_angle);
 	ObjectTypeDB::bind_method(_MD("get_radial_initial_angle"), &TextureProgress::get_radial_initial_angle);
-
+	
 	ObjectTypeDB::bind_method(_MD("set_radial_center_offset","mode"),&TextureProgress::set_radial_center_offset);
 	ObjectTypeDB::bind_method(_MD("get_radial_center_offset"), &TextureProgress::get_radial_center_offset);
+	
+	ObjectTypeDB::bind_method(_MD("set_fill_degrees","mode"),&TextureProgress::set_fill_degrees);
+	ObjectTypeDB::bind_method(_MD("get_fill_degrees"), &TextureProgress::get_fill_degrees);
 
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture/under",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_under_texture"),_SCS("get_under_texture"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture/over",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_over_texture"),_SCS("get_over_texture"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture/progress",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_progress_texture"),_SCS("get_progress_texture"));
-	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"fill/mode",PROPERTY_HINT_ENUM,"Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise"),_SCS("set_fill_mode"),_SCS("get_fill_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"fill/initial_angle",PROPERTY_HINT_RANGE,"0.0,360.0,0.1,slider"),_SCS("set_radial_initial_angle"),_SCS("get_radial_initial_angle"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"fill/center_offset"),_SCS("set_radial_center_offset"),_SCS("get_radial_center_offset"));
+	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise"),_SCS("set_fill_mode"),_SCS("get_fill_mode"));
+	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"radial_fill/initial_angle",PROPERTY_HINT_RANGE,"0.0,360.0,0.1,slider"),_SCS("set_radial_initial_angle"),_SCS("get_radial_initial_angle"));
+	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"radial_fill/fill_degrees",PROPERTY_HINT_RANGE,"0.0,360.0,0.1,slider"),_SCS("set_fill_degrees"),_SCS("get_fill_degrees"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"radial_fill/center_offset"),_SCS("set_radial_center_offset"),_SCS("get_radial_center_offset"));
 
 	BIND_CONSTANT( FILL_LEFT_TO_RIGHT );
 	BIND_CONSTANT( FILL_RIGHT_TO_LEFT );
