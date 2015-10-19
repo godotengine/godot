@@ -162,10 +162,6 @@ class RasterizerDummy : public Rasterizer {
 		uint32_t format;
 		uint32_t morph_format;
 
-		RID material;
-		bool material_owned;
-
-
 		Surface() {
 
 			packed=false;

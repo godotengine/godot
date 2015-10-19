@@ -276,7 +276,6 @@ public:
 	};
 
 	struct NewLineNode : public Node {
-		int line;
 		NewLineNode() { type=TYPE_NEWLINE; }
 	};
 
