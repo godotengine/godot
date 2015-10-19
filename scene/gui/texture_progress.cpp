@@ -302,4 +302,5 @@ TextureProgress::TextureProgress()
 {
 	mode=FILL_LEFT_TO_RIGHT;
 	rad_center_off=Point2();
+	rad_max_degrees=360;
 }
