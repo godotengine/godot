@@ -1503,10 +1503,10 @@ Error RichTextLabel::append_bbcode(const String& p_bbcode) {
 
 void RichTextLabel::scroll_to_line(int p_line) {
 
+	p_line -= 1;
 	ERR_FAIL_INDEX(p_line,lines.size());
 	_validate_line_caches();
-	vscroll->set_val(lines[p_line].height_accum_cache);
-
+	vscroll->set_val(lines[p_line].height_accum_cache-lines[p_line].height_cache);
 
 }
 
@@ -1569,26 +1569,22 @@ bool RichTextLabel::search(const String& p_string,bool p_from_selection) {
 						it=_get_next_item(it);
 					}
 
-					if (!it)
-						line=lines.size()-1;
 				}
 
-				scroll_to_line(line-2);
+				if (line > 1) {
+					line-=1;
+				}
+
+				scroll_to_line(line);
 
 				return true;
 			}
-		} else if (it->type==ITEM_NEWLINE) {
-
-			line=static_cast<ItemNewline*>(it)->line;
 		}
-
 
 		it=_get_next_item(it);
 		charidx=0;
 
 	}
-
-
 
 	return false;
 

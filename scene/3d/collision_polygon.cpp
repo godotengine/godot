@@ -126,7 +126,7 @@ void CollisionPolygon::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			if (!can_update_body && shape_from>=0 && shape_from>=0) {
+            if (!can_update_body && shape_from>=0 && shape_to>=0) {
 
 				CollisionObject *co = get_parent()->cast_to<CollisionObject>();
 				if (co) {

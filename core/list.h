@@ -518,10 +518,16 @@ public:
 
 		if (value->prev_ptr) {
 			value->prev_ptr->next_ptr = value->next_ptr;
-		};
+		}
+		else {
+			_data->first = value->next_ptr;
+		}
 		if (value->next_ptr) {
 			value->next_ptr->prev_ptr = value->prev_ptr;
-		};
+		}
+		else {
+			_data->last = value->prev_ptr;
+		}
 
 		value->next_ptr = where;
 		if (!where) {

@@ -323,8 +323,10 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 						invalidated_click=false;
 						break;
 					}
-					if (over<0 || items[over].separator || items[over].disabled)
+					if (over<0 || items[over].separator || items[over].disabled) {
+						hide();
 						break; //non-activable
+					}
 
 					if (items[over].submenu!="") {
 
@@ -738,10 +740,18 @@ int PopupMenu::find_item_by_accelerator(uint32_t p_accel) const {
 
 void PopupMenu::activate_item(int p_item) {
 
-
 	ERR_FAIL_INDEX(p_item,items.size());
 	ERR_FAIL_COND(items[p_item].separator);
 	emit_signal("item_pressed",items[p_item].ID);
+
+	//hide all parent PopupMenue's
+	Node *next = get_parent();
+	PopupMenu *pop = next->cast_to<PopupMenu>();
+	while (pop) {
+		pop->hide();
+		next = next->get_parent();
+		pop = next->cast_to<PopupMenu>();
+	}
 	hide();
 
 }

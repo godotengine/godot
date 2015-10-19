@@ -45,6 +45,27 @@ protected:
 	void _notification(int p_what);
 public:
 
+	enum FillMode {
+		FILL_LEFT_TO_RIGHT=0,
+		FILL_RIGHT_TO_LEFT,
+		FILL_TOP_TO_BOTTOM,
+		FILL_BOTTOM_TO_TOP,
+		FILL_CLOCKWISE,
+		FILL_COUNTER_CLOCKWISE
+	};
+
+	void set_fill_mode(int p_fill);
+	int get_fill_mode();
+
+	void set_radial_initial_angle(float p_angle);
+	float get_radial_initial_angle();
+
+	void set_fill_degrees(float p_angle);
+	float get_fill_degrees();
+
+	void set_radial_center_offset(const Point2 &p_off);
+	Point2 get_radial_center_offset();
+
 	void set_under_texture(const Ref<Texture>& p_texture);
 	Ref<Texture> get_under_texture() const;
 
@@ -57,6 +78,16 @@ public:
 	Size2 get_minimum_size() const;
 
 	TextureProgress();
+
+private:
+
+	FillMode mode;
+	float rad_init_angle;
+	float rad_max_degrees;
+	Point2 rad_center_off;
+
+	Point2 unit_val_to_uv(float val);
+	Point2 get_relative_center();
 };
 
 #endif // TEXTURE_PROGRESS_H

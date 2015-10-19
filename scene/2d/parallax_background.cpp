@@ -110,7 +110,10 @@ void ParallaxBackground::_update_scroll() {
 		if (!l)
 			continue;
 
-		l->set_base_offset_and_scale(ofs,scale);
+        if (ignore_camera_zoom)
+            l->set_base_offset_and_scale(ofs, 1.0);
+        else
+            l->set_base_offset_and_scale(ofs, scale);
 	}
 }
 
@@ -165,6 +168,18 @@ Point2 ParallaxBackground::get_limit_end() const {
 	return limit_end;
 }
 
+void ParallaxBackground::set_ignore_camera_zoom(bool ignore){
+
+    ignore_camera_zoom = ignore;
+
+}
+
+bool ParallaxBackground::is_ignore_camera_zoom(){
+
+    return ignore_camera_zoom;
+
+}
+
 void ParallaxBackground::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_camera_moved"),&ParallaxBackground::_camera_moved);
@@ -178,6 +193,8 @@ void ParallaxBackground::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_limit_begin"),&ParallaxBackground::get_limit_begin);
 	ObjectTypeDB::bind_method(_MD("set_limit_end","ofs"),&ParallaxBackground::set_limit_end);
 	ObjectTypeDB::bind_method(_MD("get_limit_end"),&ParallaxBackground::get_limit_end);
+    ObjectTypeDB::bind_method(_MD("set_ignore_camera_zoom"), &ParallaxBackground::set_ignore_camera_zoom);
+    ObjectTypeDB::bind_method(_MD("is_ignore_camera_zoom"), &ParallaxBackground::is_ignore_camera_zoom);
 
 
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll/offset"),_SCS("set_scroll_offset"),_SCS("get_scroll_offset"));
@@ -185,6 +202,7 @@ void ParallaxBackground::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll/base_scale"),_SCS("set_scroll_base_scale"),_SCS("get_scroll_base_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll/limit_begin"),_SCS("set_limit_begin"),_SCS("get_limit_begin"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll/limit_end"),_SCS("set_limit_end"),_SCS("get_limit_end"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "scroll/ignore_camera_zoom"), _SCS("set_ignore_camera_zoom"), _SCS("is_ignore_camera_zoom"));
 
 }
 

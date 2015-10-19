@@ -236,13 +236,12 @@ void AudioDriverOpenSL::start(){
 
 	ERR_FAIL_COND( res !=SL_RESULT_SUCCESS );
 	/* Initialize arrays required[] and iidArray[] */
-	int i;
 	SLboolean required[MAX_NUMBER_INTERFACES];
 	SLInterfaceID iidArray[MAX_NUMBER_INTERFACES];
 
 #if 0
 
-	for (i=0; i<MAX_NUMBER_INTERFACES; i++)
+	for (int i=0; i<MAX_NUMBER_INTERFACES; i++)
 	{
 	    required[i] = SL_BOOLEAN_FALSE;
 	    iidArray[i] = SL_IID_NULL;

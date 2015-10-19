@@ -121,6 +121,8 @@ public:
 	virtual bool setup(float p_step);
 	virtual void solve(float p_step);
 
+	void set_param(Physics2DServer::PinJointParam p_param, real_t p_value);
+	real_t get_param(Physics2DServer::PinJointParam p_param) const;
 
 	PinJoint2DSW(const Vector2& p_pos,Body2DSW* p_body_a,Body2DSW* p_body_b=NULL);
 	~PinJoint2DSW();

@@ -44,6 +44,7 @@ class ParallaxBackground : public CanvasLayer {
 	String group_name;
 	Point2 limit_begin;
 	Point2 limit_end;
+	bool ignore_camera_zoom;
 
 	void _update_scroll();
 protected:
@@ -71,6 +72,9 @@ public:
 
 	void set_limit_end(const Point2& p_ofs);
 	Point2 get_limit_end() const;
+
+    void set_ignore_camera_zoom(bool ignore);
+    bool is_ignore_camera_zoom();
 
 	ParallaxBackground();
 };

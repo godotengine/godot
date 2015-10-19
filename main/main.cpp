@@ -1007,61 +1007,49 @@ bool Main::start() {
 	bool export_debug=false;
 	List<String> args = OS::get_singleton()->get_cmdline_args();
 	for (int i=0;i<args.size();i++) {
-		
-
-		if (args[i]=="-doctool" && i <(args.size()-1)) {
-
-			doc_tool=args[i+1];
+		//parameters that have an argument to the right
+		if (i < (args.size()-1)) {
+			if (args[i]=="-doctool") {
+				doc_tool=args[i+1];
+			} else if (args[i]=="-script" || args[i]=="-s") {
+				script=args[i+1];
+			} else if (args[i]=="-level" || args[i]=="-l") {
+				OS::get_singleton()->_custom_level=args[i+1];
+			} else if (args[i]=="-test") {
+				test=args[i+1];
+			} else if (args[i]=="-optimize") {
+				optimize=args[i+1];
+			} else if (args[i]=="-optimize_preset") {
+				optimize_preset=args[i+1];
+			} else if (args[i]=="-export") {
+				editor=true; //needs editor
+				_export_platform=args[i+1];
+			} else if (args[i]=="-export_debug") {
+				editor=true; //needs editor
+				_export_platform=args[i+1];
+				export_debug=true;
+			} else if (args[i]=="-import") {
+				editor=true; //needs editor
+				_import=args[i+1];
+			} else if (args[i]=="-import_script") {
+				editor=true; //needs editor
+				_import_script=args[i+1];
+			} else if (args[i]=="-dumpstrings") {
+				editor=true; //needs editor
+				dumpstrings=args[i+1];
+			}
 			i++;
-		}else if (args[i]=="-nodocbase") {
-
+		}
+		//parameters that do not have an argument to the right
+		if (args[i]=="-nodocbase") {
 			doc_base=false;
-		} else if ((args[i]=="-script" || args[i]=="-s") && i <(args.size()-1)) {
-		
-			script=args[i+1];
-			i++;
-		} else if ((args[i]=="-level" || args[i]=="-l") && i <(args.size()-1)) {
-
-			OS::get_singleton()->_custom_level=args[i+1];
-			i++;
-		} else if (args[i]=="-test" && i <(args.size()-1)) {
-			test=args[i+1];
-			i++;
-		} else if (args[i]=="-optimize" && i <(args.size()-1)) {
-			optimize=args[i+1];
-			i++;
-		} else if (args[i]=="-optimize_preset" && i <(args.size()-1)) {
-			optimize_preset=args[i+1];
-			i++;
-		} else if (args[i]=="-export" && i <(args.size()-1)) {
-			editor=true; //needs editor
-			_export_platform=args[i+1];
-			i++;
-		} else if (args[i]=="-export_debug" && i <(args.size()-1)) {
-			editor=true; //needs editor
-			_export_platform=args[i+1];
-			export_debug=true;
-			i++;
-		} else if (args[i]=="-import" && i <(args.size()-1)) {
-			editor=true; //needs editor
-			_import=args[i+1];
-			i++;
-		} else if (args[i]=="-import_script" && i <(args.size()-1)) {
-			editor=true; //needs editor
-			_import_script=args[i+1];
-			i++;
-		} else if (args[i]=="-noquit" ) {
+		} else if (args[i]=="-noquit") {
 			noquit=true;
-		} else if (args[i]=="-dumpstrings" && i <(args.size()-1)) {
-			editor=true; //needs editor
-			dumpstrings=args[i+1];
-			i++;
-		} else if (args[i]=="-editor" || args[i]=="-e") {
-			editor=true;
 		} else if (args[i]=="-convert_old") {
 			convert_old=true;
+		} else if (args[i]=="-editor" || args[i]=="-e") {
+			editor=true;
 		} else if (args[i].length() && args[i][0] != '-' && game_path == "") {
-
 			game_path=args[i];
 		}
 	}
@@ -1556,9 +1544,9 @@ bool Main::iteration() {
 			OS::get_singleton()->delay_usec( OS::get_singleton()->get_frame_delay()*1000 );
 	}
 
-	int taret_fps = OS::get_singleton()->get_target_fps();
-	if (taret_fps>0) {
-		uint64_t time_step = 1000000L/taret_fps;
+	int target_fps = OS::get_singleton()->get_target_fps();
+	if (target_fps>0) {
+		uint64_t time_step = 1000000L/target_fps;
 		target_ticks += time_step;
 		uint64_t current_ticks = OS::get_singleton()->get_ticks_usec();
 		if (current_ticks<target_ticks) OS::get_singleton()->delay_usec(target_ticks-current_ticks);
