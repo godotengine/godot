@@ -165,6 +165,8 @@ void StreamPlayer::stop() {
 	//_THREAD_SAFE_METHOD_
 	AudioServer::get_singleton()->stream_set_active(stream_rid,false);
 	playback->stop();
+	resampler.flush();
+
 	//set_idle_process(false);
 }
 

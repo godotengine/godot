@@ -361,7 +361,7 @@ void AudioStreamPlaybackOGGVorbis::_clear_stream() {
 	_close_file();
 
 	stream_loaded=false;
-	stream_channels=1;
+	//stream_channels=1;
 	playing=false;
 }
 
