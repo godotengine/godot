@@ -54,7 +54,9 @@ bool RegEx::is_valid() const {
 };
 
 int RegEx::get_capture_count() const {
-	
+
+	ERR_FAIL_COND_V( !exp.valid(), 0 );
+
 	return exp.capture_size();
 }
 
