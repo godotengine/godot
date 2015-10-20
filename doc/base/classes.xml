@@ -10867,27 +10867,25 @@
 	</description>
 	<methods>
 		<method name="call_func">
-			<argument index="0" name="method" type="String">
+			<argument index="0" name="arg0" type="var" default="NULL">
 			</argument>
-			<argument index="1" name="arg0" type="var" default="NULL">
+			<argument index="1" name="arg1" type="var" default="NULL">
 			</argument>
-			<argument index="2" name="arg1" type="var" default="NULL">
+			<argument index="2" name="arg2" type="var" default="NULL">
 			</argument>
-			<argument index="3" name="arg2" type="var" default="NULL">
+			<argument index="3" name="arg3" type="var" default="NULL">
 			</argument>
-			<argument index="4" name="arg3" type="var" default="NULL">
+			<argument index="4" name="arg4" type="var" default="NULL">
 			</argument>
-			<argument index="5" name="arg4" type="var" default="NULL">
+			<argument index="5" name="arg5" type="var" default="NULL">
 			</argument>
-			<argument index="6" name="arg5" type="var" default="NULL">
+			<argument index="6" name="arg6" type="var" default="NULL">
 			</argument>
-			<argument index="7" name="arg6" type="var" default="NULL">
+			<argument index="7" name="arg7" type="var" default="NULL">
 			</argument>
-			<argument index="8" name="arg7" type="var" default="NULL">
+			<argument index="8" name="arg8" type="var" default="NULL">
 			</argument>
-			<argument index="9" name="arg8" type="var" default="NULL">
-			</argument>
-			<argument index="10" name="arg9" type="var" default="NULL">
+			<argument index="9" name="arg9" type="var" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -11556,10 +11554,10 @@
 </class>
 <class name="GraphEdit" inherits="Control" category="Core">
 	<brief_description>
-		GraphEdit is an area capable of showing various GraphNodes. It manages connection events between them.
+	GraphEdit is an area capable of showing various GraphNodes. It manages connection events between them.
 	</brief_description>
 	<description>
-		GraphEdit manages the showing of GraphNodes it contains, as well as connections an disconnections between them. Signals are sent for each of these two events. Disconnection between GraphNodes slots is disabled by default.
+	GraphEdit manages the showing of GraphNodes it contains, as well as connections an disconnections between them. Signals are sent for each of these two events. Disconnection between GraphNodes slots is disabled by default.
 		It is greatly advised to enable low processor usage mode [OS.set_low_processor_usage_mode()] when using GraphEdits.
 	</description>
 	<methods>
@@ -11575,7 +11573,7 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Create a connection between 'from_port' slot of 'from' GraphNode and 'to_port' slot of 'to' GraphNode. If the connection already exists, no connection is created.
+			Create a connection between 'from_port' slot of 'from' GraphNode and 'to_port' slot of 'to' GraphNode. If the connection already exists, no connection is created.
 			</description>
 		</method>
 		<method name="is_node_connected">
@@ -11590,7 +11588,7 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Return true if the 'from_port' slot of 'from' GraphNode is connected to the 'to_port' slot of 'to' GraphNode.
+			Return true if the 'from_port' slot of 'from' GraphNode is connected to the 'to_port' slot of 'to' GraphNode.
 			</description>
 		</method>
 		<method name="disconnect_node">
@@ -11603,32 +11601,50 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Remove the connection between 'from_port' slot of 'from' GraphNode and 'to_port' slot of 'to' GraphNode, if connection exists.
+			Remove the connection between 'from_port' slot of 'from' GraphNode and 'to_port' slot of 'to' GraphNode, if connection exists.
 			</description>
 		</method>
 		<method name="get_connection_list" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Return an Array containing the list of connections. A connection consists in a structure of the form {from_slot: 0, from: "GraphNode name 0", to_slot: 1, to: "GraphNode name 1" }
+			Return an Array containing the list of connections. A connection consists in a structure of the form {from_slot: 0, from: "GraphNode name 0", to_slot: 1, to: "GraphNode name 1" }
 			</description>
 		</method>
 		<method name="set_right_disconnects">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enable the disconnection of existing connections in the visual GraphEdit by left-clicking a connection and releasing into the void.
+			Enable the disconnection of existing connections in the visual GraphEdit by left-clicking a connection and releasing into the void.
 			</description>
 		</method>
 		<method name="is_right_disconnects_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true is the disconnection of connections is enable in the visual GraphEdit. False otherwise.
+			Return true is the disconnection of connections is enable in the visual GraphEdit. False otherwise.
 			</description>
 		</method>
 	</methods>
 	<signals>
+		<signal name="delete_nodes_request">
+			<description>
+			</description>
+		</signal>
+		<signal name="duplicate_nodes_request">
+			<description>
+			</description>
+		</signal>
+		<signal name="popup_request">
+			<argument index="0" name="p_position" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="_begin_node_move">
+			<description>
+			</description>
+		</signal>
 		<signal name="disconnection_request">
 			<argument index="0" name="from" type="String">
 			</argument>
@@ -11639,7 +11655,7 @@
 			<argument index="3" name="to_slot" type="int">
 			</argument>
 			<description>
-				Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be removed.
+			Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be removed.
 			</description>
 		</signal>
 		<signal name="connection_request">
@@ -11652,7 +11668,11 @@
 			<argument index="3" name="to_slot" type="int">
 			</argument>
 			<description>
-				Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be created.
+			Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be created.
+			</description>
+		</signal>
+		<signal name="_end_node_move">
+			<description>
 			</description>
 		</signal>
 	</signals>
@@ -11661,24 +11681,24 @@
 </class>
 <class name="GraphNode" inherits="Container" category="Core">
 	<brief_description>
-		A GraphNode is a container with several input and output slots allowing connections between GraphNodes. Slots can have different, incompatible types.
+	A GraphNode is a container with several input and output slots allowing connections between GraphNodes. Slots can have different, incompatible types.
 	</brief_description>
 	<description>
-		A GraphNode is a container defined by a title. It can have 1 or more input and output slots, which can be enabled (shown) or disabled (not shown) and have different (incompatible) types. Colors can also be assigned to slots. A tuple of input and output slots is defined for each GUI element included in the GraphNode. Input and output connections are left and right slots, but only enabled slots are counted as connections.
+	A GraphNode is a container defined by a title. It can have 1 or more input and output slots, which can be enabled (shown) or disabled (not shown) and have different (incompatible) types. Colors can also be assigned to slots. A tuple of input and output slots is defined for each GUI element included in the GraphNode. Input and output connections are left and right slots, but only enabled slots are counted as connections.
 	</description>
 	<methods>
 		<method name="set_title">
 			<argument index="0" name="title" type="String">
 			</argument>
 			<description>
-				Set the title of the GraphNode.
+			Set the title of the GraphNode.
 			</description>
 		</method>
 		<method name="get_title" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Return the title of the GraphNode.
+			Return the title of the GraphNode.
 			</description>
 		</method>
 		<method name="set_slot">
@@ -11697,19 +11717,19 @@
 			<argument index="6" name="color_right" type="Color">
 			</argument>
 			<description>
-				Set the tuple of input/output slots defined by 'idx' ID. 'left' slots are input, 'right' are output. 'type' is an integer defining the type of the slot. Refer to description for the compatibility between slot types.
+			Set the tuple of input/output slots defined by 'idx' ID. 'left' slots are input, 'right' are output. 'type' is an integer defining the type of the slot. Refer to description for the compatibility between slot types.
 			</description>
 		</method>
 		<method name="clear_slot">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Disable input and ouput slot whose index is 'idx'.
+			Disable input and ouput slot whose index is 'idx'.
 			</description>
 		</method>
 		<method name="clear_all_slots">
 			<description>
-				Disable all input and output slots of the GraphNode.
+			Disable all input and output slots of the GraphNode.
 			</description>
 		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
@@ -11718,7 +11738,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return true if left (input) slot 'idx' is enabled. False otherwise.
+			Return true if left (input) slot 'idx' is enabled. False otherwise.
 			</description>
 		</method>
 		<method name="get_slot_type_left" qualifiers="const">
@@ -11727,7 +11747,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the (integer) type of left (input) 'idx' slot.
+			Return the (integer) type of left (input) 'idx' slot.
 			</description>
 		</method>
 		<method name="get_slot_color_left" qualifiers="const">
@@ -11736,7 +11756,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the color set to 'idx' left (input) slot.
+			Return the color set to 'idx' left (input) slot.
 			</description>
 		</method>
 		<method name="is_slot_enabled_right" qualifiers="const">
@@ -11745,7 +11765,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return true if right (output) slot 'idx' is enabled. False otherwise.
+			Return true if right (output) slot 'idx' is enabled. False otherwise.
 			</description>
 		</method>
 		<method name="get_slot_type_right" qualifiers="const">
@@ -11754,7 +11774,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the (integer) type of right (output) 'idx' slot.
+			Return the (integer) type of right (output) 'idx' slot.
 			</description>
 		</method>
 		<method name="get_slot_color_right" qualifiers="const">
@@ -11763,35 +11783,35 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the color set to 'idx' right (output) slot.
+			Return the color set to 'idx' right (output) slot.
 			</description>
 		</method>
 		<method name="set_offset">
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
-				Set the offset of the GraphNode.
+			Set the offset of the GraphNode.
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the offset of the GraphNode.
+			Return the offset of the GraphNode.
 			</description>
 		</method>
 		<method name="get_connection_output_count">
 			<return type="int">
 			</return>
 			<description>
-				Return the number of enabled output slots (connections) of the GraphNode.
+			Return the number of enabled output slots (connections) of the GraphNode.
 			</description>
 		</method>
 		<method name="get_connection_input_count">
 			<return type="int">
 			</return>
 			<description>
-				Return the number of enabled input slots (connections) to the GraphNode.
+			Return the number of enabled input slots (connections) to the GraphNode.
 			</description>
 		</method>
 		<method name="get_connection_output_pos">
@@ -11800,7 +11820,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the position of the output connection 'idx'.
+			Return the position of the output connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_output_type">
@@ -11809,7 +11829,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the type of the output connection 'idx'.
+			Return the type of the output connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_output_color">
@@ -11818,7 +11838,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the color of the output connection 'idx'.
+			Return the color of the output connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_input_pos">
@@ -11827,7 +11847,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the position of the input connection 'idx'.
+			Return the position of the input connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_input_type">
@@ -11836,7 +11856,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the type of the input connection 'idx'.
+			Return the type of the input connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_input_color">
@@ -11845,33 +11865,33 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the color of the input connection 'idx'.
+			Return the color of the input connection 'idx'.
 			</description>
 		</method>
 		<method name="set_show_close_button">
 			<argument index="0" name="show" type="bool">
 			</argument>
 			<description>
-				Show the close button on the GraphNode if 'show' is true (disabled by default). If enabled, a connection on the signal close_request is needed for the close button to work.
+			Show the close button on the GraphNode if 'show' is true (disabled by default). If enabled, a connection on the signal close_request is needed for the close button to work.
 			</description>
 		</method>
 		<method name="is_close_button_visible" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns true if the close button is shown. False otherwise.
+			Returns true if the close button is shown. False otherwise.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="raise_request">
 			<description>
-				Signal sent when the GraphNode is requested to be displayed over other ones. Happens on focusing (clicking into) the GraphNode.
+			Signal sent when the GraphNode is requested to be displayed over other ones. Happens on focusing (clicking into) the GraphNode.
 			</description>
 		</signal>
 		<signal name="close_request">
 			<description>
-				Signal sent on closing the GraphNode.
+			Signal sent on closing the GraphNode.
 			</description>
 		</signal>
 		<signal name="dragged">
@@ -11880,12 +11900,12 @@
 			<argument index="1" name="to" type="Vector2">
 			</argument>
 			<description>
-				Signal sent when the GraphNode is dragged.
+			Signal sent when the GraphNode is dragged.
 			</description>
 		</signal>
 		<signal name="offset_changed">
 			<description>
-				Signal sent when the GraphNode is moved.
+			Signal sent when the GraphNode is moved.
 			</description>
 		</signal>
 	</signals>
@@ -11909,6 +11929,12 @@
 		<theme_item name="title_font" type="Font">
 		</theme_item>
 		<theme_item name="frame" type="StyleBox">
+		</theme_item>
+		<theme_item name="selectedframe" type="StyleBox">
+		</theme_item>
+		<theme_item name="defaultfocus" type="StyleBox">
+		</theme_item>
+		<theme_item name="defaultframe" type="StyleBox">
 		</theme_item>
 	</theme_items>
 </class>
@@ -14285,6 +14311,22 @@
 			</description>
 		</method>
 		<method name="load_from_globals">
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="InstancePlaceholder" inherits="Node" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="replace_by_instance">
+			<argument index="0" name="custom_scene" type="PackedScene" default="NULL">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -18124,7 +18166,11 @@
 		<method name="find_node" qualifiers="const">
 			<return type="Node">
 			</return>
-			<argument index="0" name="mask" type="NodePath" default="true">
+			<argument index="0" name="mask" type="String">
+			</argument>
+			<argument index="1" name="recursive" type="bool" default="true">
+			</argument>
+			<argument index="2" name="owned" type="bool" default="true">
 			</argument>
 			<description>
 			</description>
@@ -20171,7 +20217,7 @@
 		<method name="instance" qualifiers="const">
 			<return type="Node">
 			</return>
-			<argument index="0" name="arg0" type="bool" default="false">
+			<argument index="0" name="gen_edit_state" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -20417,6 +20463,18 @@
 		</method>
 		<method name="get_limit_end" qualifiers="const">
 			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_ignore_camera_zoom">
+			<argument index="0" name="arg0" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_ignore_camera_zoom">
+			<return type="bool">
 			</return>
 			<description>
 			</description>
@@ -24688,6 +24746,18 @@
 	Pin Joint for 2D Rigid Bodies. It pins 2 bodies (rigid or static) together, or a single body to a fixed position in space.
 	</description>
 	<methods>
+		<method name="set_softness">
+			<argument index="0" name="softness" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_softness" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -26287,6 +26357,18 @@
 			</description>
 		</method>
 		<method name="get_layer_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_type_mask">
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_type_mask" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -29442,6 +29524,28 @@
 			<return type="Array">
 			</return>
 			<argument index="0" name="shader_type" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="default_set_value">
+			<argument index="0" name="shader_type" type="int">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<argument index="2" name="param_id" type="int">
+			</argument>
+			<argument index="3" name="value" type="var">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="default_get_value">
+			<argument index="0" name="shader_type" type="int">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<argument index="2" name="param_id" type="int">
 			</argument>
 			<description>
 			</description>
@@ -33549,6 +33653,12 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="tab_close">
+			<argument index="0" name="tab" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="right_button_pressed">
 			<argument index="0" name="tab" type="int">
 			</argument>
@@ -33568,6 +33678,14 @@
 		<constant name="ALIGN_CENTER" value="1">
 		</constant>
 		<constant name="ALIGN_RIGHT" value="2">
+		</constant>
+		<constant name="SHOW_ACTIVE_ONLY" value="1">
+		</constant>
+		<constant name="SHOW_ALWAYS" value="0">
+		</constant>
+		<constant name="SHOW_HOVER" value="2">
+		</constant>
+		<constant name="SHOW_NEVER" value="3">
 		</constant>
 	</constants>
 	<theme_items>
@@ -34262,8 +34380,68 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_fill_mode">
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_fill_mode">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_radial_initial_angle">
+			<argument index="0" name="mode" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_radial_initial_angle">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_radial_center_offset">
+			<argument index="0" name="mode" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_radial_center_offset">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_fill_degrees">
+			<argument index="0" name="mode" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_fill_degrees">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
+		<constant name="FILL_LEFT_TO_RIGHT" value="0">
+		</constant>
+		<constant name="FILL_RIGHT_TO_LEFT" value="1">
+		</constant>
+		<constant name="FILL_TOP_TO_BOTTOM" value="2">
+		</constant>
+		<constant name="FILL_BOTTOM_TO_TOP" value="3">
+		</constant>
+		<constant name="FILL_CLOCKWISE" value="4">
+		</constant>
+		<constant name="FILL_COUNTER_CLOCKWISE" value="5">
+		</constant>
 	</constants>
 </class>
 <class name="Theme" inherits="Resource" category="Core">
@@ -37272,6 +37450,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="ceil">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="cross">
 			<return type="Vector3">
 			</return>
@@ -37321,6 +37505,12 @@
 			</argument>
 			<description>
 			Return the dot product with b.
+			</description>
+		</method>
+		<method name="floor">
+			<return type="Vector3">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="inverse">
