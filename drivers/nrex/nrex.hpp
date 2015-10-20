@@ -79,7 +79,8 @@ class nrex
          * This is used to provide the array size of the captures needed for
          * nrex::match() to work. The size is actually the number of capture
          * groups + one for the matching of the entire pattern. The result is
-         * always capped at 100.
+         * always capped at 10 or 100, depending on the extend option given in
+         * nrex::compile() (default 10).
          *
          * \return The number of captures
          */
@@ -95,10 +96,13 @@ class nrex
          * runtime error nrex_compile_error if it encounters a problem when
          * parsing the pattern.
          *
-         * \param The regex pattern
+         * \param pattern   The regex pattern
+         * \param extended  If true, raises the limit on number of capture
+         *                  groups and back-references to 99. Otherwise limited
+         *                  to 9. Defaults to false.
          * \return True if the pattern was succesfully compiled
          */
-        bool compile(const nrex_char* pattern);
+        bool compile(const nrex_char* pattern, bool extended = false);
 
         /*!
          * \brief Uses the pattern to search through the provided string
