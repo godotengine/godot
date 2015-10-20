@@ -3766,6 +3766,7 @@
 			<argument index="0" name="value" type="var">
 			</argument>
 			<description>
+			Append an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
 		<method name="clear">
@@ -3784,6 +3785,7 @@
 			<argument index="0" name="value" type="var">
 			</argument>
 			<description>
+			Remove the first occurence of a value from the array.
 			</description>
 		</method>
 		<method name="find">
@@ -3792,6 +3794,7 @@
 			<argument index="0" name="value" type="var">
 			</argument>
 			<description>
+			Searches the array for a value and returns its index or -1 if not found.
 			</description>
 		</method>
 		<method name="hash">
@@ -3812,12 +3815,14 @@
 		</method>
 		<method name="invert">
 			<description>
+			Reverse the order of the elements in the array (so first element will now be the last).
 			</description>
 		</method>
 		<method name="is_shared">
 			<return type="bool">
 			</return>
 			<description>
+			Get whether this is a shared array instance.
 			</description>
 		</method>
 		<method name="push_back">
@@ -3850,6 +3855,7 @@
 		</method>
 		<method name="sort">
 			<description>
+			Sort the array using natural order.
 			</description>
 		</method>
 		<method name="sort_custom">
@@ -3858,6 +3864,7 @@
 			<argument index="1" name="func" type="String">
 			</argument>
 			<description>
+			Sort the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return true if the first argument is less than the second, and return false otherwise.
 			</description>
 		</method>
 		<method name="Array">
