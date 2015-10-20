@@ -529,7 +529,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 	class_desc->add_text("Class: ");
 	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/base_type_color"));
-	class_desc->add_text(p_class);
+	_add_text(p_class);
 	class_desc->pop();
 	class_desc->pop();
 	class_desc->pop();
@@ -547,7 +547,6 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 		class_desc->pop();
 		class_desc->add_newline();
 		class_desc->add_newline();
-		class_desc->add_newline();
 
 	}
 
@@ -561,8 +560,13 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 		//class_desc->add_newline();
 		class_desc->add_newline();
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+		class_desc->push_font( get_font("normal","Fonts") );
+		class_desc->push_indent(1);
 		_add_text(cd.brief_description);
-		class_desc->add_newline();
+		class_desc->pop();
+		class_desc->pop();
+		class_desc->pop();
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
@@ -593,7 +597,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 				class_desc->push_meta("@"+cd.methods[i].name);
 			}
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-			class_desc->add_text(cd.methods[i].name);
+			_add_text(cd.methods[i].name);
 			class_desc->pop();
 			if (cd.methods[i].description!="")
 				class_desc->pop();
@@ -605,13 +609,14 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 				if (j>0)
 					class_desc->add_text(", ");
 				_add_type(cd.methods[i].arguments[j].type);
-				class_desc->add_text(" "+cd.methods[i].arguments[j].name);
+				class_desc->add_text(" ");
+				_add_text(cd.methods[i].arguments[j].name);
 				if (cd.methods[i].arguments[j].default_value!="") {
 
 					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
 					class_desc->add_text("=");
 					class_desc->pop();
-					class_desc->add_text(cd.methods[i].arguments[j].default_value);
+					_add_text(cd.methods[i].arguments[j].default_value);
 				}
 
 				class_desc->pop();
@@ -623,7 +628,8 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 			if (cd.methods[i].qualifiers!="") {
 
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
-				class_desc->add_text(" "+cd.methods[i].qualifiers);
+				class_desc->add_text(" ");
+				_add_text(cd.methods[i].qualifiers);
 				class_desc->pop();
 
 			}
@@ -638,6 +644,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 	}
 
 	if (cd.properties.size()) {
+
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
@@ -656,7 +663,8 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.properties[i].type);
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-			class_desc->add_text(" "+cd.properties[i].name);
+			class_desc->add_text(" ");
+			_add_text(cd.properties[i].name);
 			class_desc->pop();
 			class_desc->pop();
 
@@ -664,7 +672,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 				class_desc->push_font(doc_font);
 				class_desc->add_text("  ");
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/comment_color"));
-				class_desc->add_text(cd.properties[i].description);
+				_add_text(cd.properties[i].description);
 				class_desc->pop();
 				class_desc->pop();
 
@@ -699,7 +707,8 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.theme_properties[i].type);
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-			class_desc->add_text(" "+cd.theme_properties[i].name);
+			class_desc->add_text(" ");
+			_add_text(cd.theme_properties[i].name);
 			class_desc->pop();
 			class_desc->pop();
 
@@ -707,7 +716,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 				class_desc->push_font(doc_font);
 				class_desc->add_text("  ");
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/comment_color"));
-				class_desc->add_text(cd.theme_properties[i].description);
+				_add_text(cd.theme_properties[i].description);
 				class_desc->pop();
 				class_desc->pop();
 
@@ -716,10 +725,9 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 			class_desc->add_newline();
 		}
 
+		class_desc->add_newline();
 		class_desc->pop();
 
-		class_desc->add_newline();
-		class_desc->add_newline();
 
 	}
 	if (cd.signals.size()) {
@@ -738,11 +746,11 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 		for(int i=0;i<cd.signals.size();i++) {
 
 			signal_line[cd.signals[i].name]=class_desc->get_line_count()-2;	//gets overriden if description
-			class_desc->push_font(doc_code_font);
+			class_desc->push_font(doc_code_font);  // monofont
 			//_add_type("void");
 			//class_desc->add_text(" ");
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-			class_desc->add_text(cd.signals[i].name);
+			_add_text(cd.signals[i].name);
 			class_desc->pop();
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
 			class_desc->add_text(cd.signals[i].arguments.size()?"( ":"(");
@@ -752,13 +760,14 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 				if (j>0)
 					class_desc->add_text(", ");
 				_add_type(cd.signals[i].arguments[j].type);
-				class_desc->add_text(" "+cd.signals[i].arguments[j].name);
+				class_desc->add_text(" ");
+				_add_text(cd.signals[i].arguments[j].name);
 				if (cd.signals[i].arguments[j].default_value!="") {
 
 					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
 					class_desc->add_text("=");
 					class_desc->pop();
-					class_desc->add_text(cd.signals[i].arguments[j].default_value);
+					_add_text(cd.signals[i].arguments[j].default_value);
 				}
 
 				class_desc->pop();
@@ -767,20 +776,20 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
 			class_desc->add_text(cd.signals[i].arguments.size()?" )":")");
 			class_desc->pop();
+			class_desc->pop(); // end monofont
 			if (cd.signals[i].description!="") {
 
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/comment_color"));
-				class_desc->add_text(" "+cd.signals[i].description);
+				class_desc->add_text(" ");
+				_add_text(cd.signals[i].description);
 				class_desc->pop();
 
 			}
-			class_desc->pop();//monofont
 			class_desc->add_newline();
 
 		}
 
 		class_desc->pop();
-		class_desc->add_newline();
 		class_desc->add_newline();
 
 	}
@@ -803,20 +812,20 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 			constant_line[cd.constants[i].name]=class_desc->get_line_count()-2;
 			class_desc->push_font(doc_code_font);
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/base_type_color"));
-			class_desc->add_text(cd.constants[i].name);
+			_add_text(cd.constants[i].name);
 			class_desc->pop();
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
 			class_desc->add_text(" = ");
 			class_desc->pop();
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
-			class_desc->add_text(cd.constants[i].value);
+			_add_text(cd.constants[i].value);
 			class_desc->pop();
 			class_desc->pop();
 			if (cd.constants[i].description!="") {
 				class_desc->push_font(doc_font);
 				class_desc->add_text("  ");
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/comment_color"));
-				class_desc->add_text(cd.constants[i].description);
+				_add_text(cd.constants[i].description);
 				class_desc->pop();
 				class_desc->pop();
 			}
@@ -826,7 +835,6 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 		class_desc->pop();
 		class_desc->add_newline();
-		class_desc->add_newline();
 
 
 	}
@@ -834,7 +842,6 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 	if (cd.description!="") {
 
 		description_line=class_desc->get_line_count()-2;
-
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text("Description:");
@@ -842,8 +849,14 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 		class_desc->pop();
 
 		class_desc->add_newline();
-		_add_text(cd.description);
 		class_desc->add_newline();
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+		class_desc->push_font( get_font("normal","Fonts") );
+		class_desc->push_indent(1);
+		_add_text(cd.description);
+		class_desc->pop();
+		class_desc->pop();
+		class_desc->pop();
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
@@ -858,22 +871,18 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 		class_desc->add_newline();
 		class_desc->add_newline();
-		class_desc->push_indent(1);
 
 
 		for(int i=0;i<cd.methods.size();i++) {
 
 			method_line[cd.methods[i].name]=class_desc->get_line_count()-2;
 
-			if( cd.methods[i].description != "") {
-				class_desc->add_newline();
-			}
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.methods[i].return_type);
 
 			class_desc->add_text(" ");
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-			class_desc->add_text(cd.methods[i].name);
+			_add_text(cd.methods[i].name);
 			class_desc->pop();
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
 			class_desc->add_text(cd.methods[i].arguments.size()?"( ":"(");
@@ -883,13 +892,14 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 				if (j>0)
 					class_desc->add_text(", ");
 				_add_type(cd.methods[i].arguments[j].type);
-				class_desc->add_text(" "+cd.methods[i].arguments[j].name);
+				class_desc->add_text(" ");
+				_add_text(cd.methods[i].arguments[j].name);
 				if (cd.methods[i].arguments[j].default_value!="") {
 
 					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
 					class_desc->add_text("=");
 					class_desc->pop();
-					class_desc->add_text(cd.methods[i].arguments[j].default_value);
+					_add_text(cd.methods[i].arguments[j].default_value);
 				}
 
 				class_desc->pop();
@@ -901,19 +911,23 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 			if (cd.methods[i].qualifiers!="") {
 
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
-				class_desc->add_text(" "+cd.methods[i].qualifiers);
+				class_desc->add_text(" ");
+				_add_text(cd.methods[i].qualifiers);
 				class_desc->pop();
 
 			}
 
 			class_desc->pop();
 
-			if( cd.methods[i].description != "") {
-				class_desc->add_text("  ");
-				_add_text(cd.methods[i].description);
-				class_desc->add_newline();
-				class_desc->add_newline();
-			}
+			class_desc->add_newline();
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+			class_desc->push_font( get_font("normal","Fonts") );
+			class_desc->push_indent(1);
+			_add_text(cd.methods[i].description);
+			class_desc->pop();
+			class_desc->pop();
+			class_desc->pop();
+			class_desc->add_newline();
 			class_desc->add_newline();
 			class_desc->add_newline();
 
@@ -987,9 +1001,9 @@ void EditorHelp::_help_callback(const String& p_topic) {
 void EditorHelp::_add_text(const String& p_bbcode) {
 
 
-	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+	/*class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
 	class_desc->push_font( get_font("normal","Fonts") );
-	class_desc->push_indent(1);
+	class_desc->push_indent(1);*/
 	int pos = 0;
 
 	List<String> tag_stack;
@@ -1067,7 +1081,7 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 		} else if (tag=="i") {
 
 			//use italics font
-			//class_desc->push_font(get_font("italic","Fonts"));
+			class_desc->push_font(get_font("italic","Fonts"));
 			pos=brk_end+1;
 			tag_stack.push_front(tag);
 		} else if (tag=="code") {
@@ -1203,8 +1217,9 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 		}
 	}
 
+	/*class_desc->pop();
 	class_desc->pop();
-	class_desc->pop();
+	class_desc->pop();*/
 
 }
 
@@ -1259,7 +1274,7 @@ void EditorHelp::_update_doc() {
 
 	TreeItem *root = class_list->create_item();
 	class_list->set_hide_root(true);
-	List<StringName>::Element *I=type_list.front();
+	//List<StringName>::Element *I=type_list.front();
 
 	for(Map<String,DocData::ClassDoc>::Element *E=doc->class_list.front();E;E=E->next()) {
 
@@ -1404,8 +1419,6 @@ EditorHelp::EditorHelp(EditorNode *p_editor) {
 		PanelContainer *pc = memnew( PanelContainer );
 		Ref<StyleBoxFlat> style( memnew( StyleBoxFlat ) );
 		style->set_bg_color( EditorSettings::get_singleton()->get("text_editor/background_color") );	
-		style->set_default_margin(MARGIN_LEFT,20);
-		style->set_default_margin(MARGIN_TOP,20);
 		pc->add_style_override("panel", style); //get_stylebox("normal","TextEdit"));
 		h_split->add_child(pc);
 		class_desc = memnew( RichTextLabel );
