@@ -96,6 +96,9 @@ class ScriptEditorDebugger : public Control {
 	Tree *perf_monitors;
 	Control *perf_draw;
 
+	Tree *vmem_tree;
+	Button *vmem_refresh;
+
 	Tree *stack_dump;
 	PropertyEditor *inspector;
 
