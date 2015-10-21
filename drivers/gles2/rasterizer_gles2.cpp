@@ -1408,6 +1408,40 @@ GLuint RasterizerGLES2::_texture_get_name(RID p_tex) {
 	return texture->tex_id;
 };
 
+void RasterizerGLES2::texture_set_path(RID p_texture,const String& p_path) {
+	Texture * texture = texture_owner.get(p_texture);
+	ERR_FAIL_COND(!texture);
+
+	texture->path=p_path;
+
+}
+
+String RasterizerGLES2::texture_get_path(RID p_texture) const{
+
+	Texture * texture = texture_owner.get(p_texture);
+	ERR_FAIL_COND_V(!texture,String());
+	return texture->path;
+}
+void RasterizerGLES2::texture_debug_usage(List<VS::TextureInfo> *r_info){
+
+	List<RID> textures;
+	texture_owner.get_owned_list(&textures);
+
+	for (List<RID>::Element *E=textures.front();E;E=E->next()) {
+
+		Texture *t = texture_owner.get(E->get());
+		if (!t)
+			continue;
+		VS::TextureInfo tinfo;
+		tinfo.path=t->path;
+		tinfo.format=t->format;
+		tinfo.size.x=t->alloc_width;
+		tinfo.size.y=t->alloc_height;
+		tinfo.bytes=t->total_data_size;
+		r_info->push_back(tinfo);
+	}
+
+}
 
 /* SHADER API */
 

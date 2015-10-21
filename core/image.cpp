@@ -34,6 +34,33 @@
 #include "print_string.h"
 #include <stdio.h>
 
+
+const char* Image::format_names[Image::FORMAT_MAX]={
+	"Grayscale",
+	"Intensity",
+	"GrayscaleAlpha",
+	"RGB",
+	"RGBA",
+	"Indexed",
+	"IndexedAlpha",
+	"YUV422",
+	"YUV444",
+	"BC1",
+	"BC2",
+	"BC3",
+	"BC4",
+	"BC5",
+	"PVRTC2",
+	"PVRTC2Alpha",
+	"PVRTC4",
+	"PVRTC4Alpha",
+	"ETC",
+	"ATC",
+	"ATCAlphaExp",
+	"ATCAlphaInterp",
+
+};
+
 SavePNGFunc Image::save_png_func = NULL;
 
 void Image::_put_pixel(int p_x,int p_y, const BColor& p_color, unsigned char *p_data) {
@@ -2353,6 +2380,12 @@ void Image::fix_alpha_edges() {
 		}
 	}
 
+}
+
+String Image::get_format_name(Format p_format) {
+
+	ERR_FAIL_INDEX_V(p_format,FORMAT_MAX,String());
+	return format_names[p_format];
 }
 
 Image::Image(const uint8_t* p_png,int p_len) {

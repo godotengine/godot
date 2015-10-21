@@ -112,6 +112,21 @@ void VisualServerRaster::texture_set_reload_hook(RID p_texture,ObjectID p_owner,
 	rasterizer->texture_set_reload_hook(p_texture,p_owner,p_function);
 }
 
+void VisualServerRaster::texture_set_path(RID p_texture,const String& p_path) {
+
+	rasterizer->texture_set_path(p_texture,p_path);
+}
+
+String VisualServerRaster::texture_get_path(RID p_texture) const{
+
+	return rasterizer->texture_get_path(p_texture);
+}
+
+void VisualServerRaster::texture_debug_usage(List<TextureInfo> *r_info){
+
+	rasterizer->texture_debug_usage(r_info);
+}
+
 /* SHADER API */
 
 RID VisualServerRaster::shader_create(ShaderMode p_mode) {
