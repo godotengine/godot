@@ -461,6 +461,7 @@ class EditorNode : public Node {
 
 	void _cleanup_scene();
 	void _remove_edited_scene();
+	void _remove_scene(int index);
 	bool _find_and_save_resource(RES p_res,Map<RES,bool>& processed,int32_t flags);
 	bool _find_and_save_edited_subresources(Object *obj,Map<RES,bool>& processed,int32_t flags);
 	void _save_edited_subresources(Node* scene,Map<RES,bool>& processed,int32_t flags);
