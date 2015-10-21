@@ -1322,6 +1322,38 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 
 	}
 
+	VBoxContainer *vmem_vb = memnew( VBoxContainer );
+	HBoxContainer *vmem_hb = memnew( HBoxContainer );
+	Label *vmlb = memnew(Label("List of Video Memory Usage by Resource: ") );
+	vmlb->set_h_size_flags(SIZE_EXPAND_FILL);
+	vmem_hb->add_child( vmlb );
+	vmem_refresh = memnew( Button );
+	vmem_hb->add_child(vmem_refresh);
+	vmem_vb->add_child(vmem_hb);
+
+	MarginContainer *vmmc = memnew( MarginContainer );
+	vmmc = memnew( MarginContainer );
+	vmem_tree = memnew( Tree );
+	vmem_tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	vmem_tree->set_h_size_flags(SIZE_EXPAND_FILL);
+	vmmc->add_child(vmem_tree);
+	vmmc->set_v_size_flags(SIZE_EXPAND_FILL);
+	vmem_vb->add_child(vmmc);
+
+	vmem_vb->set_name("Video Mem");
+	vmem_tree->set_columns(3);
+	vmem_tree->set_column_titles_visible(true);
+	vmem_tree->set_column_title(0,"Resource Path");
+	vmem_tree->set_column_expand(0,true);
+	vmem_tree->set_column_expand(1,false);
+	vmem_tree->set_column_title(1,"Type");
+	vmem_tree->set_column_min_width(1,150);
+	vmem_tree->set_column_expand(2,false);
+	vmem_tree->set_column_title(2,"Usage");
+	vmem_tree->set_column_min_width(2,150);
+
+	tabs->add_child(vmem_vb);
+
 	info = memnew( HSplitContainer );
 	info->set_name("Info");
 	tabs->add_child(info);

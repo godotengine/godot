@@ -9164,7 +9164,11 @@ void RasterizerGLES2::_canvas_item_setup_shader_params(CanvasItemMaterial *mater
 		glBindTexture(GL_TEXTURE_2D,framebuffer.sample_color);
 		if (framebuffer.scale==1 && !canvas_texscreen_used) {
 #ifdef GLEW_ENABLED
-			glReadBuffer(GL_COLOR_ATTACHMENT0);
+			if (current_rt) {
+				glReadBuffer(GL_COLOR_ATTACHMENT0);
+			} else {
+				glReadBuffer(GL_BACK);
+			}
 #endif
 			glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
 //			if (current_clip) {
@@ -9344,7 +9348,11 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 			glBindTexture(GL_TEXTURE_2D,framebuffer.sample_color);
 
 #ifdef GLEW_ENABLED
-			glReadBuffer(GL_COLOR_ATTACHMENT0);
+			if (current_rt) {
+				glReadBuffer(GL_COLOR_ATTACHMENT0);
+			} else {
+				glReadBuffer(GL_BACK);
+			}
 #endif
 			glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,w,h);
 //			if (current_clip) {
