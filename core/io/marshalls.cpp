@@ -36,7 +36,10 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 	const uint8_t * buf=p_buffer;
 	int len=p_len;
 
-	ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
+	if (len<4) {
+
+		ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
+	}
 
 
 	uint32_t type=decode_uint32(buf);
