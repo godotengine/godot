@@ -2956,11 +2956,11 @@ void EditorNode::_remove_edited_scene() {
 	_update_title();
 	_update_scene_tabs();
 
-	if (editor_data.get_edited_scene_count()==1) {
-		//make new scene appear saved
-		set_current_version(editor_data.get_undo_redo().get_version());
-		unsaved_cache=false;
-	}
+//	if (editor_data.get_edited_scene_count()==1) {
+//		//make new scene appear saved
+//		set_current_version(editor_data.get_undo_redo().get_version());
+//		unsaved_cache=false;
+//	}
 }
 
 void EditorNode::_remove_scene(int index) {
