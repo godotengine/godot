@@ -2056,8 +2056,8 @@ Error ResourceFormatLoaderXML::rename_dependencies(const String &p_path,const Ma
 void ResourceFormatSaverXMLInstance::escape(String& p_str) {
 
 	p_str=p_str.replace("&","&amp;");
-	p_str=p_str.replace("<","&gt;");
-	p_str=p_str.replace(">","&lt;");
+	p_str=p_str.replace("<","&lt;");
+	p_str=p_str.replace(">","&gt;");
 	p_str=p_str.replace("'","&apos;");
 	p_str=p_str.replace("\"","&quot;");
 	for (char i=1;i<32;i++) {

@@ -35,6 +35,25 @@
 #include "physics_2d_server.h"
 #include "spatial_sound_server.h"
 #include "spatial_sound_2d_server.h"
+#include "script_debugger_remote.h"
+
+static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsage>* r_usage) {
+
+	List<VS::TextureInfo> tinfo;
+	VS::get_singleton()->texture_debug_usage(&tinfo);
+
+	for (List<VS::TextureInfo>::Element *E=tinfo.front();E;E=E->next()) {
+
+		ScriptDebuggerRemote::ResourceUsage usage;
+		usage.path=E->get().path;
+		usage.vram=E->get().bytes;
+		usage.id=E->get().texture;
+		usage.type="Texture";
+		usage.format=itos(E->get().size.width)+"x"+itos(E->get().size.height)+" "+Image::get_format_name(E->get().format);
+		r_usage->push_back(usage);
+	}
+
+}
 
 void register_server_types() {
 
@@ -63,6 +82,7 @@ void register_server_types() {
 	ObjectTypeDB::register_virtual_type<PhysicsDirectSpaceState>();
 	ObjectTypeDB::register_virtual_type<PhysicsShapeQueryResult>();
 
+	ScriptDebuggerRemote::resource_usage_func=_debugger_get_resource_usage;
 }
 
 void unregister_server_types(){

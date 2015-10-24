@@ -366,6 +366,16 @@ void ImageTexture::set_size_override(const Size2& p_size) {
 	VisualServer::get_singleton()->texture_set_size_override(texture,w,h);
 }
 
+void ImageTexture::set_path(const String& p_path,bool p_take_over) {
+
+	if (texture.is_valid()) {
+		VisualServer::get_singleton()->texture_set_path(texture,p_path);
+	}
+
+	Resource::set_path(p_path,p_take_over);
+}
+
+
 void ImageTexture::set_storage(Storage p_storage) {
 
 	storage=p_storage;
@@ -943,6 +953,16 @@ float CubeMap::get_lossy_storage_quality() const {
 
 	return lossy_storage_quality;
 }
+
+void CubeMap::set_path(const String& p_path,bool p_take_over) {
+
+	if (cubemap.is_valid()) {
+		VisualServer::get_singleton()->texture_set_path(cubemap,p_path);
+	}
+
+	Resource::set_path(p_path,p_take_over);
+}
+
 
 bool CubeMap::_set(const StringName& p_name, const Variant& p_value) {
 

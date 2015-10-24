@@ -1088,7 +1088,8 @@ void SceneTreeDock::_delete_confirm() {
 void SceneTreeDock::_update_tool_buttons() {
 
 	Node *sel = scene_tree->get_selected();
-	bool disable = !sel || (sel!=edited_scene && sel->get_owner()!=edited_scene) || (edited_scene->get_scene_instance_state().is_valid() && edited_scene->get_scene_instance_state()->find_node_by_path(edited_scene->get_path_to(sel))>=0);
+	bool disable = !sel || (sel!=edited_scene && sel->get_owner()!=edited_scene);
+	disable = disable || (edited_scene->get_scene_inherited_state().is_valid() && edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(sel))>=0);
 	bool disable_root = disable || sel->get_parent()==scene_root;
 	bool disable_edit = !sel;
 

@@ -171,6 +171,7 @@ void SpatialStreamPlayer::stop() {
 	//AudioServer::get_singleton()->stream_set_active(stream_rid,false);
 	SpatialSoundServer::get_singleton()->source_set_audio_stream(get_source_rid(),NULL);
 	playback->stop();
+	resampler.flush();
 	//set_idle_process(false);
 }
 

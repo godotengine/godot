@@ -577,7 +577,7 @@ class RasterizerFlash : public Rasterizer {
 					}
 				} else {
 
-					return B->material->shader_cache < B->material->shader_cache;
+					return A->material->shader_cache < B->material->shader_cache;
 				}
 			}
 		};

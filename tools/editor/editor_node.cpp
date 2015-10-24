@@ -2946,6 +2946,20 @@ void EditorNode::_remove_edited_scene() {
 		unsaved_cache=false;
 	}
 }
+
+void EditorNode::_remove_scene(int index) {
+//	printf("Attempting to remove scene %d (current is %d)\n", index, editor_data.get_edited_scene());
+	if (editor_data.get_edited_scene() == index) {
+		//Scene to remove is current scene
+		_remove_edited_scene();
+	}
+	else {
+		// Scene to remove is not active scene.");
+		editor_data.remove_scene(index);
+		editor_data.get_undo_redo().clear_history();
+	}
+}
+
 void EditorNode::set_edited_scene(Node *p_scene) {
 
 	if (get_editor_data().get_edited_scene_root()) {
@@ -4390,12 +4404,7 @@ void EditorNode::_scene_tab_script_edited(int p_tab) {
 }
 
 void EditorNode::_scene_tab_closed(int p_tab) {
-	set_current_scene(p_tab);
- 	bool p_confirmed = true;
- 	if (unsaved_cache)
- 		p_confirmed = false;
-
- 	_menu_option_confirm(FILE_CLOSE, p_confirmed);
+ 	_remove_scene(p_tab);
 	_update_scene_tabs();
 }
 

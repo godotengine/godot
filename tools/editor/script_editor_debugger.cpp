@@ -169,6 +169,17 @@ void ScriptEditorDebugger::_scene_tree_request() {
 
 }
 
+void ScriptEditorDebugger::_video_mem_request() {
+
+	ERR_FAIL_COND(connection.is_null());
+	ERR_FAIL_COND(!connection->is_connected());
+
+	Array msg;
+	msg.push_back("request_video_mem");
+	ppeer->put_var(msg);
+
+}
+
 Size2 ScriptEditorDebugger::get_minimum_size() const {
 
 	Size2 ms = Control::get_minimum_size();
@@ -243,6 +254,31 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 
 		le_clear->set_disabled(false);
 		le_set->set_disabled(false);
+
+	} else if (p_msg=="message:video_mem") {
+
+		vmem_tree->clear();
+		TreeItem* root=vmem_tree->create_item();
+
+		int total=0;
+
+		for(int i=0;i<p_data.size();i+=4) {
+
+			TreeItem *it = vmem_tree->create_item(root);
+			String type=p_data[i+1];
+			int bytes=p_data[i+3].operator int();
+			it->set_text(0,p_data[i+0]); //path
+			it->set_text(1,type); //type
+			it->set_text(2,p_data[i+2]); //type
+			it->set_text(3,String::humanize_size(bytes)); //type
+			total+=bytes;
+
+			if (has_icon(type,"EditorIcons"))
+				it->set_icon(0,get_icon(type,"EditorIcons"));
+		}
+
+		vmem_total->set_tooltip("Bytes: "+itos(total));
+		vmem_total->set_text(String::humanize_size(total));
 
 	} else if (p_msg=="stack_dump") {
 
@@ -506,6 +542,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			le_clear->connect("pressed",this,"_live_edit_clear");
 			error_list->connect("item_selected",this,"_error_selected");
 			error_stack->connect("item_selected",this,"_error_stack_selected");
+			vmem_refresh->set_icon( get_icon("Reload","EditorIcons"));
 
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -1136,6 +1173,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_performance_draw"),&ScriptEditorDebugger::_performance_draw);
 	ObjectTypeDB::bind_method(_MD("_performance_select"),&ScriptEditorDebugger::_performance_select);
 	ObjectTypeDB::bind_method(_MD("_scene_tree_request"),&ScriptEditorDebugger::_scene_tree_request);
+	ObjectTypeDB::bind_method(_MD("_video_mem_request"),&ScriptEditorDebugger::_video_mem_request);
 	ObjectTypeDB::bind_method(_MD("_live_edit_set"),&ScriptEditorDebugger::_live_edit_set);
 	ObjectTypeDB::bind_method(_MD("_live_edit_clear"),&ScriptEditorDebugger::_live_edit_clear);
 
@@ -1321,6 +1359,48 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 		perf_max[i]=0;
 
 	}
+
+	VBoxContainer *vmem_vb = memnew( VBoxContainer );
+	HBoxContainer *vmem_hb = memnew( HBoxContainer );
+	Label *vmlb = memnew(Label("List of Video Memory Usage by Resource: ") );
+	vmlb->set_h_size_flags(SIZE_EXPAND_FILL);
+	vmem_hb->add_child( vmlb );
+	vmem_hb->add_child( memnew(Label("Total: ")) );
+	vmem_total = memnew( LineEdit );
+	vmem_total->set_editable(false);
+	vmem_total->set_custom_minimum_size(Size2(100,1));
+	vmem_hb->add_child(vmem_total);
+	vmem_refresh = memnew( Button );
+	vmem_hb->add_child(vmem_refresh);
+	vmem_vb->add_child(vmem_hb);
+	vmem_refresh->connect("pressed",this,"_video_mem_request");
+
+	MarginContainer *vmmc = memnew( MarginContainer );
+	vmmc = memnew( MarginContainer );
+	vmem_tree = memnew( Tree );
+	vmem_tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	vmem_tree->set_h_size_flags(SIZE_EXPAND_FILL);
+	vmmc->add_child(vmem_tree);
+	vmmc->set_v_size_flags(SIZE_EXPAND_FILL);
+	vmem_vb->add_child(vmmc);
+
+	vmem_vb->set_name("Video Mem");
+	vmem_tree->set_columns(4);
+	vmem_tree->set_column_titles_visible(true);
+	vmem_tree->set_column_title(0,"Resource Path");
+	vmem_tree->set_column_expand(0,true);
+	vmem_tree->set_column_expand(1,false);
+	vmem_tree->set_column_title(1,"Type");
+	vmem_tree->set_column_min_width(1,100);
+	vmem_tree->set_column_expand(2,false);
+	vmem_tree->set_column_title(2,"Format");
+	vmem_tree->set_column_min_width(2,150);
+	vmem_tree->set_column_expand(3,false);
+	vmem_tree->set_column_title(3,"Usage");
+	vmem_tree->set_column_min_width(3,80);
+	vmem_tree->set_hide_root(true);
+
+	tabs->add_child(vmem_vb);
 
 	info = memnew( HSplitContainer );
 	info->set_name("Info");

@@ -236,6 +236,8 @@ static int frame_count = 0;
 	view_controller.view = glView;
 	window.rootViewController = view_controller;
 
+	glView.useCADisplayLink = bool(GLOBAL_DEF("display.iOS/use_cadisplaylink",true)) ? YES : NO;
+	printf("cadisaplylink: %d", glView.useCADisplayLink);
 	glView.animationInterval = 1.0 / kRenderingFrequency;
 	[glView startAnimation];
 	
