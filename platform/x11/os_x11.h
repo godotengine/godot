@@ -156,12 +156,7 @@ class OS_X11 : public OS_Unix {
 			};
 		};
 	};
-
-	Atom net_wm_icon;
-
-
 	int joystick_count;
-
 	Joystick joysticks[JOYSTICKS_MAX];
 
 	int audio_driver_index;

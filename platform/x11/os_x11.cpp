@@ -73,20 +73,18 @@
 #undef CursorShape
 
 int OS_X11::get_video_driver_count() const {
-
 	return 1;
 }
-const char * OS_X11::get_video_driver_name(int p_driver) const {
 
+const char * OS_X11::get_video_driver_name(int p_driver) const {
 	return "GLES2";
 }
-OS::VideoMode OS_X11::get_default_video_mode() const {
 
+OS::VideoMode OS_X11::get_default_video_mode() const {
 	return OS::VideoMode(800,600,false);
 }
 
 int OS_X11::get_audio_driver_count() const {
-
     return AudioDriverManagerSW::get_driver_count();
 }
 
@@ -256,7 +254,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		set_window_resizable(false);
 	}
 #endif
-
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -438,7 +435,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	probe_joystick();
 
 	_ensure_data_dir();
-
 }
 
 void OS_X11::finalize() {
@@ -567,37 +563,29 @@ void OS_X11::warp_mouse_pos(const Point2& p_to) {
 }
 
 OS::MouseMode OS_X11::get_mouse_mode() const {
-
 	return mouse_mode;
 }
-
-
 
 int OS_X11::get_mouse_button_state() const {
 	return last_button_state;
 }
 
 Point2 OS_X11::get_mouse_pos() const {
-
 	return last_mouse_pos;
 }
 
 void OS_X11::set_window_title(const String& p_title) {
-
 	XStoreName(x11_display,x11_window,p_title.utf8().get_data());
 }
 
 void OS_X11::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
-
-
 }
-OS::VideoMode OS_X11::get_video_mode(int p_screen) const {
 
+OS::VideoMode OS_X11::get_video_mode(int p_screen) const {
 	return current_videomode;
 }
+
 void OS_X11::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
-
-
 }
 
 //#ifdef NEW_WM_API
@@ -680,7 +668,6 @@ void OS_X11::set_current_screen(int p_screen) {
 }
 
 Point2 OS_X11::get_screen_position(int p_screen) const {
-
 	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
@@ -715,7 +702,6 @@ Size2 OS_X11::get_screen_size(int p_screen) const {
 	XFree(xsi);
 	return size;
 }
-	
 
 Point2 OS_X11::get_window_position() const {
 	int x,y;
@@ -904,7 +890,6 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 	current_videomode.height = xwa.height;
 */
 	maximized = p_enabled;
-
 }
 
 bool OS_X11::is_window_maximized() const {
@@ -1000,7 +985,6 @@ unsigned int OS_X11::get_mouse_button_state(unsigned int p_x11_state) {
 }
 	
 void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
-
 			
 	// X11 functions don't know what const is
 	XKeyEvent *xkeyevent = p_event;
@@ -1166,8 +1150,6 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 	//printf("key: %x\n",event.key.scancode);
 	input->parse_input_event( event);
-
-	
 }
 
 void OS_X11::process_xevents() {
@@ -1901,7 +1883,7 @@ void OS_X11::alert(const String& p_alert,const String& p_title) {
 }
 
 void OS_X11::set_icon(const Image& p_icon) {
-	net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
+	Atom net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
 
 	if (!p_icon.empty()) {
 		Image img=p_icon;
@@ -1935,7 +1917,6 @@ void OS_X11::set_icon(const Image& p_icon) {
 	    XDeleteProperty(x11_display, x11_window, net_wm_icon);
 	}
 	XFlush(x11_display);
-
 }
 
 
