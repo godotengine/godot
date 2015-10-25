@@ -3792,6 +3792,7 @@
 			<argument index="0" name="value" type="var">
 			</argument>
 			<description>
+			Returns index of value.  If value is not found then returns -1
 			</description>
 		</method>
 		<method name="hash">
@@ -7291,7 +7292,7 @@
 	Color in RGBA format.
 	</brief_description>
 	<description>
-	A color is represented as red, green and blue (r,g,b) components. Additionally, "a" represents the alpha component, often used for transparency. Values are in floating point, ranging from 0 to 1.
+	A color is represented as red, green and blue (r,g,b) components. Additionally, "a" represents the alpha component, often used for transparency. Values are in floating point and usually range from 0 to 1.  Some methods (such as set_modulate() ) may accept values > 1.
 	</description>
 	<methods>
 		<method name="blend">
@@ -16517,11 +16518,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="x" type="float">
+		<member name="x" type="Vector2">
 		</member>
-		<member name="y" type="float">
+		<member name="y" type="Vector2">
 		</member>
-		<member name="o" type="float">
+		<member name="o" type="Vector2">
 		</member>
 	</members>
 	<constants>
@@ -31619,7 +31620,7 @@
 			<argument index="0" name="modulate" type="Color">
 			</argument>
 			<description>
-			Set color modulation for the sprite. All sprite pixels are multiplied by this color.
+			Set color modulation for the sprite. All sprite pixels are multiplied by this color.  Color may contain rgb values above 1 to achieve a highlight effect.
 			</description>
 		</method>
 		<method name="get_modulate" qualifiers="const">
