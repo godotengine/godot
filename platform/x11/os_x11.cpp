@@ -153,6 +153,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 			
 			XFree (xim_styles);
 		}
+		XFree( imvalret );
 	}
 
 	/*
@@ -351,6 +352,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	for(int i=0;i<CURSOR_MAX;i++) {
 
 		cursors[i]=None;
+		img[i]=NULL;
 	}
 
 	current_cursor=CURSOR_ARROW;
@@ -379,16 +381,15 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 				"question_arrow"
 			};
 
-			XcursorImage *img = XcursorLibraryLoadImage(cursor_file[i],cursor_theme,cursor_size);
-			if (img) {
-				cursors[i]=XcursorImageLoadCursor(x11_display,img);
+			img[i] = XcursorLibraryLoadImage(cursor_file[i],cursor_theme,cursor_size);
+			if (img[i]) {
+				cursors[i]=XcursorImageLoadCursor(x11_display,img[i]);
 				//print_line("found cursor: "+String(cursor_file[i])+" id "+itos(cursors[i]));
 			} else {
 				if (OS::is_stdout_verbose())
 					print_line("failed cursor: "+String(cursor_file[i]));
 			}
 		}
-
 	}
 
 
@@ -399,9 +400,9 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		 XColor col;
 		 Cursor cursor;
 
-		 cursormask = XCreatePixmap(x11_display, RootWindow(x11_display,DefaultScreen(x11_display)), 1, 1, 1);
-		 xgc.function = GXclear;
-		 gc = XCreateGC(x11_display, cursormask, GCFunction, &xgc);
+		cursormask = XCreatePixmap(x11_display, RootWindow(x11_display,DefaultScreen(x11_display)), 1, 1, 1);
+		xgc.function = GXclear;
+		gc = XCreateGC(x11_display, cursormask, GCFunction, &xgc);
 		XFillRectangle(x11_display, cursormask, gc, 0, 0, 1, 1);
 		col.pixel = 0;
 		col.red = 0;
@@ -438,13 +439,8 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	_ensure_data_dir();
 
-	net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
-
-
-
-	//printf("got map notify\n");
-		
 }
+
 void OS_X11::finalize() {
 
 	if(main_loop)
@@ -476,14 +472,26 @@ void OS_X11::finalize() {
 
 	memdelete(input);
 
+	XUnmapWindow( x11_display, x11_window );
+	XDestroyWindow( x11_display, x11_window );
+
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 	memdelete(context_gl);
 #endif
-	
+	for(int i=0;i<CURSOR_MAX;i++) {
+		if( cursors[i] != None )
+			XFreeCursor( x11_display, cursors[i] );		
+		if( img[i] != NULL )
+			XcursorImageDestroy( img[i] );
+	};	
+
+	XDestroyIC( xic );
+	XCloseIM( xim );
 
 	XCloseDisplay(x11_display);
 	if (xmbstring)
 		memfree(xmbstring);
+
 		
 	args.clear();
 }
@@ -1861,7 +1869,6 @@ void OS_X11::set_cursor_shape(CursorShape p_shape) {
 			XDefineCursor(x11_display,x11_window,cursors[CURSOR_ARROW]);
 	}
 
-
 	current_cursor=p_shape;
 }
 
@@ -1894,6 +1901,8 @@ void OS_X11::alert(const String& p_alert,const String& p_title) {
 }
 
 void OS_X11::set_icon(const Image& p_icon) {
+	net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
+
 	if (!p_icon.empty()) {
 		Image img=p_icon;
 		img.convert(Image::FORMAT_RGBA);
