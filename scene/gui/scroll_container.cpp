@@ -195,11 +195,19 @@ void ScrollContainer::_notification(int p_what) {
 			Rect2 r = Rect2(-scroll,minsize);
 			if (!scroll_h) {
 				r.pos.x=0;
-				r.size.width=size.width;
+				if (c->get_h_size_flags()&SIZE_EXPAND)
+					r.size.width=MAX(size.width,minsize.width);
+				else
+					r.size.width=minsize.width;
 			}
 			if (!scroll_v) {
 				r.pos.y=0;
 				r.size.height=size.height;
+				if (c->get_v_size_flags()&SIZE_EXPAND)
+					r.size.height=MAX(size.height,minsize.height);
+				else
+					r.size.height=minsize.height;
+
 			}
 			fit_child_in_rect(c,r);
 		}
