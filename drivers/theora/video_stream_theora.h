@@ -10,9 +10,9 @@
 #include "io/resource_loader.h"
 #include "scene/resources/video_stream.h"
 
-class VideoStreamTheora : public VideoStream {
+class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
-	OBJ_TYPE(VideoStreamTheora, VideoStream);
+	OBJ_TYPE(VideoStreamPlaybackTheora, VideoStreamPlayback);
 
 	enum {
 		MAX_FRAMES = 4,
@@ -58,16 +58,19 @@ class VideoStreamTheora : public VideoStream {
 
 	double last_update_time;
 	double time;
+	double delay_compensation;
+
+	Ref<ImageTexture> texture;
+
+	AudioMixCallback mix_callback;
+	void* mix_udata;
+
+    int audio_track;
 
 protected:
 
-	virtual UpdateMode get_update_mode() const;
-	virtual void update();
-
 	void clear();
-
-	virtual bool _can_mix() const;
-
+	
 public:
 
 	virtual void play();
@@ -92,12 +95,43 @@ public:
 
 	void set_file(const String& p_file);
 
-	int get_pending_frame_count() const;
-	Image pop_frame();
-	Image peek_frame() const;
+	virtual Ref<Texture> get_texture();
+	virtual void update(float p_delta);
 
-	VideoStreamTheora();
-	~VideoStreamTheora();
+	virtual void set_mix_callback(AudioMixCallback p_callback,void *p_userdata);
+	virtual int get_channels() const;
+	virtual int get_mix_rate() const;
+
+	virtual void set_audio_track(int p_idx);
+
+	VideoStreamPlaybackTheora();
+	~VideoStreamPlaybackTheora();
+};
+
+
+
+class VideoStreamTheora : public VideoStream {
+
+	OBJ_TYPE(VideoStreamTheora,VideoStream);
+
+	String file;
+    int audio_track;
+
+
+public:
+
+	Ref<VideoStreamPlayback> instance_playback() {
+		Ref<VideoStreamPlaybackTheora> pb = memnew( VideoStreamPlaybackTheora );
+        pb->set_audio_track(audio_track);
+		pb->set_file(file);
+		return pb;
+	}
+
+	void set_file(const String& p_file) { file=p_file; }
+    void set_audio_track(int p_track) { audio_track=p_track; }
+
+    VideoStreamTheora() { audio_track=0; }
+
 };
 
 class ResourceFormatLoaderVideoStreamTheora : public ResourceFormatLoader {

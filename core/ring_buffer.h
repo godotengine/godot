@@ -141,15 +141,15 @@ public:
 	inline int space_left() {
 		int left = read_pos - write_pos;
 		if (left < 0) {
-			return size() + left;
+			return size() + left - 1;
 		};
 		if (left == 0) {
-			return size();
+			return size()-1;
 		};
-		return left;
+		return left -1;
 	};
 	inline int data_left() {
-		return size() - space_left();
+		return size() - space_left() - 1;
 	};
 	
 	inline int size() {

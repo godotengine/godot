@@ -920,7 +920,7 @@ float AudioServerSW::get_event_voice_global_volume_scale() const {
 
 double AudioServerSW::get_output_delay() const {
 
-	return _output_delay;
+	return _output_delay+AudioDriverSW::get_singleton()->get_latency();
 }
 
 double AudioServerSW::get_mix_time() const {

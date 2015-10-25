@@ -25,7 +25,7 @@ Ref<Texture> EditorTexturePreviewPlugin::generate(const RES& p_from) {
 	if (img.is_compressed()) {
 		if (img.decompress()!=OK)
 			return Ref<Texture>();
-	} else if (img.get_format()!=Image::FORMAT_RGB && img.get_format()!=Image::FORMAT_RGB) {
+    } else if (img.get_format()!=Image::FORMAT_RGB && img.get_format()!=Image::FORMAT_RGBA) {
 		img.convert(Image::FORMAT_RGBA);
 	}
 

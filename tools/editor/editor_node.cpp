@@ -976,6 +976,7 @@ void EditorNode::_save_scene(String p_file) {
 		//EditorFileSystem::get_singleton()->update_file(p_file,sdata->get_type());
 		set_current_version(editor_data.get_undo_redo().get_version());
 		_update_title();
+		_update_scene_tabs();
 	} else {
 
 		_dialog_display_file_error(p_file,err);
@@ -1108,6 +1109,11 @@ void EditorNode::_dialog_action(String p_file) {
 
 			push_item(res.operator->() );
 		} break;			
+		case FILE_NEW_INHERITED_SCENE: {
+
+
+			load_scene(p_file,false,true);
+		} break;
 		case FILE_OPEN_SCENE: {
 
 
@@ -1394,7 +1400,6 @@ void EditorNode::_dialog_action(String p_file) {
 		} break;
 		default: { //save scene?
 		
-			
 			if (file->get_mode()==FileDialog::MODE_SAVE_FILE) {
 
 				//_save_scene(p_file);
@@ -1931,6 +1936,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			
 		} break;
+		case FILE_NEW_INHERITED_SCENE:
 		case FILE_OPEN_SCENE: {
 			
 			
@@ -1951,7 +1957,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			if (scene) {
 				file->set_current_path(scene->get_filename());
 			};
-			file->set_title("Open Scene");
+			file->set_title(p_option==FILE_OPEN_SCENE?"Open Scene":"Open Base Scene");
 			file->popup_centered_ratio();
 			
 		} break;
@@ -2940,6 +2946,20 @@ void EditorNode::_remove_edited_scene() {
 		unsaved_cache=false;
 	}
 }
+
+void EditorNode::_remove_scene(int index) {
+//	printf("Attempting to remove scene %d (current is %d)\n", index, editor_data.get_edited_scene());
+	if (editor_data.get_edited_scene() == index) {
+		//Scene to remove is current scene
+		_remove_edited_scene();
+	}
+	else {
+		// Scene to remove is not active scene.");
+		editor_data.remove_scene(index);
+		editor_data.get_undo_redo().clear_history();
+	}
+}
+
 void EditorNode::set_edited_scene(Node *p_scene) {
 
 	if (get_editor_data().get_edited_scene_root()) {
@@ -3312,7 +3332,7 @@ void EditorNode::fix_dependencies(const String& p_for_file) {
 	dependency_fixer->edit(p_for_file);
 }
 
-Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps) {
+Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bool p_set_inherited) {
 
 	if (!is_inside_tree()) {
 		defer_load_scene = p_scene;
@@ -3441,6 +3461,16 @@ Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps) {
 		memdelete(old_scene);
 	}
 */
+
+	if (p_set_inherited) {
+		Ref<SceneState> state = sdata->get_state();
+		state->set_path(lpath);
+		new_scene->set_scene_inherited_state(state);
+		new_scene->set_filename(String());
+		if (new_scene->get_scene_instance_state().is_valid())
+			new_scene->get_scene_instance_state()->set_path(String());
+	}
+
 
 	set_edited_scene(new_scene);
 	_get_scene_metadata();
@@ -3918,6 +3948,7 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("set_current_scene",&EditorNode::set_current_scene);
 	ObjectTypeDB::bind_method("set_current_version",&EditorNode::set_current_version);
 	ObjectTypeDB::bind_method("_scene_tab_changed",&EditorNode::_scene_tab_changed);
+	ObjectTypeDB::bind_method("_scene_tab_closed",&EditorNode::_scene_tab_closed);
 	ObjectTypeDB::bind_method("_scene_tab_script_edited",&EditorNode::_scene_tab_script_edited);
 	ObjectTypeDB::bind_method("_set_main_scene_state",&EditorNode::_set_main_scene_state);
 	ObjectTypeDB::bind_method("_update_scene_tabs",&EditorNode::_update_scene_tabs);
@@ -4372,6 +4403,12 @@ void EditorNode::_scene_tab_script_edited(int p_tab) {
 		edit_resource(script);
 }
 
+void EditorNode::_scene_tab_closed(int p_tab) {
+ 	_remove_scene(p_tab);
+	_update_scene_tabs();
+}
+
+
 void EditorNode::_scene_tab_changed(int p_tab) {
 
 
@@ -4404,6 +4441,7 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 EditorNode::EditorNode() {
 
 	EditorHelp::generate_doc(); //before any editor classes are crated
+	SceneState::set_disable_placeholders(true);
 
 	InputDefault *id = Input::get_singleton()->cast_to<InputDefault>();
 
@@ -4538,8 +4576,10 @@ EditorNode::EditorNode() {
 	scene_tabs=memnew( Tabs );
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_align(Tabs::ALIGN_CENTER);
+	scene_tabs->set_tab_close_display_policy(Tabs::SHOW_HOVER);
 	scene_tabs->connect("tab_changed",this,"_scene_tab_changed");
 	scene_tabs->connect("right_button_pressed",this,"_scene_tab_script_edited");
+	scene_tabs->connect("tab_close", this, "_scene_tab_closed");
 	top_dark_vb->add_child(scene_tabs);
 	//left
 	left_l_hsplit = memnew( HSplitContainer );
@@ -4676,6 +4716,7 @@ EditorNode::EditorNode() {
 
 	main_editor_tabs  = memnew( Tabs );
 	main_editor_tabs->connect("tab_changed",this,"_editor_select");
+	main_editor_tabs->set_tab_close_display_policy(Tabs::SHOW_NEVER);
 	HBoxContainer *srth = memnew( HBoxContainer );
 	srt->add_child( srth );
 	Control *tec = memnew( Control );
@@ -4794,6 +4835,7 @@ EditorNode::EditorNode() {
 	file_menu->set_tooltip("Operations with scene files.");
 	p=file_menu->get_popup();
 	p->add_item("New Scene",FILE_NEW_SCENE);
+	p->add_item("New Inherited Scene..",FILE_NEW_INHERITED_SCENE);
 	p->add_item("Open Scene..",FILE_OPEN_SCENE,KEY_MASK_CMD+KEY_O);
 	p->add_separator();
 	p->add_item("Save Scene",FILE_SAVE_SCENE,KEY_MASK_CMD+KEY_S);

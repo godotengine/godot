@@ -36,8 +36,8 @@ _FORCE_INLINE_ static bool _match_object_type_query(CollisionObject2DSW *p_objec
 	if ((p_object->get_layer_mask()&p_layer_mask)==0)
 		return false;
 
-	if (p_object->get_type()==CollisionObject2DSW::TYPE_AREA && !(p_type_mask&Physics2DDirectSpaceState::TYPE_MASK_AREA))
-		return false;
+	if (p_object->get_type()==CollisionObject2DSW::TYPE_AREA)
+		return p_type_mask&Physics2DDirectSpaceState::TYPE_MASK_AREA;
 
 	Body2DSW *body = static_cast<Body2DSW*>(p_object);
 

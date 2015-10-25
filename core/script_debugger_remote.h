@@ -34,6 +34,7 @@
 #include "io/stream_peer_tcp.h"
 #include "io/packet_peer.h"
 #include "list.h"
+
 class ScriptDebuggerRemote : public ScriptDebugger {
 
 	struct Message {
@@ -41,6 +42,8 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 		String message;
 		Array data;
 	};
+
+
 
 	Ref<StreamPeerTCP> tcp_client;
 	Ref<PacketPeerStream> packet_peer_stream;
@@ -90,6 +93,7 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	RequestSceneTreeMessageFunc request_scene_tree;
 	void *request_scene_tree_ud;
 
+	void _send_video_memory();
 	LiveEditFuncs *live_edit_funcs;
 
 	ErrorHandlerList eh;
@@ -97,6 +101,20 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 
 
 public:
+
+	struct ResourceUsage {
+
+		String path;
+		String format;
+		String type;
+		RID id;
+		int vram;
+		bool operator<(const ResourceUsage& p_img) const { return vram==p_img.vram ? id<p_img.id : vram > p_img.vram; }
+	};
+
+	typedef void (*ResourceUsageFunc)(List<ResourceUsage>*);
+
+	static ResourceUsageFunc resource_usage_func;
 
 	Error connect_to_host(const String& p_host,uint16_t p_port);
 	virtual void debug(ScriptLanguage *p_script,bool p_can_continue=true);

@@ -231,14 +231,12 @@ Ref<ResourceImportMetadata> ResourceLoader::load_import_metadata(const String &p
 		local_path = Globals::get_singleton()->localize_path(p_path);
 
 	String extension=p_path.extension();
-	bool found=false;
 	Ref<ResourceImportMetadata> ret;
 
 	for (int i=0;i<loader_count;i++) {
 
 		if (!loader[i]->recognize(extension))
 			continue;
-		found=true;
 
 		Error err = loader[i]->load_import_metadata(local_path,ret);
 		if (err==OK)

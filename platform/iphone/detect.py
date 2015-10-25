@@ -38,7 +38,6 @@ def get_flags():
 	return [
 		('tools', 'no'),
 		('webp', 'yes'),
-		("theora","no"),       		
 		('openssl','builtin'), #use builtin openssl
 	]
 

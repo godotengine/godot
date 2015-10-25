@@ -80,12 +80,15 @@ void ShaderGraph::_set_data(const Dictionary &p_data) {
 			ERR_FAIL_COND((conns.size()%3)!=0);
 
 			for(int j=0;j<conns.size();j+=3) {
-
 				SourceSlot ss;
 				int ls=conns[j+0];
-				ss.id=conns[j+1];
-				ss.slot=conns[j+2];
-				n.connections[ls]=ss;
+				if (ls == SLOT_DEFAULT_VALUE) {
+					n.defaults[conns[j+1]]=conns[j+2];
+				} else {
+					ss.id=conns[j+1];
+					ss.slot=conns[j+2];
+					n.connections[ls]=ss;
+				}
 			}
 			shader[t].node_map[n.id]=n;
 
@@ -114,7 +117,7 @@ Dictionary ShaderGraph::_get_data() const {
 			data[idx+4]=E->get().param2;
 
 			Array conns;
-			conns.resize(E->get().connections.size()*3);
+			conns.resize(E->get().connections.size()*3+E->get().defaults.size()*3);
 			int idx2=0;
 			for(Map<int,SourceSlot>::Element*F=E->get().connections.front();F;F=F->next()) {
 
@@ -123,6 +126,14 @@ Dictionary ShaderGraph::_get_data() const {
 				conns[idx2+2]=F->get().slot;
 				idx2+=3;
 			}
+			for(Map<int,Variant>::Element*F=E->get().defaults.front();F;F=F->next()) {
+
+				conns[idx2+0]=SLOT_DEFAULT_VALUE;
+				conns[idx2+1]=F->key();
+				conns[idx2+2]=F->get();
+				idx2+=3;
+			}
+
 			data[idx+5]=conns;
 			idx+=6;
 		}
@@ -142,6 +153,15 @@ ShaderGraph::GraphError ShaderGraph::get_graph_error(ShaderType p_type) const {
 	return shader[p_type].error;
 }
 
+int ShaderGraph::node_count(ShaderType p_which, int p_type)
+{
+	int count=0;
+	for (Map<int,Node>::Element *E=shader[p_which].node_map.front();E;E=E->next())
+		if (E->get().type==p_type)
+			count++;
+	return count;
+}
+
 void ShaderGraph::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_update_shader"),&ShaderGraph::_update_shader);
@@ -154,6 +174,9 @@ void ShaderGraph::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("node_get_type","shader_type","id"),&ShaderGraph::node_get_type);
 
 	ObjectTypeDB::bind_method(_MD("get_node_list","shader_type"),&ShaderGraph::_get_node_list);
+
+	ObjectTypeDB::bind_method(_MD("default_set_value","shader_type","id","param_id","value"), &ShaderGraph::default_set_value);
+	ObjectTypeDB::bind_method(_MD("default_get_value","shader_type","id","param_id"), &ShaderGraph::default_get_value);
 
 	ObjectTypeDB::bind_method(_MD("scalar_const_node_set_value","shader_type","id","value"),&ShaderGraph::scalar_const_node_set_value);
 	ObjectTypeDB::bind_method(_MD("scalar_const_node_get_value","shader_type","id"),&ShaderGraph::scalar_const_node_set_value);
@@ -537,7 +560,7 @@ void ShaderGraph::node_add(ShaderType p_type, NodeType p_node_type,int p_id) {
 		case NODE_RGB_INPUT: {node.param1=_find_unique_name("Color");node.param2=Color();} break; // color uniform (assignable in material)
 		case NODE_XFORM_INPUT: {node.param1=_find_unique_name("XForm"); node.param2=Transform();} break; // mat4 uniform (assignable in material)
 		case NODE_TEXTURE_INPUT: {node.param1=_find_unique_name("Tex"); } break; // texture input (assignable in material)
-		case NODE_CUBEMAP_INPUT: {node.param1=_find_unique_name("Cube"); } break; // cubemap input (assignable in material)			
+		case NODE_CUBEMAP_INPUT: {node.param1=_find_unique_name("Cube"); } break; // cubemap input (assignable in material)
 		case NODE_DEFAULT_TEXTURE: {}; break;
 		case NODE_OUTPUT: {} break; // output (shader type dependent)
 		case NODE_COMMENT: {} break; // comment
@@ -683,6 +706,18 @@ void ShaderGraph::get_node_connections(ShaderType p_type,List<Connection> *p_con
 	}
 }
 
+bool ShaderGraph::is_slot_connected(ShaderGraph::ShaderType p_type, int p_dst_id, int slot_id)
+{
+	for(const Map<int,Node>::Element *E=shader[p_type].node_map.front();E;E=E->next()) {
+		for (const Map<int,SourceSlot>::Element *F=E->get().connections.front();F;F=F->next()) {
+
+			if (p_dst_id == E->key() && slot_id==F->key())
+				return true;
+		}
+	}
+	return false;
+}
+
 
 void ShaderGraph::clear(ShaderType p_type) {
 
@@ -824,6 +859,47 @@ float ShaderGraph::texture_node_get_filter_strength(ShaderType p_type,float p_id
 	return arr[1];
 }
 
+void ShaderGraph::duplicate_nodes(ShaderType p_which, List<int> &p_nodes)
+{
+	//Create new node IDs
+	Map<int,int> duplicates = Map<int,int>();
+	int i=1;
+	for(List<int>::Element *E=p_nodes.front();E; E=E->next()) {
+		while (shader[p_which].node_map.has(i))
+			i++;
+		duplicates.insert(E->get(), i);
+		i++;
+	}
+
+	for(List<int>::Element *E = p_nodes.front();E; E=E->next()) {
+
+		const Node &n=shader[p_which].node_map[E->get()];
+		Node nn=n;
+		nn.id=duplicates.find(n.id)->get();
+		nn.pos += Vector2(0,100);
+		for (Map<int,SourceSlot>::Element *C=nn.connections.front();C;C=C->next()) {
+			SourceSlot &c=C->get();
+			if (p_nodes.find(c.id))
+				c.id=duplicates.find(c.id)->get();
+		}
+		shader[p_which].node_map[nn.id]=nn;
+	}
+	_request_update();
+}
+
+List<int> ShaderGraph::generate_ids(ShaderType p_type, int count)
+{
+	List<int> ids = List<int>();
+	int i=1;
+	while (ids.size() < count) {
+		while (shader[p_type].node_map.has(i))
+			i++;
+		ids.push_back(i);
+		i++;
+	}
+	return ids;
+}
+
 
 void ShaderGraph::scalar_op_node_set_op(ShaderType p_type,float p_id,ScalarOp p_op){
 
@@ -955,6 +1031,33 @@ ShaderGraph::ScalarFunc ShaderGraph::scalar_func_node_get_function(ShaderType p_
 	return ScalarFunc(func);
 }
 
+void ShaderGraph::default_set_value(ShaderGraph::ShaderType p_which, int p_id, int p_param, const Variant &p_value)
+{
+	ERR_FAIL_INDEX(p_which,3);
+	ERR_FAIL_COND(!shader[p_which].node_map.has(p_id));
+	Node& n = shader[p_which].node_map[p_id];
+	if(p_value.get_type()==Variant::NIL)
+		n.defaults.erase(n.defaults.find(p_param));
+	else
+		n.defaults[p_param]=p_value;
+
+	_request_update();
+
+}
+
+Variant ShaderGraph::default_get_value(ShaderGraph::ShaderType p_which, int p_id, int p_param)
+{
+	ERR_FAIL_INDEX_V(p_which,3,Variant());
+	ERR_FAIL_COND_V(!shader[p_which].node_map.has(p_id),Variant());
+	const Node& n = shader[p_which].node_map[p_id];
+
+	if (!n.defaults.has(p_param))
+		return Variant();
+	return n.defaults[p_param];
+}
+
+
+
 void ShaderGraph::vec_func_node_set_function(ShaderType p_type,int p_id,VecFunc p_func){
 
 	ERR_FAIL_INDEX(p_type,3);
@@ -980,52 +1083,52 @@ ShaderGraph::VecFunc ShaderGraph::vec_func_node_get_function(ShaderType p_type, 
 
 void ShaderGraph::color_ramp_node_set_ramp(ShaderType p_type,int p_id,const DVector<Color>& p_colors, const DVector<real_t>& p_offsets){
 
-    ERR_FAIL_INDEX(p_type,3);
-    ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
-    ERR_FAIL_COND(p_colors.size()!=p_offsets.size());
-    Node& n = shader[p_type].node_map[p_id];
-    n.param1=p_colors;
-    n.param2=p_offsets;
-    _request_update();
+	ERR_FAIL_INDEX(p_type,3);
+	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
+	ERR_FAIL_COND(p_colors.size()!=p_offsets.size());
+	Node& n = shader[p_type].node_map[p_id];
+	n.param1=p_colors;
+	n.param2=p_offsets;
+	_request_update();
 
 }
 
 DVector<Color> ShaderGraph::color_ramp_node_get_colors(ShaderType p_type,int p_id) const{
 
-    ERR_FAIL_INDEX_V(p_type,3,DVector<Color>());
-    ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),DVector<Color>());
-    const Node& n = shader[p_type].node_map[p_id];
-    return n.param1;
+	ERR_FAIL_INDEX_V(p_type,3,DVector<Color>());
+	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),DVector<Color>());
+	const Node& n = shader[p_type].node_map[p_id];
+	return n.param1;
 
 
 }
 
 DVector<real_t> ShaderGraph::color_ramp_node_get_offsets(ShaderType p_type,int p_id) const{
 
-    ERR_FAIL_INDEX_V(p_type,3,DVector<real_t>());
-    ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),DVector<real_t>());
-    const Node& n = shader[p_type].node_map[p_id];
-    return n.param2;
+	ERR_FAIL_INDEX_V(p_type,3,DVector<real_t>());
+	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),DVector<real_t>());
+	const Node& n = shader[p_type].node_map[p_id];
+	return n.param2;
 
 }
 
 
 void ShaderGraph::curve_map_node_set_points(ShaderType p_type,int p_id,const DVector<Vector2>& p_points) {
 
-    ERR_FAIL_INDEX(p_type,3);
-    ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
-    Node& n = shader[p_type].node_map[p_id];
-    n.param1=p_points;
-    _request_update();
+	ERR_FAIL_INDEX(p_type,3);
+	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
+	Node& n = shader[p_type].node_map[p_id];
+	n.param1=p_points;
+	_request_update();
 
 }
 
 DVector<Vector2> ShaderGraph::curve_map_node_get_points(ShaderType p_type,int p_id) const{
 
-    ERR_FAIL_INDEX_V(p_type,3,DVector<Vector2>());
-    ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),DVector<Vector2>());
-    const Node& n = shader[p_type].node_map[p_id];
-    return n.param1;
+	ERR_FAIL_INDEX_V(p_type,3,DVector<Vector2>());
+	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),DVector<Vector2>());
+	const Node& n = shader[p_type].node_map[p_id];
+	return n.param1;
 
 }
 
@@ -1215,6 +1318,12 @@ Variant ShaderGraph::node_get_state(ShaderType p_type,int p_id) const {
 	s["pos"]=n.pos;
 	s["param1"]=n.param1;
 	s["param2"]=n.param2;
+	Array keys;
+	for (Map<int,Variant>::Element *E=n.defaults.front();E;E=E->next()) {
+		keys.append(E->key());
+		s[E->key()]=E->get();
+	}
+	s["default_keys"]=keys;
 	return s;
 
 }
@@ -1227,10 +1336,15 @@ void ShaderGraph::node_set_state(ShaderType p_type,int p_id,const Variant& p_sta
 	ERR_FAIL_COND(!d.has("pos"));
 	ERR_FAIL_COND(!d.has("param1"));
 	ERR_FAIL_COND(!d.has("param2"));
+	ERR_FAIL_COND(!d.has("default_keys"));
+
 	n.pos=d["pos"];
 	n.param1=d["param1"];
 	n.param2=d["param2"];
-
+	Array keys = d["default_keys"];
+	for(int i=0;i<keys.size();i++) {
+		n.defaults[keys[i]]=d[keys[i]];
+	}
 }
 
 ShaderGraph::ShaderGraph(Mode p_mode) : Shader(p_mode) {
@@ -1735,17 +1849,17 @@ void ShaderGraph::_update_shader() {
 				Vector<String> inputs;
 				int max = get_node_input_slot_count(get_mode(),ShaderType(i),n->type);
 				for(int k=0;k<max;k++) {
+					String iname;
 					if (!n->connections.has(k)) {
-						shader[i].error=GRAPH_ERROR_MISSING_CONNECTIONS;
-						failed=true;
-						break;
-					}
-					String iname="nd"+itos(n->connections[k].id)+"sl"+itos(n->connections[k].slot);
-					inputs.push_back(iname);
-					if (node_get_type(ShaderType(i),n->connections[k].id)==NODE_INPUT) {
-						inputs_used.insert(iname);
-					}
+						iname="nd"+itos(n->id)+"sl"+itos(k)+"def";
+					} else {
+						iname="nd"+itos(n->connections[k].id)+"sl"+itos(n->connections[k].slot);
+						if (node_get_type(ShaderType(i),n->connections[k].id)==NODE_INPUT) {
+							inputs_used.insert(iname);
+						}
 
+					}
+					inputs.push_back(iname);
 				}
 
 				if (failed)
@@ -1874,27 +1988,27 @@ void ShaderGraph::_plot_curve(const Vector2& p_a,const Vector2& p_b,const Vector
 	};
 
 	for (i = 0; i < 4; i++)
-	    {
-	      for (j = 0; j < 4; j++)
+		{
+		  for (j = 0; j < 4; j++)
 		{
 		  tmp1[i][j] = (CR_basis[i][0] * geometry[0][j] +
-			      CR_basis[i][1] * geometry[1][j] +
-			      CR_basis[i][2] * geometry[2][j] +
-			      CR_basis[i][3] * geometry[3][j]);
+				  CR_basis[i][1] * geometry[1][j] +
+				  CR_basis[i][2] * geometry[2][j] +
+				  CR_basis[i][3] * geometry[3][j]);
 		}
-	    }
+		}
 	/* compose the above results to get the deltas matrix */
 
 	for (i = 0; i < 4; i++)
-	    {
-	      for (j = 0; j < 4; j++)
+		{
+		  for (j = 0; j < 4; j++)
 		{
 		  deltas[i][j] = (tmp2[i][0] * tmp1[0][j] +
-			      tmp2[i][1] * tmp1[1][j] +
-			      tmp2[i][2] * tmp1[2][j] +
-			      tmp2[i][3] * tmp1[3][j]);
+				  tmp2[i][1] * tmp1[1][j] +
+				  tmp2[i][2] * tmp1[2][j] +
+				  tmp2[i][3] * tmp1[3][j]);
 		}
-	    }
+		}
 
 
 	/* extract the x deltas */
@@ -1951,6 +2065,31 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 	const char *typestr[4]={"float","vec3","mat4","texture"};
 #define OUTNAME(id,slot) (String(typestr[get_node_output_slot_type(get_mode(),p_type,p_node->type,slot)])+" "+("nd"+itos(id)+"sl"+itos(slot)))
 #define OUTVAR(id,slot) ("nd"+itos(id)+"sl"+itos(slot))
+#define DEF_VEC(slot)\
+	if (p_inputs[slot].ends_with("def")){\
+		Vector3 v = p_node->defaults[slot];\
+		code+=String(typestr[1])+" "+p_inputs[slot]+"=vec3("+v+");\n";\
+	}
+#define DEF_SCALAR(slot)\
+	if (p_inputs[slot].ends_with("def")){\
+		double v = p_node->defaults[slot];\
+		code+=String(typestr[0])+" "+p_inputs[slot]+"="+rtos(v)+";\n";\
+	}
+#define DEF_COLOR(slot)\
+	if (p_inputs[slot].ends_with("def")){\
+		Color col = p_node->defaults[slot];\
+		code+=String(typestr[1])+" "+p_inputs[slot]+"=vec3("+rtos(col.r)+","+rtos(col.g)+","+rtos(col.b)+");\n";\
+	}
+#define DEF_MATRIX(slot) \
+	if (p_inputs[slot].ends_with("def")){\
+		Transform xf = p_node->defaults[slot]; \
+		code+=String(typestr[3])+" "+p_inputs[slot]+"=mat4(\n";\
+		code+="\tvec4(vec3("+rtos(xf.basis.get_axis(0).x)+","+rtos(xf.basis.get_axis(0).y)+","+rtos(xf.basis.get_axis(0).z)+"),0),\n";\
+		code+="\tvec4(vec3("+rtos(xf.basis.get_axis(1).x)+","+rtos(xf.basis.get_axis(1).y)+","+rtos(xf.basis.get_axis(1).z)+"),0),\n";\
+		code+="\tvec4(vec3("+rtos(xf.basis.get_axis(2).x)+","+rtos(xf.basis.get_axis(2).y)+","+rtos(xf.basis.get_axis(2).z)+"),0),\n";\
+		code+="\tvec4(vec3("+rtos(xf.origin.x)+","+rtos(xf.origin.y)+","+rtos(xf.origin.z)+"),1)\n";\
+		code+=");\n";\
+	}
 
 	switch(p_node->type) {
 
@@ -1987,9 +2126,12 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			code+=OUTNAME(p_node->id,0)+"=TIME;\n";
 		}break;
 		case NODE_SCREEN_TEX: {
+			DEF_VEC(0);
 			code+=OUTNAME(p_node->id,0)+"=texscreen("+p_inputs[0]+".xy);\n";
 		}break;
 		case NODE_SCALAR_OP: {
+			DEF_SCALAR(0);
+			DEF_SCALAR(1);
 			int op = p_node->param1;
 			String optxt;
 			switch(op) {
@@ -2009,6 +2151,8 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 		}break;
 		case NODE_VEC_OP: {
+			DEF_VEC(0);
+			DEF_VEC(1);
 			int op = p_node->param1;
 			String optxt;
 			switch(op) {
@@ -2026,6 +2170,8 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 		}break;
 		case NODE_VEC_SCALAR_OP: {
+			DEF_VEC(0);
+			DEF_SCALAR(1);
 			int op = p_node->param1;
 			String optxt;
 			switch(op) {
@@ -2037,6 +2183,8 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 		}break;
 		case NODE_RGB_OP: {
+			DEF_COLOR(0);
+			DEF_COLOR(1);
 
 			int op = p_node->param1;
 			static const char*axisn[3]={"x","y","z"};
@@ -2048,7 +2196,6 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 				case RGB_OP_DIFFERENCE: {
 
 					code += OUTNAME(p_node->id,0)+"=abs("+p_inputs[0]+"-"+p_inputs[1]+");\n";
-
 				} break;
 				case RGB_OP_DARKEN: {
 
@@ -2119,11 +2266,15 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			}
 		}break;
 		case NODE_XFORM_MULT: {
+			DEF_MATRIX(0);
+			DEF_MATRIX(1);
 
 			code += OUTNAME(p_node->id,0)+"="+p_inputs[0]+"*"+p_inputs[1]+";\n";
 
 		}break;
 		case NODE_XFORM_VEC_MULT: {
+			DEF_MATRIX(0);
+			DEF_VEC(1);
 
 			bool no_translation = p_node->param1;
 			if (no_translation) {
@@ -2134,6 +2285,8 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 		}break;
 		case NODE_XFORM_VEC_INV_MULT: {
+			DEF_VEC(0);
+			DEF_MATRIX(1);
 			bool no_translation = p_node->param1;
 			if (no_translation) {
 				code += OUTNAME(p_node->id,0)+"=("+p_inputs[1]+"*vec4("+p_inputs[0]+",0)).xyz;\n";
@@ -2142,6 +2295,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			}
 		}break;
 		case NODE_SCALAR_FUNC: {
+			DEF_SCALAR(0);
 			static const char*scalar_func_id[SCALAR_MAX_FUNC]={
 				"sin($)",
 				"cos($)",
@@ -2171,6 +2325,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 		} break;
 		case NODE_VEC_FUNC: {
+			DEF_VEC(0);
 			static const char*vec_func_id[VEC_MAX_FUNC]={
 				"normalize($)",
 				"max(min($,vec3(1,1,1)),vec3(0,0,0))",
@@ -2208,44 +2363,63 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			}
 		}break;
 		case NODE_VEC_LEN: {
+			DEF_VEC(0);
 
 			code += OUTNAME(p_node->id,0)+"=length("+p_inputs[0]+");\n";
 
 		}break;
 		case NODE_DOT_PROD: {
+			DEF_VEC(0);
+			DEF_VEC(1);
 			code += OUTNAME(p_node->id,0)+"=dot("+p_inputs[1]+","+p_inputs[0]+");\n";
 
 		}break;
 		case NODE_VEC_TO_SCALAR: {
+			DEF_VEC(0);
 			code += OUTNAME(p_node->id,0)+"="+p_inputs[0]+".x;\n";
 			code += OUTNAME(p_node->id,1)+"="+p_inputs[0]+".y;\n";
 			code += OUTNAME(p_node->id,2)+"="+p_inputs[0]+".z;\n";
 
 		}break;
 		case NODE_SCALAR_TO_VEC: {
+			DEF_SCALAR(0);
+			DEF_SCALAR(1);
+			DEF_SCALAR(2);
 			code += OUTNAME(p_node->id,0)+"=vec3("+p_inputs[0]+","+p_inputs[1]+","+p_inputs[2]+""+");\n";
 
 		}break;
 		case NODE_VEC_TO_XFORM: {
+			DEF_VEC(0);
+			DEF_VEC(1);
+			DEF_VEC(2);
+			DEF_VEC(3);
 			code += OUTNAME(p_node->id,0)+"=xform("+p_inputs[0]+","+p_inputs[1]+","+p_inputs[2]+","+","+p_inputs[3]+");\n";
 
 		}break;
 		case NODE_XFORM_TO_VEC: {
+			DEF_MATRIX(0);
 			code += OUTNAME(p_node->id,0)+"="+p_inputs[0]+".x;\n";
 			code += OUTNAME(p_node->id,1)+"="+p_inputs[0]+".y;\n";
 			code += OUTNAME(p_node->id,2)+"="+p_inputs[0]+".z;\n";
 			code += OUTNAME(p_node->id,3)+"="+p_inputs[0]+".o;\n";
 		}break;
 		case NODE_SCALAR_INTERP: {
+			DEF_SCALAR(0);
+			DEF_SCALAR(1);
+			DEF_SCALAR(2);
 
 			code += OUTNAME(p_node->id,0)+"=mix("+p_inputs[0]+","+p_inputs[1]+","+p_inputs[2]+");\n";
 
 		}break;
 		case NODE_VEC_INTERP: {
+			DEF_VEC(0);
+			DEF_VEC(1);
+			DEF_SCALAR(2);
 			code += OUTNAME(p_node->id,0)+"=mix("+p_inputs[0]+","+p_inputs[1]+","+p_inputs[2]+");\n";
 
 		}break;
 		case NODE_COLOR_RAMP: {
+			DEF_SCALAR(0);
 
 			static const int color_ramp_len=512;
 			DVector<uint8_t> cramp;
@@ -2302,6 +2476,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 		}break;
 		case NODE_CURVE_MAP: {
+			DEF_SCALAR(0);
 			static const int curve_map_len=256;
 			bool mapped[256];
 			zeromem(mapped,sizeof(mapped));
@@ -2406,6 +2581,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 		}break;
 		case NODE_TEXTURE_INPUT: {
+			DEF_VEC(0);
 			String name = p_node->param1;
 			String rname="rt_read_tex"+itos(p_node->id);
 			code +="uniform texture "+name+";";
@@ -2415,7 +2591,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 		}break;
 		case NODE_CUBEMAP_INPUT: {
-
+			DEF_VEC(0);
 			String name = p_node->param1;
 			code +="uniform cubemap "+name+";";
 			String rname="rt_read_tex"+itos(p_node->id);
@@ -2424,6 +2600,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			code += OUTNAME(p_node->id,1)+"="+rname+".a;\n";
 		}break;
 		case NODE_DEFAULT_TEXTURE: {
+			DEF_VEC(0);
 
 			if (get_mode()==MODE_CANVAS_ITEM && p_type==SHADER_TYPE_FRAGMENT) {
 
@@ -2450,4 +2627,8 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 		}
 	}
+#undef DEF_SCALAR
+#undef DEF_COLOR
+#undef DEF_MATRIX
+#undef DEF_VEC
 }

@@ -2369,7 +2369,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 			te->update();
 			track_editor->set_tooltip("");
 
-			if (!track_editor->has_focus() && (!get_focus_owner() || !get_focus_owner()->cast_to<LineEdit>()))
+            if (!track_editor->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
 				track_editor->call_deferred("grab_focus");
 
 

@@ -73,20 +73,18 @@
 #undef CursorShape
 
 int OS_X11::get_video_driver_count() const {
-
 	return 1;
 }
-const char * OS_X11::get_video_driver_name(int p_driver) const {
 
+const char * OS_X11::get_video_driver_name(int p_driver) const {
 	return "GLES2";
 }
-OS::VideoMode OS_X11::get_default_video_mode() const {
 
+OS::VideoMode OS_X11::get_default_video_mode() const {
 	return OS::VideoMode(800,600,false);
 }
 
 int OS_X11::get_audio_driver_count() const {
-
     return AudioDriverManagerSW::get_driver_count();
 }
 
@@ -153,6 +151,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 			
 			XFree (xim_styles);
 		}
+		XFree( imvalret );
 	}
 
 	/*
@@ -256,7 +255,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	}
 #endif
 
-
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
 	audio_driver_index=p_audio_driver;
@@ -351,6 +349,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	for(int i=0;i<CURSOR_MAX;i++) {
 
 		cursors[i]=None;
+		img[i]=NULL;
 	}
 
 	current_cursor=CURSOR_ARROW;
@@ -379,16 +378,15 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 				"question_arrow"
 			};
 
-			XcursorImage *img = XcursorLibraryLoadImage(cursor_file[i],cursor_theme,cursor_size);
-			if (img) {
-				cursors[i]=XcursorImageLoadCursor(x11_display,img);
+			img[i] = XcursorLibraryLoadImage(cursor_file[i],cursor_theme,cursor_size);
+			if (img[i]) {
+				cursors[i]=XcursorImageLoadCursor(x11_display,img[i]);
 				//print_line("found cursor: "+String(cursor_file[i])+" id "+itos(cursors[i]));
 			} else {
 				if (OS::is_stdout_verbose())
 					print_line("failed cursor: "+String(cursor_file[i]));
 			}
 		}
-
 	}
 
 
@@ -399,9 +397,9 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		 XColor col;
 		 Cursor cursor;
 
-		 cursormask = XCreatePixmap(x11_display, RootWindow(x11_display,DefaultScreen(x11_display)), 1, 1, 1);
-		 xgc.function = GXclear;
-		 gc = XCreateGC(x11_display, cursormask, GCFunction, &xgc);
+		cursormask = XCreatePixmap(x11_display, RootWindow(x11_display,DefaultScreen(x11_display)), 1, 1, 1);
+		xgc.function = GXclear;
+		gc = XCreateGC(x11_display, cursormask, GCFunction, &xgc);
 		XFillRectangle(x11_display, cursormask, gc, 0, 0, 1, 1);
 		col.pixel = 0;
 		col.red = 0;
@@ -437,14 +435,8 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	probe_joystick();
 
 	_ensure_data_dir();
-
-	net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
-
-
-
-	//printf("got map notify\n");
-		
 }
+
 void OS_X11::finalize() {
 
 	if(main_loop)
@@ -476,14 +468,26 @@ void OS_X11::finalize() {
 
 	memdelete(input);
 
+	XUnmapWindow( x11_display, x11_window );
+	XDestroyWindow( x11_display, x11_window );
+
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 	memdelete(context_gl);
 #endif
-	
+	for(int i=0;i<CURSOR_MAX;i++) {
+		if( cursors[i] != None )
+			XFreeCursor( x11_display, cursors[i] );		
+		if( img[i] != NULL )
+			XcursorImageDestroy( img[i] );
+	};	
+
+	XDestroyIC( xic );
+	XCloseIM( xim );
 
 	XCloseDisplay(x11_display);
 	if (xmbstring)
 		memfree(xmbstring);
+
 		
 	args.clear();
 }
@@ -559,37 +563,29 @@ void OS_X11::warp_mouse_pos(const Point2& p_to) {
 }
 
 OS::MouseMode OS_X11::get_mouse_mode() const {
-
 	return mouse_mode;
 }
-
-
 
 int OS_X11::get_mouse_button_state() const {
 	return last_button_state;
 }
 
 Point2 OS_X11::get_mouse_pos() const {
-
 	return last_mouse_pos;
 }
 
 void OS_X11::set_window_title(const String& p_title) {
-
 	XStoreName(x11_display,x11_window,p_title.utf8().get_data());
 }
 
 void OS_X11::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
-
-
 }
-OS::VideoMode OS_X11::get_video_mode(int p_screen) const {
 
+OS::VideoMode OS_X11::get_video_mode(int p_screen) const {
 	return current_videomode;
 }
+
 void OS_X11::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
-
-
 }
 
 //#ifdef NEW_WM_API
@@ -672,7 +668,6 @@ void OS_X11::set_current_screen(int p_screen) {
 }
 
 Point2 OS_X11::get_screen_position(int p_screen) const {
-
 	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
@@ -707,7 +702,6 @@ Size2 OS_X11::get_screen_size(int p_screen) const {
 	XFree(xsi);
 	return size;
 }
-	
 
 Point2 OS_X11::get_window_position() const {
 	int x,y;
@@ -784,8 +778,6 @@ void OS_X11::set_window_size(const Size2 p_size) {
 void OS_X11::set_window_fullscreen(bool p_enabled) {
 	set_wm_fullscreen(p_enabled);
 	current_videomode.fullscreen = p_enabled;
-
-	visual_server->init();
 }
 
 bool OS_X11::is_window_fullscreen() const {
@@ -891,7 +883,12 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 	xev.xclient.data.l[2] = wm_max_vert;
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
-
+/* sorry this does not fix it, fails on multi monitor
+	XWindowAttributes xwa;
+	XGetWindowAttributes(x11_display,DefaultRootWindow(x11_display),&xwa);
+	current_videomode.width = xwa.width;
+	current_videomode.height = xwa.height;
+*/
 	maximized = p_enabled;
 }
 
@@ -988,7 +985,6 @@ unsigned int OS_X11::get_mouse_button_state(unsigned int p_x11_state) {
 }
 	
 void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
-
 			
 	// X11 functions don't know what const is
 	XKeyEvent *xkeyevent = p_event;
@@ -1154,8 +1150,6 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 	//printf("key: %x\n",event.key.scancode);
 	input->parse_input_event( event);
-
-	
 }
 
 void OS_X11::process_xevents() {
@@ -1201,7 +1195,6 @@ void OS_X11::process_xevents() {
 #ifdef NEW_WM_API
 			if(current_videomode.fullscreen) {
 				set_wm_fullscreen(true);
-				visual_server->init();
 			}
 #endif
 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
@@ -1218,7 +1211,6 @@ void OS_X11::process_xevents() {
 			if(current_videomode.fullscreen) {
 				set_wm_fullscreen(false);
 				set_window_minimized(true);
-				visual_server->init();
 			}
 #endif
 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
@@ -1859,7 +1851,6 @@ void OS_X11::set_cursor_shape(CursorShape p_shape) {
 			XDefineCursor(x11_display,x11_window,cursors[CURSOR_ARROW]);
 	}
 
-
 	current_cursor=p_shape;
 }
 
@@ -1892,6 +1883,8 @@ void OS_X11::alert(const String& p_alert,const String& p_title) {
 }
 
 void OS_X11::set_icon(const Image& p_icon) {
+	Atom net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
+
 	if (!p_icon.empty()) {
 		Image img=p_icon;
 		img.convert(Image::FORMAT_RGBA);
@@ -1924,7 +1917,6 @@ void OS_X11::set_icon(const Image& p_icon) {
 	    XDeleteProperty(x11_display, x11_window, net_wm_icon);
 	}
 	XFlush(x11_display);
-
 }
 
 

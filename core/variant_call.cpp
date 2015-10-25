@@ -359,6 +359,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(Vector3, dot);
 	VCALL_LOCALMEM1R(Vector3, cross);
 	VCALL_LOCALMEM0R(Vector3, abs);
+	VCALL_LOCALMEM0R(Vector3, floor);
+	VCALL_LOCALMEM0R(Vector3, ceil);
 	VCALL_LOCALMEM1R(Vector3, distance_to);
 	VCALL_LOCALMEM1R(Vector3, distance_squared_to);
 	VCALL_LOCALMEM1R(Vector3, slide);
@@ -753,7 +755,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	}
 
 	static void Matrix32_init2(Variant& r_ret,const Variant** p_args) {
-		
+
 		Matrix32 m(*p_args[0], *p_args[1]);
 		r_ret=m;
 	}
@@ -1133,7 +1135,7 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 		if (fd.returns)
 			ret.name="ret";
 		mi.return_val=ret;
-#endif		
+#endif
 
 		p_list->push_back(mi);
 	}
@@ -1336,6 +1338,8 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(VECTOR3,REAL,Vector3,dot,VECTOR3,"b",varray());
 	ADDFUNC1(VECTOR3,VECTOR3,Vector3,cross,VECTOR3,"b",varray());
 	ADDFUNC0(VECTOR3,VECTOR3,Vector3,abs,varray());
+	ADDFUNC0(VECTOR3,VECTOR3,Vector3,floor,varray());
+	ADDFUNC0(VECTOR3,VECTOR3,Vector3,ceil,varray());
 	ADDFUNC1(VECTOR3,REAL,Vector3,distance_to,VECTOR3,"b",varray());
 	ADDFUNC1(VECTOR3,REAL,Vector3,distance_squared_to,VECTOR3,"b",varray());
 	ADDFUNC1(VECTOR3,VECTOR3,Vector3,slide,VECTOR3,"by",varray());
@@ -1535,10 +1539,10 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(TRANSFORM,NIL,Transform,xform,NIL,"v",varray());
 	ADDFUNC1(TRANSFORM,NIL,Transform,xform_inv,NIL,"v",varray());
 
-#ifdef DEBUG_ENABLED	
+#ifdef DEBUG_ENABLED
 	_VariantCall::type_funcs[Variant::TRANSFORM].functions["xform"].returns=true;
 	_VariantCall::type_funcs[Variant::TRANSFORM].functions["xform_inv"].returns=true;
-#endif	
+#endif
 
 	ADDFUNC0(INPUT_EVENT,BOOL,InputEvent,is_pressed,varray());
 	ADDFUNC1(INPUT_EVENT,BOOL,InputEvent,is_action,STRING,"action",varray());
@@ -1635,9 +1639,3 @@ void unregister_variant_methods() {
 
 
 }
-
-
-
-
-
-

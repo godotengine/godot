@@ -54,7 +54,7 @@ class AudioStreamPlaybackOpus : public AudioStreamPlayback {
 	static int _op_seek_func(void *_stream, opus_int64 _offset, int _whence);
 	static int _op_close_func(void *_stream);
 	static opus_int64 _op_tell_func(void *_stream);
-	static const float osrate=48000.0f;
+	static const float osrate;
 
 	String file;
 	int64_t frames_mixed;

@@ -103,6 +103,7 @@ ReparentDialog::ReparentDialog() {
 	add_child(node_only);
 	node_only->hide();
 
+	tree->set_show_enabled_subscene(true);
 	//vbc->add_margin_child("Options:",node_only);;
 	
 

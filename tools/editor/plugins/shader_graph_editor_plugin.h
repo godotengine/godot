@@ -129,6 +129,7 @@ class ShaderGraphView : public Node {
 	GraphEdit *graph_edit;
 	Ref<ShaderGraph> graph;
 	int edited_id;
+	int edited_def;
 
 	ShaderGraph::ShaderType type;
 
@@ -136,13 +137,23 @@ class ShaderGraphView : public Node {
 	void _create_node(int p_id);
 
 
+	ToolButton *make_label(String text, Variant::Type v_type = Variant::NIL);
+	ToolButton *make_editor(String text, GraphNode* gn, int p_id, int param, Variant::Type type, String p_hint="");
 
 	void _connection_request(const String& p_from, int p_from_slot,const String& p_to,int p_to_slot);
 	void _disconnection_request(const String& p_from, int p_from_slot,const String& p_to,int p_to_slot);
 
 	void _node_removed(int p_id);
+	void _begin_node_move();
 	void _node_moved(const Vector2& p_from, const Vector2& p_to,int p_id);
+	void _end_node_move();
 	void _move_node(int p_id,const Vector2& p_to);
+	void _duplicate_nodes_request();
+    void _duplicate_nodes(const Array &p_nodes);
+	void _delete_nodes_request();
+
+
+	void _default_changed(int p_id, Node* p_button, int p_param, int v_type, String p_hint);
 
 	void _scalar_const_changed(double p_value,int p_id);
 	void _vec_const_changed(double p_value, int p_id, Array p_arr);
@@ -175,7 +186,7 @@ protected:
 	static void _bind_methods();
 public:
 
-	void add_node(int p_type);
+	void add_node(int p_type, const Vector2 &location);
 	GraphEdit *get_graph_edit() { return graph_edit; }
 	void set_graph(Ref<ShaderGraph> p_graph);
 
@@ -186,13 +197,15 @@ class ShaderGraphEditor : public VBoxContainer {
 
 	OBJ_TYPE(ShaderGraphEditor,VBoxContainer);
 
-	MenuButton *menu;
+	PopupMenu *popup;
 	TabContainer *tabs;
 	ShaderGraphView *graph_edits[ShaderGraph::SHADER_TYPE_MAX];
 	static const char* node_names[ShaderGraph::NODE_TYPE_MAX];
+	Vector2 next_location;
 
 	bool _2d;
 	void _add_node(int p_type);
+	void _popup_requested(const Vector2 &p_position);
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

@@ -135,6 +135,18 @@ public:
 	virtual bool texture_can_stream(RID p_texture) const=0;
 	virtual void texture_set_reload_hook(RID p_texture,ObjectID p_owner,const StringName& p_function) const=0;
 
+	virtual void texture_set_path(RID p_texture,const String& p_path)=0;
+	virtual String texture_get_path(RID p_texture) const=0;
+
+	struct TextureInfo {
+		RID texture;
+		Size2 size;
+		Image::Format format;
+		int bytes;
+		String path;
+	};
+
+	virtual void texture_debug_usage(List<TextureInfo> *r_info)=0;
 
 
 	/* SHADER API */

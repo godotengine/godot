@@ -74,6 +74,7 @@ void EditorPlugin::add_custom_control(CustomControlContainer p_location,Control 
 		case CONTAINER_CANVAS_EDITOR_SIDE: {
 
 			CanvasItemEditor::get_singleton()->get_palette_split()->add_child(p_control);
+			CanvasItemEditor::get_singleton()->get_palette_split()->move_child(p_control,0);
 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_BOTTOM: {

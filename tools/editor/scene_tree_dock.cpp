@@ -36,8 +36,8 @@
 #include "script_editor_debugger.h"
 #include "tools/editor/plugins/script_editor_plugin.h"
 #include "multi_node_edit.h"
-void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 
+void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 
 	uint32_t sc = p_event.key.get_scancode_with_modifiers();
 	if (!p_event.key.pressed || p_event.key.echo)
@@ -71,7 +71,7 @@ Node* SceneTreeDock::instance(const String& p_file) {
 	Node*instanced_scene=NULL;
 	Ref<PackedScene> sdata = ResourceLoader::load(p_file);
 	if (sdata.is_valid())
-		instanced_scene=sdata->instance();
+		instanced_scene=sdata->instance(true);
 
 
 	if (!instanced_scene) {
@@ -96,7 +96,7 @@ Node* SceneTreeDock::instance(const String& p_file) {
 		}
 	}
 
-	instanced_scene->generate_instance_state();
+	//instanced_scene->generate_instance_state();
 	instanced_scene->set_filename( Globals::get_singleton()->localize_path(p_file) );
 
 	editor_data->get_undo_redo().create_action("Instance Scene");
@@ -158,8 +158,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		case TOOL_NEW: {
 
 
-			if (!_validate_no_foreign())
-				break;
+			//if (!_validate_no_foreign())
+			//	break;
 			create_dialog->popup_centered_ratio();
 		} break;
 		case TOOL_INSTANCE: {
@@ -176,8 +176,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			if (!_validate_no_foreign())
-				break;
+			//if (!_validate_no_foreign())
+			//	break;
 
 			file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 			List<String> extensions;
@@ -202,8 +202,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!current)
 				break;
 
-			if (!_validate_no_foreign())
-				break;
+			//if (!_validate_no_foreign())
+			//	break;
 			connect_dialog->popup_centered_ratio();
 			connect_dialog->set_node(current);
 
@@ -213,8 +213,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			Node *current = scene_tree->get_selected();
 			if (!current)
 				break;
-			if (!_validate_no_foreign())
-				break;
+			//if (!_validate_no_foreign())
+			//	break;
 			groups_editor->set_current(current);
 			groups_editor->popup_centered_ratio();
 		} break;
@@ -224,8 +224,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!selected)
 				break;
 
-			if (!_validate_no_foreign())
-				break;
+			//if (!_validate_no_foreign())
+			//	break;
 
 			Ref<Script> existing = selected->get_script();
 			if (existing.is_valid())
@@ -573,9 +573,9 @@ Node *SceneTreeDock::_duplicate(Node *p_node, Map<Node*,Node*> &duplimap) {
 
 		Ref<PackedScene> sd = ResourceLoader::load( p_node->get_filename() );
 		ERR_FAIL_COND_V(!sd.is_valid(),NULL);
-		node = sd->instance();
+		node = sd->instance(true);
 		ERR_FAIL_COND_V(!node,NULL);
-		node->generate_instance_state();
+		//node->generate_instance_state();
 	} else {
 		Object *obj = ObjectTypeDB::instance(p_node->get_type());
 		ERR_FAIL_COND_V(!obj,NULL);
@@ -874,6 +874,16 @@ bool SceneTreeDock::_validate_no_foreign() {
 			return false;
 
 		}
+
+        if (edited_scene->get_scene_inherited_state().is_valid() && edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E->get()))>=0) {
+
+			accept->get_ok()->set_text("Makes Sense!");
+			accept->set_text("Can't operate on nodes the current scene inherits from!");
+			accept->popup_centered_minsize();
+			return false;
+
+		}
+
 	}
 
 	return true;
@@ -1079,13 +1089,15 @@ void SceneTreeDock::_update_tool_buttons() {
 
 	Node *sel = scene_tree->get_selected();
 	bool disable = !sel || (sel!=edited_scene && sel->get_owner()!=edited_scene);
+	disable = disable || (edited_scene->get_scene_inherited_state().is_valid() && edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(sel))>=0);
 	bool disable_root = disable || sel->get_parent()==scene_root;
+	bool disable_edit = !sel;
 
-	tool_buttons[TOOL_INSTANCE]->set_disabled(disable);
+	tool_buttons[TOOL_INSTANCE]->set_disabled(disable_edit);
 	tool_buttons[TOOL_REPLACE]->set_disabled(disable);
-	tool_buttons[TOOL_CONNECT]->set_disabled(disable);
-	tool_buttons[TOOL_GROUP]->set_disabled(disable);
-	tool_buttons[TOOL_SCRIPT]->set_disabled(disable);
+	tool_buttons[TOOL_CONNECT]->set_disabled(disable_edit);
+	tool_buttons[TOOL_GROUP]->set_disabled(disable_edit);
+	tool_buttons[TOOL_SCRIPT]->set_disabled(disable_edit);
 	tool_buttons[TOOL_MOVE_UP]->set_disabled(disable_root);
 	tool_buttons[TOOL_MOVE_DOWN]->set_disabled(disable_root);
 	tool_buttons[TOOL_DUPLICATE]->set_disabled(disable_root);

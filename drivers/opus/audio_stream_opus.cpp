@@ -30,6 +30,8 @@
 /*************************************************************************/
 #include "audio_stream_opus.h"
 
+const float AudioStreamPlaybackOpus::osrate=48000.0f;
+
 int AudioStreamPlaybackOpus::_op_read_func(void *_stream, unsigned char *_ptr, int _nbytes) {
 	FileAccess *fa=(FileAccess*)_stream;
 

@@ -677,7 +677,8 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2& p_screenpos,bool p_hili
 
 void SpatialEditorViewport::_smouseenter() {
 
-	surface->grab_focus();
+    if (!surface->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
+            surface->grab_focus();
 }
 
 void SpatialEditorViewport::_sinput(const InputEvent &p_event) {

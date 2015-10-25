@@ -710,7 +710,7 @@ void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,D
 	*(out++) =0;
 
 	for (i=0;i<datalen;i++) {
-		int step,diff,vpdiff,signed_nibble,p,mask;
+		int step,diff,vpdiff,mask;
 		uint8_t nibble;
 		int16_t xm_sample;
 
