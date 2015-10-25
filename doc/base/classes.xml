@@ -3792,6 +3792,7 @@
 			<argument index="0" name="value" type="var">
 			</argument>
 			<description>
+			Returns index of value.  If value is not found then returns -1
 			</description>
 		</method>
 		<method name="hash">
