@@ -49,9 +49,13 @@ void SampleLibraryEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 		play->set_icon( get_icon("Play","EditorIcons") );
+		play->set_tooltip("Play Audio");
 		stop->set_icon( get_icon("Stop","EditorIcons") );
+		stop->set_tooltip("Stop Audio");
 		load->set_icon( get_icon("Folder","EditorIcons") );
+		load->set_tooltip("Open Audio File(s)");
 		_delete->set_icon( get_icon("Del","EditorIcons") );
+		_delete->set_tooltip("Remove Audio");
 	}
 
 	if (p_what==NOTIFICATION_READY) {
