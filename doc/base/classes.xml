@@ -29178,8 +29178,10 @@
 </class>
 <class name="ScrollContainer" inherits="Container" category="Core">
 	<brief_description>
+	A helper node for displaying scollable elements (e.g. lists).
 	</brief_description>
 	<description>
+	A ScrollContainer node with a [Control] child and scrollbar child ([HScrollbar], [VScrollBar], or both) will only draw the Control within the ScrollContainer area.  Scrollbars will automatically be drawn at the right (for vertical) or bottom (for horizontal) and will enable dragging to move the viewable Control (and its children) within the ScrollContainer.  Scrollbars will also automatically resize the grabber based on the minimum_size of the Control relative to the ScrollContainer.  Works great with a [Panel] control.
 	</description>
 	<methods>
 		<method name="set_enable_h_scroll">
