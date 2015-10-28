@@ -85,7 +85,7 @@ public:
 	virtual void stop();
 	virtual bool is_playing() const;
 
-	virtual void set_loop_restart_time(float p_time) { loop_restart_time=0; }
+	virtual void set_loop_restart_time(float p_time) { loop_restart_time=p_time; }
 
 	virtual void set_paused(bool p_paused);
 	virtual bool is_paused(bool p_paused) const;
