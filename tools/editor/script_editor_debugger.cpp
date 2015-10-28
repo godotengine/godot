@@ -1376,7 +1376,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	vmem_refresh->connect("pressed",this,"_video_mem_request");
 
 	MarginContainer *vmmc = memnew( MarginContainer );
-	vmmc = memnew( MarginContainer );
 	vmem_tree = memnew( Tree );
 	vmem_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	vmem_tree->set_h_size_flags(SIZE_EXPAND_FILL);
