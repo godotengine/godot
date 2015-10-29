@@ -32,8 +32,8 @@
 
 extern "C" {
 #import <Foundation/Foundation.h>
-#import "app_delegate.h"
 };
+#import "app_delegate.h"
 
 ICloud* ICloud::instance = NULL;
 

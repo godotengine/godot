@@ -37,6 +37,35 @@
 
 namespace TestString {
 
+bool test_1();
+bool test_2();
+bool test_3();
+bool test_4();
+bool test_5();
+bool test_6();
+bool test_7();
+bool test_8();
+bool test_9();
+bool test_10();
+bool test_11();
+bool test_12();
+bool test_13();
+bool test_14();
+bool test_15();
+bool test_16();
+bool test_17();
+bool test_18();
+bool test_19();
+bool test_20();
+bool test_21();
+bool test_22();
+bool test_23();
+bool test_24();
+bool test_25();
+bool test_26();
+bool test_27();
+bool test_28();
+
 bool test_1() {
 	
 	OS::get_singleton()->print("\n\nTest 1: Assign from cstr\n");

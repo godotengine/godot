@@ -45,6 +45,15 @@
 @end
 */
 
+void _show_keyboard(String);
+void _hide_keyboard();
+bool _play_video(String, float, String, String);
+bool _is_video_playing();
+void _pause_video();
+void _focus_out_video();
+void _unpause_video();
+void _stop_video();
+
 int gl_view_base_fb;
 static String keyboard_text;
 static GLView* _instance = NULL;
@@ -618,7 +627,7 @@ static void clear_touches() {
 
 - (void)audioRouteChangeListenerCallback:(NSNotification*)notification
 {
-	printf("*********** route changed!%i\n");
+	//printf("*********** route changed!%i\n");
 	NSDictionary *interuptionDict = notification.userInfo;
 
 	NSInteger routeChangeReason = [[interuptionDict valueForKey:AVAudioSessionRouteChangeReasonKey] integerValue];
