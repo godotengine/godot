@@ -106,7 +106,6 @@ static ObjectID safe_get_instance_id(const Variant& p_v) {
 	if (o==NULL)
 		return 0;
 	else {
-
 		REF r = p_v;
 		if (r.is_valid()) {
 
@@ -115,7 +114,7 @@ static ObjectID safe_get_instance_id(const Variant& p_v) {
 
 
 			_ScriptDebuggerRemote_found_id=0;
-			_ScriptDebuggerRemote_find=NULL;
+			_ScriptDebuggerRemote_find=(Object*)p_v;
 			ObjectDB::debug_objects(_ScriptDebuggerRemote_debug_func);
 			return _ScriptDebuggerRemote_found_id;
 

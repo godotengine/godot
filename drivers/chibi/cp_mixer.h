@@ -48,7 +48,7 @@ it can be abstracted to hardware
 devices or other stuff..
 ********************************/
 
-class CPSample_ID; /* need this */
+struct CPSample_ID; /* need this */
 
 class CPMixer {
 public: 
