@@ -87,7 +87,9 @@ public:
 		ADDR_TYPE_STACK=5,
 		ADDR_TYPE_STACK_VARIABLE=6,
 		ADDR_TYPE_GLOBAL=7,
-		ADDR_TYPE_NIL=8
+		ADDR_TYPE_NIL=8,
+		ADDR_TYPE_FUNCTION=9,
+		ADDR_TYPE_LAMBDA_FUNCTION=10,
 	};
 
     struct StackDebug {
@@ -100,6 +102,7 @@ public:
 
 private:
 friend class GDCompiler;
+friend class GDInstance;
 
 	StringName source;
 
@@ -117,6 +120,7 @@ friend class GDCompiler;
 	int _call_size;
 	int _initial_line;
 	bool _static;
+	bool _lambda;
 	GDScript *_script;
 
 	StringName name;
@@ -124,6 +128,7 @@ friend class GDCompiler;
 	Vector<StringName> global_names;
 	Vector<int> default_arguments;
 	Vector<int> code;
+	Vector<int> lambda_variants;
 #ifdef DEBUG_ENABLED
 	CharString func_cname;
 	const char*_func_cname;
@@ -133,6 +138,7 @@ friend class GDCompiler;
 	Vector<StringName> arg_names;
 #endif
 
+	Vector<Variant> cache;
 	List<StackDebug> stack_debug;
 
 	_FORCE_INLINE_ Variant *_get_variant(int p_address,GDInstance *p_instance,GDScript *p_script,Variant &self,Variant *p_stack,String& r_error) const;
@@ -186,7 +192,7 @@ public:
 		return default_arguments[p_idx];
 	}
 
-	Variant call(GDInstance *p_instance,const Variant **p_args, int p_argcount,Variant::CallError& r_err,CallState *p_state=NULL);
+	Variant call(GDInstance *p_instance,const Variant **p_args, int p_argcount,Variant::CallError& r_err,CallState *p_state=NULL, const Variant **p_requires_args=NULL);
 
 	GDFunction();
 };
@@ -209,6 +215,49 @@ public:
 	~GDFunctionState();
 };
 
+class GDFunctionObject : public Reference {
+	OBJ_TYPE(GDFunctionObject,Reference);
+
+protected:
+	GDFunction *function;
+	GDInstance *instance;
+	bool enable;
+	friend class GDInstance;
+	friend class GDFunction;
+	friend class GDSignalObject;
+	static void _bind_methods();
+
+public:
+	bool is_valid() const;
+
+
+	_FORCE_INLINE_ virtual StringName get_name() const { return function->get_name(); }
+	virtual Variant applyv(const Array p_args);
+	virtual Variant apply(const Variant** p_args,int p_argcount,Variant::CallError &r_error);
+	GDFunctionObject() {enable=true;instance=NULL, function=NULL;}
+//	~GDFunctoionObject();
+};
+
+class GDNativeFunctionObject : public GDFunctionObject {
+	OBJ_TYPE(GDNativeFunctionObject,GDFunctionObject);
+
+	friend class GDInstance;
+	StringName method_name;
+public:
+
+	_FORCE_INLINE_ virtual StringName get_name() const { return method_name; }
+	virtual Variant apply(const Variant** p_args,int p_argcount,Variant::CallError &r_error);
+};
+
+class GDLambdaFunctionObject : public GDFunctionObject {
+	OBJ_TYPE(GDLambdaFunctionObject,GDFunctionObject);
+	friend class GDInstance;
+	Vector<Variant> variants;
+public:
+	virtual Variant apply(const Variant** p_args,int p_argcount,Variant::CallError &r_error);
+
+	~GDLambdaFunctionObject();
+};
 
 class GDNativeClass : public Reference {
 
@@ -256,6 +305,7 @@ friend class GDScriptLanguage;
 	GDScript *_owner; //for subclasses
 
 	Set<StringName> members; //members are just indices to the instanced script.
+	Vector<StringName> function_indices;
 	Map<StringName,Variant> constants;
 	Map<StringName,GDFunction> member_functions;
 	Map<StringName,MemberInfo> member_indices; //members are just indices to the instanced script.
@@ -360,14 +410,21 @@ class GDInstance : public ScriptInstance {
 friend class GDScript;
 friend class GDFunction;
 friend class GDFunctions;
+friend class GDLambdaFunctionObject;
+friend class GDNativeFunctionObject;
+friend class GDSignalObject;
 
 	Object *owner;
 	Ref<GDScript> script;
 	Vector<Variant> members;
+	Map<StringName, Ref<GDFunctionObject> > functions;
+	Vector< GDLambdaFunctionObject* > lambda_functions;
 	bool base_ref;
 
 	void _ml_call_reversed(GDScript *sptr,const StringName& p_method,const Variant** p_args,int p_argcount);
-
+	Ref<GDFunctionObject> get_function(StringName p_name);
+	Ref<GDLambdaFunctionObject> get_lambda_function(StringName p_name, Variant *p_stack, int p_stack_size);
+	void remove_lambda_function( GDLambdaFunctionObject *func) {lambda_functions.erase(func);}
 public:
 
 	virtual bool set(const StringName& p_name, const Variant& p_value);

@@ -150,6 +150,8 @@ class GDCompiler {
 	StringName source;
 	String error;
 
+	Map<StringName,Vector<int> > function_variants;
+
 public:
 
 	Error compile(const GDParser *p_parser,GDScript *p_script);

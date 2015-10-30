@@ -74,6 +74,37 @@ Variant *GDFunction::_get_variant(int p_address,GDInstance *p_instance,GDScript 
 			}
 			return &p_instance->members[address];
 		} break;
+		case ADDR_TYPE_FUNCTION: {
+			if (!p_instance) {
+				r_error="Cannot access member without instance.";
+				return NULL;
+			}
+			ERR_FAIL_INDEX_V(address,p_script->function_indices.size(),NULL);
+
+			GDFunction *self_func = const_cast<GDFunction*>(this);
+			Ref<GDFunctionObject> func = p_instance->get_function(p_script->function_indices[address]);
+			if (func == NULL) {
+				r_error = "Founction not found.";
+				return NULL;
+			}
+			self_func->cache.push_back(Variant(func));
+			return &self_func->cache[cache.size()-1];
+		} break;
+		case ADDR_TYPE_LAMBDA_FUNCTION: {
+			if (!p_instance) {
+				r_error="Cannot access member without instance.";
+				return NULL;
+			}
+			ERR_FAIL_INDEX_V(address,p_script->function_indices.size(),NULL);
+			GDFunction *self_func = const_cast<GDFunction*>(this);
+			Ref<GDLambdaFunctionObject> func = p_instance->get_lambda_function(p_script->function_indices[address], p_stack, _stack_size);
+			if (func == NULL) {
+				r_error = "Lambda function not found.";
+				return NULL;
+			}
+			self_func->cache.push_back(Variant(func));
+			return &self_func->cache[cache.size()-1];
+		} break;
 		case ADDR_TYPE_CLASS_CONSTANT: {
 
 			//todo change to index!
@@ -183,7 +214,7 @@ static String _get_var_type(const Variant* p_type) {
 
 }
 
-Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError& r_err, CallState *p_state) {
+Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError& r_err, CallState *p_state, const Variant **p_requires_args) {
 
 
 	if (!_code_ptr) {
@@ -253,9 +284,18 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 			if (_stack_size) {
 
 				stack=(Variant*)aptr;
-				for(int i=0;i<p_argcount;i++)
+				int i = 0;
+				for(;i<p_argcount;i++)
 					memnew_placement(&stack[i],Variant(*p_args[i]));
-				for(int i=p_argcount;i<_stack_size;i++)
+				if (p_requires_args) {
+					for(int j = 0, t = lambda_variants.size();j<t;i++,j++) {
+						memnew_placement(&stack[i+j], Variant(*p_requires_args[j]));
+					}
+				}
+				else
+					for(int j = 0, t = lambda_variants.size();j<t;i++,j++)
+						memnew_placement(&stack[i+j], Variant);
+				for(;i<(_call_size+_stack_size);i++)
 					memnew_placement(&stack[i],Variant);
 			} else {
 				stack=NULL;
@@ -520,34 +560,48 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				CHECK_SPACE(3);
 
-				GET_VARIANT_PTR(src,1);
-				GET_VARIANT_PTR(dst,3);
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(dst, 3);
 
-				int indexname = _code_ptr[ip+2];
+				int indexname = _code_ptr[ip + 2];
 
-				ERR_BREAK(indexname<0 || indexname>=_global_names_count);
+				ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
 				const StringName *index = &_global_names_ptr[indexname];
 
 				bool valid;
+				while (1) {
 #ifdef DEBUG_ENABLED
 //allow better error message in cases where src and dst are the same stack position
-				Variant ret = src->get_named(*index,&valid);
+					Variant ret = src->get_named(*index,&valid);
 
 #else
-				*dst = src->get_named(*index,&valid);
+					*dst = src->get_named(*index, &valid);
 #endif
 
-				if (!valid) {
-					if (src->has_method(*index)) {
-						err_text="Invalid get index '"+index->operator String()+"' (on base: '"+_get_var_type(src)+"'). Did you mean '."+index->operator String()+"()' ?";
-					} else {
-						err_text="Invalid get index '"+index->operator String()+"' (on base: '"+_get_var_type(src)+"').";
+					if (!valid) {
+						if (src->has_method(*index)) {
+							if (src->get_type() == Variant::Type::OBJECT &&
+								!(src->operator Object *())->get_script_instance()) {
+								Object *object = src->operator Object *();
+								GDInstance *instance = memnew(GDInstance);
+								object->set_script_instance(instance);
+								instance->owner = object;
+								continue;
+							}
+							err_text = "Invalid get index '" + index->operator String() + "' (on base: '" +
+									   _get_var_type(src) + "'). Did you mean '." + index->operator String() + "()' ?";
+						} else {
+							err_text = "Invalid get index '" + index->operator String() + "' (on base: '" +
+									   _get_var_type(src) + "').";
+						}
+						break;
 					}
+#ifdef DEBUG_ENABLED
+					*dst=ret;
+#endif
 					break;
 				}
-#ifdef DEBUG_ENABLED
-				*dst=ret;
-#endif
+				if (!valid) break;
 				ip+=4;
 			} continue;
 			case OPCODE_ASSIGN: {
@@ -673,13 +727,52 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 
 				Variant::CallError err;
-				if (call_ret) {
+				while(true) {
+					String methodstr = *methodname;
+					if ((methodstr == "connect" ||
+							methodstr == "disconnect" ||
+							methodstr == "is_connected") &&
+							argc > 1) {
+						GDFunctionObject *func_object = ((Object *) (*argptrs[1]))->cast_to<GDFunctionObject>();
+						if (func_object && func_object->is_valid()) {
+							Variant **args = (Variant **)memalloc(sizeof(Variant*)*(argc+1));
+							Variant target(func_object->instance->owner);
+							Variant fn(func_object->get_name());
 
-					GET_VARIANT_PTR(ret,argc);
-					*ret = base->call(*methodname,(const Variant**)argptrs,argc,err);
-				} else {
+							for(int i=0;i<argc;i++) {
+								if (i < 1) {
+									args[i] = argptrs[i];
+								}else if (i == 1) {
+									args[i] = &target;
+									args[i+1] = &fn;
+								}else {
+									args[i+1] = argptrs[i];
+								}
+							}
 
-					base->call(*methodname,(const Variant**)argptrs,argc,err);
+
+							if (call_ret) {
+
+								GET_VARIANT_PTR(ret,argc);
+								*ret = base->call(*methodname,(const Variant**)args,argc+1,err);
+							} else {
+
+								base->call(*methodname,(const Variant**)args,argc+1,err);
+							}
+							memfree(args);
+							break;
+						}
+					}
+
+					if (call_ret) {
+
+						GET_VARIANT_PTR(ret,argc);
+						*ret = base->call(*methodname,(const Variant**)argptrs,argc,err);
+					} else {
+
+						base->call(*methodname,(const Variant**)argptrs,argc,err);
+					}
+					break;
 				}
 
 				if (err.error!=Variant::CallError::CALL_OK) {
@@ -1157,6 +1250,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 		for(int i=0;i<_stack_size;i++)
 			stack[i].~Variant();
 	}
+	cache.clear();
 
 	return retvalue;
 
@@ -1390,6 +1484,72 @@ GDFunctionState::~GDFunctionState() {
 			v->~Variant();
 		}
 	}
+}
+
+///////////////////////////
+
+bool GDFunctionObject::is_valid() const {
+	return enable;
+}
+
+Variant GDFunctionObject::apply(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+
+	if (!enable) {
+		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		return Variant();
+	}
+
+	return function->call(instance, p_args, p_argcount, r_error, NULL);
+}
+
+Variant GDFunctionObject::applyv(const Array p_args) {
+	Variant::CallError error;
+	const Variant **v_args = (const Variant**)memalloc(p_args.size() * sizeof(Variant*));
+
+	for (int i = 0; i < p_args.size() ; ++i) {
+		v_args[i] = &p_args[i];
+	}
+	Variant ret = apply(v_args, p_args.size(), error);
+	memdelete(v_args);
+	ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, Variant());
+	return ret;
+}
+
+void GDFunctionObject::_bind_methods() {
+	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"apply",&GDFunctionObject::apply, MethodInfo("apply"));
+	ObjectTypeDB::bind_method(_MD("applyv:var", "args"), &GDFunctionObject::applyv, DEFVAL(Array()));
+	ObjectTypeDB::bind_method(_MD("is_valid"), &GDFunctionObject::is_valid);
+	ObjectTypeDB::bind_method(_MD("get_name"), &GDFunctionObject::get_name);
+}
+
+Variant GDNativeFunctionObject::apply(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	if (!enable) {
+		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		return Variant();
+	}
+
+	return instance->owner->call(method_name, p_args, p_argcount, r_error);
+}
+
+Variant GDLambdaFunctionObject::apply(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	if (!enable) {
+		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		return Variant();
+	}
+
+	int t = variants.size();
+	const Variant **v_vars = (const Variant**)memalloc(t * sizeof(Variant*));
+	for (int i = 0; i < t; ++i) {
+		v_vars[i] = &variants[i];
+	}
+
+	Variant ret = function->call(instance, p_args, p_argcount, r_error, NULL, v_vars);
+	memfree(v_vars);
+	return ret;
+}
+
+GDLambdaFunctionObject::~GDLambdaFunctionObject() {
+	instance->remove_lambda_function(this);
 }
 
 ///////////////////////////
@@ -2223,8 +2383,6 @@ bool GDInstance::set(const StringName& p_name, const Variant& p_value) {
 
 bool GDInstance::get(const StringName& p_name, Variant &r_ret) const {
 
-
-
 	const GDScript *sptr=script.ptr();
 	while(sptr) {
 
@@ -2271,9 +2429,68 @@ bool GDInstance::get(const StringName& p_name, Variant &r_ret) const {
 		sptr = sptr->_base;
 	}
 
+	Ref<GDFunctionObject> func = const_cast<GDInstance*>(this)->get_function(p_name);
+	if (func != NULL) {
+		r_ret = Variant(func);
+		return true;
+	}
 	return false;
 
 }
+
+Ref<GDFunctionObject> GDInstance::get_function(StringName p_name) {
+	const GDScript *sptr=script.ptr();
+	while (sptr) {
+		const Map<StringName, Ref<GDFunctionObject> >::Element *E = functions.find(p_name);
+		if (E) {
+			return E->get();
+		} else {
+			const Map<StringName, GDFunction>::Element *E_ = script->member_functions.find(p_name);
+			if (E_) {
+				const GDFunction *gdfunc = &E_->get();
+				if (gdfunc->_lambda) return NULL;
+				Ref<GDFunctionObject> func = memnew(GDFunctionObject);
+				func->instance = const_cast<GDInstance *>(this);
+				func->function = const_cast<GDFunction *>(gdfunc);
+				functions.insert(p_name, Variant(func));
+				return functions[p_name];
+			}
+		}
+		sptr = sptr->_base;
+	}
+	if (owner->has_method(p_name)) {
+		Ref<GDNativeFunctionObject> func = memnew(GDNativeFunctionObject);
+		func->instance = const_cast<GDInstance*>(this);
+		func->method_name = p_name;
+		functions.insert(p_name, Variant(func));
+		return functions[p_name];
+	}
+	return NULL;
+}
+
+Ref<GDLambdaFunctionObject>  GDInstance::get_lambda_function(StringName p_name, Variant *p_stack, int p_stack_size) {
+	const GDScript *sptr=script.ptr();
+	while (sptr) {
+		const Map<StringName,GDFunction>::Element *E_ = sptr->member_functions.find(p_name);
+		if (E_) {
+			Ref<GDLambdaFunctionObject> func = memnew(GDLambdaFunctionObject);
+			func->instance = const_cast<GDInstance*>(this);
+			const GDFunction *gdfunc = &E_->get();
+			func->function = const_cast<GDFunction*>(gdfunc);
+
+			for (int i = 0; i < gdfunc->lambda_variants.size(); ++i) {
+				int idx = gdfunc->lambda_variants[i];
+				if (p_stack_size <= idx) return NULL;
+				func->variants.push_back(Variant(p_stack[idx]));
+			}
+			lambda_functions.push_back(func.ptr());
+			return Variant(func);
+		}
+		sptr = sptr->_base;
+	}
+	return NULL;
+}
+
 void GDInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	// exported members, not doen yet!
 
@@ -2434,6 +2651,7 @@ Variant GDInstance::call(const StringName& p_method,const Variant** p_args,int p
 		if (E) {
 			return E->get().call(this,p_args,p_argcount,r_error);
 		}
+
 		sptr = sptr->_base;
 	}
 	r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
@@ -2518,6 +2736,12 @@ GDInstance::GDInstance() {
 GDInstance::~GDInstance() {
 	if (script.is_valid() && owner) {
 		script->instances.erase(owner);
+	}
+	for (Map<StringName, Ref<GDFunctionObject> >::Element *E = functions.front(); E ; E=E->next()) {
+		E->get()->enable = false;
+	}
+	for (int i = 0; i < lambda_functions.size(); ++i) {
+		lambda_functions[i]->enable = false;
 	}
 }
 
