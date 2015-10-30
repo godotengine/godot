@@ -496,20 +496,15 @@ bool GDScript::_update_exports() {
 					}
 				}
 
-				if (path != get_path()) {
+				Ref<GDScript> bf = ResourceLoader::load(path);
 
-					Ref<GDScript> bf = ResourceLoader::load(path);
+				if (bf.is_valid()) {
 
-					if (bf.is_valid()) {
+					//print_line("parent is: "+bf->get_path());
+					base_cache = bf;
+					bf->inheriters_cache.insert(get_instance_ID());
 
-						//print_line("parent is: "+bf->get_path());
-						base_cache = bf;
-						bf->inheriters_cache.insert(get_instance_ID());
-
-						//bf->_update_exports(p_instances,true,false);
-					}
-				} else {
-					ERR_PRINT(("Path extending itself in  " + path).utf8().get_data());
+					//bf->_update_exports(p_instances,true,false);
 				}
 			}
 
@@ -1004,7 +999,6 @@ bool GDInstance::set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool GDInstance::get(const StringName &p_name, Variant &r_ret) const {
-
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
 
@@ -1053,26 +1047,61 @@ bool GDInstance::get(const StringName &p_name, Variant &r_ret) const {
 		}
 		sptr = sptr->_base;
 	}
-
+	{
+		Ref<GDFunctionObject> func = const_cast<GDInstance *>(this)->get_function(p_name);
+		if (func != NULL) {
+			r_ret = Variant(func);
+			return true;
+		}
+	}
 	return false;
 }
 
-Variant::Type GDInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
-
+Ref<GDFunctionObject> GDInstance::get_function(StringName p_name) {
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
+		const Map<StringName, Ref<GDFunctionObject> >::Element *E = functions.find(p_name);
+		if (E) {
+			return E->get();
+		} else {
+			const Map<StringName, GDFunction *>::Element *E_ = sptr->member_functions.find(p_name);
+			if (E_) {
+				const GDFunction *gdfunc = E_->get();
+				if (gdfunc->_lambda) return NULL;
+				Ref<GDFunctionObject> func = memnew(GDFunctionObject);
+				func->instance = const_cast<GDInstance *>(this);
+				func->function = const_cast<GDFunction *>(gdfunc);
+				functions.insert(p_name, Variant(func));
+				return functions[p_name];
+			}
+		}
+		sptr = sptr->_base;
+	}
+	return NULL;
+}
 
-		if (sptr->member_info.has(p_name)) {
-			if (r_is_valid)
-				*r_is_valid = true;
-			return sptr->member_info[p_name].type;
+Ref<GDLambdaFunctionObject> GDInstance::get_lambda_function(StringName p_name, Variant *p_stack, int p_stack_size) {
+	const GDScript *sptr = script.ptr();
+	while (sptr) {
+		const Map<StringName, GDFunction *>::Element *E_ = sptr->member_functions.find(p_name);
+		if (E_) {
+			Ref<GDLambdaFunctionObject> func = memnew(GDLambdaFunctionObject);
+			func->instance = const_cast<GDInstance *>(this);
+			const GDFunction *gdfunc = E_->get();
+			func->function = const_cast<GDFunction *>(gdfunc);
+
+			for (int i = 0; i < gdfunc->lambda_variants.size(); ++i) {
+				int idx = gdfunc->lambda_variants[i];
+				if (p_stack_size <= idx) return NULL;
+				func->variants.push_back(Variant(p_stack[idx]));
+			}
+			lambda_functions.push_back(func.ptr());
+			return Variant(func);
 		}
 		sptr = sptr->_base;
 	}
 
-	if (r_is_valid)
-		*r_is_valid = false;
-	return Variant::NIL;
+	return NULL;
 }
 
 void GDInstance::get_property_list(List<PropertyInfo> *p_properties) const {
@@ -1189,6 +1218,24 @@ void GDInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	}
 }
 
+Variant::Type GDInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
+
+	const GDScript *sptr = script.ptr();
+	while (sptr) {
+
+		if (sptr->member_info.has(p_name)) {
+			if (r_is_valid)
+				*r_is_valid = true;
+			return sptr->member_info[p_name].type;
+		}
+		sptr = sptr->_base;
+	}
+
+	if (r_is_valid)
+		*r_is_valid = false;
+	return Variant::NIL;
+}
+
 void GDInstance::get_method_list(List<MethodInfo> *p_list) const {
 
 	const GDScript *sptr = script.ptr();
@@ -1219,6 +1266,41 @@ bool GDInstance::has_method(const StringName &p_method) const {
 
 	return false;
 }
+
+Variant GDInstance::call_member(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	GDScript *sptr = script.ptr();
+	while (sptr) {
+		{
+			const Map<StringName, GDScript::MemberInfo>::Element *E = script->member_indices.find(p_method);
+			if (E) {
+				Variant var;
+				do {
+					if (E->get().getter) {
+						Variant::CallError err;
+						var = const_cast<GDInstance *>(this)->call(E->get().getter, NULL, 0, err);
+						if (err.error == Variant::CallError::CALL_OK) {
+							break;
+						}
+					}
+					var = members[E->get().index];
+				} while (false);
+				if (var.get_type() == Variant::OBJECT) {
+					GDFunctionObject *func_object = ((Object *)var)->cast_to<GDFunctionObject>();
+					if (func_object)
+						return func_object->apply(p_args, p_argcount, r_error);
+				}
+			}
+		}
+		Map<StringName, GDFunction *>::Element *E = sptr->member_functions.find(p_method);
+		if (E) {
+			return E->get()->call(this, p_args, p_argcount, r_error);
+		}
+
+		sptr = sptr->_base;
+	}
+	return owner->call(p_method, p_args, p_argcount, r_error);
+}
+
 Variant GDInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
 	//printf("calling %ls:%i method %ls\n", script->get_path().c_str(), -1, String(p_method).c_str());
@@ -1229,6 +1311,7 @@ Variant GDInstance::call(const StringName &p_method, const Variant **p_args, int
 		if (E) {
 			return E->get()->call(this, p_args, p_argcount, r_error);
 		}
+
 		sptr = sptr->_base;
 	}
 	r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
@@ -1381,6 +1464,12 @@ GDInstance::~GDInstance() {
 #ifndef NO_THREADS
 		GDScriptLanguage::singleton->lock->unlock();
 #endif
+	}
+	for (Map<StringName, Ref<GDFunctionObject> >::Element *E = functions.front(); E; E = E->next()) {
+		E->get()->instance = NULL;
+	}
+	for (int i = 0; i < lambda_functions.size(); ++i) {
+		lambda_functions[i]->instance = NULL;
 	}
 }
 
