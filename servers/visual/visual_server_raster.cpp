@@ -112,6 +112,21 @@ void VisualServerRaster::texture_set_reload_hook(RID p_texture,ObjectID p_owner,
 	rasterizer->texture_set_reload_hook(p_texture,p_owner,p_function);
 }
 
+void VisualServerRaster::texture_set_path(RID p_texture,const String& p_path) {
+
+	rasterizer->texture_set_path(p_texture,p_path);
+}
+
+String VisualServerRaster::texture_get_path(RID p_texture) const{
+
+	return rasterizer->texture_get_path(p_texture);
+}
+
+void VisualServerRaster::texture_debug_usage(List<TextureInfo> *r_info){
+
+	rasterizer->texture_debug_usage(r_info);
+}
+
 /* SHADER API */
 
 RID VisualServerRaster::shader_create(ShaderMode p_mode) {
@@ -1375,7 +1390,7 @@ void VisualServerRaster::_update_baked_light_sampler_dp_cache(BakedLightSampler 
 
 void VisualServerRaster::baked_light_sampler_set_resolution(RID p_baked_light_sampler,int p_resolution){
 
-	ERR_FAIL_COND(p_resolution<4 && p_resolution>64);
+    ERR_FAIL_COND(p_resolution<4 || p_resolution>64);
 	VS_CHANGED;
 	BakedLightSampler * blsamp = baked_light_sampler_owner.get(p_baked_light_sampler);
 	ERR_FAIL_COND(!blsamp);
@@ -5219,7 +5234,6 @@ void VisualServerRaster::_light_instance_update_lispsm_shadow(Instance *p_light,
 
 
 	AABB proj_space_aabb;
-	float max_d,min_d;
 
 	{
 
@@ -6824,7 +6838,11 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 	copymem(child_items,ci->child_items.ptr(),child_item_count*sizeof(CanvasItem*));
 
 	if (ci->clip) {
-		ci->final_clip_rect=global_rect;
+		if (p_canvas_clip != NULL) {
+			ci->final_clip_rect=p_canvas_clip->final_clip_rect.clip(global_rect);
+		} else {
+			ci->final_clip_rect=global_rect;
+		}
 		ci->final_clip_owner=ci;
 
 	} else {

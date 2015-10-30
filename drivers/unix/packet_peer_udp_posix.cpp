@@ -13,7 +13,11 @@
 #include <stdio.h>
 
 #ifndef NO_FCNTL
-#include <sys/fcntl.h>
+	#ifdef __HAIKU__
+		#include <fcntl.h>
+	#else
+		#include <sys/fcntl.h>
+	#endif
 #else
 #include <sys/ioctl.h>
 #endif

@@ -78,6 +78,9 @@ class GridMapEditor : public VBoxContainer {
 	ToolButton *mode_thumbnail;
 	ToolButton *mode_list;
 	HBoxContainer *spatial_editor_hb;
+	ConfirmationDialog *settings_dialog;
+	VBoxContainer *settings_vbc;
+	SpinBox *settings_pick_distance;
 
 	struct SetItem {
 
@@ -165,8 +168,8 @@ class GridMapEditor : public VBoxContainer {
 		MENU_OPTION_SELECTION_MAKE_AREA,
 		MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR,
 		MENU_OPTION_SELECTION_CLEAR,
-		MENU_OPTION_REMOVE_AREA
-
+		MENU_OPTION_REMOVE_AREA,
+		MENU_OPTION_GRIDMAP_SETTINGS
 
 	};
 

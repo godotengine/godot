@@ -79,9 +79,9 @@ public:
 		return Math::log( p_linear ) * 8.6858896380650365530225783783321;
 	}
 
-	static inline double db2linear(double p_linear) {
+	static inline double db2linear(double p_db) {
 
-		return Math::exp( p_linear * 0.11512925464970228420089957273422 );
+		return Math::exp( p_db * 0.11512925464970228420089957273422 );
 	}
 
 	static bool is_nan(double p_val);

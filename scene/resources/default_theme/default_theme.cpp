@@ -31,7 +31,7 @@ static  TexCacheMap *tex_cache;
 
 template<class T>
 static Ref<StyleBoxTexture> make_stylebox(T p_src,float p_left, float p_top, float p_right, float p_botton,float p_margin_left=-1, float p_margin_top=-1, float p_margin_right=-1, float p_margin_botton=-1, bool p_draw_center=true) {
-	
+
 	Ref<ImageTexture> texture;
 
 
@@ -56,17 +56,27 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src,float p_left, float p_top, flo
 	style->set_default_margin( MARGIN_BOTTOM, p_margin_botton );
 	style->set_default_margin( MARGIN_TOP, p_margin_top );
 	style->set_draw_center(p_draw_center);
-	
+
 	return style;
+}
+
+
+static Ref<StyleBoxTexture> sb_expand(Ref<StyleBoxTexture> p_sbox,float p_left, float p_top, float p_right, float p_botton) {
+
+	p_sbox->set_expand_margin_size(MARGIN_LEFT,p_left);
+	p_sbox->set_expand_margin_size(MARGIN_TOP,p_top);
+	p_sbox->set_expand_margin_size(MARGIN_RIGHT,p_right);
+	p_sbox->set_expand_margin_size(MARGIN_BOTTOM,p_botton);
+	return p_sbox;
 }
 
 template<class T>
 static Ref<Texture> make_icon(T p_src) {
-	
-	
+
+
 	Ref<ImageTexture> texture( memnew( ImageTexture ) );
 	texture->create_from_image( Image(p_src),ImageTexture::FLAG_FILTER );
-		
+
 	return texture;
 }
 
@@ -75,7 +85,7 @@ static Ref<Font> make_font(int p_height,int p_ascent, int p_valign, int p_charco
 
 	Ref<Font> font( memnew( Font ) );
 	font->add_texture( p_texture );
-	
+
 	for (int i=0;i<p_charcount;i++) {
 
 		const int *c = &p_chars[i*8];
@@ -91,9 +101,9 @@ static Ref<Font> make_font(int p_height,int p_ascent, int p_valign, int p_charco
 
 
 		font->add_char( chr, 0, frect, align,advance );
-		
+
 	}
-	
+
 	font->set_height( p_height );
 	font->set_ascent( p_ascent );
 
@@ -152,12 +162,12 @@ static Ref<Font> make_font2(int p_height,int p_ascent, int p_charcount, const in
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left=-1, float p_margin_top=-1, float p_margin_right=-1, float p_margin_botton=-1) {
 
 	Ref<StyleBox> style( memnew( StyleBoxEmpty) );
-	
+
 	style->set_default_margin( MARGIN_LEFT, p_margin_left );
 	style->set_default_margin( MARGIN_RIGHT, p_margin_right );
 	style->set_default_margin( MARGIN_BOTTOM, p_margin_botton );
 	style->set_default_margin( MARGIN_TOP, p_margin_top );
-	
+
 	return style;
 }
 
@@ -195,18 +205,24 @@ void make_default_theme() {
 
 	Ref<StyleBoxTexture> focus = make_stylebox( focus_png,5,5,5,5);
 	for(int i=0;i<4;i++) {
-		focus->set_expand_margin_size(Margin(i),2);
+		focus->set_expand_margin_size(Margin(i),1);
 	}
 
 
 
 	// Button
 
-	t->set_stylebox("normal","Button", make_stylebox( button_normal_png,4,4,4,4,8,4,8,4) );
-	t->set_stylebox("pressed","Button", make_stylebox( button_pressed_png,4,4,4,4) );
-	t->set_stylebox("hover","Button", make_stylebox( button_hover_png,4,4,4,4) );
-	t->set_stylebox("disabled","Button", make_stylebox( button_disabled_png,4,4,4,4) );
-	t->set_stylebox("focus","Button", focus );
+	Ref<StyleBox> sb_button_normal = sb_expand( make_stylebox( button_normal_png,4,4,4,4,6,2,6,2),2,2,2,2);
+	Ref<StyleBox> sb_button_pressed = sb_expand( make_stylebox( button_pressed_png,4,4,4,4,6,2,6,2),2,2,2,2);
+	Ref<StyleBox> sb_button_hover = sb_expand( make_stylebox( button_hover_png,4,4,4,4,6,2,6,2),2,2,2,2);
+	Ref<StyleBox> sb_button_disabled = sb_expand( make_stylebox( button_disabled_png,4,4,4,4,6,2,6,2),2,2,2,2);
+	Ref<StyleBox> sb_button_focus = sb_expand( make_stylebox( button_focus_png,4,4,4,4,6,2,6,2),2,2,2,2);
+
+	t->set_stylebox("normal","Button", sb_button_normal);
+	t->set_stylebox("pressed","Button", sb_button_pressed);
+	t->set_stylebox("hover","Button", sb_button_hover);
+	t->set_stylebox("disabled","Button", sb_button_disabled);
+	t->set_stylebox("focus","Button", sb_button_focus);
 
 	t->set_font("font","Button", default_font );
 
@@ -221,11 +237,11 @@ void make_default_theme() {
 
 	// ColorPickerButton
 
-	t->set_stylebox("normal","ColorPickerButton", make_stylebox( button_normal_png,4,4,4,4) );
-	t->set_stylebox("pressed","ColorPickerButton", make_stylebox( button_pressed_png,4,4,4,4) );
-	t->set_stylebox("hover","ColorPickerButton", make_stylebox( button_hover_png,4,4,4,4) );
-	t->set_stylebox("disabled","ColorPickerButton", make_stylebox( button_disabled_png,4,4,4,4) );
-	t->set_stylebox("focus","ColorPickerButton", focus );
+	t->set_stylebox("normal","ColorPickerButton", sb_button_normal);
+	t->set_stylebox("pressed","ColorPickerButton", sb_button_pressed);
+	t->set_stylebox("hover","ColorPickerButton", sb_button_hover);
+	t->set_stylebox("disabled","ColorPickerButton", sb_button_disabled);
+	t->set_stylebox("focus","ColorPickerButton", sb_button_focus);
 
 	t->set_font("font","ColorPickerButton", default_font );
 
@@ -263,11 +279,17 @@ void make_default_theme() {
 
 	// OptionButton
 
-	t->set_stylebox("normal","OptionButton", make_stylebox( option_button_normal_png,5,5,21,5,8,4,8,4) );
-	t->set_stylebox("pressed","OptionButton", make_stylebox( option_button_pressed_png,5,5,21,5) );
-	t->set_stylebox("hover","OptionButton", make_stylebox( option_button_hover_png,5,5,21,5) );
-	t->set_stylebox("disabled","OptionButton", make_stylebox( option_button_disabled_png,5,5,21,5) );
-	t->set_stylebox("focus","OptionButton", focus );
+	Ref<StyleBox> sb_optbutton_normal = sb_expand( make_stylebox( option_button_normal_png,4,4,21,4,6,2,21,2),2,2,2,2);
+	Ref<StyleBox> sb_optbutton_pressed = sb_expand( make_stylebox( option_button_pressed_png,4,4,21,4,6,2,21,2),2,2,2,2);
+	Ref<StyleBox> sb_optbutton_hover = sb_expand( make_stylebox( option_button_hover_png,4,4,21,4,6,2,21,2),2,2,2,2);
+	Ref<StyleBox> sb_optbutton_disabled = sb_expand( make_stylebox( option_button_disabled_png,4,4,21,4,6,2,21,2),2,2,2,2);
+	Ref<StyleBox> sb_optbutton_focus = sb_expand( make_stylebox( button_focus_png,4,4,4,4,6,2,6,2),2,2,2,2);
+
+	t->set_stylebox("normal","OptionButton", sb_optbutton_normal );
+	t->set_stylebox("pressed","OptionButton", sb_optbutton_pressed );
+	t->set_stylebox("hover","OptionButton", sb_optbutton_hover );
+	t->set_stylebox("disabled","OptionButton", sb_optbutton_disabled );
+	t->set_stylebox("focus","OptionButton", sb_button_focus );
 
 	t->set_icon("arrow","OptionButton", make_icon( option_arrow_png ) );
 
@@ -285,9 +307,9 @@ void make_default_theme() {
 
 	// MenuButton
 
-	t->set_stylebox("normal","MenuButton", make_stylebox( button_normal_png,4,4,4,4,8,4,8,4) );
-	t->set_stylebox("pressed","MenuButton", make_stylebox( tool_button_pressed_png ,4,4,4,4) );
-	t->set_stylebox("hover","MenuButton", make_stylebox( button_normal_png,4,4,4,4) );
+	t->set_stylebox("normal","MenuButton", sb_button_normal );
+	t->set_stylebox("pressed","MenuButton", sb_button_pressed );
+	t->set_stylebox("hover","MenuButton", sb_button_pressed );
 	t->set_stylebox("disabled","MenuButton", make_empty_stylebox(0,0,0,0) );
 
 	t->set_font("font","MenuButton", default_font );
@@ -299,49 +321,49 @@ void make_default_theme() {
 
 	t->set_constant("hseparation","MenuButton", 3 );
 
-    // CheckBox
+	// CheckBox
 
-    Ref<StyleBox> cbx_empty = memnew( StyleBoxEmpty );
-    cbx_empty->set_default_margin(MARGIN_LEFT,22);
-    cbx_empty->set_default_margin(MARGIN_RIGHT,4);
-    cbx_empty->set_default_margin(MARGIN_TOP,4);
-    cbx_empty->set_default_margin(MARGIN_BOTTOM,5);
-    Ref<StyleBox> cbx_focus = focus;
-    cbx_focus->set_default_margin(MARGIN_LEFT,4);
-    cbx_focus->set_default_margin(MARGIN_RIGHT,22);
-    cbx_focus->set_default_margin(MARGIN_TOP,4);
-    cbx_focus->set_default_margin(MARGIN_BOTTOM,5);
+	Ref<StyleBox> cbx_empty = memnew( StyleBoxEmpty );
+	cbx_empty->set_default_margin(MARGIN_LEFT,22);
+	cbx_empty->set_default_margin(MARGIN_RIGHT,4);
+	cbx_empty->set_default_margin(MARGIN_TOP,4);
+	cbx_empty->set_default_margin(MARGIN_BOTTOM,5);
+	Ref<StyleBox> cbx_focus = focus;
+	cbx_focus->set_default_margin(MARGIN_LEFT,4);
+	cbx_focus->set_default_margin(MARGIN_RIGHT,22);
+	cbx_focus->set_default_margin(MARGIN_TOP,4);
+	cbx_focus->set_default_margin(MARGIN_BOTTOM,5);
 
-    t->set_stylebox("normal","CheckBox", cbx_empty );
-    t->set_stylebox("pressed","CheckBox", cbx_empty );
-    t->set_stylebox("disabled","CheckBox", cbx_empty );
-    t->set_stylebox("hover","CheckBox", cbx_empty );
-    t->set_stylebox("focus","CheckBox", cbx_focus );
+	t->set_stylebox("normal","CheckBox", cbx_empty );
+	t->set_stylebox("pressed","CheckBox", cbx_empty );
+	t->set_stylebox("disabled","CheckBox", cbx_empty );
+	t->set_stylebox("hover","CheckBox", cbx_empty );
+	t->set_stylebox("focus","CheckBox", cbx_focus );
 
-    t->set_icon("checked", "CheckBox", make_icon(checked_png));
-    t->set_icon("unchecked", "CheckBox", make_icon(unchecked_png));
-    t->set_icon("radio_checked", "CheckBox", make_icon(radio_checked_png));
-    t->set_icon("radio_unchecked", "CheckBox", make_icon(radio_unchecked_png));
+	t->set_icon("checked", "CheckBox", make_icon(checked_png));
+	t->set_icon("unchecked", "CheckBox", make_icon(unchecked_png));
+	t->set_icon("radio_checked", "CheckBox", make_icon(radio_checked_png));
+	t->set_icon("radio_unchecked", "CheckBox", make_icon(radio_unchecked_png));
 
-    t->set_font("font","CheckBox", default_font );
+	t->set_font("font","CheckBox", default_font );
 
-    t->set_color("font_color","CheckBox", control_font_color );
-    t->set_color("font_color_pressed","CheckBox", control_font_color_pressed );
-    t->set_color("font_color_hover","CheckBox", control_font_color_hover );
-    t->set_color("font_color_disabled","CheckBox", control_font_color_disabled );
+	t->set_color("font_color","CheckBox", control_font_color );
+	t->set_color("font_color_pressed","CheckBox", control_font_color_pressed );
+	t->set_color("font_color_hover","CheckBox", control_font_color_hover );
+	t->set_color("font_color_disabled","CheckBox", control_font_color_disabled );
 
-    t->set_constant("hseparation","CheckBox",4);
-    t->set_constant("check_vadjust","CheckBox",0);
+	t->set_constant("hseparation","CheckBox",4);
+	t->set_constant("check_vadjust","CheckBox",0);
 
 
 
 	// CheckButton
-	
+
 	Ref<StyleBox> cb_empty = memnew( StyleBoxEmpty );
 	cb_empty->set_default_margin(MARGIN_LEFT,6);
 	cb_empty->set_default_margin(MARGIN_RIGHT,70);
 	cb_empty->set_default_margin(MARGIN_TOP,4);
-    cb_empty->set_default_margin(MARGIN_BOTTOM,4);
+	cb_empty->set_default_margin(MARGIN_BOTTOM,4);
 
 	t->set_stylebox("normal","CheckButton", cb_empty );
 	t->set_stylebox("pressed","CheckButton", cb_empty );
@@ -365,7 +387,7 @@ void make_default_theme() {
 
 
 	// Label
-	            
+
 	t->set_font("font","Label", default_font );
 
 	t->set_color("font_color","Label", Color(1,1,1) );
@@ -497,10 +519,10 @@ void make_default_theme() {
 
 	// WindowDialog
 
-	Ref<StyleBoxTexture> style_pp_win = make_stylebox( popup_window_png,6,28,6,7);
-	for(int i=0;i<4;i++)
+	Ref<StyleBoxTexture> style_pp_win = sb_expand(make_stylebox( popup_window_png,10,30,10,8),8,26,8,4);
+	/*for(int i=0;i<4;i++)
 		style_pp_win->set_expand_margin_size((Margin)i,3);
-	style_pp_win->set_expand_margin_size(MARGIN_TOP,26);
+	style_pp_win->set_expand_margin_size(MARGIN_TOP,26);*/
 
 	t->set_stylebox("panel","WindowDialog", style_pp_win );
 
@@ -520,7 +542,7 @@ void make_default_theme() {
 
 	// Popup
 
-	Ref<StyleBoxTexture> style_pp = make_stylebox( popup_bg_png,4,4,4,4,8,8,8,8);
+	Ref<StyleBoxTexture> style_pp =  sb_expand( make_stylebox( popup_bg_png,5,5,5,5,4,4,4,4),2,2,2,2);
 
 	Ref<StyleBoxTexture> selected = make_stylebox( selection_png,6,6,6,6);
 	for(int i=0;i<4;i++) {
@@ -556,10 +578,16 @@ void make_default_theme() {
 
 	// GraphNode
 
-	Ref<StyleBoxTexture> graphsb = make_stylebox(graph_node_png,6,24,6,5,16,24,16,5);
+	Ref<StyleBoxTexture> graphsb = make_stylebox(graph_node_png,6,24,6,5,3,24,16,5);
+	Ref<StyleBoxTexture> graphsbselected = make_stylebox(graph_node_selected_png,6,24,6,5,3,24,16,5);
+	Ref<StyleBoxTexture> graphsbdefault = make_stylebox(graph_node_default_png,4,4,4,4,6,4,4,4);
+	Ref<StyleBoxTexture> graphsbdeffocus = make_stylebox(graph_node_default_focus_png,4,4,4,4,6,4,4,4);
 	//graphsb->set_expand_margin_size(MARGIN_LEFT,10);
 	//graphsb->set_expand_margin_size(MARGIN_RIGHT,10);
 	t->set_stylebox("frame","GraphNode", graphsb );
+	t->set_stylebox("selectedframe","GraphNode", graphsbselected );
+	t->set_stylebox("defaultframe", "GraphNode", graphsbdefault );
+	t->set_stylebox("defaultfocus", "GraphNode", graphsbdeffocus );
 	t->set_constant("separation","GraphNode", 1 );
 	t->set_icon("port","GraphNode", make_icon( graph_port_png ) );
 	t->set_icon("close","GraphNode", make_icon( graph_node_close_png ) );
@@ -638,16 +666,13 @@ void make_default_theme() {
 
 	// TabContainer
 
-	Ref<StyleBoxTexture> tc_sb = make_stylebox( tab_container_bg_png,4,4,4,4);
-	for(int i=0;i<4;i++) {
-		tc_sb->set_default_margin(Margin(i),4);
-		tc_sb->set_expand_margin_size(Margin(i),2);
-	}
+	Ref<StyleBoxTexture> tc_sb = sb_expand( make_stylebox( tab_container_bg_png,4,4,4,4,4,4,4,4),3,3,3,3);
+
 	tc_sb->set_expand_margin_size(MARGIN_TOP,2);
 	tc_sb->set_default_margin(MARGIN_TOP,8);
 
-	t->set_stylebox("tab_fg","TabContainer", make_stylebox( tab_current_png,4,4,4,4,16,4,16,4) );
-	t->set_stylebox("tab_bg","TabContainer", make_stylebox( tab_behind_png,4,4,4,4,16,6,16,4) );
+	t->set_stylebox("tab_fg","TabContainer", sb_expand( make_stylebox( tab_current_png,4,4,4,1,16,4,16,4),2,2,2,2) );
+	t->set_stylebox("tab_bg","TabContainer", sb_expand( make_stylebox( tab_behind_png,5,5,5,1,16,6,16,4),3,0,3,3) );
 	t->set_stylebox("panel","TabContainer", tc_sb );
 
 	t->set_icon("increment","TabContainer",make_icon( scroll_button_right_png));
@@ -672,9 +697,9 @@ void make_default_theme() {
 
 	// Tabs
 
-	t->set_stylebox("tab_fg","Tabs", make_stylebox( tab_current_png,4,4,4,4,16,4,16,4) );
-	t->set_stylebox("tab_bg","Tabs", make_stylebox( tab_behind_png,4,4,4,4,16,6,16,4) );
-	t->set_stylebox("panel","Tabs", make_stylebox( tab_container_bg_png,4,4,4,4) );
+	t->set_stylebox("tab_fg","Tabs", sb_expand( make_stylebox( tab_current_png,4,4,4,1,16,4,16,4),2,2,2,2) );
+	t->set_stylebox("tab_bg","Tabs", sb_expand( make_stylebox( tab_behind_png,5,5,5,1,16,6,16,4),3,3,3,3) );
+	t->set_stylebox("panel","Tabs",tc_sb );
 	t->set_stylebox("button_pressed","Tabs", make_stylebox( button_pressed_png,4,4,4,4) );
 	t->set_stylebox("button","Tabs", make_stylebox( button_normal_png,4,4,4,4) );
 
@@ -713,7 +738,7 @@ void make_default_theme() {
 
 
 	// FileDialog
-	
+
 	t->set_icon("folder","FileDialog",make_icon(icon_folder_png));
 	t->set_color("files_disabled","FileDialog",Color(0,0,0,0.7));
 
@@ -877,10 +902,10 @@ void make_default_theme() {
 
 #endif
 void clear_default_theme() {
-	
+
 	Theme::set_default( Ref<Theme>() );
 	Theme::set_default_icon( Ref< Texture >() );
-	Theme::set_default_style( Ref< StyleBox >() );	
+	Theme::set_default_style( Ref< StyleBox >() );
 	Theme::set_default_font( Ref< Font >() );
 
 }

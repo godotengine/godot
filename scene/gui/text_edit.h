@@ -393,6 +393,7 @@ public:
 
 	String get_text_for_completion();
 
+    virtual bool is_text_field() const;
 	TextEdit();
 	~TextEdit();
 };

@@ -46,9 +46,9 @@
 */
 
 class CustomPropertyEditor : public Popup {
-	
+
 	OBJ_TYPE( CustomPropertyEditor, Popup );
-	
+
 	enum {
 		MAX_VALUE_EDITORS=12,
 		MAX_ACTION_BUTTONS=5,
@@ -93,7 +93,8 @@ class CustomPropertyEditor : public Popup {
 	TextEdit *text_edit;
 	bool read_only;
 	Button *checks20[20];
-
+	SpinBox *spinbox;
+	HSlider *slider;
 
 
 	Control *easing_draw;
@@ -106,6 +107,7 @@ class CustomPropertyEditor : public Popup {
 	void _file_selected(String p_file);
 	void _scroll_modified(double p_value);
 	void _modified(String p_string);
+	void _range_modified(double p_value);
 	void _focus_enter();
 	void _focus_exit();
 	void _action_pressed(int p_which);
@@ -114,33 +116,34 @@ class CustomPropertyEditor : public Popup {
 	void _color_changed(const Color& p_color);
 	void _draw_easing();
 	void _menu_option(int p_which);
-	
+
 	void _drag_easing(const InputEvent& p_ev);
 
 	void _node_path_selected(NodePath p_path);
 	void show_value_editors(int p_amount);
 	void config_value_editors(int p_amount, int p_columns,int p_label_w,const List<String>& p_strings);
 	void config_action_buttons(const List<String>& p_strings);
+
 protected:
 
 	void _notification(int p_what);
-	static void _bind_methods();			
-	
-public:	
+	static void _bind_methods();
+
+public:
 	Variant get_variant() const;
 	String get_name() const;
-	
+
 	void set_read_only(bool p_read_only) { read_only=p_read_only; }
 
 	bool edit(Object* p_owner,const String& p_name,Variant::Type p_type, const Variant& p_variant,int p_hint,String p_hint_text);
-	
+
 	CustomPropertyEditor();
 };
 
 class PropertyEditor : public Control {
-	
+
 	OBJ_TYPE( PropertyEditor, Control );
-	
+
 	Tree *tree;
 	Label *top_label;
 	//Object *object;
@@ -167,36 +170,40 @@ class PropertyEditor : public Control {
 	Map<StringName,String > class_descr_cache;
 	
 	CustomPropertyEditor *custom_editor;
-	
+
 	void _resource_edit_request();
 	void _custom_editor_edited();
 	void _custom_editor_request(bool p_arrow);
-	
+
 	void _item_selected();
 	void _item_edited();
 	TreeItem *get_parent_node(String p_path,HashMap<String,TreeItem*>& item_paths,TreeItem *root);
-	
+
 	void set_item_text(TreeItem *p_item, int p_type, const String& p_name, int p_hint=PROPERTY_HINT_NONE, const String& p_hint_text="");
-		
+
 	TreeItem *find_item(TreeItem *p_item,const String& p_name);
-		
-	
+
+
 	virtual void _changed_callback(Object *p_changed,const char * p_what);
 	virtual void _changed_callbacks(Object *p_changed,const String& p_callback);
 
+
 	void _edit_button(Object *p_item, int p_column, int p_button);
-	
+
 	void _node_removed(Node *p_node);
 	void _edit_set(const String& p_name, const Variant& p_value);
 	void _draw_flags(Object *ti,const Rect2& p_rect);
 
-	Node *get_instanced_node();
+	bool _might_be_in_instance();
+	bool _get_instanced_node_original_property(const StringName& p_prop,Variant& value);
+	bool _is_property_different(const Variant& p_current, const Variant& p_orig,int p_usage=0);
+
 	void _refresh_item(TreeItem *p_item);
 	void _set_range_def(Object *p_item, String prop, float p_frame);
 
 	UndoRedo *undo_redo;
 protected:
-	
+
 	void _notification(int p_what);
 	static void _bind_methods();
 public:

@@ -229,6 +229,18 @@ void TabContainer::_notification(int p_what) {
 
 			int w=0;
 			int idx=0;
+			Vector<int> offsets;
+			Vector<Control*> controls;
+			int from=0;
+			int limit=get_size().width;
+			if (popup) {
+				top_size.width-=menu->get_width();
+				limit-=menu->get_width();
+			}
+
+			bool notdone=false;
+			last_tab_cache=-1;
+
 			for(int i=0;i<get_child_count();i++) {
 
 				Control *c = get_child(i)->cast_to<Control>();
@@ -236,7 +248,20 @@ void TabContainer::_notification(int p_what) {
 					continue;
 				if (c->is_set_as_toplevel())
 					continue;
+				if (idx<tab_display_ofs) {
+					idx++;
+					from=idx;
+					continue;
+				}
 
+				if (w>=get_size().width) {
+					buttons_visible_cache=true;
+					notdone=true;
+					break;
+				}
+
+				offsets.push_back(w);
+				controls.push_back(c);
 
 				String s = c->has_meta("_tab_name")?String(XL_MESSAGE(String(c->get_meta("_tab_name")))):String(c->get_name());
 				w+=font->get_string_size(s).width;
@@ -257,54 +282,45 @@ void TabContainer::_notification(int p_what) {
 					w+=tab_bg->get_minimum_size().width;
 				}
 
+				if (idx<tab_display_ofs) {
+
+				}
+				last_tab_cache=idx;
+
 				idx++;
 			}
 
 
 			int ofs;
-			int limit=get_size().width;
-			if (popup) {
-				top_size.width-=menu->get_width();
-				limit-=menu->get_width();
-			}
 
+			switch(align) {
 
-			if (w<=limit) {
-				switch(align) {
+				case ALIGN_LEFT: ofs = side_margin; break;
+				case ALIGN_CENTER: ofs = (int(limit) - w)/2; break;
+				case ALIGN_RIGHT: ofs = int(limit) - w - side_margin; break;
+			};
 
-					case ALIGN_LEFT: ofs = side_margin; break;
-					case ALIGN_CENTER: ofs = (int(limit) - w)/2; break;
-					case ALIGN_RIGHT: ofs = int(limit) - w - side_margin; break;
-				};
-
-				tab_display_ofs=0;
-				buttons_visible_cache=false;
-			} else {
-
-				ofs=0;
-				limit-=incr->get_width()+decr->get_width();
-				buttons_visible_cache=true;
-			}
+			tab_display_ofs=0;
 
 
 			tabs_ofs_cache=ofs;
-			last_tab_cache=-1;
 			idx=0;
-			bool notdone=false;
 
 
-			for(int i=0;i<get_child_count();i++) {
 
-				Control *c = get_child(i)->cast_to<Control>();
-				if (!c)
-					continue;
-				if (c->is_set_as_toplevel())
-					continue;
+			for(int i=0;i<controls.size();i++) {
 
-				if (idx<tab_display_ofs) {
-					idx++;
-					continue;
+				idx=i+from;
+				if (current>=from && current<from+controls.size()-1) {
+					//current is visible! draw it last.
+					if (i==controls.size()-1) {
+						idx=current;
+					} else if (idx>=current) {
+						idx+=1;
+					}
 				}
+
+				Control *c = controls[idx-from];
 
 				String s = c->has_meta("_tab_name")?String(c->get_meta("_tab_name")):String(c->get_name());
 				int w=font->get_string_size(s).width;
@@ -336,14 +352,12 @@ void TabContainer::_notification(int p_what) {
 					col=color_bg;
 				}
 
+				int lofs = ofs + offsets[idx-from];
 
 				Size2i sb_ms = sb->get_minimum_size();
-				Rect2 sb_rect = Rect2( ofs, 0, w+sb_ms.width, top_margin);
+				Rect2 sb_rect = Rect2( lofs, 0, w+sb_ms.width, top_margin);
 
-				if (sb_ms.width+w+ofs > limit) {
-					notdone=true;
-					break;
-				}
+
 				sb->draw(ci, sb_rect );
 
 				Point2i lpos = sb_rect.pos;
@@ -357,8 +371,7 @@ void TabContainer::_notification(int p_what) {
 				}
 
 				font->draw(ci, Point2i( lpos.x, sb->get_margin(MARGIN_TOP)+((sb_rect.size.y-sb_ms.y)-font->get_height())/2+font->get_ascent() ), s, col );
-				ofs+=sb_ms.x+w;
-				last_tab_cache=idx;
+				//ofs+=sb_ms.x+w;
 
 				/*
 				int sb_mw = sb->get_minimum_size().width;

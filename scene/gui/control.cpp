@@ -2713,6 +2713,21 @@ void Control::warp_mouse(const Point2& p_to_pos) {
 	get_viewport()->warp_mouse(get_global_transform().xform(p_to_pos));
 }
 
+
+bool Control::is_text_field() const {
+/*
+    if (get_script_instance()) {
+        Variant v=p_point;
+        const Variant *p[2]={&v,&p_data};
+        Variant::CallError ce;
+        Variant ret = get_script_instance()->call("is_text_field",p,2,ce);
+        if (ce.error==Variant::CallError::CALL_OK)
+            return ret;
+    }
+  */
+    return false;
+}
+
 void Control::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_window_input_event"),&Control::_window_input_event);

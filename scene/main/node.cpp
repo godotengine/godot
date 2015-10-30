@@ -841,6 +841,20 @@ Node *Node::get_child(int p_index) const {
 	return data.children[p_index];
 }
 
+
+Node *Node::_get_child_by_name(const StringName& p_name) const {
+
+	int cc=data.children.size();
+	Node* const* cd=data.children.ptr();
+
+	for(int i=0;i<cc;i++){
+		if (cd[i]->data.name==p_name)
+			return cd[i];
+	}
+
+	return NULL;
+}
+
 Node *Node::_get_node(const NodePath& p_path) const {
 
 	ERR_FAIL_COND_V( !data.inside_tree && p_path.is_absolute(), NULL );
@@ -906,8 +920,10 @@ Node *Node::_get_node(const NodePath& p_path) const {
 Node *Node::get_node(const NodePath& p_path) const {
 
 	Node *node = _get_node(p_path);
-	ERR_EXPLAIN("Node not found: "+p_path);
-	ERR_FAIL_COND_V(!node,NULL);
+	if (!node) {
+		ERR_EXPLAIN("Node not found: "+p_path);
+		ERR_FAIL_COND_V(!node,NULL);
+	}
 	return node;
 }
 
@@ -1036,6 +1052,7 @@ void Node::get_owned_by(Node *p_by,List<Node*> *p_owned) {
 
 void Node::_set_owner_nocheck(Node* p_owner) {
 
+	ERR_FAIL_COND(data.owner);
 	data.owner=p_owner;
 	data.owner->data.owned.push_back( this );
 	data.OW = data.owner->data.owned.back();
@@ -1332,7 +1349,29 @@ String Node::get_filename() const {
 	return data.filename;
 }
 
+void Node::set_editable_instance(Node* p_node,bool p_editable) {
 
+	ERR_FAIL_NULL(p_node);
+	ERR_FAIL_COND(!is_a_parent_of(p_node));
+	NodePath p = get_path_to(p_node);
+	if (!p_editable)
+		data.editable_instances.erase(p);
+	else
+		data.editable_instances[p]=true;
+
+}
+
+bool Node::is_editable_instance(Node *p_node) const {
+
+	if (!p_node)
+		return false; //easier, null is never editable :)
+	ERR_FAIL_COND_V(!is_a_parent_of(p_node),false);
+	NodePath p = get_path_to(p_node);
+	return data.editable_instances.has(p);
+}
+
+
+#if 0
 
 void Node::generate_instance_state() {
 
@@ -1383,13 +1422,36 @@ Dictionary Node::get_instance_state() const {
 	return data.instance_state;
 }
 
-Vector<StringName> Node::get_instance_groups() const {
+#endif
 
-	return data.instance_groups;
+void Node::set_scene_instance_state(const Ref<SceneState>& p_state) {
+
+	data.instance_state=p_state;
 }
-Vector<Node::Connection> Node::get_instance_connections() const{
 
-	return data.instance_connections;
+Ref<SceneState> Node::get_scene_instance_state() const{
+
+	return data.instance_state;
+}
+
+void Node::set_scene_inherited_state(const Ref<SceneState>& p_state) {
+
+	data.inherited_state=p_state;
+}
+
+Ref<SceneState> Node::get_scene_inherited_state() const{
+
+	return data.inherited_state;
+}
+
+void Node::set_scene_instance_load_placeholder(bool p_enable) {
+
+	data.use_placeholder=p_enable;
+}
+
+bool Node::get_scene_instance_load_placeholder() const{
+
+	return data.use_placeholder;
 }
 
 int Node::get_position_in_parent() const {
@@ -1931,7 +1993,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("has_node","path"),&Node::has_node);
 	ObjectTypeDB::bind_method(_MD("get_node:Node","path"),&Node::get_node);
 	ObjectTypeDB::bind_method(_MD("get_parent:Parent"),&Node::get_parent);
-	ObjectTypeDB::bind_method(_MD("find_node:Node","mask","recursive","owned"),&Node::get_node,DEFVAL(true),DEFVAL(true));
+	ObjectTypeDB::bind_method(_MD("find_node:Node","mask","recursive","owned"),&Node::find_node,DEFVAL(true),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("has_node_and_resource","path"),&Node::has_node_and_resource);
 	ObjectTypeDB::bind_method(_MD("get_node_and_resource","path"),&Node::_get_node_and_resource);
 
@@ -2049,6 +2111,7 @@ Node::Node() {
 	data.parent_owned=false;
 	data.in_constructor=true;
 	data.viewport=NULL;
+	data.use_placeholder=false;
 }
 
 Node::~Node() {
@@ -2065,3 +2128,4 @@ Node::~Node() {
 }
 
 
+////////////////////////////////

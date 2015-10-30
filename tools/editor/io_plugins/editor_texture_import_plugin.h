@@ -70,7 +70,7 @@ private:
 	static EditorTextureImportPlugin *singleton[MODE_MAX];
 	//used by other importers such as mesh
 
-	Error _process_texture_data(Ref<ImageTexture> &texture, int format, float quality, int flags,EditorExportPlatform::ImageCompression p_compr,int tex_flags,int shrink);
+	Error _process_texture_data(Ref<ImageTexture> &texture, int format, float quality, int flags,EditorExportPlatform::ImageCompression p_compr,int tex_flags,float shrink);
 	void compress_image(EditorExportPlatform::ImageCompression p_mode,Image& image,bool p_smaller);
 public:
 

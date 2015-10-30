@@ -96,6 +96,10 @@ class ScriptEditorDebugger : public Control {
 	Tree *perf_monitors;
 	Control *perf_draw;
 
+	Tree *vmem_tree;
+	Button *vmem_refresh;
+	LineEdit *vmem_total;
+
 	Tree *stack_dump;
 	PropertyEditor *inspector;
 
@@ -127,6 +131,7 @@ class ScriptEditorDebugger : public Control {
 	void _scene_tree_request();
 	void _parse_message(const String& p_msg,const Array& p_data);
 
+	void _video_mem_request();
 
 	int _get_node_path_cache(const NodePath& p_path);
 

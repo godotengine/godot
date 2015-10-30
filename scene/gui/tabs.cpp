@@ -64,6 +64,15 @@ Size2 Tabs::get_minimum_size() const {
 			ms.width+=bms.width;
 			ms.height=MAX(bms.height+tab_bg->get_minimum_size().height,ms.height);
 		}
+
+		if (tabs[i].close_button.is_valid()) {
+			Ref<Texture> cb=tabs[i].close_button;
+			Size2 bms = cb->get_size()+get_stylebox("button")->get_minimum_size();
+			bms.width+=get_constant("hseparation");
+
+			ms.width+=bms.width;
+			ms.height=MAX(bms.height+tab_bg->get_minimum_size().height,ms.height);
+		}
 	}
 
 	return ms;
@@ -77,21 +86,47 @@ void Tabs::_input_event(const InputEvent& p_event) {
 
 		Point2 pos( p_event.mouse_motion.x, p_event.mouse_motion.y );
 
-		int hover=-1;
+		int hover_buttons=-1;
+		hover=-1;
 		for(int i=0;i<tabs.size();i++) {
 
+			// test hovering tab to display close button if policy says so
+			if (cb_displaypolicy == SHOW_HOVER) {
+				int ofs=tabs[i].ofs_cache;
+				int size = tabs[i].ofs_cache;
+				if (pos.x >=tabs[i].ofs_cache && pos.x<tabs[i].ofs_cache+tabs[i].size_cache) {
+					hover=i;
+				}
+			}
+
+
+			// test hovering right button and close button
 			if (tabs[i].rb_rect.has_point(pos)) {
-				hover=i;
+				rb_hover=i;
+				hover_buttons = i;
 				break;
 			}
+			else if (tabs[i].cb_rect.has_point(pos)) {
+				cb_hover=i;
+				hover_buttons = i;
+				break;
+			}
+
+
+
 		}
 
-		if (hover!=rb_hover) {
-			rb_hover=hover;
-			update();
+		if (hover_buttons == -1) {	// no hover
+			rb_hover= hover_buttons;
+			cb_hover= hover_buttons;
 		}
+		update();
+
 		return;
 	}
+
+
+
 
 	if (rb_pressing && p_event.type==InputEvent::MOUSE_BUTTON &&
 	    !p_event.mouse_button.pressed &&
@@ -106,6 +141,20 @@ void Tabs::_input_event(const InputEvent& p_event) {
 		update();
 	}
 
+	if (cb_pressing && p_event.type==InputEvent::MOUSE_BUTTON &&
+		!p_event.mouse_button.pressed &&
+		p_event.mouse_button.button_index==BUTTON_LEFT) {
+
+		if (cb_hover!=-1) {
+			//pressed
+			emit_signal("tab_close",cb_hover);
+		}
+
+		cb_pressing=false;
+		update();
+	}
+
+
 	if (p_event.type==InputEvent::MOUSE_BUTTON &&
 	    p_event.mouse_button.pressed &&
 	    p_event.mouse_button.button_index==BUTTON_LEFT) {
@@ -118,6 +167,12 @@ void Tabs::_input_event(const InputEvent& p_event) {
 
 			if (tabs[i].rb_rect.has_point(pos)) {
 				rb_pressing=true;
+				update();
+				return;
+			}
+
+			if (tabs[i].cb_rect.has_point(pos)) {
+				cb_pressing=true;
 				update();
 				return;
 			}
@@ -148,6 +203,8 @@ void Tabs::_notification(int p_what) {
 
 		case NOTIFICATION_MOUSE_EXIT: {
 			rb_hover=-1;
+			cb_hover=-1;
+			hover=-1;
 			update();
 		} break;
 		case NOTIFICATION_DRAW: {
@@ -186,7 +243,7 @@ void Tabs::_notification(int p_what) {
 
 				String s = tabs[i].text;
 				int lsize=0;
-				int slen=font->get_string_size(s).width;;
+				int slen=font->get_string_size(s).width;
 				lsize+=slen;
 
 				Ref<Texture> icon;
@@ -210,6 +267,56 @@ void Tabs::_notification(int p_what) {
 					lsize+=style->get_margin(MARGIN_RIGHT);
 
 				}
+
+				// Close button
+				switch (cb_displaypolicy) {
+				case SHOW_ALWAYS: {
+					if (tabs[i].close_button.is_valid()) {
+						Ref<StyleBox> style = get_stylebox("button");
+						Ref<Texture> rb=tabs[i].close_button;
+
+						lsize+=get_constant("hseparation");
+						lsize+=style->get_margin(MARGIN_LEFT);
+						lsize+=rb->get_width();
+						lsize+=style->get_margin(MARGIN_RIGHT);
+
+					}
+				} break;
+				case SHOW_ACTIVE_ONLY: {
+					if (i==current) {
+						if (tabs[i].close_button.is_valid()) {
+							Ref<StyleBox> style = get_stylebox("button");
+							Ref<Texture> rb=tabs[i].close_button;
+
+							lsize+=get_constant("hseparation");
+							lsize+=style->get_margin(MARGIN_LEFT);
+							lsize+=rb->get_width();
+							lsize+=style->get_margin(MARGIN_RIGHT);
+
+						}
+					}
+				} break;
+				case SHOW_HOVER: {
+					if (i==current || i==hover) {
+						if (tabs[i].close_button.is_valid()) {
+							Ref<StyleBox> style = get_stylebox("button");
+							Ref<Texture> rb=tabs[i].close_button;
+
+							lsize+=get_constant("hseparation");
+							lsize+=style->get_margin(MARGIN_LEFT);
+							lsize+=rb->get_width();
+							lsize+=style->get_margin(MARGIN_RIGHT);
+
+						}
+					}
+				} break;
+				case SHOW_NEVER:	// by default, never show close button
+				default: {
+					// do nothing
+				} break;
+
+				}
+
 
 				Ref<StyleBox> sb;
 				int va;
@@ -270,6 +377,103 @@ void Tabs::_notification(int p_what) {
 					w+=style->get_margin(MARGIN_RIGHT);
 					tabs[i].rb_rect=rb_rect;
 
+
+				}
+
+
+
+
+				// Close button
+				switch (cb_displaypolicy) {
+				case SHOW_ALWAYS: {
+					if (tabs[i].close_button.is_valid()) {
+						Ref<StyleBox> style = get_stylebox("button");
+						Ref<Texture> cb=tabs[i].close_button;
+
+						w+=get_constant("hseparation");
+
+						Rect2 cb_rect;
+						cb_rect.size=style->get_minimum_size()+cb->get_size();
+						cb_rect.pos.x=w;
+						cb_rect.pos.y=sb->get_margin(MARGIN_TOP)+((sb_rect.size.y-sb_ms.y)-(cb_rect.size.y))/2;
+
+						if (cb_hover==i) {
+							if (cb_pressing)
+								get_stylebox("button_pressed")->draw(ci,cb_rect);
+							else
+								style->draw(ci,cb_rect);
+						}
+
+						w+=style->get_margin(MARGIN_LEFT);
+
+						cb->draw(ci,Point2i( w,cb_rect.pos.y+style->get_margin(MARGIN_TOP) ));
+						w+=cb->get_width();
+						w+=style->get_margin(MARGIN_RIGHT);
+						tabs[i].cb_rect=cb_rect;
+					}
+				} break;
+				case SHOW_ACTIVE_ONLY: {
+					if (current==i) {
+						if (tabs[i].close_button.is_valid()) {
+							Ref<StyleBox> style = get_stylebox("button");
+							Ref<Texture> cb=tabs[i].close_button;
+
+							w+=get_constant("hseparation");
+
+							Rect2 cb_rect;
+							cb_rect.size=style->get_minimum_size()+cb->get_size();
+							cb_rect.pos.x=w;
+							cb_rect.pos.y=sb->get_margin(MARGIN_TOP)+((sb_rect.size.y-sb_ms.y)-(cb_rect.size.y))/2;
+
+							if (cb_hover==i) {
+								if (cb_pressing)
+									get_stylebox("button_pressed")->draw(ci,cb_rect);
+								else
+									style->draw(ci,cb_rect);
+							}
+
+							w+=style->get_margin(MARGIN_LEFT);
+
+							cb->draw(ci,Point2i( w,cb_rect.pos.y+style->get_margin(MARGIN_TOP) ));
+							w+=cb->get_width();
+							w+=style->get_margin(MARGIN_RIGHT);
+							tabs[i].cb_rect=cb_rect;
+						}
+					}
+				} break;
+				case SHOW_HOVER: {
+					if (current==i || hover==i) {
+						if (tabs[i].close_button.is_valid()) {
+							Ref<StyleBox> style = get_stylebox("button");
+							Ref<Texture> cb=tabs[i].close_button;
+
+							w+=get_constant("hseparation");
+
+							Rect2 cb_rect;
+							cb_rect.size=style->get_minimum_size()+cb->get_size();
+							cb_rect.pos.x=w;
+							cb_rect.pos.y=sb->get_margin(MARGIN_TOP)+((sb_rect.size.y-sb_ms.y)-(cb_rect.size.y))/2;
+
+							if (cb_hover==i) {
+								if (cb_pressing)
+									get_stylebox("button_pressed")->draw(ci,cb_rect);
+								else
+									style->draw(ci,cb_rect);
+							}
+
+							w+=style->get_margin(MARGIN_LEFT);
+
+							cb->draw(ci,Point2i( w,cb_rect.pos.y+style->get_margin(MARGIN_TOP) ));
+							w+=cb->get_width();
+							w+=style->get_margin(MARGIN_RIGHT);
+							tabs[i].cb_rect=cb_rect;
+						}
+					}
+				} break;
+				case SHOW_NEVER:
+				default: {
+					// show nothing
+				} break;
 
 				}
 
@@ -358,11 +562,29 @@ Ref<Texture> Tabs::get_tab_right_button(int p_tab) const{
 
 }
 
+void Tabs::set_tab_close_button(int p_tab, const Ref<Texture>& p_close_button) {
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+	tabs[p_tab].close_button=p_close_button;
+	update();
+	minimum_size_changed();
+}
+
+
+Ref<Texture> Tabs::get_tab_close_button(int p_tab) const{
+
+	ERR_FAIL_INDEX_V(p_tab,tabs.size(),Ref<Texture>());
+	return tabs[p_tab].close_button;
+
+}
+
 void Tabs::add_tab(const String& p_str,const Ref<Texture>& p_icon) {
 
 	Tab t;
 	t.text=p_str;
 	t.icon=p_icon;
+
+	t.close_button = get_icon("Close","EditorIcons");
+
 	tabs.push_back(t);
 
 	update();
@@ -394,6 +616,11 @@ void Tabs::remove_tab(int p_idx) {
 
 }
 
+void Tabs::set_tab_close_display_policy(CloseButtonDisplayPolicy p_cb_displaypolicy) {
+	cb_displaypolicy = p_cb_displaypolicy;
+}
+
+
 void Tabs::set_tab_align(TabAlign p_align) {
 
 	tab_align=p_align;
@@ -423,13 +650,21 @@ void Tabs::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("tab_changed",PropertyInfo(Variant::INT,"tab")));
 	ADD_SIGNAL(MethodInfo("right_button_pressed",PropertyInfo(Variant::INT,"tab")));
+	ADD_SIGNAL(MethodInfo("tab_close",PropertyInfo(Variant::INT,"tab")));
+
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE,"-1,4096,1",PROPERTY_USAGE_EDITOR), _SCS("set_current_tab"), _SCS("get_current_tab") );
 
 	BIND_CONSTANT( ALIGN_LEFT );
 	BIND_CONSTANT( ALIGN_CENTER );
 	BIND_CONSTANT( ALIGN_RIGHT );
+
+	BIND_CONSTANT( SHOW_ACTIVE_ONLY );
+	BIND_CONSTANT( SHOW_ALWAYS );
+	BIND_CONSTANT( SHOW_HOVER );
+	BIND_CONSTANT( SHOW_NEVER );
 }
+
 
 Tabs::Tabs() {
 
@@ -438,4 +673,7 @@ Tabs::Tabs() {
 	rb_hover=-1;
 	rb_pressing=false;
 
+	cb_hover=-1;
+	cb_pressing=false;
+	cb_displaypolicy = SHOW_NEVER; // Default : no close button
 }

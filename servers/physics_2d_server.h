@@ -516,6 +516,13 @@ public:
 	virtual RID groove_joint_create(const Vector2& p_a_groove1,const Vector2& p_a_groove2, const Vector2& p_b_anchor, RID p_body_a,RID p_body_b)=0;
 	virtual RID damped_spring_joint_create(const Vector2& p_anchor_a,const Vector2& p_anchor_b,RID p_body_a,RID p_body_b=RID())=0;
 
+	enum PinJointParam {
+		PIN_JOINT_SOFTNESS
+	};
+
+	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value)=0;
+	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const=0;
+
 	enum DampedStringParam {
 		DAMPED_STRING_REST_LENGTH,
 		DAMPED_STRING_STIFFNESS,

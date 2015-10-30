@@ -512,12 +512,26 @@ static int button_mask=0;
 
 - (void)mouseExited:(NSEvent *)event
 {
+	if (!OS_OSX::singleton)
+		return;
+
+	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode!=OS::MOUSE_MODE_CAPTURED)
+		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
+	if (OS_OSX::singleton->input)
+		OS_OSX::singleton->input->set_mouse_in_window(false);
    // _glfwInputCursorEnter(window, GL_FALSE);
 }
 
 - (void)mouseEntered:(NSEvent *)event
 {
   //  _glfwInputCursorEnter(window, GL_TRUE);
+	if (!OS_OSX::singleton)
+		return;
+	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode!=OS::MOUSE_MODE_CAPTURED)
+		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
+	if (OS_OSX::singleton->input)
+		OS_OSX::singleton->input->set_mouse_in_window(true);
+
 }
 
 - (void)viewDidChangeBackingProperties
@@ -1238,6 +1252,11 @@ Error OS_OSX::shell_open(String p_uri) {
 
 	[[NSWorkspace sharedWorkspace] openURL:[[NSURL alloc] initWithString:[NSString stringWithUTF8String:p_uri.utf8().get_data()]]];
 	return OK;
+}
+
+String OS_OSX::get_locale() const {
+  NSString* preferredLang = [[NSLocale preferredLanguages] objectAtIndex:0];
+	return [preferredLang UTF8String];
 }
 
 void OS_OSX::swap_buffers() {

@@ -32,7 +32,7 @@
 
 #include "os/input.h"
 #include "drivers/unix/os_unix.h"
-
+#include "main/input_default.h"
 #include "servers/visual_server.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "servers/visual/rasterizer.h"
@@ -156,6 +156,8 @@ public:
 
 	Error shell_open(String p_uri);
 	void push_input(const InputEvent& p_event);
+
+	String get_locale() const;
 
 	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0);
 	virtual VideoMode get_video_mode(int p_screen=0) const;

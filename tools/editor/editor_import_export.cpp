@@ -842,6 +842,17 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			boot_splash=splash;
 		}
 	}
+	StringName custom_cursor;
+	{
+		String splash=Globals::get_singleton()->get("display/custom_mouse_cursor"); //avoid splash from being converted
+		splash=splash.strip_edges();
+		if (splash!=String()) {
+			if (!splash.begins_with("res://"))
+				splash="res://"+splash;
+			splash=splash.simplify_path();
+			custom_cursor=splash;
+		}
+	}
 
 
 
@@ -853,7 +864,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 		String src=files[i];
 		Vector<uint8_t> buf;
 
-		if (src==boot_splash)
+		if (src==boot_splash || src==custom_cursor)
 			buf = get_exported_file_default(src); //bootsplash must be kept if used
 		else
 			buf = get_exported_file(src);
@@ -1409,12 +1420,12 @@ EditorImportExport::ImageAction EditorImportExport::get_export_image_action() co
 	return image_action;
 }
 
-void EditorImportExport::set_export_image_shrink(int p_shrink) {
+void EditorImportExport::set_export_image_shrink(float p_shrink) {
 
 	image_shrink=p_shrink;
 }
 
-int EditorImportExport::get_export_image_shrink() const{
+float EditorImportExport::get_export_image_shrink() const{
 
 	return image_shrink;
 }
@@ -1485,12 +1496,12 @@ bool EditorImportExport::image_export_group_get_make_atlas(const StringName& p_e
 	return image_groups[p_export_group].make_atlas;
 
 }
-void EditorImportExport::image_export_group_set_shrink(const StringName& p_export_group,int p_amount){
+void EditorImportExport::image_export_group_set_shrink(const StringName& p_export_group,float p_amount){
 	ERR_FAIL_COND(!image_groups.has(p_export_group));
 	image_groups[p_export_group].shrink=p_amount;
 
 }
-int EditorImportExport::image_export_group_get_shrink(const StringName& p_export_group) const{
+float EditorImportExport::image_export_group_get_shrink(const StringName& p_export_group) const{
 
 	ERR_FAIL_COND_V(!image_groups.has(p_export_group),1);
 	return image_groups[p_export_group].shrink;

@@ -91,4 +91,5 @@ func _ready():
 	# Initalization here
 	pass
 
-
+func _die():
+	queue_free()

@@ -18,3 +18,11 @@ func _ready():
 	# Initalization here
 	pass
 
+
+
+func _on_coin_area_enter( area ):
+	pass # replace with function body
+
+
+func _on_coin_area_enter_shape( area_id, area, area_shape, area_shape ):
+	pass # replace with function body

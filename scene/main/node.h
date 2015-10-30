@@ -38,6 +38,7 @@
 
 
 class Viewport;
+class SceneState;
 class Node : public Object {
 
 	OBJ_TYPE( Node, Object );
@@ -69,9 +70,10 @@ private:
 	struct Data {
 	
 		String filename;
-		Dictionary instance_state;
-		Vector<StringName> instance_groups;
-		Vector<Connection> instance_connections;
+		Ref<SceneState> instance_state;
+		Ref<SceneState> inherited_state;
+
+		HashMap<NodePath,int> editable_instances;
 
 		Node *parent;
 		Node *owner;
@@ -96,6 +98,7 @@ private:
 		PauseMode pause_mode;
 		Node *pause_owner;
 		// variables used to properly sort the node when processing, ignored otherwise
+		//should move all the stuff below to bits
 		bool fixed_process;
 		bool idle_process;
 
@@ -105,6 +108,9 @@ private:
 
 		bool parent_owned;
 		bool in_constructor;
+		bool use_placeholder;
+
+
 	} data;
 	
 
@@ -112,6 +118,7 @@ private:
 	
 	virtual bool _use_builtin_script() const { return true; }
 	Node *_get_node(const NodePath& p_path) const;
+	Node *_get_child_by_name(const StringName& p_name) const;
 
 
 
@@ -151,7 +158,7 @@ protected:
 	
 	static void _bind_methods();
 
-friend class PackedScene;
+friend class SceneState;
 
 	void _add_child_nocheck(Node* p_child,const StringName& p_name);
 	void _set_owner_nocheck(Node* p_owner);
@@ -208,7 +215,7 @@ public:
 	
 	struct GroupInfo {
 	
-		String name;
+		StringName name;
 		bool persistent;
 	};
 	
@@ -229,7 +236,11 @@ public:
 	
 	void set_filename(const String& p_filename);
 	String get_filename() const;
-	
+
+	void set_editable_instance(Node* p_node,bool p_editable);
+	bool is_editable_instance(Node* p_node) const;
+
+
 	/* NOTIFICATIONS */
 	
 	void propagate_notification(int p_notification);
@@ -261,10 +272,14 @@ public:
 	//Node *clone_tree() const;
 
 	// used by editors, to save what has changed only
-	void generate_instance_state();
-	Dictionary get_instance_state() const;
-	Vector<StringName> get_instance_groups() const;
-	Vector<Connection> get_instance_connections() const;
+	void set_scene_instance_state(const Ref<SceneState>& p_state);
+	Ref<SceneState> get_scene_instance_state() const;
+
+	void set_scene_inherited_state(const Ref<SceneState>& p_state);
+	Ref<SceneState> get_scene_inherited_state() const;
+
+	void set_scene_instance_load_placeholder(bool p_enable);
+	bool get_scene_instance_load_placeholder() const;
 
 	static Vector<Variant> make_binds(VARIANT_ARG_LIST);
 
@@ -305,8 +320,6 @@ public:
 
 
 typedef Set<Node*,Node::Comparator> NodeSet;
-
-
 
 
 #endif

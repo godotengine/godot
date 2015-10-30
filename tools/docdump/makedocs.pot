@@ -1,0 +1,108 @@
+# Translations template for PROJECT.
+# Copyright (C) 2015 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2015.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: makedocs 0.1\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2015-10-07 11:47-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+"X-Generator: Poedit 1.8.4\n"
+
+#: makedocs.py:74
+msgid "\"<code>{gclass}</code>(Go to page of class {gclass})\":/class_{lkclass}"
+msgstr ""
+
+#: makedocs.py:76
+msgid "\"<code>{gclass}.{method}</code>(Go to page {gclass}, section {method})\":/class_{lkclass}#{lkmethod}"
+msgstr ""
+
+#: makedocs.py:79
+msgid "\"<code>{method}</code>(Jump to method {method})\":#{lkmethod}"
+msgstr ""
+
+#: makedocs.py:81
+msgid " \"{rtype}(Go to page of class {rtype})\":/class_{link} "
+msgstr ""
+
+#: makedocs.py:82
+msgid "\"*{funcname}*(Jump to description for node {funcname})\":#{link} <b>(</b> "
+msgstr ""
+
+#: makedocs.py:87
+msgid "h4. Inherits: "
+msgstr ""
+
+#: makedocs.py:232
+msgid "<doc>'s version attribute missing"
+msgstr ""
+
+#: makedocs.py:246
+msgid "|_. Index symbol |_. Class name |_. Index symbol |_. Class name |\n"
+msgstr ""
+
+#: makedocs.py:305
+msgid ""
+"h4. Category: {}\n"
+"\n"
+msgstr ""
+
+#: makedocs.py:310
+msgid ""
+"h2. Brief Description\n"
+"\n"
+msgstr ""
+
+#: makedocs.py:312
+msgid ""
+"\"read more\":#more\n"
+"\n"
+msgstr ""
+
+#: makedocs.py:317
+msgid ""
+"\n"
+"h3. Member Functions\n"
+"\n"
+msgstr ""
+
+#: makedocs.py:323
+msgid ""
+"\n"
+"h3. Signals\n"
+"\n"
+msgstr ""
+
+#: makedocs.py:331
+msgid ""
+"\n"
+"h3. Numeric Constants\n"
+"\n"
+msgstr ""
+
+#: makedocs.py:347
+msgid ""
+"\n"
+"h3(#more). Description\n"
+"\n"
+msgstr ""
+
+#: makedocs.py:351
+msgid "_Nothing here, yet..._\n"
+msgstr ""
+
+#: makedocs.py:355
+msgid ""
+"\n"
+"h3. Member Function Description\n"
+"\n"
+msgstr ""

@@ -29,7 +29,6 @@ class AudioStreamPlaybackSpeex : public AudioStreamPlayback {
 	bool loops;
 	int page_size;
 	bool playing;
-	bool paused;
 	bool packets_available;
 
 	void unload();

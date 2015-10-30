@@ -323,11 +323,21 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 			old_invalid=true;
 			outside=true;
+			if (main_loop && mouse_mode!=MOUSE_MODE_CAPTURED)
+				main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
+			if (input)
+				input->set_mouse_in_window(false);
 
 		} break;
 		case WM_MOUSEMOVE: {
 
 			if (outside) {
+				//mouse enter
+
+				if (main_loop && mouse_mode!=MOUSE_MODE_CAPTURED)
+					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
+				if (input)
+					input->set_mouse_in_window(true);
 
 				CursorShape c=cursor_shape;
 				cursor_shape=CURSOR_MAX;

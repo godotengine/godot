@@ -295,11 +295,13 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3& p_start, const Vector
 		}
 	}
 
+
 	if (!begin_poly || !end_poly) {
 
 		//print_line("No Path Path");
 		return Vector<Vector3>(); //no path
 	}
+
 
 	if (begin_poly==end_poly) {
 

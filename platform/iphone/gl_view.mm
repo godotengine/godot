@@ -334,13 +334,15 @@ static void clear_touches() {
 	delegateSetup = ![delegate respondsToSelector:@selector(setupView:)];
 }
 
+@synthesize useCADisplayLink;
+
 // If our view is resized, we'll be asked to layout subviews.
 // This is the perfect opportunity to also update the framebuffer so that it is
 // the same size as our display area.
 
 -(void)layoutSubviews
 {
-	printf("HERE\n");
+	//printf("HERE\n");
 	[EAGLContext setCurrentContext:context];
 	[self destroyFramebuffer];
 	[self createFramebuffer];
@@ -418,19 +420,21 @@ static void clear_touches() {
 		return;
 	active = TRUE;
 	printf("start animation!\n");
-#if USE_CADISPLAYLINK
-	// Approximate frame rate
-	// assumes device refreshes at 60 fps
-	int frameInterval = (int) floor(animationInterval * 60.0f);
+	if (useCADisplayLink) {
 
-	displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawView)];
-	[displayLink setFrameInterval:frameInterval];
+		// Approximate frame rate
+		// assumes device refreshes at 60 fps
+		int frameInterval = (int) floor(animationInterval * 60.0f);
 
-	// Setup DisplayLink in main thread
-	[displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-#else
-	animationTimer = [NSTimer scheduledTimerWithTimeInterval:animationInterval target:self selector:@selector(drawView) userInfo:nil repeats:YES];
-#endif
+		displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawView)];
+		[displayLink setFrameInterval:frameInterval];
+
+		// Setup DisplayLink in main thread
+		[displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+	}
+	else {
+		animationTimer = [NSTimer scheduledTimerWithTimeInterval:animationInterval target:self selector:@selector(drawView) userInfo:nil repeats:YES];
+	}
 
 	if (video_playing)
 	{
@@ -444,13 +448,16 @@ static void clear_touches() {
 		return;
 	active = FALSE;
 	printf("******** stop animation!\n");
-#if USE_CADISPLAYLINK
-	[displayLink invalidate];
-	displayLink = nil;
-#else
-	[animationTimer invalidate];
-	animationTimer = nil;
-#endif
+
+	if (useCADisplayLink) {
+		[displayLink invalidate];
+		displayLink = nil;
+	}
+	else {
+		[animationTimer invalidate];
+		animationTimer = nil;
+	}
+
 	clear_touches();
 
 	if (video_playing)
@@ -462,13 +469,7 @@ static void clear_touches() {
 - (void)setAnimationInterval:(NSTimeInterval)interval
 {
 	animationInterval = interval;
-	
-#if USE_CADISPLAYLINK
-	if(displayLink)
-#else
-	if(animationTimer)
-#endif
-	{
+	if ( (useCADisplayLink && displayLink) || ( !useCADisplayLink && animationTimer ) ) {
 		[self stopAnimation];
 		[self startAnimation];
 	}
@@ -477,16 +478,16 @@ static void clear_touches() {
 // Updates the OpenGL view when the timer fires
 - (void)drawView
 {
-#if USE_CADISPLAYLINK
-	// Pause the CADisplayLink to avoid recursion
-	[displayLink setPaused: YES];
+	if (useCADisplayLink) {
+		// Pause the CADisplayLink to avoid recursion
+		[displayLink setPaused: YES];
 
-	// Process all input events
-	while(CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, TRUE) == kCFRunLoopRunHandledSource);
+		// Process all input events
+		while(CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, TRUE) == kCFRunLoopRunHandledSource);
 
-	// We are good to go, resume the CADisplayLink
-	[displayLink setPaused: NO];
-#endif
+		// We are good to go, resume the CADisplayLink
+		[displayLink setPaused: NO];
+	}
 
 	if (!active) {
 		printf("draw view not active!\n");
@@ -632,7 +633,7 @@ static void clear_touches() {
 		case AVAudioSessionRouteChangeReasonOldDeviceUnavailable:
 			NSLog(@"AVAudioSessionRouteChangeReasonOldDeviceUnavailable");
 			NSLog(@"Headphone/Line was pulled. Resuming video play....");
-			if (_is_video_playing) {
+			if (_is_video_playing()) {
 
 				dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5f * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 							[_instance.avPlayer play]; // NOTE: change this line according your current player implementation

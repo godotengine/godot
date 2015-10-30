@@ -2421,6 +2421,16 @@ void GDParser::_parse_class(ClassNode *p_class) {
 								}; //fallthrough to use the same
 								case Variant::REAL: {
 
+									if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier()=="EASE") {
+										current_export.hint=PROPERTY_HINT_EXP_EASING;
+										tokenizer->advance();
+										if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected ')' in hint.");
+											return;
+										}
+										break;
+									}
+
 									float sign=1.0;
 
 									if (tokenizer->get_token()==GDTokenizer::TK_OP_SUB) {
@@ -2571,6 +2581,17 @@ void GDParser::_parse_class(ClassNode *p_class) {
 										}
 										break;
 									}
+
+									if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier()=="MULTILINE") {
+
+										current_export.hint=PROPERTY_HINT_MULTILINE_TEXT;
+										tokenizer->advance();
+										if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected ')' in hint.");
+											return;
+										}
+										break;
+									}
 								} break;
 								case Variant::COLOR: {
 
@@ -2607,23 +2628,16 @@ void GDParser::_parse_class(ClassNode *p_class) {
 					} else if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER) {
 
 						String identifier = tokenizer->get_token_identifier();
-						if (identifier == "flag") {
-							current_export.type=Variant::INT;
-							current_export.hint=PROPERTY_HINT_ALL_FLAGS;
-						}else if (identifier == "multiline"){
-							current_export.type=Variant::STRING;
-							current_export.hint=PROPERTY_HINT_MULTILINE_TEXT;
-						} else {
-							if (!ObjectTypeDB::is_type(identifier,"Resource")) {
-	
-								current_export=PropertyInfo();
-								_set_error("Export hint not a type or resource.");
-							}
-	
-							current_export.type=Variant::OBJECT;
-							current_export.hint=PROPERTY_HINT_RESOURCE_TYPE;
-							current_export.hint_string=identifier;
+						if (!ObjectTypeDB::is_type(identifier,"Resource")) {
+
+							current_export=PropertyInfo();
+							_set_error("Export hint not a type or resource.");
 						}
+
+						current_export.type=Variant::OBJECT;
+						current_export.hint=PROPERTY_HINT_RESOURCE_TYPE;
+						current_export.hint_string=identifier;
+
 						tokenizer->advance();
 					}
 

@@ -102,6 +102,7 @@ opts.Add('p','Platform (same as platform=).',"")
 opts.Add('tools','Build Tools (Including Editor): (yes/no)','yes')
 opts.Add('gdscript','Build GDSCript support: (yes/no)','yes')
 opts.Add('vorbis','Build Ogg Vorbis Support: (yes/no)','yes')
+opts.Add('opus','Build Opus Audio Format Support: (yes/no)','yes')
 opts.Add('minizip','Build Minizip Archive Support: (yes/no)','yes')
 opts.Add('squish','Squish BC Texture Compression in editor (yes/no)','yes')
 opts.Add('theora','Theora Video (yes/no)','yes')
@@ -299,6 +300,8 @@ if selected_platform in platform_list:
 
 	if (env['vorbis']=='yes'):
 		env.Append(CPPFLAGS=['-DVORBIS_ENABLED']);
+	if (env['opus']=='yes'):
+		env.Append(CPPFLAGS=['-DOPUS_ENABLED']);
 
 	if (env['theora']=='yes'):
 		env.Append(CPPFLAGS=['-DTHEORA_ENABLED']);

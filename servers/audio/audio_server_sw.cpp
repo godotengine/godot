@@ -455,12 +455,12 @@ void AudioServerSW::voice_play(RID p_voice, RID p_sample) {
 
 }
 
-void AudioServerSW::voice_set_volume(RID p_voice, float p_db) {
+void AudioServerSW::voice_set_volume(RID p_voice, float p_volume) {
 
 	VoiceRBSW::Command cmd;
 	cmd.type=VoiceRBSW::Command::CMD_SET_VOLUME;
 	cmd.voice=p_voice;
-	cmd.volume.volume=p_db;
+	cmd.volume.volume=p_volume;
 	voice_rb.push_command(cmd);
 
 }
@@ -920,7 +920,7 @@ float AudioServerSW::get_event_voice_global_volume_scale() const {
 
 double AudioServerSW::get_output_delay() const {
 
-	return _output_delay;
+	return _output_delay+AudioDriverSW::get_singleton()->get_latency();
 }
 
 double AudioServerSW::get_mix_time() const {
