@@ -971,10 +971,10 @@ FRAGMENT_SHADER_CODE
 #ifdef LIGHT_TYPE_DIRECTIONAL
 
 	float shadow_fade_exponent=5.0;  //hardcoded for now
-	float shadow_fade=pow(min(length(vertex_interp)/light_attenuation.g,1.0),shadow_fade_exponent);
+	float shadow_fade=pow(length(vertex_interp)/light_attenuation.g,shadow_fade_exponent);
 
 // optimization - skip shadows outside visible range
-	if(shadow_fade<0.999){
+	if(shadow_fade<1.0){
 
 #ifdef LIGHT_USE_PSSM
 
