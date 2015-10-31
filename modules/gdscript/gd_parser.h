@@ -133,7 +133,7 @@ public:
 		Vector<StringName> require_keys;
 
 		_FORCE_INLINE_ void insert_require(StringName p_key) {
-			if (require_keys.find(p_key) < 0 && body->variables.find(p_key) < 0) {
+			if (require_keys.find(p_key) < 0 && body->variables.find(p_key) < 0 && body->arguments.find(p_key) < 0) {
 				require_keys.push_back(p_key);
 			}else if (LambdaFunctionNode *func = dynamic_cast<LambdaFunctionNode*>(parent)) {
 				func->insert_require(p_key);
