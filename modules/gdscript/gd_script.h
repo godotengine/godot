@@ -221,7 +221,6 @@ class GDFunctionObject : public Reference {
 protected:
 	GDFunction *function;
 	GDInstance *instance;
-	bool enable;
 	friend class GDInstance;
 	friend class GDFunction;
 	friend class GDSignalObject;
@@ -229,12 +228,12 @@ protected:
 
 public:
 	bool is_valid() const;
-
+	Object *get_owner() const;
 
 	_FORCE_INLINE_ virtual StringName get_name() const { return function->get_name(); }
 	virtual Variant applyv(const Array p_args);
 	virtual Variant apply(const Variant** p_args,int p_argcount,Variant::CallError &r_error);
-	GDFunctionObject() {enable=true;instance=NULL, function=NULL;}
+	GDFunctionObject() {instance=NULL, function=NULL;}
 //	~GDFunctoionObject();
 };
 
@@ -410,6 +409,7 @@ class GDInstance : public ScriptInstance {
 friend class GDScript;
 friend class GDFunction;
 friend class GDFunctions;
+friend class GDFunctionObject;
 friend class GDLambdaFunctionObject;
 friend class GDNativeFunctionObject;
 friend class GDSignalObject;
