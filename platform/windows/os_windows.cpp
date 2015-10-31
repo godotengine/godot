@@ -1373,9 +1373,10 @@ void OS_Windows::finalize() {
 //		memdelete(debugger_connection_console);
 //}
 
+	memdelete(sample_manager);
+
 	audio_server->finish();
 	memdelete(audio_server);
-	memdelete(sample_manager);
 
 	memdelete(input);
 
