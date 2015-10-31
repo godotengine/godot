@@ -284,19 +284,16 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 			if (_stack_size) {
 
 				stack=(Variant*)aptr;
-				int i = 0;
-				for(;i<p_argcount;i++)
-					memnew_placement(&stack[i],Variant(*p_args[i]));
-				if (p_requires_args) {
-					for(int j = 0, t = lambda_variants.size();j<t;i++,j++) {
-						memnew_placement(&stack[i+j], Variant(*p_requires_args[j]));
-					}
-				}
+				for (int i = 0; i < p_argcount; i++) 
+					memnew_placement(&stack[i], Variant(*p_args[i]));
+				if (p_requires_args) 
+					for (int i = 0, t = lambda_variants.size(); i < t; i++) 
+						memnew_placement(&stack[p_argcount + i], Variant(*p_requires_args[i]));
 				else
-					for(int j = 0, t = lambda_variants.size();j<t;i++,j++)
-						memnew_placement(&stack[i+j], Variant);
-				for(;i<(_call_size+_stack_size);i++)
-					memnew_placement(&stack[i],Variant);
+					for (int i = 0, t = lambda_variants.size(); i < t; i++) 
+						memnew_placement(&stack[p_argcount + i], Variant);
+				for (int i = p_argcount + lambda_variants.size(); i < _stack_size; i++) 
+					memnew_placement(&stack[i], Variant);
 			} else {
 				stack=NULL;
 			}
