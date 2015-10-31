@@ -501,7 +501,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				id->name = identifier;
 				expr = id;
 
-				if (current_block->outer_stack(identifier) && current_function) {
+				if (current_block && current_block->outer_stack(identifier) && current_function) {
 					LambdaFunctionNode *in = dynamic_cast<LambdaFunctionNode*>(current_function);
 					if (in) in->insert_require(identifier);
 				}
