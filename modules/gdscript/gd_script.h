@@ -60,6 +60,8 @@ public:
 		OPCODE_CALL_BUILT_IN,
 		OPCODE_CALL_SELF,
 		OPCODE_CALL_SELF_BASE,
+		OPCODE_CALL_STACK,
+		OPCODE_CALL_STACK_RETURN,
 		OPCODE_YIELD,
 		OPCODE_YIELD_SIGNAL,
 		OPCODE_YIELD_RESUME,
@@ -425,6 +427,7 @@ friend class GDSignalObject;
 	Ref<GDFunctionObject> get_function(StringName p_name);
 	Ref<GDLambdaFunctionObject> get_lambda_function(StringName p_name, Variant *p_stack, int p_stack_size);
 	void remove_lambda_function( GDLambdaFunctionObject *func) {lambda_functions.erase(func);}
+	bool _get_no_func(const StringName& p_name, Variant &r_ret) const;
 public:
 
 	virtual bool set(const StringName& p_name, const Variant& p_value);

@@ -453,6 +453,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			} else {
 
 				SelfNode *self = alloc_node<SelfNode>();
+				self->implicit = true;
 				op->arguments.push_back(self);
 
 				StringName identifier;
@@ -1937,13 +1938,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 }
 
 GDParser::Node* GDParser::_parse_function(ClassNode *p_class, FunctionNode *p_func, StringName *method_name, bool *has_identifier, StringName *identifier) {
-	bool _static=false;
-
-	if (tokenizer->get_token(-1)==GDTokenizer::TK_PR_STATIC) {
-
-		_static=true;
-	}
-
+	bool _static=p_func?p_func->_static:tokenizer->get_token(-1)==GDTokenizer::TK_PR_STATIC;
 
 	tokenizer->advance();
 	StringName name;

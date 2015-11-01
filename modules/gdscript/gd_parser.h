@@ -133,10 +133,12 @@ public:
 		Vector<StringName> require_keys;
 
 		_FORCE_INLINE_ void insert_require(StringName p_key) {
-			if (require_keys.find(p_key) < 0 && body->variables.find(p_key) < 0) {
-				require_keys.push_back(p_key);
-			}else if (LambdaFunctionNode *func = dynamic_cast<LambdaFunctionNode*>(parent)) {
-				func->insert_require(p_key);
+			if (body->variables.find(p_key) < 0 && body->arguments.find(p_key) < 0) {
+				if (require_keys.find(p_key) < 0) {
+					require_keys.push_back(p_key);
+				}else if (LambdaFunctionNode *func = dynamic_cast<LambdaFunctionNode*>(parent)) {
+					func->insert_require(p_key);
+				}
 			}
 		}
 
@@ -167,11 +169,7 @@ public:
 		}
 
 		_FORCE_INLINE_ bool outer_stack(const StringName &identifier) const {
-			bool ret = variables.find(identifier)>=0?false:parent_block?parent_block->has_identifier(identifier): false;
-			if (!ret) {
-				return arguments.find(identifier) >= 0? false:parent_block?parent_block->is_stack_argument(identifier): false;
-			}
-			return ret;
+			return arguments.find(identifier) >= 0 || variables.find(identifier)>=0 ? false : (parent_block?parent_block->has_identifier(identifier) || parent_block->is_stack_argument(identifier) : false);
 		}
 
 		BlockNode() { type=TYPE_BLOCK; end_line=-1; parent_block=NULL; parent_class=NULL; }
@@ -225,7 +223,8 @@ public:
 	};
 
 	struct SelfNode : public Node {
-		SelfNode() { type=TYPE_SELF; }
+		bool implicit;
+		SelfNode() { type=TYPE_SELF; implicit=false;}
 	};
 
 	struct OperatorNode : public Node {

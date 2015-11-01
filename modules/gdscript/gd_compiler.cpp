@@ -234,7 +234,10 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 			 handled in constants now
 			 if (codegen.script->subclasses.has(identifier)) {
 				//same with a subclass, make it a local constant.
-				int idx = codegen.get_constant_pos(codegen.script->subclasses[identifier]);
+				int idx = codegen.get_constant_pos(codegen.scrip
+
+				int pos = codegen.stack_identifiers[identifier];
+				return pos|(GDFunction::ADDR_TYPE_STACK_VARIABLE<<GDFunction::ADDR_BITS);t->subclasses[identifier]);
 				return idx|(GDFunction::ADDR_TYPE_LOCAL_CONSTANT<<GDFunction::ADDR_BITS); //make it a local constant (faster access)
 
 			}*/
@@ -487,45 +490,75 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 						}
 
-
 						Vector<int> arguments;
 						int slevel = p_stack_level;
 
-						for(int i=0;i<on->arguments.size();i++) {
-
-							int ret;
-
-							if (i==0 && on->arguments[i]->type==GDParser::Node::TYPE_SELF && codegen.function_node && codegen.function_node->_static) {
-								//static call to self
-								ret=(GDFunction::ADDR_TYPE_CLASS<<GDFunction::ADDR_BITS);
-							} else if (i==1) {
-
-								if (on->arguments[i]->type!=GDParser::Node::TYPE_IDENTIFIER) {
-									_set_error("Attempt to call a non-identifier.",on);
-									return -1;
-								}
-								GDParser::IdentifierNode *id = static_cast<GDParser::IdentifierNode*>(on->arguments[i]);
-								ret=codegen.get_name_map_pos(id->name);
-
-							} else {
-
-								ret = _parse_expression(codegen,on->arguments[i],slevel);
-								if (ret<0)
-									return ret;
-								if (ret&GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS) {
-									slevel++;
-									codegen.alloc_stack(slevel);
+						do {
+							if (instance->type==GDParser::Node::TYPE_SELF) {
+								const GDParser::SelfNode *self = static_cast<const GDParser::SelfNode*>(instance);
+								if (self->implicit && on->arguments[1]->type==GDParser::Node::TYPE_IDENTIFIER) {
+									GDParser::IdentifierNode *id = static_cast<GDParser::IdentifierNode*>(on->arguments[1]);
+									if (codegen.stack_identifiers.has(id->name)) {
+										int sv = _parse_expression(codegen, id,slevel);
+										if (sv<0)
+											return sv;
+										for(int i=2;i<on->arguments.size();i++) {
+											int ret = _parse_expression(codegen,on->arguments[i],slevel);
+											if (ret<0)
+												return ret;
+											if (ret&GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS) {
+												slevel++;
+												codegen.alloc_stack(slevel);
+											}
+											arguments.push_back(ret);
+										}
+										codegen.opcodes.push_back(p_root?GDFunction::OPCODE_CALL_STACK:GDFunction::OPCODE_CALL_STACK_RETURN);
+										codegen.opcodes.push_back(on->arguments.size()-2);
+										codegen.alloc_call(on->arguments.size()-2);
+										codegen.opcodes.push_back(sv);
+										for(int i=0,t=arguments.size();i<t;i++)
+											codegen.opcodes.push_back(arguments[i]);
+										break;
+									}
 								}
 							}
-							arguments.push_back(ret);
 
-						}
+							for(int i=0;i<on->arguments.size();i++) {
 
-						codegen.opcodes.push_back(p_root?GDFunction::OPCODE_CALL:GDFunction::OPCODE_CALL_RETURN); // perform operator
-						codegen.opcodes.push_back(on->arguments.size()-2);
-						codegen.alloc_call(on->arguments.size()-2);
-						for(int i=0;i<arguments.size();i++)
-							codegen.opcodes.push_back(arguments[i]);
+								int ret;
+
+								if (i==0 && on->arguments[i]->type==GDParser::Node::TYPE_SELF && codegen.function_node && codegen.function_node->_static) {
+									//static call to self
+									ret=(GDFunction::ADDR_TYPE_CLASS<<GDFunction::ADDR_BITS);
+								} else if (i==1) {
+
+									if (on->arguments[i]->type!=GDParser::Node::TYPE_IDENTIFIER) {
+										_set_error("Attempt to call a non-identifier.",on);
+										return -1;
+									}
+									GDParser::IdentifierNode *id = static_cast<GDParser::IdentifierNode*>(on->arguments[i]);
+									ret=codegen.get_name_map_pos(id->name);
+
+								} else {
+
+									ret = _parse_expression(codegen,on->arguments[i],slevel);
+									if (ret<0)
+										return ret;
+									if (ret&GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS) {
+										slevel++;
+										codegen.alloc_stack(slevel);
+									}
+								}
+								arguments.push_back(ret);
+
+							}
+
+							codegen.opcodes.push_back(p_root?GDFunction::OPCODE_CALL:GDFunction::OPCODE_CALL_RETURN); // perform operator
+							codegen.opcodes.push_back(on->arguments.size()-2);
+							codegen.alloc_call(on->arguments.size()-2);
+							for(int i=0;i<arguments.size();i++)
+								codegen.opcodes.push_back(arguments[i]);
+						} while (false);
 					}
 				} break;
 				case GDParser::OperatorNode::OP_YIELD: {
@@ -942,7 +975,6 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 				} break;
 				default: {
-
 
 					ERR_EXPLAIN("Bug in bytecode compiler, unexpected operator #"+itos(on->op)+" in parse tree while parsing expression.");
 					ERR_FAIL_V(0); //unreachable code
