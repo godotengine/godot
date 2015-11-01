@@ -19,5 +19,3 @@ for x in env.module_list:
 lib = env_modules.Library("modules",env.modules_sources)
 
 env.Prepend(LIBS=[lib])
-
-

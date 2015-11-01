@@ -65,7 +65,5 @@ if (env["freetype"]=="builtin"):
 
 #   lib = env.Library("freetype_builtin",ft_sources)
 #   env.Prepend(LIBS=[lib])
- 
+
 Export('env')
-
-
