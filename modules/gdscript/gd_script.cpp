@@ -2695,28 +2695,38 @@ Variant GDInstance::call(const StringName& p_method,const Variant** p_args,int p
 
 	//printf("calling %ls:%i method %ls\n", script->get_path().c_str(), -1, String(p_method).c_str());
 
-	Variant var;
-	if (_get_no_func(p_method, var)) {
-		if (var.get_type() == Variant::OBJECT) {
-			GDFunctionObject *func_object = ((Object *) var)->cast_to<GDFunctionObject>();
-			if (func_object)
-				return func_object->apply(p_args, p_argcount, r_error);
-		}
-		r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
-		return Variant();
-	}else {
-		GDScript *sptr=script.ptr();
-		while(sptr) {
-			Map<StringName,GDFunction>::Element *E = sptr->member_functions.find(p_method);
+	GDScript *sptr=script.ptr();
+	while(sptr) {
+		{
+			const Map<StringName,GDScript::MemberInfo>::Element *E = script->member_indices.find(p_method);
 			if (E) {
-				return E->get().call(this,p_args,p_argcount,r_error);
+				Variant var;
+				do {
+					if (E->get().getter) {
+						Variant::CallError err;
+						var=const_cast<GDInstance*>(this)->call(E->get().getter,NULL,0,err);
+						if (err.error==Variant::CallError::CALL_OK) {
+							break;
+						}
+					}
+					var=members[E->get().index];
+				} while (false);
+				if (var.get_type() == Variant::OBJECT) {
+					GDFunctionObject *func_object = ((Object *) var)->cast_to<GDFunctionObject>();
+					if (func_object)
+						return func_object->apply(p_args, p_argcount, r_error);
+				}
 			}
-
-			sptr = sptr->_base;
 		}
-		r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
-		return Variant();
+		Map<StringName,GDFunction>::Element *E = sptr->member_functions.find(p_method);
+		if (E) {
+			return E->get().call(this,p_args,p_argcount,r_error);
+		}
+
+		sptr = sptr->_base;
 	}
+	r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+	return Variant();
 }
 
 void GDInstance::call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount) {
