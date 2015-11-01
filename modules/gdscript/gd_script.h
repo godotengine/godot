@@ -230,12 +230,13 @@ protected:
 	static void _bind_methods();
 
 public:
-	bool is_valid() const;
+	_FORCE_INLINE_ virtual bool is_valid() const {return instance && function;}
 	Object *get_owner() const;
 
 	_FORCE_INLINE_ virtual StringName get_name() const { return function->get_name(); }
 	virtual Variant applyv(const Array p_args);
 	virtual Variant apply(const Variant** p_args,int p_argcount,Variant::CallError &r_error);
+	virtual Variant apply_with(Object *p_target, const Array p_args);
 	GDFunctionObject() {instance=NULL, function=NULL;}
 //	~GDFunctoionObject();
 };
@@ -246,9 +247,11 @@ class GDNativeFunctionObject : public GDFunctionObject {
 	friend class GDInstance;
 	StringName method_name;
 public:
-
+	_FORCE_INLINE_ virtual bool is_valid() const {return !!instance;}
+	
 	_FORCE_INLINE_ virtual StringName get_name() const { return method_name; }
 	virtual Variant apply(const Variant** p_args,int p_argcount,Variant::CallError &r_error);
+	virtual Variant apply_with(Object *p_target, const Array p_args);
 };
 
 class GDLambdaFunctionObject : public GDFunctionObject {
@@ -257,6 +260,7 @@ class GDLambdaFunctionObject : public GDFunctionObject {
 	Vector<Variant> variants;
 public:
 	virtual Variant apply(const Variant** p_args,int p_argcount,Variant::CallError &r_error);
+	virtual Variant apply_with(Object *p_target, const Array p_args);
 
 	~GDLambdaFunctionObject();
 };

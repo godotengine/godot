@@ -1536,13 +1536,9 @@ GDFunctionState::~GDFunctionState() {
 
 ///////////////////////////
 
-bool GDFunctionObject::is_valid() const {
-	return instance != NULL;
-}
-
 Object *GDFunctionObject::get_owner() const {
 
-	if (!instance) {
+	if (!is_valid()) {
 		return NULL;
 	}
 	return instance->owner;
@@ -1550,7 +1546,7 @@ Object *GDFunctionObject::get_owner() const {
 
 Variant GDFunctionObject::apply(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
-	if (!instance) {
+	if (!is_valid()) {
 		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return Variant();
 	}
@@ -1571,16 +1567,33 @@ Variant GDFunctionObject::applyv(const Array p_args) {
 	return ret;
 }
 
+Variant GDFunctionObject::apply_with(Object *p_target, const Array p_args) {
+	ERR_FAIL_COND_V(!p_target, Variant());
+	ERR_FAIL_COND_V(!function, Variant());
+		
+	Variant::CallError error;
+	const Variant **v_args = (const Variant**)memalloc(p_args.size() * sizeof(Variant*));
+
+	for (int i = 0; i < p_args.size() ; ++i) {
+		v_args[i] = &p_args[i];
+	}
+	Variant ret = p_target->call(get_name(), v_args, p_args.size(), error);
+	memdelete(v_args);
+	ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, Variant());
+	return ret;
+}
+
 void GDFunctionObject::_bind_methods() {
 	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"apply",&GDFunctionObject::apply, MethodInfo("apply"));
-	ObjectTypeDB::bind_method(_MD("applyv:var", "args"), &GDFunctionObject::applyv, DEFVAL(Array()));
+	ObjectTypeDB::bind_method(_MD("applyv:var", "args:Array"), &GDFunctionObject::applyv, DEFVAL(Array()));
+	ObjectTypeDB::bind_method(_MD("apply_with:var", "target:Object", "args:Array"), &GDFunctionObject::apply_with, DEFVAL(Array()));
 	ObjectTypeDB::bind_method(_MD("is_valid"), &GDFunctionObject::is_valid);
 	ObjectTypeDB::bind_method(_MD("get_name"), &GDFunctionObject::get_name);
 	ObjectTypeDB::bind_method(_MD("get_owner:Object"), &GDFunctionObject::get_owner);
 }
 
 Variant GDNativeFunctionObject::apply(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-	if (!instance) {
+	if (!is_valid()) {
 		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return Variant();
 	}
@@ -1588,8 +1601,23 @@ Variant GDNativeFunctionObject::apply(const Variant **p_args, int p_argcount, Va
 	return instance->owner->call(method_name, p_args, p_argcount, r_error);
 }
 
+Variant GDNativeFunctionObject::apply_with(Object *p_target, const Array p_args) {
+	ERR_FAIL_COND_V(!p_target, Variant());
+		
+	Variant::CallError error;
+	const Variant **v_args = (const Variant**)memalloc(p_args.size() * sizeof(Variant*));
+
+	for (int i = 0; i < p_args.size() ; ++i) {
+		v_args[i] = &p_args[i];
+	}
+	Variant ret = p_target->call(get_name(), v_args, p_args.size(), error);
+	memdelete(v_args);
+	ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, Variant());
+	return ret;
+}
+
 Variant GDLambdaFunctionObject::apply(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-	if (!instance) {
+	if (!is_valid()) {
 		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return Variant();
 	}
@@ -1603,6 +1631,11 @@ Variant GDLambdaFunctionObject::apply(const Variant **p_args, int p_argcount, Va
 	Variant ret = function->call(instance, p_args, p_argcount, r_error, NULL, v_vars);
 	memfree(v_vars);
 	return ret;
+}
+
+Variant GDLambdaFunctionObject::apply_with(Object *p_target, const Array p_args) {
+	ERR_EXPLAIN("Lambda function don't support calling with target.");
+	ERR_FAIL_V(Variant());
 }
 
 GDLambdaFunctionObject::~GDLambdaFunctionObject() {
