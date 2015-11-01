@@ -71,8 +71,9 @@ for f in env.drivers_sources:
 		fname = env.File(f)[0].path
 	#base = string.join(fname.split("/")[:-1], "/")
 	fname = fname.replace("\\", "/")
+	#lib = env.Library("drivers", [fname])
 	base = string.join(fname.split("/")[:2], "/")
-	if base != cur_base and len(list) > max_src:
+	if base != cur_base or len(list) > max_src:
 		lib = env.Library("drivers"+str(num), list)
 		lib_list.append(lib)
 		list = []
@@ -80,10 +81,16 @@ for f in env.drivers_sources:
 	cur_base = base
 	list.append(f)
 
-if len(list) > 0:
-	lib = env.Library("drivers"+str(num), list)
-	lib_list.append(lib)
+lib = env.Library("drivers"+str(num), list)
+lib_list.append(lib)
+	
+if len(lib_list) > 0:
+	import os
+	if os.name=='posix':
+		env.Append(ARFLAGS=['-sT'])
 
+	lib = env.Library("drivers_collated", lib_list)
+	lib_list = [lib]
 
 drivers_base=[]
 env.add_source_files(drivers_base,"*.cpp")

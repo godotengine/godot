@@ -34,7 +34,7 @@ class ShaderCompilerGLES2 {
 
 	class Uniform;
 public:
-	class Flags;
+	struct Flags;
 private:
 
 	ShaderLanguage::ProgramNode *program_node;

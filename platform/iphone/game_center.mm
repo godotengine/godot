@@ -30,8 +30,8 @@
 
 #include "game_center.h"
 
-extern "C" {
 #import <GameKit/GameKit.h>
+extern "C" {
 #import "app_delegate.h"
 };
 
