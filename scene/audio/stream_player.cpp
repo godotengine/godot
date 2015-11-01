@@ -141,8 +141,8 @@ void StreamPlayer::play(float p_from_offset) {
 	ERR_FAIL_COND(!is_inside_tree());
 	if (playback.is_null())
 		return;
-	if (playback->is_playing())
-		stop();
+	//if (is_playing())
+	stop();
 
 	//_THREAD_SAFE_METHOD_
 	playback->play(p_from_offset);
@@ -175,7 +175,7 @@ bool StreamPlayer::is_playing() const {
 	if (playback.is_null())
 		return false;
 
-	return playback->is_playing();
+	return playback->is_playing() || resampler.has_data();
 }
 
 void StreamPlayer::set_loop(bool p_enable) {
@@ -267,7 +267,9 @@ void StreamPlayer::seek_pos(float p_time) {
 
 	if (playback.is_null())
 		return;
-	return playback->seek_pos(p_time);
+	//works better...
+	stop();
+	playback->play(p_time);
 
 }
 
