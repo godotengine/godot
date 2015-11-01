@@ -213,6 +213,17 @@ static String _get_var_type(const Variant* p_type) {
 
 }
 
+Variant GDFunction::call_method(Variant* p_self, const StringName& p_method, const Variant** p_args, int p_argcount, Variant::CallError& r_error) const {
+	if (p_self->get_type() == Variant::OBJECT) {
+		Object *target = *p_self;
+		if (target->get_script_instance()) {
+			GDInstance *instance = dynamic_cast<GDInstance*>(target->get_script_instance());
+			if (instance) return instance->call_member(p_method, p_args, p_argcount, r_error);
+		}
+	}
+	return p_self->call(p_method,p_args,p_argcount,r_error);
+}
+
 Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError& r_err, CallState *p_state, const Variant **p_requires_args) {
 
 	if (!_code_ptr) {
@@ -804,10 +815,10 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					if (call_ret) {
 
 						GET_VARIANT_PTR(ret,argc);
-						*ret = base->call(*methodname,(const Variant**)argptrs,argc,err);
+						*ret = call_method(base, *methodname, (const Variant**)argptrs,argc,err);
 					} else {
 
-						base->call(*methodname,(const Variant**)argptrs,argc,err);
+						call_method(base, *methodname, (const Variant**)argptrs,argc,err);
 					}
 					break;
 				}
@@ -2426,7 +2437,7 @@ bool GDInstance::set(const StringName& p_name, const Variant& p_value) {
 	return false;
 }
 
-bool GDInstance::_get_no_func(const StringName &p_name, Variant &r_ret) const {
+bool GDInstance::get(const StringName& p_name, Variant &r_ret) const {
 	const GDScript *sptr=script.ptr();
 	while(sptr) {
 
@@ -2472,19 +2483,14 @@ bool GDInstance::_get_no_func(const StringName &p_name, Variant &r_ret) const {
 		}
 		sptr = sptr->_base;
 	}
-	return false;
-}
-
-bool GDInstance::get(const StringName& p_name, Variant &r_ret) const {
-	bool ret = _get_no_func(p_name, r_ret);
-	if (!ret) {
+	{
 		Ref<GDFunctionObject> func = const_cast<GDInstance*>(this)->get_function(p_name);
 		if (func != NULL) {
 			r_ret = Variant(func);
 			return true;
 		}
 	}
-	return ret;
+	return false;
 
 }
 
@@ -2691,10 +2697,8 @@ bool GDInstance::has_method(const StringName& p_method) const {
 
 	return false;
 }
-Variant GDInstance::call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error) {
 
-	//printf("calling %ls:%i method %ls\n", script->get_path().c_str(), -1, String(p_method).c_str());
-
+Variant GDInstance::call_member(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error) {
 	GDScript *sptr=script.ptr();
 	while(sptr) {
 		{
@@ -2718,6 +2722,22 @@ Variant GDInstance::call(const StringName& p_method,const Variant** p_args,int p
 				}
 			}
 		}
+		Map<StringName,GDFunction>::Element *E = sptr->member_functions.find(p_method);
+		if (E) {
+			return E->get().call(this,p_args,p_argcount,r_error);
+		}
+
+		sptr = sptr->_base;
+	}
+	return owner->call(p_method, p_args, p_argcount, r_error);
+}
+
+Variant GDInstance::call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error) {
+
+	//printf("calling %ls:%i method %ls\n", script->get_path().c_str(), -1, String(p_method).c_str());
+
+	GDScript *sptr=script.ptr();
+	while(sptr) {
 		Map<StringName,GDFunction>::Element *E = sptr->member_functions.find(p_method);
 		if (E) {
 			return E->get().call(this,p_args,p_argcount,r_error);

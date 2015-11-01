@@ -143,6 +143,7 @@ friend class GDInstance;
 	Vector<Variant> cache;
 	List<StackDebug> stack_debug;
 
+	_FORCE_INLINE_ Variant call_method(Variant* p_self, const StringName& p_method, const Variant** p_args, int p_argcount, Variant::CallError& r_error) const;
 	_FORCE_INLINE_ Variant *_get_variant(int p_address,GDInstance *p_instance,GDScript *p_script,Variant &self,Variant *p_stack,String& r_error) const;
 	_FORCE_INLINE_ String _get_call_error(const Variant::CallError& p_err, const String& p_where,const Variant**argptrs) const;
 
@@ -426,8 +427,9 @@ friend class GDSignalObject;
 	void _ml_call_reversed(GDScript *sptr,const StringName& p_method,const Variant** p_args,int p_argcount);
 	Ref<GDFunctionObject> get_function(StringName p_name);
 	Ref<GDLambdaFunctionObject> get_lambda_function(StringName p_name, Variant *p_stack, int p_stack_size);
-	void remove_lambda_function( GDLambdaFunctionObject *func) {lambda_functions.erase(func);}
-	bool _get_no_func(const StringName& p_name, Variant &r_ret) const;
+	_FORCE_INLINE_ void remove_lambda_function( GDLambdaFunctionObject *func) {lambda_functions.erase(func);}
+	
+	Variant call_member(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error);
 public:
 
 	virtual bool set(const StringName& p_name, const Variant& p_value);
