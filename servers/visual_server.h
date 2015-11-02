@@ -707,6 +707,7 @@ public:
 
 	virtual void viewport_queue_screen_capture(RID p_viewport)=0;
 	virtual Image viewport_get_screen_capture(RID p_viewport) const=0;
+	virtual bool viewport_is_screen_capture_queued(RID p_viewport) const = 0;
 
 
 
@@ -1165,6 +1166,7 @@ public:
 	};
 
 	virtual bool has_feature(Features p_feature) const=0;
+	virtual void set_swap_buffers_active(const bool p_active)=0;
 
 	VisualServer();	
 	virtual ~VisualServer();

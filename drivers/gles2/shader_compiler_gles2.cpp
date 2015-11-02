@@ -154,6 +154,9 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				if (vnode->name==vname_vertex && p_assign_left) {
 					vertex_code_writes_vertex=true;
 				}
+				if (vnode->name == vname_position && p_assign_left) {
+					vertex_code_writes_position = true;
+				}
 				if (vnode->name==vname_color_interp) {
 					flags->use_color_interp=true;
 				}
@@ -659,6 +662,7 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	uses_texpixel_size=false;
 	uses_worldvec=false;
 	vertex_code_writes_vertex=false;
+	vertex_code_writes_position = false;
 	uses_shadow_color=false;
 	uniforms=r_uniforms;
 	flags=&r_flags;
@@ -690,6 +694,7 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	r_flags.uses_texscreen=uses_texscreen;
 	r_flags.uses_texpos=uses_texpos;
 	r_flags.vertex_code_writes_vertex=vertex_code_writes_vertex;
+	r_flags.vertex_code_writes_position=vertex_code_writes_position;
 	r_flags.uses_discard=uses_discard;
 	r_flags.uses_screen_uv=uses_screen_uv;
 	r_flags.uses_light=uses_light;
@@ -778,125 +783,127 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	replace_table["texscreen"]= "texscreen";
 	replace_table["texpos"]= "texpos";
 
-	mode_replace_table[0]["SRC_VERTEX"]="vertex_in.xyz";
-	mode_replace_table[0]["SRC_NORMAL"]="normal_in";
-	mode_replace_table[0]["SRC_TANGENT"]="tangent_in";
-	mode_replace_table[0]["SRC_BINORMALF"]="binormalf";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["POSITION"] = "gl_Position";
 
-	mode_replace_table[0]["VERTEX"]="vertex_interp";
-	mode_replace_table[0]["NORMAL"]="normal_interp";
-	mode_replace_table[0]["TANGENT"]="tangent_interp";
-	mode_replace_table[0]["BINORMAL"]="binormal_interp";
-	mode_replace_table[0]["UV"]="uv_interp.xy";
-	mode_replace_table[0]["UV2"]="uv_interp.zw";
-	mode_replace_table[0]["COLOR"]="color_interp";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SRC_VERTEX"] = "vertex_in.xyz";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SRC_NORMAL"] = "normal_in";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SRC_TANGENT"]="tangent_in";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SRC_BINORMALF"]="binormalf";
+
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["VERTEX"]="vertex_interp";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["NORMAL"]="normal_interp";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["TANGENT"]="tangent_interp";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["BINORMAL"]="binormal_interp";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["UV"]="uv_interp.xy";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["UV2"]="uv_interp.zw";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["COLOR"]="color_interp";
 	//@TODO convert to glsl stuff
-	mode_replace_table[0]["SPEC_EXP"]="vertex_specular_exp";
-	mode_replace_table[0]["WORLD_MATRIX"]="world_transform";
-	mode_replace_table[0]["INV_CAMERA_MATRIX"]="camera_inverse_transform";
-	mode_replace_table[0]["PROJECTION_MATRIX"]="projection_transform";
-	mode_replace_table[0]["MODELVIEW_MATRIX"]="modelview";
-	mode_replace_table[0]["POINT_SIZE"]="gl_PointSize";
-	mode_replace_table[0]["VAR1"]="var1_interp";
-	mode_replace_table[0]["VAR2"]="var2_interp";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SPEC_EXP"]="vertex_specular_exp";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["WORLD_MATRIX"]="world_transform";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["INV_CAMERA_MATRIX"]="camera_inverse_transform";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["PROJECTION_MATRIX"]="projection_transform";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["MODELVIEW_MATRIX"]="modelview";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["POINT_SIZE"]="gl_PointSize";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["VAR1"]="var1_interp";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["VAR2"]="var2_interp";
 
-//	mode_replace_table[0]["SCREEN_POS"]="SCREEN_POS";
-//	mode_replace_table[0]["SCREEN_SIZE"]="SCREEN_SIZE";
-	mode_replace_table[0]["INSTANCE_ID"]="instance_id";
-	mode_replace_table[0]["TIME"]="time";
+//	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SCREEN_POS"]="SCREEN_POS";
+//	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SCREEN_SIZE"]="SCREEN_SIZE";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["INSTANCE_ID"]="instance_id";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["TIME"]="time";
 
-	mode_replace_table[1]["VERTEX"]="vertex";
-	//mode_replace_table[1]["POSITION"]="IN_POSITION";
-	mode_replace_table[1]["NORMAL"]="normal";
-	mode_replace_table[1]["TANGENT"]="tangent";
-	mode_replace_table[1]["POSITION"]="gl_Position";
-	mode_replace_table[1]["BINORMAL"]="binormal";
-	mode_replace_table[1]["NORMALMAP"]="normalmap";
-	mode_replace_table[1]["NORMALMAP_DEPTH"]="normaldepth";
-	mode_replace_table[1]["VAR1"]="var1_interp";
-	mode_replace_table[1]["VAR2"]="var2_interp";
-	mode_replace_table[1]["UV"]="uv";
-	mode_replace_table[1]["UV2"]="uv2";
-	mode_replace_table[1]["SCREEN_UV"]="screen_uv";
-	mode_replace_table[1]["VAR1"]="var1_interp";
-	mode_replace_table[1]["VAR2"]="var2_interp";
-	mode_replace_table[1]["COLOR"]="color";
-	mode_replace_table[1]["DIFFUSE"]="diffuse.rgb";
-	mode_replace_table[1]["DIFFUSE_ALPHA"]="diffuse";
-	mode_replace_table[1]["SPECULAR"]="specular";
-	mode_replace_table[1]["EMISSION"]="emission";
-	mode_replace_table[1]["SHADE_PARAM"]="shade_param";
-	mode_replace_table[1]["SPEC_EXP"]="specular_exp";
-	mode_replace_table[1]["GLOW"]="glow";
-	mode_replace_table[1]["DISCARD"]="discard_";
-	mode_replace_table[1]["POINT_COORD"]="gl_PointCoord";
-	mode_replace_table[1]["INV_CAMERA_MATRIX"]="camera_inverse_transform";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["VERTEX"]="vertex";
+	//mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["POSITION"]="IN_POSITION";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["NORMAL"]="normal";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["TANGENT"]="tangent";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["POSITION"]="gl_Position";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["BINORMAL"]="binormal";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["NORMALMAP"]="normalmap";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["NORMALMAP_DEPTH"]="normaldepth";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["VAR1"]="var1_interp";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["VAR2"]="var2_interp";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["UV"]="uv";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["UV2"]="uv2";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["SCREEN_UV"]="screen_uv";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["VAR1"]="var1_interp";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["VAR2"]="var2_interp";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["COLOR"]="color";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["DIFFUSE"]="diffuse.rgb";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["DIFFUSE_ALPHA"]="diffuse";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["SPECULAR"]="specular";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["EMISSION"]="emission";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["SHADE_PARAM"]="shade_param";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["SPEC_EXP"]="specular_exp";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["GLOW"]="glow";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["DISCARD"]="discard_";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["POINT_COORD"]="gl_PointCoord";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["INV_CAMERA_MATRIX"]="camera_inverse_transform";
 
-	//mode_replace_table[1]["SCREEN_POS"]="SCREEN_POS";
-	//mode_replace_table[1]["SCREEN_TEXEL_SIZE"]="SCREEN_TEXEL_SIZE";
-	mode_replace_table[1]["TIME"]="time";
+	//mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["SCREEN_POS"]="SCREEN_POS";
+	//mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["SCREEN_TEXEL_SIZE"]="SCREEN_TEXEL_SIZE";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["TIME"]="time";
 
 	//////////////
 
-	mode_replace_table[2]["NORMAL"]="normal";
-	//mode_replace_table[2]["POSITION"]="IN_POSITION";
-	mode_replace_table[2]["LIGHT_DIR"]="light_dir";
-	mode_replace_table[2]["LIGHT_DIFFUSE"]="light_diffuse";
-	mode_replace_table[2]["LIGHT_SPECULAR"]="light_specular";
-	mode_replace_table[2]["EYE_VEC"]="eye_vec";
-	mode_replace_table[2]["DIFFUSE"]="mdiffuse";
-	mode_replace_table[2]["SPECULAR"]="specular";
-	mode_replace_table[2]["SPECULAR_EXP"]="specular_exp";
-	mode_replace_table[2]["SHADE_PARAM"]="shade_param";
-	mode_replace_table[2]["LIGHT"]="light";
-	mode_replace_table[2]["POINT_COORD"]="gl_PointCoord";
-	mode_replace_table[2]["TIME"]="time";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["NORMAL"]="normal";
+	//mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["POSITION"]="IN_POSITION";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["LIGHT_DIR"]="light_dir";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["LIGHT_DIFFUSE"]="light_diffuse";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["LIGHT_SPECULAR"]="light_specular";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["EYE_VEC"]="eye_vec";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["DIFFUSE"]="mdiffuse";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["SPECULAR"]="specular";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["SPECULAR_EXP"]="specular_exp";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["SHADE_PARAM"]="shade_param";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["LIGHT"]="light";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["POINT_COORD"]="gl_PointCoord";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["TIME"]="time";
 
-	mode_replace_table[3]["SRC_VERTEX"]="src_vtx";
-	mode_replace_table[3]["VERTEX"]="outvec.xy";
-	mode_replace_table[3]["WORLD_VERTEX"]="outvec.xy";
-	mode_replace_table[3]["UV"]="uv_interp";
-	mode_replace_table[3]["COLOR"]="color_interp";
-	mode_replace_table[3]["VAR1"]="var1_interp";
-	mode_replace_table[3]["VAR2"]="var2_interp";
-	mode_replace_table[3]["POINT_SIZE"]="gl_PointSize";
-	mode_replace_table[3]["WORLD_MATRIX"]="modelview_matrix";
-	mode_replace_table[3]["PROJECTION_MATRIX"]="projection_matrix";
-	mode_replace_table[3]["EXTRA_MATRIX"]="extra_matrix";
-	mode_replace_table[3]["TIME"]="time";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["SRC_VERTEX"]="src_vtx";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["VERTEX"]="outvec.xy";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["WORLD_VERTEX"]="outvec.xy";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["UV"]="uv_interp";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["COLOR"]="color_interp";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["VAR1"]="var1_interp";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["VAR2"]="var2_interp";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["POINT_SIZE"]="gl_PointSize";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["WORLD_MATRIX"]="modelview_matrix";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["PROJECTION_MATRIX"]="projection_matrix";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["EXTRA_MATRIX"]="extra_matrix";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["TIME"]="time";
 
-	mode_replace_table[4]["POSITION"]="gl_Position";
-	mode_replace_table[4]["NORMAL"]="normal";
-	mode_replace_table[4]["NORMALMAP"]="normal_map";
-	mode_replace_table[4]["NORMALMAP_DEPTH"]="normal_depth";
-	mode_replace_table[4]["UV"]="uv_interp";
-	mode_replace_table[4]["SRC_COLOR"]="color_interp";
-	mode_replace_table[4]["COLOR"]="color";
-	mode_replace_table[4]["TEXTURE"]="texture";
-	mode_replace_table[4]["TEXTURE_PIXEL_SIZE"]="texpixel_size";
-	mode_replace_table[4]["VAR1"]="var1_interp";
-	mode_replace_table[4]["VAR2"]="var2_interp";
-	mode_replace_table[4]["SCREEN_UV"]="screen_uv";
-	mode_replace_table[4]["POINT_COORD"]="gl_PointCoord";
-	mode_replace_table[4]["TIME"]="time";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["POSITION"]="gl_Position";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["NORMAL"]="normal";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["NORMALMAP"]="normal_map";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["NORMALMAP_DEPTH"]="normal_depth";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["UV"]="uv_interp";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["SRC_COLOR"]="color_interp";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["COLOR"]="color";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["TEXTURE"]="texture";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["TEXTURE_PIXEL_SIZE"]="texpixel_size";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["VAR1"]="var1_interp";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["VAR2"]="var2_interp";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["SCREEN_UV"]="screen_uv";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["POINT_COORD"]="gl_PointCoord";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["TIME"]="time";
 
-	mode_replace_table[5]["POSITION"]="gl_Position";
-	mode_replace_table[5]["NORMAL"]="normal";
-	mode_replace_table[5]["UV"]="uv_interp";
-	mode_replace_table[5]["COLOR"]="color";
-	mode_replace_table[5]["TEXTURE"]="texture";
-	mode_replace_table[5]["TEXTURE_PIXEL_SIZE"]="texpixel_size";
-	mode_replace_table[5]["VAR1"]="var1_interp";
-	mode_replace_table[5]["VAR2"]="var2_interp";
-	mode_replace_table[5]["LIGHT_VEC"]="light_vec";
-	mode_replace_table[5]["LIGHT_HEIGHT"]="light_height";
-	mode_replace_table[5]["LIGHT_COLOR"]="light";
-	mode_replace_table[5]["LIGHT_UV"]="light_uv";
-	mode_replace_table[5]["LIGHT"]="light_out";
-	mode_replace_table[5]["SHADOW"]="shadow_color";
-	mode_replace_table[5]["SCREEN_UV"]="screen_uv";
-	mode_replace_table[5]["POINT_COORD"]="gl_PointCoord";
-	mode_replace_table[5]["TIME"]="time";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["POSITION"]="gl_Position";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["NORMAL"]="normal";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["UV"]="uv_interp";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["COLOR"]="color";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["TEXTURE"]="texture";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["TEXTURE_PIXEL_SIZE"]="texpixel_size";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["VAR1"]="var1_interp";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["VAR2"]="var2_interp";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["LIGHT_VEC"]="light_vec";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["LIGHT_HEIGHT"]="light_height";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["LIGHT_COLOR"]="light";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["LIGHT_UV"]="light_uv";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["LIGHT"]="light_out";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["SHADOW"]="shadow_color";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["SCREEN_UV"]="screen_uv";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["POINT_COORD"]="gl_PointCoord";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["TIME"]="time";
 
 
 
@@ -917,6 +924,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	vname_var1_interp="VAR1";
 	vname_var2_interp="VAR2";
 	vname_vertex="VERTEX";
+	vname_position = "POSITION";
 	vname_light="LIGHT";
 	vname_time="TIME";
 	vname_normalmap="NORMALMAP";

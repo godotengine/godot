@@ -996,6 +996,7 @@ public:
 
 	virtual void viewport_queue_screen_capture(RID p_viewport);
 	virtual Image viewport_get_screen_capture(RID p_viewport) const;
+	virtual bool viewport_is_screen_capture_queued(RID p_viewport) const;
 
 	virtual void viewport_set_rect(RID p_viewport,const ViewportRect& p_rect);
 	virtual ViewportRect viewport_get_rect(RID p_viewport) const;
@@ -1256,6 +1257,8 @@ public:
 
 	virtual int get_render_info(RenderInfo p_info);
 	virtual bool has_feature(Features p_feature) const;
+
+	virtual void set_swap_buffers_active(const bool p_active);
 
 	RID get_test_cube();
 
