@@ -150,7 +150,7 @@ void Node::_propagate_ready() {
 }
 
 
-void Node::_propagate_enter_tree() {
+void Node::_propagate_enter_tree(bool skip_notify=false) {
 	// this needs to happen to all childs before any enter_tree
 
 	if (data.parent) {
@@ -174,17 +174,17 @@ void Node::_propagate_enter_tree() {
 		data.tree->add_to_group(*K,this);
 	}
 
+	if (!skip_notify) {
+		notification(NOTIFICATION_ENTER_TREE);
 
-	notification(NOTIFICATION_ENTER_TREE);
+		if (get_script_instance()) {
 
-	if (get_script_instance()) {
+			Variant::CallError err;
+			get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_enter_tree,NULL,0);
+		}
 
-		Variant::CallError err;
-		get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_enter_tree,NULL,0);
+		emit_signal(SceneStringNames::get_singleton()->enter_tree);
 	}
-
-	emit_signal(SceneStringNames::get_singleton()->enter_tree);
-
 
 	data.blocked++;
 	//block while adding children
@@ -192,7 +192,7 @@ void Node::_propagate_enter_tree() {
 	for (int i=0;i<data.children.size();i++) {
 		
 		if (!data.children[i]->is_inside_tree()) // could have been added in enter_tree
-			data.children[i]->_propagate_enter_tree();
+			data.children[i]->_propagate_enter_tree(skip_notify);
 	}	
 
 	data.blocked--;
@@ -209,7 +209,7 @@ void Node::_propagate_enter_tree() {
 
 
 
-void Node::_propagate_exit_tree() {
+void Node::_propagate_exit_tree(bool skip_notify=false) {
 
 	//block while removing children
 
@@ -239,19 +239,21 @@ void Node::_propagate_exit_tree() {
 
 	for (int i=data.children.size()-1;i>=0;i--) {
 
-		data.children[i]->_propagate_exit_tree();
+		data.children[i]->_propagate_exit_tree(skip_notify);
 	}
 
 	data.blocked--;
 
-	if (get_script_instance()) {
+	if (!skip_notify) {
+		if (get_script_instance()) {
 
-		Variant::CallError err;
-		get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_exit_tree,NULL,0);
+			Variant::CallError err;
+			get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_exit_tree,NULL,0);
+		}
+		emit_signal(SceneStringNames::get_singleton()->exit_tree);
+
+		notification(NOTIFICATION_EXIT_TREE,true);
 	}
-	emit_signal(SceneStringNames::get_singleton()->exit_tree);
-
-	notification(NOTIFICATION_EXIT_TREE,true);
 	if (data.tree)
 		data.tree->node_removed(this);
 
@@ -274,9 +276,50 @@ void Node::_propagate_exit_tree() {
 
 }
 
+void Node::reparent(Node *p_parent, int p_pos=-1) {
 
+	ERR_FAIL_NULL(p_parent);
 
+	int pos=0;
+	if (p_pos>=0)
+		pos=p_pos;
+	else if (p_parent->data.children.size()>0)
+		pos=p_parent->data.children.size()-1;
 
+	ERR_EXPLAIN("Invalid new child position: "+itos(pos));
+	ERR_FAIL_INDEX( pos, p_parent->data.children.size()+1 );
+	ERR_FAIL_COND(data.blocked>0);
+
+	Node* old_parent = data.parent;
+
+	if (data.parent) {
+		data.parent->data.children.remove( data.pos );
+		_propagate_exit_tree(true);
+	}
+
+	p_parent->data.children.insert( p_parent->data.children.size(), this );
+	data.parent=p_parent;
+
+	if (old_parent) {
+		old_parent->data.blocked++;
+		for (int i=0;i<old_parent->data.children.size();i++) {
+			old_parent->data.children[i]->data.pos=i;
+		}
+		old_parent->data.blocked--;
+	}
+
+	p_parent->data.blocked++;
+	for (int i=0;i<p_parent->data.children.size();i++) {
+		p_parent->data.children[i]->data.pos=i;
+	}
+	p_parent->data.blocked--;
+
+	_propagate_enter_tree(true);
+	notification(NOTIFICATION_REPARENTED);
+
+	if (p_pos>=0)
+		p_parent->move_child(this, p_pos);
+}
 
 void Node::move_child(Node *p_child,int p_pos) {	
 	
@@ -2005,6 +2048,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_to_group","group"),&Node::add_to_group,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("remove_from_group","group"),&Node::remove_from_group);
 	ObjectTypeDB::bind_method(_MD("is_in_group","group"),&Node::is_in_group);
+	ObjectTypeDB::bind_method(_MD("reparent","parent_node:Node","to_pos"),&Node::reparent, DEFVAL(-1));
 	ObjectTypeDB::bind_method(_MD("move_child","child_node:Node","to_pos"),&Node::move_child);
 	ObjectTypeDB::bind_method(_MD("get_groups"),&Node::_get_groups);
 	ObjectTypeDB::bind_method(_MD("raise"),&Node::raise);
@@ -2060,6 +2104,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT( NOTIFICATION_UNPARENTED );
 	BIND_CONSTANT( NOTIFICATION_PAUSED );
 	BIND_CONSTANT( NOTIFICATION_UNPAUSED );
+	BIND_CONSTANT( NOTIFICATION_REPARENTED );
 
 
 	BIND_CONSTANT( PAUSE_MODE_INHERIT );

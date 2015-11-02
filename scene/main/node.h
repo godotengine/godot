@@ -126,9 +126,9 @@ private:
 
 	void _propagate_reverse_notification(int p_notification);	
 	void _propagate_deferred_notification(int p_notification, bool p_reverse);
-	void _propagate_enter_tree();
+	void _propagate_enter_tree(bool skip_notify);
 	void _propagate_ready();
-	void _propagate_exit_tree();
+	void _propagate_exit_tree(bool skip_notify);
 	void _propagate_validate_owner();
 	void _print_stray_nodes();
 	void _propagate_pause_owner(Node*p_owner);
@@ -180,6 +180,7 @@ public:
 		NOTIFICATION_PARENTED=18,
 		NOTIFICATION_UNPARENTED=19,
 		NOTIFICATION_INSTANCED=20,
+		NOTIFICATION_REPARENTED=21,
 	};
 			
 	/* NODE/TREE */			
@@ -221,6 +222,7 @@ public:
 	
 	void get_groups(List<GroupInfo> *p_groups) const;
 	
+	void reparent(Node *p_parent,int p_pos);
 	void move_child(Node *p_child,int p_pos);
 	void raise();
 	
