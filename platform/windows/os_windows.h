@@ -47,6 +47,7 @@
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 
+#include "main/input_default.h"
 
 #include <windows.h>
 
@@ -263,6 +264,7 @@ public:
 	virtual Time get_time(bool utc) const;
 	virtual TimeZoneInfo get_time_zone_info() const;
 	virtual uint64_t get_unix_time() const;
+	virtual uint64_t get_system_time_msec() const;
 
 	virtual bool can_draw() const;
 	virtual Error set_cwd(const String& p_cwd);
@@ -272,7 +274,7 @@ public:
 
 	virtual Error execute(const String& p_path, const List<String>& p_arguments,bool p_blocking,ProcessID *r_child_id=NULL,String* r_pipe=NULL,int *r_exitcode=NULL);
 	virtual Error kill(const ProcessID& p_pid);
-
+	
 	virtual bool has_environment(const String& p_var) const;
 	virtual String get_environment(const String& p_var) const;
 

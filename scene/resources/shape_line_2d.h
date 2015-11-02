@@ -49,6 +49,9 @@ public:
 	Vector2 get_normal() const;
 	real_t get_d() const;
 
+	virtual void draw(const RID& p_to_rid,const Color& p_color);
+	virtual Rect2 get_rect() const;
+
 	LineShape2D();
 };
 

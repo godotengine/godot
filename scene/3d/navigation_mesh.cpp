@@ -1,6 +1,6 @@
 #include "navigation_mesh.h"
 #include "navigation.h"
-
+#include "mesh_instance.h"
 
 void NavigationMesh::create_from_mesh(const Ref<Mesh>& p_mesh) {
 
@@ -87,6 +87,97 @@ void NavigationMesh::clear_polygons(){
 	polygons.clear();
 }
 
+Ref<Mesh> NavigationMesh::get_debug_mesh() {
+
+	if (debug_mesh.is_valid())
+		return debug_mesh;
+
+
+
+	DVector<Vector3> vertices = get_vertices();
+	DVector<Vector3>::Read vr=vertices.read();
+	List<Face3> faces;
+	for(int i=0;i<get_polygon_count();i++) {
+		Vector<int> p = get_polygon(i);
+
+		for(int j=2;j<p.size();j++) {
+			Face3 f;
+			f.vertex[0]=vr[p[0]];
+			f.vertex[1]=vr[p[j-1]];
+			f.vertex[2]=vr[p[j]];
+
+			faces.push_back(f);
+		}
+	}
+
+
+	Map<_EdgeKey,bool> edge_map;
+	DVector<Vector3> tmeshfaces;
+	tmeshfaces.resize(faces.size()*3);
+
+	{
+		DVector<Vector3>::Write tw=tmeshfaces.write();
+		int tidx=0;
+
+
+		for(List<Face3>::Element *E=faces.front();E;E=E->next()) {
+
+			const Face3 &f = E->get();
+
+			for(int j=0;j<3;j++) {
+
+				tw[tidx++]=f.vertex[j];
+				_EdgeKey ek;
+				ek.from=f.vertex[j].snapped(CMP_EPSILON);
+				ek.to=f.vertex[(j+1)%3].snapped(CMP_EPSILON);
+				if (ek.from<ek.to)
+					SWAP(ek.from,ek.to);
+
+				Map<_EdgeKey,bool>::Element *E=edge_map.find(ek);
+
+				if (E) {
+
+					E->get()=false;
+
+				} else {
+
+					edge_map[ek]=true;
+				}
+
+			}
+		}
+	}
+	List<Vector3> lines;
+
+	for(Map<_EdgeKey,bool>::Element *E=edge_map.front();E;E=E->next()) {
+
+		if (E->get()) {
+			lines.push_back(E->key().from);
+			lines.push_back(E->key().to);
+		}
+	}
+
+	DVector<Vector3> varr;
+	varr.resize(lines.size());
+	{
+		DVector<Vector3>::Write w = varr.write();
+		int idx=0;
+		for(List<Vector3>::Element *E=lines.front();E;E=E->next()) {
+			w[idx++]=E->get();
+		}
+	}
+
+	debug_mesh = Ref<Mesh>( memnew( Mesh ) );
+
+	Array arr;
+	arr.resize(Mesh::ARRAY_MAX);
+	arr[Mesh::ARRAY_VERTEX]=varr;
+
+	debug_mesh->add_surface(Mesh::PRIMITIVE_LINES,arr);
+
+	return debug_mesh;
+}
+
 void NavigationMesh::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_vertices","vertices"),&NavigationMesh::set_vertices);
@@ -135,6 +226,16 @@ void NavigationMeshInstance::set_enabled(bool p_enabled) {
 
 	}
 
+	if (debug_view) {
+		MeshInstance *dm=debug_view->cast_to<MeshInstance>();
+		if (is_enabled()) {
+			dm->set_material_override( get_tree()->get_debug_navigation_material() );
+		} else {
+			dm->set_material_override( get_tree()->get_debug_navigation_disabled_material() );
+		}
+
+	}
+
 	update_gizmo();
 }
 
@@ -170,12 +271,27 @@ void NavigationMeshInstance::_notification(int p_what) {
 				c=c->get_parent_spatial();
 			}
 
+			if (navmesh.is_valid() && get_tree()->is_debugging_navigation_hint()) {
+
+				MeshInstance *dm = memnew( MeshInstance );
+				dm->set_mesh( navmesh->get_debug_mesh() );
+				if (is_enabled()) {
+					dm->set_material_override( get_tree()->get_debug_navigation_material() );
+				} else {
+					dm->set_material_override( get_tree()->get_debug_navigation_disabled_material() );
+				}
+				add_child(dm);
+				debug_view=dm;
+			}
+
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
 			if (navigation && nav_id!=-1) {
 				navigation->navmesh_set_transform(nav_id,get_relative_transform(navigation));
 			}
+
+
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -186,6 +302,11 @@ void NavigationMeshInstance::_notification(int p_what) {
 					navigation->navmesh_remove(nav_id);
 					nav_id=-1;
 				}
+			}
+
+			if (debug_view) {
+				debug_view->queue_delete();
+				debug_view=NULL;
 			}
 			navigation=NULL;
 		} break;
@@ -230,6 +351,7 @@ void NavigationMeshInstance::_bind_methods() {
 
 NavigationMeshInstance::NavigationMeshInstance() {
 
+	debug_view=NULL;
 	navigation=NULL;
 	nav_id=-1;
 	enabled=true;

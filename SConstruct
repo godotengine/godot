@@ -54,13 +54,16 @@ methods.save_active_platforms(active_platforms,active_platform_ids)
 
 custom_tools=['default']
 
+platform_arg = ARGUMENTS.get("platform", False)
+
 if (os.name=="posix"):
 	pass
 elif (os.name=="nt"):
-    if (os.getenv("VSINSTALLDIR")==None):
-	custom_tools=['mingw']
+    if (os.getenv("VSINSTALLDIR")==None or platform_arg=="android"):
+		custom_tools=['mingw']
 
 env_base=Environment(tools=custom_tools,ENV = {'PATH' : os.environ['PATH']});
+
 #env_base=Environment(tools=custom_tools);
 env_base.global_defaults=global_defaults
 env_base.android_source_modules=[]
@@ -99,6 +102,7 @@ opts.Add('p','Platform (same as platform=).',"")
 opts.Add('tools','Build Tools (Including Editor): (yes/no)','yes')
 opts.Add('gdscript','Build GDSCript support: (yes/no)','yes')
 opts.Add('vorbis','Build Ogg Vorbis Support: (yes/no)','yes')
+opts.Add('opus','Build Opus Audio Format Support: (yes/no)','yes')
 opts.Add('minizip','Build Minizip Archive Support: (yes/no)','yes')
 opts.Add('squish','Squish BC Texture Compression in editor (yes/no)','yes')
 opts.Add('theora','Theora Video (yes/no)','yes')
@@ -218,13 +222,13 @@ if selected_platform in platform_list:
 
 	env.Append(LINKFLAGS=string.split(str(LINKFLAGS)))
 
-	detect.configure(env)
-
-
 	flag_list = platform_flags[selected_platform]
 	for f in flag_list:
 		if not (f[0] in ARGUMENTS): # allow command line to override platform flags
 			env[f[0]] = f[1]
+
+	#must happen after the flags, so when flags are used by configure, stuff happens (ie, ssl on x11)
+	detect.configure(env)
 
         #env['platform_libsuffix'] = env['LIBSUFFIX']
 
@@ -297,6 +301,8 @@ if selected_platform in platform_list:
 
 	if (env['vorbis']=='yes'):
 		env.Append(CPPFLAGS=['-DVORBIS_ENABLED']);
+	if (env['opus']=='yes'):
+		env.Append(CPPFLAGS=['-DOPUS_ENABLED']);
 
 	if (env['theora']=='yes'):
 		env.Append(CPPFLAGS=['-DTHEORA_ENABLED']);
@@ -364,8 +370,8 @@ if selected_platform in platform_list:
 		
 		#env['MSVS_VERSION']='9.0'
 		env['MSVSBUILDCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
-		env['MSVSREBUILDCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
-		env['MSVSCLEANCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
+		env['MSVSREBUILDCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes vsproj=true"
+		env['MSVSCLEANCOM'] = "scons --clean platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
 			
 		debug_variants = ['Debug|Win32']+['Debug|x64']
 		release_variants = ['Release|Win32']+['Release|x64']

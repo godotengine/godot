@@ -62,12 +62,14 @@ Error FileAccessJAndroid::_open(const String& p_path, int p_mode_flags) {
 
 	JNIEnv *env = ThreadAndroid::get_env();
 
-	//OS::get_singleton()->print("env: %p, io %p, fo: %p\n",env,io,_file_open);
 
 
 	jstring js = env->NewStringUTF(path.utf8().get_data());
 	int res = env->CallIntMethod(io,_file_open,js,p_mode_flags&WRITE?true:false);
 	env->DeleteLocalRef(js);
+
+	OS::get_singleton()->print("fopen: '%s' ret %i\n",path.utf8().get_data(),res);
+
 
 	if (res<=0)
 		return ERR_FILE_CANT_OPEN;

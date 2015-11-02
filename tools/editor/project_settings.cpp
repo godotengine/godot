@@ -771,18 +771,47 @@ void ProjectSettings::_autoload_add() {
 
 void ProjectSettings::_autoload_delete(Object *p_item,int p_column, int p_button) {
 
+
 	TreeItem *ti=p_item->cast_to<TreeItem>();
 	String name = "autoload/"+ti->get_text(0);
 
-	undo_redo->create_action("Remove Autoload");
-	undo_redo->add_do_property(Globals::get_singleton(),name,Variant());
-	undo_redo->add_undo_property(Globals::get_singleton(),name,Globals::get_singleton()->get(name));
-	undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",name,true);
-	undo_redo->add_do_method(this,"_update_autoload");
-	undo_redo->add_undo_method(this,"_update_autoload");
-	undo_redo->add_do_method(this,"_settings_changed");
-	undo_redo->add_undo_method(this,"_settings_changed");
-	undo_redo->commit_action();
+	if (p_button==0) {
+		//delete
+		undo_redo->create_action("Remove Autoload");
+		undo_redo->add_do_property(Globals::get_singleton(),name,Variant());
+		undo_redo->add_undo_property(Globals::get_singleton(),name,Globals::get_singleton()->get(name));
+		undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",name,true);
+		undo_redo->add_do_method(this,"_update_autoload");
+		undo_redo->add_undo_method(this,"_update_autoload");
+		undo_redo->add_do_method(this,"_settings_changed");
+		undo_redo->add_undo_method(this,"_settings_changed");
+		undo_redo->commit_action();
+	} else {
+
+		TreeItem *swap;
+
+		if (p_button==1) {
+			swap=ti->get_prev();
+		} else if (p_button==2) {
+			swap=ti->get_next();
+		}
+		if (!swap)
+			return;
+
+		String swap_name= "autoload/"+swap->get_text(0);
+
+		undo_redo->create_action("Move Autoload");
+		undo_redo->add_do_method(Globals::get_singleton(),"set_order",swap_name,Globals::get_singleton()->get_order(name));
+		undo_redo->add_do_method(Globals::get_singleton(),"set_order",name,Globals::get_singleton()->get_order(swap_name));
+		undo_redo->add_undo_method(Globals::get_singleton(),"set_order",swap_name,Globals::get_singleton()->get_order(swap_name));
+		undo_redo->add_undo_method(Globals::get_singleton(),"set_order",name,Globals::get_singleton()->get_order(name));
+		undo_redo->add_do_method(this,"_update_autoload");
+		undo_redo->add_undo_method(this,"_update_autoload");
+		undo_redo->add_do_method(this,"_settings_changed");
+		undo_redo->add_undo_method(this,"_settings_changed");
+		undo_redo->commit_action();
+
+	}
 
 }
 
@@ -1134,6 +1163,8 @@ void ProjectSettings::_update_autoload() {
 		TreeItem *t = autoload_list->create_item(root);
 		t->set_text(0,name);
 		t->set_text(1,Globals::get_singleton()->get(pi.name));
+		t->add_button(1,get_icon("MoveUp","EditorIcons"),1);
+		t->add_button(1,get_icon("MoveDown","EditorIcons"),2);
 		t->add_button(1,get_icon("Del","EditorIcons"),0);
 
 	}

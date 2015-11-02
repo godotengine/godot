@@ -40,6 +40,7 @@
 #include "io/resource_saver.h"
 #include "io/md5.h"
 #include "io_plugins/editor_texture_import_plugin.h"
+#include "tools/editor/plugins/script_editor_plugin.h"
 
 String EditorImportPlugin::validate_source_path(const String& p_path) {
 
@@ -254,7 +255,16 @@ static void _add_filter_to_list(Set<StringName>& r_list,const String& p_filter) 
 
 }
 
+Vector<uint8_t> EditorExportPlatform::get_exported_file_default(String& p_fname) const {
 
+	FileAccess *f = FileAccess::open(p_fname,FileAccess::READ);
+	ERR_FAIL_COND_V(!f,Vector<uint8_t>());
+	Vector<uint8_t> ret;
+	ret.resize(f->get_len());
+	int rbs = f->get_buffer(ret.ptr(),ret.size());
+	memdelete(f);
+	return ret;
+}
 
 Vector<uint8_t> EditorExportPlatform::get_exported_file(String& p_fname) const {
 
@@ -269,13 +279,9 @@ Vector<uint8_t> EditorExportPlatform::get_exported_file(String& p_fname) const {
 	}
 
 
-	FileAccess *f = FileAccess::open(p_fname,FileAccess::READ);
-	ERR_FAIL_COND_V(!f,Vector<uint8_t>());
-	Vector<uint8_t> ret;
-	ret.resize(f->get_len());
-	int rbs = f->get_buffer(ret.ptr(),ret.size());
-	memdelete(f);
-	return ret;
+	return get_exported_file_default(p_fname);
+
+
 }
 
 Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const {
@@ -556,6 +562,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 		group_shrink*=EditorImportExport::get_singleton()->get_export_image_shrink();
 
 		switch(EditorImportExport::get_singleton()->image_export_group_get_image_action(E->get())) {
+			case EditorImportExport::IMAGE_ACTION_KEEP:
 			case EditorImportExport::IMAGE_ACTION_NONE: {
 
 				switch(EditorImportExport::get_singleton()->get_export_image_action()) {
@@ -580,7 +587,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			} break; //use default
 			case EditorImportExport::IMAGE_ACTION_COMPRESS_RAM: {
 				group_format=EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM;
-			} break; //use default
+			} break; //use default						
 		}
 
 		String image_list_md5;
@@ -824,13 +831,43 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 
 	StringName engine_cfg="res://engine.cfg";
+	StringName boot_splash;
+	{
+		String splash=Globals::get_singleton()->get("application/boot_splash"); //avoid splash from being converted
+		splash=splash.strip_edges();
+		if (splash!=String()) {
+			if (!splash.begins_with("res://"))
+				splash="res://"+splash;
+			splash=splash.simplify_path();
+			boot_splash=splash;
+		}
+	}
+	StringName custom_cursor;
+	{
+		String splash=Globals::get_singleton()->get("display/custom_mouse_cursor"); //avoid splash from being converted
+		splash=splash.strip_edges();
+		if (splash!=String()) {
+			if (!splash.begins_with("res://"))
+				splash="res://"+splash;
+			splash=splash.simplify_path();
+			custom_cursor=splash;
+		}
+	}
+
+
+
 
 	for(int i=0;i<files.size();i++) {
 
 		if (remap_files.has(files[i]) || files[i]==engine_cfg) //gonna be remapped (happened before!)
 			continue; //from atlas?
 		String src=files[i];
-		Vector<uint8_t> buf = get_exported_file(src);
+		Vector<uint8_t> buf;
+
+		if (src==boot_splash || src==custom_cursor)
+			buf = get_exported_file_default(src); //bootsplash must be kept if used
+		else
+			buf = get_exported_file(src);
 
 		ERR_CONTINUE( saved.has(src) );
 
@@ -915,6 +952,59 @@ static int _get_pad(int p_alignment, int p_n) {
 
 	return pad;
 };
+
+void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags) {
+
+	String host = EditorSettings::get_singleton()->get("network/debug_host");
+
+	if (p_flags&EXPORT_DUMB_CLIENT) {
+		int port = EditorSettings::get_singleton()->get("file_server/port");
+		String passwd = EditorSettings::get_singleton()->get("file_server/password");
+		r_flags.push_back("-rfs");
+		r_flags.push_back(host+":"+itos(port));
+		if (passwd!="") {
+			r_flags.push_back("-rfs_pass");
+			r_flags.push_back(passwd);
+		}
+	}
+
+	if (p_flags&EXPORT_REMOTE_DEBUG) {
+
+		r_flags.push_back("-rdebug");
+		r_flags.push_back(host+":"+String::num(GLOBAL_DEF("debug/debug_port", 6007)));
+
+		List<String> breakpoints;
+		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
+
+
+		if (breakpoints.size()) {
+
+			r_flags.push_back("-bp");
+			String bpoints;
+			for(const List<String>::Element *E=breakpoints.front();E;E=E->next()) {
+
+				bpoints+=E->get().replace(" ","%20");
+				if (E->next())
+					bpoints+=",";
+			}
+
+			r_flags.push_back(bpoints);
+		}
+
+	}
+
+	if (p_flags&EXPORT_VIEW_COLLISONS) {
+
+		r_flags.push_back("-debugcol");
+	}
+
+	if (p_flags&EXPORT_VIEW_NAVIGATION) {
+
+		r_flags.push_back("-debugnav");
+	}
+
+
+}
 
 Error EditorExportPlatform::save_pack_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total) {
 
@@ -1029,7 +1119,7 @@ Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles, int p
 	return OK;
 }
 
-Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug, bool p_dumb) {
+Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug, int p_flags) {
 
 
 
@@ -1330,12 +1420,12 @@ EditorImportExport::ImageAction EditorImportExport::get_export_image_action() co
 	return image_action;
 }
 
-void EditorImportExport::set_export_image_shrink(int p_shrink) {
+void EditorImportExport::set_export_image_shrink(float p_shrink) {
 
 	image_shrink=p_shrink;
 }
 
-int EditorImportExport::get_export_image_shrink() const{
+float EditorImportExport::get_export_image_shrink() const{
 
 	return image_shrink;
 }
@@ -1406,12 +1496,12 @@ bool EditorImportExport::image_export_group_get_make_atlas(const StringName& p_e
 	return image_groups[p_export_group].make_atlas;
 
 }
-void EditorImportExport::image_export_group_set_shrink(const StringName& p_export_group,int p_amount){
+void EditorImportExport::image_export_group_set_shrink(const StringName& p_export_group,float p_amount){
 	ERR_FAIL_COND(!image_groups.has(p_export_group));
 	image_groups[p_export_group].shrink=p_amount;
 
 }
-int EditorImportExport::image_export_group_get_shrink(const StringName& p_export_group) const{
+float EditorImportExport::image_export_group_get_shrink(const StringName& p_export_group) const{
 
 	ERR_FAIL_COND_V(!image_groups.has(p_export_group),1);
 	return image_groups[p_export_group].shrink;
@@ -1565,6 +1655,8 @@ void EditorImportExport::load_config() {
 					g.action=IMAGE_ACTION_COMPRESS_RAM;
 				else if (action=="compress_disk")
 					g.action=IMAGE_ACTION_COMPRESS_DISK;
+				else if (action=="keep")
+					g.action=IMAGE_ACTION_KEEP;
 			}
 
 			if (d.has("atlas"))
@@ -1692,6 +1784,7 @@ void EditorImportExport::save_config() {
 			case IMAGE_ACTION_NONE: d["action"]="default"; break;
 			case IMAGE_ACTION_COMPRESS_RAM: d["action"]="compress_ram"; break;
 			case IMAGE_ACTION_COMPRESS_DISK: d["action"]="compress_disk"; break;
+			case IMAGE_ACTION_KEEP: d["action"]="keep"; break;
 		}
 
 

@@ -80,7 +80,7 @@ bool ProjectExportDialog::_create_tree(TreeItem *p_parent,EditorFileSystemDirect
 		String path = p_dir->get_file_path(i);
 		fitem->set_tooltip(0,path);
 		fitem->set_metadata(0,path);
-		Ref<Texture> icon = get_icon( (has_icon(p_dir->get_file_type(i),"EditorIcons")?p_dir->get_file_type(i):String("Object")),"EditorIcons");
+		Ref<Texture> icon = get_icon( (has_icon(p_dir->get_file_type(i),ei)?p_dir->get_file_type(i):ot),ei);
 		fitem->set_icon(0,icon);
 
 		fitem->set_cell_mode(1,TreeItem::CELL_MODE_RANGE);
@@ -1156,7 +1156,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	image_shrink = memnew( SpinBox );
 	image_shrink->set_min(1);
 	image_shrink->set_max(8);
-	image_shrink->set_step(1);
+	image_shrink->set_step(0.1);
 	image_vb->add_margin_child("Shrink All Images:",image_shrink);
 	sections->add_child(image_vb);
 
@@ -1216,6 +1216,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_image_action->add_item("Default");
 	group_image_action->add_item("Compress Disk");
 	group_image_action->add_item("Compress RAM");
+	group_image_action->add_item("Keep Original");
 	group_options->add_margin_child("Compress Mode:",group_image_action);
 	group_image_action->connect("item_selected",this,"_group_changed");
 
@@ -1236,7 +1237,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_shrink->set_min(1);
 	group_shrink->set_max(8);
 	group_shrink->set_val(1);
-	group_shrink->set_step(1);
+	group_shrink->set_step(0.001);
 	group_options->add_margin_child("Shrink By:",group_shrink);
 	group_shrink->connect("value_changed",this,"_group_changed");
 
@@ -1372,6 +1373,8 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	button_export = add_button("Export..",!OS::get_singleton()->get_swap_ok_cancel(),"export_pck");
 	updating_script=false;
 
+	ei="EditorIcons";
+	ot="Object";
 
 }
 

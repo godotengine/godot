@@ -323,11 +323,21 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 			old_invalid=true;
 			outside=true;
+			if (main_loop && mouse_mode!=MOUSE_MODE_CAPTURED)
+				main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
+			if (input)
+				input->set_mouse_in_window(false);
 
 		} break;
 		case WM_MOUSEMOVE: {
 
 			if (outside) {
+				//mouse enter
+
+				if (main_loop && mouse_mode!=MOUSE_MODE_CAPTURED)
+					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
+				if (input)
+					input->set_mouse_in_window(true);
 
 				CursorShape c=cursor_shape;
 				cursor_shape=CURSOR_MAX;
@@ -1898,6 +1908,12 @@ uint64_t OS_Windows::get_unix_time() const {
 
 	return (*(uint64_t*)&ft - *(uint64_t*)&fep) / 10000000;
 };
+
+uint64_t OS_Windows::get_system_time_msec() const {
+	SYSTEMTIME st;
+	GetSystemTime(&st);
+	return st.wMilliseconds;
+}
 
 void OS_Windows::delay_usec(uint32_t p_usec) const {
 

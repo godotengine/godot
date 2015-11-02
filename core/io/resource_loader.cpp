@@ -103,10 +103,10 @@ public:
 
 
 
-Ref<ResourceInteractiveLoader> ResourceFormatLoader::load_interactive(const String &p_path) {
+Ref<ResourceInteractiveLoader> ResourceFormatLoader::load_interactive(const String &p_path, Error *r_error) {
 
 	//either this
-	Ref<Resource> res = load(p_path);
+	Ref<Resource> res = load(p_path,p_path,r_error);
 	if (res.is_null())
 		return Ref<ResourceInteractiveLoader>();
 
@@ -115,12 +115,13 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoader::load_interactive(const Stri
 	return ril;
 }
 
-RES ResourceFormatLoader::load(const String &p_path,const String& p_original_path) {
+RES ResourceFormatLoader::load(const String &p_path, const String& p_original_path, Error *r_error) {
+
 
 	String path=p_path;
 
 	//or this must be implemented
-	Ref<ResourceInteractiveLoader> ril = load_interactive(p_path);
+	Ref<ResourceInteractiveLoader> ril = load_interactive(p_path,r_error);
 	if (!ril.is_valid())
 		return RES();
 	ril->set_local_path(p_original_path);
@@ -130,8 +131,13 @@ RES ResourceFormatLoader::load(const String &p_path,const String& p_original_pat
 		Error err = ril->poll();
 
 		if (err==ERR_FILE_EOF) {
+			if (r_error)
+				*r_error=OK;
 			return ril->get_resource();
 		}
+
+		if (r_error)
+			*r_error=err;
 
 		ERR_FAIL_COND_V(err!=OK,RES());
 	}
@@ -140,7 +146,7 @@ RES ResourceFormatLoader::load(const String &p_path,const String& p_original_pat
 
 }
 
-void ResourceFormatLoader::get_dependencies(const String& p_path,List<String> *p_dependencies) {
+void ResourceFormatLoader::get_dependencies(const String& p_path, List<String> *p_dependencies, bool p_add_types) {
 
 	//do nothing by default
 }
@@ -149,7 +155,10 @@ void ResourceFormatLoader::get_dependencies(const String& p_path,List<String> *p
 ///////////////////////////////////
 
 
-RES ResourceLoader::load(const String &p_path,const String& p_type_hint,bool p_no_cache) {
+RES ResourceLoader::load(const String &p_path, const String& p_type_hint, bool p_no_cache, Error *r_error) {
+
+	if (r_error)
+		*r_error=ERR_CANT_OPEN;
 
 	String local_path;
 	if (p_path.is_rel_path())
@@ -183,7 +192,7 @@ RES ResourceLoader::load(const String &p_path,const String& p_type_hint,bool p_n
 		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
 			continue;
 		found=true;
-		RES res = loader[i]->load(remapped_path,local_path);
+		RES res = loader[i]->load(remapped_path,local_path,r_error);
 		if (res.is_null())
 			continue;
 		if (!p_no_cache)
@@ -222,14 +231,12 @@ Ref<ResourceImportMetadata> ResourceLoader::load_import_metadata(const String &p
 		local_path = Globals::get_singleton()->localize_path(p_path);
 
 	String extension=p_path.extension();
-	bool found=false;
 	Ref<ResourceImportMetadata> ret;
 
 	for (int i=0;i<loader_count;i++) {
 
 		if (!loader[i]->recognize(extension))
 			continue;
-		found=true;
 
 		Error err = loader[i]->load_import_metadata(local_path,ret);
 		if (err==OK)
@@ -289,9 +296,11 @@ String ResourceLoader::find_complete_path(const String& p_path,const String& p_t
 	return local_path;
 }
 
-Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_path,const String& p_type_hint,bool p_no_cache) {
+Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_path,const String& p_type_hint,bool p_no_cache,Error *r_error) {
 
 
+	if (r_error)
+		*r_error=ERR_CANT_OPEN;
 
 	String local_path;
 	if (p_path.is_rel_path())
@@ -327,7 +336,7 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
 			continue;
 		found=true;
-		Ref<ResourceInteractiveLoader> ril = loader[i]->load_interactive(remapped_path);
+		Ref<ResourceInteractiveLoader> ril = loader[i]->load_interactive(remapped_path,r_error);
 		if (ril.is_null())
 			continue;
 		if (!p_no_cache)
@@ -352,7 +361,7 @@ void ResourceLoader::add_resource_format_loader(ResourceFormatLoader *p_format_l
 	loader[loader_count++]=p_format_loader;
 }
 
-void ResourceLoader::get_dependencies(const String& p_path,List<String> *p_dependencies) {
+void ResourceLoader::get_dependencies(const String& p_path, List<String> *p_dependencies, bool p_add_types) {
 
 
 	String local_path;
@@ -372,10 +381,39 @@ void ResourceLoader::get_dependencies(const String& p_path,List<String> *p_depen
 		//if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
 		//	continue;
 
-		loader[i]->get_dependencies(remapped_path,p_dependencies);
+		loader[i]->get_dependencies(remapped_path,p_dependencies,p_add_types);
 
 	}
 }
+
+Error ResourceLoader::rename_dependencies(const String &p_path,const Map<String,String>& p_map) {
+
+
+	String local_path;
+	if (p_path.is_rel_path())
+		local_path="res://"+p_path;
+	else
+		local_path = Globals::get_singleton()->localize_path(p_path);
+
+	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
+
+	String extension=remapped_path.extension();
+
+	for (int i=0;i<loader_count;i++) {
+
+		if (!loader[i]->recognize(extension))
+			continue;
+		//if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
+		//	continue;
+
+		return loader[i]->rename_dependencies(p_path,p_map);
+
+	}
+
+	return OK; // ??
+
+}
+
 
 String ResourceLoader::guess_full_filename(const String &p_path,const String& p_type) {
 
@@ -413,6 +451,9 @@ String ResourceLoader::get_resource_type(const String &p_path) {
 }
 ResourceLoadErrorNotify ResourceLoader::err_notify=NULL;
 void *ResourceLoader::err_notify_ud=NULL;
+
+DependencyErrorNotify ResourceLoader::dep_err_notify=NULL;
+void *ResourceLoader::dep_err_notify_ud=NULL;
 
 bool ResourceLoader::abort_on_missing_resource=true;
 bool ResourceLoader::timestamp_on_load=false;

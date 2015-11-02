@@ -40,7 +40,7 @@ bool GraphNode::_get(const StringName& p_name,Variant &r_ret) const{
 
 
 
-	if (!p_name.operator String().begins_with("slot/")) {		
+	if (!p_name.operator String().begins_with("slot/")) {
 		return false;
 	}
 
@@ -160,7 +160,7 @@ void GraphNode::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_DRAW) {
 
-		Ref<StyleBox> sb=get_stylebox("frame");
+		Ref<StyleBox> sb=get_stylebox(selected ? "selectedframe" : "frame");
 		Ref<Texture> port =get_icon("port");
 		Ref<Texture> close =get_icon("close");
 		int close_offset = get_constant("close_offset");
@@ -360,6 +360,29 @@ Vector2 GraphNode::get_offset() const {
 	return offset;
 }
 
+void GraphNode::set_selected(bool p_selected)
+{
+	selected = p_selected;
+	update();
+}
+
+bool GraphNode::is_selected()
+{
+	return selected;
+}
+
+void GraphNode::set_drag(bool p_drag)
+{
+	if (p_drag)
+		drag_from=get_offset();
+	else
+		emit_signal("dragged",drag_from,get_offset()); //useful for undo/redo
+}
+
+Vector2 GraphNode::get_drag_from()
+{
+	return drag_from;
+}
 
 
 void GraphNode::set_show_close_button(bool p_enable){
@@ -379,7 +402,6 @@ void GraphNode::_connpos_update() {
 	int sep=get_constant("separation");
 
 	Ref<StyleBox> sb=get_stylebox("frame");
-	Ref<Texture> port =get_icon("port");
 	conn_input_cache.clear();
 	conn_output_cache.clear();
 	int vofs=0;
@@ -503,31 +525,17 @@ Color GraphNode::get_connection_output_color(int p_idx) {
 
 void GraphNode::_input_event(const InputEvent& p_ev) {
 
-	if (p_ev.type==InputEvent::MOUSE_BUTTON && p_ev.mouse_button.pressed && p_ev.mouse_button.button_index==BUTTON_LEFT) {
+	if (p_ev.type==InputEvent::MOUSE_BUTTON) {
+		get_parent_control()->grab_focus();
+		if(p_ev.mouse_button.pressed && p_ev.mouse_button.button_index==BUTTON_LEFT) {
 
-		Vector2 mpos = Vector2(p_ev.mouse_button.x,p_ev.mouse_button.y);
-		if (close_rect.size!=Size2() && close_rect.has_point(mpos)) {
-			emit_signal("close_request");
-			return;
+			Vector2 mpos = Vector2(p_ev.mouse_button.x,p_ev.mouse_button.y);
+			if (close_rect.size!=Size2() && close_rect.has_point(mpos)) {
+				emit_signal("close_request");
+				return;
+			}
+			emit_signal("raise_request");
 		}
-
-		drag_from=get_offset();
-		drag_accum=Vector2();
-		dragging=true;
-		emit_signal("raise_request");
-
-	}
-
-	if (p_ev.type==InputEvent::MOUSE_BUTTON && !p_ev.mouse_button.pressed && p_ev.mouse_button.button_index==BUTTON_LEFT) {
-
-		dragging=false;
-		emit_signal("dragged",drag_from,get_offset()); //useful for undo/redo
-	}
-
-	if (p_ev.type==InputEvent::MOUSE_MOTION && dragging) {
-
-		drag_accum+=Vector2(p_ev.mouse_motion.relative_x,p_ev.mouse_motion.relative_y);
-		set_offset(drag_from+drag_accum);
 	}
 
 }
@@ -576,8 +584,6 @@ void GraphNode::_bind_methods() {
 }
 
 GraphNode::GraphNode() {
-
-	dragging=false;
 	show_close=false;
 	connpos_dirty=true;
 }

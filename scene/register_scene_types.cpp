@@ -36,6 +36,7 @@
 #include "resources/default_theme/default_theme.h"
 #include "object_type_db.h"
 #include "scene/main/canvas_layer.h"
+#include "scene/main/instance_placeholder.h"
 #include "scene/main/viewport.h"
 #include "scene/gui/control.h"
 #include "scene/gui/texture_progress.h"
@@ -52,6 +53,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/texture_frame.h"
+#include "scene/gui/patch_9_frame.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
@@ -215,7 +217,7 @@
 #include "scene/3d/collision_polygon.h"
 #endif
 
-
+#include "scene/resources/scene_format_text.h"
 
 static ResourceFormatLoaderImage *resource_loader_image=NULL;
 static ResourceFormatLoaderWAV *resource_loader_wav=NULL;
@@ -227,6 +229,8 @@ static ResourceFormatLoaderBitMap *resource_loader_bitmap=NULL;
 #endif
 static ResourceFormatLoaderTheme *resource_loader_theme=NULL;
 static ResourceFormatLoaderShader *resource_loader_shader=NULL;
+
+static ResourceFormatSaverText *resource_saver_text=NULL;
 
 //static SceneStringNames *string_names;
 
@@ -266,6 +270,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Object>();
 
 	ObjectTypeDB::register_type<Node>();
+	ObjectTypeDB::register_virtual_type<InstancePlaceholder>();
 
 	ObjectTypeDB::register_type<Viewport>();
 	ObjectTypeDB::register_virtual_type<RenderTargetTexture>();
@@ -302,6 +307,7 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	ObjectTypeDB::register_type<TextureFrame>();
+	ObjectTypeDB::register_type<Patch9Frame>();
 	ObjectTypeDB::register_type<TabContainer>();
 	ObjectTypeDB::register_type<Tabs>();
 	ObjectTypeDB::register_virtual_type<Separator>();
@@ -456,7 +462,6 @@ void register_scene_types() {
 
 
 	/* disable types by default, only editors should enable them */
-	ObjectTypeDB::set_type_enabled("CollisionShape",false);
 	//ObjectTypeDB::set_type_enabled("BodyVolumeSphere",false);
 	//ObjectTypeDB::set_type_enabled("BodyVolumeBox",false);
 	//ObjectTypeDB::set_type_enabled("BodyVolumeCapsule",false);
@@ -490,9 +495,12 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<OccluderPolygon2D>();
 	ObjectTypeDB::register_type<YSort>();
 	ObjectTypeDB::register_type<BackBufferCopy>();
-
-	ObjectTypeDB::set_type_enabled("CollisionShape2D",false);
-	ObjectTypeDB::set_type_enabled("CollisionPolygon2D",false);
+	if (bool(GLOBAL_DEF("physics/remove_collision_helpers_at_runtime",false))) {
+		ObjectTypeDB::set_type_enabled("CollisionShape2D",false);
+		ObjectTypeDB::set_type_enabled("CollisionPolygon2D",false);
+		ObjectTypeDB::set_type_enabled("CollisionShape",false);
+		ObjectTypeDB::set_type_enabled("CollisionPolygon",false);
+	}
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -576,7 +584,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Sample>();
 	ObjectTypeDB::register_type<SampleLibrary>();
 	ObjectTypeDB::register_virtual_type<AudioStream>();
-	ObjectTypeDB::register_type<AudioStreamGibberish>();
+	ObjectTypeDB::register_virtual_type<AudioStreamPlayback>();
+//	ObjectTypeDB::register_type<AudioStreamGibberish>();
 	ObjectTypeDB::register_virtual_type<VideoStream>();
 
 	OS::get_singleton()->yield(); //may take time to init
@@ -607,6 +616,9 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 
+	resource_saver_text = memnew( ResourceFormatSaverText );
+	ResourceSaver::add_resource_format_saver(resource_saver_text);
+
 }
 
 void unregister_scene_types() {
@@ -624,5 +636,9 @@ void unregister_scene_types() {
 
 	memdelete( resource_loader_theme );
 	memdelete( resource_loader_shader );
+
+	if (resource_saver_text) {
+		memdelete(resource_saver_text);
+	}
 	SceneStringNames::free();
 }

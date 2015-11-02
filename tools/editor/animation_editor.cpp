@@ -33,6 +33,7 @@
 #include "io/resource_saver.h"
 #include "pair.h"
 #include "scene/gui/separator.h"
+#include "editor_node.h"
 /* Missing to fix:
 
   *Set
@@ -634,9 +635,14 @@ void AnimationKeyEditor::_menu_track(int p_type) {
 	last_menu_track_opt=p_type;
 	switch(p_type) {
 
-		case TRACK_MENU_ADD_VALUE_TRACK:
-		case TRACK_MENU_ADD_TRANSFORM_TRACK:
 		case TRACK_MENU_ADD_CALL_TRACK: {
+			if (root) {
+				call_select->popup_centered_ratio();
+				break;
+			}
+		} break;
+		case TRACK_MENU_ADD_VALUE_TRACK:
+		case TRACK_MENU_ADD_TRANSFORM_TRACK: {
 
 			undo_redo->create_action("Anim Add Track");
 			undo_redo->add_do_method(animation.ptr(),"add_track",p_type);			
@@ -2363,7 +2369,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 			te->update();
 			track_editor->set_tooltip("");
 
-			if (!track_editor->has_focus() && (!get_focus_owner() || !get_focus_owner()->cast_to<LineEdit>()))
+            if (!track_editor->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
 				track_editor->call_deferred("grab_focus");
 
 
@@ -2735,6 +2741,7 @@ void AnimationKeyEditor::_notification(int p_what) {
 
 
 				}
+				call_select->connect("selected",this,"_add_call_track");
 //				rename_anim->set_icon( get_icon("Rename","EditorIcons") );
 /*
 				edit_anim->set_icon( get_icon("Edit","EditorIcons") );
@@ -3456,6 +3463,26 @@ void AnimationKeyEditor::_scale() {
 }
 
 
+void AnimationKeyEditor::_add_call_track(const NodePath& p_base) {
+
+	print_line("BASE IS "+String(p_base));
+	Node* base = EditorNode::get_singleton()->get_edited_scene();
+	if (!base)
+		return;
+	Node* from=base->get_node(p_base);
+	if (!from || !root)
+		return;
+
+	NodePath path = root->get_path_to(from);
+
+	undo_redo->create_action("Anim Add Call Track");
+	undo_redo->add_do_method(animation.ptr(),"add_track",Animation::TYPE_METHOD);
+	undo_redo->add_do_method(animation.ptr(),"track_set_path",animation->get_track_count(),path);
+	undo_redo->add_undo_method(animation.ptr(),"remove_track",animation->get_track_count());
+	undo_redo->commit_action();
+
+}
+
 void AnimationKeyEditor::cleanup() {
 
 	set_animation(Ref<Animation>());
@@ -3503,6 +3530,7 @@ void AnimationKeyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_animation_optimize"),&AnimationKeyEditor::_animation_optimize);
 	ObjectTypeDB::bind_method(_MD("_curve_transition_changed"),&AnimationKeyEditor::_curve_transition_changed);
 	ObjectTypeDB::bind_method(_MD("_toggle_edit_curves"),&AnimationKeyEditor::_toggle_edit_curves);
+	ObjectTypeDB::bind_method(_MD("_add_call_track"),&AnimationKeyEditor::_add_call_track);
 
 
 	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );
@@ -3815,7 +3843,9 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	scale_dialog->connect("confirmed",this,"_scale");
 	add_child(scale_dialog);
 
-
+	call_select = memnew( SceneTreeDialog );
+	add_child(call_select);
+	call_select->set_title("Call Functions in Which Node?");
 
 }
 

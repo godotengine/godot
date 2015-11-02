@@ -10,7 +10,7 @@ class GraphEditFilter : public Control {
 
 	OBJ_TYPE(GraphEditFilter,Control);
 
-friend class GraphEdit;
+	friend class GraphEdit;
 	GraphEdit *ge;
 	virtual bool has_point(const Point2& p_point) const;
 
@@ -49,7 +49,16 @@ private:
 	String connecting_target_to;
 	int connecting_target_index;
 
+	bool dragging;
+	bool just_selected;
+	Vector2 drag_accum;
 
+	bool box_selecting;
+	bool box_selection_mode_aditive;
+	Point2 box_selecting_from;
+	Point2 box_selecting_to;
+	Rect2 box_selecting_rect;
+	List<GraphNode*> previus_selected;
 
 	bool right_disconnects;
 	bool updating;
@@ -71,7 +80,7 @@ private:
 
 	Array _get_connection_list() const;
 
-friend class GraphEditFilter;
+	friend class GraphEditFilter;
 	bool _filter_input(const Point2& p_point);
 protected:
 

@@ -286,6 +286,37 @@ NodePath::NodePath(const Vector<StringName>& p_path,const Vector<StringName>& p_
 	data->property=p_property;
 }
 
+
+void NodePath::simplify() {
+
+	if (!data)
+		return;
+	for(int i=0;i<data->path.size();i++) {
+		if (data->path.size()==1)
+			break;
+		if (data->path[i].operator String()==".") {
+			data->path.remove(i);
+			i--;
+		} else if (data->path[i].operator String()==".." && i>0 && data->path[i-1].operator String()!="." && data->path[i-1].operator String()!="..") {
+			//remove both
+			data->path.remove(i-1);
+			data->path.remove(i-1);
+			i-=2;
+			if (data->path.size()==0) {
+				data->path.push_back(".");
+				break;
+			}
+		}
+	}
+}
+
+NodePath NodePath::simplified() const {
+
+	NodePath np=*this;
+	np.simplify();
+	return np;
+}
+
 NodePath::NodePath(const String& p_path) {
 
 	data=NULL;

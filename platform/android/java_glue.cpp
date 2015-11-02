@@ -33,13 +33,14 @@
 #include "main/main.h"
 #include <unistd.h>
 #include "file_access_jandroid.h"
+#include "file_access_android.h"
 #include "dir_access_jandroid.h"
 #include "audio_driver_jandroid.h"
 #include "globals.h"
 #include "thread_jandroid.h"
 #include "core/os/keyboard.h"
 #include "java_class_wrapper.h"
-
+#include "android/asset_manager_jni.h"
 
 static JavaClassWrapper *java_class_wrapper=NULL;
 static OS_Android *os_android=NULL;
@@ -764,7 +765,7 @@ static void _stop_video() {
 	env->CallVoidMethod(godot_io, _stopVideo);
 }
 
-JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, jobject obj, jobject activity,jboolean p_need_reload_hook, jobjectArray p_cmdline) {
+JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, jobject obj, jobject activity,jboolean p_need_reload_hook, jobjectArray p_cmdline,jobject p_asset_manager) {
 
 	__android_log_print(ANDROID_LOG_INFO,"godot","**INIT EVENT! - %p\n",env);
 
@@ -820,7 +821,14 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, 
 		}
 
 		ThreadAndroid::make_default(jvm);
+#ifdef USE_JAVA_FILE_ACCESS
 		FileAccessJAndroid::setup(gob);
+#else
+
+		jobject amgr = env->NewGlobalRef(p_asset_manager);
+
+		FileAccessAndroid::asset_manager=AAssetManager_fromJava(env,amgr);
+#endif
 		DirAccessJAndroid::setup(gob);
 		AudioDriverAndroid::setup(gob);
 	}

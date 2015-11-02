@@ -112,6 +112,21 @@ void VisualServerRaster::texture_set_reload_hook(RID p_texture,ObjectID p_owner,
 	rasterizer->texture_set_reload_hook(p_texture,p_owner,p_function);
 }
 
+void VisualServerRaster::texture_set_path(RID p_texture,const String& p_path) {
+
+	rasterizer->texture_set_path(p_texture,p_path);
+}
+
+String VisualServerRaster::texture_get_path(RID p_texture) const{
+
+	return rasterizer->texture_get_path(p_texture);
+}
+
+void VisualServerRaster::texture_debug_usage(List<TextureInfo> *r_info){
+
+	rasterizer->texture_debug_usage(r_info);
+}
+
 /* SHADER API */
 
 RID VisualServerRaster::shader_create(ShaderMode p_mode) {
@@ -452,6 +467,14 @@ void VisualServerRaster::mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb) {
 AABB VisualServerRaster::mesh_get_custom_aabb(RID p_mesh) const {
 
 	return rasterizer->mesh_get_custom_aabb(p_mesh);
+}
+
+void VisualServerRaster::mesh_clear(RID p_mesh) {
+
+	ERR_FAIL_COND(!rasterizer->is_mesh(p_mesh));
+	while(rasterizer->mesh_get_surface_count(p_mesh)) {
+		rasterizer->mesh_remove_surface(p_mesh,0);
+	}
 }
 
 
@@ -1367,7 +1390,7 @@ void VisualServerRaster::_update_baked_light_sampler_dp_cache(BakedLightSampler 
 
 void VisualServerRaster::baked_light_sampler_set_resolution(RID p_baked_light_sampler,int p_resolution){
 
-	ERR_FAIL_COND(p_resolution<4 && p_resolution>64);
+    ERR_FAIL_COND(p_resolution<4 || p_resolution>64);
 	VS_CHANGED;
 	BakedLightSampler * blsamp = baked_light_sampler_owner.get(p_baked_light_sampler);
 	ERR_FAIL_COND(!blsamp);
@@ -5211,7 +5234,6 @@ void VisualServerRaster::_light_instance_update_lispsm_shadow(Instance *p_light,
 
 
 	AABB proj_space_aabb;
-	float max_d,min_d;
 
 	{
 
@@ -6816,7 +6838,11 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 	copymem(child_items,ci->child_items.ptr(),child_item_count*sizeof(CanvasItem*));
 
 	if (ci->clip) {
-		ci->final_clip_rect=global_rect;
+		if (p_canvas_clip != NULL) {
+			ci->final_clip_rect=p_canvas_clip->final_clip_rect.clip(global_rect);
+		} else {
+			ci->final_clip_rect=global_rect;
+		}
 		ci->final_clip_owner=ci;
 
 	} else {
@@ -7351,6 +7377,8 @@ void VisualServerRaster::_draw_cursors_and_margins() {
 		rasterizer->canvas_draw_rect(Rect2(cursors[i].pos, size), 0, Rect2(), tex, Color(1, 1, 1, 1));
 	};
 
+
+
 	if (black_image[MARGIN_LEFT].is_valid()) {
 		Size2 sz(rasterizer->texture_get_width(black_image[MARGIN_LEFT]),rasterizer->texture_get_height(black_image[MARGIN_LEFT]));
 		rasterizer->canvas_draw_rect(Rect2(0,0,black_margin[MARGIN_LEFT],window_h),0,Rect2(0,0,sz.x,sz.y),black_image[MARGIN_LEFT],Color(1,1,1));
@@ -7362,10 +7390,22 @@ void VisualServerRaster::_draw_cursors_and_margins() {
 		rasterizer->canvas_draw_rect(Rect2(window_w-black_margin[MARGIN_RIGHT],0,black_margin[MARGIN_RIGHT],window_h),0,Rect2(0,0,sz.x,sz.y),black_image[MARGIN_RIGHT],Color(1,1,1));
 	} else if (black_margin[MARGIN_RIGHT])
 		rasterizer->canvas_draw_rect(Rect2(window_w-black_margin[MARGIN_RIGHT],0,black_margin[MARGIN_RIGHT],window_h),0,Rect2(0,0,1,1),RID(),Color(0,0,0));
-	if (black_margin[MARGIN_TOP])
+
+	if (black_image[MARGIN_TOP].is_valid()) {
+		Size2 sz(rasterizer->texture_get_width(black_image[MARGIN_TOP]),rasterizer->texture_get_height(black_image[MARGIN_TOP]));
+		rasterizer->canvas_draw_rect(Rect2(0,0,window_w,black_margin[MARGIN_TOP]),0,Rect2(0,0,sz.x,sz.y),black_image[MARGIN_TOP],Color(1,1,1));
+
+	} else if (black_margin[MARGIN_TOP]) {
 		rasterizer->canvas_draw_rect(Rect2(0,0,window_w,black_margin[MARGIN_TOP]),0,Rect2(0,0,1,1),RID(),Color(0,0,0));
-	if (black_margin[MARGIN_BOTTOM])
+	}
+
+	if (black_image[MARGIN_BOTTOM].is_valid()) {
+
+		Size2 sz(rasterizer->texture_get_width(black_image[MARGIN_BOTTOM]),rasterizer->texture_get_height(black_image[MARGIN_BOTTOM]));
+		rasterizer->canvas_draw_rect(Rect2(0,window_h-black_margin[MARGIN_BOTTOM],window_w,black_margin[MARGIN_BOTTOM]),0,Rect2(0,0,sz.x,sz.y),black_image[MARGIN_BOTTOM],Color(1,1,1));
+	} else if (black_margin[MARGIN_BOTTOM]) {
 		rasterizer->canvas_draw_rect(Rect2(0,window_h-black_margin[MARGIN_BOTTOM],window_w,black_margin[MARGIN_BOTTOM]),0,Rect2(0,0,1,1),RID(),Color(0,0,0));
+	}
 
 	rasterizer->canvas_end_rect();
 };
@@ -7412,6 +7452,8 @@ void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_col
 
 	if (p_image.empty())
 		return;
+
+	rasterizer->restore_framebuffer();
 
 	rasterizer->begin_frame();
 

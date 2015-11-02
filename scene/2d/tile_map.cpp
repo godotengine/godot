@@ -30,6 +30,7 @@
 #include "io/marshalls.h"
 #include "servers/physics_2d_server.h"
 #include "method_bind_ext.inc"
+#include "os/os.h"
 
 int TileMap::_get_quadrant_size() const {
 
@@ -262,6 +263,14 @@ void TileMap::_update_dirty_quadrants() {
 
 	Vector2 qofs;
 
+	SceneTree *st=SceneTree::get_singleton();
+	Color debug_collision_color;
+
+	bool debug_shapes = st && st->is_debugging_collisions_hint();
+	if (debug_shapes) {
+		debug_collision_color=st->get_debug_collisions_color();
+	}
+
 	while (dirty_quadrant_list.first()) {
 
 		Quadrant &q = *dirty_quadrant_list.first()->self();
@@ -398,10 +407,18 @@ void TileMap::_update_dirty_quadrants() {
 
 					_fix_cell_transform(xform,c,shape_ofs+center_ofs,s);
 
-					ps->body_add_shape(q.body,shape->get_rid(),xform);
+					if (debug_shapes) {
+						vs->canvas_item_add_set_transform(canvas_item,xform);
+						shape->draw(canvas_item,debug_collision_color);
+
+					}
+					ps->body_add_shape(q.body,shape->get_rid(),xform);					
 					ps->body_set_shape_metadata(q.body,shape_idx++,Vector2(E->key().x,E->key().y));
 
 				}
+			}
+			if (debug_shapes) {
+				vs->canvas_item_add_set_transform(canvas_item,Matrix32());
 			}
 
 			if (navigation) {
@@ -411,6 +428,7 @@ void TileMap::_update_dirty_quadrants() {
 					Matrix32 xform;
 					xform.set_origin(offset.floor()+q.pos);
 					_fix_cell_transform(xform,c,npoly_ofs+center_ofs,s);
+
 
 					int pid = navigation->navpoly_create(navpoly,nav_rel * xform);
 
@@ -579,6 +597,10 @@ void TileMap::_make_quadrant_dirty(Map<PosKey,Quadrant>::Element *Q) {
 	call_deferred("_update_dirty_quadrants");
 }
 
+void TileMap::set_cellv(const Vector2& p_pos,int p_tile,bool p_flip_x,bool p_flip_y,bool p_transpose) {
+
+	set_cell(p_pos.x,p_pos.y,p_tile,p_flip_x,p_flip_y,p_transpose);
+}
 
 void TileMap::set_cell(int p_x,int p_y,int p_tile,bool p_flip_x,bool p_flip_y,bool p_transpose) {
 
@@ -1106,6 +1128,7 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_collision_bounce"),&TileMap::get_collision_bounce);
 
 	ObjectTypeDB::bind_method(_MD("set_cell","x","y","tile","flip_x","flip_y","transpose"),&TileMap::set_cell,DEFVAL(false),DEFVAL(false),DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("set_cellv","pos","tile","flip_x","flip_y","transpose"),&TileMap::set_cellv,DEFVAL(false),DEFVAL(false),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_cell","x","y"),&TileMap::get_cell);
 	ObjectTypeDB::bind_method(_MD("is_cell_x_flipped","x","y"),&TileMap::is_cell_x_flipped);
 	ObjectTypeDB::bind_method(_MD("is_cell_y_flipped","x","y"),&TileMap::is_cell_y_flipped);

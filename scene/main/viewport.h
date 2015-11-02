@@ -104,6 +104,11 @@ friend class RenderTargetTexture;
 	Rect2 rect;
 	Rect2 to_screen_rect;
 
+	RID contact_2d_debug;
+	RID contact_3d_debug_multimesh;
+	RID contact_3d_debug_instance;
+
+
 
 	bool size_override;
 	bool size_override_stretch;

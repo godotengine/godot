@@ -47,6 +47,7 @@
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
+#include "main/input_default.h"
 
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
@@ -115,9 +116,11 @@ class OS_X11 : public OS_Unix {
 	bool minimized;
 	int dpad_last[2];
 
+	bool do_mouse_warp;
 
 	const char *cursor_theme;
 	int cursor_size;
+	XcursorImage *img[CURSOR_MAX];
 	Cursor cursors[CURSOR_MAX];
 	Cursor null_cursor;
 	CursorShape current_cursor;
@@ -158,12 +161,7 @@ class OS_X11 : public OS_Unix {
 			};
 		};
 	};
-
-	Atom net_wm_icon;
-
-
 	int joystick_count;
-
 	Joystick joysticks[JOYSTICKS_MAX];
 
 	int audio_driver_index;
@@ -247,7 +245,7 @@ public:
 	virtual bool is_window_maximized() const;
 
 	virtual void move_window_to_foreground();
-
+	virtual void alert(const String& p_alert,const String& p_title="ALERT!");
 	void run();
 
 	OS_X11();

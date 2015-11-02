@@ -1408,6 +1408,40 @@ GLuint RasterizerGLES2::_texture_get_name(RID p_tex) {
 	return texture->tex_id;
 };
 
+void RasterizerGLES2::texture_set_path(RID p_texture,const String& p_path) {
+	Texture * texture = texture_owner.get(p_texture);
+	ERR_FAIL_COND(!texture);
+
+	texture->path=p_path;
+
+}
+
+String RasterizerGLES2::texture_get_path(RID p_texture) const{
+
+	Texture * texture = texture_owner.get(p_texture);
+	ERR_FAIL_COND_V(!texture,String());
+	return texture->path;
+}
+void RasterizerGLES2::texture_debug_usage(List<VS::TextureInfo> *r_info){
+
+	List<RID> textures;
+	texture_owner.get_owned_list(&textures);
+
+	for (List<RID>::Element *E=textures.front();E;E=E->next()) {
+
+		Texture *t = texture_owner.get(E->get());
+		if (!t)
+			continue;
+		VS::TextureInfo tinfo;
+		tinfo.path=t->path;
+		tinfo.format=t->format;
+		tinfo.size.x=t->alloc_width;
+		tinfo.size.y=t->alloc_height;
+		tinfo.bytes=t->total_data_size;
+		r_info->push_back(tinfo);
+	}
+
+}
 
 /* SHADER API */
 
@@ -4145,7 +4179,7 @@ void RasterizerGLES2::begin_frame() {
 
 	//fragment_lighting=Globals::get_singleton()->get("rasterizer/use_fragment_lighting");
 #ifdef TOOLS_ENABLED
-	canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP,GLOBAL_DEF("rasterizer/use_pixel_snap",false));
+	canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP,GLOBAL_DEF("display/use_2d_pixel_snap",false));
 	shadow_filter=ShadowFilterTechnique(int(Globals::get_singleton()->get("rasterizer/shadow_filter")));
 #endif
 
@@ -4160,7 +4194,6 @@ void RasterizerGLES2::begin_frame() {
 	time_delta=time-last_time;
 	last_time=time;
 	frame++;
-	clear_viewport(Color(1,0,0.5));
 
 	_rinfo.vertex_count=0;
 	_rinfo.object_count=0;
@@ -5969,6 +6002,10 @@ void RasterizerGLES2::_render(const Geometry *p_geometry,const Material *p_mater
 
 			if (element_count==0)
 				return;
+
+			if (mm->visible>=0) {
+				element_count=MIN(element_count,mm->visible);
+			}
 
 			const MultiMesh::Element *elements=&mm->elements[0];
 
@@ -9161,7 +9198,11 @@ void RasterizerGLES2::_canvas_item_setup_shader_params(CanvasItemMaterial *mater
 		glBindTexture(GL_TEXTURE_2D,framebuffer.sample_color);
 		if (framebuffer.scale==1 && !canvas_texscreen_used) {
 #ifdef GLEW_ENABLED
-			glReadBuffer(GL_COLOR_ATTACHMENT0);
+			if (current_rt) {
+				glReadBuffer(GL_COLOR_ATTACHMENT0);
+			} else {
+				glReadBuffer(GL_BACK);
+			}
 #endif
 			glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
 //			if (current_clip) {
@@ -9341,7 +9382,11 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 			glBindTexture(GL_TEXTURE_2D,framebuffer.sample_color);
 
 #ifdef GLEW_ENABLED
-			glReadBuffer(GL_COLOR_ATTACHMENT0);
+			if (current_rt) {
+				glReadBuffer(GL_COLOR_ATTACHMENT0);
+			} else {
+				glReadBuffer(GL_BACK);
+			}
 #endif
 			glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,w,h);
 //			if (current_clip) {
@@ -10804,7 +10849,7 @@ void RasterizerGLES2::init() {
 	copy_shader.set_conditional(CopyShaderGLES2::USE_8BIT_HDR,!use_fp16_fb);
 	canvas_shader.set_conditional(CanvasShaderGLES2::USE_DEPTH_SHADOWS,read_depth_supported);
 
-	canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP,GLOBAL_DEF("rasterizer/use_pixel_snap",false));
+	canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP,GLOBAL_DEF("display/use_2d_pixel_snap",false));
 
 	npo2_textures_available=true;
 	//fragment_lighting=false;
@@ -11187,6 +11232,12 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,boo
 	tc0_id_cache=0;
 	tc0_idx=0;
 };
+
+void RasterizerGLES2::restore_framebuffer() {
+
+	glBindFramebuffer(GL_FRAMEBUFFER, base_framebuffer);
+	
+}
 
 RasterizerGLES2::~RasterizerGLES2() {
 

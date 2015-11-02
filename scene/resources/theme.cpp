@@ -601,7 +601,9 @@ Theme::~Theme()
 
 
 
-RES ResourceFormatLoaderTheme::load(const String &p_path,const String& p_original_path) {
+RES ResourceFormatLoaderTheme::load(const String &p_path, const String& p_original_path, Error *r_error) {
+	if (r_error)
+		*r_error=ERR_CANT_OPEN;
 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path,FileAccess::READ,&err);
@@ -611,6 +613,8 @@ RES ResourceFormatLoaderTheme::load(const String &p_path,const String& p_origina
 	String base_path = p_path.get_base_dir();
 	Ref<Theme> theme( memnew( Theme ) );
 	Map<StringName,Variant> library;
+	if (r_error)
+		*r_error=ERR_FILE_CORRUPT;
 
 	bool reading_library=false;
 	int line=0;
@@ -1002,6 +1006,9 @@ RES ResourceFormatLoaderTheme::load(const String &p_path,const String& p_origina
 
 	f->close();
 	memdelete(f);
+
+	if (r_error)
+		*r_error=OK;
 
 	return theme;
 }

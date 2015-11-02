@@ -828,7 +828,7 @@ Error EditorTextureImportPlugin::import(const String& p_path, const Ref<Resource
 }
 
 
-Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &texture,int format, float quality,int flags,EditorExportPlatform::ImageCompression p_compr,int tex_flags,int shrink)  {
+Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &texture,int format, float quality,int flags,EditorExportPlatform::ImageCompression p_compr,int tex_flags,float shrink)  {
 
 
 	if (format==IMAGE_FORMAT_COMPRESS_DISK_LOSSLESS || format==IMAGE_FORMAT_COMPRESS_DISK_LOSSY) {
@@ -866,7 +866,7 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 
 			int orig_w=image.get_width();
 			int orig_h=image.get_height();
-			image.resize(orig_w/shrink,orig_h/shrink);
+			image.resize(orig_w/shrink,orig_h/shrink,Image::INTERPOLATE_CUBIC);
 			texture->create_from_image(image,tex_flags);
 			texture->set_size_override(Size2(orig_w,orig_h));
 
@@ -926,7 +926,7 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 		int orig_h=image.get_height();
 
 		if (shrink>1) {
-			image.resize(orig_w/shrink,orig_h/shrink);
+			image.resize(orig_w/shrink,orig_h/shrink,Image::INTERPOLATE_CUBIC);
 			texture->create_from_image(image,tex_flags);
 			texture->set_size_override(Size2(orig_w,orig_h));
 		}
@@ -987,7 +987,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		tex_flags|=Texture::FLAG_ANISOTROPIC_FILTER;
 
 	print_line("path: "+p_path+" flags: "+itos(tex_flags));
-	int shrink=1;
+	float shrink=1;
 	if (from->has_option("shrink"))
 		shrink=from->get_option("shrink");
 
@@ -1068,12 +1068,14 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 		//prepare atlas!
 		Vector< Image > sources;
+		Vector< Image > tsources;
 		bool alpha=false;
 		bool crop = from->get_option("crop");
 
 		EditorProgress ep("make_atlas","Build Atlas For: "+p_path.get_file(),from->get_source_count()+3);
 
 		print_line("sources: "+itos(from->get_source_count()));
+
 		for(int i=0;i<from->get_source_count();i++) {
 
 			String path = EditorImportPlugin::expand_source_path(from->get_source_path(i));
@@ -1091,17 +1093,57 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			if (src.detect_alpha())
 				alpha=true;
 
-			sources.push_back(src);
+			tsources.push_back(src);
 		}
 		ep.step("Converting Images",sources.size());
 
-		for(int i=0;i<sources.size();i++) {
+		int base_index=0;
+
+
+		Map<uint64_t,int> source_md5;
+		Map<int,List<int> > source_map;
+
+		for(int i=0;i<tsources.size();i++) {
+
+			Image src = tsources[i];
 
 			if (alpha) {
-				sources[i].convert(Image::FORMAT_RGBA);
+				src.convert(Image::FORMAT_RGBA);
 			} else {
-				sources[i].convert(Image::FORMAT_RGB);
+				src.convert(Image::FORMAT_RGB);
 			}
+
+			DVector<uint8_t> data = src.get_data();
+			MD5_CTX md5;
+			DVector<uint8_t>::Read r=data.read();
+			MD5Init(&md5);
+			int len=data.size();
+			for(int j=0;j<len;j++) {
+				uint8_t b = r[j];
+				b>>=2; //to aid in comparing
+				MD5Update(&md5,(unsigned char*)&b,1);
+			}
+			MD5Final(&md5);
+			uint64_t *cmp = (uint64_t*)md5.digest; //less bits, but still useful for this
+
+			tsources[i]=Image(); //clear
+
+			if (source_md5.has(*cmp)) {
+				int sidx=source_md5[*cmp];
+				source_map[sidx].push_back(i);
+				print_line("REUSING "+from->get_source_path(i));
+
+			} else {
+				int sidx=sources.size();
+				source_md5[*cmp]=sidx;
+				sources.push_back(src);
+				List<int> sm;
+				sm.push_back(i);
+				source_map[sidx]=sm;
+
+			}
+
+
 		}
 
 		//texturepacker is not really good for optimizing, so..
@@ -1138,31 +1180,59 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 		ep.step("Blitting Images",sources.size()+2);
 
+		bool blit_to_po2=tex_flags&Texture::FLAG_MIPMAPS;
+		int atlas_w=dst_size.width;
+		int atlas_h=dst_size.height;
+		if (blit_to_po2) {
+			atlas_w=nearest_power_of_2(dst_size.width);
+			atlas_h=nearest_power_of_2(dst_size.height);
+		}
 		Image atlas;
-		atlas.create(nearest_power_of_2(dst_size.width),nearest_power_of_2(dst_size.height),0,alpha?Image::FORMAT_RGBA:Image::FORMAT_RGB);
+		atlas.create(atlas_w,atlas_h,0,alpha?Image::FORMAT_RGBA:Image::FORMAT_RGB);
+
+
+		atlases.resize(from->get_source_count());
 
 		for(int i=0;i<sources.size();i++) {
 
 			int x=dst_positions[i].x;
 			int y=dst_positions[i].y;
 
-			Ref<AtlasTexture> at = memnew( AtlasTexture );
 			Size2 sz = Size2(sources[i].get_width(),sources[i].get_height());
+
+			Rect2 region;
+			Rect2 margin;
+
 			if (crop && sz!=crops[i].size) {
 				Rect2 rect = crops[i];
 				rect.size=sz-rect.size;
-				at->set_region(Rect2(x+border,y+border,crops[i].size.width,crops[i].size.height));
-				at->set_margin(rect);
+				region=Rect2(x+border,y+border,crops[i].size.width,crops[i].size.height);
+				margin=rect;
 				atlas.blit_rect(sources[i],crops[i],Point2(x+border,y+border));
 			} else {
-				at->set_region(Rect2(x+border,y+border,sz.x,sz.y));
+				region=Rect2(x+border,y+border,sz.x,sz.y);
 				atlas.blit_rect(sources[i],Rect2(0,0,sources[i].get_width(),sources[i].get_height()),Point2(x+border,y+border));
 			}
-			String apath = p_path.get_base_dir().plus_file(from->get_source_path(i).get_file().basename()+".atex");
-			print_line("Atlas Tex: "+apath);
-			at->set_path(apath);
-			atlases.push_back(at);
 
+			ERR_CONTINUE( !source_map.has(i) );
+			for (List<int>::Element *E=source_map[i].front();E;E=E->next()) {
+
+				String apath = p_path.get_base_dir().plus_file(from->get_source_path(E->get()).get_file().basename()+".atex");
+
+				Ref<AtlasTexture> at;
+
+				if (ResourceCache::has(apath)) {
+					at = Ref<AtlasTexture>( ResourceCache::get(apath)->cast_to<AtlasTexture>() );
+				} else {
+
+					at = Ref<AtlasTexture>( memnew( AtlasTexture ) );
+				}
+				at->set_region(region);
+				at->set_margin(margin);
+				at->set_path(apath);
+				atlases[E->get()]=at;
+				print_line("Atlas Tex: "+apath);
+			}
 		}
 		if (ResourceCache::has(p_path)) {
 			texture = Ref<ImageTexture> ( ResourceCache::get(p_path)->cast_to<ImageTexture>() );
@@ -1413,6 +1483,9 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 				} break; //use default
 				case EditorImportExport::IMAGE_ACTION_COMPRESS_RAM: {
 					group_format=EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM;
+				} break; //use default
+				case EditorImportExport::IMAGE_ACTION_KEEP: {
+					return Vector<uint8_t>();
 				} break; //use default
 			}
 

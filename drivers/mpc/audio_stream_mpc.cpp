@@ -1,7 +1,7 @@
 #include "audio_stream_mpc.h"
 
 
-Error AudioStreamMPC::_open_file() {
+Error AudioStreamPlaybackMPC::_open_file() {
 
 	if (f) {
 		memdelete(f);
@@ -41,7 +41,7 @@ Error AudioStreamMPC::_open_file() {
 	return OK;
 }
 
-void AudioStreamMPC::_close_file() {
+void AudioStreamPlaybackMPC::_close_file() {
 
 	if (f) {
 		memdelete(f);
@@ -52,7 +52,7 @@ void AudioStreamMPC::_close_file() {
 	data_ofs=0;
 }
 
-int AudioStreamMPC::_read_file(void *p_dst,int p_bytes) {
+int AudioStreamPlaybackMPC::_read_file(void *p_dst,int p_bytes) {
 
 	if (f)
 		return f->get_buffer((uint8_t*)p_dst,p_bytes);
@@ -68,7 +68,7 @@ int AudioStreamMPC::_read_file(void *p_dst,int p_bytes) {
 	return p_bytes;
 }
 
-bool AudioStreamMPC::_seek_file(int p_pos){
+bool AudioStreamPlaybackMPC::_seek_file(int p_pos){
 
 	if (p_pos<0 || p_pos>streamlen)
 		return false;
@@ -83,7 +83,7 @@ bool AudioStreamMPC::_seek_file(int p_pos){
 	return true;
 
 }
-int AudioStreamMPC::_tell_file()  const{
+int AudioStreamPlaybackMPC::_tell_file()  const{
 
 	if (f)
 		return f->get_pos();
@@ -93,13 +93,13 @@ int AudioStreamMPC::_tell_file()  const{
 
 }
 
-int AudioStreamMPC::_sizeof_file() const{
+int AudioStreamPlaybackMPC::_sizeof_file() const{
 
 	//print_line("sizeof file, get: "+itos(streamlen));
 	return streamlen;
 }
 
-bool AudioStreamMPC::_canseek_file() const{
+bool AudioStreamPlaybackMPC::_canseek_file() const{
 
 	//print_line("canseek file, get true");
 	return true;
@@ -107,51 +107,46 @@ bool AudioStreamMPC::_canseek_file() const{
 
 /////////////////////
 
-mpc_int32_t AudioStreamMPC::_mpc_read(mpc_reader *p_reader,void *p_dst, mpc_int32_t p_bytes) {
+mpc_int32_t AudioStreamPlaybackMPC::_mpc_read(mpc_reader *p_reader,void *p_dst, mpc_int32_t p_bytes) {
 
-	AudioStreamMPC *smpc=(AudioStreamMPC *)p_reader->data;
+	AudioStreamPlaybackMPC *smpc=(AudioStreamPlaybackMPC *)p_reader->data;
 	return smpc->_read_file(p_dst,p_bytes);
 }
 
-mpc_bool_t AudioStreamMPC::_mpc_seek(mpc_reader *p_reader,mpc_int32_t p_offset) {
+mpc_bool_t AudioStreamPlaybackMPC::_mpc_seek(mpc_reader *p_reader,mpc_int32_t p_offset) {
 
-	AudioStreamMPC *smpc=(AudioStreamMPC *)p_reader->data;
+	AudioStreamPlaybackMPC *smpc=(AudioStreamPlaybackMPC *)p_reader->data;
 	return smpc->_seek_file(p_offset);
 
 }
-mpc_int32_t AudioStreamMPC::_mpc_tell(mpc_reader *p_reader) {
+mpc_int32_t AudioStreamPlaybackMPC::_mpc_tell(mpc_reader *p_reader) {
 
-	AudioStreamMPC *smpc=(AudioStreamMPC *)p_reader->data;
+	AudioStreamPlaybackMPC *smpc=(AudioStreamPlaybackMPC *)p_reader->data;
 	return smpc->_tell_file();
 
 }
-mpc_int32_t AudioStreamMPC::_mpc_get_size(mpc_reader *p_reader) {
+mpc_int32_t AudioStreamPlaybackMPC::_mpc_get_size(mpc_reader *p_reader) {
 
-	AudioStreamMPC *smpc=(AudioStreamMPC *)p_reader->data;
+	AudioStreamPlaybackMPC *smpc=(AudioStreamPlaybackMPC *)p_reader->data;
 	return smpc->_sizeof_file();
 
 
 }
-mpc_bool_t AudioStreamMPC::_mpc_canseek(mpc_reader *p_reader) {
+mpc_bool_t AudioStreamPlaybackMPC::_mpc_canseek(mpc_reader *p_reader) {
 
-	AudioStreamMPC *smpc=(AudioStreamMPC *)p_reader->data;
+	AudioStreamPlaybackMPC *smpc=(AudioStreamPlaybackMPC *)p_reader->data;
 	return smpc->_canseek_file();
 }
 
 
 
-bool AudioStreamMPC::_can_mix() const {
 
-	return /*active &&*/ !paused;
-}
-
-
-void AudioStreamMPC::update() {
+int AudioStreamPlaybackMPC::mix(int16_t* p_bufer,int p_frames) {
 
 	if (!active || paused)
-		return;
+		return 0;
 
-	int todo=get_todo();
+	int todo=p_frames;
 
 	while(todo>MPC_DECODER_BUFFER_LENGTH/si.channels) {
 
@@ -162,7 +157,7 @@ void AudioStreamMPC::update() {
 		mpc_status err = mpc_demux_decode(demux, &frame);
 		if (frame.bits!=-1) {
 
-			int16_t *dst_buff = get_write_buffer();
+			int16_t *dst_buff = p_bufer;
 
 #ifdef MPC_FIXED_POINT
 
@@ -185,21 +180,21 @@ void AudioStreamMPC::update() {
 #endif
 
 			int frames = frame.samples;
-			write(frames);
+			p_bufer+=si.channels*frames;
 			todo-=frames;
 		} else {
 
 			if (err != MPC_STATUS_OK) {
 
 				stop();
-				ERR_EXPLAIN("Error decoding MPC");
-				ERR_FAIL();
+				ERR_PRINT("Error decoding MPC");
+				break;
 			} else {
 
 				//finished
 				if (!loop) {
 					stop();
-					return;
+					break;
 				} else {
 
 
@@ -213,9 +208,11 @@ void AudioStreamMPC::update() {
 			}
 		}
 	}
+
+	return p_frames-todo;
 }
 
-Error AudioStreamMPC::_reload() {
+Error AudioStreamPlaybackMPC::_reload() {
 
 	ERR_FAIL_COND_V(demux!=NULL, ERR_FILE_ALREADY_IN_USE);
 
@@ -224,30 +221,39 @@ Error AudioStreamMPC::_reload() {
 
 	demux = mpc_demux_init(&reader);
 	ERR_FAIL_COND_V(!demux,ERR_CANT_CREATE);
-
 	mpc_demux_get_info(demux,  &si);
-	_setup(si.channels,si.sample_freq,MPC_DECODER_BUFFER_LENGTH*2/si.channels);
 
 	return OK;
 }
 
-void AudioStreamMPC::set_file(const String& p_file) {
+void AudioStreamPlaybackMPC::set_file(const String& p_file) {
 
 	file=p_file;
+
+	Error err = _open_file();
+	ERR_FAIL_COND(err!=OK);
+	demux = mpc_demux_init(&reader);
+	ERR_FAIL_COND(!demux);
+	mpc_demux_get_info(demux,  &si);
+	stream_min_size=MPC_DECODER_BUFFER_LENGTH*2/si.channels;
+	stream_rate=si.sample_freq;
+	stream_channels=si.channels;
+
+	mpc_demux_exit(demux);
+	demux=NULL;
+	_close_file();
 
 }
 
 
-String AudioStreamMPC::get_file() const {
+String AudioStreamPlaybackMPC::get_file() const {
 
 	return file;
 }
 
 
-void AudioStreamMPC::play() {
+void AudioStreamPlaybackMPC::play(float p_offset) {
 
-
-	_THREAD_SAFE_METHOD_
 
 	if (active)
 		stop();
@@ -262,9 +268,9 @@ void AudioStreamMPC::play() {
 
 }
 
-void AudioStreamMPC::stop()  {
+void AudioStreamPlaybackMPC::stop()  {
 
-	_THREAD_SAFE_METHOD_
+
 	if (!active)
 		return;
 	if (demux) {
@@ -275,70 +281,58 @@ void AudioStreamMPC::stop()  {
 	active=false;
 
 }
-bool AudioStreamMPC::is_playing() const  {
+bool AudioStreamPlaybackMPC::is_playing() const  {
 
-	return active || (get_total() - get_todo() -1 > 0);
+	return active;
 }
 
-void AudioStreamMPC::set_paused(bool p_paused)  {
 
-	paused=p_paused;
-}
-bool AudioStreamMPC::is_paused(bool p_paused) const  {
-
-	return paused;
-}
-
-void AudioStreamMPC::set_loop(bool p_enable)  {
+void AudioStreamPlaybackMPC::set_loop(bool p_enable)  {
 
 	loop=p_enable;
 }
-bool AudioStreamMPC::has_loop() const  {
+bool AudioStreamPlaybackMPC::has_loop() const  {
 
 	return loop;
 }
 
-float AudioStreamMPC::get_length() const {
+float AudioStreamPlaybackMPC::get_length() const {
 
 	return 0;
 }
 
-String AudioStreamMPC::get_stream_name() const {
+String AudioStreamPlaybackMPC::get_stream_name() const {
 
 	return "";
 }
 
-int AudioStreamMPC::get_loop_count() const {
+int AudioStreamPlaybackMPC::get_loop_count() const {
 
 	return 0;
 }
 
-float AudioStreamMPC::get_pos() const {
+float AudioStreamPlaybackMPC::get_pos() const {
 
 	return 0;
 }
-void AudioStreamMPC::seek_pos(float p_time) {
+void AudioStreamPlaybackMPC::seek_pos(float p_time) {
 
 
 }
 
-AudioStream::UpdateMode AudioStreamMPC::get_update_mode() const {
 
-	return UPDATE_THREAD;
-}
+void AudioStreamPlaybackMPC::_bind_methods() {
 
-void AudioStreamMPC::_bind_methods() {
-
-	ObjectTypeDB::bind_method(_MD("set_file","name"),&AudioStreamMPC::set_file);
-	ObjectTypeDB::bind_method(_MD("get_file"),&AudioStreamMPC::get_file);
+	ObjectTypeDB::bind_method(_MD("set_file","name"),&AudioStreamPlaybackMPC::set_file);
+	ObjectTypeDB::bind_method(_MD("get_file"),&AudioStreamPlaybackMPC::get_file);
 
 	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"file",PROPERTY_HINT_FILE,"mpc"), _SCS("set_file"), _SCS("get_file"));
 
 }
 
-AudioStreamMPC::AudioStreamMPC() {
+AudioStreamPlaybackMPC::AudioStreamPlaybackMPC() {
 
-	preload=true;
+	preload=false;
 	f=NULL;
 	streamlen=0;
 	data_ofs=0;
@@ -356,7 +350,7 @@ AudioStreamMPC::AudioStreamMPC() {
 
 }
 
-AudioStreamMPC::~AudioStreamMPC() {
+AudioStreamPlaybackMPC::~AudioStreamPlaybackMPC() {
 
 	stop();
 
@@ -366,8 +360,9 @@ AudioStreamMPC::~AudioStreamMPC() {
 
 
 
-RES ResourceFormatLoaderAudioStreamMPC::load(const String &p_path,const String& p_original_path) {
-
+RES ResourceFormatLoaderAudioStreamMPC::load(const String &p_path, const String& p_original_path, Error *r_error) {
+	if (r_error)
+		*r_error=OK; //streamed so it will always work..
 	AudioStreamMPC *mpc_stream = memnew(AudioStreamMPC);
 	mpc_stream->set_file(p_path);
 	return Ref<AudioStreamMPC>(mpc_stream);

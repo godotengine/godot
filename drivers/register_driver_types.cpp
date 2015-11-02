@@ -37,13 +37,19 @@
 #include "vorbis/audio_stream_ogg_vorbis.h"
 #endif
 
+#ifdef OPUS_ENABLED
+#include "opus/audio_stream_opus.h"
+#endif
 
 #ifdef SPEEX_ENABLED
 #include "speex/audio_stream_speex.h"
 #endif
 
 #ifdef THEORA_ENABLED
-//#include "theora/video_stream_theora.h"
+#include "theora/video_stream_theora.h"
+#endif
+
+#ifdef THEORAPLAYER_ENABLED
 #include "theoraplayer/video_stream_theoraplayer.h"
 #endif
 
@@ -85,12 +91,19 @@ static ResourceFormatLoaderAudioStreamOGG *vorbis_stream_loader=NULL;
 static ResourceFormatLoaderAudioStreamOGGVorbis *vorbis_stream_loader=NULL;
 #endif
 
+#ifdef OPUS_ENABLED
+static ResourceFormatLoaderAudioStreamOpus *opus_stream_loader=NULL;
+#endif
+
 #ifdef SPEEX_ENABLED
 static ResourceFormatLoaderAudioStreamSpeex *speex_stream_loader=NULL;
 #endif
 
 #ifdef THEORA_ENABLED
-//static ResourceFormatLoaderVideoStreamTheora* theora_stream_loader = NULL;
+static ResourceFormatLoaderVideoStreamTheora* theora_stream_loader = NULL;
+#endif
+
+#ifdef THEORAPLAYER_ENABLED
 static ResourceFormatLoaderVideoStreamTheoraplayer* theoraplayer_stream_loader = NULL;
 #endif
 
@@ -169,6 +182,11 @@ void register_driver_types() {
 	ObjectTypeDB::register_type<AudioStreamOGGVorbis>();
 #endif
 
+#ifdef OPUS_ENABLED
+	opus_stream_loader=memnew( ResourceFormatLoaderAudioStreamOpus );
+	ResourceLoader::add_resource_format_loader( opus_stream_loader );
+	ObjectTypeDB::register_type<AudioStreamOpus>();
+#endif
 
 #ifdef DDS_ENABLED
 	resource_loader_dds = memnew( ResourceFormatDDS );
@@ -205,9 +223,12 @@ void register_driver_types() {
 #endif
 
 #ifdef THEORA_ENABLED
-	//theora_stream_loader = memnew( ResourceFormatLoaderVideoStreamTheora );
-	//ResourceLoader::add_resource_format_loader(theora_stream_loader);
-	//ObjectTypeDB::register_type<VideoStreamTheora>();
+	theora_stream_loader = memnew( ResourceFormatLoaderVideoStreamTheora );
+	ResourceLoader::add_resource_format_loader(theora_stream_loader);
+	ObjectTypeDB::register_type<VideoStreamTheora>();
+#endif
+
+#ifdef THEORAPLAYER_ENABLED
 	theoraplayer_stream_loader = memnew( ResourceFormatLoaderVideoStreamTheoraplayer );
 	ResourceLoader::add_resource_format_loader(theoraplayer_stream_loader);
 	ObjectTypeDB::register_type<VideoStreamTheoraplayer>();
@@ -239,12 +260,19 @@ void unregister_driver_types() {
 	memdelete( vorbis_stream_loader );
 #endif
 
+#ifdef OPUS_ENABLED
+	memdelete( opus_stream_loader );
+#endif
+
 #ifdef SPEEX_ENABLED
 	memdelete( speex_stream_loader );
 #endif
 
 #ifdef THEORA_ENABLED
-	//memdelete (theora_stream_loader);
+	memdelete (theora_stream_loader);
+#endif
+
+#ifdef THEORAPLAYER_ENABLED
 	memdelete (theoraplayer_stream_loader);
 #endif
 

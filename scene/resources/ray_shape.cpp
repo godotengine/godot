@@ -30,7 +30,14 @@
 
 #include "servers/physics_server.h"
 
+Vector<Vector3> RayShape::_gen_debug_mesh_lines() {
 
+	Vector<Vector3> points;
+	points.push_back(Vector3());
+	points.push_back(Vector3(0,0,get_length()));
+
+	return points;
+}
 
 void RayShape::_update_shape() {
 
