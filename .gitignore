@@ -212,6 +212,9 @@ csx/
 # Windows Store app package directory
 AppPackages/
 
+# Windows compiled resource
+platform/windows/icon.res
+
 # Others
 sql/
 *.Cache
