@@ -1502,7 +1502,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="free">
+		<method name="free_rid">
 			<argument index="0" name="rid" type="RID">
 			</argument>
 			<description>
