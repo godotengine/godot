@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<resource_file type="PackedScene" subresource_count="6" version="0.99" version_name="Godot Engine v0.99.3735-pre-beta">
-	<ext_resource path="res://pong.*" type="GDScript"></ext_resource>
-	<ext_resource path="res://separator.*" type="ImageTexture"></ext_resource>
-	<ext_resource path="res://left_pallete.*" type="ImageTexture"></ext_resource>
-	<ext_resource path="res://right_pallete.*" type="ImageTexture"></ext_resource>
-	<ext_resource path="res://ball.*" type="ImageTexture"></ext_resource>
+<resource_file type="PackedScene" subresource_count="6" version="1.0" version_name="Godot Engine v1.0.3917-beta1">
+	<ext_resource path="res://left_pallete.png" type="Texture"></ext_resource>
+	<ext_resource path="res://right_pallete.png" type="Texture"></ext_resource>
+	<ext_resource path="res://separator.png" type="Texture"></ext_resource>
+	<ext_resource path="res://ball.png" type="Texture"></ext_resource>
+	<ext_resource path="res://pong.gd" type="Script"></ext_resource>
 	<main_resource>
 		<dictionary name="_bundled" shared="false">
 			<string> "names" </string>
@@ -14,7 +14,7 @@
 				<string> "visibility/visible" </string>
 				<string> "visibility/opacity" </string>
 				<string> "visibility/self_opacity" </string>
-				<string> "visibility/on_top" </string>
+				<string> "visibility/behind_parent" </string>
 				<string> "transform/pos" </string>
 				<string> "transform/rot" </string>
 				<string> "transform/scale" </string>
@@ -47,10 +47,11 @@
 			<array  len="20" shared="false">
 				<bool> True </bool>
 				<real> 1 </real>
+				<bool> False </bool>
 				<vector2> 0, 0 </vector2>
 				<real> 0 </real>
 				<vector2> 1, 1 </vector2>
-				<resource  resource_type="GDScript" path="res://pong.*">  </resource>
+				<resource  resource_type="Script" path="res://pong.gd">  </resource>
 				<dictionary  shared="false">
 					<string> "__editor_plugin_states__" </string>
 					<dictionary  shared="false">
@@ -69,8 +70,12 @@
 							<bool> True </bool>
 							<string> "zoom" </string>
 							<real> 1.108033 </real>
+							<string> "use_snap" </string>
+							<bool> False </bool>
 							<string> "ofs" </string>
-							<vector2> -54.59, -36.0052 </vector2>
+							<vector2> -176.635, -36.0052 </vector2>
+							<string> "snap" </string>
+							<int> 10 </int>
 						</dictionary>
 						<string> "3D" </string>
 						<dictionary  shared="false">
@@ -160,21 +165,20 @@
 					<string> "Script" </string>
 				</dictionary>
 				<vector2> 67.6875, 183.208 </vector2>
-				<resource  resource_type="ImageTexture" path="res://left_pallete.*">  </resource>
-				<bool> False </bool>
+				<resource  resource_type="Texture" path="res://left_pallete.png">  </resource>
 				<int> 1 </int>
 				<int> 0 </int>
 				<color> 1, 1, 1, 1 </color>
 				<rect2> 0, 0, 0, 0 </rect2>
 				<vector2> 577, 187 </vector2>
-				<resource  resource_type="ImageTexture" path="res://right_pallete.*">  </resource>
+				<resource  resource_type="Texture" path="res://right_pallete.png">  </resource>
 				<vector2> 320, 200 </vector2>
-				<resource  resource_type="ImageTexture" path="res://separator.*">  </resource>
+				<resource  resource_type="Texture" path="res://separator.png">  </resource>
 				<vector2> 320.283, 188 </vector2>
-				<resource  resource_type="ImageTexture" path="res://ball.*">  </resource>
+				<resource  resource_type="Texture" path="res://ball.png">  </resource>
 			</array>
 			<string> "nodes" </string>
-			<int_array  len="197"> 				-1, -1, 1, 0, -1, 9, 2, 0, 3, 1, 4, 1, 5, 0, 6, 2, 7, 3, 8, 4, 9, 5, 10, 6, 0, 0, 0, 12, 11, -1, 18, 2, 0, 3, 1, 4, 1, 5, 0, 6, 7, 7, 3, 8, 4, 13, 8, 14, 0, 15, 2, 16, 9, 17, 9, 18, 10, 19, 10, 20, 11, 21, 12, 22, 9, 23, 13, 0, 0, 0, 12, 24, -1, 18, 2, 0, 3, 1, 4, 1, 5, 0, 6, 14, 7, 3, 8, 4, 13, 15, 14, 0, 15, 2, 16, 9, 17, 9, 18, 10, 19, 10, 20, 11, 21, 12, 22, 9, 23, 13, 0, 0, 0, 12, 25, -1, 18, 2, 0, 3, 1, 4, 1, 5, 0, 6, 16, 7, 3, 8, 4, 13, 17, 14, 0, 15, 2, 16, 9, 17, 9, 18, 10, 19, 10, 20, 11, 21, 12, 22, 9, 23, 13, 0, 0, 0, 12, 26, -1, 18, 2, 0, 3, 1, 4, 1, 5, 0, 6, 18, 7, 3, 8, 4, 13, 19, 14, 0, 15, 2, 16, 9, 17, 9, 18, 10, 19, 10, 20, 11, 21, 12, 22, 9, 23, 13, 0 </int_array>
+			<int_array  len="197"> 				-1, -1, 1, 0, -1, 9, 2, 0, 3, 1, 4, 1, 5, 2, 6, 3, 7, 4, 8, 5, 9, 6, 10, 7, 0, 0, 0, 12, 11, -1, 18, 2, 0, 3, 1, 4, 1, 5, 2, 6, 8, 7, 4, 8, 5, 13, 9, 14, 0, 15, 3, 16, 2, 17, 2, 18, 10, 19, 10, 20, 11, 21, 12, 22, 2, 23, 13, 0, 0, 0, 12, 24, -1, 18, 2, 0, 3, 1, 4, 1, 5, 2, 6, 14, 7, 4, 8, 5, 13, 15, 14, 0, 15, 3, 16, 2, 17, 2, 18, 10, 19, 10, 20, 11, 21, 12, 22, 2, 23, 13, 0, 0, 0, 12, 25, -1, 18, 2, 0, 3, 1, 4, 1, 5, 2, 6, 16, 7, 4, 8, 5, 13, 17, 14, 0, 15, 3, 16, 2, 17, 2, 18, 10, 19, 10, 20, 11, 21, 12, 22, 2, 23, 13, 0, 0, 0, 12, 26, -1, 18, 2, 0, 3, 1, 4, 1, 5, 2, 6, 18, 7, 4, 8, 5, 13, 19, 14, 0, 15, 3, 16, 2, 17, 2, 18, 10, 19, 10, 20, 11, 21, 12, 22, 2, 23, 13, 0 </int_array>
 			<string> "conns" </string>
 			<int_array  len="0"> 				 </int_array>
 		</dictionary>
