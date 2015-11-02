@@ -78,6 +78,9 @@ bool GDParser::_enter_indent_block(BlockNode* p_block) {
 	}
 
 	while(true) {
+		if ((tokenizer->get_token(1) == GDTokenizer::TK_NEWLINE)){
+			_set_error("expected a variable or pass,can`t leave space!");
+		}
 
 		if (tokenizer->get_token()!=GDTokenizer::TK_NEWLINE) {
 			return false; //wtf
