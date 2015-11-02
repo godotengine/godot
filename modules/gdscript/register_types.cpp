@@ -122,8 +122,8 @@ static void register_editor_plugin() {
 void register_gdscript_types() {
 
 	ObjectTypeDB::register_type<GDScript>();
-    ObjectTypeDB::register_virtual_type<GDFunctionObject>();
-    ObjectTypeDB::register_virtual_type<GDNativeFunctionObject>();
+	ObjectTypeDB::register_virtual_type<GDFunctionObject>();
+	ObjectTypeDB::register_virtual_type<GDNativeFunctionObject>();
 	ObjectTypeDB::register_virtual_type<GDLambdaFunctionObject>();
 	ObjectTypeDB::register_virtual_type<GDFunctionState>();
 
