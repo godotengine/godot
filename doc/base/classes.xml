@@ -7298,7 +7298,7 @@
 	Color in RGBA format.
 	</brief_description>
 	<description>
-	A color is represented as red, green and blue (r,g,b) components. Additionally, "a" represents the alpha component, often used for transparency. Values are in floating point, ranging from 0 to 1.
+	A color is represented as red, green and blue (r,g,b) components. Additionally, "a" represents the alpha component, often used for transparency. Values are in floating point and usually range from 0 to 1.  Some methods (such as set_modulate() ) may accept values > 1.
 	</description>
 	<methods>
 		<method name="blend">
@@ -16566,11 +16566,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="x" type="float">
+		<member name="x" type="Vector2">
 		</member>
-		<member name="y" type="float">
+		<member name="y" type="Vector2">
 		</member>
-		<member name="o" type="float">
+		<member name="o" type="Vector2">
 		</member>
 	</members>
 	<constants>
@@ -29267,8 +29267,10 @@
 </class>
 <class name="ScrollContainer" inherits="Container" category="Core">
 	<brief_description>
+	A helper node for displaying scollable elements (e.g. lists).
 	</brief_description>
 	<description>
+	A ScrollContainer node with a [Control] child and scrollbar child ([HScrollbar], [VScrollBar], or both) will only draw the Control within the ScrollContainer area.  Scrollbars will automatically be drawn at the right (for vertical) or bottom (for horizontal) and will enable dragging to move the viewable Control (and its children) within the ScrollContainer.  Scrollbars will also automatically resize the grabber based on the minimum_size of the Control relative to the ScrollContainer.  Works great with a [Panel] control.
 	</description>
 	<methods>
 		<method name="set_enable_h_scroll">
@@ -31730,7 +31732,7 @@
 			<argument index="0" name="modulate" type="Color">
 			</argument>
 			<description>
-			Set color modulation for the sprite. All sprite pixels are multiplied by this color.
+			Set color modulation for the sprite. All sprite pixels are multiplied by this color.  Color may contain rgb values above 1 to achieve a highlight effect.
 			</description>
 		</method>
 		<method name="get_modulate" qualifiers="const">
