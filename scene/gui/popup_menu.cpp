@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 #include "print_string.h"
 #include "os/keyboard.h"
 #include "translation.h"
+#include "os/input.h"
 
 String PopupMenu::_get_accel_text(uint32_t p_accel) const {
 
@@ -318,8 +319,14 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 
 					int over=_get_mouse_over(Point2(b.x,b.y));
 
-					if (over<0 || items[over].separator || items[over].disabled)
+					if (invalidated_click) {
+						invalidated_click=false;
+						break;
+					}
+					if (over<0 || items[over].separator || items[over].disabled) {
+						hide();
 						break; //non-activable
+					}
 
 					if (items[over].submenu!="") {
 
@@ -335,6 +342,13 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 		} break;
 		case InputEvent::MOUSE_MOTION: {
 	
+
+			if (invalidated_click) {
+				moved+=Vector2(p_event.mouse_motion.relative_x,p_event.mouse_motion.relative_y);
+				if (moved.length()>4)
+					invalidated_click=false;
+
+			}
 
 			const InputEventMouseMotion &m=p_event.mouse_motion;
 			for(List<Rect2>::Element *E=autohide_areas.front();E;E=E->next()) {
@@ -726,10 +740,18 @@ int PopupMenu::find_item_by_accelerator(uint32_t p_accel) const {
 
 void PopupMenu::activate_item(int p_item) {
 
-
 	ERR_FAIL_INDEX(p_item,items.size());
 	ERR_FAIL_COND(items[p_item].separator);
 	emit_signal("item_pressed",items[p_item].ID);
+
+	//hide all parent PopupMenue's
+	Node *next = get_parent();
+	PopupMenu *pop = next->cast_to<PopupMenu>();
+	while (pop) {
+		pop->hide();
+		next = next->get_parent();
+		pop = next->cast_to<PopupMenu>();
+	}
 	hide();
 
 }
@@ -893,12 +915,17 @@ void PopupMenu::_bind_methods() {
 
 }
 	
+
+void PopupMenu::set_invalidate_click_until_motion() {
+	moved=Vector2();
+	invalidated_click=true;
+}
+
 PopupMenu::PopupMenu() {
 
 	idcount=0;
 	mouse_over=-1;
 	
-
 	set_focus_mode(FOCUS_ALL);
 	set_as_toplevel(true);
 

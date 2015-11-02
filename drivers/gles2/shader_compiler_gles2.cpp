@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,6 +61,7 @@ static String _typestr(SL::DataType p_type) {
 		case SL::TYPE_VEC2: return "vec2";
 		case SL::TYPE_VEC3: return "vec3";
 		case SL::TYPE_VEC4: return "vec4";
+		case SL::TYPE_MAT2: return "mat2";
 		case SL::TYPE_MAT3: return "mat3";
 		case SL::TYPE_MAT4: return "mat4";
 		case SL::TYPE_TEXTURE: return "sampler2D";
@@ -131,20 +132,23 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 			SL::BlockNode *bnode=(SL::BlockNode*)p_node;
 
 			//variables
+            code+="{" ENDL;
 			for(Map<StringName,SL::DataType>::Element *E=bnode->variables.front();E;E=E->next()) {
 
-				code+=_mktab(p_level)+_typestr(E->value())+" "+replace_string(E->key())+";"ENDL;
+                code+=_mktab(p_level)+_typestr(E->value())+" "+replace_string(E->key())+";" ENDL;
 			}
 
 			for(int i=0;i<bnode->statements.size();i++) {
 
-				code+=_mktab(p_level)+dump_node_code(bnode->statements[i],p_level)+";"ENDL;
+                code+=_mktab(p_level)+dump_node_code(bnode->statements[i],p_level)+";" ENDL;
 			}
 
+            code+="}" ENDL;
 
 		} break;
 		case SL::Node::TYPE_VARIABLE: {
 			SL::VariableNode *vnode=(SL::VariableNode*)p_node;
+
 			if (type==ShaderLanguage::SHADER_MATERIAL_VERTEX) {
 
 				if (vnode->name==vname_vertex && p_assign_left) {
@@ -171,6 +175,9 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 
 
 			}
+
+
+
 			if (type==ShaderLanguage::SHADER_MATERIAL_FRAGMENT) {
 
 				if (vnode->name==vname_discard) {
@@ -212,6 +219,62 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				}
 
 			}
+			if (type==ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX) {
+
+				if (vnode->name==vname_var1_interp) {
+					flags->use_var1_interp=true;
+				}
+				if (vnode->name==vname_var2_interp) {
+					flags->use_var2_interp=true;
+				}
+				if (vnode->name==vname_world_vec) {
+					uses_worldvec=true;
+				}
+
+			}
+
+
+			if (type==ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT) {
+
+
+				if (vnode->name==vname_texpixel_size) {
+					uses_texpixel_size=true;
+				}
+				if (vnode->name==vname_normal) {
+					uses_normal=true;
+				}
+				if (vnode->name==vname_normalmap || vnode->name==vname_normalmap_depth) {
+					uses_normalmap=true;
+					uses_normal=true;
+				}
+
+				if (vnode->name==vname_screen_uv) {
+					uses_screen_uv=true;
+				}
+
+				if (vnode->name==vname_var1_interp) {
+					flags->use_var1_interp=true;
+				}
+				if (vnode->name==vname_var2_interp) {
+					flags->use_var2_interp=true;
+				}
+			}
+
+			if (type==ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT) {
+
+				if (vnode->name==vname_light) {
+					uses_light=true;
+				}
+
+				if (vnode->name==vname_normal) {
+					uses_normal=true;
+				}
+
+				if (vnode->name==vname_shadow) {
+					uses_shadow_color=true;
+				}
+
+			}
 
 			if (vnode->name==vname_time) {
 				uses_time=true;
@@ -229,6 +292,7 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				case SL::TYPE_VEC2: { Vector2 v = cnode->value; code="vec2("+_mknum(v.x)+", "+_mknum(v.y)+")"; } break;
 				case SL::TYPE_VEC3: { Vector3 v = cnode->value; code="vec3("+_mknum(v.x)+", "+_mknum(v.y)+", "+_mknum(v.z)+")"; } break;
 				case SL::TYPE_VEC4: { Plane v = cnode->value; code="vec4("+_mknum(v.normal.x)+", "+_mknum(v.normal.y)+", "+_mknum(v.normal.z)+", "+_mknum(v.d)+")"; } break;
+				case SL::TYPE_MAT2: { Matrix32 x = cnode->value; code="mat2( vec2("+_mknum(x[0][0])+", "+_mknum(x[0][1])+"), vec2("+_mknum(x[1][0])+", "+_mknum(x[1][1])+"))"; } break;
 				case SL::TYPE_MAT3: { Matrix3 x = cnode->value; code="mat3( vec3("+_mknum(x.get_axis(0).x)+", "+_mknum(x.get_axis(0).y)+", "+_mknum(x.get_axis(0).z)+"), vec3("+_mknum(x.get_axis(1).x)+", "+_mknum(x.get_axis(1).y)+", "+_mknum(x.get_axis(1).z)+"), vec3("+_mknum(x.get_axis(2).x)+", "+_mknum(x.get_axis(2).y)+", "+_mknum(x.get_axis(2).z)+"))"; } break;
 				case SL::TYPE_MAT4: { Transform x = cnode->value; code="mat4( vec4("+_mknum(x.basis.get_axis(0).x)+", "+_mknum(x.basis.get_axis(0).y)+", "+_mknum(x.basis.get_axis(0).z)+",0.0), vec4("+_mknum(x.basis.get_axis(1).x)+", "+_mknum(x.basis.get_axis(1).y)+", "+_mknum(x.basis.get_axis(1).z)+",0.0), vec4("+_mknum(x.basis.get_axis(2).x)+", "+_mknum(x.basis.get_axis(2).y)+", "+_mknum(x.basis.get_axis(2).z)+",0.0), vec4("+_mknum(x.origin.x)+", "+_mknum(x.origin.y)+", "+_mknum(x.origin.z)+",1.0))"; } break;
 				default: code="<error: "+Variant::get_type_name(cnode->value.get_type())+" ("+itos(cnode->datatype)+">";
@@ -260,13 +324,13 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 
 						String mul_l=dump_node_code(onode->arguments[0],p_level,true);
 						String mul_r=dump_node_code(onode->arguments[1],p_level);
-						code=mul_l+"=(vec4("+mul_l+",1.0,1.0)*("+mul_r+")).xy";
+						code=mul_l+"=(vec4("+mul_l+",0.0,1.0)*("+mul_r+")).xy";
 						break;
 					} else if (onode->arguments[0]->get_datatype()==SL::TYPE_MAT4 && onode->arguments[1]->get_datatype()==SL::TYPE_VEC2) {
 
 						String mul_l=dump_node_code(onode->arguments[0],p_level,true);
 						String mul_r=dump_node_code(onode->arguments[1],p_level);
-						code=mul_l+"=(("+mul_l+")*vec4("+mul_r+",1.0,1.0)).xy";
+						code=mul_l+"=(("+mul_l+")*vec4("+mul_r+",0.0,1.0)).xy";
 						break;
 					} else if (onode->arguments[0]->get_datatype()==SL::TYPE_VEC2 && onode->arguments[1]->get_datatype()==SL::TYPE_MAT3) {
 						String mul_l=dump_node_code(onode->arguments[0],p_level,true);
@@ -296,11 +360,11 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 						break;
 					} else if (onode->arguments[0]->get_datatype()==SL::TYPE_MAT4 && onode->arguments[1]->get_datatype()==SL::TYPE_VEC2) {
 
-						code="("+dump_node_code(onode->arguments[0],p_level)+"*vec4("+dump_node_code(onode->arguments[1],p_level)+",1.0,1.0)).xyz";
+						code="("+dump_node_code(onode->arguments[0],p_level)+"*vec4("+dump_node_code(onode->arguments[1],p_level)+",0.0,1.0)).xy";
 						break;
 					} else if (onode->arguments[0]->get_datatype()==SL::TYPE_VEC2 && onode->arguments[1]->get_datatype()==SL::TYPE_MAT4) {
 
-						code="(vec4("+dump_node_code(onode->arguments[0],p_level)+",1.0,1.0)*"+dump_node_code(onode->arguments[1],p_level)+").xyz";
+						code="(vec4("+dump_node_code(onode->arguments[0],p_level)+",0.0,1.0)*"+dump_node_code(onode->arguments[1],p_level)+").xy";
 						break;
 					} else if (onode->arguments[0]->get_datatype()==SL::TYPE_MAT3 && onode->arguments[1]->get_datatype()==SL::TYPE_VEC2) {
 
@@ -357,7 +421,7 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 					} else if (callfunc=="texscreen") {
 						//create the call to sample the screen, and clamp it
 						uses_texscreen=true;
-						code="(texture2D( texscreen_tex, min(("+dump_node_code(onode->arguments[1],p_level)+").xy*texscreen_screen_mult,texscreen_screen_mult))).rgb";
+						code="(texture2D( texscreen_tex, clamp(("+dump_node_code(onode->arguments[1],p_level)+").xy*texscreen_screen_mult,texscreen_screen_clamp.xy,texscreen_screen_clamp.zw))).rgb";
 						//code="(texture2D( screen_texture, ("+dump_node_code(onode->arguments[1],p_level)+").xy).rgb";
 						break;
 					} else if (callfunc=="texpos") {
@@ -367,6 +431,42 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 //						code="get_texpos(gl_ProjectionMatrixInverse * texture2D( depth_texture, clamp(("+dump_node_code(onode->arguments[1],p_level)+").xy,vec2(0.0),vec2(1.0))*gl_LightSource[5].specular.zw+gl_LightSource[5].specular.xy)";
 						//code="(texture2D( screen_texture, ("+dump_node_code(onode->arguments[1],p_level)+").xy).rgb";
 						break;
+					} else if (custom_h && callfunc=="cosh_custom") {
+
+						if (!cosh_used) {
+							global_code=	"float cosh_custom(float val)\n"\
+									"{\n"\
+									"    float tmp = exp(val);\n"\
+									"    float cosH = (tmp + 1.0 / tmp) / 2.0;\n"\
+									"    return cosH;\n"\
+									"}\n"+global_code;
+							cosh_used=true;
+						}
+						code="cosh_custom("+dump_node_code(onode->arguments[1],p_level)+"";
+					} else if (custom_h && callfunc=="sinh_custom") {
+
+						if (!sinh_used) {
+							global_code=	"float sinh_custom(float val)\n"\
+									"{\n"\
+									"    float tmp = exp(val);\n"\
+									"    float sinH = (tmp - 1.0 / tmp) / 2.0;\n"\
+									"    return sinH;\n"\
+									"}\n"+global_code;
+							sinh_used=true;
+						}
+						code="sinh_custom("+dump_node_code(onode->arguments[1],p_level)+"";
+					} else if (custom_h && callfunc=="tanh_custom") {
+
+						if (!tanh_used) {
+							global_code=	"float tanh_custom(float val)\n"\
+									"{\n"\
+									"    float tmp = exp(val);\n"\
+									"    float tanH = (tmp - 1.0 / tmp) / (tmp + 1.0 / tmp);\n"\
+									"    return tanH;\n"\
+									"}\n"+global_code;
+							tanh_used=true;
+						}
+						code="tanh_custom("+dump_node_code(onode->arguments[1],p_level)+"";
 
 					} else {
 
@@ -389,15 +489,15 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 			SL::ControlFlowNode *cfnode=(SL::ControlFlowNode*)p_node;
 			if (cfnode->flow_op==SL::FLOW_OP_IF) {
 
-				code+="if ("+dump_node_code(cfnode->statements[0],p_level)+") {"ENDL;
+                code+="if ("+dump_node_code(cfnode->statements[0],p_level)+") {" ENDL;
 				code+=dump_node_code(cfnode->statements[1],p_level+1);
 				if (cfnode->statements.size()==3) {
 
-					code+="} else {"ENDL;
+                    code+="} else {" ENDL;
 					code+=dump_node_code(cfnode->statements[2],p_level+1);
 				}
 
-				code+="}"ENDL;
+                code+="}" ENDL;
 
 			} else if (cfnode->flow_op==SL::FLOW_OP_RETURN) {
 
@@ -421,6 +521,11 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 					m="[2]";
 				else if (mnode->name=="w")
 					m="[3]";
+			} else if (mnode->basetype==SL::TYPE_MAT2) {
+				if (mnode->name=="x")
+					m="[0]";
+				else if (mnode->name=="y")
+					m="[1]";
 
 			} else if (mnode->basetype==SL::TYPE_MAT3) {
 				if (mnode->name=="x")
@@ -455,7 +560,7 @@ Error ShaderCompilerGLES2::compile_node(SL::ProgramNode *p_program) {
 		ubase=uniforms->size();
 	for(Map<StringName,SL::Uniform>::Element *E=p_program->uniforms.front();E;E=E->next()) {
 
-		String uline="uniform "+_typestr(E->get().type)+" _"+E->key().operator String()+";"ENDL;
+        String uline="uniform "+_typestr(E->get().type)+" _"+E->key().operator String()+";" ENDL;
 
 		global_code+=uline;
 		if (uniforms) {
@@ -488,10 +593,10 @@ Error ShaderCompilerGLES2::compile_node(SL::ProgramNode *p_program) {
 			header+=_typestr(fnode->arguments[i].type)+" "+replace_string(fnode->arguments[i].name);
 		}
 
-		header+=") {"ENDL;
+        header+=") {" ENDL;
 		String fcode=header;
 		fcode+=dump_node_code(fnode->body,1);
-		fcode+="}"ENDL;
+        fcode+="}" ENDL;
 		global_code+=fcode;
 
 	}
@@ -500,7 +605,7 @@ Error ShaderCompilerGLES2::compile_node(SL::ProgramNode *p_program) {
 
 		StringName varname=E->key();
 		String newvarname=replace_string(varname);
-		global_code+="uniform "+_typestr(E->get())+" "+newvarname+";"ENDL;
+        global_code+="uniform "+_typestr(E->get())+" "+newvarname+";" ENDL;
 	}*/
 
 	code=dump_node_code(p_program,0);
@@ -550,7 +655,11 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	uses_light=false;
 	uses_time=false;
 	uses_normalmap=false;
+	uses_normal=false;
+	uses_texpixel_size=false;
+	uses_worldvec=false;
 	vertex_code_writes_vertex=false;
+	uses_shadow_color=false;
 	uniforms=r_uniforms;
 	flags=&r_flags;
 	r_flags.use_color_interp=false;
@@ -560,6 +669,10 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	r_flags.use_var1_interp=false;
 	r_flags.use_var2_interp=false;
 	r_flags.uses_normalmap=false;
+	r_flags.uses_normal=false;
+	sinh_used=false;
+	tanh_used=false;
+	cosh_used=false;
 
 	String error;
 	int errline,errcol;
@@ -582,19 +695,30 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	r_flags.uses_light=uses_light;
 	r_flags.uses_time=uses_time;
 	r_flags.uses_normalmap=uses_normalmap;
+	r_flags.uses_normal=uses_normal;
+	r_flags.uses_texpixel_size=uses_texpixel_size;
+	r_flags.uses_worldvec=uses_worldvec;
+	r_flags.uses_shadow_color=uses_shadow_color;
 	r_code_line=code;
 	r_globals_line=global_code;
-
 	return OK;
 }
 
 ShaderCompilerGLES2::ShaderCompilerGLES2() {
+
+#ifdef GLEW_ENABLED
+	//use custom functions because they are not supported in GLSL120
+	custom_h=true;
+#else
+	custom_h=false;
+#endif
 
 	replace_table["bool"]= "bool";
 	replace_table["float" ]=  "float";
 	replace_table["vec2"  ]= "vec2";
 	replace_table["vec3"  ]= "vec3";
 	replace_table["vec4"  ]= "vec4";
+	replace_table["mat2" ]= "mat2";
 	replace_table["mat3" ]= "mat3";
 	replace_table["mat4" ]= "mat4";
 	replace_table["texture" ]= "sampler2D";
@@ -607,9 +731,17 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	replace_table["acos" ]= "acos";
 	replace_table["atan" ]= "atan";
 	replace_table["atan2"]= "atan";
-	replace_table["sinh" ]= "sinh";
-	replace_table["cosh" ]= "cosh";
-	replace_table["tanh" ]= "tanh";
+
+	if (custom_h) {
+		replace_table["sinh" ]= "sinh_custom";
+		replace_table["cosh" ]= "cosh_custom";
+		replace_table["tanh" ]= "tanh_custom";
+	} else {
+		replace_table["sinh" ]= "sinh";
+		replace_table["cosh" ]= "cosh";
+		replace_table["tanh" ]= "tanh";
+	}
+
 	replace_table["pow"  ]= "pow";
 	replace_table["exp" ]=  "exp";
 	replace_table["log" ]=  "log";
@@ -638,6 +770,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	replace_table["cross" ]="cross";
 	replace_table["normalize"]= "normalize";
 	replace_table["reflect"]= "reflect";
+	replace_table["refract"]= "refract";
 	replace_table["tex"]= "tex";
 	replace_table["texa"]= "texa";
 	replace_table["tex2"]= "tex2";
@@ -676,6 +809,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	//mode_replace_table[1]["POSITION"]="IN_POSITION";
 	mode_replace_table[1]["NORMAL"]="normal";
 	mode_replace_table[1]["TANGENT"]="tangent";
+	mode_replace_table[1]["POSITION"]="gl_Position";
 	mode_replace_table[1]["BINORMAL"]="binormal";
 	mode_replace_table[1]["NORMALMAP"]="normalmap";
 	mode_replace_table[1]["NORMALMAP_DEPTH"]="normaldepth";
@@ -718,6 +852,54 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[2]["POINT_COORD"]="gl_PointCoord";
 	mode_replace_table[2]["TIME"]="time";
 
+	mode_replace_table[3]["SRC_VERTEX"]="src_vtx";
+	mode_replace_table[3]["VERTEX"]="outvec.xy";
+	mode_replace_table[3]["WORLD_VERTEX"]="outvec.xy";
+	mode_replace_table[3]["UV"]="uv_interp";
+	mode_replace_table[3]["COLOR"]="color_interp";
+	mode_replace_table[3]["VAR1"]="var1_interp";
+	mode_replace_table[3]["VAR2"]="var2_interp";
+	mode_replace_table[3]["POINT_SIZE"]="gl_PointSize";
+	mode_replace_table[3]["WORLD_MATRIX"]="modelview_matrix";
+	mode_replace_table[3]["PROJECTION_MATRIX"]="projection_matrix";
+	mode_replace_table[3]["EXTRA_MATRIX"]="extra_matrix";
+	mode_replace_table[3]["TIME"]="time";
+
+	mode_replace_table[4]["POSITION"]="gl_Position";
+	mode_replace_table[4]["NORMAL"]="normal";
+	mode_replace_table[4]["NORMALMAP"]="normal_map";
+	mode_replace_table[4]["NORMALMAP_DEPTH"]="normal_depth";
+	mode_replace_table[4]["UV"]="uv_interp";
+	mode_replace_table[4]["SRC_COLOR"]="color_interp";
+	mode_replace_table[4]["COLOR"]="color";
+	mode_replace_table[4]["TEXTURE"]="texture";
+	mode_replace_table[4]["TEXTURE_PIXEL_SIZE"]="texpixel_size";
+	mode_replace_table[4]["VAR1"]="var1_interp";
+	mode_replace_table[4]["VAR2"]="var2_interp";
+	mode_replace_table[4]["SCREEN_UV"]="screen_uv";
+	mode_replace_table[4]["POINT_COORD"]="gl_PointCoord";
+	mode_replace_table[4]["TIME"]="time";
+
+	mode_replace_table[5]["POSITION"]="gl_Position";
+	mode_replace_table[5]["NORMAL"]="normal";
+	mode_replace_table[5]["UV"]="uv_interp";
+	mode_replace_table[5]["COLOR"]="color";
+	mode_replace_table[5]["TEXTURE"]="texture";
+	mode_replace_table[5]["TEXTURE_PIXEL_SIZE"]="texpixel_size";
+	mode_replace_table[5]["VAR1"]="var1_interp";
+	mode_replace_table[5]["VAR2"]="var2_interp";
+	mode_replace_table[5]["LIGHT_VEC"]="light_vec";
+	mode_replace_table[5]["LIGHT_HEIGHT"]="light_height";
+	mode_replace_table[5]["LIGHT_COLOR"]="light";
+	mode_replace_table[5]["LIGHT_UV"]="light_uv";
+	mode_replace_table[5]["LIGHT"]="light_out";
+	mode_replace_table[5]["SHADOW"]="shadow_color";
+	mode_replace_table[5]["SCREEN_UV"]="screen_uv";
+	mode_replace_table[5]["POINT_COORD"]="gl_PointCoord";
+	mode_replace_table[5]["TIME"]="time";
+
+
+
 	//mode_replace_table[2]["SCREEN_POS"]="SCREEN_POS";
 	//mode_replace_table[2]["SCREEN_TEXEL_SIZE"]="SCREEN_TEXEL_SIZE";
 
@@ -738,5 +920,10 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	vname_light="LIGHT";
 	vname_time="TIME";
 	vname_normalmap="NORMALMAP";
+	vname_normalmap_depth="NORMALMAP_DEPTH";
+	vname_normal="NORMAL";
+	vname_texpixel_size="TEXTURE_PIXEL_SIZE";
+	vname_world_vec="WORLD_VERTEX";
+	vname_shadow="SHADOW";
 
 }

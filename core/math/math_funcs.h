@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,9 +79,9 @@ public:
 		return Math::log( p_linear ) * 8.6858896380650365530225783783321;
 	}
 
-	static inline double db2linear(double p_linear) {
+	static inline double db2linear(double p_db) {
 
-		return Math::exp( p_linear * 0.11512925464970228420089957273422 );
+		return Math::exp( p_db * 0.11512925464970228420089957273422 );
 	}
 
 	static bool is_nan(double p_val);
@@ -136,7 +136,7 @@ public:
 
 		static int b;
 
-#if defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0603 // windows 8?
+#if (defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0603) || WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP // windows 8 phone?
 		b = (int)((a>0.0f) ? (a + 0.5f):(a -0.5f));
 
 #elif defined(_MSC_VER) && _MSC_VER < 1800

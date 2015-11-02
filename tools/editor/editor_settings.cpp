@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -224,6 +224,28 @@ void EditorSettings::create() {
 			dir->change_dir("..");
 		}
 
+		if (dir->change_dir("config")!=OK) {
+			dir->make_dir("config");
+		} else {
+
+			dir->change_dir("..");
+		}
+
+		dir->change_dir("config");
+
+		String pcp=Globals::get_singleton()->get_resource_path();
+		if (pcp.ends_with("/"))
+			pcp=config_path.substr(0,pcp.size()-1);
+		pcp=pcp.get_file()+"-"+pcp.md5_text();
+
+		if (dir->change_dir(pcp)) {
+			dir->make_dir(pcp);
+		} else {
+			dir->change_dir("..");
+		}
+
+		dir->change_dir("..");
+
 		// path at least is validated, so validate config file
 
 
@@ -244,6 +266,7 @@ void EditorSettings::create() {
 		}
 
 		singleton->config_file_path=config_file_path;
+		singleton->project_config_path=pcp;
 		singleton->settings_path=config_path+"/"+config_dir;
 
 		if (OS::get_singleton()->is_stdout_verbose()) {
@@ -251,7 +274,8 @@ void EditorSettings::create() {
 			print_line("EditorSettings: Load OK!");
 		}
 
-
+		singleton->setup_network();
+		singleton->load_favorites();
 		singleton->scan_plugins();
 
 		return;
@@ -264,7 +288,9 @@ void EditorSettings::create() {
 
 	singleton = Ref<EditorSettings>( memnew( EditorSettings ) );
 	singleton->config_file_path=config_file_path;
+	singleton->settings_path=config_path+"/"+config_dir;
 	singleton->_load_defaults();
+	singleton->setup_network();
 	singleton->scan_plugins();
 
 
@@ -304,6 +330,35 @@ Error EditorSettings::_load_plugin(const String& p_path, Plugin &plugin) {
 		plugin.install_files=cf->get_value("plugin","install_files");
 
 	return OK;
+}
+
+void EditorSettings::setup_network() {
+
+	List<IP_Address> local_ip;
+	IP::get_singleton()->get_local_addresses(&local_ip);
+	String lip;
+	String hint;
+	String current=get("network/debug_host");
+
+	for(List<IP_Address>::Element *E=local_ip.front();E;E=E->next()) {
+
+		String ip = E->get();
+		if (ip=="127.0.0.1")
+			continue;
+
+		if (lip!="")
+			lip=ip;
+		if (ip==current)
+			lip=current; //so it saves
+		if (hint!="")
+			hint+=",";
+		hint+=ip;
+
+	}
+
+	set("network/debug_host",lip);
+	add_property_hint(PropertyInfo(Variant::STRING,"network/debug_host",PROPERTY_HINT_ENUM,hint));
+
 }
 
 void EditorSettings::scan_plugins() {
@@ -403,14 +458,23 @@ void EditorSettings::_load_defaults() {
 	set("text_editor/string_color",Color::html("ef6ebe"));
 	set("text_editor/symbol_color",Color::html("badfff"));
 	set("text_editor/selection_color",Color::html("7b5dbe"));
+	set("text_editor/brace_mismatch_color",Color(1,0.2,0.2));
+	set("text_editor/current_line_color",Color(0.3,0.5,0.8,0.15));
 
 	set("text_editor/idle_parse_delay",2);
 	set("text_editor/create_signal_callbacks",true);
-	set("text_editor/autosave_interval_seconds",60);
+	set("text_editor/autosave_interval_secs",0);
+
 	set("text_editor/font","");
 	hints["text_editor/font"]=PropertyInfo(Variant::STRING,"text_editor/font",PROPERTY_HINT_GLOBAL_FILE,"*.fnt");
 	set("text_editor/auto_brace_complete", false);
+	set("text_editor/restore_scripts_on_load",true);
 
+
+	set("scenetree_editor/duplicate_node_name_num_separator",0);
+	hints["scenetree_editor/duplicate_node_name_num_separator"]=PropertyInfo(Variant::INT,"scenetree_editor/duplicate_node_name_num_separator",PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash");
+
+	set("gridmap_editor/pick_distance", 5000.0);
 
 	set("3d_editor/default_fov",45.0);
 	set("3d_editor/default_z_near",0.1);
@@ -418,6 +482,8 @@ void EditorSettings::_load_defaults() {
 
 	set("3d_editor/navigation_scheme",0);
 	hints["3d_editor/navigation_scheme"]=PropertyInfo(Variant::INT,"3d_editor/navigation_scheme",PROPERTY_HINT_ENUM,"Godot,Maya,Modo");
+	set("3d_editor/zoom_style",0);
+	hints["3d_editor/zoom_style"]=PropertyInfo(Variant::INT,"3d_editor/zoom_style",PROPERTY_HINT_ENUM,"Vertical, Horizontal");
 	set("3d_editor/orbit_modifier",0);
 	hints["3d_editor/orbit_modifier"]=PropertyInfo(Variant::INT,"3d_editor/orbit_modifier",PROPERTY_HINT_ENUM,"None,Shift,Alt,Meta,Ctrl");
 	set("3d_editor/pan_modifier",1);
@@ -431,6 +497,16 @@ void EditorSettings::_load_defaults() {
 	set("2d_editor/bone_selected_color",Color(0.9,0.45,0.45,0.9));
 	set("2d_editor/bone_ik_color",Color(0.9,0.9,0.45,0.9));
 
+	set("game_window_placement/rect",0);
+	hints["game_window_placement/rect"]=PropertyInfo(Variant::INT,"game_window_placement/rect",PROPERTY_HINT_ENUM,"Default,Centered,Custom Position,Force Maximized,Force Full Screen");
+	String screen_hints="Default (Same as Editor)";
+	for(int i=0;i<OS::get_singleton()->get_screen_count();i++) {
+		screen_hints+=",Monitor "+itos(i+1);
+	}
+	set("game_window_placement/rect_custom_position",Vector2());
+	set("game_window_placement/screen",0);
+	hints["game_window_placement/screen"]=PropertyInfo(Variant::INT,"game_window_placement/screen",PROPERTY_HINT_ENUM,screen_hints);
+
 	set("on_save/compress_binary_resources",true);
 	set("on_save/save_modified_external_resources",true);
 	set("on_save/save_paths_as_relative",false);
@@ -438,11 +514,15 @@ void EditorSettings::_load_defaults() {
 
 	set("text_editor/create_signal_callbacks",true);
 
+	set("file_dialog/show_hidden_files", false);
+	set("file_dialog/thumbnail_size", 64);
+	hints["file_dialog/thumbnail_size"]=PropertyInfo(Variant::INT,"file_dialog/thumbnail_size",PROPERTY_HINT_RANGE,"32,128,16");
 
 	set("animation/autorename_animation_tracks",true);
 	set("animation/confirm_insert_track",true);
 
 	set("property_editor/texture_preview_width",48);
+	set("property_editor/auto_refresh_interval",0.3);
 	set("help/doc_path","");
 
 	set("import/ask_save_before_reimport",false);
@@ -632,6 +712,71 @@ void EditorSettings::set_plugin_enabled(const String& p_plugin, bool p_enabled) 
 		set("_plugins/enabled",Variant());
 	else
 		set("_plugins/enabled",sa);
+
+}
+
+void EditorSettings::set_favorite_dirs(const Vector<String>& p_favorites) {
+
+	favorite_dirs=p_favorites;
+	FileAccess *f = FileAccess::open(get_project_settings_path().plus_file("favorite_dirs"),FileAccess::WRITE);
+	if (f) {
+		for(int i=0;i<favorite_dirs.size();i++)
+			f->store_line(favorite_dirs[i]);
+		memdelete(f);
+	}
+
+}
+
+Vector<String> EditorSettings::get_favorite_dirs() const {
+
+	return favorite_dirs;
+}
+
+
+void EditorSettings::set_recent_dirs(const Vector<String>& p_recent) {
+
+	recent_dirs=p_recent;
+	FileAccess *f = FileAccess::open(get_project_settings_path().plus_file("recent_dirs"),FileAccess::WRITE);
+	if (f) {
+		for(int i=0;i<recent_dirs.size();i++)
+			f->store_line(recent_dirs[i]);
+		memdelete(f);
+	}
+}
+
+Vector<String> EditorSettings::get_recent_dirs() const {
+
+	return recent_dirs;
+}
+
+String EditorSettings::get_project_settings_path() const {
+
+
+	return get_settings_path().plus_file("config").plus_file(project_config_path);
+}
+
+
+void EditorSettings::load_favorites() {
+
+	FileAccess *f = FileAccess::open(get_project_settings_path().plus_file("favorite_dirs"),FileAccess::READ);
+	if (f) {
+		String line = f->get_line().strip_edges();
+		while(line!="") {
+			favorite_dirs.push_back(line);
+			line = f->get_line().strip_edges();
+		}
+		memdelete(f);
+	}
+
+	f = FileAccess::open(get_project_settings_path().plus_file("recent_dirs"),FileAccess::READ);
+	if (f) {
+		String line = f->get_line().strip_edges();
+		while(line!="") {
+			recent_dirs.push_back(line);
+			line = f->get_line().strip_edges();
+		}
+		memdelete(f);
+	}
 
 }
 

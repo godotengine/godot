@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -161,7 +161,7 @@ void Color::invert() {
 
 	r=1.0-r;
 	g=1.0-g;	
-	g=1.0-b;	
+	b=1.0-b;	
 }
 void Color::contrast() {
 
@@ -225,7 +225,7 @@ Color Color::inverted() const {
 Color Color::contrasted() const {
 
 	Color c=*this;
-	c.contrasted();
+	c.contrast();
 	return c;
 }
 

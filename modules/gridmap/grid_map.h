@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -93,6 +93,8 @@ class GridMap : public Spatial {
 
 		Ref<Mesh> baked;
 		RID bake_instance;
+		RID collision_debug;
+		RID collision_debug_instance;
 
 		bool dirty;
 		RID static_body;

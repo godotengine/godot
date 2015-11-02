@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,7 +80,7 @@ bool ProjectExportDialog::_create_tree(TreeItem *p_parent,EditorFileSystemDirect
 		String path = p_dir->get_file_path(i);
 		fitem->set_tooltip(0,path);
 		fitem->set_metadata(0,path);
-		Ref<Texture> icon = get_icon( (has_icon(p_dir->get_file_type(i),"EditorIcons")?p_dir->get_file_type(i):String("Object")),"EditorIcons");
+		Ref<Texture> icon = get_icon( (has_icon(p_dir->get_file_type(i),ei)?p_dir->get_file_type(i):ot),ei);
 		fitem->set_icon(0,icon);
 
 		fitem->set_cell_mode(1,TreeItem::CELL_MODE_RANGE);
@@ -416,7 +416,7 @@ void ProjectExportDialog::_export_action(const String& p_file) {
 		if (FileAccess::exists(location.plus_file("engine.cfg"))) {
 
 			error->set_text("Please export outside the project folder!");
-			error->popup_centered(Size2(300,70));;
+			error->popup_centered_minsize();
 			return;
 		}
 		String nl = (location+"/..").simplify_path();
@@ -434,7 +434,7 @@ void ProjectExportDialog::_export_action(const String& p_file) {
 	Error err = export_platform(platform,p_file,file_export_check->is_pressed(),file_export_password->get_text(),false);
 	if (err!=OK) {
 		error->set_text("Error exporting project!");
-		error->popup_centered(Size2(300,70));;
+		error->popup_centered_minsize();
 	}
 
 }
@@ -453,7 +453,7 @@ void ProjectExportDialog::_export_action_pck(const String& p_file) {
 	FileAccess *f = FileAccess::open(p_file,FileAccess::WRITE);
 	if (!f) {
 		error->set_text("Error exporting project PCK! Can't write");
-		error->popup_centered(Size2(300,70));;
+		error->popup_centered_minsize();
 	}
 	ERR_FAIL_COND(!f);
 
@@ -462,7 +462,7 @@ void ProjectExportDialog::_export_action_pck(const String& p_file) {
 
 	if (err!=OK) {
 		error->set_text("Error exporting project!");
-		error->popup_centered(Size2(300,70));;
+		error->popup_centered_minsize();
 		return;
 	}
 }
@@ -478,7 +478,12 @@ Error ProjectExportDialog::export_platform(const String& p_platform, const Strin
 	Error err = exporter->export_project(p_path,p_debug);
 	if (err!=OK) {
 		error->set_text("Error exporting project!");
-		error->popup_centered(Size2(300,70));;
+		error->popup_centered_minsize();
+		ERR_PRINT("Exporting failed!");
+		if (p_quit_after) {
+			OS::get_singleton()->set_exit_code(255);
+			get_tree()->quit();
+		}
 		return ERR_CANT_CREATE;
 	} else {
 		if (p_quit_after) {
@@ -507,7 +512,7 @@ void ProjectExportDialog::custom_action(const String&) {
 
 	if (exporter.is_null()) {
 		error->set_text("No exporter for platform '"+platform+"' yet.");
-		error->popup_centered(Size2(300,70));;
+		error->popup_centered_minsize();
 		return;
 	}
 
@@ -558,7 +563,7 @@ void ProjectExportDialog::_update_group_list() {
 
 		TreeItem *ti = groups->create_item(r);
 		ti->set_text(0,E->get());
-		ti->add_button(0,get_icon("Del","EditorIcons"));
+		ti->add_button(0,get_icon("Remove","EditorIcons"));
 		if (E->get()==current) {
 			ti->select(0);
 		}
@@ -1126,7 +1131,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	tree->set_column_min_width(1,90);
 
 	filters = memnew( LineEdit );
-	vb->add_margin_child("Filters for Non-Resources (Comma Separated):",filters);
+	vb->add_margin_child("Filters to export non-resource files (Comma Separated, ie: *.json, *.txt):",filters);
 	filters->connect("text_changed",this,"_filters_edited");
 
 
@@ -1151,7 +1156,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	image_shrink = memnew( SpinBox );
 	image_shrink->set_min(1);
 	image_shrink->set_max(8);
-	image_shrink->set_step(1);
+	image_shrink->set_step(0.1);
 	image_vb->add_margin_child("Shrink All Images:",image_shrink);
 	sections->add_child(image_vb);
 
@@ -1211,6 +1216,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_image_action->add_item("Default");
 	group_image_action->add_item("Compress Disk");
 	group_image_action->add_item("Compress RAM");
+	group_image_action->add_item("Keep Original");
 	group_options->add_margin_child("Compress Mode:",group_image_action);
 	group_image_action->connect("item_selected",this,"_group_changed");
 
@@ -1231,7 +1237,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_shrink->set_min(1);
 	group_shrink->set_max(8);
 	group_shrink->set_val(1);
-	group_shrink->set_step(1);
+	group_shrink->set_step(0.001);
 	group_options->add_margin_child("Shrink By:",group_shrink);
 	group_shrink->connect("value_changed",this,"_group_changed");
 
@@ -1240,8 +1246,8 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_options->add_child(atlas_preview);
 	atlas_preview->show();
 	atlas_preview->connect("pressed",this,"_group_atlas_preview");
-	EmptyControl *ec = memnew(EmptyControl );
-	ec->set_minsize(Size2(150,1));
+	Control *ec = memnew(Control );
+	ec->set_custom_minimum_size(Size2(150,1));
 	gvb->add_child(ec);
 
 	VBoxContainer *group_vb_right = memnew( VBoxContainer );
@@ -1337,9 +1343,9 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 
 	expopt="--,Export,Bundle";
 
-	file_export = memnew( FileDialog );
+	file_export = memnew( EditorFileDialog );
 	add_child(file_export);
-	file_export->set_access(FileDialog::ACCESS_FILESYSTEM);
+	file_export->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_export->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_export_path") );
 
 	file_export->set_title("Export Project");
@@ -1356,8 +1362,8 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	file_export_password->set_editable(false);
 	file_export->get_vbox()->add_margin_child("Password:",file_export_password);
 
-	pck_export = memnew( FileDialog );
-	pck_export->set_access(FileDialog::ACCESS_FILESYSTEM);
+	pck_export = memnew( EditorFileDialog );
+	pck_export->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	pck_export->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_export_path") );
 	pck_export->set_title("Export Project PCK");
 	pck_export->connect("file_selected", this,"_export_action_pck");
@@ -1367,6 +1373,8 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	button_export = add_button("Export..",!OS::get_singleton()->get_swap_ok_cancel(),"export_pck");
 	updating_script=false;
 
+	ei="EditorIcons";
+	ot="Object";
 
 }
 
@@ -1648,7 +1656,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 			if (saver.is_null()) {
 				memdelete(d);
-				ERR_EXPLAIN("Preset '"+preset+"' references unexisting saver: "+type);
+				ERR_EXPLAIN("Preset '"+preset+"' references nonexistent saver: "+type);
 				ERR_FAIL_COND_V(saver.is_null(),ERR_INVALID_DATA);
 			}
 

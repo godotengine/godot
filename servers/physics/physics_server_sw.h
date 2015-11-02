@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -94,6 +94,9 @@ public:
 	// this function only works on fixed process, errors and returns null otherwise
 	virtual PhysicsDirectSpaceState* space_get_direct_state(RID p_space);
 
+	virtual void space_set_debug_contacts(RID p_space,int p_max_contacts);
+	virtual Vector<Vector3> space_get_contacts(RID p_space) const;
+	virtual int space_get_contact_count(RID p_space) const;
 
 	/* AREA API */
 
@@ -128,7 +131,10 @@ public:
 	virtual void area_set_ray_pickable(RID p_area,bool p_enable);
 	virtual bool area_is_ray_pickable(RID p_area) const;
 
+	virtual void area_set_monitorable(RID p_area,bool p_monitorable);
+
 	virtual void area_set_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method);
+	virtual void area_set_area_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method);
 
 
 	/* BODY API */

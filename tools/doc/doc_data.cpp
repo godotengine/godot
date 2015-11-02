@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,6 +59,9 @@ void DocData::merge_from(const DocData& p_data) {
 
 				if (cf.methods[j].name!=m.name)
 					continue;
+				if (cf.methods[j].arguments.size()!=m.arguments.size())
+					continue;
+
 				const MethodDoc &mf = cf.methods[j];
 
 				m.description=mf.description;
@@ -134,9 +137,9 @@ void DocData::merge_from(const DocData& p_data) {
 void DocData::generate(bool p_basic_types) {
 
 
-	List<String> classes;
+	List<StringName> classes;
 	ObjectTypeDB::get_type_list(&classes);
-	classes.sort();
+	classes.sort_custom<StringName::AlphCompare>();
 
 	while(classes.size()) {
 
@@ -186,8 +189,10 @@ void DocData::generate(bool p_basic_types) {
 					arginfo=E->get().return_val;
 					if (arginfo.type==Variant::NIL)
 						continue;
-
-					method.return_type=(arginfo.hint==PROPERTY_HINT_RESOURCE_TYPE)?arginfo.hint_string:Variant::get_type_name(arginfo.type);
+					if (m && m->get_return_type()!=StringName())
+						method.return_type=m->get_return_type();
+					else
+						method.return_type=(arginfo.hint==PROPERTY_HINT_RESOURCE_TYPE)?arginfo.hint_string:Variant::get_type_name(arginfo.type);
 
 				} else {
 
@@ -542,7 +547,7 @@ void DocData::generate(bool p_basic_types) {
 			Globals::Singleton &s=E->get();
 			pd.name=s.name;
 			pd.type=s.ptr->get_type();
-			while (ObjectTypeDB::type_inherits_from(pd.type)!="Object")
+			while (String(ObjectTypeDB::type_inherits_from(pd.type))!="Object")
 				pd.type=ObjectTypeDB::type_inherits_from(pd.type);
 			if (pd.type.begins_with("_"))
 				pd.type=pd.type.substr(1,pd.type.length());
@@ -912,9 +917,9 @@ Error DocData::save(const String& p_path) {
 
 			String qualifiers;
 			if (m.qualifiers!="")
-				qualifiers+="qualifiers=\""+m.qualifiers.xml_escape()+"\"";
+				qualifiers+=" qualifiers=\""+m.qualifiers.xml_escape()+"\"";
 
-			_write_string(f,2,"<method name=\""+m.name+"\" "+qualifiers+" >");
+			_write_string(f,2,"<method name=\""+m.name+"\""+qualifiers+">");
 
 			if (m.return_type!="") {
 

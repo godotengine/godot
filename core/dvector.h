@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -261,6 +261,23 @@ public:
 		for(int i=0;i<ds;i++)
 			w[bs+i]=r[i];
 	}
+
+
+	Error insert(int p_pos,const T& p_val) {
+
+		int s=size();
+		ERR_FAIL_INDEX_V(p_pos,s+1,ERR_INVALID_PARAMETER);
+		resize(s+1);
+		{
+			Write w = write();
+			for (int i=s;i>p_pos;i--)
+				w[i]=w[i-1];
+			w[p_pos]=p_val;
+		}
+
+		return OK;
+	}
+
 
 	bool is_locked() const { return mem.is_locked(); }
 	

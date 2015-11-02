@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,6 +73,9 @@ public:
 	enum Enabler {
 		ENABLER_PAUSE_ANIMATIONS,
 		ENABLER_FREEZE_BODIES,
+		ENABLER_PAUSE_PARTICLES,
+		ENABLER_PARENT_PROCESS,
+		ENABLER_PARENT_FIXED_PROCESS,
 		ENABLER_MAX
 	};
 

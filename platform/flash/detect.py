@@ -89,6 +89,9 @@ def configure(env):
 
 	#env.Append(CXXFLAGS=['-fno-access-control'])
 
+	if(env["opus"]=="yes"):
+		env.opus_fixed_point="yes"
+
 	if (env["target"]=="release"):
 
 		env.Append(CCFLAGS=['-O4', '-ffast-math','-fomit-frame-pointer'])

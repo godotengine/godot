@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,9 @@
 #include "main/main.h"
 #include "io/resource_loader.h"
 #include "os/keyboard.h"
+#include "emscripten.h"
+#include <string.h>
+
 OS_JavaScript *os=NULL;
 
 static void _gfx_init(void *ud,bool gl2,int w, int h,bool fs) {
@@ -196,15 +199,39 @@ static void _gfx_idle() {
 	glutPostRedisplay();
 }
 
+int start_step=0;
+
 static void _godot_draw(void) {
 
-	os->main_loop_iterate();
+	if (start_step==1) {
+		start_step=2;
+		Main::start();
+		 os->main_loop_begin();
+	}
+
+	if (start_step==2) {
+		os->main_loop_iterate();
+	}
+
 	glutSwapBuffers();
 }
 
-int main(int argc, char *argv[]) {
-   /* Initialize the window */
 
+
+extern "C" {
+
+void main_after_fs_sync(int value) {
+
+	start_step=1;
+	printf("FS SYNCHED!\n");
+}
+
+}
+
+int main(int argc, char *argv[]) {
+
+
+	/* Initialize the window */
 	printf("let it go!\n");
 	glutInit(&argc, argv);
 	os = new OS_JavaScript(_gfx_init,NULL,NULL,NULL,NULL);
@@ -218,7 +245,7 @@ int main(int argc, char *argv[]) {
 
 #endif
 	ResourceLoader::set_abort_on_missing_resources(false); //ease up compatibility
-	Main::start();
+
 
 	glutSpecialUpFunc(_glut_skey_up);
 	glutSpecialFunc(_glut_skey_down);
@@ -236,9 +263,31 @@ int main(int argc, char *argv[]) {
 //   glutReshapeFunc(gears_reshape);
 	glutDisplayFunc(_godot_draw);
    //glutSpecialFunc(gears_special);
-	 os->main_loop_begin();
+
+
+
+	 //mount persistent filesystem
+	 EM_ASM(
+		 FS.mkdir('/userfs');
+		 FS.mount(IDBFS, {}, '/userfs');
+
+
+
+		 // sync from persisted state into memory and then
+		 // run the 'test' function
+		 FS.syncfs(true, function (err) {
+			 assert(!err);
+			 console.log("done syncinc!");
+			 _after_sync_cb = Module.cwrap('main_after_fs_sync', 'void',['number']);
+			 _after_sync_cb(0);
+
+		 });
+
+	  );
 
 	glutMainLoop();
+
+
 
 	return 0;
 }

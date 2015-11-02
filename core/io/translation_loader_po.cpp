@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,10 @@
 #include "os/file_access.h"
 #include "translation.h"
 
-RES TranslationLoaderPO::load(const String &p_path,const String& p_original_path) {
+RES TranslationLoaderPO::load(const String &p_path, const String& p_original_path, Error *r_error) {
+
+	if (r_error)
+		*r_error=ERR_CANT_OPEN;
 
 	FileAccess *f=FileAccess::open(p_path,FileAccess::READ);
 	ERR_FAIL_COND_V(!f,RES());
@@ -49,6 +52,8 @@ RES TranslationLoaderPO::load(const String &p_path,const String& p_original_path
 	String msg_id;
 	String msg_str;
 	String config;
+	if (r_error)
+		*r_error=ERR_FILE_CORRUPT;
 
 	Ref<Translation> translation = Ref<Translation>( memnew( Translation ));
 	int line = 1;
@@ -174,6 +179,8 @@ RES TranslationLoaderPO::load(const String &p_path,const String& p_original_path
 		}
 	}
 
+	if (r_error)
+		*r_error=OK;
 
 	return translation;
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -765,6 +765,10 @@ AudioMixer::ChannelID AudioMixerSW::channel_alloc(RID p_sample) {
 	c.mix.increment=1;
 	//zero everything when this errors
 	for(int i=0;i<4;i++) {
+		c.mix.vol[i]=0;
+		c.mix.reverb_vol[i]=0;
+		c.mix.chorus_vol[i]=0;
+
 		c.mix.old_vol[i]=0;
 		c.mix.old_reverb_vol[i]=0;
 		c.mix.old_chorus_vol[i]=0;

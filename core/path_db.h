@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,7 +84,10 @@ public:
 	bool operator==(const NodePath& p_path) const;
 	bool operator!=(const NodePath& p_path) const;
 	void operator=(const NodePath& p_path);
-	
+
+	void simplify();
+	NodePath simplified() const;
+
 	NodePath(const Vector<StringName>& p_path,bool p_absolute,const String& p_property="");	
 	NodePath(const Vector<StringName>& p_path,const Vector<StringName>& p_subpath,bool p_absolute,const String& p_property="");
 	NodePath(const NodePath& p_path);

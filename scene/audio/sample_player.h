@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -130,8 +130,8 @@ public:
 	void set_sample_library(const Ref<SampleLibrary>& p_library);
 	Ref<SampleLibrary> get_sample_library() const;
 
-	void set_voice_count(int p_voice_count);
-	int get_voice_count() const;	
+	void set_polyphony(int p_voice_count);
+	int get_polyphony() const;
 
 	VoiceID play(const String& p_name,bool unique=false);
 	void stop(VoiceID p_voice);
@@ -161,7 +161,7 @@ public:
 	float get_filter_resonance(VoiceID p_voice) const;
 	float get_filter_gain(VoiceID p_voice) const;
 	float get_chorus(VoiceID p_voice) const;
-	float get_reverb_room(VoiceID p_voice) const;
+	ReverbRoomType get_reverb_room(VoiceID p_voice) const;
 	float get_reverb(VoiceID p_voice) const;
 
 
@@ -185,7 +185,7 @@ public:
 	float get_default_filter_resonance() const;
 	float get_default_filter_gain() const;
 	float get_default_chorus() const;
-	float get_default_reverb_room() const;
+	ReverbRoomType get_default_reverb_room() const;
 	float get_default_reverb() const;
 
 	SamplePlayer();

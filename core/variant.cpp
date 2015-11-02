@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #include "scene/main/node.h"
 #include "scene/gui/control.h"
 #include "io/marshalls.h"
-
+#include "core_string_names.h"
 
 
 
@@ -258,12 +258,12 @@ bool Variant::can_convert(Variant::Type p_type_from,Variant::Type p_type_to) {
 		case MATRIX32: {
 
 
-			static const Type invalid[]={
+			static const Type valid[]={
 				TRANSFORM,
 				NIL
 			};
 
-			invalid_types=invalid;
+			valid_types=valid;
 		} break;
 		case QUAT: {
 
@@ -445,6 +445,256 @@ bool Variant::can_convert(Variant::Type p_type_from,Variant::Type p_type_to) {
 
 }
 
+bool Variant::can_convert_strict(Variant::Type p_type_from,Variant::Type p_type_to) {
+
+	if (p_type_from==p_type_to)
+		return true;
+	if (p_type_to==NIL && p_type_from!=NIL) //nil can convert to anything
+		return true;
+
+	if (p_type_from == NIL) {
+		return (p_type_to == OBJECT);
+	};
+
+	const Type *valid_types=NULL;
+	const Type *invalid_types=NULL;
+
+	switch(p_type_to) {
+		case BOOL: {
+
+			static const Type valid[]={
+				INT,
+				REAL,
+				//STRING,
+				NIL,
+			};
+
+			valid_types=valid;
+		} break;
+		case INT: {
+
+			static const Type valid[]={
+				BOOL,
+				REAL,
+				//STRING,
+				NIL,
+			};
+
+			valid_types=valid;
+
+		} break;
+		case REAL: {
+
+			static const Type valid[]={
+				BOOL,
+				INT,
+				//STRING,
+				NIL,
+			};
+
+			valid_types=valid;
+
+		} break;
+		case STRING: {
+
+
+			static const Type valid[]={
+				NODE_PATH,
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+		case MATRIX32: {
+
+
+			static const Type valid[]={
+				TRANSFORM,
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+		case QUAT: {
+
+			static const Type valid[]={
+				MATRIX3,
+				NIL
+			};
+
+			valid_types=valid;
+
+		} break;
+		case MATRIX3: {
+
+			static const Type valid[]={
+				QUAT,
+				NIL
+			};
+
+			valid_types=valid;
+
+
+		} break;
+		case TRANSFORM: {
+
+			static const Type valid[]={
+				MATRIX32,
+				QUAT,
+				MATRIX3,
+				NIL
+			};
+
+			valid_types=valid;
+
+		} break;
+
+		case COLOR: {
+
+			static const Type valid[] = {
+				STRING,
+				INT,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
+
+		case _RID: {
+
+			static const Type valid[]={
+				OBJECT,
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+		case OBJECT: {
+
+			static const Type valid[]={
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+		case NODE_PATH: {
+
+			static const Type valid[]={
+				STRING,
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+		case ARRAY: {
+
+
+			static const Type valid[]={
+				RAW_ARRAY,
+				INT_ARRAY,
+				STRING_ARRAY,
+				REAL_ARRAY,
+				COLOR_ARRAY,
+				VECTOR2_ARRAY,
+				VECTOR3_ARRAY,
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+			// arrays
+		case RAW_ARRAY: {
+
+			static const Type valid[]={
+				ARRAY,
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+		case INT_ARRAY: {
+
+			static const Type valid[]={
+				ARRAY,
+				NIL
+			};
+			valid_types=valid;
+		} break;
+		case REAL_ARRAY: {
+
+			static const Type valid[]={
+				ARRAY,
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+		case STRING_ARRAY: {
+
+			static const Type valid[]={
+				ARRAY,
+				NIL
+			};
+			valid_types=valid;
+		} break;
+		case VECTOR2_ARRAY: {
+
+			static const Type valid[]={
+				ARRAY,
+				NIL
+			};
+			valid_types=valid;
+
+		} break;
+		case VECTOR3_ARRAY: {
+
+			static const Type valid[]={
+				ARRAY,
+				NIL
+			};
+			valid_types=valid;
+
+		} break;
+		case COLOR_ARRAY: {
+
+			static const Type valid[]={
+				ARRAY,
+				NIL
+			};
+
+			valid_types=valid;
+
+		} break;
+		default: {}
+	}
+
+
+	if (valid_types) {
+
+		int i=0;
+		while(valid_types[i]!=NIL) {
+
+			if (p_type_from==valid_types[i])
+				return true;
+			i++;
+		}
+	} else if (invalid_types) {
+
+
+		int i=0;
+		while(invalid_types[i]!=NIL) {
+
+			if (p_type_from==invalid_types[i])
+				return false;
+			i++;
+		}
+	}
+
+	return false;
+
+}
+
 bool Variant::operator==(const Variant& p_variant) const {
 
 	if (type!=p_variant.type) //evaluation of operator== needs to be more strict
@@ -454,6 +704,15 @@ bool Variant::operator==(const Variant& p_variant) const {
 	evaluate(OP_EQUAL,*this,p_variant,r,v);
 	return r;
 
+}
+
+bool Variant::operator<(const Variant& p_variant) const {
+	if (type!=p_variant.type) //if types differ, then order by type first
+		return type<p_variant.type;
+	bool v;
+	Variant r;
+	evaluate(OP_LESS,*this,p_variant,r,v);
+	return r;
 }
 
 bool Variant::is_zero() const {
@@ -523,7 +782,7 @@ bool Variant::is_zero() const {
 		} break;
 		case QUAT: {
 
-			*reinterpret_cast<const Quat*>(_data._mem)==Quat();
+			return *reinterpret_cast<const Quat*>(_data._mem)==Quat();
 
 		} break;
 		case MATRIX3: {
@@ -618,6 +877,63 @@ bool Variant::is_zero() const {
 
 	return false;
 }
+
+
+bool Variant::is_one() const {
+
+	switch( type ) {
+		case NIL: {
+
+			return true;
+		} break;
+
+		// atomic types
+		case BOOL: {
+
+			return _data._bool==true;
+		} break;
+		case INT: {
+
+			return _data._int==1;
+
+		} break;
+		case REAL: {
+
+			return _data._real==1;
+
+		} break;
+		case VECTOR2: {
+
+			return *reinterpret_cast<const Vector2*>(_data._mem)==Vector2(1,1);
+
+		} break;
+		case RECT2: {
+
+			return *reinterpret_cast<const Rect2*>(_data._mem)==Rect2(1,1,1,1);
+
+		} break;
+		case VECTOR3: {
+
+			return *reinterpret_cast<const Vector3*>(_data._mem)==Vector3(1,1,1);
+
+		} break;
+		case PLANE: {
+
+			return *reinterpret_cast<const Plane*>(_data._mem)==Plane(1,1,1,1);
+
+		} break;
+		case COLOR: {
+
+			return *reinterpret_cast<const Color*>(_data._mem)==Color(1,1,1,1);
+
+		} break;
+
+		default: { return !is_zero(); }
+	}
+
+	return false;
+}
+
 
 void Variant::reference(const Variant& p_variant) {
 
@@ -1276,9 +1592,17 @@ Variant::operator String() const {
 		} break;
 		case OBJECT: {
 
-			if (_get_obj().obj)
+			if (_get_obj().obj) {
+				#ifdef DEBUG_ENABLED
+					if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
+						//only if debugging!
+						if (!ObjectDB::instance_validate(_get_obj().obj)) {
+							return "[Deleted Object]";
+						};
+					};
+				#endif
 				return "["+_get_obj().obj->get_type()+":"+itos(_get_obj().obj->get_instance_ID())+"]";
-			else
+			} else
 				return "[Object:null]";
 
 		} break;
@@ -1394,6 +1718,10 @@ Variant::operator Color() const {
 
 	if (type==COLOR)
 		return *reinterpret_cast<const Color*>(_data._mem);
+	else if (type==STRING)
+		return Color::html( operator String() );
+	else if (type==INT)
+		return Color::hex( operator int() );
 	else
 		return Color();
 }
@@ -1430,8 +1758,16 @@ Variant::operator RID() const {
 		return *reinterpret_cast<const RID*>(_data._mem);
 	else if (type==OBJECT && !_get_obj().ref.is_null()) {
 		return _get_obj().ref.get_rid();
-	} else
+	} else if (type==OBJECT && _get_obj().obj) {
+		Variant::CallError ce;
+		Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->get_rid,NULL,0,ce);
+		if (ce.error==Variant::CallError::CALL_OK && ret.get_type()==Variant::_RID) {
+			return ret;
+		}
 		return RID();
+	} else {
+		return RID();
+	}
 }
 
 Variant::operator Object*() const {
@@ -2631,3 +2967,138 @@ Variant Variant::call(const StringName& p_method,VARIANT_ARG_DECLARE) {
 	return ret;
 }
 
+void Variant::construct_from_string(const String& p_string,Variant& r_value,ObjectConstruct p_obj_construct,void *p_construct_ud) {
+
+	r_value=Variant();
+}
+
+
+String Variant::get_construct_string(ObjectDeConstruct p_obj_deconstruct,void *p_deconstruct_ud) const {
+
+	switch( type ) {
+
+		case NIL: return "null";
+		case BOOL: return _data._bool ? "true" : "false";
+		case INT: return String::num(_data._int);
+		case REAL: return String::num(_data._real);
+		case STRING: return "\""+reinterpret_cast<const String*>(_data._mem)->c_escape()+"\"";
+		case VECTOR2: return "Vector2("+operator Vector2()+")";
+		case RECT2: return "Rect2("+operator Rect2()+")";
+		case MATRIX32: return "Matrix32("+operator Matrix32()+")";
+		case VECTOR3: return "Vector3("+operator Vector3()+")";
+		case PLANE: return "Plane("+operator Plane()+")";
+		//case QUAT:
+		case _AABB: return "AABB("+operator AABB()+")";
+		case QUAT: return "Quat("+operator Quat()+")";
+		case MATRIX3: return "Matrix3("+operator Matrix3()+")";
+		case TRANSFORM: return "Transform("+operator Transform()+")";
+		case NODE_PATH: return "@\""+String(operator NodePath()).c_escape()+"\"";
+		case INPUT_EVENT: return "InputEvent()";
+		case COLOR: return "Color("+String::num( operator Color().r)+","+String::num( operator Color().g)+","+String::num( operator Color().b)+","+String::num( operator Color().a)+")" ;
+		case DICTIONARY: {
+
+			const Dictionary &d =*reinterpret_cast<const Dictionary*>(_data._mem);
+			//const String *K=NULL;
+			String str="{";
+			List<Variant> keys;
+			d.get_key_list(&keys);
+
+			Vector<_VariantStrPair> pairs;
+
+			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
+
+				_VariantStrPair sp;
+				sp.key=E->get().get_construct_string(p_obj_deconstruct,p_deconstruct_ud);
+				sp.value=d[E->get()].get_construct_string(p_obj_deconstruct,p_deconstruct_ud);
+				pairs.push_back(sp);
+			}
+
+			pairs.sort();
+
+			for(int i=0;i<pairs.size();i++) {
+				if (i>0)
+					str+=", ";
+				str+="("+pairs[i].key+":"+pairs[i].value+")";
+			}
+			str+="}";
+
+			return str;
+		} break;
+		case VECTOR3_ARRAY: {
+
+			DVector<Vector3> vec = operator DVector<Vector3>();
+			String str="Vector3Array([";
+			for(int i=0;i<vec.size();i++) {
+
+				if (i>0)
+					str+=", ";
+				str+=Variant( vec[i] ).get_construct_string();
+			}
+			return str+"])";
+		} break;
+		case STRING_ARRAY: {
+
+			DVector<String> vec = operator DVector<String>();
+			String str="StringArray([";
+			for(int i=0;i<vec.size();i++) {
+
+				if (i>0)
+					str+=", ";
+				str=str+=Variant( vec[i] ).get_construct_string();
+			}
+			return str+"])";
+		} break;
+		case INT_ARRAY: {
+
+			DVector<int> vec = operator DVector<int>();
+			String str="IntArray([";
+			for(int i=0;i<vec.size();i++) {
+
+				if (i>0)
+					str+=", ";
+				str=str+itos(vec[i]);
+			}
+			return str+"])";
+		} break;
+		case REAL_ARRAY: {
+
+			DVector<real_t> vec = operator DVector<real_t>();
+			String str="FloatArray([";
+			for(int i=0;i<vec.size();i++) {
+
+				if (i>0)
+					str+=", ";
+				str=str+rtos(vec[i]);
+			}
+			return str+"])";
+		} break;
+		case ARRAY: {
+
+			Array arr = operator Array();
+			String str="[";
+			for (int i=0; i<arr.size(); i++) {
+				if (i)
+					str+=", ";
+				str += arr[i].get_construct_string(p_obj_deconstruct,p_deconstruct_ud);
+			};
+			return str+"]";
+
+		} break;
+		case OBJECT: {
+
+			if (_get_obj().obj) {
+				if (p_obj_deconstruct) {
+					return "Object(\""+p_obj_deconstruct(Variant(*this),p_deconstruct_ud).c_escape()+")";
+				} else {
+					return _get_obj().obj->get_type()+".new()";
+				}
+			} else
+				return "null";
+
+		} break;
+		default: {
+			return "["+get_type_name(type)+"]";
+		}
+	}
+
+}

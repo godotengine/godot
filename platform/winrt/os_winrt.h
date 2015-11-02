@@ -50,6 +50,8 @@
 
 #include <fcntl.h>
 #include <stdio.h>
+#include "main/input_default.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -198,8 +200,9 @@ public:
 
 	virtual String get_name();
 	
-	virtual Date get_date() const;
-	virtual Time get_time() const;
+	virtual Date get_date(bool utc) const;
+	virtual Time get_time(bool utc) const;
+	virtual TimeZoneInfo get_time_zone_info() const;
 	virtual uint64_t get_unix_time() const;
 
 	virtual bool can_draw() const;
@@ -228,6 +231,7 @@ public:
 	virtual String get_data_dir() const;
 
 	void set_gl_context(ContextEGL* p_context);
+	void screen_size_changed();
 
 	virtual void release_rendering_thread();
 	virtual void make_rendering_thread();

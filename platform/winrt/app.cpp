@@ -178,7 +178,7 @@ static Windows::Foundation::Point _get_pixel_position(CoreWindow^ window, Window
 	// Compute coordinates normalized from 0..1.
 	// If the coordinates need to be sized to the SDL window,
 	// we'll do that after.
-	#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
+	#if 1 || WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
 	outputPosition.X = rawPosition.X / window->Bounds.Width;
 	outputPosition.Y = rawPosition.Y / window->Bounds.Height;
 	#else
@@ -357,16 +357,29 @@ void App::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ ar
     // On Windows Phone 8.1, the window size changes when the device is rotated.
     // The default framebuffer will not be automatically resized when this occurs.
     // It is therefore up to the app to handle rotation-specific logic in its rendering code.
+	//os->screen_size_changed();
+	UpdateWindowSize(args->Size);
 #endif
 }
 
 void App::UpdateWindowSize(Size size)
 {
-	/*
-    DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
-    Size pixelSize(ConvertDipsToPixels(size.Width, currentDisplayInformation->LogicalDpi), ConvertDipsToPixels(size.Height, currentDisplayInformation->LogicalDpi));
-    
+	float dpi;
+#if (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP)
+	DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
+	dpi = currentDisplayInformation->LogicalDpi;
+#else if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+	dpi = DisplayProperties::LogicalDpi;
+#endif
+	Size pixelSize(ConvertDipsToPixels(size.Width, dpi), ConvertDipsToPixels(size.Height, dpi));
+
     mWindowWidth = static_cast<GLsizei>(pixelSize.Width);
     mWindowHeight = static_cast<GLsizei>(pixelSize.Height);
-	*/
+
+	OS::VideoMode vm;
+	vm.width = mWindowWidth;
+	vm.height = mWindowHeight;
+	vm.fullscreen = true;
+	vm.resizable = false;
+	os->set_video_mode(vm);
 }

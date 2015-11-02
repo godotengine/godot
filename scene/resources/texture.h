@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,6 +56,7 @@ public:
 		FLAG_CONVERT_TO_LINEAR=VisualServer::TEXTURE_FLAG_CONVERT_TO_LINEAR,
 		FLAG_VIDEO_SURFACE=VisualServer::TEXTURE_FLAG_VIDEO_SURFACE,
 		FLAGS_DEFAULT=FLAG_MIPMAPS|FLAG_REPEAT|FLAG_FILTER,
+		FLAG_MIRRORED_REPEAT=VisualServer::TEXTURE_FLAG_MIRRORED_REPEAT
 	};
 
 
@@ -69,9 +70,9 @@ public:
 	virtual void set_flags(uint32_t p_flags)=0;
 	virtual uint32_t get_flags() const=0;
 
-	virtual void draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate=Color(1,1,1)) const;
-	virtual void draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1)) const;
-	virtual void draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1)) const;
+	virtual void draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
+	virtual void draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
+	virtual void draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
 	virtual bool get_rect_region(const Rect2& p_rect, const Rect2& p_src_rect,Rect2& r_rect,Rect2& r_src_rect) const;
 
 
@@ -135,10 +136,9 @@ public:
 	virtual RID get_rid() const;
 	
 	bool has_alpha() const;
-	virtual void draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate=Color(1,1,1)) const;
-	virtual void draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1)) const;
-	virtual void draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1)) const;
-
+	virtual void draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
+	virtual void draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
+	virtual void draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
 	void set_storage(Storage p_storage);
 	Storage get_storage() const;
 
@@ -147,10 +147,13 @@ public:
 
 	void fix_alpha_edges();
 	void premultiply_alpha();
+	void normal_to_xy();
+
 
 	void set_size_override(const Size2& p_size);
 
-	
+	virtual void set_path(const String& p_path,bool p_take_over=false);
+
 	ImageTexture();
 	~ImageTexture();
 
@@ -191,9 +194,9 @@ public:
 	void set_margin(const Rect2& p_margin);
 	Rect2 get_margin() const ;
 
-	virtual void draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate=Color(1,1,1)) const;
-	virtual void draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1)) const;
-	virtual void draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1)) const;
+	virtual void draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
+	virtual void draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
+	virtual void draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
 	virtual bool get_rect_region(const Rect2& p_rect, const Rect2& p_src_rect,Rect2& r_rect,Rect2& r_src_rect) const;
 
 
@@ -241,9 +244,9 @@ public:
 	Vector2 get_piece_offset(int p_idx) const;
 	Ref<Texture> get_piece_texture(int p_idx) const;
 
-	virtual void draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate=Color(1,1,1)) const;
-	virtual void draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1)) const;
-	virtual void draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1)) const;
+	virtual void draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
+	virtual void draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
+	virtual void draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
 
 
 	LargeTexture();
@@ -317,6 +320,8 @@ public:
 
 	void set_lossy_storage_quality(float p_lossy_storage_quality);
 	float get_lossy_storage_quality() const;
+
+	virtual void set_path(const String& p_path,bool p_take_over=false);
 
 	CubeMap();
 	~CubeMap();

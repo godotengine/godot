@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,6 +102,7 @@ void SamplePlayer2D::_notification(int p_what) {
 void SamplePlayer2D::set_sample_library(const Ref<SampleLibrary>& p_library) {
 
 	library=p_library;
+	_change_notify();
 }
 
 Ref<SampleLibrary> SamplePlayer2D::get_sample_library() const {
@@ -213,7 +214,7 @@ void SamplePlayer2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_sample_library","library:SampleLibrary"),&SamplePlayer2D::set_sample_library);
 	ObjectTypeDB::bind_method(_MD("get_sample_library:SampleLibrary"),&SamplePlayer2D::get_sample_library);
 
-	ObjectTypeDB::bind_method(_MD("set_polyphony","voices"),&SamplePlayer2D::set_polyphony);
+	ObjectTypeDB::bind_method(_MD("set_polyphony","max_voices"),&SamplePlayer2D::set_polyphony);
 	ObjectTypeDB::bind_method(_MD("get_polyphony"),&SamplePlayer2D::get_polyphony);
 
 	ObjectTypeDB::bind_method(_MD("play","sample","voice"),&SamplePlayer2D::play,DEFVAL(NEXT_VOICE));

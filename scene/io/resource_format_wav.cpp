@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,17 @@
 #include "scene/resources/sample.h"
 
 
-RES ResourceFormatLoaderWAV::load(const String &p_path,const String& p_original_path) {
+RES ResourceFormatLoaderWAV::load(const String &p_path, const String& p_original_path, Error *r_error) {
+	if (r_error)
+		*r_error=ERR_FILE_CANT_OPEN;
 
 	Error err;
 	FileAccess *file=FileAccess::open(p_path, FileAccess::READ,&err);
 
 	ERR_FAIL_COND_V( err!=OK, RES() );
+
+	if (r_error)
+		*r_error=ERR_FILE_CORRUPT;
 
 	/* CHECK RIFF */
 	char riff[5];
@@ -146,18 +151,28 @@ RES ResourceFormatLoaderWAV::load(const String &p_path,const String& p_original_
 			}
 
 			int frames=chunksize;
+
 			frames/=format_channels;
 			frames/=(format_bits>>3);
 
-
+			/*print_line("chunksize: "+itos(chunksize));
+			print_line("channels: "+itos(format_channels));
+			print_line("bits: "+itos(format_bits));
+*/
 			sample->create(
 					(format_bits==8) ? Sample::FORMAT_PCM8 : Sample::FORMAT_PCM16,
 					(format_channels==2)?true:false,
 					frames );
 			sample->set_mix_rate( format_freq );
 
+			int len=frames;
+			if (format_channels==2)
+				len*=2;
+			if (format_bits>8)
+				len*=2;
+
 			DVector<uint8_t> data;
-			data.resize(chunksize);
+			data.resize(len);
 			DVector<uint8_t>::Write dataw = data.write();
 			void * data_ptr = dataw.ptr();
 
@@ -233,6 +248,10 @@ RES ResourceFormatLoaderWAV::load(const String &p_path,const String& p_original_
 
 	file->close();
 	memdelete(file);
+
+	if (r_error)
+		*r_error=OK;
+
 
 	return sample;
 

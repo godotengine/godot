@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -236,11 +236,11 @@ void * operator new(size_t p_size,void *p_pointer,size_t check, const char *p_de
 #endif
 
 
-_FORCE_INLINE_ void postinitialize_handler(void *) {}
+_ALWAYS_INLINE_ void postinitialize_handler(void *) {}
 
 
 template<class T>
-_FORCE_INLINE_ T *_post_initialize(T *p_obj) {
+_ALWAYS_INLINE_ T *_post_initialize(T *p_obj) {
 	
 	postinitialize_handler(p_obj);
 	return p_obj;
@@ -249,19 +249,26 @@ _FORCE_INLINE_ T *_post_initialize(T *p_obj) {
 #ifdef DEBUG_MEMORY_ENABLED
 
 #define memnew(m_class) _post_initialize(new(__FILE__":"__STR(__LINE__)", memnew type: "__STR(m_class)) m_class)
-#define memnew_placement(m_placement,m_class) _post_initialize(new(m_placement,sizeof(m_class),__FILE__":"__STR(__LINE__)", type: "__STR(m_class)) m_class)
 
 #else
 
 #define memnew(m_class) _post_initialize(new("") m_class)
-#define memnew_placement(m_placement,m_class) _post_initialize(new(m_placement,sizeof(m_class),"") m_class)
 
 #endif
 
+_ALWAYS_INLINE_ void * operator new(size_t p_size,void *p_pointer,size_t check, const char *p_description) {
+//	void *failptr=0;
+//	ERR_FAIL_COND_V( check < p_size , failptr); /** bug, or strange compiler, most likely */
+
+	return p_pointer;
+}
+
+
 #define memnew_allocator(m_class,m_allocator) _post_initialize(new(m_allocator::alloc) m_class)
+#define memnew_placement(m_placement,m_class) _post_initialize(new(m_placement,sizeof(m_class),"") m_class)
 
 
-_FORCE_INLINE_ bool predelete_handler(void *) { return true; }
+_ALWAYS_INLINE_ bool predelete_handler(void *) { return true; }
 
 template<class T>
 void memdelete(T *p_class) {

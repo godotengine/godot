@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -274,7 +274,7 @@ Button* AcceptDialog::add_button(const String& p_text,bool p_right,const String&
 	}
 
 	if (p_action!="") {
-		button->connect("pressed",this,"_custom_action",make_binds(p_action));
+		button->connect("pressed",this,"_custom_action",varray(p_action));
 	}
 
 	return button;
@@ -328,8 +328,8 @@ AcceptDialog::AcceptDialog() {
 	label->set_anchor(MARGIN_RIGHT,ANCHOR_END);
 	label->set_anchor(MARGIN_BOTTOM,ANCHOR_END);
 	label->set_begin( Point2( margin, margin) );
-	label->set_end( Point2( margin, button_margin) );
-	label->set_autowrap(true);
+	label->set_end( Point2( margin, button_margin+10) );
+	//label->set_autowrap(true);
 	add_child(label);
 
 	hbc = memnew( HBoxContainer );

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,9 +40,7 @@
 class SpatialEditorPlugin;
 
 class GridMapEditor : public VBoxContainer {
-
 	OBJ_TYPE(GridMapEditor, VBoxContainer );
-
 
 	enum {
 
@@ -66,6 +64,10 @@ class GridMapEditor : public VBoxContainer {
 		CLIP_BELOW
 	};
 
+	enum DisplayMode {
+	    DISPLAY_THUMBNAIL,
+	    DISPLAY_LIST
+	};
 
 	UndoRedo *undo_redo;
 	InputAction input_action;
@@ -73,7 +75,12 @@ class GridMapEditor : public VBoxContainer {
 	MenuButton * options;
 	SpinBox *floor;
 	OptionButton *edit_mode;
+	ToolButton *mode_thumbnail;
+	ToolButton *mode_list;
 	HBoxContainer *spatial_editor_hb;
+	ConfirmationDialog *settings_dialog;
+	VBoxContainer *settings_vbc;
+	SpinBox *settings_pick_distance;
 
 	struct SetItem {
 
@@ -105,6 +112,13 @@ class GridMapEditor : public VBoxContainer {
 	RID duplicate_mesh;
 	RID duplicate_instance;
 
+	RID indicator_mat;
+
+	RID inner_mat;
+	RID outer_mat;
+	RID inner_mat_dup;
+	RID outer_mat_dup;
+
 	bool updating;
 
 
@@ -125,6 +139,7 @@ class GridMapEditor : public VBoxContainer {
 	Vector3 cursor_origin;
 	Vector3 last_mouseover;
 
+	int display_mode;
 	int selected_pallete;
 	int selected_area;
 	int cursor_rot;
@@ -153,8 +168,8 @@ class GridMapEditor : public VBoxContainer {
 		MENU_OPTION_SELECTION_MAKE_AREA,
 		MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR,
 		MENU_OPTION_SELECTION_CLEAR,
-		MENU_OPTION_REMOVE_AREA
-
+		MENU_OPTION_REMOVE_AREA,
+		MENU_OPTION_GRIDMAP_SETTINGS
 
 	};
 
@@ -176,9 +191,10 @@ class GridMapEditor : public VBoxContainer {
 	void _configure();
 	void _menu_option(int);
 	void update_pallete();
-	Tree *theme_pallete;
+	void _set_display_mode(int p_mode);
+	ItemList *theme_pallete;
 	Tree *area_list;
-	void _item_selected_cbk();
+	void _item_selected_cbk(int idx);
 	void _update_cursor_transform();
 	void _update_cursor_instance();
 	void _update_clip();

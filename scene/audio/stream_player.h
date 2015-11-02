@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,17 +31,43 @@
 
 #include "scene/resources/audio_stream.h"
 #include "scene/main/node.h"
+#include "servers/audio/audio_rb_resampler.h"
 
 class StreamPlayer : public Node {
 
 	OBJ_TYPE(StreamPlayer,Node);
 
+	//_THREAD_SAFE_CLASS_
+
+	struct InternalStream : public AudioServer::AudioStream {
+		StreamPlayer *player;
+		virtual int get_channel_count() const;
+		virtual void set_mix_rate(int p_rate); //notify the stream of the mix rate
+		virtual bool mix(int32_t *p_buffer,int p_frames);
+		virtual void update();
+	};
+
+
+	InternalStream internal_stream;
+	Ref<AudioStreamPlayback> playback;
 	Ref<AudioStream> stream;
+
+	int sp_get_channel_count() const;
+	void sp_set_mix_rate(int p_rate); //notify the stream of the mix rate
+	bool sp_mix(int32_t *p_buffer,int p_frames);
+	void sp_update();
+
+	int server_mix_rate;
+
 	RID stream_rid;
 	bool paused;
 	bool autoplay;
 	bool loops;
 	float volume;
+	float loop_point;
+	int buffering_ms;
+
+	AudioRBResampler resampler;
 
 	bool _play;
 	void _set_play(bool p_play);
@@ -55,7 +81,7 @@ public:
 	void set_stream(const Ref<AudioStream> &p_stream);
 	Ref<AudioStream> get_stream() const;
 
-	void play();
+	void play(float p_from_offset=0);
 	void stop();
 	bool is_playing() const;
 
@@ -67,6 +93,9 @@ public:
 
 	void set_volume(float p_vol);
 	float get_volume() const;
+
+	void set_loop_restart_time(float p_secs);
+	float get_loop_restart_time() const;
 
 	void set_volume_db(float p_db);
 	float get_volume_db() const;
@@ -81,6 +110,8 @@ public:
 	void set_autoplay(bool p_vol);
 	bool has_autoplay() const;
 
+	void set_buffering_msec(int p_msec);
+	int get_buffering_msec() const;
 
 	StreamPlayer();
 	~StreamPlayer();

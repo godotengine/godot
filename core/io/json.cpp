@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -250,7 +250,7 @@ Error JSON::_get_token(const CharType *p_str, int &idx, int p_len, Token& r_toke
 				if (p_str[idx]=='-' || (p_str[idx]>='0' && p_str[idx]<='9')) {
 					//a number
 					const CharType *rptr;
-					double number = String::to_double(&p_str[idx],-1,&rptr);
+					double number = String::to_double(&p_str[idx],&rptr);
 					idx+=(rptr - &p_str[idx]);
 					r_token.type=TK_NUMBER;
 					r_token.value=number;

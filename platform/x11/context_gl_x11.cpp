@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,6 @@ struct ContextGL_X11_Private {
 	::GLXContext glx_context;
 };
 
-
 void ContextGL_X11::release_current() {
 
 	glXMakeCurrent(x11_display, None, NULL);
@@ -56,10 +55,12 @@ void ContextGL_X11::make_current() {
 
 	glXMakeCurrent(x11_display, x11_window, p->glx_context);
 }
+
 void ContextGL_X11::swap_buffers() {
 
 	glXSwapBuffers(x11_display,x11_window);
 }
+
 /*
 static GLWrapperFuncPtr wrapper_get_proc_address(const char* p_function) {
 
@@ -154,6 +155,9 @@ Error ContextGL_X11::initialize() {
 */
 	//glXMakeCurrent(x11_display, None, NULL);
 
+	XFree( vi );
+	XFree( fbc );
+
 	return OK;
 }
 
@@ -164,12 +168,12 @@ int ContextGL_X11::get_window_width() {
 	
 	return xwa.width;
 }
+
 int ContextGL_X11::get_window_height() {
 	XWindowAttributes xwa;
 	XGetWindowAttributes(x11_display,x11_window,&xwa);
 	
 	return xwa.height;
-
 }
 
 
@@ -189,6 +193,8 @@ ContextGL_X11::ContextGL_X11(::Display *p_x11_display,::Window &p_x11_window,con
 
 
 ContextGL_X11::~ContextGL_X11() {
+	release_current();
+	glXDestroyContext( x11_display, p->glx_context );
 
 	memdelete( p );
 }

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -130,7 +130,7 @@ void ResourceImportMetadata::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_editor","name"),&ResourceImportMetadata::set_editor);
 	ObjectTypeDB::bind_method(_MD("get_editor"),&ResourceImportMetadata::get_editor);
-	ObjectTypeDB::bind_method(_MD("add_source","path","md5"),&ResourceImportMetadata::add_source);
+	ObjectTypeDB::bind_method(_MD("add_source","path","md5"),&ResourceImportMetadata::add_source, "");
 	ObjectTypeDB::bind_method(_MD("get_source_path","idx"),&ResourceImportMetadata::get_source_path);
 	ObjectTypeDB::bind_method(_MD("get_source_md5","idx"),&ResourceImportMetadata::get_source_md5);
 	ObjectTypeDB::bind_method(_MD("remove_source","idx"),&ResourceImportMetadata::remove_source);
@@ -194,6 +194,17 @@ String Resource::get_path() const {
 	
 	return path_cache;
 }
+
+void Resource::set_subindex(int p_sub_index) {
+
+	subindex=p_sub_index;
+}
+
+int Resource::get_subindex() const{
+
+	return subindex;
+}
+
 
 void Resource::set_name(const String& p_name) {
 
@@ -326,6 +337,7 @@ Resource::Resource() {
 	last_modified_time=0;
 #endif
 
+	subindex=0;
 }
 
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -205,7 +205,10 @@ BitMap::BitMap() {
 //////////////////////////////////////
 
 
-RES ResourceFormatLoaderBitMap::load(const String &p_path,const String& p_original_path) {
+RES ResourceFormatLoaderBitMap::load(const String &p_path, const String& p_original_path, Error *r_error) {
+
+	if (r_error)
+		*r_error=ERR_FILE_CANT_OPEN;
 
 	BitMap* ptr = memnew(BitMap);
 	Ref<BitMap> bitmap( ptr );
@@ -219,6 +222,8 @@ RES ResourceFormatLoaderBitMap::load(const String &p_path,const String& p_origin
 	ERR_FAIL_COND_V(err, RES());
 
 	bitmap->create_from_image_alpha(image);
+	if (r_error)
+		*r_error=OK;
 
 	return bitmap;
 

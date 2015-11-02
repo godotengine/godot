@@ -6,6 +6,8 @@
 
 void CollisionPolygon::_add_to_collision_object(Object *p_obj) {
 
+	if (!can_update_body)
+		return;
 
 	CollisionObject *co = p_obj->cast_to<CollisionObject>();
 	ERR_FAIL_COND(!co);
@@ -23,6 +25,7 @@ void CollisionPolygon::_add_to_collision_object(Object *p_obj) {
 
 		//here comes the sun, lalalala
 		//decompose concave into multiple convex polygons and add them
+		shape_from=co->get_shape_count();
 		for(int i=0;i<decomp.size();i++) {
 			Ref<ConvexPolygonShape> convex = memnew( ConvexPolygonShape );
 			DVector<Vector3> cp;
@@ -42,6 +45,11 @@ void CollisionPolygon::_add_to_collision_object(Object *p_obj) {
 			convex->set_points(cp);
 			co->add_shape(convex,get_transform());
 
+		}
+		shape_to=co->get_shape_count()-1;
+		if (shape_to<shape_from) {
+			shape_from=-1;
+			shape_to=-1;
 		}
 
 	} else {
@@ -71,6 +79,9 @@ void CollisionPolygon::_add_to_collision_object(Object *p_obj) {
 
 void CollisionPolygon::_update_parent() {
 
+	if (!can_update_body)
+		return;
+
 	Node *parent = get_parent();
 	if (!parent)
 		return;
@@ -80,15 +91,50 @@ void CollisionPolygon::_update_parent() {
 	co->_update_shapes_from_children();
 }
 
+void CollisionPolygon::_set_shape_range(const Vector2& p_range) {
+
+	shape_from=p_range.x;
+	shape_to=p_range.y;
+}
+
+Vector2 CollisionPolygon::_get_shape_range() const {
+
+	return Vector2(shape_from,shape_to);
+}
+
 void CollisionPolygon::_notification(int p_what) {
 
 
 	switch(p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			can_update_body=get_tree()->is_editor_hint();
+			set_notify_local_transform(!can_update_body);
+
+			//indicator_instance = VisualServer::get_singleton()->instance_create2(indicator,get_world()->get_scenario());
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			can_update_body=false;
+			set_notify_local_transform(false);
+		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
 			if (!is_inside_tree())
 				break;
-			_update_parent();
+			if (can_update_body) {
+				_update_parent();
+			}
+
+		} break;
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+            if (!can_update_body && shape_from>=0 && shape_to>=0) {
+
+				CollisionObject *co = get_parent()->cast_to<CollisionObject>();
+				if (co) {
+					for(int i=shape_from;i<=shape_to;i++) {
+						co->set_shape_transform(i,get_transform());
+					}
+				}
+			}
 
 		} break;
 #if 0
@@ -119,29 +165,31 @@ void CollisionPolygon::_notification(int p_what) {
 void CollisionPolygon::set_polygon(const Vector<Point2>& p_polygon) {
 
 	polygon=p_polygon;
+	if (can_update_body) {
 
-	for(int i=0;i<polygon.size();i++) {
+		for(int i=0;i<polygon.size();i++) {
 
-		Vector3 p1(polygon[i].x,polygon[i].y,depth*0.5);
+			Vector3 p1(polygon[i].x,polygon[i].y,depth*0.5);
 
-		if (i==0)
-			aabb=AABB(p1,Vector3());
-		else
-			aabb.expand_to(p1);
+			if (i==0)
+				aabb=AABB(p1,Vector3());
+			else
+				aabb.expand_to(p1);
 
-		Vector3 p2(polygon[i].x,polygon[i].y,-depth*0.5);
-		aabb.expand_to(p2);
+			Vector3 p2(polygon[i].x,polygon[i].y,-depth*0.5);
+			aabb.expand_to(p2);
 
 
+		}
+		if (aabb==AABB()) {
+
+			aabb=AABB(Vector3(-1,-1,-1),Vector3(2,2,2));
+		} else {
+			aabb.pos-=aabb.size*0.3;
+			aabb.size+=aabb.size*0.6;
+		}
+		_update_parent();
 	}
-	if (aabb==AABB()) {
-
-		aabb=AABB(Vector3(-1,-1,-1),Vector3(2,2,2));
-	} else {
-		aabb.pos-=aabb.size*0.3;
-		aabb.size+=aabb.size*0.6;
-	}
-	_update_parent();
 	update_gizmo();
 }
 
@@ -154,6 +202,8 @@ void CollisionPolygon::set_build_mode(BuildMode p_mode) {
 
 	ERR_FAIL_INDEX(p_mode,2);
 	build_mode=p_mode;
+	if (!can_update_body)
+		return;
 	_update_parent();
 }
 
@@ -170,6 +220,8 @@ AABB CollisionPolygon::get_item_rect() const {
 void CollisionPolygon::set_depth(float p_depth) {
 
 	depth=p_depth;
+	if (!can_update_body)
+		return;
 	_update_parent();
 	update_gizmo();
 }
@@ -183,21 +235,33 @@ float CollisionPolygon::get_depth() const {
 void CollisionPolygon::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_add_to_collision_object"),&CollisionPolygon::_add_to_collision_object);
-	ObjectTypeDB::bind_method(_MD("set_polygon","polygon"),&CollisionPolygon::set_polygon);
-	ObjectTypeDB::bind_method(_MD("get_polygon"),&CollisionPolygon::get_polygon);
-
-	ObjectTypeDB::bind_method(_MD("set_depth","depth"),&CollisionPolygon::set_depth);
-	ObjectTypeDB::bind_method(_MD("get_depth"),&CollisionPolygon::get_depth);
 
 	ObjectTypeDB::bind_method(_MD("set_build_mode"),&CollisionPolygon::set_build_mode);
 	ObjectTypeDB::bind_method(_MD("get_build_mode"),&CollisionPolygon::get_build_mode);
 
+	ObjectTypeDB::bind_method(_MD("set_depth","depth"),&CollisionPolygon::set_depth);
+	ObjectTypeDB::bind_method(_MD("get_depth"),&CollisionPolygon::get_depth);
+
+	ObjectTypeDB::bind_method(_MD("set_polygon","polygon"),&CollisionPolygon::set_polygon);
+	ObjectTypeDB::bind_method(_MD("get_polygon"),&CollisionPolygon::get_polygon);
+
+	ObjectTypeDB::bind_method(_MD("_set_shape_range","shape_range"),&CollisionPolygon::_set_shape_range);
+	ObjectTypeDB::bind_method(_MD("_get_shape_range"),&CollisionPolygon::_get_shape_range);
+
+	ObjectTypeDB::bind_method(_MD("get_collision_object_first_shape"),&CollisionPolygon::get_collision_object_first_shape);
+	ObjectTypeDB::bind_method(_MD("get_collision_object_last_shape"),&CollisionPolygon::get_collision_object_last_shape);
+
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"build_mode",PROPERTY_HINT_ENUM,"Solids,Triangles"),_SCS("set_build_mode"),_SCS("get_build_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"depth"),_SCS("set_depth"),_SCS("get_depth"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"shape_range",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_shape_range"),_SCS("_get_shape_range"));
 }
 
 CollisionPolygon::CollisionPolygon() {
+
+	shape_from=-1;
+	shape_to=-1;
+	can_update_body=false;
 
 	aabb=AABB(Vector3(-1,-1,-1),Vector3(2,2,2));
 	build_mode=BUILD_SOLIDS;

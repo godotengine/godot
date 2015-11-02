@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,7 @@
 #include "main/main.h"
 
 #include "core/globals.h"
+#include "emscripten.h"
 
 int OS_JavaScript::get_video_driver_count() const {
 
@@ -104,21 +105,21 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 	visual_server->init();
 	visual_server->cursor_set_visible(false, 0);
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	/*AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
 	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
 
 		ERR_PRINT("Initializing audio failed.");
-	}
+	}*/
 
 	print_line("Init SM");
 
-	sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerSW(sample_manager) );
+	//sample_manager = memnew( SampleManagerMallocSW );
+	audio_server = memnew( AudioServerJavascript );
 
 	print_line("Init Mixer");
 
-	audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,false);
+	//audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,false);
 	audio_server->init();
 
 	print_line("Init SoundServer");
@@ -230,6 +231,12 @@ OS::VideoMode OS_JavaScript::get_video_mode(int p_screen) const {
 
 	return default_videomode;
 }
+
+Size2 OS_JavaScript::get_window_size() const {
+
+	return Vector2(default_videomode.width,default_videomode.height);
+}
+
 void OS_JavaScript::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 
 	p_list->push_back(default_videomode);
@@ -264,6 +271,32 @@ bool OS_JavaScript::main_loop_iterate() {
 
 	if (!main_loop)
 		return false;
+
+	if (time_to_save_sync>=0) {
+		int64_t newtime = get_ticks_msec();
+		int64_t elapsed = newtime - last_sync_time;
+		last_sync_time=newtime;
+
+		time_to_save_sync-=elapsed;
+
+		print_line("elapsed "+itos(elapsed)+" tts "+itos(time_to_save_sync));
+
+		if (time_to_save_sync<0) {
+			//time to sync, for real
+			// run 'success'
+			print_line("DOING SYNCH!");
+			EM_ASM(
+			  FS.syncfs(function (err) {
+			    assert(!err);
+				console.log("Synched!");
+			    //ccall('success', 'v');
+			  });
+			);
+		}
+
+
+	}
+
 	return Main::iteration();
 }
 
@@ -556,14 +589,21 @@ String OS_JavaScript::get_locale() const {
 
 String OS_JavaScript::get_data_dir() const {
 
-	if (get_data_dir_func)
-		return get_data_dir_func();
-	return "/";
+	//if (get_data_dir_func)
+	//	return get_data_dir_func();
+	return "/userfs";
 	//return Globals::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 };
 
 
+void OS_JavaScript::_close_notification_funcs(const String& p_file,int p_flags) {
 
+	print_line("close "+p_file+" flags "+itos(p_flags));
+	if (p_file.begins_with("/userfs") && p_flags&FileAccess::WRITE) {
+		static_cast<OS_JavaScript*>(get_singleton())->last_sync_time=OS::get_singleton()->get_ticks_msec();
+		static_cast<OS_JavaScript*>(get_singleton())->time_to_save_sync=5000; //five seconds since last save
+	}
+}
 
 OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func) {
 
@@ -583,6 +623,9 @@ OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, Ope
 	open_uri_func=p_open_uri_func;
 	get_data_dir_func=p_get_data_dir_func;
 	get_locale_func=p_get_locale_func;
+	FileAccessUnix::close_notification_func=_close_notification_funcs;
+
+	time_to_save_sync=-1;
 
 
 }

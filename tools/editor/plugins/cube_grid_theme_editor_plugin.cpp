@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -269,8 +269,8 @@ void MeshLibraryEditor::_bind_methods() {
 
 MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 
-	file = memnew( FileDialog );
-	file->set_mode(FileDialog::MODE_OPEN_FILE);
+	file = memnew( EditorFileDialog );
+	file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	//not for now?
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene",&extensions);

@@ -27,6 +27,10 @@
 
 #include "KHR/khrplatform.h"
 
+#include <map>
+#include <string>
+#include <vector>
+
 //
 // This is the platform independent interface between an OGL driver
 // and the shading language compiler.
@@ -39,19 +43,19 @@ typedef unsigned int GLenum;
 }
 
 // Must be included after GLenum proxy typedef
+// Note: make sure to increment ANGLE_SH_VERSION when changing ShaderVars.h
 #include "ShaderVars.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // Version number for shader translation API.
 // It is incremented every time the API changes.
-#define ANGLE_SH_VERSION 129
+#define ANGLE_SH_VERSION 132
 
 typedef enum {
   SH_GLES2_SPEC = 0x8B40,
   SH_WEBGL_SPEC = 0x8B41,
+
+  SH_GLES3_SPEC = 0x8B86,
+  SH_WEBGL2_SPEC = 0x8B87,
 
   // The CSS Shaders spec is a subset of the WebGL spec.
   //
@@ -83,31 +87,6 @@ typedef enum {
   SH_HLSL9_OUTPUT  = 0x8B47,
   SH_HLSL11_OUTPUT = 0x8B48
 } ShShaderOutput;
-
-typedef enum {
-  SH_PRECISION_HIGHP     = 0x5001,
-  SH_PRECISION_MEDIUMP   = 0x5002,
-  SH_PRECISION_LOWP      = 0x5003,
-  SH_PRECISION_UNDEFINED = 0
-} ShPrecisionType;
-
-typedef enum {
-  SH_INFO_LOG_LENGTH                = 0x8B84,
-  SH_OBJECT_CODE_LENGTH             = 0x8B88,  // GL_SHADER_SOURCE_LENGTH
-  SH_ACTIVE_UNIFORMS                = 0x8B86,
-  SH_ACTIVE_UNIFORM_MAX_LENGTH      = 0x8B87,
-  SH_ACTIVE_ATTRIBUTES              = 0x8B89,
-  SH_ACTIVE_ATTRIBUTE_MAX_LENGTH    = 0x8B8A,
-  SH_VARYINGS                       = 0x8BBB,
-  SH_VARYING_MAX_LENGTH             = 0x8BBC,
-  SH_MAPPED_NAME_MAX_LENGTH         = 0x6000,
-  SH_NAME_MAX_LENGTH                = 0x6001,
-  SH_HASHED_NAME_MAX_LENGTH         = 0x6002,
-  SH_HASHED_NAMES_COUNT             = 0x6003,
-  SH_SHADER_VERSION                 = 0x6004,
-  SH_RESOURCES_STRING_LENGTH        = 0x6005,
-  SH_OUTPUT_TYPE                    = 0x6006
-} ShShaderInfo;
 
 // Compile options.
 typedef enum {
@@ -188,6 +167,11 @@ typedef enum {
   // This flag scalarizes vec/ivec/bvec/mat constructor args.
   // It is intended as a workaround for Linux/Mac driver bugs.
   SH_SCALARIZE_VEC_AND_MAT_CONSTRUCTOR_ARGS = 0x40000,
+
+  // This flag overwrites a struct name with a unique prefix.
+  // It is intended as a workaround for drivers that do not handle
+  // struct scopes correctly, including all Mac drivers and Linux AMD.
+  SH_REGENERATE_STRUCT_NAMES = 0x80000,
 } ShCompileOptions;
 
 // Defines alternate strategies for implementing array index clamping.
@@ -202,14 +186,14 @@ typedef enum {
 //
 // Driver must call this first, once, before doing any other
 // compiler operations.
-// If the function succeeds, the return value is nonzero, else zero.
+// If the function succeeds, the return value is true, else false.
 //
-COMPILER_EXPORT int ShInitialize();
+COMPILER_EXPORT bool ShInitialize();
 //
 // Driver should call this at shutdown.
-// If the function succeeds, the return value is nonzero, else zero.
+// If the function succeeds, the return value is true, else false.
 //
-COMPILER_EXPORT int ShFinalize();
+COMPILER_EXPORT bool ShFinalize();
 
 // The 64 bits hash function. The first parameter is the input string; the
 // second parameter is the string length.
@@ -240,6 +224,12 @@ typedef struct
     int EXT_frag_depth;
     int EXT_shader_texture_lod;
 
+    // Set to 1 to enable replacing GL_EXT_draw_buffers #extension directives
+    // with GL_NV_draw_buffers in ESSL output. This flag can be used to emulate
+    // EXT_draw_buffers by using it in combination with GLES3.0 glDrawBuffers
+    // function. This applies to Tegra K1 devices.
+    int NV_draw_buffers;
+
     // Set to 1 if highp precision is supported in the fragment language.
     // Default is 0.
     int FragmentPrecisionHigh;
@@ -268,8 +258,10 @@ typedef struct
 
 //
 // Initialize built-in resources with minimum expected values.
+// Parameters:
+// resources: The object to initialize. Will be comparable with memcmp.
 //
-COMPILER_EXPORT void ShInitBuiltInResources(ShBuiltInResources* resources);
+COMPILER_EXPORT void ShInitBuiltInResources(ShBuiltInResources *resources);
 
 //
 // ShHandle held by but opaque to the driver.  It is allocated,
@@ -278,18 +270,15 @@ COMPILER_EXPORT void ShInitBuiltInResources(ShBuiltInResources* resources);
 //
 // If handle creation fails, 0 will be returned.
 //
-typedef void* ShHandle;
+typedef void *ShHandle;
 
 //
-// Returns the a concatenated list of the items in ShBuiltInResources as a string.
+// Returns the a concatenated list of the items in ShBuiltInResources as a
+// null-terminated string.
 // This function must be updated whenever ShBuiltInResources is changed.
 // Parameters:
 // handle: Specifies the handle of the compiler to be used.
-// outStringLen: Specifies the size of the buffer, in number of characters. The size
-//               of the buffer required to store the resources string can be obtained
-//               by calling ShGetInfo with SH_RESOURCES_STRING_LENGTH.
-// outStr: Returns a null-terminated string representing all the built-in resources.
-COMPILER_EXPORT void ShGetBuiltInResourcesString(const ShHandle handle, size_t outStringLen, char *outStr);
+COMPILER_EXPORT const std::string &ShGetBuiltInResourcesString(const ShHandle handle);
 
 //
 // Driver calls these to create and destroy compiler objects.
@@ -307,12 +296,12 @@ COMPILER_EXPORT ShHandle ShConstructCompiler(
     sh::GLenum type,
     ShShaderSpec spec,
     ShShaderOutput output,
-    const ShBuiltInResources* resources);
+    const ShBuiltInResources *resources);
 COMPILER_EXPORT void ShDestruct(ShHandle handle);
 
 //
 // Compiles the given shader source.
-// If the function succeeds, the return value is nonzero, else zero.
+// If the function succeeds, the return value is true, else false.
 // Parameters:
 // handle: Specifies the handle of compiler to be used.
 // shaderStrings: Specifies an array of pointers to null-terminated strings
@@ -334,123 +323,36 @@ COMPILER_EXPORT void ShDestruct(ShHandle handle);
 // SH_VARIABLES: Extracts attributes, uniforms, and varyings.
 //               Can be queried by calling ShGetVariableInfo().
 //
-COMPILER_EXPORT int ShCompile(
+COMPILER_EXPORT bool ShCompile(
     const ShHandle handle,
-    const char* const shaderStrings[],
+    const char * const shaderStrings[],
     size_t numStrings,
-    int compileOptions
-    );
+    int compileOptions);
 
-// Returns a parameter from a compiled shader.
+// Return the version of the shader language.
+COMPILER_EXPORT int ShGetShaderVersion(const ShHandle handle);
+
+// Return the currently set language output type.
+COMPILER_EXPORT ShShaderOutput ShGetShaderOutputType(
+    const ShHandle handle);
+
+// Returns null-terminated information log for a compiled shader.
 // Parameters:
 // handle: Specifies the compiler
-// pname: Specifies the parameter to query.
-// The following parameters are defined:
-// SH_INFO_LOG_LENGTH: the number of characters in the information log
-//                     including the null termination character.
-// SH_OBJECT_CODE_LENGTH: the number of characters in the object code
-//                        including the null termination character.
-// SH_ACTIVE_ATTRIBUTES: the number of active attribute variables.
-// SH_ACTIVE_ATTRIBUTE_MAX_LENGTH: the length of the longest active attribute
-//                                 variable name including the null
-//                                 termination character.
-// SH_ACTIVE_UNIFORMS: the number of active uniform variables.
-// SH_ACTIVE_UNIFORM_MAX_LENGTH: the length of the longest active uniform
-//                               variable name including the null
-//                               termination character.
-// SH_VARYINGS: the number of varying variables.
-// SH_VARYING_MAX_LENGTH: the length of the longest varying variable name
-//                        including the null termination character.
-// SH_MAPPED_NAME_MAX_LENGTH: the length of the mapped variable name including
-//                            the null termination character.
-// SH_NAME_MAX_LENGTH: the max length of a user-defined name including the
-//                     null termination character.
-// SH_HASHED_NAME_MAX_LENGTH: the max length of a hashed name including the
-//                            null termination character.
-// SH_HASHED_NAMES_COUNT: the number of hashed names from the latest compile.
-// SH_SHADER_VERSION: the version of the shader language
-// SH_OUTPUT_TYPE: the currently set language output type
-//
-// params: Requested parameter
-COMPILER_EXPORT void ShGetInfo(const ShHandle handle,
-                               ShShaderInfo pname,
-                               size_t* params);
-
-// Returns nul-terminated information log for a compiled shader.
-// Parameters:
-// handle: Specifies the compiler
-// infoLog: Specifies an array of characters that is used to return
-//          the information log. It is assumed that infoLog has enough memory
-//          to accomodate the information log. The size of the buffer required
-//          to store the returned information log can be obtained by calling
-//          ShGetInfo with SH_INFO_LOG_LENGTH.
-COMPILER_EXPORT void ShGetInfoLog(const ShHandle handle, char* infoLog);
+COMPILER_EXPORT const std::string &ShGetInfoLog(const ShHandle handle);
 
 // Returns null-terminated object code for a compiled shader.
 // Parameters:
 // handle: Specifies the compiler
-// infoLog: Specifies an array of characters that is used to return
-//          the object code. It is assumed that infoLog has enough memory to
-//          accomodate the object code. The size of the buffer required to
-//          store the returned object code can be obtained by calling
-//          ShGetInfo with SH_OBJECT_CODE_LENGTH.
-COMPILER_EXPORT void ShGetObjectCode(const ShHandle handle, char* objCode);
+COMPILER_EXPORT const std::string &ShGetObjectCode(const ShHandle handle);
 
-// Returns information about a shader variable.
+// Returns a (original_name, hash) map containing all the user defined
+// names in the shader, including variable names, function names, struct
+// names, and struct field names.
 // Parameters:
 // handle: Specifies the compiler
-// variableType: Specifies the variable type; options include
-//               SH_ACTIVE_ATTRIBUTES, SH_ACTIVE_UNIFORMS, SH_VARYINGS.
-// index: Specifies the index of the variable to be queried.
-// length: Returns the number of characters actually written in the string
-//         indicated by name (excluding the null terminator) if a value other
-//         than NULL is passed.
-// size: Returns the size of the variable.
-// type: Returns the data type of the variable.
-// precision: Returns the precision of the variable.
-// staticUse: Returns 1 if the variable is accessed in a statement after
-//            pre-processing, whether or not run-time flow of control will
-//            cause that statement to be executed.
-//            Returns 0 otherwise.
-// name: Returns a null terminated string containing the name of the
-//       variable. It is assumed that name has enough memory to accormodate
-//       the variable name. The size of the buffer required to store the
-//       variable name can be obtained by calling ShGetInfo with
-//       SH_ACTIVE_ATTRIBUTE_MAX_LENGTH, SH_ACTIVE_UNIFORM_MAX_LENGTH,
-//       SH_VARYING_MAX_LENGTH.
-// mappedName: Returns a null terminated string containing the mapped name of
-//             the variable, It is assumed that mappedName has enough memory
-//             (SH_MAPPED_NAME_MAX_LENGTH), or NULL if don't care about the
-//             mapped name. If the name is not mapped, then name and mappedName
-//             are the same.
-COMPILER_EXPORT void ShGetVariableInfo(const ShHandle handle,
-                                       ShShaderInfo variableType,
-                                       int index,
-                                       size_t* length,
-                                       int* size,
-                                       sh::GLenum* type,
-                                       ShPrecisionType* precision,
-                                       int* staticUse,
-                                       char* name,
-                                       char* mappedName);
-
-// Returns information about a name hashing entry from the latest compile.
-// Parameters:
-// handle: Specifies the compiler
-// index: Specifies the index of the name hashing entry to be queried.
-// name: Returns a null terminated string containing the user defined name.
-//       It is assumed that name has enough memory to accomodate the name.
-//       The size of the buffer required to store the user defined name can
-//       be obtained by calling ShGetInfo with SH_NAME_MAX_LENGTH.
-// hashedName: Returns a null terminated string containing the hashed name of
-//             the uniform variable, It is assumed that hashedName has enough
-//             memory to accomodate the name. The size of the buffer required
-//             to store the name can be obtained by calling ShGetInfo with
-//             SH_HASHED_NAME_MAX_LENGTH.
-COMPILER_EXPORT void ShGetNameHashingEntry(const ShHandle handle,
-                                           int index,
-                                           char* name,
-                                           char* hashedName);
+COMPILER_EXPORT const std::map<std::string, std::string> *ShGetNameHashingMap(
+    const ShHandle handle);
 
 // Shader variable inspection.
 // Returns a pointer to a list of variables of the designated type.
@@ -470,17 +372,17 @@ typedef struct
     int size;
 } ShVariableInfo;
 
-// Returns 1 if the passed in variables pack in maxVectors following
+// Returns true if the passed in variables pack in maxVectors following
 // the packing rules from the GLSL 1.017 spec, Appendix A, section 7.
-// Returns 0 otherwise. Also look at the SH_ENFORCE_PACKING_RESTRICTIONS
+// Returns false otherwise. Also look at the SH_ENFORCE_PACKING_RESTRICTIONS
 // flag above.
 // Parameters:
 // maxVectors: the available rows of registers.
 // varInfoArray: an array of variable info (types and sizes).
 // varInfoArraySize: the size of the variable array.
-COMPILER_EXPORT int ShCheckVariablesWithinPackingLimits(
+COMPILER_EXPORT bool ShCheckVariablesWithinPackingLimits(
     int maxVectors,
-    ShVariableInfo* varInfoArray,
+    ShVariableInfo *varInfoArray,
     size_t varInfoArraySize);
 
 // Gives the compiler-assigned register for an interface block.
@@ -491,7 +393,7 @@ COMPILER_EXPORT int ShCheckVariablesWithinPackingLimits(
 // interfaceBlockName: Specifies the interface block
 // indexOut: output variable that stores the assigned register
 COMPILER_EXPORT bool ShGetInterfaceBlockRegister(const ShHandle handle,
-                                                 const char *interfaceBlockName,
+                                                 const std::string &interfaceBlockName,
                                                  unsigned int *indexOut);
 
 // Gives the compiler-assigned register for uniforms in the default
@@ -503,11 +405,7 @@ COMPILER_EXPORT bool ShGetInterfaceBlockRegister(const ShHandle handle,
 // interfaceBlockName: Specifies the uniform
 // indexOut: output variable that stores the assigned register
 COMPILER_EXPORT bool ShGetUniformRegister(const ShHandle handle,
-                                          const char *uniformName,
+                                          const std::string &uniformName,
                                           unsigned int *indexOut);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // _COMPILER_INTERFACE_INCLUDED_

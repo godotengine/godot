@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,13 @@ class CollisionShape2D : public Node2D {
 	Rect2 rect;
 	bool trigger;
 	bool unparenting;
+	bool can_update_body;
 	void _shape_changed();
+	int update_shape_index;
+
+	void _set_update_shape_index(int p_index);
+	int _get_update_shape_index() const;
+
 protected:
 
 	void _update_parent();
@@ -54,6 +60,8 @@ public:
 	virtual Rect2 get_item_rect() const;
 	void set_trigger(bool p_trigger);
 	bool is_trigger() const;
+
+	int get_collision_object_shape_index() const { return _get_update_shape_index(); }
 
 	CollisionShape2D();
 };

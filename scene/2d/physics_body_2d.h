@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,14 @@ class PhysicsBody2D : public CollisionObject2D {
 	OBJ_TYPE(PhysicsBody2D,CollisionObject2D);
 
 	uint32_t mask;
+	uint32_t collision_mask;
+	Vector2 one_way_collision_direction;
+	float one_way_collision_max_depth;
+
+
+	void _set_layers(uint32_t p_mask);
+	uint32_t _get_layers() const;
+
 protected:
 
 	void _notification(int p_what);
@@ -50,8 +58,24 @@ public:
 	void set_layer_mask(uint32_t p_mask);
 	uint32_t get_layer_mask() const;
 
+	void set_collision_mask(uint32_t p_mask);
+	uint32_t get_collision_mask() const;
+
+
+	void set_collision_mask_bit(int p_bit, bool p_value);
+	bool get_collision_mask_bit(int p_bit) const;
+
+	void set_layer_mask_bit(int p_bit, bool p_value);
+	bool get_layer_mask_bit(int p_bit) const;
+
 	void add_collision_exception_with(Node* p_node); //must be physicsbody
 	void remove_collision_exception_with(Node* p_node);
+
+	void set_one_way_collision_direction(const Vector2& p_dir);
+	Vector2 get_one_way_collision_direction() const;
+
+	void set_one_way_collision_max_depth(float p_dir);
+	float get_one_way_collision_max_depth() const;
 
 	PhysicsBody2D();
 
@@ -119,6 +143,9 @@ private:
 	real_t bounce;
 	real_t mass;
 	real_t friction;
+	real_t gravity_scale;
+	real_t linear_damp;
+	real_t angular_damp;
 
 	Vector2 linear_velocity;
 	real_t angular_velocity;
@@ -177,6 +204,7 @@ private:
 	void _body_inout(int p_status, ObjectID p_instance, int p_body_shape,int p_local_shape);
 	void _direct_state_changed(Object *p_state);
 
+	bool _test_motion(const Vector2& p_motion,float p_margin=0.08,const Ref<Physics2DTestMotionResult>& p_result=Ref<Physics2DTestMotionResult>());
 
 protected:
 
@@ -197,6 +225,15 @@ public:
 
 	void set_bounce(real_t p_bounce);
 	real_t get_bounce() const;
+
+	void set_gravity_scale(real_t p_gravity_scale);
+	real_t get_gravity_scale() const;
+
+	void set_linear_damp(real_t p_linear_damp);
+	real_t get_linear_damp() const;
+
+	void set_angular_damp(real_t p_angular_damp);
+	real_t get_angular_damp() const;
 
 	void set_linear_velocity(const Vector2& p_velocity);
 	Vector2 get_linear_velocity() const;
@@ -229,6 +266,8 @@ public:
 	void set_applied_force(const Vector2& p_force);
 	Vector2 get_applied_force() const;
 
+
+
 	Array get_colliding_bodies() const; //function for script
 
 	RigidBody2D();
@@ -246,11 +285,6 @@ class KinematicBody2D : public PhysicsBody2D {
 	OBJ_TYPE(KinematicBody2D,PhysicsBody2D);
 
 	float margin;
-	bool collide_static;
-	bool collide_rigid;
-	bool collide_kinematic;
-	bool collide_character;
-
 	bool colliding;
 	Vector2 collision;
 	Vector2 normal;
@@ -258,6 +292,7 @@ class KinematicBody2D : public PhysicsBody2D {
 	ObjectID collider;
 	int collider_shape;
 	Variant collider_metadata;
+	Vector2 travel;
 
 	Variant _get_collider() const;
 
@@ -270,26 +305,18 @@ public:
 	Vector2 move(const Vector2& p_motion);
 	Vector2 move_to(const Vector2& p_position);
 
-	bool can_move_to(const Vector2& p_position,bool p_discrete=false);
+	bool test_move(const Vector2& p_motion);
 	bool is_colliding() const;
+
+	Vector2 get_travel() const;
+	void revert_motion();
+
 	Vector2 get_collision_pos() const;
 	Vector2 get_collision_normal() const;
 	Vector2 get_collider_velocity() const;
 	ObjectID get_collider() const;
 	int get_collider_shape() const;
 	Variant get_collider_metadata() const;
-
-	void set_collide_with_static_bodies(bool p_enable);
-	bool can_collide_with_static_bodies() const;
-
-	void set_collide_with_rigid_bodies(bool p_enable);
-	bool can_collide_with_rigid_bodies() const;
-
-	void set_collide_with_kinematic_bodies(bool p_enable);
-	bool can_collide_with_kinematic_bodies() const;
-
-	void set_collide_with_character_bodies(bool p_enable);
-	bool can_collide_with_character_bodies() const;
 
 	void set_collision_margin(float p_margin);
 	float get_collision_margin() const;

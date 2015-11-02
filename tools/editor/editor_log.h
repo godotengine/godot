@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/texture_button.h"
-#include "scene/gui/empty_control.h"
+//#include "scene/gui/empty_control.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/texture_frame.h"
@@ -45,12 +45,13 @@ class EditorLog : public PanelContainer {
 	OBJ_TYPE( EditorLog, PanelContainer );
 
 	ToolButton *button;
+	Button *clearbutton;
 	Label *title;
 	RichTextLabel *log;
 	TextureButton *tb;
 	HBoxContainer *title_hb;
 //	PaneDrag *pd;
-	EmptyControl *ec;
+	Control *ec;
 
 	static void _error_handler(void *p_self, const char*p_func, const char*p_file,int p_line, const char*p_error,const char*p_errorexp,ErrorHandlerType p_type);
 
@@ -58,10 +59,10 @@ class EditorLog : public PanelContainer {
 
 	Thread::ID current;
 
-
 //	void _dragged(const Point2& p_ofs);
 	void _close_request();
 	void _flip_request();
+	void _clear_request();
 	static void _undo_redo_cbk(void *p_self,const String& p_name);
 protected:
 
@@ -73,6 +74,7 @@ public:
 	void deinit();
 
 	ToolButton *get_button();
+	void clear();
 	EditorLog();
 	~EditorLog();
 };

@@ -4,6 +4,7 @@
 #include "os/file_access.h"
 #include "tools/editor/editor_settings.h"
 
+
 void CollisionPolygon2DEditor::_notification(int p_what) {
 
 	switch(p_what) {
@@ -33,17 +34,6 @@ void CollisionPolygon2DEditor::_node_removed(Node *p_node) {
 
 }
 
-
-Vector2 CollisionPolygon2DEditor::snap_point(const Vector2& p_point) const {
-
-	if (canvas_item_editor->is_snap_active()) {
-
-		return p_point.snapped(Vector2(1,1)*canvas_item_editor->get_snap());
-
-	} else {
-		return p_point;
-	}
-}
 
 void CollisionPolygon2DEditor::_menu_option(int p_option) {
 
@@ -98,7 +88,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
 			Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-			cpoint=snap_point(cpoint);
+			cpoint=canvas_item_editor->snap_point(cpoint);
 			cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
 
 			Vector<Vector2> poly = node->get_polygon();
@@ -301,7 +291,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 				Vector2 gpoint = Point2(mm.x,mm.y);
 				Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-				cpoint=snap_point(cpoint);
+				cpoint=canvas_item_editor->snap_point(cpoint);
 				edited_point_pos = node->get_global_transform().affine_inverse().xform(cpoint);
 
 				canvas_item_editor->get_viewport_control()->update();
@@ -368,6 +358,7 @@ void CollisionPolygon2DEditor::edit(Node *p_collision_polygon) {
 		wip.clear();
 		wip_active=false;
 		edited_point=-1;
+		canvas_item_editor->get_viewport_control()->update();
 
 	} else {
 		node=NULL;
@@ -389,6 +380,7 @@ void CollisionPolygon2DEditor::_bind_methods() {
 
 CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) {
 
+	node=NULL;
 	canvas_item_editor=NULL;
 	editor=p_editor;
 	undo_redo = editor->get_undo_redo();
@@ -398,11 +390,13 @@ CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) {
 	add_child(button_create);
 	button_create->connect("pressed",this,"_menu_option",varray(MODE_CREATE));
 	button_create->set_toggle_mode(true);
+	button_create->set_tooltip("Create a new polygon from scratch");
 
 	button_edit = memnew( ToolButton );
 	add_child(button_edit);
 	button_edit->connect("pressed",this,"_menu_option",varray(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
+	button_edit->set_tooltip("Edit existing polygon:\nLMB: Move Point.\nCtrl+LMB: Split Segment.\nRMB: Erase Point.");
 
 	//add_constant_override("separation",0);
 

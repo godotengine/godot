@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,10 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 	const uint8_t * buf=p_buffer;
 	int len=p_len;
 
-	ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
+	if (len<4) {
+
+		ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
+	}
 
 
 	uint32_t type=decode_uint32(buf);
@@ -299,10 +302,8 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 				ERR_FAIL_COND_V(len<12,ERR_INVALID_DATA);
 				Vector<StringName> names;
 				Vector<StringName> subnames;
-				bool absolute;
 				StringName prop;
 
-				int i=0;
 				uint32_t namecount=strlen&=0x7FFFFFFF;
 				uint32_t subnamecount = decode_uint32(buf+4);
 				uint32_t flags = decode_uint32(buf+8);
@@ -391,7 +392,6 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 
 			ie.type=decode_uint32(&buf[0]);
 			ie.device=decode_uint32(&buf[4]);
-			uint32_t len = decode_uint32(&buf[8])-12;
 
 			if (r_len)
 				(*r_len)+=12;

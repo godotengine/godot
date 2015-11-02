@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "io/md5.h"
 #include "ucaps.h"
 #include "color.h"
+#include "variant.h"
 #define MAX_DIGITS 6
 #define UPPERCASE(m_c) (((m_c)>='a' && (m_c)<='z')?((m_c)-('a'-'A')):(m_c))
 #define LOWERCASE(m_c) (((m_c)>='A' && (m_c)<='Z')?((m_c)+('a'-'A')):(m_c))
@@ -66,11 +67,14 @@ void String::copy_from(const char *p_cstr) {
 		return;
 	}
 	
+
 	resize(len+1); // include 0
 	
-	for(int i=0;i<len+1;i++) {
-	
-		set(i,p_cstr[i]);
+	CharType *dst = this->ptr();
+
+	for (int i=0;i<len+1;i++) {
+
+		dst[i]=p_cstr[i];
 	}
 
 }
@@ -485,7 +489,7 @@ String String::capitalize() const {
 	String cap;
 	for (int i=0;i<aux.get_slice_count(" ");i++) {
 		
-		String slice=aux.get_slice(" ",i);
+		String slice=aux.get_slicec(' ',i);
 		if (slice.length()>0) {
 		
 			slice[0]=_find_upper(slice[0]);
@@ -497,6 +501,27 @@ String String::capitalize() const {
 	
 	return cap;
 }
+
+String String::camelcase_to_underscore() const {
+	const CharType * cstr = c_str();
+	String newString;
+	const char A = 'A', Z = 'Z';
+	int startIndex = 0;
+
+	for ( int i = 1; i < this->size()-1; i++ ) {
+		bool isCapital = cstr[i] >= A && cstr[i] <= Z;
+
+		if ( isCapital ) {
+			newString += "_" + this->substr(startIndex, i-startIndex);
+			startIndex = i;
+		}
+	}
+
+	newString += "_" + this->substr(startIndex, this->size()-startIndex);
+
+	return newString;
+}
+
 int String::get_slice_count(String p_splitter) const{
 
 	if (empty())
@@ -552,6 +577,41 @@ String String::get_slice(String p_splitter, int p_slice) const {
 	}
 
 	return ""; //no find!
+
+}
+
+String String::get_slicec(CharType p_splitter, int p_slice) const {
+
+	if (empty())
+		return String();
+
+	if (p_slice<0)
+		return String();
+
+	const CharType *c=this->ptr();
+	int i=0;
+	int prev=0;
+	int count=0;
+	while(true) {
+
+
+		if (c[i]==0 || c[i]==p_splitter) {
+
+			if (p_slice==count) {
+
+				return substr(prev,i-prev);
+			} else {
+				count++;
+				prev=i+1;
+			}
+
+		}
+
+		i++;
+
+	}
+
+	return String(); //no find!
 
 }
 
@@ -626,7 +686,7 @@ Vector<float> String::split_floats(const String &p_splitter,bool p_allow_empty) 
 		if (end<0)
 			end=len;
 		if (p_allow_empty || (end>from))
-			ret.push_back(String::to_double(&c_str()[from],end-from));
+			ret.push_back(String::to_double(&c_str()[from]));
 
 		if (end==len)
 			break;
@@ -654,8 +714,9 @@ Vector<float> String::split_floats_mk(const Vector<String> &p_splitters,bool p_a
 			spl_len=p_splitters[idx].length();
 		}
 
-		if (p_allow_empty || (end>from))
-			ret.push_back(String::to_double(&c_str()[from],end-from));
+		if (p_allow_empty || (end>from)) {
+			ret.push_back(String::to_double(&c_str()[from]));
+		}
 
 		if (end==len)
 			break;
@@ -980,7 +1041,7 @@ String String::num(double p_num,int p_decimals) {
 
 }
 
-String String::num_int64(int64_t p_num) {
+String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 
 	bool sign=p_num<0;
 	int64_t num=ABS(p_num);
@@ -989,7 +1050,7 @@ String String::num_int64(int64_t p_num) {
 
 	int chars=0;
 	do {
-		n/=10;
+		n/=base;
 		chars++;
 	} while(n);
 
@@ -1001,8 +1062,15 @@ String String::num_int64(int64_t p_num) {
 	c[chars]=0;
 	n=num;
 	do {
-		c[--chars]='0'+(n%10);
-		n/=10;
+		int mod = n%base;
+		if (mod >= 10) {
+			char a = (capitalize_hex ? 'A' : 'a');
+			c[--chars]=a+(mod - 10);
+		} else {
+			c[--chars]='0'+mod;
+		}
+
+		n/=base;
 	} while(n);
 
 	if (sign)
@@ -1959,8 +2027,10 @@ float String::to_float() const {
 	return to_double();
 }
 
-double String::to_double(const CharType* p_str, int p_len, const CharType **r_end)  {
+double String::to_double(const CharType* p_str, const CharType **r_end)  {
 
+	return built_in_strtod<CharType>(p_str,(CharType**)r_end);
+#if 0
 #if 0
 	//ndef NO_USE_STDLIB
 	return wcstod(p_str,p_len<0?NULL:p_str+p_len);
@@ -2052,6 +2122,7 @@ double String::to_double(const CharType* p_str, int p_len, const CharType **r_en
 		*r_end=str-1;
 
 	return sign*(integer+decimal)*Math::pow(10,exp_sign*exp);
+#endif
 #endif
 }
 
@@ -2977,6 +3048,37 @@ bool String::is_valid_identifier() const {
 
 //kind of poor should be rewritten properly
 
+String String::world_wrap(int p_chars_per_line) const {
+
+	int from=0;
+	int last_space=0;
+	String ret;
+	for(int i=0;i<length();i++) {
+		if (i-from>=p_chars_per_line) {
+			if (last_space==-1) {
+				ret+=substr(from,i-from+1)+"\n";
+			} else {
+				ret+=substr(from,last_space-from)+"\n";
+				i=last_space; //rewind
+			}
+			from=i+1;
+			last_space=-1;
+		} else if (operator[](i)==' ' || operator[](i)=='\t') {
+			last_space=i;
+		} else if (operator[](i)=='\n') {
+			ret+=substr(from,i-from)+"\n";
+			from=i+1;
+			last_space=-1;
+		}
+	}
+
+	if (from<length()) {
+		ret+=substr(from,length());
+	}
+
+	return ret;
+}
+
 String String::c_unescape() const {
 
 	String escaped=*this;
@@ -3017,8 +3119,8 @@ String String::xml_escape(bool p_escape_quotes) const {
 
 	String str=*this;
 	str=str.replace("&","&amp;");
-	str=str.replace("<","&gt;");
-	str=str.replace(">","&lt;");
+	str=str.replace("<","&lt;");
+	str=str.replace(">","&gt;");
 	if (p_escape_quotes) {
 		str=str.replace("'","&apos;");
 		str=str.replace("\"","&quot;");
@@ -3070,12 +3172,12 @@ static _FORCE_INLINE_ int _xml_unescape(const CharType *p_src,int p_src_len,Char
 			} else if (p_src_len>=4 && p_src[1]=='g' && p_src[2]=='t' && p_src[3]==';') {
 
 				if (p_dst)
-					*p_dst='<';
+					*p_dst='>';
 				eat=4;
 			} else if (p_src_len>=4 && p_src[1]=='l' && p_src[2]=='t' && p_src[3]==';') {
 
 				if (p_dst)
-					*p_dst='>';
+					*p_dst='<';
 				eat=4;
 			} else if (p_src_len>=5 && p_src[1]=='a' && p_src[2]=='m' && p_src[3]=='p' && p_src[4]==';') {
 
@@ -3264,8 +3366,11 @@ String String::path_to_file(const String& p_path) const {
 
 	String src=this->replace("\\","/").get_base_dir();
 	String dst=p_path.replace("\\","/").get_base_dir();
-
-	return src.path_to(dst)+p_path.get_file();
+	String rel = src.path_to(dst);
+	if (rel==dst) // failed
+		return p_path;
+	else
+		return rel+p_path.get_file();
 }
 
 String String::path_to(const String& p_path) const {
@@ -3297,10 +3402,12 @@ String String::path_to(const String& p_path) const {
 		//nothing
 	} else {
 		//dos style
-		String src_begin=src.get_slice("/",0);
-		String dst_begin=dst.get_slice("/",0);
+		String src_begin=src.get_slicec('/',0);
+		String dst_begin=dst.get_slicec('/',0);
 
-		ERR_FAIL_COND_V(src_begin!=dst_begin,p_path); //return dst absolute path
+		if (src_begin!=dst_begin)
+			return p_path; //impossible to do this
+
 		base=src_begin;
 		src=src.substr(src_begin.length(),src.length());
 		dst=dst.substr(dst_begin.length(),dst.length());
@@ -3437,7 +3544,7 @@ String String::percent_encode() const {
 		uint8_t c = cs[i];
 		if ( (c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='-' || c=='_' || c=='~' || c=='.') {
 
-			char p[2]={c,0};
+			char p[2]={(char)c,0};
 			encoded+=p;
 		} else {
 			char p[4]={'%',0,0,0};
@@ -3514,4 +3621,270 @@ String rtoss(double p_val) {
 	return String::num_scientific(p_val);
 }
 
+// Right-pad with a character.
+String String::rpad(int min_length, const String& character) const {
+	String s = *this;
+	int padding = min_length - s.length();
+	if (padding > 0) {
+		for (int i = 0; i < padding; i++) s = s + character;
+	}
 
+	return s;
+}
+// Left-pad with a character.
+String String::lpad(int min_length, const String& character) const {
+	String s = *this;
+	int padding = min_length - s.length();
+	if (padding > 0) {
+		for (int i = 0; i < padding; i++) s = character + s;
+	}
+
+	return s;
+}
+
+// sprintf is implemented in GDScript via:
+//   "fish %s pie" % "frog"
+//   "fish %s %d pie" % ["frog", 12]
+// In case of an error, the string returned is the error description and "error" is true.
+String String::sprintf(const Array& values, bool* error) const {
+	String formatted;
+	CharType* self = (CharType*)c_str();
+	int num_items = values.size();
+	bool in_format = false;
+	int value_index = 0;
+	int min_chars;
+	int min_decimals;
+	bool in_decimals;
+	bool pad_with_zeroes;
+	bool left_justified;
+	bool show_sign;
+
+	*error = true;
+
+	for (; *self; self++) {
+		const CharType c = *self;
+
+		if (in_format) { // We have % - lets see what else we get.
+			switch (c) {
+				case '%': { // Replace %% with %
+					formatted += chr(c);
+					in_format = false;
+					break;
+				}
+				case 'd': // Integer (signed)
+				case 'o': // Octal
+				case 'x': // Hexadecimal (lowercase)
+				case 'X': { // Hexadecimal (uppercase)
+					if (value_index >= values.size()) {
+						return "not enough arguments for format string";
+					}
+
+					if (!values[value_index].is_num()) {
+						return "a number is required";
+					}
+					
+					int64_t value = values[value_index];
+					int base;
+					bool capitalize = false;
+					switch (c) {
+						case 'd': base = 10; break;
+						case 'o': base = 8; break;
+						case 'x': base = 16; break;
+						case 'X': base = 16; capitalize = true; break;
+					}
+					// Get basic number.
+					String str = String::num_int64(value, base, capitalize);
+
+					// Sign.
+					if (show_sign && value >= 0) {
+						str = str.insert(0, "+");
+					}
+
+					// Padding.
+					String pad_char = pad_with_zeroes ? String("0") : String(" ");
+					if (left_justified) {
+						str = str.rpad(min_chars, pad_char);
+					} else {
+						str = str.lpad(min_chars, pad_char);
+					}
+
+					formatted += str;
+					++value_index;
+					in_format = false;
+
+					break;
+				}
+				case 'f': { // Float
+					if (value_index >= values.size()) {
+						return "not enough arguments for format string";
+					}
+
+					if (!values[value_index].is_num()) {
+						return "a number is required";
+					}
+
+					double value = values[value_index];
+					String str = String::num(value, min_decimals);
+
+					// Pad decimals out.
+					str = str.pad_decimals(min_decimals);
+
+					// Show sign
+					if (show_sign && value >= 0) {
+						str = str.insert(0, "+");
+					}
+
+					// Padding
+					if (left_justified) {
+						str = str.rpad(min_chars);
+					} else {
+						str = str.lpad(min_chars);
+					}
+
+					formatted += str;
+					++value_index;
+					in_format = false;
+					
+					break;
+				}
+				case 's': { // String
+					if (value_index >= values.size()) {
+						return "not enough arguments for format string";
+					}
+
+					String str = values[value_index];
+					// Padding.
+					if (left_justified) {
+						str = str.rpad(min_chars);
+					} else {
+						str = str.lpad(min_chars);
+					}
+
+					formatted += str;
+					++value_index;
+					in_format = false;
+					break;
+				}
+				case 'c': {
+					if (value_index >= values.size()) {
+						return "not enough arguments for format string";
+					}
+
+					// Convert to character.
+					String str;
+					if (values[value_index].is_num()) {
+						int value = values[value_index];
+						if (value < 0) {
+							return "unsigned byte integer is lower than maximum";
+						} else if (value > 255) {
+							return "unsigned byte integer is greater than maximum";
+						}
+						str = chr(values[value_index]);
+					} else if (values[value_index].get_type() == Variant::STRING) {
+						str = values[value_index];
+						if (str.length() != 1) {
+							return "%c requires number or single-character string";
+						}
+					} else {
+						return "%c requires number or single-character string";
+					}
+
+					// Padding.
+					if (left_justified) {
+						str = str.rpad(min_chars);
+					} else {
+						str = str.lpad(min_chars);
+					}
+
+					formatted += str;
+					++value_index;
+					in_format = false;
+					break;
+				}
+				case '-': { // Left justify
+					left_justified = true;
+					break;
+				}
+				case '+': { // Show + if positive.
+					show_sign = true;
+					break;
+				}
+				case '0': case '1': case '2': case '3': case '4':
+				case '5': case '6': case '7': case '8': case '9': {
+					int n = c - '0';
+					if (in_decimals) {
+						min_decimals *= 10;
+						min_decimals += n;
+					} else {
+						if (c == '0' && min_chars == 0) {
+							pad_with_zeroes = true;
+						} else {
+							min_chars *= 10;
+							min_chars += n;
+						}
+					}
+					break;
+				}
+				case '.': { // Float separtor.
+					if (in_decimals) {
+						return "too many decimal points in format";
+					}
+					in_decimals = true;
+					min_decimals = 0; // We want to add the value manually.
+					break;
+				}
+
+				case '*': { // Dyanmic width, based on value.
+					if (value_index >= values.size()) {
+						return "not enough arguments for format string";
+					}
+
+					if (!values[value_index].is_num()) {
+						return "* wants number";
+					}
+
+					int size = values[value_index];
+
+					if (in_decimals) {
+						min_decimals = size;
+					} else {
+						min_chars = size;
+					}
+
+					++value_index;
+					break;
+				}
+
+				default: {
+					return "unsupported format character";
+  				}
+			}
+		} else { // Not in format string.
+			switch (c) {
+				case '%':
+					in_format = true;
+					// Back to defaults:
+					min_chars = 0;
+					min_decimals = 6;
+					pad_with_zeroes = false;
+					left_justified = false;
+					show_sign = false;
+					in_decimals = false;
+					break;
+				default:
+					formatted += chr(c);
+			}
+		}
+	}
+
+	if (in_format) {
+		return "incomplete format";
+	}
+
+	if (value_index != values.size()) {
+		return "not all arguments converted during string formatting";
+	}
+
+	*error = false;
+	return formatted;
+}

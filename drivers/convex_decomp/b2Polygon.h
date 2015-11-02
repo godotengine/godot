@@ -22,7 +22,7 @@
 #include "b2Triangle.h"
 #include "stdio.h"
 #include <string.h>
-#include <limits>
+#include <limits.h>
 namespace b2ConvexDecomp {
 
 static bool B2_POLYGON_REPORT_ERRORS = false;

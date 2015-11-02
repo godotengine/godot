@@ -27,7 +27,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles1/rasterizer_gles1.h"
 #include "os_winrt.h"
 #include "drivers/nedmalloc/memory_pool_static_nedmalloc.h"
 #include "drivers/unix/memory_pool_static_malloc.h"
@@ -62,11 +61,11 @@ using namespace Microsoft::WRL;
 
 int OSWinrt::get_video_driver_count() const {
 
-	return 2;
+	return 1;
 }
 const char * OSWinrt::get_video_driver_name(int p_driver) const {
 
-	return p_driver==0?"GLES2":"GLES1";
+	return "GLES2";
 }
 
 OS::VideoMode OSWinrt::get_default_video_mode() const {
@@ -140,6 +139,11 @@ bool OSWinrt::can_draw() const {
 void OSWinrt::set_gl_context(ContextEGL* p_context) {
 
 	gl_context = p_context;
+};
+
+void OSWinrt::screen_size_changed() {
+
+	gl_context->reset();
 };
 
 void OSWinrt::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
@@ -438,10 +442,14 @@ String OSWinrt::get_name() {
 	return "WinRT";
 }
 
-OS::Date OSWinrt::get_date() const {
+OS::Date OSWinrt::get_date(bool utc) const {
 
 	SYSTEMTIME systemtime;
-	GetSystemTime(&systemtime);
+	if (utc)
+		GetSystemTime(&systemtime);
+	else
+		GetLocalTime(&systemtime);
+
 	Date date;
 	date.day=systemtime.wDay;
 	date.month=Month(systemtime.wMonth);
@@ -450,10 +458,13 @@ OS::Date OSWinrt::get_date() const {
 	date.dst=false;
 	return date;
 }
-OS::Time OSWinrt::get_time() const {
+OS::Time OSWinrt::get_time(bool utc) const {
 
 	SYSTEMTIME systemtime;
-	GetSystemTime(&systemtime);
+	if (utc)
+		GetSystemTime(&systemtime);
+	else
+		GetLocalTime(&systemtime);
 
 	Time time;
 	time.hour=systemtime.wHour;
@@ -462,11 +473,28 @@ OS::Time OSWinrt::get_time() const {
 	return time;
 }
 
+OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
+	TIME_ZONE_INFORMATION info;
+	bool daylight = false;
+	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT)
+		daylight = true;
+
+	TimeZoneInfo ret;
+	if (daylight) {
+		ret.name = info.DaylightName;
+	} else {
+		ret.name = info.StandardName;
+	}
+
+	ret.bias = info.Bias;
+	return ret;
+}
+
 uint64_t OSWinrt::get_unix_time() const {
 
 	FILETIME ft;
 	SYSTEMTIME st;
-	GetSystemTime(&st);
+	GetSystemTime(&systemtime);
 	SystemTimeToFileTime(&st, &ft);
 
 	SYSTEMTIME ep;
@@ -568,8 +596,12 @@ Error OSWinrt::shell_open(String p_uri) {
 
 String OSWinrt::get_locale() const {
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP // this should work on phone 8.1, but it doesn't
+	return "en";
+#else
 	Platform::String ^language = Windows::Globalization::Language::CurrentInputMethodLanguageTag;
 	return language->Data();
+#endif
 }
 
 void OSWinrt::release_rendering_thread() {

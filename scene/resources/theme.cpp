@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,9 +40,9 @@ bool Theme::_set(const StringName& p_name, const Variant& p_value) {
 
 	if (sname.find("/")!=-1) {
 
-		String type=sname.get_slice("/",1);
-		String node_type=sname.get_slice("/",0);
-		String name=sname.get_slice("/",2);
+		String type=sname.get_slicec('/',1);
+		String node_type=sname.get_slicec('/',0);
+		String name=sname.get_slicec('/',2);
 
 		if (type=="icons") {
 
@@ -75,9 +75,9 @@ bool Theme::_get(const StringName& p_name,Variant &r_ret) const {
 
 	if (sname.find("/")!=-1) {
 
-		String type=sname.get_slice("/",1);
-		String node_type=sname.get_slice("/",0);
-		String name=sname.get_slice("/",2);
+		String type=sname.get_slicec('/',1);
+		String node_type=sname.get_slicec('/',0);
+		String name=sname.get_slicec('/',2);
 
 		if (type=="icons") {
 
@@ -105,6 +105,9 @@ bool Theme::_get(const StringName& p_name,Variant &r_ret) const {
 
 void Theme::_get_property_list( List<PropertyInfo> *p_list) const {
 	
+
+	List<PropertyInfo> list;
+
 	const StringName *key=NULL;
 	
 	while((key=icon_map.next(key))) {
@@ -113,7 +116,7 @@ void Theme::_get_property_list( List<PropertyInfo> *p_list) const {
 	
 		while((key2=icon_map[*key].next(key2))) {
 
-			p_list->push_back( PropertyInfo( Variant::OBJECT, String()+*key+"/icons/"+*key2, PROPERTY_HINT_RESOURCE_TYPE, "Texture" ) );
+			list.push_back( PropertyInfo( Variant::OBJECT, String()+*key+"/icons/"+*key2, PROPERTY_HINT_RESOURCE_TYPE, "Texture" ) );
 		}
 	}
 	
@@ -125,7 +128,7 @@ void Theme::_get_property_list( List<PropertyInfo> *p_list) const {
 	
 		while((key2=style_map[*key].next(key2))) {
 		
-			p_list->push_back( PropertyInfo( Variant::OBJECT, String()+*key+"/styles/"+*key2, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox" ) );
+			list.push_back( PropertyInfo( Variant::OBJECT, String()+*key+"/styles/"+*key2, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox" ) );
 		}
 	}
 	
@@ -138,7 +141,7 @@ void Theme::_get_property_list( List<PropertyInfo> *p_list) const {
 	
 		while((key2=font_map[*key].next(key2))) {
 		
-			p_list->push_back( PropertyInfo( Variant::OBJECT, String()+*key+"/fonts/"+*key2, PROPERTY_HINT_RESOURCE_TYPE, "Font" ) );
+			list.push_back( PropertyInfo( Variant::OBJECT, String()+*key+"/fonts/"+*key2, PROPERTY_HINT_RESOURCE_TYPE, "Font" ) );
 		}
 	}
 	
@@ -150,7 +153,7 @@ void Theme::_get_property_list( List<PropertyInfo> *p_list) const {
 	
 		while((key2=color_map[*key].next(key2))) {
 		
-			p_list->push_back( PropertyInfo( Variant::COLOR, String()+*key+"/colors/"+*key2 ) );
+			list.push_back( PropertyInfo( Variant::COLOR, String()+*key+"/colors/"+*key2 ) );
 		}
 	}
 	
@@ -162,8 +165,13 @@ void Theme::_get_property_list( List<PropertyInfo> *p_list) const {
 	
 		while((key2=constant_map[*key].next(key2))) {
 		
-			p_list->push_back( PropertyInfo( Variant::INT, String()+*key+"/constants/"+*key2 ) );
+			list.push_back( PropertyInfo( Variant::INT, String()+*key+"/constants/"+*key2 ) );
 		}
+	}
+
+	list.sort();
+	for(List<PropertyInfo>::Element *E=list.front();E;E=E->next()) {
+		p_list->push_back(E->get());
 	}
 	
 }
@@ -593,7 +601,9 @@ Theme::~Theme()
 
 
 
-RES ResourceFormatLoaderTheme::load(const String &p_path,const String& p_original_path) {
+RES ResourceFormatLoaderTheme::load(const String &p_path, const String& p_original_path, Error *r_error) {
+	if (r_error)
+		*r_error=ERR_CANT_OPEN;
 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path,FileAccess::READ,&err);
@@ -603,6 +613,8 @@ RES ResourceFormatLoaderTheme::load(const String &p_path,const String& p_origina
 	String base_path = p_path.get_base_dir();
 	Ref<Theme> theme( memnew( Theme ) );
 	Map<StringName,Variant> library;
+	if (r_error)
+		*r_error=ERR_FILE_CORRUPT;
 
 	bool reading_library=false;
 	int line=0;
@@ -994,6 +1006,9 @@ RES ResourceFormatLoaderTheme::load(const String &p_path,const String& p_origina
 
 	f->close();
 	memdelete(f);
+
+	if (r_error)
+		*r_error=OK;
 
 	return theme;
 }

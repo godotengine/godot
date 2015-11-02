@@ -21,8 +21,8 @@
 #include "b2Triangle.h"
 #include "b2Polygon.h"
 
-#include <cmath>
-#include <climits>
+#include <math.h>
+#include <limits.h>
 #include <assert.h>
 #define b2Assert assert
 
@@ -970,6 +970,7 @@ int32 DecomposeConvex(b2Polygon* p, b2Polygon* results, int32 maxPolys) {
 		}
 		if (nTri < 1) {
             //Still no luck?  Oh well...
+            delete[] triangulated;
             return -1;
         }
         int32 nPolys = PolygonizeTriangles(triangulated, nTri, results, maxPolys);

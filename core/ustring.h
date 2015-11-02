@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 
 #include "typedefs.h"
 #include "vector.h"
+#include "array.h"
 
 /**
 	@author red <red@killy>
@@ -127,10 +128,13 @@ public:
 	String insert(int p_at_pos,String p_string) const;
 	String pad_decimals(int p_digits) const;
 	String pad_zeros(int p_digits) const;
+	String lpad(int min_length,const String& character=" ") const;
+	String rpad(int min_length,const String& character=" ") const;
+	String sprintf(const Array& values, bool* error) const;
 	static String num(double p_num,int p_decimals=-1);
 	static String num_scientific(double p_num);
 	static String num_real(double p_num);
-	static String num_int64(int64_t p_num);
+	static String num_int64(int64_t p_num,int base=10,bool capitalize_hex=false);
 	static String chr(CharType p_char);
 	static String md5(const uint8_t *p_md5);
 	bool is_numeric() const;
@@ -142,12 +146,14 @@ public:
 	int64_t to_int64() const;
 	static int to_int(const char* p_str);
 	static double to_double(const char* p_str);
-	static double to_double(const CharType* p_str, int p_len=-1, const CharType **r_end=NULL);
+	static double to_double(const CharType* p_str, const CharType **r_end=NULL);
 	static int64_t to_int(const CharType* p_str,int p_len=-1);
 	String capitalize() const;
+	String camelcase_to_underscore() const;
 
 	int get_slice_count(String p_splitter) const;
 	String get_slice(String p_splitter,int p_slice) const;
+	String get_slicec(CharType splitter,int p_slice) const;
 
 	Vector<String> split(const String &p_splitter,bool p_allow_empty=true) const;
 	Vector<String> split_spaces() const;
@@ -203,7 +209,8 @@ public:
 	String xml_unescape() const;
 	String c_escape() const;
 	String c_unescape() const;
-
+	String world_wrap(int p_chars_per_line) const;
+	
 	String percent_encode() const;
 	String percent_decode() const;
 

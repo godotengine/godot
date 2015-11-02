@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,6 +46,7 @@ class SpriteFramesEditor : public PanelContainer {
 	Button *_delete;
 	Button *paste;
 	Button *empty;
+	Button *empty2;
 	Button *move_up;
 	Button *move_down;
 	Tree *tree;
@@ -53,7 +54,7 @@ class SpriteFramesEditor : public PanelContainer {
 	int sel;
 
 
-	FileDialog *file;
+	EditorFileDialog *file;
 
 	AcceptDialog *dialog;
 
@@ -65,6 +66,7 @@ class SpriteFramesEditor : public PanelContainer {
 	void _file_load_request(const DVector<String>& p_path);
 	void _paste_pressed();
 	void _empty_pressed();
+	void _empty2_pressed();
 	void _delete_pressed();
 	void _delete_confirm_pressed();
 	void _up_pressed();

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,6 +84,7 @@ void MenuButton::pressed() {
 	popup->set_parent_rect( Rect2(Point2(gp-popup->get_global_pos()),get_size()));
 	popup->popup();
 	popup->call_deferred("grab_click_focus");
+	popup->set_invalidate_click_until_motion();
 	
 }
 
@@ -123,7 +124,7 @@ void MenuButton::_set_items(const Array& p_items) {
 
 void MenuButton::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_popup"),&MenuButton::get_popup);		
+	ObjectTypeDB::bind_method(_MD("get_popup:PopupMenu"),&MenuButton::get_popup);
 	ObjectTypeDB::bind_method(_MD("_unhandled_key_input"),&MenuButton::_unhandled_key_input);
 	ObjectTypeDB::bind_method(_MD("_set_items"),&MenuButton::_set_items);
 	ObjectTypeDB::bind_method(_MD("_get_items"),&MenuButton::_get_items);

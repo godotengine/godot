@@ -278,6 +278,7 @@ void EditorFileServer::_thread_start(void*s) {
 			self->to_wait.erase(w);
 			self->wait_mutex->unlock();
 			Thread::wait_to_finish(w);
+			memdelete(w);
 			self->wait_mutex->lock();
 		}
 		self->wait_mutex->unlock();
@@ -317,27 +318,7 @@ EditorFileServer::EditorFileServer() {
 	cmd=CMD_NONE;
 	thread=Thread::create(_thread_start,this);
 
-	List<IP_Address> local_ip;
-	IP::get_singleton()->get_local_addresses(&local_ip);
 	EDITOR_DEF("file_server/port",6010);
-	String lip;
-	String hint;
-	for(List<IP_Address>::Element *E=local_ip.front();E;E=E->next()) {
-
-		String ip = E->get();
-		if (ip=="127.0.0.1")
-			continue;
-
-		if (lip!="")
-			lip=ip;
-		if (hint!="")
-			hint+=",";
-		hint+=ip;
-
-	}
-
-	EDITOR_DEF("file_server/host",lip);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"file_server/host",PROPERTY_HINT_ENUM,hint));
 	EDITOR_DEF("file_server/password","");
 }
 
@@ -346,5 +327,6 @@ EditorFileServer::~EditorFileServer() {
 
 	quit=true;
 	Thread::wait_to_finish(thread);
+	memdelete(thread);
 	memdelete(wait_mutex);
 }

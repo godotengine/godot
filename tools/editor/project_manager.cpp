@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/panel_container.h"
 
-#include "scene/gui/empty_control.h"
+
 #include "scene/gui/texture_frame.h"
 #include "scene/gui/margin_container.h"
 #include "io/resource_saver.h"
@@ -65,7 +65,7 @@ class NewProjectDialog : public ConfirmationDialog {
 		error->set_text("");
 		get_ok()->set_disabled(true);
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (d->change_dir(project_path->get_text())!=OK) {
+		if (project_path->get_text() != "" && d->change_dir(project_path->get_text())!=OK) {
 			error->set_text("Invalid Path for Project, Path Must Exist!");
 			memdelete(d);
 			return false;
@@ -82,7 +82,7 @@ class NewProjectDialog : public ConfirmationDialog {
 
 		} else {
 
-			if (!d->file_exists("engine.cfg")) {
+			if (project_path->get_text() != "" && !d->file_exists("engine.cfg")) {
 
 				error->set_text("Invalid Project Path (engine.cfg must exist).");
 				memdelete(d);
@@ -245,7 +245,8 @@ public:
 		project_name->clear();
 
 		if (import_mode) {
-			set_title("Import Existing Project:");
+			set_title("Import Existing Project");
+			get_ok()->set_text("Import");
 			pp->set_text("Project Path: (Must exist)");
 			pn->set_text("Project Name:");
 			pn->hide();
@@ -254,7 +255,8 @@ public:
 			popup_centered(Size2(500,125));
 
 		} else {
-			set_title("Create New Project:");
+			set_title("Create New Project");
+			get_ok()->set_text("Create");
 			pp->set_text("Project Path:");
 			pn->set_text("Project Name:");
 			pn->show();
@@ -313,7 +315,6 @@ public:
 		l->add_color_override("font_color",Color(1,0.4,0.3,0.8));
 		l->set_align(Label::ALIGN_CENTER);
 
-		get_ok()->set_text("Create");
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		project_path->set_text(d->get_current_dir());
 		memdelete(d);
@@ -580,8 +581,8 @@ void ProjectManager::_load_recent_projects() {
 
 		VBoxContainer *vb = memnew(VBoxContainer);
 		hb->add_child(vb);
-		EmptyControl *ec = memnew( EmptyControl );
-		ec->set_minsize(Size2(0,1));
+		Control *ec = memnew( Control );
+		ec->set_custom_minimum_size(Size2(0,1));
 		vb->add_child(ec);
 		Label *title = memnew( Label(project_name) );
 		title->add_font_override("font",get_font("large","Fonts"));
@@ -639,7 +640,7 @@ void ProjectManager::_open_project() {
 
 	if (selected_list.size()>1) {
 		multi_open_ask->set_text("Are you sure to open more than one projects?");
-		multi_open_ask->popup_centered(Size2(300,100));
+		multi_open_ask->popup_centered_minsize();
 	} else {
 		_open_project_confirm();
 	}
@@ -679,7 +680,7 @@ void ProjectManager::_run_project() {
 
 	if (selected_list.size()>1) {
 		multi_run_ask->set_text("Are you sure to run more than one projects?");
-		multi_run_ask->popup_centered(Size2(300,100));
+		multi_run_ask->popup_centered_minsize();
 	} else {
 		_run_project_confirm();
 	}
@@ -779,7 +780,7 @@ void ProjectManager::_erase_project()  {
 
 
 	erase_ask->set_text("Erase project from list?? (Folder contents will not be modified)");
-	erase_ask->popup_centered(Size2(300,100));
+	erase_ask->popup_centered_minsize();
 
 }
 
@@ -819,6 +820,7 @@ ProjectManager::ProjectManager() {
 	if (!EditorSettings::get_singleton())
 		EditorSettings::create();
 
+	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 
 	set_area_as_parent_rect();
 	Panel *panel = memnew( Panel );
@@ -940,7 +942,7 @@ ProjectManager::ProjectManager() {
 	String cp;
 	cp.push_back(0xA9);
 	cp.push_back(0);
-	l->set_text(cp+" 2008-2014 Juan Linietsky, Ariel Manzur.");
+	l->set_text(cp+" 2008-2015 Juan Linietsky, Ariel Manzur.");
 	l->set_align(Label::ALIGN_CENTER);
 	vb->add_child(l);
 

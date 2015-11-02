@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,8 @@
 #include "file_dialog.h"
 #include "scene/gui/label.h"
 #include "print_string.h"
+#include "os/keyboard.h"
+
 
 
 FileDialog::GetIconFunc FileDialog::get_icon_func=NULL;
@@ -90,7 +92,6 @@ void FileDialog::_file_entered(const String& p_file) {
 }
 
 void FileDialog::_save_confirm_pressed() {
-	
 	String f=dir_access->get_current_dir().plus_file(file->get_text());
 	emit_signal("file_selected",f);
 	hide();		
@@ -156,7 +157,6 @@ void FileDialog::_action_pressed() {
 
 	if (mode==MODE_SAVE_FILE) {
 		
-		String ext = f.extension();
 		bool valid=false;
 
 		if (filter->get_selected()==filter->get_item_count()-1) {
@@ -184,13 +184,21 @@ void FileDialog::_action_pressed() {
 			if (idx>=0 && idx<filters.size()) {
 
 				String flt=filters[idx].get_slice(";",0);
-				for (int j=0;j<flt.get_slice_count(",");j++) {
+				int filterSliceCount=flt.get_slice_count(",");
+				for (int j=0;j<filterSliceCount;j++) {
 
 					String str = (flt.get_slice(",",j).strip_edges());
 					if (f.match(str)) {
 						valid=true;
 						break;
 					}
+				}
+
+				if (!valid && filterSliceCount>0) {
+					String str = (flt.get_slice(",",0).strip_edges());
+					f+=str.substr(1, str.length()-1);
+					file->set_text(f.get_file());
+					valid=true;
 				}
 			} else {
 				valid=true;
@@ -271,13 +279,20 @@ void FileDialog::update_file_list() {
 	List<String> dirs;
 	
 	bool isdir;
+	bool ishidden;
+	bool show_hidden = show_hidden_files;
 	String item;
+
 	while ((item=dir_access->get_next(&isdir))!="") {
-		
-		if (!isdir)
-			files.push_back(item);
-		else
-			dirs.push_back(item);		
+
+		ishidden = dir_access->current_is_hidden();
+
+		if (show_hidden || !ishidden) {
+			if (!isdir)
+				files.push_back(item);
+			else
+				dirs.push_back(item);
+		}
 	}
 	
 	dirs.sort_custom<NoCaseComparator>();
@@ -593,21 +608,18 @@ void FileDialog::_update_drives() {
 		drives->clear();
 		drives->show();
 
-		int current=-1;
-		String abspath = dir_access->get_current_dir();
-
 		for(int i=0;i<dir_access->get_drive_count();i++) {
-			String d = dir_access->get_drive(i);
-			if (abspath.begins_with(d))
-				current=i;
+			String d = dir_access->get_drive(i);			
 			drives->add_item(dir_access->get_drive(i));
 		}
 
-		if (current!=-1)
-			drives->select(current);
+		drives->select(dir_access->get_current_drive());
 
 	}
 }
+
+bool FileDialog::default_show_hidden_files=true;
+
 
 void FileDialog::_bind_methods() {
 	
@@ -633,6 +645,8 @@ void FileDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_vbox:VBoxContainer"),&FileDialog::get_vbox);
 	ObjectTypeDB::bind_method(_MD("set_access","access"),&FileDialog::set_access);
 	ObjectTypeDB::bind_method(_MD("get_access"),&FileDialog::get_access);
+	ObjectTypeDB::bind_method(_MD("set_show_hidden_files"),&FileDialog::set_show_hidden_files);
+	ObjectTypeDB::bind_method(_MD("is_showing_hidden_files"),&FileDialog::is_showing_hidden_files);
 	ObjectTypeDB::bind_method(_MD("_select_drive"),&FileDialog::_select_drive);
 	ObjectTypeDB::bind_method(_MD("_make_dir"),&FileDialog::_make_dir);
 	ObjectTypeDB::bind_method(_MD("_make_dir_confirm"),&FileDialog::_make_dir_confirm);
@@ -657,9 +671,23 @@ void FileDialog::_bind_methods() {
 }
 
 
+void FileDialog::set_show_hidden_files(bool p_show) {
+	show_hidden_files=p_show;
+	invalidate();
+}
+
+bool FileDialog::is_showing_hidden_files() const {
+	return show_hidden_files;
+}
+
+void FileDialog::set_default_show_hidden_files(bool p_show) {
+	default_show_hidden_files=p_show;
+}
 
 FileDialog::FileDialog() {
-	
+
+	show_hidden_files=default_show_hidden_files;
+
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
 	set_child_rect(vbc);

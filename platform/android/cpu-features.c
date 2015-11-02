@@ -127,7 +127,7 @@ static __inline__ void x86_cpuid(int func, int values[4])
 static int
 get_file_size(const char* pathname)
 {
-    int fd, ret, result = 0;
+    int fd, result = 0;
     char buffer[256];
 
     fd = open(pathname, O_RDONLY);

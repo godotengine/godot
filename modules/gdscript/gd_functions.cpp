@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,6 +71,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"randi",
 		"randf",
 		"rand_range",
+		"seed",
 		"rand_seed",
 		"deg2rad",
 		"rad2deg",
@@ -87,14 +88,18 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"str",
 		"print",
 		"printt",
+		"prints",
 		"printerr",
 		"printraw",
+		"var2str",
+		"str2var",
 		"range",
 		"load",
 		"inst2dict",
 		"dict2inst",
 		"hash",
 		"print_stack",
+		"instance_from_id",
 	};
 
 	return _names[p_func];
@@ -326,6 +331,13 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			VALIDATE_ARG_NUM(1);
 			r_ret=Math::random(*p_args[0],*p_args[1]);
 		} break;
+		case MATH_SEED: {
+			VALIDATE_ARG_COUNT(1);
+			VALIDATE_ARG_NUM(0);
+			uint32_t seed=*p_args[0];
+			Math::seed(seed);
+			r_ret=Variant();
+		} break;
 		case MATH_RANDSEED: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
@@ -551,6 +563,22 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 
 
 		} break;
+		case TEXT_PRINT_SPACED: {
+
+			String str;
+			for(int i=0;i<p_arg_count;i++) {
+
+				if (i)
+					str+=" ";
+				str+=p_args[i]->operator String();
+			}
+
+			//str+="\n";
+			print_line(str);
+			r_ret=Variant();
+
+
+		} break;
 
 		case TEXT_PRINTERR: {
 
@@ -573,13 +601,26 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			}
 
 			//str+="\n";
-			OS::get_singleton()->print("%s\n",str.utf8().get_data());
+			OS::get_singleton()->print("%s",str.utf8().get_data());
 			r_ret=Variant();
 
 		} break;
+		case VAR_TO_STR: {
+			VALIDATE_ARG_COUNT(1);
+			r_ret=p_args[0]->get_construct_string();
+		} break;
+		case STR_TO_VAR: {
+			VALIDATE_ARG_COUNT(1);
+			if (p_args[0]->get_type()!=Variant::STRING) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_error.expected=Variant::STRING;
+				r_ret=Variant();
+				return;
+			}
+			Variant::construct_from_string(*p_args[0],r_ret);
+		} break;
 		case GEN_RANGE: {
-
-
 
 			switch(p_arg_count) {
 
@@ -861,8 +902,16 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				}
 			}
 
-
 			r_ret = gdscr->_new(NULL,0,r_error);
+
+            GDInstance *ins = static_cast<GDInstance*>(static_cast<Object*>(r_ret)->get_script_instance());
+            Ref<GDScript> gd_ref = ins->get_script();
+
+            for(Map<StringName,GDScript::MemberInfo>::Element *E = gd_ref->member_indices.front(); E; E = E->next()) {
+                if(d.has(E->key())) {
+                    ins->members[E->get().index] = d[E->key()];
+                }
+            }
 
 		} break;
 		case HASH: {
@@ -881,6 +930,20 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			};
 		} break;
 
+		case INSTANCE_FROM_ID: {
+
+			VALIDATE_ARG_COUNT(1);
+			if (p_args[0]->get_type()!=Variant::INT && p_args[0]->get_type()!=Variant::REAL) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_ret=Variant();
+				break;
+			}
+
+			uint32_t id=*p_args[0];
+			r_ret=ObjectDB::get_instance(id);
+
+		} break;
 		case FUNC_MAX: {
 
 			ERR_FAIL_V();
@@ -1087,7 +1150,7 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_LERP: {
-			MethodInfo mi("lerp",PropertyInfo(Variant::REAL,"a"),PropertyInfo(Variant::REAL,"b"), PropertyInfo(Variant::REAL,"c"));
+			MethodInfo mi("lerp",PropertyInfo(Variant::REAL,"from"),PropertyInfo(Variant::REAL,"to"), PropertyInfo(Variant::REAL,"weight"));
 			mi.return_val.type=Variant::REAL;
 			return mi;
 		} break;
@@ -1114,6 +1177,11 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		case MATH_RANDOM: {
 			MethodInfo mi("rand_range",PropertyInfo(Variant::REAL,"from"),PropertyInfo(Variant::REAL,"to"));
 			mi.return_val.type=Variant::REAL;
+			return mi;
+		} break;
+		case MATH_SEED: {
+			MethodInfo mi("seed",PropertyInfo(Variant::REAL,"seed"));
+			mi.return_val.type=Variant::NIL;
 			return mi;
 		} break;
 		case MATH_RANDSEED: {
@@ -1166,6 +1234,8 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("weakref",PropertyInfo(Variant::OBJECT,"obj"));
 			mi.return_val.type=Variant::OBJECT;
+			mi.return_val.name="WeakRef";
+
 			return mi;
 
 		} break;
@@ -1173,6 +1243,7 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("funcref",PropertyInfo(Variant::OBJECT,"instance"),PropertyInfo(Variant::STRING,"funcname"));
 			mi.return_val.type=Variant::OBJECT;
+			mi.return_val.name="FuncRef";
 			return mi;
 
 		} break;
@@ -1207,6 +1278,13 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			return mi;
 
 		} break;
+		case TEXT_PRINT_SPACED: {
+
+			MethodInfo mi("prints",PropertyInfo(Variant::NIL,"what"),PropertyInfo(Variant::NIL,"..."));
+			mi.return_val.type=Variant::NIL;
+			return mi;
+
+		} break;
 		case TEXT_PRINTERR: {
 
 			MethodInfo mi("printerr",PropertyInfo(Variant::NIL,"what"),PropertyInfo(Variant::NIL,"..."));
@@ -1221,6 +1299,18 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			return mi;
 
 		} break;
+		case VAR_TO_STR: {
+			MethodInfo mi("var2str",PropertyInfo(Variant::NIL,"var"));
+			mi.return_val.type=Variant::STRING;
+			return mi;
+
+		} break;
+		case STR_TO_VAR: {
+
+			MethodInfo mi("str2var:var",PropertyInfo(Variant::STRING,"string"));
+			mi.return_val.type=Variant::NIL;
+			return mi;
+		} break;
 		case GEN_RANGE: {
 
 			MethodInfo mi("range",PropertyInfo(Variant::NIL,"..."));
@@ -1231,6 +1321,7 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("load",PropertyInfo(Variant::STRING,"path"));
 			mi.return_val.type=Variant::OBJECT;
+			mi.return_val.name="Resource";
 			return mi;
 		} break;
 		case INST2DICT: {
@@ -1255,6 +1346,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		case PRINT_STACK: {
 			MethodInfo mi("print_stack");
 			mi.return_val.type=Variant::NIL;
+			return mi;
+		} break;
+
+		case INSTANCE_FROM_ID: {
+			MethodInfo mi("instance_from_id",PropertyInfo(Variant::INT,"instance_id"));
+			mi.return_val.type=Variant::OBJECT;
 			return mi;
 		} break;
 

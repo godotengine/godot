@@ -33,7 +33,6 @@ var shooting=false
 var WALK_ACCEL = 800.0
 var WALK_DEACCEL= 800.0
 var WALK_MAX_VELOCITY= 200.0
-var GRAVITY = 700.0
 var AIR_ACCEL = 200.0
 var AIR_DEACCEL= 200.0
 var JUMP_VELOCITY=460
@@ -53,11 +52,14 @@ var enemy
 
 func _integrate_forces(s):
 
+	
+
 	var lv = s.get_linear_velocity()
 	var step = s.get_step()
 	
 	var new_anim=anim
 	var new_siding_left=siding_left
+	
 	
 	# Get the controls
 	var move_left = Input.is_action_pressed("move_left")

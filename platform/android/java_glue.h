@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 
 
 extern "C" {
-    JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, jobject obj, jobject activity,jboolean p_need_reload_hook, jobjectArray p_cmdline);
+    JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, jobject obj, jobject activity,jboolean p_need_reload_hook, jobjectArray p_cmdline,jobject p_asset_manager);
     JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_resize(JNIEnv * env, jobject obj,  jint width, jint height, jboolean reload);
     JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_newcontext(JNIEnv * env, jobject obj);
     JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_step(JNIEnv * env, jobject obj);

@@ -12,12 +12,22 @@ drivers/gles2/shaders/*.h
 modules/register_module_types.cpp
 core/version.h
 core/method_bind.inc
+core/method_bind_ext.inc
 core/script_encryption_key.cpp
 core/global_defaults.cpp
 tools/editor/register_exporters.cpp
 tools/editor/doc_data_compressed.h
 tools/editor/editor_icons.cpp
 -fpic
+.fscache
+make.bat
+log.txt
+
+# Doxygen generated documentation
+doc/doxygen/*
+
+# Javascript specific
+*.bc
 
 # Android specific
 platform/android/java/local.properties
@@ -43,6 +53,14 @@ platform/android/libs/play_licensing/gen/*
 *.d
 *.so
 *.os
+*.Plo
+*.lo
+*.Po
+
+# Libs generated files
+.deps/*
+.dirstamp
+
 
 # QT project files
 *.config
@@ -66,6 +84,8 @@ platform/android/libs/play_licensing/gen/*
 *.suo
 *.user
 *.sln.docstates
+*.sln
+*.vcxproj*
 
 # Build results
 [Dd]ebug/
@@ -257,3 +277,22 @@ Desktop.ini
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 logo.h
+*.autosave
+
+# https://github.com/github/gitignore/blob/master/Global/Tags.gitignore
+# Ignore tags created by etags, ctags, gtags (GNU global) and cscope
+TAGS
+!TAGS/
+tags
+!tags/
+gtags.files
+GTAGS
+GRTAGS
+GPATH
+cscope.files
+cscope.out
+cscope.in.out
+cscope.po.out
+godot.creator.*
+
+projects/

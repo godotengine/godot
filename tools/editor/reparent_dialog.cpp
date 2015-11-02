@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,11 @@ void ReparentDialog::_notification(int p_what) {
 	if (p_what==NOTIFICATION_ENTER_TREE)	{
 
 		connect("confirmed", this,"_reparent");
+	}
+
+	if (p_what==NOTIFICATION_EXIT_TREE)	{
+
+		disconnect("confirmed", this,"_reparent");
 	}
 
 	if (p_what==NOTIFICATION_DRAW) {
@@ -98,6 +103,7 @@ ReparentDialog::ReparentDialog() {
 	add_child(node_only);
 	node_only->hide();
 
+	tree->set_show_enabled_subscene(true);
 	//vbc->add_margin_child("Options:",node_only);;
 	
 

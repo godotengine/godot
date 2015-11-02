@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,6 +110,7 @@ void register_core_types() {
 
 
 	ObjectTypeDB::register_type<Reference>();
+	ObjectTypeDB::register_type<WeakRef>();
 	ObjectTypeDB::register_type<ResourceImportMetadata>();
 	ObjectTypeDB::register_type<Resource>();
 	ObjectTypeDB::register_type<FuncRef>();
@@ -204,12 +205,14 @@ void unregister_core_types() {
 	if (ip)
 		memdelete(ip);
 
+
+	ObjectDB::cleanup();
+
 	unregister_variant_methods();
 
-	CoreStringNames::free();
 	ObjectTypeDB::cleanup();
 	ResourceCache::clear();
-	ObjectDB::cleanup();
+	CoreStringNames::free();
 	StringName::cleanup();
 
 	if (_global_mutex) {

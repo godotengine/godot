@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,8 +41,8 @@
 #define _MKSTR(m_x) _STR(m_x)
 #endif
 // have to include version.h for this to work, include it in the .cpp not the .h
-#define VERSION_MKSTRING _MKSTR(VERSION_MAJOR)"."_MKSTR(VERSION_MINOR)"."_MKSTR(VERSION_STATUS)"."_MKSTR(VERSION_REVISION)
-#define VERSION_FULL_NAME _MKSTR(VERSION_NAME)" v"VERSION_MKSTRING
+#define VERSION_MKSTRING _MKSTR(VERSION_MAJOR)"." _MKSTR(VERSION_MINOR)"." _MKSTR(VERSION_STATUS)"." _MKSTR(VERSION_REVISION)
+#define VERSION_FULL_NAME _MKSTR(VERSION_NAME)" v" VERSION_MKSTRING
 
 
 #ifndef _ALWAYS_INLINE_

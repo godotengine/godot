@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,6 +129,10 @@ friend class GDCompiler;
 	const char*_func_cname;
 #endif
 
+#ifdef TOOLS_ENABLED
+	Vector<StringName> arg_names;
+#endif
+
 	List<StackDebug> stack_debug;
 
 	_FORCE_INLINE_ Variant *_get_variant(int p_address,GDInstance *p_instance,GDScript *p_script,Variant &self,Variant *p_stack,String& r_error) const;
@@ -169,6 +173,19 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return _code_size==0; }
 
 	int get_argument_count() const { return _argument_count; }
+	StringName get_argument_name(int p_idx) const {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_INDEX_V(p_idx,arg_names.size(),StringName());
+		return arg_names[p_idx];
+#endif
+		return StringName();
+
+	}
+	Variant get_default_argument(int p_idx) const {
+		ERR_FAIL_INDEX_V(p_idx,default_arguments.size(),Variant());
+		return default_arguments[p_idx];
+	}
+
 	Variant call(GDInstance *p_instance,const Variant **p_args, int p_argcount,Variant::CallError& r_err,CallState *p_state=NULL);
 
 	GDFunction();
@@ -243,6 +260,7 @@ friend class GDScriptLanguage;
 	Map<StringName,GDFunction> member_functions;
 	Map<StringName,MemberInfo> member_indices; //members are just indices to the instanced script.
 	Map<StringName,Ref<GDScript> > subclasses;	
+	Map<StringName,Vector<StringName> > _signals;
 
 #ifdef TOOLS_ENABLED
 
@@ -293,12 +311,16 @@ protected:
 	static void _bind_methods();
 public:
 
+	bool is_valid() const { return valid; }
 
 	const Map<StringName,Ref<GDScript> >& get_subclasses() const { return subclasses; }
 	const Map<StringName,Variant >& get_constants() const { return constants; }
 	const Set<StringName>& get_members() const { return members; }
 	const Map<StringName,GDFunction>& get_member_functions() const { return member_functions; }
 	const Ref<GDNativeClass>& get_native() const { return native; }
+
+	virtual bool has_script_signal(const StringName& p_signal) const;
+	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const;
 
 
 	bool is_tool() const { return tool; }
@@ -326,6 +348,8 @@ public:
 	void set_script_path(const String& p_path) { path=p_path; } //because subclasses need a path too...
 	Error load_source_code(const String& p_path);
 	Error load_byte_code(const String& p_path);
+
+	Vector<uint8_t> get_as_byte_code() const;
 
 	virtual ScriptLanguage *get_language() const;
 
@@ -451,6 +475,19 @@ public:
     }
 
 
+	virtual Vector<StackInfo> debug_get_current_stack_info() {
+	    if (Thread::get_main_ID()!=Thread::get_caller_ID())
+		return Vector<StackInfo>();
+
+		Vector<StackInfo> csi;
+		csi.resize(_debug_call_stack_pos);
+		for(int i=0;i<_debug_call_stack_pos;i++) {
+			csi[_debug_call_stack_pos-i-1].line=_call_stack[i].line?*_call_stack[i].line:0;
+			csi[_debug_call_stack_pos-i-1].script=Ref<GDScript>(_call_stack[i].function->get_script());
+		}
+		return csi;
+	}
+
 	struct {
 
 		StringName _init;
@@ -488,7 +525,7 @@ public:
 	virtual bool has_named_classes() const;
 	virtual int find_function(const String& p_function,const String& p_code) const;
 	virtual String make_function(const String& p_class,const String& p_name,const StringArray& p_args) const;
-	virtual Error complete_keyword(const String& p_code, int p_line, const String& p_base_path,const String& p_keyword, List<String>* r_options);
+	virtual Error complete_code(const String& p_code, const String& p_base_path, Object*p_owner,List<String>* r_options,String& r_call_hint);
 	virtual void auto_indent_code(String& p_code,int p_from_line,int p_to_line) const;
 
 	/* DEBUGGER FUNCTIONS */
@@ -520,7 +557,7 @@ public:
 class ResourceFormatLoaderGDScript : public ResourceFormatLoader {
 public:
 
-	virtual RES load(const String &p_path,const String& p_original_path="");
+	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String& p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

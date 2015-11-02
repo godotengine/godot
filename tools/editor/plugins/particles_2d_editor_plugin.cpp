@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -146,6 +146,7 @@ void Particles2DEditorPlugin::_notification(int p_what) {
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		menu->get_popup()->connect("item_pressed",this,"_menu_callback");
+		menu->set_icon(menu->get_popup()->get_icon("Particles2D","EditorIcons"));
 		file->connect("file_selected",this,"_file_selected");
 	}
 }
@@ -172,14 +173,14 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	menu->get_popup()->add_item("Clear Emission Mask",MENU_CLEAR_EMISSION_MASK);
 	menu->set_text("Particles");
 
-	file = memnew(FileDialog);
+	file = memnew(EditorFileDialog);
 	add_child(file);
 	List<String> ext;
 	ImageLoader::get_recognized_extensions(&ext);
 	for(List<String>::Element *E=ext.front();E;E=E->next()) {
 		file->add_filter("*."+E->get()+"; "+E->get().to_upper());
 	}
-	file->set_mode(FileDialog::MODE_OPEN_FILE);
+	file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(menu);
 	epoints = memnew( SpinBox );
 	epoints->set_min(1);

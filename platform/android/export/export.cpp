@@ -185,6 +185,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	bool _signed;
 	bool apk_expansion;
 	bool remove_prev;
+	bool use_32_fb;
+	bool immersive;
+	bool export_arm;
+	bool export_x86;
 	String apk_expansion_salt;
 	String apk_expansion_pkey;
 	int orientation;
@@ -221,8 +225,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static void _device_poll_thread(void *ud);
 
+	String get_package_name();
+
 	String get_project_name() const;
-	void _fix_manifest(Vector<uint8_t>& p_manifest);
+	void _fix_manifest(Vector<uint8_t>& p_manifest, bool p_give_internet);
 	void _fix_resources(Vector<uint8_t>& p_manifest);
 	static Error save_apk_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total);
 
@@ -243,11 +249,11 @@ public:
 	virtual int get_device_count() const;
 	virtual String get_device_name(int p_device) const;
 	virtual String get_device_info(int p_device) const;
-	virtual Error run(int p_device,bool p_dumb=false);
+	virtual Error run(int p_device,int p_flags=0);
 
 	virtual bool requieres_password(bool p_debug) const { return !p_debug; }
 	virtual String get_binary_extension() const { return "apk"; }
-	virtual Error export_project(const String& p_path,bool p_debug,bool p_dumb=false);
+	virtual Error export_project(const String& p_path, bool p_debug, int p_flags=0);
 
 	virtual bool can_export(String *r_error=NULL) const;
 
@@ -279,6 +285,14 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 		icon=p_value;
 	else if (n=="package/signed")
 		_signed=p_value;
+	else if (n=="architecture/arm")
+		export_arm=p_value;
+	else if (n=="architecture/x86")
+		export_x86=p_value;
+	else if (n=="screen/use_32_bits_view")
+		use_32_fb=p_value;
+	else if (n=="screen/immersive_mode")
+		immersive=p_value;
 	else if (n=="screen/orientation")
 		orientation=p_value;
 	else if (n=="screen/support_small")
@@ -303,7 +317,7 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 		apk_expansion_pkey=p_value;
 	else if (n.begins_with("permissions/")) {
 
-		String what = n.get_slice("/",1).to_upper();
+		String what = n.get_slicec('/',1).to_upper();
 		bool state = p_value;
 		if (state)
 			perms.insert(what);
@@ -311,7 +325,7 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 			perms.erase(what);
 	} else if (n.begins_with("user_permissions/")) {
 
-		int which = n.get_slice("/",1).to_int();
+		int which = n.get_slicec('/',1).to_int();
 		ERR_FAIL_INDEX_V(which,MAX_USER_PERMISSIONS,false);
 		user_perms[which]=p_value;
 
@@ -344,6 +358,14 @@ bool EditorExportPlatformAndroid::_get(const StringName& p_name,Variant &r_ret) 
 		r_ret=icon;
 	else if (n=="package/signed")
 		r_ret=_signed;
+	else if (n=="architecture/arm")
+		r_ret=export_arm;
+	else if (n=="architecture/x86")
+		r_ret=export_x86;
+	else if (n=="screen/use_32_bits_view")
+		r_ret=use_32_fb;
+	else if (n=="screen/immersive_mode")
+		r_ret=immersive;
 	else if (n=="screen/orientation")
 		r_ret=orientation;
 	else if (n=="screen/support_small")
@@ -368,11 +390,11 @@ bool EditorExportPlatformAndroid::_get(const StringName& p_name,Variant &r_ret) 
 		r_ret=apk_expansion_pkey;
 	else if (n.begins_with("permissions/")) {
 
-		String what = n.get_slice("/",1).to_upper();
+		String what = n.get_slicec('/',1).to_upper();
 		r_ret = perms.has(what);
 	} else if (n.begins_with("user_permissions/")) {
 
-		int which = n.get_slice("/",1).to_int();
+		int which = n.get_slicec('/',1).to_int();
 		ERR_FAIL_INDEX_V(which,MAX_USER_PERMISSIONS,false);
 		r_ret=user_perms[which];
 	} else
@@ -393,6 +415,10 @@ void EditorExportPlatformAndroid::_get_property_list( List<PropertyInfo> *p_list
 	p_list->push_back( PropertyInfo( Variant::STRING, "package/name") );
 	p_list->push_back( PropertyInfo( Variant::STRING, "package/icon",PROPERTY_HINT_FILE,"png") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "package/signed") );
+	p_list->push_back( PropertyInfo( Variant::BOOL, "architecture/arm") );
+	p_list->push_back( PropertyInfo( Variant::BOOL, "architecture/x86") );
+	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/use_32_bits_view") );
+	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/immersive_mode") );
 	p_list->push_back( PropertyInfo( Variant::INT, "screen/orientation",PROPERTY_HINT_ENUM,"Landscape,Portrait") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/support_small") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/support_normal") );
@@ -582,7 +608,7 @@ String EditorExportPlatformAndroid::get_project_name() const {
 }
 
 
-void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
+void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool p_give_internet) {
 
 
 	const int CHUNK_AXML_FILE = 0x00080003;
@@ -629,11 +655,11 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 
 				int iofs=ofs+8;
 
-				uint32_t string_count=decode_uint32(&p_manifest[iofs]);
-				uint32_t styles_count=decode_uint32(&p_manifest[iofs+4]);
+				string_count=decode_uint32(&p_manifest[iofs]);
+				styles_count=decode_uint32(&p_manifest[iofs+4]);
 				uint32_t string_flags=decode_uint32(&p_manifest[iofs+8]);
-				uint32_t string_data_offset=decode_uint32(&p_manifest[iofs+12]);
-				uint32_t styles_offset=decode_uint32(&p_manifest[iofs+16]);
+				string_data_offset=decode_uint32(&p_manifest[iofs+12]);
+				styles_offset=decode_uint32(&p_manifest[iofs+16]);
 /*
 				printf("string count: %i\n",string_count);
 				printf("flags: %i\n",string_flags);
@@ -732,7 +758,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 					if (tname=="manifest" && attrname=="package") {
 
 						print_line("FOUND PACKAGE");
-						string_table[attr_value]=package;
+						string_table[attr_value]=get_package_name();
 					}
 
 					//print_line("tname: "+tname);
@@ -756,19 +782,21 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 
 					if (tname=="activity" && /*nspace=="android" &&*/ attrname=="screenOrientation") {
 
+						encode_uint32(orientation==0?0:1,&p_manifest[iofs+16]);
+						/*
 						print_line("FOUND screen orientation");
 						if (attr_value==0xFFFFFFFF) {
 							WARN_PRINT("Version name in a resource, should be plaintext")
 						} else {
 							string_table[attr_value]=(orientation==0?"landscape":"portrait");
-						}
+						}*/
 					}
 
 					if (tname=="application" && /*nspace=="android" &&*/ attrname=="label") {
 
 						print_line("FOUND application");
 						if (attr_value==0xFFFFFFFF) {
-							WARN_PRINT("Application name in a resource, should be plaintext.")
+							WARN_PRINT("Application name in a resource, should be plaintext (but you can ignore this).")
 						} else {
 
 							String aname = get_project_name();
@@ -779,7 +807,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 
 						print_line("FOUND activity name");
 						if (attr_value==0xFFFFFFFF) {
-							WARN_PRINT("Activity name in a resource, should be plaintext")
+							WARN_PRINT("Activity name in a resource, should be plaintext (but you can ignore this)")
 						} else {
 							String aname;
 							if (this->name!="") {
@@ -810,7 +838,10 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 
 						} else if (value.begins_with("godot.")) {
 							String perm = value.get_slice(".",1);
-							if (perms.has(perm)) {
+							print_line("PERM: "+perm+" HAS: "+itos(perms.has(perm)));
+
+							if (perms.has(perm) || (p_give_internet && perm=="INTERNET")) {
+
 								string_table[attr_value]="android.permission."+perm;
 							}
 
@@ -823,23 +854,19 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 							WARN_PRINT("Screen res name in a resource, should be plaintext")
 						} else if (attrname=="smallScreens") {
 
-							print_line("SMALLSCREEN");
-							string_table[attr_value]=screen_support[SCREEN_SMALL]?"true":"false";
+							encode_uint32(screen_support[SCREEN_SMALL]?0xFFFFFFFF:0,&p_manifest[iofs+16]);
 
 						} else if (attrname=="mediumScreens") {
 
-							print_line("MEDSCREEN");
-							string_table[attr_value]=screen_support[SCREEN_NORMAL]?"true":"false";
+							encode_uint32(screen_support[SCREEN_NORMAL]?0xFFFFFFFF:0,&p_manifest[iofs+16]);
 
 						} else if (attrname=="largeScreens") {
 
-							print_line("LARGECREEN");
-							string_table[attr_value]=screen_support[SCREEN_LARGE]?"true":"false";
+							encode_uint32(screen_support[SCREEN_LARGE]?0xFFFFFFFF:0,&p_manifest[iofs+16]);
 
 						} else if (attrname=="xlargeScreens") {
 
-							print_line("XLARGECREEN");
-							string_table[attr_value]=screen_support[SCREEN_XLARGE]?"true":"false";
+							encode_uint32(screen_support[SCREEN_XLARGE]?0xFFFFFFFF:0,&p_manifest[iofs+16]);
 
 						}
 					}
@@ -987,7 +1014,7 @@ Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata,const String& 
 
 
 
-Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_debug, bool p_dumb) {
+Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_debug, int p_flags) {
 
 	String src_apk;
 
@@ -1035,6 +1062,8 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(pkg,&info,fname,16384,NULL,0,NULL,0);
 
+		bool skip=false;
+
 		String file=fname;
 
 		Vector<uint8_t> data;
@@ -1049,7 +1078,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 		if (file=="AndroidManifest.xml") {
 
-			_fix_manifest(data);
+			_fix_manifest(data,p_flags&(EXPORT_DUMB_CLIENT|EXPORT_REMOTE_DEBUG));
 		}
 
 		if (file=="resources.arsc") {
@@ -1087,20 +1116,31 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 			}
 		}
 
-		print_line("ADDING: "+file);
-		zipOpenNewFileInZip(apk,
-			file.utf8().get_data(),
-			NULL,
-			NULL,
-			0,
-			NULL,
-			0,
-			NULL,
-			Z_DEFLATED,
-			Z_DEFAULT_COMPRESSION);
+		if (file=="lib/x86/libgodot_android.so" && !export_x86) {
+			skip=true;
+		}
 
-		zipWriteInFileInZip(apk,data.ptr(),data.size());
-		zipCloseFileInZip(apk);
+		if (file=="lib/armeabi/libgodot_android.so" && !export_arm) {
+			skip=true;
+		}
+
+		print_line("ADDING: "+file);
+
+		if (!skip) {
+			zipOpenNewFileInZip(apk,
+				file.utf8().get_data(),
+				NULL,
+				NULL,
+				0,
+				NULL,
+				0,
+				NULL,
+				Z_DEFLATED,
+				Z_DEFAULT_COMPRESSION);
+
+			zipWriteInFileInZip(apk,data.ptr(),data.size());
+			zipCloseFileInZip(apk);
+		}
 
 		ret = unzGoToNextFile(pkg);
 	}
@@ -1116,9 +1156,11 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		}
 	}
 
-	if (p_dumb) {
+	gen_export_flags(cl,p_flags);
 
-		String host = EditorSettings::get_singleton()->get("file_server/host");
+	if (p_flags) {
+
+		/*String host = EditorSettings::get_singleton()->get("file_server/host");
 		int port = EditorSettings::get_singleton()->get("file_server/post");
 		String passwd = EditorSettings::get_singleton()->get("file_server/password");
 		cl.push_back("-rfs");
@@ -1126,7 +1168,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		if (passwd!="") {
 			cl.push_back("-rfs_pass");
 			cl.push_back(passwd);
-		}
+		}*/
 
 
 	} else {
@@ -1134,7 +1176,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 		if (apk_expansion) {
 
-			String apkfname="main."+itos(version_code)+"."+package+".obb";
+			String apkfname="main."+itos(version_code)+"."+get_package_name()+".obb";
 			String fullpath=p_path.get_base_dir().plus_file(apkfname);
 			FileAccess *pf = FileAccess::open(fullpath,FileAccess::WRITE);
 			if (!pf) {
@@ -1158,7 +1200,15 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 			err = export_project_files(save_apk_file,&ed,false);
 		}
+
+
 	}
+
+	if (use_32_fb)
+		cl.push_back("-use_depth_32");
+
+	if (immersive)
+		cl.push_back("-use_immersive");
 
 	if (cl.size()) {
 		//add comandline
@@ -1435,7 +1485,7 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 
 }
 
-Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb) {
+Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 
 	ERR_FAIL_INDEX_V(p_device,devices.size(),ERR_INVALID_PARAMETER);
 	device_lock->lock();
@@ -1454,7 +1504,7 @@ Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb) {
 	ep.step("Exporting APK",0);
 
 	String export_to=EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmpexport.apk";
-	Error err = export_project(export_to,true,p_dumb);
+	Error err = export_project(export_to,true,p_flags);
 	if (err) {
 		device_lock->unlock();
 		return err;
@@ -1471,7 +1521,7 @@ Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb) {
 		args.push_back("-s");
 		args.push_back(devices[p_device].id);
 		args.push_back("uninstall");
-		args.push_back(package);
+		args.push_back(get_package_name());
 
 		err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
 #if 0
@@ -1509,7 +1559,7 @@ Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb) {
 	args.push_back("-a");
 	args.push_back("android.intent.action.MAIN");
 	args.push_back("-n");
-	args.push_back(package+"/com.android.godot.Godot");
+	args.push_back(get_package_name()+"/com.android.godot.Godot");
 
 	err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
 	if (err || rv!=0) {
@@ -1521,12 +1571,37 @@ Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb) {
 	return OK;
 }
 
+String EditorExportPlatformAndroid::get_package_name() {
+
+	String pname = package;
+	String basename = Globals::get_singleton()->get("application/name");
+	basename=basename.to_lower();
+
+	String name;
+	bool first=true;
+	for(int i=0;i<basename.length();i++) {
+		CharType c = basename[i];
+		if (c>='0' && c<='9' && first) {
+			continue;
+		}
+		if ((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9')) {
+			name+=String::chr(c);
+			first=false;
+		}
+	}
+	if (name=="")
+		name="noname";
+
+	pname=pname.replace("$genname",name);
+	return pname;
+
+}
 
 EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 
 	version_code=1;
 	version_name="1.0";
-	package="com.android.noname";
+	package="org.godotengine.$genname";
 	name="";
 	_signed=true;
 	apk_expansion=false;
@@ -1534,6 +1609,12 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 	quit_request=false;
 	orientation=0;
 	remove_prev=true;
+	use_32_fb=true;
+	immersive=true;
+
+	export_arm=true;
+	export_x86=false;
+
 
 	device_thread=Thread::create(_device_poll_thread,this);
 	devices_changed=true;
@@ -1613,8 +1694,11 @@ bool EditorExportPlatformAndroid::can_export(String *r_error) const {
 
 EditorExportPlatformAndroid::~EditorExportPlatformAndroid() {
 
+
 	quit_request=true;
 	Thread::wait_to_finish(device_thread);
+	memdelete(device_lock);
+	memdelete(device_thread);
 }
 
 

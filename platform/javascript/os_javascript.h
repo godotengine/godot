@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,8 +38,9 @@
 #include "servers/audio/audio_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/visual/rasterizer.h"
-
+#include "audio_server_javascript.h"
 #include "audio_driver_javascript.h"
+#include "main/input_default.h"
 
 typedef void (*GFXInitFunc)(void *ud,bool gl2,int w, int h, bool fs);
 typedef int (*OpenURIFunc)(const String&);
@@ -65,10 +66,13 @@ private:
 
 	bool use_gl2;
 
+	int64_t time_to_save_sync;
+	int64_t last_sync_time;
+
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
-	AudioServerSW *audio_server;
-	SampleManagerMallocSW *sample_manager;
+	AudioServerJavascript *audio_server;
+	//SampleManagerMallocSW *sample_manager;
 	SpatialSoundServerSW *spatial_sound_server;
 	SpatialSound2DServerSW *spatial_sound_2d_server;
 	PhysicsServer *physics_server;
@@ -83,6 +87,8 @@ private:
 	OpenURIFunc open_uri_func;
 	GetDataDirFunc get_data_dir_func;
 	GetLocaleFunc get_locale_func;
+
+	static void _close_notification_funcs(const String& p_file,int p_flags);
 
 public:
 
@@ -106,7 +112,7 @@ public:
 
 	typedef int64_t ProcessID;
 
-	static OS* get_singleton();
+	//static OS* get_singleton();
 
 	virtual void vprint(const char* p_format, va_list p_list, bool p_stderr=false);
 	virtual void print(const char *p_format, ... );
@@ -127,6 +133,7 @@ public:
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
 
+	virtual Size2 get_window_size() const;
 	virtual String get_name();
 	virtual MainLoop *get_main_loop() const;
 

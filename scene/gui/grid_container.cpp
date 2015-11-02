@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,8 @@ void GridContainer::_notification(int p_what) {
 			Set<int> col_expanded;
 			Set<int> row_expanded;
 
-			int sep=get_constant("separation");
+			int hsep=get_constant("hseparation");
+			int vsep=get_constant("vseparation");
 
 			int idx=0;
 			int max_row=0;
@@ -69,6 +70,7 @@ void GridContainer::_notification(int p_what) {
 				else
 					row_minh[row]=ms.height;
 
+			//	print_line("store row "+itos(row)+" mw "+itos(ms.height));
 
 				if (c->get_h_size_flags()&SIZE_EXPAND)
 					col_expanded.insert(col);
@@ -96,8 +98,8 @@ void GridContainer::_notification(int p_what) {
 					expand_rows++;
 			}
 
-			ms.height+=sep*max_row;
-			ms.width+=sep*max_col;
+			ms.height+=vsep*max_row;
+			ms.width+=hsep*max_col;
 
 			int row_expand = expand_rows?(size.y-ms.y)/expand_rows:0;
 			int col_expand = expand_cols?(size.x-ms.x)/expand_cols:0;
@@ -118,29 +120,28 @@ void GridContainer::_notification(int p_what) {
 				if (col==0) {
 					col_ofs=0;
 					if (row>0 && row_minh.has(row-1))
-						row_ofs+=row_minh[row-1]+sep+(row_expanded.has(row-1)?row_expand:0);
+						row_ofs+=row_minh[row-1]+vsep+(row_expanded.has(row-1)?row_expand:0);
 				}
 
-				if (c->is_visible()) {
-					Size2 s;
-					if (col_minw.has(col))
-						s.width=col_minw[col];
-					if (row_minh.has(row))
-						s.height=row_minh[col];
+				Size2 s;
+				if (col_minw.has(col))
+					s.width=col_minw[col];
+				if (row_minh.has(row))
+					s.height=row_minh[row];
 
-					if (row_expanded.has(row))
-						s.height+=row_expand;
-					if (col_expanded.has(col))
-						s.width+=col_expand;
+				if (row_expanded.has(row))
+					s.height+=row_expand;
+				if (col_expanded.has(col))
+					s.width+=col_expand;
 
-					Point2 p(col_ofs,row_ofs);
+				Point2 p(col_ofs,row_ofs);
 
-					fit_child_in_rect(c,Rect2(p,s));
-
-				}
+//				print_line("col: "+itos(col)+" row: "+itos(row)+" col_ofs: "+itos(col_ofs)+" row_ofs: "+itos(row_ofs));
+				fit_child_in_rect(c,Rect2(p,s));
+				//print_line("col: "+itos(col)+" row: "+itos(row)+" rect: "+Rect2(p,s));
 
 				if (col_minw.has(col)) {
-					col_ofs+=col_minw[col]+sep+(col_expanded.has(col)?col_expand:0);
+					col_ofs+=col_minw[col]+hsep+(col_expanded.has(col)?col_expand:0);
 				}
 
 				idx++;
@@ -178,7 +179,8 @@ Size2 GridContainer::get_minimum_size() const {
 	Map<int,int> col_minw;
 	Map<int,int> row_minh;
 
-	int sep=get_constant("separation");
+	int hsep=get_constant("hseparation");
+	int vsep=get_constant("vseparation");
 
 	int idx=0;
 	int max_row=0;
@@ -216,8 +218,8 @@ Size2 GridContainer::get_minimum_size() const {
 		ms.height+=E->get();
 	}
 
-	ms.height+=sep*max_row;
-	ms.width+=sep*max_col;
+	ms.height+=vsep*max_row;
+	ms.width+=hsep*max_col;
 
 	return ms;
 
@@ -226,5 +228,6 @@ Size2 GridContainer::get_minimum_size() const {
 
 GridContainer::GridContainer() {
 
+	set_stop_mouse(false);
 	columns=1;
 }

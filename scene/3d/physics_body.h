@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,6 +55,8 @@ public:
 
 	void add_collision_exception_with(Node* p_node); //must be physicsbody
 	void remove_collision_exception_with(Node* p_node);
+
+
 
 	PhysicsBody();
 
@@ -127,6 +129,10 @@ private:
 
 	Vector3 linear_velocity;
 	Vector3  angular_velocity;
+	real_t gravity_scale;
+	real_t linear_damp;
+	real_t angular_damp;
+
 	bool sleeping;
 	bool ccd;
 
@@ -214,6 +220,16 @@ public:
 
 	void set_angular_velocity(const Vector3&p_velocity);
 	Vector3  get_angular_velocity() const;
+
+	void set_gravity_scale(real_t p_gravity_scale);
+	real_t get_gravity_scale() const;
+
+	void set_linear_damp(real_t p_linear_damp);
+	real_t get_linear_damp() const;
+
+	void set_angular_damp(real_t p_angular_damp);
+	real_t get_angular_damp() const;
+
 
 	void set_use_custom_integrator(bool p_enable);
 	bool is_using_custom_integrator();

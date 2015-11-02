@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1257,7 +1257,8 @@ void SkeletonSpatialGizmo::redraw() {
 
 			//find closest axis
 			int closest=-1;
-			float closest_d;
+			float closest_d = 0.0;
+
 			for(int j=0;j<3;j++) {
 				float dp = Math::abs(grests[parent].basis[j].normalized().dot(d));
 				if (j==0 || dp>closest_d)

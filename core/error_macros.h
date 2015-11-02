@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -104,7 +104,7 @@ extern bool _err_error_exists;
 
 #define ERR_FAIL_INDEX(m_index,m_size) \
 	 do {if ((m_index)<0 || (m_index)>=(m_size)) { \
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Index "_STR(m_index)" out of size ("_STR(m_size)").");	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Index " _STR(m_index)" out of size (" _STR(m_size)").");	\
 		return;	\
 	} else _err_error_exists=false; } while(0);	\
 
@@ -115,7 +115,7 @@ extern bool _err_error_exists;
 
 #define ERR_FAIL_INDEX_V(m_index,m_size,m_retval) \
 	 do {if ((m_index)<0 || (m_index)>=(m_size)) { \
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Index "_STR(m_index)" out of size ("_STR(m_size)").");	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Index " _STR(m_index)" out of size (" _STR(m_size)").");	\
 		return m_retval;	 \
 	} else _err_error_exists=false;} while (0);
 
@@ -125,14 +125,14 @@ extern bool _err_error_exists;
 
  #define ERR_FAIL_NULL(m_param) \
 	 { if ( !m_param ) {	\
-		 _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Parameter ' "_STR(m_param)" ' is null.");	\
+         _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Parameter ' " _STR(m_param)" ' is null.");	\
 		 return;	 \
 	 }else _err_error_exists=false; }	\
 
 
 #define ERR_FAIL_NULL_V(m_param,m_retval) \
 	{ if ( !m_param ) {	\
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Parameter ' "_STR(m_param)" ' is null.");	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Parameter ' " _STR(m_param)" ' is null.");	\
 		return m_retval;	 \
 	}else _err_error_exists=false; }	\
 
@@ -142,7 +142,7 @@ extern bool _err_error_exists;
 
 #define ERR_FAIL_COND(m_cond) \
 	{ if ( m_cond ) {	\
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' "_STR(m_cond)" ' is true.");	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' " _STR(m_cond)" ' is true.");	\
 		return;	 \
 	}else _err_error_exists=false; }	\
 
@@ -154,7 +154,7 @@ extern bool _err_error_exists;
 
 #define ERR_FAIL_COND_V(m_cond,m_retval) \
 	{ if ( m_cond ) {	\
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' "_STR(m_cond)" ' is true. returned: "_STR(m_retval));	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' " _STR(m_cond)" ' is true. returned: " _STR(m_retval));	\
 		return m_retval;	 \
 	}else _err_error_exists=false; }	\
 
@@ -164,7 +164,7 @@ extern bool _err_error_exists;
 
 #define ERR_CONTINUE(m_cond) \
 	{ if ( m_cond ) {	\
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' "_STR(m_cond)" ' is true. Continuing..:");	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' " _STR(m_cond)" ' is true. Continuing..:");	\
 		continue;\
 	} else _err_error_exists=false;}	\
 
@@ -174,7 +174,7 @@ extern bool _err_error_exists;
 
 #define ERR_BREAK(m_cond) \
 	{ if ( m_cond ) {	\
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' "_STR(m_cond)" ' is true. Breaking..:");	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' " _STR(m_cond)" ' is true. Breaking..:");	\
 		break;\
 	} else _err_error_exists=false;}	\
 
@@ -193,7 +193,7 @@ extern bool _err_error_exists;
 
 #define ERR_FAIL_V(m_value) \
 { \
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Method/Function Failed, returning: "__STR(m_value));	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Method/Function Failed, returning: " __STR(m_value));	\
 		_err_error_exists=false;	\
 		return m_value;\
 } \

@@ -45,7 +45,7 @@ func _integrate_forces(state):
 				state.set_angular_velocity( -dp.cross(up).normalized() *33.0)
 				get_node("AnimationPlayer").play("impact")
 				get_node("AnimationPlayer").queue("explode")
-				set_friction(true)
+				set_friction(1)
 				cc.disabled=true
 				get_node("sound").play("hit")
 				return
@@ -91,4 +91,5 @@ func _ready():
 	# Initalization here
 	pass
 
-
+func _die():
+	queue_free()

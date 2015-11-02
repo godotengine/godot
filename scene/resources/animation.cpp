@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,8 +42,8 @@ bool Animation::_set(const StringName& p_name, const Variant& p_value) {
 		set_step(p_value);
 	else if (name.begins_with("tracks/")) {
 	
-		int track=name.get_slice("/",1).to_int();
-		String what=name.get_slice("/",2);
+		int track=name.get_slicec('/',1).to_int();
+		String what=name.get_slicec('/',2);
 
 		if (tracks.size()==track && what=="type") {
 		
@@ -257,8 +257,8 @@ bool Animation::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= step;
 	else if (name.begins_with("tracks/")) {
 
-		int track=name.get_slice("/",1).to_int();
-		String what=name.get_slice("/",2);
+		int track=name.get_slicec('/',1).to_int();
+		String what=name.get_slicec('/',2);
 		ERR_FAIL_INDEX_V( track, tracks.size(), false );
 		if (what=="type") {
 		
@@ -1216,8 +1216,8 @@ T Animation::_interpolate( const Vector< TKey<T> >& p_keys, float p_time,  Inter
 	
 	if (p_ok)
 		*p_ok=true;
-	
-	int next;
+
+	int next=0;
 	float c=0;	
 	// prepare for all cases of interpolation
 	
@@ -1718,7 +1718,7 @@ void Animation::clear() {
 
 
 
-bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0,const TKey<TransformKey> &t1, const TKey<TransformKey> &t2, float p_alowed_linear_err,float p_alowed_angular_err,float p_max_optimizable_angle) {
+bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0,const TKey<TransformKey> &t1, const TKey<TransformKey> &t2, float p_alowed_linear_err,float p_alowed_angular_err,float p_max_optimizable_angle,const Vector3& p_norm) {
 
 
 	real_t c = (t1.time-t0.time)/(t2.time-t0.time);
@@ -1753,6 +1753,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0,const
 			if (d>pd.length()*p_alowed_linear_err) {
 				return false; //beyond allowed error for colinearity
 			}
+
+			if (p_norm!=Vector3() && Math::acos(pd.normalized().dot(p_norm))>p_alowed_angular_err)
+				return false;
 
 			t[0] = (d1-d0)/(d2-d0);
 		}
@@ -1905,16 +1908,21 @@ void Animation::_transform_track_optimize(int p_idx,float p_alowed_linear_err,fl
 	bool prev_erased=false;
 	TKey<TransformKey> first_erased;
 
+	Vector3 norm;
+
 	for(int i=1;i<tt->transforms.size()-1;i++) {
 
 		TKey<TransformKey> &t0 = tt->transforms[i-1];
 		TKey<TransformKey> &t1 = tt->transforms[i];
 		TKey<TransformKey> &t2 = tt->transforms[i+1];
 
-		bool erase = _transform_track_optimize_key(t0,t1,t2,p_alowed_linear_err,p_alowed_angular_err,p_max_optimizable_angle);
+		bool erase = _transform_track_optimize_key(t0,t1,t2,p_alowed_linear_err,p_alowed_angular_err,p_max_optimizable_angle,norm);
+		if (erase && !prev_erased) {
+			norm=(t2.value.loc-t1.value.loc).normalized();
+		}
 
 
-		if (prev_erased && !_transform_track_optimize_key(t0,first_erased,t2,p_alowed_linear_err,p_alowed_angular_err,p_max_optimizable_angle)) {
+		if (prev_erased && !_transform_track_optimize_key(t0,first_erased,t2,p_alowed_linear_err,p_alowed_angular_err,p_max_optimizable_angle,norm)) {
 			 //avoid error to go beyond first erased key
 			erase=false;
 		}
@@ -1932,7 +1940,9 @@ void Animation::_transform_track_optimize(int p_idx,float p_alowed_linear_err,fl
 
 		} else {
 			prev_erased=false;
+			norm=Vector3();
 		}
+
 
 
 		//	print_line(itos(i)+" could be eliminated: "+rtos(tr));

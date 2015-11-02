@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,6 +40,7 @@
 #include "io/resource_saver.h"
 #include "io/md5.h"
 #include "io_plugins/editor_texture_import_plugin.h"
+#include "tools/editor/plugins/script_editor_plugin.h"
 
 String EditorImportPlugin::validate_source_path(const String& p_path) {
 
@@ -47,6 +48,7 @@ String EditorImportPlugin::validate_source_path(const String& p_path) {
 	String rp = Globals::get_singleton()->get_resource_path();
 	if (!rp.ends_with("/"))
 		rp+="/";
+
 	return rp.path_to_file(gp);
 }
 
@@ -253,7 +255,16 @@ static void _add_filter_to_list(Set<StringName>& r_list,const String& p_filter) 
 
 }
 
+Vector<uint8_t> EditorExportPlatform::get_exported_file_default(String& p_fname) const {
 
+	FileAccess *f = FileAccess::open(p_fname,FileAccess::READ);
+	ERR_FAIL_COND_V(!f,Vector<uint8_t>());
+	Vector<uint8_t> ret;
+	ret.resize(f->get_len());
+	int rbs = f->get_buffer(ret.ptr(),ret.size());
+	memdelete(f);
+	return ret;
+}
 
 Vector<uint8_t> EditorExportPlatform::get_exported_file(String& p_fname) const {
 
@@ -268,13 +279,9 @@ Vector<uint8_t> EditorExportPlatform::get_exported_file(String& p_fname) const {
 	}
 
 
-	FileAccess *f = FileAccess::open(p_fname,FileAccess::READ);
-	ERR_FAIL_COND_V(!f,Vector<uint8_t>());
-	Vector<uint8_t> ret;
-	ret.resize(f->get_len());
-	int rbs = f->get_buffer(ret.ptr(),ret.size());
-	memdelete(f);
-	return ret;
+	return get_exported_file_default(p_fname);
+
+
 }
 
 Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const {
@@ -292,7 +299,11 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 			_add_filter_to_list(exported,"*");
 		} else {
 			_add_to_list(EditorFileSystem::get_singleton()->get_filesystem(),exported);
-			_add_filter_to_list(exported,EditorImportExport::get_singleton()->get_export_custom_filter());
+			String cf = EditorImportExport::get_singleton()->get_export_custom_filter();
+			if (cf!="")
+				cf+=",";
+			cf+="*.flags";
+			_add_filter_to_list(exported,cf);
 
 		}
 
@@ -361,8 +372,12 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 				}
 			}
 		}
+		String cf = EditorImportExport::get_singleton()->get_export_custom_filter();
+		if (cf!="")
+			cf+=",";
+		cf+="*.flags";
+		_add_filter_to_list(exported,cf);
 
-		_add_filter_to_list(exported,EditorImportExport::get_singleton()->get_export_custom_filter());
 
 	}
 
@@ -547,6 +562,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 		group_shrink*=EditorImportExport::get_singleton()->get_export_image_shrink();
 
 		switch(EditorImportExport::get_singleton()->image_export_group_get_image_action(E->get())) {
+			case EditorImportExport::IMAGE_ACTION_KEEP:
 			case EditorImportExport::IMAGE_ACTION_NONE: {
 
 				switch(EditorImportExport::get_singleton()->get_export_image_action()) {
@@ -571,7 +587,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			} break; //use default
 			case EditorImportExport::IMAGE_ACTION_COMPRESS_RAM: {
 				group_format=EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM;
-			} break; //use default
+			} break; //use default						
 		}
 
 		String image_list_md5;
@@ -815,13 +831,43 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 
 	StringName engine_cfg="res://engine.cfg";
+	StringName boot_splash;
+	{
+		String splash=Globals::get_singleton()->get("application/boot_splash"); //avoid splash from being converted
+		splash=splash.strip_edges();
+		if (splash!=String()) {
+			if (!splash.begins_with("res://"))
+				splash="res://"+splash;
+			splash=splash.simplify_path();
+			boot_splash=splash;
+		}
+	}
+	StringName custom_cursor;
+	{
+		String splash=Globals::get_singleton()->get("display/custom_mouse_cursor"); //avoid splash from being converted
+		splash=splash.strip_edges();
+		if (splash!=String()) {
+			if (!splash.begins_with("res://"))
+				splash="res://"+splash;
+			splash=splash.simplify_path();
+			custom_cursor=splash;
+		}
+	}
+
+
+
 
 	for(int i=0;i<files.size();i++) {
 
 		if (remap_files.has(files[i]) || files[i]==engine_cfg) //gonna be remapped (happened before!)
 			continue; //from atlas?
 		String src=files[i];
-		Vector<uint8_t> buf = get_exported_file(src);
+		Vector<uint8_t> buf;
+
+		if (src==boot_splash || src==custom_cursor)
+			buf = get_exported_file_default(src); //bootsplash must be kept if used
+		else
+			buf = get_exported_file(src);
 
 		ERR_CONTINUE( saved.has(src) );
 
@@ -896,6 +942,69 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 	return OK;
 }
 
+static int _get_pad(int p_alignment, int p_n) {
+
+	int rest = p_n % p_alignment;
+	int pad = 0;
+	if (rest > 0) {
+		pad = p_alignment - rest;
+	};
+
+	return pad;
+};
+
+void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags) {
+
+	String host = EditorSettings::get_singleton()->get("network/debug_host");
+
+	if (p_flags&EXPORT_DUMB_CLIENT) {
+		int port = EditorSettings::get_singleton()->get("file_server/port");
+		String passwd = EditorSettings::get_singleton()->get("file_server/password");
+		r_flags.push_back("-rfs");
+		r_flags.push_back(host+":"+itos(port));
+		if (passwd!="") {
+			r_flags.push_back("-rfs_pass");
+			r_flags.push_back(passwd);
+		}
+	}
+
+	if (p_flags&EXPORT_REMOTE_DEBUG) {
+
+		r_flags.push_back("-rdebug");
+		r_flags.push_back(host+":"+String::num(GLOBAL_DEF("debug/debug_port", 6007)));
+
+		List<String> breakpoints;
+		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
+
+
+		if (breakpoints.size()) {
+
+			r_flags.push_back("-bp");
+			String bpoints;
+			for(const List<String>::Element *E=breakpoints.front();E;E=E->next()) {
+
+				bpoints+=E->get().replace(" ","%20");
+				if (E->next())
+					bpoints+=",";
+			}
+
+			r_flags.push_back(bpoints);
+		}
+
+	}
+
+	if (p_flags&EXPORT_VIEW_COLLISONS) {
+
+		r_flags.push_back("-debugcol");
+	}
+
+	if (p_flags&EXPORT_VIEW_NAVIGATION) {
+
+		r_flags.push_back("-debugnav");
+	}
+
+
+}
 
 Error EditorExportPlatform::save_pack_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total) {
 
@@ -922,11 +1031,19 @@ Error EditorExportPlatform::save_pack_file(void *p_userdata,const String& p_path
 	pd->ep->step("Storing File: "+p_path,2+p_file*100/p_total);
 	pd->count++;
 	pd->ftmp->store_buffer(p_data.ptr(),p_data.size());
+	if (pd->alignment > 1) {
+
+		int pad = _get_pad(pd->alignment, pd->ftmp->get_pos());
+		for (int i=0; i<pad; i++) {
+
+			pd->ftmp->store_8(0);
+		};
+	};
 	return OK;
 
 }
 
-Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles) {
+Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles, int p_alignment) {
 
 	EditorProgress ep("savepack","Packing",102);
 
@@ -944,7 +1061,6 @@ Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles) {
 		dst->store_32(0);
 	}
 
-
 	size_t fcountpos = dst->get_pos();
 	dst->store_32(0);
 
@@ -953,10 +1069,19 @@ Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles) {
 	pd.f=dst;
 	pd.ftmp=tmp;
 	pd.count=0;
+	pd.alignment = p_alignment;
 	Error err = export_project_files(save_pack_file,&pd,p_make_bundles);
 	memdelete(tmp);
 	if (err)
 		return err;
+
+	if (p_alignment > 1) {
+		int pad = _get_pad(p_alignment, dst->get_pos());
+		for (int i=0; i<pad; i++) {
+
+			dst->store_8(0);
+		};
+	};
 
 	size_t ofsplus = dst->get_pos();
 	//append file
@@ -994,7 +1119,7 @@ Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles) {
 	return OK;
 }
 
-Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug, bool p_dumb) {
+Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug, int p_flags) {
 
 
 
@@ -1133,8 +1258,34 @@ EditorImportExport* EditorImportExport::singleton=NULL;
 
 void EditorImportExport::add_import_plugin(const Ref<EditorImportPlugin>& p_plugin) {
 
+	// Need to make sure the name is unique if we are going to lookup by it
+	ERR_FAIL_COND(by_idx.has(p_plugin->get_name()));
+
 	by_idx[ p_plugin->get_name() ]=plugins.size();
 	plugins.push_back(p_plugin);
+}
+
+void EditorImportExport::remove_import_plugin(const Ref<EditorImportPlugin>& p_plugin) {
+
+	String plugin_name = p_plugin->get_name();
+
+	// Keep the indices the same
+	// Find the index of the target plugin
+	ERR_FAIL_COND(!by_idx.has(plugin_name));
+	int idx = by_idx[plugin_name];
+	int last_idx = plugins.size() - 1;
+
+	// Swap the last plugin and the target one
+	SWAP(plugins[idx], plugins[last_idx]);
+
+	// Update the index of the old last one
+	by_idx[plugins[idx]->get_name()] = idx;
+
+	// Remove the target plugin's by_idx entry
+	by_idx.erase(plugin_name);
+
+	// Erase the plugin
+	plugins.remove(last_idx);
 }
 
 int EditorImportExport::get_import_plugin_count() const{
@@ -1269,12 +1420,12 @@ EditorImportExport::ImageAction EditorImportExport::get_export_image_action() co
 	return image_action;
 }
 
-void EditorImportExport::set_export_image_shrink(int p_shrink) {
+void EditorImportExport::set_export_image_shrink(float p_shrink) {
 
 	image_shrink=p_shrink;
 }
 
-int EditorImportExport::get_export_image_shrink() const{
+float EditorImportExport::get_export_image_shrink() const{
 
 	return image_shrink;
 }
@@ -1345,12 +1496,12 @@ bool EditorImportExport::image_export_group_get_make_atlas(const StringName& p_e
 	return image_groups[p_export_group].make_atlas;
 
 }
-void EditorImportExport::image_export_group_set_shrink(const StringName& p_export_group,int p_amount){
+void EditorImportExport::image_export_group_set_shrink(const StringName& p_export_group,float p_amount){
 	ERR_FAIL_COND(!image_groups.has(p_export_group));
 	image_groups[p_export_group].shrink=p_amount;
 
 }
-int EditorImportExport::image_export_group_get_shrink(const StringName& p_export_group) const{
+float EditorImportExport::image_export_group_get_shrink(const StringName& p_export_group) const{
 
 	ERR_FAIL_COND_V(!image_groups.has(p_export_group),1);
 	return image_groups[p_export_group].shrink;
@@ -1504,6 +1655,8 @@ void EditorImportExport::load_config() {
 					g.action=IMAGE_ACTION_COMPRESS_RAM;
 				else if (action=="compress_disk")
 					g.action=IMAGE_ACTION_COMPRESS_DISK;
+				else if (action=="keep")
+					g.action=IMAGE_ACTION_KEEP;
 			}
 
 			if (d.has("atlas"))
@@ -1631,6 +1784,7 @@ void EditorImportExport::save_config() {
 			case IMAGE_ACTION_NONE: d["action"]="default"; break;
 			case IMAGE_ACTION_COMPRESS_RAM: d["action"]="compress_ram"; break;
 			case IMAGE_ACTION_COMPRESS_DISK: d["action"]="compress_disk"; break;
+			case IMAGE_ACTION_KEEP: d["action"]="keep"; break;
 		}
 
 
@@ -1715,6 +1869,14 @@ EditorImportExport::EditorImportExport() {
 	image_shrink=1;
 
 	script_action=SCRIPT_ACTION_COMPILE;
+
+}
+
+
+
+EditorImportExport::~EditorImportExport() {
+
+
 
 }
 

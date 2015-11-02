@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,6 +84,12 @@ void StyleBox::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_offset"),&StyleBox::get_offset);
 
 	ObjectTypeDB::bind_method(_MD("draw"),&StyleBox::draw);
+
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin/left", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_LEFT );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin/right", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_RIGHT );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin/top", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_TOP);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin/bottom", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_BOTTOM );
+
 
 }
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,6 +88,11 @@ private:
 
 	void _load_defaults();
 
+	String project_config_path;
+
+	Vector<String> favorite_dirs;
+	Vector<String> recent_dirs;
+
 protected:
 
 	static void _bind_methods();
@@ -102,11 +107,13 @@ public:
 	static EditorSettings *get_singleton();
 	void erase(String p_var);
 	String get_settings_path() const;
+	String get_project_settings_path() const;
 
 	const Map<String,Plugin>& get_plugins() const { return plugins; }
 
 	void scan_plugins();
 	void enable_plugins();
+	void setup_network();
 
 	void raise_order(const String& p_name);
 	static void create();
@@ -124,6 +131,14 @@ public:
 	Ref<Resource> get_resource_clipboard() const { return clipboard; }
 
 	void add_property_hint(const PropertyInfo& p_hint);
+
+	void set_favorite_dirs(const Vector<String>& p_favorite_dirs);
+	Vector<String> get_favorite_dirs() const;
+
+	void set_recent_dirs(const Vector<String>& p_recent_dirs);
+	Vector<String> get_recent_dirs() const;
+
+	void load_favorites();
 
 	EditorSettings();
 	~EditorSettings();

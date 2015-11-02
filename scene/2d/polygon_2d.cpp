@@ -192,14 +192,14 @@ void Polygon2D::set_texture(const Ref<Texture>& p_texture){
 
 	texture=p_texture;
 
-	if (texture.is_valid()) {
+	/*if (texture.is_valid()) {
 		uint32_t flags=texture->get_flags();
 		flags&=~Texture::FLAG_REPEAT;
 		if (tex_tile)
 			flags|=Texture::FLAG_REPEAT;
 
 		texture->set_flags(flags);
-	}
+	}*/
 	update();
 }
 Ref<Texture> Polygon2D::get_texture() const{
@@ -228,22 +228,6 @@ float Polygon2D::get_texture_rotation() const{
 	return tex_rot;
 }
 
-void Polygon2D::set_texture_repeat(bool p_enable){
-
-	tex_tile=p_enable;
-	if (texture.is_valid()) {
-		uint32_t flags=texture->get_flags();
-		flags&=~Texture::FLAG_REPEAT;
-		if (p_enable)
-			flags|=Texture::FLAG_REPEAT;
-		texture->set_flags(flags);
-	}
-	update();
-}
-bool Polygon2D::get_texture_repeat() const{
-
-	return tex_tile;
-}
 
 void Polygon2D::_set_texture_rotationd(float p_rot){
 
@@ -324,8 +308,6 @@ void Polygon2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_texture_scale","texture_scale"),&Polygon2D::set_texture_scale);
 	ObjectTypeDB::bind_method(_MD("get_texture_scale"),&Polygon2D::get_texture_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_texture_repeat","enable"),&Polygon2D::set_texture_repeat);
-	ObjectTypeDB::bind_method(_MD("get_texture_repeat"),&Polygon2D::get_texture_repeat);
 
 	ObjectTypeDB::bind_method(_MD("set_invert","invert"),&Polygon2D::set_invert);
 	ObjectTypeDB::bind_method(_MD("get_invert"),&Polygon2D::get_invert);
@@ -346,7 +328,6 @@ void Polygon2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture/offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture/scale"),_SCS("set_texture_scale"),_SCS("get_texture_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"texture/rotation",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_texture_rotationd"),_SCS("_get_texture_rotationd"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"texture/repeat"),_SCS("set_texture_repeat"),_SCS("get_texture_repeat"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"invert/enable"),_SCS("set_invert"),_SCS("get_invert"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"invert/border",PROPERTY_HINT_RANGE,"0.1,16384,0.1"),_SCS("set_invert_border"),_SCS("get_invert_border"));
 

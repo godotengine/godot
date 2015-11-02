@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -324,6 +324,7 @@ int MessageQueue::get_max_buffer_usage() const {
 
 void MessageQueue::flush() {
 
+
 	if (buffer_max_used<buffer_end); {
 		buffer_max_used=buffer_end;
 		//statistics();
@@ -331,9 +332,14 @@ void MessageQueue::flush() {
 
 	uint32_t read_pos=0;
 
-	while (read_pos < buffer_end ) {
+	//using reverse locking strategy
+	_THREAD_SAFE_LOCK_
+
+	while (read_pos<buffer_end) {
+
+		_THREAD_SAFE_UNLOCK_
+
 		//lock on each interation, so a call can re-add itself to the message queue
-		_THREAD_SAFE_LOCK_
 
 		Message *message = (Message*)&buffer[ read_pos ];
 
@@ -379,16 +385,17 @@ void MessageQueue::flush() {
 
 		}
 
-		read_pos+=sizeof(Message);
+		uint32_t advance = sizeof(Message);
 		if (message->type!=TYPE_NOTIFICATION)
-			read_pos+=sizeof(Variant)*message->args;
+			advance+=sizeof(Variant)*message->args;
 		message->~Message();
 
-		_THREAD_SAFE_UNLOCK_
+		_THREAD_SAFE_LOCK_
+		read_pos+=advance;
 
 	}
 
-	_THREAD_SAFE_LOCK_
+
 	buffer_end=0; // reset buffer
 	_THREAD_SAFE_UNLOCK_
 

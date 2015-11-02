@@ -4,6 +4,7 @@
 #include "scene/3d/spatial.h"
 #include "scene/resources/mesh.h"
 
+class Mesh;
 
 class NavigationMesh : public Resource  {
 
@@ -14,6 +15,16 @@ class NavigationMesh : public Resource  {
 		Vector<int> indices;
 	};
 	Vector<Polygon> polygons;
+	Ref<Mesh> debug_mesh;
+
+	struct _EdgeKey {
+
+		Vector3 from;
+		Vector3 to;
+
+		bool operator<(const _EdgeKey& p_with) const { return from==p_with.from ? to < p_with.to : from < p_with.from; }
+	};
+
 
 protected:
 
@@ -21,6 +32,7 @@ protected:
 
 	void _set_polygons(const Array& p_array);
 	Array _get_polygons() const;
+
 public:
 
 	void create_from_mesh(const Ref<Mesh>& p_mesh);
@@ -32,6 +44,8 @@ public:
 	int get_polygon_count() const;
 	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
+
+	Ref<Mesh> get_debug_mesh();
 
 	NavigationMesh();
 };
@@ -47,6 +61,9 @@ class NavigationMeshInstance : public Spatial {
 	int nav_id;
 	Navigation *navigation;
 	Ref<NavigationMesh> navmesh;
+
+	Node *debug_view;
+
 protected:
 
 	void _notification(int p_what);

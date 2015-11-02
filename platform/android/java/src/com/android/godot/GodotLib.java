@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@ public class GodotLib {
      * @param height the current view height
      */
 
-     public static native void initialize(Godot p_instance,boolean need_reload_hook,String[] p_cmdline);
+     public static native void initialize(Godot p_instance,boolean need_reload_hook,String[] p_cmdline,Object p_asset_manager);
      public static native void resize(int width, int height,boolean reload);
      public static native void newcontext();
      public static native void quit();

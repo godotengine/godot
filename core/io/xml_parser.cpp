@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@ VARIANT_ENUM_CAST(XMLParser::NodeType);
 
 static bool _equalsn(const CharType* str1, const CharType* str2, int len) {
 	int i;
-	for(i=0; str1[i] && str2[i] && i < len; ++i)
+	for(i=0; i < len && str1[i] && str2[i] ; ++i)
 	     if (str1[i] != str2[i])
 		     return false;
 

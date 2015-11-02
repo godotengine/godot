@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -478,6 +478,7 @@ static String _disassemble_addr(const Ref<GDScript>& p_script,const GDFunction& 
 		case GDFunction::ADDR_TYPE_NIL: {
 			return "nil";
 		} break;
+
 	}
 
 	return "<err>";
@@ -738,6 +739,26 @@ static void _disassemble_class(const Ref<GDScript>& p_class,const Vector<String>
 					incr=4+argc;
 
 				} break;
+				case GDFunction::OPCODE_YIELD: {
+
+					txt+=" yield ";
+					incr=1;
+
+				} break;
+				case GDFunction::OPCODE_YIELD_SIGNAL: {
+
+					txt+=" yield_signal ";
+					txt+=DADDR(1);
+					txt+=",";
+					txt+=DADDR(2);
+					incr=3;
+				} break;
+				case GDFunction::OPCODE_YIELD_RESUME: {
+
+					txt+=" yield resume: ";
+					txt+=DADDR(1);
+					incr=2;
+				} break;
 				case GDFunction::OPCODE_JUMP: {
 
 					txt+=" jump ";
@@ -807,6 +828,13 @@ static void _disassemble_class(const Ref<GDScript>& p_class,const Vector<String>
 
 					txt+=" end";
 					incr+=1;
+				} break;
+				case GDFunction::OPCODE_ASSERT: {
+
+					   txt+=" assert ";
+					   txt+=DADDR(1);
+					   incr+=2;
+
 				} break;
 
 			}

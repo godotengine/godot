@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -151,6 +151,7 @@ class ObjectTypeDB {
 	static Mutex *lock;
 	static HashMap<StringName,TypeInfo,StringNameHasher> types;
 	static HashMap<StringName,StringName,StringNameHasher> resource_base_extensions;
+	static HashMap<StringName,StringName,StringNameHasher> compat_types;
 
 #ifdef DEBUG_METHODS_ENABLED
 	static MethodBind* bind_methodfi(uint32_t p_flags, MethodBind *p_bind , const MethodDefinition &method_name, const Variant **p_defs, int p_defcount);
@@ -227,13 +228,13 @@ public:
 		T::register_custom_data_to_otdb();
 	}
 
-	static void get_type_list( List<String> *p_types);
-	static void get_inheriters_from( const String& p_type,List<String> *p_types);
-	static String type_inherits_from(const String& p_type);
-	static bool type_exists(const String &p_type);
-	static bool is_type(const String &p_type,const String& p_inherits);
-	static bool can_instance(const String &p_type);	
-	static Object *instance(const String &p_type);
+	static void get_type_list( List<StringName> *p_types);
+	static void get_inheriters_from( const StringName& p_type,List<StringName> *p_types);
+	static StringName type_inherits_from(const StringName& p_type);
+	static bool type_exists(const StringName &p_type);
+	static bool is_type(const StringName &p_type,const StringName& p_inherits);
+	static bool can_instance(const StringName &p_type);
+	static Object *instance(const StringName &p_type);
 
 #if 0
 	template<class N, class M>
@@ -467,14 +468,16 @@ public:
 	static void get_method_list(StringName p_type,List<MethodInfo> *p_methods,bool p_no_inheritance=false);
 	static MethodBind *get_method(StringName p_type, StringName p_name);
 
-	static void add_virtual_method(const StringName& p_type,const MethodInfo& p_method );
-	static void get_virtual_methods(const StringName& p_type,List<MethodInfo> * p_methods );
+	static void add_virtual_method(const StringName& p_type,const MethodInfo& p_method,bool p_virtual=true );
+	static void get_virtual_methods(const StringName& p_type,List<MethodInfo> * p_methods,bool p_no_inheritance=false );
 	
 	static void bind_integer_constant(const StringName& p_type, const StringName &p_name, int p_constant);
 	static void get_integer_constant_list(const StringName& p_type, List<String> *p_constants, bool p_no_inheritance=false);
 	static int get_integer_constant(const StringName& p_type, const StringName &p_name, bool *p_success=NULL);
 	static StringName get_category(const StringName& p_node);
-	
+
+	static bool get_setter_and_type_for_property(const StringName& p_class, const StringName& p_prop, StringName& r_class, StringName& r_setter);
+
 	static void set_type_enabled(StringName p_type,bool p_enable);
 	static bool is_type_enabled(StringName p_type);
 
@@ -482,6 +485,7 @@ public:
 	static void get_resource_base_extensions(List<String> *p_extensions);
 	static void get_extensions_for_type(const StringName& p_type,List<String> *p_extensions);
 
+	static void add_compatibility_type(const StringName& p_type,const StringName& p_fallback);
 	static void init();
 	static void cleanup();
 };

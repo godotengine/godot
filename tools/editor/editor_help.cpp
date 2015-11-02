@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,7 +79,7 @@ void EditorHelpSearch::_update_search() {
 	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
 */
 
-	List<String> type_list;
+	List<StringName> type_list;
 	ObjectTypeDB::get_type_list(&type_list);
 
 	DocData *doc=EditorHelp::get_doc_data();
@@ -353,7 +353,7 @@ void EditorHelp::_search(const String&) {
 	String stext=search->get_text();
 	bool keep = prev_search==stext && class_list->get_selected() && prev_search_page==class_list->get_selected()->get_text(0);
 
-	class_desc->search(stext);
+	class_desc->search(stext, keep);
 
 	prev_search=stext;
 	if (class_list->get_selected())
@@ -547,6 +547,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 		class_desc->pop();
 		class_desc->add_newline();
 		class_desc->add_newline();
+		class_desc->add_newline();
 
 	}
 
@@ -561,6 +562,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 		//class_desc->add_newline();
 		class_desc->add_newline();
 		_add_text(cd.brief_description);
+		class_desc->add_newline();
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
@@ -636,7 +638,6 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 	}
 
 	if (cd.properties.size()) {
-
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
@@ -715,9 +716,10 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 			class_desc->add_newline();
 		}
 
-		class_desc->add_newline();
 		class_desc->pop();
 
+		class_desc->add_newline();
+		class_desc->add_newline();
 
 	}
 	if (cd.signals.size()) {
@@ -779,6 +781,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 		class_desc->pop();
 		class_desc->add_newline();
+		class_desc->add_newline();
 
 	}
 
@@ -823,6 +826,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 		class_desc->pop();
 		class_desc->add_newline();
+		class_desc->add_newline();
 
 
 	}
@@ -830,6 +834,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 	if (cd.description!="") {
 
 		description_line=class_desc->get_line_count()-2;
+
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text("Description:");
@@ -837,8 +842,8 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 		class_desc->pop();
 
 		class_desc->add_newline();
-		class_desc->add_newline();
 		_add_text(cd.description);
+		class_desc->add_newline();
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
@@ -853,12 +858,16 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 		class_desc->add_newline();
 		class_desc->add_newline();
+		class_desc->push_indent(1);
 
 
 		for(int i=0;i<cd.methods.size();i++) {
 
 			method_line[cd.methods[i].name]=class_desc->get_line_count()-2;
 
+			if( cd.methods[i].description != "") {
+				class_desc->add_newline();
+			}
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.methods[i].return_type);
 
@@ -899,9 +908,12 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 			class_desc->pop();
 
-			class_desc->add_newline();
-			class_desc->add_newline();
-			_add_text(cd.methods[i].description);
+			if( cd.methods[i].description != "") {
+				class_desc->add_text("  ");
+				_add_text(cd.methods[i].description);
+				class_desc->add_newline();
+				class_desc->add_newline();
+			}
 			class_desc->add_newline();
 			class_desc->add_newline();
 
@@ -1241,13 +1253,13 @@ void EditorHelp::_update_doc() {
 
 	class_list->clear();
 
-	List<String> type_list;
+	List<StringName> type_list;
 
 	tree_item_map.clear();
 
 	TreeItem *root = class_list->create_item();
 	class_list->set_hide_root(true);
-	List<String>::Element *I=type_list.front();
+	List<StringName>::Element *I=type_list.front();
 
 	for(Map<String,DocData::ClassDoc>::Element *E=doc->class_list.front();E;E=E->next()) {
 
@@ -1361,8 +1373,8 @@ EditorHelp::EditorHelp(EditorNode *p_editor) {
 
 	Separator *hs = memnew( VSeparator );
 	panel_hb->add_child(hs);
-	EmptyControl *ec = memnew( EmptyControl );
-	ec->set_minsize(Size2(200,1));
+	Control *ec = memnew( Control );
+	ec->set_custom_minimum_size(Size2(200,1));
 	panel_hb->add_child(ec);
 	search = memnew( LineEdit );
 	ec->add_child(search);
@@ -1390,7 +1402,11 @@ EditorHelp::EditorHelp(EditorNode *p_editor) {
 
 	{
 		PanelContainer *pc = memnew( PanelContainer );
-		pc->add_style_override("panel",get_stylebox("normal","TextEdit"));
+		Ref<StyleBoxFlat> style( memnew( StyleBoxFlat ) );
+		style->set_bg_color( EditorSettings::get_singleton()->get("text_editor/background_color") );	
+		style->set_default_margin(MARGIN_LEFT,20);
+		style->set_default_margin(MARGIN_TOP,20);
+		pc->add_style_override("panel", style); //get_stylebox("normal","TextEdit"));
 		h_split->add_child(pc);
 		class_desc = memnew( RichTextLabel );
 		pc->add_child(class_desc);

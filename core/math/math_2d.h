@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -159,8 +159,8 @@ struct Vector2 {
 	
 	operator String() const { return String::num(x)+","+String::num(y); }
 	
-	inline Vector2(float p_x,float p_y) { x=p_x; y=p_y; }
-	inline Vector2() { x=0; y=0; }
+	_FORCE_INLINE_ Vector2(float p_x,float p_y) { x=p_x; y=p_y; }
+	_FORCE_INLINE_ Vector2() { x=0; y=0; }
 };
 
 _FORCE_INLINE_ Vector2 Vector2::plane_project(real_t p_d, const Vector2& p_vec) const {
@@ -198,6 +198,8 @@ Vector2 Vector2::linear_interpolate(const Vector2& p_a, const Vector2& p_b,float
 typedef Vector2 Size2;
 typedef Vector2 Point2;
 
+struct Matrix32;
+
 
 struct Rect2 {
 	
@@ -212,17 +214,42 @@ struct Rect2 {
 	float get_area() const { return size.width*size.height; }
 
 	inline bool intersects(const Rect2& p_rect) const { 
-		if ( pos.x > (p_rect.pos.x + p_rect.size.width) ) 
+		if ( pos.x >= (p_rect.pos.x + p_rect.size.width) )
 			return false;
-		if ( (pos.x+size.width) < p_rect.pos.x  ) 
+		if ( (pos.x+size.width) <= p_rect.pos.x  )
 			return false;
-		if ( pos.y > (p_rect.pos.y + p_rect.size.height) ) 
+		if ( pos.y >= (p_rect.pos.y + p_rect.size.height) )
 			return false;
-		if ( (pos.y+size.height) < p_rect.pos.y  ) 
+		if ( (pos.y+size.height) <= p_rect.pos.y  )
 			return false;
 		
 		return true;
 	}
+
+	inline float distance_to(const Vector2& p_point) const {
+
+		float dist = 1e20;
+
+		if (p_point.x < pos.x) {
+			dist=MIN(dist,pos.x-p_point.x);
+		}
+		if (p_point.y < pos.y) {
+			dist=MIN(dist,pos.y-p_point.y);
+		}
+		if (p_point.x >= (pos.x+size.x) ) {
+			dist=MIN(p_point.x-(pos.x+size.x),dist);
+		}
+		if (p_point.y >= (pos.y+size.y) ) {
+			dist=MIN(p_point.y-(pos.y+size.y),dist);
+		}
+
+		if (dist==1e20)
+			return 0;
+		else
+			return dist;
+	}
+
+	_FORCE_INLINE_ bool intersects_transformed(const Matrix32& p_xform, const Rect2& p_rect) const;
 
 	bool intersects_segment(const Point2& p_from, const Point2& p_to, Point2* r_pos=NULL, Point2* r_normal=NULL) const;
 
@@ -597,6 +624,160 @@ struct Matrix32 {
 
 };
 
+bool Rect2::intersects_transformed(const Matrix32& p_xform, const Rect2& p_rect) const {
+
+	//SAT intersection between local and transformed rect2
+
+	Vector2 xf_points[4]={
+		p_xform.xform(p_rect.pos),
+		p_xform.xform(Vector2(p_rect.pos.x+p_rect.size.x,p_rect.pos.y)),
+		p_xform.xform(Vector2(p_rect.pos.x,p_rect.pos.y+p_rect.size.y)),
+		p_xform.xform(Vector2(p_rect.pos.x+p_rect.size.x,p_rect.pos.y+p_rect.size.y)),
+	};
+
+	real_t low_limit;
+
+	//base rect2 first (faster)
+
+	if (xf_points[0].y>pos.y)
+		goto next1;
+	if (xf_points[1].y>pos.y)
+		goto next1;
+	if (xf_points[2].y>pos.y)
+		goto next1;
+	if (xf_points[3].y>pos.y)
+		goto next1;
+
+	return false;
+
+	next1:
+
+	low_limit=pos.y+size.y;
+
+	if (xf_points[0].y<low_limit)
+		goto next2;
+	if (xf_points[1].y<low_limit)
+		goto next2;
+	if (xf_points[2].y<low_limit)
+		goto next2;
+	if (xf_points[3].y<low_limit)
+		goto next2;
+
+	return false;
+
+	next2:
+
+	if (xf_points[0].x>pos.x)
+		goto next3;
+	if (xf_points[1].x>pos.x)
+		goto next3;
+	if (xf_points[2].x>pos.x)
+		goto next3;
+	if (xf_points[3].x>pos.x)
+		goto next3;
+
+	return false;
+
+	next3:
+
+	low_limit=pos.x+size.x;
+
+	if (xf_points[0].x<low_limit)
+		goto next4;
+	if (xf_points[1].x<low_limit)
+		goto next4;
+	if (xf_points[2].x<low_limit)
+		goto next4;
+	if (xf_points[3].x<low_limit)
+		goto next4;
+
+	return false;
+
+	next4:
+
+	Vector2 xf_points2[4]={
+		pos,
+		Vector2(pos.x+size.x,pos.y),
+		Vector2(pos.x,pos.y+size.y),
+		Vector2(pos.x+size.x,pos.y+size.y),
+	};
+
+	real_t maxa=p_xform.elements[0].dot(xf_points2[0]);
+	real_t mina=maxa;
+
+	real_t dp = p_xform.elements[0].dot(xf_points2[1]);
+	maxa=MAX(dp,maxa);
+	mina=MIN(dp,mina);
+
+	dp = p_xform.elements[0].dot(xf_points2[2]);
+	maxa=MAX(dp,maxa);
+	mina=MIN(dp,mina);
+
+	dp = p_xform.elements[0].dot(xf_points2[3]);
+	maxa=MAX(dp,maxa);
+	mina=MIN(dp,mina);
+
+	real_t maxb=p_xform.elements[0].dot(xf_points[0]);
+	real_t minb=maxb;
+
+	dp = p_xform.elements[0].dot(xf_points[1]);
+	maxb=MAX(dp,maxb);
+	minb=MIN(dp,minb);
+
+	dp = p_xform.elements[0].dot(xf_points[2]);
+	maxb=MAX(dp,maxb);
+	minb=MIN(dp,minb);
+
+	dp = p_xform.elements[0].dot(xf_points[3]);
+	maxb=MAX(dp,maxb);
+	minb=MIN(dp,minb);
+
+
+	if ( mina > maxb )
+		return false;
+	if ( minb > maxa  )
+		return false;
+
+	maxa=p_xform.elements[1].dot(xf_points2[0]);
+	mina=maxa;
+
+	dp = p_xform.elements[1].dot(xf_points2[1]);
+	maxa=MAX(dp,maxa);
+	mina=MIN(dp,mina);
+
+	dp = p_xform.elements[1].dot(xf_points2[2]);
+	maxa=MAX(dp,maxa);
+	mina=MIN(dp,mina);
+
+	dp = p_xform.elements[1].dot(xf_points2[3]);
+	maxa=MAX(dp,maxa);
+	mina=MIN(dp,mina);
+
+	maxb=p_xform.elements[1].dot(xf_points[0]);
+	minb=maxb;
+
+	dp = p_xform.elements[1].dot(xf_points[1]);
+	maxb=MAX(dp,maxb);
+	minb=MIN(dp,minb);
+
+	dp = p_xform.elements[1].dot(xf_points[2]);
+	maxb=MAX(dp,maxb);
+	minb=MIN(dp,minb);
+
+	dp = p_xform.elements[1].dot(xf_points[3]);
+	maxb=MAX(dp,maxb);
+	minb=MIN(dp,minb);
+
+
+	if ( mina > maxb )
+		return false;
+	if ( minb > maxa  )
+		return false;
+
+
+	return true;
+
+}
 
 Vector2 Matrix32::basis_xform(const Vector2& v) const {
 

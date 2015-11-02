@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,33 @@
 
 #include "print_string.h"
 #include <stdio.h>
+
+
+const char* Image::format_names[Image::FORMAT_MAX]={
+	"Grayscale",
+	"Intensity",
+	"GrayscaleAlpha",
+	"RGB",
+	"RGBA",
+	"Indexed",
+	"IndexedAlpha",
+	"YUV422",
+	"YUV444",
+	"BC1",
+	"BC2",
+	"BC3",
+	"BC4",
+	"BC5",
+	"PVRTC2",
+	"PVRTC2Alpha",
+	"PVRTC4",
+	"PVRTC4Alpha",
+	"ETC",
+	"ATC",
+	"ATCAlphaExp",
+	"ATCAlphaInterp",
+
+};
 
 SavePNGFunc Image::save_png_func = NULL;
 
@@ -129,6 +156,18 @@ void Image::get_mipmap_offset_and_size(int p_mipmap,int &r_ofs, int &r_size) con
 	_get_mipmap_offset_and_size(p_mipmap,ofs,w,h);
 	int ofs2;
 	_get_mipmap_offset_and_size(p_mipmap+1,ofs2,w,h);
+	r_ofs=ofs;
+	r_size=ofs2-ofs;
+
+}
+
+void Image::get_mipmap_offset_size_and_dimensions(int p_mipmap,int &r_ofs, int &r_size,int &w, int& h) const {
+
+
+	int ofs;
+	_get_mipmap_offset_and_size(p_mipmap,ofs,w,h);
+	int ofs2,w2,h2;
+	_get_mipmap_offset_and_size(p_mipmap+1,ofs2,w2,h2);
 	r_ofs=ofs;
 	r_size=ofs2-ofs;
 
@@ -388,6 +427,102 @@ Image::Format Image::get_format() const{
 	return format;
 }
 
+static double _bicubic_interp_kernel( double x ) {
+
+	x = ABS(x);
+
+	double bc = 0;
+
+	if ( x <= 1 )
+		bc = ( 1.5 * x - 2.5 ) * x * x + 1;
+	else if ( x < 2 )
+		bc = ( ( -0.5 * x + 2.5 ) * x - 4 ) * x + 2;
+
+
+	return bc;
+}
+
+template<int CC>
+static void _scale_cubic(const uint8_t* p_src, uint8_t* p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
+
+
+	// get source image size
+	int width   = p_src_width;
+	int height  = p_src_height;
+	double xfac = (double) width / p_dst_width;
+	double yfac = (double) height / p_dst_height;
+	// coordinates of source points and cooefficiens
+	double  ox, oy, dx, dy, k1, k2;
+	int     ox1, oy1, ox2, oy2;
+	// destination pixel values
+	// width and height decreased by 1
+	int ymax = height - 1;
+	int xmax = width - 1;
+	// temporary pointer
+
+	for ( int y = 0; y < p_dst_height; y++ ) {
+		// Y coordinates
+		oy  = (double) y * yfac - 0.5f;
+		oy1 = (int) oy;
+		dy  = oy - (double) oy1;
+
+		for ( int x = 0; x < p_dst_width; x++ )	{
+			// X coordinates
+			ox  = (double) x * xfac - 0.5f;
+			ox1 = (int) ox;
+			dx  = ox - (double) ox1;
+
+			// initial pixel value
+
+			uint8_t *dst=p_dst + (y*p_dst_width+x)*CC;
+
+			double color[CC];
+			for(int i=0;i<CC;i++) {
+				color[i]=0;
+			}
+
+
+
+			for ( int n = -1; n < 3; n++ ) {
+				// get Y cooefficient
+				k1 = _bicubic_interp_kernel( dy - (double) n );
+
+				oy2 = oy1 + n;
+				if ( oy2 < 0 )
+					oy2 = 0;
+				if ( oy2 > ymax )
+					oy2 = ymax;
+
+				for ( int m = -1; m < 3; m++ ) {
+					// get X cooefficient
+					k2 = k1 * _bicubic_interp_kernel( (double) m - dx );
+
+					ox2 = ox1 + m;
+					if ( ox2 < 0 )
+						ox2 = 0;
+					if ( ox2 > xmax )
+						ox2 = xmax;
+
+					// get pixel of original image
+					const uint8_t *p = p_src + (oy2 * p_src_width + ox2)*CC;
+
+					for(int i=0;i<CC;i++) {
+
+						color[i]+=p[i]*k2;
+					}
+				}
+			}
+
+			for(int i=0;i<CC;i++) {
+				dst[i]=CLAMP(Math::fast_ftoi(color[i]),0,255);
+			}
+		}
+	}
+}
+
+
+
+
 template<int CC>
 static void _scale_bilinear(const uint8_t* p_src, uint8_t* p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 
@@ -547,6 +682,17 @@ void Image::resize( int p_width, int p_height, Interpolation p_interpolation ) {
 			}
 
 		} break;
+		case INTERPOLATE_CUBIC: {
+
+			switch(get_format_pixel_size(format)) {
+				case 1: _scale_cubic<1>(r_ptr,w_ptr,width,height,p_width,p_height); break;
+				case 2: _scale_cubic<2>(r_ptr,w_ptr,width,height,p_width,p_height); break;
+				case 3: _scale_cubic<3>(r_ptr,w_ptr,width,height,p_width,p_height); break;
+				case 4: _scale_cubic<4>(r_ptr,w_ptr,width,height,p_width,p_height); break;
+			}
+
+		} break;
+
 
 	}
 
@@ -1004,10 +1150,10 @@ void Image::create( const char ** p_xpm ) {
 			String line_str=line_ptr;
 			line_str.replace("\t"," ");
 			
-			size_width=line_str.get_slice(" ",0).to_int();
-			size_height=line_str.get_slice(" ",1).to_int();
-			colormap_size=line_str.get_slice(" ",2).to_int();
-			pixelchars=line_str.get_slice(" ",3).to_int();
+			size_width=line_str.get_slicec(' ',0).to_int();
+			size_height=line_str.get_slicec(' ',1).to_int();
+			colormap_size=line_str.get_slicec(' ',2).to_int();
+			pixelchars=line_str.get_slicec(' ',3).to_int();
 			ERR_FAIL_COND(colormap_size > 32766);
 			ERR_FAIL_COND(pixelchars > 5);
 			ERR_FAIL_COND(size_width > 32767);
@@ -1112,6 +1258,7 @@ void Image::create( const char ** p_xpm ) {
 }
 #define DETECT_ALPHA_MAX_TRESHOLD 254
 #define DETECT_ALPHA_MIN_TRESHOLD 2
+
 #define DETECT_ALPHA( m_value )\
 { \
 	uint8_t value=m_value;\
@@ -1122,6 +1269,82 @@ void Image::create( const char ** p_xpm ) {
 		detected=true;\
 		break;\
 	}\
+}
+
+#define DETECT_NON_ALPHA( m_value )\
+{ \
+	uint8_t value=m_value;\
+	if (value>0) {\
+		\
+		detected=true;\
+		break;\
+	}\
+}
+
+
+bool Image::is_invisible() const {
+
+	if (format==FORMAT_GRAYSCALE ||
+	    format==FORMAT_RGB ||
+	    format==FORMAT_INDEXED)
+		return false;
+
+	int len = data.size();
+
+	if (len==0)
+		return true;
+
+	if (format >= FORMAT_YUV_422 && format <= FORMAT_YUV_444)
+		return false;
+
+	int w,h;
+	_get_mipmap_offset_and_size(1,len,w,h);
+
+	DVector<uint8_t>::Read r = data.read();
+	const unsigned char *data_ptr=r.ptr();
+
+	bool detected=false;
+
+	switch(format) {
+		case FORMAT_INTENSITY: {
+
+			for(int i=0;i<len;i++) {
+				DETECT_NON_ALPHA(data_ptr[i]);
+			}
+		} break;
+		case FORMAT_GRAYSCALE_ALPHA: {
+
+
+			for(int i=0;i<(len>>1);i++) {
+				DETECT_NON_ALPHA(data_ptr[(i<<1)+1]);
+			}
+
+		} break;
+		case FORMAT_RGBA: {
+
+			for(int i=0;i<(len>>2);i++) {
+				DETECT_NON_ALPHA(data_ptr[(i<<2)+3])
+			}
+
+		} break;
+		case FORMAT_INDEXED: {
+
+			return false;
+		} break;
+		case FORMAT_INDEXED_ALPHA: {
+
+			return false;
+		} break;
+		case FORMAT_PVRTC2_ALPHA:
+		case FORMAT_PVRTC4_ALPHA:
+		case FORMAT_BC2:
+		case FORMAT_BC3: {
+			detected=true;
+		} break;
+		default: {}
+	}
+
+	return !detected;
 }
 
 Image::AlphaMode Image::detect_alpha() const {
@@ -1734,6 +1957,10 @@ Error Image::_decompress_bc() {
 	return OK;
 }
 
+bool Image::is_compressed() const {
+	return format>=FORMAT_BC1;
+}
+
 
 Image Image::decompressed() const {
 
@@ -1986,7 +2213,7 @@ void Image::blit_rect(const Image& p_src, const Rect2& p_src_rect,const Point2& 
 }
 
 
-Image (*Image::_png_mem_loader_func)(const uint8_t*)=NULL;
+Image (*Image::_png_mem_loader_func)(const uint8_t*,int)=NULL;
 void (*Image::_image_compress_bc_func)(Image *)=NULL;
 void (*Image::_image_compress_pvrtc2_func)(Image *)=NULL;
 void (*Image::_image_compress_pvrtc4_func)(Image *)=NULL;
@@ -2155,7 +2382,13 @@ void Image::fix_alpha_edges() {
 
 }
 
-Image::Image(const uint8_t* p_png) {
+String Image::get_format_name(Format p_format) {
+
+	ERR_FAIL_INDEX_V(p_format,FORMAT_MAX,String());
+	return format_names[p_format];
+}
+
+Image::Image(const uint8_t* p_png,int p_len) {
 
 	width=0;
 	height=0;
@@ -2163,7 +2396,7 @@ Image::Image(const uint8_t* p_png) {
 	format=FORMAT_GRAYSCALE;
 
 	if (_png_mem_loader_func) {
-		*this = _png_mem_loader_func(p_png);
+		*this = _png_mem_loader_func(p_png,p_len);
 	}
 }
 

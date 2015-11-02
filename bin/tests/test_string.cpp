@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 //#include "math_funcs.h"
 #include <stdio.h>
 #include "os/os.h"
-#include "drivers/trex/regex.h"
+#include "drivers/nrex/regex.h"
 
 #include "test_string.h"
 
@@ -463,20 +463,16 @@ bool test_26() {
 
 	OS::get_singleton()->print("\n\nTest 26: RegEx\n");
 	RegEx regexp("(.*):(.*)");
-	List<String> captures;
 
-	bool match = regexp.match("name:password", &captures);
-	printf("\tmatch: %s\n", match?"true":"false");
+	int res = regexp.find("name:password");
+	printf("\tmatch: %s\n", (res>=0)?"true":"false");
 
-	printf("\t%i captures:\n", captures.size());
-	List<String>::Element *I = captures.front();
-	while (I) {
-
-		printf("%ls\n", I->get().c_str());
-
-		I = I->next();
-	};
-	return captures.size();
+	printf("\t%i captures:\n", regexp.get_capture_count());
+	for (int i = 0; i<regexp.get_capture_count(); i++)
+	{
+		printf("%ls\n", regexp.get_capture(i).c_str());
+	}
+	return res;
 };
 
 struct test_27_data {
@@ -487,7 +483,7 @@ struct test_27_data {
 
 bool test_27() {
 
-	OS::get_singleton()->print("\n\nTest 26: begins_with\n");
+	OS::get_singleton()->print("\n\nTest 27: begins_with\n");
 	test_27_data tc[] = {
 		{"res://foobar", "res://", true},
 		{"res", "res://", false},
@@ -504,10 +500,348 @@ bool test_27() {
 		}
 		if (!state) {
 			OS::get_singleton()->print("\n\t Failure on:\n\t\tstring: ", tc[i].data, "\n\t\tbegin: ", tc[i].begin, "\n\t\texpected: ", tc[i].expected ? "true" : "false", "\n");
+			break;
 		}
 	};
 	return state;
 };
+
+
+bool test_28() {
+
+	OS::get_singleton()->print("\n\nTest 28: sprintf\n");
+
+	bool success, state = true;
+	char output_format[] = "\tTest:\t%ls => %ls (%s)\n";
+	String format, output;
+	Array args;
+	bool error;
+	
+	// %%
+	format = "fish %% frog";
+	args.clear();
+	output = format.sprintf(args, &error);
+	success = (output == String("fish % frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	//////// INTS
+
+	// Int
+	format = "fish %d frog";
+	args.clear();
+	args.push_back(5);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish 5 frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Int left padded with zeroes.
+	format = "fish %05d frog";
+	args.clear();
+	args.push_back(5);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish 00005 frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Int left padded with spaces.
+	format = "fish %5d frog";
+	args.clear();
+	args.push_back(5);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish     5 frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Int right padded with spaces.
+	format = "fish %-5d frog";
+	args.clear();
+	args.push_back(5);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish 5     frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Int with sign (positive).
+	format = "fish %+d frog";
+	args.clear();
+	args.push_back(5);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish +5 frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Negative int.
+	format = "fish %d frog";
+	args.clear();
+	args.push_back(-5);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish -5 frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Hex (lower)
+	format = "fish %x frog";
+	args.clear();
+	args.push_back(45);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish 2d frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Hex (upper)
+	format = "fish %X frog";
+	args.clear();
+	args.push_back(45);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish 2D frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Octal
+	format = "fish %o frog";
+	args.clear();
+	args.push_back(99);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish 143 frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	////// REALS
+
+	// Real
+	format = "fish %f frog";
+	args.clear();
+	args.push_back(99.99);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish 99.990000 frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Real left-padded
+	format = "fish %11f frog";
+	args.clear();
+	args.push_back(99.99);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish   99.990000 frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Real right-padded
+	format = "fish %-11f frog";
+	args.clear();
+	args.push_back(99.99);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish 99.990000   frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Real given int.
+	format = "fish %f frog";
+	args.clear();
+	args.push_back(99);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish 99.000000 frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Real with sign (positive).
+	format = "fish %+f frog";
+	args.clear();
+	args.push_back(99.99);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish +99.990000 frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Real with 1 decimals.
+	format = "fish %.1f frog";
+	args.clear();
+	args.push_back(99.99);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish 100.0 frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Real with 12 decimals.
+	format = "fish %.12f frog";
+	args.clear();
+	args.push_back(99.99);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish 99.990000000000 frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Real with no decimals.
+	format = "fish %.f frog";
+	args.clear();
+	args.push_back(99.99);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish 100 frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	/////// Strings.
+
+	// String
+	format = "fish %s frog";
+	args.clear();
+	args.push_back("cheese");
+	output = format.sprintf(args, &error);
+	success = (output == String("fish cheese frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// String left-padded
+	format = "fish %10s frog";
+	args.clear();
+	args.push_back("cheese");
+	output = format.sprintf(args, &error);
+	success = (output == String("fish     cheese frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// String right-padded
+	format = "fish %-10s frog";
+	args.clear();
+	args.push_back("cheese");
+	output = format.sprintf(args, &error);
+	success = (output == String("fish cheese     frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	///// Characters
+
+	// Character as string.
+	format = "fish %c frog";
+	args.clear();
+	args.push_back("A");
+	output = format.sprintf(args, &error);
+	success = (output == String("fish A frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Character as int.
+	format = "fish %c frog";
+	args.clear();
+	args.push_back(65);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish A frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	///// Dynamic width
+
+	// String dynamic width
+	format = "fish %*s frog";
+	args.clear();
+	args.push_back(10);
+	args.push_back("cheese");
+	output = format.sprintf(args, &error);
+	success = (output == String("fish     cheese frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Int dynamic width
+	format = "fish %*d frog";
+	args.clear();
+	args.push_back(10);
+	args.push_back(99);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish         99 frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Float dynamic width
+	format = "fish %*.*f frog";
+	args.clear();
+	args.push_back(10);
+	args.push_back(3);
+	args.push_back(99.99);
+	output = format.sprintf(args, &error);
+	success = (output == String("fish     99.990 frog") && !error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	///// Errors
+
+	// More formats than arguments.
+	format = "fish %s %s frog";
+	args.clear();
+	args.push_back("cheese");
+	output = format.sprintf(args, &error);
+	success = (output == "not enough arguments for format string" && error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// More arguments than formats.
+	format = "fish %s frog";
+	args.clear();
+	args.push_back("hello");
+	args.push_back("cheese");
+	output = format.sprintf(args, &error);
+	success = (output == "not all arguments converted during string formatting" && error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Incomplete format.
+	format = "fish %10";
+	args.clear();
+	args.push_back("cheese");
+	output = format.sprintf(args, &error);
+	success = (output == "incomplete format" && error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Bad character in format string
+	format = "fish %&f frog";
+	args.clear();
+	args.push_back("cheese");
+	output = format.sprintf(args, &error);
+	success = (output == "unsupported format character" && error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Too many decimals.
+	format = "fish %2.2.2f frog";
+	args.clear();
+	args.push_back(99.99);
+	output = format.sprintf(args, &error);
+	success = (output == "too many decimal points in format" && error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// * not a number
+	format = "fish %*f frog";
+	args.clear();
+	args.push_back("cheese");
+	args.push_back(99.99);
+	output = format.sprintf(args, &error);
+	success = (output == "* wants number" && error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Character too long.
+	format = "fish %c frog";
+	args.clear();
+	args.push_back("sc");
+	output = format.sprintf(args, &error);
+	success = (output == "%c requires number or single-character string" && error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Character bad type.
+	format = "fish %c frog";
+	args.clear();
+	args.push_back(Array());
+	output = format.sprintf(args, &error);
+	success = (output == "%c requires number or single-character string" && error);
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	return state;
+}
 
 typedef bool (*TestFunc)(void);
 
@@ -540,6 +874,7 @@ TestFunc test_funcs[] = {
 	test_25,
 	test_26,
 	test_27,
+	test_28,
 	0
 	
 };

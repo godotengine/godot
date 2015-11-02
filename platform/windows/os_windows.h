@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,9 @@
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
 #include "drivers/unix/ip_unix.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
+#include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 
+#include "main/input_default.h"
 
 #include <windows.h>
 
@@ -86,7 +88,7 @@ class OS_Windows : public OS {
 	uint64_t ticks_start;
 	uint64_t ticks_per_second;
 
-	bool minimized;
+
         bool old_invalid;
         bool outside;
 	int old_x,old_y;
@@ -130,6 +132,7 @@ class OS_Windows : public OS {
 	int joystick_count;
 	Joystick joysticks[JOYSTICKS_MAX];
 	
+	Size2 window_rect;
 	VideoMode video_mode;
 
 	MainLoop *main_loop;
@@ -187,6 +190,7 @@ protected:
 	void probe_joysticks();
 	void process_joysticks();
 	void process_key_events();
+	String get_joystick_name( int id, JOYCAPS jcaps);
 	
 	struct ProcessInfo {
 
@@ -194,6 +198,23 @@ protected:
 		PROCESS_INFORMATION pi;
 	};
 	Map<ProcessID, ProcessInfo>* process_map;
+
+	struct MonitorInfo {
+		HMONITOR hMonitor;
+		HDC hdcMonitor;
+		Rect2 rect;
+
+
+	};
+
+	bool pre_fs_valid;
+	RECT pre_fs_rect;
+	Vector<MonitorInfo> monitor_info;
+	bool maximized;
+	bool minimized;
+
+	static BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor,  LPARAM dwData);
+
 
 public:
 	LRESULT WndProc(HWND	hWnd,UINT uMsg,	WPARAM	wParam,	LPARAM	lParam);
@@ -217,13 +238,33 @@ public:
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
 
+	virtual int get_screen_count() const;
+	virtual int get_current_screen() const;
+	virtual void set_current_screen(int p_screen);
+	virtual Point2 get_screen_position(int p_screen=0) const;
+	virtual Size2 get_screen_size(int p_screen=0) const;
+	virtual Point2 get_window_position() const;
+	virtual void set_window_position(const Point2& p_position);
+	virtual Size2 get_window_size() const;
+	virtual void set_window_size(const Size2 p_size);
+	virtual void set_window_fullscreen(bool p_enabled);
+	virtual bool is_window_fullscreen() const;
+	virtual void set_window_resizable(bool p_enabled);
+	virtual bool is_window_resizable() const;
+	virtual void set_window_minimized(bool p_enabled);
+	virtual bool is_window_minimized() const;
+	virtual void set_window_maximized(bool p_enabled);
+	virtual bool is_window_maximized() const;
+
 	virtual MainLoop *get_main_loop() const;
 
 	virtual String get_name();
 	
-	virtual Date get_date() const;
-	virtual Time get_time() const;
+	virtual Date get_date(bool utc) const;
+	virtual Time get_time(bool utc) const;
+	virtual TimeZoneInfo get_time_zone_info() const;
 	virtual uint64_t get_unix_time() const;
+	virtual uint64_t get_system_time_msec() const;
 
 	virtual bool can_draw() const;
 	virtual Error set_cwd(const String& p_cwd);
@@ -233,7 +274,7 @@ public:
 
 	virtual Error execute(const String& p_path, const List<String>& p_arguments,bool p_blocking,ProcessID *r_child_id=NULL,String* r_pipe=NULL,int *r_exitcode=NULL);
 	virtual Error kill(const ProcessID& p_pid);
-
+	
 	virtual bool has_environment(const String& p_var) const;
 	virtual String get_environment(const String& p_var) const;
 

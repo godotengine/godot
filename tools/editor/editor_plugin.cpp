@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,6 +73,13 @@ void EditorPlugin::add_custom_control(CustomControlContainer p_location,Control 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_SIDE: {
 
+			CanvasItemEditor::get_singleton()->get_palette_split()->add_child(p_control);
+			CanvasItemEditor::get_singleton()->get_palette_split()->move_child(p_control,0);
+
+		} break;
+		case CONTAINER_CANVAS_EDITOR_BOTTOM: {
+
+			CanvasItemEditor::get_singleton()->get_bottom_split()->add_child(p_control);
 
 		} break;
 
@@ -191,6 +198,13 @@ bool EditorPlugin::get_remove_list(List<Node*> *p_list) {
 void EditorPlugin::restore_global_state() {}
 void EditorPlugin::save_global_state() {}
 
+void EditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
+
+}
+
+void EditorPlugin::get_window_layout(Ref<ConfigFile> p_layout){
+
+}
 
 void EditorPlugin::_bind_methods() {
 

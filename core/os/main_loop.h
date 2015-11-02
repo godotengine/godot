@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,8 @@ protected:
 public:	
 
 	enum {
+		NOTIFICATION_WM_MOUSE_ENTER = 3,
+		NOTIFICATION_WM_MOUSE_EXIT = 4,
 		NOTIFICATION_WM_FOCUS_IN = 5,
 		NOTIFICATION_WM_FOCUS_OUT = 6,
 		NOTIFICATION_WM_QUIT_REQUEST = 7,

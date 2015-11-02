@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -104,7 +104,7 @@ public:
 
 
 	template <class T_val>
-	int find(T_val& p_val) const;
+	int find(const T_val& p_val) const;
 
 	void set(int p_index,T p_elem);
 	T get(int p_index) const;
@@ -149,7 +149,16 @@ public:
 		sort_custom<_DefaultComparator<T> >();
 	}
 
+	void ordered_insert(const T& p_val) {
+			int i;
+			for (i=0; i<size(); i++) {
 
+				if (p_val < operator[](i)) {
+					break;
+				};
+			};
+			insert(i, p_val);
+	}
 
 	void operator=(const Vector& p_from);
 	Vector(const Vector& p_from);
@@ -212,7 +221,7 @@ void Vector<T>::_copy_on_write() {
 }
 
 template<class T> template<class T_val>
-int Vector<T>::find(T_val& p_val) const {
+int Vector<T>::find(const T_val &p_val) const {
 
 	int ret = -1;
 	if (size() == 0) 
@@ -331,12 +340,14 @@ template<class T>
 void Vector<T>::remove(int p_index) {
 
 	ERR_FAIL_INDEX(p_index, size());
-	for (int i=p_index; i<size()-1; i++) {
+	T*p=ptr();
+	int len=size();
+	for (int i=p_index; i<len-1; i++) {
 
-		set(i, get(i+1));
+		p[i]=p[i+1];
 	};
 
-	resize(size()-1);
+	resize(len-1);
 };
 
 template<class T>

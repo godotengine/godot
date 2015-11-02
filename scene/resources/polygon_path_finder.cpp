@@ -142,6 +142,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2& p_from, const Vector
 			if (d<closest_dist) {
 				ignore_from_edge=E->get();
 				closest_dist=d;
+				closest_point=closest;
 			}
 		}
 
@@ -168,6 +169,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2& p_from, const Vector
 			if (d<closest_dist) {
 				ignore_to_edge=E->get();
 				closest_dist=d;
+				closest_point=closest;
 			}
 		}
 
@@ -523,23 +525,31 @@ bool PolygonPathFinder::is_point_inside(const Vector2& p_point) const {
 
 Vector2 PolygonPathFinder::get_closest_point(const Vector2& p_point) const {
 
-	int closest_idx=-1;
 	float closest_dist=1e20;
-	for(int i=0;i<points.size()-2;i++) {
+	Vector2 closest_point;
 
-		float d = p_point.distance_squared_to(points[i].pos);
+	for (Set<Edge>::Element *E=edges.front();E;E=E->next()) {
+
+		const Edge& e=E->get();
+		Vector2 seg[2]={
+			points[e.points[0]].pos,
+			points[e.points[1]].pos
+		};
+
+
+		Vector2 closest = Geometry::get_closest_point_to_segment_2d(p_point,seg);
+		float d = p_point.distance_squared_to(closest);
+
 		if (d<closest_dist) {
-			d=closest_dist;
-			closest_idx=i;
+			closest_dist=d;
+			closest_point=closest;
 		}
-
 	}
+	
+	ERR_FAIL_COND_V(closest_dist==1e20,Vector2());
 
-	ERR_FAIL_COND_V(closest_idx==-1,Vector2());
-
-	return points[closest_idx].pos;
+	return closest_point;
 }
-
 
 Vector<Vector2> PolygonPathFinder::get_intersections(const Vector2& p_from, const Vector2& p_to) const {
 

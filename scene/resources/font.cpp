@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -398,6 +398,17 @@ int Font::get_kerning_pair(CharType p_A,CharType p_B) const {
 	return 0;
 }
 
+void Font::set_distance_field_hint(bool p_distance_field) {
+
+	distance_field_hint=p_distance_field;
+	emit_changed();
+}
+
+bool Font::is_distance_field_hint() const{
+
+	return distance_field_hint;
+}
+
 
 void Font::clear() {
 	
@@ -406,6 +417,7 @@ void Font::clear() {
 	char_map.clear();
 	textures.clear();
 	kerning_map.clear();
+	distance_field_hint=false;
 }
 
 Size2 Font::get_string_size(const String& p_string) const {
@@ -498,6 +510,7 @@ float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_
 
 void Font::_bind_methods() {
 
+	ObjectTypeDB::bind_method(_MD("create_from_fnt","path"),&Font::create_from_fnt);
 	ObjectTypeDB::bind_method(_MD("set_height","px"),&Font::set_height);
 	ObjectTypeDB::bind_method(_MD("get_height"),&Font::get_height);
 
@@ -511,8 +524,15 @@ void Font::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_texture","texture:Texture"),&Font::add_texture);
 	ObjectTypeDB::bind_method(_MD("add_char","character","texture","rect","align","advance"),&Font::add_char,DEFVAL(Point2()),DEFVAL(-1));
 
+
+	ObjectTypeDB::bind_method(_MD("get_texture_count"),&Font::get_texture_count);
+	ObjectTypeDB::bind_method(_MD("get_texture:Texture","idx"),&Font::get_texture);
+
 	ObjectTypeDB::bind_method(_MD("get_char_size","char","next"),&Font::get_char_size,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_string_size","string"),&Font::get_string_size);
+
+	ObjectTypeDB::bind_method(_MD("set_distance_field_hint","enable"),&Font::set_distance_field_hint);
+	ObjectTypeDB::bind_method(_MD("is_distance_field_hint"),&Font::is_distance_field_hint);
 
 	ObjectTypeDB::bind_method(_MD("clear"),&Font::clear);
 
@@ -535,12 +555,14 @@ void Font::_bind_methods() {
 
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height", PROPERTY_HINT_RANGE,"-1024,1024,1" ), _SCS("set_height"), _SCS("get_height") );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "ascent", PROPERTY_HINT_RANGE,"-1024,1024,1" ), _SCS("set_ascent"), _SCS("get_ascent") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "distance_field" ), _SCS("set_distance_field_hint"), _SCS("is_distance_field_hint") );
 
 }
 
 Font::Font() {
 	
 	clear();
+
 	
 
 }

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #ifdef STOREKIT_ENABLED
+
+#ifdef MODULE_FUSEBOXX_ENABLED
+#import "modules/fuseboxx/ios/FuseSDK.h"
+#endif
 
 #include "in_app_store.h"
 
@@ -210,7 +214,7 @@ Error InAppStore::request_product_info(Variant p_params) {
                 receipt_to_send = [receipt description];
             }
             Dictionary receipt_ret;
-            receipt_ret["receipt"] = String::utf8([receipt_to_send UTF8String]);
+            receipt_ret["receipt"] = String::utf8(receipt_to_send != nil ? [receipt_to_send UTF8String] : "");
             receipt_ret["sdk"] = sdk_version;
             ret["receipt"] = receipt_ret;
             
@@ -222,6 +226,11 @@ Error InAppStore::request_product_info(Variant p_params) {
             else{
                 [pending_transactions setObject:transaction forKey:transaction.payment.productIdentifier];
             }
+			
+			#ifdef MODULE_FUSEBOXX_ENABLED
+			printf("Registering transaction on Fuseboxx!\n");
+			[FuseSDK registerInAppPurchase: transaction];
+			#endif
 		} break;
 		case SKPaymentTransactionStateFailed: {
             printf("status transaction failed!\n");

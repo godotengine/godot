@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,7 @@ class EditorHistory {
 
 	struct Obj {
 
-		RES res;
+		REF ref;
 		ObjectID object;
 		String property;
 	};
@@ -55,6 +55,7 @@ class EditorHistory {
 		Vector<Obj> path;
 		int level;
 	};
+friend class EditorData;
 
 	Vector<History> history;
 	int current;
@@ -74,9 +75,16 @@ class EditorHistory {
 
 public:
 
+	bool is_at_begining() const;
+	bool is_at_end() const;
+
 	void add_object(ObjectID p_object);
 	void add_object(ObjectID p_object,const String& p_subprop);
 	void add_object(ObjectID p_object,int p_relevel);
+
+	int get_history_len();
+	int get_history_pos();
+	ObjectID get_history_obj(int p_obj) const;
 
 	bool next();
 	bool previous();
@@ -90,6 +98,8 @@ public:
 
 	EditorHistory();
 };
+
+class EditorSelection;
 
 class EditorData {
 
@@ -117,6 +127,22 @@ private:
 
 	void _cleanup_history();
 
+	struct EditedScene {
+		Node* root;
+		Dictionary editor_states;
+		Ref<ResourceImportMetadata> medatata;
+		List<Node*> selection;
+		Vector<EditorHistory::History> history_stored;
+		int history_current;
+		Dictionary custom_state;
+		uint64_t version;
+		NodePath live_edit_root;
+
+
+	};
+
+	Vector<EditedScene> edited_scene;
+	int current_edited_scene;
 
 public:
 
@@ -145,6 +171,36 @@ public:
 	void add_custom_type(const String& p_type, const String& p_inherits,const Ref<Script>& p_script,const Ref<Texture>& p_icon );
 	void remove_custom_type(const String& p_type);
 	const Map<String,Vector<CustomType> >& get_custom_types() const { return custom_types; }
+
+
+	int add_edited_scene(int p_at_pos);
+	void move_edited_scene_index(int p_idx,int p_to_idx);
+	void remove_scene(int p_idx);
+	void set_edited_scene(int p_idx);
+	void set_edited_scene_root(Node* p_root);
+	void set_edited_scene_import_metadata(Ref<ResourceImportMetadata> p_mdata);
+	Ref<ResourceImportMetadata> get_edited_scene_import_metadata() const;
+	int get_edited_scene() const;
+	Node* get_edited_scene_root();
+	int get_edited_scene_count() const;
+	String get_scene_title(int p_idx) const;
+	String get_scene_path(int p_idx) const;
+	String get_scene_type(int p_idx) const;
+	Ref<Script> get_scene_root_script(int p_idx) const;
+	void set_edited_scene_version(uint64_t version);
+	uint64_t get_edited_scene_version() const;
+	uint64_t get_scene_version(int p_idx) const;
+	void clear_edited_scenes();
+	void set_edited_scene_live_edit_root(const NodePath& p_root);
+	NodePath get_edited_scene_live_edit_root();
+
+
+	void set_plugin_window_layout(Ref<ConfigFile> p_layout);
+	void get_plugin_window_layout(Ref<ConfigFile> p_layout);
+
+	void save_edited_scene_state(EditorSelection *p_selection,EditorHistory *p_history,const Dictionary& p_custom);
+	Dictionary restore_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history);
+
 
 	EditorData();
 };

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -113,7 +113,7 @@ class EditorSceneImportPlugin : public EditorImportPlugin {
 	void _filter_tracks(Node *scene, const String& p_text);
 	void _merge_existing_node(Node *p_node,Node *p_imported_scene,Set<Ref<Resource> >& checked_resources,Set<Node*> &checked_nodes);
 
-	void _add_new_nodes(Node *p_node,Node *p_imported,Node *p_imported_scene,Set<Node*> &checked_nodes);
+	void _add_new_nodes(Node *p_node,Node *p_imported,Node *p_imported_scene,Node *p_existing_scene,Set<Node*> &checked_nodes);
 	void _optimize_animations(Node *scene, float p_max_lin_error,float p_max_ang_error,float p_max_angle);
 
 	void _merge_scenes(Node *p_node, Node *p_imported);

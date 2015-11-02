@@ -22,7 +22,7 @@ def get_opts():
 	return [
 		('ISIMPLATFORM', 'name of the iphone platform', 'iPhoneSimulator'),
 		('ISIMPATH', 'the path to iphone toolchain', '/Applications/Xcode.app/Contents/Developer/Platforms/${ISIMPLATFORM}.platform'),
-		('ISIMSDK', 'path to the iphone SDK', '$ISIMPATH/Developer/SDKs/${ISIMPLATFORM}7.1.sdk'),
+		('ISIMSDK', 'path to the iphone SDK', '$ISIMPATH/Developer/SDKs/${ISIMPLATFORM}.sdk'),
 		('game_center', 'Support for game center', 'yes'),
 		('store_kit', 'Support for in-app store', 'yes'),
 		('ios_gles22_override', 'Force GLES2.0 on iOS', 'yes'),

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,7 +64,7 @@ int OSNacl::get_video_driver_count() const {
 };
 const char * OSNacl::get_video_driver_name(int p_driver) const {
 
-	return "gles2";
+	return "GLES2";
 };
 
 OS::VideoMode OSNacl::get_default_video_mode() const {
@@ -240,10 +240,14 @@ MainLoop *OSNacl::get_main_loop() const {
 	return main_loop;
 };
 
-OS::Date OSNacl::get_date() const {
+OS::Date OSNacl::get_date(bool utc) const {
 
 	time_t t=time(NULL);
-	struct tm *lt=localtime(&t);
+	struct tm *lt;
+	if (utc)
+		lt=gmtime(&t);
+	else
+		lt=localtime(&t);
 	Date ret;
 	ret.year=lt->tm_year;
 	ret.month=(Month)lt->tm_mon;
@@ -254,14 +258,44 @@ OS::Date OSNacl::get_date() const {
 	return ret;
 };
 
-OS::Time OSNacl::get_time() const {
+OS::Time OSNacl::get_time(bool utc) const {
 
 	time_t t=time(NULL);
-	struct tm *lt=localtime(&t);
+	struct tm *lt;
+	if (utc)
+		lt=gmtime(&t);
+	else
+		lt=localtime(&t);
 	Time ret;
 	ret.hour=lt->tm_hour;
 	ret.min=lt->tm_min;
 	ret.sec=lt->tm_sec;
+	return ret;
+};
+
+OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
+	time_t t = time(NULL);
+	struct tm *lt = localtime(&t);
+	char name[16];
+	strftime(name, 16, "%Z", lt);
+	name[15] = 0;
+	TimeZoneInfo ret;
+	ret.name = name;
+
+	char bias_buf[16];
+	strftime(bias_buf, 16, "%z", lt);
+	int bias;
+	bias_buf[15] = 0;
+	sscanf(bias_buf, "%d", &bias);
+
+	// convert from ISO 8601 (1 minute=1, 1 hour=100) to minutes
+	int hour = (int)bias / 100;
+	int minutes = bias % 100;
+	if (bias < 0)
+		ret.bias = hour * 60 - minutes;
+	else
+		ret.bias = hour * 60 + minutes;
+
 	return ret;
 };
 

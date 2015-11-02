@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,7 +56,6 @@ void OS_Server::initialize(const VideoMode& p_desired,int p_video_driver,int p_a
 	args=OS::get_singleton()->get_cmdline_args();
 	current_videomode=p_desired;
 	main_loop=NULL;
-
 	
 	rasterizer = memnew( RasterizerDummy );
 
@@ -163,6 +162,12 @@ OS::VideoMode OS_Server::get_video_mode(int p_screen) const {
 
 	return current_videomode;
 }
+
+Size2 OS_Server::get_window_size() const {
+
+	return Vector2(current_videomode.width,current_videomode.height)	;
+}
+
 void OS_Server::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,6 +46,7 @@ public:
 
 	Space2DSW *space;
 
+	virtual int intersect_point(const Vector2& p_point,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
 	virtual bool intersect_ray(const Vector2& p_from, const Vector2& p_to,RayResult &r_result,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
 	virtual int intersect_shape(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,float p_margin,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
 	virtual bool cast_motion(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,float p_margin,float &p_closest_safe,float &p_closest_unsafe, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
@@ -93,13 +94,17 @@ class Space2DSW {
 	float body_linear_velocity_sleep_treshold;
 	float body_angular_velocity_sleep_treshold;
 	float body_time_to_sleep;
-	float body_angular_velocity_damp_ratio;
 
 	bool locked;
 
 	int island_count;
 	int active_objects;
 	int collision_pairs;
+
+	int _cull_aabb_for_body(Body2DSW *p_body,const Rect2& p_aabb);
+
+	Vector<Vector2> contact_debug;
+	int contact_debug_count;
 
 friend class Physics2DDirectSpaceStateSW;
 
@@ -142,7 +147,7 @@ public:
 	_FORCE_INLINE_ real_t get_body_linear_velocity_sleep_treshold() const { return body_linear_velocity_sleep_treshold; }
 	_FORCE_INLINE_ real_t get_body_angular_velocity_sleep_treshold() const { return body_angular_velocity_sleep_treshold; }
 	_FORCE_INLINE_ real_t get_body_time_to_sleep() const { return body_time_to_sleep; }
-	_FORCE_INLINE_ real_t get_body_angular_velocity_damp_ratio() const { return body_angular_velocity_damp_ratio; }
+
 
 
 	void update();
@@ -164,6 +169,16 @@ public:
 	int get_active_objects() const { return active_objects; }
 
 	int get_collision_pairs() const { return collision_pairs; }
+
+	bool test_body_motion(Body2DSW *p_body, const Vector2&p_motion, float p_margin, Physics2DServer::MotionResult *r_result);
+
+
+	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
+	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.empty(); }
+	_FORCE_INLINE_ void add_debug_contact(const Vector2& p_contact) { if (contact_debug_count<contact_debug.size()) contact_debug[contact_debug_count++]=p_contact; }
+	_FORCE_INLINE_ Vector<Vector2> get_debug_contacts() { return contact_debug; }
+	_FORCE_INLINE_ int get_debug_contact_count() { return contact_debug_count; }
+
 
 	Physics2DDirectSpaceStateSW *get_direct_state();
 

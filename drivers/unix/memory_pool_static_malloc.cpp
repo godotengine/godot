@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,10 +40,9 @@
  * so BE CAREFUL!
  */
 
-
 void* MemoryPoolStaticMalloc::alloc(size_t p_bytes,const char *p_description) {
 
-	#if DFAULT_ALIGNMENT == 1
+	#if DEFAULT_ALIGNMENT == 1
 
 		return _alloc(p_bytes, p_description);
 
@@ -123,7 +122,7 @@ void* MemoryPoolStaticMalloc::_alloc(size_t p_bytes,const char *p_description) {
 
 void* MemoryPoolStaticMalloc::realloc(void *p_memory,size_t p_bytes) {
 
-	#if DFAULT_ALIGNMENT == 1
+	#if DEFAULT_ALIGNMENT == 1
 
 		return _realloc(p_memory,p_bytes);
 	#else
@@ -154,7 +153,7 @@ void* MemoryPoolStaticMalloc::_realloc(void *p_memory,size_t p_bytes) {
 		return alloc( p_bytes );
 	}
 		
-	if (p_bytes<=0) {
+	if (p_bytes==0) {
 		
 		this->free(p_memory);
 		ERR_FAIL_COND_V( p_bytes < 0 , NULL );
@@ -171,7 +170,6 @@ void* MemoryPoolStaticMalloc::_realloc(void *p_memory,size_t p_bytes) {
 	
 	bool single_element = (ringptr->next == ringptr) && (ringptr->prev == ringptr);
 	bool is_list = ( ringlist == ringptr );
-	
 	
 	RingPtr *new_ringptr=(RingPtr*)::realloc(ringptr, p_bytes+sizeof(RingPtr));
 	
@@ -213,7 +211,7 @@ void MemoryPoolStaticMalloc::free(void *p_ptr) {
 
 	ERR_FAIL_COND( !MemoryPoolStatic::get_singleton());
 
-	#if DFAULT_ALIGNMENT == 1
+	#if DEFAULT_ALIGNMENT == 1
 
 		_free(p_ptr);
 	#else

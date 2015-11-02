@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -165,9 +165,10 @@ public:
 
 	_FORCE_INLINE_ Type get_type() const { return type; }
 	static String get_type_name(Variant::Type p_type);
-	static bool can_convert(Type p_type_from,Type p_type_to);
+	static bool can_convert(Type p_type_from, Type p_type_to);
+	static bool can_convert_strict(Type p_type_from, Type p_type_to);
 
-#pragma runtime_checks( "", off )
+
 
 	template<class T>
 	static Type get_type_for() {
@@ -177,13 +178,14 @@ public:
 		Type r = v.get_type();
 		return r;
 	}
-#pragma runtime_checks( "", restore )
+
 
 	bool is_ref() const;
 	_FORCE_INLINE_ bool is_num() const { return type==INT || type==REAL; };
 	_FORCE_INLINE_ bool is_array() const { return type>=ARRAY; };
 	bool is_shared() const;
 	bool is_zero() const;
+	bool is_one() const;
 
 	operator bool() const;
 	operator signed int() const;
@@ -408,7 +410,8 @@ public:
 
 	//argsVariant call()
 
-	bool operator==(const Variant& p_variant) const;	
+	bool operator==(const Variant& p_variant) const;
+	bool operator<(const Variant& p_variant) const;
 	uint32_t hash() const;
 
 	bool booleanize(bool &valid) const;
@@ -418,6 +421,12 @@ public:
 	static void get_numeric_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
 	static bool has_numeric_constant(Variant::Type p_type, const StringName& p_value);
 	static int get_numeric_constant_value(Variant::Type p_type, const StringName& p_value);
+
+	typedef String (*ObjectDeConstruct)(const Variant& p_object,void *ud);
+	typedef void (*ObjectConstruct)(const String& p_text,void *ud,Variant& r_value);
+
+	String get_construct_string(ObjectDeConstruct p_obj_deconstruct=NULL,void *p_deconstruct_ud=NULL) const;
+	static void construct_from_string(const String& p_string,Variant& r_value,ObjectConstruct p_obj_construct=NULL,void *p_construct_ud=NULL);
 
 	void operator=(const Variant& p_variant); // only this is enough for all the other types
 	Variant(const Variant& p_variant);

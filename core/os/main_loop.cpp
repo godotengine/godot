@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,22 @@
 
 void MainLoop::_bind_methods() {
 
-	ObjectTypeDB::bind_method("input_event",&MainLoop::input_event);
+	ObjectTypeDB::bind_method(_MD("input_event","ev"),&MainLoop::input_event);
+	ObjectTypeDB::bind_method(_MD("input_text","text"),&MainLoop::input_text);
+	ObjectTypeDB::bind_method(_MD("init"),&MainLoop::init);
+	ObjectTypeDB::bind_method(_MD("iteration","delta"),&MainLoop::iteration);
+	ObjectTypeDB::bind_method(_MD("idle","delta"),&MainLoop::idle);
+	ObjectTypeDB::bind_method(_MD("finish"),&MainLoop::finish);
 
+	BIND_VMETHOD( MethodInfo("_input_event",PropertyInfo(Variant::INPUT_EVENT,"ev")) );
+	BIND_VMETHOD( MethodInfo("_input_text",PropertyInfo(Variant::STRING,"text")) );
+	BIND_VMETHOD( MethodInfo("_initialize") );
+	BIND_VMETHOD( MethodInfo("_iteration",PropertyInfo(Variant::REAL,"delta")) );
+	BIND_VMETHOD( MethodInfo("_idle",PropertyInfo(Variant::REAL,"delta")) );
+	BIND_VMETHOD( MethodInfo("_finalize") );
+
+	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_ENTER);
+	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_EXIT);
 	BIND_CONSTANT(NOTIFICATION_WM_FOCUS_IN);
 	BIND_CONSTANT(NOTIFICATION_WM_FOCUS_OUT);
 	BIND_CONSTANT(NOTIFICATION_WM_QUIT_REQUEST);
@@ -58,13 +72,15 @@ MainLoop::~MainLoop()
 
 void MainLoop::input_text( const String& p_text ) {
 
+	if (get_script_instance())
+		get_script_instance()->call("_input_text",p_text);
 
 }
 
 void MainLoop::input_event( const InputEvent& p_event ) {
 
 	if (get_script_instance())
-		get_script_instance()->call("input_event",p_event);
+		get_script_instance()->call("_input_event",p_event);
 
 }
 
@@ -74,13 +90,13 @@ void MainLoop::init() {
 		set_script(init_script.get_ref_ptr());
 
 	if (get_script_instance())
-		get_script_instance()->call("init");
+		get_script_instance()->call("_initialize");
 
 }
 bool MainLoop::iteration(float p_time) {
 
 	if (get_script_instance())
-		return get_script_instance()->call("iteration",p_time);
+		return get_script_instance()->call("_iteration",p_time);
 
 	return false;
 
@@ -88,14 +104,14 @@ bool MainLoop::iteration(float p_time) {
 bool MainLoop::idle(float p_time) {
 
 	if (get_script_instance())
-		return get_script_instance()->call("idle",p_time);
+		return get_script_instance()->call("_idle",p_time);
 
 	return false;
 }
 void MainLoop::finish() {
 
 	if (get_script_instance()) {
-		get_script_instance()->call("finish");
+		get_script_instance()->call("_finalize");
 		set_script(RefPtr()); //clear script
 	}
 

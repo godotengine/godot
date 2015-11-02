@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -328,5 +328,6 @@ enum KeyModifierMask {
 String keycode_get_string(uint32_t p_code);
 bool keycode_has_unicode(uint32_t p_unicode);
 int find_keycode(const String& p_code);
+int latin_keyboard_keycode_convert(int p_keycode);
 
 #endif

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -140,7 +140,7 @@ String GDFunction::_get_call_error(const Variant::CallError& p_err, const String
 	} else if (p_err.error==Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
 		err_text="Invalid call to "+p_where+". Expected "+itos(p_err.argument)+" arguments.";
 	} else if (p_err.error==Variant::CallError::CALL_ERROR_INVALID_METHOD) {
-		err_text="Invalid call. Unexisting "+p_where+".";
+		err_text="Invalid call. Nonexistent "+p_where+".";
 	} else if (p_err.error==Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
 		err_text="Attempt to call "+p_where+" on a null instance.";
 	} else {
@@ -335,16 +335,30 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				GET_VARIANT_PTR(b,3);
 				GET_VARIANT_PTR(dst,4);
 
+#ifdef DEBUG_ENABLED
+				Variant ret;
+				Variant::evaluate(op,*a,*b,ret,valid);
+#else
 				Variant::evaluate(op,*a,*b,*dst,valid);
+#endif
+
 				if (!valid) {
-					if (false && dst->get_type()==Variant::STRING) {
+#ifdef DEBUG_ENABLED
+
+					if (ret.get_type()==Variant::STRING) {
 						//return a string when invalid with the error
-						err_text=*dst;
+						err_text=ret;
+						err_text += " in operator '"+Variant::get_operator_name(op)+"'.";
 					} else {
 						err_text="Invalid operands '"+Variant::get_type_name(a->get_type())+"' and '"+Variant::get_type_name(b->get_type())+"' in operator '"+Variant::get_operator_name(op)+"'.";
 					}
+#endif
 					break;
+
 				}
+#ifdef DEBUG_ENABLED
+				*dst=ret;
+#endif
 
 				ip+=5;
 
@@ -456,8 +470,13 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				GET_VARIANT_PTR(dst,3);
 
 				bool valid;
+#ifdef DEBUG_ENABLED
+//allow better error message in cases where src and dst are the same stack position
+				Variant ret = src->get(*index,&valid);
+#else
 				*dst = src->get(*index,&valid);
 
+#endif
 				if (!valid) {
 					String v = index->operator String();
 					if (v!="") {
@@ -468,6 +487,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					err_text="Invalid get index "+v+" (on base: '"+_get_var_type(src)+"').";
 					break;
 				}
+#ifdef DEBUG_ENABLED
+				*dst=ret;
+#endif
 				ip+=4;
 			} continue;
 			case OPCODE_SET_NAMED: {
@@ -507,7 +529,13 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				const StringName *index = &_global_names_ptr[indexname];
 
 				bool valid;
+#ifdef DEBUG_ENABLED
+//allow better error message in cases where src and dst are the same stack position
+				Variant ret = src->get_named(*index,&valid);
+
+#else
 				*dst = src->get_named(*index,&valid);
+#endif
 
 				if (!valid) {
 					if (src->has_method(*index)) {
@@ -517,7 +545,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					}
 					break;
 				}
-
+#ifdef DEBUG_ENABLED
+				*dst=ret;
+#endif
 				ip+=4;
 			} continue;
 			case OPCODE_ASSIGN: {
@@ -820,7 +850,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				gdfs->state.stack.resize(alloca_size);
 				//copy variant stack
 				for(int i=0;i<_stack_size;i++) {
-					memnew_placement(&stack[sizeof(Variant)*i],Variant(stack[i]));
+					memnew_placement(&gdfs->state.stack[sizeof(Variant)*i],Variant(stack[i]));
 				}
 				gdfs->state.stack_size=_stack_size;
 				gdfs->state.self=self;
@@ -1440,8 +1470,8 @@ GDInstance* GDScript::_create_instance(const Variant** p_args,int p_argcount,Obj
 
 	if (err.error!=Variant::CallError::CALL_OK) {
 		instance->script=Ref<GDScript>();
+		instance->owner->set_script_instance(NULL);
 		instances.erase(p_owner);
-		memdelete(instance);
 		ERR_FAIL_COND_V(err.error!=Variant::CallError::CALL_OK, NULL); //error consrtucting
 	}
 
@@ -1688,7 +1718,7 @@ bool GDScript::_update_exports() {
 			}
 
 
-			if (c->extends_used && String(c->extends_file)!="") {
+			if (c->extends_used && String(c->extends_file)!="" && String(c->extends_file) != get_path()) {
 
 				String path = c->extends_file;
 				if (path.is_rel_path()) {
@@ -1726,6 +1756,12 @@ bool GDScript::_update_exports() {
 				//print_line("found "+c->variables[i]._export.name);
 				member_default_values_cache[c->variables[i].identifier]=c->variables[i].default_value;
 			}
+
+			_signals.clear();
+
+			for(int i=0;i<c->_signals.size();i++) {
+				_signals[c->_signals[i].name]=c->_signals[i].arguments;
+			}
 		}
 	} else {
 		//print_line("unchaged is "+get_path());
@@ -1756,6 +1792,7 @@ bool GDScript::_update_exports() {
 	return changed;
 
 #endif
+	return false;
 }
 
 void GDScript::update_exports() {
@@ -1940,8 +1977,16 @@ void GDScript::_bind_methods() {
 
 	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo("new"));	
 
+	ObjectTypeDB::bind_method(_MD("get_as_byte_code"),&GDScript::get_as_byte_code);
+
 }
 
+
+Vector<uint8_t> GDScript::get_as_byte_code() const {
+
+	GDTokenizerBuffer tokenizer;
+	return tokenizer.parse_code_string(source);
+};
 
 
 Error GDScript::load_byte_code(const String& p_path) {
@@ -2069,6 +2114,47 @@ Ref<GDScript> GDScript::get_base() const {
 	return base;
 }
 
+bool GDScript::has_script_signal(const StringName& p_signal) const {
+	if (_signals.has(p_signal))
+		return true;
+	if (base.is_valid()) {
+		return base->has_script_signal(p_signal);
+	}
+#ifdef TOOLS_ENABLED
+	else if (base_cache.is_valid()){
+		return base_cache->has_script_signal(p_signal);
+	}
+
+#endif
+	return false;
+}
+void GDScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
+
+	for(const Map<StringName,Vector<StringName> >::Element *E=_signals.front();E;E=E->next()) {
+
+		MethodInfo mi;
+		mi.name=E->key();
+		for(int i=0;i<E->get().size();i++) {
+			PropertyInfo arg;
+			arg.name=E->get()[i];
+			mi.arguments.push_back(arg);
+		}
+		r_signals->push_back(mi);
+	}
+
+	if (base.is_valid()) {
+		base->get_script_signal_list(r_signals);
+	}
+#ifdef TOOLS_ENABLED
+	else if (base_cache.is_valid()){
+		base_cache->get_script_signal_list(r_signals);
+	}
+
+#endif
+
+}
+
+
 GDScript::GDScript() {
 
 
@@ -2100,7 +2186,6 @@ bool GDInstance::set(const StringName& p_name, const Variant& p_value) {
 	{
 		const Map<StringName,GDScript::MemberInfo>::Element *E = script->member_indices.find(p_name);
 		if (E) {
-			members[E->get().index]=p_value;
 			if (E->get().setter) {
 				const Variant *val=&p_value;
 				Variant::CallError err;
@@ -2109,6 +2194,8 @@ bool GDInstance::set(const StringName& p_name, const Variant& p_value) {
 					return true; //function exists, call was successful
 				}
 			}
+			else
+				members[E->get().index] = p_value;
 			return true;
 		}
 	}
@@ -2477,9 +2564,9 @@ void GDScriptLanguage::init() {
 
 	//populate native classes
 
-	List<String> class_list;
+	List<StringName> class_list;
 	ObjectTypeDB::get_type_list(&class_list);
-	for(List<String>::Element *E=class_list.front();E;E=E->next()) {
+	for(List<StringName>::Element *E=class_list.front();E;E=E->next()) {
 
 		StringName n = E->get();
 		String s = String(n);
@@ -2562,6 +2649,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"static",
 		"float",
 		"int",
+		"signal",
 	0};
 
 
@@ -2622,7 +2710,10 @@ GDScriptLanguage::~GDScriptLanguage() {
 
 /*************** RESOURCE ***************/
 
-RES ResourceFormatLoaderGDScript::load(const String &p_path,const String& p_original_path) {
+RES ResourceFormatLoaderGDScript::load(const String &p_path, const String& p_original_path, Error *r_error) {
+
+	if (r_error)
+		*r_error=ERR_FILE_CANT_OPEN;
 
 	GDScript *script = memnew( GDScript );
 
@@ -2654,6 +2745,8 @@ RES ResourceFormatLoaderGDScript::load(const String &p_path,const String& p_orig
 
 		script->reload();
 	}
+	if (r_error)
+		*r_error=OK;
 
 	return scriptres;
 }
@@ -2695,7 +2788,10 @@ Error ResourceFormatSaverGDScript::save(const String &p_path,const RES& p_resour
 	}
 
 	file->store_string(source);
-
+	if (file->get_error()!=OK && file->get_error()!=ERR_FILE_EOF) {
+		memdelete(file);
+		return ERR_CANT_CREATE;
+	}
 	file->close();
 	memdelete(file);
 	return OK;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,6 +97,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "preload",
 "assert",
 "yield",
+"signal",
 "'['",
 "']'",
 "'{'",
@@ -110,7 +111,8 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "':'",
 "'\\n'",
 "Error",
-"EOF"};
+"EOF",
+"Cursor"};
 
 const char *GDTokenizer::get_token_name(Token p_token) {
 
@@ -537,9 +539,12 @@ void GDTokenizerText::_advance() {
 				is_node_path=true;
 				
 			case '\'':
-				string_mode=STRING_SINGLE_QUOTE;
 			case '"': {
-
+	
+				if (GETCHAR(0)=='\'')
+					string_mode=STRING_SINGLE_QUOTE;
+																	
+																	
 				int i=1;
 				if (string_mode==STRING_DOUBLE_QUOTE && GETCHAR(i)=='"' && GETCHAR(i+1)=='"') {
 					i+=2;
@@ -564,7 +569,10 @@ void GDTokenizerText::_advance() {
 					} else if( string_mode!=STRING_MULTILINE && CharType(GETCHAR(i))=='\n') {
 						_make_error("Unexpected EOL at String.");
 						return;
-
+					} else if( CharType(GETCHAR(i))==0xFFFF) {
+						//string ends here, next will be TK
+						i--;
+						break;
 					} else if (CharType(GETCHAR(i))=='\\') {
 						//escaped characters...
 						i++;
@@ -635,6 +643,11 @@ void GDTokenizerText::_advance() {
 						str+=res;
 
 					} else {
+						if (CharType(GETCHAR(i))=='\n') {
+							line++;
+							column=0;
+						}
+
 						str+=CharType(GETCHAR(i));
 					}
 					i++;
@@ -647,6 +660,9 @@ void GDTokenizerText::_advance() {
 					_make_constant(str);
 				}
 
+			} break;
+			case 0xFFFF: {
+				_make_token(TK_CURSOR);
 			} break;
 			default: {
 
@@ -663,19 +679,19 @@ void GDTokenizerText::_advance() {
 					while(true) {
 						if (GETCHAR(i)=='.') {
 							if (period_found || exponent_found) {
-                                _make_error("Invalid numeric constant at '.'");
+								_make_error("Invalid numeric constant at '.'");
 								return;
 							}
 							period_found=true;
 						} else if (GETCHAR(i)=='x') {
-                            if (hexa_found || str.length()!=1 || !( (i==1 && str[0]=='0') || (i==2 && str[1]=='0' && str[0]=='-') ) ) {
-                                _make_error("Invalid numeric constant at 'x'");
+							if (hexa_found || str.length()!=1 || !( (i==1 && str[0]=='0') || (i==2 && str[1]=='0' && str[0]=='-') ) ) {
+								_make_error("Invalid numeric constant at 'x'");
 								return;
 							}
 							hexa_found=true;
-                        } else if (!hexa_found && GETCHAR(i)=='e') {
+						} else if (!hexa_found && GETCHAR(i)=='e') {
 							if (hexa_found || exponent_found) {
-                                _make_error("Invalid numeric constant at 'e'");
+								_make_error("Invalid numeric constant at 'e'");
 								return;
 							}
 							exponent_found=true;
@@ -685,7 +701,7 @@ void GDTokenizerText::_advance() {
 
 						} else if ((GETCHAR(i)=='-' || GETCHAR(i)=='+') && exponent_found) {
 							if (sign_found) {
-                                _make_error("Invalid numeric constant at '-'");
+								_make_error("Invalid numeric constant at '-'");
 								return;
 							}
 							sign_found=true;
@@ -696,20 +712,20 @@ void GDTokenizerText::_advance() {
 						i++;
 					}
 
-                    if (!( _is_number(str[str.length()-1]) || (hexa_found && _is_hex(str[str.length()-1])))) {
-                        _make_error("Invalid numeric constant: "+str);
+					if (!( _is_number(str[str.length()-1]) || (hexa_found && _is_hex(str[str.length()-1])))) {
+						_make_error("Invalid numeric constant: "+str);
 						return;
 					}
 
 					INCPOS(str.length());
-                    if (hexa_found) {
-                        int val = str.hex_to_int();
-                        _make_constant(val);
-                    } else if (period_found) {
+					if (hexa_found) {
+						int val = str.hex_to_int();
+						_make_constant(val);
+					} else if (period_found) {
 						real_t val = str.to_double();
 						//print_line("*%*%*%*% to convert: "+str+" result: "+rtos(val));
 						_make_constant(val);
-                    } else {
+					} else {
 						int val = str.to_int();
 						_make_constant(val);
 
@@ -818,7 +834,7 @@ void GDTokenizerText::_advance() {
 
 									_make_built_in_func(GDFunctions::Function(i));
 									found=true;
-									 break;
+									break;
 								}
 							}
 
@@ -849,6 +865,7 @@ void GDTokenizerText::_advance() {
 								{TK_PR_PRELOAD,"preload"},
 								{TK_PR_ASSERT,"assert"},
 								{TK_PR_YIELD,"yield"},
+								{TK_PR_SIGNAL,"signal"},
 								{TK_PR_CONST,"const"},
 								//controlflow
 								{TK_CF_IF,"if"},
@@ -1029,7 +1046,7 @@ void GDTokenizerText::advance(int p_amount) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define BYTECODE_VERSION 3
+#define BYTECODE_VERSION 5
 
 Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -159,6 +159,17 @@ void BodySW::set_param(PhysicsServer::BodyParameter p_param, float p_value) {
 			_update_inertia();
 
 		} break;
+		case PhysicsServer::BODY_PARAM_GRAVITY_SCALE: {
+			gravity_scale=p_value;
+		} break;
+		case PhysicsServer::BODY_PARAM_LINEAR_DAMP: {
+
+			linear_damp=p_value;
+		} break;
+		case PhysicsServer::BODY_PARAM_ANGULAR_DAMP: {
+
+			angular_damp=p_value;
+		} break;
 		default:{}
 	}
 }
@@ -177,6 +188,18 @@ float BodySW::get_param(PhysicsServer::BodyParameter p_param) const {
 		case PhysicsServer::BODY_PARAM_MASS: {
 			return mass;
 		} break;
+		case PhysicsServer::BODY_PARAM_GRAVITY_SCALE: {
+			return gravity_scale;
+		} break;
+		case PhysicsServer::BODY_PARAM_LINEAR_DAMP: {
+
+			return linear_damp;
+		} break;
+		case PhysicsServer::BODY_PARAM_ANGULAR_DAMP: {
+
+			return angular_damp;
+		} break;
+
 		default:{}
 	}
 
@@ -257,10 +280,13 @@ void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant& p_varian
 				Transform t = p_variant;
 				t.orthonormalize();
 				new_transform=get_transform(); //used as old to compute motion
+				if (new_transform==t)
+					break;
 				_set_transform(t);
 				_set_inv_transform(get_transform().inverse());
 
 			}
+			wakeup();
 
 		} break;
 		case PhysicsServer::BODY_STATE_LINEAR_VELOCITY: {
@@ -268,11 +294,13 @@ void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant& p_varian
 			//if (mode==PhysicsServer::BODY_MODE_STATIC)
 			//	break;
 			linear_velocity=p_variant;
+			wakeup();
 		} break;
 		case PhysicsServer::BODY_STATE_ANGULAR_VELOCITY: {
 			//if (mode!=PhysicsServer::BODY_MODE_RIGID)
 			//	break;
 			angular_velocity=p_variant;
+			wakeup();
 
 		} break;
 		case PhysicsServer::BODY_STATE_SLEEPING: {
@@ -357,11 +385,14 @@ void BodySW::set_space(SpaceSW *p_space){
 void BodySW::_compute_area_gravity(const AreaSW *p_area) {
 
 	if (p_area->is_gravity_point()) {
-
-		gravity = (p_area->get_gravity_vector() - get_transform().get_origin()).normalized() * p_area->get_gravity();
-
+		if(p_area->get_gravity_distance_scale() > 0) {
+			Vector3 v = p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin();
+			gravity += v.normalized() * (p_area->get_gravity() / Math::pow(v.length() * p_area->get_gravity_distance_scale()+1, 2) );
+		} else {
+			gravity += (p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin()).normalized() * p_area->get_gravity();
+		}
 	} else {
-		gravity = p_area->get_gravity_vector() * p_area->get_gravity();
+		gravity += p_area->get_gravity_vector() * p_area->get_gravity();
 	}
 }
 
@@ -371,23 +402,43 @@ void BodySW::integrate_forces(real_t p_step) {
 	if (mode==PhysicsServer::BODY_MODE_STATIC)
 		return;
 
-	AreaSW *current_area = get_space()->get_default_area();
-	ERR_FAIL_COND(!current_area);
+	AreaSW *def_area = get_space()->get_default_area();
+	AreaSW *damp_area = def_area;
 
-	int prio = current_area->get_priority();
+	ERR_FAIL_COND(!def_area);
+
 	int ac = areas.size();
+	bool replace = false;
+	gravity=Vector3(0,0,0);
 	if (ac) {
+		areas.sort();
 		const AreaCMP *aa = &areas[0];
-		for(int i=0;i<ac;i++) {
-			if (aa[i].area->get_priority() > prio) {
-				current_area=aa[i].area;
-				prio=current_area->get_priority();
+		damp_area = aa[ac-1].area;
+		for(int i=ac-1;i>=0;i--) {
+			_compute_area_gravity(aa[i].area);
+			if (aa[i].area->get_space_override_mode() == PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE) {
+				replace = true;
+				break;
 			}
 		}
 	}
 
-	_compute_area_gravity(current_area);
-	density=current_area->get_density();
+	if( !replace ) {
+		_compute_area_gravity(def_area);
+	}
+
+	gravity*=gravity_scale;
+
+	if (angular_damp>=0)
+		area_angular_damp=angular_damp;
+	else
+		area_angular_damp=damp_area->get_angular_damp();
+
+	if (linear_damp>=0)
+		area_linear_damp=linear_damp;
+	else
+		area_linear_damp=damp_area->get_linear_damp();
+
 
 	Vector3 motion;
 	bool do_motion=false;
@@ -417,12 +468,12 @@ void BodySW::integrate_forces(real_t p_step) {
 			force+=applied_force;
 			Vector3 torque=applied_torque;
 
-			real_t damp = 1.0 - p_step * density;
+			real_t damp = 1.0 - p_step * area_linear_damp;
 
 			if (damp<0) // reached zero in the given time
 				damp=0;
 
-			real_t angular_damp = 1.0 - p_step * density * get_space()->get_body_angular_velocity_damp_ratio();
+			real_t angular_damp = 1.0 - p_step * area_angular_damp;
 
 			if (angular_damp<0) // reached zero in the given time
 				angular_damp=0;
@@ -455,7 +506,7 @@ void BodySW::integrate_forces(real_t p_step) {
 	}
 
 
-	current_area=NULL; // clear the area, so it is set in the next frame
+	def_area=NULL; // clear the area, so it is set in the next frame
 	contact_count=0;
 
 }
@@ -681,8 +732,12 @@ BodySW::BodySW() : CollisionObjectSW(TYPE_BODY), active_list(this), inertia_upda
 	island_list_next=NULL;
 	first_time_kinematic=false;
 	_set_static(false);
-	density=0;
+
 	contact_count=0;
+	gravity_scale=1.0;
+
+	area_angular_damp=0;
+	area_linear_damp=0;
 
 	still_time=0;
 	continuous_cd=false;

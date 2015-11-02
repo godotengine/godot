@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -112,6 +112,8 @@ public:
 	void select(int p_from=0, int p_to=-1);
 
 	virtual Size2 get_minimum_size() const;
+
+    virtual bool is_text_field() const;
 	LineEdit();
 	~LineEdit();
 	

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,8 +45,7 @@ class RayCast : public Spatial {
 
 	Vector3 cast_to;
 
-	RID exception;
-	Set<RID> exceptions;
+	Set<RID> exclude;
 
 protected:
 
@@ -65,6 +64,12 @@ public:
 	int get_collider_shape() const;
 	Vector3 get_collision_point() const;
 	Vector3 get_collision_normal() const;
+
+	void add_exception_rid(const RID& p_rid);
+	void add_exception(const Object* p_object);
+	void remove_exception_rid(const RID& p_rid);
+	void remove_exception(const Object* p_object);
+	void clear_exceptions();
 
 	RayCast();
 };

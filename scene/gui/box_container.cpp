@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@ void BoxContainer::_resort() {
 
 	Size2i new_size=get_size();;
 
-	int sep=get_constant("separation",vertical?"VBoxContainer":"HBoxContainer");
+	int sep=get_constant("separation");//,vertical?"VBoxContainer":"HBoxContainer");
 
 	bool first=true;
 	int children_count=0;
@@ -99,8 +99,10 @@ void BoxContainer::_resort() {
 		elements exist */
 
 
+	bool has_stretched = false;
 	while(stretch_ratio_total>0) { // first of all, dont even be here if no stretchable objects exist
 
+		has_stretched = true;
 		bool refit_successful=true; //assume refit-test will go well
 
 		for(int i=0;i<get_child_count();i++) {
@@ -143,6 +145,18 @@ void BoxContainer::_resort() {
 
 
 	int ofs=0;
+	if (!has_stretched) {
+		switch (align) {
+			case ALIGN_BEGIN:
+				break;
+			case ALIGN_CENTER:
+				ofs = stretch_diff / 2;
+				break;
+			case ALIGN_END:
+				ofs = stretch_diff;
+				break;
+		}
+	}
 
 	first=true;
 	int idx=0;
@@ -202,7 +216,7 @@ Size2 BoxContainer::get_minimum_size() const {
 	/* Calculate MINIMUM SIZE */
 
 	Size2i minimum;
-	int sep=get_constant("separation",vertical?"VBoxContainer":"HBoxContainer");
+	int sep=get_constant("separation");//,vertical?"VBoxContainer":"HBoxContainer");
 
 	bool first=true;
 
@@ -254,6 +268,15 @@ void BoxContainer::_notification(int p_what) {
 	}
 }
 
+void BoxContainer::set_alignment(AlignMode p_align) {
+	align = p_align;
+	_resort();
+}
+
+BoxContainer::AlignMode BoxContainer::get_alignment() const {
+	return align;
+}
+
 void BoxContainer::add_spacer(bool p_begin) {
 
 	Control *c = memnew( Control );
@@ -270,10 +293,23 @@ void BoxContainer::add_spacer(bool p_begin) {
 BoxContainer::BoxContainer(bool p_vertical) {
 
 	vertical=p_vertical;
+	align = ALIGN_BEGIN;
 //	set_ignore_mouse(true);
 	set_stop_mouse(false);
 }
 
+void BoxContainer::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("get_alignment"),&BoxContainer::get_alignment);
+	ObjectTypeDB::bind_method(_MD("set_alignment","alignment"),&BoxContainer::set_alignment);
+
+	BIND_CONSTANT( ALIGN_BEGIN );
+	BIND_CONSTANT( ALIGN_CENTER );
+	BIND_CONSTANT( ALIGN_END );
+
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), _SCS("set_alignment"),_SCS("get_alignment") );
+
+}
 
 MarginContainer* VBoxContainer::add_margin_child(const String& p_label,Control *p_control,bool p_expand) {
 

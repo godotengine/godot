@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,10 +34,10 @@
 
 _FORCE_INLINE_ static bool _match_object_type_query(CollisionObjectSW *p_object, uint32_t p_layer_mask, uint32_t p_type_mask) {
 
-	if ((p_object->get_layer_mask()&p_layer_mask)==0)
-		return false;
+	if (p_object->get_type()==CollisionObjectSW::TYPE_AREA)
+		return p_type_mask&PhysicsDirectSpaceState::TYPE_MASK_AREA;
 
-	if (p_object->get_type()==CollisionObjectSW::TYPE_AREA && !(p_type_mask&PhysicsDirectSpaceState::TYPE_MASK_AREA))
+	if ((p_object->get_layer_mask()&p_layer_mask)==0)
 		return false;
 
 	BodySW *body = static_cast<BodySW*>(p_object);
@@ -77,7 +77,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3& p_from, const Vecto
 		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
 			continue;
 
-		if (!(static_cast<AreaSW*>(space->intersection_query_results[i])->is_ray_pickable()))
+		if (!(static_cast<CollisionObjectSW*>(space->intersection_query_results[i])->is_ray_pickable()))
 			continue;
 
 		if (p_exclude.has( space->intersection_query_results[i]->get_self()))
@@ -503,15 +503,18 @@ void* SpaceSW::_broadphase_pair(CollisionObjectSW *A,int p_subindex_A,CollisionO
 
 	if (type_A==CollisionObjectSW::TYPE_AREA) {
 
-
-		ERR_FAIL_COND_V(type_B!=CollisionObjectSW::TYPE_BODY,NULL);
 		AreaSW *area=static_cast<AreaSW*>(A);
-		BodySW *body=static_cast<BodySW*>(B);
+		if (type_B==CollisionObjectSW::TYPE_AREA) {
 
+			AreaSW *area_b=static_cast<AreaSW*>(B);
+			Area2PairSW *area2_pair = memnew(Area2PairSW(area_b,p_subindex_B,area,p_subindex_A) );
+			return area2_pair;
+		} else {
 
-		AreaPairSW *area_pair = memnew(AreaPairSW(body,p_subindex_B,area,p_subindex_A) );
-
-		return area_pair;
+			BodySW *body=static_cast<BodySW*>(B);
+			AreaPairSW *area_pair = memnew(AreaPairSW(body,p_subindex_B,area,p_subindex_A) );
+			return area_pair;
+		}
 	} else {
 
 
@@ -637,7 +640,7 @@ void SpaceSW::call_queries() {
 
 void SpaceSW::setup() {
 
-
+	contact_debug_count=0;
 	while(inertia_update_list.first()) {
 		inertia_update_list.first()->self()->update_inertias();
 		inertia_update_list.remove(inertia_update_list.first());
@@ -647,6 +650,7 @@ void SpaceSW::setup() {
 }
 
 void SpaceSW::update() {
+
 
 	broadphase->update();
 
@@ -709,6 +713,7 @@ SpaceSW::SpaceSW() {
 	collision_pairs=0;
 	active_objects=0;
 	island_count=0;
+	contact_debug_count=0;
 
 	locked=false;
 	contact_recycle_radius=0.01;

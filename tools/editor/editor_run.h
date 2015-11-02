@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,12 +43,22 @@ public:
 	OS::ProcessID pid;
 private:
 
+	bool debug_collisions;
+	bool debug_navigation;
 	Status status;
 public:
 
 	Status get_status() const;
 	Error run(const String& p_scene,const String p_custom_args,const List<String>& p_breakpoints,const String& p_edited_scene);
+	void run_native_notify() { status=STATUS_PLAY; }
 	void stop();
+
+	void set_debug_collisions(bool p_debug);
+	bool get_debug_collisions() const;
+
+	void set_debug_navigation(bool p_debug);
+	bool get_debug_navigation() const;
+
 	EditorRun();
 };
 
