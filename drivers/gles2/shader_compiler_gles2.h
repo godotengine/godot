@@ -55,6 +55,7 @@ private:
 	bool uses_texpixel_size;
 	bool uses_worldvec;
 	bool vertex_code_writes_vertex;
+	bool vertex_code_writes_position;
 	bool uses_shadow_color;
 
 	bool sinh_used;
@@ -76,6 +77,7 @@ private:
 	StringName vname_var1_interp;
 	StringName vname_var2_interp;
 	StringName vname_vertex;
+	StringName vname_position;
 	StringName vname_light;
 	StringName vname_time;
 	StringName vname_normalmap;
@@ -107,6 +109,7 @@ public:
 		bool uses_texpos;
 		bool uses_normalmap;
 		bool vertex_code_writes_vertex;
+		bool vertex_code_writes_position;
 		bool uses_discard;
 		bool uses_screen_uv;
 		bool use_color_interp;
