@@ -4641,6 +4641,9 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 			enablers.push_back("#define USE_TIME\n");
 			uses_time=true;
 		}
+		if (vertex_flags.vertex_code_writes_position) {
+			enablers.push_back("#define VERTEX_SHADER_WRITE_POSITION\n");
+		}
 
 		material_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, light_code, fragment_globals,uniform_names,enablers);
 	} else if (p_shader->mode==VS::SHADER_CANVAS_ITEM) {
@@ -5441,14 +5444,9 @@ void RasterizerGLES2::_setup_light(uint16_t p_light) {
 template<bool USE_NORMAL, bool USE_TANGENT,bool INPLACE>
 void RasterizerGLES2::_skeleton_xform(const uint8_t * p_src_array, int p_src_stride, uint8_t * p_dst_array, int p_dst_stride, int p_elements,const uint8_t *p_src_bones, const uint8_t *p_src_weights, const Skeleton::Bone *p_bone_xforms) {
 
-	uint32_t basesize = 3;
-	if (USE_NORMAL)
-		basesize+=3;
-	if (USE_TANGENT)
-		basesize+=4;
-
-	uint32_t extra=(p_dst_stride-basesize*4);
 	const int dstvec_size=3+(USE_NORMAL?3:0)+(USE_TANGENT?4:0);
+	const int dstvec_size_float = dstvec_size*4;
+	uint32_t extra=(p_dst_stride-dstvec_size_float);
 	float dstcopy[dstvec_size];
 
 	for(int i=0;i<p_elements;i++) {
