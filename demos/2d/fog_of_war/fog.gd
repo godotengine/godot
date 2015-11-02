@@ -54,7 +54,7 @@ func _fixed_process(delta):
 			for m in range(x-l[end]-1,x+l[end]+2):
 				for n in range(y-l[start]-1,y+l[start]+2):
 					if get_cell(m,n) != 0:
-						set_cell(m,n,1,0,0)
+						set_cell(m,n,1,false,false)
 			end -= 1
 			start += 1
 	
@@ -79,7 +79,7 @@ func _ready():
 	# create a square filled with the 100% opaque fog
 	for x in range(x_min,x_max):
 		for y in range(y_min,y_max):
-			set_cell(x,y,0,0,0)
+			set_cell(x,y,0,false,false)
 	set_fixed_process(true)
 	pass
 
