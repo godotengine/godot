@@ -234,10 +234,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 			 handled in constants now
 			 if (codegen.script->subclasses.has(identifier)) {
 				//same with a subclass, make it a local constant.
-				int idx = codegen.get_constant_pos(codegen.scrip
-
-				int pos = codegen.stack_identifiers[identifier];
-				return pos|(GDFunction::ADDR_TYPE_STACK_VARIABLE<<GDFunction::ADDR_BITS);t->subclasses[identifier]);
+				int idx = codegen.get_constant_pos(codegen.script->subclasses[identifier]);
 				return idx|(GDFunction::ADDR_TYPE_LOCAL_CONSTANT<<GDFunction::ADDR_BITS); //make it a local constant (faster access)
 
 			}*/

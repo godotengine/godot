@@ -431,6 +431,8 @@ private:
 
 	int pending_newline;
 
+	bool _after_function;
+
 	List<int> tab_level;
 
 	String base_path;

@@ -58,7 +58,7 @@ bool GDParser::_end_statement() {
 		return true; //will be handled properly
 	}
 
-	return false;
+	return _after_function;
 }
 
 bool GDParser::_enter_indent_block(BlockNode* p_block) {
@@ -229,6 +229,8 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			}
 		}
 
+
+		GDTokenizer::Token last_token = tokenizer->get_token();
 		if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_OPEN) {
 			//subexpression ()
 			tokenizer->advance();
@@ -750,6 +752,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 		}
 
 
+		_after_function = last_token == GDTokenizer::TK_PR_FUNCTION;
 		/******************/
 		/* Parse Indexing */
 		/******************/
@@ -1592,7 +1595,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 				op->arguments.push_back(assigned);
 				p_block->statements.push_back(op);
 
-				if (assigned->type != Node::TYPE_LAMBDA_FUNCTION && !_end_statement()) {
+				if (!_end_statement()) {
 					_set_error("Expected end of statement (var)");
 					return;
 				}
@@ -1916,7 +1919,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 					return;
 				p_block->statements.push_back(expression);
 				if (!_end_statement()) {
-					_set_error("Expected end of statement after expression.");
+					_set_error("Expected end of statement after expression." + itos(expression->type));
 					return;
 				}
 
@@ -3150,6 +3153,7 @@ GDParser::GDParser() {
 	list=NULL;
 	tokenizer=NULL;
 	pending_newline=-1;
+	_after_function=false;
 	clear();
 
 }
