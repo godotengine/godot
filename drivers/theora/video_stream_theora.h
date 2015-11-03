@@ -32,6 +32,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	void video_write(void);
 	float get_time() const;
 
+
 	ogg_sync_state   oy;
 	ogg_page         og;
 	ogg_stream_state vo;
@@ -122,7 +123,7 @@ public:
 
 	Ref<VideoStreamPlayback> instance_playback() {
 		Ref<VideoStreamPlaybackTheora> pb = memnew( VideoStreamPlaybackTheora );
-        pb->set_audio_track(audio_track);
+	pb->set_audio_track(audio_track);
 		pb->set_file(file);
 		return pb;
 	}
