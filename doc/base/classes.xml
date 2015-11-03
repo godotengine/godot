@@ -26656,7 +26656,7 @@
 	Reference frame for GUI.
 	</brief_description>
 	<description>
-	Reference frame for GUI. It's just like an empty control, except a red box is displayed while editing around it's size at all times.
+	Reference frame for GUI. It's just like an empty control, except a red box is displayed while editing around its size at all times.
 	</description>
 	<methods>
 	</methods>
@@ -26669,58 +26669,88 @@
 </class>
 <class name="RegEx" inherits="Reference" category="Core">
 	<brief_description>
+	Simple regular expression matcher.
 	</brief_description>
 	<description>
+	Class for finding text patterns in a string using regular expressions. Regular expressions are a way to define patterns of text to be searched.
+	This class only finds patterns in a string. It can not perform replacements.
+	Usage of regular expressions is too long to be explained here, but Internet is full of tutorials and detailed explanations.
+	Currently supported features:
+		Capturing [code]()[/code] and non-capturing [code](?:)[/code] groups
+		Any character [code].[/code]
+		Shorthand caracter classes [code]\w \W \s \S \d \D[/code]
+		User-defined character classes such as [code][A-Za-z][/code]
+		Simple quantifiers [code]?[/code], [code]*[/code] and [code]+[/code]
+		Range quantifiers [code]{x,y}[/code]
+		Lazy (non-greedy) quantifiers [code]*?[/code]
+		Begining [code]^[/code] and end [code]$[/code] anchors
+		Alternation [code]|[/code]
+		Backreferences [code]\1[/code] to [code]\99[/code]
 	</description>
 	<methods>
 		<method name="compile">
 			<return type="int">
+			[OK] if the regular expression was valid. [FAIL] otherwise.
 			</return>
 			<argument index="0" name="pattern" type="String">
+			The string to be converted into a regular expression.
 			</argument>
 			<description>
+			Once created, a RegEx object needs a regular expression to be assigned to it. This method tries to convert the string given to an usable regular expression.
 			</description>
 		</method>
 		<method name="find" qualifiers="const">
 			<return type="int">
+			The position within the string (starting with 0) where the pattern was found. It will return -1 if the pattern was not found, it was invalid, or the start or end positions were beyond the string's end.
 			</return>
 			<argument index="0" name="text" type="String">
+			The text to search the pattern in.
 			</argument>
 			<argument index="1" name="start" type="int" default="0">
+			The position in the string (starting with 0) to start searching from.
 			</argument>
 			<argument index="2" name="end" type="int" default="-1">
+			The position in the string (starting with 0) to stop searching. A value less than the start position means "end of the string".
 			</argument>
 			<description>
+			This method tries to find the pattern within the string, and returns the position where it was found. It also stores any capturing group (see [method get_capture]) for further retrieval.
 			</description>
 		</method>
 		<method name="clear">
 			<description>
+			This method resets the state of the object, as it was freshly created. Namely, it unassigns the regular expression of this object, and forgets all captures made by the last [method find].
 			</description>
 		</method>
 		<method name="is_valid" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether this object has a valid regular expression assigned.
 			</description>
 		</method>
 		<method name="get_capture_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Returns the number of capturing groups. A captured group is the part of a string that matches a part of the pattern delimited by parentheses (unless they are non-capturing parentheses [i](?:)[/i]).
 			</description>
 		</method>
 		<method name="get_capture" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="capture" type="int">
+			The number of the captured group, starting with 0. Like other regular expression engines, Godot's engine takes 0 as the full expression, and 1 as the first pair of capturing parentheses.
 			</argument>
 			<description>
+			Returns a captured group. A captured group is the part of a string that matches a part of the pattern delimited by parentheses (unless they are non-capturing parentheses [i](?:)[/i]).
 			</description>
 		</method>
 		<method name="get_captures" qualifiers="const">
 			<return type="StringArray">
+			A list contining all the strings captured by the regular expression.
 			</return>
 			<description>
+			Return a list of all the captures made by the regular expression.
 			</description>
 		</method>
 	</methods>
