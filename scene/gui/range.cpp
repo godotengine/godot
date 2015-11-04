@@ -243,7 +243,7 @@ void Range::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "range/step" ), _SCS("set_step"), _SCS("get_step") );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "range/page" ), _SCS("set_page"), _SCS("get_page") );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "range/value" ), _SCS("set_val"), _SCS("get_val") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "range/exp_edit" ), _SCS("set_exp_unit_value"), _SCS("is_unit_value_exp") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "range/exp_edit" ), _SCS("set_exp_unit_value"), _SCS("is_unit_value_exp") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "rounded_values" ), _SCS("set_rounded_values"), _SCS("get_rounded_values") );
 
 }
