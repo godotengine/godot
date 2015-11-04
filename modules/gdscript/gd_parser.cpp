@@ -1919,7 +1919,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 					return;
 				p_block->statements.push_back(expression);
 				if (!_end_statement()) {
-					_set_error("Expected end of statement after expression." + itos(expression->type));
+					_set_error("Expected end of statement after expression.");
 					return;
 				}
 
