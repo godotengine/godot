@@ -178,7 +178,7 @@ void VideoStreamPlaybackTheora::video_write(void){
 
 void VideoStreamPlaybackTheora::clear() {
 
-	if (file_name == "")
+	if (!file)
 		return;
 
 	if(vorbis_p){
@@ -208,6 +208,10 @@ void VideoStreamPlaybackTheora::clear() {
 	frames_pending = 0;
 	videobuf_time = 0;
 
+	if (file) {
+		memdelete(file);
+	}
+	file=NULL;
 	playing = false;
 };
 
