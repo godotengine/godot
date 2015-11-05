@@ -226,7 +226,6 @@ protected:
 	GDInstance *instance;
 	friend class GDInstance;
 	friend class GDFunction;
-	friend class GDSignalObject;
 	static void _bind_methods();
 
 public:
@@ -419,7 +418,6 @@ friend class GDFunctions;
 friend class GDFunctionObject;
 friend class GDLambdaFunctionObject;
 friend class GDNativeFunctionObject;
-friend class GDSignalObject;
 
 	Object *owner;
 	Ref<GDScript> script;
