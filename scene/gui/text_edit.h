@@ -270,7 +270,7 @@ class TextEdit : public Control  {
 	void _confirm_completion();
 	void _update_completion_candidates();
 
-	bool _get_mouse_pos(const Point2i& p_mouse, int &r_row, int &r_col) const;
+	void _get_mouse_pos(const Point2i& p_mouse, int &r_row, int &r_col) const;
 
 protected:
 

@@ -1091,16 +1091,16 @@ void TextEdit::backspace_at_cursor() {
 }
 
 
-bool TextEdit::_get_mouse_pos(const Point2i& p_mouse, int &r_row, int &r_col) const {
+void TextEdit::_get_mouse_pos(const Point2i& p_mouse, int &r_row, int &r_col) const {
 	
-	int row=p_mouse.y;
-	row-=cache.style_normal->get_margin(MARGIN_TOP);
-	row/=get_row_height();
-	
-	if (row<0 || row>=get_visible_rows())
-		return false;
-	
-	row+=cursor.line_ofs;
+	float rows=p_mouse.y;
+	rows-=cache.style_normal->get_margin(MARGIN_TOP);
+	rows/=get_row_height();
+	int row=cursor.line_ofs+rows;
+
+	if (row<0)
+		row=0;
+
 	int col=0;
 	
 	if (row>=text.size()) {
@@ -1116,7 +1116,6 @@ bool TextEdit::_get_mouse_pos(const Point2i& p_mouse, int &r_row, int &r_col) co
 	
 	r_row=row;
 	r_col=col;
-	return true;
 }
 
 void TextEdit::_input_event(const InputEvent& p_input_event) {
@@ -1174,8 +1173,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				if (mb.button_index==BUTTON_LEFT) {
 					
 					int row,col;
-					if (!_get_mouse_pos(Point2i(mb.x,mb.y), row,col))
-						return;
+					_get_mouse_pos(Point2i(mb.x,mb.y), row,col);
 					
 					int prev_col=cursor.column;
 					int prev_line=cursor.line;
@@ -1304,8 +1302,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 			if (mm.button_mask&BUTTON_MASK_LEFT) {
 				
 				int row,col;
-				if (!_get_mouse_pos(Point2i(mm.x,mm.y), row,col))
-					return;
+				_get_mouse_pos(Point2i(mm.x,mm.y), row,col);
 				
 				if (selection.selecting_mode!=Selection::MODE_NONE) {
 					
@@ -3505,10 +3502,8 @@ String TextEdit::get_tooltip(const Point2& p_pos) const {
 	if (!tooltip_obj)
 		return Control::get_tooltip(p_pos);
 	int row,col;
-	if (!_get_mouse_pos(p_pos, row,col)) {
-		return Control::get_tooltip(p_pos);
-	}
-	
+	_get_mouse_pos(p_pos, row, col);
+
 	String s = text[row];
 	if (s.length()==0)
 		return Control::get_tooltip(p_pos);
