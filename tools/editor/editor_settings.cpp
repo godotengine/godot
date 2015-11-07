@@ -224,6 +224,20 @@ void EditorSettings::create() {
 			dir->change_dir("..");
 		}
 
+		if (dir->change_dir("lang")!=OK) {
+			dir->make_dir("lang");
+		} else {
+
+			dir->change_dir("..");
+		}
+
+		if (dir->change_dir("fonts")!=OK) {
+			dir->make_dir("fonts");
+		} else {
+
+			dir->change_dir("..");
+		}
+
 		if (dir->change_dir("config")!=OK) {
 			dir->make_dir("config");
 		} else {
@@ -539,6 +553,7 @@ void EditorSettings::_load_defaults() {
 	set("run/auto_save_before_running",true);
 	set("resources/save_compressed_resources",true);
 	set("resources/auto_reload_modified_images",true);
+	set("editor_language/locale","en");
 }
 
 void EditorSettings::notify_changes() {
