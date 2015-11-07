@@ -106,6 +106,8 @@
 #include "plugins/editor_preview_plugins.h"
 
 #include "script_editor_debugger.h"
+#include "tools/editor/editor_translation.h"
+
 
 EditorNode *EditorNode::singleton=NULL;
 
@@ -1382,6 +1384,23 @@ void EditorNode::_dialog_action(String p_file) {
 			}
 
 			unzClose(pkg);
+
+		} break;
+		case SETTINGS_INSTALL_EDITOR_TRANSLATION: {
+
+			String locale = EditorTranslationServer::get_singleton()->install(p_file);
+
+			if (locale!="") {
+
+				log->add_message("Successfully installed Editor Translation for: " + locale);
+				EditorSettings::get_singleton()->set("editor_language/locale", locale);
+				EditorSettings::get_singleton()->save();
+
+			} else {
+
+				log->add_message("Failed to install Editor Translation: " + p_file);
+
+			}
 
 		} break;
 		case RESOURCE_SAVE:
@@ -2731,6 +2750,12 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 
 			file_templates->popup_centered_ratio();
+
+		} break;
+		case SETTINGS_INSTALL_EDITOR_TRANSLATION: {
+
+
+			file_editor_translation->popup_centered_ratio();
 
 		} break;
 		case SETTINGS_ABOUT: {
@@ -4467,6 +4492,12 @@ EditorNode::EditorNode() {
 	if (!EditorSettings::get_singleton())
 		EditorSettings::create();
 
+	// load editor translation
+	if (!EditorTranslationServer::get_singleton()) {
+		EditorTranslationServer::create();
+	}
+	EditorTranslationServer::get_singleton()->load();
+
 	ResourceLoader::set_abort_on_missing_resources(false);
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 	ResourceLoader::set_error_notify_func(this,_load_error_notify);
@@ -5057,6 +5088,7 @@ EditorNode::EditorNode() {
 	//p->add_item("Export Settings",SETTINGS_EXPORT_PREFERENCES);
 	p->add_item("Editor Settings",SETTINGS_PREFERENCES);
 	//p->add_item("Optimization Presets",SETTINGS_OPTIMIZED_PRESETS);
+	p->add_item(_TR("Install Editor Translation"),SETTINGS_INSTALL_EDITOR_TRANSLATION);
 	p->add_separator();
 	p->add_check_item("Show Animation",SETTINGS_SHOW_ANIMATION,KEY_MASK_CMD+KEY_N);
 	p->add_separator();
@@ -5397,6 +5429,14 @@ EditorNode::EditorNode() {
 	file_templates->clear_filters();
 	file_templates->add_filter("*.tpz ; Template Package");
 
+	file_editor_translation = memnew( FileDialog );
+	file_editor_translation->set_title(_TR("Import Editor Translation from PO file"));
+
+	gui_base->add_child( file_editor_translation );
+	file_editor_translation->set_mode(FileDialog::MODE_OPEN_FILE);
+	file_editor_translation->set_access(FileDialog::ACCESS_FILESYSTEM);
+	file_editor_translation->clear_filters();
+	file_editor_translation->add_filter("*.po ; Translation File");
 
 	file = memnew( EditorFileDialog );
 	gui_base->add_child(file);
@@ -5463,6 +5503,7 @@ EditorNode::EditorNode() {
 
 	file->connect("file_selected", this,"_dialog_action");
 	file_templates->connect("file_selected", this,"_dialog_action");
+	file_editor_translation->connect("file_selected", this,"_dialog_action");
 	property_editor->connect("resource_selected", this,"_resource_selected");
 	property_editor->connect("property_keyed", this,"_property_keyed");
 	animation_editor->connect("resource_selected", this,"_resource_selected");
@@ -5671,6 +5712,8 @@ EditorNode::~EditorNode() {
 	memdelete(editor_selection);
 	memdelete(file_server);
 	EditorSettings::destroy();
+	if (EditorTranslationServer::get_singleton())
+		EditorTranslationServer::destroy();
 }
 
 
