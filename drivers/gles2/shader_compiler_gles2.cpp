@@ -218,6 +218,10 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 					uses_light=true;
 				}
 
+				if (vnode->name==vname_shadow) {
+					uses_shadow_color=true;
+				}
+
 			}
 			if (type==ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX) {
 
@@ -838,6 +842,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 
 	//////////////
 
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["TIME"]="time";
 	mode_replace_table[2]["NORMAL"]="normal";
 	//mode_replace_table[2]["POSITION"]="IN_POSITION";
 	mode_replace_table[2]["LIGHT_DIR"]="light_dir";
@@ -849,6 +854,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[2]["SPECULAR_EXP"]="specular_exp";
 	mode_replace_table[2]["SHADE_PARAM"]="shade_param";
 	mode_replace_table[2]["LIGHT"]="light";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["SHADOW"]="shadow_color";
 	mode_replace_table[2]["POINT_COORD"]="gl_PointCoord";
 	mode_replace_table[2]["TIME"]="time";
 
