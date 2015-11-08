@@ -121,7 +121,7 @@ Error PacketPeerUDPPosix::_poll(bool p_wait) {
 	struct sockaddr_in from = {0};
 	socklen_t len = sizeof(struct sockaddr_in);
 	int ret;
-	while ( (ret = recvfrom(sockfd, recv_buffer, MIN(sizeof(recv_buffer),rb.data_left()-12), p_wait?0:MSG_DONTWAIT, (struct sockaddr*)&from, &len)) > 0) {
+	while ( (ret = recvfrom(sockfd, recv_buffer, MIN(sizeof(recv_buffer),rb.space_left()-12), p_wait?0:MSG_DONTWAIT, (struct sockaddr*)&from, &len)) > 0) {
 		rb.write((uint8_t*)&from.sin_addr, 4);
 		uint32_t port = ntohs(from.sin_port);
 		rb.write((uint8_t*)&port, 4);
