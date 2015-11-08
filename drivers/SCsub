@@ -39,6 +39,7 @@ if (env["opus"]=="yes"):
 		SConscript('opus/SCsub');
 if (env["tools"]=="yes"):
 	SConscript("convex_decomp/SCsub");
+	SConscript('pe_bliss/SCsub');
 
 #if env["theora"]=="yes":
 #	SConscript("theoraplayer/SCsub")
