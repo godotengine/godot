@@ -35,6 +35,7 @@
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 #include "io/marshalls.h"
+#include "tools/editor/editor_settings.h"
 
 class _EditorSampleImportOptions : public Object {
 
@@ -156,7 +157,7 @@ public:
 		edit_normalize=true;
 		edit_loop=false;
 
-		compress_mode=COMPRESS_MODE_DISABLED;
+		compress_mode=COMPRESS_MODE_RAM;
 		compress_bitrate=COMPRESS_128;
 	}
 
@@ -580,8 +581,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 
 	int compression = from->get_option("compress/mode");
 	bool force_mono = from->get_option("force/mono");
-	if (compression==_EditorSampleImportOptions::COMPRESS_MODE_RAM)
-		force_mono=true;
+
 
 	if (force_mono && chans==2) {
 
@@ -608,9 +608,47 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 	if ( compression == _EditorSampleImportOptions::COMPRESS_MODE_RAM) {
 
 		dst_format=Sample::FORMAT_IMA_ADPCM;
+		if (chans==1) {
+			_compress_ima_adpcm(data,dst_data);
+		} else {
 
-		_compress_ima_adpcm(data,dst_data);
-		print_line("compressing ima-adpcm, resulting buffersize is "+itos(dst_data.size())+" from "+itos(data.size()));
+			print_line("INTERLEAAVE!");
+
+
+
+			//byte interleave
+			Vector<float> left;
+			Vector<float> right;
+
+			int tlen = data.size()/2;
+			left.resize(tlen);
+			right.resize(tlen);
+
+			for(int i=0;i<tlen;i++) {
+				left[i]=data[i*2+0];
+				right[i]=data[i*2+1];
+			}
+
+			DVector<uint8_t> bleft;
+			DVector<uint8_t> bright;
+
+			_compress_ima_adpcm(left,bleft);
+			_compress_ima_adpcm(right,bright);
+
+			int dl = bleft.size();
+			dst_data.resize( dl *2 );
+
+			DVector<uint8_t>::Write w=dst_data.write();
+			DVector<uint8_t>::Read rl=bleft.read();
+			DVector<uint8_t>::Read rr=bright.read();
+
+			for(int i=0;i<dl;i++) {
+				w[i*2+0]=rl[i];
+				w[i*2+1]=rr[i];
+			}
+		}
+
+//		print_line("compressing ima-adpcm, resulting buffersize is "+itos(dst_data.size())+" from "+itos(data.size()));
 
 	} else {
 
@@ -781,9 +819,54 @@ void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,D
 
 }
 
+
+EditorSampleImportPlugin* EditorSampleImportPlugin::singleton=NULL;
+
+
+
 EditorSampleImportPlugin::EditorSampleImportPlugin(EditorNode* p_editor) {
 
+	singleton=this;
 	dialog = memnew( EditorSampleImportDialog(this));
 	p_editor->get_gui_base()->add_child(dialog);
 }
+
+Vector<uint8_t> EditorSampleExportPlugin::custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform) {
+
+
+
+	if (EditorImportExport::get_singleton()->sample_get_action()==EditorImportExport::SAMPLE_ACTION_NONE || p_path.extension().to_lower()!="wav") {
+
+		return Vector<uint8_t>();
+	}
+
+	Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
+
+	imd->add_source(EditorImportPlugin::validate_source_path(p_path));
+
+	imd->set_option("force/8_bit",false);
+	imd->set_option("force/mono",false);
+	imd->set_option("force/max_rate",true);
+	imd->set_option("force/max_rate_hz",EditorImportExport::get_singleton()->sample_get_max_hz());
+	imd->set_option("edit/trim",EditorImportExport::get_singleton()->sample_get_trim());
+	imd->set_option("edit/normalize",false);
+	imd->set_option("edit/loop",false);
+	imd->set_option("compress/mode",1);
+
+	String savepath = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp/smpconv.smp");
+	Error err = EditorSampleImportPlugin::singleton->import(savepath,imd);
+
+
+	ERR_FAIL_COND_V(err!=OK,Vector<uint8_t>());
+
+	p_path=p_path.basename()+".smp";
+	return FileAccess::get_file_as_array(savepath);
+
+}
+
+
+EditorSampleExportPlugin::EditorSampleExportPlugin() {
+
+}
+
 

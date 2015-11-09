@@ -491,8 +491,14 @@ Ref<Texture> EditorSamplePreviewPlugin::generate(const RES& p_from) {
 					ima_adpcm.last_nibble++;
 					const uint8_t *src_ptr=sdata;
 
+					int ofs = ima_adpcm.last_nibble>>1;
+
+					if (stereo)
+						ofs*=2;
+
+
 					nibble = (ima_adpcm.last_nibble&1)?
-							(src_ptr[ima_adpcm.last_nibble>>1]>>4):(src_ptr[ima_adpcm.last_nibble>>1]&0xF);
+							(src_ptr[ofs]>>4):(src_ptr[ofs]&0xF);
 					step=_ima_adpcm_step_table[ima_adpcm.step_index];
 
 					ima_adpcm.step_index += _ima_adpcm_index_table[nibble];
