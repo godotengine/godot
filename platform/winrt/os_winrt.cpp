@@ -432,16 +432,16 @@ void OSWinrt::print_error(const char* p_function,const char* p_file,int p_line,c
 
 	switch(p_type) {
 		case ERR_ERROR:
-			print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,err_details);
-			print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
+			print("\E[1;31mERROR: %s: \E[0m\E[1m%s\n",p_function,err_details);
+			print("\E[0;31m   At: %s:%i.\E[0m\n",p_file,p_line);
 			break;
 		case ERR_WARNING:
-			print("\E[1;33;40mWARNING: %s: \E[1;37;40m%s\n",p_function,err_details);
-			print("\E[0;33;40m     At: %s:%i.\E[0;0;37m\n",p_file,p_line);
+			print("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n",p_function,err_details);
+			print("\E[0;33m     At: %s:%i.\E[0m\n",p_file,p_line);
 			break;
 		case ERR_SCRIPT:
-			print("\E[1;35;40mSCRIPT ERROR: %s: \E[1;37;40m%s\n",p_function,err_details);
-			print("\E[0;35;40m          At: %s:%i.\E[0;0;37m\n",p_file,p_line);
+			print("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m",p_function,err_details);
+			print("\E[0;35m          At: %s:%i.\E[0m\n",p_file,p_line);
 			break;
 	}
 }
