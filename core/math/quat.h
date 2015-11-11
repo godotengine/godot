@@ -73,7 +73,7 @@ public:
 			-x * v.x - y * v.y - z * v.z);
 	}
 
-	_FORCE_INLINE_ Vector3 xform(const Vector3& v) {
+	_FORCE_INLINE_ Vector3 xform(const Vector3& v) const {
 
 		Quat q = *this * v;
 		q *= this->inverse();
