@@ -1940,9 +1940,15 @@ void GDParser::_parse_extends(ClassNode *p_class) {
 
 	p_class->extends_used=true;
 
-	//see if inheritance happens from a file
 	tokenizer->advance();
 
+	if (tokenizer->get_token()==GDTokenizer::TK_BUILT_IN_TYPE && tokenizer->get_token_type()==Variant::OBJECT) {
+		p_class->extends_class.push_back(Variant::get_type_name(Variant::OBJECT));
+		tokenizer->advance();
+		return;
+	}
+
+	// see if inheritance happens from a file
 	if (tokenizer->get_token()==GDTokenizer::TK_CONSTANT) {
 
 		Variant constant = tokenizer->get_token_constant();
