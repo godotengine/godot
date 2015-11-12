@@ -107,7 +107,6 @@ class godot_export_manager(bpy.types.Panel):
             col.prop(group,"use_triangles")
             col.prop(group,"use_copy_images")
             col.prop(group,"use_active_layers")
-            col.prop(group,"use_exclude_ctrl_bones")
             col.prop(group,"use_anim")
             col.prop(group,"use_anim_action_all")
             col.prop(group,"use_anim_skip_noexp")
@@ -351,7 +350,7 @@ class export_group(bpy.types.Operator):
                     bpy.data.objects[object.name].select = True
                     
             bpy.ops.object.transform_apply(location=group[self.idx].apply_loc, rotation=group[self.idx].apply_rot, scale=group[self.idx].apply_scale)
-            bpy.ops.export_scene.dae(check_existing=True, filepath=path, filter_glob="*.dae", object_types=group[self.idx].object_types, use_export_selected=group[self.idx].use_export_selected, use_mesh_modifiers=group[self.idx].use_mesh_modifiers, use_tangent_arrays=group[self.idx].use_tangent_arrays, use_triangles=group[self.idx].use_triangles, use_copy_images=group[self.idx].use_copy_images, use_active_layers=group[self.idx].use_active_layers, use_exclude_ctrl_bones=group[self.idx].use_exclude_ctrl_bones, use_anim=group[self.idx].use_anim, use_anim_action_all=group[self.idx].use_anim_action_all, use_anim_skip_noexp=group[self.idx].use_anim_skip_noexp, use_anim_optimize=group[self.idx].use_anim_optimize, anim_optimize_precision=group[self.idx].anim_optimize_precision, use_metadata=group[self.idx].use_metadata)    
+            bpy.ops.export_scene.dae(check_existing=True, filepath=path, filter_glob="*.dae", object_types=group[self.idx].object_types, use_export_selected=group[self.idx].use_export_selected, use_mesh_modifiers=group[self.idx].use_mesh_modifiers, use_tangent_arrays=group[self.idx].use_tangent_arrays, use_triangles=group[self.idx].use_triangles, use_copy_images=group[self.idx].use_copy_images, use_active_layers=group[self.idx].use_active_layers, use_anim=group[self.idx].use_anim, use_anim_action_all=group[self.idx].use_anim_action_all, use_anim_skip_noexp=group[self.idx].use_anim_skip_noexp, use_anim_optimize=group[self.idx].use_anim_optimize, anim_optimize_precision=group[self.idx].anim_optimize_precision, use_metadata=group[self.idx].use_metadata)    
           
             self.report({'INFO'}, '"'+group[self.idx].name+'"' + " Group exported." )  
             msg = "Export Group "+group[self.idx].name
@@ -422,7 +421,6 @@ class godot_export_groups(bpy.types.PropertyGroup):
 
     use_copy_images = BoolProperty(name="Copy Images",description="Copy Images (create images/ subfolder)",default=False)
     use_active_layers = BoolProperty(name="Active Layers",description="Export only objects on the active layers.",default=True)
-    use_exclude_ctrl_bones = BoolProperty(name="Exclude Control Bones",description="Exclude skeleton bones with names that begin with 'ctrl'.",default=True)
     use_anim = BoolProperty(name="Export Animation",description="Export keyframe animation",default=False)
     use_anim_action_all = BoolProperty(name="All Actions",description=("Export all actions for the first armature found in separate DAE files"),default=False)
     use_anim_skip_noexp = BoolProperty(name="Skip (-noexp) Actions",description="Skip exporting of actions whose name end in (-noexp). Useful to skip control animations.",default=True)
