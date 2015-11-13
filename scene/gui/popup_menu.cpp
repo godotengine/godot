@@ -774,6 +774,7 @@ void PopupMenu::add_separator() {
 void PopupMenu::clear()  {
 
 	items.clear();
+	mouse_over=-1;
 	update();
 	idcount=0;
 
