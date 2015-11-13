@@ -460,10 +460,10 @@ void make_default_theme() {
 
 	// HScrollBar
 
-	t->set_stylebox("scroll","HScrollBar", make_stylebox( scroll_bg_png,3,3,3,3,0,0,0,0) );
-	t->set_stylebox("scroll_focus","HScrollBar", make_stylebox( scroll_bg_png,3,3,3,3,0,0,0,0) );
-	t->set_stylebox("grabber","HScrollBar", make_stylebox( scroll_grabber_png,3,3,3,3,2,2,2,2) );
-	t->set_stylebox("grabber_hilite","HScrollBar", make_stylebox( scroll_grabber_hl_png,3,3,3,3,2,2,2,2) );
+	t->set_stylebox("scroll","HScrollBar", make_stylebox( scroll_bg_png,5,5,5,5,0,0,0,0) );
+	t->set_stylebox("scroll_focus","HScrollBar", make_stylebox( scroll_bg_png,5,5,5,5,0,0,0,0) );
+	t->set_stylebox("grabber","HScrollBar", make_stylebox( scroll_grabber_png,5,5,5,5,2,2,2,2) );
+	t->set_stylebox("grabber_hilite","HScrollBar", make_stylebox( scroll_grabber_hl_png,5,5,5,5,2,2,2,2) );
 
 	t->set_icon("increment","HScrollBar",empty_icon);
 	t->set_icon("increment_hilite","HScrollBar",empty_icon);
@@ -474,10 +474,10 @@ void make_default_theme() {
 
 	// VScrollBar
 
-	t->set_stylebox("scroll","VScrollBar", make_stylebox( scroll_bg_png,3,3,3,3,0,0,0,0) );
-	t->set_stylebox("scroll_focus","VScrollBar", make_stylebox( scroll_bg_png,3,3,3,3,0,0,0,0) );
-	t->set_stylebox("grabber","VScrollBar", make_stylebox( scroll_grabber_png,3,3,3,3,2,2,2,2) );
-	t->set_stylebox("grabber_hilite","VScrollBar", make_stylebox( scroll_grabber_hl_png,3,3,3,3,2,2,2,2) );
+	t->set_stylebox("scroll","VScrollBar", make_stylebox( scroll_bg_png,5,5,5,5,0,0,0,0) );
+	t->set_stylebox("scroll_focus","VScrollBar", make_stylebox( scroll_bg_png,5,5,5,5,0,0,0,0) );
+	t->set_stylebox("grabber","VScrollBar", make_stylebox( scroll_grabber_png,5,5,5,5,2,2,2,2) );
+	t->set_stylebox("grabber_hilite","VScrollBar", make_stylebox( scroll_grabber_hl_png,5,5,5,5,2,2,2,2) );
 
 	t->set_icon("increment","VScrollBar",empty_icon);
 	t->set_icon("increment_hilite","VScrollBar",empty_icon);

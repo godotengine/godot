@@ -962,7 +962,9 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 
 		Point2i guide_space=Point2i( cache.guide_width , height );
 
-		if (p_item->childs) { //has childs, draw the guide box
+
+
+		if (!hide_folding && p_item->childs) { //has childs, draw the guide box
 
 			Ref<Texture> arrow;
 
@@ -986,7 +988,7 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 
 		int font_ascent=font->get_ascent();
 
-		int ofs = p_pos.x + cache.item_margin;
+		int ofs = p_pos.x + (hide_folding?cache.hseparation:cache.item_margin);
 		for (int i=0;i<columns.size();i++) {
 
 			int w = get_column_width(i);
@@ -1062,7 +1064,10 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 
 			if (p_item->cells[i].custom_bg_color) {
 
-				VisualServer::get_singleton()->canvas_item_add_rect(ci,cell_rect,p_item->cells[i].bg_color);
+				Rect2 r=cell_rect;
+				r.pos.x-=cache.hseparation;
+				r.size.x+=cache.hseparation;
+				VisualServer::get_singleton()->canvas_item_add_rect(ci,r,p_item->cells[i].bg_color);
 			}
 
 			Color col=p_item->cells[i].custom_color?p_item->cells[i].color:get_color( p_item->cells[i].selected?"font_color_selected":"font_color");
@@ -1376,7 +1381,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 	if (!skip && p_pos.y<item_h) {
 		// check event!
 
-		if (p_pos.x >=x_ofs && p_pos.x < (x_ofs+cache.item_margin) ) {
+		if (!hide_folding && (p_pos.x >=x_ofs && p_pos.x < (x_ofs+cache.item_margin) )) {
 
 
 			if (p_item->childs)
@@ -3114,6 +3119,16 @@ bool Tree::can_cursor_exit_tree() const {
 	return cursor_can_exit_tree;
 }
 
+void Tree::set_hide_folding(bool p_hide) {
+	hide_folding=p_hide;
+	update();
+}
+
+bool Tree::is_folding_hidden() const {
+
+	return hide_folding;
+}
+
 
 void Tree::_bind_methods() {
 
@@ -3154,6 +3169,9 @@ void Tree::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_column_title","column","title"),&Tree::set_column_title);
 	ObjectTypeDB::bind_method(_MD("get_column_title","column"),&Tree::get_column_title);
 	ObjectTypeDB::bind_method(_MD("get_scroll"),&Tree::get_scroll);
+
+	ObjectTypeDB::bind_method(_MD("set_hide_folding","hide"),&Tree::set_hide_folding);
+	ObjectTypeDB::bind_method(_MD("is_folding_hidden"),&Tree::is_folding_hidden);
 
 
 	ADD_SIGNAL( MethodInfo("item_selected"));
@@ -3241,6 +3259,8 @@ Tree::Tree() {
 	drag_touching_deaccel=false;
 	pressing_for_editor=false;
 	range_drag_enabled=false;
+
+	hide_folding=false;
 
 }
 
