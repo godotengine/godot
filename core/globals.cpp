@@ -340,7 +340,7 @@ Error Globals::setup(const String& p_path,const String & p_main_pack) {
 			//try to load settings in ascending through dirs shape!
 
 			//tries to open pack, but only first time
-			if (first_time && (_load_resource_pack(current_dir+"/data.pck") || _load_resource_pack(current_dir+"/data.pcz") )) {
+			if (first_time && (_load_resource_pack(current_dir+"/"+exec_name+".pck") || _load_resource_pack(current_dir+"/"+exec_name+".pcz") )) {
 				if (_load_settings("res://engine.cfg")==OK || _load_settings_binary("res://engine.cfb")==OK) {
 
 					_load_settings("res://override.cfg");
@@ -349,7 +349,7 @@ Error Globals::setup(const String& p_path,const String & p_main_pack) {
 
 				}
 				break;
-			} else if (first_time && (_load_resource_pack(current_dir+"/"+exec_name+".pck") || _load_resource_pack(current_dir+"/"+exec_name+".pcz") )) {
+			} else if (first_time && (_load_resource_pack(current_dir+"/data.pck") || _load_resource_pack(current_dir+"/data.pcz") )) {
 				if (_load_settings("res://engine.cfg")==OK || _load_settings_binary("res://engine.cfb")==OK) {
 
 					_load_settings("res://override.cfg");
