@@ -51,7 +51,7 @@ protected:
 
 public:
 
-
+	static bool is_valid_locale(const String& p_locale);
 	void set_locale(const String& p_locale);
 	_FORCE_INLINE_ String get_locale() const { return locale; }
 
@@ -107,6 +107,8 @@ public:
 	void clear();
 
 	void load_translations();
+
+	void clear_translations();
 
 	TranslationServer();
 };

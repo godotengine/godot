@@ -45,7 +45,9 @@
 #include "io/resource_saver.h"
 
 #include "editor_icons.h"
+#include "editor_fonts.h"
 
+#include "tools/editor/editor_translation.h"
 
 
 class NewProjectDialog : public ConfirmationDialog {
@@ -820,6 +822,12 @@ ProjectManager::ProjectManager() {
 	if (!EditorSettings::get_singleton())
 		EditorSettings::create();
 
+	// load editor translation
+	if (!EditorTranslationServer::get_singleton()) {
+		EditorTranslationServer::create();
+	}
+	EditorTranslationServer::get_singleton()->load();
+
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 
 	set_area_as_parent_rect();
@@ -848,7 +856,7 @@ ProjectManager::ProjectManager() {
 
 
 	HBoxContainer *tree_hb = memnew( HBoxContainer);
-	vb->add_margin_child("Recent Projects:",tree_hb,true);
+	vb->add_margin_child(_TR("Recent Projects:"),tree_hb,true);
 
 	VBoxContainer *search_tree_vb = memnew(VBoxContainer);
 	search_tree_vb->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -881,13 +889,13 @@ ProjectManager::ProjectManager() {
 	//vb->add_child(hb);
 
 	Button *open = memnew( Button );
-	open->set_text("Edit");
+	open->set_text(_TR("Edit"));
 	tree_vb->add_child(open);
 	open->connect("pressed", this,"_open_project");
 	open_btn=open;
 
 	Button *run = memnew( Button );
-	run->set_text("Run");
+	run->set_text(_TR("Run"));
 	tree_vb->add_child(run);
 	run->connect("pressed", this,"_run_project");
 	run_btn=run;
@@ -895,7 +903,7 @@ ProjectManager::ProjectManager() {
 	tree_vb->add_child(memnew( HSeparator ));
 
 	Button *scan = memnew( Button );
-	scan->set_text("Scan");
+	scan->set_text(_TR("Scan"));
 	tree_vb->add_child(scan);
 	scan->connect("pressed", this,"_scan_projects");
 
@@ -910,18 +918,18 @@ ProjectManager::ProjectManager() {
 
 
 	Button* create = memnew( Button );
-	create->set_text("New Project");
+	create->set_text(_TR("New Project"));
 	tree_vb->add_child(create);
 	create->connect("pressed", this,"_new_project");
 
 	Button* import = memnew( Button );
-	import->set_text("Import");
+	import->set_text(_TR("Import"));
 	tree_vb->add_child(import);
 	import->connect("pressed", this,"_import_project");
 
 
 	Button* erase = memnew( Button );
-	erase->set_text("Erase");
+	erase->set_text(_TR("Erase"));
 	tree_vb->add_child(erase);
 	erase->connect("pressed", this,"_erase_project");
 	erase_btn=erase;
@@ -930,7 +938,7 @@ ProjectManager::ProjectManager() {
 	tree_vb->add_spacer();
 
 	Button * cancel = memnew( Button );
-	cancel->set_text("Exit");
+	cancel->set_text(_TR("Exit"));
 	tree_vb->add_child(cancel);
 	cancel->connect("pressed", this,"_exit_dialog");
 
@@ -971,8 +979,17 @@ ProjectManager::ProjectManager() {
 	add_child(npdialog);
 
 	Ref<Theme> theme = memnew( Theme );
-	editor_register_icons(theme);
 	set_theme(theme);
+	editor_register_icons(theme);
+	editor_register_fonts(theme);
+
+	String global_font = EditorSettings::get_singleton()->get("global/font");
+	if (global_font!="") {
+		Ref<Font> fnt = ResourceLoader::load(global_font);
+		if (fnt.is_valid()) {
+			theme->set_default_theme_font(fnt);
+		}
+	}
 
 	npdialog->connect("project_created", this,"_load_recent_projects");
 	_load_recent_projects();
@@ -992,6 +1009,9 @@ ProjectManager::~ProjectManager() {
 
 	if (EditorSettings::get_singleton())
 		EditorSettings::destroy();
+	if (EditorTranslationServer::get_singleton())
+		EditorTranslationServer::destroy();
+
 }
 
 void ProjectListFilter::_setup_filters() {

@@ -401,7 +401,7 @@ class CanvasItemEditorPlugin : public EditorPlugin {
 
 public:
 
-	virtual String get_name() const { return "2D"; }
+	virtual String get_name() const { return _TR("2D"); }
 	bool has_main_screen() const { return true; }
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;

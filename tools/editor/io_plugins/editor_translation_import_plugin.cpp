@@ -64,7 +64,7 @@ public:
 		FileAccess *f = FileAccess::open(p_path,FileAccess::READ);
 		if (!f) {
 
-			error_dialog->set_text("Invalid source!");
+			error_dialog->set_text(_TR("Invalid source!"));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 
@@ -75,7 +75,7 @@ public:
 
 		if (csvh.size()<2) {
 
-			error_dialog->set_text("Invalid translation source!");
+			error_dialog->set_text(_TR("Invalid translation source!"));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 
@@ -86,8 +86,8 @@ public:
 		TreeItem *root = columns->create_item();
 		columns->set_hide_root(true);
 		columns->set_column_titles_visible(true);
-		columns->set_column_title(0,"Column");
-		columns->set_column_title(1,"Language");
+		columns->set_column_title(0,_TR("Column"));
+		columns->set_column_title(1,_TR("Language"));
 		Vector<String> langs = TranslationServer::get_all_locales();
 		Vector<String> names = TranslationServer::get_all_locale_names();
 		if (csvh[0]=="")
@@ -307,13 +307,13 @@ public:
 
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		csvb->add_child(hbc);
-		vbc->add_margin_child("Source CSV:",csvb);
+		vbc->add_margin_child(_TR("Source CSV:"),csvb);
 
 		import_path = memnew( LineEdit );
 		import_path->set_h_size_flags(SIZE_EXPAND_FILL);
 		hbc->add_child(import_path);
 		ignore_first = memnew( CheckButton );
-		ignore_first->set_text("Ignore First Row");
+		ignore_first->set_text(_TR("Ignore First Row"));
 		csvb->add_child(ignore_first);
 
 		Button * import_choose = memnew( Button );
@@ -325,7 +325,7 @@ public:
 		VBoxContainer *tcomp = memnew( VBoxContainer);
 		hbc = memnew( HBoxContainer );
 		tcomp->add_child(hbc);
-		vbc->add_margin_child("Target Path:",tcomp);
+		vbc->add_margin_child(_TR("Target Path:"),tcomp);
 
 		save_path = memnew( LineEdit );
 		save_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -344,7 +344,7 @@ public:
 
 		add_to_project = memnew( CheckButton);
 		add_to_project->set_pressed(true);
-		add_to_project->set_text("Add to Project (engine.cfg)");
+		add_to_project->set_text(_TR("Add to Project (engine.cfg)"));
 		tcomp->add_child(add_to_project);
 
 		file_select = memnew(EditorFileDialog);
@@ -371,7 +371,7 @@ public:
 		set_hide_on_ok(false);
 
 		columns = memnew( Tree );
-		vbc->add_margin_child("Import Languages:",columns,true);
+		vbc->add_margin_child(_TR("Import Languages:"),columns,true);
 	}
 
 	~EditorTranslationImportDialog() {
@@ -387,7 +387,7 @@ String EditorTranslationImportPlugin::get_name() const {
 }
 String EditorTranslationImportPlugin::get_visible_name() const {
 
-	return "Translation";
+	return _TR("Translation");
 }
 void EditorTranslationImportPlugin::import_dialog(const String& p_from) {
 

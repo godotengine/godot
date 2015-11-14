@@ -29,6 +29,7 @@
 #include "editor_atlas.h"
 #include "print_string.h"
 
+
 struct _EditorAtlasWorkRect {
 
 	Size2i s;

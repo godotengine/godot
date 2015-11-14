@@ -80,7 +80,7 @@
 #include "fileserver/editor_file_server.h"
 #include "editor_resource_preview.h"
 
-
+#include "tools/editor/editor_translation.h"
 
 #include "progress_dialog.h"
 
@@ -168,6 +168,7 @@ class EditorNode : public Node {
 		SETTINGS_OPTIMIZED_PRESETS,
 		SETTINGS_SHOW_ANIMATION,
 		SETTINGS_LOAD_EXPORT_TEMPLATES,
+		SETTINGS_INSTALL_EDITOR_TRANSLATION,
 		SETTINGS_HELP,
 		SETTINGS_ABOUT,
 		SOURCES_REIMPORT,
@@ -282,6 +283,7 @@ class EditorNode : public Node {
 	ProjectSettings *project_settings;
 	EditorFileDialog *file;
 	FileDialog *file_templates;
+	FileDialog *file_editor_translation;
 	FileDialog *file_export;
 	FileDialog *file_export_lib;
 	FileDialog *file_script;

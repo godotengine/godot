@@ -38,8 +38,6 @@ RES TranslationLoaderPO::load(const String &p_path, const String& p_original_pat
 	FileAccess *f=FileAccess::open(p_path,FileAccess::READ);
 	ERR_FAIL_COND_V(!f,RES());
 
-	String l = f->get_line();
-
 	enum Status {
 
 		STATUS_NONE,
@@ -173,8 +171,9 @@ RES TranslationLoaderPO::load(const String &p_path, const String& p_original_pat
 			continue;
 		String prop = c.substr(0,p).strip_edges();
 		String value = c.substr(p+1,c.length()).strip_edges();
+		value = value.replace("-", "_");
 
-		if (prop=="X-Language") {
+		if (prop=="X-Language" || prop=="Language") {
 			translation->set_locale(value);
 		}
 	}
