@@ -1562,7 +1562,7 @@ Variant GDFunctionObject::applyv(const Array p_args) {
 		v_args[i] = &p_args[i];
 	}
 	Variant ret = apply(v_args, p_args.size(), error);
-	memdelete(v_args);
+	memfree(v_args);
 	ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, Variant());
 	return ret;
 }
@@ -1578,7 +1578,7 @@ Variant GDFunctionObject::apply_with(Object *p_target, const Array p_args) {
 		v_args[i] = &p_args[i];
 	}
 	Variant ret = p_target->call(get_name(), v_args, p_args.size(), error);
-	memdelete(v_args);
+	memfree(v_args);
 	ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, Variant());
 	return ret;
 }
@@ -1611,7 +1611,7 @@ Variant GDNativeFunctionObject::apply_with(Object *p_target, const Array p_args)
 		v_args[i] = &p_args[i];
 	}
 	Variant ret = p_target->call(get_name(), v_args, p_args.size(), error);
-	memdelete(v_args);
+	memfree(v_args);
 	ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, Variant());
 	return ret;
 }
