@@ -463,6 +463,10 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 
 				}
 
+				if (current_block && current_block->outer_stack(identifier) && current_function) {
+					LambdaFunctionNode *in = dynamic_cast<LambdaFunctionNode*>(current_function);
+					if (in) in->insert_require(identifier);
+				}
 				IdentifierNode* id = alloc_node<IdentifierNode>();
 				id->name=identifier;
 				op->arguments.push_back(id);
@@ -1717,7 +1721,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 							return;
 
 
-						break; //after else, exit
+						break; //after expression->typeelse, exit
 
 					} else
 						break;
