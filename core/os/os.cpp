@@ -31,7 +31,7 @@
 #include <stdarg.h>
 #include "dir_access.h"
 #include "globals.h"
-
+#include "input.h"
 
 OS* OS::singleton=NULL;
 
@@ -50,7 +50,9 @@ uint64_t OS::get_unix_time() const {
 
 	return 0;
 };
-
+uint64_t OS::get_system_time_msec() const {
+	return 0;
+}
 void OS::debug_break() {
 
 	// something
@@ -361,7 +363,7 @@ Error OS::set_cwd(const String& p_cwd) {
 bool OS::has_touchscreen_ui_hint() const {
 
 	//return false;
-	return GLOBAL_DEF("display/emulate_touchscreen",false);
+	return Input::get_singleton() && Input::get_singleton()->is_emulating_touchscreen();
 }
 
 int OS::get_free_static_memory() const {
@@ -514,6 +516,7 @@ OS::OS() {
 	_target_fps=0;
 	_render_thread_mode=RENDER_THREAD_SAFE;
 	_time_scale=1.0;
+	_pixel_snap=false;
 	Math::seed(1234567);
 }
 

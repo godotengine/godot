@@ -94,9 +94,9 @@ void TextEdit::Text::set_tab_size(int p_tab_size) {
 
 void TextEdit::Text::_update_line_cache(int p_line) const {
 	
-	int w =0;
-	int tab_w=font->get_char_size(' ').width;
-	
+	int w = 0;
+	int tab_w=font->get_char_size(' ').width*tab_size;
+
 	int len = text[p_line].data.length();
 	const CharType *str = text[p_line].data.c_str();
 	
@@ -292,7 +292,10 @@ void TextEdit::_update_scrollbars() {
 	
 	int vscroll_pixels = v_scroll->get_combined_minimum_size().width;
 	int visible_width = size.width - cache.style_normal->get_minimum_size().width;
-	int total_width = text.get_max_width();
+	int total_width = text.get_max_width() + vmin.x;
+	
+	if (line_numbers)
+		total_width += cache.line_number_w;
 	
 	bool use_hscroll=true;
 	bool use_vscroll=true;
@@ -322,7 +325,6 @@ void TextEdit::_update_scrollbars() {
 		v_scroll->show();
 		v_scroll->set_max(total_rows);
 		v_scroll->set_page(visible_rows);
-		
 		v_scroll->set_val(cursor.line_ofs);
 		
 	}  else {
@@ -336,6 +338,7 @@ void TextEdit::_update_scrollbars() {
 		h_scroll->set_max(total_width);
 		h_scroll->set_page(visible_width);
 		h_scroll->set_val(cursor.x_ofs);
+		
 	} else {
 		
 		h_scroll->hide();
@@ -706,7 +709,7 @@ void TextEdit::_notification(int p_what) {
 						if (in_region==-1 && !in_keyword && is_char && !prev_is_char) {
 							
 							int to=j;
-							while(_is_text_char(str[to]) && to<str.length())
+							while(to<str.length() && _is_text_char(str[to]))
 								to++;
 							
 							uint32_t hash = String::hash(&str[j],to-j);
@@ -3565,7 +3568,10 @@ void TextEdit::set_show_line_numbers(bool p_show) {
 	update();
 }
 
+bool TextEdit::is_text_field() const {
 
+    return true;
+}
 void TextEdit::_bind_methods() {
 	
 	

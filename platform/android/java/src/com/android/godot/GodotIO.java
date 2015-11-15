@@ -94,6 +94,7 @@ public class GodotIO {
 
 		//System.out.printf("file_open: Attempt to Open %s\n",path);
 
+		//Log.v("MyApp", "TRYING TO OPEN FILE: " + path);
 		if (write)
 			return -1;
 
@@ -105,7 +106,7 @@ public class GodotIO {
 
 		} catch (Exception e) {
 
-			//System.out.printf("Exception on file_open: %s\n",e);
+			//System.out.printf("Exception on file_open: %s\n",path);
 			return -1;
 		}
 
@@ -113,7 +114,7 @@ public class GodotIO {
 			ad.len=ad.is.available();
 		} catch (Exception e) {
 
-			System.out.printf("Exception availabling on file_open: %s\n",e);
+			System.out.printf("Exception availabling on file_open: %s\n",path);
 			return -1;
 		}
 

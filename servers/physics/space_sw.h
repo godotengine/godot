@@ -103,6 +103,9 @@ class SpaceSW {
 
 	RID static_global_body;
 
+	Vector<Vector3> contact_debug;
+	int contact_debug_count;
+
 friend class PhysicsDirectSpaceStateSW;
 
 public:
@@ -166,6 +169,11 @@ public:
 
 	PhysicsDirectSpaceStateSW *get_direct_state();
 
+	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
+	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.empty(); }
+	_FORCE_INLINE_ void add_debug_contact(const Vector3& p_contact) { if (contact_debug_count<contact_debug.size()) contact_debug[contact_debug_count++]=p_contact; }
+	_FORCE_INLINE_ Vector<Vector3> get_debug_contacts() { return contact_debug; }
+	_FORCE_INLINE_ int get_debug_contact_count() { return contact_debug_count; }
 
 	void set_static_global_body(RID p_body) { static_global_body=p_body; }
 	RID get_static_global_body() { return static_global_body; }

@@ -30,6 +30,40 @@
 
 #include "servers/physics_server.h"
 
+Vector<Vector3> ConcavePolygonShape::_gen_debug_mesh_lines() {
+
+	Set<DrawEdge> edges;
+
+	DVector<Vector3> data=get_faces();
+	int datalen=data.size();
+	ERR_FAIL_COND_V( (datalen%3)!=0,Vector<Vector3>() );
+
+	DVector<Vector3>::Read r=data.read();
+
+	for(int i=0;i<datalen;i+=3) {
+
+		for(int j=0;j<3;j++) {
+
+			DrawEdge de(r[i+j],r[i+((j+1)%3)]);
+			edges.insert(de);
+		}
+
+	}
+
+	Vector<Vector3> points;
+	points.resize(edges.size()*2);
+	int idx=0;
+	for (Set<DrawEdge>::Element*E=edges.front();E;E=E->next()) {
+
+		points[idx+0]=E->get().a;
+		points[idx+1]=E->get().b;
+		idx+=2;
+	}
+
+	return points;
+
+}
+
 bool ConcavePolygonShape::_set(const StringName& p_name, const Variant& p_value) {
 
 	if (p_name=="data")

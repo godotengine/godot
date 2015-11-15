@@ -11,15 +11,17 @@ def get_name():
 
 def can_build():
 
-	if (sys.platform != "darwin"):
-		return False
+	if (sys.platform == "darwin" or os.environ.has_key("OSXCROSS_ROOT")):
+		return True
 
-	return True # osx enabled
+
+	return False
 
 def get_opts():
 
 	return [
 	    ('force_64_bits','Force 64 bits binary','no'),
+	    ('osxcross_sdk','OSXCross SDK version','darwin14'),
 
 	 ]
 
@@ -59,12 +61,31 @@ def configure(env):
 		env.Append(CPPPATH=['#tools/freetype'])
 		env.Append(CPPPATH=['#tools/freetype/freetype/include'])
 
-	if (env["bits"]=="64"):
-		env.Append(CCFLAGS=['-arch', 'x86_64'])
-		env.Append(LINKFLAGS=['-arch', 'x86_64'])
+
+
+	if (not os.environ.has_key("OSXCROSS_ROOT")):
+		#regular native build
+		if (env["bits"]=="64"):
+		    env.Append(CCFLAGS=['-arch', 'x86_64'])
+		    env.Append(LINKFLAGS=['-arch', 'x86_64'])
+		else:
+		    env.Append(CCFLAGS=['-arch', 'i386'])
+		    env.Append(LINKFLAGS=['-arch', 'i386'])
 	else:
-		env.Append(CCFLAGS=['-arch', 'i386'])
-		env.Append(LINKFLAGS=['-arch', 'i386'])
+		#osxcross build
+		root=os.environ.get("OSXCROSS_ROOT",0)
+		if env["bits"]=="64":
+			basecmd=root+"/target/bin/x86_64-apple-"+env["osxcross_sdk"]+"-"
+		else:
+			basecmd=root+"/target/bin/i386-apple-"+env["osxcross_sdk"]+"-"
+
+
+		env['CC'] = basecmd+"cc"
+		env['CXX'] = basecmd+"c++"
+		env['AR'] = basecmd+"ar"
+		env['RANLIB'] = basecmd+"ranlib"
+		env['AS'] = basecmd+"as"
+
 
 #	env.Append(CPPPATH=['#platform/osx/include/freetype2', '#platform/osx/include'])
 #	env.Append(LIBPATH=['#platform/osx/lib'])

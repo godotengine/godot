@@ -549,6 +549,49 @@ void AnimationPlayerEditor::ensure_visibility() {
 	_animation_edit();
 }
 
+Dictionary AnimationPlayerEditor::get_state() const {
+
+	Dictionary d;
+
+	d["visible"]=is_visible();
+	if (is_visible() && player) {
+		d["player"]=EditorNode::get_singleton()->get_edited_scene()->get_path_to(player);
+		d["animation"]=player->get_current_animation();
+		d["editing"]=edit_anim->is_pressed();
+	}
+
+	return d;
+
+}
+void AnimationPlayerEditor::set_state(const Dictionary& p_state) {
+
+	if (p_state.has("visible") && p_state["visible"]) {
+
+		Node *n = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["player"]);
+		if (n && n->cast_to<AnimationPlayer>()) {
+			player=n->cast_to<AnimationPlayer>();
+			_update_player();
+			show();
+			set_process(true);
+			ensure_visibility();
+			EditorNode::get_singleton()->animation_panel_make_visible(true);
+
+			if (p_state.has("animation")) {
+				String anim = p_state["animation"];
+				_select_anim_by_name(anim);
+				if (p_state.has("editing") && p_state["editing"]) {
+
+					edit_anim->set_pressed(true);
+					_animation_edit();
+				}
+			}
+
+		}
+	}
+
+}
+
+
 void AnimationPlayerEditor::_animation_resource_edit() {
 
 	if (animation->get_item_count()) {
@@ -1350,6 +1393,7 @@ AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
 	anim_editor = memnew( AnimationPlayerEditor(editor) );
+	anim_editor->set_undo_redo(editor->get_undo_redo());
 	editor->get_animation_panel()->add_child(anim_editor);
 	/*
 	editor->get_viewport()->add_child(anim_editor);

@@ -50,6 +50,9 @@ void Polygon2DEditor::_notification(int p_what) {
 			uv_button[UV_MODE_ROTATE]->set_icon(get_icon("ToolRotate","EditorIcons"));
 			uv_button[UV_MODE_SCALE]->set_icon(get_icon("ToolScale","EditorIcons"));
 
+			b_snap_grid->set_icon( get_icon("Grid", "EditorIcons"));
+			b_snap_enable->set_icon( get_icon("Snap", "EditorIcons"));
+			uv_icon_zoom->set_texture( get_icon("Zoom", "EditorIcons"));
 
 		} break;
 		case NOTIFICATION_FIXED_PROCESS: {
@@ -156,6 +159,41 @@ void Polygon2DEditor::_menu_option(int p_option) {
 
 
 	}
+}
+
+void Polygon2DEditor::_set_use_snap(bool p_use)
+{
+	use_snap=p_use;
+}
+
+void Polygon2DEditor::_set_show_grid(bool p_show)
+{
+	snap_show_grid=p_show;
+	uv_edit_draw->update();
+}
+
+void Polygon2DEditor::_set_snap_off_x(float p_val)
+{
+	snap_offset.x=p_val;
+	uv_edit_draw->update();
+}
+
+void Polygon2DEditor::_set_snap_off_y(float p_val)
+{
+	snap_offset.y=p_val;
+	uv_edit_draw->update();
+}
+
+void Polygon2DEditor::_set_snap_step_x(float p_val)
+{
+	snap_step.x=p_val;
+	uv_edit_draw->update();
+}
+
+void Polygon2DEditor::_set_snap_step_y(float p_val)
+{
+	snap_step.y=p_val;
+	uv_edit_draw->update();
 }
 
 void Polygon2DEditor::_wip_close() {
@@ -494,7 +532,7 @@ void Polygon2DEditor::_uv_input(const InputEvent& p_input) {
 
 						Vector2 tuv=mtx.xform(uv_prev[i]);
 						if (tuv.distance_to(Vector2(mb.x,mb.y))<8) {
-
+							uv_drag_from=tuv;
 							uv_drag_index=i;
 						}
 					}
@@ -545,7 +583,7 @@ void Polygon2DEditor::_uv_input(const InputEvent& p_input) {
 
 		} else if (uv_drag) {
 
-			Vector2 uv_drag_to(mm.x,mm.y);
+			Vector2 uv_drag_to=snap_point(Vector2(mm.x,mm.y));
 			Vector2 drag = mtx.affine_inverse().xform(uv_drag_to) - mtx.affine_inverse().xform(uv_drag_from);
 
 
@@ -649,6 +687,33 @@ void Polygon2DEditor::_uv_draw() {
 	uv_edit_draw->draw_texture(base_tex,Point2());
 	VS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(),Matrix32());
 
+	if (snap_show_grid) {
+		Size2 s = uv_edit_draw->get_size();
+		int last_cell;
+
+		if (snap_step.x!=0) {
+			for(int i=0;i<s.width;i++) {
+				int cell = Math::fast_ftoi(Math::floor((mtx.affine_inverse().xform(Vector2(i,0)).x-snap_offset.x)/snap_step.x));
+				if (i==0)
+					last_cell=cell;
+				if (last_cell!=cell)
+					uv_edit_draw->draw_line(Point2(i,0),Point2(i,s.height),Color(0.3,0.7,1,0.3));
+				last_cell=cell;
+			}
+		}
+
+		if (snap_step.y!=0) {
+			for(int i=0;i<s.height;i++) {
+				int cell = Math::fast_ftoi(Math::floor((mtx.affine_inverse().xform(Vector2(0,i)).y-snap_offset.y)/snap_step.y));
+				if (i==0)
+					last_cell=cell;
+				if (last_cell!=cell)
+					uv_edit_draw->draw_line(Point2(0,i),Point2(s.width,i),Color(0.3,0.7,1,0.3));
+				last_cell=cell;
+			}
+		}
+	}
+
 	DVector<Vector2> uvs = node->get_uv();
 	Ref<Texture> handle = get_icon("EditorHandle","EditorIcons");
 
@@ -720,8 +785,27 @@ void Polygon2DEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_uv_input"),&Polygon2DEditor::_uv_input);
 	ObjectTypeDB::bind_method(_MD("_uv_scroll_changed"),&Polygon2DEditor::_uv_scroll_changed);
 	ObjectTypeDB::bind_method(_MD("_node_removed"),&Polygon2DEditor::_node_removed);
+	ObjectTypeDB::bind_method(_MD("_set_use_snap"),&Polygon2DEditor::_set_use_snap);
+	ObjectTypeDB::bind_method(_MD("_set_show_grid"),&Polygon2DEditor::_set_show_grid);
+	ObjectTypeDB::bind_method(_MD("_set_snap_off_x"),&Polygon2DEditor::_set_snap_off_x);
+	ObjectTypeDB::bind_method(_MD("_set_snap_off_y"),&Polygon2DEditor::_set_snap_off_y);
+	ObjectTypeDB::bind_method(_MD("_set_snap_step_x"),&Polygon2DEditor::_set_snap_step_x);
+	ObjectTypeDB::bind_method(_MD("_set_snap_step_y"),&Polygon2DEditor::_set_snap_step_y);
 
 
+}
+
+inline float _snap_scalar(float p_offset, float p_step, float p_target) {
+	return p_step != 0 ? Math::stepify(p_target - p_offset, p_step) + p_offset : p_target;
+}
+
+Vector2 Polygon2DEditor::snap_point(Vector2 p_target) const {
+	if (use_snap) {
+		p_target.x = _snap_scalar(snap_offset.x*uv_draw_zoom-uv_draw_ofs.x, snap_step.x*uv_draw_zoom, p_target.x);
+		p_target.y = _snap_scalar(snap_offset.y*uv_draw_zoom-uv_draw_ofs.y, snap_step.y*uv_draw_zoom, p_target.y);
+	}
+
+	return p_target;
 }
 
 Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
@@ -730,6 +814,10 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	canvas_item_editor=NULL;
 	editor=p_editor;
 	undo_redo = editor->get_undo_redo();
+
+	snap_step=Vector2(10,10);
+	use_snap=false;
+	snap_show_grid=false;
 
 	add_child( memnew( VSeparator ));
 	button_create = memnew( ToolButton );
@@ -800,9 +888,72 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	uv_menu->get_popup()->add_separator();
 	uv_menu->get_popup()->add_item("Clear UV",UVEDIT_UV_CLEAR);
 	uv_menu->get_popup()->connect("item_pressed",this,"_menu_option");
+
+	uv_mode_hb->add_child( memnew( VSeparator ));
+
+	b_snap_enable = memnew( ToolButton );
+	uv_mode_hb->add_child(b_snap_enable);
+	b_snap_enable->set_text("Snap");
+	b_snap_enable->set_focus_mode(FOCUS_NONE);
+	b_snap_enable->set_toggle_mode(true);
+	b_snap_enable->set_pressed(use_snap);
+	b_snap_enable->set_tooltip("Enable Snap");
+	b_snap_enable->connect("toggled",this,"_set_use_snap");
+
+	b_snap_grid = memnew( ToolButton );
+	uv_mode_hb->add_child(b_snap_grid);
+	b_snap_grid->set_text("Grid");
+	b_snap_grid->set_focus_mode(FOCUS_NONE);
+	b_snap_grid->set_toggle_mode(true);
+	b_snap_grid->set_pressed(snap_show_grid);
+	b_snap_grid->set_tooltip("Show Grid");
+	b_snap_grid->connect("toggled",this,"_set_show_grid");
+
+	uv_mode_hb->add_child( memnew( VSeparator ));
+	uv_mode_hb->add_child( memnew( Label("Grid Offset:") ) );
+
+	SpinBox *sb_off_x = memnew( SpinBox );
+	sb_off_x->set_min(-256);
+	sb_off_x->set_max(256);
+	sb_off_x->set_step(1);
+	sb_off_x->set_val(snap_offset.x);
+	sb_off_x->set_suffix("px");
+	sb_off_x->connect("value_changed", this, "_set_snap_off_x");
+	uv_mode_hb->add_child(sb_off_x);
+
+	SpinBox *sb_off_y = memnew( SpinBox );
+	sb_off_y->set_min(-256);
+	sb_off_y->set_max(256);
+	sb_off_y->set_step(1);
+	sb_off_y->set_val(snap_offset.y);
+	sb_off_y->set_suffix("px");
+	sb_off_y->connect("value_changed", this, "_set_snap_off_y");
+	uv_mode_hb->add_child(sb_off_y);
+
+	uv_mode_hb->add_child( memnew( VSeparator ));
+	uv_mode_hb->add_child( memnew( Label("Grid Step:") ) );
+
+	SpinBox *sb_step_x = memnew( SpinBox );
+	sb_step_x->set_min(-256);
+	sb_step_x->set_max(256);
+	sb_step_x->set_step(1);
+	sb_step_x->set_val(snap_step.x);
+	sb_step_x->set_suffix("px");
+	sb_step_x->connect("value_changed", this, "_set_snap_step_x");
+	uv_mode_hb->add_child(sb_step_x);
+
+	SpinBox *sb_step_y = memnew( SpinBox );
+	sb_step_y->set_min(-256);
+	sb_step_y->set_max(256);
+	sb_step_y->set_step(1);
+	sb_step_y->set_val(snap_step.y);
+	sb_step_y->set_suffix("px");
+	sb_step_y->connect("value_changed", this, "_set_snap_step_y");
+	uv_mode_hb->add_child(sb_step_y);
+
 	uv_mode_hb->add_child( memnew( VSeparator ));
 	uv_icon_zoom = memnew( TextureFrame );
-	uv_main_hb->add_child( uv_icon_zoom );
+	uv_mode_hb->add_child( uv_icon_zoom );
 	uv_zoom = memnew( HSlider );
 	uv_zoom->set_min(0.01);
 	uv_zoom->set_max(4);

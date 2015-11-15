@@ -7,8 +7,7 @@ The editor, language and APIs are feature rich, yet simple to learn, allowing yo
 
 ### About
 
-Godot has been developed by Juan Linietsky and Ariel Manzur for several years, and was born as an in-house engine, used to publish several work-for-hire titles.
-Development is sponsored by OKAM Studio (http://www.okamstudio.com).
+Godot has been developed by Juan Linietsky and Ariel Manzur for several years, and was born as an in-house engine, used to publish several work-for-hire titles. Godot is a member project of the [Software Freedom Conservancy](https://sfconservancy.org)
 
 ### Documentation
 

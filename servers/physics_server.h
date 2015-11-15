@@ -41,8 +41,9 @@ protected:
 	static void _bind_methods();
 public:
 
-	virtual Vector3 get_total_gravity() const=0; // get gravity vector working on this body space/area
-	virtual float get_total_density() const=0; // get density of this body space/area
+	virtual Vector3 get_total_gravity() const=0;
+	virtual float get_total_angular_damp() const=0;
+	virtual float get_total_linear_damp() const=0;
 
 	virtual float get_inverse_mass() const=0; // get the mass
 	virtual Vector3 get_inverse_inertia() const=0; // get density of this body space
@@ -285,6 +286,9 @@ public:
 	// this function only works on fixed process, errors and returns null otherwise
 	virtual PhysicsDirectSpaceState* space_get_direct_state(RID p_space)=0;
 
+	virtual void space_set_debug_contacts(RID p_space,int p_max_contacts)=0;
+	virtual Vector<Vector3> space_get_contacts(RID p_space) const=0;
+	virtual int space_get_contact_count(RID p_space) const=0;
 
 	//missing space parameters
 
@@ -300,7 +304,8 @@ public:
 		AREA_PARAM_GRAVITY_IS_POINT,
 		AREA_PARAM_GRAVITY_DISTANCE_SCALE,
 		AREA_PARAM_GRAVITY_POINT_ATTENUATION,
-		AREA_PARAM_DENSITY,
+		AREA_PARAM_LINEAR_DAMP,
+		AREA_PARAM_ANGULAR_DAMP,
 		AREA_PARAM_PRIORITY
 	};
 
@@ -398,6 +403,9 @@ public:
 		BODY_PARAM_BOUNCE,
 		BODY_PARAM_FRICTION,
 		BODY_PARAM_MASS, ///< unused for static, always infinite
+		BODY_PARAM_GRAVITY_SCALE,
+		BODY_PARAM_LINEAR_DAMP,
+		BODY_PARAM_ANGULAR_DAMP,
 		BODY_PARAM_MAX,
 	};
 
@@ -411,7 +419,7 @@ public:
 		BODY_STATE_LINEAR_VELOCITY,
 		BODY_STATE_ANGULAR_VELOCITY,
 		BODY_STATE_SLEEPING,
-		BODY_STATE_CAN_SLEEP
+		BODY_STATE_CAN_SLEEP			
 	};
 
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant& p_variant)=0;

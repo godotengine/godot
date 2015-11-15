@@ -18,7 +18,7 @@ class GraphNode : public Container {
 		Color color_right;
 
 
-		Slot() { enable_left=false; type_left=0; color_left=Color(1,1,1,1); enable_right=false; type_right=0; color_right=Color(1,1,1,1); };
+		Slot() { enable_left=false; type_left=0; color_left=Color(1,1,1,1); enable_right=false; type_right=0; color_right=Color(1,1,1,1); }
 	};
 
 	String title;
@@ -46,8 +46,7 @@ class GraphNode : public Container {
 	void _resort();
 
 	Vector2 drag_from;
-	Vector2 drag_accum;
-	bool dragging;
+	bool selected;
 protected:
 
 	void _input_event(const InputEvent& p_ev);
@@ -78,6 +77,12 @@ public:
 
 	void set_offset(const Vector2& p_offset);
 	Vector2 get_offset() const;
+
+	void set_selected(bool p_selected);
+	bool is_selected();
+
+	void set_drag(bool p_drag);
+	Vector2 get_drag_from();
 
 	void set_show_close_button(bool p_enable);
 	bool is_close_button_visible() const;

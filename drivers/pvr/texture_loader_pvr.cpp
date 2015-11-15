@@ -22,8 +22,10 @@ enum PVRFLags {
 
 
 
-RES ResourceFormatPVR::load(const String &p_path,const String& p_original_path) {
+RES ResourceFormatPVR::load(const String &p_path,const String& p_original_path,Error *r_error) {
 
+	if (r_error)
+		*r_error=ERR_CANT_OPEN;
 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path,FileAccess::READ,&err);
@@ -34,6 +36,8 @@ RES ResourceFormatPVR::load(const String &p_path,const String& p_original_path) 
 
 	ERR_FAIL_COND_V(err,RES());
 
+	if (r_error)
+		*r_error=ERR_FILE_CORRUPT;
 
 	uint32_t hsize = f->get_32();
 
@@ -134,6 +138,9 @@ RES ResourceFormatPVR::load(const String &p_path,const String& p_original_path) 
 
 	Ref<ImageTexture> texture = memnew( ImageTexture );
 	texture->create_from_image(image,tex_flags);
+
+	if (r_error)
+		*r_error=OK;
 
 	return texture;
 

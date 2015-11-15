@@ -30,6 +30,7 @@
 #include "core/core_string_names.h"
 #include "scene/scene_string_names.h"
 #include "scene/main/viewport.h"
+#include "os/os.h"
 
 void Sprite::edit_set_pivot(const Point2& p_pivot) {
 
@@ -85,6 +86,9 @@ void Sprite::_notification(int p_what) {
 			Point2 ofs=offset;
 			if (centered)
 				ofs-=s/2;
+			if (OS::get_singleton()->get_use_pixel_snap()) {
+				ofs=ofs.floor();
+			}
 
 			Rect2 dst_rect(ofs,s);
 
@@ -189,6 +193,7 @@ void Sprite::set_region_rect(const Rect2& p_region_rect) {
 	if (region && changed) {
 		update();
 		item_rect_changed();
+		_change_notify("region_rect");
 	}
 }
 
@@ -322,8 +327,8 @@ void Sprite::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo( Variant::VECTOR2, "offset"), _SCS("set_offset"),_SCS("get_offset"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_h"), _SCS("set_flip_h"),_SCS("is_flipped_h"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_v"), _SCS("set_flip_v"),_SCS("is_flipped_v"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "vframes"), _SCS("set_vframes"),_SCS("get_vframes"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "hframes"), _SCS("set_hframes"),_SCS("get_hframes"));
+	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "vframes",PROPERTY_HINT_RANGE,"1,16384,1"), _SCS("set_vframes"),_SCS("get_vframes"));
+	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "hframes",PROPERTY_HINT_RANGE,"1,16384,1"), _SCS("set_hframes"),_SCS("get_hframes"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
 	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "region"), _SCS("set_region"),_SCS("is_region"));
@@ -421,6 +426,9 @@ void ViewportSprite::_notification(int p_what) {
 			if (centered)
 				ofs-=s/2;
 
+			if (OS::get_singleton()->get_use_pixel_snap()) {
+				ofs=ofs.floor();
+			}
 			Rect2 dst_rect(ofs,s);
 			texture->draw_rect_region(ci,dst_rect,src_rect,modulate);
 

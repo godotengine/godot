@@ -34,10 +34,10 @@
 
 _FORCE_INLINE_ static bool _match_object_type_query(CollisionObjectSW *p_object, uint32_t p_layer_mask, uint32_t p_type_mask) {
 
-	if ((p_object->get_layer_mask()&p_layer_mask)==0)
-		return false;
+	if (p_object->get_type()==CollisionObjectSW::TYPE_AREA)
+		return p_type_mask&PhysicsDirectSpaceState::TYPE_MASK_AREA;
 
-	if (p_object->get_type()==CollisionObjectSW::TYPE_AREA && !(p_type_mask&PhysicsDirectSpaceState::TYPE_MASK_AREA))
+	if ((p_object->get_layer_mask()&p_layer_mask)==0)
 		return false;
 
 	BodySW *body = static_cast<BodySW*>(p_object);
@@ -640,7 +640,7 @@ void SpaceSW::call_queries() {
 
 void SpaceSW::setup() {
 
-
+	contact_debug_count=0;
 	while(inertia_update_list.first()) {
 		inertia_update_list.first()->self()->update_inertias();
 		inertia_update_list.remove(inertia_update_list.first());
@@ -650,6 +650,7 @@ void SpaceSW::setup() {
 }
 
 void SpaceSW::update() {
+
 
 	broadphase->update();
 
@@ -712,6 +713,7 @@ SpaceSW::SpaceSW() {
 	collision_pairs=0;
 	active_objects=0;
 	island_count=0;
+	contact_debug_count=0;
 
 	locked=false;
 	contact_recycle_radius=0.01;

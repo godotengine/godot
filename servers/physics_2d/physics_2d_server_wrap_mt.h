@@ -94,6 +94,22 @@ public:
 		return physics_2d_server->space_get_direct_state(p_space);
 	}
 
+	FUNC2(space_set_debug_contacts,RID,int);
+	virtual Vector<Vector2> space_get_contacts(RID p_space) const {
+
+		ERR_FAIL_COND_V(main_thread!=Thread::get_caller_ID(),Vector<Vector2>());
+		return physics_2d_server->space_get_contacts(p_space);
+
+	}
+
+	virtual int space_get_contact_count(RID p_space) const {
+
+		ERR_FAIL_COND_V(main_thread!=Thread::get_caller_ID(),0);
+		return physics_2d_server->space_get_contact_count(p_space);
+
+	}
+
+
 
 	/* AREA API */
 
@@ -241,6 +257,9 @@ public:
 	FUNC3R(RID,pin_joint_create,const Vector2&,RID,RID);
 	FUNC5R(RID,groove_joint_create,const Vector2&,const Vector2&,const Vector2&,RID,RID);
 	FUNC4R(RID,damped_spring_joint_create,const Vector2&,const Vector2&,RID,RID);
+
+	FUNC3(pin_joint_set_param,RID,PinJointParam,real_t);
+	FUNC2RC(real_t,pin_joint_get_param,RID,PinJointParam);
 
 	FUNC3(damped_string_joint_set_param,RID,DampedStringParam,real_t);
 	FUNC2RC(real_t,damped_string_joint_get_param,RID,DampedStringParam);

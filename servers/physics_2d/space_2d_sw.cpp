@@ -36,8 +36,8 @@ _FORCE_INLINE_ static bool _match_object_type_query(CollisionObject2DSW *p_objec
 	if ((p_object->get_layer_mask()&p_layer_mask)==0)
 		return false;
 
-	if (p_object->get_type()==CollisionObject2DSW::TYPE_AREA && !(p_type_mask&Physics2DDirectSpaceState::TYPE_MASK_AREA))
-		return false;
+	if (p_object->get_type()==CollisionObject2DSW::TYPE_AREA)
+		return p_type_mask&Physics2DDirectSpaceState::TYPE_MASK_AREA;
 
 	Body2DSW *body = static_cast<Body2DSW*>(p_object);
 
@@ -1230,6 +1230,7 @@ void Space2DSW::call_queries() {
 
 void Space2DSW::setup() {
 
+	contact_debug_count=0;
 
 	while(inertia_update_list.first()) {
 		inertia_update_list.first()->self()->update_inertias();
@@ -1302,6 +1303,8 @@ Space2DSW::Space2DSW() {
 	active_objects=0;
 	island_count=0;
 
+	contact_debug_count=0;
+
 	locked=false;
 	contact_recycle_radius=0.01;
 	contact_max_separation=0.05;
@@ -1320,6 +1323,10 @@ Space2DSW::Space2DSW() {
 
 	direct_access = memnew( Physics2DDirectSpaceStateSW );
 	direct_access->space=this;
+
+
+
+
 }
 
 Space2DSW::~Space2DSW() {

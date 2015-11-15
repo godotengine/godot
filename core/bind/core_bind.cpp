@@ -494,6 +494,10 @@ uint64_t _OS::get_unix_time() const {
 	return OS::get_singleton()->get_unix_time();
 };
 
+uint64_t _OS::get_system_time_msec() const {
+	return OS::get_singleton()->get_system_time_msec();
+}
+
 void _OS::delay_usec(uint32_t p_usec) const {
 
 	OS::get_singleton()->delay_usec(p_usec);
@@ -694,6 +698,17 @@ bool _OS::is_debug_build() const {
 
 }
 
+void _OS::set_screen_orientation(ScreenOrientation p_orientation) {
+
+	OS::get_singleton()->set_screen_orientation(OS::ScreenOrientation(p_orientation));
+}
+
+_OS::ScreenOrientation _OS::get_screen_orientation() const {
+
+	return ScreenOrientation(OS::get_singleton()->get_screen_orientation());
+}
+
+
 String _OS::get_system_dir(SystemDir p_dir) const {
 
 	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir));
@@ -715,6 +730,11 @@ bool _OS::is_scancode_unicode(uint32_t p_unicode) const {
 int _OS::find_scancode_from_string(const String& p_code) const {
 
 	return find_keycode(p_code);
+}
+
+void _OS::alert(const String& p_alert,const String& p_title) {
+
+	OS::get_singleton()->alert(p_alert,p_title);
 }
 
 _OS *_OS::singleton=NULL;
@@ -752,6 +772,9 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_window_maximized", "enabled"),&_OS::set_window_maximized);
 	ObjectTypeDB::bind_method(_MD("is_window_maximized"),&_OS::is_window_maximized);
 
+	ObjectTypeDB::bind_method(_MD("set_screen_orientation","orientation"),&_OS::set_screen_orientation);
+	ObjectTypeDB::bind_method(_MD("get_screen_orientation"),&_OS::get_screen_orientation);
+
 
 	ObjectTypeDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_OS::set_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("get_iterations_per_second"),&_OS::get_iterations_per_second);
@@ -787,6 +810,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_time","utc"),&_OS::get_time,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_time_zone_info"),&_OS::get_time_zone_info);
 	ObjectTypeDB::bind_method(_MD("get_unix_time"),&_OS::get_unix_time);
+	ObjectTypeDB::bind_method(_MD("get_system_time_msec"), &_OS::get_system_time_msec);
 
 	ObjectTypeDB::bind_method(_MD("set_icon"),&_OS::set_icon);
 
@@ -840,6 +864,7 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
 
+	ObjectTypeDB::bind_method(_MD("alert","text","title"),&_OS::alert,DEFVAL("Alert!"));
 
 
 	BIND_CONSTANT( DAY_SUNDAY );
@@ -862,6 +887,14 @@ void _OS::_bind_methods() {
 	BIND_CONSTANT( MONTH_OCTOBER );
 	BIND_CONSTANT( MONTH_NOVEMBER );
 	BIND_CONSTANT( MONTH_DECEMBER );
+
+	BIND_CONSTANT( SCREEN_ORIENTATION_LANDSCAPE );
+	BIND_CONSTANT( SCREEN_ORIENTATION_PORTRAIT );
+	BIND_CONSTANT( SCREEN_ORIENTATION_REVERSE_LANDSCAPE );
+	BIND_CONSTANT( SCREEN_ORIENTATION_REVERSE_PORTRAIT );
+	BIND_CONSTANT( SCREEN_ORIENTATION_SENSOR_LANDSCAPE );
+	BIND_CONSTANT( SCREEN_ORIENTATION_SENSOR_PORTRAIT );
+	BIND_CONSTANT( SCREEN_ORIENTATION_SENSOR );
 
 	BIND_CONSTANT( SYSTEM_DIR_DESKTOP);
 	BIND_CONSTANT( SYSTEM_DIR_DCIM );

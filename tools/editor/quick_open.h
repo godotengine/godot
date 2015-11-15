@@ -38,7 +38,11 @@ class EditorQuickOpen : public ConfirmationDialog {
 
 	LineEdit *search_box;
 	Tree *search_options;
-	String base_type;
+	StringName base_type;
+	StringName ei;
+	StringName ot;
+	bool add_directories;
+
 
 	void _update_search();
 
@@ -55,9 +59,9 @@ protected:
 	static void _bind_methods();
 public:
 
-	String get_base_type() const;
+	StringName get_base_type() const;
 
-	void popup(const String& p_base,bool p_dontclear=false);
+	void popup(const StringName& p_base,bool p_dontclear=false,bool p_add_dirs=false);
 	EditorQuickOpen();
 };
 

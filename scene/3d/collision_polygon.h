@@ -24,8 +24,16 @@ protected:
 	BuildMode build_mode;
 	Vector<Point2> polygon;
 
+
 	void _add_to_collision_object(Object *p_obj);
 	void _update_parent();
+
+	bool can_update_body;
+	int shape_from;
+	int shape_to;
+
+	void _set_shape_range(const Vector2& p_range);
+	Vector2 _get_shape_range() const;
 
 protected:
 
@@ -43,6 +51,10 @@ public:
 	Vector<Point2> get_polygon() const;
 
 	virtual AABB get_item_rect() const;
+
+	int get_collision_object_first_shape() const { return shape_from; }
+	int get_collision_object_last_shape() const { return shape_to; }
+
 	CollisionPolygon();
 };
 

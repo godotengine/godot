@@ -29,16 +29,16 @@
 #include "file_access_android.h"
 #include "print_string.h"
 
-#ifdef ANDROID_NATIVE_ACTIVITY
+
 
 
 AAssetManager *FileAccessAndroid::asset_manager=NULL;
 
 
-void FileAccessAndroid::make_default() {
+/*void FileAccessAndroid::make_default() {
 
 	create_func=create_android;
-}
+}*/
 
 FileAccess* FileAccessAndroid::create_android() {
 
@@ -46,14 +46,13 @@ FileAccess* FileAccessAndroid::create_android() {
 }
 
 
-Error FileAccessAndroid::open(const String& p_path, int p_mode_flags) {
+Error FileAccessAndroid::_open(const String& p_path, int p_mode_flags) {
 
 	String path=fix_path(p_path).simplify_path();
 	if (path.begins_with("/"))
 		path=path.substr(1,path.length());
 	else if (path.begins_with("res://"))
 		path=path.substr(6,path.length());
-
 
 
 	ERR_FAIL_COND_V(p_mode_flags&FileAccess::WRITE,ERR_UNAVAILABLE); //can't write on android..
@@ -184,4 +183,4 @@ FileAccessAndroid::~FileAccessAndroid()
 {
 	close();
 }
-#endif
+

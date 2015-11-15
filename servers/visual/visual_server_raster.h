@@ -668,6 +668,11 @@ public:
 	virtual bool texture_can_stream(RID p_texture) const;
 	virtual void texture_set_reload_hook(RID p_texture,ObjectID p_owner,const StringName& p_function) const;
 
+	virtual void texture_set_path(RID p_texture,const String& p_path);
+	virtual String texture_get_path(RID p_texture) const;
+
+	virtual void texture_debug_usage(List<TextureInfo> *r_info);
+
 
 	/* SHADER API */
 	
@@ -765,6 +770,7 @@ public:
 	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb);
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
 
+	virtual void mesh_clear(RID p_mesh);
 
 	/* MULTIMESH API */
 

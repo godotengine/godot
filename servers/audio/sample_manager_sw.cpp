@@ -38,12 +38,8 @@ SampleManagerSW::~SampleManagerSW()
 
 RID SampleManagerMallocSW::sample_create(AS::SampleFormat p_format, bool p_stereo, int p_length) {
 
-	ERR_EXPLAIN("IMA-ADPCM and STEREO are not a valid combination for sample format.");
-	ERR_FAIL_COND_V( p_format == AS::SAMPLE_FORMAT_IMA_ADPCM && p_stereo,RID());
 	Sample *s = memnew( Sample );
 	int datalen = p_length;
-	if (p_stereo)
-		datalen*=2;
 	if (p_format==AS::SAMPLE_FORMAT_PCM16)
 		datalen*=2;
 	else if (p_format==AS::SAMPLE_FORMAT_IMA_ADPCM) {
@@ -53,6 +49,10 @@ RID SampleManagerMallocSW::sample_create(AS::SampleFormat p_format, bool p_stere
 		datalen/=2;
 		datalen+=4;
 	}
+
+	if (p_stereo)
+		datalen*=2;
+
 #define SAMPLE_EXTRA 16
 
 	s->data = memalloc(datalen+SAMPLE_EXTRA); //help the interpolator by allocating a little more..

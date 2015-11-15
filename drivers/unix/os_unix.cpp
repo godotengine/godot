@@ -223,6 +223,15 @@ uint64_t OS_Unix::get_unix_time() const {
 	return time(NULL);
 };
 
+uint64_t OS_Unix::get_system_time_msec() const {
+	struct timeval tv_now;
+	gettimeofday(&tv_now, NULL);
+	//localtime(&tv_now.tv_usec);
+	//localtime((const long *)&tv_now.tv_usec);
+	uint64_t msec = uint64_t(tv_now.tv_sec)*1000+tv_now.tv_usec/1000;
+	return msec;
+}
+
 
 OS::Date OS_Unix::get_date(bool utc) const {
 
@@ -234,7 +243,7 @@ OS::Date OS_Unix::get_date(bool utc) const {
 		lt=localtime(&t);
 	Date ret;
 	ret.year=1900+lt->tm_year;
-	ret.month=(Month)lt->tm_mon;
+	ret.month=(Month)(lt->tm_mon + 1);
 	ret.day=lt->tm_mday;
 	ret.weekday=(Weekday)lt->tm_wday;
 	ret.dst=lt->tm_isdst;

@@ -12,6 +12,7 @@ iphone_lib = [
 	'view_controller.mm',
 	'game_center.mm',
 	'in_app_store.mm',
+	'icloud.mm',
 	'Appirater.m',
 ]
 
@@ -34,5 +35,5 @@ obj = env_ios.Object('godot_iphone.cpp')
 
 prog = None
 prog = env_ios.Program('#bin/godot', [obj] + iphone_lib)
-action = "dsymutil "+File(prog)[0].path+" -o " + File(prog)[0].path + ".dSYM"
+action = "$IPHONEPATH/usr/bin/dsymutil "+File(prog)[0].path+" -o " + File(prog)[0].path + ".dSYM"
 env.AddPostAction(prog, action)

@@ -45,7 +45,7 @@ class EditorHistory {
 
 	struct Obj {
 
-		RES res;
+		REF ref;
 		ObjectID object;
 		String property;
 	};
@@ -75,9 +75,16 @@ friend class EditorData;
 
 public:
 
+	bool is_at_begining() const;
+	bool is_at_end() const;
+
 	void add_object(ObjectID p_object);
 	void add_object(ObjectID p_object,const String& p_subprop);
 	void add_object(ObjectID p_object,int p_relevel);
+
+	int get_history_len();
+	int get_history_pos();
+	ObjectID get_history_obj(int p_obj) const;
 
 	bool next();
 	bool previous();
@@ -129,6 +136,7 @@ private:
 		int history_current;
 		Dictionary custom_state;
 		uint64_t version;
+		NodePath live_edit_root;
 
 
 	};
@@ -183,6 +191,8 @@ public:
 	uint64_t get_edited_scene_version() const;
 	uint64_t get_scene_version(int p_idx) const;
 	void clear_edited_scenes();
+	void set_edited_scene_live_edit_root(const NodePath& p_root);
+	NodePath get_edited_scene_live_edit_root();
 
 
 	void set_plugin_window_layout(Ref<ConfigFile> p_layout);

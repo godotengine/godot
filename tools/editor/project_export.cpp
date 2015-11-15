@@ -80,7 +80,7 @@ bool ProjectExportDialog::_create_tree(TreeItem *p_parent,EditorFileSystemDirect
 		String path = p_dir->get_file_path(i);
 		fitem->set_tooltip(0,path);
 		fitem->set_metadata(0,path);
-		Ref<Texture> icon = get_icon( (has_icon(p_dir->get_file_type(i),"EditorIcons")?p_dir->get_file_type(i):String("Object")),"EditorIcons");
+		Ref<Texture> icon = get_icon( (has_icon(p_dir->get_file_type(i),ei)?p_dir->get_file_type(i):ot),ei);
 		fitem->set_icon(0,icon);
 
 		fitem->set_cell_mode(1,TreeItem::CELL_MODE_RANGE);
@@ -252,6 +252,13 @@ void ProjectExportDialog::_script_edited(Variant v) {
 
 }
 
+void ProjectExportDialog::_sample_convert_edited(int what) {
+	EditorImportExport::get_singleton()->sample_set_action( EditorImportExport::SampleAction(sample_mode->get_selected()));
+	EditorImportExport::get_singleton()->sample_set_max_hz(  sample_max_hz->get_val() );
+	EditorImportExport::get_singleton()->sample_set_trim(  sample_trim->is_pressed() );
+
+}
+
 void ProjectExportDialog::_notification(int p_what) {
 
 	switch(p_what) {
@@ -318,6 +325,15 @@ void ProjectExportDialog::_notification(int p_what) {
 			_update_group_list();
 			_update_group();
 			_update_group_tree();
+
+			sample_mode->select( EditorImportExport::get_singleton()->sample_get_action() );
+			sample_max_hz->set_val( EditorImportExport::get_singleton()->sample_get_max_hz() );
+			sample_trim->set_pressed( EditorImportExport::get_singleton()->sample_get_trim() );
+
+			sample_mode->connect("item_selected",this,"_sample_convert_edited");
+			sample_max_hz->connect("value_changed",this,"_sample_convert_edited");
+			sample_trim->connect("toggled",this,"_sample_convert_edited");
+
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -1045,6 +1061,7 @@ void ProjectExportDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_group_select_none"),&ProjectExportDialog::_group_select_none);
 	ObjectTypeDB::bind_method(_MD("_script_edited"),&ProjectExportDialog::_script_edited);
 	ObjectTypeDB::bind_method(_MD("_update_script"),&ProjectExportDialog::_update_script);
+	ObjectTypeDB::bind_method(_MD("_sample_convert_edited"),&ProjectExportDialog::_sample_convert_edited);
 
 
 	ObjectTypeDB::bind_method(_MD("export_platform"),&ProjectExportDialog::export_platform);
@@ -1156,7 +1173,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	image_shrink = memnew( SpinBox );
 	image_shrink->set_min(1);
 	image_shrink->set_max(8);
-	image_shrink->set_step(1);
+	image_shrink->set_step(0.1);
 	image_vb->add_margin_child("Shrink All Images:",image_shrink);
 	sections->add_child(image_vb);
 
@@ -1216,6 +1233,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_image_action->add_item("Default");
 	group_image_action->add_item("Compress Disk");
 	group_image_action->add_item("Compress RAM");
+	group_image_action->add_item("Keep Original");
 	group_options->add_margin_child("Compress Mode:",group_image_action);
 	group_image_action->connect("item_selected",this,"_group_changed");
 
@@ -1236,7 +1254,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_shrink->set_min(1);
 	group_shrink->set_max(8);
 	group_shrink->set_val(1);
-	group_shrink->set_step(1);
+	group_shrink->set_step(0.001);
 	group_options->add_margin_child("Shrink By:",group_shrink);
 	group_shrink->connect("value_changed",this,"_group_changed");
 
@@ -1315,6 +1333,22 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	hbc->add_child(button_reload);
 */
 
+
+	sample_vbox = memnew( VBoxContainer );
+	sample_vbox->set_name("Samples");
+	sections->add_child(sample_vbox);
+	sample_mode = memnew( OptionButton );
+	sample_vbox->add_margin_child("Sample Conversion Mode: (.wav files):",sample_mode);
+	sample_mode->add_item("Keep");
+	sample_mode->add_item("Compress (RAM - IMA-ADPCM)");
+	sample_max_hz = memnew( SpinBox );
+	sample_max_hz->set_max(192000);
+	sample_max_hz->set_min(8000);
+	sample_vbox->add_margin_child("Sampling Rate Limit: (hz)",sample_max_hz);
+	sample_trim = memnew( CheckButton );
+	sample_trim->set_text("Trim");
+	sample_vbox->add_margin_child("Trailing Silence:",sample_trim);
+
 	script_vbox = memnew( VBoxContainer );
 	script_vbox->set_name("Script");
 	sections->add_child(script_vbox);
@@ -1372,6 +1406,8 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	button_export = add_button("Export..",!OS::get_singleton()->get_swap_ok_cancel(),"export_pck");
 	updating_script=false;
 
+	ei="EditorIcons";
+	ot="Object";
 
 }
 

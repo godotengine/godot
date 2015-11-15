@@ -58,6 +58,7 @@ class OS {
 	float _fps;
 	int _target_fps;
 	float _time_scale;
+	bool _pixel_snap;
 
 	char *last_error;
 
@@ -155,7 +156,7 @@ public:
 	virtual int get_screen_count() const{ return 1; }
 	virtual int get_current_screen() const { return 0; }
 	virtual void set_current_screen(int p_screen) { }
-	virtual Point2 get_screen_position(int p_screen=0)  { return Point2(); }
+	virtual Point2 get_screen_position(int p_screen=0) const { return Point2(); }
 	virtual Size2 get_screen_size(int p_screen=0) const { return get_window_size(); }
 	virtual Point2 get_window_position() const { return Vector2(); }
 	virtual void set_window_position(const Point2& p_position) {}
@@ -254,6 +255,7 @@ public:
 	virtual Time get_time(bool local=false) const=0;
 	virtual TimeZoneInfo get_time_zone_info() const=0;
 	virtual uint64_t get_unix_time() const;
+	virtual uint64_t get_system_time_msec() const;
 
 	virtual void delay_usec(uint32_t p_usec) const=0; 
 	virtual uint64_t get_ticks_usec() const=0;
@@ -392,7 +394,7 @@ public:
 	void set_time_scale(float p_scale);
 	float get_time_scale() const;
 
-
+	_FORCE_INLINE_ bool get_use_pixel_snap() const { return _pixel_snap; }
 
 	OS();	
 	virtual ~OS();

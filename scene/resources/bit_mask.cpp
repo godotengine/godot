@@ -205,7 +205,10 @@ BitMap::BitMap() {
 //////////////////////////////////////
 
 
-RES ResourceFormatLoaderBitMap::load(const String &p_path,const String& p_original_path) {
+RES ResourceFormatLoaderBitMap::load(const String &p_path, const String& p_original_path, Error *r_error) {
+
+	if (r_error)
+		*r_error=ERR_FILE_CANT_OPEN;
 
 	BitMap* ptr = memnew(BitMap);
 	Ref<BitMap> bitmap( ptr );
@@ -219,6 +222,8 @@ RES ResourceFormatLoaderBitMap::load(const String &p_path,const String& p_origin
 	ERR_FAIL_COND_V(err, RES());
 
 	bitmap->create_from_image_alpha(image);
+	if (r_error)
+		*r_error=OK;
 
 	return bitmap;
 

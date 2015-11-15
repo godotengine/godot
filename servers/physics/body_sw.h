@@ -50,6 +50,10 @@ class BodySW : public CollisionObjectSW {
 	real_t bounce;
 	real_t friction;
 
+	real_t linear_damp;
+	real_t angular_damp;
+	real_t gravity_scale;
+
 	PhysicsServer::BodyAxisLock axis_lock;
 
 	real_t _inv_mass;
@@ -57,12 +61,15 @@ class BodySW : public CollisionObjectSW {
 	Matrix3 _inv_inertia_tensor;
 
 	Vector3 gravity;
-	real_t density;
 
 	real_t still_time;
 
 	Vector3 applied_force;
 	Vector3 applied_torque;
+
+	float area_angular_damp;
+	float area_linear_damp;
+
 
 	SelfList<BodySW> active_list;
 	SelfList<BodySW> inertia_update_list;
@@ -233,7 +240,6 @@ public:
 	_FORCE_INLINE_ Matrix3 get_inv_inertia_tensor() const { return _inv_inertia_tensor; }
 	_FORCE_INLINE_ real_t get_friction() const { return friction; }
 	_FORCE_INLINE_ Vector3 get_gravity() const { return gravity; }
-	_FORCE_INLINE_ real_t get_density() const { return density; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
 
 	_FORCE_INLINE_ void set_axis_lock(PhysicsServer::BodyAxisLock p_lock) { axis_lock=p_lock; }
@@ -335,8 +341,9 @@ public:
 	BodySW *body;
 	real_t step;
 
-	virtual Vector3 get_total_gravity() const {  return body->get_gravity();  } // get gravity vector working on this body space/area
-	virtual float get_total_density() const {  return body->get_density();  } // get density of this body space/area
+	virtual Vector3 get_total_gravity() const {  return body->gravity;  } // get gravity vector working on this body space/area
+	virtual float get_total_angular_damp() const {  return body->area_angular_damp;  } // get density of this body space/area
+	virtual float get_total_linear_damp() const {  return body->area_linear_damp;  } // get density of this body space/area
 
 	virtual float get_inverse_mass() const {  return body->get_inv_mass();  } // get the mass
 	virtual Vector3 get_inverse_inertia() const { return body->get_inv_inertia();   } // get density of this body space

@@ -3048,6 +3048,37 @@ bool String::is_valid_identifier() const {
 
 //kind of poor should be rewritten properly
 
+String String::world_wrap(int p_chars_per_line) const {
+
+	int from=0;
+	int last_space=0;
+	String ret;
+	for(int i=0;i<length();i++) {
+		if (i-from>=p_chars_per_line) {
+			if (last_space==-1) {
+				ret+=substr(from,i-from+1)+"\n";
+			} else {
+				ret+=substr(from,last_space-from)+"\n";
+				i=last_space; //rewind
+			}
+			from=i+1;
+			last_space=-1;
+		} else if (operator[](i)==' ' || operator[](i)=='\t') {
+			last_space=i;
+		} else if (operator[](i)=='\n') {
+			ret+=substr(from,i-from)+"\n";
+			from=i+1;
+			last_space=-1;
+		}
+	}
+
+	if (from<length()) {
+		ret+=substr(from,length());
+	}
+
+	return ret;
+}
+
 String String::c_unescape() const {
 
 	String escaped=*this;
@@ -3088,8 +3119,8 @@ String String::xml_escape(bool p_escape_quotes) const {
 
 	String str=*this;
 	str=str.replace("&","&amp;");
-	str=str.replace("<","&gt;");
-	str=str.replace(">","&lt;");
+	str=str.replace("<","&lt;");
+	str=str.replace(">","&gt;");
 	if (p_escape_quotes) {
 		str=str.replace("'","&apos;");
 		str=str.replace("\"","&quot;");
@@ -3141,12 +3172,12 @@ static _FORCE_INLINE_ int _xml_unescape(const CharType *p_src,int p_src_len,Char
 			} else if (p_src_len>=4 && p_src[1]=='g' && p_src[2]=='t' && p_src[3]==';') {
 
 				if (p_dst)
-					*p_dst='<';
+					*p_dst='>';
 				eat=4;
 			} else if (p_src_len>=4 && p_src[1]=='l' && p_src[2]=='t' && p_src[3]==';') {
 
 				if (p_dst)
-					*p_dst='>';
+					*p_dst='<';
 				eat=4;
 			} else if (p_src_len>=5 && p_src[1]=='a' && p_src[2]=='m' && p_src[3]=='p' && p_src[4]==';') {
 

@@ -190,7 +190,7 @@ void EditorFileDialog::_thumbnail_done(const String& p_path,const Ref<Texture>& 
 void EditorFileDialog::_request_single_thumbnail(const String& p_path) {
 
 	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path,this,"_thumbnail_done",p_path);
-	print_line("want file "+p_path);
+	//print_line("want file "+p_path);
 	set_process(true);
 	preview_waiting=true;
 	preview_wheel_timeout=0;
@@ -359,7 +359,7 @@ void EditorFileDialog::_item_dc_selected(int p_item) {
 
 	if (d["dir"]) {
 
-		print_line("change dir: "+String(d["name"]));
+		//print_line("change dir: "+String(d["name"]));
 		dir_access->change_dir(d["name"]);
 		if (mode==MODE_OPEN_FILE || mode==MODE_OPEN_FILES || mode==MODE_OPEN_DIR)
 			file->set_text("");
@@ -536,6 +536,7 @@ void EditorFileDialog::update_file_list() {
 
 			if (get_icon_func) {
 
+				
 				Ref<Texture> icon = get_icon_func(base_dir.plus_file(files.front()->get()));
 				//ti->set_icon(0,icon);
 				if (display_mode==DISPLAY_THUMBNAILS) {

@@ -43,6 +43,8 @@ class EditorSampleImportPlugin : public EditorImportPlugin {
 	void _compress_ima_adpcm(const Vector<float>& p_data,DVector<uint8_t>& dst_data);
 public:
 
+	static EditorSampleImportPlugin *singleton;
+
 	virtual String get_name() const;
 	virtual String get_visible_name() const;
 	virtual void import_dialog(const String& p_from="");
@@ -50,6 +52,18 @@ public:
 
 
 	EditorSampleImportPlugin(EditorNode* p_editor);
+};
+
+class EditorSampleExportPlugin : public EditorExportPlugin {
+
+	OBJ_TYPE( EditorSampleExportPlugin, EditorExportPlugin);
+
+
+public:
+
+	virtual Vector<uint8_t> custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform);
+
+	EditorSampleExportPlugin();
 };
 
 #endif // EDITOR_SAMPLE_IMPORT_PLUGIN_H

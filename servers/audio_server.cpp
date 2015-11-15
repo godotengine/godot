@@ -164,6 +164,7 @@ void AudioServer::_bind_methods() {
 	BIND_CONSTANT( REVERB_HALL );
 
 	GLOBAL_DEF("audio/stream_buffering_ms",500);
+	GLOBAL_DEF("audio/video_delay_compensation_ms",300);
 
 }
 

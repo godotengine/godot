@@ -30,6 +30,7 @@
 #define SCRIPT_EDITOR_PLUGIN_H
 
 #include "tools/editor/editor_plugin.h"
+#include "tools/editor/script_create_dialog.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/menu_button.h"
@@ -115,7 +116,7 @@ class ScriptEditor : public VBoxContainer {
 
 	EditorNode *editor;
 	enum {
-
+		FILE_NEW,
 		FILE_OPEN,
 		FILE_SAVE,
 		FILE_SAVE_AS,
@@ -167,6 +168,7 @@ class ScriptEditor : public VBoxContainer {
 	FindReplaceDialog *find_replace_dialog;
 	GotoLineDialog *goto_line_dialog;
 	ConfirmationDialog *erase_tab_confirm;
+	ScriptCreateDialog *script_create_dialog;
 	ScriptEditorDebugger* debugger;
 	ToolButton *scripts_visible;
 
@@ -207,6 +209,7 @@ class ScriptEditor : public VBoxContainer {
 	void _breaked(bool p_breaked,bool p_can_debug);
 	void _show_debugger(bool p_show);
 	void _update_window_menu();
+	void _script_created(Ref<Script> p_script);
 
 	void _editor_settings_changed();
 	void _autosave_scripts();
@@ -249,6 +252,8 @@ public:
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
+
+	ScriptEditorDebugger *get_debugger() { return debugger; }
 
 	ScriptEditor(EditorNode *p_editor);
 	~ScriptEditor();

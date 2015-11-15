@@ -45,6 +45,8 @@ class SceneTree;
 class PackedScene;
 class Node;
 class Viewport;
+class Material;
+class Mesh;
 
 class SceneTree : public MainLoop {
 
@@ -87,6 +89,8 @@ private:
 	uint32_t last_id;
 
 	bool editor_hint;
+	bool debug_collisions_hint;
+	bool debug_navigation_hint;
 	bool pause;
 	int root_lock;
 
@@ -138,9 +142,20 @@ private:
 
 	Node *current_scene;
 
+	Color debug_collisions_color;
+	Color debug_collision_contact_color;
+	Color debug_navigation_color;
+	Color debug_navigation_disabled_color;
+	Ref<Mesh> debug_contact_mesh;
+	Ref<Material> navigation_material;
+	Ref<Material> navigation_disabled_material;
+	Ref<Material> collision_material;
+	int collision_debug_contacts;
+
 	void _change_scene(Node* p_to);
 	//void _call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,const Variant& p_arg1,const Variant& p_arg2);
 
+	static SceneTree *singleton;
 friend class Node;
 
 	void tree_changed();
@@ -164,6 +179,58 @@ friend class Viewport;
 
 	SelfList<Node>::List xform_change_list;
 
+#ifdef DEBUG_ENABLED
+
+	Map<int,NodePath> live_edit_node_path_cache;
+	Map<int,String> live_edit_resource_cache;
+
+	NodePath live_edit_root;
+	String live_edit_scene;
+
+	Map<String,Set<Node*> > live_scene_edit_cache;
+	Map<Node*,Map<ObjectID,Node*> > live_edit_remove_list;
+
+	ScriptDebugger::LiveEditFuncs live_edit_funcs;
+
+	void _live_edit_node_path_func(const NodePath &p_path,int p_id) ;
+	void _live_edit_res_path_func(const String &p_path,int p_id) ;
+
+	void _live_edit_node_set_func(int p_id,const StringName& p_prop,const Variant& p_value) ;
+	void _live_edit_node_set_res_func(int p_id,const StringName& p_prop,const String& p_value) ;
+	void _live_edit_node_call_func(int p_id,const StringName& p_method,VARIANT_ARG_DECLARE) ;
+	void _live_edit_res_set_func(int p_id,const StringName& p_prop,const Variant& p_value) ;
+	void _live_edit_res_set_res_func(int p_id,const StringName& p_prop,const String& p_value) ;
+	void _live_edit_res_call_func(int p_id,const StringName& p_method,VARIANT_ARG_DECLARE) ;
+	void _live_edit_root_func(const NodePath& p_scene_path,const String& p_scene_from) ;
+
+	void _live_edit_create_node_func(const NodePath& p_parent,const String& p_type,const String& p_name);
+	void _live_edit_instance_node_func(const NodePath& p_parent,const String& p_path,const String& p_name);
+	void _live_edit_remove_node_func(const NodePath& p_at);
+	void _live_edit_remove_and_keep_node_func(const NodePath& p_at,ObjectID p_keep_id);
+	void _live_edit_restore_node_func(ObjectID p_id,const NodePath& p_at,int p_at_pos);
+	void _live_edit_duplicate_node_func(const NodePath& p_at,const String& p_new_name);
+	void _live_edit_reparent_node_func(const NodePath& p_at,const NodePath& p_new_place,const String& p_new_name,int p_at_pos);
+
+	static void _live_edit_node_path_funcs(void *self,const NodePath &p_path,int p_id) { reinterpret_cast<SceneTree*>(self)->_live_edit_node_path_func(p_path,p_id); }
+	static void _live_edit_res_path_funcs(void *self,const String &p_path,int p_id) { reinterpret_cast<SceneTree*>(self)->_live_edit_res_path_func(p_path,p_id); }
+
+	static void _live_edit_node_set_funcs(void *self,int p_id,const StringName& p_prop,const Variant& p_value) { reinterpret_cast<SceneTree*>(self)->_live_edit_node_set_func(p_id,p_prop,p_value); }
+	static void _live_edit_node_set_res_funcs(void *self,int p_id,const StringName& p_prop,const String& p_value)  { reinterpret_cast<SceneTree*>(self)->_live_edit_node_set_res_func(p_id,p_prop,p_value); }
+	static void _live_edit_node_call_funcs(void *self,int p_id,const StringName& p_method,VARIANT_ARG_DECLARE)   { reinterpret_cast<SceneTree*>(self)->_live_edit_node_call_func(p_id,p_method,VARIANT_ARG_PASS); }
+	static void _live_edit_res_set_funcs(void *self,int p_id,const StringName& p_prop,const Variant& p_value) { reinterpret_cast<SceneTree*>(self)->_live_edit_res_set_func(p_id,p_prop,p_value); }
+	static void _live_edit_res_set_res_funcs(void *self,int p_id,const StringName& p_prop,const String& p_value) { reinterpret_cast<SceneTree*>(self)->_live_edit_res_set_res_func(p_id,p_prop,p_value); }
+	static void _live_edit_res_call_funcs(void *self,int p_id,const StringName& p_method,VARIANT_ARG_DECLARE)   { reinterpret_cast<SceneTree*>(self)->_live_edit_res_call_func(p_id,p_method,VARIANT_ARG_PASS); }
+	static void _live_edit_root_funcs(void *self, const NodePath& p_scene_path,const String& p_scene_from) { reinterpret_cast<SceneTree*>(self)->_live_edit_root_func(p_scene_path,p_scene_from); }
+
+	static void _live_edit_create_node_funcs(void* self,const NodePath& p_parent,const String& p_type,const String& p_name) { reinterpret_cast<SceneTree*>(self)->_live_edit_create_node_func(p_parent,p_type,p_name); }
+	static void _live_edit_instance_node_funcs(void* self,const NodePath& p_parent,const String& p_path,const String& p_name) { reinterpret_cast<SceneTree*>(self)->_live_edit_instance_node_func(p_parent,p_path,p_name); }
+	static void _live_edit_remove_node_funcs(void* self,const NodePath& p_at) { reinterpret_cast<SceneTree*>(self)->_live_edit_remove_node_func(p_at); }
+	static void _live_edit_remove_and_keep_node_funcs(void* self,const NodePath& p_at,ObjectID p_keep_id) { reinterpret_cast<SceneTree*>(self)->_live_edit_remove_and_keep_node_func(p_at,p_keep_id); }
+	static void _live_edit_restore_node_funcs(void* self,ObjectID p_id,const NodePath& p_at,int p_at_pos) { reinterpret_cast<SceneTree*>(self)->_live_edit_restore_node_func(p_id,p_at,p_at_pos); }
+	static void _live_edit_duplicate_node_funcs(void* self,const NodePath& p_at,const String& p_new_name) { reinterpret_cast<SceneTree*>(self)->_live_edit_duplicate_node_func(p_at,p_new_name); }
+	static void _live_edit_reparent_node_funcs(void* self,const NodePath& p_at,const NodePath& p_new_place,const String& p_new_name,int p_at_pos) { reinterpret_cast<SceneTree*>(self)->_live_edit_reparent_node_func(p_at,p_new_place,p_new_name,p_at_pos); }
+
+#endif
 protected:
 
 	void _notification(int p_notification);
@@ -218,6 +285,32 @@ public:
 	void set_camera(const RID& p_camera);
 	RID get_camera() const;
 
+	void set_debug_collisions_hint(bool p_enabled);
+	bool is_debugging_collisions_hint() const;
+
+	void set_debug_navigation_hint(bool p_enabled);
+	bool is_debugging_navigation_hint() const;
+
+	void set_debug_collisions_color(const Color& p_color);
+	Color get_debug_collisions_color() const;
+
+	void set_debug_collision_contact_color(const Color& p_color);
+	Color get_debug_collision_contact_color() const;
+
+	void set_debug_navigation_color(const Color& p_color);
+	Color get_debug_navigation_color() const;
+
+	void set_debug_navigation_disabled_color(const Color& p_color);
+	Color get_debug_navigation_disabled_color() const;
+
+
+	Ref<Material> get_debug_navigation_material();
+	Ref<Material> get_debug_navigation_disabled_material();
+	Ref<Material> get_debug_collision_material();
+	Ref<Mesh> get_debug_contact_mesh();
+
+	int get_collision_debug_contact_count() { return collision_debug_contacts; }
+
 	int64_t get_frame() const;
 
 	int get_node_count() const;
@@ -245,6 +338,7 @@ public:
 	//used by Main::start, don't use otherwise
 	void add_current_scene(Node * p_current);
 
+	static SceneTree* get_singleton() { return singleton; }
 
 
 	SceneTree();

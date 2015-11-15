@@ -187,6 +187,7 @@ void ItemList::select(int p_idx,bool p_single){
 		}
 
 		current=p_idx;
+		ensure_selected_visible=false;
 	} else {
 
 		if (items[p_idx].selectable) {
@@ -194,6 +195,7 @@ void ItemList::select(int p_idx,bool p_single){
 		}
 	}
 	update();
+
 
 }
 void ItemList::unselect(int p_idx){
@@ -246,12 +248,14 @@ void ItemList::remove_item(int p_idx){
 	update();
 	shape_changed=true;
 
+
 }
 
 void ItemList::clear(){
 
 	items.clear();
 	current=-1;
+	ensure_selected_visible=false;
 	update();
 
 }
@@ -602,18 +606,8 @@ void ItemList::_input_event(const InputEvent& p_event) {
 
 void ItemList::ensure_current_is_visible() {
 
-	if (current>=0 && current <=items.size()) {
-
-		Rect2 r = items[current].rect_cache;
-		int from = scroll_bar->get_val();
-		int to = from + scroll_bar->get_page();
-
-		if (r.pos.y < from) {
-			scroll_bar->set_val(r.pos.y);
-		} else if (r.pos.y+r.size.y > to) {
-			scroll_bar->set_val(r.pos.y+r.size.y - (to-from));
-		}
-	}
+	ensure_selected_visible=true;
+	update();
 }
 
 void ItemList::_notification(int p_what) {
@@ -928,6 +922,24 @@ void ItemList::_notification(int p_what) {
 			draw_line(Vector2(bg->get_margin(MARGIN_LEFT),base_ofs.y+separators[i]),Vector2(size.width-bg->get_margin(MARGIN_LEFT),base_ofs.y+separators[i]),guide_color);
 		}
 
+
+		if (ensure_selected_visible && current>=0 && current <=items.size()) {
+
+			Rect2 r = items[current].rect_cache;
+			int from = scroll_bar->get_val();
+			int to = from + scroll_bar->get_page();
+
+			if (r.pos.y < from) {
+				scroll_bar->set_val(r.pos.y);
+			} else if (r.pos.y+r.size.y > to) {
+				scroll_bar->set_val(r.pos.y+r.size.y - (to-from));
+			}
+
+
+		}
+
+		ensure_selected_visible=false;
+
 	}
 }
 
@@ -1013,7 +1025,7 @@ void ItemList::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("get_item_text","idx"),&ItemList::get_item_text);
 
 	ObjectTypeDB::bind_method(_MD("set_item_icon","idx","icon:Texture"),&ItemList::set_item_icon);
-	ObjectTypeDB::bind_method(_MD("get_item_icon:Tedture","idx"),&ItemList::get_item_icon);
+	ObjectTypeDB::bind_method(_MD("get_item_icon:Texture","idx"),&ItemList::get_item_icon);
 
 	ObjectTypeDB::bind_method(_MD("set_item_selectable","idx","selectable"),&ItemList::set_item_selectable);
 	ObjectTypeDB::bind_method(_MD("is_item_selectable","idx"),&ItemList::is_item_selectable);
@@ -1095,6 +1107,7 @@ ItemList::ItemList() {
 	set_focus_mode(FOCUS_ALL);
 	current_columns=1;
 	search_time_msec=0;
+	ensure_selected_visible=false;
 
 }
 

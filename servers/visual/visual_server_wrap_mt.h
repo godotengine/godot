@@ -98,6 +98,15 @@ public:
 	FUNC1RC(bool,texture_can_stream,RID);
 	FUNC3C(texture_set_reload_hook,RID,ObjectID,const StringName&);
 
+	FUNC2(texture_set_path,RID,const String&);
+	FUNC1RC(String,texture_get_path,RID);
+
+	virtual void texture_debug_usage(List<TextureInfo> *r_info) {
+		//pass directly, should lock the server anyway
+		visual_server->texture_debug_usage(r_info);
+	}
+
+
 	/* SHADER API */
 
 	FUNC1R(RID,shader_create,ShaderMode);
@@ -199,6 +208,7 @@ public:
 
 	FUNC2(mesh_remove_surface,RID,int);
 	FUNC1RC(int,mesh_get_surface_count,RID);
+	FUNC1(mesh_clear,RID);
 
 
 	FUNC2(mesh_set_custom_aabb,RID,const AABB&);

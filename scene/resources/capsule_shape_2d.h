@@ -49,6 +49,9 @@ public:
 	void set_radius(real_t p_radius);
 	real_t get_radius() const;
 
+	virtual void draw(const RID& p_to_rid,const Color& p_color);
+	virtual Rect2 get_rect() const ;
+
 	CapsuleShape2D();
 };
 
