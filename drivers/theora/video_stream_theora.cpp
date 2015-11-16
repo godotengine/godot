@@ -281,10 +281,10 @@ void VideoStreamPlaybackTheora::set_file(const String& p_file) {
 
 					audio_track_skip--;
 
-                } else {
+				} else {
                     copymem(&vo,&test,sizeof(test));
 					vorbis_p=1;
-                }
+				}
 			}else{
 				/* whatever it is, we don't care about it */
 				ogg_stream_clear(&test);
