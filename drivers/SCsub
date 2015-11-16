@@ -71,7 +71,7 @@ for f in env.drivers_sources:
 		fname = env.File(f)[0].path
 	fname = fname.replace("\\", "/")
 	base = string.join(fname.split("/")[:2], "/")
-	if base != cur_base or len(list) > max_src:
+	if base != cur_base and len(list) > max_src:
 		if num > 0:
 			lib = env.Library("drivers"+str(num), list)
 			lib_list.append(lib)

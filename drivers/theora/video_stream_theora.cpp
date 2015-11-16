@@ -269,15 +269,22 @@ void VideoStreamPlaybackTheora::set_file(const String& p_file) {
 				copymem(&to,&test,sizeof(test));
 				theora_p=1;
 			}else if(!vorbis_p && vorbis_synthesis_headerin(&vi,&vc,&op)>=0){
+
+
 				/* it is vorbis */
-		if (audio_track_skip) {
-		    vorbis_info_clear(&vi);
-		    vorbis_comment_clear(&vc);
-		    audio_track_skip--;
-		} else {
-		    copymem(&vo,&test,sizeof(test));
-		    vorbis_p=1;
-		}
+				if (audio_track_skip) {
+					vorbis_info_clear(&vi);
+					vorbis_comment_clear(&vc);
+					ogg_stream_clear(&test);
+					vorbis_info_init(&vi);
+					vorbis_comment_init(&vc);
+
+					audio_track_skip--;
+
+                } else {
+                    copymem(&vo,&test,sizeof(test));
+					vorbis_p=1;
+                }
 			}else{
 				/* whatever it is, we don't care about it */
 				ogg_stream_clear(&test);
