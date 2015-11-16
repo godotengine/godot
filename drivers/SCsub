@@ -64,32 +64,32 @@ if env['vsproj']=="yes":
 	env.AddToVSProject(env.drivers_sources)
 
 for f in env.drivers_sources:
-    fname = ""
-    if type(f) == type(""):
-        fname = env.File(f).path
-    else:
-	    fname = env.File(f)[0].path
-    fname = fname.replace("\\", "/")
-    base = string.join(fname.split("/")[:2], "/")
-    if base != cur_base or len(list) > max_src:
-        if num > 0:
-            lib = env.Library("drivers"+str(num), list)
-            lib_list.append(lib)
-            list = []
-        num = num+1
-    cur_base = base
-    list.append(f)
+	fname = ""
+	if type(f) == type(""):
+		fname = env.File(f).path
+	else:
+		fname = env.File(f)[0].path
+	fname = fname.replace("\\", "/")
+	base = string.join(fname.split("/")[:2], "/")
+	if base != cur_base or len(list) > max_src:
+		if num > 0:
+			lib = env.Library("drivers"+str(num), list)
+			lib_list.append(lib)
+			list = []
+		num = num+1
+	cur_base = base
+	list.append(f)
 
 lib = env.Library("drivers"+str(num), list)
 lib_list.append(lib)
 
 if len(lib_list) > 0:
-    import os, sys
-    if os.name=='posix' and sys.platform=='msys':
-        env.Replace(ARFLAGS=['rcsT'])
+	import os, sys
+	if os.name=='posix' and sys.platform=='msys':
+		env.Replace(ARFLAGS=['rcsT'])
 
-        lib = env.Library("drivers_collated", lib_list)
-        lib_list = [lib]
+		lib = env.Library("drivers_collated", lib_list)
+		lib_list = [lib]
 
 drivers_base=[]
 env.add_source_files(drivers_base,"*.cpp")
