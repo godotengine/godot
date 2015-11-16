@@ -683,10 +683,10 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		} break;
 
 		#endif
-        case WM_DEVICECHANGE: {
+                case WM_DEVICECHANGE: {
 
-            joystick->probe_joysticks();
-        } break;
+                    joystick->probe_joysticks();
+                } break;
 
 		default: {
 
@@ -968,7 +968,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	visual_server->init();	
 
 	input = memnew( InputDefault );
-    joystick = memnew (joystick_windows(input, &hWnd));
+        joystick = memnew (joystick_windows(input, &hWnd));
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -1099,7 +1099,7 @@ void OS_Windows::finalize() {
 
 	main_loop=NULL;
 
-    memdelete(joystick);
+        memdelete(joystick);
 	memdelete(input);
 
 	visual_server->finish();
@@ -1691,7 +1691,7 @@ void OS_Windows::process_events() {
 
 	MSG msg;
 
-    last_id = joystick->process_joysticks(last_id);
+        last_id = joystick->process_joysticks(last_id);
 	
 	while(PeekMessageW(&msg,NULL,0,0,PM_REMOVE)) {
 

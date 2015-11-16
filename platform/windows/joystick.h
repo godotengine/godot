@@ -37,11 +37,11 @@
 
 #ifndef SAFE_RELEASE            // when Windows Media Device M? is not present
 #define SAFE_RELEASE(x) \
-   if(x != NULL)        \
-   {                    \
-      x->Release();     \
-      x = NULL;         \
-   }
+    if(x != NULL)        \
+{                    \
+    x->Release();     \
+    x = NULL;         \
+    }
 #endif
 
 
@@ -52,19 +52,19 @@ public:
     joystick_windows(InputDefault* _input, HWND* hwnd);
     ~joystick_windows();
 
-	void probe_joysticks();
+    void probe_joysticks();
     unsigned int process_joysticks(unsigned int p_last_id);
 private:
 
-	enum {
+    enum {
         JOYSTICKS_MAX = 16,
-		JOY_AXIS_COUNT = 6,
+        JOY_AXIS_COUNT = 6,
         MIN_JOY_AXIS = 10,
         MAX_JOY_AXIS = 32768,
-		MAX_JOY_BUTTONS = 128,
+        MAX_JOY_BUTTONS = 128,
         KEY_EVENT_BUFFER_SIZE = 512,
         MAX_TRIGGER = 255
-	};
+    };
 
     struct dinput_gamepad {
 

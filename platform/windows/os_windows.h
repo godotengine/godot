@@ -64,7 +64,7 @@ class joystick_windows;
 class OS_Windows : public OS {
 
 	enum {
-		KEY_EVENT_BUFFER_SIZE=512
+            KEY_EVENT_BUFFER_SIZE=512
 	};
 
 	FILE *stdo;
@@ -128,7 +128,7 @@ class OS_Windows : public OS {
 	CursorShape cursor_shape;
 
 	InputDefault *input;
-    joystick_windows *joystick;
+        joystick_windows *joystick;
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;
