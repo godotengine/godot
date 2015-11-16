@@ -85,11 +85,10 @@ lib_list.append(lib)
 
 if len(lib_list) > 0:
     import os, sys
-    if os.name=='posix' and sys.platform=='win32':
+    if os.name=='posix' and sys.platform=='msys':
         env.Replace(ARFLAGS=['rcsT'])
 
         lib = env.Library("drivers_collated", lib_list)
-        env.Replace(ARFLAGS=['rc'])
         lib_list = [lib]
 
 drivers_base=[]
