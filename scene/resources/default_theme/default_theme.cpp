@@ -188,6 +188,7 @@ void make_default_theme() {
 	// Font Colors
 
 	Color control_font_color = Color::html("e0e0e0");
+	Color control_font_color_lower = Color::html("a0a0a0");
 	Color control_font_color_low = Color::html("b0b0b0");
 	Color control_font_color_hover = Color::html("f0f0f0");
 	Color control_font_color_disabled = Color(0.9,0.9,0.9,0.2);
@@ -273,7 +274,7 @@ void make_default_theme() {
 	t->set_color("font_color_hover","ToolButton", control_font_color_hover );
 	t->set_color("font_color_disabled","ToolButton", Color(0.9,0.95,1,0.3) );
 
-	t->set_constant("hseparation","ToolButton", 0 );
+	t->set_constant("hseparation","ToolButton", 3 );
 
 
 
@@ -649,7 +650,7 @@ void make_default_theme() {
 	t->set_constant("icon_margin","ItemList",4);
 	t->set_constant("line_separation","ItemList",2);
 	t->set_font("font","ItemList", default_font );
-	t->set_color("font_color","ItemList", control_font_color_low );
+	t->set_color("font_color","ItemList", control_font_color_lower );
 	t->set_color("font_color_selected","ItemList", control_font_color_pressed );
 	t->set_color("guide_color","ItemList", Color(0,0,0,0.1) );
 	t->set_stylebox("selected","ItemList", item_selected_oof );

@@ -163,12 +163,12 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 
 		switch(p_event.key.scancode) {
 
-			case KEY_F1:
+			/*case KEY_F1:
 				if (!p_event.key.mod.shift && !p_event.key.mod.command)
 					_editor_select(3);
-			break;
-			case KEY_F2: _editor_select(0); break;
-			case KEY_F3: _editor_select(1); break;
+			break;*/
+			case KEY_F1: _editor_select(0); break;
+			case KEY_F2: _editor_select(1); break;
 			case KEY_F4: _editor_select(2); break;
 			case KEY_F5: _menu_option_confirm((p_event.key.mod.control&&p_event.key.mod.shift)?RUN_PLAY_CUSTOM_SCENE:RUN_PLAY,true); break;
 			case KEY_F6: _menu_option_confirm(RUN_PLAY_SCENE,true); break;
@@ -2846,7 +2846,7 @@ Control* EditorNode::get_viewport() {
 void EditorNode::_editor_select(int p_which) {
 
 	static bool selecting=false;
-	if (selecting)
+	if (selecting || changing_scene)
 		return;
 
 	selecting=true;
@@ -3223,9 +3223,14 @@ Dictionary EditorNode::_get_main_scene_state() {
 void EditorNode::_set_main_scene_state(Dictionary p_state) {
 
 	//print_line("set current 7 ");
+	changing_scene=false;
 
+#if 0
 	if (p_state.has("main_tab")) {
 		int idx = p_state["main_tab"];
+
+
+		print_line("comes with tab: "+itos(idx));
 		int current=-1;
 		for(int i=0;i<editor_table.size();i++) {
 			if (editor_plugin_screen==editor_table[i]) {
@@ -3234,12 +3239,41 @@ void EditorNode::_set_main_scene_state(Dictionary p_state) {
 			}
 		}
 
+
 		if (idx<2 && current<2) {
 			//only set tab for 2D and 3D
-			_editor_select(p_state["main_tab"]);
+			_editor_select(idx);
 			//print_line(" setting main tab: "+itos(p_state["main_tab"]));
 		}
 	}
+#else
+
+	if (get_edited_scene()) {
+
+		int current=-1;
+		for(int i=0;i<editor_table.size();i++) {
+			if (editor_plugin_screen==editor_table[i]) {
+				current=i;
+				break;
+			}
+		}
+
+		if (current<2) {
+			//use heuristic instead
+
+			int n2d=0,n3d=0;
+			_find_node_types(get_edited_scene(),n2d,n3d);
+			if (n2d>n3d) {
+				_editor_select(0);
+			} else if (n3d>n2d) {
+				_editor_select(1);
+
+			}
+		}
+
+	}
+#endif
+
 
 	if (p_state.has("scene_tree_offset"))
 		scene_tree_dock->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->set_val(p_state["scene_tree_offset"]);
@@ -3248,6 +3282,12 @@ void EditorNode::_set_main_scene_state(Dictionary p_state) {
 
 	//print_line("set current 8 ");
 
+	//this should only happen at the very end
+
+	//changing_scene=true; //avoid script change from opening editor
+	ScriptEditor::get_singleton()->get_debugger()->update_live_edit_root();
+	ScriptEditor::get_singleton()->set_scene_root_script( editor_data.get_scene_root_script(editor_data.get_edited_scene()) );
+	//changing_scene=false;
 
 }
 
@@ -3312,8 +3352,6 @@ void EditorNode::set_current_scene(int p_idx) {
 
 	call_deferred("_set_main_scene_state",state); //do after everything else is done setting up
 	//print_line("set current 6 ");
-	changing_scene=false;
-	ScriptEditor::get_singleton()->get_debugger()->update_live_edit_root();
 
 
 }
@@ -5493,7 +5531,6 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( CanvasItemEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SpatialEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ScriptEditorPlugin(this) ) );
-	add_editor_plugin( memnew( EditorHelpPlugin(this) ) );
 	add_editor_plugin( memnew( AnimationPlayerEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ShaderGraphEditorPlugin(this,true) ) );
 	add_editor_plugin( memnew( ShaderGraphEditorPlugin(this,false) ) );
@@ -5669,6 +5706,7 @@ EditorNode::EditorNode() {
 EditorNode::~EditorNode() {	
 
 
+	memdelete( EditorHelp::get_doc_data() );
 	memdelete(editor_selection);
 	memdelete(file_server);
 	EditorSettings::destroy();

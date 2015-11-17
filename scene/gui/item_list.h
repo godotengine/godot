@@ -101,6 +101,7 @@ public:
 	void set_current(int p_current);
 	int get_current() const;
 
+	void move_item(int p_item,int p_to_pos);
 
 	int get_item_count() const;
 	void remove_item(int p_idx);
