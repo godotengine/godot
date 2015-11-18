@@ -5285,6 +5285,7 @@ EditorNode::EditorNode() {
 
 
 	editor_history_menu = memnew( MenuButton );
+	editor_history_menu->set_tooltip("History of recently edited objects");
 	editor_history_menu->set_icon( gui_base->get_icon("History","EditorIcons"));
 	prop_editor_hb->add_child(editor_history_menu);
 	editor_history_menu->connect("about_to_show",this,"_prepare_history");
