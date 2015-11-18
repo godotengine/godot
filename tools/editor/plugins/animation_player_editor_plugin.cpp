@@ -27,7 +27,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "animation_player_editor_plugin.h"
+#include "globals.h"
 #include "io/resource_loader.h"
+#include "io/resource_saver.h"
 #include "os/keyboard.h"
 #include "tools/editor/editor_settings.h"
 
@@ -98,6 +100,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		duplicate_anim->set_icon( get_icon("Duplicate","EditorIcons") );
 		autoplay->set_icon( get_icon("AutoPlay","EditorIcons") );
 		load_anim->set_icon( get_icon("Folder","EditorIcons") );
+		save_anim->set_icon(get_icon("Save", "EditorIcons"));
+		save_anim->get_popup()->connect("item_pressed", this, "_animation_save_menu");
 		remove_anim->set_icon( get_icon("Remove","EditorIcons") );
 		edit_anim->set_icon( get_icon("Edit","EditorIcons") );
 		blend_anim->set_icon( get_icon("Blend","EditorIcons") );
@@ -367,8 +371,78 @@ void AnimationPlayerEditor::_animation_load() {
 	}
 
 	file->popup_centered_ratio();
+	current_option = RESOURCE_LOAD;
+}
 
 
+void AnimationPlayerEditor::_animation_save_in_path(const Ref<Resource>& p_resource, const String& p_path) {
+
+	int flg = 0;
+	if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
+		flg |= ResourceSaver::FLAG_COMPRESS;
+	if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
+		flg |= ResourceSaver::FLAG_RELATIVE_PATHS;
+
+	String path = Globals::get_singleton()->localize_path(p_path);
+	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
+
+	if (err != OK) {
+		accept->set_text("Error saving resource!");
+		accept->popup_centered_minsize();
+		return;
+	}
+	//	EditorFileSystem::get_singleton()->update_file(path,p_resource->get_type());
+
+	((Resource*)p_resource.ptr())->set_path(path);
+	editor->emit_signal("resource_saved", p_resource);
+
+}
+
+void AnimationPlayerEditor::_animation_save(const Ref<Resource>& p_resource) {
+
+	if (p_resource->get_path().is_resource_file()) {
+		_animation_save_in_path(p_resource, p_resource->get_path());
+	}
+	else {
+		_animation_save_as(p_resource);
+	}
+}
+
+void AnimationPlayerEditor::_animation_save_as(const Ref<Resource>& p_resource) {
+
+	file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	bool relpaths = (p_resource->has_meta("__editor_relpaths__") && p_resource->get_meta("__editor_relpaths__").operator bool());
+
+	List<String> extensions;
+	ResourceSaver::get_recognized_extensions(p_resource, &extensions);
+	file->clear_filters();
+	for (int i = 0; i<extensions.size(); i++) {
+
+		file->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+	}
+
+	//file->set_current_path(current_path);
+	if (p_resource->get_path() != "") {
+		file->set_current_path(p_resource->get_path());
+		if (extensions.size()) {
+			String ext = p_resource->get_path().extension().to_lower();
+			if (extensions.find(ext) == NULL) {
+				file->set_current_path(p_resource->get_path().replacen("." + ext, "." + extensions.front()->get()));
+			}
+		}
+	}
+	else {
+
+		String existing;
+		if (extensions.size()) {
+			existing = "new_" + p_resource->get_type().to_lower() + "." + extensions.front()->get().to_lower();
+		}
+		file->set_current_path(existing);
+
+	}
+	file->popup_centered_ratio();
+	file->set_title("Save Resource As..");
+	current_option = RESOURCE_SAVE;
 }
 void AnimationPlayerEditor::_animation_remove() {
 
@@ -635,38 +709,55 @@ void AnimationPlayerEditor::_animation_edit() {
 	//get_scene()->get_root_node()->call("_resource_selected",anim,"");
 
 }
-void AnimationPlayerEditor::_file_selected(String p_file) {
+void AnimationPlayerEditor::_dialog_action(String p_file) {
 
-	ERR_FAIL_COND(!player);
+	switch (current_option) {
+		case RESOURCE_LOAD: {
+			ERR_FAIL_COND(!player);
 
-	Ref<Resource> res = ResourceLoader::load(p_file,"Animation");
-	ERR_FAIL_COND(res.is_null());
-	ERR_FAIL_COND( !res->is_type("Animation") );
-	if (p_file.find_last("/")!=-1) {
+			Ref<Resource> res = ResourceLoader::load(p_file, "Animation");
+			ERR_FAIL_COND(res.is_null());
+			ERR_FAIL_COND(!res->is_type("Animation"));
+			if (p_file.find_last("/") != -1) {
 
-		p_file=p_file.substr( p_file.find_last("/")+1, p_file.length() );
+				p_file = p_file.substr(p_file.find_last("/") + 1, p_file.length());
 
+			}
+			if (p_file.find_last("\\") != -1) {
+
+				p_file = p_file.substr(p_file.find_last("\\") + 1, p_file.length());
+
+			}
+
+			if (p_file.find(".") != -1)
+				p_file = p_file.substr(0, p_file.find("."));
+
+			undo_redo->create_action("Load Animation");
+			undo_redo->add_do_method(player, "add_animation", p_file, res);
+			undo_redo->add_undo_method(player, "remove_animation", p_file);
+			if (player->has_animation(p_file)) {
+				undo_redo->add_undo_method(player, "add_animation", p_file, player->get_animation(p_file));
+
+			}
+			undo_redo->add_do_method(this, "_animation_player_changed", player);
+			undo_redo->add_undo_method(this, "_animation_player_changed", player);
+			undo_redo->commit_action();
+			break;
+		}
+		case RESOURCE_SAVE: {
+
+			String current = animation->get_item_text(animation->get_selected());
+			if (current != "") {
+				Ref<Animation> anim = player->get_animation(current);
+				
+				ERR_FAIL_COND(!anim->cast_to<Resource>())
+
+					RES current_res = RES(anim->cast_to<Resource>());
+
+				_animation_save_in_path(current_res, p_file);
+			}
+		}
 	}
-	if (p_file.find_last("\\")!=-1) {
-
-		p_file=p_file.substr( p_file.find_last("\\")+1, p_file.length() );
-
-	}
-
-	if (p_file.find(".")!=-1)
-		p_file=p_file.substr(0,p_file.find("."));
-
-	undo_redo->create_action("Load Animation");
-	undo_redo->add_do_method(player,"add_animation",p_file,res);
-	undo_redo->add_undo_method(player,"remove_animation",p_file);
-	if (player->has_animation(p_file)) {
-		undo_redo->add_undo_method(player,"add_animation",p_file,player->get_animation(p_file));
-
-	}
-	undo_redo->add_do_method(this,"_animation_player_changed",player);
-	undo_redo->add_undo_method(this,"_animation_player_changed",player);
-	undo_redo->commit_action();
-
 }
 
 void AnimationPlayerEditor::_scale_changed(const String& p_scale) {
@@ -730,6 +821,8 @@ void AnimationPlayerEditor::_update_player() {
 	blend_anim->set_disabled(animlist.size()==0);
 	remove_anim->set_disabled(animlist.size()==0);
 	resource_edit_anim->set_disabled(animlist.size()==0);
+	save_anim->set_disabled(animlist.size() == 0);
+
 
 	int active_idx=-1;
 	for (List<StringName>::Element *E=animlist.front();E;E=E->next()) {
@@ -1072,6 +1165,23 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 	}
 }
 
+void AnimationPlayerEditor::_animation_save_menu(int p_option) {
+
+	String current = animation->get_item_text(animation->get_selected());
+	if (current != "") {
+		Ref<Animation> anim = player->get_animation(current);
+
+		switch (p_option) {
+		case ANIM_SAVE:
+			_animation_save(anim);
+			break;
+		case ANIM_SAVE_AS:
+			_animation_save_as(anim);
+			break;
+		}
+	}
+}
+
 void AnimationPlayerEditor::_unhandled_key_input(const InputEvent& p_ev) {
 
 	if (is_visible() && p_ev.type==InputEvent::KEY && p_ev.key.pressed && !p_ev.key.echo && !p_ev.key.mod.alt && !p_ev.key.mod.control && !p_ev.key.mod.meta) {
@@ -1117,7 +1227,7 @@ void AnimationPlayerEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_animation_blend"),&AnimationPlayerEditor::_animation_blend);
 	ObjectTypeDB::bind_method(_MD("_animation_edit"),&AnimationPlayerEditor::_animation_edit);
 	ObjectTypeDB::bind_method(_MD("_animation_resource_edit"),&AnimationPlayerEditor::_animation_resource_edit);
-	ObjectTypeDB::bind_method(_MD("_file_selected"),&AnimationPlayerEditor::_file_selected);
+	ObjectTypeDB::bind_method(_MD("_dialog_action"),&AnimationPlayerEditor::_dialog_action);
 	ObjectTypeDB::bind_method(_MD("_seek_value_changed"),&AnimationPlayerEditor::_seek_value_changed);
 	ObjectTypeDB::bind_method(_MD("_animation_player_changed"),&AnimationPlayerEditor::_animation_player_changed);
 	ObjectTypeDB::bind_method(_MD("_blend_edited"),&AnimationPlayerEditor::_blend_edited);
@@ -1133,6 +1243,7 @@ void AnimationPlayerEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_blend_editor_next_changed"),&AnimationPlayerEditor::_blend_editor_next_changed);
 	ObjectTypeDB::bind_method(_MD("_unhandled_key_input"),&AnimationPlayerEditor::_unhandled_key_input);
 	ObjectTypeDB::bind_method(_MD("_animation_tool_menu"),&AnimationPlayerEditor::_animation_tool_menu);
+	ObjectTypeDB::bind_method(_MD("_animation_save_menu"), &AnimationPlayerEditor::_animation_save_menu);
 
 
 
@@ -1169,6 +1280,17 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	load_anim = memnew( ToolButton );
 	load_anim->set_tooltip("Load an animation from disk.");
 	hb->add_child(load_anim);
+
+	save_anim = memnew(MenuButton);
+	save_anim->set_tooltip("Save the current animation");
+	save_anim->get_popup()->add_item("Save", ANIM_SAVE);
+	save_anim->get_popup()->add_item("Save As..", ANIM_SAVE_AS);
+	save_anim->set_focus_mode(Control::FOCUS_NONE);
+	hb->add_child(save_anim);
+
+	accept = memnew(AcceptDialog);
+	add_child(accept);
+	accept->connect("confirmed", this, "_menu_confirm_current");
 
 	duplicate_anim = memnew( ToolButton );
 	hb->add_child(duplicate_anim);
@@ -1340,7 +1462,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	remove_anim->connect("pressed", this,"_animation_remove");
 	animation->connect("item_selected", this,"_animation_selected",Vector<Variant>(),true);
 	resource_edit_anim->connect("pressed", this,"_animation_resource_edit");
-	file->connect("file_selected", this,"_file_selected");
+	file->connect("file_selected", this,"_dialog_action");
 	 seek->connect("value_changed", this, "_seek_value_changed",Vector<Variant>(),true);
 	 scale->connect("text_entered", this, "_scale_changed",Vector<Variant>(),true);
 	 editor->get_animation_editor()->connect("timeline_changed",this,"_animation_key_editor_seek");
