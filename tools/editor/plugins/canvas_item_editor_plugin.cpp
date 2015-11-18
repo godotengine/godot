@@ -41,9 +41,9 @@
 class SnapDialog : public ConfirmationDialog {
 
 	OBJ_TYPE(SnapDialog,ConfirmationDialog);
-	
-protected:
-	friend class CanvasItemEditor;
+
+friend class CanvasItemEditor;
+
 	SpinBox *grid_offset_x;
 	SpinBox *grid_offset_y;
 	SpinBox *grid_step_x;
@@ -58,63 +58,75 @@ public:
 		Label *label;
 		VBoxContainer *container;
 		GridContainer *child_container;
-		
+
 		set_title("Configure Snap");
 		get_ok()->set_text("Close");
-		container = memnew(VBoxContainer);
+
+		container = memnew( VBoxContainer );
 		add_child(container);
-		
-		child_container = memnew(GridContainer);
+		set_child_rect(container);
+
+		child_container = memnew( GridContainer );
 		child_container->set_columns(3);
 		container->add_child(child_container);
-		
-		label = memnew(Label);
+
+		label = memnew( Label );
 		label->set_text("Grid Offset:");
 		child_container->add_child(label);
-		grid_offset_x=memnew(SpinBox);
+		label->set_h_size_flags(SIZE_EXPAND_FILL);
+
+		grid_offset_x = memnew( SpinBox );
 		grid_offset_x->set_min(-SPIN_BOX_GRID_RANGE);
 		grid_offset_x->set_max(SPIN_BOX_GRID_RANGE);
 		grid_offset_x->set_suffix("px");
 		child_container->add_child(grid_offset_x);
-		grid_offset_y=memnew(SpinBox);
+
+		grid_offset_y = memnew( SpinBox );
 		grid_offset_y->set_min(-SPIN_BOX_GRID_RANGE);
 		grid_offset_y->set_max(SPIN_BOX_GRID_RANGE);
 		grid_offset_y->set_suffix("px");
 		child_container->add_child(grid_offset_y);
 
-		label = memnew(Label);
+		label = memnew( Label );
 		label->set_text("Grid Step:");
 		child_container->add_child(label);
-		grid_step_x=memnew(SpinBox);
+		label->set_h_size_flags(SIZE_EXPAND_FILL);
+
+		grid_step_x = memnew( SpinBox );
 		grid_step_x->set_min(-SPIN_BOX_GRID_RANGE);
 		grid_step_x->set_max(SPIN_BOX_GRID_RANGE);
 		grid_step_x->set_suffix("px");
 		child_container->add_child(grid_step_x);
-		grid_step_y=memnew(SpinBox);
+
+		grid_step_y = memnew( SpinBox );
 		grid_step_y->set_min(-SPIN_BOX_GRID_RANGE);
 		grid_step_y->set_max(SPIN_BOX_GRID_RANGE);
 		grid_step_y->set_suffix("px");
 		child_container->add_child(grid_step_y);
-		
-		container->add_child(memnew(HSeparator));
 
-		child_container = memnew(GridContainer);
+		container->add_child( memnew( HSeparator ) );
+
+		child_container = memnew( GridContainer );
 		child_container->set_columns(2);
 		container->add_child(child_container);
 
-		label = memnew(Label);
+		label = memnew( Label );
 		label->set_text("Rotation Offset:");
 		child_container->add_child(label);
-		rotation_offset=memnew(SpinBox);
+		label->set_h_size_flags(SIZE_EXPAND_FILL);
+
+		rotation_offset = memnew( SpinBox );
 		rotation_offset->set_min(-SPIN_BOX_ROTATION_RANGE);
 		rotation_offset->set_max(SPIN_BOX_ROTATION_RANGE);
 		rotation_offset->set_suffix("deg");
 		child_container->add_child(rotation_offset);
-		
-		label = memnew(Label);
+
+		label = memnew( Label );
 		label->set_text("Rotation Step:");
 		child_container->add_child(label);
-		rotation_step=memnew(SpinBox);
+		label->set_h_size_flags(SIZE_EXPAND_FILL);
+
+		rotation_step = memnew( SpinBox );
 		rotation_step->set_min(-SPIN_BOX_ROTATION_RANGE);
 		rotation_step->set_max(SPIN_BOX_ROTATION_RANGE);
 		rotation_step->set_suffix("deg");
@@ -2278,7 +2290,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case SNAP_CONFIGURE: {
 			((SnapDialog *)snap_dialog)->set_fields(snap_offset, snap_step, snap_rotation_offset, snap_rotation_step);
-			snap_dialog->popup_centered(Size2(200,160));
+			snap_dialog->popup_centered(Size2(220,160));
 		} break;
 		case ZOOM_IN: {
 			zoom=zoom*(1.0/0.5);
@@ -3173,7 +3185,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_item("Paste Pose",ANIM_PASTE_POSE);
 	p->add_item("Clear Pose",ANIM_CLEAR_POSE,KEY_MASK_SHIFT|KEY_K);
 
-	snap_dialog = memnew(SnapDialog);
+	snap_dialog = memnew( SnapDialog );
 	snap_dialog->connect("confirmed",this,"_snap_changed");
 	add_child(snap_dialog);
 
