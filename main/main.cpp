@@ -796,7 +796,6 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	main_args.clear();
 	
 	print_help(execpath);
-	
 
 	if (performance)
 		memdelete(performance);
@@ -812,6 +811,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		memdelete(packed_data);
 	if (file_access_network_client)
 		memdelete(file_access_network_client);
+	if(path_remap)
+		memdelete(path_remap);
 
 // Note 1: *zip_packed_data live into *packed_data
 // Note 2: PackedData::~PackedData destroy this.
@@ -820,7 +821,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 //		memdelete( zip_packed_data );
 //#endif
 
-
+	unregister_core_driver_types();
 	unregister_core_types();
 	
 	OS::get_singleton()->_cmdline.clear();
