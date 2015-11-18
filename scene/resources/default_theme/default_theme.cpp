@@ -322,6 +322,10 @@ void make_default_theme() {
 
 	t->set_constant("hseparation","MenuButton", 3 );
 
+	// ButtonGroup
+
+	t->set_stylebox("panel","ButtonGroup", memnew( StyleBoxEmpty ));
+
 	// CheckBox
 
 	Ref<StyleBox> cbx_empty = memnew( StyleBoxEmpty );
