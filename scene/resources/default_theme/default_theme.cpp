@@ -312,6 +312,7 @@ void make_default_theme() {
 	t->set_stylebox("pressed","MenuButton", sb_button_pressed );
 	t->set_stylebox("hover","MenuButton", sb_button_pressed );
 	t->set_stylebox("disabled","MenuButton", make_empty_stylebox(0,0,0,0) );
+	t->set_stylebox("focus","MenuButton", sb_button_focus );
 
 	t->set_font("font","MenuButton", default_font );
 
