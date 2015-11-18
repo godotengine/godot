@@ -61,4 +61,3 @@ env.drivers_sources+=webp_sources
 #env.add_source_files(env.drivers_sources, webp_sources)
 
 Export('env')
-

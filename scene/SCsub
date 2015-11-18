@@ -18,5 +18,3 @@ SConscript('io/SCsub');
 lib = env.Library("scene",env.scene_sources)
 
 env.Prepend(LIBS=[lib])
-
-

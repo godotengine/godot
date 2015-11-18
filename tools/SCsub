@@ -17,5 +17,3 @@ if (env["tools"]!="no"):
 	lib = env.Library("tool",env.tool_sources)
 
 	env.Prepend(LIBS=[lib])
-
-
