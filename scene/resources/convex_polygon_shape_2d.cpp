@@ -33,6 +33,7 @@
 void ConvexPolygonShape2D::_update_shape() {
 
 	Physics2DServer::get_singleton()->shape_set_data(get_rid(),points);
+	emit_changed();
 
 }
 
@@ -62,7 +63,7 @@ void ConvexPolygonShape2D::_bind_methods() {
 
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"points"),_SCS("set_points"),_SCS("get_points") );
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"points"),_SCS("set_points"),_SCS("get_points") );
 
 }
 
