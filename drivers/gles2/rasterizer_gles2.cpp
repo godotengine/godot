@@ -6530,80 +6530,84 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_LIGHTMAP,false);
 			material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_DP_SAMPLER,false);
 
-			if (e->instance->sampled_light.is_valid()) {
+			if (material->flags[VS::MATERIAL_FLAG_UNSHADED] == false && current_debug != VS::SCENARIO_DEBUG_SHADELESS) {
 
-				SampledLight *sl = sampled_light_owner.get(e->instance->sampled_light);
-				if (sl) {
+				if (e->instance->sampled_light.is_valid()) {
 
-					baked_light=NULL; //can't mix
-					material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_DP_SAMPLER,true);
-					glActiveTexture(GL_TEXTURE0+max_texture_units-3);
-					glBindTexture(GL_TEXTURE_2D,sl->texture); //bind the texture
-					sampled_light_dp_multiplier=sl->multiplier;
-					bind_dp_sampler=true;
-				}
-			}
+					SampledLight *sl = sampled_light_owner.get(e->instance->sampled_light);
+					if (sl) {
 
-
-			if (!additive && baked_light) {
-
-				if (baked_light->mode==VS::BAKED_LIGHT_OCTREE && baked_light->octree_texture.is_valid() && e->instance->baked_light_octree_xform) {
-					material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_OCTREE,true);
-					bind_baked_light_octree=true;
-					if (prev_baked_light!=baked_light) {
-						Texture *tex=texture_owner.get(baked_light->octree_texture);
-						if (tex) {
-
-							glActiveTexture(GL_TEXTURE0+max_texture_units-3);
-							glBindTexture(tex->target,tex->tex_id); //bind the texture
-						}
-						if (baked_light->light_texture.is_valid()) {
-							Texture *texl=texture_owner.get(baked_light->light_texture);
-							if (texl) {
-								glActiveTexture(GL_TEXTURE0+max_texture_units-4);
-								glBindTexture(texl->target,texl->tex_id); //bind the light texture
-							}
-						}
-
+						baked_light = NULL; //can't mix
+						material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_DP_SAMPLER, true);
+						glActiveTexture(GL_TEXTURE0 + max_texture_units - 3);
+						glBindTexture(GL_TEXTURE_2D, sl->texture); //bind the texture
+						sampled_light_dp_multiplier = sl->multiplier;
+						bind_dp_sampler = true;
 					}
-				} else if (baked_light->mode==VS::BAKED_LIGHT_LIGHTMAPS) {
+				}
 
 
-					int lightmap_idx = e->instance->baked_lightmap_id;
+				if (!additive && baked_light) {
 
-					material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_LIGHTMAP,false);
-					bind_baked_lightmap=false;
-
-
-					if (baked_light->lightmaps.has(lightmap_idx)) {
-
-
-						RID texid = baked_light->lightmaps[lightmap_idx];
-
-						if (prev_baked_light!=baked_light || texid!=prev_baked_light_texture) {
-
-
-							Texture *tex = texture_owner.get(texid);
+					if (baked_light->mode == VS::BAKED_LIGHT_OCTREE && baked_light->octree_texture.is_valid() && e->instance->baked_light_octree_xform) {
+						material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_OCTREE, true);
+						bind_baked_light_octree = true;
+						if (prev_baked_light != baked_light) {
+							Texture *tex = texture_owner.get(baked_light->octree_texture);
 							if (tex) {
 
-								glActiveTexture(GL_TEXTURE0+max_texture_units-3);
-								glBindTexture(tex->target,tex->tex_id); //bind the texture
+								glActiveTexture(GL_TEXTURE0 + max_texture_units - 3);
+								glBindTexture(tex->target, tex->tex_id); //bind the texture
+							}
+							if (baked_light->light_texture.is_valid()) {
+								Texture *texl = texture_owner.get(baked_light->light_texture);
+								if (texl) {
+									glActiveTexture(GL_TEXTURE0 + max_texture_units - 4);
+									glBindTexture(texl->target, texl->tex_id); //bind the light texture
+								}
 							}
 
-							prev_baked_light_texture=texid;
 						}
+					}
+					else if (baked_light->mode == VS::BAKED_LIGHT_LIGHTMAPS) {
 
-						if (texid.is_valid()) {
-							material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_LIGHTMAP,true);
-							bind_baked_lightmap=true;
+
+						int lightmap_idx = e->instance->baked_lightmap_id;
+
+						material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_LIGHTMAP, false);
+						bind_baked_lightmap = false;
+
+
+						if (baked_light->lightmaps.has(lightmap_idx)) {
+
+
+							RID texid = baked_light->lightmaps[lightmap_idx];
+
+							if (prev_baked_light != baked_light || texid != prev_baked_light_texture) {
+
+
+								Texture *tex = texture_owner.get(texid);
+								if (tex) {
+
+									glActiveTexture(GL_TEXTURE0 + max_texture_units - 3);
+									glBindTexture(tex->target, tex->tex_id); //bind the texture
+								}
+
+								prev_baked_light_texture = texid;
+							}
+
+							if (texid.is_valid()) {
+								material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_LIGHTMAP, true);
+								bind_baked_lightmap = true;
+							}
+
 						}
-
 					}
 				}
-			}
 
-			if (int(prev_baked_light!=NULL) ^ int(baked_light!=NULL)) {
-				rebind=true;
+				if (int(prev_baked_light != NULL) ^ int(baked_light != NULL)) {
+					rebind = true;
+				}
 			}
 		}
 
