@@ -4645,6 +4645,9 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 			enablers.push_back("#define USE_TIME\n");
 			uses_time=true;
 		}
+		if (vertex_flags.vertex_code_writes_position) {
+			enablers.push_back("#define VERTEX_SHADER_WRITE_POSITION\n");
+		}
 
 		material_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, light_code, fragment_globals,uniform_names,enablers);
 	} else if (p_shader->mode==VS::SHADER_CANVAS_ITEM) {
