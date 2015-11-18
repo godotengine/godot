@@ -105,7 +105,7 @@ class RasterizerGLES2 : public Rasterizer {
 	float anisotropic_level;
 
 	bool use_half_float;
-
+	bool low_memory_2d;
 
 	Vector<float> skel_default;
 
