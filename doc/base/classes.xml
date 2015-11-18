@@ -30608,6 +30608,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<description>
 			Use a custom solver bias. No need to change this unless you really know what you are doing.
+			The solver bias is a factor controlling how much two colliding objects "rebound" off each other, to avoid them getting into each other, because of numerical imprecision.
 			</description>
 		</method>
 		<method name="get_custom_solver_bias" qualifiers="const">
@@ -30646,6 +30647,8 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="collide_and_get_contacts">
+			<return type="Vector2Array">
+			</return>
 			<argument index="0" name="local_xform" type="Matrix32">
 			</argument>
 			<argument index="1" name="with_shape" type="Shape2D">
@@ -30656,6 +30659,8 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="collide_with_motion_and_get_contacts">
+			<return type="Vector2Array">
+			</return>
 			<argument index="0" name="local_xform" type="Matrix32">
 			</argument>
 			<argument index="1" name="local_motion" type="Vector2">
