@@ -70,9 +70,9 @@ class AnimationKeyEditor : public VBoxContainer  {
 
 	enum {
 
-		TRACK_MENU_ADD_VALUE_TRACK,
-		TRACK_MENU_ADD_TRANSFORM_TRACK,
-		TRACK_MENU_ADD_CALL_TRACK,
+		ADD_TRACK_MENU_ADD_VALUE_TRACK,
+		ADD_TRACK_MENU_ADD_TRANSFORM_TRACK,
+		ADD_TRACK_MENU_ADD_CALL_TRACK,
 		TRACK_MENU_SCALE,
 		TRACK_MENU_SCALE_PIVOT,
 		TRACK_MENU_MOVE_UP,
@@ -192,6 +192,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 
 	SpinBox *step;
 
+	MenuButton *menu_add_track;
 	MenuButton *menu_track;
 
 	HScrollBar *h_scroll;
@@ -286,6 +287,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 
 	void _scroll_changed(double);
 
+	void _menu_add_track(int p_type);
 	void _menu_track(int p_type);
 
 	void _clear_selection_for_anim(const Ref<Animation>& p_anim);
