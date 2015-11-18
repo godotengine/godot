@@ -1123,6 +1123,10 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		if (file=="lib/armeabi/libgodot_android.so" && !export_arm) {
 			skip=true;
 		}
+		
+		if (file.begins_with("META-INF") && _signed) {
+			skip=true;
+		}
 
 		print_line("ADDING: "+file);
 
