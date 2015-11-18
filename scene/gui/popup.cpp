@@ -261,9 +261,12 @@ void Popup::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("popup"),&Popup::popup);
 	ObjectTypeDB::bind_method(_MD("set_exclusive","enable"),&Popup::set_exclusive);
 	ObjectTypeDB::bind_method(_MD("is_exclusive"),&Popup::is_exclusive);
+	ObjectTypeDB::bind_method(_MD("set_always_on_top","enable"),&Popup::set_always_on_top);
+	ObjectTypeDB::bind_method(_MD("is_always_on_top"),&Popup::is_always_on_top);
 	ADD_SIGNAL( MethodInfo("about_to_show") );
 	ADD_SIGNAL( MethodInfo("popup_hide") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "popup/exclusive"), _SCS("set_exclusive"),_SCS("is_exclusive") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "popup/always_on_top"), _SCS("set_always_on_top"),_SCS("is_always_on_top") );
 	BIND_CONSTANT(NOTIFICATION_POST_POPUP);
 	BIND_CONSTANT(NOTIFICATION_POPUP_HIDE);
 
