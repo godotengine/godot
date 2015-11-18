@@ -213,8 +213,8 @@ void make_default_theme() {
 
 	// Button
 
-	Ref<StyleBox> sb_button_normal = sb_expand( make_stylebox( button_normal_png,4,4,4,4,6,2,6,2),2,2,2,2);
-	Ref<StyleBox> sb_button_pressed = sb_expand( make_stylebox( button_pressed_png,4,4,4,4,6,2,6,2),2,2,2,2);
+	Ref<StyleBox> sb_button_normal = sb_expand( make_stylebox( button_normal_png,4,4,4,4,6,3,6,3),2,2,2,2);
+	Ref<StyleBox> sb_button_pressed = sb_expand( make_stylebox( button_pressed_png,4,4,4,4,6,3,6,3),2,2,2,2);
 	Ref<StyleBox> sb_button_hover = sb_expand( make_stylebox( button_hover_png,4,4,4,4,6,2,6,2),2,2,2,2);
 	Ref<StyleBox> sb_button_disabled = sb_expand( make_stylebox( button_disabled_png,4,4,4,4,6,2,6,2),2,2,2,2);
 	Ref<StyleBox> sb_button_focus = sb_expand( make_stylebox( button_focus_png,4,4,4,4,6,2,6,2),2,2,2,2);
@@ -280,8 +280,8 @@ void make_default_theme() {
 
 	// OptionButton
 
-	Ref<StyleBox> sb_optbutton_normal = sb_expand( make_stylebox( option_button_normal_png,4,4,21,4,6,2,21,2),2,2,2,2);
-	Ref<StyleBox> sb_optbutton_pressed = sb_expand( make_stylebox( option_button_pressed_png,4,4,21,4,6,2,21,2),2,2,2,2);
+	Ref<StyleBox> sb_optbutton_normal = sb_expand( make_stylebox( option_button_normal_png,4,4,21,4,6,3,21,3),2,2,2,2);
+	Ref<StyleBox> sb_optbutton_pressed = sb_expand( make_stylebox( option_button_pressed_png,4,4,21,4,6,3,21,3),2,2,2,2);
 	Ref<StyleBox> sb_optbutton_hover = sb_expand( make_stylebox( option_button_hover_png,4,4,21,4,6,2,21,2),2,2,2,2);
 	Ref<StyleBox> sb_optbutton_disabled = sb_expand( make_stylebox( option_button_disabled_png,4,4,21,4,6,2,21,2),2,2,2,2);
 	Ref<StyleBox> sb_optbutton_focus = sb_expand( make_stylebox( button_focus_png,4,4,4,4,6,2,6,2),2,2,2,2);
@@ -698,8 +698,8 @@ void make_default_theme() {
 
 	// Tabs
 
-	t->set_stylebox("tab_fg","Tabs", sb_expand( make_stylebox( tab_current_png,4,4,4,1,16,4,16,4),2,2,2,2) );
-	t->set_stylebox("tab_bg","Tabs", sb_expand( make_stylebox( tab_behind_png,5,5,5,1,16,6,16,4),3,3,3,3) );
+	t->set_stylebox("tab_fg","Tabs", sb_expand( make_stylebox( tab_current_png,4,3,4,1,16,3,16,2),2,2,2,2) );
+	t->set_stylebox("tab_bg","Tabs", sb_expand( make_stylebox( tab_behind_png,5,4,5,1,16,5,16,2),3,3,3,3) );
 	t->set_stylebox("panel","Tabs",tc_sb );
 	t->set_stylebox("button_pressed","Tabs", make_stylebox( button_pressed_png,4,4,4,4) );
 	t->set_stylebox("button","Tabs", make_stylebox( button_normal_png,4,4,4,4) );

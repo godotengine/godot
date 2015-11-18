@@ -1654,11 +1654,12 @@ struct _ScriptEditorItemData {
 	int index;
 	String tooltip;
 	bool used;
+	int category;
 
 
 	bool operator<(const _ScriptEditorItemData& id) const {
 
-		return name.nocasecmp_to(id.name)<0;
+		return category==id.category?name.nocasecmp_to(id.name)<0:category<id.category;
 	}
 
 };
@@ -1708,6 +1709,7 @@ void ScriptEditor::_update_script_names() {
 	}
 
 	script_list->clear();
+	bool split_script_help = EditorSettings::get_singleton()->get("text_editor/group_help_pages");
 
 	Vector<_ScriptEditorItemData> sedata;
 
@@ -1727,6 +1729,7 @@ void ScriptEditor::_update_script_names() {
 			sd.tooltip=tooltip;
 			sd.index=i;
 			sd.used=used.has(ste->get_edited_script());
+			sd.category=0;
 
 			sedata.push_back(sd);
 		}
@@ -1744,10 +1747,10 @@ void ScriptEditor::_update_script_names() {
 			sd.tooltip=tooltip;
 			sd.index=i;
 			sd.used=false;
+			sd.category=split_script_help?1:0;
 			sedata.push_back(sd);
 
 		}
-
 
 	}
 
@@ -2570,6 +2573,7 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("text_editor/script_temperature_history_size",15);
 	EDITOR_DEF("text_editor/script_temperature_hot_color",Color(1,0,0,0.3));
 	EDITOR_DEF("text_editor/script_temperature_cold_color",Color(0,0,1,0.3));
+	EDITOR_DEF("text_editor/group_help_pages",false);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"external_editor/exec_path",PROPERTY_HINT_GLOBAL_FILE));
 	EDITOR_DEF("external_editor/exec_flags","");
 
