@@ -1007,8 +1007,21 @@ bool Main::start() {
 	bool export_debug=false;
 	List<String> args = OS::get_singleton()->get_cmdline_args();
 	for (int i=0;i<args.size();i++) {
+		//parameters that do not have an argument to the right
+		if (args[i]=="-nodocbase") {
+			doc_base=false;
+		} else if (args[i]=="-noquit") {
+			noquit=true;
+		} else if (args[i]=="-convert_old") {
+			convert_old=true;
+		} else if (args[i]=="-editor" || args[i]=="-e") {
+			editor=true;
+		} else if (args[i].length() && args[i][0] != '-' && game_path == "") {
+			game_path=args[i];
+		}
 		//parameters that have an argument to the right
-		if (i < (args.size()-1)) {
+		else if (i < (args.size()-1)) {
+			bool parsed_pair=true;
 			if (args[i]=="-doctool") {
 				doc_tool=args[i+1];
 			} else if (args[i]=="-script" || args[i]=="-s") {
@@ -1037,20 +1050,13 @@ bool Main::start() {
 			} else if (args[i]=="-dumpstrings") {
 				editor=true; //needs editor
 				dumpstrings=args[i+1];
+			} else {
+				// The parameter does not match anything known, don't skip the next argument
+				parsed_pair=false;
 			}
-			i++;
-		}
-		//parameters that do not have an argument to the right
-		if (args[i]=="-nodocbase") {
-			doc_base=false;
-		} else if (args[i]=="-noquit") {
-			noquit=true;
-		} else if (args[i]=="-convert_old") {
-			convert_old=true;
-		} else if (args[i]=="-editor" || args[i]=="-e") {
-			editor=true;
-		} else if (args[i].length() && args[i][0] != '-' && game_path == "") {
-			game_path=args[i];
+			if (parsed_pair) {
+				i++;
+			}
 		}
 	}
 
