@@ -49,9 +49,13 @@ void SampleLibraryEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 		play->set_icon( get_icon("Play","EditorIcons") );
+		play->set_tooltip("Play Sample");
 		stop->set_icon( get_icon("Stop","EditorIcons") );
+		stop->set_tooltip("Stop Sample");
 		load->set_icon( get_icon("Folder","EditorIcons") );
+		load->set_tooltip("Open Sample File(s)");
 		_delete->set_icon( get_icon("Del","EditorIcons") );
+		_delete->set_tooltip("Remove Sample");
 	}
 
 	if (p_what==NOTIFICATION_READY) {
