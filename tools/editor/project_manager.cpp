@@ -193,7 +193,7 @@ class NewProjectDialog : public ConfirmationDialog {
 				f->store_line("\n");
 				f->store_line("[application]");
 				f->store_line("name=\""+project_name->get_text()+"\"");
-				f->store_line("icon=\"icon.png\"");
+				f->store_line("icon=\"res://icon.png\"");
 
 				memdelete(f);
 
