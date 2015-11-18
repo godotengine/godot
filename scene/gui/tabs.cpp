@@ -102,11 +102,13 @@ void Tabs::_input_event(const InputEvent& p_event) {
 			// test hovering right button and close button
 			if (tabs[i].rb_rect.has_point(pos)) {
 				rb_hover=i;
+				cb_hover=-1;
 				hover_buttons = i;
 				break;
 			}
 			else if (tabs[i].cb_rect.has_point(pos)) {
 				cb_hover=i;
+				rb_hover=-1;
 				hover_buttons = i;
 				break;
 			}
