@@ -233,11 +233,7 @@ float TextureProgress::get_radial_initial_angle()
 
 void TextureProgress::set_fill_degrees(float p_angle)
 {
-	while(p_angle>360)
-		p_angle-=360;
-	while (p_angle<0)
-		p_angle+=360;
-	rad_max_degrees=p_angle;
+	rad_max_degrees=CLAMP(p_angle,0,360);
 	update();
 }
 
@@ -302,4 +298,5 @@ TextureProgress::TextureProgress()
 {
 	mode=FILL_LEFT_TO_RIGHT;
 	rad_center_off=Point2();
+	rad_max_degrees=360;
 }
