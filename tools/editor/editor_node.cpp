@@ -111,6 +111,8 @@ EditorNode *EditorNode::singleton=NULL;
 
 void EditorNode::_update_scene_tabs() {
 
+	bool show_rb = EditorSettings::get_singleton()->get("global/show_script_in_scene_tabs");
+
 	scene_tabs->clear_tabs();
 	Ref<Texture> script_icon = gui_base->get_icon("Script","EditorIcons");
 	for(int i=0;i<editor_data.get_edited_scene_count();i++) {
@@ -133,7 +135,7 @@ void EditorNode::_update_scene_tabs() {
 		bool unsaved = (i==current)?saved_version!=editor_data.get_undo_redo().get_version():editor_data.get_scene_version(i)!=0;
 		scene_tabs->add_tab(editor_data.get_scene_title(i)+(unsaved?"(*)":""),icon);
 
-		if (editor_data.get_scene_root_script(i).is_valid()) {
+		if (show_rb && editor_data.get_scene_root_script(i).is_valid()) {
 			scene_tabs->set_tab_right_button(i,script_icon);
 		}
 
@@ -169,7 +171,7 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 			break;*/
 			case KEY_F1: _editor_select(0); break;
 			case KEY_F2: _editor_select(1); break;
-			case KEY_F4: _editor_select(2); break;
+			case KEY_F3: _editor_select(2); break;
 			case KEY_F5: _menu_option_confirm((p_event.key.mod.control&&p_event.key.mod.shift)?RUN_PLAY_CUSTOM_SCENE:RUN_PLAY,true); break;
 			case KEY_F6: _menu_option_confirm(RUN_PLAY_SCENE,true); break;
 			case KEY_F7: _menu_option_confirm(RUN_PAUSE,true); break;
@@ -1617,10 +1619,8 @@ void EditorNode::_edit_current() {
 
 
 				for(int i=0;i<editor_table.size();i++) {
-					if (editor_table[i]==main_plugin) {
-						main_editor_tabs->set_current_tab(i);
-						break;
-					}
+
+					main_editor_buttons[i]->set_pressed(editor_table[i]==main_plugin);
 				}
 			}
 
@@ -2854,7 +2854,9 @@ void EditorNode::_editor_select(int p_which) {
 
 	ERR_FAIL_INDEX(p_which,editor_table.size());
 
-	main_editor_tabs->set_current_tab(p_which);
+	for(int i=0;i<main_editor_buttons.size();i++) {
+		main_editor_buttons[i]->set_pressed(i==p_which);
+	}
 
 	selecting=false;
 
@@ -2872,6 +2874,8 @@ void EditorNode::_editor_select(int p_which) {
 	editor_plugin_screen=new_editor;
 	editor_plugin_screen->make_visible(true);
 	editor_plugin_screen->selected_notify();
+
+
 }
 
 void EditorNode::add_editor_plugin(EditorPlugin *p_editor) {
@@ -2879,7 +2883,12 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor) {
 
 	if (p_editor->has_main_screen()) {
 	
-		singleton->main_editor_tabs->add_tab(p_editor->get_name());
+		ToolButton *tb = memnew( ToolButton );
+		tb->set_toggle_mode(true);
+		tb->connect("pressed",singleton,"_editor_select",varray(singleton->main_editor_buttons.size()));
+		tb->set_text(p_editor->get_name());
+		singleton->main_editor_buttons.push_back(tb);
+		singleton->main_editor_button_vb->add_child(tb);
 		singleton->editor_table.push_back(p_editor);
 	}
 	singleton->editor_data.add_editor_plugin( p_editor );
@@ -2891,16 +2900,18 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor) {
 
 	if (p_editor->has_main_screen()) {
 
-		for(int i=0;i<singleton->main_editor_tabs->get_tab_count();i++) {
+		for(int i=0;i<singleton->main_editor_buttons.size();i++) {
 
-			if (p_editor->get_name()==singleton->main_editor_tabs->get_tab_title(i)) {
+			if (p_editor->get_name()==singleton->main_editor_buttons[i]->get_name()) {
 
-				singleton->main_editor_tabs->remove_tab(i);
+				memdelete( singleton->main_editor_buttons[i] );
+				singleton->main_editor_buttons.remove(i);
+
 				break;
 			}
 		}
 
-		singleton->main_editor_tabs->add_tab(p_editor->get_name());
+		//singleton->main_editor_tabs->add_tab(p_editor->get_name());
 		singleton->editor_table.erase(p_editor);
 	}
 	singleton->remove_child(p_editor);
@@ -3209,10 +3220,20 @@ Error EditorNode::save_optimized_copy(const String& p_scene,const String& p_pres
 }
 
 
+int EditorNode::_get_current_main_editor() {
+
+	for(int i=0;i<editor_table.size();i++) {
+		if (editor_table[i]==editor_plugin_screen)
+			return i;
+	}
+
+	return 0;
+}
+
 Dictionary EditorNode::_get_main_scene_state() {
 
 	Dictionary state;
-	state["main_tab"]=main_editor_tabs->get_current_tab();
+	state["main_tab"]=_get_current_main_editor();
 	state["scene_tree_offset"]=scene_tree_dock->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->get_val();
 	state["property_edit_offset"]=get_property_editor()->get_scene_tree()->get_vscroll_bar()->get_val();
 	state["saved_version"]=saved_version;
@@ -4589,6 +4610,7 @@ EditorNode::EditorNode() {
 	gui_base->add_child(main_vbox);
 	main_vbox->set_area_as_parent_rect(8);
 
+#if 0
 	PanelContainer *top_dark_panel = memnew( PanelContainer );
 	Ref<StyleBoxTexture> top_dark_sb;
 	top_dark_sb.instance();;
@@ -4604,21 +4626,14 @@ EditorNode::EditorNode() {
 	VBoxContainer *top_dark_vb = memnew( VBoxContainer );
 	main_vbox->add_child(top_dark_panel);
 	top_dark_panel->add_child(top_dark_vb);
-
+#endif
 
 
 
 	menu_hb = memnew( HBoxContainer );
-	top_dark_vb->add_child(menu_hb);
+	main_vbox->add_child(menu_hb);
 
-	scene_tabs=memnew( Tabs );
-	scene_tabs->add_tab("unsaved");
-	scene_tabs->set_tab_align(Tabs::ALIGN_CENTER);
-	scene_tabs->set_tab_close_display_policy(Tabs::SHOW_HOVER);
-	scene_tabs->connect("tab_changed",this,"_scene_tab_changed");
-	scene_tabs->connect("right_button_pressed",this,"_scene_tab_script_edited");
-	scene_tabs->connect("tab_close", this, "_scene_tab_closed");
-	top_dark_vb->add_child(scene_tabs);
+//	top_dark_vb->add_child(scene_tabs);
 	//left
 	left_l_hsplit = memnew( HSplitContainer );
 	main_vbox->add_child(left_l_hsplit);
@@ -4651,11 +4666,15 @@ EditorNode::EditorNode() {
 	main_hsplit = memnew( HSplitContainer );
 	left_r_hsplit->add_child(main_hsplit);
 	//main_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	VBoxContainer * center_vb = memnew( VBoxContainer);
+	main_hsplit->add_child(center_vb);
+	center_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	center_split = memnew( VSplitContainer );
-	main_hsplit->add_child(center_split);
-	center_split->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	//main_hsplit->add_child(center_split);
+	center_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	center_split->set_collapsed(false);
+	center_vb->add_child(center_split);
 
 	right_hsplit = memnew( HSplitContainer );
 	main_hsplit->add_child(right_hsplit);
@@ -4752,20 +4771,19 @@ EditorNode::EditorNode() {
 	srt->add_constant_override("separation",0);
 
 
-	main_editor_tabs  = memnew( Tabs );
+/*	main_editor_tabs  = memnew( Tabs );
 	main_editor_tabs->connect("tab_changed",this,"_editor_select");
 	main_editor_tabs->set_tab_close_display_policy(Tabs::SHOW_NEVER);
-	HBoxContainer *srth = memnew( HBoxContainer );
-	srt->add_child( srth );
-	Control *tec = memnew( Control );
-	tec->set_custom_minimum_size(Size2(100,0));
-	tec->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	srth->add_child(tec);
-	srth->add_child(main_editor_tabs);
-	tec = memnew( Control );
-	tec->set_custom_minimum_size(Size2(100,0));
-	srth->add_child(tec);
-	tec->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+*/
+	scene_tabs=memnew( Tabs );
+	scene_tabs->add_tab("unsaved");
+	scene_tabs->set_tab_align(Tabs::ALIGN_CENTER);
+	scene_tabs->set_tab_close_display_policy(Tabs::SHOW_ACTIVE_ONLY);
+	scene_tabs->connect("tab_changed",this,"_scene_tab_changed");
+	scene_tabs->connect("right_button_pressed",this,"_scene_tab_script_edited");
+	scene_tabs->connect("tab_close", this, "_scene_tab_closed");
+
+	srt->add_child(scene_tabs);
 
 	scene_root_parent = memnew( Panel );
 
@@ -4840,6 +4858,8 @@ EditorNode::EditorNode() {
 	anim_close->set_normal_texture( anim_close->get_icon("Close","EditorIcons"));
 	anim_close->set_hover_texture( anim_close->get_icon("CloseHover","EditorIcons"));
 	anim_close->set_pressed_texture( anim_close->get_icon("Close","EditorIcons"));
+
+
 
 
 	PanelContainer *top_region = memnew( PanelContainer );
@@ -4917,6 +4937,18 @@ EditorNode::EditorNode() {
 	recent_scenes->set_name("RecentScenes");
 	p->add_child(recent_scenes);
 	recent_scenes->connect("item_pressed",this,"_open_recent_scene");
+
+	{
+		Control *sp = memnew( Control );
+		sp->set_custom_minimum_size(Size2(30,0));
+		menu_hb->add_child(sp);
+	}
+
+	PanelContainer *editor_region = memnew( PanelContainer );
+	editor_region->add_style_override("panel",gui_base->get_stylebox("hover","Button"));
+	main_editor_button_vb = memnew( HBoxContainer );
+	editor_region->add_child(main_editor_button_vb);
+	menu_hb->add_child(editor_region);
 
 	//menu_hb->add_spacer();
 #if 0
@@ -5078,6 +5110,39 @@ EditorNode::EditorNode() {
 */
 
 
+	progress_hb = memnew( BackgroundProgress );
+	menu_hb->add_child(progress_hb);
+
+	{
+		Control *sp = memnew( Control );
+		sp->set_custom_minimum_size(Size2(30,0));
+		menu_hb->add_child(sp);
+	}
+
+
+	PanelContainer *vu_cont = memnew( PanelContainer );
+	vu_cont->add_style_override("panel",gui_base->get_stylebox("hover","Button"));
+	menu_hb->add_child(vu_cont);
+
+	audio_vu = memnew( TextureProgress );
+	CenterContainer *vu_cc = memnew( CenterContainer );
+	vu_cc->add_child(audio_vu);
+	vu_cont->add_child(vu_cc);
+	audio_vu->set_under_texture(gui_base->get_icon("VuEmpty","EditorIcons"));
+	audio_vu->set_progress_texture(gui_base->get_icon("VuFull","EditorIcons"));
+	audio_vu->set_max(24);
+	audio_vu->set_min(-80);
+	audio_vu->set_step(0.01);
+	audio_vu->set_val(0);
+
+	{
+		Control *sp = memnew( Control );
+		sp->set_custom_minimum_size(Size2(30,0));
+		menu_hb->add_child(sp);
+	}
+
+
+
 	top_region = memnew( PanelContainer );
 	top_region->add_style_override("panel",gui_base->get_stylebox("hover","Button"));
 	HBoxContainer *right_menu_hb = memnew( HBoxContainer );
@@ -5108,6 +5173,15 @@ EditorNode::EditorNode() {
 	sources_button->set_icon(gui_base->get_icon("DependencyOk","EditorIcons"));
 	sources_button->connect("pressed",this,"_menu_option",varray(SOURCES_REIMPORT));
 	sources_button->set_tooltip("Alerts when an external resource has changed.");
+
+	update_menu = memnew( MenuButton );
+	update_menu->set_tooltip("Spins when the editor window repaints!");
+	right_menu_hb->add_child(update_menu);
+	update_menu->set_icon(gui_base->get_icon("Progress1","EditorIcons"));
+	p=update_menu->get_popup();
+	p->add_check_item("Update Always",SETTINGS_UPDATE_ALWAYS);
+	p->add_check_item("Update Changes",SETTINGS_UPDATE_CHANGES);
+	p->set_item_checked(1,true);
 
 	//sources_button->connect();
 
@@ -5262,6 +5336,8 @@ EditorNode::EditorNode() {
 	log->connect("close_request",this,"_close_messages");
 	log->connect("show_request",this,"_show_messages");
 	//left_split->set_dragger_visible(false);
+
+
 	old_split_ofs=0;
 
 
@@ -5279,37 +5355,18 @@ EditorNode::EditorNode() {
 
 	animation_editor->hide();
 
-	PanelContainer *bottom_pc = memnew( PanelContainer );
-	main_vbox->add_child(bottom_pc);
+	/*PanelContainer *bottom_pc = memnew( PanelContainer );
+	srt->add_child(bottom_pc);
 	bottom_hb = memnew( HBoxContainer );
-	bottom_pc->add_child(bottom_hb);
+	bottom_pc->add_child(bottom_hb);*/
 
-	bottom_hb->add_child( log->get_button() );
+	center_vb->add_child( log->get_button() );
 	log->get_button()->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-	progress_hb = memnew( BackgroundProgress );
-	bottom_hb->add_child(progress_hb);
+
 	//progress_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-	audio_vu = memnew( TextureProgress );
-	CenterContainer *vu_cc = memnew( CenterContainer );
-	vu_cc->add_child(audio_vu);
-	bottom_hb->add_child(vu_cc);
-	audio_vu->set_under_texture(gui_base->get_icon("VuEmpty","EditorIcons"));
-	audio_vu->set_progress_texture(gui_base->get_icon("VuFull","EditorIcons"));
-	audio_vu->set_max(24);
-	audio_vu->set_min(-80);
-	audio_vu->set_step(0.01);
-	audio_vu->set_val(0);
 
-	update_menu = memnew( MenuButton );
-	update_menu->set_tooltip("Spins when the editor window repaints!");
-	bottom_hb->add_child(update_menu);
-	update_menu->set_icon(gui_base->get_icon("Progress1","EditorIcons"));
-	p=update_menu->get_popup();
-	p->add_check_item("Update Always",SETTINGS_UPDATE_ALWAYS);
-	p->add_check_item("Update Changes",SETTINGS_UPDATE_CHANGES);
-	p->set_item_checked(1,true);
 
 	/*
 	animation_menu = memnew( ToolButton );
