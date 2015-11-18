@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #include "print_string.h"
 #include "servers/physics/physics_server_sw.h"
-
+#include "os/thread.h"
 
 #include "X11/Xutil.h"
 
@@ -56,10 +56,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-
-#ifdef __linux__
-#include <linux/joystick.h>
-#endif
 
 //stupid linux.h
 #ifdef KEY_TAB
@@ -98,8 +94,6 @@ const char *OS_X11::get_audio_driver_name(int p_driver) const {
 void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
 
 	last_button_state=0;
-	dpad_last[0]=0;
-	dpad_last[1]=0;
 
 	xmbstring=NULL;
 	event_id=0;
@@ -124,7 +118,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	
 	xim = XOpenIM (x11_display, NULL, NULL, NULL);
 	
-
 	if (xim == NULL) {
 		WARN_PRINT("XOpenIM failed");
 		xim_style=0L;
@@ -431,9 +424,9 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	physics_2d_server->init();
 
 	input = memnew( InputDefault );
-
-	probe_joystick();
-
+#ifdef __linux__
+    joystick = memnew( joystick_linux(input));
+#endif
 	_ensure_data_dir();
 }
 
@@ -465,7 +458,9 @@ void OS_X11::finalize() {
 
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
-
+#ifdef __linux__
+    memdelete(joystick);
+#endif
 	memdelete(input);
 
 	XUnmapWindow( x11_display, x11_window );
@@ -1651,192 +1646,10 @@ String OS_X11::get_system_dir(SystemDir p_dir) const {
 	return pipe.strip_edges();
 }
 
-
-void OS_X11::close_joystick(int p_id) {
-
-	if (p_id == -1) {
-		for (int i=0; i<JOYSTICKS_MAX; i++) {
-
-			close_joystick(i);
-		};
-		return;
-	};
-
-
-	if (joysticks[p_id].fd != -1) {
-		close(joysticks[p_id].fd);
-		joysticks[p_id].fd = -1;
-	};
-	input->joy_connection_changed(p_id, false, "");
-};
-
-void OS_X11::probe_joystick(int p_id) {
-	#ifndef __FreeBSD__
-
-	if (p_id == -1) {
-
-		for (int i=0; i<JOYSTICKS_MAX; i++) {
-
-			probe_joystick(i);
-		};
-		return;
-	};
-
-	if (joysticks[p_id].fd != -1)
-		close_joystick(p_id);
-
-	const char *joy_names[] = {
-		"/dev/input/js%d",
-		"/dev/js%d",
-		NULL
-	};
-
-	int i=0;
-	while(joy_names[i]) {
-
-		char fname[64];
-		sprintf(fname, joy_names[i], p_id);
-		int fd = open(fname, O_RDONLY|O_NONBLOCK);
-		if (fd != -1) {
-
-			//fcntl( fd, F_SETFL, O_NONBLOCK );
-			joysticks[p_id] = Joystick(); // this will reset the axis array
-			joysticks[p_id].fd = fd;
-
-			String name;
-			char namebuf[255] = {0};
-			if (ioctl(fd, JSIOCGNAME(sizeof(namebuf)), namebuf) >= 0) {
-				name = namebuf;
-			} else {
-				name = "error";
-			};
-
-			input->joy_connection_changed(p_id, true, name);
-			break; // don't try the next name
-		};
-
-		++i;
-	};
-	#endif
-};
-
 void OS_X11::move_window_to_foreground() {
 
-	XRaiseWindow(x11_display,x11_window);
+    XRaiseWindow(x11_display,x11_window);
 }
-
-void OS_X11::process_joysticks() {
-	#ifndef __FreeBSD__
-	int bytes;
-	js_event events[32];
-	InputEvent ievent;
-	for (int i=0; i<JOYSTICKS_MAX; i++) {
-
-		if (joysticks[i].fd == -1) {
-			probe_joystick(i);
-			if (joysticks[i].fd == -1)
-				continue;
-		};
-		ievent.device = i;
-
-		while ( (bytes = read(joysticks[i].fd, &events, sizeof(events))) > 0) {
-
-			int ev_count = bytes / sizeof(js_event);
-			for (int j=0; j<ev_count; j++) {
-
-				js_event& event = events[j];
-
-				//printf("got event on joystick %i, %i, %i, %i, %i\n", i, joysticks[i].fd, event.type, event.number, event.value);
-				if (event.type & JS_EVENT_INIT)
-					continue;
-
-				switch (event.type & ~JS_EVENT_INIT) {
-
-				case JS_EVENT_AXIS:
-
-					//if (joysticks[i].last_axis[event.number] != event.value) {
-
-						/*
-						if (event.number==5 || event.number==6) {
-
-							int axis=event.number-5;
-							int val = event.value;
-							if (val<0)
-								val=-1;
-							if (val>0)
-								val=+1;
-
-							InputEvent ev;
-							ev.type = InputEvent::JOYSTICK_BUTTON;
-							ev.ID = ++event_id;
-
-
-							if (val!=dpad_last[axis]) {
-
-								int prev_val = dpad_last[axis];
-								if (prev_val!=0) {
-
-									ev.joy_button.pressed=false;
-									ev.joy_button.pressure=0.0;
-									if (event.number==5)
-										ev.joy_button.button_index=JOY_DPAD_LEFT+(prev_val+1)/2;
-									if (event.number==6)
-										ev.joy_button.button_index=JOY_DPAD_UP+(prev_val+1)/2;
-
-									input->parse_input_event( ev );
-								}
-							}
-
-							if (val!=0) {
-
-								ev.joy_button.pressed=true;
-								ev.joy_button.pressure=1.0;
-								if (event.number==5)
-									ev.joy_button.button_index=JOY_DPAD_LEFT+(val+1)/2;
-								if (event.number==6)
-									ev.joy_button.button_index=JOY_DPAD_UP+(val+1)/2;
-
-								input->parse_input_event( ev );
-							}
-
-
-							dpad_last[axis]=val;
-
-						}
-						*/
-						//print_line("ev: "+itos(event.number)+" val: "+ rtos((float)event.value / (float)MAX_JOY_AXIS));
-						//if (event.number >= JOY_AXIS_MAX)
-						//	break;
-						//ERR_FAIL_COND(event.number >= JOY_AXIS_MAX);
-						ievent.type = InputEvent::JOYSTICK_MOTION;
-						ievent.ID = ++event_id;
-						ievent.joy_motion.axis = event.number; //_pc_joystick_get_native_axis(event.number);
-						ievent.joy_motion.axis_value = (float)event.value / (float)MAX_JOY_AXIS;
-						if (event.number < JOY_AXIS_MAX)
-							joysticks[i].last_axis[event.number] = event.value;
-						input->parse_input_event( ievent );
-					//};
-					break;
-
-				case JS_EVENT_BUTTON:
-
-
-					ievent.type = InputEvent::JOYSTICK_BUTTON;
-					ievent.ID = ++event_id;
-					ievent.joy_button.button_index = event.number; // _pc_joystick_get_native_button(event.number);
-					ievent.joy_button.pressed = event.value;
-					input->parse_input_event( ievent );
-					break;
-				};
-			};
-		};
-		if (bytes == 0 || (bytes < 0 && errno != EAGAIN)) {
-			close_joystick(i);
-		};
-	};
-	#endif
-};
-
 
 void OS_X11::set_cursor_shape(CursorShape p_shape) {
 
@@ -1937,7 +1750,9 @@ void OS_X11::run() {
 	while (!force_quit) {
 	
 		process_xevents(); // get rid of pending events
-		process_joysticks();
+#ifdef __linux__
+        event_id = joystick->process_joysticks(event_id);
+#endif
 		if (Main::iteration()==true)
 			break;
 	};
