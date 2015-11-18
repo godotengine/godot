@@ -31,6 +31,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+void cgsem_init(cgsem_t*);
+void cgsem_post(cgsem_t*);
+void cgsem_wait(cgsem_t*);
+void cgsem_destroy(cgsem_t*);
+
 void cgsem_init(cgsem_t *cgsem)
 {
 	int flags, fd, i;

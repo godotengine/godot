@@ -1350,7 +1350,9 @@ void OS_Windows::finalize() {
 		memdelete(main_loop);
 
 	main_loop=NULL;
-	
+
+	memdelete(input);
+
 	visual_server->finish();
 	memdelete(visual_server);
 #ifdef OPENGL_ENABLED
@@ -1376,8 +1378,6 @@ void OS_Windows::finalize() {
 	audio_server->finish();
 	memdelete(audio_server);
 	memdelete(sample_manager);
-
-	memdelete(input);
 
 	physics_server->finish();
 	memdelete(physics_server);

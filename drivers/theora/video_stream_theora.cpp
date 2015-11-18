@@ -271,6 +271,8 @@ void VideoStreamPlaybackTheora::set_file(const String& p_file) {
 				copymem(&to,&test,sizeof(test));
 				theora_p=1;
 			}else if(!vorbis_p && vorbis_synthesis_headerin(&vi,&vc,&op)>=0){
+
+
 				/* it is vorbis */
 				if (audio_track_skip) {
 					vorbis_info_clear(&vi);
@@ -281,7 +283,7 @@ void VideoStreamPlaybackTheora::set_file(const String& p_file) {
 
 					audio_track_skip--;
 				} else {
-					copymem(&vo,&test,sizeof(test));
+                                        copymem(&vo,&test,sizeof(test));
 					vorbis_p=1;
 				}
 			}else{

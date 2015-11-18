@@ -32,6 +32,9 @@
 
 extern "C" {
 
+int add_path(int, char**);
+int add_cmdline(int, char**);
+
 int add_path(int p_argc, char** p_args) {
 
 	NSString* str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];

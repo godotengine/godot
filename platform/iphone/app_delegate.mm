@@ -56,6 +56,8 @@
 #import "Appirater.h"
 #endif
 
+Error _shell_open(String);
+
 Error _shell_open(String p_uri) {
 	NSString* url = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
 

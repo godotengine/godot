@@ -1611,28 +1611,35 @@ static void oc_filter_hedge(unsigned char *_dst,int _dst_ystride,
   int                  sum1;
   int                  bx;
   int                  by;
+  int		       _rlimit1;
+  int		       _rlimit2;
   rdst=_dst;
   rsrc=_src;
-  for(bx=0;bx<8;bx++){
+  for(bx=0;bx<8;++bx){
     cdst=rdst;
     csrc=rsrc;
-    for(by=0;by<10;by++){
+    _rlimit1 = _rlimit2 = _flimit;
+    for(by=0;by<10;++by){
       r[by]=*csrc;
       csrc+=_src_ystride;
     }
     sum0=sum1=0;
-    for(by=0;by<4;by++){
-      sum0+=abs(r[by+1]-r[by]);
-      sum1+=abs(r[by+5]-r[by+6]);
+    for(by=0;by<4;++by){
+      int sumed = abs(r[by+1]-r[by]);
+      sum0+=sumed;
+      _rlimit1-=sumed;
+      sumed = abs(r[by+5]-r[by+6]);
+      sum1+=sumed;
+      _rlimit2-=sumed;
     }
     *_variance0+=OC_MINI(255,sum0);
     *_variance1+=OC_MINI(255,sum1);
-    if(sum0<_flimit&&sum1<_flimit&&r[5]-r[4]<_qstep&&r[4]-r[5]<_qstep){
+    if(_rlimit1&&_rlimit2&&!(r[5]-r[4]-_qstep)&&!(r[4]-r[5]-_qstep)){
       *cdst=(unsigned char)(r[0]*3+r[1]*2+r[2]+r[3]+r[4]+4>>3);
       cdst+=_dst_ystride;
       *cdst=(unsigned char)(r[0]*2+r[1]+r[2]*2+r[3]+r[4]+r[5]+4>>3);
       cdst+=_dst_ystride;
-      for(by=0;by<4;by++){
+      for(by=0;by<4;++by){
         *cdst=(unsigned char)(r[by]+r[by+1]+r[by+2]+r[by+3]*2+
          r[by+4]+r[by+5]+r[by+6]+4>>3);
         cdst+=_dst_ystride;
@@ -1642,13 +1649,13 @@ static void oc_filter_hedge(unsigned char *_dst,int _dst_ystride,
       *cdst=(unsigned char)(r[5]+r[6]+r[7]+r[8]*2+r[9]*3+4>>3);
     }
     else{
-      for(by=1;by<=8;by++){
+      for(by=1;by<=8;++by){
         *cdst=(unsigned char)r[by];
         cdst+=_dst_ystride;
       }
     }
-    rdst++;
-    rsrc++;
+    ++rdst;
+    ++rsrc;
   }
 }
 
@@ -1663,19 +1670,26 @@ static void oc_filter_vedge(unsigned char *_dst,int _dst_ystride,
   int                  sum1;
   int                  bx;
   int                  by;
+  int		       _rlimit1;
+  int		       _rlimit2;
   cdst=_dst;
-  for(by=0;by<8;by++){
+  for(by=0;by<8;++by){
     rsrc=cdst-1;
     rdst=cdst;
-    for(bx=0;bx<10;bx++)r[bx]=*rsrc++;
+    for(bx=0;bx<10;++bx)r[bx]=*rsrc++;
     sum0=sum1=0;
-    for(bx=0;bx<4;bx++){
-      sum0+=abs(r[bx+1]-r[bx]);
-      sum1+=abs(r[bx+5]-r[bx+6]);
+    _rlimit1 = _rlimit2 = _flimit;
+    for(bx=0;bx<4;++bx){
+      int sumed = abs(r[bx+1]-r[bx]);
+      sum0+=sumed;
+      _rlimit1-=sumed;
+      sumed = abs(r[bx+5]-r[bx+6]);
+      sum1+=sumed;
+      _rlimit2-=sumed;
     }
     _variances[0]+=OC_MINI(255,sum0);
     _variances[1]+=OC_MINI(255,sum1);
-    if(sum0<_flimit&&sum1<_flimit&&r[5]-r[4]<_qstep&&r[4]-r[5]<_qstep){
+    if(_rlimit1&&_rlimit2&&!(r[5]-r[4]-_qstep)&&!(r[4]-r[5]-_qstep)){
       *rdst++=(unsigned char)(r[0]*3+r[1]*2+r[2]+r[3]+r[4]+4>>3);
       *rdst++=(unsigned char)(r[0]*2+r[1]+r[2]*2+r[3]+r[4]+r[5]+4>>3);
       for(bx=0;bx<4;bx++){

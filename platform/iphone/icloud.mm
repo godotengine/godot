@@ -30,10 +30,16 @@
 
 #include "icloud.h"
 
+#ifndef __IPHONE_9_0
 extern "C" {
+#endif
+
 #import <Foundation/Foundation.h>
 #import "app_delegate.h"
+
+#ifndef __IPHONE_9_0
 };
+#endif
 
 ICloud* ICloud::instance = NULL;
 
