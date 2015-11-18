@@ -627,6 +627,33 @@ public:
 };
 
 
+void AnimationKeyEditor::_menu_add_track(int p_type) {
+
+	ERR_FAIL_COND(!animation.is_valid());
+
+
+	switch(p_type) {
+
+		case ADD_TRACK_MENU_ADD_CALL_TRACK: {
+			if (root) {
+				call_select->popup_centered_ratio();
+				break;
+			}
+		} break;
+		case ADD_TRACK_MENU_ADD_VALUE_TRACK:
+		case ADD_TRACK_MENU_ADD_TRANSFORM_TRACK: {
+
+			undo_redo->create_action("Anim Add Track");
+			undo_redo->add_do_method(animation.ptr(),"add_track",p_type);
+			undo_redo->add_do_method(animation.ptr(),"track_set_path",animation->get_track_count(),".");
+			undo_redo->add_undo_method(animation.ptr(),"remove_track",animation->get_track_count());
+			undo_redo->commit_action();
+
+
+		} break;
+	}
+}
+
 void AnimationKeyEditor::_menu_track(int p_type) {
 
 	ERR_FAIL_COND(!animation.is_valid());
@@ -635,23 +662,6 @@ void AnimationKeyEditor::_menu_track(int p_type) {
 	last_menu_track_opt=p_type;
 	switch(p_type) {
 
-		case TRACK_MENU_ADD_CALL_TRACK: {
-			if (root) {
-				call_select->popup_centered_ratio();
-				break;
-			}
-		} break;
-		case TRACK_MENU_ADD_VALUE_TRACK:
-		case TRACK_MENU_ADD_TRANSFORM_TRACK: {
-
-			undo_redo->create_action("Anim Add Track");
-			undo_redo->add_do_method(animation.ptr(),"add_track",p_type);			
-			undo_redo->add_do_method(animation.ptr(),"track_set_path",animation->get_track_count(),".");
-			undo_redo->add_undo_method(animation.ptr(),"remove_track",animation->get_track_count());
-			undo_redo->commit_action();
-
-
-		} break;
 		case TRACK_MENU_SCALE:
 		case TRACK_MENU_SCALE_PIVOT: {
 
@@ -999,6 +1009,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 	if (!animation.is_valid()) {
 		v_scroll->hide();
 		h_scroll->hide();
+		menu_add_track->set_disabled(true);
 		menu_track->set_disabled(true);
 		edit_button->set_disabled(true);
 		key_editor_tab->hide();
@@ -1008,6 +1019,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 		return;
 	}
 
+	menu_add_track->set_disabled(false);
 	menu_track->set_disabled(false);
 	edit_button->set_disabled(false);
 	move_up_button->set_disabled(false);
@@ -2659,12 +2671,14 @@ void AnimationKeyEditor::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-				zoomicon->set_texture( get_icon("Zoom","EditorIcons") );				
-				//menu_track->set_icon(get_icon("AddTrack","EditorIcons"));
-				menu_track->get_popup()->add_icon_item(get_icon("KeyValue","EditorIcons"),"Add Normal Track",TRACK_MENU_ADD_VALUE_TRACK);
-				menu_track->get_popup()->add_icon_item(get_icon("KeyXform","EditorIcons"),"Add Transform Track",TRACK_MENU_ADD_TRANSFORM_TRACK);
-				menu_track->get_popup()->add_icon_item(get_icon("KeyCall","EditorIcons"),"Add Call Func Track",TRACK_MENU_ADD_CALL_TRACK);
-				menu_track->get_popup()->add_separator();
+				zoomicon->set_texture( get_icon("Zoom","EditorIcons") );
+
+				menu_add_track->set_icon(get_icon("AddTrack","EditorIcons"));
+				menu_add_track->get_popup()->add_icon_item(get_icon("KeyValue","EditorIcons"),"Add Normal Track",ADD_TRACK_MENU_ADD_VALUE_TRACK);
+				menu_add_track->get_popup()->add_icon_item(get_icon("KeyXform","EditorIcons"),"Add Transform Track",ADD_TRACK_MENU_ADD_TRANSFORM_TRACK);
+				menu_add_track->get_popup()->add_icon_item(get_icon("KeyCall","EditorIcons"),"Add Call Func Track",ADD_TRACK_MENU_ADD_CALL_TRACK);
+
+				menu_track->set_icon(get_icon("Tools","EditorIcons"));
 				menu_track->get_popup()->add_item("Scale Selection",TRACK_MENU_SCALE);
 				menu_track->get_popup()->add_item("Scale From Cursor",TRACK_MENU_SCALE_PIVOT);
 				menu_track->get_popup()->add_separator();
@@ -3511,6 +3525,7 @@ void AnimationKeyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_track_editor_input_event"),&AnimationKeyEditor::_track_editor_input_event);
 	ObjectTypeDB::bind_method(_MD("_track_name_changed"),&AnimationKeyEditor::_track_name_changed);
 	ObjectTypeDB::bind_method(_MD("_track_menu_selected"),&AnimationKeyEditor::_track_menu_selected);
+	ObjectTypeDB::bind_method(_MD("_menu_add_track"),&AnimationKeyEditor::_menu_add_track);
 	ObjectTypeDB::bind_method(_MD("_menu_track"),&AnimationKeyEditor::_menu_track);
 	ObjectTypeDB::bind_method(_MD("_clear_selection_for_anim"),&AnimationKeyEditor::_clear_selection_for_anim);
 	ObjectTypeDB::bind_method(_MD("_select_at_anim"),&AnimationKeyEditor::_select_at_anim);
@@ -3562,15 +3577,6 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	//menu->set_flat(true);
 	//menu->set_pos(Point2());
 	//add_child(menu);
-
-	menu_track = memnew( MenuButton );
-	menu_track->set_text("Tracks");
-	hb->add_child(menu_track);
-	menu_track->get_popup()->connect("item_pressed",this,"_menu_track");
-
-
-
-	hb->add_child( memnew( VSeparator ) );
 
 	zoomicon = memnew( TextureFrame );
 	hb->add_child(zoomicon);
@@ -3629,6 +3635,10 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 
 	hb->add_child( memnew( VSeparator ) );
 
+	menu_add_track = memnew( MenuButton );
+	hb->add_child(menu_add_track);
+	menu_add_track->get_popup()->connect("item_pressed",this,"_menu_add_track");
+	menu_add_track->set_tooltip("Add new tracks.");
 
 	move_up_button = memnew( ToolButton );
 	hb->add_child(move_up_button);
@@ -3652,6 +3662,11 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	remove_button->set_tooltip("Remove selected track.");
 
 	hb->add_child(memnew( VSeparator ));
+
+	menu_track = memnew( MenuButton );
+	hb->add_child(menu_track);
+	menu_track->get_popup()->connect("item_pressed",this,"_menu_track");
+	menu_track->set_tooltip("Track tools");
 
 	edit_button = memnew( ToolButton );
 	edit_button->set_toggle_mode(true);
