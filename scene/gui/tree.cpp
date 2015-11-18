@@ -2271,9 +2271,12 @@ bool Tree::edit_selected() {
 
 	TreeItem::Cell &c = s->cells[col];
 
+	if (c.mode==TreeItem::CELL_MODE_CHECK) {
 
-
-	if (c.mode==TreeItem::CELL_MODE_CUSTOM) {
+		s->set_checked(col, !c.checked);
+		item_edited(col,s);
+		return true;
+	} else if (c.mode==TreeItem::CELL_MODE_CUSTOM) {
 
 		edited_item=s;
 		edited_col=col;
