@@ -11,6 +11,10 @@ common_win=[
 	"stream_peer_winsock.cpp",
 ]
 
+if (env["tools"]=="yes"):
+	env.RES('icon.rc')
+	common_win.append("icon.res")
+
 env.Program('#bin/godot',['godot_win.cpp']+common_win,PROGSUFFIX=env["PROGSUFFIX"])
 
 # Microsoft Visual Studio Project Generation
