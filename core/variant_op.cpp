@@ -2587,7 +2587,7 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 				String idx=p_index;
 				const String *str=reinterpret_cast<const String*>(_data._mem);
 
-				return str->find("idx")!=-1;
+				return str->find(idx)!=-1;
 			}
 
 		} break;
