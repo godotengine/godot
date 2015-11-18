@@ -2542,7 +2542,7 @@ void ShaderGraphView::_notification(int p_what) {
 
 void ShaderGraphView::add_node(int p_type, const Vector2 &location) {
 
-	if ((p_type==ShaderGraph::NODE_INPUT||p_type==ShaderGraph::NODE_INPUT) && graph->node_count(type, p_type)>0)
+	if (p_type==ShaderGraph::NODE_INPUT && graph->node_count(type, p_type)>0)
 		return;
 
 	List<int> existing;

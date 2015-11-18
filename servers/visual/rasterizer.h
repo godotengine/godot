@@ -693,7 +693,7 @@ public:
 			Rect2 rect;
 			RID texture;
 			float margin[4];
-			float draw_center;
+			bool draw_center;
 			Color color;
 			CommandStyle() { draw_center=true; type = TYPE_STYLE; }
 		};

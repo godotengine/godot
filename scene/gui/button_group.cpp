@@ -155,6 +155,6 @@ void ButtonGroup::_bind_methods() {
 
 }
 
-ButtonGroup::ButtonGroup()
+ButtonGroup::ButtonGroup() : BoxContainer(true)
 {
 }

@@ -54,6 +54,14 @@ static bool video_playing = false;
 static float video_previous_volume = 0.0f;
 static CMTime video_current_time;
 
+void _show_keyboard(String);
+void _hide_keyboard();
+bool _play_video(String, float, String, String);
+bool _is_video_playing();
+void _focus_out_video();
+void _unpause_video();
+void _stop_video();
+
 void _show_keyboard(String p_existing) {
 	keyboard_text = p_existing;
 	printf("instance on show is %p\n", _instance);
@@ -618,7 +626,7 @@ static void clear_touches() {
 
 - (void)audioRouteChangeListenerCallback:(NSNotification*)notification
 {
-	printf("*********** route changed!%i\n");
+	printf("*********** route changed!\n");
 	NSDictionary *interuptionDict = notification.userInfo;
 
 	NSInteger routeChangeReason = [[interuptionDict valueForKey:AVAudioSessionRouteChangeReasonKey] integerValue];

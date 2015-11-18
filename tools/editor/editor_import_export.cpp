@@ -1706,6 +1706,17 @@ void EditorImportExport::load_config() {
 		}
 	}
 
+	if (cf->has_section("convert_samples")) {
+
+		if (cf->has_section_key("convert_samples","max_hz"))
+			sample_action_max_hz=cf->get_value("convert_samples","max_hz");
+
+		if (cf->has_section_key("convert_samples","trim"))
+			sample_action_trim=cf->get_value("convert_samples","trim");
+	}
+
+
+
 }
 
 
@@ -1816,6 +1827,14 @@ void EditorImportExport::save_config() {
 
 	cf->set_value("script","encrypt_key",script_key);
 
+	switch(sample_action) {
+		case SAMPLE_ACTION_NONE: cf->set_value("convert_samples","action","none"); break;
+		case SAMPLE_ACTION_COMPRESS_RAM: cf->set_value("convert_samples","action","compress_ram"); break;
+	}
+
+	cf->set_value("convert_samples","max_hz",sample_action_max_hz);
+	cf->set_value("convert_samples","trim",sample_action_trim);
+
 	cf->save("res://export.cfg");
 
 }
@@ -1838,6 +1857,35 @@ void EditorImportExport::script_set_encryption_key(const String& p_key){
 String EditorImportExport::script_get_encryption_key() const{
 
 	return script_key;
+}
+
+
+void EditorImportExport::sample_set_action(SampleAction p_action) {
+
+	sample_action=p_action;
+}
+
+EditorImportExport::SampleAction EditorImportExport::sample_get_action() const{
+
+	return sample_action;
+}
+
+void EditorImportExport::sample_set_max_hz(int p_hz){
+
+	sample_action_max_hz=p_hz;
+}
+int EditorImportExport::sample_get_max_hz() const{
+
+	return sample_action_max_hz;
+}
+
+void EditorImportExport::sample_set_trim(bool p_trim){
+
+	sample_action_trim=p_trim;
+}
+bool EditorImportExport::sample_get_trim() const{
+
+	return sample_action_trim;
 }
 
 
@@ -1868,7 +1916,12 @@ EditorImportExport::EditorImportExport() {
 	image_formats.insert("png");
 	image_shrink=1;
 
+
 	script_action=SCRIPT_ACTION_COMPILE;
+
+	sample_action=SAMPLE_ACTION_NONE;
+	sample_action_max_hz=44100;
+	sample_action_trim=false;
 
 }
 

@@ -235,6 +235,37 @@ int ItemList::get_current() const {
 	return current;
 }
 
+void ItemList::move_item(int p_item,int p_to_pos) {
+
+	ERR_FAIL_INDEX(p_item,items.size());
+	ERR_FAIL_INDEX(p_to_pos,items.size()+1);
+
+	Item it=items[p_item];
+	items.remove(p_item);;
+
+	if (p_to_pos>p_item) {
+		p_to_pos--;
+	}
+
+	if (p_to_pos>=items.size()) {
+		items.push_back(it);
+	} else {
+		items.insert(p_to_pos,it);
+	}
+
+	if (current<0) {
+		//do none
+	} if (p_item==current) {
+		current=p_to_pos;
+	} else if (p_to_pos>p_item && current>p_item && current<p_to_pos) {
+		current--;
+	} else if (p_to_pos<p_item && current<p_item && current>p_to_pos) {
+		current++;
+	}
+
+
+	update();
+}
 
 int ItemList::get_item_count() const{
 

@@ -63,5 +63,3 @@ SConscript('bind/SCsub');
 lib = env.Library("core",env.core_sources)
 
 env.Prepend(LIBS=[lib])
-
-

@@ -105,13 +105,13 @@ class RasterizerGLES2 : public Rasterizer {
 	float anisotropic_level;
 
 	bool use_half_float;
-
+	bool low_memory_2d;
 
 	Vector<float> skel_default;
 
 	Image _get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_internal_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed);
 
-	class RenderTarget;
+	struct RenderTarget;
 
 	struct Texture {
 
@@ -305,7 +305,7 @@ class RasterizerGLES2 : public Rasterizer {
 		virtual ~GeometryOwner() {}
 	};
 
-	class Mesh;
+	struct Mesh;
 
 	struct Surface : public Geometry {
 

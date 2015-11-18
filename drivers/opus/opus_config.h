@@ -7,11 +7,15 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
+#if (!defined( _MSC_VER ) || ( _MSC_VER >= 1800 ))
+
 /* Define to 1 if you have the `lrint' function. */
 #define HAVE_LRINT 1
 
 /* Define to 1 if you have the `lrintf' function. */
 #define HAVE_LRINTF 1
+
+#endif
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -109,7 +113,11 @@
 /* Define to the equivalent of the C99 'restrict' keyword, or to
    nothing if this is not supported.  Do not define if restrict is
    supported directly.  */
+#if (!defined( _MSC_VER ) || ( _MSC_VER >= 1800 ))
 #define restrict __restrict
+#else
+#undef restrict
+#endif
 /* Work around a bug in Sun C++: it does not support _Restrict or
    __restrict__, even though the corresponding Sun C compiler ends up with
    "#define restrict _Restrict" or "#define restrict __restrict__" in the

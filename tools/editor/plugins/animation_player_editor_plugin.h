@@ -55,6 +55,17 @@ class AnimationPlayerEditor : public VBoxContainer {
 		TOOL_EDIT_RESOURCE
 	};
 
+	enum {
+		ANIM_SAVE,
+		ANIM_SAVE_AS
+	};
+
+	enum {
+		RESOURCE_LOAD,
+		RESOURCE_SAVE
+	};
+
+
 	OptionButton *animation;
 	Button *stop;
 	Button *play;
@@ -70,6 +81,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Button *edit_anim;
 	Button *resource_edit_anim;
 	Button *load_anim;
+	MenuButton *save_anim;
 	Button *blend_anim;
 	Button *remove_anim;
 	MenuButton *tool_anim;
@@ -85,6 +97,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 	bool last_active;
 
 	EditorFileDialog *file;
+	AcceptDialog *accept;
+	int current_option;
 
 	struct BlendEditor {
 
@@ -116,13 +130,18 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_rename();
 	void _animation_name_edited();
 	void _animation_load();
+
+	void _animation_save_in_path(const Ref<Resource>& p_resource, const String& p_path);
+	void _animation_save(const Ref<Resource>& p_resource);
+	void _animation_save_as(const Ref<Resource>& p_resource);
+
 	void _animation_remove();
 	void _animation_blend();
 	void _animation_edit();
 	void _animation_duplicate();
 	void _animation_resource_edit();
 	void _scale_changed(const String& p_scale);
-	void _file_selected(String p_file);
+	void _dialog_action(String p_file);
 	void _seek_frame_changed(const String& p_frame);
 	void _seek_value_changed(float p_value);
 	void _blend_editor_next_changed(const String& p_string);
@@ -141,6 +160,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_key_editor_anim_len_changed(float p_new);
 	void _unhandled_key_input(const InputEvent& p_ev);
 	void _animation_tool_menu(int p_option);
+	void _animation_save_menu(int p_option);
 
 	AnimationPlayerEditor();
 protected:

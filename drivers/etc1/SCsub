@@ -12,4 +12,3 @@ if (env["etc1"] != "no"):
 #env.add_source_files(env.drivers_sources, etc_sources)
 
 Export('env')
-

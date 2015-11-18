@@ -165,7 +165,8 @@ void AnimatedSprite::_notification(int p_what) {
 			if (vflip)
 				dst_rect.size.y=-dst_rect.size.y;
 
-			texture->draw_rect(ci,dst_rect,false,modulate);
+			//texture->draw_rect(ci,dst_rect,false,modulate);
+			texture->draw_rect_region(ci,dst_rect,Rect2(Vector2(),texture->get_size()),modulate);
 //			VisualServer::get_singleton()->canvas_item_add_texture_rect_region(ci,dst_rect,texture->get_rid(),src_rect,modulate);
 
 		} break;

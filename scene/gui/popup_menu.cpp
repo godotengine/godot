@@ -323,10 +323,13 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 						invalidated_click=false;
 						break;
 					}
-					if (over<0 || items[over].separator || items[over].disabled) {
+					if (over<0) {
 						hide();
 						break; //non-activable
 					}
+
+					if (items[over].separator || items[over].disabled)
+						break;
 
 					if (items[over].submenu!="") {
 
@@ -362,8 +365,11 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 			int over=_get_mouse_over(Point2(m.x,m.y));
 			int id = (over<0 || items[over].separator || items[over].disabled)?-1:items[over].ID;
 
-			if (id<0)
+			if (id<0) {
+				mouse_over=-1;
+				update();
 				break;
+			}
 
 			if (items[over].submenu!="" && submenu_over!=over) {
 				submenu_over=over;
@@ -774,6 +780,7 @@ void PopupMenu::add_separator() {
 void PopupMenu::clear()  {
 
 	items.clear();
+	mouse_over=-1;
 	update();
 	idcount=0;
 

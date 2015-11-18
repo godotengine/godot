@@ -124,7 +124,7 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 					ERR_FAIL_COND_V(!node,NULL);
 				} else {
 					InstancePlaceholder *ip = memnew( InstancePlaceholder );
-					ip->set_path(path);
+					ip->set_instance_path(path);
 					node=ip;
 				}
 				node->set_scene_instance_load_placeholder(true);

@@ -300,9 +300,9 @@ void EditorHelpSearch::_bind_methods() {
 }
 
 
-EditorHelpSearch::EditorHelpSearch(EditorNode *p_editor) {
+EditorHelpSearch::EditorHelpSearch() {
 
-	editor=p_editor;
+	editor=EditorNode::get_singleton();
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
 	set_child_rect(vbc);
@@ -318,17 +318,138 @@ EditorHelpSearch::EditorHelpSearch(EditorNode *p_editor) {
 	search_box->connect("input_event",this,"_sbox_input");
 	search_options = memnew( Tree );
 	vbc->add_margin_child("Matches:",search_options,true);
-	get_ok()->set_text("View");
+	get_ok()->set_text("Open");
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	search_options->connect("item_activated",this,"_confirmed");
 	set_title("Search Classes");
+
 //	search_options->set_hide_root(true);
 
 }
 
+/////////////////////////////////
 
+////////////////////////////////////
+/// /////////////////////////////////
+
+
+
+void EditorHelpIndex::add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem *p_root) {
+
+	if (p_types.has(p_type))
+		return;
+//	if (!ObjectTypeDB::is_type(p_type,base) || p_type==base)
+//		return;
+
+	String inherits=EditorHelp::get_doc_data()->class_list[p_type].inherits;
+
+	TreeItem *parent=p_root;
+
+
+	if (inherits.length()) {
+
+		if (!p_types.has(inherits)) {
+
+			add_type(inherits,p_types,p_root);
+		}
+
+		if (p_types.has(inherits) )
+			parent=p_types[inherits];
+	}
+
+	TreeItem *item = class_list->create_item(parent);
+	item->set_metadata(0,p_type);
+	item->set_tooltip(0,EditorHelp::get_doc_data()->class_list[p_type].brief_description);
+	item->set_text(0,p_type);
+
+
+	if (has_icon(p_type,"EditorIcons")) {
+
+		item->set_icon(0, get_icon(p_type,"EditorIcons"));
+	}
+
+	p_types[p_type]=item;
+}
+
+
+void EditorHelpIndex::_tree_item_selected() {
+
+
+	TreeItem *s=class_list->get_selected();
+	if (!s)
+		return;
+
+	emit_signal("open_class",s->get_text(0));
+
+	hide();
+
+	//_goto_desc(s->get_text(0));
+
+}
+
+void EditorHelpIndex::select_class(const String& p_class) {
+
+	if (!tree_item_map.has(p_class))
+		return;
+	tree_item_map[p_class]->select(0);
+	class_list->ensure_cursor_is_visible();
+}
+
+void EditorHelpIndex::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+
+		class_list->clear();
+		tree_item_map.clear();
+		TreeItem *root = class_list->create_item();
+		class_list->set_hide_root(true);
+		connect("confirmed",this,"_tree_item_selected");
+
+
+		for(Map<String,DocData::ClassDoc>::Element *E=EditorHelp::get_doc_data()->class_list.front();E;E=E->next()) {
+
+
+			add_type(E->key(),tree_item_map,root);
+		}
+
+	}
+}
+
+void EditorHelpIndex::_bind_methods() {
+
+	ObjectTypeDB::bind_method("_tree_item_selected",&EditorHelpIndex::_tree_item_selected);
+	ObjectTypeDB::bind_method("select_class",&EditorHelpIndex::select_class);
+	ADD_SIGNAL( MethodInfo("open_class"));
+}
+
+
+
+EditorHelpIndex::EditorHelpIndex() {
+
+
+	VBoxContainer *vbc = memnew( VBoxContainer );
+	add_child(vbc);
+	set_child_rect(vbc);
+
+	class_list = memnew( Tree );
+	vbc->add_margin_child("Class List: ",class_list,true);
+	class_list->set_v_size_flags(SIZE_EXPAND_FILL);
+
+
+	class_list->connect("item_activated",this,"_tree_item_selected");
+
+
+	get_ok()->set_text("Open");
+}
+
+
+
+/////////////////////////////////
+
+////////////////////////////////////
+/// /////////////////////////////////
 DocData *EditorHelp::doc=NULL;
 
 void EditorHelp::_unhandled_key_input(const InputEvent& p_ev) {
@@ -339,8 +460,6 @@ void EditorHelp::_unhandled_key_input(const InputEvent& p_ev) {
 
 		search->grab_focus();
 		search->select_all();
-	} else if (p_ev.key.mod.shift && p_ev.key.scancode==KEY_F1) {
-		class_search->popup();
 	}
 }
 
@@ -351,17 +470,19 @@ void EditorHelp::_search(const String&) {
 
 
 	String stext=search->get_text();
-	bool keep = prev_search==stext && class_list->get_selected() && prev_search_page==class_list->get_selected()->get_text(0);
+	bool keep = prev_search==stext;
 
-	class_desc->search(stext, keep);
+	bool ret = class_desc->search(stext, keep);
+	if (!ret) {
+		class_desc->search(stext, false);
+	}
 
 	prev_search=stext;
-	if (class_list->get_selected())
-		prev_search_page=class_list->get_selected()->get_text(0);
 
 
 }
 
+#if 0
 void EditorHelp::_button_pressed(int p_idx) {
 
 	if (p_idx==PAGE_CLASS_LIST) {
@@ -399,16 +520,11 @@ void EditorHelp::_button_pressed(int p_idx) {
 	} else if (p_idx==PAGE_SEARCH) {
 
 		_search("");
-	} else if (p_idx==CLASS_SEARCH) {
-
-		class_search->popup();
 	}
-
-
 }
 
 
-
+#endif
 
 void EditorHelp::_class_list_select(const String& p_select) {
 
@@ -417,16 +533,28 @@ void EditorHelp::_class_list_select(const String& p_select) {
 
 void EditorHelp::_class_desc_select(const String& p_select) {
 
+
+
+//	print_line("LINK: "+p_select);
 	if (p_select.begins_with("#")) {
-		_goto_desc(p_select.substr(1,p_select.length()));
+		//_goto_desc(p_select.substr(1,p_select.length()));
+		emit_signal("go_to_help","class_name:"+p_select.substr(1,p_select.length()));
 		return;
 	} else if (p_select.begins_with("@")) {
 
 		String m = p_select.substr(1,p_select.length());
-		if (!method_line.has(m))
-			return;
-		class_desc->scroll_to_line(method_line[m]);
-		return;
+
+		if (m.find(".")!=-1) {
+			//must go somewhere else
+
+			emit_signal("go_to_help","class_method:"+m.get_slice(".",0)+":"+m.get_slice(".",0));
+		} else {
+
+			if (!method_line.has(m))
+				return;
+			class_desc->scroll_to_line(method_line[m]);
+		}
+
 	}
 
 
@@ -449,68 +577,40 @@ void EditorHelp::_add_type(const String& p_type) {
 
 }
 
-void EditorHelp::_update_history_buttons() {
-
-	back->set_disabled(history_pos<2);
-	forward->set_disabled(history_pos>=history.size());
-
-}
-
-
 void EditorHelp::_scroll_changed(double p_scroll) {
 
 	if (scroll_locked)
 		return;
 
-	int p = history_pos -1;
-	if (p<0 || p>=history.size())
-		return;
-
 	if (class_desc->get_v_scroll()->is_hidden())
 		p_scroll=0;
 
-	history[p].scroll=p_scroll;
+	//history[p].scroll=p_scroll;
 }
 
-Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vscr) {
+Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 	//ERR_FAIL_COND(!doc->class_list.has(p_class));
 	if (!doc->class_list.has(p_class))
 		return ERR_DOES_NOT_EXIST;
 
 
-	if (tree_item_map.has(p_class)) {
+	//if (tree_item_map.has(p_class)) {
 		select_locked = true;
-		tree_item_map[p_class]->select(0);
-		class_list->ensure_cursor_is_visible();
-	}
+	//}
 
 	class_desc->show();
 	//tabs->set_current_tab(PAGE_CLASS_DESC);
-	edited_class->set_pressed(true);
-	class_list_button->set_pressed(false);
 	description_line=0;
 
-	if (p_class==edited_class->get_text())
+	if (p_class==edited_class)
 		return OK; //already there
 
 	scroll_locked=true;
 
-	if (p_update_history) {
-
-		history.resize(history_pos);
-		history_pos++;
-		History h;
-		h.c=p_class;
-		h.scroll=0;
-		history.push_back(h);
-		_update_history_buttons();
-		class_desc->get_v_scroll()->set_val(0);
-	}
-
 	class_desc->clear();
 	method_line.clear();
-	edited_class->set_text(p_class);
+	edited_class=p_class;
 	//edited_class->show();
 
 
@@ -925,10 +1025,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 	}
 
-	if (!p_update_history) {
 
-		class_desc->get_v_scroll()->set_val(history[history_pos-1].scroll);
-	}
 
 	scroll_locked=false;
 
@@ -939,8 +1036,6 @@ void EditorHelp::_request_help(const String& p_string) {
 	Error err = _goto_desc(p_string);
 	if (err==OK) {
 		editor->call("_editor_select",3);
-	} else {
-		class_search->popup(p_string);
 	}
 	//100 palabras
 }
@@ -1209,63 +1304,11 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 }
 
 
-void EditorHelp::add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem *p_root) {
-
-	if (p_types.has(p_type))
-		return;
-//	if (!ObjectTypeDB::is_type(p_type,base) || p_type==base)
-//		return;
-
-	String inherits=doc->class_list[p_type].inherits;
-
-	TreeItem *parent=p_root;
-
-
-	if (inherits.length()) {
-
-		if (!p_types.has(inherits)) {
-
-			add_type(inherits,p_types,p_root);
-		}
-
-		if (p_types.has(inherits) )
-			parent=p_types[inherits];
-	}
-
-	TreeItem *item = class_list->create_item(parent);
-	item->set_metadata(0,p_type);
-	item->set_tooltip(0,doc->class_list[p_type].brief_description);
-	item->set_text(0,p_type);
-
-
-	if (has_icon(p_type,"EditorIcons")) {
-
-		item->set_icon(0, get_icon(p_type,"EditorIcons"));
-	}
-
-	p_types[p_type]=item;
-}
-
 
 
 void EditorHelp::_update_doc() {
 
 
-	class_list->clear();
-
-	List<StringName> type_list;
-
-	tree_item_map.clear();
-
-	TreeItem *root = class_list->create_item();
-	class_list->set_hide_root(true);
-	List<StringName>::Element *I=type_list.front();
-
-	for(Map<String,DocData::ClassDoc>::Element *E=doc->class_list.front();E;E=E->next()) {
-
-
-		add_type(E->key(),tree_item_map,root);
-	}
 
 }
 
@@ -1289,8 +1332,8 @@ void EditorHelp::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 
 
-			forward->set_icon(get_icon("Forward","EditorIcons"));
-			back->set_icon(get_icon("Back","EditorIcons"));
+//			forward->set_icon(get_icon("Forward","EditorIcons"));
+//			back->set_icon(get_icon("Back","EditorIcons"));
 			_update_doc();
 			editor->connect("request_help",this,"_request_help");
 
@@ -1298,226 +1341,121 @@ void EditorHelp::_notification(int p_what) {
 	}
 }
 
-void EditorHelp::_tree_item_selected() {
 
-	if (select_locked) {
-		select_locked = false;
-		return;
-	}
-	TreeItem *s=class_list->get_selected();
-	if (!s)
-		return;
-	select_locked=true;
-	_goto_desc(s->get_text(0));
-	select_locked=false;
+
+
+void EditorHelp::go_to_help(const String& p_help) {
+
+	_help_callback(p_help);
+}
+
+void EditorHelp::go_to_class(const String& p_class,int p_scroll) {
+
+	_goto_desc(p_class,p_scroll);
+}
+
+void EditorHelp::popup_search() {
+
+
+	search_dialog->popup_centered(Size2(250,80));
+	search->grab_focus();
+}
+
+void EditorHelp::_search_cbk() {
+
+	_search(search->get_text());
+}
+
+String EditorHelp::get_class_name() {
+
+	return edited_class;
+}
+
+void EditorHelp::search_again() {
+	_search(prev_search);
+}
+
+int EditorHelp::get_scroll() const {
+
+	return class_desc->get_v_scroll()->get_val();
+}
+void EditorHelp::set_scroll(int p_scroll) {
+
+
+	class_desc->get_v_scroll()->set_val(p_scroll);
+
 }
 
 void EditorHelp::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_class_list_select",&EditorHelp::_class_list_select);
 	ObjectTypeDB::bind_method("_class_desc_select",&EditorHelp::_class_desc_select);
-	ObjectTypeDB::bind_method("_button_pressed",&EditorHelp::_button_pressed);
+//	ObjectTypeDB::bind_method("_button_pressed",&EditorHelp::_button_pressed);
 	ObjectTypeDB::bind_method("_scroll_changed",&EditorHelp::_scroll_changed);
 	ObjectTypeDB::bind_method("_request_help",&EditorHelp::_request_help);
 	ObjectTypeDB::bind_method("_unhandled_key_input",&EditorHelp::_unhandled_key_input);
 	ObjectTypeDB::bind_method("_search",&EditorHelp::_search);
-	ObjectTypeDB::bind_method("_tree_item_selected",&EditorHelp::_tree_item_selected);
+	ObjectTypeDB::bind_method("_search_cbk",&EditorHelp::_search_cbk);
+
 	ObjectTypeDB::bind_method("_help_callback",&EditorHelp::_help_callback);
+
+	ADD_SIGNAL(MethodInfo("go_to_help"));
 
 }
 
-EditorHelp::EditorHelp(EditorNode *p_editor) {
+EditorHelp::EditorHelp() {
 
-	editor=p_editor;
+	editor=EditorNode::get_singleton();
 
 	VBoxContainer *vbc = this;
 
-	HBoxContainer *panel_hb = memnew( HBoxContainer );
 
-	Button *b = memnew( Button );
-	b->set_text("Class List");
-	panel_hb->add_child(b);
-	vbc->add_child(panel_hb);
-	b->set_toggle_mode(true);
-	b->set_pressed(true);
-	b->connect("pressed",this,"_button_pressed",make_binds(PAGE_CLASS_LIST));
-	class_list_button=b;
-	class_list_button->hide();
-
-	b = memnew( Button );
-	b->set_text("Class");
-	panel_hb->add_child(b);
-	edited_class=b;
-	edited_class->hide();
-	b->set_toggle_mode(true);
-	b->connect("pressed",this,"_button_pressed",make_binds(PAGE_CLASS_DESC));
-
-	b = memnew( Button );
-	b->set_text("Search in Classes");
-	panel_hb->add_child(b);
-	b->connect("pressed",this,"_button_pressed",make_binds(CLASS_SEARCH));
-
-	Control *expand = memnew( Control );
-	expand->set_h_size_flags(SIZE_EXPAND_FILL);
-	panel_hb->add_child(expand);
-
-	b = memnew( Button );
-	panel_hb->add_child(b);
-	back=b;
-	b->connect("pressed",this,"_button_pressed",make_binds(PAGE_CLASS_PREV));
-
-	b = memnew( Button );
-	panel_hb->add_child(b);
-	forward=b;
-	b->connect("pressed",this,"_button_pressed",make_binds(PAGE_CLASS_NEXT));
-
-	Separator *hs = memnew( VSeparator );
-	panel_hb->add_child(hs);
-	Control *ec = memnew( Control );
-	ec->set_custom_minimum_size(Size2(200,1));
-	panel_hb->add_child(ec);
-	search = memnew( LineEdit );
-	ec->add_child(search);
-	search->set_area_as_parent_rect();
-	search->connect("text_entered",this,"_search");
-
-	b = memnew( Button );
-	b->set_text("Find");
-	panel_hb->add_child(b);
-	b->connect("pressed",this,"_button_pressed",make_binds(PAGE_SEARCH));
-
-	hs = memnew( VSeparator );
-	panel_hb->add_child(hs);
-
-	h_split = memnew( HSplitContainer );
-	h_split->set_v_size_flags(SIZE_EXPAND_FILL);
-
-
-	vbc->add_child(h_split);
-
-	class_list = memnew( Tree );
-	h_split->add_child(class_list);
 	//class_list->connect("meta_clicked",this,"_class_list_select");
 	//class_list->set_selection_enabled(true);
 
 	{
-		PanelContainer *pc = memnew( PanelContainer );
+		Panel *pc = memnew( Panel );
 		Ref<StyleBoxFlat> style( memnew( StyleBoxFlat ) );
 		style->set_bg_color( EditorSettings::get_singleton()->get("text_editor/background_color") );	
-		style->set_default_margin(MARGIN_LEFT,20);
-		style->set_default_margin(MARGIN_TOP,20);
+		pc->set_v_size_flags(SIZE_EXPAND_FILL);
 		pc->add_style_override("panel", style); //get_stylebox("normal","TextEdit"));
-		h_split->add_child(pc);
+		vbc->add_child(pc);
 		class_desc = memnew( RichTextLabel );
 		pc->add_child(class_desc);
+		class_desc->set_area_as_parent_rect(8);
 		class_desc->connect("meta_clicked",this,"_class_desc_select");
 	}
 
 	class_desc->get_v_scroll()->connect("value_changed",this,"_scroll_changed");
 	class_desc->set_selection_enabled(true);
-	editor=p_editor;
-	history_pos=0;
+
 	scroll_locked=false;
 	select_locked=false;
 	set_process_unhandled_key_input(true);
-	h_split->set_split_offset(200);
-	class_list->connect("cell_selected",this,"_tree_item_selected");
 	class_desc->hide();
 
-	class_search = memnew( EditorHelpSearch(editor) );
+	search_dialog = memnew( ConfirmationDialog );
+	add_child(search_dialog);
+	VBoxContainer *search_vb = memnew( VBoxContainer );
+	search_dialog->add_child(search_vb);
+	search_dialog->set_child_rect(search_vb);
+	search = memnew( LineEdit );
+	search_dialog->register_text_enter(search);
+	search_vb->add_margin_child("Search Text",search);
+	search_dialog->get_ok()->set_text("Find");
+	search_dialog->connect("confirmed",this,"_search_cbk");
+	search_dialog->set_hide_on_ok(false);
+	search_dialog->set_self_opacity(0.8);
+
+
+	/*class_search = memnew( EditorHelpSearch(editor) );
 	editor->get_gui_base()->add_child(class_search);
-	class_search->connect("go_to_help",this,"_help_callback");
+	class_search->connect("go_to_help",this,"_help_callback");*/
+
 //	prev_search_page=-1;
 }
 
 EditorHelp::~EditorHelp() {
-	if (doc)
-		memdelete(doc);
-}
-
-
-void EditorHelpPlugin::edit(Object *p_object) {
-
-	if (!p_object->cast_to<Script>())
-		return;
-
-	//editor_help->edit(p_object->cast_to<Script>());
-}
-
-bool EditorHelpPlugin::handles(Object *p_object) const {
-
-	return false;
-}
-
-void EditorHelpPlugin::make_visible(bool p_visible) {
-
-	if (p_visible) {
-		editor_help->show();
-	} else {
-
-		editor_help->hide();
-	}
 
 }
 
-void EditorHelpPlugin::selected_notify() {
-
-	//editor_help->ensure_select_current();
-}
-
-Dictionary EditorHelpPlugin::get_state() const {
-
-	return Dictionary();
-}
-
-void EditorHelpPlugin::set_state(const Dictionary& p_state) {
-
-	//editor_help->set_state(p_state);
-}
-void EditorHelpPlugin::clear() {
-
-	//editor_help->clear();
-}
-
-void EditorHelpPlugin::save_external_data() {
-
-	//editor_help->save_external_data();
-}
-
-void EditorHelpPlugin::apply_changes() {
-
-	//editor_help->apply_helps();
-}
-
-void EditorHelpPlugin::restore_global_state() {
-
-	//if (bool(EDITOR_DEF("text_editor/restore_helps_on_load",true))) {
-//		editor_help->_load_files_state();
-	//}
-
-}
-
-void EditorHelpPlugin::save_global_state() {
-
-	//if (bool(EDITOR_DEF("text_editor/restore_helps_on_load",true))) {
-//		editor_help->_save_files_state();
-//	}
-
-}
-
-
-EditorHelpPlugin::EditorHelpPlugin(EditorNode *p_node) {
-
-	editor=p_node;
-	editor_help = memnew( EditorHelp(p_node) );
-	editor->get_viewport()->add_child(editor_help);
-	editor_help->set_area_as_parent_rect();
-	editor_help->hide();
-
-
-}
-
-
-EditorHelpPlugin::~EditorHelpPlugin()
-{
-}

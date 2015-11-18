@@ -139,6 +139,10 @@ private:
 	OptionButton *script_mode;
 	LineEdit *script_key;
 
+	VBoxContainer *sample_vbox;
+	OptionButton *sample_mode;
+	SpinBox *sample_max_hz;
+	CheckButton *sample_trim;
 
 
 	void _export_mode_changed(int p_idx);
@@ -161,6 +165,8 @@ private:
 	void _quality_edited(float what);
 	void _image_export_edited(int what);
 	void _shrink_edited(float what);
+
+	void _sample_convert_edited(int what);
 
 	void _update_group_list();
 	void _select_group(const String& p_by_name);

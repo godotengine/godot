@@ -25,10 +25,8 @@ import com.android.vending.billing.IInAppBillingService;
 public class PaymentsManager {
 
 	public static final int BILLING_RESPONSE_RESULT_OK = 0;
-
-	
 	public static final int REQUEST_CODE_FOR_PURCHASE = 0x1001;
-	
+	private static boolean auto_consume = true;
 	
 	private Activity activity;
 	IInAppBillingService mService;
@@ -69,13 +67,12 @@ public class PaymentsManager {
 	    }
 
 	    @Override
-	    public void onServiceConnected(ComponentName name, 
-	    		IBinder service) {
-		mService = IInAppBillingService.Stub.asInterface(service);
+	    public void onServiceConnected(ComponentName name, IBinder service) {
+			mService = IInAppBillingService.Stub.asInterface(service);
 	    }
 	};
 	
-	public void requestPurchase(String sku, String transactionId){
+	public void requestPurchase(final String sku, String transactionId){
 		new PurchaseTask(mService, Godot.getInstance()) {
 			
 			@Override
@@ -88,6 +85,12 @@ public class PaymentsManager {
 			protected void canceled() {
 				godotPaymentV3.callbackCancel();
 			}
+			
+			@Override
+			protected void alreadyOwned() {
+				godotPaymentV3.callbackAlreadyOwned(sku);
+			}
+			
 		}.purchase(sku, transactionId);
 
 	}
@@ -114,26 +117,82 @@ public class PaymentsManager {
 		}.consumeItAll();
 	}
 	
+	public void requestPurchased(){
+		try{
+			PaymentsCache pc = new PaymentsCache(Godot.getInstance());
+
+//			Log.d("godot", "requestPurchased for " + activity.getPackageName());
+			Bundle bundle = mService.getPurchases(3, activity.getPackageName(), "inapp",null);
+
+/*			
+			for (String key : bundle.keySet()) {
+			    Object value = bundle.get(key);
+			    Log.d("godot", String.format("%s %s (%s)", key, value.toString(), value.getClass().getName()));
+			}
+*/			
+			
+			if (bundle.getInt("RESPONSE_CODE") == 0){
+
+				final ArrayList<String> myPurchases = bundle.getStringArrayList("INAPP_PURCHASE_DATA_LIST");
+				final ArrayList<String> mySignatures = bundle.getStringArrayList("INAPP_DATA_SIGNATURE_LIST");
+				
+
+				if (myPurchases == null || myPurchases.size() == 0){
+//					Log.d("godot", "No purchases!");
+					godotPaymentV3.callbackPurchased("", "", "");
+					return;
+				}
+		
+//				Log.d("godot", "# products are purchased:" + myPurchases.size());
+				for (int i=0;i<myPurchases.size();i++)
+				{
+					
+					try{
+						String receipt = myPurchases.get(i);
+						JSONObject inappPurchaseData = new JSONObject(receipt);
+						String sku = inappPurchaseData.getString("productId");
+						String token = inappPurchaseData.getString("purchaseToken");
+						String signature = mySignatures.get(i);
+//						Log.d("godot", "purchased item:" + token + "\n" + receipt);
+
+						pc.setConsumableValue("ticket_signautre", sku, signature);
+						pc.setConsumableValue("ticket", sku, receipt);
+						pc.setConsumableFlag("block", sku, true);
+						pc.setConsumableValue("token", sku, token);
+
+						godotPaymentV3.callbackPurchased(receipt, signature, sku);
+					} catch (JSONException e) {
+					}
+				}
+
+			}
+		}catch(Exception e){
+			Log.d("godot", "Error requesting purchased products:" + e.getClass().getName() + ":" + e.getMessage());
+		}
+	}
+	
 	public void processPurchaseResponse(int resultCode, Intent data) {
 		new HandlePurchaseTask(activity){
 
 			@Override
 			protected void success(final String sku, final String signature, final String ticket) {
-				godotPaymentV3.callbackSuccess(ticket, signature);
-				new ConsumeTask(mService, activity) {
-					
-					@Override
-					protected void success(String ticket) {
-//						godotPaymentV3.callbackSuccess("");
-					}
-					
-					@Override
-					protected void error(String message) {
-						godotPaymentV3.callbackFail();
-						
-					}
-				}.consume(sku);
+				godotPaymentV3.callbackSuccess(ticket, signature, sku);
 
+				if (auto_consume){
+					new ConsumeTask(mService, activity) {
+					
+						@Override
+						protected void success(String ticket) {
+//							godotPaymentV3.callbackSuccess("");
+						}
+					
+						@Override
+						protected void error(String message) {
+							godotPaymentV3.callbackFail();
+						
+						}
+					}.consume(sku);
+				}
 				
 //				godotPaymentV3.callbackSuccess(new PaymentsCache(activity).getConsumableValue("ticket", sku),signature);
 //			    godotPaymentV3.callbackSuccess(ticket);
@@ -151,7 +210,7 @@ public class PaymentsManager {
 				godotPaymentV3.callbackCancel();
 				
 			}
-			}.handlePurchaseRequest(resultCode, data);
+		}.handlePurchaseRequest(resultCode, data);
 	}
 	
 	public void validatePurchase(String purchaseToken, final String sku){
@@ -165,7 +224,7 @@ public class PaymentsManager {
 					
 					@Override
 					protected void success(String ticket) {
-						godotPaymentV3.callbackSuccess(ticket, null);
+						godotPaymentV3.callbackSuccess(ticket, null, sku);
 						
 					}
 					
@@ -192,11 +251,31 @@ public class PaymentsManager {
 		}.validatePurchase(sku);
 	}
 	
+	public void setAutoConsume(boolean autoConsume){
+		auto_consume = autoConsume;
+	}
+	
+	public void consume(final String sku){
+		new ConsumeTask(mService, activity) {
+			
+			@Override
+			protected void success(String ticket) {
+				godotPaymentV3.callbackSuccessProductMassConsumed(ticket, "", sku);
+				
+			}
+			
+			@Override
+			protected void error(String message) {
+				godotPaymentV3.callbackFail();
+				
+			}
+		}.consume(sku);
+	}
+	
 	private GodotPaymentV3 godotPaymentV3;
 	
 	public void setBaseSingleton(GodotPaymentV3 godotPaymentV3) {
 		this.godotPaymentV3 = godotPaymentV3;
-		
 	}
 
 }

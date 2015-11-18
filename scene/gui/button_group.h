@@ -29,14 +29,14 @@
 #ifndef BUTTON_GROUP_H
 #define BUTTON_GROUP_H
 
-#include "scene/gui/control.h"
+#include "scene/gui/box_container.h"
 
 
 class BaseButton;
 
-class ButtonGroup : public Control {
+class ButtonGroup : public BoxContainer {
 
-	OBJ_TYPE(ButtonGroup,Control);
+	OBJ_TYPE(ButtonGroup,BoxContainer);
 
 
 	Set<BaseButton*> buttons;

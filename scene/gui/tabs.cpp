@@ -58,7 +58,7 @@ Size2 Tabs::get_minimum_size() const {
 
 		if (tabs[i].right_button.is_valid()) {
 			Ref<Texture> rb=tabs[i].right_button;
-			Size2 bms = rb->get_size()+get_stylebox("button")->get_minimum_size();
+			Size2 bms = rb->get_size();//+get_stylebox("button")->get_minimum_size();
 			bms.width+=get_constant("hseparation");
 
 			ms.width+=bms.width;
@@ -67,9 +67,8 @@ Size2 Tabs::get_minimum_size() const {
 
 		if (tabs[i].close_button.is_valid()) {
 			Ref<Texture> cb=tabs[i].close_button;
-			Size2 bms = cb->get_size()+get_stylebox("button")->get_minimum_size();
+			Size2 bms = cb->get_size();//+get_stylebox("button")->get_minimum_size();
 			bms.width+=get_constant("hseparation");
-
 			ms.width+=bms.width;
 			ms.height=MAX(bms.height+tab_bg->get_minimum_size().height,ms.height);
 		}
@@ -103,11 +102,13 @@ void Tabs::_input_event(const InputEvent& p_event) {
 			// test hovering right button and close button
 			if (tabs[i].rb_rect.has_point(pos)) {
 				rb_hover=i;
+				cb_hover=-1;
 				hover_buttons = i;
 				break;
 			}
 			else if (tabs[i].cb_rect.has_point(pos)) {
 				cb_hover=i;
+				rb_hover=-1;
 				hover_buttons = i;
 				break;
 			}
@@ -262,9 +263,9 @@ void Tabs::_notification(int p_what) {
 					Ref<Texture> rb=tabs[i].right_button;
 
 					lsize+=get_constant("hseparation");
-					lsize+=style->get_margin(MARGIN_LEFT);
+					//lsize+=style->get_margin(MARGIN_LEFT);
 					lsize+=rb->get_width();
-					lsize+=style->get_margin(MARGIN_RIGHT);
+					//lsize+=style->get_margin(MARGIN_RIGHT);
 
 				}
 
@@ -276,9 +277,9 @@ void Tabs::_notification(int p_what) {
 						Ref<Texture> rb=tabs[i].close_button;
 
 						lsize+=get_constant("hseparation");
-						lsize+=style->get_margin(MARGIN_LEFT);
+						//lsize+=style->get_margin(MARGIN_LEFT);
 						lsize+=rb->get_width();
-						lsize+=style->get_margin(MARGIN_RIGHT);
+						//lsize+=style->get_margin(MARGIN_RIGHT);
 
 					}
 				} break;
@@ -289,9 +290,9 @@ void Tabs::_notification(int p_what) {
 							Ref<Texture> rb=tabs[i].close_button;
 
 							lsize+=get_constant("hseparation");
-							lsize+=style->get_margin(MARGIN_LEFT);
+							//lsize+=style->get_margin(MARGIN_LEFT);
 							lsize+=rb->get_width();
-							lsize+=style->get_margin(MARGIN_RIGHT);
+							//lsize+=style->get_margin(MARGIN_RIGHT);
 
 						}
 					}
@@ -303,9 +304,9 @@ void Tabs::_notification(int p_what) {
 							Ref<Texture> rb=tabs[i].close_button;
 
 							lsize+=get_constant("hseparation");
-							lsize+=style->get_margin(MARGIN_LEFT);
+							//lsize+=style->get_margin(MARGIN_LEFT);
 							lsize+=rb->get_width();
-							lsize+=style->get_margin(MARGIN_RIGHT);
+							//lsize+=style->get_margin(MARGIN_RIGHT);
 
 						}
 					}
@@ -404,11 +405,11 @@ void Tabs::_notification(int p_what) {
 								style->draw(ci,cb_rect);
 						}
 
-						w+=style->get_margin(MARGIN_LEFT);
+						//w+=style->get_margin(MARGIN_LEFT);
 
 						cb->draw(ci,Point2i( w,cb_rect.pos.y+style->get_margin(MARGIN_TOP) ));
 						w+=cb->get_width();
-						w+=style->get_margin(MARGIN_RIGHT);
+						//w+=style->get_margin(MARGIN_RIGHT);
 						tabs[i].cb_rect=cb_rect;
 					}
 				} break;
@@ -432,11 +433,11 @@ void Tabs::_notification(int p_what) {
 									style->draw(ci,cb_rect);
 							}
 
-							w+=style->get_margin(MARGIN_LEFT);
+							//w+=style->get_margin(MARGIN_LEFT);
 
 							cb->draw(ci,Point2i( w,cb_rect.pos.y+style->get_margin(MARGIN_TOP) ));
 							w+=cb->get_width();
-							w+=style->get_margin(MARGIN_RIGHT);
+							//w+=style->get_margin(MARGIN_RIGHT);
 							tabs[i].cb_rect=cb_rect;
 						}
 					}
@@ -461,11 +462,11 @@ void Tabs::_notification(int p_what) {
 									style->draw(ci,cb_rect);
 							}
 
-							w+=style->get_margin(MARGIN_LEFT);
+							//w+=style->get_margin(MARGIN_LEFT);
 
 							cb->draw(ci,Point2i( w,cb_rect.pos.y+style->get_margin(MARGIN_TOP) ));
 							w+=cb->get_width();
-							w+=style->get_margin(MARGIN_RIGHT);
+							//w+=style->get_margin(MARGIN_RIGHT);
 							tabs[i].cb_rect=cb_rect;
 						}
 					}

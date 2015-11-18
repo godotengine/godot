@@ -193,7 +193,7 @@ class NewProjectDialog : public ConfirmationDialog {
 				f->store_line("\n");
 				f->store_line("[application]");
 				f->store_line("name=\""+project_name->get_text()+"\"");
-				f->store_line("icon=\"icon.png\"");
+				f->store_line("icon=\"res://icon.png\"");
 
 				memdelete(f);
 
@@ -480,20 +480,25 @@ void ProjectManager::_load_recent_projects() {
 		bool favorite = (_name.begins_with("favorite_projects/"))?true:false;
 
 		uint64_t last_modified = 0;
-		if (FileAccess::exists(conf))
+		if (FileAccess::exists(conf)) {
 			last_modified = FileAccess::get_modified_time(conf);
-		String fscache = path.plus_file(".fscache");
-		if (FileAccess::exists(fscache)) {
-			uint64_t cache_modified = FileAccess::get_modified_time(fscache);
-			if ( cache_modified > last_modified )
-				last_modified = cache_modified;
-		}
 
-		ProjectItem item(project, path, conf, last_modified, favorite);
-		if (favorite)
-			favorite_projects.push_back(item);
-		else
-			projects.push_back(item);
+			String fscache = path.plus_file(".fscache");
+			if (FileAccess::exists(fscache)) {
+				uint64_t cache_modified = FileAccess::get_modified_time(fscache);
+				if ( cache_modified > last_modified )
+					last_modified = cache_modified;
+			}
+
+			ProjectItem item(project, path, conf, last_modified, favorite);
+			if (favorite)
+				favorite_projects.push_back(item);
+			else
+				projects.push_back(item);
+		} else {
+			//project doesn't exist on disk but it's in the XML settings file
+			EditorSettings::get_singleton()->erase(_name); //remove it
+		}
 	}
 
 	projects.sort();
@@ -601,6 +606,8 @@ void ProjectManager::_load_recent_projects() {
 	erase_btn->set_disabled(selected_list.size()<1);
 	open_btn->set_disabled(selected_list.size()<1);
 	run_btn->set_disabled(selected_list.size()<1 || (selected_list.size()==1 && single_selected_main==""));
+
+	EditorSettings::get_singleton()->save();
 }
 
 void ProjectManager::_open_project_confirm() {

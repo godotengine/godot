@@ -15,5 +15,3 @@ SConscript('spatial_sound_2d/SCsub');
 lib = env.Library("servers",env.servers_sources)
 
 env.Prepend(LIBS=[lib])
-
-

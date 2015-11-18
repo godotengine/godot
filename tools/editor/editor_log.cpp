@@ -81,6 +81,7 @@ void EditorLog::_notification(int p_what) {
 		log->add_color_override("default_color",get_color("font_color","Tree"));
 		tb->set_normal_texture( get_icon("Collapse","EditorIcons"));
 		tb->set_hover_texture( get_icon("CollapseHl","EditorIcons"));
+		//button->set_icon(get_icon("Console","EditorIcons"));
 
 	}
 
@@ -125,6 +126,7 @@ void EditorLog::add_message(const String& p_msg,bool p_error) {
 		log->push_color(get_color("fg_error","Editor"));
 	} else {
 		button->set_icon(Ref<Texture>());
+
 	}
 
 
@@ -154,17 +156,20 @@ void EditorLog::_dragged(const Point2& p_ofs) {
 */
 
 
-ToolButton *EditorLog::get_button() {
+Button *EditorLog::get_button() {
 
 	return button;
 }
 
 void EditorLog::_flip_request() {
 
-	if (is_visible())
+	if (is_visible()) {
 		hide();
-	else
+		button->show();
+	} else {
 		show();
+		button->hide();
+	}
 }
 
 void EditorLog::_undo_redo_cbk(void *p_self,const String& p_name) {
@@ -200,7 +205,7 @@ EditorLog::EditorLog() {
 	hb->add_child(title);
 
 
-	button = memnew( ToolButton );
+	button = memnew( Button );
 	button->set_text_align(Button::ALIGN_LEFT);
 	button->connect("pressed",this,"_flip_request");
 	button->set_focus_mode(FOCUS_NONE);

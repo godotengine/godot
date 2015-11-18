@@ -40,6 +40,8 @@ int add_path(int p_argc, char** p_args);
 int add_cmdline(int p_argc, char** p_args);
 };
 
+int iphone_main(int, int, int, char**);
+
 int iphone_main(int width, int height, int argc, char** argv) {
 
 	int len = strlen(argv[0]);
