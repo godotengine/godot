@@ -62,7 +62,11 @@ abstract public class PurchaseTask {
 //		Log.d("XXX", "Buy intent response code: " + responseCode);
 		if(responseCode == 1 || responseCode == 3 || responseCode == 4){
 			canceled();
-			return ;
+			return;
+		}
+		if(responseCode == 7){
+			alreadyOwned();
+			return;
 		}
 			
 		
@@ -92,6 +96,6 @@ abstract public class PurchaseTask {
 
 	abstract protected void error(String message);
 	abstract protected void canceled();
-
+	abstract protected void alreadyOwned();
 	
 }
