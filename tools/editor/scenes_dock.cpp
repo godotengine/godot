@@ -352,10 +352,30 @@ String ScenesDock::get_selected_path() const {
 
 void ScenesDock::_instance_pressed() {
 
-	TreeItem *sel = tree->get_selected();
-	if (!sel)
-		return;
-	String path = sel->get_metadata(0);
+	if (tree_mode)
+	{
+		TreeItem *sel = tree->get_selected();
+		if (!sel)
+			return;
+		String path = sel->get_metadata(0);
+	}
+	else
+	{
+		int idx = -1;
+		for (int i = 0; i<files->get_item_count(); i++) {
+			if (files->is_selected(i))
+			{
+				idx = i;
+				break;
+			}
+		}
+
+		if (idx<0)
+			return;
+
+		path = files->get_item_metadata(idx);
+	}
+
 	emit_signal("instance",path);
 }
 
