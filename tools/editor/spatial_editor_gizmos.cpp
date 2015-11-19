@@ -745,7 +745,7 @@ static float _find_closest_angle_to_half_pi_arc(const Vector3& p_from, const Vec
 	}
 
 	//min_p = p_arc_xform.affine_inverse().xform(min_p);
-	float a = Vector2(min_p.x,-min_p.z).atan2();
+	float a = Vector2(min_p.x,-min_p.z).angle();
 	return a*180.0/Math_PI;
 }
 

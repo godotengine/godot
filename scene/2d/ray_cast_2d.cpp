@@ -131,7 +131,7 @@ void RayCast2D::_notification(int p_what) {
 			if (!get_tree()->is_editor_hint()  && !get_tree()->is_debugging_collisions_hint())
 				break;
 			Matrix32 xf;
-			xf.rotate(cast_to.atan2());
+			xf.rotate(cast_to.angle());
 			xf.translate(Vector2(0,cast_to.length()));
 
 			//Vector2 tip = Vector2(0,s->get_length());

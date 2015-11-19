@@ -133,7 +133,7 @@ struct Vector2 {
 	bool operator<(const Vector2& p_vec2) const { return (x==p_vec2.x)?(y<p_vec2.y):(x<p_vec2.x); }
 	bool operator<=(const Vector2& p_vec2) const { return (x==p_vec2.x)?(y<=p_vec2.y):(x<=p_vec2.x); }
 
-	real_t atan2() const;
+	real_t angle() const;
 
 	void set_rotation(float p_radians) {
 

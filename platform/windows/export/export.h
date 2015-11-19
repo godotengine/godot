@@ -29,7 +29,7 @@ protected:
 	void _get_property_list( List<PropertyInfo> *p_list) const;
 	
 public:
-	Error export_project(const String& p_path, bool p_debug, bool p_dumb=false, bool p_remote_debug=false);
+	Error export_project(const String& p_path, bool p_debug,int p_flags=0);
 	EditorExportPlatformWindows();
 };
 

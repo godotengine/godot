@@ -118,7 +118,7 @@ void PathFollow2D::_update_transform() {
 		pos+=n*h_offset;
 		pos+=t*v_offset;
 
-		set_rot(t.atan2());
+		set_rot(t.angle());
 
 	} else {
 

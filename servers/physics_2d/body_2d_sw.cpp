@@ -442,7 +442,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		//compute motion, angular and etc. velocities from prev transform
 		linear_velocity = (new_transform.elements[2] - get_transform().elements[2])/p_step;
 
-		real_t rot = new_transform.affine_inverse().basis_xform(get_transform().elements[1]).atan2();
+		real_t rot = new_transform.affine_inverse().basis_xform(get_transform().elements[1]).angle();
 		angular_velocity = rot / p_step;
 
 		motion = new_transform.elements[2] - get_transform().elements[2];

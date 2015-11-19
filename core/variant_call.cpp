@@ -333,7 +333,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(Vector2,dot);
 	VCALL_LOCALMEM1R(Vector2,slide);
 	VCALL_LOCALMEM1R(Vector2,reflect);
-	VCALL_LOCALMEM0R(Vector2,atan2);
+	VCALL_LOCALMEM0R(Vector2,angle);
 //	VCALL_LOCALMEM1R(Vector2,cross);
 
 	VCALL_LOCALMEM0R(Rect2,get_area);
@@ -1297,7 +1297,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 
 	ADDFUNC0(VECTOR2,VECTOR2,Vector2,normalized,varray());
 	ADDFUNC0(VECTOR2,REAL,Vector2,length,varray());
-	ADDFUNC0(VECTOR2,REAL,Vector2,atan2,varray());
+	ADDFUNC0(VECTOR2,REAL,Vector2,angle,varray());
 	ADDFUNC0(VECTOR2,REAL,Vector2,length_squared,varray());
 	ADDFUNC1(VECTOR2,REAL,Vector2,distance_to,VECTOR2,"to",varray());
 	ADDFUNC1(VECTOR2,REAL,Vector2,distance_squared_to,VECTOR2,"to",varray());

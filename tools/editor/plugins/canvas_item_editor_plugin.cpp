@@ -1488,7 +1488,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 					Matrix32 rot;
 					rot.elements[1] = (dfrom - center).normalized();
 					rot.elements[0] = rot.elements[1].tangent();
-					node->set_rot(snap_angle(rot.xform_inv(dto-center).atan2(), node->get_rot()));
+					node->set_rot(snap_angle(rot.xform_inv(dto-center).angle(), node->get_rot()));
 					display_rotate_to = dto;
 					display_rotate_from = center;
 					viewport->update();

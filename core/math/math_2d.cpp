@@ -29,7 +29,7 @@
 #include "math_2d.h"
 
 
-real_t Vector2::atan2() const {
+real_t Vector2::angle() const {
 
 	return Math::atan2(x,y);
 }
@@ -165,7 +165,7 @@ Vector2 Vector2::floor() const {
 Vector2 Vector2::rotated(float p_by) const {
 
 	Vector2 v;
-	v.set_rotation(atan2()+p_by);
+	v.set_rotation(angle()+p_by);
 	v*=length();
 	return v;
 }
