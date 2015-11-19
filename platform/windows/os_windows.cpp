@@ -1802,7 +1802,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 		switch(p_type) {
 			case ERR_ERROR: basecol = FOREGROUND_RED; break;
 			case ERR_WARNING: basecol = FOREGROUND_RED | FOREGROUND_GREEN; break;
-			case ERR_SCRIPT: basecol = FOREGROUND_GREEN; break;
+			case ERR_SCRIPT: basecol = FOREGROUND_RED | FOREGROUND_BLUE; break;
 		}
 
 		if (p_rationale && p_rationale[0]) {
