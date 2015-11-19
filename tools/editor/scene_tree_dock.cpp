@@ -1223,24 +1223,21 @@ void SceneTreeDock::_create() {
 
 		}
 
-
 		String newname=n->get_name();
 		n->replace_by(newnode,true);
-
 
 		if (n==edited_scene) {
 			edited_scene=newnode;
 			editor->set_edited_scene(newnode);
 		}
 
-
-
-
 		editor_data->get_undo_redo().clear_history();
-		memdelete(n);
 		newnode->set_name(newname);
+
 		editor->push_item(newnode);
 
+		memdelete(n);
+		
 		_update_tool_buttons();
 
 	}
