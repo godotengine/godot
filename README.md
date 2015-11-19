@@ -11,7 +11,7 @@ Godot has been developed by Juan Linietsky and Ariel Manzur for several years, a
 
 ### Documentation
 
-Documentation has been moved to the [GitHub Wiki](https://github.com/okamstudio/godot/wiki).
+Documentation has been moved to the [OpenProject Wiki](http://godotengine.org/projects/godot-engine/wiki/Documentation).
 
 ### Binary Downloads, Community, etc.
 
@@ -22,4 +22,4 @@ http://www.godotengine.org
 ### Compiling from Source
 
 Compilation instructions for every platform can be found in the Wiki:
-https://github.com/okamstudio/godot/wiki/advanced
+http://godotengine.org/projects/godot-engine/wiki/Advanced_topics
