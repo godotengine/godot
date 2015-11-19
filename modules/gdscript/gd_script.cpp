@@ -224,6 +224,8 @@ Variant GDFunction::call_method(Variant* p_self, const StringName& p_method, con
 	return p_self->call(p_method,p_args,p_argcount,r_error);
 }
 
+class Variant;
+
 Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError& r_err, CallState *p_state, const Variant **p_requires_args) {
 
 	if (!_code_ptr) {
@@ -783,18 +785,18 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 						argptrs[1]->get_type() == Variant::OBJECT) {
 						GDFunctionObject *func_object = ((Object *) (*argptrs[1]))->cast_to<GDFunctionObject>();
 						if (func_object && func_object->is_valid()) {
-							Variant **args = (Variant **)memalloc(sizeof(Variant*)*(argc+1));
+							const Variant* argptr[argc];
 							Variant target(func_object->instance->owner);
 							Variant fn(func_object->get_name());
 
 							for(int i=0;i<argc;i++) {
 								if (i < 1) {
-									args[i] = argptrs[i];
+									argptr[i] = argptrs[i];
 								}else if (i == 1) {
-									args[i] = &target;
-									args[i+1] = &fn;
+									argptr[i] = &target;
+									argptr[i+1] = &fn;
 								}else {
-									args[i+1] = argptrs[i];
+									argptr[i+1] = argptrs[i];
 								}
 							}
 
@@ -802,12 +804,11 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 							if (call_ret) {
 
 								GET_VARIANT_PTR(ret,argc);
-								*ret = base->call(*methodname,(const Variant**)args,argc+1,err);
+								*ret = base->call(*methodname, argptr, argc+1, err);
 							} else {
 
-								base->call(*methodname,(const Variant**)args,argc+1,err);
+								base->call(*methodname, argptr, argc+1, err);
 							}
-							memfree(args);
 							break;
 						}
 					}
@@ -1544,6 +1545,25 @@ Object *GDFunctionObject::get_owner() const {
 	return instance->owner;
 }
 
+
+Variant GDFunctionObject::apply(VARIANT_ARG_DECLARE) {
+	VARIANT_ARGPTRS;
+	int argc=0;
+	for(int i=0;i<VARIANT_ARG_MAX;i++) {
+		if (argptr[i]->get_type()==Variant::NIL)
+			break;
+		argc++;
+	}
+
+	Variant::CallError error;
+	Variant ret = apply(argptr,argc,error);
+	return ret;
+}
+
+Variant GDFunctionObject::_apply(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	apply(p_args, p_argcount, r_error);
+}
+
 Variant GDFunctionObject::apply(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
 	if (!is_valid()) {
@@ -1555,15 +1575,7 @@ Variant GDFunctionObject::apply(const Variant **p_args, int p_argcount, Variant:
 }
 
 Variant GDFunctionObject::applyv(const Array p_args) {
-	Variant::CallError error;
-	const Variant **v_args = (const Variant**)memalloc(p_args.size() * sizeof(Variant*));
-
-	for (int i = 0; i < p_args.size() ; ++i) {
-		v_args[i] = &p_args[i];
-	}
-	Variant ret = apply(v_args, p_args.size(), error);
-	memfree(v_args);
-	ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, Variant());
+	Variant ret = apply(VARIANT_ARGS_FROM_ARRAY(p_args));
 	return ret;
 }
 
@@ -1572,19 +1584,13 @@ Variant GDFunctionObject::apply_with(Object *p_target, const Array p_args) {
 	ERR_FAIL_COND_V(!function, Variant());
 		
 	Variant::CallError error;
-	const Variant **v_args = (const Variant**)memalloc(p_args.size() * sizeof(Variant*));
-
-	for (int i = 0; i < p_args.size() ; ++i) {
-		v_args[i] = &p_args[i];
-	}
-	Variant ret = p_target->call(get_name(), v_args, p_args.size(), error);
-	memfree(v_args);
+	Variant ret = p_target->call(get_name(), VARIANT_ARGS_FROM_ARRAY(p_args));
 	ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, Variant());
 	return ret;
 }
 
 void GDFunctionObject::_bind_methods() {
-	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"apply",&GDFunctionObject::apply, MethodInfo("apply"));
+	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"apply",&GDFunctionObject::_apply, MethodInfo("apply"));
 	ObjectTypeDB::bind_method(_MD("applyv:var", "args:Array"), &GDFunctionObject::applyv, DEFVAL(Array()));
 	ObjectTypeDB::bind_method(_MD("apply_with:var", "target:Object", "args:Array"), &GDFunctionObject::apply_with, DEFVAL(Array()));
 	ObjectTypeDB::bind_method(_MD("is_valid"), &GDFunctionObject::is_valid);
@@ -1605,13 +1611,7 @@ Variant GDNativeFunctionObject::apply_with(Object *p_target, const Array p_args)
 	ERR_FAIL_COND_V(!p_target, Variant());
 		
 	Variant::CallError error;
-	const Variant **v_args = (const Variant**)memalloc(p_args.size() * sizeof(Variant*));
-
-	for (int i = 0; i < p_args.size() ; ++i) {
-		v_args[i] = &p_args[i];
-	}
-	Variant ret = p_target->call(get_name(), v_args, p_args.size(), error);
-	memfree(v_args);
+	Variant ret = p_target->call(get_name(), VARIANT_ARGS_FROM_ARRAY(p_args));
 	ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, Variant());
 	return ret;
 }
@@ -1623,13 +1623,12 @@ Variant GDLambdaFunctionObject::apply(const Variant **p_args, int p_argcount, Va
 	}
 
 	int t = variants.size();
-	const Variant **v_vars = (const Variant**)memalloc(t * sizeof(Variant*));
-	for (int i = 0; i < t; ++i) {
+	const Variant *v_vars[function->lambda_variants.size()];
+	for (int i = 0; i < t && i < function->lambda_variants.size(); ++i) {
 		v_vars[i] = &variants[i];
 	}
 
 	Variant ret = function->call(instance, p_args, p_argcount, r_error, NULL, v_vars);
-	memfree(v_vars);
 	return ret;
 }
 

@@ -34,6 +34,7 @@
 #include "io/resource_saver.h"
 #include "os/thread.h"
 #include "pair.h"
+
 class GDInstance;
 class GDScript;
 
@@ -105,6 +106,7 @@ public:
 private:
 friend class GDCompiler;
 friend class GDInstance;
+friend class GDLambdaFunctionObject;
 
 	StringName source;
 
@@ -226,6 +228,7 @@ protected:
 	GDInstance *instance;
 	friend class GDInstance;
 	friend class GDFunction;
+	friend class GDSignalObject;
 	static void _bind_methods();
 
 public:
@@ -234,7 +237,9 @@ public:
 
 	_FORCE_INLINE_ virtual StringName get_name() const { return function->get_name(); }
 	virtual Variant applyv(const Array p_args);
+	Variant _apply(const Variant** p_args,int p_argcount,Variant::CallError &r_error);
 	virtual Variant apply(const Variant** p_args,int p_argcount,Variant::CallError &r_error);
+	Variant apply(VARIANT_ARG_LIST);
 	virtual Variant apply_with(Object *p_target, const Array p_args);
 	GDFunctionObject() {instance=NULL, function=NULL;}
 //	~GDFunctoionObject();
@@ -418,6 +423,7 @@ friend class GDFunctions;
 friend class GDFunctionObject;
 friend class GDLambdaFunctionObject;
 friend class GDNativeFunctionObject;
+friend class GDSignalObject;
 
 	Object *owner;
 	Ref<GDScript> script;
