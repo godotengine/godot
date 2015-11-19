@@ -115,8 +115,6 @@ void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_m
 			if (!mat_map.has(mat)) {
 
 				MeshMaterial mm;
-				mm.is_double_sided = mat->get_flag(Material::FLAG_DOUBLE_SIDED);
-				mm.use_alpha = false;
 
 				Ref<FixedMaterial> fm = mat;
 				if (fm.is_valid()) {
@@ -130,8 +128,6 @@ void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_m
 						mm.specular.color=mm.specular.color.to_linear();
 
 					mm.specular.tex=_get_mat_tex(fm->get_texture(FixedMaterial::PARAM_SPECULAR));
-
-					mm.use_alpha = fm->get_fixed_flag(FixedMaterial::FLAG_USE_ALPHA);
 				} else {
 
 					mm.diffuse.color=Color(1,1,1,1);
@@ -315,12 +311,7 @@ void BakedLightBaker::_parse_geometry(Node* p_node) {
 			lights.push_back(dirl);
 		}
 
-	}
-	else if (p_node->cast_to<BakedLightSampler>()){
-		// Ignore meshes and lights contained in baked light samplers
-		return;
-	}
-	else if (p_node->cast_to<Spatial>()){
+	} else if (p_node->cast_to<Spatial>()){
 
 		Spatial *sp = p_node->cast_to<Spatial>();
 
@@ -481,7 +472,6 @@ BakedLightBaker::BVH* BakedLightBaker::_parse_bvh(BVH** p_children, int p_size, 
 	BVH* right = _parse_bvh(&p_children[p_size/2],p_size-p_size/2,p_depth+1,max_depth);
 
 	BVH *_new = memnew(BVH);
-	_new->id=-1;
 	_new->aabb=aabb;
 	_new->center=aabb.pos+aabb.size*0.5;
 	_new->children[0]=left;
@@ -498,7 +488,6 @@ void BakedLightBaker::_make_bvh() {
 	int max_depth=0;
 	for(int i=0;i<triangles.size();i++) {
 		bases[i]=memnew( BVH );
-		bases[i]->id=i;
 		bases[i]->leaf=&triangles[i];
 		bases[i]->aabb.pos=triangles[i].vertices[0];
 		bases[i]->aabb.expand_to(triangles[i].vertices[1]);
@@ -960,7 +949,7 @@ void BakedLightBaker::_plot_light(ThreadStack& thread_stack,const Vector3& p_plo
 }
 
 
-float BakedLightBaker::_throw_ray(ThreadStack& thread_stack, bool p_bake_direct, const Vector3& p_begin, const Vector3& p_end, float p_rest, const Color& p_light, float *p_att_curve, float p_att_pos, int p_att_curve_len, int p_bounces, bool p_first_bounce, bool p_only_dist, Vector<int> &p_ignore_list) {
+float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,const Vector3& p_begin, const Vector3& p_end,float p_rest,const Color& p_light,float *p_att_curve,float p_att_pos,int p_att_curve_len,int p_bounces,bool p_first_bounce,bool p_only_dist) {
 
 
 	uint32_t* stack = thread_stack.ray_stack;
@@ -989,7 +978,6 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack, bool p_bake_direct,
 	Vector3 r_point;
 	Vector3 end=p_end;
 
-	int triangle_id = -1;
 	Triangle *triangle=NULL;
 
 	//for(int i=0;i<max_depth;i++)
@@ -998,7 +986,7 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack, bool p_bake_direct,
 	int level=0;
 	//AABB ray_aabb;
 	//ray_aabb.pos=p_begin;
-	//ray_aabb.expand_to(end);
+	//ray_aabb.expand_to(p_end);
 
 
 	const BVH *bvhptr = bvh;
@@ -1016,53 +1004,47 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack, bool p_bake_direct,
 		switch(mode) {
 			case TEST_AABB_BIT: {
 
-				if (p_ignore_list.find(b.id)==-1) {
-					if (b.leaf) {
+				if (b.leaf) {
 
 
-						Face3 f3(b.leaf->vertices[0],b.leaf->vertices[1],b.leaf->vertices[2]);
+					Face3 f3(b.leaf->vertices[0],b.leaf->vertices[1],b.leaf->vertices[2]);
 
 
-						Vector3 res;
+					Vector3 res;
 
-						if (f3.intersects_segment(p_begin,end,&res)) {
+					if (f3.intersects_segment(p_begin,end,&res)) {
 
 
-							float nd = n.dot(res);
-							if (nd<d) {
+						float nd = n.dot(res);
+						if (nd<d) {
 
-								d=nd;
-								r_point=res;
-								end=res;
-								len=(p_begin-end).length();
-								r_normal=f3.get_plane().get_normal();
-								triangle=b.leaf;
-								triangle_id=b.id;
-								inters=true;
-							}
-
+							d=nd;
+							r_point=res;
+							end=res;
+							len=(p_begin-end).length();
+							r_normal=f3.get_plane().get_normal();
+							triangle=b.leaf;
+							inters=true;
 						}
+
+					}
+
+					stack[level]=VISIT_DONE_BIT;
+				} else {
+
+
+					bool valid = b.aabb.smits_intersect_ray(p_begin,n,0,len);
+					//bool valid = b.aabb.intersects_segment(p_begin,p_end);
+	//				bool valid = b.aabb.intersects(ray_aabb);
+
+					if (!valid) {
 
 						stack[level]=VISIT_DONE_BIT;
+
 					} else {
 
-
-						bool valid = b.aabb.smits_intersect_ray(p_begin,n,0,len);
-						//bool valid = b.aabb.intersects_segment(p_begin,end);
-		//				bool valid = b.aabb.intersects(ray_aabb);
-
-						if (!valid) {
-
-							stack[level]=VISIT_DONE_BIT;
-
-						} else {
-
-							stack[level]=VISIT_LEFT_BIT;
-						}
-					}	
-				}
-				else {
-					stack[level] = VISIT_DONE_BIT;
+						stack[level]=VISIT_LEFT_BIT;
+					}
 				}
 
 			} continue;
@@ -1117,36 +1099,17 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack, bool p_bake_direct,
 
 		}
 
-		bool passthrough = false;
+		if (n.dot(r_normal)>0)
+			return -1;
+
+		if (n.dot(r_normal)>0)
+			r_normal=-r_normal;
 
 
 		//ok...
 		Color diffuse_at_point(0.8,0.8,0.8);
 		Color specular_at_point(0.0,0.0,0.0);
 
-		if (triangle->material) {
-
-			if ((triangle->material->is_double_sided == true || triangle->material->use_alpha == true) && use_translucency == true) {
-				if (n.dot(r_normal)>0)
-					r_normal = -r_normal;
-
-				if (triangle->material->use_alpha == true)
-					passthrough = true;
-			}
-			else {
-				if (n.dot(r_normal)>0)
-					return -1;
-			}
-
-			//triangle->get_uv(r_point);
-
-			diffuse_at_point = triangle->material->diffuse.get_color(uv);
-			specular_at_point = triangle->material->specular.get_color(uv);
-		}
-		else {
-			if (n.dot(r_normal)>0)
-				return -1;
-		}
 
 		float dist = p_begin.distance_to(r_point);
 
@@ -1176,18 +1139,23 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack, bool p_bake_direct,
 		//the multiplication can happen with more detail in the shader
 
 
+
+		if (triangle->material) {
+
+			//triangle->get_uv(r_point);
+
+			diffuse_at_point=triangle->material->diffuse.get_color(uv);
+			specular_at_point=triangle->material->specular.get_color(uv);
+		}
+
+
 		diffuse_at_point.r=res_light.r*diffuse_at_point.r;
 		diffuse_at_point.g=res_light.g*diffuse_at_point.g;
 		diffuse_at_point.b=res_light.b*diffuse_at_point.b;
 
 		float ret=1e6;
 
-		if (passthrough == true && triangle_id !=-1)
-		{
-			p_ignore_list.push_back(triangle_id);
-			ret=_throw_ray(thread_stack, p_bake_direct, r_point, p_end, p_rest, p_light, p_att_curve, p_att_pos, p_att_curve_len, p_bounces, p_first_bounce, p_only_dist, p_ignore_list);
-		}
-		else if (p_bounces>0 ) {
+		if (p_bounces>0) {
 
 
 			p_rest-=dist;
@@ -1258,37 +1226,33 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack, bool p_bake_direct,
 
 		bool skip=false;
 
-		if (passthrough == false) {
-			if (!p_first_bounce || p_bake_direct) {
+		if (!p_first_bounce || p_bake_direct) {
 
 
-				float r = plot_size * cell_size * 2;
-				if (dist < r) {
+			float r = plot_size * cell_size*2;
+			if (dist<r) {
+				//avoid accumulaiton of light on corners
+				//plot_light=plot_light.linear_interpolate(Color(0,0,0,0),1.0-sd/plot_size*plot_size);
+				skip=true;
+
+			} else {
+
+
+				Vector3 c1=r_normal.cross(n).normalized();
+				Vector3 c2=r_normal.cross(c1).normalized();
+				double r1 = double(rand())/RAND_MAX;
+				double r2 = double(rand())/RAND_MAX;
+				double r3 = double(rand())/RAND_MAX;
+				Vector3 rn = ((c1*(r1-0.5)) + (c2*(r2-0.5)) + (r_normal*r3*0.25)).normalized();
+				float d =_throw_ray(thread_stack,p_bake_direct,r_point,r_point+rn*p_rest,p_rest,diffuse_at_point,p_att_curve,p_att_pos,p_att_curve_len,p_bounces-1,false,true);
+				r = plot_size*cell_size*ao_radius;
+				if (d>0 && d<r) {
 					//avoid accumulaiton of light on corners
 					//plot_light=plot_light.linear_interpolate(Color(0,0,0,0),1.0-sd/plot_size*plot_size);
-					skip = true;
+					skip=true;
 
-				}
-				else {
-
-
-					Vector3 c1 = r_normal.cross(n).normalized();
-					Vector3 c2 = r_normal.cross(c1).normalized();
-					double r1 = double(rand()) / RAND_MAX;
-					double r2 = double(rand()) / RAND_MAX;
-					double r3 = double(rand()) / RAND_MAX;
-					Vector3 rn = ((c1*(r1 - 0.5)) + (c2*(r2 - 0.5)) + (r_normal*r3*0.25)).normalized();
-					float d = _throw_ray(thread_stack, p_bake_direct, r_point, r_point + rn*p_rest, p_rest, diffuse_at_point, p_att_curve, p_att_pos, p_att_curve_len, p_bounces - 1, false, true);
-					r = plot_size*cell_size*ao_radius;
-					if (d > 0 && d < r) {
-						//avoid accumulaiton of light on corners
-						//plot_light=plot_light.linear_interpolate(Color(0,0,0,0),1.0-sd/plot_size*plot_size);
-						skip = true;
-
-					}
-					else {
-						//plot_light=Color(0,0,0,0);
-					}
+				} else {
+					//plot_light=Color(0,0,0,0);
 				}
 			}
 		}
