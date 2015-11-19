@@ -6628,7 +6628,7 @@
 			<argument index="0" name="radius" type="float">
 			</argument>
 			<description>
-			Radius of the [CapsuleShape2D].
+			Set the radius of the [CapsuleShape2D].
 			</description>
 		</method>
 		<method name="get_radius" qualifiers="const">
@@ -6642,7 +6642,7 @@
 			<argument index="0" name="height" type="float">
 			</argument>
 			<description>
-			Height of the [CapsuleShape2D].
+			Set the height of the [CapsuleShape2D].
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
@@ -7666,7 +7666,7 @@
 	Concave polygon shape.
 	</brief_description>
 	<description>
-	Concave polygon shape resource, which can be set into a [PhysicsBody] or area.  This shape is created by feeding a list of triangles.
+	Concave polygon shape resource, which can be set into a [PhysicsBody] or area. This shape is created by feeding a list of triangles.
 	</description>
 	<methods>
 		<method name="set_faces">
@@ -8590,7 +8590,7 @@
 			<argument index="0" name="point_cloud" type="Vector2Array">
 			</argument>
 			<description>
-			Create the point set from a point cloud. The resulting convex hull will be set as the shape.
+			Currently, this method does nothing. <!-- Create the point set from a point cloud. The resulting convex hull will be set as the shape. -->
 			</description>
 		</method>
 		<method name="set_points">
