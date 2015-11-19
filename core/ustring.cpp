@@ -3096,7 +3096,7 @@ String String::http_escape() const {
             res += ord;
         } else {
             char h_Val[3];
-			_snprintf(h_Val, 3, "%.2X", ord);
+			snprintf(h_Val, 3, "%.2X", ord);
             res += "%";
             res += h_Val;
         }

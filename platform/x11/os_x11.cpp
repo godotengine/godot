@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #include "print_string.h"
 #include "servers/physics/physics_server_sw.h"
-
+#include "errno.h"
 
 #include "X11/Xutil.h"
 
