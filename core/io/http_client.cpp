@@ -579,7 +579,7 @@ Error HTTPClient::_get_http_data(uint8_t* p_buffer, int p_bytes,int &r_received)
 
 void HTTPClient::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("connect:Error","host","port","use_ssl"),&HTTPClient::connect,DEFVAL(false),DEFVAL(true));
+	ObjectTypeDB::bind_method(_MD("connect:Error","host","port","use_ssl","verify_host"),&HTTPClient::connect,DEFVAL(false),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("set_connection","connection:StreamPeer"),&HTTPClient::set_connection);
 	ObjectTypeDB::bind_method(_MD("request","method","url","headers","body"),&HTTPClient::request,DEFVAL(String()));
 	ObjectTypeDB::bind_method(_MD("send_body_text","body"),&HTTPClient::send_body_text);
@@ -600,6 +600,8 @@ void HTTPClient::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_status"),&HTTPClient::get_status);
 	ObjectTypeDB::bind_method(_MD("poll:Error"),&HTTPClient::poll);
+
+    ObjectTypeDB::bind_method(_MD("query_string_from_dict:String","fields"),&HTTPClient::query_string_from_dict);
 
 
 	BIND_CONSTANT( METHOD_GET );
@@ -689,6 +691,16 @@ void HTTPClient::set_read_chunk_size(int p_size) {
 	read_chunk_size=p_size;
 }
 
+String HTTPClient::query_string_from_dict(const Dictionary& p_dict) {
+    String query = "";
+    Array keys = p_dict.keys();
+    for (int i = 0; i < keys.size(); ++i) {
+        query += "&" + String(keys[i]).http_escape() + "=" + String(p_dict[keys[i]]).http_escape();
+    }
+    query.erase(0, 1);
+    return query;
+}
+
 HTTPClient::HTTPClient(){
 
 	tcp_connection = StreamPeerTCP::create_ref();
@@ -709,5 +721,4 @@ HTTPClient::~HTTPClient(){
 
 
 }
-
 
