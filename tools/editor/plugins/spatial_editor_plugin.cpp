@@ -862,6 +862,57 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 								//VisualServer::get_singleton()->instance_set_transform(cursor_instance,Transform(Matrix3(),cursor.cursor_pos));
 							}
 						}
+
+						if (b.mod.alt) {
+
+							if (nav_scheme == NAVIGATION_MAYA)
+								break;
+
+							_find_items_at_pos(Vector2( b.x, b.y ),clicked_includes_current,selection_results,b.mod.shift);
+
+							clicked_wants_append=b.mod.shift;
+
+							if (selection_results.size() == 1) {
+
+								clicked=selection_results[0].item->get_instance_ID();
+								selection_results.clear();
+
+								if (clicked) {
+									_select_clicked(clicked_wants_append,true);
+									clicked=0;
+								}
+
+							} else if (!selection_results.empty()) {
+
+								NodePath root_path = get_tree()->get_edited_scene_root()->get_path();
+								StringName root_name = root_path.get_name(root_path.get_name_count()-1);
+
+								for (int i = 0; i < selection_results.size(); i++) {
+
+									Spatial *spat=selection_results[i].item;
+
+									Ref<Texture> icon;
+									if (spat->has_meta("_editor_icon"))
+										icon=spat->get_meta("_editor_icon");
+									else
+										icon=get_icon( has_icon(spat->get_type(),"EditorIcons")?spat->get_type():String("Object"),"EditorIcons");
+
+									String node_path="/"+root_name+"/"+root_path.rel_path_to(spat->get_path());
+
+									selection_menu->add_item(spat->get_name());
+									selection_menu->set_item_icon(i, icon );
+									selection_menu->set_item_metadata(i, node_path);
+									selection_menu->set_item_tooltip(i,String(spat->get_name())+
+											"\nType: "+spat->get_type()+"\nPath: "+node_path);
+								}
+
+								selection_menu->set_global_pos(Vector2( b.global_x, b.global_y ));
+								selection_menu->popup();
+								selection_menu->call_deferred("grab_click_focus");
+
+								break;
+							}
+						}
 					}
 
 					if (_edit.mode!=TRANSFORM_NONE && b.pressed) {
@@ -887,57 +938,6 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						surface->update();
 						//VisualServer::get_singleton()->poly_clear(indicators);
 						set_message("Transform Aborted.",3);
-					}
-
-					if (!b.pressed && (spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_SELECT && b.mod.alt)) {
-
-						if (nav_scheme == NAVIGATION_MAYA)
-							break;
-
-						_find_items_at_pos(Vector2( b.x, b.y ),clicked_includes_current,selection_results,b.mod.shift);
-
-						clicked_wants_append=b.mod.shift;
-
-						if (selection_results.size() == 1) {
-
-							clicked=selection_results[0].item->get_instance_ID();
-							selection_results.clear();
-
-							if (clicked) {
-								_select_clicked(clicked_wants_append,true);
-								clicked=0;
-							}
-
-						} else if (!selection_results.empty()) {
-
-							NodePath root_path = get_tree()->get_edited_scene_root()->get_path();
-							StringName root_name = root_path.get_name(root_path.get_name_count()-1);
-
-							for (int i = 0; i < selection_results.size(); i++) {
-
-								Spatial *spat=selection_results[i].item;
-
-								Ref<Texture> icon;
-								if (spat->has_meta("_editor_icon"))
-									icon=spat->get_meta("_editor_icon");
-								else
-									icon=get_icon( has_icon(spat->get_type(),"EditorIcons")?spat->get_type():String("Object"),"EditorIcons");
-
-								String node_path="/"+root_name+"/"+root_path.rel_path_to(spat->get_path());
-
-								selection_menu->add_item(spat->get_name());
-								selection_menu->set_item_icon(i, icon );
-								selection_menu->set_item_metadata(i, node_path);
-								selection_menu->set_item_tooltip(i,String(spat->get_name())+
-										"\nType: "+spat->get_type()+"\nPath: "+node_path);
-							}
-
-							selection_menu->set_global_pos(Vector2( b.global_x, b.global_y ));
-							selection_menu->popup();
-							selection_menu->call_deferred("grab_click_focus");
-
-							break;
-						}
 					}
 				} break;
 				case BUTTON_MIDDLE: {
