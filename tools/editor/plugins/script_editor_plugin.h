@@ -41,6 +41,7 @@
 #include "tools/editor/code_editor.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/item_list.h"
+#include "tools/editor/editor_help.h"
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
 
@@ -141,6 +142,9 @@ class ScriptEditor : public VBoxContainer {
 		SEARCH_REPLACE,
 		SEARCH_LOCATE_FUNCTION,
 		SEARCH_GOTO_LINE,
+		SEARCH_HELP,
+		SEARCH_CLASSES,
+		SEARCH_WEBSITE,
 		DEBUG_TOGGLE_BREAKPOINT,
 		DEBUG_NEXT,
 		DEBUG_STEP,
@@ -150,6 +154,8 @@ class ScriptEditor : public VBoxContainer {
 		HELP_CONTEXTUAL,		
 		WINDOW_MOVE_LEFT,
 		WINDOW_MOVE_RIGHT,
+		WINDOW_NEXT,
+		WINDOW_PREV,
 		WINDOW_SELECT_BASE=100
 	};
 
@@ -157,10 +163,16 @@ class ScriptEditor : public VBoxContainer {
 	MenuButton *file_menu;
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
+	MenuButton *script_search_menu;
 	MenuButton *debug_menu;
 	MenuButton *help_menu;
 	Timer *autosave_timer;
 	uint64_t idle;
+
+	Button *help_search;
+	Button *site_search;
+	Button *class_search;
+	EditorHelpSearch *help_search_dialog;
 
 	ItemList *script_list;
 	HSplitContainer *script_split;
@@ -171,6 +183,27 @@ class ScriptEditor : public VBoxContainer {
 	ScriptCreateDialog *script_create_dialog;
 	ScriptEditorDebugger* debugger;
 	ToolButton *scripts_visible;
+
+	TextureFrame *script_icon;
+	Label *script_name_label;
+
+	ToolButton *script_back;
+	ToolButton *script_forward;
+
+
+	struct ScriptHistory {
+
+		Control *control;
+		int scroll_pos;
+		int cursor_column;
+		int cursor_row;
+	};
+
+	Vector<ScriptHistory> history;
+	int history_pos;
+
+
+	EditorHelpIndex *help_index;
 
 	void _tab_changed(int p_which);
 	void _menu_option(int p_optin);
@@ -201,6 +234,8 @@ class ScriptEditor : public VBoxContainer {
 	void _editor_pause();
 	void _editor_stop();
 
+	int edit_pass;
+
 	void _add_callback(Object *p_obj, const String& p_function, const StringArray& p_args);
 	void _res_saved_callback(const Ref<Resource>& p_res);
 
@@ -224,7 +259,19 @@ class ScriptEditor : public VBoxContainer {
 
 	void _script_split_dragged(float);
 
+
+	void _history_forward();
+	void _history_back();
+
 	bool waiting_update_names;
+
+	void _help_class_open(const String& p_class);
+	void _help_class_goto(const String& p_desc);
+	void _update_history_arrows();
+	void _go_to_tab(int p_idx);
+	void _update_history_pos(int p_new_pos);
+	void _update_script_colors();
+
 
 	static ScriptEditor *script_editor;
 protected:
@@ -252,6 +299,8 @@ public:
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
+
+	void set_scene_root_script( Ref<Script> p_script );
 
 	ScriptEditorDebugger *get_debugger() { return debugger; }
 

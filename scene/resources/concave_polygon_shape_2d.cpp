@@ -34,6 +34,7 @@
 void ConcavePolygonShape2D::set_segments(const DVector<Vector2>& p_segments) {
 
 	Physics2DServer::get_singleton()->shape_set_data(get_rid(),p_segments);
+	emit_changed();
 }
 
 DVector<Vector2> ConcavePolygonShape2D::get_segments() const {

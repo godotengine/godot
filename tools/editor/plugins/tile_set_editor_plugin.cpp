@@ -110,11 +110,15 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 			if (!child2->cast_to<StaticBody2D>())
 				continue;
 			StaticBody2D *sb = child2->cast_to<StaticBody2D>();
-			if (sb->get_shape_count()==0)
+			int shape_count = sb->get_shape_count();
+			if (shape_count==0)
 				continue;
-			Ref<Shape2D> collision=sb->get_shape(0);
-			if (collision.is_valid()) {
-				collisions.push_back(collision);
+			for (int shape_index=0; shape_index<shape_count; ++shape_index)
+			{
+				Ref<Shape2D> collision=sb->get_shape(shape_index);
+				if (collision.is_valid()) {
+					collisions.push_back(collision);
+				}
 			}
 		}
 

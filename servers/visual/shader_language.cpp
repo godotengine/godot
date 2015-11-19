@@ -1043,6 +1043,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::vertex_builtins_defs[]={
 	{ "SRC_TANGENT", TYPE_VEC3},
 	{ "SRC_BINORMALF", TYPE_FLOAT},
 
+	{ "POSITION", TYPE_VEC4 },
 	{ "VERTEX", TYPE_VEC3},
 	{ "NORMAL", TYPE_VEC3},
 	{ "TANGENT", TYPE_VEC3},

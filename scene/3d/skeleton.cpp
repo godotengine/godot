@@ -250,7 +250,7 @@ void Skeleton::_notification(int p_what) {
 					ERR_CONTINUE(!obj);
 					Spatial *sp = obj->cast_to<Spatial>();
 					ERR_CONTINUE(!sp);
-					sp->set_transform(b.pose_global * b.rest_global_inverse);
+					sp->set_transform(b.pose_global);
 				}
 			}
 

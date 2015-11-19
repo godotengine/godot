@@ -289,7 +289,7 @@ void MultiMeshEditor::_menu_option(int p_option) {
 
 				_last_pp_node=node;
 			}
-			populate_dialog->popup_centered(Size2(250,395));
+			populate_dialog->popup_centered(Size2(250,380));
 
 		} break;
 	}
@@ -325,10 +325,8 @@ MultiMeshEditor::MultiMeshEditor() {
 
 
 	options = memnew( MenuButton );
-	//add_child(options);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
-	options->set_area_as_parent_rect();
-
+	
 	options->set_text("MultiMesh");
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MultiMeshInstance","EditorIcons"));
 
@@ -373,12 +371,12 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_axis->select(2);
 	vbc->add_margin_child("Mesh Up Axis:",populate_axis);
 
-	populate_rotate_random = memnew( HScrollBar );
+	populate_rotate_random = memnew( HSlider );
 	populate_rotate_random->set_max(1);
 	populate_rotate_random->set_step(0.01);
 	vbc->add_margin_child("Random Rotation:",populate_rotate_random);
 
-	populate_tilt_random = memnew( HScrollBar );
+	populate_tilt_random = memnew( HSlider );
 	populate_tilt_random->set_max(1);
 	populate_tilt_random->set_step(0.01);
 	vbc->add_margin_child("Random Tilt:",populate_tilt_random);
@@ -416,8 +414,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	std->connect("selected",this,"_browsed");
 
 	_last_pp_node=NULL;
-	//options->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
-	//options->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);
+
 	err_dialog = memnew( AcceptDialog );
 	add_child(err_dialog);
 }
@@ -450,13 +447,6 @@ MultiMeshEditorPlugin::MultiMeshEditorPlugin(EditorNode *p_node) {
 	editor=p_node;
 	multimesh_editor = memnew( MultiMeshEditor );
 	editor->get_viewport()->add_child(multimesh_editor);
-
-//	multimesh_editor->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
-//	multimesh_editor->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);
-	multimesh_editor->set_margin(MARGIN_LEFT,253);
-	multimesh_editor->set_margin(MARGIN_RIGHT,310);
-	multimesh_editor->set_margin(MARGIN_TOP,0);
-	multimesh_editor->set_margin(MARGIN_BOTTOM,10);
 
 	multimesh_editor->options->hide();
 }

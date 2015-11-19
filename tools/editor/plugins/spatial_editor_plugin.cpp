@@ -1957,11 +1957,11 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 				if (!se)
 					continue;
 
-				Vector3 original_scale = sp->get_scale();
-				sp->set_global_transform(camera_transform);
-				sp->set_scale(original_scale);
-				undo_redo->add_do_method(sp,"set_global_transform",sp->get_global_transform());
-				undo_redo->add_undo_method(sp,"set_global_transform",se->original);
+				Transform xform = camera_transform;
+				xform.scale_basis(sp->get_scale());
+
+				undo_redo->add_do_method(sp,"set_global_transform",xform);
+				undo_redo->add_undo_method(sp,"set_global_transform",sp->get_global_transform());
 			}
 			undo_redo->commit_action();
 		} break;
@@ -2725,7 +2725,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_TRANSFORM_CONFIGURE_SNAP: {
 
-			snap_dialog->popup_centered(Size2(200,160));
+			snap_dialog->popup_centered(Size2(200,180));
 		} break;
 		case MENU_TRANSFORM_LOCAL_COORDS: {
 
@@ -3793,46 +3793,24 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	snap_dialog = memnew( ConfirmationDialog );
 	snap_dialog->set_title("Snap Settings");
 	add_child(snap_dialog);
-	Label *l = memnew(Label);
-	l->set_text("Translate Snap:");
-	l->set_pos(Point2(5,5));
-	snap_dialog->add_child(l);
+
+	VBoxContainer *snap_dialog_vbc = memnew( VBoxContainer );
+	snap_dialog->add_child(snap_dialog_vbc);
+	snap_dialog->set_child_rect(snap_dialog_vbc);
 
 	snap_translate = memnew( LineEdit );
-	snap_translate->set_anchor( MARGIN_RIGHT, ANCHOR_END );
-	snap_translate->set_begin( Point2(15,22) );
-	snap_translate->set_end( Point2(15,35) );
 	snap_translate->set_text("1");
-	snap_dialog->add_child(snap_translate);
-
-	l = memnew(Label);
-	l->set_text("Rotate Snap (deg.):");
-	l->set_pos(Point2(5,45));
-	snap_dialog->add_child(l);
+	snap_dialog_vbc->add_margin_child("Translate Snap:",snap_translate);
 
 	snap_rotate = memnew( LineEdit );
-	snap_rotate->set_anchor( MARGIN_RIGHT, ANCHOR_END );
-	snap_rotate->set_begin( Point2(15,62) );
-	snap_rotate->set_end( Point2(15,75) );
 	snap_rotate->set_text("5");
-	snap_dialog->add_child(snap_rotate);
-
-
-	l = memnew(Label);
-	l->set_text("Scale Snap (%):");
-	l->set_pos(Point2(5,85));
-	snap_dialog->add_child(l);
+	snap_dialog_vbc->add_margin_child("Rotate Snap (deg.):",snap_rotate);
 
 	snap_scale = memnew( LineEdit );
-	snap_scale->set_anchor( MARGIN_RIGHT, ANCHOR_END );
-	snap_scale->set_begin( Point2(15,102) );
-	snap_scale->set_end( Point2(15,115) );
 	snap_scale->set_text("5");
-	snap_dialog->add_child(snap_scale);
+	snap_dialog_vbc->add_margin_child("Scale Snap (%):",snap_scale);
 
-	//snap_dialog->get_cancel()->hide();
-
-	/* SNAP DIALOG */
+	/* SETTINGS DIALOG */
 
 	settings_dialog = memnew( ConfirmationDialog );
 	settings_dialog->set_title("Viewport Settings");
@@ -3906,7 +3884,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	xform_dialog = memnew( ConfirmationDialog );
 	xform_dialog->set_title("Transform Change");
 	add_child(xform_dialog);
-	l = memnew(Label);
+	Label *l = memnew(Label);
 	l->set_text("Translate:");
 	l->set_pos(Point2(5,5));
 	xform_dialog->add_child(l);

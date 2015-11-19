@@ -409,6 +409,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0R(Quat,normalized);
 	VCALL_LOCALMEM0R(Quat,inverse);
 	VCALL_LOCALMEM1R(Quat,dot);
+	VCALL_LOCALMEM1R(Quat,xform);
 	VCALL_LOCALMEM2R(Quat,slerp);
 	VCALL_LOCALMEM2R(Quat,slerpni);
 	VCALL_LOCALMEM4R(Quat,cubic_slerp);
@@ -1361,6 +1362,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(QUAT,QUAT,Quat,normalized,varray());
 	ADDFUNC0(QUAT,QUAT,Quat,inverse,varray());
 	ADDFUNC1(QUAT,REAL,Quat,dot,QUAT,"b",varray());
+	ADDFUNC1(QUAT,VECTOR3,Quat,xform,VECTOR3,"v",varray());
 	ADDFUNC2(QUAT,QUAT,Quat,slerp,QUAT,"b",REAL,"t",varray());
 	ADDFUNC2(QUAT,QUAT,Quat,slerpni,QUAT,"b",REAL,"t",varray());
 	ADDFUNC4(QUAT,QUAT,Quat,cubic_slerp,QUAT,"b",QUAT,"pre_a",QUAT,"post_b",REAL,"t",varray());

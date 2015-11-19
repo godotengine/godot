@@ -61,9 +61,16 @@ void OS::debug_break() {
 
 void OS::print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type) {
 
+	const char* err_type;
+	switch(p_type) {
+		case ERR_ERROR: err_type="**ERROR**"; break;
+		case ERR_WARNING: err_type="**WARNING**"; break;
+		case ERR_SCRIPT: err_type="**SCRIPT ERROR**"; break;
+	}
+
 	if (p_rationale && *p_rationale)
-		print("**ERROR**: %s\n ",p_rationale);
-	print("**ERROR**: At: %s:%i:%s() - %s\n",p_file,p_line,p_function,p_code);
+		print("%s: %s\n ",err_type,p_rationale);
+	print("%s: At: %s:%i:%s() - %s\n",err_type,p_file,p_line,p_function,p_code);
 }
 
 void OS::print(const char* p_format, ...) {

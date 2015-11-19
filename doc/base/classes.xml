@@ -3766,6 +3766,7 @@
 			<argument index="0" name="value" type="var">
 			</argument>
 			<description>
+			Append an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
 		<method name="clear">
@@ -3784,6 +3785,7 @@
 			<argument index="0" name="value" type="var">
 			</argument>
 			<description>
+			Remove the first occurence of a value from the array.
 			</description>
 		</method>
 		<method name="find">
@@ -3792,6 +3794,7 @@
 			<argument index="0" name="value" type="var">
 			</argument>
 			<description>
+			Searches the array for a value and returns its index or -1 if not found.
 			</description>
 		</method>
 		<method name="hash">
@@ -3812,12 +3815,14 @@
 		</method>
 		<method name="invert">
 			<description>
+			Reverse the order of the elements in the array (so first element will now be the last).
 			</description>
 		</method>
 		<method name="is_shared">
 			<return type="bool">
 			</return>
 			<description>
+			Get whether this is a shared array instance.
 			</description>
 		</method>
 		<method name="push_back">
@@ -3850,6 +3855,7 @@
 		</method>
 		<method name="sort">
 			<description>
+			Sort the array using natural order.
 			</description>
 		</method>
 		<method name="sort_custom">
@@ -3858,6 +3864,7 @@
 			<argument index="1" name="func" type="String">
 			</argument>
 			<description>
+			Sort the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return true if the first argument is less than the second, and return false otherwise.
 			</description>
 		</method>
 		<method name="Array">
@@ -7291,7 +7298,7 @@
 	Color in RGBA format.
 	</brief_description>
 	<description>
-	A color is represented as red, green and blue (r,g,b) components. Additionally, "a" represents the alpha component, often used for transparency. Values are in floating point, ranging from 0 to 1.
+	A color is represented as red, green and blue (r,g,b) components. Additionally, "a" represents the alpha component, often used for transparency. Values are in floating point and usually range from 0 to 1.  Some methods (such as set_modulate() ) may accept values > 1.
 	</description>
 	<methods>
 		<method name="blend">
@@ -8712,14 +8719,18 @@
 </class>
 <class name="Curve2D" inherits="Resource" category="Core">
 	<brief_description>
+	Describes a Bezier curve in 2D space.
 	</brief_description>
 	<description>
+	This class describes a Bezier curve in 2D space. It is mainly used to give a shape to a [Path2D], but can be manually sampled for other purposes.
+It keeps a cache of precalculated points along the curve, to speed further calculations up.
 	</description>
 	<methods>
 		<method name="get_point_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Returns the number of points describing the curve.
 			</description>
 		</method>
 		<method name="add_point">
@@ -8732,6 +8743,8 @@
 			<argument index="3" name="atpos" type="int" default="-1">
 			</argument>
 			<description>
+			Adds a point to a curve, at position "pos", with control points "in" and "out".
+If "atpos" is given, the point is inserted before the point number "atpos", moving that point (and every point after) after the inserted point. If "atpos" is not given, or is an illegal value (atpos &lt;0 or atpos &gt;= [method get_point_count]), the point will be appended at the end of the point list.
 			</description>
 		</method>
 		<method name="set_point_pos">
@@ -8740,6 +8753,7 @@
 			<argument index="1" name="pos" type="Vector2">
 			</argument>
 			<description>
+			Sets the position for the vertex "idx". If the index is out of bounds, the function sends an error to the console.
 			</description>
 		</method>
 		<method name="get_point_pos" qualifiers="const">
@@ -8748,6 +8762,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Returns the position of the vertex "idx". If the index is out of bounds, the function sends an error to the console, and returns (0, 0).
 			</description>
 		</method>
 		<method name="set_point_in">
@@ -8756,6 +8771,7 @@
 			<argument index="1" name="pos" type="Vector2">
 			</argument>
 			<description>
+			Sets the position of the control point leading to the vertex "idx". If the index is out of bounds, the function sends an error to the console.
 			</description>
 		</method>
 		<method name="get_point_in" qualifiers="const">
@@ -8764,6 +8780,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Returns the position of the control point leading to the vertex "idx". If the index is out of bounds, the function sends an error to the console, and returns (0, 0).
 			</description>
 		</method>
 		<method name="set_point_out">
@@ -8772,6 +8789,7 @@
 			<argument index="1" name="pos" type="Vector2">
 			</argument>
 			<description>
+			Sets the position of the control point leading out of the vertex "idx". If the index is out of bounds, the function sends an error to the console.
 			</description>
 		</method>
 		<method name="get_point_out" qualifiers="const">
@@ -8780,12 +8798,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Returns the position of the control point leading out of the vertex "idx". If the index is out of bounds, the function sends an error to the console, and returns (0, 0).
 			</description>
 		</method>
 		<method name="remove_point">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Deletes the point "idx" from the curve. Sends an error to the console if "idx" is out of bounds.
 			</description>
 		</method>
 		<method name="interpolate" qualifiers="const">
@@ -8796,6 +8816,8 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
+			Returns the position between the vertex "idx" and the vertex "idx"+1, where "t" controls if the point is the first vertex (t = 0.0), the last vertex (t = 1.0), or in between. Values of "t" outside the range (0.0 &gt;= t  &lt;=1) give strange, but predictable results.
+If "idx" is out of bounds it is truncated to the first or last vertex, and "t" is ignored. If the curve has no points, the function sends an error to the console, and returns (0, 0).
 			</description>
 		</method>
 		<method name="interpolatef" qualifiers="const">
@@ -8804,24 +8826,28 @@
 			<argument index="0" name="fofs" type="float">
 			</argument>
 			<description>
+			Returns the position at the vertex "fofs". It calls [method interpolate] using the integer part of fofs as "idx", and its fractional part as "t".
 			</description>
 		</method>
 		<method name="set_bake_interval">
 			<argument index="0" name="distance" type="float">
 			</argument>
 			<description>
+			Sets the distance in pixels between two adjacent cached points. Changing it forces the cache to be recomputed the next time a xxx_baked_xxx function is called. The less distance, the more points the cache will have, and the more memory it will consume, so use with care.
 			</description>
 		</method>
 		<method name="get_bake_interval" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the distance between two adjacent cached points.
 			</description>
 		</method>
 		<method name="get_baked_length" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the total length of the curve, based on the cached points. Given enough density (see [method set_bake_interval]), it should be approximate enough.
 			</description>
 		</method>
 		<method name="interpolate_baked" qualifiers="const">
@@ -8832,12 +8858,30 @@
 			<argument index="1" name="cubic" type="bool" default="false">
 			</argument>
 			<description>
+			Returns a point within the curve at position "offset", where "offset" is measured as a pixel distance along the curve.
+To do that, it finds the two cached points where the "offset" lies between, then interpolates the values. This interpolation is cubic if "cubic" is set to true, or linear if set to false.
+Cubic interpolation tends to follow the curves better, but linear is faster (and often, precise enough).
 			</description>
 		</method>
 		<method name="get_baked_points" qualifiers="const">
 			<return type="Vector2Array">
 			</return>
 			<description>
+			Returns the cache of points as a [Vector2Array].
+			</description>
+		</method>
+		<method name="tesselate" qualifiers="const">
+			<argument index="0" name="max_stages" type="int" default="5">
+			</argument>
+			<argument index="1" name="tolerance_degrees" type="float" default="4">
+			</argument>
+			<return type="Vector2Array">
+			</return>
+			<description>
+			Returns a list of points along the curve, with a curvature controlled point density. That is, the curvier parts will have more points than the straighter parts.
+This approximation makes straight segments between each point, then subdivides those segments until the resulting shape is similar enough.
+"max_stages" controls how many subdivisions a curve segment may face before it is considered approximate enough. Each subdivision splits the segment in half, so the default 5 stages may mean up to 32 subdivisions per curve segment. Increase with care!
+"tolerance_degrees" controls how many degrees the midpoint of a segment may deviate from the real curve, before the segment has to be subdivided.
 			</description>
 		</method>
 		<method name="tesselate" qualifiers="const">
@@ -8856,14 +8900,18 @@
 </class>
 <class name="Curve3D" inherits="Resource" category="Core">
 	<brief_description>
+	Describes a Bezier curve in 3D space.
 	</brief_description>
 	<description>
+	This class describes a Bezier curve in 3D space. It is mainly used to give a shape to a [Path], but can be manually sampled for other purposes.
+It keeps a cache of precalculated points along the curve, to speed further calculations up.
 	</description>
 	<methods>
 		<method name="get_point_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Returns the number of points describing the curve.
 			</description>
 		</method>
 		<method name="add_point">
@@ -8876,6 +8924,8 @@
 			<argument index="3" name="atpos" type="int" default="-1">
 			</argument>
 			<description>
+			Adds a point to a curve, at position "pos", with control points "in" and "out".
+If "atpos" is given, the point is inserted before the point number "atpos", moving that point (and every point after) after the inserted point. If "atpos" is not given, or is an illegal value (atpos &lt;0 or atpos &gt;= [method get_point_count]), the point will be appended at the end of the point list.
 			</description>
 		</method>
 		<method name="set_point_pos">
@@ -8884,6 +8934,7 @@
 			<argument index="1" name="pos" type="Vector3">
 			</argument>
 			<description>
+			Sets the position for the vertex "idx". If the index is out of bounds, the function sends an error to the console.
 			</description>
 		</method>
 		<method name="get_point_pos" qualifiers="const">
@@ -8892,6 +8943,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Returns the position of the vertex "idx". If the index is out of bounds, the function sends an error to the console, and returns (0, 0, 0).
 			</description>
 		</method>
 		<method name="set_point_tilt">
@@ -8900,6 +8952,8 @@
 			<argument index="1" name="tilt" type="float">
 			</argument>
 			<description>
+			Sets the tilt angle in radians for the point "idx". If the index is out of bounds, the function sends an error to the console.
+The tilt controls the rotation along the look-at axis an object travelling the path would have. In the case of a curve controlling a [PathFollow], this tilt is an offset over the natural tilt the PathFollow calculates.
 			</description>
 		</method>
 		<method name="get_point_tilt" qualifiers="const">
@@ -8908,6 +8962,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Returns the tilt angle in radians for the point "idx". If the index is out of bounds, the function sends an error to the console, and returns 0.
 			</description>
 		</method>
 		<method name="set_point_in">
@@ -8916,6 +8971,7 @@
 			<argument index="1" name="pos" type="Vector3">
 			</argument>
 			<description>
+			Sets the position of the control point leading to the vertex "idx". If the index is out of bounds, the function sends an error to the console.
 			</description>
 		</method>
 		<method name="get_point_in" qualifiers="const">
@@ -8924,6 +8980,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Returns the position of the control point leading to the vertex "idx". If the index is out of bounds, the function sends an error to the console, and returns (0, 0, 0).
 			</description>
 		</method>
 		<method name="set_point_out">
@@ -8932,6 +8989,7 @@
 			<argument index="1" name="pos" type="Vector3">
 			</argument>
 			<description>
+			Sets the position of the control point leading out of the vertex "idx". If the index is out of bounds, the function sends an error to the console.
 			</description>
 		</method>
 		<method name="get_point_out" qualifiers="const">
@@ -8940,12 +8998,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Returns the position of the control point leading out of the vertex "idx". If the index is out of bounds, the function sends an error to the console, and returns (0, 0, 0).
 			</description>
 		</method>
 		<method name="remove_point">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Deletes the point "idx" from the curve. Sends an error to the console if "idx" is out of bounds.
 			</description>
 		</method>
 		<method name="interpolate" qualifiers="const">
@@ -8956,6 +9016,8 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
+			Returns the position between the vertex "idx" and the vertex "idx"+1, where "t" controls if the point is the first vertex (t = 0.0), the last vertex (t = 1.0), or in between. Values of "t" outside the range (0.0 &gt;= t  &lt;=1) give strange, but predictable results.
+If "idx" is out of bounds it is truncated to the first or last vertex, and "t" is ignored. If the curve has no points, the function sends an error to the console, and returns (0, 0, 0).
 			</description>
 		</method>
 		<method name="interpolatef" qualifiers="const">
@@ -8964,24 +9026,28 @@
 			<argument index="0" name="fofs" type="float">
 			</argument>
 			<description>
+			Returns the position at the vertex "fofs". It calls [method interpolate] using the integer part of fofs as "idx", and its fractional part as "t".
 			</description>
 		</method>
 		<method name="set_bake_interval">
 			<argument index="0" name="distance" type="float">
 			</argument>
 			<description>
+			Sets the distance in 3D units between two adjacent cached points. Changing it forces the cache to be recomputed the next time a xxx_baked_xxx function is called. The less distance, the more points the cache will have, and the more memory it will consume, so use with care.
 			</description>
 		</method>
 		<method name="get_bake_interval" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the distance between two adjacent cached points.
 			</description>
 		</method>
 		<method name="get_baked_length" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the total length of the curve, based on the cached points. Given enough density (see [method set_bake_interval]), it should be approximate enough.
 			</description>
 		</method>
 		<method name="interpolate_baked" qualifiers="const">
@@ -8992,18 +9058,37 @@
 			<argument index="1" name="cubic" type="bool" default="false">
 			</argument>
 			<description>
+			Returns a point within the curve at position "offset", where "offset" is measured as a distance in 3D units along the curve.
+To do that, it finds the two cached points where the "offset" lies between, then interpolates the values. This interpolation is cubic if "cubic" is set to true, or linear if set to false.
+Cubic interpolation tends to follow the curves better, but linear is faster (and often, precise enough).
 			</description>
 		</method>
 		<method name="get_baked_points" qualifiers="const">
 			<return type="Vector3Array">
 			</return>
 			<description>
+			Returns the cache of points as a [Vector3Array].
 			</description>
 		</method>
 		<method name="get_baked_tilts" qualifiers="const">
 			<return type="RealArray">
 			</return>
 			<description>
+			Returns the cache of tilts as a [RealArray].
+			</description>
+		</method>
+		<method name="tesselate" qualifiers="const">
+			<argument index="0" name="max_stages" type="int" default="5">
+			</argument>
+			<argument index="1" name="tolerance_degrees" type="float" default="4">
+			</argument>
+			<return type="Vector3Array">
+			</return>
+			<description>
+			Returns a list of points along the curve, with a curvature controlled point density. That is, the curvier parts will have more points than the straighter parts.
+This approximation makes straight segments between each point, then subdivides those segments until the resulting shape is similar enough.
+"max_stages" controls how many subdivisions a curve segment may face before it is considered approximate enough. Each subdivision splits the segment in half, so the default 5 stages may mean up to 32 subdivisions per curve segment. Increase with care!
+"tolerance_degrees" controls how many degrees the midpoint of a segment may deviate from the real curve, before the segment has to be subdivided.
 			</description>
 		</method>
 		<method name="tesselate" qualifiers="const">
@@ -10867,27 +10952,25 @@
 	</description>
 	<methods>
 		<method name="call_func">
-			<argument index="0" name="method" type="String">
+			<argument index="0" name="arg0" type="var" default="NULL">
 			</argument>
-			<argument index="1" name="arg0" type="var" default="NULL">
+			<argument index="1" name="arg1" type="var" default="NULL">
 			</argument>
-			<argument index="2" name="arg1" type="var" default="NULL">
+			<argument index="2" name="arg2" type="var" default="NULL">
 			</argument>
-			<argument index="3" name="arg2" type="var" default="NULL">
+			<argument index="3" name="arg3" type="var" default="NULL">
 			</argument>
-			<argument index="4" name="arg3" type="var" default="NULL">
+			<argument index="4" name="arg4" type="var" default="NULL">
 			</argument>
-			<argument index="5" name="arg4" type="var" default="NULL">
+			<argument index="5" name="arg5" type="var" default="NULL">
 			</argument>
-			<argument index="6" name="arg5" type="var" default="NULL">
+			<argument index="6" name="arg6" type="var" default="NULL">
 			</argument>
-			<argument index="7" name="arg6" type="var" default="NULL">
+			<argument index="7" name="arg7" type="var" default="NULL">
 			</argument>
-			<argument index="8" name="arg7" type="var" default="NULL">
+			<argument index="8" name="arg8" type="var" default="NULL">
 			</argument>
-			<argument index="9" name="arg8" type="var" default="NULL">
-			</argument>
-			<argument index="10" name="arg9" type="var" default="NULL">
+			<argument index="9" name="arg9" type="var" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -11556,10 +11639,10 @@
 </class>
 <class name="GraphEdit" inherits="Control" category="Core">
 	<brief_description>
-		GraphEdit is an area capable of showing various GraphNodes. It manages connection events between them.
+	GraphEdit is an area capable of showing various GraphNodes. It manages connection events between them.
 	</brief_description>
 	<description>
-		GraphEdit manages the showing of GraphNodes it contains, as well as connections an disconnections between them. Signals are sent for each of these two events. Disconnection between GraphNodes slots is disabled by default.
+	GraphEdit manages the showing of GraphNodes it contains, as well as connections an disconnections between them. Signals are sent for each of these two events. Disconnection between GraphNodes slots is disabled by default.
 		It is greatly advised to enable low processor usage mode [OS.set_low_processor_usage_mode()] when using GraphEdits.
 	</description>
 	<methods>
@@ -11575,7 +11658,7 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Create a connection between 'from_port' slot of 'from' GraphNode and 'to_port' slot of 'to' GraphNode. If the connection already exists, no connection is created.
+			Create a connection between 'from_port' slot of 'from' GraphNode and 'to_port' slot of 'to' GraphNode. If the connection already exists, no connection is created.
 			</description>
 		</method>
 		<method name="is_node_connected">
@@ -11590,7 +11673,7 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Return true if the 'from_port' slot of 'from' GraphNode is connected to the 'to_port' slot of 'to' GraphNode.
+			Return true if the 'from_port' slot of 'from' GraphNode is connected to the 'to_port' slot of 'to' GraphNode.
 			</description>
 		</method>
 		<method name="disconnect_node">
@@ -11603,32 +11686,50 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Remove the connection between 'from_port' slot of 'from' GraphNode and 'to_port' slot of 'to' GraphNode, if connection exists.
+			Remove the connection between 'from_port' slot of 'from' GraphNode and 'to_port' slot of 'to' GraphNode, if connection exists.
 			</description>
 		</method>
 		<method name="get_connection_list" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Return an Array containing the list of connections. A connection consists in a structure of the form {from_slot: 0, from: "GraphNode name 0", to_slot: 1, to: "GraphNode name 1" }
+			Return an Array containing the list of connections. A connection consists in a structure of the form {from_slot: 0, from: "GraphNode name 0", to_slot: 1, to: "GraphNode name 1" }
 			</description>
 		</method>
 		<method name="set_right_disconnects">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enable the disconnection of existing connections in the visual GraphEdit by left-clicking a connection and releasing into the void.
+			Enable the disconnection of existing connections in the visual GraphEdit by left-clicking a connection and releasing into the void.
 			</description>
 		</method>
 		<method name="is_right_disconnects_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true is the disconnection of connections is enable in the visual GraphEdit. False otherwise.
+			Return true is the disconnection of connections is enable in the visual GraphEdit. False otherwise.
 			</description>
 		</method>
 	</methods>
 	<signals>
+		<signal name="delete_nodes_request">
+			<description>
+			</description>
+		</signal>
+		<signal name="duplicate_nodes_request">
+			<description>
+			</description>
+		</signal>
+		<signal name="popup_request">
+			<argument index="0" name="p_position" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="_begin_node_move">
+			<description>
+			</description>
+		</signal>
 		<signal name="disconnection_request">
 			<argument index="0" name="from" type="String">
 			</argument>
@@ -11639,7 +11740,7 @@
 			<argument index="3" name="to_slot" type="int">
 			</argument>
 			<description>
-				Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be removed.
+			Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be removed.
 			</description>
 		</signal>
 		<signal name="connection_request">
@@ -11652,7 +11753,11 @@
 			<argument index="3" name="to_slot" type="int">
 			</argument>
 			<description>
-				Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be created.
+			Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be created.
+			</description>
+		</signal>
+		<signal name="_end_node_move">
+			<description>
 			</description>
 		</signal>
 	</signals>
@@ -11661,24 +11766,24 @@
 </class>
 <class name="GraphNode" inherits="Container" category="Core">
 	<brief_description>
-		A GraphNode is a container with several input and output slots allowing connections between GraphNodes. Slots can have different, incompatible types.
+	A GraphNode is a container with several input and output slots allowing connections between GraphNodes. Slots can have different, incompatible types.
 	</brief_description>
 	<description>
-		A GraphNode is a container defined by a title. It can have 1 or more input and output slots, which can be enabled (shown) or disabled (not shown) and have different (incompatible) types. Colors can also be assigned to slots. A tuple of input and output slots is defined for each GUI element included in the GraphNode. Input and output connections are left and right slots, but only enabled slots are counted as connections.
+	A GraphNode is a container defined by a title. It can have 1 or more input and output slots, which can be enabled (shown) or disabled (not shown) and have different (incompatible) types. Colors can also be assigned to slots. A tuple of input and output slots is defined for each GUI element included in the GraphNode. Input and output connections are left and right slots, but only enabled slots are counted as connections.
 	</description>
 	<methods>
 		<method name="set_title">
 			<argument index="0" name="title" type="String">
 			</argument>
 			<description>
-				Set the title of the GraphNode.
+			Set the title of the GraphNode.
 			</description>
 		</method>
 		<method name="get_title" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Return the title of the GraphNode.
+			Return the title of the GraphNode.
 			</description>
 		</method>
 		<method name="set_slot">
@@ -11697,19 +11802,19 @@
 			<argument index="6" name="color_right" type="Color">
 			</argument>
 			<description>
-				Set the tuple of input/output slots defined by 'idx' ID. 'left' slots are input, 'right' are output. 'type' is an integer defining the type of the slot. Refer to description for the compatibility between slot types.
+			Set the tuple of input/output slots defined by 'idx' ID. 'left' slots are input, 'right' are output. 'type' is an integer defining the type of the slot. Refer to description for the compatibility between slot types.
 			</description>
 		</method>
 		<method name="clear_slot">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Disable input and ouput slot whose index is 'idx'.
+			Disable input and ouput slot whose index is 'idx'.
 			</description>
 		</method>
 		<method name="clear_all_slots">
 			<description>
-				Disable all input and output slots of the GraphNode.
+			Disable all input and output slots of the GraphNode.
 			</description>
 		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
@@ -11718,7 +11823,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return true if left (input) slot 'idx' is enabled. False otherwise.
+			Return true if left (input) slot 'idx' is enabled. False otherwise.
 			</description>
 		</method>
 		<method name="get_slot_type_left" qualifiers="const">
@@ -11727,7 +11832,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the (integer) type of left (input) 'idx' slot.
+			Return the (integer) type of left (input) 'idx' slot.
 			</description>
 		</method>
 		<method name="get_slot_color_left" qualifiers="const">
@@ -11736,7 +11841,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the color set to 'idx' left (input) slot.
+			Return the color set to 'idx' left (input) slot.
 			</description>
 		</method>
 		<method name="is_slot_enabled_right" qualifiers="const">
@@ -11745,7 +11850,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return true if right (output) slot 'idx' is enabled. False otherwise.
+			Return true if right (output) slot 'idx' is enabled. False otherwise.
 			</description>
 		</method>
 		<method name="get_slot_type_right" qualifiers="const">
@@ -11754,7 +11859,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the (integer) type of right (output) 'idx' slot.
+			Return the (integer) type of right (output) 'idx' slot.
 			</description>
 		</method>
 		<method name="get_slot_color_right" qualifiers="const">
@@ -11763,35 +11868,35 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the color set to 'idx' right (output) slot.
+			Return the color set to 'idx' right (output) slot.
 			</description>
 		</method>
 		<method name="set_offset">
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
-				Set the offset of the GraphNode.
+			Set the offset of the GraphNode.
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the offset of the GraphNode.
+			Return the offset of the GraphNode.
 			</description>
 		</method>
 		<method name="get_connection_output_count">
 			<return type="int">
 			</return>
 			<description>
-				Return the number of enabled output slots (connections) of the GraphNode.
+			Return the number of enabled output slots (connections) of the GraphNode.
 			</description>
 		</method>
 		<method name="get_connection_input_count">
 			<return type="int">
 			</return>
 			<description>
-				Return the number of enabled input slots (connections) to the GraphNode.
+			Return the number of enabled input slots (connections) to the GraphNode.
 			</description>
 		</method>
 		<method name="get_connection_output_pos">
@@ -11800,7 +11905,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the position of the output connection 'idx'.
+			Return the position of the output connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_output_type">
@@ -11809,7 +11914,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the type of the output connection 'idx'.
+			Return the type of the output connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_output_color">
@@ -11818,7 +11923,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the color of the output connection 'idx'.
+			Return the color of the output connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_input_pos">
@@ -11827,7 +11932,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the position of the input connection 'idx'.
+			Return the position of the input connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_input_type">
@@ -11836,7 +11941,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the type of the input connection 'idx'.
+			Return the type of the input connection 'idx'.
 			</description>
 		</method>
 		<method name="get_connection_input_color">
@@ -11845,33 +11950,33 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the color of the input connection 'idx'.
+			Return the color of the input connection 'idx'.
 			</description>
 		</method>
 		<method name="set_show_close_button">
 			<argument index="0" name="show" type="bool">
 			</argument>
 			<description>
-				Show the close button on the GraphNode if 'show' is true (disabled by default). If enabled, a connection on the signal close_request is needed for the close button to work.
+			Show the close button on the GraphNode if 'show' is true (disabled by default). If enabled, a connection on the signal close_request is needed for the close button to work.
 			</description>
 		</method>
 		<method name="is_close_button_visible" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns true if the close button is shown. False otherwise.
+			Returns true if the close button is shown. False otherwise.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="raise_request">
 			<description>
-				Signal sent when the GraphNode is requested to be displayed over other ones. Happens on focusing (clicking into) the GraphNode.
+			Signal sent when the GraphNode is requested to be displayed over other ones. Happens on focusing (clicking into) the GraphNode.
 			</description>
 		</signal>
 		<signal name="close_request">
 			<description>
-				Signal sent on closing the GraphNode.
+			Signal sent on closing the GraphNode.
 			</description>
 		</signal>
 		<signal name="dragged">
@@ -11880,12 +11985,12 @@
 			<argument index="1" name="to" type="Vector2">
 			</argument>
 			<description>
-				Signal sent when the GraphNode is dragged.
+			Signal sent when the GraphNode is dragged.
 			</description>
 		</signal>
 		<signal name="offset_changed">
 			<description>
-				Signal sent when the GraphNode is moved.
+			Signal sent when the GraphNode is moved.
 			</description>
 		</signal>
 	</signals>
@@ -11909,6 +12014,12 @@
 		<theme_item name="title_font" type="Font">
 		</theme_item>
 		<theme_item name="frame" type="StyleBox">
+		</theme_item>
+		<theme_item name="selectedframe" type="StyleBox">
+		</theme_item>
+		<theme_item name="defaultfocus" type="StyleBox">
+		</theme_item>
+		<theme_item name="defaultframe" type="StyleBox">
 		</theme_item>
 	</theme_items>
 </class>
@@ -14292,6 +14403,22 @@
 	<constants>
 	</constants>
 </class>
+<class name="InstancePlaceholder" inherits="Node" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="replace_by_instance">
+			<argument index="0" name="custom_scene" type="PackedScene" default="NULL">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="IntArray" category="Built-In Types">
 	<brief_description>
 	Integer Array.
@@ -16517,11 +16644,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="x" type="float">
+		<member name="x" type="Vector2">
 		</member>
-		<member name="y" type="float">
+		<member name="y" type="Vector2">
 		</member>
-		<member name="o" type="float">
+		<member name="o" type="Vector2">
 		</member>
 	</members>
 	<constants>
@@ -18124,7 +18251,11 @@
 		<method name="find_node" qualifiers="const">
 			<return type="Node">
 			</return>
-			<argument index="0" name="mask" type="NodePath" default="true">
+			<argument index="0" name="mask" type="String">
+			</argument>
+			<argument index="1" name="recursive" type="bool" default="true">
+			</argument>
+			<argument index="2" name="owned" type="bool" default="true">
 			</argument>
 			<description>
 			</description>
@@ -20171,7 +20302,7 @@
 		<method name="instance" qualifiers="const">
 			<return type="Node">
 			</return>
-			<argument index="0" name="arg0" type="bool" default="false">
+			<argument index="0" name="gen_edit_state" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -20417,6 +20548,18 @@
 		</method>
 		<method name="get_limit_end" qualifiers="const">
 			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_ignore_camera_zoom">
+			<argument index="0" name="arg0" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_ignore_camera_zoom">
+			<return type="bool">
 			</return>
 			<description>
 			</description>
@@ -21229,20 +21372,24 @@
 </class>
 <class name="Path" inherits="Spatial" category="Core">
 	<brief_description>
+	Container for a [Curve3D].
 	</brief_description>
 	<description>
+	This class is a container/Node-ification of a [Curve3D], so it can have [Spatial] properties and [Node] info.
 	</description>
 	<methods>
 		<method name="set_curve">
 			<argument index="0" name="curve" type="Curve3D">
 			</argument>
 			<description>
+			Sets the [Curve3D].
 			</description>
 		</method>
 		<method name="get_curve" qualifiers="const">
 			<return type="Curve3D">
 			</return>
 			<description>
+			Returns the [Curve3D] contained.
 			</description>
 		</method>
 	</methods>
@@ -21251,20 +21398,24 @@
 </class>
 <class name="Path2D" inherits="Node2D" category="Core">
 	<brief_description>
+	Container for a [Curve2D].
 	</brief_description>
 	<description>
+	This class is a container/Node-ification of a [Curve2D], so it can have [Node2D] properties and [Node] info.
 	</description>
 	<methods>
 		<method name="set_curve">
 			<argument index="0" name="curve" type="Curve2D">
 			</argument>
 			<description>
+			Sets the [Curve2D].
 			</description>
 		</method>
 		<method name="get_curve" qualifiers="const">
 			<return type="Curve2D">
 			</return>
 			<description>
+			Returns the [Curve2D] contained.
 			</description>
 		</method>
 	</methods>
@@ -21273,197 +21424,245 @@
 </class>
 <class name="PathFollow" inherits="Spatial" category="Core">
 	<brief_description>
+	Point sampler for a [Path].
 	</brief_description>
 	<description>
+	This node takes its parent [Path], and returns the coordinates of a point within it, given a distance from the first vertex.
+It is useful for making other nodes follow a path, without coding the movement pattern. For that, the nodes must be descendants of this node. Then, when setting an offset in this node, the descendant nodes will move accordingly.
 	</description>
 	<methods>
 		<method name="set_offset">
 			<argument index="0" name="offset" type="float">
 			</argument>
 			<description>
+			Sets the distance from the first vertex, measured in 3D units along the path. This sets this node's position to a point within the path.
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the distance along the path in 3D units.
 			</description>
 		</method>
 		<method name="set_h_offset">
 			<argument index="0" name="h_offset" type="float">
 			</argument>
 			<description>
+			Moves this node in the X axis. As this node's position will be set every time its offset is set, this allows many PathFollow to share the same curve (and thus the same movement pattern), yet not return the same position for a given path offset.
+A similar effect may be achieved moving the this node's descendants.
 			</description>
 		</method>
 		<method name="get_h_offset" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the X displacement this node has from its parent [Path].
 			</description>
 		</method>
 		<method name="set_v_offset">
 			<argument index="0" name="v_offset" type="float">
 			</argument>
 			<description>
+			Moves this node in the Y axis, for the same reasons of [method set_h_offset].
 			</description>
 		</method>
 		<method name="get_v_offset" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the Y displacement this node has from its parent [Path].
 			</description>
 		</method>
 		<method name="set_unit_offset">
 			<argument index="0" name="unit_offset" type="float">
 			</argument>
 			<description>
+			Sets the distance from the first vertex, considering 0.0 as the first vertex and 1.0 as the last. This is just another way of expressing the offset within the path, as the offset supplied is multiplied internally by the path's length.
 			</description>
 		</method>
 		<method name="get_unit_offset" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the distance along the path as a number in the range 0.0 (for the first vertex) to 1.0 (for the last).
 			</description>
 		</method>
 		<method name="set_rotation_mode">
 			<argument index="0" name="rotation_mode" type="int">
 			</argument>
 			<description>
+			Allows or forbids rotation on one or more axes, per the constants below.
 			</description>
 		</method>
 		<method name="get_rotation_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Returns the rotation mode. The constants below list which axes are allowed to rotate for each mode.
 			</description>
 		</method>
 		<method name="set_cubic_interpolation">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			The points along the [Curve3D] of the [Path] are precomputed before use, for faster calculations. The point at the requested offset is then calculated interpolating between two adjacent cached points. This may present a problem if the curve makes sharp turns, as the cached points may not follow the curve closely enough.
+There are two answers to this problem: Either increase the number of cached points and increase memory consumption, or make a cubic interpolation between two points at the cost of (slightly) slower calculations.
+This method controls whether the position between two cached points is interpolated linearly, or cubicly.
 			</description>
 		</method>
 		<method name="get_cubic_interpolation" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			This method returns whether the position between two cached points (see [method set_cubic_interpolation]) is interpolated linearly, or cubicly.
 			</description>
 		</method>
 		<method name="set_loop">
 			<argument index="0" name="loop" type="bool">
 			</argument>
 			<description>
+			If set, any offset outside the path's length (whether set by [method set_offset] or [method set_unit_offset] will wrap around, instead of stopping at the ends. Set it for cyclic paths.
 			</description>
 		</method>
 		<method name="has_loop" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether this node wraps its offsets around, or truncates them to the path ends.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="ROTATION_NONE" value="0">
+		Forbids the PathFollow to rotate.
 		</constant>
 		<constant name="ROTATION_Y" value="1">
+		Allows the PathFollow to rotate in the Y axis only.
 		</constant>
 		<constant name="ROTATION_XY" value="2">
+		Allows the PathFollow to rotate in both the X, and Y axes.
 		</constant>
 		<constant name="ROTATION_XYZ" value="3">
+		Allows the PathFollow to rotate in any axis.
 		</constant>
 	</constants>
 </class>
 <class name="PathFollow2D" inherits="Node2D" category="Core">
 	<brief_description>
+	Point sampler for a [Path2D].
 	</brief_description>
 	<description>
+	This node takes its parent [Path2D], and returns the coordinates of a point within it, given a distance from the first vertex.
+It is useful for making other nodes follow a path, without coding the movement pattern. For that, the nodes must be descendants of this node. Then, when setting an offset in this node, the descendant nodes will move accordingly.
 	</description>
 	<methods>
 		<method name="set_offset">
 			<argument index="0" name="offset" type="float">
 			</argument>
 			<description>
+			Sets the distance from the first vertex, measured in pixels along the path. This sets this node's position to a point within the path.
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the distance along the path in pixels.
 			</description>
 		</method>
 		<method name="set_h_offset">
 			<argument index="0" name="h_offset" type="float">
 			</argument>
 			<description>
+			Moves this node horizontally. As this node's position will be set every time its offset is set, this allows many PathFollow2D to share the same curve (and thus the same movement pattern), yet not return the same position for a given path offset.
+A similar effect may be achieved moving this node's descendants.
 			</description>
 		</method>
 		<method name="get_h_offset" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the horizontal displacement this node has from its parent [Path2D].
 			</description>
 		</method>
 		<method name="set_v_offset">
 			<argument index="0" name="v_offset" type="float">
 			</argument>
 			<description>
+			Moves the PathFollow2D vertically, for the same reasons of [method set_h_offset].
 			</description>
 		</method>
 		<method name="get_v_offset" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the vertical displacement this node has from its parent [Path2D].
 			</description>
 		</method>
 		<method name="set_unit_offset">
 			<argument index="0" name="unit_offset" type="float">
 			</argument>
 			<description>
+			Sets the distance from the first vertex, considering 0.0 as the first vertex and 1.0 as the last. This is just another way of expressing the offset within the path, as the offset supplied is multiplied internally by the path's length.
 			</description>
 		</method>
 		<method name="get_unit_offset" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the distance along the path as a number in the range 0.0 (for the first vertex) to 1.0 (for the last).
 			</description>
 		</method>
 		<method name="set_rotate">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			If set, this node rotates to follow the path, making its descendants rotate.
 			</description>
 		</method>
 		<method name="is_rotating" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether this node rotates to follow the path.
 			</description>
 		</method>
 		<method name="set_cubic_interpolation">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			The points along the [Curve2D] of the [Path2D] are precomputed before use, for faster calculations. The point at the requested offset is then calculated interpolating between two adjacent cached points. This may present a problem if the curve makes sharp turns, as the cached points may not follow the curve closely enough.
+There are two answers to this problem: Either increase the number of cached points and increase memory consumption, or make a cubic interpolation between two points at the cost of (slightly) slower calculations.
+This method controls whether the position between two cached points is interpolated linearly, or cubicly.
 			</description>
 		</method>
 		<method name="get_cubic_interpolation" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			This method returns whether the position between two cached points (see [method set_cubic_interpolation]) is interpolated linearly, or cubicly.
 			</description>
 		</method>
 		<method name="set_loop">
 			<argument index="0" name="loop" type="bool">
 			</argument>
 			<description>
+			If set, any offset outside the path's length (whether set by [method set_offset] or [method set_unit_offset] will wrap around, instead of stopping at the ends. Set it for cyclic paths.
 			</description>
 		</method>
 		<method name="has_loop" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether this node wraps its offsets around, or truncates them to the path ends.
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="lookahead" type="float">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>
@@ -24688,6 +24887,18 @@
 	Pin Joint for 2D Rigid Bodies. It pins 2 bodies (rigid or static) together, or a single body to a fixed position in space.
 	</description>
 	<methods>
+		<method name="set_softness">
+			<argument index="0" name="softness" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_softness" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -26292,6 +26503,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_type_mask">
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_type_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -26567,7 +26790,7 @@
 	Reference frame for GUI.
 	</brief_description>
 	<description>
-	Reference frame for GUI. It's just like an empty control, except a red box is displayed while editing around it's size at all times.
+	Reference frame for GUI. It's just like an empty control, except a red box is displayed while editing around its size at all times.
 	</description>
 	<methods>
 	</methods>
@@ -26580,58 +26803,88 @@
 </class>
 <class name="RegEx" inherits="Reference" category="Core">
 	<brief_description>
+	Simple regular expression matcher.
 	</brief_description>
 	<description>
+	Class for finding text patterns in a string using regular expressions. Regular expressions are a way to define patterns of text to be searched.
+	This class only finds patterns in a string. It can not perform replacements.
+	Usage of regular expressions is too long to be explained here, but Internet is full of tutorials and detailed explanations.
+	Currently supported features:
+		Capturing [code]()[/code] and non-capturing [code](?:)[/code] groups
+		Any character [code].[/code]
+		Shorthand caracter classes [code]\w \W \s \S \d \D[/code]
+		User-defined character classes such as [code][A-Za-z][/code]
+		Simple quantifiers [code]?[/code], [code]*[/code] and [code]+[/code]
+		Range quantifiers [code]{x,y}[/code]
+		Lazy (non-greedy) quantifiers [code]*?[/code]
+		Begining [code]^[/code] and end [code]$[/code] anchors
+		Alternation [code]|[/code]
+		Backreferences [code]\1[/code] to [code]\99[/code]
 	</description>
 	<methods>
 		<method name="compile">
 			<return type="int">
+			[OK] if the regular expression was valid. [FAIL] otherwise.
 			</return>
 			<argument index="0" name="pattern" type="String">
+			The string to be converted into a regular expression.
 			</argument>
 			<description>
+			Once created, a RegEx object needs a regular expression to be assigned to it. This method tries to convert the string given to an usable regular expression.
 			</description>
 		</method>
 		<method name="find" qualifiers="const">
 			<return type="int">
+			The position within the string (starting with 0) where the pattern was found. It will return -1 if the pattern was not found, it was invalid, or the start or end positions were beyond the string's end.
 			</return>
 			<argument index="0" name="text" type="String">
+			The text to search the pattern in.
 			</argument>
 			<argument index="1" name="start" type="int" default="0">
+			The position in the string (starting with 0) to start searching from.
 			</argument>
 			<argument index="2" name="end" type="int" default="-1">
+			The position in the string (starting with 0) to stop searching. A value less than the start position means "end of the string".
 			</argument>
 			<description>
+			This method tries to find the pattern within the string, and returns the position where it was found. It also stores any capturing group (see [method get_capture]) for further retrieval.
 			</description>
 		</method>
 		<method name="clear">
 			<description>
+			This method resets the state of the object, as it was freshly created. Namely, it unassigns the regular expression of this object, and forgets all captures made by the last [method find].
 			</description>
 		</method>
 		<method name="is_valid" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether this object has a valid regular expression assigned.
 			</description>
 		</method>
 		<method name="get_capture_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Returns the number of capturing groups. A captured group is the part of a string that matches a part of the pattern delimited by parentheses (unless they are non-capturing parentheses [i](?:)[/i]).
 			</description>
 		</method>
 		<method name="get_capture" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="capture" type="int">
+			The number of the captured group, starting with 0. Like other regular expression engines, Godot's engine takes 0 as the full expression, and 1 as the first pair of capturing parentheses.
 			</argument>
 			<description>
+			Returns a captured group. A captured group is the part of a string that matches a part of the pattern delimited by parentheses (unless they are non-capturing parentheses [i](?:)[/i]).
 			</description>
 		</method>
 		<method name="get_captures" qualifiers="const">
 			<return type="StringArray">
+			A list contining all the strings captured by the regular expression.
 			</return>
 			<description>
+			Return a list of all the captures made by the regular expression.
 			</description>
 		</method>
 	</methods>
@@ -29178,8 +29431,10 @@
 </class>
 <class name="ScrollContainer" inherits="Container" category="Core">
 	<brief_description>
+	A helper node for displaying scollable elements (e.g. lists).
 	</brief_description>
 	<description>
+	A ScrollContainer node with a [Control] child and scrollbar child ([HScrollbar], [VScrollBar], or both) will only draw the Control within the ScrollContainer area.  Scrollbars will automatically be drawn at the right (for vertical) or bottom (for horizontal) and will enable dragging to move the viewable Control (and its children) within the ScrollContainer.  Scrollbars will also automatically resize the grabber based on the minimum_size of the Control relative to the ScrollContainer.  Works great with a [Panel] control.
 	</description>
 	<methods>
 		<method name="set_enable_h_scroll">
@@ -29442,6 +29697,28 @@
 			<return type="Array">
 			</return>
 			<argument index="0" name="shader_type" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="default_set_value">
+			<argument index="0" name="shader_type" type="int">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<argument index="2" name="param_id" type="int">
+			</argument>
+			<argument index="3" name="value" type="var">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="default_get_value">
+			<argument index="0" name="shader_type" type="int">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<argument index="2" name="param_id" type="int">
 			</argument>
 			<description>
 			</description>
@@ -31619,7 +31896,7 @@
 			<argument index="0" name="modulate" type="Color">
 			</argument>
 			<description>
-			Set color modulation for the sprite. All sprite pixels are multiplied by this color.
+			Set color modulation for the sprite. All sprite pixels are multiplied by this color.  Color may contain rgb values above 1 to achieve a highlight effect.
 			</description>
 		</method>
 		<method name="get_modulate" qualifiers="const">
@@ -33549,6 +33826,12 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="tab_close">
+			<argument index="0" name="tab" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="right_button_pressed">
 			<argument index="0" name="tab" type="int">
 			</argument>
@@ -33568,6 +33851,14 @@
 		<constant name="ALIGN_CENTER" value="1">
 		</constant>
 		<constant name="ALIGN_RIGHT" value="2">
+		</constant>
+		<constant name="SHOW_ACTIVE_ONLY" value="1">
+		</constant>
+		<constant name="SHOW_ALWAYS" value="0">
+		</constant>
+		<constant name="SHOW_HOVER" value="2">
+		</constant>
+		<constant name="SHOW_NEVER" value="3">
 		</constant>
 	</constants>
 	<theme_items>
@@ -34262,8 +34553,68 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_fill_mode">
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_fill_mode">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_radial_initial_angle">
+			<argument index="0" name="mode" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_radial_initial_angle">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_radial_center_offset">
+			<argument index="0" name="mode" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_radial_center_offset">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_fill_degrees">
+			<argument index="0" name="mode" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_fill_degrees">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
+		<constant name="FILL_LEFT_TO_RIGHT" value="0">
+		</constant>
+		<constant name="FILL_RIGHT_TO_LEFT" value="1">
+		</constant>
+		<constant name="FILL_TOP_TO_BOTTOM" value="2">
+		</constant>
+		<constant name="FILL_BOTTOM_TO_TOP" value="3">
+		</constant>
+		<constant name="FILL_CLOCKWISE" value="4">
+		</constant>
+		<constant name="FILL_COUNTER_CLOCKWISE" value="5">
+		</constant>
 	</constants>
 </class>
 <class name="Theme" inherits="Resource" category="Core">
@@ -37272,6 +37623,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="ceil">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="cross">
 			<return type="Vector3">
 			</return>
@@ -37321,6 +37678,12 @@
 			</argument>
 			<description>
 			Return the dot product with b.
+			</description>
+		</method>
+		<method name="floor">
+			<return type="Vector3">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="inverse">

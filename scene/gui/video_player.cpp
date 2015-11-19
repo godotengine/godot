@@ -196,10 +196,10 @@ void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 
 	stream=p_stream;
     if (stream.is_valid()) {
-        stream->set_audio_track(audio_track);
-        playback=stream->instance_playback();
+	stream->set_audio_track(audio_track);
+	playback=stream->instance_playback();
     } else {
-        playback=Ref<VideoStreamPlayback>();
+	playback=Ref<VideoStreamPlayback>();
     }
 
 	if (!playback.is_null()) {
@@ -249,6 +249,8 @@ void VideoPlayer::stop() {
 		return;
 
 	playback->stop();
+	AudioServer::get_singleton()->stream_set_active(stream_rid,false);
+	resampler.clear();
 	set_process(false);
 	last_audio_time=0;
 };
@@ -382,13 +384,13 @@ void VideoPlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_buffering_msec","msec"),&VideoPlayer::set_buffering_msec);
 	ObjectTypeDB::bind_method(_MD("get_buffering_msec"),&VideoPlayer::get_buffering_msec);
 
+	ADD_PROPERTY( PropertyInfo(Variant::INT, "stream/audio_track",PROPERTY_HINT_RANGE,"0,128,1"), _SCS("set_audio_track"), _SCS("get_audio_track") );
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT, "stream/stream", PROPERTY_HINT_RESOURCE_TYPE,"VideoStream"), _SCS("set_stream"), _SCS("get_stream") );
 //	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/loop"), _SCS("set_loop"), _SCS("has_loop") );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL, "stream/volume_db", PROPERTY_HINT_RANGE,"-80,24,0.01"), _SCS("set_volume_db"), _SCS("get_volume_db") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/autoplay"), _SCS("set_autoplay"), _SCS("has_autoplay") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/paused"), _SCS("set_paused"), _SCS("is_paused") );
-    ADD_PROPERTY( PropertyInfo(Variant::INT, "stream/audio_track",PROPERTY_HINT_RANGE,"0,128,1"), _SCS("set_audio_track"), _SCS("get_audio_track") );
-    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
 }
 
 

@@ -62,10 +62,10 @@ pp_baseout.write( manifest )
 
 
 for x in env.android_source_files:
-	shutil.copy(x,abspath+"/java/src/com/android/godot")	
+	shutil.copy(x,abspath+"/java/src/com/android/godot")
 
 for x in env.android_module_libraries:
-	shutil.copy(x,abspath+"/java/libs")	
+	shutil.copy(x,abspath+"/java/libs")
 
 
 env_android.SharedLibrary("#bin/libgodot",[android_objects],SHLIBSUFFIX=env["SHLIBSUFFIX"])

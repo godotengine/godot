@@ -314,7 +314,9 @@ class EditorNode : public Node {
 	CenterContainer *tabs_center;
 	EditorQuickOpen *quick_open;
 	EditorQuickOpen *quick_run;
-	Tabs *main_editor_tabs;
+
+	HBoxContainer *main_editor_button_vb;
+	Vector<ToolButton*> main_editor_buttons;
 	Vector<EditorPlugin*> editor_table;
 
 	EditorReImportDialog *reimport_dialog;
@@ -461,6 +463,7 @@ class EditorNode : public Node {
 
 	void _cleanup_scene();
 	void _remove_edited_scene();
+	void _remove_scene(int index);
 	bool _find_and_save_resource(RES p_res,Map<RES,bool>& processed,int32_t flags);
 	bool _find_and_save_edited_subresources(Object *obj,Map<RES,bool>& processed,int32_t flags);
 	void _save_edited_subresources(Node* scene,Map<RES,bool>& processed,int32_t flags);
@@ -506,6 +509,8 @@ class EditorNode : public Node {
 
 	Dictionary _get_main_scene_state();
 	void _set_main_scene_state(Dictionary p_state);
+
+	int _get_current_main_editor();
 
 	void _save_docks();
 	void _load_docks();

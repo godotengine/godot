@@ -29,11 +29,13 @@
 #include <wctype.h>
 #include <wchar.h>
 #define NREX_ISALPHANUM iswalnum
+#define NREX_ISSPACE iswspace
 #define NREX_STRLEN wcslen
 #else
 #include <ctype.h>
 #include <string.h>
 #define NREX_ISALPHANUM isalnum
+#define NREX_ISSPACE isspace
 #define NREX_STRLEN strlen
 #endif
 
@@ -116,34 +118,72 @@ class nrex_array
         }
 };
 
-static nrex_char nrex_unescape(nrex_char repr)
+static int nrex_parse_hex(nrex_char c)
 {
-    switch (repr)
+    if ('0' <= c && c <= '9')
     {
-        case '^': return '^';
-        case '$': return '$';
-        case '(': return '(';
-        case ')': return ')';
-        case '\\': return '\\';
-        case '.': return '.';
-        case '+': return '+';
-        case '*': return '*';
-        case '?': return '?';
-        case '-': return '-';
-        case 'a': return '\a';
-        case 'e': return '\e';
-        case 'f': return '\f';
-        case 'n': return '\n';
-        case 'r': return '\r';
-        case 't': return '\t';
-        case 'v': return '\v';
+        return int(c - '0');
     }
-    return 0;
+    else if ('a' <= c && c <= 'f')
+    {
+        return int(c - 'a') + 10;
+    }
+    else if ('A' <= c && c <= 'F')
+    {
+        return int(c - 'A') + 10;
+    }
+    return -1;
+}
+
+static nrex_char nrex_unescape(const nrex_char*& c)
+{
+    switch (c[1])
+    {
+        case '0': ++c; return '\0';
+        case 'a': ++c; return '\a';
+        case 'e': ++c; return '\e';
+        case 'f': ++c; return '\f';
+        case 'n': ++c; return '\n';
+        case 'r': ++c; return '\r';
+        case 't': ++c; return '\t';
+        case 'v': ++c; return '\v';
+        case 'b': ++c; return '\b';
+        case 'x':
+        {
+            int point = 0;
+            for (int i = 2; i <= 3; ++i)
+            {
+                int res = nrex_parse_hex(c[i]);
+                if (res == -1)
+                {
+                    return '\0';
+                }
+                point = (point << 4) + res;
+            }
+            c = &c[3];
+            return nrex_char(point);
+        }
+        case 'u':
+        {
+            int point = 0;
+            for (int i = 2; i <= 5; ++i)
+            {
+                int res = nrex_parse_hex(c[i]);
+                if (res == -1)
+                {
+                    return '\0';
+                }
+                point = (point << 4) + res;
+            }
+            c = &c[5];
+            return nrex_char(point);
+        }
+    }
+    return (++c)[0];
 }
 
 struct nrex_search
 {
-    public:
         const nrex_char* str;
         nrex_result* captures;
         int end;
@@ -168,12 +208,14 @@ struct nrex_node
         nrex_node* previous;
         nrex_node* parent;
         bool quantifiable;
+        int length;
 
         nrex_node(bool quantify = false)
             : next(NULL)
             , previous(NULL)
             , parent(NULL)
             , quantifiable(quantify)
+            , length(-1)
         {
         }
 
@@ -206,21 +248,57 @@ struct nrex_node
             }
             return pos;
         }
+
+        void increment_length(int amount, bool subtract = false)
+        {
+            if (amount >= 0 && length >= 0)
+            {
+                if (!subtract)
+                {
+                    length += amount;
+                }
+                else
+                {
+                    length -= amount;
+                }
+            }
+            else
+            {
+                length = -1;
+            }
+            if (parent)
+            {
+                parent->increment_length(amount, subtract);
+            }
+        }
 };
 
 struct nrex_node_group : public nrex_node
 {
-        int capturing;
+        static const int NonCapture = -1;
+        static const int Bracket = -2;
+        static const int LookAhead = -3;
+        static const int LookBehind = -4;
+
+        int mode;
         bool negate;
         nrex_array<nrex_node*> childset;
         nrex_node* back;
 
-        nrex_node_group(int capturing)
+        nrex_node_group(int mode)
             : nrex_node(true)
-            , capturing(capturing)
+            , mode(mode)
             , negate(false)
             , back(NULL)
         {
+            if (mode != Bracket)
+            {
+                length = 0;
+            }
+            else
+            {
+                length = 1;
+            }
         }
 
         virtual ~nrex_node_group()
@@ -234,14 +312,19 @@ struct nrex_node_group : public nrex_node
 
         int test(nrex_search* s, int pos) const
         {
-            if (capturing >= 0)
+            if (mode >= 0)
             {
-                s->captures[capturing].start = pos;
+                s->captures[mode].start = pos;
             }
             for (unsigned int i = 0; i < childset.size(); ++i)
             {
                 s->complete = false;
-                int res = childset[i]->test(s, pos);
+                int offset = 0;
+                if (mode == LookBehind)
+                {
+                    offset = length;
+                }
+                int res = childset[i]->test(s, pos - offset);
                 if (s->complete)
                 {
                     return res;
@@ -256,12 +339,20 @@ struct nrex_node_group : public nrex_node
                     {
                         return -1;
                     }
+                    if (i + 1 < childset.size())
+                    {
+                        continue;
+                    }
                 }
                 if (res >= 0)
                 {
-                    if (capturing >= 0)
+                    if (mode >= 0)
                     {
-                        s->captures[capturing].length = res - pos;
+                        s->captures[mode].length = res - pos;
+                    }
+                    else if (mode == LookAhead || mode == LookBehind)
+                    {
+                        res = pos;
                     }
                     return next ? next->test(s, res) : res;
                 }
@@ -271,15 +362,19 @@ struct nrex_node_group : public nrex_node
 
         virtual int test_parent(nrex_search* s, int pos) const
         {
-            if (capturing >= 0)
+            if (mode >= 0)
             {
-                s->captures[capturing].length = pos - s->captures[capturing].start;
+                s->captures[mode].length = pos - s->captures[mode].start;
             }
             return nrex_node::test_parent(s, pos);
         }
 
         void add_childset()
         {
+            if (childset.size() > 0 && mode != Bracket)
+            {
+                length = -1;
+            }
             back = NULL;
         }
 
@@ -287,13 +382,17 @@ struct nrex_node_group : public nrex_node
         {
             node->parent = this;
             node->previous = back;
-            if (back)
+            if (back && mode != Bracket)
             {
                 back->next = node;
             }
             else
             {
                 childset.push(node);
+            }
+            if (mode != Bracket)
+            {
+                increment_length(node->length);
             }
             back = node;
         }
@@ -310,9 +409,31 @@ struct nrex_node_group : public nrex_node
             {
                 childset.pop();
             }
+            if (mode != Bracket)
+            {
+                increment_length(old->length, true);
+            }
             back = old->previous;
             add_child(node);
             return old;
+        }
+
+        void pop_back()
+        {
+            if (back)
+            {
+                nrex_node* old = back;
+                if (!old->previous)
+                {
+                    childset.pop();
+                }
+                if (mode != Bracket)
+                {
+                    increment_length(old->length, true);
+                }
+                back = old->previous;
+                NREX_DELETE(old);
+            }
         }
 };
 
@@ -324,6 +445,7 @@ struct nrex_node_char : public nrex_node
             : nrex_node(true)
             , ch(c)
         {
+            length = 1;
         }
 
         int test(nrex_search* s, int pos) const
@@ -346,6 +468,7 @@ struct nrex_node_range : public nrex_node
             , start(s)
             , end(e)
         {
+            length = 1;
         }
 
         int test(nrex_search* s, int pos) const
@@ -363,19 +486,218 @@ struct nrex_node_range : public nrex_node
         }
 };
 
-static bool nrex_is_whitespace(nrex_char repr)
+enum nrex_class_type
 {
-    switch (repr)
+    nrex_class_none,
+    nrex_class_alnum,
+    nrex_class_alpha,
+    nrex_class_blank,
+    nrex_class_cntrl,
+    nrex_class_digit,
+    nrex_class_graph,
+    nrex_class_lower,
+    nrex_class_print,
+    nrex_class_punct,
+    nrex_class_space,
+    nrex_class_upper,
+    nrex_class_xdigit,
+    nrex_class_word
+};
+
+static bool nrex_compare_class(const nrex_char** pos, const char* text)
+{
+    unsigned int i = 0;
+    for (i = 0; text[i] != '\0'; ++i)
     {
-        case ' ':
-        case '\t':
-        case '\r':
-        case '\n':
-        case '\f':
-            return true;
+        if ((*pos)[i] != text[i])
+        {
+            return false;
+        }
     }
-    return false;
+    if ((*pos)[i++] != ':' || (*pos)[i] != ']')
+    {
+        return false;
+    }
+    *pos = &(*pos)[i];
+    return true;
 }
+
+#define NREX_COMPARE_CLASS(POS, NAME) if (nrex_compare_class(POS, #NAME)) return nrex_class_ ## NAME
+
+static nrex_class_type nrex_parse_class(const nrex_char** pos)
+{
+    NREX_COMPARE_CLASS(pos, alnum);
+    NREX_COMPARE_CLASS(pos, alpha);
+    NREX_COMPARE_CLASS(pos, blank);
+    NREX_COMPARE_CLASS(pos, cntrl);
+    NREX_COMPARE_CLASS(pos, digit);
+    NREX_COMPARE_CLASS(pos, graph);
+    NREX_COMPARE_CLASS(pos, lower);
+    NREX_COMPARE_CLASS(pos, print);
+    NREX_COMPARE_CLASS(pos, punct);
+    NREX_COMPARE_CLASS(pos, space);
+    NREX_COMPARE_CLASS(pos, upper);
+    NREX_COMPARE_CLASS(pos, xdigit);
+    NREX_COMPARE_CLASS(pos, word);
+    return nrex_class_none;
+}
+
+struct nrex_node_class : public nrex_node
+{
+        nrex_class_type type;
+
+        nrex_node_class(nrex_class_type t)
+            : nrex_node(true)
+            , type(t)
+        {
+            length = 1;
+        }
+
+        int test(nrex_search* s, int pos) const
+        {
+            if (s->end == pos)
+            {
+                return -1;
+            }
+            if (!test_class(s->at(pos)))
+            {
+                return -1;
+            }
+            return next ? next->test(s, pos + 1) : pos + 1;
+        }
+
+        bool test_class(nrex_char c) const
+        {
+            if ((0 <= c && c <= 0x1F) || c == 0x7F)
+            {
+                if (type == nrex_class_cntrl)
+                {
+                    return true;
+                }
+            }
+            else if (c < 0x7F)
+            {
+                if (type == nrex_class_print)
+                {
+                    return true;
+                }
+                else if (type == nrex_class_graph && c != ' ')
+                {
+                    return true;
+                }
+                else if ('0' <= c && c <= '9')
+                {
+                    switch (type)
+                    {
+                        case nrex_class_alnum:
+                        case nrex_class_digit:
+                        case nrex_class_xdigit:
+                        case nrex_class_word:
+                            return true;
+                        default:
+                            break;
+                    }
+                }
+                else if ('A' <= c && c <= 'Z')
+                {
+                    switch (type)
+                    {
+                        case nrex_class_alnum:
+                        case nrex_class_alpha:
+                        case nrex_class_upper:
+                        case nrex_class_word:
+                            return true;
+                        case nrex_class_xdigit:
+                            if (c <= 'F')
+                            {
+                                return true;
+                            }
+                        default:
+                            break;
+                    }
+                }
+                else if ('a' <= c && c <= 'z')
+                {
+                    switch (type)
+                    {
+                        case nrex_class_alnum:
+                        case nrex_class_alpha:
+                        case nrex_class_lower:
+                        case nrex_class_word:
+                            return true;
+                        case nrex_class_xdigit:
+                            if (c <= 'f')
+                            {
+                                return true;
+                            }
+                        default:
+                            break;
+                    }
+                }
+            }
+            switch (c)
+            {
+                case ' ':
+                case '\t':
+                    if (type == nrex_class_blank)
+                    {
+                        return true;
+                    }
+                case '\r':
+                case '\n':
+                case '\f':
+                    if (type == nrex_class_space)
+                    {
+                        return true;
+                    }
+                    break;
+                case '_':
+                    if (type == nrex_class_word)
+                    {
+                        return true;
+                    }
+                case ']':
+                case '[':
+                case '!':
+                case '"':
+                case '#':
+                case '$':
+                case '%':
+                case '&':
+                case '\'':
+                case '(':
+                case ')':
+                case '*':
+                case '+':
+                case ',':
+                case '.':
+                case '/':
+                case ':':
+                case ';':
+                case '<':
+                case '=':
+                case '>':
+                case '?':
+                case '@':
+                case '\\':
+                case '^':
+                case '`':
+                case '{':
+                case '|':
+                case '}':
+                case '~':
+                case '-':
+                    if (type == nrex_class_punct)
+                    {
+                        return true;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return false;
+        }
+};
 
 static bool nrex_is_shorthand(nrex_char repr)
 {
@@ -400,6 +722,7 @@ struct nrex_node_shorthand : public nrex_node
             : nrex_node(true)
             , repr(c)
         {
+            length = 1;
         }
 
         int test(nrex_search* s, int pos) const
@@ -435,7 +758,7 @@ struct nrex_node_shorthand : public nrex_node
                 case 'S':
                     invert = true;
                 case 's':
-                    if (nrex_is_whitespace(c))
+                    if (NREX_ISSPACE(c))
                     {
                         found = true;
                     }
@@ -469,10 +792,10 @@ struct nrex_node_quantifier : public nrex_node
         bool greedy;
         nrex_node* child;
 
-        nrex_node_quantifier()
+        nrex_node_quantifier(int min, int max)
             : nrex_node()
-            , min(0)
-            , max(0)
+            , min(min)
+            , max(max)
             , greedy(true)
             , child(NULL)
         {
@@ -488,17 +811,49 @@ struct nrex_node_quantifier : public nrex_node
 
         int test(nrex_search* s, int pos) const
         {
-            nrex_array<int> backtrack;
-            backtrack.push(pos);
-            while (backtrack.top() <= s->end)
+            return test_step(s, pos, 1);
+        }
+
+        int test_step(nrex_search* s, int pos, int level) const
+        {
+            if (max == 0)
             {
-                if (max >= 1 && backtrack.size() > (unsigned int)max)
+                return pos;
+            }
+            if ((max >= 1 && level > max) || pos > s->end)
+            {
+                return -1;
+            }
+            if (!greedy && level > min)
+            {
+                int res = pos;
+                if (next)
                 {
-                    break;
+                    res = next->test(s, res);
                 }
-                if (!greedy && (unsigned int)min < backtrack.size())
+                if (s->complete)
                 {
-                    int res = backtrack.top();
+                    return res;
+                }
+                if (res >= 0 && parent->test_parent(s, res) >= 0)
+                {
+                    return res;
+                }
+            }
+            int res = child->test(s, pos);
+            if (s->complete)
+            {
+                return res;
+            }
+            if (res >= 0)
+            {
+                int res_step = test_step(s, res, level + 1);
+                if (res_step >= 0)
+                {
+                    return res_step;
+                }
+                else if (greedy && level >= min)
+                {
                     if (next)
                     {
                         res = next->test(s, res);
@@ -512,33 +867,6 @@ struct nrex_node_quantifier : public nrex_node
                         return res;
                     }
                 }
-                int res = child->test(s, backtrack.top());
-                if (s->complete)
-                {
-                    return res;
-                }
-                if (res < 0 || res == backtrack.top())
-                {
-                    break;
-                }
-                backtrack.push(res);
-            }
-            while (greedy && (unsigned int) min < backtrack.size())
-            {
-                int res = backtrack.top();
-                if (next)
-                {
-                    res = next->test(s, res);
-                }
-                if (res >= 0 && parent->test_parent(s, res) >= 0)
-                {
-                    return res;
-                }
-                if (s->complete)
-                {
-                    return res;
-                }
-                backtrack.pop();
             }
             return -1;
         }
@@ -552,6 +880,7 @@ struct nrex_node_anchor : public nrex_node
             : nrex_node()
             , end(end)
         {
+            length = 0;
         }
 
         int test(nrex_search* s, int pos) const
@@ -568,6 +897,45 @@ struct nrex_node_anchor : public nrex_node
         }
 };
 
+struct nrex_node_word_boundary : public nrex_node
+{
+        bool inverse;
+
+        nrex_node_word_boundary(bool inverse)
+            : nrex_node()
+            , inverse(inverse)
+        {
+            length = 0;
+        }
+
+        int test(nrex_search* s, int pos) const
+        {
+            bool left = false;
+            bool right = false;
+            if (pos != 0)
+            {
+                nrex_char c = s->at(pos - 1);
+                if (c == '_' || NREX_ISALPHANUM(c))
+                {
+                    left = true;
+                }
+            }
+            if (pos != s->end)
+            {
+                nrex_char c = s->at(pos);
+                if (c == '_' || NREX_ISALPHANUM(c))
+                {
+                    right = true;
+                }
+            }
+            if ((left != right) == inverse)
+            {
+                return -1;
+            }
+            return next ? next->test(s, pos) : pos;
+        }
+};
+
 struct nrex_node_backreference : public nrex_node
 {
         int ref;
@@ -576,6 +944,7 @@ struct nrex_node_backreference : public nrex_node
             : nrex_node(true)
             , ref(ref)
         {
+            length = -1;
         }
 
         int test(nrex_search* s, int pos) const
@@ -595,6 +964,18 @@ struct nrex_node_backreference : public nrex_node
             return next ? next->test(s, pos + r.length) : pos + r.length;
         }
 };
+
+bool nrex_has_lookbehind(nrex_array<nrex_node_group*>& stack)
+{
+    for (unsigned int i = 0; i < stack.size(); i++)
+    {
+        if (stack[i]->mode == nrex_node_group::LookBehind)
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 nrex::nrex()
     : _capturing(0)
@@ -630,7 +1011,7 @@ int nrex::capture_size() const
     return _capturing + 1;
 }
 
-bool nrex::compile(const nrex_char* pattern)
+bool nrex::compile(const nrex_char* pattern, bool extended)
 {
     reset();
     nrex_node_group* root = NREX_NEW(nrex_node_group(_capturing));
@@ -647,16 +1028,32 @@ bool nrex::compile(const nrex_char* pattern)
                 if (c[2] == ':')
                 {
                     c = &c[2];
-                    nrex_node_group* group = NREX_NEW(nrex_node_group(-1));
+                    nrex_node_group* group = NREX_NEW(nrex_node_group(nrex_node_group::NonCapture));
+                    stack.top()->add_child(group);
+                    stack.push(group);
+                }
+                else if (c[2] == '!' || c[2] == '=')
+                {
+                    c = &c[2];
+                    nrex_node_group* group = NREX_NEW(nrex_node_group(nrex_node_group::LookAhead));
+                    group->negate = (c[0] == '!');
+                    stack.top()->add_child(group);
+                    stack.push(group);
+                }
+                else if (c[2] == '<' && (c[3] == '!' || c[3] == '='))
+                {
+                    c = &c[3];
+                    nrex_node_group* group = NREX_NEW(nrex_node_group(nrex_node_group::LookBehind));
+                    group->negate = (c[0] == '!');
                     stack.top()->add_child(group);
                     stack.push(group);
                 }
                 else
                 {
-                    NREX_COMPILE_ERROR("unrecognised qualifier for parenthesis");
+                    NREX_COMPILE_ERROR("unrecognised qualifier for group");
                 }
             }
-            else if (_capturing < 99)
+            else if ((!extended && _capturing < 9) || (extended && _capturing < 99))
             {
                 nrex_node_group* group = NREX_NEW(nrex_node_group(++_capturing));
                 stack.top()->add_child(group);
@@ -664,7 +1061,7 @@ bool nrex::compile(const nrex_char* pattern)
             }
             else
             {
-                nrex_node_group* group = NREX_NEW(nrex_node_group(-1));
+                nrex_node_group* group = NREX_NEW(nrex_node_group(nrex_node_group::NonCapture));
                 stack.top()->add_child(group);
                 stack.push(group);
             }
@@ -682,152 +1079,233 @@ bool nrex::compile(const nrex_char* pattern)
         }
         else if (c[0] == '[')
         {
-            nrex_node_group* group = NREX_NEW(nrex_node_group(-1));
+            nrex_node_group* group = NREX_NEW(nrex_node_group(nrex_node_group::Bracket));
             stack.top()->add_child(group);
             if (c[1] == '^')
             {
                 group->negate = true;
                 ++c;
             }
+            bool first_child = true;
+            nrex_char previous_child;
+            bool previous_child_single = false;
             while (true)
             {
                 group->add_childset();
                 ++c;
                 if (c[0] == '\0')
                 {
-                    NREX_COMPILE_ERROR("unclosed character class '[]'");
+                    NREX_COMPILE_ERROR("unclosed bracket expression '['");
                 }
-                if (c[0] == ']')
+                if (c[0] == '[' && c[1] == ':')
+                {
+                    const nrex_char* d = &c[2];
+                    nrex_class_type cls = nrex_parse_class(&d);
+                    if (cls != nrex_class_none)
+                    {
+                        c = d;
+                        group->add_child(NREX_NEW(nrex_node_class(cls)));
+                        previous_child_single = false;
+                    }
+                    else
+                    {
+                        group->add_child(NREX_NEW(nrex_node_char('[')));
+                        previous_child = '[';
+                        previous_child_single = true;
+                    }
+                }
+                else if (c[0] == ']' && !first_child)
                 {
                     break;
                 }
                 else if (c[0] == '\\')
                 {
-                    nrex_char unescaped = nrex_unescape(c[1]);
-                    if (unescaped)
-                    {
-                        group->add_child(NREX_NEW(nrex_node_char(unescaped)));
-                        ++c;
-                    }
-                    else if (nrex_is_shorthand(c[1]))
+                    if (nrex_is_shorthand(c[1]))
                     {
                         group->add_child(NREX_NEW(nrex_node_shorthand(c[1])));
                         ++c;
+                        previous_child_single = false;
                     }
                     else
                     {
-                        NREX_COMPILE_ERROR("escape token not recognised");
+                        const nrex_char* d = c;
+                        nrex_char unescaped = nrex_unescape(d);
+                        if (c == d)
+                        {
+                            NREX_COMPILE_ERROR("invalid escape token");
+                        }
+                        group->add_child(NREX_NEW(nrex_node_char(unescaped)));
+                        c = d;
+                        previous_child = unescaped;
+                        previous_child_single = true;
+                    }
+                }
+                else if (previous_child_single && c[0] == '-')
+                {
+                    bool is_range = false;
+                    nrex_char next;
+                    if (c[1] != '\0' && c[1] != ']')
+                    {
+                        if (c[1] == '\\')
+                        {
+                            const nrex_char* d = ++c;
+                            next = nrex_unescape(d);
+                            if (c == d)
+                            {
+                                NREX_COMPILE_ERROR("invalid escape token in range");
+                            }
+                        }
+                        else
+                        {
+                            next = c[1];
+                            ++c;
+                        }
+                        is_range = true;
+                    }
+                    if (is_range)
+                    {
+                        if (next < previous_child)
+                        {
+                            NREX_COMPILE_ERROR("text range out of order");
+                        }
+                        group->pop_back();
+                        group->add_child(NREX_NEW(nrex_node_range(previous_child, next)));
+                        previous_child_single = false;
+                    }
+                    else
+                    {
+                        group->add_child(NREX_NEW(nrex_node_char(c[0])));
+                        previous_child = c[0];
+                        previous_child_single = true;
                     }
                 }
                 else
                 {
-                    if (c[1] == '-' && c[2] != '\0')
-                    {
-                        bool range = false;
-                        if ('A' <= c[0] && c[0] <= 'Z' && 'A' <= c[2] && c[2] <= 'Z')
-                        {
-                            range = true;
-                        }
-                        if ('a' <= c[0] && c[0] <= 'z' && 'a' <= c[2] && c[2] <= 'z')
-                        {
-                            range = true;
-                        }
-                        if ('0' <= c[0] && c[0] <= '9' && '0' <= c[2] && c[2] <= '9')
-                        {
-                            range = true;
-                        }
-                        if (range)
-                        {
-                            group->add_child(NREX_NEW(nrex_node_range(c[0], c[2])));
-                            c = &c[2];
-                            continue;
-                        }
-                    }
                     group->add_child(NREX_NEW(nrex_node_char(c[0])));
+                    previous_child = c[0];
+                    previous_child_single = true;
                 }
-
+                first_child = false;
             }
         }
         else if (nrex_is_quantifier(c[0]))
         {
-            nrex_node_quantifier* quant = NREX_NEW(nrex_node_quantifier);
-            quant->child = stack.top()->swap_back(quant);
-            if (quant->child == NULL || !quant->child->quantifiable)
+            if (stack.top()->back == NULL || !stack.top()->back->quantifiable)
             {
+                if (c[0] == '{')
+                {
+                    stack.top()->add_child(NREX_NEW(nrex_node_char('{')));
+                    continue;
+                }
                 NREX_COMPILE_ERROR("element not quantifiable");
             }
-            quant->child->previous = NULL;
-            quant->child->next = NULL;
-            quant->child->parent = quant;
+            int min = 0;
+            int max = -1;
+            bool valid_quantifier = true;
             if (c[0] == '?')
             {
-                quant->min = 0;
-                quant->max = 1;
+                min = 0;
+                max = 1;
             }
             else if (c[0] == '+')
             {
-                quant->min = 1;
-                quant->max = -1;
+                min = 1;
+                max = -1;
             }
             else if (c[0] == '*')
             {
-                quant->min = 0;
-                quant->max = -1;
+                min = 0;
+                max = -1;
             }
             else if (c[0] == '{')
             {
                 bool max_set = false;
-                quant->min = 0;
-                quant->max = -1;
+                const nrex_char* d = c;
                 while (true)
                 {
-                    ++c;
-                    if (c[0] == '\0')
+                    ++d;
+                    if (d[0] == '\0')
                     {
-                        NREX_COMPILE_ERROR("unclosed range quantifier '{}'");
+                        valid_quantifier = false;
+                        break;
                     }
-                    else if (c[0] == '}')
+                    else if (d[0] == '}')
                     {
                         break;
                     }
-                    else if (c[0] == ',')
+                    else if (d[0] == ',')
                     {
                         max_set = true;
                         continue;
                     }
-                    else if (c[0] < '0' || '9' < c[0])
+                    else if (d[0] < '0' || '9' < d[0])
                     {
-                        NREX_COMPILE_ERROR("expected numeric digits, ',' or '}'");
+                        valid_quantifier = false;
+                        break;
                     }
                     if (max_set)
                     {
-                        if (quant->max < 0)
+                        if (max < 0)
                         {
-                            quant->max = int(c[0] - '0');
+                            max = int(d[0] - '0');
                         }
                         else
                         {
-                            quant->max = quant->max * 10 + int(c[0] - '0');
+                            max = max * 10 + int(d[0] - '0');
                         }
                     }
                     else
                     {
-                        quant->min = quant->min * 10 + int(c[0] - '0');
+                        min = min * 10 + int(d[0] - '0');
                     }
                 }
                 if (!max_set)
                 {
-                    quant->max = quant->min;
+                    max = min;
+                }
+                if (valid_quantifier)
+                {
+                    c = d;
                 }
             }
-            if (c[1] == '?')
+            if (valid_quantifier)
             {
-                quant->greedy = false;
-                ++c;
+                nrex_node_quantifier* quant = NREX_NEW(nrex_node_quantifier(min, max));
+                if (min == max)
+                {
+                    if (stack.top()->back->length >= 0)
+                    {
+                        quant->length = max * stack.top()->back->length;
+                    }
+                }
+                else
+                {
+                    if (nrex_has_lookbehind(stack))
+                    {
+                        NREX_COMPILE_ERROR("variable length quantifiers inside lookbehind not supported");
+                    }
+                }
+                quant->child = stack.top()->swap_back(quant);
+                quant->child->previous = NULL;
+                quant->child->next = NULL;
+                quant->child->parent = quant;
+                if (c[1] == '?')
+                {
+                    quant->greedy = false;
+                    ++c;
+                }
+            }
+            else
+            {
+                stack.top()->add_child(NREX_NEW(nrex_node_char(c[0])));
             }
         }
         else if (c[0] == '|')
         {
+            if (nrex_has_lookbehind(stack))
+            {
+                NREX_COMPILE_ERROR("alternations inside lookbehind not supported");
+            }
             stack.top()->add_childset();
         }
         else if (c[0] == '^' || c[0] == '$')
@@ -840,13 +1318,7 @@ bool nrex::compile(const nrex_char* pattern)
         }
         else if (c[0] == '\\')
         {
-            nrex_char unescaped = nrex_unescape(c[1]);
-            if (unescaped)
-            {
-                stack.top()->add_child(NREX_NEW(nrex_node_char(unescaped)));
-                ++c;
-            }
-            else if (nrex_is_shorthand(c[1]))
+            if (nrex_is_shorthand(c[1]))
             {
                 stack.top()->add_child(NREX_NEW(nrex_node_shorthand(c[1])));
                 ++c;
@@ -854,7 +1326,7 @@ bool nrex::compile(const nrex_char* pattern)
             else if ('1' <= c[1] && c[1] <= '9')
             {
                 int ref = 0;
-                if ('0' <= c[2] && c[2] <= '9')
+                if (extended && '0' <= c[2] && c[2] <= '9')
                 {
                     ref = int(c[1] - '0') * 10 + int(c[2] - '0');
                     c = &c[2];
@@ -868,17 +1340,37 @@ bool nrex::compile(const nrex_char* pattern)
                 {
                     NREX_COMPILE_ERROR("backreference to non-existent capture");
                 }
+                if (nrex_has_lookbehind(stack))
+                {
+                    NREX_COMPILE_ERROR("backreferences inside lookbehind not supported");
+                }
                 stack.top()->add_child(NREX_NEW(nrex_node_backreference(ref)));
+            }
+            else if (c[1] == 'b' || c[1] == 'B')
+            {
+                stack.top()->add_child(NREX_NEW(nrex_node_word_boundary(c[1] == 'B')));
+                ++c;
             }
             else
             {
-                NREX_COMPILE_ERROR("escape token not recognised");
+                const nrex_char* d = c;
+                nrex_char unescaped = nrex_unescape(d);
+                if (c == d)
+                {
+                    NREX_COMPILE_ERROR("invalid escape token");
+                }
+                stack.top()->add_child(NREX_NEW(nrex_node_char(unescaped)));
+                c = d;
             }
         }
         else
         {
             stack.top()->add_child(NREX_NEW(nrex_node_char(c[0])));
         }
+    }
+    if (stack.size() > 1)
+    {
+        NREX_COMPILE_ERROR("unclosed group '('");
     }
     return true;
 }

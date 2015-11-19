@@ -1647,8 +1647,60 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				case KEY_BACKSPACE: {
 					if (readonly)
 						break;
-					backspace_at_cursor();
-					
+
+#ifdef APPLE_STYLE_KEYS
+					if (k.mod.alt) {
+#else
+					if (k.mod.alt) {
+						scancode_handled=false;
+						break;
+					} else if (k.mod.command) {
+#endif
+						int line=cursor.line;
+						int column=cursor.column;
+
+						bool prev_char=false;
+						bool only_whitespace=true;
+
+						while (only_whitespace && line > 0) {
+
+							while (column>0) {
+								CharType c=text[line][column-1];
+
+								if (c != '\t' && c != ' ') {
+									only_whitespace=false;
+									break;
+								}
+
+								column--;
+							}
+
+							if (only_whitespace) {
+								line--;
+								column=text[line].length();
+							}
+						}
+
+						while (column>0) {
+							bool ischar=_is_text_char(text[line][column-1]);
+
+							if (prev_char && !ischar)
+								break;
+
+							prev_char=ischar;
+							column--;
+
+						}
+
+						_remove_text(line, column, cursor.line, cursor.column);
+
+						cursor_set_line(line);
+						cursor_set_column(column);
+
+					} else {
+						backspace_at_cursor();
+					}
+
 				} break;
 				case KEY_LEFT: {
 					
@@ -1789,10 +1841,63 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					if (cursor.line==text.size()-1 && cursor.column==curline_len)
 						break; //nothing to do
 					
-					int next_line = cursor.column<curline_len?cursor.line:cursor.line+1;
-					int next_column = cursor.column<curline_len?(cursor.column+1):0;
+					int next_line=cursor.column<curline_len?cursor.line:cursor.line+1;
+					int next_column;
+
+#ifdef APPLE_STYLE_KEYS
+					if (k.mod.alt) {
+#else
+					if (k.mod.alt) {
+						scancode_handled=false;
+						break;
+					} else if (k.mod.command) {
+#endif
+						int last_line=text.size()-1;
+
+						int line=cursor.line;
+						int column=cursor.column;
+
+						bool prev_char=false;
+						bool only_whitespace=true;
+
+						while (only_whitespace && line < last_line) {
+
+							while (column<text[line].length()) {
+								CharType c=text[line][column];
+
+								if (c != '\t' && c != ' ') {
+									only_whitespace=false;
+									break;
+								}
+
+								column++;
+							}
+
+							if (only_whitespace) {
+								line++;
+								column=0;
+							}
+						}
+
+						while (column<text[line].length()) {
+
+							bool ischar=_is_text_char(text[line][column]);
+
+							if (prev_char && !ischar)
+								break;
+							prev_char=ischar;
+							column++;
+						}
+
+						next_line=line;
+						next_column=column;
+					} else {
+						next_column=cursor.column<curline_len?(cursor.column+1):0;
+					}
+
 					_remove_text(cursor.line,cursor.column,next_line,next_column);
 					update();
+
 				} break;
 #ifdef APPLE_STYLE_KEYS
 				case KEY_HOME: {

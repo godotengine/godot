@@ -15,7 +15,7 @@
 
 void RegEx::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("compile","pattern"),&RegEx::compile);
+	ObjectTypeDB::bind_method(_MD("compile","pattern", "expanded"),&RegEx::compile, DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("find","text","start","end"),&RegEx::find, DEFVAL(0), DEFVAL(-1));
 	ObjectTypeDB::bind_method(_MD("clear"),&RegEx::clear);
 	ObjectTypeDB::bind_method(_MD("is_valid"),&RegEx::is_valid);
@@ -54,7 +54,9 @@ bool RegEx::is_valid() const {
 };
 
 int RegEx::get_capture_count() const {
-	
+
+	ERR_FAIL_COND_V( !exp.valid(), 0 );
+
 	return exp.capture_size();
 }
 
@@ -66,11 +68,11 @@ String RegEx::get_capture(int capture) const {
 
 }
 
-Error RegEx::compile(const String& p_pattern) {
+Error RegEx::compile(const String& p_pattern, bool expanded) {
 
 	clear();
 
-	exp.compile(p_pattern.c_str());
+	exp.compile(p_pattern.c_str(), expanded);
 
 	ERR_FAIL_COND_V( !exp.valid(), FAILED );
 

@@ -1031,13 +1031,12 @@ Vector2 TileMap::world_to_map(const Vector2& p_pos) const{
 	switch(half_offset) {
 
 		case HALF_OFFSET_X: {
-			if (int(ret.y)&1) {
-
+			if ( ret.y > 0 ? int(ret.y)&1 : (int(ret.y)-1)&1 ) {
 				ret.x-=0.5;
 			}
 		} break;
 		case HALF_OFFSET_Y: {
-			if (int(ret.x)&1) {
+			if ( ret.x > 0 ? int(ret.x)&1 : (int(ret.x)-1)&1) {
 				ret.y-=0.5;
 			}
 		} break;

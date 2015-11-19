@@ -162,10 +162,6 @@ class RasterizerDummy : public Rasterizer {
 		uint32_t format;
 		uint32_t morph_format;
 
-		RID material;
-		bool material_owned;
-
-
 		Surface() {
 
 			packed=false;
@@ -414,6 +410,10 @@ public:
 	virtual bool texture_has_alpha(RID p_texture) const;
 	virtual void texture_set_size_override(RID p_texture,int p_width, int p_height);
 	virtual void texture_set_reload_hook(RID p_texture,ObjectID p_owner,const StringName& p_function) const;
+
+	virtual void texture_set_path(RID p_texture,const String& p_path) {}
+	virtual String texture_get_path(RID p_texture) const { return String(); }
+	virtual void texture_debug_usage(List<VS::TextureInfo> *r_info) {}
 
 	/* SHADER API */
 

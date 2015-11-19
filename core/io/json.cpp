@@ -177,9 +177,6 @@ Error JSON::_get_token(const CharType *p_str, int &idx, int p_len, Token& r_toke
 							case 'n': res=10; break;
 							case 'f': res=12; break;
 							case 'r': res=13; break;
-							case '\"': res='\"'; break;
-							case '\\': res='\\'; break;
-							case '/': res='/'; break; //wtf
 							case 'u': {
 								//hexnumbarh - oct is deprecated
 
@@ -218,10 +215,13 @@ Error JSON::_get_token(const CharType *p_str, int &idx, int p_len, Token& r_toke
 
 
 							} break;
+							//case '\"': res='\"'; break;
+							//case '\\': res='\\'; break;
+							//case '/': res='/'; break;
 							default: {
-
-								r_err_str="Invalid escape sequence";
-								return ERR_PARSE_ERROR;
+								res = next;
+								//r_err_str="Invalid escape sequence";
+								//return ERR_PARSE_ERROR;
 							} break;
 						}
 

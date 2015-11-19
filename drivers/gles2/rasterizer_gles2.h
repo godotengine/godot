@@ -105,16 +105,17 @@ class RasterizerGLES2 : public Rasterizer {
 	float anisotropic_level;
 
 	bool use_half_float;
-
+	bool low_memory_2d;
 
 	Vector<float> skel_default;
 
 	Image _get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_internal_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed);
 
-	class RenderTarget;
+	struct RenderTarget;
 
 	struct Texture {
 
+		String path;
 		uint32_t flags;
 		int width,height;
 		int alloc_width, alloc_height;
@@ -304,7 +305,7 @@ class RasterizerGLES2 : public Rasterizer {
 		virtual ~GeometryOwner() {}
 	};
 
-	class Mesh;
+	struct Mesh;
 
 	struct Surface : public Geometry {
 
@@ -1324,6 +1325,10 @@ public:
 	virtual bool texture_has_alpha(RID p_texture) const;
 	virtual void texture_set_size_override(RID p_texture,int p_width, int p_height);
 	virtual void texture_set_reload_hook(RID p_texture,ObjectID p_owner,const StringName& p_function) const;
+
+	virtual void texture_set_path(RID p_texture,const String& p_path);
+	virtual String texture_get_path(RID p_texture) const;
+	virtual void texture_debug_usage(List<VS::TextureInfo> *r_info);
 
 	GLuint _texture_get_name(RID p_tex);
 

@@ -447,7 +447,7 @@ void EditorSettings::_load_defaults() {
 	hints["global/default_project_path"]=PropertyInfo(Variant::STRING,"global/default_project_path",PROPERTY_HINT_GLOBAL_DIR);
 	set("global/default_project_export_path","");
 	hints["global/default_project_export_path"]=PropertyInfo(Variant::STRING,"global/default_project_export_path",PROPERTY_HINT_GLOBAL_DIR);
-
+	set("global/show_script_in_scene_tabs",false);
 	set("text_editor/background_color",Color::html("3b000000"));
 	set("text_editor/text_color",Color::html("aaaaaa"));
 	set("text_editor/text_selected_color",Color::html("000000"));

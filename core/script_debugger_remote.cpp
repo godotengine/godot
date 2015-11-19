@@ -31,6 +31,28 @@
 #include "io/ip.h"
 #include "globals.h"
 
+void ScriptDebuggerRemote::_send_video_memory() {
+
+	List<ResourceUsage> usage;
+	if (resource_usage_func)
+		resource_usage_func(&usage);
+
+	usage.sort();
+
+	packet_peer_stream->put_var("message:video_mem");
+	packet_peer_stream->put_var(usage.size()*4);
+
+
+	for(List<ResourceUsage>::Element *E=usage.front();E;E=E->next()) {
+
+		packet_peer_stream->put_var(E->get().path);
+		packet_peer_stream->put_var(E->get().type);
+		packet_peer_stream->put_var(E->get().format);
+		packet_peer_stream->put_var(E->get().vram);
+	}
+
+}
+
 Error ScriptDebuggerRemote::connect_to_host(const String& p_host,uint16_t p_port) {
 
 
@@ -248,6 +270,9 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script,bool p_can_continue) {
 				if (request_scene_tree)
 					request_scene_tree(request_scene_tree_ud);
 
+			} else if (command=="request_video_mem") {
+
+				_send_video_memory();
 			} else if (command=="breakpoint") {
 
 				bool set = cmd[3];
@@ -531,6 +556,9 @@ void ScriptDebuggerRemote::_poll_events() {
 
 			if (request_scene_tree)
 				request_scene_tree(request_scene_tree_ud);
+		} else if (command=="request_video_mem") {
+
+			_send_video_memory();
 		} else if (command=="breakpoint") {
 
 			bool set = cmd[3];
@@ -651,6 +679,8 @@ void ScriptDebuggerRemote::set_live_edit_funcs(LiveEditFuncs *p_funcs) {
 
 	live_edit_funcs=p_funcs;
 }
+
+ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func=NULL;
 
 ScriptDebuggerRemote::ScriptDebuggerRemote() {
 

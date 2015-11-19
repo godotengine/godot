@@ -60,6 +60,16 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src,float p_left, float p_top, flo
 	return style;
 }
 
+
+static Ref<StyleBoxTexture> sb_expand(Ref<StyleBoxTexture> p_sbox,float p_left, float p_top, float p_right, float p_botton) {
+
+	p_sbox->set_expand_margin_size(MARGIN_LEFT,p_left);
+	p_sbox->set_expand_margin_size(MARGIN_TOP,p_top);
+	p_sbox->set_expand_margin_size(MARGIN_RIGHT,p_right);
+	p_sbox->set_expand_margin_size(MARGIN_BOTTOM,p_botton);
+	return p_sbox;
+}
+
 template<class T>
 static Ref<Texture> make_icon(T p_src) {
 
@@ -178,6 +188,7 @@ void make_default_theme() {
 	// Font Colors
 
 	Color control_font_color = Color::html("e0e0e0");
+	Color control_font_color_lower = Color::html("a0a0a0");
 	Color control_font_color_low = Color::html("b0b0b0");
 	Color control_font_color_hover = Color::html("f0f0f0");
 	Color control_font_color_disabled = Color(0.9,0.9,0.9,0.2);
@@ -195,18 +206,24 @@ void make_default_theme() {
 
 	Ref<StyleBoxTexture> focus = make_stylebox( focus_png,5,5,5,5);
 	for(int i=0;i<4;i++) {
-		focus->set_expand_margin_size(Margin(i),2);
+		focus->set_expand_margin_size(Margin(i),1);
 	}
 
 
 
 	// Button
 
-	t->set_stylebox("normal","Button", make_stylebox( button_normal_png,4,4,4,4,8,4,8,4) );
-	t->set_stylebox("pressed","Button", make_stylebox( button_pressed_png,4,4,4,4) );
-	t->set_stylebox("hover","Button", make_stylebox( button_hover_png,4,4,4,4) );
-	t->set_stylebox("disabled","Button", make_stylebox( button_disabled_png,4,4,4,4) );
-	t->set_stylebox("focus","Button", focus );
+	Ref<StyleBox> sb_button_normal = sb_expand( make_stylebox( button_normal_png,4,4,4,4,6,3,6,3),2,2,2,2);
+	Ref<StyleBox> sb_button_pressed = sb_expand( make_stylebox( button_pressed_png,4,4,4,4,6,3,6,3),2,2,2,2);
+	Ref<StyleBox> sb_button_hover = sb_expand( make_stylebox( button_hover_png,4,4,4,4,6,2,6,2),2,2,2,2);
+	Ref<StyleBox> sb_button_disabled = sb_expand( make_stylebox( button_disabled_png,4,4,4,4,6,2,6,2),2,2,2,2);
+	Ref<StyleBox> sb_button_focus = sb_expand( make_stylebox( button_focus_png,4,4,4,4,6,2,6,2),2,2,2,2);
+
+	t->set_stylebox("normal","Button", sb_button_normal);
+	t->set_stylebox("pressed","Button", sb_button_pressed);
+	t->set_stylebox("hover","Button", sb_button_hover);
+	t->set_stylebox("disabled","Button", sb_button_disabled);
+	t->set_stylebox("focus","Button", sb_button_focus);
 
 	t->set_font("font","Button", default_font );
 
@@ -221,11 +238,11 @@ void make_default_theme() {
 
 	// ColorPickerButton
 
-	t->set_stylebox("normal","ColorPickerButton", make_stylebox( button_normal_png,4,4,4,4) );
-	t->set_stylebox("pressed","ColorPickerButton", make_stylebox( button_pressed_png,4,4,4,4) );
-	t->set_stylebox("hover","ColorPickerButton", make_stylebox( button_hover_png,4,4,4,4) );
-	t->set_stylebox("disabled","ColorPickerButton", make_stylebox( button_disabled_png,4,4,4,4) );
-	t->set_stylebox("focus","ColorPickerButton", focus );
+	t->set_stylebox("normal","ColorPickerButton", sb_button_normal);
+	t->set_stylebox("pressed","ColorPickerButton", sb_button_pressed);
+	t->set_stylebox("hover","ColorPickerButton", sb_button_hover);
+	t->set_stylebox("disabled","ColorPickerButton", sb_button_disabled);
+	t->set_stylebox("focus","ColorPickerButton", sb_button_focus);
 
 	t->set_font("font","ColorPickerButton", default_font );
 
@@ -257,17 +274,23 @@ void make_default_theme() {
 	t->set_color("font_color_hover","ToolButton", control_font_color_hover );
 	t->set_color("font_color_disabled","ToolButton", Color(0.9,0.95,1,0.3) );
 
-	t->set_constant("hseparation","ToolButton", 0 );
+	t->set_constant("hseparation","ToolButton", 3 );
 
 
 
 	// OptionButton
 
-	t->set_stylebox("normal","OptionButton", make_stylebox( option_button_normal_png,5,5,21,5,8,4,8,4) );
-	t->set_stylebox("pressed","OptionButton", make_stylebox( option_button_pressed_png,5,5,21,5) );
-	t->set_stylebox("hover","OptionButton", make_stylebox( option_button_hover_png,5,5,21,5) );
-	t->set_stylebox("disabled","OptionButton", make_stylebox( option_button_disabled_png,5,5,21,5) );
-	t->set_stylebox("focus","OptionButton", focus );
+	Ref<StyleBox> sb_optbutton_normal = sb_expand( make_stylebox( option_button_normal_png,4,4,21,4,6,3,21,3),2,2,2,2);
+	Ref<StyleBox> sb_optbutton_pressed = sb_expand( make_stylebox( option_button_pressed_png,4,4,21,4,6,3,21,3),2,2,2,2);
+	Ref<StyleBox> sb_optbutton_hover = sb_expand( make_stylebox( option_button_hover_png,4,4,21,4,6,2,21,2),2,2,2,2);
+	Ref<StyleBox> sb_optbutton_disabled = sb_expand( make_stylebox( option_button_disabled_png,4,4,21,4,6,2,21,2),2,2,2,2);
+	Ref<StyleBox> sb_optbutton_focus = sb_expand( make_stylebox( button_focus_png,4,4,4,4,6,2,6,2),2,2,2,2);
+
+	t->set_stylebox("normal","OptionButton", sb_optbutton_normal );
+	t->set_stylebox("pressed","OptionButton", sb_optbutton_pressed );
+	t->set_stylebox("hover","OptionButton", sb_optbutton_hover );
+	t->set_stylebox("disabled","OptionButton", sb_optbutton_disabled );
+	t->set_stylebox("focus","OptionButton", sb_button_focus );
 
 	t->set_icon("arrow","OptionButton", make_icon( option_arrow_png ) );
 
@@ -285,10 +308,11 @@ void make_default_theme() {
 
 	// MenuButton
 
-	t->set_stylebox("normal","MenuButton", make_stylebox( button_normal_png,4,4,4,4,8,4,8,4) );
-	t->set_stylebox("pressed","MenuButton", make_stylebox( tool_button_pressed_png ,4,4,4,4) );
-	t->set_stylebox("hover","MenuButton", make_stylebox( button_normal_png,4,4,4,4) );
+	t->set_stylebox("normal","MenuButton", sb_button_normal );
+	t->set_stylebox("pressed","MenuButton", sb_button_pressed );
+	t->set_stylebox("hover","MenuButton", sb_button_pressed );
 	t->set_stylebox("disabled","MenuButton", make_empty_stylebox(0,0,0,0) );
+	t->set_stylebox("focus","MenuButton", sb_button_focus );
 
 	t->set_font("font","MenuButton", default_font );
 
@@ -298,6 +322,10 @@ void make_default_theme() {
 	t->set_color("font_color_disabled","MenuButton", Color(1,1,1,0.3) );
 
 	t->set_constant("hseparation","MenuButton", 3 );
+
+	// ButtonGroup
+
+	t->set_stylebox("panel","ButtonGroup", memnew( StyleBoxEmpty ));
 
 	// CheckBox
 
@@ -438,10 +466,10 @@ void make_default_theme() {
 
 	// HScrollBar
 
-	t->set_stylebox("scroll","HScrollBar", make_stylebox( scroll_bg_png,3,3,3,3,0,0,0,0) );
-	t->set_stylebox("scroll_focus","HScrollBar", make_stylebox( scroll_bg_png,3,3,3,3,0,0,0,0) );
-	t->set_stylebox("grabber","HScrollBar", make_stylebox( scroll_grabber_png,3,3,3,3,2,2,2,2) );
-	t->set_stylebox("grabber_hilite","HScrollBar", make_stylebox( scroll_grabber_hl_png,3,3,3,3,2,2,2,2) );
+	t->set_stylebox("scroll","HScrollBar", make_stylebox( scroll_bg_png,5,5,5,5,0,0,0,0) );
+	t->set_stylebox("scroll_focus","HScrollBar", make_stylebox( scroll_bg_png,5,5,5,5,0,0,0,0) );
+	t->set_stylebox("grabber","HScrollBar", make_stylebox( scroll_grabber_png,5,5,5,5,2,2,2,2) );
+	t->set_stylebox("grabber_hilite","HScrollBar", make_stylebox( scroll_grabber_hl_png,5,5,5,5,2,2,2,2) );
 
 	t->set_icon("increment","HScrollBar",empty_icon);
 	t->set_icon("increment_hilite","HScrollBar",empty_icon);
@@ -452,10 +480,10 @@ void make_default_theme() {
 
 	// VScrollBar
 
-	t->set_stylebox("scroll","VScrollBar", make_stylebox( scroll_bg_png,3,3,3,3,0,0,0,0) );
-	t->set_stylebox("scroll_focus","VScrollBar", make_stylebox( scroll_bg_png,3,3,3,3,0,0,0,0) );
-	t->set_stylebox("grabber","VScrollBar", make_stylebox( scroll_grabber_png,3,3,3,3,2,2,2,2) );
-	t->set_stylebox("grabber_hilite","VScrollBar", make_stylebox( scroll_grabber_hl_png,3,3,3,3,2,2,2,2) );
+	t->set_stylebox("scroll","VScrollBar", make_stylebox( scroll_bg_png,5,5,5,5,0,0,0,0) );
+	t->set_stylebox("scroll_focus","VScrollBar", make_stylebox( scroll_bg_png,5,5,5,5,0,0,0,0) );
+	t->set_stylebox("grabber","VScrollBar", make_stylebox( scroll_grabber_png,5,5,5,5,2,2,2,2) );
+	t->set_stylebox("grabber_hilite","VScrollBar", make_stylebox( scroll_grabber_hl_png,5,5,5,5,2,2,2,2) );
 
 	t->set_icon("increment","VScrollBar",empty_icon);
 	t->set_icon("increment_hilite","VScrollBar",empty_icon);
@@ -497,10 +525,10 @@ void make_default_theme() {
 
 	// WindowDialog
 
-	Ref<StyleBoxTexture> style_pp_win = make_stylebox( popup_window_png,6,28,6,7);
-	for(int i=0;i<4;i++)
+	Ref<StyleBoxTexture> style_pp_win = sb_expand(make_stylebox( popup_window_png,10,30,10,8),8,26,8,4);
+	/*for(int i=0;i<4;i++)
 		style_pp_win->set_expand_margin_size((Margin)i,3);
-	style_pp_win->set_expand_margin_size(MARGIN_TOP,26);
+	style_pp_win->set_expand_margin_size(MARGIN_TOP,26);*/
 
 	t->set_stylebox("panel","WindowDialog", style_pp_win );
 
@@ -520,7 +548,7 @@ void make_default_theme() {
 
 	// Popup
 
-	Ref<StyleBoxTexture> style_pp = make_stylebox( popup_bg_png,4,4,4,4,8,8,8,8);
+	Ref<StyleBoxTexture> style_pp =  sb_expand( make_stylebox( popup_bg_png,5,5,5,5,4,4,4,4),2,2,2,2);
 
 	Ref<StyleBoxTexture> selected = make_stylebox( selection_png,6,6,6,6);
 	for(int i=0;i<4;i++) {
@@ -627,7 +655,7 @@ void make_default_theme() {
 	t->set_constant("icon_margin","ItemList",4);
 	t->set_constant("line_separation","ItemList",2);
 	t->set_font("font","ItemList", default_font );
-	t->set_color("font_color","ItemList", control_font_color_low );
+	t->set_color("font_color","ItemList", control_font_color_lower );
 	t->set_color("font_color_selected","ItemList", control_font_color_pressed );
 	t->set_color("guide_color","ItemList", Color(0,0,0,0.1) );
 	t->set_stylebox("selected","ItemList", item_selected_oof );
@@ -644,16 +672,13 @@ void make_default_theme() {
 
 	// TabContainer
 
-	Ref<StyleBoxTexture> tc_sb = make_stylebox( tab_container_bg_png,4,4,4,4);
-	for(int i=0;i<4;i++) {
-		tc_sb->set_default_margin(Margin(i),4);
-		tc_sb->set_expand_margin_size(Margin(i),2);
-	}
+	Ref<StyleBoxTexture> tc_sb = sb_expand( make_stylebox( tab_container_bg_png,4,4,4,4,4,4,4,4),3,3,3,3);
+
 	tc_sb->set_expand_margin_size(MARGIN_TOP,2);
 	tc_sb->set_default_margin(MARGIN_TOP,8);
 
-	t->set_stylebox("tab_fg","TabContainer", make_stylebox( tab_current_png,4,4,4,4,16,4,16,4) );
-	t->set_stylebox("tab_bg","TabContainer", make_stylebox( tab_behind_png,4,4,4,4,16,6,16,4) );
+	t->set_stylebox("tab_fg","TabContainer", sb_expand( make_stylebox( tab_current_png,4,4,4,1,16,4,16,4),2,2,2,2) );
+	t->set_stylebox("tab_bg","TabContainer", sb_expand( make_stylebox( tab_behind_png,5,5,5,1,16,6,16,4),3,0,3,3) );
 	t->set_stylebox("panel","TabContainer", tc_sb );
 
 	t->set_icon("increment","TabContainer",make_icon( scroll_button_right_png));
@@ -678,9 +703,9 @@ void make_default_theme() {
 
 	// Tabs
 
-	t->set_stylebox("tab_fg","Tabs", make_stylebox( tab_current_png,4,4,4,4,16,4,16,4) );
-	t->set_stylebox("tab_bg","Tabs", make_stylebox( tab_behind_png,4,4,4,4,16,6,16,4) );
-	t->set_stylebox("panel","Tabs", make_stylebox( tab_container_bg_png,4,4,4,4) );
+	t->set_stylebox("tab_fg","Tabs", sb_expand( make_stylebox( tab_current_png,4,3,4,1,16,3,16,2),2,2,2,2) );
+	t->set_stylebox("tab_bg","Tabs", sb_expand( make_stylebox( tab_behind_png,5,4,5,1,16,5,16,2),3,3,3,3) );
+	t->set_stylebox("panel","Tabs",tc_sb );
 	t->set_stylebox("button_pressed","Tabs", make_stylebox( button_pressed_png,4,4,4,4) );
 	t->set_stylebox("button","Tabs", make_stylebox( button_normal_png,4,4,4,4) );
 

@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_atlas.h"
-
+#include "print_string.h"
 
 struct _EditorAtlasWorkRect {
 
@@ -83,6 +83,7 @@ void EditorAtlas::fit(const Vector<Size2i>& p_rects,Vector<Point2i>& r_result, S
 		//place them
 		int ofs=0;
 		int limit_h=0;
+
 		for(int j=0;j<wrects.size();j++) {
 
 
@@ -100,6 +101,9 @@ void EditorAtlas::fit(const Vector<Size2i>& p_rects,Vector<Point2i>& r_result, S
 
 			wrects[j].p.x=ofs;
 			wrects[j].p.y=from_y;
+
+
+
 			int end_h = from_y+wrects[j].s.height;
 			int end_w = ofs+wrects[j].s.width;
 			if (ofs==0)
@@ -116,7 +120,7 @@ void EditorAtlas::fit(const Vector<Size2i>& p_rects,Vector<Point2i>& r_result, S
 			if (end_w > max_w)
 				max_w=end_w;
 
-			if (ofs==0 || end_h>limit_h ) //while h limit not reched, keep stacking
+			//if (ofs==0 || end_h>limit_h ) //while h limit not reched, keep stacking
 				ofs+=wrects[j].s.width;
 
 		}
@@ -136,8 +140,8 @@ void EditorAtlas::fit(const Vector<Size2i>& p_rects,Vector<Point2i>& r_result, S
 
 	for(int i=0;i<results.size();i++) {
 
-		float h = nearest_power_of_2(results[i].max_h);
-		float w = nearest_power_of_2(results[i].max_w);
+		float h = results[i].max_h;
+		float w = results[i].max_w;
 		float aspect = h>w ? h/w : w/h;
 		if (aspect < best_aspect) {
 			best=i;

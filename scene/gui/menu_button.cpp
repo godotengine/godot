@@ -54,6 +54,8 @@ void MenuButton::_unhandled_key_input(InputEvent p_event) {
 
 
 		int item = popup->find_item_by_accelerator(code);
+
+
 		if (item>=0 && ! popup->is_item_disabled(item))
 			popup->activate_item(item);
 		/*

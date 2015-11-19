@@ -115,6 +115,18 @@ void CollisionShape2DEditor::set_handle(int idx, Point2& p_point) {
 		} break;
 
 		case LINE_SHAPE: {
+			if (idx<2) {
+				Ref<LineShape2D> line = node->get_shape();
+
+				if (idx==0){
+					line->set_d(p_point.length());
+				}else{
+					line->set_normal(p_point/30.0);
+				}
+
+				canvas_item_editor->get_viewport_control()->update();
+			}
+
 
 		} break;
 
@@ -200,6 +212,19 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant& p_org) {
 		} break;
 
 		case LINE_SHAPE: {
+			Ref<LineShape2D> line = node->get_shape();
+
+			if (idx==0) {
+				undo_redo->add_do_method(line.ptr(),"set_d",line->get_d());
+				undo_redo->add_do_method(c,"update");
+				undo_redo->add_undo_method(line.ptr(),"set_d",p_org);
+				undo_redo->add_undo_method(c,"update");
+			} else {
+				undo_redo->add_do_method(line.ptr(),"set_normal",line->get_normal());
+				undo_redo->add_do_method(c,"update");
+				undo_redo->add_undo_method(line.ptr(),"set_normal",p_org);
+				undo_redo->add_undo_method(c,"update");
+			}
 
 		} break;
 
@@ -418,6 +443,14 @@ void CollisionShape2DEditor::_canvas_draw() {
 		} break;
 
 		case LINE_SHAPE: {
+			Ref<LineShape2D> shape = node->get_shape();
+			
+			handles.resize(2);
+			handles[0] = shape->get_normal() * shape->get_d();
+			handles[1] = shape->get_normal() * (shape->get_d() + 30.0);
+			
+			c->draw_texture(h,gt.xform(handles[0])-size);
+			c->draw_texture(h,gt.xform(handles[1])-size);
 
 		} break;
 

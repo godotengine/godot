@@ -92,6 +92,9 @@ public:
 		Param diffuse;
 		Param specular;
 		Param emission;
+		
+		bool is_double_sided;
+		bool use_alpha;
 	};
 
 	struct Triangle {
@@ -154,6 +157,7 @@ public:
 
 	struct BVH {
 
+		int id;
 		AABB aabb;
 		Vector3 center;
 		Triangle *leaf;
@@ -307,7 +311,7 @@ public:
 	void _plot_light(ThreadStack& thread_stack,const Vector3& p_plot_pos,const AABB& p_plot_aabb,const Color& p_light,const Color& p_tint_light,bool p_only_full,const Plane& p_plane);
 	//void _plot_light_point(const Vector3& p_plot_pos, Octant *p_octant, const AABB& p_aabb,const Color& p_light);
 
-	float _throw_ray(ThreadStack& thread_stack,bool p_bake_direct,const Vector3& p_begin, const Vector3& p_end,float p_rest,const Color& p_light,float *p_att_curve,float p_att_pos,int p_att_curve_len,int p_bounces,bool p_first_bounce=false,bool p_only_dist=false);
+	float _throw_ray(ThreadStack& thread_stack,bool p_bake_direct,const Vector3& p_begin, const Vector3& p_end,float p_rest,const Color& p_light,float *p_att_curve,float p_att_pos,int p_att_curve_len,int p_bounces,bool p_first_bounce=false,bool p_only_dist=false, Vector<int>&p_ignore_list=Vector<int>());
 
 
 	float total_light_area;

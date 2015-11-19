@@ -57,7 +57,9 @@ void Camera2D::_update_scroll() {
 void Camera2D::set_zoom(const Vector2 &p_zoom) {
 
 	zoom = p_zoom;
+	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
 	_update_scroll();
+	smoothed_camera_pos = old_smoothed_camera_pos;
 };
 
 Vector2 Camera2D::get_zoom() const {

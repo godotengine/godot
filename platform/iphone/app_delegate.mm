@@ -56,6 +56,8 @@
 #import "Appirater.h"
 #endif
 
+Error _shell_open(String);
+
 Error _shell_open(String p_uri) {
 	NSString* url = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
 
@@ -236,6 +238,8 @@ static int frame_count = 0;
 	view_controller.view = glView;
 	window.rootViewController = view_controller;
 
+	glView.useCADisplayLink = bool(GLOBAL_DEF("display.iOS/use_cadisplaylink",true)) ? YES : NO;
+	printf("cadisaplylink: %d", glView.useCADisplayLink);
 	glView.animationInterval = 1.0 / kRenderingFrequency;
 	[glView startAnimation];
 	

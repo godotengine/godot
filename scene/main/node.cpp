@@ -2039,6 +2039,10 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("duplicate:Node","use_instancing"),&Node::duplicate,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("replace_by","node:Node","keep_data"),&Node::replace_by,DEFVAL(false));
 
+	ObjectTypeDB::bind_method(_MD("set_scene_instance_load_placeholder","load_placeholder"),&Node::set_scene_instance_load_placeholder);
+	ObjectTypeDB::bind_method(_MD("get_scene_instance_load_placeholder"),&Node::get_scene_instance_load_placeholder);
+
+
 	ObjectTypeDB::bind_method(_MD("get_viewport"),&Node::get_viewport);
 
 	ObjectTypeDB::bind_method(_MD("queue_free"),&Node::queue_delete);

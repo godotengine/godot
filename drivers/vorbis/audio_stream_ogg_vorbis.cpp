@@ -289,8 +289,7 @@ Error AudioStreamPlaybackOGGVorbis::set_file(const String& p_file) {
 	const vorbis_info *vinfo=ov_info(&vf,-1);
 	stream_channels=vinfo->channels;
 	stream_srate=vinfo->rate;
-	ogg_int64_t len = ov_time_total(&vf,-1);
-	length=len/1000.0;
+	length = ov_time_total(&vf,-1);
 	ov_clear(&vf);
 	memdelete(f);
 	f=NULL;

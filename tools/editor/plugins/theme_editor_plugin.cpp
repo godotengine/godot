@@ -568,26 +568,24 @@ ThemeEditor::ThemeEditor() {
 	CheckButton *cb = memnew( CheckButton );
 	cb->set_text("CheckButton");
 	first_vb->add_child(cb );
-    CheckBox *cbx = memnew( CheckBox );
-    cbx->set_text("CheckBox");
-    first_vb->add_child(cbx );
+	CheckBox *cbx = memnew( CheckBox );
+	cbx->set_text("CheckBox");
+	first_vb->add_child(cbx );
 
-    /* TODO: This is not working properly, controls are overlapping*/
-    /*
-    ButtonGroup *bg = memnew( ButtonGroup );
-    bg->set_v_size_flags(SIZE_EXPAND_FILL);
-    VBoxContainer *gbvb = memnew( VBoxContainer );
-    gbvb->set_v_size_flags(SIZE_EXPAND_FILL);
-    CheckBox *rbx1 = memnew( CheckBox );
-    rbx1->set_text("CheckBox Radio1");
-    rbx1->set_pressed(true);
-    gbvb->add_child(rbx1);
-    CheckBox *rbx2 = memnew( CheckBox );
-    rbx2->set_text("CheckBox Radio2");
-    gbvb->add_child(rbx2);
-    bg->add_child(gbvb);
-    first_vb->add_child(bg);
-    */
+
+	ButtonGroup *bg = memnew( ButtonGroup );
+	bg->set_v_size_flags(SIZE_EXPAND_FILL);
+	VBoxContainer *gbvb = memnew( VBoxContainer );
+	gbvb->set_v_size_flags(SIZE_EXPAND_FILL);
+	CheckBox *rbx1 = memnew( CheckBox );
+	rbx1->set_text("CheckBox Radio1");
+	rbx1->set_pressed(true);
+	gbvb->add_child(rbx1);
+	CheckBox *rbx2 = memnew( CheckBox );
+	rbx2->set_text("CheckBox Radio2");
+	gbvb->add_child(rbx2);
+	bg->add_child(gbvb);
+	first_vb->add_child(bg);
 
 	MenuButton* test_menu_button = memnew( MenuButton );
 	test_menu_button->set_text("MenuButton");

@@ -105,7 +105,7 @@ private:
 				int32_t loop_pos;
 				int32_t window_ofs;
 				const uint8_t *ptr;
-			} ima_adpcm;
+			} ima_adpcm[2];
 
 		} mix;
 

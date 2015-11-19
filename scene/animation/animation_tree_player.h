@@ -34,6 +34,7 @@
 #include "scene/3d/spatial.h"
 #include "scene/3d/skeleton.h"
 #include "scene/main/misc.h"
+#include "animation_player.h"
 
 
 class AnimationTreePlayer : public Node {
@@ -42,7 +43,10 @@ class AnimationTreePlayer : public Node {
 	OBJ_CATEGORY("Animation Nodes");
 
 public:
-
+	enum AnimationProcessMode {
+		ANIMATION_PROCESS_FIXED,
+		ANIMATION_PROCESS_IDLE,
+	};
 
 	enum NodeType {
 
@@ -256,13 +260,15 @@ private:
 
 	ConnectError last_error;
 	AnimationNode *active_list;
+	AnimationProcessMode animation_process_mode;
+	bool processing;
 	bool active;
 	bool dirty_caches;
 	Map<StringName,NodeBase*> node_map;
 
 	// return time left to finish animation
 	float _process_node(const StringName& p_node,AnimationNode **r_prev_anim, float p_weight,float p_step, bool p_seek=false,const HashMap<NodePath,bool> *p_filter=NULL, float p_reverse_weight=0);
-	void _process_animation();
+	void _process_animation(float p_delta);
 	bool reset_request;
 
 	ConnectError _cycle_test(const StringName &p_at_node);
@@ -409,12 +415,21 @@ public:
 
 	ConnectError get_last_error() const;
 
+	void set_animation_process_mode(AnimationProcessMode p_mode);
+	AnimationProcessMode get_animation_process_mode() const;
+
+	void _set_process(bool p_process, bool p_force = false);
+
+	void advance(float p_time);
+
 	AnimationTreePlayer();
 	~AnimationTreePlayer();
 
 };
 
 VARIANT_ENUM_CAST( AnimationTreePlayer::NodeType );
+VARIANT_ENUM_CAST( AnimationTreePlayer::AnimationProcessMode );
+
 #endif // ANIMATION_TREE_PLAYER_H
 
 

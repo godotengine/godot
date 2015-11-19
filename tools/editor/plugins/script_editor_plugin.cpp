@@ -572,26 +572,117 @@ void ScriptEditor::_goto_script_line(REF p_script,int p_line) {
 
 }
 
+
+void ScriptEditor::_update_history_arrows() {
+
+	script_back->set_disabled( history_pos<=0 );
+	script_forward->set_disabled( history_pos>=history.size()-1 );
+}
+
+
+void ScriptEditor::_go_to_tab(int p_idx) {
+
+	Node *cn = tab_container->get_child(p_idx);
+	if (!cn)
+		return;
+	Control *c = cn->cast_to<Control>();
+	if (!c)
+		return;
+
+	if (history_pos>=0 && history_pos<history.size() && history[history_pos].control==tab_container->get_current_tab_control()) {
+
+		Node *n = tab_container->get_current_tab_control();
+
+		if (n->cast_to<ScriptTextEditor>()) {
+
+			history[history_pos].scroll_pos=n->cast_to<ScriptTextEditor>()->get_text_edit()->get_v_scroll();
+			history[history_pos].cursor_column=n->cast_to<ScriptTextEditor>()->get_text_edit()->cursor_get_column();
+			history[history_pos].cursor_row=n->cast_to<ScriptTextEditor>()->get_text_edit()->cursor_get_line();
+		}
+		if (n->cast_to<EditorHelp>()) {
+
+			history[history_pos].scroll_pos=n->cast_to<EditorHelp>()->get_scroll();
+		}
+	}
+
+	history.resize(history_pos+1);
+	ScriptHistory sh;
+	sh.control=c;
+	sh.scroll_pos=0;
+
+	history.push_back(sh);
+	history_pos++;
+
+
+	tab_container->set_current_tab(p_idx);
+
+	c = tab_container->get_current_tab_control();
+
+	if (c->cast_to<ScriptTextEditor>()) {
+
+		script_name_label->set_text(c->cast_to<ScriptTextEditor>()->get_name());
+		script_icon->set_texture(c->cast_to<ScriptTextEditor>()->get_icon());
+		if (is_visible())
+			c->cast_to<ScriptTextEditor>()->get_text_edit()->grab_focus();
+	}
+	if (c->cast_to<EditorHelp>()) {
+
+		script_name_label->set_text(c->cast_to<EditorHelp>()->get_class_name());
+		script_icon->set_texture(get_icon("Help","EditorIcons"));
+		if (is_visible())
+			c->cast_to<EditorHelp>()->set_focused();
+	}
+
+
+
+	c->set_meta("__editor_pass",++edit_pass);
+	_update_history_arrows();
+	_update_script_colors();
+}
+
 void ScriptEditor::_close_current_tab() {
 
 	int selected = tab_container->get_current_tab();
 	if (selected<0 || selected>=tab_container->get_child_count())
 		return;
 	
+	Node *tselected = tab_container->get_child(selected);
 	ScriptTextEditor *current = tab_container->get_child(selected)->cast_to<ScriptTextEditor>();
-	if (!current)
-		return;
+	if (current) {
+		apply_scripts();
+	}
 
-	apply_scripts();
+	//remove from history
+	history.resize(history_pos+1);
+
+	for(int i=0;i<history.size();i++) {
+		if (history[i].control==tselected) {
+			history.remove(i);
+			i--;
+			history_pos--;
+		}
+	}
+
+	if (history_pos>=history.size()) {
+		history_pos=history.size()-1;
+	}
 
 	int idx = tab_container->get_current_tab();
-	memdelete(current);
+	memdelete(tselected);
 	if (idx>=tab_container->get_child_count())
 		idx=tab_container->get_child_count()-1;
 	if (idx>=0) {
+
+		if (history_pos>=0) {
+			idx = history[history_pos].control->get_index();
+		}
 		tab_container->set_current_tab(idx);
+
 		//script_list->select(idx);
 	}
+
+
+	_update_history_arrows();
 
 
 
@@ -755,33 +846,15 @@ void ScriptEditor::swap_lines(TextEdit *tx, int line1, int line2)
 void ScriptEditor::_menu_option(int p_option) {
 
 
-	if (p_option==FILE_OPEN) {
-		editor->open_resource("Script");
-		return;
-	}
-	int selected = tab_container->get_current_tab();
-	if (selected<0 || selected>=tab_container->get_child_count())
-		return;
-
-	ScriptTextEditor *current = tab_container->get_child(selected)->cast_to<ScriptTextEditor>();
-	if (!current)
-		return;
-
 	switch(p_option) {
 		case FILE_NEW: {
 			script_create_dialog->config("Node", ".gd");
 			script_create_dialog->popup_centered(Size2(300, 300));
 		} break;
-		case FILE_SAVE: {
-			if (!_test_script_times_on_disk())
-				return;
-			editor->save_resource( current->get_edited_script() );
+		case FILE_OPEN: {
 
-		} break;
-		case FILE_SAVE_AS: {
-
-			editor->save_resource_as( current->get_edited_script() );
-
+			editor->open_resource("Script");
+			return;
 		} break;
 		case FILE_SAVE_ALL: {
 
@@ -806,386 +879,469 @@ void ScriptEditor::_menu_option(int p_option) {
 
 
 		} break;
-		case EDIT_UNDO: {
-			current->get_text_edit()->undo();
-			current->get_text_edit()->call_deferred("grab_focus");
+		case SEARCH_HELP: {
+
+			help_search_dialog->popup("current");
 		} break;
-		case EDIT_REDO: {
-			current->get_text_edit()->redo();
-			current->get_text_edit()->call_deferred("grab_focus");
-		} break;
-		case EDIT_CUT: {
+		case SEARCH_CLASSES: {
 
-			current->get_text_edit()->cut();
-			current->get_text_edit()->call_deferred("grab_focus");
-		} break;
-		case EDIT_COPY: {
-			current->get_text_edit()->copy();
-			current->get_text_edit()->call_deferred("grab_focus");
+			if (tab_container->get_tab_count()==0)
+				break;
 
-		} break;
-		case EDIT_PASTE: {
-			current->get_text_edit()->paste();
-			current->get_text_edit()->call_deferred("grab_focus");
+			String current;
 
-		} break;
-		case EDIT_SELECT_ALL: {
-
-			current->get_text_edit()->select_all();
-			current->get_text_edit()->call_deferred("grab_focus");
-
-		} break;
-        case EDIT_MOVE_LINE_UP: {
-
-            TextEdit *tx = current->get_text_edit();
-            Ref<Script> scr = current->get_edited_script();
-            if (scr.is_null())
-                return;
-
-            if (tx->is_selection_active())
-            {
-                int from_line = tx->get_selection_from_line();
-                int from_col  = tx->get_selection_from_column();
-                int to_line   = tx->get_selection_to_line();
-                int to_column = tx->get_selection_to_column();
-
-                for (int i = from_line; i <= to_line; i++)
-                {
-                    int line_id = i;
-                    int next_id = i - 1;
-
-                    if (line_id == 0 || next_id < 0)
-                        return;
-
-                    swap_lines(tx, line_id, next_id);
-                }
-                int from_line_up = from_line > 0 ? from_line-1 : from_line;
-                int to_line_up   = to_line   > 0 ? to_line-1   : to_line;
-                tx->select(from_line_up, from_col, to_line_up, to_column);
-            }
-            else
-            {
-                int line_id = tx->cursor_get_line();
-                int next_id = line_id - 1;
-
-                if (line_id == 0 || next_id < 0)
-                    return;
-
-                swap_lines(tx, line_id, next_id);
-            }
-            tx->update();
-
-        } break;
-        case EDIT_MOVE_LINE_DOWN: {
-
-            TextEdit *tx = current->get_text_edit();
-            Ref<Script> scr = current->get_edited_script();
-            if (scr.is_null())
-                return;
-
-            if (tx->is_selection_active())
-            {
-                int from_line = tx->get_selection_from_line();
-                int from_col  = tx->get_selection_from_column();
-                int to_line   = tx->get_selection_to_line();
-                int to_column = tx->get_selection_to_column();
-
-                for (int i = to_line; i >= from_line; i--)
-                {
-                    int line_id = i;
-                    int next_id = i + 1;
-
-                    if (line_id == tx->get_line_count()-1 || next_id > tx->get_line_count())
-                        return;
-
-                    swap_lines(tx, line_id, next_id);
-                }
-                int from_line_down = from_line < tx->get_line_count() ? from_line+1 : from_line;
-                int to_line_down   = to_line   < tx->get_line_count() ? to_line+1   : to_line;
-                tx->select(from_line_down, from_col, to_line_down, to_column);
-            }
-            else
-            {
-                int line_id = tx->cursor_get_line();
-                int next_id = line_id + 1;
-
-                if (line_id == tx->get_line_count()-1 || next_id > tx->get_line_count())
-                    return;
-
-                swap_lines(tx, line_id, next_id);
-            }
-            tx->update();
-
-        } break;
-        case EDIT_INDENT_LEFT: {
-
-            TextEdit *tx = current->get_text_edit();
-            Ref<Script> scr = current->get_edited_script();
-            if (scr.is_null())
-                return;
-
-
-            if (tx->is_selection_active())
-            {
-		int begin = tx->get_selection_from_line();
-		int end = tx->get_selection_to_line();
-                for (int i = begin; i <= end; i++)
-                {
-                    String line_text = tx->get_line(i);
-                    // begins with tab
-                    if (line_text.begins_with("\t"))
-                    {
-                        line_text = line_text.substr(1, line_text.length());
-                        tx->set_line(i, line_text);
-                    }
-                    // begins with 4 spaces
-                    else if (line_text.begins_with("    "))
-                    {
-                        line_text = line_text.substr(4, line_text.length());
-                        tx->set_line(i, line_text);
-                    }
-                }
-            }
-            else
-            {
-		int begin = tx->cursor_get_line();
-                String line_text = tx->get_line(begin);
-                // begins with tab
-                if (line_text.begins_with("\t"))
-                {
-                    line_text = line_text.substr(1, line_text.length());
-                    tx->set_line(begin, line_text);
-                }
-                // begins with 4 spaces
-                else if (line_text.begins_with("    "))
-                {
-                    line_text = line_text.substr(4, line_text.length());
-                    tx->set_line(begin, line_text);
-                }
-            }
-            tx->update();
-            //tx->deselect();
-
-        } break;
-        case EDIT_INDENT_RIGHT: {
-
-            TextEdit *tx = current->get_text_edit();
-            Ref<Script> scr = current->get_edited_script();
-            if (scr.is_null())
-                return;
-
-            if (tx->is_selection_active())
-            {
-		int begin = tx->get_selection_from_line();
-		int end = tx->get_selection_to_line();
-                for (int i = begin; i <= end; i++)
-                {
-                    String line_text = tx->get_line(i);
-                    line_text = '\t' + line_text;
-                    tx->set_line(i, line_text);
-                }
-            }
-            else
-            {
-		int begin = tx->cursor_get_line();
-                String line_text = tx->get_line(begin);
-                line_text = '\t' + line_text;
-                tx->set_line(begin, line_text);
-            }
-            tx->update();
-            //tx->deselect();
-
-        } break;
-        case EDIT_CLONE_DOWN: {
-
-            TextEdit *tx = current->get_text_edit();
-            Ref<Script> scr = current->get_edited_script();
-            if (scr.is_null())
-                return;
-            int line = tx->cursor_get_line();
-            int next_line = line + 1;
-
-            if (line == tx->get_line_count() || next_line > tx->get_line_count())
-                return;
-
-            String line_clone = tx->get_line(line);
-            tx->insert_at(line_clone, next_line);
-            tx->update();
-
-        } break;
-        case EDIT_TOGGLE_COMMENT: {
-
-            TextEdit *tx = current->get_text_edit();
-            Ref<Script> scr = current->get_edited_script();
-            if (scr.is_null())
-                return;
-
-
-
-            if (tx->is_selection_active())
-            {
-		int begin = tx->get_selection_from_line();
-		int end = tx->get_selection_to_line();
-                for (int i = begin; i <= end; i++)
-                {
-                    String line_text = tx->get_line(i);
-
-                    if (line_text.begins_with("#"))
-                        line_text = line_text.substr(1, line_text.length());
-                    else
-                        line_text = "#" + line_text;
-                    tx->set_line(i, line_text);
-                }
-            }
-            else
-            {
-		int begin = tx->cursor_get_line();
-                String line_text = tx->get_line(begin);
-
-                if (line_text.begins_with("#"))
-                    line_text = line_text.substr(1, line_text.length());
-                else
-                    line_text = "#" + line_text;
-                tx->set_line(begin, line_text);
-            }
-            tx->update();
-            //tx->deselect();
-
-        } break;
-		case EDIT_COMPLETE: {
-
-			current->get_text_edit()->query_code_comple();
-
-		} break;
-		case EDIT_AUTO_INDENT: {
-
-			TextEdit *te = current->get_text_edit();
-			String text = te->get_text();
-			Ref<Script> scr = current->get_edited_script();
-			if (scr.is_null())
-				return;
-			int begin,end;
-			if (te->is_selection_active()) {
-				begin=te->get_selection_from_line();
-				end=te->get_selection_to_line();
-			} else {
-				begin=0;
-				end=te->get_line_count()-1;
+			EditorHelp *eh = tab_container->get_child( tab_container->get_current_tab() )->cast_to<EditorHelp>();
+			if (eh) {
+				current=eh->get_class_name();
 			}
-			scr->get_language()->auto_indent_code(text,begin,end);
-			te->set_text(text);
 
+			help_index->popup_centered_ratio(0.6);
 
+			if (current!="") {
+				help_index->call_deferred("select_class",current);
+			}
 		} break;
-		case SEARCH_FIND: {
+		case SEARCH_WEBSITE: {
 
-			find_replace_dialog->set_text_edit(current->get_text_edit());
-			find_replace_dialog->popup_search();
+			OS::get_singleton()->shell_open("http://www.godotengine.org/projects/godot-engine/wiki/Documentation#Tutorials");
 		} break;
-		case SEARCH_FIND_NEXT: {
 
-			find_replace_dialog->set_text_edit(current->get_text_edit());
-			 find_replace_dialog->search_next();
+		case WINDOW_NEXT: {
+
+			_history_forward();
 		} break;
-		case SEARCH_REPLACE: {
-
-			find_replace_dialog->set_text_edit(current->get_text_edit());
-			find_replace_dialog->popup_replace();
+		case WINDOW_PREV: {
+			_history_back();
 		} break;
-		case SEARCH_LOCATE_FUNCTION: {
 
-			if (!current)
-				return;
-			quick_open->popup(current->get_functions());
-		} break;
-		case SEARCH_GOTO_LINE: {
+	}
 
-			goto_line_dialog->popup_find_line(current->get_text_edit());
-		} break;
-		case DEBUG_TOGGLE_BREAKPOINT: {
-			int line=current->get_text_edit()->cursor_get_line();
-			bool dobreak = !current->get_text_edit()->is_line_set_as_breakpoint(line);
-			current->get_text_edit()->set_line_as_breakpoint(line,dobreak);
-			get_debugger()->set_breakpoint(current->get_edited_script()->get_path(),line+1,dobreak);
-		} break;
-		case DEBUG_NEXT: {
 
-			if (debugger)
-				debugger->debug_next();
-		} break;
-		case DEBUG_STEP: {
+	int selected = tab_container->get_current_tab();
+	if (selected<0 || selected>=tab_container->get_child_count())
+		return;
 
-			if (debugger)
-				debugger->debug_step();
+	ScriptTextEditor *current = tab_container->get_child(selected)->cast_to<ScriptTextEditor>();
+	if (current) {
 
-		} break;
-		case DEBUG_BREAK: {
+		switch(p_option) {
+			case FILE_NEW: {
+				script_create_dialog->config("Node", ".gd");
+				script_create_dialog->popup_centered(Size2(300, 300));
+			} break;
+			case FILE_SAVE: {
+				if (!_test_script_times_on_disk())
+					return;
+				editor->save_resource( current->get_edited_script() );
 
-			if (debugger)
-				debugger->debug_break();
+			} break;
+			case FILE_SAVE_AS: {
 
-		} break;
-		case DEBUG_CONTINUE: {
+				editor->save_resource_as( current->get_edited_script() );
 
-			if (debugger)
-				debugger->debug_continue();
+			} break;
+			case EDIT_UNDO: {
+				current->get_text_edit()->undo();
+				current->get_text_edit()->call_deferred("grab_focus");
+			} break;
+			case EDIT_REDO: {
+				current->get_text_edit()->redo();
+				current->get_text_edit()->call_deferred("grab_focus");
+			} break;
+			case EDIT_CUT: {
 
-		} break;
-		case DEBUG_SHOW: {
-			if (debugger) {
-				bool visible = debug_menu->get_popup()->is_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW) );
-				debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW), !visible);
-				if (visible)
-					debugger->hide();
+				current->get_text_edit()->cut();
+				current->get_text_edit()->call_deferred("grab_focus");
+			} break;
+			case EDIT_COPY: {
+				current->get_text_edit()->copy();
+				current->get_text_edit()->call_deferred("grab_focus");
+
+			} break;
+			case EDIT_PASTE: {
+				current->get_text_edit()->paste();
+				current->get_text_edit()->call_deferred("grab_focus");
+
+			} break;
+			case EDIT_SELECT_ALL: {
+
+				current->get_text_edit()->select_all();
+				current->get_text_edit()->call_deferred("grab_focus");
+
+			} break;
+			case EDIT_MOVE_LINE_UP: {
+
+				TextEdit *tx = current->get_text_edit();
+				Ref<Script> scr = current->get_edited_script();
+				if (scr.is_null())
+					return;
+
+				if (tx->is_selection_active())
+				{
+					int from_line = tx->get_selection_from_line();
+					int from_col  = tx->get_selection_from_column();
+					int to_line   = tx->get_selection_to_line();
+					int to_column = tx->get_selection_to_column();
+
+					for (int i = from_line; i <= to_line; i++)
+					{
+						int line_id = i;
+						int next_id = i - 1;
+
+						if (line_id == 0 || next_id < 0)
+							return;
+
+						swap_lines(tx, line_id, next_id);
+					}
+					int from_line_up = from_line > 0 ? from_line-1 : from_line;
+					int to_line_up   = to_line   > 0 ? to_line-1   : to_line;
+					tx->select(from_line_up, from_col, to_line_up, to_column);
+				}
 				else
-					debugger->show();
-			}
-		} break;
-		case HELP_CONTEXTUAL: {
-			String text = current->get_text_edit()->get_selection_text();
-			if (text == "")
-				text = current->get_text_edit()->get_word_under_cursor();
-			if (text != "")
-				editor->emit_signal("request_help", text);
-		} break;
-		case FILE_CLOSE: {
-			if (current->get_text_edit()->get_version()!=current->get_text_edit()->get_saved_version()) {
-				erase_tab_confirm->set_text("Close and save changes?\n\""+current->get_name()+"\"");
-				erase_tab_confirm->popup_centered_minsize();
-			} else {
-				_close_current_tab();
-			}
-		} break;
-		case WINDOW_MOVE_LEFT: {
+				{
+					int line_id = tx->cursor_get_line();
+					int next_id = line_id - 1;
 
-			if (tab_container->get_current_tab()>0) {
-				tab_container->call_deferred("set_current_tab",tab_container->get_current_tab()-1);
-				script_list->call_deferred("select",tab_container->get_current_tab()-1);
-				tab_container->move_child(current,tab_container->get_current_tab()-1);
-				_update_script_names();
-			}
-		} break;
-		case WINDOW_MOVE_RIGHT: {
+					if (line_id == 0 || next_id < 0)
+						return;
 
-			if (tab_container->get_current_tab()<tab_container->get_child_count()-1) {
-				tab_container->call_deferred("set_current_tab",tab_container->get_current_tab()+1);
-				script_list->call_deferred("select",tab_container->get_current_tab()+1);
-				tab_container->move_child(current,tab_container->get_current_tab()+1);
-				_update_script_names();
-			}
+					swap_lines(tx, line_id, next_id);
+				}
+				tx->update();
+
+			} break;
+			case EDIT_MOVE_LINE_DOWN: {
+
+				TextEdit *tx = current->get_text_edit();
+				Ref<Script> scr = current->get_edited_script();
+				if (scr.is_null())
+					return;
+
+				if (tx->is_selection_active())
+				{
+					int from_line = tx->get_selection_from_line();
+					int from_col  = tx->get_selection_from_column();
+					int to_line   = tx->get_selection_to_line();
+					int to_column = tx->get_selection_to_column();
+
+					for (int i = to_line; i >= from_line; i--)
+					{
+						int line_id = i;
+						int next_id = i + 1;
+
+						if (line_id == tx->get_line_count()-1 || next_id > tx->get_line_count())
+							return;
+
+						swap_lines(tx, line_id, next_id);
+					}
+					int from_line_down = from_line < tx->get_line_count() ? from_line+1 : from_line;
+					int to_line_down   = to_line   < tx->get_line_count() ? to_line+1   : to_line;
+					tx->select(from_line_down, from_col, to_line_down, to_column);
+				}
+				else
+				{
+					int line_id = tx->cursor_get_line();
+					int next_id = line_id + 1;
+
+					if (line_id == tx->get_line_count()-1 || next_id > tx->get_line_count())
+						return;
+
+					swap_lines(tx, line_id, next_id);
+				}
+				tx->update();
+
+			} break;
+			case EDIT_INDENT_LEFT: {
+
+				TextEdit *tx = current->get_text_edit();
+				Ref<Script> scr = current->get_edited_script();
+				if (scr.is_null())
+					return;
 
 
-		} break;
-		default: {
+				if (tx->is_selection_active())
+				{
+					int begin = tx->get_selection_from_line();
+					int end = tx->get_selection_to_line();
+					for (int i = begin; i <= end; i++)
+					{
+						String line_text = tx->get_line(i);
+						// begins with tab
+						if (line_text.begins_with("\t"))
+						{
+							line_text = line_text.substr(1, line_text.length());
+							tx->set_line(i, line_text);
+						}
+						// begins with 4 spaces
+						else if (line_text.begins_with("    "))
+						{
+							line_text = line_text.substr(4, line_text.length());
+							tx->set_line(i, line_text);
+						}
+					}
+				}
+				else
+				{
+					int begin = tx->cursor_get_line();
+					String line_text = tx->get_line(begin);
+					// begins with tab
+					if (line_text.begins_with("\t"))
+					{
+						line_text = line_text.substr(1, line_text.length());
+						tx->set_line(begin, line_text);
+					}
+					// begins with 4 spaces
+					else if (line_text.begins_with("    "))
+					{
+						line_text = line_text.substr(4, line_text.length());
+						tx->set_line(begin, line_text);
+					}
+				}
+				tx->update();
+				//tx->deselect();
 
-			if (p_option>=WINDOW_SELECT_BASE) {
+			} break;
+			case EDIT_INDENT_RIGHT: {
 
-				tab_container->set_current_tab(p_option-WINDOW_SELECT_BASE);
-				script_list->select(p_option-WINDOW_SELECT_BASE);
+				TextEdit *tx = current->get_text_edit();
+				Ref<Script> scr = current->get_edited_script();
+				if (scr.is_null())
+					return;
 
+				if (tx->is_selection_active())
+				{
+					int begin = tx->get_selection_from_line();
+					int end = tx->get_selection_to_line();
+					for (int i = begin; i <= end; i++)
+					{
+						String line_text = tx->get_line(i);
+						line_text = '\t' + line_text;
+						tx->set_line(i, line_text);
+					}
+				}
+				else
+				{
+					int begin = tx->cursor_get_line();
+					String line_text = tx->get_line(begin);
+					line_text = '\t' + line_text;
+					tx->set_line(begin, line_text);
+				}
+				tx->update();
+				//tx->deselect();
+
+			} break;
+			case EDIT_CLONE_DOWN: {
+
+				TextEdit *tx = current->get_text_edit();
+				Ref<Script> scr = current->get_edited_script();
+				if (scr.is_null())
+					return;
+				int line = tx->cursor_get_line();
+				int next_line = line + 1;
+
+				if (line == tx->get_line_count() || next_line > tx->get_line_count())
+					return;
+
+				String line_clone = tx->get_line(line);
+				tx->insert_at(line_clone, next_line);
+				tx->update();
+
+			} break;
+			case EDIT_TOGGLE_COMMENT: {
+
+				TextEdit *tx = current->get_text_edit();
+				Ref<Script> scr = current->get_edited_script();
+				if (scr.is_null())
+					return;
+
+
+
+				if (tx->is_selection_active())
+				{
+					int begin = tx->get_selection_from_line();
+					int end = tx->get_selection_to_line();
+					for (int i = begin; i <= end; i++)
+					{
+						String line_text = tx->get_line(i);
+
+						if (line_text.begins_with("#"))
+							line_text = line_text.substr(1, line_text.length());
+						else
+							line_text = "#" + line_text;
+						tx->set_line(i, line_text);
+					}
+				}
+				else
+				{
+					int begin = tx->cursor_get_line();
+					String line_text = tx->get_line(begin);
+
+					if (line_text.begins_with("#"))
+						line_text = line_text.substr(1, line_text.length());
+					else
+						line_text = "#" + line_text;
+					tx->set_line(begin, line_text);
+				}
+				tx->update();
+				//tx->deselect();
+
+			} break;
+			case EDIT_COMPLETE: {
+
+				current->get_text_edit()->query_code_comple();
+
+			} break;
+			case EDIT_AUTO_INDENT: {
+
+				TextEdit *te = current->get_text_edit();
+				String text = te->get_text();
+				Ref<Script> scr = current->get_edited_script();
+				if (scr.is_null())
+					return;
+				int begin,end;
+				if (te->is_selection_active()) {
+					begin=te->get_selection_from_line();
+					end=te->get_selection_to_line();
+				} else {
+					begin=0;
+					end=te->get_line_count()-1;
+				}
+				scr->get_language()->auto_indent_code(text,begin,end);
+				te->set_text(text);
+
+
+			} break;
+			case SEARCH_FIND: {
+
+				find_replace_dialog->set_text_edit(current->get_text_edit());
+				find_replace_dialog->popup_search();
+			} break;
+			case SEARCH_FIND_NEXT: {
+
+				find_replace_dialog->set_text_edit(current->get_text_edit());
+				find_replace_dialog->search_next();
+			} break;
+			case SEARCH_REPLACE: {
+
+				find_replace_dialog->set_text_edit(current->get_text_edit());
+				find_replace_dialog->popup_replace();
+			} break;
+			case SEARCH_LOCATE_FUNCTION: {
+
+				if (!current)
+					return;
+				quick_open->popup(current->get_functions());
+			} break;
+			case SEARCH_GOTO_LINE: {
+
+				goto_line_dialog->popup_find_line(current->get_text_edit());
+			} break;
+			case DEBUG_TOGGLE_BREAKPOINT: {
+				int line=current->get_text_edit()->cursor_get_line();
+				bool dobreak = !current->get_text_edit()->is_line_set_as_breakpoint(line);
+				current->get_text_edit()->set_line_as_breakpoint(line,dobreak);
+				get_debugger()->set_breakpoint(current->get_edited_script()->get_path(),line+1,dobreak);
+			} break;
+			case DEBUG_NEXT: {
+
+				if (debugger)
+					debugger->debug_next();
+			} break;
+			case DEBUG_STEP: {
+
+				if (debugger)
+					debugger->debug_step();
+
+			} break;
+			case DEBUG_BREAK: {
+
+				if (debugger)
+					debugger->debug_break();
+
+			} break;
+			case DEBUG_CONTINUE: {
+
+				if (debugger)
+					debugger->debug_continue();
+
+			} break;
+			case DEBUG_SHOW: {
+				if (debugger) {
+					bool visible = debug_menu->get_popup()->is_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW) );
+					debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW), !visible);
+					if (visible)
+						debugger->hide();
+					else
+						debugger->show();
+				}
+			} break;
+			case HELP_CONTEXTUAL: {
+				String text = current->get_text_edit()->get_selection_text();
+				if (text == "")
+					text = current->get_text_edit()->get_word_under_cursor();
+				if (text != "")
+					help_search_dialog->popup(text);
+			} break;
+			case FILE_CLOSE: {
+				if (current->get_text_edit()->get_version()!=current->get_text_edit()->get_saved_version()) {
+					erase_tab_confirm->set_text("Close and save changes?\n\""+current->get_name()+"\"");
+					erase_tab_confirm->popup_centered_minsize();
+				} else {
+					_close_current_tab();
+				}
+			} break;
+			case WINDOW_MOVE_LEFT: {
+
+				if (tab_container->get_current_tab()>0) {
+					tab_container->call_deferred("set_current_tab",tab_container->get_current_tab()-1);
+					script_list->call_deferred("select",tab_container->get_current_tab()-1);
+					tab_container->move_child(current,tab_container->get_current_tab()-1);
+					_update_script_names();
+				}
+			} break;
+			case WINDOW_MOVE_RIGHT: {
+
+				if (tab_container->get_current_tab()<tab_container->get_child_count()-1) {
+					tab_container->call_deferred("set_current_tab",tab_container->get_current_tab()+1);
+					script_list->call_deferred("select",tab_container->get_current_tab()+1);
+					tab_container->move_child(current,tab_container->get_current_tab()+1);
+					_update_script_names();
+				}
+
+
+			} break;
+
+			default: {
+
+				if (p_option>=WINDOW_SELECT_BASE) {
+
+					tab_container->set_current_tab(p_option-WINDOW_SELECT_BASE);
+					script_list->select(p_option-WINDOW_SELECT_BASE);
+
+				}
 			}
 		}
 	}
+
+	EditorHelp *help = tab_container->get_child(selected)->cast_to<EditorHelp>();
+	if (help) {
+
+		switch(p_option) {
+
+			case SEARCH_FIND: {
+				help->popup_search();
+			} break;
+			case SEARCH_FIND_NEXT: {
+				help->search_again();
+			} break;
+			case FILE_CLOSE: {
+				_close_current_tab();
+			} break;
+
+
+		}
+	}
+
 
 }
 
@@ -1217,6 +1373,14 @@ void ScriptEditor::_notification(int p_what) {
 		}
 
 		EditorSettings::get_singleton()->connect("settings_changed",this,"_editor_settings_changed");
+		help_search->set_icon(get_icon("Help","EditorIcons"));
+		site_search->set_icon(get_icon("Godot","EditorIcons"));
+		class_search->set_icon(get_icon("ClassList","EditorIcons"));
+
+		script_forward->set_icon(get_icon("Forward","EditorIcons"));
+		script_back->set_icon(get_icon("Back","EditorIcons"));
+
+
 
 
 	}
@@ -1346,7 +1510,7 @@ void ScriptEditor::set_state(const Dictionary& p_state) {
 
 }
 void ScriptEditor::clear() {
-
+#if 0
 	List<ScriptTextEditor*> stes;
 	for(int i=0;i<tab_container->get_child_count();i++) {
 
@@ -1371,7 +1535,7 @@ void ScriptEditor::clear() {
 		script_list->select( script_list->find_metadata(idx) );
 	}
 
-
+#endif
 
 
 }
@@ -1402,31 +1566,6 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 
 
 
-void ScriptEditor::_bind_methods() {
-
-	ObjectTypeDB::bind_method("_tab_changed",&ScriptEditor::_tab_changed);
-	ObjectTypeDB::bind_method("_menu_option",&ScriptEditor::_menu_option);
-	ObjectTypeDB::bind_method("_close_current_tab",&ScriptEditor::_close_current_tab);
-	ObjectTypeDB::bind_method("_editor_play",&ScriptEditor::_editor_play);
-	ObjectTypeDB::bind_method("_editor_pause",&ScriptEditor::_editor_pause);
-	ObjectTypeDB::bind_method("_editor_stop",&ScriptEditor::_editor_stop);
-	ObjectTypeDB::bind_method("_add_callback",&ScriptEditor::_add_callback);
-	ObjectTypeDB::bind_method("_reload_scripts",&ScriptEditor::_reload_scripts);
-	ObjectTypeDB::bind_method("_resave_scripts",&ScriptEditor::_resave_scripts);
-	ObjectTypeDB::bind_method("_res_saved_callback",&ScriptEditor::_res_saved_callback);
-	ObjectTypeDB::bind_method("_goto_script_line",&ScriptEditor::_goto_script_line);
-	ObjectTypeDB::bind_method("_goto_script_line2",&ScriptEditor::_goto_script_line2);
-	ObjectTypeDB::bind_method("_breaked",&ScriptEditor::_breaked);
-	ObjectTypeDB::bind_method("_show_debugger",&ScriptEditor::_show_debugger);
-	ObjectTypeDB::bind_method("_get_debug_tooltip",&ScriptEditor::_get_debug_tooltip);
-	ObjectTypeDB::bind_method("_autosave_scripts",&ScriptEditor::_autosave_scripts);
-	ObjectTypeDB::bind_method("_editor_settings_changed",&ScriptEditor::_editor_settings_changed);
-	ObjectTypeDB::bind_method("_update_script_names",&ScriptEditor::_update_script_names);
-	ObjectTypeDB::bind_method("_tree_changed",&ScriptEditor::_tree_changed);
-	ObjectTypeDB::bind_method("_script_selected",&ScriptEditor::_script_selected);
-	ObjectTypeDB::bind_method("_script_created",&ScriptEditor::_script_created);
-	ObjectTypeDB::bind_method("_script_split_dragged",&ScriptEditor::_script_split_dragged);
-}
 
 
 void ScriptEditor::ensure_focus_current() {
@@ -1448,7 +1587,8 @@ void ScriptEditor::ensure_focus_current() {
 void ScriptEditor::_script_selected(int p_idx) {
 
 	grab_focus_block = !Input::get_singleton()->is_mouse_button_pressed(1); //amazing hack, simply amazing
-	tab_container->set_current_tab(script_list->get_item_metadata(p_idx));
+
+	_go_to_tab(script_list->get_item_metadata(p_idx));
 	grab_focus_block=false;
 }
 
@@ -1457,14 +1597,36 @@ void ScriptEditor::ensure_select_current() {
 
 	if (tab_container->get_child_count() && tab_container->get_current_tab()>=0) {
 
-		ScriptTextEditor *ste = tab_container->get_child(tab_container->get_current_tab())->cast_to<ScriptTextEditor>();
-		if (!ste)
-			return;
-		Ref<Script> script = ste->get_edited_script();
+		Node *current = tab_container->get_child(tab_container->get_current_tab());
 
-		if (!grab_focus_block && is_inside_tree())
-			ste->get_text_edit()->grab_focus();
+
+		ScriptTextEditor *ste = current->cast_to<ScriptTextEditor>();
+		if (ste) {
+
+			Ref<Script> script = ste->get_edited_script();
+
+			if (!grab_focus_block && is_inside_tree())
+				ste->get_text_edit()->grab_focus();
+
+			edit_menu->show();
+			search_menu->show();
+			script_search_menu->hide();
+
+
+		}
+
+		EditorHelp *eh = current->cast_to<EditorHelp>();
+
+		if (eh) {
+			edit_menu->hide();
+			search_menu->hide();
+			script_search_menu->show();
+
+		}
 	}
+
+
+
 
 
 }
@@ -1485,6 +1647,57 @@ void ScriptEditor::_find_scripts(Node* p_base, Node* p_current, Set<Ref<Script> 
 
 }
 
+struct _ScriptEditorItemData {
+
+	String name;
+	Ref<Texture> icon;
+	int index;
+	String tooltip;
+	bool used;
+	int category;
+
+
+	bool operator<(const _ScriptEditorItemData& id) const {
+
+		return category==id.category?name.nocasecmp_to(id.name)<0:category<id.category;
+	}
+
+};
+
+
+void ScriptEditor::_update_script_colors() {
+
+	bool enabled = EditorSettings::get_singleton()->get("text_editor/script_temperature_enabled");
+	if (!enabled)
+		return;
+
+	int hist_size = EditorSettings::get_singleton()->get("text_editor/script_temperature_history_size");
+	Color hot_color=EditorSettings::get_singleton()->get("text_editor/script_temperature_hot_color");
+	Color cold_color=EditorSettings::get_singleton()->get("text_editor/script_temperature_cold_color");
+
+	for(int i=0;i<script_list->get_item_count();i++) {
+
+		int c = script_list->get_item_metadata(i);
+		Node *n = tab_container->get_child(c);
+		if (!n)
+			continue;
+
+		script_list->set_item_custom_bg_color(i,Color(0,0,0,0));
+		if (!n->has_meta("__editor_pass")) {
+			continue;
+		}
+
+		int pass=n->get_meta("__editor_pass");
+		int h = edit_pass - pass;
+		if (h>hist_size) {
+			continue;
+		}
+		float v = Math::ease((edit_pass-pass)/float_t(hist_size),0.4);
+
+
+		script_list->set_item_custom_bg_color(i,hot_color.linear_interpolate(cold_color,v));
+	}
+}
 
 void ScriptEditor::_update_script_names() {
 
@@ -1496,31 +1709,75 @@ void ScriptEditor::_update_script_names() {
 	}
 
 	script_list->clear();
+	bool split_script_help = EditorSettings::get_singleton()->get("text_editor/group_help_pages");
+
+	Vector<_ScriptEditorItemData> sedata;
+
 	for(int i=0;i<tab_container->get_child_count();i++) {
 
+
 		ScriptTextEditor *ste = tab_container->get_child(i)->cast_to<ScriptTextEditor>();
-		if (!ste)
-			continue;
+		if (ste) {
 
-		String script = ste->get_name();
-		Ref<Texture> icon = ste->get_icon();
-		String path = ste->get_edited_script()->get_path();
-		script_list->add_item(script,icon);
+			String name = ste->get_name();
+			Ref<Texture> icon = ste->get_icon();
+			String tooltip = ste->get_edited_script()->get_path();
 
+			_ScriptEditorItemData sd;
+			sd.icon=icon;
+			sd.name=name;
+			sd.tooltip=tooltip;
+			sd.index=i;
+			sd.used=used.has(ste->get_edited_script());
+			sd.category=0;
+
+			sedata.push_back(sd);
+		}
+
+		EditorHelp *eh = tab_container->get_child(i)->cast_to<EditorHelp>();
+		if (eh) {
+
+			String name = eh->get_class_name();
+			Ref<Texture> icon = get_icon("Help","EditorIcons");
+			String tooltip = name+" Class Reference";
+
+			_ScriptEditorItemData sd;
+			sd.icon=icon;
+			sd.name=name;
+			sd.tooltip=tooltip;
+			sd.index=i;
+			sd.used=false;
+			sd.category=split_script_help?1:0;
+			sedata.push_back(sd);
+
+		}
+
+	}
+
+	sedata.sort();
+
+	for(int i=0;i<sedata.size();i++) {
+
+		script_list->add_item(sedata[i].name,sedata[i].icon);
 		int index = script_list->get_item_count()-1;
-
-		script_list->set_item_tooltip(index,path);
-		script_list->set_item_metadata(index,i);
-		if (used.has(ste->get_edited_script())) {
+		script_list->set_item_tooltip(index,sedata[i].tooltip);
+		script_list->set_item_metadata(index,sedata[i].index);
+		if (sedata[i].used) {
 
 			script_list->set_item_custom_bg_color(index,Color(88/255.0,88/255.0,60/255.0));
 		}
-		if (tab_container->get_current_tab()==index) {
+		if (tab_container->get_current_tab()==sedata[i].index) {
 			script_list->select(index);
+			script_name_label->set_text(sedata[i].name);
+			script_icon->set_texture(sedata[i].icon);
+
 		}
 	}
 
-	script_list->sort_items_by_text();
+	_update_script_colors();
+
+
+
 
 }
 
@@ -1530,6 +1787,8 @@ void ScriptEditor::edit(const Ref<Script>& p_script) {
 		return;
 
 	// see if already has it
+
+	bool open_dominant = EditorSettings::get_singleton()->get("text_editor/open_dominant_script_on_scene_change");
 
 	if (p_script->get_path().is_resource_file() && bool(EditorSettings::get_singleton()->get("external_editor/use_external_editor"))) {
 
@@ -1559,12 +1818,13 @@ void ScriptEditor::edit(const Ref<Script>& p_script) {
 
 		if (ste->get_edited_script()==p_script) {
 
-			if (!EditorNode::get_singleton()->is_changing_scene()) {
+			if (open_dominant || !EditorNode::get_singleton()->is_changing_scene()) {
 				if (tab_container->get_current_tab()!=i) {
-					tab_container->set_current_tab(i);
+					_go_to_tab(i);
 					script_list->select( script_list->find_metadata(i) );
 				}
-				ste->get_text_edit()->grab_focus();
+				if (is_visible())
+					ste->get_text_edit()->grab_focus();
 			}
 			return;
 		}
@@ -1576,7 +1836,8 @@ void ScriptEditor::edit(const Ref<Script>& p_script) {
 	ste->set_edited_script(p_script);
 	ste->get_text_edit()->set_tooltip_request_func(this,"_get_debug_tooltip",ste);
 	tab_container->add_child(ste);
-	tab_container->set_current_tab(tab_container->get_tab_count()-1);
+	_go_to_tab(tab_container->get_tab_count()-1);
+
 
 
 
@@ -1675,7 +1936,7 @@ void ScriptEditor::_add_callback(Object *p_obj, const String& p_function, const 
 			ste->get_text_edit()->insert_text_at_cursor("\n\n"+func);
 		}
 
-		tab_container->set_current_tab(i);
+		_go_to_tab(i);
 		ste->get_text_edit()->cursor_set_line(pos);
 		ste->get_text_edit()->cursor_set_column(1);
 
@@ -1726,10 +1987,13 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 		return;
 	}
 
-	if (!p_layout->has_section_key("ScriptEditor","open_scripts"))
+	if (!p_layout->has_section_key("ScriptEditor","open_scripts") && !p_layout->has_section_key("ScriptEditor","open_help"))
 		return;
 
 	Array scripts = p_layout->get_value("ScriptEditor","open_scripts");
+	Array helps;
+	if (p_layout->has_section_key("ScriptEditor","open_help"))
+		helps=p_layout->get_value("ScriptEditor","open_help");
 
 	restoring_layout=true;
 
@@ -1741,6 +2005,18 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 			edit(scr);
 		}
 	}
+
+
+	for(int i=0;i<helps.size();i++) {
+
+		String path = helps[i];
+		_help_class_open(path);
+	}
+
+	for(int i=0;i<tab_container->get_child_count();i++) {
+		tab_container->get_child(i)->set_meta("__editor_pass",Variant());
+	}
+
 
 	if (p_layout->has_section_key("ScriptEditor","split_offset")) {
 		script_split->set_split_offset(p_layout->get_value("ScriptEditor","split_offset"));
@@ -1754,27 +2030,184 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 
 	Array scripts;
+	Array helps;
 
 	for(int i=0;i<tab_container->get_child_count();i++) {
 
 		ScriptTextEditor *ste = tab_container->get_child(i)->cast_to<ScriptTextEditor>();
-		if (!ste)
-			continue;
+		if (ste) {
 
-		String path = ste->get_edited_script()->get_path();
-		if (!path.is_resource_file())
-			continue;
+			String path = ste->get_edited_script()->get_path();
+			if (!path.is_resource_file())
+				continue;
 
-		scripts.push_back(path);
+			scripts.push_back(path);
+		}
+
+		EditorHelp *eh = tab_container->get_child(i)->cast_to<EditorHelp>();
+
+		if (eh) {
+
+			helps.push_back(eh->get_class_name());
+		}
+
 
 	}
 
 	p_layout->set_value("ScriptEditor","open_scripts",scripts);
+	p_layout->set_value("ScriptEditor","open_help",helps);
 	p_layout->set_value("ScriptEditor","split_offset",script_split->get_split_offset());
 
 }
 
 
+void ScriptEditor::_help_class_open(const String& p_class) {
+
+
+	for(int i=0;i<tab_container->get_child_count();i++) {
+
+		EditorHelp *eh = tab_container->get_child(i)->cast_to<EditorHelp>();
+
+		if (eh && eh->get_class_name()==p_class) {
+
+			_go_to_tab(i);
+			_update_script_names();
+			return;
+		}
+	}
+
+	EditorHelp * eh = memnew( EditorHelp );
+
+
+	eh->set_name(p_class);
+	tab_container->add_child(eh);
+	_go_to_tab(tab_container->get_tab_count()-1);
+	eh->go_to_class(p_class,0);
+	eh->connect("go_to_help",this,"_help_class_goto");
+	_update_script_names();
+
+}
+
+void ScriptEditor::_help_class_goto(const String& p_desc) {
+
+
+	String cname=p_desc.get_slice(":",1);
+
+	for(int i=0;i<tab_container->get_child_count();i++) {
+
+		EditorHelp *eh = tab_container->get_child(i)->cast_to<EditorHelp>();
+
+		if (eh && eh->get_class_name()==cname) {
+
+			_go_to_tab(i);
+			eh->go_to_help(p_desc);
+			_update_script_names();
+			return;
+		}
+	}
+
+	EditorHelp * eh = memnew( EditorHelp );
+
+	eh->set_name(cname);
+	tab_container->add_child(eh);
+	_go_to_tab(tab_container->get_tab_count()-1);
+	eh->go_to_help(p_desc);
+	eh->connect("go_to_help",this,"_help_class_goto");
+	_update_script_names();
+
+}
+
+void ScriptEditor::_update_history_pos(int p_new_pos) {
+
+	Node *n = tab_container->get_current_tab_control();
+
+	if (n->cast_to<ScriptTextEditor>()) {
+
+		history[history_pos].scroll_pos=n->cast_to<ScriptTextEditor>()->get_text_edit()->get_v_scroll();
+		history[history_pos].cursor_column=n->cast_to<ScriptTextEditor>()->get_text_edit()->cursor_get_column();
+		history[history_pos].cursor_row=n->cast_to<ScriptTextEditor>()->get_text_edit()->cursor_get_line();
+	}
+	if (n->cast_to<EditorHelp>()) {
+
+		history[history_pos].scroll_pos=n->cast_to<EditorHelp>()->get_scroll();
+	}
+
+	history_pos=p_new_pos;
+	tab_container->set_current_tab(history[history_pos].control->get_index());
+
+	n = history[history_pos].control;
+
+	if (n->cast_to<ScriptTextEditor>()) {
+
+		n->cast_to<ScriptTextEditor>()->get_text_edit()->set_v_scroll(history[history_pos].scroll_pos);
+		n->cast_to<ScriptTextEditor>()->get_text_edit()->cursor_set_column( history[history_pos].cursor_column );
+		n->cast_to<ScriptTextEditor>()->get_text_edit()->cursor_set_line( history[history_pos].cursor_row );
+		n->cast_to<ScriptTextEditor>()->get_text_edit()->grab_focus();
+	}
+
+	if (n->cast_to<EditorHelp>()) {
+
+		n->cast_to<EditorHelp>()->set_scroll(history[history_pos].scroll_pos);
+		n->cast_to<EditorHelp>()->set_focused();
+	}
+
+	n->set_meta("__editor_pass",++edit_pass);
+	_update_script_names();
+	_update_history_arrows();
+
+}
+
+void ScriptEditor::_history_forward() {
+
+	if (history_pos<history.size()-1) {
+		_update_history_pos(history_pos+1);
+	}
+}
+
+void ScriptEditor::_history_back(){
+
+	if (history_pos>0) {
+		_update_history_pos(history_pos-1);
+	}
+
+}
+void ScriptEditor::set_scene_root_script( Ref<Script> p_script ) {
+
+	bool open_dominant = EditorSettings::get_singleton()->get("text_editor/open_dominant_script_on_scene_change");
+	if (open_dominant && p_script.is_valid()) {
+		edit(p_script);
+	}
+}
+
+void ScriptEditor::_bind_methods() {
+
+	ObjectTypeDB::bind_method("_tab_changed",&ScriptEditor::_tab_changed);
+	ObjectTypeDB::bind_method("_menu_option",&ScriptEditor::_menu_option);
+	ObjectTypeDB::bind_method("_close_current_tab",&ScriptEditor::_close_current_tab);
+	ObjectTypeDB::bind_method("_editor_play",&ScriptEditor::_editor_play);
+	ObjectTypeDB::bind_method("_editor_pause",&ScriptEditor::_editor_pause);
+	ObjectTypeDB::bind_method("_editor_stop",&ScriptEditor::_editor_stop);
+	ObjectTypeDB::bind_method("_add_callback",&ScriptEditor::_add_callback);
+	ObjectTypeDB::bind_method("_reload_scripts",&ScriptEditor::_reload_scripts);
+	ObjectTypeDB::bind_method("_resave_scripts",&ScriptEditor::_resave_scripts);
+	ObjectTypeDB::bind_method("_res_saved_callback",&ScriptEditor::_res_saved_callback);
+	ObjectTypeDB::bind_method("_goto_script_line",&ScriptEditor::_goto_script_line);
+	ObjectTypeDB::bind_method("_goto_script_line2",&ScriptEditor::_goto_script_line2);
+	ObjectTypeDB::bind_method("_breaked",&ScriptEditor::_breaked);
+	ObjectTypeDB::bind_method("_show_debugger",&ScriptEditor::_show_debugger);
+	ObjectTypeDB::bind_method("_get_debug_tooltip",&ScriptEditor::_get_debug_tooltip);
+	ObjectTypeDB::bind_method("_autosave_scripts",&ScriptEditor::_autosave_scripts);
+	ObjectTypeDB::bind_method("_editor_settings_changed",&ScriptEditor::_editor_settings_changed);
+	ObjectTypeDB::bind_method("_update_script_names",&ScriptEditor::_update_script_names);
+	ObjectTypeDB::bind_method("_tree_changed",&ScriptEditor::_tree_changed);
+	ObjectTypeDB::bind_method("_script_selected",&ScriptEditor::_script_selected);
+	ObjectTypeDB::bind_method("_script_created",&ScriptEditor::_script_created);
+	ObjectTypeDB::bind_method("_script_split_dragged",&ScriptEditor::_script_split_dragged);
+	ObjectTypeDB::bind_method("_help_class_open",&ScriptEditor::_help_class_open);
+	ObjectTypeDB::bind_method("_help_class_goto",&ScriptEditor::_help_class_goto);
+	ObjectTypeDB::bind_method("_history_forward",&ScriptEditor::_history_forward);
+	ObjectTypeDB::bind_method("_history_back",&ScriptEditor::_history_back);
+}
 
 ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
@@ -1816,6 +2249,9 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_item("Save As..",FILE_SAVE_AS);
 	file_menu->get_popup()->add_item("Save All",FILE_SAVE_ALL,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_S);
 	file_menu->get_popup()->add_separator();
+	file_menu->get_popup()->add_item("History Prev",WINDOW_PREV,KEY_MASK_CTRL|KEY_MASK_ALT|KEY_LEFT);
+	file_menu->get_popup()->add_item("History Next",WINDOW_NEXT,KEY_MASK_CTRL|KEY_MASK_ALT|KEY_RIGHT);
+	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_item("Close",FILE_CLOSE,KEY_MASK_CMD|KEY_W);
 	file_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
@@ -1851,12 +2287,21 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	menu_hb->add_child(search_menu);
 	search_menu->set_text("Search");
 	search_menu->get_popup()->add_item("Find..",SEARCH_FIND,KEY_MASK_CMD|KEY_F);
-	search_menu->get_popup()->add_item("Find Next",SEARCH_FIND_NEXT,KEY_MASK_CMD|KEY_G);
+	search_menu->get_popup()->add_item("Find Next",SEARCH_FIND_NEXT,KEY_F3);
 	search_menu->get_popup()->add_item("Replace..",SEARCH_REPLACE,KEY_MASK_CMD|KEY_R);
 	search_menu->get_popup()->add_separator();
 	search_menu->get_popup()->add_item("Goto Function..",SEARCH_LOCATE_FUNCTION,KEY_MASK_SHIFT|KEY_MASK_CMD|KEY_F);
 	search_menu->get_popup()->add_item("Goto Line..",SEARCH_GOTO_LINE,KEY_MASK_CMD|KEY_L);
 	search_menu->get_popup()->connect("item_pressed", this,"_menu_option");
+
+	script_search_menu = memnew( MenuButton );
+	menu_hb->add_child(script_search_menu);
+	script_search_menu->set_text("Search");
+	script_search_menu->get_popup()->add_item("Find..",SEARCH_FIND,KEY_MASK_CMD|KEY_F);
+	script_search_menu->get_popup()->add_item("Find Next",SEARCH_FIND_NEXT,KEY_F3);
+	script_search_menu->get_popup()->connect("item_pressed", this,"_menu_option");
+	script_search_menu->hide();
+
 
 	debug_menu = memnew( MenuButton );
 	menu_hb->add_child(debug_menu);
@@ -1896,6 +2341,53 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	help_menu->set_text("Help");
 	help_menu->get_popup()->add_item("Contextual", HELP_CONTEXTUAL, KEY_MASK_SHIFT|KEY_F1);
 	help_menu->get_popup()->connect("item_pressed", this,"_menu_option");
+
+	menu_hb->add_spacer();
+
+
+	script_icon = memnew( TextureFrame );
+	menu_hb->add_child(script_icon);
+	script_name_label = memnew( Label );
+	menu_hb->add_child(script_name_label);
+
+	script_icon->hide();
+	script_name_label->hide();
+
+	menu_hb->add_spacer();
+
+	site_search = memnew( ToolButton );
+	site_search->set_text("Tutorials");
+	site_search->connect("pressed",this,"_menu_option",varray(SEARCH_WEBSITE));
+	menu_hb->add_child(site_search);
+	site_search->set_tooltip("Open http://www.godotengine.org at tutorials section.");
+
+	class_search = memnew( ToolButton );
+	class_search->set_text("Classes");
+	class_search->connect("pressed",this,"_menu_option",varray(SEARCH_CLASSES));
+	menu_hb->add_child(class_search);
+	class_search->set_tooltip("Search the class hierarchy.");
+
+	help_search = memnew( ToolButton );
+	help_search->set_text("Search Help");
+	help_search->connect("pressed",this,"_menu_option",varray(SEARCH_HELP));
+	menu_hb->add_child(help_search);
+	help_search->set_tooltip("Search the reference documentation.");
+
+	menu_hb->add_child( memnew( VSeparator) );
+
+	script_back = memnew( ToolButton );
+	script_back->connect("pressed",this,"_history_back");
+	menu_hb->add_child(script_back);
+	script_back->set_disabled(true);
+	help_search->set_tooltip("Go to previous edited document.");
+
+	script_forward = memnew( ToolButton );
+	script_forward->connect("pressed",this,"_history_forward");
+	menu_hb->add_child(script_forward);
+	script_forward->set_disabled(true);
+	help_search->set_tooltip("Go to next edited document.");
+
+
 
 	tab_container->connect("tab_changed", this,"_tab_changed");
 
@@ -1959,7 +2451,19 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	grab_focus_block=false;
 
+	help_search_dialog = memnew( EditorHelpSearch );
+	add_child(help_search_dialog);
+	help_search_dialog->connect("go_to_help",this,"_help_class_goto");
+
+
+	help_index = memnew( EditorHelpIndex );
+	add_child(help_index);
+	help_index->connect("open_class",this,"_help_class_open");
+
+	history_pos=-1;
 //	debugger_gui->hide();
+
+	edit_pass=0;
 
 }
 
@@ -2062,8 +2566,14 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	script_editor->hide();
 
 	EDITOR_DEF("text_editor/auto_reload_changed_scripts",false);
+	EDITOR_DEF("text_editor/open_dominant_script_on_scene_change",true);
 	EDITOR_DEF("external_editor/use_external_editor",false);
 	EDITOR_DEF("external_editor/exec_path","");
+	EDITOR_DEF("text_editor/script_temperature_enabled",true);
+	EDITOR_DEF("text_editor/script_temperature_history_size",15);
+	EDITOR_DEF("text_editor/script_temperature_hot_color",Color(1,0,0,0.3));
+	EDITOR_DEF("text_editor/script_temperature_cold_color",Color(0,0,1,0.3));
+	EDITOR_DEF("text_editor/group_help_pages",false);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"external_editor/exec_path",PROPERTY_HINT_GLOBAL_FILE));
 	EDITOR_DEF("external_editor/exec_flags","");
 

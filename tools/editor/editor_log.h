@@ -44,7 +44,7 @@ class EditorLog : public PanelContainer {
 
 	OBJ_TYPE( EditorLog, PanelContainer );
 
-	ToolButton *button;
+	Button *button;
 	Button *clearbutton;
 	Label *title;
 	RichTextLabel *log;
@@ -73,7 +73,7 @@ public:
 	void add_message(const String& p_msg, bool p_error=false);
 	void deinit();
 
-	ToolButton *get_button();
+	Button *get_button();
 	void clear();
 	EditorLog();
 	~EditorLog();
