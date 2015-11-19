@@ -1740,8 +1740,10 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 	}
 
 	play_button->set_pressed(false);
+	play_button->set_icon(gui_base->get_icon("Play","EditorIcons"));
 	//pause_button->set_pressed(false);
 	play_scene_button->set_pressed(false);
+	play_scene_button->set_icon(gui_base->get_icon("PlayScene","EditorIcons"));
 
 	String current_filename;
 	String run_filename;
@@ -1859,8 +1861,10 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 	emit_signal("play_pressed");
 	if (p_current) {
 		play_scene_button->set_pressed(true);
+		play_scene_button->set_icon(gui_base->get_icon("Reload","EditorIcons"));
 	} else {
 		play_button->set_pressed(true);
+		play_button->set_icon(gui_base->get_icon("Reload","EditorIcons"));
 	}
 
 	_playing_edited=p_current;
@@ -2577,12 +2581,12 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			call_dialog->popup_centered_ratio();
 		} break;
 		case RUN_PLAY: {
-
+			_menu_option_confirm(RUN_STOP,true);
 			_run(false);
 
 		} break;
 		case RUN_PLAY_CUSTOM_SCENE: {
-
+			_menu_option_confirm(RUN_STOP,true);
 			quick_run->popup("PackedScene",true);
 			quick_run->set_title("Quick Run Scene..");
 
@@ -2599,18 +2603,20 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			editor_run.stop();
 			play_button->set_pressed(false);
+			play_button->set_icon(gui_base->get_icon("Play","EditorIcons"));
 			play_scene_button->set_pressed(false);
+			play_scene_button->set_icon(gui_base->get_icon("PlayScene","EditorIcons"));
 			//pause_button->set_pressed(false);
 			emit_signal("stop_pressed");
 
 		} break;
 		case RUN_PLAY_SCENE: {
-
+			_menu_option_confirm(RUN_STOP,true);
 			_run(true);
 
 		} break;
 		case RUN_PLAY_NATIVE: {
-
+			_menu_option_confirm(RUN_STOP,true);
 			emit_signal("play_pressed");
 			editor_run.run_native_notify();
 
