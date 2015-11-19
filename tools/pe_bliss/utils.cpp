@@ -23,9 +23,6 @@
 #include "utils.h"
 #include "pe_exception.h"
 
-#ifndef PE_BLISS_WINDOWS
-#include <iconv.h>
-#endif
 
 namespace pe_bliss
 {
@@ -50,22 +47,13 @@ const u16string pe_utils::to_ucs2(const std::wstring& str)
 	if(str.empty())
 		return ret;
 
-	ret.resize(str.length());
-
-	iconv_t conv = iconv_open("UCS-2", "WCHAR_T");
-	if(conv == reinterpret_cast<iconv_t>(-1))
-		throw pe_exception("Error opening iconv", pe_exception::encoding_convertion_error);
-
-	size_t inbytesleft = str.length() * sizeof(wchar_t);
-	size_t outbytesleft = ret.length() * sizeof(unicode16_t);
-	const wchar_t* in_pos = str.c_str();
-	unicode16_t* out_pos = &ret[0];
-
-	size_t result = iconv(conv, const_cast<char**>(reinterpret_cast<const char**>(&in_pos)), &inbytesleft, reinterpret_cast<char**>(&out_pos), &outbytesleft);
-	iconv_close(conv);
+	int len = str.length();
 	
-	if(result == static_cast<size_t>(-1))
-		throw pe_exception("Iconv error", pe_exception::encoding_convertion_error);
+	ret.resize(len);
+	
+	for(int i=0;i<len;i++) {
+		ret[i]=str[i]&0xFFFF;
+	}
 
 	return ret;
 }
@@ -76,22 +64,12 @@ const std::wstring pe_utils::from_ucs2(const u16string& str)
 	if(str.empty())
 		return ret;
 
+	int len = str.length();
 	ret.resize(str.length());
-
-	iconv_t conv = iconv_open("WCHAR_T", "UCS-2");
-	if(conv == reinterpret_cast<iconv_t>(-1))
-		throw pe_exception("Error opening iconv", pe_exception::encoding_convertion_error);
-
-	size_t inbytesleft = str.length() * sizeof(unicode16_t);
-	size_t outbytesleft = ret.length() * sizeof(wchar_t);
-	const unicode16_t* in_pos = str.c_str();
-	wchar_t* out_pos = &ret[0];
-
-	size_t result = iconv(conv, const_cast<char**>(reinterpret_cast<const char**>(&in_pos)), &inbytesleft, reinterpret_cast<char**>(&out_pos), &outbytesleft);
-	iconv_close(conv);
-
-	if(result == static_cast<size_t>(-1))
-		throw pe_exception("Iconv error", pe_exception::encoding_convertion_error);
+	
+	for(int i=0;i<len;i++) {
+		ret[i]=str[i];
+	}
 
 	return ret;
 }
