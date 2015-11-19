@@ -1209,30 +1209,42 @@ bool EditorExportPlatformPC::can_export(String *r_error) const {
 
 	String exe_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
 
-	if (!FileAccess::exists(exe_path+debug_binary32) || !FileAccess::exists(exe_path+release_binary32)) {
-		valid=false;
-		err="No 32 bits export templates found.\nDownload and install export templates.\n";
-	}
-	if (!FileAccess::exists(exe_path+debug_binary64) || !FileAccess::exists(exe_path+release_binary64)) {
+	if (use64 && (!FileAccess::exists(exe_path+debug_binary64) || !FileAccess::exists(exe_path+release_binary64))) {
 		valid=false;
 		err="No 64 bits export templates found.\nDownload and install export templates.\n";
 	}
 
-
-	if (custom_debug_binary!="" && !FileAccess::exists(custom_debug_binary)) {
+	if (!use64 && (!FileAccess::exists(exe_path+debug_binary32) || !FileAccess::exists(exe_path+release_binary32))) {
 		valid=false;
-		err+="Custom debug binary not found.\n";
+		err="No 32 bits export templates found.\nDownload and install export templates.\n";
 	}
 
-	if (custom_release_binary!="" && !FileAccess::exists(custom_release_binary)) {
-		valid=false;
-		err+="Custom release binary not found.\n";
+	if(custom_debug_binary=="" && custom_release_binary=="") {
+		if (r_error) *r_error=err;
+		return valid;
 	}
+
+	bool dvalid = true;
+	bool rvalid = true;
+
+	if(!FileAccess::exists(custom_debug_binary)) {
+		dvalid = false;
+		err = "Custom debug binary not found.\n";
+	}
+
+	if(!FileAccess::exists(custom_release_binary)) {
+		rvalid = false;
+		err = "Custom release binary not found.\n";
+	}
+
+	if (dvalid || rvalid)
+		valid = true;
+	else
+		valid = false;
 
 	if (r_error)
 		*r_error=err;
 	return valid;
-
 }
 
 
