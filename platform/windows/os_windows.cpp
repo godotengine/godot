@@ -1779,15 +1779,15 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 		switch(p_type) {
 			case ERR_ERROR:
 				print("ERROR: %s: %s\n", p_function, err_details);
-				print("   At: %s:%i.\n", p_file, p_line);
+				print("   At: %s:%i\n", p_file, p_line);
 				break;
 			case ERR_WARNING:
 				print("WARNING: %s: %s\n", p_function, err_details);
-				print("     At: %s:%i.\n", p_file, p_line);
+				print("     At: %s:%i\n", p_file, p_line);
 				break;
 			case ERR_SCRIPT:
 				print("SCRIPT ERROR: %s: %s", p_function, err_details);
-				print("          At: %s:%i.\n", p_file, p_line);
+				print("          At: %s:%i\n", p_file, p_line);
 				break;
 		}
 
@@ -1818,13 +1818,17 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
-			print(" %s\n", p_rationale);
+			print("%s\n", p_rationale);
 
 			SetConsoleTextAttribute(hCon, basecol);
-			print("At: ");
+			switch (p_type) {
+				case ERR_ERROR: print("   At: "); break;
+				case ERR_WARNING: print("     At: "); break;
+				case ERR_SCRIPT: print("          At: "); break;
+			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg);
-			print(" %s:%i\n", p_file, p_line);
+			print("%s:%i\n", p_file, p_line);
 
 		} else {
 
@@ -1836,13 +1840,17 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
-			print(" %s\n", p_code);
+			print("%s\n", p_code);
 
 			SetConsoleTextAttribute(hCon, basecol);
-			print("At: ");
+			switch (p_type) {
+				case ERR_ERROR: print("   At: "); break;
+				case ERR_WARNING: print("     At: "); break;
+				case ERR_SCRIPT: print("          At: "); break;
+			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg);
-			print(" %s:%i\n", p_file, p_line);
+			print("%s:%i\n", p_file, p_line);
 		}
 
 		SetConsoleTextAttribute(hCon, sbi.wAttributes);
