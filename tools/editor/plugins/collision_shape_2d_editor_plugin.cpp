@@ -42,6 +42,13 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 		} break;
 
 		case LINE_SHAPE: {
+			Ref<LineShape2D> line = node->get_shape();
+
+			if (idx==0) {
+				return line->get_d();
+			} else {
+				return line->get_normal();
+			}
 
 		} break;
 
@@ -121,7 +128,7 @@ void CollisionShape2DEditor::set_handle(int idx, Point2& p_point) {
 				if (idx==0){
 					line->set_d(p_point.length());
 				}else{
-					line->set_normal(p_point/30.0);
+					line->set_normal(p_point.normalized());
 				}
 
 				canvas_item_editor->get_viewport_control()->update();
