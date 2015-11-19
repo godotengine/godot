@@ -26819,7 +26819,11 @@ This method controls whether the position between two cached points is interpola
 		Lazy (non-greedy) quantifiers [code]*?[/code]
 		Begining [code]^[/code] and end [code]$[/code] anchors
 		Alternation [code]|[/code]
-		Backreferences [code]\1[/code] to [code]\99[/code]
+		Backreferences [code]\1[/code] to [code]\9[/code]
+		POSIX character classes [code][[:alnum:]][/code]
+		Lookahead [code](?=)[/code], [code](?!)[/code] and lookbehind [code](?&lt;=)[/code], [code](?&lt;!)[/code]
+		ASCII [code]\xFF[/code] and Unicode [code]\uFFFF[/code] code points (in a style similar to Python)
+		Word boundaries [code]\b[/code], [code]\B[/code]
 	</description>
 	<methods>
 		<method name="compile">
