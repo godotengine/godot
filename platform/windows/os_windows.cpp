@@ -1786,7 +1786,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				print("     At: %s:%i\n", p_file, p_line);
 				break;
 			case ERR_SCRIPT:
-				print("SCRIPT ERROR: %s: %s", p_function, err_details);
+				print("SCRIPT ERROR: %s: %s\n", p_function, err_details);
 				print("          At: %s:%i\n", p_file, p_line);
 				break;
 		}
