@@ -423,26 +423,26 @@ void OSWinrt::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) con
 	
 }
 
-void OSWinrt::print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type) {
+void OSWinrt::print_error(const char* p_function, const char* p_file, int p_line, const char* p_code, const char* p_rationale, ErrorType p_type) {
 
 	const char* err_details;
 	if (p_rationale && p_rationale[0])
-		err_details=p_rationale;
+		err_details = p_rationale;
 	else
-		err_details=p_code;
+		err_details = p_code;
 
 	switch(p_type) {
 		case ERR_ERROR:
-			print("\E[1;31mERROR: %s: \E[0m\E[1m%s\n",p_function,err_details);
-			print("\E[0;31m   At: %s:%i.\E[0m\n",p_file,p_line);
+			print("\E[1;31mERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
+			print("\E[0;31m   At: %s:%i.\E[0m\n", p_file, p_line);
 			break;
 		case ERR_WARNING:
-			print("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n",p_function,err_details);
-			print("\E[0;33m     At: %s:%i.\E[0m\n",p_file,p_line);
+			print("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n", p_function, err_details);
+			print("\E[0;33m     At: %s:%i.\E[0m\n", p_file, p_line);
 			break;
 		case ERR_SCRIPT:
-			print("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m",p_function,err_details);
-			print("\E[0;35m          At: %s:%i.\E[0m\n",p_file,p_line);
+			print("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m", p_function, err_details);
+			print("\E[0;35m          At: %s:%i.\E[0m\n", p_file, p_line);
 			break;
 	}
 }

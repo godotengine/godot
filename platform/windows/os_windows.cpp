@@ -1765,84 +1765,85 @@ bool OS_Windows::is_window_maximized() const{
 }
 
 
-void OS_Windows::print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type) {
+void OS_Windows::print_error(const char* p_function, const char* p_file, int p_line, const char* p_code, const char* p_rationale, ErrorType p_type) {
 
-	HANDLE hCon=GetStdHandle(STD_OUTPUT_HANDLE);
-	if (!hCon || hCon==INVALID_HANDLE_VALUE) {
+	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (!hCon || hCon == INVALID_HANDLE_VALUE) {
 
 		const char* err_details;
 		if (p_rationale && p_rationale[0])
-			err_details=p_rationale;
+			err_details = p_rationale;
 		else
-			err_details=p_code;
+			err_details = p_code;
 
 		switch(p_type) {
 			case ERR_ERROR:
-				print("\E[1;31mERROR: %s: \E[0m\E[1m%s\n",p_function,err_details);
-				print("\E[0;31m   At: %s:%i.\E[0m\n",p_file,p_line);
+				print("\E[1;31mERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
+				print("\E[0;31m   At: %s:%i.\E[0m\n", p_file, p_line);
 				break;
 			case ERR_WARNING:
-				print("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n",p_function,err_details);
-				print("\E[0;33m     At: %s:%i.\E[0m\n",p_file,p_line);
+				print("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n", p_function, err_details);
+				print("\E[0;33m     At: %s:%i.\E[0m\n", p_file, p_line);
 				break;
 			case ERR_SCRIPT:
-				print("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m",p_function,err_details);
-				print("\E[0;35m          At: %s:%i.\E[0m\n",p_file,p_line);
+				print("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m", p_function, err_details);
+				print("\E[0;35m          At: %s:%i.\E[0m\n", p_file, p_line);
 				break;
 		}
+
 	} else {
 
 		CONSOLE_SCREEN_BUFFER_INFO sbi; //original
-		GetConsoleScreenBufferInfo(hCon,&sbi);
+		GetConsoleScreenBufferInfo(hCon, &sbi);
 
-		SetConsoleTextAttribute(hCon,sbi.wAttributes);
+		SetConsoleTextAttribute(hCon, sbi.wAttributes);
 
-
-
-		uint32_t basecol=0;
+		uint32_t basecol = 0;
 		switch(p_type) {
 			case ERR_ERROR: basecol = FOREGROUND_RED; break;
-			case ERR_WARNING: basecol = FOREGROUND_RED|FOREGROUND_GREEN; break;
+			case ERR_WARNING: basecol = FOREGROUND_RED | FOREGROUND_GREEN; break;
 			case ERR_SCRIPT: basecol = FOREGROUND_GREEN; break;
 		}
 
 		if (p_rationale && p_rationale[0]) {
 
-			SetConsoleTextAttribute(hCon,basecol|FOREGROUND_INTENSITY);
-
-
+			SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
 			switch(p_type) {
 				case ERR_ERROR: print("ERROR: "); break;
 				case ERR_WARNING: print("WARNING: "); break;
 				case ERR_SCRIPT: print("SCRIPT ERROR: "); break;
 			}
 
-			SetConsoleTextAttribute(hCon,FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_GREEN|FOREGROUND_INTENSITY);
-			print(" %s\n",p_rationale);
-			SetConsoleTextAttribute(hCon,basecol);
-			print("At: ");
-			SetConsoleTextAttribute(hCon,FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_GREEN);
-			print(" %s:%i\n",p_file,p_line);
+			SetConsoleTextAttribute(hCon, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+			print(" %s\n", p_rationale);
 
+			SetConsoleTextAttribute(hCon, basecol);
+			print("At: ");
+
+			SetConsoleTextAttribute(hCon, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN);
+			print(" %s:%i\n", p_file, p_line);
 
 		} else {
-			SetConsoleTextAttribute(hCon,basecol|FOREGROUND_INTENSITY);
+
+			SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
 			switch(p_type) {
-				case ERR_ERROR: print("ERROR: %s: ",p_function); break;
-				case ERR_WARNING: print("WARNING: %s: ",p_function); break;
-				case ERR_SCRIPT: print("SCRIPT ERROR: %s: ",p_function); break;
+				case ERR_ERROR: print("ERROR: %s: ", p_function); break;
+				case ERR_WARNING: print("WARNING: %s: ", p_function); break;
+				case ERR_SCRIPT: print("SCRIPT ERROR: %s: ", p_function); break;
 			}
-			SetConsoleTextAttribute(hCon,FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_GREEN|FOREGROUND_INTENSITY);
-			print(" %s\n",p_code);
-			SetConsoleTextAttribute(hCon,basecol);
+
+			SetConsoleTextAttribute(hCon, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+			print(" %s\n", p_code);
+
+			SetConsoleTextAttribute(hCon, basecol);
 			print("At: ");
-			SetConsoleTextAttribute(hCon,FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_GREEN);
-			print(" %s:%i\n",p_file,p_line);
+
+			SetConsoleTextAttribute(hCon, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN);
+			print(" %s:%i\n", p_file, p_line);
 		}
 
-		SetConsoleTextAttribute(hCon,sbi.wAttributes);
+		SetConsoleTextAttribute(hCon, sbi.wAttributes);
 	}
-
 }
 
 
