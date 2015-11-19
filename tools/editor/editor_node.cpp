@@ -4691,6 +4691,9 @@ EditorNode::EditorNode() {
 	right_l_vsplit->add_child(dock_slot[DOCK_SLOT_RIGHT_UL]);
 	dock_slot[DOCK_SLOT_RIGHT_BL]=memnew( TabContainer );
 	right_l_vsplit->add_child(dock_slot[DOCK_SLOT_RIGHT_BL]);
+	//right_l_vsplit->hide();
+	//dock_slot[DOCK_SLOT_RIGHT_UL]->hide();
+	//dock_slot[DOCK_SLOT_RIGHT_BL]->hide();
 
 	right_r_vsplit = memnew( VSplitContainer );
 	right_hsplit->add_child(right_r_vsplit);
@@ -4699,8 +4702,8 @@ EditorNode::EditorNode() {
 	dock_slot[DOCK_SLOT_RIGHT_BR]=memnew( TabContainer );
 	right_r_vsplit->add_child(dock_slot[DOCK_SLOT_RIGHT_BR]);
 	right_r_vsplit->hide();
-	//dock_slot[DOCK_SLOT_RIGHT_UL]->hide();
-	//dock_slot[DOCK_SLOT_RIGHT_BL]->hide();
+	dock_slot[DOCK_SLOT_RIGHT_UR]->hide();
+	dock_slot[DOCK_SLOT_RIGHT_BR]->hide();
 
 	left_l_vsplit->connect("dragged",this,"_dock_split_dragged");
 	left_r_vsplit->connect("dragged",this,"_dock_split_dragged");
