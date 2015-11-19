@@ -42,8 +42,8 @@ func adjust_facing(p_facing, p_target,p_step, p_adjust_rate,current_gn):
 	var n = p_target # normal
 	var t = n.cross(current_gn).normalized()
 	
-	var x = n.dot(p_facing)
-	var y = t.dot(p_facing)
+	var x = t.dot(p_facing)
+	var y = n.dot(p_facing)
 	
 	var ang = atan2(y,x)
 	
