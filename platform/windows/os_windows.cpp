@@ -1778,16 +1778,16 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 
 		switch(p_type) {
 			case ERR_ERROR:
-				print("\E[1;31mERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-				print("\E[0;31m   At: %s:%i.\E[0m\n", p_file, p_line);
+				print("ERROR: %s: %s\n", p_function, err_details);
+				print("   At: %s:%i.\n", p_file, p_line);
 				break;
 			case ERR_WARNING:
-				print("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n", p_function, err_details);
-				print("\E[0;33m     At: %s:%i.\E[0m\n", p_file, p_line);
+				print("WARNING: %s: %s\n", p_function, err_details);
+				print("     At: %s:%i.\n", p_file, p_line);
 				break;
 			case ERR_SCRIPT:
-				print("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m", p_function, err_details);
-				print("\E[0;35m          At: %s:%i.\E[0m\n", p_file, p_line);
+				print("SCRIPT ERROR: %s: %s", p_function, err_details);
+				print("          At: %s:%i.\n", p_file, p_line);
 				break;
 		}
 
