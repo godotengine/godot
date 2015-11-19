@@ -1,11 +1,12 @@
 /*************************************************************************/
-/*  platform_config.h                                                    */
+/*  audio_driver_ao.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014 Anton Yabchinskiy.                                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,13 +27,53 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifdef __linux__
-#include <alloca.h>
+#include "servers/audio/audio_server_sw.h"
+
+#ifdef AO_ENABLED
+
+#include "core/os/thread.h"
+#include "core/os/mutex.h"
+
+#include <ao/ao.h>
+
+class AudioDriverAO : public AudioDriverSW {
+
+	Thread* thread;
+	Mutex* mutex;
+
+	ao_device* device;
+
+	int32_t* samples_in;
+
+	static void thread_func(void* p_udata);
+	int buffer_size;
+
+	unsigned int mix_rate;
+	OutputFormat output_format;
+
+	int channels;
+
+	bool active;
+	bool thread_exited;
+	mutable bool exit_thread;
+	bool pcm_open;
+
+public:
+
+	const char* get_name() const {
+		return "libao";
+	};
+
+	virtual Error init();
+	virtual void start();
+	virtual int get_mix_rate() const;
+	virtual OutputFormat get_output_format() const;
+	virtual void lock();
+	virtual void unlock();
+	virtual void finish();
+
+	AudioDriverAO();
+	~AudioDriverAO();
+};
+
 #endif
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
-#include <stdlib.h>
-#endif
-
-#define GLES2_INCLUDE_H "gl_context/glew.h"
-
-
