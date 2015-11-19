@@ -120,10 +120,8 @@ Error PacketPeerUDPWinsock::_poll(bool p_wait) {
 
 	struct sockaddr_in from = {0};
 	int len = sizeof(struct sockaddr_in);
-	int rb_size = MAX(rb.space_left()-12, 0);
-	int buffer_size = MIN((int)sizeof(recv_buffer),rb_size);
 	int ret;
-	while ( (ret = recvfrom(sockfd, (char*)recv_buffer, buffer_size, 0, (struct sockaddr*)&from, &len)) > 0) {
+	while ( (ret = recvfrom(sockfd, (char*)recv_buffer, MIN((int)sizeof(recv_buffer),MAX(rb.space_left()-12, 0)), 0, (struct sockaddr*)&from, &len)) > 0) {
 		rb.write((uint8_t*)&from.sin_addr, 4);
 		uint32_t port = ntohs(from.sin_port);
 		rb.write((uint8_t*)&port, 4);
