@@ -197,9 +197,9 @@ void EditorExportPlatformWindows::_get_property_list( List<PropertyInfo> *p_list
 	
 }
 
-Error EditorExportPlatformWindows::export_project(const String& p_path, bool p_debug, bool p_dumb,bool p_remote_debug) {
+Error EditorExportPlatformWindows::export_project(const String& p_path, bool p_debug, int p_flags) {
 
-	Error err = EditorExportPlatformPC::export_project(p_path, p_debug, p_dumb, p_remote_debug);
+	Error err = EditorExportPlatformPC::export_project(p_path, p_debug, p_flags);
 	if(err != OK)
 	{
 		return err;
