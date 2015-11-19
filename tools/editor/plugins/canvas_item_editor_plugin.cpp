@@ -999,7 +999,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 		if (b.button_index==BUTTON_RIGHT) {
 
-			if (!b.pressed && tool==TOOL_SELECT && b.mod.alt) {
+			if (b.pressed && tool==TOOL_SELECT && b.mod.alt) {
 
 				Point2 click=Point2(b.x,b.y);
 
