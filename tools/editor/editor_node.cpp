@@ -2012,6 +2012,11 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 
 		} break;
+		case SCENE_TAB_CLOSE: {
+			_remove_scene(tab_closing);
+			_update_scene_tabs();
+			current_option = -1;
+		} break;
 		case FILE_SAVE_SCENE: {
 
 
@@ -2023,7 +2028,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				return;
 			};
 			// fallthrough to save_as
-		};
+		} break;
 		case FILE_SAVE_AS_SCENE: {
 			
 			Node *scene = editor_data.get_edited_scene_root();
@@ -2957,23 +2962,23 @@ void EditorNode::_remove_edited_scene() {
 	_update_title();
 	_update_scene_tabs();
 
-	if (editor_data.get_edited_scene_count()==1) {
-		//make new scene appear saved
-		set_current_version(editor_data.get_undo_redo().get_version());
-		unsaved_cache=false;
-	}
+//	if (editor_data.get_edited_scene_count()==1) {
+//		//make new scene appear saved
+//		set_current_version(editor_data.get_undo_redo().get_version());
+//		unsaved_cache=false;
+//	}
 }
 
 void EditorNode::_remove_scene(int index) {
 //	printf("Attempting to remove scene %d (current is %d)\n", index, editor_data.get_edited_scene());
+
 	if (editor_data.get_edited_scene() == index) {
 		//Scene to remove is current scene
 		_remove_edited_scene();
 	}
 	else {
-		// Scene to remove is not active scene.");
+		// Scene to remove is not active scene
 		editor_data.remove_scene(index);
-		editor_data.get_undo_redo().clear_history();
 	}
 }
 
@@ -4469,8 +4474,19 @@ void EditorNode::_scene_tab_script_edited(int p_tab) {
 }
 
 void EditorNode::_scene_tab_closed(int p_tab) {
- 	_remove_scene(p_tab);
-	_update_scene_tabs();
+	current_option = SCENE_TAB_CLOSE;
+	tab_closing = p_tab;
+	if (unsaved_cache) {
+		confirmation->get_ok()->set_text("Yes");
+		//confirmation->get_cancel()->show();
+		confirmation->set_text("Close scene? (Unsaved changes will be lost)");
+		confirmation->popup_centered_minsize();
+	}
+	else {
+		_remove_scene(p_tab);
+		//_update_scene_tabs();
+	}
+
 }
 
 
