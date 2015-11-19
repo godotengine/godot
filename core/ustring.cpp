@@ -44,6 +44,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #endif
+
+#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#define snprintf _snprintf
+#endif
+
 /** STRING **/
 
 const char *CharString::get_data() const {
@@ -3091,7 +3096,7 @@ String String::http_escape() const {
             res += ord;
         } else {
             char h_Val[3];
-            snprintf(h_Val, 3, "%.2X", ord);
+			_snprintf(h_Val, 3, "%.2X", ord);
             res += "%";
             res += h_Val;
         }
