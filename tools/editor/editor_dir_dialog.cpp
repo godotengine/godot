@@ -90,7 +90,6 @@ void EditorDirDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 		reload();
-		tree->connect("item_collapsed",this,"_item_collapsed",varray(),CONNECT_DEFERRED);
 	}
 }
 
@@ -205,15 +204,16 @@ void EditorDirDialog::_bind_methods() {
 
 EditorDirDialog::EditorDirDialog() {
 
-	set_title("Choose a Directory");
-	tree = memnew( Tree );
-	add_child(tree);
-	set_child_rect(tree);
 	updating=false;
+
+	set_title("Choose a Directory");
 	get_ok()->set_text("Choose");
 	set_hide_on_ok(false);
 
-
+	tree = memnew( Tree );
+	add_child(tree);
+	set_child_rect(tree);
+	tree->connect("item_collapsed",this,"_item_collapsed",varray(),CONNECT_DEFERRED);
 
 	makedir = add_button("Create Folder",OS::get_singleton()->get_swap_ok_cancel()?true:false,"makedir");
 	makedir->connect("pressed",this,"_make_dir");
