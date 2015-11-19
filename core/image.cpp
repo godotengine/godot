@@ -322,7 +322,7 @@ void Image::set_pallete(const DVector<uint8_t>& p_data) {
 	DVector<uint8_t>::Write wp = data.write();
 	unsigned char *dst=wp.ptr() + pal_ofs;
 
-	DVector<uint8_t>::Read r = data.read();
+	DVector<uint8_t>::Read r = p_data.read();
 	const unsigned char *src=r.ptr();
 
 	copymem(dst, src, len);

@@ -29,6 +29,11 @@
 #include "convex_decomp/b2d_decompose.h"
 #endif
 
+#ifdef TOOLS_ENABLED
+#include "pe_bliss/pe_bliss_godot.h"
+#include "platform/windows/export/export.h"
+#endif
+
 #ifdef TREMOR_ENABLED
 #include "teora/audio_stream_ogg.h"
 #endif
@@ -246,7 +251,7 @@ void register_driver_types() {
 #ifdef ETC1_ENABLED
 	_register_etc1_compress_func();
 #endif
-
+	
 	initialize_chibi();
 }
 

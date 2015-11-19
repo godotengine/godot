@@ -1098,6 +1098,8 @@ def update_version():
 	f.write("#define VERSION_MINOR "+str(version.minor)+"\n")
 	f.write("#define VERSION_REVISION "+str(rev)+"\n")
 	f.write("#define VERSION_STATUS "+str(version.status)+"\n")
+	import datetime
+	f.write("#define VERSION_YEAR "+str(datetime.datetime.now().year)+"\n")
 
 def parse_cg_file(fname, uniforms, sizes, conditionals):
 

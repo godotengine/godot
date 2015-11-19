@@ -11,6 +11,12 @@ common_win=[
 	"stream_peer_winsock.cpp",
 ]
 
+env.RES('godot_res.rc')
+if env["is_mingw"]:
+	common_win.append("godot_res.o")
+else:
+	common_win.append("godot_res.res")
+
 env.Program('#bin/godot',['godot_win.cpp']+common_win,PROGSUFFIX=env["PROGSUFFIX"])
 
 # Microsoft Visual Studio Project Generation
