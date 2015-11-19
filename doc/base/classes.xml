@@ -8583,7 +8583,8 @@
 	Convex Polygon Shape for 2D physics.
 	</brief_description>
 	<description>
-	Convex Polygon Shape for 2D physics.
+	Convex Polygon Shape for 2D physics. A convex polygon
+	Concave polygon 2D shape resource for physics. It is made out of segments and is very optimal for complex polygonal concave collisions. It is really not advised to use for RigidBody nodes. A CollisionPolygon2D in convex decomposition mode (solids) or several convex objects are advised for that instead. Otherwise, a concave polygon 2D shape is better for static collisions.
 	</description>
 	<methods>
 		<method name="set_point_cloud">
