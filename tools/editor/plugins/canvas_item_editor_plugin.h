@@ -150,6 +150,7 @@ class CanvasItemEditor : public VBoxContainer {
 	};
 
 	EditorSelection *editor_selection;
+	bool additive_selection;
 
 	Tool tool;
 	bool first_update;
@@ -182,6 +183,18 @@ class CanvasItemEditor : public VBoxContainer {
 
 
 	MenuOption last_option;
+
+	struct _SelectResult {
+
+		CanvasItem* item;
+		float z;
+		bool has_z;
+		_FORCE_INLINE_ bool operator<(const _SelectResult& p_rr) const {
+			return has_z && p_rr.has_z ? p_rr.z < z : p_rr.has_z;
+		}
+	};
+
+	Vector<_SelectResult> selection_results;
 
 	struct LockList {
 		Point2 pos;
@@ -249,6 +262,8 @@ class CanvasItemEditor : public VBoxContainer {
 	Button *key_scale_button;
 	Button *key_insert_button;
 
+	PopupMenu *selection_menu;
+
 	//PopupMenu *popup;
 	DragType drag;
 	Point2 drag_from;
@@ -276,7 +291,10 @@ class CanvasItemEditor : public VBoxContainer {
 
 	int handle_len;
 	CanvasItem* _select_canvas_item_at_pos(const Point2 &p_pos,Node* p_node,const Matrix32& p_parent_xform,const Matrix32& p_canvas_xform);
+	void _find_canvas_items_at_pos(const Point2 &p_pos,Node* p_node,const Matrix32& p_parent_xform,const Matrix32& p_canvas_xform, Vector<_SelectResult> &r_items);
 	void _find_canvas_items_at_rect(const Rect2& p_rect,Node* p_node,const Matrix32& p_parent_xform,const Matrix32& p_canvas_xform,List<CanvasItem*> *r_items);
+
+	bool _select(CanvasItem *item, Point2 p_click_pos, bool p_append, bool p_drag=true);
 
 	ConfirmationDialog *snap_dialog;
 	
@@ -304,6 +322,9 @@ class CanvasItemEditor : public VBoxContainer {
 	void _append_canvas_item(CanvasItem *p_item);
 	void _dialog_value_changed(double);
 	void _snap_changed();
+	void _selection_result_pressed(int);
+	void _selection_menu_hide();
+
 	UndoRedo *undo_redo;
 
 	Point2 _find_topleftmost_point();

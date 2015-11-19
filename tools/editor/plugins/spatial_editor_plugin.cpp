@@ -232,15 +232,6 @@ void SpatialEditorViewport::_select(Spatial *p_node, bool p_append,bool p_single
 
 }
 
-
-struct _RayResult {
-
-	Spatial* item;
-	float depth;
-	int handle;
-	_FORCE_INLINE_ bool operator<(const _RayResult& p_rr) const { return depth<p_rr.depth; }
-};
-
 ObjectID SpatialEditorViewport::_select_ray(const Point2& p_pos, bool p_append,bool &r_includes_current,int *r_gizmo_handle,bool p_alt_select) {
 
 	if (r_gizmo_handle)
@@ -377,6 +368,70 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2& p_pos, bool p_append,b
 
 	return s->get_instance_ID();
 
+}
+
+void SpatialEditorViewport::_find_items_at_pos(const Point2& p_pos,bool &r_includes_current,Vector<_RayResult> &results,bool p_alt_select) {
+
+	Vector3 ray=_get_ray(p_pos);
+	Vector3 pos=_get_ray_pos(p_pos);
+
+	Vector<RID> instances=VisualServer::get_singleton()->instances_cull_ray(pos,ray,get_tree()->get_root()->get_world()->get_scenario() );
+	Set<Ref<SpatialEditorGizmo> > found_gizmos;
+
+	r_includes_current=false;
+
+	for (int i=0;i<instances.size();i++) {
+
+		uint32_t id=VisualServer::get_singleton()->instance_get_object_instance_ID(instances[i]);
+		Object *obj=ObjectDB::get_instance(id);
+		if (!obj)
+			continue;
+
+		Spatial *spat=obj->cast_to<Spatial>();
+
+		if (!spat)
+			continue;
+
+		Ref<SpatialEditorGizmo> seg = spat->get_gizmo();
+
+		if (!seg.is_valid())
+			continue;
+
+		if (found_gizmos.has(seg))
+			continue;
+
+		found_gizmos.insert(seg);
+		Vector3 point;
+		Vector3 normal;
+
+		int handle=-1;
+		bool inters = seg->intersect_ray(camera,p_pos,point,normal,NULL,p_alt_select);
+
+		if (!inters)
+			continue;
+
+		float dist = pos.distance_to(point);
+
+		if (dist<0)
+			continue;
+
+
+
+		if (editor_selection->is_selected(spat))
+			r_includes_current=true;
+
+		_RayResult res;
+		res.item=spat;
+		res.depth=dist;
+		res.handle=handle;
+		results.push_back(res);
+	}
+
+
+	if (results.empty())
+		return;
+
+	results.sort();
 }
 
 
@@ -724,6 +779,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				} break;
 				case BUTTON_RIGHT: {
 
+					NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_scheme");
 
 					if (b.pressed && _edit.gizmo.is_valid()) {
 						//restore
@@ -831,6 +887,57 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						surface->update();
 						//VisualServer::get_singleton()->poly_clear(indicators);
 						set_message("Transform Aborted.",3);
+					}
+
+					if (!b.pressed && (spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_SELECT && b.mod.alt)) {
+
+						if (nav_scheme == NAVIGATION_MAYA)
+							break;
+
+						_find_items_at_pos(Vector2( b.x, b.y ),clicked_includes_current,selection_results,b.mod.shift);
+
+						clicked_wants_append=b.mod.shift;
+
+						if (selection_results.size() == 1) {
+
+							clicked=selection_results[0].item->get_instance_ID();
+							selection_results.clear();
+
+							if (clicked) {
+								_select_clicked(clicked_wants_append,true);
+								clicked=0;
+							}
+
+						} else if (!selection_results.empty()) {
+
+							NodePath root_path = get_tree()->get_edited_scene_root()->get_path();
+							StringName root_name = root_path.get_name(root_path.get_name_count()-1);
+
+							for (int i = 0; i < selection_results.size(); i++) {
+
+								Spatial *spat=selection_results[i].item;
+
+								Ref<Texture> icon;
+								if (spat->has_meta("_editor_icon"))
+									icon=spat->get_meta("_editor_icon");
+								else
+									icon=get_icon( has_icon(spat->get_type(),"EditorIcons")?spat->get_type():String("Object"),"EditorIcons");
+
+								String node_path="/"+root_name+"/"+root_path.rel_path_to(spat->get_path());
+
+								selection_menu->add_item(spat->get_name());
+								selection_menu->set_item_icon(i, icon );
+								selection_menu->set_item_metadata(i, node_path);
+								selection_menu->set_item_tooltip(i,String(spat->get_name())+
+										"\nType: "+spat->get_type()+"\nPath: "+node_path);
+							}
+
+							selection_menu->set_global_pos(Vector2( b.global_x, b.global_y ));
+							selection_menu->popup();
+							selection_menu->call_deferred("grab_click_focus");
+
+							break;
+						}
 					}
 				} break;
 				case BUTTON_MIDDLE: {
@@ -2096,6 +2203,26 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 	}
 }
 
+void SpatialEditorViewport::_selection_result_pressed(int p_result) {
+
+	if (selection_results.size() <= p_result)
+		return;
+
+	clicked=selection_results[p_result].item->get_instance_ID();
+
+	if (clicked) {
+		_select_clicked(clicked_wants_append,true);
+		clicked=0;
+	}
+}
+
+void SpatialEditorViewport::_selection_menu_hide() {
+
+	selection_results.clear();
+	selection_menu->clear();
+	selection_menu->set_size(Vector2(0, 0));
+}
+
 void SpatialEditorViewport::set_can_preview(Camera* p_preview) {
 
 	preview=p_preview;
@@ -2210,6 +2337,8 @@ void SpatialEditorViewport::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("_toggle_camera_preview"),&SpatialEditorViewport::_toggle_camera_preview);
 	ObjectTypeDB::bind_method(_MD("_preview_exited_scene"),&SpatialEditorViewport::_preview_exited_scene);
 	ObjectTypeDB::bind_method(_MD("update_transform_gizmo_view"),&SpatialEditorViewport::update_transform_gizmo_view);
+	ObjectTypeDB::bind_method(_MD("_selection_result_pressed"),&SpatialEditorViewport::_selection_result_pressed);
+	ObjectTypeDB::bind_method(_MD("_selection_menu_hide"),&SpatialEditorViewport::_selection_menu_hide);
 
 	ADD_SIGNAL( MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")) );
 }
@@ -2306,6 +2435,12 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	previewing=NULL;
 	preview=NULL;
 	gizmo_scale=1.0;
+
+	selection_menu = memnew( PopupMenu );
+	add_child(selection_menu);
+	selection_menu->set_custom_minimum_size(Vector2(100, 0));
+	selection_menu->connect("item_pressed", this, "_selection_result_pressed");
+	selection_menu->connect("popup_hide", this, "_selection_menu_hide");
 
 	if (p_index==0) {
 		view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_AUDIO_LISTENER),true);
