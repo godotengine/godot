@@ -1,5 +1,6 @@
 Import('env')
 
 env.add_source_files(env.tool_sources,"*.cpp")
+env.Append(LIBS=["iconv"])
 
 Export('env')

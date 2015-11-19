@@ -1,5 +1,19 @@
 import sys
 import xml.etree.ElementTree as ET
+from xml.sax.saxutils import escape, unescape
+
+html_escape_table = {
+ '"': "&quot;",
+ "'": "&apos;"
+}
+
+html_unescape_table = {v:k for k, v in html_escape_table.items()}
+
+def html_escape(text):
+ return escape(text, html_escape_table)
+
+def html_unescape(text):
+ return unescape(text, html_unescape_table)
 
 input_list = []
 
@@ -96,7 +110,7 @@ def make_html_class_list(class_list,columns):
      
   idx=0
   for n in class_list:
-   col = idx/col_max
+   col = int(idx/col_max)
    if (col>=columns):
     col=columns-1
    fit_columns[col]+=[n]
@@ -299,6 +313,7 @@ def make_type(p_type,p_parent):
 
 
 def make_text_def(class_name,parent,text):
+ text = html_escape(text)
  pos=0
  while(True):
   pos = text.find("[",pos)
@@ -598,7 +613,6 @@ def make_html_class(node):
   
   descr=node.find("description")
   if (descr!=None and descr.text.strip()!=""):
-
    h4=ET.SubElement(div,"h4")
    h4.text="Description:"
   
@@ -643,7 +657,6 @@ def make_html_class(node):
 
 class_names=[]
 classes={}
-
 
 for file in input_list:
  tree = ET.parse(file)

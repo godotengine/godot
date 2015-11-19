@@ -12518,9 +12518,13 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<argument index="2" name="use_ssl" type="bool" default="false">
 			</argument>
-			<argument index="3" name="arg3" type="bool" default="true">
+			<argument index="3" name="verify_host" type="bool" default="true">
 			</argument>
 			<description>
+					Connect to a host. This needs to be done before any requests are sent.
+The host should not have http:// prepended but will strip the protocol identifier if provided.
+					
+verify_host will check the SSL identity of the host if set to true.
 			</description>
 		</method>
 		<method name="set_connection">
@@ -12541,6 +12545,20 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="3" name="body" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
+					Sends a request to the connected host. The url is the what is normally behind the hostname, 
+i.e; 
+http://somehost.com/index.php
+url would be &quot;index.php&quot;
+					
+Headers are HTTP request headers
+					
+To create a POST request with query strings to push to the server, do:
+var fields = {"username" : "user",
+                       "password" : "pass"}
+var queryString = httpClient.query_string_from_dict(fields)
+var headers = ["Content-Type: application/x-www-form-urlencoded",
+		   	             "Content-Length: " + str(queryString.length())]
+var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, queryString)
 			</description>
 		</method>
 		<method name="send_body_text">
@@ -12548,7 +12566,8 @@ This approximation makes straight segments between each point, then subdivides t
 			</return>
 			<argument index="0" name="body" type="String">
 			</argument>
-			<description>
+				<description>
+					Stub function
 			</description>
 		</method>
 		<method name="send_body_data">
@@ -12557,6 +12576,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="body" type="RawArray">
 			</argument>
 			<description>
+					Stub function
 			</description>
 		</method>
 		<method name="close">
@@ -12609,12 +12629,14 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="bytes" type="int">
 			</argument>
 			<description>
+					Sets the size of the buffer used and maximum bytes to read per iteration
 			</description>
 		</method>
 		<method name="set_blocking_mode">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+					If set to true, execute will wait until all data is read from the response.
 			</description>
 		</method>
 		<method name="is_blocking_mode_enabled" qualifiers="const">
@@ -12627,14 +12649,30 @@ This approximation makes straight segments between each point, then subdivides t
 			<return type="int">
 			</return>
 			<description>
+					Returns a status string like STATUS_REQUESTING. Need to call [method poll] in order to get status updates.
 			</description>
 		</method>
 		<method name="poll">
 			<return type="Error">
 			</return>
-			<description>
+				<description>
+					This needs to be called in order to have any request processed. Check results with [method get_status]
 			</description>
 		</method>
+        <method name="query_string_from_dict">
+            <return type="String">
+            </return>
+            <argument index="0" name="fields" type="Dictionary">
+            </argument>
+            <description>
+					Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary.
+					
+var fields = {"username": "user", "password": "pass"}
+String queryString = httpClient.query_string_from_dict(fields)
+					
+returns:= "username=user&amp;password=pass"
+            </description>
+        </method>
 	</methods>
 	<constants>
 		<constant name="METHOD_GET" value="0">
@@ -26819,7 +26857,11 @@ This method controls whether the position between two cached points is interpola
 		Lazy (non-greedy) quantifiers [code]*?[/code]
 		Begining [code]^[/code] and end [code]$[/code] anchors
 		Alternation [code]|[/code]
-		Backreferences [code]\1[/code] to [code]\99[/code]
+		Backreferences [code]\1[/code] to [code]\9[/code]
+		POSIX character classes [code][[:alnum:]][/code]
+		Lookahead [code](?=)[/code], [code](?!)[/code] and lookbehind [code](?&lt;=)[/code], [code](?&lt;!)[/code]
+		ASCII [code]\xFF[/code] and Unicode [code]\uFFFF[/code] code points (in a style similar to Python)
+		Word boundaries [code]\b[/code], [code]\B[/code]
 	</description>
 	<methods>
 		<method name="compile">

@@ -3079,6 +3079,48 @@ String String::world_wrap(int p_chars_per_line) const {
 	return ret;
 }
 
+String String::http_escape() const {
+    const CharString temp = utf8();
+    String res;
+    for (int i = 0; i < length(); ++i) {
+        CharType ord = temp[i];
+        if (ord == '.' || ord == '-' || ord == '_' || ord == '~' ||
+           (ord >= 'a' && ord <= 'z') ||
+           (ord >= 'A' && ord <= 'Z') ||
+           (ord >= '0' && ord <= '9')) {
+            res += ord;
+        } else {
+            char h_Val[3];
+            snprintf(h_Val, 3, "%.2X", ord);
+            res += "%";
+            res += h_Val;
+        }
+    }
+    return res;
+}
+
+String String::http_unescape() const {
+    String res;
+    for (int i = 0; i < length(); ++i) {
+        if (ord_at(i) == '%' && i+2 < length()) {
+            CharType ord1 = ord_at(i+1);
+            if ((ord1 >= '0' && ord1 <= '9') || (ord1 >= 'A' && ord1 <= 'Z')) {
+                CharType ord2 = ord_at(i+2);
+                if ((ord2 >= '0' && ord2 <= '9') || (ord2 >= 'A' && ord2 <= 'Z')) {
+                    char bytes[2] = {ord1, ord2};
+                    res += (char)strtol(bytes, NULL, 16);
+                    i+=2;
+                }
+            } else {
+                res += ord_at(i);
+            }
+        } else {
+            res += ord_at(i);
+        }
+    }
+    return String::utf8(res.ascii());
+}
+
 String String::c_unescape() const {
 
 	String escaped=*this;
