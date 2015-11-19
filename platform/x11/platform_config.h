@@ -29,7 +29,7 @@
 #ifdef __linux__
 #include <alloca.h>
 #endif
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
+#ifdef __FreeBSD__
 #include <stdlib.h>
 #endif
 

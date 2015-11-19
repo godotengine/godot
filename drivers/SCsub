@@ -7,7 +7,6 @@ Export('env')
 
 SConscript('unix/SCsub');
 SConscript('alsa/SCsub');
-SConscript('ao/SCsub');
 SConscript('pulseaudio/SCsub');
 SConscript('windows/SCsub');
 SConscript('gles2/SCsub');

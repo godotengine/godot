@@ -32,7 +32,6 @@
 #include "key_mapping_x11.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "print_string.h"
 #include "servers/physics/physics_server_sw.h"
 
@@ -1673,7 +1672,7 @@ void OS_X11::close_joystick(int p_id) {
 };
 
 void OS_X11::probe_joystick(int p_id) {
-	#if !defined(__FreeBSD__) && !defined(__OpenBSD__)
+	#ifndef __FreeBSD__
 
 	if (p_id == -1) {
 
@@ -1728,7 +1727,7 @@ void OS_X11::move_window_to_foreground() {
 }
 
 void OS_X11::process_joysticks() {
-	#if !defined(__FreeBSD__) && !defined(__OpenBSD__)
+	#ifndef __FreeBSD__
 	int bytes;
 	js_event events[32];
 	InputEvent ievent;
@@ -1959,10 +1958,6 @@ OS_X11::OS_X11() {
 
 #ifdef ALSA_ENABLED
 	AudioDriverManagerSW::add_driver(&driver_alsa);
-#endif
-
-#ifdef AO_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_ao);
 #endif
 
 	minimized = false;
