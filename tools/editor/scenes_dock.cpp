@@ -151,11 +151,11 @@ void ScenesDock::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 
 			if (initialized)
 				return;
-			initialized=false;
+			initialized=true;
 
 			EditorFileSystem::get_singleton()->connect("filesystem_changed",this,"_fs_changed");
 
@@ -191,9 +191,6 @@ void ScenesDock::_notification(int p_what) {
 			if (EditorFileSystem::get_singleton()->is_scanning()) {
 				scanning_progress->set_val(EditorFileSystem::get_singleton()->get_scanning_progress()*100);
 			}
-		} break;
-		case NOTIFICATION_EXIT_TREE: {
-
 		} break;
 
 	}
