@@ -3045,7 +3045,7 @@ Error EditorNode::save_translatable_strings(const String& p_to_file) {
 	OS::Time time = OS::get_singleton()->get_time();
 	f->store_line("# Translation Strings Dump.");
 	f->store_line("# Created By.");
-	f->store_line("# \t"VERSION_FULL_NAME" (c) 2008-2015 Juan Linietsky, Ariel Manzur.");
+	f->store_line("# \t" VERSION_FULL_NAME " (c) 2008-2015 Juan Linietsky, Ariel Manzur.");
 	f->store_line("# From Scene: ");
 	f->store_line("# \t"+get_edited_scene()->get_filename());
 	f->store_line("");
