@@ -3817,9 +3817,7 @@ void EditorNode::_quick_run(const String& p_resource) {
 
 void EditorNode::notify_child_process_exited() {
 
-	play_button->set_pressed(false);
-	play_scene_button->set_pressed(false);
-	//pause_button->set_pressed(false);
+	_menu_option_confirm(RUN_STOP,false);
 	stop_button->set_pressed(false);
 	editor_run.stop();
 
