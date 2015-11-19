@@ -1796,7 +1796,8 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 		CONSOLE_SCREEN_BUFFER_INFO sbi; //original
 		GetConsoleScreenBufferInfo(hCon, &sbi);
 
-		SetConsoleTextAttribute(hCon, sbi.wAttributes);
+		WORD current_fg = sbi.wAttributes & (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+		WORD current_bg = sbi.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY);
 
 		uint32_t basecol = 0;
 		switch(p_type) {
@@ -1804,6 +1805,8 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 			case ERR_WARNING: basecol = FOREGROUND_RED | FOREGROUND_GREEN; break;
 			case ERR_SCRIPT: basecol = FOREGROUND_RED | FOREGROUND_BLUE; break;
 		}
+
+		basecol |= current_bg;
 
 		if (p_rationale && p_rationale[0]) {
 
@@ -1814,13 +1817,13 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				case ERR_SCRIPT: print("SCRIPT ERROR: "); break;
 			}
 
-			SetConsoleTextAttribute(hCon, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
 			print(" %s\n", p_rationale);
 
 			SetConsoleTextAttribute(hCon, basecol);
 			print("At: ");
 
-			SetConsoleTextAttribute(hCon, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN);
+			SetConsoleTextAttribute(hCon, current_fg | current_bg);
 			print(" %s:%i\n", p_file, p_line);
 
 		} else {
@@ -1832,13 +1835,13 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				case ERR_SCRIPT: print("SCRIPT ERROR: %s: ", p_function); break;
 			}
 
-			SetConsoleTextAttribute(hCon, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
 			print(" %s\n", p_code);
 
 			SetConsoleTextAttribute(hCon, basecol);
 			print("At: ");
 
-			SetConsoleTextAttribute(hCon, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN);
+			SetConsoleTextAttribute(hCon, current_fg | current_bg);
 			print(" %s:%i\n", p_file, p_line);
 		}
 
