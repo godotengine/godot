@@ -155,7 +155,7 @@ void ScenesDock::_notification(int p_what) {
 
 			if (initialized)
 				return;
-			initialized=false;
+			initialized=true;
 
 			EditorFileSystem::get_singleton()->connect("filesystem_changed",this,"_fs_changed");
 
