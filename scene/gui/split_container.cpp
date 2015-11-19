@@ -435,8 +435,8 @@ void SplitContainer::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("dragged",PropertyInfo(Variant::INT,"offset")));
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"split/offset"),_SCS("set_split_offset"),_SCS("get_split_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"split/collapsed"),_SCS("set_collapsed"),_SCS("is_collapsed"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"split/dragger_visible"),_SCS("set_dragger_visible"),_SCS("is_dragger_visible"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"split/collapsed"),_SCS("set_collapsed"),_SCS("is_collapsed"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"split/dragger_visible"),_SCS("set_dragger_visible"),_SCS("is_dragger_visible"));
 
 
 }
