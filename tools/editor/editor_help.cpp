@@ -1428,7 +1428,8 @@ EditorHelp::EditorHelp() {
 	{
 		Panel *pc = memnew( Panel );
 		Ref<StyleBoxFlat> style( memnew( StyleBoxFlat ) );
-		style->set_bg_color( EditorSettings::get_singleton()->get("text_editor/background_color") );	
+		style->set_bg_color( EditorSettings::get_singleton()->get("text_editor/background_color") );
+		pc->set_v_size_flags(SIZE_EXPAND_FILL);
 		pc->add_style_override("panel", style); //get_stylebox("normal","TextEdit"));
 		vbc->add_child(pc);
 		class_desc = memnew( RichTextLabel );
