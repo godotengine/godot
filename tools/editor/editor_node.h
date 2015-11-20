@@ -173,6 +173,7 @@ class EditorNode : public Node {
 		SOURCES_REIMPORT,
 		DEPENDENCY_LOAD_CHANGED_IMAGES,
 		DEPENDENCY_UPDATE_IMPORTED,
+		SCENE_TAB_CLOSE,
 
 		IMPORT_PLUGIN_BASE=100,
 
@@ -217,6 +218,7 @@ class EditorNode : public Node {
 	//main tabs
 
 	Tabs *scene_tabs;
+	int tab_closing;
 
 
 	int old_split_ofs;
