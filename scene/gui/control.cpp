@@ -971,7 +971,9 @@ void Control::_window_input_event(InputEvent p_event) {
 
 
 					_window_sort_modal_stack();
-					while (!window->modal_stack.empty()) {
+
+					int ignored_count=0;
+					while (window->modal_stack.size()>ignored_count) {
 
 						Control *top = window->modal_stack.back()->get();
 						if (!top->has_point(top->get_global_transform().affine_inverse().xform(pos))) {
@@ -983,10 +985,20 @@ void Control::_window_input_event(InputEvent p_event) {
 								return; // no one gets the event if exclusive NO ONE
 							}
 
+							if (top->data.always_on_top) {
+								window->modal_stack.move_to_front(window->modal_stack.back());
+								ignored_count++;
+								continue;
+							}
+
 							top->notification(NOTIFICATION_MODAL_CLOSE);
 							top->_modal_stack_remove();
 							top->hide();
 						} else {
+							if (top->data.always_on_top && !top->has_focus()) {
+								window->modal_stack.move_to_back(window->modal_stack.back());
+								top->raise();
+							}
 							break;
 						}
 					}
@@ -2279,6 +2291,16 @@ void Control::show_modal(bool p_exclusive) {
 	
 }
 
+void Control::set_always_on_top(bool p_enable) {
+
+	data.always_on_top=p_enable;
+}
+
+bool Control::is_always_on_top() const {
+
+	return data.always_on_top;
+}
+
 void Control::_window_sort_subwindows() {
 
 	if (!window->subwindow_order_dirty)
@@ -2923,6 +2945,7 @@ Control::Control() {
 	data.modal=false;
 	data.theme_owner=NULL;
 	data.modal_exclusive=false;
+	data.always_on_top=false;
 	data.default_cursor = CURSOR_ARROW;
 	data.h_size_flags=SIZE_FILL;
 	data.v_size_flags=SIZE_FILL;

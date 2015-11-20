@@ -124,8 +124,9 @@ private:
 		Control *window;
 		bool modal;
 		bool modal_exclusive;
+		bool always_on_top;
 		Ref<Theme> theme;
-		Control *theme_owner;		
+		Control *theme_owner;
 		String tooltip;
 		CursorShape default_cursor;
 
@@ -303,6 +304,9 @@ public:
 	void set_area_as_parent_rect(int p_margin=0);
 	
 	void show_modal(bool p_exclusive=false);
+
+	void set_always_on_top(bool p_enable);
+	bool is_always_on_top() const;
 
 	void set_theme(const Ref<Theme>& p_theme);
 	Ref<Theme> get_theme() const;
