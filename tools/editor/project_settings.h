@@ -47,6 +47,12 @@ class ProjectSettings : public AcceptDialog {
 	UndoRedo *undo_redo;
 	PropertyEditor *globals_editor;
 
+	HBoxContainer *search_bar;
+	ToolButton *search_button;
+	LineEdit *search_box;
+	ToolButton *clear_button;
+
+	HBoxContainer *add_prop_bar;
 	ConfirmationDialog *message;
 	LineEdit *category;
 	LineEdit *property;
@@ -129,6 +135,9 @@ class ProjectSettings : public AcceptDialog {
 	void _translation_res_option_add(const String& p_path);
 	void _translation_res_option_changed();
 	void _translation_res_option_delete(Object *p_item,int p_column, int p_button);
+
+	void _toggle_search_bar(bool p_pressed);
+	void _clear_search_box();
 
 	ProjectSettings();
 

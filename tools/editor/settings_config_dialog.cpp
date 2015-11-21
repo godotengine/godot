@@ -72,6 +72,10 @@ void EditorSettingsDialog::popup_edit_settings() {
 
 	property_editor->edit(EditorSettings::get_singleton());
 	property_editor->update_tree();
+
+	search_box->select_all();
+	search_box->grab_focus();
+
 	popup_centered_ratio(0.7);
 }
 
@@ -244,11 +248,21 @@ void EditorSettingsDialog::_update_plugins() {
 
 }
 
+void EditorSettingsDialog::_clear_search_box() {
+
+	if (search_box->get_text()=="")
+		return;
+
+	search_box->clear();
+	property_editor->update_tree();
+}
+
 void EditorSettingsDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		rescan_plugins->set_icon(get_icon("Reload","EditorIcons"));
+		clear_button->set_icon(get_icon("Close","EditorIcons"));
 		_update_plugins();
 	}
 }
@@ -261,6 +275,7 @@ void EditorSettingsDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_plugin_settings"),&EditorSettingsDialog::_plugin_settings);
 	ObjectTypeDB::bind_method(_MD("_plugin_edited"),&EditorSettingsDialog::_plugin_edited);
 	ObjectTypeDB::bind_method(_MD("_plugin_install"),&EditorSettingsDialog::_plugin_install);
+	ObjectTypeDB::bind_method(_MD("_clear_search_box"),&EditorSettingsDialog::_clear_search_box);
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
@@ -271,16 +286,38 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	add_child(tabs);
 	set_child_rect(tabs);
 
+	VBoxContainer *vbc = memnew( VBoxContainer );
+	tabs->add_child(vbc);
+	vbc->set_name("General");
+
+	HBoxContainer *hbc = memnew( HBoxContainer );
+	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc->add_child(hbc);
+
+	Label *l = memnew( Label );
+	l->set_text("Search: ");
+	hbc->add_child(l);
+
+	search_box = memnew( LineEdit );
+	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	hbc->add_child(search_box);
+
+	clear_button = memnew( ToolButton );
+	hbc->add_child(clear_button);
+	clear_button->connect("pressed",this,"_clear_search_box");
+
 	property_editor = memnew( PropertyEditor );
 	property_editor->hide_top_label();
-	tabs->add_child(property_editor);
-	property_editor->set_name("General");
+	property_editor->set_use_filter(true);
+	property_editor->register_text_enter(search_box);
+	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc->add_child(property_editor);
 
-	VBoxContainer *vbc = memnew( VBoxContainer );
+	vbc = memnew( VBoxContainer );
 	tabs->add_child(vbc);
 	vbc->set_name("Plugins");
 
-	HBoxContainer *hbc = memnew( HBoxContainer );
+	hbc = memnew( HBoxContainer );
 	vbc->add_child(hbc);
 	hbc->add_child( memnew( Label("Plugin List: ")));
 	hbc->add_spacer();
