@@ -1,7 +1,7 @@
 
 extends Navigation
 
-# member variables
+# Member variables
 const SPEED = 4.0
 
 var camrot = 0.0
@@ -11,7 +11,7 @@ var end = Vector3()
 var m = FixedMaterial.new()
 
 var path = []
-var draw_path=false
+var draw_path = false
 
 
 func _process(delta):

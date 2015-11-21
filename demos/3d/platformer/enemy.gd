@@ -1,7 +1,7 @@
 
 extends RigidBody
 
-# member variables
+# Member variables
 const STATE_WALKING = 0
 const STATE_DYING = 1
 
@@ -20,9 +20,9 @@ func _integrate_forces(state):
 	var lv = state.get_linear_velocity()
 	var g = state.get_total_gravity()
 
-	lv += g*delta # apply gravity
+	lv += g*delta # Apply gravity
 	var up = -g.normalized()
-
+	
 	if (dying):
 		state.set_linear_velocity(lv)
 		return

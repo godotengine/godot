@@ -1,7 +1,7 @@
 
 extends Control
 
-# member variables
+# Member variables
 var mousepos
 
 

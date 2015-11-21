@@ -1,7 +1,7 @@
 
 extends Camera
 
-# member variables
+# Member variables
 var collision_exception = []
 export var min_distance = 0.5
 export var max_distance = 4.0
@@ -19,15 +19,15 @@ func _fixed_process(dt):
 	
 	var delta = pos - target
 	
-	# regular delta follow
+	# Regular delta follow
 	
-	# check ranges
+	# Check ranges
 	if (delta.length() < min_distance):
 		delta = delta.normalized()*min_distance
 	elif (delta.length() > max_distance):
 		delta = delta.normalized()*max_distance
 	
-	# check upper and lower height
+	# Check upper and lower height
 	if ( delta.y > max_height):
 		delta.y = max_height
 	if ( delta.y < min_height):
@@ -37,14 +37,14 @@ func _fixed_process(dt):
 	
 	look_at_from_pos(pos, target, up)
 	
-	# turn a little up or down
+	# Turn a little up or down
 	var t = get_transform()
 	t.basis = Matrix3(t.basis[0], deg2rad(angle_v_adjust))*t.basis
 	set_transform(t)
 
 
 func _ready():
-	# find collision exceptions for ray
+	# Find collision exceptions for ray
 	var node = self
 	while(node):
 		if (node extends RigidBody):
@@ -53,5 +53,5 @@ func _ready():
 		else:
 			node = node.get_parent()
 	set_fixed_process(true)
-	# this detaches the camera transform from the parent spatial node
+	# This detaches the camera transform from the parent spatial node
 	set_as_toplevel(true)

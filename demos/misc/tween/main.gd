@@ -1,7 +1,7 @@
 
 extends Control
 
-# member variables
+# Member variables
 var trans = ["linear", "sine", "quint", "quart", "quad", "expo", "elastic", "cubic", "circ", "bounce", "back"]
 var eases = ["in", "out", "in_out", "out_in"]
 var modes = ["move", "color", "scale", "rotate", "callback", "follow", "repeat", "pause"]

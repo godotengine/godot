@@ -5,7 +5,7 @@ extends Panel
 # (UDP can lose packets and you won't normally find out, so don't do a chat this way)
 # This is just a demo that shows how to use the UDP class.
 
-# member variables
+# Member variables
 var udp = PacketPeerUDP.new()
 
 

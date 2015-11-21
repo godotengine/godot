@@ -1,6 +1,6 @@
 extends Node
 
-# member variables
+# Member variables
 var current_scene = null
 
 
@@ -34,7 +34,7 @@ func _deferred_goto_scene(path):
 
 func _ready():
 	# Get the current scene, the first time.
-	# it is always the last child of root,
+	# It is always the last child of root,
 	# after the autoloaded nodes.
 	
 	var root = get_tree().get_root()
