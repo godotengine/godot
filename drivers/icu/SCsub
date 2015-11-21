@@ -1,0 +1,70 @@
+Import('env')
+
+#env.add_source_files(env.icu_sources,"*.cpp")
+#Export('env')
+
+env.icu_sources = [
+"source/common/uchar.c",
+"source/common/uinvchar.c",
+"source/common/cstring.c",
+"source/common/utf_impl.c",
+"source/common/udataswp.c",
+"source/common/umath.c",
+"source/common/cmemory.c",
+"source/common/utrie2.cpp",
+"source/common/unistr.cpp",
+"source/common/ustrtrns.cpp",
+"source/common/ushape.cpp",
+"source/common/ubidi_props.c",
+"source/common/ubidi.c",
+"source/common/ubidiwrt.c",
+"source/common/ubidiln.c",
+"source/common/ustring.cpp",
+]
+
+env.Append(CPPPATH=["#drivers/icu/source/common"])
+env.Append(CPPPATH=["#drivers/icu/source/common/unicode"])
+#env.Append(CPPFLAGS=["-DU_DISABLE_RENAMING=1", "-DU_COMMON_IMPLEMENTATION","-DU_STATIC_IMPLEMENTATION"])
+env.Append(CPPFLAGS=["-DU_COMMON_IMPLEMENTATION", "-DU_HAVE_STD_STRING=0"])
+
+
+num = 0
+cur_base = ""
+total = len(env.icu_sources)
+max_src = 64
+list = []
+lib_list = []
+
+import string
+
+if env['vsproj']=="yes":
+	env.AddToVSProject(env.icu_sources)
+
+for f in env.icu_sources:
+	fname = ""
+	if type(f) == type(""):
+		fname = env.File(f).path
+	else:
+		fname = env.File(f)[0].path
+	#base = string.join(fname.split("/")[:-1], "/")
+	fname = fname.replace("\\", "/")
+	base = string.join(fname.split("/")[:2], "/")
+	if base != cur_base and len(list) > max_src:
+		lib = env.Library("utils"+str(num), list)
+		lib_list.append(lib)
+		list = []
+		num = num+1
+	cur_base = base
+	list.append(f)
+
+if len(list) > 0:
+	lib = env.Library("icu"+str(num), list)
+	lib_list.append(lib)
+
+
+icu_base=[]
+env.add_source_files(icu_base,"*.cpp")
+lib_list.insert(0, env.Library("icu", icu_base))
+
+env.Prepend(LIBS=lib_list)
+

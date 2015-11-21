@@ -367,6 +367,7 @@ if selected_platform in platform_list:
 
 	#build subdirs, the build order is dependent on link order.
 
+	SConscript("drivers/icu/SCsub")
 	SConscript("core/SCsub")
 	SConscript("servers/SCsub")
 	SConscript("scene/SCsub")
