@@ -1,7 +1,7 @@
 
 extends Spatial
 
-# member variables
+# Member variables
 var r_pos = Vector2()
 var state
 
@@ -29,7 +29,7 @@ func _fixed_process(delta):
 	if(Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED):
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
-	var dir = Vector3() 
+	var dir = Vector3()
 	var cam = get_global_transform()
 	var org = get_translation()
 	

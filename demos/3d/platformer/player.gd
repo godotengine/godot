@@ -1,7 +1,7 @@
 
 extends RigidBody
 
-# member variables
+# Member variables
 const ANIM_FLOOR = 0
 const ANIM_AIR_UP = 1
 const ANIM_AIR_DOWN = 2
@@ -14,14 +14,14 @@ const CHAR_SCALE = Vector3(0.3, 0.3, 0.3)
 var facing_dir = Vector3(1, 0, 0)
 var movement_dir = Vector3()
 
-var jumping=false
+var jumping = false
 
 var turn_speed = 40
 var keep_jump_inertia = true
 var air_idle_deaccel = false
 var accel = 19.0
 var deaccel = 14.0
-var sharp_turn_threshhold = 140
+var sharp_turn_threshold = 140
 
 var max_speed = 3.1
 var on_floor = false
@@ -34,7 +34,7 @@ var shoot_blend = 0
 
 
 func adjust_facing(p_facing, p_target, p_step, p_adjust_rate, current_gn):
-	var n = p_target # normal
+	var n = p_target # Normal
 	var t = n.cross(current_gn).normalized()
 	
 	var x = n.dot(p_facing)
@@ -42,7 +42,7 @@ func adjust_facing(p_facing, p_target, p_step, p_adjust_rate, current_gn):
 	
 	var ang = atan2(y,x)
 	
-	if (abs(ang) < 0.001): # too small
+	if (abs(ang) < 0.001): # Too small
 		return p_facing
 	
 	var s = sign(ang)
@@ -59,22 +59,22 @@ func adjust_facing(p_facing, p_target, p_step, p_adjust_rate, current_gn):
 
 
 func _integrate_forces(state):
-	var lv = state.get_linear_velocity() # linear velocity
+	var lv = state.get_linear_velocity() # Linear velocity
 	var g = state.get_total_gravity()
 	var delta = state.get_step()
 #	var d = 1.0 - delta*state.get_total_density()
 #	if (d < 0):
 #		d = 0
-	lv += g*delta # apply gravity
+	lv += g*delta # Apply gravity
 	
 	var anim = ANIM_FLOOR
 	
 	var up = -g.normalized() # (up is against gravity)
-	var vv = up.dot(lv) # vertical velocity
-	var hv = lv - up*vv # horizontal velocity
+	var vv = up.dot(lv) # Vertical velocity
+	var hv = lv - up*vv # Horizontal velocity
 	
-	var hdir = hv.normalized() # horizontal direction
-	var hspeed = hv.length() # horizontal speed
+	var hdir = hv.normalized() # Horizontal direction
+	var hspeed = hv.length() # Horizontal speed
 	
 	var floor_velocity
 	var onfloor = false
@@ -90,7 +90,7 @@ func _integrate_forces(state):
 			floor_velocity = state.get_contact_collider_velocity_at_pos(i)
 			break
 	
-	var dir = Vector3() # where does the player intend to walk to
+	var dir = Vector3() # Where does the player intend to walk to
 	var cam_xform = get_node("target/camera").get_global_transform()
 	
 	if (Input.is_action_pressed("move_forward")):
@@ -108,7 +108,7 @@ func _integrate_forces(state):
 	var target_dir = (dir - up*dir.dot(up)).normalized()
 	
 	if (onfloor):
-		var sharp_turn = hspeed > 0.1 and rad2deg(acos(target_dir.dot(hdir))) > sharp_turn_threshhold
+		var sharp_turn = hspeed > 0.1 and rad2deg(acos(target_dir.dot(hdir))) > sharp_turn_threshold
 		
 		if (dir.length() > 0.1 and !sharp_turn):
 			if (hspeed > 0.001):
@@ -130,7 +130,7 @@ func _integrate_forces(state):
 		
 		hv = hdir*hspeed
 		
-		var mesh_xform = get_node("Armature").get_transform() 
+		var mesh_xform = get_node("Armature").get_transform()
 		var facing_mesh = -mesh_xform.basis[0].normalized()
 		facing_mesh = (facing_mesh - up*facing_mesh.dot(up)).normalized()
 		facing_mesh = adjust_facing(facing_mesh, target_dir, delta, 1.0/hspeed*turn_speed, up)
@@ -171,7 +171,7 @@ func _integrate_forces(state):
 		#lv += floor_velocity
 		last_floor_velocity = floor_velocity
 	else:
-		if (on_floor) :
+		if (on_floor):
 			#if (keep_jump_inertia):
 			#	lv += last_floor_velocity
 			pass
@@ -180,7 +180,7 @@ func _integrate_forces(state):
 		movement_dir = lv
 	
 	on_floor = onfloor
-
+	
 	state.set_linear_velocity(lv)
 	
 	if (shoot_blend > 0):
@@ -194,7 +194,7 @@ func _integrate_forces(state):
 		bullet.set_transform(get_node("Armature/bullet").get_global_transform().orthonormalized())
 		get_parent().add_child(bullet)
 		bullet.set_linear_velocity(get_node("Armature/bullet").get_global_transform().basis[2].normalized()*20)
-		PS.body_add_collision_exception(bullet.get_rid(), get_rid()) # add it to bullet
+		PS.body_add_collision_exception(bullet.get_rid(), get_rid()) # Add it to bullet
 		get_node("sfx").play("shoot")
 	
 	prev_shoot = shoot_attempt

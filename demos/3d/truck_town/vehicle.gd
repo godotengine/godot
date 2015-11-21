@@ -1,7 +1,7 @@
 
 extends VehicleBody
 
-# member variables
+# Member variables
 const STEER_SPEED = 1
 const STEER_LIMIT = 0.4
 

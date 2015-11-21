@@ -10,7 +10,7 @@ func _goto_scene():
 
 
 func _on_system_pressed():
-	# will autodetect based on system, then fall back
+	# Will autodetect based on system, then fall back
 	# to english if not found
 	_goto_scene()
 

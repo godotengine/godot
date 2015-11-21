@@ -1,26 +1,26 @@
 
 extends Spatial
 
-# member variables
+# Member variables
 var prev_pos = null
 
 
 func _input(event):
-	# all other (non-mouse) events
+	# All other (non-mouse) events
 	if (not event.type in [InputEvent.MOUSE_BUTTON, InputEvent.MOUSE_MOTION, InputEvent.SCREEN_DRAG, InputEvent.SCREEN_TOUCH]):
 		get_node("viewport").input(event)
 
 
-# mouse events for area
+# Mouse events for Area
 func _on_area_input_event(camera, event, click_pos, click_normal, shape_idx):
-	# use click pos (click in 3d space, convert to area space)
+	# Use click pos (click in 3d space, convert to area space)
 	var pos = get_node("area").get_global_transform().affine_inverse()*click_pos
-	# convert to 2D
+	# Convert to 2D
 	pos = Vector2(pos.x, pos.y)
-	# convert to viewport coordinate system
+	# Convert to viewport coordinate system
 	pos.x = (pos.x + 1.5)*100
 	pos.y = (-pos.y + 0.75)*100
-	# set to event
+	# Set to event
 	event.pos = pos
 	event.global_pos = pos
 	if (prev_pos == null):
@@ -28,7 +28,7 @@ func _on_area_input_event(camera, event, click_pos, click_normal, shape_idx):
 	if (event.type == InputEvent.MOUSE_MOTION):
 		event.relative_pos = pos - prev_pos
 	prev_pos = pos
-	# sned the event to the viewport
+	# Send the event to the viewport
 	get_node("viewport").input(event)
 
 

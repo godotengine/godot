@@ -1,7 +1,7 @@
 
 extends VBoxContainer
 
-# member variables
+# Member variables
 var regex = RegEx.new()
 
 

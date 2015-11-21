@@ -1,5 +1,5 @@
 
 extends RigidBody
 
-# member variables
-var disabled=false
+# Member variables
+var disabled = false

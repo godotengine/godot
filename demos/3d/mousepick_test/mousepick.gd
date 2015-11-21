@@ -1,9 +1,9 @@
 
 extends RigidBody
 
-# member variables
+# Member variables
 var gray_mat = FixedMaterial.new()
-var selected=false
+var selected = false
 
 
 func _input_event(camera, event, pos, normal, shape):

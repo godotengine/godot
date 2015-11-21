@@ -1,7 +1,7 @@
 
 extends KinematicBody
 
-# member variables
+# Member variables
 var g = -9.8
 var vel = Vector3()
 const MAX_SPEED = 5
@@ -12,7 +12,7 @@ const MAX_SLOPE_ANGLE = 30
 
 
 func _fixed_process(delta):
-	var dir = Vector3() #where does the player intend to walk to
+	var dir = Vector3() # Where does the player intend to walk to
 	var cam_xform = get_node("target/camera").get_global_transform()
 	
 	if (Input.is_action_pressed("move_forward")):
@@ -49,13 +49,13 @@ func _fixed_process(delta):
 	var on_floor = false
 	var original_vel = vel
 	var floor_velocity = Vector3()
-	var attempts=4
+	var attempts = 4
 	
 	while(is_colliding() and attempts):
 		var n = get_collision_normal()
 		
 		if (rad2deg(acos(n.dot(Vector3(0, 1, 0)))) < MAX_SLOPE_ANGLE):
-				# if angle to the "up" vectors is < angle tolerance
+				# If angle to the "up" vectors is < angle tolerance,
 				# char is on floor
 				floor_velocity = get_collider_velocity()
 				on_floor = true
@@ -63,7 +63,7 @@ func _fixed_process(delta):
 		motion = n.slide(motion)
 		vel = n.slide(vel)
 		if (original_vel.dot(vel) > 0):
-			# do not allow to slide towads the opposite direction we were coming from
+			# Do not allow to slide towads the opposite direction we were coming from
 			motion=move(motion)
 			if (motion.length() < 0.001):
 				break

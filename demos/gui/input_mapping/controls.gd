@@ -1,3 +1,6 @@
+
+extends Control
+
 # Note for the reader:
 #
 # This demo conveniently uses the same names for actions and for the container nodes
@@ -9,9 +12,7 @@
 # action and the node, e.g.:
 # button.connect("pressed", self, "wait_for_input", [ button, action ])
 
-extends Control
-
-# member variables
+# Member variables
 var player_actions = [ "move_up", "move_down", "move_left", "move_right", "jump" ]
 var action # To register the action the UI is currently handling
 var button # Button node corresponding to the above action
