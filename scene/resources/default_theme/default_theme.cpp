@@ -766,7 +766,8 @@ void make_default_theme() {
 	t->set_constant("color_width","ColorPicker", 100);
 	t->set_constant("label_width","ColorPicker", 20);
 	t->set_constant("hseparator","ColorPicker", 4);
-
+	
+	t->set_icon("screen_picker","ColorPicker", make_icon( icon_color_pick_png ) );
 
 
 	// TooltipPanel

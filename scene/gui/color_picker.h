@@ -36,25 +36,24 @@
 #include "scene/gui/button.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/option_button.h"
+#include "scene/gui/texture_frame.h"
+#include "scene/gui/tool_button.h"
+#include "scene/gui/check_button.h"
+#include "scene/resources/material.h"
 
-class ColorPicker : public HBoxContainer {
+class ColorPicker : public BoxContainer {
 
-	OBJ_TYPE(ColorPicker,HBoxContainer);
-public:
+	OBJ_TYPE(ColorPicker,BoxContainer);
 
-	enum Mode {
-		MODE_RGB,
-		MODE_HSV,
-		MODE_RAW
-	};
 private:
 
-	Mode mode;
-
-	OptionButton *mode_box;
-
-	Control *color_box;
+	TextureFrame *uv_edit;
+	TextureFrame *w_edit;
+	TextureFrame *sample;
+	ToolButton *btn_pick;
+	CheckButton *btn_mode;
+	Ref<CanvasItemMaterial> uv_material;
+	Ref<CanvasItemMaterial> w_material;
 	HSlider *scroll[4];
 	SpinBox *values[4];
 	Label *labels[4];
@@ -64,13 +63,19 @@ private:
 	Size2i ms;
 
 	Color color;
+	bool raw_mode_enabled;
 	bool updating;
+	bool changing_color;
+	float h,s,v;
 
 	void _html_entered(const String& p_html);
 	void _value_changed(double);
 	void _update_controls();
 	void _update_color();
-	void _color_box_draw();
+	void _sample_draw();
+
+	void _uv_input(const InputEvent& p_input);
+	void _w_input(const InputEvent& p_input);
 protected:
 
 	void _notification(int);
@@ -82,15 +87,13 @@ public:
 
 	void set_color(const Color& p_color);
 	Color get_color() const;
-
-	void set_mode(Mode p_mode);
-	Mode get_mode() const;
+	
+	void set_raw_mode(bool p_enabled);
+	bool is_raw_mode() const;
 
 
 	ColorPicker();
 };
-
-VARIANT_ENUM_CAST( ColorPicker::Mode );
 
 class ColorPickerButton : public Button {
 
