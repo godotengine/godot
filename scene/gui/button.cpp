@@ -114,7 +114,8 @@ void Button::_notification(int p_what) {
 
 		Point2 icon_ofs = (!_icon.is_null())?Point2( _icon->get_width() + get_constant("hseparation"), 0):Point2();
 		int text_clip=size.width - style->get_minimum_size().width - icon_ofs.width;
-		Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size( text ) )/2.0;
+		String bidi_text = text.bidi_visual_string();
+		Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size( bidi_text ) )/2.0;
 
 		switch(align) {
 			case ALIGN_LEFT: {
@@ -128,14 +129,14 @@ void Button::_notification(int p_what) {
 				text_ofs+=style->get_offset();
 			} break;
 			case ALIGN_RIGHT: {
-				text_ofs.x=size.x - style->get_margin(MARGIN_RIGHT) - font->get_string_size( text ).x;
+				text_ofs.x=size.x - style->get_margin(MARGIN_RIGHT) - font->get_string_size( bidi_text ).x;
 				text_ofs.y+=style->get_offset().y;
 			} break;
 		}
 
 
 		text_ofs.y+=font->get_ascent();
-		font->draw( ci, text_ofs.floor(), text, color,clip_text?text_clip:-1);
+		font->draw( ci, text_ofs.floor(), bidi_text, color,clip_text?text_clip:-1);
 		if (!_icon.is_null()) {
 
 			int valign = size.height-style->get_minimum_size().y;

@@ -468,14 +468,16 @@ void LineEdit::_notification(int p_what) {
 			Color font_color_selected=get_color("font_color_selected");
 			Color cursor_color=get_color("cursor_color");
 			
+			String bidi_text = text.bidi_visual_string();
+
 			while(true) {
 				
 		//end of string, break!
 				if (char_ofs>=text.length())
 					break;
 
-				CharType cchar=pass?'*':text[char_ofs];
-				CharType next=pass?'*':text[char_ofs+1];
+				CharType cchar=pass?'*':bidi_text[char_ofs];
+				CharType next=pass?'*':bidi_text[char_ofs+1];
 				int char_width=font->get_char_size( cchar,next ).width;
 								
 		// end of widget, break!

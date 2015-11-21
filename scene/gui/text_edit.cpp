@@ -647,7 +647,7 @@ void TextEdit::_notification(int p_what) {
 				if (line<0 || line>=(int)text.size())
 					continue;
 				
-				const String &str=text[line];
+				const String &str=text[line].bidi_visual_string();
 				
 				int char_margin=xmargin_beg-cursor.x_ofs;
 				int char_ofs=0;
