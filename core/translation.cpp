@@ -103,6 +103,8 @@ static const char* locale_list[]={
 "es_VE", //  Spanish (Venezuela)
 "et", //  Estonian
 "et_EE", //  Estonian (Estonia)
+"fa", //  Farsi (Persian)
+"fa_IR", //  Farsi (IRAN)
 "fi", //  Finnish
 "fi_FI", //  Finnish (Finland)
 "fr", //  French
@@ -260,6 +262,8 @@ static const char* locale_names[]={
 "Spanish (Venezuela)",
 "Estonian",
 "Estonian (Estonia)",
+"Farsi",
+"Farsi (IRAN)",
 "Finnish",
 "Finnish (Finland)",
 "French",
