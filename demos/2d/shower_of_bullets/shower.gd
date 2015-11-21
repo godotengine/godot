@@ -22,5 +22,4 @@ func _on_player_body_exit_shape(body_id, body, body_shape, area_shape):
 
 
 func _ready():
-	# Initialization here
 	set_process_input(true)

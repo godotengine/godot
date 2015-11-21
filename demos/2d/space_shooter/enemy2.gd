@@ -40,7 +40,6 @@ func destroy():
 
 
 func _ready():
-	# Initialization here
 	set_fixed_process(true)
 
 

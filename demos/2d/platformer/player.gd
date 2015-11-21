@@ -220,7 +220,6 @@ func _integrate_forces(s):
 
 
 func _ready():
-	# Initalization here
 	enemy = ResourceLoader.load("res://enemy.xml")
 	
 #	if !Globals.has_singleton("Facebook"):

@@ -61,7 +61,6 @@ func _process(delta):
 
 
 func _ready():
-	# Initalization here
 	screen_size = get_viewport_rect().size # Get actual size
 	pad_size = get_node("left").get_texture().get_size()
 	set_process(true)

@@ -71,7 +71,6 @@ func _fixed_process(delta):
 
 
 func _ready():
-	# Initalization here
 	# Create a square filled with the 100% opaque fog
 	for x in range(x_min, x_max):
 		for y in range(y_min, y_max):

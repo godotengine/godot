@@ -85,7 +85,6 @@ func _input(event):
 
 
 func _ready():
-	# Initalization here
 	set_process_input(true)
 	m.set_line_width(3)
 	m.set_point_size(3)

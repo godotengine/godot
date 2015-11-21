@@ -23,7 +23,6 @@ func _process(delta):
 
 
 func _ready():
-	# Initalization here
 	get_node("chat").add_style_override("panel", get_stylebox("bg", "Tree"))
 	set_process(true)
 

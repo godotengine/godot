@@ -3,7 +3,6 @@ extends Control
 
 
 func _ready():
-	# Initialization here
 	for c in get_node("pictures").get_children():
 		get_node("picture").add_item("PIC: " + c.get_name())
 	for c in get_node("effects").get_children():

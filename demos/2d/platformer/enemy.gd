@@ -79,6 +79,5 @@ func _integrate_forces(s):
 
 
 func _ready():
-	# Initalization here
 	rc_left = get_node("raycast_left")
 	rc_right = get_node("raycast_right")
