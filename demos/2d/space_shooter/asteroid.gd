@@ -15,7 +15,6 @@ func _process(delta):
 
 
 func _ready():
-	# Initialization here	
 	speed_y = rand_range(-Y_RANDOM, Y_RANDOM)
 
 

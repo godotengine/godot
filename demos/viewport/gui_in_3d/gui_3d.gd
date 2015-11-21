@@ -33,6 +33,5 @@ func _on_area_input_event(camera, event, click_pos, click_normal, shape_idx):
 
 
 func _ready():
-	# Initalization here
 	get_node("area/quad").get_material_override().set_texture(FixedMaterial.PARAM_DIFFUSE, get_node("viewport").get_render_target_texture())
 	set_process_input(true)

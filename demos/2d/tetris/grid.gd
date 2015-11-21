@@ -188,7 +188,6 @@ func setup(w, h):
 
 
 func _ready():
-	# Initalization here
 	setup(10, 20)
 	score_label = get_node("../score")
 	

@@ -27,7 +27,6 @@ func _fixed_process(delta):
 
 
 func _ready():
-	# Initialization here
 	if (use_idle):
 		set_process(true)
 	else:

@@ -30,5 +30,4 @@ func _process(delta):
 
 
 func _ready():
-	# Initialization here
 	set_process(true)

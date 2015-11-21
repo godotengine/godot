@@ -18,5 +18,4 @@ func _input(event):
 
 
 func _ready():
-	# Initialization here
 	set_process_input(true)

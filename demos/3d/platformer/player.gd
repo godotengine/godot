@@ -208,5 +208,4 @@ func _integrate_forces(state):
 
 
 func _ready():
-	# Initalization here
 	get_node("AnimationTreePlayer").set_active(true)

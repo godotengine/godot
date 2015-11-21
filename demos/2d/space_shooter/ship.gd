@@ -52,7 +52,6 @@ func _process(delta):
 
 
 func _ready():
-	# Initialization here
 	screen_size = get_viewport().get_rect().size
 	set_process(true)
 

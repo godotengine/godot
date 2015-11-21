@@ -42,7 +42,6 @@ func _process(delta):
 
 
 func _ready():
-	# Initialization here
 	shape = Physics2DServer.shape_create(Physics2DServer.SHAPE_CIRCLE)
 	Physics2DServer.shape_set_data(shape, 8) # Radius
 	

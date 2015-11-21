@@ -35,5 +35,4 @@ func _fixed_process(delta):
 
 
 func _ready():
-	# Initalization here
 	set_fixed_process(true)
