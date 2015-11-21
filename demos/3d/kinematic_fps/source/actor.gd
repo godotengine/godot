@@ -234,7 +234,10 @@ func _get_floor_velocity(ray,delta):
 
 
 func _on_ladders_body_enter( body ):
-	fly_mode=true
+	if body==self:
+		fly_mode=true
+		print("enter ladder")
 
 func _on_ladders_body_exit( body ):
-	fly_mode=false
+	if body==self:
+		fly_mode=false
