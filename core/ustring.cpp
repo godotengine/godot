@@ -35,6 +35,9 @@
 #include "ucaps.h"
 #include "color.h"
 #include "variant.h"
+#include "unicode/ubidi.h"
+#include "unicode/unistr.h"
+#include "unicode/ushape.h"
 #define MAX_DIGITS 6
 #define UPPERCASE(m_c) (((m_c)>='a' && (m_c)<='z')?((m_c)-('a'-'A')):(m_c))
 #define LOWERCASE(m_c) (((m_c)>='A' && (m_c)<='Z')?((m_c)+('a'-'A')):(m_c))
@@ -67,14 +70,14 @@ void String::copy_from(const char *p_cstr) {
 		len++;
 
 	if (len==0) {
-	
+
 		resize(0);
 		return;
 	}
-	
+
 
 	resize(len+1); // include 0
-	
+
 	CharType *dst = this->ptr();
 
 	for (int i=0;i<len+1;i++) {
@@ -85,35 +88,35 @@ void String::copy_from(const char *p_cstr) {
 }
 
 void String::copy_from(const CharType* p_cstr, int p_clip_to) {
-				
+
 	int len=0;
 	const CharType *ptr=p_cstr;
 	while (*(ptr++)!=0)
 		len++;
-	
+
 	if (p_clip_to>=0 && len>p_clip_to)
 		len=p_clip_to;
-		
+
 	if (len==0) {
-	
+
 		resize(0);
 		return;
 	}
-	
+
 	resize(len+1);
 	set(len,0);
-	
+
 	CharType *dst = &operator[](0);
-	
-	
+
+
 	for (int i=0;i<len;i++) {
-	
+
 		dst[i]=p_cstr[i];
 	}
 }
 
 void String::copy_from(const CharType& p_char) {
-		
+
 	resize(2);
 	set(0,p_char);
 	set(1,0);
@@ -126,12 +129,12 @@ bool String::operator==(const String& p_str) const {
 		return false;
 	if (empty())
 		return true;
-		
+
 	int l=length();
-	
+
 	const CharType *src = c_str();
 	const CharType *dst = p_str.c_str();
-	
+
 	/* Compare char by char */
 	for (int i=0;i<l;i++) {
 
@@ -170,19 +173,19 @@ String& String::operator+=(const String &p_str) {
 		*this=p_str;
 		return *this;
 	}
-	
+
 	if (p_str.empty())
 		return *this;
-		
+
 	int from=length();
-	
+
 	resize( length() + p_str.size() );
-	
+
 	const CharType *src = p_str.c_str();
 	CharType *dst = &operator[](0);
 
 	set( length(), 0 );
-	
+
 	for (int i=0;i<p_str.length();i++)
 		dst[from+i]=src[i];
 
@@ -200,11 +203,11 @@ String& String::operator+=(const CharType *p_str) {
 
 String&  String::operator+=(CharType p_char) {
 
-	
+
 	resize( size() ? size() + 1 : 2);
 	set( length(), 0 );
 	set( length() -1, p_char );
-	
+
 	return *this;
 
 }
@@ -220,13 +223,13 @@ String& String::operator+=(const char * p_str) {
 		src_len++;
 
 	int from=length();
-	
+
 	resize( from + src_len + 1 );
-	
+
 	CharType *dst = &operator[](0);
-	
+
 	set( length(), 0 );
-	
+
 	for (int i=0;i<src_len;i++)
 		dst[from+i]=p_str[i];
 
@@ -283,11 +286,11 @@ bool String::operator==(const char *p_str) const {
 		return false;
 	if (empty())
 		return true;
-		
+
 	int l=length();
-	
+
 	const CharType *dst = c_str();
-	
+
 	/* Compare char by char */
 	for (int i=0;i<l;i++) {
 
@@ -312,11 +315,11 @@ bool String::operator==(const CharType *p_str) const {
 		return false;
 	if (empty())
 		return true;
-		
+
 	int l=length();
-	
+
 	const CharType *dst = c_str();
-	
+
 	/* Compare char by char */
 	for (int i=0;i<l;i++) {
 
@@ -347,8 +350,8 @@ bool String::operator<(const CharType *p_str) const {
 		return false;
 	if (empty())
 		return true;
-	
-	
+
+
 	const CharType *this_str=c_str();
 	while (true) {
 
@@ -382,7 +385,7 @@ bool String::operator<(const char *p_str) const {
 		return false;
 	if (empty())
 		return true;
-	
+
 	const CharType *this_str=c_str();
 	while (true) {
 
@@ -412,7 +415,7 @@ bool String::operator<(String p_str) const {
 	return operator<(p_str.c_str());
 }
 
-signed char String::nocasecmp_to(const String &p_str) const { 
+signed char String::nocasecmp_to(const String &p_str) const {
 
 	if (empty() && p_str.empty())
 		return 0;
@@ -423,7 +426,7 @@ signed char String::nocasecmp_to(const String &p_str) const {
 
 	const CharType *that_str=p_str.c_str();
 	const CharType *this_str=c_str();
-	
+
 	while (true) {
 
 		if (*that_str==0 && *this_str==0)
@@ -445,7 +448,7 @@ signed char String::nocasecmp_to(const String &p_str) const {
 
 }
 
-signed char String::casecmp_to(const String &p_str) const { 
+signed char String::casecmp_to(const String &p_str) const {
 
 	if (empty() && p_str.empty())
 		return 0;
@@ -456,7 +459,7 @@ signed char String::casecmp_to(const String &p_str) const {
 
 	const CharType *that_str=p_str.c_str();
 	const CharType *this_str=c_str();
-	
+
 	while (true) {
 
 		if (*that_str==0 && *this_str==0)
@@ -493,17 +496,17 @@ String String::capitalize() const {
 	String aux=this->replace("_"," ").to_lower();
 	String cap;
 	for (int i=0;i<aux.get_slice_count(" ");i++) {
-		
+
 		String slice=aux.get_slicec(' ',i);
 		if (slice.length()>0) {
-		
+
 			slice[0]=_find_upper(slice[0]);
 			if (i>0)
 				cap+=" ";
 			cap+=slice;
 		}
 	}
-	
+
 	return cap;
 }
 
@@ -527,13 +530,135 @@ String String::camelcase_to_underscore() const {
 	return newString;
 }
 
+String String::bidi_visual_string(BiDiDirection p_direction) const {
+
+	if(this->length() <= 0) {
+
+		return  *this;
+	}
+
+	String res_str = "";
+
+	Vector<String> lines;
+
+	if (this->is_rtl()) {
+		lines = this->split("\n");
+	} else {
+		lines.push_back(*this);
+	}
+
+	int line_count=lines.size();
+	for (int i=0; i<line_count; i++) {
+
+		if (lines[i].empty()) {
+
+			if (i+1<line_count) {
+				res_str = "\n" + res_str;
+			}
+
+			continue;
+		}
+
+		UErrorCode error_code = U_ZERO_ERROR;
+		UBiDi* para;
+
+		int src_len = lines[i].length()*4;
+		UChar* text = new UChar[src_len];
+		UChar* res_buffer = new UChar[src_len];
+		int32_t res_len;
+		UChar32 subchar = 0xFFFD;
+		u_strFromUTF8WithSub(text, src_len, &res_len, lines[i].utf8().get_data(), lines[i].utf8().length(), subchar, NULL, &error_code);
+
+		if (U_SUCCESS(error_code)) {
+
+			uint32_t options = U_SHAPE_LETTERS_MASK | U_SHAPE_LETTERS_SHAPE;
+			res_len = u_shapeArabic(text, res_len, res_buffer, src_len, options, &error_code);
+
+			if(U_SUCCESS(error_code)) {
+
+				para=ubidi_openSized(res_len, 0, &error_code);
+				if(para!=NULL) {
+
+					ubidi_setReorderingMode(para, UBIDI_REORDER_DEFAULT);
+
+					ubidi_setReorderingOptions(para, UBIDI_OPTION_DEFAULT);
+
+					UBiDiLevel paraLevel = p_direction == BIDI_AUTO ? UBIDI_DEFAULT_LTR : p_direction;
+
+					ubidi_setPara(para, res_buffer, res_len, paraLevel, NULL, &error_code);
+
+					if (U_SUCCESS(error_code)) {
+
+						int32_t dest_size = ubidi_getProcessedLength(para);
+						if (ubidi_getLength(para) > dest_size) {
+
+							dest_size = ubidi_getLength(para);
+						}
+
+						int32_t write_size = ubidi_writeReordered(para, text, dest_size,
+								UBIDI_KEEP_BASE_COMBINING | UBIDI_DO_MIRRORING, &error_code);
+
+						if(U_SUCCESS(error_code)) {
+
+							char* utf_dest = new char[src_len];
+							int32_t p_dest_len=NULL;
+							u_strToUTF8WithSub(utf_dest, src_len, &p_dest_len, text, write_size, subchar, NULL, &error_code);
+
+							if (U_SUCCESS(error_code)) {
+
+								if (i+1==line_count) {
+									res_str = String::utf8(utf_dest) + res_str;
+								} else {
+									res_str = "\n" + String::utf8(utf_dest) + res_str;
+								}
+							}
+
+							delete []utf_dest;
+						}
+					}
+				}
+
+				ubidi_close(para);
+			}
+		}
+
+		delete []text;
+		delete []res_buffer;
+
+	}
+
+	return res_str;
+}
+
+bool String::is_rtl() const {
+
+	UErrorCode error_code = U_ZERO_ERROR;
+	int src_len = this->length()*4;
+	UChar* text = new UChar[src_len];
+	int32_t res_len;
+	UChar32 subchar = 0xFFFD;
+	u_strFromUTF8WithSub(text, src_len, &res_len, this->utf8().get_data(), this->utf8().length(), subchar, NULL, &error_code);
+
+	bool is_rtl = false;
+
+	if (U_SUCCESS(error_code)) {
+
+		UBiDiDirection direction = ubidi_getBaseDirection(text, res_len);
+		is_rtl = direction==UBIDI_RTL;
+	}
+
+	delete []text;
+
+	return is_rtl;
+}
+
 int String::get_slice_count(String p_splitter) const{
 
 	if (empty())
 		return 0;
 	if (p_splitter.empty())
 		return 0;
-	
+
 	int pos=0;
 	int slices=1;
 
@@ -550,7 +675,7 @@ String String::get_slice(String p_splitter, int p_slice) const {
 
 	if (empty() || p_splitter.empty())
 		return "";
-		
+
 	int pos=0;
 	int prev_pos=0;
 //	int slices=1;
@@ -835,7 +960,7 @@ int String::length() const {
 const CharType * String::c_str() const {
 
 	static const CharType zero=0;
-	
+
 	return size()?&operator[](0):&zero;
 }
 
@@ -858,10 +983,10 @@ String String::md5(const uint8_t *p_md5) {
 }
 
 String String::chr(CharType p_char) {
-		
+
 	CharType c[2]={p_char,0};
 	return String(c);
-	
+
 }
 String String::num(double p_num,int p_decimals) {
 
@@ -1005,7 +1130,7 @@ String String::num(double p_num,int p_decimals) {
 
 		String decimal;
 		for (int i=0;i<digit;i++) {
-	
+
 			char num[2]={0,0};
 			num[0]='0'+dec_int%10;
 			decimal=num+decimal;
@@ -1191,10 +1316,10 @@ CharString String::ascii(bool p_allow_extended) const {
 
 	CharString cs;
 	cs.resize(size());
-	
+
 	for (int i=0;i<size();i++)
 		cs[i]=operator[](i);
-		
+
 	return cs;
 
 }
@@ -1599,7 +1724,7 @@ int String::to_int() const {
 			integer+=c-'0';
 
 		} else if (integer==0 && c=='-') {
-		
+
 			sign=-sign;
 		}
 
@@ -2198,14 +2323,14 @@ double String::to_double() const {
 	double exp=0;
 	double exp_sign=1.0;
 	int reading=READING_SIGN;
-	
+
 	const CharType *str=&operator[](0);
 
 	while(*str && reading!=READING_DONE) {
-	
+
 		CharType c=*(str++);
 		switch(reading) {
-			case READING_SIGN: {		
+			case READING_SIGN: {
 				if (c>='0' && c<='9')
 					reading=READING_INT;
 					// let it fallthrough
@@ -2219,26 +2344,26 @@ double String::to_double() const {
 				} else {
 					break;
 				}
-			} 
+			}
 			case READING_INT: {
-			
+
 				if (c>='0' && c<='9') {
-		
+
 					integer*=10;
-					integer+=c-'0';		
-				} else if (c=='.') {				
+					integer+=c-'0';
+				} else if (c=='.') {
 					reading=READING_DEC;
 				} else if (c=='e') {
 					reading=READING_EXP;
 				} else {
 					reading=READING_DONE;
 				}
-			
+
 			 } break;
 			case READING_DEC: {
-			
+
 				if (c>='0' && c<='9') {
-					
+
 					decimal+=(c-'0')*decimal_mult;
 					decimal_mult*=0.1;
 				} else if (c=='e') {
@@ -2246,12 +2371,12 @@ double String::to_double() const {
 				} else {
 					reading=READING_DONE;
 				}
-			
+
 			 } break;
 			case READING_EXP: {
-			
+
 				if (c>='0' && c<='9') {
-					
+
 					exp*=10.0;
 					exp+=(c-'0');
 				} else if (c=='-' && exp==0) {
@@ -2265,14 +2390,14 @@ double String::to_double() const {
 			 } break;
 		}
 	}
-	
+
 	return sign*(integer+decimal)*Math::pow(10,exp_sign*exp);
 #endif
 #if 0
 
 
 	double ret=sign*(integer+decimal)*Math::pow(10,exp_sign*exp);
-	
+
 	print_line(*this +" == "+rtos(ret));
 	return ret;
 #endif
@@ -2299,14 +2424,14 @@ String operator+(CharType p_chr, const String& p_str) {
 }
 
 uint32_t String::hash(const char* p_cstr) {
-		
+
 	uint32_t hashv = 5381;
 	uint32_t c;
-	
+
 	while ((c = *p_cstr++))
 		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
-	
-	return hashv;	
+
+	return hashv;
 }
 
 uint32_t String::hash(const char* p_cstr,int p_len) {
@@ -2339,19 +2464,19 @@ uint32_t String::hash(const CharType* p_cstr) {
 }
 
 uint32_t String::hash() const {
-	
+
 	/* simple djb2 hashing */
-		
+
 	const CharType * chr = c_str();
 	uint32_t hashv = 5381;
 	uint32_t c;
-	
+
 	while ((c = *chr++))
 		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
-	
+
 	return hashv;
-	
-	
+
+
 }
 
 uint64_t String::hash64() const {
@@ -2433,16 +2558,16 @@ String String::substr(int p_from,int p_chars) const{
 }
 
 int String::find_last(String p_str) const {
-	
+
 	int pos=-1;
 	int findfrom=0;
 	int findres=-1;
 	while((findres=find(p_str,findfrom))!=-1) {
-		
+
 		pos=findres;
 		findfrom=pos+1;
 	}
-	
+
 	return pos;
 }
 int String::find(String p_str,int p_from) const {
@@ -2699,48 +2824,48 @@ bool String::ends_with(const String& p_string) const {
 }
 
 bool String::begins_with(const String& p_string) const {
-	
+
 	if (p_string.length() > length())
 		return false;
-	
+
 	int l=p_string.length();
 	if (l==0)
 		return true;
-	
+
 	const CharType *src=&p_string[0];
 	const CharType *str=&operator[](0);
-	
+
 	int i = 0;
 	for (;i<l;i++) {
-		
+
 		if (src[i]!=str[i])
 			return false;
 	}
-		     
+
 	// only if i == l the p_string matches the beginning
 	return i == l;
-	
+
 }
 bool String::begins_with(const char* p_string) const {
-		
+
 	int l=length();
 	if (l==0||!p_string)
 		return false;
-	
+
 	const CharType *str=&operator[](0);
 	int i=0;
-	
+
 	while (*p_string && i<l) {
-		
+
 		if (*p_string != str[i])
 			return false;
 		i++;
 		p_string++;
-		
+
 	}
-	
+
 	return *p_string == 0;
-	
+
 }
 
 
@@ -2753,27 +2878,27 @@ static bool _wildcard_match(const CharType* p_pattern, const CharType* p_string,
 	case '?' :
 		return *p_string && (*p_string != '.') && _wildcard_match(p_pattern+1, p_string+1,p_case_sensitive);
 	default  :
-		
+
 		return (p_case_sensitive?(*p_string==*p_pattern):(_find_upper(*p_string)==_find_upper(*p_pattern))) && _wildcard_match(p_pattern+1, p_string+1,p_case_sensitive);
-	} 
+	}
 }
 
 
 bool String::match(const String& p_wildcard) const {
-	
+
 	if (!p_wildcard.length() || !length())
 		return false;
-	
+
 	return _wildcard_match(p_wildcard.c_str(),c_str(),true);
 
 }
 
 bool String::matchn(const String& p_wildcard) const {
-	
+
 	if (!p_wildcard.length() || !length())
 		return false;
 	return _wildcard_match(p_wildcard.c_str(),c_str(),false);
-	
+
 }
 
 String String::replace(String p_key,String p_with) const {
@@ -2845,7 +2970,7 @@ String String::right(int p_pos) const {
 
 	if (p_pos>=size())
 		return *this;
-	
+
 	if (p_pos<0)
 		return "";
 
@@ -2859,26 +2984,26 @@ CharType String::ord_at(int p_idx) const {
 }
 
 String String::strip_edges() const {
-	
+
 	int len=length();
 	int beg=0,end=len;
-	
+
 	for (int i=0;i<length();i++) {
-		
+
 		if (operator[](i)<=32)
 			beg++;
 		else
 			break;
 	}
-	
+
 	for (int i=(int)(length()-1);i>=0;i--) {
-		
+
 		if (operator[](i)<=32)
 			end--;
 		else
 			break;
 	}
-	
+
 	if (beg==0 && end==len)
 		return *this;
 
@@ -3003,7 +3128,7 @@ String String::humanize_size(size_t p_size) {
 
 	int digits=prefix_idx>0?_humanize_digits(p_size/_div):0;
 	double divisor = prefix_idx>0?_div:1;
-	
+
 	return String::num(p_size/divisor,digits)+prefix[prefix_idx];
 }
 bool String::is_abs_path() const {
@@ -3578,12 +3703,12 @@ String String::get_file() const {
 }
 
 String String::extension() const {
-	
+
 	int pos = find_last(".");
 	if (pos<0)
 		return *this;
-	
-	return substr( pos+1, length() );	
+
+	return substr( pos+1, length() );
 }
 
 String String::plus_file(const String& p_file) const {
@@ -3740,7 +3865,7 @@ String String::sprintf(const Array& values, bool* error) const {
 					if (!values[value_index].is_num()) {
 						return "a number is required";
 					}
-					
+
 					int64_t value = values[value_index];
 					int base;
 					bool capitalize = false;
@@ -3802,7 +3927,7 @@ String String::sprintf(const Array& values, bool* error) const {
 					formatted += str;
 					++value_index;
 					in_format = false;
-					
+
 					break;
 				}
 				case 's': { // String
