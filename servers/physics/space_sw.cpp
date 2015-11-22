@@ -175,6 +175,10 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Transfo
 		if (!CollisionSolverSW::solve_static(shape,p_xform,col_obj->get_shape(shape_idx),col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), NULL,NULL,NULL,p_margin,0))
 			continue;
 
+		cc++;
+
+		if (!r_results)
+			continue;
 		r_results[cc].collider_id=col_obj->get_instance_id();
 		if (r_results[cc].collider_id!=0)
 			r_results[cc].collider=ObjectDB::get_instance(r_results[cc].collider_id);
@@ -182,8 +186,6 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Transfo
 			r_results[cc].collider=NULL;
 		r_results[cc].rid=col_obj->get_self();
 		r_results[cc].shape=shape_idx;
-
-		cc++;
 
 	}
 
