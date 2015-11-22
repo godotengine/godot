@@ -1,13 +1,8 @@
 #include "mesh_editor_plugin.h"
 
-#include "tools/editor/editor_plugin.h"
-#include "tools/editor/editor_node.h"
-#include "scene/3d/mesh_instance.h"
 #include "scene/3d/physics_body.h"
 #include "scene/3d/body_shape.h"
-#include "scene/gui/spin_box.h"
 #include "scene/gui/box_container.h"
-#include "scene/3d/mesh_instance.h"
 #include "scene/3d/navigation_mesh.h"
 #include "spatial_editor_plugin.h"
 
@@ -38,92 +33,106 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 	}
 
 	switch(p_option) {
-		case MENU_OPTION_CREATE_STATIC_TRIMESH_BODY: {
-
-			Ref<Shape> shape = mesh->create_trimesh_shape();
-			if (shape.is_null())
-				return;
-			StaticBody *body = memnew( StaticBody );
-			CollisionShape *cshape = memnew( CollisionShape );
-			cshape->set_shape(shape);
-			body->add_child(cshape);
-			Node *owner = node==get_tree()->get_edited_scene_root() ? node : node->get_owner();
-
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-			ur->create_action("Create Static Trimesh");
-			ur->add_do_method(node,"add_child",body);
-			ur->add_do_method(body,"set_owner",owner);
-			ur->add_do_method(cshape,"set_owner",owner);
-			ur->add_do_reference(body);
-			ur->add_undo_method(node,"remove_child",body);
-			ur->commit_action();
-
-		} break;
+		case MENU_OPTION_CREATE_STATIC_TRIMESH_BODY:
 		case MENU_OPTION_CREATE_STATIC_CONVEX_BODY: {
 
-			Ref<Shape> shape = mesh->create_convex_shape();
-			if (shape.is_null())
-				return;
-			StaticBody *body = memnew( StaticBody );
-			CollisionShape *cshape = memnew( CollisionShape );
-			cshape->set_shape(shape);
-			body->add_child(cshape);
-			Node *owner = node==get_tree()->get_edited_scene_root() ? node : node->get_owner();
+			bool trimesh_shape = (p_option==MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
 
+			EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-			ur->create_action("Create Static Trimesh");
-			ur->add_do_method(node,"add_child",body);
-			ur->add_do_method(body,"set_owner",owner);
-			ur->add_do_method(cshape,"set_owner",owner);
-			ur->add_do_reference(body);
-			ur->add_undo_method(node,"remove_child",body);
-			ur->commit_action();
 
-		} break;
-		case MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE: {
+			List<Node*> selection = editor_selection->get_selected_node_list();
 
+			if (selection.empty()) {
+				Ref<Shape> shape = trimesh_shape ? mesh->create_trimesh_shape() : mesh->create_convex_shape();
+				if (shape.is_null())
+					return;
 
-			if (node==get_tree()->get_edited_scene_root()) {
-				err_dialog->set_text("This doesn't work on scene root!");
-				err_dialog->popup_centered_minsize();
+				CollisionShape *cshape = memnew( CollisionShape );
+				cshape->set_shape(shape);
+				StaticBody *body = memnew( StaticBody );
+				body->add_child(cshape);
+
+				Node *owner = node==get_tree()->get_edited_scene_root() ? node : node->get_owner();
+
+				if (trimesh_shape)
+					ur->create_action("Create Static Trimesh Body");
+				else
+					ur->create_action("Create Static Convex Body");
+
+				ur->add_do_method(node,"add_child",body);
+				ur->add_do_method(body,"set_owner",owner);
+				ur->add_do_method(cshape,"set_owner",owner);
+				ur->add_do_reference(body);
+				ur->add_undo_method(node,"remove_child",body);
+				ur->commit_action();
 				return;
 			}
-			Ref<Shape> shape = mesh->create_trimesh_shape();
-			if (shape.is_null())
-				return;
-			CollisionShape *cshape = memnew( CollisionShape );
-			cshape->set_shape(shape);
 
-			Node *owner =  node->get_owner();
+			if (trimesh_shape)
+				ur->create_action("Create Static Trimesh Body");
+			else
+				ur->create_action("Create Static Convex Body");
 
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-			ur->create_action("Create Static Trimesh");
-			ur->add_do_method(node->get_parent(),"add_child",cshape);
-			ur->add_do_method(node->get_parent(),"move_child",cshape,node->get_index()+1);
-			ur->add_do_method(cshape,"set_owner",owner);
-			ur->add_do_reference(cshape);
-			ur->add_undo_method(node->get_parent(),"remove_child",cshape);
+			for (List<Node*>::Element *E=selection.front();E;E=E->next()) {
+
+				MeshInstance *instance = E->get()->cast_to<MeshInstance>();
+				if (!instance)
+					continue;
+
+				Ref<Mesh> m = instance->get_mesh();
+				if (m.is_null())
+					continue;
+
+				Ref<Shape> shape = trimesh_shape ? m->create_trimesh_shape() : m->create_convex_shape();
+				if (shape.is_null())
+					continue;
+
+				CollisionShape *cshape = memnew( CollisionShape );
+				cshape->set_shape(shape);
+				StaticBody *body = memnew( StaticBody );
+				body->add_child(cshape);
+
+				Node *owner = instance==get_tree()->get_edited_scene_root() ? instance : instance->get_owner();
+
+				ur->add_do_method(instance,"add_child",body);
+				ur->add_do_method(body,"set_owner",owner);
+				ur->add_do_method(cshape,"set_owner",owner);
+				ur->add_do_reference(body);
+				ur->add_undo_method(instance,"remove_child",body);
+			}
+
 			ur->commit_action();
 
 		} break;
+
+		case MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE:
 		case MENU_OPTION_CREATE_CONVEX_COLLISION_SHAPE: {
 
-
 			if (node==get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text("This doesn't work on scene root!");
 				err_dialog->popup_centered_minsize();
 				return;
 			}
-			Ref<Shape> shape = mesh->create_convex_shape();
+
+			bool trimesh_shape = (p_option==MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE);
+
+			Ref<Shape> shape = trimesh_shape ? mesh->create_trimesh_shape() : mesh->create_convex_shape();
 			if (shape.is_null())
 				return;
+
 			CollisionShape *cshape = memnew( CollisionShape );
 			cshape->set_shape(shape);
 
 			Node *owner =  node->get_owner();
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-			ur->create_action("Create Static Trimesh");
+
+			if (trimesh_shape)
+				ur->create_action("Create Trimesh Shape");
+			else
+				ur->create_action("Create Convex Shape");
+
 			ur->add_do_method(node->get_parent(),"add_child",cshape);
 			ur->add_do_method(node->get_parent(),"move_child",cshape,node->get_index()+1);
 			ur->add_do_method(cshape,"set_owner",owner);
@@ -132,10 +141,8 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			ur->commit_action();
 
 		} break;
+
 		case MENU_OPTION_CREATE_NAVMESH: {
-
-
-
 
 			Ref<NavigationMesh> nmesh = memnew( NavigationMesh );
 
@@ -158,6 +165,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			ur->add_undo_method(node,"remove_child",nmi);
 			ur->commit_action();
 		} break;
+
 		case MENU_OPTION_CREATE_OUTLINE_MESH: {
 
 			outline_dialog->popup_centered(Vector2(200, 90));
