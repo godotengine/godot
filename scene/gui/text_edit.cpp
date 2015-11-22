@@ -1337,6 +1337,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 			
 			if (mm.button_mask&BUTTON_MASK_LEFT) {
 				
+				int row,col;
+				_get_mouse_pos(Point2i(mm.x,mm.y), row,col);
+				
 				if (selection.selecting_mode!=Selection::MODE_NONE) {
 
 					int row,col;

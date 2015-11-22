@@ -35,13 +35,16 @@
 #include "ucaps.h"
 #include "color.h"
 #include "variant.h"
-#include "unicode/ubidi.h"
-#include "unicode/unistr.h"
-#include "unicode/ushape.h"
+
 #define MAX_DIGITS 6
 #define UPPERCASE(m_c) (((m_c)>='a' && (m_c)<='z')?((m_c)-('a'-'A')):(m_c))
 #define LOWERCASE(m_c) (((m_c)>='A' && (m_c)<='Z')?((m_c)+('a'-'A')):(m_c))
 
+#ifdef RTL_ENABLED
+#include "unicode/ubidi.h"
+#include "unicode/unistr.h"
+#include "unicode/ushape.h"
+#endif
 
 #ifndef NO_USE_STDLIB
 #include <stdlib.h>
@@ -530,6 +533,7 @@ String String::camelcase_to_underscore() const {
 	return newString;
 }
 
+#ifdef RTL_ENABLED
 String String::bidi_visual_string(BiDiDirection p_direction) const {
 
 	if(this->length() <= 0) {
@@ -651,6 +655,7 @@ bool String::is_rtl() const {
 
 	return is_rtl;
 }
+#endif
 
 int String::get_slice_count(String p_splitter) const{
 

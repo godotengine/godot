@@ -465,6 +465,7 @@ void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, co
 	Vector2 ofs;
 #ifdef RTL_ENABLED
 	String bidi_text = p_text.bidi_visual_string();
+
 	for (int i=0;i<bidi_text.length();i++) {
 
 		int width = get_char_size(bidi_text[i]).width;

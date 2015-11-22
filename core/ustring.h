@@ -75,12 +75,13 @@ public:
 		npos=-1 ///<for "some" compatibility with std::string (npos is a huge value in std::string)
 	};
 
+#ifdef RTL_ENABLED
 	enum BiDiDirection {
 		BIDI_LTR,
 		BIDI_RTL,
 		BIDI_AUTO
 	};
-
+#endif
 
 	bool operator==(const String& p_str) const;
 	bool operator!=(const String& p_str) const;
@@ -156,8 +157,10 @@ public:
 	static int64_t to_int(const CharType* p_str,int p_len=-1);
 	String capitalize() const;
 	String camelcase_to_underscore() const;
+#ifdef RTL_ENABLED
 	String bidi_visual_string(BiDiDirection p_direction=BIDI_AUTO) const;
 	bool is_rtl() const;
+#endif
 
 	int get_slice_count(String p_splitter) const;
 	String get_slice(String p_splitter,int p_slice) const;
