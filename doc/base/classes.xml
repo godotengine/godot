@@ -15038,14 +15038,13 @@ returns:= "username=user&amp;password=pass"
 			<description>
 			</description>
 		</method>
-		<method name="can_move_to">
+		<method name="can_teleport_to">
 			<return type="bool">
 			</return>
 			<argument index="0" name="position" type="Vector3">
 			</argument>
-			<argument index="1" name="arg1" type="bool">
-			</argument>
 			<description>
+			Returns whether the KinematicBody can be teleported to the destination given as an argument, checking all collision shapes of the body against potential colliders at the destination.
 			</description>
 		</method>
 		<method name="is_colliding" qualifiers="const">
