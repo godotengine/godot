@@ -1955,7 +1955,6 @@ void ResourceFormatLoaderXML::get_recognized_extensions_for_type(const String& p
 		if (ext=="res")
 			continue;
 		p_extensions->push_back("x"+ext);
-		p_extensions->push_back(ext);
 	}
 
 	p_extensions->push_back("xml");
