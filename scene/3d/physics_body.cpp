@@ -1073,7 +1073,7 @@ Vector3 KinematicBody::move_to(const Vector3& p_position) {
 	return move(p_position-get_global_transform().origin);
 }
 
-bool KinematicBody::can_move_to(const Vector3& p_position, bool p_discrete) {
+bool KinematicBody::can_teleport_to(const Vector3& p_position) {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),false);
 	PhysicsDirectSpaceState *dss = PhysicsServer::get_singleton()->space_get_direct_state(get_world()->get_space());
@@ -1089,25 +1089,18 @@ bool KinematicBody::can_move_to(const Vector3& p_position, bool p_discrete) {
 	if (collide_character)
 		mask|=PhysicsDirectSpaceState::TYPE_MASK_CHARACTER_BODY;
 
-	Vector3 motion = p_position-get_global_transform().origin;
 	Transform xform=get_global_transform();
-
-	if (true || p_discrete) {
-
-		xform.origin+=motion;
-		motion=Vector3();
-	}
+	xform.origin=p_position;
 
 	Set<RID> exclude;
 	exclude.insert(get_rid());
 
-	//fill exclude list..
 	for(int i=0;i<get_shape_count();i++) {
 
 		if (is_shape_set_as_trigger(i))
 			continue;
 
-		bool col = dss->intersect_shape(get_shape(i)->get_rid(), xform * get_shape_transform(i),0,NULL,0,exclude,get_layer_mask(),mask);
+		bool col = dss->intersect_shape(get_shape(i)->get_rid(), xform * get_shape_transform(i),0,NULL,1,exclude,get_layer_mask(),mask);
 		if (col)
 			return false;
 	}
@@ -1205,7 +1198,7 @@ void KinematicBody::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("move","rel_vec"),&KinematicBody::move);
 	ObjectTypeDB::bind_method(_MD("move_to","position"),&KinematicBody::move_to);
 
-	ObjectTypeDB::bind_method(_MD("can_move_to","position"),&KinematicBody::can_move_to);
+	ObjectTypeDB::bind_method(_MD("can_teleport_to","position"),&KinematicBody::can_teleport_to);
 
 	ObjectTypeDB::bind_method(_MD("is_colliding"),&KinematicBody::is_colliding);
 
