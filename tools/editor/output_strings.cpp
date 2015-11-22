@@ -84,15 +84,18 @@ void OutputStrings::_notification(int p_what) {
 			Ref<Texture> icon_warning = get_icon("Warning","EditorIcons");
 
 		//	int lines = (size_height-(int)margin.y) / font_height;
-			Point2 ofs=tree_st->get_offset();			
+			Point2 ofs=tree_st->get_offset();
 
 			LineMap::Element *E = line_map.find(v_scroll->get_val());
 			float h_ofs = (int)h_scroll->get_val();
 			Point2 icon_ofs=Point2(0,(font_height-(int)icon_error->get_height())/2);
 
 			while( E && ofs.y < (size_height-(int)margin.y) ) {
-
+#ifdef RTL_ENABLED
 				String str = E->get().text.bidi_visual_string();
+#else
+				String str = E->get().text;
+#endif
 				Point2 line_ofs=ofs;
 
 				switch(E->get().type) {

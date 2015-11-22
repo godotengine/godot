@@ -114,8 +114,12 @@ void Button::_notification(int p_what) {
 
 		Point2 icon_ofs = (!_icon.is_null())?Point2( _icon->get_width() + get_constant("hseparation"), 0):Point2();
 		int text_clip=size.width - style->get_minimum_size().width - icon_ofs.width;
+#ifdef RTL_ENABLED
 		String bidi_text = text.bidi_visual_string();
 		Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size( bidi_text ) )/2.0;
+#else
+		Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size( text ) )/2.0;
+#endif
 
 		switch(align) {
 			case ALIGN_LEFT: {
@@ -129,14 +133,22 @@ void Button::_notification(int p_what) {
 				text_ofs+=style->get_offset();
 			} break;
 			case ALIGN_RIGHT: {
+#ifdef RTL_ENABLED
 				text_ofs.x=size.x - style->get_margin(MARGIN_RIGHT) - font->get_string_size( bidi_text ).x;
+#else
+				text_ofs.x=size.x - style->get_margin(MARGIN_RIGHT) - font->get_string_size( text ).x;
+#endif
 				text_ofs.y+=style->get_offset().y;
 			} break;
 		}
 
 
 		text_ofs.y+=font->get_ascent();
+#ifdef RTL_ENABLED
 		font->draw( ci, text_ofs.floor(), bidi_text, color,clip_text?text_clip:-1);
+#else
+		font->draw( ci, text_ofs.floor(), text, color,clip_text?text_clip:-1);
+#endif
 		if (!_icon.is_null()) {
 
 			int valign = size.height-style->get_minimum_size().y;
