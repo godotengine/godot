@@ -2433,10 +2433,19 @@ void PropertyEditor::update_tree() {
 		if (capitalize_paths)
 			name = name.camelcase_to_underscore().capitalize();
 
-		if (use_filter && filter!="" && name.findn(filter)==-1)
-			continue;
-
 		String path=p.name.left( p.name.find_last("/") ) ;
+
+		if (use_filter && filter!="") {
+
+			String cat = path;
+
+			if (capitalize_paths)
+				cat = cat.capitalize();
+
+			if (cat.findn(filter)==-1 && name.findn(filter)==-1)
+				continue;
+		}
+
 		//printf("property %s\n",p.name.ascii().get_data());
 		TreeItem * parent = get_parent_node(path,item_path,current_category?current_category:root );
 		//if (parent->get_parent()==root)
