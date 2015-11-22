@@ -23,24 +23,19 @@ class MeshInstanceEditor : public Node {
 		MENU_OPTION_CREATE_OUTLINE_MESH,
 	};
 
+	MeshInstance *node;
+
+	MenuButton *options;
+
 	ConfirmationDialog *outline_dialog;
 	SpinBox *outline_size;
 
 	AcceptDialog *err_dialog;
 
-
-	Panel *panel;
-	MeshInstance *node;
-
-	LineEdit *surface_source;
-	LineEdit *mesh_source;
-
-
 	void _menu_option(int p_option);
 	void _create_outline_mesh();
 
 friend class MeshInstanceEditorPlugin;
-	MenuButton * options;
 
 protected:
 	void _node_removed(Node *p_node);
