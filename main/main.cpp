@@ -870,19 +870,18 @@ Error Main::setup2() {
 		String boot_logo_path=GLOBAL_DEF("application/boot_splash",String());
 		bool boot_logo_scale=GLOBAL_DEF("application/boot_splash_fullsize",true);
 		Globals::get_singleton()->set_custom_property_info("application/boot_splash",PropertyInfo(Variant::STRING,"application/boot_splash",PROPERTY_HINT_FILE,"*.png"));
-		print_line("BOOT SPLASH: "+boot_logo_path);
 
 		Image boot_logo;
 
 		boot_logo_path = boot_logo_path.strip_edges();
-		print_line("BOOT SPLASH IS : "+boot_logo_path);
 
 		if (boot_logo_path!=String() /*&& FileAccess::exists(boot_logo_path)*/) {
+			print_line("Boot splash path: "+boot_logo_path);
 			Error err = boot_logo.load(boot_logo_path);
 			if (err!=OK) {
-				print_line("ËRROR LOADING BOOT LOGO SPLASH :"+boot_logo_path);
+				print_line("Error loading boot logo splash!);
 			} else {
-				print_line("BOOT SPLASH OK!");
+				print_line("Boot splash OK!");
 
 			}
 		}
@@ -901,7 +900,7 @@ Error Main::setup2() {
 		} else {
 #ifndef NO_DEFAULT_BOOT_LOGO
 
-			MAIN_PRINT("Main: Create botsplash");
+			MAIN_PRINT("Main: Create bootsplash");
 			Image splash(boot_splash_png);
 
 			MAIN_PRINT("Main: ClearColor");
