@@ -4024,6 +4024,8 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("_prepare_history",&EditorNode::_prepare_history);
 	ObjectTypeDB::bind_method("_select_history",&EditorNode::_select_history);
 
+	ObjectTypeDB::bind_method("_toggle_search_bar",&EditorNode::_toggle_search_bar);
+	ObjectTypeDB::bind_method("_clear_search_box",&EditorNode::_clear_search_box);
 
 	ObjectTypeDB::bind_method(_MD("add_editor_import_plugin", "plugin"), &EditorNode::add_editor_import_plugin);
 	ObjectTypeDB::bind_method(_MD("remove_editor_import_plugin", "plugin"), &EditorNode::remove_editor_import_plugin);
@@ -4515,6 +4517,30 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 	editor_data.get_undo_redo().add_undo_method(this,"set_current_version",saved_version);
 	editor_data.get_undo_redo().commit_action();
 
+}
+
+void EditorNode::_toggle_search_bar(bool p_pressed) {
+
+	property_editor->set_use_filter(p_pressed);
+
+	if (p_pressed) {
+
+		search_bar->show();
+		search_box->grab_focus();
+		search_box->select_all();
+	} else {
+
+		search_bar->hide();
+	}
+}
+
+void EditorNode::_clear_search_box() {
+
+	if (search_box->get_text()=="")
+		return;
+
+	search_box->clear();
+	property_editor->update_tree();
 }
 
 EditorNode::EditorNode() {
@@ -5322,6 +5348,12 @@ EditorNode::EditorNode() {
 	editor_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	prop_editor_hb->add_child(editor_path);
 
+	search_button = memnew( ToolButton );
+	search_button->set_toggle_mode(true);
+	search_button->set_pressed(false);
+	search_button->set_icon(gui_base->get_icon("Zoom","EditorIcons"));
+	prop_editor_hb->add_child(search_button);
+	search_button->connect("toggled",this,"_toggle_search_bar");
 
 	object_menu = memnew( MenuButton );
 	object_menu->set_icon(gui_base->get_icon("Tools","EditorIcons"));
@@ -5333,6 +5365,22 @@ EditorNode::EditorNode() {
 	create_dialog->set_base_type("Resource");
 	create_dialog->connect("create",this,"_resource_created");
 
+	search_bar = memnew( HBoxContainer );
+	search_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	prop_editor_base->add_child(search_bar);
+	search_bar->hide();
+
+	l = memnew( Label("Search: ") );
+	search_bar->add_child(l);
+
+	search_box = memnew( LineEdit );
+	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search_bar->add_child(search_box);
+
+	ToolButton *clear_button = memnew( ToolButton );
+	clear_button->set_icon(gui_base->get_icon("Close","EditorIcons"));
+	search_bar->add_child(clear_button);
+	clear_button->connect("pressed",this,"_clear_search_box");
 
 	property_editor = memnew( PropertyEditor );
 	property_editor->set_autoclear(true);
@@ -5341,6 +5389,7 @@ EditorNode::EditorNode() {
 	property_editor->set_use_doc_hints(true);
 
 	property_editor->hide_top_label();
+	property_editor->register_text_enter(search_box);
 
 	prop_editor_base->add_child( property_editor );
 	property_editor->set_undo_redo(&editor_data.get_undo_redo());

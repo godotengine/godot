@@ -2363,6 +2363,8 @@ void PropertyEditor::update_tree() {
 
 	TreeItem * current_category=NULL;
 
+	String filter = search_box ? search_box->get_text() : "";
+
 	for (List<PropertyInfo>::Element *I=plist.front() ; I ; I=I->next()) {
 
 		PropertyInfo& p = I->get();
@@ -2426,6 +2428,14 @@ void PropertyEditor::update_tree() {
 		} else  if ( ! (p.usage&PROPERTY_USAGE_EDITOR ) )
 			continue;
 
+		String name = (p.name.find("/")!=-1)?p.name.right( p.name.find_last("/")+1 ):p.name;
+
+		if (capitalize_paths)
+			name = name.camelcase_to_underscore().capitalize();
+
+		if (use_filter && filter!="" && name.findn(filter)==-1)
+			continue;
+
 		String path=p.name.left( p.name.find_last("/") ) ;
 		//printf("property %s\n",p.name.ascii().get_data());
 		TreeItem * parent = get_parent_node(path,item_path,current_category?current_category:root );
@@ -2448,8 +2458,6 @@ void PropertyEditor::update_tree() {
 
 		TreeItem * item = tree->create_item( parent );
 
-		String name = (p.name.find("/")!=-1)?p.name.right( p.name.find_last("/")+1 ):p.name;
-
 		if (level>0) {
 			item->set_custom_bg_color(0,col);
 			//item->set_custom_bg_color(1,col);
@@ -2465,11 +2473,7 @@ void PropertyEditor::update_tree() {
 			item->set_checked(0,p.usage&PROPERTY_USAGE_CHECKED);
 		}
 
-		if (capitalize_paths)
-			item->set_text( 0, name.camelcase_to_underscore().capitalize() );
-		else
-			item->set_text( 0, name );
-
+		item->set_text(0, name);
 		item->set_tooltip(0, p.name);
 
 		if (use_doc_hints) {
@@ -3403,6 +3407,11 @@ void PropertyEditor::_draw_flags(Object *t,const Rect2& p_rect) {
 
 }
 
+void PropertyEditor::_filter_changed(const String& p_text) {
+
+	update_tree();
+}
+
 void PropertyEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method( "_item_edited",&PropertyEditor::_item_edited);
@@ -3415,6 +3424,7 @@ void PropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method( "_changed_callback",&PropertyEditor::_changed_callbacks);
 	ObjectTypeDB::bind_method( "_draw_flags",&PropertyEditor::_draw_flags);
 	ObjectTypeDB::bind_method( "_set_range_def",&PropertyEditor::_set_range_def);
+	ObjectTypeDB::bind_method( "_filter_changed",&PropertyEditor::_filter_changed);
 
 	ADD_SIGNAL( MethodInfo("property_toggled",PropertyInfo( Variant::STRING, "property"),PropertyInfo( Variant::BOOL, "value")));
 	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );
@@ -3469,12 +3479,32 @@ void PropertyEditor::set_show_categories(bool p_show) {
 	update_tree();
 }
 
+void PropertyEditor::set_use_filter(bool p_use) {
+
+	if (p_use==use_filter)
+		return;
+
+	use_filter=p_use;
+	update_tree();
+}
+
+void PropertyEditor::register_text_enter(Node* p_line_edit) {
+
+	ERR_FAIL_NULL(p_line_edit);
+	search_box=p_line_edit->cast_to<LineEdit>();
+
+	if (search_box)
+		search_box->connect("text_changed",this,"_filter_changed");
+
+}
+
 PropertyEditor::PropertyEditor() {
 
 	_prop_edited="property_edited";
 	_prop_edited_name.push_back(String());
 	undo_redo=NULL;
 	obj=NULL;
+	search_box=NULL;
 	changing=false;
 	update_tree_pending=false;
 
@@ -3527,7 +3557,9 @@ PropertyEditor::PropertyEditor() {
 	show_categories=false;
 	refresh_countdown=0;
 	use_doc_hints=false;
-	
+
+	use_filter=false;
+
 }
 
 
