@@ -33,9 +33,5 @@ func _deferred_goto_scene(path):
 
 
 func _ready():
-	# Get the current scene, the first time.
-	# It is always the last child of root,
-	# after the autoloaded nodes.
-	
-	var root = get_tree().get_root()
-	current_scene = root.get_child(root.get_child_count() - 1)
+	# Get the current scene at the time of initialization
+	current_scene = get_tree().get_current_scene()
