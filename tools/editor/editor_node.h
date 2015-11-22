@@ -76,6 +76,7 @@
 #include "editor_reimport_dialog.h"
 #include "import_settings.h"
 #include "tools/editor/editor_plugin.h"
+#include "tools/editor/editor_layout_dialog.h"
 
 #include "fileserver/editor_file_server.h"
 #include "editor_resource_preview.h"
@@ -166,6 +167,9 @@ class EditorNode : public Node {
 		SETTINGS_EXPORT_PREFERENCES,
 		SETTINGS_PREFERENCES,
 		SETTINGS_OPTIMIZED_PRESETS,
+		SETTINGS_LAYOUT_SAVE,
+		SETTINGS_LAYOUT_DELETE,
+		SETTINGS_LAYOUT_DEFAULT,
 		SETTINGS_SHOW_ANIMATION,
 		SETTINGS_LOAD_EXPORT_TEMPLATES,
 		SETTINGS_HELP,
@@ -277,6 +281,11 @@ class EditorNode : public Node {
 	AcceptDialog *accept;
 	AcceptDialog *about;
 	AcceptDialog *warning;
+
+	Ref<ConfigFile> default_theme;
+	PopupMenu *editor_layouts;
+	EditorLayoutDialog *layout_dialog;
+	AcceptDialog *confirm_error;
 
 	//OptimizedPresetsDialog *optimized_presets;
 	EditorSettingsDialog *settings_config_dialog;
@@ -516,10 +525,15 @@ class EditorNode : public Node {
 
 	void _save_docks();
 	void _load_docks();
+	void _save_docks_to_config(Ref<ConfigFile> p_layout, const String& p_section);
+	void _load_docks_from_config(Ref<ConfigFile> p_layout, const String& p_section);
+
+	void _update_layouts_menu();
+	void _layout_menu_option(int p_idx);
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();		
+	static void _bind_methods();
 public:
 
 	static EditorNode* get_singleton() { return singleton; }
