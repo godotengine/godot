@@ -575,8 +575,8 @@
 	3x3 Matrix.
 	</brief_description>
 	<description>
-	</description>
 	Matrix represent a 3x3 (3 rows by 3 columns) transformation matrix. it is used mainly to represent and accumulate transformations such as rotation or scale when used as an OCS (oriented coordinate system).
+	</description>
 	<methods>
 	<method name="invert">
 		<description>
@@ -937,8 +937,8 @@
 	Vector used for 2D Math.
 	</brief_description>
 	<description>
-	</description>
 	Vector class, which performs basic 2D vector math operations.
+	</description>
 	<methods>
 	<method name="operator+">
 		<argument index="0" name="b" type="Vector2">
