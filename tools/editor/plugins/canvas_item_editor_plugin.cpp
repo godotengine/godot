@@ -423,8 +423,6 @@ CanvasItem* CanvasItemEditor::_select_canvas_item_at_pos(const Point2& p_pos,Nod
 			r=_select_canvas_item_at_pos(p_pos,p_node->get_child(i),p_parent_xform * c->get_transform(),p_canvas_xform);
 		else {
 			CanvasLayer *cl = p_node->cast_to<CanvasLayer>();
-			if (cl)
-				return NULL;
 			r=_select_canvas_item_at_pos(p_pos,p_node->get_child(i),transform ,cl ? cl->get_transform() : p_canvas_xform); //use base transform
 		}
 
@@ -433,7 +431,7 @@ CanvasItem* CanvasItemEditor::_select_canvas_item_at_pos(const Point2& p_pos,Nod
 	}
 
 
-	if (c && c->is_visible() && !c->has_meta("_edit_lock_")) {
+	if (c && c->is_visible() && !c->has_meta("_edit_lock_") && !c->cast_to<CanvasLayer>()) {
 
 		Rect2 rect = c->get_item_rect();
 		Point2 local_pos = (p_parent_xform * p_canvas_xform * c->get_transform()).affine_inverse().xform(p_pos);
@@ -461,14 +459,12 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos,Node* p_nod
 			_find_canvas_items_at_pos(p_pos,p_node->get_child(i),p_parent_xform * c->get_transform(),p_canvas_xform, r_items);
 		else {
 			CanvasLayer *cl = p_node->cast_to<CanvasLayer>();
-			if (cl)
-				return;
 			_find_canvas_items_at_pos(p_pos,p_node->get_child(i),transform ,cl ? cl->get_transform() : p_canvas_xform, r_items); //use base transform
 		}
 	}
 
 
-	if (c && c->is_visible() && !c->has_meta("_edit_lock_")) {
+	if (c && c->is_visible() && !c->has_meta("_edit_lock_") && !c->cast_to<CanvasLayer>()) {
 
 		Rect2 rect = c->get_item_rect();
 		Point2 local_pos = (p_parent_xform * p_canvas_xform * c->get_transform()).affine_inverse().xform(p_pos);
@@ -505,14 +501,12 @@ void CanvasItemEditor::_find_canvas_items_at_rect(const Rect2& p_rect,Node* p_no
 			_find_canvas_items_at_rect(p_rect,p_node->get_child(i),p_parent_xform * c->get_transform(),p_canvas_xform,r_items);
 		else {
 			CanvasLayer *cl = p_node->cast_to<CanvasLayer>();
-			if (cl)
-				return;
 			_find_canvas_items_at_rect(p_rect,p_node->get_child(i),transform,cl?cl->get_transform():p_canvas_xform,r_items);
 		}
 	}
 
 
-	if (c && c->is_visible() && !c->has_meta("_edit_lock_")) {
+	if (c && c->is_visible() && !c->has_meta("_edit_lock_") && !c->cast_to<CanvasLayer>()) {
 
 		Rect2 rect = c->get_item_rect();
 		Matrix32 xform = p_parent_xform * p_canvas_xform * c->get_transform();
