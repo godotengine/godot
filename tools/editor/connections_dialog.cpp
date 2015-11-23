@@ -163,6 +163,7 @@ void ConnectDialog::edit(Node *p_node) {
 	dst_path->set_text("");
 	dst_method->set_text("");
 	deferred->set_pressed(false);
+	oneshot->set_pressed(false);
 	cdbinds->params.clear();
 	cdbinds->notify_changed();
 }
@@ -194,6 +195,11 @@ NodePath ConnectDialog::get_dst_path() const {
 bool ConnectDialog::get_deferred() const {
 
 	return deferred->is_pressed();
+}
+
+bool ConnectDialog::get_oneshot() const {
+
+	return oneshot->is_pressed();
 }
 
 StringName ConnectDialog::get_dst_method() const {
@@ -423,12 +429,13 @@ ConnectDialog::ConnectDialog() {
 	dstm_hb->add_child(make_callback);
 
 	deferred = memnew( CheckButton );
-	deferred->set_toggle_mode(true);
-	deferred->set_pressed(true);
 	deferred->set_text("Deferred");
 	dstm_hb->add_child(deferred);
 
-	
+	oneshot = memnew( CheckButton );
+	oneshot->set_text("Oneshot");
+	dstm_hb->add_child(oneshot);
+
 /*
 	realtime = memnew( CheckButton );
 	realtime->set_anchor( MARGIN_TOP, ANCHOR_END );
@@ -496,11 +503,13 @@ void ConnectionsDialog::_connect() {
 
 	StringName dst_method=connect_dialog->get_dst_method();
 	bool defer=connect_dialog->get_deferred();
+	bool oshot=connect_dialog->get_oneshot();
 	Vector<Variant> binds = connect_dialog->get_binds();
 	StringArray args =  it->get_metadata(0).operator Dictionary()["args"];
+	int flags = CONNECT_PERSIST | (defer?CONNECT_DEFERRED:0) | (oshot?CONNECT_ONESHOT:0);
 
 	undo_redo->create_action("Connect '"+signal+"' to '"+String(dst_method)+"'");
-	undo_redo->add_do_method(node,"connect",signal,target,dst_method,binds,CONNECT_PERSIST | (defer?CONNECT_DEFERRED:0));
+	undo_redo->add_do_method(node,"connect",signal,target,dst_method,binds,flags);
 	undo_redo->add_undo_method(node,"disconnect",signal,target,dst_method);
 	undo_redo->add_do_method(this,"update_tree");
 	undo_redo->add_undo_method(this,"update_tree");
@@ -731,6 +740,8 @@ void ConnectionsDialog::update_tree() {
 				String path = String(node->get_path_to(target))+" :: "+c.method+"()";
 				if (c.flags&CONNECT_DEFERRED)
 					path+=" (deferred)";
+				if (c.flags&CONNECT_ONESHOT)
+					path+=" (oneshot)";
 				if (c.binds.size()) {
 
 					path+=" binds( ";
