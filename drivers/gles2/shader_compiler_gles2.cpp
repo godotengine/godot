@@ -221,6 +221,10 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 					uses_light=true;
 				}
 
+				if (vnode->name==vname_shadow) {
+					uses_shadow_color=true;
+				}
+
 			}
 			if (type==ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX) {
 
@@ -783,13 +787,14 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	replace_table["texscreen"]= "texscreen";
 	replace_table["texpos"]= "texpos";
 
-	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["POSITION"] = "gl_Position";
+
 
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SRC_VERTEX"] = "vertex_in.xyz";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SRC_NORMAL"] = "normal_in";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SRC_TANGENT"]="tangent_in";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SRC_BINORMALF"]="binormalf";
-
+	
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["POSITION"] = "gl_Position";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["VERTEX"]="vertex_interp";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["NORMAL"]="normal_interp";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["TANGENT"]="tangent_interp";
@@ -858,6 +863,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["LIGHT"]="light";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["POINT_COORD"]="gl_PointCoord";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["TIME"]="time";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_LIGHT]["SHADOW"]="shadow_color";
 
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["SRC_VERTEX"]="src_vtx";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["VERTEX"]="outvec.xy";
