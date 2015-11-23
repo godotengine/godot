@@ -47,7 +47,7 @@ public:
 		UNDER_LEAF=0xFFFF,
 		OVER_LEAF=0xFFFE,
 		MAX_NODES=0xFFFE,
-		MAX_PLANES=(1<<16)
+		MAX_PLANES=(1<<32)
 	};
 
 	struct Node {
