@@ -1264,7 +1264,10 @@ void SceneTreeDock::import_subscene() {
 void SceneTreeDock::_import_subscene() {
 
 	Node* parent = scene_tree->get_selected();
-	ERR_FAIL_COND(!parent);
+	if (!parent) {
+		parent = editor_data->get_edited_scene_root();
+		ERR_FAIL_COND(!parent);
+	}
 
 	import_subscene_dialog->move(parent,edited_scene);
 	editor_data->get_undo_redo().clear_history(); //no undo for now..
