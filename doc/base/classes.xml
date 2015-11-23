@@ -16735,11 +16735,11 @@ returns:= "username=user&amp;password=pass"
 		</method>
 	</methods>
 	<members>
-		<member name="x" type="float">
+		<member name="x" type="Vector2">
 		</member>
-		<member name="y" type="float">
+		<member name="y" type="Vector2">
 		</member>
-		<member name="o" type="float">
+		<member name="o" type="Vector2">
 		</member>
 	</members>
 	<constants>
