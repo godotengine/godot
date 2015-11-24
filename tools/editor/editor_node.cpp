@@ -169,9 +169,18 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 				if (!p_event.key.mod.shift && !p_event.key.mod.command)
 					_editor_select(3);
 			break;*/
-			case KEY_F1: _editor_select(0); break;
-			case KEY_F2: _editor_select(1); break;
-			case KEY_F3: _editor_select(2); break;
+			case KEY_F1:
+				if (!p_event.key.mod.shift && !p_event.key.mod.command)
+					_editor_select(0);
+			break;
+			case KEY_F2:
+				if (!p_event.key.mod.shift && !p_event.key.mod.command)
+					_editor_select(1);
+			break;
+			case KEY_F3:
+				if (!p_event.key.mod.shift && !p_event.key.mod.command)
+					_editor_select(2);
+			break;
 			case KEY_F5: _menu_option_confirm((p_event.key.mod.control&&p_event.key.mod.shift)?RUN_PLAY_CUSTOM_SCENE:RUN_PLAY,true); break;
 			case KEY_F6: _menu_option_confirm(RUN_PLAY_SCENE,true); break;
 			case KEY_F7: _menu_option_confirm(RUN_PAUSE,true); break;
@@ -2519,7 +2528,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		case OBJECT_REQUEST_HELP: {
 
 			if (current) {
-				_editor_select(3);
+				_editor_select(2);
 				emit_signal("request_help",current->get_type());
 			}
 
