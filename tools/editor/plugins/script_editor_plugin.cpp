@@ -881,7 +881,7 @@ void ScriptEditor::_menu_option(int p_option) {
 		} break;
 		case SEARCH_HELP: {
 
-			help_search_dialog->popup("current");
+			help_search_dialog->popup();
 		} break;
 		case SEARCH_CLASSES: {
 
