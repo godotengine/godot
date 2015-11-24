@@ -1408,7 +1408,6 @@ void EditorHelp::_bind_methods() {
 	ObjectTypeDB::bind_method("_unhandled_key_input",&EditorHelp::_unhandled_key_input);
 	ObjectTypeDB::bind_method("_search",&EditorHelp::_search);
 	ObjectTypeDB::bind_method("_search_cbk",&EditorHelp::_search_cbk);
-
 	ObjectTypeDB::bind_method("_help_callback",&EditorHelp::_help_callback);
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));

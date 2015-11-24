@@ -31,5 +31,4 @@ sources = [
 	"theora/video_stream_theora.cpp",
 ]
 
-if env['use_theoraplayer_binary'] != "yes":
-	env.drivers_sources += sources
+env.drivers_sources += sources

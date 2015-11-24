@@ -231,6 +231,7 @@ static ResourceFormatLoaderTheme *resource_loader_theme=NULL;
 static ResourceFormatLoaderShader *resource_loader_shader=NULL;
 
 static ResourceFormatSaverText *resource_saver_text=NULL;
+static ResourceFormatLoaderText *resource_loader_text=NULL;
 
 //static SceneStringNames *string_names;
 
@@ -619,6 +620,9 @@ void register_scene_types() {
 	resource_saver_text = memnew( ResourceFormatSaverText );
 	ResourceSaver::add_resource_format_saver(resource_saver_text);
 
+	resource_loader_text = memnew( ResourceFormatLoaderText );
+	ResourceLoader::add_resource_format_loader(resource_loader_text);
+
 }
 
 void unregister_scene_types() {
@@ -639,6 +643,9 @@ void unregister_scene_types() {
 
 	if (resource_saver_text) {
 		memdelete(resource_saver_text);
+	}
+	if (resource_loader_text) {
+		memdelete(resource_loader_text);
 	}
 	SceneStringNames::free();
 }

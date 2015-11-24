@@ -54,10 +54,6 @@
 #include "theora/video_stream_theora.h"
 #endif
 
-#ifdef THEORAPLAYER_ENABLED
-#include "theoraplayer/video_stream_theoraplayer.h"
-#endif
-
 
 #include "drivers/nrex/regex.h"
 

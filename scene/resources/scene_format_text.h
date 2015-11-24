@@ -5,6 +5,88 @@
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 #include "scene/resources/packed_scene.h"
+#include "variant_parser.h"
+
+
+
+class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
+
+	String local_path;
+	String res_path;
+	String error_text;
+
+	FileAccess *f;
+
+	VariantParser::StreamFile stream;
+
+	struct ExtResource {
+		String path;
+		String type;
+	};
+
+
+	bool is_scene;
+	String res_type;
+
+
+
+//	Map<String,String> remaps;
+
+	Map<int,ExtResource> ext_resources;
+
+	int resources_total;
+	int resource_current;
+	String resource_type;
+
+	VariantParser::Tag next_tag;
+
+	mutable int lines;
+
+	Map<String,String> remaps;
+	void _printerr();
+
+friend class ResourceFormatLoaderText;
+
+	List<RES> resource_cache;
+	Error parse_property(Variant& r_v, String &r_name);
+	Error error;
+
+	RES resource;
+
+public:
+
+	virtual void set_local_path(const String& p_local_path);
+	virtual Ref<Resource> get_resource();
+	virtual Error poll();
+	virtual int get_stage() const;
+	virtual int get_stage_count() const;
+
+	void open(FileAccess *p_f);
+	String recognize(FileAccess *p_f);
+	void get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types);
+	Error rename_dependencies(FileAccess *p_f, const String &p_path,const Map<String,String>& p_map);
+
+
+	~ResourceInteractiveLoaderText();
+
+};
+
+
+
+class ResourceFormatLoaderText : public ResourceFormatLoader {
+public:
+
+	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path,Error *r_error=NULL);
+	virtual void get_recognized_extensions_for_type(const String& p_type,List<String> *p_extensions) const;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual bool handles_type(const String& p_type) const;
+	virtual String get_resource_type(const String &p_path) const;
+	virtual void get_dependencies(const String& p_path, List<String> *p_dependencies, bool p_add_types=false);
+	virtual Error rename_dependencies(const String &p_path,const Map<String,String>& p_map);
+
+
+};
+
 
 class ResourceFormatSaverTextInstance  {
 

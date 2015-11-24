@@ -870,21 +870,13 @@ Error Main::setup2() {
 		String boot_logo_path=GLOBAL_DEF("application/boot_splash",String());
 		bool boot_logo_scale=GLOBAL_DEF("application/boot_splash_fullsize",true);
 		Globals::get_singleton()->set_custom_property_info("application/boot_splash",PropertyInfo(Variant::STRING,"application/boot_splash",PROPERTY_HINT_FILE,"*.png"));
-		print_line("BOOT SPLASH: "+boot_logo_path);
 
 		Image boot_logo;
 
 		boot_logo_path = boot_logo_path.strip_edges();
-		print_line("BOOT SPLASH IS : "+boot_logo_path);
 
 		if (boot_logo_path!=String() /*&& FileAccess::exists(boot_logo_path)*/) {
 			Error err = boot_logo.load(boot_logo_path);
-			if (err!=OK) {
-				print_line("ËRROR LOADING BOOT LOGO SPLASH :"+boot_logo_path);
-			} else {
-				print_line("BOOT SPLASH OK!");
-
-			}
 		}
 
 		if (!boot_logo.empty()) {
@@ -944,10 +936,10 @@ Error Main::setup2() {
 
 	if (String(Globals::get_singleton()->get("display/custom_mouse_cursor"))!=String()) {
 
-		print_line("use custom cursor");
+		//print_line("use custom cursor");
 		Ref<Texture> cursor=ResourceLoader::load(Globals::get_singleton()->get("display/custom_mouse_cursor"));
 		if (cursor.is_valid()) {
-			print_line("loaded ok");
+		//	print_line("loaded ok");
 			Vector2 hotspot = Globals::get_singleton()->get("display/custom_mouse_cursor_hotspot");
 			Input::get_singleton()->set_custom_mouse_cursor(cursor,hotspot);
 		}

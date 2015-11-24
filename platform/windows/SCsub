@@ -11,11 +11,11 @@ common_win=[
 	"stream_peer_winsock.cpp",
 ]
 
-env.RES('godot_res.rc')
-if env["is_mingw"]:
-	common_win.append("godot_res.o")
-else:
-	common_win.append("godot_res.res")
+restarget="godot_res"+env["OBJSUFFIX"]
+
+obj = env.RES(restarget,'godot_res.rc')
+
+common_win.append(obj)
 
 env.Program('#bin/godot',['godot_win.cpp']+common_win,PROGSUFFIX=env["PROGSUFFIX"])
 
