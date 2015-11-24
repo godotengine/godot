@@ -34,5 +34,5 @@ sources_lib = [
 
 env.drivers_sources += sources
 
-if env['theora'] != "yes" or env['use_theoraplayer_binary'] != "yes":
+#if env['theora'] != "yes" or env['use_theoraplayer_binary'] != "yes":
 	env.drivers_sources += sources_lib
