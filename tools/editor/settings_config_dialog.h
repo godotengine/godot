@@ -51,6 +51,8 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	Button *rescan_plugins;
 	Tree *plugins;
+	LineEdit *search_box;
+	ToolButton *clear_button;
 	PropertyEditor *property_editor;
 
 	Timer *timer;
@@ -70,6 +72,8 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	void _rescan_plugins();
 	void _update_plugins();
+
+	void _clear_search_box();
 
 protected:
 

@@ -2818,9 +2818,9 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		} break;
 		case MATRIX32: {
 
-			p_list->push_back( PropertyInfo(Variant::REAL,"x"));
-			p_list->push_back( PropertyInfo(Variant::REAL,"y"));
-			p_list->push_back( PropertyInfo(Variant::REAL,"o"));
+			p_list->push_back( PropertyInfo(Variant::VECTOR2,"x"));
+			p_list->push_back( PropertyInfo(Variant::VECTOR2,"y"));
+			p_list->push_back( PropertyInfo(Variant::VECTOR2,"o"));
 
 		} break;
 		case PLANE: {

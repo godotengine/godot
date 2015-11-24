@@ -3197,6 +3197,24 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_animation_process_mode">
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_animation_process_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="advance">
+			<argument index="0" name="delta" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="reset">
 			<description>
 			</description>
@@ -4353,7 +4371,7 @@
 			Stop a given voice.
 			</description>
 		</method>
-		<method name="free">
+		<method name="free_rid">
 			<argument index="0" name="rid" type="RID">
 			</argument>
 			<description>
@@ -5477,7 +5495,7 @@
 		</constant>
 	</constants>
 </class>
-<class name="ButtonGroup" inherits="Control" category="Core">
+<class name="ButtonGroup" inherits="BoxContainer" category="Core">
 	<brief_description>
 	Group of Buttons.
 	</brief_description>
@@ -5523,6 +5541,10 @@
 	</methods>
 	<constants>
 	</constants>
+	<theme_items>
+		<theme_item name="panel" type="StyleBox">
+		</theme_item>
+	</theme_items>
 </class>
 <class name="Camera" inherits="Spatial" category="Core">
 	<brief_description>
@@ -6628,7 +6650,7 @@
 			<argument index="0" name="radius" type="float">
 			</argument>
 			<description>
-			Radius of the [CapsuleShape2D].
+			Set the radius of the [CapsuleShape2D].
 			</description>
 		</method>
 		<method name="get_radius" qualifiers="const">
@@ -6642,7 +6664,7 @@
 			<argument index="0" name="height" type="float">
 			</argument>
 			<description>
-			Height of the [CapsuleShape2D].
+			Set the height of the [CapsuleShape2D].
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
@@ -6947,7 +6969,7 @@
 	Base node for 2D collisionables.
 	</brief_description>
 	<description>
-	CollisionObject2D is the base class for 2D physics collisionables. They can hold any number of 2D collision shapes. Usually, they are edited by placing CollisionBody2D and CollisionPolygon2D nodes as children. Such nodes are for reference ant not present outside the editor, so code should use the regular shape API.
+	CollisionObject2D is the base class for 2D physics collisionables. They can hold any number of 2D collision shapes. Usually, they are edited by placing [CollisionBody2D] and [CollisionPolygon2D] nodes as children. Such nodes are for reference and not present outside the editor, so code should use the regular shape API.
 	</description>
 	<methods>
 		<method name="_input_event" qualifiers="virtual">
@@ -7143,58 +7165,69 @@
 </class>
 <class name="CollisionPolygon2D" inherits="Node2D" category="Core">
 	<brief_description>
-	Editor-Only class.
+	Editor-only class for easy editing of collision polygons.
 	</brief_description>
 	<description>
-	Editor-Only class. This is not present when running the game. It's used in the editor to properly edit and position collision shapes in [CollisionObject2D]. This is not accessible from regular code. This class is for editing custom shape polygons.
+	Editor-only class. This is not present when running the game. It's used in the editor to properly edit and position collision shapes in [CollisionObject2D]. This is not accessible from regular code. This class is for editing custom shape polygons.
 	</description>
 	<methods>
 		<method name="set_polygon">
 			<argument index="0" name="polygon" type="Vector2Array">
 			</argument>
 			<description>
+			Set the array of points forming the polygon.
+			When editing the point list via the editor, depending on [method get_build_mode], it has to be a list of points (for [code]build_mode[/code]=0), or a list of lines (for [code]build_mode[/code]=1). In the second case, the even elements of the array define the start point of the line, and the odd elements the end point.
 			</description>
 		</method>
 		<method name="get_polygon" qualifiers="const">
 			<return type="Vector2Array">
 			</return>
 			<description>
+			Return the list of points that define the polygon.
 			</description>
 		</method>
 		<method name="set_build_mode">
 			<argument index="0" name="arg0" type="int">
 			</argument>
 			<description>
+			Set whether the polygon is to be a [ConvexPolygon2D] ([code]build_mode[/code]=0), or a [ConcavePolygon2D] ([code]build_mode[/code]=1).
 			</description>
 		</method>
 		<method name="get_build_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return whether the polygon is a [ConvexPolygon2D] ([code]build_mode[/code]=0), or a [ConcavePolygon2D] ([code]build_mode[/code]=1).
 			</description>
 		</method>
 		<method name="set_trigger">
 			<argument index="0" name="arg0" type="bool">
 			</argument>
 			<description>
+			Set whether this polygon is a trigger. A trigger polygon detects collisions, but is otherwise unaffected by physics (i.e. colliding objects will not get blocked).
 			</description>
 		</method>
 		<method name="is_trigger" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this polygon is a trigger.
 			</description>
 		</method>
 		<method name="get_collision_object_first_shape" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the index of the first shape generated by the editor.
+			When [code]build_mode[/code] is set to generate convex polygons, the shape shown in the editor may be decomopsed into many convex polygons. In that case, a range of indexes is needed to directly access the [Shape2D]s.
+			When [code]build_mode[/code] is set to generate concave polygons, there is only one [Shape2D] generated, so the start index and the end index are the same.
 			</description>
 		</method>
 		<method name="get_collision_object_last_shape" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the index of the last shape generated by the editor.
 			</description>
 		</method>
 	</methods>
@@ -7253,40 +7286,45 @@
 </class>
 <class name="CollisionShape2D" inherits="Node2D" category="Core">
 	<brief_description>
-	Editor-Only class.
+	Editor-only class for easy editing of shapes.
 	</brief_description>
 	<description>
-	Editor-Only class. This is not present when running the game. It's used in the editor to properly edit and position collision shapes in [CollisionObject2D]. This is not accessible from regular code.
+	Editor-only class. This is not present when running the game. It's used in the editor to properly edit and position collision shapes in [CollisionObject2D]. This is not accessible from regular code.
 	</description>
 	<methods>
 		<method name="set_shape">
 			<argument index="0" name="shape" type="Object">
 			</argument>
 			<description>
+			Set this shape's [Shape2D]. This will not appear as a node, but can be directly edited as a property.
 			</description>
 		</method>
 		<method name="get_shape" qualifiers="const">
 			<return type="Object">
 			</return>
 			<description>
+			Return this shape's [Shape2D].
 			</description>
 		</method>
 		<method name="set_trigger">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set whether this shape is a trigger. A trigger shape detects collisions, but is otherwise unaffected by physics (i.e. will not block movement of colliding objects).
 			</description>
 		</method>
 		<method name="is_trigger" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this shape is a trigger.
 			</description>
 		</method>
 		<method name="get_collision_object_shape_index" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the index of this shape inside its container [CollisionObject2D]. This can be used to directly access the underlying [Shape2D].
 			</description>
 		</method>
 	</methods>
@@ -7298,7 +7336,7 @@
 	Color in RGBA format.
 	</brief_description>
 	<description>
-	A color is represented as red, green and blue (r,g,b) components. Additionally, "a" represents the alpha component, often used for transparency. Values are in floating point and usually range from 0 to 1.  Some methods (such as set_modulate() ) may accept values > 1.
+	A color is represented as red, green and blue (r,g,b) components. Additionally, "a" represents the alpha component, often used for transparency. Values are in floating point and usually range from 0 to 1.  Some methods (such as set_modulate() ) may accept values &gt; 1.
 	</description>
 	<methods>
 		<method name="blend">
@@ -7666,7 +7704,7 @@
 	Concave polygon shape.
 	</brief_description>
 	<description>
-	Concave polygon shape resource, which can be set into a [PhysicsBody] or area.  This shape is created by feeding a list of triangles.
+	Concave polygon shape resource, which can be set into a [PhysicsBody] or area. This shape is created by feeding a list of triangles.
 	</description>
 	<methods>
 		<method name="set_faces">
@@ -7693,6 +7731,7 @@
 	</brief_description>
 	<description>
 	Concave polygon 2D shape resource for physics. It is made out of segments and is very optimal for complex polygonal concave collisions. It is really not advised to use for RigidBody nodes. A CollisionPolygon2D in convex decomposition mode (solids) or several convex objects are advised for that instead. Otherwise, a concave polygon 2D shape is better for static collisions.
+	The main difference between a [ConvexPolygonShape2D] and a [ConcavePolygonShape2D] is that a concave polygon assumes it is concave and uses a more complex method of collision detection, and a convex one forces itself to be convex in order to speed up collision detection.
 	</description>
 	<methods>
 		<method name="set_segments">
@@ -8583,14 +8622,15 @@
 	Convex Polygon Shape for 2D physics.
 	</brief_description>
 	<description>
-	Convex Polygon Shape for 2D physics.
+	Convex Polygon Shape for 2D physics. A convex polygon, whatever its shape, is internally decomposed into as many convex polygons as needed to ensure all collision checks against it are always done on convex polygons (which are faster to check).
+	The main difference between a [ConvexPolygonShape2D] and a [ConcavePolygonShape2D] is that a concave polygon assumes it is concave and uses a more complex method of collision detection, and a convex one forces itself to be convex in order to speed up collision detection.
 	</description>
 	<methods>
 		<method name="set_point_cloud">
 			<argument index="0" name="point_cloud" type="Vector2Array">
 			</argument>
 			<description>
-			Create the point set from a point cloud. The resulting convex hull will be set as the shape.
+			Currently, this method does nothing.
 			</description>
 		</method>
 		<method name="set_points">
@@ -8871,27 +8911,17 @@ Cubic interpolation tends to follow the curves better, but linear is faster (and
 			</description>
 		</method>
 		<method name="tesselate" qualifiers="const">
+			<return type="Vector2Array">
+			</return>
 			<argument index="0" name="max_stages" type="int" default="5">
 			</argument>
 			<argument index="1" name="tolerance_degrees" type="float" default="4">
 			</argument>
-			<return type="Vector2Array">
-			</return>
 			<description>
 			Returns a list of points along the curve, with a curvature controlled point density. That is, the curvier parts will have more points than the straighter parts.
 This approximation makes straight segments between each point, then subdivides those segments until the resulting shape is similar enough.
 "max_stages" controls how many subdivisions a curve segment may face before it is considered approximate enough. Each subdivision splits the segment in half, so the default 5 stages may mean up to 32 subdivisions per curve segment. Increase with care!
 "tolerance_degrees" controls how many degrees the midpoint of a segment may deviate from the real curve, before the segment has to be subdivided.
-			</description>
-		</method>
-		<method name="tesselate" qualifiers="const">
-			<return type="Vector2Array">
-			</return>
-			<argument index="0" name="max_stages" type="int" default="5">
-			</argument>
-			<argument index="1" name="tolerance_degrees" type="float" default="4">
-			</argument>
-			<description>
 			</description>
 		</method>
 	</methods>
@@ -9078,27 +9108,17 @@ Cubic interpolation tends to follow the curves better, but linear is faster (and
 			</description>
 		</method>
 		<method name="tesselate" qualifiers="const">
+			<return type="Vector3Array">
+			</return>
 			<argument index="0" name="max_stages" type="int" default="5">
 			</argument>
 			<argument index="1" name="tolerance_degrees" type="float" default="4">
 			</argument>
-			<return type="Vector3Array">
-			</return>
 			<description>
 			Returns a list of points along the curve, with a curvature controlled point density. That is, the curvier parts will have more points than the straighter parts.
 This approximation makes straight segments between each point, then subdivides those segments until the resulting shape is similar enough.
 "max_stages" controls how many subdivisions a curve segment may face before it is considered approximate enough. Each subdivision splits the segment in half, so the default 5 stages may mean up to 32 subdivisions per curve segment. Increase with care!
 "tolerance_degrees" controls how many degrees the midpoint of a segment may deviate from the real curve, before the segment has to be subdivided.
-			</description>
-		</method>
-		<method name="tesselate" qualifiers="const">
-			<return type="Vector3Array">
-			</return>
-			<argument index="0" name="max_stages" type="int" default="5">
-			</argument>
-			<argument index="1" name="tolerance_degrees" type="float" default="4">
-			</argument>
-			<description>
 			</description>
 		</method>
 	</methods>
@@ -10760,6 +10780,14 @@ This approximation makes straight segments between each point, then subdivides t
 		<constant name="FLAG_USE_POINT_SIZE" value="2">
 		</constant>
 		<constant name="FLAG_DISCARD_ALPHA" value="3">
+		</constant>
+		<constant name="LIGHT_SHADER_LAMBERT" value="0">
+		</constant>
+		<constant name="LIGHT_SHADER_WRAP" value="1">
+		</constant>
+		<constant name="LIGHT_SHADER_VELVET" value="2">
+		</constant>
+		<constant name="LIGHT_SHADER_TOON" value="3">
 		</constant>
 	</constants>
 </class>
@@ -12521,9 +12549,9 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="3" name="verify_host" type="bool" default="true">
 			</argument>
 			<description>
-					Connect to a host. This needs to be done before any requests are sent.
+			Connect to a host. This needs to be done before any requests are sent.
 The host should not have http:// prepended but will strip the protocol identifier if provided.
-					
+
 verify_host will check the SSL identity of the host if set to true.
 			</description>
 		</method>
@@ -12545,13 +12573,12 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="3" name="body" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-					Sends a request to the connected host. The url is the what is normally behind the hostname, 
-i.e; 
+			Sends a request to the connected host. The url is the what is normally behind the hostname, i.e:
 http://somehost.com/index.php
-url would be &quot;index.php&quot;
-					
+url would be "index.php"
+
 Headers are HTTP request headers
-					
+
 To create a POST request with query strings to push to the server, do:
 var fields = {"username" : "user",
                        "password" : "pass"}
@@ -12566,8 +12593,8 @@ var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, qu
 			</return>
 			<argument index="0" name="body" type="String">
 			</argument>
-				<description>
-					Stub function
+			<description>
+			Stub function
 			</description>
 		</method>
 		<method name="send_body_data">
@@ -12576,7 +12603,7 @@ var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, qu
 			<argument index="0" name="body" type="RawArray">
 			</argument>
 			<description>
-					Stub function
+			Stub function
 			</description>
 		</method>
 		<method name="close">
@@ -12629,14 +12656,14 @@ var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, qu
 			<argument index="0" name="bytes" type="int">
 			</argument>
 			<description>
-					Sets the size of the buffer used and maximum bytes to read per iteration
+			Sets the size of the buffer used and maximum bytes to read per iteration
 			</description>
 		</method>
 		<method name="set_blocking_mode">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-					If set to true, execute will wait until all data is read from the response.
+			If set to true, execute will wait until all data is read from the response.
 			</description>
 		</method>
 		<method name="is_blocking_mode_enabled" qualifiers="const">
@@ -12649,30 +12676,30 @@ var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, qu
 			<return type="int">
 			</return>
 			<description>
-					Returns a status string like STATUS_REQUESTING. Need to call [method poll] in order to get status updates.
+			Returns a status string like STATUS_REQUESTING. Need to call [method poll] in order to get status updates.
 			</description>
 		</method>
 		<method name="poll">
 			<return type="Error">
 			</return>
-				<description>
-					This needs to be called in order to have any request processed. Check results with [method get_status]
+			<description>
+			This needs to be called in order to have any request processed. Check results with [method get_status]
 			</description>
 		</method>
-        <method name="query_string_from_dict">
-            <return type="String">
-            </return>
-            <argument index="0" name="fields" type="Dictionary">
-            </argument>
-            <description>
-					Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary.
-					
+		<method name="query_string_from_dict">
+			<return type="String">
+			</return>
+			<argument index="0" name="fields" type="Dictionary">
+			</argument>
+			<description>
+			Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary.
+
 var fields = {"username": "user", "password": "pass"}
 String queryString = httpClient.query_string_from_dict(fields)
-					
+
 returns:= "username=user&amp;password=pass"
-            </description>
-        </method>
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="METHOD_GET" value="0">
@@ -14453,6 +14480,12 @@ returns:= "username=user&amp;password=pass"
 			<description>
 			</description>
 		</method>
+		<method name="get_instance_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -15902,6 +15935,18 @@ returns:= "username=user&amp;password=pass"
 	LineEdit provides a single line string editor, used for text fields.
 	</description>
 	<methods>
+		<method name="set_align">
+			<argument index="0" name="align" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_align" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="clear">
 			<description>
 			Clear the [LineEdit] text.
@@ -16015,6 +16060,14 @@ returns:= "username=user&amp;password=pass"
 		</signal>
 	</signals>
 	<constants>
+		<constant name="ALIGN_LEFT" value="0">
+		</constant>
+		<constant name="ALIGN_CENTER" value="1">
+		</constant>
+		<constant name="ALIGN_RIGHT" value="2">
+		</constant>
+		<constant name="ALIGN_FILL" value="3">
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="minimum_spaces" type="int">
@@ -16732,6 +16785,8 @@ returns:= "username=user&amp;password=pass"
 		<theme_item name="hover" type="StyleBox">
 		</theme_item>
 		<theme_item name="pressed" type="StyleBox">
+		</theme_item>
+		<theme_item name="focus" type="StyleBox">
 		</theme_item>
 		<theme_item name="disabled" type="StyleBox">
 		</theme_item>
@@ -18582,6 +18637,18 @@ returns:= "username=user&amp;password=pass"
 			</argument>
 			<description>
 			Replace a node in a scene by a given one. Subscriptions that pass through this node will be lost.
+			</description>
+		</method>
+		<method name="set_scene_instance_load_placeholder">
+			<argument index="0" name="load_placeholder" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_scene_instance_load_placeholder" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_viewport" qualifiers="const">
@@ -21573,16 +21640,16 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<constants>
 		<constant name="ROTATION_NONE" value="0">
-		Forbids the PathFollow to rotate.
+			Forbids the PathFollow to rotate.
 		</constant>
 		<constant name="ROTATION_Y" value="1">
-		Allows the PathFollow to rotate in the Y axis only.
+			Allows the PathFollow to rotate in the Y axis only.
 		</constant>
 		<constant name="ROTATION_XY" value="2">
-		Allows the PathFollow to rotate in both the X, and Y axes.
+			Allows the PathFollow to rotate in both the X, and Y axes.
 		</constant>
 		<constant name="ROTATION_XYZ" value="3">
-		Allows the PathFollow to rotate in any axis.
+			Allows the PathFollow to rotate in any axis.
 		</constant>
 	</constants>
 </class>
@@ -21697,10 +21764,6 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="lookahead" type="float">
-		</member>
-	</members>
 	<constants>
 	</constants>
 </class>
@@ -26057,6 +26120,14 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="xform">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="v" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="Quat">
 			<return type="Quat">
 			</return>
@@ -26301,12 +26372,14 @@ This method controls whether the position between two cached points is interpola
 			<return type="String">
 			</return>
 			<description>
+				Returns a copy of the array's contents formatted as String. Fast alternative to get_string_from_utf8(), assuming the content is ASCII-only (unlike the UTF-8 function, this function maps every byte to a character in the string, so any multibyte sequence will be torn apart).
 			</description>
 		</method>
 		<method name="get_string_from_utf8">
 			<return type="String">
 			</return>
 			<description>
+				Returns a copy of the array's contents formatted as String, assuming the array is formatted as UTF-8. Slower than get_string_from_ascii(), but works for UTF-8. Usually you should prefer this function over get_string_from_ascii() to support international input.
 			</description>
 		</method>
 		<method name="push_back">
@@ -26584,19 +26657,21 @@ This method controls whether the position between two cached points is interpola
 	Ray 2D shape resource for physics.
 	</brief_description>
 	<description>
-	Ray 2D shape resource for physics. A ray is not really a collision body, isntead it tries to separate itself from whatever is touching its far endpoint. It's often useful for ccharacters.
+	Ray 2D shape resource for physics. A ray is not really a collision body, isntead it tries to separate itself from whatever is touching its far endpoint. It's often useful for characters.
 	</description>
 	<methods>
 		<method name="set_length">
 			<argument index="0" name="length" type="float">
 			</argument>
 			<description>
+			Set the length of the ray.
 			</description>
 		</method>
 		<method name="get_length" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the length of the ray.
 			</description>
 		</method>
 	</methods>
@@ -26866,27 +26941,22 @@ This method controls whether the position between two cached points is interpola
 	<methods>
 		<method name="compile">
 			<return type="int">
-			[OK] if the regular expression was valid. [FAIL] otherwise.
 			</return>
 			<argument index="0" name="pattern" type="String">
-			The string to be converted into a regular expression.
+			</argument>
+			<argument index="1" name="expanded" type="bool" default="true">
 			</argument>
 			<description>
-			Once created, a RegEx object needs a regular expression to be assigned to it. This method tries to convert the string given to an usable regular expression.
 			</description>
 		</method>
 		<method name="find" qualifiers="const">
 			<return type="int">
-			The position within the string (starting with 0) where the pattern was found. It will return -1 if the pattern was not found, it was invalid, or the start or end positions were beyond the string's end.
 			</return>
 			<argument index="0" name="text" type="String">
-			The text to search the pattern in.
 			</argument>
 			<argument index="1" name="start" type="int" default="0">
-			The position in the string (starting with 0) to start searching from.
 			</argument>
 			<argument index="2" name="end" type="int" default="-1">
-			The position in the string (starting with 0) to stop searching. A value less than the start position means "end of the string".
 			</argument>
 			<description>
 			This method tries to find the pattern within the string, and returns the position where it was found. It also stores any capturing group (see [method get_capture]) for further retrieval.
@@ -26915,7 +26985,6 @@ This method controls whether the position between two cached points is interpola
 			<return type="String">
 			</return>
 			<argument index="0" name="capture" type="int">
-			The number of the captured group, starting with 0. Like other regular expression engines, Godot's engine takes 0 as the full expression, and 1 as the first pair of capturing parentheses.
 			</argument>
 			<description>
 			Returns a captured group. A captured group is the part of a string that matches a part of the pattern delimited by parentheses (unless they are non-capturing parentheses [i](?:)[/i]).
@@ -26923,7 +26992,6 @@ This method controls whether the position between two cached points is interpola
 		</method>
 		<method name="get_captures" qualifiers="const">
 			<return type="StringArray">
-			A list contining all the strings captured by the regular expression.
 			</return>
 			<description>
 			Return a list of all the captures made by the regular expression.
@@ -29543,24 +29611,28 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="a" type="Vector2">
 			</argument>
 			<description>
+			Set the first point's position.
 			</description>
 		</method>
 		<method name="get_a" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the first point's position.
 			</description>
 		</method>
 		<method name="set_b">
 			<argument index="0" name="b" type="Vector2">
 			</argument>
 			<description>
+			Set the second point's position.
 			</description>
 		</method>
 		<method name="get_b" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the second point's position.
 			</description>
 		</method>
 	</methods>
@@ -30608,13 +30680,14 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<description>
 			Use a custom solver bias. No need to change this unless you really know what you are doing.
+			The solver bias is a factor controlling how much two objects "rebound" off each other, when colliding, to avoid them getting into each other because of numerical imprecision.
 			</description>
 		</method>
 		<method name="get_custom_solver_bias" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-			Return the custom solver bias. No need to change this unless you really know what you are doing.
+			Return the custom solver bias.
 			</description>
 		</method>
 		<method name="collide">
@@ -30627,6 +30700,8 @@ This method controls whether the position between two cached points is interpola
 			<argument index="2" name="shape_xform" type="Matrix32">
 			</argument>
 			<description>
+			Return whether this shape is colliding with another.
+			This method needs the transformation matrix for this shape ([code]local_xform[/code]), the shape to check collisions with ([code]with_shape[/code]), and the transformation matrix of that shape ([code]shape_xform[/code]).
 			</description>
 		</method>
 		<method name="collide_with_motion">
@@ -30643,6 +30718,8 @@ This method controls whether the position between two cached points is interpola
 			<argument index="4" name="shape_motion" type="Vector2">
 			</argument>
 			<description>
+			Return whether this shape would collide with another, if a given movemen was applied.
+			This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test ont the other object ([code]shape_motion[/code]).
 			</description>
 		</method>
 		<method name="collide_and_get_contacts">
@@ -30653,6 +30730,8 @@ This method controls whether the position between two cached points is interpola
 			<argument index="2" name="shape_xform" type="Matrix32">
 			</argument>
 			<description>
+			Return a list of the points where this shape touches another. If there are no collisions, the list is empty.
+			This method needs the transformation matrix for this shape ([code]local_xform[/code]), the shape to check collisions with ([code]with_shape[/code]), and the transformation matrix of that shape ([code]shape_xform[/code]).
 			</description>
 		</method>
 		<method name="collide_with_motion_and_get_contacts">
@@ -30667,6 +30746,8 @@ This method controls whether the position between two cached points is interpola
 			<argument index="4" name="shape_motion" type="Vector2">
 			</argument>
 			<description>
+			Return a list of the points where this shape would touch another, if a given movement was applied. If there are no collisions, the list is empty.
+			This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test ont the other object ([code]shape_motion[/code]).
 			</description>
 		</method>
 	</methods>
@@ -33055,9 +33136,10 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="to_ascii">
-			<return type="String">
+			<return type="RawArray">
 			</return>
 			<description>
+				Convert the String (which is a character array) to RawArray (which is an array of bytes). The conversion is speeded up in comparison to to_utf8() with the assumption that all the characters the String contains are only ASCII characters.
 			</description>
 		</method>
 		<method name="to_float">
@@ -33089,9 +33171,10 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="to_utf8">
-			<return type="String">
+			<return type="RawArray">
 			</return>
 			<description>
+				Convert the String (which is an array of characters) to RawArray (which is an array of bytes). The conversion is a bit slower than to_ascii(), but supports all UTF-8 characters. Therefore, you should prefer this function over to_ascii().
 			</description>
 		</method>
 		<method name="xml_escape">
@@ -33988,15 +34071,17 @@ This method controls whether the position between two cached points is interpola
 		<method name="cursor_set_column">
 			<argument index="0" name="column" type="int">
 			</argument>
+			<argument index="1" name="arg1" type="bool">
+			</argument>
 			<description>
-			Set the current column of the text editor.
 			</description>
 		</method>
 		<method name="cursor_set_line">
 			<argument index="0" name="line" type="int">
 			</argument>
+			<argument index="1" name="arg1" type="bool">
+			</argument>
 			<description>
-			Set the current line of the text editor.
 			</description>
 		</method>
 		<method name="cursor_get_column" qualifiers="const">
@@ -36252,6 +36337,18 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="set_hide_folding">
+			<argument index="0" name="hide" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_folding_hidden" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="item_activated">
@@ -37404,6 +37501,14 @@ This method controls whether the position between two cached points is interpola
 	<description>
 	</description>
 	<methods>
+		<method name="angle">
+			<return type="float">
+			</return>
+			<description>
+			Returns the result of atan2 when called with the Vector's x and y as parameters (Math::atan2(x,y)).
+			Be aware that it therefore returns an angle oriented clockwise with regard to the (0, 1) unit vector, and not an angle oriented counter-clockwise with regard to the (1, 0) unit vector (which would be the typical trigonometric representation of the angle when calling Math::atan2(y,x)).
+			</description>
+		</method>
 		<method name="angle_to">
 			<return type="float">
 			</return>
@@ -37420,13 +37525,6 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<description>
 			Returns the angle in radians between the line connecting the two points and the x coordinate.
-			</description>
-		</method>
-		<method name="atan2">
-			<return type="float">
-			</return>
-			<description>
-			Returns the result of atan2 when called with the Vector's x and y as parameters.
 			</description>
 		</method>
 		<method name="cubic_interpolate">
@@ -37529,7 +37627,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="vec" type="Vector2">
 			</argument>
 			<description>
-			Reflects/mirrors the vector around another vector.
+			Like "slide", but reflects the Vector instead of continuing along the wall.
 			</description>
 		</method>
 		<method name="rotated">
@@ -37593,10 +37691,10 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="Vector2Array" category="Built-In Types">
 	<brief_description>
-	An Array of Vector2's.
+	An Array of Vector2.
 	</brief_description>
 	<description>
-	An Array specifically designed to hold Vector2's.
+	An Array specifically designed to hold Vector2.
 	</description>
 	<methods>
 		<method name="get">
@@ -37605,21 +37703,21 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-			Get the Vector2 at the given index.
+			Returns the Vector2 at the given index.
 			</description>
 		</method>
 		<method name="push_back">
 			<argument index="0" name="vector2" type="Vector2">
 			</argument>
 			<description>
-			Insert a new Vector2.
+			Inserts a Vector2 at the end.
 			</description>
 		</method>
 		<method name="resize">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-			Set the size of the Vector2Array. If larger than the current size it will reserve some space beforehand, and if it is smaller it will cut off the array.
+			Sets the size of the Vector2Array. If larger than the current size it will reserve some space beforehand, and if it is smaller it will cut off the array.
 			</description>
 		</method>
 		<method name="set">
@@ -37628,7 +37726,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="vector2" type="Vector2">
 			</argument>
 			<description>
-			Set the Vector2 at the given index.
+			Changes the Vector2 at the given index.
 			</description>
 		</method>
 		<method name="size">
@@ -37663,12 +37761,14 @@ This method controls whether the position between two cached points is interpola
 			<return type="Vector3">
 			</return>
 			<description>
+			Returns a new vector with all components in absolute values (e.g. positive).
 			</description>
 		</method>
 		<method name="ceil">
 			<return type="Vector3">
 			</return>
 			<description>
+			Returns a new vector with all components rounded up.
 			</description>
 		</method>
 		<method name="cross">
@@ -37692,7 +37792,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="t" type="float">
 			</argument>
 			<description>
-			Perform a cubic interpolation between vectors a,b,c,d (b is current), by the given amount (i).
+			Perform a cubic interpolation between vectors pre_a, a, b, post_b (a is current), by the given amount (t).
 			</description>
 		</method>
 		<method name="distance_squared_to">
@@ -37701,7 +37801,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="b" type="Vector3">
 			</argument>
 			<description>
-			Return the squared distance (distance minus the last square root) to b.
+			Return the squared distance (distance minus the last square root) to b. Prefer this function over distance_to if you need to sort vectors or need the squared distance for some formula.
 			</description>
 		</method>
 		<method name="distance_to">
@@ -37726,13 +37826,14 @@ This method controls whether the position between two cached points is interpola
 			<return type="Vector3">
 			</return>
 			<description>
+			Returns a new vector with all components rounded down.
 			</description>
 		</method>
 		<method name="inverse">
 			<return type="Vector3">
 			</return>
 			<description>
-			Returns the inverse of the vector. this is the same as Vector3( 1.0 / v.x, 1.0 / v.y, 1.0 / v.z )
+			Returns the inverse of the vector. This is the same as Vector3( 1.0 / v.x, 1.0 / v.y, 1.0 / v.z )
 			</description>
 		</method>
 		<method name="length">
@@ -37746,7 +37847,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="float">
 			</return>
 			<description>
-			Return the length of the vector, squared.
+			Return the length of the vector, squared. Prefer this function over "length" if you need to sort vectors or need the squared length for some formula.
 			</description>
 		</method>
 		<method name="linear_interpolate">
@@ -37757,26 +37858,28 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-			Linearly interpolates the vector to a given one (b), by the given amount (i).
+			Linearly interpolates the vector to a given one (b), by the given amount (t).
 			</description>
 		</method>
 		<method name="max_axis">
 			<return type="int">
 			</return>
 			<description>
+			Returns AXIS_X, AXIS_Y or AXIS_Z depending on which axis is the largest.
 			</description>
 		</method>
 		<method name="min_axis">
 			<return type="int">
 			</return>
 			<description>
+			Returns AXIS_X, AXIS_Y or AXIS_Z depending on which axis is the smallest.
 			</description>
 		</method>
 		<method name="normalized">
 			<return type="Vector3">
 			</return>
 			<description>
-			Return a copy of the normalized vector to unit length. This is the same as v / v.length()
+			Return a copy of the normalized vector to unit length. This is the same as v / v.length().
 			</description>
 		</method>
 		<method name="reflect">
@@ -37785,6 +37888,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="by" type="Vector3">
 			</argument>
 			<description>
+			Like "slide", but reflects the Vector instead of continuing along the wall.
 			</description>
 		</method>
 		<method name="rotated">
@@ -37795,6 +37899,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
+			Rotates the vector around some axis by phi radians.
 			</description>
 		</method>
 		<method name="slide">
@@ -37803,6 +37908,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="by" type="Vector3">
 			</argument>
 			<description>
+			Slides the vector along a wall.
 			</description>
 		</method>
 		<method name="snapped">
@@ -37824,6 +37930,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="2" name="z" type="float">
 			</argument>
 			<description>
+			Returns a Vector3 with the given components.
 			</description>
 		</method>
 	</methods>
@@ -37837,17 +37944,22 @@ This method controls whether the position between two cached points is interpola
 	</members>
 	<constants>
 		<constant name="AXIS_X" value="0">
+			Enumerated value for the X axis. Returned by functions like max_axis or min_axis.
 		</constant>
 		<constant name="AXIS_Y" value="1">
+			Enumerated value for the Y axis.
 		</constant>
 		<constant name="AXIS_Z" value="2">
+			Enumerated value for the Z axis.
 		</constant>
 	</constants>
 </class>
 <class name="Vector3Array" category="Built-In Types">
 	<brief_description>
+	An Array of Vector3.
 	</brief_description>
 	<description>
+	An Array specifically designed to hold Vector3.
 	</description>
 	<methods>
 		<method name="get">
@@ -37856,18 +37968,21 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Returns the Vector3 at the given index.
 			</description>
 		</method>
 		<method name="push_back">
 			<argument index="0" name="vector3" type="Vector3">
 			</argument>
 			<description>
+			Inserts a Vector3 at the end.
 			</description>
 		</method>
 		<method name="resize">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Sets the size of the Vector3Array. If larger than the current size it will reserve some space beforehand, and if it is smaller it will cut off the array.
 			</description>
 		</method>
 		<method name="set">
@@ -37876,12 +37991,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="vector3" type="Vector3">
 			</argument>
 			<description>
+			Changes the Vector3 at the given index.
 			</description>
 		</method>
 		<method name="size">
 			<return type="int">
 			</return>
 			<description>
+			Returns the size of the array.
 			</description>
 		</method>
 		<method name="Vector3Array">
@@ -37890,6 +38007,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
+			Constructs a new Vector3Array. Optionally, you can pass in an Array that will be converted.
 			</description>
 		</method>
 	</methods>

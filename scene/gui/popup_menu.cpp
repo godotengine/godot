@@ -170,7 +170,14 @@ void PopupMenu::_activate_submenu(int over) {
 	Point2 p = get_global_pos();
 	Rect2 pr(p,get_size());
 	Ref<StyleBox> style = get_stylebox("panel");
-	pm->set_pos(p+Point2(get_size().width,items[over]._ofs_cache-style->get_offset().y));
+
+	Point2 pos = p+Point2(get_size().width,items[over]._ofs_cache-style->get_offset().y);
+	Size2 size = pm->get_size();
+	// fix pos
+	if (pos.x+size.width > get_viewport_rect().size.width)
+		pos.x=p.x-size.width;
+
+	pm->set_pos(pos);
 	pm->popup();
 
 	PopupMenu *pum = pm->cast_to<PopupMenu>();

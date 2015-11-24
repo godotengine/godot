@@ -1291,8 +1291,8 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(STRING,STRING,String,pad_decimals,INT,"digits",varray());
 	ADDFUNC1(STRING,STRING,String,pad_zeros,INT,"digits",varray());
 
-	ADDFUNC0(STRING,STRING,String,to_ascii,varray());
-	ADDFUNC0(STRING,STRING,String,to_utf8,varray());
+	ADDFUNC0(STRING,RAW_ARRAY,String,to_ascii,varray());
+	ADDFUNC0(STRING,RAW_ARRAY,String,to_utf8,varray());
 
 
 	ADDFUNC0(VECTOR2,VECTOR2,Vector2,normalized,varray());

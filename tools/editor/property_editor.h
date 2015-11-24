@@ -147,6 +147,7 @@ class PropertyEditor : public Control {
 	Tree *tree;
 	Label *top_label;
 	//Object *object;
+	LineEdit *search_box;
 
 	Object* obj;
 
@@ -162,6 +163,8 @@ class PropertyEditor : public Control {
 	bool show_categories;
 	float refresh_countdown;
 	bool use_doc_hints;
+
+	bool use_filter;
 
 	HashMap<String,String> pending;
 	String selected_property;
@@ -201,6 +204,8 @@ class PropertyEditor : public Control {
 	void _refresh_item(TreeItem *p_item);
 	void _set_range_def(Object *p_item, String prop, float p_frame);
 
+	void _filter_changed(const String& p_text);
+
 	UndoRedo *undo_redo;
 protected:
 
@@ -230,7 +235,10 @@ public:
 
 	void set_show_categories(bool p_show);
 	void set_use_doc_hints(bool p_enable) { use_doc_hints=p_enable; }
-	
+
+	void set_use_filter(bool p_use);
+	void register_text_enter(Node *p_line_edit);
+
 	PropertyEditor();	
 	~PropertyEditor();
 

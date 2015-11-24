@@ -132,7 +132,7 @@ void AudioServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("voice_stop","voice"), &AudioServer::voice_stop );
 
-	ObjectTypeDB::bind_method(_MD("free","rid"), &AudioServer::free );
+	ObjectTypeDB::bind_method(_MD("free_rid","rid"), &AudioServer::free );
 
 	ObjectTypeDB::bind_method(_MD("set_stream_global_volume_scale","scale"), &AudioServer::set_stream_global_volume_scale );
 	ObjectTypeDB::bind_method(_MD("get_stream_global_volume_scale"), &AudioServer::get_stream_global_volume_scale );

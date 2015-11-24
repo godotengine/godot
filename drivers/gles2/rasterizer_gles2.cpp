@@ -4641,6 +4641,9 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		if (light_flags.uses_light) {
 			enablers.push_back("#define USE_LIGHT_SHADER_CODE\n");
 		}
+		if (light_flags.uses_shadow_color) {
+			enablers.push_back("#define USE_LIGHT_SHADOW_COLOR\n");
+		}
 		if (light_flags.uses_time || fragment_flags.uses_time || vertex_flags.uses_time) {
 			enablers.push_back("#define USE_TIME\n");
 			uses_time=true;

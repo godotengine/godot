@@ -173,6 +173,7 @@ class EditorNode : public Node {
 		SOURCES_REIMPORT,
 		DEPENDENCY_LOAD_CHANGED_IMAGES,
 		DEPENDENCY_UPDATE_IMPORTED,
+		SCENE_TAB_CLOSE,
 
 		IMPORT_PLUGIN_BASE=100,
 
@@ -217,6 +218,7 @@ class EditorNode : public Node {
 	//main tabs
 
 	Tabs *scene_tabs;
+	int tab_closing;
 
 
 	int old_split_ofs;
@@ -248,6 +250,7 @@ class EditorNode : public Node {
 	ToolButton *play_scene_button;
 	ToolButton *play_custom_scene_button;
 	MenuButton *debug_button;
+	ToolButton *search_button;
 	TextureProgress *audio_vu;
 	//MenuButton *fileserver_menu;
 
@@ -265,6 +268,9 @@ class EditorNode : public Node {
 	PropertyEditor *property_editor;
 	ScenesDock *scenes_dock;
 	EditorRunNative *run_native;
+
+	HBoxContainer *search_bar;
+	LineEdit *search_box;
 
 	CreateDialog *create_dialog;
 
@@ -514,6 +520,9 @@ class EditorNode : public Node {
 
 	void _save_docks();
 	void _load_docks();
+
+	void _toggle_search_bar(bool p_pressed);
+	void _clear_search_box();
 
 protected:
 	void _notification(int p_what);

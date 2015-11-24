@@ -432,7 +432,6 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		} else if (I->get()=="-e" || I->get()=="-editor") { // fonud editor
 
 			editor=true;
-			init_maximized=true;
 		} else if (I->get()=="-nowindow") { // fullscreen
 
 			OS::get_singleton()->set_no_window_mode(true);
@@ -649,6 +648,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 	if (editor) {
 		main_args.push_back("-editor");
+		init_maximized=true;
 		use_custom_res=false;
 	}
 
@@ -876,6 +876,7 @@ Error Main::setup2() {
 		boot_logo_path = boot_logo_path.strip_edges();
 
 		if (boot_logo_path!=String() /*&& FileAccess::exists(boot_logo_path)*/) {
+			print_line("Boot splash path: "+boot_logo_path);
 			Error err = boot_logo.load(boot_logo_path);
 		}
 
@@ -893,7 +894,7 @@ Error Main::setup2() {
 		} else {
 #ifndef NO_DEFAULT_BOOT_LOGO
 
-			MAIN_PRINT("Main: Create botsplash");
+			MAIN_PRINT("Main: Create bootsplash");
 			Image splash(boot_splash_png);
 
 			MAIN_PRINT("Main: ClearColor");
@@ -1085,7 +1086,7 @@ bool Main::start() {
 
 #endif
 
-	if(script=="" && game_path=="" && !editor && String(GLOBAL_DEF("application/main_scene",""))!="") {
+	if(script=="" && game_path=="" && String(GLOBAL_DEF("application/main_scene",""))!="") {
 		game_path=GLOBAL_DEF("application/main_scene","");
 	}
 
