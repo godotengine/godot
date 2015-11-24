@@ -1350,7 +1350,6 @@ void EditorHelp::_notification(int p_what) {
 //			forward->set_icon(get_icon("Forward","EditorIcons"));
 //			back->set_icon(get_icon("Back","EditorIcons"));
 			_update_doc();
-			editor->connect("request_help",this,"_request_help");
 
 		} break;
 	}
