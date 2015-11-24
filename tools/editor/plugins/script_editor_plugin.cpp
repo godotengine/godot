@@ -885,14 +885,13 @@ void ScriptEditor::_menu_option(int p_option) {
 		} break;
 		case SEARCH_CLASSES: {
 
-			if (tab_container->get_tab_count()==0)
-				break;
-
 			String current;
 
-			EditorHelp *eh = tab_container->get_child( tab_container->get_current_tab() )->cast_to<EditorHelp>();
-			if (eh) {
-				current=eh->get_class_name();
+			if (tab_container->get_tab_count()>0) {
+				EditorHelp *eh = tab_container->get_child( tab_container->get_current_tab() )->cast_to<EditorHelp>();
+				if (eh) {
+					current=eh->get_class_name();
+				}
 			}
 
 			help_index->popup_centered_ratio(0.6);
