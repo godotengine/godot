@@ -879,7 +879,7 @@ Error Main::setup2() {
 			print_line("Boot splash path: "+boot_logo_path);
 			Error err = boot_logo.load(boot_logo_path);
 			if (err!=OK) {
-				print_line("Error loading boot logo splash!);
+				print_line("Error loading boot logo splash!");
 			} else {
 				print_line("Boot splash OK!");
 
