@@ -36,6 +36,14 @@
 
 #include "os/keyboard.h"
 
+void EditorHelpSearch::popup() {
+	popup_centered_ratio(0.6);
+	if (search_box->get_text()!="") {
+		search_box->select_all();
+		_update_search();
+	}
+	search_box->grab_focus();
+}
 
 void EditorHelpSearch::popup(const String& p_term) {
 

@@ -68,7 +68,8 @@ protected:
 	static void _bind_methods();
 public:
 
-	void popup(const String& p_term="");
+	void popup();
+	void popup(const String& p_term);
 
 	EditorHelpSearch();
 };
