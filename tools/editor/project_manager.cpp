@@ -624,11 +624,6 @@ void ProjectManager::_open_project_confirm() {
 
 		args.push_back("-editor");
 
-		const String &selected_main = E->get();
-		if (selected_main!="") {
-			args.push_back(selected_main);
-		}
-
 		String exec = OS::get_singleton()->get_executable_path();
 
 		OS::ProcessID pid=0;
