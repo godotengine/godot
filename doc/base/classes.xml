@@ -12551,7 +12551,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<description>
 			Connect to a host. This needs to be done before any requests are sent.
 The host should not have http:// prepended but will strip the protocol identifier if provided.
-					
+
 verify_host will check the SSL identity of the host if set to true.
 			</description>
 		</method>
@@ -12576,9 +12576,9 @@ verify_host will check the SSL identity of the host if set to true.
 			Sends a request to the connected host. The url is the what is normally behind the hostname, i.e:
 http://somehost.com/index.php
 url would be "index.php"
-					
+
 Headers are HTTP request headers
-					
+
 To create a POST request with query strings to push to the server, do:
 var fields = {"username" : "user",
                        "password" : "pass"}
@@ -12693,10 +12693,10 @@ var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, qu
 			</argument>
 			<description>
 			Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary.
-					
+
 var fields = {"username": "user", "password": "pass"}
 String queryString = httpClient.query_string_from_dict(fields)
-					
+
 returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
@@ -26372,12 +26372,14 @@ This method controls whether the position between two cached points is interpola
 			<return type="String">
 			</return>
 			<description>
+				Returns a copy of the array's contents formatted as String. Fast alternative to get_string_from_utf8(), assuming the content is ASCII-only (unlike the UTF-8 function, this function maps every byte to a character in the string, so any multibyte sequence will be torn apart).
 			</description>
 		</method>
 		<method name="get_string_from_utf8">
 			<return type="String">
 			</return>
 			<description>
+				Returns a copy of the array's contents formatted as String, assuming the array is formatted as UTF-8. Slower than get_string_from_ascii(), but works for UTF-8. Usually you should prefer this function over get_string_from_ascii() to support international input.
 			</description>
 		</method>
 		<method name="push_back">
@@ -33134,9 +33136,10 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="to_ascii">
-			<return type="String">
+			<return type="RawArray">
 			</return>
 			<description>
+				Convert the String (which is a character array) to RawArray (which is an array of bytes). The conversion is speeded up in comparison to to_utf8() with the assumption that all the characters the String contains are only ASCII characters.
 			</description>
 		</method>
 		<method name="to_float">
@@ -33168,9 +33171,10 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="to_utf8">
-			<return type="String">
+			<return type="RawArray">
 			</return>
 			<description>
+				Convert the String (which is an array of characters) to RawArray (which is an array of bytes). The conversion is a bit slower than to_ascii(), but supports all UTF-8 characters. Therefore, you should prefer this function over to_ascii().
 			</description>
 		</method>
 		<method name="xml_escape">
