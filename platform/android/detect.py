@@ -98,6 +98,7 @@ def configure(env):
 
 	if env['android_arch']=='x86':
 		env['NDK_TARGET']=env['NDK_TARGET_X86']
+		env["x86_opt_gcc"]=True
 
 	if env['PLATFORM'] == 'win32':
 		import methods

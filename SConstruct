@@ -84,6 +84,9 @@ env_base.__class__.disable_module = methods.disable_module
 
 env_base.__class__.add_source_files = methods.add_source_files
 
+env_base["x86_opt_gcc"]=False
+env_base["x86_opt_vc"]=False
+
 customs = ['custom.py']
 
 profile = ARGUMENTS.get("profile", False)
@@ -303,6 +306,7 @@ if selected_platform in platform_list:
 		env.Append(CPPFLAGS=['-DVORBIS_ENABLED']);
 	if (env['opus']=='yes'):
 		env.Append(CPPFLAGS=['-DOPUS_ENABLED']);
+
 
 	if (env['theora']=='yes'):
 		env['theoralib']='yes'

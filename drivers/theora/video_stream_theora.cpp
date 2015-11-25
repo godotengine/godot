@@ -441,8 +441,10 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 	//print_line("play "+rtos(p_delta));
 	time+=p_delta;
 
-	if (videobuf_time>get_time())
+	if (videobuf_time>get_time()) {
+
 		return; //no new frames need to be produced
+	}
 
 	bool frame_done=false;
 	bool audio_done=false;
@@ -541,7 +543,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 			if(ogg_stream_packetout(&to,&op)>0){
 
 
-				if(pp_inc){
+				if(false && pp_inc){
 					pp_level+=pp_inc;
 					th_decode_ctl(td,TH_DECCTL_SET_PPLEVEL,&pp_level,
 								  sizeof(pp_level));
@@ -569,16 +571,20 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 					 keyframing.  Soon enough libtheora will be able to deal
 					 with non-keyframe seeks.  */
 
-					if(videobuf_time>=get_time())
+					if(videobuf_time>=get_time()) {
 						frame_done=true;
-					else{
+						print_line("frame!");
+					} else{
 						/*If we are too slow, reduce the pp level.*/
 						pp_inc=pp_level>0?-1:0;
+						print_line("skip!");
 					}
 				}
 
-			} else
+			} else {
+				print_line("no packet..");
 				break;
+			}
 		}
 
 		if (file && /*!videobuf_ready && */ file->eof_reached()) {

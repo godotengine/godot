@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "video_player.h"
-
+#include "os/os.h"
 
 
 int VideoPlayer::InternalStream::get_channel_count() const {
@@ -130,7 +130,7 @@ void VideoPlayer::_notification(int p_notification) {
 			if (!playback->is_playing())
 				return;
 
-			double audio_time = AudioServer::get_singleton()->get_mix_time();
+			double audio_time = OS::get_singleton()->get_ticks_usec()/1000000.0; //AudioServer::get_singleton()->get_mix_time();
 
 			double delta = last_audio_time==0?0:audio_time-last_audio_time;
 			last_audio_time=audio_time;

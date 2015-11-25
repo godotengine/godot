@@ -180,3 +180,5 @@ def configure(env):
 		env.Append(CPPFLAGS=['-DNEW_WM_API'])
 		env.ParseConfig('pkg-config xinerama --cflags --libs')
 
+	env["x86_opt_gcc"]=True
+
