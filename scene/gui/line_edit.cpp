@@ -472,13 +472,18 @@ void LineEdit::_notification(int p_what) {
 #endif
 			while(true) {
 
-		//end of string, break!
-				if (char_ofs>=text.length())
-					break;
 #ifdef RTL_ENABLED
+		//end of string, break!
+				if (char_ofs>=bidi_text.length())
+					break;
+
 				CharType cchar=pass?'*':bidi_text[char_ofs];
 				CharType next=pass?'*':bidi_text[char_ofs+1];
 #else
+		//end of string, break!
+				if (char_ofs>=text.length())
+					break;
+
 				CharType cchar=pass?'*':text[char_ofs];
 				CharType next=pass?'*':text[char_ofs+1];
 #endif
