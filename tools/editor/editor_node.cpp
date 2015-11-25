@@ -167,19 +167,19 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 
 			/*case KEY_F1:
 				if (!p_event.key.mod.shift && !p_event.key.mod.command)
-					_editor_select(3);
+					_editor_select(EDITOR_SCRIPT);
 			break;*/
 			case KEY_F1:
 				if (!p_event.key.mod.shift && !p_event.key.mod.command)
-					_editor_select(0);
+					_editor_select(EDITOR_2D);
 			break;
 			case KEY_F2:
 				if (!p_event.key.mod.shift && !p_event.key.mod.command)
-					_editor_select(1);
+					_editor_select(EDITOR_3D);
 			break;
 			case KEY_F3:
 				if (!p_event.key.mod.shift && !p_event.key.mod.command)
-					_editor_select(2);
+					_editor_select(EDITOR_SCRIPT);
 			break;
 			case KEY_F5: _menu_option_confirm((p_event.key.mod.control&&p_event.key.mod.shift)?RUN_PLAY_CUSTOM_SCENE:RUN_PLAY,true); break;
 			case KEY_F6: _menu_option_confirm(RUN_PLAY_SCENE,true); break;
@@ -298,7 +298,7 @@ void EditorNode::_notification(int p_what) {
 		VisualServer::get_singleton()->viewport_set_hide_canvas(get_scene_root()->get_viewport(),true);
 		VisualServer::get_singleton()->viewport_set_disable_environment(get_viewport()->get_viewport_rid(),true);
 
-		_editor_select(1);
+		_editor_select(EDITOR_3D);
 
 		if (defer_load_scene!="") {
 
@@ -888,7 +888,7 @@ void EditorNode::_save_scene_with_preview(String p_file) {
 		}
 	}
 
-	_editor_select(is2d?0:1);
+	_editor_select(is2d?EDITOR_2D:EDITOR_3D);
 
 	VS::get_singleton()->viewport_queue_screen_capture(viewport);
 	save.step("Creating Thumbnail",2);
@@ -2528,7 +2528,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		case OBJECT_REQUEST_HELP: {
 
 			if (current) {
-				_editor_select(2);
+				_editor_select(EDITOR_SCRIPT);
 				emit_signal("request_help",current->get_type());
 			}
 
@@ -3305,9 +3305,9 @@ void EditorNode::_set_main_scene_state(Dictionary p_state) {
 			int n2d=0,n3d=0;
 			_find_node_types(get_edited_scene(),n2d,n3d);
 			if (n2d>n3d) {
-				_editor_select(0);
+				_editor_select(EDITOR_2D);
 			} else if (n3d>n2d) {
-				_editor_select(1);
+				_editor_select(EDITOR_3D);
 
 			}
 		}
