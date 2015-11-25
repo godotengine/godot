@@ -3857,7 +3857,8 @@ bool EditorNode::_find_editing_changed_scene(Node *p_from) {
 
 
 void EditorNode::add_io_error(const String& p_error) {
-
+	CharString err_ut = p_error.utf8();
+	ERR_PRINT(err_ut.get_data());
 	_load_error_notify(singleton,p_error);
 }
 
