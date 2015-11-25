@@ -144,11 +144,7 @@ void Button::_notification(int p_what) {
 
 
 		text_ofs.y+=font->get_ascent();
-#ifdef RTL_ENABLED
-		font->draw( ci, text_ofs.floor(), bidi_text, color,clip_text?text_clip:-1);
-#else
 		font->draw( ci, text_ofs.floor(), text, color,clip_text?text_clip:-1);
-#endif
 		if (!_icon.is_null()) {
 
 			int valign = size.height-style->get_minimum_size().y;
