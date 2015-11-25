@@ -881,18 +881,17 @@ void ScriptEditor::_menu_option(int p_option) {
 		} break;
 		case SEARCH_HELP: {
 
-			help_search_dialog->popup("current");
+			help_search_dialog->popup();
 		} break;
 		case SEARCH_CLASSES: {
 
-			if (tab_container->get_tab_count()==0)
-				break;
-
 			String current;
 
-			EditorHelp *eh = tab_container->get_child( tab_container->get_current_tab() )->cast_to<EditorHelp>();
-			if (eh) {
-				current=eh->get_class_name();
+			if (tab_container->get_tab_count()>0) {
+				EditorHelp *eh = tab_container->get_child( tab_container->get_current_tab() )->cast_to<EditorHelp>();
+				if (eh) {
+					current=eh->get_class_name();
+				}
 			}
 
 			help_index->popup_centered_ratio(0.6);
@@ -1388,6 +1387,7 @@ void ScriptEditor::_notification(int p_what) {
 	if (p_what==NOTIFICATION_READY) {
 
 		get_tree()->connect("tree_changed",this,"_tree_changed");
+		editor->connect("request_help",this,"_request_help");
 	}
 
 	if (p_what==NOTIFICATION_EXIT_TREE) {
@@ -2205,6 +2205,7 @@ void ScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_script_split_dragged",&ScriptEditor::_script_split_dragged);
 	ObjectTypeDB::bind_method("_help_class_open",&ScriptEditor::_help_class_open);
 	ObjectTypeDB::bind_method("_help_class_goto",&ScriptEditor::_help_class_goto);
+	ObjectTypeDB::bind_method("_request_help",&ScriptEditor::_help_class_open);
 	ObjectTypeDB::bind_method("_history_forward",&ScriptEditor::_history_forward);
 	ObjectTypeDB::bind_method("_history_back",&ScriptEditor::_history_back);
 }

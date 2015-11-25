@@ -36,6 +36,14 @@
 
 #include "os/keyboard.h"
 
+void EditorHelpSearch::popup() {
+	popup_centered_ratio(0.6);
+	if (search_box->get_text()!="") {
+		search_box->select_all();
+		_update_search();
+	}
+	search_box->grab_focus();
+}
 
 void EditorHelpSearch::popup(const String& p_term) {
 
@@ -263,7 +271,7 @@ void EditorHelpSearch::_confirmed() {
 
 	String mdata=ti->get_metadata(0);
 	emit_signal("go_to_help",mdata);
-	editor->call("_editor_select",3); // in case EditorHelpSearch beeen invoked on top of other editor window
+	editor->call("_editor_select",2); // in case EditorHelpSearch beeen invoked on top of other editor window
 	// go to that
 	hide();
 }
@@ -1049,7 +1057,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 void EditorHelp::_request_help(const String& p_string) {
 	Error err = _goto_desc(p_string);
 	if (err==OK) {
-		editor->call("_editor_select",3);
+		editor->call("_editor_select",2);
 	}
 	//100 palabras
 }
@@ -1350,7 +1358,6 @@ void EditorHelp::_notification(int p_what) {
 //			forward->set_icon(get_icon("Forward","EditorIcons"));
 //			back->set_icon(get_icon("Back","EditorIcons"));
 			_update_doc();
-			editor->connect("request_help",this,"_request_help");
 
 		} break;
 	}
