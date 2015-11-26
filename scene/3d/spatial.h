@@ -191,6 +191,7 @@ public:
 	void hide();
 	bool is_visible() const;
 	bool is_hidden() const;
+	void set_hidden(bool p_hidden);
 
 #ifdef TOOLS_ENABLED
 	void set_import_transform(const Transform& p_transform)	;
