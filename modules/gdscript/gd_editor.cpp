@@ -1291,6 +1291,15 @@ static void _find_identifiers(GDCompletionContext& context,int p_line,bool p_onl
 
 	const GDParser::BlockNode *block=context.block;
 
+	if (context.function) {
+
+		const GDParser::FunctionNode* f = context.function;
+
+		for (int i=0;i<f->arguments.size();i++) {
+			result.insert(f->arguments[i].operator String());
+		}
+	}
+
 	while(block) {
 
 		GDCompletionContext c = context;
