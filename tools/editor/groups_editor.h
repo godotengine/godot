@@ -29,42 +29,42 @@
 #ifndef GROUPS_EDITOR_H
 #define GROUPS_EDITOR_H
 
-
 #include "scene/gui/dialogs.h"
 #include "scene/gui/button.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/line_edit.h"
 #include "undo_redo.h"
+
 /**
 @author Juan Linietsky <reduzio@gmail.com>
 */
-class GroupsEditor : public ConfirmationDialog {
-	
-	OBJ_TYPE( GroupsEditor, ConfirmationDialog );
-	
-	LineEdit *group_name;
-	Tree *tree;
-	Button *add;
-	Button *remove;
+
+class GroupsEditor : public AcceptDialog {
+
+	OBJ_TYPE(GroupsEditor,AcceptDialog);
+
 	Node *node;
+
+	LineEdit *group_name;
+	Button *add;
+	Tree *tree;
+
 	UndoRedo *undo_redo;
-	
+
 	void update_tree();
-	void _add();
-	void _remove();
+	void _add_group(const String& p_group="");
+	void _remove_group(Object *p_item, int p_column, int p_id);
 	void _close();
-	
 protected:
-	
-	void _notification(int p_what);
-	static void _bind_methods();	
+
+	static void _bind_methods();
 public:
-	
+
 	void set_undo_redo(UndoRedo *p_undoredo) { undo_redo=p_undoredo; }
 	void set_current(Node* p_node);
-	
+
 	GroupsEditor();	
 	~GroupsEditor();
-	
 };
+
 #endif
