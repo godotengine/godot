@@ -594,6 +594,15 @@ bool Spatial::is_hidden() const{
 	return !data.visible;
 }
 
+void Spatial::set_hidden(bool p_hidden) {
+	
+	if (data.visible != p_hidden) {
+		return;
+	}
+	
+	_set_visible_(!p_hidden);
+}
+
 void Spatial::_set_visible_(bool p_visible) {
 
 	if (p_visible)
@@ -742,6 +751,7 @@ void Spatial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("hide"), &Spatial::hide);
 	ObjectTypeDB::bind_method(_MD("is_visible"), &Spatial::is_visible);
 	ObjectTypeDB::bind_method(_MD("is_hidden"), &Spatial::is_hidden);
+	ObjectTypeDB::bind_method(_MD("set_hidden","hidden"), &Spatial::set_hidden);
 
 	ObjectTypeDB::bind_method(_MD("_set_visible_"), &Spatial::_set_visible_);
 	ObjectTypeDB::bind_method(_MD("_is_visible_"), &Spatial::_is_visible_);
