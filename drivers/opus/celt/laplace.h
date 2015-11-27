@@ -26,8 +26,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "entenc.h"
-#include "entdec.h"
+#include "opus/celt/entenc.h"
+#include "opus/celt/entdec.h"
 
 /** Encode a value that is assumed to be the realisation of a
     Laplace-distributed random process

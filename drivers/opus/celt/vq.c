@@ -26,17 +26,17 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "mathops.h"
-#include "cwrs.h"
-#include "vq.h"
-#include "arch.h"
-#include "os_support.h"
-#include "bands.h"
-#include "rate.h"
+#include "opus/celt/mathops.h"
+#include "opus/celt/cwrs.h"
+#include "opus/celt/vq.h"
+#include "opus/celt/arch.h"
+#include "opus/celt/os_support.h"
+#include "opus/celt/bands.h"
+#include "opus/celt/rate.h"
 
 static void exp_rotation1(celt_norm *X, int len, int stride, opus_val16 c, opus_val16 s)
 {

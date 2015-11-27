@@ -26,8 +26,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
 #include <stdio.h>
@@ -40,13 +40,13 @@
 #endif
 
 #define CELT_C
-#include "stack_alloc.h"
-#include "entenc.c"
-#include "entdec.c"
-#include "entcode.c"
-#include "cwrs.c"
-#include "mathops.c"
-#include "rate.h"
+#include "opus/celt/stack_alloc.h"
+#include "opus/celt/entenc.c"
+#include "opus/celt/entdec.c"
+#include "opus/celt/entcode.c"
+#include "opus/celt/cwrs.c"
+#include "opus/celt/mathops.c"
+#include "opus/celt/rate.h"
 
 #define NMAX (240)
 #define KMAX (128)

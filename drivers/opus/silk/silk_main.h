@@ -28,15 +28,15 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SILK_MAIN_H
 #define SILK_MAIN_H
 
-#include "SigProc_FIX.h"
-#include "define.h"
-#include "structs.h"
-#include "tables.h"
-#include "PLC.h"
-#include "control.h"
-#include "debug.h"
-#include "entenc.h"
-#include "entdec.h"
+#include "opus/silk/SigProc_FIX.h"
+#include "opus/silk/define.h"
+#include "opus/silk/structs.h"
+#include "opus/silk/tables.h"
+#include "opus/silk/PLC.h"
+#include "opus/silk/control.h"
+#include "opus/silk/debug.h"
+#include "opus/celt/entenc.h"
+#include "opus/celt/entdec.h"
 
 /* Convert Left/Right stereo signal to adaptive Mid/Side representation */
 void silk_stereo_LR_to_MS(

@@ -28,7 +28,7 @@
 #ifndef _MLP_H_
 #define _MLP_H_
 
-#include "arch.h"
+#include "opus/celt/arch.h"
 
 typedef struct {
 	int layers;

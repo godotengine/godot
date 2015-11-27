@@ -16,11 +16,11 @@
 
   [1] <http://rt.openssl.org/Ticket/Display.html?id=2158>*/
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "internal.h"
+#include "opus/internal.h"
 #if defined(OP_ENABLE_HTTP)&&defined(_WIN32)
 /*You must include windows.h before wincrypt.h and x509.h.*/
 # define WIN32_LEAN_AND_MEAN

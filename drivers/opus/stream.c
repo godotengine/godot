@@ -14,11 +14,11 @@
  last mod: $Id: vorbisfile.c 17573 2010-10-27 14:53:59Z xiphmont $
 
  ********************************************************************/
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "internal.h"
+#include "opus/internal.h"
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>

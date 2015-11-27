@@ -25,12 +25,12 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "SigProc_FIX.h"
-#include "resampler_rom.h"
+#include "opus/silk/SigProc_FIX.h"
+#include "opus/silk/resampler_rom.h"
 
 /* Downsample by a factor 2 */
 void silk_resampler_down2(

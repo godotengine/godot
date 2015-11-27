@@ -25,14 +25,14 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
 /* Filter coefficients for IIR/FIR polyphase resampling     *
  * Total size: 179 Words (358 Bytes)                        */
 
-#include "resampler_private.h"
+#include "opus/silk/resampler_private.h"
 
 /* Matlab code for the notch filter coefficients: */
 /* B = [1, 0.147, 1];  A = [1, 0.107, 0.89]; G = 0.93; freqz(G * B, A, 2^14, 16e3); axis([0, 8000, -10, 1]) */

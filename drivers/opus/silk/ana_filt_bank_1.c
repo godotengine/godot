@@ -25,11 +25,11 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "SigProc_FIX.h"
+#include "opus/silk/SigProc_FIX.h"
 
 /* Coefficients for 2-band filter bank based on first-order allpass filters */
 static opus_int16 A_fb1_20 = 5394 << 1;
