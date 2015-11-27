@@ -14,7 +14,7 @@
  last mod: $Id: vorbisfile.c 17573 2010-10-27 14:53:59Z xiphmont $
 
  ********************************************************************/
-#ifdef OPUS_HAVE_CONFIG_H
+#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
 #endif
 

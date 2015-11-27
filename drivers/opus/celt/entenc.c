@@ -25,7 +25,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#if defined(OPUS_HAVE_CONFIG_H)
+#if defined(OPUS_ENABLED)
 # include "opus/opus_config.h"
 #endif
 #include "opus/celt/os_support.h"

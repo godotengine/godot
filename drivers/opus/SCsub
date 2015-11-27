@@ -192,6 +192,4 @@ opus_sources_lib+=opus_sources_silk
 env.drivers_sources+=opus_sources_lib
 env.drivers_sources+=opus_sources
 
-env.Append(CFLAGS=["-DOPUS_HAVE_CONFIG_H"])
-
 Export('env')

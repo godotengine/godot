@@ -32,7 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
  * Can handle slowly varying filter coefficients                        *
  *                                                                      */
 
-#ifdef OPUS_HAVE_CONFIG_H
+#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
 #endif
 

@@ -16,7 +16,7 @@
 
   [1] <http://rt.openssl.org/Ticket/Display.html?id=2158>*/
 
-#ifdef OPUS_HAVE_CONFIG_H
+#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
 #endif
 

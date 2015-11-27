@@ -27,7 +27,7 @@
 
 /* Original code from libtheora modified to suit to Opus */
 
-#ifdef OPUS_HAVE_CONFIG_H
+#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
 #endif
 

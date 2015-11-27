@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Therefore the result is not accurate NLSFs, but the two      */
 /* functions are accurate inverses of each other                */
 
-#ifdef OPUS_HAVE_CONFIG_H
+#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
 #endif
 
