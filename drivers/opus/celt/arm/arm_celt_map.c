@@ -26,10 +26,10 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "pitch.h"
+#include "opus/celt/pitch.h"
 
 #if defined(OPUS_HAVE_RTCD)
 

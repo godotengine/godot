@@ -26,7 +26,7 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
 #define SKIP_CONFIG_H
@@ -38,13 +38,13 @@
 #include <stdio.h>
 
 #define CELT_C
-#include "mdct.h"
-#include "stack_alloc.h"
+#include "opus/celt/mdct.h"
+#include "opus/celt/stack_alloc.h"
 
-#include "kiss_fft.c"
-#include "mdct.c"
-#include "mathops.c"
-#include "entcode.c"
+#include "opus/celt/kiss_fft.c"
+#include "opus/celt/mdct.c"
+#include "opus/celt/mathops.c"
+#include "opus/celt/entcode.c"
 
 #ifndef M_PI
 #define M_PI 3.141592653

@@ -27,17 +27,17 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
 #include <math.h>
-#include "opus_modes.h"
-#include "cwrs.h"
-#include "arch.h"
-#include "os_support.h"
+#include "opus/celt/opus_modes.h"
+#include "opus/celt/cwrs.h"
+#include "opus/celt/arch.h"
+#include "opus/celt/os_support.h"
 
-#include "entcode.h"
-#include "rate.h"
+#include "opus/celt/entcode.h"
+#include "opus/celt/rate.h"
 
 static const unsigned char LOG2_FRAC_TABLE[24]={
    0,

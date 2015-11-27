@@ -26,11 +26,11 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "silk_main.h"
-#include "tuning_parameters.h"
+#include "opus/silk/silk_main.h"
+#include "opus/silk/tuning_parameters.h"
 
 void silk_quant_LTP_gains(
     opus_int16                  B_Q14[ MAX_NB_SUBFR * LTP_ORDER ],          /* I/O  (un)quantized LTP gains         */

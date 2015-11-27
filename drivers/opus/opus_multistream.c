@@ -26,16 +26,16 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "opus_multistream.h"
-#include "opus.h"
-#include "opus_private.h"
-#include "stack_alloc.h"
+#include "opus/opus_multistream.h"
+#include "opus/opus.h"
+#include "opus/opus_private.h"
+#include "opus/celt/stack_alloc.h"
 #include <stdarg.h>
-#include "float_cast.h"
-#include "os_support.h"
+#include "opus/celt/float_cast.h"
+#include "opus/celt/os_support.h"
 
 
 int validate_layout(const ChannelLayout *layout)

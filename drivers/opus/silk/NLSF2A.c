@@ -26,7 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
 /* conversion between prediction filter coefficients and LSFs   */
@@ -35,8 +35,8 @@ POSSIBILITY OF SUCH DAMAGE.
 /* therefore the result is not accurate LSFs, but the two       */
 /* functions are accurate inverses of each other                */
 
-#include "SigProc_FIX.h"
-#include "tables.h"
+#include "opus/silk/SigProc_FIX.h"
+#include "opus/silk/tables.h"
 
 #define QA      16
 

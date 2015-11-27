@@ -26,10 +26,10 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "main_FLP.h"
+#include "opus/silk/float/main_FLP.h"
 
 void silk_LTP_scale_ctrl_FLP(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */

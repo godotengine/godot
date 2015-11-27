@@ -26,11 +26,11 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "silk_main.h"
-#include "stack_alloc.h"
+#include "opus/silk/silk_main.h"
+#include "opus/celt/stack_alloc.h"
 
 typedef struct {
     opus_int32 sLPC_Q14[ MAX_SUB_FRAME_LENGTH + NSQ_LPC_BUF_LENGTH ];

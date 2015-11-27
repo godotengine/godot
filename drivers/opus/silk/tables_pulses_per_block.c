@@ -26,10 +26,10 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "tables.h"
+#include "opus/silk/tables.h"
 
 const opus_uint8 silk_max_pulses_table[ 4 ] = {
          8,     10,     12,     16

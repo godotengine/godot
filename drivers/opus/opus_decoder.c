@@ -26,7 +26,7 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-# include "opus_config.h"
+# include "opus/opus_config.h"
 #endif
 
 #ifndef OPUS_BUILD
@@ -38,19 +38,19 @@
 #endif
 
 #include <stdarg.h>
-#include "celt.h"
-#include "opus.h"
-#include "entdec.h"
-#include "opus_modes.h"
-#include "API.h"
-#include "stack_alloc.h"
-#include "float_cast.h"
-#include "opus_private.h"
-#include "os_support.h"
-#include "structs.h"
-#include "define.h"
-#include "mathops.h"
-#include "cpu_support.h"
+#include "opus/celt/celt.h"
+#include "opus/opus.h"
+#include "opus/celt/entdec.h"
+#include "opus/celt/opus_modes.h"
+#include "opus/silk/API.h"
+#include "opus/celt/stack_alloc.h"
+#include "opus/celt/float_cast.h"
+#include "opus/opus_private.h"
+#include "opus/celt/os_support.h"
+#include "opus/silk/structs.h"
+#include "opus/silk/define.h"
+#include "opus/celt/mathops.h"
+#include "opus/celt/cpu_support.h"
 
 struct OpusDecoder {
    int          celt_dec_offset;

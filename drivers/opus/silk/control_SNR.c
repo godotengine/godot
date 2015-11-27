@@ -26,11 +26,11 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "silk_main.h"
-#include "tuning_parameters.h"
+#include "opus/silk/silk_main.h"
+#include "opus/silk/tuning_parameters.h"
 
 /* Control SNR of redidual quantizer */
 opus_int silk_control_SNR(

@@ -26,7 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
 /* Insertion sort (fast for already almost sorted arrays):   */
@@ -35,7 +35,7 @@ POSSIBILITY OF SUCH DAMAGE.
 /*                                                           */
 /* Shell short:    http://en.wikipedia.org/wiki/Shell_sort   */
 
-#include "SigProc_FIX.h"
+#include "opus/silk/SigProc_FIX.h"
 
 void silk_insertion_sort_increasing(
     opus_int32           *a,             /* I/O   Unsorted / Sorted vector               */

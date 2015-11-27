@@ -26,11 +26,11 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "define.h"
-#include "SigProc_FIX.h"
+#include "opus/silk/define.h"
+#include "opus/silk/SigProc_FIX.h"
 
 /*
 R. Laroia, N. Phamdo and N. Farvardin, "Robust and Efficient Quantization of Speech LSP

@@ -29,9 +29,9 @@
 #ifndef OPUS_PRIVATE_H
 #define OPUS_PRIVATE_H
 
-#include "arch.h"
-#include "opus.h"
-#include "celt.h"
+#include "opus/celt/arch.h"
+#include "opus/opus.h"
+#include "opus/celt/celt.h"
 
 struct OpusRepacketizer {
    unsigned char toc;

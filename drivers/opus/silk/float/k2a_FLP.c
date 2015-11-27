@@ -26,10 +26,10 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "SigProc_FLP.h"
+#include "opus/silk/float/SigProc_FLP.h"
 
 /* step up function, converts reflection coefficients to prediction coefficients */
 void silk_k2a_FLP(

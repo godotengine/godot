@@ -26,10 +26,10 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "silk_main.h"
+#include "opus/silk/silk_main.h"
 
 /*#define silk_enc_map(a)                ((a) > 0 ? 1 : 0)*/
 /*#define silk_dec_map(a)                ((a) > 0 ? 1 : -1)*/

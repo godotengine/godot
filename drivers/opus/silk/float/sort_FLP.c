@@ -26,15 +26,15 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
 /* Insertion sort (fast for already almost sorted arrays):  */
 /* Best case:  O(n)   for an already sorted array           */
 /* Worst case: O(n^2) for an inversely sorted array         */
 
-#include "typedef.h"
-#include "SigProc_FLP.h"
+#include "opus/silk/typedef.h"
+#include "opus/silk/float/SigProc_FLP.h"
 
 void silk_insertion_sort_decreasing_FLP(
     silk_float          *a,                 /* I/O  Unsorted / Sorted vector                                    */

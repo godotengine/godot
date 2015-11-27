@@ -26,11 +26,11 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "entcode.h"
-#include "arch.h"
+#include "opus/celt/entcode.h"
+#include "opus/celt/arch.h"
 
 #if !defined(EC_CLZ)
 /*This is a fallback for systems where we don't know how to access

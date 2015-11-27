@@ -26,11 +26,11 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
-#include "API.h"
-#include "silk_main.h"
-#include "stack_alloc.h"
+#include "opus/silk/API.h"
+#include "opus/silk/silk_main.h"
+#include "opus/celt/stack_alloc.h"
 
 /************************/
 /* Decoder Super Struct */

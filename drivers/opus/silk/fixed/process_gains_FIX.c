@@ -26,11 +26,11 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "main_FIX.h"
-#include "tuning_parameters.h"
+#include "opus/silk/fixed/main_FIX.h"
+#include "opus/silk/tuning_parameters.h"
 
 /* Processing of gains */
 void silk_process_gains_FIX(

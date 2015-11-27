@@ -26,19 +26,19 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "laplace.h"
+#include "opus/celt/laplace.h"
 #define CELT_C
-#include "stack_alloc.h"
+#include "opus/celt/stack_alloc.h"
 
-#include "entenc.c"
-#include "entdec.c"
-#include "entcode.c"
-#include "laplace.c"
+#include "opus/celt/entenc.c"
+#include "opus/celt/entdec.c"
+#include "opus/celt/entcode.c"
+#include "opus/celt/laplace.c"
 
 #define DATA_SIZE 40000
 

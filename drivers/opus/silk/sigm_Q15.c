@@ -26,12 +26,12 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
 /* Approximate sigmoid function */
 
-#include "SigProc_FIX.h"
+#include "opus/silk/SigProc_FIX.h"
 
 /* fprintf(1, '%d, ', round(1024 * ([1 ./ (1 + exp(-(1:5))), 1] - 1 ./ (1 + exp(-(0:5)))))); */
 static const opus_int32 sigm_LUT_slope_Q10[ 6 ] = {

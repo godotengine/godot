@@ -26,12 +26,12 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "silk_main.h"
-#include "control.h"
-#include "errors.h"
+#include "opus/silk/silk_main.h"
+#include "opus/silk/control.h"
+#include "opus/silk/errors.h"
 
 /* Check encoder control struct */
 opus_int check_control_input(

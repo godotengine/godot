@@ -26,10 +26,10 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "SigProc_FIX.h"
+#include "opus/silk/SigProc_FIX.h"
 
 /* Apply sine window to signal vector.                                      */
 /* Window types:                                                            */

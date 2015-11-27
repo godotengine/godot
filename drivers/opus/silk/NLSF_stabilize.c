@@ -26,7 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
 /* NLSF stabilizer:                                         */
@@ -38,7 +38,7 @@ POSSIBILITY OF SUCH DAMAGE.
 /* - Output are sorted NLSF coefficients                    */
 /*                                                          */
 
-#include "SigProc_FIX.h"
+#include "opus/silk/SigProc_FIX.h"
 
 /* Constant Definitions */
 #define MAX_LOOPS        20

@@ -26,12 +26,12 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "main_FIX.h"
-#include "stack_alloc.h"
-#include "tuning_parameters.h"
+#include "opus/silk/fixed/main_FIX.h"
+#include "opus/celt/stack_alloc.h"
+#include "opus/silk/tuning_parameters.h"
 
 /* Low Bitrate Redundancy (LBRR) encoding. Reuse all parameters but encode with lower bitrate           */
 static OPUS_INLINE void silk_LBRR_encode_FIX(

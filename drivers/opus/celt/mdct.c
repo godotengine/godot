@@ -41,17 +41,17 @@
 
 #ifndef SKIP_CONFIG_H
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 #endif
 
-#include "mdct.h"
-#include "kiss_fft.h"
-#include "_kiss_fft_guts.h"
+#include "opus/celt/mdct.h"
+#include "opus/celt/kiss_fft.h"
+#include "opus/celt/_kiss_fft_guts.h"
 #include <math.h>
-#include "os_support.h"
-#include "mathops.h"
-#include "stack_alloc.h"
+#include "opus/celt/os_support.h"
+#include "opus/celt/mathops.h"
+#include "opus/celt/stack_alloc.h"
 
 #ifdef CUSTOM_MODES
 

@@ -27,11 +27,11 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "opus_custom.h"
-#include "arch.h"
+#include "opus/opus_custom.h"
+#include "opus/celt/arch.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

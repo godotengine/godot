@@ -26,10 +26,10 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "silk_main.h"
+#include "opus/silk/silk_main.h"
 
 /* Predictive dequantizer for NLSF residuals */
 static OPUS_INLINE void silk_NLSF_residual_dequant(               /* O    Returns RD value in Q30                     */

@@ -26,11 +26,11 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "typedef.h"
-#include "SigProc_FLP.h"
+#include "opus/silk/typedef.h"
+#include "opus/silk/float/SigProc_FLP.h"
 
 /* compute autocorrelation */
 void silk_autocorrelation_FLP(

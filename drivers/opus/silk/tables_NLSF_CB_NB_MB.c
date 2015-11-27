@@ -26,10 +26,10 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "tables.h"
+#include "opus/silk/tables.h"
 
 static const opus_uint8 silk_NLSF_CB1_NB_MB_Q8[ 320 ] = {
         12,     35,     60,     83,    108,    132,    157,    180,

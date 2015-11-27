@@ -27,7 +27,7 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
 #ifndef CUSTOM_MODES
@@ -36,15 +36,15 @@
 
 #define CELT_C
 
-#include "mathops.c"
-#include "entenc.c"
-#include "entdec.c"
-#include "entcode.c"
-#include "bands.c"
-#include "quant_bands.c"
-#include "laplace.c"
-#include "vq.c"
-#include "cwrs.c"
+#include "opus/celt/mathops.c"
+#include "opus/celt/entenc.c"
+#include "opus/celt/entdec.c"
+#include "opus/celt/entcode.c"
+#include "opus/celt/bands.c"
+#include "opus/celt/quant_bands.c"
+#include "opus/celt/laplace.c"
+#include "opus/celt/vq.c"
+#include "opus/celt/cwrs.c"
 #include <stdio.h>
 #include <math.h>
 

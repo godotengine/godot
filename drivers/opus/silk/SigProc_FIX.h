@@ -38,9 +38,9 @@ extern "C"
 #define SILK_MAX_ORDER_LPC            16            /* max order of the LPC analysis in schur() and k2a() */
 
 #include <string.h>                                 /* for memset(), memcpy(), memmove() */
-#include "typedef.h"
-#include "resampler_structs.h"
-#include "macros.h"
+#include "opus/silk/typedef.h"
+#include "opus/silk/resampler_structs.h"
+#include "opus/silk/macros.h"
 
 
 /********************************************************************/
@@ -575,9 +575,9 @@ static OPUS_INLINE opus_int64 silk_max_64(opus_int64 a, opus_int64 b)
 /* the following seems faster on x86 */
 #define silk_SMMUL(a32, b32)                (opus_int32)silk_RSHIFT64(silk_SMULL((a32), (b32)), 32)
 
-#include "Inlines.h"
-#include "MacroCount.h"
-#include "MacroDebug.h"
+#include "opus/silk/Inlines.h"
+#include "opus/silk/MacroCount.h"
+#include "opus/silk/MacroDebug.h"
 
 #ifdef OPUS_ARM_INLINE_ASM
 #include "arm/SigProc_FIX_armv4.h"

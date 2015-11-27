@@ -26,14 +26,14 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
 /**********************************************************************
  * Correlation matrix computations for LS estimate.
  **********************************************************************/
 
-#include "main_FLP.h"
+#include "opus/silk/float/main_FLP.h"
 
 /* Calculates correlation vector X'*t */
 void silk_corrVector_FLP(

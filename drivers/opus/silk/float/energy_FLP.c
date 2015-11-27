@@ -26,10 +26,10 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "SigProc_FLP.h"
+#include "opus/silk/float/SigProc_FLP.h"
 
 /* sum of squares of a silk_float array, with result as double */
 double silk_energy_FLP(

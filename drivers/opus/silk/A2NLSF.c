@@ -32,11 +32,11 @@ POSSIBILITY OF SUCH DAMAGE.
 /* functions are accurate inverses of each other                */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "SigProc_FIX.h"
-#include "tables.h"
+#include "opus/silk/SigProc_FIX.h"
+#include "opus/silk/tables.h"
 
 /* Number of binary divisions, when not in low complexity mode */
 #define BIN_DIV_STEPS_A2NLSF_FIX      3 /* must be no higher than 16 - log2( LSF_COS_TAB_SZ_FIX ) */

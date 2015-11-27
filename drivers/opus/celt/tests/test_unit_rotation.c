@@ -26,7 +26,7 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
 #ifndef CUSTOM_MODES
@@ -37,13 +37,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "vq.c"
-#include "cwrs.c"
-#include "entcode.c"
-#include "entenc.c"
-#include "entdec.c"
-#include "mathops.c"
-#include "bands.h"
+#include "opus/celt/vq.c"
+#include "opus/celt/cwrs.c"
+#include "opus/celt/entcode.c"
+#include "opus/celt/entenc.c"
+#include "opus/celt/entdec.c"
+#include "opus/celt/mathops.c"
+#include "opus/celt/bands.h"
 #include <math.h>
 #define MAX_SIZE 100
 

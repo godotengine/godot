@@ -10,10 +10,10 @@
  *                                                                  *
  ********************************************************************/
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "internal.h"
+#include "opus/internal.h"
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
@@ -214,7 +214,7 @@ static const char *op_parse_file_url(const char *_src){
 #  include <winsock2.h>
 #  include <ws2tcpip.h>
 #  include <openssl/ssl.h>
-#  include "winerrno.h"
+#  include "opus/winerrno.h"
 
 typedef SOCKET op_sock;
 

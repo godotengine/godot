@@ -26,12 +26,12 @@
 */
 
 #if defined(OPUS_HAVE_CONFIG_H)
-# include "opus_config.h"
+# include "opus/opus_config.h"
 #endif
-#include "os_support.h"
-#include "arch.h"
-#include "entenc.h"
-#include "mfrngcod.h"
+#include "opus/celt/os_support.h"
+#include "opus/celt/arch.h"
+#include "opus/celt/entenc.h"
+#include "opus/celt/mfrngcod.h"
 
 /*A range encoder.
   See entdec.c and the references for implementation details \cite{Mar79,MNW98}.

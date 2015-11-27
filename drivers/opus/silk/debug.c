@@ -26,11 +26,11 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "debug.h"
-#include "SigProc_FIX.h"
+#include "opus/silk/debug.h"
+#include "opus/silk/SigProc_FIX.h"
 
 #if SILK_TIC_TOC
 

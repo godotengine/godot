@@ -15,10 +15,10 @@
 
  ********************************************************************/
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "internal.h"
+#include "opus/internal.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -26,7 +26,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "opusfile.h"
+#include "opus/opusfile.h"
 
 /*This implementation is largely based off of libvorbisfile.
   All of the Ogg bits work roughly the same, though I have made some

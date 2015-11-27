@@ -26,10 +26,10 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "opus_types.h"
+#include "opus/opus_types.h"
 #include <stdio.h>
 
 int main(void)

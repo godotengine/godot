@@ -26,12 +26,12 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "main_FIX.h"
-#include "stack_alloc.h"
-#include "tuning_parameters.h"
+#include "opus/silk/fixed/main_FIX.h"
+#include "opus/celt/stack_alloc.h"
+#include "opus/silk/tuning_parameters.h"
 
 /* Compute gain to make warped filter coefficients have a zero mean log frequency response on a   */
 /* non-warped frequency scale. (So that it can be implemented with a minimum-phase monic filter.) */

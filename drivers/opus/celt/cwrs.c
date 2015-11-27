@@ -28,13 +28,13 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "os_support.h"
-#include "cwrs.h"
-#include "mathops.h"
-#include "arch.h"
+#include "opus/celt/os_support.h"
+#include "opus/celt/cwrs.h"
+#include "opus/celt/mathops.h"
+#include "opus/celt/arch.h"
 
 #ifdef CUSTOM_MODES
 

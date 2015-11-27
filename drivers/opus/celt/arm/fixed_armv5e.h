@@ -30,7 +30,7 @@
 #ifndef FIXED_ARMv5E_H
 #define FIXED_ARMv5E_H
 
-#include "fixed_armv4.h"
+#include "opus/celt/arm/fixed_armv4.h"
 
 /** 16x32 multiplication, followed by a 16-bit shift right. Results fits in 32 bits */
 #undef MULT16_32_Q16

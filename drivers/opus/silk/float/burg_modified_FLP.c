@@ -26,12 +26,12 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "SigProc_FLP.h"
-#include "tuning_parameters.h"
-#include "define.h"
+#include "opus/silk/float/SigProc_FLP.h"
+#include "opus/silk/tuning_parameters.h"
+#include "opus/silk/define.h"
 
 #define MAX_FRAME_SIZE              384 /* subfr_length * nb_subfr = ( 0.005 * 16000 + 16 ) * 4 = 384*/
 

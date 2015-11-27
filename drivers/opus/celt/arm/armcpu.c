@@ -28,15 +28,15 @@
 /* Original code from libtheora modified to suit to Opus */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
 #ifdef OPUS_HAVE_RTCD
 
-#include "armcpu.h"
-#include "cpu_support.h"
-#include "os_support.h"
-#include "opus_types.h"
+#include "opus/celt/arm/armcpu.h"
+#include "opus/celt/cpu_support.h"
+#include "opus/celt/os_support.h"
+#include "opus/opus_types.h"
 
 #define OPUS_CPU_ARM_V4    (1)
 #define OPUS_CPU_ARM_EDSP  (1<<1)

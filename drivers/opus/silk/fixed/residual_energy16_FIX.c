@@ -26,10 +26,10 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "main_FIX.h"
+#include "opus/silk/fixed/main_FIX.h"
 
 /* Residual energy: nrg = wxx - 2 * wXx * c + c' * wXX * c */
 opus_int32 silk_residual_energy16_covar_FIX(

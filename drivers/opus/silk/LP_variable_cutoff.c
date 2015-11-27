@@ -26,7 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
 /*
@@ -35,7 +35,7 @@ POSSIBILITY OF SUCH DAMAGE.
     [0.95 : 0.15 : 0.35] normalized cut off frequencies.
 */
 
-#include "silk_main.h"
+#include "opus/silk/silk_main.h"
 
 /* Helper function, interpolates the filter taps */
 static OPUS_INLINE void silk_LP_interpolate_filter_taps(

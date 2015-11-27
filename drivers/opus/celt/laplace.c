@@ -27,11 +27,11 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "laplace.h"
-#include "mathops.h"
+#include "opus/celt/laplace.h"
+#include "opus/celt/mathops.h"
 
 /* The minimum probability of an energy delta (out of 32768). */
 #define LAPLACE_LOG_MINP (0)

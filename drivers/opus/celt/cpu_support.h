@@ -28,8 +28,8 @@
 #ifndef CPU_SUPPORT_H
 #define CPU_SUPPORT_H
 
-#include "opus_types.h"
-#include "opus_defines.h"
+#include "opus/opus_types.h"
+#include "opus/opus_defines.h"
 
 #if defined(OPUS_HAVE_RTCD) && defined(OPUS_ARM_ASM)
 #include "arm/armcpu.h"

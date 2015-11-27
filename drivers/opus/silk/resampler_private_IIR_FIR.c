@@ -26,12 +26,12 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "SigProc_FIX.h"
-#include "resampler_private.h"
-#include "stack_alloc.h"
+#include "opus/silk/SigProc_FIX.h"
+#include "opus/silk/resampler_private.h"
+#include "opus/celt/stack_alloc.h"
 
 static OPUS_INLINE opus_int16 *silk_resampler_private_IIR_FIR_INTERPOL(
     opus_int16  *out,

@@ -26,12 +26,12 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "silk_main.h"
-#include "stack_alloc.h"
-#include "PLC.h"
+#include "opus/silk/silk_main.h"
+#include "opus/celt/stack_alloc.h"
+#include "opus/silk/PLC.h"
 
 #define NB_ATT 2
 static const opus_int16 HARM_ATT_Q15[NB_ATT]              = { 32440, 31130 }; /* 0.99, 0.95 */

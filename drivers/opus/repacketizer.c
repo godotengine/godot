@@ -26,12 +26,12 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "opus.h"
-#include "opus_private.h"
-#include "os_support.h"
+#include "opus/opus.h"
+#include "opus/opus_private.h"
+#include "opus/celt/os_support.h"
 
 
 int opus_repacketizer_get_size(void)

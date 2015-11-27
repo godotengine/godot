@@ -26,18 +26,18 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
-#include "kiss_fft.h"
-#include "celt.h"
-#include "opus_modes.h"
-#include "arch.h"
-#include "quant_bands.h"
+#include "opus/celt/kiss_fft.h"
+#include "opus/celt/celt.h"
+#include "opus/celt/opus_modes.h"
+#include "opus/celt/arch.h"
+#include "opus/celt/quant_bands.h"
 #include <stdio.h>
-#include "analysis.h"
-#include "mlp.h"
-#include "stack_alloc.h"
+#include "opus/analysis.h"
+#include "opus/mlp.h"
+#include "opus/celt/stack_alloc.h"
 
 extern const MLP net;
 

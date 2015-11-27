@@ -27,21 +27,21 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
-#include "entcode.h"
-#include "entenc.h"
-#include "entdec.h"
+#include "opus/celt/entcode.h"
+#include "opus/celt/entenc.h"
+#include "opus/celt/entdec.h"
 #include <string.h>
 
-#include "entenc.c"
-#include "entdec.c"
-#include "entcode.c"
+#include "opus/celt/entenc.c"
+#include "opus/celt/entdec.c"
+#include "opus/celt/entcode.c"
 
 #ifndef M_LOG2E
 # define M_LOG2E    1.4426950408889634074

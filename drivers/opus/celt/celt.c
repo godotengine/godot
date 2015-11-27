@@ -28,27 +28,27 @@
 */
 
 #ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#include "opus/opus_config.h"
 #endif
 
 #define CELT_C
 
-#include "os_support.h"
-#include "mdct.h"
+#include "opus/celt/os_support.h"
+#include "opus/celt/mdct.h"
 #include <math.h>
-#include "celt.h"
-#include "pitch.h"
-#include "bands.h"
-#include "opus_modes.h"
-#include "entcode.h"
-#include "quant_bands.h"
-#include "rate.h"
-#include "stack_alloc.h"
-#include "mathops.h"
-#include "float_cast.h"
+#include "opus/celt/celt.h"
+#include "opus/celt/pitch.h"
+#include "opus/celt/bands.h"
+#include "opus/celt/opus_modes.h"
+#include "opus/celt/entcode.h"
+#include "opus/celt/quant_bands.h"
+#include "opus/celt/rate.h"
+#include "opus/celt/stack_alloc.h"
+#include "opus/celt/mathops.h"
+#include "opus/celt/float_cast.h"
 #include <stdarg.h>
-#include "celt_lpc.h"
-#include "vq.h"
+#include "opus/celt/celt_lpc.h"
+#include "opus/celt/vq.h"
 
 #ifndef PACKAGE_VERSION
 #define PACKAGE_VERSION "unknown"
