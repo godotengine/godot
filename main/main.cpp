@@ -702,6 +702,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	GLOBAL_DEF("display/test_width",0);
 	GLOBAL_DEF("display/test_height",0);
 	OS::get_singleton()->_pixel_snap=GLOBAL_DEF("display/use_2d_pixel_snap",false);
+	OS::get_singleton()->set_keep_screen_on(GLOBAL_DEF("display/set_keep_screen_on",true));
+
 	if (rtm==-1) {
 		rtm=GLOBAL_DEF("render/thread_model",OS::RENDER_THREAD_SAFE);
 		if (rtm>=1) //hack for now
@@ -921,8 +923,6 @@ Error Main::setup2() {
 				id->set_emulate_touch(true);
 		}
 	}
-
-
 
 	MAIN_PRINT("Main: Load Remaps");
 
