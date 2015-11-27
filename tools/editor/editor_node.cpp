@@ -1162,75 +1162,6 @@ void EditorNode::_dialog_action(String p_file) {
 			save_translatable_strings(p_file);
 
 		} break;
-		case FILE_SAVE_SUBSCENE: {
-
-			List<Node*> selection = editor_selection->get_selected_node_list();
-
-			if (selection.size()!=1) {
-
-				current_option=-1;
-				//confirmation->get_cancel()->hide();
-				accept->get_ok()->set_text("I see..");
-				accept->set_text("This operation requieres a single selected node.");
-				accept->popup_centered_minsize();
-				break;
-			}
-
-			Node *base = selection.front()->get();
-
-			Map<Node*,Node*> reown;
-			reown[editor_data.get_edited_scene_root()]=base;
-			Node *copy = base->duplicate_and_reown(reown);
-			if (copy) {
-
-				Ref<PackedScene> sdata = memnew( PackedScene );
-				Error err = sdata->pack(copy);
-				memdelete(copy);
-
-				if (err!=OK) {
-
-
-					current_option=-1;
-					//accept->get_cancel()->hide();
-					accept->get_ok()->set_text("I see..");
-					accept->set_text("Couldn't save subscene. Likely dependencies (instances) couldn't be satisfied.");
-					accept->popup_centered_minsize();
-					return;
-				}
-
-				int flg=0;
-				if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
-					flg|=ResourceSaver::FLAG_COMPRESS;
-				if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
-					flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
-
-
-				err = ResourceSaver::save(p_file,sdata,flg);
-				if (err!=OK) {
-
-					current_option=-1;
-					//confirmation->get_cancel()->hide();
-					accept->get_ok()->set_text("I see..");
-					accept->set_text("Error saving scene.");
-					accept->popup_centered_minsize();
-					break;
-				}
-		//EditorFileSystem::get_singleton()->update_file(p_file,sdata->get_type());
-
-            } else {
-
-				current_option=-1;
-				//confirmation->get_cancel()->hide();
-				accept->get_ok()->set_text("I see..");
-				accept->set_text("Error duplicating scene to save it.");
-				accept->popup_centered_minsize();
-				break;
-
-			}
-
-
-		} break;
-
 
 		case FILE_SAVE_SCENE:
 		case FILE_SAVE_AS_SCENE: {
@@ -2141,70 +2072,6 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			file->set_title("Save Translatable Strings");
 			file->popup_centered_ratio();
 
-
-		} break;
-
-		case FILE_SAVE_SUBSCENE: {
-
-			Node *scene = editor_data.get_edited_scene_root();
-
-			if (!scene) {
-
-				current_option=-1;
-				//confirmation->get_cancel()->hide();
-				accept->get_ok()->set_text("I see..");
-				accept->set_text("This operation can't be done without a scene.");
-				accept->popup_centered_minsize();
-				break;
-			}
-
-
-			List<Node*> selection = editor_selection->get_selected_node_list();
-
-			if (selection.size()!=1) {
-
-				current_option=-1;
-				//confirmation->get_cancel()->hide();
-				accept->get_ok()->set_text("I see..");
-				accept->set_text("This operation requieres a single selected node.");
-				accept->popup_centered_minsize();
-				break;
-			}
-
-			Node *tocopy = selection.front()->get();
-
-			if (tocopy!=editor_data.get_edited_scene_root() && tocopy->get_filename()!="") {
-
-
-				current_option=-1;
-				//confirmation->get_cancel()->hide();
-				accept->get_ok()->set_text("I see..");
-				accept->set_text("This operation can't be done on instanced scenes.");
-				accept->popup_centered_minsize();
-				break;
-			}
-
-			file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-
-			List<String> extensions;
-			Ref<PackedScene> sd = memnew( PackedScene );
-			ResourceSaver::get_recognized_extensions(sd,&extensions);
-			file->clear_filters();
-			for(int i=0;i<extensions.size();i++) {
-
-				file->add_filter("*."+extensions[i]+" ; "+extensions[i].to_upper());
-			}
-
-
-			String existing;
-			if (extensions.size()) {
-				existing="new_scene."+extensions.front()->get().to_lower();
-			}
-			file->set_current_path(existing);
-
-
-			file->popup_centered_ratio();
-			file->set_title("Save Sub-Scene As..");
 		} break;
 		case FILE_SAVE_OPTIMIZED: {
 			Node *scene = editor_data.get_edited_scene_root();
@@ -4972,7 +4839,6 @@ EditorNode::EditorNode() {
 	pm_export->set_name("Export");
 	p->add_child(pm_export);
 	p->add_submenu_item("Convert To..","Export");
-	pm_export->add_item("Subscene..",FILE_SAVE_SUBSCENE);
 	pm_export->add_item("Translatable Strings..",FILE_DUMP_STRINGS);
 	pm_export->add_separator();
 	pm_export->add_item("MeshLibrary..",FILE_EXPORT_MESH_LIBRARY);
