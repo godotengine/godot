@@ -262,6 +262,9 @@ public:
 	void set_screen_orientation(ScreenOrientation p_orientation);
 	ScreenOrientation get_screen_orientation() const;
 
+	void set_keep_screen_on(bool p_enabled);
+	bool is_keep_screen_on() const;
+
 	void set_time_scale(float p_scale);
 	float get_time_scale();
 
