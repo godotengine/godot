@@ -1086,6 +1086,17 @@ bool Main::start() {
 
 #endif
 
+	if (_export_platform!="") {
+		if (game_path=="") {
+			String err="Command line param ";
+			err+=export_debug?"-export_debug":"-export";
+			err+=" passed but no destination path given.\n";
+			err+="Please specify the binary's file path to export to. Aborting export.";
+			ERR_PRINT(err.utf8().get_data());
+			return false;
+		}
+	}
+
 	if(script=="" && game_path=="" && String(GLOBAL_DEF("application/main_scene",""))!="") {
 		game_path=GLOBAL_DEF("application/main_scene","");
 	}

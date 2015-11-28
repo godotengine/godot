@@ -271,7 +271,7 @@ void EditorHelpSearch::_confirmed() {
 
 	String mdata=ti->get_metadata(0);
 	emit_signal("go_to_help",mdata);
-	editor->call("_editor_select",2); // in case EditorHelpSearch beeen invoked on top of other editor window
+	editor->call("_editor_select",EditorNode::EDITOR_SCRIPT); // in case EditorHelpSearch beeen invoked on top of other editor window
 	// go to that
 	hide();
 }
@@ -1057,7 +1057,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 void EditorHelp::_request_help(const String& p_string) {
 	Error err = _goto_desc(p_string);
 	if (err==OK) {
-		editor->call("_editor_select",2);
+		editor->call("_editor_select",EditorNode::EDITOR_SCRIPT);
 	}
 	//100 palabras
 }
@@ -1097,7 +1097,7 @@ void EditorHelp::_help_callback(const String& p_topic) {
 			line=constant_line[name];
 	}
 
-	class_desc->scroll_to_line(line);
+	class_desc->call_deferred("scroll_to_line", line);
 
 }
 

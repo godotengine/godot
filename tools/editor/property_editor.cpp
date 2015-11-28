@@ -1361,7 +1361,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 		} break;
 		case Variant::MATRIX32: {
 
-			Matrix3 m;
+			Matrix32 m;
 			for(int i=0;i<6;i++) {
 
 				m.elements[i/2][i%2]=value_editor[i]->get_text().to_double();
@@ -2845,6 +2845,13 @@ void PropertyEditor::update_tree() {
 				item->set_text(1,obj->get(p.name));
 				item->set_icon( 0,get_icon("Vector","EditorIcons") );
 
+			} break;
+			case Variant::MATRIX32:
+			case Variant::MATRIX3: {
+
+				item->set_cell_mode( 1, TreeItem::CELL_MODE_CUSTOM );
+				item->set_editable( 1, true );
+				item->set_text(1, obj->get(p.name));
 			} break;
 			case Variant::TRANSFORM: {
 

@@ -25,15 +25,15 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
 #include <stddef.h>
-#include "os_support.h"
-#include "arch.h"
-#include "entdec.h"
-#include "mfrngcod.h"
+#include "opus/celt/os_support.h"
+#include "opus/celt/arch.h"
+#include "opus/celt/entdec.h"
+#include "opus/celt/mfrngcod.h"
 
 /*A range decoder.
   This is an entropy decoder based upon \cite{Mar79}, which is itself a

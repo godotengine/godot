@@ -25,8 +25,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
 /*
@@ -47,7 +47,7 @@ POSSIBILITY OF SUCH DAMAGE.
  * AF  -> AR2 filter followed by FIR interpolation
  */
 
-#include "resampler_private.h"
+#include "opus/silk/resampler_private.h"
 
 /* Tables with delay compensation values to equalize total delay for different modes */
 static const opus_int8 delay_matrix_enc[ 5 ][ 3 ] = {

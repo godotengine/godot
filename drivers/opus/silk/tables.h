@@ -28,8 +28,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SILK_TABLES_H
 #define SILK_TABLES_H
 
-#include "define.h"
-#include "structs.h"
+#include "opus/silk/define.h"
+#include "opus/silk/structs.h"
 
 #ifdef __cplusplus
 extern "C"

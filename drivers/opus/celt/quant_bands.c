@@ -26,18 +26,18 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "quant_bands.h"
-#include "laplace.h"
+#include "opus/celt/quant_bands.h"
+#include "opus/celt/laplace.h"
 #include <math.h>
-#include "os_support.h"
-#include "arch.h"
-#include "mathops.h"
-#include "stack_alloc.h"
-#include "rate.h"
+#include "opus/celt/os_support.h"
+#include "opus/celt/arch.h"
+#include "opus/celt/mathops.h"
+#include "opus/celt/stack_alloc.h"
+#include "opus/celt/rate.h"
 
 #ifdef OPUS_FIXED_POINT
 /* Mean energy in each band quantized in Q4 */

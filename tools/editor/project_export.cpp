@@ -491,6 +491,18 @@ Error ProjectExportDialog::export_platform(const String& p_platform, const Strin
 	Ref<EditorExportPlatform> exporter = EditorImportExport::get_singleton()->get_export_platform(p_platform);
 	if (exporter.is_null()) {
 		ERR_PRINT("Invalid platform for export");
+
+		List<StringName> platforms;
+		EditorImportExport::get_singleton()->get_export_platforms(&platforms);
+		print_line("Valid export plaftorms are:");
+		for (List<StringName>::Element *E=platforms.front();E;E=E->next())
+			print_line("    \""+E->get()+"\"");
+
+		if (p_quit_after) {
+			OS::get_singleton()->set_exit_code(255);
+			get_tree()->quit();
+		}
+
 		return ERR_INVALID_PARAMETER;
 	}
 	Error err = exporter->export_project(p_path,p_debug);

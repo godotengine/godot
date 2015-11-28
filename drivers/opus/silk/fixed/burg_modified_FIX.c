@@ -25,14 +25,14 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "SigProc_FIX.h"
-#include "define.h"
-#include "tuning_parameters.h"
-#include "pitch.h"
+#include "opus/silk/SigProc_FIX.h"
+#include "opus/silk/define.h"
+#include "opus/silk/tuning_parameters.h"
+#include "opus/celt/pitch.h"
 
 #define MAX_FRAME_SIZE              384             /* subfr_length * nb_subfr = ( 0.005 * 16000 + 16 ) * 4 = 384 */
 

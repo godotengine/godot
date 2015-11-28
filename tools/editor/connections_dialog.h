@@ -58,6 +58,7 @@ class ConnectDialog : public ConfirmationDialog {
 	//MenuButton *dst_method_list;
 	OptionButton *type_list;
 	CheckButton *deferred;
+	CheckButton *oneshot;
 	CheckButton *make_callback;
 	PropertyEditor *bind_editor;
 	Node *node;
@@ -80,6 +81,7 @@ public:
 	NodePath get_dst_path() const;
 	StringName get_dst_method() const;	
 	bool get_deferred() const;
+	bool get_oneshot() const;
 	Vector<Variant> get_binds() const;
 	void set_dst_method(const StringName& p_method);
 	void set_dst_node(Node* p_node);

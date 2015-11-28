@@ -25,14 +25,14 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "celt_lpc.h"
-#include "stack_alloc.h"
-#include "mathops.h"
-#include "pitch.h"
+#include "opus/celt/celt_lpc.h"
+#include "opus/celt/stack_alloc.h"
+#include "opus/celt/mathops.h"
+#include "opus/celt/pitch.h"
 
 void _celt_lpc(
       opus_val16       *_lpc, /* out: [0...p-1] LPC coefficients      */

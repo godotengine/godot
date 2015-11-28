@@ -28,11 +28,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SILK_API_H
 #define SILK_API_H
 
-#include "control.h"
-#include "typedef.h"
-#include "errors.h"
-#include "entenc.h"
-#include "entdec.h"
+#include "opus/silk/control.h"
+#include "opus/silk/typedef.h"
+#include "opus/silk/errors.h"
+#include "opus/celt/entenc.h"
+#include "opus/celt/entdec.h"
 
 #ifdef __cplusplus
 extern "C"

@@ -25,12 +25,12 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "silk_main.h"
-#include "stack_alloc.h"
+#include "opus/silk/silk_main.h"
+#include "opus/celt/stack_alloc.h"
 
 static OPUS_INLINE void silk_nsq_scale_states(
     const silk_encoder_state *psEncC,           /* I    Encoder State                   */

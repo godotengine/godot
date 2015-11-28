@@ -30,16 +30,16 @@
    heavily modified to better suit Opus */
 
 #ifndef SKIP_CONFIG_H
-#  ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#  ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #  endif
 #endif
 
-#include "_kiss_fft_guts.h"
-#include "arch.h"
-#include "os_support.h"
-#include "mathops.h"
-#include "stack_alloc.h"
+#include "opus/celt/_kiss_fft_guts.h"
+#include "opus/celt/arch.h"
+#include "opus/celt/os_support.h"
+#include "opus/celt/mathops.h"
+#include "opus/celt/stack_alloc.h"
 
 /* The guts header contains all the multiplication and addition macros that are defined for
    complex numbers.  It also delares the kf_ internal functions.

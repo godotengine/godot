@@ -13,7 +13,7 @@
 	<key>CFBundleIconFile</key>
 	<string>Godot.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.okamstudio.godot</string>
+	<string>org.godotengine.godot</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
@@ -61,7 +61,7 @@
 			<true/>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.okamstudio.scn</string>
+				<string>org.godotengine.scn</string>
 			</array>
 		</dict>
 	</array>

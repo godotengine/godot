@@ -35,12 +35,12 @@
 #ifndef CELT_H
 #define CELT_H
 
-#include "opus_types.h"
-#include "opus_defines.h"
-#include "opus_custom.h"
-#include "entenc.h"
-#include "entdec.h"
-#include "arch.h"
+#include "opus/opus_types.h"
+#include "opus/opus_defines.h"
+#include "opus/opus_custom.h"
+#include "opus/celt/entenc.h"
+#include "opus/celt/entdec.h"
+#include "opus/celt/arch.h"
 
 #ifdef __cplusplus
 extern "C" {

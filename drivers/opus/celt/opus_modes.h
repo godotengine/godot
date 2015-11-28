@@ -30,12 +30,12 @@
 #ifndef OPUS_MODES_H
 #define OPUS_MODES_H
 
-#include "opus_types.h"
-#include "celt.h"
-#include "arch.h"
-#include "mdct.h"
-#include "entenc.h"
-#include "entdec.h"
+#include "opus/opus_types.h"
+#include "opus/celt/celt.h"
+#include "opus/celt/arch.h"
+#include "opus/celt/mdct.h"
+#include "opus/celt/entenc.h"
+#include "opus/celt/entdec.h"
 
 #define MAX_PERIOD 1024
 

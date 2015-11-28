@@ -1370,7 +1370,7 @@ ShaderLanguage::Node* ShaderLanguage::validate_function_call(Parser&parser, Oper
 			}
 		}
 
-		if (!fail) {
+		if (!fail && name == program->functions[i].name) {
 			p_func->return_cache=pfunc->return_type;
 			return p_func;
 		}
