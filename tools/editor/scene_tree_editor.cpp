@@ -565,7 +565,6 @@ void SceneTreeEditor::_notification(int p_what) {
 		get_tree()->disconnect("node_removed",this,"_node_removed");
 		tree->disconnect("item_collapsed",this,"_cell_collapsed");
 		clear_inherit_confirm->disconnect("confirmed",this,"_subscene_option");
-		_update_tree();
 	}
 
 }
