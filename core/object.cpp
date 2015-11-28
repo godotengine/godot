@@ -970,7 +970,10 @@ void Object::set_script_instance(ScriptInstance *p_instance) {
 
 	script_instance=p_instance;
 
-	script=p_instance->get_script().get_ref_ptr();
+	if (p_instance)
+		script=p_instance->get_script().get_ref_ptr();
+	else
+		script=RefPtr();
 }
 
 RefPtr Object::get_script() const {
