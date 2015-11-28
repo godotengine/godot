@@ -448,31 +448,19 @@ RES ResourceFormatLoaderShader::load(const String &p_path, const String& p_origi
 
 void ResourceFormatLoaderShader::get_recognized_extensions(List<String> *p_extensions) const {
 
-	p_extensions->push_back("shader");
+	ObjectTypeDB::get_extensions_for_type("Shader", p_extensions);
 }
+
 bool ResourceFormatLoaderShader::handles_type(const String& p_type) const {
 
-	return p_type=="Shader";
+	return ObjectTypeDB::is_type(p_type, "Shader");
 }
 
 
 String ResourceFormatLoaderShader::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="shader")
+	if (p_path.extension().to_lower()=="shd")
 		return "Shader";
 	return "";
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
