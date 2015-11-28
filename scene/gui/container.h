@@ -42,6 +42,7 @@ protected:
 
 	void queue_sort();
 	virtual void add_child_notify(Node *p_child);
+	virtual void move_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 
 	void _notification(int p_what);
