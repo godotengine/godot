@@ -52,6 +52,14 @@ void Container::add_child_notify(Node *p_child) {
 
 }
 
+void Container::move_child_notify(Node *p_child) {
+
+	if (!p_child->cast_to<Control>())
+		return;
+
+	queue_sort();
+}
+
 void Container::remove_child_notify(Node *p_child) {
 
 
