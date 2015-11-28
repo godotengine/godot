@@ -33,7 +33,7 @@
 #define PITCH_SSE_H
 
 #include <xmmintrin.h>
-#include "arch.h"
+#include "opus/celt/arch.h"
 
 #define OVERRIDE_XCORR_KERNEL
 static OPUS_INLINE void xcorr_kernel(const opus_val16 *x, const opus_val16 *y, opus_val32 sum[4], int len)

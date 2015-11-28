@@ -1689,9 +1689,10 @@ void RichTextLabel::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_v_scroll"),&RichTextLabel::get_v_scroll);
 
+	ObjectTypeDB::bind_method(_MD("scroll_to_line"),&RichTextLabel::scroll_to_line);
+
 	ObjectTypeDB::bind_method(_MD("set_tab_size","spaces"),&RichTextLabel::set_tab_size);
 	ObjectTypeDB::bind_method(_MD("get_tab_size"),&RichTextLabel::get_tab_size);
-
 
 	ObjectTypeDB::bind_method(_MD("set_selection_enabled","enabled"),&RichTextLabel::set_selection_enabled);
 	ObjectTypeDB::bind_method(_MD("is_selection_enabled"),&RichTextLabel::is_selection_enabled);

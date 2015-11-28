@@ -33,9 +33,9 @@
 #ifndef VQ_H
 #define VQ_H
 
-#include "entenc.h"
-#include "entdec.h"
-#include "opus_modes.h"
+#include "opus/celt/entenc.h"
+#include "opus/celt/entdec.h"
+#include "opus/celt/opus_modes.h"
 
 /** Algebraic pulse-vector quantiser. The signal x is replaced by the sum of
   * the pitch and a combination of pulses such that its norm is still equal

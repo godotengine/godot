@@ -1097,7 +1097,7 @@ void EditorHelp::_help_callback(const String& p_topic) {
 			line=constant_line[name];
 	}
 
-	class_desc->scroll_to_line(line);
+	class_desc->call_deferred("scroll_to_line", line);
 
 }
 

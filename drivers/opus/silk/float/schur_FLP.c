@@ -25,11 +25,11 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "SigProc_FLP.h"
+#include "opus/silk/float/SigProc_FLP.h"
 
 silk_float silk_schur_FLP(                  /* O    returns residual energy                                     */
     silk_float          refl_coef[],        /* O    reflection coefficients (length order)                      */

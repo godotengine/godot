@@ -28,10 +28,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SILK_MACROS_H
 #define SILK_MACROS_H
 
-#include "opus_config.h"
+#include "opus/opus_config.h"
 
-#include "opus_types.h"
-#include "opus_defines.h"
+#include "opus/opus_types.h"
+#include "opus/opus_defines.h"
 
 /* This is an OPUS_INLINE header file for general platform. */
 
@@ -77,7 +77,7 @@ POSSIBILITY OF SUCH DAMAGE.
                                         (( (a) & ((b)^0x80000000) & 0x80000000) ? silk_int32_MIN : (a)-(b)) :    \
                                         ((((a)^0x80000000) & (b)  & 0x80000000) ? silk_int32_MAX : (a)-(b)) )
 
-#include "ecintrin.h"
+#include "opus/celt/ecintrin.h"
 
 static OPUS_INLINE opus_int32 silk_CLZ16(opus_int16 in16)
 {

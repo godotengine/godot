@@ -29,11 +29,11 @@
 #ifndef QUANT_BANDS
 #define QUANT_BANDS
 
-#include "arch.h"
-#include "opus_modes.h"
-#include "entenc.h"
-#include "entdec.h"
-#include "mathops.h"
+#include "opus/celt/arch.h"
+#include "opus/celt/opus_modes.h"
+#include "opus/celt/entenc.h"
+#include "opus/celt/entdec.h"
+#include "opus/celt/mathops.h"
 
 #ifdef OPUS_FIXED_POINT
 extern const signed char eMeans[25];

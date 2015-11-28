@@ -28,7 +28,7 @@
 #if !defined(_entdec_H)
 # define _entdec_H (1)
 # include <limits.h>
-# include "entcode.h"
+# include "opus/celt/entcode.h"
 
 /*Initializes the decoder.
   _buf: The input buffer to use.

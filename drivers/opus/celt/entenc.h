@@ -28,7 +28,7 @@
 #if !defined(_entenc_H)
 # define _entenc_H (1)
 # include <stddef.h>
-# include "entcode.h"
+# include "opus/celt/entcode.h"
 
 /*Initializes the encoder.
   _buf:  The buffer to store output bytes in.

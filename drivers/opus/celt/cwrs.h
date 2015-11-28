@@ -30,10 +30,10 @@
 #ifndef CWRS_H
 #define CWRS_H
 
-#include "arch.h"
-#include "stack_alloc.h"
-#include "entenc.h"
-#include "entdec.h"
+#include "opus/celt/arch.h"
+#include "opus/celt/stack_alloc.h"
+#include "opus/celt/entenc.h"
+#include "opus/celt/entdec.h"
 
 #ifdef CUSTOM_MODES
 int log2_frac(opus_uint32 val, int frac);

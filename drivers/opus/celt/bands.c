@@ -27,21 +27,21 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
 #include <math.h>
-#include "bands.h"
-#include "opus_modes.h"
-#include "vq.h"
-#include "cwrs.h"
-#include "stack_alloc.h"
-#include "os_support.h"
-#include "mathops.h"
-#include "rate.h"
-#include "quant_bands.h"
-#include "pitch.h"
+#include "opus/celt/bands.h"
+#include "opus/celt/opus_modes.h"
+#include "opus/celt/vq.h"
+#include "opus/celt/cwrs.h"
+#include "opus/celt/stack_alloc.h"
+#include "opus/celt/os_support.h"
+#include "opus/celt/mathops.h"
+#include "opus/celt/rate.h"
+#include "opus/celt/quant_bands.h"
+#include "opus/celt/pitch.h"
 
 int hysteresis_decision(opus_val16 val, const opus_val16 *thresholds, const opus_val16 *hysteresis, int N, int prev)
 {

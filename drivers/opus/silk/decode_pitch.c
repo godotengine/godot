@@ -25,15 +25,15 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
 /***********************************************************
 * Pitch analyser function
 ********************************************************** */
-#include "SigProc_FIX.h"
-#include "pitch_est_defines.h"
+#include "opus/silk/SigProc_FIX.h"
+#include "opus/silk/pitch_est_defines.h"
 
 void silk_decode_pitch(
     opus_int16                  lagIndex,           /* I                                                                */

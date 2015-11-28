@@ -25,14 +25,14 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "opus_types.h"
-#include "opus_defines.h"
+#include "opus/opus_types.h"
+#include "opus/opus_defines.h"
 
 #if !defined(_entcode_H)
 # define _entcode_H (1)
 # include <limits.h>
 # include <stddef.h>
-# include "ecintrin.h"
+# include "opus/celt/ecintrin.h"
 
 /*OPT: ec_window must be at least 32 bits, but if you have fast arithmetic on a
    larger type, you can speed up the decoder by using it here.*/

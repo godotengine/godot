@@ -33,7 +33,7 @@
 #define FIXED_DEBUG_H
 
 #include <stdio.h>
-#include "opus_defines.h"
+#include "opus/opus_defines.h"
 
 #ifdef CELT_C
 OPUS_EXPORT opus_int64 celt_mips=0;

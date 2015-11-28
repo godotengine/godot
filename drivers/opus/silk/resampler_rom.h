@@ -33,8 +33,8 @@ extern "C"
 {
 #endif
 
-#include "typedef.h"
-#include "resampler_structs.h"
+#include "opus/silk/typedef.h"
+#include "opus/silk/resampler_structs.h"
 
 #define RESAMPLER_DOWN_ORDER_FIR0               18
 #define RESAMPLER_DOWN_ORDER_FIR1               24

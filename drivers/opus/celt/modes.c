@@ -27,16 +27,16 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "celt.h"
-#include "opus_modes.h"
-#include "rate.h"
-#include "os_support.h"
-#include "stack_alloc.h"
-#include "quant_bands.h"
+#include "opus/celt/celt.h"
+#include "opus/celt/opus_modes.h"
+#include "opus/celt/rate.h"
+#include "opus/celt/os_support.h"
+#include "opus/celt/stack_alloc.h"
+#include "opus/celt/quant_bands.h"
 
 static const opus_int16 eband5ms[] = {
 /*0  200 400 600 800  1k 1.2 1.4 1.6  2k 2.4 2.8 3.2  4k 4.8 5.6 6.8  8k 9.6 12k 15.6 */
@@ -63,9 +63,9 @@ static const unsigned char band_allocation[] = {
 
 #ifndef CUSTOM_MODES_ONLY
  #ifdef OPUS_FIXED_POINT
-  #include "static_modes_fixed.h"
+  #include "opus/celt/static_modes_fixed.h"
  #else
-  #include "static_modes_float.h"
+  #include "opus/celt/static_modes_float.h"
  #endif
 #endif /* CUSTOM_MODES_ONLY */
 

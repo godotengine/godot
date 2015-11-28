@@ -28,8 +28,8 @@
 #ifndef ANALYSIS_H
 #define ANALYSIS_H
 
-#include "celt.h"
-#include "opus_private.h"
+#include "opus/celt/celt.h"
+#include "opus/opus_private.h"
 
 #define NB_FRAMES 8
 #define NB_TBANDS 18

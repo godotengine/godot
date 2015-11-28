@@ -327,7 +327,7 @@ EditorExportPlatformWindows::EditorExportPlatformWindows() {
 	icon128=true;
 	icon256=true;
 	product_name="$genname";
-	company_name="Okam Studio";
+	company_name="Godot Engine";
 	file_description="Created With Godot Engine";
 	version_text="1.0";
 	OS::Date date = OS::get_singleton()->get_date();
