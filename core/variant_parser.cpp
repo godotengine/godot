@@ -54,6 +54,10 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 			p_stream->saved=0;
 		} else {
 			cchar=p_stream->get_char();
+			if (p_stream->is_eof()) {
+				r_token.type=TK_EOF;
+				return OK;
+			}
 		}
 
 		switch(cchar) {
@@ -202,6 +206,9 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 					}
 				}
 
+				if (p_stream->is_utf8()) {
+					str.parse_utf8( str.ascii(true).get_data() );
+				}
 				r_token.type=TK_STRING;
 				r_token.value=str;
 				return OK;
@@ -215,7 +222,7 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 
 				if (cchar=='-' || (cchar>='0' && cchar<='9')) {
 					//a number
-					print_line("a numbar");
+
 
 					String num;
 #define READING_SIGN 0
@@ -228,7 +235,6 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 					if (cchar=='-') {
 						num+='-';
 						cchar=p_stream->get_char();
-						print_line("isnegative");
 
 					}
 
@@ -246,14 +252,11 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 
 								if (c>='0' && c<='9') {
 									//pass
-									print_line("num: regular");
 								} else if (c=='.') {
 									reading=READING_DEC;
-									print_line("num: decimal");
 									is_float=true;
 								} else if (c=='e') {
 									reading=READING_EXP;
-									print_line("num: exp");
 								} else {
 									reading=READING_DONE;
 								}
@@ -262,11 +265,10 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 							case READING_DEC: {
 
 								if (c>='0' && c<='9') {
-									print_line("dec: exp");
 
 								} else if (c=='e') {
 									reading=READING_EXP;
-									print_line("dec: expe");
+
 								} else {
 									reading=READING_DONE;
 								}
@@ -276,10 +278,10 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 
 								if (c>='0' && c<='9') {
 									exp_beg=true;
-									print_line("exp: num");
+
 								} else if ((c=='-' || c=='+') && !exp_sign && !exp_beg) {
 									exp_sign=true;
-									print_line("exp: sgn");
+
 								} else {
 									reading=READING_DONE;
 								}
@@ -290,13 +292,13 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 							break;
 						num+=String::chr(c);
 						c = p_stream->get_char();
-						print_line("add to c");
+
 
 					}
 
 					p_stream->saved=c;
 
-					print_line("num was: "+num);
+
 					r_token.type=TK_NUMBER;
 					if (is_float)
 						r_token.value=num.to_double();
@@ -307,11 +309,13 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 				} else if ((cchar>='A' && cchar<='Z') || (cchar>='a' && cchar<='z') || cchar=='_') {
 
 					String id;
+					bool first=true;
 
-					while((cchar>='A' && cchar<='Z') || (cchar>='a' && cchar<='z') || cchar=='_') {
+					while((cchar>='A' && cchar<='Z') || (cchar>='a' && cchar<='z') || cchar=='_' || (!first && cchar>='0' && cchar<='9')) {
 
 						id+=String::chr(cchar);
 						cchar=p_stream->get_char();
+						first=false;
 					}
 
 					p_stream->saved=cchar;
@@ -332,14 +336,14 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 	return ERR_PARSE_ERROR;
 }
 
-
-Error VariantParser::_parse_construct(Stream *p_stream,Vector<float>& r_construct,int &line,String &r_err_str) {
+template<class T>
+Error VariantParser::_parse_construct(Stream *p_stream,Vector<T>& r_construct,int &line,String &r_err_str) {
 
 
 	Token token;
 	get_token(p_stream,token,line,r_err_str);
 	if (token.type!=TK_PARENTHESIS_OPEN) {
-		r_err_str="Expected '('";
+		r_err_str="Expected '(' in constructor";
 		return ERR_PARSE_ERROR;
 	}
 
@@ -351,21 +355,23 @@ Error VariantParser::_parse_construct(Stream *p_stream,Vector<float>& r_construc
 			get_token(p_stream,token,line,r_err_str);
 			if (token.type==TK_COMMA) {
 				//do none
-			} else if (token.type!=TK_PARENTHESIS_CLOSE) {
+			} else if (token.type==TK_PARENTHESIS_CLOSE) {
 				break;
 			} else {
-				r_err_str="Expected ',' or ')'";
+				r_err_str="Expected ',' or ')' in constructor";
 				return ERR_PARSE_ERROR;
 
 			}
 		}
 		get_token(p_stream,token,line,r_err_str);
 		if (token.type!=TK_NUMBER) {
-			r_err_str="Expected float";
+			r_err_str="Expected float in constructor";
 			return ERR_PARSE_ERROR;
 		}
 
+
 		r_construct.push_back(token.value);
+		first=false;
 	}
 
 	return OK;
@@ -444,7 +450,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 		else if (id=="Vector2"){
 
 			Vector<float> args;
-			Error err = _parse_construct(p_stream,args,line,r_err_str);
+			Error err = _parse_construct<float>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
@@ -457,7 +463,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 		} else if (id=="Vector3"){
 
 			Vector<float> args;
-			Error err = _parse_construct(p_stream,args,line,r_err_str);
+			Error err = _parse_construct<float>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
@@ -470,7 +476,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 		} else if (id=="Matrix32"){
 
 			Vector<float> args;
-			Error err = _parse_construct(p_stream,args,line,r_err_str);
+			Error err = _parse_construct<float>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
@@ -486,7 +492,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 		} else if (id=="Plane") {
 
 			Vector<float> args;
-			Error err = _parse_construct(p_stream,args,line,r_err_str);
+			Error err = _parse_construct<float>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
@@ -499,7 +505,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 		} else if (id=="Quat") {
 
 			Vector<float> args;
-			Error err = _parse_construct(p_stream,args,line,r_err_str);
+			Error err = _parse_construct<float>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
@@ -513,7 +519,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 		} else if (id=="AABB"){
 
 			Vector<float> args;
-			Error err = _parse_construct(p_stream,args,line,r_err_str);
+			Error err = _parse_construct<float>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
@@ -527,7 +533,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 		} else if (id=="Matrix3"){
 
 			Vector<float> args;
-			Error err = _parse_construct(p_stream,args,line,r_err_str);
+			Error err = _parse_construct<float>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
@@ -540,7 +546,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 		} else if (id=="Transform"){
 
 			Vector<float> args;
-			Error err = _parse_construct(p_stream,args,line,r_err_str);
+			Error err = _parse_construct<float>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
@@ -554,7 +560,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 		} else if (id=="Color") {
 
 			Vector<float> args;
-			Error err = _parse_construct(p_stream,args,line,r_err_str);
+			Error err = _parse_construct<float>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
@@ -600,6 +606,8 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			}
 
 			int height=token.value;
+
+			get_token(p_stream,token,line,r_err_str);
 			if (token.type!=TK_COMMA) {
 				r_err_str="Expected ','";
 				return ERR_PARSE_ERROR;
@@ -612,6 +620,8 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			}
 
 			int mipmaps=token.value;
+
+			get_token(p_stream,token,line,r_err_str);
 			if (token.type!=TK_COMMA) {
 				r_err_str="Expected ','";
 				return ERR_PARSE_ERROR;
@@ -623,6 +633,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				r_err_str="Expected identifier (format)";
 				return ERR_PARSE_ERROR;
 			}
+
 
 			String sformat=token.value;
 
@@ -666,12 +677,13 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				DVector<uint8_t>::Write w=buffer.write();
 
 				for(int i=0;i<len;i++) {
-
+					get_token(p_stream,token,line,r_err_str);
 					if (token.type!=TK_COMMA) {
 						r_err_str="Expected ','";
 						return ERR_PARSE_ERROR;
 					}
 
+					get_token(p_stream,token,line,r_err_str);
 					if (token.type!=TK_NUMBER) {
 						r_err_str="Expected number";
 						return ERR_PARSE_ERROR;
@@ -702,7 +714,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 
 			get_token(p_stream,token,line,r_err_str);
 			if (token.type!=TK_STRING) {
-				r_err_str="Expected string as argument";
+				r_err_str="Expected string as argument for NodePath()";
 				return ERR_PARSE_ERROR;
 			}
 
@@ -741,7 +753,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 
 			return OK;
 
-		} else if (id=="Resource") {
+		} else if (id=="Resource" || id=="SubResource" || id=="ExtResource") {
 
 
 
@@ -751,25 +763,8 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				return ERR_PARSE_ERROR;
 			}
 
-			get_token(p_stream,token,line,r_err_str);
-			if (token.type==TK_STRING) {
-				String path=token.value;
-				RES res = ResourceLoader::load(path);
-				if (res.is_null()) {
-					r_err_str="Can't load resource at path: '"+path+"'.";
-					return ERR_PARSE_ERROR;
-				}
 
-				get_token(p_stream,token,line,r_err_str);
-				if (token.type!=TK_PARENTHESIS_CLOSE) {
-					r_err_str="Expected ')'";
-					return ERR_PARSE_ERROR;
-				}
-
-				value=res;
-				return OK;
-
-			} else if (p_res_parser && p_res_parser->func){
+			if (p_res_parser && id=="Resource" && p_res_parser->func){
 
 				RES res;
 				Error err = p_res_parser->func(p_res_parser->userdata,p_stream,res,line,r_err_str);
@@ -779,13 +774,54 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				value=res;
 
 				return OK;
+			} else if (p_res_parser && id=="ExtResource" && p_res_parser->ext_func){
+
+				RES res;
+				Error err = p_res_parser->ext_func(p_res_parser->userdata,p_stream,res,line,r_err_str);
+				if (err)
+					return err;
+
+				value=res;
+
+				return OK;
+			} else if (p_res_parser && id=="SubResource" && p_res_parser->sub_func){
+
+				RES res;
+				Error err = p_res_parser->sub_func(p_res_parser->userdata,p_stream,res,line,r_err_str);
+				if (err)
+					return err;
+
+				value=res;
+
+				return OK;
 			} else {
 
-				r_err_str="Expected string as argument.";
-				return ERR_PARSE_ERROR;
+				get_token(p_stream,token,line,r_err_str);
+				if (token.type==TK_STRING) {
+					String path=token.value;
+					RES res = ResourceLoader::load(path);
+					if (res.is_null()) {
+						r_err_str="Can't load resource at path: '"+path+"'.";
+						return ERR_PARSE_ERROR;
+					}
+
+					get_token(p_stream,token,line,r_err_str);
+					if (token.type!=TK_PARENTHESIS_CLOSE) {
+						r_err_str="Expected ')'";
+						return ERR_PARSE_ERROR;
+					}
+
+					value=res;
+					return OK;
+
+				} else {
+					r_err_str="Expected string as argument for Resource().";
+					return ERR_PARSE_ERROR;
+				}
 			}
 
 			return OK;
+
 
 		} else if (id=="InputEvent") {
 
@@ -952,8 +988,8 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 
 		} else if (id=="ByteArray") {
 
-			Vector<float> args;
-			Error err = _parse_construct(p_stream,args,line,r_err_str);
+			Vector<uint8_t> args;
+			Error err = _parse_construct<uint8_t>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
@@ -973,8 +1009,8 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 
 		} else if (id=="IntArray") {
 
-			Vector<float> args;
-			Error err = _parse_construct(p_stream,args,line,r_err_str);
+			Vector<int32_t> args;
+			Error err = _parse_construct<int32_t>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
@@ -984,7 +1020,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				arr.resize(len);
 				DVector<int32_t>::Write w = arr.write();
 				for(int i=0;i<len;i++) {
-					w[i]=Math::fast_ftoi(args[i]);
+					w[i]=int(args[i]);
 				}
 			}
 
@@ -995,7 +1031,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 		} else if (id=="FloatArray") {
 
 			Vector<float> args;
-			Error err = _parse_construct(p_stream,args,line,r_err_str);
+			Error err = _parse_construct<float>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
@@ -1066,7 +1102,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 		} else if (id=="Vector2Array") {
 
 			Vector<float> args;
-			Error err = _parse_construct(p_stream,args,line,r_err_str);
+			Error err = _parse_construct<float>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
@@ -1087,7 +1123,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 		} else if (id=="Vector3Array") {
 
 			Vector<float> args;
-			Error err = _parse_construct(p_stream,args,line,r_err_str);
+			Error err = _parse_construct<float>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
@@ -1108,7 +1144,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 		} else if (id=="ColorArray") {
 
 			Vector<float> args;
-			Error err = _parse_construct(p_stream,args,line,r_err_str);
+			Error err = _parse_construct<float>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
@@ -1191,7 +1227,12 @@ Error VariantParser::_parse_array(Array &array, Stream *p_stream, int &line, Str
 	bool need_comma=false;
 
 
-	while(!p_stream->is_eof()) {
+	while(true) {
+
+		if (p_stream->is_eof()) {
+			r_err_str="Unexpected End of File while parsing array";
+			return ERR_FILE_CORRUPT;
+		}
 
 		Error err = get_token(p_stream,token,line,r_err_str);
 		if (err!=OK)
@@ -1236,8 +1277,13 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 	bool need_comma=false;
 
 
-	while(!p_stream->is_eof()) {
+	while(true) {
 
+
+		if (p_stream->is_eof()) {
+			r_err_str="Unexpected End of File while parsing dictionary";
+			return ERR_FILE_CORRUPT;
+		}
 
 		if (at_key) {
 
@@ -1301,7 +1347,7 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 }
 
 
-Error VariantParser::_parse_tag(Token& token,Stream *p_stream, int &line, String &r_err_str,Tag& r_tag) {
+Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, ResourceParser *p_res_parser) {
 
 	r_tag.fields.clear();
 
@@ -1321,9 +1367,12 @@ Error VariantParser::_parse_tag(Token& token,Stream *p_stream, int &line, String
 
 	r_tag.name=token.value;
 
-	print_line("tag name: "+r_tag.name);
-
 	while(true) {
+
+		if (p_stream->is_eof()) {
+			r_err_str="Unexpected End of File while parsing tag: "+r_tag.name;
+			return ERR_FILE_CORRUPT;
+		}
 
 		get_token(p_stream,token,line,r_err_str);
 		if (token.type==TK_BRACKET_CLOSE)
@@ -1336,7 +1385,6 @@ Error VariantParser::_parse_tag(Token& token,Stream *p_stream, int &line, String
 
 		String id=token.value;
 
-		print_line("got ID: "+id);
 
 		get_token(p_stream,token,line,r_err_str);
 		if (token.type!=TK_EQUAL) {
@@ -1344,17 +1392,13 @@ Error VariantParser::_parse_tag(Token& token,Stream *p_stream, int &line, String
 			return ERR_PARSE_ERROR;
 		}
 
-		print_line("got tk: "+String(tk_name[token.type]));
-
 		get_token(p_stream,token,line,r_err_str);
 		Variant value;
-		Error err = parse_value(token,value,p_stream,line,r_err_str);
+		Error err = parse_value(token,value,p_stream,line,r_err_str,p_res_parser);
 		if (err)
 			return err;
 
-		print_line("id: "+id+" value: "+String(value));
-
-		r_tag.fields[id]=value;
+		r_tag.fields[id]=value;		
 
 	}
 
@@ -1363,23 +1407,71 @@ Error VariantParser::_parse_tag(Token& token,Stream *p_stream, int &line, String
 
 }
 
-Error VariantParser::parse_tag(Stream *p_stream, int &line, String &r_err_str,Tag& r_tag) {
+Error VariantParser::parse_tag(Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, ResourceParser *p_res_parser) {
 
 	Token token;
 	get_token(p_stream,token,line,r_err_str);
+
+	if (token.type==TK_EOF) {
+		return ERR_FILE_EOF;
+	}
+
 	if (token.type!=TK_BRACKET_OPEN) {
 		r_err_str="Expected '['";
 		return ERR_PARSE_ERROR;
 	}
 
-	return _parse_tag(token,p_stream,line,r_err_str,r_tag);
+	return _parse_tag(token,p_stream,line,r_err_str,r_tag,p_res_parser);
 
 }
 
-Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str,Tag& r_tag,String &r_assign) {
+Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser) {
 
-	r_tag.name.clear();
-	r_assign=String();
+
+	//assign..
+	String what;
+
+	while(true) {
+
+
+		CharType c;
+		if (p_stream->saved) {
+			c=p_stream->saved;
+			p_stream->saved=0;
+
+		} else {
+			c=p_stream->get_char();
+		}
+
+		if (p_stream->is_eof())
+			return ERR_FILE_EOF;
+
+		if (c=='[' && what.length()==0) {
+			//it's a tag!
+			p_stream->saved='['; //go back one
+
+			Error err = parse_tag(p_stream,line,r_err_str,r_tag,p_res_parser);
+
+			return err;
+		}
+
+		if (c>32) {
+			if (c!='=') {
+				what+=String::chr(c);
+			} else {
+				r_assign=what;
+				Token token;
+				get_token(p_stream,token,line,r_err_str);
+				Error err = parse_value(token,r_value,p_stream,line,r_err_str,p_res_parser);
+				if (err) {
+
+				}
+				return err;
+			}
+		} else if (c=='\n') {
+			line++;
+		}
+	}
 
 	return OK;
 }
@@ -1391,6 +1483,11 @@ Error VariantParser::parse(Stream *p_stream, Variant& r_ret, String &r_err_str, 
 	Error err = get_token(p_stream,token,r_err_line,r_err_str);
 	if (err)
 		return err;
+
+	if (token.type==TK_EOF) {
+		return ERR_FILE_EOF;
+	}
+
 	return parse_value(token,r_ret,p_stream,r_err_line,r_err_str,p_res_parser);
 
 }

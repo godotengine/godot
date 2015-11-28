@@ -126,7 +126,7 @@ public:
 	Node *instance(bool p_gen_edit_state=false) const;
 
 
-	//build-unbuild API
+	//unbuild API
 
 	int get_node_count() const;
 	StringName get_node_type(int p_idx) const;
@@ -149,6 +149,19 @@ public:
 	Array get_connection_binds(int p_idx) const;
 
 	Vector<NodePath> get_editable_instances() const;
+
+	//build API
+
+	int add_name(const StringName& p_name);
+	int add_value(const Variant& p_value);
+	int add_node_path(const NodePath& p_path);
+	int add_node(int p_parent,int p_owner,int p_type,int p_name, int p_instance);
+	void add_node_property(int p_node,int p_name,int p_value);
+	void add_node_group(int p_node,int p_group);
+	void set_base_scene(int p_idx);
+	void add_connection(int p_from,int p_to, int p_signal, int p_method, int p_flags,const Vector<int>& p_binds);
+	void add_editable_instance(const NodePath& p_path);
+
 
 	SceneState();
 };

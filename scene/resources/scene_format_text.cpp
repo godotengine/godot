@@ -9,6 +9,8 @@
 #include "version.h"
 #include "os/dir_access.h"
 
+#define _printerr() ERR_PRINT(String(res_path+":"+itos(lines)+" - Parse Error: "+error_text).utf8().get_data());
+
 
 Error ResourceInteractiveLoaderText::parse_property(Variant& r_v, String &r_name)  {
 
@@ -29,299 +31,113 @@ Ref<Resource> ResourceInteractiveLoaderText::get_resource() {
 
 	return resource;
 }
-Error ResourceInteractiveLoaderText::poll() {
 
-#if 0
-	if (error!=OK)
-		return error;
+Error ResourceInteractiveLoaderText::_parse_sub_resource(VariantParser::Stream* p_stream,Ref<Resource>& r_res,int &line,String &r_err_str) {
 
-	bool exit;
-	Tag *tag = parse_tag(&exit);
-
-
-	if (!tag) {
-		error=ERR_FILE_CORRUPT;
-		if (!exit) // shouldn't have exited
-			ERR_FAIL_V(error);
-		error=ERR_FILE_EOF;
-		return error;
+	VariantParser::Token token;
+	VariantParser::get_token(p_stream,token,line,r_err_str);
+	if (token.type!=VariantParser::TK_NUMBER) {
+		r_err_str="Expected number (sub-resource index)";
+		return ERR_PARSE_ERROR;
 	}
 
-	RES res;
-	//Object *obj=NULL;
+	int index = token.value;
 
-	bool main;
+	String path = local_path+"::"+itos(index);
 
-	if (tag->name=="ext_resource") {
+	if (!ResourceCache::has(path)) {
+		r_err_str="Can't load cached sub-resource: "+path;
+		return ERR_PARSE_ERROR;
+	}
 
-		error=ERR_FILE_CORRUPT;
-		ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": <ext_resource> missing 'path' field.");
-		ERR_FAIL_COND_V(!tag->args.has("path"),ERR_FILE_CORRUPT);
+	r_res=RES(ResourceCache::get(path));
 
-		String type="Resource";
-		if (tag->args.has("type"))
-			type=tag->args["type"];
-
-		String path = tag->args["path"];
-
-
-		ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": <ext_resource> can't use a local path, this is a bug?.");
-		ERR_FAIL_COND_V(path.begins_with("local://"),ERR_FILE_CORRUPT);
-
-		if (path.find("://")==-1 && path.is_rel_path()) {
-			// path is relative to file being loaded, so convert to a resource path
-			path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
-		}
-
-		if (remaps.has(path)) {
-			path=remaps[path];
-		}
-
-		RES res = ResourceLoader::load(path,type);
-
-		if (res.is_null()) {
-
-			if (ResourceLoader::get_abort_on_missing_resources()) {
-				ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": <ext_resource> referenced nonexistent resource at: "+path);
-				ERR_FAIL_V(error);
-			} else {
-				ResourceLoader::notify_dependency_error(local_path,path,type);
-			}
-		} else {
-
-			resource_cache.push_back(res);
-		}
-
-		if (tag->args.has("index")) {
-			ExtResource er;
-			er.path=path;
-			er.type=type;
-			ext_resources[tag->args["index"].to_int()]=er;
-		}
-
-
-		Error err = close_tag("ext_resource");
-		if (err)
-			return error;
-
-
-		error=OK;
-		resource_current++;
-		return error;
-
-	} else if (tag->name=="resource") {
-
-		main=false;
-	} else if (tag->name=="main_resource") {
-		main=true;
-	} else {
-		ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": unexpected main tag: "+tag->name);
-		error=ERR_FILE_CORRUPT;
-		ERR_FAIL_V(error);
+	VariantParser::get_token(p_stream,token,line,r_err_str);
+	if (token.type!=VariantParser::TK_PARENTHESIS_CLOSE) {
+		r_err_str="Expected ')'";
+		return ERR_PARSE_ERROR;
 	}
 
 
-	String type;
-	String path;
-	int subres=0;
-
-	if (!main) {
-		//loading resource
-
-		error=ERR_FILE_CORRUPT;
-		ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": <resource> missing 'len' field.");
-		ERR_FAIL_COND_V(!tag->args.has("path"),ERR_FILE_CORRUPT);
-		ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": <resource> missing 'type' field.");
-		ERR_FAIL_COND_V(!tag->args.has("type"),ERR_FILE_CORRUPT);
-		path=tag->args["path"];
-
-		error=OK;
-
-		if (path.begins_with("local://")) {
-			//built-in resource (but really external)
-
-			path=path.replace("local://","");
-			subres=path.to_int();
-			path=local_path+"::"+path;
-		}
-
-
-		if (ResourceCache::has(path)) {
-			Error err = close_tag(tag->name);
-			if (err) {
-				error=ERR_FILE_CORRUPT;
-			}
-			ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": Unable to close <resource> tag.");
-			ERR_FAIL_COND_V( err, err );
-			resource_current++;
-			error=OK;
-			return OK;
-		}
-
-		type = tag->args["type"];
-	} else {
-		type=resource_type;
-	}
-
-	Object *obj = ObjectTypeDB::instance(type);
-	if (!obj) {
-		error=ERR_FILE_CORRUPT;
-		ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": Object of unrecognized type in file: "+type);
-	}
-	ERR_FAIL_COND_V(!obj,ERR_FILE_CORRUPT);
-
-	Resource *r = obj->cast_to<Resource>();
-	if (!r) {
-		error=ERR_FILE_CORRUPT;
-		memdelete(obj); //bye
-		ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": Object type in resource field not a resource, type is: "+obj->get_type());
-		ERR_FAIL_COND_V(!r,ERR_FILE_CORRUPT);
-	}
-
-	res = RES( r );
-	if (path!="")
-		r->set_path(path);
-	r->set_subindex(subres);
-
-	//load properties
-
-	while(true) {
-
-		String name;
-		Variant v;
-		Error err;
-		err = parse_property(v,name);
-		if (err==ERR_FILE_EOF) //tag closed
-			break;
-		if (err!=OK) {
-			ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": Text Parsing aborted.");
-			ERR_FAIL_COND_V(err!=OK,ERR_FILE_CORRUPT);
-		}
-
-		obj->set(name,v);
-	}
-#ifdef TOOLS_ENABLED
-	res->set_edited(false);
-#endif
-	resource_cache.push_back(res); //keep it in mem until finished loading
-	resource_current++;
-	if (main) {
-		f->close();
-		resource=res;
-		resource->set_path(res_path);
-		error=ERR_FILE_EOF;
-		return error;
-
-	}
-	error=OK;
-#endif
 	return OK;
 }
 
-int ResourceInteractiveLoaderText::get_stage() const {
+Error ResourceInteractiveLoaderText::_parse_ext_resource(VariantParser::Stream* p_stream,Ref<Resource>& r_res,int &line,String &r_err_str){
 
-	return resource_current;
-}
-int ResourceInteractiveLoaderText::get_stage_count() const {
-
-	return resources_total;//+ext_resources;
-}
-
-ResourceInteractiveLoaderText::~ResourceInteractiveLoaderText() {
-
-	memdelete(f);
-}
-
-void ResourceInteractiveLoaderText::get_dependencies(FileAccess *f,List<String> *p_dependencies,bool p_add_types) {
-
-#if 0
-	open(f);
-	ERR_FAIL_COND(error!=OK);
-
-	while(true) {
-		bool exit;
-		Tag *tag = parse_tag(&exit);
-
-
-		if (!tag) {
-			error=ERR_FILE_CORRUPT;
-			ERR_FAIL_COND(!exit);
-			error=ERR_FILE_EOF;
-			return;
-		}
-
-		if (tag->name!="ext_resource") {
-
-			return;
-		}
-
-		error=ERR_FILE_CORRUPT;
-		ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": <ext_resource> missing 'path' field.");
-		ERR_FAIL_COND(!tag->args.has("path"));
-
-		String path = tag->args["path"];
-
-		ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": <ext_resource> can't use a local path, this is a bug?.");
-		ERR_FAIL_COND(path.begins_with("local://"));
-
-		if (path.find("://")==-1 && path.is_rel_path()) {
-			// path is relative to file being loaded, so convert to a resource path
-			path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
-		}
-
-		if (path.ends_with("*")) {
-			ERR_FAIL_COND(!tag->args.has("type"));
-			String type = tag->args["type"];
-			path = ResourceLoader::guess_full_filename(path,type);
-		}
-
-		if (p_add_types && tag->args.has("type")) {
-			path+="::"+tag->args["type"];
-		}
-
-		p_dependencies->push_back(path);
-
-		Error err = close_tag("ext_resource");
-		if (err)
-			return;
-
-		error=OK;
+	VariantParser::Token token;
+	VariantParser::get_token(p_stream,token,line,r_err_str);
+	if (token.type!=VariantParser::TK_NUMBER) {
+		r_err_str="Expected number (sub-resource index)";
+		return ERR_PARSE_ERROR;
 	}
-#endif
+
+	int id = token.value;
+
+
+	if (!ext_resources.has(id)) {
+		r_err_str="Can't load cached ext-resource #"+itos(id);
+		return ERR_PARSE_ERROR;
+	}
+
+	String path = ext_resources[id].path;
+	String type = ext_resources[id].type;
+
+	if (path.find("://")==-1 && path.is_rel_path()) {
+		// path is relative to file being loaded, so convert to a resource path
+		path=Globals::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
+
+	}
+
+	r_res=ResourceLoader::load(path,type);
+
+	if (r_res.is_null()) {
+		r_err_str="Couldn't load external resource: "+path;
+		return ERR_PARSE_ERROR;
+	}
+
+	VariantParser::get_token(p_stream,token,line,r_err_str);
+	if (token.type!=VariantParser::TK_PARENTHESIS_CLOSE) {
+		r_err_str="Expected ')'";
+		return ERR_PARSE_ERROR;
+	}
+
+
+	return OK;
 }
 
-Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const String &p_path,const Map<String,String>& p_map) {
 
+Error ResourceInteractiveLoaderText::poll() {
 
+	if (error!=OK)
+		return error;
 
 	if (next_tag.name=="ext_resource") {
 
-		Error err;
 
 		if (!next_tag.fields.has("path")) {
-			err=ERR_FILE_CORRUPT;
+			error=ERR_FILE_CORRUPT;
 			error_text="Missing 'path' in external resource tag";
 			_printerr();
-			return err;
+			return error;
 		}
 
 		if (!next_tag.fields.has("type")) {
-			err=ERR_FILE_CORRUPT;
+			error=ERR_FILE_CORRUPT;
 			error_text="Missing 'type' in external resource tag";
 			_printerr();
-			return err;
+			return error;
 		}
 
-		if (!next_tag.fields.has("index")) {
-			err=ERR_FILE_CORRUPT;
-			error_text="Missing 'index' in external resource tag";
+		if (!next_tag.fields.has("id")) {
+			error=ERR_FILE_CORRUPT;
+			error_text="Missing 'id' in external resource tag";
 			_printerr();
-			return err;
+			return error;
 		}
 
 		String path=next_tag.fields["path"];
 		String type=next_tag.fields["type"];
-		int index=next_tag.fields["index"];
+		int index=next_tag.fields["id"];
 
 
 		if (path.find("://")==-1 && path.is_rel_path()) {
@@ -355,19 +171,450 @@ Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const 
 		er.type=type;
 		ext_resources[index]=er;
 
-		err = VariantParser::parse_tag(&stream,lines,error_text,next_tag);
+		error = VariantParser::parse_tag(&stream,lines,error_text,next_tag,&rp);
 
-		if (err) {
-			error_text="Unexpected end of file";
+		if (error) {
+			_printerr();
+		}
+
+		return error;
+
+
+	} else if (next_tag.name=="sub_resource") {
+
+
+		if (!next_tag.fields.has("type")) {
+			error=ERR_FILE_CORRUPT;
+			error_text="Missing 'type' in external resource tag";
+			_printerr();
+			return error;
+		}
+
+		if (!next_tag.fields.has("id")) {
+			error=ERR_FILE_CORRUPT;
+			error_text="Missing 'index' in external resource tag";
+			_printerr();
+			return error;
+		}
+
+		String type=next_tag.fields["type"];
+		int id=next_tag.fields["id"];
+
+		String path = local_path+"::"+itos(id);
+
+
+		//bool exists=ResourceCache::has(path);
+
+		Ref<Resource> res;
+
+		if ( !ResourceCache::has(path)) { //only if it doesn't exist
+
+			Object *obj = ObjectTypeDB::instance(type);
+			if (!obj) {
+
+				error_text+="Can't create sub resource of type: "+type;
+				_printerr();
+				error=ERR_FILE_CORRUPT;
+				return error;
+			}
+
+
+			Resource *r = obj->cast_to<Resource>();
+			if (!r) {
+
+				error_text+="Can't create sub resource of type, because not a resource: "+type;
+				_printerr();
+				error=ERR_FILE_CORRUPT;
+				return error;
+			}
+
+			res=Ref<Resource>(r);
+			resource_cache.push_back(res);
+			res->set_path(path);
+
+		}
+
+		while(true) {
+
+			String assign;
+			Variant value;
+
+			error = VariantParser::parse_tag_assign_eof(&stream,lines,error_text,next_tag,assign,value,&rp);
+
+			if (error) {
+				_printerr();
+				return error;
+			}
+
+			if (assign!=String()) {
+				if (res.is_valid()) {
+					res->set(assign,value);
+				}
+				//it's assignment
+			} else if (next_tag.name!=String()) {
+
+				error=OK;
+				break;
+			} else {
+				error=ERR_FILE_CORRUPT;
+				error_text="Premature end of file while parsing [sub_resource]";
+				_printerr();
+				return error;
+			}
+
+
+		}
+
+		return OK;
+
+	} else if (next_tag.name=="resource") {
+
+		if (is_scene) {
+
+			error_text+="found the 'resource' tag on a scene file!";
 			_printerr();
 			error=ERR_FILE_CORRUPT;
 			return error;
 		}
 
+		Object *obj = ObjectTypeDB::instance(res_type);
+		if (!obj) {
+
+			error_text+="Can't create sub resource of type: "+res_type;
+			_printerr();
+			error=ERR_FILE_CORRUPT;
+			return error;
+		}
+
+
+		Resource *r = obj->cast_to<Resource>();
+		if (!r) {
+
+			error_text+="Can't create sub resource of type, because not a resource: "+res_type;
+			_printerr();
+			error=ERR_FILE_CORRUPT;
+			return error;
+		}
+
+		resource=Ref<Resource>(r);
+
+		while(true) {
+
+			String assign;
+			Variant value;
+
+			error = VariantParser::parse_tag_assign_eof(&stream,lines,error_text,next_tag,assign,value,&rp);
+
+			if (error) {
+				if (error!=ERR_FILE_EOF) {
+					_printerr();
+				}
+				return error;
+			}
+
+			if (assign!=String()) {
+				resource->set(assign,value);
+				//it's assignment
+			} else if (next_tag.name!=String()) {
+
+				error=ERR_FILE_CORRUPT;
+				error_text="Extra tag found when parsing main resource file";
+				_printerr();
+				return error;
+			} else {
+				error=ERR_FILE_EOF;
+				return error;
+			}
+
+		}
+
 		return OK;
+
+	} else if (next_tag.name=="node") {
+
+		if (!is_scene) {
+
+			error_text+="found the 'node' tag on a resource file!";
+			_printerr();
+			error=ERR_FILE_CORRUPT;
+			return error;
+		}
+
+		/*
+		int add_name(const StringName& p_name);
+		int add_value(const Variant& p_value);
+		int add_node_path(const NodePath& p_path);
+		int add_node(int p_parent,int p_owner,int p_type,int p_name, int p_instance);
+		void add_node_property(int p_node,int p_name,int p_value);
+		void add_node_group(int p_node,int p_group);
+		void set_base_scene(int p_idx);
+		void add_connection(int p_from,int p_to, int p_signal, int p_method, int p_flags,const Vector<int>& p_binds);
+		void add_editable_instance(const NodePath& p_path);
+
+		*/
+
+		int parent=-1;
+		int owner=-1;
+		int type=-1;
+		int name=-1;
+		int instance=-1;
+		int base_scene=-1;
+
+		if (next_tag.fields.has("name")) {
+			name=packed_scene->get_state()->add_name(next_tag.fields["name"]);
+		}
+
+		if (next_tag.fields.has("parent")) {
+			parent=packed_scene->get_state()->add_node_path(next_tag.fields["parent"]);
+		}
+
+		if (next_tag.fields.has("owner")) {
+			owner=packed_scene->get_state()->add_node_path(next_tag.fields["owner"]);
+		} else {
+			if (parent!=-1)
+				owner=0; //if no owner, owner is root
+		}
+
+
+		if (next_tag.fields.has("type")) {
+			type=packed_scene->get_state()->add_name(next_tag.fields["type"]);
+		}
+
+		if (next_tag.fields.has("instance")) {
+
+			instance=packed_scene->get_state()->add_value(next_tag.fields["instance"]);
+
+			if (packed_scene->get_state()->get_node_count()==0 && parent==-1) {
+				packed_scene->get_state()->set_base_scene(instance);
+				instance=-1;
+			}
+		}
+
+		int node_id = packed_scene->get_state()->add_node(parent,owner,type,name,instance);
+
+
+		while(true) {
+
+			String assign;
+			Variant value;
+
+			error = VariantParser::parse_tag_assign_eof(&stream,lines,error_text,next_tag,assign,value,&rp);
+
+			if (error) {
+				if (error!=ERR_FILE_EOF) {
+					_printerr();
+				} else {
+					resource=packed_scene;
+				}
+				return error;
+			}
+
+			if (assign!=String()) {
+				int nameidx = packed_scene->get_state()->add_name(assign);
+				int valueidx = packed_scene->get_state()->add_value(value);
+				packed_scene->get_state()->add_node_property(node_id,nameidx,valueidx);
+				//it's assignment
+			} else if (next_tag.name!=String()) {
+
+				error=OK;
+				return error;
+			} else {
+
+				resource=packed_scene;
+				error=ERR_FILE_EOF;
+				return error;
+			}
+
+		}
+
+		return OK;
+
+	} else if (next_tag.name=="connection") {
+
+		if (!is_scene) {
+
+			error_text+="found the 'connection' tag on a resource file!";
+			_printerr();
+			error=ERR_FILE_CORRUPT;
+			return error;
+		}
+
+		if (!next_tag.fields.has("from")) {
+			error=ERR_FILE_CORRUPT;
+			error_text="missing 'from' field fron connection tag";
+			return error;
+		}
+
+		if (!next_tag.fields.has("to")) {
+			error=ERR_FILE_CORRUPT;
+			error_text="missing 'to' field fron connection tag";
+			return error;
+		}
+
+		if (!next_tag.fields.has("signal")) {
+			error=ERR_FILE_CORRUPT;
+			error_text="missing 'signal' field fron connection tag";
+			return error;
+		}
+
+		if (!next_tag.fields.has("method")) {
+			error=ERR_FILE_CORRUPT;
+			error_text="missing 'method' field fron connection tag";
+			return error;
+		}
+
+		NodePath from = next_tag.fields["from"];
+		NodePath to = next_tag.fields["to"];
+		StringName method = next_tag.fields["method"];
+		StringName signal = next_tag.fields["signal"];
+		int flags=CONNECT_PERSIST;
+		Array binds;
+
+		if (next_tag.fields.has("flags")) {
+			flags=next_tag.fields["flags"];
+		}
+
+		if (next_tag.fields.has("binds")) {
+			binds=next_tag.fields["binds"];
+		}
+
+		Vector<int> bind_ints;
+		for(int i=9;i<binds.size();i++) {
+			bind_ints.push_back( packed_scene->get_state()->add_value( bind_ints[i] ) );
+		}
+
+		packed_scene->get_state()->add_connection(
+					packed_scene->get_state()->add_node_path(from.simplified()),
+					packed_scene->get_state()->add_node_path(to.simplified()),
+					packed_scene->get_state()->add_name(signal),
+					packed_scene->get_state()->add_name(method),
+					flags,
+					bind_ints
+					);
+
+		error = VariantParser::parse_tag(&stream,lines,error_text,next_tag,&rp);
+
+		if (error) {
+			if (error!=ERR_FILE_EOF) {
+				_printerr();
+			} else {
+				resource=packed_scene;
+			}
+		}
+
+		return error;
+	} else if (next_tag.name=="editable") {
+
+		if (!is_scene) {
+
+			error_text+="found the 'editable' tag on a resource file!";
+			_printerr();
+			error=ERR_FILE_CORRUPT;
+			return error;
+		}
+
+		if (!next_tag.fields.has("path")) {
+			error=ERR_FILE_CORRUPT;
+			error_text="missing 'path' field fron connection tag";
+			_printerr();
+			return error;
+		}
+
+		NodePath path = next_tag.fields["path"];
+
+		packed_scene->get_state()->add_editable_instance(path.simplified());
+
+		error = VariantParser::parse_tag(&stream,lines,error_text,next_tag,&rp);
+
+		if (error) {
+			if (error!=ERR_FILE_EOF) {
+				_printerr();
+			} else {
+				resource=packed_scene;
+			}
+		}
+
+		return error;
+
+	} else {
+
+		error_text+="Unknown tag in file: "+next_tag.name;
+		_printerr();
+		error=ERR_FILE_CORRUPT;
+		return error;
+	}
+
+	return OK;
+}
+
+int ResourceInteractiveLoaderText::get_stage() const {
+
+	return resource_current;
+}
+int ResourceInteractiveLoaderText::get_stage_count() const {
+
+	return resources_total;//+ext_resources;
+}
+
+ResourceInteractiveLoaderText::~ResourceInteractiveLoaderText() {
+
+	memdelete(f);
+}
+
+void ResourceInteractiveLoaderText::get_dependencies(FileAccess *f,List<String> *p_dependencies,bool p_add_types) {
+
+
+	open(f);
+	ERR_FAIL_COND(error!=OK);
+
+	while(next_tag.name=="ext_resource") {
+
+		if (!next_tag.fields.has("type")) {
+			error=ERR_FILE_CORRUPT;
+			error_text="Missing 'type' in external resource tag";
+			_printerr();
+			return;
+		}
+
+		if (!next_tag.fields.has("id")) {
+			error=ERR_FILE_CORRUPT;
+			error_text="Missing 'index' in external resource tag";
+			_printerr();
+			return;
+		}
+
+		String path=next_tag.fields["path"];
+		String type=next_tag.fields["type"];
+
+
+		if (path.find("://")==-1 && path.is_rel_path()) {
+			// path is relative to file being loaded, so convert to a resource path
+			path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
+		}
+
+
+		if (p_add_types) {
+			path+="::"+type;
+		}
+
+		p_dependencies->push_back(path);
+
+		Error err = VariantParser::parse_tag(&stream,lines,error_text,next_tag,&rp);
+
+		if (err) {
+			error_text="Unexpected end of file";
+			_printerr();
+			error=ERR_FILE_CORRUPT;
+		}
 
 
 	}
+}
+
+Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const String &p_path,const Map<String,String>& p_map) {
+
+
+
 
 #if 0
 	open(p_f);
@@ -562,10 +809,11 @@ void ResourceInteractiveLoaderText::open(FileAccess *p_f) {
 		}
 	}
 
-	print_line("TAG NAME: "+tag.name);
 
 	if (tag.name=="gd_scene") {
 		is_scene=true;
+		packed_scene.instance();
+
 	} else if (tag.name=="gd_resource") {
 		if (!tag.fields.has("type")) {
 			error_text="Missing 'type' field in 'gd_resource' tag";
@@ -593,7 +841,7 @@ void ResourceInteractiveLoaderText::open(FileAccess *p_f) {
 	}
 
 
-	err = VariantParser::parse_tag(&stream,lines,error_text,next_tag);
+	err = VariantParser::parse_tag(&stream,lines,error_text,next_tag,&rp);
 
 	if (err) {
 		error_text="Unexpected end of file";
@@ -601,12 +849,14 @@ void ResourceInteractiveLoaderText::open(FileAccess *p_f) {
 		error=ERR_FILE_CORRUPT;
 	}
 
+	rp.ext_func=_parse_ext_resources;
+	rp.sub_func=_parse_sub_resources;
+	rp.func=NULL;
+	rp.userdata=this;
+
 }
 
-void ResourceInteractiveLoaderText::_printerr() {
 
-	ERR_PRINT(String(res_path+":"+itos(lines)+" - Parse Error: "+error_text).utf8().get_data());
-}
 
 
 String ResourceInteractiveLoaderText::recognize(FileAccess *p_f) {
@@ -707,6 +957,8 @@ String ResourceFormatLoaderText::get_resource_type(const String &p_path) const{
 	String ext=p_path.extension().to_lower();
 	if (ext=="tscn")
 		return "PackedScene";
+	else if (ext!="tres")
+		return String();
 
 	//for anyhting else must test..
 
@@ -978,7 +1230,7 @@ void ResourceFormatSaverTextInstance::write_property(const String& p_name,const 
 
 			if (external_resources.has(res)) {
 
-				f->store_string("Resource( "+itos(external_resources[res]+1)+" )");
+				f->store_string("ExtResource( "+itos(external_resources[res]+1)+" )");
 			} else {
 
 				if (internal_resources.has(res)) {
@@ -1434,6 +1686,9 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 			Ref<PackedScene> instance = state->get_node_instance(i);
 			Vector<StringName> groups = state->get_node_groups(i);
 
+			if (instance.is_valid())
+				print_line("for path "+String(path)+" instance "+instance->get_path());
+
 			String header="[node";
 			header+=" name=\""+String(name)+"\"";
 			if (type!=StringName()) {
@@ -1451,7 +1706,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 				for(int j=0;j<groups.size();j++) {
 					if (j>0)
 						sgroups+=", ";
-					sgroups+="\""+groups[i].operator String().c_escape()+"\"";
+					sgroups+="\""+groups[j].operator String().c_escape()+"\"";
 				}
 				sgroups+=" ]";
 				header+=sgroups;
