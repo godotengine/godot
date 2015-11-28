@@ -286,7 +286,7 @@ friend class GDScriptLanguage;
 	String name;
 
 
-	GDInstance* _create_instance(const Variant** p_args,int p_argcount,Object *p_owner,bool p_isref);
+	GDInstance* _create_instance(const Variant** p_args,int p_argcount,Object *p_owner,bool p_isref,Variant::CallError &r_error);
 
 	void _set_subclass_path(Ref<GDScript>& p_sc,const String& p_path);
 
