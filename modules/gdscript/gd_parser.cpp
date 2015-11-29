@@ -65,8 +65,10 @@ bool GDParser::_enter_indent_block(BlockNode* p_block) {
 
 
 	if (tokenizer->get_token()!=GDTokenizer::TK_COLON) {
-
-		_set_error("':' expected at end of line.");
+		// report location at the previous token (on the previous line)
+		int error_line = tokenizer->get_token_line(-1);
+		int error_column = tokenizer->get_token_column(-1);
+		_set_error("':' expected at end of line.",error_line,error_column);
 		return false;
 	}
 	tokenizer->advance();
