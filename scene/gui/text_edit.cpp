@@ -1610,6 +1610,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						else
 							break;
 					}
+					if(auto_indent){
+						// indent once again if previous line will end with ':'
+						// (i.e. colon precedes current cursor position)
+						if(cursor.column>0 && text[cursor.line][cursor.column-1]==':') {
+							ins+="\t";
+						}
+					}
 					
 					_insert_text_at_cursor(ins);
 					_push_current_op();
@@ -2869,6 +2876,10 @@ bool TextEdit::is_syntax_coloring_enabled() const {
 	return syntax_coloring;
 }
 
+void TextEdit::set_auto_indent(bool p_auto_indent) {
+	auto_indent = p_auto_indent;
+}
+
 void TextEdit::cut() {
 	
 	if (!selection.active)
@@ -3836,7 +3847,7 @@ TextEdit::TextEdit()  {
 	next_operation_is_complex=false;
 	auto_brace_completion_enabled=false;
 	brace_matching_enabled=false;
-	
+	auto_indent=false;
 }
 
 TextEdit::~TextEdit()
