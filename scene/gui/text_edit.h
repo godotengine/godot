@@ -213,6 +213,7 @@ class TextEdit : public Control  {
 	
 	bool auto_brace_completion_enabled;
 	bool brace_matching_enabled;
+	bool auto_indent;
 	bool cut_copy_line;
 
 	uint64_t last_dblclk;
@@ -323,6 +324,7 @@ public:
 		brace_matching_enabled=p_enabled;
 		update();
 	}
+	void set_auto_indent(bool p_auto_indent);
 
 	void cursor_set_column(int p_col, bool p_adjust_viewport=true);
 	void cursor_set_line(int p_row, bool p_adjust_viewport=true);
