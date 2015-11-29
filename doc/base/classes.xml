@@ -26372,14 +26372,14 @@ This method controls whether the position between two cached points is interpola
 			<return type="String">
 			</return>
 			<description>
-				Returns a copy of the array's contents formatted as String. Fast alternative to get_string_from_utf8(), assuming the content is ASCII-only (unlike the UTF-8 function, this function maps every byte to a character in the string, so any multibyte sequence will be torn apart).
+			Returns a copy of the array's contents formatted as String. Fast alternative to get_string_from_utf8(), assuming the content is ASCII-only (unlike the UTF-8 function, this function maps every byte to a character in the string, so any multibyte sequence will be torn apart).
 			</description>
 		</method>
 		<method name="get_string_from_utf8">
 			<return type="String">
 			</return>
 			<description>
-				Returns a copy of the array's contents formatted as String, assuming the array is formatted as UTF-8. Slower than get_string_from_ascii(), but works for UTF-8. Usually you should prefer this function over get_string_from_ascii() to support international input.
+			Returns a copy of the array's contents formatted as String, assuming the array is formatted as UTF-8. Slower than get_string_from_ascii(), but works for UTF-8. Usually you should prefer this function over get_string_from_ascii() to support international input.
 			</description>
 		</method>
 		<method name="push_back">
@@ -27522,6 +27522,12 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_v_scroll">
 			<return type="Object">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="scroll_to_line">
+			<argument index="0" name="arg0" type="int">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -33139,7 +33145,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="RawArray">
 			</return>
 			<description>
-				Convert the String (which is a character array) to RawArray (which is an array of bytes). The conversion is speeded up in comparison to to_utf8() with the assumption that all the characters the String contains are only ASCII characters.
+			Convert the String (which is a character array) to RawArray (which is an array of bytes). The conversion is speeded up in comparison to to_utf8() with the assumption that all the characters the String contains are only ASCII characters.
 			</description>
 		</method>
 		<method name="to_float">
@@ -33174,7 +33180,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="RawArray">
 			</return>
 			<description>
-				Convert the String (which is an array of characters) to RawArray (which is an array of bytes). The conversion is a bit slower than to_ascii(), but supports all UTF-8 characters. Therefore, you should prefer this function over to_ascii().
+			Convert the String (which is an array of characters) to RawArray (which is an array of bytes). The conversion is a bit slower than to_ascii(), but supports all UTF-8 characters. Therefore, you should prefer this function over to_ascii().
 			</description>
 		</method>
 		<method name="xml_escape">
@@ -37754,7 +37760,7 @@ This method controls whether the position between two cached points is interpola
 	Vector class, which performs basic 3D vector math operations.
 	</brief_description>
 	<description>
-	Vector3 is one of the core classes of the engine, and includes several built-in helper functions to perform basic vecor math operations.
+	Vector3 is one of the core classes of the engine, and includes several built-in helper functions to perform basic vector math operations.
 	</description>
 	<methods>
 		<method name="abs">
