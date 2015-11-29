@@ -2388,6 +2388,10 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				log->add_message("REDO: "+action);
 
 		} break;
+		case TOOLS_ORPHAN_RESOURCES: {
+
+			orphan_resources->show();
+		} break;
 
 		case EDIT_REVERT: {
 
@@ -5048,6 +5052,17 @@ EditorNode::EditorNode() {
 	p=import_menu->get_popup();
 	p->connect("item_pressed",this,"_menu_option");
 
+	tool_menu = memnew( MenuButton );
+	tool_menu->set_tooltip("Miscelaneous project or scene wide tools.");
+	tool_menu->set_text("Tools");
+
+	//tool_menu->set_icon(gui_base->get_icon("Save","EditorIcons"));
+	left_menu_hb->add_child( tool_menu );
+
+	p=tool_menu->get_popup();
+	p->connect("item_pressed",this,"_menu_option");
+	p->add_item("Orphan Resource Explorer",TOOLS_ORPHAN_RESOURCES);
+
 	export_button = memnew( ToolButton );
 	export_button->set_tooltip("Export the project to many platforms.");
 	export_button->set_text("Export");
@@ -5476,7 +5491,8 @@ EditorNode::EditorNode() {
 
 
 
-
+	orphan_resources = memnew( OrphanResourcesDialog );
+	gui_base->add_child(orphan_resources);
 
 
 

@@ -91,4 +91,29 @@ public:
 	DependencyErrorDialog();
 };
 
+
+
+class OrphanResourcesDialog : public ConfirmationDialog {
+	OBJ_TYPE(OrphanResourcesDialog,ConfirmationDialog);
+
+	DependencyEditor *dep_edit;
+	Tree *files;
+	ConfirmationDialog *delete_confirm;
+	void ok_pressed();
+
+	bool _fill_owners(EditorFileSystemDirectory *efsd, HashMap<String,int>& refs, TreeItem *p_parent);
+
+	List<String> paths;
+	void _find_to_delete(TreeItem* p_item,List<String>& paths);
+	void _delete_confirm();
+	void _button_pressed(Object *p_item,int p_column, int p_id);
+
+	void refresh();
+	static void _bind_methods();
+public:
+
+	void show();
+	OrphanResourcesDialog();
+};
+
 #endif // DEPENDENCY_EDITOR_H

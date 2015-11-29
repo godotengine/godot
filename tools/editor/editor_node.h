@@ -133,6 +133,7 @@ class EditorNode : public Node {
 		EDIT_UNDO,
 		EDIT_REDO,
 		EDIT_REVERT,
+		TOOLS_ORPHAN_RESOURCES,
 		RESOURCE_NEW,
 		RESOURCE_LOAD,
 		RESOURCE_SAVE,
@@ -237,6 +238,7 @@ class EditorNode : public Node {
 	Control *viewport;
 	MenuButton *file_menu;
 	MenuButton *import_menu;
+	MenuButton *tool_menu;
 	ToolButton *export_button;
 	ToolButton *prev_scene;
 	MenuButton *object_menu;
@@ -333,6 +335,7 @@ class EditorNode : public Node {
 
 	DependencyErrorDialog *dependency_error;
 	DependencyEditor *dependency_fixer;
+	OrphanResourcesDialog *orphan_resources;
 
 	TabContainer *dock_slot[DOCK_SLOT_MAX];
 	Rect2 dock_select_rect[DOCK_SLOT_MAX];
