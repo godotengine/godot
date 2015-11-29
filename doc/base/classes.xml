@@ -19503,6 +19503,19 @@ returns:= "username=user&amp;password=pass"
 			<description>
 			</description>
 		</method>
+		<method name="set_keep_screen_on">
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			Set keep screen on if true, or goes to sleep by device setting if false. (for Android/iOS)
+			</description>
+		</method>
+		<method name="is_keep_screen_on" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_iterations_per_second">
 			<argument index="0" name="iterations_per_second" type="int">
 			</argument>
