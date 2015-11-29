@@ -1603,7 +1603,7 @@
 	Axis-Aligned Bounding Box.
 	</brief_description>
 	<description>
-	AABB provides an 3D Axis-Aligned Bounding Box. It consists of a position and a size, and several utility functions. It is typically used for simple (fast) overlap tests.
+	AABB provides an 3D Axis-Aligned Bounding Box. It consists of a position, a size, and several utility functions. It is typically used for simple (fast) overlap tests.
 	</description>
 	<methods>
 		<method name="encloses">
@@ -1628,7 +1628,7 @@
 			<return type="float">
 			</return>
 			<description>
-			Get the area inside the [AABB].
+			Get the area of the [AABB].
 			</description>
 		</method>
 		<method name="get_endpoint">
@@ -1697,7 +1697,7 @@
 			<argument index="0" name="by" type="float">
 			</argument>
 			<description>
-			Return a copy of the AABB grown a given a mount of units towards all the sides.
+			Return a copy of the [AABB] grown a given amount of units towards all the sides.
 			</description>
 		</method>
 		<method name="has_no_area">
@@ -1747,7 +1747,7 @@
 			<argument index="0" name="plane" type="Plane">
 			</argument>
 			<description>
-			Return true if the AABB is at both sides of a plane.
+			Return true if the [AABB] is at both sides of a plane.
 			</description>
 		</method>
 		<method name="intersects_segment">
@@ -1766,7 +1766,7 @@
 			<argument index="0" name="with" type="AABB">
 			</argument>
 			<description>
-			Combine this [AABB] with another one, a larger one is returned that contains both.
+			Combine this [AABB] with another, a larger one is returned that contains both.
 			</description>
 		</method>
 		<method name="AABB">
@@ -26372,14 +26372,14 @@ This method controls whether the position between two cached points is interpola
 			<return type="String">
 			</return>
 			<description>
-				Returns a copy of the array's contents formatted as String. Fast alternative to get_string_from_utf8(), assuming the content is ASCII-only (unlike the UTF-8 function, this function maps every byte to a character in the string, so any multibyte sequence will be torn apart).
+			Returns a copy of the array's contents formatted as String. Fast alternative to get_string_from_utf8(), assuming the content is ASCII-only (unlike the UTF-8 function, this function maps every byte to a character in the string, so any multibyte sequence will be torn apart).
 			</description>
 		</method>
 		<method name="get_string_from_utf8">
 			<return type="String">
 			</return>
 			<description>
-				Returns a copy of the array's contents formatted as String, assuming the array is formatted as UTF-8. Slower than get_string_from_ascii(), but works for UTF-8. Usually you should prefer this function over get_string_from_ascii() to support international input.
+			Returns a copy of the array's contents formatted as String, assuming the array is formatted as UTF-8. Slower than get_string_from_ascii(), but works for UTF-8. Usually you should prefer this function over get_string_from_ascii() to support international input.
 			</description>
 		</method>
 		<method name="push_back">
@@ -26734,8 +26734,10 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="Rect2" category="Built-In Types">
 	<brief_description>
+	2D Axis-aligned bounding box.
 	</brief_description>
 	<description>
+	Rect2 provides an 2D Axis-Aligned Bounding Box. It consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
 	</description>
 	<methods>
 		<method name="clip">
@@ -26744,6 +26746,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
+			Returns the intersection of this [Rect2] and b.
 			</description>
 		</method>
 		<method name="encloses">
@@ -26752,6 +26755,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
+			Returns true if this [Rect2] completely encloses another one.
 			</description>
 		</method>
 		<method name="expand">
@@ -26760,12 +26764,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="to" type="Vector2">
 			</argument>
 			<description>
+			Return this [Rect2] expanded to include a given point.
 			</description>
 		</method>
 		<method name="get_area">
 			<return type="float">
 			</return>
 			<description>
+			Get the area of the [Rect2].
 			</description>
 		</method>
 		<method name="grow">
@@ -26774,12 +26780,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="by" type="float">
 			</argument>
 			<description>
+			Return a copy of the [Rect2] grown a given amount of units towards all the sides.
 			</description>
 		</method>
 		<method name="has_no_area">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if the [Rect2] is flat or empty.
 			</description>
 		</method>
 		<method name="has_point">
@@ -26788,6 +26796,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="point" type="Vector2">
 			</argument>
 			<description>
+			Return true if the [Rect2] contains a point.
 			</description>
 		</method>
 		<method name="intersects">
@@ -26796,6 +26805,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
+			Return true if the [Rect2] overlaps with another.
 			</description>
 		</method>
 		<method name="merge">
@@ -26804,6 +26814,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
+			Combine this [Rect2] with another, a larger one is returned that contains both.
 			</description>
 		</method>
 		<method name="Rect2">
@@ -26814,6 +26825,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="size" type="Vector2">
 			</argument>
 			<description>
+			Construct a [Rect2] by position and size.
 			</description>
 		</method>
 		<method name="Rect2">
@@ -26828,6 +26840,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="height" type="float">
 			</argument>
 			<description>
+			Construct a [Rect2] by x, y, width and height.
 			</description>
 		</method>
 	</methods>
@@ -27522,6 +27535,12 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_v_scroll">
 			<return type="Object">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="scroll_to_line">
+			<argument index="0" name="arg0" type="int">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -33139,7 +33158,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="RawArray">
 			</return>
 			<description>
-				Convert the String (which is a character array) to RawArray (which is an array of bytes). The conversion is speeded up in comparison to to_utf8() with the assumption that all the characters the String contains are only ASCII characters.
+			Convert the String (which is a character array) to RawArray (which is an array of bytes). The conversion is speeded up in comparison to to_utf8() with the assumption that all the characters the String contains are only ASCII characters.
 			</description>
 		</method>
 		<method name="to_float">
@@ -33174,7 +33193,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="RawArray">
 			</return>
 			<description>
-				Convert the String (which is an array of characters) to RawArray (which is an array of bytes). The conversion is a bit slower than to_ascii(), but supports all UTF-8 characters. Therefore, you should prefer this function over to_ascii().
+			Convert the String (which is an array of characters) to RawArray (which is an array of bytes). The conversion is a bit slower than to_ascii(), but supports all UTF-8 characters. Therefore, you should prefer this function over to_ascii().
 			</description>
 		</method>
 		<method name="xml_escape">
@@ -37754,7 +37773,7 @@ This method controls whether the position between two cached points is interpola
 	Vector class, which performs basic 3D vector math operations.
 	</brief_description>
 	<description>
-	Vector3 is one of the core classes of the engine, and includes several built-in helper functions to perform basic vecor math operations.
+	Vector3 is one of the core classes of the engine, and includes several built-in helper functions to perform basic vector math operations.
 	</description>
 	<methods>
 		<method name="abs">
