@@ -44,6 +44,15 @@ if (env["tools"]=="yes"):
 	f.write(reg_exporters)
 	f.close()
 
+	ed_gl_set='#include "editor_settings.h"\n'
+	ed_gl_set+='String EditorSettings::get_global_settings_path() const {\n'
+	ed_gl_set+='\treturn "' + env["global_settings_path"]+'";\n'
+	ed_gl_set+='}\n'
+	reg_exporters+='}\n'
+	f = open("editor_global_settings.cpp","wb")
+	f.write(ed_gl_set)
+	f.close()
+
 	env.Depends("#tools/editor/doc_data_compressed.h","#doc/base/classes.xml")
 	env.Command("#tools/editor/doc_data_compressed.h","#doc/base/classes.xml",make_doc_header)
 

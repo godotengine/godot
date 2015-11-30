@@ -205,17 +205,23 @@ Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool 
 
 	EditorProgress ep("export","Exporting for javascript",104);
 
-	String template_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
+	if (p_debug)
+		src_template=custom_debug_package;
+	else
+		src_template=custom_release_package;
 
-	if (p_debug) {
-
-		src_template=custom_debug_package!=""?custom_debug_package:template_path+"javascript_debug.zip";
-	} else {
-
-		src_template=custom_release_package!=""?custom_release_package:template_path+"javascript_release.zip";
-
+	if (src_template=="") {
+		String err;
+		if (p_debug) {
+			src_template=find_export_template("javascript_debug.zip", &err);
+		} else {
+			src_template=find_export_template("javascript_release.zip", &err);
+		}
+		if (src_template=="") {
+			EditorNode::add_io_error(err);
+			return ERR_FILE_NOT_FOUND;
+		}
 	}
-
 
 	FileAccess *src_f=NULL;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
@@ -337,9 +343,8 @@ bool EditorExportPlatformJavaScript::can_export(String *r_error) const {
 
 	bool valid=true;
 	String err;
-	String exe_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
 
-	if (!FileAccess::exists(exe_path+"javascript_debug.zip") || !FileAccess::exists(exe_path+"javascript_release.zip")) {
+	if (!exists_export_template("javascript_debug.zip") || !exists_export_template("javascript_release.zip")) {
 		valid=false;
 		err+="No export templates found.\nDownload and install export templates.\n";
 	}
