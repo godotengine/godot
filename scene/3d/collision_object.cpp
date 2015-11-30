@@ -31,14 +31,14 @@
 #include "scene/scene_string_names.h"
 void CollisionObject::_update_shapes_from_children() {
 
-	shapes.resize(0);
+	shapes.clear();
 	for(int i=0;i<get_child_count();i++) {
 
 		Node* n = get_child(i);
 		n->call("_add_to_collision_object",this);
 	}
 
-//	_update_shapes();
+	_update_shapes();
 }
 
 void CollisionObject::_notification(int p_what) {
