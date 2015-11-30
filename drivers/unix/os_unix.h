@@ -64,6 +64,8 @@ protected:
 	
 	String stdin_buf;
 
+	String get_global_settings_path() const;
+
 public:
 
 
@@ -111,6 +113,7 @@ public:
 
 	virtual void debug_break();
 
+	virtual String get_installed_templates_path() const;
 	virtual String get_executable_path() const;
 	virtual String get_data_dir() const;
 

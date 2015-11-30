@@ -402,9 +402,9 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
 	String user_file = EditorSettings::get_singleton()->get_settings_path()
 		+"/templates/"+template_file_name;
-	String system_file=EditorSettings::get_singleton()->get_global_settings_path();
+	String system_file=OS::get_singleton()->get_installed_templates_path();
 	bool has_system_path=(system_file!="");
-	system_file+="/templates/"+template_file_name;
+	system_file+=template_file_name;
 
 	// Prefer user file
 	if (FileAccess::exists(user_file)) {
