@@ -1835,6 +1835,7 @@ void ScriptEditor::edit(const Ref<Script>& p_script) {
 	ScriptTextEditor *ste = memnew( ScriptTextEditor );
 	ste->set_edited_script(p_script);
 	ste->get_text_edit()->set_tooltip_request_func(this,"_get_debug_tooltip",ste);
+	ste->get_text_edit()->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/auto_brace_complete"));
 	tab_container->add_child(ste);
 	_go_to_tab(tab_container->get_tab_count()-1);
 
