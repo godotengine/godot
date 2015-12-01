@@ -211,7 +211,8 @@ def configure(env):
 #	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED','-DMPC_FIXED_POINT'])
 
 	if(env["opus"]=="yes"):
-		env.Append(CFLAGS=["-DOPUS_ARM_OPT"])
+		if (env["android_arch"]=="armv6" or env["android_arch"]=="armv7"):
+			env.Append(CFLAGS=["-DOPUS_ARM_OPT"])
 		env.opus_fixed_point="yes"
 
 	if (env['android_stl']=='yes'):
