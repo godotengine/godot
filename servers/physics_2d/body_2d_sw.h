@@ -92,10 +92,11 @@ class Body2DSW : public CollisionObject2DSW {
 	struct AreaCMP {
 
 		Area2DSW *area;
+		int refCount;
 		_FORCE_INLINE_ bool operator==(const AreaCMP& p_cmp) const { return area->get_self() == p_cmp.area->get_self();}
 		_FORCE_INLINE_ bool operator<(const AreaCMP& p_cmp) const { return area->get_priority() < p_cmp.area->get_priority();}
 		_FORCE_INLINE_ AreaCMP() {}
-		_FORCE_INLINE_ AreaCMP(Area2DSW *p_area) { area=p_area;}
+		_FORCE_INLINE_ AreaCMP(Area2DSW *p_area) { area=p_area; refCount=1;}
 	};
 
 
@@ -142,8 +143,23 @@ public:
 	void set_force_integration_callback(ObjectID p_id, const StringName& p_method, const Variant &p_udata=Variant());
 
 
-	_FORCE_INLINE_ void add_area(Area2DSW *p_area) { areas.ordered_insert(AreaCMP(p_area)); }
-	_FORCE_INLINE_ void remove_area(Area2DSW *p_area) { areas.erase(AreaCMP(p_area)); }
+	_FORCE_INLINE_ void add_area(Area2DSW *p_area) {
+		int index = areas.find(AreaCMP(p_area));
+		if( index > -1 ) {
+			areas[index].refCount += 1;
+		} else {
+			areas.ordered_insert(AreaCMP(p_area));
+		}
+	}
+
+	_FORCE_INLINE_ void remove_area(Area2DSW *p_area) {
+		int index = areas.find(AreaCMP(p_area));
+		if( index > -1 ) {
+			areas[index].refCount -= 1;
+			if( areas[index].refCount < 1 )
+				areas.remove(index);
+		}
+	}
 
 	_FORCE_INLINE_ void set_max_contacts_reported(int p_size) { contacts.resize(p_size); contact_count=0; if (mode==Physics2DServer::BODY_MODE_KINEMATIC && p_size) set_active(true);}
 
