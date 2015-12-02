@@ -10353,6 +10353,13 @@ void RasterizerGLES2::_update_framebuffer() {
 	GLuint format_rgba = GL_RGBA;
 	GLuint format_rgb = use_fp16_fb?_GL_RGB16F_EXT:GL_RGB;
 	GLuint format_type = use_fp16_fb?_GL_HALF_FLOAT_OES:GL_UNSIGNED_BYTE;
+	GLuint format_internal=GL_RGBA;
+
+	if (use_16bits_fbo) {
+		format_type=GL_UNSIGNED_SHORT_5_6_5;
+		format_rgba=GL_RGB;
+		format_internal=GL_RGB;
+	}
 	/*GLuint format_luminance = use_fp16_fb?GL_RGB16F:GL_RGBA;
 	GLuint format_luminance_type = use_fp16_fb?(use_fu_GL_HALF_FLOAT_OES):GL_UNSIGNED_BYTE;
 	GLuint format_luminance_components = use_fp16_fb?GL_RGB:GL_RGBA;*/
@@ -10366,7 +10373,7 @@ void RasterizerGLES2::_update_framebuffer() {
 
 	glGenTextures(1, &framebuffer.color);
 	glBindTexture(GL_TEXTURE_2D, framebuffer.color);
-	glTexImage2D(GL_TEXTURE_2D, 0, format_rgba,  framebuffer.width, framebuffer.height, 0, GL_RGBA, format_type, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, format_rgba,  framebuffer.width, framebuffer.height, 0, format_internal, format_type, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 //	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -10391,7 +10398,7 @@ void RasterizerGLES2::_update_framebuffer() {
 		framebuffer.fbo=0;
 		framebuffer.active=false;
 		//print_line("**************** NO FAMEBUFFEEEERRRR????");
-		WARN_PRINT("Could not create framebuffer!!");
+		WARN_PRINT(String("Could not create framebuffer!!, code: "+itos(status)).ascii().get_data());
 	}
 
 	//sample
@@ -10400,7 +10407,7 @@ void RasterizerGLES2::_update_framebuffer() {
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.sample_fbo);
 	glGenTextures(1, &framebuffer.sample_color);
 	glBindTexture(GL_TEXTURE_2D, framebuffer.sample_color);
-	glTexImage2D(GL_TEXTURE_2D, 0, format_rgba,  framebuffer.width, framebuffer.height, 0, GL_RGBA, format_type, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, format_rgba,  framebuffer.width, framebuffer.height, 0, format_internal, format_type, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 //	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -10460,7 +10467,7 @@ void RasterizerGLES2::_update_framebuffer() {
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			glTexImage2D(GL_TEXTURE_2D, 0, format_rgba, size, size, 0,
-				     GL_RGBA, format_type, NULL);
+				     format_internal, format_type, NULL);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 					       GL_TEXTURE_2D, framebuffer.blur[i].color, 0);
 
@@ -11189,6 +11196,11 @@ RasterizerGLES2* RasterizerGLES2::get_singleton() {
 
 int RasterizerGLES2::RenderList::max_elements=RenderList::DEFAULT_MAX_ELEMENTS;
 
+void RasterizerGLES2::set_force_16_bits_fbo(bool p_force) {
+
+	use_16bits_fbo=p_force;
+}
+
 RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,bool p_default_fragment_lighting,bool p_use_reload_hooks) {
 
 	_singleton = this;
@@ -11250,6 +11262,7 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,boo
 	framebuffer.active=false;
 	tc0_id_cache=0;
 	tc0_idx=0;
+	use_16bits_fbo=false;
 };
 
 void RasterizerGLES2::restore_framebuffer() {

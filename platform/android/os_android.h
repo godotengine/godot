@@ -95,6 +95,8 @@ private:
 	bool use_reload_hooks;
 	bool use_apk_expansion;
 
+	bool use_16bits_fbo;
+
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	AudioServerSW *audio_server;
@@ -200,6 +202,7 @@ public:
 	void set_display_size(Size2 p_size);
 
 	void reload_gfx();
+	void set_context_is_16_bits(bool p_is_16);
 
 	void set_need_reload_hooks(bool p_needs_them);
 	virtual void set_screen_orientation(ScreenOrientation p_orientation);

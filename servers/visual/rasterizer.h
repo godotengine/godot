@@ -1029,6 +1029,8 @@ public:
 
 	virtual int get_render_info(VS::RenderInfo p_info)=0;
 
+	virtual void set_force_16_bits_fbo(bool p_force) {}
+
 	Rasterizer();
 	virtual ~Rasterizer() {}
 };

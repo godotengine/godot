@@ -425,6 +425,7 @@ public class GodotView extends GLSurfaceView {
 			if (ec == null) {
 	  			Log.w(TAG, "Trying ConfigChooser fallback");
 	  			ec = fallback.chooseConfig(egl, display, configs);
+				use_32=false;
 			}
 			return ec;
       		}
@@ -654,7 +655,7 @@ public class GodotView extends GLSurfaceView {
 		}
 
 		public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-			GodotLib.newcontext();
+			GodotLib.newcontext(use_32);
 		}
 	}
 }

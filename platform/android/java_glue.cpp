@@ -920,13 +920,19 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_resize(JNIEnv * env, jobj
 
 }
 
-JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_newcontext(JNIEnv * env, jobject obj) {
+JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_newcontext(JNIEnv * env, jobject obj,bool p_32_bits) {
 
 	__android_log_print(ANDROID_LOG_INFO,"godot","^_^_^_^_^ newcontext %lld\n",Thread::get_caller_ID());
+
+	if (os_android) {
+		os_android->set_context_is_16_bits(!p_32_bits);
+	}
+
 	if (os_android && step > 0) {
 
 		os_android->reload_gfx();
 	}
+
 
 }
 
