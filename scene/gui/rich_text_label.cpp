@@ -719,7 +719,7 @@ void RichTextLabel::_input_event(InputEvent p_event) {
 		case InputEvent::KEY: {
 
 			const InputEventKey &k=p_event.key;
-			if (k.pressed && !k.mod.alt && !k.mod.shift && !k.mod.command && !k.mod.meta) {
+			if (k.pressed && !k.mod.alt && !k.mod.shift && !k.mod.meta) {
 				bool handled=true;
 				switch(k.scancode) {
 					case KEY_PAGEUP: {
