@@ -2207,9 +2207,9 @@ TreeItem *PropertyEditor::get_parent_node(String p_path,HashMap<String,TreeItem*
 		}
 
 		item->set_editable(0,false);
-		item->set_selectable(0,false);
+		item->set_selectable(0,subsection_selectable);
 		item->set_editable(1,false);
-		item->set_selectable(1,false);
+		item->set_selectable(1,subsection_selectable);
 
 		if (item->get_parent()==root) {
 
@@ -3511,7 +3511,15 @@ void PropertyEditor::register_text_enter(Node* p_line_edit) {
 
 	if (search_box)
 		search_box->connect("text_changed",this,"_filter_changed");
+}
 
+void PropertyEditor::set_subsection_selectable(bool p_selectable) {
+
+	if (p_selectable==subsection_selectable)
+		return;
+
+	subsection_selectable=p_selectable;
+	update_tree();
 }
 
 PropertyEditor::PropertyEditor() {
@@ -3573,8 +3581,8 @@ PropertyEditor::PropertyEditor() {
 	show_categories=false;
 	refresh_countdown=0;
 	use_doc_hints=false;
-
 	use_filter=false;
+	subsection_selectable=false;
 
 }
 
