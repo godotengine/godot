@@ -1,8 +1,10 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// This code is licensed under the same terms as WebM:
-//  Software License Agreement:  http://www.webmproject.org/license/software/
-//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
+// Use of this source code is governed by a BSD-style license
+// that can be found in the COPYING file in the root of the source
+// tree. An additional intellectual property rights grant can be found
+// in the file PATENTS. All contributing project authors may
+// be found in the AUTHORS file in the root of the source tree.
 // -----------------------------------------------------------------------------
 //
 // Quantize levels for specified number of quantization-levels ([2, 256]).
@@ -13,10 +15,6 @@
 #include <assert.h>
 
 #include "./quant_levels.h"
-
-#if defined(__cplusplus) || defined(c_plusplus)
-extern "C" {
-#endif
 
 #define NUM_SYMBOLS     256
 
@@ -140,15 +138,3 @@ int QuantizeLevels(uint8_t* const data, int width, int height,
   return 1;
 }
 
-int DequantizeLevels(uint8_t* const data, int width, int height) {
-  if (data == NULL || width <= 0 || height <= 0) return 0;
-  // TODO(skal): implement gradient smoothing.
-  (void)data;
-  (void)width;
-  (void)height;
-  return 1;
-}
-
-#if defined(__cplusplus) || defined(c_plusplus)
-}    // extern "C"
-#endif

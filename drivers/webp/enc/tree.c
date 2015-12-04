@@ -1,19 +1,17 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// This code is licensed under the same terms as WebM:
-//  Software License Agreement:  http://www.webmproject.org/license/software/
-//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
+// Use of this source code is governed by a BSD-style license
+// that can be found in the COPYING file in the root of the source
+// tree. An additional intellectual property rights grant can be found
+// in the file PATENTS. All contributing project authors may
+// be found in the AUTHORS file in the root of the source tree.
 // -----------------------------------------------------------------------------
 //
-// Token probabilities
+// Coding of token probabilities, intra modes and segments.
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
 #include "./vp8enci.h"
-
-#if defined(__cplusplus) || defined(c_plusplus)
-extern "C" {
-#endif
 
 //------------------------------------------------------------------------------
 // Default probabilities
@@ -21,7 +19,6 @@ extern "C" {
 // Paragraph 13.5
 const uint8_t
   VP8CoeffsProba0[NUM_TYPES][NUM_BANDS][NUM_CTX][NUM_PROBAS] = {
-  // genereated using vp8_default_coef_probs() in entropy.c:129
   { { { 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128 },
       { 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128 },
       { 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128 }
@@ -157,7 +154,7 @@ const uint8_t
 };
 
 void VP8DefaultProbas(VP8Encoder* const enc) {
-  VP8Proba* const probas = &enc->proba_;
+  VP8EncProba* const probas = &enc->proba_;
   probas->use_skip_proba_ = 0;
   memset(probas->segments_, 255u, sizeof(probas->segments_));
   memcpy(probas->coeffs_, VP8CoeffsProba0, sizeof(VP8CoeffsProba0));
@@ -318,7 +315,7 @@ void VP8CodeIntraModes(VP8Encoder* const enc) {
   VP8EncIterator it;
   VP8IteratorInit(enc, &it);
   do {
-    const VP8MBInfo* mb = it.mb_;
+    const VP8MBInfo* const mb = it.mb_;
     const uint8_t* preds = it.preds_;
     if (enc->segment_hdr_.update_map_) {
       PutSegment(bw, mb->segment_, enc->proba_.segments_);
@@ -343,7 +340,7 @@ void VP8CodeIntraModes(VP8Encoder* const enc) {
       }
     }
     PutUVMode(bw, mb->uv_mode_);
-  } while (VP8IteratorNext(&it, 0));
+  } while (VP8IteratorNext(&it));
 }
 
 //------------------------------------------------------------------------------
@@ -485,7 +482,7 @@ const uint8_t
   }
 };
 
-void VP8WriteProbas(VP8BitWriter* const bw, const VP8Proba* const probas) {
+void VP8WriteProbas(VP8BitWriter* const bw, const VP8EncProba* const probas) {
   int t, b, c, p;
   for (t = 0; t < NUM_TYPES; ++t) {
     for (b = 0; b < NUM_BANDS; ++b) {
@@ -494,17 +491,14 @@ void VP8WriteProbas(VP8BitWriter* const bw, const VP8Proba* const probas) {
           const uint8_t p0 = probas->coeffs_[t][b][c][p];
           const int update = (p0 != VP8CoeffsProba0[t][b][c][p]);
           if (VP8PutBit(bw, update, VP8CoeffsUpdateProba[t][b][c][p])) {
-            VP8PutValue(bw, p0, 8);
+            VP8PutBits(bw, p0, 8);
           }
         }
       }
     }
   }
   if (VP8PutBitUniform(bw, probas->use_skip_proba_)) {
-    VP8PutValue(bw, probas->skip_proba_, 8);
+    VP8PutBits(bw, probas->skip_proba_, 8);
   }
 }
 
-#if defined(__cplusplus) || defined(c_plusplus)
-}    // extern "C"
-#endif

@@ -108,6 +108,7 @@ private:
 	PropertyEditor *platform_options;
 
 	OptionButton *export_mode;
+	CheckButton *convert_text_scenes;
 	VBoxContainer *tree_vb;
 
 	VBoxContainer *image_vb;
