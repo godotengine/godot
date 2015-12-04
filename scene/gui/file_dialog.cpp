@@ -46,6 +46,11 @@ VBoxContainer *FileDialog::get_vbox() {
 }
 
 void FileDialog::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+
+		refresh->set_icon(get_icon("Reload","EditorIcons"));
+	}
 	
 	if (p_what==NOTIFICATION_DRAW) {
 
@@ -699,6 +704,10 @@ FileDialog::FileDialog() {
 	HBoxContainer *pathhb = memnew( HBoxContainer );
 	pathhb->add_child(dir);
 	dir->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	refresh = memnew( ToolButton );
+	refresh->connect("pressed",this,"_update_file_list");
+	pathhb->add_child(refresh);
 
 	drives = memnew( OptionButton );
 	pathhb->add_child(drives);
