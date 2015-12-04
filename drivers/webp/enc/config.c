@@ -1,19 +1,17 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// This code is licensed under the same terms as WebM:
-//  Software License Agreement:  http://www.webmproject.org/license/software/
-//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
+// Use of this source code is governed by a BSD-style license
+// that can be found in the COPYING file in the root of the source
+// tree. An additional intellectual property rights grant can be found
+// in the file PATENTS. All contributing project authors may
+// be found in the AUTHORS file in the root of the source tree.
 // -----------------------------------------------------------------------------
 //
 // Coding tools configuration
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
-#include "../encode.h"
-
-#if defined(__cplusplus) || defined(c_plusplus)
-extern "C" {
-#endif
+#include "../webp/encode.h"
 
 //------------------------------------------------------------------------------
 // WebPConfig
@@ -31,9 +29,9 @@ int WebPConfigInitInternal(WebPConfig* config,
   config->target_PSNR = 0.;
   config->method = 4;
   config->sns_strength = 50;
-  config->filter_strength = 20;   // default: light filtering
+  config->filter_strength = 60;   // mid-filtering
   config->filter_sharpness = 0;
-  config->filter_type = 0;        // default: simple
+  config->filter_type = 1;        // default: strong (so U/V is filtered too)
   config->partitions = 0;
   config->segments = 4;
   config->pass = 1;
@@ -45,7 +43,15 @@ int WebPConfigInitInternal(WebPConfig* config,
   config->alpha_filtering = 1;
   config->alpha_quality = 100;
   config->lossless = 0;
+  config->exact = 0;
   config->image_hint = WEBP_HINT_DEFAULT;
+  config->emulate_jpeg_size = 0;
+  config->thread_level = 0;
+  config->low_memory = 0;
+  config->near_lossless = 100;
+#ifdef WEBP_EXPERIMENTAL_FEATURES
+  config->delta_palettization = 0;
+#endif // WEBP_EXPERIMENTAL_FEATURES
 
   // TODO(skal): tune.
   switch (preset) {
@@ -53,11 +59,13 @@ int WebPConfigInitInternal(WebPConfig* config,
       config->sns_strength = 80;
       config->filter_sharpness = 4;
       config->filter_strength = 35;
+      config->preprocessing &= ~2;   // no dithering
       break;
     case WEBP_PRESET_PHOTO:
       config->sns_strength = 80;
       config->filter_sharpness = 3;
       config->filter_strength = 30;
+      config->preprocessing |= 2;
       break;
     case WEBP_PRESET_DRAWING:
       config->sns_strength = 25;
@@ -67,10 +75,12 @@ int WebPConfigInitInternal(WebPConfig* config,
     case WEBP_PRESET_ICON:
       config->sns_strength = 0;
       config->filter_strength = 0;   // disable filtering to retain sharpness
+      config->preprocessing &= ~2;   // no dithering
       break;
     case WEBP_PRESET_TEXT:
       config->sns_strength = 0;
       config->filter_strength = 0;   // disable filtering to retain sharpness
+      config->preprocessing &= ~2;   // no dithering
       config->segments = 2;
       break;
     case WEBP_PRESET_DEFAULT:
@@ -106,7 +116,7 @@ int WebPValidateConfig(const WebPConfig* config) {
     return 0;
   if (config->show_compressed < 0 || config->show_compressed > 1)
     return 0;
-  if (config->preprocessing < 0 || config->preprocessing > 1)
+  if (config->preprocessing < 0 || config->preprocessing > 7)
     return 0;
   if (config->partitions < 0 || config->partitions > 3)
     return 0;
@@ -120,13 +130,44 @@ int WebPValidateConfig(const WebPConfig* config) {
     return 0;
   if (config->lossless < 0 || config->lossless > 1)
     return 0;
+  if (config->near_lossless < 0 || config->near_lossless > 100)
+    return 0;
   if (config->image_hint >= WEBP_HINT_LAST)
     return 0;
+  if (config->emulate_jpeg_size < 0 || config->emulate_jpeg_size > 1)
+    return 0;
+  if (config->thread_level < 0 || config->thread_level > 1)
+    return 0;
+  if (config->low_memory < 0 || config->low_memory > 1)
+    return 0;
+  if (config->exact < 0 || config->exact > 1)
+    return 0;
+#ifdef WEBP_EXPERIMENTAL_FEATURES
+  if (config->delta_palettization < 0 || config->delta_palettization > 1)
+    return 0;
+#endif  // WEBP_EXPERIMENTAL_FEATURES
   return 1;
 }
 
 //------------------------------------------------------------------------------
 
-#if defined(__cplusplus) || defined(c_plusplus)
-}    // extern "C"
-#endif
+#define MAX_LEVEL 9
+
+// Mapping between -z level and -m / -q parameter settings.
+static const struct {
+  uint8_t method_;
+  uint8_t quality_;
+} kLosslessPresets[MAX_LEVEL + 1] = {
+  { 0,  0 }, { 1, 20 }, { 2, 25 }, { 3, 30 }, { 3, 50 },
+  { 4, 50 }, { 4, 75 }, { 4, 90 }, { 5, 90 }, { 6, 100 }
+};
+
+int WebPConfigLosslessPreset(WebPConfig* config, int level) {
+  if (config == NULL || level < 0 || level > MAX_LEVEL) return 0;
+  config->lossless = 1;
+  config->method = kLosslessPresets[level].method_;
+  config->quality = kLosslessPresets[level].quality_;
+  return 1;
+}
+
+//------------------------------------------------------------------------------

@@ -284,6 +284,8 @@ protected:
 	int sample_action_max_hz;
 	bool sample_action_trim;
 
+	bool convert_text_scenes;
+
 	static EditorImportExport* singleton;
 
 	static void _bind_methods();
@@ -361,6 +363,9 @@ public:
 
 	void sample_set_trim(bool p_trim);
 	bool sample_get_trim() const;
+
+	void set_convert_text_scenes(bool p_convert);
+	bool get_convert_text_scenes() const;
 
 	void load_config();
 	void save_config();

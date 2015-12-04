@@ -1,8 +1,10 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// This code is licensed under the same terms as WebM:
-//  Software License Agreement:  http://www.webmproject.org/license/software/
-//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
+// Use of this source code is governed by a BSD-style license
+// that can be found in the COPYING file in the root of the source
+// tree. An additional intellectual property rights grant can be found
+// in the file PATENTS. All contributing project authors may
+// be found in the AUTHORS file in the root of the source tree.
 // -----------------------------------------------------------------------------
 //
 // Author: Jyrki Alakuijala (jyrki@google.com)
@@ -14,7 +16,7 @@
 #include <string.h>
 #include "./huffman_encode.h"
 #include "../utils/utils.h"
-#include "../format_constants.h"
+#include "../webp/format_constants.h"
 
 // -----------------------------------------------------------------------------
 // Util function to optimize the symbol map for RLE coding
@@ -25,14 +27,14 @@ static int ValuesShouldBeCollapsedToStrideAverage(int a, int b) {
 }
 
 // Change the population counts in a way that the consequent
-// Hufmann tree compression, especially its RLE-part, give smaller output.
-static int OptimizeHuffmanForRle(int length, int* const counts) {
-  uint8_t* good_for_rle;
+// Huffman tree compression, especially its RLE-part, give smaller output.
+static void OptimizeHuffmanForRle(int length, uint8_t* const good_for_rle,
+                                  uint32_t* const counts) {
   // 1) Let's make the Huffman code more compatible with rle encoding.
   int i;
   for (; length >= 0; --length) {
     if (length == 0) {
-      return 1;  // All zeros.
+      return;  // All zeros.
     }
     if (counts[length - 1] != 0) {
       // Now counts[0..length - 1] does not have trailing zeros.
@@ -41,15 +43,11 @@ static int OptimizeHuffmanForRle(int length, int* const counts) {
   }
   // 2) Let's mark all population counts that already can be encoded
   // with an rle code.
-  good_for_rle = (uint8_t*)calloc(length, 1);
-  if (good_for_rle == NULL) {
-    return 0;
-  }
   {
     // Let's not spoil any of the existing good rle codes.
     // Mark any seq of 0's that is longer as 5 as a good_for_rle.
     // Mark any seq of non-0's that is longer as 7 as a good_for_rle.
-    int symbol = counts[0];
+    uint32_t symbol = counts[0];
     int stride = 0;
     for (i = 0; i < length + 1; ++i) {
       if (i == length || counts[i] != symbol) {
@@ -71,17 +69,17 @@ static int OptimizeHuffmanForRle(int length, int* const counts) {
   }
   // 3) Let's replace those population counts that lead to more rle codes.
   {
-    int stride = 0;
-    int limit = counts[0];
-    int sum = 0;
+    uint32_t stride = 0;
+    uint32_t limit = counts[0];
+    uint32_t sum = 0;
     for (i = 0; i < length + 1; ++i) {
       if (i == length || good_for_rle[i] ||
           (i != 0 && good_for_rle[i - 1]) ||
           !ValuesShouldBeCollapsedToStrideAverage(counts[i], limit)) {
         if (stride >= 4 || (stride >= 3 && sum == 0)) {
-          int k;
+          uint32_t k;
           // The stride must end, collapse what we have, if we have enough (4).
-          int count = (sum + stride / 2) / stride;
+          uint32_t count = (sum + stride / 2) / stride;
           if (count < 1) {
             count = 1;
           }
@@ -117,16 +115,7 @@ static int OptimizeHuffmanForRle(int length, int* const counts) {
       }
     }
   }
-  free(good_for_rle);
-  return 1;
 }
-
-typedef struct {
-  int total_count_;
-  int value_;
-  int pool_index_left_;
-  int pool_index_right_;
-} HuffmanTree;
 
 // A comparer function for two Huffman trees: sorts first by 'total count'
 // (more comes first), and then by 'value' (more comes first).
@@ -138,13 +127,8 @@ static int CompareHuffmanTrees(const void* ptr1, const void* ptr2) {
   } else if (t1->total_count_ < t2->total_count_) {
     return 1;
   } else {
-    if (t1->value_ < t2->value_) {
-      return -1;
-    }
-    if (t1->value_ > t2->value_) {
-      return 1;
-    }
-    return 0;
+    assert(t1->value_ != t2->value_);
+    return (t1->value_ < t2->value_) ? -1 : 1;
   }
 }
 
@@ -178,12 +162,12 @@ static void SetBitDepths(const HuffmanTree* const tree,
 // we are not planning to use this with extremely long blocks.
 //
 // See http://en.wikipedia.org/wiki/Huffman_coding
-static int GenerateOptimalTree(const int* const histogram, int histogram_size,
-                               int tree_depth_limit,
-                               uint8_t* const bit_depths) {
-  int count_min;
+static void GenerateOptimalTree(const uint32_t* const histogram,
+                                int histogram_size,
+                                HuffmanTree* tree, int tree_depth_limit,
+                                uint8_t* const bit_depths) {
+  uint32_t count_min;
   HuffmanTree* tree_pool;
-  HuffmanTree* tree;
   int tree_size_orig = 0;
   int i;
 
@@ -193,12 +177,10 @@ static int GenerateOptimalTree(const int* const histogram, int histogram_size,
     }
   }
 
-  // 3 * tree_size is enough to cover all the nodes representing a
-  // population and all the inserted nodes combining two existing nodes.
-  // The tree pool needs 2 * (tree_size_orig - 1) entities, and the
-  // tree needs exactly tree_size_orig entities.
-  tree = (HuffmanTree*)WebPSafeMalloc(3ULL * tree_size_orig, sizeof(*tree));
-  if (tree == NULL) return 0;
+  if (tree_size_orig == 0) {   // pretty optimal already!
+    return;
+  }
+
   tree_pool = tree + tree_size_orig;
 
   // For block sizes with less than 64k symbols we never need to do a
@@ -214,7 +196,7 @@ static int GenerateOptimalTree(const int* const histogram, int histogram_size,
     int j;
     for (j = 0; j < histogram_size; ++j) {
       if (histogram[j] != 0) {
-        const int count =
+        const uint32_t count =
             (histogram[j] < count_min) ? count_min : histogram[j];
         tree[idx].total_count_ = count;
         tree[idx].value_ = j;
@@ -230,11 +212,11 @@ static int GenerateOptimalTree(const int* const histogram, int histogram_size,
     if (tree_size > 1) {  // Normal case.
       int tree_pool_size = 0;
       while (tree_size > 1) {  // Finish when we have only one root.
-        int count;
+        uint32_t count;
         tree_pool[tree_pool_size++] = tree[tree_size - 1];
         tree_pool[tree_pool_size++] = tree[tree_size - 2];
         count = tree_pool[tree_pool_size - 1].total_count_ +
-            tree_pool[tree_pool_size - 2].total_count_;
+                tree_pool[tree_pool_size - 2].total_count_;
         tree_size -= 2;
         {
           // Search for the insertion point.
@@ -271,8 +253,6 @@ static int GenerateOptimalTree(const int* const histogram, int histogram_size,
       }
     }
   }
-  free(tree);
-  return 1;
 }
 
 // -----------------------------------------------------------------------------
@@ -423,17 +403,15 @@ static void ConvertBitDepthsToSymbols(HuffmanTreeCode* const tree) {
 // -----------------------------------------------------------------------------
 // Main entry point
 
-int VP8LCreateHuffmanTree(int* const histogram, int tree_depth_limit,
-                          HuffmanTreeCode* const tree) {
-  const int num_symbols = tree->num_symbols;
-  if (!OptimizeHuffmanForRle(num_symbols, histogram)) {
-    return 0;
-  }
-  if (!GenerateOptimalTree(histogram, num_symbols,
-                           tree_depth_limit, tree->code_lengths)) {
-    return 0;
-  }
+void VP8LCreateHuffmanTree(uint32_t* const histogram, int tree_depth_limit,
+                           uint8_t* const buf_rle,
+                           HuffmanTree* const huff_tree,
+                           HuffmanTreeCode* const huff_code) {
+  const int num_symbols = huff_code->num_symbols;
+  memset(buf_rle, 0, num_symbols * sizeof(*buf_rle));
+  OptimizeHuffmanForRle(num_symbols, buf_rle, histogram);
+  GenerateOptimalTree(histogram, num_symbols, huff_tree, tree_depth_limit,
+                      huff_code->code_lengths);
   // Create the actual bit codes for the bit lengths.
-  ConvertBitDepthsToSymbols(tree);
-  return 1;
+  ConvertBitDepthsToSymbols(huff_code);
 }

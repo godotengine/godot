@@ -1562,6 +1562,17 @@ void EditorImportExport::image_export_get_images_in_group(const StringName& p_gr
 	}
 }
 
+void EditorImportExport::set_convert_text_scenes(bool p_convert) {
+
+	convert_text_scenes=p_convert;
+}
+
+bool EditorImportExport::get_convert_text_scenes() const{
+
+	return convert_text_scenes;
+}
+
+
 void EditorImportExport::load_config() {
 
 	Ref<ConfigFile> cf = memnew( ConfigFile );
@@ -1603,6 +1614,12 @@ void EditorImportExport::load_config() {
 			image_formats.insert(f[i].strip_edges());
 		}
 	}
+
+	if (cf->has_section("convert_scenes")) {
+
+		convert_text_scenes = cf->get_value("convert_scenes","convert_text_scenes");
+	}
+
 
 	if (cf->has_section("export_filter_files")) {
 
@@ -1837,6 +1854,8 @@ void EditorImportExport::save_config() {
 		case SCRIPT_ACTION_ENCRYPT: cf->set_value("script","action","encrypt"); break;
 	}
 
+	cf->set_value("convert_scenes","convert_text_scenes",convert_text_scenes);
+
 	cf->set_value("script","encrypt_key",script_key);
 
 	switch(sample_action) {
@@ -1934,6 +1953,8 @@ EditorImportExport::EditorImportExport() {
 	sample_action=SAMPLE_ACTION_NONE;
 	sample_action_max_hz=44100;
 	sample_action_trim=false;
+
+	convert_text_scenes=true;
 
 }
 
