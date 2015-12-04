@@ -34,6 +34,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/tool_button.h"
 #include "os/dir_access.h"
 #include "box_container.h"
 /**
@@ -86,6 +87,8 @@ private:
 	OptionButton *filter;
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
+
+	ToolButton *refresh;
 	
 	Vector<String> filters;
 
