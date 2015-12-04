@@ -520,6 +520,10 @@ class EditorFontImportDialog : public ConfirmationDialog {
 			return;
 		}
 
+		if (dest->get_line_edit()->get_text().get_file()==".fnt") {
+			dest->get_line_edit()->set_text(dest->get_line_edit()->get_text().get_base_dir() + "/" + source->get_line_edit()->get_text().get_file().basename() + ".fnt" );
+		}
+
 		Ref<ResourceImportMetadata> rimd = get_rimd();
 
 		if (rimd.is_null()) {
