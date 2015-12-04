@@ -1,5 +1,7 @@
 # NREX: Node RegEx
 
+Version 0.1
+
 Small node-based regular expression library. It only does text pattern
 matchhing, not replacement. To use add the files `nrex.hpp`, `nrex.cpp`
 and `nrex_config.h` to your project and follow the example:
@@ -32,7 +34,7 @@ Currently supported features:
  * Unicode `\uFFFF` code points
  * Positive `(?=)` and negative `(?!)` lookahead
  * Positive `(?<=)` and negative `(?<!)` lookbehind (fixed length and no alternations)
- * Backreferences `\1` to `\9` (with option to expand to `\99`)
+ * Backreferences `\1` and `\g{1}` (limited by default to 9 - can be unlimited)
 
 ## License
 
