@@ -2042,7 +2042,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				return;
 			};
 			// fallthrough to save_as
-		} break;
+		};
 		case FILE_SAVE_AS_SCENE: {
 			
 			Node *scene = editor_data.get_edited_scene_root();
