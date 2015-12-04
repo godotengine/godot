@@ -26945,7 +26945,7 @@ This method controls whether the position between two cached points is interpola
 		Lazy (non-greedy) quantifiers [code]*?[/code]
 		Begining [code]^[/code] and end [code]$[/code] anchors
 		Alternation [code]|[/code]
-		Backreferences [code]\1[/code] to [code]\9[/code]
+		Backreferences [code]\1[/code] and [code]\g{1}[/code]
 		POSIX character classes [code][[:alnum:]][/code]
 		Lookahead [code](?=)[/code], [code](?!)[/code] and lookbehind [code](?&lt;=)[/code], [code](?&lt;!)[/code]
 		ASCII [code]\xFF[/code] and Unicode [code]\uFFFF[/code] code points (in a style similar to Python)
@@ -26957,9 +26957,10 @@ This method controls whether the position between two cached points is interpola
 			</return>
 			<argument index="0" name="pattern" type="String">
 			</argument>
-			<argument index="1" name="expanded" type="bool" default="true">
+			<argument index="1" name="capture" type="int" default="9">
 			</argument>
 			<description>
+            Compiles and assign the regular expression pattern to use. The limit on the number of capturing groups can be specified or made unlimited if negative.
 			</description>
 		</method>
 		<method name="find" qualifiers="const">
