@@ -36,7 +36,7 @@ public:
 	bool is_valid() const;
 	int get_capture_count() const;
 	String get_capture(int capture) const;
-	Error compile(const String& p_pattern, bool expanded = false);
+	Error compile(const String& p_pattern, int capture = 9);
 	int find(const String& p_text, int p_start = 0, int p_end = -1) const;
 
 	RegEx();
