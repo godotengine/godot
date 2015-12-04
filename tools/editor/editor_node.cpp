@@ -1563,6 +1563,10 @@ void EditorNode::_edit_current() {
 		scene_tree_dock->set_selected(NULL);
 		property_editor->edit( NULL );
 		object_menu->set_disabled(true);
+
+		if (editor_plugin_over)
+			editor_plugin_over->make_visible(false);
+
 		return;
 	}
 
