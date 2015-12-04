@@ -1410,12 +1410,22 @@ void EditorNode::_dialog_action(String p_file) {
 			save_resource_in_path(current_res,p_file);
 
 		} break;
-		default: { //save scene?
+		default: { //save scene, resource, other types?
 		
 			if (file->get_mode()==FileDialog::MODE_SAVE_FILE) {
 
-				//_save_scene(p_file);
-				_save_scene_with_preview(p_file);
+				uint32_t current = editor_history.get_current();
+				Object *current_obj = current>0 ? ObjectDB::get_instance(current) : NULL;
+
+				if (current_obj->cast_to<SceneTree>()) {
+					//_save_scene(p_file);
+					_save_scene_with_preview(p_file);
+				} else if (current_obj->cast_to<Resource>()) {
+					RES current_res = RES(current_obj->cast_to<Resource>());
+					save_resource_in_path(current_res,p_file);
+				} else {
+					//TODO: handle other types?
+				}
 			}
 			
 		} break;
