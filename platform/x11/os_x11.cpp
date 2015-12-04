@@ -576,7 +576,8 @@ Point2 OS_X11::get_mouse_pos() const {
 }
 
 void OS_X11::set_window_title(const String& p_title) {
-	XStoreName(x11_display,x11_window,p_title.utf8().get_data());
+	//XStoreName(x11_display,x11_window,p_title.utf8().get_data());
+	Xutf8SetWMProperties(x11_display, x11_window, p_title.utf8().get_data(), NULL, NULL, 0, NULL, NULL, NULL);
 }
 
 void OS_X11::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
