@@ -108,6 +108,7 @@ private:
 	ToolButton *mode_list;
 
 
+	ToolButton *refresh;
 	ToolButton *favorite;
 
 	ToolButton *fav_up;
