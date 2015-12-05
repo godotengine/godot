@@ -162,6 +162,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_tool_menu(int p_option);
 	void _animation_save_menu(int p_option);
 
+
 	AnimationPlayerEditor();
 protected:
 
@@ -170,6 +171,9 @@ protected:
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 public:
+
+	AnimationPlayer *get_player() const;
+	static AnimationPlayerEditor *singleton;
 
 	Dictionary get_state() const;
 	void set_state(const Dictionary& p_state);

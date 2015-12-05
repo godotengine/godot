@@ -612,6 +612,7 @@ void ObjectTypeDB::add_property(StringName p_type,const PropertyInfo& p_pinfo, c
 	psg._setptr=mb_set;
 	psg._getptr=mb_get;
 	psg.index=p_index;
+	psg.type=p_pinfo.type;
 
 	type->property_setget[p_pinfo.name]=psg;
 
@@ -634,7 +635,7 @@ void ObjectTypeDB::get_property_list(StringName p_type,List<PropertyInfo> *p_lis
 	}
 
 }
-bool ObjectTypeDB::set_property(Object* p_object,const StringName& p_property, const Variant& p_value) {
+bool ObjectTypeDB::set_property(Object* p_object,const StringName& p_property, const Variant& p_value,bool *r_valid) {
 
 
 	TypeInfo *type=types.getptr(p_object->get_type_name());
@@ -643,13 +644,17 @@ bool ObjectTypeDB::set_property(Object* p_object,const StringName& p_property, c
 		const PropertySetGet *psg = check->property_setget.getptr(p_property);
 		if (psg) {
 
-			if (!psg->setter)
+			if (!psg->setter) {
+				if (r_valid)
+					*r_valid=false;
 				return true; //return true but do nothing
+			}
+
+			Variant::CallError ce;
 
 			if (psg->index>=0) {
 				Variant index=psg->index;
 				const Variant* arg[2]={&index,&p_value};
-				Variant::CallError ce;
 //				p_object->call(psg->setter,arg,2,ce);
 				if (psg->_setptr) {
 					psg->_setptr->call(p_object,arg,2,ce);
@@ -660,13 +665,16 @@ bool ObjectTypeDB::set_property(Object* p_object,const StringName& p_property, c
 
 			} else {
 				const Variant* arg[1]={&p_value};
-				Variant::CallError ce;
 				if (psg->_setptr) {
 					psg->_setptr->call(p_object,arg,1,ce);
 				} else {
 					p_object->call(psg->setter,arg,1,ce);
 				}
 			}
+
+			if (r_valid)
+				*r_valid=ce.error==Variant::CallError::CALL_OK;
+
 			return true;
 		}
 
@@ -716,6 +724,29 @@ bool ObjectTypeDB::get_property(Object* p_object,const StringName& p_property, V
 	}
 
 	return false;
+}
+
+Variant::Type ObjectTypeDB::get_property_type(const StringName& p_type, const StringName& p_property,bool *r_is_valid) {
+
+	TypeInfo *type=types.getptr(p_type);
+	TypeInfo *check=type;
+	while(check) {
+		const PropertySetGet *psg = check->property_setget.getptr(p_property);
+		if (psg) {
+
+			if (r_is_valid)
+				*r_is_valid=true;
+
+			return psg->type;
+		}
+
+		check=check->inherits_ptr;
+	}
+	if (r_is_valid)
+		*r_is_valid=false;
+
+	return Variant::NIL;
+
 }
 
 

@@ -373,6 +373,8 @@ public:
 	virtual bool set(const StringName& p_name, const Variant& p_value);
 	virtual bool get(const StringName& p_name, Variant &r_ret) const;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
+	virtual Variant::Type get_property_type(const StringName& p_name,bool *r_is_valid=NULL) const;
+
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName& p_method) const;

@@ -959,7 +959,7 @@ Variant Variant::call(const StringName& p_method,const Variant** p_args,int p_ar
 #define VCALL(m_type,m_method) _VariantCall::_call_##m_type##_##m_method
 
 
-Variant Variant::construct(const Variant::Type p_type,const Variant** p_args,int p_argcount,CallError &r_error) {
+Variant Variant::construct(const Variant::Type p_type, const Variant** p_args, int p_argcount, CallError &r_error, bool p_strict) {
 
 	r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
 	ERR_FAIL_INDEX_V(p_type,VARIANT_MAX,Variant());
@@ -1035,7 +1035,7 @@ Variant Variant::construct(const Variant::Type p_type,const Variant** p_args,int
 
 	} else if (p_argcount==1 && p_args[0]->type==p_type) {
 		return *p_args[0]; //copy construct
-	} else if (p_argcount==1 && Variant::can_convert(p_args[0]->type,p_type)) {
+	} else if (p_argcount==1 && (!p_strict || Variant::can_convert(p_args[0]->type,p_type))) {
 		//near match construct
 
 		switch(p_type) {

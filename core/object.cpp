@@ -314,6 +314,7 @@ void Object::set(const StringName& p_name, const Variant& p_value, bool *r_valid
 
 	_edited=true;
 #endif
+
 	if (script_instance) {
 
 		if (script_instance->set(p_name,p_value)) {
@@ -326,9 +327,9 @@ void Object::set(const StringName& p_name, const Variant& p_value, bool *r_valid
 
 	//try built-in setgetter
 	{
-		if (ObjectTypeDB::set_property(this,p_name,p_value)) {
-			if (r_valid)
-				*r_valid=true;
+		if (ObjectTypeDB::set_property(this,p_name,p_value,r_valid)) {
+			//if (r_valid)
+			//	*r_valid=true;
 			return;
 		}
 	}
@@ -1691,6 +1692,26 @@ void Object::get_translatable_strings(List<String> *p_strings) const {
 
 		p_strings->push_back(text);
 	}
+
+}
+
+Variant::Type Object::get_static_property_type(const StringName& p_property, bool *r_valid) const {
+
+	bool valid;
+	Variant::Type t = ObjectTypeDB::get_property_type(get_type_name(),p_property,&valid);
+	if (valid) {
+		if (r_valid)
+			*r_valid=true;
+		return t;
+	}
+
+	if (get_script_instance()) {
+		return get_script_instance()->get_property_type(p_property,r_valid);
+	}
+	if (r_valid)
+		*r_valid=false;
+
+	return Variant::NIL;
 
 }
 

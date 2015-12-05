@@ -68,6 +68,7 @@ private:
 
 	struct TrackNodeCache {
 
+		NodePath path;
 		uint32_t id;
 		RES resource;
 		Node *node;
@@ -84,6 +85,7 @@ private:
 
 		struct PropertyAnim {
 
+			TrackNodeCache *owner;
 			SpecialProperty special; //small optimization
 			StringName prop;
 			Object *object;
