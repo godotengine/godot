@@ -267,6 +267,20 @@ void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properti
 	}
 }
 
+Variant::Type PlaceHolderScriptInstance::get_property_type(const StringName& p_name,bool *r_is_valid) const {
+
+	if (values.has(p_name))	{
+		if (r_is_valid)
+			*r_is_valid=true;
+		return values[p_name].get_type();
+	}
+	if (r_is_valid)
+		*r_is_valid=false;
+
+	return Variant::NIL;
+}
+
+
 void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties,const Map<StringName,Variant>& p_values) {
 
 

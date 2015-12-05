@@ -89,6 +89,8 @@ class AnimationKeyEditor : public VBoxContainer  {
 		TRACK_MENU_NEXT_STEP,
 		TRACK_MENU_PREV_STEP,
 		TRACK_MENU_OPTIMIZE,
+		TRACK_MENU_CLEAN_UP,
+		TRACK_MENU_CLEAN_UP_CONFIRM,
 		CURVE_SET_LINEAR,
 		CURVE_SET_IN,
 		CURVE_SET_OUT,
@@ -190,6 +192,11 @@ class AnimationKeyEditor : public VBoxContainer  {
 	SpinBox *optimize_angular_error;
 	SpinBox *optimize_max_angle;
 
+	ConfirmationDialog *cleanup_dialog;
+	CheckButton *cleanup_keys;
+	CheckButton *cleanup_tracks;
+	CheckButton *cleanup_all;
+
 	SpinBox *step;
 
 	MenuButton *menu_add_track;
@@ -284,6 +291,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 
 	void _animation_changed();
 	void _animation_optimize();
+	void _cleanup_animation(Ref<Animation> p_animation);
 
 	void _scroll_changed(double);
 

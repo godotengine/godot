@@ -390,7 +390,7 @@ public:
 
 	Variant call(const StringName& p_method,const Variant** p_args,int p_argcount,CallError &r_error);
 	Variant call(const StringName& p_method,const Variant& p_arg1=Variant(),const Variant& p_arg2=Variant(),const Variant& p_arg3=Variant(),const Variant& p_arg4=Variant(),const Variant& p_arg5=Variant());
-	static Variant construct(const Variant::Type,const Variant** p_args,int p_argcount,CallError &r_error);
+	static Variant construct(const Variant::Type,const Variant** p_args,int p_argcount,CallError &r_error,bool p_strict=true);
 
 	void get_method_list(List<MethodInfo> *p_list) const;
 	bool has_method(const StringName& p_method) const;

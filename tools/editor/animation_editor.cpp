@@ -34,6 +34,7 @@
 #include "pair.h"
 #include "scene/gui/separator.h"
 #include "editor_node.h"
+#include "tools/editor/plugins/animation_player_editor_plugin.h"
 /* Missing to fix:
 
   *Set
@@ -903,6 +904,23 @@ void AnimationKeyEditor::_menu_track(int p_type) {
 
 			optimize_dialog->popup_centered(Size2(250,180));
 		} break;
+		case TRACK_MENU_CLEAN_UP: {
+
+			cleanup_dialog->popup_centered_minsize(Size2(300,0));
+		} break;
+		case TRACK_MENU_CLEAN_UP_CONFIRM: {
+
+			if (cleanup_all->is_pressed()) {
+				List<StringName> names;
+				AnimationPlayerEditor::singleton->get_player()->get_animation_list(&names);
+				for (List<StringName>::Element *E=names.front();E;E=E->next()) {
+					_cleanup_animation(AnimationPlayerEditor::singleton->get_player()->get_animation(E->get()));
+				}
+			} else {
+				_cleanup_animation(animation);
+
+			}
+		} break;
 		case CURVE_SET_LINEAR: {
 			curve_edit->force_transition(1.0);
 
@@ -933,6 +951,57 @@ void AnimationKeyEditor::_menu_track(int p_type) {
 
 }
 
+void AnimationKeyEditor::_cleanup_animation(Ref<Animation> p_animation) {
+
+
+	for(int i=0;i<p_animation->get_track_count();i++) {
+
+		bool prop_exists=false;
+		Variant::Type valid_type=Variant::NIL;
+		Object *obj=NULL;
+
+		RES res;
+		Node *node = root->get_node_and_resource(animation->track_get_path(i),res);
+
+		if (res.is_valid()) {
+			obj=res.ptr();
+		} else if (node) {
+			obj=node;
+		}
+
+		if (obj && animation->track_get_type(i)==Animation::TYPE_VALUE) {
+			valid_type=obj->get_static_property_type(animation->track_get_path(i).get_property(),&prop_exists);
+		}
+
+		if (!obj && cleanup_tracks->is_pressed()) {
+
+			animation->remove_track(i);
+			i--;
+			continue;
+		}
+
+		if (!prop_exists || animation->track_get_type(i)!=Animation::TYPE_VALUE || cleanup_keys->is_pressed()==false)
+			continue;
+
+		for(int j=0;j<animation->track_get_key_count(i);j++) {
+
+			Variant v = animation->track_get_key_value(i,j);
+
+			if (!Variant::can_convert(v.get_type(),valid_type)) {
+				animation->track_remove_key(i,j);
+				j--;
+			}
+		}
+
+		if (animation->track_get_key_count(i)==0 && cleanup_tracks->is_pressed()) {
+			animation->remove_track(i);
+			i--;
+		}
+	}
+
+	undo_redo->clear_history();
+	_update_paths();
+}
 
 void AnimationKeyEditor::_animation_optimize()  {
 
@@ -1042,6 +1111,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 	timecolor = Color::html("ff4a414f");
 	Color hover_color = Color(1,1,1,0.05);
 	Color select_color = Color(1,1,1,0.1);
+	Color invalid_path_color = Color(1,0.6,0.4,0.5);
 	Color track_select_color =Color::html("ffbd8e8e");
 
 	Ref<Texture> remove_icon = get_icon("Remove","EditorIcons");
@@ -1067,6 +1137,9 @@ void AnimationKeyEditor::_track_editor_draw() {
 		get_icon("KeyXform","EditorIcons"),
 		get_icon("KeyCall","EditorIcons")
 	};
+
+	Ref<Texture> invalid_icon = get_icon("KeyInvalid","EditorIcons");
+	Ref<Texture> invalid_icon_hover = get_icon("KeyInvalidHover","EditorIcons");
 
 	Ref<Texture> hsize_icon = get_icon("Hsize","EditorIcons");
 
@@ -1254,6 +1327,23 @@ void AnimationKeyEditor::_track_editor_draw() {
 			break;
 		int y = h+i*h+sep;
 
+		bool prop_exists=false;
+		Variant::Type valid_type=Variant::NIL;
+		Object *obj=NULL;
+
+		RES res;
+		Node *node = root->get_node_and_resource(animation->track_get_path(idx),res);
+
+		if (res.is_valid()) {
+			obj=res.ptr();
+		} else if (node) {
+			obj=node;
+		}
+
+		if (obj && animation->track_get_type(idx)==Animation::TYPE_VALUE) {
+			valid_type=obj->get_static_property_type(animation->track_get_path(idx).get_property(),&prop_exists);
+		}
+
 
 		if (/*mouse_over.over!=MouseOver::OVER_NONE &&*/ idx==mouse_over.track) {
 			Color sepc=hover_color;
@@ -1274,6 +1364,8 @@ void AnimationKeyEditor::_track_editor_draw() {
 			ncol=track_select_color;
 		te->draw_string(font,Point2(ofs+Point2(type_icon[0]->get_width()+sep,y+font->get_ascent()+(sep/2))).floor(),np,ncol,name_limit-(type_icon[0]->get_width()+sep)-5);
 
+		if (!obj)
+			te->draw_line(ofs+Point2(0,y+h/2),ofs+Point2(name_limit,y+h/2),invalid_path_color);
 
 		te->draw_line(ofs+Point2(0,y+h),ofs+Point2(size.width,y+h),sepcolor);
 
@@ -1339,6 +1431,8 @@ void AnimationKeyEditor::_track_editor_draw() {
 		int kc=animation->track_get_key_count(idx);
 		bool first=true;
 
+
+
 		for(int i=0;i<kc;i++) {
 
 
@@ -1386,7 +1480,21 @@ void AnimationKeyEditor::_track_editor_draw() {
 
 			}
 
-			te->draw_texture(tex,ofs+Point2(x,y+key_vofs).floor());
+			if (prop_exists && !Variant::can_convert(value.get_type(),valid_type)) {
+				te->draw_texture(invalid_icon,ofs+Point2(x,y+key_vofs).floor());
+			}
+
+			if (prop_exists && !Variant::can_convert(value.get_type(),valid_type)) {
+				if (tex==type_hover)
+					te->draw_texture(invalid_icon_hover,ofs+Point2(x,y+key_vofs).floor());
+				else
+					te->draw_texture(invalid_icon,ofs+Point2(x,y+key_vofs).floor());
+			} else {
+
+				te->draw_texture(tex,ofs+Point2(x,y+key_vofs).floor());
+			}
+
+
 			first=false;
 		}
 
@@ -2555,6 +2663,8 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 
 						String text;
 						text="time: "+rtos(animation->track_get_key_time(idx,mouse_over.over_key))+"\n";
+
+
 						switch(animation->track_get_type(idx)) {
 
 							case Animation::TYPE_TRANSFORM: {
@@ -2569,8 +2679,33 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 							} break;
 							case Animation::TYPE_VALUE: {
 
-								Variant v = animation->track_get_key_value(idx,mouse_over.over_key);
-								text+="value: "+String(v)+"\n";
+								Variant v = animation->track_get_key_value(idx,mouse_over.over_key);;
+								//text+="value: "+String(v)+"\n";
+
+								bool prop_exists=false;
+								Variant::Type valid_type=Variant::NIL;
+								Object *obj=NULL;
+
+								RES res;
+								Node *node = root->get_node_and_resource(animation->track_get_path(idx),res);
+
+								if (res.is_valid()) {
+									obj=res.ptr();
+								} else if (node) {
+									obj=node;
+								}
+
+								if (obj) {
+									valid_type=obj->get_static_property_type(animation->track_get_path(idx).get_property(),&prop_exists);
+								}
+
+								text+="type: "+Variant::get_type_name(v.get_type())+"\n";
+								if (prop_exists && !Variant::can_convert(v.get_type(),valid_type)) {
+									text+="value: "+String(v)+"  (Invalid, expected type: "+Variant::get_type_name(valid_type)+")\n";
+								} else {
+									text+="value: "+String(v)+"\n";
+								}
+
 							} break;
 							case Animation::TYPE_METHOD: {
 
@@ -2593,6 +2728,9 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 							} break;
 						}
 						text+="easing: "+rtos(animation->track_get_key_transition(idx,mouse_over.over_key));
+
+
+
 						track_editor->set_tooltip(text);
 						return;
 
@@ -2703,6 +2841,7 @@ void AnimationKeyEditor::_notification(int p_what) {
 				//menu_track->get_popup()->add_submenu_item("Set Transitions..","Transitions");
 				//menu_track->get_popup()->add_separator();
 				menu_track->get_popup()->add_item("Optimize Animation",TRACK_MENU_OPTIMIZE);
+				menu_track->get_popup()->add_item("Clean-Up Animation",TRACK_MENU_CLEAN_UP);
 
 				curve_linear->set_icon(get_icon("CurveLinear","EditorIcons"));
 				curve_in->set_icon(get_icon("CurveIn","EditorIcons"));
@@ -3861,6 +4000,32 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	call_select = memnew( SceneTreeDialog );
 	add_child(call_select);
 	call_select->set_title("Call Functions in Which Node?");
+
+	cleanup_dialog = memnew( ConfirmationDialog );
+	add_child(cleanup_dialog);
+	VBoxContainer *cleanup_vb = memnew( VBoxContainer );
+	cleanup_dialog->add_child(cleanup_vb);
+	cleanup_dialog->set_child_rect(cleanup_vb);
+	cleanup_keys = memnew( CheckButton );
+	cleanup_keys->set_text("Remove invalid keys");
+	cleanup_keys->set_pressed(true);
+	cleanup_vb->add_child(cleanup_keys);
+
+	cleanup_tracks = memnew( CheckButton );
+	cleanup_tracks->set_text("Remove unresolved and empty tracks");
+	cleanup_tracks->set_pressed(true);
+	cleanup_vb->add_child(cleanup_tracks);
+
+	cleanup_all = memnew( CheckButton );
+	cleanup_all->set_text("Clean-Up all animations");
+	cleanup_vb->add_child(cleanup_all);
+
+	cleanup_dialog->set_title("Clean up Animation(s) (NO UNDO!)");
+	cleanup_dialog->get_ok()->set_text("Clean-Up");
+
+	cleanup_dialog->connect("confirmed",this,"_menu_track",varray(TRACK_MENU_CLEAN_UP_CONFIRM));
+
+
 
 }
 

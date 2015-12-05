@@ -606,6 +606,8 @@ public:
 	void set_block_signals(bool p_block);
 	bool is_blocking_signals() const;
 
+	Variant::Type get_static_property_type(const StringName& p_property,bool *r_valid=NULL) const;
+
 	virtual void get_translatable_strings(List<String> *p_strings) const;
 
 	virtual void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;

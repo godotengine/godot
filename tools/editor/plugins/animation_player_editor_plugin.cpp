@@ -1250,8 +1250,15 @@ void AnimationPlayerEditor::_bind_methods() {
 
 }
 
+AnimationPlayerEditor *AnimationPlayerEditor::singleton=NULL;
+
+AnimationPlayer *AnimationPlayerEditor::get_player() const {
+
+	return player;
+}
 AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	editor=p_editor;
+	singleton=this;
 
 	updating=false;
 

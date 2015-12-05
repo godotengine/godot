@@ -2274,6 +2274,26 @@ bool GDInstance::get(const StringName& p_name, Variant &r_ret) const {
 	return false;
 
 }
+
+Variant::Type GDInstance::get_property_type(const StringName& p_name,bool *r_is_valid) const {
+
+
+	const GDScript *sptr=script.ptr();
+	while(sptr) {
+
+		if (sptr->member_info.has(p_name)) {
+			if (r_is_valid)
+				*r_is_valid=true;
+			return sptr->member_info[p_name].type;
+		}
+		sptr = sptr->_base;
+	}
+
+	if (r_is_valid)
+		*r_is_valid=false;
+	return Variant::NIL;
+}
+
 void GDInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	// exported members, not doen yet!
 
