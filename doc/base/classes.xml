@@ -13147,6 +13147,21 @@ returns:= "username=user&amp;password=pass"
 			<description>
 			</description>
 		</method>
+		<method name="Image">
+			<return type="Image">
+			</return>
+			<argument index="0" name="width" type="int">
+			</argument>
+			<argument index="1" name="height" type="int">
+			</argument>
+			<argument index="2" name="mipmaps" type="bool">
+			</argument>
+			<argument index="3" name="format" type="int">
+			</argument>
+			<description>
+			Create an empty image of a specific size and format.
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="COMPRESS_BC" value="0">
