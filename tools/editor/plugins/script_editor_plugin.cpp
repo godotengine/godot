@@ -1137,12 +1137,14 @@ void ScriptEditor::_menu_option(int p_option) {
 					return;
 				int line = tx->cursor_get_line();
 				int next_line = line + 1;
+				int column = tx->cursor_get_column();
 
-				if (line == tx->get_line_count() - 1 || next_line >= tx->get_line_count())
+				if (line >= tx->get_line_count() - 1)
 					tx->set_line(line, tx->get_line(line) + "\n");
 
 				String line_clone = tx->get_line(line);
 				tx->insert_at(line_clone, next_line);
+				tx->cursor_set_column(column);
 				tx->update();
 
 			} break;
