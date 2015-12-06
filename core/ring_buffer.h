@@ -155,6 +155,12 @@ public:
 	inline int size() {
 		return data.size();
 	};
+
+	inline void clear() {
+		read_pos = 0;
+		write_pos = 0;
+
+	}
 	
 	void resize(int p_power) {
 		int old_size = size();
