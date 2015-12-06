@@ -623,7 +623,7 @@ void FileDialog::_update_drives() {
 	}
 }
 
-bool FileDialog::default_show_hidden_files=true;
+bool FileDialog::default_show_hidden_files=false;
 
 
 void FileDialog::_bind_methods() {
