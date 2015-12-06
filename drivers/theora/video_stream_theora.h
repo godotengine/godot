@@ -6,9 +6,13 @@
 #include "theora/theoradec.h"
 #include "vorbis/codec.h"
 #include "os/file_access.h"
-
+#include "ring_buffer.h"
 #include "io/resource_loader.h"
 #include "scene/resources/video_stream.h"
+#include "os/thread.h"
+#include "os/semaphore.h"
+
+//#define THEORA_USE_THREAD_STREAMING
 
 class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
@@ -66,7 +70,25 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	AudioMixCallback mix_callback;
 	void* mix_udata;
 
-    int audio_track;
+#ifdef THEORA_USE_THREAD_STREAMING
+
+	enum {
+		RB_SIZE_KB=1024
+	};
+
+	RingBuffer<uint8_t> ring_buffer;
+	Vector<uint8_t> read_buffer;
+	bool thread_eof;
+	Semaphore *thread_sem;
+	Thread *thread;
+	volatile bool thread_exit;
+
+	static void _streaming_thread(void *ud);
+
+#endif
+
+
+	int audio_track;
 
 protected:
 

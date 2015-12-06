@@ -7,11 +7,34 @@
 
 
 int VideoStreamPlaybackTheora::	buffer_data() {
-  char *buffer=ogg_sync_buffer(&oy,4096);
-  int bytes=file->get_buffer((uint8_t*)buffer, 4096);
 
-  ogg_sync_wrote(&oy,bytes);
-  return(bytes);
+	char *buffer=ogg_sync_buffer(&oy,4096);
+
+#ifdef THEORA_USE_THREAD_STREAMING
+
+	int read;
+
+	do {
+		thread_sem->post();
+		read = MIN(ring_buffer.data_left(),4096);
+		if (read) {
+			ring_buffer.read((uint8_t*)buffer,read);
+			ogg_sync_wrote(&oy,read);
+		} else {
+			OS::get_singleton()->delay_usec(100);
+		}
+
+	} while(read==0);
+
+	return read;
+
+#else
+
+	int bytes=file->get_buffer((uint8_t*)buffer, 4096);
+	ogg_sync_wrote(&oy,bytes);
+	return(bytes);
+
+#endif
 }
 
 int VideoStreamPlaybackTheora::queue_page(ogg_page *page){
@@ -200,6 +223,14 @@ void VideoStreamPlaybackTheora::clear() {
 	}
 	ogg_sync_clear(&oy);
 
+#ifdef THEORA_USE_THREAD_STREAMING
+	thread_exit=true;
+	thread_sem->post(); //just in case
+	Thread::wait_to_finish(thread);
+	memdelete(thread);
+	thread=NULL;
+	ring_buffer.clear();
+#endif
 	//file_name = "";
 
 	theora_p = 0;
@@ -217,6 +248,7 @@ void VideoStreamPlaybackTheora::clear() {
 
 void VideoStreamPlaybackTheora::set_file(const String& p_file) {
 
+	ERR_FAIL_COND(playing);
 	ogg_packet op;
 	th_setup_info    *ts = NULL;
 
@@ -227,7 +259,17 @@ void VideoStreamPlaybackTheora::set_file(const String& p_file) {
 	file = FileAccess::open(p_file, FileAccess::READ);
 	ERR_FAIL_COND(!file);
 
+#ifdef THEORA_USE_THREAD_STREAMING
+	thread_exit=false;
+	thread_eof=false;
+	//pre-fill buffer
+	int to_read = ring_buffer.space_left();
+	int read = file->get_buffer(read_buffer.ptr(),to_read);
+	ring_buffer.write(read_buffer.ptr(),read);
 
+	thread=Thread::create(_streaming_thread,this);
+
+#endif
 
 	ogg_sync_init(&oy);
 
@@ -415,6 +457,8 @@ void VideoStreamPlaybackTheora::set_file(const String& p_file) {
 	buffering=true;
 	time=0;
 	audio_frames_wrote=0;
+
+
 };
 
 float VideoStreamPlaybackTheora::get_time() const {
@@ -436,13 +480,16 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 		return;
 	};
 
+#ifdef THEORA_USE_THREAD_STREAMING
+	thread_sem->post();
+#endif
+
 	//double ctime =AudioServer::get_singleton()->get_mix_time();
 
 	//print_line("play "+rtos(p_delta));
 	time+=p_delta;
 
 	if (videobuf_time>get_time()) {
-
 		return; //no new frames need to be produced
 	}
 
@@ -573,21 +620,23 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 					if(videobuf_time>=get_time()) {
 						frame_done=true;
-						print_line("frame!");
+
 					} else{
 						/*If we are too slow, reduce the pp level.*/
 						pp_inc=pp_level>0?-1:0;
-						print_line("skip!");
 					}
 				}
 
 			} else {
-				print_line("no packet..");
+
 				break;
 			}
 		}
-
+#ifdef THEORA_USE_THREAD_STREAMING
+		if (file && thread_eof && ring_buffer.data_left()==0) {
+#else
 		if (file && /*!videobuf_ready && */ file->eof_reached()) {
+#endif
 			printf("video done, stopping\n");
 			stop();
 			return;
@@ -633,6 +682,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 		else if(tdiff<ti.fps_denominator*0.05/ti.fps_numerator){
 			pp_inc=pp_level>0?-1:0;
 		}
+
 	}
 
 	video_write();
@@ -644,15 +694,21 @@ void VideoStreamPlaybackTheora::play() {
 
 	if (!playing)
 		time=0;
+	else {
+		stop();
+	}
+
 	playing = true;
 	delay_compensation=Globals::get_singleton()->get("audio/video_delay_compensation_ms");
 	delay_compensation/=1000.0;
+
 
 };
 
 void VideoStreamPlaybackTheora::stop() {
 
 	if (playing) {
+
 		clear();
 		set_file(file_name); //reset
 	}
@@ -730,7 +786,33 @@ int VideoStreamPlaybackTheora::get_mix_rate() const{
 	return vi.rate;
 }
 
+#ifdef THEORA_USE_THREAD_STREAMING
 
+
+void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
+
+	VideoStreamPlaybackTheora *vs=(VideoStreamPlaybackTheora*)ud;
+
+	while(!vs->thread_exit) {
+
+		//just fill back the buffer
+		if (!vs->thread_eof) {
+
+			int to_read = vs->ring_buffer.space_left();
+			if (to_read) {
+				int read = vs->file->get_buffer(vs->read_buffer.ptr(),to_read);
+				vs->ring_buffer.write(vs->read_buffer.ptr(),read);
+				vs->thread_eof=vs->file->eof_reached();
+			}
+
+
+		}
+
+		vs->thread_sem->wait();
+	}
+}
+
+#endif
 
 VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
 
@@ -749,14 +831,31 @@ VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
 	    audio_track=0;
 	delay_compensation=0;
 	audio_frames_wrote=0;
+
+#ifdef THEORA_USE_THREAD_STREAMING
+	int rb_power = nearest_shift(RB_SIZE_KB*1024);
+	ring_buffer.resize(rb_power);
+	read_buffer.resize(RB_SIZE_KB*1024);
+	thread_sem=Semaphore::create();
+	thread=NULL;
+	thread_exit=false;
+	thread_eof=false;
+
+#endif
 };
 
 VideoStreamPlaybackTheora::~VideoStreamPlaybackTheora() {
 
+#ifdef THEORA_USE_THREAD_STREAMING
+
+	memdelete(thread_sem);
+#endif
 	clear();
 
 	if (file)
 		memdelete(file);
+
+
 };
 
 
