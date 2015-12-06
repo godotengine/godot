@@ -905,7 +905,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 
 		error=ERR_FILE_UNRECOGNIZED;
 		ERR_EXPLAIN("Unrecognized binary resource file: "+local_path);
-		ERR_FAIL_V();
+		ERR_FAIL();
 	}
 
 	bool big_endian = f->get_32();

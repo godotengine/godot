@@ -411,6 +411,7 @@ void VideoStreamPlaybackTheora::set_file(const String& p_file) {
 		th_decode_ctl(td,TH_DECCTL_GET_PPLEVEL_MAX,&pp_level_max,
 					  sizeof(pp_level_max));
 		pp_level=pp_level_max;
+		pp_level=0;
 		th_decode_ctl(td,TH_DECCTL_SET_PPLEVEL,&pp_level,sizeof(pp_level));
 		pp_inc=0;
 
@@ -620,7 +621,6 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 					if(videobuf_time>=get_time()) {
 						frame_done=true;
-
 					} else{
 						/*If we are too slow, reduce the pp level.*/
 						pp_inc=pp_level>0?-1:0;
