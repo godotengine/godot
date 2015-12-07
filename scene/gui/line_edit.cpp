@@ -568,7 +568,7 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 		
 		int char_w = 0;
 		if (font != NULL) {
-			int char_w = font->get_char_size(text[ofs]).width;
+			char_w = font->get_char_size(text[ofs]).width;
 		}
 		pixel_ofs+=char_w;
 		
