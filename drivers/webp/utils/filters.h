@@ -14,7 +14,7 @@
 #ifndef WEBP_UTILS_FILTERS_H_
 #define WEBP_UTILS_FILTERS_H_
 
-#include "../webp/types.h"
+#include "webp/types.h"
 #include "../dsp/dsp.h"
 
 #ifdef __cplusplus

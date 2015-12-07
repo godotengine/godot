@@ -20,7 +20,7 @@
 #include "../utils/bit_writer.h"
 #include "../utils/thread.h"
 #include "../utils/utils.h"
-#include "../webp/encode.h"
+#include "webp/encode.h"
 
 #ifdef WEBP_EXPERIMENTAL_FEATURES
 #include "./vp8li.h"

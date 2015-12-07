@@ -17,7 +17,7 @@
 #define WEBP_UTILS_BIT_READER_INL_H_
 
 #ifdef HAVE_CONFIG_H
-#include "../webp/config.h"
+#include "webp/config.h"
 #endif
 
 #ifdef WEBP_FORCE_ALIGNED

@@ -11,7 +11,7 @@
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
-#include "../webp/encode.h"
+#include "webp/encode.h"
 
 //------------------------------------------------------------------------------
 // WebPConfig
