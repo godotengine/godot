@@ -170,7 +170,6 @@ def get_flags():
 	return [
 		('freetype','builtin'), #use builtin freetype
 		('openssl','builtin'), #use builtin openssl
-		('theora','no'),
 	]
 			
 def build_res_file( target, source, env ):
