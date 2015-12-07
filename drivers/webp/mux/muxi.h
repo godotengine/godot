@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include "../dec/vp8i.h"
 #include "../dec/vp8li.h"
-#include "../webp/mux.h"
+#include "webp/mux.h"
 
 #ifdef __cplusplus
 extern "C" {

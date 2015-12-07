@@ -19,7 +19,7 @@
 #ifdef _MSC_VER
 #include <stdlib.h>  // _byteswap_ulong
 #endif
-#include "../webp/types.h"
+#include "webp/types.h"
 
 #ifdef __cplusplus
 extern "C" {

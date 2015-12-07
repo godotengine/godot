@@ -17,7 +17,7 @@
 #include "./cost.h"
 #include "./vp8enci.h"
 #include "../dsp/dsp.h"
-#include "../webp/format_constants.h"  // RIFF constants
+#include "webp/format_constants.h"  // RIFF constants
 
 #define SEGMENT_VISU 0
 #define DEBUG_SEARCH 0    // useful to track search convergence

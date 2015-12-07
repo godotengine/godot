@@ -12,7 +12,7 @@
 // Author: Skal (pascal.massimino@gmail.com)
 
 #ifdef HAVE_CONFIG_H
-#include "../webp/config.h"
+#include "webp/config.h"
 #endif
 
 #include "./bit_reader_inl.h"

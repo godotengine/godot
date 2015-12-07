@@ -13,8 +13,8 @@
 
 #include <stdlib.h>
 #include <string.h>  // for memcpy()
-#include "../webp/decode.h"
-#include "../webp/encode.h"
+#include "webp/decode.h"
+#include "webp/encode.h"
 #include "./utils.h"
 
 // If PRINT_MEM_INFO is defined, extra info (like total memory used, number of

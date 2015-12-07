@@ -22,7 +22,7 @@
 #include "../utils/bit_writer.h"
 #include "../utils/huffman_encode.h"
 #include "../utils/utils.h"
-#include "../webp/format_constants.h"
+#include "webp/format_constants.h"
 
 #include "./delta_palettization.h"
 
