@@ -27,150 +27,129 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "groups_editor.h"
-#include "scene/gui/box_container.h"
 
+#include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 
+void GroupsEditor::_add_group(const String& p_group) {
 
-#include "print_string.h"
-
-void GroupsEditor::_notification(int p_what) {
-	
-	if (p_what==NOTIFICATION_ENTER_TREE) {
-		connect("confirmed", this,"_close");
-	}	
-	if (p_what==NOTIFICATION_EXIT_TREE) {
-		disconnect("confirmed", this,"_close");
-	}
-}
-
-void GroupsEditor::_close() {
-	
-	hide();
-	
-}
-void GroupsEditor::_add() {
-	
 	if (!node)
 		return;
-		
-	undo_redo->create_action("Add To Group");
-	undo_redo->add_do_method(node,"add_to_group",group_name->get_text(),true);
-	undo_redo->add_undo_method(node,"remove_from_group",group_name->get_text());
 
+	String name = group_name->get_text();
+	if (name.strip_edges()=="")
+		return;
+
+	if (node->is_in_group(name))
+		return;
+
+	undo_redo->create_action("Add to Group");
+
+	undo_redo->add_do_method(node,"add_to_group",name,true);
 	undo_redo->add_do_method(this,"update_tree");
+	undo_redo->add_undo_method(node,"remove_from_group",name,get_text());
 	undo_redo->add_undo_method(this,"update_tree");
 
 	undo_redo->commit_action();
 }
 
+void GroupsEditor::_remove_group(Object *p_item, int p_column, int p_id) {
 
-void GroupsEditor::_remove() {
-	
-	if (!tree->get_selected())
-		return;
 	if (!node)
 		return;
 
-	TreeItem *sel = tree->get_selected();
-	if (!sel)
+	TreeItem *ti = p_item->cast_to<TreeItem>();
+	if (!ti)
 		return;
-		
-	node->remove_from_group( sel->get_text(0) );
-	update_tree();
+
+	String name = ti->get_text(0);
+
+	undo_redo->create_action("Remove from Group");
+
+	undo_redo->add_do_method(node,"remove_from_group",name);
+	undo_redo->add_do_method(this,"update_tree");
+	undo_redo->add_undo_method(node,"add_to_group",name,true);
+	undo_redo->add_undo_method(this,"update_tree");
+
+	undo_redo->commit_action();
 }
+
+struct _GroupInfoComparator {
+
+	bool operator()(const Node::GroupInfo& p_a, const Node::GroupInfo& p_b) const {
+		return p_a.name.operator String() < p_b.name.operator String();
+	}
+};
 
 void GroupsEditor::update_tree() {
 
-	
 	tree->clear();
-	
+
 	if (!node)
 		return;
-		
-	List<GroupInfo> groups;
-	node->get_groups(&groups);
-	
-	TreeItem *root=tree->create_item();
-	
-	for(List<GroupInfo>::Element *E=groups.front();E;E=E->next()) {
-	
-		if (!E->get().persistent)
-			continue;
-		TreeItem *item=tree->create_item(root);
-		item->set_text(0, E->get().name);	
-	
-	}
 
+	List<Node::GroupInfo> groups;
+	node->get_groups(&groups);
+	groups.sort_custom<_GroupInfoComparator>();
+
+	TreeItem *root=tree->create_item();
+
+	for(List<GroupInfo>::Element *E=groups.front();E;E=E->next()) {
+
+		Node::GroupInfo gi = E->get();
+		if (!gi.persistent)
+			continue;
+
+		TreeItem *item=tree->create_item(root);
+		item->set_text(0, gi.name);
+		item->add_button(0, get_icon("Remove", "EditorIcons"), 0);
+	}
 }
 
 void GroupsEditor::set_current(Node* p_node) {
-	
+
 	node=p_node;
 	update_tree();
-
 }
 
 void GroupsEditor::_bind_methods() {
-	
-	ObjectTypeDB::bind_method("_add",&GroupsEditor::_add);
-	ObjectTypeDB::bind_method("_close",&GroupsEditor::_close);
-	ObjectTypeDB::bind_method("_remove",&GroupsEditor::_remove);	
+
+	ObjectTypeDB::bind_method("_add_group",&GroupsEditor::_add_group);
+	ObjectTypeDB::bind_method("_remove_group",&GroupsEditor::_remove_group);
 	ObjectTypeDB::bind_method("update_tree",&GroupsEditor::update_tree);
 }
 
 GroupsEditor::GroupsEditor() {
 
+	node=NULL;
+
 	set_title("Group Editor");
-	
-	Label * label = memnew( Label );
-	label->set_pos( Point2( 8,11) );
-	label->set_text("Groups:");
-	
-	add_child(label);	
-	
-	group_name = memnew(LineEdit);
-	group_name->set_anchor( MARGIN_RIGHT, ANCHOR_END );
-	group_name->set_begin( Point2( 15,28) );
-	group_name->set_end( Point2( 94,48 ) );
-	
-	add_child(group_name);
-	
-	tree = memnew( Tree );
-	tree->set_anchor( MARGIN_RIGHT, ANCHOR_END );
-	tree->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
-	tree->set_begin( Point2( 15,52) );
-	tree->set_end( Point2( 94,42 ) );
-	tree->set_hide_root(true);		
-	add_child(tree);
-	
+
+	VBoxContainer *vbc = memnew( VBoxContainer );
+	add_child(vbc);
+	set_child_rect(vbc);
+
+	HBoxContainer *hbc = memnew( HBoxContainer );
+	vbc->add_margin_child("Group", hbc);
+
+	group_name = memnew( LineEdit );
+	group_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc->add_child(group_name);
+	group_name->connect("text_entered",this,"_add_group");
+
 	add = memnew( Button );
-	add->set_anchor( MARGIN_LEFT, ANCHOR_END );
-	add->set_anchor( MARGIN_RIGHT, ANCHOR_END );
-	add->set_begin( Point2( 90, 28 ) );
-	add->set_end( Point2( 15, 48 ) );	
 	add->set_text("Add");
-	
-	add_child(add);
-	
-	remove = memnew( Button );
-	remove->set_anchor( MARGIN_LEFT, ANCHOR_END );
-	remove->set_anchor( MARGIN_RIGHT, ANCHOR_END );
-	remove->set_begin( Point2( 90, 52 ) );
-	remove->set_end( Point2( 15, 72 ) );	
-	remove->set_text("Remove");
-	
-	add_child(remove);
+	hbc->add_child(add);
+	add->connect("pressed", this,"_add_group", varray(String()));
+
+	tree = memnew( Tree );
+	tree->set_hide_root(true);
+	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	vbc->add_margin_child("Node Group(s)", tree, true);
+	tree->connect("button_pressed",this,"_remove_group");
 
 	get_ok()->set_text("Close");
-			
-	add->connect("pressed", this,"_add");
-	remove->connect("pressed", this,"_remove");	
-
-	
-	node=NULL;
 }
-
 
 GroupsEditor::~GroupsEditor()
 {

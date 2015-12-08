@@ -380,7 +380,7 @@ void Body2DSW::set_space(Space2DSW *p_space){
 
 }
 
-void Body2DSW::_compute_area_gravity(const Area2DSW *p_area) {
+void Body2DSW::_compute_area_gravity_and_dampenings(const Area2DSW *p_area) {
 
 	if (p_area->is_gravity_point()) {
 		if(p_area->get_gravity_distance_scale() > 0) {
@@ -393,6 +393,8 @@ void Body2DSW::_compute_area_gravity(const Area2DSW *p_area) {
 		gravity += p_area->get_gravity_vector() * p_area->get_gravity();
 	}
 
+	area_linear_damp += p_area->get_linear_damp();
+	area_angular_damp += p_area->get_angular_damp();
 }
 
 void Body2DSW::integrate_forces(real_t p_step) {
@@ -406,13 +408,15 @@ void Body2DSW::integrate_forces(real_t p_step) {
 
 	int ac = areas.size();
 	bool replace = false;
-	gravity=Vector2(0,0);
+	gravity = Vector2(0,0);
+	area_angular_damp = 0;
+	area_linear_damp = 0;
 	if (ac) {
 		areas.sort();
 		const AreaCMP *aa = &areas[0];
 		damp_area = aa[ac-1].area;
 		for(int i=ac-1;i>=0;i--) {
-			_compute_area_gravity(aa[i].area);
+			_compute_area_gravity_and_dampenings(aa[i].area);
 			if (aa[i].area->get_space_override_mode() == Physics2DServer::AREA_SPACE_OVERRIDE_REPLACE) {
 				replace = true;
 				break;
@@ -420,19 +424,20 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		}
 	}
 	if( !replace ) {
-		_compute_area_gravity(def_area);
+		_compute_area_gravity_and_dampenings(def_area);
 	}
 	gravity*=gravity_scale;
 
+	// If less than 0, override dampenings with that of the Body2D
 	if (angular_damp>=0)
-		area_angular_damp=angular_damp;
-	else
-		area_angular_damp=damp_area->get_angular_damp();
+		area_angular_damp = angular_damp;
+	//else
+	//	area_angular_damp=damp_area->get_angular_damp();
 
 	if (linear_damp>=0)
-		area_linear_damp=linear_damp;
-	else
-		area_linear_damp=damp_area->get_linear_damp();
+		area_linear_damp = linear_damp;
+	//else
+	//	area_linear_damp=damp_area->get_linear_damp();
 
 	Vector2 motion;
 	bool do_motion=false;

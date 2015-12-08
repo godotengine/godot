@@ -477,6 +477,14 @@ String OS_Unix::get_data_dir() const {
 
 }
 
+String OS_Unix::get_installed_templates_path() const {
+	String p=get_global_settings_path();
+	if (p!="")
+		return p+"/templates/";
+	else
+		return "";
+}
+
 String OS_Unix::get_executable_path() const {
 
 #ifdef __linux__

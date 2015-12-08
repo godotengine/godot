@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  platform_config.h                                                    */
+/*  editor_layout_dialog.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,13 +26,28 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifdef __linux__
-#include <alloca.h>
-#endif
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
-#include <stdlib.h>
-#endif
 
-#define GLES2_INCLUDE_H "gl_context/glew.h"
+#ifndef EDITOR_LAYOUT_DIALOG_H
+#define EDITOR_LAYOUT_DIALOG_H
 
+#include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
 
+class EditorLayoutDialog : public ConfirmationDialog {
+
+	OBJ_TYPE( EditorLayoutDialog, ConfirmationDialog );
+
+	LineEdit *layout_name;
+
+protected:
+
+	static void _bind_methods();
+	virtual void ok_pressed();
+
+public:
+	void clear_layout_name();
+
+	EditorLayoutDialog();
+};
+
+#endif // EDITOR_LAYOUT_DIALOG_H

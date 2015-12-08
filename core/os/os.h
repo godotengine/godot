@@ -184,6 +184,7 @@ public:
 	virtual void set_low_processor_usage_mode(bool p_enabled);
 	virtual bool is_in_low_processor_usage_mode() const;
 
+	virtual String get_installed_templates_path() const { return ""; };
 	virtual String get_executable_path() const;
 	virtual Error execute(const String& p_path, const List<String>& p_arguments,bool p_blocking,ProcessID *r_child_id=NULL,String* r_pipe=NULL,int *r_exitcode=NULL)=0;
 	virtual Error kill(const ProcessID& p_pid)=0;

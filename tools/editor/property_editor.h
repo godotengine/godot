@@ -163,8 +163,8 @@ class PropertyEditor : public Control {
 	bool show_categories;
 	float refresh_countdown;
 	bool use_doc_hints;
-
 	bool use_filter;
+	bool subsection_selectable;
 
 	HashMap<String,String> pending;
 	String selected_property;
@@ -238,6 +238,8 @@ public:
 
 	void set_use_filter(bool p_use);
 	void register_text_enter(Node *p_line_edit);
+
+	void set_subsection_selectable(bool p_selectable);
 
 	PropertyEditor();	
 	~PropertyEditor();

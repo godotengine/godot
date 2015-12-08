@@ -2341,19 +2341,27 @@ Error ShaderLanguage::parse_flow_if(Parser& parser,Node *p_parent,Node **r_state
 
 	parser.advance();
 
+	if (parser.get_token_type()!=TK_CURLY_BRACKET_OPEN) {
+		parser.set_error("Expected statement block after 'if()'");
+		return ERR_PARSE_ERROR;
+	}
+
 	Node *substatement=NULL;
 	err = parse_statement(parser,cf,&substatement);
 	if (err)
 		return err;
 
-
 	cf->statements.push_back(substatement);
-
-
 
 	if (parser.get_token_type()==TK_CF_ELSE) {
 
 		parser.advance();
+
+		if (parser.get_token_type()!=TK_CURLY_BRACKET_OPEN) {
+			parser.set_error("Expected statement block after 'else'");
+			return ERR_PARSE_ERROR;
+		}
+
 		substatement=NULL;
 		err = parse_statement(parser,cf,&substatement);
 		if (err)

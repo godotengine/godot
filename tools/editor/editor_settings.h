@@ -107,6 +107,7 @@ public:
 	static EditorSettings *get_singleton();
 	void erase(String p_var);
 	String get_settings_path() const;
+	String get_global_settings_path() const;
 	String get_project_settings_path() const;
 
 	const Map<String,Plugin>& get_plugins() const { return plugins; }

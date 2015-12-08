@@ -86,6 +86,8 @@ protected:
 	Vector<uint8_t> get_exported_file_default(String& p_fname) const;
 	virtual Vector<uint8_t> get_exported_file(String& p_fname) const;
 	virtual Vector<StringName> get_dependencies(bool p_bundles) const;
+	virtual String find_export_template(String template_file_name, String *err=NULL) const;
+	virtual bool exists_export_template(String template_file_name, String *err=NULL) const;
 
 	struct TempData {
 

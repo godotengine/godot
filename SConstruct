@@ -127,6 +127,7 @@ opts.Add("CXX", "Compiler");
 opts.Add("CCFLAGS", "Custom flags for the C++ compiler");
 opts.Add("CFLAGS", "Custom flags for the C compiler");
 opts.Add("LINKFLAGS", "Custom flags for the linker");
+opts.Add('unix_global_settings_path', 'unix-specific path to system-wide settings. Currently only used by templates.','')
 opts.Add('disable_3d', 'Disable 3D nodes for smaller executable (yes/no)', "no")
 opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (yes/no)', "no")
 opts.Add('colored', 'Enable colored output for the compilation (yes/no)', 'no')

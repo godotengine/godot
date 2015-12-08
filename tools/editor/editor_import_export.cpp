@@ -399,6 +399,40 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 
 }
 
+String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
+	String user_file = EditorSettings::get_singleton()->get_settings_path()
+		+"/templates/"+template_file_name;
+	String system_file=OS::get_singleton()->get_installed_templates_path();
+	bool has_system_path=(system_file!="");
+	system_file+=template_file_name;
+
+	// Prefer user file
+	if (FileAccess::exists(user_file)) {
+		return user_file;
+	}
+
+	// Now check system file
+	if (has_system_path) {
+		if (FileAccess::exists(system_file)) {
+			return system_file;
+		}
+	}
+
+	// Not found
+	if (err) {
+		*err+="No export template found at \""+user_file+"\"";
+		if (has_system_path)
+			*err+="\n or \""+system_file+"\".";
+		else
+			*err+=".";
+	}
+	return "";
+}
+
+bool EditorExportPlatform::exists_export_template(String template_file_name, String *err) const {
+	return find_export_template(template_file_name,err)!="";
+}
+
 ///////////////////////////////////////
 
 
@@ -1131,19 +1165,32 @@ Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug,
 
 	ep.step("Setting Up..",0);
 
-	String exe_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
-	if (use64) {
-		if (p_debug)
-			exe_path=custom_debug_binary!=""?custom_debug_binary:exe_path+debug_binary64;
-		else
-			exe_path=custom_release_binary!=""?custom_release_binary:exe_path+release_binary64;
-	} else {
+	String exe_path="";
 
-		if (p_debug)
-			exe_path=custom_debug_binary!=""?custom_debug_binary:exe_path+debug_binary32;
-		else
-			exe_path=custom_release_binary!=""?custom_release_binary:exe_path+release_binary32;
+	if (p_debug)
+		exe_path=custom_debug_binary;
+	else
+		exe_path=custom_release_binary;
 
+	if (exe_path=="") {
+		String fname;
+		if (use64) {
+			if (p_debug)
+				fname=debug_binary64;
+			else
+				fname=release_binary64;
+		} else {
+			if (p_debug)
+				fname=debug_binary32;
+			else
+				fname=release_binary32;
+		}
+		String err="";
+		exe_path=find_export_template(fname,&err);
+		if (exe_path=="") {
+			EditorNode::add_io_error(err);
+			return ERR_FILE_CANT_READ;
+		}
 	}
 
 	FileAccess *src_exe=FileAccess::open(exe_path,FileAccess::READ);
@@ -1207,14 +1254,12 @@ bool EditorExportPlatformPC::can_export(String *r_error) const {
 	String err;
 	bool valid=true;
 
-	String exe_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
-
-	if (use64 && (!FileAccess::exists(exe_path+debug_binary64) || !FileAccess::exists(exe_path+release_binary64))) {
+	if (use64 && (!exists_export_template(debug_binary64)) || !exists_export_template(release_binary64)) {
 		valid=false;
 		err="No 64 bits export templates found.\nDownload and install export templates.\n";
 	}
 
-	if (!use64 && (!FileAccess::exists(exe_path+debug_binary32) || !FileAccess::exists(exe_path+release_binary32))) {
+	if (!use64 && (!exists_export_template(debug_binary32) || !exists_export_template(release_binary32))) {
 		valid=false;
 		err="No 32 bits export templates found.\nDownload and install export templates.\n";
 	}

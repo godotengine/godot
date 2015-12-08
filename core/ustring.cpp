@@ -897,17 +897,8 @@ String String::num(double p_num,int p_decimals) {
 	}
 	char buf[256];
 
-#if defined(__GNUC__)
-#ifdef MINGW_ENABLED
-	//snprintf is inexplicably broken in mingw
-	//sprintf(buf,fmt,p_num);
-	_snprintf(buf,256,fmt,p_num);
-#else
+#if defined(__GNUC__) || defined(_MSC_VER)
 	snprintf(buf,256,fmt,p_num);
-#endif
-
-#elif defined(_MSC_VER)
-	_snprintf(buf,256,fmt,p_num);
 #else
 	sprintf(buf,fmt,p_num);
 #endif
@@ -1178,10 +1169,7 @@ String String::num_scientific(double p_num) {
 
 	char buf[256];
 
-#if defined(_MSC_VER) || defined(MINGW_ENABLED)
-
-	_snprintf(buf,256,"%lg",p_num);
-#elif defined(__GNUC__)
+#if defined(__GNUC__) || defined(_MSC_VER)
 	snprintf(buf,256,"%lg",p_num);
 #else
 	sprintf(buf,"%.16lg",p_num);
@@ -3096,7 +3084,11 @@ String String::http_escape() const {
             res += ord;
         } else {
             char h_Val[3];
-			snprintf(h_Val, 3, "%.2X", ord);
+#if defined(__GNUC__) || defined(_MSC_VER)
+            snprintf(h_Val, 3, "%.2X", ord);
+#else
+            sprintf(h_Val, "%.2X", ord);
+#endif
             res += "%";
             res += h_Val;
         }
