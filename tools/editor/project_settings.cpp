@@ -722,6 +722,10 @@ void ProjectSettings::_translation_file_open() {
 void ProjectSettings::_autoload_file_callback(const String& p_path) {
 
 	autoload_add_path->set_text(p_path);
+	if (autoload_add_name->get_text().strip_edges()==String()) {
+
+		autoload_add_name->set_text( p_path.get_file().basename() );
+	}
 	//_translation_add(p_translation);
 }
 
@@ -768,6 +772,9 @@ void ProjectSettings::_autoload_add() {
 	undo_redo->add_do_method(this,"_settings_changed");
 	undo_redo->add_undo_method(this,"_settings_changed");
 	undo_redo->commit_action();
+
+	autoload_add_path->set_text("");
+	autoload_add_name->set_text("");
 
 	//autoload_file_open->popup_centered_ratio();
 }
@@ -1589,11 +1596,6 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 		HBoxContainer *ahb = memnew( HBoxContainer);
 		avb->add_child(ahb);
 
-		VBoxContainer *avb_name = memnew( VBoxContainer );
-		avb_name->set_h_size_flags(SIZE_EXPAND_FILL);
-		autoload_add_name = memnew(LineEdit);
-		avb_name->add_margin_child("Node Name:",autoload_add_name);
-		ahb->add_child(avb_name);
 
 		VBoxContainer *avb_path = memnew( VBoxContainer );
 		avb_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1604,12 +1606,23 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 		Button *browseaa = memnew( Button("..") );
 		ahb_path->add_child(browseaa);
 		browseaa->connect("pressed",this,"_autoload_file_open");
-		Button *addaa = memnew( Button("Add") );
-		ahb_path->add_child(addaa);
-		addaa->connect("pressed",this,"_autoload_add");
 
 		avb_path->add_margin_child("Path:",ahb_path);
 		ahb->add_child(avb_path);
+
+		VBoxContainer *avb_name = memnew( VBoxContainer );
+		avb_name->set_h_size_flags(SIZE_EXPAND_FILL);
+
+		HBoxContainer *ahb_name = memnew( HBoxContainer );
+		autoload_add_name = memnew(LineEdit);
+		autoload_add_name->set_h_size_flags(SIZE_EXPAND_FILL);
+		ahb_name->add_child(autoload_add_name);
+		avb_name->add_margin_child("Node Name:",ahb_name);
+		Button *addaa = memnew( Button("Add") );
+		ahb_name->add_child(addaa);
+		addaa->connect("pressed",this,"_autoload_add");
+
+		ahb->add_child(avb_name);
 
 		autoload_list = memnew( Tree );
 		autoload_list->set_v_size_flags(SIZE_EXPAND_FILL);
