@@ -68,6 +68,25 @@ void SpinBox::_line_edit_input(const InputEvent& p_event) {
 
 }
 
+void SpinBox::_range_click_timeout() {
+
+	if (!drag.enabled && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+
+		int pos_y = Input::get_singleton()->get_mouse_pos().y-get_global_pos().y;
+		bool up = pos_y < (get_size().height/2);
+		set_val( get_val() + (up?get_step():-get_step()));
+
+		if (range_click_timer->is_one_shot()) {
+			range_click_timer->set_wait_time(0.075);
+			range_click_timer->set_one_shot(false);
+			range_click_timer->start();
+		}
+
+	} else {
+		range_click_timer->stop();
+	}
+}
+
 
 void SpinBox::_input_event(const InputEvent& p_event) {
 
@@ -84,6 +103,10 @@ void SpinBox::_input_event(const InputEvent& p_event) {
 			case BUTTON_LEFT: {
 
 				set_val( get_val() + (up?get_step():-get_step()));
+
+				range_click_timer->set_wait_time(0.6);
+				range_click_timer->set_one_shot(true);
+				range_click_timer->start();
 
 			} break;
 			case BUTTON_RIGHT: {
@@ -112,6 +135,8 @@ void SpinBox::_input_event(const InputEvent& p_event) {
 	if (p_event.type==InputEvent::MOUSE_BUTTON && !p_event.mouse_button.pressed && p_event.mouse_button.button_index==1) {
 
 		//set_default_cursor_shape(CURSOR_ARROW);
+		range_click_timer->stop();
+
 		if (drag.enabled) {
 			drag.enabled=false;
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
@@ -167,6 +192,7 @@ void SpinBox::_notification(int p_what) {
 		Size2i size = get_size();
 
 		updown->draw(ci,Point2i(size.width-updown->get_width(),(size.height-updown->get_height())/2));
+
 	} else if (p_what==NOTIFICATION_FOCUS_EXIT) {
 
 
@@ -227,6 +253,7 @@ void SpinBox::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_line_edit_focus_exit"),&SpinBox::_line_edit_focus_exit);
 	ObjectTypeDB::bind_method(_MD("get_line_edit"),&SpinBox::get_line_edit);
 	ObjectTypeDB::bind_method(_MD("_line_edit_input"),&SpinBox::_line_edit_input);
+	ObjectTypeDB::bind_method(_MD("_range_click_timeout"),&SpinBox::_range_click_timeout);
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"editable"),_SCS("set_editable"),_SCS("is_editable"));
@@ -248,4 +275,8 @@ SpinBox::SpinBox() {
 	line_edit->connect("focus_exit",this,"_line_edit_focus_exit",Vector<Variant>(),CONNECT_DEFERRED);
 	line_edit->connect("input_event",this,"_line_edit_input");
 	drag.enabled=false;
+
+	range_click_timer = memnew( Timer );
+	range_click_timer->connect("timeout",this,"_range_click_timeout");
+	add_child(range_click_timer);
 }

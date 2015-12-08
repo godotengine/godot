@@ -127,7 +127,7 @@ friend class Tree;
 
 
 	
-	TreeItem(Tree *p_tree);		
+	TreeItem(Tree *p_tree);
 		
 
 	void _changed_notify(int p_cell);
@@ -300,6 +300,11 @@ friend class TreeItem;
 	PopupMenu *popup_menu;
 
 	Vector<ColumnInfo> columns;
+
+	Timer *range_click_timer;
+	TreeItem *range_item_last;
+	bool range_up_last;
+	void _range_click_timeout();
 
 	int compute_item_height(TreeItem *p_item) const;
 	int get_item_height(TreeItem *p_item) const;
