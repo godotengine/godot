@@ -148,7 +148,7 @@ def configure(env):
 
 	
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED','-DGLEW_ENABLED'])
-	if platform.platform().find('Linux')>=0:
+	if platform.system() == 'Linux':
 		env.Append(CPPFLAGS=["-DALSA_ENABLED"])
 		env.Append(LIBS=['asound'])
 
