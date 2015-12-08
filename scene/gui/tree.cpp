@@ -1369,7 +1369,40 @@ Rect2 Tree::search_item_rect(TreeItem *p_from, TreeItem *p_item) {
 }
 
 
+void Tree::_range_click_timeout() {
 
+	if (range_item_last && !range_drag_enabled && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+
+		Point2 pos = (Input::get_singleton()->get_mouse_pos()-get_global_pos())-cache.bg->get_offset();
+		if (show_column_titles) {
+			pos.y-=_get_title_button_height();
+
+			if (pos.y<0) {
+				range_click_timer->stop();
+				return;
+			}
+		}
+
+		click_handled=false;
+		InputModifierState mod = {}; // should be irrelevant..
+
+		blocked++;
+		propagate_mouse_event(pos+cache.offset, 0, 0, false, root, BUTTON_LEFT, mod);
+		blocked--;
+
+		if (range_click_timer->is_one_shot()) {
+			range_click_timer->set_wait_time(0.05);
+			range_click_timer->set_one_shot(false);
+			range_click_timer->start();
+		}
+
+		if (!click_handled)
+			range_click_timer->stop();
+
+	} else {
+		range_click_timer->stop();
+	}
+}
 
 
 int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_doubleclick,TreeItem *p_item,int p_button,const InputModifierState& p_mod) {
@@ -1564,9 +1597,25 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 						bool up=p_pos.y < (item_h /2);
 
 						if (p_button==BUTTON_LEFT) {
+
+							if (range_click_timer->get_time_left() == 0) {
+
+								range_item_last=p_item;
+								range_up_last=up;
+
+								range_click_timer->set_wait_time(0.6);
+								range_click_timer->set_one_shot(true);
+								range_click_timer->start();
+
+							} else if (up != range_up_last) {
+
+								return -1; // break. avoid changing direction on mouse held
+							}
+
 							p_item->set_range( col, c.val + (up?1.0:-1.0) * c.step );
 
 							item_edited(col,p_item);
+
 						} else if (p_button==BUTTON_RIGHT) {
 
 							p_item->set_range( col, (up?c.max:c.min) );
@@ -2024,13 +2073,14 @@ void Tree::_input_event(InputEvent p_event) {
 				update_cache();
 			const InputEventMouseMotion& b=p_event.mouse_motion;
 
+			range_click_timer->stop();
+
 			Ref<StyleBox> bg = cache.bg;
 
 			Point2 pos = Point2(b.x,b.y) - bg->get_offset();
 
 			Cache::ClickType old_hover = cache.hover_type;
 			int old_index = cache.hover_index;
-
 
 			cache.hover_type=Cache::CLICK_NONE;
 			cache.hover_index=0;
@@ -2107,6 +2157,8 @@ void Tree::_input_event(InputEvent p_event) {
 			if (!b.pressed) {
 
 				if (b.button_index==BUTTON_LEFT) {
+
+					range_click_timer->stop();
 
 					if (pressing_for_editor) {
 
@@ -2228,10 +2280,13 @@ void Tree::_input_event(InputEvent p_event) {
 
 				} break;
 				case BUTTON_WHEEL_UP: {
+
+					range_click_timer->stop();
 					v_scroll->set_val( v_scroll->get_val()-v_scroll->get_page()/8 );
 				} break;
 				case BUTTON_WHEEL_DOWN: {
 
+					range_click_timer->stop();
 					v_scroll->set_val( v_scroll->get_val()+v_scroll->get_page()/8 );
 				} break;
 			}
@@ -3135,6 +3190,7 @@ bool Tree::is_folding_hidden() const {
 
 void Tree::_bind_methods() {
 
+	ObjectTypeDB::bind_method(_MD("_range_click_timeout"),&Tree::_range_click_timeout);
 	ObjectTypeDB::bind_method(_MD("_input_event"),&Tree::_input_event);
 	ObjectTypeDB::bind_method(_MD("_popup_select"),&Tree::popup_select);
 	ObjectTypeDB::bind_method(_MD("_text_editor_enter"),&Tree::text_editor_enter);
@@ -3228,6 +3284,10 @@ Tree::Tree() {
 
 	add_child(h_scroll);
 	add_child(v_scroll);
+
+	range_click_timer = memnew( Timer );
+	range_click_timer->connect("timeout",this,"_range_click_timeout");
+	add_child(range_click_timer);
 
 	h_scroll->connect("value_changed", this,"_scroll_moved");
 	v_scroll->connect("value_changed", this,"_scroll_moved");
