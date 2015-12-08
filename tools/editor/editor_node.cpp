@@ -543,7 +543,6 @@ void EditorNode::save_resource_as(const Ref<Resource>& p_resource) {
 }
 
 
-
 void EditorNode::_menu_option(int p_option) {
 	
 	_menu_option_confirm(p_option,false);
@@ -1408,6 +1407,69 @@ void EditorNode::_dialog_action(String p_file) {
 			RES current_res = RES(current_obj->cast_to<Resource>());
 
 			save_resource_in_path(current_res,p_file);
+
+		} break;
+		case SETTINGS_LAYOUT_SAVE: {
+
+			if (p_file.empty())
+				return;
+
+			if (p_file=="Default") {
+				confirm_error->set_text("Cannot overwrite default layout!");
+				confirm_error->popup_centered_minsize();
+				return;
+			}
+
+			Ref<ConfigFile> config;
+			config.instance();
+			Error err = config->load(EditorSettings::get_singleton()->get_settings_path().plus_file("editor_layouts.cfg"));
+			if (err!=OK && err!=ERR_FILE_NOT_FOUND) {
+				return; //no config
+			}
+
+			_save_docks_to_config(config, p_file);
+
+			config->save(EditorSettings::get_singleton()->get_settings_path().plus_file("editor_layouts.cfg"));
+
+			layout_dialog->hide();
+			_update_layouts_menu();
+
+		} break;
+		case SETTINGS_LAYOUT_DELETE: {
+
+			if (p_file.empty())
+				return;
+
+			if (p_file=="Default") {
+				confirm_error->set_text("Cannot delete default layout!");
+				confirm_error->popup_centered_minsize();
+				return;
+			}
+
+			Ref<ConfigFile> config;
+			config.instance();
+			Error err = config->load(EditorSettings::get_singleton()->get_settings_path().plus_file("editor_layouts.cfg"));
+			if (err!=OK) {
+				return; //no config
+			}
+
+			if (!config->has_section(p_file)) {
+				confirm_error->set_text("Layout name not found!");
+				confirm_error->popup_centered_minsize();
+				return;
+			}
+
+			// erase
+			List<String> keys;
+			config->get_section_keys(p_file, &keys);
+			for (List<String>::Element *E=keys.front();E;E=E->next()) {
+				config->set_value(p_file, E->get(), Variant());
+			}
+
+			config->save(EditorSettings::get_singleton()->get_settings_path().plus_file("editor_layouts.cfg"));
+
+			layout_dialog->hide();
+			_update_layouts_menu();
 
 		} break;
 		default: { //save scene?
@@ -4033,6 +4095,9 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("_dock_move_left",&EditorNode::_dock_move_left);
 	ObjectTypeDB::bind_method("_dock_move_right",&EditorNode::_dock_move_right);
 
+	ObjectTypeDB::bind_method("_layout_menu_option",&EditorNode::_layout_menu_option);
+	ObjectTypeDB::bind_method("_layout_dialog_action",&EditorNode::_dialog_action);
+
 	ObjectTypeDB::bind_method("set_current_scene",&EditorNode::set_current_scene);
 	ObjectTypeDB::bind_method("set_current_version",&EditorNode::set_current_version);
 	ObjectTypeDB::bind_method("_scene_tab_changed",&EditorNode::_scene_tab_changed);
@@ -4327,6 +4392,15 @@ void EditorNode::_save_docks() {
 	Ref<ConfigFile> config;
 	config.instance();
 
+	_save_docks_to_config(config, "docks");
+	editor_data.get_plugin_window_layout(config);
+
+	config->save(EditorSettings::get_singleton()->get_project_settings_path().plus_file("editor_layout.cfg"));
+
+}
+
+void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String& p_section) {
+
 	for(int i=0;i<DOCK_SLOT_MAX;i++) {
 		String names;
 		for(int j=0;j<dock_slot[i]->get_tab_count();j++) {
@@ -4337,7 +4411,7 @@ void EditorNode::_save_docks() {
 		}
 
 		if (names!="") {
-			config->set_value("docks","dock_"+itos(i+1),names);
+			p_layout->set_value(p_section,"dock_"+itos(i+1),names);
 		}
 	}
 
@@ -4351,7 +4425,7 @@ void EditorNode::_save_docks() {
 	for(int i=0;i<DOCK_SLOT_MAX/2;i++) {
 
 		if (splits[i]->is_visible()) {
-			config->set_value("docks","dock_split_"+itos(i+1),splits[i]->get_split_offset());
+			p_layout->set_value(p_section,"dock_split_"+itos(i+1),splits[i]->get_split_offset());
 		}
 	}
 
@@ -4365,12 +4439,8 @@ void EditorNode::_save_docks() {
 
 	for(int i=0;i<4;i++) {
 
-		config->set_value("docks","dock_hsplit_"+itos(i+1),h_splits[i]->get_split_offset());
+		p_layout->set_value(p_section,"dock_hsplit_"+itos(i+1),h_splits[i]->get_split_offset());
 	}
-
-	editor_data.get_plugin_window_layout(config);
-
-	config->save(EditorSettings::get_singleton()->get_project_settings_path().plus_file("editor_layout.cfg"));
 
 }
 
@@ -4393,12 +4463,19 @@ void EditorNode::_load_docks() {
 		return; //no config
 	}
 
+	_load_docks_from_config(config, "docks");
+	editor_data.set_plugin_window_layout(config);
+
+}
+
+void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String& p_section) {
+
 	for(int i=0;i<DOCK_SLOT_MAX;i++) {
 
-		if (!config->has_section_key("docks","dock_"+itos(i+1)))
+		if (!p_layout->has_section_key(p_section,"dock_"+itos(i+1)))
 			continue;
 
-		Vector<String> names = String(config->get_value("docks","dock_"+itos(i+1))).split(",");
+		Vector<String> names = String(p_layout->get_value(p_section,"dock_"+itos(i+1))).split(",");
 
 		for(int j=0;j<names.size();j++) {
 
@@ -4418,7 +4495,7 @@ void EditorNode::_load_docks() {
 			if (atidx==-1) //well, it's not anywhere
 				continue;
 
-			if (atidx==j) {
+			if (atidx==i) {
 				node->raise();
 				continue;
 			}
@@ -4433,7 +4510,6 @@ void EditorNode::_load_docks() {
 			dock_slot[i]->add_child(node);
 			dock_slot[i]->show();
 		}
-
 	}
 
 	VSplitContainer*splits[DOCK_SLOT_MAX/2]={
@@ -4445,14 +4521,14 @@ void EditorNode::_load_docks() {
 
 	for(int i=0;i<DOCK_SLOT_MAX/2;i++) {
 
-		if (!config->has_section_key("docks","dock_split_"+itos(i+1)))
+		if (!p_layout->has_section_key(p_section,"dock_split_"+itos(i+1)))
 			continue;
 
-		int ofs = config->get_value("docks","dock_split_"+itos(i+1));
+		int ofs = p_layout->get_value(p_section,"dock_split_"+itos(i+1));
 		splits[i]->set_split_offset(ofs);
 	}
 
-	HSplitContainer *h_splits[4]={
+	HSplitContainer*h_splits[4]={
 		left_l_hsplit,
 		left_r_hsplit,
 		main_hsplit,
@@ -4460,9 +4536,9 @@ void EditorNode::_load_docks() {
 	};
 
 	for(int i=0;i<4;i++) {
-		if (!config->has_section_key("docks","dock_hsplit_"+itos(i+1)))
+		if (!p_layout->has_section_key(p_section,"dock_hsplit_"+itos(i+1)))
 			continue;
-		int ofs = config->get_value("docks","dock_hsplit_"+itos(i+1));
+		int ofs = p_layout->get_value(p_section,"dock_hsplit_"+itos(i+1));
 		h_splits[i]->set_split_offset(ofs);
 	}
 
@@ -4480,8 +4556,78 @@ void EditorNode::_load_docks() {
 			dock_slot[i]->set_current_tab(0);
 		}
 	}
+}
 
-	editor_data.set_plugin_window_layout(config);
+
+void EditorNode::_update_layouts_menu() {
+
+	editor_layouts->clear();
+	editor_layouts->set_size(Vector2());
+	editor_layouts->add_item("Save Layout", SETTINGS_LAYOUT_SAVE);
+	editor_layouts->add_item("Delete Layout", SETTINGS_LAYOUT_DELETE);
+	editor_layouts->add_separator();
+	editor_layouts->add_item("Default", SETTINGS_LAYOUT_DEFAULT);
+
+	Ref<ConfigFile> config;
+	config.instance();
+	Error err = config->load(EditorSettings::get_singleton()->get_settings_path().plus_file("editor_layouts.cfg"));
+	if (err!=OK) {
+		return; //no config
+	}
+
+	List<String> layouts;
+	config.ptr()->get_sections(&layouts);
+
+	for (List<String>::Element *E=layouts.front();E;E=E->next()) {
+
+		String layout=E->get();
+
+		if (layout!="Default")
+			editor_layouts->add_item(layout);
+	}
+
+}
+
+void EditorNode::_layout_menu_option(int p_id) {
+
+	switch (p_id) {
+
+		case SETTINGS_LAYOUT_SAVE: {
+
+			current_option=p_id;
+			layout_dialog->clear_layout_name();
+			layout_dialog->set_title("Save Layout");
+			layout_dialog->get_ok()->set_text("Save");
+			layout_dialog->popup_centered();
+		} break;
+		case SETTINGS_LAYOUT_DELETE: {
+
+			current_option=p_id;
+			layout_dialog->clear_layout_name();
+			layout_dialog->set_title("Delete Layout");
+			layout_dialog->get_ok()->set_text("Delete");
+			layout_dialog->popup_centered();
+		} break;
+		case SETTINGS_LAYOUT_DEFAULT: {
+
+			_load_docks_from_config(default_theme, "docks");
+			_save_docks();
+		} break;
+		default: {
+
+			Ref<ConfigFile> config;
+			config.instance();
+			Error err = config->load(EditorSettings::get_singleton()->get_settings_path().plus_file("editor_layouts.cfg"));
+			if (err!=OK) {
+				return; //no config
+			}
+
+			int idx=editor_layouts->get_item_index(p_id);
+			_load_docks_from_config(config, editor_layouts->get_item_text(idx));
+			_save_docks();
+
+		}
+	}
 
 }
 
@@ -5237,10 +5383,15 @@ EditorNode::EditorNode() {
 	right_menu_hb->add_child( settings_menu );
 	p=settings_menu->get_popup();
 
-
 	//p->add_item("Export Settings",SETTINGS_EXPORT_PREFERENCES);
 	p->add_item("Editor Settings",SETTINGS_PREFERENCES);
 	//p->add_item("Optimization Presets",SETTINGS_OPTIMIZED_PRESETS);
+	p->add_separator();
+	editor_layouts = memnew( PopupMenu );
+	editor_layouts->set_name("Layouts");
+	p->add_child(editor_layouts);
+	editor_layouts->connect("item_pressed",this,"_layout_menu_option");
+	p->add_submenu_item("Editor Layout", "Layouts");
 	p->add_separator();
 	p->add_check_item("Show Animation",SETTINGS_SHOW_ANIMATION,KEY_MASK_CMD+KEY_N);
 	p->add_separator();
@@ -5248,6 +5399,13 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_item("About",SETTINGS_ABOUT);
 
+	layout_dialog = memnew( EditorLayoutDialog );
+	gui_base->add_child(layout_dialog);
+	layout_dialog->set_hide_on_ok(false);
+	layout_dialog->set_size(Size2(175, 70));
+	confirm_error = memnew( AcceptDialog  );
+	layout_dialog->add_child(confirm_error);
+	layout_dialog->connect("layout_selected", this,"_layout_dialog_action");
 
 	sources_button = memnew( ToolButton );
 	right_menu_hb->add_child(sources_button);
@@ -5434,7 +5592,19 @@ EditorNode::EditorNode() {
 	scenes_dock->connect("open",this,"open_request");
 	scenes_dock->connect("instance",this,"_instance_request");
 
+	const String docks_section = "docks";
 
+	default_theme.instance();
+	default_theme->set_value(docks_section, "dock_3", "Scene");
+	default_theme->set_value(docks_section, "dock_4", "FileSystem");
+	default_theme->set_value(docks_section, "dock_5", "Inspector");
+
+	for(int i=0;i<DOCK_SLOT_MAX/2;i++)
+		default_theme->set_value(docks_section, "dock_hsplit_"+itos(i+1), 0);
+	for(int i=0;i<DOCK_SLOT_MAX/2;i++)
+		default_theme->set_value(docks_section, "dock_split_"+itos(i+1), 0);
+
+	_update_layouts_menu();
 
 	log = memnew( EditorLog );
 	center_split->add_child(log);
@@ -5743,7 +5913,7 @@ EditorNode::EditorNode() {
 	resource_preview->add_preview_generator( Ref<EditorMeshPreviewPlugin>( memnew(EditorMeshPreviewPlugin )));
 
 	circle_step_msec=OS::get_singleton()->get_ticks_msec();
-	circle_step_frame=OS::get_singleton()->get_frames_drawn();;
+	circle_step_frame=OS::get_singleton()->get_frames_drawn();
 	circle_step=0;
 
 	_rebuild_import_menu();
