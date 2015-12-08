@@ -11,6 +11,7 @@ public:
 		MODE_ADD,
 		MODE_SUB,
 		MODE_MIX,
+		MODE_MASK,
 	};
 
 private:

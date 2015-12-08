@@ -155,6 +155,7 @@ uniform vec4 light_color;
 uniform vec4 light_shadow_color;
 uniform float light_height;
 varying vec4 light_uv_interp;
+uniform float light_outside_alpha;
 
 #if defined(NORMAL_USED)
 varying vec4 local_rot;
@@ -247,22 +248,27 @@ FRAGMENT_SHADER_CODE
 	vec4 shadow_color=vec4(0.0,0.0,0.0,0.0);
 #endif
 
+	if (any(lessThan(light_uv_interp.xy,vec2(0.0,0.0))) || any(greaterThanEqual(light_uv_interp.xy,vec2(1.0,1.0)))) {
+		color.a*=light_outside_alpha; //invisible
+
+	} else {
+
 #if defined(USE_LIGHT_SHADER_CODE)
 //light is written by the light shader
-{
-	vec4 light_out=light*color;
+		{
+			vec4 light_out=light*color;
 LIGHT_SHADER_CODE
-	color=light_out;
-}
+			color=light_out;
+		}
 
 #else
 
 #if defined(NORMAL_USED)
-	vec3 light_normal = normalize(vec3(light_vec,-light_height));
-	light*=max(dot(-light_normal,normal),0.0);
+		vec3 light_normal = normalize(vec3(light_vec,-light_height));
+		light*=max(dot(-light_normal,normal),0.0);
 #endif
 
-	color*=light;
+		color*=light;
 /*
 #ifdef USE_NORMAL
 	color.xy=local_rot.xy;//normal.xy;
@@ -273,9 +279,6 @@ LIGHT_SHADER_CODE
 //light shader code
 #endif
 
-	if (any(lessThan(light_uv_interp.xy,vec2(0.0,0.0))) || any(greaterThanEqual(light_uv_interp.xy,vec2(1.0,1.0)))) {
-		color.a=0.0; //invisible
-	} else {
 
 #ifdef USE_SHADOWS
 

@@ -333,7 +333,7 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"scale",PROPERTY_HINT_RANGE,"0.01,4096,0.01"),_SCS("set_texture_scale"),_SCS("get_texture_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"energy"),_SCS("set_energy"),_SCS("get_energy"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Add,Sub,Mix"),_SCS("set_mode"),_SCS("get_mode"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Add,Sub,Mix,Mask"),_SCS("set_mode"),_SCS("get_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"range/height"),_SCS("set_height"),_SCS("get_height"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/z_min",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_min"),_SCS("get_z_range_min"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/z_max",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_max"),_SCS("get_z_range_max"));
@@ -349,6 +349,7 @@ void Light2D::_bind_methods() {
 	BIND_CONSTANT( MODE_ADD );
 	BIND_CONSTANT( MODE_SUB );
 	BIND_CONSTANT( MODE_MIX );
+	BIND_CONSTANT( MODE_MASK );
 
 
 }

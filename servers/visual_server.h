@@ -1041,6 +1041,7 @@ public:
 		CANVAS_LIGHT_MODE_ADD,
 		CANVAS_LIGHT_MODE_SUB,
 		CANVAS_LIGHT_MODE_MIX,
+		CANVAS_LIGHT_MODE_MASK,
 	};
 
 	virtual void canvas_light_set_mode(RID p_light, CanvasLightMode p_mode)=0;
