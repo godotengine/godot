@@ -304,7 +304,7 @@ public:
 	Vector3 move(const Vector3& p_motion);
 	Vector3 move_to(const Vector3& p_position);
 
-	bool can_move_to(const Vector3& p_position,bool p_discrete=false);
+	bool can_teleport_to(const Vector3& p_position);
 	bool is_colliding() const;
 	Vector3 get_collision_pos() const;
 	Vector3 get_collision_normal() const;
