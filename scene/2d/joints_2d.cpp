@@ -111,6 +111,19 @@ real_t Joint2D::get_bias() const{
 	return bias;
 }
 
+void Joint2D::set_exclude_nodes_from_collision(bool p_enable) {
+
+	if (exclude_from_collision==p_enable)
+		return;
+	exclude_from_collision=p_enable;
+	_update_joint();
+}
+
+bool Joint2D::get_exclude_nodes_from_collision() const{
+
+	return exclude_from_collision;
+}
+
 
 void Joint2D::_bind_methods() {
 
@@ -124,9 +137,14 @@ void Joint2D::_bind_methods() {
 	ObjectTypeDB::bind_method( _MD("set_bias","bias"), &Joint2D::set_bias );
 	ObjectTypeDB::bind_method( _MD("get_bias"), &Joint2D::get_bias );
 
+	ObjectTypeDB::bind_method( _MD("set_exclude_nodes_from_collision","enable"), &Joint2D::set_exclude_nodes_from_collision );
+	ObjectTypeDB::bind_method( _MD("get_exclude_nodes_from_collision"), &Joint2D::get_exclude_nodes_from_collision );
+
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "node_a"), _SCS("set_node_a"),_SCS("get_node_a") );
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "node_b"), _SCS("set_node_b"),_SCS("get_node_b") );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "bias/bias",PROPERTY_HINT_RANGE,"0,0.9,0.001"), _SCS("set_bias"),_SCS("get_bias") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "collision/exclude_nodes"), _SCS("set_exclude_nodes_from_collision"),_SCS("get_exclude_nodes_from_collision") );
+
 
 }
 
@@ -135,6 +153,7 @@ void Joint2D::_bind_methods() {
 Joint2D::Joint2D() {
 
 	bias=0;
+	exclude_from_collision=true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -173,7 +192,10 @@ RID PinJoint2D::_configure_joint() {
 		SWAP(body_a,body_b);
 	} else if (body_b) {
 		//add a collision exception between both
-		Physics2DServer::get_singleton()->body_add_collision_exception(body_a->get_rid(),body_b->get_rid());
+		if (get_exclude_nodes_from_collision())
+			Physics2DServer::get_singleton()->body_add_collision_exception(body_a->get_rid(),body_b->get_rid());
+		else
+			Physics2DServer::get_singleton()->body_remove_collision_exception(body_a->get_rid(),body_b->get_rid());
 	}
 	RID pj = Physics2DServer::get_singleton()->pin_joint_create(get_global_transform().get_origin(),body_a->get_rid(),body_b?body_b->get_rid():RID());
 	Physics2DServer::get_singleton()->pin_joint_set_param(pj, Physics2DServer::PIN_JOINT_SOFTNESS, softness);
@@ -245,7 +267,11 @@ RID GrooveJoint2D::_configure_joint(){
 	if (!body_a || !body_b)
 		return RID();
 
-	Physics2DServer::get_singleton()->body_add_collision_exception(body_a->get_rid(),body_b->get_rid());
+
+	if (get_exclude_nodes_from_collision())
+		Physics2DServer::get_singleton()->body_add_collision_exception(body_a->get_rid(),body_b->get_rid());
+	else
+		Physics2DServer::get_singleton()->body_remove_collision_exception(body_a->get_rid(),body_b->get_rid());
 
 	Matrix32 gt = get_global_transform();
 	Vector2 groove_A1 = gt.get_origin();
@@ -338,7 +364,10 @@ RID DampedSpringJoint2D::_configure_joint(){
 	if (!body_a || !body_b)
 		return RID();
 
-	Physics2DServer::get_singleton()->body_add_collision_exception(body_a->get_rid(),body_b->get_rid());
+	if (get_exclude_nodes_from_collision())
+		Physics2DServer::get_singleton()->body_add_collision_exception(body_a->get_rid(),body_b->get_rid());
+	else
+		Physics2DServer::get_singleton()->body_remove_collision_exception(body_a->get_rid(),body_b->get_rid());
 
 	Matrix32 gt = get_global_transform();
 	Vector2 anchor_A = gt.get_origin();
