@@ -1754,7 +1754,7 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 	}
 
 	play_button->set_pressed(false);
-	play_button->set_icon(gui_base->get_icon("Play","EditorIcons"));
+	play_button->set_icon(gui_base->get_icon("MainPlay","EditorIcons"));
 	//pause_button->set_pressed(false);
 	play_scene_button->set_pressed(false);
 	play_scene_button->set_icon(gui_base->get_icon("PlayScene","EditorIcons"));
@@ -2626,7 +2626,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			editor_run.stop();
 			play_button->set_pressed(false);
-			play_button->set_icon(gui_base->get_icon("Play","EditorIcons"));
+			play_button->set_icon(gui_base->get_icon("MainPlay","EditorIcons"));
 			play_scene_button->set_pressed(false);
 			play_scene_button->set_icon(gui_base->get_icon("PlayScene","EditorIcons"));
 			//pause_button->set_pressed(false);
