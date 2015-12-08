@@ -1,4 +1,5 @@
 //  NREX: Node RegEx
+//  Version 0.1
 //
 //  Copyright (c) 2015, Zher Huei Lee
 //  All rights reserved.
@@ -299,6 +300,10 @@ struct nrex_node_group : public nrex_node
             {
                 length = 1;
             }
+            if (mode == LookAhead || mode == LookBehind)
+            {
+                quantifiable = false;
+            }
         }
 
         virtual ~nrex_node_group()
@@ -322,6 +327,10 @@ struct nrex_node_group : public nrex_node
                 int offset = 0;
                 if (mode == LookBehind)
                 {
+                    if (pos < length)
+                    {
+                        return -1;
+                    }
                     offset = length;
                 }
                 int res = childset[i]->test(s, pos - offset);
@@ -450,7 +459,7 @@ struct nrex_node_char : public nrex_node
 
         int test(nrex_search* s, int pos) const
         {
-            if (s->end == pos || s->at(pos) != ch)
+            if (s->end <= pos || 0 > pos || s->at(pos) != ch)
             {
                 return -1;
             }
@@ -473,7 +482,7 @@ struct nrex_node_range : public nrex_node
 
         int test(nrex_search* s, int pos) const
         {
-            if (s->end == pos)
+            if (s->end <= pos || 0 > pos)
             {
                 return -1;
             }
@@ -555,7 +564,7 @@ struct nrex_node_class : public nrex_node
 
         int test(nrex_search* s, int pos) const
         {
-            if (s->end == pos)
+            if (s->end <= pos || 0 > pos)
             {
                 return -1;
             }
@@ -727,7 +736,7 @@ struct nrex_node_shorthand : public nrex_node
 
         int test(nrex_search* s, int pos) const
         {
-            if (s->end == pos)
+            if (s->end <= pos || 0 > pos)
             {
                 return -1;
             }
@@ -811,16 +820,12 @@ struct nrex_node_quantifier : public nrex_node
 
         int test(nrex_search* s, int pos) const
         {
-            return test_step(s, pos, 1);
+            return test_step(s, pos, 0, pos);
         }
 
-        int test_step(nrex_search* s, int pos, int level) const
+        int test_step(nrex_search* s, int pos, int level, int start) const
         {
-            if (max == 0)
-            {
-                return pos;
-            }
-            if ((max >= 1 && level > max) || pos > s->end)
+            if (pos > s->end)
             {
                 return -1;
             }
@@ -840,14 +845,26 @@ struct nrex_node_quantifier : public nrex_node
                     return res;
                 }
             }
-            int res = child->test(s, pos);
-            if (s->complete)
+            if (max >= 0 && level > max)
             {
-                return res;
+                return -1;
+            }
+            if (level > 1 && level > min + 1 && pos == start)
+            {
+                return -1;
+            }
+            int res = pos;
+            if (level >= 1)
+            {
+                res = child->test(s, pos);
+                if (s->complete)
+                {
+                    return res;
+                }
             }
             if (res >= 0)
             {
-                int res_step = test_step(s, res, level + 1);
+                int res_step = test_step(s, res, level + 1, start);
                 if (res_step >= 0)
                 {
                     return res_step;
@@ -983,6 +1000,13 @@ nrex::nrex()
 {
 }
 
+nrex::nrex(const nrex_char* pattern, int captures)
+    : _capturing(0)
+    , _root(NULL)
+{
+    compile(pattern, captures);
+}
+
 nrex::~nrex()
 {
     if (_root)
@@ -1008,10 +1032,14 @@ void nrex::reset()
 
 int nrex::capture_size() const
 {
-    return _capturing + 1;
+    if (_root)
+    {
+        return _capturing + 1;
+    }
+    return 0;
 }
 
-bool nrex::compile(const nrex_char* pattern, bool extended)
+bool nrex::compile(const nrex_char* pattern, int captures)
 {
     reset();
     nrex_node_group* root = NREX_NEW(nrex_node_group(_capturing));
@@ -1053,7 +1081,7 @@ bool nrex::compile(const nrex_char* pattern, bool extended)
                     NREX_COMPILE_ERROR("unrecognised qualifier for group");
                 }
             }
-            else if ((!extended && _capturing < 9) || (extended && _capturing < 99))
+            else if (captures >= 0 && _capturing < captures)
             {
                 nrex_node_group* group = NREX_NEW(nrex_node_group(++_capturing));
                 stack.top()->add_child(group);
@@ -1190,15 +1218,6 @@ bool nrex::compile(const nrex_char* pattern, bool extended)
         }
         else if (nrex_is_quantifier(c[0]))
         {
-            if (stack.top()->back == NULL || !stack.top()->back->quantifiable)
-            {
-                if (c[0] == '{')
-                {
-                    stack.top()->add_child(NREX_NEW(nrex_node_char('{')));
-                    continue;
-                }
-                NREX_COMPILE_ERROR("element not quantifiable");
-            }
             int min = 0;
             int max = -1;
             bool valid_quantifier = true;
@@ -1270,6 +1289,10 @@ bool nrex::compile(const nrex_char* pattern, bool extended)
             }
             if (valid_quantifier)
             {
+                if (stack.top()->back == NULL || !stack.top()->back->quantifiable)
+                {
+                    NREX_COMPILE_ERROR("element not quantifiable");
+                }
                 nrex_node_quantifier* quant = NREX_NEW(nrex_node_quantifier(min, max));
                 if (min == max)
                 {
@@ -1323,20 +1346,26 @@ bool nrex::compile(const nrex_char* pattern, bool extended)
                 stack.top()->add_child(NREX_NEW(nrex_node_shorthand(c[1])));
                 ++c;
             }
-            else if ('1' <= c[1] && c[1] <= '9')
+            else if (('1' <= c[1] && c[1] <= '9') || (c[1] == 'g' && c[2] == '{'))
             {
                 int ref = 0;
-                if (extended && '0' <= c[2] && c[2] <= '9')
+                bool unclosed = false;
+                if (c[1] == 'g')
                 {
-                    ref = int(c[1] - '0') * 10 + int(c[2] - '0');
+                    unclosed = true;
                     c = &c[2];
                 }
-                else
+                while ('0' <= c[1] && c[1] <= '9')
                 {
-                    ref = int(c[1] - '0');
+                    ref = ref * 10 + int(c[1] - '0');
                     ++c;
                 }
-                if (ref > _capturing)
+                if (c[1] == '}')
+                {
+                    unclosed = false;
+                    ++c;
+                }
+                if (ref > _capturing || ref <= 0 || unclosed)
                 {
                     NREX_COMPILE_ERROR("backreference to non-existent capture");
                 }
@@ -1377,6 +1406,10 @@ bool nrex::compile(const nrex_char* pattern, bool extended)
 
 bool nrex::match(const nrex_char* str, nrex_result* captures, int offset, int end) const
 {
+    if (!_root)
+    {
+        return false;
+    }
     nrex_search s(str, captures);
     if (end >= offset)
     {
@@ -1386,7 +1419,7 @@ bool nrex::match(const nrex_char* str, nrex_result* captures, int offset, int en
     {
         s.end = NREX_STRLEN(str);
     }
-    for (int i = offset; i < s.end; ++i)
+    for (int i = offset; i <= s.end; ++i)
     {
         for (int c = 0; c <= _capturing; ++c)
         {
