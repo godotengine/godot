@@ -122,7 +122,7 @@ private:
 
 
 
-	void _validate_child_name(Node *p_name);
+	void _validate_child_name(Node *p_name, bool p_force_human_readable=false);
 
 	void _propagate_reverse_notification(int p_notification);	
 	void _propagate_deferred_notification(int p_notification, bool p_reverse);
@@ -187,7 +187,7 @@ public:
 	StringName get_name() const;
 	void set_name(const String& p_name);
 	
-	void add_child(Node *p_child);
+	void add_child(Node *p_child,bool p_legible_unique_name=false);
 	void remove_child(Node *p_child);
 	
 	int get_child_count() const;

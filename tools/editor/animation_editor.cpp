@@ -961,7 +961,7 @@ void AnimationKeyEditor::_cleanup_animation(Ref<Animation> p_animation) {
 		Object *obj=NULL;
 
 		RES res;
-		Node *node = root->get_node_and_resource(animation->track_get_path(i),res);
+		Node *node = root->get_node_and_resource(p_animation->track_get_path(i),res);
 
 		if (res.is_valid()) {
 			obj=res.ptr();
@@ -969,32 +969,32 @@ void AnimationKeyEditor::_cleanup_animation(Ref<Animation> p_animation) {
 			obj=node;
 		}
 
-		if (obj && animation->track_get_type(i)==Animation::TYPE_VALUE) {
-			valid_type=obj->get_static_property_type(animation->track_get_path(i).get_property(),&prop_exists);
+		if (obj && p_animation->track_get_type(i)==Animation::TYPE_VALUE) {
+			valid_type=obj->get_static_property_type(p_animation->track_get_path(i).get_property(),&prop_exists);
 		}
 
 		if (!obj && cleanup_tracks->is_pressed()) {
 
-			animation->remove_track(i);
+			p_animation->remove_track(i);
 			i--;
 			continue;
 		}
 
-		if (!prop_exists || animation->track_get_type(i)!=Animation::TYPE_VALUE || cleanup_keys->is_pressed()==false)
+		if (!prop_exists || p_animation->track_get_type(i)!=Animation::TYPE_VALUE || cleanup_keys->is_pressed()==false)
 			continue;
 
-		for(int j=0;j<animation->track_get_key_count(i);j++) {
+		for(int j=0;j<p_animation->track_get_key_count(i);j++) {
 
-			Variant v = animation->track_get_key_value(i,j);
+			Variant v = p_animation->track_get_key_value(i,j);
 
 			if (!Variant::can_convert(v.get_type(),valid_type)) {
-				animation->track_remove_key(i,j);
+				p_animation->track_remove_key(i,j);
 				j--;
 			}
 		}
 
-		if (animation->track_get_key_count(i)==0 && cleanup_tracks->is_pressed()) {
-			animation->remove_track(i);
+		if (p_animation->track_get_key_count(i)==0 && cleanup_tracks->is_pressed()) {
+			p_animation->remove_track(i);
 			i--;
 		}
 	}

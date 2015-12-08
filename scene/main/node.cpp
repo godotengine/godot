@@ -628,11 +628,11 @@ String Node::validate_child_name(const String& p_name) const {
 
 }
 
-void Node::_validate_child_name(Node *p_child) {
+void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 
 	/* Make sure the name is unique */
 
-	if (node_hrcr) {
+	if (node_hrcr || p_force_human_readable) {
 
 		//this approach to autoset node names is human readable but very slow
 		//it's turned on while running in the editor
@@ -732,23 +732,26 @@ void Node::_add_child_nocheck(Node* p_child,const StringName& p_name) {
 }
 
 
-void Node::add_child(Node *p_child) {
+void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 
 	ERR_FAIL_NULL(p_child);
 	/* Fail if node has a parent */
-	ERR_EXPLAIN("Can't add child "+p_child->get_name()+" to itself.")
-	ERR_FAIL_COND( p_child==this ); // adding to itself!
+	if (p_child==this) {
+		ERR_EXPLAIN("Can't add child "+p_child->get_name()+" to itself.")
+		ERR_FAIL_COND( p_child==this ); // adding to itself!
+	}
 	ERR_EXPLAIN("Can't add child, already has a parent");
 	ERR_FAIL_COND( p_child->data.parent );
 	ERR_EXPLAIN("Can't add child while a notification is happening");
 	ERR_FAIL_COND( data.blocked > 0 );
 		
 	/* Validate name */
-	_validate_child_name(p_child);
+	_validate_child_name(p_child,p_legible_unique_name);
 
 	_add_child_nocheck(p_child,p_child->data.name);
 	
 }
+
 
 void Node::_propagate_validate_owner() {
 
@@ -1984,7 +1987,7 @@ void Node::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_name","name"),&Node::set_name);
 	ObjectTypeDB::bind_method(_MD("get_name"),&Node::get_name);
-	ObjectTypeDB::bind_method(_MD("add_child","node:Node"),&Node::add_child);
+	ObjectTypeDB::bind_method(_MD("add_child","node:Node","legible_unique_name"),&Node::add_child,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("remove_child","node:Node"),&Node::remove_child);
 	//ObjectTypeDB::bind_method(_MD("remove_and_delete_child","node:Node"),&Node::remove_and_delete_child);
 	ObjectTypeDB::bind_method(_MD("get_child_count"),&Node::get_child_count);
