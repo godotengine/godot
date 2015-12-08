@@ -45,6 +45,7 @@ class Joint : public Spatial {
 	NodePath b;
 
 	int solver_priority;
+	bool exclude_from_collision;
 
 
 protected:
@@ -66,6 +67,9 @@ public:
 
 	void set_solver_priority(int p_priority);
 	int get_solver_priority() const;
+
+	void set_exclude_nodes_from_collision(bool p_enable);
+	bool get_exclude_nodes_from_collision() const;
 
 	RID get_joint() const { return joint; }
 	Joint();

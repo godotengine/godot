@@ -34,8 +34,15 @@ void Joint::_update_joint(bool p_only_free) {
 
 
 	if (joint.is_valid()) {
-		if (ba.is_valid() && bb.is_valid())
-			PhysicsServer::get_singleton()->body_remove_collision_exception(ba,bb);
+		if (ba.is_valid() && bb.is_valid()) {
+
+			if (exclude_from_collision)
+				PhysicsServer::get_singleton()->body_add_collision_exception(ba,bb);
+			else
+				PhysicsServer::get_singleton()->body_remove_collision_exception(ba,bb);
+
+		}
+
 		PhysicsServer::get_singleton()->free(joint);
 		joint=RID();
 		ba=RID();
@@ -144,6 +151,19 @@ void Joint::_notification(int p_what) {
 }
 
 
+void Joint::set_exclude_nodes_from_collision(bool p_enable) {
+
+	if (exclude_from_collision==p_enable)
+		return;
+	exclude_from_collision=p_enable;
+	_update_joint();
+}
+
+bool Joint::get_exclude_nodes_from_collision() const{
+
+	return exclude_from_collision;
+}
+
 void Joint::_bind_methods() {
 
 
@@ -156,9 +176,15 @@ void Joint::_bind_methods() {
 	ObjectTypeDB::bind_method( _MD("set_solver_priority","priority"), &Joint::set_solver_priority );
 	ObjectTypeDB::bind_method( _MD("get_solver_priority"), &Joint::get_solver_priority );
 
+	ObjectTypeDB::bind_method( _MD("set_exclude_nodes_from_collision","enable"), &Joint::set_exclude_nodes_from_collision );
+	ObjectTypeDB::bind_method( _MD("get_exclude_nodes_from_collision"), &Joint::get_exclude_nodes_from_collision );
+
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "nodes/node_a"), _SCS("set_node_a"),_SCS("get_node_a") );
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "nodes/node_b"), _SCS("set_node_b"),_SCS("get_node_b") );
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "solver/priority",PROPERTY_HINT_RANGE,"1,8,1"), _SCS("set_solver_priority"),_SCS("get_solver_priority") );
+
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "collision/exclude_nodes"), _SCS("set_exclude_nodes_from_collision"),_SCS("get_exclude_nodes_from_collision") );
+
 
 
 }
@@ -167,6 +193,7 @@ void Joint::_bind_methods() {
 
 Joint::Joint() {
 
+	exclude_from_collision=true;
 	solver_priority=1;
 }
 
