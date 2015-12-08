@@ -6777,6 +6777,7 @@ void VisualServerRaster::_render_canvas_item_viewport(VisualServer* p_self,void 
 
 }
 
+
 void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect, float p_opacity,int p_z,Rasterizer::CanvasItem **z_list,Rasterizer::CanvasItem **z_last_list,CanvasItem *p_canvas_clip,CanvasItem *p_material_owner) {
 
 	CanvasItem *ci = p_canvas_item;
@@ -6878,6 +6879,7 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 		ci->final_opacity=opacity * ci->self_opacity;
 		ci->global_rect_cache=global_rect;
 		ci->global_rect_cache.pos-=p_clip_rect.pos;
+		ci->light_masked=false;
 
 		int zidx = p_z-CANVAS_ITEM_Z_MIN;
 
@@ -6905,7 +6907,34 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 
 }
 
-void VisualServerRaster::_render_canvas(Canvas *p_canvas,const Matrix32 &p_transform,Rasterizer::CanvasLight *p_lights) {
+void VisualServerRaster::_light_mask_canvas_items(int p_z,Rasterizer::CanvasItem *p_canvas_item,Rasterizer::CanvasLight *p_masked_lights) {
+
+	if (!p_masked_lights)
+		return;
+
+	Rasterizer::CanvasItem *ci=p_canvas_item;
+
+	while(ci) {
+
+		Rasterizer::CanvasLight *light=p_masked_lights;
+		while(light) {
+
+			if (ci->light_mask&light->item_mask && p_z>=light->z_min && p_z<=light->z_max && ci->global_rect_cache.intersects_transformed(light->xform_cache,light->rect_cache)) {
+				ci->light_masked=true;
+			}
+
+			light=light->mask_next_ptr;
+		}
+
+		ci=ci->next;
+	}
+
+
+
+
+}
+
+void VisualServerRaster::_render_canvas(Canvas *p_canvas,const Matrix32 &p_transform,Rasterizer::CanvasLight *p_lights,Rasterizer::CanvasLight *p_masked_lights) {
 
 	rasterizer->canvas_begin();
 
@@ -6938,6 +6967,11 @@ void VisualServerRaster::_render_canvas(Canvas *p_canvas,const Matrix32 &p_trans
 		for(int i=0;i<z_range;i++) {
 			if (!z_list[i])
 				continue;
+
+			if (p_masked_lights) {
+				_light_mask_canvas_items(CANVAS_ITEM_Z_MIN+i,z_list[i],p_masked_lights);
+			}
+
 			rasterizer->canvas_render_items(z_list[i],CANVAS_ITEM_Z_MIN+i,p_canvas->modulate,p_lights);
 		}
 	} else {
@@ -7072,6 +7106,7 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 		Rect2 clip_rect(0,0,viewport_rect.width,viewport_rect.height);
 		Rasterizer::CanvasLight *lights=NULL;
 		Rasterizer::CanvasLight *lights_with_shadow=NULL;
+		Rasterizer::CanvasLight *lights_with_mask=NULL;
 		Rect2 shadow_rect;
 
 		int light_count=0;
@@ -7119,9 +7154,14 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 							cl->radius_cache=cl->rect_cache.size.length();
 
 						}
+						if (cl->mode==CANVAS_LIGHT_MODE_MASK) {
+							cl->mask_next_ptr=lights_with_mask;
+							lights_with_mask=cl;
+						}
 
 						light_count++;
 					}
+
 				}
 			}
 
@@ -7190,7 +7230,7 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 				ptr=ptr->filter_next_ptr;
 			}
 
-			_render_canvas( E->get()->canvas,xform,canvas_lights );
+			_render_canvas( E->get()->canvas,xform,canvas_lights,lights_with_mask );
 			i++;
 
 			if (scenario_draw_canvas_bg && E->key().layer>=scenario_canvas_max_layer) {
