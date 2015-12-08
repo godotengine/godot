@@ -1,5 +1,13 @@
 Import('env')
 
+ed_gl_set='#include "os_unix.h"\n'
+ed_gl_set+='String OS_Unix::get_global_settings_path() const {\n'
+ed_gl_set+='\treturn "' + env["unix_global_settings_path"]+'";\n'
+ed_gl_set+='}\n'
+f = open("os_unix_global_settings_path.cpp","wb")
+f.write(ed_gl_set)
+f.close()
+
 env.add_source_files(env.drivers_sources,"*.cpp")
 
 Export('env')

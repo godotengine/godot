@@ -275,10 +275,16 @@ Error EditorExportPlatformBB10::export_project(const String& p_path, bool p_debu
 
 	EditorProgress ep("export","Exporting for BlackBerry 10",104);
 
-	String template_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
+	String src_template=custom_package;
 
-	String src_template=custom_package!=""?custom_package:template_path.plus_file("bb10.zip");
-
+	if (src_template=="") {
+		String err;
+		src_template = find_export_template("bb10.zip", &err);
+		if (src_template=="") {
+			EditorNode::add_io_error(err);
+			return ERR_FILE_NOT_FOUND;
+		}
+	}
 
 	FileAccess *src_f=NULL;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
@@ -733,9 +739,7 @@ bool EditorExportPlatformBB10::can_export(String *r_error) const {
 		err+="Blackberry host tools not configured in editor settings.\n";
 	}
 
-	String exe_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
-
-	if (!FileAccess::exists(exe_path+"bb10.zip")) {
+	if (!exists_export_template("bb10.zip")) {
 		valid=false;
 		err+="No export template found.\nDownload and install export templates.\n";
 	}
