@@ -130,7 +130,7 @@ class BodySW : public CollisionObjectSW {
 	BodySW *island_next;
 	BodySW *island_list_next;
 
-	_FORCE_INLINE_ void _compute_area_gravity(const AreaSW *p_area);
+	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const AreaSW *p_area);
 
 	_FORCE_INLINE_ void _update_inertia_tensor();
 

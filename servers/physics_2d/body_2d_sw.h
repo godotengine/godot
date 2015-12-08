@@ -132,7 +132,7 @@ class Body2DSW : public CollisionObject2DSW {
 	Body2DSW *island_next;
 	Body2DSW *island_list_next;
 
-	_FORCE_INLINE_ void _compute_area_gravity(const Area2DSW *p_area);
+	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const Area2DSW *p_area);
 
 friend class Physics2DDirectBodyStateSW; // i give up, too many functions to expose
 
