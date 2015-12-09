@@ -932,6 +932,10 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderText::load_interactive(const 
 
 void ResourceFormatLoaderText::get_recognized_extensions_for_type(const String& p_type,List<String> *p_extensions) const {
 
+	if (p_type=="") {
+		get_recognized_extensions(p_extensions);
+		return;
+	}
 
 	if (p_type=="PackedScene")
 		p_extensions->push_back("tscn");
