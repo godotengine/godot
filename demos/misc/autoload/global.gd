@@ -1,7 +1,9 @@
 extends Node
 
-# Member variables
-var current_scene = null
+
+# Changing scenes is most easily done using the functions `change_scene`
+# and `change_scene_to` of the SceneTree. This script demonstrates how to
+# change scenes without those helpers.
 
 
 func goto_scene(path):
@@ -18,20 +20,17 @@ func goto_scene(path):
 
 
 func _deferred_goto_scene(path):
-	# Immediately free the current scene,
-	# there is no risk here.
-	current_scene.free()
+	# Immediately free the current scene, there is no risk here.
+	get_tree().get_current_scene().free()
 	
 	# Load new scene
-	var s = ResourceLoader.load(path)
+	var packed_scene = ResourceLoader.load(path)
 	
 	# Instance the new scene
-	current_scene = s.instance()
+	var instanced_scene = packed_scene.instance()
 	
-	# Add it to the active scene, as child of root
-	get_tree().get_root().add_child(current_scene)
-
-
-func _ready():
-	# Get the current scene at the time of initialization
-	current_scene = get_tree().get_current_scene()
+	# Add it to the scene tree, as direct child of root
+	get_tree().get_root().add_child(instanced_scene)
+	
+	# Set it as the current scene, only after it has been added to the tree
+	get_tree().set_current_scene(instanced_scene)
