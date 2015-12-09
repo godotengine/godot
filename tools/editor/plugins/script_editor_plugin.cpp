@@ -379,6 +379,8 @@ void ScriptTextEditor::reload_text() {
 	te->set_h_scroll(h);
 	te->set_v_scroll(v);
 
+	te->tag_saved_version();
+
 	_line_col_changed();
 
 }
@@ -389,6 +391,12 @@ void ScriptTextEditor::_notification(int p_what) {
 
 		//emit_signal("name_changed");
 	}
+}
+
+
+bool ScriptTextEditor::is_unsaved()  {
+
+	return get_text_edit()->get_version()!=get_text_edit()->get_saved_version();
 }
 
 String ScriptTextEditor::get_name()  {
@@ -491,6 +499,59 @@ static Node* _find_node_for_script(Node* p_base, Node*p_current, const Ref<Scrip
 
 	return NULL;
 }
+
+static void _find_changed_scripts_for_external_editor(Node* p_base, Node*p_current, Set<Ref<Script> > &r_scripts) {
+
+	if (p_current->get_owner()!=p_base && p_base!=p_current)
+		return;
+	Ref<Script> c = p_current->get_script();
+
+	if (c.is_valid())
+		r_scripts.insert(c);
+
+	for(int i=0;i<p_current->get_child_count();i++) {
+		_find_changed_scripts_for_external_editor(p_base,p_current->get_child(i),r_scripts);
+	}
+
+}
+
+void ScriptEditor::_update_modified_scripts_for_external_editor() {
+
+	if (!bool(EditorSettings::get_singleton()->get("external_editor/use_external_editor")))
+		return;
+
+	Set<Ref<Script> > scripts;
+
+	Node *base = get_tree()->get_edited_scene_root();
+	if (base) {
+		_find_changed_scripts_for_external_editor(base,base,scripts);
+	}
+
+	for (Set<Ref<Script> >::Element *E=scripts.front();E;E=E->next()) {
+
+		Ref<Script> script = E->get();
+
+		if (script->get_path()=="" || script->get_path().find("local://")!=-1 || script->get_path().find("::")!=-1) {
+
+			continue; //internal script, who cares, though weird
+		}
+
+		uint64_t last_date = script->get_last_modified_time();
+		uint64_t date = FileAccess::get_modified_time(script->get_path());
+
+		if (last_date!=date) {
+
+			Ref<Script> rel_script = ResourceLoader::load(script->get_path(),script->get_type(),true);
+			ERR_CONTINUE(!rel_script.is_valid());
+			script->set_source_code( rel_script->get_source_code() );
+			script->set_last_modified_time( rel_script->get_last_modified_time() );
+			script->update_exports();
+		}
+
+	}
+}
+
+
 
 void ScriptTextEditor::_code_complete_script(const String& p_code, List<String>* r_options) {
 
@@ -749,6 +810,7 @@ void ScriptEditor::_reload_scripts(){
 	}
 
 	disk_changed->hide();
+	_update_script_names();
 
 }
 
@@ -791,46 +853,53 @@ bool ScriptEditor::_test_script_times_on_disk() {
 	TreeItem *r = disk_changed_list->create_item();
 	disk_changed_list->set_hide_root(true);
 
-	bool all_ok=true;
+	bool need_ask=false;
+	bool need_reload=false;
+	bool use_autoreload=bool(EDITOR_DEF("text_editor/auto_reload_scripts_on_external_change",false));
+
 
 
 	for(int i=0;i<tab_container->get_child_count();i++) {
 
 		ScriptTextEditor *ste = tab_container->get_child(i)->cast_to<ScriptTextEditor>();
-		if (!ste)
-			continue;
+		if (ste) {
+
+			Ref<Script> script = ste->get_edited_script();
+
+			if (script->get_path()=="" || script->get_path().find("local://")!=-1 || script->get_path().find("::")!=-1)
+				continue; //internal script, who cares
 
 
-		Ref<Script> script = ste->get_edited_script();
+			uint64_t last_date = script->get_last_modified_time();
+			uint64_t date = FileAccess::get_modified_time(script->get_path());
 
-		if (script->get_path()=="" || script->get_path().find("local://")!=-1 || script->get_path().find("::")!=-1)
-			continue; //internal script, who cares
+			//printf("last date: %lli vs date: %lli\n",last_date,date);
+			if (last_date!=date) {
 
+				TreeItem *ti = disk_changed_list->create_item(r);
+				ti->set_text(0,script->get_path().get_file());
 
-		uint64_t last_date = script->get_last_modified_time();
-		uint64_t date = FileAccess::get_modified_time(script->get_path());
-
-		//printf("last date: %lli vs date: %lli\n",last_date,date);
-		if (last_date!=date) {
-
-			TreeItem *ti = disk_changed_list->create_item(r);
-			ti->set_text(0,script->get_path().get_file());
-			all_ok=false;
-			//r->set_metadata(0,);
+				if (!use_autoreload || ste->is_unsaved()) {
+					need_ask=true;
+				}
+				need_reload=true;
+				//r->set_metadata(0,);
+			}
 		}
 	}
 
 
 
-	if (!all_ok) {
-		if (bool(EDITOR_DEF("text_editor/auto_reload_changed_scripts",false))) {
+	if (need_reload) {
+		if (!need_ask) {
 			script_editor->_reload_scripts();
+			need_reload=false;
 		} else {
 			disk_changed->call_deferred("popup_centered_ratio",0.5);
 		}
 	}
 
-	return all_ok;
+	return need_reload;
 }
 
 void ScriptEditor::swap_lines(TextEdit *tx, int line1, int line2)
@@ -1403,6 +1472,7 @@ void ScriptEditor::_notification(int p_what) {
 	if (p_what==MainLoop::NOTIFICATION_WM_FOCUS_IN) {
 
 		_test_script_times_on_disk();
+		_update_modified_scripts_for_external_editor();
 	}
 
 	if (p_what==NOTIFICATION_PROCESS) {
@@ -1411,6 +1481,11 @@ void ScriptEditor::_notification(int p_what) {
 
 }
 
+void ScriptEditor::edited_scene_changed() {
+
+	_update_modified_scripts_for_external_editor();
+
+}
 
 static const Node * _find_node_with_script(const Node* p_node, const RefPtr & p_script)  {
 
@@ -2560,6 +2635,11 @@ void ScriptEditorPlugin::get_breakpoints(List<String> *p_breakpoints) {
 	return script_editor->get_breakpoints(p_breakpoints);
 }
 
+void ScriptEditorPlugin::edited_scene_changed() {
+
+	script_editor->edited_scene_changed();
+}
+
 ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
@@ -2569,7 +2649,7 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 
 	script_editor->hide();
 
-	EDITOR_DEF("text_editor/auto_reload_changed_scripts",false);
+	EDITOR_DEF("text_editor/auto_reload_scripts_on_external_change",true);
 	EDITOR_DEF("text_editor/open_dominant_script_on_scene_change",true);
 	EDITOR_DEF("external_editor/use_external_editor",false);
 	EDITOR_DEF("external_editor/exec_path","");

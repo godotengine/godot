@@ -103,7 +103,7 @@ public:
 	void reload_text();
 	String get_name() ;
 	Ref<Texture> get_icon() ;
-
+	bool is_unsaved();
 	ScriptTextEditor();
 
 };
@@ -271,6 +271,7 @@ class ScriptEditor : public VBoxContainer {
 	void _go_to_tab(int p_idx);
 	void _update_history_pos(int p_new_pos);
 	void _update_script_colors();
+	void _update_modified_scripts_for_external_editor();
 
 
 	static ScriptEditor *script_editor;
@@ -301,6 +302,8 @@ public:
 	void get_window_layout(Ref<ConfigFile> p_layout);
 
 	void set_scene_root_script( Ref<Script> p_script );
+
+	virtual void edited_scene_changed();
 
 	ScriptEditorDebugger *get_debugger() { return debugger; }
 
@@ -338,6 +341,7 @@ public:
 
 	virtual void get_breakpoints(List<String> *p_breakpoints);
 
+	virtual void edited_scene_changed();
 
 	ScriptEditorPlugin(EditorNode *p_node);
 	~ScriptEditorPlugin();
