@@ -338,6 +338,14 @@ void EditorData::set_editor_states(const Dictionary& p_states) {
 
 }
 
+void EditorData::notify_edited_scene_changed() {
+
+	for(int i=0;i<editor_plugins.size();i++) {
+
+		editor_plugins[i]->edited_scene_changed();
+	}
+}
+
 void EditorData::clear_editor_states() {
 
 	for(int i=0;i<editor_plugins.size();i++) {

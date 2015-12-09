@@ -3399,6 +3399,8 @@ void EditorNode::_set_main_scene_state(Dictionary p_state) {
 	//changing_scene=true; //avoid script change from opening editor
 	ScriptEditor::get_singleton()->get_debugger()->update_live_edit_root();
 	ScriptEditor::get_singleton()->set_scene_root_script( editor_data.get_scene_root_script(editor_data.get_edited_scene()) );
+	editor_data.notify_edited_scene_changed();
+
 	//changing_scene=false;
 
 }

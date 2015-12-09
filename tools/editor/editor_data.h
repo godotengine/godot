@@ -200,6 +200,7 @@ public:
 
 	void save_edited_scene_state(EditorSelection *p_selection,EditorHistory *p_history,const Dictionary& p_custom);
 	Dictionary restore_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history);
+	void notify_edited_scene_changed();
 
 
 	EditorData();
