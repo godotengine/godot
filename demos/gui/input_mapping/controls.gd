@@ -11,9 +11,11 @@
 
 extends Control
 
+# member variables
 var player_actions = [ "move_up", "move_down", "move_left", "move_right", "jump" ]
 var action # To register the action the UI is currently handling
 var button # Button node corresponding to the above action
+
 
 func wait_for_input(action_bind):
 	action = action_bind
@@ -21,6 +23,7 @@ func wait_for_input(action_bind):
 	button = get_node("bindings").get_node(action).get_node("Button")
 	get_node("contextual_help").set_text("Press a key to assign to the '" + action + "' action.")
 	set_process_input(true)
+
 
 func _input(event):
 	# Handle the first pressed key
@@ -38,6 +41,7 @@ func _input(event):
 				InputMap.action_erase_event(action, old_event)
 			# Add the new key binding
 			InputMap.action_add_event(action, event)
+
 
 func _ready():
 	# Initialise each button with the default key binding from InputMap

@@ -1,14 +1,5 @@
 
 extends RigidBody
 
-# member variables here, example:
-# var a=2
-# var b="textvar"
-
+# member variables
 var disabled=false
-
-func _ready():
-	# Initalization here
-	pass
-
-
