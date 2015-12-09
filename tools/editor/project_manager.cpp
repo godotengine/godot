@@ -825,6 +825,19 @@ ProjectManager::ProjectManager() {
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 
 	set_area_as_parent_rect();
+
+	Ref<Theme> theme = Ref<Theme>( memnew( Theme ) );
+	set_theme(theme);
+	editor_register_icons(theme);
+
+	String global_font = EditorSettings::get_singleton()->get("global/font");
+	if (global_font!="") {
+		Ref<Font> fnt = ResourceLoader::load(global_font);
+		if (fnt.is_valid()) {
+			theme->set_default_theme_font(fnt);
+		}
+	}
+
 	Panel *panel = memnew( Panel );
 	add_child(panel);
 	panel->set_area_as_parent_rect();
@@ -971,10 +984,6 @@ ProjectManager::ProjectManager() {
 
 	npdialog = memnew( NewProjectDialog );
 	add_child(npdialog);
-
-	Ref<Theme> theme = memnew( Theme );
-	editor_register_icons(theme);
-	set_theme(theme);
 
 	npdialog->connect("project_created", this,"_load_recent_projects");
 	_load_recent_projects();
