@@ -29,6 +29,7 @@
 
 #include "text_edit.h"
 #include "os/keyboard.h"
+#include "os/input.h"
 #include "os/os.h"
 
 #include "globals.h"
@@ -347,6 +348,29 @@ void TextEdit::_update_scrollbars() {
 	
 	
 	updating_scrolls=false;
+}
+
+void TextEdit::_click_selection_held() {
+
+	if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && selection.selecting_mode!=Selection::MODE_NONE) {
+
+		Point2 mp = Input::get_singleton()->get_mouse_pos()-get_global_pos();
+
+		int row,col;
+		_get_mouse_pos(Point2i(mp.x,mp.y), row,col);
+
+		select(selection.selecting_line,selection.selecting_column,row,col);
+
+		cursor_set_line( row );
+		cursor_set_column( col );
+		update();
+
+		click_select_held->start();
+
+	} else {
+
+		click_select_held->stop();
+	}
 }
 
 
@@ -1292,6 +1316,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					update();
 				}
 			} else {
+
+				if (mb.button_index==BUTTON_LEFT)
+					click_select_held->stop();
 				
 				// notify to show soft keyboard
 				notification(NOTIFICATION_FOCUS_ENTER);
@@ -1304,16 +1331,18 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 			
 			if (mm.button_mask&BUTTON_MASK_LEFT) {
 				
-				int row,col;
-				_get_mouse_pos(Point2i(mm.x,mm.y), row,col);
-				
 				if (selection.selecting_mode!=Selection::MODE_NONE) {
+
+					int row,col;
+					_get_mouse_pos(Point2i(mm.x,mm.y), row,col);
 					
 					select(selection.selecting_line,selection.selecting_column,row,col);
 					
 					cursor_set_line( row );
 					cursor_set_column( col );
 					update();
+
+					click_select_held->start();
 					
 				}
 				
@@ -3697,6 +3726,7 @@ void TextEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_cursor_changed_emit"),&TextEdit::_cursor_changed_emit);
 	ObjectTypeDB::bind_method(_MD("_text_changed_emit"),&TextEdit::_text_changed_emit);
 	ObjectTypeDB::bind_method(_MD("_push_current_op"),&TextEdit::_push_current_op);
+	ObjectTypeDB::bind_method(_MD("_click_selection_held"),&TextEdit::_click_selection_held);
 	
 	BIND_CONSTANT( SEARCH_MATCH_CASE );
 	BIND_CONSTANT( SEARCH_WHOLE_WORDS );
@@ -3811,6 +3841,11 @@ TextEdit::TextEdit()  {
 	idle_detect->set_one_shot(true);
 	idle_detect->set_wait_time(GLOBAL_DEF("display/text_edit_idle_detect_sec",3));
 	idle_detect->connect("timeout", this,"_push_current_op");
+
+	click_select_held = memnew( Timer );
+	add_child(click_select_held);
+	click_select_held->set_wait_time(0.05);
+	click_select_held->connect("timeout", this,"_click_selection_held");
 	
 #if 0
 	syntax_coloring=true;

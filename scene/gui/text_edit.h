@@ -219,6 +219,7 @@ class TextEdit : public Control  {
 	uint64_t last_dblclk;
 
 	Timer *idle_detect;
+	Timer *click_select_held;
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
 	bool updating_scrolls;
@@ -240,6 +241,7 @@ class TextEdit : public Control  {
 	void adjust_viewport_to_cursor();
 	void _scroll_moved(double);
 	void _update_scrollbars();
+	void _click_selection_held();
 
 	void _pre_shift_selection();
 	void _post_shift_selection();
