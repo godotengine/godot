@@ -1,10 +1,7 @@
 
 extends Control
 
-# member variables here, example:
-# var a=2
-# var b="textvar"
-
+# member variables
 var trans = ["linear", "sine", "quint", "quart", "quad", "expo", "elastic", "cubic", "circ", "bounce", "back"]
 var eases = ["in", "out", "in_out", "out_in"]
 var modes = ["move", "color", "scale", "rotate", "callback", "follow", "repeat", "pause"]
@@ -13,6 +10,7 @@ var state = {
 	trans = Tween.TRANS_LINEAR,
 	eases = Tween.EASE_IN,
 }
+
 
 func _ready():
 	for index in range(trans.size()):
@@ -39,9 +37,7 @@ func _ready():
 	get_node("modes/repeat").set_pressed(true)
 	
 	reset_tween()
-	
-	# Initalization here
-	pass
+
 
 func on_trans_changed(name, index):
 	for index in range(trans.size()):
@@ -53,7 +49,8 @@ func on_trans_changed(name, index):
 	
 	state.trans = index
 	reset_tween()
-	
+
+
 func on_eases_changed(name, index):
 	for index in range(eases.size()):
 		var pressed = eases[index] == name
@@ -64,7 +61,8 @@ func on_eases_changed(name, index):
 	
 	state.eases = index
 	reset_tween()
-	
+
+
 func on_modes_changed(name):
 	var tween = get_node("tween")
 	if name == "pause":
@@ -76,10 +74,12 @@ func on_modes_changed(name):
 			get_node("timeline").set_ignore_mouse(true)
 	else:
 		reset_tween()
-	
+
+
 func on_color_changed(color):
 	reset_tween()
-	
+
+
 func reset_tween():
 	var tween = get_node("tween")
 	var pos = tween.tell()
@@ -92,20 +92,20 @@ func reset_tween():
 	var size = get_node("tween/area").get_size()
 
 	if get_node("modes/move").is_pressed():
-		tween.interpolate_method(sprite, "set_pos", Vector2(0,0), Vector2(size.width, size.height), 2, state.trans, state.eases)
-		tween.interpolate_property(sprite, "transform/pos", Vector2(size.width,size.height), Vector2(0, 0), 2, state.trans, state.eases, 2)
+		tween.interpolate_method(sprite, "set_pos", Vector2(0, 0), Vector2(size.width, size.height), 2, state.trans, state.eases)
+		tween.interpolate_property(sprite, "transform/pos", Vector2(size.width, size.height), Vector2(0, 0), 2, state.trans, state.eases, 2)
 	
 	if get_node("modes/color").is_pressed():
 		tween.interpolate_method(sprite, "set_modulate", get_node("color/color_from").get_color(), get_node("color/color_to").get_color(), 2, state.trans, state.eases)
 		tween.interpolate_property(sprite, "modulate", get_node("color/color_to").get_color(), get_node("color/color_from").get_color(), 2, state.trans, state.eases, 2)
 	else:
-		sprite.set_modulate(Color(1, 1, 1, 1))
+		sprite.set_modulate(Color(1,1,1,1))
 	
 	if get_node("modes/scale").is_pressed():
-		tween.interpolate_method(sprite, "set_scale", Vector2(0.5,0.5), Vector2(1.5, 1.5), 2, state.trans, state.eases)
-		tween.interpolate_property(sprite, "transform/scale", Vector2(1.5,1.5), Vector2(0.5, 0.5), 2, state.trans, state.eases, 2)
+		tween.interpolate_method(sprite, "set_scale", Vector2(0.5, 0.5), Vector2(1.5, 1.5), 2, state.trans, state.eases)
+		tween.interpolate_property(sprite, "transform/scale", Vector2(1.5, 1.5), Vector2(0.5, 0.5), 2, state.trans, state.eases, 2)
 	else:
-		sprite.set_scale(Vector2(1, 1))
+		sprite.set_scale(Vector2(1,1))
 	
 	if get_node("modes/rotate").is_pressed():
 		tween.interpolate_method(sprite, "_set_rotd", 0, 360, 2, state.trans, state.eases)
@@ -139,26 +139,27 @@ func reset_tween():
 	else:
 		tween.resume_all()
 		get_node("timeline").set_ignore_mouse(true)
-	
-func _on_tween_step( object, key, elapsed, value ):
 
+
+func _on_tween_step(object, key, elapsed, value):
 	var timeline = get_node("timeline")
-
+	
 	var tween = get_node("tween")
 	var runtime = tween.get_runtime()
-
-	var ratio = 100 * (elapsed / runtime)
-	timeline.set_value(ratio)
 	
+	var ratio = 100*(elapsed/runtime)
+	timeline.set_value(ratio)
 
-func _on_timeline_value_changed( value ):
+
+func _on_timeline_value_changed(value):
 	if !get_node("modes/pause").is_pressed():
 		return
 	
 	var tween = get_node("tween")
 	var runtime = tween.get_runtime()
-	tween.seek(runtime * value / 100)
-	
+	tween.seek(runtime*value/100)
+
+
 func on_callback(arg):
 	var label = get_node("tween/area/label")
 	label.add_text("on_callback -> " + arg + "\n")
