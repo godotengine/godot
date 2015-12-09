@@ -235,6 +235,11 @@ void ShaderEditor::_menu_option(int p_option) {
 
 void ShaderEditor::_tab_changed(int p_which) {
 
+	ShaderTextEditor *shader_editor = tab_container->get_child(p_which)->cast_to<ShaderTextEditor>();
+
+	if (shader_editor)
+		shader_editor->get_text_edit()->grab_focus();
+
 	ensure_select_current();
 }
 
