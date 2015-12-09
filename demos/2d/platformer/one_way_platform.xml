@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<resource_file type="PackedScene" subresource_count="3" version="1.1" version_name="Godot Engine v1.1.rc1.custom_build">
-	<ext_resource path="res://one_way_platform.png" type="Texture"></ext_resource>
+<resource_file type="PackedScene" subresource_count="3" version="2.0" version_name="Godot Engine v2.0.alpha.custom_build">
+	<ext_resource path="res://one_way_platform.png" type="Texture" index="0"></ext_resource>
 	<resource type="RectangleShape2D" path="local://1">
 		<real name="custom_solver_bias"> 0 </real>
 		<vector2 name="extents"> 100, 10 </vector2>
@@ -12,22 +12,13 @@
 			<int> 0 </int>
 			<string> "conns" </string>
 			<int_array  len="0"> 				 </int_array>
+			<string> "editable_instances" </string>
+			<array  len="0" shared="false">
+			</array>
 			<string> "names" </string>
-			<string_array  len="42">
+			<string_array  len="23">
 				<string> "one_way_platform" </string>
-				<string> "StaticBody2D" </string>
-				<string> "_import_path" </string>
-				<string> "visibility/visible" </string>
-				<string> "visibility/opacity" </string>
-				<string> "visibility/self_opacity" </string>
-				<string> "visibility/light_mask" </string>
-				<string> "transform/pos" </string>
-				<string> "transform/rot" </string>
-				<string> "transform/scale" </string>
-				<string> "z/z" </string>
-				<string> "z/relative" </string>
 				<string> "input/pickable" </string>
-				<string> "shape_count" </string>
 				<string> "shapes/0/shape" </string>
 				<string> "shapes/0/transform" </string>
 				<string> "shapes/0/trigger" </string>
@@ -40,42 +31,34 @@
 				<string> "friction" </string>
 				<string> "bounce" </string>
 				<string> "__meta__" </string>
+				<string> "StaticBody2D" </string>
 				<string> "sprite" </string>
-				<string> "Sprite" </string>
 				<string> "texture" </string>
-				<string> "centered" </string>
-				<string> "offset" </string>
-				<string> "flip_h" </string>
-				<string> "flip_v" </string>
-				<string> "vframes" </string>
-				<string> "hframes" </string>
-				<string> "frame" </string>
-				<string> "modulate" </string>
-				<string> "region" </string>
-				<string> "region_rect" </string>
+				<string> "Sprite" </string>
 				<string> "CollisionShape2D" </string>
+				<string> "transform/pos" </string>
 				<string> "shape" </string>
 				<string> "trigger" </string>
+				<string> "_update_shape_index" </string>
 			</string_array>
 			<string> "node_count" </string>
 			<int> 3 </int>
+			<string> "node_paths" </string>
+			<array  len="0" shared="false">
+			</array>
 			<string> "nodes" </string>
-			<int_array  len="135"> 				-1, -1, 1, 0, -1, 24, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 4, 8, 5, 9, 6, 10, 7, 11, 1, 12, 8, 13, 3, 14, 9, 15, 10, 16, 8, 17, 3, 18, 3, 19, 11, 20, 12, 21, 4, 22, 5, 23, 2, 24, 5, 25, 13, 0, 0, 0, 27, 26, -1, 21, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 4, 8, 5, 9, 6, 10, 7, 11, 1, 28, 14, 29, 1, 30, 4, 31, 8, 32, 8, 33, 3, 34, 3, 35, 7, 36, 15, 37, 8, 38, 16, 0, 0, 0, 39, 39, -1, 12, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 17, 8, 5, 9, 6, 10, 7, 11, 1, 40, 9, 41, 8, 0 </int_array>
+			<int_array  len="57"> 				-1, -1, 14, 0, -1, 13, 1, 0, 2, 1, 3, 2, 4, 0, 5, 3, 6, 3, 7, 4, 8, 5, 9, 6, 10, 7, 11, 8, 12, 7, 13, 9, 0, 0, 0, 17, 15, -1, 1, 16, 10, 0, 0, 0, 18, 18, -1, 4, 19, 11, 20, 1, 21, 0, 22, 12, 0 </int_array>
 			<string> "variants" </string>
-			<array  len="18" shared="false">
-				<node_path> "" </node_path>
-				<bool> True </bool>
-				<real> 1 </real>
-				<int> 1 </int>
-				<vector2> 0, 0 </vector2>
-				<real> 0 </real>
-				<vector2> 1, 1 </vector2>
-				<int> 0 </int>
+			<array  len="13" shared="false">
 				<bool> False </bool>
 				<resource  resource_type="Shape2D" path="local://1">  </resource>
 				<matrix32> 1, -0, 0, 1, 1.46304, -13.1672 </matrix32>
+				<int> 1 </int>
 				<vector2> 0, 1 </vector2>
 				<real> 20 </real>
+				<vector2> 0, 0 </vector2>
+				<real> 0 </real>
+				<real> 1 </real>
 				<dictionary  shared="false">
 					<string> "__editor_plugin_screen__" </string>
 					<string> "2D" </string>
@@ -198,6 +181,11 @@
 							<string> "znear" </string>
 							<real> 0.1 </real>
 						</dictionary>
+						<string> "Anim" </string>
+						<dictionary  shared="false">
+							<string> "visible" </string>
+							<bool> False </bool>
+						</dictionary>
 					</dictionary>
 					<string> "__editor_run_settings__" </string>
 					<dictionary  shared="false">
@@ -207,13 +195,12 @@
 						<int> 0 </int>
 					</dictionary>
 				</dictionary>
-				<resource  resource_type="Texture" path="res://one_way_platform.png">  </resource>
-				<color> 1, 1, 1, 1 </color>
-				<rect2> 0, 0, 0, 0 </rect2>
+				<resource  external="0">  </resource>
 				<vector2> 1.46304, -13.1672 </vector2>
+				<int> -1 </int>
 			</array>
 			<string> "version" </string>
-			<int> 1 </int>
+			<int> 2 </int>
 		</dictionary>
 
 	</main_resource>
