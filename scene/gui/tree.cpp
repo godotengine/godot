@@ -1721,6 +1721,7 @@ void Tree::text_editor_enter(String p_text) {
 
 
 	text_editor->hide();
+	value_editor->hide();
 
 	if (!popup_edited_item)
 		return;
@@ -2167,18 +2168,9 @@ void Tree::_input_event(InputEvent p_event) {
 							range_drag_enabled=false;
 							Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 							warp_mouse(range_drag_capture_pos);
-						} else {
-							text_editor->set_pos(pressing_item_rect.pos);
-							text_editor->set_size(pressing_item_rect.size);
+						} else
+							edit_selected();
 
-							text_editor->clear();
-							text_editor->set_text( pressing_for_editor_text );
-							text_editor->select_all();
-
-							text_editor->show_modal();
-							text_editor->grab_focus();
-
-						}
 						pressing_for_editor=false;
 
 					}
