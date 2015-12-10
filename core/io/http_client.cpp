@@ -521,6 +521,8 @@ ByteArray HTTPClient::read_response_body_chunk() {
 				break;
 			}
 		}
+		w = ByteArray::Write();
+		ret.resize(_offset);
 		if (body_left==0) {
 			status=STATUS_CONNECTED;
 		}
