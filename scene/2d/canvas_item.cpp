@@ -1156,6 +1156,8 @@ Matrix32 CanvasItem::get_canvas_transform() const {
 
 	if (canvas_layer)
 		return canvas_layer->get_transform();
+	else if (get_parent()->cast_to<CanvasItem>())
+		return get_parent()->cast_to<CanvasItem>()->get_canvas_transform();
 	else
 		return get_viewport()->get_canvas_transform();
 
