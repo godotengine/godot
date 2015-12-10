@@ -31,6 +31,7 @@
 
 #include "scene/gui/line_edit.h"
 #include "scene/gui/range.h"
+#include "scene/main/timer.h"
 
 class SpinBox : public Range {
 
@@ -38,6 +39,9 @@ class SpinBox : public Range {
 
 	LineEdit *line_edit;
 	int last_w;
+
+	Timer *range_click_timer;
+	void _range_click_timeout();
 
 	void _text_entered(const String& p_string);
 	virtual void _value_changed(double);
