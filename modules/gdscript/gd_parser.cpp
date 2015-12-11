@@ -2381,10 +2381,48 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 										current_export.hint=PROPERTY_HINT_ALL_FLAGS;
 										tokenizer->advance();
-										if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
-											_set_error("Expected ')' in hint.");
+
+										if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_CLOSE) {
+											break;
+										}
+										if (tokenizer->get_token()!=GDTokenizer::TK_COMMA)
+										{
+											_set_error("Expected ')' or ',' in bit flags hint.");
 											return;
 										}
+
+										current_export.hint=PROPERTY_HINT_FLAGS;
+										tokenizer->advance();
+
+										bool first = true;
+										while(true) {
+
+											if (tokenizer->get_token()!=GDTokenizer::TK_CONSTANT || tokenizer->get_token_constant().get_type()!=Variant::STRING) {
+												current_export=PropertyInfo();
+												_set_error("Expected a string constant in named bit flags hint.");
+												return;
+											}
+
+											String c = tokenizer->get_token_constant();
+											if (!first)
+												current_export.hint_string+=",";
+											else
+												first=false;
+
+											current_export.hint_string+=c.xml_escape();
+
+											tokenizer->advance();
+											if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_CLOSE)
+												break;
+
+											if (tokenizer->get_token()!=GDTokenizer::TK_COMMA) {
+												current_export=PropertyInfo();
+												_set_error("Expected ')' or ',' in named bit flags hint.");
+												return;
+											}
+											tokenizer->advance();
+										}
+
 										break;
 									}
 
