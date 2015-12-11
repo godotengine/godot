@@ -435,6 +435,8 @@ void EditorFileDialog::update_file_list() {
 
 	}
 
+	String cdir = dir_access->get_current_dir();
+	bool skip_pp = access==ACCESS_RESOURCES && cdir=="res://";
 
 	dir_access->list_dir_begin();
 
@@ -455,7 +457,7 @@ void EditorFileDialog::update_file_list() {
 		if (show_hidden || !ishidden) {
 			if (!isdir)
 				files.push_back(item);
-			else
+			else if (item!=".." || !skip_pp)
 				dirs.push_back(item);
 		}
 	}

@@ -161,6 +161,7 @@ class PropertyEditor : public Control {
 	bool keying;
 	bool read_only;
 	bool show_categories;
+	bool show_type_icons;
 	float refresh_countdown;
 	bool use_doc_hints;
 	bool use_filter;
