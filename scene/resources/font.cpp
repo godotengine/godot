@@ -462,31 +462,16 @@ void Font::draw_halign(RID p_canvas_item, const Point2& p_pos, HAlign p_align,fl
 
 void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, const Color& p_modulate,int p_clip_w) const {
 		
-	Point2 pos=p_pos;
-	float ofs=0;
-	VisualServer *vs = VisualServer::get_singleton();
+	Vector2 ofs;
 	
 	for (int i=0;i<p_text.length();i++) {
 
-		const Character * c = char_map.getptr(p_text[i]);
+		int width = get_char_size(p_text[i]).width;
 
-		if (!c)
-			continue;
-			
-//		if (p_clip_w>=0 && (ofs+c->rect.size.width)>(p_clip_w))
-//			break; //width exceeded
-
-		if (p_clip_w>=0 && (ofs+c->rect.size.width)>p_clip_w)
+		if (p_clip_w>=0 && (ofs.x+width)>p_clip_w)
 			break; //clip
-		Point2 cpos=pos;
-		cpos.x+=ofs+c->h_align;
-		cpos.y-=ascent;
-		cpos.y+=c->v_align;
-		ERR_CONTINUE( c->texture_idx<-1 || c->texture_idx>=textures.size());
-		if (c->texture_idx!=-1)
-			textures[c->texture_idx]->draw_rect_region( p_canvas_item, Rect2( cpos, c->rect.size ), c->rect, p_modulate );
-		
-		ofs+=get_char_size(p_text[i],p_text[i+1]).width;
+
+		ofs.x+=draw_char(p_canvas_item,p_pos+ofs,p_text[i],p_text[i+1],p_modulate);
 	}
 }
 
@@ -494,8 +479,11 @@ float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_
 	
 	const Character * c = char_map.getptr(p_char);
 	
-	if (!c)
+	if (!c) {
+		if (fallback.is_valid())
+			return fallback->draw_char(p_canvas_item,p_pos,p_char,p_next,p_modulate);
 		return 0;
+	}
 	
 	Point2 cpos=p_pos;
 	cpos.x+=c->h_align;
@@ -506,6 +494,16 @@ float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_
 		VisualServer::get_singleton()->canvas_item_add_texture_rect_region( p_canvas_item, Rect2( cpos, c->rect.size ), textures[c->texture_idx]->get_rid(),c->rect, p_modulate );
 	
 	return get_char_size(p_char,p_next).width;
+}
+
+void Font::set_fallback(const Ref<Font> &p_fallback) {
+
+	fallback=p_fallback;
+}
+
+Ref<Font> Font::get_fallback() const{
+
+	return fallback;
 }
 
 void Font::_bind_methods() {
@@ -548,6 +546,8 @@ void Font::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_set_textures"),&Font::_set_textures);
 	ObjectTypeDB::bind_method(_MD("_get_textures"),&Font::_get_textures);
 
+	ObjectTypeDB::bind_method(_MD("set_fallback","fallback"),&Font::set_fallback);
+	ObjectTypeDB::bind_method(_MD("get_fallback"),&Font::get_fallback);
 
 	ADD_PROPERTY( PropertyInfo( Variant::ARRAY, "textures", PROPERTY_HINT_NONE,"", PROPERTY_USAGE_NOEDITOR ), _SCS("_set_textures"), _SCS("_get_textures") );
 	ADD_PROPERTY( PropertyInfo( Variant::INT_ARRAY, "chars", PROPERTY_HINT_NONE,"", PROPERTY_USAGE_NOEDITOR ), _SCS("_set_chars"), _SCS("_get_chars") );
@@ -556,6 +556,7 @@ void Font::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height", PROPERTY_HINT_RANGE,"-1024,1024,1" ), _SCS("set_height"), _SCS("get_height") );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "ascent", PROPERTY_HINT_RANGE,"-1024,1024,1" ), _SCS("set_ascent"), _SCS("get_ascent") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "distance_field" ), _SCS("set_distance_field_hint"), _SCS("is_distance_field_hint") );
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "fallback", PROPERTY_HINT_RESOURCE_TYPE,"Font" ), _SCS("set_fallback"), _SCS("get_fallback") );
 
 }
 
