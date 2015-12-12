@@ -79,7 +79,6 @@ class ScriptEditorDebugger : public Control {
 	TabContainer *tabs;
 
 	Label *reason;
-	bool always_visible;
 	bool log_forced_visible;
 	ScriptEditorDebuggerVariables *variables;
 
@@ -183,7 +182,6 @@ public:
 
 	void update_live_edit_root();
 
-	void set_always_visible(bool p_visible);
 
 	virtual Size2 get_minimum_size() const;
 	ScriptEditorDebugger(EditorNode *p_editor=NULL);
