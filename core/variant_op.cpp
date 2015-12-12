@@ -2635,7 +2635,7 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 			if (l) {
 				for(int i=0;i<l;i++) {
 
-					if ((*arr)[i]==p_index)
+					if (evaluate(OP_EQUAL,(*arr)[i],p_index))
 						return true;
 				}
 
