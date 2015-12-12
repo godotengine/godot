@@ -604,7 +604,6 @@ void ScriptEditor::_breaked(bool p_breaked,bool p_can_debug) {
 void ScriptEditor::_show_debugger(bool p_show) {
 
 	debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW), p_show);
-
 }
 
 void ScriptEditor::_script_created(Ref<Script> p_script) {
@@ -1350,7 +1349,6 @@ void ScriptEditor::_menu_option(int p_option) {
 					debugger->debug_continue();
 
 			} break;
-
 			case HELP_CONTEXTUAL: {
 				String text = current->get_text_edit()->get_selection_text();
 				if (text == "")
