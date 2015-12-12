@@ -460,6 +460,19 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 
 			value=Vector2(args[0],args[1]);
 			return OK;
+		} else if (id=="Rect2"){
+
+			Vector<float> args;
+			Error err = _parse_construct<float>(p_stream,args,line,r_err_str);
+			if (err)
+				return err;
+
+			if (args.size()!=4) {
+				r_err_str="Expected 2 arguments for constructor";
+			}
+
+			value=Rect2(args[0],args[1],args[2],args[3]);
+			return OK;
 		} else if (id=="Vector3"){
 
 			Vector<float> args;
