@@ -509,6 +509,19 @@ Error SceneState::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<S
 				}
 			}
 
+			if (exists && p_node->get_script_instance()) {
+				//if this is an overriden value by another script, save it anyway
+				//as the script change will erase it
+				//https://github.com/godotengine/godot/issues/2958
+
+				bool valid=false;
+				p_node->get_script_instance()->get_property_type(name,&valid);
+				if (valid) {
+					exists=false;
+					isdefault=false;
+				}
+			}
+
 
 			if (exists && bool(Variant::evaluate(Variant::OP_EQUAL,value,original))) {
 				//exists and did not change
