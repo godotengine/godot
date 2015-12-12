@@ -1161,23 +1161,10 @@ void ScriptEditorDebugger:: _error_stack_selected(int p_idx){
 
 }
 
-<<<<<<< HEAD
 void ScriptEditorDebugger::set_hide_on_stop(bool p_hide) {
 
 	hide_on_stop=p_hide;
 }
-=======
-void ScriptEditorDebugger::set_always_visible(bool p_visible) {
-
-	always_visible=p_visible;
-
-	if (p_visible)
-		show();
-	else
-		hide();
-}
-
->>>>>>> c3db5d951c1ee938a0c789c78a9bb8045ef8605b
 
 void ScriptEditorDebugger::_bind_methods() {
 

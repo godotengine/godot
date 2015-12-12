@@ -604,8 +604,6 @@ void ScriptEditor::_breaked(bool p_breaked,bool p_can_debug) {
 void ScriptEditor::_show_debugger(bool p_show) {
 
 	debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW), p_show);
-
-	debugger->set_always_visible(p_show);
 }
 
 void ScriptEditor::_script_created(Ref<Script> p_script) {
