@@ -77,6 +77,11 @@ void CollisionShape2D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			unparenting=false;
 			can_update_body=get_tree()->is_editor_hint();
+			if (!get_tree()->is_editor_hint()) {
+				//display above all else
+				set_z_as_relative(false);
+				set_z(VS::CANVAS_ITEM_Z_MAX-1);
+			}
 
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
@@ -118,6 +123,7 @@ void CollisionShape2D::_notification(int p_what) {
 			}
 
 			rect=Rect2();
+
 
 
 			Color draw_col=get_tree()->get_debug_collisions_color();
