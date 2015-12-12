@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 import sys
 import xml.etree.ElementTree as ET
 
@@ -9,7 +10,7 @@ for arg in sys.argv[1:]:
 	input_list.append(arg)
 
 if len(input_list) < 1:
-	print 'usage: makedoku.py <class_list.xml>'
+	print 'usage: makemd.py <classes.xml>'
 	sys.exit(0)
 
 
