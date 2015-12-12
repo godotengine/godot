@@ -450,6 +450,9 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0(Array,clear);
 	VCALL_LOCALMEM0R(Array,hash);
 	VCALL_LOCALMEM1(Array,push_back);
+	VCALL_LOCALMEM1(Array,push_front);
+	VCALL_LOCALMEM0(Array,pop_back);
+	VCALL_LOCALMEM0(Array,pop_front);
 	VCALL_LOCALMEM1(Array,append);
 	VCALL_LOCALMEM1(Array,resize);
 	VCALL_LOCALMEM2(Array,insert);
@@ -492,6 +495,9 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM2(ByteArray,set);
 	VCALL_LOCALMEM1R(ByteArray,get);
 	VCALL_LOCALMEM1(ByteArray,push_back);
+	VCALL_LOCALMEM1(ByteArray,push_front);
+	VCALL_LOCALMEM0(ByteArray,pop_back);
+	VCALL_LOCALMEM0(ByteArray,pop_front);
 	VCALL_LOCALMEM1(ByteArray,resize);
 	VCALL_LOCALMEM1(ByteArray,append);
 	VCALL_LOCALMEM1(ByteArray,append_array);

@@ -53,7 +53,7 @@ public:
 	bool empty() const;
 	void clear();
 
-    bool is_shared() const;
+	bool is_shared() const;
 
 	bool operator==(const Array& p_array) const;
 
@@ -74,6 +74,10 @@ public:
 	int find(const Variant& p_value) const;
 
 	void erase(const Variant& p_value);
+
+	void push_front(const Variant& p_value);
+	void pop_back();
+	void pop_front();
 
 	Array(const Array& p_from);
 	Array(bool p_shared=false);
