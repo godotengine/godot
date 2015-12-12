@@ -605,6 +605,7 @@ void ScriptEditor::_show_debugger(bool p_show) {
 
 	debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW), p_show);
 
+	debugger->set_always_visible(p_show);
 }
 
 void ScriptEditor::_script_created(Ref<Script> p_script) {
@@ -1338,11 +1339,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			case DEBUG_SHOW: {
 				if (debugger) {
 					bool visible = debug_menu->get_popup()->is_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW) );
-					debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW), !visible);
-					if (visible)
-						debugger->hide();
-					else
-						debugger->show();
+					_show_debugger(!visible);
 				}
 			} break;
 			case HELP_CONTEXTUAL: {
