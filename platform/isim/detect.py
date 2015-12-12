@@ -21,8 +21,8 @@ def get_opts():
 
 	return [
 		('ISIMPLATFORM', 'name of the iphone platform', 'iPhoneSimulator'),
-		('ISIMPATH', 'the path to iphone toolchain', '/Applications/Xcode.app/Contents/Developer/Platforms/${ISIMPLATFORM}.platform'),
-		('ISIMSDK', 'path to the iphone SDK', '$ISIMPATH/Developer/SDKs/${ISIMPLATFORM}.sdk'),
+		('ISIMPATH', 'the path to iphone toolchain', '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain'),
+		('ISIMSDK', 'path to the iphone SDK', '/Applications/Xcode.app/Contents/Developer/Platforms/${ISIMPLATFORM}.platform/Developer/SDKs/${ISIMPLATFORM}.sdk'),
 		('game_center', 'Support for game center', 'yes'),
 		('store_kit', 'Support for in-app store', 'yes'),
 		('ios_gles22_override', 'Force GLES2.0 on iOS', 'yes'),
@@ -46,9 +46,10 @@ def configure(env):
 
 	env['ENV']['PATH'] = env['ISIMPATH']+"/Developer/usr/bin/:"+env['ENV']['PATH']
 
-	env['CC'] = '$ISIMPATH/Developer/usr/bin/gcc'
-	env['CXX'] = '$ISIMPATH/Developer/usr/bin/g++'
-	env['AR'] = 'ar'
+	env['CC'] = '$ISIMPATH/usr/bin/${ios_triple}clang'
+	env['CXX'] = '$ISIMPATH/usr/bin/${ios_triple}clang++'
+	env['AR'] = '$ISIMPATH/usr/bin/${ios_triple}ar'
+	env['RANLIB'] = '$ISIMPATH/usr/bin/${ios_triple}ranlib'
 
 	import string
 	env['CCFLAGS'] = string.split('-arch i386 -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fasm-blocks  -Wall -D__IPHONE_OS_VERSION_MIN_REQUIRED=40100 -isysroot $ISIMSDK -mios-simulator-version-min=4.3 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\"')
@@ -97,4 +98,8 @@ def configure(env):
 	env['ENV']['CODESIGN_ALLOCATE'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate'
 	env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-fexceptions'])
 
+	import methods
+	env.Append( BUILDERS = { 'GLSL120' : env.Builder(action = methods.build_legacygl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
+	env.Append( BUILDERS = { 'GLSL' : env.Builder(action = methods.build_glsl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
+	env.Append( BUILDERS = { 'GLSL120GLES' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 
