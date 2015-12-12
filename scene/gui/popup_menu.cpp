@@ -524,7 +524,7 @@ void PopupMenu::add_icon_item(const Ref<Texture>& p_icon,const String& p_label,i
 	item.icon=p_icon;
 	item.text=p_label;
 	item.accel=p_accel;
-	item.ID=(p_ID<0)?idcount++:p_ID;
+	item.ID=p_ID;
 	items.push_back(item);
 	update();
 }
@@ -533,7 +533,7 @@ void PopupMenu::add_item(const String& p_label,int p_ID,uint32_t p_accel) {
 	Item item;
 	item.text=XL_MESSAGE(p_label);
 	item.accel=p_accel;
-	item.ID=(p_ID<0)?idcount++:p_ID;
+	item.ID=p_ID;
 	items.push_back(item);
 	update();
 }
@@ -542,7 +542,7 @@ void PopupMenu::add_submenu_item(const String& p_label, const String& p_submenu,
 
 	Item item;
 	item.text=XL_MESSAGE(p_label);
-	item.ID=(p_ID<0)?idcount++:p_ID;
+	item.ID=p_ID;
 	item.submenu=p_submenu;
 	items.push_back(item);
 	update();
@@ -554,7 +554,7 @@ void PopupMenu::add_icon_check_item(const Ref<Texture>& p_icon,const String& p_l
 	item.icon=p_icon;
 	item.text=XL_MESSAGE(p_label);
 	item.accel=p_accel;
-	item.ID=(p_ID<0)?idcount++:p_ID;
+	item.ID=p_ID;
 	item.checkable=true;
 	items.push_back(item);
 	update();
@@ -564,7 +564,7 @@ void PopupMenu::add_check_item(const String& p_label,int p_ID,uint32_t p_accel) 
 	Item item;
 	item.text=XL_MESSAGE(p_label);
 	item.accel=p_accel;
-	item.ID=(p_ID<0)?idcount++:p_ID;
+	item.ID=p_ID;
 	item.checkable=true;
 	items.push_back(item);
 	update();
@@ -755,7 +755,8 @@ void PopupMenu::activate_item(int p_item) {
 
 	ERR_FAIL_INDEX(p_item,items.size());
 	ERR_FAIL_COND(items[p_item].separator);
-	emit_signal("item_pressed",items[p_item].ID);
+	int id = items[p_item].ID>=0?items[p_item].ID:p_item;
+	emit_signal("item_pressed",id);
 
 	//hide all parent PopupMenue's
 	Node *next = get_parent();
@@ -789,7 +790,7 @@ void PopupMenu::clear()  {
 	items.clear();
 	mouse_over=-1;
 	update();
-	idcount=0;
+
 
 }
 
@@ -937,7 +938,7 @@ void PopupMenu::set_invalidate_click_until_motion() {
 
 PopupMenu::PopupMenu() {
 
-	idcount=0;
+
 	mouse_over=-1;
 	
 	set_focus_mode(FOCUS_ALL);
