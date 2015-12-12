@@ -89,12 +89,22 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 				case OBJ_MENU_LOAD: {
 
 					file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-					List<String> extensions;
 					String type=(hint==PROPERTY_HINT_RESOURCE_TYPE)?hint_text:String();
 
-					ResourceLoader::get_recognized_extensions_for_type(type,&extensions);
-					file->clear_filters();
+					List<String> extensions;
+					for (int i=0;i<type.get_slice_count(",");i++) {
+
+						ResourceLoader::get_recognized_extensions_for_type(type.get_slice(",",i),&extensions);
+					}
+
+					Set<String> valid_extensions;
 					for (List<String>::Element *E=extensions.front();E;E=E->next()) {
+
+						valid_extensions.insert(E->get());
+					}
+
+					file->clear_filters();
+					for (Set<String>::Element *E=valid_extensions.front();E;E=E->next()) {
 
 						file->add_filter("*."+E->get()+" ; "+E->get().to_upper() );
 
