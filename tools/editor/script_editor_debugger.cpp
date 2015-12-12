@@ -570,12 +570,11 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					ppeer->set_stream_peer(connection);
 
 
-					if (!always_visible)
-						show();
-
+					show();
 					dobreak->set_disabled(false);
 					tabs->set_current_tab(0);
 
+					emit_signal("show_debugger",true);
 					reason->set_text("Child Process Connected");
 					reason->set_tooltip("Child Process Connected");
 					scene_tree->clear();
@@ -737,8 +736,12 @@ void ScriptEditorDebugger::stop(){
 	le_clear->set_disabled(false);
 	le_set->set_disabled(true);
 
-	if (!always_visible)
+
+	if (hide_on_stop) {
 		hide();
+		emit_signal("show_debugger",false);
+	}
+
 }
 
 
@@ -767,7 +770,9 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 
 void ScriptEditorDebugger::_hide_request() {
 
+	hide();
 	emit_signal("show_debugger",false);
+
 }
 
 void ScriptEditorDebugger::_output_clear() {
@@ -1157,16 +1162,10 @@ void ScriptEditorDebugger:: _error_stack_selected(int p_idx){
 
 }
 
-void ScriptEditorDebugger::set_always_visible(bool p_visible) {
+void ScriptEditorDebugger::set_hide_on_stop(bool p_hide) {
 
-	always_visible=p_visible;
-
-	if (p_visible)
-		show();
-	else
-		hide();
+	hide_on_stop=p_hide;
 }
-
 
 void ScriptEditorDebugger::_bind_methods() {
 
@@ -1462,7 +1461,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	add_child(msgdialog);
 
 	hide();
-	always_visible=false;
 	log_forced_visible=false;
 
 	p_editor->get_undo_redo()->set_method_notify_callback(_method_changeds,this);
@@ -1470,6 +1468,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	live_debug=false;
 	last_path_id=false;
 	error_count=0;
+	hide_on_stop=true;
 	last_error_count=0;
 
 
