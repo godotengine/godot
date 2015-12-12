@@ -338,6 +338,13 @@ float VideoPlayer::get_stream_pos() const {
 	return playback->get_pos();
 };
 
+Ref<Texture> VideoPlayer::get_video_texture() {
+
+	if (playback.is_valid())
+		return playback->get_texture();
+
+	return Ref<Texture> ();
+}
 
 void VideoPlayer::set_autoplay(bool p_enable) {
 
@@ -383,6 +390,8 @@ void VideoPlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_buffering_msec","msec"),&VideoPlayer::set_buffering_msec);
 	ObjectTypeDB::bind_method(_MD("get_buffering_msec"),&VideoPlayer::get_buffering_msec);
+
+	ObjectTypeDB::bind_method(_MD("get_video_texutre:Texture"), &VideoPlayer::get_video_texture );
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT, "stream/audio_track",PROPERTY_HINT_RANGE,"0,128,1"), _SCS("set_audio_track"), _SCS("get_audio_track") );
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT, "stream/stream", PROPERTY_HINT_RESOURCE_TYPE,"VideoStream"), _SCS("set_stream"), _SCS("get_stream") );
