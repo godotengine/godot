@@ -71,6 +71,8 @@ class ScriptEditorDebugger : public Control {
 	int error_count;
 	int last_error_count;
 
+	bool hide_on_stop;
+
 
 
 	TextureButton *tb;
@@ -181,6 +183,8 @@ public:
 	void set_breakpoint(const String& p_path,int p_line,bool p_enabled);
 
 	void update_live_edit_root();
+
+	void set_hide_on_stop(bool p_hide);
 
 
 	virtual Size2 get_minimum_size() const;

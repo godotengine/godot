@@ -737,8 +737,10 @@ void ScriptEditorDebugger::stop(){
 	le_set->set_disabled(true);
 
 
-	hide();
-	emit_signal("show_debugger",false);
+	if (hide_on_stop) {
+		hide();
+		emit_signal("show_debugger",false);
+	}
 
 }
 
@@ -1160,6 +1162,10 @@ void ScriptEditorDebugger:: _error_stack_selected(int p_idx){
 
 }
 
+void ScriptEditorDebugger::set_hide_on_stop(bool p_hide) {
+
+	hide_on_stop=p_hide;
+}
 
 void ScriptEditorDebugger::_bind_methods() {
 
@@ -1462,6 +1468,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	live_debug=false;
 	last_path_id=false;
 	error_count=0;
+	hide_on_stop=true;
 	last_error_count=0;
 
 

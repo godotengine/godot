@@ -981,7 +981,22 @@ void ScriptEditor::_menu_option(int p_option) {
 		case WINDOW_PREV: {
 			_history_back();
 		} break;
-
+		case DEBUG_SHOW: {
+			if (debugger) {
+				bool visible = debug_menu->get_popup()->is_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW) );
+				debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW), !visible);
+				if (visible)
+					debugger->hide();
+				else
+					debugger->show();
+			}
+		} break;
+		case DEBUG_SHOW_KEEP_OPEN: {
+			bool visible = debug_menu->get_popup()->is_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW_KEEP_OPEN) );
+			if (debugger)
+				debugger->set_hide_on_stop(visible);
+			debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW_KEEP_OPEN), !visible);
+		} break;
 	}
 
 
@@ -1335,16 +1350,7 @@ void ScriptEditor::_menu_option(int p_option) {
 					debugger->debug_continue();
 
 			} break;
-			case DEBUG_SHOW: {
-				if (debugger) {
-					bool visible = debug_menu->get_popup()->is_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW) );
-					debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW), !visible);
-					if (visible)
-						debugger->hide();
-					else
-						debugger->show();
-				}
-			} break;
+
 			case HELP_CONTEXTUAL: {
 				String text = current->get_text_edit()->get_selection_text();
 				if (text == "")
@@ -2394,6 +2400,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	debug_menu->get_popup()->add_item("Continue",DEBUG_CONTINUE);
 	debug_menu->get_popup()->add_separator();
 	debug_menu->get_popup()->add_check_item("Show Debugger",DEBUG_SHOW);
+	debug_menu->get_popup()->add_check_item("Keep Debuger Open",DEBUG_SHOW_KEEP_OPEN);
 	debug_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 	debug_menu->get_popup()->set_item_disabled( debug_menu->get_popup()->get_item_index(DEBUG_NEXT), true);
