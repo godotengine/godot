@@ -59,7 +59,6 @@ class PopupMenu : public Popup {
 	Timer *submenu_timer;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
-	int idcount;
 	int mouse_over;
 	int submenu_over;
 	Rect2 parent_rect;

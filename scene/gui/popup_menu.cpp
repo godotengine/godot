@@ -370,9 +370,8 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 			}
 
 			int over=_get_mouse_over(Point2(m.x,m.y));
-			int id = (over<0 || items[over].separator || items[over].disabled)?-1:items[over].ID;
 
-			if (id<0) {
+			if (over<0 || items[over].separator || items[over].disabled) {
 				mouse_over=-1;
 				update();
 				break;
@@ -524,7 +523,7 @@ void PopupMenu::add_icon_item(const Ref<Texture>& p_icon,const String& p_label,i
 	item.icon=p_icon;
 	item.text=p_label;
 	item.accel=p_accel;
-	item.ID=(p_ID<0)?idcount++:p_ID;
+	item.ID=p_ID;
 	items.push_back(item);
 	update();
 }
@@ -533,7 +532,7 @@ void PopupMenu::add_item(const String& p_label,int p_ID,uint32_t p_accel) {
 	Item item;
 	item.text=XL_MESSAGE(p_label);
 	item.accel=p_accel;
-	item.ID=(p_ID<0)?idcount++:p_ID;
+	item.ID=p_ID;
 	items.push_back(item);
 	update();
 }
@@ -542,7 +541,7 @@ void PopupMenu::add_submenu_item(const String& p_label, const String& p_submenu,
 
 	Item item;
 	item.text=XL_MESSAGE(p_label);
-	item.ID=(p_ID<0)?idcount++:p_ID;
+	item.ID=p_ID;
 	item.submenu=p_submenu;
 	items.push_back(item);
 	update();
@@ -554,7 +553,7 @@ void PopupMenu::add_icon_check_item(const Ref<Texture>& p_icon,const String& p_l
 	item.icon=p_icon;
 	item.text=XL_MESSAGE(p_label);
 	item.accel=p_accel;
-	item.ID=(p_ID<0)?idcount++:p_ID;
+	item.ID=p_ID;
 	item.checkable=true;
 	items.push_back(item);
 	update();
@@ -564,7 +563,7 @@ void PopupMenu::add_check_item(const String& p_label,int p_ID,uint32_t p_accel) 
 	Item item;
 	item.text=XL_MESSAGE(p_label);
 	item.accel=p_accel;
-	item.ID=(p_ID<0)?idcount++:p_ID;
+	item.ID=p_ID;
 	item.checkable=true;
 	items.push_back(item);
 	update();
@@ -755,7 +754,7 @@ void PopupMenu::activate_item(int p_item) {
 
 	ERR_FAIL_INDEX(p_item,items.size());
 	ERR_FAIL_COND(items[p_item].separator);
-	emit_signal("item_pressed",items[p_item].ID);
+	emit_signal("item_pressed",items[p_item].ID<0?p_item:items[p_item].ID);
 
 	//hide all parent PopupMenue's
 	Node *next = get_parent();
