@@ -839,7 +839,7 @@ OS::VideoMode OS_OSX::get_default_video_mode() const {
 
 	VideoMode vm;
 	vm.width=1280;
-	vm.height=720;
+	vm.height=720	;
 	vm.fullscreen=false;
 	vm.resizable=true;
 	return vm;
