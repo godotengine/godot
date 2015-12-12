@@ -95,6 +95,7 @@ static TranslationServer *translation_server = NULL;
 
 static OS::VideoMode video_mode;
 static bool init_maximized=false;
+static bool init_windowed=false;
 static bool init_fullscreen=false;
 static bool init_use_custom_pos=false;
 static bool debug_collisions=false;
@@ -146,6 +147,7 @@ void Main::print_help(const char* p_binary) {
 	OS::get_singleton()->print("\t-p XxY\t : Request Window Position\n");
 	OS::get_singleton()->print("\t-f\t\t : Request Fullscreen\n");
 	OS::get_singleton()->print("\t-mx\t\t Request Maximized\n");
+	OS::get_singleton()->print("\t-w\t\t Request Windowed\n");
 	OS::get_singleton()->print("\t-vd DRIVER\t : Video Driver (");
 	for (int i=0;i<OS::get_singleton()->get_video_driver_count();i++) {
 		
@@ -354,6 +356,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		} else if (I->get()=="-mx") { // video driver
 
 			init_maximized=true;
+		} else if (I->get()=="-w") { // video driver
+
+			init_windowed=true;
 		} else if (I->get()=="-vd") { // video driver
 		
 			if (I->next()) {
@@ -841,11 +846,7 @@ Error Main::setup2() {
 	if (init_use_custom_pos) {
 		OS::get_singleton()->set_window_position(init_custom_pos);
 	}
-	if (init_maximized) {
-		OS::get_singleton()->set_window_maximized(true);
-	} else if (init_fullscreen) {
-		OS::get_singleton()->set_window_fullscreen(true);
-	}
+
 
 	register_core_singletons();
 
@@ -859,8 +860,12 @@ Error Main::setup2() {
 	if (init_screen!=-1) {
 		OS::get_singleton()->set_current_screen(init_screen);
 	}
-	if (init_maximized) {
+	if (init_windowed) {
+		//do none..
+	} else if (init_maximized) {
 		OS::get_singleton()->set_window_maximized(true);
+	} else if (init_fullscreen) {
+		OS::get_singleton()->set_window_fullscreen(true);
 	}
 	MAIN_PRINT("Main: Load Remaps");
 

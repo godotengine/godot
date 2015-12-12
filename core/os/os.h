@@ -75,7 +75,7 @@ public:
 		bool fullscreen;
 		bool resizable;
 		float get_aspect() const { return (float)width/(float)height; }
-		VideoMode(int p_width=640,int p_height=480,bool p_fullscreen=false, bool p_resizable = true) {width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; }
+		VideoMode(int p_width=1280,int p_height=720,bool p_fullscreen=false, bool p_resizable = true) {width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; }
 	};
 protected:
 friend class Main;
