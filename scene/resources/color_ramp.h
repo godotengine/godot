@@ -32,6 +32,9 @@ public:
 	ColorRamp();
 	virtual ~ColorRamp();
 
+	void add_point(float p_offset, const Color& p_color);
+	void remove_point(int p_index);
+
 	void set_points(Vector<Point>& points);
 	Vector<Point>& get_points();
 

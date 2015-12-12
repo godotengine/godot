@@ -26,6 +26,23 @@ ColorRamp::~ColorRamp() {
 
 void ColorRamp::_bind_methods() {
 
+
+
+
+
+	ObjectTypeDB::bind_method(_MD("add_point","offset","color"),&ColorRamp::add_point);
+	ObjectTypeDB::bind_method(_MD("remove_point","offset","color"),&ColorRamp::remove_point);
+
+	ObjectTypeDB::bind_method(_MD("set_offset","point","offset"),&ColorRamp::set_offset);
+	ObjectTypeDB::bind_method(_MD("get_offset","point"),&ColorRamp::get_offset);
+
+	ObjectTypeDB::bind_method(_MD("set_color","point","color"),&ColorRamp::set_color);
+	ObjectTypeDB::bind_method(_MD("get_color","point"),&ColorRamp::get_color);
+
+	ObjectTypeDB::bind_method(_MD("interpolate","offset"),&ColorRamp::get_color_at_offset);
+
+	ObjectTypeDB::bind_method(_MD("get_point_count"),&ColorRamp::get_points_count);
+
 	ObjectTypeDB::bind_method(_MD(COLOR_RAMP_SET_OFFSETS,"offsets"),&ColorRamp::set_offsets);
 	ObjectTypeDB::bind_method(_MD(COLOR_RAMP_GET_OFFSETS),&ColorRamp::get_offsets);
 
@@ -77,6 +94,23 @@ void ColorRamp::set_colors(const Vector<Color>& p_colors) {
 
 Vector<ColorRamp::Point>& ColorRamp::get_points() {
 	return points;
+}
+
+void ColorRamp::add_point(float p_offset, const Color& p_color) {
+
+	Point p;
+	p.offset=p_offset;
+	p.color=p_color;
+	is_sorted=false;
+	points.push_back(p);
+
+}
+
+void ColorRamp::remove_point(int p_index) {
+
+	ERR_FAIL_INDEX(p_index,points.size());
+	ERR_FAIL_COND(points.size()<=2);
+	points.remove(p_index);
 }
 
 void ColorRamp::set_points(Vector<ColorRamp::Point>& p_points) {
