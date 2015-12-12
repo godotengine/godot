@@ -571,10 +571,10 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 
 					show();
+
 					dobreak->set_disabled(false);
 					tabs->set_current_tab(0);
 
-					emit_signal("show_debugger",true);
 					reason->set_text("Child Process Connected");
 					reason->set_tooltip("Child Process Connected");
 					scene_tree->clear();
@@ -770,9 +770,7 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 
 void ScriptEditorDebugger::_hide_request() {
 
-	hide();
 	emit_signal("show_debugger",false);
-
 }
 
 void ScriptEditorDebugger::_output_clear() {
