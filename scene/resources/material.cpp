@@ -535,6 +535,8 @@ void ShaderMaterial::_shader_changed() {
 
 void ShaderMaterial::set_shader(const Ref<Shader>& p_shader) {
 
+	ERR_FAIL_COND(p_shader.is_valid() && p_shader->get_mode()!=Shader::MODE_MATERIAL);
+
 	if (shader.is_valid())
 		shader->disconnect(SceneStringNames::get_singleton()->changed,this,SceneStringNames::get_singleton()->_shader_changed);
 	shader=p_shader;
