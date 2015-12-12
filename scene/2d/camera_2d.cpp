@@ -118,10 +118,10 @@ Matrix32 Camera2D::get_camera_transform()  {
 
 
 
-		if (smoothing>0.0) {
+		if (smoothing_enabled) {
 
 			float c = smoothing*get_fixed_process_delta_time();
-			smoothed_camera_pos = ((new_camera_pos-smoothed_camera_pos)*c)+smoothed_camera_pos;
+			smoothed_camera_pos = ((camera_pos-smoothed_camera_pos)*c)+smoothed_camera_pos;
 			ret_camera_pos=smoothed_camera_pos;
 			//			camera_pos=camera_pos*(1.0-smoothing)+new_camera_pos*smoothing;
 		} else {
@@ -440,6 +440,27 @@ float Camera2D::get_h_offset() const{
 }
 
 
+void Camera2D::_set_old_smoothing(float p_val) {
+	//compatibility
+	if (p_val>0) {
+		smoothing_enabled=true;
+		set_follow_smoothing(p_val);
+	}
+
+}
+
+void Camera2D::set_enable_follow_smoothing(bool p_enabled) {
+
+	smoothing_enabled=p_enabled;
+
+}
+
+bool Camera2D::is_follow_smoothing_enabled() const {
+
+	return smoothing_enabled;
+}
+
+
 void Camera2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&Camera2D::set_offset);
@@ -489,14 +510,17 @@ void Camera2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_follow_smoothing","follow_smoothing"),&Camera2D::set_follow_smoothing);
 	ObjectTypeDB::bind_method(_MD("get_follow_smoothing"),&Camera2D::get_follow_smoothing);
 
+	ObjectTypeDB::bind_method(_MD("set_enable_follow_smoothing","follow_smoothing"),&Camera2D::set_enable_follow_smoothing);
+	ObjectTypeDB::bind_method(_MD("is_follow_smoothing_enabled"),&Camera2D::is_follow_smoothing_enabled);
+
 	ObjectTypeDB::bind_method(_MD("force_update_scroll"),&Camera2D::force_update_scroll);
 
+	ObjectTypeDB::bind_method(_MD("_set_old_smoothing","follow_smoothing"),&Camera2D::_set_old_smoothing);
 
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_offset"),_SCS("get_offset"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"anchor_mode",PROPERTY_HINT_ENUM,"Fixed TopLeft,Drag Center"),_SCS("set_anchor_mode"),_SCS("get_anchor_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"rotating"),_SCS("set_rotating"),_SCS("is_rotating"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"current"),_SCS("_set_current"),_SCS("is_current"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"smoothing"),_SCS("set_follow_smoothing"),_SCS("get_follow_smoothing") );
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"zoom"),_SCS("set_zoom"),_SCS("get_zoom") );
 
 	ADD_PROPERTYI( PropertyInfo(Variant::INT,"limit/left"),_SCS("set_limit"),_SCS("get_limit"),MARGIN_LEFT);
@@ -506,6 +530,12 @@ void Camera2D::_bind_methods() {
 
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"drag_margin/h_enabled"),_SCS("set_h_drag_enabled"),_SCS("is_h_drag_enabled") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"drag_margin/v_enabled"),_SCS("set_v_drag_enabled"),_SCS("is_v_drag_enabled") );
+
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"smoothing/enable"),_SCS("set_enable_follow_smoothing"),_SCS("is_follow_smoothing_enabled") );
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"smoothing/speed"),_SCS("set_follow_smoothing"),_SCS("get_follow_smoothing") );
+
+	//compatibility
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"smoothing",PROPERTY_HINT_NONE,"",0),_SCS("_set_old_smoothing"),_SCS("get_follow_smoothing") );
 
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"drag_margin/left",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_drag_margin"),_SCS("get_drag_margin"),MARGIN_LEFT);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"drag_margin/top",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_drag_margin"),_SCS("get_drag_margin"),MARGIN_TOP);
@@ -535,8 +565,9 @@ Camera2D::Camera2D() {
 	drag_margin[MARGIN_BOTTOM]=0.2;
 	camera_pos=Vector2();
 	first=true;
+	smoothing_enabled=false;
 
-	smoothing=0.0;
+	smoothing=5.0;
 	zoom = Vector2(1, 1);
 
 	h_drag_enabled=true;
