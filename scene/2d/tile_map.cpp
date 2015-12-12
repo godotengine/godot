@@ -299,6 +299,7 @@ void TileMap::_update_dirty_quadrants() {
 		q.occluder_instances.clear();
 		Ref<CanvasItemMaterial> prev_material;
 		RID prev_canvas_item;
+		RID prev_debug_canvas_item;
 
 		for(int i=0;i<q.cells.size();i++) {
 
@@ -319,6 +320,7 @@ void TileMap::_update_dirty_quadrants() {
 			Ref<CanvasItemMaterial> mat = tile_set->tile_get_material(c.id);
 
 			RID canvas_item;
+			RID debug_canvas_item;
 
 			if (prev_canvas_item==RID() || prev_material!=mat) {
 
@@ -331,11 +333,24 @@ void TileMap::_update_dirty_quadrants() {
 				vs->canvas_item_set_transform( canvas_item, xform );
 				q.canvas_items.push_back(canvas_item);
 
+				if (debug_shapes) {
+
+					debug_canvas_item=vs->canvas_item_create();
+					vs->canvas_item_set_parent( debug_canvas_item, canvas_item );
+					vs->canvas_item_set_z_as_relative_to_parent(debug_canvas_item,false);
+					vs->canvas_item_set_z(debug_canvas_item,VS::CANVAS_ITEM_Z_MAX-1);
+					q.canvas_items.push_back(debug_canvas_item);
+					prev_debug_canvas_item=debug_canvas_item;
+				}
+
 				prev_canvas_item=canvas_item;
 				prev_material=mat;
 
 			} else {
 				canvas_item=prev_canvas_item;
+				if (debug_shapes) {
+					debug_canvas_item=prev_debug_canvas_item;
+				}
 			}
 
 
@@ -407,18 +422,14 @@ void TileMap::_update_dirty_quadrants() {
 
 					_fix_cell_transform(xform,c,shape_ofs+center_ofs,s);
 
-					if (debug_shapes) {
-						vs->canvas_item_add_set_transform(canvas_item,xform);
-						shape->draw(canvas_item,debug_collision_color);
+					if (debug_canvas_item) {
+						shape->draw(debug_canvas_item,debug_collision_color);
 
 					}
 					ps->body_add_shape(q.body,shape->get_rid(),xform);					
 					ps->body_set_shape_metadata(q.body,shape_idx++,Vector2(E->key().x,E->key().y));
 
 				}
-			}
-			if (debug_shapes) {
-				vs->canvas_item_add_set_transform(canvas_item,Matrix32());
 			}
 
 			if (navigation) {
