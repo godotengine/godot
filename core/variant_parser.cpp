@@ -468,7 +468,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				return err;
 
 			if (args.size()!=4) {
-				r_err_str="Expected 2 arguments for constructor";
+				r_err_str="Expected 4 arguments for constructor";
 			}
 
 			value=Rect2(args[0],args[1],args[2],args[3]);
