@@ -150,6 +150,8 @@ private:
 
 	TileOrigin tile_origin;
 
+	int occluder_light_mask;
+
 	void _fix_cell_transform(Matrix32& xform, const Cell& p_cell, const Vector2 &p_offset, const Size2 &p_sc);
 
 	Map<PosKey,Quadrant>::Element *_create_quadrant(const PosKey& p_qk);
@@ -186,6 +188,7 @@ public:
 	enum {
 		INVALID_CELL=-1
 	};
+
 
 	void set_tileset(const Ref<TileSet>& p_tileset);
 	Ref<TileSet> get_tileset() const;
@@ -246,6 +249,9 @@ public:
 
 	void set_y_sort_mode(bool p_enable);
 	bool is_y_sort_mode_enabled() const;
+
+	void set_occluder_light_mask(int p_mask);
+	int get_occluder_light_mask() const;
 
 	void clear();
 
