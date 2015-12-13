@@ -100,7 +100,7 @@ Vector<uint8_t> EditorSceneExportPlugin::custom_export(String& p_path,const Ref<
 
 	Vector<uint8_t> ret = FileAccess::get_file_as_array(tmp_path+"scnexp-"+md5+".scn");
 
-	p_path+=".optimized.scn";
+	p_path+=".converted.scn";
 
 	return ret;
 

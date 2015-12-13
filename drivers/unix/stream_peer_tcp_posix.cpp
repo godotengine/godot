@@ -38,6 +38,7 @@
 #include <string.h>
 #include <netdb.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
 #ifndef NO_FCNTL
 	#ifdef __HAIKU__
 		#include <fcntl.h>
@@ -367,6 +368,14 @@ Error StreamPeerTCPPosix::get_partial_data(uint8_t* p_buffer, int p_bytes,int &r
 	return read(p_buffer, p_bytes, r_received, false);
 };
 
+int StreamPeerTCPPosix::get_available_bytes() const {
+
+	unsigned long len;
+	int ret = ioctl(sockfd,FIONREAD,&len);
+	ERR_FAIL_COND_V(ret==-1,0)
+	return len;
+
+}
 IP_Address StreamPeerTCPPosix::get_connected_host() const {
 
 	return peer_host;
