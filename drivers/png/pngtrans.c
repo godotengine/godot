@@ -1,8 +1,8 @@
 
 /* pngtrans.c - transforms the data in a row (used by both readers and writers)
  *
- * Last changed in libpng 1.5.4 [July 7, 2011]
- * Copyright (c) 1998-2011 Glenn Randers-Pehrson
+ * Last changed in libpng 1.5.19 [August 21, 2014]
+ * Copyright (c) 1998-2002,2004,2006-2014 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -452,7 +452,7 @@ png_do_strip_channel(png_row_infop row_info, png_bytep row, int at_start)
    {
       if (row_info->bit_depth == 8)
       {
-         if (at_start) /* Skip initial filler */
+         if (at_start != 0) /* Skip initial filler */
             ++sp;
          else          /* Skip initial channel and, for sp, the filler */
             sp += 2, ++dp;
@@ -466,7 +466,7 @@ png_do_strip_channel(png_row_infop row_info, png_bytep row, int at_start)
 
       else if (row_info->bit_depth == 16)
       {
-         if (at_start) /* Skip initial filler */
+         if (at_start != 0) /* Skip initial filler */
             sp += 2;
          else          /* Skip initial channel and, for sp, the filler */
             sp += 4, dp += 2;
@@ -492,7 +492,7 @@ png_do_strip_channel(png_row_infop row_info, png_bytep row, int at_start)
    {
       if (row_info->bit_depth == 8)
       {
-         if (at_start) /* Skip initial filler */
+         if (at_start != 0) /* Skip initial filler */
             ++sp;
          else          /* Skip initial channels and, for sp, the filler */
             sp += 4, dp += 3;
@@ -506,7 +506,7 @@ png_do_strip_channel(png_row_infop row_info, png_bytep row, int at_start)
 
       else if (row_info->bit_depth == 16)
       {
-         if (at_start) /* Skip initial filler */
+         if (at_start != 0) /* Skip initial filler */
             sp += 2;
          else          /* Skip initial channels and, for sp, the filler */
             sp += 8, dp += 6;
@@ -618,6 +618,109 @@ png_do_bgr(png_row_infop row_info, png_bytep row)
    }
 }
 #endif /* PNG_READ_BGR_SUPPORTED or PNG_WRITE_BGR_SUPPORTED */
+
+#if defined(PNG_READ_CHECK_FOR_INVALID_INDEX_SUPPORTED) || \
+    defined(PNG_WRITE_CHECK_FOR_INVALID_INDEX_SUPPORTED)
+/* Added at libpng-1.5.10 */
+void /* PRIVATE */
+png_do_check_palette_indexes(png_structp png_ptr, png_row_infop row_info)
+{
+   if (png_ptr->num_palette < (1 << row_info->bit_depth) &&
+      png_ptr->num_palette > 0) /* num_palette can be 0 in MNG files */
+   {
+      /* Calculations moved outside switch in an attempt to stop different
+       * compiler warnings.  'padding' is in *bits* within the last byte, it is
+       * an 'int' because pixel_depth becomes an 'int' in the expression below,
+       * and this calculation is used because it avoids warnings that other
+       * forms produced on either GCC or MSVC.
+       */
+      int padding = (-row_info->pixel_depth * row_info->width) & 7;
+      png_bytep rp = png_ptr->row_buf + row_info->rowbytes;
+
+      switch (row_info->bit_depth)
+      {
+         case 1:
+         {
+            /* in this case, all bytes must be 0 so we don't need
+             * to unpack the pixels except for the rightmost one.
+             */
+            for (; rp > png_ptr->row_buf; rp--)
+            {
+              if (*rp >> padding != 0)
+                 png_ptr->num_palette_max = 1;
+              padding = 0;
+            }
+
+            break;
+         }
+
+         case 2:
+         {
+            for (; rp > png_ptr->row_buf; rp--)
+            {
+              int i = ((*rp >> padding) & 0x03);
+
+              if (i > png_ptr->num_palette_max)
+                 png_ptr->num_palette_max = i;
+
+              i = (((*rp >> padding) >> 2) & 0x03);
+
+              if (i > png_ptr->num_palette_max)
+                 png_ptr->num_palette_max = i;
+
+              i = (((*rp >> padding) >> 4) & 0x03);
+
+              if (i > png_ptr->num_palette_max)
+                 png_ptr->num_palette_max = i;
+
+              i = (((*rp >> padding) >> 6) & 0x03);
+
+              if (i > png_ptr->num_palette_max)
+                 png_ptr->num_palette_max = i;
+
+              padding = 0;
+            }
+
+            break;
+         }
+
+         case 4:
+         {
+            for (; rp > png_ptr->row_buf; rp--)
+            {
+              int i = ((*rp >> padding) & 0x0f);
+
+              if (i > png_ptr->num_palette_max)
+                 png_ptr->num_palette_max = i;
+
+              i = (((*rp >> padding) >> 4) & 0x0f);
+
+              if (i > png_ptr->num_palette_max)
+                 png_ptr->num_palette_max = i;
+
+              padding = 0;
+            }
+
+            break;
+         }
+
+         case 8:
+         {
+            for (; rp > png_ptr->row_buf; rp--)
+            {
+               if (*rp > png_ptr->num_palette_max)
+                  png_ptr->num_palette_max = (int) *rp;
+            }
+
+            break;
+         }
+
+         default:
+            break;
+      }
+   }
+}
+#endif /* PNG_CHECK_FOR_INVALID_INDEX_SUPPORTED */
 
 #if defined(PNG_READ_USER_TRANSFORM_SUPPORTED) || \
     defined(PNG_WRITE_USER_TRANSFORM_SUPPORTED)

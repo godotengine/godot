@@ -1,11 +1,10 @@
 
 /* pngdebug.h - Debugging macros for libpng, also used in pngtest.c
  *
- * Copyright (c) 1998-2011 Glenn Randers-Pehrson
+ * Last changed in libpng 1.5.18 [February 6, 2014]
+ * Copyright (c) 1998-2002,2004,2006-2014 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
- *
- * Last changed in libpng 1.5.0 [January 6, 2011]
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -25,7 +24,7 @@
  *   (actually ((void)0)).
  *
  *   level: level of detail of message, starting at 0.  A level 'n'
- *          message is preceded by 'n' tab characters (not implemented
+ *          message is preceded by 'n' 3-space indentations (not implemented
  *          on Microsoft compilers unless PNG_DEBUG_FILE is also
  *          defined, to allow debug DLL compilation with no standard IO).
  *   message: a printf(3) style text string.  A trailing '\n' is added
@@ -77,32 +76,29 @@
 #      endif /* PNG_DEBUG_FILE */
 
 #      if (PNG_DEBUG > 1)
-/* Note: ["%s"m PNG_STRING_NEWLINE] probably does not work on
- * non-ISO compilers
- */
 #        ifdef __STDC__
 #          ifndef png_debug
 #            define png_debug(l,m) \
        do { \
        int num_tabs=l; \
-       fprintf(PNG_DEBUG_FILE,"%s"m PNG_STRING_NEWLINE,(num_tabs==1 ? "\t" : \
-         (num_tabs==2 ? "\t\t":(num_tabs>2 ? "\t\t\t":"")))); \
+       fprintf(PNG_DEBUG_FILE,"%s" m PNG_STRING_NEWLINE,(num_tabs==1 ? "   " : \
+         (num_tabs==2 ? "      " : (num_tabs>2 ? "         " : "")))); \
        } while (0)
 #          endif
 #          ifndef png_debug1
 #            define png_debug1(l,m,p1) \
        do { \
        int num_tabs=l; \
-       fprintf(PNG_DEBUG_FILE,"%s"m PNG_STRING_NEWLINE,(num_tabs==1 ? "\t" : \
-         (num_tabs==2 ? "\t\t":(num_tabs>2 ? "\t\t\t":""))),p1); \
+       fprintf(PNG_DEBUG_FILE,"%s" m PNG_STRING_NEWLINE,(num_tabs==1 ? "   " : \
+         (num_tabs==2 ? "      " : (num_tabs>2 ? "         " : ""))),p1); \
        } while (0)
 #          endif
 #          ifndef png_debug2
 #            define png_debug2(l,m,p1,p2) \
        do { \
        int num_tabs=l; \
-       fprintf(PNG_DEBUG_FILE,"%s"m PNG_STRING_NEWLINE,(num_tabs==1 ? "\t" : \
-         (num_tabs==2 ? "\t\t":(num_tabs>2 ? "\t\t\t":""))),p1,p2); \
+       fprintf(PNG_DEBUG_FILE,"%s" m PNG_STRING_NEWLINE,(num_tabs==1 ? "   " : \
+         (num_tabs==2 ? "      " : (num_tabs>2 ? "         " : ""))),p1,p2);\
        } while (0)
 #          endif
 #        else /* __STDC __ */
