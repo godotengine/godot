@@ -570,8 +570,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					ppeer->set_stream_peer(connection);
 
 
-					if (!always_visible)
-						show();
+					show();
 
 					dobreak->set_disabled(false);
 					tabs->set_current_tab(0);
@@ -1460,7 +1459,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	add_child(msgdialog);
 
 	hide();
-	always_visible=false;
 	log_forced_visible=false;
 
 	p_editor->get_undo_redo()->set_method_notify_callback(_method_changeds,this);
