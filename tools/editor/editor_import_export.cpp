@@ -43,6 +43,7 @@
 #include "tools/editor/plugins/script_editor_plugin.h"
 #include "io/zip_io.h"
 
+
 String EditorImportPlugin::validate_source_path(const String& p_path) {
 
 	String gp = Globals::get_singleton()->globalize_path(p_path);
