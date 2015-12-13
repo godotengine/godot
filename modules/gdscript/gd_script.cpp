@@ -785,7 +785,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 						argptrs[1]->get_type() == Variant::OBJECT) {
 						GDFunctionObject *func_object = ((Object *) (*argptrs[1]))->cast_to<GDFunctionObject>();
 						if (func_object && func_object->is_valid()) {
-							const Variant* argptr[argc];
+							const Variant** argptr = (const Variant **)memalloc(argc*sizeof(Variant*));
 							Variant target(func_object->instance->owner);
 							Variant fn(func_object->get_name());
 
@@ -809,6 +809,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 								base->call(*methodname, argptr, argc+1, err);
 							}
+							memfree(argptr);
 							break;
 						}
 					}
@@ -1561,7 +1562,7 @@ Variant GDFunctionObject::apply(VARIANT_ARG_DECLARE) {
 }
 
 Variant GDFunctionObject::_apply(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-	apply(p_args, p_argcount, r_error);
+	return apply(p_args, p_argcount, r_error);
 }
 
 Variant GDFunctionObject::apply(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
@@ -1623,12 +1624,13 @@ Variant GDLambdaFunctionObject::apply(const Variant **p_args, int p_argcount, Va
 	}
 
 	int t = variants.size();
-	const Variant *v_vars[function->lambda_variants.size()];
+	const Variant **v_vars = (const Variant **)memalloc(function->lambda_variants.size() * sizeof(Variant *));
 	for (int i = 0; i < t && i < function->lambda_variants.size(); ++i) {
 		v_vars[i] = &variants[i];
 	}
 
 	Variant ret = function->call(instance, p_args, p_argcount, r_error, NULL, v_vars);
+	memfree(v_vars);
 	return ret;
 }
 
