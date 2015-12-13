@@ -24,7 +24,7 @@
 # TODO:
 #  * Refactor code.
 #  * Adapt this script for generating content in other markup formats like
-#    DokuWiki, Markdown, etc.
+#    reStructuredText, Markdown, DokuWiki, etc.
 #
 # Also check other TODO entries in this script for more information on what is
 # left to do.
