@@ -540,6 +540,7 @@ class EditorNode : public Node {
 
 	void _toggle_search_bar(bool p_pressed);
 	void _clear_search_box();
+	void _clear_undo_history();
 
 protected:
 	void _notification(int p_what);

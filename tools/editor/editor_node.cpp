@@ -955,7 +955,23 @@ void EditorNode::_save_scene(String p_file) {
 
 
 	_set_scene_metadata();
-	Ref<PackedScene> sdata = memnew( PackedScene );
+
+
+	Ref<PackedScene> sdata;
+
+	if (ResourceCache::has(p_file)) {
+		// something may be referencing this resource and we are good with that.
+		// we must update it, but also let the previous scene state go, as
+		// old version still work for referencing changes in instanced or inherited scenes
+
+		sdata = Ref<PackedScene>( ResourceCache::get(p_file)->cast_to<PackedScene>() );
+		if (sdata.is_valid())
+			sdata->recreate_state();
+		else
+			sdata.instance();
+	} else {
+		sdata.instance();
+	}
 	Error err = sdata->pack(scene);
 
 
@@ -3414,7 +3430,17 @@ void EditorNode::set_current_version(uint64_t p_version) {
 bool EditorNode::is_changing_scene() const {
 	return changing_scene;
 }
+
+void EditorNode::_clear_undo_history() {
+
+	get_undo_redo()->clear_history();
+}
+
 void EditorNode::set_current_scene(int p_idx) {
+
+	if (editor_data.check_and_update_scene(p_idx)) {
+		call_deferred("_clear_undo_history");
+	}
 
 	changing_scene=true;
 	editor_data.save_edited_scene_state(editor_selection,&editor_history,_get_main_scene_state());
@@ -4113,6 +4139,7 @@ void EditorNode::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_toggle_search_bar",&EditorNode::_toggle_search_bar);
 	ObjectTypeDB::bind_method("_clear_search_box",&EditorNode::_clear_search_box);
+	ObjectTypeDB::bind_method("_clear_undo_history",&EditorNode::_clear_undo_history);
 
 	ObjectTypeDB::bind_method(_MD("add_editor_import_plugin", "plugin"), &EditorNode::add_editor_import_plugin);
 	ObjectTypeDB::bind_method(_MD("remove_editor_import_plugin", "plugin"), &EditorNode::remove_editor_import_plugin);

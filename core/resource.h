@@ -144,7 +144,7 @@ public:
 
 #ifdef TOOLS_ENABLED
 
-	void set_last_modified_time(uint64_t p_time) { last_modified_time=p_time; }
+	virtual void set_last_modified_time(uint64_t p_time) { last_modified_time=p_time; }
 	uint64_t get_last_modified_time() const { return last_modified_time; }
 
 #endif
