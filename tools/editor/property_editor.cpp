@@ -915,15 +915,25 @@ void CustomPropertyEditor::_color_changed(const Color& p_color) {
 
 void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 
-	if (owner && owner->is_type("Node")) {
+	if (owner) {
 
-		Node *node = owner->cast_to<Node>();
-		Node *tonode=node->get_node(p_path);
-		if (tonode) {
+		Node *node=NULL;
 
-			p_path=node->get_path_to(tonode);
+		if (owner->is_type("Node"))
+			node = owner->cast_to<Node>();
+		else if (owner->is_type("ArrayPropertyEdit"))
+			node = owner->cast_to<ArrayPropertyEdit>()->get_node();
+
+		if (!node) {
+			v=p_path;
+			emit_signal("variant_changed");
+			return;
 		}
 
+		Node *tonode=node->get_node(p_path);
+		if (tonode) {
+			p_path=node->get_path_to(tonode);
+		}
 	}
 
 	v=p_path;

@@ -209,6 +209,15 @@ void ArrayPropertyEdit::edit(Object* p_obj,const StringName& p_prop,Variant::Typ
 
 }
 
+Node *ArrayPropertyEdit::get_node() {
+
+	Object *o = ObjectDB::get_instance(obj);
+	if (!o)
+		return NULL;
+
+	return o->cast_to<Node>();
+}
+
 void ArrayPropertyEdit::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_set_size"),&ArrayPropertyEdit::_set_size);
