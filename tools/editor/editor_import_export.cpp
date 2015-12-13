@@ -41,6 +41,7 @@
 #include "io/md5.h"
 #include "io_plugins/editor_texture_import_plugin.h"
 #include "tools/editor/plugins/script_editor_plugin.h"
+#include "io/zip_io.h"
 
 String EditorImportPlugin::validate_source_path(const String& p_path) {
 
@@ -1074,6 +1075,59 @@ Error EditorExportPlatform::save_pack_file(void *p_userdata,const String& p_path
 		};
 	};
 	return OK;
+
+}
+
+Error EditorExportPlatform::save_zip_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total) {
+
+
+	ZipData *zd = (ZipData*)p_userdata;
+
+	zipFile zip=(zipFile)zd->zip;
+
+	zipOpenNewFileInZip(zip,
+		p_path.utf8().get_data(),
+		NULL,
+		NULL,
+		0,
+		NULL,
+		0,
+		NULL,
+		Z_DEFLATED,
+		Z_DEFAULT_COMPRESSION);
+
+	zipWriteInFileInZip(zip,p_data.ptr(),p_data.size());
+	zipCloseFileInZip(zip);
+
+	zd->ep->step("Storing File: "+p_path,2+p_file*100/p_total);
+	zd->count++;
+	return OK;
+
+}
+
+Error EditorExportPlatform::save_zip(const String& p_path, bool p_make_bundles) {
+
+	EditorProgress ep("savezip","Packing",102);
+
+	//FileAccess *tmp = FileAccess::open(tmppath,FileAccess::WRITE);
+
+	FileAccess *src_f;
+	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	zipFile	zip=zipOpen2(p_path.utf8().get_data(),APPEND_STATUS_CREATE,NULL,&io);
+
+	ZipData zd;
+	zd.count=0;
+	zd.ep=&ep;
+	zd.zip=zip;
+
+
+	Error err = export_project_files(save_zip_file,&zd,p_make_bundles);
+
+	zipClose(zip,NULL);
+
+	if (err)
+		return err;
+
 
 }
 

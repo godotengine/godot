@@ -370,7 +370,7 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 			}
 
 			int over=_get_mouse_over(Point2(m.x,m.y));
-			int id = (over<0 || items[over].separator || items[over].disabled)?-1:items[over].ID;
+			int id = (over<0 || items[over].separator || items[over].disabled)?-1:(items[over].ID>=0?items[over].ID:over);
 
 			if (id<0) {
 				mouse_over=-1;
@@ -752,6 +752,7 @@ int PopupMenu::find_item_by_accelerator(uint32_t p_accel) const {
 }
 
 void PopupMenu::activate_item(int p_item) {
+
 
 	ERR_FAIL_INDEX(p_item,items.size());
 	ERR_FAIL_COND(items[p_item].separator);
