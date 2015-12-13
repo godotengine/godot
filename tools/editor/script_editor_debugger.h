@@ -81,7 +81,6 @@ class ScriptEditorDebugger : public Control {
 	TabContainer *tabs;
 
 	Label *reason;
-	bool always_visible;
 	bool log_forced_visible;
 	ScriptEditorDebuggerVariables *variables;
 
