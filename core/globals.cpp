@@ -309,7 +309,7 @@ Error Globals::setup(const String& p_path,const String & p_main_pack) {
 
 		print_line("has res dir: "+resource_path);
 		if (!_load_resource_pack("res://data.pck"))
-			_load_resource_pack("res://data.pcz");
+			_load_resource_pack("res://data.zip");
 		// make sure this is load from the resource path
 		print_line("exists engine cfg? "+itos(FileAccess::exists("/engine.cfg")));
 		if (_load_settings("res://engine.cfg")==OK || _load_settings_binary("res://engine.cfb")==OK) {
@@ -340,7 +340,7 @@ Error Globals::setup(const String& p_path,const String & p_main_pack) {
 			//try to load settings in ascending through dirs shape!
 
 			//tries to open pack, but only first time
-			if (first_time && (_load_resource_pack(current_dir+"/"+exec_name+".pck") || _load_resource_pack(current_dir+"/"+exec_name+".pcz") )) {
+			if (first_time && (_load_resource_pack(current_dir+"/"+exec_name+".pck") || _load_resource_pack(current_dir+"/"+exec_name+".zip") )) {
 				if (_load_settings("res://engine.cfg")==OK || _load_settings_binary("res://engine.cfb")==OK) {
 
 					_load_settings("res://override.cfg");
@@ -349,7 +349,7 @@ Error Globals::setup(const String& p_path,const String & p_main_pack) {
 
 				}
 				break;
-			} else if (first_time && (_load_resource_pack(current_dir+"/data.pck") || _load_resource_pack(current_dir+"/data.pcz") )) {
+			} else if (first_time && (_load_resource_pack(current_dir+"/data.pck") || _load_resource_pack(current_dir+"/data.zip") )) {
 				if (_load_settings("res://engine.cfg")==OK || _load_settings_binary("res://engine.cfb")==OK) {
 
 					_load_settings("res://override.cfg");
