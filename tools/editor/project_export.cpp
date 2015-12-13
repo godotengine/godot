@@ -471,20 +471,32 @@ void ProjectExportDialog::_export_action_pck(const String& p_file) {
 		ERR_PRINT("Invalid platform for export of PCK");
 		return;
 	}
-	FileAccess *f = FileAccess::open(p_file,FileAccess::WRITE);
-	if (!f) {
-		error->set_text("Error exporting project PCK! Can't write");
-		error->popup_centered_minsize();
-	}
-	ERR_FAIL_COND(!f);
 
-	Error err = exporter->save_pack(f,false);
-	memdelete(f);
+	if (p_file.ends_with(".pck")) {
+		FileAccess *f = FileAccess::open(p_file,FileAccess::WRITE);
+		if (!f) {
+			error->set_text("Error exporting project PCK! Can't write");
+			error->popup_centered_minsize();
+		}
+		ERR_FAIL_COND(!f);
 
-	if (err!=OK) {
-		error->set_text("Error exporting project!");
-		error->popup_centered_minsize();
-		return;
+		Error err = exporter->save_pack(f,false);
+		memdelete(f);
+
+		if (err!=OK) {
+			error->set_text("Error exporting project!");
+			error->popup_centered_minsize();
+			return;
+		}
+	} else if (p_file.ends_with(".zip")) {
+
+		Error err = exporter->save_zip(p_file,false);
+
+		if (err!=OK) {
+			error->set_text("Error exporting project!");
+			error->popup_centered_minsize();
+			return;
+		}
 	}
 }
 
@@ -1425,6 +1437,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	pck_export->set_title("Export Project PCK");
 	pck_export->connect("file_selected", this,"_export_action_pck");
 	pck_export->add_filter("*.pck ; Data Pack");
+	pck_export->add_filter("*.zip ; Zip");
 	add_child(pck_export);
 
 	button_export = add_button("Export..",!OS::get_singleton()->get_swap_ok_cancel(),"export_pck");

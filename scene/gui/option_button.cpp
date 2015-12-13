@@ -77,9 +77,14 @@ void OptionButton::_selected(int p_which) {
 		}
 	}
 
-	ERR_FAIL_COND(selid==-1);
+	if (selid==-1 && p_which>=0 && p_which<popup->get_item_count()) {
+		_select(p_which,true);
+	} else {
 
-	_select(selid,true);
+		ERR_FAIL_COND(selid==-1);
+
+		_select(selid,true);
+	}
 }
 
 
