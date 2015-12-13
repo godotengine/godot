@@ -36,12 +36,12 @@
 
 void ReparentDialog::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_TREE)	{
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		connect("confirmed", this,"_reparent");
 	}
 
-	if (p_what==NOTIFICATION_EXIT_TREE)	{
+	if (p_what==NOTIFICATION_EXIT_TREE) {
 
 		disconnect("confirmed", this,"_reparent");
 	}
@@ -83,29 +83,29 @@ void ReparentDialog::_bind_methods() {
 
 
 ReparentDialog::ReparentDialog() {
-	
 
 	set_title("Reparent Node");
+
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
 	set_child_rect(vbc);
 
 	tree = memnew( SceneTreeEditor(false) );
-	
+	tree->set_show_enabled_subscene(true);
 
 	vbc->add_margin_child("Reparent Location (Select new Parent):",tree,true);
-	
+
+	tree->get_scene_tree()->connect("item_activated",this,"_reparent");
+
 	//Label *label = memnew( Label );
 	//label->set_pos( Point2( 15,8) );
 	//label->set_text("Reparent Location (Select new Parent):");
-	
+
 	node_only = memnew( CheckButton );
 	add_child(node_only);
 	node_only->hide();
 
-	tree->set_show_enabled_subscene(true);
 	//vbc->add_margin_child("Options:",node_only);;
-	
 
 	//cancel->connect("pressed", this,"_cancel");
 
