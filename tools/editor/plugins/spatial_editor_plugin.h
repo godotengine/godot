@@ -239,6 +239,7 @@ private:
 	void _finish_gizmo_instances();
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
+	void _list_select(InputEventMouseButton b);
 
 
 protected:
@@ -287,7 +288,9 @@ public:
 		TOOL_MODE_SELECT,
 		TOOL_MODE_MOVE,
 		TOOL_MODE_ROTATE,
-		TOOL_MODE_SCALE
+		TOOL_MODE_SCALE,
+		TOOL_MODE_LIST_SELECT,
+		TOOL_MAX
 
 	};
 
@@ -369,6 +372,7 @@ private:
 		MENU_TOOL_MOVE,
 		MENU_TOOL_ROTATE,
 		MENU_TOOL_SCALE,
+		MENU_TOOL_LIST_SELECT,
 		MENU_TRANSFORM_USE_SNAP,
 		MENU_TRANSFORM_CONFIGURE_SNAP,
 		MENU_TRANSFORM_LOCAL_COORDS,
@@ -392,7 +396,7 @@ private:
 	};
 
 
-	Button *tool_button[4];
+	Button *tool_button[TOOL_MAX];
 	Button *instance_button;
 
 

@@ -67,6 +67,7 @@ class CanvasItemEditor : public VBoxContainer {
 	enum Tool {
 
 		TOOL_SELECT,
+		TOOL_LIST_SELECT,
 		TOOL_MOVE,
 		TOOL_ROTATE,
 		TOOL_PAN,
@@ -240,6 +241,7 @@ class CanvasItemEditor : public VBoxContainer {
 	List<PoseClipboard> pose_clipboard;
 
 	ToolButton *select_button;
+	ToolButton *list_select_button;
 	ToolButton *move_button;
 	ToolButton *rotate_button;
 
@@ -309,6 +311,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _clear_canvas_items();
 	void _visibility_changed(ObjectID p_canvas_item);
 	void _key_move(const Vector2& p_dir, bool p_snap, KeyMoveMODE p_move_mode);
+	void _list_select(const InputEventMouseButton& b);
 
 	DragType _find_drag_type(const Matrix32& p_xform, const Rect2& p_local_rect, const Point2& p_click, Vector2& r_point);
 
