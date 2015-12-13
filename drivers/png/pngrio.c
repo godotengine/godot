@@ -2,7 +2,7 @@
 /* pngrio.c - functions for data input
  *
  * Last changed in libpng 1.5.0 [January 6, 2011]
- * Copyright (c) 1998-2011 Glenn Randers-Pehrson
+ * Copyright (c) 1998-2002,2004,2006-2011 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -26,7 +26,7 @@
  * reads from a file pointer.  Note that this routine sometimes gets called
  * with very small lengths, so you should implement some kind of simple
  * buffering if you are using unbuffered reads.  This should never be asked
- * to read more then 64K on a 16 bit machine.
+ * to read more than 64K on a 16 bit machine.
  */
 void /* PRIVATE */
 png_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
