@@ -160,7 +160,20 @@ void Dictionary::_unref() const {
 }
 uint32_t Dictionary::hash() const {
 
-	return hash_djb2_one_64(make_uint64_t(_p));
+	uint32_t h=hash_djb2_one_32(Variant::DICTIONARY);
+
+	List<Variant> keys;
+	get_key_list(&keys);
+
+	for (List<Variant>::Element *E=keys.front();E;E=E->next()) {
+
+		h = hash_djb2_one_32( E->get().hash(), h);
+		h = hash_djb2_one_32( operator[](E->get()).hash(), h);
+
+	}
+
+
+	return h;
 }
 
 Array Dictionary::keys() const {
