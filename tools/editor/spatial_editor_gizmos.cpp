@@ -2283,6 +2283,8 @@ void NavigationMeshSpatialGizmo::redraw() {
 		}
 	}
 
+	if (faces.empty())
+		return;
 
 	Map<_EdgeKey,bool> edge_map;
 	DVector<Vector3> tmeshfaces;
@@ -2330,7 +2332,7 @@ void NavigationMeshSpatialGizmo::redraw() {
 		}
 	}
 
-	Ref<TriangleMesh> tmesh = memnew( TriangleMesh);
+	Ref<TriangleMesh> tmesh = memnew( TriangleMesh );
 	tmesh->create(tmeshfaces);
 
 	if (lines.size())
