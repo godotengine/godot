@@ -859,7 +859,7 @@ Vector<uint8_t> EditorSampleExportPlugin::custom_export(String& p_path,const Ref
 
 	ERR_FAIL_COND_V(err!=OK,Vector<uint8_t>());
 
-	p_path=p_path.basename()+".smp";
+	p_path=p_path.basename()+".converted.smp";
 	return FileAccess::get_file_as_array(savepath);
 
 }

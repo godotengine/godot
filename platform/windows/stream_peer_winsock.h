@@ -66,6 +66,8 @@ public:
 	virtual Error get_data(uint8_t* p_buffer, int p_bytes);
 	virtual Error get_partial_data(uint8_t* p_buffer, int p_bytes,int &r_received);
 
+	virtual int get_available_bytes() const;
+
 	void set_socket(int p_sockfd, IP_Address p_host, int p_port);
 
 	virtual IP_Address get_connected_host() const;

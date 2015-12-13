@@ -342,6 +342,14 @@ void StreamPeerWinsock::set_nodelay(bool p_enabled) {
     setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int));
 }
 
+int StreamPeerWinsock::get_available_bytes() const {
+
+	unsigned long len;
+	int ret = ioctlsocket(sockfd,FIONREAD,&len);
+	ERR_FAIL_COND_V(ret==-1,0)
+	return len;
+
+}
 
 IP_Address StreamPeerWinsock::get_connected_host() const {
 
