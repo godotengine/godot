@@ -196,7 +196,11 @@ void EditorSubScene::_bind_methods() {
 
 EditorSubScene::EditorSubScene() {
 
+	scene=NULL;
+
 	set_title("Select Sub-Scene..");
+	set_hide_on_ok(false);
+
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
 	set_child_rect(vb);
@@ -211,9 +215,11 @@ EditorSubScene::EditorSubScene() {
 	hb->add_child(b);
 	b->connect("pressed",this,"_path_browse");
 	vb->add_margin_child("Scene Path:",hb);
+
 	tree = memnew( Tree );
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
-	vb->add_margin_child("Import From Node:",tree)->set_v_size_flags(SIZE_EXPAND_FILL);
+	vb->add_margin_child("Import From Node:",tree,true);
+	tree->connect("item_activated",this,"_ok");
 
 	file_dialog = memnew( EditorFileDialog );
 	List<String> extensions;
@@ -227,9 +233,5 @@ EditorSubScene::EditorSubScene() {
 	file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	add_child(file_dialog);
 	file_dialog->connect("file_selected",this,"_path_selected");
-
-	scene=NULL;
-
-	set_hide_on_ok(false);
 
 }
