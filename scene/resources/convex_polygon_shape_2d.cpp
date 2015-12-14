@@ -30,6 +30,8 @@
 
 #include "servers/physics_2d_server.h"
 #include "servers/visual_server.h"
+#include "geometry.h"
+
 void ConvexPolygonShape2D::_update_shape() {
 
 	Physics2DServer::get_singleton()->shape_set_data(get_rid(),points);
@@ -40,7 +42,9 @@ void ConvexPolygonShape2D::_update_shape() {
 void ConvexPolygonShape2D::set_point_cloud(const Vector<Vector2>& p_points) {
 
 
-
+	Vector<Point2> hull=Geometry::convex_hull_2d(p_points);
+	ERR_FAIL_COND(hull.size()<3);
+	set_points(hull);
 }
 
 void ConvexPolygonShape2D::set_points(const Vector<Vector2>& p_points) {
