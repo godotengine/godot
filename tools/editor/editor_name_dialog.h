@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_layout_dialog.cpp                                             */
+/*  editor_name_dialog.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,39 +27,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "editor_layout_dialog.h"
-#include "object_type_db.h"
+#ifndef EDITOR_NAME_DIALOG_H
+#define EDITOR_NAME_DIALOG_H
 
-void EditorLayoutDialog::clear_layout_name() {
+#include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
 
-	layout_name->clear();
-}
+class EditorNameDialog : public ConfirmationDialog {
 
-void EditorLayoutDialog::_post_popup() {
+	OBJ_TYPE( EditorNameDialog, ConfirmationDialog );
 
-	ConfirmationDialog::_post_popup();
-	layout_name->grab_focus();
-}
+	LineEdit *name;
 
-void EditorLayoutDialog::ok_pressed() {
+	void _line_input_event(const InputEvent& p_event);
 
-	if (layout_name->get_text()!="") {
-		emit_signal("layout_selected", layout_name->get_text());
-	}
-}
+protected:
 
-void EditorLayoutDialog::_bind_methods() {
+	static void _bind_methods();
+	virtual void ok_pressed();
+	virtual void _post_popup();
 
-	ADD_SIGNAL(MethodInfo("layout_selected",PropertyInfo( Variant::STRING,"layout_name")));
-}
+public:
 
-EditorLayoutDialog::EditorLayoutDialog()
-{
+	LineEdit* get_line_edit() { return name; }
 
-	layout_name = memnew( LineEdit );
-	layout_name->set_margin(MARGIN_TOP,5);
-	layout_name->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN,5);
-	layout_name->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,5);
-	add_child(layout_name);
-	move_child(layout_name, get_label()->get_index()+1);
-}
+	EditorNameDialog();
+};
+
+#endif // EDITOR_NAME_DIALOG_H
