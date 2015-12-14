@@ -406,29 +406,41 @@ void BodySW::integrate_forces(real_t p_step) {
 		return;
 
 	AreaSW *def_area = get_space()->get_default_area();
-	AreaSW *damp_area = def_area;
+	// AreaSW *damp_area = def_area;
 
 	ERR_FAIL_COND(!def_area);
 
 	int ac = areas.size();
-	bool replace = false;
+	bool stopped = false;
 	gravity = Vector3(0,0,0);
 	area_linear_damp = 0;
 	area_angular_damp = 0;
 	if (ac) {
 		areas.sort();
 		const AreaCMP *aa = &areas[0];
-		damp_area = aa[ac-1].area;
-		for(int i=ac-1;i>=0;i--) {
-			_compute_area_gravity_and_dampenings(aa[i].area);
-			if (aa[i].area->get_space_override_mode() == PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE) {
-				replace = true;
-				break;
+		// damp_area = aa[ac-1].area;
+		for(int i=ac-1;i>=0 && !stopped;i--) {
+			PhysicsServer::AreaSpaceOverrideMode mode=aa[i].area->get_space_override_mode();
+			switch (mode) {
+				case PhysicsServer::AREA_SPACE_OVERRIDE_COMBINE:
+				case PhysicsServer::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+					_compute_area_gravity_and_dampenings(aa[i].area);
+					stopped = mode==PhysicsServer::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
+				} break;
+				case PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE:
+				case PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+					gravity = Vector3(0,0,0);
+					area_angular_damp = 0;
+					area_linear_damp = 0;
+					_compute_area_gravity_and_dampenings(aa[i].area);
+					stopped = mode==PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE;
+				} break;
+				default: {}
 			}
 		}
 	}
 
-	if( !replace ) {
+	if( !stopped ) {
 		_compute_area_gravity_and_dampenings(def_area);
 	}
 
