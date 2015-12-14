@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_node.cpp                                                      */
+/*  editor_layout_dialog.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -33,6 +33,12 @@
 void EditorLayoutDialog::clear_layout_name() {
 
 	layout_name->clear();
+}
+
+void EditorLayoutDialog::_post_popup() {
+
+	ConfirmationDialog::_post_popup();
+	layout_name->grab_focus();
 }
 
 void EditorLayoutDialog::ok_pressed() {
