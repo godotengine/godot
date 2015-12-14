@@ -70,6 +70,7 @@ protected:
 	Map<StringName,PropertyInfo> custom_prop_info;
 	bool disable_platform_override;
 	bool using_datapack;
+	List<String> input_presets;
 
 	
 	bool _set(const StringName& p_name, const Variant& p_value);
@@ -123,6 +124,8 @@ public:
 	bool has_singleton(const String& p_name) const;
 
 	Vector<String> get_optimizer_presets() const;
+
+	List<String> get_input_presets() const { return input_presets; }
 
 	void set_disable_platform_override(bool p_disable);
 	Object* get_singleton_object(const String& p_name) const;
