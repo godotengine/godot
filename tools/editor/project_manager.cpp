@@ -348,6 +348,13 @@ struct ProjectItem {
 	_FORCE_INLINE_ bool operator ==(const ProjectItem& l) const { return project==l.project; }
 };
 
+void ProjectManager::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+
+		get_tree()->set_editor_hint(true);
+	}
+}
 
 void ProjectManager::_panel_draw(Node *p_hb) {
 
