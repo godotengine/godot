@@ -211,7 +211,7 @@ public:
 	void draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width=1.0);
 	void draw_rect(const Rect2& p_rect, const Color& p_color);
 	void draw_circle(const Point2& p_pos, float p_radius, const Color& p_color);
-	void draw_texture(const Ref<Texture>& p_texture,const Point2& p_pos);
+	void draw_texture(const Ref<Texture>& p_texture, const Point2& p_pos, const Color &p_modulate=Color(1,1,1,1));
 	void draw_texture_rect(const Ref<Texture>& p_texture, const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1), bool p_transpose=false);
 	void draw_texture_rect_region(const Ref<Texture>& p_texture,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1), bool p_transpose=false);
 	void draw_style_box(const Ref<StyleBox>& p_style_box,const Rect2& p_rect);

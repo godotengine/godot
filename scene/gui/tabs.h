@@ -65,6 +65,12 @@ private:
 		Rect2 cb_rect;
 	};
 
+
+	int offset;
+	int max_drawn_tab;
+	int hilite_arrow;
+	bool buttons_visible;
+	bool missing_right;
 	Vector<Tab> tabs;
 	int current;
 	Control *_get_tab(int idx) const;

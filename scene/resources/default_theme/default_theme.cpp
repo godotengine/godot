@@ -709,6 +709,10 @@ void make_default_theme() {
 	t->set_stylebox("button_pressed","Tabs", make_stylebox( button_pressed_png,4,4,4,4) );
 	t->set_stylebox("button","Tabs", make_stylebox( button_normal_png,4,4,4,4) );
 
+	t->set_icon("increment","Tabs",make_icon( scroll_button_right_png));
+	t->set_icon("increment_hilite","Tabs",make_icon( scroll_button_right_hl_png));
+	t->set_icon("decrement","Tabs",make_icon( scroll_button_left_png));
+	t->set_icon("decrement_hilite","Tabs",make_icon( scroll_button_left_hl_png));
 
 	t->set_font("font","Tabs", default_font );
 
