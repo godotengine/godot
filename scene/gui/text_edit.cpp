@@ -646,9 +646,11 @@ void TextEdit::_notification(int p_what) {
 				
 				if (line<0 || line>=(int)text.size())
 					continue;
-				
+#ifdef RTL_ENABLED
 				const String &str=text[line].bidi_visual_string();
-				
+#else
+				const String &str=text[line];
+#endif
 				int char_margin=xmargin_beg-cursor.x_ofs;
 				int char_ofs=0;
 				int ofs_y=i*get_row_height()+cache.line_spacing/2;
