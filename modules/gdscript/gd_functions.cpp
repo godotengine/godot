@@ -1307,7 +1307,7 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case STR_TO_VAR: {
 
-			MethodInfo mi("str2var:var",PropertyInfo(Variant::STRING,"string"));
+			MethodInfo mi("str2var:Variant",PropertyInfo(Variant::STRING,"string"));
 			mi.return_val.type=Variant::NIL;
 			return mi;
 		} break;
@@ -1338,7 +1338,7 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case HASH: {
 
-			MethodInfo mi("hash",PropertyInfo(Variant::NIL,"var:var"));
+			MethodInfo mi("hash",PropertyInfo(Variant::NIL,"var:Variant"));
 			mi.return_val.type=Variant::INT;
 			return mi;
 		} break;
