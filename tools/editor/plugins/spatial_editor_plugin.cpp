@@ -736,6 +736,68 @@ void SpatialEditorViewport::_smouseenter() {
             surface->grab_focus();
 }
 
+void SpatialEditorViewport::_list_select(InputEventMouseButton b) {
+
+	_find_items_at_pos(Vector2( b.x, b.y ),clicked_includes_current,selection_results,b.mod.shift);
+
+	Node *scene=editor->get_edited_scene();
+
+	for(int i=0;i<selection_results.size();i++) {
+		Spatial *item=selection_results[i].item;
+		if (item!=scene && item->get_owner()!=scene && !scene->is_editable_instance(item->get_owner())) {
+			//invalid result
+			selection_results.remove(i);
+			i--;
+		}
+
+	}
+
+
+	clicked_wants_append=b.mod.shift;
+
+	if (selection_results.size() == 1) {
+
+		clicked=selection_results[0].item->get_instance_ID();
+		selection_results.clear();
+
+		if (clicked) {
+			_select_clicked(clicked_wants_append,true);
+			clicked=0;
+		}
+
+	} else if (!selection_results.empty()) {
+
+		NodePath root_path = get_tree()->get_edited_scene_root()->get_path();
+		StringName root_name = root_path.get_name(root_path.get_name_count()-1);
+
+		for (int i = 0; i < selection_results.size(); i++) {
+
+			Spatial *spat=selection_results[i].item;
+
+			Ref<Texture> icon;
+			if (spat->has_meta("_editor_icon"))
+				icon=spat->get_meta("_editor_icon");
+			else
+				icon=get_icon( has_icon(spat->get_type(),"EditorIcons")?spat->get_type():String("Object"),"EditorIcons");
+
+			String node_path="/"+root_name+"/"+root_path.rel_path_to(spat->get_path());
+
+			selection_menu->add_item(spat->get_name());
+			selection_menu->set_item_icon(i, icon );
+			selection_menu->set_item_metadata(i, node_path);
+			selection_menu->set_item_tooltip(i,String(spat->get_name())+
+					"\nType: "+spat->get_type()+"\nPath: "+node_path);
+		}
+
+		selection_menu->set_global_pos(Vector2( b.global_x, b.global_y ));
+		selection_menu->popup();
+		selection_menu->call_deferred("grab_click_focus");
+		selection_menu->set_invalidate_click_until_motion();
+
+
+
+	}
+}
 void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 	if (previewing)
@@ -868,50 +930,9 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 							if (nav_scheme == NAVIGATION_MAYA)
 								break;
 
-							_find_items_at_pos(Vector2( b.x, b.y ),clicked_includes_current,selection_results,b.mod.shift);
+							_list_select(b);
+							return;
 
-							clicked_wants_append=b.mod.shift;
-
-							if (selection_results.size() == 1) {
-
-								clicked=selection_results[0].item->get_instance_ID();
-								selection_results.clear();
-
-								if (clicked) {
-									_select_clicked(clicked_wants_append,true);
-									clicked=0;
-								}
-
-							} else if (!selection_results.empty()) {
-
-								NodePath root_path = get_tree()->get_edited_scene_root()->get_path();
-								StringName root_name = root_path.get_name(root_path.get_name_count()-1);
-
-								for (int i = 0; i < selection_results.size(); i++) {
-
-									Spatial *spat=selection_results[i].item;
-
-									Ref<Texture> icon;
-									if (spat->has_meta("_editor_icon"))
-										icon=spat->get_meta("_editor_icon");
-									else
-										icon=get_icon( has_icon(spat->get_type(),"EditorIcons")?spat->get_type():String("Object"),"EditorIcons");
-
-									String node_path="/"+root_name+"/"+root_path.rel_path_to(spat->get_path());
-
-									selection_menu->add_item(spat->get_name());
-									selection_menu->set_item_icon(i, icon );
-									selection_menu->set_item_metadata(i, node_path);
-									selection_menu->set_item_tooltip(i,String(spat->get_name())+
-											"\nType: "+spat->get_type()+"\nPath: "+node_path);
-								}
-
-								selection_menu->set_global_pos(Vector2( b.global_x, b.global_y ));
-								selection_menu->popup();
-								selection_menu->call_deferred("grab_click_focus");
-
-								break;
-							}
 						}
 					}
 
@@ -981,6 +1002,11 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 						NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_scheme");
 						if ( (nav_scheme==NAVIGATION_MAYA || nav_scheme==NAVIGATION_MODO) && b.mod.alt) {
+							break;
+						}
+
+						if (spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_LIST_SELECT) {
+							_list_select(b);
 							break;
 						}
 
@@ -2841,13 +2867,14 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 		case MENU_TOOL_SELECT:
 		case MENU_TOOL_MOVE:
 		case MENU_TOOL_ROTATE:
-		case MENU_TOOL_SCALE: {
+		case MENU_TOOL_SCALE:
+		case MENU_TOOL_LIST_SELECT: {
 
-			for(int i=0;i<4;i++)
+			for(int i=0;i<TOOL_MAX;i++)
 				tool_button[i]->set_pressed(i==p_option);
 			tool_mode=(ToolMode)p_option;
 
-			static const char *_mode[]={"Selection Mode.","Translation Mode.","Rotation Mode.","Scale Mode."};
+			static const char *_mode[]={"Selection Mode.","Translation Mode.","Rotation Mode.","Scale Mode.","List Selection Mode."};
 //			set_message(_mode[p_option],3);
 			update_transform_gizmo();
 
@@ -3530,6 +3557,7 @@ void SpatialEditor::_notification(int p_what) {
 		tool_button[SpatialEditor::TOOL_MODE_MOVE]->set_icon( get_icon("ToolMove","EditorIcons") );
 		tool_button[SpatialEditor::TOOL_MODE_ROTATE]->set_icon( get_icon("ToolRotate","EditorIcons") );
 		tool_button[SpatialEditor::TOOL_MODE_SCALE]->set_icon( get_icon("ToolScale","EditorIcons") );
+		tool_button[SpatialEditor::TOOL_MODE_LIST_SELECT]->set_icon( get_icon("ListSelect","EditorIcons") );
 		instance_button->set_icon( get_icon("SpatialAdd","EditorIcons") );
 		instance_button->hide();
 
@@ -3807,7 +3835,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_SELECT]->set_pressed(true);
 	button_binds[0]=MENU_TOOL_SELECT;
 	tool_button[TOOL_MODE_SELECT]->connect("pressed", this,"_menu_item_pressed",button_binds);
-	tool_button[TOOL_MODE_SELECT]->set_tooltip("Select Mode (Q)");
+	tool_button[TOOL_MODE_SELECT]->set_tooltip("Select Mode (Q)\n"+keycode_get_string(KEY_MASK_CMD)+"Drag: Rotate\nAlt+Drag: Move\nAlt+RMB: Depth list selection");
 
 
 	tool_button[TOOL_MODE_MOVE] = memnew( ToolButton );
@@ -3839,8 +3867,20 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	hbc_menu->add_child( instance_button );
 	instance_button->set_flat(true);
 	instance_button->connect("pressed",this,"_instance_scene");
+	instance_button->hide();
 
 	VSeparator *vs = memnew( VSeparator );
+	hbc_menu->add_child(vs);
+
+	tool_button[TOOL_MODE_LIST_SELECT] = memnew( ToolButton );
+	hbc_menu->add_child( tool_button[TOOL_MODE_LIST_SELECT] );
+	tool_button[TOOL_MODE_LIST_SELECT]->set_toggle_mode(true);
+	tool_button[TOOL_MODE_LIST_SELECT]->set_flat(true);
+	button_binds[0]=MENU_TOOL_LIST_SELECT;
+	tool_button[TOOL_MODE_LIST_SELECT]->connect("pressed", this,"_menu_item_pressed",button_binds);
+	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip("Show a list of all objects at the position clicked\n(same as Alt+RMB in selet mode).");
+
+	vs = memnew( VSeparator );
 	hbc_menu->add_child(vs);
 
 

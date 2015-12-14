@@ -43,6 +43,7 @@ protected:
 
 	static void _bind_methods();
 	virtual void ok_pressed();
+	virtual void _post_popup();
 
 public:
 	void clear_layout_name();

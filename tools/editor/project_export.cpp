@@ -1407,7 +1407,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	add_child(confirm);
 	confirm->connect("confirmed",this,"_confirmed");
 
-	get_ok()->set_text("Export PCK");
+	get_ok()->set_text("Export PCK/Zip");
 
 
 	expopt="--,Export,Bundle";

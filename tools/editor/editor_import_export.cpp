@@ -43,6 +43,7 @@
 #include "tools/editor/plugins/script_editor_plugin.h"
 #include "io/zip_io.h"
 
+
 String EditorImportPlugin::validate_source_path(const String& p_path) {
 
 	String gp = Globals::get_singleton()->globalize_path(p_path);
@@ -1081,12 +1082,14 @@ Error EditorExportPlatform::save_pack_file(void *p_userdata,const String& p_path
 Error EditorExportPlatform::save_zip_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total) {
 
 
+	String path=p_path.replace_first("res://","");
+
 	ZipData *zd = (ZipData*)p_userdata;
 
 	zipFile zip=(zipFile)zd->zip;
 
 	zipOpenNewFileInZip(zip,
-		p_path.utf8().get_data(),
+		path.utf8().get_data(),
 		NULL,
 		NULL,
 		0,

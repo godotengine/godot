@@ -260,7 +260,7 @@ void ShaderGraph::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("clear","shader_type"),&ShaderGraph::clear);
 
 	ObjectTypeDB::bind_method(_MD("node_set_state","shader_type","id","state"),&ShaderGraph::node_set_state);
-	ObjectTypeDB::bind_method(_MD("node_get_state:var","shader_type","id"),&ShaderGraph::node_get_state);
+	ObjectTypeDB::bind_method(_MD("node_get_state:Variant","shader_type","id"),&ShaderGraph::node_get_state);
 
 	ObjectTypeDB::bind_method(_MD("_set_data"),&ShaderGraph::_set_data);
 	ObjectTypeDB::bind_method(_MD("_get_data"),&ShaderGraph::_get_data);

@@ -221,7 +221,7 @@ void CanvasItemEditor::_unhandled_key_input(const InputEvent& p_ev) {
 void CanvasItemEditor::_tool_select(int p_index) {
 
 
-	ToolButton *tb[TOOL_MAX]={select_button,move_button,rotate_button,pan_button};
+	ToolButton *tb[TOOL_MAX]={select_button,list_select_button,move_button,rotate_button,pan_button};
 	for(int i=0;i<TOOL_MAX;i++) {
 
 		tb[i]->set_pressed(i==p_index);
@@ -938,6 +938,75 @@ bool CanvasItemEditor::get_remove_list(List<Node*> *p_list) {
 }
 
 
+void CanvasItemEditor::_list_select(const InputEventMouseButton& b) {
+
+	Point2 click=Point2(b.x,b.y);
+
+	Node* scene = editor->get_edited_scene();
+	if (!scene)
+		return;
+
+	_find_canvas_items_at_pos(click, scene,transform,Matrix32(), selection_results);
+
+	for(int i=0;i<selection_results.size();i++) {
+		CanvasItem *item=selection_results[i].item;
+		if (item!=scene && item->get_owner()!=scene && !scene->is_editable_instance(item->get_owner())) {
+			//invalid result
+			selection_results.remove(i);
+			i--;
+		}
+
+	}
+
+	if (selection_results.size() == 1) {
+
+		CanvasItem *item = selection_results[0].item;
+		selection_results.clear();
+
+		additive_selection=b.mod.shift;
+		if (!_select(item, click, additive_selection, false))
+			return;
+
+	} else if (!selection_results.empty()) {
+
+		selection_results.sort();
+
+		NodePath root_path = get_tree()->get_edited_scene_root()->get_path();
+		StringName root_name = root_path.get_name(root_path.get_name_count()-1);
+
+		for (int i = 0; i < selection_results.size(); i++) {
+
+			CanvasItem *item=selection_results[i].item;
+
+
+			Ref<Texture> icon;
+			if (item->has_meta("_editor_icon"))
+				icon=item->get_meta("_editor_icon");
+			else
+				icon=get_icon( has_icon(item->get_type(),"EditorIcons")?item->get_type():String("Object"),"EditorIcons");
+
+			String node_path="/"+root_name+"/"+root_path.rel_path_to(item->get_path());
+
+			selection_menu->add_item(item->get_name());
+			selection_menu->set_item_icon(i, icon );
+			selection_menu->set_item_metadata(i, node_path);
+			selection_menu->set_item_tooltip(i,String(item->get_name())+
+					"\nType: "+item->get_type()+"\nPath: "+node_path);
+		}
+
+		additive_selection=b.mod.shift;
+
+		selection_menu->set_global_pos(Vector2( b.global_x, b.global_y ));
+		selection_menu->popup();
+		selection_menu->call_deferred("grab_click_focus");
+		selection_menu->set_invalidate_click_until_motion();
+
+
+		return;
+	}
+
+}
+
 void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 	 {
@@ -993,59 +1062,11 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 		if (b.button_index==BUTTON_RIGHT) {
 
-			if (b.pressed && tool==TOOL_SELECT && b.mod.alt) {
 
-				Point2 click=Point2(b.x,b.y);
+			if (b.pressed && (tool==TOOL_SELECT && b.mod.alt)) {
 
-				Node* scene = editor->get_edited_scene();
-				if (!scene)
-					return;
-
-				_find_canvas_items_at_pos(click, scene,transform,Matrix32(), selection_results);
-
-				if (selection_results.size() == 1) {
-
-					CanvasItem *item = selection_results[0].item;
-					selection_results.clear();
-
-					additive_selection=b.mod.shift;
-					if (!_select(item, click, additive_selection, false))
-						return;
-
-				} else if (!selection_results.empty()) {
-
-					selection_results.sort();
-
-					NodePath root_path = get_tree()->get_edited_scene_root()->get_path();
-					StringName root_name = root_path.get_name(root_path.get_name_count()-1);
-
-					for (int i = 0; i < selection_results.size(); i++) {
-
-						CanvasItem *item=selection_results[i].item;
-
-						Ref<Texture> icon;
-						if (item->has_meta("_editor_icon"))
-							icon=item->get_meta("_editor_icon");
-						else
-							icon=get_icon( has_icon(item->get_type(),"EditorIcons")?item->get_type():String("Object"),"EditorIcons");
-
-						String node_path="/"+root_name+"/"+root_path.rel_path_to(item->get_path());
-
-						selection_menu->add_item(item->get_name());
-						selection_menu->set_item_icon(i, icon );
-						selection_menu->set_item_metadata(i, node_path);
-						selection_menu->set_item_tooltip(i,String(item->get_name())+
-								"\nType: "+item->get_type()+"\nPath: "+node_path);
-					}
-
-					additive_selection=b.mod.shift;
-
-					selection_menu->set_global_pos(Vector2( b.global_x, b.global_y ));
-					selection_menu->popup();
-					selection_menu->call_deferred("grab_click_focus");
-
-					return;
-				}
+				_list_select(b);
+				return;
 			}
 
 			if (get_item_count() > 0 && drag!=DRAG_NONE) {
@@ -1102,6 +1123,12 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 		}
 		//if (!canvas_items.size())
 		//	return;
+
+		if (b.button_index==BUTTON_LEFT && tool==TOOL_LIST_SELECT) {
+			if (b.pressed)
+				_list_select(b);
+			return;
+		}
 
 		if (tool==TOOL_PAN || b.button_index!=BUTTON_LEFT || Input::get_singleton()->is_key_pressed(KEY_SPACE))
 			return;
@@ -2118,6 +2145,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		}
 
 		select_button->set_icon( get_icon("ToolSelect","EditorIcons"));
+		list_select_button->set_icon( get_icon("ListSelect","EditorIcons"));
 		move_button->set_icon( get_icon("ToolMove","EditorIcons"));
 		rotate_button->set_icon( get_icon("ToolRotate","EditorIcons"));
 		pan_button->set_icon( get_icon("ToolPan", "EditorIcons"));
@@ -3155,7 +3183,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(select_button);
 	select_button->connect("pressed",this,"_tool_select",make_binds(TOOL_SELECT));
 	select_button->set_pressed(true);
-	select_button->set_tooltip("Select Mode (Q)\n"+keycode_get_string(KEY_MASK_CMD)+"Drag: Rotate\nAlt+Drag: Move\nPress 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving).");
+	select_button->set_tooltip("Select Mode (Q)\n"+keycode_get_string(KEY_MASK_CMD)+"Drag: Rotate\nAlt+Drag: Move\nPress 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving).\nAlt+RMB: Depth list selection");
+
 
 	move_button = memnew( ToolButton );
 	move_button->set_toggle_mode(true);
@@ -3170,6 +3199,12 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	rotate_button->set_tooltip("Rotate Mode (E)");
 
 	hb->add_child(memnew(VSeparator));
+
+	list_select_button = memnew( ToolButton );
+	list_select_button->set_toggle_mode(true);
+	hb->add_child(list_select_button);
+	list_select_button->connect("pressed",this,"_tool_select",make_binds(TOOL_LIST_SELECT));
+	list_select_button->set_tooltip("Show a list of all objects at the position clicked\n(same as Alt+RMB in selet mode).");
 
 	pan_button = memnew( ToolButton );
 	pan_button->set_toggle_mode(true);

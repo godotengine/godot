@@ -31,6 +31,9 @@
 #include "editor_settings.h"
 #include "os/dir_access.h"
 #include "io/resource_loader.h"
+#include "scene/resources/packed_scene.h"
+#include "os/file_access.h"
+#include "editor_node.h"
 
 void EditorHistory::_cleanup_history() {
 
@@ -493,6 +496,93 @@ void EditorData::remove_scene(int p_idx){
 	edited_scene.remove(p_idx);
 
 }
+
+bool EditorData::_find_updated_instances(Node* p_root,Node *p_node,Set<String> &checked_paths) {
+
+	if (p_root!=p_node && p_node->get_owner()!=p_root && !p_root->is_editable_instance(p_node->get_owner()))
+		return false;
+
+	Ref<SceneState> ss;
+
+	if (p_node==p_root) {
+		ss=p_node->get_scene_inherited_state();
+	} else if (p_node->get_filename()!=String()){
+		ss=p_node->get_scene_instance_state();
+	}
+
+	if (ss.is_valid()) {
+		String path = ss->get_path();
+
+		if (!checked_paths.has(path)) {
+
+			uint64_t modified_time = FileAccess::get_modified_time(path);
+			if (modified_time!=ss->get_last_modified_time()) {
+				return true; //external scene changed
+			}
+
+			checked_paths.insert(path);
+		}
+
+	}
+
+	for(int i=0;i<p_node->get_child_count();i++) {
+
+		bool found = _find_updated_instances(p_root,p_node->get_child(i),checked_paths);
+		if (found)
+			return true;
+	}
+
+	return false;
+}
+
+
+bool EditorData::check_and_update_scene(int p_idx) {
+
+	ERR_FAIL_INDEX_V(p_idx,edited_scene.size(),false);
+	if (!edited_scene[p_idx].root)
+		return false;
+
+	Set<String> checked_scenes;
+
+
+	bool must_reload = _find_updated_instances(edited_scene[p_idx].root,edited_scene[p_idx].root,checked_scenes);
+
+	if (must_reload) {
+		Ref<PackedScene> pscene;
+		pscene.instance();
+
+		EditorProgress ep("update_scene","Updating Scene",2);
+		ep.step("Storing local changes..",0);
+		//pack first, so it stores diffs to previous version of saved scene
+		Error err = pscene->pack(edited_scene[p_idx].root);
+		ERR_FAIL_COND_V(err!=OK,false);
+		ep.step("Updating scene..",1);
+		Node *new_scene = pscene->instance(true);
+		ERR_FAIL_COND_V(!new_scene,false);
+
+		//transfer selection
+		List<Node*> new_selection;
+		for (List<Node*>::Element *E=edited_scene[p_idx].selection.front();E;E=E->next()) {
+			NodePath p = edited_scene[p_idx].root->get_path_to(E->get());
+			Node *new_node = new_scene->get_node(p);
+			if (new_node)
+				new_selection.push_back(new_node);
+		}
+
+		new_scene->set_filename( edited_scene[p_idx].root->get_filename() );
+
+		memdelete(edited_scene[p_idx].root);
+		edited_scene[p_idx].root=new_scene;
+		edited_scene[p_idx].selection=new_selection;
+
+		return true;
+
+	}
+
+	return false;
+
+}
+
 int EditorData::get_edited_scene() const {
 
 	return current_edited_scene;

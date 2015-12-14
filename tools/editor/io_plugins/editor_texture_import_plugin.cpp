@@ -1666,7 +1666,7 @@ EditorTextureImportPlugin::EditorTextureImportPlugin(EditorNode *p_editor, Mode 
 		if (pl.is_valid()) {
 			Vector<uint8_t> ce = pl->custom_export(p_path,p_platform);
 			if (ce.size()) {
-				p_path=p_path.basename()+".tex";
+				p_path=p_path.basename()+".converted.tex";
 				return ce;
 			}
 		}
@@ -1680,7 +1680,7 @@ EditorTextureImportPlugin::EditorTextureImportPlugin(EditorNode *p_editor, Mode 
 			if (pl.is_valid()) {
 				Vector<uint8_t> ce = pl->custom_export(p_path,p_platform);
 				if (ce.size()) {
-					p_path=p_path.basename()+".tex";
+					p_path=p_path.basename()+".converted.tex";
 					return ce;
 				}
 			}

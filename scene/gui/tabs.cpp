@@ -74,6 +74,7 @@ Size2 Tabs::get_minimum_size() const {
 		}
 	}
 
+	ms.width=0; //should make this optional
 	return ms;
 }
 
@@ -84,6 +85,23 @@ void Tabs::_input_event(const InputEvent& p_event) {
 	if (p_event.type==InputEvent::MOUSE_MOTION) {
 
 		Point2 pos( p_event.mouse_motion.x, p_event.mouse_motion.y );
+
+		hilite_arrow=-1;
+		if (buttons_visible) {
+
+			Ref<Texture> incr = get_icon("increment");
+			Ref<Texture> decr = get_icon("decrement");
+
+			int limit=get_size().width-incr->get_width()-decr->get_width();
+
+			if (pos.x>limit+decr->get_width()) {
+				hilite_arrow=1;
+			} else if (pos.x>limit) {
+				hilite_arrow=0;
+			}
+		}
+
+
 
 		int hover_buttons=-1;
 		hover=-1;
@@ -163,9 +181,34 @@ void Tabs::_input_event(const InputEvent& p_event) {
 		// clicks
 		Point2 pos( p_event.mouse_button.x, p_event.mouse_button.y );
 
+		if (buttons_visible) {
+
+			Ref<Texture> incr = get_icon("increment");
+			Ref<Texture> decr = get_icon("decrement");
+
+			int limit=get_size().width-incr->get_width()-decr->get_width();
+
+			if (pos.x>limit+decr->get_width()) {
+				if (missing_right) {
+					offset++;
+					update();
+				}
+				return;
+			} else if (pos.x>limit) {
+				if (offset>0) {
+					offset--;
+					update();
+				}
+				return;
+			}
+		}
+
+
 		int found=-1;
 		for(int i=0;i<tabs.size();i++) {
 
+			if (i<offset)
+				continue;
 			if (tabs[i].rb_rect.has_point(pos)) {
 				rb_pressing=true;
 				update();
@@ -225,7 +268,46 @@ void Tabs::_notification(int p_what) {
 
 			int w=0;
 
-			int mw = get_minimum_size().width;
+			int mw = 0;
+
+			{
+
+
+			//	h+=MIN( get_constant("label_valign_fg"), get_constant("label_valign_bg") );
+
+				for(int i=0;i<tabs.size();i++) {
+
+					Ref<Texture> tex = tabs[i].icon;
+					if (tex.is_valid()) {
+						if (tabs[i].text!="")
+							mw+=get_constant("hseparation");
+
+					}
+					mw+=font->get_string_size(tabs[i].text).width;
+					if (current==i)
+						mw+=tab_fg->get_minimum_size().width;
+					else
+						mw+=tab_bg->get_minimum_size().width;
+
+					if (tabs[i].right_button.is_valid()) {
+						Ref<Texture> rb=tabs[i].right_button;
+						Size2 bms = rb->get_size();//+get_stylebox("button")->get_minimum_size();
+						bms.width+=get_constant("hseparation");
+
+						mw+=bms.width;
+					}
+
+					if (tabs[i].close_button.is_valid()) {
+						Ref<Texture> cb=tabs[i].close_button;
+						Size2 bms = cb->get_size();//+get_stylebox("button")->get_minimum_size();
+						bms.width+=get_constant("hseparation");
+						mw+=bms.width;
+					}
+				}
+
+			}
+
+
 
 			if (tab_align==ALIGN_CENTER) {
 				w=(get_size().width-mw)/2;
@@ -238,14 +320,27 @@ void Tabs::_notification(int p_what) {
 				w=0;
 			}
 
+			Ref<Texture> incr = get_icon("increment");
+			Ref<Texture> decr = get_icon("decrement");
+			Ref<Texture> incr_hl = get_icon("increment_hilite");
+			Ref<Texture> decr_hl = get_icon("decrement_hilite");
+
+			int limit=get_size().width - incr->get_size().width - decr->get_size().width;
+
+			missing_right=false;
+
 			for(int i=0;i<tabs.size();i++) {
 
+				if (i<offset)
+					continue;
 				tabs[i].ofs_cache=w;
 
 				String s = tabs[i].text;
 				int lsize=0;
 				int slen=font->get_string_size(s).width;
 				lsize+=slen;
+
+
 
 				Ref<Texture> icon;
 				if (tabs[i].icon.is_valid()) {
@@ -317,6 +412,16 @@ void Tabs::_notification(int p_what) {
 				} break;
 
 				}
+
+
+				if (w+lsize > limit) {
+					max_drawn_tab=i-1;
+					missing_right=true;
+					break;
+				} else {
+					max_drawn_tab=i;
+				}
+
 
 
 				Ref<StyleBox> sb;
@@ -482,6 +587,25 @@ void Tabs::_notification(int p_what) {
 
 				tabs[i].size_cache=w-tabs[i].ofs_cache;
 
+			}
+
+			if (offset>0 || missing_right) {
+
+				int vofs = (get_size().height-incr->get_size().height)/2;
+
+				if (offset>0)
+					draw_texture(hilite_arrow==0?decr_hl:decr,Point2(limit,vofs));
+				else
+					draw_texture(decr,Point2(limit,vofs),Color(1,1,1,0.5));
+
+				if (missing_right)
+					draw_texture(hilite_arrow==1?incr_hl:incr,Point2(limit+decr->get_size().width,vofs));
+				else
+					draw_texture(incr,Point2(limit+decr->get_size().width,vofs),Color(1,1,1,0.5));
+
+				buttons_visible=true;
+			} else {
+				buttons_visible=false;
 			}
 
 
@@ -673,8 +797,11 @@ Tabs::Tabs() {
 	tab_align=ALIGN_CENTER;
 	rb_hover=-1;
 	rb_pressing=false;
+	hilite_arrow=-1;
 
 	cb_hover=-1;
 	cb_pressing=false;
 	cb_displaypolicy = SHOW_NEVER; // Default : no close button
+	offset=0;
+	max_drawn_tab=0;
 }
