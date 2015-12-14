@@ -709,7 +709,7 @@ void CanvasItem::draw_circle(const Point2& p_pos, float p_radius, const Color& p
 
 }
 
-void CanvasItem::draw_texture(const Ref<Texture>& p_texture,const Point2& p_pos) {
+void CanvasItem::draw_texture(const Ref<Texture>& p_texture,const Point2& p_pos,const Color& p_modulate) {
 
 	if (!drawing) {
 		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
@@ -718,7 +718,7 @@ void CanvasItem::draw_texture(const Ref<Texture>& p_texture,const Point2& p_pos)
 
 	ERR_FAIL_COND(p_texture.is_null());
 
-	p_texture->draw(canvas_item,p_pos);
+	p_texture->draw(canvas_item,p_pos,p_modulate);
 }
 
 void CanvasItem::draw_texture_rect(const Ref<Texture>& p_texture,const Rect2& p_rect, bool p_tile,const Color& p_modulate, bool p_transpose) {
