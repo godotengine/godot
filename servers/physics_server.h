@@ -318,7 +318,9 @@ public:
 	enum AreaSpaceOverrideMode {
 		AREA_SPACE_OVERRIDE_DISABLED,
 		AREA_SPACE_OVERRIDE_COMBINE,
+		AREA_SPACE_OVERRIDE_COMBINE_REPLACE,
 		AREA_SPACE_OVERRIDE_REPLACE,
+		AREA_SPACE_OVERRIDE_REPLACE_COMBINE
 	};
 
 	virtual void area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode)=0;
