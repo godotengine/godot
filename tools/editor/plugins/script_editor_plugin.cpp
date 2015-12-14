@@ -2256,6 +2256,7 @@ void ScriptEditor::_history_back(){
 void ScriptEditor::set_scene_root_script( Ref<Script> p_script ) {
 
 	bool open_dominant = EditorSettings::get_singleton()->get("text_editor/open_dominant_script_on_scene_change");
+
 	if (bool(EditorSettings::get_singleton()->get("external_editor/use_external_editor")))
 		return;
 

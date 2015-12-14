@@ -482,8 +482,8 @@ void UndoRedo::_bind_methods() {
 		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"add_undo_method",&UndoRedo::_add_undo_method,mi,defargs);
 	}
 
-	ObjectTypeDB::bind_method(_MD("add_do_property","object", "property", "value:var"),&UndoRedo::add_do_property);
-	ObjectTypeDB::bind_method(_MD("add_undo_property","object", "property", "value:var"),&UndoRedo::add_undo_property);
+	ObjectTypeDB::bind_method(_MD("add_do_property","object", "property", "value:Variant"),&UndoRedo::add_do_property);
+	ObjectTypeDB::bind_method(_MD("add_undo_property","object", "property", "value:Variant"),&UndoRedo::add_undo_property);
 	ObjectTypeDB::bind_method(_MD("add_do_reference","object"),&UndoRedo::add_do_reference);
 	ObjectTypeDB::bind_method(_MD("add_undo_reference","object"),&UndoRedo::add_undo_reference);
 	ObjectTypeDB::bind_method(_MD("clear_history"),&UndoRedo::clear_history);

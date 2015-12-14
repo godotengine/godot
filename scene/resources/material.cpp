@@ -572,8 +572,8 @@ void ShaderMaterial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_shader","shader:Shader"), &ShaderMaterial::set_shader );
 	ObjectTypeDB::bind_method(_MD("get_shader:Shader"), &ShaderMaterial::get_shader );
 
-	ObjectTypeDB::bind_method(_MD("set_shader_param","param","value:var"), &ShaderMaterial::set_shader_param);
-	ObjectTypeDB::bind_method(_MD("get_shader_param:var","param"), &ShaderMaterial::get_shader_param);
+	ObjectTypeDB::bind_method(_MD("set_shader_param","param","value:Variant"), &ShaderMaterial::set_shader_param);
+	ObjectTypeDB::bind_method(_MD("get_shader_param:Variant","param"), &ShaderMaterial::get_shader_param);
 
 	ObjectTypeDB::bind_method(_MD("_shader_changed"), &ShaderMaterial::_shader_changed );
 }

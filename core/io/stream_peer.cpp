@@ -405,7 +405,7 @@ void StreamPeer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("put_float","val"),&StreamPeer::put_float);
 	ObjectTypeDB::bind_method(_MD("put_double","val"),&StreamPeer::put_double);
 	ObjectTypeDB::bind_method(_MD("put_utf8_string","val"),&StreamPeer::put_utf8_string);
-	ObjectTypeDB::bind_method(_MD("put_var","val:var"),&StreamPeer::put_var);
+	ObjectTypeDB::bind_method(_MD("put_var","val:Variant"),&StreamPeer::put_var);
 
 	ObjectTypeDB::bind_method(_MD("get_8"),&StreamPeer::get_8);
 	ObjectTypeDB::bind_method(_MD("get_u8"),&StreamPeer::get_u8);
@@ -419,5 +419,5 @@ void StreamPeer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_double"),&StreamPeer::get_double);
 	ObjectTypeDB::bind_method(_MD("get_string","bytes"),&StreamPeer::get_string);
 	ObjectTypeDB::bind_method(_MD("get_utf8_string","bytes"),&StreamPeer::get_utf8_string);
-	ObjectTypeDB::bind_method(_MD("get_var:var"),&StreamPeer::get_var);
+	ObjectTypeDB::bind_method(_MD("get_var:Variant"),&StreamPeer::get_var);
 }

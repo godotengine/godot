@@ -1613,7 +1613,7 @@ void Object::_bind_methods() {
 		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"call_deferred",&Object::_call_deferred_bind,mi,defargs);
 	}
 
-	ObjectTypeDB::bind_method(_MD("callv:var","method","arg_array"),&Object::callv);
+	ObjectTypeDB::bind_method(_MD("callv:Variant","method","arg_array"),&Object::callv);
 
 	ObjectTypeDB::bind_method(_MD("has_method"),&Object::has_method);
 

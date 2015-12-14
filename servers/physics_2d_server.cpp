@@ -102,7 +102,7 @@ void Physics2DDirectBodyState::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_contact_collider_id","contact_idx"),&Physics2DDirectBodyState::get_contact_collider_id);
 	ObjectTypeDB::bind_method(_MD("get_contact_collider_object","contact_idx"),&Physics2DDirectBodyState::get_contact_collider_object);
 	ObjectTypeDB::bind_method(_MD("get_contact_collider_shape","contact_idx"),&Physics2DDirectBodyState::get_contact_collider_shape);
-	ObjectTypeDB::bind_method(_MD("get_contact_collider_shape_metadata:var","contact_idx"),&Physics2DDirectBodyState::get_contact_collider_shape_metadata);
+	ObjectTypeDB::bind_method(_MD("get_contact_collider_shape_metadata:Variant","contact_idx"),&Physics2DDirectBodyState::get_contact_collider_shape_metadata);
 	ObjectTypeDB::bind_method(_MD("get_contact_collider_velocity_at_pos","contact_idx"),&Physics2DDirectBodyState::get_contact_collider_velocity_at_pos);
 	ObjectTypeDB::bind_method(_MD("get_step"),&Physics2DDirectBodyState::get_step);
 	ObjectTypeDB::bind_method(_MD("integrate_forces"),&Physics2DDirectBodyState::integrate_forces);
