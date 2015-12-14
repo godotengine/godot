@@ -4651,8 +4651,7 @@ void EditorNode::_layout_menu_option(int p_id) {
 				return; //no config
 			}
 
-			int idx=editor_layouts->get_item_index(p_id);
-			_load_docks_from_config(config, editor_layouts->get_item_text(idx));
+			_load_docks_from_config(config, editor_layouts->get_item_text(p_id));
 			_save_docks();
 
 		}
