@@ -226,7 +226,7 @@ void OSIPhone::mouse_button(int p_idx, int p_x, int p_y, bool p_pressed, bool p_
 		queue_event(ev);
 	};
 
-	//mouse_list.pressed[p_idx] = p_pressed;
+	mouse_list.pressed[p_idx] = p_pressed;
 
 	if (p_use_as_mouse) {
 
@@ -242,7 +242,7 @@ void OSIPhone::mouse_button(int p_idx, int p_x, int p_y, bool p_pressed, bool p_
 		ev.mouse_button.x = ev.mouse_button.global_x = p_x;
 		ev.mouse_button.y = ev.mouse_button.global_y = p_y;
 
-		mouse_list.pressed[p_idx] = p_pressed;
+		//mouse_list.pressed[p_idx] = p_pressed;
 
 		input->set_mouse_pos(Point2(ev.mouse_motion.x,ev.mouse_motion.y));
 		ev.mouse_button.button_index = BUTTON_LEFT;
