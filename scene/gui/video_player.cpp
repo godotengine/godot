@@ -117,8 +117,9 @@ void VideoPlayer::_notification(int p_notification) {
 		case NOTIFICATION_ENTER_TREE: {
 
 			//set_idle_process(false); //don't annoy
-			if (stream.is_valid() && autoplay && !get_tree()->is_editor_hint())
+			if (stream.is_valid() && autoplay && !get_tree()->is_editor_hint()) {
 				play();
+			}
 		} break;
 
 		case NOTIFICATION_PROCESS: {

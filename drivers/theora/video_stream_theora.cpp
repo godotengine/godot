@@ -504,6 +504,10 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 		bool audio_pending = false;
 
 
+		bool no_vorbis=false;
+		bool no_theora=false;
+
+
 		while (vorbis_p) {
 			int ret;
 			float **pcm;
@@ -575,6 +579,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 					}
 				} else {  /* we need more data; break out to suck in another page */
 					//printf("need moar data\n");
+					no_vorbis=true;
 					break;
 				};
 			}
@@ -625,17 +630,19 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 						/*If we are too slow, reduce the pp level.*/
 						pp_inc=pp_level>0?-1:0;
 					}
+				} else {
+
 				}
 
 			} else {
-
+				no_theora=true;
 				break;
 			}
 		}
 #ifdef THEORA_USE_THREAD_STREAMING
-		if (file && thread_eof && ring_buffer.data_left()==0) {
+		if (file && thread_eof && && (no_vorbis || no_theora) && ring_buffer.data_left()==0) {
 #else
-		if (file && /*!videobuf_ready && */ file->eof_reached()) {
+		if (file && /*!videobuf_ready && */ (no_vorbis || no_theora) && file->eof_reached()) {
 #endif
 			printf("video done, stopping\n");
 			stop();
@@ -723,7 +730,7 @@ bool VideoStreamPlaybackTheora::is_playing() const {
 
 void VideoStreamPlaybackTheora::set_paused(bool p_paused) {
 
-	playing = !p_paused;
+	//pau = !p_paused;
 };
 
 bool VideoStreamPlaybackTheora::is_paused(bool p_paused) const {
