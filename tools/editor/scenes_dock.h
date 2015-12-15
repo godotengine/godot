@@ -153,6 +153,7 @@ public:
 
 	void fix_dependencies(const String& p_for_file);
 
+	void set_use_thumbnails(bool p_use);
 
 	ScenesDock(EditorNode *p_editor);
 	~ScenesDock();
