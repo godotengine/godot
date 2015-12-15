@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_node.cpp                                                      */
+/*  editor_name_dialog.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,33 +27,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "editor_layout_dialog.h"
-#include "object_type_db.h"
+#ifndef EDITOR_NAME_DIALOG_H
+#define EDITOR_NAME_DIALOG_H
 
-void EditorLayoutDialog::clear_layout_name() {
+#include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
 
-	layout_name->clear();
-}
+class EditorNameDialog : public ConfirmationDialog {
 
-void EditorLayoutDialog::ok_pressed() {
+	OBJ_TYPE( EditorNameDialog, ConfirmationDialog );
 
-	if (layout_name->get_text()!="") {
-		emit_signal("layout_selected", layout_name->get_text());
-	}
-}
+	LineEdit *name;
 
-void EditorLayoutDialog::_bind_methods() {
+	void _line_input_event(const InputEvent& p_event);
 
-	ADD_SIGNAL(MethodInfo("layout_selected",PropertyInfo( Variant::STRING,"layout_name")));
-}
+protected:
 
-EditorLayoutDialog::EditorLayoutDialog()
-{
+	static void _bind_methods();
+	virtual void ok_pressed();
+	virtual void _post_popup();
 
-	layout_name = memnew( LineEdit );
-	layout_name->set_margin(MARGIN_TOP,5);
-	layout_name->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN,5);
-	layout_name->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,5);
-	add_child(layout_name);
-	move_child(layout_name, get_label()->get_index()+1);
-}
+public:
+
+	LineEdit* get_line_edit() { return name; }
+
+	EditorNameDialog();
+};
+
+#endif // EDITOR_NAME_DIALOG_H

@@ -338,6 +338,15 @@ void ProjectSettings::_action_button_pressed(Object* p_obj, int p_column,int p_i
 		add_at="input/"+ti->get_text(0);
 
 	} else if (p_id==2) {
+		//rename
+
+		add_at="input/"+ti->get_text(0);
+		rename_action->popup_centered();
+		rename_action->get_line_edit()->set_text(ti->get_text(0));
+		rename_action->get_line_edit()->set_cursor_pos(ti->get_text(0).length());
+		rename_action->get_line_edit()->select_all();
+
+	} else if (p_id==3) {
 		//remove
 
 		if (ti->get_parent()==input_editor->get_root()) {
@@ -418,7 +427,9 @@ void ProjectSettings::_update_actions() {
 		item->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
 		item->set_text(0,name);
 		item->add_button(0,get_icon("Add","EditorIcons"),1);
-		item->add_button(0,get_icon("Remove","EditorIcons"),2);
+		if (!Globals::get_singleton()->get_input_presets().find(pi.name))
+			item->add_button(0,get_icon("Rename","EditorIcons"),2);
+		item->add_button(0,get_icon("Remove","EditorIcons"),3);
 		item->set_custom_bg_color(0,get_color("prop_subsection","Editor"));
 		item->set_editable(0,true);
 		item->set_checked(0,pi.usage&PROPERTY_USAGE_CHECKED);
@@ -486,7 +497,7 @@ void ProjectSettings::_update_actions() {
 					action->set_icon(0,get_icon("JoyAxis","EditorIcons"));
 				} break;
 			}
-			action->add_button(0,get_icon("Remove","EditorIcons"),2);
+			action->add_button(0,get_icon("Remove","EditorIcons"),3);
 			action->set_metadata(0,i);
 		}
 	}
@@ -614,6 +625,45 @@ void ProjectSettings::_action_add() {
 	r->select(0);
 	input_editor->ensure_cursor_is_visible();
 
+}
+
+void ProjectSettings::_action_rename(const String &p_name) {
+
+
+	if (p_name.find("/")!=-1 || p_name.find(":")!=-1 || p_name=="") {
+		message->set_text("Invalid Action (Anything goes but / or :).");
+		message->popup_centered(Size2(300,100));
+		return;
+	}
+
+	String new_name = "input/"+p_name;
+
+	if (Globals::get_singleton()->has(new_name)) {
+		message->set_text("Action '"+p_name+"' already exists!.");
+		message->popup_centered(Size2(300,100));
+		return;
+	}
+
+	int order = Globals::get_singleton()->get_order(add_at);
+	Array va = Globals::get_singleton()->get(add_at);
+	bool persisting = Globals::get_singleton()->is_persisting(add_at);
+
+	undo_redo->create_action("Rename Input Action Event");
+	undo_redo->add_do_method(Globals::get_singleton(),"clear",add_at);
+	undo_redo->add_do_method(Globals::get_singleton(),"set",new_name,va);
+	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",new_name,persisting);
+	undo_redo->add_do_method(Globals::get_singleton(),"set_order",new_name,order);
+	undo_redo->add_undo_method(Globals::get_singleton(),"clear",new_name);
+	undo_redo->add_undo_method(Globals::get_singleton(),"set",add_at,va);
+	undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",add_at,persisting);
+	undo_redo->add_undo_method(Globals::get_singleton(),"set_order",add_at,order);
+	undo_redo->add_do_method(this,"_update_actions");
+	undo_redo->add_undo_method(this,"_update_actions");
+	undo_redo->add_do_method(this,"_settings_changed");
+	undo_redo->add_undo_method(this,"_settings_changed");
+	undo_redo->commit_action();
+
+	rename_action->hide();
 }
 
 
@@ -1219,6 +1269,7 @@ void ProjectSettings::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_action_adds"),&ProjectSettings::_action_adds);
 	ObjectTypeDB::bind_method(_MD("_action_persist_toggle"),&ProjectSettings::_action_persist_toggle);
 	ObjectTypeDB::bind_method(_MD("_action_button_pressed"),&ProjectSettings::_action_button_pressed);
+	ObjectTypeDB::bind_method(_MD("_action_rename"),&ProjectSettings::_action_rename);
 	ObjectTypeDB::bind_method(_MD("_update_actions"),&ProjectSettings::_update_actions);
 	ObjectTypeDB::bind_method(_MD("_wait_for_key"),&ProjectSettings::_wait_for_key);
 	ObjectTypeDB::bind_method(_MD("_add_item"),&ProjectSettings::_add_item);
@@ -1438,11 +1489,16 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	add_child(popup_add);
 	popup_add->connect("item_pressed",this,"_add_item");
 
+	rename_action = memnew( EditorNameDialog );
+	add_child(rename_action);
+	rename_action->set_hide_on_ok(false);
+	rename_action->set_size(Size2(200, 70));
+	rename_action->set_title("Rename Input Action");
+	rename_action->connect("name_confirmed", this,"_action_rename");
+
 	press_a_key = memnew( ConfirmationDialog );
 	press_a_key->set_focus_mode(FOCUS_ALL);
 	add_child(press_a_key);
-
-
 
 	l = memnew( Label );
 	l->set_text("Press a Key..");

@@ -4124,7 +4124,6 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("_dock_move_right",&EditorNode::_dock_move_right);
 
 	ObjectTypeDB::bind_method("_layout_menu_option",&EditorNode::_layout_menu_option);
-	ObjectTypeDB::bind_method("_layout_dialog_action",&EditorNode::_dialog_action);
 
 	ObjectTypeDB::bind_method("set_current_scene",&EditorNode::set_current_scene);
 	ObjectTypeDB::bind_method("set_current_version",&EditorNode::set_current_version);
@@ -4624,7 +4623,6 @@ void EditorNode::_layout_menu_option(int p_id) {
 		case SETTINGS_LAYOUT_SAVE: {
 
 			current_option=p_id;
-			layout_dialog->clear_layout_name();
 			layout_dialog->set_title("Save Layout");
 			layout_dialog->get_ok()->set_text("Save");
 			layout_dialog->popup_centered();
@@ -4632,7 +4630,6 @@ void EditorNode::_layout_menu_option(int p_id) {
 		case SETTINGS_LAYOUT_DELETE: {
 
 			current_option=p_id;
-			layout_dialog->clear_layout_name();
 			layout_dialog->set_title("Delete Layout");
 			layout_dialog->get_ok()->set_text("Delete");
 			layout_dialog->popup_centered();
@@ -4651,8 +4648,7 @@ void EditorNode::_layout_menu_option(int p_id) {
 				return; //no config
 			}
 
-			int idx=editor_layouts->get_item_index(p_id);
-			_load_docks_from_config(config, editor_layouts->get_item_text(idx));
+			_load_docks_from_config(config, editor_layouts->get_item_text(p_id));
 			_save_docks();
 
 		}
@@ -5428,13 +5424,13 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_item("About",SETTINGS_ABOUT);
 
-	layout_dialog = memnew( EditorLayoutDialog );
+	layout_dialog = memnew( EditorNameDialog );
 	gui_base->add_child(layout_dialog);
 	layout_dialog->set_hide_on_ok(false);
 	layout_dialog->set_size(Size2(175, 70));
 	confirm_error = memnew( AcceptDialog  );
 	layout_dialog->add_child(confirm_error);
-	layout_dialog->connect("layout_selected", this,"_layout_dialog_action");
+	layout_dialog->connect("name_confirmed", this,"_dialog_action");
 
 	sources_button = memnew( ToolButton );
 	right_menu_hb->add_child(sources_button);

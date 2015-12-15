@@ -76,7 +76,7 @@
 #include "editor_reimport_dialog.h"
 #include "import_settings.h"
 #include "tools/editor/editor_plugin.h"
-#include "tools/editor/editor_layout_dialog.h"
+#include "tools/editor/editor_name_dialog.h"
 
 #include "fileserver/editor_file_server.h"
 #include "editor_resource_preview.h"
@@ -290,7 +290,7 @@ class EditorNode : public Node {
 
 	Ref<ConfigFile> default_theme;
 	PopupMenu *editor_layouts;
-	EditorLayoutDialog *layout_dialog;
+	EditorNameDialog *layout_dialog;
 	AcceptDialog *confirm_error;
 
 	//OptimizedPresetsDialog *optimized_presets;
