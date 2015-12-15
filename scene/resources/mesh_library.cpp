@@ -138,12 +138,25 @@ void MeshLibrary::set_item_preview(int p_item,const Ref<Texture>& p_preview) {
 	_change_notify();
 
 }
+
+void MeshLibrary::set_item_meta(int p_item, const String& p_name, const Variant& p_value ) {
+
+	ERR_FAIL_COND(!item_map.has(p_item));
+	if (p_value.get_type() == Variant::NIL) {
+		item_map[p_item].metadata.erase(p_name);
+		return;
+	};
+
+	item_map[p_item].metadata[p_name]=p_value;
+}
+
 String MeshLibrary::get_item_name(int p_item) const {
 
 	ERR_FAIL_COND_V(!item_map.has(p_item),"");
 	return item_map[p_item].name;
 
 }
+
 Ref<Mesh> MeshLibrary::get_item_mesh(int p_item) const {
 
 	ERR_FAIL_COND_V(!item_map.has(p_item),Ref<Mesh>());
@@ -163,10 +176,38 @@ Ref<Texture> MeshLibrary::get_item_preview(int p_item) const {
 	return item_map[p_item].preview;
 }
 
+Variant MeshLibrary::get_item_meta(int p_item, const String& p_name) const {
+
+	ERR_FAIL_COND_V(!item_map.has(p_item) || !item_map[p_item].metadata.has(p_name),Variant());
+	return item_map[p_item].metadata[p_name];
+}
+
+bool MeshLibrary::item_has_meta(int p_item, const String& p_name) const {
+
+	ERR_FAIL_COND_V(!item_map.has(p_item),false);
+	return item_map[p_item].metadata.has(p_name);
+}
+
+DVector<String> MeshLibrary::get_item_meta_list(int p_item) const {
+
+	ERR_FAIL_COND_V(!item_map.has(p_item), DVector<String>());
+	DVector<String> _metaret;
+
+	List<Variant> keys;
+	item_map[p_item].metadata.get_key_list(&keys);
+	for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
+
+		_metaret.push_back(E->get());
+	}
+
+	return _metaret;
+}
+
 bool MeshLibrary::has_item(int p_item) const {
 
 	return item_map.has(p_item)	;
 }
+
 void MeshLibrary::remove_item(int p_item) {
 
 	ERR_FAIL_COND(!item_map.has(p_item));
@@ -224,9 +265,13 @@ void MeshLibrary::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_item_name","id","name"),&MeshLibrary::set_item_name);
 	ObjectTypeDB::bind_method(_MD("set_item_mesh","id","mesh:Mesh"),&MeshLibrary::set_item_mesh);
 	ObjectTypeDB::bind_method(_MD("set_item_shape","id","shape:Shape"),&MeshLibrary::set_item_shape);
+	ObjectTypeDB::bind_method(_MD("set_item_meta","id","name","value"),&MeshLibrary::set_item_meta);
 	ObjectTypeDB::bind_method(_MD("get_item_name","id"),&MeshLibrary::get_item_name);
 	ObjectTypeDB::bind_method(_MD("get_item_mesh:Mesh","id"),&MeshLibrary::get_item_mesh);
 	ObjectTypeDB::bind_method(_MD("get_item_shape:Shape","id"),&MeshLibrary::get_item_shape);
+	ObjectTypeDB::bind_method(_MD("get_item_meta","id","name"),&MeshLibrary::get_item_meta);
+	ObjectTypeDB::bind_method(_MD("item_has_meta","id","name"),&MeshLibrary::item_has_meta);
+	ObjectTypeDB::bind_method(_MD("get_item_meta_list","id"),&MeshLibrary::get_item_meta_list);
 	ObjectTypeDB::bind_method(_MD("remove_item","id"),&MeshLibrary::remove_item);
 	ObjectTypeDB::bind_method(_MD("clear"),&MeshLibrary::clear);
 	ObjectTypeDB::bind_method(_MD("get_item_list"),&MeshLibrary::get_item_list);
