@@ -55,11 +55,8 @@ void EditorFileDialog::_notification(int p_what) {
 		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
 	} else if (p_what==EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
-		bool show_hidden = EditorSettings::get_singleton()->get("file_dialog/show_hidden_files");
-
-		if (show_hidden != show_hidden_files) {
-			set_show_hidden_files(show_hidden);
-		}
+		set_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
+		set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("file_dialog/display_mode").operator int());
 	}
 }
 
@@ -1026,6 +1023,8 @@ void EditorFileDialog::_go_forward(){
 
 bool EditorFileDialog::default_show_hidden_files=false;
 
+EditorFileDialog::DisplayMode EditorFileDialog::default_display_mode=DISPLAY_THUMBNAILS;
+
 void EditorFileDialog::set_display_mode(DisplayMode p_mode) {
 
 	if (display_mode==p_mode)
@@ -1125,6 +1124,10 @@ void EditorFileDialog::set_default_show_hidden_files(bool p_show) {
 	default_show_hidden_files=p_show;
 }
 
+void EditorFileDialog::set_default_display_mode(DisplayMode p_mode) {
+	default_display_mode=p_mode;
+}
+
 void EditorFileDialog::_save_to_recent() {
 
 	String dir = get_current_dir();
@@ -1154,7 +1157,7 @@ void EditorFileDialog::_save_to_recent() {
 EditorFileDialog::EditorFileDialog() {
 
 	show_hidden_files=default_show_hidden_files;
-	display_mode=DISPLAY_THUMBNAILS;
+	display_mode=default_display_mode;
 	local_history_pos=0;
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
@@ -1194,11 +1197,13 @@ EditorFileDialog::EditorFileDialog() {
 	mode_thumbnails = memnew( ToolButton );
 	mode_thumbnails->connect("pressed",this,"set_display_mode",varray(DISPLAY_THUMBNAILS));
 	mode_thumbnails->set_toggle_mode(true);
-	mode_thumbnails->set_pressed(true);
+	mode_thumbnails->set_pressed(display_mode==DISPLAY_THUMBNAILS);
 	pathhb->add_child(mode_thumbnails);
+
 	mode_list = memnew( ToolButton );
 	mode_list->connect("pressed",this,"set_display_mode",varray(DISPLAY_LIST));
 	mode_list->set_toggle_mode(true);
+	mode_list->set_pressed(display_mode==DISPLAY_LIST);
 	pathhb->add_child(mode_list);
 
 	drives = memnew( OptionButton );

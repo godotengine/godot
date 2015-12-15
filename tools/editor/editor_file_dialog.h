@@ -128,6 +128,7 @@ private:
 	int preview_wheel_index;
 	float preview_wheel_timeout;
 	static bool default_show_hidden_files;
+	static DisplayMode default_display_mode;
 	bool show_hidden_files;
 	DisplayMode display_mode;
 
@@ -211,6 +212,7 @@ public:
 	bool is_showing_hidden_files() const;
 
 	static void set_default_show_hidden_files(bool p_show);
+	static void set_default_display_mode(DisplayMode p_mode);
 
 	void invalidate();
 
