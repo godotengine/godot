@@ -518,7 +518,7 @@ void ProjectSettings::popup_project_settings() {
 void ProjectSettings::_item_selected() {
 
 
-	TreeItem *ti = globals_editor->get_scene_tree()->get_selected();
+	TreeItem *ti = globals_editor->get_property_editor()->get_scene_tree()->get_selected();
 	if (!ti)
 		return;
 	if (!ti->get_parent())
@@ -562,7 +562,7 @@ void ProjectSettings::_item_add() {
 
 	String name = catname+"/"+propname;
 	Globals::get_singleton()->set(name,value);
-	globals_editor->update_tree();
+	globals_editor->get_property_editor()->update_tree();
 }
 
 void ProjectSettings::_item_del() {
@@ -574,7 +574,7 @@ void ProjectSettings::_item_del() {
 
 	String name = catname+"/"+propname;
 	Globals::get_singleton()->set(name,Variant());
-	globals_editor->update_tree();
+	globals_editor->get_property_editor()->update_tree();
 
 }
 
@@ -694,7 +694,7 @@ void ProjectSettings::_settings_prop_edited(const String& p_name) {
 
 		Globals::get_singleton()->set_persisting(p_name,true);
 //		globals_editor->update_property(p_name);
-		globals_editor->update_tree();
+		globals_editor->get_property_editor()->update_tree();
 	}
 	_settings_changed();
 }
@@ -729,7 +729,7 @@ void ProjectSettings::_copy_to_platform(int p_which) {
 	name = catname+"/"+propname;
 
 	Globals::get_singleton()->set(name,value);
-	globals_editor->update_tree();
+	globals_editor->get_property_editor()->update_tree();
 
 }
 
@@ -1233,7 +1233,7 @@ void ProjectSettings::_update_autoload() {
 
 void ProjectSettings::_toggle_search_bar(bool p_pressed) {
 
-	globals_editor->set_use_filter(p_pressed);
+	globals_editor->get_property_editor()->set_use_filter(p_pressed);
 
 	if (p_pressed) {
 
@@ -1254,7 +1254,7 @@ void ProjectSettings::_clear_search_box() {
 		return;
 
 	search_box->clear();
-	globals_editor->update_tree();
+	globals_editor->get_property_editor()->update_tree();
 }
 
 void ProjectSettings::_bind_methods() {
@@ -1397,15 +1397,15 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	search_bar->add_child(clear_button);
 	clear_button->connect("pressed",this,"_clear_search_box");
 
-	globals_editor = memnew( PropertyEditor );
+	globals_editor = memnew( SectionedPropertyEditor );
 	props_base->add_child(globals_editor);
-	globals_editor->hide_top_label();
+	//globals_editor->hide_top_label();
 	globals_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	globals_editor->register_text_enter(search_box);
-	globals_editor->set_capitalize_paths(false);
-	globals_editor->get_scene_tree()->connect("cell_selected",this,"_item_selected");
-	globals_editor->connect("property_toggled",this,"_item_checked");
-	globals_editor->connect("property_edited",this,"_settings_prop_edited");
+	globals_editor->get_property_editor()->register_text_enter(search_box);
+	globals_editor->get_property_editor()->set_capitalize_paths(false);
+	globals_editor->get_property_editor()->get_scene_tree()->connect("cell_selected",this,"_item_selected");
+	globals_editor->get_property_editor()->connect("property_toggled",this,"_item_checked");
+	globals_editor->get_property_editor()->connect("property_edited",this,"_settings_prop_edited");
 
 /*
 	Button *save = memnew( Button );

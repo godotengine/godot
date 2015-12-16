@@ -39,6 +39,7 @@
 #include "scene/gui/texture_frame.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/split_container.h"
 #include "scene_tree_editor.h"
 
 /**
@@ -245,6 +246,30 @@ public:
 	PropertyEditor();	
 	~PropertyEditor();
 
+};
+
+
+class SectionedPropertyEditorFilter;
+
+class SectionedPropertyEditor : public HBoxContainer {
+
+
+	OBJ_TYPE(SectionedPropertyEditor,HBoxContainer);
+	ItemList *sections;
+	SectionedPropertyEditorFilter *filter;
+	PropertyEditor *editor;
+
+
+	static void _bind_methods();
+	void _section_selected(int p_which);
+
+public:
+
+	PropertyEditor *get_property_editor();
+	void edit(Object* p_object);
+
+	SectionedPropertyEditor();
+	~SectionedPropertyEditor();
 };
 
 #endif

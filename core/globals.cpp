@@ -132,8 +132,12 @@ bool Globals::_set(const StringName& p_name, const Variant& p_value) {
 		if (props.has(p_name)) {
 			if (!props[p_name].overrided)
 				props[p_name].variant=p_value;
+
+			if (props[p_name].order>=NO_ORDER_BASE && registering_order) {
+				props[p_name].order=last_order++;
+			}
 		} else {
-			props[p_name]=VariantContainer(p_value,last_order++);
+			props[p_name]=VariantContainer(p_value,last_order++ + registering_order?0:NO_ORDER_BASE);
 		}
 	}
 
@@ -741,6 +745,10 @@ static Variant _decode_variant(const String& p_string) {
 	return Variant();
 }
 
+void Globals::set_registering_order(bool p_enable) {
+
+	registering_order=p_enable;
+}
 
 Error Globals::_load_settings_binary(const String p_path) {
 
@@ -759,6 +767,8 @@ Error Globals::_load_settings_binary(const String p_path) {
 		ERR_EXPLAIN("Corrupted header in binary engine.cfb (not ECFG)");
 		ERR_FAIL_V(ERR_FILE_CORRUPT;)
 	}
+
+	set_registering_order(false);
 
 	uint32_t count=f->get_32();
 
@@ -784,6 +794,9 @@ Error Globals::_load_settings_binary(const String p_path) {
 		set_persisting(key,true);
 	}
 
+	set_registering_order(true);
+
+
 	return OK;
 }
 Error Globals::_load_settings(const String p_path) {
@@ -801,6 +814,8 @@ Error Globals::_load_settings(const String p_path) {
 	String line;
 	String section;
 	String subpath;
+
+	set_registering_order(false);
 
 	int line_count = 0;
 
@@ -877,6 +892,7 @@ Error Globals::_load_settings(const String p_path) {
 
 	memdelete(f);
 
+	set_registering_order(true);
 
 	return OK;
 }
@@ -1388,7 +1404,7 @@ Globals::Globals() {
 	singleton=this;
 	last_order=0;
 	disable_platform_override=false;
-
+	registering_order=true;
 
 
 	Array va;
