@@ -4766,6 +4766,7 @@ EditorNode::EditorNode() {
 	ResourceLoader::set_abort_on_missing_resources(false);
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 	EditorFileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
+	EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EditorSettings::get_singleton()->get("file_dialog/display_mode").operator int());
 	ResourceLoader::set_error_notify_func(this,_load_error_notify);
 	ResourceLoader::set_dependency_error_notify_func(this,_dependency_error_report);
 
@@ -5612,6 +5613,7 @@ EditorNode::EditorNode() {
 
 	scenes_dock = memnew( ScenesDock(this) );
 	scenes_dock->set_name("FileSystem");
+	scenes_dock->set_use_thumbnails(int(EditorSettings::get_singleton()->get("file_dialog/display_mode"))==EditorFileDialog::DISPLAY_THUMBNAILS);
 	dock_slot[DOCK_SLOT_LEFT_BR]->add_child(scenes_dock);
 	//prop_pallete->add_child(scenes_dock);
 	scenes_dock->connect("open",this,"open_request");

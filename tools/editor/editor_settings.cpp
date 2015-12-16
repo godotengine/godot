@@ -515,6 +515,8 @@ void EditorSettings::_load_defaults() {
 	set("text_editor/create_signal_callbacks",true);
 
 	set("file_dialog/show_hidden_files", false);
+	set("file_dialog/display_mode", 0);
+	hints["file_dialog/display_mode"]=PropertyInfo(Variant::INT,"file_dialog/display_mode",PROPERTY_HINT_ENUM,"Thumbnails,List");
 	set("file_dialog/thumbnail_size", 64);
 	hints["file_dialog/thumbnail_size"]=PropertyInfo(Variant::INT,"file_dialog/thumbnail_size",PROPERTY_HINT_RANGE,"32,128,16");
 

@@ -427,9 +427,10 @@ void ProjectSettings::_update_actions() {
 		item->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
 		item->set_text(0,name);
 		item->add_button(0,get_icon("Add","EditorIcons"),1);
-		if (!Globals::get_singleton()->get_input_presets().find(pi.name))
+		if (!Globals::get_singleton()->get_input_presets().find(pi.name)) {
 			item->add_button(0,get_icon("Rename","EditorIcons"),2);
-		item->add_button(0,get_icon("Remove","EditorIcons"),3);
+			item->add_button(0,get_icon("Remove","EditorIcons"),3);
+		}
 		item->set_custom_bg_color(0,get_color("prop_subsection","Editor"));
 		item->set_editable(0,true);
 		item->set_checked(0,pi.usage&PROPERTY_USAGE_CHECKED);
