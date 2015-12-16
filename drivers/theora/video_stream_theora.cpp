@@ -642,7 +642,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 			}
 		}
 #ifdef THEORA_USE_THREAD_STREAMING
-		if (file && thread_eof && && (no_vorbis || no_theora) && ring_buffer.data_left()==0) {
+		if (file && thread_eof && (no_vorbis || no_theora) && ring_buffer.data_left()==0) {
 #else
 		if (file && /*!videobuf_ready && */ (no_vorbis || no_theora) && file->eof_reached()) {
 #endif
