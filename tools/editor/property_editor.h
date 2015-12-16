@@ -267,6 +267,7 @@ public:
 
 	PropertyEditor *get_property_editor();
 	void edit(Object* p_object);
+	String get_full_item_path(const String& p_item);
 
 	SectionedPropertyEditor();
 	~SectionedPropertyEditor();

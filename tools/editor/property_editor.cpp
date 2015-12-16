@@ -3486,6 +3486,7 @@ void PropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method( "_draw_flags",&PropertyEditor::_draw_flags);
 	ObjectTypeDB::bind_method( "_set_range_def",&PropertyEditor::_set_range_def);
 	ObjectTypeDB::bind_method( "_filter_changed",&PropertyEditor::_filter_changed);
+	ObjectTypeDB::bind_method( "update_tree",&PropertyEditor::update_tree);
 
 	ADD_SIGNAL( MethodInfo("property_toggled",PropertyInfo( Variant::STRING, "property"),PropertyInfo( Variant::BOOL, "value")));
 	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );
@@ -3736,6 +3737,15 @@ void SectionedPropertyEditor::_bind_methods() {
 void SectionedPropertyEditor::_section_selected(int p_which) {
 
 	filter->set_section( sections->get_item_metadata(p_which) );
+}
+
+String SectionedPropertyEditor::get_full_item_path(const String& p_item) {
+
+	String base = sections->get_item_metadata( sections->get_current() );
+	if (base!="")
+		return base+"/"+p_item;
+	else
+		return p_item;
 }
 
 void SectionedPropertyEditor::edit(Object* p_object) {
