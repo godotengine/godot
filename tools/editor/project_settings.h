@@ -46,7 +46,7 @@ class ProjectSettings : public AcceptDialog {
 
 	EditorData *data;
 	UndoRedo *undo_redo;
-	PropertyEditor *globals_editor;
+	SectionedPropertyEditor *globals_editor;
 
 	HBoxContainer *search_bar;
 	ToolButton *search_button;

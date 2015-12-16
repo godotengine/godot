@@ -53,7 +53,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	Tree *plugins;
 	LineEdit *search_box;
 	ToolButton *clear_button;
-	PropertyEditor *property_editor;
+	SectionedPropertyEditor *property_editor;
 
 	Timer *timer;
 

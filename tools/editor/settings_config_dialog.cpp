@@ -71,7 +71,7 @@ void EditorSettingsDialog::popup_edit_settings() {
 		return;
 
 	property_editor->edit(EditorSettings::get_singleton());
-	property_editor->update_tree();
+	property_editor->get_property_editor()->update_tree();
 
 	search_box->select_all();
 	search_box->grab_focus();
@@ -254,7 +254,7 @@ void EditorSettingsDialog::_clear_search_box() {
 		return;
 
 	search_box->clear();
-	property_editor->update_tree();
+	property_editor->get_property_editor()->update_tree();
 }
 
 void EditorSettingsDialog::_notification(int p_what) {
@@ -306,10 +306,10 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	hbc->add_child(clear_button);
 	clear_button->connect("pressed",this,"_clear_search_box");
 
-	property_editor = memnew( PropertyEditor );
-	property_editor->hide_top_label();
-	property_editor->set_use_filter(true);
-	property_editor->register_text_enter(search_box);
+	property_editor = memnew( SectionedPropertyEditor );
+	//property_editor->hide_top_label();
+	property_editor->get_property_editor()->set_use_filter(true);
+	property_editor->get_property_editor()->register_text_enter(search_box);
 	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(property_editor);
 

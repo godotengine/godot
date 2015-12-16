@@ -476,10 +476,12 @@ Ref<Texture> VideoStreamPlaybackTheora::get_texture() {
 
 void VideoStreamPlaybackTheora::update(float p_delta) {
 
-	if (!playing) {
+	if (!playing || paused) {
 		//printf("not playing\n");
 		return;
 	};
+
+
 
 #ifdef THEORA_USE_THREAD_STREAMING
 	thread_sem->post();
@@ -730,12 +732,13 @@ bool VideoStreamPlaybackTheora::is_playing() const {
 
 void VideoStreamPlaybackTheora::set_paused(bool p_paused) {
 
+	paused=p_paused;
 	//pau = !p_paused;
 };
 
 bool VideoStreamPlaybackTheora::is_paused(bool p_paused) const {
 
-	return playing;
+	return paused;
 };
 
 void VideoStreamPlaybackTheora::set_loop(bool p_enable) {
@@ -830,6 +833,7 @@ VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
 	playing = false;
 	frames_pending = 0;
 	videobuf_time = 0;
+	paused=false;
 
 	buffering=false;
 	texture = Ref<ImageTexture>( memnew(ImageTexture ));

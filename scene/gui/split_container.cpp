@@ -451,6 +451,7 @@ SplitContainer::SplitContainer(bool p_vertical) {
 	dragging=false;
 	collapsed=false;
 	dragger_visible=true;
+
 }
 
 

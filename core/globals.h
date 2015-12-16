@@ -54,6 +54,10 @@ public:
 
 protected:
 
+	enum {
+		NO_ORDER_BASE=1<<18
+	};
+
 	struct VariantContainer {
 		int order;
 		bool persist;
@@ -64,6 +68,7 @@ protected:
 		VariantContainer(const Variant& p_variant, int p_order, bool p_persist=false) { variant=p_variant; order=p_order; hide_from_editor=false; persist=p_persist; overrided=false; }
 	};
 
+	bool registering_order;
 	int last_order;
 	Map<StringName,VariantContainer> props;
 	String resource_path;
@@ -133,6 +138,8 @@ public:
 	void register_global_defaults();
 
 	bool is_using_datapack() const;
+
+	void set_registering_order(bool p_registering);
 
 	Globals();	
 	~Globals();

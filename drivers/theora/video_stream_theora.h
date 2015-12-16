@@ -69,6 +69,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 	AudioMixCallback mix_callback;
 	void* mix_udata;
+	bool paused;
 
 #ifdef THEORA_USE_THREAD_STREAMING
 
