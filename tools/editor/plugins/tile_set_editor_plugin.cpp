@@ -145,10 +145,6 @@ void TileSetEditor::_menu_confirm() {
 
 	switch(option) {
 
-		case MENU_OPTION_REMOVE_ITEM: {
-
-			tileset->remove_tile(to_erase);
-		} break;
 		case MENU_OPTION_MERGE_FROM_SCENE:
 		case MENU_OPTION_CREATE_FROM_SCENE: {
 
@@ -165,6 +161,27 @@ void TileSetEditor::_menu_confirm() {
 	}
 }
 
+void TileSetEditor::_name_dialog_confirm(const String& name) {
+
+	switch (option) {
+
+		case MENU_OPTION_REMOVE_ITEM: {
+
+			int id=tileset->find_tile_by_name(name);
+
+			if (id<0 && name.is_valid_integer())
+				id=name.to_int();
+
+			if (tileset->has_tile(id)) {
+				tileset->remove_tile(id);
+			} else {
+				err_dialog->set_text("Could not find tile: " + name);
+				err_dialog->popup_centered(Size2(300, 60));
+			}
+		} break;
+	}
+}
+
 void TileSetEditor::_menu_cbk(int p_option) {
 
 	option=p_option;
@@ -176,13 +193,9 @@ void TileSetEditor::_menu_cbk(int p_option) {
 		} break;
 		case MENU_OPTION_REMOVE_ITEM: {
 
-			String p = editor->get_property_editor()->get_selected_path();
-			if (p.begins_with("/TileSet") && p.get_slice_count("/")>=2) {
-
-				to_erase = p.get_slice("/",2).to_int();
-				cd->set_text("Remove Item "+itos(to_erase)+"?");
-				cd->popup_centered(Size2(300,60));
-			}
+			nd->set_title("Remove Item");
+			nd->set_text("Item name or ID:");
+			nd->popup_centered(Size2(300, 95));
 		} break;
 		case MENU_OPTION_CREATE_FROM_SCENE: {
 
@@ -210,6 +223,7 @@ void TileSetEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_menu_cbk",&TileSetEditor::_menu_cbk);
 	ObjectTypeDB::bind_method("_menu_confirm",&TileSetEditor::_menu_confirm);
+	ObjectTypeDB::bind_method("_name_dialog_confirm",&TileSetEditor::_name_dialog_confirm);
 }
 
 TileSetEditor::TileSetEditor(EditorNode *p_editor) {
@@ -222,7 +236,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	options->set_pos(Point2(1,1));
 	options->set_text("Theme");
 	options->get_popup()->add_item("Add Item",MENU_OPTION_ADD_ITEM);
-	options->get_popup()->add_item("Remove Selected Item",MENU_OPTION_REMOVE_ITEM);
+	options->get_popup()->add_item("Remove Item",MENU_OPTION_REMOVE_ITEM);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item("Create from Scene",MENU_OPTION_CREATE_FROM_SCENE);
 	options->get_popup()->add_item("Merge from Scene",MENU_OPTION_MERGE_FROM_SCENE);
@@ -232,6 +246,15 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	add_child(cd);
 	cd->get_ok()->connect("pressed", this,"_menu_confirm");
 
+	nd = memnew(EditorNameDialog);
+	add_child(nd);
+	nd->set_hide_on_ok(true);
+	nd->get_line_edit()->set_margin(MARGIN_TOP,28);
+	nd->connect("name_confirmed", this,"_name_dialog_confirm");
+
+	err_dialog = memnew(AcceptDialog);
+	add_child(err_dialog);
+	err_dialog->set_title("Error");
 }
 
 void TileSetEditorPlugin::edit(Object *p_node) {
