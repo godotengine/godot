@@ -671,10 +671,14 @@ void ProjectSettings::_action_rename(const String &p_name) {
 void ProjectSettings::_item_checked(const String& p_item, bool p_check) {
 
 	undo_redo->create_action("Toggle Persisting");
-	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",p_item,p_check);
-	undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",p_item,!p_check);
+	String full_item = globals_editor->get_full_item_path(p_item);
+
+	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",full_item,p_check);
+	undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",full_item,!p_check);
 	undo_redo->add_do_method(this,"_settings_changed");
 	undo_redo->add_undo_method(this,"_settings_changed");
+	undo_redo->add_do_method(globals_editor->get_property_editor(),"update_tree");
+	undo_redo->add_undo_method(globals_editor->get_property_editor(),"update_tree");
 	undo_redo->commit_action();
 
 }
@@ -692,8 +696,8 @@ void ProjectSettings::_save() {
 void ProjectSettings::_settings_prop_edited(const String& p_name) {
 
 	if (!Globals::get_singleton()->is_persisting(p_name)) {
-
-		Globals::get_singleton()->set_persisting(p_name,true);
+		String full_item = globals_editor->get_full_item_path(p_name);
+		Globals::get_singleton()->set_persisting(full_item,true);
 //		globals_editor->update_property(p_name);
 		globals_editor->get_property_editor()->update_tree();
 	}
@@ -1405,7 +1409,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	globals_editor->get_property_editor()->register_text_enter(search_box);
 	globals_editor->get_property_editor()->set_capitalize_paths(false);
 	globals_editor->get_property_editor()->get_scene_tree()->connect("cell_selected",this,"_item_selected");
-	globals_editor->get_property_editor()->connect("property_toggled",this,"_item_checked");
+	globals_editor->get_property_editor()->connect("property_toggled",this,"_item_checked",varray(),CONNECT_DEFERRED);
 	globals_editor->get_property_editor()->connect("property_edited",this,"_settings_prop_edited");
 
 /*
