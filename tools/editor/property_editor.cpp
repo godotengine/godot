@@ -3791,14 +3791,27 @@ PropertyEditor *SectionedPropertyEditor::get_property_editor() {
 
 SectionedPropertyEditor::SectionedPropertyEditor() {
 
+	VBoxContainer *left_vb = memnew( VBoxContainer);
+	left_vb->set_custom_minimum_size(Size2(160,0));
+	add_child(left_vb);
+
 	sections = memnew( ItemList );
-	add_child(sections);
-	sections->set_custom_minimum_size(Size2(160,0));
+	sections->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	left_vb->add_margin_child("Sections:",sections,true);
+
+	VBoxContainer *right_vb = memnew( VBoxContainer);
+	right_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(right_vb);
+
 	filter = memnew( SectionedPropertyEditorFilter );
 	editor = memnew( PropertyEditor );
+	editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	right_vb->add_margin_child("Properties:",editor,true);
+
 	editor->get_scene_tree()->set_column_titles_visible(false);
 	add_child(editor);
-	editor->set_h_size_flags(SIZE_EXPAND_FILL);
+
 	editor->hide_top_label();
 
 	sections->connect("item_selected",this,"_section_selected");
