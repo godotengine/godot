@@ -1941,6 +1941,9 @@ Error _Thread::start(Object *p_instance,const StringName& p_method,const Variant
 		return ERR_CANT_CREATE;
 	}
 
+	if (name != "")
+		thread->set_name(name);
+
 	return OK;
 }
 
@@ -1972,12 +1975,24 @@ Variant _Thread::wait_to_finish() {
 	return r;
 }
 
+Error _Thread::set_name(const String &p_name) {
+
+	name = p_name;
+
+	if (thread) {
+		return thread->set_name(p_name);
+	};
+
+	return OK;
+};
+
 void _Thread::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("start:Error","instance","method","userdata","priority"),&_Thread::start,DEFVAL(Variant()),DEFVAL(PRIORITY_NORMAL));
 	ObjectTypeDB::bind_method(_MD("get_id"),&_Thread::get_id);
 	ObjectTypeDB::bind_method(_MD("is_active"),&_Thread::is_active);
 	ObjectTypeDB::bind_method(_MD("wait_to_finish:Variant"),&_Thread::wait_to_finish);
+	ObjectTypeDB::bind_method(_MD("set_name:Error", "name"),&_Thread::set_name);
 
 	BIND_CONSTANT( PRIORITY_LOW );
 	BIND_CONSTANT( PRIORITY_NORMAL );

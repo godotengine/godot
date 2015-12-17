@@ -77,6 +77,14 @@ void ThreadPosix::wait_to_finish_func_posix(Thread* p_thread) {
 	tp->pthread=0;		
 }
 
+Error ThreadPosix::set_name(const String& p_name) {
+
+	ERR_FAIL_COND_V(pthread == 0, ERR_UNCONFIGURED);
+
+	int err = pthread_setname_np(pthread, p_name.utf8().get_data());
+
+	return err == 0 ? OK : ERR_INVALID_PARAMETER;
+};
 
 void ThreadPosix::make_default() {
 

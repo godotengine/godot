@@ -806,6 +806,7 @@ void AudioServerSW::init() {
 #ifndef NO_THREADS
 	exit_update_thread=false;
 	thread = Thread::create(_thread_func,this);
+	thread->set_name("AudioServerSW");
 #endif
 
 }
