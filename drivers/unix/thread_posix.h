@@ -61,6 +61,7 @@ public:
 	
 	
 	virtual ID get_ID() const;
+	Error set_name(const String& p_name);
 	
 	static void make_default();
 	
