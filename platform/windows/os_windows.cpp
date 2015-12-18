@@ -52,6 +52,7 @@
 #include "os/memory_pool_dynamic_prealloc.h"
 #include "globals.h"
 #include "io/marshalls.h"
+#include "joystick.h"
 
 #include "shlobj.h"
 #include <regstr.h>
@@ -682,6 +683,10 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		} break;
 
 		#endif
+		case WM_DEVICECHANGE: {
+
+			joystick->probe_joysticks();
+		} break;
 
 		default: {
 
@@ -705,108 +710,6 @@ LRESULT CALLBACK WndProc(HWND	hWnd,UINT uMsg,	WPARAM	wParam,	LPARAM	lParam)	{
 		return DefWindowProcW(hWnd,uMsg,wParam,lParam);
 
 }
-
-
-String OS_Windows::get_joystick_name(int id, JOYCAPS jcaps)
-{
-	char buffer [256];
-	char OEM [256];
-	HKEY hKey;
-	DWORD sz;
-	int res;
-
-	_snprintf(buffer, sizeof(buffer), "%s\\%s\\%s",
-				REGSTR_PATH_JOYCONFIG, jcaps.szRegKey,
-				REGSTR_KEY_JOYCURR );
-	res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, buffer, 0, KEY_QUERY_VALUE, &hKey);
-	if (res != ERROR_SUCCESS)
-	{
-		res = RegOpenKeyEx(HKEY_CURRENT_USER, buffer, 0, KEY_QUERY_VALUE, &hKey);
-		if (res != ERROR_SUCCESS) 
-			return "";
-	}
-
-	sz = sizeof(OEM);
-	_snprintf( buffer, sizeof(buffer), "Joystick%d%s", id + 1, REGSTR_VAL_JOYOEMNAME);
-	res = RegQueryValueEx ( hKey, buffer, 0, 0, (LPBYTE) OEM, &sz);
-	RegCloseKey ( hKey );
-	if (res != ERROR_SUCCESS) 
-		return "";
-
-	_snprintf( buffer, sizeof(buffer), "%s\\%s", REGSTR_PATH_JOYOEM, OEM);
-	res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, buffer, 0, KEY_QUERY_VALUE, &hKey);
-	if (res != ERROR_SUCCESS)
-	{
-		res = RegOpenKeyEx(HKEY_CURRENT_USER, buffer, 0, KEY_QUERY_VALUE, &hKey);
-		if (res != ERROR_SUCCESS)
-			return "";
-	}
-		
-
-	sz = sizeof(buffer);
-	res = RegQueryValueEx(hKey, REGSTR_VAL_JOYOEMNAME, 0, 0, (LPBYTE) buffer,
-						  &sz);
-	RegCloseKey(hKey);
-	if (res != ERROR_SUCCESS) 
-		return "";
-
-	return String(buffer);
-}
-
-void OS_Windows::probe_joysticks() {
-
-	static uint32_t last_attached = 0;
-
-	int device_count = joyGetNumDevs();
-
-	JOYINFOEX jinfo;
-	jinfo.dwSize = sizeof(JOYINFOEX);
-	jinfo.dwFlags = JOY_RETURNALL;
-
-	for (int i=0; i<JOYSTICKS_MAX; i++) {
-
-		Joystick joy;
-		joy.id = i;
-		joy.attached = (device_count > 0) && (joyGetPosEx(JOYSTICKID1 + i, &jinfo) == JOYERR_NOERROR);
-
-		if (joy.attached == (last_attached & (1 << i) != 0)) {
-			continue;
-		};
-
-		// there's been a change since last call
-
-		if (joy.attached)
-			last_attached = last_attached | (1 << i);
-		else
-			last_attached &= ~(1 << i);
-
-		if (joy.attached) {
-
-			joy.last_buttons = jinfo.dwButtons;
-
-			joy.last_axis[0] = jinfo.dwXpos;
-			joy.last_axis[1] = jinfo.dwYpos;
-			joy.last_axis[2] = jinfo.dwZpos;
-			joy.last_axis[3] = jinfo.dwRpos;
-			joy.last_axis[4] = jinfo.dwUpos;
-			joy.last_axis[5] = jinfo.dwVpos;
-
-			JOYCAPS jcaps;
-			MMRESULT res = joyGetDevCaps(JOYSTICKID1 + i, &jcaps, sizeof(jcaps));
-			if (res == JOYERR_NOERROR) {
-				String name = get_joystick_name(JOYSTICKID1 + i, jcaps);
-				if ( name == "")
-					joy.name = jcaps.szPname;
-				else
-					joy.name = name;
-				
-					
-			};
-		};
-
-		joystick_change_queue.push_back(joy);
-	};
-};
 
 void OS_Windows::process_key_events() {
 
@@ -878,154 +781,6 @@ void OS_Windows::process_key_events() {
 
 	key_event_pos=0;
 }
-
-void OS_Windows::_post_dpad(DWORD p_dpad, int p_device, bool p_pressed) {
-
-	InputEvent ievent;
-	ievent.device = p_device;
-	ievent.type = InputEvent::JOYSTICK_BUTTON;
-	ievent.joy_button.pressed = p_pressed;
-	ievent.joy_button.pressure = p_pressed ? 1.0 : 0.0;
-
-	if (p_dpad == 0) {
-
-		ievent.joy_button.button_index = JOY_DPAD_UP;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-	} else if (p_dpad == 4500) {
-
-		ievent.joy_button.button_index = JOY_DPAD_UP;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-		ievent.joy_button.button_index = JOY_DPAD_RIGHT;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-	} else if (p_dpad == 9000) {
-
-		ievent.joy_button.button_index = JOY_DPAD_RIGHT;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-	} else if (p_dpad == 13500) {
-
-		ievent.joy_button.button_index = JOY_DPAD_RIGHT;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-		ievent.joy_button.button_index = JOY_DPAD_DOWN;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-	} else if (p_dpad == 18000) {
-
-		ievent.joy_button.button_index = JOY_DPAD_DOWN;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-	} else if (p_dpad == 22500) {
-
-		ievent.joy_button.button_index = JOY_DPAD_DOWN;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-		ievent.joy_button.button_index = JOY_DPAD_LEFT;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-	} else if (p_dpad == 27000) {
-
-		ievent.joy_button.button_index = JOY_DPAD_LEFT;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-	} else if (p_dpad == 31500) {
-
-		ievent.joy_button.button_index = JOY_DPAD_LEFT;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-		ievent.joy_button.button_index = JOY_DPAD_UP;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-	};
-};
-
-void OS_Windows::process_joysticks() {
-
-	if (!main_loop) {
-		return;
-	};
-
-	InputEvent ievent;
-
-	JOYINFOEX jinfo;
-	jinfo.dwSize = sizeof(JOYINFOEX);
-	jinfo.dwFlags = JOY_RETURNALL;
-
-	for (int i=0; i<JOYSTICKS_MAX; i++) {
-
-		if (!joysticks[i].attached) {
-			continue;
-		};
-
-		if (joyGetPosEx(JOYSTICKID1 + i, &jinfo) != JOYERR_NOERROR) {
-
-			continue;
-		};
-
-		ievent.device = i;
-
-		#define CHECK_AXIS(n, var) \
-			if (joysticks[i].last_axis[n] != var) {\
-				ievent.type = InputEvent::JOYSTICK_MOTION;\
-				ievent.ID = ++last_id;\
-				ievent.joy_motion.axis = n;\
-				ievent.joy_motion.axis_value = (float)((int)var - MAX_JOY_AXIS) / (float)MAX_JOY_AXIS;\
-				joysticks[i].last_axis[n] = var;\
-				input->parse_input_event(ievent);\
-			};
-
-		CHECK_AXIS(0, jinfo.dwXpos);
-		CHECK_AXIS(1, jinfo.dwYpos);
-		CHECK_AXIS(2, jinfo.dwZpos);
-		CHECK_AXIS(3, jinfo.dwRpos);
-		CHECK_AXIS(4, jinfo.dwUpos);
-		CHECK_AXIS(5, jinfo.dwVpos);
-
-		if (joysticks[i].last_pov != jinfo.dwPOV) {
-
-			if (joysticks[i].last_pov != JOY_POVCENTERED)
-				_post_dpad(joysticks[i].last_pov, i, false);
-
-			if (jinfo.dwPOV != JOY_POVCENTERED)
-				_post_dpad(jinfo.dwPOV, i, true);
-
-			joysticks[i].last_pov = jinfo.dwPOV;
-		};
-
-		if (joysticks[i].last_buttons == jinfo.dwButtons) {
-			continue;
-		};
-
-		ievent.type = InputEvent::JOYSTICK_BUTTON;
-		for (int j=0; j<32; j++) {
-
-			if ( (joysticks[i].last_buttons & (1<<j)) != (jinfo.dwButtons & (1<<j)) ) {
-
-				ievent.joy_button.button_index = j; //_pc_joystick_get_native_button(j);
-				ievent.joy_button.pressed = jinfo.dwButtons & 1<<j;
-				ievent.ID = ++last_id;
-				input->parse_input_event(ievent);
-			};
-		};
-
-		joysticks[i].last_buttons = jinfo.dwButtons;
-	};
-};
-
 
 BOOL CALLBACK OS_Windows::MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor,  LPARAM dwData) {
 	OS_Windows *self=(OS_Windows*)OS::get_singleton();
@@ -1213,6 +968,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	visual_server->init();	
 
 	input = memnew( InputDefault );
+	joystick = memnew (joystick_windows(input, &hWnd));
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -1230,14 +986,6 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	spatial_sound_server->init();
 	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
 	spatial_sound_2d_server->init();
-
-	probe_joysticks(); // todo: move this to a thread
-	while (joystick_change_queue.size() > 0) {
-		Joystick joy = joystick_change_queue.front()->get();
-		joystick_change_queue.pop_front();
-		joysticks[joy.id] = joy;
-		input->joy_connection_changed(joy.id, joy.attached, joy.name);
-	};
 
 	TRACKMOUSEEVENT tme;
 	tme.cbSize=sizeof(TRACKMOUSEEVENT);
@@ -1351,6 +1099,7 @@ void OS_Windows::finalize() {
 
 	main_loop=NULL;
 
+	memdelete(joystick);
 	memdelete(input);
 
 	visual_server->finish();
@@ -1386,7 +1135,6 @@ void OS_Windows::finalize() {
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
 
-	joystick_change_queue.clear();
 	monitor_info.clear();
 
 }
@@ -1967,7 +1715,7 @@ void OS_Windows::process_events() {
 
 	MSG msg;
 
-	process_joysticks();
+	last_id = joystick->process_joysticks(last_id);
 	
 	while(PeekMessageW(&msg,NULL,0,0,PM_REMOVE)) {
 
