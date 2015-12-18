@@ -44,354 +44,354 @@ joystick_windows::joystick_windows() {
 
 joystick_windows::joystick_windows(InputDefault* _input, HWND* hwnd) {
 
-    input = _input;
-    hWnd = hwnd;
-    joystick_count = 0;
-    dinput = NULL;
-    xinput_dll = NULL;
-    xinput_get_state = NULL;
+	input = _input;
+	hWnd = hwnd;
+	joystick_count = 0;
+	dinput = NULL;
+	xinput_dll = NULL;
+	xinput_get_state = NULL;
 
-    load_xinput();
+	load_xinput();
 
-    for (int i = 0; i < JOYSTICKS_MAX; i++)
-        attached_joysticks[i] = false;
+	for (int i = 0; i < JOYSTICKS_MAX; i++)
+		attached_joysticks[i] = false;
 
 
-    HRESULT result;
-    result = DirectInput8Create(GetModuleHandle(NULL), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&dinput, NULL);
-    if (FAILED(result)) {
-        printf("failed init DINPUT: %ld\n", result);
-    }
-    probe_joysticks();
+	HRESULT result;
+	result = DirectInput8Create(GetModuleHandle(NULL), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&dinput, NULL);
+	if (FAILED(result)) {
+		printf("failed init DINPUT: %ld\n", result);
+	}
+	probe_joysticks();
 }
 
 joystick_windows::~joystick_windows() {
 
-    close_joystick();
-    dinput->Release();
-    unload_xinput();
+	close_joystick();
+	dinput->Release();
+	unload_xinput();
 }
 
 
 bool joystick_windows::have_device(const GUID &p_guid) {
 
-    for (int i = 0; i < JOYSTICKS_MAX; i++) {
+	for (int i = 0; i < JOYSTICKS_MAX; i++) {
 
-        if (d_joysticks[i].guid == p_guid) {
+		if (d_joysticks[i].guid == p_guid) {
 
-            d_joysticks[i].confirmed = true;
-            return true;
-        }
-    }
-    return false;
+			d_joysticks[i].confirmed = true;
+			return true;
+		}
+	}
+	return false;
 }
 
 int joystick_windows::check_free_joy_slot() const {
 
-    for (int i = 0; i < JOYSTICKS_MAX; i++) {
+	for (int i = 0; i < JOYSTICKS_MAX; i++) {
 
-        if (!attached_joysticks[i])
-            return i;
-    }
-    return -1;
+		if (!attached_joysticks[i])
+			return i;
+	}
+	return -1;
 }
 
 
 // adapted from SDL2, works a lot better than the MSDN version
 bool joystick_windows::is_xinput_device(const GUID *p_guid) {
 
-    PRAWINPUTDEVICELIST dev_list = NULL;
-    unsigned int dev_list_count = 0;
+	PRAWINPUTDEVICELIST dev_list = NULL;
+	unsigned int dev_list_count = 0;
 
-    if (GetRawInputDeviceList(NULL, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == -1) {
-        return false;
-    }
-    dev_list = (PRAWINPUTDEVICELIST) malloc(sizeof(RAWINPUTDEVICELIST) * dev_list_count);
-    if (!dev_list) return false;
+	if (GetRawInputDeviceList(NULL, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == -1) {
+		return false;
+	}
+	dev_list = (PRAWINPUTDEVICELIST) malloc(sizeof(RAWINPUTDEVICELIST) * dev_list_count);
+	if (!dev_list) return false;
 
-    if (GetRawInputDeviceList(dev_list, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == -1) {
-        free(dev_list);
-        return false;
-    }
-    for (int i = 0; i < dev_list_count; i++) {
+	if (GetRawInputDeviceList(dev_list, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == -1) {
+		free(dev_list);
+		return false;
+	}
+	for (int i = 0; i < dev_list_count; i++) {
 
-        RID_DEVICE_INFO rdi;
-        char dev_name[128];
-        UINT rdiSize = sizeof(rdi);
-        UINT nameSize = sizeof(dev_name);
+		RID_DEVICE_INFO rdi;
+		char dev_name[128];
+		UINT rdiSize = sizeof(rdi);
+		UINT nameSize = sizeof(dev_name);
 
-        rdi.cbSize = rdiSize;
-        if ( (dev_list[i].dwType == RIM_TYPEHID) &&
-             (GetRawInputDeviceInfoA(dev_list[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) != (UINT)-1) &&
-             (MAKELONG(rdi.hid.dwVendorId, rdi.hid.dwProductId) == (LONG)p_guid->Data1) &&
-             (GetRawInputDeviceInfoA(dev_list[i].hDevice, RIDI_DEVICENAME, &dev_name, &nameSize) != (UINT)-1) &&
-             (strstr(dev_name, "IG_") != NULL)) {
+		rdi.cbSize = rdiSize;
+		if ( (dev_list[i].dwType == RIM_TYPEHID) &&
+				(GetRawInputDeviceInfoA(dev_list[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) != (UINT)-1) &&
+				(MAKELONG(rdi.hid.dwVendorId, rdi.hid.dwProductId) == (LONG)p_guid->Data1) &&
+				(GetRawInputDeviceInfoA(dev_list[i].hDevice, RIDI_DEVICENAME, &dev_name, &nameSize) != (UINT)-1) &&
+				(strstr(dev_name, "IG_") != NULL)) {
 
-            free(dev_list);
-            return true;
-        }
-    }
-    free(dev_list);
-    return false;
+			free(dev_list);
+			return true;
+		}
+	}
+	free(dev_list);
+	return false;
 }
 
 bool joystick_windows::setup_dinput_joystick(const DIDEVICEINSTANCE* instance) {
 
-    HRESULT hr;
-    int num = check_free_joy_slot();
+	HRESULT hr;
+	int num = check_free_joy_slot();
 
-    if (have_device(instance->guidInstance) || num == -1)
-        return false;
+	if (have_device(instance->guidInstance) || num == -1)
+		return false;
 
-    d_joysticks[joystick_count] = dinput_gamepad();
-    dinput_gamepad* joy = &d_joysticks[num];
+	d_joysticks[joystick_count] = dinput_gamepad();
+	dinput_gamepad* joy = &d_joysticks[num];
 
-    const DWORD devtype = (instance->dwDevType & 0xFF);
+	const DWORD devtype = (instance->dwDevType & 0xFF);
 
-    if ((devtype != DI8DEVTYPE_JOYSTICK) && (devtype != DI8DEVTYPE_GAMEPAD) && (devtype != DI8DEVTYPE_1STPERSON)) {
-        //printf("ignore device %s, type %x\n", instance->tszProductName, devtype);
-        return false;
-    }
+	if ((devtype != DI8DEVTYPE_JOYSTICK) && (devtype != DI8DEVTYPE_GAMEPAD) && (devtype != DI8DEVTYPE_1STPERSON)) {
+		//printf("ignore device %s, type %x\n", instance->tszProductName, devtype);
+		return false;
+	}
 
-    hr = dinput->CreateDevice(instance->guidInstance, &joy->di_joy, NULL);
+	hr = dinput->CreateDevice(instance->guidInstance, &joy->di_joy, NULL);
 
-    if (FAILED(hr)) {
+	if (FAILED(hr)) {
 
-        //std::wcout << "failed to create device: " << instance->tszProductName << std::endl;
-        return false;
-    }
+		//std::wcout << "failed to create device: " << instance->tszProductName << std::endl;
+		return false;
+	}
 
-    const GUID &guid = instance->guidProduct;
-    char uid[128];
-    sprintf(uid, "%08lx%04hx%04hx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx",
-			__builtin_bswap32(guid.Data1), guid.Data2, guid.Data3,
-            guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
-            guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
+	const GUID &guid = instance->guidProduct;
+	char uid[128];
+	sprintf(uid, "%08lx%04hx%04hx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx",
+		 __builtin_bswap32(guid.Data1), guid.Data2, guid.Data3,
+		 guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
+			guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
 
-    id_to_change = num;
-    joy->di_joy->SetDataFormat(&c_dfDIJoystick2);
-    joy->di_joy->SetCooperativeLevel(*hWnd, DISCL_FOREGROUND);
-    joy->di_joy->EnumObjects(objectsCallback, this, NULL);
-    joy->joy_axis.sort();
+	id_to_change = num;
+	joy->di_joy->SetDataFormat(&c_dfDIJoystick2);
+	joy->di_joy->SetCooperativeLevel(*hWnd, DISCL_FOREGROUND);
+	joy->di_joy->EnumObjects(objectsCallback, this, NULL);
+	joy->joy_axis.sort();
 
-    joy->guid = instance->guidInstance;
-    input->joy_connection_changed(num, true, instance->tszProductName, uid);
-    joy->attached = true;
-    joy->id = num;
-    attached_joysticks[num] = true;
-    joy->confirmed = true;
-    joystick_count++;
-    return true;
+	joy->guid = instance->guidInstance;
+	input->joy_connection_changed(num, true, instance->tszProductName, uid);
+	joy->attached = true;
+	joy->id = num;
+	attached_joysticks[num] = true;
+	joy->confirmed = true;
+	joystick_count++;
+	return true;
 }
 
 void joystick_windows::setup_joystick_object(const DIDEVICEOBJECTINSTANCE *ob, int p_joy_id) {
 
-    if (ob->dwType & DIDFT_AXIS) {
+	if (ob->dwType & DIDFT_AXIS) {
 
-        HRESULT res;
-        DIPROPRANGE prop_range;
-        DIPROPDWORD dilong;
-        DWORD ofs;
-        if (ob->guidType == GUID_XAxis)
-            ofs = DIJOFS_X;
-        else if (ob->guidType == GUID_YAxis)
-            ofs = DIJOFS_Y;
-        else if (ob->guidType == GUID_ZAxis)
-            ofs = DIJOFS_Z;
-        else if (ob->guidType == GUID_RxAxis)
-            ofs = DIJOFS_RX;
-        else if (ob->guidType == GUID_RyAxis)
-            ofs = DIJOFS_RY;
-        else if (ob->guidType == GUID_RzAxis)
-            ofs = DIJOFS_RZ;
-        else if (ob->guidType == GUID_Slider)
-            ofs = DIJOFS_SLIDER(0);
-        else
-            return;
-        prop_range.diph.dwSize = sizeof(DIPROPRANGE);
-        prop_range.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-        prop_range.diph.dwObj = ob->dwType;
-        prop_range.diph.dwHow = DIPH_BYID;
-        prop_range.lMin = -MAX_JOY_AXIS;
-        prop_range.lMax = +MAX_JOY_AXIS;
+		HRESULT res;
+		DIPROPRANGE prop_range;
+		DIPROPDWORD dilong;
+		DWORD ofs;
+		if (ob->guidType == GUID_XAxis)
+			ofs = DIJOFS_X;
+		else if (ob->guidType == GUID_YAxis)
+			ofs = DIJOFS_Y;
+		else if (ob->guidType == GUID_ZAxis)
+			ofs = DIJOFS_Z;
+		else if (ob->guidType == GUID_RxAxis)
+			ofs = DIJOFS_RX;
+		else if (ob->guidType == GUID_RyAxis)
+			ofs = DIJOFS_RY;
+		else if (ob->guidType == GUID_RzAxis)
+			ofs = DIJOFS_RZ;
+		else if (ob->guidType == GUID_Slider)
+			ofs = DIJOFS_SLIDER(0);
+		else
+			return;
+		prop_range.diph.dwSize = sizeof(DIPROPRANGE);
+		prop_range.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+		prop_range.diph.dwObj = ob->dwType;
+		prop_range.diph.dwHow = DIPH_BYID;
+		prop_range.lMin = -MAX_JOY_AXIS;
+		prop_range.lMax = +MAX_JOY_AXIS;
 
-        dinput_gamepad &joy = d_joysticks[p_joy_id];
+		dinput_gamepad &joy = d_joysticks[p_joy_id];
 
 
-        res = joy.di_joy->SetProperty(DIPROP_RANGE, &prop_range.diph);
-        if (FAILED(res))
-            return;
+		res = joy.di_joy->SetProperty(DIPROP_RANGE, &prop_range.diph);
+		if (FAILED(res))
+			return;
 
-        dilong.diph.dwSize = sizeof(dilong);
-        dilong.diph.dwHeaderSize = sizeof(dilong.diph);
-        dilong.diph.dwObj = ob->dwType;
-        dilong.diph.dwHow = DIPH_BYID;
-        dilong.dwData = 0;
+		dilong.diph.dwSize = sizeof(dilong);
+		dilong.diph.dwHeaderSize = sizeof(dilong.diph);
+		dilong.diph.dwObj = ob->dwType;
+		dilong.diph.dwHow = DIPH_BYID;
+		dilong.dwData = 0;
 
-        res = IDirectInputDevice8_SetProperty(joy.di_joy, DIPROP_DEADZONE, &dilong.diph);
-        if (FAILED(res))
-            return;
+		res = IDirectInputDevice8_SetProperty(joy.di_joy, DIPROP_DEADZONE, &dilong.diph);
+		if (FAILED(res))
+			return;
 
-        joy.joy_axis.push_back(ofs);
-    }
+		joy.joy_axis.push_back(ofs);
+	}
 }
 
 BOOL CALLBACK joystick_windows::enumCallback(const DIDEVICEINSTANCE* instance, void* pContext) {
 
 
-    joystick_windows* self = (joystick_windows*)pContext;
-    if (self->is_xinput_device(&instance->guidProduct)) {;
-        return DIENUM_CONTINUE;
-    }
-    self->setup_dinput_joystick(instance);
-    return DIENUM_CONTINUE;
+	joystick_windows* self = (joystick_windows*)pContext;
+	if (self->is_xinput_device(&instance->guidProduct)) {;
+		return DIENUM_CONTINUE;
+	}
+	self->setup_dinput_joystick(instance);
+	return DIENUM_CONTINUE;
 }
 
 BOOL CALLBACK joystick_windows::objectsCallback(const DIDEVICEOBJECTINSTANCE *instance, void *context) {
 
-    joystick_windows* self = (joystick_windows*)context;
-    self->setup_joystick_object(instance, self->id_to_change);
+	joystick_windows* self = (joystick_windows*)context;
+	self->setup_joystick_object(instance, self->id_to_change);
 
-    return DIENUM_CONTINUE;
+	return DIENUM_CONTINUE;
 }
 
 void joystick_windows::close_joystick(int id) {
 
-    if (id == -1) {
+	if (id == -1) {
 
-        for (int i = 0; i < JOYSTICKS_MAX; i++) {
+		for (int i = 0; i < JOYSTICKS_MAX; i++) {
 
-            close_joystick(i);
-        }
-        return;
-    }
+			close_joystick(i);
+		}
+		return;
+	}
 
-    if (!d_joysticks[id].attached) return;
+	if (!d_joysticks[id].attached) return;
 
-    d_joysticks[id].di_joy->Unacquire();
-    d_joysticks[id].di_joy->Release();
-    d_joysticks[id].attached = false;
-    attached_joysticks[d_joysticks[id].id] = false;
-    d_joysticks[id].guid.Data1 = d_joysticks[id].guid.Data2 = d_joysticks[id].guid.Data3 = 0;
-    input->joy_connection_changed(id, false, "");
-    joystick_count--;
+	d_joysticks[id].di_joy->Unacquire();
+	d_joysticks[id].di_joy->Release();
+	d_joysticks[id].attached = false;
+	attached_joysticks[d_joysticks[id].id] = false;
+	d_joysticks[id].guid.Data1 = d_joysticks[id].guid.Data2 = d_joysticks[id].guid.Data3 = 0;
+	input->joy_connection_changed(id, false, "");
+	joystick_count--;
 }
 
 void joystick_windows::probe_joysticks() {
 
-    DWORD dwResult;
-    for (DWORD i = 0; i < XUSER_MAX_COUNT; i++) {
+	DWORD dwResult;
+	for (DWORD i = 0; i < XUSER_MAX_COUNT; i++) {
 
-        ZeroMemory(&x_joysticks[i].state, sizeof(XINPUT_STATE));
+		ZeroMemory(&x_joysticks[i].state, sizeof(XINPUT_STATE));
 
-        dwResult = xinput_get_state(i, &x_joysticks[i].state);
-        if ( dwResult == ERROR_SUCCESS) {
+		dwResult = xinput_get_state(i, &x_joysticks[i].state);
+		if ( dwResult == ERROR_SUCCESS) {
 
-            int id = check_free_joy_slot();
-            if (id != -1 && !x_joysticks[i].attached) {
+			int id = check_free_joy_slot();
+			if (id != -1 && !x_joysticks[i].attached) {
 
-                x_joysticks[i].attached = true;
-                x_joysticks[i].id = id;
-                attached_joysticks[id] = true;
-                input->joy_connection_changed(id, true, "XInput Gamepad","__XINPUT_DEVICE__");
-            }
-        }
-        else if (x_joysticks[i].attached) {
+				x_joysticks[i].attached = true;
+				x_joysticks[i].id = id;
+				attached_joysticks[id] = true;
+				input->joy_connection_changed(id, true, "XInput Gamepad","__XINPUT_DEVICE__");
+			}
+		}
+		else if (x_joysticks[i].attached) {
 
-            x_joysticks[i].attached = false;
-            attached_joysticks[x_joysticks[i].id] = false;
-            input->joy_connection_changed(x_joysticks[i].id, false, "");
-        }
-    }
+			x_joysticks[i].attached = false;
+			attached_joysticks[x_joysticks[i].id] = false;
+			input->joy_connection_changed(x_joysticks[i].id, false, "");
+		}
+	}
 
-    for (int i = 0; i < joystick_count; i++) {
+	for (int i = 0; i < joystick_count; i++) {
 
-        d_joysticks[i].confirmed = false;
-    }
+		d_joysticks[i].confirmed = false;
+	}
 
-    dinput->EnumDevices(DI8DEVCLASS_GAMECTRL, enumCallback, this, DIEDFL_ATTACHEDONLY);
+	dinput->EnumDevices(DI8DEVCLASS_GAMECTRL, enumCallback, this, DIEDFL_ATTACHEDONLY);
 
-    for (int i = 0; i < joystick_count; i++) {
+	for (int i = 0; i < joystick_count; i++) {
 
-        if (!d_joysticks[i].confirmed) {
+		if (!d_joysticks[i].confirmed) {
 
-            close_joystick(i);
-        }
-    }
+			close_joystick(i);
+		}
+	}
 }
 
 unsigned int joystick_windows::process_joysticks(unsigned int p_last_id) {
 
-    HRESULT hr;
+	HRESULT hr;
 
-    for (int i = 0; i < XUSER_MAX_COUNT; i++) {
+	for (int i = 0; i < XUSER_MAX_COUNT; i++) {
 
-        xinput_gamepad &joy = x_joysticks[i];
-        if (!joy.attached) {
-            continue;
-        }
-        ZeroMemory(&joy.state, sizeof(XINPUT_STATE));
+		xinput_gamepad &joy = x_joysticks[i];
+		if (!joy.attached) {
+			continue;
+		}
+		ZeroMemory(&joy.state, sizeof(XINPUT_STATE));
 
-        xinput_get_state(i, &joy.state);
-        if (joy.state.dwPacketNumber != joy.last_packet) {
+		xinput_get_state(i, &joy.state);
+		if (joy.state.dwPacketNumber != joy.last_packet) {
 
-            int button_mask = XINPUT_GAMEPAD_DPAD_UP;
-            for (int i = 0; i <= 16; i++) {
+			int button_mask = XINPUT_GAMEPAD_DPAD_UP;
+			for (int i = 0; i <= 16; i++) {
 
-                p_last_id = input->joy_button(p_last_id, joy.id, i, joy.state.Gamepad.wButtons & button_mask);
-                button_mask = button_mask * 2;
-            }
+				p_last_id = input->joy_button(p_last_id, joy.id, i, joy.state.Gamepad.wButtons & button_mask);
+				button_mask = button_mask * 2;
+			}
 
-            p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_0,  axis_correct(joy.state.Gamepad.sThumbLX, true));
-            p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_1,  axis_correct(joy.state.Gamepad.sThumbLY, true, false, true));
-            p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_2,  axis_correct(joy.state.Gamepad.sThumbRX, true));
-            p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_3,  axis_correct(joy.state.Gamepad.sThumbRY, true, false, true));
-            p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_4,  axis_correct(joy.state.Gamepad.bLeftTrigger, true, true));
-            p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_5,  axis_correct(joy.state.Gamepad.bRightTrigger, true, true));
-            joy.last_packet = joy.state.dwPacketNumber;
-        }
-    }
+			p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_0,  axis_correct(joy.state.Gamepad.sThumbLX, true));
+			p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_1,  axis_correct(joy.state.Gamepad.sThumbLY, true, false, true));
+			p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_2,  axis_correct(joy.state.Gamepad.sThumbRX, true));
+			p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_3,  axis_correct(joy.state.Gamepad.sThumbRY, true, false, true));
+			p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_4,  axis_correct(joy.state.Gamepad.bLeftTrigger, true, true));
+			p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_5,  axis_correct(joy.state.Gamepad.bRightTrigger, true, true));
+			joy.last_packet = joy.state.dwPacketNumber;
+		}
+	}
 
-    for (int i = 0; i < JOYSTICKS_MAX; i++) {
+	for (int i = 0; i < JOYSTICKS_MAX; i++) {
 
-        dinput_gamepad* joy = &d_joysticks[i];
+		dinput_gamepad* joy = &d_joysticks[i];
 
-        if (!joy->attached)
-            continue;
+		if (!joy->attached)
+			continue;
 
-        DIJOYSTATE2 js;
-        hr = joy->di_joy->Poll();
-        if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED) {
-            IDirectInputDevice8_Acquire(joy->di_joy);
-            joy->di_joy->Poll();
-        }
-        if (FAILED(hr = d_joysticks[i].di_joy->GetDeviceState(sizeof(DIJOYSTATE2), &js))) {
+		DIJOYSTATE2 js;
+		hr = joy->di_joy->Poll();
+		if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED) {
+			IDirectInputDevice8_Acquire(joy->di_joy);
+			joy->di_joy->Poll();
+		}
+		if (FAILED(hr = d_joysticks[i].di_joy->GetDeviceState(sizeof(DIJOYSTATE2), &js))) {
 
-            //printf("failed to read joy #%d\n", i);
-            continue;
-        }
+			//printf("failed to read joy #%d\n", i);
+			continue;
+		}
 
-        p_last_id = post_hat(p_last_id, i, js.rgdwPOV[0]);
+		p_last_id = post_hat(p_last_id, i, js.rgdwPOV[0]);
 
-        for (int j = 0; j < 128; j++) {
+		for (int j = 0; j < 128; j++) {
 
-            if (js.rgbButtons[j] & 0x80) {
+			if (js.rgbButtons[j] & 0x80) {
 
-                if (!joy->last_buttons[j]) {
+				if (!joy->last_buttons[j]) {
 
-                    p_last_id = input->joy_button(p_last_id, i, j, true);
-                    joy->last_buttons[j] = true;
-                }
-            }
-            else {
+					p_last_id = input->joy_button(p_last_id, i, j, true);
+					joy->last_buttons[j] = true;
+				}
+			}
+			else {
 
-                if (joy->last_buttons[j]) {
+				if (joy->last_buttons[j]) {
 
-                    p_last_id = input->joy_button(p_last_id, i, j, false);
-                    joy->last_buttons[j] = false;
-                }
-            }
-        }
+					p_last_id = input->joy_button(p_last_id, i, j, false);
+					joy->last_buttons[j] = false;
+				}
+			}
+		}
 
         // on mingw, these constants are not constants
 		int count = 6;
@@ -407,122 +407,122 @@ unsigned int joystick_windows::process_joysticks(unsigned int p_last_id) {
 				};
 			};
 		};
-    }
-    return p_last_id;
+	}
+	return p_last_id;
 }
 
 unsigned int joystick_windows::post_hat(unsigned int p_last_id, int p_device, DWORD p_dpad) {
 
-    int dpad_val = 0;
+	int dpad_val = 0;
 
-    if (p_dpad == -1) {
-        dpad_val = InputDefault::HAT_MASK_CENTER;
-    }
-    if (p_dpad == 0) {
+	if (p_dpad == -1) {
+		dpad_val = InputDefault::HAT_MASK_CENTER;
+	}
+	if (p_dpad == 0) {
 
-        dpad_val = InputDefault::HAT_MASK_UP;
+		dpad_val = InputDefault::HAT_MASK_UP;
 
-    }
-    else if (p_dpad == 4500) {
+	}
+	else if (p_dpad == 4500) {
 
-        dpad_val = (InputDefault::HAT_MASK_UP | InputDefault::HAT_MASK_RIGHT);
+		dpad_val = (InputDefault::HAT_MASK_UP | InputDefault::HAT_MASK_RIGHT);
 
-    }
-    else if (p_dpad == 9000) {
+	}
+	else if (p_dpad == 9000) {
 
-        dpad_val = InputDefault::HAT_MASK_RIGHT;
+		dpad_val = InputDefault::HAT_MASK_RIGHT;
 
-    }
-    else if (p_dpad == 13500) {
+	}
+	else if (p_dpad == 13500) {
 
-        dpad_val = (InputDefault::HAT_MASK_RIGHT | InputDefault::HAT_MASK_DOWN);
+		dpad_val = (InputDefault::HAT_MASK_RIGHT | InputDefault::HAT_MASK_DOWN);
 
-    }
-    else if (p_dpad == 18000) {
+	}
+	else if (p_dpad == 18000) {
 
-        dpad_val = InputDefault::HAT_MASK_DOWN;
+		dpad_val = InputDefault::HAT_MASK_DOWN;
 
-    }
-    else if (p_dpad == 22500) {
+	}
+	else if (p_dpad == 22500) {
 
-        dpad_val = (InputDefault::HAT_MASK_DOWN | InputDefault::HAT_MASK_LEFT);
+		dpad_val = (InputDefault::HAT_MASK_DOWN | InputDefault::HAT_MASK_LEFT);
 
-    }
-    else if (p_dpad == 27000) {
+	}
+	else if (p_dpad == 27000) {
 
-        dpad_val = InputDefault::HAT_MASK_LEFT;
+		dpad_val = InputDefault::HAT_MASK_LEFT;
 
-    }
-    else if (p_dpad == 31500) {
+	}
+	else if (p_dpad == 31500) {
 
-        dpad_val = (InputDefault::HAT_MASK_LEFT | InputDefault::HAT_MASK_UP);
-    }
-    return input->joy_hat(p_last_id, p_device, dpad_val);
+		dpad_val = (InputDefault::HAT_MASK_LEFT | InputDefault::HAT_MASK_UP);
+	}
+	return input->joy_hat(p_last_id, p_device, dpad_val);
 };
 
 InputDefault::JoyAxis joystick_windows::axis_correct(int p_val, bool p_xinput, bool p_trigger, bool p_negate) const {
 
-    InputDefault::JoyAxis jx;
-    if (Math::abs(p_val) < MIN_JOY_AXIS) {
-        jx.min = -1;
-        jx.value = 0.0f;
-        return jx;
-    }
-    if (p_xinput) {
+	InputDefault::JoyAxis jx;
+	if (Math::abs(p_val) < MIN_JOY_AXIS) {
+		jx.min = -1;
+		jx.value = 0.0f;
+		return jx;
+	}
+	if (p_xinput) {
 
-        if (p_trigger) {
-            jx.min = 0;
-            jx.value = (float)p_val / MAX_TRIGGER;
-            return jx;
-        }
-        jx.min = -1;
-        if (p_val < 0) {
-            jx.value = (float)p_val / MAX_JOY_AXIS;
-        }
-        else {
-            jx.value = (float)p_val / (MAX_JOY_AXIS - 1);
-        }
-        if (p_negate) {
-            jx.value = -jx.value;
-        }
-        return jx;
-    }
-    jx.min = -1;
-    jx.value = (float)p_val / MAX_JOY_AXIS;
-    return jx;
+		if (p_trigger) {
+			jx.min = 0;
+			jx.value = (float)p_val / MAX_TRIGGER;
+			return jx;
+		}
+		jx.min = -1;
+		if (p_val < 0) {
+			jx.value = (float)p_val / MAX_JOY_AXIS;
+		}
+		else {
+			jx.value = (float)p_val / (MAX_JOY_AXIS - 1);
+		}
+		if (p_negate) {
+			jx.value = -jx.value;
+		}
+		return jx;
+	}
+	jx.min = -1;
+	jx.value = (float)p_val / MAX_JOY_AXIS;
+	return jx;
 }
 
 void joystick_windows::load_xinput() {
 
-    xinput_get_state = &_xinput_get_state;
-    xinput_dll = LoadLibrary( "XInput1_4.dll" );
-    if (!xinput_dll) {
-        xinput_dll = LoadLibrary("XInput1_3.dll");
-        if (!xinput_dll) {
-            xinput_dll = LoadLibrary("XInput9_1_0.dll");
-        }
-    }
+	xinput_get_state = &_xinput_get_state;
+	xinput_dll = LoadLibrary( "XInput1_4.dll" );
+	if (!xinput_dll) {
+		xinput_dll = LoadLibrary("XInput1_3.dll");
+		if (!xinput_dll) {
+			xinput_dll = LoadLibrary("XInput9_1_0.dll");
+		}
+	}
 
-    if (!xinput_dll) {
-        if (OS::get_singleton()->is_stdout_verbose()) {
-            print_line("Could not find XInput, using DirectInput only");
-        }
-        return;
-    }
+	if (!xinput_dll) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			print_line("Could not find XInput, using DirectInput only");
+		}
+		return;
+	}
 
-    XInputGetState_t func = (XInputGetState_t)GetProcAddress((HMODULE)xinput_dll, "XInputGetState");
-    if (!func) {
-        unload_xinput();
-        return;
-    }
-    xinput_get_state = func;
-    return;
+	XInputGetState_t func = (XInputGetState_t)GetProcAddress((HMODULE)xinput_dll, "XInputGetState");
+	if (!func) {
+		unload_xinput();
+		return;
+	}
+	xinput_get_state = func;
+	return;
 }
 
 void joystick_windows::unload_xinput() {
 
-    if (xinput_dll) {
+	if (xinput_dll) {
 
-        FreeLibrary((HMODULE)xinput_dll);
-    }
+		FreeLibrary((HMODULE)xinput_dll);
+	}
 }
