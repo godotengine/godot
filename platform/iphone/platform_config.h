@@ -31,3 +31,5 @@
 
 
 #define PLATFORM_REFCOUNT
+
+#define PTHREAD_RENAME_SELF

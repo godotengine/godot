@@ -29,3 +29,4 @@
 #include <alloca.h>
 #define GLES2_INCLUDE_H "gl_context/glew.h"
 #define GLES1_INCLUDE_H "gl_context/glew.h"
+#define PTHREAD_RENAME_SELF
