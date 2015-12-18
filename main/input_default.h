@@ -33,31 +33,31 @@ class InputDefault : public Input {
 		SpeedTrack();
 	};
 
-    struct Joystick {
-            StringName name;
-            StringName uid;
-            bool last_buttons[JOY_BUTTON_MAX];
-            float last_axis[JOY_AXIS_MAX];
-            float filter;
-            int last_hat;
-            int mapping;
-            int hat_current;
+	struct Joystick {
+		StringName name;
+		StringName uid;
+		bool last_buttons[JOY_BUTTON_MAX];
+		float last_axis[JOY_AXIS_MAX];
+		float filter;
+		int last_hat;
+		int mapping;
+		int hat_current;
 
-            Joystick() {
+		Joystick() {
 
-                for (int i = 0; i < JOY_AXIS_MAX; i++) {
+			for (int i = 0; i < JOY_AXIS_MAX; i++) {
 
-                    last_axis[i] = 0.0f;
+				last_axis[i] = 0.0f;
 
-                }
-                for (int i = 0; i < JOY_BUTTON_MAX; i++) {
+			}
+			for (int i = 0; i < JOY_BUTTON_MAX; i++) {
 
-                    last_buttons[i] = false;
-                }
-                last_hat = HAT_MASK_CENTER;
-                filter = 0.01f;
-            }
-        };
+				last_buttons[i] = false;
+			}
+			last_hat = HAT_MASK_CENTER;
+			filter = 0.01f;
+		}
+	};
 
 	SpeedTrack mouse_speed_track;
 	Map<int, Joystick> joy_names;
@@ -98,22 +98,22 @@ private:
 		int value;
 	};
 
-        struct JoyDeviceMapping {
+	struct JoyDeviceMapping {
 
-            String uid;
-            Map<int,JoyEvent> buttons;
-            Map<int,JoyEvent> axis;
-            JoyEvent hat[HAT_MAX];
-        };
+		String uid;
+		Map<int,JoyEvent> buttons;
+		Map<int,JoyEvent> axis;
+		JoyEvent hat[HAT_MAX];
+	};
 
-        JoyEvent hat_map_default[HAT_MAX];
+	JoyEvent hat_map_default[HAT_MAX];
 
-        Vector<JoyDeviceMapping> map_db;
+	Vector<JoyDeviceMapping> map_db;
 
-        JoyEvent _find_to_event(String p_to);
-        uint32_t _button_event(uint32_t p_last_id, int p_device, int p_index, bool p_pressed);
-        uint32_t _axis_event(uint32_t p_last_id, int p_device, int p_axis, float p_value);
-        float _handle_deadzone(int p_device, int p_axis, float p_value);
+	JoyEvent _find_to_event(String p_to);
+	uint32_t _button_event(uint32_t p_last_id, int p_device, int p_index, bool p_pressed);
+	uint32_t _axis_event(uint32_t p_last_id, int p_device, int p_axis, float p_value);
+	float _handle_deadzone(int p_device, int p_axis, float p_value);
 
 public:
 
