@@ -1477,9 +1477,10 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	scene_tree->set_undo_redo(&editor_data->get_undo_redo());
 	scene_tree->set_editor_selection(editor_selection);
 
+
 	HBoxContainer *hbc_bottom = memnew( HBoxContainer );
 	vbc->add_child(hbc_bottom);
-
+	hbc_bottom->add_constant_override("separation", 0);
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_MOVE_UP, false));
