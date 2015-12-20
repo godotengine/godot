@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  input.h                                                              */
+/*  joystick_linux.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,67 +26,68 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef INPUT_H
-#define INPUT_H
 
-#include "object.h"
-#include "os/thread_safe.h"
-#include "os/main_loop.h"
+//author: Andreas Haas <hondres,  liugam3@gmail.com>
+#ifndef JOYSTICK_LINUX_H
+#define JOYSTICK_LINUX_H
+#ifdef __linux__
+#include "main/input_default.h"
+#include "os/thread.h"
+#include "os/mutex.h"
 
-class Input : public Object {
+struct input_absinfo;
 
-	OBJ_TYPE( Input, Object );
-
-	static Input *singleton;
-
-protected:
-
-	static void _bind_methods();
+class joystick_linux
+{
 public:
+	joystick_linux(InputDefault *in);
+	~joystick_linux();
+	uint32_t process_joysticks(uint32_t p_event_id);
+private:
 
-	enum MouseMode {
-		MOUSE_MODE_VISIBLE,
-		MOUSE_MODE_HIDDEN,
-		MOUSE_MODE_CAPTURED
+	enum {
+		JOYSTICKS_MAX = 16,
+		MAX_ABS = 63,
+		MAX_KEY = 767,   // Hack because <linux/input.h> can't be included here
+		BT_MISC = 256,
+		HAT_MAX = 4,
 	};
 
-	void set_mouse_mode(MouseMode p_mode);
-	MouseMode get_mouse_mode() const;
+	struct Joystick {
+		int key_map[MAX_KEY - BT_MISC];
+		int abs_map[MAX_ABS];
+		int num_buttons;
+		int num_axes;
+		int dpad;
+		int fd;
 
-	static Input *get_singleton();
+		String devpath;
+		struct libevdev *dev;
 
-	virtual bool is_key_pressed(int p_scancode)=0;	
-	virtual bool is_mouse_button_pressed(int p_button)=0;
-	virtual bool is_joy_button_pressed(int p_device, int p_button)=0;
-	virtual bool is_action_pressed(const StringName& p_action)=0;
+		Joystick();
+		void reset();
+	};
 
-	virtual float get_joy_axis(int p_device,int p_axis)=0;
-	virtual String get_joy_name(int p_idx)=0;
-	virtual void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid)=0;
+	bool exit_udev;
+	Mutex *joy_mutex;
+	Thread *joy_thread;
+	InputDefault *input;
+	Joystick joysticks[JOYSTICKS_MAX];
 
+	static void joy_thread_func(void *p_user);
 
-	virtual Point2 get_mouse_pos() const=0;
-	virtual Point2 get_mouse_speed() const=0;
-	virtual int get_mouse_button_mask() const=0;
+	int get_joy_from_path(String path) const;
+	int get_free_joy_slot() const;
 
-	virtual void warp_mouse_pos(const Vector2& p_to)=0;
+	void setup_joystick_properties(int p_id);
+	void close_joystick(int p_id = -1);
+	void enumerate_joysticks(struct udev *_udev);
+	void monitor_joysticks(struct udev *_udev);
+	void run_joystick_thread();
+	void open_joystick(const char* path);
 
-	virtual Vector3 get_accelerometer()=0;
-
-	virtual void action_press(const StringName& p_action)=0;
-	virtual void action_release(const StringName& p_action)=0;
-
-	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
-
-	virtual bool is_emulating_touchscreen() const=0;
-
-	virtual void set_custom_mouse_cursor(const RES& p_cursor,const Vector2& p_hotspot=Vector2())=0;
-	virtual void set_mouse_in_window(bool p_in_window)=0;
-
-	Input();
+	InputDefault::JoyAxis axis_correct(const input_absinfo *abs, int value) const;
 };
 
-VARIANT_ENUM_CAST(Input::MouseMode);
-
-
-#endif // INPUT_H
+#endif
+#endif // JOYSTICK_LINUX_H

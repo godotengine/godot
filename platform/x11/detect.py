@@ -150,7 +150,7 @@ def configure(env):
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED','-DGLEW_ENABLED'])
 	if platform.system() == 'Linux':
 		env.Append(CPPFLAGS=["-DALSA_ENABLED"])
-		env.Append(LIBS=['asound'])
+		env.Append(LIBS=['asound', 'evdev', 'udev'])
 
 	if (env["pulseaudio"]=="yes"):
 		if not os.system("pkg-config --exists libpulse-simple"):
