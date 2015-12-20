@@ -266,7 +266,52 @@ void Theme::get_icon_list(StringName p_type, List<StringName> *p_list) const {
 
 		p_list->push_back(*key);
 	}
+	
+}
 
+void Theme::set_shader(const StringName &p_name,const StringName &p_type,const Ref<Shader>& p_shader) {
+	bool new_value=!shader_map.has(p_type) || !shader_map[p_type].has(p_name);
+
+	shader_map[p_type][p_name]=p_shader;	
+
+	if (new_value) {
+		_change_notify();
+		emit_changed();;
+	}
+}
+
+Ref<Shader> Theme::get_shader(const StringName &p_name, const StringName &p_type) const {
+	if (shader_map.has(p_type) && shader_map[p_type].has(p_name) && shader_map[p_type][p_name].is_valid()) {
+		return shader_map[p_type][p_name];
+	} else {
+		return NULL;
+	}
+}
+
+bool Theme::has_shader(const StringName &p_name, const StringName &p_type) const {
+	return (shader_map.has(p_type) && shader_map[p_type].has(p_name) && shader_map[p_type][p_name].is_valid());
+}
+
+void Theme::clear_shader(const StringName &p_name, const StringName &p_type) {
+	ERR_FAIL_COND(!shader_map.has(p_type));
+	ERR_FAIL_COND(!shader_map[p_type].has(p_name));
+
+	shader_map[p_type].erase(p_name);
+	_change_notify();
+	emit_changed();;
+}
+
+void Theme::get_shader_list(const StringName &p_type, List<StringName> *p_list) const {
+	if (!shader_map.has(p_type))
+		return;
+
+	const StringName *key=NULL;
+
+	while((key=shader_map[p_type].next(key))) {
+
+		p_list->push_back(*key);
+	}
+	
 }
 
 

@@ -38,6 +38,10 @@ void ColorPicker::_notification(int p_what) {
 
 	switch(p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
+		uv_material->set_shader(get_shader("uv_editor"));
+		uv_material->set_shader_param("H", h);
+
+		w_material->set_shader(get_shader("w_editor"));
 
 			_update_controls();
 		} break;
@@ -337,55 +341,16 @@ ColorPicker::ColorPicker() :
 	_update_color();
 	updating=false;
 
-	const char *uv_shader_code=
-			"vec3 nd1sl2=vec3(UV,0);\n"
-			"uniform float H=0;\n"
-			"float nd4sl0=H;\n"
-			"float nd7sl0=nd1sl2.x;\n"
-			"float nd7sl1=nd1sl2.y;\n"
-			"float nd7sl2=nd1sl2.z;\n"
-			"float nd2sl1def=-1;\n"
-			"float nd2sl0=nd7sl1*nd2sl1def;\n"
-			"float nd6sl1def=1;\n"
-			"float nd6sl0=nd2sl0+nd6sl1def;\n"
-			"vec3 nd3sl0=vec3(nd4sl0,nd7sl0,nd6sl0);\n"
-			"vec3 nd5sl0;\n"
-			"{\n"
-			"	vec3 c = nd3sl0;\n"
-			"	vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n"
-			"	vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n"
-			"	nd5sl0=c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n"
-			"}\n"
-			"COLOR.rgb=nd5sl0;";
-
-	const char *w_shader_code=
-			"vec3 nd1sl2=vec3(UV,0);\n"
-			"float nd2sl0=nd1sl2.x;\n"
-			"float nd2sl1=nd1sl2.y;\n"
-			"float nd2sl2=nd1sl2.z;\n"
-			"float nd3sl1def=1;\n"
-			"float nd3sl2def=1;\n"
-			"vec3 nd3sl0=vec3(nd2sl1,nd3sl1def,nd3sl2def);\n"
-			"vec3 nd6sl0;\n"
-			"{\n"
-			"	vec3 c = nd3sl0;\n"
-			"	vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n"
-			"	vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n"
-			"	nd6sl0=c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n"
-			"}\n"
-			"COLOR.rgb=nd6sl0;";
-
 	set_color(Color(1,1,1));
 
 	uv_material.instance();
-	Ref<Shader> s_uv = memnew( Shader(Shader::MODE_CANVAS_ITEM) );
-	s_uv->set_code("", uv_shader_code, "");
+	Ref<Shader> s_uv = get_shader("uv_editor");
 	uv_material->set_shader(s_uv);
 	uv_material->set_shader_param("H", h);
 
 	w_material.instance();
-	Ref<Shader> s_w = (memnew( Shader(Shader::MODE_CANVAS_ITEM) ));
-	s_w->set_code("", w_shader_code, "");
+	
+	Ref<Shader> s_w = get_shader("w_editor");
 	w_material->set_shader(s_w);
 
 	uv_edit->set_material(uv_material);
