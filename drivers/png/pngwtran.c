@@ -1,8 +1,8 @@
 
 /* pngwtran.c - transforms the data in a row for PNG writers
  *
- * Last changed in libpng 1.5.6 [November 3, 2011]
- * Copyright (c) 1998-2011 Glenn Randers-Pehrson
+ * Copyright (c) 1998-2002,2004,2006-2012 Glenn Randers-Pehrson
+ * Copyright (c) 1998-2012 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -45,8 +45,20 @@ png_do_write_transformations(png_structp png_ptr, png_row_infop row_info)
 
 #ifdef PNG_WRITE_FILLER_SUPPORTED
    if (png_ptr->transformations & PNG_FILLER)
-      png_do_strip_channel(row_info, png_ptr->row_buf + 1,
-         !(png_ptr->flags & PNG_FLAG_FILLER_AFTER));
+   {
+      if (png_ptr->color_type & (PNG_COLOR_MASK_ALPHA|PNG_COLOR_MASK_PALETTE))
+      {
+         /* GA, RGBA or palette; in any of these cases libpng will not do the
+          * the correct thing (whatever that might be).
+          */
+         png_warning(png_ptr, "incorrect png_set_filler call ignored");
+         png_ptr->transformations &= ~PNG_FILLER;
+      }
+
+      else
+         png_do_strip_channel(row_info, png_ptr->row_buf + 1,
+            !(png_ptr->flags & PNG_FLAG_FILLER_AFTER));
+   }
 #endif
 
 #ifdef PNG_WRITE_PACKSWAP_SUPPORTED
