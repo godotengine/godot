@@ -596,7 +596,12 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 
 	if (map.type == TYPE_BUTTON) {
 		float deadzone = p_value.min == 0 ? 0.5f : 0.0f;
-		return _button_event(p_last_id, p_device, map.index, p_value.value > deadzone ? true : false);
+		bool pressed = p_value.value > deadzone ? true : false;
+		if (pressed == joy_buttons_pressed.has(_combine_device(map.index,p_device))) {
+			// button already pressed or released, this is an axis bounce value
+			return p_last_id;
+		};
+		return _button_event(p_last_id, p_device, map.index, pressed);
 	};
 
 	if (map.type == TYPE_AXIS) {
