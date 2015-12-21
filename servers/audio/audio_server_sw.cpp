@@ -693,18 +693,28 @@ void AudioServerSW::stream_set_active(RID p_stream, bool p_active) {
 
 	Stream *s = stream_owner.get(p_stream);
 	ERR_FAIL_COND(!s);
+	_THREAD_SAFE_METHOD_
 
 	if (s->active==p_active)
 		return;
-	AUDIO_LOCK;
-	_THREAD_SAFE_METHOD_
-	s->active=p_active;
-	if (p_active)
-		s->E=active_audio_streams.push_back(s);
-	else {
-		active_audio_streams.erase(s->E);
-		s->E=NULL;
+	if (!thread || thread->get_ID()!=Thread::get_caller_ID()) {
+		//do not lock in mix thread
+		lock();
 	}
+	{
+		s->active=p_active;
+		if (p_active)
+			s->E=active_audio_streams.push_back(s);
+		else {
+			active_audio_streams.erase(s->E);
+			s->E=NULL;
+		}
+	}
+	if (!thread || thread->get_ID()!=Thread::get_caller_ID()) {
+		//do not lock in mix thread
+		unlock();
+	}
+
 }
 
 bool AudioServerSW::stream_is_active(RID p_stream) const {
