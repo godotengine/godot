@@ -75,7 +75,10 @@ void StreamPlayer::sp_update() {
 			//check that all this audio has been flushed before stopping the stream
 			int to_mix = resampler.get_total() - resampler.get_todo();
 			if (to_mix==0) {
-				stop();
+				if (!stop_request) {
+					stop_request=true;
+					call_deferred("stop");
+				}
 				return;
 			}
 
@@ -164,6 +167,7 @@ void StreamPlayer::stop() {
 
 	//_THREAD_SAFE_METHOD_
 	AudioServer::get_singleton()->stream_set_active(stream_rid,false);
+	stop_request=false;
 	playback->stop();
 	resampler.flush();
 
@@ -389,6 +393,7 @@ StreamPlayer::StreamPlayer() {
 	stream_rid=AudioServer::get_singleton()->audio_stream_create(&internal_stream);
 	buffering_ms=500;
 	loop_point=0;
+	stop_request=false;
 
 }
 
