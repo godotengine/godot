@@ -33,7 +33,7 @@
 #include "joystick_linux.h"
 #include "print_string.h"
 
-#include <libevdev-1.0/libevdev/libevdev.h>
+#include <libevdev/libevdev.h>
 #include <libudev.h>
 #include <unistd.h>
 #include <fcntl.h>
