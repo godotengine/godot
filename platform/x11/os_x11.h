@@ -126,7 +126,7 @@ class OS_X11 : public OS_Unix {
 
 	InputDefault *input;
 
-#ifdef __linux__
+#ifdef JOYDEV_ENABLED
 	joystick_linux *joystick;
 #endif
 

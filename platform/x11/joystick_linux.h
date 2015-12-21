@@ -30,7 +30,7 @@
 //author: Andreas Haas <hondres,  liugam3@gmail.com>
 #ifndef JOYSTICK_LINUX_H
 #define JOYSTICK_LINUX_H
-#ifdef __linux__
+#ifdef JOYDEV_ENABLED
 #include "main/input_default.h"
 #include "os/thread.h"
 #include "os/mutex.h"

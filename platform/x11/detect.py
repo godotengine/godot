@@ -45,10 +45,6 @@ def can_build():
 		print("xinerama not found.. x11 disabled.")
 		return False
 
-	x11_error=os.system("pkg-config libevdev --modversion > /dev/null ")
-	if (x11_error):
-		print("evdev not found.. x11 disabled.")
-		return False
 
 	return True # X11 enabled
   
@@ -133,7 +129,6 @@ def configure(env):
 	env.ParseConfig('pkg-config x11 --cflags --libs')
 	env.ParseConfig('pkg-config xinerama --cflags --libs')
 	env.ParseConfig('pkg-config xcursor --cflags --libs')
-	env.ParseConfig('pkg-config libevdev --cflags --libs')
 
 	if (env["openssl"]=="yes"):
 		env.ParseConfig('pkg-config openssl --cflags --libs')
@@ -155,7 +150,18 @@ def configure(env):
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED','-DGLEW_ENABLED'])
 	if platform.system() == 'Linux':
 		env.Append(CPPFLAGS=["-DALSA_ENABLED"])
-		env.Append(LIBS=['asound', 'udev'])
+		env.Append(LIBS=['asound'])
+
+		if not os.system("pkg-config --exists libudev"):
+			if not os.system("pkg-config --exists libevdev"):
+				print("Enabling udev/evdev")
+				env.Append(CPPFLAGS=["-DJOYDEV_ENABLED"])
+				env.ParseConfig('pkg-config libudev --cflags --libs')
+				env.ParseConfig('pkg-config libevdev --cflags --libs')
+			else:
+				print("libevdev development libraries not found, disabling gamepad support")
+		else:
+			print("libudev development libraries not found, disabling gamepad support")
 
 	if (env["pulseaudio"]=="yes"):
 		if not os.system("pkg-config --exists libpulse-simple"):

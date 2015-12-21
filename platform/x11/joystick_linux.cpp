@@ -28,7 +28,7 @@
 /*************************************************************************/
 
 //author: Andreas Haas <hondres,  liugam3@gmail.com>
-#ifdef __linux__
+#ifdef JOYDEV_ENABLED
 
 #include "joystick_linux.h"
 #include "print_string.h"
