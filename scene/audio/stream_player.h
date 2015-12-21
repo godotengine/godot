@@ -37,7 +37,7 @@ class StreamPlayer : public Node {
 
 	OBJ_TYPE(StreamPlayer,Node);
 
-	//_THREAD_SAFE_CLASS_
+	_THREAD_SAFE_CLASS_
 
 	struct InternalStream : public AudioServer::AudioStream {
 		StreamPlayer *player;

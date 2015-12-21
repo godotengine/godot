@@ -68,6 +68,7 @@ struct ColladaImport {
 
 
 	Map<String,NodeMap> node_map; //map from collada node to engine node
+	Map<String,String> node_name_map; //map from collada node to engine node
 	Map<String, Ref<Mesh> > mesh_cache;
 	Map<String, Ref<Curve3D> > curve_cache;
 	Map<String, Ref<Material> > material_cache;
@@ -124,6 +125,7 @@ Error ColladaImport::_populate_skeleton(Skeleton *p_skeleton,Collada::Node *p_no
 	nm.node=p_skeleton;
 	nm.bone = r_bone;
 	node_map[p_node->id]=nm;
+	node_name_map[p_node->name]=p_node->id;
 
 	skeleton_bone_map[p_skeleton][joint->sid]=r_bone;
 
@@ -345,6 +347,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 	NodeMap nm;
 	nm.node=node;
 	node_map[p_node->id]=nm;
+	node_name_map[p_node->name]=p_node->id;
 	Transform xf = p_node->default_transform;
 
 	xf = collada.fix_transform( xf ) * p_node->post_transform;
@@ -1906,9 +1909,20 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones) {
 
 		Collada::AnimationTrack &at = collada.state.animation_tracks[i];
 		//print_line("CHANNEL: "+at.target+" PARAM: "+at.param);
+
+		String node;
+
 		if (!node_map.has(at.target)) {
-			print_line("Coudlnt find node: "+at.target);
-			continue;
+
+			if (node_name_map.has(at.target)) {
+
+				node=node_name_map[at.target];
+			} else {
+				print_line("Coudlnt find node: "+at.target);
+				continue;
+			}
+		} else {
+			node=at.target;
 		}
 
 
@@ -1917,8 +1931,9 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones) {
 			valid_animated_properties.push_back(i);
 
 		} else {
-			node_map[at.target].anim_tracks.push_back(i);
-			valid_animated_nodes.insert(at.target);
+
+			node_map[node].anim_tracks.push_back(i);
+			valid_animated_nodes.insert(node);
 		}
 
 	}
@@ -1933,6 +1948,7 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones) {
 void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones) {
 
 	Ref<Animation> animation = Ref<Animation>( memnew( Animation ));
+
 
 	if (p_clip==-1) {
 
@@ -2007,10 +2023,12 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 	while(f<anim_length) {
 
 		base_snapshots.push_back(f);
+
 		f+=snapshot_interval;
 
 		if (f>=anim_length) {
 			base_snapshots.push_back(anim_length);
+
 		}
 	}
 
@@ -2019,11 +2037,17 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 	bool tracks_found=false;
 
+
+
 	for(Set<String>::Element* E=valid_animated_nodes.front();E;E=E->next()) {
 
 		// take snapshots
-		if (!collada.state.scene_map.has(E->get()))
+
+
+		if (!collada.state.scene_map.has(E->get())) {
+
 			continue;
+		}
 
 		NodeMap &nm = node_map[E->get()];
 		String path = scene->get_path_to(nm.node);
@@ -2039,7 +2063,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 		Collada::Node *cn = collada.state.scene_map[E->get()];
 		if (cn->ignore_anim) {
-			//print_line("warning, ignoring animation on node: "+path);
+
 			continue;
 		}
 
@@ -2058,20 +2082,23 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 			for(int i=0;i<at.keys.size();i++)
 				snapshots.push_back(at.keys[i].time);
 
-			print_line("using anim snapshots");
 
 		}
 
 
 		for(int i=0;i<snapshots.size();i++) {
 
+
 			for(List<int>::Element *ET=nm.anim_tracks.front();ET;ET=ET->next()) {
 				//apply tracks
 
+
 				if (p_clip==-1) {
 
-					if (track_filter.has(ET->get()))
+					if (track_filter.has(ET->get())) {
+
 						continue;
+					}
 				} else {
 
 					if (!track_filter.has(ET->get()))
