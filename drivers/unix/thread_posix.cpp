@@ -45,8 +45,8 @@ Thread* ThreadPosix::create_thread_posix() {
 void *ThreadPosix::thread_callback(void *userdata) {
 
 	ThreadPosix *t=reinterpret_cast<ThreadPosix*>(userdata);
-	t->callback(t->user);
 	t->id=(ID)pthread_self();
+	t->callback(t->user);
 	return NULL;
 }
 
@@ -81,7 +81,23 @@ Error ThreadPosix::set_name(const String& p_name) {
 
 	ERR_FAIL_COND_V(pthread == 0, ERR_UNCONFIGURED);
 
+	#ifdef PTHREAD_RENAME_SELF
+
+	// check if thread is the same as caller
+	int caller = Thread::get_caller_ID();
+	int self = get_ID();
+	if (caller != self) {
+		ERR_EXPLAIN("On this platform, thread can only be renamed with calls from the threads to be renamed.");
+		ERR_FAIL_V(ERR_UNAVAILABLE);
+		return ERR_UNAVAILABLE;
+	};
+	int err = pthread_setname_np(p_name.utf8().get_data());
+	
+	#else
+
 	int err = pthread_setname_np(pthread, p_name.utf8().get_data());
+
+	#endif
 
 	return err == 0 ? OK : ERR_INVALID_PARAMETER;
 };

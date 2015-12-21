@@ -4040,9 +4040,9 @@ void EditorNode::progress_add_task(const String& p_task,const String& p_label, i
 	singleton->progress_dialog->add_task(p_task,p_label,p_steps);
 }
 
-void EditorNode::progress_task_step(const String& p_task, const String& p_state, int p_step) {
+void EditorNode::progress_task_step(const String& p_task, const String& p_state, int p_step,bool p_force_redraw) {
 
-	singleton->progress_dialog->task_step(p_task,p_state,p_step);
+	singleton->progress_dialog->task_step(p_task,p_state,p_step,p_force_redraw);
 
 }
 

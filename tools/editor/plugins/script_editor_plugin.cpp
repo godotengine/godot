@@ -1773,7 +1773,7 @@ void ScriptEditor::_update_script_colors() {
 		if (h>hist_size) {
 			continue;
 		}
-		float v = Math::ease((edit_pass-pass)/float_t(hist_size),0.4);
+		float v = Math::ease((edit_pass-pass)/float(hist_size),0.4);
 
 
 		script_list->set_item_custom_bg_color(i,hot_color.linear_interpolate(cold_color,v));

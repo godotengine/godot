@@ -84,6 +84,7 @@ class ProgressDialog : public Popup {
 
 	Map<String,Task> tasks;
 	VBoxContainer *main;
+	uint64_t last_progress_tick;
 
 	void _popup();
 protected:
@@ -92,7 +93,7 @@ protected:
 public:
 
 	void add_task(const String& p_task,const String& p_label, int p_steps);
-	void task_step(const String& p_task,const String& p_state, int p_step=-1);
+	void task_step(const String& p_task, const String& p_state, int p_step=-1, bool p_force_redraw=true);
 	void end_task(const String& p_task);
 
 

@@ -767,8 +767,9 @@ void AudioServerSW::free(RID p_id) {
 
 void AudioServerSW::_thread_func(void *self) {
 
-
 	AudioServerSW *as=(AudioServerSW *)self;
+
+	as->thread->set_name("AudioServerSW");
 
 	while (!as->exit_update_thread) {
 		as->_update_streams(true);
@@ -810,7 +811,6 @@ void AudioServerSW::init() {
 #ifndef NO_AUDIO_THREADS
 	exit_update_thread=false;
 	thread = Thread::create(_thread_func,this);
-	thread->set_name("AudioServerSW");
 #endif
 
 }

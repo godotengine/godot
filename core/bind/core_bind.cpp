@@ -1883,6 +1883,14 @@ void _Thread::_start_func(void *ud) {
 	Variant::CallError ce;
 	const Variant* arg[1]={&t->userdata};
 
+	// we don't know our thread pointer yet :(
+	if (t->name == "") {
+		// come up with a better name using maybe the filename on the Script?
+		//t->thread->set_name(t->target_method);
+	} else {
+		//t->thread->set_name(t->name);
+	};
+
 	t->ret=t->target_instance->call(t->target_method,arg,1,ce);
 	if (ce.error!=Variant::CallError::CALL_OK) {
 
@@ -1940,9 +1948,6 @@ Error _Thread::start(Object *p_instance,const StringName& p_method,const Variant
 		userdata=Variant();
 		return ERR_CANT_CREATE;
 	}
-
-	if (name != "")
-		thread->set_name(name);
 
 	return OK;
 }

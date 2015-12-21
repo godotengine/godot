@@ -29,7 +29,7 @@
 #include "progress_dialog.h"
 #include "main/main.h"
 #include "message_queue.h"
-
+#include "os/os.h"
 
 void BackgroundProgress::_add_task(const String& p_task,const String& p_label, int p_steps) {
 
@@ -191,9 +191,15 @@ void ProgressDialog::add_task(const String& p_task,const String& p_label,int p_s
 
 }
 
-void ProgressDialog::task_step(const String& p_task, const String& p_state, int p_step){
+void ProgressDialog::task_step(const String& p_task, const String& p_state, int p_step,bool p_force_redraw){
 
 	ERR_FAIL_COND(!tasks.has(p_task));
+
+	if (!p_force_redraw) {
+		uint64_t tus = OS::get_singleton()->get_ticks_usec();
+		if (tus-last_progress_tick < 50000) //50ms
+			return;
+	}
 
 	Task &t=tasks[p_task];
 	if (p_step<0)
@@ -202,6 +208,7 @@ void ProgressDialog::task_step(const String& p_task, const String& p_state, int 
 		t.progress->set_val(p_step);
 
 	t.state->set_text(p_state);
+	last_progress_tick=OS::get_singleton()->get_ticks_usec();
 	Main::iteration(); // this will not work on a lot of platforms, so it's only meant for the editor
 
 }
@@ -229,4 +236,5 @@ ProgressDialog::ProgressDialog() {
 	add_child(main);
 	main->set_area_as_parent_rect();
 	set_exclusive(true);
+	last_progress_tick=0;
 }

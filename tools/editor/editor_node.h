@@ -647,7 +647,7 @@ public:
 	static void add_io_error(const String& p_error);
 
 	static void progress_add_task(const String& p_task,const String& p_label, int p_steps);
-	static void progress_task_step(const String& p_task,const String& p_state, int p_step=-1);
+	static void progress_task_step(const String& p_task,const String& p_state, int p_step=-1,bool p_force_refresh=true);
 	static void progress_end_task(const String& p_task);
 
 	static void progress_add_task_bg(const String& p_task,const String& p_label, int p_steps);
@@ -674,7 +674,7 @@ public:
 struct EditorProgress {
 
 	String task;
-	void step(const String& p_state, int p_step=-1) { EditorNode::progress_task_step(task,p_state,p_step); }
+	void step(const String& p_state, int p_step=-1,bool p_force_refresh=true) { EditorNode::progress_task_step(task,p_state,p_step,p_force_refresh); }
 	EditorProgress(const String& p_task,const String& p_label,int p_amount) { EditorNode::progress_add_task(p_task,p_label,p_amount); task=p_task; }
 	~EditorProgress() { EditorNode::progress_end_task(task); }
 };
