@@ -30,6 +30,10 @@
 #include "globals.h"
 #include "os/os.h"
 
+#ifdef NO_THREADS
+#define NO_AUDIO_THREADS
+#endif
+
 struct _AudioDriverLock {
 
 	_AudioDriverLock() { if (AudioDriverSW::get_singleton()) AudioDriverSW::get_singleton()->lock(); }
@@ -775,7 +779,7 @@ void AudioServerSW::_thread_func(void *self) {
 
 	AudioServerSW *as=(AudioServerSW *)self;
 
-	as->thread->set_name("AudioServerSW");
+	//as->thread->set_name("AudioServerSW");
 
 	while (!as->exit_update_thread) {
 		as->_update_streams(true);
@@ -814,16 +818,17 @@ void AudioServerSW::init() {
 	if (AudioDriverSW::get_singleton())
 		AudioDriverSW::get_singleton()->start();
 
-#ifndef NO_THREADS
+#ifndef NO_AUDIO_THREADS
 	exit_update_thread=false;
 	thread = Thread::create(_thread_func,this);
+	thread->set_name("AudioServerSW");
 #endif
 
 }
 
 void AudioServerSW::finish() {
 
-#ifndef NO_THREADS
+#ifndef NO_AUDIO_THREADS
 	exit_update_thread=true;
 	Thread::wait_to_finish(thread);
 	memdelete(thread);
@@ -856,7 +861,7 @@ void AudioServerSW::_update_streams(bool p_thread) {
 void AudioServerSW::update() {
 
 	_update_streams(false);
-#ifdef NO_THREADS
+#ifdef NO_AUDIO_THREADS
 
 	_update_streams(true);
 #endif
