@@ -508,6 +508,7 @@ protected:
 	Object *target_instance;
 	StringName target_method;
 	Thread *thread;
+	String name;
 	static void _bind_methods();
 	static void _start_func(void *ud);
 public:
@@ -523,6 +524,7 @@ public:
 	String get_id() const;
 	bool is_active() const;
 	Variant wait_to_finish();
+	Error set_name(const String& p_name);
 
 	_Thread();
 	~_Thread();

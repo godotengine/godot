@@ -1128,10 +1128,7 @@ Error EditorExportPlatform::save_zip(const String& p_path, bool p_make_bundles) 
 
 	zipClose(zip,NULL);
 
-	if (err)
-		return err;
-
-
+	return err;
 }
 
 Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles, int p_alignment) {
