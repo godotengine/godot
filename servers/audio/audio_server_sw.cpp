@@ -30,10 +30,6 @@
 #include "globals.h"
 #include "os/os.h"
 
-#ifdef NO_THREADS
-#define NO_AUDIO_THREADS
-#endif
-
 struct _AudioDriverLock {
 
 	_AudioDriverLock() { if (AudioDriverSW::get_singleton()) AudioDriverSW::get_singleton()->lock(); }
@@ -663,7 +659,7 @@ bool AudioServerSW::voice_is_active(RID p_voice) const {
 
 RID AudioServerSW::audio_stream_create(AudioStream *p_stream) {
 
-	AUDIO_LOCK		
+	AUDIO_LOCK
 	Stream *s = memnew(Stream);
 	s->audio_stream=p_stream;
 	s->event_stream=NULL;
@@ -701,23 +697,15 @@ void AudioServerSW::stream_set_active(RID p_stream, bool p_active) {
 
 	if (s->active==p_active)
 		return;
-	if (!thread || thread->get_ID()!=Thread::get_caller_ID()) {
-		//do not lock in mix thread
-		lock();
+	AUDIO_LOCK;
+	s->active=p_active;
+	if (p_active)
+		s->E=active_audio_streams.push_back(s);
+	else {
+		active_audio_streams.erase(s->E);
+		s->E=NULL;
 	}
-	{
-		s->active=p_active;
-		if (p_active)
-			s->E=active_audio_streams.push_back(s);
-		else {
-			active_audio_streams.erase(s->E);
-			s->E=NULL;
-		}
-	}
-	if (!thread || thread->get_ID()!=Thread::get_caller_ID()) {
-		//do not lock in mix thread
-		unlock();
-	}
+
 
 }
 
@@ -779,7 +767,7 @@ void AudioServerSW::_thread_func(void *self) {
 
 	AudioServerSW *as=(AudioServerSW *)self;
 
-	//as->thread->set_name("AudioServerSW");
+	as->thread->set_name("AudioServerSW");
 
 	while (!as->exit_update_thread) {
 		as->_update_streams(true);
@@ -818,17 +806,16 @@ void AudioServerSW::init() {
 	if (AudioDriverSW::get_singleton())
 		AudioDriverSW::get_singleton()->start();
 
-#ifndef NO_AUDIO_THREADS
+#ifndef NO_THREADS
 	exit_update_thread=false;
 	thread = Thread::create(_thread_func,this);
-	thread->set_name("AudioServerSW");
 #endif
 
 }
 
 void AudioServerSW::finish() {
 
-#ifndef NO_AUDIO_THREADS
+#ifndef NO_THREADS
 	exit_update_thread=true;
 	Thread::wait_to_finish(thread);
 	memdelete(thread);
@@ -861,7 +848,7 @@ void AudioServerSW::_update_streams(bool p_thread) {
 void AudioServerSW::update() {
 
 	_update_streams(false);
-#ifdef NO_AUDIO_THREADS
+#ifdef NO_THREADS
 
 	_update_streams(true);
 #endif
