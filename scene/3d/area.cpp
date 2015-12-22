@@ -579,7 +579,7 @@ void Area::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("area_enter",PropertyInfo(Variant::OBJECT,"area",PROPERTY_HINT_RESOURCE_TYPE,"Area")));
 	ADD_SIGNAL( MethodInfo("area_exit",PropertyInfo(Variant::OBJECT,"area",PROPERTY_HINT_RESOURCE_TYPE,"Area")));
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"space_override",PROPERTY_HINT_ENUM,"Disabled,Combine,Replace"),_SCS("set_space_override_mode"),_SCS("get_space_override_mode"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"space_override",PROPERTY_HINT_ENUM,"Disabled,Combine,Combine-Replace,Replace,Replace-Combine"),_SCS("set_space_override_mode"),_SCS("get_space_override_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"gravity_point"),_SCS("set_gravity_is_point"),_SCS("is_gravity_a_point"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity_distance_scale", PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_gravity_distance_scale"),_SCS("get_gravity_distance_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"gravity_vec"),_SCS("set_gravity_vector"),_SCS("get_gravity_vector"));
