@@ -81,6 +81,11 @@ Error ThreadPosix::set_name(const String& p_name) {
 
 	ERR_FAIL_COND_V(pthread == 0, ERR_UNCONFIGURED);
 
+	#ifdef PTHREAD_NO_RENAME
+	return ERR_UNAVAILABLE;
+
+	#else
+
 	#ifdef PTHREAD_RENAME_SELF
 
 	// check if thread is the same as caller
@@ -100,6 +105,8 @@ Error ThreadPosix::set_name(const String& p_name) {
 	#endif
 
 	return err == 0 ? OK : ERR_INVALID_PARAMETER;
+
+	#endif // PTHREAD_NO_RENAME
 };
 
 void ThreadPosix::make_default() {
