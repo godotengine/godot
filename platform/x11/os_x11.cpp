@@ -426,7 +426,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	physics_2d_server->init();
 
 	input = memnew( InputDefault );
-#ifdef __linux__
+#ifdef JOYDEV_ENABLED
 	joystick = memnew( joystick_linux(input));
 #endif
 	_ensure_data_dir();
@@ -461,7 +461,7 @@ void OS_X11::finalize() {
 
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
-#ifdef __linux__
+#ifdef JOYDEV_ENABLED
 	memdelete(joystick);
 #endif
 	memdelete(input);
@@ -1753,7 +1753,7 @@ void OS_X11::run() {
 	while (!force_quit) {
 	
 		process_xevents(); // get rid of pending events
-#ifdef __linux__
+#ifdef JOYDEV_ENABLED
 		event_id = joystick->process_joysticks(event_id);
 #endif
 		if (Main::iteration()==true)
