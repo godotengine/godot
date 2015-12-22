@@ -80,7 +80,7 @@ def configure(env):
 		env.opus_fixed_point="yes"
 
 	env.Append(CPPFLAGS=["-fno-exceptions",'-DNO_SAFE_CAST','-fno-rtti'])
-	env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL','-DMPC_FIXED_POINT','-DTYPED_METHOD_BIND','-DNO_THREADS'])
+	env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DPTHREAD_NO_RENAME', '-DNO_FCNTL','-DMPC_FIXED_POINT','-DTYPED_METHOD_BIND','-DNO_THREADS'])
 	env.Append(CPPFLAGS=['-DGLES2_ENABLED'])
 	env.Append(CPPFLAGS=['-DGLES_NO_CLIENT_ARRAYS'])
 	env.Append(CPPFLAGS=['-s','ASM_JS=1'])
