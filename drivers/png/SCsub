@@ -23,7 +23,7 @@ png_sources = [
 ]
 
 if ("neon_enabled" in env and env["neon_enabled"]):
-	env.Append(CPPFLAGS=["-DPNG_ARM_NEON_OPT=2"])	
+	env.Append(CPPFLAGS=["-DPNG_ARM_NEON_OPT=2"])
 	env_neon = env.Clone();
 	if "S_compiler" in env:
 		env_neon['CC'] = env['S_compiler']
