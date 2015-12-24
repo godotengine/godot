@@ -50,6 +50,9 @@ private:
 	TextureFrame *uv_edit;
 	TextureFrame *w_edit;
 	TextureFrame *sample;
+	TextureFrame *preset;
+	Button *bt_add_preset;
+	List<Color> presets;
 	ToolButton *btn_pick;
 	CheckButton *btn_mode;
 	Ref<CanvasItemMaterial> uv_material;
@@ -72,10 +75,13 @@ private:
 	void _value_changed(double);
 	void _update_controls();
 	void _update_color();
+	void _update_presets();
 	void _sample_draw();
 
 	void _uv_input(const InputEvent& p_input);
 	void _w_input(const InputEvent& p_input);
+	void _preset_input(const InputEvent& p_input);
+	void _add_preset_pressed();
 protected:
 
 	void _notification(int);
@@ -87,7 +93,8 @@ public:
 
 	void set_color(const Color& p_color);
 	Color get_color() const;
-	
+
+	void add_preset(const Color& p_color);
 	void set_raw_mode(bool p_enabled);
 	bool is_raw_mode() const;
 
