@@ -1533,7 +1533,7 @@ const ShaderGraph::NodeSlotInfo ShaderGraph::node_slot_info[]= {
 		{NODE_CURVE_MAP,{SLOT_TYPE_SCALAR,SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, // vec3 interpolation  (with optional curve)
 		{NODE_SCALAR_INPUT,{SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, // scalar uniform (assignable in material)
 		{NODE_VEC_INPUT,{SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // vec3 uniform (assignable in material)
-		{NODE_RGB_INPUT,{SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // color uniform (assignable in material)
+		{NODE_RGB_INPUT,{SLOT_MAX},{SLOT_TYPE_VEC,SLOT_TYPE_SCALAR,SLOT_MAX}}, // color uniform (assignable in material)
 		{NODE_XFORM_INPUT,{SLOT_MAX},{SLOT_TYPE_XFORM,SLOT_MAX}}, // mat4 uniform (assignable in material)
 		{NODE_TEXTURE_INPUT,{SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_TYPE_SCALAR,SLOT_MAX}}, // texture input (assignable in material)
 		{NODE_CUBEMAP_INPUT,{SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_TYPE_SCALAR,SLOT_MAX}}, // cubemap input (assignable in material)
@@ -2576,8 +2576,9 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			String name = p_node->param1;
 			Color dv= p_node->param2;
 
-			code +="uniform color "+name+"=vec4("+rtos(dv.r)+","+rtos(dv.g)+","+rtos(dv.g)+","+rtos(dv.a)+");\n";
+			code +="uniform color "+name+"=vec4("+rtos(dv.r)+","+rtos(dv.g)+","+rtos(dv.b)+","+rtos(dv.a)+");\n";
 			code += OUTNAME(p_node->id,0)+"="+name+".rgb;\n";
+			code += OUTNAME(p_node->id,1)+"="+name+".a;\n";
 
 		}break;
 		case NODE_XFORM_INPUT: {
