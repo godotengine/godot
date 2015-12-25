@@ -567,12 +567,12 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				CHECK_SPACE(3);
 
-				GET_VARIANT_PTR(src, 1);
-				GET_VARIANT_PTR(dst, 3);
+				GET_VARIANT_PTR(src,1);
+				GET_VARIANT_PTR(dst,3);
 
-				int indexname = _code_ptr[ip + 2];
+				int indexname = _code_ptr[ip+2];
 
-				ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
+				ERR_BREAK(indexname<0 || indexname>=_global_names_count);
 				const StringName *index = &_global_names_ptr[indexname];
 
 				bool valid;
@@ -598,8 +598,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 							err_text = "Invalid get index '" + index->operator String() + "' (on base: '" +
 									   _get_var_type(src) + "'). Did you mean '." + index->operator String() + "()' ?";
 						} else {
-							err_text = "Invalid get index '" + index->operator String() + "' (on base: '" +
-									   _get_var_type(src) + "').";
+						err_text="Invalid get index '"+index->operator String()+"' (on base: '"+_get_var_type(src)+"').";
 						}
 						break;
 					}
@@ -1514,7 +1513,7 @@ Variant GDFunctionState::resume(const Variant& p_arg) {
 
 void GDFunctionState::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("resume:var","arg"),&GDFunctionState::resume,DEFVAL(Variant()));
+	ObjectTypeDB::bind_method(_MD("resume:Variant","arg"),&GDFunctionState::resume,DEFVAL(Variant()));
 	ObjectTypeDB::bind_method(_MD("is_valid"),&GDFunctionState::is_valid);
 	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"_signal_callback",&GDFunctionState::_signal_callback,MethodInfo("_signal_callback"));
 
@@ -1700,7 +1699,7 @@ Object *GDNativeClass::instance() {
 
 
 
-GDInstance* GDScript::_create_instance(const Variant** p_args,int p_argcount,Object *p_owner,bool p_isref) {
+GDInstance* GDScript::_create_instance(const Variant** p_args,int p_argcount,Object *p_owner,bool p_isref,Variant::CallError& r_error) {
 
 
 	/* STEP 1, CREATE */
@@ -1756,7 +1755,7 @@ Variant GDScript::_new(const Variant** p_args,int p_argcount,Variant::CallError&
 	}
 
 
-	GDInstance* instance = _create_instance(p_args,p_argcount,owner,r!=NULL);
+	GDInstance* instance = _create_instance(p_args,p_argcount,owner,r!=NULL,r_error);
 	if (!instance) {
 		if (ref.is_null()) {
 			memdelete(owner); //no owner, sorry
@@ -1888,7 +1887,8 @@ ScriptInstance* GDScript::instance_create(Object *p_this) {
 		}
 	}
 
-	return _create_instance(NULL,0,p_this,p_this->cast_to<Reference>());
+	Variant::CallError unchecked_error;
+	return _create_instance(NULL,0,p_this,p_this->cast_to<Reference>(),unchecked_error);
 
 }
 bool GDScript::instance_has(const Object *p_this) const {
@@ -2578,6 +2578,7 @@ Ref<GDLambdaFunctionObject>  GDInstance::get_lambda_function(StringName p_name, 
 		}
 		sptr = sptr->_base;
 	}
+
 	return NULL;
 }
 
@@ -2699,6 +2700,27 @@ void GDInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
 		p_properties->push_back(E->get());
 	}
+}
+
+
+
+Variant::Type GDInstance::get_property_type(const StringName& p_name,bool *r_is_valid) const {
+
+
+	const GDScript *sptr=script.ptr();
+	while(sptr) {
+
+		if (sptr->member_info.has(p_name)) {
+			if (r_is_valid)
+				*r_is_valid=true;
+			return sptr->member_info[p_name].type;
+		}
+		sptr = sptr->_base;
+	}
+
+	if (r_is_valid)
+		*r_is_valid=false;
+	return Variant::NIL;
 }
 
 void GDInstance::get_method_list(List<MethodInfo> *p_list) const {
