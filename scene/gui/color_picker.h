@@ -79,6 +79,7 @@ private:
 	void _update_color();
 	void _update_presets();
 	void _sample_draw();
+	void _hsv_draw(int p_wich,Control *c);
 
 	void _uv_input(const InputEvent& p_input);
 	void _w_input(const InputEvent& p_input);

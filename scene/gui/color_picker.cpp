@@ -90,6 +90,8 @@ void ColorPicker::set_color(const Color& p_color) {
 	v=color.get_v();
 	update_material(uv_material, color);
 	update_material(w_material, color);
+	uv_edit->get_child(0)->cast_to<Control>()->update();
+	w_edit->get_child(0)->cast_to<Control>()->update();
 	_update_color();
 
 }
@@ -210,6 +212,24 @@ void ColorPicker::_sample_draw() {
 	sample->draw_rect(Rect2(Point2(),Size2(256,20)),color);
 }
 
+void ColorPicker::_hsv_draw(int p_wich,Control* c)
+{
+	if (!c)
+		return;
+	if (p_wich==0) {
+		int x=c->get_size().x*color.get_s();
+		int y=c->get_size().y-c->get_size().y*color.get_v();
+		c->draw_line(Point2(x,0),Point2(x,c->get_size().y),color.inverted());
+		c->draw_line(Point2(0,y),Point2(c->get_size().x,y),color.inverted());
+		c->draw_line(Point2(x,y),Point2(x,y),Color(1,1,1),2);
+	} else if (p_wich==1) {
+		int y=c->get_size().y-c->get_size().y*color.get_h();
+		Color col=Color();
+		col.set_hsv(color.get_h(),1,1);
+		c->draw_line(Point2(0,y),Point2(c->get_size().x,y),col.inverted());
+	}
+}
+
 void ColorPicker::_uv_input(const InputEvent &ev) {
 	if (ev.type == InputEvent::MOUSE_BUTTON) {
 		const InputEventMouseButton &bev = ev.mouse_button;
@@ -220,7 +240,7 @@ void ColorPicker::_uv_input(const InputEvent &ev) {
 			s=x/256;
 			v=1.0-y/256.0;
 			color.set_hsv(h,s,v,color.a);
-			update_material(w_material, color);
+			set_color(color);
 			_update_color();
 			emit_signal("color_changed", color);
 		} else {
@@ -235,7 +255,7 @@ void ColorPicker::_uv_input(const InputEvent &ev) {
 		s=x/256;
 		v=1.0-y/256.0;
 		color.set_hsv(h,s,v,color.a);
-		update_material(w_material, color);
+		set_color(color);
 		_update_color();
 		emit_signal("color_changed", color);
 	}
@@ -252,7 +272,7 @@ void ColorPicker::_w_input(const InputEvent &ev) {
 			changing_color = false;
 		}
 		color.set_hsv(h,s,v,color.a);
-		update_material(uv_material, color);
+		set_color(color);
 		_update_color();
 		emit_signal("color_changed", color);
 	} else if (ev.type == InputEvent::MOUSE_MOTION) {
@@ -262,7 +282,7 @@ void ColorPicker::_w_input(const InputEvent &ev) {
 		float y = CLAMP((float)bev.y,0,256);
 		h=1.0-y/256.0;
 		color.set_hsv(h,s,v,color.a);
-		update_material(uv_material, color);
+		set_color(color);
 		_update_color();
 		emit_signal("color_changed", color);
 	}
@@ -306,7 +326,7 @@ void ColorPicker::_screen_input(const InputEvent &ev)
 		Viewport *r=get_tree()->get_root();
 		if (!r->get_rect().has_point(Point2(mev.global_x,mev.global_y)))
 			return;
-		Image &img =r->get_screen_capture();
+		Image img =r->get_screen_capture();
 		if (!img.empty())
 			last_capture=img;
 			r->queue_screen_capture();
@@ -347,6 +367,7 @@ void ColorPicker::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_add_preset_pressed"), &ColorPicker::_add_preset_pressed);
 	ObjectTypeDB::bind_method(_MD("_screen_pick_pressed"), &ColorPicker::_screen_pick_pressed);
 	ObjectTypeDB::bind_method(_MD("_sample_draw"),&ColorPicker::_sample_draw);
+	ObjectTypeDB::bind_method(_MD("_hsv_draw"),&ColorPicker::_hsv_draw);
 	ObjectTypeDB::bind_method(_MD("_uv_input"),&ColorPicker::_uv_input);
 	ObjectTypeDB::bind_method(_MD("_w_input"),&ColorPicker::_w_input);
 	ObjectTypeDB::bind_method(_MD("_preset_input"),&ColorPicker::_preset_input);
@@ -390,6 +411,15 @@ ColorPicker::ColorPicker() :
 	uv_edit->set_ignore_mouse(false);
 	uv_edit->set_custom_minimum_size(Size2(256,256));
 	uv_edit->connect("input_event", this, "_uv_input");
+	Control *c= memnew( Control );
+	uv_edit->add_child(c);
+	c->set_area_as_parent_rect();
+	c->set_stop_mouse(false);
+	c->set_material(memnew ( CanvasItemMaterial ));
+	Vector<Variant> args=Vector<Variant>();
+	args.push_back(0);
+	args.push_back(c);
+	c->connect("draw",this,"_hsv_draw",args);
 
 	add_child(hb_edit);
 	w_edit= memnew( TextureFrame );
@@ -404,6 +434,15 @@ ColorPicker::ColorPicker() :
 	w_edit->set_ignore_mouse(false);
 	w_edit->set_custom_minimum_size(Size2(15,256));
 	w_edit->connect("input_event", this, "_w_input");
+	c= memnew( Control );
+	w_edit->add_child(c);
+	c->set_area_as_parent_rect();
+	c->set_stop_mouse(false);
+	c->set_material(memnew ( CanvasItemMaterial ));
+	args.clear();
+	args.push_back(1);
+	args.push_back(c);
+	c->connect("draw",this,"_hsv_draw",args);
 	
 	hb_edit->add_child(uv_edit);
 	hb_edit->add_child(memnew( VSeparator ));
