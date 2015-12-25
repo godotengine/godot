@@ -47,6 +47,8 @@ class ColorPicker : public BoxContainer {
 
 private:
 
+	Control *screen;
+	Image last_capture;
 	TextureFrame *uv_edit;
 	TextureFrame *w_edit;
 	TextureFrame *sample;
@@ -81,7 +83,9 @@ private:
 	void _uv_input(const InputEvent& p_input);
 	void _w_input(const InputEvent& p_input);
 	void _preset_input(const InputEvent& p_input);
+	void _screen_input(const InputEvent& p_input);
 	void _add_preset_pressed();
+	void _screen_pick_pressed();
 protected:
 
 	void _notification(int);

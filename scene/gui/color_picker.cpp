@@ -29,6 +29,7 @@
 #include "color_picker.h"
 
 #include "scene/gui/separator.h"
+#include "scene/main/viewport.h"
 #include "os/os.h"
 #include "os/input.h"
 #include "os/keyboard.h"
@@ -282,8 +283,8 @@ void ColorPicker::_preset_input(const InputEvent &ev) {
 		_update_color();
 		emit_signal("color_changed", color);
 	} else if (ev.type == InputEvent::MOUSE_MOTION) {
-		const InputEventMouseButton &bev = ev.mouse_button;
-		int index = bev.x/(preset->get_size().x/presets.size());
+		const InputEventMouse &mev = ev.mouse_motion;
+		int index = mev.x/(preset->get_size().x/presets.size());
 		if (index<0 || index >= presets.size())
 			return;
 		preset->set_tooltip("Color: #"+presets[index].to_html(presets[index].a<1)+"\n"
@@ -292,8 +293,44 @@ void ColorPicker::_preset_input(const InputEvent &ev) {
 	}
 }
 
+void ColorPicker::_screen_input(const InputEvent &ev)
+{
+	if (ev.type==InputEvent::MOUSE_BUTTON) {
+		const InputEventMouseButton &bev = ev.mouse_button;
+		if (bev.button_index==BUTTON_LEFT&&!bev.pressed) {
+			emit_signal("color_changed", color);
+			screen->hide();
+		}
+	} else if (ev.type==InputEvent::MOUSE_MOTION) {
+		const InputEventMouse &mev = ev.mouse_motion;
+		Viewport *r=get_tree()->get_root();
+		if (!r->get_rect().has_point(Point2(mev.global_x,mev.global_y)))
+			return;
+		Image &img =r->get_screen_capture();
+		if (!img.empty())
+			last_capture=img;
+			r->queue_screen_capture();
+		if (!last_capture.empty())
+			set_color(last_capture.get_pixel(mev.global_x,mev.global_y));
+	}
+}
+
 void ColorPicker::_add_preset_pressed() {
 	add_preset(color);
+}
+
+void ColorPicker::_screen_pick_pressed()
+{
+	Viewport *r=get_tree()->get_root();
+	if (!screen) {
+		screen=memnew( Control );
+		r->add_child(screen);
+		screen->set_area_as_parent_rect();
+		screen->connect("input_event",this,"_screen_input");
+	}
+	screen->raise();
+	screen->show();
+	r->queue_screen_capture();
 }
 
 void ColorPicker::_bind_methods() {
@@ -308,10 +345,12 @@ void ColorPicker::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_value_changed"),&ColorPicker::_value_changed);
 	ObjectTypeDB::bind_method(_MD("_html_entered"),&ColorPicker::_html_entered);
 	ObjectTypeDB::bind_method(_MD("_add_preset_pressed"), &ColorPicker::_add_preset_pressed);
+	ObjectTypeDB::bind_method(_MD("_screen_pick_pressed"), &ColorPicker::_screen_pick_pressed);
 	ObjectTypeDB::bind_method(_MD("_sample_draw"),&ColorPicker::_sample_draw);
 	ObjectTypeDB::bind_method(_MD("_uv_input"),&ColorPicker::_uv_input);
 	ObjectTypeDB::bind_method(_MD("_w_input"),&ColorPicker::_w_input);
 	ObjectTypeDB::bind_method(_MD("_preset_input"),&ColorPicker::_preset_input);
+	ObjectTypeDB::bind_method(_MD("_screen_input"),&ColorPicker::_screen_input);
 
 	ADD_SIGNAL( MethodInfo("color_changed",PropertyInfo(Variant::COLOR,"color")));
 }
@@ -323,9 +362,12 @@ ColorPicker::ColorPicker() :
 	edit_alpha=true;
 	raw_mode_enabled=false;
 	changing_color=false;
+	screen=NULL;
 
 	HBoxContainer *hb_smpl = memnew( HBoxContainer );
 	btn_pick = memnew( ToolButton );
+	btn_pick->connect("pressed",this,"_screen_pick_pressed");
+
 	sample = memnew( TextureFrame );
 	sample->set_h_size_flags(SIZE_EXPAND_FILL);
 	sample->connect("draw",this,"_sample_draw");
@@ -460,7 +502,7 @@ ColorPicker::ColorPicker() :
 	bt_add_preset = memnew ( Button );
 	bt_add_preset->set_icon(get_icon("add_preset"));
 	bt_add_preset->set_tooltip("Add current color as a preset");
-	bt_add_preset->connect("pressed", this, "_add_preset_pressed", Vector<Variant>());
+	bt_add_preset->connect("pressed", this, "_add_preset_pressed");
 	bbc->add_child(bt_add_preset);
 }
 
