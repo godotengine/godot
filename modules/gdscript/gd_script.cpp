@@ -1591,8 +1591,8 @@ Variant GDFunctionObject::apply_with(Object *p_target, const Array p_args) {
 
 void GDFunctionObject::_bind_methods() {
 	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"apply",&GDFunctionObject::_apply, MethodInfo("apply"));
-	ObjectTypeDB::bind_method(_MD("applyv:var", "args:Array"), &GDFunctionObject::applyv, DEFVAL(Array()));
-	ObjectTypeDB::bind_method(_MD("apply_with:var", "target:Object", "args:Array"), &GDFunctionObject::apply_with, DEFVAL(Array()));
+	ObjectTypeDB::bind_method(_MD("applyv:Variant", "args:Array"), &GDFunctionObject::applyv, DEFVAL(Array()));
+	ObjectTypeDB::bind_method(_MD("apply_with:Variant", "target:Object", "args:Array"), &GDFunctionObject::apply_with, DEFVAL(Array()));
 	ObjectTypeDB::bind_method(_MD("is_valid"), &GDFunctionObject::is_valid);
 	ObjectTypeDB::bind_method(_MD("get_name"), &GDFunctionObject::get_name);
 	ObjectTypeDB::bind_method(_MD("get_owner:Object"), &GDFunctionObject::get_owner);
@@ -1639,7 +1639,7 @@ Variant GDLambdaFunctionObject::apply_with(Object *p_target, const Array p_args)
 }
 
 GDLambdaFunctionObject::~GDLambdaFunctionObject() {
-	instance->remove_lambda_function(this);
+	if (instance) instance->remove_lambda_function(this);
 }
 
 ///////////////////////////
