@@ -49,7 +49,7 @@ void FileDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		refresh->set_icon(get_icon("Reload","EditorIcons"));
+		refresh->set_icon(get_icon("reload"));
 	}
 	
 	if (p_what==NOTIFICATION_DRAW) {
