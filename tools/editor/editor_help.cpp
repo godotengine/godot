@@ -690,16 +690,28 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		class_desc->pop();
 
 		//class_desc->add_newline();
-		class_desc->add_newline();
+//		class_desc->add_newline();
 
 		class_desc->push_indent(1);
+		class_desc->push_table(2);
+		class_desc->set_table_column_expand(1,1);
 
 		for(int i=0;i<cd.methods.size();i++) {
 
+			class_desc->push_cell();
+
+
 			method_line[cd.methods[i].name]=class_desc->get_line_count()-2;	//gets overriden if description
+			class_desc->push_align(RichTextLabel::ALIGN_RIGHT);
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.methods[i].return_type);
-			class_desc->add_text(" ");
+			//class_desc->add_text(" ");
+			class_desc->pop(); //align
+			class_desc->pop(); //font
+			class_desc->pop(); //cell
+			class_desc->push_cell();
+			class_desc->push_font(doc_code_font);
+
 			if (cd.methods[i].description!="") {
 				method_descr=true;
 				class_desc->push_meta("@"+cd.methods[i].name);
@@ -742,11 +754,13 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 			}
 			class_desc->pop();//monofont
-			class_desc->add_newline();
+//			class_desc->add_newline();
+			class_desc->pop(); //cell
 
 		}
-
+		class_desc->pop(); //table
 		class_desc->pop();
+		class_desc->add_newline();
 		class_desc->add_newline();
 
 	}
