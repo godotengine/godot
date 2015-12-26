@@ -543,7 +543,11 @@ void make_default_theme() {
 	t->set_constant("close_v_ofs","WindowDialog", 20 );
 	t->set_constant("titlebar_height","WindowDialog", 18 );
 	t->set_constant("title_height","WindowDialog", 20 );
-
+	
+	
+	// File Dialog
+	
+	t->set_icon("reload","FileDialog",make_icon( icon_reload_png ));
 
 
 	// Popup
