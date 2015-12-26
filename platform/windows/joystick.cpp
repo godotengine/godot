@@ -100,6 +100,13 @@ int joystick_windows::check_free_joy_slot() const {
 // adapted from SDL2, works a lot better than the MSDN version
 bool joystick_windows::is_xinput_device(const GUID *p_guid) {
 
+	static GUID IID_ValveStreamingGamepad = { MAKELONG(0x28DE, 0x11FF), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
+	static GUID IID_X360WiredGamepad = { MAKELONG(0x045E, 0x02A1), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
+	static GUID IID_X360WirelessGamepad = { MAKELONG(0x045E, 0x028E), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
+
+	if (p_guid == &IID_ValveStreamingGamepad || p_guid == &IID_X360WiredGamepad || p_guid == &IID_X360WirelessGamepad)
+		return true;
+
 	PRAWINPUTDEVICELIST dev_list = NULL;
 	unsigned int dev_list_count = 0;
 
@@ -144,7 +151,7 @@ bool joystick_windows::setup_dinput_joystick(const DIDEVICEINSTANCE* instance) {
 		return false;
 
 	d_joysticks[joystick_count] = dinput_gamepad();
-	dinput_gamepad* joy = &d_joysticks[num];
+	dinput_gamepad* joy = &d_joysticks[joystick_count];
 
 	const DWORD devtype = (instance->dwDevType & 0xFF);
 
@@ -168,7 +175,8 @@ bool joystick_windows::setup_dinput_joystick(const DIDEVICEINSTANCE* instance) {
 		 guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
 			guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
 
-	id_to_change = num;
+	id_to_change = joystick_count;
+
 	joy->di_joy->SetDataFormat(&c_dfDIJoystick2);
 	joy->di_joy->SetCooperativeLevel(*hWnd, DISCL_FOREGROUND);
 	joy->di_joy->EnumObjects(objectsCallback, this, NULL);
@@ -218,7 +226,7 @@ void joystick_windows::setup_joystick_object(const DIDEVICEOBJECTINSTANCE *ob, i
 		dinput_gamepad &joy = d_joysticks[p_joy_id];
 
 
-		res = joy.di_joy->SetProperty(DIPROP_RANGE, &prop_range.diph);
+		res = IDirectInputDevice8_SetProperty(joy.di_joy, DIPROP_RANGE, &prop_range.diph);
 		if (FAILED(res))
 			return;
 
@@ -365,13 +373,13 @@ unsigned int joystick_windows::process_joysticks(unsigned int p_last_id) {
 			IDirectInputDevice8_Acquire(joy->di_joy);
 			joy->di_joy->Poll();
 		}
-		if (FAILED(hr = d_joysticks[i].di_joy->GetDeviceState(sizeof(DIJOYSTATE2), &js))) {
+		if (FAILED(hr = joy->di_joy->GetDeviceState(sizeof(DIJOYSTATE2), &js))) {
 
 			//printf("failed to read joy #%d\n", i);
 			continue;
 		}
 
-		p_last_id = post_hat(p_last_id, i, js.rgdwPOV[0]);
+		p_last_id = post_hat(p_last_id, joy->id, js.rgdwPOV[0]);
 
 		for (int j = 0; j < 128; j++) {
 
@@ -379,7 +387,7 @@ unsigned int joystick_windows::process_joysticks(unsigned int p_last_id) {
 
 				if (!joy->last_buttons[j]) {
 
-					p_last_id = input->joy_button(p_last_id, i, j, true);
+					p_last_id = input->joy_button(p_last_id, joy->id, j, true);
 					joy->last_buttons[j] = true;
 				}
 			}
@@ -387,7 +395,7 @@ unsigned int joystick_windows::process_joysticks(unsigned int p_last_id) {
 
 				if (joy->last_buttons[j]) {
 
-					p_last_id = input->joy_button(p_last_id, i, j, false);
+					p_last_id = input->joy_button(p_last_id, joy->id, j, false);
 					joy->last_buttons[j] = false;
 				}
 			}
@@ -402,7 +410,7 @@ unsigned int joystick_windows::process_joysticks(unsigned int p_last_id) {
 
 			for (int k=0; k<count; k++) {
 				if (joy->joy_axis[j] == axes[k]) {
-					p_last_id = input->joy_axis(p_last_id, i, j, axis_correct(values[k]));
+					p_last_id = input->joy_axis(p_last_id, joy->id, j, axis_correct(values[k]));
 					break;
 				};
 			};
