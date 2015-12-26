@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_player.h                                                      */
+/*  joystick_linux.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,96 +26,68 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef STREAM_PLAYER_H
-#define STREAM_PLAYER_H
 
-#include "scene/resources/audio_stream.h"
-#include "scene/main/node.h"
-#include "servers/audio/audio_rb_resampler.h"
+//author: Andreas Haas <hondres,  liugam3@gmail.com>
+#ifndef JOYSTICK_LINUX_H
+#define JOYSTICK_LINUX_H
+#ifdef JOYDEV_ENABLED
+#include "main/input_default.h"
+#include "os/thread.h"
+#include "os/mutex.h"
 
-class StreamPlayer : public Node {
+struct input_absinfo;
 
-	OBJ_TYPE(StreamPlayer,Node);
+class joystick_linux
+{
+public:
+	joystick_linux(InputDefault *in);
+	~joystick_linux();
+	uint32_t process_joysticks(uint32_t p_event_id);
+private:
 
-	//_THREAD_SAFE_CLASS_
-
-	struct InternalStream : public AudioServer::AudioStream {
-		StreamPlayer *player;
-		virtual int get_channel_count() const;
-		virtual void set_mix_rate(int p_rate); //notify the stream of the mix rate
-		virtual bool mix(int32_t *p_buffer,int p_frames);
-		virtual void update();
+	enum {
+		JOYSTICKS_MAX = 16,
+		MAX_ABS = 63,
+		MAX_KEY = 767,   // Hack because <linux/input.h> can't be included here
+		BT_MISC = 256,
+		HAT_MAX = 4,
 	};
 
+	struct Joystick {
+		int key_map[MAX_KEY - BT_MISC];
+		int abs_map[MAX_ABS];
+		int num_buttons;
+		int num_axes;
+		int dpad;
+		int fd;
 
-	InternalStream internal_stream;
-	Ref<AudioStreamPlayback> playback;
-	Ref<AudioStream> stream;
+		String devpath;
+		struct libevdev *dev;
 
-	int sp_get_channel_count() const;
-	void sp_set_mix_rate(int p_rate); //notify the stream of the mix rate
-	bool sp_mix(int32_t *p_buffer,int p_frames);
-	void sp_update();
+		Joystick();
+		void reset();
+	};
 
-	int server_mix_rate;
+	bool exit_udev;
+	Mutex *joy_mutex;
+	Thread *joy_thread;
+	InputDefault *input;
+	Joystick joysticks[JOYSTICKS_MAX];
 
-	RID stream_rid;
-	bool paused;
-	bool autoplay;
-	bool loops;
-	float volume;
-	float loop_point;
-	int buffering_ms;
-	volatile bool stop_request;
+	static void joy_thread_func(void *p_user);
 
-	AudioRBResampler resampler;
+	int get_joy_from_path(String path) const;
+	int get_free_joy_slot() const;
 
-	bool _play;
-	void _set_play(bool p_play);
-	bool _get_play() const;
-protected:
-	void _notification(int p_what);
+	void setup_joystick_properties(int p_id);
+	void close_joystick(int p_id = -1);
+	void enumerate_joysticks(struct udev *_udev);
+	void monitor_joysticks(struct udev *_udev);
+	void run_joystick_thread();
+	void open_joystick(const char* path);
 
-	static void _bind_methods();
-public:
-
-	void set_stream(const Ref<AudioStream> &p_stream);
-	Ref<AudioStream> get_stream() const;
-
-	void play(float p_from_offset=0);
-	void stop();
-	bool is_playing() const;
-
-	void set_paused(bool p_paused);
-	bool is_paused() const;
-
-	void set_loop(bool p_enable);
-	bool has_loop() const;
-
-	void set_volume(float p_vol);
-	float get_volume() const;
-
-	void set_loop_restart_time(float p_secs);
-	float get_loop_restart_time() const;
-
-	void set_volume_db(float p_db);
-	float get_volume_db() const;
-
-	String get_stream_name() const;
-
-	int get_loop_count() const;
-
-	float get_pos() const;
-	void seek_pos(float p_time);
-	float get_length() const;
-	void set_autoplay(bool p_vol);
-	bool has_autoplay() const;
-
-	void set_buffering_msec(int p_msec);
-	int get_buffering_msec() const;
-
-	StreamPlayer();
-	~StreamPlayer();
+	InputDefault::JoyAxis axis_correct(const input_absinfo *abs, int value) const;
 };
 
-#endif // AUDIO_STREAM_PLAYER_H
+#endif
+#endif // JOYSTICK_LINUX_H

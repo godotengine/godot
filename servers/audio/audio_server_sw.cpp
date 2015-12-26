@@ -659,7 +659,7 @@ bool AudioServerSW::voice_is_active(RID p_voice) const {
 
 RID AudioServerSW::audio_stream_create(AudioStream *p_stream) {
 
-	AUDIO_LOCK		
+	AUDIO_LOCK
 	Stream *s = memnew(Stream);
 	s->audio_stream=p_stream;
 	s->event_stream=NULL;
@@ -693,11 +693,11 @@ void AudioServerSW::stream_set_active(RID p_stream, bool p_active) {
 
 	Stream *s = stream_owner.get(p_stream);
 	ERR_FAIL_COND(!s);
+	_THREAD_SAFE_METHOD_
 
 	if (s->active==p_active)
 		return;
 	AUDIO_LOCK;
-	_THREAD_SAFE_METHOD_
 	s->active=p_active;
 	if (p_active)
 		s->E=active_audio_streams.push_back(s);
@@ -705,6 +705,8 @@ void AudioServerSW::stream_set_active(RID p_stream, bool p_active) {
 		active_audio_streams.erase(s->E);
 		s->E=NULL;
 	}
+
+
 }
 
 bool AudioServerSW::stream_is_active(RID p_stream) const {
@@ -765,8 +767,6 @@ void AudioServerSW::_thread_func(void *self) {
 
 	AudioServerSW *as=(AudioServerSW *)self;
 
-	as->thread->set_name("AudioServerSW");
-
 	while (!as->exit_update_thread) {
 		as->_update_streams(true);
 		OS::get_singleton()->delay_usec(5000);
@@ -807,6 +807,7 @@ void AudioServerSW::init() {
 #ifndef NO_THREADS
 	exit_update_thread=false;
 	thread = Thread::create(_thread_func,this);
+	thread->set_name("AudioServerSW");
 #endif
 
 }

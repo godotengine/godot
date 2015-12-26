@@ -23,15 +23,18 @@ png_sources = [
 ]
 
 if ("neon_enabled" in env and env["neon_enabled"]):
+	env.Append(CPPFLAGS=["-DPNG_ARM_NEON_OPT=2"])
 	env_neon = env.Clone();
 	if "S_compiler" in env:
 		env_neon['CC'] = env['S_compiler']
-	env_neon.Append(CPPFLAGS=["-DPNG_ARM_NEON"])
+	#env_neon.Append(CPPFLAGS=["-DPNG_ARM_NEON"])
 	import os
 	# Currently .ASM filter_neon.S does not compile on NT.
 	if (os.name!="nt"):
-		png_sources.append(env_neon.Object("#drivers/png/filter_neon.S"))
-
+		png_sources.append(env_neon.Object("#drivers/png/arm/arm_init.c"))
+		png_sources.append(env_neon.Object("#drivers/png/arm/filter_neon.S"))
+else:
+	env.Append(CPPFLAGS=["-DPNG_ARM_NEON_OPT=0"])
 
 env.drivers_sources+=png_sources
 

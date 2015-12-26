@@ -45,7 +45,7 @@ def can_build():
 		print("xinerama not found.. x11 disabled.")
 		return False
 
-	
+
 	return True # X11 enabled
   
 def get_opts():
@@ -151,6 +151,17 @@ def configure(env):
 	if platform.system() == 'Linux':
 		env.Append(CPPFLAGS=["-DALSA_ENABLED"])
 		env.Append(LIBS=['asound'])
+
+		if not os.system("pkg-config --exists libudev"):
+			if not os.system("pkg-config --exists libevdev"):
+				print("Enabling udev/evdev")
+				env.Append(CPPFLAGS=["-DJOYDEV_ENABLED"])
+				env.ParseConfig('pkg-config libudev --cflags --libs')
+				env.ParseConfig('pkg-config libevdev --cflags --libs')
+			else:
+				print("libevdev development libraries not found, disabling gamepad support")
+		else:
+			print("libudev development libraries not found, disabling gamepad support")
 
 	if (env["pulseaudio"]=="yes"):
 		if not os.system("pkg-config --exists libpulse-simple"):

@@ -60,13 +60,11 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+class joystick_windows;
 class OS_Windows : public OS {
 
-	enum {
-		JOYSTICKS_MAX = 8,
-		JOY_AXIS_COUNT = 6,
-		MAX_JOY_AXIS = 32768, // I've no idea
-		KEY_EVENT_BUFFER_SIZE=512
+        enum {
+            KEY_EVENT_BUFFER_SIZE=512
 	};
 
 	FILE *stdo;
@@ -106,32 +104,6 @@ class OS_Windows : public OS {
 	HINSTANCE	hInstance;		// Holds The Instance Of The Application
 	HWND hWnd;
 
-	struct Joystick {
-
-		int id;
-		bool attached;
-
-		DWORD last_axis[JOY_AXIS_COUNT];
-		DWORD last_buttons;
-		DWORD last_pov;
-		String name;
-
-		Joystick() {
-			id = -1;
-			attached = false;
-			for (int i=0; i<JOY_AXIS_COUNT; i++) {
-
-				last_axis[i] = 0;
-			};
-			last_buttons = 0;
-			last_pov = 0;
-		};
-	};
-
-	List<Joystick> joystick_change_queue;
-	int joystick_count;
-	Joystick joysticks[JOYSTICKS_MAX];
-	
 	Size2 window_rect;
 	VideoMode video_mode;
 
@@ -156,12 +128,11 @@ class OS_Windows : public OS {
 	CursorShape cursor_shape;
 
 	InputDefault *input;
+	joystick_windows *joystick;
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;
 #endif
-
-	void _post_dpad(DWORD p_dpad, int p_device, bool p_pressed);
 
 	void _drag_event(int p_x, int p_y, int idx);
 	void _touch_event(bool p_pressed, int p_x, int p_y, int idx);
@@ -186,11 +157,7 @@ protected:
 	virtual void finalize_core();
 	
 	void process_events();
-
-	void probe_joysticks();
-	void process_joysticks();
 	void process_key_events();
-	String get_joystick_name( int id, JOYCAPS jcaps);
 	
 	struct ProcessInfo {
 

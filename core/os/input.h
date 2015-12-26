@@ -62,7 +62,7 @@ public:
 
 	virtual float get_joy_axis(int p_device,int p_axis)=0;
 	virtual String get_joy_name(int p_idx)=0;
-	virtual void joy_connection_changed(int p_idx, bool p_connected, String p_name)=0;
+	virtual void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid)=0;
 
 
 	virtual Point2 get_mouse_pos() const=0;

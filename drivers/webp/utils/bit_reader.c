@@ -17,6 +17,8 @@
 
 #include "./bit_reader_inl.h"
 
+#define JAVASCRIPT_ENABLED // testing
+
 //------------------------------------------------------------------------------
 // VP8BitReader
 
@@ -40,7 +42,13 @@ void VP8InitBitReader(VP8BitReader* const br,
   br->bits_    = -8;   // to load the very first 8bits
   br->eof_     = 0;
   VP8BitReaderSetBuffer(br, start, size);
+
+#ifdef JAVASCRIPT_ENABLED // html5 required aligned reads
+  while(((uintptr_t)br->buf_ & 1) != 0 && !br->eof_)
+	VP8LoadFinalBytes(br);
+#else
   VP8LoadNewBytes(br);
+#endif
 }
 
 void VP8RemapBitReader(VP8BitReader* const br, ptrdiff_t offset) {

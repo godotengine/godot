@@ -47,6 +47,7 @@
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 #include "main/input_default.h"
+#include "joystick_linux.h"
 
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
@@ -113,7 +114,6 @@ class OS_X11 : public OS_Unix {
 
 	bool force_quit;
 	bool minimized;
-	int dpad_last[2];
 
 	bool do_mouse_warp;
 
@@ -125,6 +125,10 @@ class OS_X11 : public OS_Unix {
 	CursorShape current_cursor;
 
 	InputDefault *input;
+
+#ifdef JOYDEV_ENABLED
+	joystick_linux *joystick;
+#endif
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;
@@ -138,26 +142,7 @@ class OS_X11 : public OS_Unix {
 	AudioDriverPulseAudio driver_pulseaudio;
 #endif
 
-	enum {
-		JOYSTICKS_MAX = 8,
-		MAX_JOY_AXIS = 32768, // I've no idea
-	};
-
-	struct Joystick {
-
-		int fd;
-		int last_axis[JOY_AXIS_MAX];
-
-		Joystick() {
-			fd = -1;
-			for (int i=0; i<JOY_AXIS_MAX; i++) {
-
-				last_axis[i] = 0;
-			};
-		};
-	};
-	int joystick_count;
-	Joystick joysticks[JOYSTICKS_MAX];
+	Atom net_wm_icon;
 
 	int audio_driver_index;
 	unsigned int capture_idle;
@@ -179,10 +164,6 @@ protected:
 	virtual void finalize();
 
 	virtual void set_main_loop( MainLoop * p_main_loop );    
-
-	void probe_joystick(int p_id = -1);
-	void process_joysticks();
-	void close_joystick(int p_id = -1);
 
 
 public:

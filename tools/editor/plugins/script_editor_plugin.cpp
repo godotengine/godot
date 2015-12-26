@@ -316,6 +316,8 @@ void ScriptTextEditor::_load_theme_settings() {
 	get_text_edit()->add_keyword_color("Color",basetype_color);
 	get_text_edit()->add_keyword_color("Image",basetype_color);
 	get_text_edit()->add_keyword_color("InputEvent",basetype_color);
+	get_text_edit()->add_keyword_color("Rect2",basetype_color);
+	get_text_edit()->add_keyword_color("NodePath",basetype_color);
 
 	//colorize engine types
 	Color type_color= EDITOR_DEF("text_editor/engine_type_color",Color(0.0,0.2,0.4));
@@ -1773,7 +1775,7 @@ void ScriptEditor::_update_script_colors() {
 		if (h>hist_size) {
 			continue;
 		}
-		float v = Math::ease((edit_pass-pass)/float_t(hist_size),0.4);
+		float v = Math::ease((edit_pass-pass)/float(hist_size),0.4);
 
 
 		script_list->set_item_custom_bg_color(i,hot_color.linear_interpolate(cold_color,v));
