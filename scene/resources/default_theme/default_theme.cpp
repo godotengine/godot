@@ -797,6 +797,8 @@ void make_default_theme() {
 	t->set_color("selection_color","RichTextLabel", Color(0.1,0.1,1,0.8) );
 
 	t->set_constant("line_separation","RichTextLabel", 1 );
+	t->set_constant("table_hseparation","RichTextLabel", 3 );
+	t->set_constant("table_vseparation","RichTextLabel", 3 );
 
 
 

@@ -54,7 +54,7 @@ public:
 
 	enum ItemType {
 
-		ITEM_MAIN,
+		ITEM_FRAME,
 		ITEM_TEXT,
 		ITEM_IMAGE,
 		ITEM_NEWLINE,
@@ -64,6 +64,7 @@ public:
 		ITEM_ALIGN,
 		ITEM_INDENT,
 		ITEM_LIST,
+		ITEM_TABLE,
 		ITEM_META
 	};
 
@@ -72,6 +73,24 @@ protected:
 	static void _bind_methods();
 private:
 
+	struct Item;
+
+	struct Line {
+
+		Item *from;
+		Vector<int> offset_caches;
+		Vector<int> height_caches;
+		Vector<int> space_caches;
+		int height_cache;
+		int height_accum_cache;
+		int char_count;
+		int minimum_width;
+
+		Line() { from=NULL; char_count=0; }
+	};
+
+
+
 	struct Item {
 
 		int index;
@@ -79,17 +98,25 @@ private:
 		ItemType type;
 		List<Item*> subitems;
 		List<Item*>::Element *E;
+		int line;
 
 		void _clear_children() { while (subitems.size()) { memdelete(subitems.front()->get()); subitems.pop_front(); } }
 
-		Item() { parent=NULL; E=NULL; }
+		Item() { parent=NULL; E=NULL; line=0;}
 		virtual ~Item() {  _clear_children(); }
 	};
 
-	struct ItemMain : public Item {
+	struct ItemFrame : public Item{
 
-		ItemMain() { type=ITEM_MAIN; }
+		int parent_line;
+		bool cell;
+		Vector<Line> lines;
+		int first_invalid_line;
+		ItemFrame *parent_frame;
+
+		ItemFrame() { type=ITEM_FRAME; parent_frame=NULL; cell=false; parent_line=0; }
 	};
+
 
 	struct ItemText : public Item {
 
@@ -150,10 +177,27 @@ private:
 		ItemNewline() { type=ITEM_NEWLINE; }
 	};
 
-	ItemMain *main;
+
+	struct ItemTable : public Item{
+
+		struct Column {
+			bool expand;
+			int expand_ratio;
+			int min_width;
+			int width;
+		};
+
+		Vector<Column> columns;
+		int total_width;
+		ItemTable() { type=ITEM_TABLE; }
+	};
+
+	ItemFrame *main;
 	Item *current;
+	ItemFrame *current_frame;
 
 	VScrollBar *vscroll;
+
 
 	bool scroll_visible;
 	bool scroll_follow;
@@ -163,34 +207,16 @@ private:
 	bool updating_scroll;
 	int current_idx;
 
-	struct Line {
-
-		Item *from;
-		Vector<int> offset_caches;
-		Vector<int> height_caches;
-		Vector<int> space_caches;
-		int height_cache;
-		int height_accum_cache;
-		int char_count;
-
-		Line() { from=NULL; char_count=0; }
-	};
-
-
-
-
-	Vector<Line> lines;
-	int first_invalid_line;
 
 	int tab_size;
 	bool underline_meta;
 
 	Align default_align;
 
-	void _invalidate_current_line();
-	void _validate_line_caches();
+	void _invalidate_current_line(ItemFrame *p_frame);
+	void _validate_line_caches(ItemFrame *p_frame);
 
-	void _add_item(Item *p_item, bool p_enter=false);
+	void _add_item(Item *p_item, bool p_enter=false,bool p_ensure_newline=false);
 
 
 
@@ -227,8 +253,8 @@ private:
 	int visible_characters;
 
 
-	void _process_line(int &y, int p_width, int p_line, ProcessMode p_mode,const Ref<Font> &p_base_font,const Color &p_base_color,const Point2i& p_click_pos=Point2i(),Item **r_click_item=NULL,int *r_click_char=NULL,bool *r_outside=NULL,int p_char_count=0);
-	void _find_click(const Point2i& p_click,Item **r_click_item=NULL,int *r_click_char=NULL,bool *r_outside=NULL);
+	void _process_line(ItemFrame *p_frame,const Vector2& p_ofs,int &y, int p_width, int p_line, ProcessMode p_mode,const Ref<Font> &p_base_font,const Color &p_base_color,const Point2i& p_click_pos=Point2i(),Item **r_click_item=NULL,int *r_click_char=NULL,bool *r_outside=NULL,int p_char_count=0);
+	void _find_click(ItemFrame *p_frame, const Point2i& p_click,Item **r_click_item=NULL,int *r_click_char=NULL,bool *r_outside=NULL);
 
 
 	Ref<Font> _find_font(Item *p_item);
@@ -242,12 +268,12 @@ private:
 	void _scroll_changed(double);
 
 	void _input_event(InputEvent p_event);
-	Item *_get_next_item(Item* p_item);
+	Item *_get_next_item(Item* p_item, bool p_free=false);
 
 	bool use_bbcode;
 	String bbcode;
 
-
+	void _update_all_lines();
 
 protected:
 	void _notification(int p_what);
@@ -264,6 +290,10 @@ public:
 	void push_indent(int p_level);
 	void push_list(ListType p_list);
 	void push_meta(const Variant& p_data);
+	void push_table(int p_columns);
+	void set_table_column_expand(int p_column, bool p_expand, int p_ratio=1);
+	int get_current_table_column() const;
+	void push_cell();
 	void pop();
 
 	void clear();
