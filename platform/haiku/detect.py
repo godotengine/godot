@@ -51,6 +51,7 @@ def configure(env):
 		env.Append(CCFLAGS=['-g2', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
 
 	#env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
+	env.Append(CPPFLAGS = ['-DPTHREAD_NO_RENAME']) # TODO: enable when we have pthread_setname_np
 	env.Append(CPPFLAGS = ['-DGLEW_ENABLED', '-DOPENGL_ENABLED', '-DMEDIA_KIT_ENABLED'])
 	env.Append(CPPFLAGS = ['-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DGLES_OVER_GL'])
 	env.Append(LIBS = ['be', 'game', 'media', 'network', 'bnetapi', 'z', 'GL', 'GLEW'])
