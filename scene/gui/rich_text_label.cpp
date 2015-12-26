@@ -475,6 +475,7 @@ if (m_height > line_height) {\
 				int vseparation=get_constant("table_vseparation");
 				Color ccolor = _find_color(table,p_base_color);
 				Vector2 draw_ofs = Point2(wofs,y);
+				int max_y=get_size().height;
 
 				if (p_mode==PROCESS_CACHE) {
 
@@ -562,13 +563,22 @@ if (m_height > line_height) {\
 					int yofs=0;
 
 
+					int lines_h = frame->lines[frame->lines.size()-1].height_accum_cache - (frame->lines[0].height_accum_cache - frame->lines[0].height_cache);
+					int lines_ofs = p_ofs.y+offset.y+draw_ofs.y;
+
+					bool visible = lines_ofs < get_size().height && lines_ofs+lines_h >=0;
+
 					for(int i=0;i<frame->lines.size();i++) {
 
-						if (p_mode==PROCESS_DRAW) {
-							_process_line(frame,p_ofs+offset+draw_ofs+Vector2(0,yofs),ly,table->columns[column].width,i,PROCESS_DRAW,cfont,ccolor);
-						} else if (p_mode==PROCESS_POINTER) {
-							_process_line(frame,p_ofs+offset+draw_ofs+Vector2(0,yofs),ly,table->columns[column].width,i,PROCESS_POINTER,cfont,ccolor,p_click_pos,r_click_item,r_click_char,r_outside);
+
+						if (visible) {
+							if (p_mode==PROCESS_DRAW) {
+								_process_line(frame,p_ofs+offset+draw_ofs+Vector2(0,yofs),ly,table->columns[column].width,i,PROCESS_DRAW,cfont,ccolor);
+							} else if (p_mode==PROCESS_POINTER) {
+								_process_line(frame,p_ofs+offset+draw_ofs+Vector2(0,yofs),ly,table->columns[column].width,i,PROCESS_POINTER,cfont,ccolor,p_click_pos,r_click_item,r_click_char,r_outside);
+							}
 						}
+
 						yofs+=frame->lines[i].height_cache;
 						if (p_mode==PROCESS_CACHE) {
 							frame->lines[i].height_accum_cache=offset.y+draw_ofs.y+frame->lines[i].height_cache;
