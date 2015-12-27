@@ -16,8 +16,11 @@ restarget="godot_res"+env["OBJSUFFIX"]
 
 obj = env.RES(restarget,'godot_res.rc')
 
-common_win.append(obj)
-
+if env["is_mingw"]:
+	common_win.append(obj)
+else:
+	common_win.append("godot_res.res")
+	
 env.Program('#bin/godot',['godot_win.cpp']+common_win,PROGSUFFIX=env["PROGSUFFIX"])
 
 # Microsoft Visual Studio Project Generation
