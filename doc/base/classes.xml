@@ -525,13 +525,13 @@
 			Converts the value of a variable to a String.
 			</description>
 		</method>
-		<method name="str2var:var">
+		<method name="str2var:Variant">
 			<return type="Nil">
 			</return>
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
-			Converts the value of a String to a variable.
+			Converts the value of a String to a Variant.
 			</description>
 		</method>
 		<method name="range">
@@ -573,7 +573,7 @@
 		<method name="hash">
 			<return type="int">
 			</return>
-			<argument index="0" name="var:var" type="var">
+			<argument index="0" name="var:Variant" type="var">
 			</argument>
 			<description>
 			Hashes the variable passed and returns an integer.
@@ -1849,6 +1849,8 @@
 			</description>
 		</method>
 		<method name="register_text_enter">
+			<return type="LineEdit">
+			</return>
 			<argument index="0" name="line_edit" type="Object">
 			</argument>
 			<description>
@@ -3724,7 +3726,7 @@
 			</description>
 		</method>
 		<method name="overlaps_body" qualifiers="const">
-			<return type="bool">
+			<return type="PhysicsBody2D">
 			</return>
 			<argument index="0" name="body" type="Object">
 			</argument>
@@ -3733,7 +3735,7 @@
 			</description>
 		</method>
 		<method name="overlaps_area" qualifiers="const">
-			<return type="bool">
+			<return type="Area2D">
 			</return>
 			<argument index="0" name="area" type="Object">
 			</argument>
@@ -3898,11 +3900,25 @@
 			Get whether this is a shared array instance.
 			</description>
 		</method>
+		<method name="pop_back">
+			<description>
+			</description>
+		</method>
+		<method name="pop_front">
+			<description>
+			</description>
+		</method>
 		<method name="push_back">
 			<argument index="0" name="value" type="var">
 			</argument>
 			<description>
 			Append an element at the end of the array.
+			</description>
+		</method>
+		<method name="push_front">
+			<argument index="0" name="value" type="var">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="remove">
@@ -5969,6 +5985,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_enable_follow_smoothing">
+			<argument index="0" name="follow_smoothing" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_follow_smoothing_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="force_update_scroll">
 			<description>
 			Force the camera to update scroll immediately.
@@ -6059,6 +6087,12 @@
 		<method name="hide">
 			<description>
 			Hide the CanvasItem currently visible.
+			</description>
+		</method>
+		<method name="set_hidden">
+			<argument index="0" name="hidden" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="update">
@@ -6185,6 +6219,8 @@
 			<argument index="0" name="texture" type="Texture">
 			</argument>
 			<argument index="1" name="pos" type="Vector2">
+			</argument>
+			<argument index="2" name="arg2" type="Color">
 			</argument>
 			<description>
 			Draw a texture at a given position.
@@ -7060,7 +7096,7 @@
 			<argument index="1" name="shape" type="Shape">
 			</argument>
 			<description>
-			Change a shape in the collision body. 
+			Change a shape in the collision body.
 			</description>
 		</method>
 		<method name="set_shape_transform">
@@ -7734,6 +7770,66 @@
 	<description>
 	</description>
 	<methods>
+		<method name="add_point">
+			<argument index="0" name="offset" type="float">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_point">
+			<argument index="0" name="offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_offset">
+			<argument index="0" name="point" type="int">
+			</argument>
+			<argument index="1" name="offset" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="point" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_color">
+			<argument index="0" name="point" type="int">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="point" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="interpolate">
+			<return type="Color">
+			</return>
+			<argument index="0" name="offset" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_offsets">
 			<argument index="0" name="offsets" type="RealArray">
 			</argument>
@@ -8150,6 +8246,18 @@
 			Move the Control to a new position, relative to the top-left corner of the [i]window[/i] Control, and without changing current anchor mode. (see [method set_margin]).
 			</description>
 		</method>
+		<method name="set_rotation">
+			<argument index="0" name="rotation" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_scale">
+			<argument index="0" name="scale" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_margin" qualifiers="const">
 			<return type="float">
 			</return>
@@ -8184,6 +8292,18 @@
 			</return>
 			<description>
 			Returns the size of the Control, computed from all margins, however the size returned will [b]never be smaller than the minimum size reported by [method get_minimum_size][/b]. This means that even if end position of the Control rectangle is smaller than the begin position, the Control will still display and interact correctly. (see description, [method get_minimum_size], [method set_margin], [method set_anchor]).
+			</description>
+		</method>
+		<method name="get_rotation" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_scale" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_custom_minimum_size" qualifiers="const">
@@ -10681,6 +10801,8 @@ This approximation makes straight segments between each point, then subdivides t
 		</theme_item>
 		<theme_item name="folder" type="Texture">
 		</theme_item>
+		<theme_item name="reload" type="Texture">
+		</theme_item>
 	</theme_items>
 </class>
 <class name="FixedMaterial" inherits="Material" category="Core">
@@ -11032,6 +11154,18 @@ This approximation makes straight segments between each point, then subdivides t
 			Draw character "char" into a canvas item using the font at a given "pos" position, with "modulate" color, and optionally kerning if "next" is apassed. clipping the width. "pos" specifies te baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis. The width used by the character is returned, making this function useful for drawing strings character by character.
 			</description>
 		</method>
+		<method name="set_fallback">
+			<argument index="0" name="fallback" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_fallback" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -11089,6 +11223,8 @@ This approximation makes straight segments between each point, then subdivides t
 	</description>
 	<methods>
 		<method name="resume">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="arg" type="var" default="NULL">
 			</argument>
 			<description>
@@ -13369,6 +13505,10 @@ returns:= "username=user&amp;password=pass"
 			<description>
 			</description>
 		</method>
+		<method name="shrink_x2_and_keep_size">
+			<description>
+			</description>
+		</method>
 		<method name="set_size_override">
 			<argument index="0" name="size" type="Vector2">
 			</argument>
@@ -15038,6 +15178,18 @@ returns:= "username=user&amp;password=pass"
 			<description>
 			</description>
 		</method>
+		<method name="set_exclude_nodes_from_collision">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_exclude_nodes_from_collision" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -15086,6 +15238,18 @@ returns:= "username=user&amp;password=pass"
 		</method>
 		<method name="get_bias" qualifiers="const">
 			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_exclude_nodes_from_collision">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_exclude_nodes_from_collision" qualifiers="const">
+			<return type="bool">
 			</return>
 			<description>
 			</description>
@@ -15150,6 +15314,8 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
+			<return type="Object">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -15288,6 +15454,8 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
+			<return type="Object">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -15968,6 +16136,8 @@ returns:= "username=user&amp;password=pass"
 		</constant>
 		<constant name="MODE_MIX" value="2">
 		</constant>
+		<constant name="MODE_MASK" value="3">
+		</constant>
 	</constants>
 </class>
 <class name="LightOccluder2D" inherits="Node2D" category="Core">
@@ -16332,6 +16502,8 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="base64_to_variant">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="base64_str" type="String">
 			</argument>
 			<description>
@@ -18346,8 +18518,11 @@ returns:= "username=user&amp;password=pass"
 		<method name="add_child">
 			<argument index="0" name="node" type="Node">
 			</argument>
+			<argument index="1" name="legible_unique_name" type="bool" default="false">
+			</argument>
 			<description>
 			Add a child [Node]. Nodes can have as many children as they want, but every child must have a unique name. Children nodes are automatically deleted when the parent node is deleted, so deleting a whole scene is performed by deleting its topmost node.
+			The optional boolean argument enforces creating child node with human-readable names, based on the name of node being instanced instead of its type only.
 			</description>
 		</method>
 		<method name="remove_child">
@@ -19961,6 +20136,8 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="callv">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="method" type="String">
 			</argument>
 			<argument index="1" name="arg_array" type="Array">
@@ -20514,7 +20691,7 @@ returns:= "username=user&amp;password=pass"
 		<method name="put_var">
 			<return type="int">
 			</return>
-			<argument index="0" name="var" type="var">
+			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -21245,6 +21422,8 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="set_texture">
+			<return type="Texture">
+			</return>
 			<argument index="0" name="texture" type="Object">
 			</argument>
 			<description>
@@ -21269,6 +21448,8 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="set_color_ramp">
+			<return type="ColorRamp">
+			</return>
 			<argument index="0" name="color_ramp" type="Object">
 			</argument>
 			<description>
@@ -22147,6 +22328,8 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="get_contact_collider_shape_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="contact_idx" type="int">
 			</argument>
 			<description>
@@ -23092,14 +23275,14 @@ This method controls whether the position between two cached points is interpola
 		</constant>
 		<constant name="AREA_PARAM_PRIORITY" value="7">
 		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0">
+			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
+		</constant>
 		<constant name="AREA_SPACE_OVERRIDE_COMBINE" value="1">
 			This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
 		</constant>
 		<constant name="AREA_SPACE_OVERRIDE_COMBINE_REPLACE" value="2">
 			This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
-		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0">
-			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
 		</constant>
 		<constant name="AREA_SPACE_OVERRIDE_REPLACE" value="3">
 			This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
@@ -24855,14 +25038,14 @@ This method controls whether the position between two cached points is interpola
 		</constant>
 		<constant name="AREA_PARAM_PRIORITY" value="7">
 		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0">
+			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
+		</constant>
 		<constant name="AREA_SPACE_OVERRIDE_COMBINE" value="1">
 			This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
 		</constant>
 		<constant name="AREA_SPACE_OVERRIDE_COMBINE_REPLACE" value="2">
 			This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
-		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0">
-			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
 		</constant>
 		<constant name="AREA_SPACE_OVERRIDE_REPLACE" value="3">
 			This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
@@ -27073,7 +27256,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="capture" type="int" default="9">
 			</argument>
 			<description>
-            Compiles and assign the regular expression pattern to use. The limit on the number of capturing groups can be specified or made unlimited if negative.
+			Compiles and assign the regular expression pattern to use. The limit on the number of capturing groups can be specified or made unlimited if negative.
 			</description>
 		</method>
 		<method name="find" qualifiers="const">
@@ -27602,6 +27785,26 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="push_table">
+			<argument index="0" name="columns" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_table_column_expand">
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="expand" type="bool">
+			</argument>
+			<argument index="2" name="arg2" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="push_cell">
+			<description>
+			</description>
+		</method>
 		<method name="pop">
 			<description>
 			</description>
@@ -27766,7 +27969,7 @@ This method controls whether the position between two cached points is interpola
 		</constant>
 		<constant name="LIST_DOTS" value="2">
 		</constant>
-		<constant name="ITEM_MAIN" value="0">
+		<constant name="ITEM_FRAME" value="0">
 		</constant>
 		<constant name="ITEM_TEXT" value="1">
 		</constant>
@@ -27786,10 +27989,14 @@ This method controls whether the position between two cached points is interpola
 		</constant>
 		<constant name="ITEM_LIST" value="9">
 		</constant>
-		<constant name="ITEM_META" value="10">
+		<constant name="ITEM_META" value="11">
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="table_vseparation" type="int">
+		</theme_item>
+		<theme_item name="table_hseparation" type="int">
+		</theme_item>
 		<theme_item name="line_separation" type="int">
 		</theme_item>
 		<theme_item name="default_color" type="Color">
@@ -30513,6 +30720,8 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="node_get_state" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="shader_type" type="int">
 			</argument>
 			<argument index="1" name="id" type="int">
@@ -30775,12 +30984,14 @@ This method controls whether the position between two cached points is interpola
 		<method name="set_shader_param">
 			<argument index="0" name="param" type="String">
 			</argument>
-			<argument index="1" name="value" type="var">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="get_shader_param" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="param" type="String">
 			</argument>
 			<description>
@@ -30856,6 +31067,8 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="collide_and_get_contacts">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="local_xform" type="Matrix32">
 			</argument>
 			<argument index="1" name="with_shape" type="Shape2D">
@@ -30868,6 +31081,8 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="collide_with_motion_and_get_contacts">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="local_xform" type="Matrix32">
 			</argument>
 			<argument index="1" name="local_motion" type="Vector2">
@@ -31419,6 +31634,12 @@ This method controls whether the position between two cached points is interpola
 		<method name="is_hidden" qualifiers="const">
 			<return type="bool">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_hidden">
+			<argument index="0" name="hidden" type="bool">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -32637,6 +32858,178 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<description>
 			Return a chunk data with the received bytes. The amount of bytes to be received can be requested in the "bytes" argument. If not enough bytes are available, the function will return how many were actually received. This function returns two values, an [Error] code, and a data array.
+			</description>
+		</method>
+		<method name="get_available_bytes" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_big_endian">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_big_endian_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="put_8">
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="put_u8">
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="put_16">
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="put_u16">
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="put_32">
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="put_u32">
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="put_64">
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="put_u64">
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="put_float">
+			<argument index="0" name="val" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="put_double">
+			<argument index="0" name="val" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="put_utf8_string">
+			<argument index="0" name="val" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="put_var">
+			<argument index="0" name="val" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_8">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_u8">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_16">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_u16">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_32">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_u32">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_64">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_u64">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_float">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_double">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_string">
+			<return type="String">
+			</return>
+			<argument index="0" name="bytes" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_utf8_string">
+			<return type="String">
+			</return>
+			<argument index="0" name="bytes" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_var">
+			<return type="Variant">
+			</return>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -34132,6 +34525,14 @@ This method controls whether the position between two cached points is interpola
 		</theme_item>
 		<theme_item name="font_color_fg" type="Color">
 		</theme_item>
+		<theme_item name="increment_hilite" type="Texture">
+		</theme_item>
+		<theme_item name="decrement_hilite" type="Texture">
+		</theme_item>
+		<theme_item name="increment" type="Texture">
+		</theme_item>
+		<theme_item name="decrement" type="Texture">
+		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
 		<theme_item name="tab_fg" type="StyleBox">
@@ -34657,7 +35058,7 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="set_scale">
+		<method name="set_texture_scale">
 			<argument index="0" name="scale" type="Vector2">
 			</argument>
 			<description>
@@ -34705,7 +35106,7 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="get_scale" qualifiers="const">
+		<method name="get_texture_scale" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
@@ -35177,6 +35578,16 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="wait_to_finish">
+			<return type="Variant">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_name">
+			<return type="Error">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -35414,6 +35825,18 @@ This method controls whether the position between two cached points is interpola
 			</return>
 			<description>
 			Return the collision bounce parameter.
+			</description>
+		</method>
+		<method name="set_occluder_light_mask">
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_occluder_light_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="set_cell">
@@ -36815,6 +37238,8 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="remove_child">
+			<return type="TreeItem">
+			</return>
 			<argument index="0" name="child" type="Object">
 			</argument>
 			<description>
@@ -37437,7 +37862,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="property" type="String">
 			</argument>
-			<argument index="2" name="value" type="var">
+			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -37447,7 +37872,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="property" type="String">
 			</argument>
-			<argument index="2" name="value" type="var">
+			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -38471,6 +38896,12 @@ This method controls whether the position between two cached points is interpola
 		</method>
 		<method name="get_buffering_msec" qualifiers="const">
 			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_video_texutre">
+			<return type="Texture">
 			</return>
 			<description>
 			</description>
@@ -40277,6 +40708,14 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="canvas_item_set_z">
+			<argument index="0" name="arg0" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="canvas_item_add_line">
 			<argument index="0" name="arg0" type="RID">
 			</argument>
@@ -40722,6 +41161,8 @@ This method controls whether the position between two cached points is interpola
 	</description>
 	<methods>
 		<method name="get_ref" qualifiers="const">
+			<return type="Object">
+			</return>
 			<description>
 			</description>
 		</method>
