@@ -271,6 +271,7 @@ void VideoPlayer::set_paused(bool p_paused) {
 		playback->set_paused(p_paused);
 		set_process(!p_paused);
 	};
+	last_audio_time = 0;
 };
 
 bool VideoPlayer::is_paused() const {
