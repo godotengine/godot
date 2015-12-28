@@ -179,25 +179,25 @@ void ShaderGraph::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("default_get_value","shader_type","id","param_id"), &ShaderGraph::default_get_value);
 
 	ObjectTypeDB::bind_method(_MD("scalar_const_node_set_value","shader_type","id","value"),&ShaderGraph::scalar_const_node_set_value);
-	ObjectTypeDB::bind_method(_MD("scalar_const_node_get_value","shader_type","id"),&ShaderGraph::scalar_const_node_set_value);
+	ObjectTypeDB::bind_method(_MD("scalar_const_node_get_value","shader_type","id"),&ShaderGraph::scalar_const_node_get_value);
 
 	ObjectTypeDB::bind_method(_MD("vec_const_node_set_value","shader_type","id","value"),&ShaderGraph::vec_const_node_set_value);
-	ObjectTypeDB::bind_method(_MD("vec_const_node_get_value","shader_type","id"),&ShaderGraph::vec_const_node_set_value);
+	ObjectTypeDB::bind_method(_MD("vec_const_node_get_value","shader_type","id"),&ShaderGraph::vec_const_node_get_value);
 
 	ObjectTypeDB::bind_method(_MD("rgb_const_node_set_value","shader_type","id","value"),&ShaderGraph::rgb_const_node_set_value);
-	ObjectTypeDB::bind_method(_MD("rgb_const_node_get_value","shader_type","id"),&ShaderGraph::rgb_const_node_set_value);
+	ObjectTypeDB::bind_method(_MD("rgb_const_node_get_value","shader_type","id"),&ShaderGraph::rgb_const_node_get_value);
 
 	ObjectTypeDB::bind_method(_MD("xform_const_node_set_value","shader_type","id","value"),&ShaderGraph::xform_const_node_set_value);
-	ObjectTypeDB::bind_method(_MD("xform_const_node_get_value","shader_type","id"),&ShaderGraph::xform_const_node_set_value);
+	ObjectTypeDB::bind_method(_MD("xform_const_node_get_value","shader_type","id"),&ShaderGraph::xform_const_node_get_value);
 
 
 //	void get_node_list(ShaderType p_which,List<int> *p_node_list) const;
 
 	ObjectTypeDB::bind_method(_MD("texture_node_set_filter_size","shader_type","id","filter_size"),&ShaderGraph::texture_node_set_filter_size);
-	ObjectTypeDB::bind_method(_MD("texture_node_get_filter_size","shader_type","id"),&ShaderGraph::texture_node_set_filter_size);
+	ObjectTypeDB::bind_method(_MD("texture_node_get_filter_size","shader_type","id"),&ShaderGraph::texture_node_get_filter_size);
 
 	ObjectTypeDB::bind_method(_MD("texture_node_set_filter_strength","shader_type","id","filter_strength"),&ShaderGraph::texture_node_set_filter_strength);
-	ObjectTypeDB::bind_method(_MD("texture_node_get_filter_strength","shader_type","id"),&ShaderGraph::texture_node_set_filter_strength);
+	ObjectTypeDB::bind_method(_MD("texture_node_get_filter_strength","shader_type","id"),&ShaderGraph::texture_node_get_filter_strength);
 
 	ObjectTypeDB::bind_method(_MD("scalar_op_node_set_op","shader_type","id","op"),&ShaderGraph::scalar_op_node_set_op);
 	ObjectTypeDB::bind_method(_MD("scalar_op_node_get_op","shader_type","id"),&ShaderGraph::scalar_op_node_get_op);
