@@ -2652,6 +2652,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"elif",
 		"enum",
 		"extends"	,
+		"onready",
 		"for"	,
 		"func"	,
 		"if"	,

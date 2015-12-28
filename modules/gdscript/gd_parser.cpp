@@ -2767,6 +2767,21 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				}
 
 			}; //fallthrough to var
+			case GDTokenizer::TK_PR_ONREADY: {
+
+				if (tokenizer->get_token(-1)==GDTokenizer::TK_PR_EXPORT) {
+					current_export=PropertyInfo();
+					_set_error("Expected 'var' (can't combine with 'onready').");
+					return;
+				} else {
+
+					tokenizer->advance();
+					if (tokenizer->get_token()!=GDTokenizer::TK_PR_VAR) {
+						_set_error("Expected 'var'.");
+						return;
+					}
+				}
+			}; //fallthrough to var
 			case GDTokenizer::TK_PR_VAR: {
 				//variale declaration and (eventual) initialization
 
@@ -2776,6 +2791,8 @@ void GDParser::_parse_class(ClassNode *p_class) {
 					member._export=current_export;
 					current_export=PropertyInfo();
 				}
+
+				bool onready = tokenizer->get_token(-1)==GDTokenizer::TK_PR_ONREADY;
 
 				tokenizer->advance();
 				if (tokenizer->get_token()!=GDTokenizer::TK_IDENTIFIER) {
@@ -2805,6 +2822,21 @@ void GDParser::_parse_class(ClassNode *p_class) {
 							break;
 						}
 						return;
+					}
+
+					//discourage common error
+					if (!onready && subexpr->type==Node::TYPE_OPERATOR) {
+
+						OperatorNode *op=static_cast<OperatorNode*>(subexpr);
+						if (op->op==OperatorNode::OP_CALL && op->arguments[0]->type==Node::TYPE_SELF && op->arguments[1]->type==Node::TYPE_IDENTIFIER) {
+							IdentifierNode *id=static_cast<IdentifierNode*>(op->arguments[1]);
+							if (id->name=="get_node") {
+
+								_set_error("Use 'onready var "+String(member.identifier)+" = get_node(..)' instead");
+								return;
+
+							}
+						}
 					}
 
 					member.expression=subexpr;
@@ -2853,12 +2885,19 @@ void GDParser::_parse_class(ClassNode *p_class) {
 					op->arguments.push_back(id);
 					op->arguments.push_back(subexpr);
 
+
 #ifdef DEBUG_ENABLED
 					NewLineNode *nl = alloc_node<NewLineNode>();
 					nl->line=line;
-					p_class->initializer->statements.push_back(nl);
+					if (onready)
+						p_class->ready->statements.push_back(nl);
+					else
+						p_class->initializer->statements.push_back(nl);
 #endif
-					p_class->initializer->statements.push_back(op);
+					if (onready)
+						p_class->ready->statements.push_back(op);
+					else
+						p_class->initializer->statements.push_back(op);
 
 
 
@@ -3009,6 +3048,8 @@ Error GDParser::_parse(const String& p_base_path) {
 	ClassNode *main_class = alloc_node<ClassNode>();
 	main_class->initializer = alloc_node<BlockNode>();
 	main_class->initializer->parent_class=main_class;
+	main_class->ready = alloc_node<BlockNode>();
+	main_class->ready->parent_class=main_class;
 	current_class=main_class;
 
 	_parse_class(main_class);
