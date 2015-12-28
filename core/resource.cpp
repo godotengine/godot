@@ -278,7 +278,7 @@ void Resource::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_import_metadata","metadata"),&Resource::set_import_metadata);
 	ObjectTypeDB::bind_method(_MD("get_import_metadata"),&Resource::get_import_metadata);
 
-	ObjectTypeDB::bind_method(_MD("duplicate"),&Resource::duplicate,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("duplicate","subresources"),&Resource::duplicate,DEFVAL(false));
 	ADD_SIGNAL( MethodInfo("changed") );
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"resource/path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR ), _SCS("set_path"),_SCS("get_path"));
 	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"resource/name"), _SCS("set_name"),_SCS("get_name"));

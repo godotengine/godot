@@ -422,14 +422,14 @@ void Particles::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_variable","variable","value"),&Particles::set_variable);
 	ObjectTypeDB::bind_method(_MD("get_variable","variable"),&Particles::get_variable);
 	ObjectTypeDB::bind_method(_MD("set_randomness","variable","randomness"),&Particles::set_randomness);
-	ObjectTypeDB::bind_method(_MD("get_randomness"),&Particles::get_randomness);
+	ObjectTypeDB::bind_method(_MD("get_randomness","variable"),&Particles::get_randomness);
 	ObjectTypeDB::bind_method(_MD("set_color_phase_pos","phase","pos"),&Particles::set_color_phase_pos);
 	ObjectTypeDB::bind_method(_MD("get_color_phase_pos","phase"),&Particles::get_color_phase_pos);
 	ObjectTypeDB::bind_method(_MD("set_color_phase_color","phase","color"),&Particles::set_color_phase_color);
 	ObjectTypeDB::bind_method(_MD("get_color_phase_color","phase"),&Particles::get_color_phase_color);
 	ObjectTypeDB::bind_method(_MD("set_material","material:Material"),&Particles::set_material);
 	ObjectTypeDB::bind_method(_MD("get_material:Material"),&Particles::get_material);
-	ObjectTypeDB::bind_method(_MD("set_emit_timeout"),&Particles::set_emit_timeout);
+	ObjectTypeDB::bind_method(_MD("set_emit_timeout","timeout"),&Particles::set_emit_timeout);
 	ObjectTypeDB::bind_method(_MD("get_emit_timeout"),&Particles::get_emit_timeout);
 	ObjectTypeDB::bind_method(_MD("set_height_from_velocity","enable"),&Particles::set_height_from_velocity);
 	ObjectTypeDB::bind_method(_MD("has_height_from_velocity"),&Particles::has_height_from_velocity);

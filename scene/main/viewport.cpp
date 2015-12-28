@@ -1456,7 +1456,7 @@ void Viewport::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_as_audio_listener_2d","enable"), &Viewport::set_as_audio_listener_2d);
 	ObjectTypeDB::bind_method(_MD("is_audio_listener_2d","enable"), &Viewport::is_audio_listener_2d);
-	ObjectTypeDB::bind_method(_MD("set_render_target_to_screen_rect"), &Viewport::set_render_target_to_screen_rect);
+	ObjectTypeDB::bind_method(_MD("set_render_target_to_screen_rect","rect"), &Viewport::set_render_target_to_screen_rect);
 
 	ObjectTypeDB::bind_method(_MD("get_mouse_pos"), &Viewport::get_mouse_pos);
 	ObjectTypeDB::bind_method(_MD("warp_mouse","to_pos"), &Viewport::warp_mouse);

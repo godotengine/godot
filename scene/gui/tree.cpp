@@ -672,7 +672,7 @@ void TreeItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("clear_custom_bg_color","column"),&TreeItem::clear_custom_bg_color);
 	ObjectTypeDB::bind_method(_MD("get_custom_bg_color","column"),&TreeItem::get_custom_bg_color);
 
-	ObjectTypeDB::bind_method(_MD("add_button","column","button:Texture"),&TreeItem::add_button);
+	ObjectTypeDB::bind_method(_MD("add_button","column","button:Texture","button_idx"),&TreeItem::add_button);
 	ObjectTypeDB::bind_method(_MD("get_button_count","column"),&TreeItem::get_button_count);
 	ObjectTypeDB::bind_method(_MD("get_button:Texture","column","button_idx"),&TreeItem::get_button);
 	ObjectTypeDB::bind_method(_MD("erase_button","column","button_idx"),&TreeItem::erase_button);
@@ -3193,11 +3193,11 @@ void Tree::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("create_item:TreeItem","parent:TreeItem"),&Tree::_create_item,DEFVAL((Object*)NULL));
 
 	ObjectTypeDB::bind_method(_MD("get_root:TreeItem"),&Tree::get_root);
-	ObjectTypeDB::bind_method(_MD("set_column_min_width"),&Tree::set_column_min_width);
-	ObjectTypeDB::bind_method(_MD("set_column_expand"),&Tree::set_column_expand);
-	ObjectTypeDB::bind_method(_MD("get_column_width"),&Tree::get_column_width);
+	ObjectTypeDB::bind_method(_MD("set_column_min_width","column","min_width"),&Tree::set_column_min_width);
+	ObjectTypeDB::bind_method(_MD("set_column_expand","column","expand"),&Tree::set_column_expand);
+	ObjectTypeDB::bind_method(_MD("get_column_width","column"),&Tree::get_column_width);
 
-	ObjectTypeDB::bind_method(_MD("set_hide_root"),&Tree::set_hide_root);
+	ObjectTypeDB::bind_method(_MD("set_hide_root","enable"),&Tree::set_hide_root);
 	ObjectTypeDB::bind_method(_MD("get_next_selected:TreeItem","from:TreeItem"),&Tree::_get_next_selected);
 	ObjectTypeDB::bind_method(_MD("get_selected:TreeItem"),&Tree::get_selected);
 	ObjectTypeDB::bind_method(_MD("get_selected_column"),&Tree::get_selected_column);

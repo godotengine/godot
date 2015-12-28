@@ -1096,7 +1096,7 @@ void GridMap::_bind_methods() {
 
 //	ObjectTypeDB::bind_method(_MD("_recreate_octants"),&GridMap::_recreate_octants);
 	ObjectTypeDB::bind_method(_MD("_update_dirty_map_callback"),&GridMap::_update_dirty_map_callback);
-	ObjectTypeDB::bind_method(_MD("resource_changed"),&GridMap::resource_changed);
+	ObjectTypeDB::bind_method(_MD("resource_changed","resource"),&GridMap::resource_changed);
 
 	ObjectTypeDB::bind_method(_MD("set_center_x","enable"),&GridMap::set_center_x);
 	ObjectTypeDB::bind_method(_MD("get_center_x"),&GridMap::get_center_x);
