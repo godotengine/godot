@@ -1786,7 +1786,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 		autoload_list->set_column_title(1,"Path");
 		autoload_list->set_column_expand(1,true);
 		autoload_list->set_column_min_width(1,100);
-		autoload_list->set_column_title(2,"GlobalVar");
+		autoload_list->set_column_title(2,"Singleton");
 		autoload_list->set_column_expand(2,false);
 		autoload_list->set_column_min_width(2,80);
 		autoload_list->set_column_expand(3,false);
