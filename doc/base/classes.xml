@@ -15204,7 +15204,7 @@ returns:= "username=user&amp;password=pass"
 			<argument index="0" name="node" type="NodePath">
 			</argument>
 			<description>
-			Set the path to the A node for the joint. Must be of type PhysicsBody2D.
+			Set the path to the A node for the joint. Must be of type [PhysicsBody2D].
 			</description>
 		</method>
 		<method name="get_node_a" qualifiers="const">
@@ -15218,7 +15218,7 @@ returns:= "username=user&amp;password=pass"
 			<argument index="0" name="node" type="NodePath">
 			</argument>
 			<description>
-			Set the path to the B node for the joint. Must be of type PhysicsBody2D.
+			Set the path to the B node for the joint. Must be of type [PhysicsBody2D].
 			</description>
 		</method>
 		<method name="get_node_b" qualifiers="const">
@@ -15389,8 +15389,12 @@ returns:= "username=user&amp;password=pass"
 </class>
 <class name="KinematicBody2D" inherits="PhysicsBody2D" category="Core">
 	<brief_description>
+	Kinematic body 2D node.
 	</brief_description>
 	<description>
+	Kinematic bodies are special types of bodies that are meant to be user-controlled. They are not affected by physics at all (to other types of bodies, such a character or a rigid body, these are the same as a static body). They have however, two main uses:
+	Simulated Motion: When these bodies are moved manually, either from code or from an AnimationPlayer (with process mode set to fixed), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
+	Kinematic Characters: KinematicBody2D also has an api for moving objects (the [method move] method) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
 	</description>
 	<methods>
 		<method name="move">
@@ -15399,6 +15403,7 @@ returns:= "username=user&amp;password=pass"
 			<argument index="0" name="rel_vec" type="Vector2">
 			</argument>
 			<description>
+			Move the body in the given direction, stopping if there is an obstacle.
 			</description>
 		</method>
 		<method name="move_to">
@@ -15407,6 +15412,7 @@ returns:= "username=user&amp;password=pass"
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
+			Move the body to the given position. This is not a teleport, and the body will stop if there is an obstacle.
 			</description>
 		</method>
 		<method name="test_move">
@@ -15415,68 +15421,82 @@ returns:= "username=user&amp;password=pass"
 			<argument index="0" name="rel_vec" type="Vector2">
 			</argument>
 			<description>
+			Return true if there would be a collision if the body moved in the given direction.
 			</description>
 		</method>
 		<method name="get_travel" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the last movement done by the body.
 			</description>
 		</method>
 		<method name="revert_motion">
 			<description>
+			Undo the last movement done by the body.
 			</description>
 		</method>
 		<method name="is_colliding" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the body is colliding with another.
 			</description>
 		</method>
 		<method name="get_collision_pos" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the point in space where the body is touching another. If there is no collision, this method will return (0,0), so collisions must be checked first with [method is_colliding].
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the normal of the surface the body collided with. This is useful to implement sliding along a surface.
 			</description>
 		</method>
 		<method name="get_collider_velocity" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the velocity of the body that collided with this one.
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
 			<return type="Object">
 			</return>
 			<description>
+			Return the body that collided with this one.
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the shape index from the body that collided with this one. If there is no collision, this method will return 0, so collisions must be checked first with [method is_colliding].
 			</description>
 		</method>
 		<method name="get_collider_metadata" qualifiers="const">
+			<return type="var">
+			</return>
 			<description>
+			Return the metadata of the shape that collided with this body. If there is no collision, it will return 0, so collisions must be checked first with [method is_colliding]. Aditionally, this metadata can not be set with [method Object.set_meta], it must be set with [method Physics2DServer.body_set_shape_metadata].
 			</description>
 		</method>
 		<method name="set_collision_margin">
 			<argument index="0" name="pixels" type="float">
 			</argument>
 			<description>
+			Set the collision margin for this object. A collision margin is an amount (in pixels) that all shapes will grow when computing collisions, to account for numerical imprecision.
 			</description>
 		</method>
 		<method name="get_collision_margin" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the collision margin for this object.
 			</description>
 		</method>
 	</methods>
@@ -28306,7 +28326,7 @@ This method controls whether the position between two cached points is interpola
 	Rigid body 2D node.
 	</brief_description>
 	<description>
-	Rigid body 2D node. This node is used for placing rigid bodies in the scene. It can contain a number of shapes, and also shift state between regular Rigid Body to Character or even Static.
+	Rigid body 2D node. This node is used for placing rigid bodies in the scene. It can contain a number of shapes, and also shift state between regular Rigid body, Kinematic, Character or Static.
 	Character mode forbids the node from being rotated. This node can have a custom force integrator function, for writing complex physics motion behavior per node.
 	As a warning, don't change this node position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop will yield strange behavior.
 	</description>
@@ -28329,7 +28349,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<description>
-			Return the current body mode, see [set_mode].
+			Return the current body mode, see [method set_mode].
 			</description>
 		</method>
 		<method name="set_mass">
@@ -28350,14 +28370,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="weight" type="float">
 			</argument>
 			<description>
-			Set the body mass given standard earth-weight (gravity 9.8). Not really useful for 2D since most measures for this node are in pixels.
+			Set the body weight given standard earth-weight (gravity 9.8). Not really useful for 2D since most measures for this node are in pixels.
 			</description>
 		</method>
 		<method name="get_weight" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-			Return the body mass given standard earth-weight (gravity 9.8).
+			Return the body weight given standard earth-weight (gravity 9.8).
 			</description>
 		</method>
 		<method name="set_friction">
@@ -28378,7 +28398,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="bounce" type="float">
 			</argument>
 			<description>
-			Set the body bounciness, from 0 (no bounce) to 1 (bounce).
+			Set the body bounciness, from 0 (no bounce) to 1 (full bounce).
 			</description>
 		</method>
 		<method name="get_bounce" qualifiers="const">
@@ -28392,36 +28412,42 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="gravity_scale" type="float">
 			</argument>
 			<description>
+			Set The gravity factor. This factor multiplies gravity intensity just for this body.
 			</description>
 		</method>
 		<method name="get_gravity_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the gravity factor.
 			</description>
 		</method>
 		<method name="set_linear_damp">
 			<argument index="0" name="linear_damp" type="float">
 			</argument>
 			<description>
+			Set the linear damp for this body. If this value is different from -1, any linear damp derived from the world or areas will be overriden.
 			</description>
 		</method>
 		<method name="get_linear_damp" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the linear damp for this body.
 			</description>
 		</method>
 		<method name="set_angular_damp">
 			<argument index="0" name="angular_damp" type="float">
 			</argument>
 			<description>
+			Set the angular damp for this body. If this value is different from -1, any angular damp derived from the world or areas will be overriden.
 			</description>
 		</method>
 		<method name="get_angular_damp" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the angular damp for this body.
 			</description>
 		</method>
 		<method name="set_linear_velocity">
@@ -28435,7 +28461,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="Vector2">
 			</return>
 			<description>
-			Return the body linear velocity. This changes by physics granularity. See [set_linear_velocity].
+			Return the body linear velocity. This changes by physics granularity. See [method set_linear_velocity].
 			</description>
 		</method>
 		<method name="set_angular_velocity">
@@ -28449,7 +28475,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="float">
 			</return>
 			<description>
-			Return the body angular velocity. This changes by physics granularity. See [set_angular_velocity].
+			Return the body angular velocity. This changes by physics granularity. See [method set_angular_velocity].
 			</description>
 		</method>
 		<method name="set_max_contacts_reported">
@@ -28463,14 +28489,14 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<description>
-			Return the maximum contacts that can be reported. See [set_max_contacts_reported].
+			Return the maximum contacts that can be reported. See [method set_max_contacts_reported].
 			</description>
 		</method>
 		<method name="set_use_custom_integrator">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			Set to true if the body shall not do any internal force integration at all (like gravity or air friction). Only the [_integrate_forces] will be able to integrate them if overrided.
+			Set to true if the body shall not do any internal force integration at all (like gravity or air friction). Only the [method _integrate_forces] will be able to integrate them if overrided.
 			</description>
 		</method>
 		<method name="is_using_custom_integrator">
@@ -28484,7 +28510,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-			Enable contact monitoring. (the signals to notify when a body entered/exited collision).
+			Enable contact monitoring. This allows the body to emit signals when it collides with another.
 			</description>
 		</method>
 		<method name="is_contact_monitor_enabled" qualifiers="const">
@@ -28498,19 +28524,22 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+			Set the continuous collision detection mode from the enum CCD_MODE_*.
+			Coninuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fat-moving objects.
 			</description>
 		</method>
 		<method name="get_continuous_collision_detection_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return whether this body is using continuous collision detection.
 			</description>
 		</method>
 		<method name="set_axis_velocity">
 			<argument index="0" name="axis_velocity" type="Vector2">
 			</argument>
 			<description>
-			Set an axis velocity. The velocity in the given vector axis will be set as the given vector length. (This is useful for jumping behavior).
+			Set an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
 		</method>
 		<method name="apply_impulse">
@@ -28519,31 +28548,35 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="impulse" type="Vector2">
 			</argument>
 			<description>
-			Apply a positioned impulse (which will be affected by the body mass and shape).
+			Apply a positioned impulse (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once.
 			</description>
 		</method>
 		<method name="set_applied_force">
 			<argument index="0" name="force" type="Vector2">
 			</argument>
 			<description>
+			Set the applied force vector. This is the equivalent of pushing a box over the ground: the force applied is applied constantly.
 			</description>
 		</method>
 		<method name="get_applied_force" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the applied force vector.
 			</description>
 		</method>
 		<method name="set_sleeping">
 			<argument index="0" name="sleeping" type="bool">
 			</argument>
 			<description>
+			Set whether a body is isleeping or not. Sleeping bodies are not affected by forces until a collision or an [method apply_impulse]/[method set_applied_force] wakes them up. Until then, they behave like a static body.
 			</description>
 		</method>
 		<method name="is_sleeping" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the body is sleeping.
 			</description>
 		</method>
 		<method name="set_can_sleep">
@@ -28551,13 +28584,14 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<description>
 			Set the body ability to fall asleep when not moving. This saves an enormous amount of processor time when there are plenty of rigid bodies (non static) in a scene.
+			Sleeping bodies are not affected by forces until a collision or an [method apply_impulse]/[method set_applied_force] wakes them up. Until then, they behave like a static body.
 			</description>
 		</method>
 		<method name="is_able_to_sleep" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-			Return true if the body has the ability to fall asleep when not moving. See [set_can_sleep].
+			Return true if the body has the ability to fall asleep when not moving. See [method set_can_sleep].
 			</description>
 		</method>
 		<method name="test_motion">
@@ -28570,12 +28604,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="2" name="result" type="Physics2DTestMotionResult" default="NULL">
 			</argument>
 			<description>
+			Return whether the body would collide, if it tried to move in the given vector. This method allows two extra parameters: A margin, which increases slightly the size of the shapes involved in the collision detection, and an object of type [Physics2DTestMotionResult], which will store additional information about the collision (should there be one).
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
+			Return a list of the bodies colliding with this one.
 			</description>
 		</method>
 	</methods>
@@ -28584,7 +28620,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="body" type="Object">
 			</argument>
 			<description>
-			Emitted when a new body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+			Emitted when a body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
 			</description>
 		</signal>
 		<signal name="body_enter_shape">
@@ -28597,7 +28633,8 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-			Emitted when a new body sub-shape enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+			Emitted when a body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+			This signal not only receives the body that collided with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body collided with.
 			</description>
 		</signal>
 		<signal name="body_exit">
@@ -28618,26 +28655,31 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<description>
 			Emitted when a body shape exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+			This signal not only receives the body that stopped colliding with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body stopped colliding with.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="MODE_STATIC" value="1">
-			Static mode (does not move, can't be moved).
+		Static mode. The body behaves like a [StaticBody2D], and can only move by user code.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3">
+		Kinematic body. The body behaves like a [KinematicBody2D], and can only move by user code.
 		</constant>
 		<constant name="MODE_RIGID" value="0">
-			Rigid body, can move and rotate.
+		Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
 		</constant>
 		<constant name="MODE_CHARACTER" value="2">
-			Character body, can move but not rotate.
+		Character body. This behaves like a rigid body, but can not rotate.
 		</constant>
 		<constant name="CCD_MODE_DISABLED" value="0">
+		Disables continuous collision detection. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.
 		</constant>
 		<constant name="CCD_MODE_CAST_RAY" value="1">
+		Enables continuous collision detection by raycasting. It is faster than shapecasting, but less precise.
 		</constant>
 		<constant name="CCD_MODE_CAST_SHAPE" value="2">
+		Enables continuous collision detection by shapecasting. It is the slowest CCD method, and the most precise.
 		</constant>
 	</constants>
 </class>
@@ -32760,7 +32802,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="vel" type="Vector2">
 			</argument>
 			<description>
-			Set a constant linear velocity for the body.
+			Set a constant linear velocity for the body. This does not move the body, but affects other bodies touching it, as if it was moving.
 			</description>
 		</method>
 		<method name="set_constant_angular_velocity">
@@ -32774,7 +32816,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="Vector2">
 			</return>
 			<description>
-			Return the constant linear velocity for the body.
+			Return the constant linear velocity for the body. This does not rotate the body, but affects other bodies touching it, as if it was rotating.
 			</description>
 		</method>
 		<method name="get_constant_angular_velocity" qualifiers="const">
@@ -32788,24 +32830,28 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="friction" type="float">
 			</argument>
 			<description>
+			Set the body friction, from 0 (frictionless) to 1 (full friction).
 			</description>
 		</method>
 		<method name="get_friction" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the body friction.
 			</description>
 		</method>
 		<method name="set_bounce">
 			<argument index="0" name="bounce" type="float">
 			</argument>
 			<description>
+			Set the body bounciness, from 0 (not bouncy) to 1 (bouncy).
 			</description>
 		</method>
 		<method name="get_bounce" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the body bounciness.
 			</description>
 		</method>
 	</methods>
