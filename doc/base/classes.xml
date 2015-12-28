@@ -4104,8 +4104,6 @@
 			</return>
 			<argument index="0" name="sample" type="RID">
 			</argument>
-			<argument index="1" name="arg1" type="String">
-			</argument>
 			<description>
 			Return the description of an audio sample. Mainly used for organization.
 			</description>

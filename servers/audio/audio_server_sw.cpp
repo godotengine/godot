@@ -360,7 +360,7 @@ void AudioServerSW::sample_set_description(RID p_sample, const String& p_descrip
 	AUDIO_LOCK
 	sample_manager->sample_set_description(p_sample,p_description);
 }
-String AudioServerSW::sample_get_description(RID p_sample, const String& p_description) const {
+String AudioServerSW::sample_get_description(RID p_sample) const {
 
 	AUDIO_LOCK
 	return sample_manager->sample_get_description(p_sample);
