@@ -1330,6 +1330,12 @@ bool Main::start() {
 							continue;
 						String name = s.get_slicec('/',1);
 						String path = Globals::get_singleton()->get(s);
+						bool global_var=false;
+						if (path.begins_with("*")) {
+							global_var=true;
+							path=path.substr(1,path.length()-1);
+						}
+
 						RES res = ResourceLoader::load(path);
 						ERR_EXPLAIN("Can't autoload: "+path);
 						ERR_CONTINUE(res.is_null());
@@ -1355,7 +1361,16 @@ bool Main::start() {
 						ERR_EXPLAIN("Path in autoload not a node or script: "+path);
 						ERR_CONTINUE(!n);
 						n->set_name(name);
+
 						sml->get_root()->add_child(n);
+
+						if (global_var) {
+							for(int i=0;i<ScriptServer::get_language_count();i++) {
+								ScriptServer::get_language(i)->add_global_constant(name,n);
+							}
+						}
+
+
 					}
 
 				}
