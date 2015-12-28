@@ -517,7 +517,7 @@ void PhysicsServerSW::body_set_mode(RID p_body, BodyMode p_mode) {
 	body->set_mode(p_mode);
 };
 
-PhysicsServer::BodyMode PhysicsServerSW::body_get_mode(RID p_body, BodyMode p_mode) const {
+PhysicsServer::BodyMode PhysicsServerSW::body_get_mode(RID p_body) const {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,BODY_MODE_STATIC);

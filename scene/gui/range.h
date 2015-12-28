@@ -72,22 +72,23 @@ public:
 	void set_step(double p_step);
 	void set_page(double p_page);
 	void set_unit_value(double p_value);
-	void set_rounded_values(bool);
-	
+
 	double get_val() const;
 	double get_min() const;
 	double get_max() const;
 	double get_step() const;
 	double get_page() const;
 	double get_unit_value() const;
-	bool get_rounded_values() const;
+
+	void set_rounded_values(bool p_enable);
+	bool is_rounded_values() const;
 
 	void set_exp_unit_value(bool p_enable);
 	bool is_unit_value_exp() const;
 
 	void share(Range *p_range);
 	void unshare();
-	
+
 	Range();	
 	~Range();
 

@@ -1550,7 +1550,7 @@ void Object::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get","property"),&Object::_get_bind);
 	ObjectTypeDB::bind_method(_MD("get_property_list"),&Object::_get_property_list_bind);
 	ObjectTypeDB::bind_method(_MD("get_method_list"),&Object::_get_method_list_bind);
-	ObjectTypeDB::bind_method(_MD("notification","what"),&Object::notification,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("notification","what","reversed"),&Object::notification,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_instance_ID"),&Object::get_instance_ID);
 
 	ObjectTypeDB::bind_method(_MD("set_script","script:Script"),&Object::set_script);
@@ -1615,7 +1615,7 @@ void Object::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("callv:Variant","method","arg_array"),&Object::callv);
 
-	ObjectTypeDB::bind_method(_MD("has_method"),&Object::has_method);
+	ObjectTypeDB::bind_method(_MD("has_method","method"),&Object::has_method);
 
 	ObjectTypeDB::bind_method(_MD("get_signal_list"),&Object::_get_signal_list);
 

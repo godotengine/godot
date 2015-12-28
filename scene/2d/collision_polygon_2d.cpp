@@ -257,10 +257,10 @@ void CollisionPolygon2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_polygon","polygon"),&CollisionPolygon2D::set_polygon);
 	ObjectTypeDB::bind_method(_MD("get_polygon"),&CollisionPolygon2D::get_polygon);
 
-	ObjectTypeDB::bind_method(_MD("set_build_mode"),&CollisionPolygon2D::set_build_mode);
+	ObjectTypeDB::bind_method(_MD("set_build_mode","build_mode"),&CollisionPolygon2D::set_build_mode);
 	ObjectTypeDB::bind_method(_MD("get_build_mode"),&CollisionPolygon2D::get_build_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_trigger"),&CollisionPolygon2D::set_trigger);
+	ObjectTypeDB::bind_method(_MD("set_trigger","trigger"),&CollisionPolygon2D::set_trigger);
 	ObjectTypeDB::bind_method(_MD("is_trigger"),&CollisionPolygon2D::is_trigger);
 
 	ObjectTypeDB::bind_method(_MD("_set_shape_range","shape_range"),&CollisionPolygon2D::_set_shape_range);

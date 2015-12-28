@@ -1948,7 +1948,7 @@ void RichTextLabel::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("push_meta","data"),&RichTextLabel::push_meta);
 	ObjectTypeDB::bind_method(_MD("push_underline"),&RichTextLabel::push_underline);
 	ObjectTypeDB::bind_method(_MD("push_table","columns"),&RichTextLabel::push_table);
-	ObjectTypeDB::bind_method(_MD("set_table_column_expand","column","expand"),&RichTextLabel::set_table_column_expand);
+	ObjectTypeDB::bind_method(_MD("set_table_column_expand","column","expand","ratio"),&RichTextLabel::set_table_column_expand);
 	ObjectTypeDB::bind_method(_MD("push_cell"),&RichTextLabel::push_cell);
 	ObjectTypeDB::bind_method(_MD("pop"),&RichTextLabel::pop);
 
@@ -1965,7 +1965,7 @@ void RichTextLabel::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_v_scroll"),&RichTextLabel::get_v_scroll);
 
-	ObjectTypeDB::bind_method(_MD("scroll_to_line"),&RichTextLabel::scroll_to_line);
+	ObjectTypeDB::bind_method(_MD("scroll_to_line","line"),&RichTextLabel::scroll_to_line);
 
 	ObjectTypeDB::bind_method(_MD("set_tab_size","spaces"),&RichTextLabel::set_tab_size);
 	ObjectTypeDB::bind_method(_MD("get_tab_size"),&RichTextLabel::get_tab_size);
