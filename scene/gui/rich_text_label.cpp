@@ -86,7 +86,7 @@ RichTextLabel::Item *RichTextLabel::_get_next_item(Item* p_item,bool p_free) {
 
 
 void RichTextLabel::_process_line(ItemFrame *p_frame,const Vector2& p_ofs,int &y, int p_width, int p_line, ProcessMode p_mode,const Ref<Font> &p_base_font,const Color &p_base_color,const Point2i& p_click_pos,Item **r_click_item,int *r_click_char,bool *r_outside,int p_char_count) {
-	print_line("BEGIN");
+
 	RID ci;
 	if (r_outside)
 		*r_outside=false;

@@ -930,11 +930,14 @@ void ProjectSettings::_autoload_delete(Object *p_item,int p_column, int p_button
 
 		String swap_name= "autoload/"+swap->get_text(0);
 
+		int order = Globals::get_singleton()->get_order(name);
+		int swap_order = Globals::get_singleton()->get_order(swap_name);
+
 		undo_redo->create_action("Move Autoload");
-		undo_redo->add_do_method(Globals::get_singleton(),"set_order",swap_name,Globals::get_singleton()->get_order(name));
-		undo_redo->add_do_method(Globals::get_singleton(),"set_order",name,Globals::get_singleton()->get_order(swap_name));
-		undo_redo->add_undo_method(Globals::get_singleton(),"set_order",swap_name,Globals::get_singleton()->get_order(swap_name));
-		undo_redo->add_undo_method(Globals::get_singleton(),"set_order",name,Globals::get_singleton()->get_order(name));
+		undo_redo->add_do_method(Globals::get_singleton(),"set_order",swap_name,order);
+		undo_redo->add_do_method(Globals::get_singleton(),"set_order",name,swap_order);
+		undo_redo->add_undo_method(Globals::get_singleton(),"set_order",swap_name,swap_order);
+		undo_redo->add_undo_method(Globals::get_singleton(),"set_order",name,order);
 		undo_redo->add_do_method(this,"_update_autoload");
 		undo_redo->add_undo_method(this,"_update_autoload");
 		undo_redo->add_do_method(this,"_settings_changed");
