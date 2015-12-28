@@ -105,6 +105,7 @@ public:
 		Vector<FunctionNode*> static_functions;
 		Vector<Signal> _signals;
 		BlockNode *initializer;
+		BlockNode *ready;
 		ClassNode *owner;
 		//Vector<Node*> initializers;
 		int end_line;

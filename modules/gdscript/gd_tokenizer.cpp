@@ -851,6 +851,7 @@ void GDTokenizerText::_advance() {
 								{TK_PR_FUNCTION,"function"},
 								{TK_PR_CLASS,"class"},
 								{TK_PR_EXTENDS,"extends"},
+								{TK_PR_ONREADY,"onready"},
 								{TK_PR_TOOL,"tool"},
 								{TK_PR_STATIC,"static"},
 								{TK_PR_EXPORT,"export"},
@@ -1040,7 +1041,7 @@ void GDTokenizerText::advance(int p_amount) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define BYTECODE_VERSION 5
+#define BYTECODE_VERSION 6
 
 Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 
