@@ -402,7 +402,7 @@ int CollisionShape::_get_update_shape_index() const{
 void CollisionShape::_bind_methods() {
 
 	//not sure if this should do anything
-	ObjectTypeDB::bind_method(_MD("resource_changed"),&CollisionShape::resource_changed);
+	ObjectTypeDB::bind_method(_MD("resource_changed","resource"),&CollisionShape::resource_changed);
 	ObjectTypeDB::bind_method(_MD("set_shape","shape"),&CollisionShape::set_shape);
 	ObjectTypeDB::bind_method(_MD("get_shape"),&CollisionShape::get_shape);
 	ObjectTypeDB::bind_method(_MD("_add_to_collision_object"),&CollisionShape::_add_to_collision_object);

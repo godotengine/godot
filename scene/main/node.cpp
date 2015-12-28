@@ -2001,7 +2001,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_greater_than","node:Node"),&Node::is_greater_than);
 	ObjectTypeDB::bind_method(_MD("get_path"),&Node::get_path);
 	ObjectTypeDB::bind_method(_MD("get_path_to","node:Node"),&Node::get_path_to);
-	ObjectTypeDB::bind_method(_MD("add_to_group","group"),&Node::add_to_group,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("add_to_group","group","persistent"),&Node::add_to_group,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("remove_from_group","group"),&Node::remove_from_group);
 	ObjectTypeDB::bind_method(_MD("is_in_group","group"),&Node::is_in_group);
 	ObjectTypeDB::bind_method(_MD("move_child","child_node:Node","to_pos"),&Node::move_child);

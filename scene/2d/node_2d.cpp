@@ -394,9 +394,9 @@ void Node2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_z_as_relative","enable"),&Node2D::set_z_as_relative);
 	ObjectTypeDB::bind_method(_MD("is_z_relative"),&Node2D::is_z_relative);
 
-	ObjectTypeDB::bind_method(_MD("edit_set_pivot"),&Node2D::edit_set_pivot);
+	ObjectTypeDB::bind_method(_MD("edit_set_pivot","pivot"),&Node2D::edit_set_pivot);
 
-	ObjectTypeDB::bind_method(_MD("get_relative_transform"),&Node2D::get_relative_transform);
+	ObjectTypeDB::bind_method(_MD("get_relative_transform","parent"),&Node2D::get_relative_transform);
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"transform/pos"),_SCS("set_pos"),_SCS("get_pos"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"transform/rot",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_rotd"),_SCS("_get_rotd"));

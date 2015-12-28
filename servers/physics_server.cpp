@@ -467,7 +467,7 @@ void PhysicsServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("area_attach_object_instance_ID","area","id"),&PhysicsServer::area_attach_object_instance_ID);
 	ObjectTypeDB::bind_method(_MD("area_get_object_instance_ID","area"),&PhysicsServer::area_get_object_instance_ID);
 
-	ObjectTypeDB::bind_method(_MD("area_set_monitor_callback","receiver","method"),&PhysicsServer::area_set_monitor_callback);
+	ObjectTypeDB::bind_method(_MD("area_set_monitor_callback","area","receiver","method"),&PhysicsServer::area_set_monitor_callback);
 
 	ObjectTypeDB::bind_method(_MD("area_set_ray_pickable","area","enable"),&PhysicsServer::area_set_ray_pickable);
 	ObjectTypeDB::bind_method(_MD("area_is_ray_pickable","area"),&PhysicsServer::area_is_ray_pickable);
@@ -671,7 +671,7 @@ void PhysicsServer::_bind_methods() {
 	//ObjectTypeDB::bind_method(_MD("flush_queries"),&PhysicsServer::flush_queries);
 
 
-	ObjectTypeDB::bind_method(_MD("get_process_info"),&PhysicsServer::get_process_info);
+	ObjectTypeDB::bind_method(_MD("get_process_info","process_info"),&PhysicsServer::get_process_info);
 
 	BIND_CONSTANT( SHAPE_PLANE );
 	BIND_CONSTANT( SHAPE_RAY );

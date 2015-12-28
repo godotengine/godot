@@ -4147,7 +4147,7 @@
 		<method name="sample_set_data">
 			<argument index="0" name="sample" type="RID">
 			</argument>
-			<argument index="1" name="arg1" type="RawArray">
+			<argument index="1" name="data" type="RawArray">
 			</argument>
 			<description>
 			Set the sample data for a given sample as an array of bytes. The length must be equal to the sample lenght expected in bytes or an error will be produced.
@@ -5960,7 +5960,7 @@
 			</description>
 		</method>
 		<method name="set_zoom">
-			<argument index="0" name="arg0" type="Vector2">
+			<argument index="0" name="zoom" type="Vector2">
 			</argument>
 			<description>
 			</description>
@@ -6218,7 +6218,7 @@
 			</argument>
 			<argument index="1" name="pos" type="Vector2">
 			</argument>
-			<argument index="2" name="arg2" type="Color">
+			<argument index="2" name="modulate" type="Color" default="Color(1,1,1,1)">
 			</argument>
 			<description>
 			Draw a texture at a given position.
@@ -7209,7 +7209,7 @@
 	</description>
 	<methods>
 		<method name="set_build_mode">
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="build_mode" type="int">
 			</argument>
 			<description>
 			</description>
@@ -7284,7 +7284,7 @@
 			</description>
 		</method>
 		<method name="set_build_mode">
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="build_mode" type="int">
 			</argument>
 			<description>
 			Set whether the polygon is to be a [ConvexPolygon2D] ([code]build_mode[/code]=0), or a [ConcavePolygon2D] ([code]build_mode[/code]=1).
@@ -7298,7 +7298,7 @@
 			</description>
 		</method>
 		<method name="set_trigger">
-			<argument index="0" name="arg0" type="bool">
+			<argument index="0" name="trigger" type="bool">
 			</argument>
 			<description>
 			Set whether this polygon is a trigger. A trigger polygon detects collisions, but is otherwise unaffected by physics (i.e. colliding objects will not get blocked).
@@ -7338,7 +7338,7 @@
 	</description>
 	<methods>
 		<method name="resource_changed">
-			<argument index="0" name="arg0" type="Object">
+			<argument index="0" name="resource" type="Object">
 			</argument>
 			<description>
 			</description>
@@ -7998,7 +7998,7 @@
 		<method name="get_section_keys" qualifiers="const">
 			<return type="StringArray">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="section" type="String">
 			</argument>
 			<description>
 			</description>
@@ -9720,7 +9720,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</description>
 		</method>
 		<method name="set_show_hidden_files">
-			<argument index="0" name="arg0" type="bool">
+			<argument index="0" name="show" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -10313,6 +10313,12 @@ This approximation makes straight segments between each point, then subdivides t
 			<description>
 			</description>
 		</method>
+		<method name="get_length" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_autoplay">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
@@ -10333,24 +10339,18 @@ This approximation makes straight segments between each point, then subdivides t
 			<description>
 			</description>
 		</method>
-		<method name="get_channel_volumeidx" qualifiers="const">
+		<method name="get_channel_volume" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="idx" type="int">
 			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_length" qualifiers="const">
-			<return type="float">
-			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_channel_last_note_time" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
 			</description>
@@ -10737,7 +10737,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</description>
 		</method>
 		<method name="set_show_hidden_files">
-			<argument index="0" name="arg0" type="bool">
+			<argument index="0" name="show" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -11039,9 +11039,9 @@ This approximation makes straight segments between each point, then subdivides t
 		<method name="get_kerning_pair" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="char_a" type="int">
 			</argument>
-			<argument index="1" name="arg1" type="int">
+			<argument index="1" name="char_b" type="int">
 			</argument>
 			<description>
 			Return a kerning pair as a difference. Kerning pairs are special cases where a typeface advance is determined by the next character.
@@ -11829,7 +11829,7 @@ This approximation makes straight segments between each point, then subdivides t
 		<method name="has_singleton" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -11837,7 +11837,7 @@ This approximation makes straight segments between each point, then subdivides t
 		<method name="get_singleton" qualifiers="const">
 			<return type="Object">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -11845,7 +11845,7 @@ This approximation makes straight segments between each point, then subdivides t
 		<method name="load_resource_pack">
 			<return type="bool">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="pack" type="String">
 			</argument>
 			<description>
 			</description>
@@ -11853,7 +11853,7 @@ This approximation makes straight segments between each point, then subdivides t
 		<method name="save_custom">
 			<return type="int">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
 			</description>
@@ -12369,7 +12369,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</description>
 		</method>
 		<method name="resource_changed">
-			<argument index="0" name="arg0" type="Object">
+			<argument index="0" name="resource" type="Object">
 			</argument>
 			<description>
 			</description>
@@ -13690,13 +13690,13 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="action_press">
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="action_release">
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -15781,7 +15781,7 @@ returns:= "username=user&amp;password=pass"
 		<method name="get_parameter" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="variable" type="int">
 			</argument>
 			<description>
 			</description>
@@ -15797,7 +15797,7 @@ returns:= "username=user&amp;password=pass"
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="color" type="int">
 			</argument>
 			<description>
 			</description>
@@ -17090,9 +17090,9 @@ returns:= "username=user&amp;password=pass"
 			</argument>
 			<argument index="1" name="arrays" type="Array">
 			</argument>
-			<argument index="2" name="morph_arrays" type="Array">
+			<argument index="2" name="morph_arrays" type="Array" default="Array()">
 			</argument>
-			<argument index="3" name="arg3" type="bool" default="Array()">
+			<argument index="3" name="alphasort" type="bool" default="false">
 			</argument>
 			<description>
 			Create a new surface ([method get_surface_count] that will become surf_idx for this.
@@ -17765,7 +17765,7 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="set_instance_count">
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="count" type="int">
 			</argument>
 			<description>
 			Set the amount of instnces that is going to be drawn. Changing this number will erase all the existing instance transform and color data.
@@ -17779,9 +17779,9 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="set_instance_transform">
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="instance" type="int">
 			</argument>
-			<argument index="1" name="arg1" type="Transform">
+			<argument index="1" name="transform" type="Transform">
 			</argument>
 			<description>
 			Set the transform for a specific instance.
@@ -17790,16 +17790,16 @@ returns:= "username=user&amp;password=pass"
 		<method name="get_instance_transform" qualifiers="const">
 			<return type="Transform">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="instance" type="int">
 			</argument>
 			<description>
 			Return the transform of a specific instance.
 			</description>
 		</method>
 		<method name="set_instance_color">
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="instance" type="int">
 			</argument>
-			<argument index="1" name="arg1" type="Color">
+			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
 			Set the color of a specific instance.
@@ -17808,14 +17808,14 @@ returns:= "username=user&amp;password=pass"
 		<method name="get_instance_color" qualifiers="const">
 			<return type="Color">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="instance" type="int">
 			</argument>
 			<description>
 			Get the color of a specific instance.
 			</description>
 		</method>
 		<method name="set_aabb">
-			<argument index="0" name="arg0" type="AABB">
+			<argument index="0" name="visibility_aabb" type="AABB">
 			</argument>
 			<description>
 			Set the visibility AABB. If not provided, MultiMesh will not be visible.
@@ -18662,7 +18662,7 @@ returns:= "username=user&amp;password=pass"
 		<method name="add_to_group">
 			<argument index="0" name="group" type="String">
 			</argument>
-			<argument index="1" name="arg1" type="bool" default="false">
+			<argument index="1" name="persistent" type="bool" default="false">
 			</argument>
 			<description>
 			Add a node to a group. Groups are helpers to name and organize group of nodes, like for example: "Enemies", "Collectables", etc. A [Node] can be in any number of groups. Nodes can be assigned a group at any time, but will not be added to it until they are inside the scene tree (see [method is_inside_scene]).
@@ -19113,7 +19113,7 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="edit_set_pivot">
-			<argument index="0" name="arg0" type="Vector2">
+			<argument index="0" name="pivot" type="Vector2">
 			</argument>
 			<description>
 			</description>
@@ -19121,7 +19121,7 @@ returns:= "username=user&amp;password=pass"
 		<method name="get_relative_transform" qualifiers="const">
 			<return type="Matrix32">
 			</return>
-			<argument index="0" name="arg0" type="Object">
+			<argument index="0" name="parent" type="Object">
 			</argument>
 			<description>
 			</description>
@@ -19590,7 +19590,7 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="set_icon">
-			<argument index="0" name="arg0" type="Image">
+			<argument index="0" name="icon" type="Image">
 			</argument>
 			<description>
 			</description>
@@ -19755,7 +19755,7 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="print_resources_by_type">
-			<argument index="0" name="arg0" type="StringArray">
+			<argument index="0" name="types" type="StringArray">
 			</argument>
 			<description>
 			</description>
@@ -19763,13 +19763,13 @@ returns:= "username=user&amp;password=pass"
 		<method name="native_video_play">
 			<return type="int">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="arg1" type="float">
+			<argument index="1" name="volume" type="float">
 			</argument>
-			<argument index="2" name="arg2" type="String">
+			<argument index="2" name="audio_track" type="String">
 			</argument>
-			<argument index="3" name="arg3" type="String">
+			<argument index="3" name="subtitle_track" type="String">
 			</argument>
 			<description>
 			</description>
@@ -19996,7 +19996,7 @@ returns:= "username=user&amp;password=pass"
 		<method name="notification">
 			<argument index="0" name="what" type="int">
 			</argument>
-			<argument index="1" name="arg1" type="bool" default="false">
+			<argument index="1" name="reversed" type="bool" default="false">
 			</argument>
 			<description>
 			Notify the object of something.
@@ -20146,7 +20146,7 @@ returns:= "username=user&amp;password=pass"
 		<method name="has_method" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
 			</description>
@@ -20474,7 +20474,7 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="select">
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
 			Select an item by index and make it the current item.
@@ -20573,7 +20573,7 @@ returns:= "username=user&amp;password=pass"
 		<method name="flush">
 			<return type="int">
 			</return>
-			<argument index="0" name="arg0" type="bool">
+			<argument index="0" name="verbose" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -20910,7 +20910,7 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="set_ignore_camera_zoom">
-			<argument index="0" name="arg0" type="bool">
+			<argument index="0" name="ignore" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -21173,7 +21173,7 @@ returns:= "username=user&amp;password=pass"
 		<method name="get_randomness" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="variable" type="int">
 			</argument>
 			<description>
 			Return the randomness for a specific variable of the particle system. Randomness produces small changes from the default each time a particle is emitted.
@@ -21230,7 +21230,7 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="set_emit_timeout">
-			<argument index="0" name="arg0" type="float">
+			<argument index="0" name="timeout" type="float">
 			</argument>
 			<description>
 			</description>
@@ -22742,11 +22742,11 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="area_set_monitor_callback">
-			<argument index="0" name="receiver" type="RID">
+			<argument index="0" name="area" type="RID">
 			</argument>
-			<argument index="1" name="method" type="Object">
+			<argument index="1" name="receiver" type="Object">
 			</argument>
-			<argument index="2" name="arg2" type="String">
+			<argument index="2" name="method" type="String">
 			</argument>
 			<description>
 			</description>
@@ -23056,9 +23056,9 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="body_set_one_way_collision_direction">
-			<argument index="0" name="normal" type="RID">
+			<argument index="0" name="body" type="RID">
 			</argument>
-			<argument index="1" name="arg1" type="Vector2">
+			<argument index="1" name="normal" type="Vector2">
 			</argument>
 			<description>
 			</description>
@@ -23066,15 +23066,15 @@ This method controls whether the position between two cached points is interpola
 		<method name="body_get_one_way_collision_direction" qualifiers="const">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="arg0" type="RID">
+			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="body_set_one_way_collision_max_depth">
-			<argument index="0" name="normal" type="RID">
+			<argument index="0" name="body" type="RID">
 			</argument>
-			<argument index="1" name="arg1" type="float">
+			<argument index="1" name="depth" type="float">
 			</argument>
 			<description>
 			</description>
@@ -23082,7 +23082,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="body_get_one_way_collision_max_depth" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="arg0" type="RID">
+			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
 			</description>
@@ -23110,7 +23110,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="2" name="method" type="String">
 			</argument>
-			<argument index="3" name="arg3" type="var">
+			<argument index="3" name="userdata" type="var" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -23234,7 +23234,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_process_info">
 			<return type="int">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="process_info" type="int">
 			</argument>
 			<description>
 			</description>
@@ -24259,11 +24259,11 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="area_set_monitor_callback">
-			<argument index="0" name="receiver" type="RID">
+			<argument index="0" name="area" type="RID">
 			</argument>
-			<argument index="1" name="method" type="Object">
+			<argument index="1" name="receiver" type="Object">
 			</argument>
-			<argument index="2" name="arg2" type="String">
+			<argument index="2" name="method" type="String">
 			</argument>
 			<description>
 			</description>
@@ -24867,7 +24867,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_process_info">
 			<return type="int">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="process_info" type="int">
 			</argument>
 			<description>
 			</description>
@@ -25858,7 +25858,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="set_item_checked">
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="arg1" type="bool">
+			<argument index="1" name="checked" type="bool">
 			</argument>
 			<description>
 			Set the checkstate status of the item at index "idx".
@@ -26546,12 +26546,6 @@ This method controls whether the position between two cached points is interpola
 			Return value mapped to 0 to 1 (unit) range.
 			</description>
 		</method>
-		<method name="get_rounded_values" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="set_val">
 			<argument index="0" name="value" type="float">
 			</argument>
@@ -26599,8 +26593,14 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="set_rounded_values">
-			<argument index="0" name="arg0" type="bool">
+			<argument index="0" name="enabled" type="bool">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_rounded_values" qualifiers="const">
+			<return type="bool">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -27403,7 +27403,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="duplicate">
 			<return type="Object">
 			</return>
-			<argument index="0" name="arg0" type="bool" default="false">
+			<argument index="0" name="subresources" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -27592,7 +27592,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_dependencies">
 			<return type="StringArray">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
 			</description>
@@ -27600,7 +27600,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="has">
 			<return type="bool">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
 			</description>
@@ -27686,7 +27686,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="resource" type="Resource">
 			</argument>
-			<argument index="2" name="arg2" type="int" default="0">
+			<argument index="2" name="flags" type="int" default="0">
 			</argument>
 			<description>
 			Save a resource to disk, to a given path.
@@ -27792,7 +27792,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="expand" type="bool">
 			</argument>
-			<argument index="2" name="arg2" type="int">
+			<argument index="2" name="ratio" type="int">
 			</argument>
 			<description>
 			</description>
@@ -27852,7 +27852,7 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="scroll_to_line">
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
 			</description>
@@ -29578,7 +29578,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_nodes_in_group">
 			<return type="Array">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="group" type="String">
 			</argument>
 			<description>
 			</description>
@@ -30183,12 +30183,12 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="scalar_const_node_get_value">
+		<method name="scalar_const_node_get_value" qualifiers="const">
+			<return type="float">
+			</return>
 			<argument index="0" name="shader_type" type="int">
 			</argument>
 			<argument index="1" name="id" type="int">
-			</argument>
-			<argument index="2" name="arg2" type="float">
 			</argument>
 			<description>
 			</description>
@@ -30203,12 +30203,12 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="vec_const_node_get_value">
+		<method name="vec_const_node_get_value" qualifiers="const">
+			<return type="Vector3">
+			</return>
 			<argument index="0" name="shader_type" type="int">
 			</argument>
 			<argument index="1" name="id" type="int">
-			</argument>
-			<argument index="2" name="arg2" type="Vector3">
 			</argument>
 			<description>
 			</description>
@@ -30223,12 +30223,12 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="rgb_const_node_get_value">
+		<method name="rgb_const_node_get_value" qualifiers="const">
+			<return type="Color">
+			</return>
 			<argument index="0" name="shader_type" type="int">
 			</argument>
 			<argument index="1" name="id" type="int">
-			</argument>
-			<argument index="2" name="arg2" type="Color">
 			</argument>
 			<description>
 			</description>
@@ -30243,12 +30243,12 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="xform_const_node_get_value">
+		<method name="xform_const_node_get_value" qualifiers="const">
+			<return type="Transform">
+			</return>
 			<argument index="0" name="shader_type" type="int">
 			</argument>
 			<argument index="1" name="id" type="int">
-			</argument>
-			<argument index="2" name="arg2" type="Transform">
 			</argument>
 			<description>
 			</description>
@@ -30263,12 +30263,12 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="texture_node_get_filter_size">
+		<method name="texture_node_get_filter_size" qualifiers="const">
+			<return type="int">
+			</return>
 			<argument index="0" name="shader_type" type="int">
 			</argument>
 			<argument index="1" name="id" type="int">
-			</argument>
-			<argument index="2" name="arg2" type="int">
 			</argument>
 			<description>
 			</description>
@@ -30283,12 +30283,12 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="texture_node_get_filter_strength">
+		<method name="texture_node_get_filter_strength" qualifiers="const">
+			<return type="float">
+			</return>
 			<argument index="0" name="shader_type" type="int">
 			</argument>
 			<argument index="1" name="id" type="float">
-			</argument>
-			<argument index="2" name="arg2" type="float">
 			</argument>
 			<description>
 			</description>
@@ -31927,7 +31927,7 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="play">
-			<argument index="0" name="arg0" type="float" default="0">
+			<argument index="0" name="offset" type="float" default="0">
 			</argument>
 			<description>
 			</description>
@@ -33159,7 +33159,7 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="play">
-			<argument index="0" name="arg0" type="float" default="0">
+			<argument index="0" name="offset" type="float" default="0">
 			</argument>
 			<description>
 			</description>
@@ -33838,9 +33838,9 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="draw" qualifiers="const">
-			<argument index="0" name="arg0" type="RID">
+			<argument index="0" name="canvas_item" type="RID">
 			</argument>
-			<argument index="1" name="arg1" type="Rect2">
+			<argument index="1" name="rect" type="Rect2">
 			</argument>
 			<description>
 			</description>
@@ -33993,7 +33993,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_expand_margin_size" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="margin" type="int">
 			</argument>
 			<description>
 			Return the expand margin size (from enum MARGIN_*). Parts of the image below the size of the margin (and in the direction of the margin) will not expand.
@@ -34034,7 +34034,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_margin_size" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="margin" type="int">
 			</argument>
 			<description>
 			</description>
@@ -34050,7 +34050,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_expand_margin_size" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="margin" type="int">
 			</argument>
 			<description>
 			</description>
@@ -34592,7 +34592,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_line" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
 			Return the text of a specific line.
@@ -34601,7 +34601,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="cursor_set_column">
 			<argument index="0" name="column" type="int">
 			</argument>
-			<argument index="1" name="arg1" type="bool">
+			<argument index="1" name="adjust_viewport" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -34609,7 +34609,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="cursor_set_line">
 			<argument index="0" name="line" type="int">
 			</argument>
-			<argument index="1" name="arg1" type="bool">
+			<argument index="1" name="adjust_viewport" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -34951,7 +34951,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="2" name="modulate" type="Color" default="Color(1,1,1,1)">
 			</argument>
-			<argument index="3" name="arg3" type="bool" default="false">
+			<argument index="3" name="transpose" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -34965,7 +34965,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="3" name="modulate" type="Color" default="Color(1,1,1,1)">
 			</argument>
-			<argument index="4" name="arg4" type="bool" default="false">
+			<argument index="4" name="transpose" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -34979,7 +34979,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="3" name="modulate" type="Color" default="Color(1,1,1,1)">
 			</argument>
-			<argument index="4" name="arg4" type="bool" default="false">
+			<argument index="4" name="transpose" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -35324,7 +35324,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_icon_list" qualifiers="const">
 			<return type="StringArray">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
 			</description>
@@ -35370,7 +35370,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_stylebox_list" qualifiers="const">
 			<return type="StringArray">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
 			</description>
@@ -35416,7 +35416,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_font_list" qualifiers="const">
 			<return type="StringArray">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
 			</description>
@@ -35462,7 +35462,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_color_list" qualifiers="const">
 			<return type="StringArray">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
 			</description>
@@ -35508,7 +35508,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_constant_list" qualifiers="const">
 			<return type="StringArray">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
 			</description>
@@ -35528,7 +35528,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_type_list" qualifiers="const">
 			<return type="StringArray">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
 			</description>
@@ -36700,19 +36700,19 @@ This method controls whether the position between two cached points is interpola
 		<method name="translate" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="message" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="add_translation">
-			<argument index="0" name="arg0" type="Object">
+			<argument index="0" name="translation" type="Translation">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="remove_translation">
-			<argument index="0" name="arg0" type="Object">
+			<argument index="0" name="translation" type="Translation">
 			</argument>
 			<description>
 			</description>
@@ -36750,17 +36750,17 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="set_column_min_width">
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="column" type="int">
 			</argument>
-			<argument index="1" name="arg1" type="int">
+			<argument index="1" name="min_width" type="int">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="set_column_expand">
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="column" type="int">
 			</argument>
-			<argument index="1" name="arg1" type="bool">
+			<argument index="1" name="expand" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -36768,13 +36768,13 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_column_width" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="set_hide_root">
-			<argument index="0" name="arg0" type="bool">
+			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -37334,7 +37334,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="button" type="Texture">
 			</argument>
-			<argument index="2" name="arg2" type="int">
+			<argument index="2" name="button_idx" type="int">
 			</argument>
 			<description>
 			</description>
@@ -39232,7 +39232,7 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="set_render_target_to_screen_rect">
-			<argument index="0" name="arg0" type="Rect2">
+			<argument index="0" name="rect" type="Rect2">
 			</argument>
 			<description>
 			</description>
@@ -41370,7 +41370,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_attribute_name" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
 			</description>
@@ -41378,7 +41378,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_attribute_value" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
 			</description>
@@ -41386,7 +41386,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="has_attribute" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -41394,7 +41394,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_named_attribute_value" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -41402,7 +41402,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_named_attribute_value_safe" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -41426,7 +41426,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="seek">
 			<return type="int">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="pos" type="int">
 			</argument>
 			<description>
 			</description>

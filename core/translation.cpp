@@ -670,10 +670,10 @@ void TranslationServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_locale","locale"),&TranslationServer::set_locale);
 	ObjectTypeDB::bind_method(_MD("get_locale"),&TranslationServer::get_locale);
 
-	ObjectTypeDB::bind_method(_MD("translate"),&TranslationServer::translate);
+	ObjectTypeDB::bind_method(_MD("translate","message"),&TranslationServer::translate);
 
-	ObjectTypeDB::bind_method(_MD("add_translation"),&TranslationServer::add_translation);
-	ObjectTypeDB::bind_method(_MD("remove_translation"),&TranslationServer::remove_translation);
+	ObjectTypeDB::bind_method(_MD("add_translation","translation:Translation"),&TranslationServer::add_translation);
+	ObjectTypeDB::bind_method(_MD("remove_translation","translation:Translation"),&TranslationServer::remove_translation);
 
 	ObjectTypeDB::bind_method(_MD("clear"),&TranslationServer::clear);
 

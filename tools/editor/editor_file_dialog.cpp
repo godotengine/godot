@@ -1071,7 +1071,7 @@ void EditorFileDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_vbox:VBoxContainer"),&EditorFileDialog::get_vbox);
 	ObjectTypeDB::bind_method(_MD("set_access","access"),&EditorFileDialog::set_access);
 	ObjectTypeDB::bind_method(_MD("get_access"),&EditorFileDialog::get_access);
-	ObjectTypeDB::bind_method(_MD("set_show_hidden_files"),&EditorFileDialog::set_show_hidden_files);
+	ObjectTypeDB::bind_method(_MD("set_show_hidden_files","show"),&EditorFileDialog::set_show_hidden_files);
 	ObjectTypeDB::bind_method(_MD("is_showing_hidden_files"),&EditorFileDialog::is_showing_hidden_files);
 	ObjectTypeDB::bind_method(_MD("_select_drive"),&EditorFileDialog::_select_drive);
 	ObjectTypeDB::bind_method(_MD("_make_dir"),&EditorFileDialog::_make_dir);

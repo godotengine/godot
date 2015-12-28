@@ -517,7 +517,7 @@ void Font::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_descent"),&Font::get_descent);
 
 	ObjectTypeDB::bind_method(_MD("add_kerning_pair","char_a","char_b","kerning"),&Font::add_kerning_pair);
-	ObjectTypeDB::bind_method(_MD("get_kerning_pair"),&Font::get_kerning_pair);
+	ObjectTypeDB::bind_method(_MD("get_kerning_pair","char_a","char_b"),&Font::get_kerning_pair);
 
 	ObjectTypeDB::bind_method(_MD("add_texture","texture:Texture"),&Font::add_texture);
 	ObjectTypeDB::bind_method(_MD("add_char","character","texture","rect","align","advance"),&Font::add_char,DEFVAL(Point2()),DEFVAL(-1));

@@ -971,7 +971,7 @@ void Mesh::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_morph_target_mode","mode"),&Mesh::set_morph_target_mode);
 	ObjectTypeDB::bind_method(_MD("get_morph_target_mode"),&Mesh::get_morph_target_mode);
 
-	ObjectTypeDB::bind_method(_MD("add_surface","primitive","arrays","morph_arrays"),&Mesh::add_surface,DEFVAL(Array()));
+	ObjectTypeDB::bind_method(_MD("add_surface","primitive","arrays","morph_arrays","alphasort"),&Mesh::add_surface,DEFVAL(Array()),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_surface_count"),&Mesh::get_surface_count);
 	ObjectTypeDB::bind_method(_MD("surface_remove","surf_idx"),&Mesh::surface_remove);
 	ObjectTypeDB::bind_method(_MD("surface_get_array_len","surf_idx"),&Mesh::surface_get_array_len);
