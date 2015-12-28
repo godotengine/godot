@@ -86,7 +86,7 @@ RichTextLabel::Item *RichTextLabel::_get_next_item(Item* p_item,bool p_free) {
 
 
 void RichTextLabel::_process_line(ItemFrame *p_frame,const Vector2& p_ofs,int &y, int p_width, int p_line, ProcessMode p_mode,const Ref<Font> &p_base_font,const Color &p_base_color,const Point2i& p_click_pos,Item **r_click_item,int *r_click_char,bool *r_outside,int p_char_count) {
-
+	print_line("BEGIN");
 	RID ci;
 	if (r_outside)
 		*r_outside=false;
@@ -123,6 +123,8 @@ void RichTextLabel::_process_line(ItemFrame *p_frame,const Vector2& p_ofs,int &y
 
 	int wofs=margin;
 	int spaces_size=0;
+	int align_ofs=0;
+
 
 	if (p_mode!=PROCESS_CACHE && align!=ALIGN_FILL)
 		wofs+=line_ofs;
@@ -153,7 +155,7 @@ void RichTextLabel::_process_line(ItemFrame *p_frame,const Vector2& p_ofs,int &y
 			case ALIGN_LEFT: l.offset_caches.push_back(0); break;\
 			case ALIGN_CENTER: l.offset_caches.push_back(((p_width-margin)-used)/2); break;\
 			case ALIGN_RIGHT: l.offset_caches.push_back(((p_width-margin)-used)); break;\
-			case ALIGN_FILL: l.offset_caches.push_back((p_width-margin)-used+spaces_size); break;\
+			case ALIGN_FILL: l.offset_caches.push_back((p_width-margin)-used/*+spaces_size*/); break;\
 		}\
 		l.height_caches.push_back(line_height);\
 		l.space_caches.push_back(spaces);\
@@ -163,6 +165,7 @@ void RichTextLabel::_process_line(ItemFrame *p_frame,const Vector2& p_ofs,int &y
 	spaces=0;\
 	spaces_size=0;\
 	wofs=begin;\
+	align_ofs=0;\
 	if (p_mode!=PROCESS_CACHE) {\
 		lh=line<l.height_caches.size()?l.height_caches[line]:1;\
 	}\
@@ -279,6 +282,8 @@ if (m_height > line_height) {\
 
 						if (c[end]==' ') {
 
+							fw+=cw;
+							/*
 							if (p_mode==PROCESS_CACHE) {
 								fw+=cw;
 							} else if (align==ALIGN_FILL && line<l.space_caches.size() && l.space_caches[line]>0) {
@@ -287,7 +292,7 @@ if (m_height > line_height) {\
 								found_space=true;
 							} else {
 								fw+=cw;
-							}
+							}*/
 						} else {
 							fw+=cw;
 						}
@@ -295,22 +300,26 @@ if (m_height > line_height) {\
 						end++;						
 					}
 
-
 					ENSURE_WIDTH(w);
-
 
 					//print_line("END: "+String::chr(c[end])+".");
 					if (end && c[end-1]==' ') {
-						spaces++;
 						if (p_mode==PROCESS_CACHE) {
 							spaces_size+=font->get_char_size(' ').width;
+						} else if (align==ALIGN_FILL) {
+							int ln = MIN(l.offset_caches.size()-1,line);
+							if (l.space_caches[ln]) {
+								align_ofs = spaces * l.offset_caches[ln] / l.space_caches[ln];
+							}
 						}
+						spaces++;
 
+						/*
 						if (found_space) {
 							int ln = MIN(l.offset_caches.size()-1,line);
 
 							fw+=l.offset_caches[ln]/l.space_caches[ln];
-						}
+						}*/
 
 					}
 
@@ -335,7 +344,7 @@ if (m_height > line_height) {\
 									cw=tab_size*font->get_char_size(' ').width;
 								}
 
-								if (p_click_pos.x-cw/2>p_ofs.x+pofs) {
+								if (p_click_pos.x-cw/2>p_ofs.x+align_ofs+pofs) {
 
 									rchar=int((&c[i])-cf);
 									//print_line("GOT: "+itos(rchar));
@@ -371,11 +380,11 @@ if (m_height > line_height) {\
 									cw = font->get_char_size(c[i],c[i+1]).x;
 									draw_rect(Rect2(p_ofs.x+pofs,p_ofs.y+y,cw,lh),selection_bg);
 									if (visible)
-										font->draw_char(ci,p_ofs+Point2(pofs,y+lh-(fh-ascent)),c[i],c[i+1],selection_fg);
+										font->draw_char(ci,p_ofs+Point2(align_ofs+pofs,y+lh-(fh-ascent)),c[i],c[i+1],selection_fg);
 
 								} else {
 									if (visible)
-										cw=font->draw_char(ci,p_ofs+Point2(pofs,y+lh-(fh-ascent)),c[i],c[i+1],color);
+										cw=font->draw_char(ci,p_ofs+Point2(align_ofs+pofs,y+lh-(fh-ascent)),c[i],c[i+1],color);
 								}
 
 								p_char_count++;
@@ -391,7 +400,7 @@ if (m_height > line_height) {\
 									uc.a*=0.5;
 									//VS::get_singleton()->canvas_item_add_line(ci,Point2(pofs,y+ascent+2),Point2(pofs+cw,y+ascent+2),uc);
 									int uy = y+lh-fh+ascent+2;
-									VS::get_singleton()->canvas_item_add_line(ci,p_ofs+Point2(pofs,uy),p_ofs+Point2(pofs+cw,uy),uc);
+									VS::get_singleton()->canvas_item_add_line(ci,p_ofs+Point2(align_ofs+pofs,uy),p_ofs+Point2(align_ofs+pofs+cw,uy),uc);
 								}
 								ofs+=cw;
 							}
@@ -429,7 +438,7 @@ if (m_height > line_height) {\
 				bool visible = visible_characters<0 || p_char_count<visible_characters;
 
 				if (p_mode==PROCESS_DRAW && visible) {
-					img->image->draw(ci,p_ofs+Point2(wofs,y+lh-font->get_descent()-img->image->get_height()));
+					img->image->draw(ci,p_ofs+Point2(align_ofs+wofs,y+lh-font->get_descent()-img->image->get_height()));
 				}
 				p_char_count++;
 
@@ -548,7 +557,7 @@ if (m_height > line_height) {\
 
 
 
-				Point2 offset(hseparation,vseparation);
+				Point2 offset(align_ofs+hseparation,vseparation);
 
 				int row_height=0;
 				//draw using computed caches
