@@ -270,6 +270,8 @@ public:
 	void set_custom_minimum_size(const Size2& p_custom);
 	Size2 get_custom_minimum_size() const;
 
+	bool is_window_modal_on_top() const;
+
 	bool is_window() const;
 	Control *get_window() const;
 	Control *get_parent_control() const;

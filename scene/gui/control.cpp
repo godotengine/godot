@@ -862,6 +862,13 @@ bool Control::window_has_modal_stack() const {
 	return data.window->window->modal_stack.size();
 }
 
+bool Control::is_window_modal_on_top() const {
+
+	if (window_has_modal_stack())
+		return data.window->window->modal_stack.back()->get()==this;
+	return false;
+}
+
 void Control::_window_cancel_tooltip() {
 
 	window->tooltip=NULL;

@@ -56,7 +56,42 @@ void FileDialog::_notification(int p_what) {
 
 		//RID ci = get_canvas_item();
 		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
-	}	
+	}
+
+	if (p_what==NOTIFICATION_POPUP_HIDE) {
+
+		set_process_unhandled_input(false);
+	}
+}
+
+void FileDialog::_unhandled_input(const InputEvent& p_event) {
+
+	if (p_event.type==InputEvent::KEY && is_window_modal_on_top()) {
+
+		const InputEventKey &k=p_event.key;
+
+		if (k.pressed) {
+
+			bool handled=true;
+
+			switch (k.scancode) {
+
+				case KEY_H: {
+
+					if (k.mod.command) {
+						set_show_hidden_files(!show_hidden_files);
+					} else {
+						handled=false;
+					}
+
+				} break;
+				default: { handled=false; }
+			}
+
+			if (handled)
+				accept_event();
+		}
+	}
 }
 
 void FileDialog::set_enable_multiple_selection(bool p_enable) {
@@ -113,6 +148,8 @@ void FileDialog::_post_popup() {
 		file->grab_focus();
 	else
 		tree->grab_focus();
+
+	set_process_unhandled_input(true);
 
 }
 
@@ -628,6 +665,8 @@ bool FileDialog::default_show_hidden_files=false;
 
 void FileDialog::_bind_methods() {
 	
+	ObjectTypeDB::bind_method(_MD("_unhandled_input"),&FileDialog::_unhandled_input);
+
 	ObjectTypeDB::bind_method(_MD("_tree_selected"),&FileDialog::_tree_selected);
 	ObjectTypeDB::bind_method(_MD("_tree_db_selected"),&FileDialog::_tree_dc_selected);
 	ObjectTypeDB::bind_method(_MD("_dir_entered"),&FileDialog::_dir_entered);
