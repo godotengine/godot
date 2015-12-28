@@ -70,6 +70,7 @@ class CanvasItemEditor : public VBoxContainer {
 		TOOL_LIST_SELECT,
 		TOOL_MOVE,
 		TOOL_ROTATE,
+		TOOL_EDIT_PIVOT,
 		TOOL_PAN,
 		TOOL_MAX
 	};
@@ -245,6 +246,7 @@ class CanvasItemEditor : public VBoxContainer {
 	ToolButton *move_button;
 	ToolButton *rotate_button;
 
+	ToolButton *pivot_button;
 	ToolButton *pan_button;
 
 	ToolButton *lock_button;
@@ -265,6 +267,7 @@ class CanvasItemEditor : public VBoxContainer {
 	Button *key_insert_button;
 
 	PopupMenu *selection_menu;
+
 
 	//PopupMenu *popup;
 	DragType drag;
@@ -306,6 +309,7 @@ class CanvasItemEditor : public VBoxContainer {
 	
 	CanvasItem *ref_item;
 
+	void _edit_set_pivot(const Vector2& mouse_pos);
 	void _add_canvas_item(CanvasItem *p_canvas_item);
 	void _remove_canvas_item(CanvasItem *p_canvas_item);
 	void _clear_canvas_items();
