@@ -160,7 +160,7 @@ public:
 	virtual RID sample_create(SampleFormat p_format, bool p_stereo, int p_length)=0;
 
 	virtual void sample_set_description(RID p_sample, const String& p_description)=0;
-	virtual String sample_get_description(RID p_sample, const String& p_description) const=0;
+	virtual String sample_get_description(RID p_sample) const=0;
 
 	virtual SampleFormat sample_get_format(RID p_sample) const=0;
 	virtual bool sample_is_stereo(RID p_sample) const=0;
