@@ -83,7 +83,7 @@ void StyleBox::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_center_size"),&StyleBox::get_center_size);
 	ObjectTypeDB::bind_method(_MD("get_offset"),&StyleBox::get_offset);
 
-	ObjectTypeDB::bind_method(_MD("draw"),&StyleBox::draw);
+	ObjectTypeDB::bind_method(_MD("draw","canvas_item","rect"),&StyleBox::draw);
 
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin/left", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_LEFT );
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin/right", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_RIGHT );
@@ -182,10 +182,10 @@ void StyleBoxTexture::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_texture:Texture"),&StyleBoxTexture::get_texture);
 
 	ObjectTypeDB::bind_method(_MD("set_margin_size","margin","size"),&StyleBoxTexture::set_margin_size);
-	ObjectTypeDB::bind_method(_MD("get_margin_size"),&StyleBoxTexture::get_margin_size);
+	ObjectTypeDB::bind_method(_MD("get_margin_size","margin"),&StyleBoxTexture::get_margin_size);
 
 	ObjectTypeDB::bind_method(_MD("set_expand_margin_size","margin","size"),&StyleBoxTexture::set_expand_margin_size);
-	ObjectTypeDB::bind_method(_MD("get_expand_margin_size"),&StyleBoxTexture::get_expand_margin_size);
+	ObjectTypeDB::bind_method(_MD("get_expand_margin_size","margin"),&StyleBoxTexture::get_expand_margin_size);
 
 	ObjectTypeDB::bind_method(_MD("set_draw_center","enable"),&StyleBoxTexture::set_draw_center);
 	ObjectTypeDB::bind_method(_MD("get_draw_center"),&StyleBoxTexture::get_draw_center);
@@ -392,7 +392,7 @@ void StyleBoxImageMask::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_expand","expand"),&StyleBoxImageMask::set_expand);
 	ObjectTypeDB::bind_method(_MD("get_expand"),&StyleBoxImageMask::get_expand);
 	ObjectTypeDB::bind_method(_MD("set_expand_margin_size","margin","size"),&StyleBoxImageMask::set_expand_margin_size);
-	ObjectTypeDB::bind_method(_MD("get_expand_margin_size"),&StyleBoxImageMask::get_expand_margin_size);
+	ObjectTypeDB::bind_method(_MD("get_expand_margin_size","margin"),&StyleBoxImageMask::get_expand_margin_size);
 
 	ADD_PROPERTY( PropertyInfo(Variant::IMAGE, "image"), _SCS("set_image"), _SCS("get_image"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "expand"), _SCS("set_expand"), _SCS("get_expand"));

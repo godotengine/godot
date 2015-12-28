@@ -304,7 +304,7 @@ void OptionButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_item_count"),&OptionButton::get_item_count);
 	ObjectTypeDB::bind_method(_MD("add_separator"),&OptionButton::add_separator);
 	ObjectTypeDB::bind_method(_MD("clear"),&OptionButton::clear);
-	ObjectTypeDB::bind_method(_MD("select"),&OptionButton::select);
+	ObjectTypeDB::bind_method(_MD("select","idx"),&OptionButton::select);
 	ObjectTypeDB::bind_method(_MD("get_selected"),&OptionButton::get_selected);	
 	ObjectTypeDB::bind_method(_MD("get_selected_ID"),&OptionButton::get_selected_ID);
 	ObjectTypeDB::bind_method(_MD("get_selected_metadata"),&OptionButton::get_selected_metadata);

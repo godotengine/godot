@@ -333,7 +333,7 @@ void StreamPlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_stream","stream:Stream"),&StreamPlayer::set_stream);
 	ObjectTypeDB::bind_method(_MD("get_stream:Stream"),&StreamPlayer::get_stream);
 
-	ObjectTypeDB::bind_method(_MD("play"),&StreamPlayer::play,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("play","offset"),&StreamPlayer::play,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("stop"),&StreamPlayer::stop);
 
 	ObjectTypeDB::bind_method(_MD("is_playing"),&StreamPlayer::is_playing);

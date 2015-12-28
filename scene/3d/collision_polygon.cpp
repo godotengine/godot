@@ -236,7 +236,7 @@ void CollisionPolygon::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_add_to_collision_object"),&CollisionPolygon::_add_to_collision_object);
 
-	ObjectTypeDB::bind_method(_MD("set_build_mode"),&CollisionPolygon::set_build_mode);
+	ObjectTypeDB::bind_method(_MD("set_build_mode","build_mode"),&CollisionPolygon::set_build_mode);
 	ObjectTypeDB::bind_method(_MD("get_build_mode"),&CollisionPolygon::get_build_mode);
 
 	ObjectTypeDB::bind_method(_MD("set_depth","depth"),&CollisionPolygon::set_depth);
