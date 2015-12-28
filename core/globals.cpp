@@ -137,7 +137,7 @@ bool Globals::_set(const StringName& p_name, const Variant& p_value) {
 				props[p_name].order=last_order++;
 			}
 		} else {
-			props[p_name]=VariantContainer(p_value,last_order++ + registering_order?0:NO_ORDER_BASE);
+			props[p_name]=VariantContainer(p_value,last_order++ + (registering_order?0:NO_ORDER_BASE));
 		}
 	}
 
