@@ -856,7 +856,10 @@ Node *Node::_get_child_by_name(const StringName& p_name) const {
 
 Node *Node::_get_node(const NodePath& p_path) const {
 
-	ERR_FAIL_COND_V( !data.inside_tree && p_path.is_absolute(), NULL );
+	if (!data.inside_tree && p_path.is_absolute()) {
+		ERR_EXPLAIN("Can't use get_node() with absolute paths from outside the active scene tree.");
+		ERR_FAIL_V(NULL);
+	}
 	
 	Node *current=NULL;	
 	Node *root=NULL;
