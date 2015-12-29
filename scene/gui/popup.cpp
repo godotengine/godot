@@ -45,6 +45,14 @@ void Popup::_notification(int p_what) {
 			emit_signal("popup_hide");
 		}
 	}
+
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+		//small helper to make editing of these easier in editor
+		if (get_tree()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
+			set_as_toplevel(false);
+		}
+	}
+
 }
 
 void Popup::_fix_size() {
