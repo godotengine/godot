@@ -31,8 +31,12 @@
 
 void Path2D::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_DRAW && curve.is_valid() && is_inside_tree() && get_tree()->is_editor_hint()) {
+	if (p_what==NOTIFICATION_DRAW && curve.is_valid()) {
 		//draw the curve!!
+
+		if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_navigation_hint()) {
+			return;
+		}
 
 		for(int i=0;i<curve->get_point_count();i++) {
 
