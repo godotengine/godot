@@ -196,8 +196,12 @@ CPLoader::Error  CPLoader_S3M::load_sample(CPSample *p_sample) {
 		
 		if (id.is_null())
 			return FILE_OUT_OF_MEMORY;
+
+		sm->lock_data(id);
+		void *dataptr = sm->get_data(id);
 		
-		for (int c=0;c<(data_is_stereo?2:1);c++) {
+		int chans = (data_is_stereo?2:1);
+		for (int c=0;c<chans;c++) {
 			for (int i=0;i<sample_size;i++) {
 				
 				if (data_is_16bits) {
@@ -206,7 +210,7 @@ CPLoader::Error  CPLoader_S3M::load_sample(CPSample *p_sample) {
 					s-=32768; //toggle sign
 					
 					int16_t *v=(int16_t*)&s;
-					sm->set_data(id,i,*v,c);
+					((int16_t*)dataptr)[i*chans+c]=*v;
 				} else {
 						
 						
@@ -214,16 +218,16 @@ CPLoader::Error  CPLoader_S3M::load_sample(CPSample *p_sample) {
 					uint8_t s=file->get_byte();
 					s-=128; //toggle sign
 					v=(int8_t*)&s;
-					int16_t v16=*v;
-					v16<<=8;
-					sm->set_data(id,i,v16,c);
-						
+					((int8_t*)dataptr)[i*chans+c]=*v;
+
 				}
-				
-				
+
 			}
 			
 		}
+
+		sm->unlock_data(id);
+
 						  
 		sm->set_loop_begin( id, loop_begin );
 		sm->set_loop_end( id, loop_end );
