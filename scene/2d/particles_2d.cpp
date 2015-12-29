@@ -994,6 +994,15 @@ DVector<Vector2> Particles2D::get_emission_points() const{
 	return emission_points;
 }
 
+void Particles2D::reset() {
+
+	for(int i=0;i<particles.size();i++) {
+		particles[i].active=false;
+	}
+	time=0;
+	active_count=0;
+}
+
 void Particles2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_emitting","active"),&Particles2D::set_emitting);
@@ -1057,6 +1066,7 @@ void Particles2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_color_phase_pos","phase"),&Particles2D::get_color_phase_pos);
 
 	ObjectTypeDB::bind_method(_MD("pre_process","time"),&Particles2D::pre_process);
+	ObjectTypeDB::bind_method(_MD("reset"),&Particles2D::reset);
 
 	ObjectTypeDB::bind_method(_MD("set_use_local_space","enable"),&Particles2D::set_use_local_space);
 	ObjectTypeDB::bind_method(_MD("is_using_local_space"),&Particles2D::is_using_local_space);
