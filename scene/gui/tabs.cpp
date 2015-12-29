@@ -708,7 +708,7 @@ void Tabs::add_tab(const String& p_str,const Ref<Texture>& p_icon) {
 	t.text=p_str;
 	t.icon=p_icon;
 
-	t.close_button = get_icon("Close","EditorIcons");
+	t.close_button = get_icon("close");
 
 	tabs.push_back(t);
 
