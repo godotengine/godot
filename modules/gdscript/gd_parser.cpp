@@ -75,20 +75,28 @@ bool GDParser::_enter_indent_block(BlockNode* p_block) {
 
 	if (tokenizer->get_token()!=GDTokenizer::TK_NEWLINE) {
 
-		_set_error("newline expected after ':'.");
-		return false;
+		// be more python-like
+		int current = tab_level.back()->get();
+		tab_level.push_back(current+1);
+		return true;
+		//_set_error("newline expected after ':'.");
+		//return false;
 	}
 
 	while(true) {
 
 		if (tokenizer->get_token()!=GDTokenizer::TK_NEWLINE) {
+			print_line("no newline");
 			return false; //wtf
 		} else if (tokenizer->get_token(1)!=GDTokenizer::TK_NEWLINE) {
 
 			int indent = tokenizer->get_token_line_indent();
 			int current = tab_level.back()->get();
-			if (indent<=current)
+			if (indent<=current) {
+				print_line("current: "+itos(current)+" indent: "+itos(indent));
+				print_line("less than current");
 				return false;
+			}
 
 			tab_level.push_back(indent);
 			tokenizer->advance();
@@ -1588,6 +1596,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 				p_block->sub_blocks.push_back(cf_if->body);
 
 				if (!_enter_indent_block(cf_if->body)) {
+					_set_error("Expected intended block after 'if'");
 					p_block->end_line=tokenizer->get_token_line();
 					return;
 				}
@@ -1647,6 +1656,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 
 
 						if (!_enter_indent_block(cf_if->body)) {
+							_set_error("Expected indented block after 'elif'");
 							p_block->end_line=tokenizer->get_token_line();
 							return;
 						}
@@ -1661,7 +1671,6 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 					} else if (tokenizer->get_token()==GDTokenizer::TK_CF_ELSE) {
 
 						if (tab_level.back()->get() > indent_level) {
-
 							_set_error("Invalid indent");
 							return;
 						}
@@ -1673,6 +1682,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 						p_block->sub_blocks.push_back(cf_if->body_else);
 
 						if (!_enter_indent_block(cf_if->body_else)) {
+							_set_error("Expected indented block after 'else'");
 							p_block->end_line=tokenizer->get_token_line();
 							return;
 						}
@@ -1713,6 +1723,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 				p_block->sub_blocks.push_back(cf_while->body);
 
 				if (!_enter_indent_block(cf_while->body)) {
+					_set_error("Expected indented block after 'while'");
 					p_block->end_line=tokenizer->get_token_line();
 					return;
 				}
@@ -1764,6 +1775,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 				p_block->sub_blocks.push_back(cf_for->body);
 
 				if (!_enter_indent_block(cf_for->body)) {
+					_set_error("Expected indented block after 'while'");
 					p_block->end_line=tokenizer->get_token_line();
 					return;
 				}
