@@ -118,7 +118,7 @@ void TileMap::_update_quadrant_transform() {
 
 	Matrix32 nav_rel;
 	if (navigation)
-		nav_rel = get_relative_transform(navigation);
+		nav_rel = get_relative_transform_to_parent(navigation);
 
 	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
 
@@ -261,7 +261,7 @@ void TileMap::_update_dirty_quadrants() {
 	Vector2 tcenter = cell_size/2;
 	Matrix32 nav_rel;
 	if (navigation)
-		nav_rel = get_relative_transform(navigation);
+		nav_rel = get_relative_transform_to_parent(navigation);
 
 	Vector2 qofs;
 

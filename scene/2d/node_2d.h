@@ -99,7 +99,7 @@ public:
 	void set_z_as_relative(bool p_enabled);
 	bool is_z_relative() const;
 
-	Matrix32 get_relative_transform(const Node *p_parent) const;
+	Matrix32 get_relative_transform_to_parent(const Node *p_parent) const;
 
 
 
