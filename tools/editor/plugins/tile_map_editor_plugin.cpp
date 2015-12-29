@@ -218,7 +218,8 @@ struct _TileMapEditorCopyData {
 
 bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 
-	if (!node || !node->get_tileset().is_valid())
+
+	if (!node || !node->get_tileset().is_valid() || !node->is_visible())
 		return false;
 
 	Matrix32 xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
