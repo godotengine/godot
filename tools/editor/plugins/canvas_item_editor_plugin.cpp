@@ -166,9 +166,11 @@ void CanvasItemEditor::_edit_set_pivot(const Vector2& mouse_pos) {
 			Vector2 offset = n2d->edit_get_pivot();
 			Vector2 gpos = n2d->get_global_pos();
 
-			Vector2 motion_ofs = gpos-mouse_pos;
+			Vector2 local_mouse_pos = n2d->get_canvas_transform().affine_inverse().xform(mouse_pos);
 
-			undo_redo->add_do_method(n2d,"set_global_pos",mouse_pos);
+			Vector2 motion_ofs = gpos-local_mouse_pos;
+
+			undo_redo->add_do_method(n2d,"set_global_pos",local_mouse_pos);
 			undo_redo->add_do_method(n2d,"edit_set_pivot",offset+n2d->get_global_transform().affine_inverse().basis_xform(motion_ofs));
 			undo_redo->add_undo_method(n2d,"set_global_pos",gpos);
 			undo_redo->add_undo_method(n2d,"edit_set_pivot",offset);
