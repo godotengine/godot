@@ -56,7 +56,7 @@
 #ifdef TOOLS_ENABLED
 #include "tools/editor/editor_node.h"
 #include "tools/editor/project_manager.h"
-#include "tools/editor/console.h"
+
 #include "tools/pck/pck_packer.h"
 #endif
 

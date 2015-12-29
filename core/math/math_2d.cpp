@@ -187,7 +187,6 @@ Vector2 Vector2::snapped(const Vector2& p_by) const {
 
 Vector2 Vector2::clamped(real_t p_len) const {
 
-	return *this;
 	real_t l = length();
 	Vector2 v = *this;
 	if (l>0 && p_len<l) {
