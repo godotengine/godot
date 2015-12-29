@@ -98,6 +98,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "assert",
 "yield",
 "signal",
+"breakpoint",
 "'['",
 "']'",
 "'{'",
@@ -861,6 +862,7 @@ void GDTokenizerText::_advance() {
 								{TK_PR_ASSERT,"assert"},
 								{TK_PR_YIELD,"yield"},
 								{TK_PR_SIGNAL,"signal"},
+								{TK_PR_BREAKPOINT,"breakpoint"},
 								{TK_PR_CONST,"const"},
 								//controlflow
 								{TK_CF_IF,"if"},
@@ -1041,7 +1043,7 @@ void GDTokenizerText::advance(int p_amount) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define BYTECODE_VERSION 6
+#define BYTECODE_VERSION 7
 
 Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 

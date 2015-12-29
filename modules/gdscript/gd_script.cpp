@@ -1077,6 +1077,14 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				ip+=2;
 			} continue;
+			case OPCODE_BREAKPOINT: {
+#ifdef DEBUG_ENABLED
+				if (ScriptDebugger::get_singleton()) {
+					GDScriptLanguage::get_singleton()->debug_break("Breakpoint Statement",true);
+				}
+#endif
+				ip+=1;
+			} continue;
 			case OPCODE_LINE: {
 				CHECK_SPACE(2);
 
@@ -2672,6 +2680,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"or",
 		"export",
 		"assert",
+		"breakpoint",
 		"yield",
 		"static",
 		"float",

@@ -1156,6 +1156,10 @@ Error GDCompiler::_parse_block(CodeGen& codegen,const GDParser::BlockNode *p_blo
 				codegen.opcodes.push_back(GDFunction::OPCODE_ASSERT);
 				codegen.opcodes.push_back(ret);
 			} break;
+			case GDParser::Node::TYPE_BREAKPOINT: {
+				// try subblocks
+				codegen.opcodes.push_back(GDFunction::OPCODE_BREAKPOINT);
+			} break;
 			case GDParser::Node::TYPE_LOCAL_VAR: {
 
 

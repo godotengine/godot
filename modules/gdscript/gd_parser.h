@@ -54,6 +54,7 @@ public:
 			TYPE_CONTROL_FLOW,
 			TYPE_LOCAL_VAR,
 			TYPE_ASSERT,
+			TYPE_BREAKPOINT,
 			TYPE_NEWLINE,
 		};
 
@@ -274,6 +275,10 @@ public:
 	struct AssertNode : public Node {
 		Node* condition;
 		AssertNode() { type=TYPE_ASSERT; }
+	};
+
+	struct BreakpointNode : public Node {
+		BreakpointNode() { type=TYPE_BREAKPOINT; }
 	};
 
 	struct NewLineNode : public Node {
