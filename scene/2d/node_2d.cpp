@@ -333,17 +333,18 @@ int Node2D::get_z() const{
 	return z;
 }
 
-Matrix32 Node2D::get_relative_transform(const Node *p_parent) const {
+Matrix32 Node2D::get_relative_transform_to_parent(const Node *p_parent) const {
 
 	if (p_parent==this)
 		return Matrix32();
 
 	Node2D *parent_2d = get_parent()->cast_to<Node2D>();
+
 	ERR_FAIL_COND_V(!parent_2d,Matrix32());
 	if (p_parent==parent_2d)
 		return get_transform();
 	else
-		return parent_2d->get_relative_transform(p_parent) * get_transform();
+		return parent_2d->get_relative_transform_to_parent(p_parent) * get_transform();
 }
 
 
@@ -396,7 +397,7 @@ void Node2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("edit_set_pivot","pivot"),&Node2D::edit_set_pivot);
 
-	ObjectTypeDB::bind_method(_MD("get_relative_transform","parent"),&Node2D::get_relative_transform);
+	ObjectTypeDB::bind_method(_MD("get_relative_transform_to_parent","parent"),&Node2D::get_relative_transform_to_parent);
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"transform/pos"),_SCS("set_pos"),_SCS("get_pos"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"transform/rot",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_rotd"),_SCS("_get_rotd"));

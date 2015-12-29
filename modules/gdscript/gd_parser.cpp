@@ -2769,12 +2769,8 @@ void GDParser::_parse_class(ClassNode *p_class) {
 			}; //fallthrough to var
 			case GDTokenizer::TK_PR_ONREADY: {
 
-				if (tokenizer->get_token(-1)==GDTokenizer::TK_PR_EXPORT) {
-					current_export=PropertyInfo();
-					_set_error("Expected 'var' (can't combine with 'onready').");
-					return;
-				} else {
-
+				if (token==GDTokenizer::TK_PR_ONREADY) {
+					//may be fallthrough from export, ignore if so
 					tokenizer->advance();
 					if (tokenizer->get_token()!=GDTokenizer::TK_PR_VAR) {
 						_set_error("Expected 'var'.");
