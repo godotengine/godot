@@ -802,7 +802,7 @@ void Node::remove_child(Node *p_child) {
 	}
 	
 	ERR_FAIL_COND( idx==-1 );
-	ERR_FAIL_COND( p_child->data.blocked > 0 );
+	//ERR_FAIL_COND( p_child->data.blocked > 0 );
 
 	
 	//if (data.scene) { does not matter

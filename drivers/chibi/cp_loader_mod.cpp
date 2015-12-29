@@ -446,18 +446,19 @@ CPLoader::Error CPLoader_MOD::load_song(const char *p_file,CPSong *p_song,bool p
 		if (sid.is_null()) {
 			continue; //empty sample, not stored?
 		}
-		
+		sm->lock_data(sid);
+		uint8_t *dataptr = (uint8_t*)sm->get_data(sid);
+
 		int len=sm->get_size(sid);
 		for (int s=0;s<len;s++) {
 			
 			uint8_t d=file->get_byte();
 			//d-=128; //convert to signed
 			int8_t*ds=(int8_t*)&d;
-			int16_t d16=*ds;
-			d16<<=8;
-			sm->set_data( sid, s, d16 );
+			dataptr[s]=*ds;
 			
 		}
+		sm->unlock_data(sid);
 	}
 	
 	file->close();

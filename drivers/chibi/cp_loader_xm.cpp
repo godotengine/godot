@@ -627,6 +627,10 @@ CPLoader::Error CPLoader_XM::load_instrument_internal(CPInstrument *p_instr,bool
 			CPSample *sample=song->get_sample(sample_index[j]);
 			CPSample_ID sid=sample->get_sample_data();
 
+			sm->lock_data(sid);
+
+			void*dataptr=sm->get_data(sid);
+
 			if (sm->is_16bits( sid)) {
 
 				int16_t old=0;
@@ -638,8 +642,9 @@ CPLoader::Error CPLoader_XM::load_instrument_internal(CPInstrument *p_instr,bool
 					int16_t sampleval=file->get_word();
 					newsample=sampleval+old;
 					old=newsample;
-					
-					sm->set_data( sid, k, newsample );
+
+					((int16_t*)dataptr)[k]=newsample;
+					//sm->set_data( sid, k, newsample );
 				}
 			} else {
 
@@ -653,10 +658,15 @@ CPLoader::Error CPLoader_XM::load_instrument_internal(CPInstrument *p_instr,bool
 					newsample=sampleval+old;
 					old=newsample;
 					
-					sm->set_data( sid, k, (int16_t)newsample << 8 );
+					((int8_t*)dataptr)[k]=newsample;
+
+					//sm->set_data( sid, k, (int16_t)newsample << 8 );
 					
 				}
 			}
+
+			sm->unlock_data(sid);
+
 		}
 
 		for (int j=0;j<96;j++) {
