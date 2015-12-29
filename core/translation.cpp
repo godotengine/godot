@@ -626,7 +626,7 @@ bool TranslationServer::_load_translations(const String& p_from) {
 
 			for(int i=0;i<tcount;i++) {
 
-				print_line( "Loading translation from " + r[i] );
+				//print_line( "Loading translation from " + r[i] );
 				Ref<Translation> tr = ResourceLoader::load(r[i]);
 				if (tr.is_valid())
 					add_translation(tr);
