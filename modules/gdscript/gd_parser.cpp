@@ -1862,6 +1862,17 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 					return;
 				}
 			} break;
+			case GDTokenizer::TK_PR_BREAKPOINT: {
+
+				tokenizer->advance();
+				BreakpointNode *bn = alloc_node<BreakpointNode>();
+				p_block->statements.push_back(bn);
+
+				if (!_end_statement()) {
+					_set_error("Expected end of statement after breakpoint.");
+					return;
+				}
+			} break;
 			default: {
 
 				Node *expression = _parse_and_reduce_expression(p_block,p_static,false,true);
