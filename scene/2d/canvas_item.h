@@ -197,7 +197,7 @@ public:
 	void set_blend_mode(BlendMode p_blend_mode);
 	BlendMode get_blend_mode() const;
 
-	void set_light_mask(int p_light_mask);
+	virtual void set_light_mask(int p_light_mask);
 	int get_light_mask() const;
 
 	void set_opacity(float p_opacity);
