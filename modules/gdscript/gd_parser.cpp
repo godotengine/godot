@@ -2081,6 +2081,8 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				ClassNode *newclass = alloc_node<ClassNode>();
 				newclass->initializer = alloc_node<BlockNode>();
 				newclass->initializer->parent_class=newclass;
+				newclass->ready = alloc_node<BlockNode>();
+				newclass->ready->parent_class=newclass;
 				newclass->name=name;
 				newclass->owner=p_class;
 
