@@ -98,6 +98,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"load",
 		"inst2dict",
 		"dict2inst",
+		"Color8",
 		"hash",
 		"print_stack",
 		"instance_from_id",
@@ -938,6 +939,33 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			r_ret=p_args[0]->hash();
 
 		} break;
+		case COLOR8: {
+
+			if (p_arg_count<3) {
+				r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+				r_error.argument=3;
+				return;
+			}
+			if (p_arg_count>4) {
+				r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+				r_error.argument=4;
+				return;
+			}
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+
+			Color color(*p_args[0],*p_args[1],*p_args[2]);
+
+			if (p_arg_count==4) {
+				VALIDATE_ARG_NUM(3);
+				color.a=*p_args[3];
+			}
+
+			r_ret=color;
+
+		} break;
 
 		case PRINT_STACK: {
 
@@ -1017,6 +1045,7 @@ bool GDFunctions::is_deterministic(Function p_func) {
 		case TYPE_CONVERT:
 		case TYPE_OF:
 		case TEXT_STR:
+		case COLOR8:
 // enable for debug only, otherwise not desirable - case GEN_RANGE:
 			return true;
 		default:
@@ -1358,6 +1387,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("hash",PropertyInfo(Variant::NIL,"var:Variant"));
 			mi.return_val.type=Variant::INT;
+			return mi;
+		} break;
+		case COLOR8: {
+
+			MethodInfo mi("Color8",PropertyInfo(Variant::INT,"r8"),PropertyInfo(Variant::INT,"g8"),PropertyInfo(Variant::INT,"b8"),PropertyInfo(Variant::INT,"a8"));
+			mi.return_val.type=Variant::COLOR;
 			return mi;
 		} break;
 
