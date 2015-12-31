@@ -32,6 +32,19 @@ public:
 
 	};
 
+	struct StreamString : public Stream {
+
+		String s;
+		int pos;
+
+		virtual CharType get_char();
+		virtual bool is_utf8() const;
+		virtual bool is_eof() const;
+
+		StreamString() { pos=0; }
+
+	};
+
 	typedef Error (*ParseResourceFunc)(void* p_self, Stream* p_stream,Ref<Resource>& r_res,int &line,String &r_err_str);
 
 	struct ResourceParser {
