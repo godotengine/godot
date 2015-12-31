@@ -525,6 +525,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			for(int i=0;i<p_arg_count;i++) {
 
 				String os = p_args[i]->operator String();;
+
 				if (i==0)
 					str=os;
 				else

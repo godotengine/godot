@@ -714,8 +714,12 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 	}
 
-	if (rtm>=0 && rtm<3)
+	if (rtm>=0 && rtm<3) {
+		if (editor) {
+			rtm=OS::RENDER_THREAD_SAFE;
+		}
 		OS::get_singleton()->_render_thread_mode=OS::RenderThreadMode(rtm);
+	}
 
 
 
