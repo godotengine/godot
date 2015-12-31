@@ -394,8 +394,7 @@ void Body2DSW::_compute_area_gravity_and_dampenings(const Area2DSW *p_area) {
 	}
 
 	area_linear_damp += p_area->get_linear_damp();
-	area_angular_damp += p_area->get_angular_damp();
-	printf("%f\n",gravity.y);
+	area_angular_damp += p_area->get_angular_damp();	
 }
 
 void Body2DSW::integrate_forces(real_t p_step) {

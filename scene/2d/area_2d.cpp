@@ -383,7 +383,11 @@ void Area2D::_clear_monitoring() {
 
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = obj ? obj->cast_to<Node>() : NULL;
-			ERR_CONTINUE(!node);
+
+			if (!node) //node may have been deleted in previous frame, this should not be an error
+				continue;
+			//ERR_CONTINUE(!node);
+
 			if (!E->get().in_tree)
 				continue;
 
