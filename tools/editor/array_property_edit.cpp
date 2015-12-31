@@ -72,6 +72,15 @@ bool ArrayPropertyEdit::_set(const StringName& p_name, const Variant& p_value){
 					ur->add_undo_method(this,"_set_value",i,arr.get(i));
 
 				}
+			} else if (newsize>size && size) {
+
+				Variant init;
+				Variant::CallError ce;
+				init = Variant::construct(arr.get(size-1).get_type(),NULL,0,ce);
+				for(int i=size;i<newsize;i++) {
+					ur->add_do_method(this,"_set_value",i,init);
+				}
+
 			}
 			ur->add_do_method(this,"_notif_change");
 			ur->add_undo_method(this,"_notif_change");
