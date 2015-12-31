@@ -60,7 +60,6 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 friend class ResourceFormatLoaderText;
 
 	List<RES> resource_cache;
-	Error parse_property(Variant& r_v, String &r_name);
 	Error error;
 
 	RES resource;
@@ -117,7 +116,10 @@ class ResourceFormatSaverTextInstance  {
 	Map<RES,int> internal_resources;
 
 	void _find_resources(const Variant& p_variant,bool p_main=false);
-	void write_property(const String& p_name,const Variant& p_property,bool *r_ok=NULL);
+
+	static String _write_resources(void *ud,const RES& p_resource);
+	String _write_resource(const RES& res);
+
 
 public:
 

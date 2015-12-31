@@ -86,6 +86,7 @@ private:
 
 	template<class T>
 	static Error _parse_construct(Stream *p_stream, Vector<T>& r_construct, int &line, String &r_err_str);
+	static Error _parse_enginecfg(Stream *p_stream, Vector<String>& strings, int &line, String &r_err_str);
 	static Error _parse_dictionary(Dictionary &object, Stream *p_stream, int &line, String &r_err_str,ResourceParser *p_res_parser=NULL);
 	static Error _parse_array(Array &array, Stream *p_stream, int &line, String &r_err_str,ResourceParser *p_res_parser=NULL);
 	static Error _parse_tag(Token& token,Stream *p_stream, int &line, String &r_err_str,Tag& r_tag,ResourceParser *p_res_parser=NULL);
@@ -99,5 +100,25 @@ public:
 	static Error get_token(Stream *p_stream,Token& r_token,int &line,String &r_err_str);
 	static Error parse(Stream *p_stream, Variant &r_ret, String &r_err_str, int &r_err_line,ResourceParser *p_res_parser=NULL);
 };
+
+
+
+
+class VariantWriter {
+public:
+
+	typedef Error (*StoreStringFunc)(void *ud,const String& p_string);
+	typedef String (*EncodeResourceFunc)(void *ud,const RES& p_resource);
+
+	static Error write(const Variant& p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud,EncodeResourceFunc p_encode_res_func,void* p_encode_res_ud);
+	static Error write_to_string(const Variant& p_variant, String& r_string, EncodeResourceFunc p_encode_res_func=NULL,void* p_encode_res_ud=NULL);
+
+
+};
+
+
+
+
+
 
 #endif // VARIANT_PARSER_H

@@ -304,6 +304,7 @@ Error Globals::setup(const String& p_path,const String & p_main_pack) {
 
 		return OK;
 	}
+
 	if (OS::get_singleton()->get_resource_dir()!="") {
         //OS will call Globals->get_resource_path which will be empty if not overriden!
 		//if the OS would rather use somewhere else, then it will not be empty.
