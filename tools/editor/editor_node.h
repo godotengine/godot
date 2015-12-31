@@ -420,8 +420,8 @@ class EditorNode : public Node {
 
 	void _node_renamed();
 	void _editor_select(int p_which);
-	void _set_scene_metadata();
-	void _get_scene_metadata();
+	void _set_scene_metadata(const String &p_file);
+	void _get_scene_metadata(const String& p_file);
 	void _update_title();
 	void _update_scene_tabs();
 	void _close_messages();
