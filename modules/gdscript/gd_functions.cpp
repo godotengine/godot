@@ -98,8 +98,8 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"load",
 		"inst2dict",
 		"dict2inst",
-		"Color8",
 		"hash",
+		"Color8",
 		"print_stack",
 		"instance_from_id",
 	};
