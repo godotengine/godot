@@ -66,6 +66,7 @@ public:
 		TK_IDENTIFIER,
 		TK_STRING,
 		TK_NUMBER,
+		TK_COLOR,
 		TK_COLON,
 		TK_COMMA,
 		TK_EQUAL,
