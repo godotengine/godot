@@ -2128,8 +2128,7 @@ void Tree::_input_event(InputEvent p_event) {
 					float diff_y = -b.relative_y;
 					diff_y=Math::pow(ABS(diff_y),1.8)*SGN(diff_y);
 					diff_y*=0.1;
-					range_drag_base=CLAMP(range_drag_base + c.step * diff_y, c.min, c.max);
-
+					range_drag_base=CLAMP(range_drag_base + c.step * diff_y, c.min, c.max);					
 					popup_edited_item->set_range(popup_edited_item_col,range_drag_base);
 					item_edited(popup_edited_item_col,popup_edited_item);
 

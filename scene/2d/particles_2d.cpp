@@ -697,7 +697,7 @@ bool Particles2D::is_emitting() const {
 
 void Particles2D::set_amount(int p_amount) {
 
-	ERR_FAIL_INDEX(p_amount,1024);
+	ERR_FAIL_INDEX(p_amount,1024+1);
 
 	particles.resize(p_amount);
 }
@@ -719,7 +719,7 @@ float Particles2D::get_emit_timeout() const {
 
 void Particles2D::set_lifetime(float p_lifetime) {
 
-	ERR_FAIL_INDEX(p_lifetime,3600);
+	ERR_FAIL_INDEX(p_lifetime,3600+1);
 
 	lifetime=p_lifetime;
 }
