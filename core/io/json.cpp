@@ -288,7 +288,7 @@ Error JSON::_parse_value(Variant &value,Token& token,const CharType *p_str,int &
 
 	if (token.type==TK_CURLY_BRACKET_OPEN) {
 
-		Dictionary d;
+		Dictionary d(true);
 		Error err = _parse_object(d,p_str,index,p_len,line,r_err_str);
 		if (err)
 			return err;
@@ -296,7 +296,7 @@ Error JSON::_parse_value(Variant &value,Token& token,const CharType *p_str,int &
 		return OK;
 	} else if (token.type==TK_BRACKET_OPEN) {
 
-		Array a;
+		Array a(true);
 		Error err = _parse_array(a,p_str,index,p_len,line,r_err_str);
 		if (err)
 			return err;
