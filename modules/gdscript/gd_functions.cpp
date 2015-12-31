@@ -33,6 +33,7 @@
 #include "gd_script.h"
 #include "func_ref.h"
 #include "os/os.h"
+#include "variant_parser.h"
 
 const char *GDFunctions::get_func_name(Function p_func) {
 
@@ -607,7 +608,9 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 		} break;
 		case VAR_TO_STR: {
 			VALIDATE_ARG_COUNT(1);
-			r_ret=p_args[0]->get_construct_string();
+			String vars;
+			VariantWriter::write_to_string(*p_args[0],vars);
+			r_ret=vars;
 		} break;
 		case STR_TO_VAR: {
 			VALIDATE_ARG_COUNT(1);
@@ -618,7 +621,21 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				r_ret=Variant();
 				return;
 			}
-			Variant::construct_from_string(*p_args[0],r_ret);
+
+			VariantParser::StreamString ss;
+			ss.s=*p_args[0];
+
+			String errs;
+			int line;
+			Error err = VariantParser::parse(&ss,r_ret,errs,line);
+
+			if (err!=OK) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_error.expected=Variant::STRING;
+				r_ret=Variant();
+			}
+
 		} break;
 		case GEN_RANGE: {
 

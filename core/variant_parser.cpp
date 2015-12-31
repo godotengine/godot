@@ -19,6 +19,20 @@ bool VariantParser::StreamFile::is_eof() const {
 }
 
 
+CharType VariantParser::StreamString::get_char() {
+
+	if (pos>=s.length())
+		return 0;
+	else
+		return s[pos++];
+}
+
+bool VariantParser::StreamString::is_utf8() const {
+	return false;
+}
+bool VariantParser::StreamString::is_eof() const {
+	return pos>s.length();
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
