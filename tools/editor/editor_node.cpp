@@ -511,13 +511,21 @@ void EditorNode::save_resource_as(const Ref<Resource>& p_resource) {
 	file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	bool relpaths =  (p_resource->has_meta("__editor_relpaths__") && p_resource->get_meta("__editor_relpaths__").operator bool());
 
+	current_option=RESOURCE_SAVE_AS;
 	List<String> extensions;
 	Ref<PackedScene> sd = memnew( PackedScene );
 	ResourceSaver::get_recognized_extensions(p_resource,&extensions);
 	file->clear_filters();
+
+	List<String> preferred;
 	for(int i=0;i<extensions.size();i++) {
 
+		if (p_resource->is_type("Script") && extensions[i]=="tres" || extensions[i]=="res" || extensions[i]=="xml") {
+			//this serves no purpose and confused people
+			continue;
+		}
 		file->add_filter("*."+extensions[i]+" ; "+extensions[i].to_upper());
+		preferred.push_back(extensions[i]);
 	}
 
 	//file->set_current_path(current_path);
@@ -529,11 +537,11 @@ void EditorNode::save_resource_as(const Ref<Resource>& p_resource) {
 				file->set_current_path(p_resource->get_path().replacen("."+ext,"."+extensions.front()->get()));
 			}
 		}
-	} else {
+	} else if (preferred.size()) {
 
 		String existing;
 		if (extensions.size()) {
-			existing="new_"+p_resource->get_type().to_lower()+"."+extensions.front()->get().to_lower();
+			existing="new_"+p_resource->get_type().to_lower()+"."+preferred.front()->get().to_lower();
 		}
 		file->set_current_path(existing);
 
