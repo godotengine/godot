@@ -92,6 +92,7 @@ bool ArrayPropertyEdit::_set(const StringName& p_name, const Variant& p_value){
 			_change_notify();
 			return true;
 		}
+
 	} else if (pn.begins_with("indices")) {
 
 		if (pn.find("_")!=-1) {
