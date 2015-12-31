@@ -49,6 +49,7 @@ const char * VariantParser::tk_name[TK_MAX] = {
 	"identifier",
 	"string",
 	"number",
+	"color",
 	"':'",
 	"','",
 	"'='",
@@ -143,6 +144,29 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 
 				r_token.type=TK_EQUAL;
 				return OK;
+			};
+			case '#': {
+
+
+				String color_str="#";
+				while(true) {
+					CharType ch=p_stream->get_char();
+					if (p_stream->is_eof()) {
+						r_token.type=TK_EOF;
+						return OK;
+					} else if ( (ch>='0' && ch<='9') || (ch>='a' && ch<='f') || (ch>='A' && ch<='F') ) {
+						color_str+=String::chr(ch);
+
+					} else {
+						p_stream->saved=ch;
+						break;
+					}
+				}
+
+				r_token.value=Color::html(color_str);
+				r_token.type=TK_COLOR;
+				return OK;
+
 			};
 			case '"': {
 
@@ -1368,6 +1392,10 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 		value=token.value;
 		return OK;
 	} else if (token.type==TK_STRING) {
+
+		value=token.value;
+		return OK;
+	} else if (token.type==TK_COLOR) {
 
 		value=token.value;
 		return OK;
