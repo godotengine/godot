@@ -63,6 +63,7 @@ protected:
 	void _set_shape_range(const Vector2& p_range);
 	Vector2 _get_shape_range() const;
 
+	Vector< Vector<Vector2> > _decompose_in_convex();
 
 protected:
 
