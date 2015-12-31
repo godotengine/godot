@@ -30,7 +30,7 @@
 #include "collision_object_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
-
+#include "triangulator.h"
 void CollisionPolygon2D::_add_to_collision_object(Object *p_obj) {
 
 	if (unparenting || !can_update_body)
@@ -48,7 +48,7 @@ void CollisionPolygon2D::_add_to_collision_object(Object *p_obj) {
 
 		//here comes the sun, lalalala
 		//decompose concave into multiple convex polygons and add them
-		Vector< Vector<Vector2> > decomp = Geometry::decompose_polygon(polygon);
+		Vector< Vector<Vector2> > decomp = _decompose_in_convex();
 		shape_from=co->get_shape_count();
 		for(int i=0;i<decomp.size();i++) {
 			Ref<ConvexPolygonShape2D> convex = memnew( ConvexPolygonShape2D );
@@ -106,6 +106,51 @@ void CollisionPolygon2D::_update_parent() {
 	co->_update_shapes_from_children();
 }
 
+Vector< Vector<Vector2> > CollisionPolygon2D::_decompose_in_convex() {
+
+	Vector< Vector<Vector2> > decomp;
+#if 0
+	//fast but imprecise triangulator, gave us problems
+	decomp = Geometry::decompose_polygon(polygon);
+#else
+
+	List<TriangulatorPoly> in_poly,out_poly;
+
+	TriangulatorPoly inp;
+	inp.Init(polygon.size());
+	for(int i=0;i<polygon.size();i++) {
+		inp.GetPoint(i)=polygon[i];
+	}
+	inp.SetOrientation(TRIANGULATOR_CCW);
+	in_poly.push_back(inp);
+	TriangulatorPartition tpart;
+	if (tpart.ConvexPartition_HM(&in_poly,&out_poly)==0) { //failed!
+		ERR_PRINT("Convex decomposing failed!");
+		return decomp;
+	}
+
+	decomp.resize(out_poly.size());
+	int idx=0;
+
+	for(List<TriangulatorPoly>::Element*I = out_poly.front();I;I=I->next()) {
+
+		TriangulatorPoly& tp = I->get();
+
+		decomp[idx].resize(tp.GetNumPoints());
+
+		for(int i=0;i<tp.GetNumPoints();i++) {
+
+			decomp[idx][i]=tp.GetPoint(i);
+		}
+
+		idx++;
+	}
+
+#endif
+
+	return decomp;
+}
+
 void CollisionPolygon2D::_notification(int p_what) {
 
 
@@ -155,7 +200,8 @@ void CollisionPolygon2D::_notification(int p_what) {
 //#define DEBUG_DECOMPOSE
 #if defined(TOOLS_ENABLED) && defined (DEBUG_DECOMPOSE)
 
-			Vector< Vector<Vector2> > decomp = Geometry::decompose_polygon(polygon);
+			Vector< Vector<Vector2> > decomp = _decompose_in_convex();
+
 			Color c(0.4,0.9,0.1);
 			for(int i=0;i<decomp.size();i++) {
 
