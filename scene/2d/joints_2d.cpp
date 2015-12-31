@@ -164,11 +164,17 @@ void PinJoint2D::_notification(int p_what) {
 
 	switch(p_what) {
 		case NOTIFICATION_DRAW: {
-			if (is_inside_tree() && get_tree()->is_editor_hint()) {
 
-				draw_line(Point2(-10,0),Point2(+10,0),Color(0.7,0.6,0.0,0.5),3);
-				draw_line(Point2(0,-10),Point2(0,+10),Color(0.7,0.6,0.0,0.5),3);
+			if (!is_inside_tree())
+				break;
+
+			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+				break;
 			}
+
+
+			draw_line(Point2(-10,0),Point2(+10,0),Color(0.7,0.6,0.0,0.5),3);
+			draw_line(Point2(0,-10),Point2(0,+10),Color(0.7,0.6,0.0,0.5),3);
 		} break;
 	}
 
@@ -241,13 +247,17 @@ void GrooveJoint2D::_notification(int p_what) {
 
 	switch(p_what) {
 		case NOTIFICATION_DRAW: {
-			if (is_inside_tree() && get_tree()->is_editor_hint()) {
+			if (!is_inside_tree())
+				break;
 
-				draw_line(Point2(-10,0),Point2(+10,0),Color(0.7,0.6,0.0,0.5),3);
-				draw_line(Point2(-10,length),Point2(+10,length),Color(0.7,0.6,0.0,0.5),3);
-				draw_line(Point2(0,0),Point2(0,length),Color(0.7,0.6,0.0,0.5),3);
-				draw_line(Point2(-10,initial_offset),Point2(+10,initial_offset),Color(0.8,0.8,0.9,0.5),5);
+			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+				break;
 			}
+
+			draw_line(Point2(-10,0),Point2(+10,0),Color(0.7,0.6,0.0,0.5),3);
+			draw_line(Point2(-10,length),Point2(+10,length),Color(0.7,0.6,0.0,0.5),3);
+			draw_line(Point2(0,0),Point2(0,length),Color(0.7,0.6,0.0,0.5),3);
+			draw_line(Point2(-10,initial_offset),Point2(+10,initial_offset),Color(0.8,0.8,0.9,0.5),5);
 		} break;
 	}
 }
@@ -339,12 +349,17 @@ void DampedSpringJoint2D::_notification(int p_what) {
 
 	switch(p_what) {
 		case NOTIFICATION_DRAW: {
-			if (is_inside_tree() && get_tree()->is_editor_hint()) {
 
-				draw_line(Point2(-10,0),Point2(+10,0),Color(0.7,0.6,0.0,0.5),3);
-				draw_line(Point2(-10,length),Point2(+10,length),Color(0.7,0.6,0.0,0.5),3);
-				draw_line(Point2(0,0),Point2(0,length),Color(0.7,0.6,0.0,0.5),3);
+			if (!is_inside_tree())
+				break;
+
+			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+				break;
 			}
+
+			draw_line(Point2(-10,0),Point2(+10,0),Color(0.7,0.6,0.0,0.5),3);
+			draw_line(Point2(-10,length),Point2(+10,length),Color(0.7,0.6,0.0,0.5),3);
+			draw_line(Point2(0,0),Point2(0,length),Color(0.7,0.6,0.0,0.5),3);
 		} break;
 	}
 }

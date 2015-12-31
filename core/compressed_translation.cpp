@@ -410,15 +410,15 @@ bool PHashTranslation::_set(const StringName& p_name, const Variant& p_value) {
 	String name = p_name.operator String();
 	if (name=="hash_table") {
 		hash_table=p_value;
-		print_line("translation: loaded hash table of size: "+itos(hash_table.size()));
+		//print_line("translation: loaded hash table of size: "+itos(hash_table.size()));
 	} else if (name=="bucket_table") {
 		bucket_table=p_value;
-		print_line("translation: loaded bucket table of size: "+itos(bucket_table.size()));
+		//print_line("translation: loaded bucket table of size: "+itos(bucket_table.size()));
 	} else if (name=="strings") {
 		strings=p_value;
-		print_line("translation: loaded string table of size: "+itos(strings.size()));
+		//print_line("translation: loaded string table of size: "+itos(strings.size()));
 	} else if (name=="load_from") {
-		print_line("generating");
+		//print_line("generating");
 		generate(p_value);
 	} else
 		return false;

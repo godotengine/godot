@@ -88,7 +88,7 @@ void AudioServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("sample_get_length","sample"), &AudioServer::sample_get_length );
 
 	ObjectTypeDB::bind_method(_MD("sample_set_signed_data","sample","data"), &AudioServer::sample_set_signed_data );
-	ObjectTypeDB::bind_method(_MD("sample_set_data","sample"), &AudioServer::sample_set_data );
+	ObjectTypeDB::bind_method(_MD("sample_set_data","sample","data"), &AudioServer::sample_set_data );
 	ObjectTypeDB::bind_method(_MD("sample_get_data","sample"), &AudioServer::sample_get_data );
 
 	ObjectTypeDB::bind_method(_MD("sample_set_mix_rate","sample","mix_rate"), &AudioServer::sample_set_mix_rate );

@@ -137,7 +137,7 @@ bool Globals::_set(const StringName& p_name, const Variant& p_value) {
 				props[p_name].order=last_order++;
 			}
 		} else {
-			props[p_name]=VariantContainer(p_value,last_order++ + registering_order?0:NO_ORDER_BASE);
+			props[p_name]=VariantContainer(p_value,last_order++ + (registering_order?0:NO_ORDER_BASE));
 		}
 	}
 
@@ -1391,11 +1391,11 @@ void Globals::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("localize_path","path"),&Globals::localize_path);
 	ObjectTypeDB::bind_method(_MD("globalize_path","path"),&Globals::globalize_path);
 	ObjectTypeDB::bind_method(_MD("save"),&Globals::save);
-	ObjectTypeDB::bind_method(_MD("has_singleton"),&Globals::has_singleton);
-	ObjectTypeDB::bind_method(_MD("get_singleton"),&Globals::get_singleton_object);
-	ObjectTypeDB::bind_method(_MD("load_resource_pack"),&Globals::_load_resource_pack);
+	ObjectTypeDB::bind_method(_MD("has_singleton","name"),&Globals::has_singleton);
+	ObjectTypeDB::bind_method(_MD("get_singleton","name"),&Globals::get_singleton_object);
+	ObjectTypeDB::bind_method(_MD("load_resource_pack","pack"),&Globals::_load_resource_pack);
 
-	ObjectTypeDB::bind_method(_MD("save_custom"),&Globals::_save_custom_bnd);
+	ObjectTypeDB::bind_method(_MD("save_custom","file"),&Globals::_save_custom_bnd);
 
 }
 

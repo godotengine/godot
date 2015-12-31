@@ -248,6 +248,7 @@ public:
 	DVector<Vector2> get_emission_points() const;
 
 	void pre_process(float p_delta);
+	void reset();
 
 	Particles2D();
 };

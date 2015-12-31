@@ -205,7 +205,7 @@ void ConfigFile::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("has_section_key","section","key"),&ConfigFile::has_section_key);
 
 	ObjectTypeDB::bind_method(_MD("get_sections"),&ConfigFile::_get_sections);
-	ObjectTypeDB::bind_method(_MD("get_section_keys"),&ConfigFile::_get_section_keys);
+	ObjectTypeDB::bind_method(_MD("get_section_keys","section"),&ConfigFile::_get_section_keys);
 
 	ObjectTypeDB::bind_method(_MD("load:Error","path"),&ConfigFile::load);
 	ObjectTypeDB::bind_method(_MD("save:Error","path"),&ConfigFile::save);

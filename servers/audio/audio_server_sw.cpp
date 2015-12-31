@@ -360,7 +360,7 @@ void AudioServerSW::sample_set_description(RID p_sample, const String& p_descrip
 	AUDIO_LOCK
 	sample_manager->sample_set_description(p_sample,p_description);
 }
-String AudioServerSW::sample_get_description(RID p_sample, const String& p_description) const {
+String AudioServerSW::sample_get_description(RID p_sample) const {
 
 	AUDIO_LOCK
 	return sample_manager->sample_get_description(p_sample);
@@ -767,8 +767,6 @@ void AudioServerSW::_thread_func(void *self) {
 
 	AudioServerSW *as=(AudioServerSW *)self;
 
-	as->thread->set_name("AudioServerSW");
-
 	while (!as->exit_update_thread) {
 		as->_update_streams(true);
 		OS::get_singleton()->delay_usec(5000);
@@ -809,6 +807,7 @@ void AudioServerSW::init() {
 #ifndef NO_THREADS
 	exit_update_thread=false;
 	thread = Thread::create(_thread_func,this);
+	thread->set_name("AudioServerSW");
 #endif
 
 }

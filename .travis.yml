@@ -1,14 +1,48 @@
 language: cpp
-compiler: 
-  - gcc
-before_install:
-  
 
-before_script: 
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq scons pkg-config libx11-dev libxcursor-dev build-essential libasound2-dev libfreetype6-dev libgl1-mesa-dev libglu-dev  
-  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
-  
-script: scons platform=x11
+sudo: required
+dist: trusty
+
+compiler:
+  - gcc
+  - clang
+
+os:
+  - linux
+  - osx
+
+env:
+  - GODOT_TARGET=iphone
+  - GODOT_TARGET=osx
+  - GODOT_TARGET=x11
+  - GODOT_TARGET=android
+  - GODOT_TARGET=windows
+
+matrix:
+  exclude:
+    - os: linux
+      env: GODOT_TARGET=iphone
+    - os: linux
+      env: GODOT_TARGET=osx
+    - os: linux
+      env: GODOT_TARGET=android
+    - os: osx
+      env: GODOT_TARGET=x11
+    - os: osx
+      env: GODOT_TARGET=windows
+    - compiler: gcc
+      env: GODOT_TARGET=iphone
+    - compiler: clang
+      env: GODOT_TARGET=android
+    - compiler: clang
+      env: GODOT_TARGET=windows
+
+
+before_script:
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update -qq; sudo apt-get install -y scons pkg-config libx11-dev libxcursor-dev build-essential libasound2-dev libfreetype6-dev libgl1-mesa-dev libglu-dev libssl-dev libxinerama-dev libevdev-dev libudev-dev; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$GODOT_TARGET" = "windows" ]; then sudo apt-get update -qq; sudo apt-get install -y mingw32 mingw-w64; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; brew install scons; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$GODOT_TARGET" = "android" ]; then brew update; brew install android-sdk android-ndk; export ANDROID_HOME=/usr/local/opt/android-sdk; export ANDROID_NDK_ROOT=/usr/local/opt/android-ndk; fi
+
+script:
+  - scons platform=$GODOT_TARGET CXX=$CXX

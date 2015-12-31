@@ -71,6 +71,7 @@ public:
 		OPCODE_ITERATE_BEGIN,
 		OPCODE_ITERATE,
 		OPCODE_ASSERT,
+		OPCODE_BREAKPOINT,
 		OPCODE_LINE,
 		OPCODE_END
 	};
@@ -529,6 +530,7 @@ public:
 	virtual String make_function(const String& p_class,const String& p_name,const StringArray& p_args) const;
 	virtual Error complete_code(const String& p_code, const String& p_base_path, Object*p_owner,List<String>* r_options,String& r_call_hint);
 	virtual void auto_indent_code(String& p_code,int p_from_line,int p_to_line) const;
+	virtual void add_global_constant(const StringName& p_variable,const Variant& p_value);
 
 	/* DEBUGGER FUNCTIONS */
 

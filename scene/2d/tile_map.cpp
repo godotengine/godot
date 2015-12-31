@@ -118,7 +118,7 @@ void TileMap::_update_quadrant_transform() {
 
 	Matrix32 nav_rel;
 	if (navigation)
-		nav_rel = get_relative_transform(navigation);
+		nav_rel = get_relative_transform_to_parent(navigation);
 
 	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
 
@@ -261,7 +261,7 @@ void TileMap::_update_dirty_quadrants() {
 	Vector2 tcenter = cell_size/2;
 	Matrix32 nav_rel;
 	if (navigation)
-		nav_rel = get_relative_transform(navigation);
+		nav_rel = get_relative_transform_to_parent(navigation);
 
 	Vector2 qofs;
 
@@ -333,6 +333,8 @@ void TileMap::_update_dirty_quadrants() {
 				Matrix32 xform;
 				xform.set_origin( q.pos );
 				vs->canvas_item_set_transform( canvas_item, xform );
+				vs->canvas_item_set_light_mask(canvas_item,get_light_mask());
+
 				q.canvas_items.push_back(canvas_item);
 
 				if (debug_shapes) {
@@ -1105,7 +1107,16 @@ int TileMap::get_occluder_light_mask() const{
 	return occluder_light_mask;
 }
 
+void TileMap::set_light_mask(int p_light_mask) {
 
+	CanvasItem::set_light_mask(p_light_mask);
+	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
+
+		for (List<RID>::Element *F=E->get().canvas_items.front();F;F=F->next()) {
+			VisualServer::get_singleton()->canvas_item_set_light_mask(F->get(),get_light_mask());
+		}
+	}
+}
 
 void TileMap::_bind_methods() {
 

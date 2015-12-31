@@ -273,7 +273,7 @@ void NavigationPolygonInstance::set_enabled(bool p_enabled) {
 
 			if (navpoly.is_valid()) {
 
-				nav_id = navigation->navpoly_create(navpoly,get_relative_transform(navigation),this);
+				nav_id = navigation->navpoly_create(navpoly,get_relative_transform_to_parent(navigation),this);
 			}
 		}
 
@@ -309,7 +309,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 
 					if (enabled && navpoly.is_valid()) {
 
-						nav_id = navigation->navpoly_create(navpoly,get_relative_transform(navigation),this);
+						nav_id = navigation->navpoly_create(navpoly,get_relative_transform_to_parent(navigation),this);
 					}
 					break;
 				}
@@ -321,7 +321,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
 			if (navigation && nav_id!=-1) {
-				navigation->navpoly_set_transform(nav_id,get_relative_transform(navigation));
+				navigation->navpoly_set_transform(nav_id,get_relative_transform_to_parent(navigation));
 			}
 
 		} break;
@@ -409,7 +409,7 @@ void NavigationPolygonInstance::set_navigation_polygon(const Ref<NavigationPolyg
 	}
 
 	if (navigation && navpoly.is_valid() && enabled) {
-		nav_id = navigation->navpoly_create(navpoly,get_relative_transform(navigation),this);
+		nav_id = navigation->navpoly_create(navpoly,get_relative_transform_to_parent(navigation),this);
 	}
 	//update_gizmo();
 	_change_notify("navpoly");

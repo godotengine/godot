@@ -95,8 +95,10 @@ class ProjectSettings : public AcceptDialog {
 	void _update_autoload();
 	void _autoload_file_callback(const String& p_path);
 	void _autoload_add();
+	void _autoload_edited();
 	void _autoload_file_open();
 	void _autoload_delete(Object *p_item,int p_column, int p_button);
+	bool updating_autoload;
 
 
 	void _item_selected();

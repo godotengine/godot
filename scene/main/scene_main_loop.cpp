@@ -1586,7 +1586,7 @@ void SceneTree::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("notify_group","call_flags","group","notification"),&SceneTree::notify_group);
 	ObjectTypeDB::bind_method(_MD("set_group","call_flags","group","property","value"),&SceneTree::set_group);
 
-	ObjectTypeDB::bind_method(_MD("get_nodes_in_group"),&SceneTree::_get_nodes_in_group);
+	ObjectTypeDB::bind_method(_MD("get_nodes_in_group","group"),&SceneTree::_get_nodes_in_group);
 
 	ObjectTypeDB::bind_method(_MD("get_root:Viewport"),&SceneTree::get_root);
 

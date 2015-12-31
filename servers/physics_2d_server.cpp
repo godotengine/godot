@@ -548,7 +548,7 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("area_attach_object_instance_ID","area","id"),&Physics2DServer::area_attach_object_instance_ID);
 	ObjectTypeDB::bind_method(_MD("area_get_object_instance_ID","area"),&Physics2DServer::area_get_object_instance_ID);
 
-	ObjectTypeDB::bind_method(_MD("area_set_monitor_callback","receiver","method"),&Physics2DServer::area_set_monitor_callback);
+	ObjectTypeDB::bind_method(_MD("area_set_monitor_callback","area","receiver","method"),&Physics2DServer::area_set_monitor_callback);
 
 	ObjectTypeDB::bind_method(_MD("body_create","mode","init_sleeping"),&Physics2DServer::body_create,DEFVAL(BODY_MODE_RIGID),DEFVAL(false));
 
@@ -606,17 +606,17 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("body_set_max_contacts_reported","body","amount"),&Physics2DServer::body_set_max_contacts_reported);
 	ObjectTypeDB::bind_method(_MD("body_get_max_contacts_reported","body"),&Physics2DServer::body_get_max_contacts_reported);
 
-	ObjectTypeDB::bind_method(_MD("body_set_one_way_collision_direction","normal"),&Physics2DServer::body_set_one_way_collision_direction);
-	ObjectTypeDB::bind_method(_MD("body_get_one_way_collision_direction"),&Physics2DServer::body_get_one_way_collision_direction);
+	ObjectTypeDB::bind_method(_MD("body_set_one_way_collision_direction","body","normal"),&Physics2DServer::body_set_one_way_collision_direction);
+	ObjectTypeDB::bind_method(_MD("body_get_one_way_collision_direction","body"),&Physics2DServer::body_get_one_way_collision_direction);
 
-	ObjectTypeDB::bind_method(_MD("body_set_one_way_collision_max_depth","normal"),&Physics2DServer::body_set_one_way_collision_max_depth);
-	ObjectTypeDB::bind_method(_MD("body_get_one_way_collision_max_depth"),&Physics2DServer::body_get_one_way_collision_max_depth);
+	ObjectTypeDB::bind_method(_MD("body_set_one_way_collision_max_depth","body","depth"),&Physics2DServer::body_set_one_way_collision_max_depth);
+	ObjectTypeDB::bind_method(_MD("body_get_one_way_collision_max_depth","body"),&Physics2DServer::body_get_one_way_collision_max_depth);
 
 
 	ObjectTypeDB::bind_method(_MD("body_set_omit_force_integration","body","enable"),&Physics2DServer::body_set_omit_force_integration);
 	ObjectTypeDB::bind_method(_MD("body_is_omitting_force_integration","body"),&Physics2DServer::body_is_omitting_force_integration);
 
-	ObjectTypeDB::bind_method(_MD("body_set_force_integration_callback","body","receiver","method"),&Physics2DServer::body_set_force_integration_callback);
+	ObjectTypeDB::bind_method(_MD("body_set_force_integration_callback","body","receiver","method","userdata"),&Physics2DServer::body_set_force_integration_callback,DEFVAL(Variant()));
 
 	ObjectTypeDB::bind_method(_MD("body_test_motion","body","motion","margin","result:Physics2DTestMotionResult"),&Physics2DServer::_body_test_motion,DEFVAL(0.08),DEFVAL(Variant()));
 
@@ -638,7 +638,7 @@ void Physics2DServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_active","active"),&Physics2DServer::set_active);
 
-	ObjectTypeDB::bind_method(_MD("get_process_info"),&Physics2DServer::get_process_info);
+	ObjectTypeDB::bind_method(_MD("get_process_info","process_info"),&Physics2DServer::get_process_info);
 
 //	ObjectTypeDB::bind_method(_MD("init"),&Physics2DServer::init);
 //	ObjectTypeDB::bind_method(_MD("step"),&Physics2DServer::step);
@@ -663,9 +663,11 @@ void Physics2DServer::_bind_methods() {
 	BIND_CONSTANT( AREA_PARAM_ANGULAR_DAMP);
 	BIND_CONSTANT( AREA_PARAM_PRIORITY );
 
-	BIND_CONSTANT( AREA_SPACE_OVERRIDE_COMBINE );
 	BIND_CONSTANT( AREA_SPACE_OVERRIDE_DISABLED );
+	BIND_CONSTANT( AREA_SPACE_OVERRIDE_COMBINE );
+	BIND_CONSTANT( AREA_SPACE_OVERRIDE_COMBINE_REPLACE );
 	BIND_CONSTANT( AREA_SPACE_OVERRIDE_REPLACE );
+	BIND_CONSTANT( AREA_SPACE_OVERRIDE_REPLACE_COMBINE );
 
 	BIND_CONSTANT( BODY_MODE_STATIC );
 	BIND_CONSTANT( BODY_MODE_KINEMATIC );

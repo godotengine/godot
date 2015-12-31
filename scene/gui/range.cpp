@@ -216,11 +216,10 @@ void Range::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_val"),&Range::get_val);
 	ObjectTypeDB::bind_method(_MD("get_value"),&Range::get_val);
 	ObjectTypeDB::bind_method(_MD("get_min"),&Range::get_min);
-	ObjectTypeDB::bind_method(_MD("get_max"),&Range::get_max);		
-	ObjectTypeDB::bind_method(_MD("get_step"),&Range::get_step);		
-	ObjectTypeDB::bind_method(_MD("get_page"),&Range::get_page);		
-	ObjectTypeDB::bind_method(_MD("get_unit_value"),&Range::get_unit_value);		
-	ObjectTypeDB::bind_method(_MD("get_rounded_values"),&Range::get_rounded_values);		
+	ObjectTypeDB::bind_method(_MD("get_max"),&Range::get_max);
+	ObjectTypeDB::bind_method(_MD("get_step"),&Range::get_step);
+	ObjectTypeDB::bind_method(_MD("get_page"),&Range::get_page);
+	ObjectTypeDB::bind_method(_MD("get_unit_value"),&Range::get_unit_value);
 	ObjectTypeDB::bind_method(_MD("set_val","value"),&Range::set_val);
 	ObjectTypeDB::bind_method(_MD("set_value","value"),&Range::set_val);
 	ObjectTypeDB::bind_method(_MD("set_min","minimum"),&Range::set_min);
@@ -228,7 +227,8 @@ void Range::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_step","step"),&Range::set_step);
 	ObjectTypeDB::bind_method(_MD("set_page","pagesize"),&Range::set_page);
 	ObjectTypeDB::bind_method(_MD("set_unit_value","value"),&Range::set_unit_value);
-	ObjectTypeDB::bind_method(_MD("set_rounded_values"),&Range::set_rounded_values);		
+	ObjectTypeDB::bind_method(_MD("set_rounded_values","enabled"),&Range::set_rounded_values);
+	ObjectTypeDB::bind_method(_MD("is_rounded_values"),&Range::is_rounded_values);
 	ObjectTypeDB::bind_method(_MD("set_exp_unit_value","enabled"),&Range::set_exp_unit_value);
 	ObjectTypeDB::bind_method(_MD("is_unit_value_exp"),&Range::is_unit_value_exp);
 
@@ -244,16 +244,18 @@ void Range::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "range/page" ), _SCS("set_page"), _SCS("get_page") );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "range/value" ), _SCS("set_val"), _SCS("get_val") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "range/exp_edit" ), _SCS("set_exp_unit_value"), _SCS("is_unit_value_exp") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "rounded_values" ), _SCS("set_rounded_values"), _SCS("get_rounded_values") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "range/rounded" ), _SCS("set_rounded_values"), _SCS("is_rounded_values") );
 
 }
 
-void Range::set_rounded_values(bool p){
-	_rounded_values = p;
+void Range::set_rounded_values(bool p_enable) {
+
+	_rounded_values = p_enable;
 }
 
-bool Range::get_rounded_values() const{
-	return 	_rounded_values;
+bool Range::is_rounded_values() const {
+
+	return _rounded_values;
 }
 
 void Range::set_exp_unit_value(bool p_enable) {

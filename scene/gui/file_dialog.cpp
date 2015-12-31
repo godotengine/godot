@@ -49,7 +49,7 @@ void FileDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		refresh->set_icon(get_icon("Reload","EditorIcons"));
+		refresh->set_icon(get_icon("reload"));
 	}
 	
 	if (p_what==NOTIFICATION_DRAW) {
@@ -650,7 +650,7 @@ void FileDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_vbox:VBoxContainer"),&FileDialog::get_vbox);
 	ObjectTypeDB::bind_method(_MD("set_access","access"),&FileDialog::set_access);
 	ObjectTypeDB::bind_method(_MD("get_access"),&FileDialog::get_access);
-	ObjectTypeDB::bind_method(_MD("set_show_hidden_files"),&FileDialog::set_show_hidden_files);
+	ObjectTypeDB::bind_method(_MD("set_show_hidden_files","show"),&FileDialog::set_show_hidden_files);
 	ObjectTypeDB::bind_method(_MD("is_showing_hidden_files"),&FileDialog::is_showing_hidden_files);
 	ObjectTypeDB::bind_method(_MD("_select_drive"),&FileDialog::_select_drive);
 	ObjectTypeDB::bind_method(_MD("_make_dir"),&FileDialog::_make_dir);

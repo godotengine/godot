@@ -739,12 +739,12 @@ void ShaderGLES2::set_custom_shader(uint32_t p_code_id) {
 
 void ShaderGLES2::free_custom_shader(uint32_t p_code_id) {
 
-    if (! custom_code_map.has( p_code_id )) {
+  /*  if (! custom_code_map.has( p_code_id )) {
         print_line("no code id "+itos(p_code_id));
     } else {
         print_line("freed code id "+itos(p_code_id));
 
-    }
+    }*/
 
 	ERR_FAIL_COND(! custom_code_map.has( p_code_id ));
 	if (conditional_version.code_version==p_code_id)

@@ -802,6 +802,7 @@ void Node::remove_child(Node *p_child) {
 	}
 	
 	ERR_FAIL_COND( idx==-1 );
+	//ERR_FAIL_COND( p_child->data.blocked > 0 );
 
 	
 	//if (data.scene) { does not matter
@@ -856,7 +857,10 @@ Node *Node::_get_child_by_name(const StringName& p_name) const {
 
 Node *Node::_get_node(const NodePath& p_path) const {
 
-	ERR_FAIL_COND_V( !data.inside_tree && p_path.is_absolute(), NULL );
+	if (!data.inside_tree && p_path.is_absolute()) {
+		ERR_EXPLAIN("Can't use get_node() with absolute paths from outside the active scene tree.");
+		ERR_FAIL_V(NULL);
+	}
 	
 	Node *current=NULL;	
 	Node *root=NULL;
@@ -2001,7 +2005,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_greater_than","node:Node"),&Node::is_greater_than);
 	ObjectTypeDB::bind_method(_MD("get_path"),&Node::get_path);
 	ObjectTypeDB::bind_method(_MD("get_path_to","node:Node"),&Node::get_path_to);
-	ObjectTypeDB::bind_method(_MD("add_to_group","group"),&Node::add_to_group,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("add_to_group","group","persistent"),&Node::add_to_group,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("remove_from_group","group"),&Node::remove_from_group);
 	ObjectTypeDB::bind_method(_MD("is_in_group","group"),&Node::is_in_group);
 	ObjectTypeDB::bind_method(_MD("move_child","child_node:Node","to_pos"),&Node::move_child);

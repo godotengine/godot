@@ -385,15 +385,15 @@ void XMLParser::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_node_data"),&XMLParser::get_node_data);
 	ObjectTypeDB::bind_method(_MD("get_node_offset"),&XMLParser::get_node_offset);
 	ObjectTypeDB::bind_method(_MD("get_attribute_count"),&XMLParser::get_attribute_count);
-	ObjectTypeDB::bind_method(_MD("get_attribute_name"),&XMLParser::get_attribute_name);
-	ObjectTypeDB::bind_method(_MD("get_attribute_value"),(String (XMLParser::*)(int) const) &XMLParser::get_attribute_value);
-	ObjectTypeDB::bind_method(_MD("has_attribute"),&XMLParser::has_attribute);
-	ObjectTypeDB::bind_method(_MD("get_named_attribute_value"), (String (XMLParser::*)(const String&) const) &XMLParser::get_attribute_value);
-	ObjectTypeDB::bind_method(_MD("get_named_attribute_value_safe"), &XMLParser::get_attribute_value_safe);
+	ObjectTypeDB::bind_method(_MD("get_attribute_name","idx"),&XMLParser::get_attribute_name);
+	ObjectTypeDB::bind_method(_MD("get_attribute_value","idx"),(String (XMLParser::*)(int) const) &XMLParser::get_attribute_value);
+	ObjectTypeDB::bind_method(_MD("has_attribute","name"),&XMLParser::has_attribute);
+	ObjectTypeDB::bind_method(_MD("get_named_attribute_value","name"), (String (XMLParser::*)(const String&) const) &XMLParser::get_attribute_value);
+	ObjectTypeDB::bind_method(_MD("get_named_attribute_value_safe","name"), &XMLParser::get_attribute_value_safe);
 	ObjectTypeDB::bind_method(_MD("is_empty"),&XMLParser::is_empty);
 	ObjectTypeDB::bind_method(_MD("get_current_line"),&XMLParser::get_current_line);
 	ObjectTypeDB::bind_method(_MD("skip_section"),&XMLParser::skip_section);
-	ObjectTypeDB::bind_method(_MD("seek"),&XMLParser::seek);
+	ObjectTypeDB::bind_method(_MD("seek","pos"),&XMLParser::seek);
 	ObjectTypeDB::bind_method(_MD("open","file"),&XMLParser::open);
 	ObjectTypeDB::bind_method(_MD("open_buffer","buffer"),&XMLParser::open_buffer);
 

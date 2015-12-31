@@ -224,13 +224,13 @@ void MultiMesh::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_mesh","mesh:Mesh"),&MultiMesh::set_mesh);
 	ObjectTypeDB::bind_method(_MD("get_mesh:Mesh"),&MultiMesh::get_mesh);
-	ObjectTypeDB::bind_method(_MD("set_instance_count"),&MultiMesh::set_instance_count);
+	ObjectTypeDB::bind_method(_MD("set_instance_count","count"),&MultiMesh::set_instance_count);
 	ObjectTypeDB::bind_method(_MD("get_instance_count"),&MultiMesh::get_instance_count);
-	ObjectTypeDB::bind_method(_MD("set_instance_transform"),&MultiMesh::set_instance_transform);
-	ObjectTypeDB::bind_method(_MD("get_instance_transform"),&MultiMesh::get_instance_transform);
-	ObjectTypeDB::bind_method(_MD("set_instance_color"),&MultiMesh::set_instance_color);
-	ObjectTypeDB::bind_method(_MD("get_instance_color"),&MultiMesh::get_instance_color);
-	ObjectTypeDB::bind_method(_MD("set_aabb"),&MultiMesh::set_aabb);
+	ObjectTypeDB::bind_method(_MD("set_instance_transform","instance","transform"),&MultiMesh::set_instance_transform);
+	ObjectTypeDB::bind_method(_MD("get_instance_transform","instance"),&MultiMesh::get_instance_transform);
+	ObjectTypeDB::bind_method(_MD("set_instance_color","instance","color"),&MultiMesh::set_instance_color);
+	ObjectTypeDB::bind_method(_MD("get_instance_color","instance"),&MultiMesh::get_instance_color);
+	ObjectTypeDB::bind_method(_MD("set_aabb","visibility_aabb"),&MultiMesh::set_aabb);
 	ObjectTypeDB::bind_method(_MD("get_aabb"),&MultiMesh::get_aabb);
 
 	ObjectTypeDB::bind_method(_MD("generate_aabb"),&MultiMesh::generate_aabb);

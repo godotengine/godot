@@ -1077,6 +1077,14 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				ip+=2;
 			} continue;
+			case OPCODE_BREAKPOINT: {
+#ifdef DEBUG_ENABLED
+				if (ScriptDebugger::get_singleton()) {
+					GDScriptLanguage::get_singleton()->debug_break("Breakpoint Statement",true);
+				}
+#endif
+				ip+=1;
+			} continue;
 			case OPCODE_LINE: {
 				CHECK_SPACE(2);
 
@@ -2570,6 +2578,12 @@ void GDScriptLanguage::_add_global(const StringName& p_name,const Variant& p_val
 	_global_array=global_array.ptr();
 }
 
+void GDScriptLanguage::add_global_constant(const StringName& p_variable,const Variant& p_value) {
+
+	_add_global(p_variable,p_value);
+}
+
+
 void GDScriptLanguage::init() {
 
 
@@ -2646,6 +2660,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"elif",
 		"enum",
 		"extends"	,
+		"onready",
 		"for"	,
 		"func"	,
 		"if"	,
@@ -2665,6 +2680,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"or",
 		"export",
 		"assert",
+		"breakpoint",
 		"yield",
 		"static",
 		"float",

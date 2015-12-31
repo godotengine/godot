@@ -152,6 +152,46 @@ public:
 	}
 };
 
+void CanvasItemEditor::_edit_set_pivot(const Vector2& mouse_pos) {
+	List<Node*> &selection = editor_selection->get_selected_node_list();
+
+	undo_redo->create_action("Move Pivot");
+
+	for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+
+		Node2D *n2d = E->get()->cast_to<Node2D>();
+
+		if (n2d && n2d->edit_has_pivot()) {
+
+			Vector2 offset = n2d->edit_get_pivot();
+			Vector2 gpos = n2d->get_global_pos();
+
+			Vector2 local_mouse_pos = n2d->get_canvas_transform().affine_inverse().xform(mouse_pos);
+
+			Vector2 motion_ofs = gpos-local_mouse_pos;
+
+			undo_redo->add_do_method(n2d,"set_global_pos",local_mouse_pos);
+			undo_redo->add_do_method(n2d,"edit_set_pivot",offset+n2d->get_global_transform().affine_inverse().basis_xform(motion_ofs));
+			undo_redo->add_undo_method(n2d,"set_global_pos",gpos);
+			undo_redo->add_undo_method(n2d,"edit_set_pivot",offset);
+			for(int i=0;i<n2d->get_child_count();i++) {
+				Node2D *n2dc = n2d->get_child(i)->cast_to<Node2D>();
+				if (!n2dc)
+					continue;
+
+				undo_redo->add_do_method(n2dc,"set_global_pos",n2dc->get_global_pos());
+				undo_redo->add_undo_method(n2dc,"set_global_pos",n2dc->get_global_pos());
+
+			}
+
+		}
+
+	}
+
+	undo_redo->commit_action();
+
+}
+
 void CanvasItemEditor::_unhandled_key_input(const InputEvent& p_ev) {
 
 	if (!is_visible())
@@ -179,38 +219,7 @@ void CanvasItemEditor::_unhandled_key_input(const InputEvent& p_ev) {
 				mouse_pos=transform.affine_inverse().xform(mouse_pos);
 				mouse_pos=snap_point(mouse_pos);
 
-				undo_redo->create_action("Move Pivot");
-
-				for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
-
-					Node2D *n2d = E->get()->cast_to<Node2D>();
-
-					if (n2d && n2d->edit_has_pivot()) {
-
-						Vector2 offset = n2d->edit_get_pivot();
-						Vector2 gpos = n2d->get_global_pos();
-
-						Vector2 motion_ofs = gpos-mouse_pos;
-
-						undo_redo->add_do_method(n2d,"set_global_pos",mouse_pos);
-						undo_redo->add_do_method(n2d,"edit_set_pivot",offset+n2d->get_global_transform().affine_inverse().basis_xform(motion_ofs));
-						undo_redo->add_undo_method(n2d,"set_global_pos",gpos);
-						undo_redo->add_undo_method(n2d,"edit_set_pivot",offset);
-						for(int i=0;i<n2d->get_child_count();i++) {
-							Node2D *n2dc = n2d->get_child(i)->cast_to<Node2D>();
-							if (!n2dc)
-								continue;
-
-							undo_redo->add_do_method(n2dc,"set_global_pos",n2dc->get_global_pos());
-							undo_redo->add_undo_method(n2dc,"set_global_pos",n2dc->get_global_pos());
-
-						}
-
-					}
-
-				}
-
-				undo_redo->commit_action();
+				_edit_set_pivot(mouse_pos);
 			}
 
 		}
@@ -221,7 +230,7 @@ void CanvasItemEditor::_unhandled_key_input(const InputEvent& p_ev) {
 void CanvasItemEditor::_tool_select(int p_index) {
 
 
-	ToolButton *tb[TOOL_MAX]={select_button,list_select_button,move_button,rotate_button,pan_button};
+	ToolButton *tb[TOOL_MAX]={select_button,list_select_button,move_button,rotate_button,pivot_button,pan_button};
 	for(int i=0;i<TOOL_MAX;i++) {
 
 		tb[i]->set_pressed(i==p_index);
@@ -1130,6 +1139,20 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 			return;
 		}
 
+
+		if (b.button_index==BUTTON_LEFT && tool==TOOL_EDIT_PIVOT) {
+			if (b.pressed) {
+
+				Point2 mouse_pos(b.x,b.y);
+				mouse_pos=transform.affine_inverse().xform(mouse_pos);
+				mouse_pos=snap_point(mouse_pos);
+				_edit_set_pivot(mouse_pos);
+			}
+			return;
+		}
+
+
+
 		if (tool==TOOL_PAN || b.button_index!=BUTTON_LEFT || Input::get_singleton()->is_key_pressed(KEY_SPACE))
 			return;
 
@@ -1858,6 +1881,8 @@ void CanvasItemEditor::_viewport_draw() {
 
 	CanvasItem *single_item=NULL;
 
+	bool pivot_found=false;
+
 	for(Map<Node*,Object*>::Element *E=selection.front();E;E=E->next()) {
 
 
@@ -1899,7 +1924,7 @@ void CanvasItemEditor::_viewport_draw() {
 			viewport->draw_line(endpoints[i],endpoints[(i+1)%4],c,2);
 		}
 
-		if (single && (tool==TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_ROTATE)) { //kind of sucks
+		if (single && (tool==TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_ROTATE || tool==TOOL_EDIT_PIVOT)) { //kind of sucks
 
 			if (canvas_item->cast_to<Node2D>()) {
 
@@ -1907,6 +1932,7 @@ void CanvasItemEditor::_viewport_draw() {
 				if (canvas_item->cast_to<Node2D>()->edit_has_pivot()) {
 					viewport->draw_texture(pivot,xform.get_origin()+(-pivot->get_size()/2).floor());
 					can_move_pivot=true;
+					pivot_found=true;
 				}
 
 			}
@@ -1941,6 +1967,7 @@ void CanvasItemEditor::_viewport_draw() {
 		//E->get().last_rect = rect;
 	}
 
+	pivot_button->set_disabled(!pivot_found);
 	VisualServer::get_singleton()->canvas_item_add_set_transform(ci,Matrix32());
 
 
@@ -2149,6 +2176,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		move_button->set_icon( get_icon("ToolMove","EditorIcons"));
 		rotate_button->set_icon( get_icon("ToolRotate","EditorIcons"));
 		pan_button->set_icon( get_icon("ToolPan", "EditorIcons"));
+		pivot_button->set_icon( get_icon("EditPivot", "EditorIcons"));
 		select_handle=get_icon("EditorHandle","EditorIcons");
 		lock_button->set_icon(get_icon("Lock","EditorIcons"));
 		unlock_button->set_icon(get_icon("Unlock","EditorIcons"));
@@ -3205,6 +3233,12 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(list_select_button);
 	list_select_button->connect("pressed",this,"_tool_select",make_binds(TOOL_LIST_SELECT));
 	list_select_button->set_tooltip("Show a list of all objects at the position clicked\n(same as Alt+RMB in selet mode).");
+
+	pivot_button = memnew( ToolButton );
+	pivot_button->set_toggle_mode(true);
+	hb->add_child(pivot_button);
+	pivot_button->connect("pressed",this,"_tool_select",make_binds(TOOL_EDIT_PIVOT));
+	pivot_button->set_tooltip("Click to change object's rotation pivot");
 
 	pan_button = memnew( ToolButton );
 	pan_button->set_toggle_mode(true);

@@ -318,7 +318,9 @@ public:
 	enum AreaSpaceOverrideMode {
 		AREA_SPACE_OVERRIDE_DISABLED,
 		AREA_SPACE_OVERRIDE_COMBINE,
+		AREA_SPACE_OVERRIDE_COMBINE_REPLACE,
 		AREA_SPACE_OVERRIDE_REPLACE,
+		AREA_SPACE_OVERRIDE_REPLACE_COMBINE
 	};
 
 	virtual void area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode)=0;
@@ -370,7 +372,7 @@ public:
 	virtual RID body_get_space(RID p_body) const=0;
 
 	virtual void body_set_mode(RID p_body, BodyMode p_mode)=0;
-	virtual BodyMode body_get_mode(RID p_body, BodyMode p_mode) const=0;
+	virtual BodyMode body_get_mode(RID p_body) const=0;
 
 	virtual void body_add_shape(RID p_body, RID p_shape, const Transform& p_transform=Transform())=0;
 	virtual void body_set_shape(RID p_body, int p_shape_idx,RID p_shape)=0;
