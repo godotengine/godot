@@ -447,6 +447,8 @@ void OS_X11::finalize() {
 //		memdelete(debugger_connection_console);
 //}
 
+	memdelete(input);
+
 	memdelete(sample_manager);
 
 	audio_server->finish();
@@ -464,7 +466,6 @@ void OS_X11::finalize() {
 #ifdef JOYDEV_ENABLED
 	memdelete(joystick);
 #endif
-	memdelete(input);
 
 	XUnmapWindow( x11_display, x11_window );
 	XDestroyWindow( x11_display, x11_window );
