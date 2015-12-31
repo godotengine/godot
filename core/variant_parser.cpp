@@ -120,6 +120,20 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 				r_token.type=TK_COLON;
 				return OK;
 			};
+			case ';': {
+
+				while(true) {
+					CharType ch=p_stream->get_char();
+					if (p_stream->is_eof()) {
+						r_token.type=TK_EOF;
+						return OK;
+					}
+					if (ch=='\n')
+						break;
+				}
+
+				break;
+			};
 			case ',': {
 
 				r_token.type=TK_COMMA;
@@ -1590,6 +1604,18 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 
 		if (p_stream->is_eof())
 			return ERR_FILE_EOF;
+
+		if (c==';') { //comment
+			while(true) {
+				CharType ch=p_stream->get_char();
+				if (p_stream->is_eof()) {
+					return ERR_FILE_EOF;
+				}
+				if (ch=='\n')
+					break;
+			}
+			continue;
+		}
 
 		if (c=='[' && what.length()==0) {
 			//it's a tag!

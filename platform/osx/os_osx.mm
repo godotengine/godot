@@ -1056,6 +1056,33 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 void OS_OSX::finalize() {
 
 	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), NULL, kTISNotifySelectedKeyboardInputSourceChanged, NULL);
+	delete_main_loop();
+
+	spatial_sound_server->finish();
+	memdelete(spatial_sound_server);
+	spatial_sound_2d_server->finish();
+	memdelete(spatial_sound_2d_server);
+
+
+	memdelete(input);
+
+	memdelete(sample_manager);
+
+	audio_server->finish();
+	memdelete(audio_server);
+
+	visual_server->finish();
+	memdelete(visual_server);
+	memdelete(rasterizer);
+
+	physics_server->finish();
+	memdelete(physics_server);
+
+	physics_2d_server->finish();
+	memdelete(physics_2d_server);
+
+	screens.clear();
+
 
 }
 
@@ -1068,6 +1095,8 @@ void OS_OSX::set_main_loop( MainLoop * p_main_loop ) {
 
 void OS_OSX::delete_main_loop() {
 
+	if (!main_loop)
+		return;
 	memdelete(main_loop);
 	main_loop=NULL;
 }
