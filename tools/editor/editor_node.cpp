@@ -1454,8 +1454,13 @@ void EditorNode::_dialog_action(String p_file) {
 			Ref<ConfigFile> config;
 			config.instance();
 			Error err = config->load(EditorSettings::get_singleton()->get_settings_path().plus_file("editor_layouts.cfg"));
-			if (err!=OK && err!=ERR_FILE_NOT_FOUND) {
-				return; //no config
+
+			if (err==ERR_CANT_OPEN) {
+				config.instance(); // new config
+			} else if (err!=OK) {
+				confirm_error->set_text("Error trying to save layout!");
+				confirm_error->popup_centered_minsize();
+				return;
 			}
 
 			_save_docks_to_config(config, p_file);
@@ -1480,11 +1485,8 @@ void EditorNode::_dialog_action(String p_file) {
 			Ref<ConfigFile> config;
 			config.instance();
 			Error err = config->load(EditorSettings::get_singleton()->get_settings_path().plus_file("editor_layouts.cfg"));
-			if (err!=OK) {
-				return; //no config
-			}
 
-			if (!config->has_section(p_file)) {
+			if (err!=OK || !config->has_section(p_file)) {
 				confirm_error->set_text("Layout name not found!");
 				confirm_error->popup_centered_minsize();
 				return;
