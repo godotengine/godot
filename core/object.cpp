@@ -1011,6 +1011,27 @@ Array Object::_get_property_list_bind() const {
 	return convert_property_list(&lpi);
 }
 
+
+static Dictionary _get_dict_from_method(const MethodInfo &mi) {
+
+	Dictionary d;
+	d["name"]=mi.name;
+	d["args"]=convert_property_list(&mi.arguments);
+	Array da;
+	for(int i=0;i<mi.default_arguments.size();i++)
+		da.push_back(mi.default_arguments[i]);
+	d["default_args"]=da;
+	d["flags"]=mi.flags;
+	d["id"]=mi.id;
+	Dictionary r;
+	r["type"]=mi.return_val.type;
+	r["hint"]=mi.return_val.hint;
+	r["hint_string"]=mi.return_val.hint_string;
+	d["return_type"]=r;
+	return d;
+
+}
+
 Array Object::_get_method_list_bind() const {
 
 	List<MethodInfo> ml;
@@ -1019,20 +1040,7 @@ Array Object::_get_method_list_bind() const {
 
 	for(List<MethodInfo>::Element *E=ml.front();E;E=E->next()) {
 
-		Dictionary d;
-		d["name"]=E->get().name;
-		d["args"]=convert_property_list(&E->get().arguments);
-		Array da;
-		for(int i=0;i<E->get().default_arguments.size();i++)
-			da.push_back(E->get().default_arguments[i]);
-		d["default_args"]=da;
-		d["flags"]=E->get().flags;
-		d["id"]=E->get().id;
-		Dictionary r;
-		r["type"]=E->get().return_val.type;
-		r["hint"]=E->get().return_val.hint;
-		r["hint_string"]=E->get().return_val.hint_string;
-		d["return_type"]=r;
+		Dictionary d = _get_dict_from_method(E->get());
 		//va.push_back(d);
 		ret.push_back(d);
 	}
@@ -1299,11 +1307,39 @@ void Object::_emit_signal(const StringName& p_name,const Array& p_pargs){
 #endif
 Array Object::_get_signal_list() const{
 
-	return Array();
+	List<MethodInfo> signal_list;
+	get_signal_list(&signal_list);
+
+	Array ret;
+	for (List<MethodInfo>::Element *E=signal_list.front();E;E=E->next()) {
+
+		ret.push_back(_get_dict_from_method(E->get()));
+	}
+
+	return ret;
 }
 Array Object::_get_signal_connection_list(const String& p_signal) const{
 
-	return Array();
+	List<Connection> conns;
+	get_all_signal_connections(&conns);
+
+	Array ret;
+
+	for (List<Connection>::Element *E=conns.front();E;E=E->next()) {
+
+		Connection &c=E->get();
+		Dictionary rc;
+		rc["signal"]=c.signal;
+		rc["method"]=c.method;
+		rc["source"]=c.source;
+		rc["target"]=c.target;
+		rc["binds"]=c.binds;
+		rc["flags"]=c.flags;
+		ret.push_back(rc);
+	}
+
+	return ret;
+
 }
 
 
@@ -1618,6 +1654,7 @@ void Object::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("has_method","method"),&Object::has_method);
 
 	ObjectTypeDB::bind_method(_MD("get_signal_list"),&Object::_get_signal_list);
+	ObjectTypeDB::bind_method(_MD("get_signal_connection_list","signal"),&Object::_get_signal_connection_list);
 
 	ObjectTypeDB::bind_method(_MD("connect","signal","target:Object","method","binds","flags"),&Object::connect,DEFVAL(Array()),DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("disconnect","signal","target:Object","method"),&Object::disconnect);
