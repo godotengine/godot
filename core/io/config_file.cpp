@@ -84,10 +84,10 @@ void ConfigFile::set_value(const String& p_section, const String& p_key, const V
 	}
 
 }
-Variant ConfigFile::get_value(const String& p_section, const String& p_key) const{
+Variant ConfigFile::get_value(const String& p_section, const String& p_key, Variant p_default) const {
 
-	ERR_FAIL_COND_V(!values.has(p_section),Variant());
-	ERR_FAIL_COND_V(!values[p_section].has(p_key),Variant());
+	ERR_FAIL_COND_V(!values.has(p_section),p_default);
+	ERR_FAIL_COND_V(!values[p_section].has(p_key),p_default);
 	return values[p_section][p_key];
 
 }
@@ -199,7 +199,7 @@ Error ConfigFile::load(const String& p_path) {
 void ConfigFile::_bind_methods(){
 
 	ObjectTypeDB::bind_method(_MD("set_value","section","key","value"),&ConfigFile::set_value);
-	ObjectTypeDB::bind_method(_MD("get_value","section","key"),&ConfigFile::get_value);
+	ObjectTypeDB::bind_method(_MD("get_value","section","key","default"),&ConfigFile::get_value,DEFVAL(Variant()));
 
 	ObjectTypeDB::bind_method(_MD("has_section","section"),&ConfigFile::has_section);
 	ObjectTypeDB::bind_method(_MD("has_section_key","section","key"),&ConfigFile::has_section_key);
