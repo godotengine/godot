@@ -364,6 +364,9 @@ bool BodyPair2DSW::setup(float p_step) {
 
 
 	real_t inv_dt = 1.0/p_step;
+
+	bool do_process=false;
+
 	for (int i = 0; i < contact_count; i++) {
 
 		Contact& c = contacts[i];
@@ -459,10 +462,11 @@ bool BodyPair2DSW::setup(float p_step) {
 			c.bounce = c.bounce * dv.dot(c.normal);
 		}
 
+		do_process=true;
 
 	}
 
-	return true;
+	return do_process;
 }
 
 void BodyPair2DSW::solve(float p_step) {
