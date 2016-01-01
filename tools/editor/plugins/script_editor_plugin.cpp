@@ -2043,6 +2043,15 @@ void ScriptEditor::_editor_settings_changed() {
 		autosave_timer->stop();
 	}
 
+	for(int i=0;i<tab_container->get_child_count();i++) {
+
+		ScriptTextEditor *ste = tab_container->get_child(i)->cast_to<ScriptTextEditor>();
+		if (!ste)
+			continue;
+
+		ste->get_text_edit()->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/auto_brace_complete"));
+	}
+
 }
 
 void ScriptEditor::_autosave_scripts() {
