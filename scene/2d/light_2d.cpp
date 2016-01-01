@@ -34,10 +34,19 @@ Rect2 Light2D::get_item_rect() const {
 }
 
 
+void Light2D::_update_light_visibility() {
+
+	if (!is_inside_tree())
+		return;
+
+	VS::get_singleton()->canvas_light_set_enabled(canvas_light,enabled && is_visible());
+}
+
 void Light2D::set_enabled( bool p_enabled) {
 
-	VS::get_singleton()->canvas_light_set_enabled(canvas_light,p_enabled);
+
 	enabled=p_enabled;
+	_update_light_visibility();
 }
 
 bool Light2D::is_enabled() const {
@@ -253,16 +262,22 @@ void Light2D::_notification(int p_what) {
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		VS::get_singleton()->canvas_light_attach_to_canvas( canvas_light, get_canvas() );
+		_update_light_visibility();
 	}
 
 	if (p_what==NOTIFICATION_TRANSFORM_CHANGED) {
 
 		VS::get_singleton()->canvas_light_set_transform( canvas_light, get_global_transform());
 	}
+	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+
+		_update_light_visibility();
+	}
 
 	if (p_what==NOTIFICATION_EXIT_TREE) {
 
 		VS::get_singleton()->canvas_light_attach_to_canvas( canvas_light, RID() );
+		_update_light_visibility();
 	}
 
 }
