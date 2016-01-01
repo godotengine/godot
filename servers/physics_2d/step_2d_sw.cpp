@@ -56,14 +56,29 @@ void Step2DSW::_populate_island(Body2DSW* p_body,Body2DSW** p_island,Constraint2
 	}
 }
 
-void Step2DSW::_setup_island(Constraint2DSW *p_island,float p_delta) {
+bool Step2DSW::_setup_island(Constraint2DSW *p_island,float p_delta) {
 
 	Constraint2DSW *ci=p_island;
+	Constraint2DSW *prev_ci=NULL;
+	bool removed_root=false;
 	while(ci) {
 		bool process = ci->setup(p_delta);
-		//todo remove from island if process fails
+
+		if (!process) {
+			//remove from island if process fails
+			if (prev_ci) {
+				prev_ci->set_island_next(ci->get_island_next());
+			} else {
+				removed_root=true;
+				prev_ci=ci;
+			}
+		} else {
+			prev_ci=ci;
+		}
 		ci=ci->get_island_next();
 	}
+
+	return removed_root;
 }
 
 void Step2DSW::_solve_island(Constraint2DSW *p_island,int p_iterations,float p_delta){
@@ -195,9 +210,40 @@ void Step2DSW::step(Space2DSW* p_space,float p_delta,int p_iterations) {
 
 	{
 		Constraint2DSW *ci=constraint_island_list;
+		Constraint2DSW *prev_ci=NULL;
 		while(ci) {
 
-			_setup_island(ci,p_delta);
+			if (_setup_island(ci,p_delta)==true) {
+
+				//removed the root from the island graph because it is not to be processed
+
+				Constraint2DSW *next = ci->get_island_next();
+
+				if (next) {
+					//root from list being deleted no longer exists, replace by next
+					next->set_island_list_next(ci->get_island_list_next());
+					if (prev_ci) {
+						prev_ci->set_island_list_next(next);
+					} else {
+						constraint_island_list=next;
+
+					}
+					prev_ci=next;
+				} else {
+
+					//list is empty, just skip
+					if (prev_ci) {
+						prev_ci->set_island_list_next(ci->get_island_list_next());
+
+					} else {
+						constraint_island_list=ci->get_island_list_next();
+					}
+
+				}
+			} else {
+				prev_ci=ci;
+			}
+
 			ci=ci->get_island_list_next();
 		}
 	}
