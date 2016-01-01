@@ -35,6 +35,7 @@ private:
 	Ref<Texture> texture;
 	Vector2 texture_offset;
 
+	void _update_light_visibility();
 protected:
 
 	void _notification(int p_what);
