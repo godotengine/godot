@@ -74,7 +74,7 @@ Error FileAccessUnix::_open(const String& p_path, int p_mode_flags) {
 	else if (p_mode_flags==WRITE)
 		mode_string="wb";
 	else if (p_mode_flags==READ_WRITE)
-		mode_string="rb+";
+		mode_string="wb+";
 	else
 		return ERR_INVALID_PARAMETER;
 
