@@ -411,6 +411,7 @@ public:
 	//argsVariant call()
 
 	bool operator==(const Variant& p_variant) const;
+	bool operator!=(const Variant& p_variant) const;
 	bool operator<(const Variant& p_variant) const;
 	uint32_t hash() const;
 

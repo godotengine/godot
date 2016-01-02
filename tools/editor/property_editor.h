@@ -114,6 +114,7 @@ class CustomPropertyEditor : public Popup {
 	void _action_pressed(int p_which);
 	void _type_create_selected(int p_idx);
 
+
 	void _color_changed(const Color& p_color);
 	void _draw_easing();
 	void _menu_option(int p_which);
@@ -192,6 +193,7 @@ class PropertyEditor : public Control {
 	virtual void _changed_callback(Object *p_changed,const char * p_what);
 	virtual void _changed_callbacks(Object *p_changed,const String& p_callback);
 
+	void _check_reload_status(const String&p_name,TreeItem* item);
 
 	void _edit_button(Object *p_item, int p_column, int p_button);
 
