@@ -71,7 +71,7 @@ Error FileAccessWindows::_open(const String& p_filename, int p_mode_flags) {
 	else if (p_mode_flags==WRITE)
 		mode_string=L"wb";
 	else if (p_mode_flags==READ_WRITE)
-		mode_string=L"rb+";
+		mode_string=L"wb+";
 	else
 		return ERR_INVALID_PARAMETER;
 
