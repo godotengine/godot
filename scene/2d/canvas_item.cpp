@@ -389,8 +389,8 @@ Matrix32 CanvasItem::get_global_transform_with_canvas() const {
 
 	if (last_valid->canvas_layer)
 		return last_valid->canvas_layer->get_transform() * xform;
-	else
-		return xform;
+	else if (is_inside_tree())
+		return get_viewport()->get_canvas_transform() * xform;
 }
 
 Matrix32 CanvasItem::get_global_transform() const {
