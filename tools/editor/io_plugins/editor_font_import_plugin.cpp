@@ -621,6 +621,7 @@ public:
 		source->get_file_dialog()->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 		source->get_file_dialog()->add_filter("*.ttf;TrueType");
 		source->get_file_dialog()->add_filter("*.otf;OpenType");
+		source->get_file_dialog()->add_filter("*.fnt;BMFont");
 		source->get_line_edit()->connect("text_entered",this,"_src_changed");
 
 		vbl->add_margin_child("Source Font:",source);
@@ -876,10 +877,31 @@ static unsigned char get_SDF_radial(
 
 Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata>& p_from, const String &p_existing) {
 
+
+
 	Ref<ResourceImportMetadata> from = p_from;
 	ERR_FAIL_COND_V(from->get_source_count()!=1,Ref<Font>());
 
 	String src_path = EditorImportPlugin::expand_source_path(from->get_source_path(0));
+
+	if (src_path.extension().to_lower()=="fnt") {
+
+		if (ResourceLoader::load(src_path).is_valid()) {
+			EditorNode::get_singleton()->show_warning("Path: "+src_path+"\nIs a Godot font file, please supply a BMFont type file instead.");
+			return Ref<Font>();
+		}
+
+		Ref<Font> font;
+		font.instance();
+		Error err = font->create_from_fnt(src_path);
+		if (err) {
+			EditorNode::get_singleton()->show_warning("Path: "+src_path+"\nFailed opening as BMFont file.");
+			return Ref<Font>();
+		}
+
+		return font;
+	}
+
 	int size = from->get_option("font/size");
 
 #ifdef FREETYPE_ENABLED
