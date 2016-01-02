@@ -614,6 +614,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	editor=p_editor;
 	undo_redo = editor->get_undo_redo();
 
+	mode=MODE_EDIT;
 
 	action=ACTION_NONE;
 #if 0
