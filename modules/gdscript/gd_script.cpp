@@ -33,17 +33,6 @@
 #include "os/file_access.h"
 #include "io/file_access_encrypted.h"
 
-/* TODO:
-
-   *populate globals
-   *do checks as close to debugger as possible (but don't do debugger)
-   *const check plz
-   *check arguments and default arguments in GDFunction
-   -get property list in instance?
-   *missing opcodes
-   -const checks
-   -make thread safe
- */
 
 
 
@@ -1740,16 +1729,21 @@ bool GDScript::_update_exports() {
 					}
 				}
 
-				Ref<GDScript> bf = ResourceLoader::load(path);
+				if (path!=get_path()) {
 
-				if (bf.is_valid()) {
+					Ref<GDScript> bf = ResourceLoader::load(path);
 
-					//print_line("parent is: "+bf->get_path());
-					base_cache=bf;
-					bf->inheriters_cache.insert(get_instance_ID());
+					if (bf.is_valid()) {
 
-					//bf->_update_exports(p_instances,true,false);
+						//print_line("parent is: "+bf->get_path());
+						base_cache=bf;
+						bf->inheriters_cache.insert(get_instance_ID());
 
+						//bf->_update_exports(p_instances,true,false);
+
+					}
+				} else {
+					ERR_PRINT(("Path extending itself in  "+path).utf8().get_data());
 				}
 			}
 
