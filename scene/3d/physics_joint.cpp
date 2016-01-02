@@ -141,7 +141,7 @@ void Joint::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			if (joint.is_valid()) {
 				_update_joint(true);
-				PhysicsServer::get_singleton()->free(joint);
+				//PhysicsServer::get_singleton()->free(joint);
 				joint=RID();
 			}
 		} break;
