@@ -267,6 +267,13 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			constant->value=tokenizer->get_token_constant();
 			tokenizer->advance();
 			expr=constant;
+		} else if (tokenizer->get_token()==GDTokenizer::TK_CONST_PI) {
+
+			//constant defined by tokenizer
+			ConstantNode *constant = alloc_node<ConstantNode>();
+			constant->value=Math_PI;
+			tokenizer->advance();
+			expr=constant;
 		} else if (tokenizer->get_token()==GDTokenizer::TK_PR_PRELOAD) {
 
 			//constant defined by tokenizer

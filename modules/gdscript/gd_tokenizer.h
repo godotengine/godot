@@ -119,6 +119,7 @@ public:
 		TK_QUESTION_MARK,
 		TK_COLON,
 		TK_NEWLINE,
+		TK_CONST_PI,
 		TK_ERROR,
 		TK_EOF,
 		TK_CURSOR, //used for code completion
