@@ -402,6 +402,9 @@ static _GlobalConstant _global_constants[]={
 	BIND_GLOBAL_CONSTANT( JOY_ANALOG_2_X  ),
 	BIND_GLOBAL_CONSTANT( JOY_ANALOG_2_Y  ),
 
+	BIND_GLOBAL_CONSTANT( JOY_ANALOG_L2  ),
+	BIND_GLOBAL_CONSTANT( JOY_ANALOG_R2  ),
+
 
 	// error list
 
