@@ -706,6 +706,17 @@ bool Variant::operator==(const Variant& p_variant) const {
 
 }
 
+bool Variant::operator!=(const Variant& p_variant) const {
+
+	if (type!=p_variant.type) //evaluation of operator== needs to be more strict
+		return true;
+	bool v;
+	Variant r;
+	evaluate(OP_NOT_EQUAL,*this,p_variant,r,v);
+	return r;
+
+}
+
 bool Variant::operator<(const Variant& p_variant) const {
 	if (type!=p_variant.type) //if types differ, then order by type first
 		return type<p_variant.type;

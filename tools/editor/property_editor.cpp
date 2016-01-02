@@ -2113,6 +2113,65 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 }
 
 
+void PropertyEditor::_check_reload_status(const String&p_name, TreeItem* item) {
+
+	bool has_reload=false;
+	int found=-1;
+
+	for(int i=0;i<item->get_button_count(1);i++) {
+
+		if (item->get_button_id(1,i)==3) {
+			found=i;
+			break;
+		}
+	}
+
+	if (_might_be_in_instance()) {
+
+
+		Variant vorig;
+		Dictionary d=item->get_metadata(0);
+		int usage = d.has("usage")?int(int(d["usage"])&(PROPERTY_USAGE_STORE_IF_NONONE|PROPERTY_USAGE_STORE_IF_NONZERO)):0;
+
+
+		if (_get_instanced_node_original_property(p_name,vorig) || usage) {
+			Variant v = obj->get(p_name);
+
+			bool changed = _is_property_different(v,vorig,usage);
+
+			if ((found!=-1)!=changed) {
+
+				if (changed) {
+
+					has_reload=true;
+				} else {
+
+				}
+
+			}
+
+		}
+
+
+
+	}
+
+	if (!has_reload && !obj->get_script().is_null()) {
+		Ref<Script> scr = obj->get_script();
+		Variant orig_value;
+		if (scr->get_property_default_value(p_name,orig_value)) {
+			if (orig_value!=obj->get(p_name)) {
+				has_reload=true;
+			}
+		}
+	}
+
+	if (found!=-1 && !has_reload) {
+		item->erase_button(1,found);
+	} else if (found==-1 && has_reload) {
+		item->add_button(1,get_icon("Reload","EditorIcons"),3);
+	}
+}
 
 void PropertyEditor::_notification(int p_what) {
 
@@ -2154,43 +2213,8 @@ void PropertyEditor::_notification(int p_what) {
 				if (!item)
 					continue;
 
-				if (_might_be_in_instance()) {
+				_check_reload_status(*k,item);
 
-
-					Variant vorig;
-					Dictionary d=item->get_metadata(0);
-					int usage = d.has("usage")?int(int(d["usage"])&(PROPERTY_USAGE_STORE_IF_NONONE|PROPERTY_USAGE_STORE_IF_NONZERO)):0;
-
-
-					if (_get_instanced_node_original_property(*k,vorig) || usage) {
-						Variant v = obj->get(*k);
-
-						int found=-1;
-						for(int i=0;i<item->get_button_count(1);i++) {
-
-							if (item->get_button_id(1,i)==3) {
-								found=i;
-								break;
-							}
-						}
-
-						bool changed = _is_property_different(v,vorig,usage);
-
-						if ((found!=-1)!=changed) {
-
-							if (changed) {
-
-								item->add_button(1,get_icon("Reload","EditorIcons"),3);
-							} else {
-
-								item->erase_button(1,found);
-							}
-
-						}
-
-					}
-
-				}
 				Dictionary d=item->get_metadata(0);
 				set_item_text(item,d["type"],d["name"],d["hint"],d["hint_text"]);
 			}
@@ -2257,23 +2281,30 @@ void PropertyEditor::_refresh_item(TreeItem *p_item) {
 
 	if (name!=String()) {
 
+
+		_check_reload_status(name,p_item);
+#if 0
+		bool has_reload=false;
+
+		int found=-1;
+		for(int i=0;i<p_item->get_button_count(1);i++) {
+
+			if (p_item->get_button_id(1,i)==3) {
+				found=i;
+				break;
+			}
+		}
+
 		if (_might_be_in_instance()) {
 
 			Variant vorig;
 			Dictionary d=p_item->get_metadata(0);
 			int usage = d.has("usage")?int(int(d["usage"])&(PROPERTY_USAGE_STORE_IF_NONONE|PROPERTY_USAGE_STORE_IF_NONZERO)):0;
 
+
 			if (_get_instanced_node_original_property(name,vorig) || usage) {
 				Variant v = obj->get(name);
 
-				int found=-1;
-				for(int i=0;i<p_item->get_button_count(1);i++) {
-
-					if (p_item->get_button_id(1,i)==3) {
-						found=i;
-						break;
-					}
-				}
 
 				bool changed = _is_property_different(v,vorig,usage);
 
@@ -2281,10 +2312,11 @@ void PropertyEditor::_refresh_item(TreeItem *p_item) {
 
 					if (changed) {
 
-						p_item->add_button(1,get_icon("Reload","EditorIcons"),3);
+						has_reload=true;
+
 					} else {
 
-						p_item->erase_button(1,found);
+						//p_item->erase_button(1,found);
 					}
 
 				}
@@ -2293,6 +2325,22 @@ void PropertyEditor::_refresh_item(TreeItem *p_item) {
 
 		}
 
+		if (!has_reload && !obj->get_script().is_null()) {
+			Ref<Script> scr = obj->get_script();
+			Variant orig_value;
+			if (scr->get_property_default_value(name,orig_value)) {
+				if (orig_value!=obj->get(name)) {
+					has_reload=true;
+				}
+			}
+		}
+
+		if (!has_reload && found!=-1) {
+			p_item->erase_button(1,found);
+		} else if (has_reload && found==-1) {
+			p_item->add_button(1,get_icon("Reload","EditorIcons"),3);
+		}
+#endif
 		Dictionary d=p_item->get_metadata(0);
 		set_item_text(p_item,d["type"],d["name"],d["hint"],d["hint_text"]);
 	}
@@ -3033,6 +3081,7 @@ void PropertyEditor::update_tree() {
 			}
 		}
 
+		bool has_reload=false;
 		if (_might_be_in_instance()) {
 
 			Variant vorig;
@@ -3045,10 +3094,25 @@ void PropertyEditor::update_tree() {
 				if (_is_property_different(v,vorig,usage)) {
 					//print_line("FOR "+String(p.name)+" RELOAD WITH: "+String(v)+"("+Variant::get_type_name(v.get_type())+")=="+String(vorig)+"("+Variant::get_type_name(vorig.get_type())+")");
 					item->add_button(1,get_icon("Reload","EditorIcons"),3);
+					has_reload=true;
 				}
 			}
 
 		}
+
+		if (!has_reload && !obj->get_script().is_null()) {
+			Ref<Script> scr = obj->get_script();
+			Variant orig_value;
+			if (scr->get_property_default_value(p.name,orig_value)) {
+				if (orig_value!=obj->get(p.name)) {
+					item->add_button(1,get_icon("Reload","EditorIcons"),3);
+				}
+			}
+		} else {
+			print_line("no default value!");
+		}
+
+
 
 	}
 }
@@ -3340,8 +3404,6 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 		call_deferred("_set_range_def",ti,prop,ti->get_range(p_column)+1.0);
 	} else if (p_button==3) {
 
-		if (!_might_be_in_instance())
-			return;
 		if (!d.has("name"))
 			return;
 
@@ -3349,10 +3411,20 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 
 		Variant vorig;
 
-		if (_get_instanced_node_original_property(prop,vorig)) {
+		if (_might_be_in_instance() && _get_instanced_node_original_property(prop,vorig)) {
 
 			_edit_set(prop,vorig);
+			return;
 		}
+
+		if  (!obj->get_script().is_null()) {
+			Ref<Script> scr = obj->get_script();
+			Variant orig_value;
+			if (scr->get_property_default_value(prop,orig_value)) {
+				_edit_set(prop,orig_value);
+			}
+		}
+
 
 	} else {
 

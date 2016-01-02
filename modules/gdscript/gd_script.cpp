@@ -1592,6 +1592,28 @@ void GDScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder) {
 
 }*/
 #endif
+
+bool GDScript::get_property_default_value(const StringName& p_property, Variant &r_value) const {
+
+#ifdef TOOLS_ENABLED
+
+	//for (const Map<StringName,Variant>::Element *I=member_default_values.front();I;I=I->next()) {
+	//	print_line("\t"+String(String(I->key())+":"+String(I->get())));
+	//}
+	const Map<StringName,Variant>::Element *E=member_default_values_cache.find(p_property);
+	if (E) {
+		r_value=E->get();
+		return true;
+	}
+
+	if (base_cache.is_valid()) {
+		return base_cache->get_property_default_value(p_property,r_value);
+	}
+#endif
+	return false;
+
+}
+
 ScriptInstance* GDScript::instance_create(Object *p_this) {
 
 
