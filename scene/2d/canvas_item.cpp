@@ -548,6 +548,7 @@ void CanvasItem::_notification(int p_what) {
 				get_parent()->cast_to<CanvasItem>()->children_items.erase(C);
 				C=NULL;
 			}
+			global_invalid=true;
 		} break;
 		case NOTIFICATION_DRAW: {
 
