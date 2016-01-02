@@ -889,7 +889,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 	return true;
 }
 
-void SceneTreeDock::_node_reparent(NodePath p_path,bool p_node_only) {
+void SceneTreeDock::_node_reparent(NodePath p_path,bool p_keep_global_xform) {
 
 
 	Node *node = scene_tree->get_selected();
@@ -948,6 +948,23 @@ void SceneTreeDock::_node_reparent(NodePath p_path,bool p_node_only) {
 		editor_data->get_undo_redo().add_do_method(sed,"live_debug_reparent_node",edited_scene->get_path_to(node),edited_scene->get_path_to(new_parent),new_name,-1);
 		editor_data->get_undo_redo().add_undo_method(sed,"live_debug_reparent_node",NodePath(String(edited_scene->get_path_to(new_parent))+"/"+new_name),edited_scene->get_path_to(node->get_parent()),node->get_name(),node->get_index());
 
+		if (p_keep_global_xform) {
+			if (node->cast_to<Node2D>())
+				editor_data->get_undo_redo().add_do_method(node,"set_global_transform",node->cast_to<Node2D>()->get_global_transform());
+			if (node->cast_to<Spatial>())
+				editor_data->get_undo_redo().add_do_method(node,"set_global_transform",node->cast_to<Spatial>()->get_global_transform());
+			if (node->cast_to<Control>()) {
+				bool can_do_it=false;
+				Control *c=node->cast_to<Control>();
+				if (c->get_parent()->cast_to<Container>())
+					can_do_it=false;
+				for(int i=0;i<4;i++) {
+					if (c->get_anchor(Margin(i))!=ANCHOR_BEGIN)
+						can_do_it=false;
+				}
+				editor_data->get_undo_redo().add_do_method(node,"set_global_pos",node->cast_to<Control>()->get_global_pos());
+			}
+		}
 
 		editor_data->get_undo_redo().add_do_method(this,"_set_owners",edited_scene,owners);
 
@@ -981,6 +998,26 @@ void SceneTreeDock::_node_reparent(NodePath p_path,bool p_node_only) {
 		editor_data->get_undo_redo().add_undo_method(this,"_set_owners",edited_scene,owners);
 		if (editor->get_animation_editor()->get_root()==node)
 			editor_data->get_undo_redo().add_undo_method(editor->get_animation_editor(),"set_root",node);
+
+		if (p_keep_global_xform) {
+			if (node->cast_to<Node2D>())
+				editor_data->get_undo_redo().add_undo_method(node,"set_transform",node->cast_to<Node2D>()->get_transform());
+			if (node->cast_to<Spatial>())
+				editor_data->get_undo_redo().add_undo_method(node,"set_transform",node->cast_to<Spatial>()->get_transform());
+			if (node->cast_to<Control>()) {
+				bool can_do_it=false;
+				Control *c=node->cast_to<Control>();
+				if (c->get_parent()->cast_to<Container>())
+					can_do_it=false;
+				for(int i=0;i<4;i++) {
+					if (c->get_anchor(Margin(i))!=ANCHOR_BEGIN)
+						can_do_it=false;
+				}
+				editor_data->get_undo_redo().add_undo_method(node,"set_pos",node->cast_to<Control>()->get_pos());
+			}
+		}
+
+
 
 	}
 

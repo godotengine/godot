@@ -62,7 +62,7 @@ void ReparentDialog::_reparent() {
 	
 	if (tree->get_selected()) {
 
-		emit_signal("reparent",tree->get_selected()->get_path(),node_only->is_pressed());
+		emit_signal("reparent",tree->get_selected()->get_path(),keep_transform->is_pressed());
 		hide();
 	}
 }
@@ -78,7 +78,7 @@ void ReparentDialog::_bind_methods() {
 	ObjectTypeDB::bind_method("_reparent",&ReparentDialog::_reparent); 
 	ObjectTypeDB::bind_method("_cancel",&ReparentDialog::_cancel);
 
-	ADD_SIGNAL( MethodInfo("reparent",PropertyInfo(Variant::NODE_PATH,"path"),PropertyInfo(Variant::BOOL,"only_node")));
+	ADD_SIGNAL( MethodInfo("reparent",PropertyInfo(Variant::NODE_PATH,"path"),PropertyInfo(Variant::BOOL,"keep_global_xform")));
 }
 
 
@@ -101,15 +101,18 @@ ReparentDialog::ReparentDialog() {
 	//label->set_pos( Point2( 15,8) );
 	//label->set_text("Reparent Location (Select new Parent):");
 
-	node_only = memnew( CheckButton );
-	add_child(node_only);
-	node_only->hide();
+	keep_transform = memnew( CheckBox );
+	keep_transform->set_text("Keep Global Transform");
+	keep_transform->set_pressed(true);
+	vbc->add_child(keep_transform);
+
 
 	//vbc->add_margin_child("Options:",node_only);;
 
 	//cancel->connect("pressed", this,"_cancel");
 
 	get_ok()->set_text("Reparent");
+
 }
 
 
