@@ -612,6 +612,7 @@ CodeTextEditor::CodeTextEditor() {
 
 	if (!font_overrode)
 		text_editor->add_font_override("font",get_font("source","Fonts"));
+
 	text_editor->set_show_line_numbers(true);
 	text_editor->set_brace_matching(true);
 	text_editor->set_auto_indent(true);

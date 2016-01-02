@@ -534,6 +534,7 @@ void Path2DEditor::edit(Node *p_path2d) {
 		if (!node->is_connected("visibility_changed", this, "_node_visibility_changed"))
 			node->connect("visibility_changed", this, "_node_visibility_changed");
 
+
 	} else {
 
 		if (canvas_item_editor->get_viewport_control()->is_connected("draw",this,"_canvas_draw"))
