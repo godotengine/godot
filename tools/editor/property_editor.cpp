@@ -927,6 +927,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 		if (!node) {
 			v=p_path;
 			emit_signal("variant_changed");
+			call_deferred("hide"); //to not mess with dialogs
 			return;
 		}
 
@@ -938,6 +939,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 
 	v=p_path;
 	emit_signal("variant_changed");
+	call_deferred("hide"); //to not mess with dialogs
 
 }
 
@@ -1040,6 +1042,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 				v=NodePath();
 				emit_signal("variant_changed");
+				hide();
 			}
 		} break;
 		case Variant::OBJECT: {
