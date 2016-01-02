@@ -45,11 +45,11 @@ static const char* ignore_str = "/dev/input/js";
 joystick_linux::Joystick::Joystick() {
 	fd = -1;
 	dpad = 0;
+	dev = NULL;
+	devpath = "";
 }
 
 void joystick_linux::Joystick::reset() {
-	num_buttons = 0;
-	num_axes    = 0;
 	dpad        = 0;
 	fd          = -1;
 	for (int i=0; i < MAX_ABS; i++) {
@@ -225,20 +225,23 @@ static String _hex_str(uint8_t p_byte) {
 void joystick_linux::setup_joystick_properties(int p_id) {
 
 	Joystick* joy = &joysticks[p_id];
-
 	libevdev* dev = joy->dev;
+
+	int num_buttons = 0;
+	int num_axes = 0;
+
 	for (int i = BTN_JOYSTICK; i < KEY_MAX; ++i) {
 
 		if (libevdev_has_event_code(dev, EV_KEY, i)) {
 
-			joy->key_map[i] = joy->num_buttons++;
+			joy->key_map[i] = num_buttons++;
 		}
 	}
 	for (int i = BTN_MISC; i < BTN_JOYSTICK; ++i) {
 
 		if (libevdev_has_event_code(dev, EV_KEY, i)) {
 
-			joy->key_map[i] = joy->num_buttons++;
+			joy->key_map[i] = num_buttons++;
 		}
 	}
 	for (int i = 0; i < ABS_MISC; ++i) {
@@ -249,7 +252,7 @@ void joystick_linux::setup_joystick_properties(int p_id) {
 		}
 		if (libevdev_has_event_code(dev, EV_ABS, i)) {
 
-			joy->abs_map[i] = joy->num_axes++;
+			joy->abs_map[i] = num_axes++;
 		}
 	}
 }

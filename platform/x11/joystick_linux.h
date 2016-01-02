@@ -56,8 +56,6 @@ private:
 	struct Joystick {
 		int key_map[MAX_KEY - BT_MISC];
 		int abs_map[MAX_ABS];
-		int num_buttons;
-		int num_axes;
 		int dpad;
 		int fd;
 
