@@ -260,6 +260,7 @@ void GDTokenizerText::_advance() {
 				}
 
 				INCPOS(1);
+				line++;
 
 				while(GETCHAR(0)==' ' || GETCHAR(0)=='\t') {
 					INCPOS(1);
