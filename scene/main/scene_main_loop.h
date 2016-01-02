@@ -279,6 +279,8 @@ public:
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
 
+	bool is_node_being_edited(const Node* p_node) const;
+
 	void set_pause(bool p_enabled);
 	bool is_paused() const;
 
@@ -318,6 +320,8 @@ public:
 	void queue_delete(Object *p_object);
 
 	void get_nodes_in_group(const StringName& p_group,List<Node*> *p_list);
+	bool has_group(const StringName& p_identifier) const;
+
 
 	void set_screen_stretch(StretchMode p_mode,StretchAspect p_aspect,const Size2 p_minsize);
 
