@@ -137,8 +137,10 @@ void Button::_notification(int p_what) {
 		text_ofs.y+=font->get_ascent();
 		font->draw( ci, text_ofs.floor(), text, color,clip_text?text_clip:-1);
 		if (!_icon.is_null()) {
+
+			int valign = size.height-style->get_minimum_size().y;
 		
-			_icon->draw(ci,Point2(style->get_offset().x, Math::floor( (size.height-_icon->get_height())/2.0 ) ),is_disabled()?Color(1,1,1,0.4):Color(1,1,1) );
+			_icon->draw(ci,style->get_offset()+Point2(0, Math::floor( (valign-_icon->get_height())/2.0 ) ),is_disabled()?Color(1,1,1,0.4):Color(1,1,1) );
 		}
 
 
