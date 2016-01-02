@@ -620,6 +620,10 @@ void SceneTree::set_editor_hint(bool p_enabled) {
 	editor_hint=p_enabled;
 }
 
+bool SceneTree::is_node_being_edited(const Node* p_node) const {
+	return editor_hint && edited_scene_root && edited_scene_root->is_a_parent_of(p_node);
+}
+
 bool SceneTree::is_editor_hint() const {
 
 	return editor_hint;
@@ -965,6 +969,10 @@ Array SceneTree::_get_nodes_in_group(const StringName& p_group) {
 	return ret;
 }
 
+bool SceneTree::has_group(const StringName& p_identifier) const {
+
+	return group_map.has(p_identifier);
+}
 void SceneTree::get_nodes_in_group(const StringName& p_group,List<Node*> *p_list) {
 
 
@@ -1589,6 +1597,7 @@ void SceneTree::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_nodes_in_group","group"),&SceneTree::_get_nodes_in_group);
 
 	ObjectTypeDB::bind_method(_MD("get_root:Viewport"),&SceneTree::get_root);
+	ObjectTypeDB::bind_method(_MD("has_group","name"),&SceneTree::has_group);
 
 	ObjectTypeDB::bind_method(_MD("set_auto_accept_quit","enabled"),&SceneTree::set_auto_accept_quit);
 
