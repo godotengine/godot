@@ -111,6 +111,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "'?'",
 "':'",
 "'\\n'",
+"PI",
 "Error",
 "EOF",
 "Cursor"};
@@ -878,6 +879,7 @@ void GDTokenizerText::_advance() {
 								{TK_CF_RETURN,"return"},
 								{TK_CF_PASS,"pass"},
 								{TK_SELF,"self"},
+								{TK_CONST_PI,"PI"},
 								{TK_ERROR,NULL}
 							};
 
@@ -1044,7 +1046,7 @@ void GDTokenizerText::advance(int p_amount) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define BYTECODE_VERSION 8
+#define BYTECODE_VERSION 9
 
 Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 
