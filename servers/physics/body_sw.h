@@ -79,6 +79,8 @@ class BodySW : public CollisionObjectSW {
 	bool omit_force_integration;
 	bool active;
 
+	bool first_integration;
+
 	bool continuous_cd;
 	bool can_sleep;
 	bool first_time_kinematic;

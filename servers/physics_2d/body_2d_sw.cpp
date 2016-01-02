@@ -378,6 +378,7 @@ void Body2DSW::set_space(Space2DSW *p_space){
 
 	}
 
+	first_integration=false;
 }
 
 void Body2DSW::_compute_area_gravity_and_dampenings(const Area2DSW *p_area) {
@@ -471,7 +472,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		//}
 
 	} else {
-		if (!omit_force_integration) {
+		if (!omit_force_integration && !first_integration) {
 			//overriden by direct state query
 
 			Vector2 force=gravity*mass;
@@ -506,6 +507,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 
 	//motion=linear_velocity*p_step;
 
+	first_integration=false;
 	biased_angular_velocity=0;
 	biased_linear_velocity=Vector2();
 
@@ -681,6 +683,7 @@ Body2DSW::Body2DSW() : CollisionObject2DSW(TYPE_BODY), active_list(this), inerti
 	gravity_scale=1.0;
 	using_one_way_cache=false;
 	one_way_collision_max_depth=0.1;
+	first_integration=false;
 
 	still_time=0;
 	continuous_cd_mode=Physics2DServer::CCD_MODE_DISABLED;
