@@ -3108,8 +3108,6 @@ void PropertyEditor::update_tree() {
 					item->add_button(1,get_icon("Reload","EditorIcons"),3);
 				}
 			}
-		} else {
-			print_line("no default value!");
 		}
 
 

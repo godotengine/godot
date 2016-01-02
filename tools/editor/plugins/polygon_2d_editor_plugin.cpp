@@ -755,7 +755,6 @@ void Polygon2DEditor::edit(Node *p_collision_polygon) {
 		canvas_item_editor=CanvasItemEditor::get_singleton();
 	}
 
-
 	if (p_collision_polygon) {
 
 		node=p_collision_polygon->cast_to<Polygon2D>();
