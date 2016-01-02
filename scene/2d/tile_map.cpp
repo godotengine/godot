@@ -379,10 +379,17 @@ void TileMap::_update_dirty_quadrants() {
 		/*	rect.size.x+=fp_adjust;
 			rect.size.y+=fp_adjust;*/
 
-			if (c.flip_h)
+			if (c.transpose)
+				SWAP(tile_ofs.x, tile_ofs.y);
+
+			if (c.flip_h) {
 				rect.size.x=-rect.size.x;
-			if (c.flip_v)
+				tile_ofs.x=-tile_ofs.x;
+			}
+			if (c.flip_v) {
 				rect.size.y=-rect.size.y;
+				tile_ofs.y=-tile_ofs.y;
+			}
 
 			Vector2 center_ofs;
 
