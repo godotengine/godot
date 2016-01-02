@@ -156,12 +156,14 @@ void ProjectSettings::_device_input_add() {
 		} break;
 		case InputEvent::JOYSTICK_MOTION: {
 
-				ie.joy_motion.axis = device_index->get_selected();
+				ie.joy_motion.axis = device_index->get_selected()>>1;
+				ie.joy_motion.axis_value = device_index->get_selected()&1?1:-1;
+
 
 				for(int i=0;i<arr.size();i++) {
 
 					InputEvent aie=arr[i];
-					if (aie.device == ie.device && aie.type==InputEvent::JOYSTICK_MOTION && aie.joy_motion.axis==ie.joy_motion.axis) {
+					if (aie.device == ie.device && aie.type==InputEvent::JOYSTICK_MOTION && aie.joy_motion.axis==ie.joy_motion.axis && aie.joy_motion.axis_value==ie.joy_motion.axis_value) {
 						return;
 					}
 				}
@@ -295,9 +297,10 @@ void ProjectSettings::_add_item(int p_item){
 			device_id->set_val(0);
 			device_index_label->set_text("Joy Button Axis:");
 			device_index->clear();
-			for(int i=0;i<8;i++) {
+			for(int i=0;i<24;i++) {
 
-				device_index->add_item("Axis "+itos(i));
+
+				device_index->add_item("Axis "+itos(i/2)+" "+(i&1?"+":"-"));
 			}
 			device_input->popup_centered(Size2(350,95));
 
@@ -494,7 +497,7 @@ void ProjectSettings::_update_actions() {
 				} break;
 				case InputEvent::JOYSTICK_MOTION: {
 
-					String str = "Device "+itos(ie.device)+", Axis "+itos(ie.joy_motion.axis)+".";
+					String str = "Device "+itos(ie.device)+", Axis "+itos(ie.joy_motion.axis)+" "+(ie.joy_motion.axis_value<0?"-.":"+.");
 					action->set_text(0,str);
 					action->set_icon(0,get_icon("JoyAxis","EditorIcons"));
 				} break;

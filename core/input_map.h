@@ -68,6 +68,7 @@ public:
 
 	const List<InputEvent> *get_action_list(const StringName& p_action);
 	bool event_is_action(const InputEvent& p_event, const StringName& p_action) const;
+	bool event_is_joy_motion_action_pressed(const InputEvent& p_event) const;
 
 
 	void load_from_globals();
