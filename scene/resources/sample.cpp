@@ -210,11 +210,11 @@ void Sample::_bind_methods(){
 
 	ADD_PROPERTY( PropertyInfo( Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), _SCS("_set_data"), _SCS("_get_data") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "stereo"), _SCS(""), _SCS("is_stereo") );
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "length"), _SCS(""), _SCS("get_length") );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "length",PROPERTY_HINT_RANGE,"0,999999999"), _SCS(""), _SCS("get_length") );
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "mix_rate", PROPERTY_HINT_RANGE,"1,192000,1" ), _SCS("set_mix_rate"), _SCS("get_mix_rate") );
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "loop_format", PROPERTY_HINT_ENUM,"None,Forward,PingPong" ), _SCS("set_loop_format"), _SCS("get_loop_format") );
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "loop_begin", PROPERTY_HINT_RANGE,"0,"+itos(99999999)+",1"), _SCS("set_loop_begin"), _SCS("get_loop_begin") );
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "loop_end", PROPERTY_HINT_RANGE,"0,"+itos(99999999)+",1"), _SCS("set_loop_end"), _SCS("get_loop_end") );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "loop_begin", PROPERTY_HINT_RANGE,"0,"+itos(999999999)+",1"), _SCS("set_loop_begin"), _SCS("get_loop_begin") );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "loop_end", PROPERTY_HINT_RANGE,"0,"+itos(999999999)+",1"), _SCS("set_loop_end"), _SCS("get_loop_end") );
 
 	BIND_CONSTANT( FORMAT_PCM8 );
 	BIND_CONSTANT( FORMAT_PCM16 );
