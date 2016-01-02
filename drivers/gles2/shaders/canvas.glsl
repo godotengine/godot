@@ -196,7 +196,7 @@ void main() {
 #ifdef USE_DISTANCE_FIELD
 	const float smoothing = 1.0/32.0;
 	float distance = texture2D(texture, uv_interp).a;
-	color.a = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
+	color.a = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance) * color.a;
 #else
 	color *= texture2D( texture,  uv_interp );
 
