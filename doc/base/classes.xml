@@ -18998,6 +18998,7 @@ returns:= "username=user&amp;password=pass"
 		<constant name="NOTIFICATION_UNPAUSED" value="15">
 		</constant>
 		<constant name="NOTIFICATION_INSTANCED" value="20">
+			Notification received when the scene in which this node is placed has completed instanced. Like NOTIFICATION_READY, but parents are also guaranteed to exist.
 		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0">
 		</constant>
