@@ -1003,7 +1003,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 				return;
 			}
 
-			*str = str->substr(0,idx-1)+chr+str->substr(idx+1,str->length());
+			*str = str->substr(0,idx)+chr+str->substr(idx+1,str->length());
 			valid=true;
 			return;
 
@@ -1364,7 +1364,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 					valid=true;
 					v->b=float(p_value)/255.0;
 					return;
-				} else if (*str=="a8" ) {
+				} else if (*str=="a8" ) {\
 					valid=true;
 					v->a=float(p_value)/255.0;
 					return;
