@@ -638,7 +638,9 @@ static Variant _decode_variant(const String& p_string) {
 		InputEvent ie;
 		ie.type=InputEvent::JOYSTICK_MOTION;
 		ie.device=params[0].to_int();
-		ie.joy_motion.axis=params[1].to_int();
+		int axis = params[1].to_int();;
+		ie.joy_motion.axis=axis>>1;
+		ie.joy_motion.axis_value=axis&1?1:-1;
 
 		return ie;
 	}
@@ -1029,7 +1031,7 @@ static String _encode_variant(const Variant& p_variant) {
 				} break;
 				case InputEvent::JOYSTICK_MOTION: {
 
-					return "jaxis("+itos(ev.device)+", "+itos(ev.joy_motion.axis)+")";
+					return "jaxis("+itos(ev.device)+", "+itos(ev.joy_motion.axis * 2 + (ev.joy_motion.axis_value<0?0:1))+")";
 				} break;
 				default: {
 

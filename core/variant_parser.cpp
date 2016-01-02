@@ -1072,8 +1072,24 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				ie.joy_motion.axis = token.value;
 
 				get_token(p_stream,token,line,r_err_str);
+
+				if (token.type!=TK_COMMA) {
+					r_err_str="Expected ',' after axis index";
+					return ERR_PARSE_ERROR;
+				}
+
+				get_token(p_stream,token,line,r_err_str);
+				if (token.type!=TK_NUMBER) {
+					r_err_str="Expected axis sign";
+					return ERR_PARSE_ERROR;
+				}
+
+				ie.joy_motion.axis_value = token.value;
+
+				get_token(p_stream,token,line,r_err_str);
+
 				if (token.type!=TK_PARENTHESIS_CLOSE) {
-					r_err_str="Expected ')'";
+					r_err_str="Expected ')' for jaxis";
 					return ERR_PARSE_ERROR;
 				}
 
@@ -1339,7 +1355,9 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			InputEvent ie;
 			ie.type=InputEvent::JOYSTICK_MOTION;
 			ie.device=params[0].to_int();
-			ie.joy_motion.axis=params[1].to_int();
+			int axis=params[1].to_int();
+			ie.joy_motion.axis=axis>>1;
+			ie.joy_motion.axis_value=axis&1?1:-1;
 
 			value= ie;
 
