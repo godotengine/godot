@@ -579,6 +579,20 @@
 			Hashes the variable passed and returns an integer.
 			</description>
 		</method>
+		<method name="Color8">
+			<return type="Color">
+			</return>
+			<argument index="0" name="r8" type="int">
+			</argument>
+			<argument index="1" name="g8" type="int">
+			</argument>
+			<argument index="2" name="b8" type="int">
+			</argument>
+			<argument index="3" name="a8" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="print_stack">
 			<return type="Nil">
 			</return>
@@ -1370,6 +1384,10 @@
 		<constant name="JOY_ANALOG_2_X" value="4">
 		</constant>
 		<constant name="JOY_ANALOG_2_Y" value="5">
+		</constant>
+		<constant name="JOY_ANALOG_L2" value="6">
+		</constant>
+		<constant name="JOY_ANALOG_R2" value="7">
 		</constant>
 		<constant name="OK" value="0">
 			Functions that return [Error] return OK when everything went ok. Most functions don't return error anyway and/or just print errors to stdout.
@@ -7561,6 +7579,14 @@
 		</member>
 		<member name="v" type="float">
 		</member>
+		<member name="r8" type="int">
+		</member>
+		<member name="g8" type="int">
+		</member>
+		<member name="b8" type="int">
+		</member>
+		<member name="a8" type="int">
+		</member>
 	</members>
 	<constants>
 	</constants>
@@ -7967,6 +7993,8 @@
 			<argument index="0" name="section" type="String">
 			</argument>
 			<argument index="1" name="key" type="String">
+			</argument>
+			<argument index="2" name="default" type="var" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -15479,8 +15507,6 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="get_collider_metadata" qualifiers="const">
-			<return type="var">
-			</return>
 			<description>
 			Return the metadata of the shape that collided with this body. If there is no collision, it will return 0, so collisions must be checked first with [method is_colliding]. Aditionally, this metadata can not be set with [method Object.set_meta], it must be set with [method Physics2DServer.body_set_shape_metadata].
 			</description>
@@ -18971,6 +18997,9 @@ returns:= "username=user&amp;password=pass"
 		</constant>
 		<constant name="NOTIFICATION_UNPAUSED" value="15">
 		</constant>
+		<constant name="NOTIFICATION_INSTANCED" value="20">
+			Notification received when the scene in which this node is placed has completed instanced. Like NOTIFICATION_READY, but parents are also guaranteed to exist.
+		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0">
 		</constant>
 		<constant name="PAUSE_MODE_STOP" value="1">
@@ -19138,7 +19167,7 @@ returns:= "username=user&amp;password=pass"
 			<description>
 			</description>
 		</method>
-		<method name="get_relative_transform" qualifiers="const">
+		<method name="get_relative_transform_to_parent" qualifiers="const">
 			<return type="Matrix32">
 			</return>
 			<argument index="0" name="parent" type="Object">
@@ -20176,6 +20205,14 @@ returns:= "username=user&amp;password=pass"
 			</return>
 			<description>
 			Return the list of signals as an array of dictionaries.
+			</description>
+		</method>
+		<method name="get_signal_connection_list" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="signal" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="connect">
@@ -21598,6 +21635,10 @@ returns:= "username=user&amp;password=pass"
 		<method name="pre_process">
 			<argument index="0" name="time" type="float">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reset">
 			<description>
 			</description>
 		</method>
@@ -28661,25 +28702,25 @@ This method controls whether the position between two cached points is interpola
 	</signals>
 	<constants>
 		<constant name="MODE_STATIC" value="1">
-		Static mode. The body behaves like a [StaticBody2D], and can only move by user code.
+			Static mode. The body behaves like a [StaticBody2D], and can only move by user code.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3">
-		Kinematic body. The body behaves like a [KinematicBody2D], and can only move by user code.
+			Kinematic body. The body behaves like a [KinematicBody2D], and can only move by user code.
 		</constant>
 		<constant name="MODE_RIGID" value="0">
-		Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
+			Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
 		</constant>
 		<constant name="MODE_CHARACTER" value="2">
-		Character body. This behaves like a rigid body, but can not rotate.
+			Character body. This behaves like a rigid body, but can not rotate.
 		</constant>
 		<constant name="CCD_MODE_DISABLED" value="0">
-		Disables continuous collision detection. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.
+			Disables continuous collision detection. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.
 		</constant>
 		<constant name="CCD_MODE_CAST_RAY" value="1">
-		Enables continuous collision detection by raycasting. It is faster than shapecasting, but less precise.
+			Enables continuous collision detection by raycasting. It is faster than shapecasting, but less precise.
 		</constant>
 		<constant name="CCD_MODE_CAST_SHAPE" value="2">
-		Enables continuous collision detection by shapecasting. It is the slowest CCD method, and the most precise.
+			Enables continuous collision detection by shapecasting. It is the slowest CCD method, and the most precise.
 		</constant>
 	</constants>
 </class>
@@ -33335,6 +33376,12 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="finished">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>
