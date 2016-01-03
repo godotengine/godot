@@ -207,9 +207,15 @@ double Math::ceil(double p_x) {
 int Math::decimals(double p_step) {
 	
 	int max=4;
+	double llimit = Math::pow(0.1,max);
+	double ulimit = 1.0-llimit;
 	int i=0;
-	while( (p_step - Math::floor(p_step)) != 0.0 && max) {
-		
+	while( max) {
+
+		float d = absf(p_step) - Math::floor(absf(p_step));
+
+		if (d<llimit || d>ulimit)
+			break;
 		p_step*=10.0;
 		max--;
 		i++;
