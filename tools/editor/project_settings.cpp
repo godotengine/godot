@@ -701,9 +701,20 @@ void ProjectSettings::_save() {
 
 void ProjectSettings::_settings_prop_edited(const String& p_name) {
 
-	if (!Globals::get_singleton()->is_persisting(p_name)) {
-		String full_item = globals_editor->get_full_item_path(p_name);
+	String full_item = globals_editor->get_full_item_path(p_name);
+
+	if (!Globals::get_singleton()->is_persisting(full_item)) {
 		Globals::get_singleton()->set_persisting(full_item,true);
+
+		{
+			//small usability workaround, if anything related to resolution scaling or size is modified, change all of them together
+			if (full_item=="display/width" || full_item=="display/height" || full_item=="display/stretch_mode") {
+				Globals::get_singleton()->set_persisting("display/height",true);
+				Globals::get_singleton()->set_persisting("display/width",true);
+			}
+		}
+
+
 //		globals_editor->update_property(p_name);
 		globals_editor->get_property_editor()->update_tree();
 	}
