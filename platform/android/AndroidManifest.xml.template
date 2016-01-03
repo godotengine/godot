@@ -3,7 +3,7 @@
 	  package="com.godot.game"
       android:versionCode="1"
       android:versionName="1.0"
-      android:installLocation="preferExternal"
+      android:installLocation="auto"
       >
 <supports-screens android:smallScreens="true"
                       android:normalScreens="true"
