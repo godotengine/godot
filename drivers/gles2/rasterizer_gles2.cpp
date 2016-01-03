@@ -10306,6 +10306,8 @@ void RasterizerGLES2::_update_framebuffer() {
 		return;
 
 	int scale = GLOBAL_DEF("rasterizer/framebuffer_shrink",1);
+	if (scale<1)
+		scale=1;
 
 	int dwidth = OS::get_singleton()->get_video_mode().width/scale;
 	int dheight = OS::get_singleton()->get_video_mode().height/scale;
