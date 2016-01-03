@@ -221,7 +221,7 @@
 
 static ResourceFormatLoaderImage *resource_loader_image=NULL;
 static ResourceFormatLoaderWAV *resource_loader_wav=NULL;
-static ResourceFormatLoaderBitMap *resource_loader_bitmap=NULL;
+
 
 #ifdef TOOLS_ENABLED
 
@@ -249,8 +249,6 @@ void register_scene_types() {
 	resource_loader_wav = memnew( ResourceFormatLoaderWAV );
 	ResourceLoader::add_resource_format_loader( resource_loader_wav );
 
-	resource_loader_bitmap = memnew( ResourceFormatLoaderBitMap );
-	ResourceLoader::add_resource_format_loader( resource_loader_bitmap );
 
 #ifdef TOOLS_ENABLED
 
@@ -631,7 +629,6 @@ void unregister_scene_types() {
 	
 	memdelete( resource_loader_image );
 	memdelete( resource_loader_wav );
-	memdelete( resource_loader_bitmap );
 #ifdef TOOLS_ENABLED
 
 
