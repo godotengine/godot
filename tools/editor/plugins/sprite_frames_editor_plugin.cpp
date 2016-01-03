@@ -338,7 +338,6 @@ void SpriteFramesEditor::_update_library() {
 
 		TreeItem *ti = tree->create_item(root);
 		ti->set_cell_mode(0,TreeItem::CELL_MODE_STRING);
-		ti->set_editable(0,true);
 		ti->set_selectable(0,true);
 
 		if (frames->get_frame(i).is_null()) {
