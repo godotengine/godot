@@ -1322,8 +1322,11 @@ int Physics2DServerSW::get_process_info(ProcessInfo p_info) {
 }
 
 
+Physics2DServerSW *Physics2DServerSW::singletonsw=NULL;
+
 Physics2DServerSW::Physics2DServerSW() {
 
+	singletonsw=this;
 	BroadPhase2DSW::create_func=BroadPhase2DHashGrid::_create;
 //	BroadPhase2DSW::create_func=BroadPhase2DBasic::_create;
 
