@@ -584,7 +584,10 @@ void DocData::generate(bool p_basic_types) {
 				md.name=mi.name;
 				if (mi.return_val.name!="")
 					md.return_type=mi.return_val.name;
-				else
+				else if (mi.name.find(":")!=-1) {
+					md.return_type=mi.name.get_slice(":",1);
+					md.name=mi.name.get_slice(":",0);
+				} else
 					md.return_type=Variant::get_type_name(mi.return_val.type);
 
 				for(int i=0;i<mi.arguments.size();i++) {
@@ -594,8 +597,9 @@ void DocData::generate(bool p_basic_types) {
 					ArgumentDoc ad;
 					ad.name=pi.name;
 
+
 					if (pi.type==Variant::NIL)
-						ad.type="var";
+						ad.type="Variant";
 					else
 						ad.type=Variant::get_type_name( pi.type );
 

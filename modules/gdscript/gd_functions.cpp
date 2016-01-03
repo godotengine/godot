@@ -34,6 +34,7 @@
 #include "func_ref.h"
 #include "os/os.h"
 #include "variant_parser.h"
+#include "io/marshalls.h"
 
 const char *GDFunctions::get_func_name(Function p_func) {
 
@@ -94,6 +95,8 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"printraw",
 		"var2str",
 		"str2var",
+		"var2bytes",
+		"bytes2var",
 		"range",
 		"load",
 		"inst2dict",
@@ -637,6 +640,57 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				r_error.expected=Variant::STRING;
 				r_ret=Variant();
 			}
+
+		} break;
+		case VAR_TO_BYTES: {
+			VALIDATE_ARG_COUNT(1);
+
+			ByteArray barr;
+			int len;
+			Error err = encode_variant(*p_args[0],NULL,len);
+			if (err) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_error.expected=Variant::NIL;
+				r_ret=Variant();
+				return;
+			}
+
+			barr.resize(len);
+			{
+				ByteArray::Write w = barr.write();
+				encode_variant(*p_args[0],w.ptr(),len);
+
+			}
+			r_ret=barr;
+		} break;
+		case BYTES_TO_VAR: {
+			VALIDATE_ARG_COUNT(1);
+			if (p_args[0]->get_type()!=Variant::RAW_ARRAY) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_error.expected=Variant::RAW_ARRAY;
+				r_ret=Variant();
+				return;
+			}
+
+			ByteArray varr=*p_args[0];
+			Variant ret;
+			{
+				ByteArray::Read r=varr.read();
+				Error err = decode_variant(ret,r.ptr(),varr.size(),NULL);
+				if (err!=OK) {
+					ERR_PRINT("Not enough bytes for decoding..");
+					r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+					r_error.argument=0;
+					r_error.expected=Variant::RAW_ARRAY;
+					r_ret=Variant();
+					return;
+				}
+
+			}
+
+			r_ret=ret;
 
 		} break;
 		case GEN_RANGE: {
@@ -1355,6 +1409,18 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		case STR_TO_VAR: {
 
 			MethodInfo mi("str2var:Variant",PropertyInfo(Variant::STRING,"string"));
+			mi.return_val.type=Variant::NIL;
+			return mi;
+		} break;
+		case VAR_TO_BYTES: {
+			MethodInfo mi("var2bytes",PropertyInfo(Variant::NIL,"var"));
+			mi.return_val.type=Variant::RAW_ARRAY;
+			return mi;
+
+		} break;
+		case BYTES_TO_VAR: {
+
+			MethodInfo mi("bytes2var:Variant",PropertyInfo(Variant::RAW_ARRAY,"bytes"));
 			mi.return_val.type=Variant::NIL;
 			return mi;
 		} break;
