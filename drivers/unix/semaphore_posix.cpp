@@ -42,7 +42,7 @@ Error SemaphorePosix::wait() {
 			errno=0;
 			continue;
 		} else {
-perror("sem waiting");
+			perror("sem waiting");
 			return ERR_BUSY;
 		}
 	}

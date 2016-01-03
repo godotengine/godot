@@ -619,6 +619,7 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 	xev.xclient.data.l[2] = 0;
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+
 }
 
 int OS_X11::get_screen_count() const {
@@ -887,7 +888,16 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 	XGetWindowAttributes(x11_display,DefaultRootWindow(x11_display),&xwa);
 	current_videomode.width = xwa.width;
 	current_videomode.height = xwa.height;
-*/
+//*/
+
+//	current_videomode.width = wm_max_horz;
+//	current_videomode.height = wm_max_vert;
+
+	//Size2 ss = get_screen_size(get_current_screen());
+	//current_videomode.width=ss.width;
+	//current_videomode.height=ss.height;
+
+
 	maximized = p_enabled;
 }
 

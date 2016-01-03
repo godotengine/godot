@@ -107,6 +107,8 @@ void ProjectSettings::_action_persist_toggle() {
 	String name="input/"+ti->get_text(0);
 
 	bool prev = Globals::get_singleton()->is_persisting(name);
+	print_line("prev persist: "+itos(prev));
+	print_line("new persist: "+itos(ti->is_checked(0)));
 	if (prev==ti->is_checked(0))
 		return;
 
@@ -428,7 +430,7 @@ void ProjectSettings::_update_actions() {
 			continue;
 
 		TreeItem *item=input_editor->create_item(root);
-		item->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
+		//item->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
 		item->set_text(0,name);
 		item->add_button(0,get_icon("Add","EditorIcons"),1);
 		if (!Globals::get_singleton()->get_input_presets().find(pi.name)) {
@@ -437,7 +439,7 @@ void ProjectSettings::_update_actions() {
 		}
 		item->set_custom_bg_color(0,get_color("prop_subsection","Editor"));
 		item->set_editable(0,true);
-		item->set_checked(0,pi.usage&PROPERTY_USAGE_CHECKED);
+		//item->set_checked(0,pi.usage&PROPERTY_USAGE_CHECKED);
 
 
 
