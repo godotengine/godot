@@ -54,6 +54,7 @@ private:
 	};
 
 	struct Joystick {
+		InputDefault::JoyAxis curr_axis[MAX_ABS];
 		int key_map[MAX_KEY - BT_MISC];
 		int abs_map[MAX_ABS];
 		int dpad;

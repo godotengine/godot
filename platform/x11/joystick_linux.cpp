@@ -52,8 +52,13 @@ joystick_linux::Joystick::Joystick() {
 void joystick_linux::Joystick::reset() {
 	dpad        = 0;
 	fd          = -1;
+
+	InputDefault::JoyAxis jx;
+	jx.min = -1;
+	jx.value = 0.0f;
 	for (int i=0; i < MAX_ABS; i++) {
 		abs_map[i] = -1;
+		curr_axis[i] = jx;
 	}
 }
 
@@ -390,13 +395,19 @@ uint32_t joystick_linux::process_joysticks(uint32_t p_event_id) {
 				default:
 					if (joy->abs_map[ev.code] != -1) {
 						InputDefault::JoyAxis value = axis_correct(libevdev_get_abs_info(dev, ev.code), ev.value);
-						p_event_id = input->joy_axis(p_event_id, i, joy->abs_map[ev.code], value);
+						joy->curr_axis[joy->abs_map[ev.code]] = value;
 					}
 					break;
 				}
 				break;
 			}
 			rc = libevdev_next_event(dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
+		}
+		for (int j = 0; j < MAX_ABS; j++) {
+			int index = joy->abs_map[j];
+			if (index != -1) {
+				p_event_id = input->joy_axis(p_event_id, i, index, joy->curr_axis[index]);
+			}
 		}
 	}
 	joy_mutex->unlock();
