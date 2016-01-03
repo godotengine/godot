@@ -58,7 +58,7 @@ void StreamPlayer::sp_set_mix_rate(int p_rate){
 
 bool StreamPlayer::sp_mix(int32_t *p_buffer,int p_frames) {
 
-	if (resampler.is_ready()) {
+	if (resampler.is_ready() && !paused) {
 		return resampler.mix(p_buffer,p_frames);
 	}
 
