@@ -1636,12 +1636,16 @@ int64_t String::to_int64() const {
 	return integer*sign;
 }
 
-int String::to_int(const char* p_str) {
+int String::to_int(const char* p_str,int p_len) {
 
 
 	int to=0;
-	while(p_str[to]!=0 && p_str[to]!='.')
-		to++;
+	if (p_len>=0)
+		to=p_len;
+	else {
+		while(p_str[to]!=0 && p_str[to]!='.')
+			to++;
+	}
 
 
 	int integer=0;
