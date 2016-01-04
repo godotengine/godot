@@ -1253,6 +1253,7 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 	StringName func_name;
 
 	if (p_func) {
+
 		if (p_func->default_values.size()) {
 
 			codegen.opcodes.push_back(GDFunction::OPCODE_JUMP_TO_DEF_ARGUMENT);
@@ -1346,7 +1347,7 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 	if (defarg_addr.size()) {
 
 		gdfunc->default_arguments=defarg_addr;
-		gdfunc->_default_arg_count=defarg_addr.size();
+		gdfunc->_default_arg_count=defarg_addr.size()-1;
 		gdfunc->_default_arg_ptr=&gdfunc->default_arguments[0];
 	} else {
 		gdfunc->_default_arg_count=0;
