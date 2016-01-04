@@ -3823,10 +3823,29 @@ String SectionedPropertyEditor::get_full_item_path(const String& p_item) {
 
 void SectionedPropertyEditor::edit(Object* p_object) {
 
-	List<PropertyInfo> pinfo;
-	if (p_object)
-		p_object->get_property_list(&pinfo);
+	if (obj==p_object)
+		return;
+
+	obj=p_object;
+
+	update_category_list();
+
+	filter->set_edited(obj);
+	editor->edit(filter);
+
+	sections->select(0);
+	_section_selected(0);
+}
+
+void SectionedPropertyEditor::update_category_list() {
+
 	sections->clear();
+
+	if (!obj)
+		return;
+
+	List<PropertyInfo> pinfo;
+	obj->get_property_list(&pinfo);
 
 	Set<String> existing_sections;
 	for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
@@ -3852,19 +3871,9 @@ void SectionedPropertyEditor::edit(Object* p_object) {
 				sections->set_item_metadata(sections->get_item_count()-1,"");
 			}
 		}
-
-
 	}
 
 	//sections->sort_items_by_text();
-
-
-	filter->set_edited(p_object);
-	editor->edit(filter);
-
-	sections->select(0);
-	_section_selected(0);
-
 }
 
 PropertyEditor *SectionedPropertyEditor::get_property_editor() {
@@ -3873,6 +3882,8 @@ PropertyEditor *SectionedPropertyEditor::get_property_editor() {
 }
 
 SectionedPropertyEditor::SectionedPropertyEditor() {
+
+	obj=NULL;
 
 	VBoxContainer *left_vb = memnew( VBoxContainer);
 	left_vb->set_custom_minimum_size(Size2(160,0));
