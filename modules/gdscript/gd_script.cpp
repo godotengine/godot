@@ -221,6 +221,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				r_err.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 				r_err.argument=_argument_count;
 
+
 				return Variant();
 			} else if (p_argcount < _argument_count - _default_arg_count) {
 
