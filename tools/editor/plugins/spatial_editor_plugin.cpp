@@ -1617,6 +1617,8 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 		case InputEvent::KEY: {
 
 			const InputEventKey &k = p_event.key;
+			if (!k.pressed)
+				break;
 			switch(k.scancode) {
 
 				case KEY_S: {
@@ -1677,7 +1679,8 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				} break;
 				case KEY_KP_5: {
 
-					orthogonal = !orthogonal;
+
+					//orthogonal = !orthogonal;
 					_menu_option(orthogonal?VIEW_PERSPECTIVE:VIEW_ORTHOGONAL);
 					_update_name();
 
