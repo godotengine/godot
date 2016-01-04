@@ -512,17 +512,10 @@ Variant Object::_call_deferred_bind(const Variant** p_args, int p_argcount, Vari
 
 	r_error.error=Variant::CallError::CALL_OK;
 
-	StringName signal = *p_args[0];
+	StringName method = *p_args[0];
 
-	Variant v[VARIANT_ARG_MAX];
+	MessageQueue::get_singleton()->push_call(get_instance_ID(),method,&p_args[1],p_argcount-1);
 
-
-	for(int i=0;i<MIN(5,p_argcount-1);i++) {
-
-		v[i]=*p_args[i+1];
-	}
-
-	call_deferred(signal,v[0],v[1],v[2],v[3],v[4]);
 	return Variant();
 
 }
@@ -839,6 +832,8 @@ void Object::call_multilevel(const StringName& p_name, VARIANT_ARG_DECLARE) {
 
 Variant Object::call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error) {
 
+	r_error.error=Variant::CallError::CALL_OK;
+
 	if (p_method==CoreStringNames::get_singleton()->_free) {
 		//free must be here, before anything, always ready
 #ifdef DEBUG_ENABLED
@@ -1130,21 +1125,22 @@ Variant Object::_emit_signal(const Variant** p_args, int p_argcount, Variant::Ca
 
 	StringName signal = *p_args[0];
 
-	Variant v[VARIANT_ARG_MAX];
 
+	const Variant**args=NULL;
 
-	for(int i=0;i<MIN(5,p_argcount-1);i++) {
-
-		v[i]=*p_args[i+1];
+	int argc=p_argcount-1;
+	if (argc) {
+		args=&p_args[1];
 	}
 
-	emit_signal(signal,v[0],v[1],v[2],v[3],v[4]);
+	emit_signal(signal,args,argc);
+
 	return Variant();
+
 }
 
 
-
-void Object::emit_signal(const StringName& p_name,VARIANT_ARG_DECLARE) {
+void Object::emit_signal(const StringName& p_name,const Variant** p_args,int p_argcount) {
 
 	if (_block_signals)
 		return; //no emit, signals blocked
@@ -1167,10 +1163,12 @@ void Object::emit_signal(const StringName& p_name,VARIANT_ARG_DECLARE) {
 
 	OBJ_DEBUG_LOCK
 
+	Vector<const Variant*> bind_mem;
+
+
 	for(int i=0;i<ssize;i++) {
 
 		const Connection &c = slot_map.getv(i).conn;
-		VARIANT_ARGPTRS
 
 		Object *target;
 #ifdef DEBUG_ENABLED
@@ -1181,21 +1179,37 @@ void Object::emit_signal(const StringName& p_name,VARIANT_ARG_DECLARE) {
 #endif
 
 
-		int bind_count=c.binds.size();
-		int bind=0;
+		const Variant **args=p_args;
+		int argc=p_argcount;
 
-		for(int i=0;bind < bind_count && i<VARIANT_ARG_MAX;i++) {
+		if (c.binds.size()) {
+			//handle binds
+			bind_mem.resize(p_argcount+c.binds.size());
 
-			if (argptr[i]->get_type()==Variant::NIL) {
-				argptr[i]=&c.binds[bind];
-				bind++;
+			for(int j=0;j<p_argcount;j++) {
+				bind_mem[j]=p_args[j];
 			}
+			for(int j=0;j<c.binds.size();j++) {
+				bind_mem[p_argcount+j]=&c.binds[j];
+			}
+
+			args=bind_mem.ptr();
+			argc=bind_mem.size();
 		}
 
 		if (c.flags&CONNECT_DEFERRED) {
-			MessageQueue::get_singleton()->push_call(target->get_instance_ID(),c.method,VARIANT_ARGPTRS_PASS);
+			MessageQueue::get_singleton()->push_call(target->get_instance_ID(),c.method,args,argc,true);
 		} else {
-			target->call( c.method, VARIANT_ARGPTRS_PASS );
+			Variant::CallError ce;
+			target->call( c.method, args, argc,ce );
+			if (ce.error!=Variant::CallError::CALL_OK) {
+
+				if (ce.error==Variant::CallError::CALL_ERROR_INVALID_METHOD && !ObjectTypeDB::type_exists( target->get_type_name() ) ) {
+					//most likely object is not initialized yet, do not throw error.
+				} else {
+					ERR_PRINTS("Error calling method from signal '"+String(p_name)+"': "+Variant::get_call_error_text(target,c.method,args,argc,ce));
+				}
+			}
 		}
 
 		if (c.flags&CONNECT_ONESHOT) {
@@ -1208,57 +1222,29 @@ void Object::emit_signal(const StringName& p_name,VARIANT_ARG_DECLARE) {
 
 	}
 
-#if 0
 
-	//old (deprecated and dangerous code)
-	s->lock++;
-	for( Map<Signal::Target,Signal::Slot>::Element *E = s->slot_map.front();E;E=E->next() ) {
-
-		const Signal::Target& t = E->key();
-		const Signal::Slot& s = E->get();
-		const Connection &c = s.cE->get();
-
-		VARIANT_ARGPTRS
-
-		int bind_count=c.binds.size();
-		int bind=0;
-
-		for(int i=0;bind < bind_count && i<VARIANT_ARG_MAX;i++) {
-
-			if (argptr[i]->get_type()==Variant::NIL) {
-				argptr[i]=&c.binds[bind];
-				bind++;
-			}
-		}
-
-		if (c.flags&CONNECT_DEFERRED) {
-			MessageQueue::get_singleton()->push_call(t._id,t.method,VARIANT_ARGPTRS_PASS);
-		} else {
-			Object *obj = ObjectDB::get_instance(t._id);
-			ERR_CONTINUE(!obj); //yeah this should always be here
-			obj->call( t.method, VARIANT_ARGPTRS_PASS );
-		}
-
-		if (c.flags&CONNECT_ONESHOT) {
-			_ObjectSignalDisconnectData dd;
-			dd.signal=p_name;
-			dd.target=ObjectDB::get_instance(t._id);
-			dd.method=t.method;
-			disconnect_data.push_back(dd);
-		}
-
-	}
-
-
-
-	s->lock--;
-#endif
 	while (!disconnect_data.empty()) {
 
 		const _ObjectSignalDisconnectData &dd = disconnect_data.front()->get();
 		disconnect(dd.signal,dd.target,dd.method);
 		disconnect_data.pop_front();
 	}
+
+}
+
+void Object::emit_signal(const StringName& p_name,VARIANT_ARG_DECLARE) {
+
+	VARIANT_ARGPTRS;
+
+	int argc=0;
+
+	for(int i=0;i<VARIANT_ARG_MAX;i++) {
+		if (argptr[i]->get_type()==Variant::NIL)
+			break;
+		argc++;
+	}
+
+	emit_signal(p_name,argptr,argc);
 
 }
 
