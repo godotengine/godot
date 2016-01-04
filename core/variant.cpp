@@ -2992,3 +2992,32 @@ String Variant::get_construct_string() const {
 	return vars;
 
 }
+
+String Variant::get_call_error_text(Object* p_base, const StringName& p_method,const Variant** p_argptrs,int p_argcount,const Variant::CallError &ce) {
+
+
+	String err_text;
+
+	if (ce.error==Variant::CallError::CALL_ERROR_INVALID_ARGUMENT) {
+		int errorarg=ce.argument;
+		err_text="Cannot convert argument "+itos(errorarg+1)+" from "+Variant::get_type_name(p_argptrs[errorarg]->get_type())+" to "+Variant::get_type_name(ce.expected)+".";
+	} else if (ce.error==Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
+		err_text="Expected "+itos(ce.argument)+" arguments.";
+	} else if (ce.error==Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
+		err_text="Expected "+itos(ce.argument)+" arguments.";
+	} else if (ce.error==Variant::CallError::CALL_ERROR_INVALID_METHOD) {
+		err_text="Method not found.";
+	} else if (ce.error==Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
+		err_text="Instance is null";
+	} else if (ce.error==Variant::CallError::CALL_OK){
+		return "Call OK";
+	}
+
+	String class_name = p_base->get_type();
+	Ref<Script> script = p_base->get_script();
+	if (script.is_valid() && script->get_path().is_resource_file()) {
+
+		class_name+="("+script->get_path().get_file()+")";
+	}
+	return "'"+class_name+"::"+String(p_method)+"': "+err_text;
+}

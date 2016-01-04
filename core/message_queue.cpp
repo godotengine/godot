@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "message_queue.h"
 #include "globals.h"
-
+#include "script_language.h"
 MessageQueue *MessageQueue::singleton=NULL;
 
 MessageQueue *MessageQueue::get_singleton() {
@@ -36,26 +36,11 @@ MessageQueue *MessageQueue::get_singleton() {
 	return singleton;
 }
 
-Error MessageQueue::push_call(ObjectID p_id, const StringName& p_method, VARIANT_ARG_DECLARE) {
+Error MessageQueue::push_call(ObjectID p_id,const StringName& p_method,const Variant** p_args,int p_argcount,bool p_show_error) {
 
 	_THREAD_SAFE_METHOD_
 
-	uint8_t room_needed=sizeof(Message);
-	int args=0;
-	if (p_arg5.get_type()!=Variant::NIL)
-		args=5;
-	else if (p_arg4.get_type()!=Variant::NIL)
-		args=4;
-	else if (p_arg3.get_type()!=Variant::NIL)
-		args=3;
-	else if (p_arg2.get_type()!=Variant::NIL)
-		args=2;
-	else if (p_arg1.get_type()!=Variant::NIL)
-		args=1;
-	else
-		args=0;
-
-	room_needed+=sizeof(Variant)*args;
+	int room_needed=sizeof(Message)+sizeof(Variant)*p_argcount;
 
 	if ((buffer_end+room_needed) >= buffer_size) {
 		String type;
@@ -65,53 +50,43 @@ Error MessageQueue::push_call(ObjectID p_id, const StringName& p_method, VARIANT
 		statistics();
 
 	}
+
 	ERR_FAIL_COND_V( (buffer_end+room_needed) >= buffer_size , ERR_OUT_OF_MEMORY );
 	Message * msg = memnew_placement( &buffer[ buffer_end ], Message );
-	msg->args=args;
+	msg->args=p_argcount;
 	msg->instance_ID=p_id;
 	msg->target=p_method;
 	msg->type=TYPE_CALL;
+	if (p_show_error)
+		msg->type|=FLAG_SHOW_ERROR;
+
 	buffer_end+=sizeof(Message);
 
-
-	if (args>=1) {
-
-		Variant * v = memnew_placement( &buffer[ buffer_end ], Variant );
-		buffer_end+=sizeof(Variant);
-		*v=p_arg1;
-	}
-
-	if (args>=2) {
+	for(int i=0;i<p_argcount;i++) {
 
 		Variant * v = memnew_placement( &buffer[ buffer_end ], Variant );
 		buffer_end+=sizeof(Variant);
-		*v=p_arg2;
-	}
-
-	if (args>=3) {
-
-		Variant * v = memnew_placement( &buffer[ buffer_end ], Variant );
-		buffer_end+=sizeof(Variant);
-		*v=p_arg3;
+		*v=*p_args[i];
 
 	}
-
-	if (args>=4) {
-
-		Variant * v = memnew_placement( &buffer[ buffer_end ], Variant );
-		buffer_end+=sizeof(Variant);
-		*v=p_arg4;
-	}
-
-	if (args>=5) {
-
-		Variant * v = memnew_placement( &buffer[ buffer_end ], Variant );
-		buffer_end+=sizeof(Variant);
-		*v=p_arg5;
-	}
-
 
 	return OK;
+}
+
+Error MessageQueue::push_call(ObjectID p_id, const StringName& p_method, VARIANT_ARG_DECLARE) {
+
+	VARIANT_ARGPTRS;
+
+	int argc=0;
+
+	for(int i=0;i<VARIANT_ARG_MAX;i++) {
+		if (argptr[i]->get_type()==Variant::NIL)
+			break;
+		argc++;
+	}
+
+	return push_call(p_id,p_method,argptr,argc,false);
+
 }
 
 Error MessageQueue::push_set(ObjectID p_id, const StringName& p_prop, const Variant& p_value) {
@@ -212,7 +187,7 @@ void MessageQueue::statistics() {
 		if (target!=NULL) {
 
 
-			switch(message->type) {
+			switch(message->type&FLAG_MASK) {
 
 				case TYPE_CALL: {
 
@@ -251,7 +226,7 @@ void MessageQueue::statistics() {
 
 
 		read_pos+=sizeof(Message);
-		if (message->type!=TYPE_NOTIFICATION)
+		if ((message->type&FLAG_MASK)!=TYPE_NOTIFICATION)
 			read_pos+=sizeof(Variant)*message->args;
 	}
 
@@ -322,6 +297,26 @@ int MessageQueue::get_max_buffer_usage() const {
 	return buffer_max_used;
 }
 
+
+void MessageQueue::_call_function(Object* p_target, const StringName& p_func, const Variant *p_args, int p_argcount,bool p_show_error) {
+
+	const Variant **argptrs=NULL;
+	if (p_argcount) {
+		argptrs = (const Variant**)alloca(sizeof(Variant*)*p_argcount);
+		for(int i=0;i<p_argcount;i++) {
+			argptrs[i]=&p_args[i];
+		}
+	}
+
+	Variant::CallError ce;
+	p_target->call(p_func,argptrs,p_argcount,ce);
+	if (p_show_error && ce.error!=Variant::CallError::CALL_OK) {
+
+		ERR_PRINTS("Error calling deferred method: "+Variant::get_call_error_text(p_target,p_func,argptrs,p_argcount,ce));
+
+	}
+}
+
 void MessageQueue::flush() {
 
 
@@ -347,7 +342,7 @@ void MessageQueue::flush() {
 
 		if (target!=NULL) {
 
-			switch(message->type) {
+			switch(message->type&FLAG_MASK) {
 				case TYPE_CALL: {
 
 					Variant *args= (Variant*)(message+1);
@@ -355,12 +350,7 @@ void MessageQueue::flush() {
 					// messages don't expect a return value
 
 
-					target->call( message->target,
-						(message->args>=1) ? args[0] : Variant(),
-						(message->args>=2) ? args[1] : Variant(),
-						(message->args>=3) ? args[2] : Variant(),
-						(message->args>=4) ? args[3] : Variant(),
-						(message->args>=5) ? args[4] : Variant() );
+					_call_function(target,message->target,args,message->args,message->type&FLAG_SHOW_ERROR);
 
 					for(int i=0;i<message->args;i++) {
 						args[i].~Variant();
@@ -386,7 +376,7 @@ void MessageQueue::flush() {
 		}
 
 		uint32_t advance = sizeof(Message);
-		if (message->type!=TYPE_NOTIFICATION)
+		if ((message->type&FLAG_MASK)!=TYPE_NOTIFICATION)
 			advance+=sizeof(Variant)*message->args;
 		message->~Message();
 
@@ -423,14 +413,14 @@ MessageQueue::~MessageQueue() {
 		Message *message = (Message*)&buffer[ read_pos ];
 		Variant *args= (Variant*)(message+1);
 		int argc = message->args;
-		if (message->type!=TYPE_NOTIFICATION) {
+		if ((message->type&FLAG_MASK)!=TYPE_NOTIFICATION) {
 			for (int i=0;i<argc;i++)
 				args[i].~Variant();
 		}
 		message->~Message();
 
 		read_pos+=sizeof(Message);
-		if (message->type!=TYPE_NOTIFICATION)
+		if ((message->type&FLAG_MASK)!=TYPE_NOTIFICATION)
 			read_pos+=sizeof(Variant)*message->args;
 	}
 

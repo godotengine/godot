@@ -248,7 +248,7 @@ bool InputMap::event_is_joy_motion_action_pressed(const InputEvent& p_event) con
 					if (e.joy_motion.axis==p_event.joy_motion.axis) {
 						if (
 								(e.joy_motion.axis_value * p_event.joy_motion.axis_value >0) && //same axis
-								ABS(e.joy_motion.axis_value>0.5) && ABS(p_event.joy_motion.axis_value>0.5) )
+								ABS(e.joy_motion.axis_value)>0.5 && ABS(p_event.joy_motion.axis_value)>0.5 )
 							pressed=true;
 					}
 
