@@ -118,8 +118,7 @@ void AudioDriverMediaKit::unlock() {
 }
 
 void AudioDriverMediaKit::finish() {
-	if (player)
-		delete player;
+	delete player;
 
 	if (samples_in) {
 		memdelete_arr(samples_in);
