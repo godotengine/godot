@@ -217,8 +217,8 @@ b2Polygon::b2Polygon(b2Triangle& t) {
 void b2Polygon::Set(const b2Polygon& p) {
         if (nVertices != p.nVertices){
 			nVertices = p.nVertices;
-			if (x) delete[] x;
-			if (y) delete[] y;
+			delete[] x;
+			delete[] y;
 			x = new float32[nVertices];
 			y = new float32[nVertices];
         }
