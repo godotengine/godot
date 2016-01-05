@@ -447,6 +447,9 @@ void OS_X11::finalize() {
 //		memdelete(debugger_connection_console);
 //}
 
+#ifdef JOYDEV_ENABLED
+	memdelete(joystick);
+#endif
 	memdelete(input);
 
 	memdelete(sample_manager);
@@ -463,9 +466,6 @@ void OS_X11::finalize() {
 
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
-#ifdef JOYDEV_ENABLED
-	memdelete(joystick);
-#endif
 
 	XUnmapWindow( x11_display, x11_window );
 	XDestroyWindow( x11_display, x11_window );
