@@ -921,7 +921,7 @@ class DaeExporter:
 			if (node.parent.type=="ARMATURE"):
 				armature=node.parent
 				if (armcount>1):
-					self.operator.report({'WARNING'},'Object "'+node.name+'" refers to more than one armature! This is unsopported.')
+					self.operator.report({'WARNING'},'Object "'+node.name+'" refers to more than one armature! This is unsupported.')
 				if (armcount==0):
 					self.operator.report({'WARNING'},'Object "'+node.name+'" is child of an armature, but has no armature modifier.')
 
