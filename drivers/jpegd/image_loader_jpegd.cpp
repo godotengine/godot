@@ -63,7 +63,7 @@ Error ImageLoaderJPG::load_image(Image *p_image,FileAccess *f) {
 	for (int y = 0; y < image_height; y++)
 	{
 		const jpgd::uint8* pScan_line;
-		uint scan_line_len;
+		jpgd::uint scan_line_len;
 		if (decoder.decode((const void**)&pScan_line, &scan_line_len) != jpgd::JPGD_SUCCESS)
 		{
 			return ERR_FILE_CORRUPT;
