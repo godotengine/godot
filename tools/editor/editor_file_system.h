@@ -42,6 +42,8 @@ class EditorFileSystemDirectory : public Object {
 	OBJ_TYPE( EditorFileSystemDirectory,Object );
 
 	String name;
+	uint64_t modified_time;
+	bool verified; //used for checking changes
 
 	EditorFileSystemDirectory *parent;
 	Vector<EditorFileSystemDirectory*> subdirs;
@@ -68,11 +70,20 @@ class EditorFileSystemDirectory : public Object {
 		String file;
 		StringName type;
 		uint64_t modified_time;
-
 		ImportMeta meta;
+		bool verified; //used for checking changes
+
 	};
 
-	Vector<FileInfo> files;
+	struct FileInfoSort {
+		bool operator()(const FileInfo *p_a,const FileInfo *p_b) const {
+			return p_a->file<p_b->file;
+		}
+	};
+
+	void sort_files();
+
+	Vector<FileInfo*> files;
 
 	static void _bind_methods();
 
@@ -96,6 +107,9 @@ public:
 
 	EditorFileSystemDirectory *get_parent();
 
+	int find_file_index(const String& p_file) const;
+	int find_dir_index(const String& p_dir) const;
+
 
 	EditorFileSystemDirectory();
 	~EditorFileSystemDirectory();
@@ -107,45 +121,47 @@ class EditorFileSystem : public Node {
 
 	_THREAD_SAFE_CLASS_
 
-	struct SceneItem {
 
+
+	struct ItemAction {
+
+		enum Action {
+			ACTION_NONE,
+			ACTION_DIR_ADD,
+			ACTION_DIR_REMOVE,
+			ACTION_FILE_ADD,
+			ACTION_FILE_REMOVE,
+			ACTION_FILE_SOURCES_CHANGED
+		};
+
+		Action action;
+		EditorFileSystemDirectory *dir;
 		String file;
-		String path;
-		String type;
-		uint64_t modified_time;
-		EditorFileSystemDirectory::ImportMeta meta;
+		EditorFileSystemDirectory *new_dir;
+		EditorFileSystemDirectory::FileInfo *new_file;
+
+		ItemAction() { action=ACTION_NONE; dir=NULL; new_dir=NULL; new_file=NULL; }
+
 	};
 
-	struct DirItem {
-
-		uint64_t modified_time;
-		String path;
-		String name;
-		Vector<DirItem*> dirs;
-		Vector<SceneItem*> files;		
-		~DirItem();
-	};
-
-	float total;
 	bool use_threads;
 	Thread *thread;
 	static void _thread_func(void *_userdata);
 
-	DirItem *scandir;
-	DirItem *rootdir;
+	EditorFileSystemDirectory *new_filesystem;
 
 	bool abort_scan;
 	bool scanning;
+	float scan_total;
 
-	EditorFileSystemDirectory* _update_tree(DirItem *p_item);
 
-	void _scan_scenes();
-	void _load_type_cache();
+	void _scan_filesystem();
 
 	EditorFileSystemDirectory *filesystem;
 
 	static EditorFileSystem *singleton;
 
+	/* Used for reading the filesystem cache file */
 	struct FileCache {
 
 		String type;
@@ -154,34 +170,43 @@ class EditorFileSystem : public Node {
 		Vector<String> deps;
 	};
 
-	struct DirCache {
+	HashMap<String,FileCache> file_cache;
 
-		uint64_t modification_time;
-		Set<String> files;
-		Set<String> subdirs;
+	struct ScanProgress {
+
+		float low;
+		float hi;
+		mutable EditorProgressBG *progress;
+		void update(int p_current,int p_total) const;
+		ScanProgress get_sub(int p_current,int p_total) const;
 	};
-
 
 	static EditorFileSystemDirectory::ImportMeta _get_meta(const String& p_path);
 
-	bool _check_meta_sources(EditorFileSystemDirectory::ImportMeta & p_meta,EditorProgressBG *ep=NULL);
+	bool _check_meta_sources(EditorFileSystemDirectory::ImportMeta & p_meta);
 
-	DirItem* _scan_dir(DirAccess *da,Set<String> &extensions,String p_name,float p_from,float p_range,const String& p_path,HashMap<String,FileCache> &file_cache,HashMap<String,DirCache> &dir_cache,EditorProgressBG& p_prog);
-	void _save_type_cache_fs(DirItem *p_dir,FileAccess *p_file);
+	void _save_filesystem_cache(EditorFileSystemDirectory *p_dir,FileAccess *p_file);
 
 	bool _find_file(const String& p_file,EditorFileSystemDirectory ** r_d, int &r_file_pos) const;
 
-	void _scan_sources(EditorFileSystemDirectory *p_dir,EditorProgressBG *ep);
+	void _scan_fs_changes(EditorFileSystemDirectory *p_dir, const ScanProgress &p_progress);
 
 	int md_count;
 
+	Set<String> valid_extensions;
+
+	void _scan_new_dir(EditorFileSystemDirectory *p_dir,DirAccess *da,const ScanProgress& p_progress);
 
 	Thread *thread_sources;
 	bool scanning_sources;
 	bool scanning_sources_done;
-	int ss_amount;
+
 	static void _thread_func_sources(void *_userdata);
+
 	List<String> sources_changed;
+	List<ItemAction> scan_actions;
+
+	bool _update_scan_actions();
 
 	static void _resource_saved(const String& p_path);
 	String _find_first_from_source(EditorFileSystemDirectory* p_dir,const String &p_src) const;

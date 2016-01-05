@@ -37,6 +37,31 @@
 
 EditorFileSystem *EditorFileSystem::singleton=NULL;
 
+void EditorFileSystemDirectory::sort_files() {
+
+	files.sort_custom<FileInfoSort>();
+}
+
+int EditorFileSystemDirectory::find_file_index(const String& p_file) const {
+
+	for(int i=0;i<files.size();i++)	{
+		if (files[i]->file==p_file)
+			return i;
+	}
+	return -1;
+
+}
+int EditorFileSystemDirectory::find_dir_index(const String& p_dir) const{
+
+
+	for(int i=0;i<subdirs.size();i++) {
+		if (subdirs[i]->name==p_dir)
+			return i;
+	}
+
+	return -1;
+}
+
 
 int EditorFileSystemDirectory::get_subdir_count() const {
 
@@ -59,7 +84,7 @@ String EditorFileSystemDirectory::get_file(int p_idx) const{
 
 	ERR_FAIL_INDEX_V(p_idx,files.size(),"");
 
-	return files[p_idx].file;
+	return files[p_idx]->file;
 }
 
 String EditorFileSystemDirectory::get_path() const {
@@ -91,22 +116,22 @@ String EditorFileSystemDirectory::get_file_path(int p_idx) const {
 bool EditorFileSystemDirectory::get_file_meta(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx,files.size(),"");
-	return files[p_idx].meta.enabled;
+	return files[p_idx]->meta.enabled;
 }
 
 Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx,files.size(),Vector<String>());
-	return files[p_idx].meta.deps;
+	return files[p_idx]->meta.deps;
 
 }
 Vector<String> EditorFileSystemDirectory::get_missing_sources(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx,files.size(),Vector<String>());
 	Vector<String> missing;
-	for(int i=0;i<files[p_idx].meta.sources.size();i++) {
-		if (files[p_idx].meta.sources[i].missing)
-			missing.push_back(files[p_idx].meta.sources[i].path);
+	for(int i=0;i<files[p_idx]->meta.sources.size();i++) {
+		if (files[p_idx]->meta.sources[i].missing)
+			missing.push_back(files[p_idx]->meta.sources[i].path);
 	}
 
 	return missing;
@@ -116,8 +141,8 @@ Vector<String> EditorFileSystemDirectory::get_missing_sources(int p_idx) const {
 bool EditorFileSystemDirectory::is_missing_sources(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx,files.size(),false);
-	for(int i=0;i<files[p_idx].meta.sources.size();i++) {
-		if (files[p_idx].meta.sources[i].missing)
+	for(int i=0;i<files[p_idx]->meta.sources.size();i++) {
+		if (files[p_idx]->meta.sources[i].missing)
 			return true;
 	}
 
@@ -127,7 +152,7 @@ bool EditorFileSystemDirectory::is_missing_sources(int p_idx) const {
 StringName EditorFileSystemDirectory::get_file_type(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx,files.size(),"");
-	return files[p_idx].type;
+	return files[p_idx]->type;
 }
 
 String EditorFileSystemDirectory::get_name() {
@@ -157,10 +182,16 @@ void EditorFileSystemDirectory::_bind_methods() {
 
 EditorFileSystemDirectory::EditorFileSystemDirectory() {
 
+	modified_time=0;
 	parent=NULL;
 }
 
 EditorFileSystemDirectory::~EditorFileSystemDirectory() {
+
+	for(int i=0;i<files.size();i++) {
+
+		memdelete(files[i]);
+	}
 
 	for(int i=0;i<subdirs.size();i++) {
 
@@ -172,19 +203,6 @@ EditorFileSystemDirectory::~EditorFileSystemDirectory() {
 
 
 
-
-
-
-EditorFileSystem::DirItem::~DirItem() {
-
-	for(int i=0;i<dirs.size();i++) {
-		memdelete(dirs[i]);
-	}
-
-	for(int i=0;i<files.size();i++) {
-		memdelete(files[i]);
-	}
-}
 
 EditorFileSystemDirectory::ImportMeta EditorFileSystem::_get_meta(const String& p_path) {
 
@@ -214,160 +232,16 @@ EditorFileSystemDirectory::ImportMeta EditorFileSystem::_get_meta(const String& 
 	return m;
 }
 
-EditorFileSystem::DirItem* EditorFileSystem::_scan_dir(DirAccess *da,Set<String> &extensions,String p_name,float p_from,float p_range,const String& p_path,HashMap<String,FileCache> &file_cache,HashMap<String,DirCache> &dir_cache,EditorProgressBG& p_prog) {
 
-	if (abort_scan)
-		return NULL;
+void EditorFileSystem::_scan_filesystem() {
 
-	if (p_path!=String()) {
-		if (FileAccess::exists(("res://"+p_path).plus_file("engine.cfg"))) {
-			return NULL;
-		}
-	}
-
-	List<String> dirs;
-	List<String> files;
-	Set<String> pngs;
-
-	String path=p_path;
-	if (path.ends_with("/"))
-		path=path.substr(0,path.length()-1);
-	String global_path = Globals::get_singleton()->get_resource_path().plus_file(path);
-
-	path="res://"+path;
-	uint64_t mtime = FileAccess::get_modified_time(global_path);
-
-	DirCache *dc = dir_cache.getptr(path);
-
-
-	if (false && dc && dc->modification_time==mtime) {
-		//use the cached files, since directory did not change
-		for (Set<String>::Element *E=dc->subdirs.front();E;E=E->next()) {
-			dirs.push_back(E->get());
-		}
-		for (Set<String>::Element *E=dc->files.front();E;E=E->next()) {
-			files.push_back(E->get());
-		}
-
-	} else {
-		//use the filesystem, some files may have changed
-		Error err = da->change_dir(global_path);
-		if (err!=OK) {
-			print_line("Can't change to: "+path);
-			ERR_FAIL_COND_V(err!=OK,NULL);
-		}
-
-
-		da->list_dir_begin();
-		while (true) {
-
-			bool isdir;
-			String f = da->get_next(&isdir);
-			if (f=="")
-				break;
-			if (isdir) {
-				dirs.push_back(f);
-			} else {
-				String ext = f.extension().to_lower();
-				if (extensions.has(ext))
-					files.push_back(f);
-
-			}
-
-		}
-
-		da->list_dir_end();
-		files.sort();
-		dirs.sort();
-
-	}
-
-
-
-	//print_line(da->get_current_dir()+": dirs: "+itos(dirs.size())+" files:"+itos(files.size()) );
-
-	//find subdirs
-	Vector<DirItem*> subdirs;
-
-	//String current = da->get_current_dir();
-	float idx=0;
-	for (List<String>::Element *E=dirs.front();E;E=E->next(),idx+=1.0) {
-
-		String d = E->get();
-		if (d.begins_with(".")) //ignore hidden and . / ..
-			continue;
-
-		//ERR_CONTINUE( da->change_dir(d)!= OK );
-		DirItem *sdi = _scan_dir(da,extensions,d,p_from+(idx/dirs.size())*p_range,p_range/dirs.size(),p_path+d+"/",file_cache,dir_cache,p_prog);
-		if (sdi) {
-			subdirs.push_back(sdi);
-		}
-		//da->change_dir(current);
-	}
-
-
-	if (subdirs.empty() && files.empty()) {
-		total=p_from+p_range;
-		p_prog.step(total*100);
-		return NULL; //give up, nothing to do here
-	}
-
-	DirItem *di = memnew( DirItem );
-	di->path=path;
-	di->name=p_name;
-	di->dirs=subdirs;
-	di->modified_time=mtime;
-
-	//add files
-	for (List<String>::Element *E=files.front();E;E=E->next()) {
-
-		SceneItem * si = memnew( SceneItem );
-		si->file=E->get();
-		si->path="res://"+p_path+si->file;
-		FileCache *fc = file_cache.getptr(si->path);
-		uint64_t mt = FileAccess::get_modified_time(si->path);
-
-		if (fc && fc->modification_time == mt) {
-
-			si->meta=fc->meta;
-			si->type=fc->type;
-			si->modified_time=fc->modification_time;
-		} else {
-			si->meta=_get_meta(si->path);
-			si->type=ResourceLoader::get_resource_type(si->path);
-			si->modified_time=mt;
-
-		}
-
-		if (si->meta.enabled) {
-			md_count++;
-			if (_check_meta_sources(si->meta)) {
-				sources_changed.push_back(si->path);
-			}
-		}
-		di->files.push_back(si);
-	}
-
-	total=p_from+p_range;
-	p_prog.step(total*100);
-
-	return di;
-}
-
-
-void EditorFileSystem::_scan_scenes() {
-
-	ERR_FAIL_COND(!scanning || scandir);
+	ERR_FAIL_COND(!scanning || new_filesystem);
 
 	//read .fscache
-	HashMap<String,FileCache> file_cache;
-	HashMap<String,DirCache> dir_cache;
-	DirCache *dc=NULL;
 	String cpath;
 
 	sources_changed.clear();
-
-
+	file_cache.clear();
 
 	String project=Globals::get_singleton()->get_resource_path();
 
@@ -387,26 +261,7 @@ void EditorFileSystem::_scan_scenes() {
 				ERR_CONTINUE( split.size() != 3);
 				String name = split[1];
 
-				dir_cache[name]=DirCache();
-				dc=&dir_cache[name];
-				dc->modification_time=split[2].to_int64();
-
-				if (name!="res://") {
-
-					cpath=name+"/";
-
-					int sp=name.find_last("/");
-					if (sp==5)
-						sp=6;
-					String pd = name.substr(0,sp);
-					DirCache *dcp = dir_cache.getptr(pd);
-					ERR_CONTINUE(!dcp);
-					dcp->subdirs.insert(name.get_file());
-				} else {
-
-					cpath=name;
-				}
-
+				cpath=name;
 
 			} else {
 				Vector<String> split = l.split("::");
@@ -414,12 +269,8 @@ void EditorFileSystem::_scan_scenes() {
 				String name = split[0];
 				String file;
 
-				if (!name.begins_with("res://")) {
-					file=name;
-					name=cpath+name;
-				} else {
-					file=name.get_file();
-				}
+				file=name;
+				name=cpath.plus_file(name);
 
 				FileCache fc;
 				fc.type=split[1];
@@ -453,8 +304,6 @@ void EditorFileSystem::_scan_scenes() {
 
 				file_cache[name]=fc;
 
-				ERR_CONTINUE(!dc);
-				dc->files.insert(file);
 			}
 
 		}
@@ -465,39 +314,31 @@ void EditorFileSystem::_scan_scenes() {
 
 
 
+	EditorProgressBG scan_progress("efs","ScanFS",1000);
+
+	ScanProgress sp;
+	sp.low=0;
+	sp.hi=1;
+	sp.progress=&scan_progress;
 
 
+	new_filesystem = memnew( EditorFileSystemDirectory );
+	new_filesystem->parent=NULL;
 
-	total=0;
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	//da->change_dir( Globals::get_singleton()->get_resource_path() );
+	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	d->change_dir("res://");
+	_scan_new_dir(new_filesystem,d,sp);
 
+	file_cache.clear(); //clear caches, no longer needed
 
-	List<String> extensionsl;
-	ResourceLoader::get_recognized_extensions_for_type("",&extensionsl);
-	Set<String> extensions;
-	for(List<String>::Element *E = extensionsl.front();E;E=E->next()) {
-
-		extensions.insert(E->get());
-	}
-
-	EditorProgressBG scan_progress("efs","ScanFS",100);
-
-	md_count=0;
-	scandir=_scan_dir(da,extensions,"",0,1,"",file_cache,dir_cache,scan_progress);
-	memdelete(da);
-	if (abort_scan && scandir) {
-		memdelete(scandir);
-		scandir=NULL;
-
-	}
+	memdelete(d);
 
 
 	//save back the findings
 //	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("file_cache");
 
 	f=FileAccess::open(fscache,FileAccess::WRITE);
-	_save_type_cache_fs(scandir,f);
+	_save_filesystem_cache(new_filesystem,f);
 	f->close();
 	memdelete(f);
 
@@ -510,7 +351,95 @@ void EditorFileSystem::_scan_scenes() {
 void EditorFileSystem::_thread_func(void *_userdata) {
 
 	EditorFileSystem *sd = (EditorFileSystem*)_userdata;
-	sd->_scan_scenes();
+	sd->_scan_filesystem();
+
+}
+
+bool EditorFileSystem::_update_scan_actions() {
+
+	sources_changed.clear();
+
+	bool fs_changed=false;
+
+	for (List<ItemAction>::Element *E=scan_actions.front();E;E=E->next()) {
+
+		ItemAction&ia = E->get();
+
+		switch(ia.action) {
+			case ItemAction::ACTION_NONE: {
+
+			} break;
+			case ItemAction::ACTION_DIR_ADD: {
+
+				//print_line("*ACTION ADD DIR: "+ia.new_dir->get_name());
+				int idx=0;
+				for(int i=0;i<ia.dir->subdirs.size();i++) {
+
+					if (ia.new_dir->name<ia.dir->subdirs[i]->name)
+						break;
+					idx++;
+				}
+				if (idx==ia.dir->subdirs.size()) {
+					ia.dir->subdirs.push_back(ia.new_dir);
+				} else {
+					ia.dir->subdirs.insert(idx,ia.new_dir);
+				}
+
+				fs_changed=true;
+			} break;
+			case ItemAction::ACTION_DIR_REMOVE: {
+
+				ERR_CONTINUE(!ia.dir->parent);
+				//print_line("*ACTION REMOVE DIR: "+ia.dir->get_name());
+				ia.dir->parent->subdirs.erase(ia.dir);
+				memdelete( ia.dir );
+				fs_changed=true;
+			} break;
+			case ItemAction::ACTION_FILE_ADD: {
+
+				int idx=0;
+				for(int i=0;i<ia.dir->files.size();i++) {
+
+					if (ia.new_file->file<ia.dir->files[i]->file)
+						break;
+					idx++;
+				}
+				if (idx==ia.dir->files.size()) {
+					ia.dir->files.push_back(ia.new_file);
+				} else {
+					ia.dir->files.insert(idx,ia.new_file);
+				}
+
+				fs_changed=true;
+				//print_line("*ACTION ADD FILE: "+ia.new_file->file);
+
+			} break;
+			case ItemAction::ACTION_FILE_REMOVE: {
+
+				int idx = ia.dir->find_file_index(ia.file);
+				ERR_CONTINUE(idx==-1);
+				memdelete( ia.dir->files[idx] );
+				ia.dir->files.remove(idx);
+
+				fs_changed=true;
+				//print_line("*ACTION REMOVE FILE: "+ia.file);
+
+			} break;
+			case ItemAction::ACTION_FILE_SOURCES_CHANGED: {
+
+				int idx = ia.dir->find_file_index(ia.file);
+				ERR_CONTINUE(idx==-1);
+				String full_path = ia.dir->get_file_path(idx);
+				sources_changed.push_back(full_path);
+
+			} break;
+
+		}
+	}
+
+	scan_actions.clear();
+
+	return fs_changed;
 
 }
 
@@ -526,19 +455,15 @@ void EditorFileSystem::scan() {
 	abort_scan=false;
 	if (!use_threads) {
 		scanning=true;
-		_scan_scenes();
-		if (rootdir)
-			memdelete(rootdir);
-		rootdir=scandir;
+		scan_total=0;
+		_scan_filesystem();
 		if (filesystem)
 			memdelete(filesystem);
 //		file_type_cache.clear();
-		filesystem=_update_tree(rootdir);
-
-		if (rootdir)
-			memdelete(rootdir);
-		rootdir=NULL;
-		scanning=false;
+		filesystem=new_filesystem;
+		new_filesystem=NULL;
+		_update_scan_actions();
+		scanning=false;		
 		emit_signal("filesystem_changed");
 		emit_signal("sources_changed",sources_changed.size()>0);
 
@@ -548,6 +473,7 @@ void EditorFileSystem::scan() {
 		set_process(true);
 		Thread::Settings s;
 		scanning=true;
+		scan_total=0;
 		s.priority=Thread::PRIORITY_LOW;
 		thread = Thread::create(_thread_func,this,s);
 		//tree->hide();
@@ -559,13 +485,9 @@ void EditorFileSystem::scan() {
 
 }
 
-bool EditorFileSystem::_check_meta_sources(EditorFileSystemDirectory::ImportMeta & p_meta,EditorProgressBG *ep) {
+bool EditorFileSystem::_check_meta_sources(EditorFileSystemDirectory::ImportMeta & p_meta) {
 
 	if (p_meta.enabled) {
-
-		if (ep) {
-			ep->step(ss_amount++);
-		}
 
 		for(int j=0;j<p_meta.sources.size();j++) {
 
@@ -584,9 +506,9 @@ bool EditorFileSystem::_check_meta_sources(EditorFileSystemDirectory::ImportMeta
 			if (mt!=p_meta.sources[j].modified_time) {
 				//scan
 				String md5 = FileAccess::get_md5(src);
-				print_line("checking: "+src);
-				print_line("md5: "+md5);
-				print_line("vs: "+p_meta.sources[j].md5);
+				//print_line("checking: "+src);
+				//print_line("md5: "+md5);
+				//print_line("vs: "+p_meta.sources[j].md5);
 				if (md5!=p_meta.sources[j].md5) {
 					//really changed
 					return true;
@@ -599,18 +521,300 @@ bool EditorFileSystem::_check_meta_sources(EditorFileSystemDirectory::ImportMeta
 	return false;
 }
 
-void EditorFileSystem::_scan_sources(EditorFileSystemDirectory *p_dir,EditorProgressBG *ep) {
+void EditorFileSystem::ScanProgress::update(int p_current,int p_total) const {
+
+	float ratio = low + ((hi-low)/p_total)*p_current;
+	progress->step(ratio*1000);
+	EditorFileSystem::singleton->scan_total=ratio;
+}
+
+EditorFileSystem::ScanProgress EditorFileSystem::ScanProgress::get_sub(int p_current,int p_total) const{
+
+	ScanProgress sp=*this;
+	float slice = (sp.hi-sp.low)/p_total;
+	sp.low+=slice*p_current;
+	sp.hi=slice;
+	return sp;
+
+
+}
+
+
+void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir,DirAccess *da,const ScanProgress& p_progress) {
+
+	List<String> dirs;
+	List<String> files;
+
+	String cd = da->get_current_dir();
+
+	p_dir->modified_time = FileAccess::get_modified_time(cd);
+
+
+	da->list_dir_begin();
+	while (true) {
+
+		bool isdir;
+		String f = da->get_next(&isdir);
+		if (f=="")
+			break;
+
+		if (isdir) {
+
+			if (f.begins_with(".")) //ignore hidden and . / ..
+				continue;
+
+			if (FileAccess::exists(cd.plus_file(f).plus_file("engine.cfg"))) // skip if another project inside this
+				continue;
+
+			dirs.push_back(f);
+
+		} else {
+
+			files.push_back(f);
+		}
+
+	}
+
+	da->list_dir_end();
+
+	dirs.sort();
+	files.sort();
+
+	int total = dirs.size()+files.size();
+	int idx=0;
+
+	for (List<String>::Element *E=dirs.front();E;E=E->next(),idx++) {
+
+		if (da->change_dir(E->get())==OK) {
+
+			EditorFileSystemDirectory *efd = memnew( EditorFileSystemDirectory );
+
+			efd->parent=p_dir;
+			efd->name=E->get();
+
+			_scan_new_dir(efd,da,p_progress.get_sub(idx,total));
+
+			int idx=0;
+			for(int i=0;i<p_dir->subdirs.size();i++) {
+
+				if (efd->name<p_dir->subdirs[i]->name)
+					break;
+				idx++;
+			}
+			if (idx==p_dir->subdirs.size()) {
+				p_dir->subdirs.push_back(efd);
+			} else {
+				p_dir->subdirs.insert(idx,efd);
+			}
+
+			da->change_dir("..");
+		} else {
+			ERR_PRINTS("Can't go into subdir: "+E->get());
+		}
+
+		p_progress.update(idx,total);
+
+	}
+
+	for (List<String>::Element*E=files.front();E;E=E->next(),idx++) {
+
+		String ext = E->get().extension().to_lower();
+		if (!valid_extensions.has(ext))
+			continue; //invalid
+
+		EditorFileSystemDirectory::FileInfo *fi = memnew( EditorFileSystemDirectory::FileInfo );
+		fi->file=E->get();
+
+		String path = cd.plus_file(fi->file);
+
+		FileCache *fc = file_cache.getptr(path);
+		uint64_t mt = FileAccess::get_modified_time(path);
+
+		if (fc && fc->modification_time == mt) {
+
+			fi->meta=fc->meta;
+			fi->type=fc->type;
+			fi->modified_time=fc->modification_time;
+		} else {
+			fi->meta=_get_meta(path);
+			fi->type=ResourceLoader::get_resource_type(path);
+			fi->modified_time=mt;
+
+		}
+
+		if (fi->meta.enabled) {
+			if (_check_meta_sources(fi->meta)) {
+				ItemAction ia;
+				ia.action=ItemAction::ACTION_FILE_SOURCES_CHANGED;
+				ia.dir=p_dir;
+				ia.file=E->get();
+				scan_actions.push_back(ia);
+			}
+		}
+
+		p_dir->files.push_back(fi);
+		p_progress.update(idx,total);
+	}
+
+}
+
+
+void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir,const ScanProgress& p_progress) {
+
+	uint64_t current_mtime = FileAccess::get_modified_time(p_dir->get_path());
+
+	bool updated_dir=false;
+
+	//print_line("dir: "+p_dir->get_path()+" MODTIME: "+itos(p_dir->modified_time)+" CTIME: "+itos(current_mtime));
+
+	if (current_mtime!=p_dir->modified_time) {
+
+		updated_dir=true;
+		p_dir->modified_time=current_mtime;
+		//ooooops, dir changed, see what's going on
+
+		//first mark everything as veryfied
+
+		for(int i=0;i<p_dir->files.size();i++) {
+
+			p_dir->files[i]->verified=false;
+		}
+
+		for(int i=0;i<p_dir->subdirs.size();i++) {
+
+			p_dir->get_subdir(i)->verified=false;
+		}
+
+		//then scan files and directories and check what's different
+
+		DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		String cd = p_dir->get_path();
+		da->change_dir(cd);
+		da->list_dir_begin();
+		while (true) {
+
+			bool isdir;
+			String f = da->get_next(&isdir);
+			if (f=="")
+				break;
+
+			if (isdir) {
+
+				if (f.begins_with(".")) //ignore hidden and . / ..
+					continue;
+
+				int idx = p_dir->find_dir_index(f);
+				if (idx==-1) {
+
+					if (FileAccess::exists(cd.plus_file(f).plus_file("engine.cfg"))) // skip if another project inside this
+						continue;
+
+					EditorFileSystemDirectory *efd = memnew( EditorFileSystemDirectory );
+
+					efd->parent=p_dir;
+					efd->name=f;
+					DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+					d->change_dir(cd.plus_file(f));
+					_scan_new_dir(efd,d,p_progress.get_sub(1,1));
+					memdelete(d);
+
+
+					ItemAction ia;
+					ia.action=ItemAction::ACTION_DIR_ADD;
+					ia.dir=p_dir;
+					ia.file=f;
+					ia.new_dir=efd;
+					scan_actions.push_back(ia);
+				} else {
+					p_dir->subdirs[idx]->verified=true;
+				}
+
+
+			} else {
+				String ext = f.extension().to_lower();
+				if (!valid_extensions.has(ext))
+					continue; //invalid
+
+				int idx = p_dir->find_file_index(f);
+
+				if (idx==-1) {
+					//never seen this file, add actition to add it
+					EditorFileSystemDirectory::FileInfo *fi = memnew( EditorFileSystemDirectory::FileInfo );
+					fi->file=f;
+
+					String path = cd.plus_file(fi->file);
+					fi->modified_time=FileAccess::get_modified_time(path);
+					fi->meta=_get_meta(path);
+					fi->type=ResourceLoader::get_resource_type(path);
+
+					{
+						ItemAction ia;
+						ia.action=ItemAction::ACTION_FILE_ADD;
+						ia.dir=p_dir;
+						ia.file=f;
+						ia.new_file=fi;
+						scan_actions.push_back(ia);
+					}
+
+					//take the chance and scan sources
+					if (_check_meta_sources(fi->meta)) {
+
+						ItemAction ia;
+						ia.action=ItemAction::ACTION_FILE_SOURCES_CHANGED;
+						ia.dir=p_dir;
+						ia.file=f;
+						scan_actions.push_back(ia);
+					}
+
+				} else {
+					p_dir->files[idx]->verified=true;
+				}
+
+
+			}
+
+		}
+		da->list_dir_end();
+		memdelete(da);
+
+
+
+
+	}
 
 	for(int i=0;i<p_dir->files.size();i++) {
 
-		if (_check_meta_sources(p_dir->files[i].meta,ep)) {
-			sources_changed.push_back(p_dir->get_file_path(i));
+		if (updated_dir && !p_dir->files[i]->verified) {
+			//this file was removed, add action to remove it
+			ItemAction ia;
+			ia.action=ItemAction::ACTION_FILE_REMOVE;
+			ia.dir=p_dir;
+			ia.file=p_dir->files[i]->file;
+			scan_actions.push_back(ia);
+			continue;
+
+		}
+		if (_check_meta_sources(p_dir->files[i]->meta)) {
+			ItemAction ia;
+			ia.action=ItemAction::ACTION_FILE_SOURCES_CHANGED;
+			ia.dir=p_dir;
+			ia.file=p_dir->files[i]->file;
+			scan_actions.push_back(ia);
 		}
 	}
 
 	for(int i=0;i<p_dir->subdirs.size();i++) {
 
-		_scan_sources(p_dir->get_subdir(i),ep);
+		if (updated_dir && !p_dir->subdirs[i]->verified) {
+			//this directory was removed, add action to remove it
+			ItemAction ia;
+			ia.action=ItemAction::ACTION_DIR_REMOVE;
+			ia.dir=p_dir->subdirs[i];
+			scan_actions.push_back(ia);
+			continue;
+
+		}
+		_scan_fs_changes(p_dir->get_subdir(i),p_progress);
 	}
 
 }
@@ -619,9 +823,12 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 
 	EditorFileSystem *efs = (EditorFileSystem*)_userdata;
 	if (efs->filesystem) {
-		EditorProgressBG pr("sources","ScanSources",efs->md_count);
-		efs->ss_amount=0;
-		efs->_scan_sources(efs->filesystem,&pr);
+		EditorProgressBG pr("sources","ScanSources",1000);
+		ScanProgress sp;
+		sp.progress=&pr;
+		sp.hi=1;
+		sp.low=0;
+		efs->_scan_fs_changes(efs->filesystem,sp);
 	}
 	efs->scanning_sources_done=true;
 }
@@ -643,8 +850,17 @@ void EditorFileSystem::scan_sources() {
 	abort_scan=false;
 
 	if (!use_threads) {
-		if (filesystem)
-			_scan_sources(filesystem,NULL);
+		if (filesystem) {
+			EditorProgressBG pr("sources","ScanSources",1000);
+			ScanProgress sp;
+			sp.progress=&pr;
+			sp.hi=1;
+			sp.low=0;
+			scan_total=0;
+			_scan_fs_changes(filesystem,sp);
+			if (_update_scan_actions())
+				emit_signal("filesystem_changed");
+		}
 		scanning_sources=false;
 		scanning_sources_done=true;
 		emit_signal("sources_changed",sources_changed.size()>0);
@@ -652,8 +868,8 @@ void EditorFileSystem::scan_sources() {
 
 		ERR_FAIL_COND(thread_sources);
 		set_process(true);
+		scan_total=0;
 		Thread::Settings s;
-		ss_amount=0;
 		s.priority=Thread::PRIORITY_LOW;
 		thread_sources = Thread::create(_thread_func_sources,this,s);
 		//tree->hide();
@@ -665,53 +881,14 @@ void EditorFileSystem::scan_sources() {
 
 }
 
-EditorFileSystemDirectory* EditorFileSystem::_update_tree(DirItem *p_item) {
-
-	EditorFileSystemDirectory *efd = memnew( EditorFileSystemDirectory );
-
-	if (!p_item)
-		return efd; //empty likely
-	efd->name=p_item->name;
-
-	for(int i=0;i<p_item->files.size();i++) {
-
-		String s = p_item->files[i]->type;
-		//if (p_item->files[i]->meta)
-		//	s="*"+s;
-
-//		file_type_cache[p_item->files[i]->path]=s;
-		if (p_item->files[i]->type=="")
-			continue; //ignore because it's invalid
-		EditorFileSystemDirectory::FileInfo fi;
-		fi.file=p_item->files[i]->file;
-		fi.type=p_item->files[i]->type;
-		fi.meta=p_item->files[i]->meta;
-		fi.modified_time=p_item->files[i]->modified_time;
-
-		efd->files.push_back(fi);
-
-	}
-
-	for(int i=0;i<p_item->dirs.size();i++) {
-
-		EditorFileSystemDirectory *efsd =_update_tree(p_item->dirs[i]);
-		efsd->parent=efd;
-		efd->subdirs.push_back( efsd );
-
-	}
-
-
-	return efd;
-}
-
 void EditorFileSystem::_notification(int p_what) {
 
 	switch(p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			_load_type_cache();
-			    scan();
+
+			   scan();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (use_threads && thread) {
@@ -727,13 +904,13 @@ void EditorFileSystem::_notification(int p_what) {
 				set_process(false);
 
 			}
-			if (rootdir)
-				memdelete(rootdir);
-			rootdir=NULL;
 
 			if (filesystem)
 				memdelete(filesystem);
+			if (new_filesystem)
+				memdelete(new_filesystem);
 			filesystem=NULL;
+			new_filesystem=NULL;
 
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -751,6 +928,8 @@ void EditorFileSystem::_notification(int p_what) {
 						Thread::wait_to_finish(thread_sources);
 						memdelete(thread_sources);
 						thread_sources=NULL;
+						if (_update_scan_actions())
+							emit_signal("filesystem_changed");
 						//print_line("sources changed: "+itos(sources_changed.size()));
 						emit_signal("sources_changed",sources_changed.size()>0);
 					}
@@ -758,21 +937,14 @@ void EditorFileSystem::_notification(int p_what) {
 
 					set_process(false);
 
-					if (rootdir)
-						memdelete(rootdir);
 					if (filesystem)
 						memdelete(filesystem);
-					rootdir=scandir;
-					scandir=NULL;
-//					file_type_cache.clear();
-					filesystem=_update_tree(rootdir);
-
-					if (rootdir)
-						memdelete(rootdir);
-					rootdir=NULL;
+					filesystem=new_filesystem;
+					new_filesystem=NULL;
 					Thread::wait_to_finish(thread);
 					memdelete(thread);
 					thread=NULL;
+					_update_scan_actions();
 					emit_signal("filesystem_changed");
 					emit_signal("sources_changed",sources_changed.size()>0);
 					//print_line("initial sources changed: "+itos(sources_changed.size()));
@@ -794,7 +966,7 @@ bool EditorFileSystem::is_scanning() const {
 }
 float EditorFileSystem::get_scanning_progress() const {
 
-	return total;
+	return scan_total;
 }
 
 EditorFileSystemDirectory *EditorFileSystem::get_filesystem() {
@@ -802,12 +974,12 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem() {
 	return filesystem;
 }
 
-void EditorFileSystem::_save_type_cache_fs(DirItem *p_dir,FileAccess *p_file) {
+void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory*p_dir,FileAccess *p_file) {
 
 
 	if (!p_dir)
 		return; //none
-	p_file->store_line("::"+p_dir->path+"::"+String::num(p_dir->modified_time));
+	p_file->store_line("::"+p_dir->get_path()+"::"+String::num(p_dir->modified_time));
 
 	for(int i=0;i<p_dir->files.size();i++) {
 
@@ -832,126 +1004,96 @@ void EditorFileSystem::_save_type_cache_fs(DirItem *p_dir,FileAccess *p_file) {
 		p_file->store_line(s);
 	}
 
-	for(int i=0;i<p_dir->dirs.size();i++) {
+	for(int i=0;i<p_dir->subdirs.size();i++) {
 
-		_save_type_cache_fs(p_dir->dirs[i],p_file);
+		_save_filesystem_cache(p_dir->subdirs[i],p_file);
 	}
 
 }
 
 
 
-void EditorFileSystem::_load_type_cache(){
-
-	GLOBAL_LOCK_FUNCTION
-
-
-#if 0
-	//this is not good, removed for now as it interferes with metadata stored in files
-
-	String project=Globals::get_singleton()->get_resource_path();
-	FileAccess *f =FileAccess::open(project+"/types.cache",FileAccess::READ);
-
-	if (!f) {
-
-		WARN_PRINT("Can't open types.cache.");
-		return;
-	}
-
-	file_type_cache.clear();
-	while(!f->eof_reached()) {
-
-		String path=f->get_line();
-		if (f->eof_reached())
-			break;
-		String type=f->get_line();
-		file_type_cache[path]=type;
-	}
-
-	memdelete(f);
-#endif
-}
 
 
 
 bool EditorFileSystem::_find_file(const String& p_file,EditorFileSystemDirectory ** r_d, int &r_file_pos) const {
 	//todo make faster
 
-    if (!filesystem || scanning)
-	return false;
+	if (!filesystem || scanning)
+		return false;
 
 
-    String f = Globals::get_singleton()->localize_path(p_file);
+	String f = Globals::get_singleton()->localize_path(p_file);
 
-    if (!f.begins_with("res://"))
-	return false;
-    f=f.substr(6,f.length());
-    f=f.replace("\\","/");
+	if (!f.begins_with("res://"))
+		return false;
+	f=f.substr(6,f.length());
+	f=f.replace("\\","/");
 
-    Vector<String> path = f.split("/");
+	Vector<String> path = f.split("/");
 
-    if (path.size()==0)
-	return false;
-    String file=path[path.size()-1];
-    path.resize(path.size()-1);
+	if (path.size()==0)
+		return false;
+	String file=path[path.size()-1];
+	path.resize(path.size()-1);
 
-    EditorFileSystemDirectory *fs=filesystem;
+	EditorFileSystemDirectory *fs=filesystem;
 
-    for(int i=0;i<path.size();i++) {
+	for(int i=0;i<path.size();i++) {
 
 
-	int idx=-1;
-	for(int j=0;j<fs->get_subdir_count();j++) {
+		int idx=-1;
+		for(int j=0;j<fs->get_subdir_count();j++) {
 
-	    if (fs->get_subdir(j)->get_name()==path[i]) {
-		idx=j;
-		break;
-	    }
+			if (fs->get_subdir(j)->get_name()==path[i]) {
+				idx=j;
+				break;
+			}
+		}
+
+		if (idx==-1) {
+			//does not exist, create i guess?
+			EditorFileSystemDirectory *efsd = memnew( EditorFileSystemDirectory );
+			efsd->name=path[i];
+			int idx2=0;
+			for(int j=0;j<fs->get_subdir_count();j++) {
+
+				if (efsd->name<fs->get_subdir(j)->get_name())
+					break;
+				idx2++;
+			}
+
+			if (idx2==fs->get_subdir_count())
+				fs->subdirs.push_back(efsd);
+			else
+				fs->subdirs.insert(idx2,efsd);
+			fs=efsd;
+		} else {
+
+			fs=fs->get_subdir(idx);
+		}
 	}
 
-	if (idx==-1) {
-	    //does not exist, create i guess?
-	    EditorFileSystemDirectory *efsd = memnew( EditorFileSystemDirectory );
-	    efsd->name=path[i];
-	    int idx2=0;
-	    for(int j=0;j<fs->get_subdir_count();j++) {
 
-		if (efsd->name<fs->get_subdir(j)->get_name())
-		    break;
-		idx2++;
-	    }
+	int cpos=-1;
+	for(int i=0;i<fs->files.size();i++) {
 
-	    if (idx2==fs->get_subdir_count())
-		fs->subdirs.push_back(efsd);
-	    else
-		fs->subdirs.insert(idx2,efsd);
-	    fs=efsd;
-	} else {
-
-	    fs=fs->get_subdir(idx);
+		if (fs->files[i]->file==file) {
+			cpos=i;
+			break;
+		}
 	}
-    }
-
-
-    int cpos=-1;
-    for(int i=0;i<fs->files.size();i++) {
-
-	if (fs->files[i].file==file) {
-		cpos=i;
-		break;
-	}
-    }
 
 	r_file_pos=cpos;
 	*r_d=fs;
 
-    if (cpos!=-1) {
+	if (cpos!=-1) {
 
-	return true;
-    }  else {
+		return true;
+	}  else {
 
-	return false;
-    }
+		return false;
+	}
 
 
 }
@@ -967,7 +1109,7 @@ String EditorFileSystem::get_file_type(const String& p_file) const {
     }
 
 
-    return fs->files[cpos].type;
+    return fs->files[cpos]->type;
 
 }
 
@@ -1024,16 +1166,16 @@ EditorFileSystemDirectory *EditorFileSystem::get_path(const String& p_path) {
 
 void EditorFileSystem::_resource_saved(const String& p_path){
 
-	print_line("resource saved: "+p_path);
+	//print_line("resource saved: "+p_path);
 	EditorFileSystem::get_singleton()->update_file(p_path);
 }
 
 String EditorFileSystem::_find_first_from_source(EditorFileSystemDirectory* p_dir,const String &p_src) const {
 
 	for(int i=0;i<p_dir->files.size();i++) {
-		for(int j=0;j<p_dir->files[i].meta.sources.size();j++) {
+		for(int j=0;j<p_dir->files[i]->meta.sources.size();j++) {
 
-			if (p_dir->files[i].meta.sources[j].path==p_src)
+			if (p_dir->files[i]->meta.sources[j].path==p_src)
 				return p_dir->get_file_path(i);
 		}
 	}
@@ -1070,6 +1212,7 @@ void EditorFileSystem::update_file(const String& p_file) {
 
     if (!FileAccess::exists(p_file)) {
 	    //was removed
+	    memdelete( fs->files[cpos] );
 	    fs->files.remove(cpos);
 	    call_deferred("emit_signal","filesystem_changed"); //update later
 	    return;
@@ -1083,13 +1226,13 @@ void EditorFileSystem::update_file(const String& p_file) {
 	    int idx=0;
 
 	    for(int i=0;i<fs->files.size();i++) {
-		if (p_file<fs->files[i].file)
+		if (p_file<fs->files[i]->file)
 		    break;
 		idx++;
 	    }
 
-	    EditorFileSystemDirectory::FileInfo fi;
-	    fi.file=p_file.get_file();
+	    EditorFileSystemDirectory::FileInfo *fi = memnew( EditorFileSystemDirectory::FileInfo );
+	    fi->file=p_file.get_file();
 
 	    if (idx==fs->files.size()) {
 		fs->files.push_back(fi);
@@ -1102,10 +1245,10 @@ void EditorFileSystem::update_file(const String& p_file) {
 
     }
 
-	print_line("UPDATING: "+p_file);
-	fs->files[cpos].type=type;
-	fs->files[cpos].modified_time=FileAccess::get_modified_time(p_file);
-	fs->files[cpos].meta=_get_meta(p_file);
+	//print_line("UPDATING: "+p_file);
+	fs->files[cpos]->type=type;
+	fs->files[cpos]->modified_time=FileAccess::get_modified_time(p_file);
+	fs->files[cpos]->meta=_get_meta(p_file);
 
 	call_deferred("emit_signal","filesystem_changed"); //update later
 
@@ -1128,15 +1271,22 @@ EditorFileSystem::EditorFileSystem() {
 
 	thread = NULL;
 	scanning=false;
-	scandir=NULL;
-	rootdir=NULL;
 	use_threads=true;
 	thread_sources=NULL;
+	new_filesystem=NULL;
 
 	scanning_sources=false;
 	ResourceSaver::set_save_callback(_resource_saved);
 
+	List<String> extensionsl;
+	ResourceLoader::get_recognized_extensions_for_type("",&extensionsl);
+	for(List<String>::Element *E = extensionsl.front();E;E=E->next()) {
 
+		valid_extensions.insert(E->get());
+	}
+
+
+	scan_total=0;
 }
 
 EditorFileSystem::~EditorFileSystem() {
