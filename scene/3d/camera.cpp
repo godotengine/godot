@@ -125,8 +125,15 @@ bool Camera::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= int(keep_aspect);
 	else if (p_name=="current") {
 
-		if (is_inside_tree() && get_tree()->is_node_being_edited(this)) {
+		if (is_inside_tree()) {
+#ifdef TOOLS_ENABLED
+			if (get_tree()->is_node_being_edited(this)) {
+
+				r_ret=current;
+			}
+#else
 			r_ret=current;
+#endif
 		} else {
 			r_ret=is_current();
 		}
@@ -215,18 +222,22 @@ void Camera::_notification(int p_what) {
 
 			bool first_camera = get_viewport()->cameras.size()==0;
 			get_viewport()->cameras.insert(this);
+#ifdef TOOLS_ENABLED
 			if (!get_tree()->is_node_being_edited(this) && (current || first_camera))
 				make_current();
-
-
+#else
+			if (current || first_camera)
+				make_current();
+#endif
 		} break;			
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 		
 			_request_camera_update();
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
-		
+#ifdef TOOLS_ENABLED		
 			if (!get_tree()->is_node_being_edited(this)) {
+#endif
 				if (is_current()) {
 					clear_current();
 					current=true; //keep it true
@@ -234,8 +245,9 @@ void Camera::_notification(int p_what) {
 				} else {
 					current=false;
 				}
+#ifdef TOOLS_ENABLED
 			}
-
+#endif
 			get_viewport()->cameras.erase(this);
 
 
@@ -339,9 +351,15 @@ void Camera::clear_current() {
 
 bool Camera::is_current() const {
 
-	if (is_inside_tree() && !get_tree()->is_node_being_edited(this)) {
+	if (is_inside_tree()) {
+#ifdef TOOLS_ENABLED
+		if (!get_tree()->is_node_being_edited(this)) {
 
+			return get_viewport()->get_camera()==this;
+		}
+#else
 		return get_viewport()->get_camera()==this;
+#endif
 	} else
 		return current;
 
