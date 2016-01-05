@@ -620,9 +620,11 @@ void SceneTree::set_editor_hint(bool p_enabled) {
 	editor_hint=p_enabled;
 }
 
+#ifdef TOOLS_ENABLED
 bool SceneTree::is_node_being_edited(const Node* p_node) const {
 	return editor_hint && edited_scene_root && edited_scene_root->is_a_parent_of(p_node);
 }
+#endif
 
 bool SceneTree::is_editor_hint() const {
 

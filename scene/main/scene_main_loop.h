@@ -279,8 +279,9 @@ public:
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
 
+#ifdef TOOLS_ENABLED
 	bool is_node_being_edited(const Node* p_node) const;
-
+#endif
 	void set_pause(bool p_enabled);
 	bool is_paused() const;
 
