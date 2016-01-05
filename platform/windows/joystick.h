@@ -44,6 +44,9 @@ if(x != NULL)           \
 }
 #endif
 
+#ifndef XUSER_MAX_COUNT
+#define XUSER_MAX_COUNT 4
+#endif
 
 class joystick_windows
 {
