@@ -48,20 +48,20 @@ void Range::Shared::emit_value_changed() {
 	}
 }
 
-void Range::_changed_notify() {
+void Range::_changed_notify(const char *p_what) {
 
 	emit_signal("changed",shared->val);
 	update();
-	_change_notify();
+	_change_notify(p_what);
 }
 
-void Range::Shared::emit_changed() {
+void Range::Shared::emit_changed(const char *p_what) {
 
 	for (Set<Range*>::Element *E=owners.front();E;E=E->next()) {
 		Range *r=E->get();
 		if (!r->is_inside_tree())
 			continue;
-		r->_changed_notify();
+		r->_changed_notify(p_what);
 	}
 }
 
@@ -94,20 +94,20 @@ void Range::set_min(double p_min) {
 	shared->min=p_min;
 	set_val(shared->val);
 	
-	shared->emit_changed();
+	shared->emit_changed("range/min");
 }
 void Range::set_max(double p_max) {
 	
 	shared->max=p_max;
 	set_val(shared->val);
 		
-	shared->emit_changed();
+	shared->emit_changed("range/max");
 
 }
 void Range::set_step(double p_step) {
 	
 	shared->step=p_step;
-	shared->emit_changed();
+	shared->emit_changed("range/step");
 
 }
 void Range::set_page(double p_page) {
@@ -115,7 +115,7 @@ void Range::set_page(double p_page) {
 	shared->page=p_page;
 	set_val(shared->val);
 			
-	shared->emit_changed();
+	shared->emit_changed("range/page");
 }
 
 double Range::get_val() const {
