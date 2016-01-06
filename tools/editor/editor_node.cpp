@@ -415,7 +415,7 @@ void EditorNode::_rebuild_import_menu()
 {
 	PopupMenu* p = import_menu->get_popup();
 	p->clear();
-	p->add_item("Sub-Scene", FILE_IMPORT_SUBSCENE);
+	p->add_item("Node from scene", FILE_IMPORT_SUBSCENE);
 	p->add_separator();
 	for (int i = 0; i < editor_import_export->get_import_plugin_count(); i++) {
 		p->add_item(editor_import_export->get_import_plugin(i)->get_visible_name(), IMPORT_PLUGIN_BASE + i);
