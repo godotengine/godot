@@ -346,7 +346,7 @@ void SpriteFramesEditor::_update_library() {
 			ti->set_text(0,"Frame "+itos(i)+" (empty)");
 
 		} else {
-			ti->set_text(0,"Frame "+itos(i));
+			ti->set_text(0,"Frame "+itos(i)+" ("+frames->get_frame(i)->get_name()+")");
 			ti->set_icon(0,frames->get_frame(i));
 		}
 		if (frames->get_frame(i).is_valid())
