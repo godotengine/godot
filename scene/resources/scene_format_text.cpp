@@ -473,8 +473,8 @@ Error ResourceInteractiveLoaderText::poll() {
 		}
 
 		Vector<int> bind_ints;
-		for(int i=9;i<binds.size();i++) {
-			bind_ints.push_back( packed_scene->get_state()->add_value( bind_ints[i] ) );
+		for(int i=0;i<binds.size();i++) {
+			bind_ints.push_back( packed_scene->get_state()->add_value( binds[i] ) );
 		}
 
 		packed_scene->get_state()->add_connection(
@@ -1366,10 +1366,10 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 
 			Array binds=state->get_connection_binds(i);
 			f->store_string(connstr);
-			if (binds.size()) {				
+			if (binds.size()) {
 				String vars;
 				VariantWriter::write_to_string(binds,vars,_write_resources,this);
-				f->store_string("binds= "+vars);
+				f->store_string(" binds= "+vars);
 
 			}
 
