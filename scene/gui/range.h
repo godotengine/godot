@@ -44,7 +44,7 @@ class Range : public Control {
 		bool exp_unit_value;
 		Set<Range*> owners;
 		void emit_value_changed();
-		void emit_changed();
+		void emit_changed(const char *p_what="");
 	};
 
 	Shared *shared;
@@ -55,7 +55,7 @@ class Range : public Control {
 	void _share(Node *p_range);
 
 	void _value_changed_notify();
-	void _changed_notify();
+	void _changed_notify(const char *p_what="");
 
 protected:	
 
