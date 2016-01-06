@@ -1634,6 +1634,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 
 
 	//assign..
+	r_assign="";
 	String what;
 
 	while(true) {
