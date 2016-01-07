@@ -285,12 +285,26 @@ void LineEdit::_input_event(InputEvent p_event) {
 						}
 
 					} break;
+					case KEY_KP_7: {
+						if (k.unicode != 0) {
+							handled = false;
+							break;
+						}
+						// numlock disabled. fallthrough to key_home
+					}
 					case KEY_HOME: {
 
 						shift_selection_check_pre(k.mod.shift);
 						set_cursor_pos(0);
 						shift_selection_check_post(k.mod.shift);
 					} break;
+					case KEY_KP_1: {
+						if (k.unicode != 0) {
+							handled = false;
+							break;
+						}
+						// numlock disabled. fallthrough to key_end
+					}
 					case KEY_END: {
 
 						shift_selection_check_pre(k.mod.shift);
