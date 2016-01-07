@@ -24,4 +24,4 @@ env.Program('#bin/godot',['godot_win.cpp']+common_win,PROGSUFFIX=env["PROGSUFFIX
 if (env['vsproj'])=="yes":
 	env.vs_srcs = env.vs_srcs + ["platform/windows/godot_win.cpp"]
 	for x in common_win:
-		env.vs_srcs = env.vs_srcs + ["platform/windows/" + x]
+		env.vs_srcs = env.vs_srcs + ["platform/windows/" + str(x)]

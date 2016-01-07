@@ -173,6 +173,10 @@ Error ConfigFile::load(const String& p_path) {
 
 	while(true) {
 
+		assign=Variant();
+		next_tag.fields.clear();
+		next_tag.name=String();
+
 		err = VariantParser::parse_tag_assign_eof(&stream,lines,error_text,next_tag,assign,value,NULL);
 		if (err==ERR_FILE_EOF)
 			return OK;

@@ -53,10 +53,49 @@ void EditorFileDialog::_notification(int p_what) {
 
 		//RID ci = get_canvas_item();
 		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
+	} else if (p_what==NOTIFICATION_POPUP_HIDE) {
+
+		set_process_unhandled_input(false);
+
 	} else if (p_what==EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
-		set_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
+		bool show_hidden=EditorSettings::get_singleton()->get("file_dialog/show_hidden_files");
+		if (show_hidden_files!=show_hidden)
+			set_show_hidden_files(show_hidden);
 		set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("file_dialog/display_mode").operator int());
+	}
+}
+
+void EditorFileDialog::_unhandled_input(const InputEvent& p_event) {
+
+	if (p_event.type==InputEvent::KEY && is_window_modal_on_top()) {
+
+		const InputEventKey &k=p_event.key;
+
+		if (k.pressed) {
+
+			bool handled=true;
+
+			switch (k.scancode) {
+
+				case KEY_H: {
+
+					if (k.mod.command) {
+
+						bool show=!show_hidden_files;
+						set_show_hidden_files(show);
+						EditorSettings::get_singleton()->set("file_dialog/show_hidden_files",show);
+					} else {
+						handled=false;
+					}
+
+				} break;
+				default: { handled=false; }
+			}
+
+			if (handled)
+				accept_event();
+		}
 	}
 }
 
@@ -150,6 +189,8 @@ void EditorFileDialog::_post_popup() {
 
 		_update_favorites();
 	}
+
+	set_process_unhandled_input(true);
 
 }
 
@@ -1048,6 +1089,8 @@ EditorFileDialog::DisplayMode EditorFileDialog::get_display_mode() const{
 
 
 void EditorFileDialog::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("_unhandled_input"),&EditorFileDialog::_unhandled_input);
 
 	ObjectTypeDB::bind_method(_MD("_item_selected"),&EditorFileDialog::_item_selected);
 	ObjectTypeDB::bind_method(_MD("_item_db_selected"),&EditorFileDialog::_item_dc_selected);

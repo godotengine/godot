@@ -3535,11 +3535,13 @@ Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bo
 	}
 
 
-	for(int i=0;i<editor_data.get_edited_scene_count();i++) {
+	if(!p_set_inherited) {
+		for(int i=0;i<editor_data.get_edited_scene_count();i++) {
 
-		if (editor_data.get_scene_path(i)==p_scene) {
-			_scene_tab_changed(i);
-			return OK;
+			if (editor_data.get_scene_path(i)==p_scene) {
+				_scene_tab_changed(i);
+				return OK;
+			}
 		}
 	}
 

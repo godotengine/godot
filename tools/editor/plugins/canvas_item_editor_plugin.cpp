@@ -1541,6 +1541,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 				continue;
 			}
 
+
 			dfrom = drag_point_from;
 			dto = snap_point(dto - (drag == DRAG_ALL ? drag_from - drag_point_from : Vector2(0, 0)), drag_point_from);
 
@@ -1548,30 +1549,35 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 					canvas_item->get_global_transform_with_canvas().affine_inverse().xform(dto) -
 					canvas_item->get_global_transform_with_canvas().affine_inverse().xform(dfrom);
 
-
 			Rect2 local_rect = canvas_item->get_item_rect();
-
-			if (false && drag!=DRAG_ALL && m.mod.alt) {
-				float aspect = local_rect.size.get_aspect();
-				if (aspect!=0) {
-					if (ABS(drag_vector.x) > ABS(drag_vector.y)) {
-
-						drag_vector.y = ABS(drag_vector.x)/aspect * SGN(drag_vector.y);
-					} else {
-
-						drag_vector.x = ABS(drag_vector.y)*aspect * SGN(drag_vector.x);
-					}
-				}
-			}
-
-
-
 			Vector2 begin=local_rect.pos;
 			Vector2 end=local_rect.pos+local_rect.size;
 			Vector2 minsize = canvas_item->edit_get_minimum_size();
 			bool uniform = m.mod.shift;
 			bool symmetric=m.mod.alt;
 
+			if (uniform) {
+				float aspect = local_rect.size.get_aspect();
+				switch(drag) {
+					case DRAG_BOTTOM_LEFT:
+					case DRAG_TOP_RIGHT: {
+						if (aspect > 1.0) { // width > height, take x as reference
+							drag_vector.y = -drag_vector.x/aspect;
+						} else { // height > width, take y as reference
+							drag_vector.x = -drag_vector.y*aspect;
+						}
+					} break;
+					case DRAG_BOTTOM_RIGHT:
+					case DRAG_TOP_LEFT: {
+						if (aspect > 1.0) { // width > height, take x as reference
+							drag_vector.y = drag_vector.x/aspect;
+						} else { // height > width, take y as reference
+							drag_vector.x = drag_vector.y*aspect;
+						}
+					} break;
+					default: {}
+				}
+			}
 
 			switch(drag) {
 				case DRAG_ALL: {
@@ -1590,19 +1596,11 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 				} break;
 				case DRAG_BOTTOM_RIGHT: {
 
-					if (uniform) {
-						drag_vector.y=drag_vector.x;
-						minsize.y=minsize.x;
-					}
 					incend(begin.x,end.x,drag_vector.x,minsize.x,symmetric);
 					incend(begin.y,end.y,drag_vector.y,minsize.y,symmetric);
-				} break;				
+				} break;
 				case DRAG_TOP_LEFT: {
 
-					if (uniform) {
-						drag_vector.y=drag_vector.x;
-						minsize.y=minsize.x;
-					}
 					incbeg(begin.x,end.x,drag_vector.x,minsize.x,symmetric);
 					incbeg(begin.y,end.y,drag_vector.y,minsize.y,symmetric);
 				} break;
@@ -1618,20 +1616,12 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 				} break;
 				case DRAG_TOP_RIGHT: {
 
-					if (uniform) {
-						drag_vector.x=-drag_vector.y;
-						minsize.x=minsize.y;
-					}
 					incbeg(begin.y,end.y,drag_vector.y,minsize.y,symmetric);
 					incend(begin.x,end.x,drag_vector.x,minsize.x,symmetric);
 
 				} break;
 				case DRAG_BOTTOM_LEFT: {
 
-					if (uniform) {
-						drag_vector.x=-drag_vector.y;
-						minsize.x=minsize.y;
-					}
 					incbeg(begin.x,end.x,drag_vector.x,minsize.x,symmetric);
 					incend(begin.y,end.y,drag_vector.y,minsize.y,symmetric);
 				} break;
