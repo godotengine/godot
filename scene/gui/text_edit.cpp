@@ -1740,6 +1740,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					}
 
 				} break;
+				case KEY_KP_4: {
+					if (k.unicode != 0) {
+						scancode_handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_left
+				}
 				case KEY_LEFT: {
 					
 					if (k.mod.shift)
@@ -1786,6 +1793,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						_post_shift_selection();
 					
 				} break;
+				case KEY_KP_6: {
+					if (k.unicode != 0) {
+						scancode_handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_right
+				}
 				case KEY_RIGHT: {
 					
 					if (k.mod.shift)
@@ -1829,6 +1843,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						_post_shift_selection();
 					
 				} break;
+				case KEY_KP_8: {
+					if (k.unicode != 0) {
+						scancode_handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_up
+				}
 				case KEY_UP: {
 					
 					if (k.mod.shift)
@@ -1849,6 +1870,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					_cancel_code_hint();
 					
 				} break;
+				case KEY_KP_2: {
+					if (k.unicode != 0) {
+						scancode_handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_down
+				}
 				case KEY_DOWN: {
 					
 					if (k.mod.shift)

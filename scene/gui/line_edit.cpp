@@ -245,12 +245,26 @@ void LineEdit::_input_event(InputEvent p_event) {
 								delete_char();
 						}
 					} break;
+					case KEY_KP_4: {
+						if (k.unicode != 0) {
+							handled = false;
+							break;
+						}
+						// numlock disabled. fallthrough to key_left
+					}
 					case KEY_LEFT: {
 						shift_selection_check_pre(k.mod.shift);
 						set_cursor_pos(get_cursor_pos()-1);
 						shift_selection_check_post(k.mod.shift);
 
 					} break;
+					case KEY_KP_6: {
+						if (k.unicode != 0) {
+							handled = false;
+							break;
+						}
+						// numlock disabled. fallthrough to key_right
+					}
 					case KEY_RIGHT: {
 
 						shift_selection_check_pre(k.mod.shift);
@@ -287,26 +301,27 @@ void LineEdit::_input_event(InputEvent p_event) {
 
 					default: {
 
-						if (k.unicode>=32 && k.scancode!=KEY_DELETE) {
-
-							if (editable) {
-								selection_delete();
-								CharType ucodestr[2]={(CharType)k.unicode,0};
-								append_at_cursor(ucodestr);
-								emit_signal("text_changed",text);
-								_change_notify("text");
-							}
-
-						} else {
-							handled=false;
-						}
+						handled=false;
 					} break;
 				}
 
-				if (handled)
+				if (handled) {
 					accept_event();
-				else
-					return;
+				} else {
+					if (k.unicode>=32 && k.scancode!=KEY_DELETE) {
+
+						if (editable) {
+							selection_delete();
+							CharType ucodestr[2]={(CharType)k.unicode,0};
+							append_at_cursor(ucodestr);
+							emit_signal("text_changed",text);
+							_change_notify("text");
+						}
+
+					} else {
+						return;
+					}
+				}
 
 
 				selection.old_shift=k.mod.shift;
