@@ -88,6 +88,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "func",
 "class",
 "extends",
+"onready",
 "tool",
 "static",
 "export",
