@@ -781,3 +781,49 @@ void InputDefault::parse_mapping(String p_mapping) {
 	map_db.push_back(mapping);
 	//printf("added mapping with uuid %ls\n", mapping.uid.c_str());
 };
+
+void InputDefault::add_joy_mapping(String p_mapping, bool p_update_existing) {
+	parse_mapping(p_mapping);
+	if (p_update_existing) {
+		Vector<String> entry = p_mapping.split(",");
+		String uid = entry[0];
+		for (int i=0; i<joy_names.size(); i++) {
+			if (uid == joy_names[i].uid) {
+				joy_names[i].mapping = map_db.size() -1;
+			}
+		}
+	}
+}
+
+void InputDefault::remove_joy_mapping(String p_guid) {
+	for (int i=map_db.size()-1; i >= 0;i--) {
+		if (p_guid == map_db[i].uid) {
+			map_db.remove(i);
+		}
+	}
+	for (int i=0; i<joy_names.size(); i++) {
+		if (joy_names[i].uid == p_guid) {
+			joy_names[i].mapping = -1;
+		}
+	}
+}
+
+//Defaults to simple implementation for platforms with a fixed gamepad layout, like consoles.
+bool InputDefault::is_joy_known(int p_device) {
+
+	return OS::get_singleton()->is_joy_known(p_device);
+}
+
+String InputDefault::get_joy_guid(int p_device) const {
+	return OS::get_singleton()->get_joy_guid(p_device);
+}
+
+//platforms that use the remapping system can override and call to these ones
+bool InputDefault::is_joy_mapped(int p_device) {
+	return joy_names[p_device].mapping != -1 ? true : false;
+}
+
+String InputDefault::get_joy_guid_remapped(int p_device) const {
+	return joy_names[p_device].uid;
+}
+
