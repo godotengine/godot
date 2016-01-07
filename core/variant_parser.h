@@ -69,6 +69,7 @@ public:
 		TK_COLOR,
 		TK_COLON,
 		TK_COMMA,
+		TK_PERIOD,
 		TK_EQUAL,
 		TK_EOF,
 		TK_ERROR,

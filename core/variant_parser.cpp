@@ -52,6 +52,7 @@ const char * VariantParser::tk_name[TK_MAX] = {
 	"color",
 	"':'",
 	"','",
+	"'.'",
 	"'='",
 	"EOF",
 	"ERROR"
@@ -138,6 +139,11 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 			case ',': {
 
 				r_token.type=TK_COMMA;
+				return OK;
+			};
+			case '.': {
+
+				r_token.type=TK_PERIOD;
 				return OK;
 			};
 			case '=': {
@@ -1362,6 +1368,28 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			value= ie;
 
 			return OK;
+		} else if (id=="img") {  // compatibility with engine.cfg
+
+			Token token;
+			get_token(p_stream,token,line,r_err_str);
+			if (token.type!=TK_PARENTHESIS_OPEN) {
+				r_err_str="Expected '(' in old-style engine.cfg construct";
+				return ERR_PARSE_ERROR;
+			}
+
+			while(true) {
+				CharType c = p_stream->get_char();
+				if (p_stream->is_eof()) {
+					r_err_str="Unexpected EOF in old style engine.cfg img()";
+					return ERR_PARSE_ERROR;
+				}
+				if (c==')')
+					break;
+			}
+
+			value=Image();
+
+			return OK;
 
 		} else {
 			r_err_str="Unexpected identifier: '"+id+"'.";
@@ -1571,6 +1599,7 @@ Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, Strin
 	}
 
 	r_tag.name=token.value;
+	bool parsing_tag=true;
 
 	while(true) {
 
@@ -1583,6 +1612,13 @@ Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, Strin
 		if (token.type==TK_BRACKET_CLOSE)
 			break;
 
+		if (parsing_tag && token.type==TK_PERIOD) {
+			r_tag.name+="."; //support tags such as [someprop.Anroid] for specific platforms
+			get_token(p_stream,token,line,r_err_str);
+		} else {
+			parsing_tag=false;
+		}
+
 		if (token.type!=TK_IDENTIFIER) {
 			r_err_str="Expected Identifier";
 			return ERR_PARSE_ERROR;
@@ -1590,10 +1626,13 @@ Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, Strin
 
 		String id=token.value;
 
+		if (parsing_tag) {
+			r_tag.name+=id;
+			continue;
+		}
 
 		get_token(p_stream,token,line,r_err_str);
 		if (token.type!=TK_EQUAL) {
-			r_err_str="Expected '='";
 			return ERR_PARSE_ERROR;
 		}
 
