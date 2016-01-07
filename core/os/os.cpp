@@ -507,6 +507,13 @@ float OS::get_time_scale() const {
 	return _time_scale;
 }
 
+bool OS::is_joy_known(int p_device) {
+	return true;
+}
+
+String OS::get_joy_guid(int p_device) const {
+	return "Default Joystick";
+}
 
 OS::OS() {
 	last_error=NULL;
