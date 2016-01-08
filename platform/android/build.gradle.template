@@ -43,7 +43,7 @@ android {
 	sourceSets {
 		main {
 			manifest.srcFile 'AndroidManifest.xml'
-			java.srcDirs = ['src',
+			java.srcDirs = ['src'
 				$$GRADLE_JAVA_DIRS$$    
 			]
 			resources.srcDirs = [
