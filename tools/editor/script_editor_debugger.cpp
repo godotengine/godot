@@ -569,8 +569,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 					ppeer->set_stream_peer(connection);
 
-
 					show();
+					emit_signal("show_debugger",true);
 
 					dobreak->set_disabled(false);
 					tabs->set_current_tab(0);
@@ -770,6 +770,7 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 
 void ScriptEditorDebugger::_hide_request() {
 
+	hide();
 	emit_signal("show_debugger",false);
 }
 
