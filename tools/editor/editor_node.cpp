@@ -2108,7 +2108,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		} break;
 		case FILE_CLOSE: {
 
-			if (!p_confirmed) {
+			if (!p_confirmed && unsaved_cache) {
 				confirmation->get_ok()->set_text("Yes");
 				//confirmation->get_cancel()->show();
 				confirmation->set_text("Close scene? (Unsaved changes will be lost)");
