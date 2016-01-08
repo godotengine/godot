@@ -839,7 +839,7 @@ void TextEdit::_notification(int p_what) {
 					
 				}
 				
-				if (cursor.column==str.length() && cursor.line==line) {
+				if (cursor.column==str.length() && cursor.line==line && (char_ofs+char_margin)>=xmargin_beg) {
 					
 					cursor_pos=Point2i( char_ofs+char_margin, ofs_y );
 					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
