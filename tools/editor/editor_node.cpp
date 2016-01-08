@@ -1321,10 +1321,18 @@ void EditorNode::_dialog_action(String p_file) {
 		case FILE_EXPORT_TILESET: {
 
 			Ref<TileSet> ml;
-			if (file_export_lib_merge->is_pressed() && FileAccess::exists(p_file)) {
+			if (FileAccess::exists(p_file)) {
 				ml=ResourceLoader::load(p_file,"TileSet");
 
-				if (ml.is_null()) {
+				if (!file_export_lib_merge->is_pressed()) {
+					ml->clear();
+				}
+
+			}
+
+			if (ml.is_null()) {
+
+				if (file_export_lib_merge->is_pressed()) {
 					current_option=-1;
 					//accept->get_cancel()->hide();
 					accept->get_ok()->set_text("I see..");
@@ -1333,9 +1341,6 @@ void EditorNode::_dialog_action(String p_file) {
 					return;
 				}
 
-			}
-
-			if (ml.is_null()) {
 				ml = Ref<TileSet>( memnew( TileSet ));
 			}
 
