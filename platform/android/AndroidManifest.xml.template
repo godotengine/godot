@@ -11,7 +11,7 @@
                       android:xlargeScreens="true"/>
 
     <application android:label="@string/godot_project_name_string" android:icon="@drawable/icon" android:allowBackup="false" $$ADD_APPATTRIBUTE_CHUNKS$$ >
-        <activity android:name="com.android.godot.Godot"
+        <activity android:name="org.godotengine.godot.Godot"
                   android:label="@string/godot_project_name_string"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
                   android:launchMode="singleTask"
@@ -23,7 +23,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-	<service android:name="com.android.godot.GodotDownloaderService" />
+	<service android:name="org.godotengine.godot.GodotDownloaderService" />
 
 
   

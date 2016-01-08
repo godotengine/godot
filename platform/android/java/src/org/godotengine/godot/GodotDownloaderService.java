@@ -1,4 +1,4 @@
-package com.android.godot;
+package org.godotengine.godot;
 
 import android.content.Context;
 import android.content.SharedPreferences;

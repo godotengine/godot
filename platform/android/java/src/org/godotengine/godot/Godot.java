@@ -26,7 +26,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-package com.android.godot;
+package org.godotengine.godot;
 
 import android.R;
 import android.app.Activity;
@@ -60,14 +60,14 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.ArrayList;
 
-import com.android.godot.payments.PaymentsManager;
+import org.godotengine.godot.payments.PaymentsManager;
 
 import java.io.IOException;
 
 import android.provider.Settings.Secure;
 import android.widget.FrameLayout;
 
-import com.android.godot.input.*;
+import org.godotengine.godot.input.*;
 
 import java.io.InputStream;
 import javax.microedition.khronos.opengles.GL10;

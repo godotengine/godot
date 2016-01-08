@@ -1,12 +1,12 @@
-package com.android.godot.payments;
+package org.godotengine.godot.payments;
 
 import java.util.ArrayList;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.android.godot.Dictionary;
-import com.android.godot.Godot;
+import org.godotengine.godot.Dictionary;
+import org.godotengine.godot.Godot;
 import com.android.vending.billing.IInAppBillingService;
 
 import android.content.Context;

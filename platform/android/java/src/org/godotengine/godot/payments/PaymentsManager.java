@@ -1,4 +1,4 @@
-package com.android.godot.payments;
+package org.godotengine.godot.payments;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +17,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONStringer;
 
-import com.android.godot.Dictionary;
-import com.android.godot.Godot;
-import com.android.godot.GodotPaymentV3;
+import org.godotengine.godot.Dictionary;
+import org.godotengine.godot.Godot;
+import org.godotengine.godot.GodotPaymentV3;
 import com.android.vending.billing.IInAppBillingService;
 
 public class PaymentsManager {

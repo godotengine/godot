@@ -1,4 +1,4 @@
-package com.android.godot.payments;
+package org.godotengine.godot.payments;
 
 import android.content.Context;
 import android.content.SharedPreferences;

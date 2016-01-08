@@ -1,4 +1,4 @@
-package com.android.godot;
+package org.godotengine.godot;
 
 import com.google.android.vending.expansion.downloader.DownloaderClientMarshaller;
 
