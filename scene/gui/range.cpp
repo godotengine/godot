@@ -115,7 +115,8 @@ void Range::set_page(double p_page) {
 }
 
 double Range::get_val() const {
-	
+	if (shared->val == 0) shared->val = 0;
+
 	return shared->val;
 }
 double Range::get_min() const {
