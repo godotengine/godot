@@ -1,4 +1,4 @@
-package com.android.godot.utils;
+package org.godotengine.godot.utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;

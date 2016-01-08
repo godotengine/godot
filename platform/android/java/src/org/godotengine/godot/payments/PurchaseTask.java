@@ -1,10 +1,10 @@
-package com.android.godot.payments;
+package org.godotengine.godot.payments;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.android.godot.GodotLib;
-import com.android.godot.utils.Crypt;
+import org.godotengine.godot.GodotLib;
+import org.godotengine.godot.utils.Crypt;
 import com.android.vending.billing.IInAppBillingService;
 
 import android.app.Activity;

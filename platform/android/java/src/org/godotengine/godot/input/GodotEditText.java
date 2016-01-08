@@ -1,9 +1,9 @@
-package com.android.godot.input;
+package org.godotengine.godot.input;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.widget.EditText;
-import com.android.godot.*;
+import org.godotengine.godot.*;
 import android.os.Handler;
 import android.os.Message;
 import android.view.inputmethod.InputMethodManager;

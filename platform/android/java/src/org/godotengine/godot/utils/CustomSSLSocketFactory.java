@@ -1,4 +1,4 @@
-package com.android.godot.utils;
+package org.godotengine.godot.utils;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;

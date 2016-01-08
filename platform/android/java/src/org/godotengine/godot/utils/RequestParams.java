@@ -1,4 +1,4 @@
-package com.android.godot.utils;
+package org.godotengine.godot.utils;
 
 import java.util.ArrayList;
 import java.util.Date;

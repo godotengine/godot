@@ -26,7 +26,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-package com.android.godot;
+package org.godotengine.godot;
 import java.util.HashMap;
 import java.util.Locale;
 import android.net.Uri;
@@ -47,7 +47,7 @@ import android.media.*;
 import android.hardware.*;
 import android.content.*;
 import android.content.pm.ActivityInfo;
-import com.android.godot.input.*;
+import org.godotengine.godot.input.*;
 //android.os.Build
 
 // Wrapper for native library
