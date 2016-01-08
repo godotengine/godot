@@ -1274,30 +1274,35 @@ def win32_spawn(sh, escape, cmd, args, spawnenv):
 	return exit_code
 """
 
-def android_module_source(self,subpath,manifest=""):
-	base_path = "../../../modules/"+self.current_module+"/"+subpath
-	self.android_source_modules.append(base_path)		
+def android_add_maven_repository(self,url):
+	self.android_maven_repos.append(url)
 
-def android_module_library(self,subpath,manifest=""):
-	base_path = ""
-	if (os.path.isabs(subpath)):
-		base_path=subpath
-	else:
-		base_path = self.Dir(".").abspath+"/modules/"+self.current_module+"/"+subpath
-	self.android_module_libraries.append(base_path)		
+def android_add_dependency(self,depline):
+	self.android_dependencies.append(depline)
 
-def android_module_file(self,file):
-	base_path = self.Dir(".").abspath+"/modules/"+self.current_module+"/"+file
-	self.android_source_files.append(base_path)		
-def android_module_manifest(self,file):
+def android_add_java_dir(self,subpath):
+	base_path = self.Dir(".").abspath+"/modules/"+self.current_module+"/"+subpath
+	self.android_java_dirs.append(base_path)
+
+def android_add_res_dir(self,subpath):
+	base_path = self.Dir(".").abspath+"/modules/"+self.current_module+"/"+subpath
+	self.android_res_dirs.append(base_path)
+def android_add_aidl_dir(self,file):
+	base_path = self.Dir(".").abspath+"/modules/"+self.current_module+"/"+subpath
+	self.android_aidl_dirs.append(base_path)
+def android_add_jni_dir(self,file):
+	base_path = self.Dir(".").abspath+"/modules/"+self.current_module+"/"+subpath
+	self.android_jni_dirs.append(base_path)
+
+def android_add_to_manifest(self,file):
 	base_path = self.Dir(".").abspath+"/modules/"+self.current_module+"/"+file
 	f = open(base_path,"rb")
 	self.android_manifest_chunk+=f.read()
-def android_module_permission(self,file):
+def android_add_to_permissions(self,file):
 	base_path = self.Dir(".").abspath+"/modules/"+self.current_module+"/"+file
 	f = open(base_path,"rb")
 	self.android_permission_chunk+=f.read()
-def android_module_attribute(self,file):
+def android_add_to_attributes(self,file):
 	base_path = self.Dir(".").abspath+"/modules/"+self.current_module+"/"+file
 	f = open(base_path,"rb")
 	self.android_appattributes_chunk+=f.read()
