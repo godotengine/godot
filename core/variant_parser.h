@@ -104,12 +104,12 @@ private:
 	static Error _parse_enginecfg(Stream *p_stream, Vector<String>& strings, int &line, String &r_err_str);
 	static Error _parse_dictionary(Dictionary &object, Stream *p_stream, int &line, String &r_err_str,ResourceParser *p_res_parser=NULL);
 	static Error _parse_array(Array &array, Stream *p_stream, int &line, String &r_err_str,ResourceParser *p_res_parser=NULL);
-	static Error _parse_tag(Token& token,Stream *p_stream, int &line, String &r_err_str,Tag& r_tag,ResourceParser *p_res_parser=NULL);
+	static Error _parse_tag(Token& token,Stream *p_stream, int &line, String &r_err_str,Tag& r_tag,ResourceParser *p_res_parser=NULL,bool p_simple_tag=false);
 
 public:
 
-	static Error parse_tag(Stream *p_stream, int &line, String &r_err_str,Tag& r_tag,ResourceParser *p_res_parser=NULL);
-	static Error parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, String &r_assign, Variant &r_value,ResourceParser *p_res_parser=NULL);
+	static Error parse_tag(Stream *p_stream, int &line, String &r_err_str,Tag& r_tag,ResourceParser *p_res_parser=NULL,bool p_simple_tag=false);
+	static Error parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, String &r_assign, Variant &r_value,ResourceParser *p_res_parser=NULL,bool p_simple_tag=false);
 
 	static Error parse_value(Token& token,Variant &value, Stream *p_stream, int &line, String &r_err_str,ResourceParser *p_res_parser=NULL);
 	static Error get_token(Stream *p_stream,Token& r_token,int &line,String &r_err_str);
