@@ -1281,7 +1281,7 @@ JavaClassWrapper::JavaClassWrapper(jobject p_activity) {
 
 	JNIEnv *env = ThreadAndroid::get_env();
 
-	jclass activityClass = env->FindClass("com/android/godot/Godot");
+	jclass activityClass = env->FindClass("org/godotengine/godot/Godot");
 	jmethodID getClassLoader = env->GetMethodID(activityClass,"getClassLoader", "()Ljava/lang/ClassLoader;");
 	classLoader = env->CallObjectMethod(p_activity, getClassLoader);
 	classLoader=(jclass)env->NewGlobalRef(classLoader);

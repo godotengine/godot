@@ -1,11 +1,11 @@
 /*************************************************************************/
-/*  GodotLib.java                                                        */
+/*  Dictionary.java                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,41 +26,55 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-package com.android.godot;
+package org.godotengine.godot;
 
-// Wrapper for native library
+import java.util.HashMap;
+import java.util.Set;
 
-public class GodotLib {
 
+public class Dictionary extends HashMap<String, Object> {
 
-     public static GodotIO io;
+	protected String[] keys_cache;
 
-     static {
-	 System.loadLibrary("godot_android");
-     }
+	public String[] get_keys() {
 
-    /**
-     * @param width the current view width
-     * @param height the current view height
-     */
+		String[] ret = new String[size()];
+		int i=0;
+		Set<String> keys = keySet();
+		for (String key : keys) {
 
-     public static native void initialize(Godot p_instance,boolean need_reload_hook,String[] p_cmdline,Object p_asset_manager);
-     public static native void resize(int width, int height,boolean reload);
-     public static native void newcontext(boolean p_32_bits);
-     public static native void quit();
-     public static native void step();
-     public static native void touch(int what,int pointer,int howmany, int[] arr);
-     public static native void accelerometer(float x, float y, float z);
-	 public static native void key(int p_scancode, int p_unicode_char, boolean p_pressed);
-	 public static native void joybutton(int p_device, int p_but, boolean p_pressed);
-	 public static native void joyaxis(int p_device, int p_axis, float p_value);
-     public static native void focusin();
-     public static native void focusout();
-     public static native void audio();
-     public static native void singleton(String p_name,Object p_object);
-     public static native void method(String p_sname,String p_name,String p_ret,String[] p_params);
-     public static native String getGlobal(String p_key);
-	public static native void callobject(int p_ID, String p_method, Object[] p_params);
-	public static native void calldeferred(int p_ID, String p_method, Object[] p_params);
+			ret[i] = key;
+			i++;
+		};
 
-}
+		return ret;
+	};
+
+	public Object[] get_values() {
+
+		Object[] ret = new Object[size()];
+		int i=0;
+		Set<String> keys = keySet();
+		for (String key : keys) {
+
+			ret[i] = get(key);
+			i++;
+		};
+
+		return ret;
+	};
+
+	public void set_keys(String[] keys) {
+		keys_cache = keys;
+	};
+
+	public void set_values(Object[] vals) {
+
+		int i=0;
+		for (String key : keys_cache) {
+			put(key, vals[i]);
+			i++;
+		};
+		keys_cache = null;
+	};
+};

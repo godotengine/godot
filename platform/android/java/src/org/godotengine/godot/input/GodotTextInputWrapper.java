@@ -1,4 +1,4 @@
-package com.android.godot.input;
+package org.godotengine.godot.input;
 import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -8,7 +8,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
-import com.android.godot.*;
+import org.godotengine.godot.*;
 
 public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListener {
 	// ===========================================================

@@ -1580,7 +1580,7 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 }
 
 
-Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, ResourceParser *p_res_parser) {
+Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, ResourceParser *p_res_parser,bool p_simple_tag) {
 
 	r_tag.fields.clear();
 
@@ -1589,6 +1589,29 @@ Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, Strin
 		return ERR_PARSE_ERROR;
 	}
 
+
+	if (p_simple_tag) {
+
+		r_tag.name="";
+		r_tag.fields.clear();
+
+		while(true) {
+
+			CharType c = p_stream->get_char();
+			if (p_stream->is_eof()) {
+				r_err_str="Unexpected EOF while parsing simple tag";
+				return ERR_PARSE_ERROR;
+			}
+			if (c==']')
+				break;
+			r_tag.name+=String::chr(c);
+		}
+
+		r_tag.name = r_tag.name.strip_edges();
+
+		return OK;
+
+	}
 
 	get_token(p_stream,token,line,r_err_str);
 
@@ -1654,7 +1677,7 @@ Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, Strin
 
 }
 
-Error VariantParser::parse_tag(Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, ResourceParser *p_res_parser) {
+Error VariantParser::parse_tag(Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, ResourceParser *p_res_parser, bool p_simple_tag) {
 
 	Token token;
 	get_token(p_stream,token,line,r_err_str);
@@ -1668,11 +1691,11 @@ Error VariantParser::parse_tag(Stream *p_stream, int &line, String &r_err_str, T
 		return ERR_PARSE_ERROR;
 	}
 
-	return _parse_tag(token,p_stream,line,r_err_str,r_tag,p_res_parser);
+	return _parse_tag(token,p_stream,line,r_err_str,r_tag,p_res_parser,p_simple_tag);
 
 }
 
-Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser) {
+Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser, bool p_simple_tag) {
 
 
 	//assign..
@@ -1710,7 +1733,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 			//it's a tag!
 			p_stream->saved='['; //go back one
 
-			Error err = parse_tag(p_stream,line,r_err_str,r_tag,p_res_parser);
+			Error err = parse_tag(p_stream,line,r_err_str,r_tag,p_res_parser,p_simple_tag);
 
 			return err;
 		}

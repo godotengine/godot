@@ -190,10 +190,10 @@ void DocData::generate(bool p_basic_types) {
 #ifdef DEBUG_METHODS_ENABLED
 					if (m && m->get_return_type()!=StringName())
 						method.return_type=m->get_return_type();
-					else if (arginfo.type!=Variant::NIL) {
+					else if (arginfo.type!=Variant::NIL) // {
 #endif
 						method.return_type=(arginfo.hint==PROPERTY_HINT_RESOURCE_TYPE)?arginfo.hint_string:Variant::get_type_name(arginfo.type);
-					}
+//					}
 
 				} else {
 

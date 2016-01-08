@@ -1,6 +1,6 @@
-package com.android.godot;
+package org.godotengine.godot;
 
-import com.android.godot.Dictionary;
+import org.godotengine.godot.Dictionary;
 import android.app.Activity;
 import android.util.Log;
 

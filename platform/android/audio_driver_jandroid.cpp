@@ -147,13 +147,13 @@ void AudioDriverAndroid::setup( jobject p_io) {
 
 void AudioDriverAndroid::thread_func(JNIEnv *env) {
 
-	jclass cls = env->FindClass("com/android/godot/Godot");
+	jclass cls = env->FindClass("org/godotengine/godot/Godot");
 	if (cls) {
 
 		cls=(jclass)env->NewGlobalRef(cls);
 		__android_log_print(ANDROID_LOG_INFO,"godot","*******CLASS FOUND!!!");
 	}
-	jfieldID fid = env->GetStaticFieldID(cls, "io", "Lcom/android/godot/GodotIO;");
+	jfieldID fid = env->GetStaticFieldID(cls, "io", "Lorg/godotengine/godot/GodotIO;");
 	jobject ob = env->GetStaticObjectField(cls,fid);
 	jobject gob = env->NewGlobalRef(ob);
 	jclass c = env->GetObjectClass(gob);

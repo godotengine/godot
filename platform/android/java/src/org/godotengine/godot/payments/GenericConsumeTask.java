@@ -1,4 +1,4 @@
-package com.android.godot.payments;
+package org.godotengine.godot.payments;
 
 import com.android.vending.billing.IInAppBillingService;
 
