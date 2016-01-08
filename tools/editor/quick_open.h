@@ -61,7 +61,10 @@ public:
 
 	StringName get_base_type() const;
 
-	void popup(const StringName& p_base,bool p_dontclear=false,bool p_add_dirs=false);
+	String get_selected() const;
+	Vector<String> get_selected_files() const;
+
+	void popup(const StringName& p_base,bool p_enable_multi=false,bool p_add_dirs=false,bool p_dontclear=false);
 	EditorQuickOpen();
 };
 
