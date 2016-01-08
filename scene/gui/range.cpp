@@ -77,7 +77,11 @@ void Range::set_val(double p_val) {
 	
 	if (p_val<shared->min)
 		p_val=shared->min;
-	
+
+	//avoid to set -0
+	if (p_val == 0)
+		p_val = 0;
+
 	if (shared->val==p_val)
 		return;
 	
