@@ -1189,7 +1189,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 					get_token(p_stream,token,line,r_err_str);
 					if (token.type==TK_COMMA) {
 						//do none
-					} else if (token.type!=TK_PARENTHESIS_CLOSE) {
+					} else if (token.type==TK_PARENTHESIS_CLOSE) {
 						break;
 					} else {
 						r_err_str="Expected ',' or ')'";
@@ -1198,11 +1198,13 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 					}
 				}
 				get_token(p_stream,token,line,r_err_str);
+
 				if (token.type!=TK_STRING) {
-					r_err_str="Expected string";
+					r_err_str="Expected string";					
 					return ERR_PARSE_ERROR;
 				}
 
+				first=false;
 				cs.push_back(token.value);
 			}
 
@@ -2118,7 +2120,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 				if (i>0)
 					p_store_string_func(p_store_string_ud,", ");
 				String str=ptr[i];
-				p_store_string_func(p_store_string_ud,""+str.c_escape()+"\"");
+				p_store_string_func(p_store_string_ud,"\""+str.c_escape()+"\"");
 			}
 
 			p_store_string_func(p_store_string_ud," )");
