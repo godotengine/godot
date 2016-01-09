@@ -132,12 +132,18 @@ int FileAccessAndroid::get_buffer(uint8_t *p_dst, int p_length) const {
 
 
 	off_t r = AAsset_read(a,p_dst,p_length);
+
+	if (pos+p_length >len ) {
+		eof=true;
+	}
+
 	if (r>=0) {
+
 		pos+=r;
 		if (pos>len) {
 			pos=len;
-			eof=true;
 		}
+
 	}
 	return r;
 
