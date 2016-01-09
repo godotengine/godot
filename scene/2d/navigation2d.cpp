@@ -508,7 +508,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 					   points+=", ";
 				   points+=_get_vertex(p->edges[i].point);
 			   }
-			   print_line("poly "+itos(idx++)+" - "+points);
+			   //print_line("poly "+itos(idx++)+" - "+points);
 			   p = p->edges[prev].C;
 			   if (p==begin_poly)
 			       break;
@@ -557,6 +557,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 
 				bool skip=false;
 
+				/*
 				print_line("-----\nAPEX: "+(apex_point-end_point));
 				print_line("LEFT:");
 				print_line("\tPortal: "+(portal_left-end_point));
@@ -570,6 +571,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 				print_line("\tRight Tangent: "+rtos(CLOCK_TANGENT(apex_point,portal_right,right)));
 				print_line("\tRight Distance: "+rtos(portal_right.distance_squared_to(apex_point)));
 				print_line("\tRight Test: "+rtos(CLOCK_TANGENT(apex_point,right,portal_left)));
+				*/
 
 
 				if (CLOCK_TANGENT(apex_point,portal_left,left) >= 0){
@@ -577,7 +579,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 					if (portal_left.distance_squared_to(apex_point)<CMP_EPSILON || CLOCK_TANGENT(apex_point,left,portal_right) > 0) {
 						left_poly=p;
 						portal_left=left;
-						print_line("***ADVANCE LEFT");
+						//print_line("***ADVANCE LEFT");
 					} else {
 
 						//_clip_path(path,apex_poly,portal_right,right_poly);
@@ -592,7 +594,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 							path.push_back(apex_point);
 						skip=true;
 						//print_line("addpoint left");
-						print_line("***CLIP LEFT");
+						//print_line("***CLIP LEFT");
 					}
 				}
 
@@ -601,7 +603,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 					if (portal_right.distance_squared_to(apex_point)<CMP_EPSILON || CLOCK_TANGENT(apex_point,right,portal_left) < 0) {
 						right_poly=p;
 						portal_right=right;
-						print_line("***ADVANCE RIGHT");
+						//print_line("***ADVANCE RIGHT");
 					} else {
 
 						//_clip_path(path,apex_poly,portal_left,left_poly);
@@ -615,7 +617,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 						if (path[path.size()-1].distance_to(apex_point)>CMP_EPSILON)
 							path.push_back(apex_point);
 						//print_line("addpoint right");
-						print_line("***CLIP RIGHT");
+						//print_line("***CLIP RIGHT");
 
 					}
 				}
