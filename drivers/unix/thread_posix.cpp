@@ -30,6 +30,10 @@
 
 #if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
 
+#ifdef PTHREAD_BSD_SET_NAME
+#include <pthread_np.h>
+#endif
+
 #include "os/memory.h"
 
 Thread::ID ThreadPosix::get_ID() const {
@@ -100,9 +104,14 @@ Error ThreadPosix::set_name(const String& p_name) {
 	
 	#else
 
+	#ifdef PTHREAD_BSD_SET_NAME
+	pthread_set_name_np(pthread, p_name.utf8().get_data());
+	int err = 0; // Open/FreeBSD ignore errors in this function
+	#else
 	int err = pthread_setname_np(pthread, p_name.utf8().get_data());
+	#endif // PTHREAD_BSD_SET_NAME
 
-	#endif
+	#endif // PTHREAD_RENAME_SELF
 
 	return err == 0 ? OK : ERR_INVALID_PARAMETER;
 
