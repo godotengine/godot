@@ -405,9 +405,9 @@ void CanvasItemEditor::_node_removed(Node *p_node) {
 #endif
 }
 
-void CanvasItemEditor::_keying_changed(bool p_changed) {
+void CanvasItemEditor::_keying_changed() {
 
-	if (p_changed)
+	if (editor->get_animation_editor()->has_keying())
 		animation_hb->show();
 	else
 		animation_hb->hide();

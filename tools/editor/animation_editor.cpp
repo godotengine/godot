@@ -3017,7 +3017,7 @@ void AnimationKeyEditor::set_keying(bool p_enabled) {
 
 	keying=p_enabled;
 	_update_menu();
-	emit_signal("keying_changed",p_enabled);
+	emit_signal("keying_changed");
 
 }
 
