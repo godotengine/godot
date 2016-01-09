@@ -3698,7 +3698,6 @@ void EditorNode::animation_editor_make_visible(bool p_visible) {
 	}
 
 	animation_editor->set_keying(p_visible);
-	_update_keying();
 
 }
 

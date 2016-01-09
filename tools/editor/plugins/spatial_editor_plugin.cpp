@@ -3504,13 +3504,7 @@ void SpatialEditor::_instance_scene() {
 	undo_redo->commit_action();
 #endif
 }
-/*
-void SpatialEditor::_update_selection() {
 
-
-
-}
-*/
 void SpatialEditor::_unhandled_key_input(InputEvent p_event) {
 
 	if (!is_visible())
@@ -3715,7 +3709,6 @@ void SpatialEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_menu_item_pressed",&SpatialEditor::_menu_item_pressed);
 	ObjectTypeDB::bind_method("_xform_dialog_action",&SpatialEditor::_xform_dialog_action);
 	ObjectTypeDB::bind_method("_instance_scene",&SpatialEditor::_instance_scene);
-//	ObjectTypeDB::bind_method("_update_selection",&SpatialEditor::_update_selection);
 	ObjectTypeDB::bind_method("_get_editor_data",&SpatialEditor::_get_editor_data);
 	ObjectTypeDB::bind_method("_request_gizmo",&SpatialEditor::_request_gizmo);
 	ObjectTypeDB::bind_method("_default_light_angle_input",&SpatialEditor::_default_light_angle_input);
@@ -3817,7 +3810,6 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	editor=p_editor;
 	editor_selection=editor->get_editor_selection();
 	editor_selection->add_editor_plugin(this);
-	editor_selection->connect("selection_changed",this,"_update_selection");
 
 	snap_enabled=false;
 	tool_mode = TOOL_MODE_SELECT;
