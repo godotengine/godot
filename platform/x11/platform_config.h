@@ -31,6 +31,7 @@
 #endif
 #if defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <stdlib.h>
+#define PTHREAD_BSD_SET_NAME
 #endif
 
 #define GLES2_INCLUDE_H "gl_context/glew.h"
