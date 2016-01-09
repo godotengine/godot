@@ -12,9 +12,7 @@ apply plugin: 'com.android.application'
 allprojects {
     repositories {
 	mavenCentral()
-	maven {
-		$$GRADLE_REPOSITORY_URLS$$
-	}
+	$$GRADLE_REPOSITORY_URLS$$
     }
 }
 
