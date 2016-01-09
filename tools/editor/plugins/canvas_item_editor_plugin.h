@@ -344,7 +344,7 @@ class CanvasItemEditor : public VBoxContainer {
 
 	CanvasItem *get_single_item();
 	int get_item_count();
-	void _keying_changed(bool p_changed);
+	void _keying_changed();
 
 	void _unhandled_key_input(const InputEvent& p_ev);
 

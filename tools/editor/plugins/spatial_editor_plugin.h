@@ -137,7 +137,6 @@ private:
 	Vector3 _get_screen_to_space(const Vector3& p_vector3);
 
 	void _select_region();
-	void _update_selection();
 	bool _gizmo_select(const Vector2& p_screenpos,bool p_hilite_only=false);
 
 	float get_znear() const;
