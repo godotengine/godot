@@ -47,7 +47,7 @@ _FORCE_INLINE_ static bool _match_object_type_query(CollisionObjectSW *p_object,
 }
 
 
-bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3& p_from, const Vector3& p_to,RayResult &r_result,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
+bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3& p_from, const Vector3& p_to, RayResult &r_result, const Set<RID>& p_exclude, uint32_t p_layer_mask, uint32_t p_object_type_mask, bool p_pick_ray) {
 
 
 	ERR_FAIL_COND_V(space->locked,false);
@@ -77,7 +77,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3& p_from, const Vecto
 		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
 			continue;
 
-		if (!(static_cast<CollisionObjectSW*>(space->intersection_query_results[i])->is_ray_pickable()))
+		if (p_pick_ray && !(static_cast<CollisionObjectSW*>(space->intersection_query_results[i])->is_ray_pickable()))
 			continue;
 
 		if (p_exclude.has( space->intersection_query_results[i]->get_self()))
