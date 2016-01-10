@@ -2629,6 +2629,13 @@ Dictionary SpatialEditor::get_state() const {
 
 	Dictionary d;
 
+	d["snap_enabled"]=snap_enabled;
+	d["translate_snap"]=get_translate_snap();
+	d["rotate_snap"]=get_rotate_snap();
+	d["scale_snap"]=get_scale_snap();
+
+	int local_coords_index=transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_LOCAL_COORDS);
+	d["local_coords"]=transform_menu->get_popup()->is_item_checked( local_coords_index );
 
 	int vc=0;
 	if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT) ))
@@ -2678,6 +2685,27 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 	ERR_FAIL_COND(!d.has("fov"));
 	ERR_FAIL_COND(!d.has("znear"));
 	ERR_FAIL_COND(!d.has("zfar"));
+
+	if (d.has("snap_enabled")) {
+		snap_enabled=d["snap_enabled"];
+		int snap_enabled_idx=transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_USE_SNAP);
+		transform_menu->get_popup()->set_item_checked( snap_enabled_idx, snap_enabled );
+	}
+
+	if (d.has("translate_snap"))
+		snap_translate->set_text(d["translate_snap"]);
+
+	if (d.has("rotate_snap"))
+		snap_rotate->set_text(d["rotate_snap"]);
+
+	if (d.has("scale_snap"))
+		snap_scale->set_text(d["scale_snap"]);
+
+	if (d.has("local_coords")) {
+		int local_coords_idx=transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_LOCAL_COORDS);
+		transform_menu->get_popup()->set_item_checked( local_coords_idx, d["local_coords"] );
+		update_transform_gizmo();
+	}
 
 	int vc = d["viewport_mode"];
 
