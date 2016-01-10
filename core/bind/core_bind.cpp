@@ -1520,6 +1520,7 @@ void _File::_bind_methods() {
 	BIND_CONSTANT( READ );
 	BIND_CONSTANT( WRITE );
 	BIND_CONSTANT( READ_WRITE );
+	BIND_CONSTANT( WRITE_READ );
 }
 
 _File::_File(){

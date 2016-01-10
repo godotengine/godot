@@ -78,6 +78,7 @@ public:
 		READ=1,
 		WRITE=2,
 		READ_WRITE=3,
+		WRITE_READ=7,
 	};
 	
 	virtual void close()=0; ///< close a file 
