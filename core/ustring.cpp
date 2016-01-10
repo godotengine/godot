@@ -3158,6 +3158,21 @@ String String::c_escape() const {
 	return escaped;
 }
 
+String String::json_escape() const {
+
+	String escaped=*this;
+	escaped=escaped.replace("\\","\\\\");
+	escaped=escaped.replace("\b","\\b");
+	escaped=escaped.replace("\f","\\f");
+	escaped=escaped.replace("\n","\\n");
+	escaped=escaped.replace("\r","\\r");
+	escaped=escaped.replace("\t","\\t");
+	escaped=escaped.replace("\v","\\v");
+	escaped=escaped.replace("\"","\\\"");
+
+	return escaped;
+}
+
 String String::xml_escape(bool p_escape_quotes) const {
 
 	String str=*this;
