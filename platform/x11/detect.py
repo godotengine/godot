@@ -147,9 +147,13 @@ def configure(env):
 
 
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED','-DGLEW_ENABLED'])
-	if platform.system() == 'Linux':
+
+	if os.system("pkg-config --exists alsa")==0:
+		print("Enabling ALSA")
 		env.Append(CPPFLAGS=["-DALSA_ENABLED"])
 		env.Append(LIBS=['asound'])
+	else:
+		print("ALSA libraries not found, disabling driver")
 
 	if (env["gamepad"]=="yes" and platform.system() == "Linux"):
 		# pkg-config returns 0 when the lib exists...
