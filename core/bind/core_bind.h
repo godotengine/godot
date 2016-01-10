@@ -329,6 +329,7 @@ public:
 		READ=1,
 		WRITE=2,
 		READ_WRITE=3,
+		WRITE_READ=7,
 	};
 
 	Error open_encrypted(const String& p_path, int p_mode_flags,const Vector<uint8_t>& p_key);
