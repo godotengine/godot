@@ -455,6 +455,9 @@ bool EditorExportPlatformPC::_set(const StringName& p_name, const Variant& p_val
 	} else if (n=="resources/pack_mode") {
 
 		export_mode=ExportMode(int(p_value));
+	} else if (n=="resources/bundle_dependencies_(for_optical_disc)") {
+
+		bundle=p_value;
 	} else if (n=="binary/64_bits") {
 
 		use64=p_value;
@@ -478,6 +481,9 @@ bool EditorExportPlatformPC::_get(const StringName& p_name,Variant &r_ret) const
 	} else if (n=="resources/pack_mode") {
 
 		r_ret=export_mode;
+	} else if (n=="resources/bundle_dependencies_(for_optical_disc)") {
+
+		r_ret=bundle;
 	} else if (n=="binary/64_bits") {
 
 		r_ret=use64;
@@ -492,7 +498,8 @@ void EditorExportPlatformPC::_get_property_list( List<PropertyInfo> *p_list) con
 
 	p_list->push_back( PropertyInfo( Variant::STRING, "custom_binary/debug", PROPERTY_HINT_GLOBAL_FILE,binary_extension));
 	p_list->push_back( PropertyInfo( Variant::STRING, "custom_binary/release", PROPERTY_HINT_GLOBAL_FILE,binary_extension));
-	p_list->push_back( PropertyInfo( Variant::INT, "resources/pack_mode", PROPERTY_HINT_ENUM,"Single Exec.,Exec+Pack (.pck),Copy,Bundles (Optical)"));
+	p_list->push_back( PropertyInfo( Variant::INT, "resources/pack_mode", PROPERTY_HINT_ENUM,"Pack into executable,Pack into binary file (.pck),Pack into archive file (.zip)"));
+	p_list->push_back( PropertyInfo( Variant::BOOL, "resources/bundle_dependencies_(for_optical_disc)"));
 	p_list->push_back( PropertyInfo( Variant::BOOL, "binary/64_bits"));
 }
 
@@ -1274,26 +1281,32 @@ Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug,
 		}
 	}
 
+	String dstfile = p_path.replace_first("res://","").replace("\\","/");
 	if (export_mode!=EXPORT_EXE) {
 
-		String dstfile=p_path.replace_first("res://","").replace("\\","/");
+		String dstfile_extension=export_mode==EXPORT_ZIP?".zip":".pck";
 		if (dstfile.find("/")!=-1)
-			dstfile=dstfile.get_base_dir()+"/data.pck";
+			dstfile=dstfile.get_base_dir()+"/data"+dstfile_extension;
 		else
-			dstfile="data.pck";
+			dstfile="data"+dstfile_extension;
+		if (export_mode==EXPORT_PACK) {
 
-		memdelete(dst);
-		dst=FileAccess::open(dstfile,FileAccess::WRITE);
-		if (!dst) {
+			memdelete(dst);
 
-			EditorNode::add_io_error("Can't write data pack to:\n "+p_path);
-			return ERR_FILE_CANT_WRITE;
+			dst=FileAccess::open(dstfile,FileAccess::WRITE);
+			if (!dst) {
+
+				EditorNode::add_io_error("Can't write data pack to:\n "+p_path);
+				return ERR_FILE_CANT_WRITE;
+			}
 		}
 	}
 
+
+
 	memdelete(src_exe);
 
-	Error err = save_pack(dst,export_mode==EXPORT_BUNDLES);
+	Error err = export_mode==EXPORT_ZIP?save_zip(dstfile,bundle):save_pack(dst,bundle);
 	memdelete(dst);
 	return err;
 }

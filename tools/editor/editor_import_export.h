@@ -175,8 +175,7 @@ public:
 	enum ExportMode {
 		EXPORT_EXE,
 		EXPORT_PACK,
-		EXPORT_COPY,
-		EXPORT_BUNDLES
+		EXPORT_ZIP
 	};
 
 
@@ -198,6 +197,7 @@ private:
 	Ref<Texture> logo;
 
 	ExportMode export_mode;
+	bool bundle;
 protected:
 
 	bool _set(const StringName& p_name, const Variant& p_value);
