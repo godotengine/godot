@@ -1702,7 +1702,7 @@ bool AnimationKeyEditor::_edit_if_single_selection() {
 
 		if (selection.size()==0) {
 			curve_edit->set_mode(AnimationCurveEdit::MODE_DISABLED);
-			print_line("disable");
+			//print_line("disable");
 		} else {
 
 			curve_edit->set_mode(AnimationCurveEdit::MODE_MULTIPLE);
@@ -1713,13 +1713,13 @@ bool AnimationKeyEditor::_edit_if_single_selection() {
 
 				curve_edit->set_multiple(animation->track_get_key_transition(E->key().track,E->key().key));
 			}
-			print_line("multiple");
+			//print_line("multiple");
 
 		}
 		return false;
 	}
 	curve_edit->set_mode(AnimationCurveEdit::MODE_SINGLE);
-	print_line("regular");
+	//print_line("regular");
 
 	int idx = selection.front()->key().track;
 	int key = selection.front()->key().key;

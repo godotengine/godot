@@ -1801,7 +1801,10 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::REAL: {
 
-			p_store_string_func(p_store_string_ud, rtoss(p_variant.operator real_t()) );
+			String s = rtoss(p_variant.operator real_t());
+			if (s.find(".")==-1 && s.find("e")==-1)
+				s+=".0";
+			p_store_string_func(p_store_string_ud, s );
 		} break;
 		case Variant::STRING: {
 
