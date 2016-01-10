@@ -530,7 +530,7 @@ void ProjectSettings::_item_selected() {
 		return;
 	if (!ti->get_parent())
 		return;
-	category->set_text(ti->get_parent()->get_text(0));
+	category->set_text(globals_editor->get_current_section());
 	property->set_text(ti->get_text(0));
 	popup_platform->set_disabled(false);
 
@@ -569,7 +569,8 @@ void ProjectSettings::_item_add() {
 
 	String name = catname+"/"+propname;
 	Globals::get_singleton()->set(name,value);
-	globals_editor->get_property_editor()->update_tree();
+	globals_editor->edit(NULL);
+	globals_editor->edit(Globals::get_singleton());
 }
 
 void ProjectSettings::_item_del() {

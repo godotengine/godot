@@ -3812,6 +3812,11 @@ void SectionedPropertyEditor::_section_selected(int p_which) {
 	filter->set_section( sections->get_item_metadata(p_which) );
 }
 
+String SectionedPropertyEditor::get_current_section() const {
+
+	return sections->get_item_metadata( sections->get_current() );
+}
+
 String SectionedPropertyEditor::get_full_item_path(const String& p_item) {
 
 	String base = sections->get_item_metadata( sections->get_current() );
