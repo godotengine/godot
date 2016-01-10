@@ -411,6 +411,7 @@ SpriteRegionEditor::SpriteRegionEditor(EditorNode* p_editor)
 	snap_step=Vector2(10,10);
 	use_snap=false;
 	snap_show_grid=false;
+	drag=false;
 
 	add_child( memnew( VSeparator ));
 	edit_node = memnew( ToolButton );
@@ -449,7 +450,7 @@ SpriteRegionEditor::SpriteRegionEditor(EditorNode* p_editor)
 	hb_tools->add_child( memnew( VSeparator ));
 	hb_tools->add_child( memnew( Label("Grid Offset:") ) );
 
-	SpinBox *sb_off_x = memnew( SpinBox );
+	sb_off_x = memnew( SpinBox );
 	sb_off_x->set_min(-256);
 	sb_off_x->set_max(256);
 	sb_off_x->set_step(1);
@@ -458,7 +459,7 @@ SpriteRegionEditor::SpriteRegionEditor(EditorNode* p_editor)
 	sb_off_x->connect("value_changed", this, "_set_snap_off_x");
 	hb_tools->add_child(sb_off_x);
 
-	SpinBox *sb_off_y = memnew( SpinBox );
+	sb_off_y = memnew( SpinBox );
 	sb_off_y->set_min(-256);
 	sb_off_y->set_max(256);
 	sb_off_y->set_step(1);
@@ -470,7 +471,7 @@ SpriteRegionEditor::SpriteRegionEditor(EditorNode* p_editor)
 	hb_tools->add_child( memnew( VSeparator ));
 	hb_tools->add_child( memnew( Label("Grid Step:") ) );
 
-	SpinBox *sb_step_x = memnew( SpinBox );
+	sb_step_x = memnew( SpinBox );
 	sb_step_x->set_min(-256);
 	sb_step_x->set_max(256);
 	sb_step_x->set_step(1);
@@ -479,7 +480,7 @@ SpriteRegionEditor::SpriteRegionEditor(EditorNode* p_editor)
 	sb_step_x->connect("value_changed", this, "_set_snap_step_x");
 	hb_tools->add_child(sb_step_x);
 
-	SpinBox *sb_step_y = memnew( SpinBox );
+	sb_step_y = memnew( SpinBox );
 	sb_step_y->set_min(-256);
 	sb_step_y->set_max(256);
 	sb_step_y->set_step(1);
@@ -487,8 +488,6 @@ SpriteRegionEditor::SpriteRegionEditor(EditorNode* p_editor)
 	sb_step_y->set_suffix("px");
 	sb_step_y->connect("value_changed", this, "_set_snap_step_y");
 	hb_tools->add_child(sb_step_y);
-
-//	MARIANOGNU::TODO: Add more tools?
 
 	HBoxContainer *main_hb = memnew( HBoxContainer );
 	main_vb->add_child(main_hb);
@@ -551,6 +550,50 @@ void SpriteRegionEditorPlugin::make_visible(bool p_visible)
 	} else {
 		region_editor->hide();
 		region_editor->edit(NULL);
+	}
+}
+
+
+Dictionary SpriteRegionEditorPlugin::get_state() const {
+
+	Dictionary state;
+	state["zoom"]=region_editor->zoom->get_val();
+	state["snap_offset"]=region_editor->snap_offset;
+	state["snap_step"]=region_editor->snap_step;
+	state["use_snap"]=region_editor->use_snap;
+	state["snap_show_grid"]=region_editor->snap_show_grid;
+	return state;
+}
+
+void SpriteRegionEditorPlugin::set_state(const Dictionary& p_state){
+
+	Dictionary state=p_state;
+	if (state.has("zoom")) {
+		region_editor->zoom->set_val(p_state["zoom"]);
+	}
+
+	if (state.has("snap_step")) {
+		Vector2 s = state["snap_step"];
+		region_editor->sb_step_x->set_val(s.x);
+		region_editor->sb_step_y->set_val(s.y);
+		region_editor->snap_step = s;
+	}
+
+	if (state.has("snap_offset")) {
+		Vector2 ofs = state["snap_offset"];
+		region_editor->sb_off_x->set_val(ofs.x);
+		region_editor->sb_off_y->set_val(ofs.y);
+		region_editor->snap_offset = ofs;
+	}
+
+	if (state.has("use_snap")) {
+		region_editor->use_snap=state["use_snap"];
+		region_editor->b_snap_enable->set_pressed(state["use_snap"]);
+	}
+
+	if (state.has("snap_show_grid")) {
+		region_editor->snap_show_grid=state["snap_show_grid"];
+		region_editor->b_snap_grid->set_pressed(state["snap_show_grid"]);
 	}
 }
 
