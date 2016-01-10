@@ -923,7 +923,7 @@ void Control::_window_show_tooltip() {
 
 void Control::_window_call_input(Control *p_control,const InputEvent& p_input) {
 
-	_block();
+//	_block();
 
 	while(p_control) {
 
@@ -941,7 +941,7 @@ void Control::_window_call_input(Control *p_control,const InputEvent& p_input) {
 		p_control=p_control->data.parent;
 	}
 
-	_unblock();
+	//_unblock();
 
 }
 
