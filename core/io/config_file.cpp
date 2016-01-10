@@ -127,6 +127,8 @@ Error ConfigFile::save(const String& p_path){
 	FileAccess *file = FileAccess::open(p_path,FileAccess::WRITE,&err);
 
 	if (err) {
+		if (file)
+			memdelete(file);
 		return err;
 	}
 
