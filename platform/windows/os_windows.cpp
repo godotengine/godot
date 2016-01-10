@@ -1681,10 +1681,16 @@ uint64_t OS_Windows::get_unix_time() const {
 	return (*(uint64_t*)&ft - *(uint64_t*)&fep) / 10000000;
 };
 
-uint64_t OS_Windows::get_system_time_msec() const {
+uint64_t OS_Windows::get_system_time_secs() const {
 	SYSTEMTIME st;
 	GetSystemTime(&st);
-	return st.wMilliseconds;
+	FILETIME ft;
+	SystemTimeToFileTime(&st,&ft);
+	uint64_t ret;
+	ret=ft.dwHighDateTime;
+	ret<<=32;
+	ret|=ft.dwLowDateTime;
+	return ret;
 }
 
 void OS_Windows::delay_usec(uint32_t p_usec) const {

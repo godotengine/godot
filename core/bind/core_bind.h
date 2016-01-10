@@ -208,7 +208,7 @@ public:
 	Dictionary get_time(bool utc) const;
 	Dictionary get_time_zone_info() const;
 	uint64_t get_unix_time() const;
-	uint64_t get_system_time_msec() const;
+	uint64_t get_system_time_secs() const;
 
 	int get_static_memory_usage() const;
 	int get_static_memory_peak_usage() const;

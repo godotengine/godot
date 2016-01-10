@@ -494,8 +494,8 @@ uint64_t _OS::get_unix_time() const {
 	return OS::get_singleton()->get_unix_time();
 };
 
-uint64_t _OS::get_system_time_msec() const {
-	return OS::get_singleton()->get_system_time_msec();
+uint64_t _OS::get_system_time_secs() const {
+	return OS::get_singleton()->get_system_time_secs();
 }
 
 void _OS::delay_usec(uint32_t p_usec) const {
@@ -810,7 +810,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_time","utc"),&_OS::get_time,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_time_zone_info"),&_OS::get_time_zone_info);
 	ObjectTypeDB::bind_method(_MD("get_unix_time"),&_OS::get_unix_time);
-	ObjectTypeDB::bind_method(_MD("get_system_time_msec"), &_OS::get_system_time_msec);
+	ObjectTypeDB::bind_method(_MD("get_system_time_secs"), &_OS::get_system_time_secs);
 
 	ObjectTypeDB::bind_method(_MD("set_icon","icon"),&_OS::set_icon);
 
