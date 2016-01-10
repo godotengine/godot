@@ -86,7 +86,7 @@ String JSON::_print_var(const Variant& p_var) {
 			s+="}";
 			return s;
 		};
-		default: return "\""+String(p_var).c_escape()+"\"";
+		default: return "\""+String(p_var).json_escape()+"\"";
 
 	}
 
