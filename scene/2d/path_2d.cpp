@@ -74,6 +74,8 @@ void Path2D::set_curve(const Ref<Curve2D>& p_curve) {
 		curve->connect("changed",this,"_curve_changed");
 	}
 
+	_curve_changed();
+
 }
 
 Ref<Curve2D> Path2D::get_curve() const{
