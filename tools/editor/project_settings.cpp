@@ -569,18 +569,18 @@ void ProjectSettings::_item_add() {
 
 	String name = catname+"/"+propname;
 	Globals::get_singleton()->set(name,value);
+	globals_editor->update_category_list();
 	globals_editor->get_property_editor()->update_tree();
 }
 
 void ProjectSettings::_item_del() {
 
-	String catname = category->get_text();
-	//ERR_FAIL_COND(!catname.is_valid_identifier());
-	String propname = property->get_text();
+	String propname = globals_editor->get_property_editor()->get_selected_path();
 	//ERR_FAIL_COND(!propname.is_valid_identifier());
 
-	String name = catname+"/"+propname;
+	String name = globals_editor->get_full_item_path(propname);
 	Globals::get_singleton()->set(name,Variant());
+	globals_editor->update_category_list();
 	globals_editor->get_property_editor()->update_tree();
 
 }
