@@ -8330,6 +8330,14 @@ void RasterizerGLES2::canvas_draw_rect(const Rect2& p_rect, int p_flags, const R
 
 	if ( texture ) {
 
+		bool untile=false;
+
+		if (p_flags&CANVAS_RECT_TILE && !(texture->flags&VS::TEXTURE_FLAG_REPEAT)) {
+			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+			untile=true;
+		}
+
 		if (!(p_flags&CANVAS_RECT_REGION)) {
 
 			Rect2 region = Rect2(0,0,texture->width,texture->height);
@@ -8340,6 +8348,12 @@ void RasterizerGLES2::canvas_draw_rect(const Rect2& p_rect, int p_flags, const R
 			_draw_textured_quad(p_rect, p_source, Size2(texture->width,texture->height),p_flags&CANVAS_RECT_FLIP_H,p_flags&CANVAS_RECT_FLIP_V,p_flags&CANVAS_RECT_TRANSPOSE);
 
 		}
+
+		if (untile) {
+			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		}
+
 	} else {
 
 		//glDisable(GL_TEXTURE_2D);
