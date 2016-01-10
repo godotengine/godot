@@ -727,7 +727,17 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 
 			RES cb=EditorSettings::get_singleton()->get_resource_clipboard();
-			bool paste_valid=cb.is_valid() && (hint_text=="" || ObjectTypeDB::is_type(cb->get_type(),hint_text));
+			bool paste_valid=false;
+			if (cb.is_valid()) {
+				if (hint_text=="")
+					paste_valid=true;
+				else
+					for (int i = 0; i < hint_text.get_slice_count(",");i++)
+						if (ObjectTypeDB::is_type(cb->get_type(),hint_text.get_slice(",",i))) {
+							paste_valid=true;
+							break;
+						}
+			}
 
 			if (!RES(v).is_null() || paste_valid) {
 				menu->add_separator();
