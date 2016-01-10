@@ -5195,7 +5195,11 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_item("Revert Scene",EDIT_REVERT);
 	p->add_separator();
+#ifdef OSX_ENABLED
 	p->add_item("Quit to Project List",RUN_PROJECT_MANAGER,KEY_MASK_SHIFT+KEY_MASK_ALT+KEY_Q);
+#else
+	p->add_item("Quit to Project List",RUN_PROJECT_MANAGER,KEY_MASK_SHIFT+KEY_MASK_CTRL+KEY_Q);
+#endif
 	p->add_item("Quit",FILE_QUIT,KEY_MASK_CMD+KEY_Q);
 
 	recent_scenes = memnew( PopupMenu );
