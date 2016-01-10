@@ -520,7 +520,7 @@ void EditorNode::save_resource_as(const Ref<Resource>& p_resource) {
 	List<String> preferred;
 	for(int i=0;i<extensions.size();i++) {
 
-		if (p_resource->is_type("Script") && extensions[i]=="tres" || extensions[i]=="res" || extensions[i]=="xml") {
+		if (p_resource->is_type("Script") && (extensions[i]=="tres" || extensions[i]=="res" || extensions[i]=="xml")) {
 			//this serves no purpose and confused people
 			continue;
 		}
