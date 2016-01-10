@@ -1254,6 +1254,8 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 	history_pos=0;
 	tree_mode=true;
 
+	path="res://";
+
 
 }
 
