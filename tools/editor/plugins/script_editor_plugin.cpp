@@ -327,7 +327,11 @@ void ScriptTextEditor::_load_theme_settings() {
 
 	for(List<StringName>::Element *E=types.front();E;E=E->next()) {
 
-		get_text_edit()->add_keyword_color(E->get(),type_color);
+		String n = E->get();
+		if (n.begins_with("_"))
+			n = n.substr(1, n.length());
+
+		get_text_edit()->add_keyword_color(n,type_color);
 	}
 
 	//colorize comments
