@@ -50,7 +50,7 @@ uint64_t OS::get_unix_time() const {
 
 	return 0;
 };
-uint64_t OS::get_system_time_msec() const {
+uint64_t OS::get_system_time_secs() const {
 	return 0;
 }
 void OS::debug_break() {
