@@ -124,7 +124,7 @@ static String unescape_cmdline(const String& p_str) {
 
 void Main::print_help(const char* p_binary) {
 
-	OS::get_singleton()->print(VERSION_FULL_NAME" (c) 2008-2015 Juan Linietsky, Ariel Manzur.\n");
+	OS::get_singleton()->print(VERSION_FULL_NAME" (c) 2008-2016 Juan Linietsky, Ariel Manzur.\n");
 	OS::get_singleton()->print("Usage: %s [options] [scene]\n",p_binary);
 	OS::get_singleton()->print("Options:\n");
 	OS::get_singleton()->print("\t-path [dir] : Path to a game, containing engine.cfg\n");
