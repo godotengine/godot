@@ -929,6 +929,7 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 	texture->compressed=compressed;
 	texture->has_alpha=false; //by default it doesn't have alpha unless something with alpha is blitteds
 	texture->data_size=0;
+	texture->mipmaps=0;
 
 
 	glActiveTexture(GL_TEXTURE0);
@@ -1086,6 +1087,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 		glGenerateMipmap(texture->target);
 	}
 
+	texture->mipmaps=mipmaps;
 
 
 
@@ -1269,10 +1271,13 @@ void RasterizerGLES2::texture_set_flags(RID p_texture,uint32_t p_flags) {
 		p_flags&=VS::TEXTURE_FLAG_FILTER;//can change only filter
 	}
 
+	bool had_mipmaps = texture->flags&VS::TEXTURE_FLAG_MIPMAPS;
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 	uint32_t cube = texture->flags & VS::TEXTURE_FLAG_CUBEMAP;
 	texture->flags=p_flags|cube; // can't remove a cube from being a cube
+
 
 	bool force_clamp_to_edge = !(p_flags&VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps) && (nearest_power_of_2(texture->alloc_height)!=texture->alloc_height || nearest_power_of_2(texture->alloc_width)!=texture->alloc_width);
 
@@ -1304,9 +1309,13 @@ void RasterizerGLES2::texture_set_flags(RID p_texture,uint32_t p_flags) {
 		}
 	}
 
-	if (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps)
+	if (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps) {
+		if (!had_mipmaps && texture->mipmaps==1) {
+			glGenerateMipmap(texture->target);
+		}
 		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,use_fast_texture_filter?GL_LINEAR_MIPMAP_NEAREST:GL_LINEAR_MIPMAP_LINEAR);
-	else{
+
+	} else{
 		if (texture->flags&VS::TEXTURE_FLAG_FILTER) {
 			glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 		} else {

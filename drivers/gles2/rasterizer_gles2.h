@@ -138,6 +138,8 @@ class RasterizerGLES2 : public Rasterizer {
 		StringName reloader_func;
 		Image image[6];
 
+		int mipmaps;
+
 		bool active;
 		GLuint tex_id;
 
@@ -159,6 +161,7 @@ class RasterizerGLES2 : public Rasterizer {
 			compressed=false;
 			total_data_size=0;
 			target=GL_TEXTURE_2D;
+			mipmaps=0;
 
 			reloader=0;
 		}
