@@ -1450,12 +1450,6 @@ void EditorNode::_dialog_action(String p_file) {
 			if (p_file.empty())
 				return;
 
-			if (p_file=="Default") {
-				confirm_error->set_text("Cannot overwrite default layout!");
-				confirm_error->popup_centered_minsize();
-				return;
-			}
-
 			Ref<ConfigFile> config;
 			config.instance();
 			Error err = config->load(EditorSettings::get_singleton()->get_settings_path().plus_file("editor_layouts.cfg"));
@@ -1463,8 +1457,7 @@ void EditorNode::_dialog_action(String p_file) {
 			if (err==ERR_CANT_OPEN) {
 				config.instance(); // new config
 			} else if (err!=OK) {
-				confirm_error->set_text("Error trying to save layout!");
-				confirm_error->popup_centered_minsize();
+				show_warning("Error trying to save layout!");
 				return;
 			}
 
@@ -1475,25 +1468,22 @@ void EditorNode::_dialog_action(String p_file) {
 			layout_dialog->hide();
 			_update_layouts_menu();
 
+			if (p_file=="Default") {
+				show_warning("Default editor layout overridden.");
+			}
+
 		} break;
 		case SETTINGS_LAYOUT_DELETE: {
 
 			if (p_file.empty())
 				return;
 
-			if (p_file=="Default") {
-				confirm_error->set_text("Cannot delete default layout!");
-				confirm_error->popup_centered_minsize();
-				return;
-			}
-
 			Ref<ConfigFile> config;
 			config.instance();
 			Error err = config->load(EditorSettings::get_singleton()->get_settings_path().plus_file("editor_layouts.cfg"));
 
 			if (err!=OK || !config->has_section(p_file)) {
-				confirm_error->set_text("Layout name not found!");
-				confirm_error->popup_centered_minsize();
+				show_warning("Layout name not found!");
 				return;
 			}
 
@@ -1508,6 +1498,10 @@ void EditorNode::_dialog_action(String p_file) {
 
 			layout_dialog->hide();
 			_update_layouts_menu();
+
+			if (p_file=="Default") {
+				show_warning("Restored Default layout to base settings.");
+			}
 
 		} break;
 		default: { //save scene?
@@ -4518,7 +4512,11 @@ void EditorNode::_load_docks() {
 	config.instance();
 	Error err = config->load(EditorSettings::get_singleton()->get_project_settings_path().plus_file("editor_layout.cfg"));
 	if (err!=OK) {
-		return; //no config
+		//no config
+		if (overridden_default_layout>=0) {
+			_layout_menu_option(overridden_default_layout);
+		}
+		return;
 	}
 
 	_load_docks_from_config(config, "docks");
@@ -4620,6 +4618,8 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String&
 void EditorNode::_update_layouts_menu() {
 
 	editor_layouts->clear();
+	overridden_default_layout=-1;
+
 	editor_layouts->set_size(Vector2());
 	editor_layouts->add_item("Save Layout", SETTINGS_LAYOUT_SAVE);
 	editor_layouts->add_item("Delete Layout", SETTINGS_LAYOUT_DELETE);
@@ -4640,8 +4640,12 @@ void EditorNode::_update_layouts_menu() {
 
 		String layout=E->get();
 
-		if (layout!="Default")
-			editor_layouts->add_item(layout);
+		if (layout=="Default") {
+			editor_layouts->remove_item(editor_layouts->get_item_index(SETTINGS_LAYOUT_DEFAULT));
+			overridden_default_layout=editor_layouts->get_item_count();
+		}
+
+		editor_layouts->add_item(layout);
 	}
 
 }
@@ -4666,7 +4670,7 @@ void EditorNode::_layout_menu_option(int p_id) {
 		} break;
 		case SETTINGS_LAYOUT_DEFAULT: {
 
-			_load_docks_from_config(default_theme, "docks");
+			_load_docks_from_config(default_layout, "docks");
 			_save_docks();
 		} break;
 		default: {
@@ -4680,7 +4684,6 @@ void EditorNode::_layout_menu_option(int p_id) {
 
 			_load_docks_from_config(config, editor_layouts->get_item_text(p_id));
 			_save_docks();
-
 		}
 	}
 
@@ -5465,8 +5468,6 @@ EditorNode::EditorNode() {
 	gui_base->add_child(layout_dialog);
 	layout_dialog->set_hide_on_ok(false);
 	layout_dialog->set_size(Size2(175, 70));
-	confirm_error = memnew( AcceptDialog  );
-	layout_dialog->add_child(confirm_error);
 	layout_dialog->connect("name_confirmed", this,"_dialog_action");
 
 	sources_button = memnew( ToolButton );
@@ -5657,15 +5658,16 @@ EditorNode::EditorNode() {
 
 	const String docks_section = "docks";
 
-	default_theme.instance();
-	default_theme->set_value(docks_section, "dock_3", "Scene");
-	default_theme->set_value(docks_section, "dock_4", "FileSystem");
-	default_theme->set_value(docks_section, "dock_5", "Inspector");
+	overridden_default_layout=-1;
+	default_layout.instance();
+	default_layout->set_value(docks_section, "dock_3", "Scene");
+	default_layout->set_value(docks_section, "dock_4", "FileSystem");
+	default_layout->set_value(docks_section, "dock_5", "Inspector");
 
 	for(int i=0;i<DOCK_SLOT_MAX/2;i++)
-		default_theme->set_value(docks_section, "dock_hsplit_"+itos(i+1), 0);
+		default_layout->set_value(docks_section, "dock_hsplit_"+itos(i+1), 0);
 	for(int i=0;i<DOCK_SLOT_MAX/2;i++)
-		default_theme->set_value(docks_section, "dock_split_"+itos(i+1), 0);
+		default_layout->set_value(docks_section, "dock_split_"+itos(i+1), 0);
 
 	_update_layouts_menu();
 
