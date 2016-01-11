@@ -102,6 +102,10 @@ void TouchScreenButton::_notification(int p_what) {
 				action_id=-1;
 			}
 		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			if (is_pressed())
+				Input::get_singleton()->action_release(action);
+		} break;
 	}
 }
 
