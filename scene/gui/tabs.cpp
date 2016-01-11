@@ -266,6 +266,7 @@ void Tabs::_notification(int p_what) {
 			int label_valign_fg = get_constant("label_valign_fg");
 			int label_valign_bg = get_constant("label_valign_bg");
 
+
 			int w=0;
 
 			int mw = 0;
@@ -277,12 +278,16 @@ void Tabs::_notification(int p_what) {
 
 				for(int i=0;i<tabs.size();i++) {
 
+
 					Ref<Texture> tex = tabs[i].icon;
 					if (tex.is_valid()) {
 						if (tabs[i].text!="")
 							mw+=get_constant("hseparation");
 
 					}
+
+					tabs[i].ofs_cache=mw;
+
 					mw+=font->get_string_size(tabs[i].text).width;
 					if (current==i)
 						mw+=tab_fg->get_minimum_size().width;
@@ -303,6 +308,9 @@ void Tabs::_notification(int p_what) {
 						bms.width+=get_constant("hseparation");
 						mw+=bms.width;
 					}
+
+
+
 				}
 
 			}
@@ -758,6 +766,79 @@ Tabs::TabAlign Tabs::get_tab_align() const {
 }
 
 
+void Tabs::ensure_tab_visible(int p_idx) {
+
+	if (!is_inside_tree())
+		return;
+
+	ERR_FAIL_INDEX(p_idx,tabs.size());
+
+	if (p_idx<offset) {
+		offset=p_idx;
+		update();
+		return;
+	}
+
+	Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
+	Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
+	Ref<Font> font = get_font("font");
+
+	Ref<Texture> incr = get_icon("increment");
+	Ref<Texture> decr = get_icon("decrement");
+
+	int limit=get_size().width-incr->get_width()-decr->get_width();
+
+
+
+	int x=0;
+	for(int i=0;i<tabs.size();i++) {
+
+		if (i<offset)
+			continue;
+
+		Ref<Texture> tex = tabs[i].icon;
+		if (tex.is_valid()) {
+			if (tabs[i].text!="")
+				x+=get_constant("hseparation");
+
+		}
+
+		tabs[i].x_cache=x;
+
+		x+=font->get_string_size(tabs[i].text).width;
+		if (current==i)
+			x+=tab_fg->get_minimum_size().width;
+		else
+			x+=tab_bg->get_minimum_size().width;
+
+		if (tabs[i].right_button.is_valid()) {
+			Ref<Texture> rb=tabs[i].right_button;
+			Size2 bms = rb->get_size();//+get_stylebox("button")->get_minimum_size();
+			bms.width+=get_constant("hseparation");
+
+			x+=bms.width;
+		}
+
+		if (tabs[i].close_button.is_valid()) {
+			Ref<Texture> cb=tabs[i].close_button;
+			Size2 bms = cb->get_size();//+get_stylebox("button")->get_minimum_size();
+			bms.width+=get_constant("hseparation");
+			x+=bms.width;
+		}
+
+		tabs[i].x_size_cache=x-tabs[i].x_cache;
+
+
+
+	}
+
+	while(offset<tabs.size() && ( (tabs[p_idx].x_cache + tabs[p_idx].x_size_cache) - tabs[offset].x_cache) < limit) {
+		offset++;
+	}
+
+	update();
+}
+
 void Tabs::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&Tabs::_input_event);
@@ -772,6 +853,7 @@ void Tabs::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_tab","title","icon:Texture"),&Tabs::add_tab);
 	ObjectTypeDB::bind_method(_MD("set_tab_align","align"),&Tabs::set_tab_align);
 	ObjectTypeDB::bind_method(_MD("get_tab_align"),&Tabs::get_tab_align);
+	ObjectTypeDB::bind_method(_MD("ensure_tab_visible","idx"),&Tabs::ensure_tab_visible);
 
 	ADD_SIGNAL(MethodInfo("tab_changed",PropertyInfo(Variant::INT,"tab")));
 	ADD_SIGNAL(MethodInfo("right_button_pressed",PropertyInfo(Variant::INT,"tab")));
@@ -804,4 +886,6 @@ Tabs::Tabs() {
 	cb_displaypolicy = SHOW_NEVER; // Default : no close button
 	offset=0;
 	max_drawn_tab=0;
+
+
 }
