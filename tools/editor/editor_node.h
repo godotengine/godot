@@ -288,10 +288,10 @@ class EditorNode : public Node {
 	AcceptDialog *about;
 	AcceptDialog *warning;
 
-	Ref<ConfigFile> default_theme;
+	int overridden_default_layout;
+	Ref<ConfigFile> default_layout;
 	PopupMenu *editor_layouts;
 	EditorNameDialog *layout_dialog;
-	AcceptDialog *confirm_error;
 
 	//OptimizedPresetsDialog *optimized_presets;
 	EditorSettingsDialog *settings_config_dialog;
