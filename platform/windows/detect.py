@@ -262,7 +262,7 @@ def configure(env):
 		env.Append(CCFLAGS=["/I"+DIRECTX_PATH+"/Include"])
 		env.Append(LIBPATH=[DIRECTX_PATH+"/Lib/x86"])
 		env['ENV'] = os.environ;
-		env["x86_opt_vc"]=True
+		env["x86_opt_vc"]=env["bits"]!="64"
 	else:
 
 		# Workaround for MinGW. See:
