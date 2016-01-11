@@ -60,9 +60,6 @@ void ProjectSettings::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		search_button->set_icon(get_icon("Zoom","EditorIcons"));
-		clear_button->set_icon(get_icon("Close","EditorIcons"));
-
 		translation_list->connect("button_pressed",this,"_translation_delete");
 		_update_actions();
 		popup_add->add_icon_item(get_icon("Keyboard","EditorIcons"),"Key",InputEvent::KEY);
@@ -93,7 +90,9 @@ void ProjectSettings::_notification(int p_what) {
 
 			autoload_file_open->add_filter("*."+E->get());
 		}
+	} else if (p_what==NOTIFICATION_POST_POPUP) {
 
+		globals_editor->clear_search_box();
 	}
 }
 
@@ -1339,32 +1338,6 @@ void ProjectSettings::_update_autoload() {
 
 }
 
-void ProjectSettings::_toggle_search_bar(bool p_pressed) {
-
-	globals_editor->get_property_editor()->set_use_filter(p_pressed);
-
-	if (p_pressed) {
-
-		search_bar->show();
-		add_prop_bar->hide();
-		search_box->grab_focus();
-		search_box->select_all();
-	} else {
-
-		search_bar->hide();
-		add_prop_bar->show();
-	}
-}
-
-void ProjectSettings::_clear_search_box() {
-
-	if (search_box->get_text()=="")
-		return;
-
-	search_box->clear();
-	globals_editor->get_property_editor()->update_tree();
-}
-
 void ProjectSettings::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_item_selected"),&ProjectSettings::_item_selected);
@@ -1407,9 +1380,6 @@ void ProjectSettings::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_autoload_delete"),&ProjectSettings::_autoload_delete);
 	ObjectTypeDB::bind_method(_MD("_autoload_edited"),&ProjectSettings::_autoload_edited);
 
-	ObjectTypeDB::bind_method(_MD("_clear_search_box"),&ProjectSettings::_clear_search_box);
-	ObjectTypeDB::bind_method(_MD("_toggle_search_bar"),&ProjectSettings::_toggle_search_bar);
-
 }
 
 ProjectSettings::ProjectSettings(EditorData *p_data) {
@@ -1440,77 +1410,50 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	props_base->add_child(hbc);
 
-	search_button = memnew( ToolButton );
-	search_button->set_toggle_mode(true);
-	search_button->set_pressed(false);
-	search_button->set_text("Search");
-	hbc->add_child(search_button);
-	search_button->connect("toggled",this,"_toggle_search_bar");
-
-	hbc->add_child( memnew( VSeparator ) );
-
-	add_prop_bar = memnew( HBoxContainer );
-	add_prop_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	hbc->add_child(add_prop_bar);
-
 	Label *l = memnew( Label );
-	add_prop_bar->add_child(l);
+	hbc->add_child(l);
 	l->set_text("Category:");
 
 	category = memnew( LineEdit );
 	category->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	add_prop_bar->add_child(category);
+	hbc->add_child(category);
 	category->connect("text_entered",this,"_item_adds");
 
 	l = memnew( Label );
-	add_prop_bar->add_child(l);
+	hbc->add_child(l);
 	l->set_text("Property:");
 
 	property = memnew( LineEdit );
 	property->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	add_prop_bar->add_child(property);
+	hbc->add_child(property);
 	property->connect("text_entered",this,"_item_adds");
 
 	l = memnew( Label );
-	add_prop_bar->add_child(l);
+	hbc->add_child(l);
 	l->set_text("Type:");
 
 	type = memnew( OptionButton );
 	type->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	add_prop_bar->add_child(type);
+	hbc->add_child(type);
 	type->add_item("bool");
 	type->add_item("int");
 	type->add_item("float");
 	type->add_item("string");
 
 	Button *add = memnew( Button );
-	add_prop_bar->add_child(add);
+	hbc->add_child(add);
 	add->set_text("Add");
 	add->connect("pressed",this,"_item_add");
 
 	Button *del = memnew( Button );
-	add_prop_bar->add_child(del);
+	hbc->add_child(del);
 	del->set_text("Del");
 	del->connect("pressed",this,"_item_del");
-
-	search_bar = memnew( HBoxContainer );
-	search_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	hbc->add_child(search_bar);
-	search_bar->hide();
-
-	search_box = memnew( LineEdit );
-	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search_bar->add_child(search_box);
-
-	clear_button = memnew( ToolButton );
-	search_bar->add_child(clear_button);
-	clear_button->connect("pressed",this,"_clear_search_box");
 
 	globals_editor = memnew( SectionedPropertyEditor );
 	props_base->add_child(globals_editor);
 	//globals_editor->hide_top_label();
 	globals_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	globals_editor->get_property_editor()->register_text_enter(search_box);
 	globals_editor->get_property_editor()->set_capitalize_paths(false);
 	globals_editor->get_property_editor()->get_scene_tree()->connect("cell_selected",this,"_item_selected");
 	globals_editor->get_property_editor()->connect("property_toggled",this,"_item_checked",varray(),CONNECT_DEFERRED);
