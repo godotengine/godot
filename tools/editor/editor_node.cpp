@@ -2081,21 +2081,21 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		} break;
 		case FILE_QUICK_OPEN_SCENE: {
 
-			quick_open->popup("PackedScene");
+			quick_open->popup("PackedScene", true);
 			quick_open->set_title("Quick Open Scene..");
 
 		} break;
 		case FILE_QUICK_OPEN_SCRIPT: {
 
 
-			quick_open->popup("Script");
+			quick_open->popup("Script", true);
 			quick_open->set_title("Quick Open Script..");
 
 		} break;
 		case FILE_QUICK_OPEN_FILE: {
 
 
-			quick_open->popup("Resource",false,true);
+			quick_open->popup("Resource", false, true);
 			quick_open->set_title("Quick Search File..");
 
 		} break;
@@ -3931,19 +3931,26 @@ void EditorNode::hide_animation_player_editors() {
 	emit_signal("hide_animation_player_editors");
 }
 
-void EditorNode::_quick_opened(const String& p_resource) {
+void EditorNode::_quick_opened() {
 
 	if (current_option==FILE_QUICK_OPEN_FILE) {
-		scenes_dock->open(p_resource);
+		String res_path = quick_open->get_selected();
+
+		scenes_dock->open(res_path);
 		return;
 	}
 
-	if (quick_open->get_base_type()=="PackedScene") {
-		open_request(p_resource);
-	} else {
-		load_resource(p_resource);
-	}
+	Vector<String> files = quick_open->get_selected_files();
 
+	for (int i = 0; i < files.size(); i++) {
+		String res_path = files[i];
+
+		if (quick_open->get_base_type()=="PackedScene") {
+			open_request(res_path);
+		} else {
+			load_resource(res_path);
+		}
+	}
 }
 
 void EditorNode::_quick_run(const String& p_resource) {
