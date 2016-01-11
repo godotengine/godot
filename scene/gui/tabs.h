@@ -59,10 +59,14 @@ private:
 		Ref<Texture> icon;
 		int ofs_cache;
 		int size_cache;
+		int x_cache;
+		int x_size_cache;
+
 		Ref<Texture> right_button;
 		Rect2 rb_rect;
 		Ref<Texture> close_button;
 		Rect2 cb_rect;
+
 	};
 
 
@@ -118,6 +122,8 @@ public:
 	void remove_tab(int p_idx);
 
 	void clear_tabs();
+
+	void ensure_tab_visible(int p_idx);
 
 	Size2 get_minimum_size() const;
 
