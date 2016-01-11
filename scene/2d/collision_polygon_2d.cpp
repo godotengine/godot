@@ -197,7 +197,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 				Vector2 n = polygon[(i+1)%polygon.size()];
 				draw_line(p,n,Color(0.9,0.2,0.0,0.8),3);
 			}
-//#define DEBUG_DECOMPOSE
+#define DEBUG_DECOMPOSE
 #if defined(TOOLS_ENABLED) && defined (DEBUG_DECOMPOSE)
 
 			Vector< Vector<Vector2> > decomp = _decompose_in_convex();
