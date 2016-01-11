@@ -171,7 +171,7 @@ RES ResourceFormatPBM::load(const String &p_path,const String& p_original_path,E
 
 		DVector<uint8_t>::Read r=token.read();
 		int bitwidth = width;
-		if (bidtwidth % 8)
+		if (bitwidth % 8)
 			bitwidth+=8-(bitwidth%8);
 			
 		for(int i=0;i<height;i++) {
