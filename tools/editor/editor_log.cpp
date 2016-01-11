@@ -243,7 +243,7 @@ EditorLog::EditorLog() {
 	log->set_selection_enabled(true);
 	log->set_focus_mode(FOCUS_CLICK);
 	pc->add_child(log);
-	add_message(VERSION_FULL_NAME" (c) 2008-2015 Juan Linietsky, Ariel Manzur.");
+	add_message(VERSION_FULL_NAME" (c) 2008-2016 Juan Linietsky, Ariel Manzur.");
 	//log->add_text("Initialization Complete.\n"); //because it looks cool.
 	add_style_override("panel",get_stylebox("panelf","Panel"));
 
