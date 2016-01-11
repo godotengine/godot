@@ -448,7 +448,7 @@ Error VariantParser::_parse_construct(Stream *p_stream,Vector<T>& r_construct,in
 		if (!first) {
 			get_token(p_stream,token,line,r_err_str);
 			if (token.type==TK_COMMA) {
-				//do none
+				//do none				
 			} else if (token.type==TK_PARENTHESIS_CLOSE) {
 				break;
 			} else {
@@ -458,7 +458,10 @@ Error VariantParser::_parse_construct(Stream *p_stream,Vector<T>& r_construct,in
 			}
 		}
 		get_token(p_stream,token,line,r_err_str);
-		if (token.type!=TK_NUMBER) {
+
+		if (first && token.type==TK_PARENTHESIS_CLOSE) {
+			break;
+		} else if (token.type!=TK_NUMBER) {
 			r_err_str="Expected float in constructor";
 			return ERR_PARSE_ERROR;
 		}
