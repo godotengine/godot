@@ -13,6 +13,7 @@ class ColorRampEditorPlugin : public EditorPlugin {
 
 	OBJ_TYPE( ColorRampEditorPlugin, EditorPlugin );
 
+	bool _2d;
 	Ref<ColorRamp> color_ramp_ref;
 	ColorRampEdit *ramp_editor;
 	EditorNode *editor;
@@ -29,7 +30,7 @@ public:
 	virtual bool handles(Object *p_node) const;
 	virtual void make_visible(bool p_visible);
 
-	ColorRampEditorPlugin(EditorNode *p_node);
+	ColorRampEditorPlugin(EditorNode *p_node, bool p_2d);
 	~ColorRampEditorPlugin();
 
 };
