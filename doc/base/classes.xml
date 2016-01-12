@@ -432,7 +432,7 @@
 		<method name="convert">
 			<return type="Object">
 			</return>
-			<argument index="0" name="what" type="var">
+			<argument index="0" name="what" type="Variant">
 			</argument>
 			<argument index="1" name="type" type="int">
 			</argument>
@@ -443,9 +443,9 @@
 		<method name="str">
 			<return type="String">
 			</return>
-			<argument index="0" name="what" type="var">
+			<argument index="0" name="what" type="Variant">
 			</argument>
-			<argument index="1" name="..." type="var">
+			<argument index="1" name="..." type="Variant">
 			</argument>
 			<description>
 			Convert one or more arguments to strings in the best way possible.
@@ -454,9 +454,9 @@
 		<method name="str">
 			<return type="String">
 			</return>
-			<argument index="0" name="what" type="var">
+			<argument index="0" name="what" type="Variant">
 			</argument>
-			<argument index="1" name="..." type="var">
+			<argument index="1" name="..." type="Variant">
 			</argument>
 			<description>
 			Convert one or more arguments to strings in the best way possible.
@@ -465,9 +465,9 @@
 		<method name="print">
 			<return type="Nil">
 			</return>
-			<argument index="0" name="what" type="var">
+			<argument index="0" name="what" type="Variant">
 			</argument>
-			<argument index="1" name="..." type="var">
+			<argument index="1" name="..." type="Variant">
 			</argument>
 			<description>
 			Print one or more arguments to strings in the best way possible to a console line.
@@ -476,9 +476,9 @@
 		<method name="printt">
 			<return type="Nil">
 			</return>
-			<argument index="0" name="what" type="var">
+			<argument index="0" name="what" type="Variant">
 			</argument>
-			<argument index="1" name="..." type="var">
+			<argument index="1" name="..." type="Variant">
 			</argument>
 			<description>
 			Print one or more arguments to the console with a tab between each argument.
@@ -487,9 +487,9 @@
 		<method name="prints">
 			<return type="Nil">
 			</return>
-			<argument index="0" name="what" type="var">
+			<argument index="0" name="what" type="Variant">
 			</argument>
-			<argument index="1" name="..." type="var">
+			<argument index="1" name="..." type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -497,9 +497,9 @@
 		<method name="printerr">
 			<return type="Nil">
 			</return>
-			<argument index="0" name="what" type="var">
+			<argument index="0" name="what" type="Variant">
 			</argument>
-			<argument index="1" name="..." type="var">
+			<argument index="1" name="..." type="Variant">
 			</argument>
 			<description>
 			Print one or more arguments to strings in the best way possible to standard error line.
@@ -508,9 +508,9 @@
 		<method name="printraw">
 			<return type="Nil">
 			</return>
-			<argument index="0" name="what" type="var">
+			<argument index="0" name="what" type="Variant">
 			</argument>
-			<argument index="1" name="..." type="var">
+			<argument index="1" name="..." type="Variant">
 			</argument>
 			<description>
 			Print one or more arguments to strings in the best way possible to console. No newline is added at the end.
@@ -519,25 +519,40 @@
 		<method name="var2str">
 			<return type="String">
 			</return>
-			<argument index="0" name="var" type="var">
+			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
 			Converts the value of a variable to a String.
 			</description>
 		</method>
-		<method name="str2var:Variant">
-			<return type="Nil">
+		<method name="str2var">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
-			Converts the value of a String to a Variant.
+			</description>
+		</method>
+		<method name="var2bytes">
+			<return type="RawArray">
+			</return>
+			<argument index="0" name="var" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bytes2var">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="bytes" type="RawArray">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="range">
 			<return type="Array">
 			</return>
-			<argument index="0" name="..." type="var">
+			<argument index="0" name="..." type="Variant">
 			</argument>
 			<description>
 			Return an array with the given range. Range can be 1 argument N (0 to N-1), two arguments (initial, final-1) or three arguments (initial,final-1,increment).
@@ -573,10 +588,24 @@
 		<method name="hash">
 			<return type="int">
 			</return>
-			<argument index="0" name="var:Variant" type="var">
+			<argument index="0" name="var:Variant" type="Variant">
 			</argument>
 			<description>
 			Hashes the variable passed and returns an integer.
+			</description>
+		</method>
+		<method name="Color8">
+			<return type="Color">
+			</return>
+			<argument index="0" name="r8" type="int">
+			</argument>
+			<argument index="1" name="g8" type="int">
+			</argument>
+			<argument index="2" name="b8" type="int">
+			</argument>
+			<argument index="3" name="a8" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="print_stack">
@@ -1370,6 +1399,10 @@
 		<constant name="JOY_ANALOG_2_X" value="4">
 		</constant>
 		<constant name="JOY_ANALOG_2_Y" value="5">
+		</constant>
+		<constant name="JOY_ANALOG_L2" value="6">
+		</constant>
+		<constant name="JOY_ANALOG_R2" value="7">
 		</constant>
 		<constant name="OK" value="0">
 			Functions that return [Error] return OK when everything went ok. Most functions don't return error anyway and/or just print errors to stdout.
@@ -7561,6 +7594,14 @@
 		</member>
 		<member name="v" type="float">
 		</member>
+		<member name="r8" type="int">
+		</member>
+		<member name="g8" type="int">
+		</member>
+		<member name="b8" type="int">
+		</member>
+		<member name="a8" type="int">
+		</member>
 	</members>
 	<constants>
 	</constants>
@@ -7967,6 +8008,8 @@
 			<argument index="0" name="section" type="String">
 			</argument>
 			<argument index="1" name="key" type="String">
+			</argument>
+			<argument index="2" name="default" type="var" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -13625,6 +13668,7 @@ returns:= "username=user&amp;password=pass"
 			<argument index="1" name="button" type="int">
 			</argument>
 			<description>
+			Returns true if the joystick button at the given index is currently pressed. Returns false otherwise. (see JOY_* constans in [InputEvent])
 			</description>
 		</method>
 		<method name="is_action_pressed">
@@ -13635,6 +13679,31 @@ returns:= "username=user&amp;password=pass"
 			<description>
 			</description>
 		</method>
+		<method name="add_joy_mapping">
+			<argument index="0" name="mapping" type="String">
+			</argument>
+			<argument index="1" name="update_existing" type="bool" default="false">
+			</argument>
+			<description>
+			Add a new mapping entry (in SDL2 format) to the mapping database. Optionally update already connected devices.
+			</description>
+		</method>
+		<method name="remove_joy_mapping">
+			<argument index="0" name="guid" type="String">
+			</argument>
+			<description>
+			Removes all mappings from the internal db that match the given uid.
+			</description>
+		</method>
+		<method name="is_joy_known">
+			<return type="bool">
+			</return>
+			<argument index="0" name="device" type="int">
+			</argument>
+			<description>
+			Returns true if the specified device is known by the system. This means that it sets all button and axis indices exactly as defined in [InputEvent]. Unknown joysticks are not expected to match these constants, but you can still retrieve events from them.
+			</description>
+		</method>
 		<method name="get_joy_axis">
 			<return type="float">
 			</return>
@@ -13643,6 +13712,7 @@ returns:= "username=user&amp;password=pass"
 			<argument index="1" name="axis" type="int">
 			</argument>
 			<description>
+			Returns the current value of the joystick axis at given index (see JOY_* enum in [InputEvent])
 			</description>
 		</method>
 		<method name="get_joy_name">
@@ -13651,6 +13721,16 @@ returns:= "username=user&amp;password=pass"
 			<argument index="0" name="device" type="int">
 			</argument>
 			<description>
+			Returns the name of the joystick at the specified device index
+			</description>
+		</method>
+		<method name="get_joy_guid" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="device" type="int">
+			</argument>
+			<description>
+			Returns a SDL2 compatible device guid on platforms that use gamepad remapping. Returns "Default Gamepad" otherwise.
 			</description>
 		</method>
 		<method name="get_accelerometer">
@@ -15479,7 +15559,7 @@ returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 		<method name="get_collider_metadata" qualifiers="const">
-			<return type="var">
+			<return type="Variant">
 			</return>
 			<description>
 			Return the metadata of the shape that collided with this body. If there is no collision, it will return 0, so collisions must be checked first with [method is_colliding]. Aditionally, this metadata can not be set with [method Object.set_meta], it must be set with [method Physics2DServer.body_set_shape_metadata].
@@ -18971,6 +19051,8 @@ returns:= "username=user&amp;password=pass"
 		</constant>
 		<constant name="NOTIFICATION_UNPAUSED" value="15">
 		</constant>
+		<constant name="NOTIFICATION_INSTANCED" value="20">
+		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0">
 		</constant>
 		<constant name="PAUSE_MODE_STOP" value="1">
@@ -19138,7 +19220,7 @@ returns:= "username=user&amp;password=pass"
 			<description>
 			</description>
 		</method>
-		<method name="get_relative_transform" qualifiers="const">
+		<method name="get_relative_transform_to_parent" qualifiers="const">
 			<return type="Matrix32">
 			</return>
 			<argument index="0" name="parent" type="Object">
@@ -20176,6 +20258,14 @@ returns:= "username=user&amp;password=pass"
 			</return>
 			<description>
 			Return the list of signals as an array of dictionaries.
+			</description>
+		</method>
+		<method name="get_signal_connection_list" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="signal" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="connect">
@@ -21598,6 +21688,10 @@ returns:= "username=user&amp;password=pass"
 		<method name="pre_process">
 			<argument index="0" name="time" type="float">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reset">
 			<description>
 			</description>
 		</method>
@@ -29631,6 +29725,14 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="has_group" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_auto_accept_quit">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
@@ -33335,6 +33437,12 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="finished">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>

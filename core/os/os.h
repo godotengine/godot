@@ -397,6 +397,9 @@ public:
 
 	_FORCE_INLINE_ bool get_use_pixel_snap() const { return _pixel_snap; }
 
+	virtual bool is_joy_known(int p_device);
+	virtual String get_joy_guid(int p_device)const;
+
 	OS();	
 	virtual ~OS();
 

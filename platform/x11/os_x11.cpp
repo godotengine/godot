@@ -1774,6 +1774,14 @@ void OS_X11::run() {
 	main_loop->finish();
 }
 
+bool OS_X11::is_joy_known(int p_device) {
+	return input->is_joy_mapped(p_device);
+}
+
+String OS_X11::get_joy_guid(int p_device) const {
+	return input->get_joy_guid_remapped(p_device);
+}
+
 OS_X11::OS_X11() {
 
 #ifdef RTAUDIO_ENABLED

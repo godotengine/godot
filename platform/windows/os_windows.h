@@ -270,6 +270,9 @@ public:
 
 	virtual bool get_swap_ok_cancel() { return true; }
 
+	virtual bool is_joy_known(int p_device);
+	virtual String get_joy_guid(int p_device) const;
+
 	OS_Windows(HINSTANCE _hInstance);	
 	~OS_Windows();
 
