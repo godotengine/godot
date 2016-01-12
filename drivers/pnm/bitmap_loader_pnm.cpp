@@ -170,15 +170,12 @@ RES ResourceFormatPBM::load(const String &p_path,const String& p_original_path,E
 		}
 
 		DVector<uint8_t>::Read r=token.read();
-		int bitwidth = width;
-		if (bitwidth % 8)
-			bitwidth+=8-(bitwidth%8);
 			
 		for(int i=0;i<height;i++) {
 			for(int j=0;j<width;j++) {
 
 
-				char num = r[i*bitwidth+j];
+				char num = r[i*width+j];
 				bm->set_bit(Point2i(j,i),num=='0');
 			}
 
@@ -197,11 +194,14 @@ RES ResourceFormatPBM::load(const String &p_path,const String& p_original_path,E
 		}
 
 		DVector<uint8_t>::Read r=token.read();
+		int bitwidth = width;
+		if (bitwidth % 8)
+			bitwidth+=8-(bitwidth%8);
 
 		for(int i=0;i<height;i++) {
 			for(int j=0;j<width;j++) {
 
-				int ofs = width*i+j;
+				int ofs = bitwidth*i+j;
 
 				uint8_t byte = r[ofs/8];
 				bool bit = (byte>>(7-(ofs%8)))&1;
