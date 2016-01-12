@@ -1268,6 +1268,11 @@ void SceneTreeDock::_create() {
 			editor->set_edited_scene(newnode);
 		}
 
+		//small hack to make collisionshapes and other kind of nodes to work
+		for(int i=0;i<newnode->get_child_count();i++) {
+			Node *c=newnode->get_child(i);
+			c->call("set_transform", c->call("get_transform") );
+		}
 		editor_data->get_undo_redo().clear_history();
 		newnode->set_name(newname);
 
