@@ -216,7 +216,7 @@ static String _get_var_type(const Variant* p_type) {
 Variant GDFunction::call_method(Variant* p_self, const StringName& p_method, const Variant** p_args, int p_argcount, Variant::CallError& r_error) const {
 	if (p_self->get_type() == Variant::OBJECT) {
 		Object *target = *p_self;
-		if (target->get_script_instance()) {
+		if (target && target->get_script_instance()) {
 			GDInstance *instance = dynamic_cast<GDInstance*>(target->get_script_instance());
 			if (instance) return instance->call_member(p_method, p_args, p_argcount, r_error);
 		}
