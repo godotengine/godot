@@ -362,17 +362,14 @@ Error ResourceInteractiveLoaderText::poll() {
 			parent=packed_scene->get_state()->add_node_path(next_tag.fields["parent"]);
 		}
 
-		if (next_tag.fields.has("owner")) {
-			owner=packed_scene->get_state()->add_node_path(next_tag.fields["owner"]);
-		} else {
-			if (parent!=-1)
-				owner=0; //if no owner, owner is root
-		}
 
 
 		if (next_tag.fields.has("type")) {
 			type=packed_scene->get_state()->add_name(next_tag.fields["type"]);
+		} else {
+			type=SceneState::TYPE_INSTANCED; //no type? assume this was instanced
 		}
+
 
 		if (next_tag.fields.has("instance")) {
 
@@ -382,6 +379,13 @@ Error ResourceInteractiveLoaderText::poll() {
 				packed_scene->get_state()->set_base_scene(instance);
 				instance=-1;
 			}
+		}
+
+		if (next_tag.fields.has("owner")) {
+			owner=packed_scene->get_state()->add_node_path(next_tag.fields["owner"]);
+		} else {
+			if (parent!=-1 && !(type==SceneState::TYPE_INSTANCED && instance==-1))
+				owner=0; //if no owner, owner is root
 		}
 
 		int node_id = packed_scene->get_state()->add_node(parent,owner,type,name,instance);

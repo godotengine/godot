@@ -50,7 +50,6 @@ class SceneState : public Reference {
 		FLAG_INSTANCE_IS_PLACEHOLDER=(1<<30),
 		FLAG_MASK=(1<<24)-1,
 		NO_PARENT_SAVED=0x7FFFFFFF,
-		TYPE_INSTANCED=0x7FFFFFFF,
 
 	};
 
@@ -105,6 +104,10 @@ class SceneState : public Reference {
 
 	static bool disable_placeholders;
 public:
+
+	enum {
+		TYPE_INSTANCED=0x7FFFFFFF
+	};
 
 	static void set_disable_placeholders(bool p_disable);
 
