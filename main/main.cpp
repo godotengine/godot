@@ -1350,6 +1350,7 @@ bool Main::start() {
 					}
 
 					//second pass, load into global constants
+					List<Node*> to_add;
 					for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
 
 						String s = E->get().name;
@@ -1389,7 +1390,9 @@ bool Main::start() {
 						ERR_CONTINUE(!n);
 						n->set_name(name);
 
-						sml->get_root()->add_child(n);
+						//defer so references are all valid on _ready()
+						//sml->get_root()->add_child(n);
+						to_add.push_back(n);
 
 						if (global_var) {
 							for(int i=0;i<ScriptServer::get_language_count();i++) {
@@ -1398,6 +1401,13 @@ bool Main::start() {
 						}
 
 					}
+
+					for(List<Node*>::Element *E=to_add.front();E;E=E->next()) {
+
+						sml->get_root()->add_child(E->get());
+					}
+
+
 
 				}
 
