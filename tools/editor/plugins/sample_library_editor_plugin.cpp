@@ -173,17 +173,17 @@ void SampleLibraryEditor::_item_edited() {
 		undo_redo->add_undo_method(this,"_update_library");
 		undo_redo->commit_action();
 
-	} else if (tree->get_selected_column()==3) {
-
-		StringName n = s->get_text(0);
-		sample_library->sample_set_volume_db(n,s->get_range(3));
-
-	} else if (tree->get_selected_column()==4) {
-
-		StringName n = s->get_text(0);
-		sample_library->sample_set_pitch_scale(n,s->get_range(4));
-
 	} else if (tree->get_selected_column()==5) {
+
+		StringName n = s->get_text(0);
+		sample_library->sample_set_volume_db(n,s->get_range(5));
+
+	} else if (tree->get_selected_column()==6) {
+
+		StringName n = s->get_text(0);
+		sample_library->sample_set_pitch_scale(n,s->get_range(6));
+
+	} else if (tree->get_selected_column()==7) {
 
 		//edit
 
