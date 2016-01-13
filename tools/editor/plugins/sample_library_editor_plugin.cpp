@@ -383,8 +383,8 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	tree->set_column_title(5,"dB");
 	tree->set_column_title(6,"PScale");
 
-  tree->set_column_min_width(1,16);
-  tree->set_column_min_width(2,16);
+	tree->set_column_min_width(1,16);
+	tree->set_column_min_width(2,16);
 	tree->set_column_min_width(3,150);
 	tree->set_column_min_width(4,100);
 	tree->set_column_min_width(5,50);
