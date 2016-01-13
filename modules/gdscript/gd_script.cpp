@@ -587,8 +587,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 					if (!valid) {
 						if (src->has_method(*index)) {
-							if (src->get_type() == Variant::OBJECT &&
-								!(src->operator Object *())->get_script_instance()) {
+							if (src->get_type() == Variant::OBJECT) {
 								Object *object = src->operator Object *();
 								if (object) {
 									Ref<GDNativeFunctionObject> fun = memnew(GDNativeFunctionObject);
@@ -2581,12 +2580,6 @@ Ref<GDFunctionObject> GDInstance::get_function(StringName p_name) {
 			}
 		}
 		sptr = sptr->_base;
-	}
-	if (owner->has_method(p_name)) {
-		Ref<GDNativeFunctionObject> func = memnew(GDNativeFunctionObject);
-		func->target_id = owner->get_instance_ID();
-		func->method_name = p_name;
-		return functions[p_name];
 	}
 	return NULL;
 }
