@@ -143,6 +143,7 @@ void EditorNode::_update_scene_tabs() {
 	}
 
 	scene_tabs->set_current_tab(editor_data.get_edited_scene());
+	scene_tabs->ensure_tab_visible(editor_data.get_edited_scene());
 
 }
 
@@ -5055,7 +5056,7 @@ EditorNode::EditorNode() {
 	scene_tabs=memnew( Tabs );
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_align(Tabs::ALIGN_CENTER);
-	scene_tabs->set_tab_close_display_policy(Tabs::SHOW_ACTIVE_ONLY);
+	scene_tabs->set_tab_close_display_policy(Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY);
 	scene_tabs->connect("tab_changed",this,"_scene_tab_changed");
 	scene_tabs->connect("right_button_pressed",this,"_scene_tab_script_edited");
 	scene_tabs->connect("tab_close", this, "_scene_tab_closed");
