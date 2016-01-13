@@ -590,10 +590,14 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 							if (src->get_type() == Variant::OBJECT &&
 								!(src->operator Object *())->get_script_instance()) {
 								Object *object = src->operator Object *();
-								GDInstance *instance = memnew(GDInstance);
-								object->set_script_instance(instance);
-								instance->owner = object;
-								continue;
+								if (object) {
+									Ref<GDNativeFunctionObject> fun = memnew(GDNativeFunctionObject);
+									fun->target_id = object->get_instance_ID();
+									fun->method_name = *index;
+									*dst = fun;
+									valid = true;
+									break;
+								}
 							}
 							err_text = "Invalid get index '" + index->operator String() + "' (on base: '" +
 									   _get_var_type(src) + "'). Did you mean '." + index->operator String() + "()' ?";
@@ -1612,7 +1616,7 @@ Variant GDNativeFunctionObject::apply(const Variant **p_args, int p_argcount, Va
 		return Variant();
 	}
 
-	return instance->owner->call(method_name, p_args, p_argcount, r_error);
+	return ObjectDB::get_instance(target_id)->call(method_name, p_args, p_argcount, r_error);
 }
 
 Variant GDNativeFunctionObject::apply_with(Object *p_target, const Array p_args) {
@@ -1854,6 +1858,28 @@ void GDScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder) {
 
 }*/
 #endif
+
+bool GDScript::get_property_default_value(const StringName& p_property, Variant &r_value) const {
+    
+#ifdef TOOLS_ENABLED
+    
+    //for (const Map<StringName,Variant>::Element *I=member_default_values.front();I;I=I->next()) {
+    //	print_line("\t"+String(String(I->key())+":"+String(I->get())));
+    //}
+    const Map<StringName,Variant>::Element *E=member_default_values_cache.find(p_property);
+    if (E) {
+        r_value=E->get();
+        return true;
+    }
+    
+    if (base_cache.is_valid()) {
+        return base_cache->get_property_default_value(p_property,r_value);
+    }
+#endif
+    return false;
+    
+}
+
 ScriptInstance* GDScript::instance_create(Object *p_this) {
 
 
@@ -2558,9 +2584,8 @@ Ref<GDFunctionObject> GDInstance::get_function(StringName p_name) {
 	}
 	if (owner->has_method(p_name)) {
 		Ref<GDNativeFunctionObject> func = memnew(GDNativeFunctionObject);
-		func->instance = const_cast<GDInstance*>(this);
+		func->target_id = owner->get_instance_ID();
 		func->method_name = p_name;
-		functions.insert(p_name, Variant(func));
 		return functions[p_name];
 	}
 	return NULL;
@@ -2928,6 +2953,13 @@ void GDScriptLanguage::_add_global(const StringName& p_name,const Variant& p_val
 	global_array.push_back(p_value);
 	_global_array=global_array.ptr();
 }
+
+
+void GDScriptLanguage::add_global_constant(const StringName& p_variable,const Variant& p_value) {
+
+	_add_global(p_variable,p_value);
+}
+
 
 void GDScriptLanguage::init() {
 

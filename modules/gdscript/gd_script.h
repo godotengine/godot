@@ -248,14 +248,17 @@ public:
 class GDNativeFunctionObject : public GDFunctionObject {
 	OBJ_TYPE(GDNativeFunctionObject,GDFunctionObject);
 
+	friend class GDFunction;
 	friend class GDInstance;
+	ObjectID target_id;
 	StringName method_name;
 public:
-	_FORCE_INLINE_ virtual bool is_valid() const {return !!instance;}
+	_FORCE_INLINE_ virtual bool is_valid() const { return target_id != 0 && ObjectDB::get_instance(target_id); }
 	
 	_FORCE_INLINE_ virtual StringName get_name() const { return method_name; }
 	virtual Variant apply(const Variant** p_args,int p_argcount,Variant::CallError &r_error);
 	virtual Variant apply_with(Object *p_target, const Array p_args);
+	GDNativeFunctionObject() {target_id = 0;}
 };
 
 class GDLambdaFunctionObject : public GDFunctionObject {
@@ -410,6 +413,8 @@ public:
 	Error load_byte_code(const String& p_path);
 
 	Vector<uint8_t> get_as_byte_code() const;
+    
+    bool get_property_default_value(const StringName& p_property,Variant& r_value) const;
 
 	virtual ScriptLanguage *get_language() const;
 
@@ -598,6 +603,7 @@ public:
 	virtual String make_function(const String& p_class,const String& p_name,const StringArray& p_args) const;
 	virtual Error complete_code(const String& p_code, const String& p_base_path, Object*p_owner,List<String>* r_options,String& r_call_hint);
 	virtual void auto_indent_code(String& p_code,int p_from_line,int p_to_line) const;
+	virtual void add_global_constant(const StringName& p_variable,const Variant& p_value);
 
 	/* DEBUGGER FUNCTIONS */
 
