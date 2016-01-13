@@ -1327,6 +1327,29 @@ bool Main::start() {
 					//autoload
 					List<PropertyInfo> props;
 					Globals::get_singleton()->get_property_list(&props);
+
+					//first pass, add the constants so they exist before any script is loaded
+					for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
+
+						String s = E->get().name;
+						if (!s.begins_with("autoload/"))
+							continue;
+						String name = s.get_slicec('/',1);
+						String path = Globals::get_singleton()->get(s);
+						bool global_var=false;
+						if (path.begins_with("*")) {
+							global_var=true;
+						}
+
+						if (global_var) {
+							for(int i=0;i<ScriptServer::get_language_count();i++) {
+								ScriptServer::get_language(i)->add_global_constant(name,Variant());
+							}
+						}
+
+					}
+
+					//second pass, load into global constants
 					for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
 
 						String s = E->get().name;
@@ -1373,7 +1396,6 @@ bool Main::start() {
 								ScriptServer::get_language(i)->add_global_constant(name,n);
 							}
 						}
-
 
 					}
 

@@ -534,6 +534,7 @@ public:
 	virtual void auto_indent_code(String& p_code,int p_from_line,int p_to_line) const;
 	virtual void add_global_constant(const StringName& p_variable,const Variant& p_value);
 
+
 	/* DEBUGGER FUNCTIONS */
 
 	virtual String debug_get_error() const;
