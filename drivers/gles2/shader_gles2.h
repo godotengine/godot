@@ -205,6 +205,11 @@ private:
 			Plane val=p_value;
 			glUniform4f( p_uniform, val.normal.x,val.normal.y,val.normal.z,val.d );
 		} break;
+		case Variant::QUAT: {
+
+			Quat val=p_value;
+			glUniform4f( p_uniform, val.x,val.y,val.z,val.w );
+		} break;
 
 		case Variant::MATRIX32: {
 
