@@ -258,6 +258,7 @@ void ProjectExportDialog::_sample_convert_edited(int what) {
 	EditorImportExport::get_singleton()->sample_set_action( EditorImportExport::SampleAction(sample_mode->get_selected()));
 	EditorImportExport::get_singleton()->sample_set_max_hz(  sample_max_hz->get_val() );
 	EditorImportExport::get_singleton()->sample_set_trim(  sample_trim->is_pressed() );
+	_save_export_cfg();
 
 }
 
