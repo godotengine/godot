@@ -1597,6 +1597,16 @@ Node *PackedScene::instance(bool p_gen_edit_state) const {
 	return s;
 }
 
+void PackedScene::replace_state(Ref<SceneState> p_by) {
+
+	state=p_by;
+	state->set_path(get_path());
+#ifdef TOOLS_ENABLED
+	state->set_last_modified_time(get_last_modified_time());
+#endif
+
+}
+
 void PackedScene::recreate_state() {
 
 	state = Ref<SceneState>( memnew( SceneState ));

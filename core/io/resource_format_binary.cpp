@@ -725,7 +725,8 @@ Error ResourceInteractiveLoaderBinary::poll(){
 		}
 	} else {
 
-		path=res_path;
+		if (!ResourceCache::has(res_path))
+			path=res_path;
 	}
 
 	uint64_t offset = internal_resources[s].offset;
