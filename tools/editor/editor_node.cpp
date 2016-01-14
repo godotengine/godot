@@ -3624,7 +3624,7 @@ Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bo
 	}
 
 	if (ResourceCache::has(lpath)) {
-		//used from somewhere else? no problem! update state
+		//used from somewhere else? no problem! update state and replace sdata
 		Ref<PackedScene> ps = Ref<PackedScene>( ResourceCache::get(lpath)->cast_to<PackedScene>() );
 		if (ps.is_valid()) {
 			ps->replace_state( sdata->get_state() );

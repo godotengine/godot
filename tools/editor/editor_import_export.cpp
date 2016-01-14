@@ -1849,6 +1849,15 @@ void EditorImportExport::load_config() {
 
 	if (cf->has_section("convert_samples")) {
 
+		if (cf->has_section_key("convert_samples","action")) {
+			String action = cf->get_value("convert_samples","action");
+			if (action=="none") {
+				sample_action=SAMPLE_ACTION_NONE;
+			} else if (action=="compress_ram") {
+				sample_action=SAMPLE_ACTION_COMPRESS_RAM;
+			}
+		}
+
 		if (cf->has_section_key("convert_samples","max_hz"))
 			sample_action_max_hz=cf->get_value("convert_samples","max_hz");
 
