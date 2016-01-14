@@ -198,6 +198,7 @@ public:
 	Node *instance(bool p_gen_edit_state=false) const;
 
 	void recreate_state();
+	void replace_state(Ref<SceneState> p_by);
 
 	virtual void set_path(const String& p_path,bool p_take_over=false);
 #ifdef TOOLS_ENABLED

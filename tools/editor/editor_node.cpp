@@ -3623,7 +3623,18 @@ Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bo
 		add_io_error(txt);
 	}
 
-	sdata->set_path(lpath,true); //take over path
+	if (ResourceCache::has(lpath)) {
+		//used from somewhere else? no problem! update state
+		Ref<PackedScene> ps = Ref<PackedScene>( ResourceCache::get(lpath)->cast_to<PackedScene>() );
+		if (ps.is_valid()) {
+			ps->replace_state( sdata->get_state() );
+			ps->set_last_modified_time( sdata->get_last_modified_time() );
+			sdata=ps;
+		}
+
+	} else {
+		sdata->set_path(lpath,true); //take over path
+	}
 
 	Node*new_scene=sdata->instance(true);
 
