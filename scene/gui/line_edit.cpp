@@ -330,6 +330,8 @@ void LineEdit::_input_event(InputEvent p_event) {
 							append_at_cursor(ucodestr);
 							emit_signal("text_changed",text);
 							_change_notify("text");
+
+							accept_event();
 						}
 
 					} else {
