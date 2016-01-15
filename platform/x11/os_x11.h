@@ -222,6 +222,10 @@ public:
 
 	virtual void move_window_to_foreground();
 	virtual void alert(const String& p_alert,const String& p_title="ALERT!");
+
+	virtual bool is_joy_known(int p_device);
+	virtual String get_joy_guid(int p_device) const;
+
 	void run();
 
 	OS_X11();

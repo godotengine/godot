@@ -1570,7 +1570,9 @@ Error ResourceInteractiveLoaderXML::poll() {
 	if (main) {
 		f->close();
 		resource=res;
-		resource->set_path(res_path);
+		if (!ResourceCache::has(res_path)) {
+			resource->set_path(res_path);
+		}
 		error=ERR_FILE_EOF;
 		return error;
 

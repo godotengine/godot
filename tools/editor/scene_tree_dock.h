@@ -62,6 +62,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MOVE_DOWN,
 		TOOL_DUPLICATE,
 		TOOL_REPARENT,
+		TOOL_NEW_SCENE_FROM,
 		TOOL_MULTI_EDIT,
 		TOOL_ERASE,
 		TOOL_BUTTON_MAX
@@ -90,6 +91,7 @@ class SceneTreeDock : public VBoxContainer {
 	ReparentDialog *reparent_dialog;
 	EditorFileDialog *file;
 	EditorSubScene *import_subscene_dialog;
+	EditorFileDialog *new_scene_from_dialog;
 
 	bool first_enter;
 
@@ -118,6 +120,8 @@ class SceneTreeDock : public VBoxContainer {
 	void _unhandled_key_input(InputEvent p_event);
 
 	void _import_subscene();
+
+	void _new_scene_from(String p_file);
 
 	bool _validate_no_foreign();
 	void _selection_changed();

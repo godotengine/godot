@@ -420,13 +420,13 @@ void Area2D::_notification(int p_what) {
 
 void Area2D::set_enable_monitoring(bool p_enable) {
 
-	if (locked) {
-		ERR_EXPLAIN("This function can't be used during the in/out signal.");
-	}
-	ERR_FAIL_COND(locked);
 
 	if (p_enable==monitoring)
 		return;
+	if (locked) {
+		ERR_EXPLAIN("Function blocked during in/out signal. Use call_deferred(\"set_enable_monitoring\",true/false)");
+	}
+	ERR_FAIL_COND(locked);
 
 	monitoring=p_enable;
 
