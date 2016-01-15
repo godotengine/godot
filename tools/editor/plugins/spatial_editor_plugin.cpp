@@ -3529,10 +3529,10 @@ void SpatialEditor::_instance_scene() {
 
 void SpatialEditor::_unhandled_key_input(InputEvent p_event) {
 
-	if (!is_visible())
+	if (!is_visible() || window_has_modal_stack())
 		return;
 
-	 {
+	{
 
 		EditorNode *en = editor;
 		EditorPlugin *over_plugin = en->get_editor_plugin_over();
