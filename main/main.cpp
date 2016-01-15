@@ -1374,7 +1374,7 @@ bool Main::start() {
 						} else if (res->is_type("Script")) {
 							Ref<Script> s = res;
 							StringName ibt = s->get_instance_base_type();
-							bool valid_type = !ObjectTypeDB::is_type(ibt,"Node");
+							bool valid_type = ObjectTypeDB::is_type(ibt,"Node");
 							ERR_EXPLAIN("Script does not inherit a Node: "+path);
 							ERR_CONTINUE( !valid_type );
 

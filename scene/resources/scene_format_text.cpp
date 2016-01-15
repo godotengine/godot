@@ -302,6 +302,10 @@ Error ResourceInteractiveLoaderText::poll() {
 			if (error) {
 				if (error!=ERR_FILE_EOF) {
 					_printerr();
+				} else {
+					if (!ResourceCache::has(res_path)) {
+						resource->set_path(res_path);
+					}
 				}
 				return error;
 			}
@@ -403,6 +407,9 @@ Error ResourceInteractiveLoaderText::poll() {
 					_printerr();
 				} else {
 					resource=packed_scene;
+					if (!ResourceCache::has(res_path)) {
+						packed_scene->set_path(res_path);
+					}
 				}
 				return error;
 			}
