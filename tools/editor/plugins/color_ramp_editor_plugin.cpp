@@ -3,14 +3,20 @@
  */
 
 #include "color_ramp_editor_plugin.h"
+#include "spatial_editor_plugin.h"
+#include "canvas_item_editor_plugin.h"
 
-ColorRampEditorPlugin::ColorRampEditorPlugin(EditorNode *p_node) {
+ColorRampEditorPlugin::ColorRampEditorPlugin(EditorNode *p_node, bool p_2d) {
 
 	editor=p_node;
 	ramp_editor = memnew( ColorRampEdit );
 
-	add_custom_control(CONTAINER_CANVAS_EDITOR_BOTTOM,ramp_editor);
-	//add_custom_control(CONTAINER_SPATIAL_EDITOR_BOTTOM,ramp_editor);
+	_2d=p_2d;
+	if (p_2d)
+		add_custom_control(CONTAINER_CANVAS_EDITOR_BOTTOM,ramp_editor);
+	else
+		add_custom_control(CONTAINER_SPATIAL_EDITOR_BOTTOM,ramp_editor);
+
 	ramp_editor->set_custom_minimum_size(Size2(100, 48));
 	ramp_editor->hide();
 	ramp_editor->connect("ramp_changed", this, "ramp_changed");
@@ -27,7 +33,10 @@ void ColorRampEditorPlugin::edit(Object *p_object) {
 
 bool ColorRampEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("ColorRamp");
+	if (_2d)
+		return p_object->is_type("ColorRamp") && CanvasItemEditor::get_singleton()->is_visible() == true;
+	else
+		return p_object->is_type("ColorRamp") && SpatialEditor::get_singleton()->is_visible() == true;
 }
 
 void ColorRampEditorPlugin::make_visible(bool p_visible) {
