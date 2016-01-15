@@ -35,7 +35,6 @@
 #include "sample_editor_plugin.h"
 
 
-
 void SampleLibraryEditor::_input_event(InputEvent p_event) {
 
 
@@ -129,9 +128,32 @@ void SampleLibraryEditor::_button_pressed(Object *p_item,int p_column, int p_id)
 	String name = ti->get_text(0);
 
 	if (p_column==1) {
-		player->play(name,true);
+		int idx;
+		String btn_type;
+		if(!is_playing) {
+			is_playing = true;
+			btn_type = "Stop";
+			player->play(name,true);
+			last_sample_playing = p_item;
+		} else {
+			_stop_pressed();
+			if(last_sample_playing != p_item){
+				TreeItem *tl=last_sample_playing->cast_to<TreeItem>();
+				idx=tl->get_button_by_id(1, 0);
+				tl->set_button(1,idx,get_icon("Play","EditorIcons"));
+				btn_type = "Stop";
+				player->play(name,true);
+				last_sample_playing = p_item;
+			} else {
+				btn_type = "Play";
+				is_playing = false;
+			}
+		}
+		idx=ti->get_button_by_id(1, 0);
+		ti->set_button(1,idx,get_icon(btn_type,"EditorIcons"));
 	} else if (p_column==2) {
-		_stop_pressed();
+		tree->set_selected(ti);
+		_delete_pressed();
 	} else if (p_column==3) {
 		get_tree()->get_root()->get_child(0)->call("_resource_selected",sample_library->get_sample(name));
 	}
@@ -250,7 +272,7 @@ void SampleLibraryEditor::_update_library() {
 		ti->set_metadata(0,E->get());
 
 		ti->add_button(1,get_icon("Play","EditorIcons"),0);
-		ti->add_button(2,get_icon("Stop","EditorIcons"),0);
+		ti->add_button(2,get_icon("Del","EditorIcons"),0);
 
 		ti->add_button(3,get_icon("Edit","EditorIcons"),1);
 		Ref<Sample> smp = sample_library->get_sample(E->get());

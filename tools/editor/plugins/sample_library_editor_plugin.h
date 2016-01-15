@@ -53,6 +53,8 @@ class SampleLibraryEditor : public Panel {
 	Button *load;
 	Button *_delete;
 	Tree *tree;
+	bool is_playing;
+	Object *last_sample_playing;
 
 	EditorFileDialog *file;
 
@@ -79,7 +81,6 @@ protected:
 public:
 
 	void set_undo_redo(UndoRedo *p_undo_redo) {undo_redo=p_undo_redo; }
-
 	void edit(Ref<SampleLibrary> p_sample);
 	SampleLibraryEditor();
 };
