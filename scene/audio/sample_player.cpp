@@ -195,7 +195,6 @@ void SamplePlayer::Voice::clear() {
 	reverb_room=REVERB_HALL;
 	reverb_send=0;
 	active=false;
-	
 
 }
 SamplePlayer::Voice::~Voice() {

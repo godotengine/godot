@@ -152,7 +152,7 @@ void SampleLibraryEditor::_button_pressed(Object *p_item,int p_column, int p_id)
 		idx=ti->get_button_by_id(1, 0);
 		ti->set_button(1,idx,get_icon(btn_type,"EditorIcons"));
 	} else if (p_column==2) {
-		tree->set_selected(ti);
+		ti->select(2);
 		_delete_pressed();
 	} else if (p_column==3) {
 		get_tree()->get_root()->get_child(0)->call("_resource_selected",sample_library->get_sample(name));
