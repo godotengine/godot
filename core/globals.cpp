@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -137,7 +137,7 @@ bool Globals::_set(const StringName& p_name, const Variant& p_value) {
 				props[p_name].order=last_order++;
 			}
 		} else {
-			props[p_name]=VariantContainer(p_value,last_order++ + registering_order?0:NO_ORDER_BASE);
+			props[p_name]=VariantContainer(p_value,last_order++ + (registering_order?0:NO_ORDER_BASE));
 		}
 	}
 
@@ -304,6 +304,7 @@ Error Globals::setup(const String& p_path,const String & p_main_pack) {
 
 		return OK;
 	}
+
 	if (OS::get_singleton()->get_resource_dir()!="") {
         //OS will call Globals->get_resource_path which will be empty if not overriden!
 		//if the OS would rather use somewhere else, then it will not be empty.
@@ -637,7 +638,9 @@ static Variant _decode_variant(const String& p_string) {
 		InputEvent ie;
 		ie.type=InputEvent::JOYSTICK_MOTION;
 		ie.device=params[0].to_int();
-		ie.joy_motion.axis=params[1].to_int();
+		int axis = params[1].to_int();;
+		ie.joy_motion.axis=axis>>1;
+		ie.joy_motion.axis_value=axis&1?1:-1;
 
 		return ie;
 	}
@@ -1028,7 +1031,7 @@ static String _encode_variant(const Variant& p_variant) {
 				} break;
 				case InputEvent::JOYSTICK_MOTION: {
 
-					return "jaxis("+itos(ev.device)+", "+itos(ev.joy_motion.axis)+")";
+					return "jaxis("+itos(ev.device)+", "+itos(ev.joy_motion.axis * 2 + (ev.joy_motion.axis_value<0?0:1))+")";
 				} break;
 				default: {
 
@@ -1390,11 +1393,11 @@ void Globals::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("localize_path","path"),&Globals::localize_path);
 	ObjectTypeDB::bind_method(_MD("globalize_path","path"),&Globals::globalize_path);
 	ObjectTypeDB::bind_method(_MD("save"),&Globals::save);
-	ObjectTypeDB::bind_method(_MD("has_singleton"),&Globals::has_singleton);
-	ObjectTypeDB::bind_method(_MD("get_singleton"),&Globals::get_singleton_object);
-	ObjectTypeDB::bind_method(_MD("load_resource_pack"),&Globals::_load_resource_pack);
+	ObjectTypeDB::bind_method(_MD("has_singleton","name"),&Globals::has_singleton);
+	ObjectTypeDB::bind_method(_MD("get_singleton","name"),&Globals::get_singleton_object);
+	ObjectTypeDB::bind_method(_MD("load_resource_pack","pack"),&Globals::_load_resource_pack);
 
-	ObjectTypeDB::bind_method(_MD("save_custom"),&Globals::_save_custom_bnd);
+	ObjectTypeDB::bind_method(_MD("save_custom","file"),&Globals::_save_custom_bnd);
 
 }
 

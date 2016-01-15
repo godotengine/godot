@@ -5,7 +5,7 @@
 /*                GODOT ENGINE                   */
 /*************************************************/
 /*       Source code within this file is:        */
-/*  (c) 2007-2010 Juan Linietsky, Ariel Manzur   */
+/*  (c) 2007-2016 Juan Linietsky, Ariel Manzur   */
 /*             All Rights Reserved.              */
 /*************************************************/
 
@@ -543,7 +543,11 @@ void make_default_theme() {
 	t->set_constant("close_v_ofs","WindowDialog", 20 );
 	t->set_constant("titlebar_height","WindowDialog", 18 );
 	t->set_constant("title_height","WindowDialog", 20 );
-
+	
+	
+	// File Dialog
+	
+	t->set_icon("reload","FileDialog",make_icon( icon_reload_png ));
 
 
 	// Popup
@@ -713,6 +717,7 @@ void make_default_theme() {
 	t->set_icon("increment_hilite","Tabs",make_icon( scroll_button_right_hl_png));
 	t->set_icon("decrement","Tabs",make_icon( scroll_button_left_png));
 	t->set_icon("decrement_hilite","Tabs",make_icon( scroll_button_left_hl_png));
+	t->set_icon("close","Tabs",make_icon( tab_close_png));
 
 	t->set_font("font","Tabs", default_font );
 

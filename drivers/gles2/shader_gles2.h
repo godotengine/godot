@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -204,6 +204,11 @@ private:
 
 			Plane val=p_value;
 			glUniform4f( p_uniform, val.normal.x,val.normal.y,val.normal.z,val.d );
+		} break;
+		case Variant::QUAT: {
+
+			Quat val=p_value;
+			glUniform4f( p_uniform, val.x,val.y,val.z,val.w );
 		} break;
 
 		case Variant::MATRIX32: {

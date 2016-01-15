@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -380,6 +380,8 @@ void BodySW::set_space(SpaceSW *p_space){
 
 	}
 
+	first_integration=true;
+
 }
 
 void BodySW::_compute_area_gravity_and_dampenings(const AreaSW *p_area) {
@@ -479,7 +481,7 @@ void BodySW::integrate_forces(real_t p_step) {
 		do_motion=true;
 
 	} else {
-		if (!omit_force_integration) {
+		if (!omit_force_integration && !first_integration) {
 			//overriden by direct state query
 
 			Vector3 force=gravity*mass;
@@ -512,6 +514,7 @@ void BodySW::integrate_forces(real_t p_step) {
 
 	applied_force=Vector3();
 	applied_torque=Vector3();
+	first_integration=false;
 
 	//motion=linear_velocity*p_step;
 
@@ -749,6 +752,7 @@ BodySW::BodySW() : CollisionObjectSW(TYPE_BODY), active_list(this), inertia_upda
 	island_next=NULL;
 	island_list_next=NULL;
 	first_time_kinematic=false;
+	first_integration=false;
 	_set_static(false);
 
 	contact_count=0;

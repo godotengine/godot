@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,17 +68,14 @@ private:
 	RID camera;
 	RID scenario_id;
 
-	String camera_group;
+	//String camera_group;
 
 	uint32_t layers;
 
-	Viewport *viewport_ptr;
 	Ref<Environment> environment;
 
 	virtual bool _can_gizmo_scale() const;
 	virtual RES _get_gizmo_geometry() const;
-
-	void _camera_make_next_current(Node *p_exclude);
 
 
 	//void _camera_make_current(Node *p_camera);

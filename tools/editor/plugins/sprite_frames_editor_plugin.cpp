@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -338,7 +338,6 @@ void SpriteFramesEditor::_update_library() {
 
 		TreeItem *ti = tree->create_item(root);
 		ti->set_cell_mode(0,TreeItem::CELL_MODE_STRING);
-		ti->set_editable(0,true);
 		ti->set_selectable(0,true);
 
 		if (frames->get_frame(i).is_null()) {
@@ -346,7 +345,7 @@ void SpriteFramesEditor::_update_library() {
 			ti->set_text(0,"Frame "+itos(i)+" (empty)");
 
 		} else {
-			ti->set_text(0,"Frame "+itos(i));
+			ti->set_text(0,"Frame "+itos(i)+" ("+frames->get_frame(i)->get_name()+")");
 			ti->set_icon(0,frames->get_frame(i));
 		}
 		if (frames->get_frame(i).is_valid())

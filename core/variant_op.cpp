@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1003,7 +1003,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 				return;
 			}
 
-			*str = str->substr(0,idx-1)+chr+str->substr(idx+1,str->length());
+			*str = str->substr(0,idx)+chr+str->substr(idx+1,str->length());
 			valid=true;
 			return;
 
@@ -1351,6 +1351,22 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 				} else if (*str=="v" ) {
 					valid=true;
 					v->set_hsv(v->get_h(),v->get_s(),p_value);
+					return;
+				} else if (*str=="r8" ) {
+					valid=true;
+					v->g=float(p_value)/255.0;
+					return;
+				} else if (*str=="g8" ) {
+					valid=true;
+					v->g=float(p_value)/255.0;
+					return;
+				} else if (*str=="b8" ) {
+					valid=true;
+					v->b=float(p_value)/255.0;
+					return;
+				} else if (*str=="a8" ) {\
+					valid=true;
+					v->a=float(p_value)/255.0;
 					return;
 				}
 			} else if (p_index.get_type()==Variant::INT) {
@@ -2195,6 +2211,18 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				} else if (*str=="v" ) {
 					valid=true;
 					return v->get_v();
+				} else if (*str=="r8") {
+					valid=true;
+					return v->r*255.0;
+				} else if (*str=="g8" ) {
+					valid=true;
+					return v->g*255.0;
+				} else if (*str=="b8" ) {
+					valid=true;
+					return v->b*255.0;
+				} else if (*str=="a8" ) {
+					valid=true;
+					return v->a*255.0;
 				}
 			}  else if (p_index.get_type()==Variant::INT) {
 
@@ -2866,6 +2894,10 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back( PropertyInfo(Variant::REAL,"h"));
 			p_list->push_back( PropertyInfo(Variant::REAL,"s"));
 			p_list->push_back( PropertyInfo(Variant::REAL,"v"));
+			p_list->push_back( PropertyInfo(Variant::INT,"r8"));
+			p_list->push_back( PropertyInfo(Variant::INT,"g8"));
+			p_list->push_back( PropertyInfo(Variant::INT,"b8"));
+			p_list->push_back( PropertyInfo(Variant::INT,"a8"));
 
 		} break;
 		case IMAGE: {	} break;

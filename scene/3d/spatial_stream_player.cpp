@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,7 +60,7 @@ void SpatialStreamPlayer::sp_set_mix_rate(int p_rate){
 
 bool SpatialStreamPlayer::sp_mix(int32_t *p_buffer,int p_frames) {
 
-	if (resampler.is_ready()) {
+	if (resampler.is_ready() && !paused) {
 		return resampler.mix(p_buffer,p_frames);
 	}
 
@@ -332,7 +332,7 @@ void SpatialStreamPlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_stream","stream:Stream"),&SpatialStreamPlayer::set_stream);
 	ObjectTypeDB::bind_method(_MD("get_stream:Stream"),&SpatialStreamPlayer::get_stream);
 
-	ObjectTypeDB::bind_method(_MD("play"),&SpatialStreamPlayer::play,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("play","offset"),&SpatialStreamPlayer::play,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("stop"),&SpatialStreamPlayer::stop);
 
 	ObjectTypeDB::bind_method(_MD("is_playing"),&SpatialStreamPlayer::is_playing);

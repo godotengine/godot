@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -187,7 +187,6 @@ Vector2 Vector2::snapped(const Vector2& p_by) const {
 
 Vector2 Vector2::clamped(real_t p_len) const {
 
-	return *this;
 	real_t l = length();
 	Vector2 v = *this;
 	if (l>0 && p_len<l) {

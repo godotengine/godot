@@ -1569,7 +1569,7 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 	args.push_back("-a");
 	args.push_back("android.intent.action.MAIN");
 	args.push_back("-n");
-	args.push_back(get_package_name()+"/com.android.godot.Godot");
+	args.push_back(get_package_name()+"/org.godotengine.godot.Godot");
 
 	err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
 	if (err || rv!=0) {

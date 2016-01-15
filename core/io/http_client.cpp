@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -248,7 +248,7 @@ Error HTTPClient::poll(){
 							status=STATUS_SSL_HANDSHAKE_ERROR;
 							return ERR_CANT_CONNECT;
 						}
-						print_line("SSL! TURNED ON!");
+						//print_line("SSL! TURNED ON!");
 						connection=ssl;
 					}
 					status=STATUS_CONNECTED;
@@ -295,7 +295,7 @@ Error HTTPClient::poll(){
 					response_str.push_back(0);
 					String response;
 					response.parse_utf8((const char*)response_str.ptr());
-					print_line("END OF RESPONSE? :\n"+response+"\n------");
+					//print_line("END OF RESPONSE? :\n"+response+"\n------");
 					Vector<String> responses = response.split("\n");
 					body_size=0;
 					chunked=false;
@@ -307,16 +307,17 @@ Error HTTPClient::poll(){
 					for(int i=0;i<responses.size();i++) {
 
 						String s = responses[i].strip_edges();
+						s = s.to_lower();
 						if (s.length()==0)
 							continue;						
-						if (s.begins_with("Content-Length:")) {
+						if (s.begins_with("content-length:")) {
 							body_size = s.substr(s.find(":")+1,s.length()).strip_edges().to_int();
 							body_left=body_size;
 						}
 
-						if (s.begins_with("Transfer-Encoding:")) {
+						if (s.begins_with("transfer-encoding:")) {
 							String encoding = s.substr(s.find(":")+1,s.length()).strip_edges();
-							print_line("TRANSFER ENCODING: "+encoding);
+							//print_line("TRANSFER ENCODING: "+encoding);
 							if (encoding=="chunked") {
 								chunked=true;
 							}

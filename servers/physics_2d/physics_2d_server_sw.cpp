@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1322,8 +1322,11 @@ int Physics2DServerSW::get_process_info(ProcessInfo p_info) {
 }
 
 
+Physics2DServerSW *Physics2DServerSW::singletonsw=NULL;
+
 Physics2DServerSW::Physics2DServerSW() {
 
+	singletonsw=this;
 	BroadPhase2DSW::create_func=BroadPhase2DHashGrid::_create;
 //	BroadPhase2DSW::create_func=BroadPhase2DBasic::_create;
 

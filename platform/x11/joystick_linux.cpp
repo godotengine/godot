@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,15 +45,20 @@ static const char* ignore_str = "/dev/input/js";
 joystick_linux::Joystick::Joystick() {
 	fd = -1;
 	dpad = 0;
+	dev = NULL;
+	devpath = "";
 }
 
 void joystick_linux::Joystick::reset() {
-	num_buttons = 0;
-	num_axes    = 0;
 	dpad        = 0;
 	fd          = -1;
+
+	InputDefault::JoyAxis jx;
+	jx.min = -1;
+	jx.value = 0.0f;
 	for (int i=0; i < MAX_ABS; i++) {
 		abs_map[i] = -1;
+		curr_axis[i] = jx;
 	}
 }
 
@@ -225,20 +230,23 @@ static String _hex_str(uint8_t p_byte) {
 void joystick_linux::setup_joystick_properties(int p_id) {
 
 	Joystick* joy = &joysticks[p_id];
-
 	libevdev* dev = joy->dev;
+
+	int num_buttons = 0;
+	int num_axes = 0;
+
 	for (int i = BTN_JOYSTICK; i < KEY_MAX; ++i) {
 
 		if (libevdev_has_event_code(dev, EV_KEY, i)) {
 
-			joy->key_map[i] = joy->num_buttons++;
+			joy->key_map[i] = num_buttons++;
 		}
 	}
 	for (int i = BTN_MISC; i < BTN_JOYSTICK; ++i) {
 
 		if (libevdev_has_event_code(dev, EV_KEY, i)) {
 
-			joy->key_map[i] = joy->num_buttons++;
+			joy->key_map[i] = num_buttons++;
 		}
 	}
 	for (int i = 0; i < ABS_MISC; ++i) {
@@ -249,7 +257,7 @@ void joystick_linux::setup_joystick_properties(int p_id) {
 		}
 		if (libevdev_has_event_code(dev, EV_ABS, i)) {
 
-			joy->abs_map[i] = joy->num_axes++;
+			joy->abs_map[i] = num_axes++;
 		}
 	}
 }
@@ -387,13 +395,19 @@ uint32_t joystick_linux::process_joysticks(uint32_t p_event_id) {
 				default:
 					if (joy->abs_map[ev.code] != -1) {
 						InputDefault::JoyAxis value = axis_correct(libevdev_get_abs_info(dev, ev.code), ev.value);
-						p_event_id = input->joy_axis(p_event_id, i, joy->abs_map[ev.code], value);
+						joy->curr_axis[joy->abs_map[ev.code]] = value;
 					}
 					break;
 				}
 				break;
 			}
 			rc = libevdev_next_event(dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
+		}
+		for (int j = 0; j < MAX_ABS; j++) {
+			int index = joy->abs_map[j];
+			if (index != -1) {
+				p_event_id = input->joy_axis(p_event_id, i, index, joy->curr_axis[index]);
+			}
 		}
 	}
 	joy_mutex->unlock();

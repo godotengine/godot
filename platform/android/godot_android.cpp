@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,9 +50,9 @@
 
 
 extern "C" {
-    JNIEXPORT void JNICALL Java_com_android_godot_Godot_registerSingleton(JNIEnv * env, jobject obj, jstring name,jobject p_object);
-    JNIEXPORT void JNICALL Java_com_android_godot_Godot_registerMethod(JNIEnv * env, jobject obj, jstring sname, jstring name, jstring ret, jobjectArray args);
-    JNIEXPORT jstring JNICALL Java_com_android_godot_Godot_getGlobal(JNIEnv * env, jobject obj, jstring path);
+    JNIEXPORT void JNICALL Java_org_godotengine_godot_Godot_registerSingleton(JNIEnv * env, jobject obj, jstring name,jobject p_object);
+    JNIEXPORT void JNICALL Java_org_godotengine_godot_Godot_registerMethod(JNIEnv * env, jobject obj, jstring sname, jstring name, jstring ret, jobjectArray args);
+    JNIEXPORT jstring JNICALL Java_org_godotengine_godot_Godot_getGlobal(JNIEnv * env, jobject obj, jstring path);
 };
 
 class JNISingleton : public Object {
@@ -671,12 +671,12 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 
 
 					static JNINativeMethod methods[] = {
-					    {"registerSingleton",    "(Ljava/lang/String;Ljava/lang/Object;)V",(void *)&Java_com_android_godot_Godot_registerSingleton},
-					    {"registerMethod",        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)V",(void *)&Java_com_android_godot_Godot_registerMethod},
-					    {"getGlobal",      "(Ljava/lang/String;)Ljava/lang/String;",                    (void *)&Java_com_android_godot_Godot_getGlobal},
+					    {"registerSingleton",    "(Ljava/lang/String;Ljava/lang/Object;)V",(void *)&Java_org_godotengine_godot_Godot_registerSingleton},
+					    {"registerMethod",        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)V",(void *)&Java_org_godotengine_godot_Godot_registerMethod},
+					    {"getGlobal",      "(Ljava/lang/String;)Ljava/lang/String;",                    (void *)&Java_org_godotengine_godot_Godot_getGlobal},
 					};
 
-					jstring gstrClassName = engine->jni->NewStringUTF("com/android/godot/Godot");
+					jstring gstrClassName = engine->jni->NewStringUTF("org/godotengine/godot/Godot");
 					jclass GodotClass = (jclass)engine->jni->CallObjectMethod(cls, findClass, gstrClassName);
 
 					__android_log_print(ANDROID_LOG_INFO,"godot","godot ****^*^*?^*^*class data %x",GodotClass);
@@ -692,7 +692,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 						jclass singletonClass = (jclass)engine->jni->CallObjectMethod(cls, findClass, strClassName);
 
 						__android_log_print(ANDROID_LOG_INFO,"godot","****^*^*?^*^*class data %x",singletonClass);
-						jmethodID initialize = engine->jni->GetStaticMethodID(singletonClass, "initialize", "(Landroid/app/Activity;)Lcom/android/godot/Godot$SingletonBase;");
+						jmethodID initialize = engine->jni->GetStaticMethodID(singletonClass, "initialize", "(Landroid/app/Activity;)Lorg/godotengine/godot/Godot$SingletonBase;");
 
 
 						jobject obj = engine->jni->CallStaticObjectMethod(singletonClass,initialize,app->activity->clazz);
@@ -863,7 +863,7 @@ void android_main(struct android_app* state) {
 
 
 
-JNIEXPORT void JNICALL Java_com_android_godot_Godot_registerSingleton(JNIEnv * env, jobject obj, jstring name,jobject p_object){
+JNIEXPORT void JNICALL Java_org_godotengine_godot_Godot_registerSingleton(JNIEnv * env, jobject obj, jstring name,jobject p_object){
 
 	String singname = env->GetStringUTFChars( name, NULL );
 	JNISingleton *s = memnew( JNISingleton );
@@ -938,7 +938,7 @@ static const char* get_jni_sig(const String& p_type) {
 	return "";
 }
 
-JNIEXPORT jstring JNICALL Java_com_android_godot_Godot_getGlobal(JNIEnv * env, jobject obj, jstring path) {
+JNIEXPORT jstring JNICALL Java_org_godotengine_godot_Godot_getGlobal(JNIEnv * env, jobject obj, jstring path) {
 
 	String js = env->GetStringUTFChars( path, NULL );
 
@@ -949,7 +949,7 @@ JNIEXPORT jstring JNICALL Java_com_android_godot_Godot_getGlobal(JNIEnv * env, j
 
 
 
-JNIEXPORT void JNICALL Java_com_android_godot_Godot_registerMethod(JNIEnv * env, jobject obj, jstring sname, jstring name, jstring ret, jobjectArray args){
+JNIEXPORT void JNICALL Java_org_godotengine_godot_Godot_registerMethod(JNIEnv * env, jobject obj, jstring sname, jstring name, jstring ret, jobjectArray args){
 
 	String singname = env->GetStringUTFChars( sname, NULL );
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1354,6 +1354,10 @@ void ConcavePolygonShapeSW::_fill_bvh(_VolumeSW_BVH* p_bvh_tree,BVH* p_bvh_array
 void ConcavePolygonShapeSW::_setup(DVector<Vector3> p_faces) {
 
 	int src_face_count=p_faces.size();
+	if (src_face_count==0) {
+		configure(AABB());
+		return;
+	}
 	ERR_FAIL_COND(src_face_count%3);
 	src_face_count/=3;
 

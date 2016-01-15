@@ -12,12 +12,6 @@
 #define _printerr() ERR_PRINT(String(res_path+":"+itos(lines)+" - Parse Error: "+error_text).utf8().get_data());
 
 
-Error ResourceInteractiveLoaderText::parse_property(Variant& r_v, String &r_name)  {
-
-	return OK;
-}
-
-
 
 
 ///
@@ -308,6 +302,10 @@ Error ResourceInteractiveLoaderText::poll() {
 			if (error) {
 				if (error!=ERR_FILE_EOF) {
 					_printerr();
+				} else {
+					if (!ResourceCache::has(res_path)) {
+						resource->set_path(res_path);
+					}
 				}
 				return error;
 			}
@@ -368,17 +366,14 @@ Error ResourceInteractiveLoaderText::poll() {
 			parent=packed_scene->get_state()->add_node_path(next_tag.fields["parent"]);
 		}
 
-		if (next_tag.fields.has("owner")) {
-			owner=packed_scene->get_state()->add_node_path(next_tag.fields["owner"]);
-		} else {
-			if (parent!=-1)
-				owner=0; //if no owner, owner is root
-		}
 
 
 		if (next_tag.fields.has("type")) {
 			type=packed_scene->get_state()->add_name(next_tag.fields["type"]);
+		} else {
+			type=SceneState::TYPE_INSTANCED; //no type? assume this was instanced
 		}
+
 
 		if (next_tag.fields.has("instance")) {
 
@@ -388,6 +383,13 @@ Error ResourceInteractiveLoaderText::poll() {
 				packed_scene->get_state()->set_base_scene(instance);
 				instance=-1;
 			}
+		}
+
+		if (next_tag.fields.has("owner")) {
+			owner=packed_scene->get_state()->add_node_path(next_tag.fields["owner"]);
+		} else {
+			if (parent!=-1 && !(type==SceneState::TYPE_INSTANCED && instance==-1))
+				owner=0; //if no owner, owner is root
 		}
 
 		int node_id = packed_scene->get_state()->add_node(parent,owner,type,name,instance);
@@ -405,6 +407,9 @@ Error ResourceInteractiveLoaderText::poll() {
 					_printerr();
 				} else {
 					resource=packed_scene;
+					if (!ResourceCache::has(res_path)) {
+						packed_scene->set_path(res_path);
+					}
 				}
 				return error;
 			}
@@ -479,8 +484,8 @@ Error ResourceInteractiveLoaderText::poll() {
 		}
 
 		Vector<int> bind_ints;
-		for(int i=9;i<binds.size();i++) {
-			bind_ints.push_back( packed_scene->get_state()->add_value( bind_ints[i] ) );
+		for(int i=0;i<binds.size();i++) {
+			bind_ints.push_back( packed_scene->get_state()->add_value( binds[i] ) );
 		}
 
 		packed_scene->get_state()->add_connection(
@@ -1026,430 +1031,36 @@ Error ResourceFormatLoaderText::rename_dependencies(const String &p_path,const M
 /*****************************************************************************************************/
 
 
-void ResourceFormatSaverTextInstance::write_property(const String& p_name,const Variant& p_property,bool *r_ok) {
+String ResourceFormatSaverTextInstance::_write_resources(void *ud,const RES& p_resource) {
 
-	if (r_ok)
-		*r_ok=false;
-
-	if (p_name!=String()) {
-		f->store_string(p_name+" = ");
-	}
-
-	switch( p_property.get_type() ) {
-
-		case Variant::NIL: {
-			f->store_string("null");
-		} break;
-		case Variant::BOOL: {
-
-			f->store_string(p_property.operator bool() ? "true":"false" );
-		} break;
-		case Variant::INT: {
-
-			f->store_string( itos(p_property.operator int()) );
-		} break;
-		case Variant::REAL: {
-
-			f->store_string( rtoss(p_property.operator real_t()) );
-		} break;
-		case Variant::STRING: {
-
-			String str=p_property;
-
-			str="\""+str.c_escape()+"\"";
-			f->store_string( str );
-		} break;
-		case Variant::VECTOR2: {
-
-			Vector2 v = p_property;
-			f->store_string("Vector2( "+rtoss(v.x) +", "+rtoss(v.y)+" )" );
-		} break;
-		case Variant::RECT2: {
-
-			Rect2 aabb = p_property;
-			f->store_string("Rect2( "+rtoss(aabb.pos.x) +", "+rtoss(aabb.pos.y) +", "+rtoss(aabb.size.x) +", "+rtoss(aabb.size.y)+" )" );
-
-		} break;
-		case Variant::VECTOR3: {
-
-			Vector3 v = p_property;
-			f->store_string("Vector3( "+rtoss(v.x) +", "+rtoss(v.y)+", "+rtoss(v.z)+" )");
-		} break;
-		case Variant::PLANE: {
-
-			Plane p = p_property;
-			f->store_string("Plane( "+rtoss(p.normal.x) +", "+rtoss(p.normal.y)+", "+rtoss(p.normal.z)+", "+rtoss(p.d)+" )" );
-
-		} break;
-		case Variant::_AABB: {
-
-			AABB aabb = p_property;
-			f->store_string("AABB( "+rtoss(aabb.pos.x) +", "+rtoss(aabb.pos.y) +", "+rtoss(aabb.pos.z) +", "+rtoss(aabb.size.x) +", "+rtoss(aabb.size.y) +", "+rtoss(aabb.size.z)+" )"  );
-
-		} break;
-		case Variant::QUAT: {
-
-			Quat quat = p_property;
-			f->store_string("Quat( "+rtoss(quat.x)+", "+rtoss(quat.y)+", "+rtoss(quat.z)+", "+rtoss(quat.w)+" )");
-
-		} break;
-		case Variant::MATRIX32: {
-
-			String s="Matrix32( ";
-			Matrix32 m3 = p_property;
-			for (int i=0;i<3;i++) {
-				for (int j=0;j<2;j++) {
-
-					if (i!=0 || j!=0)
-						s+=", ";
-					s+=rtoss( m3.elements[i][j] );
-				}
-			}
-
-			f->store_string(s+" )");
-
-		} break;
-		case Variant::MATRIX3: {
-
-			String s="Matrix3( ";
-			Matrix3 m3 = p_property;
-			for (int i=0;i<3;i++) {
-				for (int j=0;j<3;j++) {
-
-					if (i!=0 || j!=0)
-						s+=", ";
-					s+=rtoss( m3.elements[i][j] );
-				}
-			}
-
-			f->store_string(s+" )");
-
-		} break;
-		case Variant::TRANSFORM: {
-
-			String s="Transform( ";
-			Transform t = p_property;
-			Matrix3 &m3 = t.basis;
-			for (int i=0;i<3;i++) {
-				for (int j=0;j<3;j++) {
-
-					if (i!=0 || j!=0)
-						s+=", ";
-					s+=rtoss( m3.elements[i][j] );
-				}
-			}
-
-			s=s+", "+rtoss(t.origin.x) +", "+rtoss(t.origin.y)+", "+rtoss(t.origin.z);
-
-			f->store_string(s+" )");
-		} break;
-
-			// misc types
-		case Variant::COLOR: {
-
-			Color c = p_property;
-			f->store_string("Color( "+rtoss(c.r) +", "+rtoss(c.g)+", "+rtoss(c.b)+", "+rtoss(c.a)+" )");
-
-		} break;
-		case Variant::IMAGE: {
-
-
-			Image img=p_property;
-
-			if (img.empty()) {
-				f->store_string("Image()");
-				break;
-			}
-
-			String imgstr="Image( ";
-			imgstr+=itos(img.get_width());
-			imgstr+=", "+itos(img.get_height());
-			imgstr+=", "+itos(img.get_mipmaps());
-			imgstr+=", ";
-
-			switch(img.get_format()) {
-
-				case Image::FORMAT_GRAYSCALE: imgstr+="GRAYSCALE"; break;
-				case Image::FORMAT_INTENSITY: imgstr+="INTENSITY"; break;
-				case Image::FORMAT_GRAYSCALE_ALPHA: imgstr+="GRAYSCALE_ALPHA"; break;
-				case Image::FORMAT_RGB: imgstr+="RGB"; break;
-				case Image::FORMAT_RGBA: imgstr+="RGBA"; break;
-				case Image::FORMAT_INDEXED : imgstr+="INDEXED"; break;
-				case Image::FORMAT_INDEXED_ALPHA: imgstr+="INDEXED_ALPHA"; break;
-				case Image::FORMAT_BC1: imgstr+="BC1"; break;
-				case Image::FORMAT_BC2: imgstr+="BC2"; break;
-				case Image::FORMAT_BC3: imgstr+="BC3"; break;
-				case Image::FORMAT_BC4: imgstr+="BC4"; break;
-				case Image::FORMAT_BC5: imgstr+="BC5"; break;
-				case Image::FORMAT_PVRTC2: imgstr+="PVRTC2"; break;
-				case Image::FORMAT_PVRTC2_ALPHA: imgstr+="PVRTC2_ALPHA"; break;
-				case Image::FORMAT_PVRTC4: imgstr+="PVRTC4"; break;
-				case Image::FORMAT_PVRTC4_ALPHA: imgstr+="PVRTC4_ALPHA"; break;
-				case Image::FORMAT_ETC: imgstr+="ETC"; break;
-				case Image::FORMAT_ATC: imgstr+="ATC"; break;
-				case Image::FORMAT_ATC_ALPHA_EXPLICIT: imgstr+="ATC_ALPHA_EXPLICIT"; break;
-				case Image::FORMAT_ATC_ALPHA_INTERPOLATED: imgstr+="ATC_ALPHA_INTERPOLATED"; break;
-				case Image::FORMAT_CUSTOM: imgstr+="CUSTOM"; break;
-				default: {}
-			}
-
-
-			String s;
-
-			DVector<uint8_t> data = img.get_data();
-			int len = data.size();
-			DVector<uint8_t>::Read r = data.read();
-			const uint8_t *ptr=r.ptr();;
-			for (int i=0;i<len;i++) {
-
-				if (i>0)
-					s+=", ";
-				s+=itos(ptr[i]);
-			}
-
-			imgstr+=", ";
-			f->store_string(imgstr);
-			f->store_string(s);
-			f->store_string(" )");
-		} break;
-		case Variant::NODE_PATH: {
-
-			String str=p_property;
-
-			str="NodePath(\""+str.c_escape()+"\")";
-			f->store_string(str);
-
-		} break;
-
-		case Variant::OBJECT: {
-
-			RES res = p_property;
-			if (res.is_null()) {
-				f->store_string("null");
-				if (r_ok)
-					*r_ok=true;
-
-				break; // don't save it
-			}
-
-			if (external_resources.has(res)) {
-
-				f->store_string("ExtResource( "+itos(external_resources[res]+1)+" )");
-			} else {
-
-				if (internal_resources.has(res)) {
-					f->store_string("SubResource( "+itos(internal_resources[res])+" )");
-				} else 	if (res->get_path().length() && res->get_path().find("::")==-1) {
-
-					//external resource
-					String path=relative_paths?local_path.path_to_file(res->get_path()):res->get_path();
-					f->store_string("Resource( \""+path+"\" )");
-				} else {
-					f->store_string("null");
-					ERR_EXPLAIN("Resource was not pre cached for the resource section, bug?");
-					ERR_BREAK(true);
-					//internal resource
-				}
-			}
-
-		} break;
-		case Variant::INPUT_EVENT: {
-
-			f->store_string("InputEvent()"); //will be added later
-		} break;
-		case Variant::DICTIONARY: {
-
-			Dictionary dict = p_property;
-
-			List<Variant> keys;
-			dict.get_key_list(&keys);
-			keys.sort();
-
-			f->store_string("{ ");
-			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
-
-				//if (!_check_type(dict[E->get()]))
-				//	continue;
-				bool ok;
-				write_property("",E->get(),&ok);
-				ERR_CONTINUE(!ok);
-
-				f->store_string(":");
-				write_property("",dict[E->get()],&ok);
-				if (!ok)
-					write_property("",Variant()); //at least make the file consistent..
-				if (E->next())
-					f->store_string(", ");
-			}
-
-
-			f->store_string(" }");
-
-
-		} break;
-		case Variant::ARRAY: {
-
-			f->store_string("[ ");
-			Array array = p_property;
-			int len=array.size();
-			for (int i=0;i<len;i++) {
-
-				if (i>0)
-					f->store_string(", ");
-				write_property("",array[i]);
-
-
-			}
-			f->store_string(" ]");
-
-		} break;
-
-		case Variant::RAW_ARRAY: {
-
-			f->store_string("ByteArray( ");
-			String s;
-			DVector<uint8_t> data = p_property;
-			int len = data.size();
-			DVector<uint8_t>::Read r = data.read();
-			const uint8_t *ptr=r.ptr();;
-			for (int i=0;i<len;i++) {
-
-				if (i>0)
-					f->store_string(", ");
-
-				f->store_string(itos(ptr[i]));
-
-			}
-
-			f->store_string(" )");
-
-		} break;
-		case Variant::INT_ARRAY: {
-
-			f->store_string("IntArray( ");
-			DVector<int> data = p_property;
-			int len = data.size();
-			DVector<int>::Read r = data.read();
-			const int *ptr=r.ptr();;
-
-			for (int i=0;i<len;i++) {
-
-				if (i>0)
-					f->store_string(", ");
-
-				f->store_string(itos(ptr[i]));
-			}
-
-
-			f->store_string(" )");
-
-		} break;
-		case Variant::REAL_ARRAY: {
-
-			f->store_string("FloatArray( ");
-			DVector<real_t> data = p_property;
-			int len = data.size();
-			DVector<real_t>::Read r = data.read();
-			const real_t *ptr=r.ptr();;
-
-			for (int i=0;i<len;i++) {
-
-				if (i>0)
-					f->store_string(", ");
-				f->store_string(rtoss(ptr[i]));
-			}
-
-			f->store_string(" )");
-
-		} break;
-		case Variant::STRING_ARRAY: {
-
-			f->store_string("StringArray( ");
-			DVector<String> data = p_property;
-			int len = data.size();
-			DVector<String>::Read r = data.read();
-			const String *ptr=r.ptr();;
-			String s;
-			//write_string("\n");
-
-
-
-			for (int i=0;i<len;i++) {
-
-				if (i>0)
-					f->store_string(", ");
-				String str=ptr[i];
-				f->store_string(""+str.c_escape()+"\"");
-			}
-
-			f->store_string(" )");
-
-		} break;
-		case Variant::VECTOR2_ARRAY: {
-
-			f->store_string("Vector2Array( ");
-			DVector<Vector2> data = p_property;
-			int len = data.size();
-			DVector<Vector2>::Read r = data.read();
-			const Vector2 *ptr=r.ptr();;
-
-			for (int i=0;i<len;i++) {
-
-				if (i>0)
-					f->store_string(", ");
-				f->store_string(rtoss(ptr[i].x)+", "+rtoss(ptr[i].y) );
-			}
-
-			f->store_string(" )");
-
-		} break;
-		case Variant::VECTOR3_ARRAY: {
-
-			f->store_string("Vector3Array( ");
-			DVector<Vector3> data = p_property;
-			int len = data.size();
-			DVector<Vector3>::Read r = data.read();
-			const Vector3 *ptr=r.ptr();;
-
-			for (int i=0;i<len;i++) {
-
-				if (i>0)
-					f->store_string(", ");
-				f->store_string(rtoss(ptr[i].x)+", "+rtoss(ptr[i].y)+", "+rtoss(ptr[i].z) );
-			}
-
-			f->store_string(" )");
-
-		} break;
-		case Variant::COLOR_ARRAY: {
-
-			f->store_string("ColorArray( ");
-
-			DVector<Color> data = p_property;
-			int len = data.size();
-			DVector<Color>::Read r = data.read();
-			const Color *ptr=r.ptr();;
-
-			for (int i=0;i<len;i++) {
-
-				if (i>0)
-					f->store_string(", ");
-
-				f->store_string(rtoss(ptr[i].r)+", "+rtoss(ptr[i].g)+", "+rtoss(ptr[i].b)+", "+rtoss(ptr[i].a) );
-
-			}
-			f->store_string(" )");
-
-		} break;
-		default: {}
-
-	}
-
-	if (r_ok)
-		*r_ok=true;
+	ResourceFormatSaverTextInstance *rsi=(ResourceFormatSaverTextInstance*)ud;
+	return rsi->_write_resource(p_resource);
 
 }
 
+String ResourceFormatSaverTextInstance::_write_resource(const RES& res) {
+
+	if (external_resources.has(res)) {
+
+		return "ExtResource( "+itos(external_resources[res]+1)+" )";
+	} else {
+
+		if (internal_resources.has(res)) {
+			return "SubResource( "+itos(internal_resources[res])+" )";
+		} else 	if (res->get_path().length() && res->get_path().find("::")==-1) {
+
+			//external resource
+			String path=relative_paths?local_path.path_to_file(res->get_path()):res->get_path();
+			return "Resource( \""+path+"\" )";
+		} else {
+			ERR_EXPLAIN("Resource was not pre cached for the resource section, bug?");
+			ERR_FAIL_V("null");
+			//internal resource
+		}
+	}
+
+	return "null";
+}
 
 void ResourceFormatSaverTextInstance::_find_resources(const Variant& p_variant,bool p_main) {
 
@@ -1584,11 +1195,18 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 	}
 
 
+	Vector<RES> sorted_er;
+	sorted_er.resize(external_resources.size());
+
 	for(Map<RES,int>::Element *E=external_resources.front();E;E=E->next()) {
 
-		String p = E->key()->get_path();
+		sorted_er[E->get()]=E->key();
+	}
 
-		f->store_string("[ext_resource path=\""+p+"\" type=\""+E->key()->get_save_type()+"\" id="+itos(E->get()+1)+"]\n"); //bundled
+	for(int i=0;i<sorted_er.size();i++) {
+		String p = sorted_er[i]->get_path();
+
+		f->store_string("[ext_resource path=\""+p+"\" type=\""+sorted_er[i]->get_save_type()+"\" id="+itos(i+1)+"]\n"); //bundled
 	}
 
 	if (external_resources.size())
@@ -1667,8 +1285,9 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 				if (PE->get().type==Variant::OBJECT && value.is_zero())
 					continue;
 
-				write_property(name,value);
-				f->store_string("\n");
+				String vars;
+				VariantWriter::write_to_string(value,vars,_write_resources,this);
+				f->store_string(name+" = "+vars+"\n");
 			}
 
 
@@ -1719,17 +1338,22 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 			f->store_string(header);
 
 			if (instance.is_valid()) {
+
+				String vars;
 				f->store_string(" instance=");
-				write_property("",instance);
+				VariantWriter::write_to_string(instance,vars,_write_resources,this);
+				f->store_string(vars);
+
 			}
 
 			f->store_line("]\n");
 
 			for(int j=0;j<state->get_node_property_count(i);j++) {
 
-				write_property(state->get_node_property_name(i,j),state->get_node_property_value(i,j));
-				f->store_line(String());
+				String vars;
+				VariantWriter::write_to_string(state->get_node_property_value(i,j),vars,_write_resources,this);
 
+				f->store_string(String(state->get_node_property_name(i,j))+" = "+vars+"\n");
 			}
 
 			if (state->get_node_property_count(i)) {
@@ -1754,8 +1378,10 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 			Array binds=state->get_connection_binds(i);
 			f->store_string(connstr);
 			if (binds.size()) {
-				f->store_string(" binds=");
-				write_property("",binds);
+				String vars;
+				VariantWriter::write_to_string(binds,vars,_write_resources,this);
+				f->store_string(" binds= "+vars);
+
 			}
 
 			f->store_line("]\n");

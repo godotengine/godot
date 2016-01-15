@@ -66,20 +66,27 @@ env_base=Environment(tools=custom_tools,ENV = {'PATH' : os.environ['PATH']});
 
 #env_base=Environment(tools=custom_tools);
 env_base.global_defaults=global_defaults
-env_base.android_source_modules=[]
-env_base.android_source_files=[]
-env_base.android_module_libraries=[]
+env_base.android_maven_repos=[]
+env_base.android_dependencies=[]
+env_base.android_java_dirs=[]
+env_base.android_res_dirs=[]
+env_base.android_aidl_dirs=[]
+env_base.android_jni_dirs=[]
 env_base.android_manifest_chunk=""
 env_base.android_permission_chunk=""
 env_base.android_appattributes_chunk=""
 env_base.disabled_modules=[]
 
-env_base.__class__.android_module_source = methods.android_module_source
-env_base.__class__.android_module_library = methods.android_module_library
-env_base.__class__.android_module_file = methods.android_module_file
-env_base.__class__.android_module_manifest = methods.android_module_manifest
-env_base.__class__.android_module_permission = methods.android_module_permission
-env_base.__class__.android_module_attribute = methods.android_module_attribute
+
+env_base.__class__.android_add_maven_repository=methods.android_add_maven_repository
+env_base.__class__.android_add_dependency=methods.android_add_dependency
+env_base.__class__.android_add_java_dir=methods.android_add_java_dir
+env_base.__class__.android_add_res_dir=methods.android_add_res_dir
+env_base.__class__.android_add_aidl_dir=methods.android_add_aidl_dir
+env_base.__class__.android_add_jni_dir=methods.android_add_jni_dir
+env_base.__class__.android_add_to_manifest = methods.android_add_to_manifest
+env_base.__class__.android_add_to_permissions = methods.android_add_to_permissions
+env_base.__class__.android_add_to_attributes = methods.android_add_to_attributes
 env_base.__class__.disable_module = methods.disable_module
 
 env_base.__class__.add_source_files = methods.add_source_files

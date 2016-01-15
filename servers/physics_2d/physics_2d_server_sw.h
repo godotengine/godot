@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,6 +42,7 @@ class Physics2DServerSW : public Physics2DServer {
 	OBJ_TYPE( Physics2DServerSW, Physics2DServer );
 
 friend class Physics2DDirectSpaceStateSW;
+friend class Physics2DDirectBodyStateSW;
 	bool active;
 	int iterations;
 	bool doing_sync;
@@ -65,7 +66,7 @@ friend class Physics2DDirectSpaceStateSW;
 	mutable RID_Owner<Body2DSW> body_owner;
 	mutable RID_Owner<Joint2DSW> joint_owner;
 
-
+	static Physics2DServerSW *singletonsw;
 
 
 //	void _clear_query(Query2DSW *p_query);

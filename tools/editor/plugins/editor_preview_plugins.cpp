@@ -6,6 +6,7 @@
 #include "scene/resources/material.h"
 #include "scene/resources/sample.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/bit_mask.h"
 
 bool EditorTexturePreviewPlugin::handles(const String& p_type) const {
 
@@ -54,6 +55,81 @@ Ref<Texture> EditorTexturePreviewPlugin::generate(const RES& p_from) {
 }
 
 EditorTexturePreviewPlugin::EditorTexturePreviewPlugin() {
+
+
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+bool EditorBitmapPreviewPlugin::handles(const String& p_type) const {
+
+	return ObjectTypeDB::is_type(p_type,"BitMap");
+}
+
+Ref<Texture> EditorBitmapPreviewPlugin::generate(const RES& p_from) {
+
+	Ref<BitMap> bm =p_from;
+
+	if (bm->get_size()==Size2()) {
+		return Ref<Texture>();
+	}
+
+	DVector<uint8_t> data;
+
+	data.resize(bm->get_size().width*bm->get_size().height);
+
+	{
+		DVector<uint8_t>::Write w=data.write();
+
+		for(int i=0;i<bm->get_size().width;i++) {
+			for(int j=0;j<bm->get_size().height;j++) {
+				if (bm->get_bit(Point2i(i,j))) {
+					w[j*bm->get_size().width+i]=255;
+				} else {
+					w[j*bm->get_size().width+i]=0;
+
+				}
+			}
+
+		}
+	}
+
+
+	Image img(bm->get_size().width,bm->get_size().height,0,Image::FORMAT_GRAYSCALE,data);
+
+	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+	if (img.is_compressed()) {
+		if (img.decompress()!=OK)
+			return Ref<Texture>();
+	} else if (img.get_format()!=Image::FORMAT_RGB && img.get_format()!=Image::FORMAT_RGBA) {
+		img.convert(Image::FORMAT_RGBA);
+	}
+
+	int width,height;
+	if (img.get_width() > thumbnail_size && img.get_width() >= img.get_height()) {
+
+		width=thumbnail_size;
+		height = img.get_height() * thumbnail_size / img.get_width();
+	} else if (img.get_height() > thumbnail_size &&  img.get_height() >= img.get_width()) {
+
+		height=thumbnail_size;
+		width = img.get_width() * thumbnail_size / img.get_height();
+	}  else {
+
+		width=img.get_width();
+		height=img.get_height();
+	}
+
+	img.resize(width,height);
+
+	Ref<ImageTexture> ptex = Ref<ImageTexture>( memnew( ImageTexture ));
+
+	ptex->create_from_image(img,0);
+	return ptex;
+
+}
+
+EditorBitmapPreviewPlugin::EditorBitmapPreviewPlugin() {
 
 
 }

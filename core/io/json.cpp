@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,7 +86,7 @@ String JSON::_print_var(const Variant& p_var) {
 			s+="}";
 			return s;
 		};
-		default: return "\""+String(p_var).c_escape()+"\"";
+		default: return "\""+String(p_var).json_escape()+"\"";
 
 	}
 
@@ -288,7 +288,7 @@ Error JSON::_parse_value(Variant &value,Token& token,const CharType *p_str,int &
 
 	if (token.type==TK_CURLY_BRACKET_OPEN) {
 
-		Dictionary d;
+		Dictionary d(true);
 		Error err = _parse_object(d,p_str,index,p_len,line,r_err_str);
 		if (err)
 			return err;
@@ -296,7 +296,7 @@ Error JSON::_parse_value(Variant &value,Token& token,const CharType *p_str,int &
 		return OK;
 	} else if (token.type==TK_BRACKET_OPEN) {
 
-		Array a;
+		Array a(true);
 		Error err = _parse_array(a,p_str,index,p_len,line,r_err_str);
 		if (err)
 			return err;

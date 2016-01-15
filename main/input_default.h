@@ -56,6 +56,7 @@ class InputDefault : public Input {
 			}
 			last_hat = HAT_MASK_CENTER;
 			filter = 0.01f;
+			mapping = -1;
 		}
 	};
 
@@ -160,6 +161,14 @@ public:
 	uint32_t joy_button(uint32_t p_last_id, int p_device, int p_button, bool p_pressed);
 	uint32_t joy_axis(uint32_t p_last_id, int p_device, int p_axis, const JoyAxis& p_value);
 	uint32_t joy_hat(uint32_t p_last_id, int p_device, int p_val);
+
+	virtual void add_joy_mapping(String p_mapping, bool p_update_existing=false);
+	virtual void remove_joy_mapping(String p_guid);
+	virtual bool is_joy_known(int p_device);
+	virtual String get_joy_guid(int p_device) const;
+
+	bool is_joy_mapped(int p_device);
+	String get_joy_guid_remapped(int p_device) const;
 
 	InputDefault();
 };

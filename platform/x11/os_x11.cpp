@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -447,6 +447,11 @@ void OS_X11::finalize() {
 //		memdelete(debugger_connection_console);
 //}
 
+#ifdef JOYDEV_ENABLED
+	memdelete(joystick);
+#endif
+	memdelete(input);
+
 	memdelete(sample_manager);
 
 	audio_server->finish();
@@ -461,10 +466,6 @@ void OS_X11::finalize() {
 
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
-#ifdef JOYDEV_ENABLED
-	memdelete(joystick);
-#endif
-	memdelete(input);
 
 	XUnmapWindow( x11_display, x11_window );
 	XDestroyWindow( x11_display, x11_window );
@@ -618,6 +619,7 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 	xev.xclient.data.l[2] = 0;
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+
 }
 
 int OS_X11::get_screen_count() const {
@@ -886,7 +888,16 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 	XGetWindowAttributes(x11_display,DefaultRootWindow(x11_display),&xwa);
 	current_videomode.width = xwa.width;
 	current_videomode.height = xwa.height;
-*/
+//*/
+
+//	current_videomode.width = wm_max_horz;
+//	current_videomode.height = wm_max_vert;
+
+	//Size2 ss = get_screen_size(get_current_screen());
+	//current_videomode.width=ss.width;
+	//current_videomode.height=ss.height;
+
+
 	maximized = p_enabled;
 }
 
@@ -1761,6 +1772,14 @@ void OS_X11::run() {
 	};
 	
 	main_loop->finish();
+}
+
+bool OS_X11::is_joy_known(int p_device) {
+	return input->is_joy_mapped(p_device);
+}
+
+String OS_X11::get_joy_guid(int p_device) const {
+	return input->get_joy_guid_remapped(p_device);
 }
 
 OS_X11::OS_X11() {

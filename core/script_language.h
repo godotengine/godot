@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -98,6 +98,7 @@ public:
 	virtual bool has_script_signal(const StringName& p_signal) const=0;
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const=0;
 
+	virtual bool get_property_default_value(const StringName& p_property,Variant& r_value) const=0;
 
 	virtual void update_exports() {} //editor tool
 
@@ -165,6 +166,7 @@ public:
 	virtual String make_function(const String& p_class,const String& p_name,const StringArray& p_args) const=0;
 	virtual Error complete_code(const String& p_code, const String& p_base_path, Object*p_owner,List<String>* r_options,String& r_call_hint) { return ERR_UNAVAILABLE; }
 	virtual void auto_indent_code(String& p_code,int p_from_line,int p_to_line) const=0;
+	virtual void add_global_constant(const StringName& p_variable,const Variant& p_value)=0;
 
 	/* DEBUGGER FUNCTIONS */
 

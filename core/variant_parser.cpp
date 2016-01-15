@@ -19,6 +19,20 @@ bool VariantParser::StreamFile::is_eof() const {
 }
 
 
+CharType VariantParser::StreamString::get_char() {
+
+	if (pos>=s.length())
+		return 0;
+	else
+		return s[pos++];
+}
+
+bool VariantParser::StreamString::is_utf8() const {
+	return false;
+}
+bool VariantParser::StreamString::is_eof() const {
+	return pos>s.length();
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -35,8 +49,10 @@ const char * VariantParser::tk_name[TK_MAX] = {
 	"identifier",
 	"string",
 	"number",
+	"color",
 	"':'",
 	"','",
+	"'.'",
 	"'='",
 	"EOF",
 	"ERROR"
@@ -106,15 +122,57 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 				r_token.type=TK_COLON;
 				return OK;
 			};
+			case ';': {
+
+				while(true) {
+					CharType ch=p_stream->get_char();
+					if (p_stream->is_eof()) {
+						r_token.type=TK_EOF;
+						return OK;
+					}
+					if (ch=='\n')
+						break;
+				}
+
+				break;
+			};
 			case ',': {
 
 				r_token.type=TK_COMMA;
+				return OK;
+			};
+			case '.': {
+
+				r_token.type=TK_PERIOD;
 				return OK;
 			};
 			case '=': {
 
 				r_token.type=TK_EQUAL;
 				return OK;
+			};
+			case '#': {
+
+
+				String color_str="#";
+				while(true) {
+					CharType ch=p_stream->get_char();
+					if (p_stream->is_eof()) {
+						r_token.type=TK_EOF;
+						return OK;
+					} else if ( (ch>='0' && ch<='9') || (ch>='a' && ch<='f') || (ch>='A' && ch<='F') ) {
+						color_str+=String::chr(ch);
+
+					} else {
+						p_stream->saved=ch;
+						break;
+					}
+				}
+
+				r_token.value=Color::html(color_str);
+				r_token.type=TK_COLOR;
+				return OK;
+
 			};
 			case '"': {
 
@@ -336,6 +394,42 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 	return ERR_PARSE_ERROR;
 }
 
+Error VariantParser::_parse_enginecfg(Stream *p_stream, Vector<String>& strings, int &line, String &r_err_str) {
+
+	Token token;
+	get_token(p_stream,token,line,r_err_str);
+	if (token.type!=TK_PARENTHESIS_OPEN) {
+		r_err_str="Expected '(' in old-style engine.cfg construct";
+		return ERR_PARSE_ERROR;
+	}
+
+
+	String accum;
+
+	while(true) {
+
+		CharType c=p_stream->get_char();
+
+		if (p_stream->is_eof()) {
+			r_err_str="Unexpected EOF while parsing old-style engine.cfg construct";
+			return ERR_PARSE_ERROR;
+		}
+
+		if (c==',') {
+			strings.push_back(accum.strip_edges());
+			accum=String();
+		} else if (c==')') {
+			strings.push_back(accum.strip_edges());
+			return OK;
+		} else if (c=='\n') {
+			line++;
+		}
+
+	}
+
+	return OK;
+}
+
 template<class T>
 Error VariantParser::_parse_construct(Stream *p_stream,Vector<T>& r_construct,int &line,String &r_err_str) {
 
@@ -354,7 +448,7 @@ Error VariantParser::_parse_construct(Stream *p_stream,Vector<T>& r_construct,in
 		if (!first) {
 			get_token(p_stream,token,line,r_err_str);
 			if (token.type==TK_COMMA) {
-				//do none
+				//do none				
 			} else if (token.type==TK_PARENTHESIS_CLOSE) {
 				break;
 			} else {
@@ -364,7 +458,10 @@ Error VariantParser::_parse_construct(Stream *p_stream,Vector<T>& r_construct,in
 			}
 		}
 		get_token(p_stream,token,line,r_err_str);
-		if (token.type!=TK_NUMBER) {
+
+		if (first && token.type==TK_PARENTHESIS_CLOSE) {
+			break;
+		} else if (token.type!=TK_NUMBER) {
 			r_err_str="Expected float in constructor";
 			return ERR_PARSE_ERROR;
 		}
@@ -984,8 +1081,24 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				ie.joy_motion.axis = token.value;
 
 				get_token(p_stream,token,line,r_err_str);
+
+				if (token.type!=TK_COMMA) {
+					r_err_str="Expected ',' after axis index";
+					return ERR_PARSE_ERROR;
+				}
+
+				get_token(p_stream,token,line,r_err_str);
+				if (token.type!=TK_NUMBER) {
+					r_err_str="Expected axis sign";
+					return ERR_PARSE_ERROR;
+				}
+
+				ie.joy_motion.axis_value = token.value;
+
+				get_token(p_stream,token,line,r_err_str);
+
 				if (token.type!=TK_PARENTHESIS_CLOSE) {
-					r_err_str="Expected ')'";
+					r_err_str="Expected ')' for jaxis";
 					return ERR_PARSE_ERROR;
 				}
 
@@ -1079,7 +1192,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 					get_token(p_stream,token,line,r_err_str);
 					if (token.type==TK_COMMA) {
 						//do none
-					} else if (token.type!=TK_PARENTHESIS_CLOSE) {
+					} else if (token.type==TK_PARENTHESIS_CLOSE) {
 						break;
 					} else {
 						r_err_str="Expected ',' or ')'";
@@ -1088,11 +1201,13 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 					}
 				}
 				get_token(p_stream,token,line,r_err_str);
+
 				if (token.type!=TK_STRING) {
-					r_err_str="Expected string";
+					r_err_str="Expected string";					
 					return ERR_PARSE_ERROR;
 				}
 
+				first=false;
 				cs.push_back(token.value);
 			}
 
@@ -1174,6 +1289,112 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			value=arr;
 
 			return OK;
+		} else if (id=="key") { // compatibility with engine.cfg
+
+			Vector<String> params;
+			Error err = _parse_enginecfg(p_stream,params,line,r_err_str);
+			if (err)
+				return err;
+			ERR_FAIL_COND_V(params.size()!=1 && params.size()!=2,ERR_PARSE_ERROR);
+
+			int scode=0;
+
+			if (params[0].is_numeric()) {
+				scode=params[0].to_int();
+				if (scode < 10) {
+					scode=KEY_0+scode;
+				}
+			} else
+				scode=find_keycode(params[0]);
+
+			InputEvent ie;
+			ie.type=InputEvent::KEY;
+			ie.key.scancode=scode;
+
+			if (params.size()==2) {
+				String mods=params[1];
+				if (mods.findn("C")!=-1)
+					ie.key.mod.control=true;
+				if (mods.findn("A")!=-1)
+					ie.key.mod.alt=true;
+				if (mods.findn("S")!=-1)
+					ie.key.mod.shift=true;
+				if (mods.findn("M")!=-1)
+					ie.key.mod.meta=true;
+			}
+			value=ie;
+			return OK;
+
+		} else if (id=="mbutton") {  // compatibility with engine.cfg
+
+			Vector<String> params;
+			Error err = _parse_enginecfg(p_stream,params,line,r_err_str);
+			if (err)
+				return err;
+			ERR_FAIL_COND_V(params.size()!=2,ERR_PARSE_ERROR);
+
+			InputEvent ie;
+			ie.type=InputEvent::MOUSE_BUTTON;
+			ie.device=params[0].to_int();
+			ie.mouse_button.button_index=params[1].to_int();
+
+			value=ie;
+			return OK;
+		} else if (id=="jbutton") {  // compatibility with engine.cfg
+
+			Vector<String> params;
+			Error err = _parse_enginecfg(p_stream,params,line,r_err_str);
+			if (err)
+				return err;
+			ERR_FAIL_COND_V(params.size()!=2,ERR_PARSE_ERROR);
+			InputEvent ie;
+			ie.type=InputEvent::JOYSTICK_BUTTON;
+			ie.device=params[0].to_int();
+			ie.joy_button.button_index=params[1].to_int();
+
+			value=ie;
+
+			return OK;
+		} else if (id=="jaxis") {  // compatibility with engine.cfg
+
+			Vector<String> params;
+			Error err = _parse_enginecfg(p_stream,params,line,r_err_str);
+			if (err)
+				return err;
+			ERR_FAIL_COND_V(params.size()!=2,ERR_PARSE_ERROR);
+
+			InputEvent ie;
+			ie.type=InputEvent::JOYSTICK_MOTION;
+			ie.device=params[0].to_int();
+			int axis=params[1].to_int();
+			ie.joy_motion.axis=axis>>1;
+			ie.joy_motion.axis_value=axis&1?1:-1;
+
+			value= ie;
+
+			return OK;
+		} else if (id=="img") {  // compatibility with engine.cfg
+
+			Token token;
+			get_token(p_stream,token,line,r_err_str);
+			if (token.type!=TK_PARENTHESIS_OPEN) {
+				r_err_str="Expected '(' in old-style engine.cfg construct";
+				return ERR_PARSE_ERROR;
+			}
+
+			while(true) {
+				CharType c = p_stream->get_char();
+				if (p_stream->is_eof()) {
+					r_err_str="Unexpected EOF in old style engine.cfg img()";
+					return ERR_PARSE_ERROR;
+				}
+				if (c==')')
+					break;
+			}
+
+			value=Image();
+
+			return OK;
 
 		} else {
 			r_err_str="Unexpected identifier: '"+id+"'.";
@@ -1222,6 +1443,10 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 		value=token.value;
 		return OK;
 	} else if (token.type==TK_STRING) {
+
+		value=token.value;
+		return OK;
+	} else if (token.type==TK_COLOR) {
 
 		value=token.value;
 		return OK;
@@ -1360,7 +1585,7 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 }
 
 
-Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, ResourceParser *p_res_parser) {
+Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, ResourceParser *p_res_parser,bool p_simple_tag) {
 
 	r_tag.fields.clear();
 
@@ -1369,6 +1594,29 @@ Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, Strin
 		return ERR_PARSE_ERROR;
 	}
 
+
+	if (p_simple_tag) {
+
+		r_tag.name="";
+		r_tag.fields.clear();
+
+		while(true) {
+
+			CharType c = p_stream->get_char();
+			if (p_stream->is_eof()) {
+				r_err_str="Unexpected EOF while parsing simple tag";
+				return ERR_PARSE_ERROR;
+			}
+			if (c==']')
+				break;
+			r_tag.name+=String::chr(c);
+		}
+
+		r_tag.name = r_tag.name.strip_edges();
+
+		return OK;
+
+	}
 
 	get_token(p_stream,token,line,r_err_str);
 
@@ -1379,6 +1627,7 @@ Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, Strin
 	}
 
 	r_tag.name=token.value;
+	bool parsing_tag=true;
 
 	while(true) {
 
@@ -1391,6 +1640,16 @@ Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, Strin
 		if (token.type==TK_BRACKET_CLOSE)
 			break;
 
+		if (parsing_tag && token.type==TK_PERIOD) {
+			r_tag.name+="."; //support tags such as [someprop.Anroid] for specific platforms
+			get_token(p_stream,token,line,r_err_str);
+		} else if (parsing_tag && token.type==TK_COLON) {
+			r_tag.name+=":"; //support tags such as [someprop.Anroid] for specific platforms
+			get_token(p_stream,token,line,r_err_str);
+		} else {
+			parsing_tag=false;
+		}
+
 		if (token.type!=TK_IDENTIFIER) {
 			r_err_str="Expected Identifier";
 			return ERR_PARSE_ERROR;
@@ -1398,10 +1657,13 @@ Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, Strin
 
 		String id=token.value;
 
+		if (parsing_tag) {
+			r_tag.name+=id;
+			continue;
+		}
 
 		get_token(p_stream,token,line,r_err_str);
 		if (token.type!=TK_EQUAL) {
-			r_err_str="Expected '='";
 			return ERR_PARSE_ERROR;
 		}
 
@@ -1420,7 +1682,7 @@ Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, Strin
 
 }
 
-Error VariantParser::parse_tag(Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, ResourceParser *p_res_parser) {
+Error VariantParser::parse_tag(Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, ResourceParser *p_res_parser, bool p_simple_tag) {
 
 	Token token;
 	get_token(p_stream,token,line,r_err_str);
@@ -1434,14 +1696,15 @@ Error VariantParser::parse_tag(Stream *p_stream, int &line, String &r_err_str, T
 		return ERR_PARSE_ERROR;
 	}
 
-	return _parse_tag(token,p_stream,line,r_err_str,r_tag,p_res_parser);
+	return _parse_tag(token,p_stream,line,r_err_str,r_tag,p_res_parser,p_simple_tag);
 
 }
 
-Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser) {
+Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str, Tag& r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser, bool p_simple_tag) {
 
 
 	//assign..
+	r_assign="";
 	String what;
 
 	while(true) {
@@ -1459,11 +1722,23 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 		if (p_stream->is_eof())
 			return ERR_FILE_EOF;
 
+		if (c==';') { //comment
+			while(true) {
+				CharType ch=p_stream->get_char();
+				if (p_stream->is_eof()) {
+					return ERR_FILE_EOF;
+				}
+				if (ch=='\n')
+					break;
+			}
+			continue;
+		}
+
 		if (c=='[' && what.length()==0) {
 			//it's a tag!
 			p_stream->saved='['; //go back one
 
-			Error err = parse_tag(p_stream,line,r_err_str,r_tag,p_res_parser);
+			Error err = parse_tag(p_stream,line,r_err_str,r_tag,p_res_parser,p_simple_tag);
 
 			return err;
 		}
@@ -1506,3 +1781,431 @@ Error VariantParser::parse(Stream *p_stream, Variant& r_ret, String &r_err_str, 
 }
 
 
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+
+Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud,EncodeResourceFunc p_encode_res_func,void* p_encode_res_ud) {
+
+	switch( p_variant.get_type() ) {
+
+		case Variant::NIL: {
+			p_store_string_func(p_store_string_ud,"null");
+		} break;
+		case Variant::BOOL: {
+
+			p_store_string_func(p_store_string_ud,p_variant.operator bool() ? "true":"false" );
+		} break;
+		case Variant::INT: {
+
+			p_store_string_func(p_store_string_ud, itos(p_variant.operator int()) );
+		} break;
+		case Variant::REAL: {
+
+			String s = rtoss(p_variant.operator real_t());
+			if (s.find(".")==-1 && s.find("e")==-1)
+				s+=".0";
+			p_store_string_func(p_store_string_ud, s );
+		} break;
+		case Variant::STRING: {
+
+			String str=p_variant;
+
+			str="\""+str.c_escape()+"\"";
+			p_store_string_func(p_store_string_ud, str );
+		} break;
+		case Variant::VECTOR2: {
+
+			Vector2 v = p_variant;
+			p_store_string_func(p_store_string_ud,"Vector2( "+rtoss(v.x) +", "+rtoss(v.y)+" )" );
+		} break;
+		case Variant::RECT2: {
+
+			Rect2 aabb = p_variant;
+			p_store_string_func(p_store_string_ud,"Rect2( "+rtoss(aabb.pos.x) +", "+rtoss(aabb.pos.y) +", "+rtoss(aabb.size.x) +", "+rtoss(aabb.size.y)+" )" );
+
+		} break;
+		case Variant::VECTOR3: {
+
+			Vector3 v = p_variant;
+			p_store_string_func(p_store_string_ud,"Vector3( "+rtoss(v.x) +", "+rtoss(v.y)+", "+rtoss(v.z)+" )");
+		} break;
+		case Variant::PLANE: {
+
+			Plane p = p_variant;
+			p_store_string_func(p_store_string_ud,"Plane( "+rtoss(p.normal.x) +", "+rtoss(p.normal.y)+", "+rtoss(p.normal.z)+", "+rtoss(p.d)+" )" );
+
+		} break;
+		case Variant::_AABB: {
+
+			AABB aabb = p_variant;
+			p_store_string_func(p_store_string_ud,"AABB( "+rtoss(aabb.pos.x) +", "+rtoss(aabb.pos.y) +", "+rtoss(aabb.pos.z) +", "+rtoss(aabb.size.x) +", "+rtoss(aabb.size.y) +", "+rtoss(aabb.size.z)+" )"  );
+
+		} break;
+		case Variant::QUAT: {
+
+			Quat quat = p_variant;
+			p_store_string_func(p_store_string_ud,"Quat( "+rtoss(quat.x)+", "+rtoss(quat.y)+", "+rtoss(quat.z)+", "+rtoss(quat.w)+" )");
+
+		} break;
+		case Variant::MATRIX32: {
+
+			String s="Matrix32( ";
+			Matrix32 m3 = p_variant;
+			for (int i=0;i<3;i++) {
+				for (int j=0;j<2;j++) {
+
+					if (i!=0 || j!=0)
+						s+=", ";
+					s+=rtoss( m3.elements[i][j] );
+				}
+			}
+
+			p_store_string_func(p_store_string_ud,s+" )");
+
+		} break;
+		case Variant::MATRIX3: {
+
+			String s="Matrix3( ";
+			Matrix3 m3 = p_variant;
+			for (int i=0;i<3;i++) {
+				for (int j=0;j<3;j++) {
+
+					if (i!=0 || j!=0)
+						s+=", ";
+					s+=rtoss( m3.elements[i][j] );
+				}
+			}
+
+			p_store_string_func(p_store_string_ud,s+" )");
+
+		} break;
+		case Variant::TRANSFORM: {
+
+			String s="Transform( ";
+			Transform t = p_variant;
+			Matrix3 &m3 = t.basis;
+			for (int i=0;i<3;i++) {
+				for (int j=0;j<3;j++) {
+
+					if (i!=0 || j!=0)
+						s+=", ";
+					s+=rtoss( m3.elements[i][j] );
+				}
+			}
+
+			s=s+", "+rtoss(t.origin.x) +", "+rtoss(t.origin.y)+", "+rtoss(t.origin.z);
+
+			p_store_string_func(p_store_string_ud,s+" )");
+		} break;
+
+			// misc types
+		case Variant::COLOR: {
+
+			Color c = p_variant;
+			p_store_string_func(p_store_string_ud,"Color( "+rtoss(c.r) +", "+rtoss(c.g)+", "+rtoss(c.b)+", "+rtoss(c.a)+" )");
+
+		} break;
+		case Variant::IMAGE: {
+
+
+			Image img=p_variant;
+
+			if (img.empty()) {
+				p_store_string_func(p_store_string_ud,"Image()");
+				break;
+			}
+
+			String imgstr="Image( ";
+			imgstr+=itos(img.get_width());
+			imgstr+=", "+itos(img.get_height());
+			imgstr+=", "+itos(img.get_mipmaps());
+			imgstr+=", ";
+
+			switch(img.get_format()) {
+
+				case Image::FORMAT_GRAYSCALE: imgstr+="GRAYSCALE"; break;
+				case Image::FORMAT_INTENSITY: imgstr+="INTENSITY"; break;
+				case Image::FORMAT_GRAYSCALE_ALPHA: imgstr+="GRAYSCALE_ALPHA"; break;
+				case Image::FORMAT_RGB: imgstr+="RGB"; break;
+				case Image::FORMAT_RGBA: imgstr+="RGBA"; break;
+				case Image::FORMAT_INDEXED : imgstr+="INDEXED"; break;
+				case Image::FORMAT_INDEXED_ALPHA: imgstr+="INDEXED_ALPHA"; break;
+				case Image::FORMAT_BC1: imgstr+="BC1"; break;
+				case Image::FORMAT_BC2: imgstr+="BC2"; break;
+				case Image::FORMAT_BC3: imgstr+="BC3"; break;
+				case Image::FORMAT_BC4: imgstr+="BC4"; break;
+				case Image::FORMAT_BC5: imgstr+="BC5"; break;
+				case Image::FORMAT_PVRTC2: imgstr+="PVRTC2"; break;
+				case Image::FORMAT_PVRTC2_ALPHA: imgstr+="PVRTC2_ALPHA"; break;
+				case Image::FORMAT_PVRTC4: imgstr+="PVRTC4"; break;
+				case Image::FORMAT_PVRTC4_ALPHA: imgstr+="PVRTC4_ALPHA"; break;
+				case Image::FORMAT_ETC: imgstr+="ETC"; break;
+				case Image::FORMAT_ATC: imgstr+="ATC"; break;
+				case Image::FORMAT_ATC_ALPHA_EXPLICIT: imgstr+="ATC_ALPHA_EXPLICIT"; break;
+				case Image::FORMAT_ATC_ALPHA_INTERPOLATED: imgstr+="ATC_ALPHA_INTERPOLATED"; break;
+				case Image::FORMAT_CUSTOM: imgstr+="CUSTOM"; break;
+				default: {}
+			}
+
+
+			String s;
+
+			DVector<uint8_t> data = img.get_data();
+			int len = data.size();
+			DVector<uint8_t>::Read r = data.read();
+			const uint8_t *ptr=r.ptr();;
+			for (int i=0;i<len;i++) {
+
+				if (i>0)
+					s+=", ";
+				s+=itos(ptr[i]);
+			}
+
+			imgstr+=", ";
+			p_store_string_func(p_store_string_ud,imgstr);
+			p_store_string_func(p_store_string_ud,s);
+			p_store_string_func(p_store_string_ud," )");
+		} break;
+		case Variant::NODE_PATH: {
+
+			String str=p_variant;
+
+			str="NodePath(\""+str.c_escape()+"\")";
+			p_store_string_func(p_store_string_ud,str);
+
+		} break;
+
+		case Variant::OBJECT: {
+
+			RES res = p_variant;
+			if (res.is_null()) {
+				p_store_string_func(p_store_string_ud,"null");
+				break; // don't save it
+			}
+
+			String res_text;
+
+			if (p_encode_res_func) {
+
+				res_text=p_encode_res_func(p_encode_res_ud,res);
+			}
+
+			if (res_text==String() && res->get_path().is_resource_file()) {
+
+				//external resource
+				String path=res->get_path();
+				res_text="Resource( \""+path+"\")";
+			}
+
+			if (res_text==String())
+				res_text="null";
+
+			p_store_string_func(p_store_string_ud,res_text);
+
+		} break;
+		case Variant::INPUT_EVENT: {
+
+			p_store_string_func(p_store_string_ud,"InputEvent()"); //will be added later
+		} break;
+		case Variant::DICTIONARY: {
+
+			Dictionary dict = p_variant;
+
+			List<Variant> keys;
+			dict.get_key_list(&keys);
+			keys.sort();
+
+			p_store_string_func(p_store_string_ud,"{ ");
+			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
+
+				//if (!_check_type(dict[E->get()]))
+				//	continue;
+				write(E->get(),p_store_string_func,p_store_string_ud,p_encode_res_func,p_encode_res_ud);
+				p_store_string_func(p_store_string_ud,":");
+				write(dict[E->get()],p_store_string_func,p_store_string_ud,p_encode_res_func,p_encode_res_ud);
+				if (E->next())
+					p_store_string_func(p_store_string_ud,", ");
+			}
+
+
+			p_store_string_func(p_store_string_ud," }");
+
+
+		} break;
+		case Variant::ARRAY: {
+
+			p_store_string_func(p_store_string_ud,"[ ");
+			Array array = p_variant;
+			int len=array.size();
+			for (int i=0;i<len;i++) {
+
+				if (i>0)
+					p_store_string_func(p_store_string_ud,", ");
+				write(array[i],p_store_string_func,p_store_string_ud,p_encode_res_func,p_encode_res_ud);
+
+			}
+			p_store_string_func(p_store_string_ud," ]");
+
+		} break;
+
+		case Variant::RAW_ARRAY: {
+
+			p_store_string_func(p_store_string_ud,"ByteArray( ");
+			String s;
+			DVector<uint8_t> data = p_variant;
+			int len = data.size();
+			DVector<uint8_t>::Read r = data.read();
+			const uint8_t *ptr=r.ptr();;
+			for (int i=0;i<len;i++) {
+
+				if (i>0)
+					p_store_string_func(p_store_string_ud,", ");
+
+				p_store_string_func(p_store_string_ud,itos(ptr[i]));
+
+			}
+
+			p_store_string_func(p_store_string_ud," )");
+
+		} break;
+		case Variant::INT_ARRAY: {
+
+			p_store_string_func(p_store_string_ud,"IntArray( ");
+			DVector<int> data = p_variant;
+			int len = data.size();
+			DVector<int>::Read r = data.read();
+			const int *ptr=r.ptr();;
+
+			for (int i=0;i<len;i++) {
+
+				if (i>0)
+					p_store_string_func(p_store_string_ud,", ");
+
+				p_store_string_func(p_store_string_ud,itos(ptr[i]));
+			}
+
+
+			p_store_string_func(p_store_string_ud," )");
+
+		} break;
+		case Variant::REAL_ARRAY: {
+
+			p_store_string_func(p_store_string_ud,"FloatArray( ");
+			DVector<real_t> data = p_variant;
+			int len = data.size();
+			DVector<real_t>::Read r = data.read();
+			const real_t *ptr=r.ptr();;
+
+			for (int i=0;i<len;i++) {
+
+				if (i>0)
+					p_store_string_func(p_store_string_ud,", ");
+				p_store_string_func(p_store_string_ud,rtoss(ptr[i]));
+			}
+
+			p_store_string_func(p_store_string_ud," )");
+
+		} break;
+		case Variant::STRING_ARRAY: {
+
+			p_store_string_func(p_store_string_ud,"StringArray( ");
+			DVector<String> data = p_variant;
+			int len = data.size();
+			DVector<String>::Read r = data.read();
+			const String *ptr=r.ptr();;
+			String s;
+			//write_string("\n");
+
+
+
+			for (int i=0;i<len;i++) {
+
+				if (i>0)
+					p_store_string_func(p_store_string_ud,", ");
+				String str=ptr[i];
+				p_store_string_func(p_store_string_ud,"\""+str.c_escape()+"\"");
+			}
+
+			p_store_string_func(p_store_string_ud," )");
+
+		} break;
+		case Variant::VECTOR2_ARRAY: {
+
+			p_store_string_func(p_store_string_ud,"Vector2Array( ");
+			DVector<Vector2> data = p_variant;
+			int len = data.size();
+			DVector<Vector2>::Read r = data.read();
+			const Vector2 *ptr=r.ptr();;
+
+			for (int i=0;i<len;i++) {
+
+				if (i>0)
+					p_store_string_func(p_store_string_ud,", ");
+				p_store_string_func(p_store_string_ud,rtoss(ptr[i].x)+", "+rtoss(ptr[i].y) );
+			}
+
+			p_store_string_func(p_store_string_ud," )");
+
+		} break;
+		case Variant::VECTOR3_ARRAY: {
+
+			p_store_string_func(p_store_string_ud,"Vector3Array( ");
+			DVector<Vector3> data = p_variant;
+			int len = data.size();
+			DVector<Vector3>::Read r = data.read();
+			const Vector3 *ptr=r.ptr();;
+
+			for (int i=0;i<len;i++) {
+
+				if (i>0)
+					p_store_string_func(p_store_string_ud,", ");
+				p_store_string_func(p_store_string_ud,rtoss(ptr[i].x)+", "+rtoss(ptr[i].y)+", "+rtoss(ptr[i].z) );
+			}
+
+			p_store_string_func(p_store_string_ud," )");
+
+		} break;
+		case Variant::COLOR_ARRAY: {
+
+			p_store_string_func(p_store_string_ud,"ColorArray( ");
+
+			DVector<Color> data = p_variant;
+			int len = data.size();
+			DVector<Color>::Read r = data.read();
+			const Color *ptr=r.ptr();;
+
+			for (int i=0;i<len;i++) {
+
+				if (i>0)
+					p_store_string_func(p_store_string_ud,", ");
+
+				p_store_string_func(p_store_string_ud,rtoss(ptr[i].r)+", "+rtoss(ptr[i].g)+", "+rtoss(ptr[i].b)+", "+rtoss(ptr[i].a) );
+
+			}
+			p_store_string_func(p_store_string_ud," )");
+
+		} break;
+		default: {}
+
+	}
+
+	return OK;
+}
+
+static Error _write_to_str(void *ud,const String& p_string) {
+
+	String *str=(String*)ud;
+	(*str)+=p_string;
+	return OK;
+}
+
+Error VariantWriter::write_to_string(const Variant& p_variant, String& r_string, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud) {
+
+	r_string=String();
+
+	return write(p_variant,_write_to_str,&r_string,p_encode_res_func,p_encode_res_ud);
+
+}

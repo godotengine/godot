@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -389,8 +389,8 @@ Matrix32 CanvasItem::get_global_transform_with_canvas() const {
 
 	if (last_valid->canvas_layer)
 		return last_valid->canvas_layer->get_transform() * xform;
-	else
-		return xform;
+	else if (is_inside_tree())
+		return get_viewport()->get_canvas_transform() * xform;
 }
 
 Matrix32 CanvasItem::get_global_transform() const {
@@ -548,6 +548,7 @@ void CanvasItem::_notification(int p_what) {
 				get_parent()->cast_to<CanvasItem>()->children_items.erase(C);
 				C=NULL;
 			}
+			global_invalid=true;
 		} break;
 		case NOTIFICATION_DRAW: {
 
@@ -773,7 +774,7 @@ void CanvasItem::draw_set_transform(const Point2& p_offset, float p_rot, const S
 
 	Matrix32 xform(p_rot,p_offset);
 	xform.scale_basis(p_scale);
-	VisualServer::get_singleton()->canvas_item_set_transform(canvas_item,xform);
+	VisualServer::get_singleton()->canvas_item_add_set_transform(canvas_item,xform);
 }
 
 void CanvasItem::draw_polygon(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, Ref<Texture> p_texture) {
@@ -1080,7 +1081,7 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("draw_line","from","to","color","width"),&CanvasItem::draw_line,DEFVAL(1.0));
 	ObjectTypeDB::bind_method(_MD("draw_rect","rect","color"),&CanvasItem::draw_rect);
 	ObjectTypeDB::bind_method(_MD("draw_circle","pos","radius","color"),&CanvasItem::draw_circle);
-	ObjectTypeDB::bind_method(_MD("draw_texture","texture:Texture","pos"),&CanvasItem::draw_texture);
+	ObjectTypeDB::bind_method(_MD("draw_texture","texture:Texture","pos","modulate"),&CanvasItem::draw_texture,DEFVAL(Color(1,1,1,1)));
 	ObjectTypeDB::bind_method(_MD("draw_texture_rect","texture:Texture","rect","tile","modulate","transpose"),&CanvasItem::draw_texture_rect,DEFVAL(Color(1,1,1)),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("draw_texture_rect_region","texture:Texture","rect","src_rect","modulate","transpose"),&CanvasItem::draw_texture_rect_region,DEFVAL(Color(1,1,1)),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("draw_style_box","style_box:StyleBox","rect"),&CanvasItem::draw_style_box);

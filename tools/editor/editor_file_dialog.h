@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -175,6 +175,8 @@ private:
 	void _thumbnail_result(const String& p_path,const Ref<Texture>& p_preview, const Variant& p_udata);
 	void _thumbnail_done(const String& p_path,const Ref<Texture>& p_preview, const Variant& p_udata);
 	void _request_single_thumbnail(const String& p_path);
+
+	void _unhandled_input(const InputEvent& p_event);
 
 protected:
 

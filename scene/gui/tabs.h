@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,10 +45,9 @@ public:
 
 	enum CloseButtonDisplayPolicy {
 
-		SHOW_ALWAYS,
-		SHOW_ACTIVE_ONLY,
-		SHOW_HOVER,
-		SHOW_NEVER
+		CLOSE_BUTTON_SHOW_NEVER,
+		CLOSE_BUTTON_SHOW_ACTIVE_ONLY,
+		CLOSE_BUTTON_SHOW_ALWAYS,
 	};
 private:
 
@@ -59,10 +58,13 @@ private:
 		Ref<Texture> icon;
 		int ofs_cache;
 		int size_cache;
+		int x_cache;
+		int x_size_cache;
+
 		Ref<Texture> right_button;
 		Rect2 rb_rect;
-		Ref<Texture> close_button;
 		Rect2 cb_rect;
+
 	};
 
 
@@ -85,6 +87,8 @@ private:
 
 	int hover;	// hovered tab
 
+	int get_tab_width(int p_idx) const;
+
 protected:
 
 	void _input_event(const InputEvent& p_event);
@@ -104,12 +108,10 @@ public:
 	void set_tab_right_button(int p_tab,const Ref<Texture>& p_right_button);
 	Ref<Texture> get_tab_right_button(int p_tab) const;
 
-	void set_tab_close_button(int p_tab, const Ref<Texture>& p_close_button);
-	Ref<Texture> get_tab_close_button(int p_tab) const;
-	void set_tab_close_display_policy(CloseButtonDisplayPolicy p_cb_displaypolicy);
-
 	void set_tab_align(TabAlign p_align);
 	TabAlign get_tab_align() const;
+
+	void set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy);
 
 	int get_tab_count() const;
 	void set_current_tab(int p_current);
@@ -118,6 +120,8 @@ public:
 	void remove_tab(int p_idx);
 
 	void clear_tabs();
+
+	void ensure_tab_visible(int p_idx);
 
 	Size2 get_minimum_size() const;
 

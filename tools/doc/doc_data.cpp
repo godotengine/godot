@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -190,10 +190,10 @@ void DocData::generate(bool p_basic_types) {
 #ifdef DEBUG_METHODS_ENABLED
 					if (m && m->get_return_type()!=StringName())
 						method.return_type=m->get_return_type();
-					else if (arginfo.type!=Variant::NIL) {
+					else if (arginfo.type!=Variant::NIL) // {
 #endif
 						method.return_type=(arginfo.hint==PROPERTY_HINT_RESOURCE_TYPE)?arginfo.hint_string:Variant::get_type_name(arginfo.type);
-					}
+//					}
 
 				} else {
 
@@ -584,7 +584,10 @@ void DocData::generate(bool p_basic_types) {
 				md.name=mi.name;
 				if (mi.return_val.name!="")
 					md.return_type=mi.return_val.name;
-				else
+				else if (mi.name.find(":")!=-1) {
+					md.return_type=mi.name.get_slice(":",1);
+					md.name=mi.name.get_slice(":",0);
+				} else
 					md.return_type=Variant::get_type_name(mi.return_val.type);
 
 				for(int i=0;i<mi.arguments.size();i++) {
@@ -594,8 +597,9 @@ void DocData::generate(bool p_basic_types) {
 					ArgumentDoc ad;
 					ad.name=pi.name;
 
+
 					if (pi.type==Variant::NIL)
-						ad.type="var";
+						ad.type="Variant";
 					else
 						ad.type=Variant::get_type_name( pi.type );
 

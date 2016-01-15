@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 #include "collision_object_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
-
+#include "triangulator.h"
 void CollisionPolygon2D::_add_to_collision_object(Object *p_obj) {
 
 	if (unparenting || !can_update_body)
@@ -48,7 +48,7 @@ void CollisionPolygon2D::_add_to_collision_object(Object *p_obj) {
 
 		//here comes the sun, lalalala
 		//decompose concave into multiple convex polygons and add them
-		Vector< Vector<Vector2> > decomp = Geometry::decompose_polygon(polygon);
+		Vector< Vector<Vector2> > decomp = _decompose_in_convex();
 		shape_from=co->get_shape_count();
 		for(int i=0;i<decomp.size();i++) {
 			Ref<ConvexPolygonShape2D> convex = memnew( ConvexPolygonShape2D );
@@ -106,6 +106,51 @@ void CollisionPolygon2D::_update_parent() {
 	co->_update_shapes_from_children();
 }
 
+Vector< Vector<Vector2> > CollisionPolygon2D::_decompose_in_convex() {
+
+	Vector< Vector<Vector2> > decomp;
+#if 0
+	//fast but imprecise triangulator, gave us problems
+	decomp = Geometry::decompose_polygon(polygon);
+#else
+
+	List<TriangulatorPoly> in_poly,out_poly;
+
+	TriangulatorPoly inp;
+	inp.Init(polygon.size());
+	for(int i=0;i<polygon.size();i++) {
+		inp.GetPoint(i)=polygon[i];
+	}
+	inp.SetOrientation(TRIANGULATOR_CCW);
+	in_poly.push_back(inp);
+	TriangulatorPartition tpart;
+	if (tpart.ConvexPartition_HM(&in_poly,&out_poly)==0) { //failed!
+		ERR_PRINT("Convex decomposing failed!");
+		return decomp;
+	}
+
+	decomp.resize(out_poly.size());
+	int idx=0;
+
+	for(List<TriangulatorPoly>::Element*I = out_poly.front();I;I=I->next()) {
+
+		TriangulatorPoly& tp = I->get();
+
+		decomp[idx].resize(tp.GetNumPoints());
+
+		for(int i=0;i<tp.GetNumPoints();i++) {
+
+			decomp[idx][i]=tp.GetPoint(i);
+		}
+
+		idx++;
+	}
+
+#endif
+
+	return decomp;
+}
+
 void CollisionPolygon2D::_notification(int p_what) {
 
 
@@ -152,10 +197,11 @@ void CollisionPolygon2D::_notification(int p_what) {
 				Vector2 n = polygon[(i+1)%polygon.size()];
 				draw_line(p,n,Color(0.9,0.2,0.0,0.8),3);
 			}
-//#define DEBUG_DECOMPOSE
+#define DEBUG_DECOMPOSE
 #if defined(TOOLS_ENABLED) && defined (DEBUG_DECOMPOSE)
 
-			Vector< Vector<Vector2> > decomp = Geometry::decompose_polygon(polygon);
+			Vector< Vector<Vector2> > decomp = _decompose_in_convex();
+
 			Color c(0.4,0.9,0.1);
 			for(int i=0;i<decomp.size();i++) {
 
@@ -257,10 +303,10 @@ void CollisionPolygon2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_polygon","polygon"),&CollisionPolygon2D::set_polygon);
 	ObjectTypeDB::bind_method(_MD("get_polygon"),&CollisionPolygon2D::get_polygon);
 
-	ObjectTypeDB::bind_method(_MD("set_build_mode"),&CollisionPolygon2D::set_build_mode);
+	ObjectTypeDB::bind_method(_MD("set_build_mode","build_mode"),&CollisionPolygon2D::set_build_mode);
 	ObjectTypeDB::bind_method(_MD("get_build_mode"),&CollisionPolygon2D::get_build_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_trigger"),&CollisionPolygon2D::set_trigger);
+	ObjectTypeDB::bind_method(_MD("set_trigger","trigger"),&CollisionPolygon2D::set_trigger);
 	ObjectTypeDB::bind_method(_MD("is_trigger"),&CollisionPolygon2D::is_trigger);
 
 	ObjectTypeDB::bind_method(_MD("_set_shape_range","shape_range"),&CollisionPolygon2D::_set_shape_range);

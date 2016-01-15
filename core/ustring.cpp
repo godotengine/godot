@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1636,12 +1636,16 @@ int64_t String::to_int64() const {
 	return integer*sign;
 }
 
-int String::to_int(const char* p_str) {
+int String::to_int(const char* p_str,int p_len) {
 
 
 	int to=0;
-	while(p_str[to]!=0 && p_str[to]!='.')
-		to++;
+	if (p_len>=0)
+		to=p_len;
+	else {
+		while(p_str[to]!=0 && p_str[to]!='.')
+			to++;
+	}
 
 
 	int integer=0;
@@ -3150,6 +3154,21 @@ String String::c_escape() const {
 	escaped=escaped.replace("\'","\\'");
 	escaped=escaped.replace("\"","\\\"");
 	escaped=escaped.replace("\?","\\?");
+
+	return escaped;
+}
+
+String String::json_escape() const {
+
+	String escaped=*this;
+	escaped=escaped.replace("\\","\\\\");
+	escaped=escaped.replace("\b","\\b");
+	escaped=escaped.replace("\f","\\f");
+	escaped=escaped.replace("\n","\\n");
+	escaped=escaped.replace("\r","\\r");
+	escaped=escaped.replace("\t","\\t");
+	escaped=escaped.replace("\v","\\v");
+	escaped=escaped.replace("\"","\\\"");
 
 	return escaped;
 }

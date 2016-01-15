@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1570,7 +1570,9 @@ Error ResourceInteractiveLoaderXML::poll() {
 	if (main) {
 		f->close();
 		resource=res;
-		resource->set_path(res_path);
+		if (!ResourceCache::has(res_path)) {
+			resource->set_path(res_path);
+		}
 		error=ERR_FILE_EOF;
 		return error;
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1253,6 +1253,8 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 	history.push_back("res://");
 	history_pos=0;
 	tree_mode=true;
+
+	path="res://";
 
 
 }

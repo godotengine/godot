@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -360,7 +360,7 @@ void AudioServerSW::sample_set_description(RID p_sample, const String& p_descrip
 	AUDIO_LOCK
 	sample_manager->sample_set_description(p_sample,p_description);
 }
-String AudioServerSW::sample_get_description(RID p_sample, const String& p_description) const {
+String AudioServerSW::sample_get_description(RID p_sample) const {
 
 	AUDIO_LOCK
 	return sample_manager->sample_get_description(p_sample);

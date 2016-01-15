@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -144,7 +144,7 @@ public:
 	int to_int() const;
 
 	int64_t to_int64() const;
-	static int to_int(const char* p_str);
+	static int to_int(const char* p_str, int p_len=-1);
 	static double to_double(const char* p_str);
 	static double to_double(const CharType* p_str, const CharType **r_end=NULL);
 	static int64_t to_int(const CharType* p_str,int p_len=-1);
@@ -211,6 +211,7 @@ public:
     String http_unescape() const;
 	String c_escape() const;
 	String c_unescape() const;
+	String json_escape() const;
 	String world_wrap(int p_chars_per_line) const;
 	
 	String percent_encode() const;

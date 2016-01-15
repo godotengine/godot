@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,12 +48,6 @@ class ProjectSettings : public AcceptDialog {
 	UndoRedo *undo_redo;
 	SectionedPropertyEditor *globals_editor;
 
-	HBoxContainer *search_bar;
-	ToolButton *search_button;
-	LineEdit *search_box;
-	ToolButton *clear_button;
-
-	HBoxContainer *add_prop_bar;
 	ConfirmationDialog *message;
 	LineEdit *category;
 	LineEdit *property;
@@ -95,8 +89,10 @@ class ProjectSettings : public AcceptDialog {
 	void _update_autoload();
 	void _autoload_file_callback(const String& p_path);
 	void _autoload_add();
+	void _autoload_edited();
 	void _autoload_file_open();
 	void _autoload_delete(Object *p_item,int p_column, int p_button);
+	bool updating_autoload;
 
 
 	void _item_selected();
@@ -139,9 +135,6 @@ class ProjectSettings : public AcceptDialog {
 	void _translation_res_option_add(const String& p_path);
 	void _translation_res_option_changed();
 	void _translation_res_option_delete(Object *p_item,int p_column, int p_button);
-
-	void _toggle_search_bar(bool p_pressed);
-	void _clear_search_box();
 
 	ProjectSettings();
 

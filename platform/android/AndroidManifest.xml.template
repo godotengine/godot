@@ -3,7 +3,7 @@
 	  package="com.godot.game"
       android:versionCode="1"
       android:versionName="1.0"
-      android:installLocation="preferExternal"
+      android:installLocation="auto"
       >
 <supports-screens android:smallScreens="true"
                       android:normalScreens="true"
@@ -11,7 +11,7 @@
                       android:xlargeScreens="true"/>
 
     <application android:label="@string/godot_project_name_string" android:icon="@drawable/icon" android:allowBackup="false" $$ADD_APPATTRIBUTE_CHUNKS$$ >
-        <activity android:name="com.android.godot.Godot"
+        <activity android:name="org.godotengine.godot.Godot"
                   android:label="@string/godot_project_name_string"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
                   android:launchMode="singleTask"
@@ -23,7 +23,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-	<service android:name="com.android.godot.GodotDownloaderService" />
+	<service android:name="org.godotengine.godot.GodotDownloaderService" />
 
 
   
@@ -189,7 +189,7 @@ $$ADD_PERMISSION_CHUNKS$$
 <uses-permission android:name="godot.custom.7"/>
 <uses-permission android:name="godot.custom.8"/>
 <uses-permission android:name="godot.custom.9"/>
-<uses-permission android:name="godot.custom.0"/>
+<uses-permission android:name="godot.custom.10"/>
 <uses-permission android:name="godot.custom.11"/>
 <uses-permission android:name="godot.custom.12"/>
 <uses-permission android:name="godot.custom.13"/>

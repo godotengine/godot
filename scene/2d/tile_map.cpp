@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -118,7 +118,7 @@ void TileMap::_update_quadrant_transform() {
 
 	Matrix32 nav_rel;
 	if (navigation)
-		nav_rel = get_relative_transform(navigation);
+		nav_rel = get_relative_transform_to_parent(navigation);
 
 	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
 
@@ -223,6 +223,14 @@ void TileMap::_fix_cell_transform(Matrix32& xform,const Cell& p_cell, const Vect
 	Size2 s=p_sc;
 	Vector2 offset = p_offset;
 
+	if (s.y > s.x) {
+		if ((p_cell.flip_h && (p_cell.flip_v || p_cell.transpose)) || (p_cell.flip_v && !p_cell.transpose))
+			offset.y += s.y - s.x;
+	} else if (s.y < s.x) {
+		if ((p_cell.flip_v && (p_cell.flip_h || p_cell.transpose)) || (p_cell.flip_h && !p_cell.transpose))
+			offset.x += s.x - s.y;
+	}
+
 	if (p_cell.transpose) {
 		SWAP(xform.elements[0].x, xform.elements[0].y);
 		SWAP(xform.elements[1].x, xform.elements[1].y);
@@ -261,7 +269,7 @@ void TileMap::_update_dirty_quadrants() {
 	Vector2 tcenter = cell_size/2;
 	Matrix32 nav_rel;
 	if (navigation)
-		nav_rel = get_relative_transform(navigation);
+		nav_rel = get_relative_transform_to_parent(navigation);
 
 	Vector2 qofs;
 
@@ -333,6 +341,8 @@ void TileMap::_update_dirty_quadrants() {
 				Matrix32 xform;
 				xform.set_origin( q.pos );
 				vs->canvas_item_set_transform( canvas_item, xform );
+				vs->canvas_item_set_light_mask(canvas_item,get_light_mask());
+
 				q.canvas_items.push_back(canvas_item);
 
 				if (debug_shapes) {
@@ -374,13 +384,28 @@ void TileMap::_update_dirty_quadrants() {
 			rect.pos=offset.floor();
 			rect.size=s;
 
+			if (rect.size.y > rect.size.x) {
+				if ((c.flip_h && (c.flip_v || c.transpose)) || (c.flip_v && !c.transpose))
+					tile_ofs.y += rect.size.y - rect.size.x;
+			} else if (rect.size.y < rect.size.x) {
+				if ((c.flip_v && (c.flip_h || c.transpose)) || (c.flip_h && !c.transpose))
+					tile_ofs.x += rect.size.x - rect.size.y;
+			}
+
 		/*	rect.size.x+=fp_adjust;
 			rect.size.y+=fp_adjust;*/
 
-			if (c.flip_h)
+			if (c.transpose)
+				SWAP(tile_ofs.x, tile_ofs.y);
+
+			if (c.flip_h) {
 				rect.size.x=-rect.size.x;
-			if (c.flip_v)
+				tile_ofs.x=-tile_ofs.x;
+			}
+			if (c.flip_v) {
 				rect.size.y=-rect.size.y;
+				tile_ofs.y=-tile_ofs.y;
+			}
 
 			Vector2 center_ofs;
 
@@ -1105,7 +1130,16 @@ int TileMap::get_occluder_light_mask() const{
 	return occluder_light_mask;
 }
 
+void TileMap::set_light_mask(int p_light_mask) {
 
+	CanvasItem::set_light_mask(p_light_mask);
+	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
+
+		for (List<RID>::Element *F=E->get().canvas_items.front();F;F=F->next()) {
+			VisualServer::get_singleton()->canvas_item_set_light_mask(F->get(),get_light_mask());
+		}
+	}
+}
 
 void TileMap::_bind_methods() {
 

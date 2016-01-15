@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -123,6 +123,8 @@ void RichTextLabel::_process_line(ItemFrame *p_frame,const Vector2& p_ofs,int &y
 
 	int wofs=margin;
 	int spaces_size=0;
+	int align_ofs=0;
+
 
 	if (p_mode!=PROCESS_CACHE && align!=ALIGN_FILL)
 		wofs+=line_ofs;
@@ -153,7 +155,7 @@ void RichTextLabel::_process_line(ItemFrame *p_frame,const Vector2& p_ofs,int &y
 			case ALIGN_LEFT: l.offset_caches.push_back(0); break;\
 			case ALIGN_CENTER: l.offset_caches.push_back(((p_width-margin)-used)/2); break;\
 			case ALIGN_RIGHT: l.offset_caches.push_back(((p_width-margin)-used)); break;\
-			case ALIGN_FILL: l.offset_caches.push_back((p_width-margin)-used+spaces_size); break;\
+			case ALIGN_FILL: l.offset_caches.push_back((p_width-margin)-used/*+spaces_size*/); break;\
 		}\
 		l.height_caches.push_back(line_height);\
 		l.space_caches.push_back(spaces);\
@@ -163,6 +165,7 @@ void RichTextLabel::_process_line(ItemFrame *p_frame,const Vector2& p_ofs,int &y
 	spaces=0;\
 	spaces_size=0;\
 	wofs=begin;\
+	align_ofs=0;\
 	if (p_mode!=PROCESS_CACHE) {\
 		lh=line<l.height_caches.size()?l.height_caches[line]:1;\
 	}\
@@ -279,6 +282,8 @@ if (m_height > line_height) {\
 
 						if (c[end]==' ') {
 
+							fw+=cw;
+							/*
 							if (p_mode==PROCESS_CACHE) {
 								fw+=cw;
 							} else if (align==ALIGN_FILL && line<l.space_caches.size() && l.space_caches[line]>0) {
@@ -287,7 +292,7 @@ if (m_height > line_height) {\
 								found_space=true;
 							} else {
 								fw+=cw;
-							}
+							}*/
 						} else {
 							fw+=cw;
 						}
@@ -295,22 +300,26 @@ if (m_height > line_height) {\
 						end++;						
 					}
 
-
 					ENSURE_WIDTH(w);
-
 
 					//print_line("END: "+String::chr(c[end])+".");
 					if (end && c[end-1]==' ') {
-						spaces++;
 						if (p_mode==PROCESS_CACHE) {
 							spaces_size+=font->get_char_size(' ').width;
+						} else if (align==ALIGN_FILL) {
+							int ln = MIN(l.offset_caches.size()-1,line);
+							if (l.space_caches[ln]) {
+								align_ofs = spaces * l.offset_caches[ln] / l.space_caches[ln];
+							}
 						}
+						spaces++;
 
+						/*
 						if (found_space) {
 							int ln = MIN(l.offset_caches.size()-1,line);
 
 							fw+=l.offset_caches[ln]/l.space_caches[ln];
-						}
+						}*/
 
 					}
 
@@ -335,7 +344,7 @@ if (m_height > line_height) {\
 									cw=tab_size*font->get_char_size(' ').width;
 								}
 
-								if (p_click_pos.x-cw/2>p_ofs.x+pofs) {
+								if (p_click_pos.x-cw/2>p_ofs.x+align_ofs+pofs) {
 
 									rchar=int((&c[i])-cf);
 									//print_line("GOT: "+itos(rchar));
@@ -371,11 +380,11 @@ if (m_height > line_height) {\
 									cw = font->get_char_size(c[i],c[i+1]).x;
 									draw_rect(Rect2(p_ofs.x+pofs,p_ofs.y+y,cw,lh),selection_bg);
 									if (visible)
-										font->draw_char(ci,p_ofs+Point2(pofs,y+lh-(fh-ascent)),c[i],c[i+1],selection_fg);
+										font->draw_char(ci,p_ofs+Point2(align_ofs+pofs,y+lh-(fh-ascent)),c[i],c[i+1],selection_fg);
 
 								} else {
 									if (visible)
-										cw=font->draw_char(ci,p_ofs+Point2(pofs,y+lh-(fh-ascent)),c[i],c[i+1],color);
+										cw=font->draw_char(ci,p_ofs+Point2(align_ofs+pofs,y+lh-(fh-ascent)),c[i],c[i+1],color);
 								}
 
 								p_char_count++;
@@ -391,7 +400,7 @@ if (m_height > line_height) {\
 									uc.a*=0.5;
 									//VS::get_singleton()->canvas_item_add_line(ci,Point2(pofs,y+ascent+2),Point2(pofs+cw,y+ascent+2),uc);
 									int uy = y+lh-fh+ascent+2;
-									VS::get_singleton()->canvas_item_add_line(ci,p_ofs+Point2(pofs,uy),p_ofs+Point2(pofs+cw,uy),uc);
+									VS::get_singleton()->canvas_item_add_line(ci,p_ofs+Point2(align_ofs+pofs,uy),p_ofs+Point2(align_ofs+pofs+cw,uy),uc);
 								}
 								ofs+=cw;
 							}
@@ -429,7 +438,7 @@ if (m_height > line_height) {\
 				bool visible = visible_characters<0 || p_char_count<visible_characters;
 
 				if (p_mode==PROCESS_DRAW && visible) {
-					img->image->draw(ci,p_ofs+Point2(wofs,y+lh-font->get_descent()-img->image->get_height()));
+					img->image->draw(ci,p_ofs+Point2(align_ofs+wofs,y+lh-font->get_descent()-img->image->get_height()));
 				}
 				p_char_count++;
 
@@ -475,6 +484,7 @@ if (m_height > line_height) {\
 				int vseparation=get_constant("table_vseparation");
 				Color ccolor = _find_color(table,p_base_color);
 				Vector2 draw_ofs = Point2(wofs,y);
+				int max_y=get_size().height;
 
 				if (p_mode==PROCESS_CACHE) {
 
@@ -547,7 +557,7 @@ if (m_height > line_height) {\
 
 
 
-				Point2 offset(hseparation,vseparation);
+				Point2 offset(align_ofs+hseparation,vseparation);
 
 				int row_height=0;
 				//draw using computed caches
@@ -562,13 +572,22 @@ if (m_height > line_height) {\
 					int yofs=0;
 
 
+					int lines_h = frame->lines[frame->lines.size()-1].height_accum_cache - (frame->lines[0].height_accum_cache - frame->lines[0].height_cache);
+					int lines_ofs = p_ofs.y+offset.y+draw_ofs.y;
+
+					bool visible = lines_ofs < get_size().height && lines_ofs+lines_h >=0;
+
 					for(int i=0;i<frame->lines.size();i++) {
 
-						if (p_mode==PROCESS_DRAW) {
-							_process_line(frame,p_ofs+offset+draw_ofs+Vector2(0,yofs),ly,table->columns[column].width,i,PROCESS_DRAW,cfont,ccolor);
-						} else if (p_mode==PROCESS_POINTER) {
-							_process_line(frame,p_ofs+offset+draw_ofs+Vector2(0,yofs),ly,table->columns[column].width,i,PROCESS_POINTER,cfont,ccolor,p_click_pos,r_click_item,r_click_char,r_outside);
+
+						if (visible) {
+							if (p_mode==PROCESS_DRAW) {
+								_process_line(frame,p_ofs+offset+draw_ofs+Vector2(0,yofs),ly,table->columns[column].width,i,PROCESS_DRAW,cfont,ccolor);
+							} else if (p_mode==PROCESS_POINTER) {
+								_process_line(frame,p_ofs+offset+draw_ofs+Vector2(0,yofs),ly,table->columns[column].width,i,PROCESS_POINTER,cfont,ccolor,p_click_pos,r_click_item,r_click_char,r_outside);
+							}
 						}
+
 						yofs+=frame->lines[i].height_cache;
 						if (p_mode==PROCESS_CACHE) {
 							frame->lines[i].height_accum_cache=offset.y+draw_ofs.y+frame->lines[i].height_cache;
@@ -1929,7 +1948,7 @@ void RichTextLabel::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("push_meta","data"),&RichTextLabel::push_meta);
 	ObjectTypeDB::bind_method(_MD("push_underline"),&RichTextLabel::push_underline);
 	ObjectTypeDB::bind_method(_MD("push_table","columns"),&RichTextLabel::push_table);
-	ObjectTypeDB::bind_method(_MD("set_table_column_expand","column","expand"),&RichTextLabel::set_table_column_expand);
+	ObjectTypeDB::bind_method(_MD("set_table_column_expand","column","expand","ratio"),&RichTextLabel::set_table_column_expand);
 	ObjectTypeDB::bind_method(_MD("push_cell"),&RichTextLabel::push_cell);
 	ObjectTypeDB::bind_method(_MD("pop"),&RichTextLabel::pop);
 
@@ -1946,7 +1965,7 @@ void RichTextLabel::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_v_scroll"),&RichTextLabel::get_v_scroll);
 
-	ObjectTypeDB::bind_method(_MD("scroll_to_line"),&RichTextLabel::scroll_to_line);
+	ObjectTypeDB::bind_method(_MD("scroll_to_line","line"),&RichTextLabel::scroll_to_line);
 
 	ObjectTypeDB::bind_method(_MD("set_tab_size","spaces"),&RichTextLabel::set_tab_size);
 	ObjectTypeDB::bind_method(_MD("get_tab_size"),&RichTextLabel::get_tab_size);

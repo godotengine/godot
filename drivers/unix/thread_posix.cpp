@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,10 @@
 #include "thread_posix.h"
 
 #if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
+
+#ifdef PTHREAD_BSD_SET_NAME
+#include <pthread_np.h>
+#endif
 
 #include "os/memory.h"
 
@@ -100,9 +104,14 @@ Error ThreadPosix::set_name(const String& p_name) {
 	
 	#else
 
+	#ifdef PTHREAD_BSD_SET_NAME
+	pthread_set_name_np(pthread, p_name.utf8().get_data());
+	int err = 0; // Open/FreeBSD ignore errors in this function
+	#else
 	int err = pthread_setname_np(pthread, p_name.utf8().get_data());
+	#endif // PTHREAD_BSD_SET_NAME
 
-	#endif
+	#endif // PTHREAD_RENAME_SELF
 
 	return err == 0 ? OK : ERR_INVALID_PARAMETER;
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,6 +95,7 @@ public:
 		TK_PR_FUNCTION,
 		TK_PR_CLASS,
 		TK_PR_EXTENDS,
+		TK_PR_ONREADY,
 		TK_PR_TOOL,
 		TK_PR_STATIC,
 		TK_PR_EXPORT,
@@ -105,6 +106,7 @@ public:
 		TK_PR_ASSERT,
 		TK_PR_YIELD,
 		TK_PR_SIGNAL,
+		TK_PR_BREAKPOINT,
 		TK_BRACKET_OPEN,
 		TK_BRACKET_CLOSE,
 		TK_CURLY_BRACKET_OPEN,
@@ -117,6 +119,7 @@ public:
 		TK_QUESTION_MARK,
 		TK_COLON,
 		TK_NEWLINE,
+		TK_CONST_PI,
 		TK_ERROR,
 		TK_EOF,
 		TK_CURSOR, //used for code completion

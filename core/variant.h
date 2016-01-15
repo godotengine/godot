@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -390,6 +390,9 @@ public:
 
 	Variant call(const StringName& p_method,const Variant** p_args,int p_argcount,CallError &r_error);
 	Variant call(const StringName& p_method,const Variant& p_arg1=Variant(),const Variant& p_arg2=Variant(),const Variant& p_arg3=Variant(),const Variant& p_arg4=Variant(),const Variant& p_arg5=Variant());
+
+	static String get_call_error_text(Object* p_base, const StringName& p_method,const Variant** p_argptrs,int p_argcount,const Variant::CallError &ce);
+
 	static Variant construct(const Variant::Type,const Variant** p_args,int p_argcount,CallError &r_error,bool p_strict=true);
 
 	void get_method_list(List<MethodInfo> *p_list) const;
@@ -411,6 +414,7 @@ public:
 	//argsVariant call()
 
 	bool operator==(const Variant& p_variant) const;
+	bool operator!=(const Variant& p_variant) const;
 	bool operator<(const Variant& p_variant) const;
 	uint32_t hash() const;
 
@@ -425,7 +429,7 @@ public:
 	typedef String (*ObjectDeConstruct)(const Variant& p_object,void *ud);
 	typedef void (*ObjectConstruct)(const String& p_text,void *ud,Variant& r_value);
 
-	String get_construct_string(ObjectDeConstruct p_obj_deconstruct=NULL,void *p_deconstruct_ud=NULL) const;
+	String get_construct_string() const;
 	static void construct_from_string(const String& p_string,Variant& r_value,ObjectConstruct p_obj_construct=NULL,void *p_construct_ud=NULL);
 
 	void operator=(const Variant& p_variant); // only this is enough for all the other types

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -72,6 +72,8 @@ Error FileAccessWindows::_open(const String& p_filename, int p_mode_flags) {
 		mode_string=L"wb";
 	else if (p_mode_flags==READ_WRITE)
 		mode_string=L"rb+";
+	else if (p_mode_flags==WRITE_READ)
+		mode_string=L"wb+";
 	else
 		return ERR_INVALID_PARAMETER;
 

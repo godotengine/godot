@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,6 +114,7 @@ class CustomPropertyEditor : public Popup {
 	void _action_pressed(int p_which);
 	void _type_create_selected(int p_idx);
 
+
 	void _color_changed(const Color& p_color);
 	void _draw_easing();
 	void _menu_option(int p_which);
@@ -192,6 +193,7 @@ class PropertyEditor : public Control {
 	virtual void _changed_callback(Object *p_changed,const char * p_what);
 	virtual void _changed_callbacks(Object *p_changed,const String& p_callback);
 
+	void _check_reload_status(const String&p_name,TreeItem* item);
 
 	void _edit_button(Object *p_item, int p_column, int p_button);
 
@@ -257,17 +259,24 @@ class SectionedPropertyEditor : public HBoxContainer {
 	OBJ_TYPE(SectionedPropertyEditor,HBoxContainer);
 	ItemList *sections;
 	SectionedPropertyEditorFilter *filter;
+	LineEdit *search_box;
+	ToolButton *clear_button;
 	PropertyEditor *editor;
 
-
-	static void _bind_methods();
 	void _section_selected(int p_which);
 
+protected:
+
+	void _notification(int p_what);
+	static void _bind_methods();
 public:
 
 	PropertyEditor *get_property_editor();
 	void edit(Object* p_object);
 	String get_full_item_path(const String& p_item);
+	String get_current_section() const;
+
+	void clear_search_box();
 
 	SectionedPropertyEditor();
 	~SectionedPropertyEditor();

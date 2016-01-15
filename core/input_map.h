@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,6 +68,7 @@ public:
 
 	const List<InputEvent> *get_action_list(const StringName& p_action);
 	bool event_is_action(const InputEvent& p_event, const StringName& p_action) const;
+	bool event_is_joy_motion_action_pressed(const InputEvent& p_event) const;
 
 
 	void load_from_globals();

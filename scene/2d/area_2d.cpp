@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -383,7 +383,11 @@ void Area2D::_clear_monitoring() {
 
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = obj ? obj->cast_to<Node>() : NULL;
-			ERR_CONTINUE(!node);
+
+			if (!node) //node may have been deleted in previous frame, this should not be an error
+				continue;
+			//ERR_CONTINUE(!node);
+
 			if (!E->get().in_tree)
 				continue;
 
@@ -416,13 +420,13 @@ void Area2D::_notification(int p_what) {
 
 void Area2D::set_enable_monitoring(bool p_enable) {
 
-	if (locked) {
-		ERR_EXPLAIN("This function can't be used during the in/out signal.");
-	}
-	ERR_FAIL_COND(locked);
 
 	if (p_enable==monitoring)
 		return;
+	if (locked) {
+		ERR_EXPLAIN("Function blocked during in/out signal. Use call_deferred(\"set_enable_monitoring\",true/false)");
+	}
+	ERR_FAIL_COND(locked);
 
 	monitoring=p_enable;
 

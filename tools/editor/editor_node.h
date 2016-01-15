@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -100,13 +100,12 @@ typedef void (*EditorNodeInitCallback)();
 class EditorNode : public Node {
 
 	OBJ_TYPE( EditorNode, Node );
-	
+
 	enum {
-		
-		HISTORY_SIZE=64	
+		HISTORY_SIZE=64
 	};
+
 	enum MenuOptions {
-	
 		FILE_NEW_SCENE,
 		FILE_NEW_INHERITED_SCENE,
 		FILE_OPEN_SCENE,
@@ -119,7 +118,6 @@ class EditorNode : public Node {
 		FILE_EXPORT_MESH_LIBRARY,
 		FILE_EXPORT_TILESET,
 		FILE_SAVE_OPTIMIZED,
-		FILE_SAVE_SUBSCENE,
 		FILE_DUMP_STRINGS,
 		FILE_OPEN_RECENT,
 		FILE_OPEN_OLD_SCENE,
@@ -288,10 +286,10 @@ class EditorNode : public Node {
 	AcceptDialog *about;
 	AcceptDialog *warning;
 
-	Ref<ConfigFile> default_theme;
+	int overridden_default_layout;
+	Ref<ConfigFile> default_layout;
 	PopupMenu *editor_layouts;
 	EditorNameDialog *layout_dialog;
-	AcceptDialog *confirm_error;
 
 	//OptimizedPresetsDialog *optimized_presets;
 	EditorSettingsDialog *settings_config_dialog;
@@ -420,8 +418,8 @@ class EditorNode : public Node {
 
 	void _node_renamed();
 	void _editor_select(int p_which);
-	void _set_scene_metadata();
-	void _get_scene_metadata();
+	void _set_scene_metadata(const String &p_file);
+	void _get_scene_metadata(const String& p_file);
 	void _update_title();
 	void _update_scene_tabs();
 	void _close_messages();
@@ -440,7 +438,7 @@ class EditorNode : public Node {
 
 	void _update_keying();
 	void _hide_top_editors();
-	void _quick_opened(const String& p_resource);
+	void _quick_opened();
 	void _quick_run(const String& p_resource);
 
 	void _run(bool p_current=false, const String &p_custom="");

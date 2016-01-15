@@ -62,8 +62,8 @@ void _ResourceLoader::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("load:Resource","path","type_hint", "p_no_cache"),&_ResourceLoader::load,DEFVAL(""), DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_recognized_extensions_for_type","type"),&_ResourceLoader::get_recognized_extensions_for_type);
 	ObjectTypeDB::bind_method(_MD("set_abort_on_missing_resources","abort"),&_ResourceLoader::set_abort_on_missing_resources);
-	ObjectTypeDB::bind_method(_MD("get_dependencies"),&_ResourceLoader::get_dependencies);
-	ObjectTypeDB::bind_method(_MD("has"),&_ResourceLoader::has);
+	ObjectTypeDB::bind_method(_MD("get_dependencies","path"),&_ResourceLoader::get_dependencies);
+	ObjectTypeDB::bind_method(_MD("has","path"),&_ResourceLoader::has);
 }
 
 _ResourceLoader::_ResourceLoader() {
@@ -96,7 +96,7 @@ _ResourceSaver *_ResourceSaver::singleton=NULL;
 
 void _ResourceSaver::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("save","path","resource:Resource"),&_ResourceSaver::save, DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("save","path","resource:Resource","flags"),&_ResourceSaver::save,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_recognized_extensions","type"),&_ResourceSaver::get_recognized_extensions);
 
 	BIND_CONSTANT(FLAG_RELATIVE_PATHS);
@@ -494,8 +494,8 @@ uint64_t _OS::get_unix_time() const {
 	return OS::get_singleton()->get_unix_time();
 };
 
-uint64_t _OS::get_system_time_msec() const {
-	return OS::get_singleton()->get_system_time_msec();
+uint64_t _OS::get_system_time_secs() const {
+	return OS::get_singleton()->get_system_time_secs();
 }
 
 void _OS::delay_usec(uint32_t p_usec) const {
@@ -810,9 +810,9 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_time","utc"),&_OS::get_time,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_time_zone_info"),&_OS::get_time_zone_info);
 	ObjectTypeDB::bind_method(_MD("get_unix_time"),&_OS::get_unix_time);
-	ObjectTypeDB::bind_method(_MD("get_system_time_msec"), &_OS::get_system_time_msec);
+	ObjectTypeDB::bind_method(_MD("get_system_time_secs"), &_OS::get_system_time_secs);
 
-	ObjectTypeDB::bind_method(_MD("set_icon"),&_OS::set_icon);
+	ObjectTypeDB::bind_method(_MD("set_icon","icon"),&_OS::set_icon);
 
 	ObjectTypeDB::bind_method(_MD("delay_usec","usec"),&_OS::delay_usec);
 	ObjectTypeDB::bind_method(_MD("delay_msec","msec"),&_OS::delay_msec);
@@ -851,9 +851,9 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_frames_per_second"),&_OS::get_frames_per_second);
 
 	ObjectTypeDB::bind_method(_MD("print_all_textures_by_size"),&_OS::print_all_textures_by_size);
-	ObjectTypeDB::bind_method(_MD("print_resources_by_type"),&_OS::print_resources_by_type);
+	ObjectTypeDB::bind_method(_MD("print_resources_by_type","types"),&_OS::print_resources_by_type);
 
-	ObjectTypeDB::bind_method(_MD("native_video_play"),&_OS::native_video_play);
+	ObjectTypeDB::bind_method(_MD("native_video_play","path","volume","audio_track","subtitle_track"),&_OS::native_video_play);
 	ObjectTypeDB::bind_method(_MD("native_video_is_playing"),&_OS::native_video_is_playing);
 	ObjectTypeDB::bind_method(_MD("native_video_stop"),&_OS::native_video_stop);
 	ObjectTypeDB::bind_method(_MD("native_video_pause"),&_OS::native_video_pause);
@@ -1509,6 +1509,7 @@ void _File::_bind_methods() {
 	BIND_CONSTANT( READ );
 	BIND_CONSTANT( WRITE );
 	BIND_CONSTANT( READ_WRITE );
+	BIND_CONSTANT( WRITE_READ );
 }
 
 _File::_File(){

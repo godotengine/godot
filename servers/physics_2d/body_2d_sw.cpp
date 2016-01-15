@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 #include "body_2d_sw.h"
 #include "space_2d_sw.h"
 #include "area_2d_sw.h"
+#include "physics_2d_server_sw.h"
 
 void Body2DSW::_update_inertia() {
 
@@ -378,6 +379,7 @@ void Body2DSW::set_space(Space2DSW *p_space){
 
 	}
 
+	first_integration=false;
 }
 
 void Body2DSW::_compute_area_gravity_and_dampenings(const Area2DSW *p_area) {
@@ -394,8 +396,7 @@ void Body2DSW::_compute_area_gravity_and_dampenings(const Area2DSW *p_area) {
 	}
 
 	area_linear_damp += p_area->get_linear_damp();
-	area_angular_damp += p_area->get_angular_damp();
-	printf("%f\n",gravity.y);
+	area_angular_damp += p_area->get_angular_damp();	
 }
 
 void Body2DSW::integrate_forces(real_t p_step) {
@@ -472,7 +473,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		//}
 
 	} else {
-		if (!omit_force_integration) {
+		if (!omit_force_integration && !first_integration) {
 			//overriden by direct state query
 
 			Vector2 force=gravity*mass;
@@ -507,6 +508,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 
 	//motion=linear_velocity*p_step;
 
+	first_integration=false;
 	biased_angular_velocity=0;
 	biased_linear_velocity=Vector2();
 
@@ -682,6 +684,7 @@ Body2DSW::Body2DSW() : CollisionObject2DSW(TYPE_BODY), active_list(this), inerti
 	gravity_scale=1.0;
 	using_one_way_cache=false;
 	one_way_collision_max_depth=0.1;
+	first_integration=false;
 
 	still_time=0;
 	continuous_cd_mode=Physics2DServer::CCD_MODE_DISABLED;
@@ -701,4 +704,25 @@ Physics2DDirectBodyStateSW *Physics2DDirectBodyStateSW::singleton=NULL;
 Physics2DDirectSpaceState* Physics2DDirectBodyStateSW::get_space_state() {
 
 	return body->get_space()->get_direct_state();
+}
+
+
+Variant Physics2DDirectBodyStateSW::get_contact_collider_shape_metadata(int p_contact_idx) const {
+
+	ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,Variant());
+
+	if (!Physics2DServerSW::singletonsw->body_owner.owns(body->contacts[p_contact_idx].collider)) {
+
+		return Variant();
+	}
+	Body2DSW *other = Physics2DServerSW::singletonsw->body_owner.get(body->contacts[p_contact_idx].collider);
+
+	int sidx = body->contacts[p_contact_idx].collider_shape;
+	if (sidx<0 || sidx>=other->get_shape_count()) {
+
+		return Variant();
+	}
+
+
+	return other->get_shape_metadata(sidx);
 }

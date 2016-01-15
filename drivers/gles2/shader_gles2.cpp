@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -739,12 +739,12 @@ void ShaderGLES2::set_custom_shader(uint32_t p_code_id) {
 
 void ShaderGLES2::free_custom_shader(uint32_t p_code_id) {
 
-    if (! custom_code_map.has( p_code_id )) {
+  /*  if (! custom_code_map.has( p_code_id )) {
         print_line("no code id "+itos(p_code_id));
     } else {
         print_line("freed code id "+itos(p_code_id));
 
-    }
+    }*/
 
 	ERR_FAIL_COND(! custom_code_map.has( p_code_id ));
 	if (conditional_version.code_version==p_code_id)

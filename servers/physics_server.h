@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -170,7 +170,7 @@ public:
 		int shape;
 	};
 
-	virtual bool intersect_ray(const Vector3& p_from, const Vector3& p_to,RayResult &r_result,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION)=0;
+	virtual bool intersect_ray(const Vector3& p_from, const Vector3& p_to,RayResult &r_result,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION,bool p_pick_ray=false)=0;
 
 	struct ShapeResult {
 
@@ -372,7 +372,7 @@ public:
 	virtual RID body_get_space(RID p_body) const=0;
 
 	virtual void body_set_mode(RID p_body, BodyMode p_mode)=0;
-	virtual BodyMode body_get_mode(RID p_body, BodyMode p_mode) const=0;
+	virtual BodyMode body_get_mode(RID p_body) const=0;
 
 	virtual void body_add_shape(RID p_body, RID p_shape, const Transform& p_transform=Transform())=0;
 	virtual void body_set_shape(RID p_body, int p_shape_idx,RID p_shape)=0;

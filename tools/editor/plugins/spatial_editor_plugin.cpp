@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1617,6 +1617,8 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 		case InputEvent::KEY: {
 
 			const InputEventKey &k = p_event.key;
+			if (!k.pressed)
+				break;
 			switch(k.scancode) {
 
 				case KEY_S: {
@@ -1677,7 +1679,8 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				} break;
 				case KEY_KP_5: {
 
-					orthogonal = !orthogonal;
+
+					//orthogonal = !orthogonal;
 					_menu_option(orthogonal?VIEW_PERSPECTIVE:VIEW_ORTHOGONAL);
 					_update_name();
 
@@ -2626,6 +2629,13 @@ Dictionary SpatialEditor::get_state() const {
 
 	Dictionary d;
 
+	d["snap_enabled"]=snap_enabled;
+	d["translate_snap"]=get_translate_snap();
+	d["rotate_snap"]=get_rotate_snap();
+	d["scale_snap"]=get_scale_snap();
+
+	int local_coords_index=transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_LOCAL_COORDS);
+	d["local_coords"]=transform_menu->get_popup()->is_item_checked( local_coords_index );
 
 	int vc=0;
 	if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT) ))
@@ -2667,37 +2677,52 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 
 	Dictionary d = p_state;
 
-	ERR_FAIL_COND(!d.has("viewport_mode"));
-	ERR_FAIL_COND(!d.has("viewports"));
-	ERR_FAIL_COND(!d.has("default_light"));
-	ERR_FAIL_COND(!d.has("show_grid"));
-	ERR_FAIL_COND(!d.has("show_origin"));
-	ERR_FAIL_COND(!d.has("fov"));
-	ERR_FAIL_COND(!d.has("znear"));
-	ERR_FAIL_COND(!d.has("zfar"));
-
-	int vc = d["viewport_mode"];
-
-	if (vc==1)
-		_menu_item_pressed(MENU_VIEW_USE_1_VIEWPORT);
-	else if (vc==2)
-		_menu_item_pressed(MENU_VIEW_USE_2_VIEWPORTS);
-	else if (vc==3)
-		_menu_item_pressed(MENU_VIEW_USE_3_VIEWPORTS);
-	else if (vc==4)
-		_menu_item_pressed(MENU_VIEW_USE_4_VIEWPORTS);
-	else if (vc==5)
-		_menu_item_pressed(MENU_VIEW_USE_2_VIEWPORTS_ALT);
-	else if (vc==6)
-		_menu_item_pressed(MENU_VIEW_USE_3_VIEWPORTS_ALT);
-
-	Array vp = d["viewports"];
-	ERR_FAIL_COND(vp.size()>4);
-
-	for(int i=0;i<4;i++) {
-		viewports[i]->set_state(vp[i]);
+	if (d.has("snap_enabled")) {
+		snap_enabled=d["snap_enabled"];
+		int snap_enabled_idx=transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_USE_SNAP);
+		transform_menu->get_popup()->set_item_checked( snap_enabled_idx, snap_enabled );
 	}
 
+	if (d.has("translate_snap"))
+		snap_translate->set_text(d["translate_snap"]);
+
+	if (d.has("rotate_snap"))
+		snap_rotate->set_text(d["rotate_snap"]);
+
+	if (d.has("scale_snap"))
+		snap_scale->set_text(d["scale_snap"]);
+
+	if (d.has("local_coords")) {
+		int local_coords_idx=transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_LOCAL_COORDS);
+		transform_menu->get_popup()->set_item_checked( local_coords_idx, d["local_coords"] );
+		update_transform_gizmo();
+	}
+
+	if (d.has("viewport_mode")) {
+		int vc = d["viewport_mode"];
+
+		if (vc==1)
+			_menu_item_pressed(MENU_VIEW_USE_1_VIEWPORT);
+		else if (vc==2)
+			_menu_item_pressed(MENU_VIEW_USE_2_VIEWPORTS);
+		else if (vc==3)
+			_menu_item_pressed(MENU_VIEW_USE_3_VIEWPORTS);
+		else if (vc==4)
+			_menu_item_pressed(MENU_VIEW_USE_4_VIEWPORTS);
+		else if (vc==5)
+			_menu_item_pressed(MENU_VIEW_USE_2_VIEWPORTS_ALT);
+		else if (vc==6)
+			_menu_item_pressed(MENU_VIEW_USE_3_VIEWPORTS_ALT);
+	}
+
+	if (d.has("viewports")) {
+		Array vp = d["viewports"];
+		ERR_FAIL_COND(vp.size()>4);
+
+		for(int i=0;i<4;i++) {
+			viewports[i]->set_state(vp[i]);
+		}
+	}
 
 	if (d.has("zfar"))
 		settings_zfar->set_val(float(d["zfar"]));
@@ -3501,19 +3526,13 @@ void SpatialEditor::_instance_scene() {
 	undo_redo->commit_action();
 #endif
 }
-/*
-void SpatialEditor::_update_selection() {
 
-
-
-}
-*/
 void SpatialEditor::_unhandled_key_input(InputEvent p_event) {
 
-	if (!is_visible())
+	if (!is_visible() || window_has_modal_stack())
 		return;
 
-	 {
+	{
 
 		EditorNode *en = editor;
 		EditorPlugin *over_plugin = en->get_editor_plugin_over();
@@ -3712,7 +3731,6 @@ void SpatialEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_menu_item_pressed",&SpatialEditor::_menu_item_pressed);
 	ObjectTypeDB::bind_method("_xform_dialog_action",&SpatialEditor::_xform_dialog_action);
 	ObjectTypeDB::bind_method("_instance_scene",&SpatialEditor::_instance_scene);
-//	ObjectTypeDB::bind_method("_update_selection",&SpatialEditor::_update_selection);
 	ObjectTypeDB::bind_method("_get_editor_data",&SpatialEditor::_get_editor_data);
 	ObjectTypeDB::bind_method("_request_gizmo",&SpatialEditor::_request_gizmo);
 	ObjectTypeDB::bind_method("_default_light_angle_input",&SpatialEditor::_default_light_angle_input);
@@ -3814,7 +3832,6 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	editor=p_editor;
 	editor_selection=editor->get_editor_selection();
 	editor_selection->add_editor_plugin(this);
-	editor_selection->connect("selection_changed",this,"_update_selection");
 
 	snap_enabled=false;
 	tool_mode = TOOL_MODE_SELECT;

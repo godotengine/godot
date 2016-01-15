@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,7 +63,10 @@ public:
 	virtual float get_joy_axis(int p_device,int p_axis)=0;
 	virtual String get_joy_name(int p_idx)=0;
 	virtual void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid)=0;
-
+	virtual void add_joy_mapping(String p_mapping, bool p_update_existing=false)=0;
+	virtual void remove_joy_mapping(String p_guid)=0;
+	virtual bool is_joy_known(int p_device)=0;
+	virtual String get_joy_guid(int p_device) const=0;
 
 	virtual Point2 get_mouse_pos() const=0;
 	virtual Point2 get_mouse_speed() const=0;

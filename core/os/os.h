@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -256,7 +256,7 @@ public:
 	virtual Time get_time(bool local=false) const=0;
 	virtual TimeZoneInfo get_time_zone_info() const=0;
 	virtual uint64_t get_unix_time() const;
-	virtual uint64_t get_system_time_msec() const;
+	virtual uint64_t get_system_time_secs() const;
 
 	virtual void delay_usec(uint32_t p_usec) const=0; 
 	virtual uint64_t get_ticks_usec() const=0;
@@ -396,6 +396,9 @@ public:
 	float get_time_scale() const;
 
 	_FORCE_INLINE_ bool get_use_pixel_snap() const { return _pixel_snap; }
+
+	virtual bool is_joy_known(int p_device);
+	virtual String get_joy_guid(int p_device)const;
 
 	OS();	
 	virtual ~OS();

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,22 +42,22 @@ Size2 TextureButton::get_minimum_size() const {
 			else
 				rscale= hover->get_size();
 		} else
-			rscale= pressed->get_size()*scale;
+			rscale=pressed->get_size();
 
 	} else
 		rscale= normal->get_size();
 
-	return rscale*scale;
+	return rscale*scale.abs();
 }
 
 
 bool TextureButton::has_point(const Point2& p_point) const {
 
-	if (scale[0] <= 0 || scale[1] <= 0) {
+	if (scale[0] == 0 || scale[1] == 0) {
 		return false;
 	}
 
-	Point2 ppos = p_point/scale;
+	Point2 ppos = p_point/scale.abs();
 
 	if (click_mask.is_valid()) {
 

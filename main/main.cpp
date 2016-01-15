@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,7 +56,7 @@
 #ifdef TOOLS_ENABLED
 #include "tools/editor/editor_node.h"
 #include "tools/editor/project_manager.h"
-#include "tools/editor/console.h"
+
 #include "tools/pck/pck_packer.h"
 #endif
 
@@ -124,7 +124,7 @@ static String unescape_cmdline(const String& p_str) {
 
 void Main::print_help(const char* p_binary) {
 
-	OS::get_singleton()->print(VERSION_FULL_NAME" (c) 2008-2015 Juan Linietsky, Ariel Manzur.\n");
+	OS::get_singleton()->print(VERSION_FULL_NAME" (c) 2008-2016 Juan Linietsky, Ariel Manzur.\n");
 	OS::get_singleton()->print("Usage: %s [options] [scene]\n",p_binary);
 	OS::get_singleton()->print("Options:\n");
 	OS::get_singleton()->print("\t-path [dir] : Path to a game, containing engine.cfg\n");
@@ -714,8 +714,12 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 	}
 
-	if (rtm>=0 && rtm<3)
+	if (rtm>=0 && rtm<3) {
+		if (editor) {
+			rtm=OS::RENDER_THREAD_SAFE;
+		}
 		OS::get_singleton()->_render_thread_mode=OS::RenderThreadMode(rtm);
+	}
 
 
 
@@ -1323,6 +1327,8 @@ bool Main::start() {
 					//autoload
 					List<PropertyInfo> props;
 					Globals::get_singleton()->get_property_list(&props);
+
+					//first pass, add the constants so they exist before any script is loaded
 					for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
 
 						String s = E->get().name;
@@ -1330,6 +1336,34 @@ bool Main::start() {
 							continue;
 						String name = s.get_slicec('/',1);
 						String path = Globals::get_singleton()->get(s);
+						bool global_var=false;
+						if (path.begins_with("*")) {
+							global_var=true;
+						}
+
+						if (global_var) {
+							for(int i=0;i<ScriptServer::get_language_count();i++) {
+								ScriptServer::get_language(i)->add_global_constant(name,Variant());
+							}
+						}
+
+					}
+
+					//second pass, load into global constants
+					List<Node*> to_add;
+					for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
+
+						String s = E->get().name;
+						if (!s.begins_with("autoload/"))
+							continue;
+						String name = s.get_slicec('/',1);
+						String path = Globals::get_singleton()->get(s);
+						bool global_var=false;
+						if (path.begins_with("*")) {
+							global_var=true;
+							path=path.substr(1,path.length()-1);
+						}
+
 						RES res = ResourceLoader::load(path);
 						ERR_EXPLAIN("Can't autoload: "+path);
 						ERR_CONTINUE(res.is_null());
@@ -1340,12 +1374,13 @@ bool Main::start() {
 						} else if (res->is_type("Script")) {
 							Ref<Script> s = res;
 							StringName ibt = s->get_instance_base_type();
+							bool valid_type = ObjectTypeDB::is_type(ibt,"Node");
 							ERR_EXPLAIN("Script does not inherit a Node: "+path);
-							ERR_CONTINUE( !ObjectTypeDB::is_type(ibt,"Node") );
+							ERR_CONTINUE( !valid_type );
 
 							Object *obj = ObjectTypeDB::instance(ibt);
 
-							ERR_EXPLAIN("Cannot instance node for autoload type: "+String(ibt));
+							ERR_EXPLAIN("Cannot instance script for autoload, expected 'Node' inheritance, got: "+String(ibt));
 							ERR_CONTINUE( obj==NULL );
 
 							n = obj->cast_to<Node>();
@@ -1355,8 +1390,25 @@ bool Main::start() {
 						ERR_EXPLAIN("Path in autoload not a node or script: "+path);
 						ERR_CONTINUE(!n);
 						n->set_name(name);
-						sml->get_root()->add_child(n);
+
+						//defer so references are all valid on _ready()
+						//sml->get_root()->add_child(n);
+						to_add.push_back(n);
+
+						if (global_var) {
+							for(int i=0;i<ScriptServer::get_language_count();i++) {
+								ScriptServer::get_language(i)->add_global_constant(name,n);
+							}
+						}
+
 					}
+
+					for(List<Node*>::Element *E=to_add.front();E;E=E->next()) {
+
+						sml->get_root()->add_child(E->get());
+					}
+
+
 
 				}
 

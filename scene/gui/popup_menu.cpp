@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -898,7 +898,7 @@ void PopupMenu::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_item_icon","idx","icon"),&PopupMenu::set_item_icon);
 	ObjectTypeDB::bind_method(_MD("set_item_accelerator","idx","accel"),&PopupMenu::set_item_accelerator);
 	ObjectTypeDB::bind_method(_MD("set_item_metadata","idx","metadata"),&PopupMenu::set_item_metadata);
-	ObjectTypeDB::bind_method(_MD("set_item_checked","idx"),&PopupMenu::set_item_checked);
+	ObjectTypeDB::bind_method(_MD("set_item_checked","idx","checked"),&PopupMenu::set_item_checked);
 	ObjectTypeDB::bind_method(_MD("set_item_disabled","idx","disabled"),&PopupMenu::set_item_disabled);
 	ObjectTypeDB::bind_method(_MD("set_item_submenu","idx","submenu"),&PopupMenu::set_item_submenu);
 	ObjectTypeDB::bind_method(_MD("set_item_as_separator","idx","enable"),&PopupMenu::set_item_as_separator);

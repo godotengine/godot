@@ -14,8 +14,9 @@ var cur_joy
 var axis_value
 var btn_state
 
+const DEADZONE = 0.2
 
-func _input(event):
+func _fixed_process(delta):
 	# Get the joystick device number from the spinbox
 	joy_num = get_node("joy_num").get_value()
 
@@ -29,15 +30,24 @@ func _input(event):
 		axis_value = Input.get_joy_axis(joy_num, axis)
 		get_node("axis_prog" + str(axis)).set_value(100*axis_value)
 		get_node("axis_val" + str(axis)).set_text(str(axis_value))
+		if (axis < 4):
+			if (abs(axis_value) < DEADZONE):
+				get_node("diagram/axes/" + str(axis) + "+").hide()
+				get_node("diagram/axes/" + str(axis) + "-").hide()
+			elif (axis_value > 0):
+				get_node("diagram/axes/" + str(axis) + "+").show()
+			else:
+				get_node("diagram/axes/" + str(axis) + "-").show()
 
 	# Loop through the buttons and highlight the ones that are pressed
-	for btn in range(0, 17):
+	for btn in range(0, 16):
 		btn_state = 1
 		if (Input.is_joy_button_pressed(joy_num, btn)):
 			get_node("btn" + str(btn)).add_color_override("font_color", Color(1, 1, 1, 1))
+			get_node("diagram/buttons/" + str(btn)).show()
 		else:
 			get_node("btn" + str(btn)).add_color_override("font_color", Color(0.2, 0.1, 0.3, 1))
-
+			get_node("diagram/buttons/" + str(btn)).hide()
 
 func _ready():
-	set_process_input(true)
+	set_fixed_process(true)

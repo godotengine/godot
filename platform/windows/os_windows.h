@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -231,7 +231,7 @@ public:
 	virtual Time get_time(bool utc) const;
 	virtual TimeZoneInfo get_time_zone_info() const;
 	virtual uint64_t get_unix_time() const;
-	virtual uint64_t get_system_time_msec() const;
+	virtual uint64_t get_system_time_secs() const;
 
 	virtual bool can_draw() const;
 	virtual Error set_cwd(const String& p_cwd);
@@ -269,6 +269,9 @@ public:
 	void run();
 
 	virtual bool get_swap_ok_cancel() { return true; }
+
+	virtual bool is_joy_known(int p_device);
+	virtual String get_joy_guid(int p_device) const;
 
 	OS_Windows(HINSTANCE _hInstance);	
 	~OS_Windows();

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -143,7 +143,7 @@ class GDCompiler {
 	int _parse_assign_right_expression(CodeGen& codegen,const GDParser::OperatorNode *p_expression, int p_stack_level);
 	int _parse_expression(CodeGen& codegen,const GDParser::Node *p_expression, int p_stack_level,bool p_root=false,bool p_initializer=false);
 	Error _parse_block(CodeGen& codegen,const GDParser::BlockNode *p_block,int p_stack_level=0,int p_break_addr=-1,int p_continue_addr=-1);
-	Error _parse_function(GDScript *p_script,const GDParser::ClassNode *p_class,const GDParser::FunctionNode *p_func);
+	Error _parse_function(GDScript *p_script,const GDParser::ClassNode *p_class,const GDParser::FunctionNode *p_func,bool p_for_ready=false);
 	Error _parse_class(GDScript *p_script,GDScript *p_owner,const GDParser::ClassNode *p_class);
 	int err_line;
 	int err_column;

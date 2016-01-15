@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -839,7 +839,7 @@ void TextEdit::_notification(int p_what) {
 					
 				}
 				
-				if (cursor.column==str.length() && cursor.line==line) {
+				if (cursor.column==str.length() && cursor.line==line && (char_ofs+char_margin)>=xmargin_beg) {
 					
 					cursor_pos=Point2i( char_ofs+char_margin, ofs_y );
 					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
@@ -1740,6 +1740,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					}
 
 				} break;
+				case KEY_KP_4: {
+					if (k.unicode != 0) {
+						scancode_handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_left
+				}
 				case KEY_LEFT: {
 					
 					if (k.mod.shift)
@@ -1786,6 +1793,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						_post_shift_selection();
 					
 				} break;
+				case KEY_KP_6: {
+					if (k.unicode != 0) {
+						scancode_handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_right
+				}
 				case KEY_RIGHT: {
 					
 					if (k.mod.shift)
@@ -1829,6 +1843,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						_post_shift_selection();
 					
 				} break;
+				case KEY_KP_8: {
+					if (k.unicode != 0) {
+						scancode_handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_up
+				}
 				case KEY_UP: {
 					
 					if (k.mod.shift)
@@ -1849,6 +1870,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					_cancel_code_hint();
 					
 				} break;
+				case KEY_KP_2: {
+					if (k.unicode != 0) {
+						scancode_handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_down
+				}
 				case KEY_DOWN: {
 					
 					if (k.mod.shift)
@@ -1937,6 +1965,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					update();
 
 				} break;
+				case KEY_KP_7: {
+					if (k.unicode != 0) {
+						scancode_handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_home
+				}
 #ifdef APPLE_STYLE_KEYS
 				case KEY_HOME: {
 					
@@ -1950,18 +1985,6 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						_post_shift_selection();
 					
 				} break;
-				case KEY_END: {
-					
-					if (k.mod.shift)
-						_pre_shift_selection();
-					
-					cursor_set_line(text.size()-1);
-					
-					if (k.mod.shift)
-						_post_shift_selection();
-					
-				} break;
-					
 #else
 				case KEY_HOME: {
 					
@@ -1992,6 +2015,27 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					completion_hint="";
 					
 				} break;
+#endif
+				case KEY_KP_1: {
+					if (k.unicode != 0) {
+						scancode_handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_end
+				}
+#ifdef APPLE_STYLE_KEYS
+				case KEY_END: {
+
+					if (k.mod.shift)
+						_pre_shift_selection();
+
+					cursor_set_line(text.size()-1);
+
+					if (k.mod.shift)
+						_post_shift_selection();
+
+				} break;
+#else
 				case KEY_END: {
 					
 					if (k.mod.shift)
@@ -2009,6 +2053,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 				} break;
 #endif
+				case KEY_KP_9: {
+					if (k.unicode != 0) {
+						scancode_handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_pageup
+				}
 				case KEY_PAGEUP: {
 					
 					if (k.mod.shift)
@@ -2024,6 +2075,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					
 				} break;
+				case KEY_KP_3: {
+					if (k.unicode != 0) {
+						scancode_handled = false;
+						break;
+					}
+					// numlock disabled. fallthrough to key_pageup
+				}
 				case KEY_PAGEDOWN: {
 					
 					if (k.mod.shift)
@@ -3742,10 +3800,10 @@ void TextEdit::_bind_methods() {
 	
 	ObjectTypeDB::bind_method(_MD("get_line_count"),&TextEdit::get_line_count);
 	ObjectTypeDB::bind_method(_MD("get_text"),&TextEdit::get_text);
-	ObjectTypeDB::bind_method(_MD("get_line"),&TextEdit::get_line);
+	ObjectTypeDB::bind_method(_MD("get_line","line"),&TextEdit::get_line);
 	
-	ObjectTypeDB::bind_method(_MD("cursor_set_column","column"),&TextEdit::cursor_set_column);
-	ObjectTypeDB::bind_method(_MD("cursor_set_line","line"),&TextEdit::cursor_set_line);
+	ObjectTypeDB::bind_method(_MD("cursor_set_column","column","adjust_viewport"),&TextEdit::cursor_set_column,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("cursor_set_line","line","adjust_viewport"),&TextEdit::cursor_set_line,DEFVAL(false));
 	
 	ObjectTypeDB::bind_method(_MD("cursor_get_column"),&TextEdit::cursor_get_column);
 	ObjectTypeDB::bind_method(_MD("cursor_get_line"),&TextEdit::cursor_get_line);

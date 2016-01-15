@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -138,6 +138,8 @@ class RasterizerGLES2 : public Rasterizer {
 		StringName reloader_func;
 		Image image[6];
 
+		int mipmaps;
+
 		bool active;
 		GLuint tex_id;
 
@@ -159,6 +161,7 @@ class RasterizerGLES2 : public Rasterizer {
 			compressed=false;
 			total_data_size=0;
 			target=GL_TEXTURE_2D;
+			mipmaps=0;
 
 			reloader=0;
 		}

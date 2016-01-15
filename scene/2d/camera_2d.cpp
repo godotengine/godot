@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -503,7 +503,7 @@ void Camera2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_camera_pos"),&Camera2D::get_camera_pos);
 	ObjectTypeDB::bind_method(_MD("get_camera_screen_center"),&Camera2D::get_camera_screen_center);
 
-	ObjectTypeDB::bind_method(_MD("set_zoom"),&Camera2D::set_zoom);
+	ObjectTypeDB::bind_method(_MD("set_zoom","zoom"),&Camera2D::set_zoom);
 	ObjectTypeDB::bind_method(_MD("get_zoom"),&Camera2D::get_zoom);
 
 

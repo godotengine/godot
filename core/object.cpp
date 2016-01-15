@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -512,17 +512,10 @@ Variant Object::_call_deferred_bind(const Variant** p_args, int p_argcount, Vari
 
 	r_error.error=Variant::CallError::CALL_OK;
 
-	StringName signal = *p_args[0];
+	StringName method = *p_args[0];
 
-	Variant v[VARIANT_ARG_MAX];
+	MessageQueue::get_singleton()->push_call(get_instance_ID(),method,&p_args[1],p_argcount-1);
 
-
-	for(int i=0;i<MIN(5,p_argcount-1);i++) {
-
-		v[i]=*p_args[i+1];
-	}
-
-	call_deferred(signal,v[0],v[1],v[2],v[3],v[4]);
 	return Variant();
 
 }
@@ -839,6 +832,8 @@ void Object::call_multilevel(const StringName& p_name, VARIANT_ARG_DECLARE) {
 
 Variant Object::call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error) {
 
+	r_error.error=Variant::CallError::CALL_OK;
+
 	if (p_method==CoreStringNames::get_singleton()->_free) {
 		//free must be here, before anything, always ready
 #ifdef DEBUG_ENABLED
@@ -1011,6 +1006,27 @@ Array Object::_get_property_list_bind() const {
 	return convert_property_list(&lpi);
 }
 
+
+static Dictionary _get_dict_from_method(const MethodInfo &mi) {
+
+	Dictionary d;
+	d["name"]=mi.name;
+	d["args"]=convert_property_list(&mi.arguments);
+	Array da;
+	for(int i=0;i<mi.default_arguments.size();i++)
+		da.push_back(mi.default_arguments[i]);
+	d["default_args"]=da;
+	d["flags"]=mi.flags;
+	d["id"]=mi.id;
+	Dictionary r;
+	r["type"]=mi.return_val.type;
+	r["hint"]=mi.return_val.hint;
+	r["hint_string"]=mi.return_val.hint_string;
+	d["return_type"]=r;
+	return d;
+
+}
+
 Array Object::_get_method_list_bind() const {
 
 	List<MethodInfo> ml;
@@ -1019,20 +1035,7 @@ Array Object::_get_method_list_bind() const {
 
 	for(List<MethodInfo>::Element *E=ml.front();E;E=E->next()) {
 
-		Dictionary d;
-		d["name"]=E->get().name;
-		d["args"]=convert_property_list(&E->get().arguments);
-		Array da;
-		for(int i=0;i<E->get().default_arguments.size();i++)
-			da.push_back(E->get().default_arguments[i]);
-		d["default_args"]=da;
-		d["flags"]=E->get().flags;
-		d["id"]=E->get().id;
-		Dictionary r;
-		r["type"]=E->get().return_val.type;
-		r["hint"]=E->get().return_val.hint;
-		r["hint_string"]=E->get().return_val.hint_string;
-		d["return_type"]=r;
+		Dictionary d = _get_dict_from_method(E->get());
 		//va.push_back(d);
 		ret.push_back(d);
 	}
@@ -1122,21 +1125,22 @@ Variant Object::_emit_signal(const Variant** p_args, int p_argcount, Variant::Ca
 
 	StringName signal = *p_args[0];
 
-	Variant v[VARIANT_ARG_MAX];
 
+	const Variant**args=NULL;
 
-	for(int i=0;i<MIN(5,p_argcount-1);i++) {
-
-		v[i]=*p_args[i+1];
+	int argc=p_argcount-1;
+	if (argc) {
+		args=&p_args[1];
 	}
 
-	emit_signal(signal,v[0],v[1],v[2],v[3],v[4]);
+	emit_signal(signal,args,argc);
+
 	return Variant();
+
 }
 
 
-
-void Object::emit_signal(const StringName& p_name,VARIANT_ARG_DECLARE) {
+void Object::emit_signal(const StringName& p_name,const Variant** p_args,int p_argcount) {
 
 	if (_block_signals)
 		return; //no emit, signals blocked
@@ -1159,10 +1163,12 @@ void Object::emit_signal(const StringName& p_name,VARIANT_ARG_DECLARE) {
 
 	OBJ_DEBUG_LOCK
 
+	Vector<const Variant*> bind_mem;
+
+
 	for(int i=0;i<ssize;i++) {
 
 		const Connection &c = slot_map.getv(i).conn;
-		VARIANT_ARGPTRS
 
 		Object *target;
 #ifdef DEBUG_ENABLED
@@ -1173,21 +1179,37 @@ void Object::emit_signal(const StringName& p_name,VARIANT_ARG_DECLARE) {
 #endif
 
 
-		int bind_count=c.binds.size();
-		int bind=0;
+		const Variant **args=p_args;
+		int argc=p_argcount;
 
-		for(int i=0;bind < bind_count && i<VARIANT_ARG_MAX;i++) {
+		if (c.binds.size()) {
+			//handle binds
+			bind_mem.resize(p_argcount+c.binds.size());
 
-			if (argptr[i]->get_type()==Variant::NIL) {
-				argptr[i]=&c.binds[bind];
-				bind++;
+			for(int j=0;j<p_argcount;j++) {
+				bind_mem[j]=p_args[j];
 			}
+			for(int j=0;j<c.binds.size();j++) {
+				bind_mem[p_argcount+j]=&c.binds[j];
+			}
+
+			args=bind_mem.ptr();
+			argc=bind_mem.size();
 		}
 
 		if (c.flags&CONNECT_DEFERRED) {
-			MessageQueue::get_singleton()->push_call(target->get_instance_ID(),c.method,VARIANT_ARGPTRS_PASS);
+			MessageQueue::get_singleton()->push_call(target->get_instance_ID(),c.method,args,argc,true);
 		} else {
-			target->call( c.method, VARIANT_ARGPTRS_PASS );
+			Variant::CallError ce;
+			target->call( c.method, args, argc,ce );
+			if (ce.error!=Variant::CallError::CALL_OK) {
+
+				if (ce.error==Variant::CallError::CALL_ERROR_INVALID_METHOD && !ObjectTypeDB::type_exists( target->get_type_name() ) ) {
+					//most likely object is not initialized yet, do not throw error.
+				} else {
+					ERR_PRINTS("Error calling method from signal '"+String(p_name)+"': "+Variant::get_call_error_text(target,c.method,args,argc,ce));
+				}
+			}
 		}
 
 		if (c.flags&CONNECT_ONESHOT) {
@@ -1200,57 +1222,29 @@ void Object::emit_signal(const StringName& p_name,VARIANT_ARG_DECLARE) {
 
 	}
 
-#if 0
 
-	//old (deprecated and dangerous code)
-	s->lock++;
-	for( Map<Signal::Target,Signal::Slot>::Element *E = s->slot_map.front();E;E=E->next() ) {
-
-		const Signal::Target& t = E->key();
-		const Signal::Slot& s = E->get();
-		const Connection &c = s.cE->get();
-
-		VARIANT_ARGPTRS
-
-		int bind_count=c.binds.size();
-		int bind=0;
-
-		for(int i=0;bind < bind_count && i<VARIANT_ARG_MAX;i++) {
-
-			if (argptr[i]->get_type()==Variant::NIL) {
-				argptr[i]=&c.binds[bind];
-				bind++;
-			}
-		}
-
-		if (c.flags&CONNECT_DEFERRED) {
-			MessageQueue::get_singleton()->push_call(t._id,t.method,VARIANT_ARGPTRS_PASS);
-		} else {
-			Object *obj = ObjectDB::get_instance(t._id);
-			ERR_CONTINUE(!obj); //yeah this should always be here
-			obj->call( t.method, VARIANT_ARGPTRS_PASS );
-		}
-
-		if (c.flags&CONNECT_ONESHOT) {
-			_ObjectSignalDisconnectData dd;
-			dd.signal=p_name;
-			dd.target=ObjectDB::get_instance(t._id);
-			dd.method=t.method;
-			disconnect_data.push_back(dd);
-		}
-
-	}
-
-
-
-	s->lock--;
-#endif
 	while (!disconnect_data.empty()) {
 
 		const _ObjectSignalDisconnectData &dd = disconnect_data.front()->get();
 		disconnect(dd.signal,dd.target,dd.method);
 		disconnect_data.pop_front();
 	}
+
+}
+
+void Object::emit_signal(const StringName& p_name,VARIANT_ARG_DECLARE) {
+
+	VARIANT_ARGPTRS;
+
+	int argc=0;
+
+	for(int i=0;i<VARIANT_ARG_MAX;i++) {
+		if (argptr[i]->get_type()==Variant::NIL)
+			break;
+		argc++;
+	}
+
+	emit_signal(p_name,argptr,argc);
 
 }
 
@@ -1299,11 +1293,39 @@ void Object::_emit_signal(const StringName& p_name,const Array& p_pargs){
 #endif
 Array Object::_get_signal_list() const{
 
-	return Array();
+	List<MethodInfo> signal_list;
+	get_signal_list(&signal_list);
+
+	Array ret;
+	for (List<MethodInfo>::Element *E=signal_list.front();E;E=E->next()) {
+
+		ret.push_back(_get_dict_from_method(E->get()));
+	}
+
+	return ret;
 }
 Array Object::_get_signal_connection_list(const String& p_signal) const{
 
-	return Array();
+	List<Connection> conns;
+	get_all_signal_connections(&conns);
+
+	Array ret;
+
+	for (List<Connection>::Element *E=conns.front();E;E=E->next()) {
+
+		Connection &c=E->get();
+		Dictionary rc;
+		rc["signal"]=c.signal;
+		rc["method"]=c.method;
+		rc["source"]=c.source;
+		rc["target"]=c.target;
+		rc["binds"]=c.binds;
+		rc["flags"]=c.flags;
+		ret.push_back(rc);
+	}
+
+	return ret;
+
 }
 
 
@@ -1550,7 +1572,7 @@ void Object::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get","property"),&Object::_get_bind);
 	ObjectTypeDB::bind_method(_MD("get_property_list"),&Object::_get_property_list_bind);
 	ObjectTypeDB::bind_method(_MD("get_method_list"),&Object::_get_method_list_bind);
-	ObjectTypeDB::bind_method(_MD("notification","what"),&Object::notification,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("notification","what","reversed"),&Object::notification,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_instance_ID"),&Object::get_instance_ID);
 
 	ObjectTypeDB::bind_method(_MD("set_script","script:Script"),&Object::set_script);
@@ -1615,9 +1637,10 @@ void Object::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("callv:Variant","method","arg_array"),&Object::callv);
 
-	ObjectTypeDB::bind_method(_MD("has_method"),&Object::has_method);
+	ObjectTypeDB::bind_method(_MD("has_method","method"),&Object::has_method);
 
 	ObjectTypeDB::bind_method(_MD("get_signal_list"),&Object::_get_signal_list);
+	ObjectTypeDB::bind_method(_MD("get_signal_connection_list","signal"),&Object::_get_signal_connection_list);
 
 	ObjectTypeDB::bind_method(_MD("connect","signal","target:Object","method","binds","flags"),&Object::connect,DEFVAL(Array()),DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("disconnect","signal","target:Object","method"),&Object::disconnect);

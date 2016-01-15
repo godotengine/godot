@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -727,7 +727,17 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 
 			RES cb=EditorSettings::get_singleton()->get_resource_clipboard();
-			bool paste_valid=cb.is_valid() && (hint_text=="" || ObjectTypeDB::is_type(cb->get_type(),hint_text));
+			bool paste_valid=false;
+			if (cb.is_valid()) {
+				if (hint_text=="")
+					paste_valid=true;
+				else
+					for (int i = 0; i < hint_text.get_slice_count(",");i++)
+						if (ObjectTypeDB::is_type(cb->get_type(),hint_text.get_slice(",",i))) {
+							paste_valid=true;
+							break;
+						}
+			}
 
 			if (!RES(v).is_null() || paste_valid) {
 				menu->add_separator();
@@ -927,6 +937,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 		if (!node) {
 			v=p_path;
 			emit_signal("variant_changed");
+			call_deferred("hide"); //to not mess with dialogs
 			return;
 		}
 
@@ -938,6 +949,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 
 	v=p_path;
 	emit_signal("variant_changed");
+	call_deferred("hide"); //to not mess with dialogs
 
 }
 
@@ -1040,6 +1052,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 				v=NodePath();
 				emit_signal("variant_changed");
+				hide();
 			}
 		} break;
 		case Variant::OBJECT: {
@@ -2110,6 +2123,65 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 }
 
 
+void PropertyEditor::_check_reload_status(const String&p_name, TreeItem* item) {
+
+	bool has_reload=false;
+	int found=-1;
+
+	for(int i=0;i<item->get_button_count(1);i++) {
+
+		if (item->get_button_id(1,i)==3) {
+			found=i;
+			break;
+		}
+	}
+
+	if (_might_be_in_instance()) {
+
+
+		Variant vorig;
+		Dictionary d=item->get_metadata(0);
+		int usage = d.has("usage")?int(int(d["usage"])&(PROPERTY_USAGE_STORE_IF_NONONE|PROPERTY_USAGE_STORE_IF_NONZERO)):0;
+
+
+		if (_get_instanced_node_original_property(p_name,vorig) || usage) {
+			Variant v = obj->get(p_name);
+
+			bool changed = _is_property_different(v,vorig,usage);
+
+			if ((found!=-1)!=changed) {
+
+				if (changed) {
+
+					has_reload=true;
+				} else {
+
+				}
+
+			}
+
+		}
+
+
+
+	}
+
+	if (!has_reload && !obj->get_script().is_null()) {
+		Ref<Script> scr = obj->get_script();
+		Variant orig_value;
+		if (scr->get_property_default_value(p_name,orig_value)) {
+			if (orig_value!=obj->get(p_name)) {
+				has_reload=true;
+			}
+		}
+	}
+
+	if (found!=-1 && !has_reload) {
+		item->erase_button(1,found);
+	} else if (found==-1 && has_reload) {
+		item->add_button(1,get_icon("Reload","EditorIcons"),3);
+	}
+}
 
 void PropertyEditor::_notification(int p_what) {
 
@@ -2151,43 +2223,8 @@ void PropertyEditor::_notification(int p_what) {
 				if (!item)
 					continue;
 
-				if (_might_be_in_instance()) {
+				_check_reload_status(*k,item);
 
-
-					Variant vorig;
-					Dictionary d=item->get_metadata(0);
-					int usage = d.has("usage")?int(int(d["usage"])&(PROPERTY_USAGE_STORE_IF_NONONE|PROPERTY_USAGE_STORE_IF_NONZERO)):0;
-
-
-					if (_get_instanced_node_original_property(*k,vorig) || usage) {
-						Variant v = obj->get(*k);
-
-						int found=-1;
-						for(int i=0;i<item->get_button_count(1);i++) {
-
-							if (item->get_button_id(1,i)==3) {
-								found=i;
-								break;
-							}
-						}
-
-						bool changed = _is_property_different(v,vorig,usage);
-
-						if ((found!=-1)!=changed) {
-
-							if (changed) {
-
-								item->add_button(1,get_icon("Reload","EditorIcons"),3);
-							} else {
-
-								item->erase_button(1,found);
-							}
-
-						}
-
-					}
-
-				}
 				Dictionary d=item->get_metadata(0);
 				set_item_text(item,d["type"],d["name"],d["hint"],d["hint_text"]);
 			}
@@ -2254,23 +2291,30 @@ void PropertyEditor::_refresh_item(TreeItem *p_item) {
 
 	if (name!=String()) {
 
+
+		_check_reload_status(name,p_item);
+#if 0
+		bool has_reload=false;
+
+		int found=-1;
+		for(int i=0;i<p_item->get_button_count(1);i++) {
+
+			if (p_item->get_button_id(1,i)==3) {
+				found=i;
+				break;
+			}
+		}
+
 		if (_might_be_in_instance()) {
 
 			Variant vorig;
 			Dictionary d=p_item->get_metadata(0);
 			int usage = d.has("usage")?int(int(d["usage"])&(PROPERTY_USAGE_STORE_IF_NONONE|PROPERTY_USAGE_STORE_IF_NONZERO)):0;
 
+
 			if (_get_instanced_node_original_property(name,vorig) || usage) {
 				Variant v = obj->get(name);
 
-				int found=-1;
-				for(int i=0;i<p_item->get_button_count(1);i++) {
-
-					if (p_item->get_button_id(1,i)==3) {
-						found=i;
-						break;
-					}
-				}
 
 				bool changed = _is_property_different(v,vorig,usage);
 
@@ -2278,10 +2322,11 @@ void PropertyEditor::_refresh_item(TreeItem *p_item) {
 
 					if (changed) {
 
-						p_item->add_button(1,get_icon("Reload","EditorIcons"),3);
+						has_reload=true;
+
 					} else {
 
-						p_item->erase_button(1,found);
+						//p_item->erase_button(1,found);
 					}
 
 				}
@@ -2290,6 +2335,22 @@ void PropertyEditor::_refresh_item(TreeItem *p_item) {
 
 		}
 
+		if (!has_reload && !obj->get_script().is_null()) {
+			Ref<Script> scr = obj->get_script();
+			Variant orig_value;
+			if (scr->get_property_default_value(name,orig_value)) {
+				if (orig_value!=obj->get(name)) {
+					has_reload=true;
+				}
+			}
+		}
+
+		if (!has_reload && found!=-1) {
+			p_item->erase_button(1,found);
+		} else if (has_reload && found==-1) {
+			p_item->add_button(1,get_icon("Reload","EditorIcons"),3);
+		}
+#endif
 		Dictionary d=p_item->get_metadata(0);
 		set_item_text(p_item,d["type"],d["name"],d["hint"],d["hint_text"]);
 	}
@@ -3030,6 +3091,7 @@ void PropertyEditor::update_tree() {
 			}
 		}
 
+		bool has_reload=false;
 		if (_might_be_in_instance()) {
 
 			Variant vorig;
@@ -3042,10 +3104,23 @@ void PropertyEditor::update_tree() {
 				if (_is_property_different(v,vorig,usage)) {
 					//print_line("FOR "+String(p.name)+" RELOAD WITH: "+String(v)+"("+Variant::get_type_name(v.get_type())+")=="+String(vorig)+"("+Variant::get_type_name(vorig.get_type())+")");
 					item->add_button(1,get_icon("Reload","EditorIcons"),3);
+					has_reload=true;
 				}
 			}
 
 		}
+
+		if (!has_reload && !obj->get_script().is_null()) {
+			Ref<Script> scr = obj->get_script();
+			Variant orig_value;
+			if (scr->get_property_default_value(p.name,orig_value)) {
+				if (orig_value!=obj->get(p.name)) {
+					item->add_button(1,get_icon("Reload","EditorIcons"),3);
+				}
+			}
+		}
+
+
 
 	}
 }
@@ -3337,8 +3412,6 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 		call_deferred("_set_range_def",ti,prop,ti->get_range(p_column)+1.0);
 	} else if (p_button==3) {
 
-		if (!_might_be_in_instance())
-			return;
 		if (!d.has("name"))
 			return;
 
@@ -3346,10 +3419,20 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 
 		Variant vorig;
 
-		if (_get_instanced_node_original_property(prop,vorig)) {
+		if (_might_be_in_instance() && _get_instanced_node_original_property(prop,vorig)) {
 
 			_edit_set(prop,vorig);
+			return;
 		}
+
+		if  (!obj->get_script().is_null()) {
+			Ref<Script> scr = obj->get_script();
+			Variant orig_value;
+			if (scr->get_property_default_value(prop,orig_value)) {
+				_edit_set(prop,orig_value);
+			}
+		}
+
 
 	} else {
 
@@ -3694,6 +3777,10 @@ class SectionedPropertyEditorFilter : public Object {
 		for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
 
 			PropertyInfo pi=E->get();
+
+			if (section=="")
+				p_list->push_back(pi);
+
 			int sp = pi.name.find("/");
 			if (sp!=-1) {
 				String ss = pi.name.substr(0,sp);
@@ -3703,7 +3790,7 @@ class SectionedPropertyEditorFilter : public Object {
 					p_list->push_back(pi);
 				}
 			} else {
-				if (section=="")
+				if (section=="global")
 					p_list->push_back(pi);
 			}
 		}
@@ -3728,15 +3815,49 @@ public:
 
 };
 
+void SectionedPropertyEditor::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+
+		clear_button->set_icon(get_icon("Close", "EditorIcons"));
+	}
+}
 
 void SectionedPropertyEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_section_selected",&SectionedPropertyEditor::_section_selected);
+	ObjectTypeDB::bind_method("_clear_search_box",&SectionedPropertyEditor::clear_search_box);
 }
 
 void SectionedPropertyEditor::_section_selected(int p_which) {
 
 	filter->set_section( sections->get_item_metadata(p_which) );
+}
+
+void SectionedPropertyEditor::clear_search_box() {
+
+	if (search_box->get_text().strip_edges()=="")
+		return;
+
+	search_box->clear();
+	editor->update_tree();
+}
+
+
+String SectionedPropertyEditor::get_current_section() const {
+
+	String section = sections->get_item_metadata( sections->get_current() );
+
+	if (section=="") {
+		String name = editor->get_selected_path();
+
+		int sp = name.find("/");
+		if (sp!=-1)
+			section = name.substr(0, sp);
+
+	}
+
+	return section;
 }
 
 String SectionedPropertyEditor::get_full_item_path(const String& p_item) {
@@ -3756,11 +3877,20 @@ void SectionedPropertyEditor::edit(Object* p_object) {
 	sections->clear();
 
 	Set<String> existing_sections;
+
+	existing_sections.insert("");
+	sections->add_item("All");
+	sections->set_item_metadata(0, "");
+
 	for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
 
 		PropertyInfo pi=E->get();
+
 		if (pi.usage&PROPERTY_USAGE_CATEGORY)
 			continue;
+		if ( !(pi.usage&PROPERTY_USAGE_EDITOR) )
+			continue;
+
 		if (pi.name.find(":")!=-1 || pi.name=="script/script")
 			continue;
 		int sp = pi.name.find("/");
@@ -3773,10 +3903,10 @@ void SectionedPropertyEditor::edit(Object* p_object) {
 			}
 
 		} else {
-			if (!existing_sections.has("")) {
-				existing_sections.insert("");
+			if (!existing_sections.has("global")) {
+				existing_sections.insert("global");
 				sections->add_item("Global");
-				sections->set_item_metadata(sections->get_item_count()-1,"");
+				sections->set_item_metadata(sections->get_item_count()-1,"global");
 			}
 		}
 
@@ -3801,6 +3931,8 @@ PropertyEditor *SectionedPropertyEditor::get_property_editor() {
 
 SectionedPropertyEditor::SectionedPropertyEditor() {
 
+	add_constant_override("separation", 8);
+
 	VBoxContainer *left_vb = memnew( VBoxContainer);
 	left_vb->set_custom_minimum_size(Size2(160,0));
 	add_child(left_vb);
@@ -3815,7 +3947,21 @@ SectionedPropertyEditor::SectionedPropertyEditor() {
 	add_child(right_vb);
 
 	filter = memnew( SectionedPropertyEditorFilter );
+
+	HBoxContainer *hbc = memnew( HBoxContainer );
+	right_vb->add_margin_child("Search:",hbc);
+
+	search_box = memnew( LineEdit );
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc->add_child(search_box);
+
+	clear_button = memnew( ToolButton );
+	hbc->add_child(clear_button);
+	clear_button->connect("pressed", this, "_clear_search_box");
+
 	editor = memnew( PropertyEditor );
+	editor->register_text_enter(search_box);
+	editor->set_use_filter(true);
 	editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	right_vb->add_margin_child("Properties:",editor,true);
 

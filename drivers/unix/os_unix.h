@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,7 +95,7 @@ public:
 	virtual TimeZoneInfo get_time_zone_info() const;
 
 	virtual uint64_t get_unix_time() const;
-	virtual uint64_t get_system_time_msec() const;
+	virtual uint64_t get_system_time_secs() const;
 
 	virtual void delay_usec(uint32_t p_usec) const; 
 	virtual uint64_t get_ticks_usec() const;

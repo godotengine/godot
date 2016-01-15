@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1156,6 +1156,10 @@ Error GDCompiler::_parse_block(CodeGen& codegen,const GDParser::BlockNode *p_blo
 				codegen.opcodes.push_back(GDFunction::OPCODE_ASSERT);
 				codegen.opcodes.push_back(ret);
 			} break;
+			case GDParser::Node::TYPE_BREAKPOINT: {
+				// try subblocks
+				codegen.opcodes.push_back(GDFunction::OPCODE_BREAKPOINT);
+			} break;
 			case GDParser::Node::TYPE_LOCAL_VAR: {
 
 
@@ -1181,7 +1185,7 @@ Error GDCompiler::_parse_block(CodeGen& codegen,const GDParser::BlockNode *p_blo
 }
 
 
-Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *p_class,const GDParser::FunctionNode *p_func) {
+Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *p_class,const GDParser::FunctionNode *p_func,bool p_for_ready) {
 
 	Vector<int> bytecode;
 	CodeGen codegen;
@@ -1212,9 +1216,9 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 
 	/* Parse initializer -if applies- */
 
-	bool is_initializer=false || !p_func;
+	bool is_initializer=!p_for_ready && !p_func;
 
-	if (!p_func || String(p_func->name)=="_init") {
+	if (is_initializer || (p_func && String(p_func->name)=="_init")) {
 		//parse initializer for class members
 		if (!p_func && p_class->extends_used && p_script->native.is_null()){
 
@@ -1232,12 +1236,24 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 
 	}
 
+	if (p_for_ready || (p_func && String(p_func->name)=="_ready")) {
+		//parse initializer for class members
+		if (p_class->ready->statements.size()) {
+			Error err = _parse_block(codegen,p_class->ready,stack_level);
+			if (err)
+				return err;
+		}
+
+	}
+
+
 	/* Parse default argument code -if applies- */
 
 	Vector<int> defarg_addr;
 	StringName func_name;
 
 	if (p_func) {
+
 		if (p_func->default_values.size()) {
 
 			codegen.opcodes.push_back(GDFunction::OPCODE_JUMP_TO_DEF_ARGUMENT);
@@ -1260,7 +1276,10 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 
 		func_name=p_func->name;
 	} else {
-		func_name="_init";
+		if (p_for_ready)
+			func_name="_ready";
+		else
+			func_name="_init";
 	}
 
 	codegen.opcodes.push_back(GDFunction::OPCODE_END);
@@ -1328,7 +1347,7 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 	if (defarg_addr.size()) {
 
 		gdfunc->default_arguments=defarg_addr;
-		gdfunc->_default_arg_count=defarg_addr.size();
+		gdfunc->_default_arg_count=defarg_addr.size()-1;
 		gdfunc->_default_arg_ptr=&gdfunc->default_arguments[0];
 	} else {
 		gdfunc->_default_arg_count=0;
@@ -1614,10 +1633,14 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 	//parse methods
 
 	bool has_initializer=false;
+	bool has_ready=false;
+
 	for(int i=0;i<p_class->functions.size();i++) {
 
 		if (!has_initializer && p_class->functions[i]->name=="_init")
 			has_initializer=true;
+		if (!has_ready && p_class->functions[i]->name=="_ready")
+			has_ready=true;
 		Error err = _parse_function(p_script,p_class,p_class->functions[i]);
 		if (err)
 			return err;
@@ -1636,6 +1659,13 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 	if (!has_initializer) {
 		//create a constructor
 		Error err = _parse_function(p_script,p_class,NULL);
+		if (err)
+			return err;
+	}
+
+	if (!has_ready && p_class->ready->statements.size()) {
+		//create a constructor
+		Error err = _parse_function(p_script,p_class,NULL,true);
 		if (err)
 			return err;
 	}

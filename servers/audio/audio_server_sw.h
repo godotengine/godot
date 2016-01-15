@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -118,7 +118,7 @@ public:
 	virtual RID sample_create(SampleFormat p_format, bool p_stereo, int p_length);
 
 	virtual void sample_set_description(RID p_sample, const String& p_description);
-	virtual String sample_get_description(RID p_sample, const String& p_description) const;
+	virtual String sample_get_description(RID p_sample) const;
 
 	virtual SampleFormat sample_get_format(RID p_sample) const;
 	virtual bool sample_is_stereo(RID p_sample) const;

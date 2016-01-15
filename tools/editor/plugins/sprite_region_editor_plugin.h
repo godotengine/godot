@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Author: Mariano Suligoy                                               */
 /*                                                                       */
@@ -41,6 +41,8 @@ class SpriteRegionEditor : public HBoxContainer {
 
 	OBJ_TYPE(SpriteRegionEditor, HBoxContainer );
 
+	friend class SpriteRegionEditorPlugin;
+
 	ToolButton *edit_node;
 //	Button *use_region;
 	ToolButton *b_snap_enable;
@@ -48,6 +50,10 @@ class SpriteRegionEditor : public HBoxContainer {
 	TextureFrame *icon_zoom;
 	HSlider *zoom;
 	SpinBox *zoom_value;
+	SpinBox *sb_step_y;
+	SpinBox *sb_step_x;
+	SpinBox *sb_off_y;
+	SpinBox *sb_off_x;
 	Control *edit_draw;
 
 	VScrollBar *vscroll;
@@ -113,11 +119,13 @@ class SpriteRegionEditorPlugin : public EditorPlugin
 	EditorNode *editor;
 public:
 
-	virtual String get_name() const { return "Sprite"; }
+	virtual String get_name() const { return "SpriteRegion"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
 	virtual bool handles(Object *p_node) const;
 	virtual void make_visible(bool p_visible);
+	void set_state(const Dictionary &p_state);
+	Dictionary get_state() const;
 
 	SpriteRegionEditorPlugin(EditorNode *p_node);
 };

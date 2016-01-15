@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -141,7 +141,7 @@ void Joint::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			if (joint.is_valid()) {
 				_update_joint(true);
-				PhysicsServer::get_singleton()->free(joint);
+				//PhysicsServer::get_singleton()->free(joint);
 				joint=RID();
 			}
 		} break;

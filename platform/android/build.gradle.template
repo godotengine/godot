@@ -1,0 +1,70 @@
+buildscript {
+	repositories {
+		jcenter()
+	}
+	dependencies {
+		classpath 'com.android.tools.build:gradle:1.2.0'
+	}
+}
+
+apply plugin: 'com.android.application'
+
+allprojects {
+    repositories {
+	mavenCentral()
+	$$GRADLE_REPOSITORY_URLS$$
+    }
+}
+
+dependencies {
+
+	$$GRADLE_DEPENDENCIES$$    
+}
+
+android {
+
+	lintOptions {
+		abortOnError false
+	}
+
+	compileSdkVersion 19
+	buildToolsVersion "19.1"
+
+	packagingOptions {
+		exclude 'META-INF/LICENSE'
+		exclude 'META-INF/NOTICE'
+	}
+	defaultConfig {
+		minSdkVersion 14
+		targetSdkVersion 19
+	}
+	sourceSets {
+		main {
+			manifest.srcFile 'AndroidManifest.xml'
+			java.srcDirs = ['src'
+				$$GRADLE_JAVA_DIRS$$    
+			]
+			resources.srcDirs = [
+				'res'
+				$$GRADLE_RES_DIRS$$    
+			]
+			res.srcDirs = ['res']
+		//            libs.srcDirs = ['libs']
+			aidl.srcDirs = [
+				'aidl'
+				$$GRADLE_AIDL_DIRS$$    
+			]
+			assets.srcDirs = [
+				'assets'
+				$$GRADLE_ASSET_DIRS$$    				
+			]
+			jniLibs.srcDirs = [
+				'libs'
+				$$GRADLE_JNI_DIRS$$    								
+			] 
+		}
+
+	}
+
+
+}

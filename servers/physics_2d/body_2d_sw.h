@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,6 +81,7 @@ class Body2DSW : public CollisionObject2DSW {
 	bool active;
 	bool can_sleep;
 	bool first_time_kinematic;
+	bool first_integration;
 	bool using_one_way_cache;
 	void _update_inertia();
 	virtual void _shapes_changed();
@@ -369,7 +370,7 @@ public:
 	virtual Vector2 get_contact_collider_pos(int p_contact_idx) const {  ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,Vector2());   return body->contacts[p_contact_idx].collider_pos;  }
 	virtual ObjectID get_contact_collider_id(int p_contact_idx) const {  ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,0);   return body->contacts[p_contact_idx].collider_instance_id;   }
 	virtual int get_contact_collider_shape(int p_contact_idx) const {  ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,0); return body->contacts[p_contact_idx].collider_shape;  }
-	virtual Variant get_contact_collider_shape_metadata(int p_contact_idx) const {  ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,Variant()); return body->get_shape_metadata(body->contacts[p_contact_idx].collider_shape);  }
+	virtual Variant get_contact_collider_shape_metadata(int p_contact_idx) const;
 
 	virtual Vector2 get_contact_collider_velocity_at_pos(int p_contact_idx) const {  ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,Vector2()); return body->contacts[p_contact_idx].collider_velocity_at_pos;  }
 

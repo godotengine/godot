@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,7 +50,6 @@ class SceneState : public Reference {
 		FLAG_INSTANCE_IS_PLACEHOLDER=(1<<30),
 		FLAG_MASK=(1<<24)-1,
 		NO_PARENT_SAVED=0x7FFFFFFF,
-		TYPE_INSTANCED=0x7FFFFFFF,
 
 	};
 
@@ -105,6 +104,10 @@ class SceneState : public Reference {
 
 	static bool disable_placeholders;
 public:
+
+	enum {
+		TYPE_INSTANCED=0x7FFFFFFF
+	};
 
 	static void set_disable_placeholders(bool p_disable);
 
@@ -195,6 +198,7 @@ public:
 	Node *instance(bool p_gen_edit_state=false) const;
 
 	void recreate_state();
+	void replace_state(Ref<SceneState> p_by);
 
 	virtual void set_path(const String& p_path,bool p_take_over=false);
 #ifdef TOOLS_ENABLED

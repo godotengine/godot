@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1096,7 +1096,7 @@ void GridMap::_bind_methods() {
 
 //	ObjectTypeDB::bind_method(_MD("_recreate_octants"),&GridMap::_recreate_octants);
 	ObjectTypeDB::bind_method(_MD("_update_dirty_map_callback"),&GridMap::_update_dirty_map_callback);
-	ObjectTypeDB::bind_method(_MD("resource_changed"),&GridMap::resource_changed);
+	ObjectTypeDB::bind_method(_MD("resource_changed","resource"),&GridMap::resource_changed);
 
 	ObjectTypeDB::bind_method(_MD("set_center_x","enable"),&GridMap::set_center_x);
 	ObjectTypeDB::bind_method(_MD("get_center_x"),&GridMap::get_center_x);

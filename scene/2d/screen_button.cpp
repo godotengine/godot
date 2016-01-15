@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,6 +102,10 @@ void TouchScreenButton::_notification(int p_what) {
 				action_id=-1;
 			}
 		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			if (is_pressed())
+				Input::get_singleton()->action_release(action);
+		} break;
 	}
 }
 
@@ -161,7 +165,7 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 
 			if (finger_pressed==-1 || p_event.screen_touch.index==finger_pressed) {
 
-				Point2 coord = (get_global_transform()).affine_inverse().xform(Point2(p_event.screen_touch.x,p_event.screen_touch.y));
+				Point2 coord = (get_global_transform_with_canvas()).affine_inverse().xform(Point2(p_event.screen_touch.x,p_event.screen_touch.y));
 
 				bool touched=false;
 				if (bitmask.is_valid()) {
@@ -238,7 +242,7 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 				if (finger_pressed!=-1)
 					return; //already fingering
 
-				Point2 coord = (get_global_transform()).affine_inverse().xform(Point2(p_event.screen_touch.x,p_event.screen_touch.y));
+				Point2 coord = (get_global_transform_with_canvas()).affine_inverse().xform(Point2(p_event.screen_touch.x,p_event.screen_touch.y));
 
 				bool touched=false;
 				if (bitmask.is_valid()) {

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -243,7 +243,7 @@ EditorLog::EditorLog() {
 	log->set_selection_enabled(true);
 	log->set_focus_mode(FOCUS_CLICK);
 	pc->add_child(log);
-	add_message(VERSION_FULL_NAME" (c) 2008-2015 Juan Linietsky, Ariel Manzur.");
+	add_message(VERSION_FULL_NAME" (c) 2008-2016 Juan Linietsky, Ariel Manzur.");
 	//log->add_text("Initialization Complete.\n"); //because it looks cool.
 	add_style_override("panel",get_stylebox("panelf","Panel"));
 

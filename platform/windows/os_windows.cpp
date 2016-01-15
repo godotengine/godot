@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1144,8 +1144,7 @@ void OS_Windows::finalize_core() {
 
 	if (mempool_dynamic)
 		memdelete( mempool_dynamic );
-	if (mempool_static)
-		delete mempool_static;
+	delete mempool_static;
 
 
 	TCPServerWinsock::cleanup();
@@ -1681,10 +1680,16 @@ uint64_t OS_Windows::get_unix_time() const {
 	return (*(uint64_t*)&ft - *(uint64_t*)&fep) / 10000000;
 };
 
-uint64_t OS_Windows::get_system_time_msec() const {
+uint64_t OS_Windows::get_system_time_secs() const {
 	SYSTEMTIME st;
 	GetSystemTime(&st);
-	return st.wMilliseconds;
+	FILETIME ft;
+	SystemTimeToFileTime(&st,&ft);
+	uint64_t ret;
+	ret=ft.dwHighDateTime;
+	ret<<=32;
+	ret|=ft.dwLowDateTime;
+	return ret;
 }
 
 void OS_Windows::delay_usec(uint32_t p_usec) const {
@@ -2099,6 +2104,13 @@ String OS_Windows::get_data_dir() const {
 
 }
 
+bool OS_Windows::is_joy_known(int p_device) {
+	return input->is_joy_mapped(p_device);
+}
+
+String OS_Windows::get_joy_guid(int p_device) const {
+	return input->get_joy_guid_remapped(p_device);
+}
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
