@@ -5975,7 +5975,8 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( Polygon2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( LightOccluder2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( NavigationPolygonEditorPlugin(this) ) );
-	add_editor_plugin( memnew( ColorRampEditorPlugin(this) ) );
+	add_editor_plugin( memnew( ColorRampEditorPlugin(this,true) ) );
+	add_editor_plugin( memnew( ColorRampEditorPlugin(this,false) ) );
 	add_editor_plugin( memnew( CollisionShape2DEditorPlugin(this) ) );
 
 	for(int i=0;i<EditorPlugins::get_plugin_count();i++)
