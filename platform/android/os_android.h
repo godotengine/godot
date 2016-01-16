@@ -73,6 +73,7 @@ typedef void (*VideoPlayFunc)(const String&);
 typedef bool (*VideoIsPlayingFunc)();
 typedef void (*VideoPauseFunc)();
 typedef void (*VideoStopFunc)();
+typedef void (*SetKeepScreenOnFunc)(bool p_enabled);
 
 class OS_Android : public OS_Unix {
 public:
@@ -132,6 +133,7 @@ private:
 	VideoIsPlayingFunc video_is_playing_func;
 	VideoPauseFunc video_pause_func;
 	VideoStopFunc video_stop_func;
+	SetKeepScreenOnFunc set_keep_screen_on_func;
 
 public:
 
@@ -175,7 +177,9 @@ public:
 	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0);
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
-
+	
+	virtual void set_keep_screen_on(bool p_enabled);
+	
 	virtual Size2 get_window_size() const;
 
 	virtual String get_name();
@@ -228,7 +232,7 @@ public:
 	virtual void native_video_pause();
 	virtual void native_video_stop();
 
-	OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func,bool p_use_apk_expansion);
+	OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, bool p_use_apk_expansion);
 	~OS_Android();
 
 };

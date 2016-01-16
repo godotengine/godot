@@ -671,7 +671,7 @@ static jmethodID _playVideo=0;
 static jmethodID _isVideoPlaying=0;
 static jmethodID _pauseVideo=0;
 static jmethodID _stopVideo=0;
-
+static jmethodID _setKeepScreenOn=0;
 
 static void _gfx_init_func(void* ud, bool gl2) {
 
@@ -765,6 +765,11 @@ static void _stop_video() {
 	env->CallVoidMethod(godot_io, _stopVideo);
 }
 
+static void _set_keep_screen_on(bool p_enabled) {
+	JNIEnv* env = ThreadAndroid::get_env();
+	env->CallVoidMethod(_godot_instance, _setKeepScreenOn, p_enabled);
+}
+
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv * env, jobject obj, jobject activity,jboolean p_need_reload_hook, jobjectArray p_cmdline,jobject p_asset_manager) {
 
 	__android_log_print(ANDROID_LOG_INFO,"godot","**INIT EVENT! - %p\n",env);
@@ -801,6 +806,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv * e
 		godot_io=gob;
 
 		_on_video_init = env->GetMethodID(cls, "onVideoInit", "(Z)V");
+		_setKeepScreenOn = env->GetMethodID(cls,"setKeepScreenOn","(Z)V");
 
 		jclass clsio = env->FindClass("org/godotengine/godot/Godot");
 		if (cls) {
@@ -863,7 +869,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv * e
 
 	__android_log_print(ANDROID_LOG_INFO,"godot","CMDLINE LEN %i - APK EXPANSION %I\n",cmdlen,int(use_apk_expansion));
 
-	os_android = new OS_Android(_gfx_init_func,env,_open_uri,_get_data_dir,_get_locale, _get_model,_show_vk, _hide_vk,_set_screen_orient,_get_unique_id, _get_system_dir, _play_video,_is_video_playing, _pause_video, _stop_video,use_apk_expansion);
+	os_android = new OS_Android(_gfx_init_func,env,_open_uri,_get_data_dir,_get_locale, _get_model,_show_vk, _hide_vk,_set_screen_orient,_get_unique_id, _get_system_dir, _play_video,_is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, use_apk_expansion);
 	os_android->set_need_reload_hooks(p_need_reload_hook);
 
 	char wd[500];

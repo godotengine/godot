@@ -302,6 +302,14 @@ void OS_Android::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) 
 	p_list->push_back(default_videomode);
 }
 
+void OS_Android::set_keep_screen_on(bool p_enabled) {
+	OS::set_keep_screen_on(p_enabled);
+	
+	if (set_keep_screen_on_func) {
+		set_keep_screen_on_func(p_enabled);
+	}
+}
+
 Size2 OS_Android::get_window_size() const {
 
 	return Vector2(default_videomode.width,default_videomode.height);
@@ -734,7 +742,7 @@ void OS_Android::set_context_is_16_bits(bool p_is_16) {
 		rasterizer->set_force_16_bits_fbo(p_is_16);
 }
 
-OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func,bool p_use_apk_expansion) {
+OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, bool p_use_apk_expansion) {
 
 
 	use_apk_expansion=p_use_apk_expansion;
@@ -767,6 +775,7 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFu
 	hide_virtual_keyboard_func = p_hide_vk;
 
 	set_screen_orientation_func=p_screen_orient;
+	set_keep_screen_on_func = p_set_keep_screen_on_func;
 	use_reload_hooks=false;
 
 }
