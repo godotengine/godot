@@ -39,6 +39,11 @@
 */
 
 class Camera;
+class Control;
+class CanvasItem;
+class Panel;
+class Label;
+class Timer;
 class Viewport;
 
 class RenderTargetTexture : public Texture {
@@ -162,6 +167,48 @@ friend class RenderTargetTexture;
 	Ref<RenderTargetTexture> render_target_texture;
 
 
+	struct GUI {
+		// info used when this is a window
+
+		bool key_event_accepted;
+		Control *mouse_focus;
+		int mouse_focus_button;
+		Control *key_focus;
+		Control *mouse_over;
+		Control *tooltip;
+		Panel *tooltip_popup;
+		Label *tooltip_label;
+		Point2 tooltip_pos;
+		Point2 last_mouse_pos;
+		Point2 drag_accum;
+		bool drag_attempted;
+		Variant drag_data;
+		Control *drag_preview;
+		Timer *tooltip_timer;
+		List<Control*> modal_stack;
+		unsigned int cancelled_input_ID;
+		Matrix32 focus_inv_xform;
+		bool subwindow_order_dirty;
+		List<Control*> subwindows;
+		bool roots_order_dirty;
+		List<Control*> roots;
+
+
+		GUI();
+	} gui;
+
+	bool disable_input;
+
+	void _gui_call_input(Control *p_control,const InputEvent& p_input);
+	void _gui_sort_subwindows();
+	void _gui_sort_roots();
+	void _gui_sort_modal_stack();
+	Control* _gui_find_control(const Point2& p_global);
+	Control* _gui_find_control_at_pos(CanvasItem* p_node,const Point2& p_global,const Matrix32& p_xform,Matrix32& r_inv_xform);
+
+	void _gui_input_event(InputEvent p_event);
+
+
 	void update_worlds();
 
 	_FORCE_INLINE_ Matrix32 _get_input_pre_xform() const;
@@ -170,8 +217,46 @@ friend class RenderTargetTexture;
 	void _vp_exit_tree();
 
 	void _vp_input(const InputEvent& p_ev);
+	void _vp_input_text(const String& p_text);
 	void _vp_unhandled_input(const InputEvent& p_ev);
 	void _make_input_local(InputEvent& ev);
+
+
+friend class Control;
+
+	List<Control*>::Element* _gui_add_root_control(Control* p_control);
+	List<Control*>::Element* _gui_add_subwindow_control(Control* p_control);
+
+	void _gui_set_subwindow_order_dirty();
+	void _gui_set_root_order_dirty();
+
+
+	void _gui_remove_modal_control(List<Control*>::Element *MI);
+	void _gui_remove_from_modal_stack(List<Control*>::Element *MI,ObjectID p_prev_focus_owner);
+	void _gui_remove_root_control(List<Control*>::Element *RI);
+	void _gui_remove_subwindow_control(List<Control*>::Element* SI);
+
+	void _gui_cancel_tooltip();
+	void _gui_show_tooltip();
+
+
+	void _gui_remove_control(Control *p_control);
+	void _gui_hid_control(Control *p_control);
+
+	void _gui_force_drag(const Variant& p_data,Control *p_control);
+	void _gui_set_drag_preview(Control *p_control);
+
+	bool _gui_is_modal_on_top(const Control* p_control);
+	List<Control*>::Element* _gui_show_modal(Control* p_control);
+
+	void _gui_remove_focus();
+	void _gui_unfocus_control(Control *p_control);
+	bool _gui_control_has_focus(const Control* p_control);
+	void _gui_control_grab_focus(Control* p_control);
+	void _gui_grab_click_focus(Control *p_control);
+	void _gui_accept_event();
+
+	Control *_gui_get_focus_owner();
 
 friend class Camera;
 	void _camera_transform_changed_notify();
@@ -254,6 +339,9 @@ public:
 	void input(const InputEvent& p_event);
 	void unhandled_input(const InputEvent& p_event);
 
+	void set_disable_input(bool p_disable);
+	bool is_input_disabled() const;
+
 	void set_render_target_to_screen_rect(const Rect2& p_rect);
 	Rect2 get_render_target_to_screen_rect() const;
 
@@ -262,6 +350,9 @@ public:
 
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
+
+	bool gui_has_modal_stack() const;
+
 
 	Viewport();	
 	~Viewport();

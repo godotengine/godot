@@ -3529,7 +3529,7 @@ void SpatialEditor::_instance_scene() {
 
 void SpatialEditor::_unhandled_key_input(InputEvent p_event) {
 
-	if (!is_visible() || window_has_modal_stack())
+	if (!is_visible() || get_viewport()->gui_has_modal_stack())
 		return;
 
 	{

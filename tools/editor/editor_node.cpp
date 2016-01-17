@@ -4964,8 +4964,9 @@ EditorNode::EditorNode() {
 
 
 	//scene_root_base->add_child(scene_root);
-	scene_root->set_meta("_editor_disable_input",true);
+	//scene_root->set_meta("_editor_disable_input",true);
 	VisualServer::get_singleton()->viewport_set_hide_scenario(scene_root->get_viewport(),true);
+	scene_root->set_disable_input(true);
 	scene_root->set_as_audio_listener_2d(true);
 	scene_root->set_size_override(true,Size2(Globals::get_singleton()->get("display/width"),Globals::get_singleton()->get("display/height")));
 

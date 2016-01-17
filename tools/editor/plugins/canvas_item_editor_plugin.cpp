@@ -194,7 +194,7 @@ void CanvasItemEditor::_edit_set_pivot(const Vector2& mouse_pos) {
 
 void CanvasItemEditor::_unhandled_key_input(const InputEvent& p_ev) {
 
-	if (!is_visible() || window_has_modal_stack())
+	if (!is_visible() || get_viewport()->gui_has_modal_stack())
 		return;
 	if (p_ev.key.mod.control)
 		// prevent to change tool mode when control key is pressed

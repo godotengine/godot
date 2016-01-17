@@ -330,7 +330,8 @@ void SceneTree::input_text( const String& p_text ) {
 
 	root_lock++;
 
-	call_group(GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"input",p_text);
+	call_group(GROUP_CALL_REALTIME,"_viewports","_vp_input_text",p_text); //special one for GUI, as controls use their own process check
+
 	root_lock--;
 
 }

@@ -124,7 +124,6 @@ private:
 		bool stop_mouse;
 
 		Control *parent;
-		Control *window;
 		bool modal;
 		bool modal_exclusive;
 		Ref<Theme> theme;
@@ -134,10 +133,9 @@ private:
 
 		List<Control*>::Element *MI; //modal item
 		List<Control*>::Element *SI;
+		List<Control*>::Element *RI;
 
 		CanvasItem *parent_canvas_item;
-
-		Viewport *viewport;
 
 		ObjectID modal_prev_focus_owner;
 
@@ -149,66 +147,25 @@ private:
 		HashMap<StringName, Color, StringNameHasher > color_override;
 		HashMap<StringName, int, StringNameHasher > constant_override;
 	} data;
-	
-	struct Window {
-		// info used when this is a window 	
-
-		bool key_event_accepted;
-		Control *mouse_focus;
-		int mouse_focus_button;
-		Control *key_focus;
-		Control *mouse_over;
-		Control *tooltip;
-		Panel *tooltip_popup;
-		Label *tooltip_label;
-		Point2 tooltip_pos;
-		Point2 last_mouse_pos;
-		Point2 drag_accum;
-		bool drag_attempted;
-		Variant drag_data;
-		Control *drag_preview;
-		Timer *tooltip_timer;
-		List<Control*> modal_stack;
-		unsigned int cancelled_input_ID;
-		Matrix32 focus_inv_xform;
-		bool subwindow_order_dirty;
-		List<Control*> subwindows;
-		bool disable_input;
-
-		Window();
-	};
-
-	Window *window;
-	
+		
 	// used internally
-	Control* _find_next_visible_control_at_pos(Node* p_node,const Point2& p_global,Matrix32& r_xform) const;
 	Control* _find_control_at_pos(CanvasItem* p_node,const Point2& p_pos,const Matrix32& p_xform,Matrix32& r_inv_xform);
 
 
-	void _window_sort_subwindows();
-	void _window_accept_event();
-	void _window_remove_focus();
-	void _window_cancel_input_ID(int p_input);
-	void _window_sort_modal_stack();
 	void _window_find_focus_neighbour(const Vector2& p_dir, Node *p_at, const Point2* p_points ,float p_min,float &r_closest_dist,Control **r_closest);
 	Control *_get_focus_neighbour(Margin p_margin,int p_count=0);
-	void _window_call_input(Control *p_control,const InputEvent& p_input);
+
 
 	float _get_parent_range(int p_idx) const;
 	float _get_range(int p_idx) const;
 	float _s2a(float p_val, AnchorType p_anchor,float p_range) const;
 	float _a2s(float p_val, AnchorType p_anchor,float p_range) const;
-	void _modal_stack_remove();
 	void _propagate_theme_changed(Control *p_owner);
 
 	void _change_notify_margins();
-	void _window_cancel_tooltip();
-	void _window_show_tooltip();
 	void _update_minimum_size();
 
 	void _update_scroll();
-	void _gui_input(const InputEvent& p_event); //used by scene main loop
-	void _input_text(const String& p_text);
 	void _resize(const Size2& p_size);
 
 	void _size_changed();
@@ -217,10 +174,13 @@ private:
 	void _set_rotation_deg(float p_rot);
 	float _get_rotation_deg() const;
 
-protected:	
-	bool window_has_modal_stack() const;
+friend class Viewport;
+	void _modal_stack_remove();
+	void _modal_set_prev_focus_owner(ObjectID p_prev);
 
-	virtual void _window_input_event(InputEvent p_event);
+protected:	
+
+	//virtual void _window_input_event(InputEvent p_event);
 
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
@@ -272,8 +232,6 @@ public:
 
 	bool is_window_modal_on_top() const;
 
-	bool is_window() const;
-	Control *get_window() const;
 	Control *get_parent_control() const;
 
 

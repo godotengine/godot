@@ -39,12 +39,8 @@
 Node *SceneTreeEditor::get_scene_node() {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),NULL);
-	if (get_tree()->get_root()->get_child_count() && get_tree()->get_root()->get_child(0)->cast_to<EditorNode>())
-		return get_tree()->get_root()->get_child(0)->cast_to<EditorNode>()->get_edited_scene();
-	else
-		return get_tree()->get_root();
 
-	return NULL;
+	return get_tree()->get_edited_scene_root();
 }
 
 
