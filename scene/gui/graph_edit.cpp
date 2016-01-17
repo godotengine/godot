@@ -42,7 +42,6 @@ bool GraphEdit::is_node_connected(const StringName& p_from, int p_from_port,cons
 
 void GraphEdit::disconnect_node(const StringName& p_from, int p_from_port,const StringName& p_to,int p_to_port){
 
-
 	for(List<Connection>::Element *E=connections.front();E;E=E->next()) {
 
 		if (E->get().from==p_from && E->get().from_port==p_from_port && E->get().to==p_to && E->get().to_port==p_to_port) {
@@ -59,9 +58,12 @@ void GraphEdit::get_connection_list(List<Connection> *r_connections) const {
 	*r_connections=connections;
 }
 
+Vector2 GraphEdit::get_scroll_ofs() const{
+
+	return Vector2(h_scroll->get_val(),v_scroll->get_val());
+}
 
 void GraphEdit::_scroll_moved(double) {
-
 
 	_update_scroll_offset();
 	top_layer->update();
@@ -718,6 +720,7 @@ void GraphEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_node_connected","from","from_port","to","to_port"),&GraphEdit::is_node_connected);
 	ObjectTypeDB::bind_method(_MD("disconnect_node","from","from_port","to","to_port"),&GraphEdit::disconnect_node);
 	ObjectTypeDB::bind_method(_MD("get_connection_list"),&GraphEdit::_get_connection_list);
+	ObjectTypeDB::bind_method(_MD("get_scroll_ofs"),&GraphEdit::get_scroll_ofs);
 
 	ObjectTypeDB::bind_method(_MD("set_right_disconnects","enable"),&GraphEdit::set_right_disconnects);
 	ObjectTypeDB::bind_method(_MD("is_right_disconnects_enabled"),&GraphEdit::is_right_disconnects_enabled);
