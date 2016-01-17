@@ -2578,7 +2578,7 @@ Ref<GDFunctionObject> GDInstance::get_function(StringName p_name) {
 		if (E) {
 			return E->get();
 		} else {
-			const Map<StringName, GDFunction>::Element *E_ = script->member_functions.find(p_name);
+			const Map<StringName, GDFunction>::Element *E_ = sptr->member_functions.find(p_name);
 			if (E_) {
 				const GDFunction *gdfunc = &E_->get();
 				if (gdfunc->_lambda) return NULL;
