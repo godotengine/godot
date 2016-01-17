@@ -37,6 +37,8 @@
 #include "tools/editor/plugins/script_editor_plugin.h"
 #include "core/io/resource_saver.h"
 #include "multi_node_edit.h"
+#include "tools/editor/plugins/animation_player_editor_plugin.h"
+#include "animation_editor.h"
 
 void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 
@@ -292,7 +294,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			for (int i = 0; i < selection.size(); i++) {
 				Node *top_node = selection[i];
 				Node *bottom_node = selection[selection.size() - 1 - i];
-				 
+
 				ERR_FAIL_COND(!top_node->get_parent());
 				ERR_FAIL_COND(!bottom_node->get_parent());
 
@@ -398,7 +400,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					editor_data->get_undo_redo().add_do_method(d,"set_owner",node->get_owner());
 				}
 				editor_data->get_undo_redo().add_do_method(editor_selection,"add_node",dup);
-				editor_data->get_undo_redo().add_undo_method(parent,"remove_child",dup);								
+				editor_data->get_undo_redo().add_undo_method(parent,"remove_child",dup);
 				editor_data->get_undo_redo().add_do_reference(dup);
 
 				ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
@@ -924,7 +926,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 
 		}
 
-        if (edited_scene->get_scene_inherited_state().is_valid() && edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E->get()))>=0) {
+	if (edited_scene->get_scene_inherited_state().is_valid() && edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E->get()))>=0) {
 
 			accept->get_ok()->set_text("Makes Sense!");
 			accept->set_text("Can't operate on nodes the current scene inherits from!");
@@ -1017,8 +1019,8 @@ void SceneTreeDock::_node_reparent(NodePath p_path,bool p_keep_global_xform) {
 
 		editor_data->get_undo_redo().add_do_method(this,"_set_owners",edited_scene,owners);
 
-		if (editor->get_animation_editor()->get_root()==node)
-			editor_data->get_undo_redo().add_do_method(editor->get_animation_editor(),"set_root",node);
+		if (AnimationPlayerEditor::singleton->get_key_editor()->get_root()==node)
+			editor_data->get_undo_redo().add_do_method(AnimationPlayerEditor::singleton->get_key_editor(),"set_root",node);
 
 		editor_data->get_undo_redo().add_undo_method(new_parent,"remove_child",node);
 
@@ -1045,8 +1047,8 @@ void SceneTreeDock::_node_reparent(NodePath p_path,bool p_keep_global_xform) {
 		editor_data->get_undo_redo().add_undo_method(node->get_parent(),"add_child",node);
 		editor_data->get_undo_redo().add_undo_method(node->get_parent(),"move_child",node,child_pos);
 		editor_data->get_undo_redo().add_undo_method(this,"_set_owners",edited_scene,owners);
-		if (editor->get_animation_editor()->get_root()==node)
-			editor_data->get_undo_redo().add_undo_method(editor->get_animation_editor(),"set_root",node);
+		if (AnimationPlayerEditor::singleton->get_key_editor()->get_root()==node)
+			editor_data->get_undo_redo().add_undo_method(AnimationPlayerEditor::singleton->get_key_editor(),"set_root",node);
 
 		if (p_keep_global_xform) {
 			if (node->cast_to<Node2D>())
@@ -1152,8 +1154,8 @@ void SceneTreeDock::_delete_confirm() {
 			editor_data->get_undo_redo().add_do_method(n->get_parent(),"remove_child",n);
 			editor_data->get_undo_redo().add_undo_method(n->get_parent(),"add_child",n);
 			editor_data->get_undo_redo().add_undo_method(n->get_parent(),"move_child",n,n->get_index());
-			if (editor->get_animation_editor()->get_root()==n)
-				editor_data->get_undo_redo().add_undo_method(editor->get_animation_editor(),"set_root",n);
+			if (AnimationPlayerEditor::singleton->get_key_editor()->get_root()==n)
+				editor_data->get_undo_redo().add_undo_method(AnimationPlayerEditor::singleton->get_key_editor(),"set_root",n);
 			editor_data->get_undo_redo().add_undo_method(this,"_set_owners",edited_scene,owners);
 			//editor_data->get_undo_redo().add_undo_method(n,"set_owner",n->get_owner());
 			editor_data->get_undo_redo().add_undo_reference(n);
@@ -1329,7 +1331,7 @@ void SceneTreeDock::_create() {
 		editor->push_item(newnode);
 
 		memdelete(n);
-		
+
 		_update_tool_buttons();
 
 	}

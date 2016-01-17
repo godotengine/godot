@@ -56,7 +56,7 @@
 #include "tools/editor/editor_run.h"
 
 #include "tools/editor/pane_drag.h"
-#include "tools/editor/animation_editor.h"
+
 #include "tools/editor/script_create_dialog.h"
 #include "tools/editor/run_settings_dialog.h"
 #include "tools/editor/project_settings.h"
@@ -169,7 +169,6 @@ class EditorNode : public Node {
 		SETTINGS_LAYOUT_SAVE,
 		SETTINGS_LAYOUT_DELETE,
 		SETTINGS_LAYOUT_DEFAULT,
-		SETTINGS_SHOW_ANIMATION,
 		SETTINGS_LOAD_EXPORT_TEMPLATES,
 		SETTINGS_HELP,
 		SETTINGS_ABOUT,
@@ -230,7 +229,6 @@ class EditorNode : public Node {
 	Control *vp_base;
 	PaneDrag *pd;
 	//PaneDrag *pd_anim;
-	TextureButton *anim_close;
 	Panel *menu_panel;
 
 
@@ -250,7 +248,6 @@ class EditorNode : public Node {
 	ToolButton *pause_button;
 	ToolButton *stop_button;
 	ToolButton *run_settings_button;
-	ToolButton *animation_menu;
 	ToolButton *play_scene_button;
 	ToolButton *play_custom_scene_button;
 	MenuButton *debug_button;
@@ -316,15 +313,12 @@ class EditorNode : public Node {
 	String defer_export_platform;
 	bool defer_export_debug;
 	Node *_last_instanced_scene;
-	PanelContainer *animation_panel;
-	HBoxContainer *animation_panel_hb;
-	VBoxContainer *animation_vb;
 	EditorPath *editor_path;
 	ToolButton *resource_new_button;
 	ToolButton *resource_load_button;
 	MenuButton *resource_save_button;
 	MenuButton *editor_history_menu;
-	AnimationKeyEditor *animation_editor;
+
 	EditorLog *log;
 	CenterContainer *tabs_center;
 	EditorQuickOpen *quick_open;
@@ -387,6 +381,21 @@ class EditorNode : public Node {
 
 	EditorFileServer *file_server;
 
+
+	struct BottomPanelItem {
+		String name;
+		Control *control;
+		ToolButton *button;
+	};
+
+	Vector<BottomPanelItem> bottom_panel_items;
+
+	PanelContainer *bottom_panel;
+	HBoxContainer *bottom_panel_hb;
+	VBoxContainer *bottom_panel_vb;
+
+	void _bottom_panel_switch(bool p_enable, int p_idx);
+
 	String external_file;
 	List<String> previous_scenes;
 	bool opening_prev;
@@ -436,7 +445,6 @@ class EditorNode : public Node {
 	void _property_keyed(const String& p_keyed, const Variant& p_value, bool p_advance);
 	void _transform_keyed(Object *sp,const String& p_sub,const Transform& p_key);
 
-	void _update_keying();
 	void _hide_top_editors();
 	void _quick_opened();
 	void _quick_run(const String& p_resource);
@@ -586,13 +594,10 @@ public:
 
 	static EditorLog *get_log() { return singleton->log; }
 	Control* get_viewport();
-	AnimationKeyEditor *get_animation_editor() const { return animation_editor; }
-	Control *get_animation_panel() { return animation_vb; }
-	HBoxContainer *get_animation_panel_hb() { return animation_panel_hb; }
 
-	void animation_editor_make_visible(bool p_visible);
-	void hide_animation_player_editors();
-	void animation_panel_make_visible(bool p_visible);
+	//void animation_editor_make_visible(bool p_visible);
+	//void hide_animation_player_editors();
+	//void animation_panel_make_visible(bool p_visible);
 
 	void set_edited_scene(Node *p_scene);
 
@@ -612,6 +617,7 @@ public:
 	void set_current_scene(int p_idx);
 
 	static EditorData& get_editor_data() { return singleton->editor_data; }
+	EditorHistory * get_editor_history() { return &editor_history; }
 
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
 
@@ -659,6 +665,14 @@ public:
 	void scan_import_changes();
 
 	void save_layout();
+
+	void update_keying();
+
+
+	ToolButton* add_bottom_panel_item(String p_text,Control *p_item);
+	void make_bottom_panel_item_visible(Control *p_item);
+	void raise_bottom_panel_item(Control *p_item);
+	void hide_bottom_panel();
 
 	EditorNode();	
 	~EditorNode();

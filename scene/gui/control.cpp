@@ -387,7 +387,7 @@ void Control::_notification(int p_notification) {
 
 				data.parent_canvas_item->disconnect("item_rect_changed",this,"_size_changed");
 				data.parent_canvas_item=NULL;
-			} else {
+			} else if (!is_set_as_toplevel()) {
 				//disconnect viewport
 				get_viewport()->disconnect("size_changed",this,"_size_changed");
 

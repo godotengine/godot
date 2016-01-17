@@ -40,15 +40,13 @@
 #include "scene/gui/tool_button.h"
 #include "pane_drag.h"
 #include "os/thread.h"
-class EditorLog : public PanelContainer {
+class EditorLog : public VBoxContainer {
 
-	OBJ_TYPE( EditorLog, PanelContainer );
+	OBJ_TYPE( EditorLog, VBoxContainer );
 
-	Button *button;
 	Button *clearbutton;
 	Label *title;
 	RichTextLabel *log;
-	TextureButton *tb;
 	HBoxContainer *title_hb;
 //	PaneDrag *pd;
 	Control *ec;
@@ -60,8 +58,6 @@ class EditorLog : public PanelContainer {
 	Thread::ID current;
 
 //	void _dragged(const Point2& p_ofs);
-	void _close_request();
-	void _flip_request();
 	void _clear_request();
 	static void _undo_redo_cbk(void *p_self,const String& p_name);
 protected:
@@ -73,7 +69,7 @@ public:
 	void add_message(const String& p_msg, bool p_error=false);
 	void deinit();
 
-	Button *get_button();
+
 	void clear();
 	EditorLog();
 	~EditorLog();

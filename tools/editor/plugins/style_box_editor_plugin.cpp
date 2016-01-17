@@ -90,19 +90,24 @@ bool StyleBoxEditorPlugin::handles(Object *p_node) const{
 
 void StyleBoxEditorPlugin::make_visible(bool p_visible){
 
-	if (p_visible)
-		stylebox_editor->show();
-	else
-		stylebox_editor->hide();
+	if (p_visible) {
+		button->show();
+
+	} else {
+		if (stylebox_editor->is_visible())
+			EditorNode::get_singleton()->hide_bottom_panel();
+		button->hide();
+	}
 }
 
 StyleBoxEditorPlugin::StyleBoxEditorPlugin(EditorNode *p_node) {
 
 	stylebox_editor = memnew( StyleBoxEditor );
+	stylebox_editor->set_custom_minimum_size(Size2(0,250));
 
-	p_node->get_viewport()->add_child(stylebox_editor);
-	stylebox_editor->set_area_as_parent_rect();
-	stylebox_editor->hide();
+	//p_node->get_viewport()->add_child(stylebox_editor);
+	button = p_node->add_bottom_panel_item("StyleBox",stylebox_editor);
+	button->hide();
 
 
 }

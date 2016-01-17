@@ -2321,12 +2321,9 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	menu_hb = memnew( HBoxContainer );
 	add_child(menu_hb);
 
-	v_split = memnew( VSplitContainer );
-	add_child(v_split);
-	v_split->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	script_split = memnew( HSplitContainer );
-	v_split->add_child(script_split);
+	add_child(script_split);
 	script_split->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	script_list = memnew( ItemList );
@@ -2416,7 +2413,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	debug_menu->get_popup()->add_item("Break",DEBUG_BREAK);
 	debug_menu->get_popup()->add_item("Continue",DEBUG_CONTINUE);
 	debug_menu->get_popup()->add_separator();
-	debug_menu->get_popup()->add_check_item("Show Debugger",DEBUG_SHOW);
+	//debug_menu->get_popup()->add_check_item("Show Debugger",DEBUG_SHOW);
 	debug_menu->get_popup()->add_check_item("Keep Debugger Open",DEBUG_SHOW_KEEP_OPEN);
 	debug_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
@@ -2545,7 +2542,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	quick_open->connect("goto_line",this,"_goto_script_line2");
 
-	v_split->add_child(debugger);
+
+	Button *db = EditorNode::get_singleton()->add_bottom_panel_item("Debugger",debugger);
+	debugger->set_tool_button(db);
+
+
 	debugger->connect("breaked",this,"_breaked");
 
 	autosave_timer = memnew( Timer );

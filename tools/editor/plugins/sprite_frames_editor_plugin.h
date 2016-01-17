@@ -94,6 +94,7 @@ class SpriteFramesEditorPlugin : public EditorPlugin {
 
 	SpriteFramesEditor *frames_editor;
 	EditorNode *editor;
+	Button *button;
 
 public:
 

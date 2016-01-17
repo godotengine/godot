@@ -1498,18 +1498,17 @@ bool AnimationTreeEditorPlugin::handles(Object *p_object) const {
 void AnimationTreeEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		editor->hide_animation_player_editors();
-		editor->animation_panel_make_visible(true);
-		anim_tree_editor->show();
+//		editor->hide_animation_player_editors();
+//		editor->animation_panel_make_visible(true);
+		button->show();
+		editor->make_bottom_panel_item_visible(anim_tree_editor);
 		anim_tree_editor->set_fixed_process(true);
-		EditorNode::get_top_split()->set_collapsed(false);
-
 	} else {
 
-		anim_tree_editor->hide();
+		if (anim_tree_editor->is_visible())
+			editor->hide_bottom_panel();
+		button->hide();
 		anim_tree_editor->set_fixed_process(false);
-		editor->animation_panel_make_visible(false);
-		EditorNode::get_top_split()->set_collapsed(true);
 	}
 }
 
@@ -1517,12 +1516,10 @@ AnimationTreeEditorPlugin::AnimationTreeEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
 	anim_tree_editor = memnew( AnimationTreeEditor );
-	//editor->get_viewport()->add_child(anim_tree_editor);
-	//anim_tree_editor->set_area_as_parent_rect();
-	editor->get_animation_panel()->add_child(anim_tree_editor);
-	anim_tree_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	anim_tree_editor->hide();
+	anim_tree_editor->set_custom_minimum_size(Size2(0,300));
 
+	button=editor->add_bottom_panel_item("AnimationTree",anim_tree_editor);
+	button->hide();
 
 
 

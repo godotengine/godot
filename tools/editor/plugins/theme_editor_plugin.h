@@ -102,6 +102,7 @@ class ThemeEditorPlugin : public EditorPlugin {
 
 	ThemeEditor *theme_editor;
 	EditorNode *editor;
+	Button *button;
 
 public:
 

@@ -39,6 +39,9 @@
 #include "scene/resources/surface_tool.h"
 #include "tools/editor/spatial_editor_gizmos.h"
 #include "globals.h"
+#include "tools/editor/plugins/animation_player_editor_plugin.h"
+#include "tools/editor/animation_editor.h"
+
 #define DISTANCE_DEFAULT 4
 
 
@@ -1691,7 +1694,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					if (!get_selected_count() || _edit.mode!=TRANSFORM_NONE)
 						break;
 
-					if (!editor->get_animation_editor()->has_keying()) {
+					if (!AnimationPlayerEditor::singleton->get_key_editor()->has_keying()) {
 						set_message("Keying is disabled (no key inserted).");
 						break;
 					}
