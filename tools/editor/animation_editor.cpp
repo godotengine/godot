@@ -2807,6 +2807,10 @@ void AnimationKeyEditor::_notification(int p_what) {
 
 
 	switch(p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+
+			EditorNode::get_singleton()->update_keying();
+		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
 
@@ -2989,6 +2993,8 @@ void AnimationKeyEditor::set_animation(const Ref<Animation>& p_anim) {
 	_update_menu();
 	selected_track=-1;
 	_edit_if_single_selection();
+
+	EditorNode::get_singleton()->update_keying();
 }
 
 void AnimationKeyEditor::set_root(Node *p_root) {
@@ -3024,7 +3030,7 @@ void AnimationKeyEditor::set_keying(bool p_enabled) {
 
 bool AnimationKeyEditor::has_keying() const {
 
-	return is_visible();
+	return is_visible() && animation.is_valid();
 }
 
 void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
