@@ -790,7 +790,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 						GDFunctionObject *func_object = ((Object *) (*argptrs[1]))->cast_to<GDFunctionObject>();
 						if (func_object && func_object->is_valid()) {
 							Variant** argptr = (Variant **)memalloc(sizeof(Variant*)*(argc+1));
-							Variant target(func_object->instance->owner);
+							Variant target(func_object->get_owner());
 							Variant fn(func_object->get_name());
 
 							for(int i=0;i<argc;i++) {

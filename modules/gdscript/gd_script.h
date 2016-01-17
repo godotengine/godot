@@ -234,7 +234,7 @@ protected:
 
 public:
 	_FORCE_INLINE_ virtual bool is_valid() const {return instance && function;}
-	Object *get_owner() const;
+	virtual Object *get_owner() const;
 
 	_FORCE_INLINE_ virtual StringName get_name() const { return function->get_name(); }
 	virtual Variant applyv(const Array p_args);
@@ -254,6 +254,7 @@ class GDNativeFunctionObject : public GDFunctionObject {
 	ObjectID target_id;
 	StringName method_name;
 public:
+	virtual Object *get_owner() const {return (target_id == 0 ? NULL : ObjectDB::get_instance(target_id));}
 	_FORCE_INLINE_ virtual bool is_valid() const { return target_id != 0 && ObjectDB::get_instance(target_id); }
 	
 	_FORCE_INLINE_ virtual StringName get_name() const { return method_name; }
