@@ -1742,7 +1742,7 @@ GDInstance* GDScript::_create_instance(const Variant** p_args,int p_argcount,Obj
 		instance->script=Ref<GDScript>();
 		instance->owner->set_script_instance(NULL);
 		instances.erase(p_owner);
-		ERR_FAIL_COND_V(err.error!=Variant::CallError::CALL_OK, NULL); //error consrtucting
+		ERR_FAIL_COND_V(r_error.error!=Variant::CallError::CALL_OK, NULL); //error consrtucting
 	}
 
 	//@TODO make thread safe
@@ -1929,7 +1929,6 @@ ScriptInstance* GDScript::instance_create(Object *p_this) {
 		}
 	}
 
-	return _create_instance(NULL,0,p_this,p_this->cast_to<Reference>());
 	Variant::CallError unchecked_error;
 	return _create_instance(NULL,0,p_this,p_this->cast_to<Reference>(),unchecked_error);
 
