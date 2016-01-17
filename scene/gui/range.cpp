@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,20 +48,20 @@ void Range::Shared::emit_value_changed() {
 	}
 }
 
-void Range::_changed_notify() {
+void Range::_changed_notify(const char *p_what) {
 
 	emit_signal("changed",shared->val);
 	update();
-	_change_notify();
+	_change_notify(p_what);
 }
 
-void Range::Shared::emit_changed() {
+void Range::Shared::emit_changed(const char *p_what) {
 
 	for (Set<Range*>::Element *E=owners.front();E;E=E->next()) {
 		Range *r=E->get();
 		if (!r->is_inside_tree())
 			continue;
-		r->_changed_notify();
+		r->_changed_notify(p_what);
 	}
 }
 
@@ -77,7 +77,11 @@ void Range::set_val(double p_val) {
 	
 	if (p_val<shared->min)
 		p_val=shared->min;
-	
+
+	//avoid to set -0
+	if (p_val == 0)
+		p_val = 0;
+
 	if (shared->val==p_val)
 		return;
 	
@@ -90,20 +94,20 @@ void Range::set_min(double p_min) {
 	shared->min=p_min;
 	set_val(shared->val);
 	
-	shared->emit_changed();
+	shared->emit_changed("range/min");
 }
 void Range::set_max(double p_max) {
 	
 	shared->max=p_max;
 	set_val(shared->val);
 		
-	shared->emit_changed();
+	shared->emit_changed("range/max");
 
 }
 void Range::set_step(double p_step) {
 	
 	shared->step=p_step;
-	shared->emit_changed();
+	shared->emit_changed("range/step");
 
 }
 void Range::set_page(double p_page) {
@@ -111,7 +115,7 @@ void Range::set_page(double p_page) {
 	shared->page=p_page;
 	set_val(shared->val);
 			
-	shared->emit_changed();
+	shared->emit_changed("range/page");
 }
 
 double Range::get_val() const {
@@ -216,11 +220,10 @@ void Range::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_val"),&Range::get_val);
 	ObjectTypeDB::bind_method(_MD("get_value"),&Range::get_val);
 	ObjectTypeDB::bind_method(_MD("get_min"),&Range::get_min);
-	ObjectTypeDB::bind_method(_MD("get_max"),&Range::get_max);		
-	ObjectTypeDB::bind_method(_MD("get_step"),&Range::get_step);		
-	ObjectTypeDB::bind_method(_MD("get_page"),&Range::get_page);		
-	ObjectTypeDB::bind_method(_MD("get_unit_value"),&Range::get_unit_value);		
-	ObjectTypeDB::bind_method(_MD("get_rounded_values"),&Range::get_rounded_values);		
+	ObjectTypeDB::bind_method(_MD("get_max"),&Range::get_max);
+	ObjectTypeDB::bind_method(_MD("get_step"),&Range::get_step);
+	ObjectTypeDB::bind_method(_MD("get_page"),&Range::get_page);
+	ObjectTypeDB::bind_method(_MD("get_unit_value"),&Range::get_unit_value);
 	ObjectTypeDB::bind_method(_MD("set_val","value"),&Range::set_val);
 	ObjectTypeDB::bind_method(_MD("set_value","value"),&Range::set_val);
 	ObjectTypeDB::bind_method(_MD("set_min","minimum"),&Range::set_min);
@@ -228,7 +231,8 @@ void Range::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_step","step"),&Range::set_step);
 	ObjectTypeDB::bind_method(_MD("set_page","pagesize"),&Range::set_page);
 	ObjectTypeDB::bind_method(_MD("set_unit_value","value"),&Range::set_unit_value);
-	ObjectTypeDB::bind_method(_MD("set_rounded_values"),&Range::set_rounded_values);		
+	ObjectTypeDB::bind_method(_MD("set_rounded_values","enabled"),&Range::set_rounded_values);
+	ObjectTypeDB::bind_method(_MD("is_rounded_values"),&Range::is_rounded_values);
 	ObjectTypeDB::bind_method(_MD("set_exp_unit_value","enabled"),&Range::set_exp_unit_value);
 	ObjectTypeDB::bind_method(_MD("is_unit_value_exp"),&Range::is_unit_value_exp);
 
@@ -243,17 +247,19 @@ void Range::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "range/step" ), _SCS("set_step"), _SCS("get_step") );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "range/page" ), _SCS("set_page"), _SCS("get_page") );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "range/value" ), _SCS("set_val"), _SCS("get_val") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "range/exp_edit" ), _SCS("set_exp_unit_value"), _SCS("is_unit_value_exp") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "rounded_values" ), _SCS("set_rounded_values"), _SCS("get_rounded_values") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "range/exp_edit" ), _SCS("set_exp_unit_value"), _SCS("is_unit_value_exp") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "range/rounded" ), _SCS("set_rounded_values"), _SCS("is_rounded_values") );
 
 }
 
-void Range::set_rounded_values(bool p){
-	_rounded_values = p;
+void Range::set_rounded_values(bool p_enable) {
+
+	_rounded_values = p_enable;
 }
 
-bool Range::get_rounded_values() const{
-	return 	_rounded_values;
+bool Range::is_rounded_values() const {
+
+	return _rounded_values;
 }
 
 void Range::set_exp_unit_value(bool p_enable) {

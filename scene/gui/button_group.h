@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,14 +29,14 @@
 #ifndef BUTTON_GROUP_H
 #define BUTTON_GROUP_H
 
-#include "scene/gui/control.h"
+#include "scene/gui/box_container.h"
 
 
 class BaseButton;
 
-class ButtonGroup : public Control {
+class ButtonGroup : public BoxContainer {
 
-	OBJ_TYPE(ButtonGroup,Control);
+	OBJ_TYPE(ButtonGroup,BoxContainer);
 
 
 	Set<BaseButton*> buttons;

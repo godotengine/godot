@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -193,6 +193,8 @@ void ProjectExportDialog::_prop_edited(String what) {
 
 	_save_export_cfg();
 
+	_validate_platform();
+
 }
 
 void ProjectExportDialog::_filters_edited(String what) {
@@ -252,6 +254,14 @@ void ProjectExportDialog::_script_edited(Variant v) {
 
 }
 
+void ProjectExportDialog::_sample_convert_edited(int what) {
+	EditorImportExport::get_singleton()->sample_set_action( EditorImportExport::SampleAction(sample_mode->get_selected()));
+	EditorImportExport::get_singleton()->sample_set_max_hz(  sample_max_hz->get_val() );
+	EditorImportExport::get_singleton()->sample_set_trim(  sample_trim->is_pressed() );
+	_save_export_cfg();
+
+}
+
 void ProjectExportDialog::_notification(int p_what) {
 
 	switch(p_what) {
@@ -288,6 +298,7 @@ void ProjectExportDialog::_notification(int p_what) {
 //			_rescan();
 			_update_platform();
 			export_mode->select( EditorImportExport::get_singleton()->get_export_filter() );
+			convert_text_scenes->set_pressed( EditorImportExport::get_singleton()->get_convert_text_scenes() );
 			filters->set_text( EditorImportExport::get_singleton()->get_export_custom_filter() );
 			if (EditorImportExport::get_singleton()->get_export_filter()!=EditorImportExport::EXPORT_SELECTED)
 				tree_vb->hide();
@@ -318,6 +329,15 @@ void ProjectExportDialog::_notification(int p_what) {
 			_update_group_list();
 			_update_group();
 			_update_group_tree();
+
+			sample_mode->select( EditorImportExport::get_singleton()->sample_get_action() );
+			sample_max_hz->set_val( EditorImportExport::get_singleton()->sample_get_max_hz() );
+			sample_trim->set_pressed( EditorImportExport::get_singleton()->sample_get_trim() );
+
+			sample_mode->connect("item_selected",this,"_sample_convert_edited");
+			sample_max_hz->connect("value_changed",this,"_sample_convert_edited");
+			sample_trim->connect("toggled",this,"_sample_convert_edited");
+
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -402,6 +422,8 @@ void ProjectExportDialog::_export_mode_changed(int p_idx) {
 	else
 		tree_vb->show();
 
+	EditorImportExport::get_singleton()->set_convert_text_scenes( convert_text_scenes->is_pressed() );
+
 	_save_export_cfg();
 
 }
@@ -450,20 +472,32 @@ void ProjectExportDialog::_export_action_pck(const String& p_file) {
 		ERR_PRINT("Invalid platform for export of PCK");
 		return;
 	}
-	FileAccess *f = FileAccess::open(p_file,FileAccess::WRITE);
-	if (!f) {
-		error->set_text("Error exporting project PCK! Can't write");
-		error->popup_centered_minsize();
-	}
-	ERR_FAIL_COND(!f);
 
-	Error err = exporter->save_pack(f,false);
-	memdelete(f);
+	if (p_file.ends_with(".pck")) {
+		FileAccess *f = FileAccess::open(p_file,FileAccess::WRITE);
+		if (!f) {
+			error->set_text("Error exporting project PCK! Can't write");
+			error->popup_centered_minsize();
+		}
+		ERR_FAIL_COND(!f);
 
-	if (err!=OK) {
-		error->set_text("Error exporting project!");
-		error->popup_centered_minsize();
-		return;
+		Error err = exporter->save_pack(f,false);
+		memdelete(f);
+
+		if (err!=OK) {
+			error->set_text("Error exporting project!");
+			error->popup_centered_minsize();
+			return;
+		}
+	} else if (p_file.ends_with(".zip")) {
+
+		Error err = exporter->save_zip(p_file,false);
+
+		if (err!=OK) {
+			error->set_text("Error exporting project!");
+			error->popup_centered_minsize();
+			return;
+		}
 	}
 }
 
@@ -473,6 +507,18 @@ Error ProjectExportDialog::export_platform(const String& p_platform, const Strin
 	Ref<EditorExportPlatform> exporter = EditorImportExport::get_singleton()->get_export_platform(p_platform);
 	if (exporter.is_null()) {
 		ERR_PRINT("Invalid platform for export");
+
+		List<StringName> platforms;
+		EditorImportExport::get_singleton()->get_export_platforms(&platforms);
+		print_line("Valid export plaftorms are:");
+		for (List<StringName>::Element *E=platforms.front();E;E=E->next())
+			print_line("    \""+E->get()+"\"");
+
+		if (p_quit_after) {
+			OS::get_singleton()->set_exit_code(255);
+			get_tree()->quit();
+		}
+
 		return ERR_INVALID_PARAMETER;
 	}
 	Error err = exporter->export_project(p_path,p_debug);
@@ -1045,6 +1091,7 @@ void ProjectExportDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_group_select_none"),&ProjectExportDialog::_group_select_none);
 	ObjectTypeDB::bind_method(_MD("_script_edited"),&ProjectExportDialog::_script_edited);
 	ObjectTypeDB::bind_method(_MD("_update_script"),&ProjectExportDialog::_update_script);
+	ObjectTypeDB::bind_method(_MD("_sample_convert_edited"),&ProjectExportDialog::_sample_convert_edited);
 
 
 	ObjectTypeDB::bind_method(_MD("export_platform"),&ProjectExportDialog::export_platform);
@@ -1106,6 +1153,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	vb = memnew( VBoxContainer );
 	vb->set_name("Resources");
 	sections->add_child(vb);
+
 	export_mode = memnew( OptionButton );
 	export_mode->add_item("Export selected resources (including dependencies).");
 	export_mode->add_item("Export all resources in the project.");
@@ -1113,6 +1161,8 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	export_mode->connect("item_selected",this,"_export_mode_changed");
 
 	vb->add_margin_child("Export Mode:",export_mode);
+
+
 
 	tree_vb = memnew( VBoxContainer );
 	vb->add_child(tree_vb);
@@ -1134,6 +1184,10 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	vb->add_margin_child("Filters to export non-resource files (Comma Separated, ie: *.json, *.txt):",filters);
 	filters->connect("text_changed",this,"_filters_edited");
 
+	convert_text_scenes = memnew( CheckButton );
+	convert_text_scenes->set_text("Convert text scenes to binary on export");
+	vb->add_child(convert_text_scenes);
+	convert_text_scenes->connect("toggled",this,"_export_mode_changed");
 
 	image_vb = memnew( VBoxContainer );
 	image_vb->set_name("Images");
@@ -1316,6 +1370,22 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	hbc->add_child(button_reload);
 */
 
+
+	sample_vbox = memnew( VBoxContainer );
+	sample_vbox->set_name("Samples");
+	sections->add_child(sample_vbox);
+	sample_mode = memnew( OptionButton );
+	sample_vbox->add_margin_child("Sample Conversion Mode: (.wav files):",sample_mode);
+	sample_mode->add_item("Keep");
+	sample_mode->add_item("Compress (RAM - IMA-ADPCM)");
+	sample_max_hz = memnew( SpinBox );
+	sample_max_hz->set_max(192000);
+	sample_max_hz->set_min(8000);
+	sample_vbox->add_margin_child("Sampling Rate Limit: (hz)",sample_max_hz);
+	sample_trim = memnew( CheckButton );
+	sample_trim->set_text("Trim");
+	sample_vbox->add_margin_child("Trailing Silence:",sample_trim);
+
 	script_vbox = memnew( VBoxContainer );
 	script_vbox->set_name("Script");
 	sections->add_child(script_vbox);
@@ -1338,7 +1408,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	add_child(confirm);
 	confirm->connect("confirmed",this,"_confirmed");
 
-	get_ok()->set_text("Export PCK");
+	get_ok()->set_text("Export PCK/Zip");
 
 
 	expopt="--,Export,Bundle";
@@ -1368,6 +1438,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	pck_export->set_title("Export Project PCK");
 	pck_export->connect("file_selected", this,"_export_action_pck");
 	pck_export->add_filter("*.pck ; Data Pack");
+	pck_export->add_filter("*.zip ; Zip");
 	add_child(pck_export);
 
 	button_export = add_button("Export..",!OS::get_singleton()->get_swap_ok_cancel(),"export_pck");

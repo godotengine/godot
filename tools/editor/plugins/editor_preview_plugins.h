@@ -13,6 +13,17 @@ public:
 };
 
 
+class EditorBitmapPreviewPlugin : public EditorResourcePreviewGenerator {
+public:
+
+	virtual bool handles(const String& p_type) const;
+	virtual Ref<Texture> generate(const RES& p_from);
+
+	EditorBitmapPreviewPlugin();
+};
+
+
+
 class EditorPackedScenePreviewPlugin : public EditorResourcePreviewGenerator {
 
 	Ref<Texture> _gen_from_imd(Ref<ResourceImportMetadata> p_imd);

@@ -88,7 +88,7 @@
 
 import os
 
-import sys	
+import sys
 
 
 def is_active():
@@ -170,16 +170,32 @@ def get_flags():
 	return [
 		('freetype','builtin'), #use builtin freetype
 		('openssl','builtin'), #use builtin openssl
-		('theora','no'),
 	]
 			
+def build_res_file( target, source, env ):
 
+	cmdbase = ""
+	if (env["bits"] == "32"):
+		cmdbase = env['mingw_prefix']
+	else:
+		cmdbase = env['mingw_prefix_64']
+	CPPPATH = env['CPPPATH']
+	cmdbase = cmdbase + 'windres --include-dir . '
+	import subprocess
+	for x in range(len(source)):
+		cmd = cmdbase + '-i ' + str(source[x]) + ' -o ' + str(target[x])
+		try:
+			out = subprocess.Popen(cmd,shell = True,stderr = subprocess.PIPE).communicate()
+			if len(out[1]):
+				return 1
+		except:
+			return 1
+	return 0
 
 def configure(env):
 
 	env.Append(CPPPATH=['#platform/windows'])
-
-
+	env['is_mingw']=False
 	if (os.name=="nt" and os.getenv("VSINSTALLDIR")!=None):
 		#build using visual studio
 		env['ENV']['TMP'] = os.environ['TMP']
@@ -203,14 +219,14 @@ def configure(env):
 			env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
 		elif (env["target"]=="debug_release"):
 
-			env.Append(CCFLAGS=['/Zi','/Od'])
+			env.Append(CCFLAGS=['/Z7','/Od'])
 			env.Append(LINKFLAGS=['/DEBUG'])
 			env.Append(LINKFLAGS=['/SUBSYSTEM:WINDOWS'])
 			env.Append(LINKFLAGS=['/ENTRY:mainCRTStartup'])
 
 		elif (env["target"]=="debug"):
 
-			env.Append(CCFLAGS=['/Zi','/DDEBUG_ENABLED','/DDEBUG_MEMORY_ENABLED','/DD3D_DEBUG_INFO','/Od'])
+			env.Append(CCFLAGS=['/Z7','/DDEBUG_ENABLED','/DDEBUG_MEMORY_ENABLED','/DD3D_DEBUG_INFO','/Od'])
 			env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
 			env.Append(LINKFLAGS=['/DEBUG'])
 
@@ -227,7 +243,7 @@ def configure(env):
 		env.Append(CCFLAGS=['/DGLES2_ENABLED'])
 
 		env.Append(CCFLAGS=['/DGLEW_ENABLED'])
-		LIBS=['winmm','opengl32','dsound','kernel32','ole32','user32','gdi32', 'IPHLPAPI','Shlwapi', 'wsock32', 'shell32','advapi32']
+		LIBS=['winmm','opengl32','dsound','kernel32','ole32','oleaut32','user32','gdi32', 'IPHLPAPI','Shlwapi', 'wsock32', 'shell32','advapi32','dinput8','dxguid']
 		env.Append(LINKFLAGS=[p+env["LIBSUFFIX"] for p in LIBS])
 		
 		env.Append(LIBPATH=[os.getenv("WindowsSdkDir")+"/Lib"])
@@ -246,6 +262,7 @@ def configure(env):
 		env.Append(CCFLAGS=["/I"+DIRECTX_PATH+"/Include"])
 		env.Append(LIBPATH=[DIRECTX_PATH+"/Lib/x86"])
 		env['ENV'] = os.environ;
+		env["x86_opt_vc"]=env["bits"]!="64"
 	else:
 
 		# Workaround for MinGW. See:
@@ -322,7 +339,13 @@ def configure(env):
 
 		if (env["target"]=="release"):
 			
-			env.Append(CCFLAGS=['-O3','-ffast-math','-fomit-frame-pointer','-msse2'])
+			env.Append(CCFLAGS=['-ffast-math','-fomit-frame-pointer','-msse2'])
+
+			if (env["bits"]=="64"):
+				env.Append(CCFLAGS=['-O3'])
+			else:
+				env.Append(CCFLAGS=['-O2'])
+
 			env.Append(LINKFLAGS=['-Wl,--subsystem,windows'])
 
 		elif (env["target"]=="release_debug"):
@@ -344,6 +367,7 @@ def configure(env):
 		env['AR'] = mingw_prefix+"ar"
 		env['RANLIB'] = mingw_prefix+"ranlib"
 		env['LD'] = mingw_prefix+"g++"
+		env["x86_opt_gcc"]=True
 
 		#env['CC'] = "winegcc"
 		#env['CXX'] = "wineg++"
@@ -351,10 +375,10 @@ def configure(env):
 		env.Append(CCFLAGS=['-DWINDOWS_ENABLED','-mwindows'])
 		env.Append(CPPFLAGS=['-DRTAUDIO_ENABLED'])
 		env.Append(CCFLAGS=['-DGLES2_ENABLED','-DGLEW_ENABLED'])
-		env.Append(LIBS=['mingw32','opengl32', 'dsound', 'ole32', 'd3d9','winmm','gdi32','iphlpapi','shlwapi','wsock32','kernel32'])
+		env.Append(LIBS=['mingw32','opengl32', 'dsound', 'ole32', 'd3d9','winmm','gdi32','iphlpapi','shlwapi','wsock32','kernel32', 'oleaut32', 'dinput8', 'dxguid'])
 
 		# if (env["bits"]=="32"):
-# #			env.Append(LIBS=['gcc_s'])
+			# env.Append(LIBS=['gcc_s'])
 			# #--with-arch=i686
 			# env.Append(CPPFLAGS=['-march=i686'])
 			# env.Append(LINKFLAGS=['-march=i686'])
@@ -364,7 +388,11 @@ def configure(env):
 
 		#'d3dx9d'
 		env.Append(CPPFLAGS=['-DMINGW_ENABLED'])
-		env.Append(LINKFLAGS=['-g'])
+		#env.Append(LINKFLAGS=['-g'])
+
+		# resrc
+		env['is_mingw']=True
+		env.Append( BUILDERS = { 'RES' : env.Builder(action = build_res_file, suffix = '.o',src_suffix = '.rc') } )
 
 	import methods
 	env.Append( BUILDERS = { 'GLSL120' : env.Builder(action = methods.build_legacygl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
@@ -373,4 +401,3 @@ def configure(env):
 	env.Append( BUILDERS = { 'GLSL120GLES' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 
 	
-

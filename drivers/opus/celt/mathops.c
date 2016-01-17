@@ -31,11 +31,11 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "mathops.h"
+#include "opus/celt/mathops.h"
 
 /*Compute floor(sqrt(_val)) with exact arithmetic.
   This has been tested on all possible 32-bit inputs.*/

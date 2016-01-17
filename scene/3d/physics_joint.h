@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,6 +45,7 @@ class Joint : public Spatial {
 	NodePath b;
 
 	int solver_priority;
+	bool exclude_from_collision;
 
 
 protected:
@@ -66,6 +67,9 @@ public:
 
 	void set_solver_priority(int p_priority);
 	int get_solver_priority() const;
+
+	void set_exclude_nodes_from_collision(bool p_enable);
+	bool get_exclude_nodes_from_collision() const;
 
 	RID get_joint() const { return joint; }
 	Joint();

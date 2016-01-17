@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -207,12 +207,18 @@ void RigidBody::_body_enter_tree(ObjectID p_id) {
 	ERR_FAIL_COND(E->get().in_tree);
 
 	E->get().in_tree=true;
+
+	contact_monitor->locked=true;
+
 	emit_signal(SceneStringNames::get_singleton()->body_enter,node);
 
 	for(int i=0;i<E->get().shapes.size();i++) {
 
 		emit_signal(SceneStringNames::get_singleton()->body_enter_shape,p_id,node,E->get().shapes[i].body_shape,E->get().shapes[i].local_shape);
 	}
+
+	contact_monitor->locked=false;
+
 
 }
 
@@ -225,11 +231,18 @@ void RigidBody::_body_exit_tree(ObjectID p_id) {
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(!E->get().in_tree);
 	E->get().in_tree=false;
+
+	contact_monitor->locked=true;
+
 	emit_signal(SceneStringNames::get_singleton()->body_exit,node);
+
 	for(int i=0;i<E->get().shapes.size();i++) {
 
 		emit_signal(SceneStringNames::get_singleton()->body_exit_shape,p_id,node,E->get().shapes[i].body_shape,E->get().shapes[i].local_shape);
 	}
+
+	contact_monitor->locked=false;
+
 }
 
 void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,int p_local_shape) {
@@ -317,6 +330,8 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 
 	if (contact_monitor) {
 
+		contact_monitor->locked=true;
+
 		//untag all
 		int rc=0;
 		for( Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.front();E;E=E->next()) {
@@ -395,6 +410,8 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 
 			_body_inout(1,toadd[i].id,toadd[i].shape,toadd[i].local_shape);
 		}
+
+		contact_monitor->locked=false;
 
 	}
 
@@ -648,6 +665,11 @@ void RigidBody::set_contact_monitor(bool p_enabled) {
 
 	if (!p_enabled) {
 
+		if (contact_monitor->locked) {
+			ERR_EXPLAIN("Can't disable contact monitoring during in/out callback. Use call_deferred(\"set_contact_monitor\",false) instead");
+		}
+		ERR_FAIL_COND(contact_monitor->locked);
+
 		for(Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.front();E;E=E->next()) {
 
 			//clean up mess
@@ -658,6 +680,8 @@ void RigidBody::set_contact_monitor(bool p_enabled) {
 	} else {
 
 		contact_monitor = memnew( ContactMonitor );
+		contact_monitor->locked=false;
+
 	}
 
 }
@@ -1073,7 +1097,7 @@ Vector3 KinematicBody::move_to(const Vector3& p_position) {
 	return move(p_position-get_global_transform().origin);
 }
 
-bool KinematicBody::can_move_to(const Vector3& p_position, bool p_discrete) {
+bool KinematicBody::can_teleport_to(const Vector3& p_position) {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),false);
 	PhysicsDirectSpaceState *dss = PhysicsServer::get_singleton()->space_get_direct_state(get_world()->get_space());
@@ -1089,25 +1113,18 @@ bool KinematicBody::can_move_to(const Vector3& p_position, bool p_discrete) {
 	if (collide_character)
 		mask|=PhysicsDirectSpaceState::TYPE_MASK_CHARACTER_BODY;
 
-	Vector3 motion = p_position-get_global_transform().origin;
 	Transform xform=get_global_transform();
-
-	if (true || p_discrete) {
-
-		xform.origin+=motion;
-		motion=Vector3();
-	}
+	xform.origin=p_position;
 
 	Set<RID> exclude;
 	exclude.insert(get_rid());
 
-	//fill exclude list..
 	for(int i=0;i<get_shape_count();i++) {
 
 		if (is_shape_set_as_trigger(i))
 			continue;
 
-		bool col = dss->intersect_shape(get_shape(i)->get_rid(), xform * get_shape_transform(i),0,NULL,0,exclude,get_layer_mask(),mask);
+		bool col = dss->intersect_shape(get_shape(i)->get_rid(), xform * get_shape_transform(i),0,NULL,1,exclude,get_layer_mask(),mask);
 		if (col)
 			return false;
 	}
@@ -1205,7 +1222,7 @@ void KinematicBody::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("move","rel_vec"),&KinematicBody::move);
 	ObjectTypeDB::bind_method(_MD("move_to","position"),&KinematicBody::move_to);
 
-	ObjectTypeDB::bind_method(_MD("can_move_to","position"),&KinematicBody::can_move_to);
+	ObjectTypeDB::bind_method(_MD("can_teleport_to","position"),&KinematicBody::can_teleport_to);
 
 	ObjectTypeDB::bind_method(_MD("is_colliding"),&KinematicBody::is_colliding);
 

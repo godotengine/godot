@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,6 +70,8 @@ class ScriptEditorDebugger : public Control {
 
 	int error_count;
 	int last_error_count;
+
+	bool hide_on_stop;
 
 
 
@@ -182,6 +184,7 @@ public:
 
 	void update_live_edit_root();
 
+	void set_hide_on_stop(bool p_hide);
 
 	virtual Size2 get_minimum_size() const;
 	ScriptEditorDebugger(EditorNode *p_editor=NULL);

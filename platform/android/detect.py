@@ -98,6 +98,7 @@ def configure(env):
 
 	if env['android_arch']=='x86':
 		env['NDK_TARGET']=env['NDK_TARGET_X86']
+		env["x86_opt_gcc"]=True
 
 	if env['PLATFORM'] == 'win32':
 		import methods
@@ -105,10 +106,6 @@ def configure(env):
 		#env['SPAWN'] = methods.win32_spawn
 		env['SHLIBSUFFIX'] = '.so'
 
-	#env.android_source_modules.append("../libs/apk_expansion")	
-	env.android_source_modules.append("../libs/google_play_services")	
-	env.android_source_modules.append("../libs/downloader_library")	
-	env.android_source_modules.append("../libs/play_licensing")	
 
 	neon_text=""
 	if env["android_arch"]=="armv7" and env['android_neon']=='yes':
@@ -210,7 +207,8 @@ def configure(env):
 #	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED','-DMPC_FIXED_POINT'])
 
 	if(env["opus"]=="yes"):
-		env.Append(CFLAGS=["-DOPUS_ARM_OPT"])
+		if (env["android_arch"]=="armv6" or env["android_arch"]=="armv7"):
+			env.Append(CFLAGS=["-DOPUS_ARM_OPT"])
 		env.opus_fixed_point="yes"
 
 	if (env['android_stl']=='yes'):

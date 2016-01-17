@@ -6,6 +6,7 @@ files = [
 	'audio_driver_osx.cpp',
 	'sem_osx.cpp',
 #	'context_gl_osx.cpp',
+	'dir_access_osx.mm',
 	]
 
 env.Program('#bin/godot',files)

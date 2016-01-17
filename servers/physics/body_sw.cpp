@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -380,9 +380,11 @@ void BodySW::set_space(SpaceSW *p_space){
 
 	}
 
+	first_integration=true;
+
 }
 
-void BodySW::_compute_area_gravity(const AreaSW *p_area) {
+void BodySW::_compute_area_gravity_and_dampenings(const AreaSW *p_area) {
 
 	if (p_area->is_gravity_point()) {
 		if(p_area->get_gravity_distance_scale() > 0) {
@@ -394,6 +396,9 @@ void BodySW::_compute_area_gravity(const AreaSW *p_area) {
 	} else {
 		gravity += p_area->get_gravity_vector() * p_area->get_gravity();
 	}
+
+	area_linear_damp += p_area->get_linear_damp();
+	area_angular_damp += p_area->get_angular_damp();
 }
 
 void BodySW::integrate_forces(real_t p_step) {
@@ -403,41 +408,56 @@ void BodySW::integrate_forces(real_t p_step) {
 		return;
 
 	AreaSW *def_area = get_space()->get_default_area();
-	AreaSW *damp_area = def_area;
+	// AreaSW *damp_area = def_area;
 
 	ERR_FAIL_COND(!def_area);
 
 	int ac = areas.size();
-	bool replace = false;
-	gravity=Vector3(0,0,0);
+	bool stopped = false;
+	gravity = Vector3(0,0,0);
+	area_linear_damp = 0;
+	area_angular_damp = 0;
 	if (ac) {
 		areas.sort();
 		const AreaCMP *aa = &areas[0];
-		damp_area = aa[ac-1].area;
-		for(int i=ac-1;i>=0;i--) {
-			_compute_area_gravity(aa[i].area);
-			if (aa[i].area->get_space_override_mode() == PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE) {
-				replace = true;
-				break;
+		// damp_area = aa[ac-1].area;
+		for(int i=ac-1;i>=0 && !stopped;i--) {
+			PhysicsServer::AreaSpaceOverrideMode mode=aa[i].area->get_space_override_mode();
+			switch (mode) {
+				case PhysicsServer::AREA_SPACE_OVERRIDE_COMBINE:
+				case PhysicsServer::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+					_compute_area_gravity_and_dampenings(aa[i].area);
+					stopped = mode==PhysicsServer::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
+				} break;
+				case PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE:
+				case PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+					gravity = Vector3(0,0,0);
+					area_angular_damp = 0;
+					area_linear_damp = 0;
+					_compute_area_gravity_and_dampenings(aa[i].area);
+					stopped = mode==PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE;
+				} break;
+				default: {}
 			}
 		}
 	}
 
-	if( !replace ) {
-		_compute_area_gravity(def_area);
+	if( !stopped ) {
+		_compute_area_gravity_and_dampenings(def_area);
 	}
 
 	gravity*=gravity_scale;
 
+	// If less than 0, override dampenings with that of the Body
 	if (angular_damp>=0)
 		area_angular_damp=angular_damp;
-	else
-		area_angular_damp=damp_area->get_angular_damp();
+	//else
+	//	area_angular_damp=damp_area->get_angular_damp();
 
 	if (linear_damp>=0)
 		area_linear_damp=linear_damp;
-	else
-		area_linear_damp=damp_area->get_linear_damp();
+	//else
+	//	area_linear_damp=damp_area->get_linear_damp();
 
 
 	Vector3 motion;
@@ -461,7 +481,7 @@ void BodySW::integrate_forces(real_t p_step) {
 		do_motion=true;
 
 	} else {
-		if (!omit_force_integration) {
+		if (!omit_force_integration && !first_integration) {
 			//overriden by direct state query
 
 			Vector3 force=gravity*mass;
@@ -494,6 +514,7 @@ void BodySW::integrate_forces(real_t p_step) {
 
 	applied_force=Vector3();
 	applied_torque=Vector3();
+	first_integration=false;
 
 	//motion=linear_velocity*p_step;
 
@@ -731,6 +752,7 @@ BodySW::BodySW() : CollisionObjectSW(TYPE_BODY), active_list(this), inertia_upda
 	island_next=NULL;
 	island_list_next=NULL;
 	first_time_kinematic=false;
+	first_integration=false;
 	_set_static(false);
 
 	contact_count=0;

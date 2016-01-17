@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -330,7 +330,8 @@ void SceneTree::input_text( const String& p_text ) {
 
 	root_lock++;
 
-	call_group(GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"input",p_text);
+	call_group(GROUP_CALL_REALTIME,"_viewports","_vp_input_text",p_text); //special one for GUI, as controls use their own process check
+
 	root_lock--;
 
 }
@@ -618,6 +619,14 @@ void SceneTree::set_auto_accept_quit(bool p_enable) {
 void SceneTree::set_editor_hint(bool p_enabled) {
 
 	editor_hint=p_enabled;
+}
+
+bool SceneTree::is_node_being_edited(const Node* p_node) const {
+#ifdef TOOLS_ENABLED
+	return editor_hint && edited_scene_root && edited_scene_root->is_a_parent_of(p_node);
+#else
+	return false;
+#endif
 }
 
 bool SceneTree::is_editor_hint() const {
@@ -965,6 +974,10 @@ Array SceneTree::_get_nodes_in_group(const StringName& p_group) {
 	return ret;
 }
 
+bool SceneTree::has_group(const StringName& p_identifier) const {
+
+	return group_map.has(p_identifier);
+}
 void SceneTree::get_nodes_in_group(const StringName& p_group,List<Node*> *p_list) {
 
 
@@ -1586,9 +1599,10 @@ void SceneTree::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("notify_group","call_flags","group","notification"),&SceneTree::notify_group);
 	ObjectTypeDB::bind_method(_MD("set_group","call_flags","group","property","value"),&SceneTree::set_group);
 
-	ObjectTypeDB::bind_method(_MD("get_nodes_in_group"),&SceneTree::_get_nodes_in_group);
+	ObjectTypeDB::bind_method(_MD("get_nodes_in_group","group"),&SceneTree::_get_nodes_in_group);
 
 	ObjectTypeDB::bind_method(_MD("get_root:Viewport"),&SceneTree::get_root);
+	ObjectTypeDB::bind_method(_MD("has_group","name"),&SceneTree::has_group);
 
 	ObjectTypeDB::bind_method(_MD("set_auto_accept_quit","enabled"),&SceneTree::set_auto_accept_quit);
 

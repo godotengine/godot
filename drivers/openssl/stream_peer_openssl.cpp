@@ -479,6 +479,13 @@ Error StreamPeerOpenSSL::get_partial_data(uint8_t* p_buffer, int p_bytes,int &r_
 	return OK;
 }
 
+int StreamPeerOpenSSL::get_available_bytes() const {
+
+	ERR_FAIL_COND_V(!connected,0);
+
+	return SSL_pending(ssl);
+
+}
 StreamPeerOpenSSL::StreamPeerOpenSSL() {
 
 	ctx=NULL;

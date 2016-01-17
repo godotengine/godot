@@ -22,12 +22,12 @@ void InstancePlaceholder::_get_property_list( List<PropertyInfo> *p_list) const{
 }
 
 
-void InstancePlaceholder::set_path(const String& p_name) {
+void InstancePlaceholder::set_instance_path(const String& p_name) {
 
 	path=p_name;
 }
 
-String InstancePlaceholder::get_path() const {
+String InstancePlaceholder::get_instance_path() const {
 
 	return path;
 }
@@ -66,6 +66,7 @@ void InstancePlaceholder::replace_by_instance(const Ref<PackedScene> &p_custom_s
 void InstancePlaceholder::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("replace_by_instance","custom_scene:PackedScene"),&InstancePlaceholder::replace_by_instance,DEFVAL(Variant()));
+	ObjectTypeDB::bind_method(_MD("get_instance_path"),&InstancePlaceholder::get_instance_path);
 }
 
 InstancePlaceholder::InstancePlaceholder() {

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,15 +65,25 @@ void OS_Unix::print_error(const char* p_function,const char* p_file,int p_line,c
 	if (!_print_error_enabled)
 		return;
 
-	if (p_rationale && p_rationale[0]) {
+	const char* err_details;
+	if (p_rationale && p_rationale[0])
+		err_details=p_rationale;
+	else
+		err_details=p_code;
 
-		print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_rationale);
-		print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
-
-	} else {
-		print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_code);
-		print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
-
+	switch(p_type) {
+		case ERR_ERROR:
+			print("\E[1;31mERROR: %s: \E[0m\E[1m%s\n",p_function,err_details);
+			print("\E[0;31m   At: %s:%i.\E[0m\n",p_file,p_line);
+			break;
+		case ERR_WARNING:
+			print("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n",p_function,err_details);
+			print("\E[0;33m   At: %s:%i.\E[0m\n",p_file,p_line);
+			break;
+		case ERR_SCRIPT:
+			print("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m%s\n",p_function,err_details);
+			print("\E[0;35m   At: %s:%i.\E[0m\n",p_file,p_line);
+			break;
 	}
 }
 
@@ -139,8 +149,7 @@ void OS_Unix::finalize_core() {
 
 	if (mempool_dynamic)
 		memdelete( mempool_dynamic );
-	if (mempool_static)
-		delete mempool_static;
+	delete mempool_static;
 
 }
 
@@ -223,13 +232,12 @@ uint64_t OS_Unix::get_unix_time() const {
 	return time(NULL);
 };
 
-uint64_t OS_Unix::get_system_time_msec() const {
+uint64_t OS_Unix::get_system_time_secs() const {
 	struct timeval tv_now;
 	gettimeofday(&tv_now, NULL);
 	//localtime(&tv_now.tv_usec);
 	//localtime((const long *)&tv_now.tv_usec);
-	uint64_t msec = uint64_t(tv_now.tv_sec)*1000+tv_now.tv_usec/1000;
-	return msec;
+	return uint64_t(tv_now.tv_sec);
 }
 
 
@@ -465,6 +473,14 @@ String OS_Unix::get_data_dir() const {
 
 	return Globals::get_singleton()->get_resource_path();
 
+}
+
+String OS_Unix::get_installed_templates_path() const {
+	String p=get_global_settings_path();
+	if (p!="")
+		return p+"/templates/";
+	else
+		return "";
 }
 
 String OS_Unix::get_executable_path() const {

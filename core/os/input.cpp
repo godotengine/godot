@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,8 +53,12 @@ void Input::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_mouse_button_pressed","button"),&Input::is_mouse_button_pressed);
 	ObjectTypeDB::bind_method(_MD("is_joy_button_pressed","device","button"),&Input::is_joy_button_pressed);
 	ObjectTypeDB::bind_method(_MD("is_action_pressed","action"),&Input::is_action_pressed);
+	ObjectTypeDB::bind_method(_MD("add_joy_mapping","mapping", "update_existing"),&Input::add_joy_mapping, DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("remove_joy_mapping","guid"),&Input::remove_joy_mapping);
+	ObjectTypeDB::bind_method(_MD("is_joy_known","device"),&Input::is_joy_known);
 	ObjectTypeDB::bind_method(_MD("get_joy_axis","device","axis"),&Input::get_joy_axis);
 	ObjectTypeDB::bind_method(_MD("get_joy_name","device"),&Input::get_joy_name);
+	ObjectTypeDB::bind_method(_MD("get_joy_guid","device"),&Input::get_joy_guid);
 	ObjectTypeDB::bind_method(_MD("get_accelerometer"),&Input::get_accelerometer);
 	//ObjectTypeDB::bind_method(_MD("get_mouse_pos"),&Input::get_mouse_pos); - this is not the function you want
 	ObjectTypeDB::bind_method(_MD("get_mouse_speed"),&Input::get_mouse_speed);
@@ -62,8 +66,8 @@ void Input::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_mouse_mode","mode"),&Input::set_mouse_mode);
 	ObjectTypeDB::bind_method(_MD("get_mouse_mode"),&Input::get_mouse_mode);
 	ObjectTypeDB::bind_method(_MD("warp_mouse_pos","to"),&Input::warp_mouse_pos);
-	ObjectTypeDB::bind_method(_MD("action_press"),&Input::action_press);
-	ObjectTypeDB::bind_method(_MD("action_release"),&Input::action_release);
+	ObjectTypeDB::bind_method(_MD("action_press","action"),&Input::action_press);
+	ObjectTypeDB::bind_method(_MD("action_release","action"),&Input::action_release);
 	ObjectTypeDB::bind_method(_MD("set_custom_mouse_cursor","image:Texture","hotspot"),&Input::set_custom_mouse_cursor,DEFVAL(Vector2()));
 
 	BIND_CONSTANT( MOUSE_MODE_VISIBLE );

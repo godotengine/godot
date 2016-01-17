@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -626,7 +626,7 @@ bool TranslationServer::_load_translations(const String& p_from) {
 
 			for(int i=0;i<tcount;i++) {
 
-				print_line( "Loading translation from " + r[i] );
+				//print_line( "Loading translation from " + r[i] );
 				Ref<Translation> tr = ResourceLoader::load(r[i]);
 				if (tr.is_valid())
 					add_translation(tr);
@@ -670,10 +670,10 @@ void TranslationServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_locale","locale"),&TranslationServer::set_locale);
 	ObjectTypeDB::bind_method(_MD("get_locale"),&TranslationServer::get_locale);
 
-	ObjectTypeDB::bind_method(_MD("translate"),&TranslationServer::translate);
+	ObjectTypeDB::bind_method(_MD("translate","message"),&TranslationServer::translate);
 
-	ObjectTypeDB::bind_method(_MD("add_translation"),&TranslationServer::add_translation);
-	ObjectTypeDB::bind_method(_MD("remove_translation"),&TranslationServer::remove_translation);
+	ObjectTypeDB::bind_method(_MD("add_translation","translation:Translation"),&TranslationServer::add_translation);
+	ObjectTypeDB::bind_method(_MD("remove_translation","translation:Translation"),&TranslationServer::remove_translation);
 
 	ObjectTypeDB::bind_method(_MD("clear"),&TranslationServer::clear);
 

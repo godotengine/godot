@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -310,13 +310,19 @@ void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(E->get().in_scene);
 
+	contact_monitor->locked=true;
+
 	E->get().in_scene=true;
 	emit_signal(SceneStringNames::get_singleton()->body_enter,node);
+
 
 	for(int i=0;i<E->get().shapes.size();i++) {
 
 		emit_signal(SceneStringNames::get_singleton()->body_enter_shape,p_id,node,E->get().shapes[i].body_shape,E->get().shapes[i].local_shape);
 	}
+
+	contact_monitor->locked=false;
+
 
 }
 
@@ -329,11 +335,18 @@ void RigidBody2D::_body_exit_tree(ObjectID p_id) {
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(!E->get().in_scene);
 	E->get().in_scene=false;
+
+	contact_monitor->locked=true;
+
 	emit_signal(SceneStringNames::get_singleton()->body_exit,node);
+
 	for(int i=0;i<E->get().shapes.size();i++) {
 
 		emit_signal(SceneStringNames::get_singleton()->body_exit_shape,p_id,node,E->get().shapes[i].body_shape,E->get().shapes[i].local_shape);
 	}
+
+	contact_monitor->locked=false;
+
 }
 
 void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,int p_local_shape) {
@@ -439,6 +452,8 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 
 	if (contact_monitor) {
 
+		contact_monitor->locked=true;
+
 		//untag all
 		int rc=0;
 		for( Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.front();E;E=E->next()) {
@@ -519,6 +534,8 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 
 			_body_inout(1,toadd[i].id,toadd[i].shape,toadd[i].local_shape);
 		}
+
+		contact_monitor->locked=false;
 
 	}
 
@@ -803,6 +820,11 @@ void RigidBody2D::set_contact_monitor(bool p_enabled) {
 
 	if (!p_enabled) {
 
+		if (contact_monitor->locked) {
+			ERR_EXPLAIN("Can't disable contact monitoring during in/out callback. Use call_deferred(\"set_contact_monitor\",false) instead");
+		}
+		ERR_FAIL_COND(contact_monitor->locked);
+
 		for(Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.front();E;E=E->next()) {
 
 			//clean up mess
@@ -813,6 +835,7 @@ void RigidBody2D::set_contact_monitor(bool p_enabled) {
 	} else {
 
 		contact_monitor = memnew( ContactMonitor );
+		contact_monitor->locked=false;
 	}
 
 }
@@ -1250,7 +1273,7 @@ void KinematicBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_collider_velocity"),&KinematicBody2D::get_collider_velocity);
 	ObjectTypeDB::bind_method(_MD("get_collider:Object"),&KinematicBody2D::_get_collider);
 	ObjectTypeDB::bind_method(_MD("get_collider_shape"),&KinematicBody2D::get_collider_shape);
-	ObjectTypeDB::bind_method(_MD("get_collider_metadata"),&KinematicBody2D::get_collider_metadata);
+	ObjectTypeDB::bind_method(_MD("get_collider_metadata:Variant"),&KinematicBody2D::get_collider_metadata);
 
 	ObjectTypeDB::bind_method(_MD("set_collision_margin","pixels"),&KinematicBody2D::set_collision_margin);
 	ObjectTypeDB::bind_method(_MD("get_collision_margin","pixels"),&KinematicBody2D::get_collision_margin);

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,6 +108,7 @@ private:
 	PropertyEditor *platform_options;
 
 	OptionButton *export_mode;
+	CheckButton *convert_text_scenes;
 	VBoxContainer *tree_vb;
 
 	VBoxContainer *image_vb;
@@ -139,6 +140,10 @@ private:
 	OptionButton *script_mode;
 	LineEdit *script_key;
 
+	VBoxContainer *sample_vbox;
+	OptionButton *sample_mode;
+	SpinBox *sample_max_hz;
+	CheckButton *sample_trim;
 
 
 	void _export_mode_changed(int p_idx);
@@ -161,6 +166,8 @@ private:
 	void _quality_edited(float what);
 	void _image_export_edited(int what);
 	void _shrink_edited(float what);
+
+	void _sample_convert_edited(int what);
 
 	void _update_group_list();
 	void _select_group(const String& p_by_name);

@@ -1020,17 +1020,23 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 	EditorProgress ep("export","Exporting for Android",104);
 
-	String apk_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
+	if (p_debug)
+		src_apk=custom_debug_package;
+	else
+		src_apk=custom_release_package;
 
-	if (p_debug) {
-
-		src_apk=custom_debug_package!=""?custom_debug_package:apk_path+"android_debug.apk";
-	} else {
-
-		src_apk=custom_release_package!=""?custom_release_package:apk_path+"android_release.apk";
-
+	if (src_apk=="") {
+		String err;
+		if (p_debug) {
+			src_apk=find_export_template("android_debug.apk", &err);
+		} else {
+			src_apk=find_export_template("android_release.apk", &err);
+		}
+		if (src_apk=="") {
+			EditorNode::add_io_error(err);
+			return ERR_FILE_NOT_FOUND;
+		}
 	}
-
 
 	FileAccess *src_f=NULL;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
@@ -1121,6 +1127,10 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		}
 
 		if (file=="lib/armeabi/libgodot_android.so" && !export_arm) {
+			skip=true;
+		}
+		
+		if (file.begins_with("META-INF") && _signed) {
 			skip=true;
 		}
 
@@ -1559,7 +1569,7 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 	args.push_back("-a");
 	args.push_back("android.intent.action.MAIN");
 	args.push_back("-n");
-	args.push_back(get_package_name()+"/com.android.godot.Godot");
+	args.push_back(get_package_name()+"/org.godotengine.godot.Godot");
 
 	err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
 	if (err || rv!=0) {
@@ -1655,10 +1665,7 @@ bool EditorExportPlatformAndroid::can_export(String *r_error) const {
 		err+="Debug Keystore not configured in editor settings.\n";
 	}
 
-
-	String exe_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
-
-	if (!FileAccess::exists(exe_path+"android_debug.apk") || !FileAccess::exists(exe_path+"android_release.apk")) {
+	if (!exists_export_template("android_debug.apk") || !exists_export_template("android_release.apk")) {
 		valid=false;
 		err+="No export templates found.\nDownload and install export templates.\n";
 	}

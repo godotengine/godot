@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,7 @@ _FORCE_INLINE_ static bool _match_object_type_query(CollisionObjectSW *p_object,
 }
 
 
-bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3& p_from, const Vector3& p_to,RayResult &r_result,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
+bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3& p_from, const Vector3& p_to, RayResult &r_result, const Set<RID>& p_exclude, uint32_t p_layer_mask, uint32_t p_object_type_mask, bool p_pick_ray) {
 
 
 	ERR_FAIL_COND_V(space->locked,false);
@@ -77,7 +77,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3& p_from, const Vecto
 		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
 			continue;
 
-		if (!(static_cast<CollisionObjectSW*>(space->intersection_query_results[i])->is_ray_pickable()))
+		if (p_pick_ray && !(static_cast<CollisionObjectSW*>(space->intersection_query_results[i])->is_ray_pickable()))
 			continue;
 
 		if (p_exclude.has( space->intersection_query_results[i]->get_self()))
@@ -175,13 +175,15 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Transfo
 		if (!CollisionSolverSW::solve_static(shape,p_xform,col_obj->get_shape(shape_idx),col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), NULL,NULL,NULL,p_margin,0))
 			continue;
 
-		r_results[cc].collider_id=col_obj->get_instance_id();
-		if (r_results[cc].collider_id!=0)
-			r_results[cc].collider=ObjectDB::get_instance(r_results[cc].collider_id);
-		else
-			r_results[cc].collider=NULL;
-		r_results[cc].rid=col_obj->get_self();
-		r_results[cc].shape=shape_idx;
+		if (r_results) {
+			r_results[cc].collider_id=col_obj->get_instance_id();
+			if (r_results[cc].collider_id!=0)
+				r_results[cc].collider=ObjectDB::get_instance(r_results[cc].collider_id);
+			else
+				r_results[cc].collider=NULL;
+			r_results[cc].rid=col_obj->get_self();
+			r_results[cc].shape=shape_idx;
+		}
 
 		cc++;
 

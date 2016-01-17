@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1043,6 +1043,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::vertex_builtins_defs[]={
 	{ "SRC_TANGENT", TYPE_VEC3},
 	{ "SRC_BINORMALF", TYPE_FLOAT},
 
+	{ "POSITION", TYPE_VEC4 },
 	{ "VERTEX", TYPE_VEC3},
 	{ "NORMAL", TYPE_VEC3},
 	{ "TANGENT", TYPE_VEC3},
@@ -1112,7 +1113,8 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::light_builtins_defs[]={
 	{ "SPECULAR_EXP", TYPE_FLOAT},
 	{ "SHADE_PARAM", TYPE_FLOAT},
 	{ "LIGHT", TYPE_VEC3},
-	{ "POINT_COORD", TYPE_VEC2},
+	{ "SHADOW", TYPE_VEC3 },
+	{ "POINT_COORD", TYPE_VEC2 },
 //	{ "SCREEN_POS", TYPE_VEC2},
 //	{ "SCREEN_TEXEL_SIZE", TYPE_VEC2},
 	{ "TIME", TYPE_FLOAT},
@@ -1368,7 +1370,7 @@ ShaderLanguage::Node* ShaderLanguage::validate_function_call(Parser&parser, Oper
 			}
 		}
 
-		if (!fail) {
+		if (!fail && name == program->functions[i].name) {
 			p_func->return_cache=pfunc->return_type;
 			return p_func;
 		}
@@ -2339,19 +2341,27 @@ Error ShaderLanguage::parse_flow_if(Parser& parser,Node *p_parent,Node **r_state
 
 	parser.advance();
 
+	if (parser.get_token_type()!=TK_CURLY_BRACKET_OPEN) {
+		parser.set_error("Expected statement block after 'if()'");
+		return ERR_PARSE_ERROR;
+	}
+
 	Node *substatement=NULL;
 	err = parse_statement(parser,cf,&substatement);
 	if (err)
 		return err;
 
-
 	cf->statements.push_back(substatement);
-
-
 
 	if (parser.get_token_type()==TK_CF_ELSE) {
 
 		parser.advance();
+
+		if (parser.get_token_type()!=TK_CURLY_BRACKET_OPEN) {
+			parser.set_error("Expected statement block after 'else'");
+			return ERR_PARSE_ERROR;
+		}
+
 		substatement=NULL;
 		err = parse_statement(parser,cf,&substatement);
 		if (err)

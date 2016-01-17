@@ -9,11 +9,11 @@
 	<key>CFBundleName</key>
 	<string>Godot</string>
 	<key>CFBundleGetInfoString</key>
-	<string>(c) 2007-2014 Juan Linietsky, Ariel Manzur</string>
+	<string>(c) 2007-2016 Juan Linietsky, Ariel Manzur</string>
 	<key>CFBundleIconFile</key>
 	<string>Godot.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.okamstudio.godot</string>
+	<string>org.godotengine.godot</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
@@ -25,7 +25,7 @@
 	<key>CFBundleVersion</key>
 	<string>1.0.0</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2007-2014 Juan Linietsky, Ariel Manzur</string>
+	<string>© 2007-2016 Juan Linietsky, Ariel Manzur</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.6.0</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
@@ -61,7 +61,7 @@
 			<true/>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.okamstudio.scn</string>
+				<string>org.godotengine.scn</string>
 			</array>
 		</dict>
 	</array>

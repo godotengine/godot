@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "scene/gui/control.h"
 #include "io/marshalls.h"
 #include "core_string_names.h"
-
+#include "variant_parser.h"
 
 
 String Variant::get_type_name(Variant::Type p_type) {
@@ -702,6 +702,17 @@ bool Variant::operator==(const Variant& p_variant) const {
 	bool v;
 	Variant r;
 	evaluate(OP_EQUAL,*this,p_variant,r,v);
+	return r;
+
+}
+
+bool Variant::operator!=(const Variant& p_variant) const {
+
+	if (type!=p_variant.type) //evaluation of operator== needs to be more strict
+		return true;
+	bool v;
+	Variant r;
+	evaluate(OP_NOT_EQUAL,*this,p_variant,r,v);
 	return r;
 
 }
@@ -2973,132 +2984,40 @@ void Variant::construct_from_string(const String& p_string,Variant& r_value,Obje
 }
 
 
-String Variant::get_construct_string(ObjectDeConstruct p_obj_deconstruct,void *p_deconstruct_ud) const {
+String Variant::get_construct_string() const {
 
-	switch( type ) {
+	String vars;
+	VariantWriter::write_to_string(*this,vars);
 
-		case NIL: return "null";
-		case BOOL: return _data._bool ? "true" : "false";
-		case INT: return String::num(_data._int);
-		case REAL: return String::num(_data._real);
-		case STRING: return "\""+reinterpret_cast<const String*>(_data._mem)->c_escape()+"\"";
-		case VECTOR2: return "Vector2("+operator Vector2()+")";
-		case RECT2: return "Rect2("+operator Rect2()+")";
-		case MATRIX32: return "Matrix32("+operator Matrix32()+")";
-		case VECTOR3: return "Vector3("+operator Vector3()+")";
-		case PLANE: return "Plane("+operator Plane()+")";
-		//case QUAT:
-		case _AABB: return "AABB("+operator AABB()+")";
-		case QUAT: return "Quat("+operator Quat()+")";
-		case MATRIX3: return "Matrix3("+operator Matrix3()+")";
-		case TRANSFORM: return "Transform("+operator Transform()+")";
-		case NODE_PATH: return "@\""+String(operator NodePath()).c_escape()+"\"";
-		case INPUT_EVENT: return "InputEvent()";
-		case COLOR: return "Color("+String::num( operator Color().r)+","+String::num( operator Color().g)+","+String::num( operator Color().b)+","+String::num( operator Color().a)+")" ;
-		case DICTIONARY: {
+	return vars;
 
-			const Dictionary &d =*reinterpret_cast<const Dictionary*>(_data._mem);
-			//const String *K=NULL;
-			String str="{";
-			List<Variant> keys;
-			d.get_key_list(&keys);
+}
 
-			Vector<_VariantStrPair> pairs;
+String Variant::get_call_error_text(Object* p_base, const StringName& p_method,const Variant** p_argptrs,int p_argcount,const Variant::CallError &ce) {
 
-			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
 
-				_VariantStrPair sp;
-				sp.key=E->get().get_construct_string(p_obj_deconstruct,p_deconstruct_ud);
-				sp.value=d[E->get()].get_construct_string(p_obj_deconstruct,p_deconstruct_ud);
-				pairs.push_back(sp);
-			}
+	String err_text;
 
-			pairs.sort();
-
-			for(int i=0;i<pairs.size();i++) {
-				if (i>0)
-					str+=", ";
-				str+="("+pairs[i].key+":"+pairs[i].value+")";
-			}
-			str+="}";
-
-			return str;
-		} break;
-		case VECTOR3_ARRAY: {
-
-			DVector<Vector3> vec = operator DVector<Vector3>();
-			String str="Vector3Array([";
-			for(int i=0;i<vec.size();i++) {
-
-				if (i>0)
-					str+=", ";
-				str+=Variant( vec[i] ).get_construct_string();
-			}
-			return str+"])";
-		} break;
-		case STRING_ARRAY: {
-
-			DVector<String> vec = operator DVector<String>();
-			String str="StringArray([";
-			for(int i=0;i<vec.size();i++) {
-
-				if (i>0)
-					str+=", ";
-				str=str+=Variant( vec[i] ).get_construct_string();
-			}
-			return str+"])";
-		} break;
-		case INT_ARRAY: {
-
-			DVector<int> vec = operator DVector<int>();
-			String str="IntArray([";
-			for(int i=0;i<vec.size();i++) {
-
-				if (i>0)
-					str+=", ";
-				str=str+itos(vec[i]);
-			}
-			return str+"])";
-		} break;
-		case REAL_ARRAY: {
-
-			DVector<real_t> vec = operator DVector<real_t>();
-			String str="FloatArray([";
-			for(int i=0;i<vec.size();i++) {
-
-				if (i>0)
-					str+=", ";
-				str=str+rtos(vec[i]);
-			}
-			return str+"])";
-		} break;
-		case ARRAY: {
-
-			Array arr = operator Array();
-			String str="[";
-			for (int i=0; i<arr.size(); i++) {
-				if (i)
-					str+=", ";
-				str += arr[i].get_construct_string(p_obj_deconstruct,p_deconstruct_ud);
-			};
-			return str+"]";
-
-		} break;
-		case OBJECT: {
-
-			if (_get_obj().obj) {
-				if (p_obj_deconstruct) {
-					return "Object(\""+p_obj_deconstruct(Variant(*this),p_deconstruct_ud).c_escape()+")";
-				} else {
-					return _get_obj().obj->get_type()+".new()";
-				}
-			} else
-				return "null";
-
-		} break;
-		default: {
-			return "["+get_type_name(type)+"]";
-		}
+	if (ce.error==Variant::CallError::CALL_ERROR_INVALID_ARGUMENT) {
+		int errorarg=ce.argument;
+		err_text="Cannot convert argument "+itos(errorarg+1)+" from "+Variant::get_type_name(p_argptrs[errorarg]->get_type())+" to "+Variant::get_type_name(ce.expected)+".";
+	} else if (ce.error==Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
+		err_text="Expected "+itos(ce.argument)+" arguments.";
+	} else if (ce.error==Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
+		err_text="Expected "+itos(ce.argument)+" arguments.";
+	} else if (ce.error==Variant::CallError::CALL_ERROR_INVALID_METHOD) {
+		err_text="Method not found.";
+	} else if (ce.error==Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
+		err_text="Instance is null";
+	} else if (ce.error==Variant::CallError::CALL_OK){
+		return "Call OK";
 	}
 
+	String class_name = p_base->get_type();
+	Ref<Script> script = p_base->get_script();
+	if (script.is_valid() && script->get_path().is_resource_file()) {
+
+		class_name+="("+script->get_path().get_file()+")";
+	}
+	return "'"+class_name+"::"+String(p_method)+"': "+err_text;
 }

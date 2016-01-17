@@ -16,9 +16,7 @@ HaikuDirectWindow::HaikuDirectWindow(BRect p_frame)
 
 
 HaikuDirectWindow::~HaikuDirectWindow() {
-	if (update_runner) {
-		delete update_runner;
-	}
+	delete update_runner;
 }
 
 void HaikuDirectWindow::SetHaikuGLView(HaikuGLView* p_view) {

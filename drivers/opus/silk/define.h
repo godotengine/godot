@@ -28,8 +28,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SILK_DEFINE_H
 #define SILK_DEFINE_H
 
-#include "errors.h"
-#include "typedef.h"
+#include "opus/silk/errors.h"
+#include "opus/silk/typedef.h"
 
 #ifdef __cplusplus
 extern "C"

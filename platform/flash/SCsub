@@ -36,5 +36,3 @@ java -jar $ALCHEMY/usr/lib/asc2.jar -md -strict -optimize -AS3 \
 -import ../platform/flash/lib/libGL.abc \
 ../platform/flash/Console.as
 """
-
-

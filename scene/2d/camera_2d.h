@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,6 +59,7 @@ protected:
 	bool rotating;
 	bool current;
 	float smoothing;
+	bool smoothing_enabled;
 	int limit[4];
 	float drag_margin[4];
 
@@ -73,6 +74,8 @@ protected:
 
 	void _make_current(Object *p_which);
 	void _set_current(bool p_current);
+
+	void _set_old_smoothing(float p_enable);
 protected:
 
 	virtual Matrix32 get_camera_transform();
@@ -107,6 +110,9 @@ public:
 
 	void set_h_offset(float p_offset);
 	float get_h_offset() const;
+
+	void set_enable_follow_smoothing(bool p_enabled);
+	bool is_follow_smoothing_enabled() const;
 
 	void set_follow_smoothing(float p_speed);
 	float get_follow_smoothing() const;

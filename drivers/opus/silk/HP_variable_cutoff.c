@@ -25,15 +25,15 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 #ifdef OPUS_FIXED_POINT
-#include "main_FIX.h"
+#include "opus/silk/fixed/main_FIX.h"
 #else
-#include "main_FLP.h"
+#include "opus/silk/float/main_FLP.h"
 #endif
-#include "tuning_parameters.h"
+#include "opus/silk/tuning_parameters.h"
 
 /* High-pass filter with cutoff frequency adaptation based on pitch lag statistics */
 void silk_HP_variable_cutoff(

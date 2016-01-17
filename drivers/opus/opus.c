@@ -25,12 +25,12 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "opus.h"
-#include "opus_private.h"
+#include "opus/opus.h"
+#include "opus/opus_private.h"
 
 #ifndef DISABLE_FLOAT_API
 OPUS_EXPORT void opus_pcm_soft_clip(float *_x, int N, int C, float *declip_mem)

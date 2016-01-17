@@ -72,6 +72,15 @@ bool ArrayPropertyEdit::_set(const StringName& p_name, const Variant& p_value){
 					ur->add_undo_method(this,"_set_value",i,arr.get(i));
 
 				}
+			} else if (newsize>size && size) {
+
+				Variant init;
+				Variant::CallError ce;
+				init = Variant::construct(arr.get(size-1).get_type(),NULL,0,ce);
+				for(int i=size;i<newsize;i++) {
+					ur->add_do_method(this,"_set_value",i,init);
+				}
+
 			}
 			ur->add_do_method(this,"_notif_change");
 			ur->add_undo_method(this,"_notif_change");
@@ -83,6 +92,7 @@ bool ArrayPropertyEdit::_set(const StringName& p_name, const Variant& p_value){
 			_change_notify();
 			return true;
 		}
+
 	} else if (pn.begins_with("indices")) {
 
 		if (pn.find("_")!=-1) {
@@ -207,6 +217,15 @@ void ArrayPropertyEdit::edit(Object* p_obj,const StringName& p_prop,Variant::Typ
 	obj=p_obj->get_instance_ID();
 	default_type=p_deftype;
 
+}
+
+Node *ArrayPropertyEdit::get_node() {
+
+	Object *o = ObjectDB::get_instance(obj);
+	if (!o)
+		return NULL;
+
+	return o->cast_to<Node>();
 }
 
 void ArrayPropertyEdit::_bind_methods() {

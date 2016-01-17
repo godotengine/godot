@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -193,7 +193,7 @@ void ParallaxBackground::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_limit_begin"),&ParallaxBackground::get_limit_begin);
 	ObjectTypeDB::bind_method(_MD("set_limit_end","ofs"),&ParallaxBackground::set_limit_end);
 	ObjectTypeDB::bind_method(_MD("get_limit_end"),&ParallaxBackground::get_limit_end);
-    ObjectTypeDB::bind_method(_MD("set_ignore_camera_zoom"), &ParallaxBackground::set_ignore_camera_zoom);
+    ObjectTypeDB::bind_method(_MD("set_ignore_camera_zoom","ignore"), &ParallaxBackground::set_ignore_camera_zoom);
     ObjectTypeDB::bind_method(_MD("is_ignore_camera_zoom"), &ParallaxBackground::is_ignore_camera_zoom);
 
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -322,7 +322,7 @@ void Image::set_pallete(const DVector<uint8_t>& p_data) {
 	DVector<uint8_t>::Write wp = data.write();
 	unsigned char *dst=wp.ptr() + pal_ofs;
 
-	DVector<uint8_t>::Read r = data.read();
+	DVector<uint8_t>::Read r = p_data.read();
 	const unsigned char *src=r.ptr();
 
 	copymem(dst, src, len);

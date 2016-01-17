@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -94,6 +94,8 @@ private:
 	bool use_gl2;
 	bool use_reload_hooks;
 	bool use_apk_expansion;
+
+	bool use_16bits_fbo;
 
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
@@ -200,6 +202,7 @@ public:
 	void set_display_size(Size2 p_size);
 
 	void reload_gfx();
+	void set_context_is_16_bits(bool p_is_16);
 
 	void set_need_reload_hooks(bool p_needs_them);
 	virtual void set_screen_orientation(ScreenOrientation p_orientation);

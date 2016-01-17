@@ -32,8 +32,8 @@
 #ifndef STACK_ALLOC_H
 #define STACK_ALLOC_H
 
-#include "opus_types.h"
-#include "opus_defines.h"
+#include "opus/opus_types.h"
+#include "opus/opus_defines.h"
 
 #if (!defined (VAR_ARRAYS) && !defined (USE_ALLOCA) && !defined (NONTHREADSAFE_PSEUDOSTACK))
 #define VAR_ARRAYS
@@ -149,7 +149,7 @@ extern char *global_stack_top;
 
 #endif /* ENABLE_VALGRIND */
 
-#include "os_support.h"
+#include "opus/celt/os_support.h"
 #define VARDECL(type, var) type *var
 #define ALLOC(var, size, type) var = PUSH(global_stack, size, type)
 #define SAVE_STACK char *_saved_stack = global_stack;

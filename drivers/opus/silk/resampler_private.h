@@ -32,9 +32,9 @@ POSSIBILITY OF SUCH DAMAGE.
 extern "C" {
 #endif
 
-#include "SigProc_FIX.h"
-#include "resampler_structs.h"
-#include "resampler_rom.h"
+#include "opus/silk/SigProc_FIX.h"
+#include "opus/silk/resampler_structs.h"
+#include "opus/silk/resampler_rom.h"
 
 /* Number of input samples to process in the inner loop */
 #define RESAMPLER_MAX_BATCH_SIZE_MS             10

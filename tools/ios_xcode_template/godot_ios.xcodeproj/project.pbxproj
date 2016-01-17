@@ -192,7 +192,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0500;
-				ORGANIZATIONNAME = Okam;
+				ORGANIZATIONNAME = GodotEngine;
 				TargetAttributes = {
 					D0BCFE5F18AEBDA3004A7AAE = {
 						TestTargetID = D0BCFE3318AEBDA2004A7AAE;

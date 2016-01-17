@@ -232,6 +232,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 		return Variant();
 	}
+
 	r_err.error=Variant::CallError::CALL_OK;
 
 	Variant self;
@@ -272,6 +273,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				r_err.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 				r_err.argument=_argument_count;
+
 
 				return Variant();
 			} else if (p_argcount < _argument_count - _default_arg_count) {
@@ -1222,6 +1224,14 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				ip+=2;
 			} continue;
+			case OPCODE_BREAKPOINT: {
+#ifdef DEBUG_ENABLED
+				if (ScriptDebugger::get_singleton()) {
+					GDScriptLanguage::get_singleton()->debug_break("Breakpoint Statement",true);
+				}
+#endif
+				ip+=1;
+			} continue;
 			case OPCODE_LINE: {
 				CHECK_SPACE(2);
 
@@ -1286,7 +1296,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 	if (!GDScriptLanguage::get_singleton()->debug_break(err_text,false)) {
             // debugger break did not happen
 
-            _err_print_error(err_func.utf8().get_data(),err_file.utf8().get_data(),err_line,err_text.utf8().get_data());
+	    _err_print_error(err_func.utf8().get_data(),err_file.utf8().get_data(),err_line,err_text.utf8().get_data(),ERR_HANDLER_SCRIPT);
         }
 
 
@@ -1726,10 +1736,9 @@ GDInstance* GDScript::_create_instance(const Variant** p_args,int p_argcount,Obj
 
 	instances.insert(instance->owner);
 
-	Variant::CallError err;
-	initializer->call(instance,p_args,p_argcount,err);
+	initializer->call(instance,p_args,p_argcount,r_error);
 
-	if (err.error!=Variant::CallError::CALL_OK) {
+	if (r_error.error!=Variant::CallError::CALL_OK) {
 		instance->script=Ref<GDScript>();
 		instance->owner->set_script_instance(NULL);
 		instances.erase(p_owner);
@@ -1920,6 +1929,7 @@ ScriptInstance* GDScript::instance_create(Object *p_this) {
 		}
 	}
 
+	return _create_instance(NULL,0,p_this,p_this->cast_to<Reference>());
 	Variant::CallError unchecked_error;
 	return _create_instance(NULL,0,p_this,p_this->cast_to<Reference>(),unchecked_error);
 

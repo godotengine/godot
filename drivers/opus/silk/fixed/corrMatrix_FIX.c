@@ -25,15 +25,15 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
 /**********************************************************************
  * Correlation Matrix Computations for LS estimate.
  **********************************************************************/
 
-#include "main_FIX.h"
+#include "opus/silk/fixed/main_FIX.h"
 
 /* Calculates correlation vector X'*t */
 void silk_corrVector_FIX(

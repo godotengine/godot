@@ -34,8 +34,8 @@
 #ifndef PITCH_H
 #define PITCH_H
 
-#include "opus_modes.h"
-#include "cpu_support.h"
+#include "opus/celt/opus_modes.h"
+#include "opus/celt/cpu_support.h"
 
 #if defined(__SSE__) && !defined(OPUS_FIXED_POINT)
 #include "x86/pitch_sse.h"

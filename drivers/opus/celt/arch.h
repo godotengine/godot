@@ -34,8 +34,8 @@
 #ifndef ARCH_H
 #define ARCH_H
 
-#include "opus_types.h"
-#include "opus_defines.h"
+#include "opus/opus_types.h"
+#include "opus/opus_defines.h"
 
 # if !defined(__GNUC_PREREQ)
 #  if defined(__GNUC__)&&defined(__GNUC_MINOR__)
@@ -109,10 +109,10 @@ typedef opus_val32 celt_ener;
 #define SCALEOUT(a)     (a)
 
 #ifdef FIXED_DEBUG
-#include "fixed_debug.h"
+#include "opus/celt/fixed_debug.h"
 #else
 
-#include "fixed_generic.h"
+#include "opus/celt/fixed_generic.h"
 
 #ifdef OPUS_ARM_INLINE_EDSP
 #include "arm/fixed_armv5e.h"

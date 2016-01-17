@@ -28,7 +28,7 @@
 #if !defined(PITCH_ARM_H)
 # define PITCH_ARM_H
 
-# include "armcpu.h"
+# include "opus/celt/arm/armcpu.h"
 
 # if defined(OPUS_FIXED_POINT)
 

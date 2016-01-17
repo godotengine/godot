@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -127,7 +127,7 @@ Error PacketPeer::_get_packet_error() const {
 void PacketPeer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_var"),&PacketPeer::_bnd_get_var);
-	ObjectTypeDB::bind_method(_MD("put_var", "var:var"),&PacketPeer::put_var);
+	ObjectTypeDB::bind_method(_MD("put_var", "var:Variant"),&PacketPeer::put_var);
 	ObjectTypeDB::bind_method(_MD("get_packet"),&PacketPeer::_get_packet);
 	ObjectTypeDB::bind_method(_MD("put_packet:Error", "buffer"),&PacketPeer::_put_packet);
 	ObjectTypeDB::bind_method(_MD("get_packet_error:Error"),&PacketPeer::_get_packet_error);

@@ -33,7 +33,7 @@
    defines kiss_fft_scalar as either short or a float type
    and defines
    typedef struct { kiss_fft_scalar r; kiss_fft_scalar i; }kiss_fft_cpx; */
-#include "kiss_fft.h"
+#include "opus/celt/kiss_fft.h"
 
 /*
   Explanation of macros dealing with complex math:
@@ -45,7 +45,7 @@
    C_ADDTO( res , a)    : res += a
  * */
 #ifdef OPUS_FIXED_POINT
-#include "arch.h"
+#include "opus/celt/arch.h"
 
 
 #define SAMP_MAX 2147483647

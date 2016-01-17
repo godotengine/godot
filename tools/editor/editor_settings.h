@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -107,6 +107,7 @@ public:
 	static EditorSettings *get_singleton();
 	void erase(String p_var);
 	String get_settings_path() const;
+	String get_global_settings_path() const;
 	String get_project_settings_path() const;
 
 	const Map<String,Plugin>& get_plugins() const { return plugins; }

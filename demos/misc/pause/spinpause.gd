@@ -11,5 +11,3 @@ func _on_pause_pressed():
 func _on_unpause_pressed():
 	get_node("pause_popup").hide()
 	get_tree().set_pause(false)
-	
-	

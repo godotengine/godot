@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -406,7 +406,6 @@ void FixedMaterial::_bind_methods() {
 	BIND_CONSTANT( PARAM_SHADE_PARAM );
 	BIND_CONSTANT( PARAM_MAX );
 
-
 	BIND_CONSTANT( TEXCOORD_SPHERE );
 	BIND_CONSTANT( TEXCOORD_UV );
 	BIND_CONSTANT( TEXCOORD_UV_TRANSFORM );
@@ -416,6 +415,11 @@ void FixedMaterial::_bind_methods() {
 	BIND_CONSTANT( FLAG_USE_COLOR_ARRAY );
 	BIND_CONSTANT( FLAG_USE_POINT_SIZE );
 	BIND_CONSTANT( FLAG_DISCARD_ALPHA );
+
+	BIND_CONSTANT( LIGHT_SHADER_LAMBERT );
+	BIND_CONSTANT( LIGHT_SHADER_WRAP );
+	BIND_CONSTANT( LIGHT_SHADER_VELVET );
+	BIND_CONSTANT( LIGHT_SHADER_TOON );
 
 }
 
@@ -531,6 +535,8 @@ void ShaderMaterial::_shader_changed() {
 
 void ShaderMaterial::set_shader(const Ref<Shader>& p_shader) {
 
+	ERR_FAIL_COND(p_shader.is_valid() && p_shader->get_mode()!=Shader::MODE_MATERIAL);
+
 	if (shader.is_valid())
 		shader->disconnect(SceneStringNames::get_singleton()->changed,this,SceneStringNames::get_singleton()->_shader_changed);
 	shader=p_shader;
@@ -566,8 +572,8 @@ void ShaderMaterial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_shader","shader:Shader"), &ShaderMaterial::set_shader );
 	ObjectTypeDB::bind_method(_MD("get_shader:Shader"), &ShaderMaterial::get_shader );
 
-	ObjectTypeDB::bind_method(_MD("set_shader_param","param","value:var"), &ShaderMaterial::set_shader_param);
-	ObjectTypeDB::bind_method(_MD("get_shader_param:var","param"), &ShaderMaterial::get_shader_param);
+	ObjectTypeDB::bind_method(_MD("set_shader_param","param","value:Variant"), &ShaderMaterial::set_shader_param);
+	ObjectTypeDB::bind_method(_MD("get_shader_param:Variant","param"), &ShaderMaterial::get_shader_param);
 
 	ObjectTypeDB::bind_method(_MD("_shader_changed"), &ShaderMaterial::_shader_changed );
 }

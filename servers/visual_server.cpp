@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -526,6 +526,7 @@ void VisualServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("canvas_item_get_opacity"),&VisualServer::canvas_item_get_opacity);
 	ObjectTypeDB::bind_method(_MD("canvas_item_set_self_opacity"),&VisualServer::canvas_item_set_self_opacity);
 	ObjectTypeDB::bind_method(_MD("canvas_item_get_self_opacity"),&VisualServer::canvas_item_get_self_opacity);
+	ObjectTypeDB::bind_method(_MD("canvas_item_set_z"),&VisualServer::canvas_item_set_z);
 
 	ObjectTypeDB::bind_method(_MD("canvas_item_add_line"),&VisualServer::canvas_item_add_line, DEFVAL(1.0));
 	ObjectTypeDB::bind_method(_MD("canvas_item_add_rect"),&VisualServer::canvas_item_add_rect);

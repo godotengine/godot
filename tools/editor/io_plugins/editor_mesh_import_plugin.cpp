@@ -128,7 +128,7 @@ class EditorMeshImportDialog : public ConfirmationDialog {
 	LineEdit *save_path;
 	EditorFileDialog *file_select;
 	EditorDirDialog *save_select;
-	ConfirmationDialog *error_dialog;
+	AcceptDialog *error_dialog;
 	PropertyEditor *option_editor;
 
 	_EditorMeshImportOptions *options;
@@ -169,13 +169,12 @@ public:
 	void _browse_target() {
 
 		save_select->popup_centered_ratio();
-
 	}
-
 
 	void popup_import(const String& p_path) {
 
 		popup_centered(Size2(400,400));
+
 		if (p_path!="") {
 
 			Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(p_path);
@@ -199,14 +198,13 @@ public:
 		}
 	}
 
-
 	void _import() {
 
 		Vector<String> meshes = import_path->get_text().split(",");
-
 		if (meshes.size()==0) {
 			error_dialog->set_text("No meshes to import!");
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered_minsize();
+			return;
 		}
 
 		for(int i=0;i<meshes.size();i++) {
@@ -229,18 +227,17 @@ public:
 			String dst = save_path->get_text();
 			if (dst=="") {
 				error_dialog->set_text("Save path is empty!");
-				error_dialog->popup_centered(Size2(200,100));
+				error_dialog->popup_centered_minsize();
+				return;
 			}
 
 			dst = dst.plus_file(meshes[i].get_file().basename()+".msh");
 
-			Error err = plugin->import(dst,imd);
+			plugin->import(dst,imd);
 		}
 
 		hide();
-
 	}
-
 
 	void _notification(int p_what) {
 
@@ -253,26 +250,23 @@ public:
 
 	static void _bind_methods() {
 
-
 		ObjectTypeDB::bind_method("_choose_files",&EditorMeshImportDialog::_choose_files);
 		ObjectTypeDB::bind_method("_choose_save_dir",&EditorMeshImportDialog::_choose_save_dir);
 		ObjectTypeDB::bind_method("_import",&EditorMeshImportDialog::_import);
 		ObjectTypeDB::bind_method("_browse",&EditorMeshImportDialog::_browse);
 		ObjectTypeDB::bind_method("_browse_target",&EditorMeshImportDialog::_browse_target);
-	//	ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
 	}
 
 	EditorMeshImportDialog(EditorMeshImportPlugin *p_plugin) {
 
 		plugin=p_plugin;
 
-
 		set_title("Single Mesh Import");
+		set_hide_on_ok(false);
 
 		VBoxContainer *vbc = memnew( VBoxContainer );
 		add_child(vbc);
 		set_child_rect(vbc);
-
 
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		vbc->add_margin_child("Source Mesh(es):",hbc);
@@ -300,28 +294,23 @@ public:
 
 		save_choose->connect("pressed", this,"_browse_target");
 
-		file_select = memnew(EditorFileDialog);
+		file_select = memnew( EditorFileDialog );
 		file_select->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-		add_child(file_select);
 		file_select->set_mode(EditorFileDialog::MODE_OPEN_FILES);
-		file_select->connect("files_selected", this,"_choose_files");
 		file_select->add_filter("*.obj ; Wavefront OBJ");
-		save_select = memnew(	EditorDirDialog );
-		add_child(save_select);
+		add_child(file_select);
+		file_select->connect("files_selected", this,"_choose_files");
 
-	//	save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
+		save_select = memnew( EditorDirDialog );
+		add_child(save_select);
 		save_select->connect("dir_selected", this,"_choose_save_dir");
 
 		get_ok()->connect("pressed", this,"_import");
 		get_ok()->set_text("Import");
 
-
-		error_dialog = memnew ( ConfirmationDialog );
+		error_dialog = memnew( AcceptDialog );
 		add_child(error_dialog);
-		error_dialog->get_ok()->set_text("Accept");
-	//	error_dialog->get_cancel()->hide();
 
-		set_hide_on_ok(false);
 		options = memnew( _EditorMeshImportOptions );
 
 		option_editor = memnew( PropertyEditor );

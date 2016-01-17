@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,6 +54,10 @@ public:
 
 protected:
 
+	enum {
+		NO_ORDER_BASE=1<<18
+	};
+
 	struct VariantContainer {
 		int order;
 		bool persist;
@@ -64,12 +68,14 @@ protected:
 		VariantContainer(const Variant& p_variant, int p_order, bool p_persist=false) { variant=p_variant; order=p_order; hide_from_editor=false; persist=p_persist; overrided=false; }
 	};
 
+	bool registering_order;
 	int last_order;
 	Map<StringName,VariantContainer> props;
 	String resource_path;
 	Map<StringName,PropertyInfo> custom_prop_info;
 	bool disable_platform_override;
 	bool using_datapack;
+	List<String> input_presets;
 
 	
 	bool _set(const StringName& p_name, const Variant& p_value);
@@ -124,12 +130,16 @@ public:
 
 	Vector<String> get_optimizer_presets() const;
 
+	List<String> get_input_presets() const { return input_presets; }
+
 	void set_disable_platform_override(bool p_disable);
 	Object* get_singleton_object(const String& p_name) const;
 
 	void register_global_defaults();
 
 	bool is_using_datapack() const;
+
+	void set_registering_order(bool p_registering);
 
 	Globals();	
 	~Globals();

@@ -33,7 +33,7 @@ void AudioServerJavascript::sample_set_description(RID p_sample, const String& p
 
 
 }
-String AudioServerJavascript::sample_get_description(RID p_sample, const String& p_description) const{
+String AudioServerJavascript::sample_get_description(RID p_sample) const{
 
 	return String();
 }

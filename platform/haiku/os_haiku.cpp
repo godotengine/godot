@@ -137,9 +137,10 @@ void OS_Haiku::finalize() {
 	spatial_sound_2d_server->finish();
 	memdelete(spatial_sound_2d_server);
 
+	memdelete(sample_manager);
+	
 	audio_server->finish();
 	memdelete(audio_server);
-	memdelete(sample_manager);
 
 	visual_server->finish();
 	memdelete(visual_server);

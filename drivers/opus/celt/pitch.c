@@ -31,16 +31,16 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "pitch.h"
-#include "os_support.h"
-#include "opus_modes.h"
-#include "stack_alloc.h"
-#include "mathops.h"
-#include "celt_lpc.h"
+#include "opus/celt/pitch.h"
+#include "opus/celt/os_support.h"
+#include "opus/celt/opus_modes.h"
+#include "opus/celt/stack_alloc.h"
+#include "opus/celt/mathops.h"
+#include "opus/celt/celt_lpc.h"
 
 static void find_best_pitch(opus_val32 *xcorr, opus_val16 *y, int len,
                             int max_pitch, int *best_pitch

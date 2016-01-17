@@ -25,18 +25,18 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
 /***********************************************************
 * Pitch analyser function
 ********************************************************** */
-#include "SigProc_FIX.h"
-#include "pitch_est_defines.h"
-#include "stack_alloc.h"
-#include "debug.h"
-#include "pitch.h"
+#include "opus/silk/SigProc_FIX.h"
+#include "opus/silk/pitch_est_defines.h"
+#include "opus/celt/stack_alloc.h"
+#include "opus/silk/debug.h"
+#include "opus/celt/pitch.h"
 
 #define SCRATCH_SIZE    22
 #define SF_LENGTH_4KHZ  ( PE_SUBFR_LENGTH_MS * 4 )

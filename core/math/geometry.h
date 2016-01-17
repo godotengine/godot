@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -886,7 +886,38 @@ public:
 	}
 
 
+	static double vec2_cross(const Point2 &O, const Point2 &A, const Point2 &B)
+	{
+		return (double)(A.x - O.x) * (B.y - O.y) - (double)(A.y - O.y) * (B.x - O.x);
+	}
 
+	// Returns a list of points on the convex hull in counter-clockwise order.
+	// Note: the last point in the returned list is the same as the first one.
+	static Vector<Point2> convex_hull_2d(Vector<Point2> P)
+	{
+		int n = P.size(), k = 0;
+		Vector<Point2> H;
+		H.resize(2*n);
+
+		// Sort points lexicographically
+		P.sort();
+
+
+		// Build lower hull
+		for (int i = 0; i < n; ++i) {
+			while (k >= 2 && vec2_cross(H[k-2], H[k-1], P[i]) <= 0) k--;
+			H[k++] = P[i];
+		}
+
+		// Build upper hull
+		for (int i = n-2, t = k+1; i >= 0; i--) {
+			while (k >= t && vec2_cross(H[k-2], H[k-1], P[i]) <= 0) k--;
+			H[k++] = P[i];
+		}
+
+		H.resize(k);
+		return H;
+	}
 
 	static MeshData build_convex_mesh(const DVector<Plane> &p_planes);
 	static DVector<Plane> build_sphere_planes(float p_radius, int p_lats, int p_lons, Vector3::Axis p_axis=Vector3::AXIS_Z);

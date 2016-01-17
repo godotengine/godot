@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,10 +42,10 @@ class MultiMeshEditor : public Control {
 
 	OBJ_TYPE(MultiMeshEditor, Control );
 
-        friend class MultiMeshEditorPlugin;
+friend class MultiMeshEditorPlugin;
 
 	AcceptDialog *err_dialog;
-        MenuButton * options;
+	MenuButton * options;
 	MultiMeshInstance *_last_pp_node;
 	bool browsing_source;
 
@@ -59,8 +59,8 @@ class MultiMeshEditor : public Control {
 
 	ConfirmationDialog *populate_dialog;
 	OptionButton *populate_axis;
-	HScrollBar *populate_rotate_random;
-	HScrollBar *populate_tilt_random;
+	HSlider *populate_rotate_random;
+	HSlider *populate_tilt_random;
 	SpinBox *populate_scale_random;
 	SpinBox *populate_scale;
 	SpinBox *populate_amount;

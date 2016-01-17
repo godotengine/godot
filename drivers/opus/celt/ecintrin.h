@@ -26,10 +26,10 @@
 */
 
 /*Some common macros for potential platform-specific optimization.*/
-#include "opus_types.h"
+#include "opus/opus_types.h"
 #include <math.h>
 #include <limits.h>
-#include "arch.h"
+#include "opus/celt/arch.h"
 #if !defined(_ecintrin_H)
 # define _ecintrin_H (1)
 

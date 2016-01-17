@@ -11,11 +11,10 @@ if (env["tools"]!="no"):
 	SConscript('collada/SCsub');
 	SConscript('docdump/SCsub');
 	SConscript('freetype/SCsub');
+	SConscript('pe_bliss/SCsub');
 	SConscript('doc/SCsub')
 	SConscript('pck/SCsub')
 
 	lib = env.Library("tool",env.tool_sources)
 
 	env.Prepend(LIBS=[lib])
-
-

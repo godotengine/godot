@@ -25,12 +25,12 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "main_FIX.h"
-#include "tuning_parameters.h"
+#include "opus/silk/fixed/main_FIX.h"
+#include "opus/silk/tuning_parameters.h"
 
 /* Head room for correlations */
 #define LTP_CORRS_HEAD_ROOM                             2

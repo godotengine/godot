@@ -6,9 +6,13 @@
 #include "theora/theoradec.h"
 #include "vorbis/codec.h"
 #include "os/file_access.h"
-
+#include "ring_buffer.h"
 #include "io/resource_loader.h"
 #include "scene/resources/video_stream.h"
+#include "os/thread.h"
+#include "os/semaphore.h"
+
+//#define THEORA_USE_THREAD_STREAMING
 
 class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
@@ -31,6 +35,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	int queue_page(ogg_page *page);
 	void video_write(void);
 	float get_time() const;
+
 
 	ogg_sync_state   oy;
 	ogg_page         og;
@@ -64,8 +69,27 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 	AudioMixCallback mix_callback;
 	void* mix_udata;
+	bool paused;
 
-    int audio_track;
+#ifdef THEORA_USE_THREAD_STREAMING
+
+	enum {
+		RB_SIZE_KB=1024
+	};
+
+	RingBuffer<uint8_t> ring_buffer;
+	Vector<uint8_t> read_buffer;
+	bool thread_eof;
+	Semaphore *thread_sem;
+	Thread *thread;
+	volatile bool thread_exit;
+
+	static void _streaming_thread(void *ud);
+
+#endif
+
+
+	int audio_track;
 
 protected:
 
@@ -115,20 +139,20 @@ class VideoStreamTheora : public VideoStream {
 	OBJ_TYPE(VideoStreamTheora,VideoStream);
 
 	String file;
-    int audio_track;
+	int audio_track;
 
 
 public:
 
 	Ref<VideoStreamPlayback> instance_playback() {
 		Ref<VideoStreamPlaybackTheora> pb = memnew( VideoStreamPlaybackTheora );
-        pb->set_audio_track(audio_track);
+		pb->set_audio_track(audio_track);
 		pb->set_file(file);
 		return pb;
 	}
 
 	void set_file(const String& p_file) { file=p_file; }
-    void set_audio_track(int p_track) { audio_track=p_track; }
+	void set_audio_track(int p_track) { audio_track=p_track; }
 
     VideoStreamTheora() { audio_track=0; }
 

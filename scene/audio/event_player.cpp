@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -312,16 +312,14 @@ void EventPlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_pos"),&EventPlayer::get_pos);
 	ObjectTypeDB::bind_method(_MD("seek_pos","time"),&EventPlayer::seek_pos);
 
+	ObjectTypeDB::bind_method(_MD("get_length"),&EventPlayer::get_length);
+
 	ObjectTypeDB::bind_method(_MD("set_autoplay","enabled"),&EventPlayer::set_autoplay);
 	ObjectTypeDB::bind_method(_MD("has_autoplay"),&EventPlayer::has_autoplay);
 
 	ObjectTypeDB::bind_method(_MD("set_channel_volume","idx","channel_volume"),&EventPlayer::set_channel_volume);
-	ObjectTypeDB::bind_method(_MD("get_channel_volume""idx"),&EventPlayer::get_channel_volume);
-
-	ObjectTypeDB::bind_method(_MD("get_length"),&EventPlayer::get_length);
-
-
-	ObjectTypeDB::bind_method(_MD("get_channel_last_note_time"),&EventPlayer::get_channel_last_note_time);
+	ObjectTypeDB::bind_method(_MD("get_channel_volume","idx"),&EventPlayer::get_channel_volume);
+	ObjectTypeDB::bind_method(_MD("get_channel_last_note_time","idx"),&EventPlayer::get_channel_last_note_time);
 
 	ObjectTypeDB::bind_method(_MD("_set_play","play"),&EventPlayer::_set_play);
 	ObjectTypeDB::bind_method(_MD("_get_play"),&EventPlayer::_get_play);

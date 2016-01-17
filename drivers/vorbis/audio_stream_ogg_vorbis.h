@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,7 +85,7 @@ public:
 	virtual void stop();
 	virtual bool is_playing() const;
 
-	virtual void set_loop_restart_time(float p_time) { loop_restart_time=0; }
+	virtual void set_loop_restart_time(float p_time) { loop_restart_time=p_time; }
 
 	virtual void set_paused(bool p_paused);
 	virtual bool is_paused(bool p_paused) const;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -111,12 +111,21 @@ private:
 	bool orthogonal;
 	float gizmo_scale;
 
+	struct _RayResult {
+
+		Spatial* item;
+		float depth;
+		int handle;
+		_FORCE_INLINE_ bool operator<(const _RayResult& p_rr) const { return depth<p_rr.depth; }
+	};
+
 	void _update_name();
 	void _compute_edit(const Point2& p_point);
 	void _clear_selected();
 	void _select_clicked(bool p_append,bool p_single);
 	void _select(Spatial *p_node, bool p_append,bool p_single);
 	ObjectID _select_ray(const Point2& p_pos, bool p_append,bool &r_includes_current,int *r_gizmo_handle=NULL,bool p_alt_select=false);
+	void _find_items_at_pos(const Point2& p_pos,bool &r_includes_current,Vector<_RayResult> &results,bool p_alt_select=false);
 	Vector3 _get_ray_pos(const Vector2& p_pos) const;
 	Vector3 _get_ray(const Vector2& p_pos);
 	Point2 _point_to_screen(const Vector3& p_point);
@@ -128,7 +137,6 @@ private:
 	Vector3 _get_screen_to_space(const Vector3& p_vector3);
 
 	void _select_region();
-	void _update_selection();
 	bool _gizmo_select(const Vector2& p_screenpos,bool p_hilite_only=false);
 
 	float get_znear() const;
@@ -136,8 +144,11 @@ private:
 	float get_fov() const;
 
 	ObjectID clicked;
+	Vector<_RayResult> selection_results;
 	bool clicked_includes_current;
 	bool clicked_wants_append;
+
+	PopupMenu *selection_menu;
 
 	enum NavigationScheme {
 		NAVIGATION_GODOT,
@@ -225,6 +236,9 @@ private:
 	void _toggle_camera_preview(bool);
 	void _init_gizmo_instance(int p_idx);
 	void _finish_gizmo_instances();
+	void _selection_result_pressed(int);
+	void _selection_menu_hide();
+	void _list_select(InputEventMouseButton b);
 
 
 protected:
@@ -273,7 +287,9 @@ public:
 		TOOL_MODE_SELECT,
 		TOOL_MODE_MOVE,
 		TOOL_MODE_ROTATE,
-		TOOL_MODE_SCALE
+		TOOL_MODE_SCALE,
+		TOOL_MODE_LIST_SELECT,
+		TOOL_MAX
 
 	};
 
@@ -355,6 +371,7 @@ private:
 		MENU_TOOL_MOVE,
 		MENU_TOOL_ROTATE,
 		MENU_TOOL_SCALE,
+		MENU_TOOL_LIST_SELECT,
 		MENU_TRANSFORM_USE_SNAP,
 		MENU_TRANSFORM_CONFIGURE_SNAP,
 		MENU_TRANSFORM_LOCAL_COORDS,
@@ -378,7 +395,7 @@ private:
 	};
 
 
-	Button *tool_button[4];
+	Button *tool_button[TOOL_MAX];
 	Button *instance_button;
 
 

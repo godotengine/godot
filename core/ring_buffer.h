@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -155,6 +155,12 @@ public:
 	inline int size() {
 		return data.size();
 	};
+
+	inline void clear() {
+		read_pos = 0;
+		write_pos = 0;
+
+	}
 	
 	void resize(int p_power) {
 		int old_size = size();

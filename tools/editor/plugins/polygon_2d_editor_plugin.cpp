@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,6 +54,8 @@ void Polygon2DEditor::_notification(int p_what) {
 			b_snap_enable->set_icon( get_icon("Snap", "EditorIcons"));
 			uv_icon_zoom->set_texture( get_icon("Zoom", "EditorIcons"));
 
+			get_tree()->connect("node_removed", this, "_node_removed");
+
 		} break;
 		case NOTIFICATION_FIXED_PROCESS: {
 
@@ -65,8 +67,10 @@ void Polygon2DEditor::_notification(int p_what) {
 void Polygon2DEditor::_node_removed(Node *p_node) {
 
 	if(p_node==node) {
-		node=NULL;
+		edit(NULL);
 		hide();
+		
+		canvas_item_editor->get_viewport_control()->update();
 	}
 
 }
@@ -751,21 +755,17 @@ void Polygon2DEditor::edit(Node *p_collision_polygon) {
 		canvas_item_editor=CanvasItemEditor::get_singleton();
 	}
 
-
 	if (p_collision_polygon) {
 
 		node=p_collision_polygon->cast_to<Polygon2D>();
 		if (!canvas_item_editor->get_viewport_control()->is_connected("draw",this,"_canvas_draw"))
 			canvas_item_editor->get_viewport_control()->connect("draw",this,"_canvas_draw");
-		node->connect("exit_tree",this,"_node_removed",varray(),CONNECT_ONESHOT);
+		
 		wip.clear();
 		wip_active=false;
 		edited_point=-1;
 
 	} else {
-
-		if (node)
-			node->disconnect("exit_tree",this,"_node_removed");
 
 		node=NULL;
 

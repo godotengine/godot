@@ -28,11 +28,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SILK_STRUCTS_H
 #define SILK_STRUCTS_H
 
-#include "typedef.h"
-#include "SigProc_FIX.h"
-#include "define.h"
-#include "entenc.h"
-#include "entdec.h"
+#include "opus/silk/typedef.h"
+#include "opus/silk/SigProc_FIX.h"
+#include "opus/silk/define.h"
+#include "opus/celt/entenc.h"
+#include "opus/celt/entdec.h"
 
 #ifdef __cplusplus
 extern "C"

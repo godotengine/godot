@@ -1,0 +1,63 @@
+Import('env')
+
+
+webp_sources = [
+	"webp/mux/muxedit.c",
+	"webp/mux/muxread.c",
+	"webp/mux/muxinternal.c",
+	"webp/mux/demux.c",
+	"webp/enc/tree.c",
+	"webp/enc/analysis.c",
+	"webp/enc/backward_references.c",
+	"webp/enc/alpha.c",
+	"webp/enc/picture.c",
+	"webp/enc/frame.c",
+	"webp/enc/webpenc.c",
+	"webp/enc/cost.c",
+	"webp/enc/filter.c",
+	"webp/enc/vp8l.c",
+	"webp/enc/quant.c",
+	"webp/enc/histogram.c",
+	"webp/enc/syntax.c",
+	"webp/enc/config.c",
+	"webp/enc/layer.c",
+	"webp/enc/iterator.c",
+	"webp/dsp/dec_sse2.c",
+	"webp/dsp/upsampling_sse2.c",
+	"webp/dsp/dec_neon.c",
+	"webp/dsp/enc.c",
+	"webp/dsp/enc_sse2.c",
+	"webp/dsp/upsampling.c",
+	"webp/dsp/lossless.c",
+	"webp/dsp/cpu.c",
+	"webp/dsp/dec.c",
+	"webp/dsp/yuv.c",
+	"webp/utils/bit_reader.c",
+	"webp/utils/filters.c",
+	"webp/utils/bit_writer.c",
+	"webp/utils/thread.c",
+	"webp/utils/quant_levels.c",
+	"webp/utils/color_cache.c",
+	"webp/utils/rescaler.c",
+	"webp/utils/utils.c",
+	"webp/utils/huffman.c",
+	"webp/utils/huffman_encode.c",
+	"webp/dec/tree.c",
+	"webp/dec/alpha.c",
+	"webp/dec/frame.c",
+	"webp/dec/vp8l.c",
+	"webp/dec/vp8.c",
+	"webp/dec/quant.c",
+	"webp/dec/webp.c",
+	"webp/dec/buffer.c",
+	"webp/dec/io.c",
+	"webp/dec/layer.c",
+	"webp/dec/idec.c",
+	"webp/image_loader_webp.cpp"
+]
+
+env.drivers_sources+=webp_sources
+
+#env.add_source_files(env.drivers_sources, webp_sources)
+
+Export('env')

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,6 +41,8 @@
 #include "io/md5.h"
 #include "io_plugins/editor_texture_import_plugin.h"
 #include "tools/editor/plugins/script_editor_plugin.h"
+#include "io/zip_io.h"
+
 
 String EditorImportPlugin::validate_source_path(const String& p_path) {
 
@@ -399,6 +401,40 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 
 }
 
+String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
+	String user_file = EditorSettings::get_singleton()->get_settings_path()
+		+"/templates/"+template_file_name;
+	String system_file=OS::get_singleton()->get_installed_templates_path();
+	bool has_system_path=(system_file!="");
+	system_file+=template_file_name;
+
+	// Prefer user file
+	if (FileAccess::exists(user_file)) {
+		return user_file;
+	}
+
+	// Now check system file
+	if (has_system_path) {
+		if (FileAccess::exists(system_file)) {
+			return system_file;
+		}
+	}
+
+	// Not found
+	if (err) {
+		*err+="No export template found at \""+user_file+"\"";
+		if (has_system_path)
+			*err+="\n or \""+system_file+"\".";
+		else
+			*err+=".";
+	}
+	return "";
+}
+
+bool EditorExportPlatform::exists_export_template(String template_file_name, String *err) const {
+	return find_export_template(template_file_name,err)!="";
+}
+
 ///////////////////////////////////////
 
 
@@ -419,6 +455,9 @@ bool EditorExportPlatformPC::_set(const StringName& p_name, const Variant& p_val
 	} else if (n=="resources/pack_mode") {
 
 		export_mode=ExportMode(int(p_value));
+	} else if (n=="resources/bundle_dependencies_(for_optical_disc)") {
+
+		bundle=p_value;
 	} else if (n=="binary/64_bits") {
 
 		use64=p_value;
@@ -442,6 +481,9 @@ bool EditorExportPlatformPC::_get(const StringName& p_name,Variant &r_ret) const
 	} else if (n=="resources/pack_mode") {
 
 		r_ret=export_mode;
+	} else if (n=="resources/bundle_dependencies_(for_optical_disc)") {
+
+		r_ret=bundle;
 	} else if (n=="binary/64_bits") {
 
 		r_ret=use64;
@@ -456,7 +498,8 @@ void EditorExportPlatformPC::_get_property_list( List<PropertyInfo> *p_list) con
 
 	p_list->push_back( PropertyInfo( Variant::STRING, "custom_binary/debug", PROPERTY_HINT_GLOBAL_FILE,binary_extension));
 	p_list->push_back( PropertyInfo( Variant::STRING, "custom_binary/release", PROPERTY_HINT_GLOBAL_FILE,binary_extension));
-	p_list->push_back( PropertyInfo( Variant::INT, "resources/pack_mode", PROPERTY_HINT_ENUM,"Single Exec.,Exec+Pack (.pck),Copy,Bundles (Optical)"));
+	p_list->push_back( PropertyInfo( Variant::INT, "resources/pack_mode", PROPERTY_HINT_ENUM,"Pack into executable,Pack into binary file (.pck),Pack into archive file (.zip)"));
+	p_list->push_back( PropertyInfo( Variant::BOOL, "resources/bundle_dependencies_(for_optical_disc)"));
 	p_list->push_back( PropertyInfo( Variant::BOOL, "binary/64_bits"));
 }
 
@@ -1028,7 +1071,7 @@ Error EditorExportPlatform::save_pack_file(void *p_userdata,const String& p_path
 		MD5Final(&ctx);
 		pd->f->store_buffer(ctx.digest,16);
 	}
-	pd->ep->step("Storing File: "+p_path,2+p_file*100/p_total);
+	pd->ep->step("Storing File: "+p_path,2+p_file*100/p_total,false);
 	pd->count++;
 	pd->ftmp->store_buffer(p_data.ptr(),p_data.size());
 	if (pd->alignment > 1) {
@@ -1041,6 +1084,58 @@ Error EditorExportPlatform::save_pack_file(void *p_userdata,const String& p_path
 	};
 	return OK;
 
+}
+
+Error EditorExportPlatform::save_zip_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total) {
+
+
+	String path=p_path.replace_first("res://","");
+
+	ZipData *zd = (ZipData*)p_userdata;
+
+	zipFile zip=(zipFile)zd->zip;
+
+	zipOpenNewFileInZip(zip,
+		path.utf8().get_data(),
+		NULL,
+		NULL,
+		0,
+		NULL,
+		0,
+		NULL,
+		Z_DEFLATED,
+		Z_DEFAULT_COMPRESSION);
+
+	zipWriteInFileInZip(zip,p_data.ptr(),p_data.size());
+	zipCloseFileInZip(zip);
+
+	zd->ep->step("Storing File: "+p_path,2+p_file*100/p_total,false);
+	zd->count++;
+	return OK;
+
+}
+
+Error EditorExportPlatform::save_zip(const String& p_path, bool p_make_bundles) {
+
+	EditorProgress ep("savezip","Packing",102);
+
+	//FileAccess *tmp = FileAccess::open(tmppath,FileAccess::WRITE);
+
+	FileAccess *src_f;
+	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	zipFile	zip=zipOpen2(p_path.utf8().get_data(),APPEND_STATUS_CREATE,NULL,&io);
+
+	ZipData zd;
+	zd.count=0;
+	zd.ep=&ep;
+	zd.zip=zip;
+
+
+	Error err = export_project_files(save_zip_file,&zd,p_make_bundles);
+
+	zipClose(zip,NULL);
+
+	return err;
 }
 
 Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles, int p_alignment) {
@@ -1131,19 +1226,32 @@ Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug,
 
 	ep.step("Setting Up..",0);
 
-	String exe_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
-	if (use64) {
-		if (p_debug)
-			exe_path=custom_debug_binary!=""?custom_debug_binary:exe_path+debug_binary64;
-		else
-			exe_path=custom_release_binary!=""?custom_release_binary:exe_path+release_binary64;
-	} else {
+	String exe_path="";
 
-		if (p_debug)
-			exe_path=custom_debug_binary!=""?custom_debug_binary:exe_path+debug_binary32;
-		else
-			exe_path=custom_release_binary!=""?custom_release_binary:exe_path+release_binary32;
+	if (p_debug)
+		exe_path=custom_debug_binary;
+	else
+		exe_path=custom_release_binary;
 
+	if (exe_path=="") {
+		String fname;
+		if (use64) {
+			if (p_debug)
+				fname=debug_binary64;
+			else
+				fname=release_binary64;
+		} else {
+			if (p_debug)
+				fname=debug_binary32;
+			else
+				fname=release_binary32;
+		}
+		String err="";
+		exe_path=find_export_template(fname,&err);
+		if (exe_path=="") {
+			EditorNode::add_io_error(err);
+			return ERR_FILE_CANT_READ;
+		}
 	}
 
 	FileAccess *src_exe=FileAccess::open(exe_path,FileAccess::READ);
@@ -1173,26 +1281,32 @@ Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug,
 		}
 	}
 
+	String dstfile = p_path.replace_first("res://","").replace("\\","/");
 	if (export_mode!=EXPORT_EXE) {
 
-		String dstfile=p_path.replace_first("res://","").replace("\\","/");
+		String dstfile_extension=export_mode==EXPORT_ZIP?".zip":".pck";
 		if (dstfile.find("/")!=-1)
-			dstfile=dstfile.get_base_dir()+"/data.pck";
+			dstfile=dstfile.get_base_dir()+"/data"+dstfile_extension;
 		else
-			dstfile="data.pck";
+			dstfile="data"+dstfile_extension;
+		if (export_mode==EXPORT_PACK) {
 
-		memdelete(dst);
-		dst=FileAccess::open(dstfile,FileAccess::WRITE);
-		if (!dst) {
+			memdelete(dst);
 
-			EditorNode::add_io_error("Can't write data pack to:\n "+p_path);
-			return ERR_FILE_CANT_WRITE;
+			dst=FileAccess::open(dstfile,FileAccess::WRITE);
+			if (!dst) {
+
+				EditorNode::add_io_error("Can't write data pack to:\n "+p_path);
+				return ERR_FILE_CANT_WRITE;
+			}
 		}
 	}
 
+
+
 	memdelete(src_exe);
 
-	Error err = save_pack(dst,export_mode==EXPORT_BUNDLES);
+	Error err = export_mode==EXPORT_ZIP?save_zip(dstfile,bundle):save_pack(dst,bundle);
 	memdelete(dst);
 	return err;
 }
@@ -1207,32 +1321,42 @@ bool EditorExportPlatformPC::can_export(String *r_error) const {
 	String err;
 	bool valid=true;
 
-	String exe_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
-
-	if (!FileAccess::exists(exe_path+debug_binary32) || !FileAccess::exists(exe_path+release_binary32)) {
-		valid=false;
-		err="No 32 bits export templates found.\nDownload and install export templates.\n";
-	}
-	if (!FileAccess::exists(exe_path+debug_binary64) || !FileAccess::exists(exe_path+release_binary64)) {
+	if (use64 && (!exists_export_template(debug_binary64)) || !exists_export_template(release_binary64)) {
 		valid=false;
 		err="No 64 bits export templates found.\nDownload and install export templates.\n";
 	}
 
-
-	if (custom_debug_binary!="" && !FileAccess::exists(custom_debug_binary)) {
+	if (!use64 && (!exists_export_template(debug_binary32) || !exists_export_template(release_binary32))) {
 		valid=false;
-		err+="Custom debug binary not found.\n";
+		err="No 32 bits export templates found.\nDownload and install export templates.\n";
 	}
 
-	if (custom_release_binary!="" && !FileAccess::exists(custom_release_binary)) {
-		valid=false;
-		err+="Custom release binary not found.\n";
+	if(custom_debug_binary=="" && custom_release_binary=="") {
+		if (r_error) *r_error=err;
+		return valid;
 	}
+
+	bool dvalid = true;
+	bool rvalid = true;
+
+	if(!FileAccess::exists(custom_debug_binary)) {
+		dvalid = false;
+		err = "Custom debug binary not found.\n";
+	}
+
+	if(!FileAccess::exists(custom_release_binary)) {
+		rvalid = false;
+		err = "Custom release binary not found.\n";
+	}
+
+	if (dvalid || rvalid)
+		valid = true;
+	else
+		valid = false;
 
 	if (r_error)
 		*r_error=err;
 	return valid;
-
 }
 
 
@@ -1550,6 +1674,17 @@ void EditorImportExport::image_export_get_images_in_group(const StringName& p_gr
 	}
 }
 
+void EditorImportExport::set_convert_text_scenes(bool p_convert) {
+
+	convert_text_scenes=p_convert;
+}
+
+bool EditorImportExport::get_convert_text_scenes() const{
+
+	return convert_text_scenes;
+}
+
+
 void EditorImportExport::load_config() {
 
 	Ref<ConfigFile> cf = memnew( ConfigFile );
@@ -1591,6 +1726,12 @@ void EditorImportExport::load_config() {
 			image_formats.insert(f[i].strip_edges());
 		}
 	}
+
+	if (cf->has_section("convert_scenes")) {
+
+		convert_text_scenes = cf->get_value("convert_scenes","convert_text_scenes");
+	}
+
 
 	if (cf->has_section("export_filter_files")) {
 
@@ -1706,6 +1847,26 @@ void EditorImportExport::load_config() {
 		}
 	}
 
+	if (cf->has_section("convert_samples")) {
+
+		if (cf->has_section_key("convert_samples","action")) {
+			String action = cf->get_value("convert_samples","action");
+			if (action=="none") {
+				sample_action=SAMPLE_ACTION_NONE;
+			} else if (action=="compress_ram") {
+				sample_action=SAMPLE_ACTION_COMPRESS_RAM;
+			}
+		}
+
+		if (cf->has_section_key("convert_samples","max_hz"))
+			sample_action_max_hz=cf->get_value("convert_samples","max_hz");
+
+		if (cf->has_section_key("convert_samples","trim"))
+			sample_action_trim=cf->get_value("convert_samples","trim");
+	}
+
+
+
 }
 
 
@@ -1814,7 +1975,17 @@ void EditorImportExport::save_config() {
 		case SCRIPT_ACTION_ENCRYPT: cf->set_value("script","action","encrypt"); break;
 	}
 
+	cf->set_value("convert_scenes","convert_text_scenes",convert_text_scenes);
+
 	cf->set_value("script","encrypt_key",script_key);
+
+	switch(sample_action) {
+		case SAMPLE_ACTION_NONE: cf->set_value("convert_samples","action","none"); break;
+		case SAMPLE_ACTION_COMPRESS_RAM: cf->set_value("convert_samples","action","compress_ram"); break;
+	}
+
+	cf->set_value("convert_samples","max_hz",sample_action_max_hz);
+	cf->set_value("convert_samples","trim",sample_action_trim);
 
 	cf->save("res://export.cfg");
 
@@ -1838,6 +2009,35 @@ void EditorImportExport::script_set_encryption_key(const String& p_key){
 String EditorImportExport::script_get_encryption_key() const{
 
 	return script_key;
+}
+
+
+void EditorImportExport::sample_set_action(SampleAction p_action) {
+
+	sample_action=p_action;
+}
+
+EditorImportExport::SampleAction EditorImportExport::sample_get_action() const{
+
+	return sample_action;
+}
+
+void EditorImportExport::sample_set_max_hz(int p_hz){
+
+	sample_action_max_hz=p_hz;
+}
+int EditorImportExport::sample_get_max_hz() const{
+
+	return sample_action_max_hz;
+}
+
+void EditorImportExport::sample_set_trim(bool p_trim){
+
+	sample_action_trim=p_trim;
+}
+bool EditorImportExport::sample_get_trim() const{
+
+	return sample_action_trim;
 }
 
 
@@ -1868,7 +2068,14 @@ EditorImportExport::EditorImportExport() {
 	image_formats.insert("png");
 	image_shrink=1;
 
+
 	script_action=SCRIPT_ACTION_COMPILE;
+
+	sample_action=SAMPLE_ACTION_NONE;
+	sample_action_max_hz=44100;
+	sample_action_trim=false;
+
+	convert_text_scenes=true;
 
 }
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -360,7 +360,7 @@ void AudioServerSW::sample_set_description(RID p_sample, const String& p_descrip
 	AUDIO_LOCK
 	sample_manager->sample_set_description(p_sample,p_description);
 }
-String AudioServerSW::sample_get_description(RID p_sample, const String& p_description) const {
+String AudioServerSW::sample_get_description(RID p_sample) const {
 
 	AUDIO_LOCK
 	return sample_manager->sample_get_description(p_sample);
@@ -659,7 +659,7 @@ bool AudioServerSW::voice_is_active(RID p_voice) const {
 
 RID AudioServerSW::audio_stream_create(AudioStream *p_stream) {
 
-	AUDIO_LOCK		
+	AUDIO_LOCK
 	Stream *s = memnew(Stream);
 	s->audio_stream=p_stream;
 	s->event_stream=NULL;
@@ -693,11 +693,11 @@ void AudioServerSW::stream_set_active(RID p_stream, bool p_active) {
 
 	Stream *s = stream_owner.get(p_stream);
 	ERR_FAIL_COND(!s);
+	_THREAD_SAFE_METHOD_
 
 	if (s->active==p_active)
 		return;
 	AUDIO_LOCK;
-	_THREAD_SAFE_METHOD_
 	s->active=p_active;
 	if (p_active)
 		s->E=active_audio_streams.push_back(s);
@@ -705,6 +705,8 @@ void AudioServerSW::stream_set_active(RID p_stream, bool p_active) {
 		active_audio_streams.erase(s->E);
 		s->E=NULL;
 	}
+
+
 }
 
 bool AudioServerSW::stream_is_active(RID p_stream) const {
@@ -763,7 +765,6 @@ void AudioServerSW::free(RID p_id) {
 
 void AudioServerSW::_thread_func(void *self) {
 
-
 	AudioServerSW *as=(AudioServerSW *)self;
 
 	while (!as->exit_update_thread) {
@@ -806,6 +807,7 @@ void AudioServerSW::init() {
 #ifndef NO_THREADS
 	exit_update_thread=false;
 	thread = Thread::create(_thread_func,this);
+	thread->set_name("AudioServerSW");
 #endif
 
 }

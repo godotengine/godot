@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,6 +55,8 @@
 #ifdef APPIRATER_ENABLED
 #import "Appirater.h"
 #endif
+
+Error _shell_open(String);
 
 Error _shell_open(String p_uri) {
 	NSString* url = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -96,7 +96,7 @@ void DirAccessJAndroid::list_dir_end(){
 		return;
 
 	JNIEnv *env = ThreadAndroid::get_env();
-	env->CallObjectMethod(io,_dir_close,id);
+	env->CallVoidMethod(io,_dir_close,id);
 	id=0;
 
 
@@ -143,7 +143,7 @@ Error DirAccessJAndroid::change_dir(String p_dir){
 	if (res<=0)
 		return ERR_INVALID_PARAMETER;
 
-	env->CallObjectMethod(io,_dir_close,res);
+	env->CallVoidMethod(io,_dir_close,res);
 
 	current_dir=new_dir;
 

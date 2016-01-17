@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -143,6 +143,9 @@ enum {
 
 	JOY_ANALOG_2_X = JOY_AXIS_4,
 	JOY_ANALOG_2_Y = JOY_AXIS_5,
+
+	JOY_ANALOG_L2 = JOY_AXIS_6,
+	JOY_ANALOG_R2 = JOY_AXIS_7,
 };
 
 

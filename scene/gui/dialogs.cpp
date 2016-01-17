@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -308,7 +308,9 @@ void AcceptDialog::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("confirmed") );
 	ADD_SIGNAL( MethodInfo("custom_action",PropertyInfo(Variant::STRING,"action")) );
 
-	
+	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"dialog/text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL),_SCS("set_text"),_SCS("get_text"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "dialog/hide_on_ok"),_SCS("set_hide_on_ok"),_SCS("get_hide_on_ok") );
+
 }
 
 

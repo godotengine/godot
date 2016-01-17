@@ -28,7 +28,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SILK_DEBUG_H
 #define SILK_DEBUG_H
 
-#include "typedef.h"
+#include "opus/silk/typedef.h"
 #include <stdio.h>      /* file writing */
 #include <string.h>     /* strcpy, strcmp */
 

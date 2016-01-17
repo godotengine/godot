@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -482,8 +482,8 @@ void UndoRedo::_bind_methods() {
 		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"add_undo_method",&UndoRedo::_add_undo_method,mi,defargs);
 	}
 
-	ObjectTypeDB::bind_method(_MD("add_do_property","object", "property", "value:var"),&UndoRedo::add_do_property);
-	ObjectTypeDB::bind_method(_MD("add_undo_property","object", "property", "value:var"),&UndoRedo::add_undo_property);
+	ObjectTypeDB::bind_method(_MD("add_do_property","object", "property", "value:Variant"),&UndoRedo::add_do_property);
+	ObjectTypeDB::bind_method(_MD("add_undo_property","object", "property", "value:Variant"),&UndoRedo::add_undo_property);
 	ObjectTypeDB::bind_method(_MD("add_do_reference","object"),&UndoRedo::add_do_reference);
 	ObjectTypeDB::bind_method(_MD("add_undo_reference","object"),&UndoRedo::add_undo_reference);
 	ObjectTypeDB::bind_method(_MD("clear_history"),&UndoRedo::clear_history);

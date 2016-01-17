@@ -34,9 +34,9 @@
 #ifndef MATHOPS_H
 #define MATHOPS_H
 
-#include "arch.h"
-#include "entcode.h"
-#include "os_support.h"
+#include "opus/celt/arch.h"
+#include "opus/celt/entcode.h"
+#include "opus/celt/os_support.h"
 
 /* Multiplies two 16-bit fractional values. Bit-exactness of this macro is important */
 #define FRAC_MUL16(a,b) ((16384+((opus_int32)(opus_int16)(a)*(opus_int16)(b)))>>15)
@@ -141,7 +141,7 @@ static OPUS_INLINE float celt_exp2(float x)
 
 #ifdef OPUS_FIXED_POINT
 
-#include "os_support.h"
+#include "opus/celt/os_support.h"
 
 #ifndef OVERRIDE_CELT_ILOG2
 /** Integer log in base2. Undefined for zero and negative numbers */

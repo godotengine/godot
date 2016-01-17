@@ -28,13 +28,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SILK_MAIN_FIX_H
 #define SILK_MAIN_FIX_H
 
-#include "SigProc_FIX.h"
-#include "structs_FIX.h"
-#include "control.h"
-#include "silk_main.h"
-#include "PLC.h"
-#include "debug.h"
-#include "entenc.h"
+#include "opus/silk/SigProc_FIX.h"
+#include "opus/silk/fixed/structs_FIX.h"
+#include "opus/silk/control.h"
+#include "opus/silk/silk_main.h"
+#include "opus/silk/PLC.h"
+#include "opus/silk/debug.h"
+#include "opus/celt/entenc.h"
 
 #ifndef FORCE_CPP_BUILD
 #ifdef __cplusplus

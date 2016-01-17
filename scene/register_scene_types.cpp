@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -221,7 +221,7 @@
 
 static ResourceFormatLoaderImage *resource_loader_image=NULL;
 static ResourceFormatLoaderWAV *resource_loader_wav=NULL;
-static ResourceFormatLoaderBitMap *resource_loader_bitmap=NULL;
+
 
 #ifdef TOOLS_ENABLED
 
@@ -231,6 +231,7 @@ static ResourceFormatLoaderTheme *resource_loader_theme=NULL;
 static ResourceFormatLoaderShader *resource_loader_shader=NULL;
 
 static ResourceFormatSaverText *resource_saver_text=NULL;
+static ResourceFormatLoaderText *resource_loader_text=NULL;
 
 //static SceneStringNames *string_names;
 
@@ -248,8 +249,6 @@ void register_scene_types() {
 	resource_loader_wav = memnew( ResourceFormatLoaderWAV );
 	ResourceLoader::add_resource_format_loader( resource_loader_wav );
 
-	resource_loader_bitmap = memnew( ResourceFormatLoaderBitMap );
-	ResourceLoader::add_resource_format_loader( resource_loader_bitmap );
 
 #ifdef TOOLS_ENABLED
 
@@ -619,6 +618,9 @@ void register_scene_types() {
 	resource_saver_text = memnew( ResourceFormatSaverText );
 	ResourceSaver::add_resource_format_saver(resource_saver_text);
 
+	resource_loader_text = memnew( ResourceFormatLoaderText );
+	ResourceLoader::add_resource_format_loader(resource_loader_text);
+
 }
 
 void unregister_scene_types() {
@@ -627,7 +629,6 @@ void unregister_scene_types() {
 	
 	memdelete( resource_loader_image );
 	memdelete( resource_loader_wav );
-	memdelete( resource_loader_bitmap );
 #ifdef TOOLS_ENABLED
 
 
@@ -639,6 +640,9 @@ void unregister_scene_types() {
 
 	if (resource_saver_text) {
 		memdelete(resource_saver_text);
+	}
+	if (resource_loader_text) {
+		memdelete(resource_loader_text);
 	}
 	SceneStringNames::free();
 }

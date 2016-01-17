@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -127,7 +127,7 @@ friend class Tree;
 
 
 	
-	TreeItem(Tree *p_tree);		
+	TreeItem(Tree *p_tree);
 		
 
 	void _changed_notify(int p_cell);
@@ -228,6 +228,7 @@ public:
 	void set_tooltip(int p_column, const String& p_tooltip);
 	String get_tooltip(int p_column) const;
 
+
 	void clear_children();
 
 	void move_to_top();
@@ -299,6 +300,11 @@ friend class TreeItem;
 	PopupMenu *popup_menu;
 
 	Vector<ColumnInfo> columns;
+
+	Timer *range_click_timer;
+	TreeItem *range_item_last;
+	bool range_up_last;
+	void _range_click_timeout();
 
 	int compute_item_height(TreeItem *p_item) const;
 	int get_item_height(TreeItem *p_item) const;
@@ -410,6 +416,8 @@ friend class TreeItem;
 	bool drag_touching_deaccel;
 	bool click_handled;
 
+	bool hide_folding;
+
 protected:
 	static void _bind_methods();
 	
@@ -466,6 +474,11 @@ public:
 	bool can_cursor_exit_tree() const;
 
 	VScrollBar *get_vscroll_bar() { return v_scroll; }
+
+	void set_hide_folding(bool p_hide);
+	bool is_folding_hidden() const;
+
+
 
 	Tree();
 	~Tree();	

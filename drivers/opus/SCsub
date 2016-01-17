@@ -124,7 +124,7 @@ opus_sources_lib = [
 ]
 
 if("opus_fixed_point" in env and env.opus_fixed_point=="yes"):
-	env.Append(CPPPATH=["#drivers/opus/silk/fixed"], CFLAGS=["-DOPUS_FIXED_POINT"])
+	env.Append(CFLAGS=["-DOPUS_FIXED_POINT"])
 	opus_sources_silk = [
 		"opus/silk/fixed/apply_sine_window_FIX.c",
 		"opus/silk/fixed/k2a_FIX.c",
@@ -153,7 +153,6 @@ if("opus_fixed_point" in env and env.opus_fixed_point=="yes"):
 		"opus/silk/fixed/regularize_correlations_FIX.c"
 	]
 else:
-	env.Append(CPPPATH=["#drivers/opus/silk/float"])
 	opus_sources_silk = [
 		"opus/silk/float/apply_sine_window_FLP.c",
 		"opus/silk/float/inner_product_FLP.c",
@@ -192,9 +191,5 @@ else:
 opus_sources_lib+=opus_sources_silk
 env.drivers_sources+=opus_sources_lib
 env.drivers_sources+=opus_sources
-
-env.Append(CPPPATH=["#drivers/opus"])
-env.Append(CPPPATH=["#drivers/opus/celt","#drivers/opus/silk","#drivers/opus/silk/float"])
-env.Append(CFLAGS=["-DOPUS_HAVE_CONFIG_H"])
 
 Export('env')

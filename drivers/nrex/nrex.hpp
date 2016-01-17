@@ -1,4 +1,5 @@
 //  NREX: Node RegEx
+//  Version 0.1
 //
 //  Copyright (c) 2015, Zher Huei Lee
 //  All rights reserved.
@@ -59,7 +60,32 @@ class nrex
         int _capturing;
         nrex_node* _root;
     public:
+
+        /*!
+         * \brief Initialises an empty regex container
+         */
         nrex();
+
+        /*!
+         * \brief Initialises and compiles the regex pattern
+         *
+         * This calls nrex::compile() with the same arguments. To check whether
+         * the compilation was successfull, use nrex::valid().
+         *
+         * If the NREX_THROW_ERROR was defined it would automatically throw a
+         * runtime error nrex_compile_error if it encounters a problem when
+         * parsing the pattern.
+         *
+         * \param pattern   The regex pattern
+         * \param captures  The maximum number of capture groups to allow. Any
+         *                  extra would be converted to non-capturing groups.
+         *                  If negative, no limit would be imposed. Defaults
+         *                  to 9.
+         *
+         * \see nrex::compile()
+         */
+        nrex(const nrex_char* pattern, int captures = 9);
+
         ~nrex();
 
         /*!
@@ -78,8 +104,9 @@ class nrex
          *
          * This is used to provide the array size of the captures needed for
          * nrex::match() to work. The size is actually the number of capture
-         * groups + one for the matching of the entire pattern. The result is
-         * always capped at 100.
+         * groups + one for the matching of the entire pattern. This can be
+         * capped using the extra argument given in nrex::compile()
+         * (default 10).
          *
          * \return The number of captures
          */
@@ -95,10 +122,14 @@ class nrex
          * runtime error nrex_compile_error if it encounters a problem when
          * parsing the pattern.
          *
-         * \param The regex pattern
+         * \param pattern   The regex pattern
+         * \param captures  The maximum number of capture groups to allow. Any
+         *                  extra would be converted to non-capturing groups.
+         *                  If negative, no limit would be imposed. Defaults
+         *                  to 9.
          * \return True if the pattern was succesfully compiled
          */
-        bool compile(const nrex_char* pattern);
+        bool compile(const nrex_char* pattern, int captures = 9);
 
         /*!
          * \brief Uses the pattern to search through the provided string

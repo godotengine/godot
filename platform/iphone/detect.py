@@ -59,11 +59,11 @@ def configure(env):
 	import string
 	if (env["bits"]=="64"):
 		#env['CCFLAGS'] = string.split('-arch arm64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wshorten-64-to-32 -Wno-newline-eof -Wno-c++11-extensions -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -g -Wno-sign-conversion -miphoneos-version-min=5.1.1 -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -Wno-invalid-offsetof -ffast-math -m64 -DDEBUG -D_DEBUG -MMD -MT dependencies -isysroot $IPHONESDK')
-		env['CCFLAGS'] = string.split('-fno-objc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -Wno-trigraphs -fpascal-strings -Wmissing-prototypes -Wreturn-type -Wparentheses -Wswitch -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-shorten-64-to-32 -gdwarf-2 -fvisibility=hidden -Wno-sign-conversion -MMD -MT dependencies -miphoneos-version-min=5.1.1 -isysroot $IPHONESDK')		
+		env['CCFLAGS'] = string.split('-fno-objc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -Wno-trigraphs -fpascal-strings -Wmissing-prototypes -Wreturn-type -Wparentheses -Wswitch -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-shorten-64-to-32 -fvisibility=hidden -Wno-sign-conversion -MMD -MT dependencies -miphoneos-version-min=5.1.1 -isysroot $IPHONESDK')
 		env.Append(CPPFLAGS=['-DNEED_LONG_INT'])
 		env.Append(CPPFLAGS=['-DLIBYUV_DISABLE_NEON'])
 	else:
-		env['CCFLAGS'] = string.split('-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -Wno-trigraphs -fpascal-strings -Wmissing-prototypes -Wreturn-type -Wparentheses -Wswitch -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-shorten-64-to-32 -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk -gdwarf-2 -fvisibility=hidden -Wno-sign-conversion -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=5.1.1 -MMD -MT dependencies -isysroot $IPHONESDK')
+		env['CCFLAGS'] = string.split('-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -Wno-trigraphs -fpascal-strings -Wmissing-prototypes -Wreturn-type -Wparentheses -Wswitch -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-shorten-64-to-32 -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk -fvisibility=hidden -Wno-sign-conversion -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=5.1.1 -MMD -MT dependencies -isysroot $IPHONESDK')
 
 	if (env["bits"]=="64"):
 		env.Append(LINKFLAGS=['-arch', 'arm64', '-Wl,-dead_strip', '-miphoneos-version-min=5.1.1',
@@ -116,12 +116,12 @@ def configure(env):
 
 	if (env["target"]=="release"):
 
-		env.Append(CCFLAGS=['-O3', '-ffast-math', '-DNS_BLOCK_ASSERTIONS=1','-Wall'])
-		env.Append(LINKFLAGS=['-O3', '-ffast-math'])
+		env.Append(CCFLAGS=['-O3', '-DNS_BLOCK_ASSERTIONS=1','-Wall', '-gdwarf-2']) # removed -ffast-math
+		env.Append(LINKFLAGS=['-O3']) # 
 
 	elif env["target"] == "release_debug":
-		env.Append(CCFLAGS=['-Os', '-ffast-math', '-DNS_BLOCK_ASSERTIONS=1','-Wall','-DDEBUG_ENABLED'])
-		env.Append(LINKFLAGS=['-Os', '-ffast-math'])
+		env.Append(CCFLAGS=['-Os', '-DNS_BLOCK_ASSERTIONS=1','-Wall','-DDEBUG_ENABLED'])
+		env.Append(LINKFLAGS=['-Os'])
 		env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ENABLED'])
 
 	elif (env["target"]=="debug"):
@@ -131,7 +131,7 @@ def configure(env):
 
 	elif (env["target"]=="profile"):
 
-		env.Append(CCFLAGS=['-g','-pg', '-Os', '-ffast-math'])
+		env.Append(CCFLAGS=['-g','-pg', '-Os'])
 		env.Append(LINKFLAGS=['-pg'])
 
 

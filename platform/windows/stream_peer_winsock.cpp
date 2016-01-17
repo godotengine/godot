@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -342,6 +342,14 @@ void StreamPeerWinsock::set_nodelay(bool p_enabled) {
     setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int));
 }
 
+int StreamPeerWinsock::get_available_bytes() const {
+
+	unsigned long len;
+	int ret = ioctlsocket(sockfd,FIONREAD,&len);
+	ERR_FAIL_COND_V(ret==-1,0)
+	return len;
+
+}
 
 IP_Address StreamPeerWinsock::get_connected_host() const {
 

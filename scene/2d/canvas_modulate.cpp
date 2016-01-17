@@ -5,10 +5,19 @@ void CanvasModulate::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_CANVAS) {
 
-		VS::get_singleton()->canvas_set_modulate(get_canvas(),color);
+		if (is_visible())
+			VS::get_singleton()->canvas_set_modulate(get_canvas(),color);
 	} else if (p_what==NOTIFICATION_EXIT_CANVAS) {
 
-		VS::get_singleton()->canvas_set_modulate(get_canvas(),Color(1,1,1,1));
+		if (is_visible())
+			VS::get_singleton()->canvas_set_modulate(get_canvas(),Color(1,1,1,1));
+	} else if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+
+		if (is_visible()) {
+			VS::get_singleton()->canvas_set_modulate(get_canvas(),color);
+		} else {
+			VS::get_singleton()->canvas_set_modulate(get_canvas(),Color(1,1,1,1));
+		}
 	}
 }
 

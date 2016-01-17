@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -179,25 +179,25 @@ void ShaderGraph::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("default_get_value","shader_type","id","param_id"), &ShaderGraph::default_get_value);
 
 	ObjectTypeDB::bind_method(_MD("scalar_const_node_set_value","shader_type","id","value"),&ShaderGraph::scalar_const_node_set_value);
-	ObjectTypeDB::bind_method(_MD("scalar_const_node_get_value","shader_type","id"),&ShaderGraph::scalar_const_node_set_value);
+	ObjectTypeDB::bind_method(_MD("scalar_const_node_get_value","shader_type","id"),&ShaderGraph::scalar_const_node_get_value);
 
 	ObjectTypeDB::bind_method(_MD("vec_const_node_set_value","shader_type","id","value"),&ShaderGraph::vec_const_node_set_value);
-	ObjectTypeDB::bind_method(_MD("vec_const_node_get_value","shader_type","id"),&ShaderGraph::vec_const_node_set_value);
+	ObjectTypeDB::bind_method(_MD("vec_const_node_get_value","shader_type","id"),&ShaderGraph::vec_const_node_get_value);
 
 	ObjectTypeDB::bind_method(_MD("rgb_const_node_set_value","shader_type","id","value"),&ShaderGraph::rgb_const_node_set_value);
-	ObjectTypeDB::bind_method(_MD("rgb_const_node_get_value","shader_type","id"),&ShaderGraph::rgb_const_node_set_value);
+	ObjectTypeDB::bind_method(_MD("rgb_const_node_get_value","shader_type","id"),&ShaderGraph::rgb_const_node_get_value);
 
 	ObjectTypeDB::bind_method(_MD("xform_const_node_set_value","shader_type","id","value"),&ShaderGraph::xform_const_node_set_value);
-	ObjectTypeDB::bind_method(_MD("xform_const_node_get_value","shader_type","id"),&ShaderGraph::xform_const_node_set_value);
+	ObjectTypeDB::bind_method(_MD("xform_const_node_get_value","shader_type","id"),&ShaderGraph::xform_const_node_get_value);
 
 
 //	void get_node_list(ShaderType p_which,List<int> *p_node_list) const;
 
 	ObjectTypeDB::bind_method(_MD("texture_node_set_filter_size","shader_type","id","filter_size"),&ShaderGraph::texture_node_set_filter_size);
-	ObjectTypeDB::bind_method(_MD("texture_node_get_filter_size","shader_type","id"),&ShaderGraph::texture_node_set_filter_size);
+	ObjectTypeDB::bind_method(_MD("texture_node_get_filter_size","shader_type","id"),&ShaderGraph::texture_node_get_filter_size);
 
 	ObjectTypeDB::bind_method(_MD("texture_node_set_filter_strength","shader_type","id","filter_strength"),&ShaderGraph::texture_node_set_filter_strength);
-	ObjectTypeDB::bind_method(_MD("texture_node_get_filter_strength","shader_type","id"),&ShaderGraph::texture_node_set_filter_strength);
+	ObjectTypeDB::bind_method(_MD("texture_node_get_filter_strength","shader_type","id"),&ShaderGraph::texture_node_get_filter_strength);
 
 	ObjectTypeDB::bind_method(_MD("scalar_op_node_set_op","shader_type","id","op"),&ShaderGraph::scalar_op_node_set_op);
 	ObjectTypeDB::bind_method(_MD("scalar_op_node_get_op","shader_type","id"),&ShaderGraph::scalar_op_node_get_op);
@@ -260,7 +260,7 @@ void ShaderGraph::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("clear","shader_type"),&ShaderGraph::clear);
 
 	ObjectTypeDB::bind_method(_MD("node_set_state","shader_type","id","state"),&ShaderGraph::node_set_state);
-	ObjectTypeDB::bind_method(_MD("node_get_state:var","shader_type","id"),&ShaderGraph::node_get_state);
+	ObjectTypeDB::bind_method(_MD("node_get_state:Variant","shader_type","id"),&ShaderGraph::node_get_state);
 
 	ObjectTypeDB::bind_method(_MD("_set_data"),&ShaderGraph::_set_data);
 	ObjectTypeDB::bind_method(_MD("_get_data"),&ShaderGraph::_get_data);
@@ -1435,6 +1435,7 @@ const ShaderGraph::InOutParamInfo ShaderGraph::inout_param_info[]={
 	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"ShadeParam","SHADE_PARAM","",SLOT_TYPE_SCALAR,SLOT_IN},
 	//light out
 	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"Light","LIGHT","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"Shadow", "SHADOW", "",SLOT_TYPE_VEC, SLOT_OUT },
 	//canvas item vertex in
 	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"Vertex","vec3(SRC_VERTEX,0)","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"UV","SRC_UV","",SLOT_TYPE_VEC,SLOT_IN},
@@ -1532,7 +1533,7 @@ const ShaderGraph::NodeSlotInfo ShaderGraph::node_slot_info[]= {
 		{NODE_CURVE_MAP,{SLOT_TYPE_SCALAR,SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, // vec3 interpolation  (with optional curve)
 		{NODE_SCALAR_INPUT,{SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, // scalar uniform (assignable in material)
 		{NODE_VEC_INPUT,{SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // vec3 uniform (assignable in material)
-		{NODE_RGB_INPUT,{SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // color uniform (assignable in material)
+		{NODE_RGB_INPUT,{SLOT_MAX},{SLOT_TYPE_VEC,SLOT_TYPE_SCALAR,SLOT_MAX}}, // color uniform (assignable in material)
 		{NODE_XFORM_INPUT,{SLOT_MAX},{SLOT_TYPE_XFORM,SLOT_MAX}}, // mat4 uniform (assignable in material)
 		{NODE_TEXTURE_INPUT,{SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_TYPE_SCALAR,SLOT_MAX}}, // texture input (assignable in material)
 		{NODE_CUBEMAP_INPUT,{SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_TYPE_SCALAR,SLOT_MAX}}, // cubemap input (assignable in material)
@@ -2083,7 +2084,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 #define DEF_MATRIX(slot) \
 	if (p_inputs[slot].ends_with("def")){\
 		Transform xf = p_node->defaults[slot]; \
-		code+=String(typestr[3])+" "+p_inputs[slot]+"=mat4(\n";\
+		code+=String(typestr[2])+" "+p_inputs[slot]+"=mat4(\n";\
 		code+="\tvec4(vec3("+rtos(xf.basis.get_axis(0).x)+","+rtos(xf.basis.get_axis(0).y)+","+rtos(xf.basis.get_axis(0).z)+"),0),\n";\
 		code+="\tvec4(vec3("+rtos(xf.basis.get_axis(1).x)+","+rtos(xf.basis.get_axis(1).y)+","+rtos(xf.basis.get_axis(1).z)+"),0),\n";\
 		code+="\tvec4(vec3("+rtos(xf.basis.get_axis(2).x)+","+rtos(xf.basis.get_axis(2).y)+","+rtos(xf.basis.get_axis(2).z)+"),0),\n";\
@@ -2393,15 +2394,29 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			DEF_VEC(1);
 			DEF_VEC(2);
 			DEF_VEC(3);
-			code += OUTNAME(p_node->id,0)+"=xform("+p_inputs[0]+","+p_inputs[1]+","+p_inputs[2]+","+","+p_inputs[3]+");\n";
+			code += OUTNAME(p_node->id, 0) + "=mat4(" +
+				"vec4(" + p_inputs[0] + ".x," + p_inputs[0] + ".y," + p_inputs[0] + ".z, 0.0),"
+				"vec4(" + p_inputs[1] + ".x," + p_inputs[1] + ".y," + p_inputs[1] + ".z, 0.0),"
+				"vec4(" + p_inputs[2] + ".x," + p_inputs[2] + ".y," + p_inputs[2] + ".z, 0.0),"
+				"vec4(" + p_inputs[3] + ".x," + p_inputs[3] + ".y," + p_inputs[3] + ".z, 1.0));\n";
 
 		}break;
 		case NODE_XFORM_TO_VEC: {
 			DEF_MATRIX(0);
-			code += OUTNAME(p_node->id,0)+"="+p_inputs[0]+".x;\n";
-			code += OUTNAME(p_node->id,1)+"="+p_inputs[0]+".y;\n";
-			code += OUTNAME(p_node->id,2)+"="+p_inputs[0]+".z;\n";
-			code += OUTNAME(p_node->id,3)+"="+p_inputs[0]+".o;\n";
+			code += OUTNAME(p_node->id, 0) + ";\n";
+			code += OUTNAME(p_node->id, 1) + ";\n";
+			code += OUTNAME(p_node->id, 2) + ";\n";
+			code += OUTNAME(p_node->id, 3) + ";\n";
+			code += "{\n";
+			code += "\tvec4 xform_row_01=" + p_inputs[0] + ".x;\n";
+			code += "\tvec4 xform_row_02=" + p_inputs[0] + ".y;\n";
+			code += "\tvec4 xform_row_03=" + p_inputs[0] + ".z;\n";
+			code += "\tvec4 xform_row_04=" + p_inputs[0] + ".w;\n";
+			code += "\t" + OUTVAR(p_node->id, 0) + "=vec3(xform_row_01.x, xform_row_01.y, xform_row_01.z);\n";
+			code += "\t" + OUTVAR(p_node->id, 1) + "=vec3(xform_row_02.x, xform_row_02.y, xform_row_02.z);\n";
+			code += "\t" + OUTVAR(p_node->id, 2) + "=vec3(xform_row_03.x, xform_row_03.y, xform_row_03.z);\n";
+			code += "\t" + OUTVAR(p_node->id, 3) + "=vec3(xform_row_04.x, xform_row_04.y, xform_row_04.z);\n";
+			code += "}\n";
 		}break;
 		case NODE_SCALAR_INTERP: {
 			DEF_SCALAR(0);
@@ -2561,8 +2576,9 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			String name = p_node->param1;
 			Color dv= p_node->param2;
 
-			code +="uniform color "+name+"=vec4("+rtos(dv.r)+","+rtos(dv.g)+","+rtos(dv.g)+","+rtos(dv.a)+");\n";
+			code +="uniform color "+name+"=vec4("+rtos(dv.r)+","+rtos(dv.g)+","+rtos(dv.b)+","+rtos(dv.a)+");\n";
 			code += OUTNAME(p_node->id,0)+"="+name+".rgb;\n";
+			code += OUTNAME(p_node->id,1)+"="+name+".a;\n";
 
 		}break;
 		case NODE_XFORM_INPUT: {

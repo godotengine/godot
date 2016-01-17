@@ -26,8 +26,8 @@ protected:
 
 public:
 
-	void set_path(const String& p_name);
-	String get_path() const;
+	void set_instance_path(const String& p_name);
+	String get_instance_path() const;
 
 	void replace_by_instance(const Ref<PackedScene>& p_custom_scene=Ref<PackedScene>());
 

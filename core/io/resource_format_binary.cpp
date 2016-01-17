@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -725,7 +725,8 @@ Error ResourceInteractiveLoaderBinary::poll(){
 		}
 	} else {
 
-		path=res_path;
+		if (!ResourceCache::has(res_path))
+			path=res_path;
 	}
 
 	uint64_t offset = internal_resources[s].offset;
@@ -853,6 +854,8 @@ String ResourceInteractiveLoaderBinary::get_unicode_string() {
 	if (len>str_buf.size()) {
 		str_buf.resize(len);
 	}
+	if (len==0)
+		return String();
 	f->get_buffer((uint8_t*)&str_buf[0],len);
 	String s;
 	s.parse_utf8(&str_buf[0]);
@@ -905,7 +908,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 
 		error=ERR_FILE_UNRECOGNIZED;
 		ERR_EXPLAIN("Unrecognized binary resource file: "+local_path);
-		ERR_FAIL_V();
+		ERR_FAIL();
 	}
 
 	bool big_endian = f->get_32();

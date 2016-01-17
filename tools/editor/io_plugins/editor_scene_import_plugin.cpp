@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1814,8 +1814,8 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 			for(int i=0;i<portal_points.size()-1;i++) {
 
-				float a = portal_points[i].atan2();
-				float b = portal_points[i+1].atan2();
+				float a = portal_points[i].angle();
+				float b = portal_points[i+1].angle();
 
 				if (a>b) {
 					SWAP( portal_points[i], portal_points[i+1] );

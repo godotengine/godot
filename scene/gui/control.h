@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -107,7 +107,10 @@ private:
 
 		float margin[4];
 		AnchorType anchor[4];
-		FocusMode focus_mode;		
+		FocusMode focus_mode;
+
+		float rotation;
+		Vector2 scale;
 
 		bool pending_resize;
 
@@ -121,7 +124,6 @@ private:
 		bool stop_mouse;
 
 		Control *parent;
-		Control *window;
 		bool modal;
 		bool modal_exclusive;
 		Ref<Theme> theme;
@@ -131,10 +133,9 @@ private:
 
 		List<Control*>::Element *MI; //modal item
 		List<Control*>::Element *SI;
+		List<Control*>::Element *RI;
 
 		CanvasItem *parent_canvas_item;
-
-		Viewport *viewport;
 
 		ObjectID modal_prev_focus_owner;
 
@@ -146,76 +147,40 @@ private:
 		HashMap<StringName, Color, StringNameHasher > color_override;
 		HashMap<StringName, int, StringNameHasher > constant_override;
 	} data;
-	
-	struct Window {
-		// info used when this is a window 	
-
-		bool key_event_accepted;
-		Control *mouse_focus;
-		int mouse_focus_button;
-		Control *key_focus;
-		Control *mouse_over;
-		Control *tooltip;
-		Panel *tooltip_popup;
-		Label *tooltip_label;
-		Point2 tooltip_pos;
-		Point2 last_mouse_pos;
-		Point2 drag_accum;
-		bool drag_attempted;
-		Variant drag_data;
-		Control *drag_preview;
-		Timer *tooltip_timer;
-		List<Control*> modal_stack;
-		unsigned int cancelled_input_ID;
-		Matrix32 focus_inv_xform;
-		bool subwindow_order_dirty;
-		List<Control*> subwindows;
-		bool disable_input;
-
-		Window();
-	};
-
-	Window *window;
-	
+		
 	// used internally
-	Control* _find_next_visible_control_at_pos(Node* p_node,const Point2& p_global,Matrix32& r_xform) const;
 	Control* _find_control_at_pos(CanvasItem* p_node,const Point2& p_pos,const Matrix32& p_xform,Matrix32& r_inv_xform);
 
 
-	void _window_sort_subwindows();
-	void _window_accept_event();
-	void _window_remove_focus();
-	void _window_cancel_input_ID(int p_input);
-	void _window_sort_modal_stack();
 	void _window_find_focus_neighbour(const Vector2& p_dir, Node *p_at, const Point2* p_points ,float p_min,float &r_closest_dist,Control **r_closest);
 	Control *_get_focus_neighbour(Margin p_margin,int p_count=0);
-	void _window_call_input(Control *p_control,const InputEvent& p_input);
+
 
 	float _get_parent_range(int p_idx) const;
 	float _get_range(int p_idx) const;
 	float _s2a(float p_val, AnchorType p_anchor,float p_range) const;
 	float _a2s(float p_val, AnchorType p_anchor,float p_range) const;
-	void _modal_stack_remove();
 	void _propagate_theme_changed(Control *p_owner);
 
 	void _change_notify_margins();
-	void _window_cancel_tooltip();
-	void _window_show_tooltip();
 	void _update_minimum_size();
 
 	void _update_scroll();
-	void _gui_input(const InputEvent& p_event); //used by scene main loop
-	void _input_text(const String& p_text);
 	void _resize(const Size2& p_size);
 
 	void _size_changed();
 	String _get_tooltip() const;
 
+	void _set_rotation_deg(float p_rot);
+	float _get_rotation_deg() const;
+
+friend class Viewport;
+	void _modal_stack_remove();
+	void _modal_set_prev_focus_owner(ObjectID p_prev);
 
 protected:	
-	bool window_has_modal_stack() const;
 
-	virtual void _window_input_event(InputEvent p_event);
+	//virtual void _window_input_event(InputEvent p_event);
 
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
@@ -265,8 +230,8 @@ public:
 	void set_custom_minimum_size(const Size2& p_custom);
 	Size2 get_custom_minimum_size() const;
 
-	bool is_window() const;
-	Control *get_window() const;
+	bool is_window_modal_on_top() const;
+
 	Control *get_parent_control() const;
 
 
@@ -299,6 +264,13 @@ public:
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;
 	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the visual server
+
+	void set_rotation(float p_rotation);
+	float get_rotation() const;
+
+	void set_scale(const Vector2& p_scale);
+	Vector2 get_scale() const;
+
 	
 	void set_area_as_parent_rect(int p_margin=0);
 	
@@ -382,7 +354,7 @@ public:
 
 	void warp_mouse(const Point2& p_to_pos);
 
-    virtual bool is_text_field() const;
+	virtual bool is_text_field() const;
 
 	Control();	
 	~Control();

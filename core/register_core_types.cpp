@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -101,10 +101,12 @@ void register_core_types() {
 	resource_loader_binary = memnew( ResourceFormatLoaderBinary );
 	ResourceLoader::add_resource_format_loader(resource_loader_binary);
 
+#ifdef XML_ENABLED
 	resource_saver_xml = memnew( ResourceFormatSaverXML );
 	ResourceSaver::add_resource_format_saver(resource_saver_xml);
 	resource_loader_xml = memnew( ResourceFormatLoaderXML );
 	ResourceLoader::add_resource_format_loader(resource_loader_xml);
+#endif
 
 	ObjectTypeDB::register_type<Object>();
 

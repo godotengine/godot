@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -131,7 +131,7 @@ void RayCast2D::_notification(int p_what) {
 			if (!get_tree()->is_editor_hint()  && !get_tree()->is_debugging_collisions_hint())
 				break;
 			Matrix32 xf;
-			xf.rotate(cast_to.atan2());
+			xf.rotate(cast_to.angle());
 			xf.translate(Vector2(0,cast_to.length()));
 
 			//Vector2 tip = Vector2(0,s->get_length());

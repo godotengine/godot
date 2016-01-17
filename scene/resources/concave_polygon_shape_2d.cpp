@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 void ConcavePolygonShape2D::set_segments(const DVector<Vector2>& p_segments) {
 
 	Physics2DServer::get_singleton()->shape_set_data(get_rid(),p_segments);
+	emit_changed();
 }
 
 DVector<Vector2> ConcavePolygonShape2D::get_segments() const {

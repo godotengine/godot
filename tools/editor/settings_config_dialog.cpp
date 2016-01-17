@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,7 +71,8 @@ void EditorSettingsDialog::popup_edit_settings() {
 		return;
 
 	property_editor->edit(EditorSettings::get_singleton());
-	property_editor->update_tree();
+	property_editor->get_property_editor()->update_tree();
+
 	popup_centered_ratio(0.7);
 }
 
@@ -250,6 +251,9 @@ void EditorSettingsDialog::_notification(int p_what) {
 
 		rescan_plugins->set_icon(get_icon("Reload","EditorIcons"));
 		_update_plugins();
+	} else if (p_what==NOTIFICATION_POST_POPUP) {
+
+		property_editor->clear_search_box();
 	}
 }
 
@@ -271,10 +275,11 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	add_child(tabs);
 	set_child_rect(tabs);
 
-	property_editor = memnew( PropertyEditor );
-	property_editor->hide_top_label();
-	tabs->add_child(property_editor);
+	property_editor = memnew( SectionedPropertyEditor );
+	//property_editor->hide_top_label();
 	property_editor->set_name("General");
+	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tabs->add_child(property_editor);
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	tabs->add_child(vbc);

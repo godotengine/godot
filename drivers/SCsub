@@ -12,11 +12,13 @@ SConscript('windows/SCsub');
 SConscript('gles2/SCsub');
 SConscript('gl_context/SCsub');
 SConscript('openssl/SCsub');
+SConscript('pnm/SCsub');
 
 if (env["png"]=="yes"):
 	SConscript("png/SCsub");
 if (env["jpg"]=="yes"):
-	SConscript("jpg/SCsub");
+	#SConscript("jpg/SCsub");
+	SConscript("jpegd/SCsub");
 if (env["webp"]=="yes"):
 	SConscript("webp/SCsub");
 SConscript("dds/SCsub");
@@ -31,7 +33,7 @@ SConscript("rtaudio/SCsub");
 SConscript("nedmalloc/SCsub");
 SConscript("nrex/SCsub");
 SConscript("chibi/SCsub");
-if (env["vorbis"]=="yes" or env["speex"]=="yes" or env["theora"]=="yes" or env["opus"]=="yes"):
+if (env["vorbis"]=="yes" or env["speex"]=="yes" or env["theoralib"]=="yes" or env["opus"]=="yes"):
         SConscript("ogg/SCsub");
 if (env["vorbis"]=="yes"):
         SConscript("vorbis/SCsub");
@@ -40,9 +42,7 @@ if (env["opus"]=="yes"):
 if (env["tools"]=="yes"):
 	SConscript("convex_decomp/SCsub");
 
-#if env["theora"]=="yes":
-#	SConscript("theoraplayer/SCsub")
-if (env["theora"]=="yes"):
+if (env["theoralib"]=="yes"):
 	SConscript("theora/SCsub");
 if (env['speex']=='yes'):
 	SConscript("speex/SCsub");
@@ -63,34 +63,42 @@ import string
 if env['vsproj']=="yes":
 	env.AddToVSProject(env.drivers_sources)
 
-for f in env.drivers_sources:
-	fname = ""
-	if type(f) == type(""):
-		fname = env.File(f).path
-	else:
-		fname = env.File(f)[0].path
-	#base = string.join(fname.split("/")[:-1], "/")
-	fname = fname.replace("\\", "/")
-	base = string.join(fname.split("/")[:2], "/")
-	if base != cur_base and len(list) > max_src:
-		lib = env.Library("drivers"+str(num), list)
-		lib_list.append(lib)
-		list = []
-		num = num+1
-	cur_base = base
-	list.append(f)
+if (False): #split drivers, this used to be needed for windows until separate builders for windows were created
 
-if len(list) > 0:
+	for f in env.drivers_sources:
+		fname = ""
+		if type(f) == type(""):
+			fname = env.File(f).path
+		else:
+			fname = env.File(f)[0].path
+		fname = fname.replace("\\", "/")
+		base = string.join(fname.split("/")[:2], "/")
+		if base != cur_base and len(list) > max_src:
+			if num > 0:
+				lib = env.Library("drivers"+str(num), list)
+				lib_list.append(lib)
+				list = []
+			num = num+1
+		cur_base = base
+		list.append(f)
+
 	lib = env.Library("drivers"+str(num), list)
 	lib_list.append(lib)
 
+	if len(lib_list) > 0:
+		import os, sys
+		if os.name=='posix' and sys.platform=='msys':
+			env.Replace(ARFLAGS=['rcsT'])
 
-drivers_base=[]
-env.add_source_files(drivers_base,"*.cpp")
-lib_list.insert(0, env.Library("drivers", drivers_base))
+			lib = env.Library("drivers_collated", lib_list)
+			lib_list = [lib]
 
-env.Prepend(LIBS=lib_list)
+	drivers_base=[]
+	env.add_source_files(drivers_base,"*.cpp")
+	lib_list.insert(0, env.Library("drivers", drivers_base))
 
-#lib = env.Library("drivers",env.drivers_sources)
-#env.Prepend(LIBS=[lib])
-
+	env.Prepend(LIBS=lib_list)
+else:
+	env.add_source_files(env.drivers_sources,"*.cpp")
+	lib = env.Library("drivers",env.drivers_sources)
+	env.Prepend(LIBS=[lib])

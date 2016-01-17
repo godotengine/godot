@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,12 +45,20 @@ void Popup::_notification(int p_what) {
 			emit_signal("popup_hide");
 		}
 	}
+
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+		//small helper to make editing of these easier in editor
+#ifdef TOOLS_ENABLED
+		if (get_tree()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
+			set_as_toplevel(false);
+		}
+#endif
+	}
+
 }
 
 void Popup::_fix_size() {
 	
-	Control *window = get_window();
-	ERR_FAIL_COND(!window);
 
 #if 0
 	Point2 pos = get_pos();
@@ -172,14 +180,12 @@ void Popup::popup_centered_minsize(const Size2& p_minsize) {
 
 void Popup::popup_centered(const Size2& p_size) {
 	
-	Control *window = get_window();
-	ERR_FAIL_COND(!window);
-
+	Point2 window_size = get_viewport_rect().size;
 
 	emit_signal("about_to_show");
 	Rect2 rect;
 	rect.size = p_size==Size2()?get_size():p_size;
-	Point2 window_size = window==this ? get_parent_area_size()  :window->get_size();
+
 	rect.pos = ((window_size-rect.size)/2.0).floor();
 	set_pos( rect.pos );
 	set_size( rect.size );
@@ -199,13 +205,11 @@ void Popup::popup_centered(const Size2& p_size) {
 void Popup::popup_centered_ratio(float p_screen_ratio) {
 	
 	
-	Control *window = get_window();
-	ERR_FAIL_COND(!window);
 	
 	emit_signal("about_to_show");
 
 	Rect2 rect;
-	Point2 window_size = window==this ? get_parent_area_size()  :window->get_size();
+	Point2 window_size = get_viewport_rect().size;
 	rect.size = (window_size * p_screen_ratio).floor();
 	rect.pos = ((window_size-rect.size)/2.0).floor();
 	set_pos( rect.pos );

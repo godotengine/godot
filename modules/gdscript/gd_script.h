@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,6 +74,7 @@ public:
 		OPCODE_ITERATE_BEGIN,
 		OPCODE_ITERATE,
 		OPCODE_ASSERT,
+		OPCODE_BREAKPOINT,
 		OPCODE_LINE,
 		OPCODE_END
 	};
@@ -416,6 +417,8 @@ public:
     
     bool get_property_default_value(const StringName& p_property,Variant& r_value) const;
 
+	bool get_property_default_value(const StringName& p_property,Variant& r_value) const;
+
 	virtual ScriptLanguage *get_language() const;
 
 	GDScript();
@@ -449,6 +452,7 @@ public:
 	virtual bool get(const StringName& p_name, Variant &r_ret) const;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
 	virtual Variant::Type get_property_type(const StringName& p_name,bool *r_is_valid=NULL) const;
+
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName& p_method) const;
@@ -604,6 +608,7 @@ public:
 	virtual Error complete_code(const String& p_code, const String& p_base_path, Object*p_owner,List<String>* r_options,String& r_call_hint);
 	virtual void auto_indent_code(String& p_code,int p_from_line,int p_to_line) const;
 	virtual void add_global_constant(const StringName& p_variable,const Variant& p_value);
+
 
 	/* DEBUGGER FUNCTIONS */
 

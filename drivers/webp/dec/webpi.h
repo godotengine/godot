@@ -1,8 +1,10 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// This code is licensed under the same terms as WebM:
-//  Software License Agreement:  http://www.webmproject.org/license/software/
-//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
+// Use of this source code is governed by a BSD-style license
+// that can be found in the COPYING file in the root of the source
+// tree. An additional intellectual property rights grant can be found
+// in the file PATENTS. All contributing project authors may
+// be found in the AUTHORS file in the root of the source tree.
 // -----------------------------------------------------------------------------
 //
 // Internal header: WebP decoding parameters and custom IO on buffer
@@ -12,7 +14,7 @@
 #ifndef WEBP_DEC_WEBPI_H_
 #define WEBP_DEC_WEBPI_H_
 
-#if defined(__cplusplus) || defined(c_plusplus)
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -24,7 +26,10 @@ extern "C" {
 
 typedef struct WebPDecParams WebPDecParams;
 typedef int (*OutputFunc)(const VP8Io* const io, WebPDecParams* const p);
-typedef int (*OutputRowFunc)(WebPDecParams* const p, int y_pos);
+typedef int (*OutputAlphaFunc)(const VP8Io* const io, WebPDecParams* const p,
+                               int expected_num_out_lines);
+typedef int (*OutputRowFunc)(WebPDecParams* const p, int y_pos,
+                             int max_out_lines);
 
 struct WebPDecParams {
   WebPDecBuffer* output;             // output buffer.
@@ -38,7 +43,7 @@ struct WebPDecParams {
   void* memory;                  // overall scratch memory for the output work.
 
   OutputFunc emit;               // output RGB or YUV samples
-  OutputFunc emit_alpha;         // output alpha channel
+  OutputAlphaFunc emit_alpha;    // output alpha channel
   OutputRowFunc emit_alpha_row;  // output one line of rescaled alpha values
 };
 
@@ -52,6 +57,7 @@ void WebPResetDecParams(WebPDecParams* const params);
 typedef struct {
   const uint8_t* data;         // input buffer
   size_t data_size;            // input buffer size
+  int have_all_data;           // true if all data is known to be available
   size_t offset;               // offset to main data chunk (VP8 or VP8L)
   const uint8_t* alpha_data;   // points to alpha chunk (if present)
   size_t alpha_data_size;      // alpha chunk size
@@ -61,10 +67,10 @@ typedef struct {
 } WebPHeaderStructure;
 
 // Skips over all valid chunks prior to the first VP8/VP8L frame header.
-// Returns VP8_STATUS_OK on success,
-//         VP8_STATUS_BITSTREAM_ERROR if an invalid header/chunk is found, and
-//         VP8_STATUS_NOT_ENOUGH_DATA if case of insufficient data.
-// In 'headers', compressed_size, offset, alpha_data, alpha_size and lossless
+// Returns: VP8_STATUS_OK, VP8_STATUS_BITSTREAM_ERROR (invalid header/chunk),
+// VP8_STATUS_NOT_ENOUGH_DATA (partial input) or VP8_STATUS_UNSUPPORTED_FEATURE
+// in the case of non-decodable features (animation for instance).
+// In 'headers', compressed_size, offset, alpha_data, alpha_size, and lossless
 // fields are updated appropriately upon success.
 VP8StatusCode WebPParseHeaders(WebPHeaderStructure* const headers);
 
@@ -91,9 +97,14 @@ int WebPIoInitFromOptions(const WebPDecoderOptions* const options,
 // dimension / etc.). If *options is not NULL, also verify that the options'
 // parameters are valid and apply them to the width/height dimensions of the
 // output buffer. This takes cropping / scaling / rotation into account.
+// Also incorporates the options->flip flag to flip the buffer parameters if
+// needed.
 VP8StatusCode WebPAllocateDecBuffer(int width, int height,
                                     const WebPDecoderOptions* const options,
                                     WebPDecBuffer* const buffer);
+
+// Flip buffer vertically by negating the various strides.
+VP8StatusCode WebPFlipBuffer(WebPDecBuffer* const buffer);
 
 // Copy 'src' into 'dst' buffer, making sure 'dst' is not marked as owner of the
 // memory (still held by 'src').
@@ -103,11 +114,9 @@ void WebPCopyDecBuffer(const WebPDecBuffer* const src,
 // Copy and transfer ownership from src to dst (beware of parameter order!)
 void WebPGrabDecBuffer(WebPDecBuffer* const src, WebPDecBuffer* const dst);
 
-
-
 //------------------------------------------------------------------------------
 
-#if defined(__cplusplus) || defined(c_plusplus)
+#ifdef __cplusplus
 }    // extern "C"
 #endif
 

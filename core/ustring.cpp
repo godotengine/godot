@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,6 +44,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #endif
+
+#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#define snprintf _snprintf
+#endif
+
 /** STRING **/
 
 const char *CharString::get_data() const {
@@ -892,17 +897,8 @@ String String::num(double p_num,int p_decimals) {
 	}
 	char buf[256];
 
-#if defined(__GNUC__)
-#ifdef MINGW_ENABLED
-	//snprintf is inexplicably broken in mingw
-	//sprintf(buf,fmt,p_num);
-	_snprintf(buf,256,fmt,p_num);
-#else
+#if defined(__GNUC__) || defined(_MSC_VER)
 	snprintf(buf,256,fmt,p_num);
-#endif
-
-#elif defined(_MSC_VER)
-	_snprintf(buf,256,fmt,p_num);
 #else
 	sprintf(buf,fmt,p_num);
 #endif
@@ -1173,10 +1169,7 @@ String String::num_scientific(double p_num) {
 
 	char buf[256];
 
-#if defined(_MSC_VER) || defined(MINGW_ENABLED)
-
-	_snprintf(buf,256,"%lg",p_num);
-#elif defined(__GNUC__)
+#if defined(__GNUC__) || defined(_MSC_VER)
 	snprintf(buf,256,"%lg",p_num);
 #else
 	sprintf(buf,"%.16lg",p_num);
@@ -1643,12 +1636,16 @@ int64_t String::to_int64() const {
 	return integer*sign;
 }
 
-int String::to_int(const char* p_str) {
+int String::to_int(const char* p_str,int p_len) {
 
 
 	int to=0;
-	while(p_str[to]!=0 && p_str[to]!='.')
-		to++;
+	if (p_len>=0)
+		to=p_len;
+	else {
+		while(p_str[to]!=0 && p_str[to]!='.')
+			to++;
+	}
 
 
 	int integer=0;
@@ -3079,6 +3076,52 @@ String String::world_wrap(int p_chars_per_line) const {
 	return ret;
 }
 
+String String::http_escape() const {
+    const CharString temp = utf8();
+    String res;
+    for (int i = 0; i < length(); ++i) {
+        CharType ord = temp[i];
+        if (ord == '.' || ord == '-' || ord == '_' || ord == '~' ||
+           (ord >= 'a' && ord <= 'z') ||
+           (ord >= 'A' && ord <= 'Z') ||
+           (ord >= '0' && ord <= '9')) {
+            res += ord;
+        } else {
+            char h_Val[3];
+#if defined(__GNUC__) || defined(_MSC_VER)
+            snprintf(h_Val, 3, "%.2X", ord);
+#else
+            sprintf(h_Val, "%.2X", ord);
+#endif
+            res += "%";
+            res += h_Val;
+        }
+    }
+    return res;
+}
+
+String String::http_unescape() const {
+    String res;
+    for (int i = 0; i < length(); ++i) {
+        if (ord_at(i) == '%' && i+2 < length()) {
+            CharType ord1 = ord_at(i+1);
+            if ((ord1 >= '0' && ord1 <= '9') || (ord1 >= 'A' && ord1 <= 'Z')) {
+                CharType ord2 = ord_at(i+2);
+                if ((ord2 >= '0' && ord2 <= '9') || (ord2 >= 'A' && ord2 <= 'Z')) {
+                    char bytes[2] = {ord1, ord2};
+                    res += (char)strtol(bytes, NULL, 16);
+                    i+=2;
+                }
+            } else {
+                res += ord_at(i);
+            }
+        } else {
+            res += ord_at(i);
+        }
+    }
+    return String::utf8(res.ascii());
+}
+
 String String::c_unescape() const {
 
 	String escaped=*this;
@@ -3111,6 +3154,21 @@ String String::c_escape() const {
 	escaped=escaped.replace("\'","\\'");
 	escaped=escaped.replace("\"","\\\"");
 	escaped=escaped.replace("\?","\\?");
+
+	return escaped;
+}
+
+String String::json_escape() const {
+
+	String escaped=*this;
+	escaped=escaped.replace("\\","\\\\");
+	escaped=escaped.replace("\b","\\b");
+	escaped=escaped.replace("\f","\\f");
+	escaped=escaped.replace("\n","\\n");
+	escaped=escaped.replace("\r","\\r");
+	escaped=escaped.replace("\t","\\t");
+	escaped=escaped.replace("\v","\\v");
+	escaped=escaped.replace("\"","\\\"");
 
 	return escaped;
 }

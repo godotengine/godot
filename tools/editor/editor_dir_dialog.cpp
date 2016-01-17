@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -205,31 +205,36 @@ void EditorDirDialog::_bind_methods() {
 
 EditorDirDialog::EditorDirDialog() {
 
+	updating=false;
+
 	set_title("Choose a Directory");
+	set_hide_on_ok(false);
+
 	tree = memnew( Tree );
 	add_child(tree);
 	set_child_rect(tree);
-	updating=false;
-	get_ok()->set_text("Choose");
-	set_hide_on_ok(false);
-
-
+	tree->connect("item_activated",this,"_ok");
 
 	makedir = add_button("Create Folder",OS::get_singleton()->get_swap_ok_cancel()?true:false,"makedir");
 	makedir->connect("pressed",this,"_make_dir");
 
 	makedialog = memnew( ConfirmationDialog );
 	makedialog->set_title("Create Folder");
+	add_child(makedialog);
+
 	VBoxContainer *makevb= memnew( VBoxContainer );
 	makedialog->add_child(makevb);
 	makedialog->set_child_rect(makevb);
+
 	makedirname = memnew( LineEdit );
 	makevb->add_margin_child("Name:",makedirname);
-	add_child(makedialog);
 	makedialog->register_text_enter(makedirname);
 	makedialog->connect("confirmed",this,"_make_dir_confirm");
+
 	mkdirerr = memnew( AcceptDialog );
 	mkdirerr->set_text("Could not create folder.");
 	add_child(mkdirerr);
+
+	get_ok()->set_text("Choose");
 
 }

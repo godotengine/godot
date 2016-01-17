@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/check_box.h"
 #include "tools/editor/scene_tree_editor.h"
 #include "scene/gui/line_edit.h"
 /**
@@ -42,12 +43,14 @@ class ReparentDialog : public ConfirmationDialog {
 	OBJ_TYPE( ReparentDialog, ConfirmationDialog );
 	
 	SceneTreeEditor *tree;
-	CheckButton *node_only;
+	CheckBox *keep_transform;
+
 	
 	void update_tree();
 	void _reparent();
 	void _cancel();
-	
+
+
 protected:
 	
 	void _notification(int p_what);

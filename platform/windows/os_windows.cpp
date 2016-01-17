@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,6 +52,7 @@
 #include "os/memory_pool_dynamic_prealloc.h"
 #include "globals.h"
 #include "io/marshalls.h"
+#include "joystick.h"
 
 #include "shlobj.h"
 #include <regstr.h>
@@ -148,7 +149,7 @@ const char * OS_Windows::get_video_driver_name(int p_driver) const {
 
 OS::VideoMode OS_Windows::get_default_video_mode() const {
 
-	return VideoMode(800,600,false);	
+	return VideoMode(1280,720,false);
 }
 
 int OS_Windows::get_audio_driver_count() const {
@@ -682,6 +683,10 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		} break;
 
 		#endif
+		case WM_DEVICECHANGE: {
+
+			joystick->probe_joysticks();
+		} break;
 
 		default: {
 
@@ -705,108 +710,6 @@ LRESULT CALLBACK WndProc(HWND	hWnd,UINT uMsg,	WPARAM	wParam,	LPARAM	lParam)	{
 		return DefWindowProcW(hWnd,uMsg,wParam,lParam);
 
 }
-
-
-String OS_Windows::get_joystick_name(int id, JOYCAPS jcaps)
-{
-	char buffer [256];
-	char OEM [256];
-	HKEY hKey;
-	DWORD sz;
-	int res;
-
-	_snprintf(buffer, sizeof(buffer), "%s\\%s\\%s",
-				REGSTR_PATH_JOYCONFIG, jcaps.szRegKey,
-				REGSTR_KEY_JOYCURR );
-	res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, buffer, 0, KEY_QUERY_VALUE, &hKey);
-	if (res != ERROR_SUCCESS)
-	{
-		res = RegOpenKeyEx(HKEY_CURRENT_USER, buffer, 0, KEY_QUERY_VALUE, &hKey);
-		if (res != ERROR_SUCCESS) 
-			return "";
-	}
-
-	sz = sizeof(OEM);
-	_snprintf( buffer, sizeof(buffer), "Joystick%d%s", id + 1, REGSTR_VAL_JOYOEMNAME);
-	res = RegQueryValueEx ( hKey, buffer, 0, 0, (LPBYTE) OEM, &sz);
-	RegCloseKey ( hKey );
-	if (res != ERROR_SUCCESS) 
-		return "";
-
-	_snprintf( buffer, sizeof(buffer), "%s\\%s", REGSTR_PATH_JOYOEM, OEM);
-	res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, buffer, 0, KEY_QUERY_VALUE, &hKey);
-	if (res != ERROR_SUCCESS)
-	{
-		res = RegOpenKeyEx(HKEY_CURRENT_USER, buffer, 0, KEY_QUERY_VALUE, &hKey);
-		if (res != ERROR_SUCCESS)
-			return "";
-	}
-		
-
-	sz = sizeof(buffer);
-	res = RegQueryValueEx(hKey, REGSTR_VAL_JOYOEMNAME, 0, 0, (LPBYTE) buffer,
-						  &sz);
-	RegCloseKey(hKey);
-	if (res != ERROR_SUCCESS) 
-		return "";
-
-	return String(buffer);
-}
-
-void OS_Windows::probe_joysticks() {
-
-	static uint32_t last_attached = 0;
-
-	int device_count = joyGetNumDevs();
-
-	JOYINFOEX jinfo;
-	jinfo.dwSize = sizeof(JOYINFOEX);
-	jinfo.dwFlags = JOY_RETURNALL;
-
-	for (int i=0; i<JOYSTICKS_MAX; i++) {
-
-		Joystick joy;
-		joy.id = i;
-		joy.attached = (device_count > 0) && (joyGetPosEx(JOYSTICKID1 + i, &jinfo) == JOYERR_NOERROR);
-
-		if (joy.attached == (last_attached & (1 << i) != 0)) {
-			continue;
-		};
-
-		// there's been a change since last call
-
-		if (joy.attached)
-			last_attached = last_attached | (1 << i);
-		else
-			last_attached &= ~(1 << i);
-
-		if (joy.attached) {
-
-			joy.last_buttons = jinfo.dwButtons;
-
-			joy.last_axis[0] = jinfo.dwXpos;
-			joy.last_axis[1] = jinfo.dwYpos;
-			joy.last_axis[2] = jinfo.dwZpos;
-			joy.last_axis[3] = jinfo.dwRpos;
-			joy.last_axis[4] = jinfo.dwUpos;
-			joy.last_axis[5] = jinfo.dwVpos;
-
-			JOYCAPS jcaps;
-			MMRESULT res = joyGetDevCaps(JOYSTICKID1 + i, &jcaps, sizeof(jcaps));
-			if (res == JOYERR_NOERROR) {
-				String name = get_joystick_name(JOYSTICKID1 + i, jcaps);
-				if ( name == "")
-					joy.name = jcaps.szPname;
-				else
-					joy.name = name;
-				
-					
-			};
-		};
-
-		joystick_change_queue.push_back(joy);
-	};
-};
 
 void OS_Windows::process_key_events() {
 
@@ -878,154 +781,6 @@ void OS_Windows::process_key_events() {
 
 	key_event_pos=0;
 }
-
-void OS_Windows::_post_dpad(DWORD p_dpad, int p_device, bool p_pressed) {
-
-	InputEvent ievent;
-	ievent.device = p_device;
-	ievent.type = InputEvent::JOYSTICK_BUTTON;
-	ievent.joy_button.pressed = p_pressed;
-	ievent.joy_button.pressure = p_pressed ? 1.0 : 0.0;
-
-	if (p_dpad == 0) {
-
-		ievent.joy_button.button_index = JOY_DPAD_UP;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-	} else if (p_dpad == 4500) {
-
-		ievent.joy_button.button_index = JOY_DPAD_UP;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-		ievent.joy_button.button_index = JOY_DPAD_RIGHT;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-	} else if (p_dpad == 9000) {
-
-		ievent.joy_button.button_index = JOY_DPAD_RIGHT;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-	} else if (p_dpad == 13500) {
-
-		ievent.joy_button.button_index = JOY_DPAD_RIGHT;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-		ievent.joy_button.button_index = JOY_DPAD_DOWN;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-	} else if (p_dpad == 18000) {
-
-		ievent.joy_button.button_index = JOY_DPAD_DOWN;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-	} else if (p_dpad == 22500) {
-
-		ievent.joy_button.button_index = JOY_DPAD_DOWN;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-		ievent.joy_button.button_index = JOY_DPAD_LEFT;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-	} else if (p_dpad == 27000) {
-
-		ievent.joy_button.button_index = JOY_DPAD_LEFT;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-	} else if (p_dpad == 31500) {
-
-		ievent.joy_button.button_index = JOY_DPAD_LEFT;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-
-		ievent.joy_button.button_index = JOY_DPAD_UP;
-		ievent.ID = ++last_id;
-		input->parse_input_event(ievent);
-	};
-};
-
-void OS_Windows::process_joysticks() {
-
-	if (!main_loop) {
-		return;
-	};
-
-	InputEvent ievent;
-
-	JOYINFOEX jinfo;
-	jinfo.dwSize = sizeof(JOYINFOEX);
-	jinfo.dwFlags = JOY_RETURNALL;
-
-	for (int i=0; i<JOYSTICKS_MAX; i++) {
-
-		if (!joysticks[i].attached) {
-			continue;
-		};
-
-		if (joyGetPosEx(JOYSTICKID1 + i, &jinfo) != JOYERR_NOERROR) {
-
-			continue;
-		};
-
-		ievent.device = i;
-
-		#define CHECK_AXIS(n, var) \
-			if (joysticks[i].last_axis[n] != var) {\
-				ievent.type = InputEvent::JOYSTICK_MOTION;\
-				ievent.ID = ++last_id;\
-				ievent.joy_motion.axis = n;\
-				ievent.joy_motion.axis_value = (float)((int)var - MAX_JOY_AXIS) / (float)MAX_JOY_AXIS;\
-				joysticks[i].last_axis[n] = var;\
-				input->parse_input_event(ievent);\
-			};
-
-		CHECK_AXIS(0, jinfo.dwXpos);
-		CHECK_AXIS(1, jinfo.dwYpos);
-		CHECK_AXIS(2, jinfo.dwZpos);
-		CHECK_AXIS(3, jinfo.dwRpos);
-		CHECK_AXIS(4, jinfo.dwUpos);
-		CHECK_AXIS(5, jinfo.dwVpos);
-
-		if (joysticks[i].last_pov != jinfo.dwPOV) {
-
-			if (joysticks[i].last_pov != JOY_POVCENTERED)
-				_post_dpad(joysticks[i].last_pov, i, false);
-
-			if (jinfo.dwPOV != JOY_POVCENTERED)
-				_post_dpad(jinfo.dwPOV, i, true);
-
-			joysticks[i].last_pov = jinfo.dwPOV;
-		};
-
-		if (joysticks[i].last_buttons == jinfo.dwButtons) {
-			continue;
-		};
-
-		ievent.type = InputEvent::JOYSTICK_BUTTON;
-		for (int j=0; j<32; j++) {
-
-			if ( (joysticks[i].last_buttons & (1<<j)) != (jinfo.dwButtons & (1<<j)) ) {
-
-				ievent.joy_button.button_index = j; //_pc_joystick_get_native_button(j);
-				ievent.joy_button.pressed = jinfo.dwButtons & 1<<j;
-				ievent.ID = ++last_id;
-				input->parse_input_event(ievent);
-			};
-		};
-
-		joysticks[i].last_buttons = jinfo.dwButtons;
-	};
-};
-
 
 BOOL CALLBACK OS_Windows::MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor,  LPARAM dwData) {
 	OS_Windows *self=(OS_Windows*)OS::get_singleton();
@@ -1213,6 +968,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	visual_server->init();	
 
 	input = memnew( InputDefault );
+	joystick = memnew (joystick_windows(input, &hWnd));
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -1230,14 +986,6 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	spatial_sound_server->init();
 	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
 	spatial_sound_2d_server->init();
-
-	probe_joysticks(); // todo: move this to a thread
-	while (joystick_change_queue.size() > 0) {
-		Joystick joy = joystick_change_queue.front()->get();
-		joystick_change_queue.pop_front();
-		joysticks[joy.id] = joy;
-		input->joy_connection_changed(joy.id, joy.attached, joy.name);
-	};
 
 	TRACKMOUSEEVENT tme;
 	tme.cbSize=sizeof(TRACKMOUSEEVENT);
@@ -1350,7 +1098,10 @@ void OS_Windows::finalize() {
 		memdelete(main_loop);
 
 	main_loop=NULL;
-	
+
+	memdelete(joystick);
+	memdelete(input);
+
 	visual_server->finish();
 	memdelete(visual_server);
 #ifdef OPENGL_ENABLED
@@ -1373,11 +1124,10 @@ void OS_Windows::finalize() {
 //		memdelete(debugger_connection_console);
 //}
 
-	audio_server->finish();
-	memdelete(audio_server);
 	memdelete(sample_manager);
 
-	memdelete(input);
+	audio_server->finish();
+	memdelete(audio_server);
 
 	physics_server->finish();
 	memdelete(physics_server);
@@ -1385,7 +1135,6 @@ void OS_Windows::finalize() {
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
 
-	joystick_change_queue.clear();
 	monitor_info.clear();
 
 }
@@ -1395,8 +1144,7 @@ void OS_Windows::finalize_core() {
 
 	if (mempool_dynamic)
 		memdelete( mempool_dynamic );
-	if (mempool_static)
-		delete mempool_static;
+	delete mempool_static;
 
 
 	TCPServerWinsock::cleanup();
@@ -1764,73 +1512,96 @@ bool OS_Windows::is_window_maximized() const{
 }
 
 
-void OS_Windows::print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type) {
+void OS_Windows::print_error(const char* p_function, const char* p_file, int p_line, const char* p_code, const char* p_rationale, ErrorType p_type) {
 
-	HANDLE hCon=GetStdHandle(STD_OUTPUT_HANDLE);
-	if (!hCon || hCon==INVALID_HANDLE_VALUE) {
-		if (p_rationale && p_rationale[0]) {
+	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (!hCon || hCon == INVALID_HANDLE_VALUE) {
 
-			print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_rationale);
-			print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
+		const char* err_details;
+		if (p_rationale && p_rationale[0])
+			err_details = p_rationale;
+		else
+			err_details = p_code;
 
-		} else {
-			print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_code);
-			print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
-
+		switch(p_type) {
+			case ERR_ERROR:
+				print("ERROR: %s: %s\n", p_function, err_details);
+				print("   At: %s:%i\n", p_file, p_line);
+				break;
+			case ERR_WARNING:
+				print("WARNING: %s: %s\n", p_function, err_details);
+				print("     At: %s:%i\n", p_file, p_line);
+				break;
+			case ERR_SCRIPT:
+				print("SCRIPT ERROR: %s: %s\n", p_function, err_details);
+				print("          At: %s:%i\n", p_file, p_line);
+				break;
 		}
+
 	} else {
 
 		CONSOLE_SCREEN_BUFFER_INFO sbi; //original
-		GetConsoleScreenBufferInfo(hCon,&sbi);
+		GetConsoleScreenBufferInfo(hCon, &sbi);
 
-		SetConsoleTextAttribute(hCon,sbi.wAttributes);
+		WORD current_fg = sbi.wAttributes & (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+		WORD current_bg = sbi.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY);
 
-
-
-		uint32_t basecol=0;
+		uint32_t basecol = 0;
 		switch(p_type) {
 			case ERR_ERROR: basecol = FOREGROUND_RED; break;
-			case ERR_WARNING: basecol = FOREGROUND_RED|FOREGROUND_GREEN; break;
-			case ERR_SCRIPT: basecol = FOREGROUND_GREEN; break;
+			case ERR_WARNING: basecol = FOREGROUND_RED | FOREGROUND_GREEN; break;
+			case ERR_SCRIPT: basecol = FOREGROUND_RED | FOREGROUND_BLUE; break;
 		}
+
+		basecol |= current_bg;
 
 		if (p_rationale && p_rationale[0]) {
 
-			SetConsoleTextAttribute(hCon,basecol|FOREGROUND_INTENSITY);
-
-
+			SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
 			switch(p_type) {
 				case ERR_ERROR: print("ERROR: "); break;
 				case ERR_WARNING: print("WARNING: "); break;
 				case ERR_SCRIPT: print("SCRIPT ERROR: "); break;
 			}
 
-			SetConsoleTextAttribute(hCon,FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_GREEN|FOREGROUND_INTENSITY);
-			print(" %s\n",p_rationale);
-			SetConsoleTextAttribute(hCon,basecol);
-			print("At: ");
-			SetConsoleTextAttribute(hCon,FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_GREEN);
-			print(" %s:%i\n",p_file,p_line);
+			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
+			print("%s\n", p_rationale);
 
+			SetConsoleTextAttribute(hCon, basecol);
+			switch (p_type) {
+				case ERR_ERROR: print("   At: "); break;
+				case ERR_WARNING: print("     At: "); break;
+				case ERR_SCRIPT: print("          At: "); break;
+			}
+
+			SetConsoleTextAttribute(hCon, current_fg | current_bg);
+			print("%s:%i\n", p_file, p_line);
 
 		} else {
-			SetConsoleTextAttribute(hCon,basecol|FOREGROUND_INTENSITY);
+
+			SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
 			switch(p_type) {
-				case ERR_ERROR: print("ERROR: %s: ",p_function); break;
-				case ERR_WARNING: print("WARNING: %s: ",p_function); break;
-				case ERR_SCRIPT: print("SCRIPT ERROR: %s: ",p_function); break;
+				case ERR_ERROR: print("ERROR: %s: ", p_function); break;
+				case ERR_WARNING: print("WARNING: %s: ", p_function); break;
+				case ERR_SCRIPT: print("SCRIPT ERROR: %s: ", p_function); break;
 			}
-			SetConsoleTextAttribute(hCon,FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_GREEN|FOREGROUND_INTENSITY);
-			print(" %s\n",p_code);
-			SetConsoleTextAttribute(hCon,basecol);
-			print("At: ");
-			SetConsoleTextAttribute(hCon,FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_GREEN);
-			print(" %s:%i\n",p_file,p_line);
+
+			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
+			print("%s\n", p_code);
+
+			SetConsoleTextAttribute(hCon, basecol);
+			switch (p_type) {
+				case ERR_ERROR: print("   At: "); break;
+				case ERR_WARNING: print("     At: "); break;
+				case ERR_SCRIPT: print("          At: "); break;
+			}
+
+			SetConsoleTextAttribute(hCon, current_fg | current_bg);
+			print("%s:%i\n", p_file, p_line);
 		}
 
-		SetConsoleTextAttribute(hCon,sbi.wAttributes);
+		SetConsoleTextAttribute(hCon, sbi.wAttributes);
 	}
-
 }
 
 
@@ -1909,10 +1680,16 @@ uint64_t OS_Windows::get_unix_time() const {
 	return (*(uint64_t*)&ft - *(uint64_t*)&fep) / 10000000;
 };
 
-uint64_t OS_Windows::get_system_time_msec() const {
+uint64_t OS_Windows::get_system_time_secs() const {
 	SYSTEMTIME st;
 	GetSystemTime(&st);
-	return st.wMilliseconds;
+	FILETIME ft;
+	SystemTimeToFileTime(&st,&ft);
+	uint64_t ret;
+	ret=ft.dwHighDateTime;
+	ret<<=32;
+	ret|=ft.dwLowDateTime;
+	return ret;
 }
 
 void OS_Windows::delay_usec(uint32_t p_usec) const {
@@ -1943,7 +1720,7 @@ void OS_Windows::process_events() {
 
 	MSG msg;
 
-	process_joysticks();
+	last_id = joystick->process_joysticks(last_id);
 	
 	while(PeekMessageW(&msg,NULL,0,0,PM_REMOVE)) {
 
@@ -2327,6 +2104,13 @@ String OS_Windows::get_data_dir() const {
 
 }
 
+bool OS_Windows::is_joy_known(int p_device) {
+	return input->is_joy_mapped(p_device);
+}
+
+String OS_Windows::get_joy_guid(int p_device) const {
+	return input->get_joy_guid_remapped(p_device);
+}
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 

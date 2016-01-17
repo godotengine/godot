@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,6 +54,8 @@ void MenuButton::_unhandled_key_input(InputEvent p_event) {
 
 
 		int item = popup->find_item_by_accelerator(code);
+
+
 		if (item>=0 && ! popup->is_item_disabled(item))
 			popup->activate_item(item);
 		/*

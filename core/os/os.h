@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,7 +75,7 @@ public:
 		bool fullscreen;
 		bool resizable;
 		float get_aspect() const { return (float)width/(float)height; }
-		VideoMode(int p_width=640,int p_height=480,bool p_fullscreen=false, bool p_resizable = true) {width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; }
+		VideoMode(int p_width=1280,int p_height=720,bool p_fullscreen=false, bool p_resizable = true) {width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; }
 	};
 protected:
 friend class Main;
@@ -184,6 +184,7 @@ public:
 	virtual void set_low_processor_usage_mode(bool p_enabled);
 	virtual bool is_in_low_processor_usage_mode() const;
 
+	virtual String get_installed_templates_path() const { return ""; };
 	virtual String get_executable_path() const;
 	virtual Error execute(const String& p_path, const List<String>& p_arguments,bool p_blocking,ProcessID *r_child_id=NULL,String* r_pipe=NULL,int *r_exitcode=NULL)=0;
 	virtual Error kill(const ProcessID& p_pid)=0;
@@ -255,7 +256,7 @@ public:
 	virtual Time get_time(bool local=false) const=0;
 	virtual TimeZoneInfo get_time_zone_info() const=0;
 	virtual uint64_t get_unix_time() const;
-	virtual uint64_t get_system_time_msec() const;
+	virtual uint64_t get_system_time_secs() const;
 
 	virtual void delay_usec(uint32_t p_usec) const=0; 
 	virtual uint64_t get_ticks_usec() const=0;
@@ -395,6 +396,9 @@ public:
 	float get_time_scale() const;
 
 	_FORCE_INLINE_ bool get_use_pixel_snap() const { return _pixel_snap; }
+
+	virtual bool is_joy_known(int p_device);
+	virtual String get_joy_guid(int p_device)const;
 
 	OS();	
 	virtual ~OS();

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -250,7 +250,7 @@ void Skeleton::_notification(int p_what) {
 					ERR_CONTINUE(!obj);
 					Spatial *sp = obj->cast_to<Spatial>();
 					ERR_CONTINUE(!sp);
-					sp->set_transform(b.pose_global * b.rest_global_inverse);
+					sp->set_transform(b.pose_global);
 				}
 			}
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -612,13 +612,15 @@ CodeTextEditor::CodeTextEditor() {
 
 	if (!font_overrode)
 		text_editor->add_font_override("font",get_font("source","Fonts"));
+
 	text_editor->set_show_line_numbers(true);
 	text_editor->set_brace_matching(true);
+	text_editor->set_auto_indent(true);
 
 	line_col = memnew( Label );
 	add_child(line_col);
 	line_col->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_END,135);
-	line_col->set_anchor_and_margin(MARGIN_TOP,ANCHOR_END,20);
+	line_col->set_anchor_and_margin(MARGIN_TOP,ANCHOR_END,15);
 	line_col->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END,1);
 	line_col->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,5);
 	//line_col->set_align(Label::ALIGN_RIGHT);
@@ -637,7 +639,7 @@ CodeTextEditor::CodeTextEditor() {
 	error = memnew( Label );
 	add_child(error);
 	error->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN,5);
-	error->set_anchor_and_margin(MARGIN_TOP,ANCHOR_END,20);
+	error->set_anchor_and_margin(MARGIN_TOP,ANCHOR_END,15);
 	error->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END,1);
 	error->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,130);
 	error->hide();

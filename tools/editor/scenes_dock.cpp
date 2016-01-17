@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -155,7 +155,7 @@ void ScenesDock::_notification(int p_what) {
 
 			if (initialized)
 				return;
-			initialized=false;
+			initialized=true;
 
 			EditorFileSystem::get_singleton()->connect("filesystem_changed",this,"_fs_changed");
 
@@ -195,7 +195,12 @@ void ScenesDock::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 
 		} break;
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
+			display_mode->set_pressed(int(EditorSettings::get_singleton()->get("file_dialog/display_mode"))==EditorFileDialog::DISPLAY_LIST);
+
+			_change_file_display();
+		} break;
 	}
 
 }
@@ -352,10 +357,30 @@ String ScenesDock::get_selected_path() const {
 
 void ScenesDock::_instance_pressed() {
 
-	TreeItem *sel = tree->get_selected();
-	if (!sel)
-		return;
-	String path = sel->get_metadata(0);
+	if (tree_mode)
+	{
+		TreeItem *sel = tree->get_selected();
+		if (!sel)
+			return;
+		String path = sel->get_metadata(0);
+	}
+	else
+	{
+		int idx = -1;
+		for (int i = 0; i<files->get_item_count(); i++) {
+			if (files->is_selected(i))
+			{
+				idx = i;
+				break;
+			}
+		}
+
+		if (idx<0)
+			return;
+
+		path = files->get_item_metadata(idx);
+	}
+
 	emit_signal("instance",path);
 }
 
@@ -1043,6 +1068,11 @@ void ScenesDock::open(const String& p_path) {
 
 }
 
+void ScenesDock::set_use_thumbnails(bool p_use) {
+
+	display_mode->set_pressed(!p_use);
+}
+
 void ScenesDock::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_update_tree"),&ScenesDock::_update_tree);
@@ -1223,6 +1253,8 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 	history.push_back("res://");
 	history_pos=0;
 	tree_mode=true;
+
+	path="res://";
 
 
 }

@@ -25,8 +25,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
 #define SKIP_CONFIG_H
@@ -38,11 +38,11 @@
 #include <stdio.h>
 
 #define CELT_C
-#include "stack_alloc.h"
-#include "kiss_fft.h"
-#include "kiss_fft.c"
-#include "mathops.c"
-#include "entcode.c"
+#include "opus/celt/stack_alloc.h"
+#include "opus/celt/kiss_fft.h"
+#include "opus/celt/kiss_fft.c"
+#include "opus/celt/mathops.c"
+#include "opus/celt/entcode.c"
 
 
 #ifndef M_PI

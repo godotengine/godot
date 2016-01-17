@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,6 +57,11 @@ void Thread::wait_to_finish(Thread *p_thread) {
 		wait_to_finish_func(p_thread);
 		
 }
+
+Error Thread::set_name(const String &p_name) {
+
+	return ERR_UNAVAILABLE;
+};
 
 Thread::Thread()
 {

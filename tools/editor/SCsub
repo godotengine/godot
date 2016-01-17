@@ -28,7 +28,7 @@ def make_doc_header(target,source,env):
 
 
 
-	
+
 
 if (env["tools"]=="yes"):
 
@@ -43,17 +43,16 @@ if (env["tools"]=="yes"):
 	f.write(reg_exporters_inc)
 	f.write(reg_exporters)
 	f.close()
-	
+
 	env.Depends("#tools/editor/doc_data_compressed.h","#doc/base/classes.xml")
 	env.Command("#tools/editor/doc_data_compressed.h","#doc/base/classes.xml",make_doc_header)
 
 	#make_doc_header(env.File("#tools/editor/doc_data_raw.h").srcnode().abspath,env.File("#doc/base/classes.xml").srcnode().abspath,env)
-	
+
 	env.add_source_files(env.tool_sources,"*.cpp")
-	
+
 	Export('env')
-	SConscript('icons/SCsub');	
+	SConscript('icons/SCsub');
 	SConscript('plugins/SCsub');
 	SConscript('fileserver/SCsub');
 	SConscript('io_plugins/SCsub');
-

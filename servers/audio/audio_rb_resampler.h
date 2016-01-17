@@ -67,6 +67,11 @@ public:
 		return todo;
 	}
 
+
+	_FORCE_INLINE_ bool has_data() const {
+		return rb && rb_read_pos!=rb_write_pos;
+	}
+
 	_FORCE_INLINE_ int16_t *get_write_buffer() { return read_buf; }
 	_FORCE_INLINE_ void write(uint32_t p_frames) {
 

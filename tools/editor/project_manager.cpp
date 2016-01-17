@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -144,7 +144,7 @@ class NewProjectDialog : public ConfirmationDialog {
 
 			fdialog->set_mode(FileDialog::MODE_OPEN_FILE);
 			fdialog->clear_filters();
-			fdialog->add_filter("engine.cfg ; "_MKSTR(VERSION_NAME)" Project");
+			fdialog->add_filter("engine.cfg ; " _MKSTR(VERSION_NAME) " Project");
 		} else {
 			fdialog->set_mode(FileDialog::MODE_OPEN_DIR);
 		}
@@ -193,7 +193,7 @@ class NewProjectDialog : public ConfirmationDialog {
 				f->store_line("\n");
 				f->store_line("[application]");
 				f->store_line("name=\""+project_name->get_text()+"\"");
-				f->store_line("icon=\"icon.png\"");
+				f->store_line("icon=\"res://icon.png\"");
 
 				memdelete(f);
 
@@ -348,6 +348,13 @@ struct ProjectItem {
 	_FORCE_INLINE_ bool operator ==(const ProjectItem& l) const { return project==l.project; }
 };
 
+void ProjectManager::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+
+		get_tree()->set_editor_hint(true);
+	}
+}
 
 void ProjectManager::_panel_draw(Node *p_hb) {
 
@@ -480,20 +487,25 @@ void ProjectManager::_load_recent_projects() {
 		bool favorite = (_name.begins_with("favorite_projects/"))?true:false;
 
 		uint64_t last_modified = 0;
-		if (FileAccess::exists(conf))
+		if (FileAccess::exists(conf)) {
 			last_modified = FileAccess::get_modified_time(conf);
-		String fscache = path.plus_file(".fscache");
-		if (FileAccess::exists(fscache)) {
-			uint64_t cache_modified = FileAccess::get_modified_time(fscache);
-			if ( cache_modified > last_modified )
-				last_modified = cache_modified;
-		}
 
-		ProjectItem item(project, path, conf, last_modified, favorite);
-		if (favorite)
-			favorite_projects.push_back(item);
-		else
-			projects.push_back(item);
+			String fscache = path.plus_file(".fscache");
+			if (FileAccess::exists(fscache)) {
+				uint64_t cache_modified = FileAccess::get_modified_time(fscache);
+				if ( cache_modified > last_modified )
+					last_modified = cache_modified;
+			}
+
+			ProjectItem item(project, path, conf, last_modified, favorite);
+			if (favorite)
+				favorite_projects.push_back(item);
+			else
+				projects.push_back(item);
+		} else {
+			//project doesn't exist on disk but it's in the XML settings file
+			EditorSettings::get_singleton()->erase(_name); //remove it
+		}
 	}
 
 	projects.sort();
@@ -601,6 +613,8 @@ void ProjectManager::_load_recent_projects() {
 	erase_btn->set_disabled(selected_list.size()<1);
 	open_btn->set_disabled(selected_list.size()<1);
 	run_btn->set_disabled(selected_list.size()<1 || (selected_list.size()==1 && single_selected_main==""));
+
+	EditorSettings::get_singleton()->save();
 }
 
 void ProjectManager::_open_project_confirm() {
@@ -616,11 +630,6 @@ void ProjectManager::_open_project_confirm() {
 		args.push_back(path);
 
 		args.push_back("-editor");
-
-		const String &selected_main = E->get();
-		if (selected_main!="") {
-			args.push_back(selected_main);
-		}
 
 		String exec = OS::get_singleton()->get_executable_path();
 
@@ -823,6 +832,19 @@ ProjectManager::ProjectManager() {
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 
 	set_area_as_parent_rect();
+
+	Ref<Theme> theme = Ref<Theme>( memnew( Theme ) );
+	set_theme(theme);
+	editor_register_icons(theme);
+
+	String global_font = EditorSettings::get_singleton()->get("global/font");
+	if (global_font!="") {
+		Ref<Font> fnt = ResourceLoader::load(global_font);
+		if (fnt.is_valid()) {
+			theme->set_default_theme_font(fnt);
+		}
+	}
+
 	Panel *panel = memnew( Panel );
 	add_child(panel);
 	panel->set_area_as_parent_rect();
@@ -839,7 +861,7 @@ ProjectManager::ProjectManager() {
 	l->set_align(Label::ALIGN_CENTER);
 	vb->add_child(l);
 	l = memnew( Label );
-	l->set_text("v"VERSION_MKSTRING);
+	l->set_text("v" VERSION_MKSTRING);
 	//l->add_font_override("font",get_font("bold","Fonts"));
 	l->set_align(Label::ALIGN_CENTER);
 	vb->add_child(l);
@@ -942,7 +964,7 @@ ProjectManager::ProjectManager() {
 	String cp;
 	cp.push_back(0xA9);
 	cp.push_back(0);
-	l->set_text(cp+" 2008-2015 Juan Linietsky, Ariel Manzur.");
+	l->set_text(cp+" 2008-2016 Juan Linietsky, Ariel Manzur.");
 	l->set_align(Label::ALIGN_CENTER);
 	vb->add_child(l);
 
@@ -969,10 +991,6 @@ ProjectManager::ProjectManager() {
 
 	npdialog = memnew( NewProjectDialog );
 	add_child(npdialog);
-
-	Ref<Theme> theme = memnew( Theme );
-	editor_register_icons(theme);
-	set_theme(theme);
 
 	npdialog->connect("project_created", this,"_load_recent_projects");
 	_load_recent_projects();

@@ -1,8 +1,10 @@
 // Copyright 2012 Google Inc. All Rights Reserved.
 //
-// This code is licensed under the same terms as WebM:
-//  Software License Agreement:  http://www.webmproject.org/license/software/
-//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
+// Use of this source code is governed by a BSD-style license
+// that can be found in the COPYING file in the root of the source
+// tree. An additional intellectual property rights grant can be found
+// in the file PATENTS. All contributing project authors may
+// be found in the AUTHORS file in the root of the source tree.
 // -----------------------------------------------------------------------------
 //
 // Utilities for building and looking up Huffman trees.
@@ -13,65 +15,73 @@
 #define WEBP_UTILS_HUFFMAN_H_
 
 #include <assert.h>
-#include "../types.h"
+#include "webp/format_constants.h"
+#include "webp/types.h"
 
-#if defined(__cplusplus) || defined(c_plusplus)
+#ifdef __cplusplus
 extern "C" {
 #endif
 
-// A node of a Huffman tree.
-typedef struct {
-  int symbol_;
-  int children_;  // delta offset to both children (contiguous) or 0 if leaf.
-} HuffmanTreeNode;
+#define HUFFMAN_TABLE_BITS      8
+#define HUFFMAN_TABLE_MASK      ((1 << HUFFMAN_TABLE_BITS) - 1)
 
-// Huffman Tree.
-typedef struct HuffmanTree HuffmanTree;
-struct HuffmanTree {
-  HuffmanTreeNode* root_;   // all the nodes, starting at root.
-  int max_nodes_;           // max number of nodes
-  int num_nodes_;           // number of currently occupied nodes
+#define LENGTHS_TABLE_BITS      7
+#define LENGTHS_TABLE_MASK      ((1 << LENGTHS_TABLE_BITS) - 1)
+
+
+// Huffman lookup table entry
+typedef struct {
+  uint8_t bits;     // number of bits used for this symbol
+  uint16_t value;   // symbol value or table offset
+} HuffmanCode;
+
+// long version for holding 32b values
+typedef struct {
+  int bits;         // number of bits used for this symbol,
+                    // or an impossible value if not a literal code.
+  uint32_t value;   // 32b packed ARGB value if literal,
+                    // or non-literal symbol otherwise
+} HuffmanCode32;
+
+#define HUFFMAN_PACKED_BITS 6
+#define HUFFMAN_PACKED_TABLE_SIZE (1u << HUFFMAN_PACKED_BITS)
+
+// Huffman table group.
+// Includes special handling for the following cases:
+//  - is_trivial_literal: one common literal base for RED/BLUE/ALPHA (not GREEN)
+//  - is_trivial_code: only 1 code (no bit is read from bitstream)
+//  - use_packed_table: few enough literal symbols, so all the bit codes
+//    can fit into a small look-up table packed_table[]
+// The common literal base, if applicable, is stored in 'literal_arb'.
+typedef struct HTreeGroup HTreeGroup;
+struct HTreeGroup {
+  HuffmanCode* htrees[HUFFMAN_CODES_PER_META_CODE];
+  int      is_trivial_literal;  // True, if huffman trees for Red, Blue & Alpha
+                                // Symbols are trivial (have a single code).
+  uint32_t literal_arb;         // If is_trivial_literal is true, this is the
+                                // ARGB value of the pixel, with Green channel
+                                // being set to zero.
+  int is_trivial_code;          // true if is_trivial_literal with only one code
+  int use_packed_table;         // use packed table below for short literal code
+  // table mapping input bits to a packed values, or escape case to literal code
+  HuffmanCode32 packed_table[HUFFMAN_PACKED_TABLE_SIZE];
 };
 
-// Returns true if the given node is a leaf of the Huffman tree.
-static WEBP_INLINE int HuffmanTreeNodeIsLeaf(
-    const HuffmanTreeNode* const node) {
-  return (node->children_ == 0);
-}
+// Creates the instance of HTreeGroup with specified number of tree-groups.
+HTreeGroup* VP8LHtreeGroupsNew(int num_htree_groups);
 
-// Go down one level. Most critical function. 'right_child' must be 0 or 1.
-static WEBP_INLINE const HuffmanTreeNode* HuffmanTreeNextNode(
-    const HuffmanTreeNode* node, int right_child) {
-  return node + node->children_ + right_child;
-}
+// Releases the memory allocated for HTreeGroup.
+void VP8LHtreeGroupsFree(HTreeGroup* const htree_groups);
 
-// Releases the nodes of the Huffman tree.
-// Note: It does NOT free 'tree' itself.
-void HuffmanTreeRelease(HuffmanTree* const tree);
+// Builds Huffman lookup table assuming code lengths are in symbol order.
+// The 'code_lengths' is pre-allocated temporary memory buffer used for creating
+// the huffman table.
+// Returns built table size or 0 in case of error (invalid tree or
+// memory error).
+int VP8LBuildHuffmanTable(HuffmanCode* const root_table, int root_bits,
+                          const int code_lengths[], int code_lengths_size);
 
-// Builds Huffman tree assuming code lengths are implicitly in symbol order.
-// Returns false in case of error (invalid tree or memory error).
-int HuffmanTreeBuildImplicit(HuffmanTree* const tree,
-                             const int* const code_lengths,
-                             int code_lengths_size);
-
-// Build a Huffman tree with explicitly given lists of code lengths, codes
-// and symbols. Verifies that all symbols added are smaller than max_symbol.
-// Returns false in case of an invalid symbol, invalid tree or memory error.
-int HuffmanTreeBuildExplicit(HuffmanTree* const tree,
-                             const int* const code_lengths,
-                             const int* const codes,
-                             const int* const symbols, int max_symbol,
-                             int num_symbols);
-
-// Utility: converts Huffman code lengths to corresponding Huffman codes.
-// 'huff_codes' should be pre-allocated.
-// Returns false in case of error (memory allocation, invalid codes).
-int HuffmanCodeLengthsToCodes(const int* const code_lengths,
-                              int code_lengths_size, int* const huff_codes);
-
-
-#if defined(__cplusplus) || defined(c_plusplus)
+#ifdef __cplusplus
 }    // extern "C"
 #endif
 

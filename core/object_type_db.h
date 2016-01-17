@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,6 +117,7 @@ class ObjectTypeDB {
 		StringName getter;
 		MethodBind *_setptr;
 		MethodBind *_getptr;
+		Variant::Type type;
 	};
 
 	struct TypeInfo {
@@ -456,8 +457,9 @@ public:
 
 	static void add_property(StringName p_type,const PropertyInfo& p_pinfo, const StringName& p_setter, const StringName& p_getter, int p_index=-1);
 	static void get_property_list(StringName p_type,List<PropertyInfo> *p_list,bool p_no_inheritance=false);
-	static bool set_property(Object* p_object,const StringName& p_property, const Variant& p_value);
+	static bool set_property(Object* p_object, const StringName& p_property, const Variant& p_value, bool *r_valid=NULL);
 	static bool get_property(Object* p_object,const StringName& p_property, Variant& r_value);
+	static Variant::Type get_property_type(const StringName& p_type, const StringName& p_property,bool *r_is_valid=NULL);
 
 
 

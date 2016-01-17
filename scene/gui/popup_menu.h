@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,7 +59,6 @@ class PopupMenu : public Popup {
 	Timer *submenu_timer;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
-	int idcount;
 	int mouse_over;
 	int submenu_over;
 	Rect2 parent_rect;

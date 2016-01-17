@@ -251,15 +251,19 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 
 	EditorProgress ep("export","Exporting for OSX",104);
 
-	String pkg_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/osx.zip";
 
-	if (p_debug) {
+	if (p_debug)
+		src_pkg=custom_debug_package;
+	else
+		src_pkg=custom_release_package;
 
-		src_pkg=custom_debug_package!=""?custom_debug_package:pkg_path;
-	} else {
-
-		src_pkg=custom_release_package!=""?custom_release_package:pkg_path;
-
+	if (src_pkg=="") {
+		String err;
+		src_pkg=find_export_template("osx.zip", &err);
+		if (src_pkg=="") {
+			EditorNode::add_io_error(err);
+			return ERR_FILE_NOT_FOUND;
+		}
 	}
 
 
@@ -464,9 +468,8 @@ bool EditorExportPlatformOSX::can_export(String *r_error) const {
 
 	bool valid=true;
 	String err;
-	String exe_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
 
-	if (!FileAccess::exists(exe_path+"osx.zip")) {
+	if (!exists_export_template("osx.zip")) {
 		valid=false;
 		err+="No export templates found.\nDownload and install export templates.\n";
 	}

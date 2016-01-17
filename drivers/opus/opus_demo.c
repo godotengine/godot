@@ -26,19 +26,19 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "opus.h"
-#include "debug.h"
-#include "opus_types.h"
-#include "opus_private.h"
-#include "opus_multistream.h"
+#include "opus/opus.h"
+#include "opus/silk/debug.h"
+#include "opus/opus_types.h"
+#include "opus/opus_private.h"
+#include "opus/opus_multistream.h"
 
 #define MAX_PACKET 1500
 

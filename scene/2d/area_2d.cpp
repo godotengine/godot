@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -383,7 +383,11 @@ void Area2D::_clear_monitoring() {
 
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = obj ? obj->cast_to<Node>() : NULL;
-			ERR_CONTINUE(!node);
+
+			if (!node) //node may have been deleted in previous frame, this should not be an error
+				continue;
+			//ERR_CONTINUE(!node);
+
 			if (!E->get().in_tree)
 				continue;
 
@@ -416,13 +420,13 @@ void Area2D::_notification(int p_what) {
 
 void Area2D::set_enable_monitoring(bool p_enable) {
 
-	if (locked) {
-		ERR_EXPLAIN("This function can't be used during the in/out signal.");
-	}
-	ERR_FAIL_COND(locked);
 
 	if (p_enable==monitoring)
 		return;
+	if (locked) {
+		ERR_EXPLAIN("Function blocked during in/out signal. Use call_deferred(\"set_enable_monitoring\",true/false)");
+	}
+	ERR_FAIL_COND(locked);
 
 	monitoring=p_enable;
 
@@ -652,7 +656,7 @@ void Area2D::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("area_exit",PropertyInfo(Variant::OBJECT,"area",PROPERTY_HINT_RESOURCE_TYPE,"Area2D")));
 
 
-	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"space_override",PROPERTY_HINT_ENUM,"Disabled,Combine,Replace"),_SCS("set_space_override_mode"),_SCS("get_space_override_mode"));
+	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"space_override",PROPERTY_HINT_ENUM,"Disabled,Combine,Combine-Replace,Replace,Replace-Combine"),_SCS("set_space_override_mode"),_SCS("get_space_override_mode"));
 	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"gravity_point"),_SCS("set_gravity_is_point"),_SCS("is_gravity_a_point"));
 	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"gravity_distance_scale", PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_gravity_distance_scale"),_SCS("get_gravity_distance_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"gravity_vec"),_SCS("set_gravity_vector"),_SCS("get_gravity_vector"));

@@ -30,11 +30,11 @@
 #ifndef BANDS_H
 #define BANDS_H
 
-#include "arch.h"
-#include "opus_modes.h"
-#include "entenc.h"
-#include "entdec.h"
-#include "rate.h"
+#include "opus/celt/arch.h"
+#include "opus/celt/opus_modes.h"
+#include "opus/celt/entenc.h"
+#include "opus/celt/entdec.h"
+#include "opus/celt/rate.h"
 
 /** Compute the amplitude (sqrt energy) in each of the bands
  * @param m Mode data

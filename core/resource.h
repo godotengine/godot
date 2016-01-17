@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -144,7 +144,7 @@ public:
 
 #ifdef TOOLS_ENABLED
 
-	void set_last_modified_time(uint64_t p_time) { last_modified_time=p_time; }
+	virtual void set_last_modified_time(uint64_t p_time) { last_modified_time=p_time; }
 	uint64_t get_last_modified_time() const { return last_modified_time; }
 
 #endif

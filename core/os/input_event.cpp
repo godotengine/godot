@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -156,6 +156,7 @@ bool InputEvent::is_pressed() const {
 		case MOUSE_BUTTON: return mouse_button.pressed;
 		case JOYSTICK_BUTTON: return joy_button.pressed;
 		case SCREEN_TOUCH: return screen_touch.pressed;
+		case JOYSTICK_MOTION: return InputMap::get_singleton()->event_is_joy_motion_action_pressed(*this);
 		case ACTION: return action.pressed;
 		default: {}
 	}

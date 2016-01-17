@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -610,6 +610,7 @@ public:
 		CanvasLight *shadows_next_ptr;
 		CanvasLight *filter_next_ptr;
 		CanvasLight *next_ptr;
+		CanvasLight *mask_next_ptr;
 
 		CanvasLight() {
 			enabled=true;			
@@ -627,6 +628,7 @@ public:
 			mode=VS::CANVAS_LIGHT_MODE_ADD;
 			texture_cache=NULL;
 			next_ptr=NULL;
+			mask_next_ptr=NULL;
 			filter_next_ptr=NULL;
 			shadow_buffer_size=2048;
 			shadow_esm_mult=80;
@@ -693,7 +695,7 @@ public:
 			Rect2 rect;
 			RID texture;
 			float margin[4];
-			float draw_center;
+			bool draw_center;
 			Color color;
 			CommandStyle() { draw_center=true; type = TYPE_STYLE; }
 		};
@@ -792,6 +794,7 @@ public:
 		CanvasItem* material_owner;
 		ViewportRender *vp_render;
 		bool distance_field;
+		bool light_masked;
 
 		Rect2 global_rect_cache;
 
@@ -918,8 +921,8 @@ public:
 			return rect;
 		}
 
-		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true; final_clip_owner=NULL;  material_owner=NULL;}
-		CanvasItem() { light_mask=1; vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; material_owner=NULL; material=NULL; copy_back_buffer=NULL; distance_field=false; }
+		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true; final_clip_owner=NULL;  material_owner=NULL; light_masked=false; }
+		CanvasItem() { light_mask=1; vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; material_owner=NULL; material=NULL; copy_back_buffer=NULL; distance_field=false; light_masked=false; }
 		virtual ~CanvasItem() { clear(); if (copy_back_buffer) memdelete(copy_back_buffer); }
 	};
 
@@ -1028,6 +1031,8 @@ public:
 	virtual void restore_framebuffer()=0;
 
 	virtual int get_render_info(VS::RenderInfo p_info)=0;
+
+	virtual void set_force_16_bits_fbo(bool p_force) {}
 
 	Rasterizer();
 	virtual ~Rasterizer() {}

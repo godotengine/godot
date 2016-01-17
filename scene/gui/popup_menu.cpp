@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -170,7 +170,14 @@ void PopupMenu::_activate_submenu(int over) {
 	Point2 p = get_global_pos();
 	Rect2 pr(p,get_size());
 	Ref<StyleBox> style = get_stylebox("panel");
-	pm->set_pos(p+Point2(get_size().width,items[over]._ofs_cache-style->get_offset().y));
+
+	Point2 pos = p+Point2(get_size().width,items[over]._ofs_cache-style->get_offset().y);
+	Size2 size = pm->get_size();
+	// fix pos
+	if (pos.x+size.width > get_viewport_rect().size.width)
+		pos.x=p.x-size.width;
+
+	pm->set_pos(pos);
 	pm->popup();
 
 	PopupMenu *pum = pm->cast_to<PopupMenu>();
@@ -323,10 +330,13 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 						invalidated_click=false;
 						break;
 					}
-					if (over<0 || items[over].separator || items[over].disabled) {
+					if (over<0) {
 						hide();
 						break; //non-activable
 					}
+
+					if (items[over].separator || items[over].disabled)
+						break;
 
 					if (items[over].submenu!="") {
 
@@ -360,10 +370,13 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 			}
 
 			int over=_get_mouse_over(Point2(m.x,m.y));
-			int id = (over<0 || items[over].separator || items[over].disabled)?-1:items[over].ID;
+			int id = (over<0 || items[over].separator || items[over].disabled)?-1:(items[over].ID>=0?items[over].ID:over);
 
-			if (id<0)
+			if (id<0) {
+				mouse_over=-1;
+				update();
 				break;
+			}
 
 			if (items[over].submenu!="" && submenu_over!=over) {
 				submenu_over=over;
@@ -511,7 +524,7 @@ void PopupMenu::add_icon_item(const Ref<Texture>& p_icon,const String& p_label,i
 	item.icon=p_icon;
 	item.text=p_label;
 	item.accel=p_accel;
-	item.ID=(p_ID<0)?idcount++:p_ID;
+	item.ID=p_ID;
 	items.push_back(item);
 	update();
 }
@@ -520,7 +533,7 @@ void PopupMenu::add_item(const String& p_label,int p_ID,uint32_t p_accel) {
 	Item item;
 	item.text=XL_MESSAGE(p_label);
 	item.accel=p_accel;
-	item.ID=(p_ID<0)?idcount++:p_ID;
+	item.ID=p_ID;
 	items.push_back(item);
 	update();
 }
@@ -529,7 +542,7 @@ void PopupMenu::add_submenu_item(const String& p_label, const String& p_submenu,
 
 	Item item;
 	item.text=XL_MESSAGE(p_label);
-	item.ID=(p_ID<0)?idcount++:p_ID;
+	item.ID=p_ID;
 	item.submenu=p_submenu;
 	items.push_back(item);
 	update();
@@ -541,7 +554,7 @@ void PopupMenu::add_icon_check_item(const Ref<Texture>& p_icon,const String& p_l
 	item.icon=p_icon;
 	item.text=XL_MESSAGE(p_label);
 	item.accel=p_accel;
-	item.ID=(p_ID<0)?idcount++:p_ID;
+	item.ID=p_ID;
 	item.checkable=true;
 	items.push_back(item);
 	update();
@@ -551,7 +564,7 @@ void PopupMenu::add_check_item(const String& p_label,int p_ID,uint32_t p_accel) 
 	Item item;
 	item.text=XL_MESSAGE(p_label);
 	item.accel=p_accel;
-	item.ID=(p_ID<0)?idcount++:p_ID;
+	item.ID=p_ID;
 	item.checkable=true;
 	items.push_back(item);
 	update();
@@ -740,9 +753,11 @@ int PopupMenu::find_item_by_accelerator(uint32_t p_accel) const {
 
 void PopupMenu::activate_item(int p_item) {
 
+
 	ERR_FAIL_INDEX(p_item,items.size());
 	ERR_FAIL_COND(items[p_item].separator);
-	emit_signal("item_pressed",items[p_item].ID);
+	int id = items[p_item].ID>=0?items[p_item].ID:p_item;
+	emit_signal("item_pressed",id);
 
 	//hide all parent PopupMenue's
 	Node *next = get_parent();
@@ -774,8 +789,9 @@ void PopupMenu::add_separator() {
 void PopupMenu::clear()  {
 
 	items.clear();
+	mouse_over=-1;
 	update();
-	idcount=0;
+
 
 }
 
@@ -882,7 +898,7 @@ void PopupMenu::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_item_icon","idx","icon"),&PopupMenu::set_item_icon);
 	ObjectTypeDB::bind_method(_MD("set_item_accelerator","idx","accel"),&PopupMenu::set_item_accelerator);
 	ObjectTypeDB::bind_method(_MD("set_item_metadata","idx","metadata"),&PopupMenu::set_item_metadata);
-	ObjectTypeDB::bind_method(_MD("set_item_checked","idx"),&PopupMenu::set_item_checked);
+	ObjectTypeDB::bind_method(_MD("set_item_checked","idx","checked"),&PopupMenu::set_item_checked);
 	ObjectTypeDB::bind_method(_MD("set_item_disabled","idx","disabled"),&PopupMenu::set_item_disabled);
 	ObjectTypeDB::bind_method(_MD("set_item_submenu","idx","submenu"),&PopupMenu::set_item_submenu);
 	ObjectTypeDB::bind_method(_MD("set_item_as_separator","idx","enable"),&PopupMenu::set_item_as_separator);
@@ -923,7 +939,7 @@ void PopupMenu::set_invalidate_click_until_motion() {
 
 PopupMenu::PopupMenu() {
 
-	idcount=0;
+
 	mouse_over=-1;
 	
 	set_focus_mode(FOCUS_ALL);

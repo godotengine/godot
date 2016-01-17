@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,11 +68,32 @@ protected:
 	static void _bind_methods();
 public:
 
-	void popup(const String& p_term="");
+	void popup();
+	void popup(const String& p_term);
 
-	EditorHelpSearch(EditorNode *p_editor);
+	EditorHelpSearch();
 };
 
+class EditorHelpIndex : public ConfirmationDialog {
+	OBJ_TYPE( EditorHelpIndex, ConfirmationDialog );
+
+
+	Tree *class_list;
+	HashMap<String,TreeItem*> tree_item_map;
+
+	void _tree_item_selected();
+	void add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem *p_root);
+protected:
+
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+
+	void select_class(const String& p_class);
+
+	EditorHelpIndex();
+};
 
 
 class EditorHelp : public VBoxContainer {
@@ -91,17 +112,11 @@ class EditorHelp : public VBoxContainer {
 	};
 
 
-	struct History {
-		String c;
-		int scroll;
-	};
-
-	Vector<History> history;
-	int history_pos;
 	bool select_locked;
 
 	String prev_search;
-	String prev_search_page;
+
+	String edited_class;
 
 	EditorNode *editor;
 	Map<String,int> method_line;
@@ -111,21 +126,17 @@ class EditorHelp : public VBoxContainer {
 	Map<String,int> constant_line;
 	int description_line;
 
-	Tree *class_list;
 
 	RichTextLabel *class_desc;
 	HSplitContainer *h_split;
 	static DocData *doc;
 
-	Button *class_list_button;
-	Button *edited_class;
-	Button *back;
-	Button *forward;
+
+	ConfirmationDialog *search_dialog;
 	LineEdit *search;
 
-	String base_path;
 
-	HashMap<String,TreeItem*> tree_item_map;
+	String base_path;
 
 
 	void _help_callback(const String& p_topic);
@@ -133,25 +144,24 @@ class EditorHelp : public VBoxContainer {
 	void _add_text(const String& p_text);
 	bool scroll_locked;
 
-	void _button_pressed(int p_idx);
+	//void _button_pressed(int p_idx);
 	void _add_type(const String& p_type);
 
 	void _scroll_changed(double p_scroll);
 	void _class_list_select(const String& p_select);
 	void _class_desc_select(const String& p_select);
 
-	Error _goto_desc(const String& p_class,bool p_update_history=true,int p_vscr=-1);
-	void _update_history_buttons();
+	Error _goto_desc(const String& p_class, int p_vscr=-1);
+	//void _update_history_buttons();
 	void _update_doc();
 
 	void _request_help(const String& p_string);
 	void _search(const String& p_str);
+	void _search_cbk();
 
 	void _unhandled_key_input(const InputEvent& p_ev);
-	void add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem *p_root);
-	void _tree_item_selected();
 
-	EditorHelpSearch *class_search;
+
 
 protected:
 
@@ -163,41 +173,25 @@ public:
 	static void generate_doc();
 	static DocData *get_doc_data() { return doc; }
 
-	EditorHelp(EditorNode *p_editor=NULL);
+	void go_to_help(const String& p_help);
+	void go_to_class(const String& p_class,int p_scroll=0);
+
+	void popup_search();
+	void search_again();
+
+	String get_class_name();
+
+	void set_focused() { class_desc->grab_focus(); }
+
+	int get_scroll() const;
+	void set_scroll(int p_scroll);
+
+	EditorHelp();
 	~EditorHelp();
 };
 
 
 
-class EditorHelpPlugin : public EditorPlugin {
-
-	OBJ_TYPE( EditorHelpPlugin, EditorPlugin );
-
-	EditorHelp *editor_help;
-	EditorNode *editor;
-public:
-
-	virtual String get_name() const { return "Help"; }
-	bool has_main_screen() const { return true; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
-	virtual void make_visible(bool p_visible);
-	virtual void selected_notify();
-
-	Dictionary get_state() const;
-	virtual void set_state(const Dictionary& p_state);
-	virtual void clear();
-
-	virtual void save_external_data();
-	virtual void apply_changes();
-
-	virtual void restore_global_state();
-	virtual void save_global_state();
-
-	EditorHelpPlugin(EditorNode *p_node);
-	~EditorHelpPlugin();
-
-};
 
 
 #endif // EDITOR_HELP_H

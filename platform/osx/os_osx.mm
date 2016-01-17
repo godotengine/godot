@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,7 @@
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "main/main.h"
 #include "os/keyboard.h"
+#include "dir_access_osx.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -849,6 +850,11 @@ OS::VideoMode OS_OSX::get_default_video_mode() const {
 void OS_OSX::initialize_core() {
 
 	OS_Unix::initialize_core();
+
+	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_RESOURCES);
+	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_USERDATA);
+	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_FILESYSTEM);
+
 	SemaphoreOSX::make_default();
 
 }
@@ -1050,6 +1056,33 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 void OS_OSX::finalize() {
 
 	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), NULL, kTISNotifySelectedKeyboardInputSourceChanged, NULL);
+	delete_main_loop();
+
+	spatial_sound_server->finish();
+	memdelete(spatial_sound_server);
+	spatial_sound_2d_server->finish();
+	memdelete(spatial_sound_2d_server);
+
+
+	memdelete(input);
+
+	memdelete(sample_manager);
+
+	audio_server->finish();
+	memdelete(audio_server);
+
+	visual_server->finish();
+	memdelete(visual_server);
+	memdelete(rasterizer);
+
+	physics_server->finish();
+	memdelete(physics_server);
+
+	physics_2d_server->finish();
+	memdelete(physics_2d_server);
+
+	screens.clear();
+
 
 }
 
@@ -1062,6 +1095,8 @@ void OS_OSX::set_main_loop( MainLoop * p_main_loop ) {
 
 void OS_OSX::delete_main_loop() {
 
+	if (!main_loop)
+		return;
 	memdelete(main_loop);
 	main_loop=NULL;
 }

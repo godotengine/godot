@@ -42,9 +42,9 @@
 #ifndef MDCT_H
 #define MDCT_H
 
-#include "opus_defines.h"
-#include "kiss_fft.h"
-#include "arch.h"
+#include "opus/opus_defines.h"
+#include "opus/celt/kiss_fft.h"
+#include "opus/celt/arch.h"
 
 typedef struct {
    int n;

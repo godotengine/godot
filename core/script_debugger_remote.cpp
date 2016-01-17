@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 #include "os/os.h"
 #include "io/ip.h"
 #include "globals.h"
-
+#include "os/input.h"
 void ScriptDebuggerRemote::_send_video_memory() {
 
 	List<ResourceUsage> usage;
@@ -134,6 +134,10 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script,bool p_can_continue) {
 	packet_peer_stream->put_var(2);
 	packet_peer_stream->put_var(p_can_continue);
 	packet_peer_stream->put_var(p_script->debug_get_error());
+
+	Input::MouseMode mouse_mode=Input::get_singleton()->get_mouse_mode();
+	if (mouse_mode!=Input::MOUSE_MODE_VISIBLE)
+		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 
 
 	while(true) {
@@ -295,6 +299,9 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script,bool p_can_continue) {
 
 	packet_peer_stream->put_var("debug_exit");
 	packet_peer_stream->put_var(0);
+
+	if (mouse_mode!=Input::MOUSE_MODE_VISIBLE)
+		Input::get_singleton()->set_mouse_mode(mouse_mode);
 
 }
 

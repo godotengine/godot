@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/tool_button.h"
 #include "os/dir_access.h"
 #include "box_container.h"
 /**
@@ -86,6 +87,8 @@ private:
 	OptionButton *filter;
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
+
+	ToolButton *refresh;
 	
 	Vector<String> filters;
 
@@ -113,6 +116,8 @@ private:
 	void _make_dir_confirm();
 
 	void _update_drives();
+
+	void _unhandled_input(const InputEvent& p_event);
 
 	virtual void _post_popup();
 

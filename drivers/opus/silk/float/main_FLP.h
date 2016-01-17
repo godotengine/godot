@@ -28,13 +28,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SILK_MAIN_FLP_H
 #define SILK_MAIN_FLP_H
 
-#include "SigProc_FLP.h"
-#include "SigProc_FIX.h"
-#include "structs_FLP.h"
-#include "silk_main.h"
-#include "define.h"
-#include "debug.h"
-#include "entenc.h"
+#include "opus/silk/float/SigProc_FLP.h"
+#include "opus/silk/SigProc_FIX.h"
+#include "opus/silk/float/structs_FLP.h"
+#include "opus/silk/silk_main.h"
+#include "opus/silk/define.h"
+#include "opus/silk/debug.h"
+#include "opus/celt/entenc.h"
 
 #ifdef __cplusplus
 extern "C"

@@ -28,7 +28,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SILK_CONTROL_H
 #define SILK_CONTROL_H
 
-#include "typedef.h"
+#include "opus/silk/typedef.h"
 
 #ifdef __cplusplus
 extern "C"

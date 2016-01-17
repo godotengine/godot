@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@ class EditorLog : public PanelContainer {
 
 	OBJ_TYPE( EditorLog, PanelContainer );
 
-	ToolButton *button;
+	Button *button;
 	Button *clearbutton;
 	Label *title;
 	RichTextLabel *log;
@@ -73,7 +73,7 @@ public:
 	void add_message(const String& p_msg, bool p_error=false);
 	void deinit();
 
-	ToolButton *get_button();
+	Button *get_button();
 	void clear();
 	EditorLog();
 	~EditorLog();

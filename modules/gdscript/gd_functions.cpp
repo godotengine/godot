@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,8 @@
 #include "gd_script.h"
 #include "func_ref.h"
 #include "os/os.h"
+#include "variant_parser.h"
+#include "io/marshalls.h"
 
 const char *GDFunctions::get_func_name(Function p_func) {
 
@@ -93,11 +95,14 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"printraw",
 		"var2str",
 		"str2var",
+		"var2bytes",
+		"bytes2var",
 		"range",
 		"load",
 		"inst2dict",
 		"dict2inst",
 		"hash",
+		"Color8",
 		"print_stack",
 		"instance_from_id",
 	};
@@ -524,6 +529,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			for(int i=0;i<p_arg_count;i++) {
 
 				String os = p_args[i]->operator String();;
+
 				if (i==0)
 					str=os;
 				else
@@ -607,7 +613,9 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 		} break;
 		case VAR_TO_STR: {
 			VALIDATE_ARG_COUNT(1);
-			r_ret=p_args[0]->get_construct_string();
+			String vars;
+			VariantWriter::write_to_string(*p_args[0],vars);
+			r_ret=vars;
 		} break;
 		case STR_TO_VAR: {
 			VALIDATE_ARG_COUNT(1);
@@ -618,7 +626,72 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				r_ret=Variant();
 				return;
 			}
-			Variant::construct_from_string(*p_args[0],r_ret);
+
+			VariantParser::StreamString ss;
+			ss.s=*p_args[0];
+
+			String errs;
+			int line;
+			Error err = VariantParser::parse(&ss,r_ret,errs,line);
+
+			if (err!=OK) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_error.expected=Variant::STRING;
+				r_ret=Variant();
+			}
+
+		} break;
+		case VAR_TO_BYTES: {
+			VALIDATE_ARG_COUNT(1);
+
+			ByteArray barr;
+			int len;
+			Error err = encode_variant(*p_args[0],NULL,len);
+			if (err) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_error.expected=Variant::NIL;
+				r_ret=Variant();
+				return;
+			}
+
+			barr.resize(len);
+			{
+				ByteArray::Write w = barr.write();
+				encode_variant(*p_args[0],w.ptr(),len);
+
+			}
+			r_ret=barr;
+		} break;
+		case BYTES_TO_VAR: {
+			VALIDATE_ARG_COUNT(1);
+			if (p_args[0]->get_type()!=Variant::RAW_ARRAY) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_error.expected=Variant::RAW_ARRAY;
+				r_ret=Variant();
+				return;
+			}
+
+			ByteArray varr=*p_args[0];
+			Variant ret;
+			{
+				ByteArray::Read r=varr.read();
+				Error err = decode_variant(ret,r.ptr(),varr.size(),NULL);
+				if (err!=OK) {
+					ERR_PRINT("Not enough bytes for decoding..");
+					r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+					r_error.argument=0;
+					r_error.expected=Variant::RAW_ARRAY;
+					r_ret=Variant();
+					return;
+				}
+
+			}
+
+			r_ret=ret;
+
 		} break;
 		case GEN_RANGE: {
 
@@ -920,6 +993,33 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			r_ret=p_args[0]->hash();
 
 		} break;
+		case COLOR8: {
+
+			if (p_arg_count<3) {
+				r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+				r_error.argument=3;
+				return;
+			}
+			if (p_arg_count>4) {
+				r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+				r_error.argument=4;
+				return;
+			}
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+
+			Color color(*p_args[0],*p_args[1],*p_args[2]);
+
+			if (p_arg_count==4) {
+				VALIDATE_ARG_NUM(3);
+				color.a=*p_args[3];
+			}
+
+			r_ret=color;
+
+		} break;
 
 		case PRINT_STACK: {
 
@@ -999,6 +1099,7 @@ bool GDFunctions::is_deterministic(Function p_func) {
 		case TYPE_CONVERT:
 		case TYPE_OF:
 		case TEXT_STR:
+		case COLOR8:
 // enable for debug only, otherwise not desirable - case GEN_RANGE:
 			return true;
 		default:
@@ -1311,6 +1412,18 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			mi.return_val.type=Variant::NIL;
 			return mi;
 		} break;
+		case VAR_TO_BYTES: {
+			MethodInfo mi("var2bytes",PropertyInfo(Variant::NIL,"var"));
+			mi.return_val.type=Variant::RAW_ARRAY;
+			return mi;
+
+		} break;
+		case BYTES_TO_VAR: {
+
+			MethodInfo mi("bytes2var:Variant",PropertyInfo(Variant::RAW_ARRAY,"bytes"));
+			mi.return_val.type=Variant::NIL;
+			return mi;
+		} break;
 		case GEN_RANGE: {
 
 			MethodInfo mi("range",PropertyInfo(Variant::NIL,"..."));
@@ -1340,6 +1453,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("hash",PropertyInfo(Variant::NIL,"var:Variant"));
 			mi.return_val.type=Variant::INT;
+			return mi;
+		} break;
+		case COLOR8: {
+
+			MethodInfo mi("Color8",PropertyInfo(Variant::INT,"r8"),PropertyInfo(Variant::INT,"g8"),PropertyInfo(Variant::INT,"b8"),PropertyInfo(Variant::INT,"a8"));
+			mi.return_val.type=Variant::COLOR;
 			return mi;
 		} break;
 

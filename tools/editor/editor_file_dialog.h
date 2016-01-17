@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,6 +108,7 @@ private:
 	ToolButton *mode_list;
 
 
+	ToolButton *refresh;
 	ToolButton *favorite;
 
 	ToolButton *fav_up;
@@ -127,6 +128,7 @@ private:
 	int preview_wheel_index;
 	float preview_wheel_timeout;
 	static bool default_show_hidden_files;
+	static DisplayMode default_display_mode;
 	bool show_hidden_files;
 	DisplayMode display_mode;
 
@@ -174,6 +176,8 @@ private:
 	void _thumbnail_done(const String& p_path,const Ref<Texture>& p_preview, const Variant& p_udata);
 	void _request_single_thumbnail(const String& p_path);
 
+	void _unhandled_input(const InputEvent& p_event);
+
 protected:
 
 	void _notification(int p_what);
@@ -210,6 +214,7 @@ public:
 	bool is_showing_hidden_files() const;
 
 	static void set_default_show_hidden_files(bool p_show);
+	static void set_default_display_mode(DisplayMode p_mode);
 
 	void invalidate();
 

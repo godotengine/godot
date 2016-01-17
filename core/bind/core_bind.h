@@ -208,7 +208,7 @@ public:
 	Dictionary get_time(bool utc) const;
 	Dictionary get_time_zone_info() const;
 	uint64_t get_unix_time() const;
-	uint64_t get_system_time_msec() const;
+	uint64_t get_system_time_secs() const;
 
 	int get_static_memory_usage() const;
 	int get_static_memory_peak_usage() const;
@@ -329,6 +329,7 @@ public:
 		READ=1,
 		WRITE=2,
 		READ_WRITE=3,
+		WRITE_READ=7,
 	};
 
 	Error open_encrypted(const String& p_path, int p_mode_flags,const Vector<uint8_t>& p_key);
@@ -508,6 +509,7 @@ protected:
 	Object *target_instance;
 	StringName target_method;
 	Thread *thread;
+	String name;
 	static void _bind_methods();
 	static void _start_func(void *ud);
 public:
@@ -523,6 +525,7 @@ public:
 	String get_id() const;
 	bool is_active() const;
 	Variant wait_to_finish();
+	Error set_name(const String& p_name);
 
 	_Thread();
 	~_Thread();

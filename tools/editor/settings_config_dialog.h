@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,7 +51,7 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	Button *rescan_plugins;
 	Tree *plugins;
-	PropertyEditor *property_editor;
+	SectionedPropertyEditor *property_editor;
 
 	Timer *timer;
 
@@ -70,6 +70,8 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	void _rescan_plugins();
 	void _update_plugins();
+
+	void _clear_search_box();
 
 protected:
 

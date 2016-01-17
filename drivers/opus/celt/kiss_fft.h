@@ -31,7 +31,7 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include "arch.h"
+#include "opus/celt/arch.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,7 +46,7 @@ extern "C" {
 #endif
 
 #ifdef OPUS_FIXED_POINT
-#include "arch.h"
+#include "opus/celt/arch.h"
 
 #  define kiss_fft_scalar opus_int32
 #  define kiss_twiddle_scalar opus_int16

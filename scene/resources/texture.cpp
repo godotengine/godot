@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,9 +70,9 @@ void Texture::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("has_alpha"),&Texture::has_alpha);
 	ObjectTypeDB::bind_method(_MD("set_flags","flags"),&Texture::set_flags);
 	ObjectTypeDB::bind_method(_MD("get_flags"),&Texture::get_flags);
-	ObjectTypeDB::bind_method(_MD("draw","canvas_item","pos","modulate"),&Texture::draw,DEFVAL(Color(1,1,1)),DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("draw_rect","canvas_item","rect","tile","modulate"),&Texture::draw_rect,DEFVAL(Color(1,1,1)),DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("draw_rect_region","canvas_item","rect","src_rect","modulate"),&Texture::draw_rect_region,DEFVAL(Color(1,1,1)),DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("draw","canvas_item","pos","modulate","transpose"),&Texture::draw,DEFVAL(Color(1,1,1)),DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("draw_rect","canvas_item","rect","tile","modulate","transpose"),&Texture::draw_rect,DEFVAL(Color(1,1,1)),DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("draw_rect_region","canvas_item","rect","src_rect","modulate","transpose"),&Texture::draw_rect_region,DEFVAL(Color(1,1,1)),DEFVAL(false));
 
 	BIND_CONSTANT( FLAG_MIPMAPS );
 	BIND_CONSTANT( FLAG_REPEAT );
@@ -329,6 +329,16 @@ void ImageTexture::normal_to_xy() {
 	create_from_image(img,flags);
 }
 
+void ImageTexture::shrink_x2_and_keep_size() {
+
+	Size2 sizeov=get_size();
+	Image img = get_data();
+	img.resize(img.get_width()/2,img.get_height()/2,Image::INTERPOLATE_BILINEAR);
+	create_from_image(img,flags);
+	set_size_override(sizeov);
+
+}
+
 bool ImageTexture::has_alpha() const {
 
 	return ( format==Image::FORMAT_GRAYSCALE_ALPHA || format==Image::FORMAT_INDEXED_ALPHA || format==Image::FORMAT_RGBA );
@@ -424,10 +434,13 @@ void ImageTexture::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("fix_alpha_edges"),&ImageTexture::fix_alpha_edges);
 	ObjectTypeDB::bind_method(_MD("premultiply_alpha"),&ImageTexture::premultiply_alpha);
 	ObjectTypeDB::bind_method(_MD("normal_to_xy"),&ImageTexture::normal_to_xy);
+	ObjectTypeDB::bind_method(_MD("shrink_x2_and_keep_size"),&ImageTexture::shrink_x2_and_keep_size);
+
 	ObjectTypeDB::bind_method(_MD("set_size_override","size"),&ImageTexture::set_size_override);
 	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("fix_alpha_edges"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("premultiply_alpha"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("normal_to_xy"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("shrink_x2_and_keep_size"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 	ObjectTypeDB::bind_method(_MD("_reload_hook","rid"),&ImageTexture::_reload_hook);
 
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -147,13 +147,13 @@ void AudioDriverAndroid::setup( jobject p_io) {
 
 void AudioDriverAndroid::thread_func(JNIEnv *env) {
 
-	jclass cls = env->FindClass("com/android/godot/Godot");
+	jclass cls = env->FindClass("org/godotengine/godot/Godot");
 	if (cls) {
 
 		cls=(jclass)env->NewGlobalRef(cls);
 		__android_log_print(ANDROID_LOG_INFO,"godot","*******CLASS FOUND!!!");
 	}
-	jfieldID fid = env->GetStaticFieldID(cls, "io", "Lcom/android/godot/GodotIO;");
+	jfieldID fid = env->GetStaticFieldID(cls, "io", "Lorg/godotengine/godot/GodotIO;");
 	jobject ob = env->GetStaticObjectField(cls,fid);
 	jobject gob = env->NewGlobalRef(ob);
 	jclass c = env->GetObjectClass(gob);

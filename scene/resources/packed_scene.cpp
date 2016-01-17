@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -124,7 +124,7 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 					ERR_FAIL_COND_V(!node,NULL);
 				} else {
 					InstancePlaceholder *ip = memnew( InstancePlaceholder );
-					ip->set_path(path);
+					ip->set_instance_path(path);
 					node=ip;
 				}
 				node->set_scene_instance_load_placeholder(true);
@@ -506,6 +506,19 @@ Error SceneState::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<S
 				original = ps.state->get_property_value(ps.node,E->get().name,exists);
 				if (exists) {
 					break;
+				}
+			}
+
+			if (exists && p_node->get_script_instance()) {
+				//if this is an overriden value by another script, save it anyway
+				//as the script change will erase it
+				//https://github.com/godotengine/godot/issues/2958
+
+				bool valid=false;
+				p_node->get_script_instance()->get_property_type(name,&valid);
+				if (valid) {
+					exists=false;
+					isdefault=false;
 				}
 			}
 
@@ -1280,14 +1293,17 @@ StringName SceneState::get_node_name(int p_idx) const {
 
 Ref<PackedScene> SceneState::get_node_instance(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx,nodes.size(),Ref<PackedScene>());
+
 	if (nodes[p_idx].instance>=0) {
 		return variants[nodes[p_idx].instance];
-	} else if (nodes[p_idx].parent<=0 || nodes[p_idx].parent==NO_PARENT_SAVED) {
+	} else if (nodes[p_idx].parent<0 || nodes[p_idx].parent==NO_PARENT_SAVED) {
 
 		if (base_scene_idx>=0) {
 			return variants[base_scene_idx];
 		}
 	}
+
+
 
 	return Ref<PackedScene>();
 
@@ -1438,11 +1454,90 @@ Array SceneState::get_connection_binds(int p_idx) const {
 Vector<NodePath> SceneState::get_editable_instances() const {
 	return editable_instances;
 }
+//add
+
+int SceneState::add_name(const StringName& p_name) {
+
+	names.push_back(p_name);
+	return names.size()-1;
+}
+
+int SceneState::add_value(const Variant& p_value) {
+
+	variants.push_back(p_value);
+	return variants.size()-1;
+}
+
+int SceneState::add_node_path(const NodePath& p_path){
+
+	node_paths.push_back(p_path);
+	return  (node_paths.size()-1)|FLAG_ID_IS_PATH;
+}
+int SceneState::add_node(int p_parent,int p_owner,int p_type,int p_name, int p_instance){
+
+	NodeData nd;
+	nd.parent=p_parent;
+	nd.owner=p_owner;
+	nd.type=p_type;
+	nd.name=p_name;
+	nd.instance=p_instance;
+
+	nodes.push_back(nd);
+
+	return nodes.size()-1;
+}
+void SceneState::add_node_property(int p_node,int p_name,int p_value){
+
+	ERR_FAIL_INDEX(p_node,nodes.size());
+	ERR_FAIL_INDEX(p_name,names.size());
+	ERR_FAIL_INDEX(p_value,variants.size());
+
+	NodeData::Property prop;
+	prop.name=p_name;
+	prop.value=p_value;
+	nodes[p_node].properties.push_back(prop);
+}
+void SceneState::add_node_group(int p_node,int p_group){
+
+	ERR_FAIL_INDEX(p_node,nodes.size());
+	ERR_FAIL_INDEX(p_group,names.size());
+	nodes[p_node].groups.push_back(p_group);
+
+}
+void SceneState::set_base_scene(int p_idx){
+
+	ERR_FAIL_INDEX(p_idx,variants.size());
+	base_scene_idx=p_idx;
+}
+void SceneState::add_connection(int p_from,int p_to, int p_signal, int p_method, int p_flags,const Vector<int>& p_binds){
+
+	ERR_FAIL_INDEX(p_signal,names.size());
+	ERR_FAIL_INDEX(p_method,names.size());
+
+	for(int i=0;i<p_binds.size();i++) {
+		ERR_FAIL_INDEX(p_binds[i],variants.size());
+	}
+	ConnectionData c;
+	c.from=p_from;
+	c.to=p_to;
+	c.signal=p_signal;
+	c.method=p_method;
+	c.flags=p_flags;
+	c.binds=p_binds;
+	connections.push_back(c);
+
+}
+void SceneState::add_editable_instance(const NodePath& p_path){
+
+	editable_instances.push_back(p_path);
+}
+
 
 
 SceneState::SceneState() {
 
 	base_scene_idx=-1;
+	last_modified_time=0;
 }
 
 
@@ -1502,6 +1597,25 @@ Node *PackedScene::instance(bool p_gen_edit_state) const {
 	return s;
 }
 
+void PackedScene::replace_state(Ref<SceneState> p_by) {
+
+	state=p_by;
+	state->set_path(get_path());
+#ifdef TOOLS_ENABLED
+	state->set_last_modified_time(get_last_modified_time());
+#endif
+
+}
+
+void PackedScene::recreate_state() {
+
+	state = Ref<SceneState>( memnew( SceneState ));
+	state->set_path(get_path());
+#ifdef TOOLS_ENABLED
+	state->set_last_modified_time(get_last_modified_time());
+#endif
+}
+
 Ref<SceneState> PackedScene::get_state() {
 
 	return state;
@@ -1512,6 +1626,7 @@ void PackedScene::set_path(const String& p_path,bool p_take_over) {
 	state->set_path(p_path);
 	Resource::set_path(p_path,p_take_over);
 }
+
 
 void PackedScene::_bind_methods() {
 

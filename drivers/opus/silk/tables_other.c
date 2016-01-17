@@ -25,13 +25,13 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 
-#include "structs.h"
-#include "define.h"
-#include "tables.h"
+#include "opus/silk/structs.h"
+#include "opus/silk/define.h"
+#include "opus/silk/tables.h"
 
 #ifdef __cplusplus
 extern "C"

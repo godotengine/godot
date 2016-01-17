@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,6 +50,14 @@ void Container::add_child_notify(Node *p_child) {
 	control->connect("visibility_changed",this,"_child_minsize_changed");
 	queue_sort();
 
+}
+
+void Container::move_child_notify(Node *p_child) {
+
+	if (!p_child->cast_to<Control>())
+		return;
+
+	queue_sort();
 }
 
 void Container::remove_child_notify(Node *p_child) {
@@ -97,6 +105,8 @@ void Container::fit_child_in_rect(Control *p_child,const Rect2& p_rect) {
 
 	p_child->set_pos(r.pos);
 	p_child->set_size(r.size);
+	p_child->set_rotation(0);
+	p_child->set_scale(Vector2(1,1));
 }
 
 void Container::queue_sort() {

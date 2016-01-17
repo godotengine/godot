@@ -28,7 +28,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SILK_PLC_H
 #define SILK_PLC_H
 
-#include "silk_main.h"
+#include "opus/silk/silk_main.h"
 
 #define BWE_COEF                        0.99
 #define V_PITCH_GAIN_START_MIN_Q14      11469               /* 0.7 in Q14               */

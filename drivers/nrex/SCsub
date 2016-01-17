@@ -1,4 +1,3 @@
-
 Import('env')
 
 sources = [
@@ -6,4 +5,3 @@ sources = [
 	'regex.cpp',
 ]
 env.add_source_files(env.drivers_sources, sources)
-

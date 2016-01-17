@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -517,7 +517,7 @@ void PhysicsServerSW::body_set_mode(RID p_body, BodyMode p_mode) {
 	body->set_mode(p_mode);
 };
 
-PhysicsServer::BodyMode PhysicsServerSW::body_get_mode(RID p_body, BodyMode p_mode) const {
+PhysicsServer::BodyMode PhysicsServerSW::body_get_mode(RID p_body) const {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,BODY_MODE_STATIC);

@@ -1,8 +1,10 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// This code is licensed under the same terms as WebM:
-//  Software License Agreement:  http://www.webmproject.org/license/software/
-//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
+// Use of this source code is governed by a BSD-style license
+// that can be found in the COPYING file in the root of the source
+// tree. An additional intellectual property rights grant can be found
+// in the file PATENTS. All contributing project authors may
+// be found in the AUTHORS file in the root of the source tree.
 // -----------------------------------------------------------------------------
 //
 // Author: Jyrki Alakuijala (jyrki@google.com)
@@ -12,9 +14,9 @@
 #ifndef WEBP_UTILS_HUFFMAN_ENCODE_H_
 #define WEBP_UTILS_HUFFMAN_ENCODE_H_
 
-#include "../types.h"
+#include "webp/types.h"
 
-#if defined(__cplusplus) || defined(c_plusplus)
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -31,16 +33,27 @@ typedef struct {
   uint16_t* codes;         // Symbol Codes.
 } HuffmanTreeCode;
 
+// Struct to represent the Huffman tree.
+typedef struct {
+  uint32_t total_count_;   // Symbol frequency.
+  int value_;              // Symbol value.
+  int pool_index_left_;    // Index for the left sub-tree.
+  int pool_index_right_;   // Index for the right sub-tree.
+} HuffmanTree;
+
 // Turn the Huffman tree into a token sequence.
 // Returns the number of tokens used.
 int VP8LCreateCompressedHuffmanTree(const HuffmanTreeCode* const tree,
                                     HuffmanTreeToken* tokens, int max_tokens);
 
 // Create an optimized tree, and tokenize it.
-int VP8LCreateHuffmanTree(int* const histogram, int tree_depth_limit,
-                          HuffmanTreeCode* const tree);
+// 'buf_rle' and 'huff_tree' are pre-allocated and the 'tree' is the constructed
+// huffman code tree.
+void VP8LCreateHuffmanTree(uint32_t* const histogram, int tree_depth_limit,
+                           uint8_t* const buf_rle, HuffmanTree* const huff_tree,
+                           HuffmanTreeCode* const tree);
 
-#if defined(__cplusplus) || defined(c_plusplus)
+#ifdef __cplusplus
 }
 #endif
 

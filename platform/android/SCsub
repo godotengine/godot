@@ -37,19 +37,59 @@ prog = None
 abspath=env.Dir(".").abspath
 
 
-pp_basein = open(abspath+"/project.properties.template","rb")
-pp_baseout = open(abspath+"/java/project.properties","wb")
-pp_baseout.write( pp_basein.read() )
+gradle_basein = open(abspath+"/build.gradle.template","rb")
+gradle_baseout = open(abspath+"/java/build.gradle","wb")
 
-refcount=1
-
-for x in env.android_source_modules:
-	pp_baseout.write("android.library.reference."+str(refcount)+"="+x+"\n")
-	refcount+=1
+gradle_text = gradle_basein.read()
 
 
+gradle_maven_repos_text=""
 
-pp_baseout.close()
+if len(env.android_maven_repos) > 0:
+	gradle_maven_repos_text+="maven {\n"
+	for x in env.android_maven_repos:
+		gradle_maven_repos_text+="\t\t"+x+"\n"
+	gradle_maven_repos_text+="\t}\n"
+
+gradle_maven_dependencies_text=""
+
+for x in env.android_dependencies:
+	gradle_maven_dependencies_text+=x+"\n"
+
+gradle_java_dirs_text=""
+
+for x in env.android_java_dirs:
+	gradle_java_dirs_text+=",'"+x+"'"
+
+
+gradle_res_dirs_text=""
+
+for x in env.android_res_dirs:
+	gradle_res_dirs_text+=",'"+x+"'"
+
+gradle_aidl_dirs_text=""
+
+for x in env.android_aidl_dirs:
+	gradle_aidl_dirs_text+=",'"+x+"'"
+
+gradle_jni_dirs_text=""
+
+for x in env.android_jni_dirs:
+	gradle_jni_dirs_text+=",'"+x+"'"
+
+gradle_asset_dirs_text=""
+
+gradle_text = gradle_text.replace("$$GRADLE_REPOSITORY_URLS$$",gradle_maven_repos_text)
+gradle_text = gradle_text.replace("$$GRADLE_DEPENDENCIES$$",gradle_maven_dependencies_text)
+gradle_text = gradle_text.replace("$$GRADLE_JAVA_DIRS$$",gradle_java_dirs_text)
+gradle_text = gradle_text.replace("$$GRADLE_RES_DIRS$$",gradle_res_dirs_text)
+gradle_text = gradle_text.replace("$$GRADLE_ASSET_DIRS$$",gradle_asset_dirs_text)
+gradle_text = gradle_text.replace("$$GRADLE_AIDL_DIRS$$",gradle_aidl_dirs_text)
+gradle_text = gradle_text.replace("$$GRADLE_JNI_DIRS$$",gradle_jni_dirs_text)
+
+
+gradle_baseout.write( gradle_text )
+gradle_baseout.close()
 
 
 pp_basein = open(abspath+"/AndroidManifest.xml.template","rb")
@@ -59,13 +99,6 @@ manifest = manifest.replace("$$ADD_APPLICATION_CHUNKS$$",env.android_manifest_ch
 manifest = manifest.replace("$$ADD_PERMISSION_CHUNKS$$",env.android_permission_chunk)
 manifest = manifest.replace("$$ADD_APPATTRIBUTE_CHUNKS$$",env.android_appattributes_chunk)
 pp_baseout.write( manifest )
-
-
-for x in env.android_source_files:
-	shutil.copy(x,abspath+"/java/src/com/android/godot")	
-
-for x in env.android_module_libraries:
-	shutil.copy(x,abspath+"/java/libs")	
 
 
 env_android.SharedLibrary("#bin/libgodot",[android_objects],SHLIBSUFFIX=env["SHLIBSUFFIX"])

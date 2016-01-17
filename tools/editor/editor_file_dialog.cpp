@@ -6,6 +6,8 @@
 #include "editor_resource_preview.h"
 #include "editor_settings.h"
 #include "scene/gui/margin_container.h"
+#include "os/file_access.h"
+
 EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func=NULL;
 EditorFileDialog::GetIconFunc EditorFileDialog::get_large_icon_func=NULL;
 
@@ -27,14 +29,14 @@ void EditorFileDialog::_notification(int p_what) {
 		dir_prev->set_icon(get_icon("ArrowLeft","EditorIcons"));
 		dir_next->set_icon(get_icon("ArrowRight","EditorIcons"));
 		dir_up->set_icon(get_icon("ArrowUp","EditorIcons"));
+		refresh->set_icon(get_icon("Reload","EditorIcons"));
 		favorite->set_icon(get_icon("Favorites","EditorIcons"));
 
 		fav_up->set_icon(get_icon("MoveUp","EditorIcons"));
 		fav_down->set_icon(get_icon("MoveDown","EditorIcons"));
 		fav_rm->set_icon(get_icon("RemoveSmall","EditorIcons"));
 
-	}
-	if (p_what==NOTIFICATION_PROCESS) {
+	} else if (p_what==NOTIFICATION_PROCESS) {
 
 		if (preview_waiting) {
 			preview_wheel_timeout-=get_process_delta_time();
@@ -47,12 +49,53 @@ void EditorFileDialog::_notification(int p_what) {
 				preview_wheel_timeout=0.1;
 			}
 		}
-	}
-
-	if (p_what==NOTIFICATION_DRAW) {
+	} else if (p_what==NOTIFICATION_DRAW) {
 
 		//RID ci = get_canvas_item();
 		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
+	} else if (p_what==NOTIFICATION_POPUP_HIDE) {
+
+		set_process_unhandled_input(false);
+
+	} else if (p_what==EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+
+		bool show_hidden=EditorSettings::get_singleton()->get("file_dialog/show_hidden_files");
+		if (show_hidden_files!=show_hidden)
+			set_show_hidden_files(show_hidden);
+		set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("file_dialog/display_mode").operator int());
+	}
+}
+
+void EditorFileDialog::_unhandled_input(const InputEvent& p_event) {
+
+	if (p_event.type==InputEvent::KEY && is_window_modal_on_top()) {
+
+		const InputEventKey &k=p_event.key;
+
+		if (k.pressed) {
+
+			bool handled=true;
+
+			switch (k.scancode) {
+
+				case KEY_H: {
+
+					if (k.mod.command) {
+
+						bool show=!show_hidden_files;
+						set_show_hidden_files(show);
+						EditorSettings::get_singleton()->set("file_dialog/show_hidden_files",show);
+					} else {
+						handled=false;
+					}
+
+				} break;
+				default: { handled=false; }
+			}
+
+			if (handled)
+				accept_event();
+		}
 	}
 }
 
@@ -147,6 +190,8 @@ void EditorFileDialog::_post_popup() {
 		_update_favorites();
 	}
 
+	set_process_unhandled_input(true);
+
 }
 
 void EditorFileDialog::_thumbnail_result(const String& p_path,const Ref<Texture>& p_preview, const Variant& p_udata) {
@@ -188,6 +233,9 @@ void EditorFileDialog::_thumbnail_done(const String& p_path,const Ref<Texture>& 
 }
 
 void EditorFileDialog::_request_single_thumbnail(const String& p_path) {
+
+	if (!FileAccess::exists(p_path))
+		return;
 
 	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path,this,"_thumbnail_done",p_path);
 	//print_line("want file "+p_path);
@@ -430,6 +478,8 @@ void EditorFileDialog::update_file_list() {
 
 	}
 
+	String cdir = dir_access->get_current_dir();
+	bool skip_pp = access==ACCESS_RESOURCES && cdir=="res://";
 
 	dir_access->list_dir_begin();
 
@@ -450,7 +500,7 @@ void EditorFileDialog::update_file_list() {
 		if (show_hidden || !ishidden) {
 			if (!isdir)
 				files.push_back(item);
-			else
+			else if (item!=".." || !skip_pp)
 				dirs.push_back(item);
 		}
 	}
@@ -1012,7 +1062,9 @@ void EditorFileDialog::_go_forward(){
 
 }
 
-bool EditorFileDialog::default_show_hidden_files=true;
+bool EditorFileDialog::default_show_hidden_files=false;
+
+EditorFileDialog::DisplayMode EditorFileDialog::default_display_mode=DISPLAY_THUMBNAILS;
 
 void EditorFileDialog::set_display_mode(DisplayMode p_mode) {
 
@@ -1038,6 +1090,8 @@ EditorFileDialog::DisplayMode EditorFileDialog::get_display_mode() const{
 
 void EditorFileDialog::_bind_methods() {
 
+	ObjectTypeDB::bind_method(_MD("_unhandled_input"),&EditorFileDialog::_unhandled_input);
+
 	ObjectTypeDB::bind_method(_MD("_item_selected"),&EditorFileDialog::_item_selected);
 	ObjectTypeDB::bind_method(_MD("_item_db_selected"),&EditorFileDialog::_item_dc_selected);
 	ObjectTypeDB::bind_method(_MD("_dir_entered"),&EditorFileDialog::_dir_entered);
@@ -1060,7 +1114,7 @@ void EditorFileDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_vbox:VBoxContainer"),&EditorFileDialog::get_vbox);
 	ObjectTypeDB::bind_method(_MD("set_access","access"),&EditorFileDialog::set_access);
 	ObjectTypeDB::bind_method(_MD("get_access"),&EditorFileDialog::get_access);
-	ObjectTypeDB::bind_method(_MD("set_show_hidden_files"),&EditorFileDialog::set_show_hidden_files);
+	ObjectTypeDB::bind_method(_MD("set_show_hidden_files","show"),&EditorFileDialog::set_show_hidden_files);
 	ObjectTypeDB::bind_method(_MD("is_showing_hidden_files"),&EditorFileDialog::is_showing_hidden_files);
 	ObjectTypeDB::bind_method(_MD("_select_drive"),&EditorFileDialog::_select_drive);
 	ObjectTypeDB::bind_method(_MD("_make_dir"),&EditorFileDialog::_make_dir);
@@ -1113,6 +1167,10 @@ void EditorFileDialog::set_default_show_hidden_files(bool p_show) {
 	default_show_hidden_files=p_show;
 }
 
+void EditorFileDialog::set_default_display_mode(DisplayMode p_mode) {
+	default_display_mode=p_mode;
+}
+
 void EditorFileDialog::_save_to_recent() {
 
 	String dir = get_current_dir();
@@ -1141,8 +1199,8 @@ void EditorFileDialog::_save_to_recent() {
 
 EditorFileDialog::EditorFileDialog() {
 
-	show_hidden_files=true;
-	display_mode=DISPLAY_THUMBNAILS;
+	show_hidden_files=default_show_hidden_files;
+	display_mode=default_display_mode;
 	local_history_pos=0;
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
@@ -1170,6 +1228,10 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(dir);
 	dir->set_h_size_flags(SIZE_EXPAND_FILL);
 
+	refresh = memnew( ToolButton );
+	refresh->connect("pressed",this,"_update_file_list");
+	pathhb->add_child(refresh);
+
 	favorite = memnew( ToolButton );
 	favorite->set_toggle_mode(true);
 	favorite->connect("toggled",this,"_favorite_toggled");
@@ -1178,11 +1240,13 @@ EditorFileDialog::EditorFileDialog() {
 	mode_thumbnails = memnew( ToolButton );
 	mode_thumbnails->connect("pressed",this,"set_display_mode",varray(DISPLAY_THUMBNAILS));
 	mode_thumbnails->set_toggle_mode(true);
-	mode_thumbnails->set_pressed(true);
+	mode_thumbnails->set_pressed(display_mode==DISPLAY_THUMBNAILS);
 	pathhb->add_child(mode_thumbnails);
+
 	mode_list = memnew( ToolButton );
 	mode_list->connect("pressed",this,"set_display_mode",varray(DISPLAY_LIST));
 	mode_list->set_toggle_mode(true);
+	mode_list->set_pressed(display_mode==DISPLAY_LIST);
 	pathhb->add_child(mode_list);
 
 	drives = memnew( OptionButton );

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 #include "os/keyboard.h"
 
 
-void EditorQuickOpen::popup(const StringName &p_base, bool p_dontclear, bool p_add_dirs) {
+void EditorQuickOpen::popup(const StringName &p_base, bool p_enable_multi, bool p_add_dirs, bool p_dontclear) {
 
 	add_directories=p_add_dirs;
 	popup_centered_ratio(0.6);
@@ -38,13 +38,38 @@ void EditorQuickOpen::popup(const StringName &p_base, bool p_dontclear, bool p_a
 		search_box->select_all();
 	else
 		search_box->clear();
+	if (p_enable_multi)
+		search_options->set_select_mode(Tree::SELECT_MULTI);
+	else
+		search_options->set_select_mode(Tree::SELECT_SINGLE);
 	search_box->grab_focus();
 	base_type=p_base;
 	_update_search();
-
-
 }
 
+String EditorQuickOpen::get_selected() const {
+
+	TreeItem *ti = search_options->get_selected();
+	if (!ti)
+		return String();
+
+	return "res://" + ti->get_text(0);
+}
+
+Vector<String> EditorQuickOpen::get_selected_files() const {
+
+	Vector<String> files;
+
+	TreeItem* item = search_options->get_next_selected(search_options->get_root());
+	while (item) {
+
+		files.push_back("res://"+item->get_text(0));
+
+		item = search_options->get_next_selected(item);
+	}
+
+	return files;
+}
 
 void EditorQuickOpen::_text_changed(const String& p_newtext) {
 
@@ -132,7 +157,7 @@ void EditorQuickOpen::_confirmed() {
 	TreeItem *ti = search_options->get_selected();
 	if (!ti)
 		return;
-	emit_signal("quick_open","res://"+ti->get_text(0));
+	emit_signal("quick_open");
 	hide();
 }
 
@@ -156,7 +181,7 @@ void EditorQuickOpen::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_confirmed"),&EditorQuickOpen::_confirmed);
 	ObjectTypeDB::bind_method(_MD("_sbox_input"),&EditorQuickOpen::_sbox_input);
 
-	ADD_SIGNAL(MethodInfo("quick_open",PropertyInfo(Variant::STRING,"respath")));
+	ADD_SIGNAL(MethodInfo("quick_open"));
 
 }
 

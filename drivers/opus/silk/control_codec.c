@@ -25,19 +25,19 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifdef OPUS_HAVE_CONFIG_H
-#include "opus_config.h"
+#ifdef OPUS_ENABLED
+#include "opus/opus_config.h"
 #endif
 #ifdef OPUS_FIXED_POINT
-#include "main_FIX.h"
+#include "opus/silk/fixed/main_FIX.h"
 #define silk_encoder_state_Fxx      silk_encoder_state_FIX
 #else
-#include "main_FLP.h"
+#include "opus/silk/float/main_FLP.h"
 #define silk_encoder_state_Fxx      silk_encoder_state_FLP
 #endif
-#include "stack_alloc.h"
-#include "tuning_parameters.h"
-#include "pitch_est_defines.h"
+#include "opus/celt/stack_alloc.h"
+#include "opus/silk/tuning_parameters.h"
+#include "opus/silk/pitch_est_defines.h"
 
 static opus_int silk_setup_resamplers(
     silk_encoder_state_Fxx          *psEnc,             /* I/O                      */

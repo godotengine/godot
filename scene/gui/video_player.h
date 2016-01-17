@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,6 +88,8 @@ public:
 	bool has_expand() const;
 
 
+	Ref<Texture> get_video_texture();
+
 	void set_stream(const Ref<VideoStream> &p_stream);
 	Ref<VideoStream> get_stream() const;
 
@@ -110,8 +112,8 @@ public:
 	void set_autoplay(bool p_vol);
 	bool has_autoplay() const;
 
-    void set_audio_track(int p_track);
-    int get_audio_track() const;
+	void set_audio_track(int p_track);
+	int get_audio_track() const;
 
 	void set_buffering_msec(int p_msec);
 	int get_buffering_msec() const;

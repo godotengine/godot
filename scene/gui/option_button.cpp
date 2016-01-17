@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,9 +77,14 @@ void OptionButton::_selected(int p_which) {
 		}
 	}
 
-	ERR_FAIL_COND(selid==-1);
+	if (selid==-1 && p_which>=0 && p_which<popup->get_item_count()) {
+		_select(p_which,true);
+	} else {
 
-	_select(selid,true);
+		ERR_FAIL_COND(selid==-1);
+
+		_select(selid,true);
+	}
 }
 
 
@@ -299,7 +304,7 @@ void OptionButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_item_count"),&OptionButton::get_item_count);
 	ObjectTypeDB::bind_method(_MD("add_separator"),&OptionButton::add_separator);
 	ObjectTypeDB::bind_method(_MD("clear"),&OptionButton::clear);
-	ObjectTypeDB::bind_method(_MD("select"),&OptionButton::select);
+	ObjectTypeDB::bind_method(_MD("select","idx"),&OptionButton::select);
 	ObjectTypeDB::bind_method(_MD("get_selected"),&OptionButton::get_selected);	
 	ObjectTypeDB::bind_method(_MD("get_selected_ID"),&OptionButton::get_selected_ID);
 	ObjectTypeDB::bind_method(_MD("get_selected_metadata"),&OptionButton::get_selected_metadata);
