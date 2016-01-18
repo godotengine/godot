@@ -80,6 +80,13 @@ static Ref<Texture> make_icon(T p_src) {
 	return texture;
 }
 
+static Ref<Shader> make_shader(const char*vertex_code,const char*fragment_code,const char*lighting_code) {
+	Ref<Shader> shader = (memnew( Shader(Shader::MODE_CANVAS_ITEM) ));
+	shader->set_code(vertex_code, fragment_code, lighting_code);
+
+	return shader;
+}
+
 static Ref<Font> make_font(int p_height,int p_ascent, int p_valign, int p_charcount, const int *p_chars,const Ref<Texture> &p_texture) {
 
 
@@ -767,7 +774,11 @@ void make_default_theme() {
 	t->set_constant("label_width","ColorPicker", 20);
 	t->set_constant("hseparator","ColorPicker", 4);
 
-
+	t->set_icon("screen_picker","ColorPicker", make_icon( icon_color_pick_png ) );
+	t->set_icon("add_preset","ColorPicker", make_icon( icon_add_png ) );
+	
+	t->set_shader("uv_editor", "ColorPicker", make_shader("", uv_editor_shader_code, ""));
+	t->set_shader("w_editor", "ColorPicker", make_shader("", w_editor_shader_code, ""));
 
 	// TooltipPanel
 

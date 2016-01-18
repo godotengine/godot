@@ -142,6 +142,7 @@ private:
 		NodePath focus_neighbour[4];
 
 		HashMap<StringName, Ref<Texture>, StringNameHasher > icon_override;
+		HashMap<StringName, Ref<Shader>, StringNameHasher > shader_override;
 		HashMap<StringName, Ref<StyleBox>, StringNameHasher > style_override;
 		HashMap<StringName, Ref<Font>, StringNameHasher > font_override;
 		HashMap<StringName, Color, StringNameHasher > color_override;
@@ -315,18 +316,21 @@ public:
 	/* SKINNING */
 	
 	void add_icon_override(const StringName& p_name, const Ref<Texture>& p_icon);
+	void add_shader_override(const StringName& p_name, const Ref<Shader>& p_shader);
 	void add_style_override(const StringName& p_name, const Ref<StyleBox>& p_style);
 	void add_font_override(const StringName& p_name, const Ref<Font>& p_font);
 	void add_color_override(const StringName& p_name, const Color& p_color);
 	void add_constant_override(const StringName& p_name, int p_constant);
 
 	Ref<Texture> get_icon(const StringName& p_name,const StringName& p_type=StringName()) const;
+	Ref<Shader> get_shader(const StringName &p_name, const StringName &p_type=StringName()) const;
 	Ref<StyleBox> get_stylebox(const StringName& p_name,const StringName& p_type=StringName()) const;
 	Ref<Font> get_font(const StringName& p_name,const StringName& p_type=StringName()) const;
 	Color get_color(const StringName& p_name,const StringName& p_type=StringName()) const;
 	int get_constant(const StringName& p_name,const StringName& p_type=StringName()) const;
 
 	bool has_icon(const StringName& p_name,const StringName& p_type=StringName()) const;
+	bool has_shader(const StringName& p_name,const StringName& p_type=StringName()) const;
 	bool has_stylebox(const StringName& p_name,const StringName& p_type=StringName()) const;
 	bool has_font(const StringName& p_name,const StringName& p_type=StringName()) const;
 	bool has_color(const StringName& p_name,const StringName& p_type=StringName()) const;
@@ -358,7 +362,7 @@ public:
 
 	Control();	
 	~Control();
-
+	
 };
 
 VARIANT_ENUM_CAST(Control::AnchorType);
