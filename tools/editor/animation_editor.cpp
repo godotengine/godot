@@ -3489,7 +3489,7 @@ void AnimationKeyEditor::_step_changed(float p_len) {
 	updating=true;
 	if (!animation.is_null()) {
 		animation->set_step(p_len);
-		emit_signal("animation_step_changed",animation->get_length());
+		emit_signal("animation_step_changed",animation->get_step());
 	}
 	updating=false;
 }
