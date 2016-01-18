@@ -2415,6 +2415,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	add_child(c);
 	c->set_area_as_parent_rect();
 	viewport = memnew( Viewport );
+	viewport->set_disable_input(true);
 	c->add_child(viewport);
 	surface = memnew( Control );
 	add_child(surface);
@@ -4022,6 +4023,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_light_base->connect("input_event",this,"_default_light_angle_input");
 	settings_vbc->add_margin_child("Default Light Normal:",settings_light_base);
 	settings_light_vp = memnew( Viewport );
+	settings_light_vp->set_disable_input(true);
 	settings_light_vp->set_use_own_world(true);
 	settings_light_base->add_child(settings_light_vp);
 

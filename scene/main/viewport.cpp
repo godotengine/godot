@@ -162,11 +162,10 @@ void Viewport::_update_rect() {
 	if (!is_inside_tree())
 		return;
 
-	Node *parent = get_parent();
 
-	if (!render_target && parent && parent->cast_to<Control>()) {
+	if (!render_target && parent_control) {
 
-		Control *c = parent->cast_to<Control>();
+		Control *c = parent_control;
 
 		rect.pos=Point2();
 		rect.size=c->get_size();
@@ -175,6 +174,7 @@ void Viewport::_update_rect() {
 	VisualServer::ViewportRect vr;
 	vr.x=rect.pos.x;
 	vr.y=rect.pos.y;
+
 	if (render_target) {
 		vr.x=0;
 		vr.y=0;
@@ -206,11 +206,10 @@ void Viewport::_parent_draw() {
 
 void Viewport::_parent_visibility_changed() {
 
-	Node *parent = get_parent();
 
-	if (parent && parent->cast_to<Control>()) {
+	if (parent_control) {
 
-		Control *c = parent->cast_to<Control>();
+		Control *c = parent_control;
 		VisualServer::get_singleton()->canvas_item_set_visible(canvas_item,c->is_visible());
 
 		_update_listener();
@@ -223,11 +222,9 @@ void Viewport::_parent_visibility_changed() {
 
 void Viewport::_vp_enter_tree() {
 
-	Node *parent = get_parent();
-		//none?
-	if (parent && parent->cast_to<Control>()) {
+	if (parent_control) {
 
-		Control *cparent=parent->cast_to<Control>();
+		Control *cparent=parent_control;
 		RID parent_ci = cparent->get_canvas_item();
 		ERR_FAIL_COND(!parent_ci.is_valid());
 		canvas_item = VisualServer::get_singleton()->canvas_item_create();
@@ -235,8 +232,8 @@ void Viewport::_vp_enter_tree() {
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item,parent_ci);
 		VisualServer::get_singleton()->canvas_item_set_visible(canvas_item,false);
 		VisualServer::get_singleton()->canvas_item_attach_viewport(canvas_item,viewport);
-		parent->connect("resized",this,"_parent_resized");
-		parent->connect("visibility_changed",this,"_parent_visibility_changed");
+		parent_control->connect("resized",this,"_parent_resized");
+		parent_control->connect("visibility_changed",this,"_parent_visibility_changed");
 	} else if (!parent){
 
 		VisualServer::get_singleton()->viewport_attach_to_screen(viewport,0);
@@ -248,15 +245,14 @@ void Viewport::_vp_enter_tree() {
 
 void Viewport::_vp_exit_tree() {
 
-	Node *parent = get_parent();
-	if (parent && parent->cast_to<Control>()) {
+	if (parent_control) {
 
-		parent->disconnect("resized",this,"_parent_resized");
+		parent_control->disconnect("resized",this,"_parent_resized");
 	}
 
-	if (parent && parent->cast_to<Control>()) {
+	if (parent_control) {
 
-		parent->disconnect("visibility_changed",this,"_parent_visibility_changed");
+		parent_control->disconnect("visibility_changed",this,"_parent_visibility_changed");
 	}
 
 	if (canvas_item.is_valid()) {
@@ -328,6 +324,12 @@ void Viewport::_notification(int p_what) {
 		
 		case NOTIFICATION_ENTER_TREE: {
 
+			if (get_parent()) {
+				Node *parent=get_parent();
+				if (parent) {
+					parent_control=parent->cast_to<Control>();
+				}
+			}
 
 			if (!render_target)
 				_vp_enter_tree();
@@ -423,6 +425,7 @@ void Viewport::_notification(int p_what) {
 			}
 
 			remove_from_group("_viewports");
+			parent_control=NULL;
 
 		} break;
 		case NOTIFICATION_FIXED_PROCESS: {
@@ -1276,6 +1279,13 @@ void Viewport::_vp_input(const InputEvent& p_ev) {
 	if (disable_input)
 		return;
 
+	if (get_tree()->is_editor_hint() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
+		return;
+	}
+
+	if (parent_control && !parent_control->is_visible())
+		return;
+
 	if (render_target && to_screen_rect==Rect2())
 		return; //if render target, can't get input events
 
@@ -1291,6 +1301,15 @@ void Viewport::_vp_input(const InputEvent& p_ev) {
 
 void Viewport::_vp_unhandled_input(const InputEvent& p_ev) {
 
+	if (disable_input)
+		return;
+
+	if (get_tree()->is_editor_hint() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
+		return;
+	}
+
+	if (parent_control && !parent_control->is_visible())
+		return;
 
 	if (render_target && to_screen_rect==Rect2())
 		return; //if render target, can't get input events
@@ -1557,7 +1576,6 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 						Vector2 pos = top->get_global_transform_with_canvas().affine_inverse().xform(mpos);
 						if (!top->has_point(pos)) {
 
-							print_line("NO POINT");
 							if (top->data.modal_exclusive) {
 								//cancel event, sorry, modal exclusive EATS UP ALL
 								//get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
@@ -1795,7 +1813,6 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 
 			Control::CursorShape cursor_shape = over->get_cursor_shape(pos);
-
 			OS::get_singleton()->set_cursor_shape( (OS::CursorShape)cursor_shape );
 
 
@@ -2149,6 +2166,8 @@ void Viewport::_gui_grab_click_focus(Control *p_control) {
 void Viewport::input(const InputEvent& p_event) {
 
 	ERR_FAIL_COND(!is_inside_tree());
+
+
 	get_tree()->_call_input_pause(input_group,"_input",p_event);		
 	_gui_input_event(p_event);
 	//get_tree()->call_group(SceneTree::GROUP_CALL_REVERSE|SceneTree::GROUP_CALL_REALTIME|SceneTree::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",p_event); //special one for GUI, as controls use their own process check
@@ -2157,6 +2176,7 @@ void Viewport::input(const InputEvent& p_event) {
 void Viewport::unhandled_input(const InputEvent& p_event) {
 
 	ERR_FAIL_COND(!is_inside_tree());
+
 
 	get_tree()->_call_input_pause(unhandled_input_group,"_unhandled_input",p_event);
 	//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_input","_unhandled_input",ev);
@@ -2448,6 +2468,8 @@ Viewport::Viewport() {
 	gui.tooltip_popup->hide();
 	gui.drag_attempted=false;
 	gui.drag_preview=NULL;
+
+	parent_control=NULL;
 
 
 }

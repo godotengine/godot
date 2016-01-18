@@ -87,6 +87,9 @@ public:
 private:
 
 friend class RenderTargetTexture;
+
+
+	Control *parent_control;
 	Viewport *parent;
 
 	Camera *camera;
