@@ -53,6 +53,8 @@ private:
 	bool just_selected;
 	Vector2 drag_accum;
 
+	float zoom;
+
 	bool box_selecting;
 	bool box_selection_mode_aditive;
 	Point2 box_selecting_from;
@@ -95,6 +97,9 @@ public:
 	bool is_node_connected(const StringName& p_from, int p_from_port,const StringName& p_to,int p_to_port);
 	void disconnect_node(const StringName& p_from, int p_from_port,const StringName& p_to,int p_to_port);
 	void clear_connections();
+
+	void set_zoom(float p_zoom);
+	float get_zoom() const;
 
 	GraphEditFilter *get_top_layer() const { return top_layer; }
 	void get_connection_list(List<Connection> *r_connections) const;
