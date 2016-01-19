@@ -246,8 +246,8 @@ friend class Control;
 	void _gui_remove_control(Control *p_control);
 	void _gui_hid_control(Control *p_control);
 
-	void _gui_force_drag(const Variant& p_data,Control *p_control);
-	void _gui_set_drag_preview(Control *p_control);
+	void _gui_force_drag(Control *p_base,const Variant& p_data,Control *p_control);
+	void _gui_set_drag_preview(Control *p_base,Control *p_control);
 
 	bool _gui_is_modal_on_top(const Control* p_control);
 	List<Control*>::Element* _gui_show_modal(Control* p_control);

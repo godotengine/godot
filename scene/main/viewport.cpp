@@ -1460,7 +1460,7 @@ Control* Viewport::_gui_find_control(const Point2& p_global)  {
 		Matrix32 xform;
 		CanvasItem *pci = sw->get_parent_item();
 		if (pci)
-			xform=pci->get_global_transform();
+			xform=pci->get_global_transform_with_canvas();
 
 
 		Control *ret = _gui_find_control_at_pos(sw,p_global,xform,gui.focus_inv_xform);
@@ -1477,7 +1477,7 @@ Control* Viewport::_gui_find_control(const Point2& p_global)  {
 		Matrix32 xform;
 		CanvasItem *pci = sw->get_parent_item();
 		if (pci)
-			xform=pci->get_global_transform();
+			xform=pci->get_global_transform_with_canvas();
 
 
 		Control *ret = _gui_find_control_at_pos(sw,p_global,xform,gui.focus_inv_xform);
@@ -1979,17 +1979,17 @@ void Viewport::_gui_remove_from_modal_stack(List<Control*>::Element *MI,ObjectID
 	}
 }
 
-void Viewport::_gui_force_drag(const Variant& p_data,Control *p_control) {
+void Viewport::_gui_force_drag(Control *p_base, const Variant& p_data, Control *p_control) {
 
 	gui.drag_data=p_data;
 	gui.mouse_focus=NULL;
 
 	if (p_control) {
-		_gui_set_drag_preview(p_control);
+		_gui_set_drag_preview(p_base,p_control);
 	}
 }
 
-void Viewport::_gui_set_drag_preview(Control *p_control) {
+void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 
 	ERR_FAIL_NULL(p_control);
 	ERR_FAIL_COND( !((Object*)p_control)->cast_to<Control>());
@@ -2001,7 +2001,7 @@ void Viewport::_gui_set_drag_preview(Control *p_control) {
 	}
 	p_control->set_as_toplevel(true);
 	p_control->set_pos(gui.last_mouse_pos);
-	add_child(p_control); //add as child of viewport
+	p_base->get_root_parent_control()->add_child(p_control); //add as child of viewport
 	p_control->raise();
 	if (gui.drag_preview) {
 		memdelete( gui.drag_preview );
