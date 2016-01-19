@@ -59,8 +59,6 @@ void Popup::_notification(int p_what) {
 
 void Popup::_fix_size() {
 	
-	Control *window = get_window();
-	ERR_FAIL_COND(!window);
 
 #if 0
 	Point2 pos = get_pos();
@@ -182,14 +180,12 @@ void Popup::popup_centered_minsize(const Size2& p_minsize) {
 
 void Popup::popup_centered(const Size2& p_size) {
 	
-	Control *window = get_window();
-	ERR_FAIL_COND(!window);
-
+	Point2 window_size = get_viewport_rect().size;
 
 	emit_signal("about_to_show");
 	Rect2 rect;
 	rect.size = p_size==Size2()?get_size():p_size;
-	Point2 window_size = window==this ? get_parent_area_size()  :window->get_size();
+
 	rect.pos = ((window_size-rect.size)/2.0).floor();
 	set_pos( rect.pos );
 	set_size( rect.size );
@@ -209,13 +205,11 @@ void Popup::popup_centered(const Size2& p_size) {
 void Popup::popup_centered_ratio(float p_screen_ratio) {
 	
 	
-	Control *window = get_window();
-	ERR_FAIL_COND(!window);
 	
 	emit_signal("about_to_show");
 
 	Rect2 rect;
-	Point2 window_size = window==this ? get_parent_area_size()  :window->get_size();
+	Point2 window_size = get_viewport_rect().size;
 	rect.size = (window_size * p_screen_ratio).floor();
 	rect.pos = ((window_size-rect.size)/2.0).floor();
 	set_pos( rect.pos );

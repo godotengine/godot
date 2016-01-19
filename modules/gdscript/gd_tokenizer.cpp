@@ -852,7 +852,6 @@ void GDTokenizerText::_advance() {
 								{TK_OP_AND,"and"},
 								//func
 								{TK_PR_FUNCTION,"func"},
-								{TK_PR_FUNCTION,"function"},
 								{TK_PR_CLASS,"class"},
 								{TK_PR_EXTENDS,"extends"},
 								{TK_PR_ONREADY,"onready"},

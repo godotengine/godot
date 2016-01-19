@@ -113,6 +113,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
     private boolean use_immersive=false;
     private boolean mStatePaused;
     private int mState;
+	private boolean keep_screen_on=true;
 
     private void setState(int newState) {
         if (mState != newState) {
@@ -259,7 +260,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		
 		mView = new GodotView(getApplication(),io,use_gl2,use_32_bits, this);
 		layout.addView(mView,new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
-		mView.setKeepScreenOn(true);
+		setKeepScreenOn(GodotLib.getGlobal("display/keep_screen_on").equals("True"));
 		
         edittext.setView(mView);
         io.setEdit(edittext);
@@ -270,7 +271,19 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		layout.addView(adLayout);
 		
 	}
-
+	
+	public void setKeepScreenOn(final boolean p_enabled) {
+		keep_screen_on = p_enabled;
+		if (mView != null){
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					mView.setKeepScreenOn(p_enabled);
+				}
+			});
+		}
+	}
+	
 	private static Godot _self;
 	
 	public static Godot getInstance(){
@@ -385,8 +398,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		super.onCreate(icicle);
 		_self = this;
 		Window window = getWindow();
-		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-			| WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		//window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
 
 		//check for apk expansion API

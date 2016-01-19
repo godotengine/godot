@@ -595,7 +595,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 			color_picker->show();
 			color_picker->set_edit_alpha(hint!=PROPERTY_HINT_COLOR_NO_ALPHA);
 			color_picker->set_color(v);
-			set_size( Size2(350, color_picker->get_combined_minimum_size().height+10));
+			set_size( Size2(300, color_picker->get_combined_minimum_size().height+10));
 			/*
 			int ofs=80;
 			int m=10;

@@ -90,6 +90,7 @@ class SampleLibraryEditorPlugin : public EditorPlugin {
 
 	SampleLibraryEditor *sample_library_editor;
 	EditorNode *editor;
+	Button *button;
 
 public:
 

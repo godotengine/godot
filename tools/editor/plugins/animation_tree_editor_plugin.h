@@ -176,6 +176,7 @@ class AnimationTreeEditorPlugin : public EditorPlugin {
 
 	AnimationTreeEditor *anim_tree_editor;
 	EditorNode *editor;
+	Button *button;
 
 public:
 

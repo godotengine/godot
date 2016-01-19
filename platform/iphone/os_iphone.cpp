@@ -454,6 +454,7 @@ bool OSIPhone::has_virtual_keyboard() const {
 extern void _show_keyboard(String p_existing);
 extern void _hide_keyboard();
 extern Error _shell_open(String p_uri);
+extern void _set_keep_screen_on(bool p_enabled);
 
 void OSIPhone::show_virtual_keyboard(const String& p_existing_text,const Rect2& p_screen_rect) {
 	_show_keyboard(p_existing_text);
@@ -467,6 +468,10 @@ Error OSIPhone::shell_open(String p_uri) {
 	return _shell_open(p_uri);
 };
 
+void OSIPhone::set_keep_screen_on(bool p_enabled) {
+	OS::set_keep_screen_on(p_enabled);
+	_set_keep_screen_on(p_enabled);
+};
 
 void OSIPhone::set_cursor_shape(CursorShape p_shape) {
 

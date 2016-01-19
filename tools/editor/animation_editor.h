@@ -262,7 +262,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 
 	EditorSelection *editor_selection;
 
-	AnimationKeyEditor();
+
 
 	float _get_zoom_scale() const;
 
@@ -334,7 +334,7 @@ public:
 	void insert_value_key(const String& p_property, const Variant& p_value, bool p_advance);
 	void insert_transform_key(Spatial *p_node,const String& p_sub,const Transform& p_xform);
 
-	AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_history, EditorSelection *p_selection);
+	AnimationKeyEditor();
 	~AnimationKeyEditor();
 };
 

@@ -485,11 +485,15 @@ bool SpriteFramesEditorPlugin::handles(Object *p_object) const {
 void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		frames_editor->show();
+		button->show();
+		editor->make_bottom_panel_item_visible(frames_editor);
 //		frames_editor->set_process(true);
 	} else {
 
-		frames_editor->hide();
+		button->hide();
+		if (frames_editor->is_visible())
+			editor->hide_bottom_panel();
+
 //		frames_editor->set_process(false);
 	}
 
@@ -499,11 +503,9 @@ SpriteFramesEditorPlugin::SpriteFramesEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
 	frames_editor = memnew( SpriteFramesEditor );
-	editor->get_viewport()->add_child(frames_editor);
-	frames_editor->set_area_as_parent_rect();
-//	frames_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
-//	frames_editor->set_margin( MARGIN_TOP, 120 );
-	frames_editor->hide();
+	frames_editor->set_custom_minimum_size(Size2(0,300));
+	button=editor->add_bottom_panel_item("SpriteFrames",frames_editor);
+	button->hide();
 
 
 

@@ -46,6 +46,7 @@ class OS {
 	String _custom_level;
 	List<String> _cmdline;
 	int ips;
+	bool _keep_screen_on;
 	bool low_processor_usage_mode;
 	bool _verbose_stdout;
 	String _local_clipboard;
@@ -180,7 +181,8 @@ public:
 
 	virtual float get_frames_per_second() const { return _fps; };
 
-
+	virtual void set_keep_screen_on(bool p_enabled);
+	virtual bool is_keep_screen_on() const;
 	virtual void set_low_processor_usage_mode(bool p_enabled);
 	virtual bool is_in_low_processor_usage_mode() const;
 

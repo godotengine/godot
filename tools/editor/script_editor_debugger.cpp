@@ -210,6 +210,8 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 		OS::get_singleton()->move_window_to_foreground();
 		tabs->set_current_tab(0);
 
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+
 	} else if (p_msg=="debug_exit") {
 
 		breaked=false;
@@ -358,7 +360,7 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 
 			if (EditorNode::get_log()->is_hidden()) {
 				log_forced_visible=true;
-				EditorNode::get_log()->show();
+				EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
 			}
 			EditorNode::get_log()->add_message(t);
 
@@ -551,8 +553,14 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 				if (error_count==0) {
 					error_split->set_name("Errors");
+					debugger_button->set_text("Debugger");
+					debugger_button->set_icon(Ref<Texture>());
+					tabs->set_tab_icon(error_split->get_index(),Ref<Texture>());
 				} else {
 					error_split->set_name("Errors ("+itos(error_count)+")");
+					debugger_button->set_text("Debugger ("+itos(error_count)+")");
+					debugger_button->set_icon(get_icon("Error","EditorIcons"));
+					tabs->set_tab_icon(error_split->get_index(),get_icon("Error","EditorIcons"));
 				}
 				last_error_count=error_count;
 			}
@@ -569,8 +577,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 					ppeer->set_stream_peer(connection);
 
-					show();
-					emit_signal("show_debugger",true);
+					//EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+					//emit_signal("show_debugger",true);
 
 					dobreak->set_disabled(false);
 					tabs->set_current_tab(0);
@@ -727,7 +735,9 @@ void ScriptEditorDebugger::stop(){
 	message.clear();
 
 	if (log_forced_visible) {
-		EditorNode::get_log()->hide();
+		//EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+		if (EditorNode::get_log()->is_visible())
+			EditorNode::get_singleton()->hide_bottom_panel();
 		log_forced_visible=false;
 	}
 
@@ -738,7 +748,8 @@ void ScriptEditorDebugger::stop(){
 
 
 	if (hide_on_stop) {
-		hide();
+		if (is_visible())
+			EditorNode::get_singleton()->hide_bottom_panel();
 		emit_signal("show_debugger",false);
 	}
 
@@ -770,7 +781,8 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 
 void ScriptEditorDebugger::_hide_request() {
 
-	hide();
+	if (EditorNode::get_log()->is_visible())
+		EditorNode::get_singleton()->hide_bottom_panel();
 	emit_signal("show_debugger",false);
 }
 
@@ -1227,12 +1239,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	vbc->add_child(hbc);
 
 
-	reason = memnew( Label );
+	reason = memnew( LineEdit );
 	reason->set_text("");
+	reason->set_editable(false);
 	hbc->add_child(reason);
 	reason->add_color_override("font_color",Color(1,0.4,0.0,0.8));
 	reason->set_h_size_flags(SIZE_EXPAND_FILL);
-	reason->set_clip_text(true);
+	//reason->set_clip_text(true);
 
 	hbc->add_child( memnew( VSeparator) );
 
@@ -1459,7 +1472,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	msgdialog = memnew( AcceptDialog );
 	add_child(msgdialog);
 
-	hide();
 	log_forced_visible=false;
 
 	p_editor->get_undo_redo()->set_method_notify_callback(_method_changeds,this);
