@@ -1279,9 +1279,11 @@ void Viewport::_vp_input(const InputEvent& p_ev) {
 	if (disable_input)
 		return;
 
+#ifdef TOOLS_ENABLED
 	if (get_tree()->is_editor_hint() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
 		return;
 	}
+#endif
 
 	if (parent_control && !parent_control->is_visible())
 		return;
@@ -1304,9 +1306,11 @@ void Viewport::_vp_unhandled_input(const InputEvent& p_ev) {
 	if (disable_input)
 		return;
 
+#ifdef TOOLS_ENABLED
 	if (get_tree()->is_editor_hint() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
 		return;
 	}
+#endif
 
 	if (parent_control && !parent_control->is_visible())
 		return;
