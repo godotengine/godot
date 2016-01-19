@@ -1,6 +1,7 @@
 #include "graph_edit.h"
 #include "os/input.h"
 #include "os/keyboard.h"
+#include "scene/gui/box_container.h"
 bool GraphEditFilter::has_point(const Point2& p_point) const {
 
 	return ge->_filter_input(p_point);
@@ -184,6 +185,8 @@ void GraphEdit::_notification(int p_what) {
 		h_scroll->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,0);
 		h_scroll->set_anchor_and_margin(MARGIN_TOP,ANCHOR_END,hmin.height);
 		h_scroll->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END,0);
+
+		zoom_icon->set_texture( get_icon("Zoom", "EditorIcons"));
 
 	}
 	if (p_what==NOTIFICATION_DRAW) {
@@ -687,11 +690,11 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 		}
 
 		if (b.button_index==BUTTON_WHEEL_UP && b.pressed) {
-			set_zoom(zoom/0.9);
+			sl_zoom->set_val(zoom/0.9);
 		}
 
 		if (b.button_index==BUTTON_WHEEL_DOWN && b.pressed) {
-			set_zoom(zoom*0.9);
+			sl_zoom->set_val(zoom*0.9);
 		}
 	}
 
@@ -826,4 +829,19 @@ GraphEdit::GraphEdit() {
 	v_scroll->connect("value_changed", this,"_scroll_moved");
 
 	zoom = 1;
+
+	HBoxContainer* tools = memnew( HBoxContainer );
+	add_child(tools);
+
+	zoom_icon = memnew( TextureFrame );
+	tools->add_child(zoom_icon);
+
+	sl_zoom = memnew( HSlider );
+	sl_zoom->set_min(0.01);
+	sl_zoom->set_max(4);
+	sl_zoom->set_val(1);
+	sl_zoom->set_step(0.01);
+	sl_zoom->connect("value_changed", this, "set_zoom");
+	tools->add_child(sl_zoom);
+	sl_zoom->set_custom_minimum_size(Size2(200,0));
 }

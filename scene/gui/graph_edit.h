@@ -3,7 +3,8 @@
 
 #include "scene/gui/graph_node.h"
 #include "scene/gui/scroll_bar.h"
-
+#include "scene/gui/slider.h"
+#include "texture_frame.h"
 class GraphEdit;
 
 class GraphEditFilter : public Control {
@@ -34,6 +35,8 @@ public:
 	};
 private:
 
+	TextureFrame* zoom_icon;
+	HSlider* sl_zoom;
 	HScrollBar* h_scroll;
 	VScrollBar* v_scroll;
 
