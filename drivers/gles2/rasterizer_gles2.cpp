@@ -6755,7 +6755,13 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			if (e->instance->billboard) {
 
 				Vector3 scale = xf.basis.get_scale();
-				xf.set_look_at(xf.origin,xf.origin+p_view_transform.get_basis().get_axis(2),p_view_transform.get_basis().get_axis(1));
+
+				if (current_rt && current_rt_vflip) {
+					xf.set_look_at(xf.origin, xf.origin + p_view_transform.get_basis().get_axis(2), -p_view_transform.get_basis().get_axis(1));
+				} else {
+					xf.set_look_at(xf.origin, xf.origin + p_view_transform.get_basis().get_axis(2), p_view_transform.get_basis().get_axis(1));
+				}
+
 				xf.basis.scale(scale);
 			}
 			material_shader.set_uniform(MaterialShaderGLES2::WORLD_TRANSFORM, xf);
