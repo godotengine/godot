@@ -1168,7 +1168,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 	gen_export_flags(cl,p_flags);
 
-	if (p_flags) {
+	if (p_flags&EXPORT_DUMB_CLIENT) {
 
 		/*String host = EditorSettings::get_singleton()->get("file_server/host");
 		int port = EditorSettings::get_singleton()->get("file_server/post");
