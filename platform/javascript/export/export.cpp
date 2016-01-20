@@ -185,7 +185,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t>& p_html, const St
 		current_line = current_line.replace("$GODOT_JS",p_name+".js");
 		current_line = current_line.replace("$GODOT_CANVAS_WIDTH",Globals::get_singleton()->get("display/width"));
 		current_line = current_line.replace("$GODOT_CANVAS_HEIGHT",Globals::get_singleton()->get("display/height"));
-		current_line = current_line.replace("$GODOT_HEAD_TITLE",!html_title.empty()?html_title:Globals::get_singleton()->get("application/name"));
+		current_line = current_line.replace("$GODOT_HEAD_TITLE",!html_title.empty()?html_title:(String) Globals::get_singleton()->get("application/name"));
 		current_line = current_line.replace("$GODOT_HEAD_INCLUDE",html_head_include);
 		current_line = current_line.replace("$GODOT_STYLE_FONT_FAMILY",html_font_family);
 		current_line = current_line.replace("$GODOT_STYLE_INCLUDE",html_style_include);
