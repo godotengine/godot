@@ -1000,6 +1000,9 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 
 	String host = EditorSettings::get_singleton()->get("network/debug_host");
 
+	if (p_flags&EXPORT_REMOTE_DEBUG_LOCALHOST)
+		host="localhost";
+
 	if (p_flags&EXPORT_DUMB_CLIENT) {
 		int port = EditorSettings::get_singleton()->get("file_server/port");
 		String passwd = EditorSettings::get_singleton()->get("file_server/password");
@@ -1014,6 +1017,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 	if (p_flags&EXPORT_REMOTE_DEBUG) {
 
 		r_flags.push_back("-rdebug");
+
 		r_flags.push_back(host+":"+String::num(GLOBAL_DEF("debug/debug_port", 6007)));
 
 		List<String> breakpoints;
