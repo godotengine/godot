@@ -1510,6 +1510,15 @@ Node *Node::duplicate(bool p_use_instancing) const {
 
 	node->set_name(get_name());
 
+	List<GroupInfo> gi;
+	get_groups(&gi);
+	for (List<GroupInfo>::Element *E=gi.front();E;E=E->next()) {
+
+		node->add_to_group(E->get().name, E->get().persistent);
+	}
+
+	_duplicate_signals(this, node);
+
 	for(int i=0;i<get_child_count();i++) {
 
 		if (get_child(i)->data.parent_owned)
