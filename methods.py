@@ -1287,10 +1287,10 @@ def android_add_java_dir(self,subpath):
 def android_add_res_dir(self,subpath):
 	base_path = self.Dir(".").abspath+"/modules/"+self.current_module+"/"+subpath
 	self.android_res_dirs.append(base_path)
-def android_add_aidl_dir(self,file):
+def android_add_aidl_dir(self,subpath):
 	base_path = self.Dir(".").abspath+"/modules/"+self.current_module+"/"+subpath
 	self.android_aidl_dirs.append(base_path)
-def android_add_jni_dir(self,file):
+def android_add_jni_dir(self,subpath):
 	base_path = self.Dir(".").abspath+"/modules/"+self.current_module+"/"+subpath
 	self.android_jni_dirs.append(base_path)
 
