@@ -164,7 +164,7 @@ void EditorNode::_update_title() {
 
 void EditorNode::_unhandled_input(const InputEvent& p_event) {
 
-	if (p_event.type==InputEvent::KEY && p_event.key.pressed && !p_event.key.echo) {
+	if (p_event.type==InputEvent::KEY && p_event.key.pressed && !p_event.key.echo && !gui_base->get_viewport()->gui_has_modal_stack()) {
 
 		switch(p_event.key.scancode) {
 
