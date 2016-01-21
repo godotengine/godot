@@ -271,7 +271,6 @@ friend class TreeItem;
 	bool range_drag_enabled;
 	Vector2 range_drag_capture_pos;
 
-
 	//TreeItem *cursor_item;
 	//int cursor_column;
 
@@ -314,6 +313,8 @@ friend class TreeItem;
 	void select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col,TreeItem *p_prev=NULL,bool *r_in_range=NULL);
 	int propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_doubleclick,TreeItem *p_item,int p_button,const InputModifierState& p_mod);
 	void text_editor_enter(String p_text);
+	void text_editor_changed(String p_text);
+	void text_editor_hide();
 	void value_editor_changed(double p_value);
 
 	void popup_select(int p_option);
@@ -417,6 +418,8 @@ friend class TreeItem;
 	bool click_handled;
 
 	bool hide_folding;
+
+	bool text_changed;
 
 protected:
 	static void _bind_methods();
