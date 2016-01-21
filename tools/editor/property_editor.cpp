@@ -27,7 +27,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "property_editor.h"
-#include "scene/gui/label.h"
 #include "io/resource_loader.h"
 #include "io/image_loader.h"
 #include "object_type_db.h"
@@ -35,7 +34,6 @@
 #include "globals.h"
 #include "scene/resources/font.h"
 #include "pair.h"
-#include "scene/scene_string_names.h"
 #include "editor_settings.h"
 #include "editor_import_export.h"
 #include "editor_node.h"
@@ -43,6 +41,8 @@
 #include "array_property_edit.h"
 #include "editor_help.h"
 #include "scene/resources/packed_scene.h"
+#include "os/input.h"
+#include "os/keyboard.h"
 
 
 void CustomPropertyEditor::_notification(int p_what) {
@@ -52,11 +52,16 @@ void CustomPropertyEditor::_notification(int p_what) {
 
 		RID ci = get_canvas_item();
 		get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
-		/*
-		if (v.get_type()==Variant::COLOR) {
 
-			VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2( 10,10,60, get_size().height-20 ), v );
-		}*/
+	} else if (p_what==NOTIFICATION_POPUP_HIDE) {
+
+		if (!text_changed)
+			return;
+
+		if (Input::get_singleton()->is_key_pressed(KEY_ESCAPE))
+			return;
+
+		_modified(String());
 	}
 }
 
@@ -235,6 +240,8 @@ String CustomPropertyEditor::get_name() const {
 
 bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Type p_type, const Variant& p_variant,int p_hint,String p_hint_text) {
 
+	text_changed=false;
+
 	owner=p_owner;
 	updating=true;
 	name=p_name;
@@ -254,8 +261,6 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 		value_editor[i]->hide();
 		value_label[i]->hide();
-		if (i<4)
-			scroll[i]->hide();
 	}
 
 	for (int i=0;i<MAX_ACTION_BUTTONS;i++) {
@@ -591,44 +596,10 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 		} break;
 		case Variant::COLOR: {
 
-
 			color_picker->show();
 			color_picker->set_edit_alpha(hint!=PROPERTY_HINT_COLOR_NO_ALPHA);
 			color_picker->set_color(v);
 			set_size( Size2(300, color_picker->get_combined_minimum_size().height+10));
-			/*
-			int ofs=80;
-			int m=10;
-			int h=20;
-			Color c=v;
-			float values[4]={c.r,c.g,c.b,c.a};
-			for (int i=0;i<4;i++) {
-				int y=m+i*h;
-
-				value_editor[i]->show();
-				value_label[i]->show();
-				value_label[i]->set_pos(Point2(ofs,y));
-				scroll[i]->set_min(0);
-				scroll[i]->set_max(1.0);
-				scroll[i]->set_page(0);
-				scroll[i]->set_pos(Point2(ofs+15,y+Math::floor((h-scroll[i]->get_minimum_size().height)/2.0)));
-				scroll[i]->set_val(values[i]);
-				scroll[i]->set_size(Size2(120,1));
-				scroll[i]->show();
-				value_editor[i]->set_pos(Point2(ofs+140,y));
-				value_editor[i]->set_size(Size2(40,h));
-				value_editor[i]->set_text( String::num(values[i],2 ));
-
-			}
-
-			value_label[0]->set_text("R");
-			value_label[1]->set_text("G");
-			value_label[2]->set_text("B");
-			value_label[3]->set_text("A");
-
-			Size2 new_size = value_editor[3]->get_pos() + value_editor[3]->get_size() + Point2(10,10);
-			set_size( new_size );
-			*/
 
 		} break;
 		case Variant::IMAGE: {
@@ -1184,36 +1155,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 		} break;
 		default: {};
 	}
-
 }
-
-void CustomPropertyEditor::_scroll_modified(double p_value) {
-
-	if (updating)
-		return;
-	/*
-	switch(type) {
-
-		case Variant::COLOR: {
-
-			for (int i=0;i<4;i++) {
-
-				value_editor[i]->set_text( String::num(scroll[i]->get_val(),2) );
-			}
-			Color c;
-			c.r=scroll[0]->get_val();
-			c.g=scroll[1]->get_val();
-			c.b=scroll[2]->get_val();
-			c.a=scroll[3]->get_val();
-			v=c;
-			update();
-			emit_signal("variant_changed");
-		} break;
-		default: {}
-	}
-	*/
-}
-
 
 void CustomPropertyEditor::_drag_easing(const InputEvent& p_ev) {
 
@@ -1309,6 +1251,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 	if (updating)
 		return;
 	updating=true;
+	text_changed=false;
 	switch(type) {
 		case Variant::REAL: {
 
@@ -1435,20 +1378,8 @@ void CustomPropertyEditor::_modified(String p_string) {
 
 		} break;
 		case Variant::COLOR: {
-			/*
-			for (int i=0;i<4;i++) {
 
-				scroll[i]->set_val( value_editor[i]->get_text().to_double() );
-			}
-			Color c;
-			c.r=value_editor[0]->get_text().to_double();
-			c.g=value_editor[1]->get_text().to_double();
-			c.b=value_editor[2]->get_text().to_double();
-			c.a=value_editor[3]->get_text().to_double();
-			v=c;
-			update();
-			emit_signal("variant_changed");
-			*/
+
 		} break;
 		case Variant::IMAGE: {
 
@@ -1601,9 +1532,11 @@ void CustomPropertyEditor::config_value_editors(int p_amount, int p_columns,int 
 			value_label[i]->hide();
 		}
 	}
+}
 
+void CustomPropertyEditor::_text_editor_changed(String p_text) {
 
-
+	text_changed=true;
 }
 
 void CustomPropertyEditor::_bind_methods() {
@@ -1612,7 +1545,6 @@ void CustomPropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_focus_exit", &CustomPropertyEditor::_focus_exit);
 	ObjectTypeDB::bind_method("_modified",&CustomPropertyEditor::_modified);
 	ObjectTypeDB::bind_method("_range_modified", &CustomPropertyEditor::_range_modified);
-	ObjectTypeDB::bind_method("_scroll_modified",&CustomPropertyEditor::_scroll_modified);
 	ObjectTypeDB::bind_method("_action_pressed",&CustomPropertyEditor::_action_pressed);
 	ObjectTypeDB::bind_method("_file_selected",&CustomPropertyEditor::_file_selected);
 	ObjectTypeDB::bind_method("_type_create_selected",&CustomPropertyEditor::_type_create_selected);
@@ -1620,9 +1552,9 @@ void CustomPropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_color_changed",&CustomPropertyEditor::_color_changed);
 	ObjectTypeDB::bind_method("_draw_easing",&CustomPropertyEditor::_draw_easing);
 	ObjectTypeDB::bind_method("_drag_easing",&CustomPropertyEditor::_drag_easing);
-	ObjectTypeDB::bind_method( "_text_edit_changed",&CustomPropertyEditor::_text_edit_changed);
-	ObjectTypeDB::bind_method( "_menu_option",&CustomPropertyEditor::_menu_option);
-
+	ObjectTypeDB::bind_method("_text_edit_changed",&CustomPropertyEditor::_text_edit_changed);
+	ObjectTypeDB::bind_method("_menu_option",&CustomPropertyEditor::_menu_option);
+	ObjectTypeDB::bind_method("_text_editor_changed",&CustomPropertyEditor::_text_editor_changed);
 
 	ADD_SIGNAL( MethodInfo("variant_changed") );
 	ADD_SIGNAL( MethodInfo("resource_edit_request") );
@@ -1633,6 +1565,8 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	read_only=false;
 	updating=false;
 
+	text_changed=false;
+
 	for (int i=0;i<MAX_VALUE_EDITORS;i++) {
 
 		value_editor[i]=memnew( LineEdit );
@@ -1642,20 +1576,9 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		value_editor[i]->hide();
 		value_label[i]->hide();
 		value_editor[i]->connect("text_entered", this,"_modified");
+		value_editor[i]->connect("text_changed", this, "_text_editor_changed");
 		value_editor[i]->connect("focus_enter", this, "_focus_enter");
 		value_editor[i]->connect("focus_exit", this, "_focus_exit");
-	}
-
-	for(int i=0;i<4;i++) {
-
-		scroll[i] = memnew( HScrollBar );
-		scroll[i]->hide();
-		scroll[i]->set_min(0);
-		scroll[i]->set_max(1.0);
-		scroll[i]->set_step(0.01);
-		add_child(scroll[i]);
-		scroll[i]->connect("value_changed", this,"_scroll_modified");
-
 	}
 
 	for(int i=0;i<20;i++) {
@@ -1729,7 +1652,6 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	easing_draw->hide();
 	easing_draw->connect("draw",this,"_draw_easing");
 	easing_draw->connect("input_event",this,"_drag_easing");
-	//easing_draw->emit_signal(SceneStringNames::get_singleton()->input_event,InputEvent());
 	easing_draw->set_default_cursor_shape(Control::CURSOR_MOVE);
 
 	menu = memnew(PopupMenu);

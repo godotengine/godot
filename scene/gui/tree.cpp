@@ -1719,6 +1719,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 
 void Tree::text_editor_enter(String p_text) {
 
+	text_changed=false;
 
 	text_editor->hide();
 	value_editor->hide();
@@ -1755,6 +1756,22 @@ void Tree::text_editor_enter(String p_text) {
 	item_edited(popup_edited_item_col,popup_edited_item);
 	update();
 
+}
+
+void Tree::text_editor_changed(String p_text) {
+
+	text_changed=true;
+}
+
+void Tree::text_editor_hide() {
+
+	if (!text_changed)
+		return;
+
+	if (Input::get_singleton()->is_key_pressed(KEY_ESCAPE))
+		return;
+
+	text_editor_enter(text_editor->get_text());
 }
 
 void Tree::value_editor_changed(double p_value) {
@@ -2349,6 +2366,8 @@ bool Tree::edit_selected() {
 		return true;
 
 	} else if (c.mode==TreeItem::CELL_MODE_STRING || c.mode==TreeItem::CELL_MODE_RANGE) {
+
+		text_changed=false;
 
 		Point2i textedpos=get_global_pos() + rect.pos;
 		text_editor->set_pos( textedpos );
@@ -3185,6 +3204,8 @@ void Tree::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_input_event"),&Tree::_input_event);
 	ObjectTypeDB::bind_method(_MD("_popup_select"),&Tree::popup_select);
 	ObjectTypeDB::bind_method(_MD("_text_editor_enter"),&Tree::text_editor_enter);
+	ObjectTypeDB::bind_method(_MD("_text_editor_changed"),&Tree::text_editor_changed);
+	ObjectTypeDB::bind_method(_MD("_text_editor_hide"),&Tree::text_editor_hide);
 	ObjectTypeDB::bind_method(_MD("_value_editor_changed"),&Tree::value_editor_changed);
 	ObjectTypeDB::bind_method(_MD("_scroll_moved"),&Tree::_scroll_moved);
 
@@ -3283,6 +3304,8 @@ Tree::Tree() {
 	h_scroll->connect("value_changed", this,"_scroll_moved");
 	v_scroll->connect("value_changed", this,"_scroll_moved");
 	text_editor->connect("text_entered", this,"_text_editor_enter");
+	text_editor->connect("text_changed",this,"_text_editor_changed");
+	text_editor->connect("hide",this,"_text_editor_hide");
 	popup_menu->connect("item_pressed", this,"_popup_select");
 	value_editor->connect("value_changed", this,"_value_editor_changed");
 
@@ -3315,6 +3338,8 @@ Tree::Tree() {
 	range_drag_enabled=false;
 
 	hide_folding=false;
+
+	text_changed=false;
 
 }
 
