@@ -41,6 +41,7 @@
 #include "audio_server_javascript.h"
 #include "audio_driver_javascript.h"
 #include "main/input_default.h"
+#include "emscripten/html5.h"
 
 typedef void (*GFXInitFunc)(void *ud,bool gl2,int w, int h, bool fs);
 typedef int (*OpenURIFunc)(const String&);
@@ -89,6 +90,8 @@ private:
 	GetLocaleFunc get_locale_func;
 
 	static void _close_notification_funcs(const String& p_file,int p_flags);
+
+	void process_joysticks();
 
 public:
 
@@ -163,6 +166,11 @@ public:
 	void process_accelerometer(const Vector3& p_accelerometer);
 	void process_touch(int p_what,int p_pointer, const Vector<TouchPos>& p_points);
 	void push_input(const InputEvent& p_ev);
+
+	virtual bool is_joy_known(int p_device);
+	virtual String get_joy_guid(int p_device) const;
+	bool joy_connection_changed(int p_type, const EmscriptenGamepadEvent *p_event);
+
 	OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func);
 	~OS_JavaScript();
 
