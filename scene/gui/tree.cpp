@@ -1373,7 +1373,7 @@ void Tree::_range_click_timeout() {
 
 	if (range_item_last && !range_drag_enabled && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
 
-		Point2 pos = (Input::get_singleton()->get_mouse_pos()-get_global_pos())-cache.bg->get_offset();
+		Point2 pos = get_local_mouse_pos()-cache.bg->get_offset();
 		if (show_column_titles) {
 			pos.y-=_get_title_button_height();
 
@@ -1384,7 +1384,7 @@ void Tree::_range_click_timeout() {
 		}
 
 		click_handled=false;
-		InputModifierState mod = {}; // should be irrelevant..
+		InputModifierState mod = InputModifierState(); // should be irrelevant..
 
 		blocked++;
 		propagate_mouse_event(pos+cache.offset, 0, 0, false, root, BUTTON_LEFT, mod);
@@ -1413,6 +1413,10 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 
 	if (!skip && p_pos.y<item_h) {
 		// check event!
+
+		if (range_click_timer->get_time_left() > 0 && p_item != range_item_last) {
+			return -1;
+		}
 
 		if (!hide_folding && (p_pos.x >=x_ofs && p_pos.x < (x_ofs+cache.item_margin) )) {
 
@@ -2074,8 +2078,6 @@ void Tree::_input_event(InputEvent p_event) {
 				update_cache();
 			const InputEventMouseMotion& b=p_event.mouse_motion;
 
-			range_click_timer->stop();
-
 			Ref<StyleBox> bg = cache.bg;
 
 			Point2 pos = Point2(b.x,b.y) - bg->get_offset();
@@ -2272,12 +2274,10 @@ void Tree::_input_event(InputEvent p_event) {
 				} break;
 				case BUTTON_WHEEL_UP: {
 
-					range_click_timer->stop();
 					v_scroll->set_val( v_scroll->get_val()-v_scroll->get_page()/8 );
 				} break;
 				case BUTTON_WHEEL_DOWN: {
 
-					range_click_timer->stop();
 					v_scroll->set_val( v_scroll->get_val()+v_scroll->get_page()/8 );
 				} break;
 			}
