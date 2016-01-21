@@ -4177,6 +4177,7 @@
 			<description>
 			Set the sample data for a given sample as an array of floats. The length must be equal to the sample lenght or an error will be produced.
 			For this method, a stereo sample is made from two samples. Thus, in case of a stereo sample, the array length must be twice the length returned by [method sample_get_length].
+			Trying to alter a SAMPLE_FORMAT_IMA_ADPCM sample is not supported. It will throw an error to the console, but will not alter the sample data.
 			</description>
 		</method>
 		<method name="sample_set_data">
