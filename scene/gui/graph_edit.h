@@ -3,7 +3,8 @@
 
 #include "scene/gui/graph_node.h"
 #include "scene/gui/scroll_bar.h"
-
+#include "scene/gui/slider.h"
+#include "texture_frame.h"
 class GraphEdit;
 
 class GraphEditFilter : public Control {
@@ -34,6 +35,8 @@ public:
 	};
 private:
 
+	TextureFrame* zoom_icon;
+	HSlider* sl_zoom;
 	HScrollBar* h_scroll;
 	VScrollBar* v_scroll;
 
@@ -52,6 +55,8 @@ private:
 	bool dragging;
 	bool just_selected;
 	Vector2 drag_accum;
+
+	float zoom;
 
 	bool box_selecting;
 	bool box_selection_mode_aditive;
@@ -95,6 +100,9 @@ public:
 	bool is_node_connected(const StringName& p_from, int p_from_port,const StringName& p_to,int p_to_port);
 	void disconnect_node(const StringName& p_from, int p_from_port,const StringName& p_to,int p_to_port);
 	void clear_connections();
+
+	void set_zoom(float p_zoom);
+	float get_zoom() const;
 
 	GraphEditFilter *get_top_layer() const { return top_layer; }
 	void get_connection_list(List<Connection> *r_connections) const;

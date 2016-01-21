@@ -4120,7 +4120,8 @@
 			<argument index="2" name="length" type="int">
 			</argument>
 			<description>
-			Create an audio sample, return a [RID] referencing it. The sample will be created with a given format (from the SAMPLE_FORMAT_* enum), a total length (in frames, not samples or bytes), in either stereo or mono.
+			Create an audio sample, return a [RID] referencing it. The sample will be created with a given format (from the SAMPLE_FORMAT_* enum), a total length (in samples, not bytes), in either stereo or mono.
+			Even if a stereo sample consists of a left sample and a right sample, it still counts as one sample for length purposes.
 			</description>
 		</method>
 		<method name="sample_set_description">
@@ -4156,7 +4157,7 @@
 			<argument index="0" name="sample" type="RID">
 			</argument>
 			<description>
-			Return wether the sample is stereo (2 channels)
+			Return whether the sample is stereo (2 channels).
 			</description>
 		</method>
 		<method name="sample_get_length" qualifiers="const">
@@ -4165,7 +4166,7 @@
 			<argument index="0" name="sample" type="RID">
 			</argument>
 			<description>
-			Return the length in frames of the audio sample (not samples or bytes).
+			Return the length in samples (not bytes) of the audio sample. Even if a stereo sample consists of a left sample and a right sample, it still counts as one sample for length purposes.
 			</description>
 		</method>
 		<method name="sample_set_signed_data">
@@ -4175,6 +4176,8 @@
 			</argument>
 			<description>
 			Set the sample data for a given sample as an array of floats. The length must be equal to the sample lenght or an error will be produced.
+			For this method, a stereo sample is made from two samples. Thus, in case of a stereo sample, the array length must be twice the length returned by [method sample_get_length].
+			Trying to alter a SAMPLE_FORMAT_IMA_ADPCM sample is not supported. It will throw an error to the console, but will not alter the sample data.
 			</description>
 		</method>
 		<method name="sample_set_data">
@@ -4183,7 +4186,11 @@
 			<argument index="1" name="data" type="RawArray">
 			</argument>
 			<description>
-			Set the sample data for a given sample as an array of bytes. The length must be equal to the sample lenght expected in bytes or an error will be produced.
+			Set the sample data for a given sample as an array of bytes. The length must be equal to the sample lenght expected in bytes or an error will be produced. The byte length can be calculated as follows:
+			Get the sample length ([method get_sample_length]).
+			If the sample format is SAMPLE_FORMAT_PCM16, multiply it by 2.
+			If the sample format is SAMPLE_FORMAT_IMA_ADPCM, divide it by 2 (rounding any fraction up), then add 4.
+			If the sample is stereo ([method sample_is_stereo]), multiply it by 2.
 			</description>
 		</method>
 		<method name="sample_get_data" qualifiers="const">
@@ -4498,24 +4505,28 @@
 			<argument index="0" name="scale" type="float">
 			</argument>
 			<description>
+			Set global scale for all voices (not including streams). Default is 1.0.
 			</description>
 		</method>
 		<method name="get_fx_global_volume_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the global scale for all voices.
 			</description>
 		</method>
 		<method name="set_event_voice_global_volume_scale">
 			<argument index="0" name="scale" type="float">
 			</argument>
 			<description>
+			Set global scale for event-based stream ([EventStream]) playback. Default is 1.0.
 			</description>
 		</method>
 		<method name="get_event_voice_global_volume_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the global scale for event-based stream playback.
 			</description>
 		</method>
 	</methods>
@@ -4524,7 +4535,7 @@
 			Sample format is 8 bits, signed.
 		</constant>
 		<constant name="SAMPLE_FORMAT_PCM16" value="1">
-			Sample format is 16 bits, signed.
+			Sample format is 16 bits, little-endian, signed.
 		</constant>
 		<constant name="SAMPLE_FORMAT_IMA_ADPCM" value="2">
 			Sample format is IMA-ADPCM compressed.
@@ -4572,8 +4583,11 @@
 </class>
 <class name="AudioServerSW" inherits="AudioServer" category="Core">
 	<brief_description>
+	Software implementation of [AudioServer].
 	</brief_description>
 	<description>
+	This is a software audio server. It does not use any kind of hardware acceleration.
+	This class does not expose any new method.
 	</description>
 	<methods>
 	</methods>
@@ -10230,172 +10244,204 @@ This approximation makes straight segments between each point, then subdivides t
 </class>
 <class name="EventPlayer" inherits="Node" category="Core">
 	<brief_description>
+	Class for event stream playback.
 	</brief_description>
 	<description>
+	Class for event stream playback. Event streams are music expressed as a series of events (note on, note off, instrument change...), as opposed to audio streams, which are just audio data. Examples of event-based streams are MIDI files, or MOD music.
+	Currently, only MOD, S3M, IT, and XM music is supported.
 	</description>
 	<methods>
 		<method name="set_stream">
 			<argument index="0" name="stream" type="EventStream">
 			</argument>
 			<description>
+			Set the [EventStream] this player will play.
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
 			<return type="EventStream">
 			</return>
 			<description>
+			Return the currently assigned stream.
 			</description>
 		</method>
 		<method name="play">
 			<description>
+			Play the currently assigned stream.
 			</description>
 		</method>
 		<method name="stop">
 			<description>
+			Stop playing.
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this player is playing.
 			</description>
 		</method>
 		<method name="set_paused">
 			<argument index="0" name="paused" type="bool">
 			</argument>
 			<description>
+			Pause stream playback.
 			</description>
 		</method>
 		<method name="is_paused" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the playback is currently paused.
 			</description>
 		</method>
 		<method name="set_loop">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Set whether the stream will be restarted at the end.
 			</description>
 		</method>
 		<method name="has_loop" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this player will be restart the playback at the end.
 			</description>
 		</method>
 		<method name="set_volume">
 			<argument index="0" name="volume" type="float">
 			</argument>
 			<description>
+			Set the playback volume for this player. This is a float between 0.0 (silent) and 1.0 (full volume). Values over 1.0 may amplify sound even more, but may introduce distortion. Negative values may just invert the output waveform, which produces no audible difference.
+			The effect of these special values uiltimately depends on the low-level implementation of the file format being played.
 			</description>
 		</method>
 		<method name="get_volume" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the playback volume for this player.
 			</description>
 		</method>
 		<method name="set_pitch_scale">
 			<argument index="0" name="pitch_scale" type="float">
 			</argument>
 			<description>
+			Set the pitch multiplier for all sounds coming from this stream. A value of 2.0 shifts all pitches one octave up, and a value of 0.5 shifts pitches one octave down.
 			</description>
 		</method>
 		<method name="get_pitch_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the pitch scale factor for this player.
 			</description>
 		</method>
 		<method name="set_tempo_scale">
 			<argument index="0" name="tempo_scale" type="float">
 			</argument>
 			<description>
+			Set the tempo multiplier. This allows to slow down or speed up the music, without affecting its pitch.
 			</description>
 		</method>
 		<method name="get_tempo_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the tempo multiplier.
 			</description>
 		</method>
 		<method name="set_volume_db">
 			<argument index="0" name="db" type="float">
 			</argument>
 			<description>
+			Set the playback volume for this player, in decibels. This is a float between -80.0 (silent) and 0.0 (full volume). Values under -79.0 get truncated to -80, but values over 0.0 do not, so the warnings for overamplifying (see [set_volume]) still apply.
 			</description>
 		</method>
 		<method name="get_volume_db" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the playback volume for this player, in decibels.
 			</description>
 		</method>
 		<method name="get_stream_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+			Return the name of the currently assigned stream. This is not the file name, but a field inside the file. If no stream is assigned, if returns "&lt;No Stream&gt;".
 			</description>
 		</method>
 		<method name="get_loop_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the number of times the playback has looped.
 			</description>
 		</method>
 		<method name="get_pos" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the playback position. May be in seconds, but depends on the stream type.
 			</description>
 		</method>
 		<method name="seek_pos">
 			<argument index="0" name="time" type="float">
 			</argument>
 			<description>
+			Set the playback position. May be in seconds, but depends on the stream type.
 			</description>
 		</method>
 		<method name="get_length" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the song length. May be in seconds, but depends on the stream type.
 			</description>
 		</method>
 		<method name="set_autoplay">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Set whether this player will start playing as soon as it enters the scene tree.
 			</description>
 		</method>
 		<method name="has_autoplay" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this player will start playing as soon as it enters the scene tree.
 			</description>
 		</method>
 		<method name="set_channel_volume">
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="channel" type="int">
 			</argument>
 			<argument index="1" name="channel_volume" type="float">
 			</argument>
 			<description>
+			Set the volume scale for an individual channel of the stream, with the same value range as [methid set_volume]. The channel number depends on the stream format. For example, MIDIs range from 0 to 15, and MODs from 0 to 63.
+			Many stream formats are multichannel, so this allows to affect only a part of the music.
 			</description>
 		</method>
 		<method name="get_channel_volume" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="channel" type="int">
 			</argument>
 			<description>
+			Return the volume scale for an individual channel of the stream.
 			</description>
 		</method>
 		<method name="get_channel_last_note_time" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="channel" type="int">
 			</argument>
 			<description>
+			Return the time at which the last note of a given channel in the stream plays.
 			</description>
 		</method>
 	</methods>
@@ -10404,8 +10450,11 @@ This approximation makes straight segments between each point, then subdivides t
 </class>
 <class name="EventStream" inherits="Resource" category="Core">
 	<brief_description>
+	Base class for all event-based stream drivers.
 	</brief_description>
 	<description>
+	Base class for all event-based stream drivers. Event streams are music expressed as a series of events (note on, note off, instrument change...), as opposed to audio streams, which are just audio data. Examples of event-based streams are MIDI files, of MOD music.
+	This class exposes no methods.
 	</description>
 	<methods>
 	</methods>
@@ -10414,8 +10463,15 @@ This approximation makes straight segments between each point, then subdivides t
 </class>
 <class name="EventStreamChibi" inherits="EventStream" category="Core">
 	<brief_description>
+	Driver for MOD playback.
 	</brief_description>
 	<description>
+	This driver plays MOD music. MOD music, as all event-based streams, is a music format defined by note events ocurring at defined moments, instead of a stream of audio samples.
+	Currently, this driver supports the MOD, S3M, IT, and XM formats.
+	This class exposes no methods.
+	This class can return its playback positon in seconds, but does not allow to set it, failing with only a console warning.
+	This class can not return its song length, returning 1.0 when queried.
+	This class does not limit its volume settings, allowing for overflow/distortion and wave inversion.
 	</description>
 	<methods>
 	</methods>
@@ -28888,8 +28944,8 @@ This method controls whether the position between two cached points is interpola
 			<argument index="2" name="length" type="int">
 			</argument>
 			<description>
-			Create new data for the sample, with format (see FORMAT_* constants), stereo hint, and length in frames (not samples or bytes!).
-			Calling this method overrides previously existing data. Stereo samples are interleaved pairs of left and right points (in that order).
+			Create new data for the sample, with format (see FORMAT_* constants), stereo hint, and length in samples (not bytes).
+			Calling this method overrides previously existing data. Stereo samples are interleaved pairs of left and right points (in that order), but count as one sample for length purposes.
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
@@ -28910,15 +28966,18 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<description>
-			Return the sample length in frames.
+			Return the sample length in samples. Stereo samples count as one, even if they are made of a left and a right sample.
 			</description>
 		</method>
 		<method name="set_data">
 			<argument index="0" name="data" type="RawArray">
 			</argument>
 			<description>
-			Set sample data. Data must be little endian, no matter the host platform, and exactly as long as to fit all frames.
-			For example, if data is stereo, 16 bits, 256 frames, it will be 1024 bytes long.
+			Set sample data. Data must be little endian, no matter the host platform, and exactly as long as to fit all samples. The length of this array can be calculated as follows:
+			Get the sample length ([method get_length]).
+			If the sample format is FORMAT_PCM16, multiply it by 2.
+			If the sample format is FORMAT_IMA_ADPCM, divide it by 2 (rounding any fraction up), then add 4.
+			If the sample is stereo ([method is_stereo]), multiply it by 2.
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">
@@ -28987,7 +29046,7 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<constants>
 		<constant name="FORMAT_PCM8" value="0">
-			8-bits signed little endian PCM audio.
+			8-bits signed PCM audio.
 		</constant>
 		<constant name="FORMAT_PCM16" value="1">
 			16-bits signed little endian PCM audio.
@@ -33311,148 +33370,174 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="stream" type="Stream">
 			</argument>
 			<description>
+			Set the [EventStream] this player will play.
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
 			<return type="Stream">
 			</return>
 			<description>
+			Return the currently assigned stream.
 			</description>
 		</method>
 		<method name="play">
 			<argument index="0" name="offset" type="float" default="0">
 			</argument>
 			<description>
+			Play the currently assigned stream, starting from a given position (in seconds).
 			</description>
 		</method>
 		<method name="stop">
 			<description>
+			Stop the playback.
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this player is playing.
 			</description>
 		</method>
 		<method name="set_paused">
 			<argument index="0" name="paused" type="bool">
 			</argument>
 			<description>
+			Pause stream playback.
 			</description>
 		</method>
 		<method name="is_paused" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the playback is currently paused.
 			</description>
 		</method>
 		<method name="set_loop">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Set whether the stream will be restarted at the end.
 			</description>
 		</method>
 		<method name="has_loop" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the stream will be restarted at the end.
 			</description>
 		</method>
 		<method name="set_volume">
 			<argument index="0" name="volume" type="float">
 			</argument>
 			<description>
+			Set the playback volume for this player. This is a float between 0.0 (silent) and 1.0 (full volume). Values over 1.0 will amplify sound even more, but may introduce distortion. Negative values will just invert the output waveform, which produces no audible difference.
 			</description>
 		</method>
 		<method name="get_volume" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the playback volume for this player.
 			</description>
 		</method>
 		<method name="set_volume_db">
 			<argument index="0" name="db" type="float">
 			</argument>
 			<description>
+			Set the playback volume for this player, in decibels. This is a float between -80.0 (silent) and 0.0 (full volume). Values under -79.0 get truncated to -80, but values over 0.0 do not, so the warnings for overamplifying (see [set_volume]) still apply.
 			</description>
 		</method>
 		<method name="get_volume_db" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the playback volume for this player, in decibels.
 			</description>
 		</method>
 		<method name="set_buffering_msec">
 			<argument index="0" name="msec" type="int">
 			</argument>
 			<description>
+			Set the size (in milliseconds) of the audio buffer. A long audio buffer protects better against slowdowns, but responds worse to changes (in volume, stream played...). A shorter buffer takes less time to respond to changes, but may stutter if the application suffers some slowdown.
+			Default is 500 milliseconds.
 			</description>
 		</method>
 		<method name="get_buffering_msec" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the size of the audio buffer.
 			</description>
 		</method>
 		<method name="set_loop_restart_time">
 			<argument index="0" name="secs" type="float">
 			</argument>
 			<description>
+			Set the point in time the stream will rewind to, when looping.
 			</description>
 		</method>
 		<method name="get_loop_restart_time" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the point in time the stream will rewind to, when looping.
 			</description>
 		</method>
 		<method name="get_stream_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+			Return the name of the currently assigned stream. This is not the file name, but a field inside the file. If no stream is assigned, if returns "&lt;No Stream&gt;".
 			</description>
 		</method>
 		<method name="get_loop_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the number of times the playback has looped.
 			</description>
 		</method>
 		<method name="get_pos" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the playback position, in seconds.
 			</description>
 		</method>
 		<method name="seek_pos">
 			<argument index="0" name="time" type="float">
 			</argument>
 			<description>
+			Set the playback position, in seconds.
 			</description>
 		</method>
 		<method name="set_autoplay">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Set whether this player will start playing as soon as it enters the scene tree.
 			</description>
 		</method>
 		<method name="has_autoplay" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this player will start playing as soon as it enters the scene tree.
 			</description>
 		</method>
 		<method name="get_length" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the length of the stream, in seconds.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="finished">
 			<description>
+			This signal triggers when the player stops playing. It will not trigger on each loop.
 			</description>
 		</signal>
 	</signals>

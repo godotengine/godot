@@ -360,6 +360,8 @@ public:
 
 	virtual bool is_text_field() const;
 
+	Control *get_root_parent_control() const;
+
 	Control();	
 	~Control();
 	

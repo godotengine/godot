@@ -606,14 +606,14 @@ void Control::force_drag(const Variant& p_data,Control *p_control) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(p_data.get_type()==Variant::NIL);
 
-	get_viewport()->_gui_force_drag(p_data,p_control);
+	get_viewport()->_gui_force_drag(this,p_data,p_control);
 
 }
 
 void Control::set_drag_preview(Control *p_control) {
 
 	ERR_FAIL_COND(!is_inside_tree());
-	get_viewport()->_gui_set_drag_preview(p_control);
+	get_viewport()->_gui_set_drag_preview(this,p_control);
 }
 
 
@@ -2046,6 +2046,26 @@ Vector2 Control::get_scale() const{
 	return data.scale;
 }
 
+Control *Control::get_root_parent_control() const {
+
+	const CanvasItem *ci=this;
+	const Control *root=this;
+
+	while(ci) {
+
+		const Control *c = ci->cast_to<Control>();
+		if (c) {
+			root=c;
+
+			if (c->data.RI || c->data.MI || c->is_toplevel_control())
+				break;
+		}
+
+		ci=ci->get_parent_item();
+	}
+
+	return const_cast<Control*>(root);
+}
 
 void Control::_bind_methods() {
 
