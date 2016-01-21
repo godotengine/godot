@@ -55,6 +55,7 @@
 #include "bind/core_bind.h"
 #include "io/zip_io.h"
 #include "io/config_file.h"
+#include "animation_editor.h"
 
 // plugins
 #include "plugins/sprite_frames_editor_plugin.h"
@@ -1741,7 +1742,7 @@ void EditorNode::_edit_current() {
 	//p->add_item("All Methods",OBJECT_CALL_METHOD);
 
 
-	_update_keying();
+	update_keying();
 }
 
 void EditorNode::_resource_created() {
@@ -2713,11 +2714,6 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			//optimized_presets->popup_centered_ratio();
 		} break;
-		case SETTINGS_SHOW_ANIMATION: {
-
-			animation_panel_make_visible( ! animation_panel->is_visible() );
-
-		} break;
 		case SETTINGS_LOAD_EXPORT_TEMPLATES: {
 
 
@@ -2967,7 +2963,7 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 	if (get_editor_data().get_edited_scene_root()) {
 		if (get_editor_data().get_edited_scene_root()->get_parent()==scene_root)
 			scene_root->remove_child(get_editor_data().get_edited_scene_root());
-		animation_editor->set_root(NULL);
+
 	}	
 	get_editor_data().set_edited_scene_root(p_scene);
 	
@@ -2980,7 +2976,7 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 	if (p_scene) {
 		if (p_scene->get_parent()!=scene_root)
 			scene_root->add_child(p_scene);
-		animation_editor->set_root(p_scene);
+
 	}
 }
 
@@ -3332,7 +3328,7 @@ void EditorNode::set_current_scene(int p_idx) {
 	if (get_editor_data().get_edited_scene_root()) {
 		if (get_editor_data().get_edited_scene_root()->get_parent()==scene_root)
 			scene_root->remove_child(get_editor_data().get_edited_scene_root());
-		animation_editor->set_root(NULL);
+
 	}
 
 	//print_line("set current 2 ");
@@ -3354,7 +3350,7 @@ void EditorNode::set_current_scene(int p_idx) {
 	if (new_scene) {
 		if (new_scene->get_parent()!=scene_root)
 			scene_root->add_child(new_scene);
-		animation_editor->set_root(new_scene);
+
 	}
 	//print_line("set current 4 ");
 
@@ -3620,7 +3616,7 @@ void EditorNode::_instance_request(const String& p_path){
 
 void EditorNode::_property_keyed(const String& p_keyed,const Variant& p_value,bool p_advance) {
 
-	animation_editor->insert_value_key(p_keyed,p_value,p_advance);
+	AnimationPlayerEditor::singleton->get_key_editor()->insert_value_key(p_keyed,p_value,p_advance);
 }
 
 void EditorNode::_transform_keyed(Object *sp,const String& p_sub,const Transform& p_key) {
@@ -3628,16 +3624,16 @@ void EditorNode::_transform_keyed(Object *sp,const String& p_sub,const Transform
 	Spatial *s=sp->cast_to<Spatial>();
 	if (!s)
 		return;
-	animation_editor->insert_transform_key(s,p_sub,p_key);
+	AnimationPlayerEditor::singleton->get_key_editor()->insert_transform_key(s,p_sub,p_key);
 }
 
-void EditorNode::_update_keying() {
+void EditorNode::update_keying() {
 
 	//print_line("KR: "+itos(p_enabled));
 
 	bool valid=false;
 
-	if (animation_editor->has_keying()) {
+	if (AnimationPlayerEditor::singleton->get_key_editor()->has_keying()) {
 
 		if (editor_history.get_path_size()>=1) {
 
@@ -3671,6 +3667,7 @@ void EditorNode::_show_messages() {
 
 }
 
+#if 0
 void EditorNode::animation_panel_make_visible(bool p_visible) {
 
 	if (!p_visible) {
@@ -3682,6 +3679,7 @@ void EditorNode::animation_panel_make_visible(bool p_visible) {
 	int idx = settings_menu->get_popup()->get_item_index(SETTINGS_SHOW_ANIMATION);
 	settings_menu->get_popup()->set_item_checked(idx,p_visible);
 }
+
 
 void EditorNode::animation_editor_make_visible(bool p_visible) {
 
@@ -3706,7 +3704,7 @@ void EditorNode::animation_editor_make_visible(bool p_visible) {
 	animation_editor->set_keying(p_visible);
 
 }
-
+#endif
 void EditorNode::_add_to_recent_scenes(const String& p_scene) {
 
 	String base="_"+Globals::get_singleton()->get_resource_path().replace("\\","::").replace("/","::");
@@ -3797,11 +3795,6 @@ void EditorNode::_update_recent_scenes() {
 		recent_scenes->add_item(rc[i],i);
 	}
 
-}
-
-void EditorNode::hide_animation_player_editors() {
-
-	emit_signal("hide_animation_player_editors");
 }
 
 void EditorNode::_quick_opened() {
@@ -3974,90 +3967,6 @@ void EditorNode::progress_end_task_bg(const String& p_task) {
 }
 
 
-void EditorNode::_bind_methods() {
-	
-
-	ObjectTypeDB::bind_method("_menu_option",&EditorNode::_menu_option);
-	ObjectTypeDB::bind_method("_menu_confirm_current",&EditorNode::_menu_confirm_current);
-	ObjectTypeDB::bind_method("_dialog_action",&EditorNode::_dialog_action);
-	ObjectTypeDB::bind_method("_resource_selected",&EditorNode::_resource_selected,DEFVAL(""));
-	ObjectTypeDB::bind_method("_property_editor_forward",&EditorNode::_property_editor_forward);
-	ObjectTypeDB::bind_method("_property_editor_back",&EditorNode::_property_editor_back);
-	ObjectTypeDB::bind_method("_editor_select",&EditorNode::_editor_select);
-	ObjectTypeDB::bind_method("_node_renamed",&EditorNode::_node_renamed);
-	ObjectTypeDB::bind_method("edit_node",&EditorNode::edit_node);
-	ObjectTypeDB::bind_method("_imported",&EditorNode::_imported);
-	ObjectTypeDB::bind_method("_unhandled_input",&EditorNode::_unhandled_input);
-
-	ObjectTypeDB::bind_method("_get_scene_metadata",&EditorNode::_get_scene_metadata);
-	ObjectTypeDB::bind_method("set_edited_scene",&EditorNode::set_edited_scene);
-	ObjectTypeDB::bind_method("open_request",&EditorNode::open_request);
-	ObjectTypeDB::bind_method("_instance_request",&EditorNode::_instance_request);
-	ObjectTypeDB::bind_method("_update_keying",&EditorNode::_update_keying);
-	ObjectTypeDB::bind_method("_property_keyed",&EditorNode::_property_keyed);
-	ObjectTypeDB::bind_method("_transform_keyed",&EditorNode::_transform_keyed);
-	ObjectTypeDB::bind_method("_close_messages",&EditorNode::_close_messages);
-	ObjectTypeDB::bind_method("_show_messages",&EditorNode::_show_messages);
-	ObjectTypeDB::bind_method("_vp_resized",&EditorNode::_vp_resized);
-	ObjectTypeDB::bind_method("_quick_opened",&EditorNode::_quick_opened);
-	ObjectTypeDB::bind_method("_quick_run",&EditorNode::_quick_run);
-
-	ObjectTypeDB::bind_method("_resource_created",&EditorNode::_resource_created);
-
-	ObjectTypeDB::bind_method("_import_action",&EditorNode::_import_action);
-	//ObjectTypeDB::bind_method("_import",&EditorNode::_import);
-//	ObjectTypeDB::bind_method("_import_conflicts_solved",&EditorNode::_import_conflicts_solved);
-	ObjectTypeDB::bind_method("_open_recent_scene",&EditorNode::_open_recent_scene);
-//	ObjectTypeDB::bind_method("_open_recent_scene_confirm",&EditorNode::_open_recent_scene_confirm);
-
-	ObjectTypeDB::bind_method("_save_optimized",&EditorNode::_save_optimized);
-	ObjectTypeDB::bind_method(_MD("animation_panel_make_visible","enable"),&EditorNode::animation_panel_make_visible);
-
-	ObjectTypeDB::bind_method("stop_child_process",&EditorNode::stop_child_process);
-
-	ObjectTypeDB::bind_method("_sources_changed",&EditorNode::_sources_changed);
-	ObjectTypeDB::bind_method("_fs_changed",&EditorNode::_fs_changed);
-	ObjectTypeDB::bind_method("_dock_select_draw",&EditorNode::_dock_select_draw);
-	ObjectTypeDB::bind_method("_dock_select_input",&EditorNode::_dock_select_input);
-	ObjectTypeDB::bind_method("_dock_pre_popup",&EditorNode::_dock_pre_popup);
-	ObjectTypeDB::bind_method("_dock_split_dragged",&EditorNode::_dock_split_dragged);
-	ObjectTypeDB::bind_method("_save_docks",&EditorNode::_save_docks);
-	ObjectTypeDB::bind_method("_dock_popup_exit",&EditorNode::_dock_popup_exit);
-	ObjectTypeDB::bind_method("_dock_move_left",&EditorNode::_dock_move_left);
-	ObjectTypeDB::bind_method("_dock_move_right",&EditorNode::_dock_move_right);
-
-	ObjectTypeDB::bind_method("_layout_menu_option",&EditorNode::_layout_menu_option);
-
-	ObjectTypeDB::bind_method("set_current_scene",&EditorNode::set_current_scene);
-	ObjectTypeDB::bind_method("set_current_version",&EditorNode::set_current_version);
-	ObjectTypeDB::bind_method("_scene_tab_changed",&EditorNode::_scene_tab_changed);
-	ObjectTypeDB::bind_method("_scene_tab_closed",&EditorNode::_scene_tab_closed);
-	ObjectTypeDB::bind_method("_scene_tab_script_edited",&EditorNode::_scene_tab_script_edited);
-	ObjectTypeDB::bind_method("_set_main_scene_state",&EditorNode::_set_main_scene_state);
-	ObjectTypeDB::bind_method("_update_scene_tabs",&EditorNode::_update_scene_tabs);
-
-	ObjectTypeDB::bind_method("_prepare_history",&EditorNode::_prepare_history);
-	ObjectTypeDB::bind_method("_select_history",&EditorNode::_select_history);
-
-	ObjectTypeDB::bind_method("_toggle_search_bar",&EditorNode::_toggle_search_bar);
-	ObjectTypeDB::bind_method("_clear_search_box",&EditorNode::_clear_search_box);
-	ObjectTypeDB::bind_method("_clear_undo_history",&EditorNode::_clear_undo_history);
-
-	ObjectTypeDB::bind_method(_MD("add_editor_import_plugin", "plugin"), &EditorNode::add_editor_import_plugin);
-	ObjectTypeDB::bind_method(_MD("remove_editor_import_plugin", "plugin"), &EditorNode::remove_editor_import_plugin);
-	ObjectTypeDB::bind_method(_MD("get_gui_base"), &EditorNode::get_gui_base);
-
-	ADD_SIGNAL( MethodInfo("play_pressed") );
-	ADD_SIGNAL( MethodInfo("pause_pressed") );
-	ADD_SIGNAL( MethodInfo("stop_pressed") );
-	ADD_SIGNAL( MethodInfo("hide_animation_player_editors") );
-	ADD_SIGNAL( MethodInfo("request_help") );
-	ADD_SIGNAL( MethodInfo("script_add_function_request",PropertyInfo(Variant::OBJECT,"obj"),PropertyInfo(Variant::STRING,"function"),PropertyInfo(Variant::STRING_ARRAY,"args")) );
-	ADD_SIGNAL( MethodInfo("resource_saved",PropertyInfo(Variant::OBJECT,"obj")) );
-
-
-	
-}
 
 Ref<Texture> EditorNode::_file_dialog_get_icon(const String& p_path) {
 
@@ -4648,6 +4557,173 @@ void EditorNode::_clear_search_box() {
 	property_editor->update_tree();
 }
 
+ToolButton *EditorNode::add_bottom_panel_item(String p_text,Control *p_item) {
+
+	ToolButton *tb = memnew( ToolButton );
+	tb->connect("toggled",this,"_bottom_panel_switch",varray(bottom_panel_items.size()));
+	tb->set_text(p_text);
+	tb->set_toggle_mode(true);
+	tb->set_focus_mode(Control::FOCUS_NONE);
+	bottom_panel_vb->add_child(p_item);
+	bottom_panel_hb->raise();
+	bottom_panel_hb->add_child(tb);
+	p_item->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	p_item->hide();
+	BottomPanelItem bpi;
+	bpi.button=tb;
+	bpi.control=p_item;
+	bpi.name=p_text;
+	bottom_panel_items.push_back(bpi);
+
+	return tb;
+
+}
+
+void EditorNode::hide_bottom_panel() {
+
+	_bottom_panel_switch(false,0);
+
+}
+
+void EditorNode::make_bottom_panel_item_visible(Control *p_item) {
+
+	for(int i=0;i<bottom_panel_items.size();i++) {
+
+		if (bottom_panel_items[i].control==p_item) {
+			_bottom_panel_switch(true,i);
+			break;
+		}
+	}
+}
+
+void EditorNode::raise_bottom_panel_item(Control *p_item) {
+
+	for(int i=0;i<bottom_panel_items.size();i++) {
+
+		if (bottom_panel_items[i].control==p_item) {
+			bottom_panel_items[i].button->raise();
+			SWAP( bottom_panel_items[i], bottom_panel_items[bottom_panel_items.size()-1]);
+			break;
+		}
+	}
+
+	for(int i=0;i<bottom_panel_items.size();i++) {
+		bottom_panel_items[i].button->disconnect("toggled",this,"_bottom_panel_switch");
+		bottom_panel_items[i].button->connect("toggled",this,"_bottom_panel_switch",varray(i));
+	}
+
+}
+
+void EditorNode::_bottom_panel_switch(bool p_enable,int p_idx) {
+
+	ERR_FAIL_INDEX(p_idx,bottom_panel_items.size());
+
+
+
+	if (p_enable) {
+		for(int i=0;i<bottom_panel_items.size();i++) {
+
+			bottom_panel_items[i].button->set_pressed(i==p_idx);
+			bottom_panel_items[i].control->set_hidden(i!=p_idx);
+		}
+		center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
+		center_split->set_collapsed(false);
+	} else {
+		for(int i=0;i<bottom_panel_items.size();i++) {
+
+			bottom_panel_items[i].button->set_pressed(false);
+			bottom_panel_items[i].control->set_hidden(true);
+		}
+		center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
+		center_split->set_collapsed(true);
+	}
+}
+
+void EditorNode::_bind_methods() {
+
+
+	ObjectTypeDB::bind_method("_menu_option",&EditorNode::_menu_option);
+	ObjectTypeDB::bind_method("_menu_confirm_current",&EditorNode::_menu_confirm_current);
+	ObjectTypeDB::bind_method("_dialog_action",&EditorNode::_dialog_action);
+	ObjectTypeDB::bind_method("_resource_selected",&EditorNode::_resource_selected,DEFVAL(""));
+	ObjectTypeDB::bind_method("_property_editor_forward",&EditorNode::_property_editor_forward);
+	ObjectTypeDB::bind_method("_property_editor_back",&EditorNode::_property_editor_back);
+	ObjectTypeDB::bind_method("_editor_select",&EditorNode::_editor_select);
+	ObjectTypeDB::bind_method("_node_renamed",&EditorNode::_node_renamed);
+	ObjectTypeDB::bind_method("edit_node",&EditorNode::edit_node);
+	ObjectTypeDB::bind_method("_imported",&EditorNode::_imported);
+	ObjectTypeDB::bind_method("_unhandled_input",&EditorNode::_unhandled_input);
+
+	ObjectTypeDB::bind_method("_get_scene_metadata",&EditorNode::_get_scene_metadata);
+	ObjectTypeDB::bind_method("set_edited_scene",&EditorNode::set_edited_scene);
+	ObjectTypeDB::bind_method("open_request",&EditorNode::open_request);
+	ObjectTypeDB::bind_method("_instance_request",&EditorNode::_instance_request);
+	ObjectTypeDB::bind_method("update_keying",&EditorNode::update_keying);
+	ObjectTypeDB::bind_method("_property_keyed",&EditorNode::_property_keyed);
+	ObjectTypeDB::bind_method("_transform_keyed",&EditorNode::_transform_keyed);
+	ObjectTypeDB::bind_method("_close_messages",&EditorNode::_close_messages);
+	ObjectTypeDB::bind_method("_show_messages",&EditorNode::_show_messages);
+	ObjectTypeDB::bind_method("_vp_resized",&EditorNode::_vp_resized);
+	ObjectTypeDB::bind_method("_quick_opened",&EditorNode::_quick_opened);
+	ObjectTypeDB::bind_method("_quick_run",&EditorNode::_quick_run);
+
+	ObjectTypeDB::bind_method("_resource_created",&EditorNode::_resource_created);
+
+	ObjectTypeDB::bind_method("_import_action",&EditorNode::_import_action);
+	//ObjectTypeDB::bind_method("_import",&EditorNode::_import);
+//	ObjectTypeDB::bind_method("_import_conflicts_solved",&EditorNode::_import_conflicts_solved);
+	ObjectTypeDB::bind_method("_open_recent_scene",&EditorNode::_open_recent_scene);
+//	ObjectTypeDB::bind_method("_open_recent_scene_confirm",&EditorNode::_open_recent_scene_confirm);
+
+	ObjectTypeDB::bind_method("_save_optimized",&EditorNode::_save_optimized);
+
+	ObjectTypeDB::bind_method("stop_child_process",&EditorNode::stop_child_process);
+
+	ObjectTypeDB::bind_method("_sources_changed",&EditorNode::_sources_changed);
+	ObjectTypeDB::bind_method("_fs_changed",&EditorNode::_fs_changed);
+	ObjectTypeDB::bind_method("_dock_select_draw",&EditorNode::_dock_select_draw);
+	ObjectTypeDB::bind_method("_dock_select_input",&EditorNode::_dock_select_input);
+	ObjectTypeDB::bind_method("_dock_pre_popup",&EditorNode::_dock_pre_popup);
+	ObjectTypeDB::bind_method("_dock_split_dragged",&EditorNode::_dock_split_dragged);
+	ObjectTypeDB::bind_method("_save_docks",&EditorNode::_save_docks);
+	ObjectTypeDB::bind_method("_dock_popup_exit",&EditorNode::_dock_popup_exit);
+	ObjectTypeDB::bind_method("_dock_move_left",&EditorNode::_dock_move_left);
+	ObjectTypeDB::bind_method("_dock_move_right",&EditorNode::_dock_move_right);
+
+	ObjectTypeDB::bind_method("_layout_menu_option",&EditorNode::_layout_menu_option);
+
+	ObjectTypeDB::bind_method("set_current_scene",&EditorNode::set_current_scene);
+	ObjectTypeDB::bind_method("set_current_version",&EditorNode::set_current_version);
+	ObjectTypeDB::bind_method("_scene_tab_changed",&EditorNode::_scene_tab_changed);
+	ObjectTypeDB::bind_method("_scene_tab_closed",&EditorNode::_scene_tab_closed);
+	ObjectTypeDB::bind_method("_scene_tab_script_edited",&EditorNode::_scene_tab_script_edited);
+	ObjectTypeDB::bind_method("_set_main_scene_state",&EditorNode::_set_main_scene_state);
+	ObjectTypeDB::bind_method("_update_scene_tabs",&EditorNode::_update_scene_tabs);
+
+	ObjectTypeDB::bind_method("_prepare_history",&EditorNode::_prepare_history);
+	ObjectTypeDB::bind_method("_select_history",&EditorNode::_select_history);
+
+	ObjectTypeDB::bind_method("_toggle_search_bar",&EditorNode::_toggle_search_bar);
+	ObjectTypeDB::bind_method("_clear_search_box",&EditorNode::_clear_search_box);
+	ObjectTypeDB::bind_method("_clear_undo_history",&EditorNode::_clear_undo_history);
+
+	ObjectTypeDB::bind_method(_MD("add_editor_import_plugin", "plugin"), &EditorNode::add_editor_import_plugin);
+	ObjectTypeDB::bind_method(_MD("remove_editor_import_plugin", "plugin"), &EditorNode::remove_editor_import_plugin);
+	ObjectTypeDB::bind_method(_MD("get_gui_base"), &EditorNode::get_gui_base);
+	ObjectTypeDB::bind_method(_MD("_bottom_panel_switch"), &EditorNode::_bottom_panel_switch);
+
+
+	ADD_SIGNAL( MethodInfo("play_pressed") );
+	ADD_SIGNAL( MethodInfo("pause_pressed") );
+	ADD_SIGNAL( MethodInfo("stop_pressed") );
+	ADD_SIGNAL( MethodInfo("request_help") );
+	ADD_SIGNAL( MethodInfo("script_add_function_request",PropertyInfo(Variant::OBJECT,"obj"),PropertyInfo(Variant::STRING,"function"),PropertyInfo(Variant::STRING_ARRAY,"args")) );
+	ADD_SIGNAL( MethodInfo("resource_saved",PropertyInfo(Variant::OBJECT,"obj")) );
+
+
+
+}
+
 EditorNode::EditorNode() {
 
 	EditorHelp::generate_doc(); //before any editor classes are crated
@@ -4981,44 +5057,6 @@ EditorNode::EditorNode() {
 	scene_root_parent->add_child(viewport);
 
 
-	PanelContainer *pc = memnew( PanelContainer );
-	top_split->add_child(pc);
-	animation_vb = memnew( VBoxContainer );
-	animation_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	pc->add_child(animation_vb);
-	animation_panel=pc;
-	animation_panel->hide();
-
-
-	HBoxContainer *animation_hb = memnew( HBoxContainer);
-	animation_vb->add_child(animation_hb);
-
-	Label *l= memnew( Label );
-	l->set_text("Animation:");
-	//l->set_h_size_flags(Control::SIZE_);
-	animation_hb->add_child(l);
-
-	animation_panel_hb = memnew( HBoxContainer );
-	animation_hb->add_child(animation_panel_hb);
-	animation_panel_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-
-
-	/*pd_anim = memnew( PaneDrag );
-	animation_hb->add_child(pd_anim);
-	pd_anim->connect("dragged",this,"_dragged");
-	pd_anim->set_default_cursor_shape(Control::CURSOR_MOVE);
-	pd_anim->hide();*/
-
-	anim_close = memnew( TextureButton );
-	animation_hb->add_child(anim_close);
-	anim_close->connect("pressed",this,"animation_panel_make_visible",make_binds(false));
-	anim_close->set_normal_texture( anim_close->get_icon("Close","EditorIcons"));
-	anim_close->set_hover_texture( anim_close->get_icon("CloseHover","EditorIcons"));
-	anim_close->set_pressed_texture( anim_close->get_icon("Close","EditorIcons"));
-
-
-
-
 	PanelContainer *top_region = memnew( PanelContainer );
 	top_region->add_style_override("panel",gui_base->get_stylebox("hover","Button"));
 	HBoxContainer *left_menu_hb = memnew( HBoxContainer );
@@ -5337,8 +5375,6 @@ EditorNode::EditorNode() {
 	editor_layouts->connect("item_pressed",this,"_layout_menu_option");
 	p->add_submenu_item("Editor Layout", "Layouts");
 	p->add_separator();
-	p->add_check_item("Show Animation",SETTINGS_SHOW_ANIMATION,KEY_MASK_CMD+KEY_N);
-	p->add_separator();
 	p->add_item("Install Export Templates",SETTINGS_LOAD_EXPORT_TEMPLATES);
 	p->add_separator();
 	p->add_item("About",SETTINGS_ABOUT);
@@ -5502,7 +5538,7 @@ EditorNode::EditorNode() {
 	prop_editor_base->add_child(search_bar);
 	search_bar->hide();
 
-	l = memnew( Label("Search: ") );
+	Label *l = memnew( Label("Search: ") );
 	search_bar->add_child(l);
 
 	search_box = memnew( LineEdit );
@@ -5550,37 +5586,40 @@ EditorNode::EditorNode() {
 
 	_update_layouts_menu();
 
+	bottom_panel = memnew( PanelContainer );
+	bottom_panel->add_style_override("panel",gui_base->get_stylebox("panelf","Panel"));
+	center_split->add_child(bottom_panel);
+	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
+
+	bottom_panel_vb = memnew( VBoxContainer );
+	bottom_panel->add_child(bottom_panel_vb);
+	//bottom_panel_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+	bottom_panel_hb = memnew( HBoxContainer );
+	bottom_panel_vb->add_child(bottom_panel_hb);
+
+
+
 	log = memnew( EditorLog );
-	center_split->add_child(log);
-	log->connect("close_request",this,"_close_messages");
-	log->connect("show_request",this,"_show_messages");
+
+	add_bottom_panel_item("Output",log);
+
 	//left_split->set_dragger_visible(false);
 
 
 	old_split_ofs=0;
 
-
-	animation_editor = memnew( AnimationKeyEditor(get_undo_redo(),&editor_history,editor_selection) );
-	animation_editor->set_anchor_and_margin(MARGIN_RIGHT,Control::ANCHOR_END,0);
-	animation_editor->set_margin(MARGIN_BOTTOM,200);
-	animation_editor->connect("keying_changed",this,"_update_keying");
-
-	animation_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-
-
-	animation_vb->add_child(animation_editor);
 	center_split->connect("resized",this,"_vp_resized");
 
-
-	animation_editor->hide();
 
 	/*PanelContainer *bottom_pc = memnew( PanelContainer );
 	srt->add_child(bottom_pc);
 	bottom_hb = memnew( HBoxContainer );
 	bottom_pc->add_child(bottom_hb);*/
 
-	center_vb->add_child( log->get_button() );
-	log->get_button()->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+//	center_vb->add_child( log->get_button() );
+//	log->get_button()->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 
 	//progress_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -5780,7 +5819,7 @@ EditorNode::EditorNode() {
 	file_templates->connect("file_selected", this,"_dialog_action");
 	property_editor->connect("resource_selected", this,"_resource_selected");
 	property_editor->connect("property_keyed", this,"_property_keyed");
-	animation_editor->connect("resource_selected", this,"_resource_selected");
+
 	//plugin stuff
 
 	file_server = memnew( EditorFileServer );
@@ -5806,10 +5845,15 @@ EditorNode::EditorNode() {
 	editor_import_export->add_export_plugin( Ref<EditorSampleExportPlugin>( memnew(EditorSampleExportPlugin)));
 	editor_import_export->add_export_plugin( Ref<EditorSceneExportPlugin>( memnew(EditorSceneExportPlugin)));
 
+
+	add_editor_plugin( memnew( AnimationPlayerEditorPlugin(this) ) );
 	add_editor_plugin( memnew( CanvasItemEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SpatialEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ScriptEditorPlugin(this) ) );
-	add_editor_plugin( memnew( AnimationPlayerEditorPlugin(this) ) );
+
+	//more visually meaningful to have this later
+	raise_bottom_panel_item(AnimationPlayerEditor::singleton);
+
 	add_editor_plugin( memnew( ShaderGraphEditorPlugin(this,true) ) );
 	add_editor_plugin( memnew( ShaderGraphEditorPlugin(this,false) ) );
 	add_editor_plugin( memnew( ShaderEditorPlugin(this,true) ) );

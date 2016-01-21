@@ -109,6 +109,11 @@ bool Control::_set(const StringName& p_name, const Variant& p_value) {
 			data.icon_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 			update();
+		} else if (name.begins_with("custom_shaders/")) {
+			String dname = name.get_slicec('/',1);
+			data.shader_override.erase(dname);
+			notification(NOTIFICATION_THEME_CHANGED);
+			update();
 		} else if (name.begins_with("custom_styles/")) {
 			String dname = name.get_slicec('/',1);
 			data.style_override.erase(dname);
@@ -137,6 +142,10 @@ bool Control::_set(const StringName& p_name, const Variant& p_value) {
 			String dname = name.get_slicec('/',1);
 			notification(NOTIFICATION_THEME_CHANGED);
 			add_icon_override(dname,p_value);
+		} else if (name.begins_with("custom_shaders/")) {
+			String dname = name.get_slicec('/',1);
+			add_shader_override(dname,p_value);
+			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_styles/")) {
 			String dname = name.get_slicec('/',1);
 			add_style_override(dname,p_value);
@@ -189,6 +198,10 @@ bool Control::_get(const StringName& p_name,Variant &r_ret) const {
 		String name = sname.get_slicec('/',1);
 
 		r_ret= data.icon_override.has(name)?Variant(data.icon_override[name]):Variant();
+	} else if (sname.begins_with("custom_shaders/")) {
+		String name = sname.get_slicec('/',1);
+
+		r_ret= data.shader_override.has(name)?Variant(data.shader_override[name]):Variant();
 	} else if (sname.begins_with("custom_styles/")) {
 		String name = sname.get_slicec('/',1);
 
@@ -234,6 +247,18 @@ void Control::_get_property_list( List<PropertyInfo> *p_list) const {
 				hint|=PROPERTY_USAGE_STORAGE|PROPERTY_USAGE_CHECKED;
 
 			p_list->push_back( PropertyInfo(Variant::OBJECT,"custom_icons/"+E->get(),PROPERTY_HINT_RESOURCE_TYPE, "Texture",hint) );
+		}
+	}
+	{
+		List<StringName> names;
+		theme->get_shader_list(get_type_name(),&names);
+		for(List<StringName>::Element *E=names.front();E;E=E->next()) {
+
+			uint32_t hint= PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_CHECKABLE;
+			if (data.shader_override.has(E->get()))
+				hint|=PROPERTY_USAGE_STORAGE|PROPERTY_USAGE_CHECKED;
+
+			p_list->push_back( PropertyInfo(Variant::OBJECT,"custom_shaders/"+E->get(),PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemShader,CanvasItemShaderGraph",hint) );
 		}
 	}
 	{
@@ -387,7 +412,7 @@ void Control::_notification(int p_notification) {
 
 				data.parent_canvas_item->disconnect("item_rect_changed",this,"_size_changed");
 				data.parent_canvas_item=NULL;
-			} else {
+			} else if (!is_set_as_toplevel()) {
 				//disconnect viewport
 				get_viewport()->disconnect("size_changed",this,"_size_changed");
 
@@ -581,14 +606,14 @@ void Control::force_drag(const Variant& p_data,Control *p_control) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(p_data.get_type()==Variant::NIL);
 
-	get_viewport()->_gui_force_drag(p_data,p_control);
+	get_viewport()->_gui_force_drag(this,p_data,p_control);
 
 }
 
 void Control::set_drag_preview(Control *p_control) {
 
 	ERR_FAIL_COND(!is_inside_tree());
-	get_viewport()->_gui_set_drag_preview(p_control);
+	get_viewport()->_gui_set_drag_preview(this,p_control);
 }
 
 
@@ -648,6 +673,35 @@ Ref<Texture> Control::get_icon(const StringName& p_name,const StringName& p_type
 
 	return Theme::get_default()->get_icon( p_name, type );
 
+}
+
+Ref<Shader> Control::get_shader(const StringName& p_name,const StringName& p_type) const {
+	if (p_type==StringName()) {
+
+		const Ref<Shader>* sdr = data.shader_override.getptr(p_name);
+		if (sdr)
+			return *sdr;
+	}
+
+	StringName type = p_type?p_type:get_type_name();
+
+	// try with custom themes
+	Control *theme_owner = data.theme_owner;
+
+	while(theme_owner) {
+
+		if (theme_owner->data.theme->has_shader(p_name, type))
+			return data.theme_owner->data.theme->get_shader(p_name, type );
+		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
+
+		if (parent)
+			theme_owner=parent->data.theme_owner;
+		else
+			theme_owner=NULL;
+
+	}
+
+	return Theme::get_default()->get_shader( p_name, type );
 }
 
 Ref<StyleBox> Control::get_stylebox(const StringName& p_name,const StringName& p_type) const {
@@ -796,7 +850,37 @@ bool Control::has_icon(const StringName& p_name,const StringName& p_type) const 
 	}
 
 	return Theme::get_default()->has_icon( p_name, type );
+	
+}
 
+bool Control::has_shader(const StringName &p_name, const StringName &p_type) const
+{
+	if (p_type==StringName()) {
+		const Ref<Shader>* sdr = data.shader_override.getptr(p_name);
+		if (sdr)
+			return true;
+	}
+
+	StringName type = p_type?p_type:get_type_name();
+
+	// try with custom themes
+	Control *theme_owner = data.theme_owner;
+
+	while(theme_owner) {
+
+		if (theme_owner->data.theme->has_shader(p_name, type))
+			return true;
+		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
+
+		if (parent)
+			theme_owner=parent->data.theme_owner;
+		else
+			theme_owner=NULL;
+
+	}
+
+	return Theme::get_default()->has_shader( p_name, type );
+	
 }
 bool Control::has_stylebox(const StringName& p_name,const StringName& p_type) const {
 		
@@ -1261,7 +1345,14 @@ void Control::add_icon_override(const StringName& p_name, const Ref<Texture>& p_
 	data.icon_override[p_name]=p_icon;
 	notification(NOTIFICATION_THEME_CHANGED);
 	update();
+	
+}
 
+void Control::add_shader_override(const StringName &p_name, const Ref<Shader> &p_shader) {
+	ERR_FAIL_COND(p_shader.is_null());
+	data.shader_override[p_name]=p_shader;
+	notification(NOTIFICATION_THEME_CHANGED);
+	update();
 }
 void Control::add_style_override(const StringName& p_name, const Ref<StyleBox>& p_style) {
 
@@ -1955,6 +2046,26 @@ Vector2 Control::get_scale() const{
 	return data.scale;
 }
 
+Control *Control::get_root_parent_control() const {
+
+	const CanvasItem *ci=this;
+	const Control *root=this;
+
+	while(ci) {
+
+		const Control *c = ci->cast_to<Control>();
+		if (c) {
+			root=c;
+
+			if (c->data.RI || c->data.MI || c->is_toplevel_control())
+				break;
+		}
+
+		ci=ci->get_parent_item();
+	}
+
+	return const_cast<Control*>(root);
+}
 
 void Control::_bind_methods() {
 
@@ -2011,8 +2122,9 @@ void Control::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_theme","theme:Theme"),&Control::set_theme);
 	ObjectTypeDB::bind_method(_MD("get_theme:Theme"),&Control::get_theme);
-
+	
 	ObjectTypeDB::bind_method(_MD("add_icon_override","name","texture:Texture"),&Control::add_icon_override);
+	ObjectTypeDB::bind_method(_MD("add_shader_override","name","shader:Shader"),&Control::add_shader_override);
 	ObjectTypeDB::bind_method(_MD("add_style_override","name","stylebox:StyleBox"),&Control::add_style_override);
 	ObjectTypeDB::bind_method(_MD("add_font_override","name","font:Font"),&Control::add_font_override);
 	ObjectTypeDB::bind_method(_MD("add_color_override","name","color"),&Control::add_color_override);

@@ -423,11 +423,16 @@ bool SampleLibraryEditorPlugin::handles(Object *p_object) const {
 void SampleLibraryEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		sample_library_editor->show();
+		//sample_library_editor->show();
+		button->show();
+		editor->make_bottom_panel_item_visible(sample_library_editor);
 //		sample_library_editor->set_process(true);
 	} else {
 
-		sample_library_editor->hide();
+		if (sample_library_editor->is_visible())
+			editor->hide_bottom_panel();
+		button->hide();
+
 //		sample_library_editor->set_process(false);
 	}
 
@@ -437,11 +442,16 @@ SampleLibraryEditorPlugin::SampleLibraryEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
 	sample_library_editor = memnew( SampleLibraryEditor );
-	editor->get_viewport()->add_child(sample_library_editor);
-	sample_library_editor->set_area_as_parent_rect();
+
+	//editor->get_viewport()->add_child(sample_library_editor);
+	sample_library_editor->set_custom_minimum_size(Size2(0,250));
+	button=p_node->add_bottom_panel_item("SampleLibrary",sample_library_editor);
+	button->hide();
+
+	//sample_library_editor->set_area_as_parent_rect();
 //	sample_library_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
 //	sample_library_editor->set_margin( MARGIN_TOP, 120 );
-	sample_library_editor->hide();
+	//sample_library_editor->hide();
 
 
 

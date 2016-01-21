@@ -79,8 +79,6 @@ void EditorLog::_notification(int p_what) {
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		log->add_color_override("default_color",get_color("font_color","Tree"));
-		tb->set_normal_texture( get_icon("Collapse","EditorIcons"));
-		tb->set_hover_texture( get_icon("CollapseHl","EditorIcons"));
 		//button->set_icon(get_icon("Console","EditorIcons"));
 
 	}
@@ -98,11 +96,6 @@ void EditorLog::_notification(int p_what) {
 }
 
 
-void EditorLog::_close_request() {
-
-	_flip_request();
-
-}
 
 
 void EditorLog::_clear_request() {
@@ -122,17 +115,17 @@ void EditorLog::add_message(const String& p_msg,bool p_error) {
 	if (p_error) {
 		Ref<Texture> icon = get_icon("Error","EditorIcons");
 		log->add_image( icon );
-		button->set_icon(icon);
+		//button->set_icon(icon);
 		log->push_color(get_color("fg_error","Editor"));
 	} else {
-		button->set_icon(Ref<Texture>());
+		//button->set_icon(Ref<Texture>());
 
 	}
 
 
 	log->add_newline();
 	log->add_text(p_msg);
-	button->set_text(p_msg);
+//	button->set_text(p_msg);
 
 	if (p_error)
 		log->pop();
@@ -156,21 +149,7 @@ void EditorLog::_dragged(const Point2& p_ofs) {
 */
 
 
-Button *EditorLog::get_button() {
 
-	return button;
-}
-
-void EditorLog::_flip_request() {
-
-	if (is_visible()) {
-		hide();
-		button->show();
-	} else {
-		show();
-		button->hide();
-	}
-}
 
 void EditorLog::_undo_redo_cbk(void *p_self,const String& p_name) {
 
@@ -181,21 +160,16 @@ void EditorLog::_undo_redo_cbk(void *p_self,const String& p_name) {
 
 void EditorLog::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_close_request"),&EditorLog::_close_request );
-	ObjectTypeDB::bind_method(_MD("_flip_request"),&EditorLog::_flip_request );
 	ObjectTypeDB::bind_method(_MD("_clear_request"),&EditorLog::_clear_request );
 
 	//ObjectTypeDB::bind_method(_MD("_dragged"),&EditorLog::_dragged );
-	ADD_SIGNAL( MethodInfo("close_request"));
-	ADD_SIGNAL( MethodInfo("show_request"));
 	ADD_SIGNAL( MethodInfo("clear_request"));
 }
 
 EditorLog::EditorLog() {
 
-	VBoxContainer *vb = memnew( VBoxContainer);
-	add_child(vb);
-	vb->set_v_size_flags(SIZE_EXPAND_FILL);
+	VBoxContainer *vb = this;
+	add_constant_override("separation",get_constant("separation","VBoxContainer"));
 
 	HBoxContainer *hb = memnew( HBoxContainer );
 	vb->add_child(hb);
@@ -203,14 +177,6 @@ EditorLog::EditorLog() {
 	title->set_text(" Output:");
 	title->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(title);
-
-
-	button = memnew( Button );
-	button->set_text_align(Button::ALIGN_LEFT);
-	button->connect("pressed",this,"_flip_request");
-	button->set_focus_mode(FOCUS_NONE);
-	button->set_clip_text(true);
-	button->set_tooltip("Open/Close output panel.");
 
 	//pd = memnew( PaneDrag );
 	//hb->add_child(pd);
@@ -222,14 +188,9 @@ EditorLog::EditorLog() {
 	clearbutton->set_text("Clear");
 	clearbutton->connect("pressed", this,"_clear_request");
 
-	tb = memnew( TextureButton );
-	hb->add_child(tb);
-	tb->connect("pressed",this,"_close_request");
-
-
 	ec = memnew( Control);
 	vb->add_child(ec);
-	ec->set_custom_minimum_size(Size2(0,100));
+	ec->set_custom_minimum_size(Size2(0,180));
 	ec->set_v_size_flags(SIZE_EXPAND_FILL);
 
 
@@ -245,7 +206,6 @@ EditorLog::EditorLog() {
 	pc->add_child(log);
 	add_message(VERSION_FULL_NAME" (c) 2008-2016 Juan Linietsky, Ariel Manzur.");
 	//log->add_text("Initialization Complete.\n"); //because it looks cool.
-	add_style_override("panel",get_stylebox("panelf","Panel"));
 
 	eh.errfunc=_error_handler;
 	eh.userdata=this;
@@ -255,7 +215,6 @@ EditorLog::EditorLog() {
 
 	EditorNode::get_undo_redo()->set_commit_notify_callback(_undo_redo_cbk,this);
 
-	hide();
 
 }
 

@@ -474,7 +474,10 @@ Vector2 GraphNode::get_connection_input_pos(int p_idx) {
 		_connpos_update();
 
 	ERR_FAIL_INDEX_V(p_idx,conn_input_cache.size(),Vector2());
-	return conn_input_cache[p_idx].pos;
+	Vector2 pos = conn_input_cache[p_idx].pos;
+	pos.x *= get_scale().x;
+	pos.y *= get_scale().y;
+	return pos;
 }
 
 int GraphNode::get_connection_input_type(int p_idx) {
@@ -501,8 +504,10 @@ Vector2 GraphNode::get_connection_output_pos(int p_idx){
 		_connpos_update();
 
 	ERR_FAIL_INDEX_V(p_idx,conn_output_cache.size(),Vector2());
-	return conn_output_cache[p_idx].pos;
-
+	Vector2 pos = conn_output_cache[p_idx].pos;
+	pos.x *= get_scale().x;
+	pos.y *= get_scale().y;
+	return pos;
 }
 
 int GraphNode::get_connection_output_type(int p_idx) {

@@ -10,13 +10,26 @@
 
 bool EditorTexturePreviewPlugin::handles(const String& p_type) const {
 
-	return ObjectTypeDB::is_type(p_type,"ImageTexture");
+	return (ObjectTypeDB::is_type(p_type,"ImageTexture") || ObjectTypeDB::is_type(p_type, "AtlasTexture"));
 }
 
 Ref<Texture> EditorTexturePreviewPlugin::generate(const RES& p_from) {
 
-	Ref<ImageTexture> tex =p_from;
-	Image img = tex->get_data();
+	Image img;
+	Ref<AtlasTexture> atex = p_from;
+	if (atex.is_valid()) {
+		Ref<ImageTexture> tex = atex->get_atlas();
+		if (!tex.is_valid()) {
+			return Ref<Texture>();
+		}
+		Image atlas = tex->get_data();
+		img = atlas.get_rect(atex->get_region());
+	}
+	else {
+		Ref<ImageTexture> tex = p_from;
+		img = tex->get_data();
+	}
+
 	if (img.empty())
 		return Ref<Texture>();
 

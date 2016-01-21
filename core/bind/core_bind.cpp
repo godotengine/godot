@@ -708,6 +708,15 @@ _OS::ScreenOrientation _OS::get_screen_orientation() const {
 	return ScreenOrientation(OS::get_singleton()->get_screen_orientation());
 }
 
+void _OS::set_keep_screen_on(bool p_enabled) {
+
+	OS::get_singleton()->set_keep_screen_on(p_enabled);
+}
+
+bool _OS::is_keep_screen_on() const {
+
+	return OS::get_singleton()->is_keep_screen_on();
+}
 
 String _OS::get_system_dir(SystemDir p_dir) const {
 
@@ -775,6 +784,8 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_screen_orientation","orientation"),&_OS::set_screen_orientation);
 	ObjectTypeDB::bind_method(_MD("get_screen_orientation"),&_OS::get_screen_orientation);
 
+	ObjectTypeDB::bind_method(_MD("set_keep_screen_on","enabled"),&_OS::set_keep_screen_on);
+	ObjectTypeDB::bind_method(_MD("is_keep_screen_on"),&_OS::is_keep_screen_on);
 
 	ObjectTypeDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_OS::set_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("get_iterations_per_second"),&_OS::get_iterations_per_second);

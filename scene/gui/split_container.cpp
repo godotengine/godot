@@ -109,7 +109,7 @@ void SplitContainer::_resort() {
 	int sep=get_constant("separation");
 	Ref<Texture> g = get_icon("grabber");
 
-	if (collapsed || !dragger_visible) {
+	if (dragger_visibility==DRAGGER_HIDDEN_COLLAPSED) {
 		sep=0;
 	} else {
 		sep=MAX(sep,vertical?g->get_height():g->get_width());
@@ -221,7 +221,7 @@ Size2 SplitContainer::get_minimum_size() const {
 	Size2i minimum;
 	int sep=get_constant("separation");
 	Ref<Texture> g = get_icon("grabber");
-	sep=dragger_visible?MAX(sep,vertical?g->get_height():g->get_width()):0;
+	sep=(dragger_visibility!=DRAGGER_HIDDEN_COLLAPSED)?MAX(sep,vertical?g->get_height():g->get_width()):0;
 
 	for(int i=0;i<2;i++) {
 
@@ -278,19 +278,19 @@ void SplitContainer::_notification(int p_what) {
 
 			if (collapsed || (!mouse_inside && get_constant("autohide")))
 				return;
-			int sep=dragger_visible?get_constant("separation"):0;
+			int sep=dragger_visibility!=DRAGGER_HIDDEN_COLLAPSED?get_constant("separation"):0;
 			Ref<Texture> tex = get_icon("grabber");
 			Size2 size=get_size();
 			if (vertical) {
 
 				//draw_style_box( get_stylebox("bg"), Rect2(0,middle_sep,get_size().width,sep));
-				if (dragger_visible)
+				if (dragger_visibility==DRAGGER_VISIBLE)
 					draw_texture(tex,Point2i((size.x-tex->get_width())/2,middle_sep+(sep-tex->get_height())/2));
 
 			} else {
 
 				//draw_style_box( get_stylebox("bg"), Rect2(middle_sep,0,sep,get_size().height));
-				if (dragger_visible)
+				if (dragger_visibility==DRAGGER_VISIBLE)
 					draw_texture(tex,Point2i(middle_sep+(sep-tex->get_width())/2,(size.y-tex->get_height())/2));
 
 			}
@@ -301,7 +301,7 @@ void SplitContainer::_notification(int p_what) {
 
 void SplitContainer::_input_event(const InputEvent& p_event) {
 
-	if (collapsed || !_getch(0) || !_getch(1) || !dragger_visible)
+	if (collapsed || !_getch(0) || !_getch(1) || dragger_visibility!=DRAGGER_VISIBLE)
 		return;
 
 	if (p_event.type==InputEvent::MOUSE_BUTTON) {
@@ -400,18 +400,18 @@ void SplitContainer::set_collapsed(bool p_collapsed) {
 
 }
 
-void SplitContainer::set_dragger_visible(bool p_true) {
+void SplitContainer::set_dragger_visibility(DraggerVisibility p_visibility) {
 
-	dragger_visible=p_true;
+	dragger_visibility=p_visibility;
 	queue_sort();
 	update();
 }
 
-bool SplitContainer::is_dragger_visible() const{
+SplitContainer::DraggerVisibility SplitContainer::get_dragger_visibility() const {
 
-
-	return dragger_visible;
+	return dragger_visibility;
 }
+
 
 bool SplitContainer::is_collapsed() const {
 
@@ -429,15 +429,18 @@ void SplitContainer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_collapsed","collapsed"),&SplitContainer::set_collapsed);
 	ObjectTypeDB::bind_method(_MD("is_collapsed"),&SplitContainer::is_collapsed);
 
-	ObjectTypeDB::bind_method(_MD("set_dragger_visible","visible"),&SplitContainer::set_dragger_visible);
-	ObjectTypeDB::bind_method(_MD("is_dragger_visible"),&SplitContainer::is_dragger_visible);
+	ObjectTypeDB::bind_method(_MD("set_dragger_visibility","mode"),&SplitContainer::set_dragger_visibility);
+	ObjectTypeDB::bind_method(_MD("get_dragger_visibility"),&SplitContainer::get_dragger_visibility);
 
 	ADD_SIGNAL( MethodInfo("dragged",PropertyInfo(Variant::INT,"offset")));
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"split/offset"),_SCS("set_split_offset"),_SCS("get_split_offset"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"split/collapsed"),_SCS("set_collapsed"),_SCS("is_collapsed"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"split/dragger_visible"),_SCS("set_dragger_visible"),_SCS("is_dragger_visible"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"split/dragger_visibility",PROPERTY_HINT_ENUM,"Visible,Hidden,Hidden & Collapsed"),_SCS("set_dragger_visibility"),_SCS("get_dragger_visibility"));
 
+	BIND_CONSTANT( DRAGGER_VISIBLE );
+	BIND_CONSTANT( DRAGGER_HIDDEN );
+	BIND_CONSTANT( DRAGGER_HIDDEN_COLLAPSED );
 
 }
 
@@ -450,7 +453,7 @@ SplitContainer::SplitContainer(bool p_vertical) {
 	vertical=p_vertical;
 	dragging=false;
 	collapsed=false;
-	dragger_visible=true;
+	dragger_visibility=DRAGGER_VISIBLE;
 
 }
 

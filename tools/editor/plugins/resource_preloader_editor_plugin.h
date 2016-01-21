@@ -85,6 +85,7 @@ class ResourcePreloaderEditorPlugin : public EditorPlugin {
 
 	ResourcePreloaderEditor *preloader_editor;
 	EditorNode *editor;
+	Button *button;
 
 public:
 

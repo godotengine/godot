@@ -212,8 +212,6 @@ class ScriptEditor : public VBoxContainer {
 	Tree *disk_changed_list;
 	ConfirmationDialog *disk_changed;
 
-	VSplitContainer *v_split;
-
 	bool restoring_layout;
 
 	String _get_debug_tooltip(const String&p_text,Node *_ste);

@@ -85,6 +85,10 @@ void FileDialog::_unhandled_input(const InputEvent& p_event) {
 					}
 
 				} break;
+				case KEY_F5: {
+
+					invalidate();
+				} break;
 				default: { handled=false; }
 			}
 
