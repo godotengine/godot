@@ -243,6 +243,10 @@ void Tabs::_notification(int p_what) {
 			hover=-1;
 			update();
 		} break;
+		case NOTIFICATION_RESIZED: {
+
+			_ensure_no_over_offset();
+		} break;
 		case NOTIFICATION_DRAW: {
 
 			RID ci = get_canvas_item();
@@ -587,6 +591,8 @@ void Tabs::remove_tab(int p_idx) {
 
 	//emit_signal("tab_changed",current);
 
+	_ensure_no_over_offset();
+
 }
 
 
@@ -645,12 +651,47 @@ int Tabs::get_tab_width(int p_idx) const {
 	return x;
 }
 
+
+void Tabs::_ensure_no_over_offset() {
+
+	if (!is_inside_tree())
+		return;
+
+	Ref<Texture> incr = get_icon("increment");
+	Ref<Texture> decr = get_icon("decrement");
+
+	int limit=get_size().width-incr->get_width()-decr->get_width();
+
+	while(offset>0) {
+
+		int total_w=0;
+		for(int i=0;i<tabs.size();i++) {
+
+			if (i<offset-1)
+				continue;
+
+			total_w+=get_tab_width(i);
+		}
+
+		if (total_w < limit) {
+			offset--;
+			update();
+		} else {
+			break;
+		}
+	}
+
+}
+
+
 void Tabs::ensure_tab_visible(int p_idx) {
 
 	if (!is_inside_tree())
 		return;
 
 	ERR_FAIL_INDEX(p_idx,tabs.size());
+
+	_ensure_no_over_offset();
 
 	if (p_idx<=offset) {
 		offset=p_idx;
