@@ -481,9 +481,12 @@ static const char *s_ControllerMappings [] =
 
 	#ifdef JAVASCRIPT_ENABLED
 	"Default HTML5 Gamepad, Default Mapping,leftx:a0,lefty:a1,dpdown:b13,rightstick:b11,rightshoulder:b5,rightx:a2,start:b9,righty:a3,dpleft:b14,lefttrigger:a6,x:b2,dpup:b12,back:b8,leftstick:b10,leftshoulder:b4,y:b3,a:b0,dpright:b15,righttrigger:a7,b:b1,",
-	"303534632d303236382d536f6e792050,PS3 Controller USB,leftx:a0,lefty:a1,dpdown:b6,rightstick:b2,rightshoulder:b11,rightx:a2,start:b3,righty:a3,dpleft:b7,lefttrigger:b8,x:b15,dpup:b4,back:b0,leftstick:b1,leftshoulder:b10,y:b12,a:b14,dpright:b5,righttrigger:b9,b:b13,",
-	"303534632d303563342d536f6e792043,PS4 Controller USB,leftx:a0,lefty:a1,dpdown:a7,rightstick:b11,rightshoulder:b5,rightx:a2,start:b9,righty:a5,dpleft:a6,lefttrigger:a3,x:b0,dpup:a7,back:b8,leftstick:b10,leftshoulder:b4,y:b3,a:b1,dpright:a6,righttrigger:a4,b:b2,",
-	"303435652d303238652d4d6963726f73,Nacon X360 Clone(XInput),leftx:a0,lefty:a1,dpdown:a7,rightstick:b10,rightshoulder:b5,rightx:a3,start:b7,righty:a4,dpleft:a6,lefttrigger:a2,x:b2,dpup:a7,back:b6,leftstick:b9,leftshoulder:b4,y:b3,a:b0,dpright:a6,righttrigger:a5,b:b1,",
+	"303534632d303236382d536f6e792050,PS3 Controller USB/Linux,leftx:a0,lefty:a1,dpdown:b6,rightstick:b2,rightshoulder:b11,rightx:a2,start:b3,righty:a3,dpleft:b7,lefttrigger:b8,x:b15,dpup:b4,back:b0,leftstick:b1,leftshoulder:b10,y:b12,a:b14,dpright:b5,righttrigger:b9,b:b13,",
+	"303534632d303563342d536f6e792043,PS4 Controller USB/Linux,leftx:a0,lefty:a1,dpdown:a7,rightstick:b11,rightshoulder:b5,rightx:a2,start:b9,righty:a5,dpleft:a6,lefttrigger:a3,x:b0,dpup:a7,back:b8,leftstick:b10,leftshoulder:b4,y:b3,a:b1,dpright:a6,righttrigger:a4,b:b2,",
+	"303534632d303563342d576972656c65,PS4 Controller USB/Win,leftx:a0,lefty:a1,dpdown:b15,rightstick:b11,rightshoulder:b5,rightx:a2,start:b9,righty:a5,lefttrigger:a3,x:b0,dpup:b14,dpleft:b16,dpright:b17,back:b8,leftstick:b10,leftshoulder:b4,y:b3,a:b1,righttrigger:b7,b:b2,",
+	"303435652d303238652d4d6963726f73,Wired X360 Controller,leftx:a0,lefty:a1,dpdown:a7,rightstick:b10,rightshoulder:b5,rightx:a3,start:b7,righty:a4,dpleft:a6,lefttrigger:a2,x:b2,dpup:a7,back:b6,leftstick:b9,leftshoulder:b4,y:b3,a:b0,dpright:a6,righttrigger:a5,b:b1,",
+	"303435652d303731392d58626f782033,Wireless X360 Controller,leftx:a0,lefty:a1,dpdown:b14,rightstick:b10,rightshoulder:b5,rightx:a3,start:b7,righty:a4,dpleft:b11,lefttrigger:a2,x:b2,dpup:b13,back:b6,leftstick:b9,leftshoulder:b4,y:b3,a:b0,dpright:b12,righttrigger:a5,b:b1,",
+	"c2a94d6963726f736f66742058626f78,Wireless X360 Controller,leftx:a0,lefty:a1,dpdown:b14,rightstick:b10,rightshoulder:b5,rightx:a3,start:b7,righty:a4,dpleft:b11,lefttrigger:a2,x:b2,dpup:b13,back:b6,leftstick:b9,leftshoulder:b4,y:b3,a:b0,dpright:b12,righttrigger:a5,b:b1,",
 	#endif
 	NULL
 };
