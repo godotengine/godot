@@ -494,6 +494,8 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 
 		open_list.erase(least_cost_poly);
 	}
+#if 0
+debug path
 	{
 		       Polygon *p=end_poly;
 		       int idx=0;
@@ -514,6 +516,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 			       break;
 		       }
 		   }
+#endif
 	if (found_route) {
 
 		Vector<Vector2> path;
