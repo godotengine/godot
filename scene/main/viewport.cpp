@@ -331,20 +331,24 @@ void Viewport::_notification(int p_what) {
 				}
 			}
 
+
+			parent=NULL;
+			Node *parent_node=get_parent();
+
+
+			while(parent_node) {
+
+				parent = parent_node->cast_to<Viewport>();
+				if (parent)
+					break;
+
+				parent_node=parent_node->get_parent();
+			}
+
+
 			if (!render_target)
 				_vp_enter_tree();
 
-			this->parent=NULL;
-			Node *parent=get_parent();
-
-			if (parent) {
-
-
-				while(parent && !(this->parent=parent->cast_to<Viewport>())) {
-
-					parent=parent->get_parent();
-				}
-			}
 
 			current_canvas=find_world_2d()->get_canvas();
 			VisualServer::get_singleton()->viewport_set_scenario(viewport,find_world()->get_scenario());
