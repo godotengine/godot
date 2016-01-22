@@ -478,6 +478,16 @@ static const char *s_ControllerMappings [] =
 	#if defined(__ANDROID__)
 	"4e564944494120436f72706f72617469,NVIDIA Controller,a:b0,b:b1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,",
 	#endif
+
+	#ifdef JAVASCRIPT_ENABLED
+	"Default HTML5 Gamepad, Default Mapping,leftx:a0,lefty:a1,dpdown:b13,rightstick:b11,rightshoulder:b5,rightx:a2,start:b9,righty:a3,dpleft:b14,lefttrigger:a6,x:b2,dpup:b12,back:b8,leftstick:b10,leftshoulder:b4,y:b3,a:b0,dpright:b15,righttrigger:a7,b:b1,",
+	"303534632d303236382d536f6e792050,PS3 Controller USB/Linux,leftx:a0,lefty:a1,dpdown:b6,rightstick:b2,rightshoulder:b11,rightx:a2,start:b3,righty:a3,dpleft:b7,lefttrigger:b8,x:b15,dpup:b4,back:b0,leftstick:b1,leftshoulder:b10,y:b12,a:b14,dpright:b5,righttrigger:b9,b:b13,",
+	"303534632d303563342d536f6e792043,PS4 Controller USB/Linux,leftx:a0,lefty:a1,dpdown:a7,rightstick:b11,rightshoulder:b5,rightx:a2,start:b9,righty:a5,dpleft:a6,lefttrigger:a3,x:b0,dpup:a7,back:b8,leftstick:b10,leftshoulder:b4,y:b3,a:b1,dpright:a6,righttrigger:a4,b:b2,",
+	"303534632d303563342d576972656c65,PS4 Controller USB/Win,leftx:a0,lefty:a1,dpdown:b15,rightstick:b11,rightshoulder:b5,rightx:a2,start:b9,righty:a5,lefttrigger:a3,x:b0,dpup:b14,dpleft:b16,dpright:b17,back:b8,leftstick:b10,leftshoulder:b4,y:b3,a:b1,righttrigger:b7,b:b2,",
+	"303435652d303238652d4d6963726f73,Wired X360 Controller,leftx:a0,lefty:a1,dpdown:a7,rightstick:b10,rightshoulder:b5,rightx:a3,start:b7,righty:a4,dpleft:a6,lefttrigger:a2,x:b2,dpup:a7,back:b6,leftstick:b9,leftshoulder:b4,y:b3,a:b0,dpright:a6,righttrigger:a5,b:b1,",
+	"303435652d303731392d58626f782033,Wireless X360 Controller,leftx:a0,lefty:a1,dpdown:b14,rightstick:b10,rightshoulder:b5,rightx:a3,start:b7,righty:a4,dpleft:b11,lefttrigger:a2,x:b2,dpup:b13,back:b6,leftstick:b9,leftshoulder:b4,y:b3,a:b0,dpright:b12,righttrigger:a5,b:b1,",
+	"c2a94d6963726f736f66742058626f78,Wireless X360 Controller,leftx:a0,lefty:a1,dpdown:b14,rightstick:b10,rightshoulder:b5,rightx:a3,start:b7,righty:a4,dpleft:b11,lefttrigger:a2,x:b2,dpup:b13,back:b6,leftstick:b9,leftshoulder:b4,y:b3,a:b0,dpright:b12,righttrigger:a5,b:b1,",
+	#endif
 	NULL
 };
 
@@ -606,6 +616,41 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 			float value = p_value.min == 0 ? p_value.value : 0.5f + p_value.value / 2.0f;
 			int axis = map.index == JOY_L2 ? JOY_ANALOG_L2 : JOY_ANALOG_R2;
 			p_last_id = _axis_event(p_last_id, p_device, axis, value);
+		}
+
+		if (map.index == JOY_DPAD_UP || map.index == JOY_DPAD_DOWN) {
+			bool pressed = p_value.value != 0.0f;
+			int button = p_value.value < 0 ? JOY_DPAD_UP : JOY_DPAD_DOWN;
+
+			if (!pressed) {
+				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_UP, p_device))) {
+					p_last_id = _button_event(p_last_id, p_device, JOY_DPAD_UP, false);
+				}
+				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_DOWN, p_device))) {
+					p_last_id = _button_event(p_last_id, p_device, JOY_DPAD_DOWN, false);
+				}
+			}
+			if ( pressed == joy_buttons_pressed.has(_combine_device(button, p_device))) {
+				return p_last_id;
+			}
+			return _button_event(p_last_id, p_device, button, true);
+		}
+		if (map.index == JOY_DPAD_LEFT || map.index == JOY_DPAD_RIGHT) {
+			bool pressed = p_value.value != 0.0f;
+			int button = p_value.value < 0 ? JOY_DPAD_LEFT : JOY_DPAD_RIGHT;
+
+			if (!pressed) {
+				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_LEFT, p_device))) {
+					p_last_id = _button_event(p_last_id, p_device, JOY_DPAD_LEFT, false);
+				}
+				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_RIGHT, p_device))) {
+					p_last_id = _button_event(p_last_id, p_device, JOY_DPAD_RIGHT, false);
+				}
+			}
+			if ( pressed == joy_buttons_pressed.has(_combine_device(button, p_device))) {
+				return p_last_id;
+			}
+			return _button_event(p_last_id, p_device, button, true);
 		}
 		float deadzone = p_value.min == 0 ? 0.5f : 0.0f;
 		bool pressed = p_value.value > deadzone ? true : false;

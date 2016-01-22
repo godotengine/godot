@@ -317,9 +317,9 @@ void EventPlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_autoplay","enabled"),&EventPlayer::set_autoplay);
 	ObjectTypeDB::bind_method(_MD("has_autoplay"),&EventPlayer::has_autoplay);
 
-	ObjectTypeDB::bind_method(_MD("set_channel_volume","idx","channel_volume"),&EventPlayer::set_channel_volume);
-	ObjectTypeDB::bind_method(_MD("get_channel_volume","idx"),&EventPlayer::get_channel_volume);
-	ObjectTypeDB::bind_method(_MD("get_channel_last_note_time","idx"),&EventPlayer::get_channel_last_note_time);
+	ObjectTypeDB::bind_method(_MD("set_channel_volume","channel","channel_volume"),&EventPlayer::set_channel_volume);
+	ObjectTypeDB::bind_method(_MD("get_channel_volume","channel"),&EventPlayer::get_channel_volume);
+	ObjectTypeDB::bind_method(_MD("get_channel_last_note_time","channel"),&EventPlayer::get_channel_last_note_time);
 
 	ObjectTypeDB::bind_method(_MD("_set_play","play"),&EventPlayer::_set_play);
 	ObjectTypeDB::bind_method(_MD("_get_play"),&EventPlayer::_get_play);

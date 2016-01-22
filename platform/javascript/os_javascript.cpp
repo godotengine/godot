@@ -76,6 +76,14 @@ void OS_JavaScript::set_opengl_extensions(const char* p_gl_extensions) {
 	gl_extensions=p_gl_extensions;
 }
 
+static EM_BOOL joy_callback_func(int p_type, const EmscriptenGamepadEvent *p_event, void *p_user) {
+	OS_JavaScript *os = (OS_JavaScript*) OS::get_singleton();
+	if (os) {
+		return os->joy_connection_changed(p_type, p_event);
+	}
+	return false;
+}
+
 void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
 
 	print_line("Init OS");
@@ -142,6 +150,8 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 
 	input = memnew( InputDefault );
 
+	emscripten_set_gamepadconnected_callback(NULL, true, &joy_callback_func);
+	emscripten_set_gamepaddisconnected_callback(NULL, true, &joy_callback_func);
 }
 
 void OS_JavaScript::set_main_loop( MainLoop * p_main_loop ) {
@@ -296,7 +306,7 @@ bool OS_JavaScript::main_loop_iterate() {
 
 
 	}
-
+	process_joysticks();
 	return Main::iteration();
 }
 
@@ -603,6 +613,62 @@ void OS_JavaScript::_close_notification_funcs(const String& p_file,int p_flags) 
 		static_cast<OS_JavaScript*>(get_singleton())->last_sync_time=OS::get_singleton()->get_ticks_msec();
 		static_cast<OS_JavaScript*>(get_singleton())->time_to_save_sync=5000; //five seconds since last save
 	}
+}
+
+void OS_JavaScript::process_joysticks() {
+
+	int joy_count = emscripten_get_num_gamepads();
+	for (int i = 0; i < joy_count; i++) {
+		EmscriptenGamepadEvent state;
+		emscripten_get_gamepad_status(i, &state);
+		if (state.connected) {
+
+			int num_buttons = MIN(state.numButtons, 18);
+			int num_axes = MIN(state.numAxes, 8);
+			for (int j = 0; j < num_buttons; j++) {
+
+				float value = state.analogButton[j];
+				if (String(state.mapping) == "standard" && (j == 6 || j == 7)) {
+					InputDefault::JoyAxis jx;
+					jx.min = 0;
+					jx.value = value;
+					last_id = input->joy_axis(last_id, i, j, jx);
+				}
+				else {
+					last_id = input->joy_button(last_id, i, j, value);
+				}
+			}
+			for (int j = 0; j < num_axes; j++) {
+
+				InputDefault::JoyAxis jx;
+				jx.min = -1;
+				jx.value = state.axis[j];
+				last_id = input->joy_axis(last_id, i, j, jx);
+			}
+		}
+	}
+}
+
+bool OS_JavaScript::joy_connection_changed(int p_type, const EmscriptenGamepadEvent *p_event) {
+	if (p_type == EMSCRIPTEN_EVENT_GAMEPADCONNECTED) {
+
+		String guid = "";
+		if (String(p_event->mapping) == "standard")
+			guid = "Default HTML5 Gamepad";
+		input->joy_connection_changed(p_event->index, true, String(p_event->id), guid);
+	}
+	else {
+		input->joy_connection_changed(p_event->index, false, "");
+	}
+	return true;
+}
+
+bool OS_JavaScript::is_joy_known(int p_device) {
+	return input->is_joy_mapped(p_device);
+}
+
+String OS_JavaScript::get_joy_guid(int p_device) const {
+	return input->get_joy_guid_remapped(p_device);
 }
 
 OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func) {

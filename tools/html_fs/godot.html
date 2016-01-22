@@ -93,23 +93,15 @@
 			top: 0;
 			right: 0;
 			bottom: 0;
-		}
-
-		#status-table {
-			/* vertical centering per table... */
-			display: table;
-			width: 100%;
-			height: 100%;
-		}
-
-		#status-table-cell {
-			display: table-cell;
-			vertical-align: middle;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			/* don't consume click events - make children visible explicitly */
+			visibility: hidden;
 		}
 
 		#status {
-			/* hidden until explicitly shown in debug mode */
-			visibility: hidden;
+			visibility: visible;
 			padding: 4px 6px;
 		}
 
@@ -184,9 +176,9 @@
 		<canvas id="canvas" width="$GODOT_CANVAS_WIDTH" height="$GODOT_CANVAS_HEIGHT" onclick="canvas.ownerDocument.defaultView.focus();" oncontextmenu="event.preventDefault();">
 			HTML5 canvas appears to be unsupported in the current browser.<br />Please try updating or use a different browser.
 		</canvas>
-		<div id="status-container"><div id="status-table"><div id="status-table-cell">
+		<div id="status-container">
 			<span id="status" class="godot" onclick="this.style.visibility='hidden';">Loading page...</span>
-		</div></div></div>
+		</div>
 		<div id="controls" class="godot">
 			<label id="display-output"><input id="output-toggle" type="checkbox" autocomplete="off" onchange="Presentation.setOutputVisible(this.checked);" />display output</label>
 			<!-- hidden until implemented
