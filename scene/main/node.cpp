@@ -33,6 +33,7 @@
 #include "scene/resources/packed_scene.h"
 #include "io/resource_loader.h"
 #include "viewport.h"
+#include "instance_placeholder.h"
 
 VARIANT_ENUM_CAST(Node::PauseMode);
 
@@ -1471,7 +1472,14 @@ Node *Node::duplicate(bool p_use_instancing) const {
 
 	bool instanced=false;
 
-	if (p_use_instancing && get_filename()!=String()) {
+	if (cast_to<InstancePlaceholder>()) {
+
+		const InstancePlaceholder *ip = cast_to<const InstancePlaceholder>();
+		InstancePlaceholder *nip = memnew( InstancePlaceholder );
+		nip->set_instance_path( ip->get_instance_path() );
+		node=nip;
+
+	} else if (p_use_instancing && get_filename()!=String()) {
 
 		Ref<PackedScene> res = ResourceLoader::load(get_filename());
 		ERR_FAIL_COND_V(res.is_null(),NULL);
