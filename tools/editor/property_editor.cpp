@@ -3099,7 +3099,7 @@ void PropertyEditor::update_tree() {
 			int usage = d.has("usage")?int(int(d["usage"])&(PROPERTY_USAGE_STORE_IF_NONONE|PROPERTY_USAGE_STORE_IF_NONZERO)):0;
 			if (_get_instanced_node_original_property(p.name,vorig) || usage) {
 				Variant v = obj->get(p.name);
-				
+
 
 				if (_is_property_different(v,vorig,usage)) {
 					//print_line("FOR "+String(p.name)+" RELOAD WITH: "+String(v)+"("+Variant::get_type_name(v.get_type())+")=="+String(vorig)+"("+Variant::get_type_name(vorig.get_type())+")");
@@ -3908,7 +3908,7 @@ SectionedPropertyEditor::SectionedPropertyEditor() {
 	right_vb->add_margin_child("Properties:",editor,true);
 
 	editor->get_scene_tree()->set_column_titles_visible(false);
-	add_child(editor);
+
 
 	editor->hide_top_label();
 

@@ -234,7 +234,7 @@ void ShaderEditor::_tab_changed(int p_which) {
 
 	ShaderTextEditor *shader_editor = tab_container->get_tab_control(p_which)->cast_to<ShaderTextEditor>();
 
-	if (shader_editor)
+	if (shader_editor && is_inside_tree())
 		shader_editor->get_text_edit()->grab_focus();
 
 	ensure_select_current();

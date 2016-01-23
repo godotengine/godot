@@ -93,7 +93,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		editor->connect("hide_animation_player_editors",this,"_hide_anim_editors");
+//		editor->connect("hide_animation_player_editors",this,"_hide_anim_editors");
 		add_anim->set_icon( get_icon("New","EditorIcons") );
 		rename_anim->set_icon( get_icon("Rename","EditorIcons") );
 		duplicate_anim->set_icon( get_icon("Duplicate","EditorIcons") );

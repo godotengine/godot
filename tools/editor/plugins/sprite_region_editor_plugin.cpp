@@ -367,7 +367,7 @@ void SpriteRegionEditor::edit(Node *p_sprite)
 {
 	if (p_sprite) {
 		node=p_sprite->cast_to<Sprite>();
-		node->connect("exit_tree",this,"_node_removed",varray(),CONNECT_ONESHOT);
+		node->connect("exit_tree",this,"_node_removed",varray(p_sprite),CONNECT_ONESHOT);
 	} else {
 		if (node)
 			node->disconnect("exit_tree",this,"_node_removed");

@@ -721,6 +721,9 @@ void SceneTreeEditor::_update_selection(TreeItem *item) {
 
 	NodePath np = item->get_metadata(0);
 
+	if (!has_node(np))
+		return;
+
 	Node *n=get_node(np);
 
 	if (!n)

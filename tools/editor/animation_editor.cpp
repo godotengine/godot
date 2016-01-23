@@ -2814,6 +2814,8 @@ void AnimationKeyEditor::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
+				key_editor->edit(key_edit);
+
 				zoomicon->set_texture( get_icon("Zoom","EditorIcons") );
 
 				menu_add_track->set_icon(get_icon("AddTrack","EditorIcons"));
@@ -3924,7 +3926,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	key_edit = memnew( AnimationKeyEdit );
 	key_edit->undo_redo=undo_redo;
 	//key_edit->ke_dialog=key_edit_dialog;
-	key_editor->edit(key_edit);
+
 	type_menu = memnew( PopupMenu );
 	add_child(type_menu);
 	for(int i=0;i<Variant::VARIANT_MAX;i++)

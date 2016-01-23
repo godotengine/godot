@@ -530,6 +530,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
+			inspector->edit(variables);
+
 			step->set_icon( get_icon("DebugStep","EditorIcons"));
 			next->set_icon( get_icon("DebugNext","EditorIcons"));
 			back->set_icon( get_icon("Back","EditorIcons"));
@@ -1308,7 +1310,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	pending_in_queue=0;
 
 	variables = memnew( ScriptEditorDebuggerVariables );
-	inspector->edit(variables);
+
 	breaked=false;
 
 	tabs->add_child(dbg);
