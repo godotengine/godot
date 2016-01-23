@@ -38,8 +38,16 @@ int VideoStreamPlaybackTheora::	buffer_data() {
 }
 
 int VideoStreamPlaybackTheora::queue_page(ogg_page *page){
-  if(theora_p)ogg_stream_pagein(&to,page);
-  if(vorbis_p)ogg_stream_pagein(&vo,page);
+  if(theora_p) {
+	  ogg_stream_pagein(&to,page);
+	  if (to.e_o_s)
+		  theora_eos=true;
+  }
+  if(vorbis_p) {
+	  ogg_stream_pagein(&vo,page);
+	  if (vo.e_o_s)
+		  vorbis_eos=true;
+  }
   return 0;
 }
 
@@ -238,6 +246,8 @@ void VideoStreamPlaybackTheora::clear() {
 	videobuf_ready = 0;
 	frames_pending = 0;
 	videobuf_time = 0;
+	theora_eos=false;
+	vorbis_eos=false;
 
 	if (file) {
 		memdelete(file);
@@ -280,6 +290,9 @@ void VideoStreamPlaybackTheora::set_file(const String& p_file) {
 	/* init supporting Theora structures needed in header parsing */
 	th_comment_init(&tc);
 	th_info_init(&ti);
+
+	theora_eos=false;
+	vorbis_eos=false;
 
 	/* Ogg file open; parse the headers */
 	/* Only interested in Vorbis/Theora streams */
@@ -499,7 +512,9 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 	bool frame_done=false;
 	bool audio_done=false;
 
-	while (!frame_done || !audio_done) {
+	bool theora_done=false;
+
+	while (!frame_done || (!audio_done && !vorbis_eos)) {
 		//a frame needs to be produced
 
 		ogg_packet op;
@@ -641,10 +656,14 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 				break;
 			}
 		}
+
+
+		//print_line("no theora: "+itos(no_theora)+" theora eos: "+itos(theora_eos)+" frame done "+itos(frame_done));
+
 #ifdef THEORA_USE_THREAD_STREAMING
-		if (file && thread_eof && (no_vorbis || no_theora) && ring_buffer.data_left()==0) {
+		if (file && thread_eof && no_theora && theora_eos && ring_buffer.data_left()==0) {
 #else
-		if (file && /*!videobuf_ready && */ (no_vorbis || no_theora) && file->eof_reached()) {
+		if (file && /*!videobuf_ready && */ no_theora && theora_eos) {
 #endif
 			printf("video done, stopping\n");
 			stop();
