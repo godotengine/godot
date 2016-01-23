@@ -36,6 +36,8 @@
 class SceneState : public Reference {
 
 	OBJ_TYPE( SceneState, Reference );
+
+
 	Vector<StringName> names;
 	Vector<Variant> variants;
 	Vector<NodePath> node_paths;
@@ -103,6 +105,13 @@ class SceneState : public Reference {
 	_FORCE_INLINE_ Ref<SceneState> _get_base_scene_state() const;
 
 	static bool disable_placeholders;
+
+	DVector<String> _get_node_groups(int p_idx) const;
+
+protected:
+
+	static void _bind_methods();
+
 public:
 
 	enum {
