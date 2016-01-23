@@ -635,6 +635,16 @@ String EditorData::get_scene_type(int p_idx) const {
 	return edited_scene[p_idx].root->get_type();
 
 }
+void EditorData::move_edited_scene_to_index(int p_idx) {
+
+	ERR_FAIL_INDEX(current_edited_scene,edited_scene.size());
+	ERR_FAIL_INDEX(p_idx,edited_scene.size());
+
+	EditedScene es=edited_scene[current_edited_scene];
+	edited_scene.remove(current_edited_scene);
+	edited_scene.insert(p_idx,es);
+	current_edited_scene=p_idx;
+}
 
 Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
 

@@ -196,6 +196,7 @@ public:
 	void set_edited_scene_live_edit_root(const NodePath& p_root);
 	NodePath get_edited_scene_live_edit_root();
 	bool check_and_update_scene(int p_idx);
+	void move_edited_scene_to_index(int p_idx);
 
 
 	void set_plugin_window_layout(Ref<ConfigFile> p_layout);

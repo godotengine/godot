@@ -2367,7 +2367,14 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			if (!scene)
 				break;
-			
+
+			String filename = scene->get_filename();
+
+			if (filename==String()) {
+				show_warning("Can't reload a scene that was never saved..");
+				break;
+			}
+
 			if (unsaved_cache && !p_confirmed) {
 				confirmation->get_ok()->set_text("Revert");
 				confirmation->set_text("This action cannot be undone. Revert anyway?");
@@ -2375,7 +2382,13 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				break;
 			}
 
-			Error err = load_scene(scene->get_filename());
+
+			int cur_idx = editor_data.get_edited_scene();
+			_remove_edited_scene();
+			Error err = load_scene(filename);
+			editor_data.move_edited_scene_to_index(cur_idx);
+			get_undo_redo()->clear_history();
+			scene_tabs->set_current_tab(cur_idx);
 
 		} break;
 
