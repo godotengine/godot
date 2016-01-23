@@ -509,6 +509,10 @@ void Control::_notification(int p_notification) {
 
 			update();
 		} break;
+		case NOTIFICATION_MODAL_CLOSE: {
+
+			emit_signal("modal_close");
+		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
 			if (!is_visible()) {
@@ -2246,6 +2250,7 @@ void Control::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("focus_exit") );
 	ADD_SIGNAL( MethodInfo("size_flags_changed") );
 	ADD_SIGNAL( MethodInfo("minimum_size_changed") );
+	ADD_SIGNAL( MethodInfo("modal_close") );
 
 	
 }
