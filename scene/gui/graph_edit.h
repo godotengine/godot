@@ -93,7 +93,7 @@ protected:
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	void _notification(int p_what);
-
+	virtual bool clips_input() const;
 public:
 
 	Error connect_node(const StringName& p_from, int p_from_port,const StringName& p_to,int p_to_port);

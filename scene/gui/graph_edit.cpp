@@ -2,6 +2,8 @@
 #include "os/input.h"
 #include "os/keyboard.h"
 #include "scene/gui/box_container.h"
+
+
 bool GraphEditFilter::has_point(const Point2& p_point) const {
 
 	return ge->_filter_input(p_point);
@@ -52,6 +54,11 @@ void GraphEdit::disconnect_node(const StringName& p_from, int p_from_port,const 
 			return;
 		}
 	}
+}
+
+bool GraphEdit::clips_input() const {
+
+	return true;
 }
 
 void GraphEdit::get_connection_list(List<Connection> *r_connections) const {
