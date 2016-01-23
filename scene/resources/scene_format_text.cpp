@@ -356,7 +356,7 @@ Error ResourceInteractiveLoaderText::poll() {
 		int type=-1;
 		int name=-1;
 		int instance=-1;
-		int base_scene=-1;
+//		int base_scene=-1;
 
 		if (next_tag.fields.has("name")) {
 			name=packed_scene->get_state()->add_name(next_tag.fields["name"]);
@@ -619,57 +619,63 @@ void ResourceInteractiveLoaderText::get_dependencies(FileAccess *f,List<String> 
 Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const String &p_path,const Map<String,String>& p_map) {
 
 
-
-
-#if 0
-	open(p_f);
+	open(p_f,true);
 	ERR_FAIL_COND_V(error!=OK,error);
 
 	//FileAccess
-
-	bool old_format=false;
 
 	FileAccess *fw = NULL;
 
 	String base_path=local_path.get_base_dir();
 
+
+	uint64_t tag_end = f->get_pos();
+
+
 	while(true) {
-		bool exit;
-		List<String> order;
 
-		Tag *tag = parse_tag(&exit,true,&order);
 
-		bool done=false;
 
-		if (!tag) {
+		Error err = VariantParser::parse_tag(&stream,lines,error_text,next_tag,&rp);
+
+		if (err!=OK) {
 			if (fw) {
 				memdelete(fw);
 			}
 			error=ERR_FILE_CORRUPT;
-			ERR_FAIL_COND_V(!exit,error);
-			error=ERR_FILE_EOF;
-
-			return error;
+			ERR_FAIL_V(error);
 		}
 
-		if (tag->name=="ext_resource") {
+		if (next_tag.name!="ext_resource") {
 
-			if (!tag->args.has("index") || !tag->args.has("path") || !tag->args.has("type")) {
-				old_format=true;
-				break;
-			}
+			//nothing was done
+			if (!fw)
+				return OK;
+
+			break;
+
+
+		} else {
 
 			if (!fw) {
 
 				fw=FileAccess::open(p_path+".depren",FileAccess::WRITE);
-				fw->store_line("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"); //no escape
-				fw->store_line("<resource_file type=\""+resource_type+"\" subresource_count=\""+itos(resources_total)+"\" version=\""+itos(VERSION_MAJOR)+"."+itos(VERSION_MINOR)+"\" version_name=\""+VERSION_FULL_NAME+"\">");
-
+				if (is_scene) {
+					fw->store_line("[gd_scene load_steps="+itos(resources_total)+" format="+itos(FORMAT_VERSION)+"]\n");
+				} else {
+					fw->store_line("[gd_resource type=\""+res_type+"\" load_steps="+itos(resources_total)+" format="+itos(FORMAT_VERSION)+"]\n");
+				}
 			}
 
-			String path = tag->args["path"];
-			String index = tag->args["index"];
-			String type = tag->args["type"];
+			if (!next_tag.fields.has("path") || !next_tag.fields.has("id") || !next_tag.fields.has("type")) {
+				memdelete(fw);
+				error=ERR_FILE_CORRUPT;
+				ERR_FAIL_V(error);
+			}
+
+			String path = next_tag.fields["path"];
+			int index = next_tag.fields["id"];
+			String type = next_tag.fields["type"];
 
 
 			bool relative=false;
@@ -677,7 +683,6 @@ Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const 
 				path=base_path.plus_file(path).simplify_path();
 				relative=true;
 			}
-
 
 			if (p_map.has(path)) {
 				String np=p_map[path];
@@ -689,74 +694,15 @@ Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const 
 				path=base_path.path_to_file(path);
 			}
 
-			tag->args["path"]=path;
-			tag->args["index"]=index;
-			tag->args["type"]=type;
+			fw->store_line("[ext_resource path=\""+path+"\" type=\""+type+"\" id="+itos(index)+"]");
 
-		} else {
+			tag_end = f->get_pos();
 
-			done=true;
 		}
-
-		String tagt="\t<";
-		if (exit)
-			tagt+="/";
-		tagt+=tag->name;
-
-		for(List<String>::Element *E=order.front();E;E=E->next()) {
-			tagt+=" "+E->get()+"=\""+tag->args[E->get()]+"\"";
-		}
-		tagt+=">";
-		fw->store_line(tagt);
-		if (done)
-			break;
-		close_tag("ext_resource");
-		fw->store_line("\t</ext_resource>");
 
 	}
 
-
-	if (old_format) {
-		if (fw)
-			memdelete(fw);
-
-		DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		da->remove(p_path+".depren");
-		memdelete(da);
-		//fuck it, use the old approach;
-
-		WARN_PRINT(("This file is old, so it can't refactor dependencies, opening and resaving: "+p_path).utf8().get_data());
-
-		Error err;
-		FileAccess *f2 = FileAccess::open(p_path,FileAccess::READ,&err);
-		if (err!=OK) {
-			ERR_FAIL_COND_V(err!=OK,ERR_FILE_CANT_OPEN);
-		}
-
-		Ref<ResourceInteractiveLoaderText> ria = memnew( ResourceInteractiveLoaderText );
-		ria->local_path=Globals::get_singleton()->localize_path(p_path);
-		ria->res_path=ria->local_path;
-		ria->remaps=p_map;
-	//	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
-		ria->open(f2);
-
-		err = ria->poll();
-
-		while(err==OK) {
-			err=ria->poll();
-		}
-
-		ERR_FAIL_COND_V(err!=ERR_FILE_EOF,ERR_FILE_CORRUPT);
-		RES res = ria->get_resource();
-		ERR_FAIL_COND_V(!res.is_valid(),ERR_FILE_CORRUPT);
-
-		return ResourceFormatSaverText::singleton->save(p_path,res);
-	}
-
-	if (!fw) {
-
-		return OK; //nothing to rename, do nothing
-	}
+	f->seek(tag_end);
 
 	uint8_t c=f->get_8();
 	while(!f->eof_reached()) {
@@ -776,13 +722,13 @@ Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const 
 	da->remove(p_path);
 	da->rename(p_path+".depren",p_path);
 	memdelete(da);
-#endif
+
 	return OK;
 
 }
 
 
-void ResourceInteractiveLoaderText::open(FileAccess *p_f) {
+void ResourceInteractiveLoaderText::open(FileAccess *p_f,bool p_skip_first_tag) {
 
 	error=OK;
 
@@ -845,13 +791,15 @@ void ResourceInteractiveLoaderText::open(FileAccess *p_f) {
 		resources_total=0;
 	}
 
+	if (!p_skip_first_tag) {
 
-	err = VariantParser::parse_tag(&stream,lines,error_text,next_tag,&rp);
+		err = VariantParser::parse_tag(&stream,lines,error_text,next_tag,&rp);
 
-	if (err) {
-		error_text="Unexpected end of file";
-		_printerr();
-		error=ERR_FILE_CORRUPT;
+		if (err) {
+			error_text="Unexpected end of file";
+			_printerr();
+			error=ERR_FILE_CORRUPT;
+		}
 	}
 
 	rp.ext_func=_parse_ext_resources;
