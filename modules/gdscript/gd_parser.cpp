@@ -3145,6 +3145,11 @@ Error GDParser::parse(const String& p_code, const String& p_base_path, bool p_ju
 	return ret;
 }
 
+bool GDParser::is_tool_script() const {
+
+	return (head && head->type==Node::TYPE_CLASS && static_cast<const ClassNode*>(head)->tool);
+}
+
 const GDParser::Node *GDParser::get_parse_tree() const {
 
 	return head;

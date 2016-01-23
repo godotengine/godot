@@ -1874,19 +1874,27 @@ Error GDScript::reload() {
 		if (ScriptDebugger::get_singleton()) {
 			GDScriptLanguage::get_singleton()->debug_break_parse(get_path(),parser.get_error_line(),"Parser Error: "+parser.get_error());
 		}
-		_err_print_error("GDScript::reload",path.empty()?"built-in":(const char*)path.utf8().get_data(),parser.get_error_line(),("Parse Error: "+parser.get_error()).utf8().get_data());
+		_err_print_error("GDScript::reload",path.empty()?"built-in":(const char*)path.utf8().get_data(),parser.get_error_line(),("Parse Error: "+parser.get_error()).utf8().get_data(),ERR_HANDLER_SCRIPT);
 		ERR_FAIL_V(ERR_PARSE_ERROR);
 	}
+
+
+	bool can_run = ScriptServer::is_scripting_enabled() || parser.is_tool_script();
 
 	GDCompiler compiler;
 	err = compiler.compile(&parser,this);
 
 	if (err) {
-		if (ScriptDebugger::get_singleton()) {
-			GDScriptLanguage::get_singleton()->debug_break_parse(get_path(),compiler.get_error_line(),"Parser Error: "+compiler.get_error());
+
+		if (can_run) {
+			if (ScriptDebugger::get_singleton()) {
+				GDScriptLanguage::get_singleton()->debug_break_parse(get_path(),compiler.get_error_line(),"Parser Error: "+compiler.get_error());
+			}
+			_err_print_error("GDScript::reload",path.empty()?"built-in":(const char*)path.utf8().get_data(),compiler.get_error_line(),("Compile Error: "+compiler.get_error()).utf8().get_data(),ERR_HANDLER_SCRIPT);
+			ERR_FAIL_V(ERR_COMPILATION_FAILED);
+		} else {
+			return err;
 		}
-		_err_print_error("GDScript::reload",path.empty()?"built-in":(const char*)path.utf8().get_data(),compiler.get_error_line(),("Compile Error: "+compiler.get_error()).utf8().get_data());
-		ERR_FAIL_V(ERR_COMPILATION_FAILED);
 	}
 
 	valid=true;
@@ -2053,7 +2061,7 @@ Error GDScript::load_byte_code(const String& p_path) {
 	GDParser parser;
 	Error err = parser.parse_bytecode(bytecode,basedir,get_path());
 	if (err) {
-		_err_print_error("GDScript::load_byte_code",path.empty()?"built-in":(const char*)path.utf8().get_data(),parser.get_error_line(),("Parse Error: "+parser.get_error()).utf8().get_data());
+		_err_print_error("GDScript::load_byte_code",path.empty()?"built-in":(const char*)path.utf8().get_data(),parser.get_error_line(),("Parse Error: "+parser.get_error()).utf8().get_data(),ERR_HANDLER_SCRIPT);
 		ERR_FAIL_V(ERR_PARSE_ERROR);
 	}
 
@@ -2061,7 +2069,7 @@ Error GDScript::load_byte_code(const String& p_path) {
 	err = compiler.compile(&parser,this);
 
 	if (err) {
-		_err_print_error("GDScript::load_byte_code",path.empty()?"built-in":(const char*)path.utf8().get_data(),compiler.get_error_line(),("Compile Error: "+compiler.get_error()).utf8().get_data());
+		_err_print_error("GDScript::load_byte_code",path.empty()?"built-in":(const char*)path.utf8().get_data(),compiler.get_error_line(),("Compile Error: "+compiler.get_error()).utf8().get_data(),ERR_HANDLER_SCRIPT);
 		ERR_FAIL_V(ERR_COMPILATION_FAILED);
 	}
 
