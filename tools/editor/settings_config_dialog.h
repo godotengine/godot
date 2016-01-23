@@ -51,6 +51,8 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	Button *rescan_plugins;
 	Tree *plugins;
+	LineEdit *search_box;
+	ToolButton *clear_button;
 	SectionedPropertyEditor *property_editor;
 
 	Timer *timer;
