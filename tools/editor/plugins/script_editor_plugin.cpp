@@ -1018,8 +1018,10 @@ void ScriptEditor::_menu_option(int p_option) {
 				script_create_dialog->popup_centered(Size2(300, 300));
 			} break;
 			case FILE_SAVE: {
-				if (!_test_script_times_on_disk())
+
+				if (_test_script_times_on_disk())
 					return;
+
 				editor->save_resource( current->get_edited_script() );
 
 			} break;
