@@ -38,6 +38,8 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/texture_frame.h"
 #include "scene/gui/text_edit.h"
+#include "scene/gui/check_button.h"
+#include "scene/gui/split_container.h"
 #include "scene_tree_editor.h"
 
 /**
@@ -83,6 +85,7 @@ class CustomPropertyEditor : public Popup {
 	String hint_text;
 	LineEdit *value_editor[MAX_VALUE_EDITORS];
 	Label *value_label[MAX_VALUE_EDITORS];
+	HScrollBar *scroll[4];
 	Button *action_buttons[MAX_ACTION_BUTTONS];
 	MenuButton *type_button;
 	Vector<String> inheritors_array;
@@ -103,6 +106,7 @@ class CustomPropertyEditor : public Popup {
 
 	void _text_edit_changed();
 	void _file_selected(String p_file);
+	void _scroll_modified(double p_value);
 	void _modified(String p_string);
 	void _range_modified(double p_value);
 	void _focus_enter();
@@ -121,10 +125,6 @@ class CustomPropertyEditor : public Popup {
 	void show_value_editors(int p_amount);
 	void config_value_editors(int p_amount, int p_columns,int p_label_w,const List<String>& p_strings);
 	void config_action_buttons(const List<String>& p_strings);
-
-	bool text_changed;
-
-	void _text_editor_changed(String p_text);
 
 protected:
 
