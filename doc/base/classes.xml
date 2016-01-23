@@ -13724,7 +13724,7 @@ returns:= "username=user&amp;password=pass"
 			<argument index="1" name="button" type="int">
 			</argument>
 			<description>
-			Returns true if the joystick button at the given index is currently pressed. Returns false otherwise. (see JOY_* constans in [InputEvent])
+			Returns if the joystick button at the given index is currently pressed. (see JOY_* constans in [@Global Scope])
 			</description>
 		</method>
 		<method name="is_action_pressed">
@@ -13757,7 +13757,7 @@ returns:= "username=user&amp;password=pass"
 			<argument index="0" name="device" type="int">
 			</argument>
 			<description>
-			Returns true if the specified device is known by the system. This means that it sets all button and axis indices exactly as defined in [InputEvent]. Unknown joysticks are not expected to match these constants, but you can still retrieve events from them.
+			Returns if the specified device is known by the system. This means that it sets all button and axis indices exactly as defined in the JOY_* constants (see [@Global Scope]). Unknown joysticks are not expected to match these constants, but you can still retrieve events from them.
 			</description>
 		</method>
 		<method name="get_joy_axis">
@@ -13768,7 +13768,7 @@ returns:= "username=user&amp;password=pass"
 			<argument index="1" name="axis" type="int">
 			</argument>
 			<description>
-			Returns the current value of the joystick axis at given index (see JOY_* enum in [InputEvent])
+			Returns the current value of the joystick axis at given index (see JOY_* constants in [@Global Scope])
 			</description>
 		</method>
 		<method name="get_joy_name">
@@ -13853,6 +13853,7 @@ returns:= "username=user&amp;password=pass"
 			<argument index="1" name="connected" type="bool">
 			</argument>
 			<description>
+				Emitted when a joystick device has been connected or disconnected
 			</description>
 		</signal>
 	</signals>
@@ -20232,7 +20233,7 @@ returns:= "username=user&amp;password=pass"
 			<argument index="1" name="arguments" type="Array" default="Array()">
 			</argument>
 			<description>
-			Add a user signal (can be added anytime). Arguments are optional, but can be added as an array of dictionaries, each containing "name" and "type" (from [@GlobalScope] TYPE_*).
+			Add a user signal (can be added anytime). Arguments are optional, but can be added as an array of dictionaries, each containing "name" and "type" (from [@Global Scope] TYPE_*).
 			</description>
 		</method>
 		<method name="has_user_signal" qualifiers="const">
