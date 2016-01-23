@@ -2045,7 +2045,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 			if (img.empty())
 				p_item->set_text(1,"[Image (empty)]");
 			else
-				p_item->set_text(1,"[Image "+itos(img.get_width())+"x"+itos(img.get_height())+"]");
+				p_item->set_text(1,"[Image "+itos(img.get_width())+"x"+itos(img.get_height())+"-"+String(Image::get_format_name(img.get_format()))+"]");
 
 		} break;
 		case Variant::NODE_PATH: {
@@ -3007,7 +3007,7 @@ void PropertyEditor::update_tree() {
 				if (img.empty())
 					item->set_text(1,"[Image (empty)]");
 				else
-					item->set_text(1,"[Image "+itos(img.get_width())+"x"+itos(img.get_height())+"]");
+					item->set_text(1,"[Image "+itos(img.get_width())+"x"+itos(img.get_height())+"-"+String(Image::get_format_name(img.get_format()))+"]");
 				if (show_type_icons)
 					item->set_icon( 0,get_icon("Image","EditorIcons") );
 
