@@ -533,6 +533,8 @@ void TileMapEditor::_canvas_draw() {
 
 		if (node->get_half_offset()!=TileMap::HALF_OFFSET_X) {
 
+			int max_lines=2000; //avoid crash if size too smal
+
 			for(int i=(si.pos.x)-1;i<=(si.pos.x+si.size.x);i++) {
 
 				Vector2 from = xform.xform(node->map_to_world(Vector2(i,si.pos.y)));
@@ -540,10 +542,12 @@ void TileMapEditor::_canvas_draw() {
 
 				Color col=i==0?Color(1,0.8,0.2,0.5):Color(1,0.3,0.1,0.2);
 				canvas_item_editor->draw_line(from,to,col,1);
-
+				if (max_lines--==0)
+					break;
 			}
 		} else {
 
+			int max_lines=10000; //avoid crash if size too smal
 
 			for(int i=(si.pos.x)-1;i<=(si.pos.x+si.size.x);i++) {
 
@@ -558,10 +562,16 @@ void TileMapEditor::_canvas_draw() {
 					Vector2 to = xform.xform(node->map_to_world(Vector2(i,j+1),true)+ofs);
 					Color col=i==0?Color(1,0.8,0.2,0.5):Color(1,0.3,0.1,0.2);
 					canvas_item_editor->draw_line(from,to,col,1);
+
+					if (max_lines--==0)
+						break;
+
 				}
 
 			}
 		}
+
+		int max_lines=10000; //avoid crash if size too smal
 
 		if (node->get_half_offset()!=TileMap::HALF_OFFSET_Y) {
 
@@ -572,6 +582,9 @@ void TileMapEditor::_canvas_draw() {
 
 				Color col=i==0?Color(1,0.8,0.2,0.5):Color(1,0.3,0.1,0.2);
 				canvas_item_editor->draw_line(from,to,col,1);
+
+				if (max_lines--==0)
+					break;
 
 			}
 		} else {
@@ -590,6 +603,10 @@ void TileMapEditor::_canvas_draw() {
 					Vector2 to = xform.xform(node->map_to_world(Vector2(j+1,i),true)+ofs);
 					Color col=i==0?Color(1,0.8,0.2,0.5):Color(1,0.3,0.1,0.2);
 					canvas_item_editor->draw_line(from,to,col,1);
+
+					if (max_lines--==0)
+						break;
+
 				}
 
 			}
