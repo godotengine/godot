@@ -321,7 +321,7 @@ size_t MemoryPoolStaticMalloc::get_max_usage() {
 /* Most likely available only if memory debugger was compiled in */
 int MemoryPoolStaticMalloc::get_alloc_count() {
 	
-	return 0;
+	return total_pointers;
 }
 void * MemoryPoolStaticMalloc::get_alloc_ptr(int p_alloc_idx) {
 	
