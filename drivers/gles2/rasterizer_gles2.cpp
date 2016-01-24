@@ -9260,7 +9260,13 @@ void RasterizerGLES2::_canvas_item_setup_shader_params(CanvasItemMaterial *mater
 				glReadBuffer(GL_BACK);
 			}
 #endif
-			glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
+			if (current_rt) {
+				glCopyTexSubImage2D(GL_TEXTURE_2D,0,viewport.x,viewport.y,viewport.x,viewport.y,viewport.width,viewport.height);
+				canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_SCREEN_CLAMP,Color(float(x)/framebuffer.width,float(viewport.y)/framebuffer.height,float(x+viewport.width)/framebuffer.width,float(y+viewport.height)/framebuffer.height));
+				//window_size.height-(viewport.height+viewport.y)
+			} else {
+				glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
+			}
 //			if (current_clip) {
 //			//	print_line(" a clip ");
 //			}
@@ -9457,7 +9463,12 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 				glReadBuffer(GL_BACK);
 			}
 #endif
-			glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,w,h);
+			if (current_rt) {
+				glCopyTexSubImage2D(GL_TEXTURE_2D,0,viewport.x,viewport.y,viewport.x,viewport.y,viewport.width,viewport.height);
+				//window_size.height-(viewport.height+viewport.y)
+			} else {
+				glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
+			}
 //			if (current_clip) {
 //			//	print_line(" a clip ");
 //			}
