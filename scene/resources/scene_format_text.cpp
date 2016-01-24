@@ -394,6 +394,13 @@ Error ResourceInteractiveLoaderText::poll() {
 
 		int node_id = packed_scene->get_state()->add_node(parent,owner,type,name,instance);
 
+		if (next_tag.fields.has("groups")) {
+
+			Array groups = next_tag.fields["groups"];
+			for (int i=0;i<groups.size();i++) {
+				packed_scene->get_state()->add_node_group(node_id,packed_scene->get_state()->add_name(groups[i]));
+			}
+		}
 
 		while(true) {
 
