@@ -51,6 +51,8 @@ void GroupsEditor::_add_group(const String& p_group) {
 	undo_redo->add_undo_method(this,"update_tree");
 
 	undo_redo->commit_action();
+
+	group_name->clear();
 }
 
 void GroupsEditor::_remove_group(Object *p_item, int p_column, int p_id) {
