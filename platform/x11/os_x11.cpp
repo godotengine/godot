@@ -78,7 +78,7 @@ const char * OS_X11::get_video_driver_name(int p_driver) const {
 }
 
 OS::VideoMode OS_X11::get_default_video_mode() const {
-	return OS::VideoMode(1280,720,false);
+	return OS::VideoMode(1024,600,false);
 }
 
 int OS_X11::get_audio_driver_count() const {
