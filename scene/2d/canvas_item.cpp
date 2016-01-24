@@ -1193,6 +1193,14 @@ bool CanvasItem::is_local_transform_notification_enabled() const {
 	return notify_local_transform;
 }
 
+int CanvasItem::get_canvas_layer() const {
+
+	if (canvas_layer)
+		return canvas_layer->get_layer();
+	else
+		return 0;
+}
+
 CanvasItem::CanvasItem() : xform_change(this) {
 
 

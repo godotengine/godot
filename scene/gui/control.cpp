@@ -2071,6 +2071,8 @@ Control *Control::get_root_parent_control() const {
 	return const_cast<Control*>(root);
 }
 
+
+
 void Control::_bind_methods() {
 
 
