@@ -85,8 +85,7 @@ Error ResourceInteractiveLoaderText::_parse_ext_resource(VariantParser::Stream* 
 	r_res=ResourceLoader::load(path,type);
 
 	if (r_res.is_null()) {
-		r_err_str="Couldn't load external resource: "+path;
-		return ERR_PARSE_ERROR;
+		WARN_PRINT(String("Couldn't load external resource: "+path).utf8().get_data());
 	}
 
 	VariantParser::get_token(p_stream,token,line,r_err_str);
