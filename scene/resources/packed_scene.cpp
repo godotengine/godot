@@ -33,7 +33,7 @@
 #include "scene/gui/control.h"
 #include "scene/2d/node_2d.h"
 #include "scene/main/instance_placeholder.h"
-
+#include "core/core_string_names.h"
 #define PACK_VERSION 2
 
 bool SceneState::can_instance() const {
@@ -98,6 +98,7 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 		}
 
 		Node *node=NULL;
+
 
 		if (i==0 && base_scene_idx>=0) {
 			//scene inheritance on root node
@@ -193,7 +194,26 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 					ERR_FAIL_INDEX_V( nprops[j].name, sname_count, NULL );
 					ERR_FAIL_INDEX_V( nprops[j].value, prop_count, NULL );
 
-					node->set(snames[ nprops[j].name ],props[ nprops[j].value ],&valid);
+					if (snames[ nprops[j].name ]==CoreStringNames::get_singleton()->_script) {
+						//work around to avoid old script variables from disappearing, should be the proper fix to:
+						//https://github.com/godotengine/godot/issues/2958
+
+						//store old state
+						List<Pair<StringName,Variant> > old_state;
+						if (node->get_script_instance()) {
+							node->get_script_instance()->get_property_state(old_state);
+						}
+
+						node->set(snames[ nprops[j].name ],props[ nprops[j].value ],&valid);
+
+						//restore old state for new script, if exists
+						for (List<Pair<StringName,Variant> >::Element *E=old_state.front();E;E=E->next()) {
+							node->set(E->get().first,E->get().second);
+						}
+					} else {
+
+						node->set(snames[ nprops[j].name ],props[ nprops[j].value ],&valid);
+					}
 				}
 			}
 
@@ -460,6 +480,7 @@ Error SceneState::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<S
 	List<PropertyInfo> plist;
 	p_node->get_property_list(&plist);
 
+	bool saved_script=false;
 
 	for (List<PropertyInfo>::Element *E=plist.front();E;E=E->next()) {
 
@@ -508,8 +529,10 @@ Error SceneState::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<S
 					break;
 				}
 			}
-
-			if (exists && p_node->get_script_instance()) {
+#if 0
+// this workaround ended up causing problems:
+https://github.com/godotengine/godot/issues/3127
+			if (saved_script && exists && p_node->get_script_instance()) {
 				//if this is an overriden value by another script, save it anyway
 				//as the script change will erase it
 				//https://github.com/godotengine/godot/issues/2958
@@ -522,7 +545,7 @@ Error SceneState::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<S
 				}
 			}
 
-
+#endif
 			if (exists && bool(Variant::evaluate(Variant::OP_EQUAL,value,original))) {
 				//exists and did not change
 				continue;
@@ -542,6 +565,9 @@ Error SceneState::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<S
 				continue;
 			}
 		}
+
+		if (name=="script/script")
+			saved_script=true;
 
 		NodeData::Property prop;
 		prop.name=_nm_get_string( name,name_map);

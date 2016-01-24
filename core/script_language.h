@@ -113,6 +113,8 @@ public:
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const=0;
 	virtual Variant::Type get_property_type(const StringName& p_name,bool *r_is_valid=NULL) const=0;
 
+	virtual void get_property_state(List<Pair<StringName,Variant> > &state);
+
 	virtual void get_method_list(List<MethodInfo> *p_list) const=0;
 	virtual bool has_method(const StringName& p_method) const=0;
 	virtual Variant call(const StringName& p_method,VARIANT_ARG_LIST);
