@@ -360,7 +360,9 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 
 			if (EditorNode::get_log()->is_hidden()) {
 				log_forced_visible=true;
-				EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
+				if (EditorNode::get_singleton()->are_bottom_panels_hidden()) {
+					EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
+				}
 			}
 			EditorNode::get_log()->add_message(t);
 

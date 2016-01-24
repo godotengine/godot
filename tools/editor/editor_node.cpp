@@ -4579,6 +4579,16 @@ ToolButton *EditorNode::add_bottom_panel_item(String p_text,Control *p_item) {
 
 }
 
+bool EditorNode::are_bottom_panels_hidden() const {
+
+	for(int i=0;i<bottom_panel_items.size();i++) {
+		if (bottom_panel_items[i].button->is_pressed())
+			return false;
+	}
+
+	return true;
+}
+
 void EditorNode::hide_bottom_panel() {
 
 	_bottom_panel_switch(false,0);
