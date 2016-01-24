@@ -18,7 +18,6 @@ class InputDefault : public Input {
 	MainLoop *main_loop;
 
 	bool emulate_touch;
-
 	struct SpeedTrack {
 
 		uint64_t last_tick;
@@ -62,6 +61,7 @@ class InputDefault : public Input {
 
 	SpeedTrack mouse_speed_track;
 	Map<int, Joystick> joy_names;
+	int fallback_mapping;
 	RES custom_cursor;
 public:
 	enum HatMask {
@@ -169,7 +169,7 @@ public:
 
 	bool is_joy_mapped(int p_device);
 	String get_joy_guid_remapped(int p_device) const;
-
+	void set_fallback_mapping(String p_mapping);
 	InputDefault();
 };
 
