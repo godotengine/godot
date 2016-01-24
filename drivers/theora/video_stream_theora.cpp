@@ -489,6 +489,9 @@ Ref<Texture> VideoStreamPlaybackTheora::get_texture() {
 
 void VideoStreamPlaybackTheora::update(float p_delta) {
 
+	if (!file)
+		return;
+
 	if (!playing || paused) {
 		//printf("not playing\n");
 		return;
