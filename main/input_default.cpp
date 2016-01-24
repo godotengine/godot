@@ -164,6 +164,12 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 				//printf("found mapping\n");
 			};
 		};
+#ifdef ANDROID_ENABLED
+		//Use a default mapping for Android, as we recieve events using indices of a SDL_GAMECONTROLLER.
+		//So we need to map those to our own joystick layout
+		if (mapping == -1)
+			mapping = 0;
+#endif
 		js.mapping = mapping;
 	};
 	joy_names[p_idx] = js;
@@ -513,6 +519,10 @@ InputDefault::InputDefault() {
 	hat_map_default[HAT_LEFT].index = JOY_DPAD_LEFT;
 	hat_map_default[HAT_LEFT].value = 0;
 
+#ifdef ANDROID_ENABLED
+	//add the default mapping first, in case someone actually sets the env variable on their phone
+	parse_mapping("Default Android Gamepad,Default Controller,leftx:a0,lefty:a1,dpdown:h0.4,rightstick:b8,rightshoulder:b10,rightx:a2,start:b6,righty:a3,dpleft:h0.8,lefttrigger:a4,x:b2,dpup:h0.1,back:b4,leftstick:b7,leftshoulder:b9,y:b3,a:b0,dpright:h0.2,righttrigger:a5,b:b1,");
+#endif
 	String env_mapping = OS::get_singleton()->get_environment("SDL_GAMECONTROLLERCONFIG");
 	if (env_mapping != "") {
 
@@ -865,6 +875,10 @@ String InputDefault::get_joy_guid(int p_device) const {
 
 //platforms that use the remapping system can override and call to these ones
 bool InputDefault::is_joy_mapped(int p_device) {
+#ifdef ANDROID_ENABLED
+	if (joy_names[p_device].mapping == 0)
+		return false;
+#endif
 	return joy_names[p_device].mapping != -1 ? true : false;
 }
 

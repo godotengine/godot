@@ -36,7 +36,7 @@ class InputDefault : public Input {
 	struct Joystick {
 		StringName name;
 		StringName uid;
-		bool last_buttons[JOY_BUTTON_MAX + 2]; //html5 needs support for 18 buttons to map some devices correctly
+		bool last_buttons[JOY_BUTTON_MAX + 19]; //apparently SDL specifies 35 possible buttons on android
 		float last_axis[JOY_AXIS_MAX];
 		float filter;
 		int last_hat;
@@ -50,7 +50,7 @@ class InputDefault : public Input {
 				last_axis[i] = 0.0f;
 
 			}
-			for (int i = 0; i < JOY_BUTTON_MAX + 2; i++) {
+			for (int i = 0; i < JOY_BUTTON_MAX + 19; i++) {
 
 				last_buttons[i] = false;
 			}
