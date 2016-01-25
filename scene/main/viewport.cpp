@@ -1493,6 +1493,8 @@ Control* Viewport::_gui_find_control(const Point2& p_global)  {
 			return ret;
 	}
 
+	_gui_sort_roots();
+
 	for (List<Control*>::Element *E=gui.roots.back();E;E=E->prev()) {
 
 		Control *sw = E->get();
