@@ -670,6 +670,7 @@ public:
 
 
 	ToolButton* add_bottom_panel_item(String p_text,Control *p_item);
+	bool are_bottom_panels_hidden() const;
 	void make_bottom_panel_item_visible(Control *p_item);
 	void raise_bottom_panel_item(Control *p_item);
 	void hide_bottom_panel();

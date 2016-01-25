@@ -283,13 +283,23 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				return NULL;
 			}
 			tokenizer->advance();
-			if (tokenizer->get_token()!=GDTokenizer::TK_CONSTANT || tokenizer->get_token_constant().get_type()!=Variant::STRING) {
-				_set_error("Expected string constant as 'preload' argument.");
+
+			String path;
+			bool valid = false;
+			Node *subexpr = _parse_and_reduce_expression(p_parent, p_static);
+			if (subexpr) {
+				if (subexpr->type == Node::TYPE_CONSTANT) {
+					ConstantNode *cn = static_cast<ConstantNode*>(subexpr);
+					if (cn->value.get_type() == Variant::STRING) {
+						valid = true;
+						path = (String) cn->value;
+					}
+				}
+			}
+			if (!valid) {
+				_set_error("expected string constant as 'preload' argument.");
 				return NULL;
 			}
-
-
-			String path = tokenizer->get_token_constant();
 			if (!path.is_abs_path() && base_path!="")
 				path=base_path+"/"+path;
 			path = path.replace("///","//").simplify_path();
@@ -321,8 +331,6 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 					return NULL;
 				}
 			}
-
-			tokenizer->advance();
 
 			if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
 				_set_error("Expected ')' after 'preload' path");

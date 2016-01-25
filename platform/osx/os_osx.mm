@@ -839,7 +839,7 @@ const char * OS_OSX::get_video_driver_name(int p_driver) const {
 OS::VideoMode OS_OSX::get_default_video_mode() const {
 
 	VideoMode vm;
-	vm.width=800;
+	vm.width=1024;
 	vm.height=600;
 	vm.fullscreen=false;
 	vm.resizable=true;

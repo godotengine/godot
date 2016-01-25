@@ -85,8 +85,7 @@ Error ResourceInteractiveLoaderText::_parse_ext_resource(VariantParser::Stream* 
 	r_res=ResourceLoader::load(path,type);
 
 	if (r_res.is_null()) {
-		r_err_str="Couldn't load external resource: "+path;
-		return ERR_PARSE_ERROR;
+		WARN_PRINT(String("Couldn't load external resource: "+path).utf8().get_data());
 	}
 
 	VariantParser::get_token(p_stream,token,line,r_err_str);
@@ -394,6 +393,13 @@ Error ResourceInteractiveLoaderText::poll() {
 
 		int node_id = packed_scene->get_state()->add_node(parent,owner,type,name,instance);
 
+		if (next_tag.fields.has("groups")) {
+
+			Array groups = next_tag.fields["groups"];
+			for (int i=0;i<groups.size();i++) {
+				packed_scene->get_state()->add_node_group(node_id,packed_scene->get_state()->add_name(groups[i]));
+			}
+		}
 
 		while(true) {
 
@@ -1374,9 +1380,10 @@ bool ResourceFormatSaverText::recognize(const RES& p_resource) const {
 }
 void ResourceFormatSaverText::get_recognized_extensions(const RES& p_resource,List<String> *p_extensions) const {
 
-	p_extensions->push_back("tres"); //text resource
 	if (p_resource->get_type()=="PackedScene")
 		p_extensions->push_back("tscn"); //text scene
+	else
+		p_extensions->push_back("tres"); //text resource
 
 }
 
