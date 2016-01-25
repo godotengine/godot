@@ -540,9 +540,6 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			forward->set_icon( get_icon("Forward","EditorIcons"));
 			dobreak->set_icon( get_icon("Pause","EditorIcons"));
 			docontinue->set_icon( get_icon("DebugContinue","EditorIcons"));
-			tb->set_normal_texture( get_icon("Close","EditorIcons"));
-			tb->set_hover_texture( get_icon("CloseHover","EditorIcons"));
-			tb->set_pressed_texture( get_icon("Close","EditorIcons"));
 			scene_tree_refresh->set_icon( get_icon("Reload","EditorIcons"));
 			le_set->connect("pressed",this,"_live_edit_set");
 			le_clear->connect("pressed",this,"_live_edit_clear");
@@ -781,13 +778,6 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 	msg.push_back(d["frame"]);
 	ppeer->put_var(msg);
 
-}
-
-void ScriptEditorDebugger::_hide_request() {
-
-	if (EditorNode::get_log()->is_visible())
-		EditorNode::get_singleton()->hide_bottom_panel();
-	emit_signal("show_debugger",false);
 }
 
 void ScriptEditorDebugger::_output_clear() {
@@ -1190,7 +1180,6 @@ void ScriptEditorDebugger::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("debug_break"),&ScriptEditorDebugger::debug_break);
 	ObjectTypeDB::bind_method(_MD("debug_continue"),&ScriptEditorDebugger::debug_continue);
 	ObjectTypeDB::bind_method(_MD("_output_clear"),&ScriptEditorDebugger::_output_clear);
-	ObjectTypeDB::bind_method(_MD("_hide_request"),&ScriptEditorDebugger::_hide_request);
 	ObjectTypeDB::bind_method(_MD("_performance_draw"),&ScriptEditorDebugger::_performance_draw);
 	ObjectTypeDB::bind_method(_MD("_performance_select"),&ScriptEditorDebugger::_performance_select);
 	ObjectTypeDB::bind_method(_MD("_scene_tree_request"),&ScriptEditorDebugger::_scene_tree_request);
@@ -1225,13 +1214,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	tabs->set_v_size_flags(SIZE_EXPAND_FILL);
 	tabs->set_area_as_parent_rect();
 	add_child(tabs);
-
-	tb = memnew( TextureButton );
-	tb->connect("pressed",this,"_hide_request");
-	tb->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_END,20);
-	tb->set_margin(MARGIN_TOP,2);
-	add_child(tb);
-
 
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
