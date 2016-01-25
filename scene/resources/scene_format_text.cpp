@@ -1380,9 +1380,10 @@ bool ResourceFormatSaverText::recognize(const RES& p_resource) const {
 }
 void ResourceFormatSaverText::get_recognized_extensions(const RES& p_resource,List<String> *p_extensions) const {
 
-	p_extensions->push_back("tres"); //text resource
 	if (p_resource->get_type()=="PackedScene")
 		p_extensions->push_back("tscn"); //text scene
+	else
+		p_extensions->push_back("tres"); //text resource
 
 }
 

@@ -1419,7 +1419,7 @@ Globals::Globals() {
 
 	set("application/name","" );
 	set("application/main_scene","");
-	custom_prop_info["application/main_scene"]=PropertyInfo(Variant::STRING,"application/main_scene",PROPERTY_HINT_FILE,"scn,res,xscn,xml");
+	custom_prop_info["application/main_scene"]=PropertyInfo(Variant::STRING,"application/main_scene",PROPERTY_HINT_FILE,"scn,res,xscn,xml,tscn");
 	set("application/disable_stdout",false);
 	set("application/use_shared_user_dir",true);
 
