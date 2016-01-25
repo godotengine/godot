@@ -406,7 +406,7 @@ void Viewport::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 
 
-
+			_gui_cancel_tooltip();
 			if (world_2d.is_valid())
 				world_2d->_remove_viewport(this);
 
@@ -434,6 +434,12 @@ void Viewport::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_FIXED_PROCESS: {
 
+			if (gui.tooltip_timer>=0) {
+				gui.tooltip_timer-=get_fixed_process_delta_time();
+				if (gui.tooltip_timer<0) {
+					_gui_show_tooltip();
+				}
+			}
 
 			if (get_tree()->is_debugging_collisions_hint() && contact_2d_debug.is_valid()) {
 
@@ -1376,10 +1382,11 @@ void Viewport::_gui_sort_roots() {
 void Viewport::_gui_cancel_tooltip() {
 
 	gui.tooltip=NULL;
-	if (gui.tooltip_timer)
-		gui.tooltip_timer->stop();
-	if (gui.tooltip_popup)
-		gui.tooltip_popup->hide();
+	gui.tooltip_timer=-1;
+	if (gui.tooltip_popup) {
+		gui.tooltip_popup->queue_delete();
+		gui.tooltip_popup=NULL;
+	}
 
 }
 
@@ -1393,10 +1400,25 @@ void Viewport::_gui_show_tooltip() {
 	if (tooltip.length()==0)
 		return; // bye
 
-
-	if (!gui.tooltip_label) {
-		return;
+	if (gui.tooltip_popup) {
+		memdelete(gui.tooltip_popup);
+		gui.tooltip_popup=NULL;
 	}
+
+	Control *rp = gui.tooltip->get_root_parent_control();
+	if (!rp)
+		return;
+
+
+	gui.tooltip_popup = memnew( TooltipPanel );
+
+	rp->add_child(gui.tooltip_popup);
+	gui.tooltip_popup->force_parent_owned();
+	gui.tooltip_label = memnew( TooltipLabel );
+	gui.tooltip_popup->add_child(gui.tooltip_label);
+	gui.tooltip_popup->set_as_toplevel(true);
+	gui.tooltip_popup->hide();
+
 	Ref<StyleBox> ttp = gui.tooltip_label->get_stylebox("panel","TooltipPanel");
 
 	gui.tooltip_label->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_BEGIN,ttp->get_margin(MARGIN_LEFT));
@@ -1416,11 +1438,10 @@ void Viewport::_gui_show_tooltip() {
 	else if (r.pos.y<0)
 		r.pos.y=0;
 
-	gui.tooltip_popup->set_pos(r.pos);
+	gui.tooltip_popup->set_global_pos(r.pos);
 	gui.tooltip_popup->set_size(r.size);
 
 	gui.tooltip_popup->raise();
-
 	gui.tooltip_popup->show();
 }
 
@@ -1660,7 +1681,8 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 				get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
 				get_tree()->set_input_as_handled();
 
-				gui.tooltip_popup->hide();
+				_gui_cancel_tooltip();
+				//gui.tooltip_popup->hide();
 
 			} else {
 
@@ -1792,7 +1814,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 			p_event.mouse_motion.relative_x=rel.x;
 			p_event.mouse_motion.relative_y=rel.y;
 
-			if (p_event.mouse_motion.button_mask==0 && gui.tooltip_timer) {
+			if (p_event.mouse_motion.button_mask==0) {
 				//nothing pressed
 
 				bool can_tooltip=true;
@@ -1808,7 +1830,8 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 					gui.tooltip=over;
 					gui.tooltip_pos=mpos;//(parent_xform * get_transform()).affine_inverse().xform(pos);
-					gui.tooltip_timer->start();
+					gui.tooltip_timer=gui.tooltip_delay;
+
 				}
 			}
 
@@ -2053,8 +2076,10 @@ void Viewport::_gui_hid_control(Control *p_control) {
 		gui.mouse_over=NULL;
 	if (gui.tooltip == p_control)
 		gui.tooltip=NULL;
-	if (gui.tooltip == p_control)
+	if (gui.tooltip == p_control) {
 		gui.tooltip=NULL;
+		_gui_cancel_tooltip();
+	}
 
 }
 
@@ -2069,6 +2094,9 @@ void Viewport::_gui_remove_control(Control *p_control) {
 		gui.mouse_over=NULL;
 	if (gui.tooltip == p_control)
 		gui.tooltip=NULL;
+	if (gui.tooltip_popup == p_control) {
+		_gui_cancel_tooltip();
+	}
 
 
 }
@@ -2461,21 +2489,16 @@ Viewport::Viewport() {
 	disable_input=false;
 
 	//window tooltip
-	gui.tooltip_timer = memnew( Timer );
-	add_child(gui.tooltip_timer);
-	gui.tooltip_timer->force_parent_owned();
-	gui.tooltip_timer->set_wait_time( GLOBAL_DEF("display/tooltip_delay",0.7));
-	gui.tooltip_timer->connect("timeout",this,"_gui_show_tooltip");
+	gui.tooltip_timer = -1;
+
+	//gui.tooltip_timer->force_parent_owned();
+	gui.tooltip_delay=GLOBAL_DEF("display/tooltip_delay",0.7);
+
 	gui.tooltip=NULL;
-	gui.tooltip_popup = memnew( TooltipPanel );
-	add_child(gui.tooltip_popup);
-	gui.tooltip_popup->force_parent_owned();
-	gui.tooltip_label = memnew( TooltipLabel );
-	gui.tooltip_popup->add_child(gui.tooltip_label);
-	gui.tooltip_popup->set_as_toplevel(true);
-	gui.tooltip_popup->hide();
-	gui.drag_attempted=false;
+	gui.tooltip_label=NULL;
 	gui.drag_preview=NULL;
+	gui.drag_attempted=false;
+
 
 	parent_control=NULL;
 
