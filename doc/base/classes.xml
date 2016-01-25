@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="2.0.alpha.custom_build" name="Engine Types">
+<doc version="2.0.beta.custom_build" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 	Built-in GDScript functions.
@@ -437,18 +437,16 @@
 			<argument index="1" name="type" type="int">
 			</argument>
 			<description>
-			Convert from a type to another in the best way possible. The "type" parameter uses the enum TYPE_* in Global Scope.
+			Convert from a type to another in the best way possible. The "type" parameter uses the enum TYPE_* in [@Global Scope].
 			</description>
 		</method>
-		<method name="str">
-			<return type="String">
+		<method name="typeof">
+			<return type="int">
 			</return>
 			<argument index="0" name="what" type="Variant">
 			</argument>
-			<argument index="1" name="..." type="Variant">
-			</argument>
 			<description>
-			Convert one or more arguments to strings in the best way possible.
+			Returns the internal type of the given Variant object, using the TYPE_* enum in [@Global Scope].
 			</description>
 		</method>
 		<method name="str">
@@ -7628,15 +7626,6 @@
 	Array of Color, can only contains colors. Optimized for memory usage, can't fragment the memory.
 	</description>
 	<methods>
-		<method name="get">
-			<return type="Color">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-			Get an index in the array.
-			</description>
-		</method>
 		<method name="push_back">
 			<argument index="0" name="color" type="Color">
 			</argument>
@@ -7680,7 +7669,7 @@
 	<constants>
 	</constants>
 </class>
-<class name="ColorPicker" inherits="HBoxContainer" category="Core">
+<class name="ColorPicker" inherits="BoxContainer" category="Core">
 	<brief_description>
 	Color picker control.
 	</brief_description>
@@ -7702,14 +7691,14 @@
 			Return the current (edited) color.
 			</description>
 		</method>
-		<method name="set_mode">
-			<argument index="0" name="mode" type="int">
+		<method name="set_raw_mode">
+			<argument index="0" name="mode" type="bool">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="get_mode" qualifiers="const">
-			<return type="int">
+		<method name="is_raw_mode" qualifiers="const">
+			<return type="bool">
 			</return>
 			<description>
 			</description>
@@ -7723,6 +7712,12 @@
 		<method name="is_editing_alpha" qualifiers="const">
 			<return type="bool">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="add_preset">
+			<argument index="0" name="arg0" type="Color">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -7748,6 +7743,10 @@
 		<theme_item name="label_width" type="int">
 		</theme_item>
 		<theme_item name="hseparator" type="int">
+		</theme_item>
+		<theme_item name="add_preset" type="Texture">
+		</theme_item>
+		<theme_item name="screen_picker" type="Texture">
 		</theme_item>
 	</theme_items>
 </class>
@@ -8208,20 +8207,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="is_window" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			Return wether this control is a [i]window[/i]. Controls are considered windows when their parent [Node] is not a Control.
-			</description>
-		</method>
-		<method name="get_window" qualifiers="const">
-			<return type="Object">
-			</return>
-			<description>
-			Return the [i]window[/i] for this control, ascending the scene tree (see [method is_window]).
-			</description>
-		</method>
 		<method name="set_anchor">
 			<argument index="0" name="margin" type="int">
 			</argument>
@@ -8504,6 +8489,14 @@
 			Override a single icon ([Texture]) in the theme of this Control. If texture is empty, override is cleared.
 			</description>
 		</method>
+		<method name="add_shader_override">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="shader" type="Shader">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="add_style_override">
 			<argument index="0" name="name" type="String">
 			</argument>
@@ -8739,6 +8732,10 @@
 			</argument>
 			<description>
 			Emitted when an input event is received. Connecting in realtime is recommended for accepting the events.
+			</description>
+		</signal>
+		<signal name="modal_close">
+			<description>
 			</description>
 		</signal>
 		<signal name="mouse_exit">
@@ -10742,6 +10739,8 @@ This approximation makes straight segments between each point, then subdivides t
 		</constant>
 		<constant name="READ_WRITE" value="3">
 		</constant>
+		<constant name="WRITE_READ" value="7">
+		</constant>
 	</constants>
 </class>
 <class name="FileDialog" inherits="ConfirmationDialog" category="Core">
@@ -12018,6 +12017,24 @@ This approximation makes straight segments between each point, then subdivides t
 			</return>
 			<description>
 			Return an Array containing the list of connections. A connection consists in a structure of the form {from_slot: 0, from: "GraphNode name 0", to_slot: 1, to: "GraphNode name 1" }
+			</description>
+		</method>
+		<method name="get_scroll_ofs" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_zoom">
+			<argument index="0" name="p_zoom" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_zoom" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="set_right_disconnects">
@@ -13853,7 +13870,7 @@ returns:= "username=user&amp;password=pass"
 			<argument index="1" name="connected" type="bool">
 			</argument>
 			<description>
-				Emitted when a joystick device has been connected or disconnected
+			Emitted when a joystick device has been connected or disconnected
 			</description>
 		</signal>
 	</signals>
@@ -14851,15 +14868,6 @@ returns:= "username=user&amp;password=pass"
 	Integer Array. Array of integers. Can only contain integers. Optimized for memory usage, can't fragment the memory.
 	</description>
 	<methods>
-		<method name="get">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-			Get an index in the array.
-			</description>
-		</method>
 		<method name="push_back">
 			<argument index="0" name="integer" type="int">
 			</argument>
@@ -19755,7 +19763,7 @@ returns:= "username=user&amp;password=pass"
 			<description>
 			</description>
 		</method>
-		<method name="get_system_time_msec" qualifiers="const">
+		<method name="get_system_time_secs" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -20846,6 +20854,12 @@ returns:= "username=user&amp;password=pass"
 		</method>
 		<method name="can_instance" qualifiers="const">
 			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_state">
+			<return type="SceneState">
 			</return>
 			<description>
 			</description>
@@ -26836,14 +26850,6 @@ This method controls whether the position between two cached points is interpola
 	Raw byte array. Contains bytes. Optimized for memory usage, can't fragment the memory.
 	</description>
 	<methods>
-		<method name="get">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="get_string_from_ascii">
 			<return type="String">
 			</return>
@@ -27162,14 +27168,6 @@ This method controls whether the position between two cached points is interpola
 	Real Array. Array of floating point values. Can only contain floats. Optimized for memory usage, can't fragment the memory.
 	</description>
 	<methods>
-		<method name="get">
-			<return type="float">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="push_back">
 			<argument index="0" name="value" type="float">
 			</argument>
@@ -28825,25 +28823,25 @@ This method controls whether the position between two cached points is interpola
 	</signals>
 	<constants>
 		<constant name="MODE_STATIC" value="1">
-		Static mode. The body behaves like a [StaticBody2D], and can only move by user code.
+			Static mode. The body behaves like a [StaticBody2D], and can only move by user code.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3">
-		Kinematic body. The body behaves like a [KinematicBody2D], and can only move by user code.
+			Kinematic body. The body behaves like a [KinematicBody2D], and can only move by user code.
 		</constant>
 		<constant name="MODE_RIGID" value="0">
-		Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
+			Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
 		</constant>
 		<constant name="MODE_CHARACTER" value="2">
-		Character body. This behaves like a rigid body, but can not rotate.
+			Character body. This behaves like a rigid body, but can not rotate.
 		</constant>
 		<constant name="CCD_MODE_DISABLED" value="0">
-		Disables continuous collision detection. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.
+			Disables continuous collision detection. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.
 		</constant>
 		<constant name="CCD_MODE_CAST_RAY" value="1">
-		Enables continuous collision detection by raycasting. It is faster than shapecasting, but less precise.
+			Enables continuous collision detection by raycasting. It is faster than shapecasting, but less precise.
 		</constant>
 		<constant name="CCD_MODE_CAST_SHAPE" value="2">
-		Enables continuous collision detection by shapecasting. It is the slowest CCD method, and the most precise.
+			Enables continuous collision detection by shapecasting. It is the slowest CCD method, and the most precise.
 		</constant>
 	</constants>
 </class>
@@ -29754,6 +29752,152 @@ This method controls whether the position between two cached points is interpola
 		<constant name="NEXT_VOICE" value="-2">
 			Default voice for the play method. Corresponds to the first voice following the last used voice.
 		</constant>
+	</constants>
+</class>
+<class name="SceneState" inherits="Reference" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_node_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_type" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_path" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="for_parent" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_owner_path" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_instance" qualifiers="const">
+			<return type="PackedScene">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_groups" qualifiers="const">
+			<return type="StringArray">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_property_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_property_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="prop_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_property_value" qualifiers="const">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="prop_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_connection_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_connection_source" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_connection_signal" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_connection_target" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_connection_method" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_connection_flags" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_connection_binds" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
 	</constants>
 </class>
 <class name="SceneTree" inherits="MainLoop" category="Core">
@@ -32398,14 +32542,14 @@ This method controls whether the position between two cached points is interpola
 			Return if the split is collapsed.
 			</description>
 		</method>
-		<method name="set_dragger_visible">
-			<argument index="0" name="visible" type="bool">
+		<method name="set_dragger_visibility">
+			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="is_dragger_visible" qualifiers="const">
-			<return type="bool">
+		<method name="get_dragger_visibility" qualifiers="const">
+			<return type="int">
 			</return>
 			<description>
 			</description>
@@ -32420,6 +32564,12 @@ This method controls whether the position between two cached points is interpola
 		</signal>
 	</signals>
 	<constants>
+		<constant name="DRAGGER_VISIBLE" value="0">
+		</constant>
+		<constant name="DRAGGER_HIDDEN" value="1">
+		</constant>
+		<constant name="DRAGGER_HIDDEN_COLLAPSED" value="2">
+		</constant>
 	</constants>
 </class>
 <class name="SpotLight" inherits="Light" category="Core">
@@ -33569,6 +33719,18 @@ This method controls whether the position between two cached points is interpola
 			Return true if the strings begins with the given string.
 			</description>
 		</method>
+		<method name="c_escape">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="c_unescape">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="capitalize">
 			<return type="String">
 			</return>
@@ -33715,6 +33877,12 @@ This method controls whether the position between two cached points is interpola
 			</return>
 			<description>
 			Check whether the string contains a valid IP address.
+			</description>
+		</method>
+		<method name="json_escape">
+			<return type="String">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="left">
@@ -33978,14 +34146,6 @@ This method controls whether the position between two cached points is interpola
 	String Array. Array of strings. Can only contain strings. Optimized for memory usage, can't fragment the memory.
 	</description>
 	<methods>
-		<method name="get">
-			<return type="String">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="push_back">
 			<argument index="0" name="string" type="String">
 			</argument>
@@ -34724,6 +34884,12 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="ensure_tab_visible">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="tab_close">
@@ -34752,13 +34918,11 @@ This method controls whether the position between two cached points is interpola
 		</constant>
 		<constant name="ALIGN_RIGHT" value="2">
 		</constant>
-		<constant name="SHOW_ACTIVE_ONLY" value="1">
+		<constant name="CLOSE_BUTTON_SHOW_ACTIVE_ONLY" value="1">
 		</constant>
-		<constant name="SHOW_ALWAYS" value="0">
+		<constant name="CLOSE_BUTTON_SHOW_ALWAYS" value="2">
 		</constant>
-		<constant name="SHOW_HOVER" value="2">
-		</constant>
-		<constant name="SHOW_NEVER" value="3">
+		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0">
 		</constant>
 	</constants>
 	<theme_items>
@@ -34779,6 +34943,8 @@ This method controls whether the position between two cached points is interpola
 		<theme_item name="decrement_hilite" type="Texture">
 		</theme_item>
 		<theme_item name="increment" type="Texture">
+		</theme_item>
+		<theme_item name="close" type="Texture">
 		</theme_item>
 		<theme_item name="decrement" type="Texture">
 		</theme_item>
@@ -38504,15 +38670,6 @@ This method controls whether the position between two cached points is interpola
 	An Array specifically designed to hold Vector2.
 	</description>
 	<methods>
-		<method name="get">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-			Returns the Vector2 at the given index.
-			</description>
-		</method>
 		<method name="push_back">
 			<argument index="0" name="vector2" type="Vector2">
 			</argument>
@@ -38769,15 +38926,6 @@ This method controls whether the position between two cached points is interpola
 	An Array specifically designed to hold Vector3.
 	</description>
 	<methods>
-		<method name="get">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-			Returns the Vector3 at the given index.
-			</description>
-		</method>
 		<method name="push_back">
 			<argument index="0" name="vector3" type="Vector3">
 			</argument>
@@ -39499,6 +39647,24 @@ This method controls whether the position between two cached points is interpola
 		<method name="warp_mouse">
 			<argument index="0" name="to_pos" type="Vector2">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="gui_has_modal_stack" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_disable_input">
+			<argument index="0" name="disable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_input_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
 			<description>
 			</description>
 		</method>
