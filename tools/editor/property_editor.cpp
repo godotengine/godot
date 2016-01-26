@@ -3701,9 +3701,7 @@ PropertyEditor::PropertyEditor() {
 
 	capitalize_paths=true;
 	autoclear=false;
-	tree->set_column_title(0,"Property");
-	tree->set_column_title(1,"Value");
-	tree->set_column_titles_visible(true);
+	tree->set_column_titles_visible(false);
 
 	keying=false;
 	read_only=false;
