@@ -154,6 +154,8 @@ void ColorPicker::_update_color() {
 	}
 
 	html->set_text(color.to_html(edit_alpha && color.a<1));
+	html->grab_focus();
+	html->select();
 
 	sample->update();
 	updating=false;
