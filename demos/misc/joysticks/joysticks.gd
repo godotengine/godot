@@ -51,3 +51,12 @@ func _fixed_process(delta):
 
 func _ready():
 	set_fixed_process(true)
+	Input.connect("joy_connection_changed", self, "_on_joy_connection_changed")
+
+#Called whenever a joystick has been connected or disconnected.
+func _on_joy_connection_changed(device_id, connected):
+	if device_id == cur_joy:
+		if connected:
+			get_node("joy_name").set_text(Input.get_joy_name(device_id))
+		else:
+			get_node("joy_name").set_text("")
