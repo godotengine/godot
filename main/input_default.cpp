@@ -140,7 +140,7 @@ static String _hex_str(uint8_t p_byte) {
 void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid) {
 
 	_THREAD_SAFE_METHOD_
-			Joystick js;
+	Joystick js;
 	js.name = p_connected ? p_name : "";
 	js.uid = p_connected ? p_guid : "";
 	js.mapping = -1;
@@ -165,6 +165,16 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 			};
 		};
 		js.mapping = mapping;
+	}
+	else {
+		for (int i = 0; i < JOY_BUTTON_MAX; i++) {
+
+			if (i < JOY_AXIS_MAX)
+				set_joy_axis(p_idx, i, 0.0f);
+
+			int c = _combine_device(i, p_idx);
+			joy_buttons_pressed.erase(c);
+		};
 	};
 	joy_names[p_idx] = js;
 
