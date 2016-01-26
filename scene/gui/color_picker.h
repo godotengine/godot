@@ -62,10 +62,11 @@ private:
 	HSlider *scroll[4];
 	SpinBox *values[4];
 	Label *labels[4];
-	Label *html_num;
-	LineEdit *html;
+	Button *text_type;
+	LineEdit *c_text;
 	bool edit_alpha;
 	Size2i ms;
+	bool text_is_constructor;
 
 	Color color;
 	bool raw_mode_enabled;
@@ -78,6 +79,7 @@ private:
 	void _update_controls();
 	void _update_color();
 	void _update_presets();
+	void _text_type_toggled();
 	void _sample_draw();
 	void _hsv_draw(int p_wich,Control *c);
 
