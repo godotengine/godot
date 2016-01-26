@@ -2316,7 +2316,7 @@ bool Tree::edit_selected() {
 		return false;
 
 	Rect2 rect;
-	rect.pos.y = get_item_offset(s) - v_scroll->get_val();
+	rect.pos.y = get_item_offset(s) - get_scroll().y;
 
 	for(int i=0;i<col;i++) {
 
