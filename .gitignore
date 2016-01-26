@@ -31,6 +31,8 @@ doc/_build/
 *.bc
 
 # Android specific
+platform/android/java/.gradle
+platform/android/java/.gradletasknamecache
 platform/android/java/local.properties
 platform/android/java/project.properties
 platform/android/java/AndroidManifest.xml
