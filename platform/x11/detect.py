@@ -158,18 +158,14 @@ def configure(env):
 	if (env["gamepad"]=="yes" and platform.system() == "Linux"):
 		# pkg-config returns 0 when the lib exists...
 		found_udev = not os.system("pkg-config --exists libudev")
-		found_evdev = not os.system("pkg-config --exists libevdev")
 		
-		if (found_udev and found_evdev):
-			print("Enabling gamepad support with udev/evdev")
+		if (found_udev):
+			print("Enabling gamepad support with udev")
 			env.Append(CPPFLAGS=["-DJOYDEV_ENABLED"])
 			env.ParseConfig('pkg-config libudev --cflags --libs')
-			env.ParseConfig('pkg-config libevdev --cflags --libs')
 		else:
-			if (not found_udev):
-				print("libudev development libraries not found")
-			if (not found_evdev):
-				print("libevdev development libraries not found")
+			print("libudev development libraries not found")
+
 			print("Some libraries are missing for the required gamepad support, aborting!")
 			print("Install the mentioned libraries or build with 'gamepad=no' to disable gamepad support.")
 			sys.exit(255)
