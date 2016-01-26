@@ -658,6 +658,9 @@ void SceneTreeEditor::_renamed() {
 		new_name=n->get_name();
 	}
 
+	if (new_name==n->get_name())
+		return;
+
 	if (!undo_redo) {
 		n->set_name( new_name );
 		which->set_metadata(0,n->get_path());
@@ -844,7 +847,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	add_child( tree );
 		
 	tree->connect("cell_selected", this,"_selected_changed");
-	tree->connect("item_edited", this,"_renamed");
+	tree->connect("item_edited", this,"_renamed",varray(),CONNECT_DEFERRED);
 	tree->connect("multi_selected",this,"_cell_multi_selected");
 	tree->connect("button_pressed",this,"_cell_button_pressed");
 //	tree->connect("item_edited", this,"_renamed",Vector<Variant>(),true);
