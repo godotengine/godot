@@ -476,6 +476,7 @@ static const char *s_ControllerMappings [] =
 	#endif
 
 	#if defined(__ANDROID__)
+	"Default Android Gamepad,Default Controller,leftx:a0,lefty:a1,dpdown:h0.4,rightstick:b8,rightshoulder:b10,rightx:a2,start:b6,righty:a3,dpleft:h0.8,lefttrigger:a4,x:b2,dpup:h0.1,back:b4,leftstick:b7,leftshoulder:b9,y:b3,a:b0,dpright:h0.2,righttrigger:a5,b:b1,",
 	"4e564944494120436f72706f72617469,NVIDIA Controller,a:b0,b:b1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,",
 	#endif
 
@@ -855,6 +856,16 @@ void InputDefault::remove_joy_mapping(String p_guid) {
 	}
 }
 
+void InputDefault::set_fallback_mapping(String p_guid) {
+
+	for (int i = 0; i < map_db.size(); i++) {
+		if (map_db[i].uid == p_guid) {
+			fallback_mapping = i;
+			return;
+		}
+	}
+}
+
 //Defaults to simple implementation for platforms with a fixed gamepad layout, like consoles.
 bool InputDefault::is_joy_known(int p_device) {
 
@@ -867,25 +878,10 @@ String InputDefault::get_joy_guid(int p_device) const {
 
 //platforms that use the remapping system can override and call to these ones
 bool InputDefault::is_joy_mapped(int p_device) {
-	if (joy_names[p_device].mapping == fallback_mapping)
-		return false;
-	return joy_names[p_device].mapping != -1 ? true : false;
+	int mapping = joy_names[p_device].mapping;
+	return mapping != -1 ? (mapping == fallback_mapping) : false;
 }
 
 String InputDefault::get_joy_guid_remapped(int p_device) const {
 	return joy_names[p_device].uid;
 }
-
-void InputDefault::set_fallback_mapping(String p_mapping) {
-
-	int prev_fallback = fallback_mapping;
-	parse_mapping(p_mapping);
-	fallback_mapping = map_db.size() -1;
-
-	for (int i = 0; i < joy_names.size(); i++) {
-		if (joy_names[i].mapping == prev_fallback) {
-			joy_names[i].mapping = fallback_mapping;
-		}
-	}
-}
-

@@ -178,7 +178,7 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	physics_2d_server->init();
 
 	input = memnew( InputDefault );
-	input->set_fallback_mapping("Default Android Gamepad,Default Controller,leftx:a0,lefty:a1,dpdown:h0.4,rightstick:b8,rightshoulder:b10,rightx:a2,start:b6,righty:a3,dpleft:h0.8,lefttrigger:a4,x:b2,dpup:h0.1,back:b4,leftstick:b7,leftshoulder:b9,y:b3,a:b0,dpright:h0.2,righttrigger:a5,b:b1,");
+	input->set_fallback_mapping("Default Android Gamepad");
 }
 
 void OS_Android::set_main_loop( MainLoop * p_main_loop ) {
