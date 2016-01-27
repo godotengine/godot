@@ -324,7 +324,7 @@ public:
 	Ref<Animation> get_current_animation() const;
 	void set_root(Node *p_root);
 	Node *get_root() const;
-	void set_keying(bool p_enabled);
+	void update_keying();
 	bool has_keying() const;
 
 	void cleanup();

@@ -128,15 +128,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		anim_editor_load->set_hover_texture( get_icon("AnimGetHl","EditorIcons"));
 		anim_editor_store->set_hover_texture( get_icon("AnimSetHl","EditorIcons"));
 */
-	}
-
-	if (p_what==NOTIFICATION_READY) {
 
 		get_tree()->connect("node_removed",this,"_node_removed");
-	}
-
-	if (p_what==NOTIFICATION_DRAW) {
-
 	}
 }
 
