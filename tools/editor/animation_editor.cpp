@@ -3022,9 +3022,14 @@ Node *AnimationKeyEditor::get_root() const {
 
 
 
-void AnimationKeyEditor::set_keying(bool p_enabled) {
+void AnimationKeyEditor::update_keying() {
 
-	keying=p_enabled;
+	bool keying_enabled=is_visible() && animation.is_valid();
+
+	if (keying_enabled==keying)
+		return;
+
+	keying=keying_enabled;
 	_update_menu();
 	emit_signal("keying_changed");
 
@@ -3032,7 +3037,7 @@ void AnimationKeyEditor::set_keying(bool p_enabled) {
 
 bool AnimationKeyEditor::has_keying() const {
 
-	return is_visible() && animation.is_valid();
+	return keying;
 }
 
 void AnimationKeyEditor::_query_insert(const InsertData& p_id) {

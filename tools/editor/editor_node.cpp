@@ -3661,6 +3661,7 @@ void EditorNode::update_keying() {
 
 	property_editor->set_keying(valid);
 
+	AnimationPlayerEditor::singleton->get_key_editor()->update_keying();
 }
 
 
