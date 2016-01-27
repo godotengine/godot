@@ -402,6 +402,13 @@ public:
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device)const;
 
+	enum EngineContext {
+		CONTEXT_EDITOR,
+		CONTEXT_PROJECTMAN,
+	};
+
+	virtual void set_context(int p_context);
+
 	OS();	
 	virtual ~OS();
 
