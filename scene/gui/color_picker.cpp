@@ -122,7 +122,7 @@ void ColorPicker::_value_changed(double) {
 	update_material(uv_material,color);
 	update_material(w_material,color);
 
-	html->set_text(color.to_html(edit_alpha && color.a<1));
+	c_text->set_text(color.to_html(edit_alpha && color.a<1));
 
 	sample->update();
 
@@ -153,9 +153,18 @@ void ColorPicker::_update_color() {
 			scroll[i]->set_val(color.components[i]*255);
 	}
 
-	html->set_text(color.to_html(edit_alpha && color.a<1));
-	html->grab_focus();
-	html->select();
+	if (text_is_constructor) {
+		String t = "Color("+String::num(color.r)+","+String::num(color.g)+","+String::num(color.b);
+		if (edit_alpha && color.a<1)
+			t+=(","+String::num(color.a)+")") ;
+		else
+			t+=")";
+		c_text->set_text(t);
+	} else {
+		c_text->set_text(color.to_html(edit_alpha && color.a<1));
+	}
+	c_text->grab_focus();
+	c_text->select();
 
 	sample->update();
 	updating=false;
@@ -173,6 +182,21 @@ void ColorPicker::_update_presets()
 	t.instance();
 	t->create_from_image(i);
 	preset->set_texture(t);
+}
+
+void ColorPicker::_text_type_toggled()
+{
+	if (!get_tree()->is_editor_hint())
+		return;
+	text_is_constructor = !text_is_constructor;
+	if (text_is_constructor) {
+		text_type->set_text("");
+		text_type->set_icon(get_icon("Script", "EditorIcons"));
+	} else {
+		text_type->set_text("#");
+		text_type->set_icon(NULL);
+	}
+	_update_color();
 }
 
 Color ColorPicker::get_color() const {
@@ -366,6 +390,7 @@ void ColorPicker::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_preset"), &ColorPicker::add_preset);
 	ObjectTypeDB::bind_method(_MD("_value_changed"),&ColorPicker::_value_changed);
 	ObjectTypeDB::bind_method(_MD("_html_entered"),&ColorPicker::_html_entered);
+	ObjectTypeDB::bind_method(_MD("_text_type_toggled"),&ColorPicker::_text_type_toggled);
 	ObjectTypeDB::bind_method(_MD("_add_preset_pressed"), &ColorPicker::_add_preset_pressed);
 	ObjectTypeDB::bind_method(_MD("_screen_pick_pressed"), &ColorPicker::_screen_pick_pressed);
 	ObjectTypeDB::bind_method(_MD("_sample_draw"),&ColorPicker::_sample_draw);
@@ -383,6 +408,7 @@ ColorPicker::ColorPicker() :
 
 	updating=true;
 	edit_alpha=true;
+	text_is_constructor = false;
 	raw_mode_enabled=false;
 	changing_color=false;
 	screen=NULL;
@@ -492,14 +518,16 @@ ColorPicker::ColorPicker() :
 	btn_mode->connect("toggled", this, "set_raw_mode");
 	hhb->add_child(btn_mode);
 	vbr->add_child(hhb);
-	html_num = memnew( Label );
-	hhb->add_child(html_num);
+	text_type = memnew( Button );
+	text_type->set_flat(true);
+	text_type->connect("pressed", this, "_text_type_toggled");
+	hhb->add_child(text_type);
 
-	html = memnew( LineEdit );
-	hhb->add_child(html);
-	html->connect("text_entered",this,"_html_entered");
-	html_num->set_text("#");
-	html->set_h_size_flags(SIZE_EXPAND_FILL);
+	c_text = memnew( LineEdit );
+	hhb->add_child(c_text);
+	c_text->connect("text_entered",this,"_html_entered");
+	text_type->set_text("#");
+	c_text->set_h_size_flags(SIZE_EXPAND_FILL);
 
 
 	_update_controls();
