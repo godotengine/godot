@@ -23,3 +23,5 @@ http://www.godotengine.org
 
 Compilation instructions for every platform can be found in the Wiki:
 http://godotengine.org/projects/godot-engine/wiki/Advanced_topics
+
+[![Build Status](https://travis-ci.org/godotengine/godot.svg?branch=master)](https://travis-ci.org/godotengine/godot)
