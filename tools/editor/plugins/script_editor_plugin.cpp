@@ -1694,7 +1694,7 @@ void ScriptEditor::ensure_select_current() {
 
 			Ref<Script> script = ste->get_edited_script();
 
-			if (!grab_focus_block && is_inside_tree())
+			if (!grab_focus_block && is_visible())
 				ste->get_text_edit()->grab_focus();
 
 			edit_menu->show();
