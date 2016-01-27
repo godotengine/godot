@@ -1730,6 +1730,8 @@ void Tree::_text_editor_modal_close() {
 		return;
 	}
 
+	if (value_editor->has_point(value_editor->get_local_mouse_pos()))
+		return;
 
 	text_editor_enter(text_editor->get_text());
 }
