@@ -31,22 +31,34 @@
 #ifdef JOYDEV_ENABLED
 
 #include "joystick_linux.h"
-#include "print_string.h"
 
-#include <libevdev/libevdev.h>
+#include <linux/input.h>
 #include <libudev.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <cstring>
+
+#define test_bit(nr, addr)  (((1UL << ((nr) % (sizeof(long) * 8))) & ((addr)[(nr) / (sizeof(long) * 8)])) != 0)
+#define NBITS(x) ((((x)-1)/(sizeof(long) * 8))+1)
 
 static const char* ignore_str = "/dev/input/js";
 
 joystick_linux::Joystick::Joystick() {
 	fd = -1;
 	dpad = 0;
-	dev = NULL;
 	devpath = "";
+	for (int i = 0; i < MAX_ABS; i++) {
+		abs_info[i] = NULL;
+	}
+}
+
+joystick_linux::Joystick::~Joystick() {
+
+	for (int i = 0; i < MAX_ABS; i++) {
+		if (abs_info[i]) {
+			memdelete(abs_info[i]);
+		}
+	}
 }
 
 void joystick_linux::Joystick::reset() {
@@ -112,10 +124,14 @@ void joystick_linux::enumerate_joysticks(udev *p_udev) {
 		dev = udev_device_new_from_syspath(p_udev, path);
 		const char* devnode = udev_device_get_devnode(dev);
 
-		if (devnode != NULL && strstr(devnode, ignore_str) == NULL) {
-			joy_mutex->lock();
-			open_joystick(devnode);
-			joy_mutex->unlock();
+		if (devnode) {
+
+			String devnode_str = devnode;
+			if (devnode_str.find(ignore_str) == -1) {
+				joy_mutex->lock();
+				open_joystick(devnode);
+				joy_mutex->unlock();
+			}
 		}
 		udev_device_unref(dev);
 	}
@@ -146,22 +162,24 @@ void joystick_linux::monitor_joysticks(udev *p_udev) {
 		/* Check if our file descriptor has received data. */
 		if (ret > 0 && FD_ISSET(fd, &fds)) {
 			/* Make the call to receive the device.
-					   select() ensured that this will not block. */
+			   select() ensured that this will not block. */
 			dev = udev_monitor_receive_device(mon);
 
 			if (dev && udev_device_get_devnode(dev) != 0) {
 
 				joy_mutex->lock();
-				const char* action = udev_device_get_action(dev);
+				String action = udev_device_get_action(dev);
 				const char* devnode = udev_device_get_devnode(dev);
+				if (devnode) {
 
-				if (strstr(devnode, ignore_str) == NULL) {
+					String devnode_str = devnode;
+					if (devnode_str.find(ignore_str) == -1) {
 
-					if (strcmp(action, "add") == 0)
-						open_joystick(devnode);
-
-					else if (strcmp(action, "remove") == 0)
-						close_joystick(get_joy_from_path(devnode));
+						if (action == "add")
+							open_joystick(devnode);
+						else if (String(action) == "remove")
+							close_joystick(get_joy_from_path(devnode));
+					}
 				}
 
 				udev_device_unref(dev);
@@ -208,7 +226,6 @@ void joystick_linux::close_joystick(int p_id) {
 
 	if (joy.fd != -1) {
 
-		libevdev_free(joy.dev);
 		close(joy.fd);
 		joy.fd = -1;
 		input->joy_connection_changed(p_id, false, "");
@@ -230,21 +247,27 @@ static String _hex_str(uint8_t p_byte) {
 void joystick_linux::setup_joystick_properties(int p_id) {
 
 	Joystick* joy = &joysticks[p_id];
-	libevdev* dev = joy->dev;
+
+	unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
+	unsigned long absbit[NBITS(ABS_MAX)] = { 0 };
 
 	int num_buttons = 0;
 	int num_axes = 0;
 
+	if ((ioctl(joy->fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) < 0) ||
+	    (ioctl(joy->fd, EVIOCGBIT(EV_ABS, sizeof(absbit)), absbit) < 0)) {
+		return;
+	}
 	for (int i = BTN_JOYSTICK; i < KEY_MAX; ++i) {
 
-		if (libevdev_has_event_code(dev, EV_KEY, i)) {
+		if (test_bit(i, keybit)) {
 
 			joy->key_map[i] = num_buttons++;
 		}
 	}
 	for (int i = BTN_MISC; i < BTN_JOYSTICK; ++i) {
 
-		if (libevdev_has_event_code(dev, EV_KEY, i)) {
+		if (test_bit(i, keybit)) {
 
 			joy->key_map[i] = num_buttons++;
 		}
@@ -255,12 +278,18 @@ void joystick_linux::setup_joystick_properties(int p_id) {
 			i = ABS_HAT3Y;
 			continue;
 		}
-		if (libevdev_has_event_code(dev, EV_ABS, i)) {
+		if (test_bit(i, absbit)) {
 
 			joy->abs_map[i] = num_axes++;
+			joy->abs_info[i] = memnew(input_absinfo);
+			if (ioctl(joy->fd, EVIOCGABS(i), joy->abs_info[i]) < 0) {
+				memdelete(joy->abs_info[i]);
+				joy->abs_info[i] = NULL;
+			}
 		}
 	}
 }
+
 
 void joystick_linux::open_joystick(const char *p_path) {
 
@@ -268,55 +297,63 @@ void joystick_linux::open_joystick(const char *p_path) {
 	int fd = open(p_path, O_RDONLY | O_NONBLOCK);
 	if (fd != -1 && joy_num != -1) {
 
-		int rc = libevdev_new_from_fd(fd, &joysticks[joy_num].dev);
-		if (rc < 0) {
+		unsigned long evbit[NBITS(EV_MAX)] = { 0 };
+		unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
+		unsigned long absbit[NBITS(ABS_MAX)] = { 0 };
 
-			fprintf(stderr, "Failed to init libevdev (%s)\n", strerror(-rc));
+		if ((ioctl(fd, EVIOCGBIT(0, sizeof(evbit)), evbit) < 0) ||
+		    (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) < 0) ||
+		    (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(absbit)), absbit) < 0)) {
 			return;
 		}
 
-		libevdev *dev = joysticks[joy_num].dev;
-
 		//check if the device supports basic gamepad events, prevents certain keyboards from
 		//being detected as joysticks
-		if (libevdev_has_event_type(dev, EV_ABS) && libevdev_has_event_type(dev, EV_KEY) &&
-				(libevdev_has_event_code(dev, EV_KEY, BTN_A) || libevdev_has_event_code(dev, EV_KEY, BTN_THUMBL) || libevdev_has_event_code(dev, EV_KEY, BTN_TOP))) {
+		if (!(test_bit(EV_KEY, evbit) && test_bit(EV_ABS, evbit) &&
+		    ((test_bit(ABS_X, absbit) || test_bit(ABS_Y, absbit)) ||
+		     (test_bit(BTN_A, keybit) || test_bit(BTN_THUMBL, keybit))))) {
+			close(fd);
+			return;
+		}
 
-			char uid[128];
-			String name = libevdev_get_name(dev);
-			uint16_t bus = __bswap_16(libevdev_get_id_bustype(dev));
-			uint16_t vendor = __bswap_16(libevdev_get_id_vendor(dev));
-			uint16_t product = __bswap_16(libevdev_get_id_product(dev));
-			uint16_t version = __bswap_16(libevdev_get_id_version(dev));
+		char uid[128];
+		char namebuf[128];
+		String name = "";
+		input_id inpid;
+		if (ioctl(fd, EVIOCGNAME(sizeof(namebuf)), namebuf) >= 0) {
+			name = namebuf;
+		}
 
-			joysticks[joy_num].reset();
+		if (ioctl(fd, EVIOCGID, &inpid) < 0) {
+			close(fd);
+			return;
+		}
 
-			Joystick &joy = joysticks[joy_num];
-			joy.fd = fd;
-			joy.devpath = String(p_path);
-			setup_joystick_properties(joy_num);
-			sprintf(uid, "%04x%04x", bus, 0);
-			if (vendor && product && version) {
+		joysticks[joy_num].reset();
 
-				sprintf(uid + String(uid).length(), "%04x%04x%04x%04x%04x%04x", vendor,0,product,0,version,0);
-				input->joy_connection_changed(joy_num, true, name, uid);
-			}
-			else {
-				String uidname = uid;
-				int uidlen = MIN(name.length(), 11);
-				for (int i=0; i<uidlen; i++) {
+		Joystick &joy = joysticks[joy_num];
+		joy.fd = fd;
+		joy.devpath = String(p_path);
+		setup_joystick_properties(joy_num);
+		sprintf(uid, "%04x%04x", __bswap_16(inpid.bustype), 0);
+		if (inpid.vendor && inpid.product && inpid.version) {
 
-					uidname = uidname + _hex_str(name[i]);
-				}
-				uidname += "00";
-				input->joy_connection_changed(joy_num, true, name, uidname);
+			uint16_t vendor = __bswap_16(inpid.vendor);
+			uint16_t product = __bswap_16(inpid.product);
+			uint16_t version = __bswap_16(inpid.version);
 
-			}
+			sprintf(uid + String(uid).length(), "%04x%04x%04x%04x%04x%04x", vendor,0,product,0,version,0);
+			input->joy_connection_changed(joy_num, true, name, uid);
 		}
 		else {
-			//device is not a gamepad, clean up
-			libevdev_free(dev);
-			close(fd);
+			String uidname = uid;
+			int uidlen = MIN(name.length(), 11);
+			for (int i=0; i<uidlen; i++) {
+
+				uidname = uidname + _hex_str(name[i]);
+			}
+			uidname += "00";
+			input->joy_connection_changed(joy_num, true, name, uidname);
 		}
 	}
 }
@@ -350,58 +387,54 @@ uint32_t joystick_linux::process_joysticks(uint32_t p_event_id) {
 
 		if (joysticks[i].fd == -1) continue;
 
-		input_event ev;
+		input_event events[32];
 		Joystick* joy = &joysticks[i];
-		libevdev* dev = joy->dev;
-		int rc = 1;
 
-		rc = libevdev_next_event(dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
+		int len;
 
-		if (rc < 0 && rc != -EAGAIN) {
-			continue;
-		}
+		while ((len = read(joy->fd, events, (sizeof events))) > 0) {
+			len /= sizeof(events[0]);
+			for (int j = 0; j < len; j++) {
 
-		while (rc == LIBEVDEV_READ_STATUS_SYNC || rc == LIBEVDEV_READ_STATUS_SUCCESS) {
-
-			switch (ev.type) {
-			case EV_KEY:
-				p_event_id = input->joy_button(p_event_id, i, joy->key_map[ev.code], ev.value);
-				break;
-
-			case EV_ABS:
-
-				switch (ev.code) {
-				case ABS_HAT0X:
-					if (ev.value != 0) {
-						if (ev.value < 0) joy->dpad |= InputDefault::HAT_MASK_LEFT;
-						else              joy->dpad |= InputDefault::HAT_MASK_RIGHT;
-
-					}
-					else joy->dpad &= ~(InputDefault::HAT_MASK_LEFT | InputDefault::HAT_MASK_RIGHT);
-
-					p_event_id = input->joy_hat(p_event_id, i, joy->dpad);
+				input_event &ev = events[j];
+				switch (ev.type) {
+				case EV_KEY:
+					p_event_id = input->joy_button(p_event_id, i, joy->key_map[ev.code], ev.value);
 					break;
 
-				case ABS_HAT0Y:
-					if (ev.value != 0) {
-						if (ev.value < 0) joy->dpad |= InputDefault::HAT_MASK_UP;
-						else              joy->dpad |= InputDefault::HAT_MASK_DOWN;
-					}
-					else joy->dpad &= ~(InputDefault::HAT_MASK_UP | InputDefault::HAT_MASK_DOWN);
+				case EV_ABS:
 
-					p_event_id = input->joy_hat(p_event_id, i, joy->dpad);
-					break;
+					switch (ev.code) {
+					case ABS_HAT0X:
+						if (ev.value != 0) {
+							if (ev.value < 0) joy->dpad |= InputDefault::HAT_MASK_LEFT;
+							else              joy->dpad |= InputDefault::HAT_MASK_RIGHT;
+						}
+						else joy->dpad &= ~(InputDefault::HAT_MASK_LEFT | InputDefault::HAT_MASK_RIGHT);
 
-				default:
-					if (joy->abs_map[ev.code] != -1) {
-						InputDefault::JoyAxis value = axis_correct(libevdev_get_abs_info(dev, ev.code), ev.value);
-						joy->curr_axis[joy->abs_map[ev.code]] = value;
+						p_event_id = input->joy_hat(p_event_id, i, joy->dpad);
+						break;
+
+					case ABS_HAT0Y:
+						if (ev.value != 0) {
+							if (ev.value < 0) joy->dpad |= InputDefault::HAT_MASK_UP;
+							else              joy->dpad |= InputDefault::HAT_MASK_DOWN;
+						}
+						else joy->dpad &= ~(InputDefault::HAT_MASK_UP | InputDefault::HAT_MASK_DOWN);
+
+						p_event_id = input->joy_hat(p_event_id, i, joy->dpad);
+						break;
+
+					default:
+						if (joy->abs_map[ev.code] != -1 && joy->abs_info[ev.code]) {
+							InputDefault::JoyAxis value = axis_correct(joy->abs_info[ev.code], ev.value);
+							joy->curr_axis[joy->abs_map[ev.code]] = value;
+						}
+						break;
 					}
 					break;
 				}
-				break;
 			}
-			rc = libevdev_next_event(dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
 		}
 		for (int j = 0; j < MAX_ABS; j++) {
 			int index = joy->abs_map[j];

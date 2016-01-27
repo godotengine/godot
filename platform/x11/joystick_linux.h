@@ -61,9 +61,10 @@ private:
 		int fd;
 
 		String devpath;
-		struct libevdev *dev;
+		input_absinfo *abs_info[MAX_ABS];
 
 		Joystick();
+		~Joystick();
 		void reset();
 	};
 
