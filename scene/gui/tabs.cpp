@@ -633,7 +633,6 @@ int Tabs::get_tab_width(int p_idx) const {
 		x+=tab_bg->get_minimum_size().width;
 
 	if (tabs[p_idx].right_button.is_valid()) {
-		print_line("has right");
 		Ref<Texture> rb=tabs[p_idx].right_button;
 		Size2 bms = rb->get_size();//+get_stylebox("button")->get_minimum_size();
 		bms.width+=get_constant("hseparation");
