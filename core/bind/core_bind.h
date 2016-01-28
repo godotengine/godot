@@ -390,7 +390,7 @@ public:
 	virtual void store_pascal_string(const String& p_string);
 	virtual String get_pascal_string();
 
-	Vector<String> get_csv_line() const;
+	Vector<String> get_csv_line(String delim=",") const;
 
 
 	void store_buffer(const DVector<uint8_t>& p_buffer); ///< store an array of bytes

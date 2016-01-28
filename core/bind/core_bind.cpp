@@ -1313,9 +1313,9 @@ String _File::get_line() const{
 
 }
 
-Vector<String> _File::get_csv_line() const {
+Vector<String> _File::get_csv_line(String delim) const {
 	ERR_FAIL_COND_V(!f,Vector<String>());
-	return f->get_csv_line();
+	return f->get_csv_line(delim);
 }
 
 /**< use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
@@ -1498,7 +1498,7 @@ void _File::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_endian_swap","enable"),&_File::set_endian_swap);
 	ObjectTypeDB::bind_method(_MD("get_error:Error"),&_File::get_error);
 	ObjectTypeDB::bind_method(_MD("get_var"),&_File::get_var);
-	ObjectTypeDB::bind_method(_MD("get_csv_line"),&_File::get_csv_line);
+	ObjectTypeDB::bind_method(_MD("get_csv_line","delim"),&_File::get_csv_line,DEFVAL(","));
 
 	ObjectTypeDB::bind_method(_MD("store_8","value"),&_File::store_8);
 	ObjectTypeDB::bind_method(_MD("store_16","value"),&_File::store_16);
