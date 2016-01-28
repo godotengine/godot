@@ -474,7 +474,7 @@ void ProjectSettings::_update_actions() {
 				case InputEvent::JOYSTICK_BUTTON: {
 
 					String str = "Device "+itos(ie.device)+", Button "+itos(ie.joy_button.button_index);
-					if (ie.joy_button.button_index>=0 && ie.joy_button.button_index<14)
+					if (ie.joy_button.button_index>=0 && ie.joy_button.button_index<JOY_BUTTON_MAX)
 						str+=String()+" ("+_button_names[ie.joy_button.button_index]+").";
 					else
 						str+=".";
