@@ -170,6 +170,7 @@ Error ResourceInteractiveLoaderText::poll() {
 			_printerr();
 		}
 
+		resource_current++;
 		return error;
 
 
@@ -226,6 +227,8 @@ Error ResourceInteractiveLoaderText::poll() {
 			res->set_path(path);
 
 		}
+
+		resource_current++;
 
 		while(true) {
 
@@ -290,6 +293,8 @@ Error ResourceInteractiveLoaderText::poll() {
 		}
 
 		resource=Ref<Resource>(r);
+
+		resource_current++;
 
 		while(true) {
 
@@ -744,6 +749,8 @@ void ResourceInteractiveLoaderText::open(FileAccess *p_f,bool p_skip_first_tag) 
 
 	stream.f=f;
 	is_scene=false;
+
+	resource_current=0;
 
 
 	VariantParser::Tag tag;
