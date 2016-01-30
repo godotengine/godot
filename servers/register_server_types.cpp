@@ -65,8 +65,8 @@ void register_server_types() {
 	Globals::get_singleton()->add_singleton( Globals::Singleton("PS",PhysicsServer::get_singleton()) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("Physics2DServer",Physics2DServer::get_singleton()) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("PS2D",Physics2DServer::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("SpatialSoundServer",SpatialSound2DServer::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("SS",SpatialSound2DServer::get_singleton()) );
+	Globals::get_singleton()->add_singleton( Globals::Singleton("SpatialSoundServer",SpatialSoundServer::get_singleton()) );
+	Globals::get_singleton()->add_singleton( Globals::Singleton("SS",SpatialSoundServer::get_singleton()) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("SpatialSound2DServer",SpatialSound2DServer::get_singleton()) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("SS2D",SpatialSound2DServer::get_singleton()) );
 
