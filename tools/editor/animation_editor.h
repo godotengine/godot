@@ -302,7 +302,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 	void _select_at_anim(const Ref<Animation>& p_anim,int p_track,float p_pos);
 	void _curve_transition_changed(float p_what);
 
-	PropertyInfo _find_hint_for_track(int p_idx);
+	PropertyInfo _find_hint_for_track(int p_idx, NodePath &r_base_path);
 
 	void _create_value_item(int p_type);
 	void _pane_drag(const Point2& p_delta);
