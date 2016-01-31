@@ -855,7 +855,7 @@ void Viewport::_camera_transform_changed_notify() {
 #endif
 }
 
-void Viewport::_set_camera(Camera* p_camera) {
+void Viewport::_camera_set(Camera* p_camera) {
 
 #ifndef _3D_DISABLED
 
@@ -878,6 +878,36 @@ void Viewport::_set_camera(Camera* p_camera) {
 	_update_listener();
 	_camera_transform_changed_notify();
 #endif
+}
+
+bool Viewport::_camera_add(Camera* p_camera) {
+
+	cameras.insert(p_camera);
+	return cameras.size()==1;
+}
+
+void Viewport::_camera_remove(Camera* p_camera) {
+
+	cameras.erase(p_camera);
+	if (camera==p_camera) {
+		camera=NULL;
+	}
+}
+
+void Viewport::_camera_make_next_current(Camera* p_exclude) {
+
+	for(Set<Camera*>::Element *E=cameras.front();E;E=E->next()) {
+
+		if (p_exclude==E->get())
+			continue;
+		if (!E->get()->is_inside_tree())
+			continue;
+		if (camera!=NULL)
+			return;
+
+		E->get()->make_current();
+
+	}
 }
 
 

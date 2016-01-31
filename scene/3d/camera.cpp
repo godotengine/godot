@@ -213,8 +213,7 @@ void Camera::_notification(int p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
 
 
-			bool first_camera = get_viewport()->cameras.size()==0;
-			get_viewport()->cameras.insert(this);
+			bool first_camera = get_viewport()->_camera_add(this);
 			if (!get_tree()->is_node_being_edited(this) && (current || first_camera))
 				make_current();
 
@@ -236,7 +235,7 @@ void Camera::_notification(int p_what) {
 				}
 			}
 
-			get_viewport()->cameras.erase(this);
+			get_viewport()->_camera_remove(this);
 
 
 		} break;
@@ -304,7 +303,7 @@ void Camera::make_current() {
 	if (!is_inside_tree())
 		return;
 
-	get_viewport()->_set_camera(this);
+	get_viewport()->_camera_set(this);
 
 	//get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,camera_group,"_camera_make_current",this);
 }
@@ -319,20 +318,8 @@ void Camera::clear_current() {
 		return;
 
 	if (get_viewport()->get_camera()==this) {
-		get_viewport()->_set_camera(NULL);
-		//a group is used beause this needs to be in order to be deterministic
-
-		for (Set<Camera*>::Element *E=get_viewport()->cameras.front();E;E=E->next()) {
-
-			if (this==E->get())
-				continue;
-			if (!E->get()->is_inside_tree())
-				continue;
-			if (get_viewport()->get_camera()!=NULL)
-				return;
-
-			E->get()->make_current();
-		}
+		get_viewport()->_camera_set(NULL);
+		get_viewport()->_camera_make_next_current(this);
 	}
 
 }
