@@ -726,8 +726,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 	/* Determine Video Driver */
 
-	if (audio_driver=="") // specified in engine.cfg
+	if (audio_driver=="") { // specified in engine.cfg
 		audio_driver=GLOBAL_DEF("audio/driver",OS::get_singleton()->get_audio_driver_name(0));
+	}
 		
 	
 	for (int i=0;i<OS::get_singleton()->get_video_driver_count();i++) {
@@ -758,7 +759,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	if (audio_driver_idx<0) {
 	
 		OS::get_singleton()->alert( "Invalid Audio Driver: "+audio_driver );
-		goto error;
+		audio_driver_idx = 0;
+		//goto error;
 	}
 
 	{

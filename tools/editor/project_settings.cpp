@@ -924,10 +924,12 @@ void ProjectSettings::_autoload_delete(Object *p_item,int p_column, int p_button
 
 	if (p_button==0) {
 		//delete
+		int order = Globals::get_singleton()->get_order(name);
 		undo_redo->create_action("Remove Autoload");
 		undo_redo->add_do_property(Globals::get_singleton(),name,Variant());
 		undo_redo->add_undo_property(Globals::get_singleton(),name,Globals::get_singleton()->get(name));
 		undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",name,true);
+		undo_redo->add_undo_method(Globals::get_singleton(),"set_order",name,order);
 		undo_redo->add_do_method(this,"_update_autoload");
 		undo_redo->add_undo_method(this,"_update_autoload");
 		undo_redo->add_do_method(this,"_settings_changed");
