@@ -2456,6 +2456,7 @@ void GDInstance::get_method_list(List<MethodInfo> *p_list) const {
 
 			MethodInfo mi;
 			mi.name=E->key();
+			mi.flags|=METHOD_FLAG_FROM_SCRIPT;
 			for(int i=0;i<E->get().get_argument_count();i++)
 				mi.arguments.push_back(PropertyInfo(Variant::NIL,"arg"+itos(i)));
 			p_list->push_back(mi);
