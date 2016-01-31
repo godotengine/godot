@@ -390,6 +390,12 @@ bool _OS::is_ok_left_and_cancel_right() const {
 	return OS::get_singleton()->get_swap_ok_cancel();
 }
 
+Error _OS::set_thread_name(const String& p_name) {
+
+	return Thread::set_name(p_name);
+};
+
+
 /*
 enum Weekday {
 	DAY_SUNDAY,
@@ -876,6 +882,8 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
 
 	ObjectTypeDB::bind_method(_MD("alert","text","title"),&_OS::alert,DEFVAL("Alert!"));
+
+	ObjectTypeDB::bind_method(_MD("set_thread_name","name"),&_OS::set_thread_name);
 
 
 	BIND_CONSTANT( DAY_SUNDAY );
@@ -1895,13 +1903,7 @@ void _Thread::_start_func(void *ud) {
 	Variant::CallError ce;
 	const Variant* arg[1]={&t->userdata};
 
-	// we don't know our thread pointer yet :(
-	if (t->name == "") {
-		// come up with a better name using maybe the filename on the Script?
-		//t->thread->set_name(t->target_method);
-	} else {
-		//t->thread->set_name(t->name);
-	};
+	Thread::set_name(t->target_method);
 
 	t->ret=t->target_instance->call(t->target_method,arg,1,ce);
 	if (ce.error!=Variant::CallError::CALL_OK) {
@@ -1992,24 +1994,12 @@ Variant _Thread::wait_to_finish() {
 	return r;
 }
 
-Error _Thread::set_name(const String &p_name) {
-
-	name = p_name;
-
-	if (thread) {
-		return thread->set_name(p_name);
-	};
-
-	return OK;
-};
-
 void _Thread::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("start:Error","instance","method","userdata","priority"),&_Thread::start,DEFVAL(Variant()),DEFVAL(PRIORITY_NORMAL));
 	ObjectTypeDB::bind_method(_MD("get_id"),&_Thread::get_id);
 	ObjectTypeDB::bind_method(_MD("is_active"),&_Thread::is_active);
 	ObjectTypeDB::bind_method(_MD("wait_to_finish:Variant"),&_Thread::wait_to_finish);
-	ObjectTypeDB::bind_method(_MD("set_name:Error", "name"),&_Thread::set_name);
 
 	BIND_CONSTANT( PRIORITY_LOW );
 	BIND_CONSTANT( PRIORITY_NORMAL );
