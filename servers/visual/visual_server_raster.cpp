@@ -1081,6 +1081,9 @@ RID VisualServerRaster::baked_light_create() {
 	baked_light->data.octree_lattice_divide=0;
 	baked_light->data.octree_steps=1;
 	baked_light->data.lightmap_multiplier=1.0;
+	baked_light->data.realtime_color_enabled=false;
+	baked_light->data.realtime_color=Color(1.0, 1.0, 1.0);
+	baked_light->data.realtime_energy = 1.0;
 
 	return baked_light_owner.make_rid( baked_light );
 
@@ -1323,6 +1326,63 @@ void VisualServerRaster::baked_light_clear_lightmaps(RID p_baked_light){
 	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
 	ERR_FAIL_COND(!baked_light);
 	baked_light->data.lightmaps.clear();
+
+}
+
+void VisualServerRaster::baked_light_set_realtime_color_enabled(RID p_baked_light, const bool p_enabled) {
+
+	VS_CHANGED;
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND(!baked_light);
+
+	baked_light->data.realtime_color_enabled = p_enabled;
+
+}
+
+bool VisualServerRaster::baked_light_get_realtime_color_enabled(RID p_baked_light) const{
+
+	const BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND_V(!baked_light, false);
+
+	return baked_light->data.realtime_color_enabled;
+
+}
+
+void VisualServerRaster::baked_light_set_realtime_color(RID p_baked_light, const Color& p_color) {
+
+	VS_CHANGED;
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND(!baked_light);
+
+	baked_light->data.realtime_color = p_color;
+
+}
+
+Color VisualServerRaster::baked_light_get_realtime_color(RID p_baked_light) const{
+
+	const BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND_V(!baked_light, Color(1.0, 1.0, 1.0));
+
+	return baked_light->data.realtime_color;
+
+}
+
+void VisualServerRaster::baked_light_set_realtime_energy(RID p_baked_light, const float p_energy) {
+
+	VS_CHANGED;
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND(!baked_light);
+
+	baked_light->data.realtime_energy = p_energy;
+
+}
+
+float VisualServerRaster::baked_light_get_realtime_energy(RID p_baked_light) const{
+
+	const BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND_V(!baked_light, 1.0f);
+
+	return baked_light->data.realtime_energy;
 
 }
 

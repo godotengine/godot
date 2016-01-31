@@ -391,6 +391,14 @@ public:
 	FUNC3(baked_light_add_lightmap,RID,RID,int);
 	FUNC1(baked_light_clear_lightmaps,RID);
 
+	FUNC2(baked_light_set_realtime_color_enabled, RID, const bool);
+	FUNC1RC(bool, baked_light_get_realtime_color_enabled, RID);
+
+	FUNC2(baked_light_set_realtime_color, RID, const Color&);
+	FUNC1RC(Color, baked_light_get_realtime_color, RID);
+
+	FUNC2(baked_light_set_realtime_energy, RID, const float);
+	FUNC1RC(float, baked_light_get_realtime_energy, RID);
 
 	FUNC0R(RID,baked_light_sampler_create);
 

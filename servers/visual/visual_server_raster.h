@@ -951,6 +951,15 @@ public:
 	virtual void baked_light_add_lightmap(RID p_baked_light,const RID p_texture,int p_id);
 	virtual void baked_light_clear_lightmaps(RID p_baked_light);
 
+	virtual void baked_light_set_realtime_color_enabled(RID p_baked_light, const bool p_enabled);
+	virtual bool baked_light_get_realtime_color_enabled(RID p_baked_light) const;
+
+	virtual void baked_light_set_realtime_color(RID p_baked_light, const Color& p_color);
+	virtual Color baked_light_get_realtime_color(RID p_baked_light) const;
+
+	virtual void baked_light_set_realtime_energy(RID p_baked_light, const float p_energy);
+	virtual float baked_light_get_realtime_energy(RID p_baked_light) const;
+
 	/* BAKED LIGHT SAMPLER */
 
 	virtual RID baked_light_sampler_create();
