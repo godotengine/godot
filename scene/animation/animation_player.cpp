@@ -147,14 +147,21 @@ void AnimationPlayer::_get_property_list( List<PropertyInfo> *p_list) const {
 
 	List<String> names;
 
+	List<PropertyInfo> anim_names;
+
 	for( Map<StringName, AnimationData>::Element *E=animation_set.front();E;E=E->next()) {
 
-		p_list->push_back( PropertyInfo( Variant::OBJECT, "anims/"+String(E->key()), PROPERTY_HINT_RESOURCE_TYPE, "Animation",PROPERTY_USAGE_NOEDITOR) );
+		anim_names.push_back( PropertyInfo( Variant::OBJECT, "anims/"+String(E->key()), PROPERTY_HINT_RESOURCE_TYPE, "Animation",PROPERTY_USAGE_NOEDITOR) );
 		if (E->get().next!=StringName())
-			p_list->push_back( PropertyInfo( Variant::STRING, "next/"+String(E->key()), PROPERTY_HINT_NONE, "",PROPERTY_USAGE_NOEDITOR) );
+			anim_names.push_back( PropertyInfo( Variant::STRING, "next/"+String(E->key()), PROPERTY_HINT_NONE, "",PROPERTY_USAGE_NOEDITOR) );
 		names.push_back(E->key());
 	}
 
+	anim_names.sort();
+
+	for( List<PropertyInfo>::Element *E=anim_names.front();E;E=E->next()) {
+		p_list->push_back(E->get());
+	}
 
 	{
 		names.sort();
