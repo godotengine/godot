@@ -46,7 +46,7 @@ _FORCE_INLINE_ static bool _match_object_type_query(CollisionObject2DSW *p_objec
 }
 
 
-int Physics2DDirectSpaceStateSW::intersect_point(const Vector2& p_point,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
+int Physics2DDirectSpaceStateSW::intersect_point(const Vector2& p_point,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask,bool p_pick_point) {
 
 	if (p_result_max<=0)
 		return 0;
@@ -69,7 +69,7 @@ int Physics2DDirectSpaceStateSW::intersect_point(const Vector2& p_point,ShapeRes
 
 		const CollisionObject2DSW *col_obj=space->intersection_query_results[i];
 
-		if (!col_obj->is_pickable())
+		if (p_pick_point && !col_obj->is_pickable())
 			continue;
 
 		int shape_idx=space->intersection_query_subindex_results[i];
