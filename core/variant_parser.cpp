@@ -542,7 +542,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			value=true;
 		else if (id=="false")
 			value=false;
-		else if (id=="null")
+		else if (id=="null" || id=="nil")
 			value=Variant();
 		else if (id=="Vector2"){
 

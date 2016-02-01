@@ -1597,7 +1597,9 @@ bool Control::has_focus() const {
 
 void Control::grab_focus() {
 
-	ERR_FAIL_COND(!is_inside_tree());
+	if (!is_inside_tree()){
+		ERR_FAIL_COND(!is_inside_tree());
+	}
 	if (data.focus_mode==FOCUS_NONE)
 		return;
 
