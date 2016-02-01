@@ -1282,7 +1282,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				arr.resize(len);
 				DVector<Color>::Write w = arr.write();
 				for(int i=0;i<len;i++) {
-					w[i]=Color(args[i*3+0],args[i*3+1],args[i*3+2],args[i*3+3]);
+					w[i]=Color(args[i*4+0],args[i*4+1],args[i*4+2],args[i*4+3]);
 				}
 			}
 
