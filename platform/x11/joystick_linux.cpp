@@ -304,6 +304,7 @@ void joystick_linux::open_joystick(const char *p_path) {
 		if ((ioctl(fd, EVIOCGBIT(0, sizeof(evbit)), evbit) < 0) ||
 		    (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) < 0) ||
 		    (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(absbit)), absbit) < 0)) {
+			close(fd);
 			return;
 		}
 
