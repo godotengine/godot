@@ -916,6 +916,14 @@ static String _encode_variant(const Variant& p_variant) {
 			float val = p_variant;
 			return rtos(val)+(val==int(val)?".0":"");
 		} break;
+		case Variant::VECTOR2: {
+			Vector2 val = p_variant;
+			return String("Vector2(")+rtos(val.x)+String(", ")+rtos(val.y)+String(")");
+		} break;
+		case Variant::VECTOR3: {
+			Vector3 val = p_variant;
+			return String("Vector3(")+rtos(val.x)+ String(", ") +rtos(val.y)+ String(", ") +rtos(val.z)+String(")");
+		} break;
 		case Variant::STRING: {
 			String val = p_variant;
 			return "\""+val.xml_escape()+"\"";
