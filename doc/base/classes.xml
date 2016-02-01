@@ -681,9 +681,9 @@
 		</member>
 		<member name="PS2D" type="Physics2DServer">
 		</member>
-		<member name="SpatialSoundServer" type="SpatialSound2DServer">
+		<member name="SpatialSoundServer" type="SpatialSoundServer">
 		</member>
-		<member name="SS" type="SpatialSound2DServer">
+		<member name="SS" type="SpatialSoundServer">
 		</member>
 		<member name="SpatialSound2DServer" type="SpatialSound2DServer">
 		</member>
