@@ -47,7 +47,6 @@
 #include "tcp_server_winsock.h"
 #include "packet_peer_udp_winsock.h"
 #include "stream_peer_winsock.h"
-#include "os/pc_joystick_map.h"
 #include "lang_table.h"
 #include "os/memory_pool_dynamic_prealloc.h"
 #include "globals.h"

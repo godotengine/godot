@@ -43,7 +43,6 @@
 #include "servers/audio/audio_server_sw.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
-#include "os/pc_joystick_map.h"
 #include "os/memory_pool_dynamic_prealloc.h"
 #include "globals.h"
 #include "io/marshalls.h"
