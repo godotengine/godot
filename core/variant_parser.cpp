@@ -338,6 +338,8 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 									exp_beg=true;
 
 								} else if ((c=='-' || c=='+') && !exp_sign && !exp_beg) {
+									if (c=='-')
+										is_float=true;
 									exp_sign=true;
 
 								} else {
@@ -358,6 +360,7 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 
 
 					r_token.type=TK_NUMBER;
+
 					if (is_float)
 						r_token.value=num.to_double();
 					else
