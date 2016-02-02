@@ -904,7 +904,7 @@ MainLoop* test() {
 	OS::get_singleton()->print("***TOTALS!***\n");
 	OS::get_singleton()->print("*************\n");
 	
-	OS::get_singleton()->print("Passed %i of %i tests\n",count,passed);
+	OS::get_singleton()->print("Passed %i of %i tests\n", passed, count);
 	
 	return NULL;
 }
