@@ -262,6 +262,9 @@ public:
 
 		NodePath np=value;
 
+		if (np==NodePath())
+			return;
+
 		Node* root = EditorNode::get_singleton()->get_tree()->get_root();
 
 		Node* np_node = root->get_node(np);
