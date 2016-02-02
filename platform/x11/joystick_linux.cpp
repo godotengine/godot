@@ -38,8 +38,9 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#define test_bit(nr, addr)  (((1UL << ((nr) % (sizeof(long) * 8))) & ((addr)[(nr) / (sizeof(long) * 8)])) != 0)
-#define NBITS(x) ((((x)-1)/(sizeof(long) * 8))+1)
+#define LONG_BITS  (sizeof(long) * 8)
+#define test_bit(nr, addr)  (((1UL << ((nr) % LONG_BITS)) & ((addr)[(nr) / LONG_BITS])) != 0)
+#define NBITS(x) ((((x)-1)/LONG_BITS)+1)
 
 static const char* ignore_str = "/dev/input/js";
 
@@ -311,7 +312,7 @@ void joystick_linux::open_joystick(const char *p_path) {
 		//check if the device supports basic gamepad events, prevents certain keyboards from
 		//being detected as joysticks
 		if (!(test_bit(EV_KEY, evbit) && test_bit(EV_ABS, evbit) &&
-		    ((test_bit(ABS_X, absbit) || test_bit(ABS_Y, absbit)) ||
+		    ((test_bit(ABS_X, absbit) || test_bit(ABS_Y, absbit) || test_bit(ABS_HAT0X, absbit)) &&
 		     (test_bit(BTN_A, keybit) || test_bit(BTN_THUMBL, keybit))))) {
 			close(fd);
 			return;
