@@ -38,18 +38,18 @@
 ProjectSettings *ProjectSettings::singleton=NULL;
 
 static const char* _button_names[JOY_BUTTON_MAX]={
-"PS X, XBox A, NDS B",
-"PS Circle, XBox B, NDS A",
-"PS Square, XBox X, NDS Y",
-"PS Triangle, XBox Y, NDS X",
-"L, L1, Wii C",
+"PS X, XBox A, Nintendo B",
+"PS Circle, XBox B, Nintendo A",
+"PS Square, XBox X, Nintendo Y",
+"PS Triangle, XBox Y, Nintendo X",
+"L, L1",
 "R, R1",
-"L2, Wii Z",
+"L2",
 "R2",
 "L3",
 "R3",
-"Select, Wii -",
-"Start, Wii +",
+"Select, Nintendo -",
+"Start, Nintendo +",
 "D-Pad Up",
 "D-Pad Down",
 "D-Pad Left",
@@ -301,8 +301,20 @@ void ProjectSettings::_add_item(int p_item){
 			device_index->clear();
 			for(int i=0;i<24;i++) {
 
+				String desc;
 
-				device_index->add_item("Axis "+itos(i/2)+" "+(i&1?"+":"-"));
+				int ax=i/2;
+				if (ax==0)
+					desc=" (Left Stick)";
+				else if (ax==1)
+					desc=" (Right Stick)";
+				else if (ax==4)
+					desc=" (L2)";
+				else if (ax==5)
+					desc=" (R2)";
+
+
+				device_index->add_item("Axis "+itos(i/2)+" "+(i&1?"+":"-")+desc);
 			}
 			device_input->popup_centered(Size2(350,95));
 
@@ -315,7 +327,7 @@ void ProjectSettings::_add_item(int p_item){
 
 			for(int i=0;i<JOY_BUTTON_MAX;i++) {
 
-				device_index->add_item(String(_button_names[i]));
+				device_index->add_item(itos(i)+": "+String(_button_names[i]));
 			}
 			device_input->popup_centered(Size2(350,95));
 
