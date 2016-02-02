@@ -846,7 +846,7 @@ void ProjectSettings::_autoload_edited() {
 	undo_redo->create_action("Toggle Autoload GlobalVar");
 	undo_redo->add_do_property(Globals::get_singleton(),base,path);
 	undo_redo->add_undo_property(Globals::get_singleton(),base,Globals::get_singleton()->get(base));
-	undo_redo->add_do_method(Globals::get_singleton(),"set_order",base,order);
+	undo_redo->add_do_method(Globals::get_singleton(),"set_order",base,order); // keep order, as config order matters for these
 	undo_redo->add_undo_method(Globals::get_singleton(),"set_order",base,order);
 	undo_redo->add_do_method(this,"_update_autoload");
 	undo_redo->add_undo_method(this,"_update_autoload");

@@ -264,8 +264,8 @@ void make_default_theme() {
 	// ToolButton
 
 	Ref<StyleBox> tb_empty = memnew( StyleBoxEmpty );
-	tb_empty->set_default_margin(MARGIN_LEFT,8);
-	tb_empty->set_default_margin(MARGIN_RIGHT,8);
+	tb_empty->set_default_margin(MARGIN_LEFT,6);
+	tb_empty->set_default_margin(MARGIN_RIGHT,6);
 	tb_empty->set_default_margin(MARGIN_TOP,4);
 	tb_empty->set_default_margin(MARGIN_BOTTOM,4);
 
