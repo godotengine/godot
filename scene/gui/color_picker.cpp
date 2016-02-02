@@ -64,7 +64,18 @@ void ColorPicker::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			btn_pick->set_icon(get_icon("screen_picker", "ColorPicker"));
+			update_material(uv_material, color);
+			update_material(w_material, color);
+
+			uv_edit->get_child(0)->cast_to<Control>()->update();
+			w_edit->get_child(0)->cast_to<Control>()->update();
+			_update_color();
 		}
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			c_text->call_deferred("grab_focus");
+			c_text->call_deferred("select");
+		} break;
 	}
 }
 
@@ -88,8 +99,13 @@ void ColorPicker::set_color(const Color& p_color) {
 	h=color.get_h();
 	s=color.get_s();
 	v=color.get_v();
+
+	if (!is_inside_tree())
+		return;
+
 	update_material(uv_material, color);
 	update_material(w_material, color);
+
 	uv_edit->get_child(0)->cast_to<Control>()->update();
 	w_edit->get_child(0)->cast_to<Control>()->update();
 	_update_color();
@@ -100,6 +116,10 @@ void ColorPicker::set_edit_alpha(bool p_show) {
 
 	edit_alpha=p_show;
 	_update_controls();
+
+	if (!is_inside_tree())
+		return;
+
 	_update_color();
 	sample->update();
 }
@@ -136,6 +156,10 @@ void ColorPicker::_html_entered(const String& p_html) {
 		return;
 
 	color = Color::html(p_html);
+
+	if (!is_inside_tree())
+		return;
+
 	_update_color();
 	emit_signal("color_changed",color);
 }
@@ -163,8 +187,6 @@ void ColorPicker::_update_color() {
 	} else {
 		c_text->set_text(color.to_html(edit_alpha && color.a<1));
 	}
-	c_text->grab_focus();
-	c_text->select();
 
 	sample->update();
 	updating=false;
@@ -225,6 +247,9 @@ void ColorPicker::set_raw_mode(bool p_enabled) {
 	if (btn_mode->is_pressed()!=p_enabled)
 		btn_mode->set_pressed(p_enabled);
 	
+	if (!is_inside_tree())
+		return;
+
 	_update_controls();
 	_update_color();
 }
@@ -531,7 +556,7 @@ ColorPicker::ColorPicker() :
 
 
 	_update_controls();
-	_update_color();
+	//_update_color();
 	updating=false;
 
 	uv_material.instance();
@@ -594,6 +619,8 @@ void ColorPickerButton::pressed() {
 	popup->set_pos(get_global_pos()-Size2(0,ms.height));
 	popup->set_size(ms);
 	popup->popup();
+
+
 }
 
 void ColorPickerButton::_notification(int p_what) {

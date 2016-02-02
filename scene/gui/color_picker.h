@@ -89,6 +89,9 @@ private:
 	void _screen_input(const InputEvent& p_input);
 	void _add_preset_pressed();
 	void _screen_pick_pressed();
+
+friend class ColorPicker;
+
 protected:
 
 	void _notification(int);
