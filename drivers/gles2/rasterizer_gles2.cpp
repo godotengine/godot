@@ -7088,11 +7088,13 @@ void RasterizerGLES2::_draw_tex_bg() {
 	copy_shader.set_uniform(CopyShaderGLES2::ENERGY,nrg);
 	copy_shader.set_uniform(CopyShaderGLES2::CUSTOM_ALPHA,float(current_env->bg_param[VS::ENV_BG_PARAM_GLOW]));
 
+	float flip_sign = (current_env->bg_mode==VS::ENV_BG_TEXTURE && current_rt && current_rt_vflip)?-1:1;
+
 	Vector3 vertices[4]={
-		Vector3(-1,-1,1),
-		Vector3( 1,-1,1),
-		Vector3( 1, 1,1),
-		Vector3(-1, 1,1)
+		Vector3(-1,-1*flip_sign,1),
+		Vector3( 1,-1*flip_sign,1),
+		Vector3( 1, 1*flip_sign,1),
+		Vector3(-1, 1*flip_sign,1)
 	};
 
 
@@ -7238,7 +7240,7 @@ void RasterizerGLES2::end_scene() {
 					bgcolor = current_env->bg_param[VS::ENV_BG_PARAM_COLOR];
 				else
 					bgcolor = Globals::get_singleton()->get("render/default_clear_color");
-			bgcolor = _convert_color(bgcolor);
+				bgcolor = _convert_color(bgcolor);
 				float a = use_fb ? float(current_env->bg_param[VS::ENV_BG_PARAM_GLOW]) : 1.0;
 				glClearColor(bgcolor.r,bgcolor.g,bgcolor.b,a);
 				_glClearDepth(1.0);

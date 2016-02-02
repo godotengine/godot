@@ -173,6 +173,8 @@ public:
 	virtual bool is_window_maximized() const { return true; }
 
 
+
+
 	virtual void set_iterations_per_second(int p_ips);
 	virtual int get_iterations_per_second() const;
 
