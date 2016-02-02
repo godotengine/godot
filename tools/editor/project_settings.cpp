@@ -835,6 +835,7 @@ void ProjectSettings::_autoload_edited() {
 	String base="autoload/"+ti->get_text(0);
 
 	String path = Globals::get_singleton()->get(base);
+	int order = Globals::get_singleton()->get_order(base);
 
 	if (path.begins_with("*"))
 		path=path.substr(1,path.length());
@@ -845,6 +846,8 @@ void ProjectSettings::_autoload_edited() {
 	undo_redo->create_action("Toggle Autoload GlobalVar");
 	undo_redo->add_do_property(Globals::get_singleton(),base,path);
 	undo_redo->add_undo_property(Globals::get_singleton(),base,Globals::get_singleton()->get(base));
+	undo_redo->add_do_method(Globals::get_singleton(),"set_order",base,order);
+	undo_redo->add_undo_method(Globals::get_singleton(),"set_order",base,order);
 	undo_redo->add_do_method(this,"_update_autoload");
 	undo_redo->add_undo_method(this,"_update_autoload");
 	undo_redo->add_do_method(this,"_settings_changed");
