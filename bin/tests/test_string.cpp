@@ -472,7 +472,7 @@ bool test_26() {
 	{
 		printf("%ls\n", regexp.get_capture(i).c_str());
 	}
-	return res;
+	return (res>=0);
 };
 
 struct test_27_data {
