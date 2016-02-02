@@ -299,18 +299,18 @@ void ProjectSettings::_add_item(int p_item){
 			device_id->set_val(0);
 			device_index_label->set_text("Joy Button Axis:");
 			device_index->clear();
-			for(int i=0;i<24;i++) {
+			for(int i=0;i<JOY_AXIS_MAX*2;i++) {
 
 				String desc;
 
 				int ax=i/2;
-				if (ax==0)
+				if (ax==0 || ax==1)
 					desc=" (Left Stick)";
-				else if (ax==1)
+				else if (ax==2 || ax==3)
 					desc=" (Right Stick)";
-				else if (ax==4)
+				else if (ax==6)
 					desc=" (L2)";
-				else if (ax==5)
+				else if (ax==7)
 					desc=" (R2)";
 
 
@@ -511,7 +511,18 @@ void ProjectSettings::_update_actions() {
 				} break;
 				case InputEvent::JOYSTICK_MOTION: {
 
-					String str = "Device "+itos(ie.device)+", Axis "+itos(ie.joy_motion.axis)+" "+(ie.joy_motion.axis_value<0?"-.":"+.");
+					String desc;
+					int ax = ie.joy_motion.axis;
+
+					if (ax==0 || ax==1)
+						desc=" (Left Stick).";
+					else if (ax==2 || ax==3)
+						desc=" (Right Stick).";
+					else if (ax==6)
+						desc=" (L2).";
+					else if (ax==7)
+						desc=" (R2).";
+					String str = "Device "+itos(ie.device)+", Axis "+itos(ie.joy_motion.axis)+" "+(ie.joy_motion.axis_value<0?"-":"+")+desc;
 					action->set_text(0,str);
 					action->set_icon(0,get_icon("JoyAxis","EditorIcons"));
 				} break;
