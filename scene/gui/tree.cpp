@@ -482,7 +482,7 @@ void TreeItem::deselect(int p_column) {
 	_cell_deselected(p_column);
 }
 
-void TreeItem::add_button(int p_column,const Ref<Texture>& p_button,int p_id) {
+void TreeItem::add_button(int p_column, const Ref<Texture>& p_button, int p_id, bool p_disabled) {
 
 
 	ERR_FAIL_INDEX( p_column, cells.size() );
@@ -492,6 +492,7 @@ void TreeItem::add_button(int p_column,const Ref<Texture>& p_button,int p_id) {
 	if (p_id<0)
 		p_id=cells[p_column].buttons.size();
 	button.id=p_id;
+	button.disabled=p_disabled;
 	cells[p_column].buttons.push_back(button);
 	_changed_notify(p_column);
 }
@@ -532,6 +533,15 @@ int TreeItem::get_button_by_id(int p_column,int p_id) const {
 	}
 
 	return -1;
+}
+
+bool TreeItem::is_button_disabled(int p_column, int p_idx) const {
+
+	ERR_FAIL_INDEX_V( p_column, cells.size(), false );
+	ERR_FAIL_INDEX_V( p_idx, cells[p_column].buttons.size(), false );
+
+	return cells[p_column].buttons[p_idx].disabled;
+
 }
 void TreeItem::set_button(int p_column,int p_idx,const Ref<Texture>& p_button){
 
@@ -672,10 +682,11 @@ void TreeItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("clear_custom_bg_color","column"),&TreeItem::clear_custom_bg_color);
 	ObjectTypeDB::bind_method(_MD("get_custom_bg_color","column"),&TreeItem::get_custom_bg_color);
 
-	ObjectTypeDB::bind_method(_MD("add_button","column","button:Texture","button_idx"),&TreeItem::add_button);
+	ObjectTypeDB::bind_method(_MD("add_button","column","button:Texture","button_idx","disabled"),&TreeItem::add_button,DEFVAL(-1),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_button_count","column"),&TreeItem::get_button_count);
 	ObjectTypeDB::bind_method(_MD("get_button:Texture","column","button_idx"),&TreeItem::get_button);
 	ObjectTypeDB::bind_method(_MD("erase_button","column","button_idx"),&TreeItem::erase_button);
+	ObjectTypeDB::bind_method(_MD("is_button_disabled","column","button_idx"),&TreeItem::is_button_disabled);
 
 	ObjectTypeDB::bind_method(_MD("set_tooltip","column","tooltip"),&TreeItem::set_tooltip);
 	ObjectTypeDB::bind_method(_MD("get_tooltip","column"),&TreeItem::get_tooltip);
@@ -1015,14 +1026,15 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 
 				Point2i o = Point2i( ofs+w-s.width, p_pos.y )-cache.offset+p_draw_ofs;
 
-				if (cache.click_type==Cache::CLICK_BUTTON && cache.click_item==p_item && cache.click_column==i) {
+				if (cache.click_type==Cache::CLICK_BUTTON && cache.click_item==p_item && cache.click_column==i && !p_item->cells[i].buttons[j].disabled) {
 					//being pressed
 					cache.button_pressed->draw(get_canvas_item(),Rect2(o,s));
 				}
 
 				o.y+=(label_h-s.height)/2;
 				o+=cache.button_pressed->get_offset();
-				b->draw(ci,o);
+
+				b->draw(ci,o,p_item->cells[i].buttons[j].disabled?Color(1,1,1,0.5):Color(1,1,1,1));
 				w-=s.width+cache.button_margin;
 				bw+=s.width+cache.button_margin;
 			}
@@ -1472,7 +1484,13 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 		for(int j=c.buttons.size()-1;j>=0;j--) {
 			Ref<Texture> b=c.buttons[j].texture;
 			int w = b->get_size().width + cache.button_pressed->get_minimum_size().width;
+
 			if (x>col_width-w) {
+				if (c.buttons[j].disabled) {
+					pressed_button=-1;
+					cache.click_type=Cache::CLICK_NONE;
+					return -1;
+				}
 				pressed_button=j;
 				cache.click_type=Cache::CLICK_BUTTON;
 				cache.click_index=j;
