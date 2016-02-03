@@ -65,7 +65,6 @@
 
 
 #include <X11/Xatom.h>
-//#include "os/pc_joystick_map.h"
 
 #undef CursorShape
 
