@@ -100,11 +100,20 @@ void StreamPlayer::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
 			//set_idle_process(false); //don't annoy
-			if (stream.is_valid() && autoplay && !get_tree()->is_editor_hint())
-				play();
+			if (stream.is_valid() && !get_tree()->is_editor_hint()) {
+				if (resume_pos>=0) {
+					play(resume_pos);
+					resume_pos=-1;
+				} else if (autoplay) {
+					play();
+				}
+			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
+			if (is_playing()) {
+				resume_pos=get_pos();
+			}
 			stop(); //wathever it may be doing, stop
 		} break;
 	}
@@ -397,6 +406,7 @@ StreamPlayer::StreamPlayer() {
 	buffering_ms=500;
 	loop_point=0;
 	stop_request=false;
+	resume_pos=-1;
 
 }
 

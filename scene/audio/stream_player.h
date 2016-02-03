@@ -67,6 +67,7 @@ class StreamPlayer : public Node {
 	float loop_point;
 	int buffering_ms;
 	volatile bool stop_request;
+	float resume_pos;
 
 	AudioRBResampler resampler;
 
