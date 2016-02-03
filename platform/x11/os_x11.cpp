@@ -574,6 +574,10 @@ Point2 OS_X11::get_mouse_pos() const {
 
 void OS_X11::set_window_title(const String& p_title) {
 	XStoreName(x11_display,x11_window,p_title.utf8().get_data());
+
+	Atom _net_wm_name = XInternAtom(x11_display, "_NET_WM_NAME", false);
+	Atom utf8_string = XInternAtom(x11_display, "UTF8_STRING", false);
+	XChangeProperty( x11_display, x11_window, _net_wm_name, utf8_string, 8, PropModeReplace, (unsigned char*) p_title.utf8().get_data(), p_title.utf8().length());
 }
 
 void OS_X11::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
