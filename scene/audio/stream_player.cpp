@@ -101,9 +101,26 @@ void StreamPlayer::_notification(int p_what) {
 
 			//set_idle_process(false); //don't annoy
 			if (stream.is_valid() && autoplay && !get_tree()->is_editor_hint())
+			{
 				play();
+				autoplay = false;
+			}
+			/* Audio beeps sometimes with pause/unpause on same frame remove add to another parent so is better to let the user control the pause audio behaviour on remove */
+			/*
+			if (!paused)
+				stream->set_paused(false);
+			*/
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+
+			//stop(); //wathever it may be doing, stop
+			/* Audio beeps sometimes with pause/unpause on same frame remove add  to another parent so is better to let the user control the pause audio behaviour on remove */
+			/* 
+			if (!paused && stream.is_valid())
+				stream->set_paused(true);
+			*/
+		} break;
+		case NOTIFICATION_PREDELETE: {
 
 			stop(); //wathever it may be doing, stop
 		} break;
