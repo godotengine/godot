@@ -277,7 +277,9 @@ String FileAccess::get_line() const {
 	return String::utf8(line.get_data());
 }
 
-Vector<String> FileAccess::get_csv_line() const {
+Vector<String> FileAccess::get_csv_line(String delim) const {
+
+	ERR_FAIL_COND_V(delim.length()!=1,Vector<String>());
 
 	String l;
 	int qc=0;
@@ -303,7 +305,7 @@ Vector<String> FileAccess::get_csv_line() const {
 		CharType s[2]={0,0};
 
 
-		if (!in_quote && c==',') {
+		if (!in_quote && c==delim[0]) {
 			strings.push_back(current);
 			current=String();
 		} else if (c=='"') {
