@@ -533,7 +533,7 @@ void Viewport::_notification(int p_what) {
 
 						Vector2 point = get_canvas_transform().affine_inverse().xform(pos);
 						Physics2DDirectSpaceState::ShapeResult res[64];
-						int rc = ss2d->intersect_point(point,res,64,Set<RID>(),0xFFFFFFFF,0xFFFFFFFF);
+						int rc = ss2d->intersect_point(point,res,64,Set<RID>(),0xFFFFFFFF,0xFFFFFFFF,true);
 						for(int i=0;i<rc;i++) {
 
 							if (res[i].collider_id && res[i].collider) {
