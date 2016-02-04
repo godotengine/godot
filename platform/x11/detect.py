@@ -52,6 +52,7 @@ def get_opts():
 
 	return [
 	('use_llvm','Use llvm compiler','no'),
+	('use_static_cpp','link stdc++ statically','no'),
 	('use_sanitizer','Use llvm compiler sanitize address','no'),
 	('use_leak_sanitizer','Use llvm compiler sanitize memory leaks','no'),
 	('pulseaudio','Detect & Use pulseaudio','yes'),
@@ -202,6 +203,9 @@ def configure(env):
 	if(env["new_wm_api"]=="yes"):
 		env.Append(CPPFLAGS=['-DNEW_WM_API'])
 		env.ParseConfig('pkg-config xinerama --cflags --libs')
+
+	if (env["use_static_cpp"]=="yes"):
+		env.Append(LINKFLAGS=['-static-libstdc++'])
 
 	env["x86_opt_gcc"]=True
 
