@@ -29,7 +29,7 @@
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
 
-#define WINVER 0x0500
+#define WINVER 0x0600
 
 #include "os/input.h"
 #include "os/os.h"
