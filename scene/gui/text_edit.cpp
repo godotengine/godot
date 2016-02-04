@@ -1197,6 +1197,12 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				if (mb.button_index==BUTTON_WHEEL_DOWN) {
 					v_scroll->set_val( v_scroll->get_val() +3 );
 				}
+				if (mb.button_index==BUTTON_WHEEL_LEFT) {
+					h_scroll->set_val( h_scroll->get_val() -3 );
+				}
+				if (mb.button_index==BUTTON_WHEEL_RIGHT) {
+					h_scroll->set_val( h_scroll->get_val() +3 );
+				}
 				if (mb.button_index==BUTTON_LEFT) {
 					
 					int row,col;

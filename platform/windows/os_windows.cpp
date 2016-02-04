@@ -66,6 +66,10 @@ extern "C" {
 #endif
 }
 
+#ifndef WM_MOUSEHWHEEL
+#define WM_MOUSEHWHEEL 0x020e
+#endif
+
 //#define STDOUT_FILE
 
 extern HINSTANCE godot_hinstance;
@@ -432,6 +436,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		case WM_RBUTTONDOWN:
 		case WM_RBUTTONUP:
 		case WM_MOUSEWHEEL:
+		case WM_MOUSEHWHEEL:
 		case WM_LBUTTONDBLCLK:
 		case WM_RBUTTONDBLCLK:
 		/*case WM_XBUTTONDOWN:
@@ -502,11 +507,23 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 
 					if (motion>0)
-						mb.button_index=4;
+						mb.button_index= BUTTON_WHEEL_UP;
 					else
-						mb.button_index=5;
+						mb.button_index= BUTTON_WHEEL_DOWN;
 
 
+				} break;
+				case WM_MOUSEHWHEEL: {
+
+					mb.pressed = true;
+					int motion = (short)HIWORD(wParam);
+					if (!motion)
+						return 0;
+
+					if (motion<0)
+						mb.button_index = BUTTON_WHEEL_LEFT;
+					else
+						mb.button_index = BUTTON_WHEEL_RIGHT;
 				} break;
 					/*
 				case WM_XBUTTONDOWN: {
