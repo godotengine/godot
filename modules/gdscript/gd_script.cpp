@@ -2687,6 +2687,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"float",
 		"int",
 		"null",
+		"PI",
 		"self",
 		"true",
 		// functions
@@ -2695,6 +2696,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"class",
 		"extends",
 		"func",
+		"preload"
 		"setget",
 		"signal",
 		"tool",
