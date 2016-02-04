@@ -305,7 +305,7 @@ def configure(env):
 
 		if (env["target"]=="release"):
 			
-			env.Append(CCFLAGS=['-ffast-math','-fomit-frame-pointer','-msse2'])
+			env.Append(CCFLAGS=['-msse2'])
 
 			if (env["bits"]=="64"):
 				env.Append(CCFLAGS=['-O3'])
