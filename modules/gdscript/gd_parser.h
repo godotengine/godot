@@ -134,7 +134,7 @@ public:
 		FunctionNode *parent;
 		Vector<StringName> require_keys;
 
-		_FORCE_INLINE_ void insert_require(StringName p_key) {
+		void insert_require(StringName p_key) {
 			if (body->variables.find(p_key) < 0 && body->arguments.find(p_key) < 0) {
 				if (require_keys.find(p_key) < 0) {
 					require_keys.push_back(p_key);
