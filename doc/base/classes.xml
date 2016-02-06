@@ -36301,6 +36301,15 @@ This method controls whether the position between two cached points is interpola
 			Return the tile index of the referenced cell.
 			</description>
 		</method>
+		<method name="get_cellv" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+			Return the tile index of the cell referenced by a Vector2.
+			</description>
+		</method>
 		<method name="is_cell_x_flipped" qualifiers="const">
 			<return type="bool">
 			</return>
