@@ -91,8 +91,6 @@ private:
 	void _add_preset_pressed();
 	void _screen_pick_pressed();
 
-friend class ColorPicker;
-
 protected:
 
 	void _notification(int);

@@ -270,8 +270,10 @@ void ColorPicker::_hsv_draw(int p_wich,Control* c)
 	if (p_wich==0) {
 		int x=c->get_size().x*s;
 		int y=c->get_size().y-c->get_size().y*v;
-		c->draw_line(Point2(x,0),Point2(x,c->get_size().y),color.inverted());
-		c->draw_line(Point2(0,y),Point2(c->get_size().x,y),color.inverted());
+		Color col = color;
+		col.a=1;
+		c->draw_line(Point2(x,0),Point2(x,c->get_size().y),col.inverted());
+		c->draw_line(Point2(0,y),Point2(c->get_size().x,y),col.inverted());
 		c->draw_line(Point2(x,y),Point2(x,y),Color(1,1,1),2);
 	} else if (p_wich==1) {
 		int y=c->get_size().y-c->get_size().y*h;
