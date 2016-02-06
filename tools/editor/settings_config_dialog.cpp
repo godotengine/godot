@@ -321,12 +321,12 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	vbc->add_child(hbc);
 	hbc->add_child( memnew( Label("Plugin List: ")));
 	hbc->add_spacer();
-	Button *load = memnew( Button );
-	load->set_text("Load..");
+	//Button *load = memnew( Button );
+	//load->set_text("Load..");
+	//hbc->add_child(load);
 	Button *rescan = memnew( Button );
 	rescan_plugins=rescan;
 	rescan_plugins->connect("pressed",this,"_rescan_plugins");
-	hbc->add_child(load);
 	hbc->add_child(rescan);
 	plugins = memnew( Tree );
 	MarginContainer *mc = memnew( MarginContainer);
