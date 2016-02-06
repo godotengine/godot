@@ -73,6 +73,7 @@ private:
 	bool updating;
 	bool changing_color;
 	float h,s,v;
+	Color last_hsv;
 
 	void _html_entered(const String& p_html);
 	void _value_changed(double);

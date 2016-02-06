@@ -34,7 +34,7 @@
 #include "os/input.h"
 #include "os/keyboard.h"
 
-void update_material(Ref<CanvasItemMaterial>mat,const Color& p_color) {
+void update_material(Ref<CanvasItemMaterial>mat,const Color& p_color,float h,float s,float v) {
 	if (!mat.is_valid())
 		return;
 	Ref<Shader> sdr = mat->get_shader();
@@ -44,9 +44,9 @@ void update_material(Ref<CanvasItemMaterial>mat,const Color& p_color) {
 		mat->set_shader_param("R",p_color.r);
 		mat->set_shader_param("G",p_color.g);
 		mat->set_shader_param("B",p_color.b);
-		mat->set_shader_param("H",p_color.get_h());
-		mat->set_shader_param("S",p_color.get_s());
-		mat->set_shader_param("V",p_color.get_v());
+		mat->set_shader_param("H",h);
+		mat->set_shader_param("S",s);
+		mat->set_shader_param("V",v);
 		mat->set_shader_param("A",p_color.a);
 }
 
@@ -57,15 +57,15 @@ void ColorPicker::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			uv_material->set_shader(get_shader("uv_editor"));
 			w_material->set_shader(get_shader("w_editor"));
-			update_material(uv_material,color);
-			update_material(w_material,color);
+			update_material(uv_material,color,h,s,v);
+			update_material(w_material,color,h,s,v);
 			_update_controls();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
 			btn_pick->set_icon(get_icon("screen_picker", "ColorPicker"));
-			update_material(uv_material, color);
-			update_material(w_material, color);
+			update_material(uv_material, color,h,s,v);
+			update_material(w_material, color,h,s,v);
 
 			uv_edit->get_child(0)->cast_to<Control>()->update();
 			w_edit->get_child(0)->cast_to<Control>()->update();
@@ -96,15 +96,18 @@ void ColorPicker::_update_controls() {
 void ColorPicker::set_color(const Color& p_color) {
 
 	color=p_color;
-	h=color.get_h();
-	s=color.get_s();
-	v=color.get_v();
+	if (color != last_hsv) {
+		h=color.get_h();
+		s=color.get_s();
+		v=color.get_v();
+		last_hsv = color;
+	}
 
 	if (!is_inside_tree())
 		return;
 
-	update_material(uv_material, color);
-	update_material(w_material, color);
+	update_material(uv_material, color,h,s,v);
+	update_material(w_material, color,h,s,v);
 
 	uv_edit->get_child(0)->cast_to<Control>()->update();
 	w_edit->get_child(0)->cast_to<Control>()->update();
@@ -139,12 +142,9 @@ void ColorPicker::_value_changed(double) {
 	}
 	color.components[3] = scroll[3]->get_val()/255.0;
 
-	update_material(uv_material,color);
-	update_material(w_material,color);
+	set_color(color);
 
 	c_text->set_text(color.to_html(edit_alpha && color.a<1));
-
-	sample->update();
 
 	emit_signal("color_changed",color);
 
@@ -268,15 +268,15 @@ void ColorPicker::_hsv_draw(int p_wich,Control* c)
 	if (!c)
 		return;
 	if (p_wich==0) {
-		int x=c->get_size().x*color.get_s();
-		int y=c->get_size().y-c->get_size().y*color.get_v();
+		int x=c->get_size().x*s;
+		int y=c->get_size().y-c->get_size().y*v;
 		c->draw_line(Point2(x,0),Point2(x,c->get_size().y),color.inverted());
 		c->draw_line(Point2(0,y),Point2(c->get_size().x,y),color.inverted());
 		c->draw_line(Point2(x,y),Point2(x,y),Color(1,1,1),2);
 	} else if (p_wich==1) {
-		int y=c->get_size().y-c->get_size().y*color.get_h();
+		int y=c->get_size().y-c->get_size().y*h;
 		Color col=Color();
-		col.set_hsv(color.get_h(),1,1);
+		col.set_hsv(h,1,1);
 		c->draw_line(Point2(0,y),Point2(c->get_size().x,y),col.inverted());
 	}
 }
@@ -291,6 +291,7 @@ void ColorPicker::_uv_input(const InputEvent &ev) {
 			s=x/256;
 			v=1.0-y/256.0;
 			color.set_hsv(h,s,v,color.a);
+			last_hsv = color;
 			set_color(color);
 			_update_color();
 			emit_signal("color_changed", color);
@@ -306,6 +307,7 @@ void ColorPicker::_uv_input(const InputEvent &ev) {
 		s=x/256;
 		v=1.0-y/256.0;
 		color.set_hsv(h,s,v,color.a);
+		last_hsv = color;
 		set_color(color);
 		_update_color();
 		emit_signal("color_changed", color);
@@ -323,6 +325,7 @@ void ColorPicker::_w_input(const InputEvent &ev) {
 			changing_color = false;
 		}
 		color.set_hsv(h,s,v,color.a);
+		last_hsv = color;
 		set_color(color);
 		_update_color();
 		emit_signal("color_changed", color);
@@ -333,6 +336,7 @@ void ColorPicker::_w_input(const InputEvent &ev) {
 		float y = CLAMP((float)bev.y,0,256);
 		h=1.0-y/256.0;
 		color.set_hsv(h,s,v,color.a);
+		last_hsv = color;
 		set_color(color);
 		_update_color();
 		emit_signal("color_changed", color);
