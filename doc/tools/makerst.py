@@ -166,9 +166,9 @@ def rstize_text(text,cclass):
 
 				if param.find('.') != -1:
 					(class_param, method_param) = param.split('.')
-					tag_text = ':ref:`'+class_param+'.'+method_param+'<' + class_param.lower() + '_' + method_param + '>`'
+					tag_text = ':ref:`'+class_param+'.'+method_param+'<class_' + class_param + '_' + method_param + '>`'
 				else:
-					tag_text = ':ref:`' + param + '<' + cclass +"_"+ param + '>`'
+					tag_text = ':ref:`' + param + '<class_' + cclass +"_"+ param + '>`'
 			elif cmd.find('image=') == 0:
 				tag_text = "" #'![](' + cmd[6:] + ')'
 			elif cmd.find('url=') == 0:

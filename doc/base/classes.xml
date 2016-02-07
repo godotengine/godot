@@ -1780,7 +1780,7 @@
 			<argument index="0" name="with" type="AABB">
 			</argument>
 			<description>
-			Return the intersection between two [AABB]s. An empty AABB (size 0,0,0) is returned on failure.
+			Return the intersection between two [AABB]. An empty AABB (size 0,0,0) is returned on failure.
 			</description>
 		</method>
 		<method name="intersects">
@@ -2102,7 +2102,7 @@
 	</brief_description>
 	<description>
 	An Animation resource contains data used to animate everything in the engine. Animations are divided into tracks, and each track must be linked to a node. The state of that node can be changed through time, by adding timed keys (events) to the track.
-        Animations are just data containers, and must be added to odes such as an [AnimationPlayer] or [AnimationTreePlayer] to be played back.
+	Animations are just data containers, and must be added to odes such as an [AnimationPlayer] or [AnimationTreePlayer] to be played back.
 	</description>
 	<methods>
 		<method name="add_track">
@@ -5925,7 +5925,7 @@
 			<return type="bool">
 			</return>
 			<description>
-			Return true of this is the current camera (see [method Camera2D.make_current]).
+			Return true of this is the current camera (see [method make_current]).
 			</description>
 		</method>
 		<method name="set_limit">
@@ -7339,7 +7339,7 @@
 			</argument>
 			<description>
 			Set the array of points forming the polygon.
-			When editing the point list via the editor, depending on [method get_build_mode], it has to be a list of points (for [code]build_mode[/code]=0), or a list of lines (for [code]build_mode[/code]=1). In the second case, the even elements of the array define the start point of the line, and the odd elements the end point.
+			When editing the point list via the editor, depending on [method get_build_mode], it has to be a list of points (for [code]build_mode==0[/code]), or a list of lines (for [code]build_mode==1[/code]). In the second case, the even elements of the array define the start point of the line, and the odd elements the end point.
 			</description>
 		</method>
 		<method name="get_polygon" qualifiers="const">
@@ -7353,14 +7353,14 @@
 			<argument index="0" name="build_mode" type="int">
 			</argument>
 			<description>
-			Set whether the polygon is to be a [ConvexPolygon2D] ([code]build_mode[/code]=0), or a [ConcavePolygon2D] ([code]build_mode[/code]=1).
+			Set whether the polygon is to be a [ConvexPolygon2D] ([code]build_mode==0[/code]), or a [ConcavePolygon2D] ([code]build_mode==1[/code]).
 			</description>
 		</method>
 		<method name="get_build_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-			Return whether the polygon is a [ConvexPolygon2D] ([code]build_mode[/code]=0), or a [ConcavePolygon2D] ([code]build_mode[/code]=1).
+			Return whether the polygon is a [ConvexPolygon2D] ([code]build_mode==0[/code]), or a [ConcavePolygon2D] ([code]build_mode==1[/code]).
 			</description>
 		</method>
 		<method name="set_trigger">
@@ -12909,19 +12909,13 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="3" name="body" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-			Sends a request to the connected host. The url is the what is normally behind the hostname, i.e:
-http://somehost.com/index.php
-url would be "index.php"
-
-Headers are HTTP request headers
-
-To create a POST request with query strings to push to the server, do:
-var fields = {"username" : "user",
-                       "password" : "pass"}
-var queryString = httpClient.query_string_from_dict(fields)
-var headers = ["Content-Type: application/x-www-form-urlencoded",
-		   	             "Content-Length: " + str(queryString.length())]
-var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, queryString)
+			Sends a request to the connected host. The url is what is normally behind the hostname, i.e. in [code]http://somehost.com/index.php[/code], url would be "index.php".
+			Headers are HTTP request headers.
+			To create a POST request with query strings to push to the server, do::
+			    var fields = {"username" : "user", "password" : "pass"}
+			    var queryString = httpClient.query_string_from_dict(fields)
+			    var headers = ["Content-Type: application/x-www-form-urlencoded", "Content-Length: " + str(queryString.length())]
+			    var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, queryString)
 			</description>
 		</method>
 		<method name="send_body_text">
@@ -13028,12 +13022,10 @@ var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, qu
 			<argument index="0" name="fields" type="Dictionary">
 			</argument>
 			<description>
-			Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary.
-
-var fields = {"username": "user", "password": "pass"}
-String queryString = httpClient.query_string_from_dict(fields)
-
-returns:= "username=user&amp;password=pass"
+			Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary, e.g.::
+			    var fields = {"username": "user", "password": "pass"}
+			    String queryString = httpClient.query_string_from_dict(fields)
+			    returns:= "username=user&amp;password=pass"
 			</description>
 		</method>
 	</methods>
