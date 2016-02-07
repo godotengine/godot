@@ -13746,6 +13746,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
+			Returns true or false depending on whether mouse button is pressed or not. You can pass BUTTON_*, which are pre-defined constants listed in [@Global Scope].
 			</description>
 		</method>
 		<method name="is_joy_button_pressed">
@@ -13756,7 +13757,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="1" name="button" type="int">
 			</argument>
 			<description>
-			Returns if the joystick button at the given index is currently pressed. (see JOY_* constans in [@Global Scope])
+			Returns if the joystick button at the given index is currently pressed. (see JOY_* constants in [@Global Scope])
 			</description>
 		</method>
 		<method name="is_action_pressed">
