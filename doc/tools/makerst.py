@@ -99,6 +99,22 @@ def make_class_list(class_list, columns):
 
 
 def rstize_text(text,cclass):
+
+	# Linebreak + tabs in the XML should become two line breaks
+	pos = 0
+	while True:
+		pos = text.find('\n', pos)
+		if pos == -1:
+			break
+
+		pre_text = text[:pos]
+		while text[pos+1] == '\t':
+			pos += 1
+		post_text = text[pos+1:]
+
+		text = pre_text + "\n\n" + post_text
+		pos += 2
+
 	pos = 0
 	while True:
 		pos = text.find('[', pos)
@@ -145,7 +161,11 @@ def rstize_text(text,cclass):
 			elif cmd == '/center':
 				tag_text = ''
 			elif cmd == 'br':
-				tag_text = '\n| '
+				# Make a new paragraph instead of a linebreak, rst is not so linebreak friendly
+				tag_text = '\n\n'
+				# Strip potential leading spaces
+				while post_text[0] == ' ':
+					post_text = post_text[1:]
 			elif cmd == 'i' or cmd == '/i':
 				tag_text = '*'
 			elif cmd == 'b' or cmd == '/b':
@@ -259,31 +279,34 @@ def make_method(
 		f.write(t+s+"\n")
 
 
+def make_heading(title, underline):
+	return title + '\n' + underline*len(title) + "\n\n"
+
+
 def make_rst_class(node):
 
 	name = node.attrib['name']
 
 	f = open("class_"+name.lower() + '.rst', 'wb')
 
-	f.write(".. _class_"+name+":\n")
-	f.write(name + '  \n==========\n')
+	f.write(".. _class_"+name+":\n\n")
+	f.write(make_heading(name, '='))
 
 	if 'inherits' in node.attrib:
 		inh = node.attrib['inherits'].strip()
-		f.write('**Inherits:** '+make_type(inh)+'\n---------\n')
+		f.write(make_heading('Inherits: ' + make_type(inh), '-'))
 	if 'category' in node.attrib:
-		f.write('**Category:** ' + node.attrib['category'].strip()
-				+ '\n---------\n')
+		f.write(make_heading('Category: ' + node.attrib['category'].strip(), '-'))
 
 	briefd = node.find('brief_description')
 	if briefd != None:
-		f.write('\n Brief Description  \n-------\n')
-		f.write(rstize_text(briefd.text.strip(),name) + '\n')
+		f.write(make_heading('Brief Description', '-'))
+		f.write(rstize_text(briefd.text.strip(),name) + "\n\n")
 
 	methods = node.find('methods')
 
 	if methods != None and len(list(methods)) > 0:
-		f.write('\nMember Functions \n---------\n')
+		f.write(make_heading('Member Functions', '-'))
 		ml=[]
 		for m in list(methods):
 			make_method(f, node.attrib['name'], m, False,name,False,ml)
@@ -314,19 +337,19 @@ def make_rst_class(node):
 				st+=" "
 			f.write("| "+rt+" | "+st+" |\n")
 			f.write(sep)
-			
-		
+		f.write('\n')
+
 
 	events = node.find('signals')
 	if events != None and len(list(events)) > 0:
-		f.write('\nSignals  \n----------\n')
+		f.write(make_heading('Signals', '-'))
 		for m in list(events):
 			make_method(f, node.attrib['name'], m, True,name, True)
+		f.write('\n')
 
 	members = node.find('members')
-
 	if members != None and len(list(members)) > 0:
-		f.write('\nMember Variables  \n--------\n')
+		f.write(make_heading('Member Variables', '-'))
 
 		for c in list(members):
 			s = '- '
@@ -335,39 +358,41 @@ def make_rst_class(node):
 			if c.text.strip() != '':
 				s += ' - ' + c.text.strip()
 			f.write(s + '\n')
+		f.write('\n')
 
 	constants = node.find('constants')
 	if constants != None and len(list(constants)) > 0:
-		f.write('\nNumeric Constants  \n------\n')
+		f.write(make_heading('Numeric Constants', '-'))
 		for c in list(constants):
 			s = '- '
 			s += '**' + c.attrib['name'] + '**'
 			if 'value' in c.attrib:
 				s += ' = **' + c.attrib['value'] + '**'
 			if c.text.strip() != '':
-				s += ' - ' + c.text.strip()
+				s += ' --- ' + rstize_text(c.text.strip(),name)
 			f.write(s + '\n')
+		f.write('\n')
 
 	descr = node.find('description')
 	if descr != None and descr.text.strip() != '':
-		f.write('\nDescription  \n-------\n')
-		f.write(rstize_text(descr.text.strip(),name) + '\n')
+		f.write(make_heading('Description', '-'))
+		f.write(rstize_text(descr.text.strip(),name) + "\n\n")
 
 	methods = node.find('methods')
-
 	if methods != None and len(list(methods)) > 0:
-		f.write('\nMember Function Description  \n----------\n')
+		f.write(make_heading('Member Function Description', '-'))
 		for m in list(methods):
-			f.write("\n.. _class_"+name+"_"+m.attrib['name']+":\n")
+			f.write(".. _class_"+name+"_"+m.attrib['name']+":\n\n")
 #			f.write(ul_string(m.attrib['name'],"^"))
-			d = m.find('description')
-			if d == None or d.text.strip() == '':
-				continue
 			#f.write('\n<a name="'+m.attrib['name']+'">' + m.attrib['name'] + '</a>\n------\n')
 			make_method(f, node.attrib['name'], m, True,name)
 			f.write('\n')
+			d = m.find('description')
+			if d == None or d.text.strip() == '':
+				continue
 			f.write(rstize_text(d.text.strip(),name))
-			f.write('\n')
+			f.write("\n\n")
+		f.write('\n')
 
 
 for file in input_list:
