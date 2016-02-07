@@ -39343,7 +39343,7 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="get_video_texutre">
+		<method name="get_video_texture">
 			<return type="Texture">
 			</return>
 			<description>
