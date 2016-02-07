@@ -130,7 +130,7 @@ def rstize_text(text,cclass):
 		pos = text.find('_', pos)
 		if pos == -1:
 			break
-		if text[pos + 1] == ' ' or text[pos + 1] == '\\':
+		if not text[pos + 1].isalnum(): # don't escape within a snake_case word
 			text = text[:pos] + "\_" + text[pos + 1:]
 			pos += 2
 		else:
@@ -159,7 +159,7 @@ def rstize_text(text,cclass):
 			if cmd.find('html') == 0:
 				cmd = tag_text[:space_pos]
 				param = tag_text[space_pos + 1:]
-				tag_text =  param 
+				tag_text = param
 			elif cmd.find('method') == 0:
 				cmd = tag_text[:space_pos]
 				param = tag_text[space_pos + 1:]
@@ -191,6 +191,8 @@ def rstize_text(text,cclass):
 				tag_text = '**'
 			elif cmd == 'u' or cmd == '/u':
 				tag_text = ''
+			elif cmd == 'code' or cmd == '/code':
+				tag_text = '``'
 			else:
 				tag_text = ':ref:`' + tag_text + '<class_'+tag_text.lower()+'>`'
 
