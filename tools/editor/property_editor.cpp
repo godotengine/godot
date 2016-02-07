@@ -1814,7 +1814,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 bool PropertyEditor::_might_be_in_instance() {
 
 	if (!obj)
-		return NULL;
+		return false;
 
 	Node *node = obj->cast_to<Node>();
 
