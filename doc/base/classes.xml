@@ -1247,6 +1247,10 @@
 		</constant>
 		<constant name="BUTTON_WHEEL_DOWN" value="5">
 		</constant>
+		<constant name="BUTTON_WHEEL_LEFT" value="6">
+		</constant>
+		<constant name="BUTTON_WHEEL_RIGHT" value="7">
+		</constant>
 		<constant name="BUTTON_MASK_LEFT" value="1">
 		</constant>
 		<constant name="BUTTON_MASK_RIGHT" value="2">
@@ -1544,6 +1548,22 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="7">
 			Default usage (storage and editor).
+		</constant>
+		<constant name="METHOD_FLAG_NORMAL" value="1">
+		</constant>
+		<constant name="METHOD_FLAG_EDITOR" value="2">
+		</constant>
+		<constant name="METHOD_FLAG_NOSCRIPT" value="4">
+		</constant>
+		<constant name="METHOD_FLAG_CONST" value="8">
+		</constant>
+		<constant name="METHOD_FLAG_REVERSE" value="16">
+		</constant>
+		<constant name="METHOD_FLAG_VIRTUAL" value="32">
+		</constant>
+		<constant name="METHOD_FLAG_FROM_SCRIPT" value="64">
+		</constant>
+		<constant name="METHOD_FLAGS_DEFAULT" value="1">
 		</constant>
 		<constant name="TYPE_NIL" value="0">
 			Variable is of type nil (only applied for null).
@@ -10642,6 +10662,8 @@ This approximation makes straight segments between each point, then subdivides t
 		<method name="get_csv_line" qualifiers="const">
 			<return type="StringArray">
 			</return>
+			<argument index="0" name="delim" type="String" default="&quot;,&quot;">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -20002,6 +20024,14 @@ returns:= "username=user&amp;password=pass"
 			<argument index="0" name="text" type="String">
 			</argument>
 			<argument index="1" name="title" type="String" default="&quot;Alert!&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_thread_name">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -35998,14 +36028,6 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="set_name">
-			<return type="Error">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<constants>
 		<constant name="PRIORITY_LOW" value="0">
@@ -37762,7 +37784,9 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="button" type="Texture">
 			</argument>
-			<argument index="2" name="button_idx" type="int">
+			<argument index="2" name="button_idx" type="int" default="-1">
+			</argument>
+			<argument index="3" name="disabled" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -37786,6 +37810,16 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="erase_button">
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="button_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_button_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
 			<argument index="1" name="button_idx" type="int">
