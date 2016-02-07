@@ -344,7 +344,7 @@
 			<argument index="0" name="rad" type="float">
 			</argument>
 			<description>
-			Convert from radian to degrees.
+			Convert from radians to degrees.
 			</description>
 		</method>
 		<method name="linear2db">
