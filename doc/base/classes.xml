@@ -97,7 +97,7 @@
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
-			Arc-tangent that takes a 2D vector as argument, retuns the full -pi to +pi range.
+			Arc-tangent that takes a 2D vector as argument, returns the full -pi to +pi range.
 			</description>
 		</method>
 		<method name="sqrt">
@@ -344,7 +344,7 @@
 			<argument index="0" name="rad" type="float">
 			</argument>
 			<description>
-			Convert from radias to degrees.
+			Convert from radian to degrees.
 			</description>
 		</method>
 		<method name="linear2db">
@@ -2113,7 +2113,7 @@
 			<argument index="1" name="at_pos" type="int" default="-1">
 			</argument>
 			<description>
-			Add a track to the Animation. The track type must be specified as any of the values in te TYPE_* enumeration.
+			Add a track to the Animation. The track type must be specified as any of the values in the TYPE_* enumeration.
 			</description>
 		</method>
 		<method name="remove_track">
@@ -2176,7 +2176,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-			Nove a track down.
+			Move a track down.
 			</description>
 		</method>
 		<method name="transform_track_insert_key">
@@ -2346,7 +2346,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-			Return wether interpolation is enabled or disabled for a whole track. By default tracks are interpolated.
+			Return whether interpolation is enabled or disabled for a whole track. By default tracks are interpolated.
 			</description>
 		</method>
 		<method name="value_track_get_key_indices" qualifiers="const">
@@ -2422,7 +2422,7 @@
 			<return type="bool">
 			</return>
 			<description>
-			Return wether the animation has the loop flag set.
+			Return whether the animation has the loop flag set.
 			</description>
 		</method>
 		<method name="set_step">
@@ -2469,7 +2469,7 @@
 	Container and player of [Animation] resources.
 	</brief_description>
 	<description>
-	An animation player is used for general purpose playback of [Animation] resources. It contains a dictionary of animations (referenced by name) and custom blend times between their transitions. Additionally, animations can be played and blended in diferent channels.
+	An animation player is used for general purpose playback of [Animation] resources. It contains a dictionary of animations (referenced by name) and custom blend times between their transitions. Additionally, animations can be played and blended in different channels.
 	</description>
 	<methods>
 		<method name="add_animation">
@@ -2505,7 +2505,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-			Request wether an [Animation] name exist within the player.
+			Request whether an [Animation] name exist within the player.
 			</description>
 		</method>
 		<method name="get_animation" qualifiers="const">
@@ -2532,7 +2532,7 @@
 			<argument index="2" name="sec" type="float">
 			</argument>
 			<description>
-			Specify a blend time (in seconds) between two animations, referemced by their names.
+			Specify a blend time (in seconds) between two animations, referenced by their names.
 			</description>
 		</method>
 		<method name="get_blend_time" qualifiers="const">
@@ -2543,7 +2543,7 @@
 			<argument index="1" name="anim_to" type="String">
 			</argument>
 			<description>
-			Get the blend time between two animations, referemced by their names.
+			Get the blend time between two animations, referenced by their names.
 			</description>
 		</method>
 		<method name="set_default_blend_time">
@@ -2596,7 +2596,7 @@
 			<return type="bool">
 			</return>
 			<description>
-			Return wether an animation is playing.
+			Return whether an animation is playing.
 			</description>
 		</method>
 		<method name="set_current_animation">
@@ -3814,7 +3814,7 @@
 			<argument index="3" name="area_shape" type="int">
 			</argument>
 			<description>
-			This signal triggers only once when a body enters this area. The first parameter is the body's [RID]. The second one is the body as an object. The third one is the index of the shape of the body that entered this area, and the fourth one is the index of the shape in this area that repored the entering.
+			This signal triggers only once when a body enters this area. The first parameter is the body's [RID]. The second one is the body as an object. The third one is the index of the shape of the body that entered this area, and the fourth one is the index of the shape in this area that reported the entering.
 			</description>
 		</signal>
 		<signal name="area_enter">
@@ -3912,7 +3912,7 @@
 			<argument index="0" name="value" type="var">
 			</argument>
 			<description>
-			Remove the first occurence of a value from the array.
+			Remove the first occurrence of a value from the array.
 			</description>
 		</method>
 		<method name="find">
@@ -4194,7 +4194,7 @@
 			<argument index="1" name="data" type="RealArray">
 			</argument>
 			<description>
-			Set the sample data for a given sample as an array of floats. The length must be equal to the sample lenght or an error will be produced.
+			Set the sample data for a given sample as an array of floats. The length must be equal to the sample length or an error will be produced.
 			For this method, a stereo sample is made from two samples. Thus, in case of a stereo sample, the array length must be twice the length returned by [method sample_get_length].
 			Trying to alter a SAMPLE_FORMAT_IMA_ADPCM sample is not supported. It will throw an error to the console, but will not alter the sample data.
 			</description>
@@ -4205,7 +4205,7 @@
 			<argument index="1" name="data" type="RawArray">
 			</argument>
 			<description>
-			Set the sample data for a given sample as an array of bytes. The length must be equal to the sample lenght expected in bytes or an error will be produced. The byte length can be calculated as follows:
+			Set the sample data for a given sample as an array of bytes. The length must be equal to the sample length expected in bytes or an error will be produced. The byte length can be calculated as follows:
 			Get the sample length ([method get_sample_length]).
 			If the sample format is SAMPLE_FORMAT_PCM16, multiply it by 2.
 			If the sample format is SAMPLE_FORMAT_IMA_ADPCM, divide it by 2 (rounding any fraction up), then add 4.
@@ -4381,7 +4381,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
-			Set wether a given voice is positional. This is only interpreted as a hint and used for backends that may support binaural encoding.
+			Set whether a given voice is positional. This is only interpreted as a hint and used for backends that may support binaural encoding.
 			</description>
 		</method>
 		<method name="voice_get_volume" qualifiers="const">
@@ -4489,7 +4489,7 @@
 			<argument index="0" name="voice" type="RID">
 			</argument>
 			<description>
-			Return wether the current voice is positional. See [method voice_set_positional].
+			Return whether the current voice is positional. See [method voice_set_positional].
 			</description>
 		</method>
 		<method name="voice_stop">
@@ -4618,7 +4618,7 @@
 	Base class for audio streams.
 	</brief_description>
 	<description>
-	Base class for audio streams. Audio streams are used for music playback, or other types of streamed sounds that don't fit or requiere more flexibility than a [Sample].
+	Base class for audio streams. Audio streams are used for music playback, or other types of streamed sounds that don't fit or require more flexibility than a [Sample].
 	</description>
 	<methods>
 	</methods>
@@ -5166,7 +5166,7 @@
 	Provides a base class for different kinds of buttons.
 	</brief_description>
 	<description>
-	BaseButton is the abstract base class for buttons, so it shouldn't be used directly (It doesnt display anything). Other types of buttons inherit from it.
+	BaseButton is the abstract base class for buttons, so it shouldn't be used directly (It doesn't display anything). Other types of buttons inherit from it.
 	</description>
 	<methods>
 		<method name="_pressed" qualifiers="virtual">
@@ -5224,14 +5224,14 @@
 			<return type="bool">
 			</return>
 			<description>
-			Return wether the button is in disabled state (see [method set_disabled]).
+			Return whether the button is in disabled state (see [method set_disabled]).
 			</description>
 		</method>
 		<method name="set_click_on_press">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			Set the button click_on_press mode. This mode generates click events when a mousebutton or key is just pressed (by default events are generated when the button/keys are released and both press and release occur in the visual area of the Button).
+			Set the button click_on_press mode. This mode generates click events when a mouse button or key is just pressed (by default events are generated when the button/keys are released and both press and release occur in the visual area of the Button).
 			</description>
 		</method>
 		<method name="get_click_on_press" qualifiers="const">
@@ -5245,7 +5245,7 @@
 			<return type="int">
 			</return>
 			<description>
-			Return the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overiding _draw() or connecting to "draw" signal. The visual state of the button is defined by the DRAW_* enum.
+			Return the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overriding _draw() or connecting to "draw" signal. The visual state of the button is defined by the DRAW_* enum.
 			</description>
 		</method>
 	</methods>
@@ -5440,7 +5440,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-			Set the [i]flat[/i] property of a Button. Flat buttons don't display decoration unless hoevered or pressed.
+			Set the [i]flat[/i] property of a Button. Flat buttons don't display decoration unless hovered or pressed.
 			</description>
 		</method>
 		<method name="set_clip_text">
@@ -5509,7 +5509,7 @@
 	Array of Buttons.
 	</brief_description>
 	<description>
-	Array of Buttons. A Button array is useful to have an array of buttons laid out vertically or horizontally. Only one can be selected. This is useful for joypad based interfaces and option menus.
+	Array of Buttons. A Button array is useful to have an array of buttons laid out vertically or horizontally. Only one can be selected. This is useful for joy pad based interfaces and option menus.
 	</description>
 	<methods>
 		<method name="add_button">
@@ -5587,7 +5587,7 @@
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
-			Sekect a button in the array.
+			Select a button in the array.
 			</description>
 		</method>
 		<method name="erase_button">
@@ -5614,7 +5614,7 @@
 	</signals>
 	<constants>
 		<constant name="ALIGN_BEGIN" value="0">
-			Align buttons at the begining.
+			Align buttons at the beginning.
 		</constant>
 		<constant name="ALIGN_CENTER" value="1">
 			Align buttons in the middle.
@@ -5721,7 +5721,7 @@
 			<argument index="0" name="world_point" type="Vector3">
 			</argument>
 			<description>
-			Return how a 3D point in worldpsace maps to a 2D coordinate in the [Viewport] rectangle.
+			Return how a 3D point in worldspace maps to a 2D coordinate in the [Viewport] rectangle.
 			</description>
 		</method>
 		<method name="is_position_behind" qualifiers="const">
@@ -5775,7 +5775,7 @@
 			<return type="bool">
 			</return>
 			<description>
-			Return wether the Camera is the current one in the [Viewport], or plans to become current (if outside the scene tree).
+			Return whether the Camera is the current one in the [Viewport], or plans to become current (if outside the scene tree).
 			</description>
 		</method>
 		<method name="get_camera_transform" qualifiers="const">
@@ -6080,7 +6080,7 @@
 	</brief_description>
 	<description>
 	Base class of anything 2D. Canvas items are laid out in a tree and children inherit and extend the transform of their parent. CanvasItem is extended by [Control], for anything GUI related, and by [Node2D] for anything 2D engine related.
-	Any CanvasItem can draw. For this, the "update" function must be called, then NOTIFICATION_DRAW will be received on idle time to request redraw. Because of this, canvas items don't need to be redraw on every frame, improving the performance significan'tly. Several functions for drawing on the CanvasItem are provided (see draw_* functions). They can only be used inside the notification, signal or _draw() overrided function, though.
+	Any CanvasItem can draw. For this, the "update" function must be called, then NOTIFICATION_DRAW will be received on idle time to request redraw. Because of this, canvas items don't need to be redraw on every frame, improving the performance significan'tly. Several functions for drawing on the CanvasItem are provided (see draw_* functions). They can only be used inside the notification, signal or _draw() overrides function, though.
 	Canvas items are draw in tree order. By default, children are on top of their parents so a root CanvasItem will be drawn behind everything (this can be changed per item though).
 	Canvas items can also be hidden (hiding also their subtree). They provide many means for changing standard parameters such as opacity (for it and the subtree) and self opacity, blend mode.
 	Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
@@ -6095,7 +6095,7 @@
 			<argument index="0" name="state" type="var">
 			</argument>
 			<description>
-			Used for editing, returns an opaque value represeting the transform state.
+			Used for editing, returns an opaque value representing the transform state.
 			</description>
 		</method>
 		<method name="edit_get" qualifiers="const">
@@ -6509,7 +6509,7 @@
 	<signals>
 		<signal name="item_rect_changed">
 			<description>
-			Emitted when the intem rect has changed.
+			Emitted when the item rect has changed.
 			</description>
 		</signal>
 		<signal name="draw">
@@ -6798,7 +6798,7 @@
 	Capsule 2D shape resource for physics.
 	</brief_description>
 	<description>
-	Capsule 2D shape resource for physics. A capsule (or sometimes called "pill") is like a line grown in all directions. It has a radius and a height, and is often useful for modelling biped characters.
+	Capsule 2D shape resource for physics. A capsule (or sometimes called "pill") is like a line grown in all directions. It has a radius and a height, and is often useful for modeling biped characters.
 	</description>
 	<methods>
 		<method name="set_radius">
@@ -6948,7 +6948,7 @@
 	Circular Shape for 2D Physics.
 	</brief_description>
 	<description>
-	Circular Shape for 2D Physics. This shape is useful for modelling balls or small characters and it's collision detection with everything else is very fast.
+	Circular Shape for 2D Physics. This shape is useful for modeling balls or small characters and it's collision detection with everything else is very fast.
 	</description>
 	<methods>
 		<method name="set_radius">
@@ -7382,7 +7382,7 @@
 			</return>
 			<description>
 			Return the index of the first shape generated by the editor.
-			When [code]build_mode[/code] is set to generate convex polygons, the shape shown in the editor may be decomopsed into many convex polygons. In that case, a range of indexes is needed to directly access the [Shape2D].
+			When [code]build_mode[/code] is set to generate convex polygons, the shape shown in the editor may be decomposed into many convex polygons. In that case, a range of indexes is needed to directly access the [Shape2D].
 			When [code]build_mode[/code] is set to generate concave polygons, there is only one [Shape2D] generated, so the start index and the end index are the same.
 			</description>
 		</method>
@@ -7546,7 +7546,7 @@
 			<return type="int">
 			</return>
 			<description>
-			Convert the color to a 32 its integer (each byte represets a RGBA).
+			Convert the color to a 32 its integer (each byte represents a RGBA).
 			</description>
 		</method>
 		<method name="to_ARGB32">
@@ -8105,7 +8105,7 @@
 	Dialog for confirmation of actions.
 	</brief_description>
 	<description>
-	Dialog for confirmation of actions. This dialog inherits from [AcceptDialog], but has by default an OK and Cancel buton (in host OS order).
+	Dialog for confirmation of actions. This dialog inherits from [AcceptDialog], but has by default an OK and Cancel button (in host OS order).
 	</description>
 	<methods>
 		<method name="get_cancel">
@@ -8124,8 +8124,8 @@
 	Base node for containers.
 	</brief_description>
 	<description>
-	Base node for conainers. A [Container] contains other controls and automatically arranges them in a certain way.
-	A Control can inherit this to reate custom container classes.
+	Base node for containers. A [Container] contains other controls and automatically arranges them in a certain way.
+	A Control can inherit this to create custom container classes.
 	</description>
 	<methods>
 		<method name="queue_sort">
@@ -8146,7 +8146,7 @@
 	<signals>
 		<signal name="sort_children">
 			<description>
-			Enmitted when sorting the children is needed.
+			Emitted when sorting the children is needed.
 			</description>
 		</signal>
 	</signals>
@@ -8234,7 +8234,7 @@
 			<argument index="1" name="anchor_mode" type="int">
 			</argument>
 			<description>
-			Change the anchor (ANCHOR_BEGIN, ANCHOR_END, ANCHOR_RATIO) type for a margin (MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM). Changing the anchor mode converts the current margin offset from the previos anchor mode to the new one, so margin offsets ([method set_margin]) must be done after setting anchors, or at the same time ([method set_anchor_and_margin]).
+			Change the anchor (ANCHOR_BEGIN, ANCHOR_END, ANCHOR_RATIO) type for a margin (MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM). Changing the anchor mode converts the current margin offset from the previous anchor mode to the new one, so margin offsets ([method set_margin]) must be done after setting anchors, or at the same time ([method set_anchor_and_margin]).
 			</description>
 		</method>
 		<method name="get_anchor" qualifiers="const">
@@ -8345,7 +8345,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-			Returns the Control position, relative to the top-left corner of the parent Control and independly of the anchor mode.
+			Returns the Control position, relative to the top-left corner of the parent Control and independent of the anchor mode.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
@@ -8425,7 +8425,7 @@
 			<return type="bool">
 			</return>
 			<description>
-			Return wether the Control is the current focused control (see [method set_focus_mode]).
+			Return whether the Control is the current focused control (see [method set_focus_mode]).
 			</description>
 		</method>
 		<method name="grab_focus">
@@ -9239,7 +9239,7 @@ If "atpos" is given, the point is inserted before the point number "atpos", movi
 			</argument>
 			<description>
 			Sets the tilt angle in radians for the point "idx". If the index is out of bounds, the function sends an error to the console.
-The tilt controls the rotation along the look-at axis an object travelling the path would have. In the case of a curve controlling a [PathFollow], this tilt is an offset over the natural tilt the PathFollow calculates.
+The tilt controls the rotation along the look-at axis an object traveling the path would have. In the case of a curve controlling a [PathFollow], this tilt is an offset over the natural tilt the PathFollow calculates.
 			</description>
 		</method>
 		<method name="get_point_tilt" qualifiers="const">
@@ -10333,7 +10333,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 			Set the playback volume for this player. This is a float between 0.0 (silent) and 1.0 (full volume). Values over 1.0 may amplify sound even more, but may introduce distortion. Negative values may just invert the output waveform, which produces no audible difference.
-			The effect of these special values uiltimately depends on the low-level implementation of the file format being played.
+			The effect of these special values ultimately depends on the low-level implementation of the file format being played.
 			</description>
 		</method>
 		<method name="get_volume" qualifiers="const">
@@ -10375,7 +10375,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="db" type="float">
 			</argument>
 			<description>
-			Set the playback volume for this player, in decibels. This is a float between -80.0 (silent) and 0.0 (full volume). Values under -79.0 get truncated to -80, but values over 0.0 do not, so the warnings for overamplifying (see [method set_volume]) still apply.
+			Set the playback volume for this player, in decibels. This is a float between -80.0 (silent) and 0.0 (full volume). Values under -79.0 get truncated to -80, but values over 0.0 do not, so the warnings for over amplifying (see [method set_volume]) still apply.
 			</description>
 		</method>
 		<method name="get_volume_db" qualifiers="const">
@@ -10484,10 +10484,10 @@ This approximation makes straight segments between each point, then subdivides t
 	Driver for MOD playback.
 	</brief_description>
 	<description>
-	This driver plays MOD music. MOD music, as all event-based streams, is a music format defined by note events ocurring at defined moments, instead of a stream of audio samples.
+	This driver plays MOD music. MOD music, as all event-based streams, is a music format defined by note events occurring at defined moments, instead of a stream of audio samples.
 	Currently, this driver supports the MOD, S3M, IT, and XM formats.
 	This class exposes no methods.
-	This class can return its playback positon in seconds, but does not allow to set it, failing with only a console warning.
+	This class can return its playback position in seconds, but does not allow to set it, failing with only a console warning.
 	This class can not return its song length, returning 1.0 when queried.
 	This class does not limit its volume settings, allowing for overflow/distortion and wave inversion.
 	</description>
@@ -10929,7 +10929,7 @@ This approximation makes straight segments between each point, then subdivides t
 	Simple Material with a fixed parameter set.
 	</brief_description>
 	<description>
-	FixedMaterial is a simple type of material [Resource], which contains a fixed amount of paramters. It is the only type of material supported in fixed-pipeline devices and APIs. It is also an often a better alternative to [ShaderMaterial] for most simple use cases.
+	FixedMaterial is a simple type of material [Resource], which contains a fixed amount of parameters. It is the only type of material supported in fixed-pipeline devices and APIs. It is also an often a better alternative to [ShaderMaterial] for most simple use cases.
 	</description>
 	<methods>
 		<method name="set_parameter">
@@ -11253,7 +11253,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="4" name="clip_w" type="int" default="-1">
 			</argument>
 			<description>
-			Draw "string" into a canvas item using the font at a given "pos" position, with "modulate" color, and optionally clipping the width. "pos" specifies te baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
+			Draw "string" into a canvas item using the font at a given "pos" position, with "modulate" color, and optionally clipping the width. "pos" specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
 			</description>
 		</method>
 		<method name="draw_char" qualifiers="const">
@@ -11270,7 +11270,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="4" name="modulate" type="Color" default="Color(1,1,1,1)">
 			</argument>
 			<description>
-			Draw character "char" into a canvas item using the font at a given "pos" position, with "modulate" color, and optionally kerning if "next" is apassed. clipping the width. "pos" specifies te baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis. The width used by the character is returned, making this function useful for drawing strings character by character.
+			Draw character "char" into a canvas item using the font at a given "pos" position, with "modulate" color, and optionally kerning if "next" is apassed. clipping the width. "pos" specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis. The width used by the character is returned, making this function useful for drawing strings character by character.
 			</description>
 		</method>
 		<method name="set_fallback">
@@ -12173,7 +12173,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-			Disable input and ouput slot whose index is 'idx'.
+			Disable input and output slot whose index is 'idx'.
 			</description>
 		</method>
 		<method name="clear_all_slots">
@@ -13987,7 +13987,7 @@ verify_host will check the SSL identity of the host if set to true.
 			Mouse button event.
 		</constant>
 		<constant name="JOYSTICK_MOTION" value="4">
-			Jostick motion event.
+			Joystick motion event.
 		</constant>
 		<constant name="JOYSTICK_BUTTON" value="5">
 			Joystick button event.
@@ -15643,7 +15643,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<return type="Variant">
 			</return>
 			<description>
-			Return the metadata of the shape that collided with this body. If there is no collision, it will return 0, so collisions must be checked first with [method is_colliding]. Aditionally, this metadata can not be set with [method Object.set_meta], it must be set with [method Physics2DServer.body_set_shape_metadata].
+			Return the metadata of the shape that collided with this body. If there is no collision, it will return 0, so collisions must be checked first with [method is_colliding]. Additionally, this metadata can not be set with [method Object.set_meta], it must be set with [method Physics2DServer.body_set_shape_metadata].
 			</description>
 		</method>
 		<method name="set_collision_margin">
@@ -17178,7 +17178,7 @@ verify_host will check the SSL identity of the host if set to true.
 	Special button that brings up a [PopupMenu] when clicked.
 	</brief_description>
 	<description>
-	Special button that brings up a [PopupMenu] when clicked. That's pretty much all it does, as it's just a helper class when bulding GUIs.
+	Special button that brings up a [PopupMenu] when clicked. That's pretty much all it does, as it's just a helper class when building GUIs.
 	</description>
 	<methods>
 		<method name="get_popup">
@@ -17227,7 +17227,7 @@ verify_host will check the SSL identity of the host if set to true.
 	A [Resource] that contains vertex-array based geometry.
 	</brief_description>
 	<description>
-	Mesh is a type of [Resource] that contains vertex-array based geometry, divided in [i]surfaces[/i]. Each surface contains a completely separate array and a material used to draw it. Design wise, a mesh with multiple surfaces is prefered to a single surface, because objects created in 3D editing software commonly contain multiple materials.
+	Mesh is a type of [Resource] that contains vertex-array based geometry, divided in [i]surfaces[/i]. Each surface contains a completely separate array and a material used to draw it. Design wise, a mesh with multiple surfaces is preferred to a single surface, because objects created in 3D editing software commonly contain multiple materials.
 	</description>
 	<methods>
 		<method name="add_morph_target">
@@ -17775,7 +17775,7 @@ verify_host will check the SSL identity of the host if set to true.
 	Node that instances meshes into a [Scenario].
 	</brief_description>
 	<description>
-	MeshInstance is a [Node] that takes a [Mesh] resource and adds it to the current [Scenario] by creating an instance of it. This is the class most often used to get 3D geometry rendered and can be used to instance a sigle [Mesh] in many places. This allows to reuse geometry and save on resources. When a [Mesh] has to be instanced more than thousands of times at close proximity, consider using a [MultiMesh] in a [MultiMeshInstance] instead.
+	MeshInstance is a [Node] that takes a [Mesh] resource and adds it to the current [Scenario] by creating an instance of it. This is the class most often used to get 3D geometry rendered and can be used to instance a single [Mesh] in many places. This allows to reuse geometry and save on resources. When a [Mesh] has to be instanced more than thousands of times at close proximity, consider using a [MultiMesh] in a [MultiMeshInstance] instead.
 	</description>
 	<methods>
 		<method name="set_mesh">
@@ -17923,12 +17923,12 @@ verify_host will check the SSL identity of the host if set to true.
 </class>
 <class name="MultiMesh" inherits="Resource" category="Core">
 	<brief_description>
-	Provides high perfomance mesh instancing.
+	Provides high performance mesh instancing.
 	</brief_description>
 	<description>
 	MultiMesh provides low level mesh instancing. If the amount of [Mesh] instances needed goes from hundreds to thousands (and most need to be visible at close proximity) creating such a large amount of [MeshInstance] nodes may affect performance by using too much CPU or video memory.
 	For this case a MultiMesh becomes very useful, as it can draw thousands of instances with little API overhead.
-        As a drawback, if the instances are too far away of each other, performance may be reduced as every sigle instance will always rendered (they are spatially indexed as one, for the whole object).
+        As a drawback, if the instances are too far away of each other, performance may be reduced as every single instance will always rendered (they are spatially indexed as one, for the whole object).
 	Since instances may have any behavior, the AABB used for visibility must be provided by the user, or generated with [method generate_aabb].
 	</description>
 	<methods>
@@ -17950,14 +17950,14 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="0" name="count" type="int">
 			</argument>
 			<description>
-			Set the amount of instnces that is going to be drawn. Changing this number will erase all the existing instance transform and color data.
+			Set the amount of instances that is going to be drawn. Changing this number will erase all the existing instance transform and color data.
 			</description>
 		</method>
 		<method name="get_instance_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-			Return the amount of instnces that is going to be drawn.
+			Return the amount of instances that is going to be drawn.
 			</description>
 		</method>
 		<method name="set_instance_transform">
@@ -18624,12 +18624,12 @@ verify_host will check the SSL identity of the host if set to true.
 	<description>
 	Nodes can be set as children of other nodes, resulting in a tree arrangement. Any tree of nodes is called a "Scene".
 	Scenes can be saved to disk, and then instanced into other scenes. This allows for very high flexibility in the architecture and data model of the projects.
-	[SceneMainLoop] contains the "active" tree of nodes, and a node becomes active (receinving NOTIFICATION_ENTER_SCENE) when added to that tree.
-	A node can contain any number of nodes as a children (but there is only one tree root) with the requirement that no two childrens with the same name can exist.
+	[SceneMainLoop] contains the "active" tree of nodes, and a node becomes active (receiving NOTIFICATION_ENTER_SCENE) when added to that tree.
+	A node can contain any number of nodes as a children (but there is only one tree root) with the requirement that no two children with the same name can exist.
 	Nodes can, optionally, be added to groups. This makes it easy to reach a number of nodes from the code (for example an "enemies" group).
 	Nodes can be set to "process" state, so they constantly receive a callback requesting them to process (do anything). Normal processing ([method _process]) happens as fast as possible and is dependent on the frame rate, so the processing time delta is variable. Fixed processing ([method _fixed_process]) happens a fixed amount of times per second (by default 60) and is useful to link itself to the physics.
 	Nodes can also process input events. When set, the [method _input] function will be called with every input that the program receives. Since this is usually too overkill (unless used for simple projects), an [method _unhandled_input] function is called when the input was not handled by anyone else (usually, GUI [Control] nodes).
-	To keep track of the scene hieararchy (specially when instancing scenes into scenes) an "owner" can be set to a node. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
+	To keep track of the scene hierarchy (specially when instancing scenes into scenes) an "owner" can be set to a node. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
 	Finally, when a node is freed, it will free all its children nodes too.
 	</description>
 	<methods>
@@ -18829,7 +18829,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<return type="NodePath">
 			</return>
 			<description>
-			Return the absolute path of the current node. This only works if the curent node is inside the scene tree (see [method is_inside_scene]).
+			Return the absolute path of the current node. This only works if the current node is inside the scene tree (see [method is_inside_scene]).
 			</description>
 		</method>
 		<method name="get_path_to" qualifiers="const">
@@ -18871,7 +18871,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="1" name="to_pos" type="int">
 			</argument>
 			<description>
-			Move a child node to a different position (order) amongst the other children. Since calls, signals, etc are performed by tree order, changing the order of chilren nodes may be useful.
+			Move a child node to a different position (order) amongst the other children. Since calls, signals, etc are performed by tree order, changing the order of children nodes may be useful.
 			</description>
 		</method>
 		<method name="get_groups" qualifiers="const">
@@ -18901,7 +18901,7 @@ verify_host will check the SSL identity of the host if set to true.
 		</method>
 		<method name="remove_and_skip">
 			<description>
-			Remove a node and set all its children as childrens of the parent node (if exists). All even subscriptions that pass by the removed node will be unsubscribed.
+			Remove a node and set all its children as children of the parent node (if exists). All even subscriptions that pass by the removed node will be unsubscribed.
 			</description>
 		</method>
 		<method name="get_index" qualifiers="const">
@@ -18913,7 +18913,7 @@ verify_host will check the SSL identity of the host if set to true.
 		</method>
 		<method name="print_tree">
 			<description>
-			Print the screne to stdout. Used mainly for debugging purposes.
+			Print the scene to stdout. Used mainly for debugging purposes.
 			</description>
 		</method>
 		<method name="set_filename">
@@ -18934,21 +18934,21 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="0" name="what" type="int">
 			</argument>
 			<description>
-			Notify the current node and all its chldren recursively by calling notification() in all of them.
+			Notify the current node and all its children recursively by calling notification() in all of them.
 			</description>
 		</method>
 		<method name="set_fixed_process">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			Enables or disables node fixed framerate processing. When a node is being processed, it will receive a NOTIFICATION_PROCESS at a fixed (usually 60fps, check [OS] to change that) interval (and the [method _fixed_process] callback will be called if exists). It is common to check how much time was elapsed since the previous frame by calling [method get_fixed_process_time].
+			Enables or disables node fixed framerate processing. When a node is being processed, it will receive a NOTIFICATION_PROCESS at a fixed (usually 60 fps, check [OS] to change that) interval (and the [method _fixed_process] callback will be called if exists). It is common to check how much time was elapsed since the previous frame by calling [method get_fixed_process_time].
 			</description>
 		</method>
 		<method name="get_fixed_process_delta_time" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-			Return the time elapsed since the last fixed frame. This is always the same in fixed proecssing unless the frames per second is changed in [OS].
+			Return the time elapsed since the last fixed frame. This is always the same in fixed processing unless the frames per second is changed in [OS].
 			</description>
 		</method>
 		<method name="is_fixed_processing" qualifiers="const">
@@ -18983,7 +18983,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			Enable input processing for node. This is not requiered for GUI controls! It hooks up the node to receive all input (see [method _input]).
+			Enable input processing for node. This is not required for GUI controls! It hooks up the node to receive all input (see [method _input]).
 			</description>
 		</method>
 		<method name="is_processing_input" qualifiers="const">
@@ -18997,7 +18997,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			Enable unhandled input processing for node. This is not requiered for GUI controls! It hooks up the node to receive all input that was not previously handled before (usually by a [Control]). (see [method _unhandled_input]).
+			Enable unhandled input processing for node. This is not required for GUI controls! It hooks up the node to receive all input that was not previously handled before (usually by a [Control]). (see [method _unhandled_input]).
 			</description>
 		</method>
 		<method name="is_processing_unhandled_input" qualifiers="const">
@@ -19148,7 +19148,7 @@ verify_host will check the SSL identity of the host if set to true.
 	Base node for 2D system.
 	</brief_description>
 	<description>
-	Base node for 2D system. Node2D contains a position, rotation and scale, which is used to position and animate. It can alternatively be used with a custom 2D transform ([Matrix32]). A tree of Node2Ds allows complex hierachies for animation and positioning.
+	Base node for 2D system. Node2D contains a position, rotation and scale, which is used to position and animate. It can alternatively be used with a custom 2D transform ([Matrix32]). A tree of Node2Ds allows complex hierarchies for animation and positioning.
 	</description>
 	<methods>
 		<method name="set_pos">
@@ -19728,7 +19728,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="0" name="environment" type="String">
 			</argument>
 			<description>
-			Return true if an envieronment variable exists.
+			Return true if an environment variable exists.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
@@ -20110,7 +20110,7 @@ verify_host will check the SSL identity of the host if set to true.
 	<description>
 	Base class for all non built-in types. Everything not a built-in type starts the inheritance chain from this class.
 	Objects do not manage memory, if inheriting from one the object will most likely have to be deleted manually (call the [method free] function from the script or delete from C++).
-	Some derivates add memory management, such as [Reference] (which keps a reference count and deletes itself automatically when no longer referenced) and [Node], which deletes the children tree when deleted.
+	Some derivates add memory management, such as [Reference] (which keeps a reference count and deletes itself automatically when no longer referenced) and [Node], which deletes the children tree when deleted.
 	Objects export properties, which are mainly useful for storage and editing, but not really so much in programming. Properties are exported in [method _get_property_list] and handled in [method _get] and [method _set]. However, scripting languages and C++ have simper means to export them.
 	Objects also receive notifications ([method _notification]). Notifications are a simple way to notify the object about simple events, so they can all be handled together.
 	</description>
@@ -20126,7 +20126,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<return type="Array">
 			</return>
 			<description>
-			Return the property list, array of dictionaries, dictionaries must countain: name:String, type:int (see TYPE_* enum in globals) and optionally: hint:int (see PROPERTY_HINT_* in globals), hint_string:String, usage:int (see PROPERTY_USAGE_* in globals).
+			Return the property list, array of dictionaries, dictionaries must contain: name:String, type:int (see TYPE_* enum in globals) and optionally: hint:int (see PROPERTY_HINT_* in globals), hint_string:String, usage:int (see PROPERTY_USAGE_* in globals).
 			</description>
 		</method>
 		<method name="_init" qualifiers="virtual">
@@ -20166,7 +20166,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-			Check the type of the obeject against a string (including inheritance).
+			Check the type of the object against a string (including inheritance).
 			</description>
 		</method>
 		<method name="set">
@@ -20189,7 +20189,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<return type="Array">
 			</return>
 			<description>
-			Return the list of properties as an array of dictionaries, dictionaries countain: name:String, type:int (see TYPE_* enum in globals) and optionally: hint:int (see PROPERTY_HINT_* in globals), hint_string:String, usage:int (see PROPERTY_USAGE_* in globals).
+			Return the list of properties as an array of dictionaries, dictionaries contain: name:String, type:int (see TYPE_* enum in globals) and optionally: hint:int (see PROPERTY_HINT_* in globals), hint_string:String, usage:int (see PROPERTY_USAGE_* in globals).
 			</description>
 		</method>
 		<method name="get_method_list" qualifiers="const">
@@ -20234,7 +20234,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="1" name="value" type="var">
 			</argument>
 			<description>
-			Set a metadata into the object. Medatada is serialized. Metadata can be [i]anything[/i].
+			Set a metadata into the object. Metadata is serialized. Metadata can be [i]anything[/i].
 			</description>
 		</method>
 		<method name="get_meta" qualifiers="const">
@@ -20257,7 +20257,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<return type="StringArray">
 			</return>
 			<description>
-			Return the list of metadatas in the object.
+			Return the list of metadata in the object.
 			</description>
 		</method>
 		<method name="add_user_signal">
@@ -20547,7 +20547,7 @@ verify_host will check the SSL identity of the host if set to true.
 </class>
 <class name="OmniLight" inherits="Light" category="Core">
 	<brief_description>
-	OmniDirectional Light, such as a lightbulb or a candle.
+	OmniDirectional Light, such as a light bulb or a candle.
 	</brief_description>
 	<description>
 	An OmniDirectional light is a type of [Light] node that emits lights in all directions. The light is attenuated through the distance and this attenuation can be configured by changing the energy, radius and attenuation parameters of [Light]. TODO: Image of an omnilight.
@@ -20898,7 +20898,7 @@ verify_host will check the SSL identity of the host if set to true.
 	Abstraction and base class for packet-based protocols.
 	</brief_description>
 	<description>
-	PacketPeer is an abstration and base class for packet-based protocols (such as UDP). It provides an API for sending and receiving packets both as raw data or variables. This makes it easy to transfer data over a protocol, without having to encode data as low level bytes or having to worry about network ordering.
+	PacketPeer is an abstraction and base class for packet-based protocols (such as UDP). It provides an API for sending and receiving packets both as raw data or variables. This makes it easy to transfer data over a protocol, without having to encode data as low level bytes or having to worry about network ordering.
 	</description>
 	<methods>
 		<method name="get_var" qualifiers="const">
@@ -21031,7 +21031,7 @@ verify_host will check the SSL identity of the host if set to true.
 	Provides an opaque background for [Control] children.
 	</brief_description>
 	<description>
-	Panel is a [Control] that displays an opaque background. It's commoly used as a parent and container for other types of [Control] nodes. [center][img]images/panel_example.png[/img][/center]
+	Panel is a [Control] that displays an opaque background. It's commonly used as a parent and container for other types of [Control] nodes. [center][img]images/panel_example.png[/img][/center]
 	</description>
 	<methods>
 	</methods>
@@ -22251,7 +22251,7 @@ This method controls whether the position between two cached points is interpola
 	Singleton containing the list of remapped resources.
 	</brief_description>
 	<description>
-	When exporting, the types of some resources may change internally so they are converted to more optimized versions. While it's not usually necesary to access to this directly (path remapping happens automatically when opeining a file), it's exported just for information.
+	When exporting, the types of some resources may change internally so they are converted to more optimized versions. While it's not usually necessary to access to this directly (path remapping happens automatically when opening a file), it's exported just for information.
 	</description>
 	<methods>
 		<method name="add_remap">
@@ -22639,11 +22639,11 @@ This method controls whether the position between two cached points is interpola
 			Intersect a ray in a given space, the returned object is a dictionary with the following fields:
 		position: place where ray is stopped.
 		normal: normal of the object at the point where the ray was stopped.
-		shape: shape index of the object agaisnt which the ray was stopped.
-		collider_: collider agaisnt which the ray was stopped.
-		collider_id: collider id of the object agaisnt which the ray was stopped.
-		collider: collider object agaisnt which the ray was stopped.
-		rid: [RID] of the object agaisnt which the ray was stopped.
+		shape: shape index of the object against which the ray was stopped.
+		collider_: collider against which the ray was stopped.
+		collider_id: collider id of the object against which the ray was stopped.
+		collider: collider object against which the ray was stopped.
+		rid: [RID] of the object against which the ray was stopped.
 	If the ray did not intersect anything, then an empty dictionary (dir.empty()==true) is returned instead.
 			</description>
 		</method>
@@ -25558,7 +25558,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="epsilon" type="float" default="0.00001">
 			</argument>
 			<description>
-			Returns true if "point" is inside the plane (by a very minimum treshold).
+			Returns true if "point" is inside the plane (by a very minimum threshold).
 			</description>
 		</method>
 		<method name="intersect_3">
@@ -25907,14 +25907,14 @@ This method controls whether the position between two cached points is interpola
 	Base container control for popups and dialogs.
 	</brief_description>
 	<description>
-	PopUp is a base [Control] used to show dialogs and popups. It's a subwindow and modal by default (see [Control]) and has helpers for custom popup behavior.
+	Popup is a base [Control] used to show dialogs and popups. It's a subwindow and modal by default (see [Control]) and has helpers for custom popup behavior.
 	</description>
 	<methods>
 		<method name="popup_centered">
 			<argument index="0" name="size" type="Vector2" default="Vector2(0,0)">
 			</argument>
 			<description>
-			Popup (show the control in modal form) in the center of the screen, at the curent size, or at a size determined by "size".
+			Popup (show the control in modal form) in the center of the screen, at the current size, or at a size determined by "size".
 			</description>
 		</method>
 		<method name="popup_centered_ratio">
@@ -25995,7 +25995,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="accel" type="int" default="0">
 			</argument>
 			<description>
-			Add a new item with text "label" and icon "texture". An id can optonally be provided, as well as an accelerator. If no id is provided, one will be created from the index.
+			Add a new item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index.
 			</description>
 		</method>
 		<method name="add_item">
@@ -26006,7 +26006,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="2" name="accel" type="int" default="0">
 			</argument>
 			<description>
-			Add a new item with text "label". An id can optonally be provided, as well as an accelerator. If no id is provided, one will be created from the index.
+			Add a new item with text "label". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index.
 			</description>
 		</method>
 		<method name="add_icon_check_item">
@@ -26019,7 +26019,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="accel" type="int" default="0">
 			</argument>
 			<description>
-			Add a new checkable item with text "label" and icon "texture". An id can optonally be provided, as well as an accelerator. If no id is provided, one will be created from the index. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+			Add a new check able item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="add_check_item">
@@ -26030,7 +26030,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="2" name="accel" type="int" default="0">
 			</argument>
 			<description>
-			Add a new checkable item with text "label". An id can optonally be provided, as well as an accelerator. If no id is provided, one will be created from the index. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+			Add a new checkable item with text "label". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="add_submenu_item">
@@ -26327,14 +26327,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			Enable the portal (it is enabled by defaul though), disabling it will cause the parent [RoomInstance] to not be visible any longer when looking through the portal.
+			Enable the portal (it is enabled by default though), disabling it will cause the parent [RoomInstance] to not be visible any longer when looking through the portal.
 			</description>
 		</method>
 		<method name="is_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-			Return wether the portal is active. When disabled it causes the parent [RoomInstance] to not be visible any longer when looking through the portal.
+			Return whether the portal is active. When disabled it causes the parent [RoomInstance] to not be visible any longer when looking through the portal.
 			</description>
 		</method>
 		<method name="set_disable_distance">
@@ -26590,7 +26590,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="Quat">
 			</return>
 			<description>
-			Returns the inverse of the quaternion (applies to the inverse rotatio too).
+			Returns the inverse of the quaternion (applies to the inverse rotation too).
 			</description>
 		</method>
 		<method name="length">
@@ -27164,7 +27164,7 @@ This method controls whether the position between two cached points is interpola
 	Ray 2D shape resource for physics.
 	</brief_description>
 	<description>
-	Ray 2D shape resource for physics. A ray is not really a collision body, isntead it tries to separate itself from whatever is touching its far endpoint. It's often useful for characters.
+	Ray 2D shape resource for physics. A ray is not really a collision body, instead it tries to separate itself from whatever is touching its far endpoint. It's often useful for characters.
 	</description>
 	<methods>
 		<method name="set_length">
@@ -27359,7 +27359,7 @@ This method controls whether the position between two cached points is interpola
 	Rectangle Shape for 2D Physics.
 	</brief_description>
 	<description>
-	Rectangle Shape for 2D Physics. This shape is useful for modelling box-like 2D objects.
+	Rectangle Shape for 2D Physics. This shape is useful for modeling box-like 2D objects.
 	</description>
 	<methods>
 		<method name="set_extents">
@@ -27437,12 +27437,12 @@ This method controls whether the position between two cached points is interpola
 	Currently supported features:
 		Capturing [code]()[/code] and non-capturing [code](?:)[/code] groups
 		Any character [code].[/code]
-		Shorthand caracter classes [code]\w \W \s \S \d \D[/code]
+		Shorthand character classes [code]\w \W \s \S \d \D[/code]
 		User-defined character classes such as [code][A-Za-z][/code]
 		Simple quantifiers [code]?[/code], [code]*[/code] and [code]+[/code]
 		Range quantifiers [code]{x,y}[/code]
 		Lazy (non-greedy) quantifiers [code]*?[/code]
-		Begining [code]^[/code] and end [code]$[/code] anchors
+		Beginning [code]^[/code] and end [code]$[/code] anchors
 		Alternation [code]|[/code]
 		Backreferences [code]\1[/code] and [code]\g{1}[/code]
 		POSIX character classes [code][[:alnum:]][/code]
@@ -27551,7 +27551,7 @@ This method controls whether the position between two cached points is interpola
 	Base class for all resources.
 	</brief_description>
 	<description>
-	Resource is the base class for all resource types. Resources are primarily data containers. They are reference counted and freed when no longer in use. They are also loaded only once from disk, and further attempts to load the resource will return the same reference (all this in contrast to a [Node], which is not reference counted and can be instanced from disk as many times as desred). Resources can be saved externally on disk or bundled into another object, such as a [Node] or another resource.
+	Resource is the base class for all resource types. Resources are primarily data containers. They are reference counted and freed when no longer in use. They are also loaded only once from disk, and further attempts to load the resource will return the same reference (all this in contrast to a [Node], which is not reference counted and can be instanced from disk as many times as desired). Resources can be saved externally on disk or bundled into another object, such as a [Node] or another resource.
 	</description>
 	<methods>
 		<method name="set_path">
@@ -27821,7 +27821,7 @@ This method controls whether the position between two cached points is interpola
 	Resource Preloader Node.
 	</brief_description>
 	<description>
-	Resource Preloader Node. This node is used to preload sub-resources inside a scene, so when the scene is loaded all the resourcs are ready to use and be retrieved from here.
+	Resource Preloader Node. This node is used to preload sub-resources inside a scene, so when the scene is loaded all the resources are ready to use and be retrieved from here.
 	</description>
 	<methods>
 		<method name="add_resource">
@@ -28613,7 +28613,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="linear_damp" type="float">
 			</argument>
 			<description>
-			Set the linear damp for this body. If this value is different from -1, any linear damp derived from the world or areas will be overriden.
+			Set the linear damp for this body. If this value is different from -1, any linear damp derived from the world or areas will be overridden.
 			</description>
 		</method>
 		<method name="get_linear_damp" qualifiers="const">
@@ -28627,7 +28627,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="angular_damp" type="float">
 			</argument>
 			<description>
-			Set the angular damp for this body. If this value is different from -1, any angular damp derived from the world or areas will be overriden.
+			Set the angular damp for this body. If this value is different from -1, any angular damp derived from the world or areas will be overridden.
 			</description>
 		</method>
 		<method name="get_angular_damp" qualifiers="const">
@@ -28712,7 +28712,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<description>
 			Set the continuous collision detection mode from the enum CCD_MODE_*.
-			Coninuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fat-moving objects.
+			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fat-moving objects.
 			</description>
 		</method>
 		<method name="get_continuous_collision_detection_mode" qualifiers="const">
@@ -30263,7 +30263,7 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="ScrollContainer" inherits="Container" category="Core">
 	<brief_description>
-	A helper node for displaying scollable elements (e.g. lists).
+	A helper node for displaying scrollable elements (e.g. lists).
 	</brief_description>
 	<description>
 	A ScrollContainer node with a [Control] child and scrollbar child ([HScrollbar], [VScrollBar], or both) will only draw the Control within the ScrollContainer area.  Scrollbars will automatically be drawn at the right (for vertical) or bottom (for horizontal) and will enable dragging to move the viewable Control (and its children) within the ScrollContainer.  Scrollbars will also automatically resize the grabber based on the minimum_size of the Control relative to the ScrollContainer.  Works great with a [Panel] control.
@@ -30388,7 +30388,7 @@ This method controls whether the position between two cached points is interpola
 	Base class for separators.
 	</brief_description>
 	<description>
-	Separator is a [Control] used for sepataring other controls. It's purely a visual decoration. Horizontal ([HSeparator]) and Vertical ([VSeparator]) versions are available.
+	Separator is a [Control] used for separating other controls. It's purely a visual decoration. Horizontal ([HSeparator]) and Vertical ([VSeparator]) versions are available.
 	</description>
 	<methods>
 	</methods>
@@ -31444,8 +31444,8 @@ This method controls whether the position between two cached points is interpola
 			<argument index="4" name="shape_motion" type="Vector2">
 			</argument>
 			<description>
-			Return whether this shape would collide with another, if a given movemen was applied.
-			This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test ont the other object ([code]shape_motion[/code]).
+			Return whether this shape would collide with another, if a given movement was applied.
+			This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
 			</description>
 		</method>
 		<method name="collide_and_get_contacts">
@@ -31477,7 +31477,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<description>
 			Return a list of the points where this shape would touch another, if a given movement was applied. If there are no collisions, the list is empty.
-			This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test ont the other object ([code]shape_motion[/code]).
+			This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
 			</description>
 		</method>
 	</methods>
@@ -31489,7 +31489,7 @@ This method controls whether the position between two cached points is interpola
 	Skeleton for characters and animated objects.
 	</brief_description>
 	<description>
-	Skeleton provides a hierachial interface for managing bones, including pose, rest and animation (see [Animation]). Skeleton will support rag doll dynamics in the future.
+	Skeleton provides a hierarchical interface for managing bones, including pose, rest and animation (see [Animation]). Skeleton will support rag doll dynamics in the future.
 	</description>
 	<methods>
 		<method name="add_bone">
@@ -32118,7 +32118,7 @@ This method controls whether the position between two cached points is interpola
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
-			Spatial nodes receive this notifacation with their global transform changes. This means that either the current or a parent node changed its transform.
+			Spatial nodes receive this notification with their global transform changes. This means that either the current or a parent node changed its transform.
 		</constant>
 		<constant name="NOTIFICATION_ENTER_WORLD" value="41">
 		</constant>
@@ -32663,7 +32663,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="flip_h" type="bool">
 			</argument>
 			<description>
-			Set true to flip the sprite horizontaly.
+			Set true to flip the sprite horizontally.
 			</description>
 		</method>
 		<method name="is_flipped_h" qualifiers="const">
@@ -33213,7 +33213,7 @@ This method controls whether the position between two cached points is interpola
 	Abstraction and base class for stream-based protocols.
 	</brief_description>
 	<description>
-	StreamPeer is an abstration and base class for stream-based protocols (such as TCP or Unix Sockets). It provides an API for sending and receiving data through streams as raw data or strings.
+	StreamPeer is an abstraction and base class for stream-based protocols (such as TCP or Unix Sockets). It provides an API for sending and receiving data through streams as raw data or strings.
 	</description>
 	<methods>
 		<method name="put_data">
@@ -33222,7 +33222,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="data" type="RawArray">
 			</argument>
 			<description>
-			Send a chunk of data through the connection, blocking if necesary until the data is done sending. This function returns an Error code.
+			Send a chunk of data through the connection, blocking if necessary until the data is done sending. This function returns an Error code.
 			</description>
 		</method>
 		<method name="put_partial_data">
@@ -33725,7 +33725,7 @@ This method controls whether the position between two cached points is interpola
 	Built-in string class.
 	</brief_description>
 	<description>
-	This is the built-in string class (and the one used by GDScript). It supports Unicode and provides all necesary means for string handling. Strings are reference counted and use a copy-on-write approach, so passing them around is cheap in resources.
+	This is the built-in string class (and the one used by GDScript). It supports Unicode and provides all necessary means for string handling. Strings are reference counted and use a copy-on-write approach, so passing them around is cheap in resources.
 	</description>
 	<methods>
 		<method name="basename">
@@ -33769,7 +33769,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="to" type="String">
 			</argument>
 			<description>
-			Perform a case-sensitive comparison to antoher string, return -1 if less, 0 if equal and +1 if greater.
+			Perform a case-sensitive comparison to another string, return -1 if less, 0 if equal and +1 if greater.
 			</description>
 		</method>
 		<method name="empty">
@@ -33794,7 +33794,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="from" type="int" default="0">
 			</argument>
 			<description>
-			Find the first occurence of a substring, return the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
+			Find the first occurrence of a substring, return the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
 		<method name="find_last">
@@ -33803,7 +33803,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="what" type="String">
 			</argument>
 			<description>
-			Find the last occurence of a substring, return the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
+			Find the last occurrence of a substring, return the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
 		<method name="findn">
@@ -33814,7 +33814,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="from" type="int" default="0">
 			</argument>
 			<description>
-			Find the first occurence of a substring but search as case-insensitive, return the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
+			Find the first occurrence of a substring but search as case-insensitive, return the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
 		<method name="get_base_dir">
@@ -33962,7 +33962,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="to" type="String">
 			</argument>
 			<description>
-			Perform a case-insensitive comparison to antoher string, return -1 if less, 0 if equal and +1 if greater.
+			Perform a case-insensitive comparison to another string, return -1 if less, 0 if equal and +1 if greater.
 			</description>
 		</method>
 		<method name="ord_at">
@@ -34040,7 +34040,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="from" type="int" default="-1">
 			</argument>
 			<description>
-			Perform a search for a substring, but start from the end of the string instead of the begining.
+			Perform a search for a substring, but start from the end of the string instead of the beginning.
 			</description>
 		</method>
 		<method name="rfindn">
@@ -34051,7 +34051,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="from" type="int" default="-1">
 			</argument>
 			<description>
-			Perform a search for a substring, but start from the end of the string instead of the begining. Also search case-insensitive.
+			Perform a search for a substring, but start from the end of the string instead of the beginning. Also search case-insensitive.
 			</description>
 		</method>
 		<method name="right">
@@ -34089,7 +34089,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="String">
 			</return>
 			<description>
-			Return a copy of the string stripped of any non-printable character at the begining and the end.
+			Return a copy of the string stripped of any non-printable character at the beginning and the end.
 			</description>
 		</method>
 		<method name="substr">
@@ -34225,7 +34225,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="rect" type="Rect2">
 			</argument>
 			<description>
-			Test a position in a rectangle, return wether it pases the mask test.
+			Test a position in a rectangle, return whether it passes the mask test.
 			</description>
 		</method>
 		<method name="set_default_margin">
@@ -34388,7 +34388,7 @@ This method controls whether the position between two cached points is interpola
 	Image mask based StyleBox, for mask test.
 	</brief_description>
 	<description>
-	This StyleBox is similar to [StyleBoxTexture], but only meant to be used for mask testing. It takes an image and applies stretch rules to determine if the poit clicked is masked or not.
+	This StyleBox is similar to [StyleBoxTexture], but only meant to be used for mask testing. It takes an image and applies stretch rules to determine if the point clicked is masked or not.
 	</description>
 	<methods>
 		<method name="set_image">
@@ -34416,7 +34416,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="bool">
 			</return>
 			<description>
-			Return wether the expand property is set(default). When expanding, the image will use the same rules as [StyleBoxTexture] for expand. If not expanding, the image will always be tested at its original size.
+			Return whether the expand property is set(default). When expanding, the image will use the same rules as [StyleBoxTexture] for expand. If not expanding, the image will always be tested at its original size.
 			</description>
 		</method>
 		<method name="set_expand_margin_size">
@@ -34731,7 +34731,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
-			Set a title for the tab. Tab titles are by default the children node name, but this can be overriden.
+			Set a title for the tab. Tab titles are by default the children node name, but this can be overridden.
 			</description>
 		</method>
 		<method name="get_tab_title" qualifiers="const">
@@ -34740,7 +34740,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
-			Return the title for the tab. Tab titles are by default the children node name, but this can be overriden.
+			Return the title for the tab. Tab titles are by default the children node name, but this can be overridden.
 			</description>
 		</method>
 		<method name="set_tab_icon">
@@ -35284,7 +35284,7 @@ This method controls whether the position between two cached points is interpola
 			Match whole words when searching.
 		</constant>
 		<constant name="SEARCH_BACKWARDS" value="4">
-			Search from end to begining.
+			Search from end to beginning.
 		</constant>
 	</constants>
 	<theme_items>
@@ -39450,7 +39450,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="Rect2">
 			</return>
 			<description>
-			Return the final, visuble rect in global screen coordinates.
+			Return the final, visible rect in global screen coordinates.
 			</description>
 		</method>
 		<method name="set_transparent_background">
@@ -39464,7 +39464,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="bool">
 			</return>
 			<description>
-			Reurn whether the viewport lets whatever is behind it to show.
+			Return whether the viewport lets whatever is behind it to show.
 			</description>
 		</method>
 		<method name="set_size_override">
