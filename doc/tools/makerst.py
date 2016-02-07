@@ -115,6 +115,28 @@ def rstize_text(text,cclass):
 		text = pre_text + "\n\n" + post_text
 		pos += 2
 
+	# Escape * character to avoid interpreting it as emphasis
+	pos = 0
+	while True:
+		pos = text.find('*', pos)
+		if pos == -1:
+			break
+		text = text[:pos] + "\*" + text[pos + 1:]
+		pos += 2
+
+	# Escape _ character at the end of a word to avoid interpreting it as an inline hyperlink
+	pos = 0
+	while True:
+		pos = text.find('_', pos)
+		if pos == -1:
+			break
+		if text[pos + 1] == ' ' or text[pos + 1] == '\\':
+			text = text[:pos] + "\_" + text[pos + 1:]
+			pos += 2
+		else:
+			pos += 1
+
+	# Handle [tags]
 	pos = 0
 	while True:
 		pos = text.find('[', pos)
@@ -131,10 +153,7 @@ def rstize_text(text,cclass):
 
 		if tag_text in class_names:
 			tag_text = make_type(tag_text)
-		else:
-
-		# command
-
+		else: # command
 			cmd = tag_text
 			space_pos = tag_text.find(' ')
 			if cmd.find('html') == 0:
@@ -238,7 +257,6 @@ def make_method(
 		s = ' **'+m.attrib['name']+'** '
 	else:
 		s = ':ref:`'+ m.attrib['name']+'<class_' + cname+"_"+m.attrib['name'] + '>` '
-		
 
 	s += ' **(**'
 	argfound = False
@@ -294,13 +312,12 @@ def make_rst_class(node):
 
 	if 'inherits' in node.attrib:
 		inh = node.attrib['inherits'].strip()
-		f.write(make_heading('Inherits: ' + make_type(inh), '-'))
+		f.write('**Inherits:** ' + make_type(inh) + "\n\n")
 	if 'category' in node.attrib:
-		f.write(make_heading('Category: ' + node.attrib['category'].strip(), '-'))
+		f.write('**Category:** ' + node.attrib['category'].strip() + "\n\n")
 
 	briefd = node.find('brief_description')
 	if briefd != None:
-		f.write(make_heading('Brief Description', '-'))
 		f.write(rstize_text(briefd.text.strip(),name) + "\n\n")
 
 	methods = node.find('methods')
@@ -413,7 +430,8 @@ for file in input_list:
 
 class_names.sort()
 
-make_class_list(class_names, 2)
+#Don't make class list for Sphinx, :toctree: handles it
+#make_class_list(class_names, 2)
 
 for cn in class_names:
 	c = classes[cn]
