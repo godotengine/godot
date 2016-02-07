@@ -301,6 +301,7 @@ def make_heading(title, underline):
 	return title + '\n' + underline*len(title) + "\n\n"
 
 
+
 def make_rst_class(node):
 
 	name = node.attrib['name']
@@ -312,10 +313,43 @@ def make_rst_class(node):
 
 	if 'inherits' in node.attrib:
 		inh = node.attrib['inherits'].strip()
-		f.write('**Inherits:** ' + make_type(inh) + "\n\n")
+#		whle inh in classes[cn]
+		f.write('**Inherits:** ')
+		first=True
+		while(inh in classes):
+			if (not first):
+				f.write(" **<** ")
+			else:
+				first=False
+		
+			f.write(make_type(inh))
+			inode = classes[inh]
+			if ('inherits' in inode.attrib):
+				inh=inode.attrib['inherits'].strip()
+			else:
+				inh=None
+			
+		
+		f.write("\n\n")
+		
+	inherited=[]
+	for cn in classes:
+		c=classes[cn]	
+		if 'inherits' in c.attrib:
+			if (c.attrib['inherits'].strip()==name):
+				inherited.append(c.attrib['name'])
+				
+	if (len(inherited)):
+		f.write('**Inherited By:** ')
+		for i in range(len(inherited)):
+			if (i>0):
+				f.write(", ")
+			f.write(make_type(inherited[i]))
+		f.write("\n\n")
 	if 'category' in node.attrib:
 		f.write('**Category:** ' + node.attrib['category'].strip() + "\n\n")
 
+	f.write(make_heading('Brief Description', '-'))
 	briefd = node.find('brief_description')
 	if briefd != None:
 		f.write(rstize_text(briefd.text.strip(),name) + "\n\n")
