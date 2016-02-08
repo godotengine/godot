@@ -18,7 +18,6 @@ class InputDefault : public Input {
 	MainLoop *main_loop;
 
 	bool emulate_touch;
-
 	struct SpeedTrack {
 
 		uint64_t last_tick;
@@ -36,7 +35,7 @@ class InputDefault : public Input {
 	struct Joystick {
 		StringName name;
 		StringName uid;
-		bool last_buttons[JOY_BUTTON_MAX + 2]; //html5 needs support for 18 buttons to map some devices correctly
+		bool last_buttons[JOY_BUTTON_MAX + 19]; //apparently SDL specifies 35 possible buttons on android
 		float last_axis[JOY_AXIS_MAX];
 		float filter;
 		int last_hat;
@@ -50,7 +49,7 @@ class InputDefault : public Input {
 				last_axis[i] = 0.0f;
 
 			}
-			for (int i = 0; i < JOY_BUTTON_MAX + 2; i++) {
+			for (int i = 0; i < JOY_BUTTON_MAX + 19; i++) {
 
 				last_buttons[i] = false;
 			}
@@ -62,6 +61,7 @@ class InputDefault : public Input {
 
 	SpeedTrack mouse_speed_track;
 	Map<int, Joystick> joy_names;
+	int fallback_mapping;
 	RES custom_cursor;
 public:
 	enum HatMask {
@@ -169,7 +169,7 @@ public:
 
 	bool is_joy_mapped(int p_device);
 	String get_joy_guid_remapped(int p_device) const;
-
+	void set_fallback_mapping(String p_guid);
 	InputDefault();
 };
 

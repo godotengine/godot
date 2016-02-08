@@ -41,6 +41,7 @@
 #include "core/os/keyboard.h"
 #include "java_class_wrapper.h"
 #include "android/asset_manager_jni.h"
+#include "main/input_default.h"
 
 static JavaClassWrapper *java_class_wrapper=NULL;
 static OS_Android *os_android=NULL;
@@ -639,6 +640,7 @@ struct JAndroidPointerEvent {
 
 static List<JAndroidPointerEvent> pointer_events;
 static List<InputEvent> key_events;
+static List<OS_Android::JoystickEvent> joy_events;
 static bool initialized=false;
 static Mutex *input_mutex=NULL;
 static Mutex *suspend_mutex=NULL;
@@ -1067,6 +1069,14 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv * env, jo
 		key_events.pop_front();
 	};
 
+	while (joy_events.size()) {
+
+		OS_Android::JoystickEvent event = joy_events.front()->get();
+		os_android->process_joy_event(event);
+
+		joy_events.pop_front();
+	}
+
 	if (quit_request) {
 
 		os_android->main_loop_request_quit();
@@ -1380,48 +1390,57 @@ static unsigned int android_get_keysym(unsigned int p_code) {
 	return KEY_UNKNOWN;
 }
 
-static int find_device(int p_device) {
-
-	for (int i=0; i<joy_device_ids.size(); i++) {
-
-		if (joy_device_ids[i] == p_device) {
-			//print_line("found device at "+String::num(i));
-			return i;
-		};
-	};
-
-	//print_line("adding a device at" + String::num(joy_device_ids.size()));
-	joy_device_ids.push_back(p_device);
-
-	return joy_device_ids.size() - 1;
-};
-
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joybutton(JNIEnv * env, jobject obj, jint p_device, jint p_button, jboolean p_pressed) {
 
-	InputEvent ievent;
-	ievent.type = InputEvent::JOYSTICK_BUTTON;
-	ievent.device = find_device(p_device);
-	ievent.joy_button.button_index = p_button;
-	ievent.joy_button.pressed = p_pressed;
+	OS_Android::JoystickEvent jevent;
+	jevent.device = p_device;
+	jevent.type = OS_Android::JOY_EVENT_BUTTON;
+	jevent.index = p_button;
+	jevent.pressed = p_pressed;
 
 	input_mutex->lock();
-	key_events.push_back(ievent);
+	joy_events.push_back(jevent);
 	input_mutex->unlock();
 };
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyaxis(JNIEnv * env, jobject obj, jint p_device, jint p_axis, jfloat p_value) {
 
-	InputEvent ievent;
-	ievent.type = InputEvent::JOYSTICK_MOTION;
-	ievent.device = find_device(p_device);
-	ievent.joy_motion.axis = p_axis;
-	ievent.joy_motion.axis_value = p_value;
+	OS_Android::JoystickEvent jevent;
+	jevent.device = p_device;
+	jevent.type = OS_Android::JOY_EVENT_AXIS;
+	jevent.index = p_axis;
+	jevent.value = p_value;
 
 	input_mutex->lock();
-	key_events.push_back(ievent);
+	joy_events.push_back(jevent);
 	input_mutex->unlock();
 };
 
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv * env, jobject obj, jint p_device, jint p_hat_x, jint p_hat_y) {
+	OS_Android::JoystickEvent jevent;
+	jevent.device = p_device;
+	jevent.type = OS_Android::JOY_EVENT_HAT;
+	int hat = 0;
+	if (p_hat_x != 0) {
+		if (p_hat_x < 0) hat |= InputDefault::HAT_MASK_LEFT;
+		else hat |= InputDefault::HAT_MASK_RIGHT;
+	}
+	if (p_hat_y != 0) {
+		if (p_hat_y < 0) hat |= InputDefault::HAT_MASK_UP;
+		else hat |= InputDefault::HAT_MASK_DOWN;
+	}
+	jevent.hat = hat;
+	input_mutex->lock();
+	joy_events.push_back(jevent);
+	input_mutex->unlock();
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(JNIEnv * env, jobject obj, jint p_device, jboolean p_connected, jstring p_name) {
+	if (os_android) {
+		String name = env->GetStringUTFChars( p_name, NULL );
+		os_android->joy_connection_changed(p_device, p_connected, name);
+	}
+}
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv * env, jobject obj, jint p_scancode, jint p_unicode_char, jboolean p_pressed) {
 
