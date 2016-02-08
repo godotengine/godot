@@ -3528,6 +3528,7 @@ CanvasItemEditorPlugin::CanvasItemEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
 	canvas_item_editor = memnew( CanvasItemEditor(editor) );
+	canvas_item_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	editor->get_viewport()->add_child(canvas_item_editor);
 	canvas_item_editor->set_area_as_parent_rect();
 	canvas_item_editor->hide();

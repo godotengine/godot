@@ -5041,23 +5041,20 @@ EditorNode::EditorNode() {
 
 	srt->add_child(scene_tabs);
 
-	scene_root_parent = memnew( Panel );
+	scene_root_parent = memnew( PanelContainer );
+	scene_root_parent->set_custom_minimum_size(Size2(0,80));
 
-	Ref<StyleBox> sp = scene_root_parent->get_stylebox("panel","TabContainer");
-	scene_root_parent->add_style_override("panel",sp);
+
+	//Ref<StyleBox> sp = scene_root_parent->get_stylebox("panel","TabContainer");
+	//scene_root_parent->add_style_override("panel",sp);
+
+
 	/*scene_root_parent->set_anchor( MARGIN_RIGHT, Control::ANCHOR_END );
 	scene_root_parent->set_anchor( MARGIN_BOTTOM, Control::ANCHOR_END );
 	scene_root_parent->set_begin( Point2( 0, 0) );
 	scene_root_parent->set_end( Point2( 0,80 ) );*/
 	srt->add_child(scene_root_parent);
 	scene_root_parent->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-
-	scene_root_base = memnew( Control );
-	scene_root_base->set_area_as_parent_rect();
-	for(int i=0;i<4;i++) {
-		scene_root_base->set_margin(Margin(i),sp->get_margin(Margin(i)));
-	}
-	scene_root_parent->add_child(scene_root_base);
 
 
 	scene_root = memnew( Viewport );
@@ -5073,11 +5070,11 @@ EditorNode::EditorNode() {
 //	scene_root->set_world_2d( Ref<World2D>( memnew( World2D )) );
 
 
-	viewport = memnew( Control );
-	viewport->set_area_as_parent_rect(4);
-	for(int i=0;i<4;i++) {
+	viewport = memnew( VBoxContainer );
+	viewport->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	/*for(int i=0;i<4;i++) {
 		viewport->set_margin(Margin(i),sp->get_margin(Margin(i)));
-	}
+	}*/
 	scene_root_parent->add_child(viewport);
 
 

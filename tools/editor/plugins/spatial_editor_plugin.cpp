@@ -4217,8 +4217,10 @@ SpatialEditorPlugin::SpatialEditorPlugin(EditorNode *p_node) {
 	
 	editor=p_node;
 	spatial_editor = memnew( SpatialEditor(p_node) );
+	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	editor->get_viewport()->add_child(spatial_editor);
-	spatial_editor->set_area_as_parent_rect();
+
+	//spatial_editor->set_area_as_parent_rect();
 	spatial_editor->hide();
 	spatial_editor->connect("transform_key_request",editor,"_transform_keyed");
 

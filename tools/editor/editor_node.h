@@ -258,7 +258,7 @@ class EditorNode : public Node {
 	TextEdit *load_errors;
 	AcceptDialog *load_error_dialog;
 
-	Control *scene_root_base;
+	//Control *scene_root_base;
 	Ref<Theme> theme;
 
 	PopupMenu *recent_scenes;
