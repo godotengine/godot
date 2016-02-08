@@ -151,8 +151,8 @@ void Sample::set_loop_format(LoopFormat p_format) {
 	if (sample.is_valid())
 		AudioServer::get_singleton()->sample_set_loop_format(sample,(AudioServer::SampleLoopFormat)p_format);
 	loop_format=p_format;
-
 }
+
 Sample::LoopFormat Sample::get_loop_format() const {
 
 	return loop_format;
