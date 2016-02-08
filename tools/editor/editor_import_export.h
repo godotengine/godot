@@ -285,7 +285,7 @@ protected:
 	Set<String> image_formats;
 
 	ExportFilter export_filter;
-	String export_custom_filter;
+	String export_custom_filter, export_custom_filter_exclude;
 	Map<StringName,FileAction> files;
 	Map<StringName,Ref<EditorExportPlatform> > exporters;
 	Map<StringName,ImageGroup> image_groups;
@@ -332,7 +332,9 @@ public:
 	ExportFilter get_export_filter() const;
 
 	void set_export_custom_filter(const String& p_custom_filter);
+	void set_export_custom_filter_exclude(const String& p_custom_filter);
 	String get_export_custom_filter() const;
+	String get_export_custom_filter_exclude() const;
 
 	void set_export_image_action(ImageAction p_action);
 	ImageAction get_export_image_action() const;

@@ -162,6 +162,7 @@ EditorExportPlugin::EditorExportPlugin() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+
 static void _add_to_list(EditorFileSystemDirectory *p_efsd,Set<StringName>& r_list) {
 
 	for(int i=0;i<p_efsd->get_subdir_count();i++) {
@@ -170,11 +171,9 @@ static void _add_to_list(EditorFileSystemDirectory *p_efsd,Set<StringName>& r_li
 	}
 
 	for(int i=0;i<p_efsd->get_file_count();i++) {
-
 		r_list.insert(p_efsd->get_file_path(i));
 	}
 }
-
 
 
 struct __EESortDepCmp {
@@ -187,7 +186,7 @@ struct __EESortDepCmp {
 
 
 
-static void _add_files_with_filter(DirAccess *da,const List<String>& p_filters,Set<StringName>& r_list) {
+static void _edit_files_with_filter(DirAccess *da,const List<String>& p_filters,Set<StringName>& r_list,bool exclude) {
 
 
 	List<String> files;
@@ -218,8 +217,17 @@ static void _add_files_with_filter(DirAccess *da,const List<String>& p_filters,S
 		for(const List<String>::Element *F=p_filters.front();F;F=F->next()) {
 
 			if (fullpath.matchn(F->get())) {
-				r_list.insert(fullpath);
-				print_line("Added: "+fullpath);
+				String act = "Added: ";
+
+				if (!exclude) {
+					r_list.insert(fullpath);
+				} else {
+					act = "Removed: ";
+					r_list.erase(fullpath);
+				}
+
+
+				print_line(act+fullpath);
 			}
 		}
 	}
@@ -230,13 +238,13 @@ static void _add_files_with_filter(DirAccess *da,const List<String>& p_filters,S
 		if (E->get().begins_with("."))
 			continue;
 		da->change_dir(E->get());
-		_add_files_with_filter(da,p_filters,r_list);
+		_edit_files_with_filter(da,p_filters,r_list,exclude);
 		da->change_dir("..");
 	}
 
 }
 
-static void _add_filter_to_list(Set<StringName>& r_list,const String& p_filter) {
+static void _edit_filter_list(Set<StringName>& r_list,const String& p_filter,bool exclude) {
 
 	if (p_filter=="")
 		return;
@@ -250,11 +258,16 @@ static void _add_filter_to_list(Set<StringName>& r_list,const String& p_filter) 
 	}
 
 	DirAccess *da = DirAccess::open("res://");
-	_add_files_with_filter(da,filters,r_list);
+	_edit_files_with_filter(da,filters,r_list,exclude);
 	memdelete(da);
+}
 
+static void _add_filter_to_list(Set<StringName>& r_list,const String& p_filter) {
+	_edit_filter_list(r_list,p_filter,false);
+}
 
-
+static void _remove_filter_from_list(Set<StringName>& r_list,const String& p_filter) {
+	_edit_filter_list(r_list,p_filter,true);
 }
 
 Vector<uint8_t> EditorExportPlatform::get_exported_file_default(String& p_fname) const {
@@ -307,6 +320,8 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 			cf+="*.flags";
 			_add_filter_to_list(exported,cf);
 
+			cf = EditorImportExport::get_singleton()->get_export_custom_filter_exclude();
+			_remove_filter_from_list(exported,cf);
 		}
 
 
@@ -379,6 +394,9 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 			cf+=",";
 		cf+="*.flags";
 		_add_filter_to_list(exported,cf);
+
+		cf = EditorImportExport::get_singleton()->get_export_custom_filter_exclude();
+		_remove_filter_from_list(exported,cf);
 
 
 	}
@@ -1530,12 +1548,16 @@ EditorImportExport::ExportFilter EditorImportExport::get_export_filter() const{
 }
 
 void EditorImportExport::set_export_custom_filter(const String& p_custom_filter){
-
 	export_custom_filter=p_custom_filter;
 }
+void EditorImportExport::set_export_custom_filter_exclude(const String& p_custom_filter){
+	export_custom_filter_exclude=p_custom_filter;
+}
 String EditorImportExport::get_export_custom_filter() const{
-
 	return export_custom_filter;
+}
+String EditorImportExport::get_export_custom_filter_exclude() const{
+	return export_custom_filter_exclude;
 }
 
 void EditorImportExport::set_export_image_action(ImageAction p_action) {
@@ -1699,6 +1721,7 @@ void EditorImportExport::load_config() {
 
 
 	export_custom_filter=cf->get_value("export_filter","filter");
+	export_custom_filter_exclude=cf->get_value("export_filter","filter_exclude");
 	String t=cf->get_value("export_filter","type");
 	if (t=="selected")
 		export_filter=EXPORT_SELECTED;
@@ -1888,6 +1911,7 @@ void EditorImportExport::save_config() {
 	}
 
 	cf->set_value("export_filter","filter",export_custom_filter);
+	cf->set_value("export_filter", "filter_exclude",export_custom_filter_exclude);
 
 	String file_action_section = "export_filter_files";
 
