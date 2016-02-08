@@ -884,6 +884,13 @@ void make_default_theme() {
 	t->set_stylebox("panelf","Panel", tc_sb );
 	t->set_stylebox("panel","PanelContainer", tc_sb );
 
+	t->set_icon("minus","GraphEdit", make_icon(icon_zoom_less_png) );
+	t->set_icon("reset","GraphEdit", make_icon(icon_zoom_reset_png) );
+	t->set_icon("more","GraphEdit", make_icon(icon_zoom_more_png) );
+	t->set_stylebox("bg","GraphEdit", make_stylebox( tree_bg_png,4,4,4,5) );
+
+
+
 	t->set_icon( "logo","Icons", make_icon(logo_png) );
 
 

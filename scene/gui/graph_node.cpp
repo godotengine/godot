@@ -591,4 +591,5 @@ void GraphNode::_bind_methods() {
 GraphNode::GraphNode() {
 	show_close=false;
 	connpos_dirty=true;
+	set_stop_mouse(false);
 }
