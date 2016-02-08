@@ -4232,7 +4232,7 @@
 			</argument>
 			<description>
 			Set the sample data for a given sample as an array of bytes. The length must be equal to the sample length expected in bytes or an error will be produced. The byte length can be calculated as follows:
-			Get the sample length ([method get_sample_length]).
+			Get the sample length ([method sample_get_length]).
 			If the sample format is SAMPLE_FORMAT_PCM16, multiply it by 2.
 			If the sample format is SAMPLE_FORMAT_IMA_ADPCM, divide it by 2 (rounding any fraction up), then add 4.
 			If the sample is stereo ([method sample_is_stereo]), multiply it by 2.
@@ -5712,7 +5712,7 @@
 	Camera node, displays from a point of view.
 	</brief_description>
 	<description>
-	Camera is a special node that displays what is visible from its current location. Cameras register themselves in the nearest [Viewport] node (when ascending the tree). Only one camera can be active per viewport. If no viewport is available ascending the tree, the Camera will register in the global viewport. In other words, a Camera just provides [i]3D[/i] display capabilities to a [Viewport], and, without one, a [Scene] registered in that [Viewport] (or higher viewports) can't be displayed.
+	Camera is a special node that displays what is visible from its current location. Cameras register themselves in the nearest [Viewport] node (when ascending the tree). Only one camera can be active per viewport. If no viewport is available ascending the tree, the Camera will register in the global viewport. In other words, a Camera just provides [i]3D[/i] display capabilities to a [Viewport], and, without one, a scene registered in that [Viewport] (or higher viewports) can't be displayed.
 	</description>
 	<methods>
 		<method name="project_ray_normal" qualifiers="const">
@@ -7379,14 +7379,14 @@
 			<argument index="0" name="build_mode" type="int">
 			</argument>
 			<description>
-			Set whether the polygon is to be a [ConvexPolygon2D] ([code]build_mode==0[/code]), or a [ConcavePolygon2D] ([code]build_mode==1[/code]).
+			Set whether the polygon is to be a [ConvexPolygonShape2D] ([code]build_mode==0[/code]), or a [ConcavePolygonShape2D] ([code]build_mode==1[/code]).
 			</description>
 		</method>
 		<method name="get_build_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-			Return whether the polygon is a [ConvexPolygon2D] ([code]build_mode==0[/code]), or a [ConcavePolygon2D] ([code]build_mode==1[/code]).
+			Return whether the polygon is a [ConvexPolygonShape2D] ([code]build_mode==0[/code]), or a [ConcavePolygonShape2D] ([code]build_mode==1[/code]).
 			</description>
 		</method>
 		<method name="set_trigger">
@@ -8190,7 +8190,7 @@
 	Control is the base class Node for all the GUI components. Every GUI component inherits from it, directly or indirectly. In this way, sections of the scene tree made of contiguous control nodes, become user interfaces.
 	Controls are relative to the parent position and size by using anchors and margins. This ensures that they can adapt easily in most situation to changing dialog and screen sizes. When more flexibility is desired, [Container] derived nodes can be used.
 	Anchors work by defining which margin do they follow, and a value relative to it. Allowed anchoring modes are ANCHOR_BEGIN, where the margin is relative to the top or left margins of the parent (in pixels), ANCHOR_END for the right and bottom margins of the parent and ANCHOR_RATIO, which is a ratio from 0 to 1 in the parent range.
-	Input device events ([InputEvent]) are first sent to the root controls via the [method Node._input], which distribute it through the tree, then delivers them to the adequate one (under cursor or keyboard focus based) by calling [method Node._input_event]. There is no need to enable input processing on controls to receive such events. To ensure that no one else will receive the event (not even [method Node._unhandled_input]), the control can accept it by calling [method accept_event].
+	Input device events ([InputEvent]) are first sent to the root controls via the [method Node._input], which distribute it through the tree, then delivers them to the adequate one (under cursor or keyboard focus based) by calling [method MainLoop._input_event]. There is no need to enable input processing on controls to receive such events. To ensure that no one else will receive the event (not even [method Node._unhandled_input]), the control can accept it by calling [method accept_event].
 	Only one control can hold the keyboard focus (receiving keyboard events), for that the control must define the focus mode with [method set_focus_mode]. Focus is lost when another control gains it, or the current focus owner is hidden.
 	It is sometimes desired for a control to ignore mouse/pointer events. This is often the case when placing other controls on top of a button, in such cases. Calling [method set_ignore_mouse] enables this function.
 	Finally, controls are skinned according to a [Theme]. Setting a [Theme] on a control will propagate all the skinning down the tree. Optionally, skinning can be overrided per each control by calling the add_*_override functions, or from the editor.
@@ -8437,7 +8437,7 @@
 			<argument index="0" name="exclusive" type="bool" default="false">
 			</argument>
 			<description>
-			Display a Control as modal. Control must be a subwindow (see [method set_as_subwindow]). Modal controls capture the input signals until closed or the area outside them is accessed. When a modal control loses focus, or the ESC key is pressed, they automatically hide. Modal controls are used extensively for popup dialogs and menus.
+			Display a Control as modal. Control must be a subwindow. Modal controls capture the input signals until closed or the area outside them is accessed. When a modal control loses focus, or the ESC key is pressed, they automatically hide. Modal controls are used extensively for popup dialogs and menus.
 			</description>
 		</method>
 		<method name="set_focus_mode">
@@ -13276,7 +13276,7 @@ verify_host will check the SSL identity of the host if set to true.
 	IP Protocol support functions.
 	</brief_description>
 	<description>
-	IP contains some support functions for the IPv4 protocol. TCP/IP support is in different classes (see [TCP_Client], [TCP_Server]). IP provides hostname resolution support, both blocking and threaded.
+	IP contains some support functions for the IPv4 protocol. TCP/IP support is in different classes (see [StreamPeerTCP] and [TCP_Server]). IP provides hostname resolution support, both blocking and threaded.
 	</description>
 	<methods>
 		<method name="resolve_hostname">
@@ -16598,7 +16598,7 @@ verify_host will check the SSL identity of the host if set to true.
 	Main loop is the abstract main loop base class.
 	</brief_description>
 	<description>
-	Main loop is the abstract main loop base class. All other main loop classes are derived from it. Upon application start, a [MainLoop] has to be provided to OS, else the application will exit. This happens automatically (and a [SceneMainLoop] is created), unless a main [Script] is supplied, which may or not create and return a [MainLoop].
+	Main loop is the abstract main loop base class. All other main loop classes are derived from it. Upon application start, a [MainLoop] has to be provided to OS, else the application will exit. This happens automatically (and a [SceneTree] is created), unless a main [Script] is supplied, which may or not create and return a [MainLoop].
 	</description>
 	<methods>
 		<method name="_finalize" qualifiers="virtual">
@@ -17809,10 +17809,10 @@ verify_host will check the SSL identity of the host if set to true.
 </class>
 <class name="MeshInstance" inherits="GeometryInstance" category="Core">
 	<brief_description>
-	Node that instances meshes into a [Scenario].
+	Node that instances meshes into a scenario.
 	</brief_description>
 	<description>
-	MeshInstance is a [Node] that takes a [Mesh] resource and adds it to the current [Scenario] by creating an instance of it. This is the class most often used to get 3D geometry rendered and can be used to instance a single [Mesh] in many places. This allows to reuse geometry and save on resources. When a [Mesh] has to be instanced more than thousands of times at close proximity, consider using a [MultiMesh] in a [MultiMeshInstance] instead.
+	MeshInstance is a [Node] that takes a [Mesh] resource and adds it to the current scenario by creating an instance of it. This is the class most often used to get 3D geometry rendered and can be used to instance a single [Mesh] in many places. This allows to reuse geometry and save on resources. When a [Mesh] has to be instanced more than thousands of times at close proximity, consider using a [MultiMesh] in a [MultiMeshInstance] instead.
 	</description>
 	<methods>
 		<method name="set_mesh">
@@ -18061,7 +18061,7 @@ verify_host will check the SSL identity of the host if set to true.
 	Node that instances a [MultiMesh].
 	</brief_description>
 	<description>
-	MultiMeshInstance is a [Node] that takes a [MultiMesh] resource and adds it to the current [Scenario] by creating an instance of it (yes, this is an instance of instances).
+	MultiMeshInstance is a [Node] that takes a [MultiMesh] resource and adds it to the current scenario by creating an instance of it (yes, this is an instance of instances).
 	</description>
 	<methods>
 		<method name="set_multimesh">
@@ -18661,7 +18661,7 @@ verify_host will check the SSL identity of the host if set to true.
 	<description>
 	Nodes can be set as children of other nodes, resulting in a tree arrangement. Any tree of nodes is called a "Scene".
 	Scenes can be saved to disk, and then instanced into other scenes. This allows for very high flexibility in the architecture and data model of the projects.
-	[SceneMainLoop] contains the "active" tree of nodes, and a node becomes active (receiving NOTIFICATION_ENTER_SCENE) when added to that tree.
+	[SceneTree] contains the "active" tree of nodes, and a node becomes active (receiving NOTIFICATION_ENTER_SCENE) when added to that tree.
 	A node can contain any number of nodes as a children (but there is only one tree root) with the requirement that no two children with the same name can exist.
 	Nodes can, optionally, be added to groups. This makes it easy to reach a number of nodes from the code (for example an "enemies" group).
 	Nodes can be set to "process" state, so they constantly receive a callback requesting them to process (do anything). Normal processing ([method _process]) happens as fast as possible and is dependent on the frame rate, so the processing time delta is variable. Fixed processing ([method _fixed_process]) happens a fixed amount of times per second (by default 60) and is useful to link itself to the physics.
@@ -18786,7 +18786,7 @@ verify_host will check the SSL identity of the host if set to true.
 			</argument>
 			<description>
 			Fetch a node. NodePath must be valid (or else error will occur) and can be either the path to child node, a relative path (from the current node to another node), or an absolute path to a node.
-			Note: fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_scene]). Examples. Assume your current node is Character and following tree:[br]
+			Note: fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]). Examples. Assume your current node is Character and following tree:[br]
  root/
  root/Character
  root/Character/Sword
@@ -18866,7 +18866,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<return type="NodePath">
 			</return>
 			<description>
-			Return the absolute path of the current node. This only works if the current node is inside the scene tree (see [method is_inside_scene]).
+			Return the absolute path of the current node. This only works if the current node is inside the scene tree (see [method is_inside_tree]).
 			</description>
 		</method>
 		<method name="get_path_to" qualifiers="const">
@@ -18884,7 +18884,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="1" name="persistent" type="bool" default="false">
 			</argument>
 			<description>
-			Add a node to a group. Groups are helpers to name and organize group of nodes, like for example: "Enemies", "Collectables", etc. A [Node] can be in any number of groups. Nodes can be assigned a group at any time, but will not be added to it until they are inside the scene tree (see [method is_inside_scene]).
+			Add a node to a group. Groups are helpers to name and organize group of nodes, like for example: "Enemies", "Collectables", etc. A [Node] can be in any number of groups. Nodes can be assigned a group at any time, but will not be added to it until they are inside the scene tree (see [method is_inside_tree]).
 			</description>
 		</method>
 		<method name="remove_from_group">
@@ -18933,7 +18933,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<return type="Node">
 			</return>
 			<description>
-			Get the node owner (see [method set_node_owner]).
+			Get the node owner (see [method set_owner]).
 			</description>
 		</method>
 		<method name="remove_and_skip">
@@ -18978,7 +18978,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			Enables or disables node fixed framerate processing. When a node is being processed, it will receive a NOTIFICATION_PROCESS at a fixed (usually 60 fps, check [OS] to change that) interval (and the [method _fixed_process] callback will be called if exists). It is common to check how much time was elapsed since the previous frame by calling [method get_fixed_process_time].
+			Enables or disables node fixed framerate processing. When a node is being processed, it will receive a NOTIFICATION_PROCESS at a fixed (usually 60 fps, check [OS] to change that) interval (and the [method _fixed_process] callback will be called if exists). It is common to check how much time was elapsed since the previous frame by calling [method get_fixed_process_delta_time].
 			</description>
 		</method>
 		<method name="get_fixed_process_delta_time" qualifiers="const">
@@ -18999,7 +18999,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			Enables or disables node processing. When a node is being processed, it will receive a NOTIFICATION_PROCESS on every drawn frame (and the [method _process] callback will be called if exists). It is common to check how much time was elapsed since the previous frame by calling [method get_process_time].
+			Enables or disables node processing. When a node is being processed, it will receive a NOTIFICATION_PROCESS on every drawn frame (and the [method _process] callback will be called if exists). It is common to check how much time was elapsed since the previous frame by calling [method get_process_delta_time].
 			</description>
 		</method>
 		<method name="get_process_delta_time" qualifiers="const">
@@ -21068,7 +21068,7 @@ verify_host will check the SSL identity of the host if set to true.
 	Provides an opaque background for [Control] children.
 	</brief_description>
 	<description>
-	Panel is a [Control] that displays an opaque background. It's commonly used as a parent and container for other types of [Control] nodes. [center][img]images/panel_example.png[/img][/center]
+	Panel is a [Control] that displays an opaque background. It's commonly used as a parent and container for other types of [Control] nodes.
 	</description>
 	<methods>
 	</methods>
@@ -23873,7 +23873,7 @@ This method controls whether the position between two cached points is interpola
 	Base class for all objects affected by physics.
 	</brief_description>
 	<description>
-	PhysicsBody2D is an abstract base class for implementing a physics body. All [i]x[/i]Body2D types inherit from it.
+	PhysicsBody2D is an abstract base class for implementing a physics body. All *Body2D types inherit from it.
 	</description>
 	<methods>
 		<method name="set_layer_mask">
@@ -23960,7 +23960,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="depth" type="float">
 			</argument>
 			<description>
-			Set how far a body can go through this one, when it allows one-way collisions (see [method set_one_way_collision_detection]).
+			Set how far a body can go through this one, when it allows one-way collisions (see [method set_one_way_collision_direction]).
 			</description>
 		</method>
 		<method name="get_one_way_collision_max_depth" qualifiers="const">
@@ -26343,35 +26343,35 @@ This method controls whether the position between two cached points is interpola
 	Portals provide virtual openings to rooms.
 	</brief_description>
 	<description>
-	Portals provide virtual openings to [RoomInstance] nodes, so cameras can look at them from the outside. Note that portals are a visibility optimization technique, and are in no way related to the game of the same name (as in, they are not used for teleportation). For more information on how rooms and portals work, see [RoomInstance]. Portals are represented as 2D convex polygon shapes (in the X,Y local plane), and are placed on the surface of the areas occupied by a [RoomInstance], to indicate that the room can be accessed or looked-at through them. If two rooms are next to each other, and two similar portals in each of them share the same world position (and are parallel and opposed to each other), they will automatically "connect" and form "doors" (for example, the portals that connect a kitchen to a living room are placed in the door they share). Portals must always have a [RoomInstance] node as a parent, grandparent or far parent, or else they will not be active.
+	Portals provide virtual openings to [VisualInstance] nodes, so cameras can look at them from the outside. Note that portals are a visibility optimization technique, and are in no way related to the game of the same name (as in, they are not used for teleportation). For more information on how rooms and portals work, see [VisualInstance]. Portals are represented as 2D convex polygon shapes (in the X,Y local plane), and are placed on the surface of the areas occupied by a [VisualInstance], to indicate that the room can be accessed or looked-at through them. If two rooms are next to each other, and two similar portals in each of them share the same world position (and are parallel and opposed to each other), they will automatically "connect" and form "doors" (for example, the portals that connect a kitchen to a living room are placed in the door they share). Portals must always have a [VisualInstance] node as a parent, grandparent or far parent, or else they will not be active.
 	</description>
 	<methods>
 		<method name="set_shape">
 			<argument index="0" name="points" type="Vector2Array">
 			</argument>
 			<description>
-			Set the portal shape. The shape is an array of [Point2] points, representing a convex polygon in the X,Y plane.
+			Set the portal shape. The shape is an array of [Vector2] points, representing a convex polygon in the X,Y plane.
 			</description>
 		</method>
 		<method name="get_shape" qualifiers="const">
 			<return type="Vector2Array">
 			</return>
 			<description>
-			Return the portal shape. The shape is an array of [Point2] points, representing a convex polygon in the X,Y plane.
+			Return the portal shape. The shape is an array of [Vector2] points, representing a convex polygon in the X,Y plane.
 			</description>
 		</method>
 		<method name="set_enabled">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			Enable the portal (it is enabled by default though), disabling it will cause the parent [RoomInstance] to not be visible any longer when looking through the portal.
+			Enable the portal (it is enabled by default though), disabling it will cause the parent [VisualInstance] to not be visible any longer when looking through the portal.
 			</description>
 		</method>
 		<method name="is_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-			Return whether the portal is active. When disabled it causes the parent [RoomInstance] to not be visible any longer when looking through the portal.
+			Return whether the portal is active. When disabled it causes the parent [VisualInstance] to not be visible any longer when looking through the portal.
 			</description>
 		</method>
 		<method name="set_disable_distance">
@@ -28920,7 +28920,7 @@ This method controls whether the position between two cached points is interpola
 	Room data resource.
 	</brief_description>
 	<description>
-	Room contains the data to define the bounds of a scene (using a BSP Tree). It is instanced by a [RoomInstance] node to create rooms. See that class documentation for more information about rooms.
+	Room contains the data to define the bounds of a scene (using a BSP Tree). It is instanced by a [VisualInstance] node to create rooms. See that class documentation for more information about rooms.
 	</description>
 	<methods>
 		<method name="set_room">
@@ -34317,7 +34317,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="Vector2">
 			</return>
 			<description>
-			Return the "offset" of a stylebox, this is a helper function, like writing Point2( style.get_margin(MARGIN_LEFT), style.get_margin(MARGIN_TOP) )
+			Return the "offset" of a stylebox, this is a helper function, like writing [code]Vector2(style.get_margin(MARGIN_LEFT), style.get_margin(MARGIN_TOP))[/code].
 			</description>
 		</method>
 		<method name="draw" qualifiers="const">
