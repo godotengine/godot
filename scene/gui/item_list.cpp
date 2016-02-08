@@ -826,22 +826,25 @@ void ItemList::_notification(int p_what) {
 			if (current_columns==1) {
 				rcache.size.width = width-rcache.pos.x;
 			}
-			if (items[i].custom_bg.a>0.001) {
-				Rect2 r=rcache;
-				r.pos+=base_ofs;
-				draw_rect(r,items[i].custom_bg);
-			}
+
+			Rect2 r=rcache;
+			r.pos+=base_ofs;
+
+			// Use stylebox to dimension potential bg color, even if not selected
+			r.pos.x-=sbsel->get_margin(MARGIN_LEFT);
+			r.size.x+=sbsel->get_margin(MARGIN_LEFT)+sbsel->get_margin(MARGIN_RIGHT);
+			r.pos.y-=sbsel->get_margin(MARGIN_TOP);
+			r.size.y+=sbsel->get_margin(MARGIN_TOP)+sbsel->get_margin(MARGIN_BOTTOM);
+
 			if (items[i].selected) {
-				Rect2 r=rcache;
-				r.pos+=base_ofs;
-
-				r.pos.x-=sbsel->get_margin(MARGIN_LEFT);
-				r.size.x+=sbsel->get_margin(MARGIN_LEFT)+sbsel->get_margin(MARGIN_RIGHT);
-				r.pos.y-=sbsel->get_margin(MARGIN_TOP);
-				r.size.y+=sbsel->get_margin(MARGIN_TOP)+sbsel->get_margin(MARGIN_BOTTOM);
-
 				draw_style_box(sbsel,r);
-
+			}
+			if (items[i].custom_bg.a>0.001) {
+				r.pos.x+=2;
+				r.size.x-=4;
+				r.pos.y+=2;
+				r.size.y-=4;
+				draw_rect(r,items[i].custom_bg);
 			}
 
 
