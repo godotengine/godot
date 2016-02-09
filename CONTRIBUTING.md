@@ -17,7 +17,12 @@ Many bugs can't be reproduced unless specific steps are taken. Please **specify 
 
 #### Provide a Simple,  Example Project
 
-Sometimes an unexpected behavior happens in your project. In such case understand that we can't always take a look at your project. Providing **a simple project** that isolates and reproduces the issue is always the **the best way for us to fix it**.
+Sometimes an unexpected behavior happens in your project. In such case understand that:
+
+* What happens to you may not happen to other users.
+* We can't take the time a look at your project, learn it and then figure out why it's failing. 
+ 
+To speed up our work, prepare for us **a simple project** that isolates and reproduces the issue. This is always the **the best way for us to fix it**.
 
 ### Contributing Pull Requests
 
