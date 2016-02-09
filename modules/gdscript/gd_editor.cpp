@@ -285,6 +285,30 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 
 		p_functions->push_back(GDFunctions::get_info(GDFunctions::Function(i)));
 	}
+
+	//not really "functions", but..
+	{
+		MethodInfo mi;
+		mi.name="preload:Resource";
+		mi.arguments.push_back(PropertyInfo(Variant::STRING,"path"));
+		mi.return_val=PropertyInfo(Variant::OBJECT,"",PROPERTY_HINT_RESOURCE_TYPE,"Resource");
+		p_functions->push_back(mi);
+	}
+	{
+		MethodInfo mi;
+		mi.name="yield";
+		mi.arguments.push_back(PropertyInfo(Variant::OBJECT,"object"));
+		mi.arguments.push_back(PropertyInfo(Variant::STRING,"signal"));
+		mi.default_arguments.push_back(Variant::NIL);
+		mi.default_arguments.push_back(Variant::STRING);
+		p_functions->push_back(mi);
+	}
+	{
+		MethodInfo mi;
+		mi.name="assert";
+		mi.arguments.push_back(PropertyInfo(Variant::BOOL,"condition"));
+		p_functions->push_back(mi);
+	}
 }
 
 void GDScriptLanguage::get_public_constants(List<Pair<String,Variant> > *p_constants) const {

@@ -239,7 +239,6 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 				} else {
 					node->_set_name_nocheck( snames[ n.name ] );
 				}
-
 			}
 
 			if (n.owner>=0) {
