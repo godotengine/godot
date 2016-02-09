@@ -226,7 +226,7 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 				node->add_to_group( snames[ n.groups[j] ], true );
 			}
 
-			if (n.instance>=0 || n.type!=TYPE_INSTANCED) {
+			if (n.instance>=0 || n.type!=TYPE_INSTANCED || i==0) {
 				//if node was not part of instance, must set it's name, parenthood and ownership
 				if (i>0) {
 					if (parent) {

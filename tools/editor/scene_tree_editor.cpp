@@ -230,7 +230,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 			return;
 		}
 	} else {
-		part_of_subscene = get_scene_node()->get_scene_inherited_state().is_valid() && get_scene_node()->get_scene_inherited_state()->find_node_by_path(get_scene_node()->get_path_to(p_node))>=0;
+		part_of_subscene = p_node!=get_scene_node() && get_scene_node()->get_scene_inherited_state().is_valid() && get_scene_node()->get_scene_inherited_state()->find_node_by_path(get_scene_node()->get_path_to(p_node))>=0;
 	}
 
 	TreeItem *item = tree->create_item(p_parent);
