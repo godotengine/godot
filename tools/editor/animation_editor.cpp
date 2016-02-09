@@ -2857,6 +2857,7 @@ void AnimationKeyEditor::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
 			EditorNode::get_singleton()->update_keying();
+			emit_signal("keying_changed");
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
