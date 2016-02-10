@@ -328,12 +328,14 @@ void EditorNode::_notification(int p_what) {
 		}
 */
 
+		/*  // moved to "_sources_changed"
 		if (export_defer.platform!="") {
 
 			project_export_settings->export_platform(export_defer.platform,export_defer.path,export_defer.debug,export_defer.password,true);
 			export_defer.platform="";
 		}
 
+		*/
 	}
 
 	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
@@ -391,6 +393,13 @@ void EditorNode::_fs_changed() {
 
 		E->get()->invalidate();
 	}
+
+	if (export_defer.platform!="") {
+
+		project_export_settings->export_platform(export_defer.platform,export_defer.path,export_defer.debug,export_defer.password,true);
+		export_defer.platform="";
+	}
+
 }
 
 void EditorNode::_sources_changed(bool p_exist) {
@@ -406,6 +415,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 		sources_button->set_disabled(true);
 
 	}
+
 }
 
 void EditorNode::_vp_resized() {
