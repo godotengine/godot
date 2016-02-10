@@ -2486,13 +2486,13 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_back->connect("pressed",this,"_history_back");
 	menu_hb->add_child(script_back);
 	script_back->set_disabled(true);
-	help_search->set_tooltip("Go to previous edited document.");
+	script_back->set_tooltip("Go to previous edited document.");
 
 	script_forward = memnew( ToolButton );
 	script_forward->connect("pressed",this,"_history_forward");
 	menu_hb->add_child(script_forward);
 	script_forward->set_disabled(true);
-	help_search->set_tooltip("Go to next edited document.");
+	script_forward->set_tooltip("Go to next edited document.");
 
 
 
