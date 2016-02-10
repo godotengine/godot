@@ -107,13 +107,13 @@ InputEvent::operator String() const {
 		
 		} break;
 		case JOYSTICK_MOTION: {
-			str+= "Event: JoyMotion ";
+			str+= "Event: JoystickMotion ";
 			str=str+"Axis: "+itos(joy_motion.axis)+" Value: " +rtos(joy_motion.axis_value);
 			return str;
 
 		} break;
 		case JOYSTICK_BUTTON: {
-			str+= "Event: JoyButton ";
+			str+= "Event: JoystickButton ";
 			str=str+"Pressed: "+itos(joy_button.pressed)+" Index: " +itos(joy_button.button_index)+" pressure "+rtos(joy_button.pressure);
 			return str;
 
