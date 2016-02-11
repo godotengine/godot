@@ -481,10 +481,10 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 				float mu = pos-Math::floor(pos);
 				int ipos = int(Math::floor(pos));
 
-				float y0=data[MAX(0,ipos-1)];
-				float y1=data[ipos];
-				float y2=data[MIN(len-1,ipos+1)];
-				float y3=data[MIN(len-1,ipos+2)];
+				float y0=data[MAX(0,ipos-1)*chans+c];
+				float y1=data[ipos*chans+c];
+				float y2=data[MIN(len-1,ipos+1)*chans+c];
+				float y3=data[MIN(len-1,ipos+2)*chans+c];
 
 				float mu2 = mu*mu;
 				float a0 = y3 - y2 - y0 + y1;
