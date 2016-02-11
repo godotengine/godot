@@ -297,7 +297,7 @@ void ProjectSettings::_add_item(int p_item){
 		case InputEvent::JOYSTICK_MOTION: {
 
 			device_id->set_val(0);
-			device_index_label->set_text("Joy Button Axis:");
+			device_index_label->set_text("Joystick Axis Index:");
 			device_index->clear();
 			for(int i=0;i<JOY_AXIS_MAX*2;i++) {
 
@@ -322,7 +322,7 @@ void ProjectSettings::_add_item(int p_item){
 		case InputEvent::JOYSTICK_BUTTON: {
 
 			device_id->set_val(0);
-			device_index_label->set_text("Joy Button Index:");
+			device_index_label->set_text("Joystick Button Index:");
 			device_index->clear();
 
 			for(int i=0;i<JOY_BUTTON_MAX;i++) {
