@@ -211,6 +211,7 @@ void AnimationPlayer::_notification(int p_what) {
 
 			if (!get_tree()->is_editor_hint() && animation_set.has(autoplay)) {
 				play(autoplay);
+				set_autoplay(""); //this line is the fix for autoplay issues with animatio
 			}
 		} break;
 		case NOTIFICATION_PROCESS: {

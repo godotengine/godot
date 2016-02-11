@@ -106,8 +106,10 @@ void StreamPlayer::_notification(int p_what) {
 					resume_pos=-1;
 				} else if (autoplay) {
 					play();
+					autoplay = false; //this line fix autoplay issues
 				}
 			}
+
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
