@@ -433,7 +433,7 @@ void DocData::generate(bool p_basic_types) {
 
 			if (i==Variant::INPUT_EVENT) {
 				static const char* ie_type[InputEvent::TYPE_MAX]={
-					"","Key","MouseMotion","MouseButton","JoyMotion","JoyButton","ScreenTouch","ScreenDrag","Action"
+					"","Key","MouseMotion","MouseButton","JoystickMotion","JoystickButton","ScreenTouch","ScreenDrag","Action"
 				};
 				cname+=ie_type[j];
 			}
