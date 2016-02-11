@@ -29,7 +29,6 @@
 #include "os_bb10.h"
 
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles1/rasterizer_gles1.h"
 #include "servers/visual/visual_server_raster.h"
 #include "core/os/dir_access.h"
 
@@ -605,6 +604,9 @@ String OSBB10::get_data_dir() const {
 	return data_dir;
 };
 
+Size2 OSBB10::get_window_size() const {
+	return Vector2(default_videomode.width, default_videomode.height);
+}
 
 OSBB10::OSBB10() {
 
