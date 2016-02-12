@@ -472,7 +472,7 @@ InputDefault::JoyAxis joystick_windows::axis_correct(int p_val, bool p_xinput, b
 
 	InputDefault::JoyAxis jx;
 	if (Math::abs(p_val) < MIN_JOY_AXIS) {
-		jx.min = -1;
+		jx.min = p_trigger ? 0 : -1;
 		jx.value = 0.0f;
 		return jx;
 	}
