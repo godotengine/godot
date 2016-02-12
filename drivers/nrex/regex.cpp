@@ -71,7 +71,7 @@ String RegEx::get_capture(int capture) const {
 
 int RegEx::get_capture_start(int capture) const {
 
-	ERR_FAIL_COND_V( get_capture_count() <= capture, String() );
+	ERR_FAIL_COND_V( get_capture_count() <= capture, -1 );
 
 	return captures[capture].start;
 
