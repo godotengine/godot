@@ -34,7 +34,6 @@
 #include "optimized_save_dialog.h"
 #include "undo_redo.h"
 #include "editor_data.h"
-#include "editor_name_dialog.h"
 //#include "project_export_settings.h"
 
 class ProjectSettings : public AcceptDialog {
@@ -66,8 +65,6 @@ class ProjectSettings : public AcceptDialog {
 	OptionButton *device_index;
 	Label *device_index_label;
 	MenuButton *popup_platform;
-
-	EditorNameDialog *rename_action;
 
 	LineEdit *action_name;
 	Tree *input_editor;
@@ -111,11 +108,11 @@ class ProjectSettings : public AcceptDialog {
 
 	void _action_adds(String);
 	void _action_add();
-	void _action_rename(const String& p_name);
 	void _device_input_add();
 
 	void _item_checked(const String& p_item, bool p_check);
-	void _action_persist_toggle();
+	void _action_selected();
+	void _action_edited();
 	void _action_button_pressed(Object* p_obj, int p_column,int p_id);
 	void _wait_for_key(const InputEvent& p_event);
 	void _press_a_key_confirm();
