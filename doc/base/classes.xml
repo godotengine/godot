@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="2.0.beta.custom_build" name="Engine Types">
+<doc version="2.0.rc1.custom_build" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 	Built-in GDScript functions.
@@ -617,6 +617,32 @@
 			<return type="Object">
 			</return>
 			<argument index="0" name="instance_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="preload">
+			<return type="Resource">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="yield">
+			<return type="Nil">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<argument index="1" name="signal" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="assert">
+			<return type="Nil">
+			</return>
+			<argument index="0" name="condition" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -12127,6 +12153,16 @@ This approximation makes straight segments between each point, then subdivides t
 	</signals>
 	<constants>
 	</constants>
+	<theme_items>
+		<theme_item name="more" type="Texture">
+		</theme_item>
+		<theme_item name="reset" type="Texture">
+		</theme_item>
+		<theme_item name="minus" type="Texture">
+		</theme_item>
+		<theme_item name="bg" type="StyleBox">
+		</theme_item>
+	</theme_items>
 </class>
 <class name="GraphNode" inherits="Container" category="Core">
 	<brief_description>
@@ -14081,7 +14117,7 @@ verify_host will check the SSL identity of the host if set to true.
 		</constant>
 	</constants>
 </class>
-<class name="InputEventJoyButton" category="Built-In Types">
+<class name="InputEventJoystickButton" category="Built-In Types">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -14167,7 +14203,7 @@ verify_host will check the SSL identity of the host if set to true.
 		</constant>
 	</constants>
 </class>
-<class name="InputEventJoyMotion" category="Built-In Types">
+<class name="InputEventJoystickMotion" category="Built-In Types">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -19736,7 +19772,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<return type="String">
 			</return>
 			<description>
-			Return the name of the host OS.
+			Return the name of the host OS. Possible values are: "Android", "BlackBerry 10", "Flash", "Haiku", "iOS", "HTML5", "OSX", "Server", "Windows", "WinRT", "X11"
 			</description>
 		</method>
 		<method name="get_cmdline_args">
@@ -27502,6 +27538,14 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<description>
 			Returns a captured group. A captured group is the part of a string that matches a part of the pattern delimited by parentheses (unless they are non-capturing parentheses [i](?:)[/i]).
+			</description>
+		</method>
+		<method name="get_capture_start" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="capture" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_captures" qualifiers="const">
