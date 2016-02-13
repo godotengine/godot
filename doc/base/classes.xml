@@ -12968,6 +12968,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<return type="Dictionary">
 			</return>
 			<description>
+			Returns all response headers as dictionary where the keys and values are transformed to lower case. A key with more than one value is a simple string with "; " as separator. example: (content-length:12), (content-type:application/json; charset=utf-8)
 			</description>
 		</method>
 		<method name="get_response_body_length" qualifiers="const">
