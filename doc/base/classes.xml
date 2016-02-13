@@ -19771,7 +19771,7 @@ verify_host will check the SSL identity of the host if set to true.
 			<return type="String">
 			</return>
 			<description>
-			Return the name of the host OS.
+			Return the name of the host OS. Possible values are: "Android", "BlackBerry 10", "Flash", "Haiku", "iOS", "HTML5", "OSX", "Server", "Windows", "WinRT", "X11"
 			</description>
 		</method>
 		<method name="get_cmdline_args">
