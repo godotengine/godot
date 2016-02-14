@@ -73,6 +73,7 @@ private:
 	Thread *joy_thread;
 	InputDefault *input;
 	Joystick joysticks[JOYSTICKS_MAX];
+	Vector<String> attached_devices;
 
 	static void joy_thread_func(void *p_user);
 
@@ -81,8 +82,11 @@ private:
 
 	void setup_joystick_properties(int p_id);
 	void close_joystick(int p_id = -1);
+#ifdef UDEV_ENABLED
 	void enumerate_joysticks(struct udev *_udev);
 	void monitor_joysticks(struct udev *_udev);
+#endif
+	void monitor_joysticks();
 	void run_joystick_thread();
 	void open_joystick(const char* path);
 
