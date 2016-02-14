@@ -56,7 +56,7 @@ def get_opts():
 	('use_sanitizer','Use llvm compiler sanitize address','no'),
 	('use_leak_sanitizer','Use llvm compiler sanitize memory leaks','no'),
 	('pulseaudio','Detect & Use pulseaudio','yes'),
-	('gamepad','Gamepad support, requires libudev and libevdev','yes'),
+	('udev','Use udev for gamepad connection callbacks','no'),
 	('new_wm_api', 'Use experimental window management API','no'),
 	('debug_release', 'Add debug symbols to release version','no'),
 	]
@@ -156,20 +156,18 @@ def configure(env):
 	else:
 		print("ALSA libraries not found, disabling driver")
 
-	if (env["gamepad"]=="yes" and platform.system() == "Linux"):
+	if (platform.system() == "Linux"):
+		env.Append(CPPFLAGS=["-DJOYDEV_ENABLED"])
+	if (env["udev"]=="yes"):
 		# pkg-config returns 0 when the lib exists...
 		found_udev = not os.system("pkg-config --exists libudev")
-		
+
 		if (found_udev):
-			print("Enabling gamepad support with udev")
-			env.Append(CPPFLAGS=["-DJOYDEV_ENABLED"])
+			print("Enabling udev support")
+			env.Append(CPPFLAGS=["-DUDEV_ENABLED"])
 			env.ParseConfig('pkg-config libudev --cflags --libs')
 		else:
-			print("libudev development libraries not found")
-
-			print("Some libraries are missing for the required gamepad support, aborting!")
-			print("Install the mentioned libraries or build with 'gamepad=no' to disable gamepad support.")
-			sys.exit(255)
+			print("libudev development libraries not found, disabling udev support")
 
 	if (env["pulseaudio"]=="yes"):
 		if not os.system("pkg-config --exists libpulse-simple"):
