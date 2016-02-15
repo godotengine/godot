@@ -102,6 +102,18 @@ bool InputDefault::is_action_pressed(const StringName& p_action) {
 				if (joy_buttons_pressed.has(c))
 					return true;
 			} break;
+			case InputEvent::JOYSTICK_MOTION: {
+
+				const InputEventJoystickMotion &iejm=E->get().joy_motion;
+				int c = _combine_device(iejm.axis,device);
+				if (_joy_axis.has(c)) {
+					if (iejm.axis_value < 0) {
+						if (_joy_axis[c] < -0.5f) return true;
+					}
+					else
+						if (_joy_axis[c] > 0.5f) return true;
+				}
+			} break;
 		}
 	}
 
