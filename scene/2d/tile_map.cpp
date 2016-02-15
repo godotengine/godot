@@ -1205,6 +1205,7 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_cellv","pos"),&TileMap::get_cellv);
 	ObjectTypeDB::bind_method(_MD("is_cell_x_flipped","x","y"),&TileMap::is_cell_x_flipped);
 	ObjectTypeDB::bind_method(_MD("is_cell_y_flipped","x","y"),&TileMap::is_cell_y_flipped);
+	ObjectTypeDB::bind_method(_MD("is_cell_transposed","x","y"),&TileMap::is_cell_transposed);
 
 	ObjectTypeDB::bind_method(_MD("clear"),&TileMap::clear);
 
