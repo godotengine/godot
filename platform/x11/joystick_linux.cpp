@@ -33,10 +33,13 @@
 #include "joystick_linux.h"
 
 #include <linux/input.h>
-#include <libudev.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+
+#ifdef UDEV_ENABLED
+#include <libudev.h>
+#endif
 
 #define LONG_BITS  (sizeof(long) * 8)
 #define test_bit(nr, addr)  (((1UL << ((nr) % LONG_BITS)) & ((addr)[(nr) / LONG_BITS])) != 0)
