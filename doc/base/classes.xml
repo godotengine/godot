@@ -36394,6 +36394,17 @@ This method controls whether the position between two cached points is interpola
 			Return whether the referenced cell is flipped over the Y axis.
 			</description>
 		</method>
+		<method name="is_cell_transposed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<argument index="1" name="y" type="int">
+			</argument>
+			<description>
+                        Return whether the referenced cell is transposed, i.e. the X and Y axes are swapped (mirroring with regard to the (1,1) vector).
+			</description>
+		</method>
 		<method name="clear">
 			<description>
 			Clear all cells.
