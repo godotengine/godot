@@ -95,7 +95,7 @@ DVector<Face3> Particles::get_faces(uint32_t p_usage_flags) const {
 
 void Particles::set_amount(int p_amount) {
 
-	ERR_FAIL_INDEX(p_amount,4096);
+	ERR_FAIL_INDEX(p_amount,1024);
 	amount=p_amount;
 	VisualServer::get_singleton()->particles_set_amount(particles,p_amount);
 }
@@ -441,7 +441,7 @@ void Particles::_bind_methods() {
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "Material" ), _SCS("set_material"), _SCS("get_material") );
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,4096,1" ), _SCS("set_amount"), _SCS("get_amount") );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1024,1" ), _SCS("set_amount"), _SCS("get_amount") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "emitting" ), _SCS("set_emitting"), _SCS("is_emitting") );
 	ADD_PROPERTY( PropertyInfo( Variant::_AABB, "visibility" ), _SCS("set_visibility_aabb"), _SCS("get_visibility_aabb") );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "emission_extents" ), _SCS("set_emission_half_extents"), _SCS("get_emission_half_extents") );
