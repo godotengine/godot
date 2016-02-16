@@ -942,6 +942,14 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value) {
 	anim=player->get_animation(current);
 
 	float pos = anim->get_length() * (p_value / frame->get_max());
+	float step = anim->get_step();
+	if (step) {
+		pos=Math::stepify(pos, step);
+		if (pos<0)
+			pos=0;
+		if (pos>=anim->get_length())
+			pos=anim->get_length();
+	}
 
 	if (player->is_valid()) {
 		float cpos = player->get_current_animation_pos();
