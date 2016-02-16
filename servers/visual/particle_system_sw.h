@@ -38,7 +38,7 @@
 struct ParticleSystemSW {
 	enum {
 	
-		MAX_PARTICLES=1024
+		MAX_PARTICLES=4096
 	};
 
 	float particle_vars[VS::PARTICLE_VAR_MAX];
