@@ -1631,8 +1631,11 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						_edit.snap=true;
 					}
 				} break;
+				case KEY_7:
 				case KEY_KP_7: {
-
+					bool emulate_numpad = EditorSettings::get_singleton()->get("3d_editor/emulate_numpad");
+					if (!emulate_numpad && k.scancode==KEY_7)
+						return;
 					cursor.y_rot=0;
 					if (k.mod.shift) {
 						cursor.x_rot=-Math_PI/2.0;
@@ -1647,8 +1650,11 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						_update_name();
 					}
 				} break;
+				case KEY_1:
 				case KEY_KP_1: {
-
+					bool emulate_numpad = EditorSettings::get_singleton()->get("3d_editor/emulate_numpad");
+					if (!emulate_numpad && k.scancode==KEY_1)
+						return;
 					cursor.x_rot=0;
 					if (k.mod.shift) {
 						cursor.y_rot=Math_PI;
@@ -1664,8 +1670,11 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					}
 
 				} break;
+				case KEY_3:
 				case KEY_KP_3: {
-
+					bool emulate_numpad = EditorSettings::get_singleton()->get("3d_editor/emulate_numpad");
+					if (!emulate_numpad && k.scancode==KEY_3)
+						return;
 					cursor.x_rot=0;
 					if (k.mod.shift) {
 						cursor.y_rot=Math_PI/2.0;
@@ -1680,8 +1689,11 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					}
 
 				} break;
+				case KEY_5:
 				case KEY_KP_5: {
-
+					bool emulate_numpad = EditorSettings::get_singleton()->get("3d_editor/emulate_numpad");
+					if (!emulate_numpad && k.scancode==KEY_5)
+						return;
 
 					//orthogonal = !orthogonal;
 					_menu_option(orthogonal?VIEW_PERSPECTIVE:VIEW_ORTHOGONAL);
