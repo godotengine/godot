@@ -9606,8 +9606,25 @@ This approximation makes straight segments between each point, then subdivides t
 </class>
 <class name="Directory" inherits="Reference" category="Core">
 	<brief_description>
+	Directory type.
 	</brief_description>
-	<description>
+	<description>Directory type. Is used to manage directories and their content (not restricted to the project folder).
+
+How to iterate through the files of a directory example:
+
+func dir(path):
+	var d = Directory.new()
+	if d.open( path )==0:
+		d.list_dir_begin()
+		var file_name = d.get_next()
+		while(file_name!=""):
+			if d.current_is_dir():
+				print("Is directory: " + file_name)
+			else:
+				print("Is File:" + file_name)
+			file_name = d.get_next()
+	else:
+		print("Some open Error, maybe directory not found?")
 	</description>
 	<methods>
 		<method name="open">
@@ -9616,28 +9633,34 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+Opens a directory to work with. Needs a path, example "res://folder"
 			</description>
 		</method>
 		<method name="list_dir_begin">
 			<return type="bool">
 			</return>
 			<description>
+Loads all file names of the current directory (prepares the get_next() function).
 			</description>
 		</method>
 		<method name="get_next">
 			<return type="String">
 			</return>
 			<description>
+Is used to iterate through the files of the current directory. Returns the name(no path) of the current file/directory, it also contains "." and ".." .
+Returns an empty String "" at the end of the list.
 			</description>
 		</method>
 		<method name="current_is_dir" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+Returns true if the current file you are looking at with get_next() is a directory or "." or ".." otherwise false.
 			</description>
 		</method>
 		<method name="list_dir_end">
 			<description>
+Run this to empty the list of remaining files in get_next(). You can use it to end the iteration, as soon as your goal is reached.
 			</description>
 		</method>
 		<method name="get_drive_count">
@@ -9660,12 +9683,14 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="todir" type="String">
 			</argument>
 			<description>
+Needs a path or name to the next directory. When the target directory is in the current directory you can use "newfolder" otherwise you need the full path "res://currentfolder/newfolder"
 			</description>
 		</method>
 		<method name="get_current_dir">
 			<return type="String">
 			</return>
 			<description>
+Returns a path to the current directory, example: "res://folder"
 			</description>
 		</method>
 		<method name="make_dir">
@@ -9698,6 +9723,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+Returns true if directory exists otherwise false. Needs a path, example: "res://folder"
 			</description>
 		</method>
 		<method name="get_space_left">
