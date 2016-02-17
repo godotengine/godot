@@ -9412,7 +9412,7 @@ This approximation makes straight segments between each point, then subdivides t
 	Damped spring constraint for 2D physics.
 	</brief_description>
 	<description>
-	Damped spring constraint for 2D physics. This resembles a spring joint that always want to go back to a given length.
+	Damped spring constraint for 2D physics. This resembles a spring joint that always wants to go back to a given length.
 	</description>
 	<methods>
 		<method name="set_length">
@@ -9447,28 +9447,28 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="stiffness" type="float">
 			</argument>
 			<description>
-			Set the stiffness of the spring joint.
+			Set the stiffness of the spring joint. The joint applies a force equal to the stiffness times the distance from its resting length.
 			</description>
 		</method>
 		<method name="get_stiffness" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-			Return the stiffness of the spring joint.
+			Return the stiffness of the spring joint. The joint applies a force equal to the stiffness times the distance from its resting length.
 			</description>
 		</method>
 		<method name="set_damping">
 			<argument index="0" name="damping" type="float">
 			</argument>
 			<description>
-			Set the damping of the spring joint.
+			Set the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping).
 			</description>
 		</method>
 		<method name="get_damping" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-			Return the damping of the spring joint.
+			Return the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping).
 			</description>
 		</method>
 	</methods>
