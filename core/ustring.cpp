@@ -508,6 +508,8 @@ String String::capitalize() const {
 }
 
 String String::camelcase_to_underscore() const {
+	if ( this->find(String("_")) >=0 ) 
+		return *this; // a string containing underscore might already be uncamelcased. Ex : "test_AABB_collision"
 	const CharType * cstr = c_str();
 	String newString;
 	const char A = 'A', Z = 'Z';
