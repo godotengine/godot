@@ -429,8 +429,8 @@ void NavigationPolygonInstance::_navpoly_changed() {
 
 void NavigationPolygonInstance::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_navigation_polygon","navpoly"),&NavigationPolygonInstance::set_navigation_polygon);
-	ObjectTypeDB::bind_method(_MD("get_navigation_polygon"),&NavigationPolygonInstance::get_navigation_polygon);
+	ObjectTypeDB::bind_method(_MD("set_navigation_polygon","navpoly:NavigationPolygon"),&NavigationPolygonInstance::set_navigation_polygon);
+	ObjectTypeDB::bind_method(_MD("get_navigation_polygon:NavigationPolygon"),&NavigationPolygonInstance::get_navigation_polygon);
 
 	ObjectTypeDB::bind_method(_MD("set_enabled","enabled"),&NavigationPolygonInstance::set_enabled);
 	ObjectTypeDB::bind_method(_MD("is_enabled"),&NavigationPolygonInstance::is_enabled);
