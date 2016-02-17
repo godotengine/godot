@@ -646,9 +646,11 @@ void TextEdit::_notification(int p_what) {
 				
 				if (line<0 || line>=(int)text.size())
 					continue;
-				
+#ifdef RTL_ENABLED
+				const String &str=text[line].bidi_visual_string();
+#else
 				const String &str=text[line];
-				
+#endif
 				int char_margin=xmargin_beg-cursor.x_ofs;
 				int char_ofs=0;
 				int ofs_y=i*get_row_height()+cache.line_spacing/2;
@@ -1336,6 +1338,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 			const InputEventMouseMotion &mm=p_input_event.mouse_motion;
 			
 			if (mm.button_mask&BUTTON_MASK_LEFT) {
+				
+				int row,col;
+				_get_mouse_pos(Point2i(mm.x,mm.y), row,col);
 				
 				if (selection.selecting_mode!=Selection::MODE_NONE) {
 

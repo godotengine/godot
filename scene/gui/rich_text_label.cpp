@@ -236,8 +236,12 @@ if (m_height > line_height) {\
 				Ref<Font> font=_find_font(it);
 				if (font.is_null())
 					font=p_base_font;
-
-				const CharType *c = text->text.c_str();				
+#ifdef RTL_ENABLED
+				String bidi_text = text->text.bidi_visual_string();
+				const CharType *c = bidi_text.c_str();
+#else
+				const CharType *c = text->text.c_str();
+#endif
 				const CharType *cf=c;
 				int fh=font->get_height();
 				int ascent = font->get_ascent();
@@ -297,7 +301,7 @@ if (m_height > line_height) {\
 							fw+=cw;
 						}
 
-						end++;						
+						end++;
 					}
 
 					ENSURE_WIDTH(w);
@@ -2058,7 +2062,7 @@ RichTextLabel::RichTextLabel() {
 	scroll_active=true;
 	scroll_w=0;
 
-	vscroll = memnew( VScrollBar );	
+	vscroll = memnew( VScrollBar );
 	add_child(vscroll);
 	vscroll->set_drag_slave(String(".."));
 	vscroll->set_step(1);

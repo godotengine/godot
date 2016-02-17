@@ -463,7 +463,19 @@ void Font::draw_halign(RID p_canvas_item, const Point2& p_pos, HAlign p_align,fl
 void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, const Color& p_modulate,int p_clip_w) const {
 		
 	Vector2 ofs;
-	
+#ifdef RTL_ENABLED
+	String bidi_text = p_text.bidi_visual_string();
+
+	for (int i=0;i<bidi_text.length();i++) {
+
+		int width = get_char_size(bidi_text[i]).width;
+
+		if (p_clip_w>=0 && (ofs.x+width)>p_clip_w)
+			break; //clip
+
+		ofs.x+=draw_char(p_canvas_item,p_pos+ofs,bidi_text[i],bidi_text[i+1],p_modulate);
+	}
+#else
 	for (int i=0;i<p_text.length();i++) {
 
 		int width = get_char_size(p_text[i]).width;
@@ -473,6 +485,7 @@ void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, co
 
 		ofs.x+=draw_char(p_canvas_item,p_pos+ofs,p_text[i],p_text[i+1],p_modulate);
 	}
+#endif
 }
 
 float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_char,const CharType& p_next,const Color& p_modulate) const {

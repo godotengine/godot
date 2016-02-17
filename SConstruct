@@ -145,6 +145,7 @@ opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (ye
 opts.Add('colored', 'Enable colored output for the compilation (yes/no)', 'no')
 opts.Add('extra_suffix', 'Custom extra suffix added to the base filename of all generated binary files.', '')
 opts.Add('vsproj', 'Generate Visual Studio Project. (yes/no)', 'no')
+opts.Add('rtl', 'RTL support (yes/no)', 'no')
 
 # add platform specific options
 
@@ -363,9 +364,15 @@ if selected_platform in platform_list:
 	if (env['etc1']=='yes'):
 		env.Append(CPPFLAGS=['-DETC1_ENABLED'])
 
+	if (env['rtl']=='yes'):
+		env.Append(CPPFLAGS=['-DRTL_ENABLED'])
+		
 	Export('env')
 
 	#build subdirs, the build order is dependent on link order.
+
+	if (env['rtl']=='yes'):
+		SConscript("drivers/icu/SCsub")
 
 	SConscript("core/SCsub")
 	SConscript("servers/SCsub")

@@ -94,7 +94,9 @@ void Label::_notification(int p_what) {
 		int lines_visible = size.y/font_h;
 		int space_w=font->get_char_size(' ').width;
 		int chars_total=0;
-
+#ifdef RTL_ENABLED
+		bool text_is_rtl = text.is_rtl();
+#endif
 		int vbegin=0,vsep=0;
 
 		if (lines_visible > line_count) {
@@ -184,7 +186,47 @@ void Label::_notification(int p_what) {
 			bool can_fill = to && to->char_pos==WordCache::CHAR_WRAPLINE;
 
 			float x_ofs=0;
+#ifdef RTL_ENABLED
+			switch (align) {
 
+				case ALIGN_FILL: {
+
+					if (!text_is_rtl) {
+						x_ofs=0;
+					} else {
+						x_ofs=int(size.width);
+					}
+
+				} break;
+				case ALIGN_LEFT: {
+
+					if (!text_is_rtl) {
+						x_ofs=0;
+					} else {
+						x_ofs=int(taken+spaces*space_w);
+					}
+
+				} break;
+				case ALIGN_CENTER: {
+
+					if (!text_is_rtl) {
+						x_ofs=int(size.width-(taken+spaces*space_w))/2;
+					} else {
+						x_ofs=int(size.width+(taken+spaces*space_w))/2;
+					}
+
+				} break;
+				case ALIGN_RIGHT: {
+
+					if (!text_is_rtl) {
+						x_ofs=int(size.width-(taken+spaces*space_w));
+					} else {
+						x_ofs=int(size.width);
+					}
+
+				} break;
+			}
+#else
 			switch (align) {
 
 				case ALIGN_FILL:
@@ -194,16 +236,14 @@ void Label::_notification(int p_what) {
 				} break;
 				case ALIGN_CENTER: {
 
-					x_ofs=int(size.width-(taken+spaces*space_w))/2;;
-
+					x_ofs=int(size.width-(taken+spaces*space_w))/2;
 				} break;
 				case ALIGN_RIGHT: {
 
-
 					x_ofs=int(size.width-(taken+spaces*space_w));
-
 				} break;
-				}
+			}
+#endif
 
 			int y_ofs=(line-lines_skipped)*font_h + font->get_ascent();
 			y_ofs+=vbegin + line*vsep;
@@ -219,24 +259,57 @@ void Label::_notification(int p_what) {
 				}
 				if (from->space_count) {
 				/* spacing */
-					x_ofs+=space_w*from->space_count;
-					if (can_fill && align==ALIGN_FILL && spaces) {
+#ifdef RTL_ENABLED
+					if (!text_is_rtl) {
+#endif
+						x_ofs+=space_w*from->space_count;
+#ifdef RTL_ENABLED
+					} else {
+						x_ofs-=space_w*from->space_count;
+					}
 
+					if (can_fill && align==ALIGN_FILL && spaces && !text_is_rtl) {
+#else
+					if (can_fill && align==ALIGN_FILL && spaces) {
+#endif
 						x_ofs+=int((size.width-(taken+space_w*spaces))/spaces);
 					}
 
-
 				}
 
+#ifdef RTL_ENABLED
+				if (!text_is_rtl) {
+#endif
+					if (font_color_shadow.a>0) {
+
+						int chars_total_shadow = chars_total; //save chars drawn
+						float x_ofs_shadow=x_ofs;
+						for (int i=0;i<from->word_len;i++) {
+
+							if (visible_chars < 0 || chars_total_shadow<visible_chars) {
+								CharType c = text[i+pos];
+								CharType n = text[i+pos+1];
+								if (uppercase) {
+									c=String::char_uppercase(c);
+									n=String::char_uppercase(c);
+								}
+
+								float move=font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+shadow_ofs, c, n,font_color_shadow );
+								if (use_outlinde) {
+									font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+Vector2(-shadow_ofs.x,shadow_ofs.y), c, n,font_color_shadow );
+									font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+Vector2(shadow_ofs.x,-shadow_ofs.y), c, n,font_color_shadow );
+									font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+Vector2(-shadow_ofs.x,-shadow_ofs.y), c, n,font_color_shadow );
+								}
+								x_ofs_shadow+=move;
+								chars_total_shadow++;
+							}
+						}
 
 
-				if (font_color_shadow.a>0) {
-
-					int chars_total_shadow = chars_total; //save chars drawn
-					float x_ofs_shadow=x_ofs;
+					}
 					for (int i=0;i<from->word_len;i++) {
 
-						if (visible_chars < 0 || chars_total_shadow<visible_chars) {
+						if (visible_chars < 0 || chars_total<visible_chars) {
 							CharType c = text[i+pos];
 							CharType n = text[i+pos+1];
 							if (uppercase) {
@@ -244,34 +317,68 @@ void Label::_notification(int p_what) {
 								n=String::char_uppercase(c);
 							}
 
-							float move=font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+shadow_ofs, c, n,font_color_shadow );
-							if (use_outlinde) {
-								font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+Vector2(-shadow_ofs.x,shadow_ofs.y), c, n,font_color_shadow );
-								font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+Vector2(shadow_ofs.x,-shadow_ofs.y), c, n,font_color_shadow );
-								font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+Vector2(-shadow_ofs.x,-shadow_ofs.y), c, n,font_color_shadow );
+							x_ofs+=font->draw_char(ci,Point2( x_ofs, y_ofs ), c, n, font_color );
+							chars_total++;
+						}
+
+					}
+#ifdef RTL_ENABLED
+				} else { //RTL text
+
+					String bidi_text = text.bidi_visual_string();
+					x_ofs-=from->pixel_width;
+					if (font_color_shadow.a>0) {
+
+						int chars_total_shadow = chars_total; //save chars drawn
+						float x_ofs_shadow=x_ofs;
+
+						for (int i=from->word_len-1; i>-1;i--) {
+
+							if (visible_chars < 0 || chars_total_shadow<visible_chars) {
+								CharType c = bidi_text[pos-i];
+								CharType n = bidi_text[pos-i+1];
+								if (uppercase) {
+									c=String::char_uppercase(c);
+									n=String::char_uppercase(c);
+								}
+
+								float move=font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+shadow_ofs, c, n,font_color_shadow );
+								if (use_outlinde) {
+									font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+Vector2(-shadow_ofs.x,shadow_ofs.y), c, n,font_color_shadow );
+									font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+Vector2(shadow_ofs.x,-shadow_ofs.y), c, n,font_color_shadow );
+									font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+Vector2(-shadow_ofs.x,-shadow_ofs.y), c, n,font_color_shadow );
+								}
+								x_ofs_shadow+=move;
+								chars_total_shadow++;
 							}
-							x_ofs_shadow+=move;
-							chars_total_shadow++;
-						}
-					}
-
-
-				}
-				for (int i=0;i<from->word_len;i++) {
-
-					if (visible_chars < 0 || chars_total<visible_chars) {
-						CharType c = text[i+pos];
-						CharType n = text[i+pos+1];
-						if (uppercase) {
-							c=String::char_uppercase(c);
-							n=String::char_uppercase(c);
 						}
 
-						x_ofs+=font->draw_char(ci,Point2( x_ofs, y_ofs ), c, n, font_color );
-						chars_total++;
+
 					}
 
+					for (int i=from->word_len-1; i>-1;i--) {
+
+						if (visible_chars < 0 || chars_total<visible_chars) {
+							CharType c = bidi_text[pos-i];
+							CharType n = bidi_text[pos-i+1];
+							if (uppercase) {
+								c=String::char_uppercase(c);
+								n=String::char_uppercase(c);
+							}
+
+							x_ofs+=font->draw_char(ci,Point2( x_ofs, y_ofs ), c, n, font_color );
+							chars_total++;
+						}
+
+					}
+
+					x_ofs -= from->pixel_width;
+					if (can_fill && align==ALIGN_FILL && spaces) {
+
+						x_ofs-=int((size.width-(taken+space_w*spaces))/spaces);
+					}
 				}
+#endif
 				from=from->next;
 			}
 
@@ -315,10 +422,16 @@ int Label::get_longest_line_width() const {
 	Ref<Font> font = get_font("font");
 	int max_line_width=0;
 	int line_width=0;
+#ifdef RTL_ENABLED
+	String bidi_text = text.bidi_visual_string();
+	for (int i=0;i<bidi_text.size()+1;i++) {
 
-	for (int i=0;i<text.size();i++) {
+		CharType current=i<bidi_text.length()?bidi_text[i]:' '; //always a space at the end, so the algo works
+#else
+	for (int i=0;i<text.size()+1;i++) {
 
-		CharType current=text[i];
+		CharType current=i<text.length()?text[i]:' '; //always a space at the end, so the algo works
+#endif
 		if (uppercase)
 			current=String::char_uppercase(current);
 
@@ -377,9 +490,32 @@ void Label::regenerate_word_cache() {
 
 	WordCache *last=NULL;
 
-	for (int i=0;i<text.size()+1;i++) {
+	int i;
+	bool next_char_available;
+#ifdef RTL_ENABLED
+	bool text_is_rtl = text.is_rtl();
+	String bidi_text = text.bidi_visual_string();
+#endif
+	CharType current;
 
-		CharType current=i<text.length()?text[i]:' '; //always a space at the end, so the algo works
+#ifdef RTL_ENABLED
+	if (!text_is_rtl) {
+
+		i=0;
+		next_char_available= i<=bidi_text.size()+1;
+		current=i<bidi_text.length()?bidi_text[i]:' '; //always a space at the end, so the algo works
+	} else {
+
+		i=bidi_text.size()-1;
+		next_char_available= i>-1;
+		current= next_char_available?bidi_text[i]:' ';
+	}
+#else
+	i=0;
+	next_char_available= i<=text.size()+1;
+	current=i<text.length()?text[i]:' '; //always a space at the end, so the algo works
+#endif
+	while (next_char_available) {
 
 		if (uppercase)
 			current=String::char_uppercase(current);
@@ -405,7 +541,15 @@ void Label::regenerate_word_cache() {
 
 				wc->pixel_width=current_word_size;
 				wc->char_pos=word_pos;
+#ifdef RTL_ENABLED
+				if (!text_is_rtl) {
+					wc->word_len=i-word_pos;
+				} else {
+					wc->word_len=word_pos-i;
+				}
+#else
 				wc->word_len=i-word_pos;
+#endif
 				wc->space_count = space_count;
 				current_word_size=0;
 				space_count=0;
@@ -418,8 +562,12 @@ void Label::regenerate_word_cache() {
 			} else {
 				total_char_cache++;
 			}
-
+#ifdef RTL_ENABLED
+			if ( (!text_is_rtl && i<bidi_text.length() && bidi_text[i] == ' ')
+				|| (text_is_rtl && i>-1 && bidi_text[i] == ' ') ) {
+#else
 			if (i<text.length() && text[i] == ' ') {
+#endif
 				total_char_cache--;  // do not count spaces
 				if (line_width > 0 || last==NULL || last->char_pos!=WordCache::CHAR_WRAPLINE) {
 					space_count++;
@@ -480,6 +628,23 @@ void Label::regenerate_word_cache() {
 			space_count=0;
 
 		}
+#ifdef RTL_ENABLED
+		if (!text_is_rtl) {
+
+			i++;
+			next_char_available= i<bidi_text.size()+1;
+			current=i<bidi_text.length()?bidi_text[i]:' '; //always a space at the end, so the algo works
+		} else {
+
+			i--;
+			next_char_available= i>=-1;
+			current= i>-1?bidi_text[i]:' ';
+		}
+#else
+		i++;
+		next_char_available= i<text.size()+1;
+		current=i<text.length()?text[i]:' '; //always a space at the end, so the algo works
+#endif
 
 	}
 

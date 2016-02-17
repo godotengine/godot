@@ -1,0 +1,32 @@
+Import('env')
+
+env.icu_sources = [
+"source/common/uchar.c",
+"source/common/uinvchar.c",
+"source/common/cstring.c",
+"source/common/utf_impl.c",
+"source/common/udataswp.c",
+"source/common/umath.c",
+"source/common/cmemory.c",
+"source/common/utrie2.cpp",
+"source/common/unistr.cpp",
+"source/common/ustrtrns.cpp",
+"source/common/ushape.cpp",
+"source/common/ubidi_props.c",
+"source/common/ubidi.c",
+"source/common/ubidiwrt.c",
+"source/common/ubidiln.c",
+"source/common/ustring.cpp",
+]
+
+#env.add_source_files(env.icu_sources,"*.cpp")
+
+env.Append(CPPPATH=["#drivers/icu/source/common"])
+env.Append(CPPPATH=["#drivers/icu/source/common/unicode"])
+#env.Append(CPPFLAGS=["-DU_DISABLE_RENAMING=1", "-DU_COMMON_IMPLEMENTATION","-DU_STATIC_IMPLEMENTATION"])
+env.Append(CPPFLAGS=["-DU_COMMON_IMPLEMENTATION", "-DU_HAVE_STD_STRING=0"])
+
+lib = env.Library("icu",env.icu_sources)
+
+env.Prepend(LIBS=lib)
+
