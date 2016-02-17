@@ -32,10 +32,14 @@ matrix:
       env: GODOT_TARGET=windows
     - compiler: gcc
       env: GODOT_TARGET=iphone
+    - compiler: gcc
+      env: GODOT_TARGET=osx
     - compiler: clang
       env: GODOT_TARGET=android
     - compiler: clang
       env: GODOT_TARGET=windows
+    - compiler: clang
+      env: GODOT_TARGET=x11
 
 
 before_script:
