@@ -355,6 +355,7 @@ class EditorNode : public Node {
 	Object *current;
 
 	bool _playing_edited;
+	String run_custom_filename;
 	bool reference_resource_mem;
 	bool save_external_resources_mem;
 	uint64_t saved_version;
