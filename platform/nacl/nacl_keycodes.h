@@ -286,7 +286,7 @@ static uint32_t godot_key(uint32_t p_key, bool& is_char) {
 	case VKEY_MULTIPLY: return KEY_KP_MULTIPLY;
 	case VKEY_ADD: return KEY_KP_ADD;
 //	case VKEY_SEPARATOR: return KEY_SEPARATOR;
-	case VKEY_SUBTRACT: return KEY_KP_SUBSTRACT;
+	case VKEY_SUBTRACT: return KEY_KP_SUBTRACT;
 	case VKEY_DECIMAL: return KEY_KP_PERIOD;
 	case VKEY_DIVIDE: return KEY_KP_DIVIDE;
 	case VKEY_F1: return KEY_F1;

@@ -851,7 +851,7 @@
 		</constant>
 		<constant name="KEY_KP_DIVIDE" value="16777346">
 		</constant>
-		<constant name="KEY_KP_SUBSTRACT" value="16777347">
+		<constant name="KEY_KP_SUBTRACT" value="16777347">
 		</constant>
 		<constant name="KEY_KP_PERIOD" value="16777348">
 		</constant>
