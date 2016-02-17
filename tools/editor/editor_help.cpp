@@ -1201,7 +1201,7 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 			class_desc->push_font(get_font("italic","Fonts"));
 			pos=brk_end+1;
 			tag_stack.push_front(tag);
-		} else if (tag=="code") {
+		} else if (tag=="code" || tag=="codeblock") {
 
 			//use monospace font
 			class_desc->push_font(get_font("source","EditorFonts"));

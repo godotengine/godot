@@ -9606,26 +9606,26 @@ This approximation makes straight segments between each point, then subdivides t
 </class>
 <class name="Directory" inherits="Reference" category="Core">
 	<brief_description>
-	Directory type.
+	Type used to handle the filesystem.
 	</brief_description>
 	<description>
 	Directory type. Is used to manage directories and their content (not restricted to the project folder).
-
-How to iterate through the files of a directory example:
-
-func dir(path):
-	var d = Directory.new()
-	if d.open( path )==0:
-		d.list_dir_begin()
-		var file_name = d.get_next()
-		while(file_name!=""):
-			if d.current_is_dir():
-				print("Is directory: " + file_name)
-			else:
-				print("Is File:" + file_name)
-			file_name = d.get_next()
-	else:
-		print("Some open Error, maybe directory not found?")
+	Example for how to iterate through the files of a directory:
+	[codeblock]
+	func dir(path):
+	    var d = Directory.new()
+	    if d.open( path )==0:
+	        d.list_dir_begin()
+	        var file_name = d.get_next()
+	        while(file_name!=""):
+	            if d.current_is_dir():
+	                print("Found directory: " + file_name)
+	            else:
+	                print("Found file:" + file_name)
+	            file_name = d.get_next()
+	    else:
+	        print("Some open Error, maybe directory not found?")
+	[/codeblock]
 	</description>
 	<methods>
 		<method name="open">
@@ -12949,9 +12949,8 @@ Returns an empty String "" at the end of the list.
 			</argument>
 			<description>
 			Connect to a host. This needs to be done before any requests are sent.
-The host should not have http:// prepended but will strip the protocol identifier if provided.
-
-verify_host will check the SSL identity of the host if set to true.
+			The host should not have http:// prepended but will strip the protocol identifier if provided.
+			verify_host will check the SSL identity of the host if set to true.
 			</description>
 		</method>
 		<method name="set_connection">
@@ -12974,11 +12973,13 @@ verify_host will check the SSL identity of the host if set to true.
 			<description>
 			Sends a request to the connected host. The url is what is normally behind the hostname, i.e. in [code]http://somehost.com/index.php[/code], url would be "index.php".
 			Headers are HTTP request headers.
-			To create a POST request with query strings to push to the server, do::
-			    var fields = {"username" : "user", "password" : "pass"}
-			    var queryString = httpClient.query_string_from_dict(fields)
-			    var headers = ["Content-Type: application/x-www-form-urlencoded", "Content-Length: " + str(queryString.length())]
-			    var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, queryString)
+			To create a POST request with query strings to push to the server, do:
+			[codeblock]
+			var fields = {"username" : "user", "password" : "pass"}
+			var queryString = httpClient.query_string_from_dict(fields)
+			var headers = ["Content-Type: application/x-www-form-urlencoded", "Content-Length: " + str(queryString.length())]
+			var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, queryString)
+			[/codeblock]
 			</description>
 		</method>
 		<method name="send_body_text">
@@ -13086,10 +13087,12 @@ verify_host will check the SSL identity of the host if set to true.
 			<argument index="0" name="fields" type="Dictionary">
 			</argument>
 			<description>
-			Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary, e.g.::
-			    var fields = {"username": "user", "password": "pass"}
-			    String queryString = httpClient.query_string_from_dict(fields)
-			    returns:= "username=user&amp;password=pass"
+			Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary, e.g.:
+			[codeblock]
+			var fields = {"username": "user", "password": "pass"}
+			String queryString = httpClient.query_string_from_dict(fields)
+			returns:= "username=user&amp;password=pass"
+			[/codeblock]
 			</description>
 		</method>
 	</methods>
@@ -17992,7 +17995,7 @@ verify_host will check the SSL identity of the host if set to true.
 	<description>
 	MultiMesh provides low level mesh instancing. If the amount of [Mesh] instances needed goes from hundreds to thousands (and most need to be visible at close proximity) creating such a large amount of [MeshInstance] nodes may affect performance by using too much CPU or video memory.
 	For this case a MultiMesh becomes very useful, as it can draw thousands of instances with little API overhead.
-        As a drawback, if the instances are too far away of each other, performance may be reduced as every single instance will always rendered (they are spatially indexed as one, for the whole object).
+	As a drawback, if the instances are too far away of each other, performance may be reduced as every single instance will always rendered (they are spatially indexed as one, for the whole object).
 	Since instances may have any behavior, the AABB used for visibility must be provided by the user, or generated with [method generate_aabb].
 	</description>
 	<methods>
