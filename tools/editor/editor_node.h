@@ -447,7 +447,7 @@ class EditorNode : public Node {
 
 	void _hide_top_editors();
 	void _quick_opened();
-	void _quick_run(const String& p_resource);
+	void _quick_run();
 
 	void _run(bool p_current=false, const String &p_custom="");
 

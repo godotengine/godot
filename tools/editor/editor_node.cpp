@@ -3843,9 +3843,9 @@ void EditorNode::_quick_opened() {
 	}
 }
 
-void EditorNode::_quick_run(const String& p_resource) {
+void EditorNode::_quick_run() {
 
-	_run(false,p_resource);
+	_run(false,quick_run->get_selected());
 }
 
 
