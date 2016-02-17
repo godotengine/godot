@@ -507,25 +507,34 @@ String String::capitalize() const {
 	return cap;
 }
 
-String String::camelcase_to_underscore() const {
+String String::camelcase_to_underscore(bool lowercase) const {
 	const CharType * cstr = c_str();
-	String newString;
+	String new_string;
 	const char A = 'A', Z = 'Z';
-	int startIndex = 0;
+	const char a = 'a', z = 'z';
+	int start_index = 0;
 
-	for ( int i = 1; i < this->size()-1; i++ ) {
-		bool isCapital = cstr[i] >= A && cstr[i] <= Z;
+	for ( size_t i = 1; i < this->size(); i++ ) {
+		bool is_upper = cstr[i] >= A && cstr[i] <= Z;
+		bool are_next_2_lower = false;
+		bool was_precedent_upper = cstr[i-1] >= A && cstr[i-1] <= Z;
 
-		if ( isCapital ) {
-			newString += "_" + this->substr(startIndex, i-startIndex);
-			startIndex = i;
+		if (i+2 < this->size()) {
+			are_next_2_lower = cstr[i+1] >= a && cstr[i+1] <= z && cstr[i+2] >= a && cstr[i+2] <= z;
+		}
+
+		bool should_split = ((is_upper && !was_precedent_upper) || (was_precedent_upper && is_upper && are_next_2_lower));
+		if (should_split) {
+			new_string += this->substr(start_index, i - start_index) + "_";
+			start_index = i;
 		}
 	}
 
-	newString += "_" + this->substr(startIndex, this->size()-startIndex);
-
-	return newString;
+	new_string += this->substr(start_index, this->size() - start_index);
+	return lowercase ? new_string.to_lower() : new_string;
 }
+
+
 
 int String::get_slice_count(String p_splitter) const{
 
