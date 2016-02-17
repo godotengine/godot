@@ -1795,6 +1795,8 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 	//pause_button->set_pressed(false);
 	play_scene_button->set_pressed(false);
 	play_scene_button->set_icon(gui_base->get_icon("PlayScene","EditorIcons"));
+	play_custom_scene_button->set_pressed(false);
+	play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom","EditorIcons"));
 
 	String current_filename;
 	String run_filename;
@@ -1803,7 +1805,6 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 
 
 	if (p_current || (editor_data.get_edited_scene_root() && p_custom==editor_data.get_edited_scene_root()->get_filename())) {
-
 
 		Node *scene = editor_data.get_edited_scene_root();
 
@@ -1913,6 +1914,10 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 	if (p_current) {
 		play_scene_button->set_pressed(true);
 		play_scene_button->set_icon(gui_base->get_icon("Reload","EditorIcons"));
+	} else if (p_custom!="") {
+		run_custom_filename=run_filename;
+		play_custom_scene_button->set_pressed(true);
+		play_custom_scene_button->set_icon(gui_base->get_icon("Reload","EditorIcons"));
 	} else {
 		play_button->set_pressed(true);
 		play_button->set_icon(gui_base->get_icon("Reload","EditorIcons"));
@@ -2595,9 +2600,15 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		} break;
 		case RUN_PLAY_CUSTOM_SCENE: {
-			_menu_option_confirm(RUN_STOP,true);
-			quick_run->popup("PackedScene",true);
-			quick_run->set_title("Quick Run Scene..");
+			if (run_custom_filename.empty() || editor_run.get_status()==EditorRun::STATUS_STOP) {
+				_menu_option_confirm(RUN_STOP,true);
+				quick_run->popup("PackedScene",true);
+				quick_run->set_title("Quick Run Scene..");
+			} else {
+				String last_custom_scene=run_custom_filename;
+				_menu_option_confirm(RUN_STOP,true);
+				_run(false,last_custom_scene);
+			}
 
 		} break;
 		case RUN_PAUSE: {
@@ -2611,10 +2622,13 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				break;
 
 			editor_run.stop();
+			run_custom_filename.clear();
 			play_button->set_pressed(false);
 			play_button->set_icon(gui_base->get_icon("MainPlay","EditorIcons"));
 			play_scene_button->set_pressed(false);
 			play_scene_button->set_icon(gui_base->get_icon("PlayScene","EditorIcons"));
+			play_custom_scene_button->set_pressed(false);
+			play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom","EditorIcons"));
 			//pause_button->set_pressed(false);
 			emit_signal("stop_pressed");
 
@@ -3843,9 +3857,9 @@ void EditorNode::_quick_opened() {
 	}
 }
 
-void EditorNode::_quick_run(const String& p_resource) {
+void EditorNode::_quick_run() {
 
-	_run(false,p_resource);
+	_run(false,quick_run->get_selected());
 }
 
 

@@ -355,6 +355,7 @@ class EditorNode : public Node {
 	Object *current;
 
 	bool _playing_edited;
+	String run_custom_filename;
 	bool reference_resource_mem;
 	bool save_external_resources_mem;
 	uint64_t saved_version;
@@ -447,7 +448,7 @@ class EditorNode : public Node {
 
 	void _hide_top_editors();
 	void _quick_opened();
-	void _quick_run(const String& p_resource);
+	void _quick_run();
 
 	void _run(bool p_current=false, const String &p_custom="");
 
