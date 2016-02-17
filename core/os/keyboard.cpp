@@ -82,7 +82,7 @@ static const _KeyCodeText _keycodes[]={
 		{KEY_KP_ENTER                      ,"Kp Enter"},
 		{KEY_KP_MULTIPLY                   ,"Kp Multiply"},
 		{KEY_KP_DIVIDE                     ,"Kp Divide"},
-		{KEY_KP_SUBSTRACT                  ,"Kp Substract"},
+		{KEY_KP_SUBTRACT                   ,"Kp Subtract"},
 		{KEY_KP_PERIOD                     ,"Kp Period"},
 		{KEY_KP_ADD                        ,"Kp Add"},
 		{KEY_KP_0                          ,"Kp 0"},

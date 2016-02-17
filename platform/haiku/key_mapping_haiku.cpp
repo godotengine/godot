@@ -160,7 +160,7 @@ unsigned int KeyMappingHaiku::get_keysym(int32 raw_char, int32 key) {
 	if (raw_char == B_UP_ARROW && key == 0x38) { return KEY_KP_8; }
 	if (raw_char == B_PAGE_UP && key == 0x39) { return KEY_KP_9; }
 	if (raw_char == 0x2F && key == 0x23) { return KEY_KP_DIVIDE; }
-	if (raw_char == 0x2D && key == 0x25) { return KEY_KP_SUBSTRACT; }
+	if (raw_char == 0x2D && key == 0x25) { return KEY_KP_SUBTRACT; }
 	if (raw_char == B_DELETE && key == 0x65) { return KEY_KP_PERIOD; }
 
 	if (raw_char == 0x10) {

@@ -650,7 +650,7 @@ static int translateKey(unsigned int key)
 	/* 4b */ KEY_KP_DIVIDE,
 	/* 4c */ KEY_KP_ENTER,
 	/* 4d */ KEY_UNKNOWN,
-	/* 4e */ KEY_KP_SUBSTRACT,
+	/* 4e */ KEY_KP_SUBTRACT,
 	/* 4f */ KEY_UNKNOWN,
 	/* 50 */ KEY_UNKNOWN,
 	/* 51 */ KEY_EQUAL, //wtf equal?
