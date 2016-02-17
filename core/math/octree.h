@@ -201,7 +201,7 @@ private:
 
 	_FORCE_INLINE_ void _pair_check(PairData *p_pair) {
 
-		bool intersect=p_pair->A->aabb.intersects( p_pair->B->aabb );
+		bool intersect=p_pair->A->aabb.intersects_inclusive( p_pair->B->aabb );
 
 		if (intersect!=p_pair->intersect) {
 
@@ -480,7 +480,7 @@ void Octree<T,use_pairs,AL>::_insert_element(Element *p_element,Octant *p_octant
 					
 			if (p_octant->children[i]) {
 				/* element exists, go straight to it */
-				if (p_octant->children[i]->aabb.intersects( p_element->aabb ) ) {				
+				if (p_octant->children[i]->aabb.intersects_inclusive( p_element->aabb ) ) {
 					_insert_element( p_element, p_octant->children[i] );
 					splits++;
 				}
@@ -497,7 +497,7 @@ void Octree<T,use_pairs,AL>::_insert_element(Element *p_element,Octant *p_octant
 				if (i&4)
 					aabb.pos.z+=aabb.size.z;
 				
-				if (aabb.intersects( p_element->aabb) ) {
+				if (aabb.intersects_inclusive( p_element->aabb) ) {
 					/* if actually intersects, create the child */
 					
 					Octant *child = memnew_allocator( Octant, AL );
@@ -1146,7 +1146,7 @@ void Octree<T,use_pairs,AL>::_cull_AABB(Octant *p_octant,const AABB& p_aabb, T**
 				continue;
 			e->last_pass=pass;
 			
-			if (p_aabb.intersects(e->aabb)) {
+			if (p_aabb.intersects_inclusive(e->aabb)) {
 				
 				if (*p_result_idx<p_result_max) {
 					
@@ -1175,7 +1175,7 @@ void Octree<T,use_pairs,AL>::_cull_AABB(Octant *p_octant,const AABB& p_aabb, T**
 				continue;
 			e->last_pass=pass;
 			
-			if (p_aabb.intersects(e->aabb)) {
+			if (p_aabb.intersects_inclusive(e->aabb)) {
 				
 				if (*p_result_idx<p_result_max) {
 					
@@ -1193,7 +1193,7 @@ void Octree<T,use_pairs,AL>::_cull_AABB(Octant *p_octant,const AABB& p_aabb, T**
 
 	for (int i=0;i<8;i++) {
 		
-		if (p_octant->children[i] && p_octant->children[i]->aabb.intersects(p_aabb)) {
+		if (p_octant->children[i] && p_octant->children[i]->aabb.intersects_inclusive(p_aabb)) {
 			_cull_AABB(p_octant->children[i],p_aabb, p_result_array,p_result_idx,p_result_max,p_subindex_array,p_mask);
 		}
 	}	
