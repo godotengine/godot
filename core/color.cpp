@@ -117,29 +117,31 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 	}
 
 	p_h *=6.0;
+	p_h = Math::fmod(p_h,6);
 	i = Math::floor( p_h );
+	
 	f = p_h - i;
 	p = p_v * ( 1 - p_s );
 	q = p_v * ( 1 - p_s * f );
 	t = p_v * ( 1 - p_s * ( 1 - f ) );
 
 	switch( i ) {
-		case 0:
+		case 0: // Red is the dominant color
 			r = p_v;
 			g = t;
 			b = p;
 			break;
-		case 1:
+		case 1: // Green is the dominant color
 			r = q;
 			g = p_v;
 			b = p;
 			break;
-		case 2:
+		case 2: 
 			r = p;
 			g = p_v;
 			b = t;
 			break;
-		case 3:
+		case 3: // Blue is the dominant color
 			r = p;
 			g = q;
 			b = p_v;
@@ -149,7 +151,7 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 			g = p;
 			b = p_v;
 			break;
-		default:		// cap_se 5:
+		default: // (5) Red is the dominant color
 			r = p_v;
 			g = p;
 			b = q;
