@@ -2604,6 +2604,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				_menu_option_confirm(RUN_STOP,true);
 				quick_run->popup("PackedScene",true);
 				quick_run->set_title("Quick Run Scene..");
+				play_custom_scene_button->set_pressed(false);
 			} else {
 				String last_custom_scene=run_custom_filename;
 				_menu_option_confirm(RUN_STOP,true);
