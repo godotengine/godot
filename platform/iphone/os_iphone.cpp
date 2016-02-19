@@ -517,12 +517,35 @@ extern void _focus_out_video();
 Error OSIPhone::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 	FileAccess* f = FileAccess::open(p_path, FileAccess::READ);
 	bool exists = f && f->is_open();
-	printf("file exists for %ls, %i, %p\n", p_path.c_str(), (int)exists, f);
-	if (f)
-		memdelete(f);
+
+	String tempFile = get_data_dir();
 	if (!exists)
 		return FAILED;
-    if ( _play_video(p_path, p_volume, p_audio_track, p_subtitle_track) )
+	
+	if (p_path.begins_with("res://")) {
+		// We need to copy the file out of the app directory into the user data directory
+		print("Copying video from resources to user data directory\n");
+		p_path = get_data_dir() + "/" + (p_path.replace("res://", "").replace("/", "_"));
+		FileAccess* fp = FileAccess::open(p_path, FileAccess::WRITE);
+		if (fp) {
+			int readBytes = 0;
+			uint8_t* buffer = (uint8_t*)malloc(sizeof(uint8_t) * (1024 * 1024));
+			do {
+				readBytes = f->get_buffer(buffer, (1024 * 1024));
+				fp->store_buffer(buffer, readBytes);
+			} while (readBytes > 0);
+			free(buffer);
+			memdelete(fp);
+		} else {
+			print("Couldn't open output file: %S\n", p_path.c_str());
+			memdelete(f);
+			return FAILED;
+		}
+	}
+
+	memdelete(f);
+	
+	if (_play_video(p_path, p_volume, p_audio_track, p_subtitle_track) )
 		return OK;
 	return FAILED;
 }

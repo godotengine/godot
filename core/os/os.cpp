@@ -478,6 +478,10 @@ void OS::native_video_pause() {
 
 };
 
+void OS::native_video_unpause() {
+
+};
+
 void OS::native_video_stop() {
 
 };
