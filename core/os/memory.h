@@ -308,11 +308,11 @@ T* memnew_arr_template(size_t p_elements,const char *p_descr="") {
 	same strategy used by std::vector, and the DVector class, so it should be safe.*/
 
 	size_t len = sizeof(T) * p_elements;
-	unsigned int *mem = (unsigned int*)Memory::alloc_static( len + DEFAULT_ALIGNMENT, p_descr );
+	unsigned int *mem = (unsigned int*)Memory::alloc_static( len + sizeof(size_t), p_descr );
 	T *failptr=0; //get rid of a warning
 	ERR_FAIL_COND_V( !mem, failptr );
 	*mem=p_elements;
-	mem = (unsigned int *)( ((uint8_t*)mem) + DEFAULT_ALIGNMENT);
+	mem = (unsigned int *)( ((uint8_t*)mem) + sizeof(size_t));
 	T* elems = (T*)mem;
 
 	/* call operator new */
@@ -331,14 +331,14 @@ T* memnew_arr_template(size_t p_elements,const char *p_descr="") {
 template<typename T>
 size_t memarr_len(const T *p_class) {
 
-	uint8_t* ptr = ((uint8_t*)p_class) - DEFAULT_ALIGNMENT;
+	uint8_t* ptr = ((uint8_t*)p_class) - sizeof(size_t);
 	return *(size_t*)ptr;
 }
 
 template<typename T>
 void memdelete_arr(T *p_class) {
 
-	unsigned int * elems = (unsigned int*)(((uint8_t*)p_class) - DEFAULT_ALIGNMENT);
+	unsigned int * elems = (unsigned int*)(((uint8_t*)p_class) - sizeof(size_t));
 
 	for (unsigned int i=0;i<*elems;i++) {
 
