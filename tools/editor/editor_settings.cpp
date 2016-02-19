@@ -165,22 +165,32 @@ void EditorSettings::create() {
 		return; //pointless
 
 	DirAccess *dir=NULL;
-	Object *object;
 	Variant meta;
 
 	String config_path;
 	String config_dir;
 	String config_file="editor_settings.xml";
 
-	if (OS::get_singleton()->has_environment("APPDATA")) {
-		// Most likely under windows, save here
-		config_path=OS::get_singleton()->get_environment("APPDATA");
-		config_dir=String(_MKSTR(VERSION_SHORT_NAME)).capitalize();
-	} else if (OS::get_singleton()->has_environment("HOME")) {
+	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
+	DirAccess* d = DirAccess::create_for_path(exe_path);
+	if (d->file_exists(exe_path + "/._sc_")) {
 
-		config_path=OS::get_singleton()->get_environment("HOME");
-		config_dir="."+String(_MKSTR(VERSION_SHORT_NAME)).to_lower();
-	}
+		// editor is self contained
+		config_path = exe_path;
+		config_dir = "editor_data";
+
+	} else {
+
+		if (OS::get_singleton()->has_environment("APPDATA")) {
+			// Most likely under windows, save here
+			config_path=OS::get_singleton()->get_environment("APPDATA");
+			config_dir=String(_MKSTR(VERSION_SHORT_NAME)).capitalize();
+		} else if (OS::get_singleton()->has_environment("HOME")) {
+
+			config_path=OS::get_singleton()->get_environment("HOME");
+			config_dir="."+String(_MKSTR(VERSION_SHORT_NAME)).to_lower();
+		}
+	};
 
 	ObjectTypeDB::register_type<EditorSettings>(); //otherwise it can't be unserialized
 	String config_file_path;
