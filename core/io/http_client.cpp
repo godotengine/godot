@@ -330,7 +330,7 @@ Error HTTPClient::poll(){
 							response_num=num.to_int();
 						} else {
 
-							response_headers.push_back(s);
+							response_headers.push_back(responses[i].strip_edges());
 						}
 
 					}
