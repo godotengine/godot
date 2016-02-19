@@ -13032,7 +13032,9 @@ Returns an empty String "" at the end of the list.
 			<return type="Dictionary">
 			</return>
 			<description>
-			Returns all response headers as dictionary where the keys and values are transformed to lower case. A key with more than one value is a simple string with "; " as separator. example: (content-length:12), (content-type:application/json; charset=utf-8)
+			Returns all response headers as dictionary where the case-sensitivity of the keys and values is kept like the server delivers it. A value is a simple String, this string can have more than one value where "; " is used as separator.
+Structure: ("key":"value1; value2")
+Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</description>
 		</method>
 		<method name="get_response_body_length" qualifiers="const">
@@ -20049,6 +20051,10 @@ Returns an empty String "" at the end of the list.
 			</description>
 		</method>
 		<method name="native_video_pause">
+			<description>
+			</description>
+		</method>
+		<method name="native_video_unpause">
 			<description>
 			</description>
 		</method>
