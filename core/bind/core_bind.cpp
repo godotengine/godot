@@ -689,6 +689,10 @@ void _OS::native_video_pause() {
 	OS::get_singleton()->native_video_pause();
 };
 
+void _OS::native_video_unpause() {
+	OS::get_singleton()->native_video_unpause();
+};
+
 void _OS::native_video_stop() {
 
 	OS::get_singleton()->native_video_stop();
@@ -874,6 +878,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("native_video_is_playing"),&_OS::native_video_is_playing);
 	ObjectTypeDB::bind_method(_MD("native_video_stop"),&_OS::native_video_stop);
 	ObjectTypeDB::bind_method(_MD("native_video_pause"),&_OS::native_video_pause);
+	ObjectTypeDB::bind_method(_MD("native_video_unpause"),&_OS::native_video_unpause);
 
 	ObjectTypeDB::bind_method(_MD("get_scancode_string","code"),&_OS::get_scancode_string);
 	ObjectTypeDB::bind_method(_MD("is_scancode_unicode","code"),&_OS::is_scancode_unicode);
