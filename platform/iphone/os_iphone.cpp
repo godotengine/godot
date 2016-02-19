@@ -541,7 +541,8 @@ Error OSIPhone::native_video_play(String p_path, float p_volume, String p_audio_
 			memdelete(f);
 			return FAILED;
 		}
-	}
+	} else if (p_path.begins_with("user://"))
+		p_path = p_path.replace("user:/", get_data_dir());
 
 	memdelete(f);
 	
