@@ -5433,7 +5433,7 @@
 	Standard themed Button.
 	</brief_description>
 	<description>
-	Button is just the standard themed button: [image src="images/button_example.png"/] It can contain text and an icon, and will display them according to the current [Theme].
+	Button is the standard themed button. It can contain text and an icon, and will display them according to the current [Theme].
 	</description>
 	<methods>
 		<method name="set_text">
