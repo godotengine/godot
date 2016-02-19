@@ -306,17 +306,20 @@ Error HTTPClient::poll(){
 
 					for(int i=0;i<responses.size();i++) {
 
-						String s = responses[i].strip_edges();
-						s = s.to_lower();
-						if (s.length()==0)
-							continue;						
-						if (s.begins_with("content-length:")) {
-							body_size = s.substr(s.find(":")+1,s.length()).strip_edges().to_int();
+						Vector<String> name_value = responses[i].strip_edges().split(":");
+
+						if (name_value.size()<2)
+							continue;
+
+						name_value[0] = name_value[0].to_lower();
+
+						if (name_value[0] == "content-length") {
+							body_size = name_value[1].strip_edges().to_int();
 							body_left=body_size;
 						}
 
-						if (s.begins_with("transfer-encoding:")) {
-							String encoding = s.substr(s.find(":")+1,s.length()).strip_edges();
+						if (name_value[0] == "transfer-encoding") {
+							String encoding = name_value[1].strip_edges();
 							//print_line("TRANSFER ENCODING: "+encoding);
 							if (encoding=="chunked") {
 								chunked=true;
@@ -330,7 +333,7 @@ Error HTTPClient::poll(){
 							response_num=num.to_int();
 						} else {
 
-							response_headers.push_back(s);
+							response_headers.push_back(name_value[0]+":"+name_value[1]);
 						}
 
 					}
