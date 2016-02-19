@@ -306,8 +306,8 @@ Error HTTPClient::poll(){
 
 					for(int i=0;i<responses.size();i++) {
 
-						String s = responses[i].strip_edges();
-						s = s.to_lower();
+						String header = responses[i].strip_edges();
+						String s = header.to_lower();
 						if (s.length()==0)
 							continue;						
 						if (s.begins_with("content-length:")) {
@@ -316,7 +316,7 @@ Error HTTPClient::poll(){
 						}
 
 						if (s.begins_with("transfer-encoding:")) {
-							String encoding = s.substr(s.find(":")+1,s.length()).strip_edges();
+							String encoding = header.substr(header.find(":")+1,header.length()).strip_edges();
 							//print_line("TRANSFER ENCODING: "+encoding);
 							if (encoding=="chunked") {
 								chunked=true;
@@ -330,7 +330,7 @@ Error HTTPClient::poll(){
 							response_num=num.to_int();
 						} else {
 
-							response_headers.push_back(responses[i].strip_edges());
+							response_headers.push_back(header);
 						}
 
 					}
