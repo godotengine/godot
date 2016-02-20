@@ -380,6 +380,10 @@ void EditorNode::_notification(int p_what) {
 		_menu_option_confirm(FILE_QUIT, false);
 	};
 
+	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		scene_tabs->set_tab_close_display_policy( (bool(EDITOR_DEF("global/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY) );
+	}
+
 }
 
 void EditorNode::_fs_changed() {
@@ -5059,7 +5063,7 @@ EditorNode::EditorNode() {
 	scene_tabs=memnew( Tabs );
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_align(Tabs::ALIGN_CENTER);
-	scene_tabs->set_tab_close_display_policy(Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY);
+	scene_tabs->set_tab_close_display_policy( (bool(EDITOR_DEF("global/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY) );
 	scene_tabs->connect("tab_changed",this,"_scene_tab_changed");
 	scene_tabs->connect("right_button_pressed",this,"_scene_tab_script_edited");
 	scene_tabs->connect("tab_close", this, "_scene_tab_closed");
