@@ -450,6 +450,7 @@ void TileMap::_update_dirty_quadrants() {
 					_fix_cell_transform(xform,c,shape_ofs+center_ofs,s);
 
 					if (debug_canvas_item) {
+						vs->canvas_item_add_set_transform(debug_canvas_item,xform);
 						shape->draw(debug_canvas_item,debug_collision_color);
 
 					}
@@ -457,6 +458,10 @@ void TileMap::_update_dirty_quadrants() {
 					ps->body_set_shape_metadata(q.body,shape_idx++,Vector2(E->key().x,E->key().y));
 
 				}
+			}
+
+			if (debug_canvas_item) {
+				vs->canvas_item_add_set_transform(debug_canvas_item,Matrix32());
 			}
 
 			if (navigation) {

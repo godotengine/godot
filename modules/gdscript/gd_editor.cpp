@@ -52,6 +52,7 @@ String GDScriptLanguage::get_template(const String& p_class_name, const String& 
 	"# var a=2\n"+
 	"# var b=\"textvar\"\n\n"+
 	"func _ready():\n"+
+	"\t# Called every time the node is added to the scene.\n"+
 	"\t# Initialization here\n"+
 	"\tpass\n"+
 	"\n"+

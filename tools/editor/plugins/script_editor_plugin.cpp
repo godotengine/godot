@@ -979,7 +979,7 @@ void ScriptEditor::_menu_option(int p_option) {
 		} break;
 		case SEARCH_WEBSITE: {
 
-			OS::get_singleton()->shell_open("http://www.godotengine.org/projects/godot-engine/wiki/Documentation#Tutorials");
+			OS::get_singleton()->shell_open("http://docs.godotengine.org/");
 		} break;
 
 		case WINDOW_NEXT: {
