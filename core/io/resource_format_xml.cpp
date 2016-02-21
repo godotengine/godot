@@ -1796,6 +1796,7 @@ Error ResourceInteractiveLoaderXML::rename_dependencies(FileAccess *p_f, const S
 		fw->store_8(c);
 		c=f->get_8();
 	}
+	f->close();
 
 	bool all_ok = fw->get_error()==OK;
 
