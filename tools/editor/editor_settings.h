@@ -33,6 +33,7 @@
 
 #include "resource.h"
 #include "os/thread_safe.h"
+#include "core/io/config_file.h"
 
 class EditorPlugin;
 
@@ -86,7 +87,7 @@ private:
 	EditorPlugin *_load_plugin_editor(const String& p_path);
 	Error _load_plugin(const String& p_path,Plugin& plugin);
 
-	void _load_defaults();
+	void _load_defaults(Ref<ConfigFile> p_extra_config = NULL);
 
 	String project_config_path;
 

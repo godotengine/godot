@@ -170,6 +170,7 @@ void EditorSettings::create() {
 	String config_path;
 	String config_dir;
 	String config_file="editor_settings.xml";
+	Ref<ConfigFile> extra_config = memnew(ConfigFile);
 
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
 	DirAccess* d = DirAccess::create_for_path(exe_path);
@@ -178,7 +179,7 @@ void EditorSettings::create() {
 		// editor is self contained
 		config_path = exe_path;
 		config_dir = "editor_data";
-
+		extra_config->load(exe_path + "/._sc_");
 	} else {
 
 		if (OS::get_singleton()->has_environment("APPDATA")) {
@@ -296,10 +297,20 @@ void EditorSettings::create() {
 
 	fail:
 
+	// patch init projects
+	if (extra_config->has_section("init_projects")) {
+		Vector<String> list = extra_config->get_value("init_projects", "list");
+		for (int i=0; i<list.size(); i++) {
+
+			list[i] = exe_path + "/" + list[i];
+		};
+		extra_config->set_value("init_projects", "list", list);
+	};
+
 	singleton = Ref<EditorSettings>( memnew( EditorSettings ) );
 	singleton->config_file_path=config_file_path;
 	singleton->settings_path=config_path+"/"+config_dir;
-	singleton->_load_defaults();
+	singleton->_load_defaults(extra_config);
 	singleton->setup_network();
 	singleton->scan_plugins();
 
@@ -445,7 +456,7 @@ void EditorSettings::destroy() {
 	singleton=Ref<EditorSettings>();
 }
 
-void EditorSettings::_load_defaults() {
+void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -552,6 +563,17 @@ void EditorSettings::_load_defaults() {
 	set("run/auto_save_before_running",true);
 	set("resources/save_compressed_resources",true);
 	set("resources/auto_reload_modified_images",true);
+
+	if (p_extra_config.is_valid() && p_extra_config->has_section("init_projects") && p_extra_config->has_section_key("init_projects", "list")) {
+
+		Vector<String> list = p_extra_config->get_value("init_projects", "list");
+		for (int i=0; i<list.size(); i++) {
+
+			String name = list[i].replace("/", "::");
+			set("projects/"+name, list[i]);
+		};
+	};
+
 }
 
 void EditorSettings::notify_changes() {
