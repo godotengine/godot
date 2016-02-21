@@ -28603,7 +28603,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="state" type="Physics2DDirectBodyState">
 			</argument>
 			<description>
-			Override this function to use a custom force integrator. This allows to hook up to the physics processing and alter the simulation state for the object on every frame.
+			Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default it works in addition to the usual physics behavior, but [method set_use_custom_integrator] allows you to disable the default behavior and do fully custom force integration for a body.
 			</description>
 		</method>
 		<method name="set_mode">
@@ -28764,7 +28764,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			Set to true if the body shall not do any internal force integration at all (like gravity or air friction). Only the [method _integrate_forces] will be able to integrate them if overrided.
+			Pass true to disable the internal force integration (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
 			</description>
 		</method>
 		<method name="is_using_custom_integrator">
