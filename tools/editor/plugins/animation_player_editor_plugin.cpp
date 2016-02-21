@@ -621,10 +621,11 @@ void AnimationPlayerEditor::ensure_visibility() {
 
 Dictionary AnimationPlayerEditor::get_state() const {
 
+
 	Dictionary d;
 
 	d["visible"]=is_visible();
-	if (is_visible() && player) {
+	if (EditorNode::get_singleton()->get_edited_scene() && is_visible() && player) {
 		d["player"]=EditorNode::get_singleton()->get_edited_scene()->get_path_to(player);
 		d["animation"]=player->get_current_animation();
 
@@ -636,6 +637,9 @@ Dictionary AnimationPlayerEditor::get_state() const {
 void AnimationPlayerEditor::set_state(const Dictionary& p_state) {
 
 	if (p_state.has("visible") && p_state["visible"]) {
+
+		if (!EditorNode::get_singleton()->get_edited_scene())
+			return;
 
 		Node *n = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["player"]);
 		if (n && n->cast_to<AnimationPlayer>()) {
