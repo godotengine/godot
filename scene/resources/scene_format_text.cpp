@@ -389,6 +389,22 @@ Error ResourceInteractiveLoaderText::poll() {
 			}
 		}
 
+		if (next_tag.fields.has("instance_placeholder")) {
+
+			String path=next_tag.fields["instance_placeholder"];
+
+			int path_v = packed_scene->get_state()->add_value(path);
+
+			if (packed_scene->get_state()->get_node_count()==0) {
+				error=ERR_FILE_CORRUPT;
+				error_text="Instance Placeholder can't be used for inheritance.";
+				_printerr();
+				return error;
+			}
+
+			instance=path_v|SceneState::FLAG_INSTANCE_IS_PLACEHOLDER;
+		}
+
 		if (next_tag.fields.has("owner")) {
 			owner=packed_scene->get_state()->add_node_path(next_tag.fields["owner"]);
 		} else {
@@ -1124,7 +1140,10 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 	if (packed_scene.is_valid()) {
 		//add instances to external resources if saving a packed scene
 		for(int i=0;i<packed_scene->get_state()->get_node_count();i++) {
-			Ref<PackedScene> instance=packed_scene->get_state()->get_node_instance(i);
+			if (packed_scene->get_state()->is_node_instance_placeholder(i))
+				continue;
+
+			Ref<PackedScene> instance=packed_scene->get_state()->get_node_instance(i);			
 			if (instance.is_valid() && !external_resources.has(instance)) {
 				int index = external_resources.size();
 				external_resources[instance]=index;
@@ -1268,7 +1287,9 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 			NodePath path = state->get_node_path(i,true);
 			NodePath owner = state->get_node_owner_path(i);
 			Ref<PackedScene> instance = state->get_node_instance(i);
+			String instance_placeholder = state->get_node_instance_placeholder(i);
 			Vector<StringName> groups = state->get_node_groups(i);
+
 
 			if (instance.is_valid())
 				print_line("for path "+String(path)+" instance "+instance->get_path());
@@ -1297,6 +1318,14 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 			}
 
 			f->store_string(header);
+
+			if (instance_placeholder!=String()) {
+
+				String vars;
+				f->store_string(" instance_placeholder=");
+				VariantWriter::write_to_string(instance_placeholder,vars,_write_resources,this);
+				f->store_string(vars);
+			}
 
 			if (instance.is_valid()) {
 

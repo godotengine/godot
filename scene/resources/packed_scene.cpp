@@ -1316,11 +1316,23 @@ StringName SceneState::get_node_name(int p_idx) const {
 	return names[nodes[p_idx].name];
 }
 
+
+bool SceneState::is_node_instance_placeholder(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx,nodes.size(),false);
+
+	return nodes[p_idx].instance>=0 && nodes[p_idx].instance&FLAG_INSTANCE_IS_PLACEHOLDER;
+
+}
+
 Ref<PackedScene> SceneState::get_node_instance(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx,nodes.size(),Ref<PackedScene>());
 
 	if (nodes[p_idx].instance>=0) {
-		return variants[nodes[p_idx].instance];
+		if (nodes[p_idx].instance&FLAG_INSTANCE_IS_PLACEHOLDER)
+			return Ref<PackedScene>();
+		else
+			return variants[nodes[p_idx].instance&FLAG_MASK];
 	} else if (nodes[p_idx].parent<0 || nodes[p_idx].parent==NO_PARENT_SAVED) {
 
 		if (base_scene_idx>=0) {
@@ -1334,6 +1346,19 @@ Ref<PackedScene> SceneState::get_node_instance(int p_idx) const {
 
 
 }
+
+String SceneState::get_node_instance_placeholder(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx,nodes.size(),String());
+
+	if (nodes[p_idx].instance>=0 && nodes[p_idx].instance&FLAG_INSTANCE_IS_PLACEHOLDER) {
+		return variants[nodes[p_idx].instance&FLAG_MASK];
+	}
+
+	return String();
+
+}
+
 Vector<StringName> SceneState::get_node_groups(int p_idx) const{
 	ERR_FAIL_INDEX_V(p_idx,nodes.size(),Vector<StringName>());
 	Vector<StringName> groups;
@@ -1577,6 +1602,8 @@ void SceneState::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_node_name","idx"),&SceneState::get_node_name);
 	ObjectTypeDB::bind_method(_MD("get_node_path","idx","for_parent"),&SceneState::get_node_path,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_node_owner_path","idx"),&SceneState::get_node_owner_path);
+	ObjectTypeDB::bind_method(_MD("is_node_instance_placeholder","idx"),&SceneState::is_node_instance_placeholder);
+	ObjectTypeDB::bind_method(_MD("get_node_instance_placeholder","idx"),&SceneState::get_node_instance_placeholder);
 	ObjectTypeDB::bind_method(_MD("get_node_instance:PackedScene","idx"),&SceneState::get_node_instance);
 	ObjectTypeDB::bind_method(_MD("get_node_groups","idx"),&SceneState::_get_node_groups);
 	ObjectTypeDB::bind_method(_MD("get_node_property_count","idx"),&SceneState::get_node_property_count);

@@ -48,11 +48,7 @@ class SceneState : public Reference {
 	int base_scene_idx;
 
 	enum {
-		FLAG_ID_IS_PATH=(1<<30),
-		FLAG_INSTANCE_IS_PLACEHOLDER=(1<<30),
-		FLAG_MASK=(1<<24)-1,
 		NO_PARENT_SAVED=0x7FFFFFFF,
-
 	};
 
 	struct NodeData {
@@ -115,7 +111,10 @@ protected:
 public:
 
 	enum {
-		TYPE_INSTANCED=0x7FFFFFFF
+		FLAG_ID_IS_PATH=(1<<30),
+		TYPE_INSTANCED=0x7FFFFFFF,
+		FLAG_INSTANCE_IS_PLACEHOLDER=(1<<30),
+		FLAG_MASK=(1<<24)-1,
 	};
 
 	static void set_disable_placeholders(bool p_disable);
@@ -148,6 +147,8 @@ public:
 	NodePath get_node_path(int p_idx,bool p_for_parent=false) const;
 	NodePath get_node_owner_path(int p_idx) const;
 	Ref<PackedScene> get_node_instance(int p_idx) const;
+	String get_node_instance_placeholder(int p_idx) const;
+	bool is_node_instance_placeholder(int p_idx) const;
 	Vector<StringName> get_node_groups(int p_idx) const;
 
 	int get_node_property_count(int p_idx) const;
