@@ -169,7 +169,7 @@ void EditorSettings::create() {
 
 	String config_path;
 	String config_dir;
-	String config_file="editor_settings.xml";
+	String config_file="editor_settings."VERSION_MKSTRING".xml";
 
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
 	DirAccess* d = DirAccess::create_for_path(exe_path);
