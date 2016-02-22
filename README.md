@@ -1,5 +1,7 @@
 ![GODOT](/logo.png)
 
+http://www.godotengine.org
+
 ### The Engine
 
 Godot is a fully featured, open source, MIT licensed, game engine. It focuses on having great tools, and a visual oriented workflow that can export to PC, Mobile and Web platforms with no hassle.
@@ -11,7 +13,7 @@ Godot has been developed by Juan Linietsky and Ariel Manzur for several years, a
 
 ### Documentation
 
-Documentation has been moved to the [OpenProject Wiki](http://godotengine.org/projects/godot-engine/wiki/Documentation).
+Documentation has been moved to [ReadTheDocs](http://docs.godotengine.org).
 
 ### Binary Downloads, Community, etc.
 
@@ -22,6 +24,6 @@ http://www.godotengine.org
 ### Compiling from Source
 
 Compilation instructions for every platform can be found in the Wiki:
-http://godotengine.org/projects/godot-engine/wiki/Advanced_topics
+http://docs.godotengine.org/en/latest/reference/_compiling.html
 
 [![Build Status](https://travis-ci.org/godotengine/godot.svg?branch=master)](https://travis-ci.org/godotengine/godot)
