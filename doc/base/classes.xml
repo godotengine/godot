@@ -19385,10 +19385,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="NodePath" category="Built-In Types">
 	<brief_description>
-	Built-in type optimized for path traversing.
+	Pre-parsed scene tree path.
 	</brief_description>
 	<description>
-	Built-in type optimized for path traversing. A Node path is an optimized compiled path used for traversing the scene tree. It references nodes and can reference properties in that node, or even reference properties inside the resources of the node.
+	A pre-parsed relative or absolute path in a scene tree, for use with [method Node.get_node] and similar functions. It can reference a node, a resource within a node, or a property of a node or resource. For instance, [code]"Path2D/PathFollow2D/Sprite:texture:size"[/code] would refer to the size property of the texture resource on the node named "Sprite" which is a child of the other named nodes in the path. Note that if you want to get a resource, you must end the path with a colon, otherwise the last element will be used as a property name.
+	You will usually just pass a string to [method Node.get_node] and it will be automatically converted, but you may occasionally want to parse a path ahead of time with [NodePath] or the literal syntax [code]@"path"[/code]. Exporting a [NodePath] variable will give you a node selection widget in the properties panel of the editor, which can often be useful.
+	A [NodePath] is made up of a list of node names, a list of "subnode" (resource) names, and the name of a property in the final node or resource.
 	</description>
 	<methods>
 		<method name="get_name">
@@ -19397,21 +19399,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-			Return a path level name.
+			Get the node name indicated by [code]idx[/code] (0 to [method get_name_count])
 			</description>
 		</method>
 		<method name="get_name_count">
 			<return type="int">
 			</return>
 			<description>
-			Return the path level count.
+			Get the number of node names which make up the path.
 			</description>
 		</method>
 		<method name="get_property">
 			<return type="String">
 			</return>
 			<description>
-			Return the property associated (empty if none).
+			Get the path's property name, or an empty string if the path doesn't have a property.
 			</description>
 		</method>
 		<method name="get_subname">
@@ -19420,14 +19422,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-			Return the subname level name.
+			Get the resource name indicated by [code]idx[/code] (0 to [method get_subname_count])
 			</description>
 		</method>
 		<method name="get_subname_count">
 			<return type="int">
 			</return>
 			<description>
-			Return the subname count.
+			Get the number of resource names in the path.
 			</description>
 		</method>
 		<method name="is_absolute">
@@ -19450,6 +19452,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
+			Create a NodePath from a string, e.g. "Path2D/PathFollow2D/Sprite:texture:size". A path is absolute if it starts with a slash. Absolute paths are only valid in the global scene tree, not within individual scenes. In a relative path, [code]"."[/code] and [code]".."[/code] indicate the current node and its parent.
 			</description>
 		</method>
 	</methods>
@@ -20184,7 +20187,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	Base class for all non built-in types. Everything not a built-in type starts the inheritance chain from this class.
 	Objects do not manage memory, if inheriting from one the object will most likely have to be deleted manually (call the [method free] function from the script or delete from C++).
 	Some derivates add memory management, such as [Reference] (which keeps a reference count and deletes itself automatically when no longer referenced) and [Node], which deletes the children tree when deleted.
-	Objects export properties, which are mainly useful for storage and editing, but not really so much in programming. Properties are exported in [method _get_property_list] and handled in [method _get] and [method _set]. However, scripting languages and C++ have simper means to export them.
+	Objects export properties, which are mainly useful for storage and editing, but not really so much in programming. Properties are exported in [method _get_property_list] and handled in [method _get] and [method _set]. However, scripting languages and C++ have simpler means to export them.
 	Objects also receive notifications ([method _notification]). Notifications are a simple way to notify the object about simple events, so they can all be handled together.
 	</description>
 	<methods>
