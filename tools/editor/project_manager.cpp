@@ -788,7 +788,7 @@ void ProjectManager::_erase_project()  {
 		return;
 
 
-	erase_ask->set_text("Erase project from list?? (Folder contents will not be modified)");
+	erase_ask->set_text("Remove project from list?? (Folder contents will not be modified)");
 	erase_ask->popup_centered_minsize();
 
 }
@@ -943,7 +943,7 @@ ProjectManager::ProjectManager() {
 
 
 	Button* erase = memnew( Button );
-	erase->set_text("Erase");
+	erase->set_text("Remove");
 	tree_vb->add_child(erase);
 	erase->connect("pressed", this,"_erase_project");
 	erase_btn=erase;
@@ -970,7 +970,7 @@ ProjectManager::ProjectManager() {
 
 
 	erase_ask = memnew( ConfirmationDialog );
-	erase_ask->get_ok()->set_text("Erase");
+	erase_ask->get_ok()->set_text("Remove");
 	erase_ask->get_ok()->connect("pressed", this,"_erase_project_confirm");
 
 	add_child(erase_ask);
