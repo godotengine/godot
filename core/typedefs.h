@@ -154,6 +154,23 @@ inline void __swap_tmpl(T &x, T &y ) {
 	((m_hex>='A' && m_hex<='F')?(10+m_hex-'A'):\
 	((m_hex>='a' && m_hex<='f')?(10+m_hex-'a'):0)))
 
+// Macro to check whether we are compiled by clang
+// and we have a specific builtin
+#if defined(__llvm__) && defined(__has_builtin)
+	#define _llvm_has_builtin(x) __has_builtin(x)
+#else
+	#define _llvm_has_builtin(x) 0
+#endif
+
+#if (defined(__GNUC__) && (__GNUC__ >= 5)) || _llvm_has_builtin(__builtin_mul_overflow)
+#    define _mul_overflow __builtin_mul_overflow
+#endif
+
+#if (defined(__GNUC__) && (__GNUC__ >= 5)) || _llvm_has_builtin(__builtin_add_overflow)
+#    define _add_overflow __builtin_add_overflow
+#endif
+
+
 
 
 
@@ -167,6 +184,19 @@ static _FORCE_INLINE_ unsigned int nearest_power_of_2(unsigned int x) {
 	x |= x >> 4;
 	x |= x >> 8;
 	x |= x >> 16;
+
+	return ++x;
+}
+
+template<class T>
+static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
+
+	--x;
+	// If the compiler is smart, it unrolls this loop
+	// If its dumb, this is a bit slow.
+	for (size_t i = 0; i < sizeof(T); i++)
+		x |= x >> (1 << i);
+
 	return ++x;
 }
 
