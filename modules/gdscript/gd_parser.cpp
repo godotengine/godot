@@ -1790,7 +1790,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 				p_block->sub_blocks.push_back(cf_for->body);
 
 				if (!_enter_indent_block(cf_for->body)) {
-					_set_error("Expected indented block after 'while'");
+					_set_error("Expected indented block after 'for'");
 					p_block->end_line=tokenizer->get_token_line();
 					return;
 				}
