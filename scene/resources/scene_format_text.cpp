@@ -736,6 +736,7 @@ Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const 
 		fw->store_8(c);
 		c=f->get_8();
 	}
+	f->close();
 
 	bool all_ok = fw->get_error()==OK;
 
