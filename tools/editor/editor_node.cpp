@@ -4539,7 +4539,7 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 	}
 	else {
 		_remove_scene(p_tab);
-		//_update_scene_tabs();
+		_update_scene_tabs();
 	}
 
 }
