@@ -32,6 +32,7 @@
 #include "reference.h"
 #include "gd_script.h"
 #include "func_ref.h"
+#include "range_iterator.h"
 #include "os/os.h"
 #include "variant_parser.h"
 #include "io/marshalls.h"
@@ -98,6 +99,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"var2bytes",
 		"bytes2var",
 		"range",
+		"xrange",
 		"load",
 		"inst2dict",
 		"dict2inst",
@@ -816,6 +818,81 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			}
 
 		} break;
+		case GEN_XRANGE: {
+
+			switch(p_arg_count) {
+				case 0: {
+					r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+					r_error.argument=1;
+				} break;
+				case 1: {
+
+					VALIDATE_ARG_NUM(0);
+
+					int count=*p_args[0];
+
+					Ref<RangeIterator> itr = Ref<RangeIterator>( memnew(RangeIterator) );
+					if (!*itr) {
+						ERR_EXPLAIN("Couldn't allocate iterator!");
+						r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+						ERR_FAIL();
+					}
+					(*itr)->set_range(count);
+					r_ret=Variant(itr);
+					return;
+				} break;
+				case 2: {
+
+					VALIDATE_ARG_NUM(0);
+					VALIDATE_ARG_NUM(1);
+
+					int from=*p_args[0];
+					int to=*p_args[1];
+
+					Ref<RangeIterator> itr = Ref<RangeIterator>( memnew(RangeIterator) );
+					if (!*itr) {
+						ERR_EXPLAIN("Couldn't allocate iterator!");
+						r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+						ERR_FAIL();
+					}
+					(*itr)->set_range(from, to);
+					r_ret=Variant(itr);
+					return;
+				} break;
+				case 3: {
+
+					VALIDATE_ARG_NUM(0);
+					VALIDATE_ARG_NUM(1);
+					VALIDATE_ARG_NUM(2);
+
+					int from=*p_args[0];
+					int to=*p_args[1];
+					int incr=*p_args[2];
+
+					if (incr==0) {
+						ERR_EXPLAIN("step argument is zero!");
+						r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+						ERR_FAIL();
+					}
+
+					Ref<RangeIterator> itr = Ref<RangeIterator>( memnew(RangeIterator) );
+					if (!*itr) {
+						ERR_EXPLAIN("Couldn't allocate iterator!");
+						r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+						ERR_FAIL();
+					}
+					(*itr)->set_range(from, to, incr);
+					r_ret=Variant(itr);
+					return;
+				} break;
+				default: {
+
+					r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+					r_error.argument=3;
+				} break;
+			}
+
+		} break;
 		case RESOURCE_LOAD: {
 			VALIDATE_ARG_COUNT(1);
 			if (p_args[0]->get_type()!=Variant::STRING) {
@@ -1431,6 +1508,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("range",PropertyInfo(Variant::NIL,"..."));
 			mi.return_val.type=Variant::ARRAY;
+			return mi;
+		} break;
+		case GEN_XRANGE: {
+
+			MethodInfo mi("xrange",PropertyInfo(Variant::NIL,"..."));
+			mi.return_val.type=Variant::OBJECT;
 			return mi;
 		} break;
 		case RESOURCE_LOAD: {
