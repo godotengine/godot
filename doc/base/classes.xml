@@ -6106,7 +6106,7 @@
 	</brief_description>
 	<description>
 	Base class of anything 2D. Canvas items are laid out in a tree and children inherit and extend the transform of their parent. CanvasItem is extended by [Control], for anything GUI related, and by [Node2D] for anything 2D engine related.
-	Any CanvasItem can draw. For this, the "update" function must be called, then NOTIFICATION_DRAW will be received on idle time to request redraw. Because of this, canvas items don't need to be redraw on every frame, improving the performance significan'tly. Several functions for drawing on the CanvasItem are provided (see draw_* functions). They can only be used inside the notification, signal or _draw() overrides function, though.
+	Any CanvasItem can draw. For this, the "update" function must be called, then NOTIFICATION_DRAW will be received on idle time to request redraw. Because of this, canvas items don't need to be redraw on every frame, improving the performance significantly. Several functions for drawing on the CanvasItem are provided (see draw_* functions). They can only be used inside the notification, signal or _draw() overrides function, though.
 	Canvas items are draw in tree order. By default, children are on top of their parents so a root CanvasItem will be drawn behind everything (this can be changed per item though).
 	Canvas items can also be hidden (hiding also their subtree). They provide many means for changing standard parameters such as opacity (for it and the subtree) and self opacity, blend mode.
 	Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
@@ -6562,7 +6562,7 @@
 			Additive blending mode.
 		</constant>
 		<constant name="BLEND_MODE_SUB" value="2">
-			Substractive blending mode.
+			Subtractive blending mode.
 		</constant>
 		<constant name="BLEND_MODE_MUL" value="3">
 			Multiplicative blending mode.
@@ -8193,7 +8193,7 @@
 	Input device events ([InputEvent]) are first sent to the root controls via the [method Node._input], which distribute it through the tree, then delivers them to the adequate one (under cursor or keyboard focus based) by calling [method MainLoop._input_event]. There is no need to enable input processing on controls to receive such events. To ensure that no one else will receive the event (not even [method Node._unhandled_input]), the control can accept it by calling [method accept_event].
 	Only one control can hold the keyboard focus (receiving keyboard events), for that the control must define the focus mode with [method set_focus_mode]. Focus is lost when another control gains it, or the current focus owner is hidden.
 	It is sometimes desired for a control to ignore mouse/pointer events. This is often the case when placing other controls on top of a button, in such cases. Calling [method set_ignore_mouse] enables this function.
-	Finally, controls are skinned according to a [Theme]. Setting a [Theme] on a control will propagate all the skinning down the tree. Optionally, skinning can be overrided per each control by calling the add_*_override functions, or from the editor.
+	Finally, controls are skinned according to a [Theme]. Setting a [Theme] on a control will propagate all the skinning down the tree. Optionally, skinning can be overridden per each control by calling the add_*_override functions, or from the editor.
 	</description>
 	<methods>
 		<method name="_input_event" qualifiers="virtual">
@@ -9555,7 +9555,7 @@ This approximation makes straight segments between each point, then subdivides t
 	Directional Light, such as the Sun or the Moon.
 	</brief_description>
 	<description>
-	A DirectionalLight is a type of [Light] node that emits light constantly in one direction (the negative z axis of the node). It is used lights with strong intensity that are located far away from the scene to model sunlight or moonlight. The worldpace location of the DirectionalLight transform (origin) is ignored, only the basis is used do determine light direction.
+	A DirectionalLight is a type of [Light] node that emits light constantly in one direction (the negative z axis of the node). It is used lights with strong intensity that are located far away from the scene to model sunlight or moonlight. The worldspace location of the DirectionalLight transform (origin) is ignored, only the basis is used do determine light direction.
 	</description>
 	<methods>
 		<method name="set_shadow_mode">
@@ -11057,14 +11057,14 @@ Returns an empty String "" at the end of the list.
 			<argument index="0" name="transform" type="Transform">
 			</argument>
 			<description>
-			Sets a special transform used to post-transform UV coordinates of the uv_xfrom tecoord mode: TEXCOORD_UV_TRANSFORM.
+			Sets a special transform used to post-transform UV coordinates of the uv_xform texcoord mode: TEXCOORD_UV_TRANSFORM.
 			</description>
 		</method>
 		<method name="get_uv_transform" qualifiers="const">
 			<return type="Transform">
 			</return>
 			<description>
-			Returns the special transform used to post-transform UV coordinates of the uv_xfrom tecoord mode: TEXCOORD_UV_TRANSFORM.
+			Returns the special transform used to post-transform UV coordinates of the uv_xform texcoord mode: TEXCOORD_UV_TRANSFORM.
 			</description>
 		</method>
 		<method name="set_light_shader">
@@ -11323,7 +11323,7 @@ Returns an empty String "" at the end of the list.
 			<argument index="4" name="modulate" type="Color" default="Color(1,1,1,1)">
 			</argument>
 			<description>
-			Draw character "char" into a canvas item using the font at a given "pos" position, with "modulate" color, and optionally kerning if "next" is apassed. clipping the width. "pos" specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis. The width used by the character is returned, making this function useful for drawing strings character by character.
+			Draw character "char" into a canvas item using the font at a given "pos" position, with "modulate" color, and optionally kerning if "next" is passed. clipping the width. "pos" specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis. The width used by the character is returned, making this function useful for drawing strings character by character.
 			</description>
 		</method>
 		<method name="set_fallback">
@@ -12869,7 +12869,7 @@ Returns an empty String "" at the end of the list.
 	Horizontal separator.
 	</brief_description>
 	<description>
-	Horizontal separator. See [Separator]. It is used to separate objects vertiacally, though (but it looks horizontal!).
+	Horizontal separator. See [Separator]. It is used to separate objects vertically, though (but it looks horizontal!).
 	</description>
 	<methods>
 	</methods>
@@ -15424,10 +15424,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="Joint2D" inherits="Node2D" category="Core">
 	<brief_description>
-	Base node for all joint constraints in 2D phyisics.
+	Base node for all joint constraints in 2D physics.
 	</brief_description>
 	<description>
-	Base node for all joint constraints in 2D phyisics. Joints take 2 bodies and apply a custom constraint.
+	Base node for all joint constraints in 2D physics. Joints take 2 bodies and apply a custom constraint.
 	</description>
 	<methods>
 		<method name="set_node_a">
@@ -16897,7 +16897,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Use additive blending equation, often used for particle effects such as fire or light decals.
 		</constant>
 		<constant name="BLEND_MODE_SUB" value="2">
-			Use substractive blending equation, often used for some smoke effects or types of glass.
+			Use subtractive blending equation, often used for some smoke effects or types of glass.
 		</constant>
 		<constant name="BLEND_MODE_MUL" value="3">
 		</constant>
@@ -25997,7 +25997,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="ratio" type="float" default="0.75">
 			</argument>
 			<description>
-			Popup (show the control in modal form) in the center of the screen, scalled at a ratio of size of the screen.
+			Popup (show the control in modal form) in the center of the screen, scaled at a ratio of size of the screen.
 			</description>
 		</method>
 		<method name="popup_centered_minsize">
@@ -32033,7 +32033,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="Transform">
 			</return>
 			<description>
-			Return the gloal transform, relative to worldspace.
+			Return the global transform, relative to worldspace.
 			</description>
 		</method>
 		<method name="get_parent_spatial" qualifiers="const">
@@ -32683,7 +32683,7 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="SpotLight" inherits="Light" category="Core">
 	<brief_description>
-	Spotlight [Light], such as a reflector spotlight or a latern.
+	Spotlight [Light], such as a reflector spotlight or a lantern.
 	</brief_description>
 	<description>
 	A SpotLight light is a type of [Light] node that emits lights in a specific direction, in the shape of a cone. The light is attenuated through the distance and this attenuation can be configured by changing the energy, radius and attenuation parameters of [Light]. TODO: Image of a spotlight.
@@ -32740,7 +32740,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="Vector2">
 			</return>
 			<description>
-			Return sprite draw offst.
+			Return sprite draw offset.
 			</description>
 		</method>
 		<method name="set_flip_h">
@@ -33227,7 +33227,7 @@ This method controls whether the position between two cached points is interpola
 	Static body for 2D Physics.
 	</brief_description>
 	<description>
-	Static body for 2D Physics. A static body is a simple body that is not intended to move. They don't consume any CPU resources in contrast to a [RigidBody2D] so they are great for scenaro collision.
+	Static body for 2D Physics. A static body is a simple body that is not intended to move. They don't consume any CPU resources in contrast to a [RigidBody2D] so they are great for scenario collision.
 	A static body can also be animated by using simulated motion mode. This is useful for implementing functionalities such as moving platforms. When this mode is active the body can be animated and automatically computes linear and angular velocity to apply in that frame and to influence other bodies.
 	Alternatively, a constant linear or angular velocity can be set for the static body, so even if it doesn't move, it affects other bodies as if it was moving (this is useful for simulating conveyor belts or conveyor wheels).
 	</description>
