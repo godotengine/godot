@@ -49,13 +49,11 @@ private:
 		JOYSTICKS_MAX = 16,
 		MAX_ABS = 63,
 		MAX_KEY = 767,   // Hack because <linux/input.h> can't be included here
-		BT_MISC = 256,
-		HAT_MAX = 4,
 	};
 
 	struct Joystick {
 		InputDefault::JoyAxis curr_axis[MAX_ABS];
-		int key_map[MAX_KEY - BT_MISC];
+		int key_map[MAX_KEY];
 		int abs_map[MAX_ABS];
 		int dpad;
 		int fd;
