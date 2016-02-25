@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="2.0.rc1.custom_build" name="Engine Types">
+<doc version="2.0.stable.custom_build" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 	Built-in GDScript functions.
@@ -10689,6 +10689,16 @@ Returns an empty String "" at the end of the list.
 			<return type="String">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="get_md5" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			Returns on success, a md5 String representing the file of the given path.
+				else, empty String "".
 			</description>
 		</method>
 		<method name="get_endian_swap">
@@ -29903,6 +29913,22 @@ This method controls whether the position between two cached points is interpola
 		</method>
 		<method name="get_node_owner_path" qualifiers="const">
 			<return type="NodePath">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_node_instance_placeholder" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_instance_placeholder" qualifiers="const">
+			<return type="String">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
