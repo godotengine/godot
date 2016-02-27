@@ -564,13 +564,29 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("resources/save_compressed_resources",true);
 	set("resources/auto_reload_modified_images",true);
 
-	if (p_extra_config.is_valid() && p_extra_config->has_section("init_projects") && p_extra_config->has_section_key("init_projects", "list")) {
+	if (p_extra_config.is_valid()) {
 
-		Vector<String> list = p_extra_config->get_value("init_projects", "list");
-		for (int i=0; i<list.size(); i++) {
+		if (p_extra_config->has_section("init_projects") && p_extra_config->has_section_key("init_projects", "list")) {
 
-			String name = list[i].replace("/", "::");
-			set("projects/"+name, list[i]);
+			Vector<String> list = p_extra_config->get_value("init_projects", "list");
+			for (int i=0; i<list.size(); i++) {
+
+				String name = list[i].replace("/", "::");
+				set("projects/"+name, list[i]);
+			};
+		};
+
+		if (p_extra_config->has_section("presets")) {
+
+			List<String> keys;
+			p_extra_config->get_section_keys("presets", &keys);
+
+			for (List<String>::Element *E=keys.front();E;E=E->next()) {
+
+				String key = E->get();
+				Variant val = p_extra_config->get_value("presets", key);
+				set(key, val);
+			};
 		};
 	};
 
