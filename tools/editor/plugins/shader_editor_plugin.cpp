@@ -578,9 +578,9 @@ ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node, bool p_2d) {
 	shader_editor = memnew( ShaderEditor );
 	_2d=p_2d;
 	if (p_2d)
-		add_custom_control(CONTAINER_CANVAS_EDITOR_BOTTOM,shader_editor);
+		add_control_to_container(CONTAINER_CANVAS_EDITOR_BOTTOM,shader_editor);
 	else
-		add_custom_control(CONTAINER_SPATIAL_EDITOR_BOTTOM,shader_editor);
+		add_control_to_container(CONTAINER_SPATIAL_EDITOR_BOTTOM,shader_editor);
 //	editor->get_viewport()->add_child(shader_editor);
 //	shader_editor->set_area_as_parent_rect();
 

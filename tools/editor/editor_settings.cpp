@@ -818,6 +818,16 @@ void EditorSettings::load_favorites() {
 
 void EditorSettings::_bind_methods() {
 
+	ObjectTypeDB::bind_method(_MD("erase","property"),&EditorSettings::erase);
+	ObjectTypeDB::bind_method(_MD("get_settings_path"),&EditorSettings::get_settings_path);
+	ObjectTypeDB::bind_method(_MD("get_project_settings_path"),&EditorSettings::get_project_settings_path);
+
+	ObjectTypeDB::bind_method(_MD("set_favorite_dirs","dirs"),&EditorSettings::set_favorite_dirs);
+	ObjectTypeDB::bind_method(_MD("get_favorite_dirs"),&EditorSettings::get_favorite_dirs);
+
+	ObjectTypeDB::bind_method(_MD("set_recent_dirs","dirs"),&EditorSettings::set_recent_dirs);
+	ObjectTypeDB::bind_method(_MD("get_recent_dirs"),&EditorSettings::get_recent_dirs);
+
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 
 }

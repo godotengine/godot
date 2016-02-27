@@ -3950,9 +3950,13 @@ void EditorNode::register_editor_types() {
 
 	ObjectTypeDB::register_type<EditorPlugin>();
 	ObjectTypeDB::register_type<EditorImportPlugin>();
+	ObjectTypeDB::register_type<EditorExportPlugin>();
 	ObjectTypeDB::register_type<EditorScenePostImport>();
 	ObjectTypeDB::register_type<EditorScript>();
+	ObjectTypeDB::register_type<EditorSelection>();
 	ObjectTypeDB::register_type<EditorFileDialog>();
+	ObjectTypeDB::register_type<EditorImportExport>();
+	ObjectTypeDB::register_type<EditorSettings>();
 	ObjectTypeDB::register_type<UndoRedo>();
 
 

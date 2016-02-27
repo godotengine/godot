@@ -29,6 +29,8 @@
 #include "editor_plugin.h"
 #include "plugins/canvas_item_editor_plugin.h"
 #include "plugins/spatial_editor_plugin.h"
+#include "tools/editor/editor_node.h"
+#include "tools/editor/editor_settings.h"
 
 void EditorPlugin::add_custom_type(const String& p_type, const String& p_base,const Ref<Script>& p_script, const Ref<Texture>& p_icon) {
 
@@ -41,8 +43,13 @@ void EditorPlugin::remove_custom_type(const String& p_type){
 }
 
 
+void EditorPlugin::add_control_to_bottom_dock(Control *p_control, const String &p_title) {
 
-void EditorPlugin::add_custom_control(CustomControlContainer p_location,Control *p_control) {
+	EditorNode::get_singleton()->add_bottom_panel_item(p_title,p_control);
+}
+
+
+void EditorPlugin::add_control_to_container(CustomControlContainer p_location,Control *p_control) {
 
 	switch(p_location) {
 
@@ -50,6 +57,7 @@ void EditorPlugin::add_custom_control(CustomControlContainer p_location,Control 
 
 			EditorNode::get_menu_hb()->add_child(p_control);
 		} break;
+
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
 
 			SpatialEditor::get_singleton()->add_control_to_menu_panel(p_control);
@@ -206,12 +214,28 @@ void EditorPlugin::get_window_layout(Ref<ConfigFile> p_layout){
 
 }
 
+EditorSelection* EditorPlugin::get_selection() {
+	return EditorNode::get_singleton()->get_editor_selection();
+}
+
+EditorImportExport *EditorPlugin::get_import_export() {
+	return EditorImportExport::get_singleton();
+}
+
+EditorSettings *EditorPlugin::get_editor_settings() {
+	return EditorSettings::get_singleton();
+}
+
 void EditorPlugin::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_undo_redo"),&EditorPlugin::_get_undo_redo);
-	ObjectTypeDB::bind_method(_MD("add_custom_control","container","control"),&EditorPlugin::add_custom_control);
+	ObjectTypeDB::bind_method(_MD("add_control_to_container","container","control:Control"),&EditorPlugin::add_control_to_container);
+	ObjectTypeDB::bind_method(_MD("add_control_to_bottom_dock","control:Control","title"),&EditorPlugin::add_control_to_bottom_dock);
 	ObjectTypeDB::bind_method(_MD("add_custom_type","type","base","script:Script","icon:Texture"),&EditorPlugin::add_custom_type);
 	ObjectTypeDB::bind_method(_MD("remove_custom_type","type"),&EditorPlugin::remove_custom_type);
+	ObjectTypeDB::bind_method(_MD("get_undo_redo:UndoRedo"),&EditorPlugin::_get_undo_redo);
+	ObjectTypeDB::bind_method(_MD("get_selection:EditorSelection"),&EditorPlugin::get_selection);
+	ObjectTypeDB::bind_method(_MD("get_import_export:EditorImportExport"),&EditorPlugin::get_import_export);
+	ObjectTypeDB::bind_method(_MD("get_editor_settings:EditorSettings"),&EditorPlugin::get_import_export);
 
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"forward_input_event",PropertyInfo(Variant::INPUT_EVENT,"event")));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"forward_spatial_input_event",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera"),PropertyInfo(Variant::INPUT_EVENT,"event")));

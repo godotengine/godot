@@ -228,6 +228,7 @@ public:
 	List<Node*> selected_node_list;
 
 	void _update_nl();
+	Array _get_selected_nodes();
 protected:
 
 	static void _bind_methods();
