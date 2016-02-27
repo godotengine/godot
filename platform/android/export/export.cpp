@@ -1493,6 +1493,16 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 		OS::get_singleton()->delay_usec(3000000);
 	}
 
+	if (EditorSettings::get_singleton()->get("android/shutdown_adb_on_exit")) {
+		String adb=EditorSettings::get_singleton()->get("android/adb");
+		if (!FileAccess::exists(adb)) {
+			return; //adb not configured
+		}
+
+		List<String> args;
+		args.push_back("kill-server");
+		OS::get_singleton()->execute(adb,args,true);
+	};
 }
 
 Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
