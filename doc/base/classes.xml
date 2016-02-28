@@ -10252,21 +10252,18 @@ Returns an empty String "" at the end of the list.
 			remove your custom controls too.
 			</description>
 		</method>
-		<method name="add_control_to_bottom_dock">
+		<method name="add_control_to_bottom_panel">
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
-			Add a control to the bottom dock (together with
+			Add a control to the bottom panel (together with
 			Output, Debug, Animation, etc).
 			
-			Please remember that you have to manage the
-			visibility of your custom controls yourself (and likely
-			hide it after adding it).
-			
 			If your plugin is being removed, also make sure to
-			remove your custom controls too.
+			remove your control by calling [method
+			remove_control_from_bottom_panel].
 			</description>
 		</method>
 		<method name="add_control_to_dock">
@@ -10295,6 +10292,15 @@ Returns an empty String "" at the end of the list.
 			Remove the control from the dock. Don't forget to
 			call this if you added one, so the editor can save
 			the layout and remove it cleanly.
+			</description>
+		</method>
+		<method name="remove_control_from_bottom_panel">
+			<argument index="0" name="control" type="Control">
+			</argument>
+			<description>
+			Remove the control from the bottom panel. Don't forget
+			to call this if you added one, so the editor can
+			remove it cleanly.
 			</description>
 		</method>
 		<method name="add_custom_type">
