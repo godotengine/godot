@@ -6639,6 +6639,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			}
 			rebind=true;
 		}
+		
 		if  (use_hw_skeleton_xform && skeleton!=prev_skeleton) {
 			if (!prev_skeleton || !skeleton)
 				rebind=true; //went from skeleton <-> no skeleton, needs rebind
@@ -6715,10 +6716,6 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		if (i==0 || rebind) {
 			material_shader.set_uniform(MaterialShaderGLES2::CAMERA_INVERSE_TRANSFORM, p_view_transform_inverse);
 			material_shader.set_uniform(MaterialShaderGLES2::PROJECTION_TRANSFORM, p_projection);
-			if (skeleton && use_hw_skeleton_xform) {
-				material_shader.set_uniform(MaterialShaderGLES2::SKELETON_MATRICES,GL_TEXTURE0+max_texture_units-2);
-				material_shader.set_uniform(MaterialShaderGLES2::SKELTEX_PIXEL_SIZE,skeleton->pixel_size);
-			}
 			if (!shadow) {
 
 				if (!additive && current_env && current_env->fx_enabled[VS::ENV_FX_AMBIENT_LIGHT]) {
@@ -6731,6 +6728,13 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			}
 
 			_rinfo.shader_change_count++;
+		}
+
+		if (skeleton != prev_skeleton || rebind) {
+			if (skeleton) {
+				material_shader.set_uniform(MaterialShaderGLES2::SKELETON_MATRICES, max_texture_units - 2);
+				material_shader.set_uniform(MaterialShaderGLES2::SKELTEX_PIXEL_SIZE, skeleton->pixel_size);
+			}
 		}
 
 		if (e->instance->billboard || e->instance->depth_scale) {
@@ -10819,7 +10823,6 @@ void RasterizerGLES2::init() {
 	use_depth24 =true;
 	s3tc_supported = true;
 	atitc_supported = false;
-	use_hw_skeleton_xform = false;
 //	use_texture_instancing=false;
 //	use_attribute_instancing=true;
 	use_texture_instancing=false;
@@ -10830,7 +10833,11 @@ void RasterizerGLES2::init() {
 	s3tc_srgb_supported=true;
 	use_anisotropic_filter=true;
 	float_linear_supported=true;
-	float_supported=true;
+
+	GLint vtf;
+	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,&vtf);
+	float_supported = extensions.has("GL_OES_texture_float") || extensions.has("GL_ARB_texture_float");
+	use_hw_skeleton_xform=vtf>0 && float_supported;
 
 	read_depth_supported=_test_depth_shadow_buffer();
 	use_rgba_shadowmaps=!read_depth_supported;
@@ -10880,7 +10887,7 @@ void RasterizerGLES2::init() {
 
 	GLint vtf;
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,&vtf);
-	float_supported = extensions.has("GL_OES_texture_float");
+	float_supported = extensions.has("GL_OES_texture_float") || extensions.has("GL_ARB_texture_float");
 	use_hw_skeleton_xform=vtf>0 && float_supported;
 	float_linear_supported = extensions.has("GL_OES_texture_float_linear");
 
@@ -10913,7 +10920,6 @@ void RasterizerGLES2::init() {
 
 
 	//etc_supported=false;
-	use_hw_skeleton_xform=false;
 
 #endif
 
