@@ -429,6 +429,12 @@ uint32_t joystick_linux::process_joysticks(uint32_t p_event_id) {
 			for (int j = 0; j < len; j++) {
 
 				input_event &ev = events[j];
+
+				// ev may be tainted and out of MAX_KEY range, which will cause
+				// joy->key_map[ev.code] to crash
+				if( ev.code < 0 || ev.code >= MAX_KEY )
+					return p_event_id;
+
 				switch (ev.type) {
 				case EV_KEY:
 					p_event_id = input->joy_button(p_event_id, i, joy->key_map[ev.code], ev.value);
