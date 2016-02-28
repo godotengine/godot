@@ -281,6 +281,7 @@ static void _edit_filter_list(Set<StringName>& r_list,const String& p_filter,boo
 	}
 
 	DirAccess *da = DirAccess::open("res://");
+	ERR_FAIL_NULL(da);
 	_edit_files_with_filter(da,filters,r_list,exclude);
 	memdelete(da);
 }
@@ -2217,5 +2218,3 @@ EditorImportExport::~EditorImportExport() {
 
 
 }
-
-
