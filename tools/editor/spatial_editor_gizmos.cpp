@@ -708,7 +708,8 @@ void EditorSpatialGizmo::_bind_methods() {
 EditorSpatialGizmo::EditorSpatialGizmo() {
 	valid=false;
 	billboard_handle=false;
-
+	base=NULL;
+	spatial_node=NULL;
 }
 
 EditorSpatialGizmo::~EditorSpatialGizmo(){
@@ -3219,4 +3220,3 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 
 
 }
-

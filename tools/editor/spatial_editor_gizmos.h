@@ -491,4 +491,3 @@ public:
 };
 
 #endif // SPATIAL_EDITOR_GIZMOS_H
-
