@@ -10285,7 +10285,6 @@ Returns an empty String "" at the end of the list.
 			If your plugin is being removed, also make sure to
 			remove your control by calling [method
 			remove_control_from_docks].
-			
 			</description>
 		</method>
 		<method name="remove_control_from_docks">
@@ -38646,62 +38645,85 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="Tween" inherits="Node" category="Core">
 	<brief_description>
+	Node useful for animations with unknown start and end points.
 	</brief_description>
 	<description>
+	Node useful for animations with unknown start and end points, procedural animations, making one node follow another, and other simple behavior.
+	
+	Because it is easy to get it wrong, here is a quick usage example:
+	
+	[codeblock]
+	var tween = get_node("Tween")
+	tween.interpolate_property(get_node("Node2D_to_move"), "transform/pos", Vector2(0,0), Vector2(100,100), Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+	tween.start()
+	[/codeblock]
+	
+	Some of the methods of this class require a property name. You can get the property name by hovering over the property in the inspector of the editor.
+	
+	Many of the methods accept [code]trans_type[/code] and [code]ease_type[/code]. The first accepts an TRANS_* constant, and refers to the way the timing of the animation is handled (you might want to see [code]http://easings.net/[/code] for some examples). The second accepts an EASE_* constant, and controls the where [code]trans_type[/code] is applied to the interpolation (in the begining, the end, or both). If you don't know which transision and easing to pick, you can try different TRANS_* constants with EASE_IN_OUT, and use the one that looks best.
 	</description>
 	<methods>
 		<method name="is_active" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns true if any tweens are currently running, and false otherwise. Note that this method doesn't consider tweens that have ended.
 			</description>
 		</method>
 		<method name="set_active">
 			<argument index="0" name="active" type="bool">
 			</argument>
 			<description>
+			Activate/deactivate the tween. You can use this for pausing animations, though [method stop_all] and [method resume_all] might be more fit for this.
 			</description>
 		</method>
 		<method name="is_repeat" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns true if repeat has been set from editor GUI or [method set_repeat].
 			</description>
 		</method>
 		<method name="set_repeat">
 			<argument index="0" name="repeat" type="bool">
 			</argument>
 			<description>
+			Make the tween repeat after all tweens have finished.
 			</description>
 		</method>
 		<method name="set_speed">
 			<argument index="0" name="speed" type="float">
 			</argument>
 			<description>
+			Set the speed multiplier of the tween. Set it to 1 for normal speed, 2 for two times nromal speed, and 0.5 for half of the normal speed. Setting it to 0 would pause the animation, but you might consider using [method set_active] or [method stop_all] and [method resume_all] for this.
 			</description>
 		</method>
 		<method name="get_speed" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the speed that has been set from editor GUI or [method set_repeat].
 			</description>
 		</method>
 		<method name="set_tween_process_mode">
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+			Set whether the Tween uses [code]_process[/code] or [code]_fixed_process[/code] (accepts TWEEN_PROCESS_IDLE and TWEEN_PROCESS_FIXED constants, respectively).
 			</description>
 		</method>
 		<method name="get_tween_process_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Returns the process mode that has been set from editor GUI or [method set_tween_process_mode]
 			</description>
 		</method>
 		<method name="start">
 			<return type="bool">
 			</return>
 			<description>
+			Start the tween node. You can define tweens both before and after this.
 			</description>
 		</method>
 		<method name="reset">
@@ -38712,12 +38734,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="key" type="String">
 			</argument>
 			<description>
+			Resets a tween to the initial value (the one given, not the one before the tween), given its object and property/method pair.
 			</description>
 		</method>
 		<method name="reset_all">
 			<return type="bool">
 			</return>
 			<description>
+			Resets all tweens to their initial values (the ones given, not those before the tween).
 			</description>
 		</method>
 		<method name="stop">
@@ -38728,12 +38752,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="key" type="String">
 			</argument>
 			<description>
+			Stop animating a tween, given its object and property/method pair.
 			</description>
 		</method>
 		<method name="stop_all">
 			<return type="bool">
 			</return>
 			<description>
+			Stop animating all tweens.
 			</description>
 		</method>
 		<method name="resume">
@@ -38744,12 +38770,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="key" type="String">
 			</argument>
 			<description>
+			Continue animating a stopped tween, given its object and property/method pair.
 			</description>
 		</method>
 		<method name="resume_all">
 			<return type="bool">
 			</return>
 			<description>
+			Continue animating all stopped tweens.
 			</description>
 		</method>
 		<method name="remove">
@@ -38760,12 +38788,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="key" type="String">
 			</argument>
 			<description>
+			Stop animating and completely remove a tween, given its object and property/method pair.
 			</description>
 		</method>
 		<method name="remove_all">
 			<return type="bool">
 			</return>
 			<description>
+			Stop animating and completely remove all tweens.
 			</description>
 		</method>
 		<method name="seek">
@@ -38774,18 +38804,21 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="time" type="float">
 			</argument>
 			<description>
+			Seek the animation to the given [code]time[/code] in seconds.
 			</description>
 		</method>
 		<method name="tell" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the current time of the tween.
 			</description>
 		</method>
 		<method name="get_runtime" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the time needed for all tweens to end in seconds, measured from the start. Thus, if you have two tweens, one ending 10 seconds after the start and the other - 20 seconds, it would return 20 seconds, as by that time all tweens would have finished.
 			</description>
 		</method>
 		<method name="interpolate_property">
@@ -38808,6 +38841,9 @@ This method controls whether the position between two cached points is interpola
 			<argument index="7" name="delay" type="float" default="0">
 			</argument>
 			<description>
+			Animate [code]property[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] seconds later. 
+			
+			[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="interpolate_method">
@@ -38830,6 +38866,9 @@ This method controls whether the position between two cached points is interpola
 			<argument index="7" name="delay" type="float" default="0">
 			</argument>
 			<description>
+			Animate [code]method[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecuitive values.
+			
+			[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="interpolate_callback">
@@ -38852,6 +38891,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="7" name="arg5" type="Variant" default="NULL">
 			</argument>
 			<description>
+			Call [code]callback[/code] of [code]object[/code] after [code]times_in_sec[/code]. [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
 			</description>
 		</method>
 		<method name="interpolate_deferred_callback">
@@ -38874,6 +38914,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="7" name="arg5" type="Variant" default="NULL">
 			</argument>
 			<description>
+			Call [code]callback[/code] of [code]object[/code] after [code]times_in_sec[/code] on the main thread (similar to [methog Object.call_deferred). [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
 			</description>
 		</method>
 		<method name="follow_property">
@@ -38898,6 +38939,9 @@ This method controls whether the position between two cached points is interpola
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
+			Follow [code]property[/code] of [code]object[/code] and apply it on [code]target_property[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] seconds later. Note that [code]target:target_property[/code] would equal [code]object:property[/code] at the end of the tween.
+			
+			[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="follow_method">
@@ -38922,6 +38966,9 @@ This method controls whether the position between two cached points is interpola
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
+			Follow [code]method[/code] of [code]object[/code] and apply the returned value on [code]target_method[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] later. Methods are animated by calling them with consequitive values.
+			
+			[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="targeting_property">
@@ -38946,6 +38993,9 @@ This method controls whether the position between two cached points is interpola
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
+			Animate [code]property[/code] of [code]object[/code] from the current value of the [code]initial_val[/code] property of [code]initial[/code] to [code]final_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] seconds later. 
+			
+			[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="targeting_method">
@@ -38970,6 +39020,9 @@ This method controls whether the position between two cached points is interpola
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
+			Animate [code]method[/code] of [code]object[/code] from the value returned by [code]initial.initial_method[/code] to [code]final_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecuitive values.
+			
+			[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 	</methods>
@@ -38980,6 +39033,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="key" type="String">
 			</argument>
 			<description>
+			This signal is emitted when a tween ends.
 			</description>
 		</signal>
 		<signal name="tween_step">
@@ -38992,6 +39046,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="value" type="Object">
 			</argument>
 			<description>
+			This signal is emitted each step of the tweening.
 			</description>
 		</signal>
 		<signal name="tween_start">
@@ -39000,43 +39055,61 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="key" type="String">
 			</argument>
 			<description>
+			This signal is emitted when a tween starts.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="TWEEN_PROCESS_FIXED" value="0">
+			The [Tween] should use [code]_fixed_process[/code] for timekeeping when this is enabled.
 		</constant>
 		<constant name="TWEEN_PROCESS_IDLE" value="1">
+			The [Tween] should use [code]_process[/code] for timekeeping when this is enabled (default).
 		</constant>
 		<constant name="TRANS_LINEAR" value="0">
+			Means that the animation is interpolated linearly.
 		</constant>
 		<constant name="TRANS_SINE" value="1">
+			Means that the animation is interpolated using a sine wave.
 		</constant>
 		<constant name="TRANS_QUINT" value="2">
+			Means that the animation is interpolated with a quinary (to the power of 5) function.
 		</constant>
 		<constant name="TRANS_QUART" value="3">
+			Means that the animation is interpolated with a quartic (to the power of 4) function.
 		</constant>
 		<constant name="TRANS_QUAD" value="4">
+			Means that the animation is interpolated with a quadratic (to the power of 2) function.
 		</constant>
 		<constant name="TRANS_EXPO" value="5">
+			Means that the animation is interpolated with a exponential (some number to the power of x) function.
 		</constant>
 		<constant name="TRANS_ELASTIC" value="6">
+			Means that the animation is interpolated with elasticity, wiggling around the edges.
 		</constant>
 		<constant name="TRANS_CUBIC" value="7">
+			Means that the animation is interpolated with a cubic (to the power of 3) function.
 		</constant>
 		<constant name="TRANS_CIRC" value="8">
+			Means that the animation is interpolated with a function using square roots.
 		</constant>
 		<constant name="TRANS_BOUNCE" value="9">
+			Means that the animation is interpolated by bouncing at, but never surpassing, the end.
 		</constant>
 		<constant name="TRANS_BACK" value="10">
+			Means that the animation is interpolated backing out at edges.
 		</constant>
 		<constant name="EASE_IN" value="0">
+			Signifies that the interpolation should be focused in the beginning.
 		</constant>
 		<constant name="EASE_OUT" value="1">
+			Signifies that the interpolation should be focused in the end.
 		</constant>
 		<constant name="EASE_IN_OUT" value="2">
+			Signifies that the interpolation should be focused in both ends.
 		</constant>
 		<constant name="EASE_OUT_IN" value="3">
+			Signifies that the interpolation should be focused in both ends, but they should be switched (a bit hard to explain, try it for yourself to be sure).
 		</constant>
 	</constants>
 </class>
