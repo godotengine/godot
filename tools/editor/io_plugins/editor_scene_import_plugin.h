@@ -87,7 +87,7 @@ protected:
 	static void _bind_methods();
 public:
 
-	virtual Error post_import(Node* p_scene);
+	virtual Node* post_import(Node* p_scene);
 	EditorScenePostImport();
 };
 

@@ -1481,6 +1481,11 @@ Variant GDScript::_new(const Variant** p_args,int p_argcount,Variant::CallError&
 
 	/* STEP 1, CREATE */
 
+	if (!valid) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
+	}
+
 	r_error.error=Variant::CallError::CALL_OK;
 	REF ref;
 	Object *owner=NULL;

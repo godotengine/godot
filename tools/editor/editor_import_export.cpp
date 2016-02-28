@@ -63,13 +63,30 @@ String EditorImportPlugin::expand_source_path(const String& p_path) {
 	}
 }
 
+
+String EditorImportPlugin::_validate_source_path(const String& p_path) {
+
+	return validate_source_path(p_path);
+}
+
+String EditorImportPlugin::_expand_source_path(const String& p_path) {
+
+	return expand_source_path(p_path);
+}
+
 void EditorImportPlugin::_bind_methods() {
+
+
+	ObjectTypeDB::bind_method(_MD("validate_source_path","path"),&EditorImportPlugin::_validate_source_path);
+	ObjectTypeDB::bind_method(_MD("expand_source_path","path"),&EditorImportPlugin::_expand_source_path);
 
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::STRING,"get_name"));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::STRING,"get_visible_name"));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo("import_dialog",PropertyInfo(Variant::STRING,"from")));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::INT,"import",PropertyInfo(Variant::STRING,"path"),PropertyInfo(Variant::OBJECT,"from",PROPERTY_HINT_RESOURCE_TYPE,"ResourceImportMetadata")));
-	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::RAW_ARRAY,"custom_export",PropertyInfo(Variant::STRING,"path")));
+	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::RAW_ARRAY,"custom_export",PropertyInfo(Variant::STRING,"path"),PropertyInfo(Variant::OBJECT,"platform",PROPERTY_HINT_RESOURCE_TYPE,"EditorExportPlatform")));
+
+//	BIND_VMETHOD( mi );
 }
 
 String EditorImportPlugin::get_name() const {
@@ -113,8 +130,8 @@ Error EditorImportPlugin::import(const String& p_path, const Ref<ResourceImportM
 
 Vector<uint8_t> EditorImportPlugin::custom_export(const String& p_path, const Ref<EditorExportPlatform> &p_platform) {
 
-	if (get_script_instance() && get_script_instance()->has_method("custom_export")) {
-		get_script_instance()->call("custom_export",p_path,p_platform);
+	if (get_script_instance() && get_script_instance()->has_method("_custom_export")) {
+		get_script_instance()->call("_custom_export",p_path,p_platform);
 	}
 
 	return Vector<uint8_t>();
@@ -130,7 +147,7 @@ EditorImportPlugin::EditorImportPlugin() {
 
 void EditorExportPlugin::_bind_methods() {
 
-	MethodInfo mi = MethodInfo("custom_export",PropertyInfo(Variant::STRING,"name"),PropertyInfo(Variant::OBJECT,"platform",PROPERTY_HINT_RESOURCE_TYPE,"EditorExportPlatform"));
+	MethodInfo mi = MethodInfo("custom_export:Variant",PropertyInfo(Variant::STRING,"name"),PropertyInfo(Variant::OBJECT,"platform",PROPERTY_HINT_RESOURCE_TYPE,"EditorExportPlatform"));
 	mi.return_val.type=Variant::RAW_ARRAY;
 
 	BIND_VMETHOD( mi );
@@ -144,6 +161,9 @@ Vector<uint8_t> EditorExportPlugin::custom_export(String& p_path,const Ref<Edito
 		Variant d = get_script_instance()->call("custom_export",p_path,p_platform);
 		if (d.get_type()==Variant::NIL)
 			return Vector<uint8_t>();
+		if (d.get_type()==Variant::RAW_ARRAY)
+			return d;
+
 		ERR_FAIL_COND_V(d.get_type()!=Variant::DICTIONARY,Vector<uint8_t>());
 		Dictionary dict=d;
 		ERR_FAIL_COND_V(!dict.has("name"),Vector<uint8_t>());
@@ -1458,11 +1478,14 @@ Ref<EditorImportPlugin> EditorImportExport::get_import_plugin_by_name(const Stri
 
 void EditorImportExport::add_export_plugin(const Ref<EditorExportPlugin>& p_plugin) {
 
+	ERR_FAIL_COND( p_plugin.is_null() );
+
 	export_plugins.push_back(p_plugin);
 }
 
 void EditorImportExport::remove_export_plugin(const Ref<EditorExportPlugin>& p_plugin) {
 
+	ERR_FAIL_COND( p_plugin.is_null() );
 	export_plugins.erase(p_plugin);
 }
 

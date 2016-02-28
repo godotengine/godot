@@ -34,6 +34,9 @@
 #include "optimized_save_dialog.h"
 #include "undo_redo.h"
 #include "editor_data.h"
+
+#include "editor_plugin_settings.h"
+
 //#include "project_export_settings.h"
 
 class ProjectSettings : public AcceptDialog {
@@ -89,6 +92,9 @@ class ProjectSettings : public AcceptDialog {
 	LineEdit *autoload_add_name;
 	LineEdit *autoload_add_path;
 
+
+	EditorPluginSettings *plugin_settings;
+
 	void _update_autoload();
 	void _autoload_file_callback(const String& p_path);
 	void _autoload_add();
@@ -142,6 +148,8 @@ class ProjectSettings : public AcceptDialog {
 	void _toggle_search_bar(bool p_pressed);
 	void _clear_search_box();
 
+
+
 	ProjectSettings();
 
 
@@ -156,6 +164,8 @@ public:
 	void add_translation(const String& p_translation);
 	static ProjectSettings *get_singleton() { return singleton; }
 	void popup_project_settings();
+
+	void queue_save();
 
 
 	ProjectSettings(EditorData *p_data);

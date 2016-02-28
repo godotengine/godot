@@ -165,6 +165,9 @@ public:
 	void add_editor_plugin(EditorPlugin *p_plugin);
 	void remove_editor_plugin(EditorPlugin *p_plugin);
 
+	int get_editor_plugin_count() const;
+	EditorPlugin *get_editor_plugin(int p_idx);
+
 	UndoRedo &get_undo_redo();
 
 	void save_editor_global_states();

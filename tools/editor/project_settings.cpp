@@ -570,6 +570,7 @@ void ProjectSettings::popup_project_settings() {
 	globals_editor->edit(Globals::get_singleton());
 	_update_translations();
 	_update_autoload();
+	plugin_settings->update_plugins();
 }
 
 
@@ -737,6 +738,10 @@ void ProjectSettings::_settings_prop_edited(const String& p_name) {
 void ProjectSettings::_settings_changed() {
 
 	timer->start();
+}
+
+void ProjectSettings::queue_save() {
+	_settings_changed();
 }
 
 
@@ -1828,6 +1833,13 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 		updating_autoload=false;
 
+	}
+
+	{
+
+		plugin_settings = memnew( EditorPluginSettings );
+		plugin_settings->set_name("Plugins");
+		tab_container->add_child(plugin_settings);
 	}
 
 	timer = memnew( Timer );

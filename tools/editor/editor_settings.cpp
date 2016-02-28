@@ -228,13 +228,6 @@ void EditorSettings::create() {
 			dir->change_dir("..");
 		}
 
-		if (dir->change_dir("plugins")!=OK) {
-			dir->make_dir("plugins");
-		} else {
-
-			dir->change_dir("..");
-		}
-
 		if (dir->change_dir("config")!=OK) {
 			dir->make_dir("config");
 		} else {
@@ -287,7 +280,6 @@ void EditorSettings::create() {
 
 		singleton->setup_network();
 		singleton->load_favorites();
-		singleton->scan_plugins();
 
 		return;
 
@@ -312,7 +304,6 @@ void EditorSettings::create() {
 	singleton->settings_path=config_path+"/"+config_dir;
 	singleton->_load_defaults(extra_config);
 	singleton->setup_network();
-	singleton->scan_plugins();
 
 
 }
@@ -323,35 +314,6 @@ String EditorSettings::get_settings_path() const {
 }
 
 
-Error EditorSettings::_load_plugin(const String& p_path, Plugin &plugin) {
-
-	if (!FileAccess::exists(p_path))
-		return ERR_FILE_NOT_FOUND;
-
-	Ref<ConfigFile> cf = memnew(ConfigFile);
-	Error err = cf->load(p_path);
-	ERR_EXPLAIN("Error loading plugin description for: "+p_path);
-	ERR_FAIL_COND_V(err!=OK,ERR_CANT_OPEN);
-
-	plugin.instance=NULL;
-	ERR_FAIL_COND_V(!cf->has_section_key("plugin","name"),ERR_INVALID_DATA);
-	ERR_FAIL_COND_V(!cf->has_section_key("plugin","installs"),ERR_INVALID_DATA);
-	ERR_FAIL_COND_V(!cf->has_section_key("plugin","author"),ERR_INVALID_DATA);
-	ERR_FAIL_COND_V(!cf->has_section_key("plugin","version"),ERR_INVALID_DATA);
-	ERR_FAIL_COND_V(!cf->has_section_key("plugin","script"),ERR_INVALID_DATA);
-	plugin.name=cf->get_value("plugin","name");
-	plugin.author=cf->get_value("plugin","author");
-	plugin.version=cf->get_value("plugin","version");
-	plugin.script=cf->get_value("plugin","script");
-
-	if (cf->has_section_key("plugin","description"))
-		plugin.description=cf->get_value("plugin","description");
-	plugin.installs=cf->get_value("plugin","installs");
-	if (cf->has_section_key("plugin","install_files"))
-		plugin.install_files=cf->get_value("plugin","install_files");
-
-	return OK;
-}
 
 void EditorSettings::setup_network() {
 
@@ -382,46 +344,6 @@ void EditorSettings::setup_network() {
 
 }
 
-void EditorSettings::scan_plugins() {
-
-	Map<String,Plugin> new_plugins;
-
-	new_plugins.clear();
-	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	Error err = d->change_dir(get_settings_path().plus_file("plugins"));
-	if (err!=OK) {
-		memdelete(d);
-		ERR_EXPLAIN("Plugin dir does not exist!")
-		ERR_FAIL_COND(err!=OK);
-	}
-	d->list_dir_begin();
-
-	String base = d->get_current_dir();
-	//print_line("list diring on: "+base);
-	while(true) {
-		String p = d->get_next();
-		if (p=="")
-			break;
-		if (!d->current_is_dir() || p.begins_with("."))
-			continue;
-
-		String cfpath=d->get_current_dir().plus_file(p+"/plugin.cfg");
-
-		Plugin plugin;
-		Error err = _load_plugin(cfpath,plugin);
-		ERR_CONTINUE(err!=OK);
-
-		if (plugins.has(p))
-			plugin.instance=plugins[p].instance;
-
-		new_plugins[p]=plugin;
-	}
-
-
-	plugins=new_plugins;
-
-	memdelete(d);
-}
 
 void EditorSettings::save() {
 
@@ -623,148 +545,9 @@ void EditorSettings::add_property_hint(const PropertyInfo& p_hint) {
 }
 
 
-bool EditorSettings::is_plugin_enabled(const String& p_plugin) {
-
-	if (!has("_plugins/enabled"))
-		return false;
-
-	StringArray sa=get("_plugins/enabled");
-
-	for(int i=0;i<sa.size();i++) {
-
-		String plugin = sa[i];
-		if (!plugins.has(plugin))
-			continue;
-		if (plugin==p_plugin)
-			return true;
-	}
-
-	return false;
-
-}
-
-void EditorSettings::enable_plugins() {
-
-	// editor plugins
-	if (has("_plugins/enabled")) {
-	StringArray sa=get("_plugins/enabled");
-
-		for(int i=0;i<sa.size();i++) {
-
-			String plugin = sa[i];
-			if (!plugins.has(plugin))
-				continue;
-			if (plugins[plugin].installs)
-				continue; //not configured here
-			set_plugin_enabled(plugin,true);
-		}
-	}
-
-	// installed plugins
-	List<PropertyInfo> pi;
-	Globals::get_singleton()->get_property_list(&pi);
-	for (List<PropertyInfo>::Element *E=pi.front();E;E=E->next()) {
-
-		String p = E->get().name;
-
-		if (p.begins_with("plugins/")) {
-			load_installed_plugin(p.replace_first("plugins/",""));
-		}
-	}
-
-}
-
-void EditorSettings::load_installed_plugin(const String& p_plugin) {
-
-	ERR_FAIL_COND( !Globals::get_singleton()->has("plugins/"+p_plugin) );
-	String path = Globals::get_singleton()->get("plugins/"+p_plugin);
-
-	Plugin plugin;
-	Error err = _load_plugin(path.plus_file("plugin.cfg"),plugin);
-
-	if (err)
-		return;
-
-	print_line("installing plugin...");
-	EditorPlugin *ep=_load_plugin_editor(path.plus_file(plugin.script));
-	ERR_FAIL_COND(!ep);
-	print_line("load!");
-	EditorNode::add_editor_plugin(ep);
-
-}
 
 
-EditorPlugin *EditorSettings::_load_plugin_editor(const String& p_path) {
 
-	Ref<Script> script = ResourceLoader::load(p_path);
-	ERR_EXPLAIN("Invalid Script for plugin: "+p_path);
-	ERR_FAIL_COND_V(script.is_null(),NULL);
-	ERR_EXPLAIN("Script has errors: "+p_path);
-	ERR_FAIL_COND_V(!script->can_instance(),NULL);
-	ERR_EXPLAIN("Script does not inherit EditorPlugin: "+p_path);
-	ERR_FAIL_COND_V(script->get_instance_base_type().operator String()!="EditorPlugin",NULL);
-
-	EditorPlugin *ep = memnew( EditorPlugin );
-	ep->set_script(script.get_ref_ptr());
-	if (!ep->get_script_instance()) {
-		memdelete(ep);
-		ERR_EXPLAIN("Script could't load: "+p_path);
-		ERR_FAIL_V(NULL);
-	}
-
-
-	return ep;
-}
-
-void EditorSettings::set_plugin_enabled(const String& p_plugin, bool p_enabled) {
-
-	ERR_FAIL_COND(!plugins.has(p_plugin));
-	if (p_enabled == (plugins[p_plugin].instance!=NULL)) //already enabled or disabled
-		return;
-
-	print_line("REQUEST "+p_plugin+" to "+itos(p_enabled));
-	StringArray sa;
-	if (has("_plugins/enabled"))
-		sa=get("_plugins/enabled");
-
-	int idx=-1;
-	for(int i=0;i<sa.size();i++) {
-
-		if (sa[i]==p_plugin) {
-			idx=i;
-			break;
-		}
-	}
-
-	if (p_enabled) {
-
-
-		String ppath = get_settings_path().plus_file("plugins/"+p_plugin+"/"+plugins[p_plugin].script);
-		EditorPlugin *ep=_load_plugin_editor(ppath);
-		if (!ep)
-			return;
-		plugins[p_plugin].instance=ep;
-		EditorNode::add_editor_plugin(ep);
-
-		if (idx==-1)
-			sa.push_back(p_plugin);
-	} else {
-
-		print_line("DISABLING");
-		EditorNode::remove_editor_plugin(plugins[p_plugin].instance);
-		memdelete(plugins[p_plugin].instance);
-		plugins[p_plugin].instance=NULL;
-		if (idx!=-1)
-			sa.remove(idx);
-
-	}
-
-	if (sa.size()==0)
-		set("_plugins/enabled",Variant());
-	else
-		set("_plugins/enabled",sa);
-
-}
 
 void EditorSettings::set_favorite_dirs(const Vector<String>& p_favorites) {
 

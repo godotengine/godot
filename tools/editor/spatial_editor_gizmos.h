@@ -52,9 +52,9 @@
 
 class Camera;
 
-class SpatialGizmoTool  : public SpatialEditorGizmo {
+class EditorSpatialGizmo  : public SpatialEditorGizmo {
 
-	OBJ_TYPE(SpatialGizmoTool,SpatialGizmo);
+	OBJ_TYPE(EditorSpatialGizmo,SpatialGizmo);
 
 	struct Instance{
 
@@ -93,6 +93,8 @@ class SpatialGizmoTool  : public SpatialEditorGizmo {
 	Spatial *base;
 	Vector<Instance> instances;
 	Spatial *spatial_node;
+
+	void _set_spatial_node(Node *p_node) { set_spatial_node(p_node->cast_to<Spatial>()); }
 protected:
 	void add_lines(const Vector<Vector3> &p_lines,const Ref<Material>& p_material,bool p_billboard=false);
 	void add_mesh(const Ref<Mesh>& p_mesh,bool p_billboard=false,const RID& p_skeleton=RID());
@@ -103,6 +105,7 @@ protected:
 
 	void set_spatial_node(Spatial *p_node);
 
+	static void _bind_methods();
 public:
 
 	virtual Vector3 get_handle_pos(int p_idx) const;
@@ -112,18 +115,18 @@ public:
 	void clear();
 	void create();
 	void transform();
-	//void redraw();
+	virtual void redraw();
 	void free();
 
-	SpatialGizmoTool();
-	~SpatialGizmoTool();
+	EditorSpatialGizmo();
+	~EditorSpatialGizmo();
 };
 
 
 
-class LightSpatialGizmo  : public SpatialGizmoTool {
+class LightSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(LightSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(LightSpatialGizmo,EditorSpatialGizmo);
 
 	Light* light;
 
@@ -140,9 +143,9 @@ public:
 
 };
 
-class CameraSpatialGizmo  : public SpatialGizmoTool {
+class CameraSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(CameraSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(CameraSpatialGizmo,EditorSpatialGizmo);
 
 	Camera* camera;
 
@@ -161,9 +164,9 @@ public:
 
 
 
-class MeshInstanceSpatialGizmo  : public SpatialGizmoTool {
+class MeshInstanceSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(MeshInstanceSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(MeshInstanceSpatialGizmo,EditorSpatialGizmo);
 
 	MeshInstance* mesh;
 
@@ -174,9 +177,9 @@ public:
 
 };
 
-class Position3DSpatialGizmo  : public SpatialGizmoTool {
+class Position3DSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(Position3DSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(Position3DSpatialGizmo,EditorSpatialGizmo);
 
 	Position3D* p3d;
 
@@ -187,9 +190,9 @@ public:
 
 };
 
-class SkeletonSpatialGizmo  : public SpatialGizmoTool {
+class SkeletonSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(SkeletonSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(SkeletonSpatialGizmo,EditorSpatialGizmo);
 
 	Skeleton* skel;
 
@@ -203,9 +206,9 @@ public:
 
 
 
-class SpatialPlayerSpatialGizmo  : public SpatialGizmoTool {
+class SpatialPlayerSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(SpatialPlayerSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(SpatialPlayerSpatialGizmo,EditorSpatialGizmo);
 
 	SpatialPlayer* splayer;
 
@@ -218,9 +221,9 @@ public:
 
 
 
-class TestCubeSpatialGizmo  : public SpatialGizmoTool {
+class TestCubeSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(TestCubeSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(TestCubeSpatialGizmo,EditorSpatialGizmo);
 
 	TestCube* tc;
 
@@ -231,9 +234,9 @@ public:
 };
 
 
-class RoomSpatialGizmo  : public SpatialGizmoTool {
+class RoomSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(RoomSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(RoomSpatialGizmo,EditorSpatialGizmo);
 
 
 	struct _EdgeKey {
@@ -256,9 +259,9 @@ public:
 };
 
 
-class PortalSpatialGizmo  : public SpatialGizmoTool {
+class PortalSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(PortalSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(PortalSpatialGizmo,EditorSpatialGizmo);
 
 	Portal* portal;
 
@@ -270,9 +273,9 @@ public:
 };
 
 
-class VisibilityNotifierGizmo  : public SpatialGizmoTool {
+class VisibilityNotifierGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(VisibilityNotifierGizmo ,SpatialGizmoTool);
+	OBJ_TYPE(VisibilityNotifierGizmo ,EditorSpatialGizmo);
 
 
 	VisibilityNotifier* notifier;
@@ -291,9 +294,9 @@ public:
 
 
 
-class CollisionShapeSpatialGizmo  : public SpatialGizmoTool {
+class CollisionShapeSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(CollisionShapeSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(CollisionShapeSpatialGizmo,EditorSpatialGizmo);
 
 	CollisionShape* cs;
 
@@ -308,9 +311,9 @@ public:
 };
 
 
-class CollisionPolygonSpatialGizmo  : public SpatialGizmoTool {
+class CollisionPolygonSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(CollisionPolygonSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(CollisionPolygonSpatialGizmo,EditorSpatialGizmo);
 
 	CollisionPolygon* polygon;
 
@@ -322,9 +325,9 @@ public:
 };
 
 
-class RayCastSpatialGizmo  : public SpatialGizmoTool {
+class RayCastSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(RayCastSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(RayCastSpatialGizmo,EditorSpatialGizmo);
 
 	RayCast* raycast;
 
@@ -337,9 +340,9 @@ public:
 
 
 
-class VehicleWheelSpatialGizmo  : public SpatialGizmoTool {
+class VehicleWheelSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(VehicleWheelSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(VehicleWheelSpatialGizmo,EditorSpatialGizmo);
 
 	VehicleWheel* car_wheel;
 
@@ -351,9 +354,9 @@ public:
 };
 
 
-class NavigationMeshSpatialGizmo  : public SpatialGizmoTool {
+class NavigationMeshSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(NavigationMeshSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(NavigationMeshSpatialGizmo,EditorSpatialGizmo);
 
 
 	struct _EdgeKey {
@@ -376,9 +379,9 @@ public:
 };
 
 
-class PinJointSpatialGizmo  : public SpatialGizmoTool {
+class PinJointSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(PinJointSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(PinJointSpatialGizmo,EditorSpatialGizmo);
 
 	PinJoint* p3d;
 
@@ -390,9 +393,9 @@ public:
 };
 
 
-class HingeJointSpatialGizmo  : public SpatialGizmoTool {
+class HingeJointSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(HingeJointSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(HingeJointSpatialGizmo,EditorSpatialGizmo);
 
 	HingeJoint* p3d;
 
@@ -403,9 +406,9 @@ public:
 
 };
 
-class SliderJointSpatialGizmo  : public SpatialGizmoTool {
+class SliderJointSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(SliderJointSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(SliderJointSpatialGizmo,EditorSpatialGizmo);
 
 	SliderJoint* p3d;
 
@@ -416,9 +419,9 @@ public:
 
 };
 
-class ConeTwistJointSpatialGizmo  : public SpatialGizmoTool {
+class ConeTwistJointSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(ConeTwistJointSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(ConeTwistJointSpatialGizmo,EditorSpatialGizmo);
 
 	ConeTwistJoint* p3d;
 
@@ -430,9 +433,9 @@ public:
 };
 
 
-class Generic6DOFJointSpatialGizmo  : public SpatialGizmoTool {
+class Generic6DOFJointSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(Generic6DOFJointSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(Generic6DOFJointSpatialGizmo,EditorSpatialGizmo);
 
 	Generic6DOFJoint* p3d;
 

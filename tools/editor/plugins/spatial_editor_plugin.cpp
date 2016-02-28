@@ -3655,27 +3655,25 @@ void SpatialEditor::_request_gizmo(Object* p_obj) {
 	Spatial *sp=p_obj->cast_to<Spatial>();
 	if (!sp)
 		return;
-	if (editor->get_edited_scene() && (sp==editor->get_edited_scene() || sp->get_owner()==editor->get_edited_scene())) {
+	if (editor->get_edited_scene() && (sp==editor->get_edited_scene() || sp->get_owner()==editor->get_edited_scene() || editor->get_edited_scene()->is_editable_instance(sp->get_owner()))) {
 
-		Ref<SpatialEditorGizmo> seg = gizmos->get_gizmo(sp);
+		Ref<SpatialEditorGizmo> seg;
+
+		for(int i=0;i<EditorNode::get_singleton()->get_editor_data().get_editor_plugin_count();i++) {
+
+			seg = EditorNode::get_singleton()->get_editor_data().get_editor_plugin(i)->create_spatial_gizmo(sp);
+			if (seg.is_valid())
+				break;
+		}
+
+		if (!seg.is_valid()) {
+			seg = gizmos->get_gizmo(sp);
+		}
 
 		if (seg.is_valid()) {
 			sp->set_gizmo(seg);
 		}
 
-		for (List<EditorPlugin*>::Element *E=gizmo_plugins.front();E;E=E->next()) {
-
-			if (E->get()->create_spatial_gizmo(sp)) {
-
-				seg = sp->get_gizmo();
-				if (sp==selected && seg.is_valid()) {
-
-					seg->set_selected(true);
-					selected->update_gizmo();
-				}
-				return;
-			}
-		}
 
 		if (seg.is_valid() && sp==selected) {
 			seg->set_selected(true);
@@ -3683,7 +3681,6 @@ void SpatialEditor::_request_gizmo(Object* p_obj) {
 		}
 
 	}
-
 }
 
 void SpatialEditor::_toggle_maximize_view(Object* p_viewport) {

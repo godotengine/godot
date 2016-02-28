@@ -101,6 +101,19 @@ class EditorNode : public Node {
 
 	OBJ_TYPE( EditorNode, Node );
 
+public:
+	enum DockSlot {
+		DOCK_SLOT_LEFT_UL,
+		DOCK_SLOT_LEFT_BL,
+		DOCK_SLOT_LEFT_UR,
+		DOCK_SLOT_LEFT_BR,
+		DOCK_SLOT_RIGHT_UL,
+		DOCK_SLOT_RIGHT_BL,
+		DOCK_SLOT_RIGHT_UR,
+		DOCK_SLOT_RIGHT_BR,
+		DOCK_SLOT_MAX
+	};
+private:
 	enum {
 		HISTORY_SIZE=64
 	};
@@ -182,17 +195,6 @@ class EditorNode : public Node {
 		OBJECT_METHOD_BASE=500
 	};
 
-	enum DockSlot {
-		DOCK_SLOT_LEFT_UL,
-		DOCK_SLOT_LEFT_BL,
-		DOCK_SLOT_LEFT_UR,
-		DOCK_SLOT_LEFT_BR,
-		DOCK_SLOT_RIGHT_UL,
-		DOCK_SLOT_RIGHT_BL,
-		DOCK_SLOT_RIGHT_UR,
-		DOCK_SLOT_RIGHT_BR,
-		DOCK_SLOT_MAX
-	};
 
 
 	//Node *edited_scene; //scene being edited
@@ -479,6 +481,10 @@ class EditorNode : public Node {
 
 	Map<String,Ref<Texture> > icon_type_cache;
 
+	bool _initializing_addons;
+	Map<String,EditorPlugin*> plugin_addons;
+
+
 	static Ref<Texture> _file_dialog_get_icon(const String& p_path);
 	static void _file_dialog_register(FileDialog *p_dialog);
 	static void _file_dialog_unregister(FileDialog *p_dialog);
@@ -541,6 +547,8 @@ class EditorNode : public Node {
 	void _load_docks();
 	void _save_docks_to_config(Ref<ConfigFile> p_layout, const String& p_section);
 	void _load_docks_from_config(Ref<ConfigFile> p_layout, const String& p_section);
+	void _update_dock_slots_visibility();
+
 
 	void _update_layouts_menu();
 	void _layout_menu_option(int p_idx);
@@ -548,6 +556,9 @@ class EditorNode : public Node {
 	void _toggle_search_bar(bool p_pressed);
 	void _clear_search_box();
 	void _clear_undo_history();
+
+	void _update_addon_config();
+
 
 protected:
 	void _notification(int p_what);
@@ -570,9 +581,14 @@ public:
 	static void add_editor_plugin(EditorPlugin *p_editor);
 	static void remove_editor_plugin(EditorPlugin *p_editor);
 
+	void add_control_to_dock(DockSlot p_slot,Control* p_control);
+	void remove_control_from_dock(Control* p_control);
+
 	void add_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
 	void remove_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
 
+	void set_addon_plugin_enabled(const String& p_addon,bool p_enabled);
+	bool is_addon_plugin_enabled(const String &p_addon) const;
 
 	void edit_node(Node *p_node);
 	void edit_resource(const Ref<Resource>& p_resource);

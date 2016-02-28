@@ -32,9 +32,9 @@
 
 #include "tools/editor/spatial_editor_gizmos.h"
 #include "scene/3d/path.h"
-class PathSpatialGizmo  : public SpatialGizmoTool {
+class PathSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(PathSpatialGizmo,SpatialGizmoTool);
+	OBJ_TYPE(PathSpatialGizmo,EditorSpatialGizmo);
 
 	Path* path;
 	mutable Vector3 original;
@@ -83,7 +83,7 @@ public:
 	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event);
 
 //	virtual bool forward_input_event(const InputEvent& p_event) { return collision_polygon_editor->forward_input_event(p_event); }
-	virtual bool create_spatial_gizmo(Spatial* p_spatial);
+	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial* p_spatial);
 	virtual String get_name() const { return "Path"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);

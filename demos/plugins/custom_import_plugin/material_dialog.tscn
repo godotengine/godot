@@ -1,0 +1,111 @@
+[gd_scene load_steps=2 format=1]
+
+[ext_resource path="res://addons/custom_import_plugin/material_dialog.gd" type="Script" id=1]
+
+[node name="MaterialImport" type="ConfirmationDialog"]
+
+margin/right = 276.0
+margin/bottom = 154.0
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+popup/exclusive = false
+window/title = "Silly Material Import"
+dialog/hide_on_ok = true
+script/script = ExtResource( 1 )
+__meta__ = { "__editor_plugin_screen__":"Script" }
+
+[node name="src_file" type="LineEdit" parent="."]
+
+margin/left = 19.0
+margin/top = 6.0
+margin/right = 190.0
+margin/bottom = 29.0
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+text = ""
+max_length = 0
+editable = true
+secret = false
+
+[node name="src_browse" type="Button" parent="."]
+
+margin/left = 195.0
+margin/top = 7.0
+margin/right = 249.0
+margin/bottom = 29.0
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+toggle_mode = false
+text = "browse"
+flat = false
+
+[node name="dst_browse" type="Button" parent="."]
+
+margin/left = 195.0
+margin/top = 47.0
+margin/right = 249.0
+margin/bottom = 69.0
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+toggle_mode = false
+text = "browse"
+flat = false
+
+[node name="dst_file" type="LineEdit" parent="."]
+
+margin/left = 19.0
+margin/top = 46.0
+margin/right = 190.0
+margin/bottom = 69.0
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+text = ""
+max_length = 0
+editable = true
+secret = false
+
+[node name="use_red_anyway" type="CheckBox" parent="."]
+
+margin/left = 20.0
+margin/top = 84.0
+margin/right = 144.0
+margin/bottom = 106.0
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+toggle_mode = true
+text = "Use Red Anyway"
+flat = false
+align = 0
+
+[node name="error" type="AcceptDialog" parent="."]
+
+visibility/visible = false
+margin/right = 40.0
+margin/bottom = 40.0
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+popup/exclusive = false
+window/title = "Alert!"
+dialog/hide_on_ok = true
+
+[connection signal="confirmed" from="." to="." method="_on_MaterialImport_confirmed"]
+
+[connection signal="pressed" from="src_browse" to="." method="_on_src_browse_pressed"]
+
+[connection signal="pressed" from="dst_browse" to="." method="_on_dst_browse_pressed"]
+
+

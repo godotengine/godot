@@ -46,6 +46,10 @@ protected:
 
 	static void _bind_methods();
 
+	String _validate_source_path(const String& p_path);
+	String _expand_source_path(const String& p_path);
+
+
 public:
 
 

@@ -267,17 +267,15 @@ PathSpatialGizmo::PathSpatialGizmo(Path* p_path){
 
 }
 
-bool PathEditorPlugin::create_spatial_gizmo(Spatial* p_spatial) {
+Ref<SpatialEditorGizmo> PathEditorPlugin::create_spatial_gizmo(Spatial* p_spatial) {
+
 
 	if (p_spatial->cast_to<Path>()) {
 
-
-		Ref<PathSpatialGizmo> psg = memnew( PathSpatialGizmo(p_spatial->cast_to<Path>()));
-		p_spatial->set_gizmo(psg);
-		return true;
+		return memnew( PathSpatialGizmo(p_spatial->cast_to<Path>()));
 	}
 
-	return false;
+	return Ref<SpatialEditorGizmo>();
 }
 
 bool PathEditorPlugin::forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) {
@@ -538,7 +536,7 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 	path_thin_material->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 	path_thin_material->set_flag(Material::FLAG_UNSHADED,true);
 
-	SpatialEditor::get_singleton()->add_gizmo_plugin(this);
+//	SpatialEditor::get_singleton()->add_gizmo_plugin(this);
 
 	sep = memnew( VSeparator);
 	sep->hide();

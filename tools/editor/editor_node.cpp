@@ -2952,15 +2952,108 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor) {
 
 void EditorNode::add_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import) {
 
+	ERR_FAIL_COND( p_editor_import.is_null() );
 	editor_import_export->add_import_plugin(p_editor_import);
 	_rebuild_import_menu();
 }
 
 void EditorNode::remove_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import) {
+	ERR_FAIL_COND( p_editor_import.is_null() );
 
 	editor_import_export->remove_import_plugin(p_editor_import);
 	_rebuild_import_menu();
 }
+
+
+void EditorNode::_update_addon_config() {
+
+	if (_initializing_addons)
+		return;
+
+	Vector<String> enabled_addons;
+
+	for(Map<String,EditorPlugin*>::Element *E=plugin_addons.front();E;E=E->next()) {
+		enabled_addons.push_back(E->key());
+	}
+
+	if (enabled_addons.size()==0) {
+		Globals::get_singleton()->set("editor_plugins/enabled",Variant());
+		Globals::get_singleton()->set_persisting("editor_plugins/enabled",false);
+	} else {
+		Globals::get_singleton()->set("editor_plugins/enabled",enabled_addons);
+		Globals::get_singleton()->set_persisting("editor_plugins/enabled",true);
+	}
+
+	project_settings->queue_save();
+
+}
+
+void EditorNode::set_addon_plugin_enabled(const String& p_addon,bool p_enabled) {
+
+	ERR_FAIL_COND(p_enabled && plugin_addons.has(p_addon));
+	ERR_FAIL_COND(!p_enabled && !plugin_addons.has(p_addon));
+
+	if (!p_enabled) {
+
+		EditorPlugin *addon = plugin_addons[p_addon];
+		memdelete(addon); //bye
+		plugin_addons.erase(p_addon);
+		_update_addon_config();
+		return;
+	}
+
+
+	Ref<ConfigFile> cf;
+	cf.instance();
+	String addon_path = "res://addons/"+p_addon+"/plugin.cfg";
+	Error err = cf->load(addon_path);
+	if (err!=OK) {
+		show_warning("Unable to enable addon plugin at: '"+addon_path+"' parsing of config failed.");
+		return;
+	}
+
+	if (!cf->has_section_key("plugin","script")) {
+		show_warning("Unable to find script field for addon plugin at: 'res://addons/"+p_addon+"''.");
+		return;
+	}
+
+	String path = cf->get_value("plugin","script");
+	path="res://addons/"+p_addon+"/"+path;
+
+	Ref<Script> script = ResourceLoader::load(path);
+
+
+	if (script.is_null()) {
+		show_warning("Unable to load addon script from path: '"+path+"'.");
+		return;
+	}
+
+	//could check inheritance..
+	if (String(script->get_instance_base_type())!="EditorPlugin") {
+		show_warning("Unable to load addon script from path: '"+path+"' Base type is not EditorPlugin.");
+		return;
+	}
+
+	if (!script->is_tool()) {
+		show_warning("Unable to load addon script from path: '"+path+"' Script is does not support tool mode.");
+		return;
+	}
+
+	EditorPlugin *ep = memnew( EditorPlugin );
+	ep->set_script(script.get_ref_ptr());
+	plugin_addons[p_addon]=ep;
+	add_editor_plugin(ep);
+
+	_update_addon_config();
+
+
+}
+
+bool EditorNode::is_addon_plugin_enabled(const String& p_addon) const {
+
+	return plugin_addons.has(p_addon);
+}
+
 
 void EditorNode::_remove_edited_scene() {
 	int new_index = editor_data.get_edited_scene();
@@ -3955,9 +4048,9 @@ void EditorNode::register_editor_types() {
 	ObjectTypeDB::register_type<EditorScript>();
 	ObjectTypeDB::register_type<EditorSelection>();
 	ObjectTypeDB::register_type<EditorFileDialog>();
-	ObjectTypeDB::register_type<EditorImportExport>();
+	//ObjectTypeDB::register_type<EditorImportExport>();
 	ObjectTypeDB::register_type<EditorSettings>();
-	ObjectTypeDB::register_type<UndoRedo>();
+	ObjectTypeDB::register_type<EditorSpatialGizmo>();
 
 
 	//ObjectTypeDB::register_type<EditorImporter>();
@@ -4360,6 +4453,51 @@ void EditorNode::_load_docks() {
 
 }
 
+
+void EditorNode::_update_dock_slots_visibility() {
+
+	VSplitContainer*splits[DOCK_SLOT_MAX/2]={
+		left_l_vsplit,
+		left_r_vsplit,
+		right_l_vsplit,
+		right_r_vsplit,
+	};
+
+
+	HSplitContainer*h_splits[4]={
+		left_l_hsplit,
+		left_r_hsplit,
+		main_hsplit,
+		right_hsplit,
+	};
+
+	for(int i=0;i<DOCK_SLOT_MAX;i++) {
+
+		if (dock_slot[i]->get_tab_count())
+			dock_slot[i]->show();
+		else
+			dock_slot[i]->hide();
+
+	}
+
+
+	for(int i=0;i<DOCK_SLOT_MAX/2;i++) {
+		bool in_use = dock_slot[i*2+0]->get_tab_count() || dock_slot[i*2+1]->get_tab_count();
+		if (in_use)
+			splits[i]->show();
+		else
+			splits[i]->hide();
+	}
+
+	for(int i=0;i<DOCK_SLOT_MAX;i++) {
+
+		if (!dock_slot[i]->is_hidden() && dock_slot[i]->get_tab_count()) {
+			dock_slot[i]->set_current_tab(0);
+		}
+	}
+}
+
+
 void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String& p_section) {
 
 	for(int i=0;i<DOCK_SLOT_MAX;i++) {
@@ -4697,6 +4835,31 @@ void EditorNode::_bottom_panel_switch(bool p_enable,int p_idx) {
 	}
 }
 
+
+void EditorNode::add_control_to_dock(DockSlot p_slot,Control* p_control) {
+	ERR_FAIL_INDEX(p_slot,DOCK_SLOT_MAX);
+	dock_slot[p_slot]->add_child(p_control);
+	_update_dock_slots_visibility();
+
+}
+
+void EditorNode::remove_control_from_dock(Control* p_control) {
+
+	Control *dock=NULL;
+	for(int i=0;i<DOCK_SLOT_MAX;i++) {
+		if (p_control->get_parent()==dock_slot[i]) {
+			dock=dock_slot[i];
+			break;
+		}
+	}
+
+	ERR_EXPLAIN("Control was not in dock");
+	ERR_FAIL_COND(!dock);
+
+	dock->remove_child(p_control);
+	_update_dock_slots_visibility();
+}
+
 void EditorNode::_bind_methods() {
 
 
@@ -4787,6 +4950,7 @@ EditorNode::EditorNode() {
 	EditorHelp::generate_doc(); //before any editor classes are crated
 	SceneState::set_disable_placeholders(true);
 
+
 	InputDefault *id = Input::get_singleton()->cast_to<InputDefault>();
 
 	if (id) {
@@ -4802,6 +4966,7 @@ EditorNode::EditorNode() {
 	singleton=this;
 	last_checked_version=0;
 	changing_scene=false;
+	_initializing_addons=false;
 
 	FileAccess::set_backup_save(true);
 
@@ -6061,7 +6226,7 @@ EditorNode::EditorNode() {
 	}
 
 
-	EditorSettings::get_singleton()->enable_plugins();
+
 	Node::set_human_readable_collision_renaming(true);
 
 
@@ -6076,6 +6241,19 @@ EditorNode::EditorNode() {
 	editor_data.add_edited_scene(-1);
 	editor_data.set_edited_scene(0);
 	_update_scene_tabs();
+
+	{
+
+		_initializing_addons=true;
+		Vector<String> addons = Globals::get_singleton()->get("editor_plugins/enabled");
+
+		for(int i=0;i<addons.size();i++) {
+			set_addon_plugin_enabled(addons[i],true);
+		}
+		_initializing_addons=false;
+	}
+
+
 
 	_load_docks();
 

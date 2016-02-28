@@ -422,6 +422,14 @@ void EditorData::add_editor_plugin(EditorPlugin *p_plugin) {
 	editor_plugins.push_back(p_plugin);
 }
 
+int EditorData::get_editor_plugin_count() const {
+	return editor_plugins.size();
+}
+EditorPlugin *EditorData::get_editor_plugin(int p_idx) {
+
+	ERR_FAIL_INDEX_V(p_idx,editor_plugins.size(),NULL);
+	return editor_plugins[p_idx];
+}
 
 
 void EditorData::add_custom_type(const String& p_type, const String& p_inherits,const Ref<Script>& p_script,const Ref<Texture>& p_icon ) {
@@ -852,8 +860,8 @@ void EditorSelection::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_node_removed"),&EditorSelection::_node_removed);
 	ObjectTypeDB::bind_method(_MD("clear"),&EditorSelection::clear);
-	ObjectTypeDB::bind_method(_MD("add_node","node"),&EditorSelection::add_node);
-	ObjectTypeDB::bind_method(_MD("remove_node","node"),&EditorSelection::remove_node);
+	ObjectTypeDB::bind_method(_MD("add_node","node:Node"),&EditorSelection::add_node);
+	ObjectTypeDB::bind_method(_MD("remove_node","node:Node"),&EditorSelection::remove_node);
 	ObjectTypeDB::bind_method(_MD("get_selected_nodes"),&EditorSelection::_get_selected_nodes);
 	ADD_SIGNAL( MethodInfo("selection_changed") );
 

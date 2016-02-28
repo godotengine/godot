@@ -57,11 +57,12 @@ void EditorScenePostImport::_bind_methods() {
 
 }
 
-Error EditorScenePostImport::post_import(Node* p_scene) {
+Node *EditorScenePostImport::post_import(Node* p_scene) {
 
 	if (get_script_instance())
-		return Error(int(get_script_instance()->call("post_import",p_scene)));
-	return OK;
+		return get_script_instance()->call("post_import",p_scene);
+
+	return p_scene;
 }
 
 EditorScenePostImport::EditorScenePostImport() {
@@ -2748,8 +2749,8 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 
 	if (post_import_script.is_valid()) {
-		err = post_import_script->post_import(scene);
-		if (err) {
+		scene = post_import_script->post_import(scene);
+		if (!scene) {
 			EditorNode::add_io_error("Error running Post-Import script: '"+post_import_script_path);
 			return err;
 		}

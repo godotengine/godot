@@ -1123,35 +1123,87 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 	class_desc->push_indent(1);*/
 	int pos = 0;
 
+	String bbcode=p_bbcode.replace("\t"," ").replace("\r"," ").strip_edges();
+
+	//find double newlines, keep them
+	for(int i=0;i<bbcode.length();i++) {
+
+		//find valid newlines (double)
+		if (bbcode[i]=='\n') {
+			bool dnl=false;
+			int j=i+1;
+			for(;j<p_bbcode.length();j++) {
+				if (bbcode[j]==' ')
+					continue;
+				if (bbcode[j]=='\n') {
+					dnl=true;
+					break;
+				}
+				break;
+			}
+
+			if (dnl) {
+				bbcode[i]=0xFFFF;
+				i=j;
+			} else {
+				bbcode[i]=' ';
+				i=j-1;
+			}
+		}
+	}
+
+	//remove double spaces or spaces after newlines
+	for(int i=0;i<bbcode.length();i++) {
+
+		if (bbcode[i]==' ' || bbcode[i]==0xFFFF) {
+
+			for(int j=i+1;j<p_bbcode.length();j++) {
+				if (bbcode[j]==' ') {
+					bbcode.remove(j);
+					j--;
+					continue;
+				} else {
+					break;
+				}
+			}
+		}
+	}
+
+	//change newlines to double newlines
+
+	CharType dnls[2]={0xFFFF,0};
+	bbcode=bbcode.replace(dnls,"\n");
+
+
 	List<String> tag_stack;
 
-	while(pos < p_bbcode.length()) {
+	while(pos < bbcode.length()) {
 
 
-		int brk_pos = p_bbcode.find("[",pos);
+		int brk_pos = bbcode.find("[",pos);
 
 		if (brk_pos<0)
-			brk_pos=p_bbcode.length();
+			brk_pos=bbcode.length();
 
 		if (brk_pos > pos) {
-			class_desc->add_text(p_bbcode.substr(pos,brk_pos-pos));
+			class_desc->add_text(bbcode.substr(pos,brk_pos-pos));
 
 		}
 
-		if (brk_pos==p_bbcode.length())
+		if (brk_pos==bbcode.length())
 			break; //nothing else o add
 
-		int brk_end = p_bbcode.find("]",brk_pos+1);
+		int brk_end = bbcode.find("]",brk_pos+1);
 
 		if (brk_end==-1) {
 			//no close, add the rest
-			class_desc->add_text(p_bbcode.substr(brk_pos,p_bbcode.length()-brk_pos));
+			class_desc->add_text(bbcode.substr(brk_pos,bbcode.length()-brk_pos));
 
 			break;
 		}
 
 
-		String tag = p_bbcode.substr(brk_pos+1,brk_end-brk_pos-1);
+		String tag = bbcode.substr(brk_pos+1,brk_end-brk_pos-1);
 
 
 		if (tag.begins_with("/")) {
@@ -1234,10 +1286,10 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 		} else if (tag=="url") {
 
 			//use strikethrough (not supported underline instead)
-			int end=p_bbcode.find("[",brk_end);
+			int end=bbcode.find("[",brk_end);
 			if (end==-1)
-				end=p_bbcode.length();
-			String url = p_bbcode.substr(brk_end+1,end-brk_end-1);
+				end=bbcode.length();
+			String url = bbcode.substr(brk_end+1,end-brk_end-1);
 			class_desc->push_meta(url);
 
 			pos=brk_end+1;
@@ -1251,10 +1303,10 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 		} else if (tag=="img") {
 
 			//use strikethrough (not supported underline instead)
-			int end=p_bbcode.find("[",brk_end);
+			int end=bbcode.find("[",brk_end);
 			if (end==-1)
-				end=p_bbcode.length();
-			String image = p_bbcode.substr(brk_end+1,end-brk_end-1);
+				end=bbcode.length();
+			String image = bbcode.substr(brk_end+1,end-brk_end-1);
 
 			Ref<Texture> texture = ResourceLoader::load(base_path+"/"+image,"Texture");
 			if (texture.is_valid())

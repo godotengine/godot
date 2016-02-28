@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="2.0.rc1.custom_build" name="Engine Types">
+<doc version="2.0.stable.custom_build" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 	Built-in GDScript functions.
@@ -1476,6 +1476,8 @@
 		</constant>
 		<constant name="ERR_CANT_CREATE" value="20">
 		</constant>
+		<constant name="ERR_PARSE_ERROR" value="43">
+		</constant>
 		<constant name="ERROR_QUERY_FAILED" value="21">
 		</constant>
 		<constant name="ERR_ALREADY_IN_USE" value="22">
@@ -2227,7 +2229,7 @@
 			</argument>
 			<argument index="1" name="time" type="float">
 			</argument>
-			<argument index="2" name="key" type="var">
+			<argument index="2" name="key" type="Variant">
 			</argument>
 			<argument index="3" name="transition" type="float" default="1">
 			</argument>
@@ -2258,7 +2260,7 @@
 			</argument>
 			<argument index="1" name="key" type="int">
 			</argument>
-			<argument index="2" name="value" type="var">
+			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
 			Set the value of an existing key.
@@ -6118,7 +6120,7 @@
 			</description>
 		</method>
 		<method name="edit_set_state">
-			<argument index="0" name="state" type="var">
+			<argument index="0" name="state" type="Variant">
 			</argument>
 			<description>
 			Used for editing, returns an opaque value representing the transform state.
@@ -6608,7 +6610,7 @@
 		<method name="set_shader_param">
 			<argument index="0" name="param" type="String">
 			</argument>
-			<argument index="1" name="value" type="var">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -8059,7 +8061,7 @@
 			</argument>
 			<argument index="1" name="key" type="String">
 			</argument>
-			<argument index="2" name="value" type="var">
+			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -8069,7 +8071,7 @@
 			</argument>
 			<argument index="1" name="key" type="String">
 			</argument>
-			<argument index="2" name="default" type="var" default="NULL">
+			<argument index="2" name="default" type="Variant" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -8208,7 +8210,7 @@
 			</return>
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
-			<argument index="1" name="data" type="var">
+			<argument index="1" name="data" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -8216,7 +8218,7 @@
 		<method name="drop_data" qualifiers="virtual">
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
-			<argument index="1" name="data" type="var">
+			<argument index="1" name="data" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -8707,7 +8709,7 @@
 			</description>
 		</method>
 		<method name="force_drag">
-			<argument index="0" name="data" type="var">
+			<argument index="0" name="data" type="Variant">
 			</argument>
 			<argument index="1" name="preview" type="Object">
 			</argument>
@@ -9765,6 +9767,47 @@ Returns an empty String "" at the end of the list.
 	<constants>
 	</constants>
 </class>
+<class name="EditorExportPlugin" inherits="Reference" category="Core">
+	<brief_description>
+	Editor plugin to control the export process.
+	</brief_description>
+	<description>
+	This plugin is added into EditorImportExport and allows to modify
+	the behavior of the export process for individual files.
+	</description>
+	<methods>
+		<method name="custom_export" qualifiers="virtual">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="platform" type="EditorExportPlatform">
+			</argument>
+			<description>
+			This function is called for each file exported and
+			depending from the return value one of many things
+			might happen.
+			
+			1) If returned value is null, the file is exported
+			as is.
+			
+			2) If the returned value is a RawAray (array of
+			bytes), the content of that array becomes the new
+			file being exported.
+			
+			3) If the file must also change it's name when
+			exported, then a [Dictionary] must be returned with
+			two fields: 'name' with the new filename and 'data'
+			with a [RawArray] containing the raw contents of the
+			file. Even if the name is changed, the run-time will
+			redirect the old file to the new file automatically
+			when accessed.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="EditorFileDialog" inherits="ConfirmationDialog" category="Core">
 	<brief_description>
 	</brief_description>
@@ -9915,8 +9958,14 @@ Returns an empty String "" at the end of the list.
 </class>
 <class name="EditorImportPlugin" inherits="Reference" category="Core">
 	<brief_description>
+	Import plugin for editor
 	</brief_description>
 	<description>
+	Import plugins make it easy to handle importing of external assets
+	into a project. 
+	
+	They way they work is not that obvious though, so please make sure
+	to read the documentation, tutorials and examples.
 	</description>
 	<methods>
 		<method name="custom_export" qualifiers="virtual">
@@ -9924,19 +9973,35 @@ Returns an empty String "" at the end of the list.
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
+			<argument index="1" name="platform" type="EditorExportPlatform">
+			</argument>
 			<description>
+			Generally, files that are imported stay the same
+			when exported. The only exception is in some cases
+			when the file must be re-imported for different
+			platforms (ie. texture compression).
+			
+			If you want to customize the export process, it's
+			recommended to use [EditorExportPlugin.custom_export]
+			instead.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="virtual">
 			<return type="String">
 			</return>
 			<description>
+			Get the name of the import plugin, which will be
+			used to identify content imported by this plugin.
+			
+			Try to use lowecase and underscores if possible.
 			</description>
 		</method>
 		<method name="get_visible_name" qualifiers="virtual">
 			<return type="String">
 			</return>
 			<description>
+			Visible name for this plugin, which will be shown on
+			the import menu.
 			</description>
 		</method>
 		<method name="import" qualifiers="virtual">
@@ -9944,13 +10009,68 @@ Returns an empty String "" at the end of the list.
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="from" type="ResourceImportMetaData">
+			<argument index="1" name="from" type="ResourceImportMetadata">
 			</argument>
 			<description>
+			Perform an import of an external resources into the
+			project. This function is both called on import
+			(from the dialog) or re-import
+			(manual or automatic when external source files
+			changed).
+			
+			An import process generally works like this:
+			
+			1) Check the metadata for source files and options.
+			Metadata is either generated in the import dialog or
+			taken from an existing resource upon reimport.
+			
+			2) Perform the import process into a new resource.
+			Some times the resource being re-imported may be already loaded
+			and in use, so checking for this by using
+			[ResourceLoader.has] is recommended. Otherwise
+			create a new resource.
+			
+			3) Set the metadata from the argument into the existing or new
+			resource being created using
+			[Resource.set_import_metadata].
+			
+			4) Save the resource into 'path' (function argument)
 			</description>
 		</method>
 		<method name="import_dialog" qualifiers="virtual">
 			<argument index="0" name="from" type="String">
+			</argument>
+			<description>
+			This function is called when either the user chooses
+			to import a resource of this type (Import menu), or
+			when the user chooses to re-import the resource
+			(from filesystem). In the later case, the path for
+			the existing file is supplied in the argument.
+			
+			If the path is supplied, it is recommended to read
+			the import metadata with
+			[ResourceLoader.load_import_metadata] and fill in
+			the fields with the values contained there.
+			
+			The dialog can be shown in any way (just use a
+			ConfirmationDialog and pop it up). Upon
+			confirmation, fill up a ResourceImportMetadata and
+			call the [EditorImportPlugin.import] function with
+			this information.
+			</description>
+		</method>
+		<method name="validate_source_path">
+			<return type="String">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="expand_source_path">
+			<return type="String">
+			</return>
+			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
 			</description>
@@ -9961,22 +10081,52 @@ Returns an empty String "" at the end of the list.
 </class>
 <class name="EditorPlugin" inherits="Node" category="Core">
 	<brief_description>
+	Used by the editor to extend it's functionality.
 	</brief_description>
 	<description>
+	Plugins are used by the editor to extend functionality. The most
+	common types of plugins are those which edit a given node or
+	resource type, import plugins and export plugins.
 	</description>
 	<methods>
 		<method name="apply_changes" qualifiers="virtual">
 			<description>
+			This method is called when the editor is about to
+			save the project, switch to another tab, etc. It
+			asks the plugin to apply any pending state changes
+			to ensure consistency. 
+			
+			This is used, for example, in shader editors to let
+			the plugin know that it must apply the shader code
+			being written by the user to the object.
 			</description>
 		</method>
 		<method name="clear" qualifiers="virtual">
 			<description>
+			Clear all the state and reset the object being
+			edited to zero. This ensures your plugin does not
+			keep editing a currently existing node, or a node
+			fromt the wrong scene.
+			</description>
+		</method>
+		<method name="create_spatial_gizmo" qualifiers="virtual">
+			<return type="EditorSpatialGizmo">
+			</return>
+			<argument index="0" name="for_spatial" type="Spatial">
+			</argument>
+			<description>
+			This is used for plugins that create gizmos used by
+			the spatial editor. Just check that the node passed
+			in the "for_spatial" argument matches your plugin.
 			</description>
 		</method>
 		<method name="edit" qualifiers="virtual">
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<description>
+			This function is used for plugins that edit specific
+			object types (nodes or resources). It requests the
+			editor to edit the given object.
 			</description>
 		</method>
 		<method name="forward_input_event" qualifiers="virtual">
@@ -9985,6 +10135,13 @@ Returns an empty String "" at the end of the list.
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
+			This is a low level function for plugins that edit a given
+			object type derived from CanvasItem to capture the input in the 2D editor
+			viewport. The function is only being called if your
+			object is being edited.
+			
+			Return true if you want to capture the input,
+			otherwise false.
 			</description>
 		</method>
 		<method name="forward_spatial_input_event" qualifiers="virtual">
@@ -9995,24 +10152,45 @@ Returns an empty String "" at the end of the list.
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<description>
+			This is a low level function for plugins that edit a
+			given objet type derived from Spatial to capture the
+			input of the viewport. The function is only being
+			called if your object is being edited.
+			
+			By using the [InputEvent] and the [Camera] arguments
+			it's pretty easy to do raycasts into space using
+			Camera functions.
+			
+			Return true if you want to capture the input,
+			otherwise false.
 			</description>
 		</method>
 		<method name="get_breakpoints" qualifiers="virtual">
 			<return type="StringArray">
 			</return>
 			<description>
+			This is for editors that edit script based objects.
+			You can return a list of breakpoints in the format
+			(script:line), for example: res://path_to_script.gd:25
 			</description>
 		</method>
 		<method name="get_name" qualifiers="virtual">
 			<return type="String">
 			</return>
 			<description>
+			Get the name of the editor plugin. For main scren
+			plugins this is what will appear in the selector
+			(which by default is 2D, 3D, Script).
 			</description>
 		</method>
 		<method name="get_state" qualifiers="virtual">
 			<return type="Dictionary">
 			</return>
 			<description>
+			Get the state of your plugin editor. This is used
+			when saving the scene (so state is kept when opening
+			it again) and for switching tabs (so state can be
+			restored when the tab returns).
 			</description>
 		</method>
 		<method name="handles" qualifiers="virtual">
@@ -10021,38 +10199,102 @@ Returns an empty String "" at the end of the list.
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<description>
+			Implement this function if your plugin edits a
+			specific type of object (Resource or Node). If you
+			return true, then you will get the functions
+			[EditorPlugin.edit] and [EditorPlugin.make_visible]
+			called when the editor requests them.
 			</description>
 		</method>
 		<method name="has_main_screen" qualifiers="virtual">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if this is a main screen editor plugin
+			(it goes in the main screen selector together with
+			2D, 3D, Script).
 			</description>
 		</method>
 		<method name="make_visible" qualifiers="virtual">
 			<argument index="0" name="visible" type="bool">
 			</argument>
 			<description>
+			This function will be called when the editor is
+			requested to become visible. It is used for plugins
+			that edit a specific object type.
+			
+			Remember that you have to manage the visibility of
+			all your editor controls manually.
 			</description>
 		</method>
 		<method name="set_state" qualifiers="virtual">
 			<argument index="0" name="state" type="Dictionary">
 			</argument>
 			<description>
+			Restore the state saved by [EditorPlugin.get_state].
 			</description>
 		</method>
-		<method name="get_undo_redo">
-			<return type="Object">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="add_custom_control">
+		<method name="add_control_to_container">
 			<argument index="0" name="container" type="int">
 			</argument>
-			<argument index="1" name="control" type="Object">
+			<argument index="1" name="control" type="Control">
 			</argument>
 			<description>
+			Add a custom control to a container (see
+			CONTAINER_* enum). There are many locations where
+			custom controls can be added in the editor UI.
+			
+			Please remember that you have to manage the
+			visibility of your custom controls yourself (and likely
+			hide it after adding it).
+			
+			If your plugin is being removed, also make sure to
+			remove your custom controls too.
+			</description>
+		</method>
+		<method name="add_control_to_bottom_dock">
+			<argument index="0" name="control" type="Control">
+			</argument>
+			<argument index="1" name="title" type="String">
+			</argument>
+			<description>
+			Add a control to the bottom dock (together with
+			Output, Debug, Animation, etc).
+			
+			Please remember that you have to manage the
+			visibility of your custom controls yourself (and likely
+			hide it after adding it).
+			
+			If your plugin is being removed, also make sure to
+			remove your custom controls too.
+			</description>
+		</method>
+		<method name="add_control_to_dock">
+			<argument index="0" name="slot" type="int">
+			</argument>
+			<argument index="1" name="control" type="Control">
+			</argument>
+			<description>
+			Add the control to a specific dock slot (see DOCK_*
+			enum for options). 
+			
+			If the dock is repositioned and as long as the
+			plugin is active, the editor will save the dock
+			position on further sessions.
+			
+			If your plugin is being removed, also make sure to
+			remove your control by calling [method
+			remove_control_from_docks].
+			
+			</description>
+		</method>
+		<method name="remove_control_from_docks">
+			<argument index="0" name="control" type="Control">
+			</argument>
+			<description>
+			Remove the control from the dock. Don't forget to
+			call this if you added one, so the editor can save
+			the layout and remove it cleanly.
 			</description>
 		</method>
 		<method name="add_custom_type">
@@ -10065,12 +10307,102 @@ Returns an empty String "" at the end of the list.
 			<argument index="3" name="icon" type="Texture">
 			</argument>
 			<description>
+			Add a custom type, which will appear in the list of
+			nodes or resources. An icon can be optionally
+			passed.
+			
+			When given node or resource is selected, the base
+			type will be instanced (ie, "Spatial", "Control",
+			"Resource"), then the script will be loaded and set
+			to this object.
+			
+			You can use the [EditorPlugin.handles] to check if
+			your custom object is being edited by checking the
+			script or using 'extends' keyword.			
+			
+			During run-time, this will be a simple object with a
+			script so this function does not need to be called
+			then.
 			</description>
 		</method>
 		<method name="remove_custom_type">
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
+			Remove a custom type added by
+			[EditorPlugin.add_custom_type]
+			</description>
+		</method>
+		<method name="add_import_plugin">
+			<argument index="0" name="plugin" type="EditorImportPlugin">
+			</argument>
+			<description>
+			Add an import plugin. These plugins manage importing
+			external content (from outside the project) into
+			formats the engine can understand.
+			
+			On exit, don't forget to remove the plugin by
+			calling [method remove_import_plugin]
+			</description>
+		</method>
+		<method name="remove_import_plugin">
+			<argument index="0" name="plugin" type="EditorImportPlugin">
+			</argument>
+			<description>
+			Remove the import plugin, don't forget to call this
+			on exit.
+			</description>
+		</method>
+		<method name="add_export_plugin">
+			<argument index="0" name="plugin" type="EditorExportPlugin">
+			</argument>
+			<description>
+			Add an export plugin. Plugins of this kind can
+			change files being exported. On exit don't forget to
+			call [method remove_export_plugin].
+			</description>
+		</method>
+		<method name="remove_export_plugin">
+			<argument index="0" name="plugin" type="EditorExportPlugin">
+			</argument>
+			<description>
+			Remove the export plugin, don't forget to call this
+			on exit.
+			</description>
+		</method>
+		<method name="get_base_control">
+			<return type="Control">
+			</return>
+			<description>
+			Get a base control where it's safe to place dialogs.
+			Many plugins open dialogs and they need a control as
+			a base to make sure they use the editor icons and
+			theme.
+			</description>
+		</method>
+		<method name="get_undo_redo">
+			<return type="UndoRedo">
+			</return>
+			<description>
+			Get the undo/redo object. Most actions in the editor
+			can be undoable, so use this object to make sure
+			this happens when it's worth it.
+			</description>
+		</method>
+		<method name="get_selection">
+			<return type="EditorSelection">
+			</return>
+			<description>
+			Get the object that handles the selection of nodes
+			in the Scene Tree editor.
+			</description>
+		</method>
+		<method name="get_editor_settings">
+			<return type="EditorSettings">
+			</return>
+			<description>
+			Get the general settings for the editor (the same
+			window that appears in the Settings menu).
 			</description>
 		</method>
 	</methods>
@@ -10087,18 +10419,45 @@ Returns an empty String "" at the end of the list.
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_SIDE" value="5">
 		</constant>
+		<constant name="DOCK_SLOT_LEFT_UL" value="0">
+		</constant>
+		<constant name="DOCK_SLOT_LEFT_BL" value="1">
+		</constant>
+		<constant name="DOCK_SLOT_LEFT_UR" value="2">
+		</constant>
+		<constant name="DOCK_SLOT_LEFT_BR" value="3">
+		</constant>
+		<constant name="DOCK_SLOT_RIGHT_UL" value="4">
+		</constant>
+		<constant name="DOCK_SLOT_RIGHT_BL" value="5">
+		</constant>
+		<constant name="DOCK_SLOT_RIGHT_UR" value="6">
+		</constant>
+		<constant name="DOCK_SLOT_RIGHT_BR" value="7">
+		</constant>
+		<constant name="DOCK_SLOT_MAX" value="8">
+		</constant>
 	</constants>
 </class>
 <class name="EditorScenePostImport" inherits="Reference" category="Core">
 	<brief_description>
+	Base script for post-processing scenes being imported.
 	</brief_description>
 	<description>
+	These scripts can modify scenes after being imported by the 3D Scene
+	import option of the Import menu.
 	</description>
 	<methods>
 		<method name="post_import" qualifiers="virtual">
 			<argument index="0" name="scene" type="Object">
 			</argument>
 			<description>
+			This function is called upon import with the
+			imported scene.
+			
+			Just do any changes desired to the scene and return
+			it. If null is returned, import will fail and throw
+			an error to the user.
 			</description>
 		</method>
 	</methods>
@@ -10107,8 +10466,10 @@ Returns an empty String "" at the end of the list.
 </class>
 <class name="EditorScript" inherits="Reference" category="Core">
 	<brief_description>
+	Simple script to perform changes in the currently edited scene.
 	</brief_description>
 	<description>
+	This script can be run from the Scene -&gt; Run Script menu option.
 	</description>
 	<methods>
 		<method name="_run" qualifiers="virtual">
@@ -10125,6 +10486,300 @@ Returns an empty String "" at the end of the list.
 			<return type="Object">
 			</return>
 			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="EditorSelection" inherits="Object" category="Core">
+	<brief_description>
+	Manages the SceneTree selection in the editor.
+	</brief_description>
+	<description>
+	This object manages the SceneTree selection in the editor.
+	</description>
+	<methods>
+		<method name="clear">
+			<description>
+			Clear the selection.
+			</description>
+		</method>
+		<method name="add_node">
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+			Add a node to the selection.
+			</description>
+		</method>
+		<method name="remove_node">
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+			Remove a node from the selection.
+			</description>
+		</method>
+		<method name="get_selected_nodes">
+			<return type="Array">
+			</return>
+			<description>
+			Get the list of selectes nodes.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="selection_changed">
+			<description>
+			Emitted when the selection changes.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>
+<class name="EditorSettings" inherits="Resource" category="Core">
+	<brief_description>
+	Object that holds the project-independent editor settings.
+	</brief_description>
+	<description>
+	Object that holds the project-independent editor settings. These
+	settings are generally visible in the Editor Settings menu.
+	
+	Accessing the settings is done by using the regular [Object] API,
+	such as.
+	
+	settings.set(prop,value)
+	
+	settings.get(prop)
+	
+	list_of_settings = settings.get_property_list()
+	</description>
+	<methods>
+		<method name="erase">
+			<argument index="0" name="property" type="String">
+			</argument>
+			<description>
+			Erase a given setting (pass full property path).
+			</description>
+		</method>
+		<method name="get_settings_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			Get the global settings path for the engine. Inside
+			this path you can find some standard paths such as:
+			
+			settings/tmp - used for temporary storage of files
+			
+			settings/templates - where export templates are
+			located
+			</description>
+		</method>
+		<method name="get_project_settings_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			Get the specific project settings path. Projects all
+			have an unique sub-directory inside the settings
+			path where project specific settings are saved.
+			</description>
+		</method>
+		<method name="set_favorite_dirs">
+			<argument index="0" name="dirs" type="StringArray">
+			</argument>
+			<description>
+			Set the list of favorite directories for this
+			project.
+			</description>
+		</method>
+		<method name="get_favorite_dirs" qualifiers="const">
+			<return type="StringArray">
+			</return>
+			<description>
+			Get the list of favorite directories for this
+			project.
+			</description>
+		</method>
+		<method name="set_recent_dirs">
+			<argument index="0" name="dirs" type="StringArray">
+			</argument>
+			<description>
+			Set the list of recently visited folders in the file
+			dialog for this project.
+			</description>
+		</method>
+		<method name="get_recent_dirs" qualifiers="const">
+			<return type="StringArray">
+			</return>
+			<description>
+			Get the list of recently visited folders in the file
+			dialog for this project.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="settings_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>
+<class name="EditorSpatialGizmo" inherits="SpatialGizmo" category="Core">
+	<brief_description>
+	Custom gizmo for editing Spatial objects.
+	</brief_description>
+	<description>
+	Custom gizmo that is used for providing custom visualization and
+	editing (handles) for 3D Spatial objects. These are created by
+	[method EditorPlugin.create_spatial_gizmo].
+	</description>
+	<methods>
+		<method name="commit_handle" qualifiers="virtual">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="restore" type="Variant">
+			</argument>
+			<argument index="2" name="cancel" type="bool">
+			</argument>
+			<description>
+			Commit a handle being edited (handles must have been
+			prevously added by [method add_handles]).
+			
+			If the cancel parameter is true, an option to
+			restore the edited value to the original is
+			provided.
+			</description>
+		</method>
+		<method name="get_handle_name" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			Get the name of an edited handle (handles must have
+			been previously added by [method add_handles]).
+			
+			Handles can be named for reference to the user when editing.
+			</description>
+		</method>
+		<method name="get_handle_value" qualifiers="virtual">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			Get actual value of a handle. This value can be
+			anything and used for eventually undoing the motion
+			when calling [method commit_handle]
+			</description>
+		</method>
+		<method name="redraw" qualifiers="virtual">
+			<description>
+			This function is called when the Spatial this gizmo
+			refers to changes (the [method Spatial.update_gizmo]
+			is called).
+			</description>
+		</method>
+		<method name="set_handle" qualifiers="virtual">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="camera" type="Camera">
+			</argument>
+			<argument index="2" name="point" type="Vector2">
+			</argument>
+			<description>
+			This function is used when the user drags a gizmo
+			handle (previously added with [method add_handles])
+			in screen coordinates. 
+			
+			The [Camera] is also provided
+			so screen coordinates can be converted to raycasts.
+			</description>
+		</method>
+		<method name="add_lines">
+			<argument index="0" name="lines" type="Vector3Array">
+			</argument>
+			<argument index="1" name="material" type="Material">
+			</argument>
+			<argument index="2" name="billboard" type="bool" default="false">
+			</argument>
+			<description>
+			Add lines to the gizmo (as sets of 2 points), with a
+			given material. The lines are used for visualizing
+			the gizmo.
+			
+			Call this function during [method redraw].
+			</description>
+		</method>
+		<method name="add_mesh">
+			<argument index="0" name="mesh" type="Mesh">
+			</argument>
+			<argument index="1" name="billboard" type="bool" default="false">
+			</argument>
+			<argument index="2" name="skeleton" type="RID" default="RID()">
+			</argument>
+			<description>
+			Add a mesh to the gizmo, this is used for
+			visualization.
+			
+			Call this function during [method redraw].
+			</description>
+		</method>
+		<method name="add_collision_segments">
+			<argument index="0" name="segments" type="Vector3Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_collision_triangles">
+			<argument index="0" name="triangles" type="TriangleMesh">
+			</argument>
+			<description>
+			Add collision triangles to the gizmo for picking. A
+			[TriangleMesh] can be generated from a regular
+			[Mesh] too.
+			
+			Call this function during [method redraw].
+			</description>
+		</method>
+		<method name="add_unscaled_billboard">
+			<argument index="0" name="material" type="Material">
+			</argument>
+			<argument index="1" name="default_scale" type="float" default="1">
+			</argument>
+			<description>
+			Add an unscaled billboard for visualization.
+			
+			Call this function during [method redraw].
+			</description>
+		</method>
+		<method name="add_handles">
+			<argument index="0" name="handles" type="Vector3Array">
+			</argument>
+			<argument index="1" name="billboard" type="bool" default="false">
+			</argument>
+			<argument index="2" name="secondary" type="bool" default="false">
+			</argument>
+			<description>
+			Add a list of handles (points) which can be used to
+			deform the object being edited.
+			
+			There are virtual functions which will be called
+			upon editing of these handles.
+			
+			Call this function during [method redraw].
+			</description>
+		</method>
+		<method name="set_spatial_node">
+			<argument index="0" name="node" type="Spatial">
+			</argument>
+			<description>
+			Call this function once and upon creation of the
+			gizmo, otherwise no other function will work.
+			
+			The argument is the node being edited by the gizmo.
 			</description>
 		</method>
 	</methods>
@@ -10152,7 +10807,7 @@ Returns an empty String "" at the end of the list.
 		<method name="set_background_param">
 			<argument index="0" name="param" type="int">
 			</argument>
-			<argument index="1" name="value" type="var">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -10182,7 +10837,7 @@ Returns an empty String "" at the end of the list.
 		<method name="fx_set_param">
 			<argument index="0" name="param" type="int">
 			</argument>
-			<argument index="1" name="value" type="var">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -10782,7 +11437,7 @@ Returns an empty String "" at the end of the list.
 			</description>
 		</method>
 		<method name="store_var">
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -10988,7 +11643,7 @@ Returns an empty String "" at the end of the list.
 		<method name="set_parameter">
 			<argument index="0" name="param" type="int">
 			</argument>
-			<argument index="1" name="value" type="var">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
 			Set a parameter, parameters are defined in the PARAM_* enum. The type of each parameter may change, so it's best to check the enum.
@@ -11349,25 +12004,25 @@ Returns an empty String "" at the end of the list.
 	</description>
 	<methods>
 		<method name="call_func">
-			<argument index="0" name="arg0" type="var" default="NULL">
+			<argument index="0" name="arg0" type="Variant" default="NULL">
 			</argument>
-			<argument index="1" name="arg1" type="var" default="NULL">
+			<argument index="1" name="arg1" type="Variant" default="NULL">
 			</argument>
-			<argument index="2" name="arg2" type="var" default="NULL">
+			<argument index="2" name="arg2" type="Variant" default="NULL">
 			</argument>
-			<argument index="3" name="arg3" type="var" default="NULL">
+			<argument index="3" name="arg3" type="Variant" default="NULL">
 			</argument>
-			<argument index="4" name="arg4" type="var" default="NULL">
+			<argument index="4" name="arg4" type="Variant" default="NULL">
 			</argument>
-			<argument index="5" name="arg5" type="var" default="NULL">
+			<argument index="5" name="arg5" type="Variant" default="NULL">
 			</argument>
-			<argument index="6" name="arg6" type="var" default="NULL">
+			<argument index="6" name="arg6" type="Variant" default="NULL">
 			</argument>
-			<argument index="7" name="arg7" type="var" default="NULL">
+			<argument index="7" name="arg7" type="Variant" default="NULL">
 			</argument>
-			<argument index="8" name="arg8" type="var" default="NULL">
+			<argument index="8" name="arg8" type="Variant" default="NULL">
 			</argument>
-			<argument index="9" name="arg9" type="var" default="NULL">
+			<argument index="9" name="arg9" type="Variant" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -11397,7 +12052,7 @@ Returns an empty String "" at the end of the list.
 		<method name="resume">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="arg" type="var" default="NULL">
+			<argument index="0" name="arg" type="Variant" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -15139,7 +15794,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="set_item_metadata">
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="metadata" type="var">
+			<argument index="1" name="metadata" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -16744,7 +17399,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="variant_to_base64">
 			<return type="String">
 			</return>
-			<argument index="0" name="variant" type="var">
+			<argument index="0" name="variant" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -17722,7 +18377,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="set_vertex_meta">
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="meta" type="var">
+			<argument index="1" name="meta" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -17770,7 +18425,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="set_edge_meta">
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="meta" type="var">
+			<argument index="1" name="meta" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -17804,7 +18459,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="set_face_meta">
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="meta" type="var">
+			<argument index="1" name="meta" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -20219,7 +20874,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="_set" qualifiers="virtual">
 			<argument index="0" name="property" type="String">
 			</argument>
-			<argument index="1" name="value" type="var">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
 			Set a property. Return true if the property was found.
@@ -20248,7 +20903,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="set">
 			<argument index="0" name="property" type="String">
 			</argument>
-			<argument index="1" name="value" type="var">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
 			Set property into the object.
@@ -20307,7 +20962,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="set_meta">
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="value" type="var">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
 			Set a metadata into the object. Metadata is serialized. Metadata can be [i]anything[/i].
@@ -20356,15 +21011,15 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="emit_signal">
 			<argument index="0" name="signal" type="String">
 			</argument>
-			<argument index="1" name="arg0" type="var" default="NULL">
+			<argument index="1" name="arg0" type="Variant" default="NULL">
 			</argument>
-			<argument index="2" name="arg1" type="var" default="NULL">
+			<argument index="2" name="arg1" type="Variant" default="NULL">
 			</argument>
-			<argument index="3" name="arg2" type="var" default="NULL">
+			<argument index="3" name="arg2" type="Variant" default="NULL">
 			</argument>
-			<argument index="4" name="arg3" type="var" default="NULL">
+			<argument index="4" name="arg3" type="Variant" default="NULL">
 			</argument>
-			<argument index="5" name="arg4" type="var" default="NULL">
+			<argument index="5" name="arg4" type="Variant" default="NULL">
 			</argument>
 			<description>
 			Emit a signal. Arguments are passed in an array.
@@ -20373,25 +21028,25 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="call">
 			<argument index="0" name="method" type="String">
 			</argument>
-			<argument index="1" name="arg0" type="var" default="NULL">
+			<argument index="1" name="arg0" type="Variant" default="NULL">
 			</argument>
-			<argument index="2" name="arg1" type="var" default="NULL">
+			<argument index="2" name="arg1" type="Variant" default="NULL">
 			</argument>
-			<argument index="3" name="arg2" type="var" default="NULL">
+			<argument index="3" name="arg2" type="Variant" default="NULL">
 			</argument>
-			<argument index="4" name="arg3" type="var" default="NULL">
+			<argument index="4" name="arg3" type="Variant" default="NULL">
 			</argument>
-			<argument index="5" name="arg4" type="var" default="NULL">
+			<argument index="5" name="arg4" type="Variant" default="NULL">
 			</argument>
-			<argument index="6" name="arg5" type="var" default="NULL">
+			<argument index="6" name="arg5" type="Variant" default="NULL">
 			</argument>
-			<argument index="7" name="arg6" type="var" default="NULL">
+			<argument index="7" name="arg6" type="Variant" default="NULL">
 			</argument>
-			<argument index="8" name="arg7" type="var" default="NULL">
+			<argument index="8" name="arg7" type="Variant" default="NULL">
 			</argument>
-			<argument index="9" name="arg8" type="var" default="NULL">
+			<argument index="9" name="arg8" type="Variant" default="NULL">
 			</argument>
-			<argument index="10" name="arg9" type="var" default="NULL">
+			<argument index="10" name="arg9" type="Variant" default="NULL">
 			</argument>
 			<description>
 			Call a function in the object, result is returned.
@@ -20400,15 +21055,15 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="call_deferred">
 			<argument index="0" name="method" type="String">
 			</argument>
-			<argument index="1" name="arg0" type="var" default="NULL">
+			<argument index="1" name="arg0" type="Variant" default="NULL">
 			</argument>
-			<argument index="2" name="arg1" type="var" default="NULL">
+			<argument index="2" name="arg1" type="Variant" default="NULL">
 			</argument>
-			<argument index="3" name="arg2" type="var" default="NULL">
+			<argument index="3" name="arg2" type="Variant" default="NULL">
 			</argument>
-			<argument index="4" name="arg3" type="var" default="NULL">
+			<argument index="4" name="arg3" type="Variant" default="NULL">
 			</argument>
-			<argument index="5" name="arg4" type="var" default="NULL">
+			<argument index="5" name="arg4" type="Variant" default="NULL">
 			</argument>
 			<description>
 			Create and store a function in the object. The call will take place on idle time.
@@ -20699,7 +21354,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="set_item_metadata">
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="metadata" type="var">
+			<argument index="1" name="metadata" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -20898,7 +21553,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="pack">
 			<return type="Error">
 			</return>
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -22795,7 +23450,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="shape_set_data">
 			<argument index="0" name="shape" type="RID">
 			</argument>
-			<argument index="1" name="data" type="var">
+			<argument index="1" name="data" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -22995,7 +23650,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="param" type="int">
 			</argument>
-			<argument index="2" name="value" type="var">
+			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -23127,7 +23782,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
-			<argument index="2" name="metadata" type="var">
+			<argument index="2" name="metadata" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -23291,7 +23946,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="state" type="int">
 			</argument>
-			<argument index="2" name="value" type="var">
+			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -23409,7 +24064,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="2" name="method" type="String">
 			</argument>
-			<argument index="3" name="userdata" type="var" default="NULL">
+			<argument index="3" name="userdata" type="Variant" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -24328,7 +24983,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="shape_set_data">
 			<argument index="0" name="shape" type="RID">
 			</argument>
-			<argument index="1" name="data" type="var">
+			<argument index="1" name="data" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -24512,7 +25167,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="param" type="int">
 			</argument>
-			<argument index="2" name="value" type="var">
+			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -24754,7 +25409,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="state" type="int">
 			</argument>
-			<argument index="2" name="value" type="var">
+			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -24856,7 +25511,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="2" name="method" type="String">
 			</argument>
-			<argument index="3" name="userdata" type="var" default="NULL">
+			<argument index="3" name="userdata" type="Variant" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -26149,7 +26804,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="set_item_metadata">
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="metadata" type="var">
+			<argument index="1" name="metadata" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -26536,7 +27191,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="broadcast">
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="parameters" type="var">
+			<argument index="1" name="parameters" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -27766,7 +28421,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="set_option">
 			<argument index="0" name="key" type="String">
 			</argument>
-			<argument index="1" name="value" type="var">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -27860,6 +28515,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
 			</argument>
 			<argument index="2" name="p_no_cache" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="load_import_metadata">
+			<return type="ResourceImportMetadata">
+			</return>
+			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
 			</description>
@@ -28063,7 +28726,7 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="push_meta">
-			<argument index="0" name="data" type="var">
+			<argument index="0" name="data" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -29909,6 +30572,22 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="is_node_instance_placeholder" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_instance_placeholder" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_node_instance" qualifiers="const">
 			<return type="PackedScene">
 			</return>
@@ -30032,7 +30711,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="2" name="property" type="String">
 			</argument>
-			<argument index="3" name="value" type="var">
+			<argument index="3" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -30168,15 +30847,15 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="2" name="method" type="String">
 			</argument>
-			<argument index="3" name="arg0" type="var" default="NULL">
+			<argument index="3" name="arg0" type="Variant" default="NULL">
 			</argument>
-			<argument index="4" name="arg1" type="var" default="NULL">
+			<argument index="4" name="arg1" type="Variant" default="NULL">
 			</argument>
-			<argument index="5" name="arg2" type="var" default="NULL">
+			<argument index="5" name="arg2" type="Variant" default="NULL">
 			</argument>
-			<argument index="6" name="arg3" type="var" default="NULL">
+			<argument index="6" name="arg3" type="Variant" default="NULL">
 			</argument>
-			<argument index="7" name="arg4" type="var" default="NULL">
+			<argument index="7" name="arg4" type="Variant" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -30628,7 +31307,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="2" name="param_id" type="int">
 			</argument>
-			<argument index="3" name="value" type="var">
+			<argument index="3" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -31180,7 +31859,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="id" type="int">
 			</argument>
-			<argument index="2" name="state" type="var">
+			<argument index="2" name="state" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -32210,6 +32889,16 @@ This method controls whether the position between two cached points is interpola
 		</constant>
 		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="43">
 		</constant>
+	</constants>
+</class>
+<class name="SpatialGizmo" inherits="Reference" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+	</methods>
+	<constants>
 	</constants>
 </class>
 <class name="SpatialPlayer" inherits="Spatial" category="Core">
@@ -36082,7 +36771,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="method" type="String">
 			</argument>
-			<argument index="2" name="userdata" type="var" default="NULL">
+			<argument index="2" name="userdata" type="Variant" default="NULL">
 			</argument>
 			<argument index="3" name="priority" type="int" default="1">
 			</argument>
@@ -37704,7 +38393,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="set_metadata">
 			<argument index="0" name="column" type="int">
 			</argument>
-			<argument index="1" name="meta" type="var">
+			<argument index="1" name="meta" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -38106,9 +38795,9 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="property" type="String">
 			</argument>
-			<argument index="2" name="initial_val" type="var">
+			<argument index="2" name="initial_val" type="Variant">
 			</argument>
-			<argument index="3" name="final_val" type="var">
+			<argument index="3" name="final_val" type="Variant">
 			</argument>
 			<argument index="4" name="times_in_sec" type="float">
 			</argument>
@@ -38128,9 +38817,9 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="method" type="String">
 			</argument>
-			<argument index="2" name="initial_val" type="var">
+			<argument index="2" name="initial_val" type="Variant">
 			</argument>
-			<argument index="3" name="final_val" type="var">
+			<argument index="3" name="final_val" type="Variant">
 			</argument>
 			<argument index="4" name="times_in_sec" type="float">
 			</argument>
@@ -38152,15 +38841,15 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="2" name="callback" type="String">
 			</argument>
-			<argument index="3" name="arg1" type="var" default="NULL">
+			<argument index="3" name="arg1" type="Variant" default="NULL">
 			</argument>
-			<argument index="4" name="arg2" type="var" default="NULL">
+			<argument index="4" name="arg2" type="Variant" default="NULL">
 			</argument>
-			<argument index="5" name="arg3" type="var" default="NULL">
+			<argument index="5" name="arg3" type="Variant" default="NULL">
 			</argument>
-			<argument index="6" name="arg4" type="var" default="NULL">
+			<argument index="6" name="arg4" type="Variant" default="NULL">
 			</argument>
-			<argument index="7" name="arg5" type="var" default="NULL">
+			<argument index="7" name="arg5" type="Variant" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -38174,15 +38863,15 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="2" name="callback" type="String">
 			</argument>
-			<argument index="3" name="arg1" type="var" default="NULL">
+			<argument index="3" name="arg1" type="Variant" default="NULL">
 			</argument>
-			<argument index="4" name="arg2" type="var" default="NULL">
+			<argument index="4" name="arg2" type="Variant" default="NULL">
 			</argument>
-			<argument index="5" name="arg3" type="var" default="NULL">
+			<argument index="5" name="arg3" type="Variant" default="NULL">
 			</argument>
-			<argument index="6" name="arg4" type="var" default="NULL">
+			<argument index="6" name="arg4" type="Variant" default="NULL">
 			</argument>
-			<argument index="7" name="arg5" type="var" default="NULL">
+			<argument index="7" name="arg5" type="Variant" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -38194,7 +38883,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="property" type="String">
 			</argument>
-			<argument index="2" name="initial_val" type="var">
+			<argument index="2" name="initial_val" type="Variant">
 			</argument>
 			<argument index="3" name="target" type="Object">
 			</argument>
@@ -38218,7 +38907,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="method" type="String">
 			</argument>
-			<argument index="2" name="initial_val" type="var">
+			<argument index="2" name="initial_val" type="Variant">
 			</argument>
 			<argument index="3" name="target" type="Object">
 			</argument>
@@ -38246,7 +38935,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="3" name="initial_val" type="String">
 			</argument>
-			<argument index="4" name="final_val" type="var">
+			<argument index="4" name="final_val" type="Variant">
 			</argument>
 			<argument index="5" name="times_in_sec" type="float">
 			</argument>
@@ -38270,7 +38959,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="3" name="initial_method" type="String">
 			</argument>
-			<argument index="4" name="final_val" type="var">
+			<argument index="4" name="final_val" type="Variant">
 			</argument>
 			<argument index="5" name="times_in_sec" type="float">
 			</argument>
@@ -38353,8 +39042,14 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="UndoRedo" inherits="Object" category="Core">
 	<brief_description>
+	Helper to manage UndoRedo in the editor or custom tools.
 	</brief_description>
 	<description>
+	Helper to maange UndoRedo in the editor or custom tools. It works by
+	storing calls to functions in both 'do' an 'undo' lists.
+	
+	Common behavior is to create an action, then add do/undo calls to
+	functions or property changes, then commiting the action.
 	</description>
 	<methods>
 		<method name="create_action">
@@ -38363,10 +39058,16 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="mergeable" type="bool" default="false">
 			</argument>
 			<description>
+			Create a new action. After this is called, do all
+			your calls to [method add_do_method],
+			[method add_undo_method], [method add_do_property]
+			and [method add_undo_property].
 			</description>
 		</method>
 		<method name="commit_action">
 			<description>
+			Commit the action. All 'do' methods/properties are
+			called/set when this function is called.
 			</description>
 		</method>
 		<method name="add_do_method">
@@ -38374,17 +39075,19 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="method" type="String">
 			</argument>
-			<argument index="2" name="arg0" type="var" default="NULL">
+			<argument index="2" name="arg0" type="Variant" default="NULL">
 			</argument>
-			<argument index="3" name="arg1" type="var" default="NULL">
+			<argument index="3" name="arg1" type="Variant" default="NULL">
 			</argument>
-			<argument index="4" name="arg2" type="var" default="NULL">
+			<argument index="4" name="arg2" type="Variant" default="NULL">
 			</argument>
-			<argument index="5" name="arg3" type="var" default="NULL">
+			<argument index="5" name="arg3" type="Variant" default="NULL">
 			</argument>
-			<argument index="6" name="arg4" type="var" default="NULL">
+			<argument index="6" name="arg4" type="Variant" default="NULL">
 			</argument>
 			<description>
+			Add a call to a method in a given object with custom
+			arguments.
 			</description>
 		</method>
 		<method name="add_undo_method">
@@ -38392,17 +39095,20 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="method" type="String">
 			</argument>
-			<argument index="2" name="arg0" type="var" default="NULL">
+			<argument index="2" name="arg0" type="Variant" default="NULL">
 			</argument>
-			<argument index="3" name="arg1" type="var" default="NULL">
+			<argument index="3" name="arg1" type="Variant" default="NULL">
 			</argument>
-			<argument index="4" name="arg2" type="var" default="NULL">
+			<argument index="4" name="arg2" type="Variant" default="NULL">
 			</argument>
-			<argument index="5" name="arg3" type="var" default="NULL">
+			<argument index="5" name="arg3" type="Variant" default="NULL">
 			</argument>
-			<argument index="6" name="arg4" type="var" default="NULL">
+			<argument index="6" name="arg4" type="Variant" default="NULL">
 			</argument>
 			<description>
+			Add a call to an undo method in a given object with
+			custom arguments. Undo calls are used to revert 'do'
+			calls.
 			</description>
 		</method>
 		<method name="add_do_property">
@@ -38413,6 +39119,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
+			Set a property with a custom value.
 			</description>
 		</method>
 		<method name="add_undo_property">
@@ -38423,34 +39130,51 @@ This method controls whether the position between two cached points is interpola
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
+			Undo setting of a property with a custom value.
 			</description>
 		</method>
 		<method name="add_do_reference">
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<description>
+			Add a 'do' reference that will be erased if the 'do'
+			history is lost. This is useful mostly for new nodes
+			created for the 'do' call. Do not use for resources.
 			</description>
 		</method>
 		<method name="add_undo_reference">
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<description>
+			Add an 'undo' reference that will be erased if the
+			'undo' history is lost. This is useful mostly for
+			nodes rmoved with the 'do' call (not the 'undo'
+			call!).
 			</description>
 		</method>
 		<method name="clear_history">
 			<description>
+			Clear the undo/redo history and associated
+			references.
 			</description>
 		</method>
 		<method name="get_current_action_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+			Get the name of the current action.
 			</description>
 		</method>
 		<method name="get_version" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Get the version, each time a new action is commited,
+			the version number of the UndoRedo is increased
+			automatically. 
+			
+			This is useful mostly to check if something changed
+			from a saved version.
 			</description>
 		</method>
 	</methods>
@@ -40175,7 +40899,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="arg1" type="String">
 			</argument>
-			<argument index="2" name="arg2" type="var">
+			<argument index="2" name="arg2" type="Variant">
 			</argument>
 			<description>
 			</description>

@@ -40,17 +40,10 @@ class EditorSettingsDialog : public AcceptDialog {
 
 
 
-	ConfirmationDialog *install_confirm;
 	bool updating;
-	ConfirmationDialog *plugin_setting;
-	String plugin_setting_edit;
-
-	RichTextLabel *plugin_description;
 
 	TabContainer *tabs;
 
-	Button *rescan_plugins;
-	Tree *plugins;
 	LineEdit *search_box;
 	ToolButton *clear_button;
 	SectionedPropertyEditor *property_editor;
@@ -60,18 +53,11 @@ class EditorSettingsDialog : public AcceptDialog {
 	virtual void cancel_pressed();
 	virtual void ok_pressed();
 
-	void _plugin_edited();
-
-	void _plugin_settings(Object *p_obj,int p_cell,int p_index);
 	void _settings_changed();
 	void _settings_save();
 
-	void _plugin_install();
-
 	void _notification(int p_what);
 
-	void _rescan_plugins();
-	void _update_plugins();
 
 	void _clear_search_box();
 

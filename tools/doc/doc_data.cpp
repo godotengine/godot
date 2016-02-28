@@ -190,7 +190,11 @@ void DocData::generate(bool p_basic_types) {
 #ifdef DEBUG_METHODS_ENABLED
 					if (m && m->get_return_type()!=StringName())
 						method.return_type=m->get_return_type();
-					else if (arginfo.type!=Variant::NIL) // {
+					else if (method.name.find(":")!=-1) {
+						method.return_type=method.name.get_slice(":",1);
+						method.name=method.name.get_slice(":",0);
+
+					} else if (arginfo.type!=Variant::NIL) // {
 #endif
 						method.return_type=(arginfo.hint==PROPERTY_HINT_RESOURCE_TYPE)?arginfo.hint_string:Variant::get_type_name(arginfo.type);
 //					}
@@ -210,7 +214,7 @@ void DocData::generate(bool p_basic_types) {
 					} else if (arginfo.hint==PROPERTY_HINT_RESOURCE_TYPE) {
 						type_name=arginfo.hint_string;
 					} else if (arginfo.type==Variant::NIL)
-						type_name="var";
+						type_name="Variant";
 					else
 						type_name=Variant::get_type_name(arginfo.type);
 
