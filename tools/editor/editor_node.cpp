@@ -4810,6 +4810,28 @@ void EditorNode::raise_bottom_panel_item(Control *p_item) {
 
 }
 
+void EditorNode::remove_bottom_panel_item(Control *p_item) {
+
+	for(int i=0;i<bottom_panel_items.size();i++) {
+
+		if (bottom_panel_items[i].control==p_item) {
+			if (p_item->is_visible()) {
+				_bottom_panel_switch(false,0);
+			}
+			bottom_panel_vb->remove_child(bottom_panel_items[i].control);
+			bottom_panel_hb->remove_child(bottom_panel_items[i].button);
+			memdelete( bottom_panel_items[i].button );
+			bottom_panel_items.remove(i);
+			break;
+		}
+	}
+
+	for(int i=0;i<bottom_panel_items.size();i++) {
+		bottom_panel_items[i].button->disconnect("toggled",this,"_bottom_panel_switch");
+		bottom_panel_items[i].button->connect("toggled",this,"_bottom_panel_switch",varray(i));
+	}
+}
+
 void EditorNode::_bottom_panel_switch(bool p_enable,int p_idx) {
 
 	ERR_FAIL_INDEX(p_idx,bottom_panel_items.size());
