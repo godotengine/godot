@@ -188,13 +188,22 @@ static _FORCE_INLINE_ unsigned int nearest_power_of_2(unsigned int x) {
 	return ++x;
 }
 
+// We need this definition inside the function below.
+static inline int get_shift_from_power_of_2(unsigned int p_pixel);
+
 template<class T>
 static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
 
 	--x;
+
+	// The number of operations on x is the base two logarithm
+	// of the p_number of bits in the type. Add three to account
+	// for sizeof(T) being in bytes.
+	size_t num = get_shift_from_power_of_2(sizeof(T)) + 3;
+
 	// If the compiler is smart, it unrolls this loop
 	// If its dumb, this is a bit slow.
-	for (size_t i = 0; i < sizeof(T); i++)
+	for (size_t i = 0; i < num; i++)
 		x |= x >> (1 << i);
 
 	return ++x;
