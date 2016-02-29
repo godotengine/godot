@@ -102,6 +102,7 @@ private:
 	struct JoyDeviceMapping {
 
 		String uid;
+		String name;
 		Map<int,JoyEvent> buttons;
 		Map<int,JoyEvent> axis;
 		JoyEvent hat[HAT_MAX];
