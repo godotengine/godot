@@ -2084,7 +2084,9 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 				count++;
 			}
 
-			center/=float(count);
+			if( count != 0 ) {
+				center/=float(count);
+			}
 
 			cursor.pos=center;
 		} break;
@@ -4240,6 +4242,3 @@ SpatialEditorPlugin::SpatialEditorPlugin(EditorNode *p_node) {
 SpatialEditorPlugin::~SpatialEditorPlugin() {
 
 }
-
-
-

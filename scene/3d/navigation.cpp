@@ -64,7 +64,11 @@ void Navigation::_navmesh_link(int p_id) {
 			continue;
 		}
 
-		p.center=center/plen;
+		p.center = center;
+		if( plen != 0 ) {
+			p.center /= plen;
+		}
+
 
 		//connect
 
@@ -721,5 +725,3 @@ Navigation::Navigation() {
 	last_id=1;
 	up=Vector3(0,1,0);
 }
-
-

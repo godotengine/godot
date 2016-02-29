@@ -1784,7 +1784,8 @@ void ScriptEditor::_update_script_colors() {
 		if (h>hist_size) {
 			continue;
 		}
-		float v = Math::ease((edit_pass-pass)/float(hist_size),0.4);
+		int non_zero_hist_size = ( hist_size == 0 ) ? 1 : hist_size;
+		float v = Math::ease((edit_pass-pass)/float(non_zero_hist_size),0.4);
 
 
 		script_list->set_item_custom_bg_color(i,hot_color.linear_interpolate(cold_color,v));
@@ -2704,4 +2705,3 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 ScriptEditorPlugin::~ScriptEditorPlugin()
 {
 }
-

@@ -361,7 +361,10 @@ void ColorPicker::_preset_input(const InputEvent &ev) {
 		emit_signal("color_changed", color);
 	} else if (ev.type == InputEvent::MOUSE_MOTION) {
 		const InputEventMouse &mev = ev.mouse_motion;
-		int index = mev.x/(preset->get_size().x/presets.size());
+		int index = mev.x * presets.size();
+		if( preset->get_size().x != 0 ) {
+			index /= preset->get_size().x;
+		}
 		if (index<0 || index >= presets.size())
 			return;
 		preset->set_tooltip("Color: #"+presets[index].to_html(presets[index].a<1)+"\n"
@@ -684,4 +687,3 @@ ColorPickerButton::ColorPickerButton() {
 	picker->connect("color_changed",this,"_color_changed");
 	add_child(popup);
 }
-
