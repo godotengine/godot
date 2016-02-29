@@ -966,7 +966,7 @@ void ProjectSettings::_autoload_delete(Object *p_item,int p_column, int p_button
 		undo_redo->commit_action();
 	} else {
 
-		TreeItem *swap;
+		TreeItem *swap = NULL;
 
 		if (p_button==1) {
 			swap=ti->get_prev();
