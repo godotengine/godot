@@ -623,7 +623,7 @@ void OS_JavaScript::process_joysticks() {
 		emscripten_get_gamepad_status(i, &state);
 		if (state.connected) {
 
-			int num_buttons = MIN(state.numButtons, 16);
+			int num_buttons = MIN(state.numButtons, 18);
 			int num_axes = MIN(state.numAxes, 8);
 			for (int j = 0; j < num_buttons; j++) {
 

@@ -1712,6 +1712,8 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 		}
 	}
 #endif
+
+	p_script->valid=true;
 	return OK;
 }
 

@@ -32,6 +32,7 @@
 #include "os/input.h"
 #include "drivers/unix/os_unix.h"
 #include "os/main_loop.h"
+#include "main/input_default.h"
 #include "servers/physics/physics_server_sw.h"
 #include "servers/spatial_sound/spatial_sound_server_sw.h"
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
@@ -135,6 +136,7 @@ public:
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
 
+	virtual Size2 get_window_size() const;
 	virtual String get_name();
 	virtual MainLoop *get_main_loop() const;
 

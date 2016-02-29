@@ -70,11 +70,12 @@ private:
 
 	TabContainer *sections;
 	bool updating_tree;
+	bool pending_update_tree;
 	AcceptDialog *error;
 	ConfirmationDialog *confirm;
 
 	Button *button_reload;
-	LineEdit *filters;
+	LineEdit *filters, *filters_exclude;
 	HBoxContainer *plat_errors;
 	Label *platform_error_string;
 
@@ -154,6 +155,7 @@ private:
 	void _platform_selected();
 
 	void _filters_edited(String what);
+	void _filters_exclude_edited(String what);
 	void _update_group_tree();
 
 	void _image_filter_changed(String);
@@ -203,6 +205,7 @@ public:
 
 	Error export_platform(const String& p_platform, const String& p_path, bool p_debug,const String& p_password,bool p_quit_after=false);
 
+	void popup_export();
 	ProjectExportDialog(EditorNode *p_editor);
 	~ProjectExportDialog();
 };

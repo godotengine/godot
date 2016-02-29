@@ -230,7 +230,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 			return;
 		}
 	} else {
-		part_of_subscene = get_scene_node()->get_scene_inherited_state().is_valid() && get_scene_node()->get_scene_inherited_state()->find_node_by_path(get_scene_node()->get_path_to(p_node))>=0;
+		part_of_subscene = p_node!=get_scene_node() && get_scene_node()->get_scene_inherited_state().is_valid() && get_scene_node()->get_scene_inherited_state()->find_node_by_path(get_scene_node()->get_path_to(p_node))>=0;
 	}
 
 	TreeItem *item = tree->create_item(p_parent);
@@ -658,6 +658,9 @@ void SceneTreeEditor::_renamed() {
 		new_name=n->get_name();
 	}
 
+	if (new_name==n->get_name())
+		return;
+
 	if (!undo_redo) {
 		n->set_name( new_name );
 		which->set_metadata(0,n->get_path());
@@ -720,6 +723,9 @@ void SceneTreeEditor::_update_selection(TreeItem *item) {
 	ERR_FAIL_COND(!item);
 
 	NodePath np = item->get_metadata(0);
+
+	if (!has_node(np))
+		return;
 
 	Node *n=get_node(np);
 
@@ -841,7 +847,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	add_child( tree );
 		
 	tree->connect("cell_selected", this,"_selected_changed");
-	tree->connect("item_edited", this,"_renamed");
+	tree->connect("item_edited", this,"_renamed",varray(),CONNECT_DEFERRED);
 	tree->connect("multi_selected",this,"_cell_multi_selected");
 	tree->connect("button_pressed",this,"_cell_button_pressed");
 //	tree->connect("item_edited", this,"_renamed",Vector<Variant>(),true);

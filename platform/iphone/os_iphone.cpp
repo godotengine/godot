@@ -41,6 +41,7 @@
 
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
+#include "core/io/file_access_pack.h"
 #include "core/globals.h"
 
 #include "sem_iphone.h"
@@ -517,12 +518,25 @@ extern void _focus_out_video();
 Error OSIPhone::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 	FileAccess* f = FileAccess::open(p_path, FileAccess::READ);
 	bool exists = f && f->is_open();
-	printf("file exists for %ls, %i, %p\n", p_path.c_str(), (int)exists, f);
-	if (f)
-		memdelete(f);
+
+	String tempFile = get_data_dir();
 	if (!exists)
 		return FAILED;
-    if ( _play_video(p_path, p_volume, p_audio_track, p_subtitle_track) )
+	
+	if (p_path.begins_with("res://")) {
+		if (PackedData::get_singleton()->has_path(p_path)) {
+			print("Unable to play %S using the native player as it resides in a .pck file\n", p_path.c_str());
+			return ERR_INVALID_PARAMETER;
+		} else {
+			p_path = p_path.replace("res:/", Globals::get_singleton()->get_resource_path());
+		}
+	} else if (p_path.begins_with("user://"))
+		p_path = p_path.replace("user:/", get_data_dir());
+
+	memdelete(f);
+
+	print("Playing video: %S\n", p_path.c_str());	
+	if (_play_video(p_path, p_volume, p_audio_track, p_subtitle_track) )
 		return OK;
 	return FAILED;
 }

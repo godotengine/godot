@@ -52,6 +52,7 @@ String GDScriptLanguage::get_template(const String& p_class_name, const String& 
 	"# var a=2\n"+
 	"# var b=\"textvar\"\n\n"+
 	"func _ready():\n"+
+	"\t# Called every time the node is added to the scene.\n"+
 	"\t# Initialization here\n"+
 	"\tpass\n"+
 	"\n"+
@@ -284,6 +285,30 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 	for(int i=0;i<GDFunctions::FUNC_MAX;i++) {
 
 		p_functions->push_back(GDFunctions::get_info(GDFunctions::Function(i)));
+	}
+
+	//not really "functions", but..
+	{
+		MethodInfo mi;
+		mi.name="preload:Resource";
+		mi.arguments.push_back(PropertyInfo(Variant::STRING,"path"));
+		mi.return_val=PropertyInfo(Variant::OBJECT,"",PROPERTY_HINT_RESOURCE_TYPE,"Resource");
+		p_functions->push_back(mi);
+	}
+	{
+		MethodInfo mi;
+		mi.name="yield";
+		mi.arguments.push_back(PropertyInfo(Variant::OBJECT,"object"));
+		mi.arguments.push_back(PropertyInfo(Variant::STRING,"signal"));
+		mi.default_arguments.push_back(Variant::NIL);
+		mi.default_arguments.push_back(Variant::STRING);
+		p_functions->push_back(mi);
+	}
+	{
+		MethodInfo mi;
+		mi.name="assert";
+		mi.arguments.push_back(PropertyInfo(Variant::BOOL,"condition"));
+		p_functions->push_back(mi);
 	}
 }
 
@@ -2300,8 +2325,8 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 								"# Key",
 								"# MouseMotion",
 								"# MouseButton",
-								"# JoyMotion",
-								"# JoyButton",
+								"# JoystickMotion",
+								"# JoystickButton",
 								"# ScreenTouch",
 								"# ScreenDrag",
 								"# Action"

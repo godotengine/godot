@@ -62,22 +62,25 @@ private:
 	HSlider *scroll[4];
 	SpinBox *values[4];
 	Label *labels[4];
-	Label *html_num;
-	LineEdit *html;
+	Button *text_type;
+	LineEdit *c_text;
 	bool edit_alpha;
 	Size2i ms;
+	bool text_is_constructor;
 
 	Color color;
 	bool raw_mode_enabled;
 	bool updating;
 	bool changing_color;
 	float h,s,v;
+	Color last_hsv;
 
 	void _html_entered(const String& p_html);
 	void _value_changed(double);
 	void _update_controls();
 	void _update_color();
 	void _update_presets();
+	void _text_type_toggled();
 	void _sample_draw();
 	void _hsv_draw(int p_wich,Control *c);
 
@@ -87,6 +90,7 @@ private:
 	void _screen_input(const InputEvent& p_input);
 	void _add_preset_pressed();
 	void _screen_pick_pressed();
+
 protected:
 
 	void _notification(int);

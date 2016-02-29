@@ -92,6 +92,22 @@ void ScriptServer::init_languages() {
 	}
 }
 
+void ScriptInstance::get_property_state(List<Pair<StringName, Variant> > &state) {
+
+	List<PropertyInfo> pinfo;
+	get_property_list(&pinfo);
+	for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+
+		if (E->get().usage&PROPERTY_USAGE_STORAGE) {
+			Pair<StringName,Variant> p;
+			p.first=E->get().name;
+			if (get(p.first,p.second))
+				state.push_back(p);
+		}
+	}
+}
+
+
 Variant ScriptInstance::call(const StringName& p_method,VARIANT_ARG_DECLARE) {
 
 	VARIANT_ARGPTRS;

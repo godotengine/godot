@@ -86,8 +86,9 @@ friend class Tree;
 
 		struct Button {
 			int id;
+			bool disabled;
 			Ref<Texture> texture;
-			Button() { id=0; }
+			Button() { id=0; disabled=false; }
 		};
 
 		Vector< Button > buttons;
@@ -172,12 +173,13 @@ public:
 	void set_icon_max_width(int p_column,int p_max);
 	int get_icon_max_width(int p_column) const;
 
-	void add_button(int p_column,const Ref<Texture>& p_button,int p_id=-1);
+	void add_button(int p_column,const Ref<Texture>& p_button,int p_id=-1,bool p_disabled=false);
 	int get_button_count(int p_column) const;
 	Ref<Texture> get_button(int p_column,int p_idx) const;
 	int get_button_id(int p_column,int p_idx) const;
 	void erase_button(int p_column,int p_idx);
 	int get_button_by_id(int p_column,int p_id) const;
+	bool is_button_disabled(int p_column,int p_idx) const;
 	void set_button(int p_column,int p_idx,const Ref<Texture>& p_button);
 
 	/* range works for mode number or mode combo */
@@ -314,6 +316,7 @@ friend class TreeItem;
 	void select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col,TreeItem *p_prev=NULL,bool *r_in_range=NULL);
 	int propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_doubleclick,TreeItem *p_item,int p_button,const InputModifierState& p_mod);
 	void text_editor_enter(String p_text);
+	void _text_editor_modal_close();
 	void value_editor_changed(double p_value);
 
 	void popup_select(int p_option);

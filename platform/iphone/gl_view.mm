@@ -58,6 +58,7 @@ void _show_keyboard(String);
 void _hide_keyboard();
 bool _play_video(String, float, String, String);
 bool _is_video_playing();
+void _pause_video();
 void _focus_out_video();
 void _unpause_video();
 void _stop_video();
@@ -74,64 +75,30 @@ void _hide_keyboard() {
 	keyboard_text = "";
 };
 
-/*
-bool _play_video(String p_path, float p_volume) {
-	
-	float player_volume = p_volume * AudioServer::get_singleton()->get_singleton()->get_stream_global_volume_scale();
-	video_previous_volume = [[MPMusicPlayerController applicationMusicPlayer] volume];
-
-	//[[MPMusicPlayerController applicationMusicPlayer] setVolume: player_volume];
-
-	p_path = Globals::get_singleton()->globalize_path(p_path);
-
-	NSString* file_path = [[[NSString alloc] initWithUTF8String:p_path.utf8().get_data()] autorelease];
-	NSURL *file_url = [NSURL fileURLWithPath:file_path];
-		
-	_instance.moviePlayerController = [[MPMoviePlayerController alloc] initWithContentURL:file_url];
-	_instance.moviePlayerController.controlStyle = MPMovieControlStyleNone;
-	[_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFit];
-	//[_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFill];
-	
-	[[NSNotificationCenter defaultCenter] addObserver:_instance
-                   selector:@selector(moviePlayBackDidFinish:)
-                   name:MPMoviePlayerPlaybackDidFinishNotification
-                   object:_instance.moviePlayerController];
-	
-	[_instance.moviePlayerController.view setFrame:_instance.bounds];
-	_instance.moviePlayerController.view.userInteractionEnabled = NO;
-	[_instance addSubview:_instance.moviePlayerController.view];
-	[_instance.moviePlayerController play];
-
-	video_playing = true;
-
-	return true;
-}
-*/
-
 bool _play_video(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 	p_path = Globals::get_singleton()->globalize_path(p_path);
 
 	NSString* file_path = [[[NSString alloc] initWithUTF8String:p_path.utf8().get_data()] autorelease];
-	//NSURL *file_url = [NSURL fileURLWithPath:file_path];
 
 	_instance.avAsset = [AVAsset assetWithURL:[NSURL fileURLWithPath:file_path]];
+
 	_instance.avPlayerItem =[[AVPlayerItem alloc]initWithAsset:_instance.avAsset];
 	[_instance.avPlayerItem addObserver:_instance forKeyPath:@"status" options:0 context:nil];
 
-    _instance.avPlayer = [[AVPlayer alloc]initWithPlayerItem:_instance.avPlayerItem];
-    _instance.avPlayerLayer =[AVPlayerLayer playerLayerWithPlayer:_instance.avPlayer];
+	_instance.avPlayer = [[AVPlayer alloc]initWithPlayerItem:_instance.avPlayerItem];
+	_instance.avPlayerLayer =[AVPlayerLayer playerLayerWithPlayer:_instance.avPlayer];
 
-    [_instance.avPlayer addObserver:_instance forKeyPath:@"status" options:0 context:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:_instance
+	[_instance.avPlayer addObserver:_instance forKeyPath:@"status" options:0 context:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:_instance
                                         selector:@selector(playerItemDidReachEnd:)
                                                name:AVPlayerItemDidPlayToEndTimeNotification
                                              object:[_instance.avPlayer currentItem]];
 
 	[_instance.avPlayer addObserver:_instance forKeyPath:@"rate" options:NSKeyValueObservingOptionNew context:0];
 
-    [_instance.avPlayerLayer setFrame:_instance.bounds];
-    [_instance.layer addSublayer:_instance.avPlayerLayer];
-    [_instance.avPlayer play];
+	[_instance.avPlayerLayer setFrame:_instance.bounds];
+	[_instance.layer addSublayer:_instance.avPlayerLayer];
+	[_instance.avPlayer play];
 
 	AVMediaSelectionGroup *audioGroup = [_instance.avAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
 
@@ -173,23 +140,19 @@ bool _play_video(String p_path, float p_volume, String p_audio_track, String p_s
         }
 	}
 
-    video_playing = true;
+	video_playing = true;
 
 	return true;
 }
 
 bool _is_video_playing() {
-	//NSInteger playback_state = _instance.moviePlayerController.playbackState;
-	//return video_playing || _instance.moviePlayerController.playbackState == MPMoviePlaybackStatePlaying;
-	//if (video_found_error)
-	//	return false;
-	//return (_instance.moviePlayerController.playbackState == MPMoviePlaybackStatePlaying);
-
-	return video_playing || (_instance.avPlayer.rate > 0 && !_instance.avPlayer.error);
+	if (_instance.avPlayer.error) {
+		printf("Error during playback\n");	
+	}
+	return (_instance.avPlayer.rate > 0 && !_instance.avPlayer.error);
 }
 
 void _pause_video() {
-	//[_instance.moviePlayerController pause];
 	video_current_time = _instance.avPlayer.currentTime;
 	[_instance.avPlayer pause];
 	video_playing = false;
@@ -204,15 +167,9 @@ void _unpause_video() {
 
 	[_instance.avPlayer play];
 	video_playing = true;
-
-	//video_current_time = kCMTimeZero;
 };
 
 void _stop_video() {
-	//[_instance.moviePlayerController stop];
-	//[_instance.moviePlayerController.view removeFromSuperview];
-	//[[MPMusicPlayerController applicationMusicPlayer] setVolume: video_previous_volume];
-
 	[_instance.avPlayer pause];
 	[_instance.avPlayerLayer removeFromSuperlayer];
 	_instance.avPlayer = nil;

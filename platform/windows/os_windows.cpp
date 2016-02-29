@@ -47,7 +47,6 @@
 #include "tcp_server_winsock.h"
 #include "packet_peer_udp_winsock.h"
 #include "stream_peer_winsock.h"
-#include "os/pc_joystick_map.h"
 #include "lang_table.h"
 #include "os/memory_pool_dynamic_prealloc.h"
 #include "globals.h"
@@ -66,6 +65,10 @@ extern "C" {
 	__attribute__((visibility("default"))) DWORD NvOptimusEnablement = 0x00000001;
 #endif
 }
+
+#ifndef WM_MOUSEHWHEEL
+#define WM_MOUSEHWHEEL 0x020e
+#endif
 
 //#define STDOUT_FILE
 
@@ -149,7 +152,7 @@ const char * OS_Windows::get_video_driver_name(int p_driver) const {
 
 OS::VideoMode OS_Windows::get_default_video_mode() const {
 
-	return VideoMode(1280,720,false);
+	return VideoMode(1024,600,false);
 }
 
 int OS_Windows::get_audio_driver_count() const {
@@ -433,6 +436,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		case WM_RBUTTONDOWN:
 		case WM_RBUTTONUP:
 		case WM_MOUSEWHEEL:
+		case WM_MOUSEHWHEEL:
 		case WM_LBUTTONDBLCLK:
 		case WM_RBUTTONDBLCLK:
 		/*case WM_XBUTTONDOWN:
@@ -503,11 +507,23 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 
 					if (motion>0)
-						mb.button_index=4;
+						mb.button_index= BUTTON_WHEEL_UP;
 					else
-						mb.button_index=5;
+						mb.button_index= BUTTON_WHEEL_DOWN;
 
 
+				} break;
+				case WM_MOUSEHWHEEL: {
+
+					mb.pressed = true;
+					int motion = (short)HIWORD(wParam);
+					if (!motion)
+						return 0;
+
+					if (motion<0)
+						mb.button_index = BUTTON_WHEEL_LEFT;
+					else
+						mb.button_index = BUTTON_WHEEL_RIGHT;
 				} break;
 					/*
 				case WM_XBUTTONDOWN: {
@@ -2059,7 +2075,7 @@ String OS_Windows::get_system_dir(SystemDir p_dir) const {
 			id=CSIDL_MYPICTURES;
 		} break;
 		case SYSTEM_DIR_DOCUMENTS: {
-			id=0x000C;
+			id=CSIDL_PERSONAL;
 		} break;
 		case SYSTEM_DIR_DOWNLOADS: {
 			id=0x000C ;

@@ -450,6 +450,7 @@ void TileMap::_update_dirty_quadrants() {
 					_fix_cell_transform(xform,c,shape_ofs+center_ofs,s);
 
 					if (debug_canvas_item) {
+						vs->canvas_item_add_set_transform(debug_canvas_item,xform);
 						shape->draw(debug_canvas_item,debug_collision_color);
 
 					}
@@ -457,6 +458,10 @@ void TileMap::_update_dirty_quadrants() {
 					ps->body_set_shape_metadata(q.body,shape_idx++,Vector2(E->key().x,E->key().y));
 
 				}
+			}
+
+			if (debug_canvas_item) {
+				vs->canvas_item_add_set_transform(debug_canvas_item,Matrix32());
 			}
 
 			if (navigation) {
@@ -692,6 +697,10 @@ void TileMap::set_cell(int p_x,int p_y,int p_tile,bool p_flip_x,bool p_flip_y,bo
 
 	_make_quadrant_dirty(Q);
 
+}
+
+int TileMap::get_cellv(const Vector2& p_pos) const {
+	return get_cell(p_pos.x,p_pos.y);
 }
 
 int TileMap::get_cell(int p_x,int p_y) const {
@@ -1198,8 +1207,10 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_cell","x","y","tile","flip_x","flip_y","transpose"),&TileMap::set_cell,DEFVAL(false),DEFVAL(false),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("set_cellv","pos","tile","flip_x","flip_y","transpose"),&TileMap::set_cellv,DEFVAL(false),DEFVAL(false),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_cell","x","y"),&TileMap::get_cell);
+	ObjectTypeDB::bind_method(_MD("get_cellv","pos"),&TileMap::get_cellv);
 	ObjectTypeDB::bind_method(_MD("is_cell_x_flipped","x","y"),&TileMap::is_cell_x_flipped);
 	ObjectTypeDB::bind_method(_MD("is_cell_y_flipped","x","y"),&TileMap::is_cell_y_flipped);
+	ObjectTypeDB::bind_method(_MD("is_cell_transposed","x","y"),&TileMap::is_cell_transposed);
 
 	ObjectTypeDB::bind_method(_MD("clear"),&TileMap::clear);
 

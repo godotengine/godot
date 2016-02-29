@@ -97,7 +97,7 @@ static _XTranslatePair _xkeysym_to_keycode[]={
 	{ XK_KP_Enter,		      KEY_KP_ENTER },
 	{ XK_KP_Multiply,	      KEY_KP_MULTIPLY},
 	{ XK_KP_Divide,		     KEY_KP_DIVIDE},
-	{ XK_KP_Subtract,		KEY_KP_SUBSTRACT},
+	{ XK_KP_Subtract,		KEY_KP_SUBTRACT},
 	{ XK_KP_Add,		KEY_KP_ADD},
 	{ XK_KP_0,		KEY_KP_0},
 	{ XK_KP_1,		KEY_KP_1},

@@ -6639,6 +6639,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			}
 			rebind=true;
 		}
+		
 		if  (use_hw_skeleton_xform && skeleton!=prev_skeleton) {
 			if (!prev_skeleton || !skeleton)
 				rebind=true; //went from skeleton <-> no skeleton, needs rebind
@@ -6715,10 +6716,6 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		if (i==0 || rebind) {
 			material_shader.set_uniform(MaterialShaderGLES2::CAMERA_INVERSE_TRANSFORM, p_view_transform_inverse);
 			material_shader.set_uniform(MaterialShaderGLES2::PROJECTION_TRANSFORM, p_projection);
-			if (skeleton && use_hw_skeleton_xform) {
-				material_shader.set_uniform(MaterialShaderGLES2::SKELETON_MATRICES,GL_TEXTURE0+max_texture_units-2);
-				material_shader.set_uniform(MaterialShaderGLES2::SKELTEX_PIXEL_SIZE,skeleton->pixel_size);
-			}
 			if (!shadow) {
 
 				if (!additive && current_env && current_env->fx_enabled[VS::ENV_FX_AMBIENT_LIGHT]) {
@@ -6731,6 +6728,13 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			}
 
 			_rinfo.shader_change_count++;
+		}
+
+		if (skeleton != prev_skeleton || rebind) {
+			if (skeleton) {
+				material_shader.set_uniform(MaterialShaderGLES2::SKELETON_MATRICES, max_texture_units - 2);
+				material_shader.set_uniform(MaterialShaderGLES2::SKELTEX_PIXEL_SIZE, skeleton->pixel_size);
+			}
 		}
 
 		if (e->instance->billboard || e->instance->depth_scale) {
@@ -7088,11 +7092,13 @@ void RasterizerGLES2::_draw_tex_bg() {
 	copy_shader.set_uniform(CopyShaderGLES2::ENERGY,nrg);
 	copy_shader.set_uniform(CopyShaderGLES2::CUSTOM_ALPHA,float(current_env->bg_param[VS::ENV_BG_PARAM_GLOW]));
 
+	float flip_sign = (current_env->bg_mode==VS::ENV_BG_TEXTURE && current_rt && current_rt_vflip)?-1:1;
+
 	Vector3 vertices[4]={
-		Vector3(-1,-1,1),
-		Vector3( 1,-1,1),
-		Vector3( 1, 1,1),
-		Vector3(-1, 1,1)
+		Vector3(-1,-1*flip_sign,1),
+		Vector3( 1,-1*flip_sign,1),
+		Vector3( 1, 1*flip_sign,1),
+		Vector3(-1, 1*flip_sign,1)
 	};
 
 
@@ -7238,7 +7244,7 @@ void RasterizerGLES2::end_scene() {
 					bgcolor = current_env->bg_param[VS::ENV_BG_PARAM_COLOR];
 				else
 					bgcolor = Globals::get_singleton()->get("render/default_clear_color");
-			bgcolor = _convert_color(bgcolor);
+				bgcolor = _convert_color(bgcolor);
 				float a = use_fb ? float(current_env->bg_param[VS::ENV_BG_PARAM_GLOW]) : 1.0;
 				glClearColor(bgcolor.r,bgcolor.g,bgcolor.b,a);
 				_glClearDepth(1.0);
@@ -9260,7 +9266,13 @@ void RasterizerGLES2::_canvas_item_setup_shader_params(CanvasItemMaterial *mater
 				glReadBuffer(GL_BACK);
 			}
 #endif
-			glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
+			if (current_rt) {
+				glCopyTexSubImage2D(GL_TEXTURE_2D,0,viewport.x,viewport.y,viewport.x,viewport.y,viewport.width,viewport.height);
+				canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_SCREEN_CLAMP,Color(float(x)/framebuffer.width,float(viewport.y)/framebuffer.height,float(x+viewport.width)/framebuffer.width,float(y+viewport.height)/framebuffer.height));
+				//window_size.height-(viewport.height+viewport.y)
+			} else {
+				glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
+			}
 //			if (current_clip) {
 //			//	print_line(" a clip ");
 //			}
@@ -9457,7 +9469,12 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 				glReadBuffer(GL_BACK);
 			}
 #endif
-			glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,w,h);
+			if (current_rt) {
+				glCopyTexSubImage2D(GL_TEXTURE_2D,0,viewport.x,viewport.y,viewport.x,viewport.y,viewport.width,viewport.height);
+				//window_size.height-(viewport.height+viewport.y)
+			} else {
+				glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
+			}
 //			if (current_clip) {
 //			//	print_line(" a clip ");
 //			}
@@ -10806,7 +10823,6 @@ void RasterizerGLES2::init() {
 	use_depth24 =true;
 	s3tc_supported = true;
 	atitc_supported = false;
-	use_hw_skeleton_xform = false;
 //	use_texture_instancing=false;
 //	use_attribute_instancing=true;
 	use_texture_instancing=false;
@@ -10817,7 +10833,11 @@ void RasterizerGLES2::init() {
 	s3tc_srgb_supported=true;
 	use_anisotropic_filter=true;
 	float_linear_supported=true;
-	float_supported=true;
+
+	GLint vtf;
+	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,&vtf);
+	float_supported = extensions.has("GL_OES_texture_float") || extensions.has("GL_ARB_texture_float");
+	use_hw_skeleton_xform=vtf>0 && float_supported;
 
 	read_depth_supported=_test_depth_shadow_buffer();
 	use_rgba_shadowmaps=!read_depth_supported;
@@ -10867,7 +10887,7 @@ void RasterizerGLES2::init() {
 
 	GLint vtf;
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,&vtf);
-	float_supported = extensions.has("GL_OES_texture_float");
+	float_supported = extensions.has("GL_OES_texture_float") || extensions.has("GL_ARB_texture_float");
 	use_hw_skeleton_xform=vtf>0 && float_supported;
 	float_linear_supported = extensions.has("GL_OES_texture_float_linear");
 
@@ -10900,7 +10920,6 @@ void RasterizerGLES2::init() {
 
 
 	//etc_supported=false;
-	use_hw_skeleton_xform=false;
 
 #endif
 

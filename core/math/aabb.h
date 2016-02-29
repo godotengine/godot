@@ -66,6 +66,7 @@ public:
 	bool operator!=(const AABB& p_rval) const;
 
 	_FORCE_INLINE_ bool intersects(const AABB& p_aabb) const; /// Both AABBs overlap
+	_FORCE_INLINE_ bool intersects_inclusive(const AABB& p_aabb) const; /// Both AABBs (or their faces) overlap
 	_FORCE_INLINE_ bool encloses(const AABB & p_aabb) const; /// p_aabb is completely inside this
 
 	AABB merge(const AABB& p_with) const;
@@ -126,6 +127,23 @@ inline bool AABB::intersects(const AABB& p_aabb) const {
         return true;
 }
 
+inline bool AABB::intersects_inclusive(const AABB& p_aabb) const {
+
+	if ( pos.x > (p_aabb.pos.x + p_aabb.size.x) )
+                return false;
+	if ( (pos.x+size.x) < p_aabb.pos.x  )
+                return false;
+	if ( pos.y > (p_aabb.pos.y + p_aabb.size.y) )
+                return false;
+	if ( (pos.y+size.y) < p_aabb.pos.y  )
+                return false;
+	if ( pos.z > (p_aabb.pos.z + p_aabb.size.z) )
+                return false;
+	if ( (pos.z+size.z) < p_aabb.pos.z  )
+                return false;
+
+        return true;
+}
 
 inline bool AABB::encloses(const AABB & p_aabb) const {
 

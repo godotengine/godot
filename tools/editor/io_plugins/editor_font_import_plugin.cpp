@@ -540,7 +540,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 			return;
 		}
 
-		//_import_inc(dest->get_line_edit()->get_text());
+		_import_inc(dest->get_line_edit()->get_text());
 
 		hide();
 	}

@@ -338,6 +338,8 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 									exp_beg=true;
 
 								} else if ((c=='-' || c=='+') && !exp_sign && !exp_beg) {
+									if (c=='-')
+										is_float=true;
 									exp_sign=true;
 
 								} else {
@@ -358,6 +360,7 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 
 
 					r_token.type=TK_NUMBER;
+
 					if (is_float)
 						r_token.value=num.to_double();
 					else
@@ -542,7 +545,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			value=true;
 		else if (id=="false")
 			value=false;
-		else if (id=="null")
+		else if (id=="null" || id=="nil")
 			value=Variant();
 		else if (id=="Vector2"){
 
@@ -1282,7 +1285,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				arr.resize(len);
 				DVector<Color>::Write w = arr.write();
 				for(int i=0;i<len;i++) {
-					w[i]=Color(args[i*3+0],args[i*3+1],args[i*3+2],args[i*3+3]);
+					w[i]=Color(args[i*4+0],args[i*4+1],args[i*4+2],args[i*4+3]);
 				}
 			}
 

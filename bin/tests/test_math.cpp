@@ -75,9 +75,90 @@ fix: 0, 0, 100, 100
 
 }
 
+uint32_t ihash( uint32_t a)
+{
+    a = (a+0x7ed55d16) + (a<<12);
+    a = (a^0xc761c23c) ^ (a>>19);
+    a = (a+0x165667b1) + (a<<5);
+    a = (a+0xd3a2646c) ^ (a<<9);
+    a = (a+0xfd7046c5) + (a<<3);
+    a = (a^0xb55a4f09) ^ (a>>16);
+    return a;
+}
+
+uint32_t ihash2( uint32_t a) {
+    a = (a ^ 61) ^ (a >> 16);
+    a = a + (a << 3);
+    a = a ^ (a >> 4);
+    a = a * 0x27d4eb2d;
+    a = a ^ (a >> 15);
+    return a;
+}
+
+uint32_t ihash3( uint32_t a)
+{
+    a = (a+0x479ab41d) + (a<<8);
+    a = (a^0xe4aa10ce) ^ (a>>5);
+    a = (a+0x9942f0a6) - (a<<14);
+    a = (a^0x5aedd67d) ^ (a>>3);
+    a = (a+0x17bea992) + (a<<7);
+    return a;
+}
 
 MainLoop* test() {
 
+
+	{
+
+		Vector<int32_t> hashes;
+		List<StringName> tl;
+		ObjectTypeDB::get_type_list(&tl);
+
+
+		for (List<StringName>::Element *E=tl.front();E;E=E->next()) {
+
+			Vector<uint8_t> m5b = E->get().operator String().md5_buffer();
+			uint32_t *ub = (uint32_t*)m5b.ptr();
+			//hashes.push_back(ihash(ihash2(ihash3(*ub))));
+			hashes.push_back(hashes.size());
+			//hashes.push_back(E->get().hash());
+
+		}
+
+		//hashes.resize(50);
+
+		for(int i=nearest_shift(hashes.size());i<20;i++) {
+
+			bool success=true;
+			for(int s=0;s<10000;s++) {
+				Set<uint32_t> existing;
+				success=true;
+
+				for(int j=0;j<hashes.size();j++) {
+
+					uint32_t eh = ihash2(ihash3(hashes[j]+ihash(s)+s))&((1<<i)-1);
+					if (existing.has(eh)) {
+						success=false;
+						break;
+					}
+					existing.insert(eh);
+				}
+
+				if (success) {
+					print_line("success at "+itos(i)+"/"+itos(nearest_shift(hashes.size()))+" shift "+itos(s));
+					break;
+				}
+			}
+			if (success)
+				break;
+		}
+
+		print_line("DONE");
+
+
+
+		return NULL;
+	}
 	{
 
 

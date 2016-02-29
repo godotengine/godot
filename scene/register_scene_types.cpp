@@ -608,6 +608,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
+	ObjectTypeDB::register_virtual_type<SceneState>();
 	ObjectTypeDB::register_type<PackedScene>();
 
 	ObjectTypeDB::register_type<SceneTree>();

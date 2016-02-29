@@ -178,7 +178,7 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	physics_2d_server->init();
 
 	input = memnew( InputDefault );
-
+	input->set_fallback_mapping("Default Android Gamepad");
 }
 
 void OS_Android::set_main_loop( MainLoop * p_main_loop ) {
@@ -370,6 +370,25 @@ void OS_Android::main_loop_focusin(){
 
 }
 
+void OS_Android::process_joy_event(OS_Android::JoystickEvent p_event) {
+
+	switch (p_event.type) {
+	case JOY_EVENT_BUTTON:
+		last_id = input->joy_button(last_id, p_event.device, p_event.index, p_event.pressed);
+		break;
+	case JOY_EVENT_AXIS:
+		InputDefault::JoyAxis value;
+		value.min = -1;
+		value.value = p_event.value;
+		last_id = input->joy_axis(last_id, p_event.device, p_event.index, value);
+		break;
+	case JOY_EVENT_HAT:
+		last_id = input->joy_hat(last_id, p_event.device, p_event.hat);
+		break;
+	default:
+		return;
+	}
+}
 
 void OS_Android::process_event(InputEvent p_event) {
 
@@ -740,6 +759,18 @@ void OS_Android::set_context_is_16_bits(bool p_is_16) {
 	use_16bits_fbo=p_is_16;
 	if (rasterizer)
 		rasterizer->set_force_16_bits_fbo(p_is_16);
+}
+
+void OS_Android::joy_connection_changed(int p_device, bool p_connected, String p_name) {
+	return input->joy_connection_changed(p_device, p_connected, p_name, "");
+}
+
+bool OS_Android::is_joy_known(int p_device) {
+	return input->is_joy_mapped(p_device);
+}
+
+String OS_Android::get_joy_guid(int p_device) const {
+	return input->get_joy_guid_remapped(p_device);
 }
 
 OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, bool p_use_apk_expansion) {

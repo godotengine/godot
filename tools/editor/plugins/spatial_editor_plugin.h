@@ -457,8 +457,6 @@ private:
 
 	Ref<Environment> viewport_environment;
 
-	List<EditorPlugin*> gizmo_plugins;
-
 	Spatial *selected;
 
 	void _request_gizmo(Object* p_obj);
@@ -517,8 +515,6 @@ public:
 	Ref<Environment> get_viewport_environment() { return viewport_environment; }
 
 	UndoRedo *get_undo_redo() { return undo_redo; }
-
-	void add_gizmo_plugin(EditorPlugin* p_plugin) { gizmo_plugins.push_back(p_plugin); }
 
 	void add_control_to_menu_panel(Control *p_control);
 

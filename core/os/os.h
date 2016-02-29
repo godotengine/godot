@@ -76,7 +76,7 @@ public:
 		bool fullscreen;
 		bool resizable;
 		float get_aspect() const { return (float)width/(float)height; }
-		VideoMode(int p_width=1280,int p_height=720,bool p_fullscreen=false, bool p_resizable = true) {width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; }
+		VideoMode(int p_width=1024,int p_height=600,bool p_fullscreen=false, bool p_resizable = true) {width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; }
 	};
 protected:
 friend class Main;
@@ -171,6 +171,8 @@ public:
 	virtual bool is_window_minimized() const { return false; }
 	virtual void set_window_maximized(bool p_enabled) {}
 	virtual bool is_window_maximized() const { return true; }
+
+
 
 
 	virtual void set_iterations_per_second(int p_ips);
@@ -374,6 +376,7 @@ public:
 	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 	virtual bool native_video_is_playing() const;
 	virtual void native_video_pause();
+	virtual void native_video_unpause();
 	virtual void native_video_stop();
 
 	virtual bool can_use_threads() const;
@@ -401,6 +404,13 @@ public:
 
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device)const;
+
+	enum EngineContext {
+		CONTEXT_EDITOR,
+		CONTEXT_PROJECTMAN,
+	};
+
+	virtual void set_context(int p_context);
 
 	OS();	
 	virtual ~OS();

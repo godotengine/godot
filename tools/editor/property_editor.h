@@ -259,24 +259,18 @@ class SectionedPropertyEditor : public HBoxContainer {
 	OBJ_TYPE(SectionedPropertyEditor,HBoxContainer);
 	ItemList *sections;
 	SectionedPropertyEditorFilter *filter;
-	LineEdit *search_box;
-	ToolButton *clear_button;
 	PropertyEditor *editor;
 
+
+	static void _bind_methods();
 	void _section_selected(int p_which);
 
-protected:
-
-	void _notification(int p_what);
-	static void _bind_methods();
 public:
 
 	PropertyEditor *get_property_editor();
 	void edit(Object* p_object);
 	String get_full_item_path(const String& p_item);
 	String get_current_section() const;
-
-	void clear_search_box();
 
 	SectionedPropertyEditor();
 	~SectionedPropertyEditor();

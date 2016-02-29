@@ -35,6 +35,7 @@
 #include "scene/gui/separator.h"
 #include "editor_node.h"
 #include "tools/editor/plugins/animation_player_editor_plugin.h"
+#include "scene/main/viewport.h"
 /* Missing to fix:
 
   *Set
@@ -256,6 +257,28 @@ public:
 
 	//PopupDialog *ke_dialog;
 
+	void _fix_node_path(Variant &value) {
+
+
+		NodePath np=value;
+
+		if (np==NodePath())
+			return;
+
+		Node* root = EditorNode::get_singleton()->get_tree()->get_root();
+
+		Node* np_node = root->get_node(np);
+		ERR_FAIL_COND(!np_node);
+
+		Node* edited_node = root->get_node(base);
+		ERR_FAIL_COND(!edited_node);
+
+
+
+		value = edited_node->get_path_to(np_node);
+	}
+
+
 	void _update_obj(const Ref<Animation> &p_anim) {
 		if (setting)
 			return;
@@ -356,10 +379,18 @@ public:
 			case Animation::TYPE_VALUE: {
 
 				if (name=="value") {
+
+					Variant value = p_value;
+
+					if (value.get_type()==Variant::NODE_PATH) {
+
+						_fix_node_path(value);
+					}
+
 					setting=true;
 					undo_redo->create_action("Anim Change Value",true);
 					Variant prev =  animation->track_get_key_value(track,key);
-					undo_redo->add_do_method(animation.ptr(),"track_set_key_value",track,key,p_value);
+					undo_redo->add_do_method(animation.ptr(),"track_set_key_value",track,key,value);
 					undo_redo->add_undo_method(animation.ptr(),"track_set_key_value",track,key,prev);
 					undo_redo->add_do_method(this,"_update_obj",animation);
 					undo_redo->add_undo_method(this,"_update_obj",animation);
@@ -420,7 +451,14 @@ public:
 
 					}
 					if (what=="value") {
-						args[idx]=p_value;
+
+						Variant value=p_value;
+						if (value.get_type()==Variant::NODE_PATH) {
+
+							_fix_node_path(value);
+						}
+
+						args[idx]=value;
 						d_new["args"]=args;
 						mergeable=true;
 					}
@@ -441,7 +479,7 @@ public:
 			} break;
 		}
 
-		return false;
+		
 
 		return false;
 
@@ -616,6 +654,7 @@ public:
 	float key_ofs;
 
 	PropertyInfo hint;
+	NodePath base;
 
 
 	void notify_change() {
@@ -1630,8 +1669,9 @@ void AnimationKeyEditor::_select_at_anim(const Ref<Animation>& p_anim,int p_trac
 }
 
 
-PropertyInfo AnimationKeyEditor::_find_hint_for_track(int p_idx) {
+PropertyInfo AnimationKeyEditor::_find_hint_for_track(int p_idx,NodePath& r_base_path) {
 
+	r_base_path=NodePath();
 	ERR_FAIL_COND_V(!animation.is_valid(),PropertyInfo());
 	ERR_FAIL_INDEX_V(p_idx,animation->get_track_count(),PropertyInfo());
 
@@ -1640,15 +1680,21 @@ PropertyInfo AnimationKeyEditor::_find_hint_for_track(int p_idx) {
 
 	NodePath path = animation->track_get_path(p_idx);
 
-	String property = path.get_property();
-	if (property=="")
-		return PropertyInfo();
 
 	if (!root->has_node_and_resource(path))
 		return PropertyInfo();
 
 	RES res;
 	Node *node = root->get_node_and_resource(path,res);
+
+
+	if (node) {
+		r_base_path=node->get_path();
+	}
+
+	String property = path.get_property();
+	if (property=="")
+		return PropertyInfo();
 
 	List<PropertyInfo> pinfo;
 	if (res.is_valid())
@@ -1729,7 +1775,7 @@ bool AnimationKeyEditor::_edit_if_single_selection() {
 		key_edit->animation=animation;
 		key_edit->track=idx;
 		key_edit->key_ofs=animation->track_get_key_time(idx,key);
-		key_edit->hint=_find_hint_for_track(idx);
+		key_edit->hint=_find_hint_for_track(idx,key_edit->base);
 		key_edit->notify_change();
 
 		curve_edit->set_transition(animation->track_get_key_transition(idx,key));
@@ -2187,7 +2233,8 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 								newval=d;
 							} else if (tt==Animation::TYPE_VALUE) {
 
-								PropertyInfo inf = _find_hint_for_track(idx);
+								NodePath np;
+								PropertyInfo inf = _find_hint_for_track(idx,np);
 								if (inf.type!=Variant::NIL) {
 
 									Variant::CallError err;
@@ -2810,9 +2857,12 @@ void AnimationKeyEditor::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
 			EditorNode::get_singleton()->update_keying();
+			emit_signal("keying_changed");
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+
+				key_editor->edit(key_edit);
 
 				zoomicon->set_texture( get_icon("Zoom","EditorIcons") );
 
@@ -2973,6 +3023,7 @@ void AnimationKeyEditor::_clear_selection() {
 	key_edit->track=0;
 	key_edit->key_ofs=0;
 	key_edit->hint=PropertyInfo();
+	key_edit->base=NodePath();
 	key_edit->notify_change();
 
 }
@@ -3020,9 +3071,14 @@ Node *AnimationKeyEditor::get_root() const {
 
 
 
-void AnimationKeyEditor::set_keying(bool p_enabled) {
+void AnimationKeyEditor::update_keying() {
 
-	keying=p_enabled;
+	bool keying_enabled=is_visible() && animation.is_valid();
+
+	if (keying_enabled==keying)
+		return;
+
+	keying=keying_enabled;
 	_update_menu();
 	emit_signal("keying_changed");
 
@@ -3030,7 +3086,7 @@ void AnimationKeyEditor::set_keying(bool p_enabled) {
 
 bool AnimationKeyEditor::has_keying() const {
 
-	return is_visible() && animation.is_valid();
+	return keying;
 }
 
 void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
@@ -3262,9 +3318,10 @@ int AnimationKeyEditor::_confirm_insert(InsertData p_id,int p_last_track) {
 
 			{
 				//shitty hack
+				NodePath np;
 				animation->add_track(p_id.type);
 				animation->track_set_path(animation->get_track_count()-1,p_id.path);
-				PropertyInfo h = _find_hint_for_track(animation->get_track_count()-1);
+				PropertyInfo h = _find_hint_for_track(animation->get_track_count()-1,np);
 				animation->remove_track(animation->get_track_count()-1); //hack
 
 
@@ -3638,6 +3695,9 @@ void AnimationKeyEditor::_add_call_track(const NodePath& p_base) {
 
 	NodePath path = root->get_path_to(from);
 
+	//print_line("root: "+String(root->get_path()));
+	//print_line("path: "+String(path));
+
 	undo_redo->create_action("Anim Add Call Track");
 	undo_redo->add_do_method(animation.ptr(),"add_track",Animation::TYPE_METHOD);
 	undo_redo->add_do_method(animation.ptr(),"track_set_path",animation->get_track_count(),path);
@@ -3924,7 +3984,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	key_edit = memnew( AnimationKeyEdit );
 	key_edit->undo_redo=undo_redo;
 	//key_edit->ke_dialog=key_edit_dialog;
-	key_editor->edit(key_edit);
+
 	type_menu = memnew( PopupMenu );
 	add_child(type_menu);
 	for(int i=0;i<Variant::VARIANT_MAX;i++)

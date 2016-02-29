@@ -49,21 +49,20 @@ private:
 		JOYSTICKS_MAX = 16,
 		MAX_ABS = 63,
 		MAX_KEY = 767,   // Hack because <linux/input.h> can't be included here
-		BT_MISC = 256,
-		HAT_MAX = 4,
 	};
 
 	struct Joystick {
 		InputDefault::JoyAxis curr_axis[MAX_ABS];
-		int key_map[MAX_KEY - BT_MISC];
+		int key_map[MAX_KEY];
 		int abs_map[MAX_ABS];
 		int dpad;
 		int fd;
 
 		String devpath;
-		struct libevdev *dev;
+		input_absinfo *abs_info[MAX_ABS];
 
 		Joystick();
+		~Joystick();
 		void reset();
 	};
 
@@ -72,6 +71,7 @@ private:
 	Thread *joy_thread;
 	InputDefault *input;
 	Joystick joysticks[JOYSTICKS_MAX];
+	Vector<String> attached_devices;
 
 	static void joy_thread_func(void *p_user);
 
@@ -80,8 +80,11 @@ private:
 
 	void setup_joystick_properties(int p_id);
 	void close_joystick(int p_id = -1);
+#ifdef UDEV_ENABLED
 	void enumerate_joysticks(struct udev *_udev);
 	void monitor_joysticks(struct udev *_udev);
+#endif
+	void monitor_joysticks();
 	void run_joystick_thread();
 	void open_joystick(const char* path);
 

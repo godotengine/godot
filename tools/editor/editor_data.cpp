@@ -422,6 +422,14 @@ void EditorData::add_editor_plugin(EditorPlugin *p_plugin) {
 	editor_plugins.push_back(p_plugin);
 }
 
+int EditorData::get_editor_plugin_count() const {
+	return editor_plugins.size();
+}
+EditorPlugin *EditorData::get_editor_plugin(int p_idx) {
+
+	ERR_FAIL_INDEX_V(p_idx,editor_plugins.size(),NULL);
+	return editor_plugins[p_idx];
+}
 
 
 void EditorData::add_custom_type(const String& p_type, const String& p_inherits,const Ref<Script>& p_script,const Ref<Texture>& p_icon ) {
@@ -635,6 +643,16 @@ String EditorData::get_scene_type(int p_idx) const {
 	return edited_scene[p_idx].root->get_type();
 
 }
+void EditorData::move_edited_scene_to_index(int p_idx) {
+
+	ERR_FAIL_INDEX(current_edited_scene,edited_scene.size());
+	ERR_FAIL_INDEX(p_idx,edited_scene.size());
+
+	EditedScene es=edited_scene[current_edited_scene];
+	edited_scene.remove(current_edited_scene);
+	edited_scene.insert(p_idx,es);
+	current_edited_scene=p_idx;
+}
 
 Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
 
@@ -781,6 +799,8 @@ void EditorSelection::_node_removed(Node *p_node) {
 
 void EditorSelection::add_node(Node *p_node) {
 
+	ERR_FAIL_NULL(p_node);
+
 	if (selection.has(p_node))
 		return;
 
@@ -804,6 +824,8 @@ void EditorSelection::add_node(Node *p_node) {
 
 void EditorSelection::remove_node(Node *p_node) {
 
+	ERR_FAIL_NULL(p_node);
+
 	if (!selection.has(p_node))
 		return;
 
@@ -822,12 +844,25 @@ bool EditorSelection::is_selected(Node * p_node) const {
 }
 
 
+Array EditorSelection::_get_selected_nodes() {
+
+	Array ret;
+
+	for (List<Node*>::Element *E=selected_node_list.front();E;E=E->next()) {
+
+		ret.push_back(E->get());
+	}
+
+	return ret;
+}
 
 void EditorSelection::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_node_removed"),&EditorSelection::_node_removed);
 	ObjectTypeDB::bind_method(_MD("clear"),&EditorSelection::clear);
-	ObjectTypeDB::bind_method(_MD("add_node"),&EditorSelection::add_node);
+	ObjectTypeDB::bind_method(_MD("add_node","node:Node"),&EditorSelection::add_node);
+	ObjectTypeDB::bind_method(_MD("remove_node","node:Node"),&EditorSelection::remove_node);
+	ObjectTypeDB::bind_method(_MD("get_selected_nodes"),&EditorSelection::_get_selected_nodes);
 	ADD_SIGNAL( MethodInfo("selection_changed") );
 
 }

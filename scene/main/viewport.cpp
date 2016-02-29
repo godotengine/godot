@@ -331,20 +331,24 @@ void Viewport::_notification(int p_what) {
 				}
 			}
 
+
+			parent=NULL;
+			Node *parent_node=get_parent();
+
+
+			while(parent_node) {
+
+				parent = parent_node->cast_to<Viewport>();
+				if (parent)
+					break;
+
+				parent_node=parent_node->get_parent();
+			}
+
+
 			if (!render_target)
 				_vp_enter_tree();
 
-			this->parent=NULL;
-			Node *parent=get_parent();
-
-			if (parent) {
-
-
-				while(parent && !(this->parent=parent->cast_to<Viewport>())) {
-
-					parent=parent->get_parent();
-				}
-			}
 
 			current_canvas=find_world_2d()->get_canvas();
 			VisualServer::get_singleton()->viewport_set_scenario(viewport,find_world()->get_scenario());
@@ -402,7 +406,7 @@ void Viewport::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 
 
-
+			_gui_cancel_tooltip();
 			if (world_2d.is_valid())
 				world_2d->_remove_viewport(this);
 
@@ -430,6 +434,12 @@ void Viewport::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_FIXED_PROCESS: {
 
+			if (gui.tooltip_timer>=0) {
+				gui.tooltip_timer-=get_fixed_process_delta_time();
+				if (gui.tooltip_timer<0) {
+					_gui_show_tooltip();
+				}
+			}
 
 			if (get_tree()->is_debugging_collisions_hint() && contact_2d_debug.is_valid()) {
 
@@ -523,7 +533,7 @@ void Viewport::_notification(int p_what) {
 
 						Vector2 point = get_canvas_transform().affine_inverse().xform(pos);
 						Physics2DDirectSpaceState::ShapeResult res[64];
-						int rc = ss2d->intersect_point(point,res,64,Set<RID>(),0xFFFFFFFF,0xFFFFFFFF);
+						int rc = ss2d->intersect_point(point,res,64,Set<RID>(),0xFFFFFFFF,0xFFFFFFFF,true);
 						for(int i=0;i<rc;i++) {
 
 							if (res[i].collider_id && res[i].collider) {
@@ -845,7 +855,7 @@ void Viewport::_camera_transform_changed_notify() {
 #endif
 }
 
-void Viewport::_set_camera(Camera* p_camera) {
+void Viewport::_camera_set(Camera* p_camera) {
 
 #ifndef _3D_DISABLED
 
@@ -868,6 +878,36 @@ void Viewport::_set_camera(Camera* p_camera) {
 	_update_listener();
 	_camera_transform_changed_notify();
 #endif
+}
+
+bool Viewport::_camera_add(Camera* p_camera) {
+
+	cameras.insert(p_camera);
+	return cameras.size()==1;
+}
+
+void Viewport::_camera_remove(Camera* p_camera) {
+
+	cameras.erase(p_camera);
+	if (camera==p_camera) {
+		camera=NULL;
+	}
+}
+
+void Viewport::_camera_make_next_current(Camera* p_exclude) {
+
+	for(Set<Camera*>::Element *E=cameras.front();E;E=E->next()) {
+
+		if (p_exclude==E->get())
+			continue;
+		if (!E->get()->is_inside_tree())
+			continue;
+		if (camera!=NULL)
+			return;
+
+		E->get()->make_current();
+
+	}
 }
 
 
@@ -1372,10 +1412,11 @@ void Viewport::_gui_sort_roots() {
 void Viewport::_gui_cancel_tooltip() {
 
 	gui.tooltip=NULL;
-	if (gui.tooltip_timer)
-		gui.tooltip_timer->stop();
-	if (gui.tooltip_popup)
-		gui.tooltip_popup->hide();
+	gui.tooltip_timer=-1;
+	if (gui.tooltip_popup) {
+		gui.tooltip_popup->queue_delete();
+		gui.tooltip_popup=NULL;
+	}
 
 }
 
@@ -1389,10 +1430,25 @@ void Viewport::_gui_show_tooltip() {
 	if (tooltip.length()==0)
 		return; // bye
 
-
-	if (!gui.tooltip_label) {
-		return;
+	if (gui.tooltip_popup) {
+		memdelete(gui.tooltip_popup);
+		gui.tooltip_popup=NULL;
 	}
+
+	Control *rp = gui.tooltip->get_root_parent_control();
+	if (!rp)
+		return;
+
+
+	gui.tooltip_popup = memnew( TooltipPanel );
+
+	rp->add_child(gui.tooltip_popup);
+	gui.tooltip_popup->force_parent_owned();
+	gui.tooltip_label = memnew( TooltipLabel );
+	gui.tooltip_popup->add_child(gui.tooltip_label);
+	gui.tooltip_popup->set_as_toplevel(true);
+	gui.tooltip_popup->hide();
+
 	Ref<StyleBox> ttp = gui.tooltip_label->get_stylebox("panel","TooltipPanel");
 
 	gui.tooltip_label->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_BEGIN,ttp->get_margin(MARGIN_LEFT));
@@ -1412,11 +1468,10 @@ void Viewport::_gui_show_tooltip() {
 	else if (r.pos.y<0)
 		r.pos.y=0;
 
-	gui.tooltip_popup->set_pos(r.pos);
+	gui.tooltip_popup->set_global_pos(r.pos);
 	gui.tooltip_popup->set_size(r.size);
 
 	gui.tooltip_popup->raise();
-
 	gui.tooltip_popup->show();
 }
 
@@ -1461,12 +1516,15 @@ Control* Viewport::_gui_find_control(const Point2& p_global)  {
 		CanvasItem *pci = sw->get_parent_item();
 		if (pci)
 			xform=pci->get_global_transform_with_canvas();
-
+		else
+			xform=sw->get_canvas_transform();
 
 		Control *ret = _gui_find_control_at_pos(sw,p_global,xform,gui.focus_inv_xform);
 		if (ret)
 			return ret;
 	}
+
+	_gui_sort_roots();
 
 	for (List<Control*>::Element *E=gui.roots.back();E;E=E->prev()) {
 
@@ -1478,6 +1536,8 @@ Control* Viewport::_gui_find_control(const Point2& p_global)  {
 		CanvasItem *pci = sw->get_parent_item();
 		if (pci)
 			xform=pci->get_global_transform_with_canvas();
+		else
+			xform=sw->get_canvas_transform();
 
 
 		Control *ret = _gui_find_control_at_pos(sw,p_global,xform,gui.focus_inv_xform);
@@ -1597,7 +1657,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 
 
-					Matrix32 parent_xform;
+					//Matrix32 parent_xform;
 
 					//if (data.parent_canvas_item)
 					//	parent_xform=data.parent_canvas_item->get_global_transform();
@@ -1656,7 +1716,8 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 				get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
 				get_tree()->set_input_as_handled();
 
-				gui.tooltip_popup->hide();
+				_gui_cancel_tooltip();
+				//gui.tooltip_popup->hide();
 
 			} else {
 
@@ -1742,6 +1803,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 			}
 
 
+
 			if (gui.drag_data.get_type()==Variant::NIL && over && !gui.modal_stack.empty()) {
 
 				Control *top = gui.modal_stack.back()->get();
@@ -1775,7 +1837,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 			}
 
 
-			Matrix32 localizer = over->get_canvas_transform().affine_inverse();
+			Matrix32 localizer = over->get_global_transform_with_canvas().affine_inverse();
 			Size2 pos = localizer.xform(mpos);
 			Vector2 speed = localizer.basis_xform(Point2(p_event.mouse_motion.speed_x,p_event.mouse_motion.speed_y));
 			Vector2 rel = localizer.basis_xform(Point2(p_event.mouse_motion.relative_x,p_event.mouse_motion.relative_y));
@@ -1788,7 +1850,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 			p_event.mouse_motion.relative_x=rel.x;
 			p_event.mouse_motion.relative_y=rel.y;
 
-			if (p_event.mouse_motion.button_mask==0 && gui.tooltip_timer) {
+			if (p_event.mouse_motion.button_mask==0) {
 				//nothing pressed
 
 				bool can_tooltip=true;
@@ -1804,12 +1866,13 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 					gui.tooltip=over;
 					gui.tooltip_pos=mpos;//(parent_xform * get_transform()).affine_inverse().xform(pos);
-					gui.tooltip_timer->start();
+					gui.tooltip_timer=gui.tooltip_delay;
+
 				}
 			}
 
 
-			pos = gui.focus_inv_xform.xform(pos);
+			//pos = gui.focus_inv_xform.xform(pos);
 
 
 			p_event.mouse_motion.x = pos.x;
@@ -2049,8 +2112,10 @@ void Viewport::_gui_hid_control(Control *p_control) {
 		gui.mouse_over=NULL;
 	if (gui.tooltip == p_control)
 		gui.tooltip=NULL;
-	if (gui.tooltip == p_control)
+	if (gui.tooltip == p_control) {
 		gui.tooltip=NULL;
+		_gui_cancel_tooltip();
+	}
 
 }
 
@@ -2065,6 +2130,9 @@ void Viewport::_gui_remove_control(Control *p_control) {
 		gui.mouse_over=NULL;
 	if (gui.tooltip == p_control)
 		gui.tooltip=NULL;
+	if (gui.tooltip_popup == p_control) {
+		_gui_cancel_tooltip();
+	}
 
 
 }
@@ -2143,7 +2211,7 @@ void Viewport::_gui_grab_click_focus(Control *p_control) {
 
 		//send unclic
 
-		Point2 click =gui.mouse_focus->get_global_transform().affine_inverse().xform(gui.last_mouse_pos);
+		Point2 click =gui.mouse_focus->get_global_transform_with_canvas().affine_inverse().xform(gui.last_mouse_pos);
 		mb.x=click.x;
 		mb.y=click.y;
 		mb.button_index=gui.mouse_focus_button;
@@ -2152,8 +2220,8 @@ void Viewport::_gui_grab_click_focus(Control *p_control) {
 
 
 		gui.mouse_focus=p_control;
-		gui.focus_inv_xform=gui.mouse_focus->get_global_transform().affine_inverse();
-		click =gui.mouse_focus->get_global_transform().affine_inverse().xform(gui.last_mouse_pos);
+		gui.focus_inv_xform=gui.mouse_focus->get_global_transform_with_canvas().affine_inverse();
+		click =gui.mouse_focus->get_global_transform_with_canvas().affine_inverse().xform(gui.last_mouse_pos);
 		mb.x=click.x;
 		mb.y=click.y;
 		mb.button_index=gui.mouse_focus_button;
@@ -2457,21 +2525,16 @@ Viewport::Viewport() {
 	disable_input=false;
 
 	//window tooltip
-	gui.tooltip_timer = memnew( Timer );
-	add_child(gui.tooltip_timer);
-	gui.tooltip_timer->force_parent_owned();
-	gui.tooltip_timer->set_wait_time( GLOBAL_DEF("display/tooltip_delay",0.7));
-	gui.tooltip_timer->connect("timeout",this,"_gui_show_tooltip");
+	gui.tooltip_timer = -1;
+
+	//gui.tooltip_timer->force_parent_owned();
+	gui.tooltip_delay=GLOBAL_DEF("display/tooltip_delay",0.7);
+
 	gui.tooltip=NULL;
-	gui.tooltip_popup = memnew( TooltipPanel );
-	add_child(gui.tooltip_popup);
-	gui.tooltip_popup->force_parent_owned();
-	gui.tooltip_label = memnew( TooltipLabel );
-	gui.tooltip_popup->add_child(gui.tooltip_label);
-	gui.tooltip_popup->set_as_toplevel(true);
-	gui.tooltip_popup->hide();
-	gui.drag_attempted=false;
+	gui.tooltip_label=NULL;
 	gui.drag_preview=NULL;
+	gui.drag_attempted=false;
+
 
 	parent_control=NULL;
 

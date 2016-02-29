@@ -26,6 +26,7 @@ public:
 	void set_abort_on_missing_resources(bool p_abort);
 	StringArray get_dependencies(const String& p_path);
 	bool has(const String& p_path);
+	Ref<ResourceImportMetadata> load_import_metadata(const String& p_path);
 
 	_ResourceLoader();
 };
@@ -131,6 +132,7 @@ public:
 	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 	bool native_video_is_playing();
 	void native_video_pause();
+	void native_video_unpause();
 	void native_video_stop();
 
 	void set_iterations_per_second(int p_ips);
@@ -270,6 +272,8 @@ public:
 
 	bool is_ok_left_and_cancel_right() const;
 
+	Error set_thread_name(const String& p_name);
+
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();
@@ -390,7 +394,7 @@ public:
 	virtual void store_pascal_string(const String& p_string);
 	virtual String get_pascal_string();
 
-	Vector<String> get_csv_line() const;
+	Vector<String> get_csv_line(String delim=",") const;
 
 
 	void store_buffer(const DVector<uint8_t>& p_buffer); ///< store an array of bytes
@@ -512,7 +516,6 @@ protected:
 	Object *target_instance;
 	StringName target_method;
 	Thread *thread;
-	String name;
 	static void _bind_methods();
 	static void _start_func(void *ud);
 public:
@@ -528,7 +531,6 @@ public:
 	String get_id() const;
 	bool is_active() const;
 	Variant wait_to_finish();
-	Error set_name(const String& p_name);
 
 	_Thread();
 	~_Thread();

@@ -83,6 +83,22 @@ public:
 		Point2 pos;
 	};
 
+	enum {
+		JOY_EVENT_BUTTON = 0,
+		JOY_EVENT_AXIS = 1,
+		JOY_EVENT_HAT = 2
+	};
+
+	struct JoystickEvent {
+
+		int device;
+		int type;
+		int index;
+		bool pressed;
+		float value;
+		int hat;
+	};
+
 private:
 
 	Vector<TouchPos> touch;
@@ -224,6 +240,7 @@ public:
 
 	void process_accelerometer(const Vector3& p_accelerometer);
 	void process_touch(int p_what,int p_pointer, const Vector<TouchPos>& p_points);
+	void process_joy_event(JoystickEvent p_event);
 	void process_event(InputEvent p_event);
 	void init_video_mode(int p_video_width,int p_video_height);
 
@@ -231,6 +248,10 @@ public:
 	virtual bool native_video_is_playing();
 	virtual void native_video_pause();
 	virtual void native_video_stop();
+
+	virtual bool is_joy_known(int p_device);
+	virtual String get_joy_guid(int p_device) const;
+	void joy_connection_changed(int p_device, bool p_connected, String p_name);
 
 	OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, bool p_use_apk_expansion);
 	~OS_Android();

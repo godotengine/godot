@@ -124,6 +124,13 @@ Error ImageLoaderPNG::_load_image(void *rf_up,png_rw_ptr p_func,Image *p_image) 
 		png_read_update_info(png, info);
 	}
 
+	if (png_get_valid(png,info,PNG_INFO_tRNS)) {
+//		png_set_expand_gray_1_2_4_to_8(png);
+		png_set_tRNS_to_alpha(png);
+		png_read_update_info(png, info);
+		png_get_IHDR(png, info, &width, &height, &depth, &color, NULL, NULL, NULL);
+	}
+
 	int palette_colors = 0;
 	int palette_components = 0;
 	int components = 0;

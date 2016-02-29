@@ -51,6 +51,8 @@
 #include "packed_data_container.h"
 #include "func_ref.h"
 #include "input_map.h"
+#include "undo_redo.h"
+#include "range_iterator.h"
 
 #ifdef XML_ENABLED
 static ResourceFormatSaverXML *resource_saver_xml=NULL;
@@ -128,6 +130,8 @@ void register_core_types() {
 //	ObjectTypeDB::register_type<OptimizedSaver>();
 	ObjectTypeDB::register_type<Translation>();
 	ObjectTypeDB::register_type<PHashTranslation>();
+	ObjectTypeDB::register_type<UndoRedo>();
+	ObjectTypeDB::register_type<RangeIterator>();
 
 	ObjectTypeDB::register_type<HTTPClient>();
 

@@ -55,11 +55,17 @@ bool _ResourceLoader::has(const String &p_path) {
 	return ResourceCache::has(local_path);
 };
 
+Ref<ResourceImportMetadata> _ResourceLoader::load_import_metadata(const String& p_path) {
+
+	return ResourceLoader::load_import_metadata(p_path);
+}
+
 void _ResourceLoader::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("load_interactive:ResourceInteractiveLoader","path","type_hint"),&_ResourceLoader::load_interactive,DEFVAL(""));
 	ObjectTypeDB::bind_method(_MD("load:Resource","path","type_hint", "p_no_cache"),&_ResourceLoader::load,DEFVAL(""), DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("load_import_metadata:ResourceImportMetadata","path"),&_ResourceLoader::load_import_metadata);
 	ObjectTypeDB::bind_method(_MD("get_recognized_extensions_for_type","type"),&_ResourceLoader::get_recognized_extensions_for_type);
 	ObjectTypeDB::bind_method(_MD("set_abort_on_missing_resources","abort"),&_ResourceLoader::set_abort_on_missing_resources);
 	ObjectTypeDB::bind_method(_MD("get_dependencies","path"),&_ResourceLoader::get_dependencies);
@@ -390,6 +396,12 @@ bool _OS::is_ok_left_and_cancel_right() const {
 	return OS::get_singleton()->get_swap_ok_cancel();
 }
 
+Error _OS::set_thread_name(const String& p_name) {
+
+	return Thread::set_name(p_name);
+};
+
+
 /*
 enum Weekday {
 	DAY_SUNDAY,
@@ -683,6 +695,10 @@ void _OS::native_video_pause() {
 	OS::get_singleton()->native_video_pause();
 };
 
+void _OS::native_video_unpause() {
+	OS::get_singleton()->native_video_unpause();
+};
+
 void _OS::native_video_stop() {
 
 	OS::get_singleton()->native_video_stop();
@@ -868,6 +884,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("native_video_is_playing"),&_OS::native_video_is_playing);
 	ObjectTypeDB::bind_method(_MD("native_video_stop"),&_OS::native_video_stop);
 	ObjectTypeDB::bind_method(_MD("native_video_pause"),&_OS::native_video_pause);
+	ObjectTypeDB::bind_method(_MD("native_video_unpause"),&_OS::native_video_unpause);
 
 	ObjectTypeDB::bind_method(_MD("get_scancode_string","code"),&_OS::get_scancode_string);
 	ObjectTypeDB::bind_method(_MD("is_scancode_unicode","code"),&_OS::is_scancode_unicode);
@@ -876,6 +893,8 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
 
 	ObjectTypeDB::bind_method(_MD("alert","text","title"),&_OS::alert,DEFVAL("Alert!"));
+
+	ObjectTypeDB::bind_method(_MD("set_thread_name","name"),&_OS::set_thread_name);
 
 
 	BIND_CONSTANT( DAY_SUNDAY );
@@ -1313,9 +1332,9 @@ String _File::get_line() const{
 
 }
 
-Vector<String> _File::get_csv_line() const {
+Vector<String> _File::get_csv_line(String delim) const {
 	ERR_FAIL_COND_V(!f,Vector<String>());
-	return f->get_csv_line();
+	return f->get_csv_line(delim);
 }
 
 /**< use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
@@ -1498,7 +1517,7 @@ void _File::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_endian_swap","enable"),&_File::set_endian_swap);
 	ObjectTypeDB::bind_method(_MD("get_error:Error"),&_File::get_error);
 	ObjectTypeDB::bind_method(_MD("get_var"),&_File::get_var);
-	ObjectTypeDB::bind_method(_MD("get_csv_line"),&_File::get_csv_line);
+	ObjectTypeDB::bind_method(_MD("get_csv_line","delim"),&_File::get_csv_line,DEFVAL(","));
 
 	ObjectTypeDB::bind_method(_MD("store_8","value"),&_File::store_8);
 	ObjectTypeDB::bind_method(_MD("store_16","value"),&_File::store_16);
@@ -1895,13 +1914,7 @@ void _Thread::_start_func(void *ud) {
 	Variant::CallError ce;
 	const Variant* arg[1]={&t->userdata};
 
-	// we don't know our thread pointer yet :(
-	if (t->name == "") {
-		// come up with a better name using maybe the filename on the Script?
-		//t->thread->set_name(t->target_method);
-	} else {
-		//t->thread->set_name(t->name);
-	};
+	Thread::set_name(t->target_method);
 
 	t->ret=t->target_instance->call(t->target_method,arg,1,ce);
 	if (ce.error!=Variant::CallError::CALL_OK) {
@@ -1992,24 +2005,12 @@ Variant _Thread::wait_to_finish() {
 	return r;
 }
 
-Error _Thread::set_name(const String &p_name) {
-
-	name = p_name;
-
-	if (thread) {
-		return thread->set_name(p_name);
-	};
-
-	return OK;
-};
-
 void _Thread::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("start:Error","instance","method","userdata","priority"),&_Thread::start,DEFVAL(Variant()),DEFVAL(PRIORITY_NORMAL));
 	ObjectTypeDB::bind_method(_MD("get_id"),&_Thread::get_id);
 	ObjectTypeDB::bind_method(_MD("is_active"),&_Thread::is_active);
 	ObjectTypeDB::bind_method(_MD("wait_to_finish:Variant"),&_Thread::wait_to_finish);
-	ObjectTypeDB::bind_method(_MD("set_name:Error", "name"),&_Thread::set_name);
 
 	BIND_CONSTANT( PRIORITY_LOW );
 	BIND_CONSTANT( PRIORITY_NORMAL );

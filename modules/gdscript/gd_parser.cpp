@@ -283,13 +283,23 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				return NULL;
 			}
 			tokenizer->advance();
-			if (tokenizer->get_token()!=GDTokenizer::TK_CONSTANT || tokenizer->get_token_constant().get_type()!=Variant::STRING) {
-				_set_error("Expected string constant as 'preload' argument.");
+
+			String path;
+			bool valid = false;
+			Node *subexpr = _parse_and_reduce_expression(p_parent, p_static);
+			if (subexpr) {
+				if (subexpr->type == Node::TYPE_CONSTANT) {
+					ConstantNode *cn = static_cast<ConstantNode*>(subexpr);
+					if (cn->value.get_type() == Variant::STRING) {
+						valid = true;
+						path = (String) cn->value;
+					}
+				}
+			}
+			if (!valid) {
+				_set_error("expected string constant as 'preload' argument.");
 				return NULL;
 			}
-
-
-			String path = tokenizer->get_token_constant();
 			if (!path.is_abs_path() && base_path!="")
 				path=base_path+"/"+path;
 			path = path.replace("///","//").simplify_path();
@@ -321,8 +331,6 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 					return NULL;
 				}
 			}
-
-			tokenizer->advance();
 
 			if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
 				_set_error("Expected ')' after 'preload' path");
@@ -1771,6 +1779,20 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 					return;
 				}
 
+				// Little optimisation for common usage "for i in range(...):":
+				// don't create and initialize a possibly huge array as range()
+				// would do, but instead create an iterator using xrange()
+				if (container->type == Node::TYPE_OPERATOR) {
+					OperatorNode *op = static_cast<OperatorNode *>(container);
+					if (op->arguments.size() > 0 &&
+							op->arguments[0]->type == Node::TYPE_BUILT_IN_FUNCTION) {
+						BuiltInFunctionNode *c = static_cast<BuiltInFunctionNode *>(op->arguments[0]);
+						if (c->function == GDFunctions::GEN_RANGE) {
+							c->function = GDFunctions::GEN_XRANGE;
+						}
+					}
+				}
+
 				ControlFlowNode *cf_for = alloc_node<ControlFlowNode>();
 
 				cf_for->cf_type=ControlFlowNode::CF_FOR;
@@ -1782,7 +1804,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 				p_block->sub_blocks.push_back(cf_for->body);
 
 				if (!_enter_indent_block(cf_for->body)) {
-					_set_error("Expected indented block after 'while'");
+					_set_error("Expected indented block after 'for'");
 					p_block->end_line=tokenizer->get_token_line();
 					return;
 				}
@@ -3143,6 +3165,11 @@ Error GDParser::parse(const String& p_code, const String& p_base_path, bool p_ju
 	memdelete(tt);
 	tokenizer=NULL;
 	return ret;
+}
+
+bool GDParser::is_tool_script() const {
+
+	return (head && head->type==Node::TYPE_CLASS && static_cast<const ClassNode*>(head)->tool);
 }
 
 const GDParser::Node *GDParser::get_parse_tree() const {

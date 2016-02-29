@@ -93,7 +93,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		editor->connect("hide_animation_player_editors",this,"_hide_anim_editors");
+//		editor->connect("hide_animation_player_editors",this,"_hide_anim_editors");
 		add_anim->set_icon( get_icon("New","EditorIcons") );
 		rename_anim->set_icon( get_icon("Rename","EditorIcons") );
 		duplicate_anim->set_icon( get_icon("Duplicate","EditorIcons") );
@@ -128,15 +128,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		anim_editor_load->set_hover_texture( get_icon("AnimGetHl","EditorIcons"));
 		anim_editor_store->set_hover_texture( get_icon("AnimSetHl","EditorIcons"));
 */
-	}
-
-	if (p_what==NOTIFICATION_READY) {
 
 		get_tree()->connect("node_removed",this,"_node_removed");
-	}
-
-	if (p_what==NOTIFICATION_DRAW) {
-
 	}
 }
 
@@ -628,10 +621,11 @@ void AnimationPlayerEditor::ensure_visibility() {
 
 Dictionary AnimationPlayerEditor::get_state() const {
 
+
 	Dictionary d;
 
 	d["visible"]=is_visible();
-	if (is_visible() && player) {
+	if (EditorNode::get_singleton()->get_edited_scene() && is_visible() && player) {
 		d["player"]=EditorNode::get_singleton()->get_edited_scene()->get_path_to(player);
 		d["animation"]=player->get_current_animation();
 
@@ -643,6 +637,9 @@ Dictionary AnimationPlayerEditor::get_state() const {
 void AnimationPlayerEditor::set_state(const Dictionary& p_state) {
 
 	if (p_state.has("visible") && p_state["visible"]) {
+
+		if (!EditorNode::get_singleton()->get_edited_scene())
+			return;
 
 		Node *n = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["player"]);
 		if (n && n->cast_to<AnimationPlayer>()) {
@@ -949,6 +946,14 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value) {
 	anim=player->get_animation(current);
 
 	float pos = anim->get_length() * (p_value / frame->get_max());
+	float step = anim->get_step();
+	if (step) {
+		pos=Math::stepify(pos, step);
+		if (pos<0)
+			pos=0;
+		if (pos>=anim->get_length())
+			pos=anim->get_length();
+	}
 
 	if (player->is_valid()) {
 		float cpos = player->get_current_animation_pos();
@@ -1305,7 +1310,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 	frame = memnew( SpinBox );
 	hb->add_child(frame);
-	frame->set_custom_minimum_size(Size2(80,0));
+	frame->set_custom_minimum_size(Size2(60,0));
 	frame->set_stretch_ratio(2);
 	frame->set_tooltip("Animation position (in seconds).");
 

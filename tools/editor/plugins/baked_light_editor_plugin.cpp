@@ -332,7 +332,7 @@ BakedLightEditorPlugin::BakedLightEditorPlugin(EditorNode *p_node) {
 	editor=p_node;
 	baked_light_editor = memnew( BakedLightEditor );
 	editor->get_viewport()->add_child(baked_light_editor);
-	add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU,baked_light_editor->bake_hbox);
+	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU,baked_light_editor->bake_hbox);
 	baked_light_editor->hide();
 	baked_light_editor->bake_hbox->hide();
 }

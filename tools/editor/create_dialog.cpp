@@ -171,6 +171,7 @@ void CreateDialog::_update_search() {
 
 		if (EditorNode::get_editor_data().get_custom_types().has(type)) {
 			//there are custom types based on this... cool.
+			//print_line("there are custom types");
 
 
 			const Vector<EditorData::CustomType> &ct = EditorNode::get_editor_data().get_custom_types()[type];
@@ -259,7 +260,33 @@ Object *CreateDialog::instance_selected() {
 	TreeItem *selected = search_options->get_selected();
 	if (selected) {
 
-		return ObjectTypeDB::instance(selected->get_text(0));
+		String custom = selected->get_metadata(0);
+		if (custom!=String()) {
+			if (EditorNode::get_editor_data().get_custom_types().has(custom)) {
+
+				for(int i=0;i<EditorNode::get_editor_data().get_custom_types()[custom].size();i++) {
+					if (EditorNode::get_editor_data().get_custom_types()[custom][i].name==selected->get_text(0)) {
+						Ref<Texture> icon = EditorNode::get_editor_data().get_custom_types()[custom][i].icon;
+						Ref<Script> script = EditorNode::get_editor_data().get_custom_types()[custom][i].script;
+						String name = selected->get_text(0);
+
+						Object *ob = ObjectTypeDB::instance(custom);
+						ERR_FAIL_COND_V(!ob,NULL);
+						if (ob->is_type("Node")) {
+							ob->call("set_name",name);
+						}
+						ob->set_script(script.get_ref_ptr());
+						if (icon.is_valid())
+							ob->set_meta("_editor_icon",icon);
+						return ob;
+
+					}
+				}
+
+			}
+		} else {
+			return ObjectTypeDB::instance(selected->get_text(0));
+		}
 	}
 
 	return NULL;

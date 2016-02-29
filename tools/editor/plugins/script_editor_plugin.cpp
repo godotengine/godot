@@ -609,7 +609,7 @@ void ScriptEditor::_breaked(bool p_breaked,bool p_can_debug) {
 
 void ScriptEditor::_show_debugger(bool p_show) {
 
-	debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW), p_show);
+//	debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW), p_show);
 }
 
 void ScriptEditor::_script_created(Ref<Script> p_script) {
@@ -935,6 +935,9 @@ void ScriptEditor::_menu_option(int p_option) {
 			if (!_test_script_times_on_disk())
 				return;
 
+			save_all_scripts();
+
+#if 0
 			for(int i=0;i<tab_container->get_child_count();i++) {
 
 				ScriptTextEditor *ste = tab_container->get_child(i)->cast_to<ScriptTextEditor>();
@@ -951,7 +954,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				editor->save_resource( script );
 			}
 
-
+#endif
 		} break;
 		case SEARCH_HELP: {
 
@@ -976,7 +979,7 @@ void ScriptEditor::_menu_option(int p_option) {
 		} break;
 		case SEARCH_WEBSITE: {
 
-			OS::get_singleton()->shell_open("http://www.godotengine.org/projects/godot-engine/wiki/Documentation#Tutorials");
+			OS::get_singleton()->shell_open("http://docs.godotengine.org/");
 		} break;
 
 		case WINDOW_NEXT: {
@@ -1018,8 +1021,10 @@ void ScriptEditor::_menu_option(int p_option) {
 				script_create_dialog->popup_centered(Size2(300, 300));
 			} break;
 			case FILE_SAVE: {
-				if (!_test_script_times_on_disk())
+
+				if (_test_script_times_on_disk())
 					return;
+
 				editor->save_resource( current->get_edited_script() );
 
 			} break;
@@ -1692,7 +1697,7 @@ void ScriptEditor::ensure_select_current() {
 
 			Ref<Script> script = ste->get_edited_script();
 
-			if (!grab_focus_block && is_inside_tree())
+			if (!grab_focus_block && is_visible())
 				ste->get_text_edit()->grab_focus();
 
 			edit_menu->show();
@@ -1936,9 +1941,7 @@ void ScriptEditor::edit(const Ref<Script>& p_script) {
 	}
 }
 
-void ScriptEditor::save_external_data() {
-
-	apply_scripts();
+void ScriptEditor::save_all_scripts() {
 
 
 	for(int i=0;i<tab_container->get_child_count();i++) {
@@ -1947,9 +1950,13 @@ void ScriptEditor::save_external_data() {
 		if (!ste)
 			continue;
 
+		if (ste->get_text_edit()->get_version()==ste->get_text_edit()->get_saved_version())
+			continue;
+
 		Ref<Script> script = ste->get_edited_script();
 		if (script->get_path()!="" && script->get_path().find("local://")==-1 &&script->get_path().find("::")==-1) {
 			//external script, save it
+			ste->apply_code();
 			editor->save_resource(script);
 			//ResourceSaver::save(script->get_path(),script);
 		}
@@ -2061,7 +2068,7 @@ void ScriptEditor::_editor_settings_changed() {
 void ScriptEditor::_autosave_scripts() {
 
 	print_line("autosaving");
-	save_external_data();
+	save_all_scripts();
 }
 
 void ScriptEditor::_tree_changed() {
@@ -2479,13 +2486,13 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_back->connect("pressed",this,"_history_back");
 	menu_hb->add_child(script_back);
 	script_back->set_disabled(true);
-	help_search->set_tooltip("Go to previous edited document.");
+	script_back->set_tooltip("Go to previous edited document.");
 
 	script_forward = memnew( ToolButton );
 	script_forward->connect("pressed",this,"_history_forward");
 	menu_hb->add_child(script_forward);
 	script_forward->set_disabled(true);
-	help_search->set_tooltip("Go to next edited document.");
+	script_forward->set_tooltip("Go to next edited document.");
 
 
 
@@ -2626,7 +2633,7 @@ void ScriptEditorPlugin::clear() {
 
 void ScriptEditorPlugin::save_external_data() {
 
-	script_editor->save_external_data();
+	script_editor->save_all_scripts();
 }
 
 void ScriptEditorPlugin::apply_changes() {
@@ -2670,7 +2677,7 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	editor=p_node;
 	script_editor = memnew( ScriptEditor(p_node) );
 	editor->get_viewport()->add_child(script_editor);
-	script_editor->set_area_as_parent_rect();
+	script_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	script_editor->hide();
 

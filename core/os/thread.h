@@ -63,6 +63,7 @@ protected:
 	static Thread* (*create_func)(ThreadCreateCallback p_callback,void *,const Settings&);
 	static ID (*get_thread_ID_func)();
 	static void (*wait_to_finish_func)(Thread*);
+	static Error (*set_name_func)(const String&);
 
     friend class Main;
 
@@ -73,10 +74,9 @@ protected:
 public:
 		
 
-	virtual Error set_name(const String& p_name);
-		
 	virtual ID get_ID() const=0;
-	
+
+	static Error set_name(const String &p_name);
 	_FORCE_INLINE_ static ID get_main_ID() { return _main_thread_id; } ///< get the ID of the main thread
 	static ID get_caller_ID(); ///< get the ID of the caller function ID
 	static void wait_to_finish(Thread *p_thread); ///< waits until thread is finished, and deallocates it.

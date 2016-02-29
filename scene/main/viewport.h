@@ -187,7 +187,8 @@ friend class RenderTargetTexture;
 		bool drag_attempted;
 		Variant drag_data;
 		Control *drag_preview;
-		Timer *tooltip_timer;
+		float tooltip_timer;
+		float tooltip_delay;
 		List<Control*> modal_stack;
 		unsigned int cancelled_input_ID;
 		Matrix32 focus_inv_xform;
@@ -263,7 +264,11 @@ friend class Control;
 
 friend class Camera;
 	void _camera_transform_changed_notify();
-	void _set_camera(Camera* p_camera);
+	void _camera_set(Camera* p_camera);
+	bool _camera_add(Camera* p_camera); //true if first
+	void _camera_remove(Camera* p_camera);
+	void _camera_make_next_current(Camera* p_exclude);
+
 
 protected:	
 	void _notification(int p_what);

@@ -726,8 +726,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 	/* Determine Video Driver */
 
-	if (audio_driver=="") // specified in engine.cfg
+	if (audio_driver=="") { // specified in engine.cfg
 		audio_driver=GLOBAL_DEF("audio/driver",OS::get_singleton()->get_audio_driver_name(0));
+	}
 		
 	
 	for (int i=0;i<OS::get_singleton()->get_video_driver_count();i++) {
@@ -758,7 +759,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	if (audio_driver_idx<0) {
 	
 		OS::get_singleton()->alert( "Invalid Audio Driver: "+audio_driver );
-		goto error;
+		audio_driver_idx = 0;
+		//goto error;
 	}
 
 	{
@@ -1009,6 +1011,7 @@ bool Main::start() {
 	bool noquit=false;
 	bool convert_old=false;
 	bool export_debug=false;
+	bool project_manager_request = false;
 	List<String> args = OS::get_singleton()->get_cmdline_args();
 	for (int i=0;i<args.size();i++) {
 		//parameters that do not have an argument to the right
@@ -1020,6 +1023,8 @@ bool Main::start() {
 			convert_old=true;
 		} else if (args[i]=="-editor" || args[i]=="-e") {
 			editor=true;
+		} else if (args[i] == "-pm" || args[i] == "-project_manager") {
+			project_manager_request = true;
 		} else if (args[i].length() && args[i][0] != '-' && game_path == "") {
 			game_path=args[i];
 		}
@@ -1253,7 +1258,7 @@ bool Main::start() {
 		}
 
 
-		if (game_path!="") {
+		if (game_path!="" && !project_manager_request) {
 
 			String local_game_path=game_path.replace("\\","/");
 
@@ -1319,6 +1324,7 @@ bool Main::start() {
 						}
 					}
 				}
+				OS::get_singleton()->set_context(OS::CONTEXT_EDITOR);
 
 				//editor_node->set_edited_scene(game);
 			} else {
@@ -1459,10 +1465,11 @@ bool Main::start() {
 			};
 		}
 */
-		if (script=="" && test=="" && game_path=="" && !editor) {
+		if (project_manager_request || (script=="" && test=="" && game_path=="" && !editor)) {
 
 			ProjectManager *pmanager = memnew( ProjectManager );
 			sml->get_root()->add_child(pmanager);
+			OS::get_singleton()->set_context(OS::CONTEXT_PROJECTMAN);
 		}
 
 #endif

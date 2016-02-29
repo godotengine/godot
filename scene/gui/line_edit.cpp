@@ -80,8 +80,8 @@ void LineEdit::_input_event(InputEvent p_event) {
 				selection.creating=false;
 				selection.doubleclick=false;
 
-                // notify to show soft keyboard
-                notification(NOTIFICATION_FOCUS_ENTER);
+				if (OS::get_singleton()->has_virtual_keyboard())
+					OS::get_singleton()->show_virtual_keyboard(get_text(),get_global_rect());
 			}
 			
 			update();				
@@ -230,8 +230,9 @@ void LineEdit::_input_event(InputEvent p_event) {
 					case KEY_RETURN: {
 
 						emit_signal( "text_entered",text );
-                        // notify to hide soft keyboard
-						   notification(NOTIFICATION_FOCUS_EXIT);
+						if (OS::get_singleton()->has_virtual_keyboard())
+							OS::get_singleton()->hide_virtual_keyboard();
+
 						return;
 					} break;
 

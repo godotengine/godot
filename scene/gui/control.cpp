@@ -85,9 +85,14 @@ Size2 Control::edit_get_minimum_size() const {
 void Control::edit_set_rect(const Rect2& p_edit_rect) {
 
 
-	Rect2 new_rect=get_rect();
+	Matrix32 postxf;
+	postxf.set_rotation_and_scale(data.rotation,data.scale);
+	Vector2 new_pos = postxf.xform(p_edit_rect.pos);
 
-	new_rect.pos+=p_edit_rect.pos.snapped(Vector2(1,1));
+	Vector2 pos = get_pos()+new_pos;
+
+	Rect2 new_rect=get_rect();
+	new_rect.pos=pos.snapped(Vector2(1,1));
 	new_rect.size=p_edit_rect.size.snapped(Vector2(1,1));
 
 	set_pos(new_rect.pos);
@@ -508,6 +513,10 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_THEME_CHANGED: {
 
 			update();
+		} break;
+		case NOTIFICATION_MODAL_CLOSE: {
+
+			emit_signal("modal_close");
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
@@ -1593,7 +1602,9 @@ bool Control::has_focus() const {
 
 void Control::grab_focus() {
 
-	ERR_FAIL_COND(!is_inside_tree());
+	if (!is_inside_tree()){
+		ERR_FAIL_COND(!is_inside_tree());
+	}
 	if (data.focus_mode==FOCUS_NONE)
 		return;
 
@@ -2067,6 +2078,8 @@ Control *Control::get_root_parent_control() const {
 	return const_cast<Control*>(root);
 }
 
+
+
 void Control::_bind_methods() {
 
 
@@ -2246,6 +2259,7 @@ void Control::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("focus_exit") );
 	ADD_SIGNAL( MethodInfo("size_flags_changed") );
 	ADD_SIGNAL( MethodInfo("minimum_size_changed") );
+	ADD_SIGNAL( MethodInfo("modal_close") );
 
 	
 }

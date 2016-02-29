@@ -54,6 +54,8 @@ void EventPlayer::set_stream(const Ref<EventStream> &p_stream) {
 	stream=p_stream;
 	if (stream.is_valid())
 		playback=stream->instance_playback();
+	else
+		playback.unref();
 
 	if (playback.is_valid()) {
 

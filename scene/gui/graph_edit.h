@@ -4,7 +4,9 @@
 #include "scene/gui/graph_node.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
+#include "scene/gui/tool_button.h"
 #include "texture_frame.h"
+
 class GraphEdit;
 
 class GraphEditFilter : public Control {
@@ -35,8 +37,15 @@ public:
 	};
 private:
 
-	TextureFrame* zoom_icon;
-	HSlider* sl_zoom;
+
+	ToolButton *zoom_minus;
+	ToolButton *zoom_reset;
+	ToolButton *zoom_plus;
+
+	void _zoom_minus();
+	void _zoom_reset();
+	void _zoom_plus();
+
 	HScrollBar* h_scroll;
 	VScrollBar* v_scroll;
 
@@ -93,7 +102,7 @@ protected:
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	void _notification(int p_what);
-
+	virtual bool clips_input() const;
 public:
 
 	Error connect_node(const StringName& p_from, int p_from_port,const StringName& p_to,int p_to_port);

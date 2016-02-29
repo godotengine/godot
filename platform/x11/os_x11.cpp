@@ -65,7 +65,6 @@
 
 
 #include <X11/Xatom.h>
-//#include "os/pc_joystick_map.h"
 
 #undef CursorShape
 
@@ -78,7 +77,7 @@ const char * OS_X11::get_video_driver_name(int p_driver) const {
 }
 
 OS::VideoMode OS_X11::get_default_video_mode() const {
-	return OS::VideoMode(1280,720,false);
+	return OS::VideoMode(1024,600,false);
 }
 
 int OS_X11::get_audio_driver_count() const {
@@ -575,6 +574,10 @@ Point2 OS_X11::get_mouse_pos() const {
 
 void OS_X11::set_window_title(const String& p_title) {
 	XStoreName(x11_display,x11_window,p_title.utf8().get_data());
+
+	Atom _net_wm_name = XInternAtom(x11_display, "_NET_WM_NAME", false);
+	Atom utf8_string = XInternAtom(x11_display, "UTF8_STRING", false);
+	XChangeProperty( x11_display, x11_window, _net_wm_name, utf8_string, 8, PropModeReplace, (unsigned char*) p_title.utf8().get_data(), p_title.utf8().length());
 }
 
 void OS_X11::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
@@ -1780,6 +1783,22 @@ bool OS_X11::is_joy_known(int p_device) {
 
 String OS_X11::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
+}
+
+void OS_X11::set_context(int p_context) {
+
+	XClassHint* classHint = NULL;
+	classHint = XAllocClassHint();
+	if (classHint) {
+
+		if (p_context == CONTEXT_EDITOR)
+			classHint->res_name = (char *)"Godot_Editor";
+		if (p_context == CONTEXT_PROJECTMAN)
+			classHint->res_name = (char *)"Godot_ProjectList";
+		classHint->res_class = (char *)"Godot";
+		XSetClassHint(x11_display, x11_window, classHint);
+		XFree(classHint);
+	}
 }
 
 OS_X11::OS_X11() {

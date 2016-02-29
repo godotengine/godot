@@ -38,18 +38,18 @@
 ProjectSettings *ProjectSettings::singleton=NULL;
 
 static const char* _button_names[JOY_BUTTON_MAX]={
-"PS X, XBox A, NDS B",
-"PS Circle, XBox B, NDS A",
-"PS Square, XBox X, NDS Y",
-"PS Triangle, XBox Y, NDS X",
-"L, L1, Wii C",
+"PS X, XBox A, Nintendo B",
+"PS Circle, XBox B, Nintendo A",
+"PS Square, XBox X, Nintendo Y",
+"PS Triangle, XBox Y, Nintendo X",
+"L, L1",
 "R, R1",
-"L2, Wii Z",
+"L2",
 "R2",
 "L3",
 "R3",
-"Select, Wii -",
-"Start, Wii +",
+"Select, Nintendo -",
+"Start, Nintendo +",
 "D-Pad Up",
 "D-Pad Down",
 "D-Pad Left",
@@ -59,6 +59,9 @@ static const char* _button_names[JOY_BUTTON_MAX]={
 void ProjectSettings::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
+
+		search_button->set_icon(get_icon("Zoom","EditorIcons"));
+		clear_button->set_icon(get_icon("Close","EditorIcons"));
 
 		translation_list->connect("button_pressed",this,"_translation_delete");
 		_update_actions();
@@ -90,38 +93,75 @@ void ProjectSettings::_notification(int p_what) {
 
 			autoload_file_open->add_filter("*."+E->get());
 		}
-	} else if (p_what==NOTIFICATION_POST_POPUP) {
 
-		globals_editor->clear_search_box();
 	}
 }
 
-void ProjectSettings::_action_persist_toggle() {
+void ProjectSettings::_action_selected() {
 
+	TreeItem *ti=input_editor->get_selected();
+	if (!ti || !ti->is_editable(0))
+		return;
+
+	add_at="input/"+ti->get_text(0);
+}
+
+void ProjectSettings::_action_edited() {
 
 	TreeItem *ti=input_editor->get_selected();
 	if (!ti)
 		return;
 
-	String name="input/"+ti->get_text(0);
+	String new_name=ti->get_text(0);
+	String old_name=add_at.substr(add_at.find("/")+1,add_at.length());
 
-	bool prev = Globals::get_singleton()->is_persisting(name);
-	print_line("prev persist: "+itos(prev));
-	print_line("new persist: "+itos(ti->is_checked(0)));
-	if (prev==ti->is_checked(0))
+	if (new_name==old_name)
 		return;
 
+	if (new_name.find("/")!=-1 || new_name.find(":")!=-1 || new_name=="") {
+
+		ti->set_text(0,old_name);
+		add_at="input/"+old_name;
+
+		message->set_text("Invalid Action (Anything goes but / or :).");
+		message->popup_centered(Size2(300,100));
+		return;
+	}
+
+	String action_prop="input/"+new_name;
+
+	if (Globals::get_singleton()->has(action_prop)) {
+
+		ti->set_text(0,old_name);
+		add_at="input/"+old_name;
+
+		message->set_text("Action '"+new_name+"' already exists!.");
+		message->popup_centered(Size2(300,100));
+		return;
+	}
+
+	int order = Globals::get_singleton()->get_order(add_at);
+	Array va = Globals::get_singleton()->get(add_at);
+	bool persisting = Globals::get_singleton()->is_persisting(add_at);
 
 	setting=true;
-	undo_redo->create_action("Change Input Action Persistence");
-	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",name,ti->is_checked(0));
-	undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",name,prev);
+	undo_redo->create_action("Rename Input Action Event");
+	undo_redo->add_do_method(Globals::get_singleton(),"clear",add_at);
+	undo_redo->add_do_method(Globals::get_singleton(),"set",action_prop,va);
+	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",action_prop,persisting);
+	undo_redo->add_do_method(Globals::get_singleton(),"set_order",action_prop,order);
+	undo_redo->add_undo_method(Globals::get_singleton(),"clear",action_prop);
+	undo_redo->add_undo_method(Globals::get_singleton(),"set",add_at,va);
+	undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",add_at,persisting);
+	undo_redo->add_undo_method(Globals::get_singleton(),"set_order",add_at,order);
 	undo_redo->add_do_method(this,"_update_actions");
 	undo_redo->add_undo_method(this,"_update_actions");
 	undo_redo->add_do_method(this,"_settings_changed");
 	undo_redo->add_undo_method(this,"_settings_changed");
 	undo_redo->commit_action();
 	setting=false;
+
+	add_at=action_prop;
 
 }
 
@@ -296,12 +336,24 @@ void ProjectSettings::_add_item(int p_item){
 		case InputEvent::JOYSTICK_MOTION: {
 
 			device_id->set_val(0);
-			device_index_label->set_text("Joy Button Axis:");
+			device_index_label->set_text("Joystick Axis Index:");
 			device_index->clear();
-			for(int i=0;i<24;i++) {
+			for(int i=0;i<JOY_AXIS_MAX*2;i++) {
+
+				String desc;
+
+				int ax=i/2;
+				if (ax==0 || ax==1)
+					desc=" (Left Stick)";
+				else if (ax==2 || ax==3)
+					desc=" (Right Stick)";
+				else if (ax==6)
+					desc=" (L2)";
+				else if (ax==7)
+					desc=" (R2)";
 
 
-				device_index->add_item("Axis "+itos(i/2)+" "+(i&1?"+":"-"));
+				device_index->add_item("Axis "+itos(i/2)+" "+(i&1?"+":"-")+desc);
 			}
 			device_input->popup_centered(Size2(350,95));
 
@@ -309,12 +361,12 @@ void ProjectSettings::_add_item(int p_item){
 		case InputEvent::JOYSTICK_BUTTON: {
 
 			device_id->set_val(0);
-			device_index_label->set_text("Joy Button Index:");
+			device_index_label->set_text("Joystick Button Index:");
 			device_index->clear();
 
 			for(int i=0;i<JOY_BUTTON_MAX;i++) {
 
-				device_index->add_item(String(_button_names[i]));
+				device_index->add_item(itos(i)+": "+String(_button_names[i]));
 			}
 			device_input->popup_centered(Size2(350,95));
 
@@ -343,15 +395,6 @@ void ProjectSettings::_action_button_pressed(Object* p_obj, int p_column,int p_i
 		add_at="input/"+ti->get_text(0);
 
 	} else if (p_id==2) {
-		//rename
-
-		add_at="input/"+ti->get_text(0);
-		rename_action->popup_centered();
-		rename_action->get_line_edit()->set_text(ti->get_text(0));
-		rename_action->get_line_edit()->set_cursor_pos(ti->get_text(0).length());
-		rename_action->get_line_edit()->select_all();
-
-	} else if (p_id==3) {
 		//remove
 
 		if (ti->get_parent()==input_editor->get_root()) {
@@ -433,13 +476,11 @@ void ProjectSettings::_update_actions() {
 		item->set_text(0,name);
 		item->add_button(0,get_icon("Add","EditorIcons"),1);
 		if (!Globals::get_singleton()->get_input_presets().find(pi.name)) {
-			item->add_button(0,get_icon("Rename","EditorIcons"),2);
-			item->add_button(0,get_icon("Remove","EditorIcons"),3);
+			item->add_button(0,get_icon("Remove","EditorIcons"),2);
+			item->set_editable(0,true);
 		}
 		item->set_custom_bg_color(0,get_color("prop_subsection","Editor"));
-		item->set_editable(0,true);
 		//item->set_checked(0,pi.usage&PROPERTY_USAGE_CHECKED);
-
 
 
 		Array actions=Globals::get_singleton()->get(pi.name);
@@ -473,7 +514,7 @@ void ProjectSettings::_update_actions() {
 				case InputEvent::JOYSTICK_BUTTON: {
 
 					String str = "Device "+itos(ie.device)+", Button "+itos(ie.joy_button.button_index);
-					if (ie.joy_button.button_index>=0 && ie.joy_button.button_index<14)
+					if (ie.joy_button.button_index>=0 && ie.joy_button.button_index<JOY_BUTTON_MAX)
 						str+=String()+" ("+_button_names[ie.joy_button.button_index]+").";
 					else
 						str+=".";
@@ -498,12 +539,23 @@ void ProjectSettings::_update_actions() {
 				} break;
 				case InputEvent::JOYSTICK_MOTION: {
 
-					String str = "Device "+itos(ie.device)+", Axis "+itos(ie.joy_motion.axis)+" "+(ie.joy_motion.axis_value<0?"-.":"+.");
+					String desc;
+					int ax = ie.joy_motion.axis;
+
+					if (ax==0 || ax==1)
+						desc=" (Left Stick).";
+					else if (ax==2 || ax==3)
+						desc=" (Right Stick).";
+					else if (ax==6)
+						desc=" (L2).";
+					else if (ax==7)
+						desc=" (R2).";
+					String str = "Device "+itos(ie.device)+", Axis "+itos(ie.joy_motion.axis)+" "+(ie.joy_motion.axis_value<0?"-":"+")+desc;
 					action->set_text(0,str);
 					action->set_icon(0,get_icon("JoyAxis","EditorIcons"));
 				} break;
 			}
-			action->add_button(0,get_icon("Remove","EditorIcons"),3);
+			action->add_button(0,get_icon("Remove","EditorIcons"),2);
 			action->set_metadata(0,i);
 		}
 	}
@@ -518,6 +570,7 @@ void ProjectSettings::popup_project_settings() {
 	globals_editor->edit(Globals::get_singleton());
 	_update_translations();
 	_update_autoload();
+	plugin_settings->update_plugins();
 }
 
 
@@ -634,45 +687,6 @@ void ProjectSettings::_action_add() {
 
 }
 
-void ProjectSettings::_action_rename(const String &p_name) {
-
-
-	if (p_name.find("/")!=-1 || p_name.find(":")!=-1 || p_name=="") {
-		message->set_text("Invalid Action (Anything goes but / or :).");
-		message->popup_centered(Size2(300,100));
-		return;
-	}
-
-	String new_name = "input/"+p_name;
-
-	if (Globals::get_singleton()->has(new_name)) {
-		message->set_text("Action '"+p_name+"' already exists!.");
-		message->popup_centered(Size2(300,100));
-		return;
-	}
-
-	int order = Globals::get_singleton()->get_order(add_at);
-	Array va = Globals::get_singleton()->get(add_at);
-	bool persisting = Globals::get_singleton()->is_persisting(add_at);
-
-	undo_redo->create_action("Rename Input Action Event");
-	undo_redo->add_do_method(Globals::get_singleton(),"clear",add_at);
-	undo_redo->add_do_method(Globals::get_singleton(),"set",new_name,va);
-	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",new_name,persisting);
-	undo_redo->add_do_method(Globals::get_singleton(),"set_order",new_name,order);
-	undo_redo->add_undo_method(Globals::get_singleton(),"clear",new_name);
-	undo_redo->add_undo_method(Globals::get_singleton(),"set",add_at,va);
-	undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",add_at,persisting);
-	undo_redo->add_undo_method(Globals::get_singleton(),"set_order",add_at,order);
-	undo_redo->add_do_method(this,"_update_actions");
-	undo_redo->add_undo_method(this,"_update_actions");
-	undo_redo->add_do_method(this,"_settings_changed");
-	undo_redo->add_undo_method(this,"_settings_changed");
-	undo_redo->commit_action();
-
-	rename_action->hide();
-}
-
 
 void ProjectSettings::_item_checked(const String& p_item, bool p_check) {
 
@@ -724,6 +738,10 @@ void ProjectSettings::_settings_prop_edited(const String& p_name) {
 void ProjectSettings::_settings_changed() {
 
 	timer->start();
+}
+
+void ProjectSettings::queue_save() {
+	_settings_changed();
 }
 
 
@@ -822,6 +840,7 @@ void ProjectSettings::_autoload_edited() {
 	String base="autoload/"+ti->get_text(0);
 
 	String path = Globals::get_singleton()->get(base);
+	int order = Globals::get_singleton()->get_order(base);
 
 	if (path.begins_with("*"))
 		path=path.substr(1,path.length());
@@ -832,6 +851,8 @@ void ProjectSettings::_autoload_edited() {
 	undo_redo->create_action("Toggle Autoload GlobalVar");
 	undo_redo->add_do_property(Globals::get_singleton(),base,path);
 	undo_redo->add_undo_property(Globals::get_singleton(),base,Globals::get_singleton()->get(base));
+	undo_redo->add_do_method(Globals::get_singleton(),"set_order",base,order); // keep order, as config order matters for these
+	undo_redo->add_undo_method(Globals::get_singleton(),"set_order",base,order);
 	undo_redo->add_do_method(this,"_update_autoload");
 	undo_redo->add_undo_method(this,"_update_autoload");
 	undo_redo->add_do_method(this,"_settings_changed");
@@ -923,10 +944,12 @@ void ProjectSettings::_autoload_delete(Object *p_item,int p_column, int p_button
 
 	if (p_button==0) {
 		//delete
+		int order = Globals::get_singleton()->get_order(name);
 		undo_redo->create_action("Remove Autoload");
 		undo_redo->add_do_property(Globals::get_singleton(),name,Variant());
 		undo_redo->add_undo_property(Globals::get_singleton(),name,Globals::get_singleton()->get(name));
 		undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",name,true);
+		undo_redo->add_undo_method(Globals::get_singleton(),"set_order",name,order);
 		undo_redo->add_do_method(this,"_update_autoload");
 		undo_redo->add_undo_method(this,"_update_autoload");
 		undo_redo->add_do_method(this,"_settings_changed");
@@ -1338,6 +1361,32 @@ void ProjectSettings::_update_autoload() {
 
 }
 
+void ProjectSettings::_toggle_search_bar(bool p_pressed) {
+
+	globals_editor->get_property_editor()->set_use_filter(p_pressed);
+
+	if (p_pressed) {
+
+		search_bar->show();
+		add_prop_bar->hide();
+		search_box->grab_focus();
+		search_box->select_all();
+	} else {
+
+		search_bar->hide();
+		add_prop_bar->show();
+	}
+}
+
+void ProjectSettings::_clear_search_box() {
+
+	if (search_box->get_text()=="")
+		return;
+
+	search_box->clear();
+	globals_editor->get_property_editor()->update_tree();
+}
+
 void ProjectSettings::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_item_selected"),&ProjectSettings::_item_selected);
@@ -1348,9 +1397,9 @@ void ProjectSettings::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_save"),&ProjectSettings::_save);
 	ObjectTypeDB::bind_method(_MD("_action_add"),&ProjectSettings::_action_add);
 	ObjectTypeDB::bind_method(_MD("_action_adds"),&ProjectSettings::_action_adds);
-	ObjectTypeDB::bind_method(_MD("_action_persist_toggle"),&ProjectSettings::_action_persist_toggle);
+	ObjectTypeDB::bind_method(_MD("_action_selected"),&ProjectSettings::_action_selected);
+	ObjectTypeDB::bind_method(_MD("_action_edited"),&ProjectSettings::_action_edited);
 	ObjectTypeDB::bind_method(_MD("_action_button_pressed"),&ProjectSettings::_action_button_pressed);
-	ObjectTypeDB::bind_method(_MD("_action_rename"),&ProjectSettings::_action_rename);
 	ObjectTypeDB::bind_method(_MD("_update_actions"),&ProjectSettings::_update_actions);
 	ObjectTypeDB::bind_method(_MD("_wait_for_key"),&ProjectSettings::_wait_for_key);
 	ObjectTypeDB::bind_method(_MD("_add_item"),&ProjectSettings::_add_item);
@@ -1379,6 +1428,9 @@ void ProjectSettings::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_update_autoload"),&ProjectSettings::_update_autoload);
 	ObjectTypeDB::bind_method(_MD("_autoload_delete"),&ProjectSettings::_autoload_delete);
 	ObjectTypeDB::bind_method(_MD("_autoload_edited"),&ProjectSettings::_autoload_edited);
+
+	ObjectTypeDB::bind_method(_MD("_clear_search_box"),&ProjectSettings::_clear_search_box);
+	ObjectTypeDB::bind_method(_MD("_toggle_search_bar"),&ProjectSettings::_toggle_search_bar);
 
 }
 
@@ -1410,50 +1462,77 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	props_base->add_child(hbc);
 
+	search_button = memnew( ToolButton );
+	search_button->set_toggle_mode(true);
+	search_button->set_pressed(false);
+	search_button->set_text("Search");
+	hbc->add_child(search_button);
+	search_button->connect("toggled",this,"_toggle_search_bar");
+
+	hbc->add_child( memnew( VSeparator ) );
+
+	add_prop_bar = memnew( HBoxContainer );
+	add_prop_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	hbc->add_child(add_prop_bar);
+
 	Label *l = memnew( Label );
-	hbc->add_child(l);
+	add_prop_bar->add_child(l);
 	l->set_text("Category:");
 
 	category = memnew( LineEdit );
 	category->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	hbc->add_child(category);
+	add_prop_bar->add_child(category);
 	category->connect("text_entered",this,"_item_adds");
 
 	l = memnew( Label );
-	hbc->add_child(l);
+	add_prop_bar->add_child(l);
 	l->set_text("Property:");
 
 	property = memnew( LineEdit );
 	property->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	hbc->add_child(property);
+	add_prop_bar->add_child(property);
 	property->connect("text_entered",this,"_item_adds");
 
 	l = memnew( Label );
-	hbc->add_child(l);
+	add_prop_bar->add_child(l);
 	l->set_text("Type:");
 
 	type = memnew( OptionButton );
 	type->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	hbc->add_child(type);
+	add_prop_bar->add_child(type);
 	type->add_item("bool");
 	type->add_item("int");
 	type->add_item("float");
 	type->add_item("string");
 
 	Button *add = memnew( Button );
-	hbc->add_child(add);
+	add_prop_bar->add_child(add);
 	add->set_text("Add");
 	add->connect("pressed",this,"_item_add");
 
 	Button *del = memnew( Button );
-	hbc->add_child(del);
+	add_prop_bar->add_child(del);
 	del->set_text("Del");
 	del->connect("pressed",this,"_item_del");
+
+	search_bar = memnew( HBoxContainer );
+	search_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	hbc->add_child(search_bar);
+	search_bar->hide();
+
+	search_box = memnew( LineEdit );
+	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search_bar->add_child(search_box);
+
+	clear_button = memnew( ToolButton );
+	search_bar->add_child(clear_button);
+	clear_button->connect("pressed",this,"_clear_search_box");
 
 	globals_editor = memnew( SectionedPropertyEditor );
 	props_base->add_child(globals_editor);
 	//globals_editor->hide_top_label();
 	globals_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	globals_editor->get_property_editor()->register_text_enter(search_box);
 	globals_editor->get_property_editor()->set_capitalize_paths(false);
 	globals_editor->get_property_editor()->get_scene_tree()->connect("cell_selected",this,"_item_selected");
 	globals_editor->get_property_editor()->connect("property_toggled",this,"_item_checked",varray(),CONNECT_DEFERRED);
@@ -1535,18 +1614,12 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	input_editor->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END, 35 );
 	input_editor->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN, 5 );
 	input_editor->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END, 5 );
-	input_editor->connect("item_edited",this,"_action_persist_toggle");
+	input_editor->connect("item_edited",this,"_action_edited");
+	input_editor->connect("cell_selected",this,"_action_selected");
 	input_editor->connect("button_pressed",this,"_action_button_pressed");
 	popup_add = memnew( PopupMenu );
 	add_child(popup_add);
 	popup_add->connect("item_pressed",this,"_add_item");
-
-	rename_action = memnew( EditorNameDialog );
-	add_child(rename_action);
-	rename_action->set_hide_on_ok(false);
-	rename_action->set_size(Size2(200, 70));
-	rename_action->set_title("Rename Input Action");
-	rename_action->connect("name_confirmed", this,"_action_rename");
 
 	press_a_key = memnew( ConfirmationDialog );
 	press_a_key->set_focus_mode(FOCUS_ALL);
@@ -1760,6 +1833,13 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 		updating_autoload=false;
 
+	}
+
+	{
+
+		plugin_settings = memnew( EditorPluginSettings );
+		plugin_settings->set_name("Plugins");
+		tab_container->add_child(plugin_settings);
 	}
 
 	timer = memnew( Timer );

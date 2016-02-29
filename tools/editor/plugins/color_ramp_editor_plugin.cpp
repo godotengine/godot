@@ -13,9 +13,9 @@ ColorRampEditorPlugin::ColorRampEditorPlugin(EditorNode *p_node, bool p_2d) {
 
 	_2d=p_2d;
 	if (p_2d)
-		add_custom_control(CONTAINER_CANVAS_EDITOR_BOTTOM,ramp_editor);
+		add_control_to_container(CONTAINER_CANVAS_EDITOR_BOTTOM,ramp_editor);
 	else
-		add_custom_control(CONTAINER_SPATIAL_EDITOR_BOTTOM,ramp_editor);
+		add_control_to_container(CONTAINER_SPATIAL_EDITOR_BOTTOM,ramp_editor);
 
 	ramp_editor->set_custom_minimum_size(Size2(100, 48));
 	ramp_editor->hide();

@@ -76,9 +76,6 @@ class ScriptEditorDebugger : public Control {
 
 
 
-	TextureButton *tb;
-
-
 	TabContainer *tabs;
 
 	LineEdit *reason;
@@ -129,7 +126,6 @@ class ScriptEditorDebugger : public Control {
 	void _performance_select(Object *, int, bool);
 	void _stack_dump_frame_selected();
 	void _output_clear();
-	void _hide_request();
 
 	void _scene_tree_request();
 	void _parse_message(const String& p_msg,const Array& p_data);

@@ -36,14 +36,21 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.content.ContextWrapper;
 import android.view.InputDevice;
+import android.hardware.input.InputManager;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.opengles.GL10;
 
+import org.godotengine.godot.input.InputManagerCompat;
+import org.godotengine.godot.input.InputManagerCompat.InputDeviceListener;
 /**
  * A simple GLSurfaceView sub-class that demonstrate how to perform
  * OpenGL ES 2.0 rendering into a GL Surface. Note the following important
@@ -62,7 +69,7 @@ import javax.microedition.khronos.opengles.GL10;
  *   that matches it exactly (with regards to red/green/blue/alpha channels
  *   bit depths). Failure to do so would result in an EGL_BAD_MATCH error.
  */
-public class GodotView extends GLSurfaceView {
+public class GodotView extends GLSurfaceView implements InputDeviceListener {
 
 	private static String TAG = "GodotView";
 	private static final boolean DEBUG = false;
@@ -75,6 +82,8 @@ public class GodotView extends GLSurfaceView {
 
 	private Godot activity;
 
+
+	private InputManagerCompat mInputManager;
 	public GodotView(Context context,GodotIO p_io,boolean p_use_gl2, boolean p_use_32_bits, Godot p_activity) {
 		super(context);
 		ctx=context;
@@ -88,7 +97,8 @@ public class GodotView extends GLSurfaceView {
 			//will only work on SDK 11+!!
 			setPreserveEGLContextOnPause(true);
 		}
-
+		mInputManager = InputManagerCompat.Factory.getInputManager(this.getContext());
+		mInputManager.registerInputDeviceListener(this, null);
 		init(false, 16, 0);
     }
 
@@ -119,50 +129,112 @@ public class GodotView extends GLSurfaceView {
 				button = 3;
 				break;
 			case KeyEvent.KEYCODE_BUTTON_L1:
-				button = 4;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_L2:
-				button = 6;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_R1:
-				button = 5;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_R2:
-				button = 7;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_SELECT:
-				button = 10;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_START:
-				button = 11;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_THUMBL:
-				button = 8;
-				break;
-			case KeyEvent.KEYCODE_BUTTON_THUMBR:
 				button = 9;
 				break;
+			case KeyEvent.KEYCODE_BUTTON_L2:
+				button = 15;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_R1:
+				button = 10;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_R2:
+				button = 16;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_SELECT:
+				button = 4;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_START:
+				button = 6;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_THUMBL:
+				button = 7;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_THUMBR:
+				button = 8;
+				break;
 			case KeyEvent.KEYCODE_DPAD_UP:
-				button = 12;
+				button = 11;
 				break;
 			case KeyEvent.KEYCODE_DPAD_DOWN:
-				button = 13;
+				button = 12;
 				break;
 			case KeyEvent.KEYCODE_DPAD_LEFT:
-				button = 14;
+				button = 13;
 				break;
 			case KeyEvent.KEYCODE_DPAD_RIGHT:
-				button = 15;
+				button = 14;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_C:
+				button = 17;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_Z:
+				button = 18;
 				break;
 
 			default:
-				button = keyCode - KeyEvent.KEYCODE_BUTTON_1;
+				button = keyCode - KeyEvent.KEYCODE_BUTTON_1 + 20;
 				break;
 		};
-
 		return button;
 	};
 
+	private static class joystick {
+		public int device_id;
+		public String name;
+		public ArrayList<InputDevice.MotionRange> axes;
+		public ArrayList<InputDevice.MotionRange> hats;
+	}
+
+	private static class RangeComparator implements Comparator<InputDevice.MotionRange> {
+		@Override
+		public int compare(InputDevice.MotionRange arg0, InputDevice.MotionRange arg1) {
+			return arg0.getAxis() - arg1.getAxis();
+		}
+	}
+
+	ArrayList<joystick> joy_devices = new ArrayList<joystick>();
+
+	private int find_joy_device(int device_id) {
+		for (int i=0; i<joy_devices.size(); i++) {
+			if (joy_devices.get(i).device_id == device_id) {
+					return i;
+			}
+		}
+		onInputDeviceAdded(device_id);
+		return joy_devices.size() - 1;
+	}
+
+	@Override public void onInputDeviceAdded(int deviceId) {
+		joystick joy = new joystick();
+		joy.device_id = deviceId;
+		int id = joy_devices.size();
+		InputDevice device = mInputManager.getInputDevice(deviceId);
+		joy.name = device.getName();
+		joy.axes = new ArrayList<InputDevice.MotionRange>();
+		joy.hats = new ArrayList<InputDevice.MotionRange>();
+		List<InputDevice.MotionRange> ranges = device.getMotionRanges();
+		Collections.sort(ranges, new RangeComparator());
+		for (InputDevice.MotionRange range : ranges) {
+			if (range.getAxis() == MotionEvent.AXIS_HAT_X || range.getAxis() == MotionEvent.AXIS_HAT_Y) {
+				joy.hats.add(range);
+			}
+			else {
+				joy.axes.add(range);
+			}
+		}
+		joy_devices.add(joy);
+		GodotLib.joyconnectionchanged(id, true, joy.name);
+  }
+
+	@Override public void onInputDeviceRemoved(int deviceId) {
+		int id = find_joy_device(deviceId);
+		joy_devices.remove(id);
+		GodotLib.joyconnectionchanged(id, false, "");
+	}
+
+	@Override public void onInputDeviceChanged(int deviceId) {
+
+	}
 	@Override public boolean onKeyUp(int keyCode, KeyEvent event) {
 
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -177,7 +249,7 @@ public class GodotView extends GLSurfaceView {
 		if ((source & InputDevice.SOURCE_JOYSTICK) != 0 || (source & InputDevice.SOURCE_DPAD) != 0 || (source & InputDevice.SOURCE_GAMEPAD) != 0) {
 
 			int button = get_godot_button(keyCode);
-			int device = event.getDeviceId();
+			int device = find_joy_device(event.getDeviceId());
 
 			GodotLib.joybutton(device, button, false);
 			return true;
@@ -209,7 +281,8 @@ public class GodotView extends GLSurfaceView {
 			if (event.getRepeatCount() > 0) // ignore key echo
 				return true;
 			int button = get_godot_button(keyCode);
-			int device = event.getDeviceId();
+			int device = find_joy_device(event.getDeviceId());
+
 			//Log.e(TAG, String.format("joy button down! button %x, %d, device %d", keyCode, button, device));
 
 			GodotLib.joybutton(device, button, true);
@@ -221,125 +294,27 @@ public class GodotView extends GLSurfaceView {
 		return super.onKeyDown(keyCode, event);
 	}
 
-	public float axis_value(MotionEvent p_event, InputDevice p_device, int p_axis, int p_pos) {
-
-		final InputDevice.MotionRange range = p_device.getMotionRange(p_axis, p_event.getSource());
-		if (range == null)
-			return 0;
-
-		//Log.e(TAG, String.format("axis ranges %f, %f, %f", range.getRange(), range.getMin(), range.getMax()));
-
-		final float flat = range.getFlat();
-		final float value =
-			p_pos < 0 ? p_event.getAxisValue(p_axis):
-			p_event.getHistoricalAxisValue(p_axis, p_pos);
-
-		final float absval = Math.abs(value);
-		if (absval <= flat) {
-			return 0;
-		};
-
-		final float ret = (value - range.getMin()) / range.getRange() * 2 - 1.0f;
-
-		return ret;
-	};
-
-	float[] last_axis_values = { 0, 0, 0, 0, -1, -1 };
-	boolean[] last_axis_buttons = { false, false, false, false, false, false }; // dpad up down left right, ltrigger, rtrigger
-
-	public void process_axis_state(MotionEvent p_event, int p_pos) {
-
-		int device_id = p_event.getDeviceId();
-		InputDevice device = p_event.getDevice();
-		float val;
-
-		val = axis_value(p_event, device, MotionEvent.AXIS_X, p_pos);
-		if (val != last_axis_values[0]) {
-			last_axis_values[0] = val;
-			//Log.e(TAG, String.format("axis moved! axis %d, value %f", 0, val));
-			GodotLib.joyaxis(device_id, 0, val);
-		};
-
-		val = axis_value(p_event, device, MotionEvent.AXIS_Y, p_pos);
-		if (val != last_axis_values[1]) {
-			last_axis_values[1] = val;
-			//Log.e(TAG, String.format("axis moved! axis %d, value %f", 1, val));
-			GodotLib.joyaxis(device_id, 1, val);
-		};
-
-		val = axis_value(p_event, device, MotionEvent.AXIS_Z, p_pos);
-		if (val != last_axis_values[2]) {
-			last_axis_values[2] = val;
-			//Log.e(TAG, String.format("axis moved! axis %d, value %f", 2, val));
-			GodotLib.joyaxis(device_id, 2, val);
-		};
-
-		val = axis_value(p_event, device, MotionEvent.AXIS_RZ, p_pos);
-		if (val != last_axis_values[3]) {
-			last_axis_values[3] = val;
-			//Log.e(TAG, String.format("axis moved! axis %d, value %f", 3, val));
-			GodotLib.joyaxis(device_id, 3, val);
-		};
-
-		val = axis_value(p_event, device, MotionEvent.AXIS_LTRIGGER, p_pos);
-		if (val != last_axis_values[4]) {
-			last_axis_values[4] = val;
-			if ((val != 0) != (last_axis_buttons[4])) {
-				last_axis_buttons[4] = (val != 0);
-				GodotLib.joybutton(device_id, 6, (val != 0));
-			};
-		};
-
-		val = axis_value(p_event, device, MotionEvent.AXIS_RTRIGGER, p_pos);
-		if (val != last_axis_values[5]) {
-			last_axis_values[5] = val;
-			if ((val != 0) != (last_axis_buttons[5])) {
-				last_axis_buttons[5] = (val != 0);
-				GodotLib.joybutton(device_id, 7, (val != 0));
-			};
-		};
-
-		val = axis_value(p_event, device, MotionEvent.AXIS_HAT_Y, p_pos);
-
-		if (last_axis_buttons[0] != (val > 0)) {
-			last_axis_buttons[0] = val > 0;
-			GodotLib.joybutton(device_id, 12, val > 0);
-		};
-		if (last_axis_buttons[1] != (val < 0)) {
-			last_axis_buttons[1] = val < 0;
-			GodotLib.joybutton(device_id, 13, val > 0);
-		};
-
-		val = axis_value(p_event, device, MotionEvent.AXIS_HAT_X, p_pos);
-		if (last_axis_buttons[2] != (val < 0)) {
-			last_axis_buttons[2] = val < 0;
-			GodotLib.joybutton(device_id, 14, val < 0);
-		};
-		if (last_axis_buttons[3] != (val > 0)) {
-			last_axis_buttons[3] = val > 0;
-			GodotLib.joybutton(device_id, 15, val > 0);
-		};
-	};
-
 	@Override public boolean onGenericMotionEvent(MotionEvent event) {
 
 		if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.getAction() == MotionEvent.ACTION_MOVE) {
 
-			// Process all historical movement samples in the batch
-			final int historySize = event.getHistorySize();
+			int device_id = find_joy_device(event.getDeviceId());
+			joystick joy = joy_devices.get(device_id);
 
-			// Process the movements starting from the
-			// earliest historical position in the batch
-			for (int i = 0; i < historySize; i++) {
-				// Process the event at historical position i
-				process_axis_state(event, i);
+			for (int i = 0; i < joy.axes.size(); i++) {
+				InputDevice.MotionRange range = joy.axes.get(i);
+				float value = (event.getAxisValue(range.getAxis()) - range.getMin() ) / range.getRange() * 2.0f - 1.0f;
+				//Log.e(TAG, String.format("axis event: %d, value %f", i, value));
+				GodotLib.joyaxis(device_id, i, value);
 			}
 
-			// Process the current movement sample in the batch (position -1)
-			process_axis_state(event, -1);
+			for (int i = 0; i < joy.hats.size(); i+=2) {
+				int hatX = Math.round(event.getAxisValue(joy.hats.get(i).getAxis()));
+				int hatY = Math.round(event.getAxisValue(joy.hats.get(i+1).getAxis()));
+				//Log.e(TAG, String.format("HAT EVENT %d, %d", hatX, hatY));
+				GodotLib.joyhat(device_id, hatX, hatY);
+			}
 			return true;
-
-
 		};
 
 		return super.onGenericMotionEvent(event);
@@ -413,12 +388,12 @@ public class GodotView extends GLSurfaceView {
     	/* Fallback if 32bit View is not supported*/
 	private static class FallbackConfigChooser extends ConfigChooser {
 		private ConfigChooser fallback;
-		
+
 		public FallbackConfigChooser(int r, int g, int b, int a, int depth, int stencil, ConfigChooser fallback) {
 			super(r, g, b, a, depth, stencil);
 			this.fallback = fallback;
 		}
-      
+
       		@Override
 		public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display, EGLConfig[] configs) {
 			EGLConfig ec = super.chooseConfig(egl, display, configs);

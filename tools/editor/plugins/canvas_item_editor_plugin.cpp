@@ -409,7 +409,7 @@ void CanvasItemEditor::_node_removed(Node *p_node) {
 
 void CanvasItemEditor::_keying_changed() {
 
-	if (AnimationPlayerEditor::singleton->get_key_editor()->has_keying())
+	if (AnimationPlayerEditor::singleton->get_key_editor()->is_visible())
 		animation_hb->show();
 	else
 		animation_hb->hide();
@@ -603,6 +603,9 @@ bool CanvasItemEditor::_select(CanvasItem *item, Point2 p_click_pos, bool p_appe
 				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
 				if (!canvas_item || !canvas_item->is_visible())
 					continue;
+				if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+					continue;
+
 				CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 				if (!se)
 					continue;
@@ -643,6 +646,9 @@ void CanvasItemEditor::_key_move(const Vector2& p_dir, bool p_snap, KeyMoveMODE 
 		CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
 		if (!canvas_item || !canvas_item->is_visible())
 			continue;
+		if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+			continue;
+
 		CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 		if (!se)
 			continue;
@@ -702,6 +708,9 @@ Point2 CanvasItemEditor::_find_topleftmost_point() {
 		CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
 		if (!canvas_item || !canvas_item->is_visible())
 			continue;
+		if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+			continue;
+
 
 
 
@@ -731,6 +740,9 @@ int CanvasItemEditor::get_item_count() {
 		if (!canvas_item || !canvas_item->is_visible())
 			continue;
 
+		if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+			continue;
+
 		ic++;
 	};
 
@@ -748,6 +760,8 @@ CanvasItem *CanvasItemEditor::get_single_item() {
 
 		CanvasItem *canvas_item = E->key()->cast_to<CanvasItem>();
 		if (!canvas_item || !canvas_item->is_visible())
+			continue;
+		if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
 			continue;
 
 		if (single_item)
@@ -1102,6 +1116,9 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 						CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
 						if (!canvas_item || !canvas_item->is_visible())
 							continue;
+						if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+							continue;
+
 
 						CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 						if (!se)
@@ -1194,6 +1211,9 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 							CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
 							if (!canvas_item || !canvas_item->is_visible())
 								continue;
+							if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+								continue;
+
 							CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 							if (!se)
 								continue;
@@ -1400,6 +1420,9 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
 				if (!canvas_item || !canvas_item->is_visible())
 					continue;
+				if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+					continue;
+
 				CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 				if (!se)
 					continue;
@@ -1507,6 +1530,9 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 			CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
 			if (!canvas_item || !canvas_item->is_visible())
 				continue;
+			if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+				continue;
+
 			CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 			if (!se)
 				continue;
@@ -1534,7 +1560,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 					Matrix32 rot;
 					rot.elements[1] = (dfrom - center).normalized();
 					rot.elements[0] = rot.elements[1].tangent();
-					node->set_rot(snap_angle(rot.xform_inv(dto-center).angle(), node->get_rot()));
+					node->set_rot(snap_angle(rot.xform_inv(dto-center).angle() + node->get_rot(), node->get_rot()));
 					display_rotate_to = dto;
 					display_rotate_from = center;
 					viewport->update();
@@ -1881,6 +1907,8 @@ void CanvasItemEditor::_viewport_draw() {
 		CanvasItem *canvas_item = E->key()->cast_to<CanvasItem>();
 		if (!canvas_item || !canvas_item->is_visible())
 			continue;
+		if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+			continue;
 		CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 		if (!se)
 			continue;
@@ -2104,6 +2132,9 @@ void CanvasItemEditor::_notification(int p_what) {
 			if (!canvas_item || !canvas_item->is_visible())
 				continue;
 
+			if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+				continue;
+
 			if (canvas_item->cast_to<Control>())
 				has_control=true;
 			else
@@ -2202,6 +2233,8 @@ void CanvasItemEditor::_notification(int p_what) {
 		p->add_icon_item(get_icon("ControlAlignWide","EditorIcons"),"Full Rect",ANCHOR_ALIGN_WIDE);
 
 
+		AnimationPlayerEditor::singleton->get_key_editor()->connect("visibility_changed",this,"_keying_changed");
+		_keying_changed();
 	}
 
 	if (p_what==NOTIFICATION_READY) {
@@ -2509,6 +2542,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 
+				if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+					continue;
+
 				canvas_item->set_meta("_edit_lock_",true);
 				emit_signal("item_lock_status_changed");
 			}
@@ -2522,6 +2558,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
 				if (!canvas_item || !canvas_item->is_visible())
+					continue;
+
+				if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
 					continue;
 
 
@@ -2542,6 +2581,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 
+				if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+					continue;
+
 				canvas_item->set_meta("_edit_group_",true);
 				emit_signal("item_group_status_changed");
 			}
@@ -2555,6 +2597,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
 				if (!canvas_item || !canvas_item->is_visible())
+					continue;
+
+				if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
 					continue;
 
 				canvas_item->set_meta("_edit_group_",Variant());
@@ -2573,6 +2618,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
 				if (!canvas_item || !canvas_item->is_visible())
+					continue;
+
+				if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
 					continue;
 
 
@@ -2693,6 +2741,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 
+				if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+					continue;
+
 				if (canvas_item->cast_to<Node2D>()) {
 					Node2D *n2d = canvas_item->cast_to<Node2D>();
 
@@ -2803,6 +2854,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 
+				if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+					continue;
 
 
 				if (canvas_item->cast_to<Node2D>()) {
@@ -2853,6 +2906,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 
+				if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+					continue;
+
 				if (canvas_item->cast_to<Node2D>()) {
 					Node2D *n2d = canvas_item->cast_to<Node2D>();
 
@@ -2887,6 +2943,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			for(Map<Node*,Object*>::Element *E=selection.front();E;E=E->next()) {
 				CanvasItem *canvas_item = E->key()->cast_to<CanvasItem>();
 				if (!canvas_item) continue;
+				if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+					continue;
+
 
 				// counting invisible items, for now
 				//if (!canvas_item->is_visible()) continue;
@@ -2979,6 +3038,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 
+				if (canvas_item->get_viewport()!=EditorNode::get_singleton()->get_scene_root())
+					continue;
 
 				canvas_item->set_meta("_edit_ik_",true);
 
@@ -3418,7 +3479,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	box_selecting=false;
 	//zoom=0.5;
 	singleton=this;
-	AnimationPlayerEditor::singleton->get_key_editor()->connect("keying_changed",this,"_keying_changed");
+
 	set_process_unhandled_key_input(true);
 	can_move_pivot=false;
 	drag=DRAG_NONE;
@@ -3469,6 +3530,7 @@ CanvasItemEditorPlugin::CanvasItemEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
 	canvas_item_editor = memnew( CanvasItemEditor(editor) );
+	canvas_item_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	editor->get_viewport()->add_child(canvas_item_editor);
 	canvas_item_editor->set_area_as_parent_rect();
 	canvas_item_editor->hide();
