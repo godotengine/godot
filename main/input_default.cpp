@@ -173,6 +173,7 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 		for (int i=0; i < map_db.size(); i++) {
 			if (js.uid == map_db[i].uid) {
 				mapping = i;
+				js.name = map_db[i].name;
 				//printf("found mapping\n");
 			};
 		};
@@ -826,6 +827,7 @@ void InputDefault::parse_mapping(String p_mapping) {
 	uid.resize(17);
 
 	mapping.uid = entry[0];
+	mapping.name = entry[1];
 
 	int idx = 1;
 	while (++idx < entry.size()) {
