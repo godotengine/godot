@@ -61,6 +61,7 @@
 #include "plugins/sprite_frames_editor_plugin.h"
 #include "plugins/sprite_region_editor_plugin.h"
 #include "plugins/canvas_item_editor_plugin.h"
+#include "addon_editor_plugin.h"
 #include "plugins/spatial_editor_plugin.h"
 #include "plugins/sample_editor_plugin.h"
 #include "plugins/sample_library_editor_plugin.h"
@@ -6093,6 +6094,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( CanvasItemEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SpatialEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ScriptEditorPlugin(this) ) );
+	//add_editor_plugin( memnew( AddonEditorPlugin(this) ) );
 
 	//more visually meaningful to have this later
 	raise_bottom_panel_item(AnimationPlayerEditor::singleton);
