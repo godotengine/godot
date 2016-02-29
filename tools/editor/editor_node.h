@@ -691,6 +691,7 @@ public:
 	void make_bottom_panel_item_visible(Control *p_item);
 	void raise_bottom_panel_item(Control *p_item);
 	void hide_bottom_panel();
+	void remove_bottom_panel_item(Control *p_item);
 
 	EditorNode();	
 	~EditorNode();

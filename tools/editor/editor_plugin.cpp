@@ -43,7 +43,7 @@ void EditorPlugin::remove_custom_type(const String& p_type){
 }
 
 
-void EditorPlugin::add_control_to_bottom_dock(Control *p_control, const String &p_title) {
+void EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
 
 	EditorNode::get_singleton()->add_bottom_panel_item(p_title,p_control);
 }
@@ -59,6 +59,13 @@ void EditorPlugin::remove_control_from_docks(Control *p_control) {
 
 	ERR_FAIL_NULL(p_control);
 	EditorNode::get_singleton()->remove_control_from_dock(p_control);
+
+}
+
+void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
+
+	ERR_FAIL_NULL(p_control);
+	EditorNode::get_singleton()->remove_bottom_panel_item(p_control);
 
 }
 
@@ -270,9 +277,10 @@ Control *EditorPlugin::get_base_control() {
 void EditorPlugin::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("add_control_to_container","container","control:Control"),&EditorPlugin::add_control_to_container);
-	ObjectTypeDB::bind_method(_MD("add_control_to_bottom_dock","control:Control","title"),&EditorPlugin::add_control_to_bottom_dock);
+	ObjectTypeDB::bind_method(_MD("add_control_to_bottom_panel","control:Control","title"),&EditorPlugin::add_control_to_bottom_panel);
 	ObjectTypeDB::bind_method(_MD("add_control_to_dock","slot","control:Control"),&EditorPlugin::add_control_to_dock);
 	ObjectTypeDB::bind_method(_MD("remove_control_from_docks","control:Control"),&EditorPlugin::remove_control_from_docks);
+	ObjectTypeDB::bind_method(_MD("remove_control_from_bottom_panel","control:Control"),&EditorPlugin::remove_control_from_bottom_panel);
 	ObjectTypeDB::bind_method(_MD("add_custom_type","type","base","script:Script","icon:Texture"),&EditorPlugin::add_custom_type);
 	ObjectTypeDB::bind_method(_MD("remove_custom_type","type"),&EditorPlugin::remove_custom_type);
 

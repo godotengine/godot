@@ -91,9 +91,10 @@ public:
 	//TODO: send a resoucre for editing to the editor node?
 
 	void add_control_to_container(CustomControlContainer p_location, Control *p_control);
-	void add_control_to_bottom_dock(Control *p_control, const String &p_title);
+	void add_control_to_bottom_panel(Control *p_control, const String &p_title);
 	void add_control_to_dock(DockSlot p_slot,Control *p_control);
 	void remove_control_from_docks(Control *p_control);
+	void remove_control_from_bottom_panel(Control *p_control);
 
 	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial* p_spatial);
 	virtual bool forward_input_event(const InputEvent& p_event);
