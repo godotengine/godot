@@ -226,9 +226,6 @@
     <Filter Include="drivers\nrex">
       <UniqueIdentifier>{d9b70962-2a95-49c2-8346-6ae69ceda673}</UniqueIdentifier>
     </Filter>
-    <Filter Include="tools\pe_bliss">
-      <UniqueIdentifier>{471124b0-9439-4663-918e-fe1bebde8cf7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="drivers\jpegd">
       <UniqueIdentifier>{d73f620e-1659-463b-9657-fc6cf9fc6c61}</UniqueIdentifier>
     </Filter>
@@ -2259,138 +2256,6 @@
     <ClInclude Include="..\..\..\tools\editor\plugins\editor_preview_plugins.h">
       <Filter>tools\editor\plugins</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\resource_version_info_reader.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\resource_version_info_writer.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\stdint_defs.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\utils.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\version_info_editor.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\version_info_types.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\version_info_viewer.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\entropy.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\file_version_info.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\message_table.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_base.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_bliss.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_bliss_godot.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_bliss_resources.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_bound_import.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_checksum.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_debug.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_directory.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_dotnet.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_exception.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_exception_directory.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_exports.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_factory.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_imports.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_load_config.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_properties.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_properties_generic.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_rebuilder.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_relocations.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_resource_manager.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_resource_viewer.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_resources.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_rich_data.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_section.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_structures.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\pe_tls.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\resource_bitmap_reader.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\resource_bitmap_writer.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\resource_cursor_icon_reader.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\resource_cursor_icon_writer.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\resource_data_info.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\resource_internal.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\resource_message_list_reader.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\pe_bliss\resource_string_table_reader.h">
-      <Filter>tools\pe_bliss</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\core\version.h">
       <Filter>core</Filter>
     </ClInclude>
@@ -2405,6 +2270,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\drivers\pnm\bitmap_loader_pnm.h">
       <Filter>drivers\pnm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\core\range_iterator.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\editor\editor_plugin_settings.h">
+      <Filter>tools\editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -4379,120 +4250,6 @@
     <ClCompile Include="..\..\..\tools\editor\plugins\editor_preview_plugins.cpp">
       <Filter>tools\editor\plugins</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\resource_version_info_writer.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\utils.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\version_info_editor.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\version_info_viewer.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\entropy.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\file_version_info.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\message_table.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_base.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_bliss_godot.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_bound_import.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_checksum.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_debug.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_directory.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_dotnet.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_exception.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_exception_directory.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_exports.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_factory.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_imports.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_load_config.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_properties.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_properties_generic.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_rebuilder.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_relocations.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_resource_manager.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_resource_viewer.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_resources.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_rich_data.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_section.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\pe_tls.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\resource_bitmap_reader.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\resource_bitmap_writer.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\resource_cursor_icon_reader.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\resource_cursor_icon_writer.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\resource_data_info.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\resource_message_list_reader.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\resource_string_table_reader.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\pe_bliss\resource_version_info_reader.cpp">
-      <Filter>tools\pe_bliss</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\platform\windows\joystick.cpp">
       <Filter>platform\windows</Filter>
     </ClCompile>
@@ -4504,6 +4261,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\drivers\pnm\bitmap_loader_pnm.cpp">
       <Filter>drivers\pnm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\core\range_iterator.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\editor\editor_plugin_settings.cpp">
+      <Filter>tools\editor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
