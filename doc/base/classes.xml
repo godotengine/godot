@@ -556,15 +556,6 @@
 			Return an array with the given range. Range can be 1 argument N (0 to N-1), two arguments (initial, final-1) or three arguments (initial,final-1,increment).
 			</description>
 		</method>
-		<method name="xrange">
-			<return type="Object">
-			</return>
-			<argument index="0" name="..." type="Variant">
-			</argument>
-			<description>
-			Return an iterator over the given range. Range can be 1 argument N (0 to N-1), two arguments (initial, final-1) or three arguments (initial,final-1,increment).
-			</description>
-		</method>
 		<method name="load">
 			<return type="Resource">
 			</return>
@@ -27609,40 +27600,6 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
-</class>
-<class name="RangeIterator" inherits="Reference" category="Core">
-	<brief_description>
-	</brief_description>
-	<description>
-	</description>
-	<methods>
-		<method name="is_finished">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="to_array">
-			<return type="Array">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_range">
-			<return type="Object">
-			</return>
-			<argument index="0" name="arg1" type="Variant">
-			</argument>
-			<argument index="1" name="arg2" type="Variant" default="NULL">
-			</argument>
-			<argument index="2" name="arg3" type="Variant" default="NULL">
-			</argument>
-			<description>
-			</description>
-		</method>
-	</methods>
 	<constants>
 	</constants>
 </class>
