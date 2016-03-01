@@ -525,6 +525,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			mi.return_val.type=Variant::ARRAY;
 			return mi;
 		} break;
+		case GEN_XRANGE: {
+
+			MethodInfo mi("xrange",PropertyInfo(Variant::NIL,"..."));
+			mi.return_val.type=Variant::OBJECT;
+			return mi;
+		} break;
 		case RESOURCE_LOAD: {
 
 			MethodInfo mi("load",PropertyInfo(Variant::STRING,"path"));
