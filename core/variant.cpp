@@ -1116,6 +1116,21 @@ void Variant::reference(const Variant& p_variant) {
 
 
 }
+void Variant::zero() {
+	switch(type) {
+		case NIL: break;
+		case BOOL: this->_data._bool = false; break;
+		case INT: this->_data._int = 0; break;
+		case REAL: this->_data._real = 0; break;
+		case VECTOR2: *reinterpret_cast<Vector2*>(this->_data._mem) = Vector2(); break;
+		case RECT2: *reinterpret_cast<Rect2*>(this->_data._mem) = Rect2(); break;
+		case VECTOR3: *reinterpret_cast<Vector3*>(this->_data._mem) = Vector3(); break;
+		case PLANE: *reinterpret_cast<Plane*>(this->_data._mem) = Plane(); break;
+		case QUAT: *reinterpret_cast<Quat*>(this->_data._mem) = Quat(); break;
+		case COLOR: *reinterpret_cast<Color*>(this->_data._mem) = Color(); break;
+		default: this->clear(); break;
+	}
+}
 void Variant::clear() {
 
 	switch(type) {

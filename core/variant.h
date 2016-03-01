@@ -372,6 +372,8 @@ public:
 		return res;
 	}
 
+	void zero();
+	static void blend(const Variant& a, const Variant& b, float c,Variant &r_dst);
 	static void interpolate(const Variant& a, const Variant& b, float c,Variant &r_dst);
 
 	struct CallError {

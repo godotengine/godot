@@ -768,6 +768,10 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 		t.scale.x=0;
 		t.scale.y=0;
 		t.scale.z=0;
+
+		Variant value = t.node->get(t.property);
+		value.zero();
+		t.node->set(t.property, value);
 	}
 
 
@@ -777,11 +781,9 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 	Quat empty_rot;
 
 
-	int total = 0;
 	while(anim_list) {
 
 		if (!anim_list->animation.is_null() && !anim_list->skip) {
-			++total;
 			//check if animation is meaningful
 			Animation *a = anim_list->animation.operator->();
 
@@ -816,8 +818,9 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 					case Animation::TYPE_VALUE: { ///< Set a value in a property, can be interpolated.
 
 						if (a->value_track_is_continuous(tr.local_track)) {
-							Variant value = a->value_track_interpolate(tr.local_track,anim_list->time);
-							tr.track->node->set(tr.track->property,value);
+							Variant blended, value = a->value_track_interpolate(tr.local_track,anim_list->time);
+							Variant::blend(tr.track->node->get(tr.track->property),value,blend,blended);
+							tr.track->node->set(tr.track->property,blended);
 						} else {
 
 							List<int> indices;
