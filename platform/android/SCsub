@@ -59,7 +59,7 @@ for x in env.android_dependencies:
 gradle_java_dirs_text=""
 
 for x in env.android_java_dirs:
-	gradle_java_dirs_text+=",'"+x+"'"
+	gradle_java_dirs_text+=",'"+x.replace("\\","/")+"'"
 
 
 gradle_res_dirs_text=""
