@@ -967,7 +967,7 @@ void TextEdit::_notification(int p_what) {
 				}
 				
 				
-				Point2 hint_ofs = Vector2(completion_hint_offset,cursor_pos.y-minsize.y);
+				Point2 hint_ofs = Vector2(completion_hint_offset,cursor_pos.y+minsize.y);
 				draw_style_box(sb,Rect2(hint_ofs,minsize));
 				
 				spacing=0;
