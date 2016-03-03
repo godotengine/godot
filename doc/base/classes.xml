@@ -20360,6 +20360,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="time_scale" type="float">
 			</argument>
 			<description>
+			Speeds up or slows down the physics by changing the delta variable. (delta * time_scale)
 			</description>
 		</method>
 		<method name="get_time_scale">
