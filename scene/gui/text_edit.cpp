@@ -931,7 +931,7 @@ void TextEdit::_notification(int p_what) {
 				
 			}
 			
-			if (completion_hint!="") {
+			if (completion_hint!="" && !completion_active) {
 				
 				Ref<StyleBox> sb = get_stylebox("panel","TooltipPanel");
 				Ref<Font> font = cache.font;
