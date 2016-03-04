@@ -6,6 +6,15 @@
 #include "core/globals.h"
 #include "io/file_access_encrypted.h"
 #include "os/keyboard.h"
+
+/**
+ *  Time constants borrowed from loc_time.h
+ */
+#define EPOCH_YR  1970    /* EPOCH = Jan 1 1970 00:00:00 */
+#define SECS_DAY  (24L * 60L * 60L)
+#define LEAPYEAR(year)  (!((year) % 4) && (((year) % 100) || !((year) % 400)))
+#define YEARSIZE(year)  (LEAPYEAR(year) ? 366 : 365)
+
 _ResourceLoader *_ResourceLoader::singleton=NULL;
 
 Ref<ResourceInteractiveLoader> _ResourceLoader::load_interactive(const String& p_path,const String& p_type_hint) {
@@ -479,9 +488,8 @@ Dictionary _OS::get_date(bool utc) const {
 	dated["weekday"]=date.weekday;
 	dated["dst"]=date.dst;
 	return dated;
-
-
 }
+
 Dictionary _OS::get_time(bool utc) const {
 
 	OS::Time time = OS::get_singleton()->get_time(utc);
@@ -490,7 +498,67 @@ Dictionary _OS::get_time(bool utc) const {
 	timed["minute"]=time.min;
 	timed["second"]=time.sec;
 	return timed;
+}
 
+/**
+ *  Get a dictionary of time values when given epoc time
+ *
+ *  Dictionary Time values will be a union if values from #get_time
+ *    and #get_date dictionaries (with the exception of dst = 
+ *    day light standard time, as it cannot be determined from epoc)
+ */
+Dictionary _OS::get_time_from_unix_time( uint64_t unix_time_val) const {
+
+	OS::Date date;
+	OS::Time time;
+
+	unsigned long dayclock, dayno;
+	int year = EPOCH_YR;
+
+	dayclock = (unsigned long)unix_time_val % SECS_DAY;
+	dayno = (unsigned long)unix_time_val / SECS_DAY;
+
+	time.sec = dayclock % 60;
+	time.min = (dayclock % 3600) / 60;
+	time.hour = dayclock / 3600;
+
+	/* day 0 was a thursday */
+	date.weekday = static_cast<OS::Weekday>((dayno + 4) % 7);       
+
+	while (dayno >= YEARSIZE(year)) {
+		dayno -= YEARSIZE(year);
+		year++;
+	}
+
+	date.year = year; 
+
+	// Table of number of days in each month (for regular year and leap year)
+	const unsigned int _ytab[2][12] = {
+		{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
+		{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+	};
+
+	size_t imonth = 0;
+
+	while (dayno >= _ytab[LEAPYEAR(year)][imonth]) {
+		dayno -= _ytab[LEAPYEAR(year)][imonth];
+		imonth++;
+	}
+
+	date.month = static_cast<OS::Month>(imonth);
+
+	date.day = dayno + 1;
+
+	Dictionary timed;
+	timed["hour"]=time.hour;
+	timed["minute"]=time.min;
+	timed["second"]=time.sec;
+	timed["year"]=date.year;
+	timed["month"]=date.month;
+	timed["day"]=date.day;
+	timed["weekday"]=date.weekday;
+
+	return timed;
 }
 
 Dictionary _OS::get_time_zone_info() const {
@@ -837,6 +905,8 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_time","utc"),&_OS::get_time,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_time_zone_info"),&_OS::get_time_zone_info);
 	ObjectTypeDB::bind_method(_MD("get_unix_time"),&_OS::get_unix_time);
+	ObjectTypeDB::bind_method(_MD("get_time_from_unix_time", "unix_time_val"),
+			&_OS::get_time_from_unix_time);
 	ObjectTypeDB::bind_method(_MD("get_system_time_secs"), &_OS::get_system_time_secs);
 
 	ObjectTypeDB::bind_method(_MD("set_icon","icon"),&_OS::set_icon);
@@ -1984,7 +2054,6 @@ String _Thread::get_id() const {
 
 	return itos(thread->get_ID());
 }
-
 
 bool _Thread::is_active() const {
 
