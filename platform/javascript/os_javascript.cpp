@@ -693,7 +693,11 @@ OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, Ope
 
 	time_to_save_sync=-1;
 
-
+	for (int i = 0; i < 256; i++) {
+		key_pressed[i] = false;
+		if (i < 121)
+			skey_pressed[i] = false;
+	}
 }
 
 OS_JavaScript::~OS_JavaScript() {
