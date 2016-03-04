@@ -847,7 +847,7 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 			
-			
+			bool completion_below = false;
 			if (completion_active) {
 				// code completion box
 				Ref<StyleBox> csb = get_stylebox("completion");
@@ -878,11 +878,12 @@ void TextEdit::_notification(int p_what) {
 				}
 				
 				int th = h + csb->get_minimum_size().y;
+				
 				if (cursor_pos.y+get_row_height()+th > get_size().height) {
 					completion_rect.pos.y=cursor_pos.y-th;
 				} else {
 					completion_rect.pos.y=cursor_pos.y+get_row_height()+csb->get_offset().y;
-					
+					completion_below = true;
 				}
 				
 				if (cursor_pos.x-nofs+w+scrollw  > get_size().width) {
@@ -930,8 +931,24 @@ void TextEdit::_notification(int p_what) {
 				completion_line_ofs=line_from;
 				
 			}
-			
+
+			// check to see if the hint should be drawn
+			bool show_hint = false;
 			if (completion_hint!="") {
+				if (completion_active) {
+					if (completion_below && !callhint_below) {
+						show_hint = true;
+					}
+					else if (!completion_below && callhint_below) {
+						show_hint = true;
+					}
+				}
+				else {
+					show_hint = true;
+				}
+			}
+			
+			if (show_hint) {
 				
 				Ref<StyleBox> sb = get_stylebox("panel","TooltipPanel");
 				Ref<Font> font = cache.font;
@@ -967,7 +984,15 @@ void TextEdit::_notification(int p_what) {
 				}
 				
 				
-				Point2 hint_ofs = Vector2(completion_hint_offset,cursor_pos.y-minsize.y);
+				Point2 hint_ofs = Vector2(completion_hint_offset,cursor_pos.y) + callhint_offset;
+
+				if (callhint_below) {
+					hint_ofs.y += get_row_height() + sb->get_offset().y;
+				}
+				else {
+					hint_ofs.y -= minsize.y + sb->get_offset().y;
+				}
+
 				draw_style_box(sb,Rect2(hint_ofs,minsize));
 				
 				spacing=0;

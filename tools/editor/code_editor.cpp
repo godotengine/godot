@@ -568,6 +568,12 @@ void CodeTextEditor::_on_settings_change() {
 	);
 
 	enable_complete_timer = EDITOR_DEF("text_editor/enable_code_completion_delay",true);
+
+	// call hint settings
+	text_editor->set_callhint_settings(
+		EDITOR_DEF("text_editor/put_callhint_tooltip_below_current_line", true),
+		EDITOR_DEF("text_editor/callhint_tooltip_offset", Vector2())
+	);
 }
 
 void CodeTextEditor::_text_changed_idle_timeout() {

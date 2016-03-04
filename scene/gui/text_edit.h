@@ -231,6 +231,9 @@ class TextEdit : public Control  {
 	
 	bool next_operation_is_complex;
 
+	bool callhint_below;
+	Vector2 callhint_offset;
+
 	int get_visible_rows() const;
 
 	int get_char_count();
@@ -325,6 +328,10 @@ public:
 	inline void set_brace_matching(bool p_enabled) {
 		brace_matching_enabled=p_enabled;
 		update();
+	}
+	inline void set_callhint_settings(bool below, Vector2 offset) {
+		callhint_below = below;
+		callhint_offset = offset;
 	}
 	void set_auto_indent(bool p_auto_indent);
 
