@@ -526,6 +526,8 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 				return _process_node(osn->inputs[0].node,r_prev_anim,p_weight,p_time,switched,p_seek,p_filter,p_reverse_weight);
 			}
 
+			float os_seek = p_seek || osn->start;
+
 			if (p_seek)
 				osn->time=p_time;
 			if (osn->start)
@@ -555,12 +557,12 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 			if (!osn->filter.empty()) {
 
 				main_rem = _process_node(osn->inputs[0].node,r_prev_anim,(osn->mix?p_weight:p_weight*(1.0-blend)),p_time,switched,p_seek,&osn->filter,p_weight);
-				os_rem = _process_node(osn->inputs[1].node,r_prev_anim,p_weight*blend,p_time,osn->start,p_seek,&osn->filter,-1);
+				os_rem = _process_node(osn->inputs[1].node,r_prev_anim,p_weight*blend,p_time,osn->start,os_seek,&osn->filter,-1);
 
 			} else {
 
 				main_rem = _process_node(osn->inputs[0].node,r_prev_anim,(osn->mix?p_weight:p_weight*(1.0-blend)),p_time,switched,p_seek);
-				os_rem = _process_node(osn->inputs[1].node,r_prev_anim,p_weight*blend,p_time,osn->start,p_seek);
+				os_rem = _process_node(osn->inputs[1].node,r_prev_anim,p_weight*blend,p_time,osn->start,os_seek);
 			}
 
 			if (osn->start) {
