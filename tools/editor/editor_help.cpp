@@ -650,13 +650,63 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		class_desc->add_text("Inherits: ");
 		class_desc->pop();
 		class_desc->pop();
+
+		String inherits = cd.inherits;
+
 		class_desc->push_font(doc_font);
-		_add_type(cd.inherits);
+
+		while (inherits != "") {
+			_add_type(inherits);
+
+			inherits = doc->class_list[inherits].inherits;
+
+			if (inherits != "") {
+				class_desc->add_text(" , ");
+			}
+		}
+
 		class_desc->pop();
 		class_desc->add_newline();
-		class_desc->add_newline();
-
 	}
+
+	if (ObjectTypeDB::type_exists(cd.name)) {
+
+		bool found = false;
+		bool prev = false;
+
+		for (Map<String,DocData::ClassDoc>::Element *E=doc->class_list.front();E;E=E->next()) {
+
+			if (E->get().inherits == cd.name) {
+
+				if (!found) {
+					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+					class_desc->push_font(doc_title_font);
+					class_desc->add_text("Inherited by: ");
+					class_desc->pop();
+					class_desc->pop();
+
+					found = true;
+					class_desc->push_font(doc_font);
+				}
+
+				if (prev) {
+
+					class_desc->add_text(" , ");
+					prev = false;
+				}
+
+				_add_type(E->get().name);
+				prev = true;
+			}
+		}
+
+		if (found)
+			class_desc->pop();
+
+		class_desc->add_newline();
+	}
+
+	class_desc->add_newline();
 
 	if (cd.brief_description!="") {
 
