@@ -248,12 +248,41 @@ EditorAddonLibraryItemDescription::EditorAddonLibraryItemDescription() {
 void EditorAddonLibrary::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_READY) {
+		TextureFrame *tf = memnew(TextureFrame);
+		tf->set_texture(get_icon("Error","EditorIcons"));
+		error_hb->add_child(tf);
+		error_label->raise();
+
 		_api_request("api/configure");
 	}
 
 	if (p_what==NOTIFICATION_PROCESS) {
 
+		HTTPClient::Status s = request->get_http_client_status();
+		bool visible = s!=HTTPClient::STATUS_DISCONNECTED;
 
+		if (visible !=load_status->is_visible()) {
+			load_status->set_hidden(!visible);
+		}
+
+		if (visible) {
+			switch(s) {
+
+				case HTTPClient::STATUS_RESOLVING: {
+					load_status->set_val(0.1);
+				} break;
+				case HTTPClient::STATUS_CONNECTING: {
+					load_status->set_val(0.2);
+				} break;
+				case HTTPClient::STATUS_REQUESTING: {
+					load_status->set_val(0.3);
+				} break;
+				case HTTPClient::STATUS_BODY: {
+					load_status->set_val(0.4);
+				} break;
+
+			}
+		}
 	}
 
 }
@@ -514,6 +543,7 @@ void EditorAddonLibrary::_api_request(const String& p_request,const String& p_ar
 		request->cancel_request();
 	}
 
+	error_hb->hide();
 	current_request=p_request;
 	request->request(host+"/"+p_request+p_arguments);
 }
@@ -529,6 +559,49 @@ void EditorAddonLibrary::_http_request_completed(int p_status, int p_code, const
 		int datalen=p_data.size();
 		ByteArray::Read r = p_data.read();
 		str.parse_utf8((const char*)r.ptr(),datalen);
+	}
+
+	bool error_abort=true;
+
+	switch(p_status) {
+
+		case HTTPRequest::RESULT_CANT_RESOLVE: {
+			error_label->set_text("Can't resolve hostname: "+host);
+		} break;
+		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED:
+		case HTTPRequest::RESULT_CONNECTION_ERROR:
+		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH: {
+			error_label->set_text("Connection error, please try again.");
+		} break;
+		case HTTPRequest::RESULT_SSL_HANDSHAKE_ERROR:
+		case HTTPRequest::RESULT_CANT_CONNECT: {
+			error_label->set_text("Can't connect to host: "+host);
+		} break;
+		case HTTPRequest::RESULT_NO_RESPONSE: {
+			error_label->set_text("No response from host: "+host);
+		} break;
+		case HTTPRequest::RESULT_REQUEST_FAILED: {
+			error_label->set_text("Request failed, return code: "+itos(p_code));
+		} break;
+		case HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED: {
+			error_label->set_text("Request failed, too many redirects");
+
+		} break;
+		default: {
+			if (p_code!=200) {
+				error_label->set_text("Request failed, return code: "+itos(p_code));
+			} else {
+
+				error_abort=false;
+			}
+		} break;
+
+	}
+
+
+	if (error_abort) {
+		error_hb->show();
+		return;
 	}
 
 	print_line("response: "+itos(p_status)+" code: "+itos(p_code));
@@ -717,7 +790,7 @@ EditorAddonLibrary::EditorAddonLibrary() {
 	border->set_default_margin(MARGIN_LEFT,15);
 	border->set_default_margin(MARGIN_RIGHT,15);
 	border->set_default_margin(MARGIN_BOTTOM,15);
-	border->set_default_margin(MARGIN_TOP,15);
+	border->set_default_margin(MARGIN_TOP,5);
 
 	PanelContainer *margin_panel = memnew( PanelContainer );
 
@@ -728,7 +801,6 @@ EditorAddonLibrary::EditorAddonLibrary() {
 	VBoxContainer *library_main = memnew( VBoxContainer );
 
 	margin_panel->add_child(library_main);
-
 
 	HBoxContainer *search_hb = memnew( HBoxContainer );
 
@@ -839,9 +911,23 @@ EditorAddonLibrary::EditorAddonLibrary() {
 
 	library_vb->add_constant_override("separation",20);
 
+	load_status = memnew( ProgressBar );
+	load_status->set_min(0);
+	load_status->set_max(1);
+	load_status->set_step(0.001);
+	library_main->add_child(load_status);
+
+	error_hb = memnew( HBoxContainer );
+	library_main->add_child(error_hb);
+	error_label = memnew( Label );
+	error_label->add_color_override("color",Color(1,0.4,0.3));
+	error_hb->add_child(error_label);
+
 	description = NULL;
 
-	host="http://localhost:8000";
+	//host="http://localhost:8000";
+	host="http://godotengine.org/addonlib";
+	set_process(true);
 }
 
 

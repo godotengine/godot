@@ -10,6 +10,7 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/progress_bar.h"
 #include "scene/gui/separator.h"
 
 #include "scene/gui/grid_container.h"
@@ -103,6 +104,9 @@ class EditorAddonLibrary : public VBoxContainer {
 	OptionButton *sort;
 	CheckBox *reverse;
 	Button *search;
+	ProgressBar *load_status;
+	HBoxContainer *error_hb;
+	Label *error_label;
 
 	HBoxContainer *contents;
 
