@@ -188,13 +188,15 @@ bool Sprite::is_region() const{
 
 void Sprite::set_region_rect(const Rect2& p_region_rect) {
 
-	bool changed=region_rect!=p_region_rect;
+	if (region_rect==p_region_rect)
+		return;
+
 	region_rect=p_region_rect;
-	if (region && changed) {
-		update();
+
+	if (region)
 		item_rect_changed();
-		_change_notify("region_rect");
-	}
+
+	_change_notify("region_rect");
 }
 
 Rect2 Sprite::get_region_rect() const {
