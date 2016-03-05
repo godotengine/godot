@@ -77,11 +77,16 @@ public:
 class EditorHelpIndex : public ConfirmationDialog {
 	OBJ_TYPE( EditorHelpIndex, ConfirmationDialog );
 
-
+	LineEdit *search_box;
 	Tree *class_list;
 	HashMap<String,TreeItem*> tree_item_map;
 
 	void _tree_item_selected();
+	void _text_changed(const String& p_text);
+	void _sbox_input(const InputEvent& p_ie);
+
+	void _update_class_list();
+
 	void add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem *p_root);
 protected:
 
@@ -91,6 +96,8 @@ protected:
 public:
 
 	void select_class(const String& p_class);
+
+	void popup();
 
 	EditorHelpIndex();
 };
