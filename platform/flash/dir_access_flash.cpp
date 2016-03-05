@@ -183,12 +183,12 @@ size_t DirAccessFlash::get_space_left() {
 
 Error DirAccessFlash::rename(String p_from, String p_to) {
 
-	return FAILED;
+	ERR_FAIL_V(ERR_UNAVAILABLE);
 };
 
 Error DirAccessFlash::remove(String p_name) {
 
-	return FAILED;
+	ERR_FAIL_V(ERR_UNAVAILABLE);
 };
 
 extern char* psp_drive;
