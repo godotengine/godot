@@ -490,6 +490,7 @@
 			<argument index="1" name="..." type="Variant">
 			</argument>
 			<description>
+			Print one or more arguments to the console with a space between each argument.
 			</description>
 		</method>
 		<method name="printerr">
@@ -520,7 +521,7 @@
 			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
-			Converts the value of a variable to a String.
+			Converts a value to a string that can later be parsed using str2var.
 			</description>
 		</method>
 		<method name="str2var">
@@ -529,6 +530,7 @@
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
+			Converts a string that was returned by var2str to the original value.
 			</description>
 		</method>
 		<method name="var2bytes">
@@ -537,6 +539,7 @@
 			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
+			Encodes a variable to a byte array.
 			</description>
 		</method>
 		<method name="bytes2var">
@@ -545,6 +548,7 @@
 			<argument index="0" name="bytes" type="RawArray">
 			</argument>
 			<description>
+			Decodes a byte array back to a variable.
 			</description>
 		</method>
 		<method name="range">
@@ -604,6 +608,7 @@
 			<argument index="3" name="a8" type="int">
 			</argument>
 			<description>
+			Makes a color from red, green, blue and alpha. Arguments can range from 0 to 255.
 			</description>
 		</method>
 		<method name="print_stack">
@@ -619,6 +624,7 @@
 			<argument index="0" name="instance_id" type="int">
 			</argument>
 			<description>
+			Get an object by its ID.
 			</description>
 		</method>
 		<method name="preload">
@@ -627,6 +633,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Preload and get a resource. The resource is loaded during script parsing.
 			</description>
 		</method>
 		<method name="yield">
@@ -637,6 +644,7 @@
 			<argument index="1" name="signal" type="String">
 			</argument>
 			<description>
+			Stops function execution and return current state. Call resume on the state to resume execution.
 			</description>
 		</method>
 		<method name="assert">
@@ -645,6 +653,7 @@
 			<argument index="0" name="condition" type="bool">
 			</argument>
 			<description>
+			If the condition is false, generates an error.
 			</description>
 		</method>
 	</methods>
