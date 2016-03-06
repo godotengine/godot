@@ -29,7 +29,6 @@
 #include "project_settings.h"
 #include "scene/gui/tab_container.h"
 #include "globals.h"
-#include "os/keyboard.h"
 #include "editor_node.h"
 #include "scene/gui/margin_container.h"
 #include "translation.h"

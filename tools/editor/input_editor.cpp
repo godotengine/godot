@@ -635,6 +635,8 @@ void InputEditor::_action_add() {
 	r->select(0);
 	input_tree->ensure_cursor_is_visible();
 
+	action_name->set_text("");
+
 }
 
 void InputEditor::_settings_changed() {

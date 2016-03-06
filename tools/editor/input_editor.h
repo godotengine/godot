@@ -31,8 +31,11 @@
 #define INPUT_EDITOR_H
 
 #include "scene/gui/dialogs.h"
-#include "property_editor.h"
 #include "undo_redo.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/spin_box.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/tree.h"
 
 class InputEditor : public Control {
 
