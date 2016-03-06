@@ -3,6 +3,3 @@ name="Godot Engine"
 major=2
 minor=0
 status="stable"
-
-
-
