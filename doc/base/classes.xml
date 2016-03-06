@@ -1528,14 +1528,14 @@
 			Joystick Right Stick Vertical Axis
 		</constant>
 		<constant name="JOY_AXIS_4" value="4">
-			Joystick Left Trigger Analog Axis
 		</constant>
 		<constant name="JOY_AXIS_5" value="5">
-			Joystick Right Trigger Analog Axis
 		</constant>
 		<constant name="JOY_AXIS_6" value="6">
+			Joystick Left Trigger Analog Axis
 		</constant>
 		<constant name="JOY_AXIS_7" value="7">
+			Joystick Right Trigger Analog Axis
 		</constant>
 		<constant name="JOY_AXIS_MAX" value="8">
 		</constant>
