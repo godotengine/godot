@@ -971,7 +971,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				}
 			}
 
-			help_index->popup_centered_ratio(0.6);
+			help_index->popup();
 
 			if (current!="") {
 				help_index->call_deferred("select_class",current);

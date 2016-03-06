@@ -405,29 +405,98 @@ void EditorHelpIndex::select_class(const String& p_class) {
 	class_list->ensure_cursor_is_visible();
 }
 
+void EditorHelpIndex::popup() {
+
+	popup_centered_ratio(0.6);
+
+	search_box->set_text("");
+	_update_class_list();
+}
+
 void EditorHelpIndex::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		class_list->clear();
-		tree_item_map.clear();
-		TreeItem *root = class_list->create_item();
-		class_list->set_hide_root(true);
+		_update_class_list();
+
 		connect("confirmed",this,"_tree_item_selected");
 
+	} else if (p_what==NOTIFICATION_POST_POPUP) {
 
-		for(Map<String,DocData::ClassDoc>::Element *E=EditorHelp::get_doc_data()->class_list.front();E;E=E->next()) {
+		search_box->call_deferred("grab_focus");
+	}
+}
 
+void EditorHelpIndex::_text_changed(const String& p_text) {
 
+	_update_class_list();
+}
+
+void EditorHelpIndex::_update_class_list() {
+
+	class_list->clear();
+	tree_item_map.clear();
+	TreeItem *root = class_list->create_item();
+	class_list->set_hide_root(true);
+
+	String filter = search_box->get_text().strip_edges();
+	String to_select = "";
+
+	for(Map<String,DocData::ClassDoc>::Element *E=EditorHelp::get_doc_data()->class_list.front();E;E=E->next()) {
+
+		if (filter == "") {
 			add_type(E->key(),tree_item_map,root);
-		}
+		} else {
 
+			bool found = false;
+			String type = E->key();
+
+			while(type != "") {
+				if (type.findn(filter)!=-1) {
+
+					if (to_select.empty()) {
+						to_select = type;
+					}
+
+					found=true;
+					break;
+				}
+
+				type = EditorHelp::get_doc_data()->class_list[type].inherits;
+			}
+
+			if (found) {
+				add_type(E->key(),tree_item_map,root);
+			}
+		}
+	}
+
+	if (tree_item_map.has(filter)) {
+		select_class(filter);
+	} else if (to_select != "") {
+		select_class(to_select);
+	}
+}
+
+
+void EditorHelpIndex::_sbox_input(const InputEvent& p_ie) {
+
+	if (p_ie.type==InputEvent::KEY && (
+		p_ie.key.scancode == KEY_UP ||
+		p_ie.key.scancode == KEY_DOWN ||
+		p_ie.key.scancode == KEY_PAGEUP ||
+		p_ie.key.scancode == KEY_PAGEDOWN ) ) {
+
+		class_list->call("_input_event",p_ie);
+		search_box->accept_event();
 	}
 }
 
 void EditorHelpIndex::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_tree_item_selected",&EditorHelpIndex::_tree_item_selected);
+	ObjectTypeDB::bind_method("_text_changed",&EditorHelpIndex::_text_changed);
+	ObjectTypeDB::bind_method("_sbox_input",&EditorHelpIndex::_sbox_input);
 	ObjectTypeDB::bind_method("select_class",&EditorHelpIndex::select_class);
 	ADD_SIGNAL( MethodInfo("open_class"));
 }
@@ -436,18 +505,24 @@ void EditorHelpIndex::_bind_methods() {
 
 EditorHelpIndex::EditorHelpIndex() {
 
-
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
 	set_child_rect(vbc);
 
+	search_box = memnew( LineEdit );
+	vbc->add_margin_child("Search:", search_box);
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	register_text_enter(search_box);
+
+	search_box->connect("text_changed", this, "_text_changed");
+	search_box->connect("input_event", this, "_sbox_input");
+
 	class_list = memnew( Tree );
-	vbc->add_margin_child("Class List: ",class_list,true);
+	vbc->add_margin_child("Class List: ", class_list, true);
 	class_list->set_v_size_flags(SIZE_EXPAND_FILL);
 
-
 	class_list->connect("item_activated",this,"_tree_item_selected");
-
 
 	get_ok()->set_text("Open");
 }
