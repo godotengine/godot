@@ -318,6 +318,7 @@
 			<argument index="0" name="seed" type="float">
 			</argument>
 			<description>
+			Set seed for the random number generator.
 			</description>
 		</method>
 		<method name="rand_seed">
@@ -426,7 +427,7 @@
 			<argument index="1" name="funcname" type="String">
 			</argument>
 			<description>
-			Returns a reference to the specified function
+			Return a reference to the specified function.
 			</description>
 		</method>
 		<method name="convert">
@@ -446,7 +447,7 @@
 			<argument index="0" name="what" type="Variant">
 			</argument>
 			<description>
-			Returns the internal type of the given Variant object, using the TYPE_* enum in [@Global Scope].
+			Return the internal type of the given Variant object, using the TYPE_* enum in [@Global Scope].
 			</description>
 		</method>
 		<method name="str">
@@ -521,7 +522,7 @@
 			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
-			Converts a value to a string that can later be parsed using str2var.
+			Convert a value to a formatted string that can later be parsed using [method str2var].
 			</description>
 		</method>
 		<method name="str2var">
@@ -530,7 +531,7 @@
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
-			Converts a string that was returned by var2str to the original value.
+			Convert a formatted string that was returned by [method var2str] to the original value.
 			</description>
 		</method>
 		<method name="var2bytes">
@@ -539,7 +540,7 @@
 			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
-			Encodes a variable to a byte array.
+			Encode a variable value to a byte array.
 			</description>
 		</method>
 		<method name="bytes2var">
@@ -548,7 +549,7 @@
 			<argument index="0" name="bytes" type="RawArray">
 			</argument>
 			<description>
-			Decodes a byte array back to a variable.
+			Decode a byte array back to a value.
 			</description>
 		</method>
 		<method name="range">
@@ -557,7 +558,7 @@
 			<argument index="0" name="..." type="Variant">
 			</argument>
 			<description>
-			Return an array with the given range. Range can be 1 argument N (0 to N-1), two arguments (initial, final-1) or three arguments (initial,final-1,increment).
+			Return an array with the given range. Range can be 1 argument N (0 to N-1), two arguments (initial, final-1) or three arguments (initial, final-1, increment).
 			</description>
 		</method>
 		<method name="load">
@@ -590,10 +591,10 @@
 		<method name="hash">
 			<return type="int">
 			</return>
-			<argument index="0" name="var:Variant" type="Variant">
+			<argument index="0" name="Variant" type="Variant">
 			</argument>
 			<description>
-			Hashes the variable passed and returns an integer.
+			Hash the variable passed and return an integer.
 			</description>
 		</method>
 		<method name="Color8">
@@ -608,7 +609,7 @@
 			<argument index="3" name="a8" type="int">
 			</argument>
 			<description>
-			Makes a color from red, green, blue and alpha. Arguments can range from 0 to 255.
+			Make a color from red, green, blue and alpha. Arguments can range from 0 to 255.
 			</description>
 		</method>
 		<method name="print_stack">
@@ -633,18 +634,20 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-			Preload and get a resource. The resource is loaded during script parsing.
+			Preload a resource from the filesystem. The resource is loaded during script parsing.
 			</description>
 		</method>
 		<method name="yield">
-			<return type="Nil">
+			<return type="Object">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<argument index="1" name="signal" type="String">
 			</argument>
 			<description>
-			Stops function execution and return current state. Call resume on the state to resume execution.
+			Stop the function execution and return the current state. Call resume on the state to resume execution. This makes the state invalid.
+			Returns anything that was passed to the resume function call.
+			If passed an object and a signal, the execution is resumed when the object's signal is emmited.
 			</description>
 		</method>
 		<method name="assert">
@@ -653,7 +656,7 @@
 			<argument index="0" name="condition" type="bool">
 			</argument>
 			<description>
-			If the condition is false, generates an error.
+			Assert that the condition is true. If the condition is false, generates an error.
 			</description>
 		</method>
 	</methods>
@@ -772,119 +775,172 @@
 			Tab Key
 		</constant>
 		<constant name="KEY_BACKTAB" value="16777219">
-			Shift-Tab key
+			Shift-Tab Key
 		</constant>
 		<constant name="KEY_BACKSPACE" value="16777220">
+			Backspace Key
 		</constant>
 		<constant name="KEY_RETURN" value="16777221">
+			Return Key
 		</constant>
 		<constant name="KEY_ENTER" value="16777222">
+			Enter Key
 		</constant>
 		<constant name="KEY_INSERT" value="16777223">
+			Insert Key
 		</constant>
 		<constant name="KEY_DELETE" value="16777224">
+			Delete Key
 		</constant>
 		<constant name="KEY_PAUSE" value="16777225">
+			Pause Key
 		</constant>
 		<constant name="KEY_PRINT" value="16777226">
+			Printscreen Key
 		</constant>
 		<constant name="KEY_SYSREQ" value="16777227">
 		</constant>
 		<constant name="KEY_CLEAR" value="16777228">
 		</constant>
 		<constant name="KEY_HOME" value="16777229">
+			Home Key
 		</constant>
 		<constant name="KEY_END" value="16777230">
+			End Key
 		</constant>
 		<constant name="KEY_LEFT" value="16777231">
+			Left Arrow Key
 		</constant>
 		<constant name="KEY_UP" value="16777232">
+			Up Arrow Key
 		</constant>
 		<constant name="KEY_RIGHT" value="16777233">
+			Right Arrow Key
 		</constant>
 		<constant name="KEY_DOWN" value="16777234">
+			Down Arrow Key
 		</constant>
 		<constant name="KEY_PAGEUP" value="16777235">
+			Pageup Key
 		</constant>
 		<constant name="KEY_PAGEDOWN" value="16777236">
+			Pagedown Key
 		</constant>
 		<constant name="KEY_SHIFT" value="16777237">
+			Shift Key
 		</constant>
 		<constant name="KEY_CONTROL" value="16777238">
+			Control Key
 		</constant>
 		<constant name="KEY_META" value="16777239">
 		</constant>
 		<constant name="KEY_ALT" value="16777240">
+			Alt Key
 		</constant>
 		<constant name="KEY_CAPSLOCK" value="16777241">
+			Capslock Key
 		</constant>
 		<constant name="KEY_NUMLOCK" value="16777242">
+			Numlock Key
 		</constant>
 		<constant name="KEY_SCROLLLOCK" value="16777243">
+			Scrolllock Key
 		</constant>
 		<constant name="KEY_F1" value="16777244">
+			F1 Key
 		</constant>
 		<constant name="KEY_F2" value="16777245">
+			F2 Key
 		</constant>
 		<constant name="KEY_F3" value="16777246">
+			F3 Key
 		</constant>
 		<constant name="KEY_F4" value="16777247">
+			F4 Key
 		</constant>
 		<constant name="KEY_F5" value="16777248">
+			F5 Key
 		</constant>
 		<constant name="KEY_F6" value="16777249">
+			F6 Key
 		</constant>
 		<constant name="KEY_F7" value="16777250">
+			F7 Key
 		</constant>
 		<constant name="KEY_F8" value="16777251">
+			F8 Key
 		</constant>
 		<constant name="KEY_F9" value="16777252">
+			F9 Key
 		</constant>
 		<constant name="KEY_F10" value="16777253">
+			F10 Key
 		</constant>
 		<constant name="KEY_F11" value="16777254">
+			F11 Key
 		</constant>
 		<constant name="KEY_F12" value="16777255">
+			F12 Key
 		</constant>
 		<constant name="KEY_F13" value="16777256">
+			F13 Key
 		</constant>
 		<constant name="KEY_F14" value="16777257">
+			F14 Key
 		</constant>
 		<constant name="KEY_F15" value="16777258">
+			F15 Key
 		</constant>
 		<constant name="KEY_F16" value="16777259">
+			F16 Key
 		</constant>
 		<constant name="KEY_KP_ENTER" value="16777344">
+			Enter Key on Numpad
 		</constant>
 		<constant name="KEY_KP_MULTIPLY" value="16777345">
+			Multiply Key on Numpad
 		</constant>
 		<constant name="KEY_KP_DIVIDE" value="16777346">
+			Divide Key on Numpad
 		</constant>
 		<constant name="KEY_KP_SUBTRACT" value="16777347">
+			Subtract Key on Numpad
 		</constant>
 		<constant name="KEY_KP_PERIOD" value="16777348">
+			Period Key on Numpad
 		</constant>
 		<constant name="KEY_KP_ADD" value="16777349">
+			Add Key on Numpad
 		</constant>
 		<constant name="KEY_KP_0" value="16777350">
+			Number 0 on Numpad
 		</constant>
 		<constant name="KEY_KP_1" value="16777351">
+			Number 1 on Numpad
 		</constant>
 		<constant name="KEY_KP_2" value="16777352">
+			Number 2 on Numpad
 		</constant>
 		<constant name="KEY_KP_3" value="16777353">
+			Number 3 on Numpad
 		</constant>
 		<constant name="KEY_KP_4" value="16777354">
+			Number 4 on Numpad
 		</constant>
 		<constant name="KEY_KP_5" value="16777355">
+			Number 5 on Numpad
 		</constant>
 		<constant name="KEY_KP_6" value="16777356">
+			Number 6 on Numpad
 		</constant>
 		<constant name="KEY_KP_7" value="16777357">
+			Number 7 on Numpad
 		</constant>
 		<constant name="KEY_KP_8" value="16777358">
+			Number 8 on Numpad
 		</constant>
 		<constant name="KEY_KP_9" value="16777359">
+			Number 9 on Numpad
 		</constant>
 		<constant name="KEY_SUPER_L" value="16777260">
 		</constant>
@@ -985,6 +1041,7 @@
 		<constant name="KEY_UNKNOWN" value="33554431">
 		</constant>
 		<constant name="KEY_SPACE" value="32">
+			Space Key
 		</constant>
 		<constant name="KEY_EXCLAM" value="33">
 		</constant>
@@ -1017,24 +1074,34 @@
 		<constant name="KEY_SLASH" value="47">
 		</constant>
 		<constant name="KEY_0" value="48">
+			Number 0
 		</constant>
 		<constant name="KEY_1" value="49">
+			Number 1
 		</constant>
 		<constant name="KEY_2" value="50">
+			Number 2
 		</constant>
 		<constant name="KEY_3" value="51">
+			Number 3
 		</constant>
 		<constant name="KEY_4" value="52">
+			Number 4
 		</constant>
 		<constant name="KEY_5" value="53">
+			Number 5
 		</constant>
 		<constant name="KEY_6" value="54">
+			Number 6
 		</constant>
 		<constant name="KEY_7" value="55">
+			Number 7
 		</constant>
 		<constant name="KEY_8" value="56">
+			Number 8
 		</constant>
 		<constant name="KEY_9" value="57">
+			Number 9
 		</constant>
 		<constant name="KEY_COLON" value="58">
 		</constant>
@@ -1051,56 +1118,82 @@
 		<constant name="KEY_AT" value="64">
 		</constant>
 		<constant name="KEY_A" value="65">
+			A Key
 		</constant>
 		<constant name="KEY_B" value="66">
+			B Key
 		</constant>
 		<constant name="KEY_C" value="67">
+			C Key
 		</constant>
 		<constant name="KEY_D" value="68">
+			D Key
 		</constant>
 		<constant name="KEY_E" value="69">
+			E Key
 		</constant>
 		<constant name="KEY_F" value="70">
+			F Key
 		</constant>
 		<constant name="KEY_G" value="71">
+			G Key
 		</constant>
 		<constant name="KEY_H" value="72">
+			H Key
 		</constant>
 		<constant name="KEY_I" value="73">
+			I Key
 		</constant>
 		<constant name="KEY_J" value="74">
+			J Key
 		</constant>
 		<constant name="KEY_K" value="75">
+			K Key
 		</constant>
 		<constant name="KEY_L" value="76">
+			L Key
 		</constant>
 		<constant name="KEY_M" value="77">
+			M Key
 		</constant>
 		<constant name="KEY_N" value="78">
+			N Key
 		</constant>
 		<constant name="KEY_O" value="79">
+			O Key
 		</constant>
 		<constant name="KEY_P" value="80">
+			P Key
 		</constant>
 		<constant name="KEY_Q" value="81">
+			Q Key
 		</constant>
 		<constant name="KEY_R" value="82">
+			R Key
 		</constant>
 		<constant name="KEY_S" value="83">
+			S Key
 		</constant>
 		<constant name="KEY_T" value="84">
+			T Key
 		</constant>
 		<constant name="KEY_U" value="85">
+			U Key
 		</constant>
 		<constant name="KEY_V" value="86">
+			V Key
 		</constant>
 		<constant name="KEY_W" value="87">
+			W Key
 		</constant>
 		<constant name="KEY_X" value="88">
+			X Key
 		</constant>
 		<constant name="KEY_Y" value="89">
+			Y Key
 		</constant>
 		<constant name="KEY_Z" value="90">
+			Z Key
 		</constant>
 		<constant name="KEY_BRACKETLEFT" value="91">
 		</constant>
@@ -1273,10 +1366,13 @@
 		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824">
 		</constant>
 		<constant name="BUTTON_LEFT" value="1">
+			Left Mouse Button
 		</constant>
 		<constant name="BUTTON_RIGHT" value="2">
+			Right Mouse Button
 		</constant>
 		<constant name="BUTTON_MIDDLE" value="3">
+			Middle Mouse Button
 		</constant>
 		<constant name="BUTTON_WHEEL_UP" value="4">
 		</constant>
@@ -1384,40 +1480,58 @@
 		<constant name="JOY_DS_Y" value="2">
 		</constant>
 		<constant name="JOY_SELECT" value="10">
+			Joystick Button Select
 		</constant>
 		<constant name="JOY_START" value="11">
+			Joystick Button Start
 		</constant>
 		<constant name="JOY_DPAD_UP" value="12">
+			Joystick DPad Up
 		</constant>
 		<constant name="JOY_DPAD_DOWN" value="13">
+			Joystick DPad Down
 		</constant>
 		<constant name="JOY_DPAD_LEFT" value="14">
+			Joystick DPad Left
 		</constant>
 		<constant name="JOY_DPAD_RIGHT" value="15">
+			Joystick DPad Right
 		</constant>
 		<constant name="JOY_L" value="4">
+			Joystick Left Shoulder Button
 		</constant>
 		<constant name="JOY_L2" value="6">
+			Joystick Left Trigger
 		</constant>
 		<constant name="JOY_L3" value="8">
+			Joystick Left Stick Click
 		</constant>
 		<constant name="JOY_R" value="5">
+			Joystick Right Shoulder Button
 		</constant>
 		<constant name="JOY_R2" value="7">
+			Joystick Right Trigger
 		</constant>
 		<constant name="JOY_R3" value="9">
+			Joystick Right Stick Click
 		</constant>
 		<constant name="JOY_AXIS_0" value="0">
+			Joystick Left Stick Horizontal Axis
 		</constant>
 		<constant name="JOY_AXIS_1" value="1">
+			Joystick Left Stick Vertical Axis
 		</constant>
 		<constant name="JOY_AXIS_2" value="2">
+			Joystick Right Stick Horizontal Axis
 		</constant>
 		<constant name="JOY_AXIS_3" value="3">
+			Joystick Right Stick Vertical Axis
 		</constant>
 		<constant name="JOY_AXIS_4" value="4">
+			Joystick Left Trigger Analog Axis
 		</constant>
 		<constant name="JOY_AXIS_5" value="5">
+			Joystick Right Trigger Analog Axis
 		</constant>
 		<constant name="JOY_AXIS_6" value="6">
 		</constant>
@@ -1426,12 +1540,16 @@
 		<constant name="JOY_AXIS_MAX" value="8">
 		</constant>
 		<constant name="JOY_ANALOG_0_X" value="0">
+			Joystick Left Stick Horizontal Axis
 		</constant>
 		<constant name="JOY_ANALOG_0_Y" value="1">
+			Joystick Left Stick Vertical Axis
 		</constant>
 		<constant name="JOY_ANALOG_1_X" value="2">
+			Joystick Right Stick Horizontal Axis
 		</constant>
 		<constant name="JOY_ANALOG_1_Y" value="3">
+			Joystick Right Stick Vertical Axis
 		</constant>
 		<constant name="JOY_ANALOG_2_X" value="4">
 		</constant>
@@ -1575,9 +1693,6 @@
 		<constant name="PROPERTY_USAGE_STORAGE" value="1">
 			Property will be used as storage (default).
 		</constant>
-		<constant name="PROPERTY_USAGE_STORAGE" value="1">
-			Property will be used as storage (default).
-		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR" value="2">
 			Property will be visible in editor (default).
 		</constant>
@@ -1639,34 +1754,34 @@
 			Variable is of type [AABB].
 		</constant>
 		<constant name="TYPE_MATRIX3" value="12">
-			Variable is fo type [Matrix3].
+			Variable is of type [Matrix3].
 		</constant>
 		<constant name="TYPE_TRANSFORM" value="13">
-			Variable is fo type [Transform].
+			Variable is of type [Transform].
 		</constant>
 		<constant name="TYPE_COLOR" value="14">
-			Variable is fo type [Color].
+			Variable is of type [Color].
 		</constant>
 		<constant name="TYPE_IMAGE" value="15">
-			Variable is fo type [Image].
+			Variable is of type [Image].
 		</constant>
 		<constant name="TYPE_NODE_PATH" value="16">
-			Variable is fo type [NodePath].
+			Variable is of type [NodePath].
 		</constant>
 		<constant name="TYPE_RID" value="17">
-			Variable is fo type [RID].
+			Variable is of type [RID].
 		</constant>
 		<constant name="TYPE_OBJECT" value="18">
-			Variable is fo type [Object].
+			Variable is of type [Object].
 		</constant>
 		<constant name="TYPE_INPUT_EVENT" value="19">
-			Variable is fo type [InputEvent].
+			Variable is of type [InputEvent].
 		</constant>
 		<constant name="TYPE_DICTIONARY" value="20">
-			Variable is fo type [Dictionary].
+			Variable is of type [Dictionary].
 		</constant>
 		<constant name="TYPE_ARRAY" value="21">
-			Variable is fo type [Array].
+			Variable is of type [Array].
 		</constant>
 		<constant name="TYPE_RAW_ARRAY" value="22">
 		</constant>
