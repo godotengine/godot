@@ -257,6 +257,9 @@ class SectionedPropertyEditor : public HBoxContainer {
 
 
 	OBJ_TYPE(SectionedPropertyEditor,HBoxContainer);
+
+	ObjectID obj;
+
 	ItemList *sections;
 	SectionedPropertyEditorFilter *filter;
 	PropertyEditor *editor;
@@ -270,7 +273,11 @@ public:
 	PropertyEditor *get_property_editor();
 	void edit(Object* p_object);
 	String get_full_item_path(const String& p_item);
+
+	void set_current_section(const String& p_section);
 	String get_current_section() const;
+
+	void update_category_list();
 
 	SectionedPropertyEditor();
 	~SectionedPropertyEditor();

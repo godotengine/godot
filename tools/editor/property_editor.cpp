@@ -3840,14 +3840,34 @@ void SectionedPropertyEditor::_section_selected(int p_which) {
 	filter->set_section( sections->get_item_metadata(p_which) );
 }
 
+void SectionedPropertyEditor::set_current_section(const String& p_section) {
+
+	int section_idx = sections->find_metadata(p_section);
+
+	if (section_idx==sections->get_current())
+		return;
+
+	if (section_idx!=-1) {
+		sections->select(section_idx);
+		_section_selected(section_idx);
+	} else if (sections->get_item_count()) {
+		sections->select(0);
+		_section_selected(0);
+	}
+}
+
 String SectionedPropertyEditor::get_current_section() const {
 
-	return sections->get_item_metadata( sections->get_current() );
+	if (sections->get_current()!=-1)
+		return sections->get_item_metadata( sections->get_current() );
+	else
+		return "";
 }
 
 String SectionedPropertyEditor::get_full_item_path(const String& p_item) {
 
-	String base = sections->get_item_metadata( sections->get_current() );
+	String base = get_current_section();
+
 	if (base!="")
 		return base+"/"+p_item;
 	else
@@ -3856,17 +3876,44 @@ String SectionedPropertyEditor::get_full_item_path(const String& p_item) {
 
 void SectionedPropertyEditor::edit(Object* p_object) {
 
-	List<PropertyInfo> pinfo;
-	if (p_object)
-		p_object->get_property_list(&pinfo);
+	if (p_object) {
+		obj=p_object->get_instance_ID();
+		update_category_list();
+	} else {
+		sections->clear();
+	}
+
+	filter->set_edited(p_object);
+	editor->edit(filter);
+
+	sections->select(0);
+	_section_selected(0);
+
+}
+
+void SectionedPropertyEditor::update_category_list() {
+
+	String selected_category=get_current_section();
 	sections->clear();
+
+	Object *o = ObjectDB::get_instance(obj);
+
+	if (!o)
+		return;
+
+	List<PropertyInfo> pinfo;
+	o->get_property_list(&pinfo);
 
 	Set<String> existing_sections;
 	for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
 
 		PropertyInfo pi=E->get();
+
 		if (pi.usage&PROPERTY_USAGE_CATEGORY)
 			continue;
+		else if ( !(pi.usage&PROPERTY_USAGE_EDITOR) )
+			continue;
+
 		if (pi.name.find(":")!=-1 || pi.name=="script/script")
 			continue;
 		int sp = pi.name.find("/");
@@ -3885,19 +3932,9 @@ void SectionedPropertyEditor::edit(Object* p_object) {
 				sections->set_item_metadata(sections->get_item_count()-1,"");
 			}
 		}
-
-
 	}
 
-	//sections->sort_items_by_text();
-
-
-	filter->set_edited(p_object);
-	editor->edit(filter);
-
-	sections->select(0);
-	_section_selected(0);
-
+	set_current_section(selected_category);
 }
 
 PropertyEditor *SectionedPropertyEditor::get_property_editor() {
