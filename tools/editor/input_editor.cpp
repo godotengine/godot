@@ -658,6 +658,8 @@ void InputEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_press_a_key_confirm"), &InputEditor::_press_a_key_confirm);
 	ObjectTypeDB::bind_method(_MD("_settings_changed"), &InputEditor::_settings_changed);
 
+	ADD_SIGNAL(MethodInfo("settings_changed"));
+
 }
 
 InputEditor::InputEditor(UndoRedo *p_undoredo) {
@@ -689,7 +691,7 @@ InputEditor::InputEditor(UndoRedo *p_undoredo) {
 	add_child(input_tree);
 	input_tree->set_area_as_parent_rect();
 	input_tree->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 55);
-	input_tree->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 35);
+	input_tree->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 5);
 	input_tree->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
 	input_tree->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 5);
 	input_tree->connect("item_edited", this, "_action_edited");
@@ -743,5 +745,7 @@ InputEditor::InputEditor(UndoRedo *p_undoredo) {
 	device_index->set_pos(Point2(95, 30));
 	device_index->set_size(Size2(300, 10));
 	device_index->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 10);
+
+	setting = false;
 
 }
