@@ -6368,6 +6368,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 	uint8_t prev_sort_flags=0xFF;
 	const BakedLightData *prev_baked_light=NULL;
 	RID prev_baked_light_texture;
+	const float *prev_morph_values=NULL;
 
 	Geometry::Type prev_geometry_type=Geometry::GEOMETRY_INVALID;
 
@@ -6406,6 +6407,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		const Skeleton *skeleton = e->skeleton;
 		const Geometry *geometry_cmp = e->geometry_cmp;
 		const BakedLightData *baked_light = e->instance->baked_light;
+		const float *morph_values = e->instance->morph_values.ptr();
 
 		bool rebind=false;
 		bool bind_baked_light_octree=false;
@@ -6428,6 +6430,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 				prev_overrides=NULL; // make it diferent than NULL
 				prev_skeleton =NULL;
 				prev_sort_flags=0xFF;
+				prev_morph_values=NULL;
 				prev_geometry_type=Geometry::GEOMETRY_INVALID;
 				glEnable(GL_BLEND);
 				glDepthMask(GL_TRUE);
@@ -6640,10 +6643,14 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			rebind=true;
 		}
 		
-		if  (use_hw_skeleton_xform && skeleton!=prev_skeleton) {
+		if  (use_hw_skeleton_xform && (skeleton!=prev_skeleton||morph_values!=prev_morph_values)) {
 			if (!prev_skeleton || !skeleton)
 				rebind=true; //went from skeleton <-> no skeleton, needs rebind
-			_setup_skeleton(skeleton);
+
+			if (morph_values==NULL)
+				_setup_skeleton(skeleton);
+			else
+				_setup_skeleton(NULL);
 		}
 
 		if (material!=prev_material || rebind) {
@@ -6731,7 +6738,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		}
 
 		if (skeleton != prev_skeleton || rebind) {
-			if (skeleton) {
+			if (skeleton && morph_values == NULL) {
 				material_shader.set_uniform(MaterialShaderGLES2::SKELETON_MATRICES, max_texture_units - 2);
 				material_shader.set_uniform(MaterialShaderGLES2::SKELTEX_PIXEL_SIZE, skeleton->pixel_size);
 			}
@@ -6788,6 +6795,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		prev_light_type=e->light_type;
 		prev_sort_flags=sort_flags;
 		prev_baked_light=baked_light;
+		prev_morph_values=morph_values;
 //		prev_geometry_type=geometry->type;
 	}
 
