@@ -41,6 +41,7 @@
 #include "io/config_file.h"
 #include "editor_node.h"
 #include "globals.h"
+#include "os/keyboard.h"
 
 Ref<EditorSettings> EditorSettings::singleton=NULL;
 
@@ -485,6 +486,38 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("run/auto_save_before_running",true);
 	set("resources/save_compressed_resources",true);
 	set("resources/auto_reload_modified_images",true);
+
+	// shortcuts
+	Array arr;
+	InputEvent ie;
+	ie.type = InputEvent::KEY;
+
+	ie.key.mod.control = true;
+	ie.key.scancode = KEY_N;
+	arr.push_back(ie);
+	set("input/scene_new", arr);
+
+	ie.key.scancode = KEY_O;
+	arr = Array();
+	arr.push_back(ie);
+	set("input/scene_open", arr);
+
+	ie.key.scancode = KEY_S;
+	arr = Array();
+	arr.push_back(ie);
+	set("input/scene_save", arr);
+
+	ie.key.scancode = KEY_S;
+	ie.key.mod.shift = true;
+	arr = Array();
+	arr.push_back(ie);
+	set("input/scene_save_as", arr);
+
+	ie.key.mod.shift = false;
+	ie.key.scancode = KEY_W;
+	arr = Array();
+	arr.push_back(ie);
+	set("input/scene_close", arr);
 
 	if (p_extra_config.is_valid()) {
 
