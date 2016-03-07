@@ -31,6 +31,8 @@
 #include "scene/gui/margin_container.h"
 #include "globals.h"
 #include "editor_file_system.h"
+#include "input_editor.h"
+
 void EditorSettingsDialog::ok_pressed() {
 
 	if (!EditorSettings::get_singleton())
@@ -140,18 +142,9 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(property_editor);
 
-	Control *shortcuts_base = memnew(Control);
-	shortcuts_base->set_name("Shortcuts");
-	shortcuts_base->set_area_as_parent_rect();;
-	tabs->add_child(shortcuts_base);
-
-	Tree *shortcuts_editor = memnew(Tree);
-	shortcuts_base->add_child(shortcuts_editor);
-	shortcuts_editor->set_area_as_parent_rect();
-	shortcuts_editor->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 5);
-	shortcuts_editor->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 5);
-	shortcuts_editor->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
-	shortcuts_editor->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 5);
+	InputEditor *input_editor = memnew(InputEditor(true));
+	input_editor->set_name("Shortcuts");
+	tabs->add_child(input_editor);
 
 	vbc = memnew( VBoxContainer );
 	tabs->add_child(vbc);
