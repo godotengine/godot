@@ -1677,9 +1677,30 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 							ins+="\t";
 						}
 					}
+
+					bool first_line = false;
+					if (k.mod.command) {
+						if (k.mod.shift) {
+							if (cursor.line > 0) {
+								cursor_set_line(cursor.line - 1);
+								cursor_set_column(text[cursor.line].length());
+							}
+							else {
+								cursor_set_column(0);
+								first_line = true;
+							}
+						}
+						else {
+							cursor_set_column(text[cursor.line].length());
+						}
+					}
 					
 					_insert_text_at_cursor(ins);
 					_push_current_op();
+
+					if (first_line) {
+						cursor_set_line(0);
+					}
 					
 				} break;
 				case KEY_ESCAPE: {
