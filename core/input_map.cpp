@@ -156,10 +156,7 @@ void InputMap::action_erase_event(const StringName& p_action,const InputEvent& p
 
 	List<InputEvent>::Element *E=_find_event(input_map[p_action].inputs,p_event);
 	if (E)
-		return; //already gots
-
-	input_map[p_action].inputs.erase(E);
-
+		input_map[p_action].inputs.erase(E);
 }
 
 
