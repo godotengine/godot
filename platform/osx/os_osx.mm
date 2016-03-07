@@ -813,7 +813,7 @@ static int translateKey(unsigned int key)
 
 		InputEvent ev;
 		ev.type=InputEvent::MOUSE_BUTTON;
-		ev.mouse_button.button_index=deltaX >0 ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT;
+		ev.mouse_button.button_index=deltaX < 0 ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT;
 		ev.mouse_button.pressed=true;
 		ev.mouse_button.x=mouse_x;
 		ev.mouse_button.y=mouse_y;
