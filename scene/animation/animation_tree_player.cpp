@@ -607,19 +607,20 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 			Blend3Node *bn = static_cast<Blend3Node*>(nb);
 
 			float rem;
-
-			if (bn->value==0) {
-				rem = _process_node(bn->inputs[1].node,r_prev_anim,p_weight,p_time,switched,p_seek,p_filter,p_reverse_weight);
-			} else if (bn->value>0) {
-
-				rem = _process_node(bn->inputs[1].node,r_prev_anim,p_weight*(1.0-bn->value),p_time,switched,p_seek,p_filter,p_reverse_weight*(1.0-bn->value));
-				_process_node(bn->inputs[2].node,r_prev_anim,p_weight*bn->value,p_time,switched,p_seek,p_filter,p_reverse_weight*bn->value);
-
+			float blend, lower_blend, upper_blend;
+			if (bn->value < 0) {
+				lower_blend = -bn->value;
+				blend = 1.0 - lower_blend;
+				upper_blend = 0;
 			} else {
-
-				rem = _process_node(bn->inputs[1].node,r_prev_anim,p_weight*(1.0+bn->value),p_time,switched,p_seek,p_filter,p_reverse_weight*(1.0+bn->value));
-				_process_node(bn->inputs[0].node,r_prev_anim,p_weight*-bn->value,p_time,switched,p_seek,p_filter,p_reverse_weight*-bn->value);
+				lower_blend = 0;
+				blend = 1.0 - bn->value;
+				upper_blend = bn->value;
 			}
+
+			rem = _process_node(bn->inputs[1].node,r_prev_anim,p_weight*blend,p_time,switched,p_seek,p_filter,p_reverse_weight*blend);
+			_process_node(bn->inputs[2].node,r_prev_anim,p_weight*upper_blend,p_time,switched,p_seek,p_filter,p_reverse_weight*upper_blend);
+			_process_node(bn->inputs[0].node,r_prev_anim,p_weight*lower_blend,p_time,switched,p_seek,p_filter,p_reverse_weight*lower_blend);
 
 			return rem;
 		} break;
@@ -768,6 +769,10 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 		t.scale.x=0;
 		t.scale.y=0;
 		t.scale.z=0;
+
+		Variant value = t.node->get(t.property);
+		value.zero();
+		t.node->set(t.property, value);
 	}
 
 
@@ -777,11 +782,9 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 	Quat empty_rot;
 
 
-	int total = 0;
 	while(anim_list) {
 
 		if (!anim_list->animation.is_null() && !anim_list->skip) {
-			++total;
 			//check if animation is meaningful
 			Animation *a = anim_list->animation.operator->();
 
@@ -816,8 +819,9 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 					case Animation::TYPE_VALUE: { ///< Set a value in a property, can be interpolated.
 
 						if (a->value_track_is_continuous(tr.local_track)) {
-							Variant value = a->value_track_interpolate(tr.local_track,anim_list->time);
-							tr.track->node->set(tr.track->property,value);
+							Variant blended, value = a->value_track_interpolate(tr.local_track,anim_list->time);
+							Variant::blend(tr.track->node->get(tr.track->property),value,blend,blended);
+							tr.track->node->set(tr.track->property,blended);
 						} else {
 
 							List<int> indices;

@@ -241,7 +241,15 @@ void make_default_theme() {
 
 	t->set_constant("hseparation","Button", 2);
 
+	// LinkButton
 
+	t->set_font("font","LinkButton", default_font );
+
+	t->set_color("font_color","LinkButton", control_font_color );
+	t->set_color("font_color_pressed","LinkButton", control_font_color_pressed );
+	t->set_color("font_color_hover","LinkButton", control_font_color_hover );
+
+	t->set_constant("underline_spacing","LinkButton", 2 );
 
 	// ColorPickerButton
 

@@ -981,11 +981,6 @@ void EditorNode::_save_scene(String p_file) {
 
 	editor_data.apply_changes_in_editors();
 
-	if (editor_plugin_screen) {
-		scene->set_meta("__editor_plugin_screen__",editor_plugin_screen->get_name());
-	}
-
-
 	_set_scene_metadata(p_file);
 
 
@@ -3692,25 +3687,11 @@ Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bo
 */
 	editor_data.set_edited_scene_import_metadata( sdata->get_import_metadata() );
 
-
 //	editor_data.get_undo_redo().clear_history();
 	saved_version=editor_data.get_undo_redo().get_version();
 	_update_title();
 	_update_scene_tabs();
 	_add_to_recent_scenes(lpath);
-
-	if (new_scene->has_meta("__editor_plugin_screen__")) {
-
-		String editor = new_scene->get_meta("__editor_plugin_screen__");
-
-		for(int i=0;i<editor_table.size();i++) {
-
-			if (editor_table[i]->get_name()==editor) {
-				_editor_select(i);
-				break;
-			}
-		}
-	}
 
 	prev_scene->set_disabled(previous_scenes.size()==0);
 	opening_prev=false;

@@ -60,6 +60,8 @@ void ProjectSettings::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
+		globals_editor->edit(Globals::get_singleton());
+
 		search_button->set_icon(get_icon("Zoom","EditorIcons"));
 		clear_button->set_icon(get_icon("Close","EditorIcons"));
 
@@ -566,8 +568,7 @@ void ProjectSettings::popup_project_settings() {
 
 	//popup_centered(Size2(500,400));
 	popup_centered_ratio();
-	globals_editor->edit(NULL);
-	globals_editor->edit(Globals::get_singleton());
+	globals_editor->update_category_list();
 	_update_translations();
 	_update_autoload();
 	plugin_settings->update_plugins();
@@ -605,37 +606,45 @@ void ProjectSettings::_item_add() {
 		case 3: value=""; break;
 	}
 
-	String catname = category->get_text();
+	String catname = category->get_text().strip_edges();
 	/*if (!catname.is_valid_identifier()) {
 		message->set_text("Invalid Category.\nValid characters: a-z,A-Z,0-9 or _");
 		message->popup_centered(Size2(300,100));
 		return;
 	}*/
 
-	String propname = property->get_text();
+	String propname = property->get_text().strip_edges();
 	/*if (!propname.is_valid_identifier()) {
 		message->set_text("Invalid Property.\nValid characters: a-z,A-Z,0-9 or _");
 		message->popup_centered(Size2(300,100));
 		return;
 	}*/
 
-	String name = catname+"/"+propname;
+	String name = catname!="" ? catname+"/"+propname : propname;
+
 	Globals::get_singleton()->set(name,value);
-	globals_editor->edit(NULL);
-	globals_editor->edit(Globals::get_singleton());
+
+	globals_editor->set_current_section(catname);
+	globals_editor->update_category_list();
+
+	_settings_changed();
 }
 
 void ProjectSettings::_item_del() {
 
-	String catname = category->get_text();
+	String catname = category->get_text().strip_edges();
 	//ERR_FAIL_COND(!catname.is_valid_identifier());
-	String propname = property->get_text();
+	String propname = property->get_text().strip_edges();
 	//ERR_FAIL_COND(!propname.is_valid_identifier());
 
-	String name = catname+"/"+propname;
-	Globals::get_singleton()->set(name,Variant());
-	globals_editor->get_property_editor()->update_tree();
+	String name = catname!="" ? catname+"/"+propname : propname;
 
+	Globals::get_singleton()->set(name,Variant());
+
+	globals_editor->set_current_section(catname);
+	globals_editor->update_category_list();
+
+	_settings_changed();
 }
 
 void ProjectSettings::_action_adds(String) {

@@ -56,10 +56,12 @@ public:
 		Point2 pos;
 	};
 
+	bool skey_pressed[121];
+	bool key_pressed[256];
+
 private:
 
 	Vector<TouchPos> touch;
-
 	Point2 last_mouse;
 	unsigned int last_id;
 	GFXInitFunc gfx_init_func;

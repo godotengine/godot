@@ -1779,20 +1779,6 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 					return;
 				}
 
-				// Little optimisation for common usage "for i in range(...):":
-				// don't create and initialize a possibly huge array as range()
-				// would do, but instead create an iterator using xrange()
-				if (container->type == Node::TYPE_OPERATOR) {
-					OperatorNode *op = static_cast<OperatorNode *>(container);
-					if (op->arguments.size() > 0 &&
-							op->arguments[0]->type == Node::TYPE_BUILT_IN_FUNCTION) {
-						BuiltInFunctionNode *c = static_cast<BuiltInFunctionNode *>(op->arguments[0]);
-						if (c->function == GDFunctions::GEN_RANGE) {
-							c->function = GDFunctions::GEN_XRANGE;
-						}
-					}
-				}
-
 				ControlFlowNode *cf_for = alloc_node<ControlFlowNode>();
 
 				cf_for->cf_type=ControlFlowNode::CF_FOR;
