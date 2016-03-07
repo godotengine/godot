@@ -670,7 +670,7 @@ void InputEditor::_update_actions() const {
 	else
 		Globals::get_singleton()->get_property_list(&props);
 
-	for (List<PropertyInfo>::Element *E = props.front();E;E = E->next()) {
+	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 
 		const PropertyInfo &pi = E->get();
 		if (!pi.name.begins_with("input/"))
@@ -681,15 +681,16 @@ void InputEditor::_update_actions() const {
 			continue;
 
 		TreeItem *item = input_tree->create_item(root);
-		//item->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
+
 		item->set_text(0, name);
 		item->add_button(0, get_icon("Add", "EditorIcons"), 1);
+
 		if (!use_editor_setttings && !Globals::get_singleton()->get_input_presets().find(pi.name)) {
 			item->add_button(0, get_icon("Remove", "EditorIcons"), 2);
 			item->set_editable(0, true);
 		}
+
 		item->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
-		//item->set_checked(0,pi.usage&PROPERTY_USAGE_CHECKED);
 
 		Array actions;
 
@@ -698,7 +699,7 @@ void InputEditor::_update_actions() const {
 		else
 			actions = Globals::get_singleton()->get(pi.name);
 
-		for (int i = 0;i<actions.size();i++) {
+		for (int i = 0; i<actions.size(); i++) {
 
 			if (actions[i].get_type() != Variant::INPUT_EVENT)
 				continue;
@@ -942,7 +943,11 @@ InputEditor::InputEditor(bool p_use_editor_settings, UndoRedo *p_undoredo) {
 	action_name->set_anchor(MARGIN_RIGHT, ANCHOR_RATIO);
 	action_name->set_begin(Point2(5, 25));
 	action_name->set_end(Point2(0.85, 26));
-	action_name->connect("text_entered", this, "_action_adds");
+
+	if (use_editor_setttings)
+		action_name->set_editable(false);
+	else
+		action_name->connect("text_entered", this, "_action_adds");
 
 	Button *add_button = memnew(Button);
 	add_child(add_button);
@@ -951,7 +956,11 @@ InputEditor::InputEditor(bool p_use_editor_settings, UndoRedo *p_undoredo) {
 	add_button->set_anchor(MARGIN_RIGHT, ANCHOR_END);
 	add_button->set_end(Point2(5, 26));
 	add_button->set_text("Add");
-	add_button->connect("pressed", this, "_action_add");
+
+	if (use_editor_setttings)
+		add_button->set_disabled(true);
+	else
+		add_button->connect("pressed", this, "_action_add");
 
 	input_tree = memnew(Tree);
 	add_child(input_tree);
