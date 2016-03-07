@@ -906,6 +906,11 @@ InputEditor::InputEditor(bool p_use_editor_settings, UndoRedo *p_undoredo) {
 	device_index->set_size(Size2(300, 10));
 	device_index->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 10);
 
+	message = memnew(ConfirmationDialog);
+	add_child(message);
+	message->get_cancel()->hide();
+	message->set_hide_on_ok(true);
+
 	setting = false;
 
 }
