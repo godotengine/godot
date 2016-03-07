@@ -120,6 +120,7 @@ void InputEditor::_action_edited() {
 		Array va = EditorSettings::get_singleton()->get(add_at);
 
 		if (undo_redo) {
+
 			setting = true;
 			undo_redo->create_action("Rename Input Action Event");
 			undo_redo->add_do_method(EditorSettings::get_singleton(), "erase", add_at);
@@ -132,6 +133,17 @@ void InputEditor::_action_edited() {
 			undo_redo->add_undo_method(this, "_settings_changed");
 			undo_redo->commit_action();
 			setting = false;
+
+		}
+		else {
+			
+			setting = true;
+			EditorSettings::get_singleton()->erase(add_at);
+			EditorSettings::get_singleton()->set(action_prop, va);
+			_update_actions();
+			_settings_changed();
+			setting = false;
+
 		}
 
 	}
@@ -152,6 +164,7 @@ void InputEditor::_action_edited() {
 		Array va = Globals::get_singleton()->get(add_at);
 
 		if (undo_redo) {
+
 			setting = true;
 			undo_redo->create_action("Rename Input Action Event");
 			undo_redo->add_do_method(Globals::get_singleton(), "clear", add_at);
@@ -168,6 +181,19 @@ void InputEditor::_action_edited() {
 			undo_redo->add_undo_method(this, "_settings_changed");
 			undo_redo->commit_action();
 			setting = false;
+
+		}
+		else {
+			
+			setting = true;
+			Globals::get_singleton()->clear(add_at);
+			Globals::get_singleton()->set(action_prop, va);
+			Globals::get_singleton()->set_persisting(action_prop, persisting);
+			Globals::get_singleton()->set_order(action_prop, order);
+			_update_actions();
+			_settings_changed();
+			setting = false;
+
 		}
 
 	}
@@ -245,6 +271,7 @@ void InputEditor::_device_input_add() {
 	if (use_editor_setttings) {
 		
 		if (undo_redo) {
+
 			undo_redo->create_action("Add Input Action Event");
 			undo_redo->add_do_method(EditorSettings::get_singleton(), "set", name, arr);
 			undo_redo->add_undo_method(EditorSettings::get_singleton(), "set", name, old_val);
@@ -253,6 +280,14 @@ void InputEditor::_device_input_add() {
 			undo_redo->add_do_method(this, "_settings_changed");
 			undo_redo->add_undo_method(this, "_settings_changed");
 			undo_redo->commit_action();
+
+		}
+		else {
+
+			EditorSettings::get_singleton()->set(name, arr);
+			_update_actions();
+			_settings_changed();
+
 		}
 
 	}
@@ -267,6 +302,14 @@ void InputEditor::_device_input_add() {
 		undo_redo->add_do_method(this, "_settings_changed");
 		undo_redo->add_undo_method(this, "_settings_changed");
 		undo_redo->commit_action();
+
+	}
+	else {
+		
+		Globals::get_singleton()->set(name, arr);
+		Globals::get_singleton()->set_persisting(name, true);
+		_update_actions();
+		_settings_changed();
 
 	}
 
@@ -292,7 +335,7 @@ void InputEditor::_press_a_key_confirm() {
 
 	Array arr = old_val;
 
-	for (int i = 0;i<arr.size();i++) {
+	for (int i = 0; i<arr.size(); i++) {
 
 		InputEvent aie = arr[i];
 		if (aie.type == InputEvent::KEY && aie.key.scancode == ie.key.scancode && aie.key.mod == ie.key.mod) {
@@ -317,6 +360,13 @@ void InputEditor::_press_a_key_confirm() {
 			undo_redo->commit_action();
 
 		}
+		else {
+
+			EditorSettings::get_singleton()->set(name, arr);
+			_update_actions();
+			_settings_changed();
+
+		}
 
 	}
 	else if (undo_redo) {
@@ -330,6 +380,14 @@ void InputEditor::_press_a_key_confirm() {
 		undo_redo->add_do_method(this, "_settings_changed");
 		undo_redo->add_undo_method(this, "_settings_changed");
 		undo_redo->commit_action();
+
+	}
+	else {
+
+		Globals::get_singleton()->set(name, arr);
+		Globals::get_singleton()->set_persisting(name, true);
+		_update_actions();
+		_settings_changed();
 
 	}
 
@@ -476,6 +534,7 @@ void InputEditor::_action_button_pressed(Object* p_obj, int p_column, int p_id) 
 				Variant old_val = EditorSettings::get_singleton()->get(name);
 
 				if (undo_redo) {
+
 					undo_redo->create_action("Erase Input Action");
 					undo_redo->add_do_method(EditorSettings::get_singleton(), "erase", name);
 					undo_redo->add_undo_method(EditorSettings::get_singleton(), "set", name, old_val);
@@ -484,6 +543,14 @@ void InputEditor::_action_button_pressed(Object* p_obj, int p_column, int p_id) 
 					undo_redo->add_do_method(this, "_settings_changed");
 					undo_redo->add_undo_method(this, "_settings_changed");
 					undo_redo->commit_action();
+
+				}
+				else {
+					
+					EditorSettings::get_singleton()->erase(name);
+					_update_actions();
+					_settings_changed();
+
 				}
 
 			}
@@ -493,6 +560,7 @@ void InputEditor::_action_button_pressed(Object* p_obj, int p_column, int p_id) 
 				int order = Globals::get_singleton()->get_order(name);
 
 				if (undo_redo) {
+
 					undo_redo->create_action("Erase Input Action");
 					undo_redo->add_do_method(Globals::get_singleton(), "clear", name);
 					undo_redo->add_undo_method(Globals::get_singleton(), "set", name, old_val);
@@ -503,6 +571,14 @@ void InputEditor::_action_button_pressed(Object* p_obj, int p_column, int p_id) 
 					undo_redo->add_do_method(this, "_settings_changed");
 					undo_redo->add_undo_method(this, "_settings_changed");
 					undo_redo->commit_action();
+
+				}
+				else {
+
+					Globals::get_singleton()->clear(name);
+					_update_actions();
+					_settings_changed();
+
 				}
 
 			}
@@ -542,6 +618,13 @@ void InputEditor::_action_button_pressed(Object* p_obj, int p_column, int p_id) 
 					undo_redo->commit_action();
 
 				}
+				else {
+
+					EditorSettings::get_singleton()->set(name, va);
+					_update_actions();
+					_settings_changed();
+
+				}
 
 			}
 			else if (undo_redo) {
@@ -554,6 +637,14 @@ void InputEditor::_action_button_pressed(Object* p_obj, int p_column, int p_id) 
 				undo_redo->add_do_method(this, "_settings_changed");
 				undo_redo->add_undo_method(this, "_settings_changed");
 				undo_redo->commit_action();
+
+			}
+			else {
+
+				Globals::get_singleton()->set(name, va);
+				Globals::get_singleton()->set_persisting(name, true);
+				_update_actions();
+				_settings_changed();
 
 			}
 
@@ -757,6 +848,13 @@ void InputEditor::_action_add() {
 			undo_redo->commit_action();
 
 		}
+		else {
+
+			EditorSettings::get_singleton()->set(name, va);
+			_update_actions();
+			_settings_changed();
+
+		}
 
 	}
 	else if (undo_redo) {
@@ -770,6 +868,14 @@ void InputEditor::_action_add() {
 		undo_redo->add_do_method(this, "_settings_changed");
 		undo_redo->add_undo_method(this, "_settings_changed");
 		undo_redo->commit_action();
+
+	}
+	else {
+		
+		Globals::get_singleton()->set(name, va);
+		Globals::get_singleton()->set_persisting(name, true);
+		_update_actions();
+		_settings_changed();
 
 	}
 

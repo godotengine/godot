@@ -145,6 +145,8 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	InputEditor *input_editor = memnew(InputEditor(true));
 	input_editor->set_name("Shortcuts");
 	tabs->add_child(input_editor);
+	input_editor->set_area_as_parent_rect();
+	input_editor->connect("settings_changed", this, "_settings_changed");
 
 	vbc = memnew( VBoxContainer );
 	tabs->add_child(vbc);
