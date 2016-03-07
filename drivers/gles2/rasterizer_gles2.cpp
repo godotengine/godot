@@ -4781,9 +4781,12 @@ void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceD
 		if (has_blend_alpha || (has_base_alpha && m->depth_draw_mode!=VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA))
 			return; //bye
 
-		if (m->shader_cache && !m->shader_cache->writes_vertex && !m->shader_cache->uses_discard && m->depth_draw_mode!=VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA) {
+		if (!m->shader_cache || (!m->shader_cache->writes_vertex && !m->shader_cache->uses_discard && m->depth_draw_mode!=VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA)) {
 			//shader does not use discard and does not write a vertex position, use generic material
-			m = shadow_mat_ptr;
+			if (p_instance->cast_shadows == VS::SHADOW_CASTING_SETTING_DOUBLE_SIDED)
+				m = shadow_mat_double_sided_ptr;
+			else
+				m = shadow_mat_ptr;
 			if (m->last_pass!=frame) {
 
 				if (m->shader.is_valid()) {
@@ -10961,6 +10964,12 @@ void RasterizerGLES2::init() {
 
 	shadow_material = material_create(); //empty with nothing
 	shadow_mat_ptr = material_owner.get(shadow_material);
+
+	// Now create a second shadow material for double-sided shadow instances
+	shadow_material_double_sided = material_create();
+	shadow_mat_double_sided_ptr = material_owner.get(shadow_material_double_sided);
+	shadow_mat_double_sided_ptr->flags[VS::MATERIAL_FLAG_DOUBLE_SIDED] = true;
+
 	overdraw_material = create_overdraw_debug_material();
 	copy_shader.set_conditional(CopyShaderGLES2::USE_8BIT_HDR,!use_fp16_fb);
 	canvas_shader.set_conditional(CanvasShaderGLES2::USE_DEPTH_SHADOWS,read_depth_supported);

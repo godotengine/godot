@@ -937,8 +937,18 @@ public:
 		INSTANCE_FLAG_MAX
 	};
 
+	enum ShadowCastingSetting {
+		SHADOW_CASTING_SETTING_OFF,
+		SHADOW_CASTING_SETTING_ON,
+		SHADOW_CASTING_SETTING_DOUBLE_SIDED,
+		SHADOW_CASTING_SETTING_SHADOWS_ONLY,
+	};
+
 	virtual void instance_geometry_set_flag(RID p_instance,InstanceFlags p_flags,bool p_enabled)=0;
 	virtual bool instance_geometry_get_flag(RID p_instance,InstanceFlags p_flags) const=0;
+
+	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, ShadowCastingSetting p_shadow_casting_setting) = 0;
+	virtual ShadowCastingSetting instance_geometry_get_cast_shadows_setting(RID p_instance) const = 0;
 
 	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material)=0;
 	virtual RID instance_geometry_get_material_override(RID p_instance) const=0;
