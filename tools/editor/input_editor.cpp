@@ -29,6 +29,7 @@
 
 #include "input_editor.h"
 #include "globals.h"
+#include "editor_settings.h"
 #include "os/keyboard.h"
 
 static const char* _button_names[JOY_BUTTON_MAX] = {
@@ -103,38 +104,72 @@ void InputEditor::_action_edited() {
 
 	String action_prop = "input/" + new_name;
 
-	if (Globals::get_singleton()->has(action_prop)) {
+	if (use_editor_setttings) {
 
-		ti->set_text(0, old_name);
+		if (EditorSettings::get_singleton()->has(action_prop)) {
 
-		message->set_text("Action '" + new_name + "' already exists!.");
-		message->popup_centered(Size2(300, 100));
+			ti->set_text(0, old_name);
 
-		return;
+			message->set_text("Action '" + new_name + "' already exists!.");
+			message->popup_centered(Size2(300, 100));
+
+			return;
+
+		}
+
+		Array va = EditorSettings::get_singleton()->get(add_at);
+
+		if (undo_redo) {
+			setting = true;
+			undo_redo->create_action("Rename Input Action Event");
+			undo_redo->add_do_method(EditorSettings::get_singleton(), "erase", add_at);
+			undo_redo->add_do_method(EditorSettings::get_singleton(), "set", action_prop, va);
+			undo_redo->add_undo_method(EditorSettings::get_singleton(), "erase", action_prop);
+			undo_redo->add_undo_method(EditorSettings::get_singleton(), "set", add_at, va);
+			undo_redo->add_do_method(this, "_update_actions");
+			undo_redo->add_undo_method(this, "_update_actions");
+			undo_redo->add_do_method(this, "_settings_changed");
+			undo_redo->add_undo_method(this, "_settings_changed");
+			undo_redo->commit_action();
+			setting = false;
+		}
 
 	}
+	else {
 
-	int order = Globals::get_singleton()->get_order(add_at);
-	bool persisting = Globals::get_singleton()->is_persisting(add_at);
-	Array va = Globals::get_singleton()->get(add_at);
+		if (Globals::get_singleton()->has(action_prop)) {
 
-	if (undo_redo) {
-		setting = true;
-		undo_redo->create_action("Rename Input Action Event");
-		undo_redo->add_do_method(Globals::get_singleton(), "clear", add_at);
-		undo_redo->add_do_method(Globals::get_singleton(), "set", action_prop, va);
-		undo_redo->add_do_method(Globals::get_singleton(), "set_persisting", action_prop, persisting);
-		undo_redo->add_do_method(Globals::get_singleton(), "set_order", action_prop, order);
-		undo_redo->add_undo_method(Globals::get_singleton(), "clear", action_prop);
-		undo_redo->add_undo_method(Globals::get_singleton(), "set", add_at, va);
-		undo_redo->add_undo_method(Globals::get_singleton(), "set_persisting", add_at, persisting);
-		undo_redo->add_undo_method(Globals::get_singleton(), "set_order", add_at, order);
-		undo_redo->add_do_method(this, "_update_actions");
-		undo_redo->add_undo_method(this, "_update_actions");
-		undo_redo->add_do_method(this, "_settings_changed");
-		undo_redo->add_undo_method(this, "_settings_changed");
-		undo_redo->commit_action();
-		setting = false;
+			ti->set_text(0, old_name);
+
+			message->set_text("Action '" + new_name + "' already exists!.");
+			message->popup_centered(Size2(300, 100));
+
+			return;
+		}
+
+		int order = Globals::get_singleton()->get_order(add_at);
+		bool persisting = Globals::get_singleton()->is_persisting(add_at);
+		Array va = Globals::get_singleton()->get(add_at);
+
+		if (undo_redo) {
+			setting = true;
+			undo_redo->create_action("Rename Input Action Event");
+			undo_redo->add_do_method(Globals::get_singleton(), "clear", add_at);
+			undo_redo->add_do_method(Globals::get_singleton(), "set", action_prop, va);
+			undo_redo->add_do_method(Globals::get_singleton(), "set_persisting", action_prop, persisting);
+			undo_redo->add_do_method(Globals::get_singleton(), "set_order", action_prop, order);
+			undo_redo->add_undo_method(Globals::get_singleton(), "clear", action_prop);
+			undo_redo->add_undo_method(Globals::get_singleton(), "set", add_at, va);
+			undo_redo->add_undo_method(Globals::get_singleton(), "set_persisting", add_at, persisting);
+			undo_redo->add_undo_method(Globals::get_singleton(), "set_order", add_at, order);
+			undo_redo->add_do_method(this, "_update_actions");
+			undo_redo->add_undo_method(this, "_update_actions");
+			undo_redo->add_do_method(this, "_settings_changed");
+			undo_redo->add_undo_method(this, "_settings_changed");
+			undo_redo->commit_action();
+			setting = false;
+		}
+
 	}
 
 	add_at = action_prop;
@@ -146,10 +181,15 @@ void InputEditor::_device_input_add() {
 
 	InputEvent ie;
 	String name = add_at;
-	Variant old_val = Globals::get_singleton()->get(name);
-	Array arr = old_val;
+	Variant old_val;
 	ie.device = device_id->get_val();
 
+	if (use_editor_setttings)
+		old_val = EditorSettings::get_singleton()->get(name);
+	else
+		old_val = Globals::get_singleton()->get(name);
+
+	Array arr = old_val;
 	ie.type = add_type;
 
 	switch (add_type) {
@@ -202,7 +242,22 @@ void InputEditor::_device_input_add() {
 
 	arr.push_back(ie);
 
-	if (undo_redo) {
+	if (use_editor_setttings) {
+		
+		if (undo_redo) {
+			undo_redo->create_action("Add Input Action Event");
+			undo_redo->add_do_method(EditorSettings::get_singleton(), "set", name, arr);
+			undo_redo->add_undo_method(EditorSettings::get_singleton(), "set", name, old_val);
+			undo_redo->add_do_method(this, "_update_actions");
+			undo_redo->add_undo_method(this, "_update_actions");
+			undo_redo->add_do_method(this, "_settings_changed");
+			undo_redo->add_undo_method(this, "_settings_changed");
+			undo_redo->commit_action();
+		}
+
+	}
+	else if (undo_redo) {
+
 		undo_redo->create_action("Add Input Action Event");
 		undo_redo->add_do_method(Globals::get_singleton(), "set", name, arr);
 		undo_redo->add_do_method(Globals::get_singleton(), "set_persisting", name, true);
@@ -212,6 +267,7 @@ void InputEditor::_device_input_add() {
 		undo_redo->add_do_method(this, "_settings_changed");
 		undo_redo->add_undo_method(this, "_settings_changed");
 		undo_redo->commit_action();
+
 	}
 
 }
@@ -227,7 +283,13 @@ void InputEditor::_press_a_key_confirm() {
 	ie.key.mod = last_wait_for_key.key.mod;
 	String name = add_at;
 
-	Variant old_val = Globals::get_singleton()->get(name);
+	Variant old_val;
+
+	if (use_editor_setttings)
+		old_val = EditorSettings::get_singleton()->get(name);
+	else
+		old_val = Globals::get_singleton()->get(name);
+
 	Array arr = old_val;
 
 	for (int i = 0;i<arr.size();i++) {
@@ -241,7 +303,24 @@ void InputEditor::_press_a_key_confirm() {
 
 	arr.push_back(ie);
 
-	if (undo_redo) {
+	if (use_editor_setttings) {
+		
+		if (undo_redo) {
+
+			undo_redo->create_action("Add Input Action Event");
+			undo_redo->add_do_method(EditorSettings::get_singleton(), "set", name, arr);
+			undo_redo->add_undo_method(EditorSettings::get_singleton(), "set", name, old_val);
+			undo_redo->add_do_method(this, "_update_actions");
+			undo_redo->add_undo_method(this, "_update_actions");
+			undo_redo->add_do_method(this, "_settings_changed");
+			undo_redo->add_undo_method(this, "_settings_changed");
+			undo_redo->commit_action();
+
+		}
+
+	}
+	else if (undo_redo) {
+
 		undo_redo->create_action("Add Input Action Event");
 		undo_redo->add_do_method(Globals::get_singleton(), "set", name, arr);
 		undo_redo->add_do_method(Globals::get_singleton(), "set_persisting", name, true);
@@ -251,6 +330,7 @@ void InputEditor::_press_a_key_confirm() {
 		undo_redo->add_do_method(this, "_settings_changed");
 		undo_redo->add_undo_method(this, "_settings_changed");
 		undo_redo->commit_action();
+
 	}
 
 }
@@ -390,20 +470,41 @@ void InputEditor::_action_button_pressed(Object* p_obj, int p_column, int p_id) 
 			// remove whole action
 
 			String name = "input/" + ti->get_text(0);
-			Variant old_val = Globals::get_singleton()->get(name);
-			int order = Globals::get_singleton()->get_order(name);
 
-			if (undo_redo) {
-				undo_redo->create_action("Erase Input Action");
-				undo_redo->add_do_method(Globals::get_singleton(), "clear", name);
-				undo_redo->add_undo_method(Globals::get_singleton(), "set", name, old_val);
-				undo_redo->add_undo_method(Globals::get_singleton(), "set_order", name, order);
-				undo_redo->add_undo_method(Globals::get_singleton(), "set_persisting", name, Globals::get_singleton()->is_persisting(name));
-				undo_redo->add_do_method(this, "_update_actions");
-				undo_redo->add_undo_method(this, "_update_actions");
-				undo_redo->add_do_method(this, "_settings_changed");
-				undo_redo->add_undo_method(this, "_settings_changed");
-				undo_redo->commit_action();
+			if (use_editor_setttings) {
+
+				Variant old_val = EditorSettings::get_singleton()->get(name);
+
+				if (undo_redo) {
+					undo_redo->create_action("Erase Input Action");
+					undo_redo->add_do_method(EditorSettings::get_singleton(), "erase", name);
+					undo_redo->add_undo_method(EditorSettings::get_singleton(), "set", name, old_val);
+					undo_redo->add_do_method(this, "_update_actions");
+					undo_redo->add_undo_method(this, "_update_actions");
+					undo_redo->add_do_method(this, "_settings_changed");
+					undo_redo->add_undo_method(this, "_settings_changed");
+					undo_redo->commit_action();
+				}
+
+			}
+			else {
+				
+				Variant old_val = Globals::get_singleton()->get(name);
+				int order = Globals::get_singleton()->get_order(name);
+
+				if (undo_redo) {
+					undo_redo->create_action("Erase Input Action");
+					undo_redo->add_do_method(Globals::get_singleton(), "clear", name);
+					undo_redo->add_undo_method(Globals::get_singleton(), "set", name, old_val);
+					undo_redo->add_undo_method(Globals::get_singleton(), "set_order", name, order);
+					undo_redo->add_undo_method(Globals::get_singleton(), "set_persisting", name, Globals::get_singleton()->is_persisting(name));
+					undo_redo->add_do_method(this, "_update_actions");
+					undo_redo->add_undo_method(this, "_update_actions");
+					undo_redo->add_do_method(this, "_settings_changed");
+					undo_redo->add_undo_method(this, "_settings_changed");
+					undo_redo->commit_action();
+				}
+
 			}
 
 		}
@@ -412,7 +513,7 @@ void InputEditor::_action_button_pressed(Object* p_obj, int p_column, int p_id) 
 			// remove action key
 
 			String name = "input/" + ti->get_parent()->get_text(0);
-			Variant old_val = Globals::get_singleton()->get(name);
+			Variant old_val = use_editor_setttings ? EditorSettings::get_singleton()->get(name) : Globals::get_singleton()->get(name);
 			int idx = ti->get_metadata(0);
 
 			Array va = old_val;
@@ -427,7 +528,24 @@ void InputEditor::_action_button_pressed(Object* p_obj, int p_column, int p_id) 
 
 			va.resize(va.size() - 1);
 
-			if (undo_redo) {
+			if (use_editor_setttings) {
+				
+				if (undo_redo) {
+
+					undo_redo->create_action("Erase Input Action Event");
+					undo_redo->add_do_method(EditorSettings::get_singleton(), "set", name, va);
+					undo_redo->add_undo_method(EditorSettings::get_singleton(), "set", name, old_val);
+					undo_redo->add_do_method(this, "_update_actions");
+					undo_redo->add_undo_method(this, "_update_actions");
+					undo_redo->add_do_method(this, "_settings_changed");
+					undo_redo->add_undo_method(this, "_settings_changed");
+					undo_redo->commit_action();
+
+				}
+
+			}
+			else if (undo_redo) {
+
 				undo_redo->create_action("Erase Input Action Event");
 				undo_redo->add_do_method(Globals::get_singleton(), "set", name, va);
 				undo_redo->add_undo_method(Globals::get_singleton(), "set", name, old_val);
@@ -436,6 +554,7 @@ void InputEditor::_action_button_pressed(Object* p_obj, int p_column, int p_id) 
 				undo_redo->add_do_method(this, "_settings_changed");
 				undo_redo->add_undo_method(this, "_settings_changed");
 				undo_redo->commit_action();
+
 			}
 
 		}
@@ -455,7 +574,10 @@ void InputEditor::_update_actions() const {
 	input_tree->set_hide_root(true);
 
 	List<PropertyInfo> props;
-	Globals::get_singleton()->get_property_list(&props);
+	if (use_editor_setttings)
+		EditorSettings::get_singleton()->get_property_list(&props);
+	else
+		Globals::get_singleton()->get_property_list(&props);
 
 	for (List<PropertyInfo>::Element *E = props.front();E;E = E->next()) {
 
@@ -471,14 +593,19 @@ void InputEditor::_update_actions() const {
 		//item->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
 		item->set_text(0, name);
 		item->add_button(0, get_icon("Add", "EditorIcons"), 1);
-		if (!Globals::get_singleton()->get_input_presets().find(pi.name)) {
+		if (!use_editor_setttings && !Globals::get_singleton()->get_input_presets().find(pi.name)) {
 			item->add_button(0, get_icon("Remove", "EditorIcons"), 2);
 			item->set_editable(0, true);
 		}
 		item->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
 		//item->set_checked(0,pi.usage&PROPERTY_USAGE_CHECKED);
 
-		Array actions = Globals::get_singleton()->get(pi.name);
+		Array actions;
+
+		if (use_editor_setttings)
+			actions = EditorSettings::get_singleton()->get(pi.name);
+		else
+			actions = Globals::get_singleton()->get(pi.name);
 
 		for (int i = 0;i<actions.size();i++) {
 
@@ -592,7 +719,19 @@ void InputEditor::_action_add() {
 
 	}
 
-	if (Globals::get_singleton()->has("input/" + action)) {
+	if (use_editor_setttings) {
+		
+		if (EditorSettings::get_singleton()->has("input/" + action)) {
+
+			message->set_text("Action '" + action + "' already exists!.");
+			message->popup_centered(Size2(300, 100));
+
+			return;
+
+		}
+
+	}
+	else if (Globals::get_singleton()->has("input/" + action)) {
 
 		message->set_text("Action '" + action + "' already exists!.");
 		message->popup_centered(Size2(300, 100));
@@ -604,7 +743,24 @@ void InputEditor::_action_add() {
 	Array va;
 	String name = "input/" + action;
 
-	if (undo_redo) {
+	if (use_editor_setttings) {
+		
+		if (undo_redo) {
+
+			undo_redo->create_action("Add Input Action Event");
+			undo_redo->add_do_method(EditorSettings::get_singleton(), "set", name, va);
+			undo_redo->add_undo_method(EditorSettings::get_singleton(), "erase", name);
+			undo_redo->add_do_method(this, "_update_actions");
+			undo_redo->add_undo_method(this, "_update_actions");
+			undo_redo->add_do_method(this, "_settings_changed");
+			undo_redo->add_undo_method(this, "_settings_changed");
+			undo_redo->commit_action();
+
+		}
+
+	}
+	else if (undo_redo) {
+
 		undo_redo->create_action("Add Input Action Event");
 		undo_redo->add_do_method(Globals::get_singleton(), "set", name, va);
 		undo_redo->add_do_method(Globals::get_singleton(), "set_persisting", name, true);
@@ -614,6 +770,7 @@ void InputEditor::_action_add() {
 		undo_redo->add_do_method(this, "_settings_changed");
 		undo_redo->add_undo_method(this, "_settings_changed");
 		undo_redo->commit_action();
+
 	}
 
 	TreeItem *r = input_tree->get_root();
@@ -664,8 +821,9 @@ void InputEditor::_bind_methods() {
 
 }
 
-InputEditor::InputEditor(UndoRedo *p_undoredo) {
+InputEditor::InputEditor(bool p_use_editor_settings, UndoRedo *p_undoredo) {
 
+	use_editor_setttings = p_use_editor_settings; // otherwise use globals
 	undo_redo = p_undoredo;
 
 	Label *label = memnew(Label);

@@ -1029,10 +1029,10 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	message = memnew( ConfirmationDialog );
 	add_child(message);
-//	message->get_cancel()->hide();
+	//message->get_cancel()->hide();
 	message->set_hide_on_ok(true);
 
-	InputEditor *input_editor = memnew(InputEditor(undo_redo));
+	InputEditor *input_editor = memnew(InputEditor(false, undo_redo));
 	tab_container->add_child(input_editor);
 	input_editor->set_name("Input Map");
 	input_editor->set_area_as_parent_rect();
@@ -1040,7 +1040,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	setting=false;
 
-	//translations
+	// translations
 	TabContainer *translations = memnew( TabContainer );
 	translations->set_name("Localization");
 	tab_container->add_child(translations);

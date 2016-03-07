@@ -45,6 +45,7 @@ class InputEditor : public Control {
 	String add_at;
 
 	UndoRedo *undo_redo;
+	bool use_editor_setttings;
 	ConfirmationDialog *message;
 
 	PopupMenu *popup_add_key;
@@ -57,9 +58,9 @@ class InputEditor : public Control {
 	LineEdit *action_name;
 	Tree *input_tree;
 
-	bool setting;
-
 	InputEvent last_wait_for_key;
+
+	bool setting;
 
 	void _update_actions() const;
 	void _add_item(int p_item);
@@ -83,7 +84,7 @@ protected:
 
 public:
 
-	InputEditor(UndoRedo *p_undoredo = 0);
+	InputEditor(bool p_use_editor_settings, UndoRedo *p_undoredo = NULL);
 
 };
 
