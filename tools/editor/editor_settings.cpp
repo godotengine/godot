@@ -404,6 +404,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("text_editor/brace_mismatch_color",Color(1,0.2,0.2));
 	set("text_editor/current_line_color",Color(0.3,0.5,0.8,0.15));
 
+	set("text_editor/scroll_past_end_of_file", false);
+
 	set("text_editor/idle_parse_delay",2);
 	set("text_editor/create_signal_callbacks",true);
 	set("text_editor/autosave_interval_secs",0);

@@ -290,7 +290,10 @@ void TextEdit::_update_scrollbars() {
 	int hscroll_rows = ((hmin.height-1)/get_row_height())+1;
 	int visible_rows = get_visible_rows();
 	int total_rows = text.size();
-	
+	if (scroll_past_end_of_file_enabled) {
+		total_rows += get_visible_rows() - 1;
+	}
+
 	int vscroll_pixels = v_scroll->get_combined_minimum_size().width;
 	int visible_width = size.width - cache.style_normal->get_minimum_size().width;
 	int total_width = text.get_max_width() + vmin.x;
@@ -3990,6 +3993,7 @@ TextEdit::TextEdit()  {
 	tooltip_obj=NULL;
 	line_numbers=false;
 	next_operation_is_complex=false;
+	scroll_past_end_of_file_enabled=false;
 	auto_brace_completion_enabled=false;
 	brace_matching_enabled=false;
 	auto_indent=false;
