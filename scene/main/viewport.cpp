@@ -318,10 +318,10 @@ void Viewport::_test_new_mouseover(ObjectID new_collider) {
 }
 
 void Viewport::_notification(int p_what) {
-	
+
 
 	switch( p_what ) {
-		
+
 		case NOTIFICATION_ENTER_TREE: {
 
 			if (get_parent()) {
@@ -696,8 +696,8 @@ void Viewport::_notification(int p_what) {
 }
 
 RID Viewport::get_viewport() const {
-	
-	return viewport;	
+
+	return viewport;
 }
 
 void Viewport::set_rect(const Rect2& p_rect) {
@@ -715,12 +715,12 @@ Rect2 Viewport::get_visible_rect() const {
 
 
 	Rect2 r;
-		
+
 	if (rect.pos==Vector2() && rect.size==Size2()) {
-	
+
 		r=Rect2( Point2(), Size2( OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height ) );
 	} else {
-	
+
 		r=Rect2( rect.pos , rect.size );
 	}
 
@@ -733,7 +733,7 @@ Rect2 Viewport::get_visible_rect() const {
 }
 
 Rect2 Viewport::get_rect() const {
-	
+
 	return rect;
 }
 
@@ -1335,7 +1335,7 @@ void Viewport::_vp_input(const InputEvent& p_ev) {
 	//they are converted to viewport coordinates
 
 
-	InputEvent ev = p_ev;	
+	InputEvent ev = p_ev;
 	_make_input_local(ev);
 	input(ev);
 
@@ -2240,7 +2240,7 @@ void Viewport::input(const InputEvent& p_event) {
 	ERR_FAIL_COND(!is_inside_tree());
 
 
-	get_tree()->_call_input_pause(input_group,"_input",p_event);		
+	get_tree()->_call_input_pause(input_group,"_input",p_event);
 	_gui_input_event(p_event);
 	//get_tree()->call_group(SceneTree::GROUP_CALL_REVERSE|SceneTree::GROUP_CALL_REALTIME|SceneTree::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",p_event); //special one for GUI, as controls use their own process check
 }
@@ -2409,10 +2409,10 @@ void Viewport::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_render_target_vflip","enable"), &Viewport::set_render_target_vflip);
 	ObjectTypeDB::bind_method(_MD("get_render_target_vflip"), &Viewport::get_render_target_vflip);
-	
+
 	ObjectTypeDB::bind_method(_MD("set_render_target_clear_on_new_frame","enable"), &Viewport::set_render_target_clear_on_new_frame);
 	ObjectTypeDB::bind_method(_MD("get_render_target_clear_on_new_frame"), &Viewport::get_render_target_clear_on_new_frame);
-	
+
 	ObjectTypeDB::bind_method(_MD("render_target_clear"), &Viewport::render_target_clear);
 
 	ObjectTypeDB::bind_method(_MD("set_render_target_filter","enable"), &Viewport::set_render_target_filter);

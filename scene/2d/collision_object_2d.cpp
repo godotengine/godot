@@ -261,7 +261,7 @@ void CollisionObject2D::add_shape(const Ref<Shape2D>& p_shape, const Matrix32& p
 	else
 		Physics2DServer::get_singleton()->body_add_shape(get_rid(),p_shape->get_rid(),p_transform);
 
-	shapes.push_back(sdata);	
+	shapes.push_back(sdata);
 
 }
 int CollisionObject2D::get_shape_count() const {

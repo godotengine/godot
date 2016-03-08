@@ -35,20 +35,20 @@ void VisualServerWrapMT::thread_exit() {
 }
 
 void VisualServerWrapMT::thread_draw() {
-	
-	
+
+
 	draw_mutex->lock();
-	
+
 	draw_pending--;
 	bool draw=(draw_pending==0);// only draw when no more flushes are pending
-	
+
 	draw_mutex->unlock();
-	
+
 	if (draw) {
-	
+
 		visual_server->draw();
-	}	
-	
+	}
+
 }
 
 void VisualServerWrapMT::thread_flush() {
@@ -67,10 +67,10 @@ void VisualServerWrapMT::thread_flush() {
 void VisualServerWrapMT::_thread_callback(void *_instance) {
 
 	VisualServerWrapMT *vsmt = reinterpret_cast<VisualServerWrapMT*>(_instance);
-	
+
 
 	vsmt->thread_loop();
-}	
+}
 
 void VisualServerWrapMT::thread_loop() {
 
@@ -79,18 +79,18 @@ void VisualServerWrapMT::thread_loop() {
 	OS::get_singleton()->make_rendering_thread();
 
 	visual_server->init();
-	
+
 	exit=false;
 	draw_thread_up=true;
 	while(!exit) {
 		// flush commands one by one, until exit is requested
 		command_queue.wait_and_flush_one();
 	}
-	
+
 	command_queue.flush_all(); // flush all
-	
+
 	visual_server->finish();
-	
+
 }
 
 
@@ -117,7 +117,7 @@ void VisualServerWrapMT::sync() {
 }
 
 void VisualServerWrapMT::draw() {
-	
+
 
 	if (create_thread) {
 
@@ -155,7 +155,7 @@ void VisualServerWrapMT::init() {
 
 		visual_server->init();
 	}
-		
+
 }
 
 void VisualServerWrapMT::finish() {
@@ -164,7 +164,7 @@ void VisualServerWrapMT::finish() {
 	if (thread) {
 
 		command_queue.push( this, &VisualServerWrapMT::thread_exit);
-		Thread::wait_to_finish( thread );		
+		Thread::wait_to_finish( thread );
 		memdelete(thread);
 
 

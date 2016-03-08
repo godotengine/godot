@@ -43,7 +43,7 @@ class BSP_Tree {
 public:
 
 	enum {
-	
+
 		UNDER_LEAF=0xFFFF,
 		OVER_LEAF=0xFFFE,
 		MAX_NODES=0xFFFE,
@@ -51,22 +51,22 @@ public:
 	};
 
 	struct Node {
-		
+
 		uint16_t plane;
 		uint16_t under;
 		uint16_t over;
 	};
 
-	
-private:	
-	// thanks to the properties of Vector, 
+
+private:
+	// thanks to the properties of Vector,
 	// this class can be assigned and passed around between threads
 	// with no cost.
-	
+
 	Vector<Node> nodes;
 	Vector<Plane> planes;
 	AABB aabb;
-	float error_radius;	
+	float error_radius;
 
 	int _get_points_inside(int p_node,const Vector3* p_points,int *p_indices, const Vector3& p_center,const Vector3& p_half_extents,int p_indices_count) const;
 
@@ -79,8 +79,8 @@ public:
 	Vector<Node> get_nodes() const;
 	Vector<Plane> get_planes() const;
 	AABB get_aabb() const;
-		
-	bool point_is_inside(const Vector3& p_point) const;		
+
+	bool point_is_inside(const Vector3& p_point) const;
 	int get_points_inside(const Vector3* p_points, int p_point_count) const;
 	template<class T>
 	bool convex_is_inside(const T& p_convex) const;
@@ -91,8 +91,8 @@ public:
 
 	BSP_Tree();
 	BSP_Tree(const Variant& p_variant);
-	BSP_Tree(const DVector<Face3>& p_faces,float p_error_radius=0);	
-	BSP_Tree(const Vector<Node> &p_nodes, const Vector<Plane> &p_planes, const AABB& p_aabb,float p_error_radius=0);	
+	BSP_Tree(const DVector<Face3>& p_faces,float p_error_radius=0);
+	BSP_Tree(const Vector<Node> &p_nodes, const Vector<Plane> &p_planes, const AABB& p_aabb,float p_error_radius=0);
 	~BSP_Tree();
 
 };

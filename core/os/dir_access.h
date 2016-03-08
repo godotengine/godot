@@ -79,13 +79,13 @@ public:
 	virtual String get_next()=0;
 	virtual bool current_is_dir() const=0;
 	virtual bool current_is_hidden() const=0;
-	
-	virtual void list_dir_end()=0; ///< 
-	
+
+	virtual void list_dir_end()=0; ///<
+
 	virtual int get_drive_count()=0;
 	virtual String get_drive(int p_drive)=0;
 	virtual int get_current_drive();
-	
+
 	virtual Error change_dir(String p_dir)=0; ///< can be relative or absolute, return false on success
 	virtual String get_current_dir()=0; ///< return current dir location
 	virtual Error make_dir(String p_dir)=0;
@@ -100,7 +100,7 @@ public:
 	virtual Error copy(String p_from,String p_to);
 	virtual Error rename(String p_from, String p_to)=0;
 	virtual Error remove(String p_name)=0;
-	
+
 	static String get_full_path(const String& p_path,AccessType p_access);
 	static DirAccess *create_for_path(const String& p_path);
 
@@ -111,7 +111,7 @@ public:
 		FILE_TYPE_FILE,
 		FILE_TYPE_DIR,
 	};
-	
+
 	//virtual DirType get_file_type() const=0;
 */
 	static DirAccess *create(AccessType p_access);

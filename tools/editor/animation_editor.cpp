@@ -479,7 +479,7 @@ public:
 			} break;
 		}
 
-		
+
 
 		return false;
 
@@ -2207,7 +2207,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 
 						if (ofsx < add_key_icon->get_width()) {
 
-							Animation::TrackType tt = animation->track_get_type(idx);						
+							Animation::TrackType tt = animation->track_get_type(idx);
 
 							float pos = timeline_pos;
 							int existing = animation->track_find_key(idx,pos,true);
@@ -3111,7 +3111,7 @@ void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 
 	if (p_id.track_idx==-1) {
 		if (bool(EDITOR_DEF("animation/confirm_insert_track",true))) {
-			//potential new key, does not exist		
+			//potential new key, does not exist
 			if (insert_data.size()==1)
 				insert_confirm->set_text("Create NEW track for "+p_id.query+" and insert key?");
 			else
@@ -3744,7 +3744,7 @@ void AnimationKeyEditor::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("_animation_loop_changed"),&AnimationKeyEditor::_animation_loop_changed);
-	ObjectTypeDB::bind_method(_MD("_animation_len_changed"),&AnimationKeyEditor::_animation_len_changed);	
+	ObjectTypeDB::bind_method(_MD("_animation_len_changed"),&AnimationKeyEditor::_animation_len_changed);
 	ObjectTypeDB::bind_method(_MD("_create_value_item"),&AnimationKeyEditor::_create_value_item);
 	ObjectTypeDB::bind_method(_MD("_pane_drag"),&AnimationKeyEditor::_pane_drag);
 

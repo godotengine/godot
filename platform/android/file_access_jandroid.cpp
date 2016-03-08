@@ -203,7 +203,7 @@ void FileAccessJAndroid::setup(  jobject p_io) {
 	__android_log_print(ANDROID_LOG_INFO,"godot","STEP6");
 	cls=(jclass)env->NewGlobalRef(c);
 
-	_file_open = env->GetMethodID(cls, "file_open", "(Ljava/lang/String;Z)I");	
+	_file_open = env->GetMethodID(cls, "file_open", "(Ljava/lang/String;Z)I");
 	if(_file_open != 0) {
 		__android_log_print(ANDROID_LOG_INFO,"godot","*******GOT METHOD _file_open ok!!");
 	}

@@ -451,7 +451,7 @@ Error VariantParser::_parse_construct(Stream *p_stream,Vector<T>& r_construct,in
 		if (!first) {
 			get_token(p_stream,token,line,r_err_str);
 			if (token.type==TK_COMMA) {
-				//do none				
+				//do none
 			} else if (token.type==TK_PARENTHESIS_CLOSE) {
 				break;
 			} else {
@@ -1206,7 +1206,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				get_token(p_stream,token,line,r_err_str);
 
 				if (token.type!=TK_STRING) {
-					r_err_str="Expected string";					
+					r_err_str="Expected string";
 					return ERR_PARSE_ERROR;
 				}
 
@@ -1676,7 +1676,7 @@ Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, Strin
 		if (err)
 			return err;
 
-		r_tag.fields[id]=value;		
+		r_tag.fields[id]=value;
 
 	}
 

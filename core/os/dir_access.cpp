@@ -344,7 +344,7 @@ DirAccess *DirAccess::open(const String& p_path,Error *r_error) {
 }
 
 DirAccess *DirAccess::create(AccessType p_access) {
-	
+
 	DirAccess * da = create_func[p_access]?create_func[p_access]():NULL;
 	if (da) {
 		da->_access_type=p_access;
@@ -359,7 +359,7 @@ String DirAccess::get_full_path(const String& p_path,AccessType p_access) {
 	DirAccess *d=DirAccess::create(p_access);
 	if (!d)
 		return p_path;
-		
+
 	d->change_dir(p_path);
 	String full=d->get_current_dir();
 	memdelete(d);
@@ -367,31 +367,31 @@ String DirAccess::get_full_path(const String& p_path,AccessType p_access) {
 }
 
 Error DirAccess::copy(String p_from,String p_to) {
-	
+
 	//printf("copy %s -> %s\n",p_from.ascii().get_data(),p_to.ascii().get_data());
 	Error err;
 	FileAccess *fsrc = FileAccess::open(p_from, FileAccess::READ,&err);
-	
+
 	if (err) {
 
 		ERR_FAIL_COND_V( err, err );
 	}
 
-	
+
 	FileAccess *fdst = FileAccess::open(p_to, FileAccess::WRITE,&err );
 	if (err) {
-						
+
 		fsrc->close();
 		memdelete( fsrc );
 		ERR_FAIL_COND_V( err, err );
 	}
-	
+
 	fsrc->seek_end(0);
 	int size = fsrc->get_pos();
 	fsrc->seek(0);
 	err = OK;
 	while(size--) {
-		
+
 		if (fsrc->get_error()!=OK) {
 			err= fsrc->get_error();
 			break;
@@ -400,13 +400,13 @@ Error DirAccess::copy(String p_from,String p_to) {
 			err= fdst->get_error();
 			break;
 		}
-		
+
 		fdst->store_8( fsrc->get_8() );
 	}
-	
+
 	memdelete(fsrc);
 	memdelete(fdst);
-	
+
 	return err;
 }
 

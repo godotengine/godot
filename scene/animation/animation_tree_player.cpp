@@ -420,7 +420,7 @@ void AnimationTreePlayer::_notification(int p_what) {
 				_process_animation( get_process_delta_time() );
 		} break;
 		case NOTIFICATION_FIXED_PROCESS: {
-		
+
 			if (animation_process_mode==ANIMATION_PROCESS_IDLE)
 				break;
 
@@ -507,7 +507,7 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 
 			if (!(*r_prev_anim))
 				active_list=an;
-			else 
+			else
 				(*r_prev_anim)->next=an;
 
 			an->next=NULL;
@@ -1831,7 +1831,7 @@ void AnimationTreePlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("reset"),&AnimationTreePlayer::reset);
 
-	ObjectTypeDB::bind_method(_MD("recompute_caches"),&AnimationTreePlayer::recompute_caches);	
+	ObjectTypeDB::bind_method(_MD("recompute_caches"),&AnimationTreePlayer::recompute_caches);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback/process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_animation_process_mode"), _SCS("get_animation_process_mode"));
 

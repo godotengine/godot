@@ -41,7 +41,7 @@
 
 class Material : public Resource {
 
-	OBJ_TYPE(Material,Resource);	
+	OBJ_TYPE(Material,Resource);
 	RES_BASE_EXTENSION("mtl");
 	OBJ_SAVE_TYPE( Material );
 

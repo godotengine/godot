@@ -47,7 +47,7 @@ class TestPhysicsMainLoop : public MainLoop {
 	};
 
 	RID test_cube;
-	
+
 	RID plane;
 	RID sphere;
 	RID light;
@@ -74,13 +74,13 @@ class TestPhysicsMainLoop : public MainLoop {
 		//t.basis.scale( Vector3(1.0,0.5,0.2) );
 		vs->instance_set_transform(p_visual_instance,t);
 	}
-	
+
 	bool quit;
-	
+
 protected:
 
 	static void _bind_methods() {
-	
+
 		ObjectTypeDB::bind_method("body_changed_transform",&TestPhysicsMainLoop::body_changed_transform);
 	}
 
@@ -90,11 +90,11 @@ protected:
 		PhysicsServer * ps = PhysicsServer::get_singleton();
 
 		RID mesh_instance = vs->instance_create2(type_mesh_map[p_shape],scenario);
-		RID body = ps->body_create(p_body,!p_active_default);		
+		RID body = ps->body_create(p_body,!p_active_default);
 		ps->body_set_space(body,space);
 		ps->body_set_param(body,PhysicsServer::BODY_PARAM_BOUNCE,0.0);
 		//todo set space
-		ps->body_add_shape(body,type_shape_map[p_shape]);		
+		ps->body_add_shape(body,type_shape_map[p_shape]);
 		ps->body_set_force_integration_callback(body,this,"body_changed_transform",mesh_instance);
 
 		ps->body_set_state( body, PhysicsServer::BODY_STATE_TRANSFORM,p_location);
@@ -289,7 +289,7 @@ protected:
 
 public:
 	virtual void input_event(const InputEvent& p_event) {
-	
+
 		if (p_event.type==InputEvent::MOUSE_MOTION && p_event.mouse_motion.button_mask&4) {
 
 			ofs_y-=p_event.mouse_motion.relative_y/200.0;
@@ -329,7 +329,7 @@ public:
 	}
 
 	virtual void request_quit() {
-	
+
 		quit=true;
 	}
 	virtual void init() {
@@ -388,53 +388,53 @@ public:
 		/* Make Trimesh */
 		quit=false;
 		return;
-		
+
 #if 0
 #define GRID_SIZE 5
-		
+
 		float grid[GRID_SIZE][GRID_SIZE];
-		
+
 		for (int i=0;i<GRID_SIZE;i++) {
-		
+
 			for (int j=0;j<GRID_SIZE;j++) {
-		
+
 				grid[j][i]=Math::random(0.0, 1.0 );
 			}
 		}
-		
+
 		Vector<Vector3> faces;
-		
+
 		for (int i=1;i<GRID_SIZE;i++) {
-		
+
 			for (int j=1;j<GRID_SIZE;j++) {
-		
-		
+
+
 #define MAKE_VERTEX(m_x,m_z)\
 	faces.push_back( Vector3( m_x-GRID_SIZE/2.0, grid[m_x][m_z], m_z-GRID_SIZE/2.0 )*3.0 )
-									
+
 				MAKE_VERTEX(i,j-1);
 				MAKE_VERTEX(i,j);
 				MAKE_VERTEX(i-1,j);
-								
+
 				MAKE_VERTEX(i-1,j-1);
 				MAKE_VERTEX(i,j-1);
 				MAKE_VERTEX(i-1,j);
-								
+
 			}
 		}
 		/*
-		faces.clear();		
+		faces.clear();
 		faces.push_back( Vector3(0,0,-5) );
 		faces.push_back( Vector3(1,0,-1) );
 		faces.push_back( Vector3(-1,-0,-1) );
 		*/
-		
+
 		RID trimesh_shape = ps->shape_create();
 		ps->shape_set_data(trimesh_shape, PhysicsServer::SHAPE_CONCAVE_POLYGON,faces);
 		faces=ps->shape_get_shape(trimesh_shape, 0);
 		Vector<Vector3> normals; // for drawing
 		for (int i=0;i<faces.size()/3;i++) {
-		
+
 			Plane p( faces[i*3+0],faces[i*3+1], faces[i*3+2] );
 			normals.push_back(p.normal);
 			normals.push_back(p.normal);
@@ -448,11 +448,11 @@ public:
 		RID trimesh_mat = vs->fixed_material_create();
 		vs->material_generate( trimesh_mat, Color(1.0,0.5,0.3) );
 		vs->mesh_surface_set_material( trimesh_mesh, 0, trimesh_mat );
-		
+
 		RID triins = vs->instance_create2(trimesh_mesh);
-		
-		
-		
+
+
+
 		RID tribody = ps->body_create( PhysicsServer::BODY_MODE_STATIC, trimesh_shape);
 		Transform tritrans = Transform( Matrix3(), Vector3(0,0,-2) );
 		ps->body_set_state( tribody, PhysicsServer::BODY_STATE_TRANSFORM, tritrans );
@@ -483,7 +483,7 @@ public:
 		return quit;
 	}
 	virtual void finish() {
-	
+
 	}
 
 	void test_joint() {
@@ -599,7 +599,7 @@ public:
 			PhysicsServer::ShapeType type=shape_idx[i%4];
 			//type=PhysicsServer::SHAPE_CONVEX_POLYGON;
 
-			Transform t;			
+			Transform t;
 
 			t.origin=Vector3(0.0*i,3.5+1.1*i,0.7+0.0*i);
 			//t.origin=Vector3(-0.7+0.0*i,0.5+4.1*i,0);

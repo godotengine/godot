@@ -85,7 +85,7 @@ void FindReplaceDialog::popup_search() {
 	skip->hide();
 	popup_centered(Point2(300,190));
 	get_ok()->set_text("Find");
-	search_text->grab_focus();	
+	search_text->grab_focus();
 	if (text_edit->is_selection_active() && ( text_edit->get_selection_from_line() == text_edit->get_selection_to_line())) {
 
 		search_text->set_text( text_edit->get_selection_text() );
@@ -544,7 +544,7 @@ void CodeTextEditor::set_error(const String& p_error) {
 }
 
 void CodeTextEditor::_on_settings_change() {
-	
+
 	// FONTS
 	String editor_font = EDITOR_DEF("text_editor/font", "");
 	bool font_overrode = false;
@@ -557,8 +557,8 @@ void CodeTextEditor::_on_settings_change() {
 	}
 	if(!font_overrode)
 		text_editor->add_font_override("font",get_font("source","Fonts"));
-	
-	// AUTO BRACE COMPLETION 
+
+	// AUTO BRACE COMPLETION
 	text_editor->set_auto_brace_completion(
 		EDITOR_DEF("text_editor/auto_brace_complete", true)
 	);

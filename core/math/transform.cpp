@@ -30,7 +30,7 @@
 #include "math_funcs.h"
 #include "os/copymem.h"
 #include "print_string.h"
-	
+
 
 void Transform::affine_invert() {
 
@@ -50,7 +50,7 @@ Transform Transform::affine_inverse() const {
 void Transform::invert() {
 
 	basis.transpose();
-	origin = basis.xform(-origin);	
+	origin = basis.xform(-origin);
 }
 
 Transform Transform::inverse() const {
@@ -87,30 +87,30 @@ void Transform::set_look_at( const Vector3& p_eye, const Vector3& p_target, cons
 
 	// Reference: MESA source code
 	Vector3 v_x, v_y, v_z;
-	
+
 	/* Make rotation matrix */
-	
+
 	/* Z vector */
 	v_z = p_eye - p_target;
-	
+
 	v_z.normalize();
-	
+
 	v_y = p_up;
-	
+
 
 	v_x=v_y.cross(v_z);
-	
+
 	/* Recompute Y = Z cross X */
 	v_y=v_z.cross(v_x);
-	
+
 	v_x.normalize();
 	v_y.normalize();
-	
+
 	basis.set_axis(0,v_x);
 	basis.set_axis(1,v_y);
 	basis.set_axis(2,v_z);
 	origin=p_eye;
-	
+
 }
 
 Transform Transform::interpolate_with(const Transform& p_transform, float p_c) const {
@@ -193,7 +193,7 @@ bool Transform::operator!=(const Transform& p_transform) const {
 void Transform::operator*=(const Transform& p_transform) {
 
 	origin=xform(p_transform.origin);
-	basis*=p_transform.basis;	
+	basis*=p_transform.basis;
 }
 
 Transform Transform::operator*(const Transform& p_transform) const {

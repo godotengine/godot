@@ -402,13 +402,13 @@ private:
 	String external_file;
 	List<String> previous_scenes;
 	bool opening_prev;
-	
+
 	void _dialog_action(String p_file);
 
 
 	void _edit_current();
 	void _dialog_display_file_error(String p_file,Error p_error);
-	
+
 	int current_option;
 	//void _animation_visibility_toggle();
 	void _resource_created();
@@ -423,7 +423,7 @@ private:
 	void _select_history(int p_idx);
 	void _prepare_history();
 
-	
+
 	void _fs_changed();
 	void _sources_changed(bool p_exist);
 	void _imported(Node *p_node);
@@ -693,7 +693,7 @@ public:
 	void hide_bottom_panel();
 	void remove_bottom_panel_item(Control *p_item);
 
-	EditorNode();	
+	EditorNode();
 	~EditorNode();
 	void get_singleton(const char* arg1, bool arg2);
 

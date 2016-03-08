@@ -451,11 +451,11 @@ void CollisionShape2DEditor::_canvas_draw() {
 
 		case LINE_SHAPE: {
 			Ref<LineShape2D> shape = node->get_shape();
-			
+
 			handles.resize(2);
 			handles[0] = shape->get_normal() * shape->get_d();
 			handles[1] = shape->get_normal() * (shape->get_d() + 30.0);
-			
+
 			c->draw_texture(h,gt.xform(handles[0])-size);
 			c->draw_texture(h,gt.xform(handles[1])-size);
 

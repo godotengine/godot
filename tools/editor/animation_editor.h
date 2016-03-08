@@ -212,7 +212,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 	ConfirmationDialog *scale_dialog;
 	SpinBox *scale;
 
-	PropertyEditor *key_editor;	
+	PropertyEditor *key_editor;
 
 	SceneTreeDialog *call_select;
 

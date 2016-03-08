@@ -646,7 +646,7 @@ https://github.com/godotengine/godot/issues/3127
 	}
 
 	// Save the right type. If this node was created by an instance
-	// then flag that the node should not be created but reused	
+	// then flag that the node should not be created but reused
 	if (pack_state_stack.empty()) {
 		//this node is not part of an instancing process, so save the type
 		nd.type=_nm_get_string(p_node->get_type(),name_map);
@@ -963,7 +963,7 @@ Ref<SceneState> SceneState::_get_base_scene_state() const {
 
 int SceneState::find_node_by_path(const NodePath& p_node) const {
 
-	if (!node_path_cache.has(p_node)) {		
+	if (!node_path_cache.has(p_node)) {
 		if (_get_base_scene_state().is_valid()) {
 			int idx = _get_base_scene_state()->find_node_by_path(p_node);
 			if (idx>=0) {
@@ -1275,7 +1275,7 @@ Dictionary SceneState::get_bundled_scene() const {
 	rnode_paths.resize(node_paths.size());
 	for(int i=0;i<node_paths.size();i++) {
 		rnode_paths[i]=node_paths[i];
-	}	
+	}
 	d["node_paths"]=rnode_paths;
 
 	Array reditable_instances;

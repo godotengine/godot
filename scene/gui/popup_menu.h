@@ -37,7 +37,7 @@
 class PopupMenu : public Popup {
 
 	OBJ_TYPE(PopupMenu, Popup );
-	
+
 	struct Item {
 		Ref<Texture> icon;
 		String text;
@@ -45,16 +45,16 @@ class PopupMenu : public Popup {
 		bool checkable;
 		bool separator;
 		bool disabled;
-		int ID;	
+		int ID;
 		Variant metadata;
 		String submenu;
 		String tooltip;
 		uint32_t accel;
 		int _ofs_cache;
-		
+
 		Item() { checked=false; checkable=false; separator=false; accel=0; disabled=false; _ofs_cache=0; }
 	};
-	
+
 
 	Timer *submenu_timer;
 	List<Rect2> autohide_areas;
@@ -64,7 +64,7 @@ class PopupMenu : public Popup {
 	Rect2 parent_rect;
 	String _get_accel_text(uint32_t p_accel) const;
 	int _get_mouse_over(const Point2& p_over) const;
-	virtual Size2 get_minimum_size() const;	 	
+	virtual Size2 get_minimum_size() const;
 	void _input_event(const InputEvent &p_event);
 	void _activate_submenu(int over);
 	void _submenu_timeout();
@@ -79,11 +79,11 @@ protected:
 
 	virtual bool has_point(const Point2& p_point) const;
 
-friend class MenuButton;	
+friend class MenuButton;
 	void _notification(int p_what);
-	static void _bind_methods();			
+	static void _bind_methods();
 public:
-	
+
 	void add_icon_item(const Ref<Texture>& p_icon,const String& p_label,int p_ID=-1,uint32_t p_accel=0);
 	void add_item(const String& p_label,int p_ID=-1,uint32_t p_accel=0);
 	void add_icon_check_item(const Ref<Texture>& p_icon,const String& p_label,int p_ID=-1,uint32_t p_accel=0);
@@ -92,7 +92,7 @@ public:
 
 	void set_item_text(int p_idx,const String& p_text);
 	void set_item_icon(int p_idx,const Ref<Texture>& p_icon);
-	void set_item_checked(int p_idx,bool p_checked);	
+	void set_item_checked(int p_idx,bool p_checked);
 	void set_item_ID(int p_idx,int p_ID);
 	void set_item_accelerator(int p_idx,uint32_t p_accel);
 	void set_item_metadata(int p_idx,const Variant& p_meta);
@@ -110,7 +110,7 @@ public:
 	uint32_t get_item_accelerator(int p_idx) const;
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;
-	String get_item_submenu(int p_ID) const;	
+	String get_item_submenu(int p_ID) const;
 	bool is_item_separator(int p_idx) const;
 	bool is_item_checkable(int p_idx) const;
 	String get_item_tooltip(int p_idx) const;
@@ -121,9 +121,9 @@ public:
 	void activate_item(int p_item);
 
 	void remove_item(int p_idx);
-	
+
 	void add_separator();
-		
+
 	void clear();
 
 	void set_parent_rect(const Rect2& p_rect);
@@ -137,7 +137,7 @@ public:
 
 	void set_invalidate_click_until_motion();
 
-	PopupMenu();	
+	PopupMenu();
 	~PopupMenu();
 
 };

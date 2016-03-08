@@ -231,13 +231,13 @@ void Slider::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_input_event"),&Slider::_input_event);
 	ObjectTypeDB::bind_method(_MD("set_ticks","count"),&Slider::set_ticks);
 	ObjectTypeDB::bind_method(_MD("get_ticks"),&Slider::get_ticks);
-	
-	ObjectTypeDB::bind_method(_MD("get_ticks_on_borders"),&Slider::get_ticks_on_borders);          
+
+	ObjectTypeDB::bind_method(_MD("get_ticks_on_borders"),&Slider::get_ticks_on_borders);
 	ObjectTypeDB::bind_method(_MD("set_ticks_on_borders","ticks_on_border"),&Slider::set_ticks_on_borders);
-	
+
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "tick_count", PROPERTY_HINT_RANGE,"0,4096,1"), _SCS("set_ticks"), _SCS("get_ticks") );
         ADD_PROPERTY( PropertyInfo( Variant::BOOL, "ticks_on_borders" ), _SCS("set_ticks_on_borders"), _SCS("get_ticks_on_borders") );
-        
+
 }
 
 Slider::Slider(Orientation p_orientation) {

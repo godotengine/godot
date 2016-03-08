@@ -1372,7 +1372,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 					DVector<float> tangents;
 					print_line("vertex source id: "+vertex_src_id);
 					if(md.vertices[vertex_src_id].sources.has("NORMAL")){
-						//has normals 
+						//has normals
 						normals.resize(vlen);
 						//std::cout << "has normals" << std::endl;
 						String normal_src_id = md.vertices[vertex_src_id].sources["NORMAL"];
@@ -1386,7 +1386,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 						if (stride==0)
 							stride=3;
 
-					
+
 						//read normals from morph target
 						DVector<Vector3>::Write vertw = normals.write();
 
@@ -1421,7 +1421,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 								}
 							}
 						}
-					
+
 						print_line("using built-in normals");
 					}else{
 						print_line("generating normals");
@@ -2070,7 +2070,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 
 		animation->add_track(Animation::TYPE_TRANSFORM);
-		int track = animation->get_track_count() -1;		
+		int track = animation->get_track_count() -1;
 		animation->track_set_path( track , path );
 
 		Vector<float> snapshots = base_snapshots;

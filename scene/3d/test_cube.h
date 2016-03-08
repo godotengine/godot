@@ -42,14 +42,14 @@ class TestCube : public GeometryInstance {
 	OBJ_TYPE( TestCube, GeometryInstance );
 
 	RID instance;
-	
+
 
 public:
 
 	virtual AABB get_aabb() const;
 	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
-	TestCube();	
+	TestCube();
 	~TestCube();
 
 };

@@ -111,7 +111,7 @@ bool Timer::has_autostart() const {
 }
 
 void Timer::start() {
-	time_left=wait_time;	
+	time_left=wait_time;
 	_set_process(true);
 }
 
@@ -154,7 +154,7 @@ Timer::TimerProcessMode Timer::get_timer_process_mode() const{
 }
 
 
-void Timer::_set_process(bool p_process, bool p_force) 
+void Timer::_set_process(bool p_process, bool p_force)
 {
 	switch (timer_process_mode) {
 		case TIMER_PROCESS_FIXED: set_fixed_process(p_process); break;

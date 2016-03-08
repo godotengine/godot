@@ -13,7 +13,7 @@ RID BakedLightInstance::get_baked_light_instance() const {
 
 void BakedLightInstance::set_baked_light(const Ref<BakedLight>& p_baked_light) {
 
-	baked_light=p_baked_light;	
+	baked_light=p_baked_light;
 
 	RID base_rid;
 

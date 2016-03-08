@@ -1515,7 +1515,7 @@ Variant GDScript::_new(const Variant** p_args,int p_argcount,Variant::CallError&
 		return Variant();
 	}
 
-	if (ref.is_valid()) {		
+	if (ref.is_valid()) {
 		return ref;
 	} else {
 		return owner;
@@ -2013,7 +2013,7 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 
 void GDScript::_bind_methods() {
 
-	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo("new"));	
+	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo("new"));
 
 	ObjectTypeDB::bind_method(_MD("get_as_byte_code"),&GDScript::get_as_byte_code);
 

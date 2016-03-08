@@ -370,7 +370,7 @@ RID Rasterizer::fixed_material_create() {
 		material_set_param(mat,_fixed_material_param_names[i],fm.param[i]); //must be there
 	}
 	fixed_material_dirty_list.add(&fm.dirty_list);
-	//print_line("FMC: "+itos(mat.get_id()));	
+	//print_line("FMC: "+itos(mat.get_id()));
 	return mat;
 }
 

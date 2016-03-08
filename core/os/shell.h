@@ -42,7 +42,7 @@ public:
 
 	static Shell * get_singleton();
 	virtual void execute(String p_path)=0;
-	
+
 	Shell();
 	virtual ~Shell();
 };

@@ -58,8 +58,8 @@ template<class T>
 struct VariantCaster {
 
 	static _FORCE_INLINE_ T cast(const Variant& p_variant) {
-	
-		return p_variant;			
+
+		return p_variant;
 	}
 };
 
@@ -67,8 +67,8 @@ template<class T>
 struct VariantCaster<T&> {
 
 	static _FORCE_INLINE_ T cast(const Variant& p_variant) {
-	
-		return p_variant;			
+
+		return p_variant;
 	}
 };
 
@@ -76,8 +76,8 @@ template<class T>
 struct VariantCaster<const T&> {
 
 	static _FORCE_INLINE_ T cast(const Variant& p_variant) {
-	
-		return p_variant;			
+
+		return p_variant;
 	}
 };
 

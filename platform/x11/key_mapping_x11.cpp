@@ -32,14 +32,14 @@
 /***** SCAN CODE CONVERSION ******/
 
 struct _XTranslatePair {
-	
+
 	KeySym keysym;
 	unsigned int keycode;
 };
 
-static _XTranslatePair _xkeysym_to_keycode[]={ 
+static _XTranslatePair _xkeysym_to_keycode[]={
   // misc keys
-	
+
 	{ XK_Escape,                  KEY_ESCAPE   },
 	{ XK_Tab,                     KEY_TAB   },
 	{ XK_ISO_Left_Tab,            KEY_BACKTAB   },
@@ -136,8 +136,8 @@ static _XTranslatePair _xkeysym_to_keycode[]={
 	{ XK_F14,		KEY_F14},
 	{ XK_F15,		KEY_F15},
 	{ XK_F16,		KEY_F16},
-	
-    // media keys	
+
+    // media keys
 	{ XF86XK_Back,                KEY_BACK   },
 	{ XF86XK_Forward,             KEY_FORWARD   },
 	{ XF86XK_Stop,                KEY_STOP   },
@@ -146,7 +146,7 @@ static _XTranslatePair _xkeysym_to_keycode[]={
 	{ XF86XK_AudioMedia,          KEY_LAUNCHMEDIA   },
 	{ XF86XK_OpenURL,             KEY_OPENURL   },
 	{ XF86XK_HomePage,            KEY_HOMEPAGE   },
-	{ XF86XK_Search,              KEY_SEARCH   },		
+	{ XF86XK_Search,              KEY_SEARCH   },
 	{ XF86XK_AudioLowerVolume,    KEY_VOLUMEDOWN   },
 	{ XF86XK_AudioMute,           KEY_VOLUMEMUTE   },
 	{ XF86XK_AudioRaiseVolume,    KEY_VOLUMEUP   },
@@ -155,13 +155,13 @@ static _XTranslatePair _xkeysym_to_keycode[]={
 	{ XF86XK_AudioPrev,           KEY_MEDIAPREVIOUS   },
 	{ XF86XK_AudioNext,           KEY_MEDIANEXT   },
 	{ XF86XK_AudioRecord,         KEY_MEDIARECORD   },
-		
+
     // launch keys
 	{ XF86XK_Mail,                KEY_LAUNCHMAIL   },
 	{ XF86XK_MyComputer,          KEY_LAUNCH0   },
 	{ XF86XK_Calculator,          KEY_LAUNCH1   },
 	{ XF86XK_Standby,             KEY_STANDBY   },
-		
+
 	{ XF86XK_Launch0,             KEY_LAUNCH2   },
 	{ XF86XK_Launch1,             KEY_LAUNCH3   },
 	{ XF86XK_Launch2,             KEY_LAUNCH4   },
@@ -176,41 +176,41 @@ static _XTranslatePair _xkeysym_to_keycode[]={
 	{ XF86XK_LaunchB,             KEY_LAUNCHD   },
 	{ XF86XK_LaunchC,             KEY_LAUNCHE   },
 	{ XF86XK_LaunchD,             KEY_LAUNCHF   },
-		
+
 	{0,                          0  }
 };
 
 
 unsigned int KeyMappingX11::get_keycode(KeySym p_keysym) {
-	
+
 	// kinda bruteforce.. could optimize.
-	
+
 	if (p_keysym<0x100) // Latin 1, maps 1-1
 		return p_keysym;
-	
+
 	// look for special key
 	for(int idx=0;_xkeysym_to_keycode[idx].keysym!=0;idx++) {
-		
+
 		if (_xkeysym_to_keycode[idx].keysym==p_keysym)
 			return  _xkeysym_to_keycode[idx].keycode;
 	}
-	
+
 	return 0;
 }
 KeySym KeyMappingX11::get_keysym(unsigned int p_code) {
-	
+
 	// kinda bruteforce.. could optimize.
-	
+
 	if (p_code<0x100) // Latin 1, maps 1-1
 		return p_code;
-	
+
 	// look for special key
 	for(int idx=0;_xkeysym_to_keycode[idx].keysym!=0;idx++) {
-		
+
 		if (_xkeysym_to_keycode[idx].keycode==p_code)
 			return  _xkeysym_to_keycode[idx].keysym;
 	}
-	
+
 	return 0;
 }
 
@@ -220,13 +220,13 @@ KeySym KeyMappingX11::get_keysym(unsigned int p_code) {
 // Tables taken from FOX toolkit
 
 struct _XTranslateUnicodePair {
-	
+
 	KeySym keysym;
 	unsigned int unicode;
 };
 
 enum {
-	
+
 	_KEYSYM_MAX=759
 };
 
@@ -992,7 +992,7 @@ static _XTranslateUnicodePair _xkeysym_to_unicode[_KEYSYM_MAX] = {
 };
 
 unsigned int KeyMappingX11::get_unicode_from_keysym(KeySym p_keysym) {
-	
+
 	/* Latin-1 */
 	if (p_keysym>=0x20 && p_keysym<=0x7e)
 		return p_keysym;
@@ -1001,13 +1001,13 @@ unsigned int KeyMappingX11::get_unicode_from_keysym(KeySym p_keysym) {
 	// keypad to latin1 is easy
 	if (p_keysym>=0xffaa && p_keysym<=0xffb9)
 		return p_keysym-0xff80;
-	
+
 	/* Unicode (may be present)*/
-	
-	if((p_keysym&0xff000000)==0x01000000) 
+
+	if((p_keysym&0xff000000)==0x01000000)
 		return p_keysym&0x00ffffff;
-	
-	int middle,low=0,high=_KEYSYM_MAX-1;	
+
+	int middle,low=0,high=_KEYSYM_MAX-1;
 	do {
 		middle=(high+low)/2;
 		if ( _xkeysym_to_unicode[middle].keysym==p_keysym)
@@ -1017,19 +1017,19 @@ unsigned int KeyMappingX11::get_unicode_from_keysym(KeySym p_keysym) {
 		else
 			high=middle-1;
 	} while (high>=low);
-	
+
 	return 0;
-	
+
 }
 
 struct _XTranslateUnicodePairReverse {
-	
+
 	unsigned int unicode;
 	KeySym keysym;
 };
 
 enum {
-	
+
 	_UNICODE_MAX=750
 };
 
@@ -1783,20 +1783,20 @@ static _XTranslateUnicodePairReverse _unicode_to_xkeysym[_UNICODE_MAX] = {
 	{ 0x0EF4, 0x3184 },
 	{ 0x0EF5, 0x3186 },
 	{ 0x0EF6, 0x318D },
-	{ 0x0EF7, 0x318E } 
+	{ 0x0EF7, 0x318E }
 };
 
 KeySym KeyMappingX11::get_keysym_from_unicode(unsigned int p_unicode) {
-	
+
 	/* Latin 1 */
-	
+
 	if (p_unicode>=0x20 && p_unicode<=0x7e)
 		return p_unicode;
-	
+
 	if (p_unicode>=0xa0 && p_unicode<=0xff)
 		return p_unicode;
-	
-	int middle,low=0,high=_UNICODE_MAX-1;	
+
+	int middle,low=0,high=_UNICODE_MAX-1;
 	do {
 		middle=(high+low)/2;
 		if ( _unicode_to_xkeysym[middle].keysym==p_unicode)
@@ -1806,7 +1806,7 @@ KeySym KeyMappingX11::get_keysym_from_unicode(unsigned int p_unicode) {
 		else
 			high=middle-1;
 	} while (high>=low);
-	
+
 	// if not found, let's hope X understands it as unicode
 	return p_unicode|0x01000000;
 }

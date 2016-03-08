@@ -454,7 +454,7 @@ void TileMap::_update_dirty_quadrants() {
 						shape->draw(debug_canvas_item,debug_collision_color);
 
 					}
-					ps->body_add_shape(q.body,shape->get_rid(),xform);					
+					ps->body_add_shape(q.body,shape->get_rid(),xform);
 					ps->body_set_shape_metadata(q.body,shape_idx++,Vector2(E->key().x,E->key().y));
 
 				}

@@ -1265,7 +1265,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 			} else if (m.button_mask&1) {
 
 				if (nav_scheme == NAVIGATION_MAYA && m.mod.alt) {
-					nav_mode = NAVIGATION_ORBIT;				
+					nav_mode = NAVIGATION_ORBIT;
 				} else if (nav_scheme == NAVIGATION_MODO && m.mod.alt && m.mod.shift) {
 					nav_mode = NAVIGATION_PAN;
 				} else if (nav_scheme == NAVIGATION_MODO && m.mod.alt && m.mod.control) {
@@ -2606,15 +2606,15 @@ void SpatialEditor::_generate_selection_box() {
 	aabb.grow_by( aabb.get_longest_axis_size()/20.0 );
 
 	Ref<SurfaceTool> st = memnew( SurfaceTool );
-	
+
 	st->begin(Mesh::PRIMITIVE_LINES);
 	for (int i=0;i<12;i++) {
-	
+
 		Vector3 a,b;
-		aabb.get_edge(i,a,b); 
-		
+		aabb.get_edge(i,a,b);
+
 		/*Vector<Vector3> points;
-		Vector<Color> colors;		
+		Vector<Color> colors;
 		points.push_back(a);
 		points.push_back(b);*/
 
@@ -2804,7 +2804,7 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 
 
 void SpatialEditor::edit(Spatial *p_spatial) {
-	
+
 	if (p_spatial!=selected) {
 		if (selected) {
 
@@ -2836,8 +2836,8 @@ void SpatialEditor::edit(Spatial *p_spatial) {
 
 		// should become the selection
 	}
-	
-	
+
+
 }
 
 void SpatialEditor::_xform_dialog_action() {
@@ -4167,7 +4167,7 @@ SpatialEditor::~SpatialEditor() {
 void SpatialEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-	
+
 
 		spatial_editor->show();
 		spatial_editor->set_process(true);
@@ -4175,7 +4175,7 @@ void SpatialEditorPlugin::make_visible(bool p_visible) {
 		spatial_editor->grab_focus();
 
 	} else {
-	
+
 		spatial_editor->hide();
 		spatial_editor->set_process(false);
 		//VisualServer::get_singleton()->viewport_set_hide_scenario(editor->get_scene_root()->get_viewport(),true);
@@ -4189,7 +4189,7 @@ void SpatialEditorPlugin::edit(Object *p_object) {
 }
 
 bool SpatialEditorPlugin::handles(Object *p_object) const {
-	
+
 	return p_object->is_type("Spatial");
 }
 
@@ -4223,7 +4223,7 @@ void SpatialEditorPlugin::snap_cursor_to_plane(const Plane& p_plane) {
 
 
 SpatialEditorPlugin::SpatialEditorPlugin(EditorNode *p_node) {
-	
+
 	editor=p_node;
 	spatial_editor = memnew( SpatialEditor(p_node) );
 	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -4238,7 +4238,7 @@ SpatialEditorPlugin::SpatialEditorPlugin(EditorNode *p_node) {
 
 
 SpatialEditorPlugin::~SpatialEditorPlugin() {
-	
+
 }
 
 

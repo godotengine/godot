@@ -82,37 +82,37 @@ public:
 //old create dialog, disabled
 
 class CreateDialog : public ConfirmationDialog {
-	
+
 	OBJ_TYPE( CreateDialog, ConfirmationDialog );
-	
+
 	Tree *tree;
 	Button *create;
 	Button *cancel;
 	LineEdit *filter;
 
-	
+
 	void update_tree();
 	void _create();
 	void _cancel();
-	void add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem 
+	void add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem
 	*p_root);
-		
+
 	String base;
 	void _text_changed(String p_text);
 	virtual void _post_popup() { tree->grab_focus();}
 
 protected:
-	static void _bind_methods();	
+	static void _bind_methods();
 	void _notification(int p_what);
 public:
-	
+
 
 
 	Object *instance_selected();
-	
+
 	void set_base_type(const String& p_base);
 	String get_base_type() const;
-	CreateDialog();	
+	CreateDialog();
 	~CreateDialog();
 
 };

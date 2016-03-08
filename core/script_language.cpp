@@ -61,26 +61,26 @@ void ScriptServer::set_scripting_enabled(bool p_enabled) {
 }
 
 bool ScriptServer::is_scripting_enabled() {
-	
+
 	return scripting_enabled;
 }
 
 
 int ScriptServer::get_language_count() {
-	
+
 	return _language_count;
-	
+
 }
 
 ScriptLanguage* ScriptServer::get_language(int p_idx) {
 
 	ERR_FAIL_INDEX_V(p_idx,_language_count,NULL);
-	
+
 	return _languages[p_idx];
 }
 
 void ScriptServer::register_language(ScriptLanguage *p_language) {
-	
+
 	ERR_FAIL_COND( _language_count >= MAX_LANGUAGES );
 	_languages[_language_count++]=p_language;
 }

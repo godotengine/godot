@@ -45,19 +45,19 @@ class Label;
 class Panel;
 
 class Control : public CanvasItem {
-	
+
 	OBJ_TYPE( Control, CanvasItem );
 	OBJ_CATEGORY("GUI Nodes");
 
 public:
-	
-	enum AnchorType {		
+
+	enum AnchorType {
 		ANCHOR_BEGIN,
 		ANCHOR_END,
 		ANCHOR_RATIO,
 		ANCHOR_CENTER,
 	};
-	
+
 	enum FocusMode {
 		FOCUS_NONE,
 		FOCUS_CLICK,
@@ -106,7 +106,7 @@ private:
 	};
 
 	struct Data {
-			
+
 		Point2 pos_cache;
 		Size2 size_cache;
 
@@ -132,7 +132,7 @@ private:
 		bool modal;
 		bool modal_exclusive;
 		Ref<Theme> theme;
-		Control *theme_owner;		
+		Control *theme_owner;
 		String tooltip;
 		CursorShape default_cursor;
 
@@ -153,7 +153,7 @@ private:
 		HashMap<StringName, Color, StringNameHasher > color_override;
 		HashMap<StringName, int, StringNameHasher > constant_override;
 	} data;
-		
+
 	// used internally
 	Control* _find_control_at_pos(CanvasItem* p_node,const Point2& p_pos,const Matrix32& p_xform,Matrix32& r_inv_xform);
 
@@ -184,7 +184,7 @@ friend class Viewport;
 	void _modal_stack_remove();
 	void _modal_set_prev_focus_owner(ObjectID p_prev);
 
-protected:	
+protected:
 
 	//virtual void _window_input_event(InputEvent p_event);
 
@@ -194,15 +194,15 @@ protected:
 
 	void _notification(int p_notification);
 
-	
-	static void _bind_methods();	
-	
-	//bind helpers 
-	
+
+	static void _bind_methods();
+
+	//bind helpers
+
 public:
 
 	enum {
-	
+
 /*		NOTIFICATION_DRAW=30,
 		NOTIFICATION_VISIBILITY_CHANGED=38*/
 		NOTIFICATION_RESIZED=40,
@@ -241,29 +241,29 @@ public:
 	Control *get_parent_control() const;
 
 
-	
+
 	/* POSITIONING */
-	
+
 	void set_anchor(Margin p_margin,AnchorType p_anchor);
 	void set_anchor_and_margin(Margin p_margin,AnchorType p_anchor, float p_pos);
-	
+
 	AnchorType get_anchor(Margin p_margin) const;
-		
+
 	void set_margin(Margin p_margin,float p_value);
-	
+
 	void set_begin(const Point2& p_point); // helper
 	void set_end(const Point2& p_point); // helper
-	
-	
-	
+
+
+
 	float get_margin(Margin p_margin) const;
 	Point2 get_begin() const;
 	Point2 get_end() const;
-		
+
 	void set_pos(const Point2& p_point);
 	void set_size(const Size2& p_size);
 	void set_global_pos(const Point2& p_point);
-	
+
 	Point2 get_pos() const;
 	Point2 get_global_pos() const;
 	Size2 get_size() const;
@@ -277,9 +277,9 @@ public:
 	void set_scale(const Vector2& p_scale);
 	Vector2 get_scale() const;
 
-	
+
 	void set_area_as_parent_rect(int p_margin=0);
-	
+
 	void show_modal(bool p_exclusive=false);
 
 	void set_theme(const Ref<Theme>& p_theme);
@@ -297,7 +297,7 @@ public:
 	void minimum_size_changed();
 
 	/* FOCUS */
-	
+
 	void set_focus_mode(FocusMode p_focus_mode);
 	FocusMode get_focus_mode() const;
 	bool has_focus() const;
@@ -319,7 +319,7 @@ public:
 	bool is_stopping_mouse() const;
 
 	/* SKINNING */
-	
+
 	void add_icon_override(const StringName& p_name, const Ref<Texture>& p_icon);
 	void add_shader_override(const StringName& p_name, const Ref<Shader>& p_shader);
 	void add_style_override(const StringName& p_name, const Ref<StyleBox>& p_style);
@@ -367,9 +367,9 @@ public:
 
 	Control *get_root_parent_control() const;
 
-	Control();	
+	Control();
 	~Control();
-	
+
 };
 
 VARIANT_ENUM_CAST(Control::AnchorType);

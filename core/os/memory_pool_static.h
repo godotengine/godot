@@ -38,17 +38,17 @@
 */
 class MemoryPoolStatic {
 private:
-	
+
 	static MemoryPoolStatic *singleton;
 
 public:
-	
+
 	static MemoryPoolStatic *get_singleton();
-	
+
 	virtual void* alloc(size_t p_bytes,const char *p_description)=0; ///< Pointer in p_description shold be to a const char const like "hello"
 	virtual void* realloc(void * p_memory,size_t p_bytes)=0; ///< Pointer in p_description shold be to a const char const like "hello"
 	virtual void free(void *p_ptr)=0; ///< Pointer in p_description shold be to a const char const
-	
+
 	virtual size_t get_available_mem() const=0;
 	virtual size_t get_total_usage()=0;
 	virtual size_t get_max_usage()=0;

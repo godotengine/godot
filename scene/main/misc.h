@@ -37,7 +37,7 @@ class Misc : public Node {
 
 	OBJ_TYPE( Misc, Node );
 public:
-	Misc();	
+	Misc();
 	~Misc();
 
 };

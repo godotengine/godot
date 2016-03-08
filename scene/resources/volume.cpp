@@ -33,10 +33,10 @@ void Volume::_set(const String& p_name, const Variant& p_value) {
 
 
 	if (p_name.begins_with("shapes/")) {
-	
+
 		int idx=p_name.get_slice("/",1).to_int()-1;
 		ERR_FAIL_COND( idx != get_shape_count() );
-		
+
 		Dictionary shape = p_value;
 		ERR_FAIL_COND( !shape.has("type") || !shape.has("data"));
 		String type = shape["type"];
@@ -44,7 +44,7 @@ void Volume::_set(const String& p_name, const Variant& p_value) {
 		Transform transform;
 		if (shape.has("transform"))
 			transform=shape["transform"];
-		
+
 		if (type=="plane")
 			add_shape(SHAPE_PLANE,data,transform);
 		else if (type=="sphere")
@@ -59,7 +59,7 @@ void Volume::_set(const String& p_name, const Variant& p_value) {
 			add_shape(SHAPE_CONVEX_POLYGON,data,transform);
 		else if (type=="concave_polygon")
 			add_shape(SHAPE_CONCAVE_POLYGON,data,transform);
-		else {			
+		else {
 			ERR_FAIL();
 		}
 	}
@@ -68,14 +68,14 @@ void Volume::_set(const String& p_name, const Variant& p_value) {
 Variant Volume::_get(const String& p_name) const {
 
 	if (p_name.begins_with("shapes/")) {
-	
+
 		int idx=p_name.get_slice("/",1).to_int()-1;
 		ERR_FAIL_INDEX_V( idx, get_shape_count(), Variant() );
-		
+
 		Dictionary shape;
-		
+
 		switch( get_shape_type(idx) ) {
-		
+
 			case SHAPE_PLANE: shape["type"]="plane"; break;
 			case SHAPE_SPHERE: shape["type"]="sphere"; break;
 			case SHAPE_BOX: shape["type"]="box"; break;
@@ -83,15 +83,15 @@ Variant Volume::_get(const String& p_name) const {
 			case SHAPE_CAPSULE: shape["type"]="capsule"; break;
 			case SHAPE_CONVEX_POLYGON: shape["type"]="convex_polygon"; break;
 			case SHAPE_CONCAVE_POLYGON: shape["type"]="concave_polygon"; break;
-		
+
 		}
-		
+
 		shape["transform"]=get_shape_transform(idx);
 		shape["data"]=get_shape(idx);
 
 		return shape;
 	}
-	
+
 	return Variant();
 }
 
@@ -99,8 +99,8 @@ void Volume::_get_property_list( List<PropertyInfo> *p_list) const {
 
 	int count=get_shape_count();
 	for(int i=0;i<count;i++) {
-	
-		p_list->push_back( PropertyInfo( Variant::DICTIONARY, "shapes/"+itos(i+1)) );	
+
+		p_list->push_back( PropertyInfo( Variant::DICTIONARY, "shapes/"+itos(i+1)) );
 	}
 }
 
@@ -118,7 +118,7 @@ void Volume::add_shape(ShapeType p_shape_type, const Variant& p_data, const Tran
 void Volume::add_plane_shape(const Plane& p_plane,const Transform& p_transform) {
 
 	add_shape(SHAPE_PLANE, p_plane, p_transform );
-}	
+}
 
 void Volume::add_sphere_shape(float p_radius,const Transform& p_transform) {
 
@@ -140,7 +140,7 @@ void Volume::add_cylinder_shape(float p_radius, float p_height,const Transform& 
 void Volume::add_capsule_shape(float p_radius, float p_height,const Transform& p_transform) {
 
 	Dictionary d;
-	d["radius"]=p_radius;	
+	d["radius"]=p_radius;
 	d["height"]=p_height;
 
 	add_shape(SHAPE_CAPSULE,d,p_transform);
@@ -179,7 +179,7 @@ void Volume::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_shape_type","shape_idx"),&Volume::get_shape_type);
 	ObjectTypeDB::bind_method(_MD("get_shape_transform","shape_idx"),&Volume::get_shape_transform);
 	ObjectTypeDB::bind_method(_MD("get_shape","shape_idx"),&Volume::get_shape);
-	
+
 	BIND_CONSTANT( SHAPE_PLANE );
 	BIND_CONSTANT( SHAPE_SPHERE );
 	BIND_CONSTANT( SHAPE_BOX );
@@ -198,7 +198,7 @@ RID Volume::get_rid() {
 Volume::Volume() {
 
 	volume= PhysicsServer::get_singleton()->volume_create();
-	
+
 }
 
 

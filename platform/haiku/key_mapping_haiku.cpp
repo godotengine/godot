@@ -70,7 +70,7 @@ static _HaikuTranslatePair _hb_to_keycode[] = {
 	{ KEY_INSERT, B_INSERT },
 	{ KEY_DELETE, B_DELETE },
 	// { KEY_HELP, ??? },
-	
+
 	{ KEY_0, (0x30) },
 	{ KEY_1, (0x31) },
 	{ KEY_2, (0x32) },

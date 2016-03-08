@@ -31,13 +31,13 @@
 MemoryPoolStatic *MemoryPoolStatic::singleton=0;
 
 MemoryPoolStatic *MemoryPoolStatic::get_singleton() {
-	
+
 	return singleton;
 }
 
 
 MemoryPoolStatic::MemoryPoolStatic() {
-	
+
 	singleton=this;
 }
 

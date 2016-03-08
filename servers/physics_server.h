@@ -421,7 +421,7 @@ public:
 		BODY_STATE_LINEAR_VELOCITY,
 		BODY_STATE_ANGULAR_VELOCITY,
 		BODY_STATE_SLEEPING,
-		BODY_STATE_CAN_SLEEP			
+		BODY_STATE_CAN_SLEEP
 	};
 
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant& p_variant)=0;
@@ -648,7 +648,7 @@ public:
 	virtual void damped_string_joint_set_param(RID p_joint, DampedStringParam p_param, real_t p_value)=0;
 	virtual real_t damped_string_joint_get_param(RID p_joint, DampedStringParam p_param) const=0;
 
-	virtual JointType joint_get_type(RID p_joint) const=0;	
+	virtual JointType joint_get_type(RID p_joint) const=0;
 #endif
 	/* QUERY API */
 

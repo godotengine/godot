@@ -41,7 +41,7 @@
 class ResBase;
 
 class RefPtr {
-friend class ResBase;	
+friend class ResBase;
 	enum {
 
 		DATASIZE=sizeof(void*)*4

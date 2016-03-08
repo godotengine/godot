@@ -160,13 +160,13 @@ void OSIPhone::initialize(const VideoMode& p_desired,int p_video_driver,int p_au
 #ifdef STOREKIT_ENABLED
 	store_kit = memnew(InAppStore);
 	Globals::get_singleton()->add_singleton(Globals::Singleton("InAppStore", store_kit));
-#endif		
+#endif
 
 #ifdef ICLOUD_ENABLED
 	icloud = memnew(ICloud);
 	Globals::get_singleton()->add_singleton(Globals::Singleton("ICloud", icloud));
 	//icloud->connect();
-#endif		
+#endif
 };
 
 MainLoop *OSIPhone::get_main_loop() const {
@@ -303,7 +303,7 @@ void OSIPhone::queue_event(const InputEvent& p_event) {
 
 	ERR_FAIL_INDEX( event_count, MAX_EVENTS );
 
-	event_queue[event_count++] = p_event; 
+	event_queue[event_count++] = p_event;
 };
 
 void OSIPhone::touches_cancelled() {
@@ -490,7 +490,7 @@ String OSIPhone::get_name() {
 };
 
 Size2 OSIPhone::get_window_size() const {
-	
+
 	return Vector2(video_mode.width, video_mode.height);
 }
 
@@ -522,7 +522,7 @@ Error OSIPhone::native_video_play(String p_path, float p_volume, String p_audio_
 	String tempFile = get_data_dir();
 	if (!exists)
 		return FAILED;
-	
+
 	if (p_path.begins_with("res://")) {
 		if (PackedData::get_singleton()->has_path(p_path)) {
 			print("Unable to play %S using the native player as it resides in a .pck file\n", p_path.c_str());
@@ -535,7 +535,7 @@ Error OSIPhone::native_video_play(String p_path, float p_volume, String p_audio_
 
 	memdelete(f);
 
-	print("Playing video: %S\n", p_path.c_str());	
+	print("Playing video: %S\n", p_path.c_str());
 	if (_play_video(p_path, p_volume, p_audio_track, p_subtitle_track) )
 		return OK;
 	return FAILED;

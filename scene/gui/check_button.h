@@ -35,18 +35,18 @@
 @author Juan Linietsky <reduzio@gmail.com>
 */
 class CheckButton : public Button {
-	
+
 	OBJ_TYPE( CheckButton, Button );
-	
-	
-protected:	
+
+
+protected:
 	void _notification(int p_what);
 
 public:
-		
-	CheckButton();	
+
+	CheckButton();
 	~CheckButton();
-	
+
 };
 
 #endif

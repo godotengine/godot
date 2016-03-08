@@ -43,9 +43,9 @@ class Mesh : public Resource {
 	RES_BASE_EXTENSION("msh");
 
 public:
-	
+
 	enum {
-	
+
 		NO_INDEX_ARRAY=VisualServer::NO_INDEX_ARRAY,
 		ARRAY_WEIGHTS_SIZE=VisualServer::ARRAY_WEIGHTS_SIZE
 	};
@@ -63,8 +63,8 @@ public:
 		ARRAY_INDEX=VisualServer::ARRAY_INDEX,
 		ARRAY_MAX=VisualServer::ARRAY_MAX
 
-	};	
-	
+	};
+
 	enum ArrayFormat {
 		/* ARRAY FORMAT FLAGS */
 		ARRAY_FORMAT_VERTEX=1<<ARRAY_VERTEX, // mandatory
@@ -77,8 +77,8 @@ public:
 		ARRAY_FORMAT_WEIGHTS=1<<ARRAY_WEIGHTS,
 		ARRAY_FORMAT_INDEX=1<<ARRAY_INDEX,
 
-	};	
-	
+	};
+
 	enum PrimitiveType {
 		PRIMITIVE_POINTS=VisualServer::PRIMITIVE_POINTS,
 		PRIMITIVE_LINES=VisualServer::PRIMITIVE_LINES,
@@ -87,7 +87,7 @@ public:
 		PRIMITIVE_TRIANGLES=VisualServer::PRIMITIVE_TRIANGLES,
 		PRIMITIVE_TRIANGLE_STRIP=VisualServer::PRIMITIVE_TRIANGLE_STRIP,
 		PRIMITIVE_TRIANGLE_FAN=VisualServer::PRIMITIVE_TRIANGLE_FAN,
-	};	
+	};
 
 	enum MorphTargetMode {
 
@@ -95,7 +95,7 @@ public:
 		MORPH_MODE_RELATIVE=VS::MORPH_MODE_RELATIVE,
 	};
 
-private:	
+private:
 	struct Surface {
 		String name;
 		AABB aabb;
@@ -111,16 +111,16 @@ private:
 
 	mutable Ref<TriangleMesh> triangle_mesh;
 
-	
+
 	void _recompute_aabb();
 protected:
-	
+
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list( List<PropertyInfo> *p_list) const;
-	
+
 	static void _bind_methods();
-	
+
 public:
 
 	void add_surface(PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes=Array(),bool p_alphasort=false);
@@ -174,7 +174,7 @@ public:
 	DVector<Face3> get_faces() const;
 	Ref<TriangleMesh> generate_triangle_mesh() const;
 	Mesh();
-	
+
 	~Mesh();
 
 };

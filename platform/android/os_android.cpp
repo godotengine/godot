@@ -304,7 +304,7 @@ void OS_Android::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) 
 
 void OS_Android::set_keep_screen_on(bool p_enabled) {
 	OS::set_keep_screen_on(p_enabled);
-	
+
 	if (set_keep_screen_on_func) {
 		set_keep_screen_on_func(p_enabled);
 	}
@@ -796,7 +796,7 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFu
 	get_model_func=p_get_model_func;
 	get_unique_id_func=p_get_unique_id;
 	get_system_dir_func=p_get_sdir_func;
-    
+
 	video_play_func = p_video_play_func;
 	video_is_playing_func = p_video_is_playing_func;
 	video_pause_func = p_video_pause_func;

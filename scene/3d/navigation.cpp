@@ -455,7 +455,7 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3& p_start, const Vector
 
 						_clip_path(path,apex_poly,portal_right,right_poly);
 
-						apex_point=portal_right;						
+						apex_point=portal_right;
 						p=right_poly;
 						left_poly=p;
 						apex_poly=p;

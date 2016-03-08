@@ -44,7 +44,7 @@
 class Geometry {
 	Geometry();
 public:
-	
+
 
 
 
@@ -201,37 +201,37 @@ public:
 		real_t a =e1.dot(h);
 		if (a>-CMP_EPSILON && a < CMP_EPSILON) // parallel test
 			return false;
-				
+
 		real_t f=1.0/a;
-		
+
 		Vector3 s=p_from-p_v0;
 		real_t u = f * s.dot(h);
-		
+
 		if ( u< 0.0 || u > 1.0)
 			return false;
-		
+
 		Vector3 q=s.cross(e1);
-		
+
 		real_t v = f * p_dir.dot(q);
-		
+
 		if (v < 0.0 || u + v > 1.0)
 			return false;
-		
-		// at this stage we can compute t to find out where 
+
+		// at this stage we can compute t to find out where
 		// the intersection point is on the line
 		real_t t = f * e2.dot(q);
-		
+
 		if (t > 0.00001) {// ray intersection
 			if (r_res)
 				*r_res=p_from+p_dir*t;
 			return true;
-		} else // this means that there is a line intersection  
+		} else // this means that there is a line intersection
 			// but not a ray intersection
 			return false;
-	}	
-	
+	}
+
 	static inline bool segment_intersects_triangle( const Vector3& p_from, const Vector3& p_to, const Vector3& p_v0,const Vector3& p_v1,const Vector3& p_v2,Vector3* r_res=0) {
-	
+
 		Vector3 rel=p_to-p_from;
 		Vector3 e1=p_v1-p_v0;
 		Vector3 e2=p_v2-p_v0;
@@ -239,34 +239,34 @@ public:
 		real_t a =e1.dot(h);
 		if (a>-CMP_EPSILON && a < CMP_EPSILON) // parallel test
 			return false;
-				
+
 		real_t f=1.0/a;
-		
+
 		Vector3 s=p_from-p_v0;
 		real_t u = f * s.dot(h);
-		
+
 		if ( u< 0.0 || u > 1.0)
 			return false;
-		
+
 		Vector3 q=s.cross(e1);
-		
+
 		real_t v = f * rel.dot(q);
-		
+
 		if (v < 0.0 || u + v > 1.0)
 			return false;
-		
-		// at this stage we can compute t to find out where 
+
+		// at this stage we can compute t to find out where
 		// the intersection point is on the line
 		real_t t = f * e2.dot(q);
-		
+
 		if (t > CMP_EPSILON && t<=1.0) {// ray intersection
 			if (r_res)
 				*r_res=p_from+rel*t;
 			return true;
-		} else // this means that there is a line intersection  
+		} else // this means that there is a line intersection
 			// but not a ray intersection
 			return false;
-	}	
+	}
 
 	static inline bool segment_intersects_sphere( const Vector3& p_from, const Vector3& p_to, const Vector3& p_sphere_pos,real_t p_sphere_radius,Vector3* r_res=0,Vector3 *r_norm=0) {
 
@@ -356,24 +356,24 @@ public:
 			real_t box_end=size[i];
 			real_t cmin,cmax;
 
-	
+
 			if (seg_from < seg_to) {
-	
+
 				if (seg_from > box_end || seg_to < box_begin)
 					return false;
 				real_t length=seg_to-seg_from;
 				cmin = (seg_from < box_begin)?((box_begin - seg_from)/length):0;
 				cmax = (seg_to > box_end)?((box_end - seg_from)/length):1;
-	
+
 			} else {
-	
+
 				if (seg_to > box_end || seg_from < box_begin)
 					return false;
 				real_t length=seg_to-seg_from;
 				cmin = (seg_from > box_end)?(box_end - seg_from)/length:0;
 				cmax = (seg_to < box_begin)?(box_begin - seg_from)/length:1;
 			}
-	
+
 			if (cmin > min) {
 				min = cmin;
 				axis=i;
@@ -468,9 +468,9 @@ public:
 		if (l<1e-10)
 			return p_segment[0]; // both points are the same, just give any
 		n/=l;
-	
+
 		float d=n.dot(p);
-	
+
 		if (d<=0.0)
 			return p_segment[0]; // before first point
 		else if (d>=l)
@@ -570,27 +570,27 @@ public:
 
 
 	static inline bool point_in_projected_triangle(const Vector3& p_point,const Vector3& p_v1,const Vector3& p_v2,const Vector3& p_v3) {
-	
-	
-		Vector3 face_n =  (p_v1-p_v3).cross(p_v1-p_v2);		
-		
-		Vector3 n1 =  (p_point-p_v3).cross(p_point-p_v2);		
-		
+
+
+		Vector3 face_n =  (p_v1-p_v3).cross(p_v1-p_v2);
+
+		Vector3 n1 =  (p_point-p_v3).cross(p_point-p_v2);
+
 		if (face_n.dot(n1)<0)
 			return false;
-			
-		Vector3 n2 =  (p_v1-p_v3).cross(p_v1-p_point);		
-		
+
+		Vector3 n2 =  (p_v1-p_v3).cross(p_v1-p_point);
+
 		if (face_n.dot(n2)<0)
 			return false;
-		
-		Vector3 n3 =  (p_v1-p_point).cross(p_v1-p_v2);		
-	
+
+		Vector3 n3 =  (p_v1-p_point).cross(p_v1-p_v2);
+
 		if (face_n.dot(n3)<0)
 			return false;
-	
+
 		return true;
-	
+
 	}
 
 	static inline bool triangle_sphere_intersection_test(const Vector3 *p_triangle,const Vector3& p_normal,const Vector3& p_sphere_pos, real_t p_sphere_radius,Vector3& r_triangle_contact,Vector3& r_sphere_contact) {
@@ -814,21 +814,21 @@ public:
 
 
 	struct MeshData {
-		
+
 		struct Face {
 			Plane plane;
 			Vector<int> indices;
 		};
-		
+
 		Vector<Face> faces;
-		
+
 		struct Edge {
-		
+
 			int a,b;
 		};
-		
+
 		Vector<Edge> edges;
-		
+
 		Vector< Vector3 > vertices;
 
 		void optimize_vertices();
@@ -927,7 +927,7 @@ public:
 
 	static void make_atlas(const Vector<Size2i>& p_rects,Vector<Point2i>& r_result, Size2i& r_size);
 
-	
+
 };
 
 

@@ -246,7 +246,7 @@ void ColorPicker::set_raw_mode(bool p_enabled) {
 	raw_mode_enabled=p_enabled;
 	if (btn_mode->is_pressed()!=p_enabled)
 		btn_mode->set_pressed(p_enabled);
-	
+
 	if (!is_inside_tree())
 		return;
 
@@ -322,7 +322,7 @@ void ColorPicker::_w_input(const InputEvent &ev) {
 		if (bev.pressed) {
 			changing_color = true;
 			h=1-((float)bev.y)/256.0;
-			
+
 		} else {
 			changing_color = false;
 		}
@@ -502,7 +502,7 @@ ColorPicker::ColorPicker() :
 	args.push_back(1);
 	args.push_back(c);
 	c->connect("draw",this,"_hsv_draw",args);
-	
+
 	hb_edit->add_child(uv_edit);
 	hb_edit->add_child(memnew( VSeparator ));
 	hb_edit->add_child(w_edit);
@@ -543,7 +543,7 @@ ColorPicker::ColorPicker() :
 	}
 
 	HBoxContainer *hhb = memnew( HBoxContainer );
-	
+
 	btn_mode = memnew( CheckButton );
 	btn_mode->set_text("RAW Mode");
 	btn_mode->connect("toggled", this, "set_raw_mode");
@@ -570,7 +570,7 @@ ColorPicker::ColorPicker() :
 	uv_material->set_shader(s_uv);
 
 	w_material.instance();
-	
+
 	Ref<Shader> s_w = get_shader("w_editor");
 	w_material->set_shader(s_w);
 

@@ -30,7 +30,7 @@
 #include "input_map.h"
 #include "os/keyboard.h"
 /**
- * 
+ *
  */
 
 bool InputEvent::operator==(const InputEvent &p_event) const {
@@ -40,15 +40,15 @@ bool InputEvent::operator==(const InputEvent &p_event) const {
 InputEvent::operator String() const {
 
 	String str="Device "+itos(device)+" ID "+itos(ID)+" ";
-	
+
 	switch(type) {
-	
+
 		case NONE: {
-		
+
 			return "Event: None";
 		} break;
 		case KEY: {
-			
+
 			str+= "Event: Key ";
 			str=str+"Unicode: "+String::chr(key.unicode)+" Scan: "+itos( key.scancode )+" Echo: "+String(key.echo?"True":"False")+" Pressed"+String(key.pressed?"True":"False")+" Mod: ";
 			if (key.mod.shift)
@@ -59,15 +59,15 @@ InputEvent::operator String() const {
 				str+="A";
 			if (key.mod.meta)
 				str+="M";
-				
+
 			return str;
 		} break;
 		case MOUSE_MOTION: {
-		
+
 			str+= "Event: Motion ";
 			str=str+" Pos: " +itos(mouse_motion.x)+","+itos(mouse_motion.y)+" Rel: "+itos(mouse_motion.relative_x)+","+itos(mouse_motion.relative_y)+" Mask: ";
 			for (int i=0;i<8;i++) {
-			
+
 				if ((1<<i)&mouse_motion.button_mask)
 					str+=itos(i+1);
 			}
@@ -87,7 +87,7 @@ InputEvent::operator String() const {
 			str+= "Event: Button ";
 			str=str+"Pressed: "+itos(mouse_button.pressed)+" Pos: " +itos(mouse_button.x)+","+itos(mouse_button.y)+" Button: "+itos(mouse_button.button_index)+" Mask: ";
 			for (int i=0;i<8;i++) {
-			
+
 				if ((1<<i)&mouse_button.button_mask)
 					str+=itos(i+1);
 			}
@@ -102,9 +102,9 @@ InputEvent::operator String() const {
 				str+="M";
 
 			str+=String(" DoubleClick: ")+(mouse_button.doubleclick?"Yes":"No");
-			
+
 			return str;
-		
+
 		} break;
 		case JOYSTICK_MOTION: {
 			str+= "Event: JoystickMotion ";
@@ -137,7 +137,7 @@ InputEvent::operator String() const {
 		} break;
 
 	}
-	
+
 	return "";
 }
 

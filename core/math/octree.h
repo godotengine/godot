@@ -52,11 +52,11 @@ public:
 	typedef void* (*PairCallback)(void*,OctreeElementID, T*,int,OctreeElementID, T*,int);
 	typedef void (*UnpairCallback)(void*,OctreeElementID, T*,int,OctreeElementID, T*,int,void*);
 
-private:	
+private:
 	enum {
-	
+
 		NEG=0,
-		POS=1,		
+		POS=1,
 	};
 
 	enum {
@@ -72,7 +72,7 @@ private:
 
 
 	struct PairKey {
-	
+
 		union {
 			struct {
 				OctreeElementID A;
@@ -80,66 +80,66 @@ private:
 			};
 			uint64_t key;
 		};
-			
+
 		_FORCE_INLINE_ bool operator<(const PairKey& p_pair) const {
-		
+
 			return key<p_pair.key;
 		}
-		
+
 		_FORCE_INLINE_ PairKey( OctreeElementID p_A, OctreeElementID p_B) {
-		
+
 			if (p_A<p_B) {
-			
+
 				A=p_A;
-				B=p_B;	
+				B=p_B;
 			} else {
-			
+
 				B=p_A;
 				A=p_B;
 			}
 		}
-		
+
 		_FORCE_INLINE_ PairKey() {}
-	};	
-		
+	};
+
 	struct Element;
-		
+
 	struct Octant {
-		
+
 		// cached for FAST plane check
 		AABB aabb;
-			
+
 		uint64_t last_pass;
 		Octant *parent;
 		Octant *children[8];
-		
+
 		int children_count; // cache for amount of childrens (fast check for removal)
 		int parent_index; // cache for parent index (fast check for removal)
-	
+
 		List<Element*,AL> pairable_elements;
 		List<Element*,AL> elements;
-			
+
 		Octant() {
 			children_count=0;
 			parent_index=-1;
 			last_pass=0;
 			parent=NULL;
 			for (int i=0;i<8;i++)
-				children[i]=NULL;			
+				children[i]=NULL;
 		}
-		
+
 		~Octant() {
-			
+
 			//for (int i=0;i<8;i++)
 			//	memdelete_notnull(children[i]);
 		}
 	};
-	
+
 
 	struct PairData;
 
 	struct Element {
-		
+
 		Octree *octree;
 
 		T *userdata;
@@ -147,28 +147,28 @@ private:
 		bool pairable;
 		uint32_t pairable_mask;
 		uint32_t pairable_type;
-		
+
 		uint64_t last_pass;
 		OctreeElementID _id;
 		Octant *common_parent;
-		
+
 		AABB aabb;
 		AABB container_aabb;
 
 		List<PairData*,AL> pair_list;
-		
+
 		struct OctantOwner {
-		
+
 			Octant *octant;
 			typename List<Element*,AL>::Element *E;
-		}; // an element can be in max 8 octants 
-		
+		}; // an element can be in max 8 octants
+
 		List<OctantOwner,AL> octant_owners;
-		
-		
+
+
 		Element() { last_pass=0; _id=0; pairable=false; subindex=0; userdata=0; octree=0; pairable_mask=0; pairable_type=0; common_parent=NULL; }
 	};
-	
+
 
 	struct PairData {
 
@@ -181,15 +181,15 @@ private:
 
 	typedef Map<OctreeElementID, Element, Comparator<OctreeElementID>, AL> ElementMap;
 	typedef Map<PairKey, PairData, Comparator<PairKey>, AL> PairMap;
-	ElementMap element_map;	
-	PairMap pair_map;	
+	ElementMap element_map;
+	PairMap pair_map;
 
 	PairCallback pair_callback;
 	UnpairCallback unpair_callback;
 	void *pair_callback_userdata;
 	void *unpair_callback_userdata;
-	
-	OctreeElementID last_element_id;	
+
+	OctreeElementID last_element_id;
 	uint64_t pass;
 
 	real_t unit_size;
@@ -231,7 +231,7 @@ private:
 
 		if (p_A==p_B || (p_A->userdata==p_B->userdata && p_A->userdata))
 			return;
-			
+
 		if ( 	!(p_A->pairable_type&p_B->pairable_mask) &&
 			!(p_B->pairable_type&p_A->pairable_mask) )
 			return; // none can pair with none
@@ -253,17 +253,17 @@ private:
 //			if (pair_callback)
 //				pair_callback(pair_callback_userdata,p_A->userdata,p_B->userdata);
 		} else {
-		
+
 			E->get().refcount++;
 		}
-		
+
 	}
-	
+
 	_FORCE_INLINE_ void _pair_unreference(Element* p_A,Element* p_B) {
-	
+
 		if (p_A==p_B)
 			return;
-	
+
 		PairKey key(p_A->_id, p_B->_id);
 		typename PairMap::Element *E=pair_map.find(key);
 		if (!E) {
@@ -293,7 +293,7 @@ private:
 			p_B->pair_list.erase( E->get().eB );
 			pair_map.erase(E);
 		}
-	
+
 	}
 
 	_FORCE_INLINE_ void _element_check_pairs(Element *p_element) {
@@ -341,7 +341,7 @@ private:
 	void _ensure_valid_root(const AABB& p_aabb);
 	bool _remove_element_from_octant(Element *p_element,Octant *p_octant,Octant *p_limit=NULL);
 	void _remove_element(Element *p_element);
-	void _pair_element(Element *p_element,Octant *p_octant);	
+	void _pair_element(Element *p_element,Octant *p_octant);
 	void _unpair_element(Element *p_element,Octant *p_octant);
 
 
@@ -361,16 +361,16 @@ private:
 	void _cull_point(Octant *p_octant,const Vector3& p_point,T** p_result_array,int *p_result_idx,int p_result_max,int *p_subindex_array,uint32_t p_mask);
 
 	void _remove_tree(Octant *p_octant) {
-	
+
 		if (!p_octant)
 			return;
 
 		for(int i=0;i<8;i++) {
-		
+
 			if (p_octant->children[i])
 				_remove_tree(p_octant->children[i]);
 		}
-		
+
 		memdelete_allocator<Octant,AL>(p_octant);
 	}
 public:
@@ -432,24 +432,24 @@ template<class T,bool use_pairs,class AL>
 void Octree<T,use_pairs,AL>::_insert_element(Element *p_element,Octant *p_octant) {
 
 	float element_size = p_element->aabb.get_longest_axis_size() * 1.01; // avoid precision issues
-	
+
 	if (p_octant->aabb.size.x/OCTREE_DIVISOR < element_size) {
-	//if (p_octant->aabb.size.x*0.5 < element_size) {		
-		
-		/* at smallest possible size for the element  */	
+	//if (p_octant->aabb.size.x*0.5 < element_size) {
+
+		/* at smallest possible size for the element  */
 		typename Element::OctantOwner owner;
 		owner.octant=p_octant;
-		
+
 		if (use_pairs && p_element->pairable) {
-				
+
 			p_octant->pairable_elements.push_back(p_element);
 			owner.E = p_octant->pairable_elements.back();
 		} else {
-		
+
 			p_octant->elements.push_back(p_element);
 			owner.E = p_octant->elements.back();
 		}
-		
+
 		p_element->octant_owners.push_back( owner );
 
 		if (p_element->common_parent==NULL) {
@@ -461,13 +461,13 @@ void Octree<T,use_pairs,AL>::_insert_element(Element *p_element,Octant *p_octant
 
 
 		if (use_pairs && p_octant->children_count>0) {
-		
+
 			pass++; //elements below this only get ONE reference added
 
 			for (int i=0;i<8;i++) {
-						
+
 				if (p_octant->children[i]) {
-					_pair_element(p_element,p_octant->children[i]);	
+					_pair_element(p_element,p_octant->children[i]);
 				}
 			}
 		}
@@ -477,7 +477,7 @@ void Octree<T,use_pairs,AL>::_insert_element(Element *p_element,Octant *p_octant
 		bool candidate=p_element->common_parent==NULL;
 
 		for (int i=0;i<8;i++) {
-					
+
 			if (p_octant->children[i]) {
 				/* element exists, go straight to it */
 				if (p_octant->children[i]->aabb.intersects_inclusive( p_element->aabb ) ) {
@@ -486,20 +486,20 @@ void Octree<T,use_pairs,AL>::_insert_element(Element *p_element,Octant *p_octant
 				}
 			} else {
 				/* check againt AABB where child should be */
-				
+
 				AABB aabb=p_octant->aabb;
 				aabb.size*=0.5;
-				
+
 				if (i&1)
 					aabb.pos.x+=aabb.size.x;
 				if (i&2)
 					aabb.pos.y+=aabb.size.y;
 				if (i&4)
 					aabb.pos.z+=aabb.size.z;
-				
+
 				if (aabb.intersects_inclusive( p_element->aabb) ) {
 					/* if actually intersects, create the child */
-					
+
 					Octant *child = memnew_allocator( Octant, AL );
 					p_octant->children[i]=child;
 					child->parent=p_octant;
@@ -517,14 +517,14 @@ void Octree<T,use_pairs,AL>::_insert_element(Element *p_element,Octant *p_octant
 			}
 
 		}
-		
+
 		if (candidate && splits>1) {
 
 			p_element->common_parent=p_octant;
 		}
-		
+
 	}
-	
+
 	if (use_pairs) {
 
 		typename List<Element*,AL>::Element *E=p_octant->pairable_elements.front();
@@ -532,8 +532,8 @@ void Octree<T,use_pairs,AL>::_insert_element(Element *p_element,Octant *p_octant
 		while(E) {
 			_pair_reference( p_element,E->get() );
 			E=E->next();
-		}		
-		
+		}
+
 		if (p_element->pairable) {
 			// and always test non-pairable if element is pairable
 			E=p_octant->elements.front();
@@ -541,9 +541,9 @@ void Octree<T,use_pairs,AL>::_insert_element(Element *p_element,Octant *p_octant
 				_pair_reference( p_element,E->get() );
 				E=E->next();
 			}
-		}		
+		}
 	}
-	
+
 
 }
 
@@ -553,35 +553,35 @@ void Octree<T,use_pairs,AL>::_ensure_valid_root(const AABB& p_aabb) {
 
 	if (!root) {
 		// octre is empty
-		
+
 		AABB base( Vector3(), Vector3(1.0,1.0,1.0) * unit_size);
-		
+
 		while ( !base.encloses(p_aabb) ) {
-			
+
 			if ( ABS(base.pos.x+base.size.x) <= ABS(base.pos.x) ) {
 				/* grow towards positive */
 				base.size*=2.0;
 			} else {
-				base.pos-=base.size;				
+				base.pos-=base.size;
 				base.size*=2.0;
 			}
 		}
-		
+
 		root = memnew_allocator( Octant, AL );
 
-		root->parent=NULL;	
-		root->parent_index=-1;	
+		root->parent=NULL;
+		root->parent_index=-1;
 		root->aabb=base;
-		
+
 		octant_count++;
-		
-		
-	} else {		
-	
+
+
+	} else {
+
 		AABB base=root->aabb;
-		
+
 		while( !base.encloses( p_aabb ) ) {
-			
+
 			if (base.size.x > OCTREE_SIZE_LIMIT) {
 				ERR_EXPLAIN("Octree upper size limit reeached, does the AABB supplied contain NAN?");
 				ERR_FAIL();
@@ -590,7 +590,7 @@ void Octree<T,use_pairs,AL>::_ensure_valid_root(const AABB& p_aabb) {
 			Octant * gp = memnew_allocator( Octant, AL );
 			octant_count++;
 			root->parent=gp;
-			
+
 			if ( ABS(base.pos.x+base.size.x) <= ABS(base.pos.x) ) {
 				/* grow towards positive */
 				base.size*=2.0;
@@ -598,16 +598,16 @@ void Octree<T,use_pairs,AL>::_ensure_valid_root(const AABB& p_aabb) {
 				gp->children[0]=root;
 				root->parent_index=0;
 			} else {
-				base.pos-=base.size;				
+				base.pos-=base.size;
 				base.size*=2.0;
 				gp->aabb=base;
 				gp->children[(1<<0)|(1<<1)|(1<<2)]=root; // add at all-positive
 				root->parent_index=(1<<0)|(1<<1)|(1<<2);
 			}
-						
+
 			gp->children_count=1;
-			root=gp;			
-		}		
+			root=gp;
+		}
 	}
 }
 
@@ -615,16 +615,16 @@ template<class T,bool use_pairs,class AL>
 bool Octree<T,use_pairs,AL>::_remove_element_from_octant(Element *p_element,Octant *p_octant,Octant *p_limit) {
 
 	bool octant_removed=false;
-	
+
 	while(true) {
-	
+
 		// check all exit conditions
-		
+
 		if (p_octant==p_limit) // reached limit, nothing to erase, exit
 			return octant_removed;
-			
+
 		bool unpaired=false;
-			
+
 		if (use_pairs && p_octant->last_pass!=pass) {
 			// check wether we should unpair stuff
 			// always test pairable
@@ -644,21 +644,21 @@ bool Octree<T,use_pairs,AL>::_remove_element_from_octant(Element *p_element,Octa
 			p_octant->last_pass=pass;
 			unpaired=true;
 		}
-	
+
 		bool removed=false;
-		
+
 		Octant *parent=p_octant->parent;
-		
+
 		if (p_octant->children_count==0 && p_octant->elements.empty() && p_octant->pairable_elements.empty()) {
-		
+
 			// erase octant
-			
+
 			if (p_octant==root) { // won't have a parent, just erase
-							
+
 				root=NULL;
 			} else {
 				ERR_FAIL_INDEX_V(p_octant->parent_index,8,octant_removed);
-				
+
 				parent->children[ p_octant->parent_index ]=NULL;
 				parent->children_count--;
 			}
@@ -668,12 +668,12 @@ bool Octree<T,use_pairs,AL>::_remove_element_from_octant(Element *p_element,Octa
 			removed=true;
 			octant_removed=true;
 		}
-		
+
 		if (!removed && !unpaired)
 			return octant_removed; // no reason to keep going up anymore! was already visited and was not removed
-			
+
 		p_octant=parent;
-		
+
 	}
 
 	return octant_removed;
@@ -682,8 +682,8 @@ bool Octree<T,use_pairs,AL>::_remove_element_from_octant(Element *p_element,Octa
 template<class T,bool use_pairs,class AL>
 void Octree<T,use_pairs,AL>::_unpair_element(Element *p_element,Octant *p_octant) {
 
-	
-	// always test pairable				
+
+	// always test pairable
 	typename List<Element*,AL>::Element *E=p_octant->pairable_elements.front();
 	while(E) {
 		if (E->get()->last_pass!=pass) { // only remove ONE reference
@@ -692,7 +692,7 @@ void Octree<T,use_pairs,AL>::_unpair_element(Element *p_element,Octant *p_octant
 		}
 		E=E->next();
 	}
-	
+
 	if (p_element->pairable) {
 		// and always test non-pairable if element is pairable
 		E=p_octant->elements.front();
@@ -704,14 +704,14 @@ void Octree<T,use_pairs,AL>::_unpair_element(Element *p_element,Octant *p_octant
 			E=E->next();
 		}
 	}
-	
+
 	p_octant->last_pass=pass;
-	
+
 	if (p_octant->children_count==0)
 		return; // small optimization for leafs
-	
+
 	for (int i=0;i<8;i++) {
-	
+
 		if (p_octant->children[i])
 			_unpair_element(p_element,p_octant->children[i]);
 	}
@@ -732,7 +732,7 @@ void Octree<T,use_pairs,AL>::_pair_element(Element *p_element,Octant *p_octant) 
 		}
 		E=E->next();
 	}
-	
+
 	if (p_element->pairable) {
 		// and always test non-pairable if element is pairable
 		E=p_octant->elements.front();
@@ -745,12 +745,12 @@ void Octree<T,use_pairs,AL>::_pair_element(Element *p_element,Octant *p_octant) 
 		}
 	}
 	p_octant->last_pass=pass;
-	
+
 	if (p_octant->children_count==0)
 		return; // small optimization for leafs
-		
+
 	for (int i=0;i<8;i++) {
-	
+
 		if (p_octant->children[i])
 			_pair_element(p_element,p_octant->children[i]);
 	}
@@ -760,13 +760,13 @@ template<class T,bool use_pairs,class AL>
 void Octree<T,use_pairs,AL>::_remove_element(Element *p_element) {
 
 	pass++; // will do a new pass for this
-	
+
 	typename List< typename Element::OctantOwner,AL >::Element *I=p_element->octant_owners.front();
-			
+
 
 	/* FIRST remove going up normally */
 	for(;I;I=I->next()) {
-		
+
 		Octant *o=I->get().octant;
 
 		if (!use_pairs) // small speedup
@@ -809,14 +809,14 @@ void Octree<T,use_pairs,AL>::_remove_element(Element *p_element) {
 		int remaining=p_element->pair_list.size();
 		//p_element->pair_list.clear();
 		ERR_FAIL_COND( remaining );
-	}	
+	}
 
 }
 
 template<class T,bool use_pairs,class AL>
 OctreeElementID Octree<T,use_pairs,AL>::create(T* p_userdata, const AABB& p_aabb, int p_subindex,bool p_pairable,uint32_t p_pairable_type,uint32_t p_pairable_mask) {
 
-	// check for AABB validity 
+	// check for AABB validity
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V( p_aabb.pos.x > 1e15 || p_aabb.pos.x < -1e15, 0 );
 	ERR_FAIL_COND_V( p_aabb.pos.y > 1e15 || p_aabb.pos.y < -1e15, 0 );
@@ -828,12 +828,12 @@ OctreeElementID Octree<T,use_pairs,AL>::create(T* p_userdata, const AABB& p_aabb
 	ERR_FAIL_COND_V( Math::is_nan(p_aabb.size.y) , 0 );
 	ERR_FAIL_COND_V( Math::is_nan(p_aabb.size.z) , 0 );
 
-	
+
 #endif
 	typename ElementMap::Element *E = element_map.insert(last_element_id++,
 	Element());
 	Element &e = E->get();
-			
+
 	e.aabb=p_aabb;
 	e.userdata=p_userdata;
 	e.subindex=p_subindex;
@@ -843,7 +843,7 @@ OctreeElementID Octree<T,use_pairs,AL>::create(T* p_userdata, const AABB& p_aabb
 	e.pairable_type=p_pairable_type;
 	e.pairable_mask=p_pairable_mask;
 	e._id=last_element_id-1;
-	
+
 	if (!e.aabb.has_no_surface()) {
 		_ensure_valid_root(p_aabb);
 		_insert_element(&e,root);
@@ -964,7 +964,7 @@ void Octree<T,use_pairs,AL>::move(OctreeElementID p_id, const AABB& p_aabb) {
 	_insert_element(&e,common_parent); // reinsert from this point
 
 	pass++;
-	
+
 	for(typename List<typename Element::OctantOwner,AL>::Element *E=owners.front();E;) {
 
 		Octant *o=E->get().octant;
@@ -1018,28 +1018,28 @@ void Octree<T,use_pairs,AL>::set_pairable(OctreeElementID p_id,bool p_pairable,u
 
 	typename ElementMap::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	
+
 	Element &e = E->get();
 
 	if (p_pairable == e.pairable && e.pairable_type==p_pairable_type && e.pairable_mask==p_pairable_mask)
 		return; // no changes, return
-	
+
 	if (!e.aabb.has_no_surface()) {
 		_remove_element(&e);
 	}
-	
+
 	e.pairable=p_pairable;
 	e.pairable_type=p_pairable_type;
 	e.pairable_mask=p_pairable_mask;
 	e.common_parent=NULL;
-	
+
 	if (!e.aabb.has_no_surface()) {
 		_ensure_valid_root(e.aabb);
 		_insert_element(&e,root);
 		if (use_pairs)
 			_element_check_pairs(&e);
 
-	}	
+	}
 }
 
 
@@ -1048,155 +1048,155 @@ void Octree<T,use_pairs,AL>::erase(OctreeElementID p_id) {
 
 	typename ElementMap::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	
+
 	Element &e = E->get();
 
 	if (!e.aabb.has_no_surface()) {
-	
-		_remove_element(&e);				
+
+		_remove_element(&e);
 	}
-		
+
 	element_map.erase(p_id);
 	_optimize();
 }
 
 template<class T,bool use_pairs,class AL>
 void Octree<T,use_pairs,AL>::_cull_convex(Octant *p_octant,_CullConvexData *p_cull) {
-	
+
 	if (*p_cull->result_idx==p_cull->result_max)
 		return; //pointless
-	
+
 	if (!p_octant->elements.empty()) {
-		
+
 		typename List< Element*,AL >::Element *I;
 		I=p_octant->elements.front();
-		
+
 		for(;I;I=I->next()) {
-			
+
 			Element *e=I->get();
-			
+
 			if (e->last_pass==pass || (use_pairs && !(e->pairable_type&p_cull->mask)))
 				continue;
 			e->last_pass=pass;
-			
+
 			if (e->aabb.intersects_convex_shape(p_cull->planes,p_cull->plane_count)) {
-				
+
 				if (*p_cull->result_idx<p_cull->result_max) {
 					p_cull->result_array[*p_cull->result_idx] = e->userdata;
 					(*p_cull->result_idx)++;
 				} else {
-					
+
 					return; // pointless to continue
 				}
 			}
 		}
 	}
-	
+
 	if (use_pairs && !p_octant->pairable_elements.empty()) {
-		
+
 		typename List< Element*,AL >::Element *I;
 		I=p_octant->pairable_elements.front();
-		
+
 		for(;I;I=I->next()) {
-			
+
 			Element *e=I->get();
-			
+
 			if (e->last_pass==pass || (use_pairs && !(e->pairable_type&p_cull->mask)))
 				continue;
 			e->last_pass=pass;
-			
+
 			if (e->aabb.intersects_convex_shape(p_cull->planes,p_cull->plane_count)) {
-				
+
 				if (*p_cull->result_idx<p_cull->result_max) {
 
 					p_cull->result_array[*p_cull->result_idx] = e->userdata;
 					(*p_cull->result_idx)++;
 				} else {
-					
+
 					return; // pointless to continue
 				}
 			}
 		}
 	}
-		
+
 	for (int i=0;i<8;i++) {
-		
+
 		if (p_octant->children[i] && p_octant->children[i]->aabb.intersects_convex_shape(p_cull->planes,p_cull->plane_count)) {
 			_cull_convex(p_octant->children[i],p_cull);
 		}
-	}	
+	}
 }
 
 
 template<class T,bool use_pairs,class AL>
 void Octree<T,use_pairs,AL>::_cull_AABB(Octant *p_octant,const AABB& p_aabb, T** p_result_array,int *p_result_idx,int p_result_max,int *p_subindex_array,uint32_t p_mask) {
-	
+
 	if (*p_result_idx==p_result_max)
 		return; //pointless
-	
+
 	if (!p_octant->elements.empty()) {
-		
+
 		typename List< Element*,AL >::Element *I;
 		I=p_octant->elements.front();
 		for(;I;I=I->next()) {
-			
+
 			Element *e=I->get();
-			
+
 			if (e->last_pass==pass || (use_pairs && !(e->pairable_type&p_mask)))
 				continue;
 			e->last_pass=pass;
-			
+
 			if (p_aabb.intersects_inclusive(e->aabb)) {
-				
+
 				if (*p_result_idx<p_result_max) {
-					
+
 					p_result_array[*p_result_idx] = e->userdata;
 					if (p_subindex_array)
 						p_subindex_array[*p_result_idx] = e->subindex;
 
 					(*p_result_idx)++;
 				} else {
-					
+
 					return; // pointless to continue
 				}
 			}
 		}
 	}
-	
+
 	if (use_pairs && !p_octant->pairable_elements.empty()) {
-		
+
 		typename List< Element*,AL >::Element *I;
 		I=p_octant->pairable_elements.front();
 		for(;I;I=I->next()) {
-			
+
 			Element *e=I->get();
-			
+
 			if (e->last_pass==pass || (use_pairs && !(e->pairable_type&p_mask)))
 				continue;
 			e->last_pass=pass;
-			
+
 			if (p_aabb.intersects_inclusive(e->aabb)) {
-				
+
 				if (*p_result_idx<p_result_max) {
-					
+
 					p_result_array[*p_result_idx] = e->userdata;
 					if (p_subindex_array)
 						p_subindex_array[*p_result_idx] = e->subindex;
 					(*p_result_idx)++;
 				} else {
-					
+
 					return; // pointless to continue
 				}
 			}
 		}
-	}	
+	}
 
 	for (int i=0;i<8;i++) {
-		
+
 		if (p_octant->children[i] && p_octant->children[i]->aabb.intersects_inclusive(p_aabb)) {
 			_cull_AABB(p_octant->children[i],p_aabb, p_result_array,p_result_idx,p_result_max,p_subindex_array,p_mask);
 		}
-	}	
+	}
 
 }
 
@@ -1205,53 +1205,53 @@ void Octree<T,use_pairs,AL>::_cull_segment(Octant *p_octant,const Vector3& p_fro
 
 	if (*p_result_idx==p_result_max)
 		return; //pointless
-	
+
 	if (!p_octant->elements.empty()) {
-		
+
 		typename List< Element*,AL >::Element *I;
 		I=p_octant->elements.front();
 		for(;I;I=I->next()) {
-			
+
 			Element *e=I->get();
-			
+
 			if (e->last_pass==pass || (use_pairs && !(e->pairable_type&p_mask)))
 				continue;
 			e->last_pass=pass;
-									
+
 			if (e->aabb.intersects_segment(p_from,p_to)) {
-				
+
 				if (*p_result_idx<p_result_max) {
-					
+
 					p_result_array[*p_result_idx] = e->userdata;
 					if (p_subindex_array)
 						p_subindex_array[*p_result_idx] = e->subindex;
 					(*p_result_idx)++;
 
 				} else {
-					
+
 					return; // pointless to continue
 				}
 			}
 		}
 	}
-	
+
 	if (use_pairs && !p_octant->pairable_elements.empty()) {
-		
+
 		typename List< Element*,AL >::Element *I;
 		I=p_octant->pairable_elements.front();
 		for(;I;I=I->next()) {
-			
+
 			Element *e=I->get();
-			
+
 			if (e->last_pass==pass || (use_pairs && !(e->pairable_type&p_mask)))
 				continue;
-				
+
 			e->last_pass=pass;
-									
+
 			if (e->aabb.intersects_segment(p_from,p_to)) {
-				
+
 				if (*p_result_idx<p_result_max) {
-					
+
 					p_result_array[*p_result_idx] = e->userdata;
 					if (p_subindex_array)
 						p_subindex_array[*p_result_idx] = e->subindex;
@@ -1259,20 +1259,20 @@ void Octree<T,use_pairs,AL>::_cull_segment(Octant *p_octant,const Vector3& p_fro
 					(*p_result_idx)++;
 
 				} else {
-					
+
 					return; // pointless to continue
 				}
 			}
 		}
 	}
-	
+
 
 	for (int i=0;i<8;i++) {
-		
+
 		if (p_octant->children[i] && p_octant->children[i]->aabb.intersects_segment(p_from,p_to)) {
 			_cull_segment(p_octant->children[i],p_from,p_to, p_result_array,p_result_idx,p_result_max,p_subindex_array,p_mask);
 		}
-	}	
+	}
 }
 
 
@@ -1357,7 +1357,7 @@ int Octree<T,use_pairs,AL>::cull_convex(const Vector<Plane>& p_convex,T** p_resu
 
 	if (!root)
 		return 0;
-	
+
 	int result_count=0;
 	pass++;
 	_CullConvexData cdata;
@@ -1367,9 +1367,9 @@ int Octree<T,use_pairs,AL>::cull_convex(const Vector<Plane>& p_convex,T** p_resu
 	cdata.result_max=p_result_max;
 	cdata.result_idx=&result_count;
 	cdata.mask=p_mask;
-	
+
 	_cull_convex(root,&cdata);
-	
+
 	return result_count;
 }
 
@@ -1381,11 +1381,11 @@ int Octree<T,use_pairs,AL>::cull_AABB(const AABB& p_aabb,T** p_result_array,int 
 
 	if (!root)
 		return 0;
-	
+
 	int result_count=0;
 	pass++;
 	_cull_AABB(root,p_aabb,p_result_array,&result_count,p_result_max,p_subindex_array,p_mask);
-			
+
 	return result_count;
 }
 
@@ -1395,11 +1395,11 @@ int Octree<T,use_pairs,AL>::cull_segment(const Vector3& p_from, const Vector3& p
 
 	if (!root)
 		return 0;
-	
+
 	int result_count=0;
 	pass++;
 	_cull_segment(root,p_from,p_to,p_result_array,&result_count,p_result_max,p_subindex_array,p_mask);
-			
+
 	return result_count;
 
 }
@@ -1436,7 +1436,7 @@ void Octree<T,use_pairs,AL>::set_unpair_callback( UnpairCallback p_callback, voi
 
 template<class T,bool use_pairs,class AL>
 Octree<T,use_pairs,AL>::Octree(real_t p_unit_size) {
-	
+
 	last_element_id=1;
 	pass=1;
 	unit_size=p_unit_size;

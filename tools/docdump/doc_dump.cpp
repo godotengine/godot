@@ -248,7 +248,7 @@ void DocDump::dump(const String& p_file) {
 		}
 
 
-		_write_string(f,1,"</methods>");		
+		_write_string(f,1,"</methods>");
 
 		List<MethodInfo> signal_list;
 		ObjectTypeDB::get_signal_list(name,&signal_list,true);

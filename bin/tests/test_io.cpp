@@ -47,37 +47,37 @@ namespace TestIO {
 
 
 class TestMainLoop : public MainLoop {
-	
-	
+
+
 	bool quit;
-	
+
 public:
 	virtual void input_event(const InputEvent& p_event) {
-		
-		
+
+
 	}
 	virtual bool idle(float p_time) {
 		return false;
 	}
 
 	virtual void request_quit() {
-		
+
 		quit=true;
-		
+
 	}
 	virtual void init() {
 
 		quit=true;
 	}
 	virtual bool iteration(float p_time) {
-		
+
 		return quit;
 	}
 	virtual void finish() {
-		
+
 	}
-	
-	
+
+
 };
 
 
