@@ -861,8 +861,9 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 
 		if (!t.node)
 			continue;
-		//if (E->get()->t.type!=Animation::TYPE_TRANSFORM)
-		//	continue;
+
+		if(t.property)  // value track; was applied in step 2
+			continue;
 
 		Transform xform;
 		xform.basis=t.rot;
