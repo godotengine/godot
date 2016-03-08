@@ -539,6 +539,7 @@ public:
 		Vector<RID> light_instances;
 		Vector<float> morph_values;
 		BakedLightData *baked_light;
+		VS::ShadowCastingSetting cast_shadows;
 		Transform *baked_light_octree_xform;
 		int baked_lightmap_id;
 		bool mirror :8;

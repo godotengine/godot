@@ -534,6 +534,9 @@ public:
 	FUNC3(instance_geometry_set_flag,RID,InstanceFlags ,bool );
 	FUNC2RC(bool,instance_geometry_get_flag,RID,InstanceFlags );
 
+	FUNC2(instance_geometry_set_cast_shadows_setting, RID, ShadowCastingSetting);
+	FUNC1RC(ShadowCastingSetting, instance_geometry_get_cast_shadows_setting, RID);
+
 	FUNC2(instance_geometry_set_material_override,RID, RID );
 	FUNC1RC(RID,instance_geometry_get_material_override,RID);
 
