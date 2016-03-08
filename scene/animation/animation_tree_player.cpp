@@ -642,7 +642,10 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 				rem = _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time,switched,true,p_filter,p_reverse_weight);
 			else
 				rem = _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time*tsn->scale,switched,false,p_filter,p_reverse_weight);
-			return rem / tsn->scale;
+			if (tsn->scale == 0)
+				return INFINITY;
+			else
+				return rem / tsn->scale;
 
 		} break;
 		case NODE_TIMESEEK: {
