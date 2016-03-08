@@ -290,7 +290,10 @@ void TextEdit::_update_scrollbars() {
 	int hscroll_rows = ((hmin.height-1)/get_row_height())+1;
 	int visible_rows = get_visible_rows();
 	int total_rows = text.size();
-	
+	if (scroll_past_end_of_file_enabled) {
+		total_rows += get_visible_rows() - 1;
+	}
+
 	int vscroll_pixels = v_scroll->get_combined_minimum_size().width;
 	int visible_width = size.width - cache.style_normal->get_minimum_size().width;
 	int total_width = text.get_max_width() + vmin.x;
@@ -1677,9 +1680,30 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 							ins+="\t";
 						}
 					}
+
+					bool first_line = false;
+					if (k.mod.command) {
+						if (k.mod.shift) {
+							if (cursor.line > 0) {
+								cursor_set_line(cursor.line - 1);
+								cursor_set_column(text[cursor.line].length());
+							}
+							else {
+								cursor_set_column(0);
+								first_line = true;
+							}
+						}
+						else {
+							cursor_set_column(text[cursor.line].length());
+						}
+					}
 					
 					_insert_text_at_cursor(ins);
 					_push_current_op();
+
+					if (first_line) {
+						cursor_set_line(0);
+					}
 					
 				} break;
 				case KEY_ESCAPE: {
@@ -3969,6 +3993,7 @@ TextEdit::TextEdit()  {
 	tooltip_obj=NULL;
 	line_numbers=false;
 	next_operation_is_complex=false;
+	scroll_past_end_of_file_enabled=false;
 	auto_brace_completion_enabled=false;
 	brace_matching_enabled=false;
 	auto_indent=false;

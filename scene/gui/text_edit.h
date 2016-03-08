@@ -211,6 +211,7 @@ class TextEdit : public Control  {
 	bool undo_enabled;
 	bool line_numbers;
 	
+	bool scroll_past_end_of_file_enabled;
 	bool auto_brace_completion_enabled;
 	bool brace_matching_enabled;
 	bool auto_indent;
@@ -322,6 +323,10 @@ public:
     void set_line(int line, String new_text);
 	void backspace_at_cursor();
 	
+	inline void set_scroll_pass_end_of_file(bool p_enabled) {
+		scroll_past_end_of_file_enabled = p_enabled;
+		update();
+	}
 	inline void set_auto_brace_completion(bool p_enabled) {
 		auto_brace_completion_enabled = p_enabled;
 	}

@@ -81,7 +81,7 @@ void EditorSpatialGizmo::Instance::create_instance(Spatial *p_base) {
 		VS::get_singleton()->instance_attach_skeleton(instance,skeleton);
 	if (extra_margin)
 		VS::get_singleton()->instance_set_extra_visibility_margin(instance,1);
-	VS::get_singleton()->instance_geometry_set_flag(instance,VS::INSTANCE_FLAG_CAST_SHADOW,false);
+	VS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance,VS::SHADOW_CASTING_SETTING_OFF);
 	VS::get_singleton()->instance_geometry_set_flag(instance,VS::INSTANCE_FLAG_RECEIVE_SHADOWS,false);
 	VS::get_singleton()->instance_set_layer_mask(instance,1<<SpatialEditorViewport::GIZMO_EDIT_LAYER); //gizmos are 26
 }

@@ -169,7 +169,6 @@ class VisualServerRaster : public VisualServer {
 		AABB transformed_aabb;
 		uint32_t object_ID;
 		bool visible;
-		bool cast_shadows;
 		bool receive_shadows;
 		bool visible_in_all_rooms;
 		uint32_t layer_mask;
@@ -300,7 +299,7 @@ class VisualServerRaster : public VisualServer {
 			update_next=NULL;
 			update=false;
 			visible=true;
-			cast_shadows=true;
+			data.cast_shadows=SHADOW_CASTING_SETTING_ON;
 			receive_shadows=true;
 			data.depth_scale=false;
 			data.billboard=false;
@@ -1092,6 +1091,9 @@ public:
 
 	virtual void instance_geometry_set_flag(RID p_instance,InstanceFlags p_flags,bool p_enabled);
 	virtual bool instance_geometry_get_flag(RID p_instance,InstanceFlags p_flags) const;
+
+	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, VS::ShadowCastingSetting p_shadow_casting_setting);
+	virtual VS::ShadowCastingSetting instance_geometry_get_cast_shadows_setting(RID p_instance) const;
 
 	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material);
 	virtual RID instance_geometry_get_material_override(RID p_instance) const;

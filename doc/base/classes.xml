@@ -11475,6 +11475,16 @@ Returns an empty String "" at the end of the list.
 			<description>
 			</description>
 		</method>
+		<method name="get_md5" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			Returns on success, a md5 String representing the file of the given path.
+				else, empty String "".
+			</description>
+		</method>
 		<method name="get_endian_swap">
 			<return type="bool">
 			</return>

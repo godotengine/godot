@@ -1325,6 +1325,15 @@ String _File::get_as_text() const {
 
 
 }
+
+
+String _File::get_md5(const String& p_path) const {
+
+	return FileAccess::get_md5(p_path);
+
+}
+
+
 String _File::get_line() const{
 
 	ERR_FAIL_COND_V(!f,String());
@@ -1513,6 +1522,7 @@ void _File::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_buffer","len"),&_File::get_buffer);
 	ObjectTypeDB::bind_method(_MD("get_line"),&_File::get_line);
 	ObjectTypeDB::bind_method(_MD("get_as_text"),&_File::get_as_text);
+	ObjectTypeDB::bind_method(_MD("get_md5","path"),&_File::get_md5);
 	ObjectTypeDB::bind_method(_MD("get_endian_swap"),&_File::get_endian_swap);
 	ObjectTypeDB::bind_method(_MD("set_endian_swap","enable"),&_File::set_endian_swap);
 	ObjectTypeDB::bind_method(_MD("get_error:Error"),&_File::get_error);
