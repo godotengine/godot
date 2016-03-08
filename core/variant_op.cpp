@@ -3461,11 +3461,17 @@ void Variant::blend(const Variant& a, const Variant& b, float c, Variant &r_dst)
 					   const Rect2 *rb = reinterpret_cast<const Rect2*>(b._data._mem);
 					   r_dst=Rect2(ra->pos + rb->pos * c, ra->size + rb->size * c);
 				   } return;
-		case VECTOR3:{ r_dst=*reinterpret_cast<const Vector2*>(a._data._mem)+*reinterpret_cast<const Vector2*>(b._data._mem)*c; } return;
+		case VECTOR3:{ r_dst=*reinterpret_cast<const Vector3*>(a._data._mem)+*reinterpret_cast<const Vector3*>(b._data._mem)*c; } return;
 		case _AABB:{
 					   const AABB *ra = reinterpret_cast<const AABB*>(a._data._mem);
 					   const AABB *rb = reinterpret_cast<const AABB*>(b._data._mem);
 					   r_dst=AABB(ra->pos + rb->pos * c, ra->size + rb->size * c);
+				   } return;
+		case QUAT:{
+					  Quat empty_rot;
+					  const Quat *qa = reinterpret_cast<const Quat*>(a._data._mem);
+					  const Quat *qb = reinterpret_cast<const Quat*>(b._data._mem);
+					  r_dst=*qa * empty_rot.slerp(*qb,c);
 				   } return;
 		case COLOR:{
 					   const Color *ca = reinterpret_cast<const Color*>(a._data._mem);
