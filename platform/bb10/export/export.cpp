@@ -482,7 +482,7 @@ Error EditorExportPlatformBB10::export_project(const String& p_path, bool p_debu
 		return err;
 	if (ec!=0)
 		return ERR_CANT_CREATE;
-	
+
 	return OK;
 
 }

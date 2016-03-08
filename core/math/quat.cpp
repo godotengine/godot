@@ -30,9 +30,9 @@
 #include "print_string.h"
 
 void Quat::set_euler(const Vector3& p_euler) {
-	real_t half_yaw = p_euler.x * 0.5;  
-	real_t half_pitch = p_euler.y * 0.5;  
-	real_t half_roll = p_euler.z * 0.5;  
+	real_t half_yaw = p_euler.x * 0.5;
+	real_t half_pitch = p_euler.y * 0.5;
+	real_t half_roll = p_euler.z * 0.5;
 	real_t cos_yaw = Math::cos(half_yaw);
 	real_t sin_yaw = Math::sin(half_yaw);
 	real_t cos_pitch = Math::cos(half_pitch);
@@ -75,7 +75,7 @@ void Quat::normalize() {
 
 Quat Quat::normalized() const {
 	return *this / length();
-} 
+}
 
 Quat Quat::inverse() const {
 	return Quat( -x, -y, -z, w );
@@ -252,7 +252,7 @@ Quat Quat::cubic_slerp(const Quat& q, const Quat& prep, const Quat& postq,const 
 
 Quat::operator String() const {
 
-	return String::num(x)+","+String::num(y)+","+ String::num(z)+","+ String::num(w); 
+	return String::num(x)+","+String::num(y)+","+ String::num(z)+","+ String::num(w);
 }
 
 Quat::Quat(const Vector3& axis, const real_t& angle) {
@@ -261,7 +261,7 @@ Quat::Quat(const Vector3& axis, const real_t& angle) {
 		set(0,0,0,0);
 	else {
 		real_t s = Math::sin(-angle * 0.5) / d;
-		set(axis.x * s, axis.y * s, axis.z * s, 
+		set(axis.x * s, axis.y * s, axis.z * s,
 			Math::cos(-angle * 0.5));
 	}
 }

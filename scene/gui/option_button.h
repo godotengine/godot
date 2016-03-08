@@ -35,12 +35,12 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class OptionButton : public Button {
-	
+
 	OBJ_TYPE( OptionButton, Button );
-	
+
 	PopupMenu *popup;
 	int current;
-	
+
 	void _selected(int p_which);
 	void _select(int p_which,bool p_emit=false);
 	void _select_int(int p_which);
@@ -55,10 +55,10 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 public:
-	
+
 	void add_icon_item(const Ref<Texture>& p_icon,const String& p_label,int p_ID=-1);
 	void add_item(const String& p_label,int p_ID=-1);
-	
+
 	void set_item_text(int p_idx,const String& p_text);
 	void set_item_icon(int p_idx,const Ref<Texture>& p_icon);
 	void set_item_ID(int p_idx,int p_ID);
@@ -73,11 +73,11 @@ public:
 
 
 	int get_item_count() const;
-	
+
 	void add_separator();
-	
+
 	void clear();
-	
+
 	void select(int p_idx);
 	int get_selected() const;
 	int get_selected_ID() const;
@@ -87,7 +87,7 @@ public:
 
 	virtual void get_translatable_strings(List<String> *p_strings) const;
 
-	OptionButton();	
+	OptionButton();
 	~OptionButton();
 
 };

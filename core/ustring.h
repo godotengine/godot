@@ -40,7 +40,7 @@
 
 
 class CharString : public Vector<char> {
-public:	
+public:
 	int length() const { return size() ? size()-1 : 0; }
 	const char *get_data() const;
 	operator const char*() {return get_data();};
@@ -120,7 +120,7 @@ public:
 	bool match(const String& p_wildcard) const;
 	bool matchn(const String& p_wildcard) const;
 	bool begins_with(const String& p_string) const;
-	bool begins_with(const char* p_string) const;	
+	bool begins_with(const char* p_string) const;
 	bool ends_with(const String& p_string) const;
 	String replace_first(String p_key,String p_with) const;
 	String replace(String p_key,String p_with) const;
@@ -182,17 +182,17 @@ public:
 	CharString utf8() const;
 	bool parse_utf8(const char* p_utf8,int p_len=-1); //return true on error
 	static String utf8(const char* p_utf8,int p_len=-1);
-	
+
 	static uint32_t hash(const CharType* p_str,int p_len); /* hash the string */
 	static uint32_t hash(const CharType* p_str); /* hash the string */
 	static uint32_t hash(const char* p_cstr,int p_len); /* hash the string */
 	static uint32_t hash(const char* p_cstr); /* hash the string */
 	uint32_t hash() const; /* hash the string */
-	uint64_t hash64() const; /* hash the string */	
+	uint64_t hash64() const; /* hash the string */
 	String md5_text() const;
 	Vector<uint8_t> md5_buffer() const;
 
-	inline bool empty() const { return length() == 0; }	
+	inline bool empty() const { return length() == 0; }
 
 	// path functions
 	bool is_abs_path() const;
@@ -213,7 +213,7 @@ public:
 	String c_unescape() const;
 	String json_escape() const;
 	String world_wrap(int p_chars_per_line) const;
-	
+
 	String percent_encode() const;
 	String percent_decode() const;
 
@@ -247,9 +247,9 @@ String rtoss(double p_val); //scientific version
 
 
 struct NoCaseComparator {
-		
+
 	bool operator()(const String& p_a, const String& p_b) const {
-		
+
 		return p_a.nocasecmp_to(p_b)<0;
 	}
 };

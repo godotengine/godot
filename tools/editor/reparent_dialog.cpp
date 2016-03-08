@@ -47,19 +47,19 @@ void ReparentDialog::_notification(int p_what) {
 	}
 
 	if (p_what==NOTIFICATION_DRAW) {
-		
+
 		//RID ci = get_canvas_item();
 		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
-	}	
+	}
 }
 
 void ReparentDialog::_cancel() {
-	
+
 	hide();
-	
+
 }
 void ReparentDialog::_reparent() {
-	
+
 	if (tree->get_selected()) {
 
 		emit_signal("reparent",tree->get_selected()->get_path(),keep_transform->is_pressed());
@@ -68,14 +68,14 @@ void ReparentDialog::_reparent() {
 }
 
 void ReparentDialog::set_current(const Set<Node*>& p_selection) {
-	
+
 	tree->set_marked(p_selection,false,false);
 	//tree->set_selected(p_node->get_parent());
 }
 
 void ReparentDialog::_bind_methods() {
-	
-	ObjectTypeDB::bind_method("_reparent",&ReparentDialog::_reparent); 
+
+	ObjectTypeDB::bind_method("_reparent",&ReparentDialog::_reparent);
 	ObjectTypeDB::bind_method("_cancel",&ReparentDialog::_cancel);
 
 	ADD_SIGNAL( MethodInfo("reparent",PropertyInfo(Variant::NODE_PATH,"path"),PropertyInfo(Variant::BOOL,"keep_global_xform")));

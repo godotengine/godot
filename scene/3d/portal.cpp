@@ -40,7 +40,7 @@ bool Portal::_set(const StringName& p_name, const Variant& p_value) {
 		ERR_FAIL_COND_V(src_coords_size%2,false);
 		points.resize(src_coords_size/2);
 		for (int i=0;i<points.size();i++) {
-		
+
 			points[i].x=src_coords[i*2+0];
 			points[i].y=src_coords[i*2+1];
 			set_shape(points);
@@ -65,13 +65,13 @@ bool Portal::_get(const StringName& p_name,Variant &r_ret) const {
 		Vector<Point2> points=get_shape();
 		DVector<float> dst_coords;
 		dst_coords.resize(points.size()*2);
-		
+
 		for (int i=0;i<points.size();i++) {
-		
+
 			dst_coords.set(i*2+0,points[i].x);
 			dst_coords.set(i*2+1,points[i].y);
 		}
-		
+
 		r_ret= dst_coords;
 	} else if (p_name=="enabled") {
 		r_ret= is_enabled();
@@ -115,17 +115,17 @@ RES Portal::_get_gizmo_geometry() const {
 
 	Vector2 center;
 	for (int i=0;i<shape.size();i++) {
-	
+
 		int n=(i+1)%shape.size();
 		Vector<Vector3> points;
 		surface_tool->add_vertex( Vector3( shape[i].x, shape[i].y,0 ));
 		surface_tool->add_vertex( Vector3( shape[n].x, shape[n].y,0 ));
 		center+=shape[i];
-			
+
 	}
 
 	if (shape.size()>0) {
-	
+
 		center/=shape.size();
 		Vector<Vector3> points;
 		surface_tool->add_vertex( Vector3( center.x, center.y,0 ));
@@ -139,7 +139,7 @@ RES Portal::_get_gizmo_geometry() const {
 
 AABB Portal::get_aabb() const {
 
-	return aabb;	
+	return aabb;
 }
 DVector<Face3> Portal::get_faces(uint32_t p_usage_flags) const {
 
@@ -149,28 +149,28 @@ DVector<Face3> Portal::get_faces(uint32_t p_usage_flags) const {
 	Vector<Point2> shape = get_shape();
 	if (shape.size()==0)
 		return DVector<Face3>();
-		
+
 	Vector2 center;
 	for (int i=0;i<shape.size();i++) {
-	
+
 		center+=shape[i];
-		
+
 	}
-	
+
 	DVector<Face3> ret;
 	center/=shape.size();
 
 	for (int i=0;i<shape.size();i++) {
 
 		int n=(i+1)%shape.size();
-		
+
 		Face3 f;
 		f.vertex[0]=Vector3( center.x, center.y, 0 );
 		f.vertex[1]=Vector3( shape[i].x, shape[i].y, 0 );
 		f.vertex[2]=Vector3( shape[n].x, shape[n].y, 0 );
 		ret.push_back(f);
 	}
-	
+
 	return ret;
 }
 

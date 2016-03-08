@@ -33,9 +33,9 @@
 void CameraMatrix::set_identity() {
 
 	for (int i=0;i<4;i++) {
-	
+
 		for (int j=0;j<4;j++) {
-		
+
 			matrix[i][j]=(i==j)?1:0;
 		}
 	}
@@ -90,7 +90,7 @@ void CameraMatrix::set_perspective(float p_fovy_degrees, float p_aspect, float p
 	matrix[2][2] = -(p_z_far + p_z_near) / deltaZ;
 	matrix[2][3] = -1;
 	matrix[3][2] = -2 * p_z_near * p_z_far / deltaZ;
-	matrix[3][3] = 0;	
+	matrix[3][3] = 0;
 
 }
 
@@ -155,95 +155,95 @@ void CameraMatrix::set_frustum(float p_left, float p_right, float p_bottom, floa
 
 
 float CameraMatrix::get_z_far() const {
-	
-	const float * matrix = (const float*)this->matrix;			
+
+	const float * matrix = (const float*)this->matrix;
 	Plane new_plane=Plane(matrix[ 3] - matrix[ 2],
 	                matrix[ 7] - matrix[ 6],
 	                matrix[11] - matrix[10],
 	                matrix[15] - matrix[14]);
-	
+
 	new_plane.normal=-new_plane.normal;
 	new_plane.normalize();
-	
+
 	return new_plane.d;
 }
 float CameraMatrix::get_z_near() const {
-	
-	const float * matrix = (const float*)this->matrix;			
+
+	const float * matrix = (const float*)this->matrix;
 	Plane new_plane=Plane(matrix[ 3] + matrix[ 2],
 	                matrix[ 7] + matrix[ 6],
 	                matrix[11] + matrix[10],
 	               -matrix[15] - matrix[14]);
-	
+
 	new_plane.normalize();
 	return new_plane.d;
 }
 
 void CameraMatrix::get_viewport_size(float& r_width, float& r_height) const {
 
-	const float * matrix = (const float*)this->matrix;		
+	const float * matrix = (const float*)this->matrix;
 	///////--- Near Plane ---///////
 	Plane near_plane=Plane(matrix[ 3] + matrix[ 2],
 	                matrix[ 7] + matrix[ 6],
 	                matrix[11] + matrix[10],
 			-matrix[15] - matrix[14]).normalized();
-		
+
 	///////--- Right Plane ---///////
 	Plane right_plane=Plane(matrix[ 3] - matrix[ 0],
 	                matrix[ 7] - matrix[ 4],
 	                matrix[11] - matrix[ 8],
 			- matrix[15] + matrix[12]).normalized();
-	
+
 	Plane top_plane=Plane(matrix[ 3] - matrix[ 1],
 	                matrix[ 7] - matrix[ 5],
 	                matrix[11] - matrix[ 9],
 			-matrix[15] + matrix[13]).normalized();
-	
+
 	Vector3 res;
 	near_plane.intersect_3(right_plane,top_plane,&res);
-	
+
 	r_width=res.x;
 	r_height=res.y;
 }
 
 bool CameraMatrix::get_endpoints(const Transform& p_transform, Vector3 *p_8points) const {
 
-	const float * matrix = (const float*)this->matrix;		
-		
+	const float * matrix = (const float*)this->matrix;
+
 	///////--- Near Plane ---///////
 	Plane near_plane=Plane(matrix[ 3] + matrix[ 2],
 	                matrix[ 7] + matrix[ 6],
 	                matrix[11] + matrix[10],
 			-matrix[15] - matrix[14]).normalized();
-	
+
 	///////--- Far Plane ---///////
 	Plane far_plane=Plane(matrix[ 2] - matrix[ 3],
 		      matrix[ 6] - matrix[ 7],
 		      matrix[10] - matrix[11],
 		      matrix[15] - matrix[14]).normalized();
 
-		
+
 	///////--- Right Plane ---///////
 	Plane right_plane=Plane(matrix[ 0] - matrix[ 3],
 	                matrix[ 4] - matrix[ 7],
 	                matrix[8] - matrix[ 11],
 			- matrix[15] + matrix[12]).normalized();
-	
-	///////--- Top Plane ---///////	
+
+	///////--- Top Plane ---///////
 	Plane top_plane=Plane(matrix[ 1] - matrix[ 3],
 	                matrix[ 5] - matrix[ 7],
 	                matrix[9] - matrix[ 11],
 			-matrix[15] + matrix[13]).normalized();
-		
+
 	Vector3 near_endpoint;
 	Vector3 far_endpoint;
-	
+
 	bool res=near_plane.intersect_3(right_plane,top_plane,&near_endpoint);
 	ERR_FAIL_COND_V(!res,false);
-	
+
 	res=far_plane.intersect_3(right_plane,top_plane,&far_endpoint);
 	ERR_FAIL_COND_V(!res,false);
-	
+
 	p_8points[0]=p_transform.xform( Vector3( near_endpoint.x, near_endpoint.y, near_endpoint.z ) );
 	p_8points[1]=p_transform.xform( Vector3( near_endpoint.x,-near_endpoint.y, near_endpoint.z ) );
 	p_8points[2]=p_transform.xform( Vector3(-near_endpoint.x, near_endpoint.y, near_endpoint.z ) );
@@ -252,7 +252,7 @@ bool CameraMatrix::get_endpoints(const Transform& p_transform, Vector3 *p_8point
 	p_8points[5]=p_transform.xform( Vector3( far_endpoint.x,-far_endpoint.y, far_endpoint.z ) );
 	p_8points[6]=p_transform.xform( Vector3(-far_endpoint.x, far_endpoint.y, far_endpoint.z ) );
 	p_8points[7]=p_transform.xform( Vector3(-far_endpoint.x,-far_endpoint.y, far_endpoint.z ) );
-	
+
 	return true;
 }
 
@@ -263,10 +263,10 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform& p_transform) 
 	 * http://www.markmorley.com/opengl/frustumculling.html
 	 * http://www2.ravensoft.com/users/ggribb/plane%20extraction.pdf
 	 */
-	 
+
 	Vector<Plane> planes;
-	
-	const float * matrix = (const float*)this->matrix;			
+
+	const float * matrix = (const float*)this->matrix;
 
 	Plane new_plane;
 
@@ -275,7 +275,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform& p_transform) 
 		      matrix[ 7] + matrix[ 6],
 		      matrix[11] + matrix[10],
 		      matrix[15] + matrix[14]);
-	
+
 	new_plane.normal=-new_plane.normal;
 	new_plane.normalize();
 
@@ -298,7 +298,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform& p_transform) 
 		      matrix[ 7] + matrix[ 4],
 		      matrix[11] + matrix[ 8],
 		      matrix[15] + matrix[12]);
-		      
+
 	new_plane.normal=-new_plane.normal;
 	new_plane.normalize();
 
@@ -310,8 +310,8 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform& p_transform) 
 		      matrix[ 7] - matrix[ 5],
 		      matrix[11] - matrix[ 9],
 		      matrix[15] - matrix[13]);
-		      
-	
+
+
 	new_plane.normal=-new_plane.normal;
 	new_plane.normalize();
 
@@ -324,10 +324,10 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform& p_transform) 
 		      matrix[11] - matrix[ 8],
 		      matrix[15] - matrix[12]);
 
-	
+
 	new_plane.normal=-new_plane.normal;
 	new_plane.normalize();
-	
+
 	planes.push_back( p_transform.xform(new_plane) );
 
 
@@ -337,12 +337,12 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform& p_transform) 
 		      matrix[11] + matrix[ 9],
 		      matrix[15] + matrix[13]);
 
-	
+
 	new_plane.normal=-new_plane.normal;
 	new_plane.normalize();
 
 	planes.push_back( p_transform.xform(new_plane) );
-	
+
 	return planes;
 }
 
@@ -356,7 +356,7 @@ CameraMatrix CameraMatrix::inverse() const {
 }
 
 void CameraMatrix::invert() {
-	
+
 	int i,j,k;
 	int pvt_i[4], pvt_j[4];            /* Locations of pivot matrix */
 	float pvt_val;                     /* Value of current pivot element */
@@ -448,7 +448,7 @@ void CameraMatrix::invert() {
 			}
 	}
 
-	
+
 }
 
 CameraMatrix::CameraMatrix() {
@@ -475,31 +475,31 @@ CameraMatrix CameraMatrix::operator*(const CameraMatrix& p_matrix) const {
 void CameraMatrix::set_light_bias() {
 
 	float *m=&matrix[0][0];
-	
-	m[0]=0.5, 
-	m[1]=0.0, 
-	m[2]=0.0, 
+
+	m[0]=0.5,
+	m[1]=0.0,
+	m[2]=0.0,
 	m[3]=0.0,
-	m[4]=0.0, 
-	m[5]=0.5, 
-	m[6]=0.0, 
+	m[4]=0.0,
+	m[5]=0.5,
+	m[6]=0.0,
 	m[7]=0.0,
-	m[8]=0.0, 
-	m[9]=0.0, 
-	m[10]=0.5, 
+	m[8]=0.0,
+	m[9]=0.0,
+	m[10]=0.5,
 	m[11]=0.0,
-	m[12]=0.5, 
-	m[13]=0.5, 
-	m[14]=0.5, 
-	m[15]=1.0;	
-		
+	m[12]=0.5,
+	m[13]=0.5,
+	m[14]=0.5,
+	m[15]=1.0;
+
 }
 
 CameraMatrix::operator String() const {
 
 	String str;
-	for (int i=0;i<4;i++) 
-		for (int j=0;j<4;j++) 
+	for (int i=0;i<4;i++)
+		for (int j=0;j<4;j++)
 			str+=String((j>0)?", ":"\n")+rtos(matrix[i][j]);
 
 	return str;
@@ -513,7 +513,7 @@ float CameraMatrix::get_aspect() const {
 }
 
 float CameraMatrix::get_fov() const {
-	const float * matrix = (const float*)this->matrix;		
+	const float * matrix = (const float*)this->matrix;
 
 	Plane right_plane=Plane(matrix[ 3] - matrix[ 0],
 			matrix[ 7] - matrix[ 4],
@@ -588,7 +588,7 @@ CameraMatrix::CameraMatrix(const Transform& p_transform) {
 
 	const Transform &tr = p_transform;
 	float *m=&matrix[0][0];
-	
+
 	m[0]=tr.basis.elements[0][0];
 	m[1]=tr.basis.elements[1][0];
 	m[2]=tr.basis.elements[2][0];
@@ -604,7 +604,7 @@ CameraMatrix::CameraMatrix(const Transform& p_transform) {
   	m[12]=tr.origin.x;
 	m[13]=tr.origin.y;
 	m[14]=tr.origin.z;
-	m[15]=1.0;		
+	m[15]=1.0;
 }
 
 CameraMatrix::~CameraMatrix()

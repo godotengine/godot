@@ -545,7 +545,7 @@ Vector2 PolygonPathFinder::get_closest_point(const Vector2& p_point) const {
 			closest_point=closest;
 		}
 	}
-	
+
 	ERR_FAIL_COND_V(closest_dist==1e20,Vector2());
 
 	return closest_point;

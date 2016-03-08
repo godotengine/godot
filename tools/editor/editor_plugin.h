@@ -42,7 +42,7 @@ class Spatial;
 class Camera;
 
 class EditorPlugin : public Node {
-	
+
 	OBJ_TYPE( EditorPlugin, Node );
 friend class EditorData;
 	UndoRedo *undo_redo;

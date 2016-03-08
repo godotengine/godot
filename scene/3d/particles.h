@@ -63,7 +63,7 @@ private:
 	OBJ_TYPE( Particles, GeometryInstance );
 
 	RID particles;
-	
+
 	int amount;
 	bool emitting;
 	float emit_timeout;
@@ -71,14 +71,14 @@ private:
 	Vector3 gravity_normal;
 	Vector3 emission_half_extents;
 	bool using_points;
-	float var[VAR_MAX];	
-	float var_random[VAR_MAX];	
+	float var[VAR_MAX];
+	float var_random[VAR_MAX];
 	bool height_from_velocity;
 	Vector3 emission_base_velocity;
 	bool local_coordinates;
-	
+
 	struct ColorPhase {
-	
+
 		Color color;
 		float pos;
 	};
@@ -87,18 +87,18 @@ private:
 	virtual RES _get_gizmo_geometry() const;
 
 	int color_phase_count;
-	
+
 	ColorPhase color_phase[4];
-	
+
 	Ref<Material> material;
 
 	Timer* timer;
 	void setup_timer();
 
-protected:	
-		
+protected:
+
 	static void _bind_methods();
-	
+
 public:
 
 
@@ -107,13 +107,13 @@ public:
 
 	void set_amount(int p_amount);
 	int get_amount() const;
-		
+
 	void set_emitting(bool p_emitting);
 	bool is_emitting() const;
-		
+
 	void set_visibility_aabb(const AABB& p_aabb);
 	AABB get_visibility_aabb() const;
-		
+
 	void set_emission_half_extents(const Vector3& p_half_extents);
 	Vector3 get_emission_half_extents() const;
 
@@ -125,25 +125,25 @@ public:
 
 	void set_gravity_normal(const Vector3& p_normal);
 	Vector3 get_gravity_normal() const;
-		
+
 	void set_variable(Variable p_variable,float p_value);
 	float get_variable(Variable p_variable) const;
-	
+
 	void set_randomness(Variable p_variable,float p_randomness);
 	float get_randomness(Variable p_variable) const;
 
 	void set_color_phases(int p_phases);
 	int get_color_phases() const;
-	
+
 	void set_color_phase_pos(int p_phase, float p_pos);
 	float get_color_phase_pos(int p_phase) const;
-	
+
 	void set_color_phase_color(int p_phase, const Color& p_color);
 	Color get_color_phase_color(int p_phase) const;
 
 	void set_height_from_velocity(bool p_enable);
 	bool has_height_from_velocity() const;
-	
+
 	void set_material(const Ref<Material>& p_material);
 	Ref<Material> get_material() const;
 
@@ -156,7 +156,7 @@ public:
 	void start_emitting(float p_time);
 
 
-	Particles();	
+	Particles();
 	~Particles();
 
 };

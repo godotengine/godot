@@ -1612,7 +1612,7 @@ void RasterizerFlash::_add_geometry( const Geometry* p_geometry, const InstanceD
 
 	if (m->flags[VS::MATERIAL_FLAG_UNSHADED]) {
 
-		e->light_key-=1;		
+		e->light_key-=1;
 	} else {
 
 		//setup lights

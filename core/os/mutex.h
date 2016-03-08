@@ -33,7 +33,7 @@
 
 
 /**
- * @class Mutex 
+ * @class Mutex
  * @author Juan Linietsky
  * Portable Mutex (thread-safe locking) implementation.
  * Mutexes are always recursive ( they don't self-lock in a single thread ).
@@ -43,9 +43,9 @@
 
 
 class Mutex {
-protected:	
+protected:
 	static Mutex* (*create_func)(bool);
-	
+
 public:
 
 	virtual void lock()=0; ///< Lock the mutex, block if locked by someone else
@@ -53,7 +53,7 @@ public:
 	virtual Error try_lock()=0; ///< Attempt to lock the mutex, OK on success, ERROR means it can't lock.
 
 	static Mutex * create(bool p_recursive=true); ///< Create a mutex
-	
+
 	virtual ~Mutex();
 };
 

@@ -217,7 +217,7 @@ Error FileAccessNetworkClient::connect(const String& p_host,int p_port,const Str
 		return ERR_CANT_CONNECT;
 	}
 
-	CharString cs = p_password.utf8();	
+	CharString cs = p_password.utf8();
 	put_32(cs.length());
 	client->put_data((const uint8_t*)cs.ptr(),cs.length());
 

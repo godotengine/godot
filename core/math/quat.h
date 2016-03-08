@@ -89,18 +89,18 @@ public:
 	_FORCE_INLINE_ Quat operator-() const;
 	_FORCE_INLINE_ Quat operator*(const real_t& s) const;
 	_FORCE_INLINE_ Quat operator/(const real_t& s) const;
-	
+
 
 	_FORCE_INLINE_ bool operator==(const Quat& p_quat) const;
 	_FORCE_INLINE_ bool operator!=(const Quat& p_quat) const;
-	
+
 	operator String() const;
-	
+
 	inline void set( real_t p_x, real_t p_y, real_t p_z, real_t p_w) {
-		x=p_x; y=p_y; z=p_z; w=p_w;	
+		x=p_x; y=p_y; z=p_z; w=p_w;
 	}
 	inline Quat(real_t p_x, real_t p_y, real_t p_z, real_t p_w) {
-		x=p_x; y=p_y; z=p_z; w=p_w;	
+		x=p_x; y=p_y; z=p_z; w=p_w;
 	}
 	Quat(const Vector3& axis, const real_t& angle);
 
@@ -127,7 +127,7 @@ public:
 	}
 
 	inline Quat() {x=y=z=0; w=1; }
-	
+
 
 };
 
@@ -141,7 +141,7 @@ real_t Quat::length_squared() const {
 }
 
 void Quat::operator+=(const Quat& q) {
-	x += q.x; y += q.y; z += q.z; w += q.w;	
+	x += q.x; y += q.y; z += q.z; w += q.w;
 }
 
 void Quat::operator-=(const Quat& q) {

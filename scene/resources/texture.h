@@ -84,7 +84,7 @@ VARIANT_ENUM_CAST( Texture::Flags );
 
 
 class ImageTexture : public Texture {
-	
+
 	OBJ_TYPE( ImageTexture, Texture );
 	RES_BASE_EXTENSION("tex");
 public:
@@ -97,12 +97,12 @@ private:
 	RID texture;
 	Image::Format format;
 	uint32_t flags;
-	int w,h;	
+	int w,h;
 	Storage storage;
 	Size2 size_override;
 	float lossy_storage_quality;
 
-protected:	
+protected:
 	virtual bool can_reload_from_file();
 	virtual void reload_from_file();
 
@@ -117,24 +117,24 @@ protected:
 	void _set_data(Dictionary p_data);
 
 public:
-	
+
 
 	void create(int p_width, int p_height,Image::Format p_format,uint32_t p_flags=FLAGS_DEFAULT);
 	void create_from_image(const Image& p_image,  uint32_t p_flags=FLAGS_DEFAULT);
 
-	
+
 	void set_flags(uint32_t p_flags);
 	uint32_t get_flags() const;
 	Image::Format get_format() const;
 	void load(const String& p_path);
 	void set_data(const Image& p_image);
 	Image get_data() const;
-		
+
 	int get_width() const;
 	int get_height() const;
-	
+
 	virtual RID get_rid() const;
-	
+
 	bool has_alpha() const;
 	virtual void draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
 	virtual void draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;

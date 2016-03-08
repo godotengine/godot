@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "shader_editor_plugin.h"
 #include "tools/editor/editor_settings.h"
- 
+
 #include "spatial_editor_plugin.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
@@ -52,7 +52,7 @@ Ref<Shader> ShaderTextEditor::get_edited_shader() const {
 }
 void ShaderTextEditor::set_edited_shader(const Ref<Shader>& p_shader,ShaderLanguage::ShaderType p_type) {
 
-	shader=p_shader;	
+	shader=p_shader;
 	type=p_type;
 
 	_load_theme_settings();

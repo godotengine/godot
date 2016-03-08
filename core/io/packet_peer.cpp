@@ -180,10 +180,10 @@ int PacketPeerStream::get_available_packet_count() const {
 		ring_buffer.copy(lbuf,ofs,4);
 		uint32_t len = decode_uint32(lbuf);
 		remaining-=4;
-		ofs+=4;		
+		ofs+=4;
 		if (len>remaining)
 			break;
-		remaining-=len;		
+		remaining-=len;
 		ofs+=len;
 		count++;
 	}
@@ -201,7 +201,7 @@ Error PacketPeerStream::get_packet(const uint8_t **r_buffer,int &r_buffer_size) 
 	uint8_t lbuf[4];
 	ring_buffer.copy(lbuf,0,4);
 	remaining-=4;
-	uint32_t len = decode_uint32(lbuf);	
+	uint32_t len = decode_uint32(lbuf);
 	ERR_FAIL_COND_V(remaining<(int)len,ERR_UNAVAILABLE);
 
 	ring_buffer.read(lbuf,4); //get rid of first 4 bytes

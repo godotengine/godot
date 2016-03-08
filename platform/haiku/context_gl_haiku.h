@@ -18,8 +18,8 @@ public:
 	~ContextGL_Haiku();
 
 	virtual Error initialize();
-	virtual void release_current();	
-	virtual void make_current();	
+	virtual void release_current();
+	virtual void make_current();
 	virtual void swap_buffers();
 	virtual int get_window_width();
 	virtual int get_window_height();

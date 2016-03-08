@@ -59,34 +59,34 @@ Size2 PopupMenu::get_minimum_size() const {
 
 	int vseparation = get_constant("vseparation");
 	int hseparation = get_constant("hseparation");
-	
+
 	Size2 minsize = get_stylebox("panel")->get_minimum_size();
 	Ref<Font> font = get_font("font");
-	
+
 	float max_w=0;
 	int font_h = font->get_height();
 	int check_w = get_icon("checked")->get_width();
 	int accel_max_w=0;
-	
+
 	for (int i=0;i<items.size();i++) {
-	
+
 		Size2 size;
 		if (!items[i].icon.is_null()) {
-		
+
 			Size2 icon_size = items[i].icon->get_size();
 			size.height = MAX( icon_size.height, font_h );
 			size.width+=icon_size.width;
 			size.width+=hseparation;
 		} else {
-		
+
 			size.height=font_h;
 		}
-		
+
 		if (items[i].checkable) {
-		
+
 			size.width+=check_w+hseparation;
 		}
-		
+
 		size.width+=font->get_string_size(items[i].text).width;
 		if (i>0)
 			size.height+=vseparation;
@@ -100,11 +100,11 @@ Size2 PopupMenu::get_minimum_size() const {
 
 		minsize.height+=size.height;
 		max_w = MAX( max_w, size.width );
-		
+
 	}
-	
+
 	minsize.width+=max_w+accel_max_w;
-	
+
 	return minsize;
 }
 
@@ -115,41 +115,41 @@ int PopupMenu::_get_mouse_over(const Point2& p_over) const {
 		return -1;
 
 	Ref<StyleBox> style = get_stylebox("panel");
-	
+
 	Point2 ofs=style->get_offset();
-	
+
 
 	if (ofs.y>p_over.y)
 		return -1;
-	
-		
-	Ref<Font> font = get_font("font");	
+
+
+	Ref<Font> font = get_font("font");
 	int vseparation = get_constant("vseparation");
 //	int hseparation = get_constant("hseparation");
 	float font_h=font->get_height();
 
-	
+
 	for (int i=0;i<items.size();i++) {
-	
+
 		if (i>0)
 			ofs.y+=vseparation;
 		float h;
-		
+
 		if (!items[i].icon.is_null()) {
-		
+
 			Size2 icon_size = items[i].icon->get_size();
 			h = MAX( icon_size.height, font_h );
 		} else {
-		
+
 			h=font_h;
 		}
-		
+
 		ofs.y+=h;
 		if (p_over.y < ofs.y) {
 			return i;
-		}			
+		}
 	}
-	
+
 	return -1;
 
 }
@@ -271,11 +271,11 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 		} break;
 
 		case InputEvent::MOUSE_BUTTON: {
-	
-			
+
+
 			const InputEventMouseButton &b=p_event.mouse_button;
 			if (b.pressed)
-				break;			
+				break;
 
 			switch(b.button_index) {
 
@@ -347,11 +347,11 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 
 				} break;
 			}
-			
+
 			//update();
 		} break;
 		case InputEvent::MOUSE_MOTION: {
-	
+
 
 			if (invalidated_click) {
 				moved+=Vector2(p_event.mouse_motion.relative_x,p_event.mouse_motion.relative_y);
@@ -409,13 +409,13 @@ bool PopupMenu::has_point(const Point2& p_point) const {
 void PopupMenu::_notification(int p_what) {
 
 	switch(p_what) {
-	
+
 
 		case NOTIFICATION_DRAW: {
-		
+
 			RID ci = get_canvas_item();
 			Size2 size=get_size();
-		
+
 			Ref<StyleBox> style = get_stylebox("panel");
 			Ref<StyleBox> hover = get_stylebox("hover");
 			Ref<Font> font = get_font("font");
@@ -423,7 +423,7 @@ void PopupMenu::_notification(int p_what) {
 			Ref<Texture> uncheck = get_icon("unchecked");
 			Ref<Texture> submenu= get_icon("submenu");
 			Ref<StyleBox> separator = get_stylebox("separator");
-			
+
 			style->draw( ci, Rect2( Point2(), get_size() ) );
 			Point2 ofs=style->get_offset();
 			int vseparation = get_constant("vseparation");
@@ -433,36 +433,36 @@ void PopupMenu::_notification(int p_what) {
 			Color font_color_accel = get_color("font_color_accel");
 			Color font_color_hover = get_color("font_color_hover");
 			float font_h=font->get_height();
-			
+
 			for (int i=0;i<items.size();i++) {
-			
+
 				if (i>0)
 					ofs.y+=vseparation;
 				Point2 item_ofs=ofs;
 				float h;
 				Size2 icon_size;
-								
+
 				if (!items[i].icon.is_null()) {
-				
+
 					icon_size = items[i].icon->get_size();
 					h = MAX( icon_size.height, font_h );
 				} else {
-				
+
 					h=font_h;
 				}
-					
+
 				if (i==mouse_over) {
-							
+
 					hover->draw(ci,	Rect2( ofs+Point2(-hseparation,-vseparation), Size2( get_size().width - style->get_minimum_size().width + hseparation*2, h+vseparation*2 ) ));
 				}
-				
+
 				if (items[i].separator) {
-				
+
 					int sep_h=separator->get_center_size().height+separator->get_minimum_size().height;
 					separator->draw(ci,	Rect2( ofs+Point2(0,Math::floor((h-sep_h)/2.0)), Size2( get_size().width - style->get_minimum_size().width , sep_h ) ));
-					
+
 				}
-				
+
 				if (items[i].checkable) {
 
 					if (items[i].checked)
@@ -499,16 +499,16 @@ void PopupMenu::_notification(int p_what) {
 				items[i]._ofs_cache=ofs.y;
 
 				ofs.y+=h;
-				
+
 			}
-			
+
 		} break;
 		case NOTIFICATION_MOUSE_ENTER: {
 
 			grab_focus();
 		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
-		
+
 			if (mouse_over>=0) {
 				mouse_over=-1;
 				update();
@@ -574,7 +574,7 @@ void PopupMenu::set_item_text(int p_idx,const String& p_text) {
 
 	ERR_FAIL_INDEX(p_idx,items.size());
 	items[p_idx].text=XL_MESSAGE(p_text);
-	
+
 	update();
 
 }
@@ -597,8 +597,8 @@ void PopupMenu::set_item_checked(int p_idx,bool p_checked) {
 void PopupMenu::set_item_ID(int p_idx,int p_ID) {
 
 	ERR_FAIL_INDEX(p_idx,items.size());
-	items[p_idx].ID=p_ID;	
-	
+	items[p_idx].ID=p_ID;
+
 	update();
 }
 
@@ -785,7 +785,7 @@ void PopupMenu::add_separator() {
 	items.push_back(sep);
 	update();
 }
-	
+
 void PopupMenu::clear()  {
 
 	items.clear();
@@ -888,7 +888,7 @@ void PopupMenu::clear_autohide_areas(){
 
 void PopupMenu::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&PopupMenu::_input_event);	
+	ObjectTypeDB::bind_method(_MD("_input_event"),&PopupMenu::_input_event);
 	ObjectTypeDB::bind_method(_MD("add_icon_item","texture","label","id","accel"),&PopupMenu::add_icon_item,DEFVAL(-1),DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("add_item","label","id","accel"),&PopupMenu::add_item,DEFVAL(-1),DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("add_icon_check_item","texture","label","id","accel"),&PopupMenu::add_icon_check_item,DEFVAL(-1),DEFVAL(0));
@@ -916,7 +916,7 @@ void PopupMenu::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_item_ID","idx"),&PopupMenu::get_item_ID);
 	ObjectTypeDB::bind_method(_MD("get_item_index","id"),&PopupMenu::get_item_index);
 	ObjectTypeDB::bind_method(_MD("get_item_count"),&PopupMenu::get_item_count);
-	ObjectTypeDB::bind_method(_MD("add_separator"),&PopupMenu::add_separator);	
+	ObjectTypeDB::bind_method(_MD("add_separator"),&PopupMenu::add_separator);
 	ObjectTypeDB::bind_method(_MD("remove_item","idx"),&PopupMenu::remove_item);
 	ObjectTypeDB::bind_method(_MD("clear"),&PopupMenu::clear);
 
@@ -930,7 +930,7 @@ void PopupMenu::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("item_pressed", PropertyInfo( Variant::INT,"ID") ) );
 
 }
-	
+
 
 void PopupMenu::set_invalidate_click_until_motion() {
 	moved=Vector2();
@@ -941,7 +941,7 @@ PopupMenu::PopupMenu() {
 
 
 	mouse_over=-1;
-	
+
 	set_focus_mode(FOCUS_ALL);
 	set_as_toplevel(true);
 

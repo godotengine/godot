@@ -56,7 +56,7 @@ void OS_Server::initialize(const VideoMode& p_desired,int p_video_driver,int p_a
 	args=OS::get_singleton()->get_cmdline_args();
 	current_videomode=p_desired;
 	main_loop=NULL;
-	
+
 	rasterizer = memnew( RasterizerDummy );
 
 	visual_server = memnew( VisualServerRaster(rasterizer) );
@@ -76,7 +76,7 @@ void OS_Server::initialize(const VideoMode& p_desired,int p_video_driver,int p_a
 	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
 	spatial_sound_2d_server->init();
 
-	
+
 	ERR_FAIL_COND(!visual_server);
 
 	visual_server->init();
@@ -90,7 +90,7 @@ void OS_Server::initialize(const VideoMode& p_desired,int p_video_driver,int p_a
 
 	_ensure_data_dir();
 
-		
+
 }
 void OS_Server::finalize() {
 
@@ -115,7 +115,7 @@ void OS_Server::finalize() {
 	visual_server->finish();
 	memdelete(visual_server);
 	memdelete(rasterizer);
-	
+
 	physics_server->finish();
 	memdelete(physics_server);
 
@@ -218,18 +218,18 @@ void OS_Server::set_cursor_shape(CursorShape p_shape) {
 void OS_Server::run() {
 
 	force_quit = false;
-	
+
 	if (!main_loop)
 		return;
-		
+
 	main_loop->init();
-		
+
 	while (!force_quit) {
-	
+
 		if (Main::iteration()==true)
 			break;
 	};
-	
+
 	main_loop->finish();
 }
 

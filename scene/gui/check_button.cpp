@@ -33,9 +33,9 @@
 
 
 void CheckButton::_notification(int p_what) {
-	
+
 	if (p_what==NOTIFICATION_DRAW) {
-		
+
 		RID ci = get_canvas_item();
 
 		Ref<Texture> on=Control::get_icon("on");
@@ -50,17 +50,17 @@ void CheckButton::_notification(int p_what) {
 		else
 			off->draw(ci,ofs);
 
-	
+
 	}
 }
 
 
 CheckButton::CheckButton() {
-	
+
 	set_toggle_mode(true);
 	set_text_align(ALIGN_LEFT);
 
-	
+
 }
 
 

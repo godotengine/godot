@@ -261,13 +261,13 @@ EditorPlugin* EditorData::get_subeditor(Object *p_object) {
 }
 
 EditorPlugin* EditorData::get_editor(String p_name) {
-	
+
 	for(int i=0;i<editor_plugins.size();i++) {
-		
+
 		if (editor_plugins[i]->get_name()==p_name)
 			return editor_plugins[i];
 	}
-	
+
 	return NULL;
 }
 

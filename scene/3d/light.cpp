@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "light.h"
- 
+
 #include "globals.h"
 #include "scene/resources/surface_tool.h"
 
@@ -86,7 +86,7 @@ void Light::set_project_shadows(bool p_enabled) {
 	_change_notify("shadow");
 }
 bool Light::has_project_shadows() const {
-	
+
 	return shadows;
 }
 
@@ -175,9 +175,9 @@ RES Light::_get_gizmo_geometry() const {
 	Ref< Mesh > mesh;
 
 	Ref<SurfaceTool> surftool( memnew( SurfaceTool ));
-	
+
 	switch(type) {
-	
+
 		case VisualServer::LIGHT_DIRECTIONAL: {
 
 
@@ -260,9 +260,9 @@ RES Light::_get_gizmo_geometry() const {
 			surftool->set_material(mat_light);
 			mesh=surftool->commit(mesh);
 		} break;
-				
+
 		case VisualServer::LIGHT_SPOT: {
-	
+
 			_make_sphere( 5,5,0.1, surftool );
 			surftool->set_material(mat_light);
 			mesh=surftool->commit(mesh);
@@ -273,14 +273,14 @@ RES Light::_get_gizmo_geometry() const {
 			float size=Math::tan(Math::deg2rad(vars[PARAM_SPOT_ANGLE]))*len;
 
 			surftool->begin(Mesh::PRIMITIVE_TRIANGLES);
-			
+
 			for(int i = 0; i < points; i++) {
-			
+
 				float x0=Math::sin(i * Math_PI * 2 / points);
 				float y0=Math::cos(i * Math_PI * 2 / points);
 				float x1=Math::sin((i+1) * Math_PI * 2 / points);
 				float y1=Math::cos((i+1) * Math_PI * 2 / points);
-				
+
 				Vector3 v1=Vector3(x0*size,y0*size,-len).normalized()*len;
 				Vector3 v2=Vector3(x1*size,y1*size,-len).normalized()*len;
 
@@ -288,7 +288,7 @@ RES Light::_get_gizmo_geometry() const {
 				Vector3 v4=Vector3(0,0,v1.z);
 
 				Vector3 n = Plane(v1,v2,v3).normal;
-			
+
 
 				surftool->add_normal(n);
 				surftool->add_vertex(v1);
@@ -306,7 +306,7 @@ RES Light::_get_gizmo_geometry() const {
 				surftool->add_normal(n);
 				surftool->add_vertex(v4);
 
-			
+
 			}
 
 			surftool->set_material(mat_area);
@@ -323,15 +323,15 @@ RES Light::_get_gizmo_geometry() const {
 AABB Light::get_aabb() const {
 
 	if (type==VisualServer::LIGHT_DIRECTIONAL) {
-	
-		return AABB( Vector3(-1,-1,-1), Vector3(2, 2, 2 ) );	
-		
+
+		return AABB( Vector3(-1,-1,-1), Vector3(2, 2, 2 ) );
+
 	} else if (type==VisualServer::LIGHT_OMNI) {
-	
+
 		return AABB( Vector3(-1,-1,-1) * vars[PARAM_RADIUS], Vector3(2, 2, 2 ) * vars[PARAM_RADIUS]);
-		
+
 	} else if (type==VisualServer::LIGHT_SPOT) {
-	
+
 		float len=vars[PARAM_RADIUS];
 		float size=Math::tan(Math::deg2rad(vars[PARAM_SPOT_ANGLE]))*len;
 		return AABB( Vector3( -size,-size,-len ), Vector3( size*2, size*2, len ) );
@@ -542,7 +542,7 @@ void Light::_bind_methods() {
 
 
 	BIND_CONSTANT( COLOR_DIFFUSE );
-	BIND_CONSTANT( COLOR_SPECULAR );	
+	BIND_CONSTANT( COLOR_SPECULAR );
 
 	BIND_CONSTANT( BAKE_MODE_DISABLED );
 	BIND_CONSTANT( BAKE_MODE_INDIRECT );

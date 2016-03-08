@@ -38,8 +38,8 @@ class RoomBounds : public Resource {
 
 	OBJ_TYPE( RoomBounds, Resource );
 	RES_BASE_EXTENSION("room");
-	
-	RID area;	
+
+	RID area;
 	DVector<Face3> geometry_hint;
 
 	void _regenerate_bsp();
@@ -54,10 +54,10 @@ public:
 
 	void set_bounds( const BSP_Tree& p_bounds );
 	BSP_Tree get_bounds() const;
-	
+
 	void set_geometry_hint(const DVector<Face3>& geometry_hint);
 	const DVector<Face3>& get_geometry_hint() const;
-	
+
 	RoomBounds();
 	~RoomBounds();
 

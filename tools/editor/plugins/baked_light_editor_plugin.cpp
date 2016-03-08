@@ -131,7 +131,7 @@ void BakedLightEditor::_notification(int p_option) {
 				last_rays_time=rays_snap;
 
 				bake_info->set_text("rays/s: "+itos(rays_sec));
-				update_timeout=1;				
+				update_timeout=1;
 				print_line("MSUPDATE: "+itos(OS::get_singleton()->get_ticks_msec()-t));
 				t=OS::get_singleton()->get_ticks_msec();
 				node->get_baked_light()->set_octree(octree_texture);

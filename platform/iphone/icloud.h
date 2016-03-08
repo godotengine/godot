@@ -44,13 +44,13 @@ class ICloud : public Object {
 	List<Variant> pending_events;
 
 public:
-	
+
 	Error remove_key(Variant p_param);
 	Variant set_key_values(Variant p_param);
 	Variant get_key_value(Variant p_param);
 	Error synchronize_key_values();
 	Variant get_all_key_values();
-	
+
 	int get_pending_event_count();
 	Variant pop_pending_event();
 

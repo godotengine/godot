@@ -34,78 +34,78 @@
 struct _ConnectionKey {
 
 	int node;
-	int slot;	
-		
+	int slot;
+
 	_FORCE_INLINE_ _ConnectionKey(int p_node=0,int p_slot=0) { node=p_node; slot=p_slot; }
-	
+
 	_FORCE_INLINE_ bool operator<(const _ConnectionKey& p_other) const {
-	
+
 		if (node<p_other.node)
 			return true;
 		else if (node>p_other.node)
-			return false;			
+			return false;
 		else
 			return slot<p_other.slot;
 	}
 };
 
 Error ShaderGraph::generate(ShaderCodeGenerator * p_generator) const {
-	
+
 	Map<int,Node>::Element *E = node_map.front();
-	int i=0;	
+	int i=0;
 	while(E) {
-	
+
 		E->get().order=i++;
 		E->get().out_valid=false;
 		E->get().in_valid=false;
 		E=E->next();
-	}	
+	}
 
 	int worst_case=connections.size() * connections.size(); // worst bubble case
 	int iterations=0;
 	int swaps;
-	
-	do {	
+
+	do {
 		swaps=0;
 		const List<Connection>::Element *E=connections.front();
 
 		while(E) {
 
 			const Connection &c = E->get();
-			
+
 			const Node *src = &node_map[c.src_id];
 			const Node *dst = &node_map[c.dst_id];
-						
+
 			if (src->order > dst->order) {
-			
+
 				SWAP(src->order, dst->order);
 				swaps++;
 			}
-			
+
 			E=E->next();
 		}
-		
-	
+
+
 		iterations++;
-		
+
 	} while (iterations<=worst_case && swaps>0);
-	
+
 	ERR_FAIL_COND_V( swaps != 0 , ERR_CYCLIC_LINK );
-	
+
 	//node array
 	Vector<const Node*> nodes;
 	nodes.resize(node_map.size());
-	
+
 	E = node_map.front();
 	while(E) {
-	
+
 		ERR_FAIL_INDEX_V( E->get().order, nodes.size(), ERR_BUG);
 		nodes[E->get().order]=&E->get();
 		E=E->next();
 	}
-	
+
 	//connection set
-	
+
 	Map<_ConnectionKey,int> in_connection_map;
 	Map<_ConnectionKey,List<int> > out_connection_map;
 	Map<_ConnectionKey,int> in_node_map;
@@ -115,7 +115,7 @@ Error ShaderGraph::generate(ShaderCodeGenerator * p_generator) const {
 	i=0;
 	while(CE) {
 		const Connection &c = CE->get();
-		
+
 		_ConnectionKey in_k;
 		in_k.node=node_map[c.dst_id].order;
 		in_k.slot=c.dst_slot;
@@ -131,11 +131,11 @@ Error ShaderGraph::generate(ShaderCodeGenerator * p_generator) const {
 		if(!out_node_map.has(out_k))
 			out_node_map[out_k]=List<int>();
 		out_node_map[out_k].push_back(node_map[c.dst_id].order);
-		
+
 		i++;
 		CE=CE->next();
 	}
-	
+
 	// validate nodes if they are connected to an output
 
 	for(int i=nodes.size()-1;i>=0;i--) {
@@ -231,9 +231,9 @@ Error ShaderGraph::generate(ShaderCodeGenerator * p_generator) const {
 	}
 
 	// write code
-		
+
 	p_generator->begin();
-		
+
 	for(int i=0;i<nodes.size();i++) {
 
 
@@ -244,35 +244,35 @@ Error ShaderGraph::generate(ShaderCodeGenerator * p_generator) const {
 		in_indices.resize(VS::shader_get_input_count(nodes[i]->type));
 		Vector<int> out_indices;
 		Vector<int> out_slot_indices;
-		
+
 		for(int j=0;j<in_indices.size();j++) {
-		
+
 			_ConnectionKey key(nodes[i]->order,j);
 			if (in_connection_map.has(key))
 				in_indices[j]=in_connection_map[key];
 			else
-				in_indices[j]=-1;			
+				in_indices[j]=-1;
 		}
-		
+
 		for(int j=0;j<VS::shader_get_output_count(nodes[i]->type);j++) {
-		
+
 			_ConnectionKey key(nodes[i]->order,j);
 			if (out_connection_map.has(key)) {
 				for(List<int>::Element *CE=out_connection_map[key].front();CE;CE=CE->next()) {
-				
+
 					out_indices.push_back(CE->get());
 					out_slot_indices.push_back(j);
 				}
 			}
 		}
-		
+
 		Error err = p_generator->add_node(nodes[i]->type,i,nodes[i]->id,nodes[i]->param,in_indices,out_indices,out_slot_indices);
 		ERR_FAIL_COND_V( err, err );
 	}
-		
+
 	p_generator->end();
-		
-	
+
+
 	return OK;
 }
 
@@ -282,7 +282,7 @@ void ShaderGraph::node_add(VS::ShaderNodeType p_type,int p_id) {
 	ERR_FAIL_COND( node_map.has(p_id ) );
 	ERR_FAIL_INDEX( p_type, VS::NODE_TYPE_MAX );
 	Node node;
-	
+
 	node.type=p_type;
 	node.id=p_id;
 	node.x=0;
@@ -312,14 +312,14 @@ int ShaderGraph::node_get_pos_y(int p_id) const {
 void ShaderGraph::node_remove(int p_id) {
 
 	ERR_FAIL_COND(!node_map.has(p_id));
-	
+
 	//erase connections associated with node
 	List<Connection>::Element *N,*E=connections.front();
 	while(E) {
 		N=E->next();
 		const Connection &c = E->get();
 		if (c.src_id==p_id || c.dst_id==p_id) {
-		
+
 			connections.erase(E);
 		}
 		E=N;
@@ -337,17 +337,17 @@ void ShaderGraph::node_change_type(int p_id, VS::ShaderNodeType p_type) {
 }
 
 void ShaderGraph::node_set_param(int p_id, const Variant& p_value) {
-	
+
 	ERR_FAIL_COND(!node_map.has(p_id));
-	node_map[p_id].param=p_value;	
+	node_map[p_id].param=p_value;
 }
 
 void ShaderGraph::get_node_list(List<int> *p_node_list) const {
 
 	Map<int,Node>::Element *E = node_map.front();
-	
+
 	while(E) {
-	
+
 		p_node_list->push_back(E->key());
 		E=E->next();
 	}
@@ -363,7 +363,7 @@ VS::ShaderNodeType ShaderGraph::node_get_type(int p_id) const {
 Variant ShaderGraph::node_get_param(int p_id) const {
 
 	ERR_FAIL_COND_V(!node_map.has(p_id),Variant());
-	return node_map[p_id].param;	
+	return node_map[p_id].param;
 }
 
 
@@ -383,16 +383,16 @@ Error ShaderGraph::connect(int p_src_id,int p_src_slot, int p_dst_id,int p_dst_s
 	while(E) {
 		const Connection &c = E->get();
 		ERR_FAIL_COND_V(c.dst_slot==p_dst_slot && c.dst_id == p_dst_id, ERR_ALREADY_EXISTS);
-		
+
 		E=E->next();
 	}
-	
+
 	Connection c;
 	c.src_slot=p_src_slot;
 	c.src_id=p_src_id;
 	c.dst_slot=p_dst_slot;
 	c.dst_id=p_dst_id;
-		
+
 	connections.push_back(c);
 
 	return OK;
@@ -419,12 +419,12 @@ void ShaderGraph::disconnect(int p_src_id,int p_src_slot, int p_dst_id,int p_dst
 		N=E->next();
 		const Connection &c = E->get();
 		if (c.src_slot==p_src_slot && c.src_id==p_src_id && c.dst_slot==p_dst_slot && c.dst_id == p_dst_id) {
-		
+
 			connections.erase(E);
 		}
 		E=N;
 	}
-	
+
 
 }
 

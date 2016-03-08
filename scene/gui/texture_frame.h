@@ -42,7 +42,7 @@ class TextureFrame : public Control {
 	Ref<Texture> texture;
 protected:
 
-	void _notification(int p_what);	
+	void _notification(int p_what);
 	virtual Size2 get_minimum_size() const;
 	static void _bind_methods();
 

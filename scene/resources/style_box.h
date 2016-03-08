@@ -36,60 +36,60 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class StyleBox : public Resource {
-		
+
 	OBJ_TYPE( StyleBox, Resource );
 	RES_BASE_EXTENSION("sbx");
 	OBJ_SAVE_TYPE( StyleBox );
 	float margin[4];
-	
-protected:	
-	
+
+protected:
+
 	virtual float get_style_margin(Margin p_margin) const=0;
 	static void _bind_methods();
 public:
-	
+
 	virtual bool test_mask(const Point2& p_point, const Rect2& p_rect) const;
-	
+
 	void set_default_margin(Margin p_margin, float p_value);
 	float get_default_margin(Margin p_margin) const;
 	float get_margin(Margin p_margin) const;
 	virtual Size2 get_center_size() const;
-	
+
 	virtual void draw(RID p_canvas_item,const Rect2& p_rect) const=0;
-	
+
 	Size2 get_minimum_size() const;
 	Point2 get_offset() const;
-		
+
 	StyleBox();
 };
 
 class StyleBoxEmpty : public StyleBox {
-	
+
 	OBJ_TYPE( StyleBoxEmpty, StyleBox );
 	virtual float get_style_margin(Margin p_margin) const { return 0; }
-public:	
-	
+public:
+
 	virtual void draw(RID p_canvas_item,const Rect2& p_rect) const {}
 	StyleBoxEmpty() {}
-	
+
 };
 
 class StyleBoxTexture : public StyleBox {
-	
+
 	OBJ_TYPE( StyleBoxTexture, StyleBox );
-	
+
 
 	float expand_margin[4];
 	float margin[4];
 	Ref<Texture> texture;
 	bool draw_center;
-	
 
-protected:		
-	
+
+protected:
+
 	virtual float get_style_margin(Margin p_margin) const;
 	static void _bind_methods();
-	
+
 public:
 
 	void set_expand_margin_size(Margin p_expand_margin,float p_size);
@@ -105,12 +105,12 @@ public:
 	bool get_draw_center() const;
 	virtual Size2 get_center_size() const;
 
-	
+
 	virtual void draw(RID p_canvas_item,const Rect2& p_rect) const;
-	
-	StyleBoxTexture();	
+
+	StyleBoxTexture();
 	~StyleBoxTexture();
-	
+
 };
 
 class StyleBoxFlat : public StyleBox {

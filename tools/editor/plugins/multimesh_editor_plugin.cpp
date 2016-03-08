@@ -326,7 +326,7 @@ MultiMeshEditor::MultiMeshEditor() {
 
 	options = memnew( MenuButton );
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
-	
+
 	options->set_text("MultiMesh");
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MultiMeshInstance","EditorIcons"));
 

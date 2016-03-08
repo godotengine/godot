@@ -189,7 +189,7 @@ struct InputModifierState {
 struct InputEventKey  {
 
 	InputModifierState mod;
-		
+
 	bool pressed; /// otherwise release
 
 	uint32_t scancode; ///< check keyboard.h , KeyCode enum, without modifier masks
@@ -212,11 +212,11 @@ struct InputEventMouse  {
 
 struct InputEventMouseButton : public InputEventMouse {
 
-	
+
 	int button_index;
 	bool pressed; //otherwise released
 	bool doubleclick; //last even less than doubleclick time
-	
+
 };
 
 struct InputEventMouseMotion : public InputEventMouse {

@@ -40,7 +40,7 @@
 Globals *Globals::singleton=NULL;
 
 Globals *Globals::get_singleton() {
-	
+
 	return singleton;
 }
 
@@ -108,7 +108,7 @@ bool Globals::is_persisting(const String& p_name) const {
 
 
 String Globals::globalize_path(const String& p_path) const {
-	
+
 	if (p_path.begins_with("res://")) {
 
 		if (resource_path != "") {
@@ -125,7 +125,7 @@ String Globals::globalize_path(const String& p_path) const {
 bool Globals::_set(const StringName& p_name, const Variant& p_value) {
 
 	_THREAD_SAFE_METHOD_
-	
+
 	if (p_value.get_type()==Variant::NIL)
 		props.erase(p_name);
 	else {
@@ -174,7 +174,7 @@ bool Globals::_get(const StringName& p_name,Variant &r_ret) const {
 		return false;
 	r_ret=props[p_name].variant;
 	return true;
-	
+
 }
 
 struct _VCSort {
@@ -188,13 +188,13 @@ struct _VCSort {
 };
 
 void Globals::_get_property_list(List<PropertyInfo> *p_list) const {
-	
+
 	_THREAD_SAFE_METHOD_
 
 	Set<_VCSort> vclist;
-	
+
 	for(Map<StringName,VariantContainer>::Element *E=props.front();E;E=E->next()) {
-		
+
 		const VariantContainer *v=&E->get();
 
 		if (v->hide_from_editor)
@@ -250,7 +250,7 @@ bool Globals::_load_resource_pack(const String& p_pack) {
 Error Globals::setup(const String& p_path,const String & p_main_pack) {
 
 	//an absolute mess of a function, must be cleaned up and reorganized somehow at some point
-	
+
 	//_load_settings(p_path+"/override.cfg");
 
 	if (p_main_pack!="") {
@@ -292,7 +292,7 @@ Error Globals::setup(const String& p_path,const String & p_main_pack) {
 		}
 
 	}
-	
+
 
 	if (FileAccessNetworkClient::get_singleton()) {
 
@@ -332,7 +332,7 @@ Error Globals::setup(const String& p_path,const String & p_main_pack) {
 		resource_path = p_path;
 
 	} else {
-	
+
 		d->change_dir(p_path);
 
 		String candidate = d->get_current_dir();
@@ -395,7 +395,7 @@ Error Globals::setup(const String& p_path,const String & p_main_pack) {
 }
 
 bool Globals::has(String p_var) const {
-	
+
 	_THREAD_SAFE_METHOD_
 
 	return props.has(p_var);
@@ -1410,7 +1410,7 @@ void Globals::_bind_methods() {
 }
 
 Globals::Globals() {
-	
+
 
 	singleton=this;
 	last_order=0;
@@ -1531,7 +1531,7 @@ Globals::Globals() {
 
 
 Globals::~Globals() {
-	
+
 	singleton=NULL;
 }
 

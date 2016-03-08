@@ -290,7 +290,7 @@ MainLoop* test() {
 
 	FileAccess *fa = FileAccess::open(test,FileAccess::READ);
 
-	if (!fa) {        
+	if (!fa) {
 		ERR_FAIL_V(NULL);
 	}
 

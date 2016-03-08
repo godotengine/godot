@@ -128,7 +128,7 @@ class TextEdit : public Control  {
 		void set_font(const Ref<Font>& p_font);
 		void set_color_regions(const Vector<ColorRegion>*p_regions) { color_regions=p_regions; }
 		int get_line_width(int p_line) const;
-		int get_max_width() const;		
+		int get_max_width() const;
 		const Map<int,ColorRegionInfo>& get_color_region_info(int p_line);
 		void set(int p_line,const String& p_string);
 		void set_marked(int p_line,bool p_marked) { text[p_line].marked=p_marked; }
@@ -210,7 +210,7 @@ class TextEdit : public Control  {
 	bool text_changed_dirty;
 	bool undo_enabled;
 	bool line_numbers;
-	
+
 	bool scroll_past_end_of_file_enabled;
 	bool auto_brace_completion_enabled;
 	bool brace_matching_enabled;
@@ -229,7 +229,7 @@ class TextEdit : public Control  {
 	Object *tooltip_obj;
 	StringName tooltip_func;
 	Variant tooltip_ud;
-	
+
 	bool next_operation_is_complex;
 
 	bool callhint_below;
@@ -258,13 +258,13 @@ class TextEdit : public Control  {
 	void _update_caches();
 	void _cursor_changed_emit();
 	void _text_changed_emit();
-	
+
 	void _begin_compex_operation();
 	void _end_compex_operation();
 	void _push_current_op();
 
 	/* super internal api, undo/redo builds on it */
-	
+
 	void _base_insert_text(int p_line, int p_column,const String& p_text,int &r_end_line,int &r_end_column);
 	String _base_get_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column) const;
 	void _base_remove_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column);
@@ -282,16 +282,16 @@ class TextEdit : public Control  {
 protected:
 
 	virtual String get_tooltip(const Point2& p_pos) const;
-	
+
 	void _insert_text(int p_line, int p_column,const String& p_text,int *r_end_line=NULL,int *r_end_char=NULL);
 	void _remove_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column);
 	void _insert_text_at_cursor(const String& p_text);
 	void _input_event(const InputEvent& p_input);
 	void _notification(int p_what);
-	
+
 	void _consume_pair_symbol(CharType ch);
 	void _consume_backspace_for_pair_symbol(int prev_line, int prev_column);
-	
+
 	static void _bind_methods();
 
 
@@ -304,7 +304,7 @@ public:
 		SEARCH_WHOLE_WORDS=2,
 		SEARCH_BACKWARDS=4
 	};
-	
+
 	virtual CursorShape get_cursor_shape(const Point2& p_pos=Point2i()) const;
 
 	//void delete_char();
@@ -322,7 +322,7 @@ public:
 	String get_line(int line) const;
     void set_line(int line, String new_text);
 	void backspace_at_cursor();
-	
+
 	inline void set_scroll_pass_end_of_file(bool p_enabled) {
 		scroll_past_end_of_file_enabled = p_enabled;
 		update();
@@ -402,7 +402,7 @@ public:
 
 	void set_tooltip_request_func(Object *p_obj, const StringName& p_function, const Variant& p_udata);
 
-	void set_completion(bool p_enabled,const Vector<String>& p_prefixes);	
+	void set_completion(bool p_enabled,const Vector<String>& p_prefixes);
 	void code_complete(const Vector<String> &p_strings);
 	void set_code_hint(const String& p_hint);
 	void query_code_comple();

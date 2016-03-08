@@ -42,15 +42,15 @@ struct SafeRefCount {
 	int count;
 
 public:
-	
+
 	// destroy() is called when weak_count_ drops to zero.
-	
+
 	bool ref() {  //true on success
-	
+
 		if (count==0)
 			return false;
 		count++;
-		
+
 		return true;
 	}
 
@@ -66,17 +66,17 @@ public:
 
 		if (count>0)
 			count--;
-				
+
 		return count==0;
 	}
-	
+
 	long get() const { // nothrow
-		
+
 		return static_cast<int const volatile &>( count );
 	}
-	
+
 	void init(int p_value=1) {
-	
+
 		count=p_value;
 	};
 
@@ -105,9 +105,9 @@ static inline int atomic_conditional_increment( volatile int * pw ) {
 	// int rv = *pw;
 	// if( rv != 0 ) ++*pw;
 	// return rv;
-	
+
 	int rv, tmp;
-	
+
 	__asm__
 	(
 		"movl %0, %%eax\n\t"
@@ -124,22 +124,22 @@ static inline int atomic_conditional_increment( volatile int * pw ) {
 		"m"( *pw ): // input (%3)
 		"cc" // clobbers
 	);
-	
+
 	return rv;
 }
 
 static inline int atomic_decrement( volatile int *pw) {
-	
+
 	// return --(*pw);
-		
+
 	unsigned char rv;
-	
+
 	__asm__
 	(
 		"lock\n\t"
 		"decl %0\n\t"
-		"setne %1": 
-		"=m" (*pw), "=qm" (rv): 
+		"setne %1":
+		"=m" (*pw), "=qm" (rv):
 		"m" (*pw):
 		"memory"
 	);
@@ -266,15 +266,15 @@ inline long atomic_conditional_increment( register long * pw )
 	asm
 	{
 	loop:
-	
+
 	lwarx   a, 0, pw
 	cmpwi   a, 0
 	beq     store
-	
+
 	addi    a, a, 1
-	
+
 	store:
-	
+
 	stwcx.  a, 0, pw
 	bne-    loop
     }
@@ -288,16 +288,16 @@ inline long atomic_decrement( register long * pw )
     register int a;
 
     asm {
-    
+
 	sync
-	
+
 	loop:
-	
+
 	lwarx   a, 0, pw
 	addi    a, a, -1
 	stwcx.  a, 0, pw
 	bne-    loop
-	
+
 	isync
     }
 
@@ -338,11 +338,11 @@ struct SafeRefCount {
   REFCOUNT_T count;
 
 public:
-	
+
 	// destroy() is called when weak_count_ drops to zero.
-	
+
 	bool ref() {  //true on success
-	
+
 		return atomic_conditional_increment( &count ) != 0;
 	}
 
@@ -356,17 +356,17 @@ public:
 		if( atomic_decrement ( &count ) == 0 ) {
 			return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	long get() const { // nothrow
-		
+
 		return static_cast<REFCOUNT_GET_T>( count );
 	}
-	
+
 	void init(int p_value=1) {
-	
+
 		count=p_value;
 	};
 
@@ -376,4 +376,4 @@ public:
 
 #endif // no thread safe
 
-#endif 
+#endif

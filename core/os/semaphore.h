@@ -35,17 +35,17 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class Semaphore {
-protected:	
+protected:
 	static Semaphore* (*create_func)();
-	
+
 public:
 
 	virtual Error wait()=0; ///< wait until semaphore has positive value, then decrement and pass
 	virtual Error post()=0; ///< unlock the semaphore, incrementing the    value
 	virtual int get() const=0; ///< get semaphore value
-	
+
 	static Semaphore * create(); ///< Create a mutex
-	
+
 	virtual ~Semaphore();
 };
 

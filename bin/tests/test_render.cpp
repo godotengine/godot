@@ -49,16 +49,16 @@ class TestMainLoop : public MainLoop {
 	RID viewport;
 	RID light;
 	RID scenario;
-	
+
 	struct InstanceInfo {
-	
+
 		RID instance;
 		Transform base;
 		Vector3 rot_axis;
 	};
-	
+
 	List<InstanceInfo> instances;
-	
+
 	float ofs;
 	bool quit;
 protected:
@@ -66,13 +66,13 @@ protected:
 
 public:
 	virtual void input_event(const InputEvent& p_event) {
-	
+
 		if (p_event.type==InputEvent::KEY && p_event.key.pressed)
 			quit=true;
 	}
 
 	virtual void init() {
-		
+
 
 		print_line("INITIALIZING TEST RENDER");
 		VisualServer *vs=VisualServer::get_singleton();
@@ -150,26 +150,26 @@ public:
 		};
 
 		for (int i=0;i<object_count;i++) {
-			
+
 			InstanceInfo ii;
-			
-			
+
+
 			ii.instance = vs->instance_create2( test_cube, scenario );
-			
-			
+
+
 			ii.base.translate( Math::random(-20,20), Math::random(-20,20),Math::random(-20,18) );
 			ii.base.rotate( Vector3(0,1,0), Math::randf() * Math_PI );
 			ii.base.rotate( Vector3(1,0,0), Math::randf() * Math_PI );
-			vs->instance_set_transform( ii.instance, ii.base );			
-			
+			vs->instance_set_transform( ii.instance, ii.base );
+
 			ii.rot_axis = Vector3( Math::random(-1,1), Math::random(-1,1), Math::random(-1,1) ).normalized();
-			
+
 			instances.push_back(ii);
-			
+
 		}
-		
+
 		camera = vs->camera_create();
-		
+
 // 		vs->camera_set_perspective( camera, 60.0,0.1, 100.0 );
 
 		viewport = vs->viewport_create();
@@ -226,9 +226,9 @@ public:
 		ofs+=p_time*0.05;
 
 		//return quit;
-		
+
 		for(List<InstanceInfo>::Element *E=instances.front();E;E=E->next()) {
-		
+
 			Transform pre( Matrix3(E->get().rot_axis, ofs), Vector3() );
 			vs->instance_set_transform( E->get().instance, pre * E->get().base );
 			/*
@@ -238,7 +238,7 @@ public:
 				instances.erase(E );
 			}*/
 		}
-			
+
 		return quit;
 	}
 

@@ -1122,7 +1122,7 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 
 	button_reload = memnew( Button );
 	button_reload->set_flat(true);
-	button_reload->connect("pressed",this,"_rescan");	
+	button_reload->connect("pressed",this,"_rescan");
 	toolbar_hbc->add_child(button_reload);
 	button_reload->set_focus_mode(FOCUS_NONE);
 	button_reload->set_tooltip("Re-Scan Filesystem");
@@ -1238,10 +1238,10 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 	add_child(remove_dialog);
 
 	move_dialog = memnew( EditorDirDialog );
-	add_child(move_dialog);	
+	add_child(move_dialog);
 	move_dialog->connect("dir_selected",this,"_move_operation");
 	move_dialog->get_ok()->set_text("Move");
-	
+
 	rename_dialog = memnew( EditorFileDialog );
 	rename_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	rename_dialog->connect("file_selected",this,"_rename_operation");

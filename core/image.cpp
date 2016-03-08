@@ -382,7 +382,7 @@ void Image::convert( Format p_new_format ){
 
 
 	Image new_img(width,height,0,p_new_format);
-	
+
 	int len=data.size();
 
 	DVector<uint8_t>::Read r = data.read();
@@ -413,7 +413,7 @@ void Image::convert( Format p_new_format ){
 	w = DVector<uint8_t>::Write();
 
 	bool gen_mipmaps=mipmaps>0;
-			
+
 	*this=new_img;
 
 	if (gen_mipmaps)
@@ -643,13 +643,13 @@ void Image::resize( int p_width, int p_height, Interpolation p_interpolation ) {
 	ERR_FAIL_COND(p_height<=0);
 	ERR_FAIL_COND(p_width>MAX_WIDTH);
 	ERR_FAIL_COND(p_height>MAX_HEIGHT);
-	
+
 
 	if (p_width==width && p_height==height)
 		return;
-		
+
 	Image dst( p_width, p_height, 0, format );
-	 
+
 	if (format==FORMAT_INDEXED)
 		p_interpolation=INTERPOLATE_NEAREST;
 
@@ -714,34 +714,34 @@ void Image::crop( int p_width, int p_height ) {
 	ERR_FAIL_COND(p_height<=0);
 	ERR_FAIL_COND(p_width>MAX_WIDTH);
 	ERR_FAIL_COND(p_height>MAX_HEIGHT);
-	
+
 	/* to save memory, cropping should be done in-place, however, since this function
 	   will most likely either not be used much, or in critical areas, for now it wont, because
 	   it's a waste of time. */
 
 	if (p_width==width && p_height==height)
 		return;
-		
+
 	Image dst( p_width, p_height,0, format );
 
-	
+
 	for (int y=0;y<p_height;y++) {
-	
+
 		for (int x=0;x<p_width;x++) {
 
 			Color col = (x>=width || y>=height)? Color() : get_pixel(x,y);
 			dst.put_pixel(x,y,col);
 		}
 	}
-	
+
 	if (mipmaps>0)
 		dst.generate_mipmaps();
 	*this=dst;
-	
+
 }
 
 void Image::flip_y() {
-	
+
 	if (!_can_modify(format)) {
 		ERR_EXPLAIN("Cannot flip_y in indexed, compressed or custom image formats.");
 		ERR_FAIL();
@@ -756,12 +756,12 @@ void Image::flip_y() {
 
 
 	for (int y=0;y<(height/2);y++) {
-	
+
 		for (int x=0;x<width;x++) {
 
 			Color up = get_pixel(x,y);
 			Color down = get_pixel(x,height-y-1);
-			
+
 			put_pixel(x,y,down);
 			put_pixel(x,height-y-1,up);
 		}
@@ -783,12 +783,12 @@ void Image::flip_x() {
 		clear_mipmaps();;
 
 	for (int y=0;y<(height/2);y++) {
-		
+
 		for (int x=0;x<width;x++) {
-			
+
 			Color up = get_pixel(x,y);
 			Color down = get_pixel(width-x-1,y);
-			
+
 			put_pixel(x,y,down);
 			put_pixel(width-x-1,y,up);
 		}
@@ -1040,26 +1040,26 @@ void Image::make_normalmap(float p_height_scale) {
 	}
 
 	ERR_FAIL_COND( empty() );
-	
+
 	Image normalmap(width,height,0, FORMAT_RGB);
 	/*
 	for (int y=0;y<height;y++) {
 		for (int x=0;x<width;x++) {
-		
+
 			float center=get_pixel(x,y).gray()/255.0;
 			float up=(y>0)?get_pixel(x,y-1).gray()/255.0:center;
 			float down=(y<(height-1))?get_pixel(x,y+1).gray()/255.0:center;
 			float left=(x>0)?get_pixel(x-1,y).gray()/255.0:center;
 			float right=(x<(width-1))?get_pixel(x+1,y).gray()/255.0:center;
-		
-		
+
+
 			// uhm, how do i do this? ....
-			
+
 			Color result( (uint8_t)((normal.x+1.0)*127.0), (uint8_t)((normal.y+1.0)*127.0), (uint8_t)((normal.z+1.0)*127.0) );
-			
+
 			normalmap.put_pixel( x, y, result );
 		}
-		
+
 	}
 	*/
 	*this=normalmap;
@@ -1071,14 +1071,14 @@ bool Image::empty() const {
 }
 
 DVector<uint8_t> Image::get_data() const {
-	
+
 	return data;
 }
 
 void Image::create(int p_width, int p_height, bool p_use_mipmaps,Format p_format) {
 
 
-	int mm=0;	
+	int mm=0;
 	int size = _get_dst_image_size(p_width,p_height,p_format,mm,p_use_mipmaps?-1:0);
 	data.resize( size );
 	{
@@ -1095,7 +1095,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps,Format p_format
 }
 
 void Image::create(int p_width, int p_height, int p_mipmaps, Format p_format, const DVector<uint8_t>& p_data) {
-	
+
 	ERR_FAIL_INDEX(p_width-1,MAX_WIDTH);
 	ERR_FAIL_INDEX(p_height-1,MAX_HEIGHT);
 
@@ -1108,48 +1108,48 @@ void Image::create(int p_width, int p_height, int p_mipmaps, Format p_format, co
 			ERR_FAIL_COND(p_data.size()!=size);
 		}
 	};
-	
+
 	height=p_height;
 	width=p_width;
 	format=p_format;
-	data=p_data;	
+	data=p_data;
 	mipmaps=p_mipmaps;
 }
 
 
 void Image::create( const char ** p_xpm ) {
-	
+
 
 	int size_width,size_height;
 	int pixelchars=0;
 	mipmaps=0;
 	bool has_alpha=false;
-	
+
 	enum Status {
 		READING_HEADER,
 		READING_COLORS,
 		READING_PIXELS,
 		DONE
 	};
-	
+
 	Status status = READING_HEADER;
 	int line=0;
-	
+
 	HashMap<String,Color> colormap;
 	int colormap_size;
-	
+
 	while (status!=DONE) {
-		
+
 		const char * line_ptr = p_xpm[line];
-		
-		
+
+
 		switch (status) {
-			
+
 		case READING_HEADER: {
-			
+
 			String line_str=line_ptr;
 			line_str.replace("\t"," ");
-			
+
 			size_width=line_str.get_slicec(' ',0).to_int();
 			size_height=line_str.get_slicec(' ',1).to_int();
 			colormap_size=line_str.get_slicec(' ',2).to_int();
@@ -1161,10 +1161,10 @@ void Image::create( const char ** p_xpm ) {
 			status=READING_COLORS;
 		} break;
 		case READING_COLORS: {
-			
+
 			String colorstring;
 			for (int i=0;i<pixelchars;i++) {
-				
+
 				colorstring+=*line_ptr;
 				line_ptr++;
 			}
@@ -1175,25 +1175,25 @@ void Image::create( const char ** p_xpm ) {
 				line_ptr++;
 			}
 			if (*line_ptr=='c') {
-				
+
 				line_ptr++;
 				while (*line_ptr==' ' ||  *line_ptr=='\t' || *line_ptr==0) {
 					if (*line_ptr==0)
 						break;
 					line_ptr++;
 				}
-				
+
 				if (*line_ptr=='#') {
 					line_ptr++;
 					uint8_t col_r;
 					uint8_t col_g;
 					uint8_t col_b;
 //					uint8_t col_a=255;
-					
+
 					for (int i=0;i<6;i++) {
-						
+
 						char v = line_ptr[i];
-						
+
 						if (v>='0' && v<='9')
 							v-='0';
 						else if (v>='A' && v<='F')
@@ -1202,7 +1202,7 @@ void Image::create( const char ** p_xpm ) {
 							v=(v-'a')+10;
 						else
 							break;
-						
+
 						switch(i) {
 						case 0: col_r=v<<4; break;
 						case 1: col_r|=v; break;
@@ -1211,48 +1211,48 @@ void Image::create( const char ** p_xpm ) {
 						case 4: col_b=v<<4; break;
 						case 5: col_b|=v; break;
 						};
-						
+
 					}
-					
+
 							// magenta mask
 					if (col_r==255 && col_g==0 && col_b==255) {
-						
+
 						colormap[colorstring]=Color(0,0,0,0);
 						has_alpha=true;
 					} else {
 
 						colormap[colorstring]=Color(col_r/255.0,col_g/255.0,col_b/255.0,1.0);
 					}
-					
+
 				}
 			}
 			if (line==colormap_size) {
-				
+
 				status=READING_PIXELS;
 				create(size_width,size_height,0,has_alpha?FORMAT_RGBA:FORMAT_RGB);
 			}
 		} break;
 		case READING_PIXELS: {
-			
+
 			int y=line-colormap_size-1;
 			for (int x=0;x<size_width;x++) {
-				
+
 				char pixelstr[6]={0,0,0,0,0,0};
 				for (int i=0;i<pixelchars;i++)
 					pixelstr[i]=line_ptr[x*pixelchars+i];
-				
+
 				Color *colorptr = colormap.getptr(pixelstr);
 				ERR_FAIL_COND(!colorptr);
 				put_pixel(x,y,*colorptr);
-				
+
 			}
-			
+
 			if (y==(size_height-1))
 				status=DONE;
 		} break;
 		default:{}
 		}
-		
+
 		line++;
 	}
 }
@@ -2022,7 +2022,7 @@ Image Image::compressed(int p_mode) {
 };
 
 Image::Image(const char **p_xpm) {
-	
+
 	width=0;
 	height=0;
 	mipmaps=0;

@@ -119,7 +119,7 @@ void ItemListOptionButtonPlugin::set_object(Object *p_object) {
 
 bool ItemListOptionButtonPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("OptionButton"); 
+	return p_object->is_type("OptionButton");
 }
 
 int ItemListOptionButtonPlugin::get_flags() const {
@@ -130,23 +130,23 @@ int ItemListOptionButtonPlugin::get_flags() const {
 void ItemListOptionButtonPlugin::add_item() {
 
 	ob->add_item( "Item "+itos(ob->get_item_count()));
-	_change_notify(); 
+	_change_notify();
 }
 
 int ItemListOptionButtonPlugin::get_item_count() const {
 
-	return ob->get_item_count(); 
+	return ob->get_item_count();
 }
 
 void ItemListOptionButtonPlugin::erase(int p_idx) {
 
-	ob->remove_item(p_idx); 
+	ob->remove_item(p_idx);
 	_change_notify();
 }
 
 ItemListOptionButtonPlugin::ItemListOptionButtonPlugin() {
 
-	ob=NULL; 
+	ob=NULL;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -259,7 +259,7 @@ void ItemListEditor::edit(Node *p_item_list) {
 
 			item_plugins[i]->set_object(p_item_list);
 			property_editor->edit(item_plugins[i]);
-			
+
 			if (has_icon(item_list->get_type(), "EditorIcons"))
 				toolbar_button->set_icon(get_icon(item_list->get_type(), "EditorIcons"));
 			else

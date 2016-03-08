@@ -47,7 +47,7 @@ public:
 	typedef int VoiceID;
 
 
-private:	
+private:
 
 	Ref<SampleLibrary> library;
 	int polyphony;

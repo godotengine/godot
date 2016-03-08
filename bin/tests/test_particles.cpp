@@ -43,38 +43,38 @@ class TestMainLoop : public MainLoop {
 	RID viewport;
 	RID light;
 	RID scenario;
-	
+
 	struct InstanceInfo {
-	
+
 		RID instance;
 		Transform base;
 		Vector3 rot_axis;
 	};
-	
+
 	List<InstanceInfo> instances;
-	
+
 	float ofs;
 	bool quit;
 public:
 	virtual void input_event(const InputEvent& p_event) {
-	
-		
+
+
 	}
 	virtual void request_quit() {
-	
+
 		quit=true;
 	}
 	virtual void init() {
-		
+
 		VisualServer *vs=VisualServer::get_singleton();
 		particles = vs->particles_create();
 		vs->particles_set_amount(particles,1000);
-		
+
 		instance = vs->instance_create2(particles,scenario);
-		
-		
+
+
 		camera = vs->camera_create();
-		
+
 // 		vs->camera_set_perspective( camera, 60.0,0.1, 100.0 );
 		viewport = vs->viewport_create();
 		vs->viewport_attach_camera( viewport, camera );
@@ -89,7 +89,7 @@ public:
 		RID lightaux = vs->light_create( VisualServer::LIGHT_DIRECTIONAL );
 	//	vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,0.0) );
 		light = vs->instance_create2( lightaux, scenario );
-		
+
 		ofs=0;
 		quit=false;
 	}
@@ -99,14 +99,14 @@ public:
 
 
 	virtual bool iteration(float p_time) {
-	
+
 //		VisualServer *vs=VisualServer::get_singleton();
-			
+
 		ofs+=p_time;
 		return quit;
 	}
 	virtual void finish() {
-	
+
 	}
 
 };

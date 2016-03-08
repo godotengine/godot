@@ -166,7 +166,7 @@ public:
 	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0);
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
-    
+
 	virtual void set_keep_screen_on(bool p_enabled);
 
 	virtual bool can_draw() const;
@@ -176,7 +176,7 @@ public:
 	virtual void hide_virtual_keyboard();
 
 	virtual void set_cursor_shape(CursorShape p_shape);
-	
+
 	virtual Size2 get_window_size() const;
 
 	virtual bool has_touchscreen_ui_hint() const;
@@ -188,7 +188,7 @@ public:
 	Error shell_open(String p_uri);
 
 	String get_data_dir() const;
-	
+
 	void set_locale(String p_locale);
 	String get_locale() const;
 

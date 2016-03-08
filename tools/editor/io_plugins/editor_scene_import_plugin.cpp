@@ -461,7 +461,7 @@ EditorImportAnimationOptions::EditorImportAnimationOptions() {
 		items.push_back(ti);
 		fname++;
 		fdescr++;
-	}	
+	}
 
 
 	TreeItem *fps_base = flags->create_item(root);

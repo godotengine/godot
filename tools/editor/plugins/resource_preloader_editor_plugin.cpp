@@ -46,7 +46,7 @@ void ResourcePreloaderEditor::_notification(int p_what) {
 	}
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
-		load->set_icon( get_icon("Folder","EditorIcons") );		
+		load->set_icon( get_icon("Folder","EditorIcons") );
 		_delete->set_icon( get_icon("Del","EditorIcons") );
 	}
 

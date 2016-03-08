@@ -541,14 +541,14 @@ void GDTokenizerText::_advance() {
 				}
 				INCPOS(1);
 				is_node_path=true;
-				
+
 			case '\'':
 			case '"': {
-	
+
 				if (GETCHAR(0)=='\'')
 					string_mode=STRING_SINGLE_QUOTE;
-																	
-																	
+
+
 				int i=1;
 				if (string_mode==STRING_DOUBLE_QUOTE && GETCHAR(i)=='"' && GETCHAR(i+1)=='"') {
 					i+=2;
@@ -1054,7 +1054,7 @@ Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 	const uint8_t *buf=p_buffer.ptr();
 	int total_len=p_buffer.size();
 	ERR_FAIL_COND_V( p_buffer.size()<24 || p_buffer[0]!='G' || p_buffer[1]!='D' || p_buffer[2]!='S' || p_buffer[3]!='C',ERR_INVALID_DATA);
-	
+
 	int version = decode_uint32(&buf[4]);
 	if (version>BYTECODE_VERSION) {
 		ERR_EXPLAIN("Bytecode is too New! Please use a newer engine version.");
@@ -1066,13 +1066,13 @@ Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 	int token_count = decode_uint32(&buf[20]);
 
 	const uint8_t *b=buf;
-	
+
 	b=&buf[24];
 	total_len-=24;
-	
+
 	identifiers.resize(identifier_count);
 	for(int i=0;i<identifier_count;i++) {
-		
+
 		int len = decode_uint32(b);
 		ERR_FAIL_COND_V(len>total_len,ERR_INVALID_DATA);
 		b+=4;
@@ -1089,7 +1089,7 @@ Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 		total_len-=len+4;
 		identifiers[i]=s;
 	}
-	
+
 	constants.resize(constant_count);
 	for(int i=0;i<constant_count;i++) {
 

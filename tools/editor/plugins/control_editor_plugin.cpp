@@ -80,16 +80,16 @@ void ControlEditor::_node_removed(Node *p_node) {
 
 // slow as hell
 Control* ControlEditor::_select_control_at_pos(const Point2& p_pos,Node* p_node) {
-	
+
 	for (int i=p_node->get_child_count()-1;i>=0;i--) {
-	
+
 		Control *r=_select_control_at_pos(p_pos,p_node->get_child(i));
 		if (r)
 			return r;
 	}
-	
+
 	Control *c=p_node->cast_to<Control>();
-	
+
 	if (c) {
 		Rect2 rect = c->get_window_rect();
 		if (c->get_window()==current_window) {
@@ -123,9 +123,9 @@ void ControlEditor::_key_move(const Vector2& p_dir, bool p_snap) {
 
 
 void ControlEditor::_input_event(InputEvent p_event) {
-	
+
 	if (p_event.type==InputEvent::MOUSE_BUTTON) {
-		
+
 		const InputEventMouseButton &b=p_event.mouse_button;
 
 		if (b.button_index==BUTTON_RIGHT) {
@@ -146,12 +146,12 @@ void ControlEditor::_input_event(InputEvent p_event) {
 		}
 		//if (!controls.size())
 		//	return;
-		
+
 		if (b.button_index!=BUTTON_LEFT)
 			return;
 
 		if (!b.pressed) {
-			
+
 			if (drag!=DRAG_NONE) {
 
 				if (undo_redo) {
@@ -321,11 +321,11 @@ void ControlEditor::_input_event(InputEvent p_event) {
 		}
 
 	}
-	
+
 	if (p_event.type==InputEvent::MOUSE_MOTION) {
-		
+
 		const InputEventMouseMotion &m=p_event.mouse_motion;
-		
+
 		if (drag==DRAG_NONE || !current_window)
 			return;
 
@@ -449,7 +449,7 @@ void ControlEditor::_input_event(InputEvent p_event) {
 
 	}
 
-		
+
 }
 
 
@@ -492,9 +492,9 @@ void ControlEditor::_update_scroll(float) {
 }
 
 void ControlEditor::_notification(int p_what) {
-	
+
 	if (p_what==NOTIFICATION_PROCESS) {
-		
+
 		for(ControlMap::Element *E=controls.front();E;E=E->next()) {
 
 			Control *control = E->key();
@@ -504,16 +504,16 @@ void ControlEditor::_notification(int p_what) {
 				E->get().last_rect=r;
 			}
 		}
-		
+
 	}
-	
+
 	if (p_what==NOTIFICATION_CHILDREN_CONFIGURED) {
-		
+
 		get_scene()->connect("node_removed",this,"_node_removed");
 	}
-	
+
 	if (p_what==NOTIFICATION_DRAW) {
-		
+
 		// TODO fetch the viewport?
 		/*
 		if (!control) {
@@ -572,11 +572,11 @@ VisualServer::get_singleton()->canvas_item_add_rect(ci,m_rect,m_color);
 			//DRAW_EMPTY_RECT( Rect2( current_window->get_scroll()-Point2(1,1), get_size()+Size2(2,2)), Color(0.8,0.8,1.0,0.8) );
 			E->get().last_rect = rect;
 		}
-	}	
+	}
 }
 
 void ControlEditor::edit(Control *p_control) {
-	
+
 	drag=DRAG_NONE;
 
 	_clear_controls();
@@ -727,9 +727,9 @@ void ControlEditor::_popup_callback(int p_op) {
 }
 
 void ControlEditor::_bind_methods() {
-	
+
 	ObjectTypeDB::bind_method("_input_event",&ControlEditor::_input_event);
-	ObjectTypeDB::bind_method("_node_removed",&ControlEditor::_node_removed);		
+	ObjectTypeDB::bind_method("_node_removed",&ControlEditor::_node_removed);
 	ObjectTypeDB::bind_method("_update_scroll",&ControlEditor::_update_scroll);
 	ObjectTypeDB::bind_method("_popup_callback",&ControlEditor::_popup_callback);
 	ObjectTypeDB::bind_method("_visibility_changed",&ControlEditor::_visibility_changed);
@@ -781,13 +781,13 @@ ControlEditor::ControlEditor(EditorNode *p_editor) {
 
 
 void ControlEditorPlugin::edit(Object *p_object) {
-	
+
 	control_editor->set_undo_redo(&get_undo_redo());
 	control_editor->edit(p_object->cast_to<Control>());
 }
 
 bool ControlEditorPlugin::handles(Object *p_object) const {
-	
+
 	return p_object->is_type("Control");
 }
 
@@ -797,7 +797,7 @@ void ControlEditorPlugin::make_visible(bool p_visible) {
 		control_editor->show();
 		control_editor->set_process(true);
 	} else {
-	
+
 		control_editor->hide();
 		control_editor->set_process(false);
 	}
@@ -805,14 +805,14 @@ void ControlEditorPlugin::make_visible(bool p_visible) {
 }
 
 ControlEditorPlugin::ControlEditorPlugin(EditorNode *p_node) {
-	
+
 	editor=p_node;
 	control_editor = memnew( ControlEditor(editor) );
 	editor->get_viewport()->add_child(control_editor);
 	control_editor->set_area_as_parent_rect();
 	control_editor->hide();
 
-	
+
 
 }
 

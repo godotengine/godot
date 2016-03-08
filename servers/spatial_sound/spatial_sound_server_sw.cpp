@@ -323,7 +323,7 @@ RID SpatialSoundServerSW::source_create(RID p_space) {
 
 void SpatialSoundServerSW::source_set_polyphony(RID p_source,int p_voice_count) {
 
-	
+
 	ERR_FAIL_COND(p_voice_count<=0); // more than 32 is too much, change this if you really need more
 	if (p_voice_count>32) {
 
@@ -378,8 +378,8 @@ float SpatialSoundServerSW::source_get_param(RID p_source, SourceParam p_param) 
 	Source *source = source_owner.get(p_source);
 	ERR_FAIL_COND_V(!source,0);
 	return source->params[p_param];
-	
-	
+
+
 }
 
 void SpatialSoundServerSW::source_set_audio_stream(RID p_source, AudioServer::AudioStream *p_stream) {
@@ -542,7 +542,7 @@ void SpatialSoundServerSW::free(RID p_id) {
 
 	if (space_owner.owns(p_id)) {
 
-		Space *space = space_owner.get(p_id);	
+		Space *space = space_owner.get(p_id);
 		free(space->default_room);
 
 		while(space->listeners.size()) {
