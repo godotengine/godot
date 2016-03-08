@@ -368,6 +368,7 @@ public:
 	DVector<uint8_t> get_buffer(int p_length) const; ///< get an array of bytes
 	String get_line() const;
 	String get_as_text() const;
+	String get_md5(const String& p_path) const;
 
 	/**< use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
 	 * It's not about the current CPU type but file formats.
