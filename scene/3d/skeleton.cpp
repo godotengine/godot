@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "skeleton.h"
- 
+
 #include "message_queue.h"
 
 #include "scene/resources/surface_tool.h"
@@ -40,19 +40,19 @@ bool Skeleton::_set(const StringName& p_path, const Variant& p_value) {
 
 	if (!path.begins_with("bones/"))
 		return false;
-		
+
 	int which=path.get_slicec('/',1).to_int();
 	String what=path.get_slicec('/',2);
 
 
 	if (which==bones.size() && what=="name") {
-	
+
 		add_bone(p_value);
 		return true;
 	}
-	
+
 	ERR_FAIL_INDEX_V( which, bones.size(), false );
-	
+
 	if (what=="parent")
 		set_bone_parent(which, p_value );
 	else if (what=="rest")
@@ -63,11 +63,11 @@ bool Skeleton::_set(const StringName& p_path, const Variant& p_value) {
 		set_bone_pose(which, p_value);
 	else if (what=="bound_childs") {
 		Array children=p_value;
-		
+
 		bones[which].nodes_bound.clear();
-		
+
 		for (int i=0;i<children.size();i++) {
-		
+
 			NodePath path=children[i];
 			ERR_CONTINUE( path.operator String()=="" );
 			Node *node = get_node(path);
@@ -87,12 +87,12 @@ bool Skeleton::_get(const StringName& p_name,Variant &r_ret) const {
 
 	if (!path.begins_with("bones/"))
 		return false;
-		
+
 	int which=path.get_slicec('/',1).to_int();
 	String what=path.get_slicec('/',2);
-		
+
 	ERR_FAIL_INDEX_V( which, bones.size(), false );
-	
+
 	if (what=="name")
 		r_ret=get_bone_name(which);
 	else if (what=="parent")
@@ -105,29 +105,29 @@ bool Skeleton::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret=get_bone_pose(which);
 	else if (what=="bound_childs") {
 		Array children;
-		
+
 		for (const List<uint32_t>::Element *E=bones[which].nodes_bound.front();E;E=E->next()) {
-		
+
 			Object *obj=ObjectDB::get_instance(E->get());
 			ERR_CONTINUE(!obj);
 			Node *node=obj->cast_to<Node>();
 			ERR_CONTINUE(!node);
 			NodePath path=get_path_to(node);
 			children.push_back(path);
-			
+
 		}
-		
+
 		r_ret=children;
 	} else
 		return false;
-	
+
 	return true;
 
 }
 void Skeleton::_get_property_list( List<PropertyInfo>* p_list ) const {
 
 	for (int i=0;i<bones.size();i++) {
-		
+
 		String prep="bones/"+itos(i)+"/";
 		p_list->push_back( PropertyInfo( Variant::STRING, prep+"name" ) );
 		p_list->push_back( PropertyInfo( Variant::INT, prep+"parent" , PROPERTY_HINT_RANGE,"-1,"+itos(i-1)+",1") );
@@ -141,18 +141,18 @@ void Skeleton::_get_property_list( List<PropertyInfo>* p_list ) const {
 void Skeleton::_notification(int p_what) {
 
 	switch(p_what) {
-	
+
 		case NOTIFICATION_ENTER_WORLD: {
-		
+
 			if (dirty) {
-			
+
 				dirty=false;
 				_make_dirty(); // property make it dirty
 			}
-			
+
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
-		
+
 		} break;
 		case NOTIFICATION_UPDATE_SKELETON: {
 
@@ -178,15 +178,15 @@ void Skeleton::_notification(int p_what) {
 					Bone &b=bonesptr[i];
 					b.rest_global_inverse.affine_invert();
 				}
-				
+
 				rest_global_inverse_dirty=false;
 
 			}
-			
+
 			for (int i=0;i<len;i++) {
-			
+
 				Bone &b=bonesptr[i];
-		
+
 				if (b.disable_rest) {
 					if (b.enabled) {
 
@@ -241,7 +241,7 @@ void Skeleton::_notification(int p_what) {
 						}
 					}
 				}
-				
+
 				vs->skeleton_bone_set_transform( skeleton, i,  b.pose_global * b.rest_global_inverse );
 
 				for(List<uint32_t>::Element *E=b.nodes_bound.front();E;E=E->next()) {
@@ -255,7 +255,7 @@ void Skeleton::_notification(int p_what) {
 			}
 
 			dirty=false;
-		} break;	
+		} break;
 	}
 }
 
@@ -298,16 +298,16 @@ RID Skeleton::get_skeleton() const {
 void Skeleton::add_bone(const String& p_name) {
 
 	ERR_FAIL_COND( p_name=="" || p_name.find(":")!=-1 || p_name.find("/")!=-1 );
-	
+
 	for (int i=0;i<bones.size();i++) {
-	
+
 		ERR_FAIL_COND( bones[i].name=="p_name");
 	}
 
 	Bone b;
 	b.name=p_name;
 	bones.push_back(b);
-	
+
 	rest_global_inverse_dirty=true;
 	_make_dirty();
 	update_gizmo();
@@ -315,11 +315,11 @@ void Skeleton::add_bone(const String& p_name) {
 int Skeleton::find_bone(String p_name) const {
 
 	for (int i=0;i<bones.size();i++) {
-	
+
 		if (bones[i].name==p_name)
 			return i;
 	}
-	
+
 	return -1;
 }
 String Skeleton::get_bone_name(int p_bone) const {
@@ -338,7 +338,7 @@ void Skeleton::set_bone_parent(int p_bone, int p_parent) {
 
 	ERR_FAIL_INDEX( p_bone, bones.size() );
 	ERR_FAIL_COND( p_parent!=-1 && (p_parent<0 || p_parent>=p_bone));
-	
+
 	bones[p_bone].parent=p_parent;
 	rest_global_inverse_dirty=true;
 	_make_dirty();
@@ -378,14 +378,14 @@ bool Skeleton::is_bone_rest_disabled(int p_bone) const {
 int Skeleton::get_bone_parent(int p_bone) const {
 
 	ERR_FAIL_INDEX_V( p_bone, bones.size(), -1 );
-	
+
 	return bones[p_bone].parent;
 }
 
 void Skeleton::set_bone_rest(int p_bone, const Transform& p_rest) {
 
 	ERR_FAIL_INDEX( p_bone, bones.size() );
-	
+
 	bones[p_bone].rest=p_rest;
 	rest_global_inverse_dirty=true;
 	_make_dirty();
@@ -394,7 +394,7 @@ void Skeleton::set_bone_rest(int p_bone, const Transform& p_rest) {
 Transform Skeleton::get_bone_rest(int p_bone) const {
 
 	ERR_FAIL_INDEX_V( p_bone, bones.size(), Transform() );
-	
+
 	return bones[p_bone].rest;
 
 }
@@ -402,7 +402,7 @@ Transform Skeleton::get_bone_rest(int p_bone) const {
 void Skeleton::set_bone_enabled(int p_bone, bool p_enabled) {
 
 	ERR_FAIL_INDEX( p_bone, bones.size() );
-	
+
 	bones[p_bone].enabled=p_enabled;
 	rest_global_inverse_dirty=true;
 	_make_dirty();
@@ -418,23 +418,23 @@ void Skeleton::bind_child_node_to_bone(int p_bone,Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_INDEX( p_bone, bones.size() );
-	
+
 	uint32_t id=p_node->get_instance_ID();
-	
+
 	for (List<uint32_t>::Element *E=bones[p_bone].nodes_bound.front();E;E=E->next()) {
-	
+
 		if (E->get()==id)
 			return; // already here
 	}
-	
+
 	bones[p_bone].nodes_bound.push_back(id);
-	
+
 }
 void Skeleton::unbind_child_node_from_bone(int p_bone,Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_INDEX( p_bone, bones.size() );
-	
+
 	uint32_t id=p_node->get_instance_ID();
 	bones[p_bone].nodes_bound.erase(id);
 
@@ -442,9 +442,9 @@ void Skeleton::unbind_child_node_from_bone(int p_bone,Node *p_node) {
 void Skeleton::get_bound_child_nodes_to_bone(int p_bone,List<Node*> *p_bound) const {
 
 	ERR_FAIL_INDEX( p_bone, bones.size() );
-	
+
 	for (const List<uint32_t>::Element *E=bones[p_bone].nodes_bound.front();E;E=E->next()) {
-	
+
 		Object *obj=ObjectDB::get_instance(E->get());
 		ERR_CONTINUE(!obj);
 		p_bound->push_back(obj->cast_to<Node>());
@@ -465,7 +465,7 @@ void Skeleton::set_bone_pose(int p_bone, const Transform& p_pose) {
 
 	ERR_FAIL_INDEX( p_bone, bones.size() );
 	ERR_FAIL_COND( !is_inside_tree() );
-	
+
 
 	bones[p_bone].pose=p_pose;
 	_make_dirty();
@@ -501,7 +501,7 @@ void Skeleton::_make_dirty() {
 
 	if (dirty)
 		return;
-		
+
 	if (!is_inside_tree()) {
 		dirty=true;
 		return;
@@ -538,13 +538,13 @@ RES Skeleton::_get_gizmo_geometry() const {
 	int len=bones.size();
 
 	for (int i=0;i<len;i++) {
-	
+
 		const Bone &b=bonesptr[i];
-		
+
 		Transform t;
 		if (b.parent<0)
 			continue;
-			
+
 		Vector3 v1=(bonesptr[b.parent].pose_global * bonesptr[b.parent].rest_global_inverse).xform(bonesptr[b.parent].rest_global_inverse.affine_inverse().origin);
 		Vector3 v2=(b.pose_global * b.rest_global_inverse).xform(b.rest_global_inverse.affine_inverse().origin);
 
@@ -576,10 +576,10 @@ void Skeleton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_bone","name"),&Skeleton::add_bone);
 	ObjectTypeDB::bind_method(_MD("find_bone","name"),&Skeleton::find_bone);
 	ObjectTypeDB::bind_method(_MD("get_bone_name","bone_idx"),&Skeleton::get_bone_name);
-	
+
 	ObjectTypeDB::bind_method(_MD("get_bone_parent","bone_idx"),&Skeleton::get_bone_parent);
 	ObjectTypeDB::bind_method(_MD("set_bone_parent","bone_idx","parent_idx"),&Skeleton::set_bone_parent);
-	
+
 	ObjectTypeDB::bind_method(_MD("get_bone_count"),&Skeleton::get_bone_count);
 
 	ObjectTypeDB::bind_method(_MD("unparent_bone_and_rest","bone_idx"),&Skeleton::unparent_bone_and_rest);
@@ -593,9 +593,9 @@ void Skeleton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("bind_child_node_to_bone","bone_idx","node:Node"),&Skeleton::bind_child_node_to_bone);
 	ObjectTypeDB::bind_method(_MD("unbind_child_node_from_bone","bone_idx","node:Node"),&Skeleton::unbind_child_node_from_bone);
 	ObjectTypeDB::bind_method(_MD("get_bound_child_nodes_to_bone","bone_idx"),&Skeleton::_get_bound_child_nodes_to_bone);
-	
+
 	ObjectTypeDB::bind_method(_MD("clear_bones"),&Skeleton::clear_bones);
-	
+
 	ObjectTypeDB::bind_method(_MD("get_bone_pose","bone_idx"),&Skeleton::get_bone_pose);
 	ObjectTypeDB::bind_method(_MD("set_bone_pose","bone_idx","pose"),&Skeleton::set_bone_pose);
 

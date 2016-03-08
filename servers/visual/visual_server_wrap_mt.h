@@ -41,9 +41,9 @@ class VisualServerWrapMT : public VisualServer {
 
 	// the real visual server
 	mutable VisualServer *visual_server;
-	
+
 	mutable CommandQueueMT command_queue;
-	
+
 	static void _thread_callback(void *_instance);
 	void thread_loop();
 
@@ -52,7 +52,7 @@ class VisualServerWrapMT : public VisualServer {
 	Thread *thread;
 	volatile bool draw_thread_up;
 	bool create_thread;
-	
+
 	Mutex *draw_mutex;
 	int draw_pending;
 	void thread_draw();
@@ -433,7 +433,7 @@ public:
 	FUNC2(viewport_set_render_target_vflip,RID,bool);
 	FUNC1RC(bool,viewport_get_render_target_vflip,RID);
 	FUNC2(viewport_set_render_target_to_screen_rect,RID,const Rect2&);
-	
+
 	FUNC2(viewport_set_render_target_clear_on_new_frame,RID,bool);
 	FUNC1RC(bool,viewport_get_render_target_clear_on_new_frame,RID);
 	FUNC1(viewport_render_target_clear,RID);
@@ -663,7 +663,7 @@ public:
 	FUNC0R(RID,canvas_item_material_create);
 	FUNC2(canvas_item_material_set_shader,RID,RID);
 	FUNC3(canvas_item_material_set_shader_param,RID,const StringName&,const Variant&);
-	FUNC2RC(Variant,canvas_item_material_get_shader_param,RID,const StringName&);	
+	FUNC2RC(Variant,canvas_item_material_get_shader_param,RID,const StringName&);
 	FUNC2(canvas_item_material_set_shading_mode,RID,CanvasItemShadingMode);
 
 	/* CURSOR */

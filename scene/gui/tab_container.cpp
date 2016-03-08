@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "tab_container.h"
- 
+
 #include "message_queue.h"
 
 
@@ -209,7 +209,7 @@ void TabContainer::_notification(int p_what) {
 			Ref<Texture> incr = get_icon("increment");
 			Ref<Texture> incr_hl = get_icon("increment_hilite");
 			Ref<Texture> decr = get_icon("decrement");
-			Ref<Texture> decr_hl = get_icon("decrement_hilite");			
+			Ref<Texture> decr_hl = get_icon("decrement_hilite");
 			Ref<Texture> menu = get_icon("menu");
 			Ref<Texture> menu_hl = get_icon("menu_hl");
 			Ref<Font> font = get_font("font");

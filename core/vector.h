@@ -43,30 +43,30 @@ template<class T>
 class Vector {
 
 	mutable T* _ptr;
- 
+
  	// internal helpers
- 
+
  	_FORCE_INLINE_ SafeRefCount* _get_refcount() const  {
- 	
+
 		if (!_ptr)
  			return NULL;
- 			
+
 		return reinterpret_cast<SafeRefCount*>((uint8_t*)_ptr-sizeof(int)-sizeof(SafeRefCount));
  	}
- 	
+
 	_FORCE_INLINE_ int* _get_size() const  {
- 	
+
 		if (!_ptr)
  			return NULL;
 		return reinterpret_cast<int*>((uint8_t*)_ptr-sizeof(int));
- 		
+
  	}
 	_FORCE_INLINE_ T* _get_data() const {
- 	
+
 		if (!_ptr)
  			return NULL;
 		return reinterpret_cast<T*>(_ptr);
- 		
+
  	}
 
 	_FORCE_INLINE_ size_t _get_alloc_size(size_t p_elements) const {
@@ -88,9 +88,9 @@ class Vector {
 		return true;
 #endif
 	}
- 	
+
 	void _unref(void *p_data);
-	
+
 	void _copy_from(const Vector& p_from);
 	void _copy_on_write();
 public:
@@ -101,18 +101,18 @@ public:
 
 
 	_FORCE_INLINE_ void clear() { resize(0); }
-	
+
 	_FORCE_INLINE_ int size() const {
 		int* size = _get_size();
 		if (size)
 			return *size;
-		else		
+		else
 			return 0;
 	}
 	_FORCE_INLINE_ bool empty() const { return _ptr == 0; }
 	Error resize(int p_size);
 	bool push_back(T p_elem);
-	
+
 	void remove(int p_index);
 	void erase(const T& p_val) { int idx = find(p_val); if (idx>=0) remove(idx); };
 	void invert();
@@ -132,7 +132,7 @@ public:
 		}
 
 		_copy_on_write(); // wants to write, so copy on write.
-		
+
 		return _get_data()[p_index];
 	}
 
@@ -145,7 +145,7 @@ public:
 		// no cow needed, since it's reading
 		return _get_data()[p_index];
 	}
-	
+
 	Error insert(int p_pos,const T& p_val);
 
 	template<class C>
@@ -188,21 +188,21 @@ void Vector<T>::_unref(void *p_data) {
 
 	if (!p_data)
 		return;
-		
+
 	SafeRefCount *src = reinterpret_cast<SafeRefCount*>((uint8_t*)p_data-sizeof(int)-sizeof(SafeRefCount));
-	
+
 	if (!src->unref())
 		return; // still in use
 	// clean up
-		
+
 	int *count = (int*)(src+1);
 	T *data = (T*)(count+1);
-	
+
 	for (int i=0;i<*count;i++) {
-		// call destructors	
+		// call destructors
 		data[i].~T();
 	}
-	
+
 	// free mem
 	memfree((uint8_t*)p_data-sizeof(int)-sizeof(SafeRefCount));
 
@@ -213,7 +213,7 @@ void Vector<T>::_copy_on_write() {
 
 	if (!_ptr)
 		return;
-	
+
 	if (_get_refcount()->get() > 1 ) {
 		/* in use by more than me */
 		void* mem_new = memalloc(_get_alloc_size(*_get_size()));
@@ -221,15 +221,15 @@ void Vector<T>::_copy_on_write() {
 		src_new->init();
 		int * _size = (int*)(src_new+1);
 		*_size=*_get_size();
-		
+
 		T*_data=(T*)(_size+1);
-		
+
 		// initialize new elements
 		for (int i=0;i<*_size;i++) {
-		
+
 			memnew_placement(&_data[i], T( _get_data()[i] ) );
 		}
-		
+
 		_unref(_ptr);
 		_ptr=_data;
 	}
@@ -240,11 +240,11 @@ template<class T> template<class T_val>
 int Vector<T>::find(const T_val &p_val) const {
 
 	int ret = -1;
-	if (size() == 0) 
+	if (size() == 0)
 		return ret;
-		
+
 	for (int i=0; i<size(); i++) {
-	
+
 		if (operator[](i) == p_val) {
 			ret = i;
 			break;
@@ -261,17 +261,17 @@ Error Vector<T>::resize(int p_size) {
 
 	if (p_size==size())
 		return OK;
-		
+
 	if (p_size==0) {
-		// wants to clean up 
+		// wants to clean up
 		_unref(_ptr);
 		_ptr=NULL;
 		return OK;
 	}
-	
+
 	// possibly changing size, copy on write
 	_copy_on_write();
-	
+
 	size_t alloc_size;
 	ERR_FAIL_COND_V(!_get_alloc_size_checked(p_size, &alloc_size), ERR_OUT_OF_MEMORY);
 
@@ -293,16 +293,16 @@ Error Vector<T>::resize(int p_size) {
 
 		// construct the newly created elements
 		T*elems = _get_data();
-		
+
 		for (int i=*_get_size();i<p_size;i++) {
-			
+
 			memnew_placement(&elems[i], T) ;
 		}
 
 		*_get_size()=p_size;
 
 	} else if (p_size<size()) {
-		
+
 		// deinitialize no longer needed elements
 		for (int i=p_size;i<*_get_size();i++) {
 
@@ -312,11 +312,11 @@ Error Vector<T>::resize(int p_size) {
 
 		void *_ptrnew = (T*)memrealloc((uint8_t*)_ptr-sizeof(int)-sizeof(SafeRefCount), alloc_size);
 		ERR_FAIL_COND_V( !_ptrnew ,ERR_OUT_OF_MEMORY);
-		
+
 		_ptr=(T*)((uint8_t*)_ptrnew+sizeof(int)+sizeof(SafeRefCount));
-		
+
 		*_get_size()=p_size;
-				
+
 	}
 
 	return OK;
@@ -325,9 +325,9 @@ Error Vector<T>::resize(int p_size) {
 
 template<class T>
 void Vector<T>::invert() {
-	
+
 	for(int i=0;i<size()/2;i++) {
-		
+
 		SWAP( operator[](i), operator[](size()-i-1) );
 	}
 }
@@ -374,13 +374,13 @@ void Vector<T>::_copy_from(const Vector& p_from) {
 
 	if (_ptr == p_from._ptr)
 		return; // self assign, do nothing.
-		
+
 	_unref(_ptr);
 	_ptr=NULL;
-	
+
 	if (!p_from._ptr)
 		return; //nothing to do
-		
+
 	if (p_from._get_refcount()->ref()) // could reference
 		_ptr=p_from._ptr;
 
@@ -395,13 +395,13 @@ void Vector<T>::operator=(const Vector& p_from) {
 
 template<class T>
 Error Vector<T>::insert(int p_pos,const T& p_val) {
-	
+
 	ERR_FAIL_INDEX_V(p_pos,size()+1,ERR_INVALID_PARAMETER);
 	resize(size()+1);
 	for (int i=(size()-1);i>p_pos;i--)
 		set( i, get(i-1) );
 	set( p_pos, p_val );
-	
+
 	return OK;
 }
 

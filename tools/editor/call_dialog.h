@@ -43,39 +43,39 @@
 class CallDialogParams;
 
 class CallDialog : public Popup {
-	
+
 	OBJ_TYPE( CallDialog, Popup );
-	
+
 
 	Label* method_label;
 	Tree *tree;
 	Button *call;
 	Button *cancel;
-	
+
 	CallDialogParams *call_params;
 	PropertyEditor *property_editor;
-	
+
 	Label *return_label;
 	LineEdit *return_value;
-	Object *object;	
+	Object *object;
 	StringName selected;
-		
+
 	Vector<MethodInfo> methods;
-	
-	
+
+
 	void _item_selected();
 	void _update_method_list();
 	void _call();
 	void _cancel();
-		
+
 protected:
-	static void _bind_methods();	
+	static void _bind_methods();
 	void _notification(int p_what);
 public:
-	
+
 	void set_object(Object *p_object,StringName p_selected="");
-	
-	CallDialog();	
+
+	CallDialog();
 	~CallDialog();
 
 };

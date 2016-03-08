@@ -56,7 +56,7 @@ protected:
 	void _get_property_list( List<PropertyInfo> *p_list) const;
 
 	static void _bind_methods();
-public:		
+public:
 
 
 	void create_item(int p_item);

@@ -44,7 +44,7 @@ class VisualServerRaster : public VisualServer {
 
 
 	enum {
-	
+
 		MAX_INSTANCE_CULL=8192,
 		MAX_INSTANCE_LIGHTS=4,
 		LIGHT_CACHE_DIRTY=-1,
@@ -58,13 +58,13 @@ class VisualServerRaster : public VisualServer {
 	};
 
 	struct Room {
-	
+
 		bool occlude_exterior;
 		BSP_Tree bounds;
 		Room() { occlude_exterior=true; }
 	};
-	
-	
+
+
 	BalloonAllocator<> octree_allocator;
 
 	struct OctreeAllocator {
@@ -116,10 +116,10 @@ class VisualServerRaster : public VisualServer {
 
 	void _update_baked_light_sampler_dp_cache(BakedLightSampler * blsamp);
 	struct Camera  {
- 
+
 		enum Type {
 			PERSPECTIVE,
-			ORTHOGONAL 	
+			ORTHOGONAL
 		};
 		Type type;
 		float fov;
@@ -128,18 +128,18 @@ class VisualServerRaster : public VisualServer {
 		uint32_t visible_layers;
 		bool vaspect;
 		RID env;
-		
+
 		Transform transform;
- 
+
  		Camera() {
- 		
+
 			visible_layers=0xFFFFFFFF;
 			fov=60;
 			type=PERSPECTIVE;
 			znear=0.1; zfar=100;
 			size=1.0;
 			vaspect=false;
-		
+
  		}
  	};
 
@@ -147,24 +147,24 @@ class VisualServerRaster : public VisualServer {
 	struct Instance;
 	typedef Set<Instance*,Comparator<Instance*>,OctreeAllocator> InstanceSet;
 	struct Scenario;
-	
+
 	struct Instance {
-			
+
 		enum {
-		
+
 			MAX_LIGHTS=4
 		};
-	
+
 		RID self;
-		OctreeElementID octree_id;		
+		OctreeElementID octree_id;
 		Scenario *scenario;
 		bool update;
 		bool update_aabb;
-		Instance *update_next;				
+		Instance *update_next;
 		InstanceType base_type;
 
 		RID base_rid;
-		
+
 		AABB aabb;
 		AABB transformed_aabb;
 		uint32_t object_ID;
@@ -180,7 +180,7 @@ class VisualServerRaster : public VisualServer {
 
 		Rasterizer::InstanceData data;
 
-		
+
 		Set<Instance*> auto_rooms;
 		Set<Instance*> valid_auto_rooms;
 		Instance *room;
@@ -192,9 +192,9 @@ class VisualServerRaster : public VisualServer {
 
 		uint64_t last_render_pass;
 		uint64_t last_frame_pass;
-		
+
 		uint64_t version; // changes to this, and changes to base increase version
-		
+
 		InstanceSet lights;
 		bool light_cache_dirty;
 
@@ -205,7 +205,7 @@ class VisualServerRaster : public VisualServer {
 			Transform affine_inverse;
 			Room *room;
 			List<Instance*> owned_geometry_instances;
-			List<Instance*> owned_portal_instances;			
+			List<Instance*> owned_portal_instances;
 			List<Instance*> owned_room_instances;
 			List<Instance*> owned_light_instances; //not used, but just for the sake of it
 			Set<Instance*> disconnected_child_portals;
@@ -230,8 +230,8 @@ class VisualServerRaster : public VisualServer {
 		};
 
 		struct LightInfo {
-			
-			RID instance;						
+
+			RID instance;
 			int light_set_index;
 			uint64_t last_version;
 			uint64_t last_add_pass;
@@ -240,10 +240,10 @@ class VisualServerRaster : public VisualServer {
 			bool enabled;
 			float dtc; //distance to camera, used for sorting
 
-			
+
 			LightInfo() {
-			
-				D=NULL;	
+
+				D=NULL;
 				light_set_index=-1;
 				last_add_pass=0;
 				enabled=true;
@@ -273,10 +273,10 @@ class VisualServerRaster : public VisualServer {
 				resolution=0;
 			}
 		};
-		
+
 		struct ParticlesInfo {
-			
-			RID instance;			
+
+			RID instance;
 		};
 
 
@@ -288,7 +288,7 @@ class VisualServerRaster : public VisualServer {
 		BakedLightSamplerInfo * baked_light_sampler_info;
 
 
-		Instance() { 
+		Instance() {
 			octree_id=0;
 			update_next=0;
 			object_ID=0;
@@ -328,9 +328,9 @@ class VisualServerRaster : public VisualServer {
 			light_cache_dirty=true;
 
 		}
-		
+
 		~Instance() {
-		
+
 			if (light_info)
 				memdelete(light_info);
 			if (particles_info)
@@ -343,26 +343,26 @@ class VisualServerRaster : public VisualServer {
 				memdelete(baked_light_info);
 		};
 	};
-	
+
 	struct _InstanceLightsort {
 
 		bool operator()(const Instance* p_A, const Instance* p_B) const { return p_A->light_info->dtc < p_B->light_info->dtc; }
 	};
 
 	struct Scenario {
-	
+
 
 		ScenarioDebugMode debug;
 		RID self;
 		// well wtf, balloon allocator is slower?
 		typedef ::Octree<Instance,true> Octree;
-		
+
 		Octree octree;
-			
+
 		List<RID> directional_lights;
 		RID environment;
 		RID fallback_environment;
-		
+
 		Instance *dirty_instances;
 
 		Scenario() { dirty_instances=NULL; debug=SCENARIO_DEBUG_DISABLED; }
@@ -458,7 +458,7 @@ class VisualServerRaster : public VisualServer {
 		}
 
 		Canvas() { modulate=Color(1,1,1,1); }
-		
+
 	};
 
 
@@ -524,14 +524,14 @@ class VisualServerRaster : public VisualServer {
 	Map<RID,int> screen_viewports;
 
 	struct CullRange {
-	
+
 		Plane nearp;
 		float min,max;
 		float z_near,z_far;
-		
+
 		void add_aabb(const AABB& p_aabb) {
-		
-		
+
+
 		}
 	};
 
@@ -559,12 +559,12 @@ class VisualServerRaster : public VisualServer {
 
 	Instance *instance_cull_result[MAX_INSTANCE_CULL];
 	Instance *instance_shadow_cull_result[MAX_INSTANCE_CULL]; //used for generating shadowmaps
-	Instance *light_cull_result[MAX_LIGHTS_CULLED];	
+	Instance *light_cull_result[MAX_LIGHTS_CULLED];
 	int light_cull_count;
 
 	Instance *exterior_portal_cull_result[MAX_EXTERIOR_PORTALS];
 	int exterior_portal_cull_count;
-	bool exterior_visited;	
+	bool exterior_visited;
 
 	Instance *light_sampler_cull_result[MAX_LIGHT_SAMPLERS];
 	int light_samplers_culled;
@@ -591,7 +591,7 @@ class VisualServerRaster : public VisualServer {
 	void _update_instance(Instance *p_instance);
 	void _free_attached_instances(RID p_rid,bool p_free_scenario=false);
 	void _clean_up_owner(RID_OwnerBase *p_owner,String p_type);
-	
+
 	Instance *instance_update_list;
 
 	//RID default_scenario;
@@ -599,7 +599,7 @@ class VisualServerRaster : public VisualServer {
 
 	RID test_cube;
 
-	
+
 	mutable RID_Owner<Room> room_owner;
 	mutable RID_Owner<Portal> portal_owner;
 
@@ -608,20 +608,20 @@ class VisualServerRaster : public VisualServer {
 
 	mutable RID_Owner<Camera> camera_owner;
 	mutable RID_Owner<Viewport> viewport_owner;
-	
+
 	mutable RID_Owner<Scenario> scenario_owner;
 	mutable RID_Owner<Instance> instance_owner;
-	
+
 	mutable RID_Owner<Canvas> canvas_owner;
 	mutable RID_Owner<CanvasItem> canvas_item_owner;
 
 	Map< RID, Set<RID> > instance_dependency_map;
 	Map< RID, Set<Instance*> > skeleton_dependency_map;
 
-	
+
 	ViewportRect viewport_rect;
 	_FORCE_INLINE_ void _instance_draw(Instance *p_instance);
-	
+
 	bool _test_portal_cull(Camera *p_camera, Instance *p_portal_from, Instance *p_portal_to);
 	void _cull_portal(Camera *p_camera, Instance *p_portal,Instance *p_from_portal);
 	void _cull_room(Camera *p_camera, Instance *p_room,Instance *p_from_portal=NULL);
@@ -640,9 +640,9 @@ class VisualServerRaster : public VisualServer {
 
 	void _light_instance_update_lispsm_shadow(Instance *p_light,Scenario *p_scenario,Camera *p_camera,const CullRange& p_cull_range);
 	void _light_instance_update_pssm_shadow(Instance *p_light,Scenario *p_scenario,Camera *p_camera,const CullRange& p_cull_range);
-	
+
 	void _light_instance_update_shadow(Instance *p_light,Scenario *p_scenario,Camera *p_camera,const CullRange& p_cull_range);
-	
+
 	uint64_t render_pass;
 	int changes;
 	bool draw_extra_frame;
@@ -651,8 +651,8 @@ class VisualServerRaster : public VisualServer {
 	void _draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_ofs_y,int p_parent_w,int p_parent_h);
 	void _draw_viewports();
 	void _draw_cursors_and_margins();
-	
-	
+
+
 	Rasterizer *rasterizer;
 public:
 
@@ -676,7 +676,7 @@ public:
 
 
 	/* SHADER API */
-	
+
 	virtual RID shader_create(ShaderMode p_mode=SHADER_MATERIAL);
 
 	virtual void shader_set_mode(RID p_shader,ShaderMode p_mode);
@@ -764,7 +764,7 @@ public:
 	virtual int mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const;
 	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const;
 	virtual PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
-	
+
 	virtual void mesh_remove_surface(RID p_mesh,int p_index);
 	virtual int mesh_get_surface_count(RID p_mesh) const;
 
@@ -807,23 +807,23 @@ public:
 	virtual void immediate_set_material(RID p_immediate,RID p_material);
 	virtual RID immediate_get_material(RID p_immediate) const;
 
-	
+
 	/* PARTICLES API */
-	
+
 	virtual RID particles_create();
-	
+
 	virtual void particles_set_amount(RID p_particles, int p_amount);
 	virtual int particles_get_amount(RID p_particles) const;
-		
+
 	virtual void particles_set_emitting(RID p_particles, bool p_emitting);
 	virtual bool particles_is_emitting(RID p_particles) const;
-		
+
 	virtual void particles_set_visibility_aabb(RID p_particles, const AABB& p_visibility);
 	virtual AABB particles_get_visibility_aabb(RID p_particles) const;
-		
+
 	virtual void particles_set_emission_half_extents(RID p_particles, const Vector3& p_half_extents);
 	virtual Vector3 particles_get_emission_half_extents(RID p_particles) const;
-		
+
 	virtual void particles_set_emission_base_velocity(RID p_particles, const Vector3& p_base_velocity);
 	virtual Vector3 particles_get_emission_base_velocity(RID p_particles) const;
 
@@ -832,16 +832,16 @@ public:
 
 	virtual void particles_set_gravity_normal(RID p_particles, const Vector3& p_normal);
 	virtual Vector3 particles_get_gravity_normal(RID p_particles) const;
-		
+
 	virtual void particles_set_variable(RID p_particles, ParticleVariable p_variable,float p_value);
 	virtual float particles_get_variable(RID p_particles, ParticleVariable p_variable) const;
-	
+
 	virtual void particles_set_randomness(RID p_particles, ParticleVariable p_variable,float p_randomness);
 	virtual float particles_get_randomness(RID p_particles, ParticleVariable p_variable) const;
-	
+
 	virtual void particles_set_color_phase_pos(RID p_particles, int p_phase, float p_pos);
 	virtual float particles_get_color_phase_pos(RID p_particles, int p_phase) const;
-	
+
 	virtual void particles_set_color_phases(RID p_particles, int p_phases);
 	virtual int particles_get_color_phases(RID p_particles) const;
 
@@ -859,32 +859,32 @@ public:
 
 	virtual void particles_set_material(RID p_particles, RID p_material,bool p_owned=false);
 	virtual RID particles_get_material(RID p_particles) const;
-		
+
 	virtual void particles_set_height_from_velocity(RID p_particles, bool p_enable);
 	virtual bool particles_has_height_from_velocity(RID p_particles) const;
 
 	virtual void particles_set_use_local_coordinates(RID p_particles, bool p_enable);
 	virtual bool particles_is_using_local_coordinates(RID p_particles) const;
 
-	
+
 	/* Light API */
-	
+
 	virtual RID light_create(LightType p_type);
 	virtual LightType light_get_type(RID p_light) const;
 
 	virtual void light_set_color(RID p_light,LightColor p_type, const Color& p_color);
-	virtual Color light_get_color(RID p_light,LightColor p_type) const;	
-	
+	virtual Color light_get_color(RID p_light,LightColor p_type) const;
+
 
 	virtual void light_set_shadow(RID p_light,bool p_enabled);
-	virtual bool light_has_shadow(RID p_light) const;	
-						
+	virtual bool light_has_shadow(RID p_light) const;
+
 	virtual void light_set_volumetric(RID p_light,bool p_enabled);
-	virtual bool light_is_volumetric(RID p_light) const;	
-			
+	virtual bool light_is_volumetric(RID p_light) const;
+
 	virtual void light_set_projector(RID p_light,RID p_texture);
 	virtual RID light_get_projector(RID p_light) const;
-			
+
 	virtual void light_set_param(RID p_light, LightParam p_var, float p_value);
 	virtual float light_get_param(RID p_light, LightParam p_var) const;
 
@@ -901,7 +901,7 @@ public:
 
 
 	/* SKELETON API */
-	
+
 	virtual RID skeleton_create();
 	virtual void skeleton_resize(RID p_skeleton,int p_bones);
 	virtual int skeleton_get_bone_count(RID p_skeleton) const;
@@ -913,9 +913,9 @@ public:
 	virtual RID room_create();
 	virtual void room_set_bounds(RID p_room, const BSP_Tree& p_bounds);
 	virtual BSP_Tree room_get_bounds(RID p_room) const;
-			
+
 	/* PORTAL API */
-	
+
 	virtual RID portal_create();
 	virtual void portal_set_shape(RID p_portal, const Vector<Point2>& p_shape);
 	virtual Vector<Point2> portal_get_shape(RID p_portal) const;
@@ -961,12 +961,12 @@ public:
 	virtual int baked_light_sampler_get_resolution(RID p_baked_light_sampler) const;
 
 	/* CAMERA API */
-	
+
 	virtual RID camera_create();
 	virtual void camera_set_perspective(RID p_camera,float p_fovy_degrees, float p_z_near, float p_z_far);
 	virtual void camera_set_orthogonal(RID p_camera,float p_size, float p_z_near, float p_z_far);
-	virtual void camera_set_transform(RID p_camera,const Transform& p_transform);	
-	
+	virtual void camera_set_transform(RID p_camera,const Transform& p_transform);
+
 	virtual void camera_set_visible_layers(RID p_camera,uint32_t p_layers);
 	virtual uint32_t camera_get_visible_layers(RID p_camera) const;
 
@@ -1000,7 +1000,7 @@ public:
 
 	virtual void viewport_set_rect(RID p_viewport,const ViewportRect& p_rect);
 	virtual ViewportRect viewport_get_rect(RID p_viewport) const;
-	
+
 	virtual void viewport_set_hide_scenario(RID p_viewport,bool p_hide);
 	virtual void viewport_set_hide_canvas(RID p_viewport,bool p_hide);
 	virtual void viewport_set_disable_environment(RID p_viewport,bool p_disable);
@@ -1011,8 +1011,8 @@ public:
 	virtual RID viewport_get_scenario(RID  p_viewport) const;
 	virtual void viewport_attach_canvas(RID p_viewport,RID p_canvas);
 	virtual void viewport_remove_canvas(RID p_viewport,RID p_canvas);
-	virtual void viewport_set_canvas_transform(RID p_viewport,RID p_canvas,const Matrix32& p_offset);	
-	virtual Matrix32 viewport_get_canvas_transform(RID p_viewport,RID p_canvas) const;	
+	virtual void viewport_set_canvas_transform(RID p_viewport,RID p_canvas,const Matrix32& p_offset);
+	virtual Matrix32 viewport_get_canvas_transform(RID p_viewport,RID p_canvas) const;
 	virtual void viewport_set_global_canvas_transform(RID p_viewport,const Matrix32& p_transform);
 	virtual Matrix32 viewport_get_global_canvas_transform(RID p_viewport) const;
 	virtual void viewport_set_canvas_layer(RID p_viewport,RID p_canvas,int p_layer);
@@ -1037,10 +1037,10 @@ public:
 	virtual void environment_fx_set_param(RID p_env,EnvironmentFxParam p_effect,const Variant& p_param);
 	virtual Variant environment_fx_get_param(RID p_env,EnvironmentFxParam p_effect) const;
 
-	
+
 	/* SCENARIO API */
-	
-	virtual RID scenario_create();	
+
+	virtual RID scenario_create();
 
 	virtual void scenario_set_debug(RID p_scenario,ScenarioDebugMode p_debug_mode);
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment);
@@ -1048,9 +1048,9 @@ public:
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment);
 
 
-		
+
 	/* INSTANCING API */
-	
+
 	virtual RID instance_create();
 
 	virtual void instance_set_base(RID p_instance, RID p_base);
@@ -1115,7 +1115,7 @@ public:
 	virtual bool instance_light_is_enabled(RID p_instance) const;
 
 	/* CANVAS (2D) */
-	
+
 	virtual RID canvas_create();
 	virtual void canvas_set_item_mirroring(RID p_canvas,RID p_item,const Point2& p_mirroring);
 	virtual Point2 canvas_get_item_mirroring(RID p_canvas,RID p_item) const;
@@ -1217,7 +1217,7 @@ public:
 	virtual RID canvas_item_material_create();
 	virtual void canvas_item_material_set_shader(RID p_material, RID p_shader);
 	virtual void canvas_item_material_set_shader_param(RID p_material, const StringName& p_param, const Variant& p_value);
-	virtual Variant canvas_item_material_get_shader_param(RID p_material, const StringName& p_param) const;	
+	virtual Variant canvas_item_material_get_shader_param(RID p_material, const StringName& p_param) const;
 	virtual void canvas_item_material_set_shading_mode(RID p_material, CanvasItemShadingMode p_mode);
 
 
@@ -1234,7 +1234,7 @@ public:
 	virtual void black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom);
 
 	/* FREE */
-	
+
 	virtual void free( RID p_rid );
 
 	/* CUSTOM SHADE MODEL */
@@ -1251,7 +1251,7 @@ public:
 	virtual void draw();
 	virtual void sync();
 
-	virtual void init();	
+	virtual void init();
 	virtual void finish();
 
 	virtual bool has_changed() const;
@@ -1266,7 +1266,7 @@ public:
 	virtual void set_boot_image(const Image& p_image, const Color& p_color, bool p_scale);
 	virtual void set_default_clear_color(const Color& p_color);
 
-	VisualServerRaster(Rasterizer *p_rasterizer);	
+	VisualServerRaster(Rasterizer *p_rasterizer);
 	~VisualServerRaster();
 
 };

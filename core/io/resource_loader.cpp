@@ -49,16 +49,16 @@ Error ResourceInteractiveLoader::wait() {
 
 
 bool ResourceFormatLoader::recognize(const String& p_extension) const {
-	
-	
+
+
 	List<String> extensions;
 	get_recognized_extensions(&extensions);
 	for (List<String>::Element *E=extensions.front();E;E=E->next()) {
-		
+
 		if (E->get().nocasecmp_to(p_extension.extension())==0)
 			return true;
 	}
-	
+
 	return false;
 }
 
@@ -184,9 +184,9 @@ RES ResourceLoader::load(const String &p_path, const String& p_type_hint, bool p
 
 	String extension=remapped_path.extension();
 	bool found=false;
-	
+
 	for (int i=0;i<loader_count;i++) {
-		
+
 		if (!loader[i]->recognize(extension))
 			continue;
 		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
@@ -356,7 +356,7 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 }
 
 void ResourceLoader::add_resource_format_loader(ResourceFormatLoader *p_format_loader) {
-	
+
 	ERR_FAIL_COND( loader_count >= MAX_LOADERS );
 	loader[loader_count++]=p_format_loader;
 }

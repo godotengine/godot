@@ -344,13 +344,13 @@ Array TileSet::_tile_get_shapes(int p_id) const{
 }
 
 Array TileSet::_get_tiles_ids() const{
-	
+
 	Array arr;
 
 	for (Map<int, Data>::Element *E = tile_map.front(); E; E = E->next()) {
-		arr.push_back(E->key());		
+		arr.push_back(E->key());
 	}
-	
+
 	return arr;
 }
 

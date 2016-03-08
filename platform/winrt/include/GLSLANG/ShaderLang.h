@@ -107,7 +107,7 @@ typedef enum {
   // This is needed only as a workaround for certain OpenGL driver bugs.
   SH_EMULATE_BUILT_IN_FUNCTIONS = 0x0100,
 
-  // This is an experimental flag to enforce restrictions that aim to prevent 
+  // This is an experimental flag to enforce restrictions that aim to prevent
   // timing attacks.
   // It generates compilation errors for shaders that could expose sensitive
   // texture information via the timing channel.

@@ -662,7 +662,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 		case OP_DIVIDE: {
 			switch(p_a.type) {
 
-				DEFAULT_OP_FAIL(NIL);				
+				DEFAULT_OP_FAIL(NIL);
 				DEFAULT_OP_NUM(/,BOOL,_bool);
 				case INT: {
 					switch(p_b.type) {
@@ -779,7 +779,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				}
 #endif
 				_RETURN( p_a._data._int % p_b._data._int );
-				
+
 			} else if (p_a.type==STRING) {
 				const String* format=reinterpret_cast<const String*>(p_a._data._mem);
 
@@ -2409,7 +2409,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				} if (str=="value") {
 					valid=true;
 					return ie.joy_motion.axis_value;
-				}				
+				}
 			}
 
 			if (ie.type==InputEvent::SCREEN_TOUCH) {

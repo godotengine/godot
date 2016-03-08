@@ -40,12 +40,12 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class Theme : public Resource {
-	
+
 	OBJ_TYPE( Theme, Resource );
 	RES_BASE_EXTENSION("thm");
-	
+
 	static Ref<Theme> default_theme;
-	
+
 	HashMap<StringName,HashMap<StringName,Ref<Texture>,StringNameHasher >, StringNameHasher >  icon_map;
 	HashMap<StringName,HashMap<StringName,Ref<StyleBox>,StringNameHasher >,StringNameHasher > style_map;
 	HashMap<StringName,HashMap<StringName,Ref<Font>,StringNameHasher >,StringNameHasher > font_map;
@@ -56,7 +56,7 @@ protected:
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list( List<PropertyInfo> *p_list) const;
-	
+
 	static Ref<Texture> default_icon;
 	static Ref<StyleBox> default_style;
 	static Ref<Font> default_font;
@@ -72,10 +72,10 @@ protected:
 
 	static void _bind_methods();
 public:
-	
+
 	static Ref<Theme> get_default();
 	static void set_default(const Ref<Theme>& p_default);
-	
+
 	static void set_default_icon( const Ref<Texture>& p_icon );
 	static void set_default_style( const Ref<StyleBox>& p_default_style);
 	static void set_default_font( const Ref<Font>& p_default_font );

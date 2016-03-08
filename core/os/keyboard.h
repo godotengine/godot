@@ -121,7 +121,7 @@ enum KeyList {
 	KEY_DIRECTION_R=SPKEY | 0x33,
 	KEY_BACK=SPKEY | 0x40,
 	KEY_FORWARD=SPKEY | 0x41,
-	KEY_STOP=SPKEY | 0x42, 
+	KEY_STOP=SPKEY | 0x42,
 	KEY_REFRESH=SPKEY | 0x43,
 	KEY_VOLUMEDOWN=SPKEY | 0x44,
 	KEY_VOLUMEMUTE=SPKEY | 0x45,
@@ -159,11 +159,11 @@ enum KeyList {
 	KEY_LAUNCHD=SPKEY | 0x65,
 	KEY_LAUNCHE=SPKEY | 0x66,
 	KEY_LAUNCHF=SPKEY | 0x67,
-	
+
 	KEY_UNKNOWN=SPKEY | 0xFFFFFF,
-		
+
 /* PRINTABLE LATIN 1 CODES */
-	
+
 	KEY_SPACE=0x0020,
 	KEY_EXCLAM=0x0021,
 	KEY_QUOTEDBL=0x0022,
@@ -297,18 +297,18 @@ enum KeyList {
 	KEY_YACUTE=0x00DD,
 	KEY_THORN=0x00DE,
 	KEY_SSHARP=0x00DF,
-	
+
 	KEY_DIVISION=0x00F7,
 	KEY_YDIAERESIS=0x00FF,
-		
-		
+
+
 };
 
 
 enum KeyModifierMask {
-	
+
 	KEY_CODE_MASK=((1<<25)-1), ///< Apply this mask to any keycode to remove modifiers.
-	KEY_MODIFIER_MASK=(0xFF<<24), ///< Apply this mask to isolate modifiers.	
+	KEY_MODIFIER_MASK=(0xFF<<24), ///< Apply this mask to isolate modifiers.
 	KEY_MASK_SHIFT = (1<<25),
 	KEY_MASK_ALT = (1<<26),
 	KEY_MASK_META = (1<<27),
@@ -322,7 +322,7 @@ enum KeyModifierMask {
 	KEY_MASK_KPAD = (1<<29),
 	KEY_MASK_GROUP_SWITCH = (1<<30)
 	// bit 31 can't be used because variant uses regular 32 bits int as datatype
-		
+
 };
 
 String keycode_get_string(uint32_t p_code);

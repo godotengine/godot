@@ -41,14 +41,14 @@
 class NodePath {
 
 	struct Data {
-	
+
 		SafeRefCount refcount;
 		StringName property;
-		Vector<StringName> path;	
+		Vector<StringName> path;
 		Vector<StringName> subpath;
 		bool absolute;
 	};
-	
+
 	Data *data;
 	void unref();
 public:
@@ -77,7 +77,7 @@ public:
 	NodePath get_parent() const;
 
 	uint32_t hash() const;
-	
+
 	operator String() const;
 	bool is_empty() const;
 
@@ -88,7 +88,7 @@ public:
 	void simplify();
 	NodePath simplified() const;
 
-	NodePath(const Vector<StringName>& p_path,bool p_absolute,const String& p_property="");	
+	NodePath(const Vector<StringName>& p_path,bool p_absolute,const String& p_property="");
 	NodePath(const Vector<StringName>& p_path,const Vector<StringName>& p_subpath,bool p_absolute,const String& p_property="");
 	NodePath(const NodePath& p_path);
 	NodePath(const String& p_path);

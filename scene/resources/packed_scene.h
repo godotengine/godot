@@ -66,7 +66,7 @@ class SceneState : public Reference {
 		};
 
 		Vector<Property> properties;
-		Vector<int> groups;		
+		Vector<int> groups;
 
 	};
 

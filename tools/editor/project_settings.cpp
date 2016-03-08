@@ -1012,7 +1012,7 @@ void ProjectSettings::_translation_delete(Object *p_item,int p_column, int p_but
 
 	undo_redo->create_action("Remove Translation");
 	undo_redo->add_do_property(Globals::get_singleton(),"locale/translations",translations);
-	undo_redo->add_undo_property(Globals::get_singleton(),"locale/translations",Globals::get_singleton()->get("locale/translations"));	
+	undo_redo->add_undo_property(Globals::get_singleton(),"locale/translations",Globals::get_singleton()->get("locale/translations"));
 	undo_redo->add_do_method(this,"_update_translations");
 	undo_redo->add_undo_method(this,"_update_translations");
 	undo_redo->add_do_method(this,"_settings_changed");
@@ -1126,7 +1126,7 @@ void ProjectSettings::_translation_res_option_changed() {
 
 
 	ERR_FAIL_COND(!remaps.has(key));
-	StringArray r = remaps[key];	
+	StringArray r = remaps[key];
 	ERR_FAIL_INDEX(idx,r.size());
 	r.set(idx,path+":"+langs[which]);
 	remaps[key]=r;

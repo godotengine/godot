@@ -48,7 +48,7 @@ BSP_Tree RoomBounds::get_bounds() const {
 }
 
 void RoomBounds::set_geometry_hint(const DVector<Face3>& p_geometry_hint) {
-	
+
 	geometry_hint=p_geometry_hint;
 }
 

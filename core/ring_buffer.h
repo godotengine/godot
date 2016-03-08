@@ -38,21 +38,21 @@ class RingBuffer {
 	int read_pos;
 	int write_pos;
 	int size_mask;
-	
+
 	inline int inc(int& p_var, int p_size) {
 		int ret = p_var;
 		p_var += p_size;
 		p_var = p_var&size_mask;
 		return ret;
 	};
-	
+
 public:
 
 	T read() {
 		ERR_FAIL_COND_V(space_left() < 1, T());
 		return data[inc(read_pos, 1)];
 	};
-	
+
 	int read(T* p_buf, int p_size, bool p_advance=true) {
 		int left = data_left();
 		p_size = MIN(left, p_size);
@@ -76,7 +76,7 @@ public:
 	};
 
 	int copy(T* p_buf, int p_offset, int p_size) {
-		
+
 		int left = data_left();
 		if ((p_offset+p_size)>left) {
 			p_size-=left-p_offset;
@@ -106,18 +106,18 @@ public:
 		inc(read_pos, p_n);
 		return p_n;
 	};
-	
+
 	Error write(const T& p_v) {
 		ERR_FAIL_COND_V( space_left() < 1, FAILED);
 		data[inc(write_pos, 1)] = p_v;
 		return OK;
 	};
-	
+
 	int write(const T* p_buf, int p_size) {
-		
+
 		int left = space_left();
 		p_size = MIN(left, p_size);
-		
+
 		int pos = write_pos;
 		int to_write = p_size;
 		int src = 0;
@@ -126,7 +126,7 @@ public:
 			int end = pos + to_write;
 			end = MIN(end, size());
 			int total = end - pos;
-			
+
 			for (int i=0; i<total; i++) {
 				data[pos+i] = p_buf[src++];
 			};
@@ -137,7 +137,7 @@ public:
 		inc(write_pos, p_size);
 		return p_size;
 	};
-	
+
 	inline int space_left() {
 		int left = read_pos - write_pos;
 		if (left < 0) {
@@ -151,7 +151,7 @@ public:
 	inline int data_left() {
 		return size() - space_left() - 1;
 	};
-	
+
 	inline int size() {
 		return data.size();
 	};
@@ -161,7 +161,7 @@ public:
 		write_pos = 0;
 
 	}
-	
+
 	void resize(int p_power) {
 		int old_size = size();
 		int new_size = 1<<p_power;
@@ -176,10 +176,10 @@ public:
 			read_pos = read_pos & mask;
 			write_pos = write_pos & mask;
 		};
-		
+
 		size_mask = mask;
 	};
-	
+
 	RingBuffer<T>(int p_power=0) {
 		read_pos = 0;
 		write_pos = 0;

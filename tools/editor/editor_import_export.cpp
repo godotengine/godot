@@ -671,7 +671,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			} break; //use default
 			case EditorImportExport::IMAGE_ACTION_COMPRESS_RAM: {
 				group_format=EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM;
-			} break; //use default						
+			} break; //use default
 		}
 
 		String image_list_md5;

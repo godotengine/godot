@@ -37,10 +37,10 @@ MemoryPoolDynamicStatic::Chunk *MemoryPoolDynamicStatic::get_chunk(ID p_id) {
 
 	uint64_t check = p_id/MAX_CHUNKS;
 	uint64_t idx = p_id%MAX_CHUNKS;
-	
+
 	if (!chunk[idx].mem || chunk[idx].check!=check)
 		return NULL;
-		
+
 	return &chunk[idx];
 }
 
@@ -49,32 +49,32 @@ const MemoryPoolDynamicStatic::Chunk *MemoryPoolDynamicStatic::get_chunk(ID p_id
 
 	uint64_t check = p_id/MAX_CHUNKS;
 	uint64_t idx = p_id%MAX_CHUNKS;
-	
+
 	if (!chunk[idx].mem || chunk[idx].check!=check)
 		return NULL;
-		
+
 	return &chunk[idx];
 }
 
 MemoryPoolDynamic::ID MemoryPoolDynamicStatic::alloc(size_t p_amount,const char* p_description) {
 
 	_THREAD_SAFE_METHOD_
-	
+
 	int idx=-1;
-	
+
 	for (int i=0;i<MAX_CHUNKS;i++) {
-	
+
 		last_alloc++;
 		if (last_alloc>=MAX_CHUNKS)
 			last_alloc=0;
-			
+
 		if ( !chunk[last_alloc].mem ) {
-		
+
 			idx=last_alloc;
 			break;
 		}
 	}
-	
+
 
 	if (idx==-1) {
 		ERR_EXPLAIN("Out of dynamic Memory IDs");
@@ -86,36 +86,36 @@ MemoryPoolDynamic::ID MemoryPoolDynamicStatic::alloc(size_t p_amount,const char*
 	chunk[idx].mem = memalloc(p_amount);
 	if (!chunk[idx].mem)
 		return INVALID_ID;
-		
+
 	chunk[idx].size=p_amount;
 	chunk[idx].check=++last_check;
 	chunk[idx].descr=p_description;
 	chunk[idx].lock=0;
-	
+
 	total_usage+=p_amount;
 	if (total_usage>max_usage)
 		max_usage=total_usage;
-	
+
 	ID id = chunk[idx].check*MAX_CHUNKS + (uint64_t)idx;
-	
+
 	return id;
-	
+
 }
 void MemoryPoolDynamicStatic::free(ID p_id) {
 
 	_THREAD_SAFE_METHOD_
-	
+
 	Chunk *c = get_chunk(p_id);
 	ERR_FAIL_COND(!c);
-	
-	
+
+
 	total_usage-=c->size;
 	memfree(c->mem);
 
 	c->mem=0;
-	
+
 	if (c->lock>0) {
-	
+
 		ERR_PRINT("Freed ID Still locked");
 	}
 }
@@ -123,14 +123,14 @@ void MemoryPoolDynamicStatic::free(ID p_id) {
 Error MemoryPoolDynamicStatic::realloc(ID p_id, size_t p_amount) {
 
 	_THREAD_SAFE_METHOD_
-	
+
 	Chunk *c = get_chunk(p_id);
 	ERR_FAIL_COND_V(!c,ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(c->lock > 0 , ERR_LOCKED );
-	
-	
+
+
 	void * new_mem = memrealloc(c->mem,p_amount);
-	
+
 	ERR_FAIL_COND_V(!new_mem,ERR_OUT_OF_MEMORY);
 	total_usage-=c->size;
 	c->mem=new_mem;
@@ -138,37 +138,37 @@ Error MemoryPoolDynamicStatic::realloc(ID p_id, size_t p_amount) {
 	total_usage+=c->size;
 	if (total_usage>max_usage)
 		max_usage=total_usage;
-	
+
 
 	return OK;
 }
 bool MemoryPoolDynamicStatic::is_valid(ID p_id) {
 
 	_THREAD_SAFE_METHOD_
-	
+
 	Chunk *c = get_chunk(p_id);
-	
+
 	return c!=NULL;
 
 }
 size_t MemoryPoolDynamicStatic::get_size(ID p_id) const {
 
 	_THREAD_SAFE_METHOD_
-	
+
 	const Chunk *c = get_chunk(p_id);
 	ERR_FAIL_COND_V(!c,0);
-	
+
 	return c->size;
-	
+
 
 }
 const char* MemoryPoolDynamicStatic::get_description(ID p_id) const {
 
 	_THREAD_SAFE_METHOD_
-	
+
 	const Chunk *c = get_chunk(p_id);
 	ERR_FAIL_COND_V(!c,"");
-	
+
 	return c->descr;
 
 }
@@ -177,10 +177,10 @@ const char* MemoryPoolDynamicStatic::get_description(ID p_id) const {
 bool MemoryPoolDynamicStatic::is_locked(ID p_id) const {
 
 	_THREAD_SAFE_METHOD_
-	
+
 	const Chunk *c = get_chunk(p_id);
 	ERR_FAIL_COND_V(!c,false);
-	
+
 	return c->lock>0;
 
 }
@@ -188,10 +188,10 @@ bool MemoryPoolDynamicStatic::is_locked(ID p_id) const {
 Error MemoryPoolDynamicStatic::lock(ID p_id) {
 
 	_THREAD_SAFE_METHOD_
-	
+
 	Chunk *c = get_chunk(p_id);
 	ERR_FAIL_COND_V(!c,ERR_INVALID_PARAMETER);
-	
+
 	c->lock++;
 
 	return OK;
@@ -199,23 +199,23 @@ Error MemoryPoolDynamicStatic::lock(ID p_id) {
 void * MemoryPoolDynamicStatic::get(ID p_id) {
 
 	_THREAD_SAFE_METHOD_
-	
+
 	const Chunk *c = get_chunk(p_id);
 	ERR_FAIL_COND_V(!c,NULL);
 	ERR_FAIL_COND_V( c->lock==0, NULL );
-	
+
 	return c->mem;
 }
 Error MemoryPoolDynamicStatic::unlock(ID p_id) {
 
 	_THREAD_SAFE_METHOD_
-	
+
 	Chunk *c = get_chunk(p_id);
 	ERR_FAIL_COND_V(!c,ERR_INVALID_PARAMETER);
-	
+
 	ERR_FAIL_COND_V( c->lock<=0, ERR_INVALID_PARAMETER );
 	c->lock--;
-	
+
 	return OK;
 }
 
@@ -226,7 +226,7 @@ size_t MemoryPoolDynamicStatic::get_available_mem() const {
 
 size_t MemoryPoolDynamicStatic::get_total_usage() const {
 	_THREAD_SAFE_METHOD_
-	
+
 	return total_usage;
 }
 

@@ -76,7 +76,7 @@ CommandQueueMT::SyncSemaphore* CommandQueueMT::_alloc_sync_sem() {
 CommandQueueMT::CommandQueueMT(bool p_sync){
 
 	read_ptr=0;
-	write_ptr=0;	
+	write_ptr=0;
 	mutex = Mutex::create();
 
 	for(int i=0;i<SYNC_SEMAPHORES;i++) {

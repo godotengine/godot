@@ -136,13 +136,13 @@ void Main::print_help(const char* p_binary) {
 	const char **test_names=tests_get_names();
 	const char* coma = "";
 	while(*test_names) {
-	
+
 		OS::get_singleton()->print("%s%s", coma, *test_names);
 		test_names++;
 		coma = ", ";
 	}
 	OS::get_singleton()->print(")\n");
-	
+
 	OS::get_singleton()->print("\t-r WIDTHxHEIGHT\t : Request Window Resolution\n");
 	OS::get_singleton()->print("\t-p XxY\t : Request Window Position\n");
 	OS::get_singleton()->print("\t-f\t\t : Request Fullscreen\n");
@@ -150,7 +150,7 @@ void Main::print_help(const char* p_binary) {
 	OS::get_singleton()->print("\t-w\t\t Request Windowed\n");
 	OS::get_singleton()->print("\t-vd DRIVER\t : Video Driver (");
 	for (int i=0;i<OS::get_singleton()->get_video_driver_count();i++) {
-		
+
 		if (i!=0)
 			OS::get_singleton()->print(", ");
 		OS::get_singleton()->print("%s",OS::get_singleton()->get_video_driver_name(i));
@@ -158,7 +158,7 @@ void Main::print_help(const char* p_binary) {
 	OS::get_singleton()->print(")\n");
 	OS::get_singleton()->print("\t-ad DRIVER\t : Audio Driver (");
 	for (int i=0;i<OS::get_singleton()->get_audio_driver_count();i++) {
-		
+
 		if (i!=0)
 			OS::get_singleton()->print(", ");
 		OS::get_singleton()->print("%s",OS::get_singleton()->get_audio_driver_name(i));
@@ -166,7 +166,7 @@ void Main::print_help(const char* p_binary) {
     OS::get_singleton()->print(")\n");
 	OS::get_singleton()->print("\t-rthread <mode>\t : Render Thread Mode ('unsafe', 'safe', 'separate).");
 	OS::get_singleton()->print(")\n");
-	OS::get_singleton()->print("\t-s,-script [script] : Run a script.\n");	
+	OS::get_singleton()->print("\t-s,-script [script] : Run a script.\n");
 	OS::get_singleton()->print("\t-d,-debug : Debug (local stdout debugger).\n");
 	OS::get_singleton()->print("\t-rdebug ADDRESS : Remote debug (<ip>:<port> host address).\n");
 	OS::get_singleton()->print("\t-fdelay [msec]: Simulate high CPU load (delay each frame by [msec]).\n");
@@ -217,7 +217,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	/* argument parsing and main creation */
 	List<String> args;
 	List<String> main_args;
-	
+
 	for(int i=0;i<argc;i++) {
 
 		args.push_back(String::utf8(argv[i]));
@@ -235,7 +235,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	}
 
 	I=args.front();
-	
+
 	video_mode = OS::get_singleton()->get_default_video_mode();
 
 	String video_driver="";
@@ -264,7 +264,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		packed_data = memnew(PackedData);
 
 #ifdef MINIZIP_ENABLED
-	
+
 	//XXX: always get_singleton() == 0x0
 	zip_packed_data = ZipArchive::get_singleton();
 	//TODO: remove this temporary fix
@@ -285,44 +285,44 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 			// no op
 		} else if (I->get()=="-h" || I->get()=="--help" || I->get()=="/?") { // resolution
-			
+
 			goto error;
-			
-			
+
+
 		} else if (I->get()=="-r") { // resolution
-		
+
 			if (I->next()) {
-			
+
 				String vm=I->next()->get();
-				
+
 				if (vm.find("x")==-1) { // invalid parameter format
-				
+
 					OS::get_singleton()->print("Invalid -r argument: %s\n",vm.utf8().get_data());
 					goto error;
-					
-				
+
+
 				}
-				
+
 				int w=vm.get_slice("x",0).to_int();
 				int h=vm.get_slice("x",1).to_int();
-				
+
 				if (w==0 || h==0) {
-				
+
 					OS::get_singleton()->print("Invalid -r resolution, x and y must be >0\n");
 					goto error;
-					
+
 				}
-				
+
 				video_mode.width=w;
 				video_mode.height=h;
 				force_res=true;
-				
+
 				N=I->next()->next();
 			} else {
 				OS::get_singleton()->print("Invalid -p argument, needs resolution\n");
 				goto error;
-				
-			
+
+
 			}
 		} else if (I->get()=="-p") { // position
 
@@ -360,15 +360,15 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 			init_windowed=true;
 		} else if (I->get()=="-vd") { // video driver
-		
+
 			if (I->next()) {
-			
+
 				video_driver=I->next()->get();
 				N=I->next()->next();
 			} else {
 				OS::get_singleton()->print("Invalid -cd argument, needs driver name\n");
 				goto error;
-				
+
 			}
 		} else if (I->get()=="-lang") { // language
 
@@ -420,18 +420,18 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 			}
 
 		} else if (I->get()=="-ad") { // video driver
-		
+
 			if (I->next()) {
-			
+
 				audio_driver=I->next()->get();
 				N=I->next()->next();
 			} else {
 				goto error;
-				
+
 			}
-			
+
 		} else if (I->get()=="-f") { // fullscreen
-		
+
 			//video_mode.fullscreen=false;
 			init_fullscreen=true;
 		} else if (I->get()=="-e" || I->get()=="-editor") { // fonud editor
@@ -446,9 +446,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		} else if (I->get()=="-v") { // fullscreen
 			OS::get_singleton()->_verbose_stdout=true;
 		} else if (I->get()=="-path") { // resolution
-		
+
 			if (I->next()) {
-			
+
 				String p = I->next()->get();
 				if (OS::get_singleton()->set_cwd(p)==OK) {
 					//nothing
@@ -458,7 +458,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				N=I->next()->next();
 			} else {
 				goto error;
-				
+
 			}
 		} else if (I->get()=="-bp") { // /breakpoints
 
@@ -567,7 +567,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				main_args.push_back(I->get());
 			}
 		}
-			
+
 		I=N;
 	}
 
@@ -641,7 +641,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 
 	if (globals->setup(game_path,main_pack)!=OK) {
-		
+
 #ifdef TOOLS_ENABLED
 		editor=false;
 #else
@@ -729,35 +729,35 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	if (audio_driver=="") { // specified in engine.cfg
 		audio_driver=GLOBAL_DEF("audio/driver",OS::get_singleton()->get_audio_driver_name(0));
 	}
-		
-	
+
+
 	for (int i=0;i<OS::get_singleton()->get_video_driver_count();i++) {
 
 		if (video_driver==OS::get_singleton()->get_video_driver_name(i)) {
-		
+
 			video_driver_idx=i;
 			break;
 		}
 	}
 
 	if (video_driver_idx<0) {
-	
+
 		OS::get_singleton()->alert( "Invalid Video Driver: "+video_driver );
 		video_driver_idx = 0;
 		//goto error;
 	}
 
 	for (int i=0;i<OS::get_singleton()->get_audio_driver_count();i++) {
-	
+
 		if (audio_driver==OS::get_singleton()->get_audio_driver_name(i)) {
-		
+
 			audio_driver_idx=i;
 			break;
 		}
 	}
 
 	if (audio_driver_idx<0) {
-	
+
 		OS::get_singleton()->alert( "Invalid Audio Driver: "+audio_driver );
 		audio_driver_idx = 0;
 		//goto error;
@@ -799,14 +799,14 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	return OK;
 
 	error:
-	
-	video_driver="";	
+
+	video_driver="";
 	audio_driver="";
 	game_path="";
-		
-	args.clear(); 
+
+	args.clear();
 	main_args.clear();
-	
+
 	print_help(execpath);
 
 	if (performance)
@@ -835,14 +835,14 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 	unregister_core_driver_types();
 	unregister_core_types();
-	
+
 	OS::get_singleton()->_cmdline.clear();
 
 	if (message_queue)
 		memdelete( message_queue);
 	OS::get_singleton()->finalize_core();
 	locale=String();
-	
+
 	return ERR_INVALID_PARAMETER;
 }
 
@@ -1136,9 +1136,9 @@ bool Main::start() {
 		Ref<Script> script_res = ResourceLoader::load(script);
 		ERR_EXPLAIN("Can't load script: "+script);
 		ERR_FAIL_COND_V(script_res.is_null(),false);
-		
+
 		if( script_res->can_instance() /*&& script_res->inherits_from("SceneTreeScripted")*/) {
-		
+
 
 			StringName instance_type=script_res->get_instance_base_type();
 			Object *obj = ObjectTypeDB::instance(instance_type);
@@ -1161,10 +1161,10 @@ bool Main::start() {
 	} else {
 		main_loop_type=GLOBAL_DEF("application/main_loop_type","");
 	}
-	
+
 	if (!main_loop && main_loop_type=="")
 		main_loop_type="SceneTree";
-	
+
 	if (!main_loop) {
 		if (!ObjectTypeDB::type_exists(main_loop_type)) {
 			OS::get_singleton()->alert("godot: error: MainLoop type doesn't exist: "+main_loop_type);
@@ -1179,17 +1179,17 @@ bool Main::start() {
 
 			main_loop=ml->cast_to<MainLoop>();
 			if (!main_loop) {
-				
+
 				memdelete(ml);
 				ERR_EXPLAIN("Invalid MainLoop type");
 				ERR_FAIL_V(false);
-				
+
 			}
 		}
 	}
 
 	if (main_loop->is_type("SceneTree")) {
-		
+
 		SceneTree *sml = main_loop->cast_to<SceneTree>();
 
 		if (debug_collisions) {
@@ -1204,7 +1204,7 @@ bool Main::start() {
 		EditorNode *editor_node=NULL;
 		if (editor) {
 
-			editor_node = memnew( EditorNode );			
+			editor_node = memnew( EditorNode );
 			sml->get_root()->add_child(editor_node);
 
 			//root_node->set_editor(editor);
@@ -1656,13 +1656,13 @@ void Main::cleanup() {
 	EditorNode::unregister_editor_types();
 #endif
 
-	unregister_driver_types();	
+	unregister_driver_types();
 	unregister_module_types();
-	unregister_scene_types();	
+	unregister_scene_types();
 	unregister_server_types();
 
 	OS::get_singleton()->finalize();
-				
+
 	if (packed_data)
 		memdelete(packed_data);
 	if (file_access_network_client)

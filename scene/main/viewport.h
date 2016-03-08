@@ -270,7 +270,7 @@ friend class Camera;
 	void _camera_make_next_current(Camera* p_exclude);
 
 
-protected:	
+protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 public:
@@ -284,7 +284,7 @@ public:
 	void set_as_audio_listener_2d(bool p_enable);
 	bool is_audio_listener_2d() const;
 
-	void set_rect(const Rect2& p_rect);	
+	void set_rect(const Rect2& p_rect);
 	Rect2 get_rect() const;
 	Rect2 get_visible_rect() const;
 	RID get_viewport() const;
@@ -362,7 +362,7 @@ public:
 	bool gui_has_modal_stack() const;
 
 
-	Viewport();	
+	Viewport();
 	~Viewport();
 
 };

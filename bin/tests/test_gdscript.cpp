@@ -81,7 +81,7 @@ static String _parser_expr(const GDParser::Node *p_expr) {
 
 		case GDParser::Node::TYPE_IDENTIFIER: {
 
-			const GDParser::IdentifierNode *id_node = static_cast<const GDParser::IdentifierNode *>(p_expr);			
+			const GDParser::IdentifierNode *id_node = static_cast<const GDParser::IdentifierNode *>(p_expr);
 			txt=id_node->name;
 		} break;
 		case GDParser::Node::TYPE_CONSTANT: {

@@ -122,7 +122,7 @@ uint8_t FileAccessAndroid::get_8() const {
 	}
 
 
-	uint8_t byte;	
+	uint8_t byte;
 	AAsset_read(a,&byte,1);
 	pos++;
 	return byte;

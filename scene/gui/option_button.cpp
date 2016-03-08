@@ -55,7 +55,7 @@ void OptionButton::_notification(int p_what) {
 			Ref<Texture> arrow = Control::get_icon("arrow");
 			Ref<StyleBox> normal = get_stylebox("normal" );
 
-			Size2 size = get_size();	
+			Size2 size = get_size();
 
 			Point2 ofs( size.width - arrow->get_width() - get_constant("arrow_margin"), int(Math::abs((size.height-arrow->get_height())/2)));
 			arrow->draw(ci,ofs);
@@ -66,7 +66,7 @@ void OptionButton::_notification(int p_what) {
 
 
 void OptionButton::_selected(int p_which) {
-	
+
 	int selid = -1;
 	for (int i=0;i<popup->get_item_count();i++) {
 
@@ -89,39 +89,39 @@ void OptionButton::_selected(int p_which) {
 
 
 void OptionButton::pressed() {
-	
+
 	Size2 size=get_size();
 	popup->set_global_pos( get_global_pos() + Size2( 0, size.height ) );
 	popup->set_size( Size2( size.width, 0) );
-	
+
 	popup->popup();
 }
 
 void OptionButton::add_icon_item(const Ref<Texture>& p_icon,const String& p_label,int p_ID) {
-	
-	popup->add_icon_check_item( p_icon, p_label, p_ID );	
+
+	popup->add_icon_check_item( p_icon, p_label, p_ID );
 	if (popup->get_item_count()==1)
 		select(0);
 }
 void OptionButton::add_item(const String& p_label,int p_ID) {
-	
-	popup->add_check_item( p_label, p_ID );	
+
+	popup->add_check_item( p_label, p_ID );
 	if (popup->get_item_count()==1)
-		select(0);	
+		select(0);
 }
 
 void OptionButton::set_item_text(int p_idx,const String& p_text) {
-	
+
 	popup->set_item_text(p_idx,p_text);
-	
+
 }
 void OptionButton::set_item_icon(int p_idx,const Ref<Texture>& p_icon) {
-	
+
 	popup->set_item_icon(p_idx,p_icon);
-	
+
 }
 void OptionButton::set_item_ID(int p_idx,int p_ID) {
-	
+
 	popup->set_item_ID(p_idx,p_ID);
 }
 
@@ -136,17 +136,17 @@ void OptionButton::set_item_disabled(int p_idx,bool p_disabled) {
 }
 
 String OptionButton::get_item_text(int p_idx) const {
-	
+
 	return popup->get_item_text(p_idx);
 }
 
 Ref<Texture> OptionButton::get_item_icon(int p_idx) const {
-	
+
 	return popup->get_item_icon(p_idx);
 }
 
 int OptionButton::get_item_ID(int p_idx) const {
-	
+
 	return popup->get_item_ID(p_idx);
 }
 Variant OptionButton::get_item_metadata(int p_idx) const {
@@ -161,17 +161,17 @@ bool OptionButton::is_item_disabled(int p_idx) const {
 
 
 int OptionButton::get_item_count() const  {
-	
+
 	return popup->get_item_count();
 }
 
 void OptionButton::add_separator() {
-	
+
 	popup->add_separator();
 }
 
 void OptionButton::clear() {
-	
+
 	popup->clear();
 	set_text("");
 	current=-1;
@@ -210,12 +210,12 @@ void OptionButton::_select_int(int p_which) {
 }
 
 void OptionButton::select(int p_idx) {
-	
+
 	_select(p_idx,false);
 }
 
 int OptionButton::get_selected() const {
-	
+
 	return current;
 }
 
@@ -286,9 +286,9 @@ void OptionButton::get_translatable_strings(List<String> *p_strings) const {
 
 
 void OptionButton::_bind_methods() {
-	
+
 	ObjectTypeDB::bind_method(_MD("_selected"),&OptionButton::_selected);
-	
+
 	ObjectTypeDB::bind_method(_MD("add_item","label","id"),&OptionButton::add_item,DEFVAL(-1));
 	ObjectTypeDB::bind_method(_MD("add_icon_item","texture:Texture","label","id"),&OptionButton::add_icon_item);
 	ObjectTypeDB::bind_method(_MD("set_item_text","idx","text"),&OptionButton::set_item_text);
@@ -305,7 +305,7 @@ void OptionButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_separator"),&OptionButton::add_separator);
 	ObjectTypeDB::bind_method(_MD("clear"),&OptionButton::clear);
 	ObjectTypeDB::bind_method(_MD("select","idx"),&OptionButton::select);
-	ObjectTypeDB::bind_method(_MD("get_selected"),&OptionButton::get_selected);	
+	ObjectTypeDB::bind_method(_MD("get_selected"),&OptionButton::get_selected);
 	ObjectTypeDB::bind_method(_MD("get_selected_ID"),&OptionButton::get_selected_ID);
 	ObjectTypeDB::bind_method(_MD("get_selected_metadata"),&OptionButton::get_selected_metadata);
 	ObjectTypeDB::bind_method(_MD("remove_item","idx"),&OptionButton::remove_item);
@@ -320,23 +320,23 @@ void OptionButton::_bind_methods() {
 }
 
 OptionButton::OptionButton() {
-	
-	
+
+
 	popup = memnew( PopupMenu );
 	popup->hide();
 	popup->set_as_toplevel(true);
 	add_child(popup);
 	popup->connect("item_pressed", this,"_selected");
-	
+
 	current=-1;
 	set_text_align(ALIGN_LEFT);
 }
 
 
 OptionButton::~OptionButton() {
-	
 
-	
+
+
 }
 
 

@@ -378,7 +378,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 				} break;
 				case OBJECT_INTERNAL_RESOURCE: {
 					uint32_t index=f->get_32();
-					String path = res_path+"::"+itos(index);					
+					String path = res_path+"::"+itos(index);
 					RES res = ResourceLoader::load(path);
 					if (res.is_null()) {
 						WARN_PRINT(String("Couldn't load resource: "+path).utf8().get_data());
@@ -2100,7 +2100,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 					p.value=E->get()->get(F->get().name);
 					if ((F->get().usage&PROPERTY_USAGE_STORE_IF_NONZERO && p.value.is_zero())||(F->get().usage&PROPERTY_USAGE_STORE_IF_NONONE && p.value.is_one()) )
 						continue;
-					p.pi=F->get();										
+					p.pi=F->get();
 
 					rd.properties.push_back(p);
 

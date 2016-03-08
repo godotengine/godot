@@ -55,7 +55,7 @@ public:
 
 
 	void set_text_editor(TextEdit *p_text_editor);
-	GotoLineDialog();	
+	GotoLineDialog();
 };
 
 

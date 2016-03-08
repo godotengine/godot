@@ -174,7 +174,7 @@ class PropertyEditor : public Control {
 
 	Map<StringName,Map<StringName,String> > descr_cache;
 	Map<StringName,String > class_descr_cache;
-	
+
 	CustomPropertyEditor *custom_editor;
 
 	void _resource_edit_request();
@@ -245,7 +245,7 @@ public:
 
 	void set_subsection_selectable(bool p_selectable);
 
-	PropertyEditor();	
+	PropertyEditor();
 	~PropertyEditor();
 
 };

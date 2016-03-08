@@ -37,19 +37,19 @@ void BaseButton::_input_event(InputEvent p_event) {
 
 	if (status.disabled) // no interaction with disabled button
 		return;
-		
+
 	switch(p_event.type) {
-	
+
 		case InputEvent::MOUSE_BUTTON: {
-	
+
 			const InputEventMouseButton &b=p_event.mouse_button;
-	
+
 			if ( status.disabled || b.button_index!=1 )
 				return;
 
 			if (status.pressing_button)
 				break;
-			
+
 			if (status.click_on_press) {
 
 				if (b.pressed) {
@@ -96,13 +96,13 @@ void BaseButton::_input_event(InputEvent p_event) {
 			}
 
 			if (b.pressed) {
-				
+
 				status.press_attempt=true;
 				status.pressing_inside=true;
-				
+
 			} else {
-				
-				
+
+
 				if (status.press_attempt &&status.pressing_inside) {
 
 					if (!toggle_mode) { //mouse press attempt
@@ -114,14 +114,14 @@ void BaseButton::_input_event(InputEvent p_event) {
 						}
 
 						emit_signal("pressed");
-						
+
 					} else {
 
 						status.pressed=!status.pressed;
-						
+
 						pressed();
 						emit_signal("pressed");
-						
+
 						toggled(status.pressed);
 						emit_signal("toggled",status.pressed);
 						if (get_script_instance()) {
@@ -134,10 +134,10 @@ void BaseButton::_input_event(InputEvent p_event) {
 				}
 
 				status.press_attempt=false;
-				
+
 			}
-			
-			update();				
+
+			update();
 		} break;
 		case InputEvent::MOUSE_MOTION: {
 
@@ -151,7 +151,7 @@ void BaseButton::_input_event(InputEvent p_event) {
 		case InputEvent::ACTION:
 		case InputEvent::JOYSTICK_BUTTON:
 		case InputEvent::KEY: {
-		
+
 
 			if (p_event.is_echo()) {
 				break;
@@ -166,7 +166,7 @@ void BaseButton::_input_event(InputEvent p_event) {
 			}
 
 			if (p_event.is_action("ui_accept")) {
-		
+
 				if (p_event.is_pressed()) {
 
 					status.pressing_button++;
@@ -183,18 +183,18 @@ void BaseButton::_input_event(InputEvent p_event) {
 
 					status.press_attempt=false;
 					status.pressing_inside=false;
-				
+
 					if (!toggle_mode) { //mouse press attempt
-					
-						pressed();
-						emit_signal("pressed");				
-					} else {
-					
-						status.pressed=!status.pressed;
-						
+
 						pressed();
 						emit_signal("pressed");
-						
+					} else {
+
+						status.pressed=!status.pressed;
+
+						pressed();
+						emit_signal("pressed");
+
 						toggled(status.pressed);
 						if (get_script_instance()) {
 							get_script_instance()->call(SceneStringNames::get_singleton()->_toggled,status.pressed);
@@ -202,29 +202,29 @@ void BaseButton::_input_event(InputEvent p_event) {
 						emit_signal("toggled",status.pressed);
 					}
 				}
-				
+
 				accept_event();
-				update();		
+				update();
 
 			}
-		}	
-			
+		}
+
 	}
 }
 
 void BaseButton::_notification(int p_what) {
-	
+
 
 	if (p_what==NOTIFICATION_MOUSE_ENTER) {
-	
+
 		status.hovering=true;
 		update();
 	}
-	
+
 	if (p_what==NOTIFICATION_MOUSE_EXIT) {
 		status.hovering=false;
 		update();
-	}	
+	}
 	if (p_what==NOTIFICATION_FOCUS_EXIT) {
 
 		if (status.pressing_button && status.press_attempt) {
@@ -282,7 +282,7 @@ void BaseButton::toggled(bool p_pressed) {
 
 
 void BaseButton::set_disabled(bool p_disabled) {
-	
+
 	status.disabled = p_disabled;
 	update();
 	_change_notify("disabled");
@@ -298,7 +298,7 @@ bool BaseButton::is_disabled() const {
 }
 
 void BaseButton::set_pressed(bool p_pressed) {
-	
+
 	if (!toggle_mode)
 		return;
 	if (status.pressed==p_pressed)
@@ -309,12 +309,12 @@ void BaseButton::set_pressed(bool p_pressed) {
 }
 
 bool BaseButton::is_pressing() const{
-	
+
 	return status.press_attempt;
 }
 
 bool BaseButton::is_pressed() const {
-	
+
 	return toggle_mode?status.pressed:status.press_attempt;
 }
 
@@ -324,11 +324,11 @@ bool BaseButton::is_hovered() const {
 }
 
 BaseButton::DrawMode BaseButton::get_draw_mode() const {
-	
+
 	if (status.disabled) {
 		return DRAW_DISABLED;
 	};
-	
+
 	//print_line("press attempt: "+itos(status.press_attempt)+" hover: "+itos(status.hovering)+" pressed: "+itos(status.pressed));
 	if (status.press_attempt==false && status.hovering && !status.pressed) {
 
@@ -336,34 +336,34 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 		return DRAW_HOVER;
 	} else {
 		/* determine if pressed or not */
-				
+
 		bool pressing;
 		if (status.press_attempt) {
-			
+
 			pressing=status.pressing_inside;
 			if (status.pressed)
 				pressing=!pressing;
 		} else {
-			
+
 			pressing=status.pressed;
 		}
-		
-		if (pressing) 
+
+		if (pressing)
 			return DRAW_PRESSED;
-		else			
+		else
 			return DRAW_NORMAL;
-	}	
+	}
 
 	return DRAW_NORMAL;
 }
 
 void BaseButton::set_toggle_mode(bool p_on) {
-	
+
 	toggle_mode=p_on;
 }
 
 bool BaseButton::is_toggle_mode() const {
-	
+
 	return toggle_mode;
 }
 
@@ -414,7 +414,7 @@ void BaseButton::_bind_methods() {
 }
 
 BaseButton::BaseButton() {
-	
+
 	toggle_mode=false;
 	status.pressed=false;
 	status.press_attempt=false;
@@ -426,7 +426,7 @@ BaseButton::BaseButton() {
 	set_focus_mode( FOCUS_ALL );
 	group=NULL;
 
-		
+
 }
 
 BaseButton::~BaseButton()

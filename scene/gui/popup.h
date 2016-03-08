@@ -35,12 +35,12 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class Popup : public Control {
-	
+
 	OBJ_TYPE( Popup, Control );
 
 	bool exclusive;
 	bool popped_up;
-	
+
 protected:
 
 	virtual void _post_popup() {}
@@ -48,14 +48,14 @@ protected:
 	void _input_event(InputEvent p_event);
 	void _notification(int p_what);
 	void _fix_size();
-	static void _bind_methods();		
+	static void _bind_methods();
 public:
 
 	enum {
 		NOTIFICATION_POST_POPUP=80,
 		NOTIFICATION_POPUP_HIDE=81
 	};
-	
+
 	void set_exclusive(bool p_exclusive);
 	bool is_exclusive() const;
 
@@ -65,8 +65,8 @@ public:
 	void set_as_minsize();
 	virtual void popup();
 
-	
-	Popup();	
+
+	Popup();
 	~Popup();
 
 };

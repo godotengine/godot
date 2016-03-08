@@ -337,116 +337,116 @@ CreateDialog::CreateDialog() {
 //old create dialog, disabled
 
 void CreateDialog::_notification(int p_what) {
-	
+
 	if (p_what==NOTIFICATION_READY) {
 		connect("confirmed",this,"_create");
 		update_tree();
 	}
 	if (p_what==NOTIFICATION_DRAW) {
-		
+
 		//RID ci = get_canvas_item();
 		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
-	}	
+	}
 }
 
 
 void CreateDialog::_create() {
-	
+
 	if (tree->get_selected())
 		emit_signal("create");
 	hide();
 }
 
 void CreateDialog::_cancel() {
-	
+
 	hide();
 }
 
 void CreateDialog::_text_changed(String p_text) {
-	
+
 	update_tree();
 }
 
 void CreateDialog::add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem *p_root) {
-	
+
 	if (p_types.has(p_type))
 		return;
 	if (!ObjectTypeDB::is_type(p_type,base) || p_type==base)
 		return;
-	
+
 	String inherits=ObjectTypeDB::type_inherits_from(p_type);
-	
+
 	TreeItem *parent=p_root;
 
-	
+
 	if (inherits.length()) {
-	
+
 		if (!p_types.has(inherits)) {
-			
+
 			add_type(inherits,p_types,p_root);
 		}
-			
+
 		if (p_types.has(inherits) )
-			parent=p_types[inherits];		
-	} 
-	
+			parent=p_types[inherits];
+	}
+
 	TreeItem *item = tree->create_item(parent);
 	item->set_text(0,p_type);
 	if (!ObjectTypeDB::can_instance(p_type)) {
 		item->set_custom_color(0, Color(0.5,0.5,0.5) );
 		item->set_selectable(0,false);
 	}
-	
-	
+
+
 	if (has_icon(p_type,"EditorIcons")) {
-		
+
 		item->set_icon(0, get_icon(p_type,"EditorIcons"));
 	}
 
 
-	
+
 	p_types[p_type]=item;
 }
 
 void CreateDialog::update_tree() {
 
 	tree->clear();
-	
+
 	List<String> type_list;
-	ObjectTypeDB::get_type_list(&type_list);	
-	
+	ObjectTypeDB::get_type_list(&type_list);
+
 	HashMap<String,TreeItem*> types;
-	
+
 	TreeItem *root = tree->create_item();
-		
+
 	root->set_text(0,base);
 
 	List<String>::Element *I=type_list.front();
-	
+
 	for(;I;I=I->next()) {
-				
-		
+
+
 		String type=I->get();
-		
+
 
 		if (!ObjectTypeDB::can_instance(type))
 			continue; // cant create what can't be instanced
 		if (filter->get_text()=="")
 			add_type(type,types,root);
 		else {
-			
+
 			bool found=false;
 			String type=I->get();
-			while(type!="" && ObjectTypeDB::is_type(type,base) && type!=base) { 	
+			while(type!="" && ObjectTypeDB::is_type(type,base) && type!=base) {
 				if (type.findn(filter->get_text())!=-1) {
-					
+
 					found=true;
 					break;
 				}
-				
+
 				type=ObjectTypeDB::type_inherits_from(type);
 			}
-			
+
 
 			if (found)
 				add_type(I->get(),types,root);
@@ -528,12 +528,12 @@ Object *CreateDialog::instance_selected() {
 
 
 void CreateDialog::_bind_methods() {
-	
+
 	ObjectTypeDB::bind_method("_create",&CreateDialog::_create);
 	ObjectTypeDB::bind_method("_cancel",&CreateDialog::_cancel);
 	ObjectTypeDB::bind_method("_text_changed", &CreateDialog::_text_changed);
 	ADD_SIGNAL( MethodInfo("create"));
-	
+
 }
 
 
@@ -547,7 +547,7 @@ void CreateDialog::set_base_type(const String& p_base) {
 		return;
 	base=p_base;
 	if (is_inside_scene())
-		update_tree();	
+		update_tree();
 }
 
 String CreateDialog::get_base_type() const {
@@ -563,14 +563,14 @@ CreateDialog::CreateDialog() {
 	set_child_rect(vbc);
 
 	get_ok()->set_text("Create");
-	
+
 	tree = memnew( Tree );
 	vbc->add_margin_child("Type:",tree,true);
 	//tree->set_hide_root(true);
-	
-	filter = memnew( LineEdit );	
+
+	filter = memnew( LineEdit );
 	vbc->add_margin_child("Filter:",filter);
-		
+
 	base="Node";
 	set_as_toplevel(true);
 

@@ -37,7 +37,7 @@
 
 
 String Variant::get_type_name(Variant::Type p_type) {
-	
+
 	switch( p_type ) {
 		case NIL: {
 
@@ -297,7 +297,7 @@ bool Variant::can_convert(Variant::Type p_type_from,Variant::Type p_type_to) {
 
 			valid_types=valid;
 
-		} break;		
+		} break;
 
 		case COLOR: {
 
@@ -948,52 +948,52 @@ bool Variant::is_one() const {
 
 void Variant::reference(const Variant& p_variant) {
 
-	
+
 	if (this == &p_variant)
 		return;
-		
+
 	clear();
-		
+
 	type=p_variant.type;
-		
+
 	switch( p_variant.type ) {
 		case NIL: {
-		
+
 			// none
 		} break;
-		
-		// atomic types 		
+
+		// atomic types
 		case BOOL: {
-		
+
 			_data._bool=p_variant._data._bool;
 		} break;
 		case INT: {
-		
+
 			_data._int=p_variant._data._int;
-		
+
 		} break;
 		case REAL: {
-		
+
 			_data._real=p_variant._data._real;
-		
+
 		} break;
 		case STRING: {
-		
+
 			memnew_placement( _data._mem, String( *reinterpret_cast<const String*>(p_variant._data._mem) ) );
-			
+
 		} break;
-		
+
 		// math types
-		
+
 		case VECTOR2: {
-		
+
 			memnew_placement( _data._mem, Vector2( *reinterpret_cast<const Vector2*>(p_variant._data._mem) ) );
-		
+
 		} break;
 		case RECT2: {
-		
+
 			memnew_placement( _data._mem, Rect2( *reinterpret_cast<const Rect2*>(p_variant._data._mem) ) );
-		
+
 		} break;
 		case MATRIX32: {
 
@@ -1001,100 +1001,100 @@ void Variant::reference(const Variant& p_variant) {
 
 		} break;
 		case VECTOR3: {
-		
+
 			memnew_placement( _data._mem, Vector3( *reinterpret_cast<const Vector3*>(p_variant._data._mem) ) );
-		
+
 		} break;
 		case PLANE: {
-		
+
 			memnew_placement( _data._mem, Plane( *reinterpret_cast<const Plane*>(p_variant._data._mem) ) );
-		
+
 		} break;
-/*		
+/*
 		case QUAT: {
-		
-		
+
+
 		} break;*/
 		case _AABB: {
-		
+
 			_data._aabb = memnew( AABB( *p_variant._data._aabb ) );
 		} break;
 		case QUAT: {
-		
+
 			memnew_placement( _data._mem, Quat( *reinterpret_cast<const Quat*>(p_variant._data._mem) ) );
-		
+
 		} break;
 		case MATRIX3: {
-		
+
 			_data._matrix3 = memnew( Matrix3( *p_variant._data._matrix3 ) );
-		
+
 		} break;
 		case TRANSFORM: {
-		
+
 			_data._transform = memnew( Transform( *p_variant._data._transform ) );
-		
+
 		} break;
-		
-		// misc types		
+
+		// misc types
 		case COLOR: {
-		
+
 			memnew_placement( _data._mem, Color( *reinterpret_cast<const Color*>(p_variant._data._mem) ) );
-		
+
 		} break;
 		case IMAGE: {
-		
+
 			_data._image = memnew( Image( *p_variant._data._image ) );
-		
+
 		} break;
 		case _RID: {
-		
+
 			memnew_placement( _data._mem, RID( *reinterpret_cast<const RID*>(p_variant._data._mem) ) );
 		} break;
 		case OBJECT: {
-		
+
 			memnew_placement( _data._mem, ObjData( p_variant._get_obj() ) );
 		} break;
 		case NODE_PATH: {
-		
+
 			memnew_placement( _data._mem, NodePath( *reinterpret_cast<const NodePath*>(p_variant._data._mem) ) );
-		
+
 		} break;
 		case INPUT_EVENT: {
-			
+
 			_data._input_event= memnew( InputEvent( *p_variant._data._input_event ) );
-			
+
 		} break;
 		case DICTIONARY: {
-			
+
 			memnew_placement( _data._mem, Dictionary( *reinterpret_cast<const Dictionary*>(p_variant._data._mem) ) );
-			
+
 		} break;
 		case ARRAY: {
-			
+
 			memnew_placement( _data._mem, Array ( *reinterpret_cast<const Array*>(p_variant._data._mem) ) );
-			
+
 		} break;
-		
+
 		// arrays
 		case RAW_ARRAY: {
-		
+
 			memnew_placement( _data._mem, DVector<uint8_t> ( *reinterpret_cast<const DVector<uint8_t>*>(p_variant._data._mem) ) );
-		
+
 		} break;
 		case INT_ARRAY: {
-		
+
 			memnew_placement( _data._mem, DVector<int> ( *reinterpret_cast<const DVector<int>*>(p_variant._data._mem) ) );
-		
+
 		} break;
 		case REAL_ARRAY: {
-		
+
 			memnew_placement( _data._mem, DVector<real_t> ( *reinterpret_cast<const DVector<real_t>*>(p_variant._data._mem) ) );
-		
+
 		} break;
 		case STRING_ARRAY: {
-		
+
 			memnew_placement( _data._mem, DVector<String> ( *reinterpret_cast<const DVector<String>*>(p_variant._data._mem) ) );
-		
+
 		} break;
 		case VECTOR2_ARRAY: {
 
@@ -1102,17 +1102,17 @@ void Variant::reference(const Variant& p_variant) {
 
 		} break;
 		case VECTOR3_ARRAY: {
-		
+
 			memnew_placement( _data._mem, DVector<Vector3> ( *reinterpret_cast<const DVector<Vector3>*>(p_variant._data._mem) ) );
-		
+
 		} break;
 		case COLOR_ARRAY: {
-		
+
 			memnew_placement( _data._mem, DVector<Color> ( *reinterpret_cast<const DVector<Color>*>(p_variant._data._mem) ) );
-		
+
 		} break;
 		default: {}
-	}		
+	}
 
 
 }
@@ -1135,7 +1135,7 @@ void Variant::clear() {
 
 	switch(type) {
 		case STRING: {
-		
+
 			reinterpret_cast<String*>(_data._mem)->~String();
 		} break;
 	/*
@@ -1153,33 +1153,33 @@ void Variant::clear() {
 
 		} break;
 		case _AABB: {
-		
+
 			memdelete( _data._aabb );
-		
+
 		} break;
 		case MATRIX3: {
-		
+
 			memdelete( _data._matrix3 );
 		} break;
 		case TRANSFORM: {
-		
+
 			memdelete( _data._transform );
-		
+
 		} break;
-		
-		// misc types		
+
+		// misc types
 		case IMAGE: {
-		
+
 			memdelete( _data._image );
-		
+
 		} break;
 		case NODE_PATH: {
-		
+
 			reinterpret_cast<NodePath*>(_data._mem)->~NodePath();
-		
+
 		} break;
 		case OBJECT: {
-		
+
 			_get_obj().obj=NULL;
 			_get_obj().ref.unref();
 		} break;
@@ -1188,41 +1188,41 @@ void Variant::clear() {
 			reinterpret_cast<RID*>(_data._mem)->~RID();
 		} break;
 		case DICTIONARY: {
-			
+
 			reinterpret_cast<Dictionary*>(_data._mem)->~Dictionary();
-			
+
 		} break;
 		case ARRAY: {
-			
+
 			reinterpret_cast<Array*>(_data._mem)->~Array();
-			
+
 		} break;
 		case INPUT_EVENT: {
-			
+
 			memdelete( _data._input_event );
-			
+
 		} break;
-		
+
 		// arrays
 		case RAW_ARRAY: {
-		
+
 			reinterpret_cast< DVector<uint8_t>* >(_data._mem)->~DVector<uint8_t>();
-		
+
 		} break;
 		case INT_ARRAY: {
-		
+
 			reinterpret_cast< DVector<int>* >(_data._mem)->~DVector<int>();
-		
+
 		} break;
 		case REAL_ARRAY: {
-		
+
 			reinterpret_cast< DVector<real_t>* >(_data._mem)->~DVector<real_t>();
-		
+
 		} break;
 		case STRING_ARRAY: {
-		
+
 			reinterpret_cast< DVector<String>* >(_data._mem)->~DVector<String>();
-		
+
 		} break;
 		case VECTOR2_ARRAY: {
 
@@ -1230,55 +1230,55 @@ void Variant::clear() {
 
 		} break;
 		case VECTOR3_ARRAY: {
-		
+
 			reinterpret_cast< DVector<Vector3>* >(_data._mem)->~DVector<Vector3>();
-		
+
 		} break;
 		case COLOR_ARRAY: {
-		
+
 			reinterpret_cast< DVector<Color>* >(_data._mem)->~DVector<Color>();
-		
+
 		} break;
 		default: {} /* not needed */
 	}
-	
+
 	type=NIL;
 
 }
-	
+
 
 Variant::operator signed int() const {
 
 	switch( type ) {
-	
-		case NIL: return 0; 
+
+		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
 		case REAL: return _data._real;
 		case STRING: return operator String().to_int();
 		default: {
-		
+
 			return 0;
-		}		
+		}
 	}
-	
+
 	return 0;
 }
 Variant::operator unsigned int() const {
 
 		switch( type ) {
-	
-		case NIL: return 0; 
+
+		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
 		case REAL: return _data._real;
 		case STRING: return operator String().to_int();
 		default: {
-		
+
 			return 0;
-		}		
+		}
 	}
-	
+
 	return 0;
 }
 
@@ -1380,69 +1380,69 @@ Variant::operator unsigned long() const {
 Variant::operator signed short() const {
 
 	switch( type ) {
-	
-		case NIL: return 0; 
+
+		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
 		case REAL: return _data._real;
 		case STRING: return operator String().to_int();
 		default: {
-		
+
 			return 0;
-		}		
+		}
 	}
-	
+
 	return 0;
 }
 Variant::operator unsigned short() const {
 
 	switch( type ) {
-	
-		case NIL: return 0; 
+
+		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
 		case REAL: return _data._real;
 		case STRING: return operator String().to_int();
 		default: {
-		
+
 			return 0;
-		}		
+		}
 	}
-	
+
 	return 0;
 }
 Variant::operator signed char() const {
 
 	switch( type ) {
-	
-		case NIL: return 0; 
+
+		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
 		case REAL: return _data._real;
 		case STRING: return operator String().to_int();
 		default: {
-		
+
 			return 0;
-		}		
+		}
 	}
-	
+
 	return 0;
 }
 Variant::operator unsigned char() const {
 
 	switch( type ) {
-	
-		case NIL: return 0; 
+
+		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
 		case REAL: return _data._real;
 		case STRING: return operator String().to_int();
 		default: {
-		
+
 			return 0;
-		}		
+		}
 	}
-	
+
 	return 0;
 }
 #ifndef CHARTYPE_16BITS
@@ -1455,40 +1455,40 @@ Variant::operator CharType() const {
 Variant::operator float() const {
 
 	switch( type ) {
-	
-		case NIL: return 0; 
+
+		case NIL: return 0;
 		case BOOL: return _data._bool ? 1.0 : 0.0;
 		case INT: return (float)_data._int;
 		case REAL: return _data._real;
 		case STRING: return operator String().to_double();
 		default: {
-		
+
 			return 0;
-		}		
+		}
 	}
-	
+
 	return 0;
 }
 Variant::operator double() const {
 
 	switch( type ) {
-	
-		case NIL: return 0; 
+
+		case NIL: return 0;
 		case BOOL: return _data._bool ? 1.0 : 0.0;
 		case INT: return (float)_data._int;
 		case REAL: return _data._real;
 		case STRING: return operator String().to_double();
 		default: {
-		
+
 			return 0;
-		}		
+		}
 	}
-	
+
 	return true;
 }
 
 Variant::operator StringName() const {
-	
+
 	if (type==NODE_PATH) {
 		return reinterpret_cast<const NodePath*>(_data._mem)->get_sname();
 	}
@@ -1509,8 +1509,8 @@ struct _VariantStrPair {
 Variant::operator String() const {
 
 	switch( type ) {
-	
-		case NIL: return ""; 
+
+		case NIL: return "";
 		case BOOL: return _data._bool ? "True" : "False";
 		case INT: return String::num(_data._int);
 		case REAL: return String::num(_data._real);
@@ -1520,7 +1520,7 @@ Variant::operator String() const {
 		case MATRIX32: return operator Matrix32();
 		case VECTOR3: return operator Vector3();
 		case PLANE: return operator Plane();
-		//case QUAT: 
+		//case QUAT:
 		case _AABB: return operator AABB();
 		case QUAT: return operator Quat();
 		case MATRIX3: return operator Matrix3();
@@ -1529,7 +1529,7 @@ Variant::operator String() const {
 		case INPUT_EVENT: return operator InputEvent();
 		case COLOR: return String::num( operator Color().r)+","+String::num( operator Color().g)+","+String::num( operator Color().b)+","+String::num( operator Color().a) ;
 		case DICTIONARY: {
-			
+
 			const Dictionary &d =*reinterpret_cast<const Dictionary*>(_data._mem);
 			//const String *K=NULL;
 			String str;
@@ -1553,15 +1553,15 @@ Variant::operator String() const {
 					str+=", ";
 				str+="("+pairs[i].key+":"+pairs[i].value+")";
 			}
-			
+
 			return str;
 		} break;
-		case VECTOR3_ARRAY: { 
-		
+		case VECTOR3_ARRAY: {
+
 			DVector<Vector3> vec = operator DVector<Vector3>();
 			String str;
 			for(int i=0;i<vec.size();i++) {
-			
+
 				if (i>0)
 					str+=", ";
 				str=str+Variant( vec[i] );
@@ -1634,9 +1634,9 @@ Variant::operator String() const {
 		} break;
 		default: {
 			return "["+get_type_name(type)+"]";
-		}		
+		}
 	}
-	
+
 	return "";
 }
 
@@ -1819,7 +1819,7 @@ Variant::operator Control*() const {
 }
 
 Variant::operator InputEvent() const {
-	
+
 	if (type==INPUT_EVENT)
 		return *reinterpret_cast<const InputEvent*>(_data._input_event);
 	else
@@ -1827,8 +1827,8 @@ Variant::operator InputEvent() const {
 }
 
 Variant::operator Dictionary() const {
-	
-	if (type==DICTIONARY) 
+
+	if (type==DICTIONARY)
 		return *reinterpret_cast<const Dictionary*>(_data._mem);
 	else
 		return Dictionary();
@@ -1869,10 +1869,10 @@ inline DA _convert_array_from_variant(const Variant& p_variant) {
 }
 
 Variant::operator Array() const {
-	
-	if (type==ARRAY) 
+
+	if (type==ARRAY)
 		return *reinterpret_cast<const Array*>(_data._mem);
-	else 
+	else
 		return _convert_array_from_variant<Array >(*this);
 }
 
@@ -2019,17 +2019,17 @@ Variant::operator Vector<Plane>() const {
 }
 
 Variant::operator Vector<Variant>() const {
-	
+
 	Array from=operator Array();
 	Vector<Variant> to;
 	int len=from.size();
 	to.resize(len);
 	for (int i=0;i<len;i++) {
-	
+
 		to[i]=from[i];
 	}
 	return to;
-	
+
 }
 
 Variant::operator Vector<uint8_t>() const {
@@ -2039,7 +2039,7 @@ Variant::operator Vector<uint8_t>() const {
 	int len=from.size();
 	to.resize(len);
 	for (int i=0;i<len;i++) {
-	
+
 		to[i]=from[i];
 	}
 	return to;
@@ -2051,7 +2051,7 @@ Variant::operator Vector<int>() const {
 	int len=from.size();
 	to.resize(len);
 	for (int i=0;i<len;i++) {
-	
+
 		to[i]=from[i];
 	}
 	return to;
@@ -2063,7 +2063,7 @@ Variant::operator Vector<real_t>() const {
 	int len=from.size();
 	to.resize(len);
 	for (int i=0;i<len;i++) {
-	
+
 		to[i]=from[i];
 	}
 	return to;
@@ -2076,7 +2076,7 @@ Variant::operator Vector<String>() const {
 	int len=from.size();
 	to.resize(len);
 	for (int i=0;i<len;i++) {
-	
+
 		to[i]=from[i];
 	}
 	return to;
@@ -2093,7 +2093,7 @@ Variant::operator Vector<Vector3>() const {
 	DVector<Vector3>::Read r = from.read();
 	Vector3 *w = &to[0];
 	for (int i=0;i<len;i++) {
-	
+
 		w[i]=r[i];
 	}
 	return to;
@@ -2168,16 +2168,16 @@ Variant::Variant(unsigned int p_int) {
 #ifdef NEED_LONG_INT
 
 Variant::Variant(signed long p_int) {
-	
+
 	type=INT;
 	_data._int=p_int;
-	
+
 }
 Variant::Variant(unsigned long p_int) {
-	
+
 	type=INT;
 	_data._int=p_int;
-	
+
 }
 #endif
 
@@ -2232,10 +2232,10 @@ Variant::Variant(double p_double) {
 }
 
 Variant::Variant(const StringName& p_string) {
-	
+
 	type=STRING;
 	memnew_placement( _data._mem, String( p_string.operator String() ) );
-	
+
 }
 Variant::Variant(const String& p_string) {
 
@@ -2335,9 +2335,9 @@ Variant::Variant(const NodePath& p_node_path) {
 }
 
 Variant::Variant(const InputEvent& p_input_event) {
-	
+
 	type=INPUT_EVENT;
-	_data._input_event = memnew( InputEvent(p_input_event) );	
+	_data._input_event = memnew( InputEvent(p_input_event) );
 
 }
 
@@ -2367,10 +2367,10 @@ Variant::Variant(const Object* p_object) {
 }
 
 Variant::Variant(const Dictionary& p_dictionary) {
-	
+
 	type=DICTIONARY;
 	memnew_placement( _data._mem, (Dictionary)( p_dictionary) );
-	
+
 }
 
 Variant::Variant(const Array& p_array) {
@@ -2382,15 +2382,15 @@ Variant::Variant(const Array& p_array) {
 
 Variant::Variant(const DVector<Plane>& p_array) {
 
-	
+
 	type=ARRAY;
 
 	Array *plane_array=memnew_placement( _data._mem, Array );
-	
+
 	plane_array->resize( p_array.size() );
-	
+
 	for (int i=0;i<p_array.size();i++) {
-	
+
 		plane_array->operator [](i)=Variant(p_array[i]);
 	}
 }

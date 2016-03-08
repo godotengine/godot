@@ -41,25 +41,25 @@ typedef void (*ThreadCreateCallback)(void *p_userdata);
 
 class Thread {
 public:
-			
+
 	enum Priority {
-		
+
 		PRIORITY_LOW,
   		PRIORITY_NORMAL,
 		PRIORITY_HIGH
 	};
-	
+
 	struct Settings {
-		
+
 		Priority priority;
 		Settings() { priority=PRIORITY_NORMAL; }
 	};
-	
+
 
 
 	typedef uint64_t ID;
 
-protected:	
+protected:
 	static Thread* (*create_func)(ThreadCreateCallback p_callback,void *,const Settings&);
 	static ID (*get_thread_ID_func)();
 	static void (*wait_to_finish_func)(Thread*);
@@ -72,7 +72,7 @@ protected:
 
 	Thread();
 public:
-		
+
 
 	virtual ID get_ID() const=0;
 
@@ -81,8 +81,8 @@ public:
 	static ID get_caller_ID(); ///< get the ID of the caller function ID
 	static void wait_to_finish(Thread *p_thread); ///< waits until thread is finished, and deallocates it.
 	static Thread * create(ThreadCreateCallback p_callback,void * p_user,const Settings& p_settings=Settings()); ///< Static function to create a thread, will call p_callback
-	
-	
+
+
 	virtual ~Thread();
 
 };

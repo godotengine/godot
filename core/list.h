@@ -245,7 +245,7 @@ public:
 			_data->first=n;
 
 		_data->size_cache++;
-		
+
 		return n;
 	};
 
@@ -285,7 +285,7 @@ public:
 			_data->last=n;
 
 		_data->size_cache++;
-		
+
 		return n;
 	};
 
@@ -363,30 +363,30 @@ public:
 	}
 
 	void swap(Element* p_A, Element *p_B) {
-		
+
 		ERR_FAIL_COND(!p_A || !p_B);
 		ERR_FAIL_COND(p_A->data!=_data);
 		ERR_FAIL_COND(p_B->data!=_data);
-		
+
 		Element* A_prev=p_A->prev_ptr;
 		Element* A_next=p_A->next_ptr;
-		
+
 		p_A->next_ptr=p_B->next_ptr;
 		p_A->prev_ptr=p_B->prev_ptr;
-		
+
 		p_B->next_ptr=A_next;
-		p_B->prev_ptr=A_prev;	
-		
+		p_B->prev_ptr=A_prev;
+
 		if (p_A->prev_ptr)
 			p_A->prev_ptr->next_ptr=p_A;
 		if (p_A->next_ptr)
-			p_A->next_ptr->prev_ptr=p_A;		
-		
+			p_A->next_ptr->prev_ptr=p_A;
+
 		if (p_B->prev_ptr)
 			p_B->prev_ptr->next_ptr=p_B;
 		if (p_B->next_ptr)
-			p_B->next_ptr->prev_ptr=p_B;		
-		
+			p_B->next_ptr->prev_ptr=p_B;
+
 	}
 	/**
 	 * copy the list
@@ -552,10 +552,10 @@ public:
 	 */
 
 	void sort() {
-		
+
 		sort_custom< Comparator<T> >();
 	}
-			
+
 	template<class C>
 	void sort_custom_inplace() {
 
@@ -565,44 +565,44 @@ public:
 		Element *from=front();
 		Element *current=from;
 		Element *to=from;
-		
+
 		while(current) {
-			
+
 			Element *next=current->next_ptr;
-			
+
 			//disconnect
 			current->next_ptr=NULL;
-			
+
 			if (from!=current) {
-				
+
 				current->prev_ptr=NULL;
 				current->next_ptr=from;
-				
+
 				Element *find=from;
 				C less;
 				while( find && less(find->value,current->value) ) {
-				
+
 					current->prev_ptr=find;
 					current->next_ptr=find->next_ptr;
 					find=find->next_ptr;
 				}
-								
+
 				if (current->prev_ptr)
 					current->prev_ptr->next_ptr=current;
 				else
 					from=current;
-				
+
 				if (current->next_ptr)
 					current->next_ptr->prev_ptr=current;
 				else
 					to=current;
 			} else {
-				
+
 				current->prev_ptr=NULL;
 				current->next_ptr=NULL;
-				
+
 			}
-			
+
 			current=next;
 		}
 		_data->first=from;

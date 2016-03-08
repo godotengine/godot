@@ -138,7 +138,7 @@ void ScriptCreateDialog::ok_pressed() {
 			return;
 
 		}
-		Error err = ResourceSaver::save(lpath,scr,ResourceSaver::FLAG_CHANGE_PATH);		
+		Error err = ResourceSaver::save(lpath,scr,ResourceSaver::FLAG_CHANGE_PATH);
 		if (err!=OK) {
 
 			alert->set_text("Could not create script in filesystem: "+String(""));
@@ -195,7 +195,7 @@ void ScriptCreateDialog::_browse_path() {
 		file_browse->add_filter("*."+E->get());
 	}
 
-	file_browse->set_current_path(file_path->get_text());	
+	file_browse->set_current_path(file_path->get_text());
 	file_browse->popup_centered_ratio();
 
 }

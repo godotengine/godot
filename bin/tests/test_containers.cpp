@@ -44,9 +44,9 @@ MainLoop * test() {
 
 	/*
 	HashMap<int,int> int_map;
-	
+
 	for (int i=0;i<68000;i++) {
-		
+
 		int num=(int)Math::random(0,1024);
 		int_map[i]=num;
 	}
@@ -70,21 +70,21 @@ MainLoop * test() {
 		};
 
 	};
-	
-#if 0	
+
+#if 0
 	Set<int> set;
-	
+
 	print_line("Begin Insert");
 	for (int i=0;i<1100;i++) {
-		
+
 		int num=i;//(int)Math::random(0,1024);
-	//	print_line("inserting "+itos(num));		
+	//	print_line("inserting "+itos(num));
 		set.insert( num );
 	}
-	
+
 	/*
 	for (int i=0;i<400;i++) {
-		
+
 		int num=(int)Math::random(0,1024);
 		set.erase(num);
 	}
@@ -92,11 +92,11 @@ MainLoop * test() {
 	//set.print_tree();
 
 	for(Set<int>::Element *I=set.front();I;I=I->next()) {
-		
+
 		print_line("inserted "+itos(I->get())+" prev is "+itos(I->prev()?I->prev()->get():-100));
 
 	}
-	
+
 	print_line("depth is "+itos(set.calculate_depth()));
 	print_line("Insert Success");
 #endif

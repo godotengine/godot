@@ -118,7 +118,7 @@ public:
 
 	void set_right_disconnects(bool p_enable);
 	bool is_right_disconnects_enabled() const;
-	
+
 	Vector2 get_scroll_ofs() const;
 
 

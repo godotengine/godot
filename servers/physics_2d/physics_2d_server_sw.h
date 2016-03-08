@@ -258,7 +258,7 @@ public:
 	virtual void set_active(bool p_active);
 	virtual void init();
 	virtual void step(float p_step);
-	virtual void sync();	
+	virtual void sync();
 	virtual void flush_queries();
 	virtual void end_sync();
 	virtual void finish();

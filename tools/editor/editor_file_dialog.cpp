@@ -590,7 +590,7 @@ void EditorFileDialog::update_file_list() {
 
 			if (get_icon_func) {
 
-				
+
 				Ref<Texture> icon = get_icon_func(base_dir.plus_file(files.front()->get()));
 				//ti->set_icon(0,icon);
 				if (display_mode==DISPLAY_THUMBNAILS) {

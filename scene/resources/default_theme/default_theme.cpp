@@ -558,10 +558,10 @@ void make_default_theme() {
 	t->set_constant("close_v_ofs","WindowDialog", 20 );
 	t->set_constant("titlebar_height","WindowDialog", 18 );
 	t->set_constant("title_height","WindowDialog", 20 );
-	
-	
+
+
 	// File Dialog
-	
+
 	t->set_icon("reload","FileDialog",make_icon( icon_reload_png ));
 
 
@@ -784,7 +784,7 @@ void make_default_theme() {
 
 	t->set_icon("screen_picker","ColorPicker", make_icon( icon_color_pick_png ) );
 	t->set_icon("add_preset","ColorPicker", make_icon( icon_add_png ) );
-	
+
 	t->set_shader("uv_editor", "ColorPicker", make_shader("", uv_editor_shader_code, ""));
 	t->set_shader("w_editor", "ColorPicker", make_shader("", w_editor_shader_code, ""));
 

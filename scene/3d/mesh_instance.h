@@ -38,7 +38,7 @@
 class MeshInstance : public GeometryInstance {
 
 	OBJ_TYPE( MeshInstance, GeometryInstance );
-	
+
 	Ref<Mesh> mesh;
 	NodePath skeleton_path;
 
@@ -68,7 +68,7 @@ public:
 
 	void set_skeleton_path(const NodePath& p_skeleton);
 	NodePath get_skeleton_path();
-	
+
 	Node* create_trimesh_collision_node();
 	void create_trimesh_collision();
 
@@ -78,7 +78,7 @@ public:
 	virtual AABB get_aabb() const;
 	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
-	MeshInstance();	
+	MeshInstance();
 	~MeshInstance();
 };
 

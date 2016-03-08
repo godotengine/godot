@@ -30,7 +30,7 @@
 #include "print_string.h"
 
 void Panel::_notification(int p_what) {
-	
+
 	if (p_what==NOTIFICATION_DRAW) {
 
 		RID ci = get_canvas_item();
@@ -40,7 +40,7 @@ void Panel::_notification(int p_what) {
 }
 
 Panel::Panel() {
-	
+
 	set_stop_mouse(true);
 }
 

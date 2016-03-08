@@ -50,7 +50,7 @@ void Plane::normalize() {
 }
 
 Plane Plane::normalized() const {
-	
+
 	Plane p = *this;
 	p.normalize();
 	return p;
@@ -66,12 +66,12 @@ Vector3 Plane::get_any_perpendicular_normal() const {
 	static const Vector3 p1 = Vector3(1,0,0);
 	static const Vector3 p2 = Vector3(0,1,0);
 	Vector3 p;
-	
+
 	if (ABS(normal.dot(p1)) > 0.99) // if too similar to p1
 		p=p2; // use p2
 	else
 		p=p1; // use p1
-	
+
 	p-=normal * normal.dot(p);
 	p.normalize();
 

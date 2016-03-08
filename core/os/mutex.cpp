@@ -50,13 +50,13 @@ Mutex::~Mutex() {
 Mutex *_global_mutex=NULL;;
 
 void _global_lock() {
-	
+
 	if (_global_mutex)
 		_global_mutex->lock();
 }
 void _global_unlock() {
-	
+
 	if (_global_mutex)
-		_global_mutex->unlock();	
+		_global_mutex->unlock();
 }
 

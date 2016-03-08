@@ -305,7 +305,7 @@ Error HTTPClient::poll(){
 						String header = responses[i].strip_edges();
 						String s = header.to_lower();
 						if (s.length()==0)
-							continue;						
+							continue;
 						if (s.begins_with("content-length:")) {
 							body_size = s.substr(s.find(":")+1,s.length()).strip_edges().to_int();
 							body_left=body_size;

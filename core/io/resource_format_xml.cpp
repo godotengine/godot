@@ -1818,7 +1818,7 @@ Error ResourceInteractiveLoaderXML::rename_dependencies(FileAccess *p_f, const S
 
 void ResourceInteractiveLoaderXML::open(FileAccess *p_f) {
 
-	error=OK;	
+	error=OK;
 
 	lines=1;
 	f=p_f;

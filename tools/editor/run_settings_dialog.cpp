@@ -84,7 +84,7 @@ RunSettingsDialog::RunSettingsDialog() {
 	run_mode->add_item("Main Scene");
 	run_mode->connect("item_selected",this,"_run_mode_changed");
 	arguments = memnew( LineEdit );
-	vbc->add_margin_child("Main Scene Arguments:",arguments);	
+	vbc->add_margin_child("Main Scene Arguments:",arguments);
 	arguments->set_editable(false);
 
 	get_ok()->set_text("Close");

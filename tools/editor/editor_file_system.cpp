@@ -463,7 +463,7 @@ void EditorFileSystem::scan() {
 		filesystem=new_filesystem;
 		new_filesystem=NULL;
 		_update_scan_actions();
-		scanning=false;		
+		scanning=false;
 		emit_signal("filesystem_changed");
 		emit_signal("sources_changed",sources_changed.size()>0);
 

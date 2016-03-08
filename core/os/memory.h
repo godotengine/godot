@@ -42,61 +42,61 @@
 class MID {
 
 	struct Data {
-	
+
 		SafeRefCount refcount;
 		MemoryPoolDynamic::ID id;
 	};
 
 	mutable Data *data;
-	
+
 	void unref() {
-	
+
 		if (!data)
 			return;
 		if (data->refcount.unref()) {
-		
+
 			if (data->id!=MemoryPoolDynamic::INVALID_ID)
-				MemoryPoolDynamic::get_singleton()->free(data->id);	
-			MemoryPoolStatic::get_singleton()->free(data);	
+				MemoryPoolDynamic::get_singleton()->free(data->id);
+			MemoryPoolStatic::get_singleton()->free(data);
 		}
-		
+
 		data=NULL;
 	}
-	
+
 	void ref(Data *p_data) {
-	
+
 		if (data==p_data)
 			return;
 		unref();
-		
+
 		if (p_data && p_data->refcount.ref())
-			data=p_data;		
+			data=p_data;
 	}
-	
+
 friend class MID_Lock;
 
 	inline void lock() {
-	
+
 		if (data && data->id!=MemoryPoolDynamic::INVALID_ID)
 			MemoryPoolDynamic::get_singleton()->lock(data->id);
 	}
 	inline void unlock() {
-	
+
 		if (data && data->id!=MemoryPoolDynamic::INVALID_ID)
 			MemoryPoolDynamic::get_singleton()->unlock(data->id);
-	
+
 	}
-	
+
 	inline void * get() {
-	
+
 		if (data && data->id!=MemoryPoolDynamic::INVALID_ID)
 			return MemoryPoolDynamic::get_singleton()->get(data->id);
-		
+
 		return NULL;
 	}
-	
-	Error _resize(size_t p_size) { 
-				
+
+	Error _resize(size_t p_size) {
+
 		if (p_size==0 && (!data || data->id==MemoryPoolDynamic::INVALID_ID))
 				return OK;
 		if (p_size && !data) {
@@ -104,46 +104,46 @@ friend class MID_Lock;
 			data = (Data*)MemoryPoolStatic::get_singleton()->alloc(sizeof(Data),"MID::Data");
 			ERR_FAIL_COND_V( !data,ERR_OUT_OF_MEMORY );
 			data->refcount.init();
-			data->id=MemoryPoolDynamic::INVALID_ID;			
+			data->id=MemoryPoolDynamic::INVALID_ID;
 		}
-		
+
 		if (p_size==0 && data && data->id==MemoryPoolDynamic::INVALID_ID) {
-		
+
 			MemoryPoolDynamic::get_singleton()->free(data->id);
 			data->id=MemoryPoolDynamic::INVALID_ID;
 		}
-		
+
 		if (p_size>0) {
-		 
+
 		 	if (data->id==MemoryPoolDynamic::INVALID_ID) {
-		
+
 				data->id=MemoryPoolDynamic::get_singleton()->alloc(p_size,"Unnamed MID");
 				ERR_FAIL_COND_V( data->id==MemoryPoolDynamic::INVALID_ID, ERR_OUT_OF_MEMORY );
 
 			} else {
-			
+
 				MemoryPoolDynamic::get_singleton()->realloc(data->id,p_size);
 				ERR_FAIL_COND_V( data->id==MemoryPoolDynamic::INVALID_ID, ERR_OUT_OF_MEMORY );
-			
+
 			}
-		}				
-		
+		}
+
 		return OK;
 	}
 friend class Memory;
-	
+
 	MID(MemoryPoolDynamic::ID p_id) {
-	
+
 		data = (Data*)MemoryPoolStatic::get_singleton()->alloc(sizeof(Data),"MID::Data");
 		data->refcount.init();
 		data->id=p_id;
 	}
-public:	
+public:
 
 	bool is_valid() const { return data; }
 	operator bool() const { return data; }
-	
-		
+
+
 	size_t get_size() const { return (data && data->id!=MemoryPoolDynamic::INVALID_ID) ? MemoryPoolDynamic::get_singleton()->get_size(data->id) : 0; }
 	Error resize(size_t p_size) { return _resize(p_size); }
 	inline void operator=(const MID& p_mid) { ref( p_mid.data ); }
@@ -157,7 +157,7 @@ public:
 class MID_Lock {
 
 	MID mid;
-	
+
 public:
 
 	void *data() { return mid.get(); }
@@ -174,21 +174,21 @@ class Memory{
 
 	Memory();
 public:
-    
+
 	static void * alloc_static(size_t p_bytes,const char *p_descr="");
 	static void * realloc_static(void *p_memory,size_t p_bytes);
 	static void free_static(void *p_ptr);
 	static size_t get_static_mem_available();
-	static size_t get_static_mem_usage(); 
+	static size_t get_static_mem_usage();
 	static size_t get_static_mem_max_usage();
 	static void dump_static_mem_to_file(const char* p_file);
 
 	static MID alloc_dynamic(size_t p_bytes, const char *p_descr="");
 	static Error realloc_dynamic(MID p_mid,size_t p_bytes);
-    
+
 	static size_t get_dynamic_mem_available();
 	static size_t get_dynamic_mem_usage();
-    
+
 };
 
 template<class T>
@@ -241,7 +241,7 @@ _ALWAYS_INLINE_ void postinitialize_handler(void *) {}
 
 template<class T>
 _ALWAYS_INLINE_ T *_post_initialize(T *p_obj) {
-	
+
 	postinitialize_handler(p_obj);
 	return p_obj;
 }
@@ -272,7 +272,7 @@ _ALWAYS_INLINE_ bool predelete_handler(void *) { return true; }
 
 template<class T>
 void memdelete(T *p_class) {
-		
+
 	if (!predelete_handler(p_class))
 		return; // doesn't want to be deleted
 	p_class->~T();

@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "character_camera.h"
- 
+
 #include "physics_body.h"
 #if 0
 void CharacterCamera::_set(const String& p_name, const Variant& p_value) {

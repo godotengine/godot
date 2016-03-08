@@ -607,7 +607,7 @@ bool ShaderLanguage::test_existing_identifier(Node *p_node,const StringName p_id
 				return true;
 		} else if (node->type==Node::TYPE_PROGRAM) {
 
-			ProgramNode *program = (ProgramNode*)node;			
+			ProgramNode *program = (ProgramNode*)node;
 			for(int i=0;i<program->functions.size();i++) {
 
 				if (program->functions[i].name==p_identifier) {
@@ -1138,7 +1138,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_vertex_builtins_defs[]={
 	//builtins
 	{ "WORLD_MATRIX", TYPE_MAT4},
 	{ "PROJECTION_MATRIX", TYPE_MAT4},
-	{ "EXTRA_MATRIX", TYPE_MAT4},	
+	{ "EXTRA_MATRIX", TYPE_MAT4},
 	{ "TIME", TYPE_FLOAT},
 	{ NULL, TYPE_VOID},
 };

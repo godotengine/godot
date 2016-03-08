@@ -169,69 +169,69 @@ String FileAccess::fix_path(const String& p_path) const {
 			return r_path;
 		} break;
 	}
-	
+
 	return r_path;
 }
 
 /* these are all implemented for ease of porting, then can later be optimized */
 
 uint16_t FileAccess::get_16()const {
-	
+
 	uint16_t res;
 	uint8_t a,b;
-	
+
 	a=get_8();
 	b=get_8();
-	
+
 	if (endian_swap) {
-		
+
 		SWAP( a,b );
 	}
-	
+
 	res=b;
 	res<<=8;
 	res|=a;
-	
+
 	return res;
 }
 uint32_t FileAccess::get_32() const{
-	
+
 	uint32_t res;
 	uint16_t a,b;
-	
+
 	a=get_16();
 	b=get_16();
-	
+
 	if (endian_swap) {
-		
+
 		SWAP( a,b );
 	}
-	
+
 	res=b;
 	res<<=16;
 	res|=a;
-	
-	return res;	
+
+	return res;
 }
 uint64_t FileAccess::get_64()const {
-	
+
 	uint64_t res;
 	uint32_t a,b;
-	
+
 	a=get_32();
 	b=get_32();
-	
+
 	if (endian_swap) {
-		
+
 		SWAP( a,b );
 	}
-	
+
 	res=b;
 	res<<=32;
 	res|=a;
-	
-	return res;	
-	
+
+	return res;
+
 }
 
 float FileAccess::get_float() const {
@@ -262,15 +262,15 @@ String FileAccess::get_line() const {
 	CharString line;
 
 	CharType c=get_8();
-	
+
 	while(!eof_reached()) {
-	
+
 		if (c=='\n' || c=='\0') {
 			line.push_back(0);
 			return String::utf8(line.get_data());
 		} else if (c!='\r')
 			line.push_back(c);
-				
+
 		c=get_8();
 	}
 	line.push_back(0);
@@ -331,7 +331,7 @@ Vector<String> FileAccess::get_csv_line(String delim) const {
 
 
 int FileAccess::get_buffer(uint8_t *p_dst,int p_length) const{
-	
+
 	int i=0;
 	for (i=0; i<p_length && !eof_reached(); i++)
 		p_dst[i]=get_8();
@@ -340,53 +340,53 @@ int FileAccess::get_buffer(uint8_t *p_dst,int p_length) const{
 }
 
 void FileAccess::store_16(uint16_t p_dest) {
-	
+
 	uint8_t a,b;
-	
+
 	a=p_dest&0xFF;
 	b=p_dest>>8;
-	
+
 	if (endian_swap) {
-		
+
 		SWAP( a,b );
 	}
-		
+
 	store_8(a);
 	store_8(b);
 
 }
 void FileAccess::store_32(uint32_t p_dest) {
-	
-	
+
+
 	uint16_t a,b;
-	
+
 	a=p_dest&0xFFFF;
 	b=p_dest>>16;
-	
+
 	if (endian_swap) {
-		
+
 		SWAP( a,b );
 	}
-		
+
 	store_16(a);
 	store_16(b);
-	
+
 }
 void FileAccess::store_64(uint64_t p_dest) {
-	
+
 	uint32_t a,b;
-	
+
 	a=p_dest&0xFFFFFFFF;
 	b=p_dest>>32;
-	
+
 	if (endian_swap) {
-		
+
 		SWAP( a,b );
 	}
-		
+
 	store_32(a);
 	store_32(b);
-	
+
 }
 
 void FileAccess::store_real(real_t p_real) {
@@ -461,7 +461,7 @@ void FileAccess::store_line(const String& p_line) {
 }
 
 void FileAccess::store_buffer(const uint8_t *p_src,int p_length) {
-	
+
 	for (int i=0;i<p_length;i++)
 		store_8(p_src[i]);
 }

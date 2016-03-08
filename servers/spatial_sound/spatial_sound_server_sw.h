@@ -154,7 +154,7 @@ class SpatialSoundServerSW : public SpatialSoundServer {
 	};
 
 	mutable RID_Owner<Listener> listener_owner;
-	
+
 	struct ActiveVoice {
 
 		Source *source;

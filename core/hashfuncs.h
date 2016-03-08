@@ -47,10 +47,10 @@ static inline uint32_t hash_djb2(const char *p_cstr) {
 	const unsigned char* chr=(const unsigned char*)p_cstr;
 	uint32_t hash = 5381;
 	uint32_t c;
-	
+
 	while ((c = *chr++))
 		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-	
+
 	return hash;
 }
 
@@ -86,7 +86,7 @@ static inline uint32_t make_uint32_t(T p_in) {
 		T t;
 		uint32_t _u32;
 	} _u;
-	_u._u32=0;	
+	_u._u32=0;
 	_u.t=p_in;
 	return _u._u32;
 }
@@ -106,7 +106,7 @@ static inline uint64_t make_uint64_t(T p_in) {
 		uint64_t _u64;
 	} _u;
 	_u._u64=0; // in case p_in is smaller
-	
+
 	_u.t=p_in;
 	return _u._u64;
 }

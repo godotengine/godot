@@ -211,7 +211,7 @@ void SceneTree::call_group(uint32_t p_call_flags,const StringName& p_group,const
 				else
 					nodes[i]->call(p_function,VARIANT_ARG_PASS);
 			} else
-				MessageQueue::get_singleton()->push_call(nodes[i],p_function,VARIANT_ARG_PASS);			
+				MessageQueue::get_singleton()->push_call(nodes[i],p_function,VARIANT_ARG_PASS);
 		}
 
 	}
@@ -433,7 +433,7 @@ void SceneTree::input_event( const InputEvent& p_event ) {
 		ScriptDebugger::get_singleton()->request_quit();
 	}
 
-	_flush_ugc();	
+	_flush_ugc();
 	root_lock--;
 	MessageQueue::get_singleton()->flush(); //small little hack
 

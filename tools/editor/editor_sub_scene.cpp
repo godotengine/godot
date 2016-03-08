@@ -147,7 +147,7 @@ void EditorSubScene::move(Node* p_new_parent, Node* p_new_owner) {
 	}
 	TreeItem *s = tree->get_selected();
 	if (!s) {
-		return;		
+		return;
 	}
 
 	Node *selnode = s->get_metadata(0);

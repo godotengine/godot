@@ -432,7 +432,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<ConeTwistJoint>();
 	ObjectTypeDB::register_type<Generic6DOFJoint>();
 
-	//scenariofx	
+	//scenariofx
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -629,9 +629,9 @@ void register_scene_types() {
 }
 
 void unregister_scene_types() {
-	
+
 	clear_default_theme();
-	
+
 	memdelete( resource_loader_image );
 	memdelete( resource_loader_wav );
 #ifdef TOOLS_ENABLED

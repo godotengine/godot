@@ -60,9 +60,9 @@ protected:
 		String name;
 		int access_flags;
 	} file;
-	
+
 	mutable struct Cache {
-		
+
 		Vector<uint8_t> buffer;
 		int offset;
 	} cache;
@@ -71,7 +71,7 @@ protected:
 
 	void set_cache_size(int p_size);
 	int get_cache_size();
-	
+
 public:
 
 	virtual size_t get_pos() const; ///< get position in the file

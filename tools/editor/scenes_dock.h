@@ -138,7 +138,7 @@ class ScenesDock : public VBoxContainer {
 	void _rescan();
 	void _set_scannig_mode();
 
-	void _favorites_pressed();	
+	void _favorites_pressed();
 	void _instance_pressed();
 	void _open_pressed();
 

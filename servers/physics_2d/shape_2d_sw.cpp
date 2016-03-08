@@ -746,7 +746,7 @@ Variant ConvexPolygonShape2DSW::get_data() const {
 
 	dvr.resize(point_count);
 
-	for(int i=0;i<point_count;i++) {	
+	for(int i=0;i<point_count;i++) {
 		dvr.set(i,points[i].pos);
 	}
 

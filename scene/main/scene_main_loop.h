@@ -76,7 +76,7 @@ private:
 	struct Group {
 
 		Vector<Node*> nodes;
-		uint64_t last_tree_version;		
+		uint64_t last_tree_version;
 		Group() { last_tree_version=0; };
 	};
 

@@ -171,9 +171,9 @@ void ButtonArray::_notification(int p_what) {
 		case NOTIFICATION_READY:{
 		        MethodInfo mi;
 			mi.name="mouse_sub_enter";
-		                
+
 			add_user_signal(mi);
-			
+
 		}break;
 		case NOTIFICATION_DRAW: {
 

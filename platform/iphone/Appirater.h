@@ -27,10 +27,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
  This file is part of Appirater.
- 
+
  Copyright (c) 2010, Arash Payan
  All rights reserved.
- 
+
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
  files (the "Software"), to deal in the Software without
@@ -39,10 +39,10 @@
  copies of the Software, and to permit persons to whom the
  Software is furnished to do so, subject to the following
  conditions:
- 
+
  The above copyright notice and this permission notice shall be
  included in all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -119,7 +119,7 @@ extern NSString *const kAppiraterDeclinedToRate;
  a 'use'. You tell Appirater about these events using the two methods:
  [Appirater appLaunched:]
  [Appirater appEnteredForeground:]
- 
+
  Users need to 'use' the same version of the app this many times before
  before they will be prompted to rate it.
  */
@@ -161,7 +161,7 @@ extern NSString *const kAppiraterDeclinedToRate;
 /*
  DEPRECATED: While still functional, it's better to use
  appLaunched:(BOOL)canPromptForRating instead.
- 
+
  Calls [Appirater appLaunched:YES]. See appLaunched: for details of functionality.
  */
 + (void)appLaunched:(int)p_app_id;
@@ -171,7 +171,7 @@ extern NSString *const kAppiraterDeclinedToRate;
  support multitasking, the 'uses' count will be incremented. You should
  call this method at the end of your application delegate's
  application:didFinishLaunchingWithOptions: method.
- 
+
  If the app has been used enough to be rated (and enough significant events),
  you can suppress the rating alert
  by passing NO for canPromptForRating. The rating alert will simply be postponed
@@ -185,7 +185,7 @@ extern NSString *const kAppiraterDeclinedToRate;
  Tells Appirater that the app was brought to the foreground on multitasking
  devices. You should call this method from the application delegate's
  applicationWillEnterForeground: method.
- 
+
  If the app has been used enough to be rated (and enough significant events),
  you can suppress the rating alert
  by passing NO for canPromptForRating. The rating alert will simply be postponed
@@ -201,7 +201,7 @@ extern NSString *const kAppiraterDeclinedToRate;
  calls, then you might want to call this method whenever the user places
  a call. If it's a game, you might want to call this whenever the user
  beats a level boss.
- 
+
  If the user has performed enough significant events and used the app enough,
  you can suppress the rating alert by passing NO for canPromptForRating. The
  rating alert will simply be postponed until it is called again with YES for

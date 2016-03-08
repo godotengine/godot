@@ -36,40 +36,40 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class ScrollBar : public Range {
-	
+
 	OBJ_TYPE( ScrollBar, Range );
-	
+
 	enum HiliteStatus {
 		HILITE_NONE,
 		HILITE_DECR,
 		HILITE_RANGE,
-		HILITE_INCR,		
+		HILITE_INCR,
 	};
-	
+
 	static bool focus_by_default;
-	
+
 	Orientation orientation;
 	Size2 size;
 	float custom_step;
-	
+
 	HiliteStatus hilite;
-	
+
 	struct Drag {
-		
+
 		bool active;
 		float pos_at_click;
 		float value_at_click;
 	} drag;
-	
-	
+
+
 	double get_grabber_size() const;
 	double get_grabber_min_size() const;
 	double get_area_size() const;
 	double get_area_offset() const;
 	double get_click_pos(const Point2& p_pos) const;
 	double get_grabber_offset() const;
-	
-	static void set_can_focus_by_default(bool p_can_focus); 
+
+	static void set_can_focus_by_default(bool p_can_focus);
 
 	Node* drag_slave;
 	NodePath drag_slave_path;
@@ -86,12 +86,12 @@ class ScrollBar : public Range {
 
 	void _drag_slave_exit();
 	void _drag_slave_input(const InputEvent& p_input);
-	
+
 	void _input_event(InputEvent p_event);
-protected:	
+protected:
 	void _notification(int p_what);
 
-	static void _bind_methods();		
+	static void _bind_methods();
 
 public:
 
@@ -101,25 +101,25 @@ public:
 	void set_drag_slave(const NodePath& p_path);
 	NodePath get_drag_slave() const;
 
-	virtual Size2 get_minimum_size() const;	 	
-	ScrollBar(Orientation p_orientation=VERTICAL);	
+	virtual Size2 get_minimum_size() const;
+	ScrollBar(Orientation p_orientation=VERTICAL);
 	~ScrollBar();
 
 };
 
 class HScrollBar : public ScrollBar {
-	
+
 	OBJ_TYPE( HScrollBar, ScrollBar );
 public:
-	
+
 	HScrollBar() : ScrollBar(HORIZONTAL) { 	set_v_size_flags(0); }
 };
 
 class VScrollBar : public ScrollBar {
-	
+
 	OBJ_TYPE( VScrollBar, ScrollBar );
 public:
-	
+
 	VScrollBar() : ScrollBar(VERTICAL) { set_h_size_flags(0); }
 };
 

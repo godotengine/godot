@@ -711,7 +711,7 @@ void ScriptEditor::_close_current_tab() {
 	int selected = tab_container->get_current_tab();
 	if (selected<0 || selected>=tab_container->get_child_count())
 		return;
-	
+
 	Node *tselected = tab_container->get_child(selected);
 	ScriptTextEditor *current = tab_container->get_child(selected)->cast_to<ScriptTextEditor>();
 	if (current) {

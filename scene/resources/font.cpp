@@ -272,24 +272,24 @@ Error Font::create_from_fnt(const String& p_string) {
 
 
 void Font::set_height(float p_height) {
-	
+
 	height=p_height;
 }
 float Font::get_height() const{
-	
+
 	return height;
 }
 
 void Font::set_ascent(float p_ascent){
-	
+
 	ascent=p_ascent;
 }
 float Font::get_ascent() const {
-	
+
 	return ascent;
 }
 float Font::get_descent() const {
-	
+
 	return height-ascent;
 }
 
@@ -349,7 +349,7 @@ void Font::add_char(CharType p_char, int p_texture_idx, const Rect2& p_rect, con
 	c.v_align=p_align.y;
 	c.advance=p_advance;
 	c.h_align=p_align.x;
-	
+
 	char_map[p_char]=c;
 }
 
@@ -411,7 +411,7 @@ bool Font::is_distance_field_hint() const{
 
 
 void Font::clear() {
-	
+
 	height=1;
 	ascent=0;
 	char_map.clear();
@@ -423,14 +423,14 @@ void Font::clear() {
 Size2 Font::get_string_size(const String& p_string) const {
 
 	float w=0;
-	
+
 	int l = p_string.length();
 	if (l==0)
 		return Size2(0,height);
 	const CharType *sptr = &p_string[0];
 
 	for (int i=0;i<l;i++) {
-			
+
 		w+=get_char_size(sptr[i],sptr[i+1]).width;
 	}
 
@@ -461,9 +461,9 @@ void Font::draw_halign(RID p_canvas_item, const Point2& p_pos, HAlign p_align,fl
 }
 
 void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, const Color& p_modulate,int p_clip_w) const {
-		
+
 	Vector2 ofs;
-	
+
 	for (int i=0;i<p_text.length();i++) {
 
 		int width = get_char_size(p_text[i]).width;
@@ -476,15 +476,15 @@ void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, co
 }
 
 float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_char,const CharType& p_next,const Color& p_modulate) const {
-	
+
 	const Character * c = char_map.getptr(p_char);
-	
+
 	if (!c) {
 		if (fallback.is_valid())
 			return fallback->draw_char(p_canvas_item,p_pos,p_char,p_next,p_modulate);
 		return 0;
 	}
-	
+
 	Point2 cpos=p_pos;
 	cpos.x+=c->h_align;
 	cpos.y-=ascent;
@@ -492,7 +492,7 @@ float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_
 	ERR_FAIL_COND_V( c->texture_idx<-1 || c->texture_idx>=textures.size(),0);
 	if (c->texture_idx!=-1)
 		VisualServer::get_singleton()->canvas_item_add_texture_rect_region( p_canvas_item, Rect2( cpos, c->rect.size ), textures[c->texture_idx]->get_rid(),c->rect, p_modulate );
-	
+
 	return get_char_size(p_char,p_next).width;
 }
 
@@ -561,16 +561,16 @@ void Font::_bind_methods() {
 }
 
 Font::Font() {
-	
+
 	clear();
 
-	
+
 
 }
 
 
 Font::~Font() {
-	
+
 	clear();
 }
 
