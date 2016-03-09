@@ -968,19 +968,25 @@ void ConcavePolygonShape2DSW::set_data(const Variant& p_data) {
 
 	ERR_FAIL_COND(p_data.get_type()!=Variant::VECTOR2_ARRAY && p_data.get_type()!=Variant::REAL_ARRAY);
 
-	segments.clear();;
-	points.clear();;
-	bvh.clear();;
-	bvh_depth=1;
-
 	Rect2 aabb;
 
 	if (p_data.get_type()==Variant::VECTOR2_ARRAY) {
 
 		DVector<Vector2> p2arr = p_data;
 		int len = p2arr.size();
-		DVector<Vector2>::Read arr = p2arr.read();
+		ERR_FAIL_COND(len%2);
 
+		segments.clear();
+		points.clear();
+		bvh.clear();
+		bvh_depth=1;
+
+		if (len==0) {
+			configure(aabb);
+			return;
+		}
+
+		DVector<Vector2>::Read arr = p2arr.read();
 
 		Map<Point2,int> pointmap;
 		for(int i=0;i<len;i+=2) {
@@ -988,8 +994,6 @@ void ConcavePolygonShape2DSW::set_data(const Variant& p_data) {
 			Point2 p1 =arr[i];
 			Point2 p2 =arr[i+1];
 			int idx_p1,idx_p2;
-			if (p1==p2)
-				continue; //don't want it
 
 			if (pointmap.has(p1)) {
 				idx_p1=pointmap[p1];
