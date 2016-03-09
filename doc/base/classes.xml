@@ -8385,8 +8385,12 @@
 			</argument>
 			<argument index="1" name="anchor_mode" type="int">
 			</argument>
+			<argument index="2" name="keep_margin" type="bool" default="false">
+			</argument>
 			<description>
-			Change the anchor (ANCHOR_BEGIN, ANCHOR_END, ANCHOR_RATIO) type for a margin (MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM). Changing the anchor mode converts the current margin offset from the previous anchor mode to the new one, so margin offsets ([method set_margin]) must be done after setting anchors, or at the same time ([method set_anchor_and_margin]).
+			Change the anchor (ANCHOR_BEGIN, ANCHOR_END, ANCHOR_RATIO) type for a margin (MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM). Changing the anchor mode converts the current margin offset from the previous anchor mode to the new one, so margin offsets ([method set_margin]) must be done after setting anchors, or at the same time ([method set_anchor_and_margin])
+			
+			Additionally, [code]keep_margin[/code] controls whether margins should be left the same, or changed to keep the same position and size on-screen.
 			</description>
 		</method>
 		<method name="get_anchor" qualifiers="const">
