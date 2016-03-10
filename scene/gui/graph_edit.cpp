@@ -617,7 +617,7 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 
 		if (b.button_index==BUTTON_LEFT && b.pressed) {
 
-			GraphNode *gn;
+			GraphNode *gn = NULL;
 			for(int i=get_child_count()-1;i>=0;i--) {
 
 				gn=get_child(i)->cast_to<GraphNode>();

@@ -5667,7 +5667,10 @@ void VisualServerRaster::_instance_validate_autorooms(Instance *p_geometry) {
 
 		int pass = room->room_info->room->bounds.get_points_inside(dst_points,point_count);
 
-		float ratio = (float)pass / point_count;
+		float ratio = pass;
+		if( point_count != 0 ) {
+			ratio /= (float)point_count;
+		}
 
 		if (ratio>0.5) // should make some constant
 			p_geometry->valid_auto_rooms.insert(room);
@@ -7670,5 +7673,3 @@ VisualServerRaster::VisualServerRaster(Rasterizer *p_rasterizer) {
 VisualServerRaster::~VisualServerRaster()
 {
 }
-
-
