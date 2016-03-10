@@ -206,6 +206,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
+	private Sensor mMagnetometer;
 
 	public FrameLayout layout;
 	public RelativeLayout adLayout;
@@ -374,6 +375,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
+		mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
 
 		result_callback = null;
 
@@ -588,6 +591,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 		mView.onResume();
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_NORMAL);
 		GodotLib.focusin();
 		if(use_immersive && Build.VERSION.SDK_INT >= 19.0){ // check if the application runs on an android 4.4+
 			Window window = getWindow();
@@ -646,7 +650,14 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		float x = adjustedValues[0];
 		float y = adjustedValues[1];
 		float z = adjustedValues[2];
-		GodotLib.accelerometer(x,y,z);
+
+		int typeOfSensor = event.sensor.getType();
+		if (typeOfSensor == event.sensor.TYPE_ACCELEROMETER) {
+			GodotLib.accelerometer(x,y,z);
+		}
+		if (typeOfSensor == event.sensor.TYPE_MAGNETIC_FIELD) {
+			GodotLib.magnetometer(x,y,z);
+		}
 	}
 
 	@Override public final void onAccuracyChanged(Sensor sensor, int accuracy) {
