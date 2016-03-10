@@ -200,6 +200,12 @@ Vector3 InputDefault::get_accelerometer() {
 	return accelerometer;
 }
 
+Vector3 InputDefault::get_magnetometer() {
+
+	_THREAD_SAFE_METHOD_
+	return magnetometer;
+}
+
 void InputDefault::parse_input_event(const InputEvent& p_event) {
 
 	_THREAD_SAFE_METHOD_
@@ -293,6 +299,14 @@ void InputDefault::set_accelerometer(const Vector3& p_accel) {
 	_THREAD_SAFE_METHOD_
 
 	accelerometer=p_accel;
+
+}
+
+void InputDefault::set_magnetometer(const Vector3& p_magnetometer) {
+
+	_THREAD_SAFE_METHOD_
+
+	magnetometer=p_magnetometer;
 
 }
 
