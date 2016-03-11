@@ -31,6 +31,7 @@
 
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
+
 #include "scene/2d/tile_map.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/tool_button.h"
@@ -39,7 +40,6 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class CanvasItemEditor;
 
 class TileMapEditor : public VBoxContainer {
 
