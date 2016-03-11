@@ -3495,6 +3495,13 @@ void TextEdit::_push_current_op() {
 
 }
 
+void TextEdit::set_tab_size(const int p_size) {
+	ERR_FAIL_COND(p_size <= 0);
+	tab_size = p_size;
+	text.set_tab_size(p_size);
+	update();
+}
+
 void TextEdit::set_draw_tabs(bool p_draw) {
 
 	draw_tabs=p_draw;

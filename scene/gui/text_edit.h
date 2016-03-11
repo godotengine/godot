@@ -378,7 +378,7 @@ public:
 	void redo();
 	void clear_undo_history();
 
-
+	void set_tab_size(const int p_size);
 	void set_draw_tabs(bool p_draw);
 	bool is_drawing_tabs() const;
 
