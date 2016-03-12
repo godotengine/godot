@@ -55,7 +55,7 @@ public:
 
 	static Input *get_singleton();
 
-	virtual bool is_key_pressed(int p_scancode)=0;	
+	virtual bool is_key_pressed(int p_scancode)=0;
 	virtual bool is_mouse_button_pressed(int p_button)=0;
 	virtual bool is_joy_button_pressed(int p_device, int p_button)=0;
 	virtual bool is_action_pressed(const StringName& p_action)=0;

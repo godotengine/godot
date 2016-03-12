@@ -313,7 +313,7 @@ struct engine {
 
     ASensorManager* sensorManager;
     const ASensor* accelerometerSensor;
-    const ASensor* magnetometerSensor; // fluffrabbit
+    const ASensor* magnetometerSensor;
     ASensorEventQueue* sensorEventQueue;
 
     bool display_active;
@@ -737,7 +737,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 			engine->accelerometerSensor, (1000L/60)*1000);
 
 	    }
-	    // Copypasta changing accelerometerSensor to magnetometerSensor, courtesy fluffrabbit
+	    // Copypasta changing accelerometerSensor to magnetometerSensor
 	    if (engine->magnetometerSensor != NULL) {
 		ASensorEventQueue_enableSensor(engine->sensorEventQueue,
 			engine->magnetometerSensor);
@@ -755,7 +755,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 		ASensorEventQueue_disableSensor(engine->sensorEventQueue,
 			engine->accelerometerSensor);
 	    }
-	    // More copypasta, courtesy fluffrabbit
+	    // More copypasta
 	    if (engine->magnetometerSensor != NULL) {
 		ASensorEventQueue_disableSensor(engine->sensorEventQueue,
 			engine->magnetometerSensor);
@@ -787,7 +787,7 @@ void android_main(struct android_app* state) {
      engine.sensorManager = ASensorManager_getInstance();
      engine.accelerometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
 	     ASENSOR_TYPE_ACCELEROMETER);
-     // Here goes fluffrabbit assuming the Android API is uniform
+     // assuming the Android API is uniform
      engine.magnetometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
 	     ASENSOR_TYPE_MAGNETOMETER);
      engine.sensorEventQueue = ASensorManager_createEventQueue(engine.sensorManager,
@@ -830,7 +830,7 @@ void android_main(struct android_app* state) {
 	     // If a sensor has data, process it now.
 	    // LOGI("events\n");
 	     if (ident == LOOPER_ID_USER) {
-		 // fluffrabbit thinks an OR would work here
+		 // an OR works here
 		 if (engine.accelerometerSensor != NULL || engine.magnetometerSensor != NULL) {
 		     ASensorEvent event;
 		     while (ASensorEventQueue_getEvents(engine.sensorEventQueue,
@@ -838,7 +838,7 @@ void android_main(struct android_app* state) {
 
 
 			     if (engine.os) {
-				  // This is where the magic happens. Courtesy fluffrabbit.
+				  // This is where the magic happens.
 				  if (event.acceleration != NULL) {
 				     engine.os->process_accelerometer(Vector3(event.acceleration.x, event.acceleration.y,
 									      event.acceleration.z));
