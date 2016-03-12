@@ -35,7 +35,6 @@
 #include "sample_editor_plugin.h"
 
 
-
 void SampleLibraryEditor::_input_event(InputEvent p_event) {
 
 
@@ -128,13 +127,35 @@ void SampleLibraryEditor::_button_pressed(Object *p_item,int p_column, int p_id)
 	TreeItem *ti=p_item->cast_to<TreeItem>();
 	String name = ti->get_text(0);
 
-	if (p_column==0) {
-
-		player->play(name,true);
-	} else if (p_column==1) {
-
+	if (p_column==1) {
+		int idx;
+		String btn_type;
+		if(!is_playing) {
+			is_playing = true;
+			btn_type = "Stop";
+			player->play(name,true);
+			last_sample_playing = p_item;
+		} else {
+			_stop_pressed();
+			if(last_sample_playing != p_item){
+				TreeItem *tl=last_sample_playing->cast_to<TreeItem>();
+				idx=tl->get_button_by_id(1, 0);
+				tl->set_button(1,idx,get_icon("Play","EditorIcons"));
+				btn_type = "Stop";
+				player->play(name,true);
+				last_sample_playing = p_item;
+			} else {
+				btn_type = "Play";
+				is_playing = false;
+			}
+		}
+		idx=ti->get_button_by_id(1, 0);
+		ti->set_button(1,idx,get_icon(btn_type,"EditorIcons"));
+	} else if (p_column==2) {
+		ti->select(2);
+		_delete_pressed();
+	} else if (p_column==3) {
 		get_tree()->get_root()->get_child(0)->call("_resource_selected",sample_library->get_sample(name));
-
 	}
 
 
@@ -174,17 +195,17 @@ void SampleLibraryEditor::_item_edited() {
 		undo_redo->add_undo_method(this,"_update_library");
 		undo_redo->commit_action();
 
-	} else if (tree->get_selected_column()==3) {
-
-		StringName n = s->get_text(0);
-		sample_library->sample_set_volume_db(n,s->get_range(3));
-
-	} else if (tree->get_selected_column()==4) {
-
-		StringName n = s->get_text(0);
-		sample_library->sample_set_pitch_scale(n,s->get_range(4));
-
 	} else if (tree->get_selected_column()==5) {
+
+		StringName n = s->get_text(0);
+		sample_library->sample_set_volume_db(n,s->get_range(5));
+
+	} else if (tree->get_selected_column()==6) {
+
+		StringName n = s->get_text(0);
+		sample_library->sample_set_pitch_scale(n,s->get_range(6));
+
+	} else if (tree->get_selected_column()==7) {
 
 		//edit
 
@@ -249,37 +270,39 @@ void SampleLibraryEditor::_update_library() {
 		ti->set_selectable(0,true);
 		ti->set_text(0,E->get());
 		ti->set_metadata(0,E->get());
-		ti->add_button(0,get_icon("Play","EditorIcons"),0);
-		ti->add_button(1,get_icon("Edit","EditorIcons"),1);
 
+		ti->add_button(1,get_icon("Play","EditorIcons"),0);
+		ti->add_button(2,get_icon("Del","EditorIcons"),0);
+
+		ti->add_button(3,get_icon("Edit","EditorIcons"),1);
 		Ref<Sample> smp = sample_library->get_sample(E->get());
 
 		Ref<ImageTexture> preview( memnew( ImageTexture ));
 		preview->create(128,16,Image::FORMAT_RGB);
 		SampleEditor::generate_preview_texture(smp,preview);
-		ti->set_cell_mode(1,TreeItem::CELL_MODE_ICON);
-		ti->set_selectable(1,false);
-		ti->set_editable(1,false);
-		ti->set_icon(1,preview);
+		ti->set_cell_mode(3,TreeItem::CELL_MODE_ICON);
+		ti->set_selectable(3,false);
+		ti->set_editable(3,false);
+		ti->set_icon(3,preview);
 
 
-		ti->set_cell_mode(2,TreeItem::CELL_MODE_STRING);
-		ti->set_editable(2,false);
-		ti->set_selectable(2,false);
+		ti->set_cell_mode(4,TreeItem::CELL_MODE_STRING);
+		ti->set_editable(4,false);
+		ti->set_selectable(4,false);
 		Ref<Sample> s = sample_library->get_sample(E->get());
-		ti->set_text(2,String()+/*itos(s->get_length())+" frames ("+String::num(s->get_length()/(float)s->get_mix_rate(),2)+" s), "+*/(s->get_format()==Sample::FORMAT_PCM16?"16 Bits, ":(s->get_format()==Sample::FORMAT_PCM8?"8 bits, ":"IMA-ADPCM,"))+(s->is_stereo()?"Stereo":"Mono"));
+		ti->set_text(4,String()+/*itos(s->get_length())+" frames ("+String::num(s->get_length()/(float)s->get_mix_rate(),2)+" s), "+*/(s->get_format()==Sample::FORMAT_PCM16?"16 Bits, ":(s->get_format()==Sample::FORMAT_PCM8?"8 bits, ":"IMA-ADPCM,"))+(s->is_stereo()?"Stereo":"Mono"));
 
-		ti->set_cell_mode(3,TreeItem::CELL_MODE_RANGE);
-		ti->set_range_config(3,-60,24,0.01);
-		ti->set_selectable(3,true);
-		ti->set_editable(3,true);
-		ti->set_range(3,sample_library->sample_get_volume_db(E->get()));
+		ti->set_cell_mode(5,TreeItem::CELL_MODE_RANGE);
+		ti->set_range_config(5,-60,24,0.01);
+		ti->set_selectable(5,true);
+		ti->set_editable(5,true);
+		ti->set_range(5,sample_library->sample_get_volume_db(E->get()));
 
-		ti->set_cell_mode(4,TreeItem::CELL_MODE_RANGE);
-		ti->set_range_config(4,0.01,100,0.01);
-		ti->set_selectable(4,true);
-		ti->set_editable(4,true);
-		ti->set_range(4,sample_library->sample_get_pitch_scale(E->get()));
+		ti->set_cell_mode(6,TreeItem::CELL_MODE_RANGE);
+		ti->set_range_config(6,0.01,100,0.01);
+		ti->set_selectable(6,true);
+		ti->set_editable(6,true);
+		ti->set_range(6,sample_library->sample_get_pitch_scale(E->get()));
 
 		//ti->set_cell_mode(5,TreeItem::CELL_MODE_CUSTOM);
 		//ti->set_text(5,"Edit..");
@@ -367,7 +390,7 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	add_child(_delete);
 
 	tree = memnew( Tree );
-	tree->set_columns(5);
+	tree->set_columns(7);
 	add_child(tree);
 	tree->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN,5);
 	tree->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,5);
@@ -375,19 +398,25 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	tree->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END,5);
 	tree->set_column_titles_visible(true);
 	tree->set_column_title(0,"Name");
+	tree->set_column_title(1,"");
+	tree->set_column_title(2,"");
+	tree->set_column_title(3,"Preview");
+	tree->set_column_title(4,"Format");
+	tree->set_column_title(5,"dB");
+	tree->set_column_title(6,"PScale");
 
-	tree->set_column_title(1,"Preview");
-	tree->set_column_title(2,"Format");
-	tree->set_column_title(3,"dB");
-	tree->set_column_title(4,"PScale");
-	tree->set_column_min_width(1,150);
-	tree->set_column_min_width(2,100);
-	tree->set_column_min_width(3,50);
-	tree->set_column_min_width(4,50);
+	tree->set_column_min_width(1,16);
+	tree->set_column_min_width(2,16);
+	tree->set_column_min_width(3,150);
+	tree->set_column_min_width(4,100);
+	tree->set_column_min_width(5,50);
+	tree->set_column_min_width(6,50);
 	tree->set_column_expand(1,false);
 	tree->set_column_expand(2,false);
 	tree->set_column_expand(3,false);
 	tree->set_column_expand(4,false);
+	tree->set_column_expand(5,false);
+	tree->set_column_expand(6,false);
 
 	dialog = memnew( ConfirmationDialog );
 	add_child( dialog );
@@ -461,5 +490,3 @@ SampleLibraryEditorPlugin::SampleLibraryEditorPlugin(EditorNode *p_node) {
 SampleLibraryEditorPlugin::~SampleLibraryEditorPlugin()
 {
 }
-
-
