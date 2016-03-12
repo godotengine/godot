@@ -62,7 +62,7 @@ class TileMapEditor : public VBoxContainer {
 
 	enum Options {
 
-		OPTION_BUCKET_FILL,
+		OPTION_BUCKET,
 		OPTION_PICK_TILE,
 		OPTION_SELECT,
 		OPTION_DUPLICATE,
