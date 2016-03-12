@@ -2734,7 +2734,7 @@ void VisualServerRaster::instance_geometry_set_flag(RID p_instance,InstanceFlags
 		} break;
 		case INSTANCE_FLAG_RECEIVE_SHADOWS: {
 
-			instance->receive_shadows=p_enabled;
+			instance->data.receive_shadows=p_enabled;
 
 		} break;
 		case INSTANCE_FLAG_DEPH_SCALE: {
@@ -2786,7 +2786,7 @@ bool VisualServerRaster::instance_geometry_get_flag(RID p_instance,InstanceFlags
 		} break;
 		case INSTANCE_FLAG_RECEIVE_SHADOWS: {
 
-			return instance->receive_shadows;
+			return instance->data.receive_shadows;
 
 		} break;
 		case INSTANCE_FLAG_DEPH_SCALE: {
