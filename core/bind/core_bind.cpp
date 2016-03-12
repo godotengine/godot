@@ -874,8 +874,6 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
 	ObjectTypeDB::bind_method(_MD("get_borderless_window"), &_OS::get_borderless_window);
-	ObjectTypeDB::bind_method(_MD("set_multisamples", "multisamples"), &_OS::set_multisamples);
-	ObjectTypeDB::bind_method(_MD("get_multisamples"), &_OS::get_multisamples);
 
 	ObjectTypeDB::bind_method(_MD("set_screen_orientation","orientation"),&_OS::set_screen_orientation);
 	ObjectTypeDB::bind_method(_MD("get_screen_orientation"),&_OS::get_screen_orientation);
