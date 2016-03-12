@@ -55,12 +55,14 @@ class TileMapEditor : public VBoxContainer {
 		TOOL_LINE_PAINT,
 		TOOL_LINE_ERASE,
 		TOOL_SELECTING,
+		TOOL_BUCKET,
+		TOOL_PICKING,
 		TOOL_DUPLICATING,
-		TOOL_PICKING
 	};
 
 	enum Options {
 
+		OPTION_BUCKET_FILL,
 		OPTION_PICK_TILE,
 		OPTION_SELECT,
 		OPTION_DUPLICATE,
@@ -123,6 +125,12 @@ class TileMapEditor : public VBoxContainer {
 	List<TileData> copydata;
 
 	void _pick_tile(const Point2& p_pos);
+
+	DVector<Vector2> _bucket_fill(const Point2i& p_start);
+
+	void _fill_points(const DVector<Vector2> p_points, const Dictionary& p_op);
+	void _erase_points(const DVector<Vector2> p_points);
+	
 	void _select(const Point2i& p_from, const Point2i& p_to);
 
 	void _draw_cell(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Matrix32& p_xform);

@@ -58,6 +58,12 @@ void TileMapEditor::_menu_option(int p_option) {
 
 	switch(p_option) {
 
+		case OPTION_BUCKET_FILL: {
+
+			tool=TOOL_BUCKET;
+
+			canvas_item_editor->update();
+		} break;
 		case OPTION_PICK_TILE: {
 
 			tool=TOOL_PICKING;
@@ -268,6 +274,84 @@ void TileMapEditor::_pick_tile(const Point2& p_pos) {
 
 	_update_transform_buttons();
 	canvas_item_editor->update();
+}
+
+#define BUCKET_FILL_LIMIT 50
+
+DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i& p_start) {
+
+	if (node->get_cell(p_start.x, p_start.y) != TileMap::INVALID_CELL)
+		return DVector<Vector2>();
+
+	int id = get_selected_tile();
+
+	if (id == TileMap::INVALID_CELL)
+		return DVector<Vector2>();
+
+	int len = 0;
+
+	DVector<Vector2> points;
+	points.resize(Math::pow(BUCKET_FILL_LIMIT*2, 2));
+
+	List<Point2i> queue;
+	queue.push_back(p_start);
+
+	DVector<Vector2>::Write pw = points.write();
+
+	while (queue.size()) {
+
+		Point2i n = queue.front()->get();
+		queue.pop_front();
+
+		if (ABS(n.x - p_start.x) > BUCKET_FILL_LIMIT || ABS(n.y - p_start.y) > BUCKET_FILL_LIMIT)
+			continue;
+
+		if (node->get_cell(n.x, n.y) == TileMap::INVALID_CELL) {
+
+			node->set_cellv(n, id, flip_h, flip_v, transpose);
+
+			pw[++len] = n;
+
+			queue.push_back(n + Point2i(0, 1));
+			queue.push_back(n + Point2i(0, -1));
+			queue.push_back(n + Point2i(1, 0));
+			queue.push_back(n + Point2i(-1, 0));
+		}
+	}
+
+	pw = DVector<Vector2>::Write();
+	points.resize(len);
+
+	return points;
+}
+
+#undef BUCKET_FILL_LIMIT
+
+void TileMapEditor::_fill_points(const DVector<Vector2> p_points, const Dictionary& p_op) {
+
+	int len = p_points.size();
+	DVector<Vector2>::Read pr = p_points.read();
+
+	int id = p_op["id"];
+	bool xf = p_op["flip_h"];
+	bool yf = p_op["flip_v"];
+	bool tr = p_op["transpose"];
+
+	for (int i=0;i<len;i++) {
+
+		_set_cell(pr[i], id, xf, yf, tr);
+	}
+}
+
+void TileMapEditor::_erase_points(const DVector<Vector2> p_points) {
+
+	int len = p_points.size();
+	DVector<Vector2>::Read pr = p_points.read();
+
+	for (int i=0;i<len;i++) {
+
+		_set_cell(pr[i], TileMap::INVALID_CELL);
+	}
 }
 
 void TileMapEditor::_select(const Point2i& p_from, const Point2i& p_to) {
@@ -514,24 +598,10 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 						return true;
 					}
 
-					if (tool==TOOL_DUPLICATING) {
-
-						Point2 ofs = over_tile-rectangle.pos;
-
-						undo_redo->create_action("Duplicate");
-						for (List<TileData>::Element *E=copydata.front();E;E=E->next()) {
-
-							_set_cell(E->get().pos+ofs,E->get().cell,E->get().flip_h,E->get().flip_v,E->get().transpose,true);
-						}
-						undo_redo->commit_action();
-
-						tool=TOOL_NONE;
-						copydata.clear();
-
-						canvas_item_editor->update();
-
+					if (tool!=TOOL_NONE) {
 						return true;
 					}
+
 				} else {
 
 					if (tool!=TOOL_NONE) {
@@ -585,9 +655,44 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 
 								canvas_item_editor->update();
 							}
+						} else if (tool==TOOL_DUPLICATING) {
+
+							Point2 ofs = over_tile-rectangle.pos;
+
+							undo_redo->create_action("Duplicate");
+							for (List<TileData>::Element *E=copydata.front();E;E=E->next()) {
+
+								_set_cell(E->get().pos+ofs,E->get().cell,E->get().flip_h,E->get().flip_v,E->get().transpose,true);
+							}
+							undo_redo->commit_action();
+
+							copydata.clear();
+
+							canvas_item_editor->update();
+
 						} else if (tool==TOOL_SELECTING) {
 
 							canvas_item_editor->update();
+
+						} else if (tool==TOOL_BUCKET) {
+
+							DVector<Vector2> points = _bucket_fill(over_tile);
+
+							if (points.size() == 0)
+								return false;
+
+							Dictionary op;
+							op["id"] = get_selected_tile();
+							op["flip_h"] = flip_h;
+							op["flip_v"] = flip_v;
+							op["transpose"] = transpose;
+
+							undo_redo->create_action("Bucket Fill");
+
+							undo_redo->add_do_method(this, "_fill_points", points, op);
+							undo_redo->add_undo_method(this, "_erase_points", points);
+
+							undo_redo->commit_action();
 						}
 
 						tool=TOOL_NONE;
@@ -1011,7 +1116,7 @@ void TileMapEditor::_canvas_draw() {
 			canvas_item_editor->draw_line(endpoints[i],endpoints[(i+1)%4],col,2);
 
 
-		if (tool==TOOL_SELECTING || tool==TOOL_PICKING) {
+		if (tool==TOOL_SELECTING || tool==TOOL_PICKING || tool==TOOL_BUCKET) {
 
 			return;
 		}
@@ -1148,6 +1253,9 @@ void TileMapEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_canvas_mouse_exit"),&TileMapEditor::_canvas_mouse_exit);
 	ObjectTypeDB::bind_method(_MD("_tileset_settings_changed"),&TileMapEditor::_tileset_settings_changed);
 	ObjectTypeDB::bind_method(_MD("_update_transform_buttons"),&TileMapEditor::_update_transform_buttons);
+
+	ObjectTypeDB::bind_method(_MD("_fill_points"),&TileMapEditor::_fill_points);
+	ObjectTypeDB::bind_method(_MD("_erase_points"),&TileMapEditor::_erase_points);
 }
 
 TileMapEditor::CellOp TileMapEditor::_get_op_from_cell(const Point2i& p_pos)
@@ -1242,6 +1350,8 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	PopupMenu *p = options->get_popup();
 
+	p->add_item("Bucket Fill", OPTION_BUCKET_FILL);
+	p->add_separator();
 	p->add_item("Pick Tile", OPTION_PICK_TILE, KEY_CONTROL);
 	p->add_separator();
 	p->add_item("Select", OPTION_SELECT, KEY_MASK_SHIFT+KEY_B);
