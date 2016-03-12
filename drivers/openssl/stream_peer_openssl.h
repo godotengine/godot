@@ -54,6 +54,7 @@ private:
 
 	static Vector<X509*> certs;
 
+	static void _load_certs(const ByteArray& p_array);
 protected:
 	static void _bind_methods();
 public:

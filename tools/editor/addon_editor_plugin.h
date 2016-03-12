@@ -20,6 +20,7 @@
 #include "editor_plugin_settings.h"
 
 #include "scene/main/http_request.h"
+#include "editor_asset_installer.h"
 
 class EditorAssetLibraryItem : public PanelContainer {
 
@@ -77,25 +78,79 @@ class EditorAddonLibraryItemDescription : public ConfirmationDialog {
 
 	void set_image(int p_type,int p_index,const Ref<Texture>& p_image);
 
+	int asset_id;
+	String download_url;
+	String title;
+	Ref<Texture> icon;
+
+	void _link_click(const String& p_url);
 protected:
 
 	static void _bind_methods();
 public:
 
-	void configure(const String& p_title,int p_asset_id,const String& p_category,int p_category_id,const String& p_author,int p_author_id,int p_rating,const String& p_cost,const String& p_description);
+	void configure(const String& p_title,int p_asset_id,const String& p_category,int p_category_id,const String& p_author,int p_author_id,int p_rating,const String& p_cost,const String& p_version,const String& p_description,const String& p_download_url,const String& p_browse_url);
 	void add_preview(int p_id, bool p_video,const String& p_url);
 
+	String get_title() { return title; }
+	Ref<Texture> get_preview_icon() { return icon; }
+	String get_download_url() { return download_url; }
+	int get_asset_id() { return asset_id; }
 	EditorAddonLibraryItemDescription();
 
 };
 
-class EditorAddonLibrary : public VBoxContainer {
-	OBJ_TYPE(EditorAddonLibrary,VBoxContainer);
+class EditorAddonLibraryItemDownload : public PanelContainer {
+
+	OBJ_TYPE(EditorAddonLibraryItemDownload, PanelContainer);
+
+
+	TextureFrame *icon;
+	Label* title;
+	ProgressBar *progress;
+	Button *install;
+	TextureButton *dismiss;
+
+	AcceptDialog *download_error;
+	HTTPRequest *download;
+	String host;
+	Label *status;
+
+	int prev_status;
+
+	int asset_id;
+
+	EditorAssetInstaller *asset_installer;
+
+	void _close();
+	void _install();
+	void _http_download_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data);
+
+protected:
+
+	void _notification(int p_what);
+	static void _bind_methods();
+public:
+
+	int get_asset_id() { return asset_id; }
+	void configure(const String& p_title,int p_asset_id,const Ref<Texture>& p_preview, const String& p_download_url);
+	EditorAddonLibraryItemDownload();
+
+};
+
+class EditorAddonLibrary : public PanelContainer {
+	OBJ_TYPE(EditorAddonLibrary,PanelContainer);
 
 	String host;
 
-	TabContainer *tabs;
-	EditorPluginSettings *installed;
+	EditorFileDialog *asset_open;
+	EditorAssetInstaller *asset_installer;
+
+
+	void _asset_open();
+	void _asset_file_selected(const String& p_file);
+
+
 	ScrollContainer *library_scroll;
 	VBoxContainer *library_vb;
 	LineEdit *filter;
@@ -115,6 +170,7 @@ class EditorAddonLibrary : public VBoxContainer {
 	HBoxContainer *asset_bottom_page;
 
 	HTTPRequest *request;
+
 
 	enum SortOrder {
 		SORT_RATING,
@@ -155,6 +211,7 @@ class EditorAddonLibrary : public VBoxContainer {
 
 
 	void _image_request_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data, int p_queue_id);
+
 	void _request_image(ObjectID p_for,int p_asset_id,ImageType p_type,int p_image_index);
 	void _update_image_queue();
 
@@ -174,13 +231,24 @@ class EditorAddonLibrary : public VBoxContainer {
 
 	RequestType requesting;
 
+
+	ScrollContainer *downloads_scroll;
+	HBoxContainer *downloads_hb;
+
+
+
+	void _install_asset();
+
 	void _select_author(int p_id);
 	void _select_category(int p_id);
 	void _select_asset(int p_id);
 
+	void _manage_plugins();
+
 	void _search(int p_page=0);
 	void _api_request(const String& p_request, const String &p_arguments="");
 	void _http_request_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data);
+	void _http_download_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data);
 
 friend class EditorAddonLibraryItemDescription;
 friend class EditorAssetLibraryItem;

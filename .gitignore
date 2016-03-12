@@ -18,6 +18,7 @@ core/global_defaults.cpp
 drivers/unix/os_unix_global_settings_path.cpp
 tools/editor/register_exporters.cpp
 tools/editor/doc_data_compressed.h
+tools/editor/certs_compressed.h
 tools/editor/editor_icons.cpp
 -fpic
 .fscache

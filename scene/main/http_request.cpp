@@ -7,28 +7,22 @@ void HTTPRequest::_redirect_request(const String& p_new_url) {
 
 Error HTTPRequest::_request() {
 
+	print_line("Requesting:\n\tURL: "+url+"\n\tString: "+request_string+"\n\tPort: "+itos(port)+"\n\tSSL: "+itos(use_ssl)+"\n\tValidate SSL: "+itos(validate_ssl));
 	return client->connect(url,port,use_ssl,validate_ssl);
 }
 
-Error HTTPRequest::request(const String& p_url, const Vector<String>& p_custom_headers, bool p_ssl_validate_domain) {
-
-	ERR_FAIL_COND_V(!is_inside_tree(),ERR_UNCONFIGURED);
-	if ( requesting ) {
-		ERR_EXPLAIN("HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
-		ERR_FAIL_V(ERR_BUSY);
-	}
+Error HTTPRequest::_parse_url(const String& p_url) {
 
 	url=p_url;
 	use_ssl=false;
 
 	request_string="";
 	port=80;
-	headers=p_custom_headers;
 	request_sent=false;
 	got_response=false;
-	validate_ssl=p_ssl_validate_domain;
 	body_len=-1;
 	body.resize(0);
+	downloaded=0;
 	redirections=0;
 
 	print_line("1 url: "+url);
@@ -71,8 +65,23 @@ Error HTTPRequest::request(const String& p_url, const Vector<String>& p_custom_h
 
 	print_line("4 url: "+url);
 
+	return OK;
+}
+
+Error HTTPRequest::request(const String& p_url, const Vector<String>& p_custom_headers, bool p_ssl_validate_domain) {
+
+	ERR_FAIL_COND_V(!is_inside_tree(),ERR_UNCONFIGURED);
+	if ( requesting ) {
+		ERR_EXPLAIN("HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
+		ERR_FAIL_V(ERR_BUSY);
+	}
+
+	Error err = _parse_url(p_url);
+	validate_ssl=p_ssl_validate_domain;
+
 	bool has_user_agent=false;
 	bool has_accept=false;
+	headers=p_custom_headers;
 
 	for(int i=0;i<headers.size();i++) {
 
@@ -91,7 +100,7 @@ Error HTTPRequest::request(const String& p_url, const Vector<String>& p_custom_h
 	}
 
 
-	Error err = _request();
+	err = _request();
 
 	if (err==OK) {
 		set_process(true);
@@ -112,13 +121,89 @@ void HTTPRequest::cancel_request() {
 		set_process(false);
 	}
 
+	if (file) {
+		memdelete(file);
+		file=NULL;
+	}
 	client->close();
 	body.resize(0);
+	//downloaded=0;
 	got_response=false;
 	response_code=-1;
-	body_len=-1;
+	//body_len=-1;
 	request_sent=false;
 	requesting=false;
+}
+
+
+bool HTTPRequest::_handle_response(bool *ret_value) {
+
+	if (!client->has_response()) {
+		call_deferred("emit_signal","request_completed",RESULT_NO_RESPONSE,0,StringArray(),ByteArray());
+		*ret_value=true;
+		return true;
+	}
+
+	got_response=true;
+	response_code=client->get_response_code();
+	List<String> rheaders;
+	client->get_response_headers(&rheaders);
+	response_headers.resize(0);
+	downloaded=0;
+	for (List<String>::Element *E=rheaders.front();E;E=E->next()) {
+		print_line("HEADER: "+E->get());
+		response_headers.push_back(E->get());
+	}
+
+	if (response_code==301 || response_code==302) {
+		//redirect
+		if (max_redirects>=0 && redirections>=max_redirects) {
+
+			call_deferred("emit_signal","request_completed",RESULT_REDIRECT_LIMIT_REACHED,response_code,response_headers,ByteArray());
+			*ret_value=true;
+			return true;
+		}
+
+		String new_request;
+
+		for (List<String>::Element *E=rheaders.front();E;E=E->next()) {
+			if (E->get().findn("Location: ")!=-1) {
+				new_request=E->get().substr(9,E->get().length()).strip_edges();
+			}
+		}
+
+		print_line("NEW LOCATION: "+new_request);
+
+		if (new_request!="") {
+			//process redirect
+			client->close();
+			int new_redirs=redirections+1; //because _request() will clear it
+			Error err;
+			if (new_request.begins_with("http")) {
+				//new url, request all again
+				err=_parse_url(new_request);
+			} else {
+				request_string=new_request;
+			}
+
+			err = _request();
+
+			print_line("new connection: "+itos(err));
+			if (err==OK) {
+				request_sent=false;
+				got_response=false;
+				body_len=-1;
+				body.resize(0);
+				downloaded=0;
+				redirections=new_redirs;
+				*ret_value=false;
+				return true;
+
+			}
+		}
+	}
+
+	return false;
 }
 
 
@@ -157,52 +242,10 @@ bool HTTPRequest::_update_connection() {
 
 					//no body
 
-					got_response=true;
-					response_code=client->get_response_code();
-					List<String> rheaders;
-					client->get_response_headers(&rheaders);
-					response_headers.resize(0);
-					for (List<String>::Element *E=rheaders.front();E;E=E->next()) {
-						print_line("HEADER: "+E->get());
-						response_headers.push_back(E->get());
-					}
+					bool ret_value;
 
-					if (response_code==301) {
-						//redirect
-						if (max_redirects>=0 && redirections>=max_redirects) {
-
-							call_deferred("emit_signal","request_completed",RESULT_REDIRECT_LIMIT_REACHED,response_code,response_headers,ByteArray());
-							return true;
-						}
-
-						String new_request;
-
-						for (List<String>::Element *E=rheaders.front();E;E=E->next()) {
-							if (E->get().findn("Location: ")!=-1) {
-								new_request=E->get().substr(9,E->get().length()).strip_edges();
-							}
-						}
-
-						print_line("NEW LOCATION: "+new_request);
-
-						if (new_request!="") {
-							//process redirect
-							client->close();
-							request_string=new_request;
-							int new_redirs=redirections+1; //because _request() will clear it
-							Error err = _request();
-							print_line("new connection: "+itos(err));
-							if (err==OK) {
-								request_sent=false;
-								got_response=false;
-								body_len=-1;
-								body.resize(0);
-								redirections=new_redirs;
-								return false;
-
-							}
-						}
-					}
+					if (_handle_response(&ret_value))
+						return ret_value;
 
 
 					call_deferred("emit_signal","request_completed",RESULT_SUCCESS,response_code,response_headers,ByteArray());
@@ -240,20 +283,12 @@ bool HTTPRequest::_update_connection() {
 		case HTTPClient::STATUS_BODY: {
 
 			if (!got_response) {
-				if (!client->has_response()) {
-					call_deferred("emit_signal","request_completed",RESULT_NO_RESPONSE,0,StringArray(),ByteArray());
-					return true;
-				}
 
-				got_response=true;
-				response_code=client->get_response_code();
-				List<String> rheaders;
-				client->get_response_headers(&rheaders);
-				response_headers.resize(0);
-				for (List<String>::Element *E=rheaders.front();E;E=E->next()) {
-					print_line("HEADER: "+E->get());
-					response_headers.push_back(E->get());
-				}
+
+				bool ret_value;
+
+				if (_handle_response(&ret_value))
+					return ret_value;
 
 				if (!client->is_response_chunked() && client->get_response_body_length()==0) {
 
@@ -263,7 +298,7 @@ bool HTTPRequest::_update_connection() {
 
 
 				if (client->is_response_chunked()) {
-					body_len=-1;
+					body_len=-1; //no body len because chunked, change your webserver configuration if you want body len
 				} else {
 					body_len=client->get_response_body_length();
 
@@ -273,22 +308,41 @@ bool HTTPRequest::_update_connection() {
 					}
 				}
 
+				if (download_to_file!=String()) {
+					file=FileAccess::open(download_to_file,FileAccess::WRITE);
+					if (!file) {
+
+						call_deferred("emit_signal","request_completed",RESULT_DOWNLOAD_FILE_CANT_OPEN,response_code,response_headers,ByteArray());
+					}
+				}
 			}
 
 
 			//print_line("BODY: "+itos(body.size()));
 			client->poll();
 
-			body.append_array(client->read_response_body_chunk());
+			ByteArray chunk = client->read_response_body_chunk();
+			downloaded+=chunk.size();
 
-			if (body_size_limit>=0 && body.size()>body_size_limit) {
+			if (file) {
+				ByteArray::Read r=chunk.read();
+				file->store_buffer(r.ptr(),chunk.size());
+				if (file->get_error()!=OK) {
+					call_deferred("emit_signal","request_completed",RESULT_DOWNLOAD_FILE_WRITE_ERROR,response_code,response_headers,ByteArray());
+					return true;
+				}
+			} else {
+				body.append_array(chunk);
+			}
+
+			if (body_size_limit>=0 && downloaded>body_size_limit) {
 				call_deferred("emit_signal","request_completed",RESULT_BODY_SIZE_LIMIT_EXCEEDED,response_code,response_headers,ByteArray());
 				return true;
 			}
 
 			if (body_len>=0) {
 
-				if (body.size()==body_len) {
+				if (downloaded==body_len) {
 					call_deferred("emit_signal","request_completed",RESULT_SUCCESS,response_code,response_headers,body);
 					return true;
 				}
@@ -351,6 +405,18 @@ int HTTPRequest::get_body_size_limit() const {
 	return body_size_limit;
 }
 
+
+void HTTPRequest::set_download_file(const String& p_file) {
+
+	ERR_FAIL_COND( status!=HTTPClient::STATUS_DISCONNECTED );
+
+	download_to_file=p_file;
+}
+
+String HTTPRequest::get_download_file() const {
+
+	return download_to_file;
+}
 HTTPClient::Status HTTPRequest::get_http_client_status() const {
 	return client->get_status();
 }
@@ -363,6 +429,14 @@ void HTTPRequest::set_max_redirects(int p_max) {
 int HTTPRequest::get_max_redirects() const{
 
 	return max_redirects;
+}
+
+int HTTPRequest::get_downloaded_bytes() const {
+
+	return downloaded;
+}
+int HTTPRequest::get_body_size() const{
+	return body_len;
 }
 
 
@@ -381,6 +455,12 @@ void HTTPRequest::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_max_redirects","amount"),&HTTPRequest::set_max_redirects);
 	ObjectTypeDB::bind_method(_MD("get_max_redirects"),&HTTPRequest::get_max_redirects);
+
+	ObjectTypeDB::bind_method(_MD("set_download_file","path"),&HTTPRequest::set_download_file);
+	ObjectTypeDB::bind_method(_MD("get_download_file"),&HTTPRequest::get_download_file);
+
+	ObjectTypeDB::bind_method(_MD("get_downloaded_bytes"),&HTTPRequest::get_downloaded_bytes);
+	ObjectTypeDB::bind_method(_MD("get_body_size"),&HTTPRequest::get_body_size);
 
 	ObjectTypeDB::bind_method(_MD("_redirect_request"),&HTTPRequest::_redirect_request);
 
@@ -401,6 +481,7 @@ void HTTPRequest::_bind_methods() {
 	BIND_CONSTANT( RESULT_BODY_SIZE_LIMIT_EXCEEDED );
 	BIND_CONSTANT( RESULT_REQUEST_FAILED );
 	BIND_CONSTANT( RESULT_REDIRECT_LIMIT_REACHED );
+	BIND_CONSTANT( RESULT_DOWNLOAD_FILE_WRITE_ERROR );
 
 }
 
@@ -413,14 +494,19 @@ HTTPRequest::HTTPRequest()
 	max_redirects=8;
 	body_len=-1;
 	got_response=false;
-	validate_ssl=false;
+	validate_ssl=false;	
 	use_ssl=false;
 	response_code=0;
 	request_sent=false;
 	client.instance();
 	use_threads=false;
 	body_size_limit=-1;
+	file=NULL;
 	status=HTTPClient::STATUS_DISCONNECTED;
 
 }
 
+HTTPRequest::~HTTPRequest() {
+	if (file)
+		memdelete(file);
+}

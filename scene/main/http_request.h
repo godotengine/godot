@@ -3,6 +3,7 @@
 
 #include "node.h"
 #include "io/http_client.h"
+#include "os/file_access.h"
 
 class HTTPRequest : public Node {
 
@@ -20,6 +21,8 @@ public:
 		RESULT_NO_RESPONSE,
 		RESULT_BODY_SIZE_LIMIT_EXCEEDED,
 		RESULT_REQUEST_FAILED,
+		RESULT_DOWNLOAD_FILE_CANT_OPEN,
+		RESULT_DOWNLOAD_FILE_WRITE_ERROR,
 		RESULT_REDIRECT_LIMIT_REACHED
 
 	};
@@ -44,8 +47,12 @@ private:
 	int response_code;
 	DVector<String> response_headers;
 
-	int body_len;
+	String download_to_file;
 
+	FileAccess *file;
+
+	int body_len;
+	int downloaded;
 	int body_size_limit;
 
 	int redirections;
@@ -58,7 +65,11 @@ private:
 
 	void _redirect_request(const String& p_new_url);
 
+	bool _handle_response(bool *ret_value);
+
+	Error _parse_url(const String& p_url);
 	Error _request();
+
 
 protected:
 
@@ -73,13 +84,20 @@ public:
 	void set_use_threads(bool p_use);
 	bool is_using_threads() const;
 
+	void set_download_file(const String& p_file);
+	String get_download_file() const;
+
 	void set_body_size_limit(int p_bytes);
 	int get_body_size_limit() const;
 
 	void set_max_redirects(int p_max);
 	int get_max_redirects() const;
 
+	int get_downloaded_bytes() const;
+	int get_body_size() const;
+
 	HTTPRequest();
+	~HTTPRequest();
 };
 
 #endif // HTTPREQUEST_H

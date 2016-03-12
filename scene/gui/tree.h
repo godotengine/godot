@@ -221,6 +221,7 @@ public:
 	bool is_editable(int p_column);
 
 	void set_custom_color(int p_column,const Color& p_color);
+	Color get_custom_color(int p_column) const;
 	void clear_custom_color(int p_column);
 
 	void set_custom_bg_color(int p_column,const Color& p_color);

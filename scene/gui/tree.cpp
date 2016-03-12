@@ -574,7 +574,14 @@ void TreeItem::set_custom_color(int p_column,const Color& p_color) {
 	cells[p_column].color=p_color;
 	_changed_notify(p_column);
 }
+Color TreeItem::get_custom_color(int p_column) const {
 
+	ERR_FAIL_INDEX_V( p_column, cells.size(), Color() );
+	if (!cells[p_column].custom_color)
+		return Color();
+	return cells[p_column].color;
+
+}
 void TreeItem::clear_custom_color(int p_column) {
 
 	ERR_FAIL_INDEX( p_column, cells.size() );

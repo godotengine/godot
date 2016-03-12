@@ -655,7 +655,7 @@ public:
 	Ref<Theme> get_editor_theme() const { return theme; }
 
 
-	void show_warning(const String& p_text);
+	void show_warning(const String& p_text,const String& p_title="Warning!");
 
 
 	Error export_platform(const String& p_platform, const String& p_path, bool p_debug,const String& p_password,bool p_quit_after=false);

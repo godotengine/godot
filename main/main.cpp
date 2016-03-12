@@ -73,6 +73,7 @@
 #include "core/os/thread.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/file_access_zip.h"
+#include "core/io/stream_peer_ssl.h"
 #include "translation.h"
 #include "version.h"
 #include "main/input_default.h"
@@ -635,6 +636,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	if (editor) {
 		packed_data->set_disabled(true);
 		globals->set_disable_platform_override(true);
+		StreamPeerSSL::initialize_certs=false; //will be initialized by editor
 	}
 
 #endif
