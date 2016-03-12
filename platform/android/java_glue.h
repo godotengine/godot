@@ -49,6 +49,7 @@ extern "C" {
 	JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(JNIEnv * env, jobject obj, jint p_device, jboolean p_connected, jstring p_name);
 	JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_audio(JNIEnv * env, jobject obj);
     JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_accelerometer(JNIEnv * env, jobject obj,  jfloat x, jfloat y, jfloat z);
+    JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_magnetometer(JNIEnv * env, jobject obj,  jfloat x, jfloat y, jfloat z);
     JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusin(JNIEnv * env, jobject obj);
     JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusout(JNIEnv * env, jobject obj);
     JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_singleton(JNIEnv * env, jobject obj, jstring name,jobject p_object);
