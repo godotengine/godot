@@ -260,6 +260,13 @@ bool _OS::is_window_maximized() const {
 	return OS::get_singleton()->is_window_maximized();
 }
 
+void _OS::set_borderless_window(bool p_borderless) {
+	OS::get_singleton()->set_borderless_window(p_borderless);
+}
+
+bool _OS::get_borderless_window() const {
+	return OS::get_singleton()->get_borderless_window();
+}
 
 void _OS::set_use_file_access_save_and_swap(bool p_enable) {
 
@@ -864,6 +871,11 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_window_minimized"),&_OS::is_window_minimized);
 	ObjectTypeDB::bind_method(_MD("set_window_maximized", "enabled"),&_OS::set_window_maximized);
 	ObjectTypeDB::bind_method(_MD("is_window_maximized"),&_OS::is_window_maximized);
+
+	ObjectTypeDB::bind_method(_MD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
+	ObjectTypeDB::bind_method(_MD("get_borderless_window"), &_OS::get_borderless_window);
+	ObjectTypeDB::bind_method(_MD("set_multisamples", "multisamples"), &_OS::set_multisamples);
+	ObjectTypeDB::bind_method(_MD("get_multisamples"), &_OS::get_multisamples);
 
 	ObjectTypeDB::bind_method(_MD("set_screen_orientation","orientation"),&_OS::set_screen_orientation);
 	ObjectTypeDB::bind_method(_MD("get_screen_orientation"),&_OS::get_screen_orientation);
