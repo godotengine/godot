@@ -7,6 +7,7 @@ void ItemList::add_item(const String& p_item,const Ref<Texture>& p_texture,bool 
 
 	Item item;
 	item.icon=p_texture;
+	item.icon_region=Rect2i();
 	item.text=p_item;
 	item.selectable=p_selectable;
 	item.selected=false;
@@ -23,6 +24,7 @@ void ItemList::add_icon_item(const Ref<Texture>& p_item,bool p_selectable){
 
 	Item item;
 	item.icon=p_item;
+	item.icon_region=Rect2i();
 	//item.text=p_item;
 	item.selectable=p_selectable;
 	item.selected=false;
@@ -79,12 +81,29 @@ void ItemList::set_item_icon(int p_idx,const Ref<Texture>& p_icon){
 
 
 }
+
 Ref<Texture> ItemList::get_item_icon(int p_idx) const{
 
 	ERR_FAIL_INDEX_V(p_idx,items.size(),Ref<Texture>());
 
 	return items[p_idx].icon;
 
+}
+
+void ItemList::set_item_icon_region(int p_idx,const Rect2& p_region) {
+
+	ERR_FAIL_INDEX(p_idx,items.size());
+
+	items[p_idx].icon_region=p_region;
+	update();
+	shape_changed=true;
+}
+
+Rect2 ItemList::get_item_icon_region(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx,items.size(),Rect2());
+
+	return items[p_idx].icon_region;
 }
 
 void ItemList::set_item_custom_bg_color(int p_idx,const Color& p_custom_bg_color) {
@@ -362,7 +381,15 @@ Size2 ItemList::get_min_icon_size() const {
 	return min_icon_size;
 }
 
+Size2 ItemList::Item::get_icon_size() const {
 
+	if (icon.is_null())
+		return Size2();
+	if (icon_region.has_no_area())
+		return icon->get_size();
+
+	return icon_region.size;
+}
 
 void ItemList::_input_event(const InputEvent& p_event) {
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_LEFT && p_event.mouse_button.pressed) {
@@ -702,7 +729,9 @@ void ItemList::_notification(int p_what) {
 
 				Size2 minsize;
 				if (items[i].icon.is_valid()) {
-					minsize=items[i].icon->get_size();
+
+					minsize=items[i].get_icon_size();
+
 					if (min_icon_size.x!=0)
 						minsize.x = MAX(minsize.x,min_icon_size.x);
 					if (min_icon_size.y!=0)
@@ -851,18 +880,30 @@ void ItemList::_notification(int p_what) {
 			Vector2 text_ofs;
 			if (items[i].icon.is_valid()) {
 
+				Size2 icon_size = items[i].get_icon_size();
+
 				Vector2 icon_ofs;
 				if (min_icon_size!=Vector2()) {
-					icon_ofs = (min_icon_size - items[i].icon->get_size())/2;
+					icon_ofs = (min_icon_size - icon_size)/2;
 				}
 
+				Point2 pos = items[i].rect_cache.pos + icon_ofs + base_ofs;
+
 				if (icon_mode==ICON_MODE_TOP) {
-					draw_texture(items[i].icon,icon_ofs+items[i].rect_cache.pos+Vector2(items[i].rect_cache.size.width/2-items[i].icon->get_width()/2,0).floor()+base_ofs);
-					text_ofs.y = MAX(items[i].icon->get_height(),min_icon_size.y)+icon_margin;
+
+					pos.x += Math::floor((items[i].rect_cache.size.width - icon_size.width)/2);
+					text_ofs.y = MAX(icon_size.height, min_icon_size.y) + icon_margin;
 				} else {
-					draw_texture(items[i].icon,icon_ofs+items[i].rect_cache.pos+Vector2(0,items[i].rect_cache.size.height/2-items[i].icon->get_height()/2).floor()+base_ofs);
-					text_ofs.x = MAX(items[i].icon->get_width(),min_icon_size.x)+icon_margin;
+
+					pos.y += Math::floor((items[i].rect_cache.size.height - icon_size.height)/2);
+					text_ofs.x = MAX(icon_size.width, min_icon_size.x) + icon_margin;
 				}
+
+				if (items[i].icon_region.has_no_area())
+					draw_texture(items[i].icon, pos);
+				else
+					draw_texture_rect_region(items[i].icon, Rect2(pos, icon_size), items[i].icon_region);
+
 			}
 
 			if (items[i].tag_icon.is_valid()) {
@@ -1060,6 +1101,9 @@ void ItemList::_bind_methods(){
 
 	ObjectTypeDB::bind_method(_MD("set_item_icon","idx","icon:Texture"),&ItemList::set_item_icon);
 	ObjectTypeDB::bind_method(_MD("get_item_icon:Texture","idx"),&ItemList::get_item_icon);
+
+	ObjectTypeDB::bind_method(_MD("set_item_icon_region","idx","rect"),&ItemList::set_item_icon_region);
+	ObjectTypeDB::bind_method(_MD("get_item_icon_region","idx"),&ItemList::get_item_icon_region);
 
 	ObjectTypeDB::bind_method(_MD("set_item_selectable","idx","selectable"),&ItemList::set_item_selectable);
 	ObjectTypeDB::bind_method(_MD("is_item_selectable","idx"),&ItemList::is_item_selectable);

@@ -22,6 +22,7 @@ private:
 	struct Item {
 
 		Ref<Texture> icon;
+		Rect2i icon_region;
 		Ref<Texture> tag_icon;
 		String text;
 		bool selectable;
@@ -31,8 +32,9 @@ private:
 		String tooltip;
 		Color custom_bg;
 
-
 		Rect2 rect_cache;
+
+		Size2 get_icon_size() const;
 
 		bool operator<(const Item& p_another) const { return text<p_another.text; }
 	};
@@ -75,6 +77,9 @@ public:
 
 	void set_item_icon(int p_idx,const Ref<Texture>& p_icon);
 	Ref<Texture> get_item_icon(int p_idx) const;
+
+	void set_item_icon_region(int p_idx,const Rect2& p_region);
+	Rect2 get_item_icon_region(int p_idx) const;
 
 	void set_item_selectable(int p_idx,bool p_selectable);
 	bool is_item_selectable(int p_idx) const;
