@@ -878,3 +878,4 @@ LineEditFileChooser::LineEditFileChooser() {
 	dialog->connect("files_selected",this,"_chosen");
 
 }
+
