@@ -58,7 +58,7 @@ public:
 		MODE_OPEN_FILES,
 		MODE_OPEN_DIR,
 		MODE_OPEN_ANY,
-		MODE_SAVE_FILE,
+		MODE_SAVE_FILE
 	};
 
 	typedef Ref<Texture> (*GetIconFunc)(const String&);
