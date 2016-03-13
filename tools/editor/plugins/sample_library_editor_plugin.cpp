@@ -52,14 +52,8 @@ void SampleLibraryEditor::_notification(int p_what) {
 	}
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
-		play->set_icon( get_icon("Play","EditorIcons") );
-		play->set_tooltip("Play Sample");
-		stop->set_icon( get_icon("Stop","EditorIcons") );
-		stop->set_tooltip("Stop Sample");
 		load->set_icon( get_icon("Folder","EditorIcons") );
 		load->set_tooltip("Open Sample File(s)");
-		_delete->set_icon( get_icon("Del","EditorIcons") );
-		_delete->set_tooltip("Remove Sample");
 	}
 
 	if (p_what==NOTIFICATION_READY) {
@@ -70,23 +64,6 @@ void SampleLibraryEditor::_notification(int p_what) {
 	if (p_what==NOTIFICATION_DRAW) {
 
 	}
-}
-
-void SampleLibraryEditor::_play_pressed() {
-
-	if (!tree->get_selected())
-		return;
-
-	String to_play = tree->get_selected()->get_text(0);
-
-	player->play(to_play,true);
-	play->set_pressed(false);
-	stop->set_pressed(false);
-}
-void SampleLibraryEditor::_stop_pressed() {
-
-	player->stop_all();
-	play->set_pressed(false);
 }
 
 void SampleLibraryEditor::_file_load_request(const DVector<String>& p_path) {
@@ -142,7 +119,7 @@ void SampleLibraryEditor::_button_pressed(Object *p_item,int p_column, int p_id)
 			last_sample_playing = p_item;
 			set_process(true);
 		} else {
-			_stop_pressed();
+			player->stop_all();
 			if(last_sample_playing != p_item){
 				TreeItem *tl=last_sample_playing->cast_to<TreeItem>();
 				tl->set_button(p_column,0,get_icon("Play","EditorIcons"));
@@ -216,7 +193,7 @@ void SampleLibraryEditor::_item_edited() {
 
 }
 
-void SampleLibraryEditor::_delete_confirm_pressed() {
+void SampleLibraryEditor::_delete_pressed() {
 
 	if (!tree->get_selected())
 		return;
@@ -228,24 +205,6 @@ void SampleLibraryEditor::_delete_confirm_pressed() {
 	undo_redo->add_do_method(this,"_update_library");
 	undo_redo->add_undo_method(this,"_update_library");
 	undo_redo->commit_action();
-}
-
-
-void SampleLibraryEditor::_delete_pressed() {
-
-
-	if (!tree->get_selected())
-		return;
-
-	_delete_confirm_pressed(); //it has undo.. why bother with a dialog..
-	/*
-	dialog->set_title("Confirm...");
-	dialog->set_text("Remove Sample '"+tree->get_selected()->get_text(0)+"' ?");
-	//dialog->get_cancel()->set_text("Cancel");
-	//dialog->get_ok()->show();
-	dialog->get_ok()->set_text("Remove");
-	dialog->popup_centered(Size2(300,60));*/
-
 }
 
 
@@ -336,12 +295,9 @@ void SampleLibraryEditor::edit(Ref<SampleLibrary> p_sample_library) {
 void SampleLibraryEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&SampleLibraryEditor::_input_event);
-	ObjectTypeDB::bind_method(_MD("_play_pressed"),&SampleLibraryEditor::_play_pressed);
-	ObjectTypeDB::bind_method(_MD("_stop_pressed"),&SampleLibraryEditor::_stop_pressed);
 	ObjectTypeDB::bind_method(_MD("_load_pressed"),&SampleLibraryEditor::_load_pressed);
 	ObjectTypeDB::bind_method(_MD("_item_edited"),&SampleLibraryEditor::_item_edited);
 	ObjectTypeDB::bind_method(_MD("_delete_pressed"),&SampleLibraryEditor::_delete_pressed);
-	ObjectTypeDB::bind_method(_MD("_delete_confirm_pressed"),&SampleLibraryEditor::_delete_confirm_pressed);
 	ObjectTypeDB::bind_method(_MD("_file_load_request"),&SampleLibraryEditor::_file_load_request);
 	ObjectTypeDB::bind_method(_MD("_update_library"),&SampleLibraryEditor::_update_library);
 	ObjectTypeDB::bind_method(_MD("_button_pressed"),&SampleLibraryEditor::_button_pressed);
@@ -354,28 +310,10 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	add_style_override("panel", get_stylebox("panel","Panel"));
 
 
-	play = memnew( Button );
-
-	play->set_pos(Point2( 5, 5 ));
-	play->set_size( Size2(1,1 ) );
-	play->set_toggle_mode(true);
-	add_child(play);
-	play->hide();
-
-	stop = memnew( Button );
-
-	stop->set_pos(Point2( 5, 5 ));
-	stop->set_size( Size2(1,1 ) );
-	//stop->set_toggle_mode(true);
-	add_child(stop);
-
 	load = memnew( Button );
-
-	load->set_pos(Point2( 35, 5 ));
+	load->set_pos(Point2( 5, 5 ));
 	load->set_size( Size2(1,1 ) );
 	add_child(load);
-
-	_delete = memnew( Button );
 
 	file = memnew( EditorFileDialog );
 	add_child(file);
@@ -384,10 +322,6 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	for(int i=0;i<extensions.size();i++)
 		file->add_filter("*."+extensions[i]);
 	file->set_mode(EditorFileDialog::MODE_OPEN_FILES);
-
-	_delete->set_pos(Point2( 65, 5 ));
-	_delete->set_size( Size2(1,1 ) );
-	add_child(_delete);
 
 	tree = memnew( Tree );
 	tree->set_columns(6);
@@ -419,12 +353,8 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	add_child( dialog );
 
 	tree->connect("button_pressed",this,"_button_pressed");
-	play->connect("pressed", this,"_play_pressed");
-	stop->connect("pressed", this,"_stop_pressed");
 	load->connect("pressed", this,"_load_pressed");
-	_delete->connect("pressed", this,"_delete_pressed");
 	file->connect("files_selected", this,"_file_load_request");
-	//dialog->connect("confirmed", this,"_delete_confirm_pressed");
 	tree->connect("item_edited", this,"_item_edited");
 
 
