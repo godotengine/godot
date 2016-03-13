@@ -950,7 +950,7 @@ void Object::set_script(const RefPtr& p_script) {
 	script=p_script;
 	Ref<Script> s(script);
 
-	if (!s.is_null() && s->can_instance() ) {
+	if (!s.is_null()) {
 		OBJ_DEBUG_LOCK
 		script_instance = s->instance_create(this);
 
@@ -959,6 +959,22 @@ void Object::set_script(const RefPtr& p_script) {
 	_change_notify("script/script");
 	emit_signal(CoreStringNames::get_singleton()->script_changed);
 
+}
+
+void Object::refresh_script_instance() {
+
+	if (script_instance) {
+		memdelete(script_instance);
+		script_instance = NULL;
+	}
+
+	Ref<Script> s(script);
+
+	if (!script.is_null()) {
+		OBJ_DEBUG_LOCK
+			script_instance = s->instance_create(this);
+
+	}
 }
 
 void Object::set_script_instance(ScriptInstance *p_instance) {

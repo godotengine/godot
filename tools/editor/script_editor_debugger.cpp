@@ -1559,6 +1559,19 @@ void ScriptEditorDebugger::live_debug_reparent_node(const NodePath& p_at, const 
 
 }
 
+void ScriptEditorDebugger::live_debug_script_reload(const Array& p_script_reload_chain, const Array& p_script_new_code){
+
+	if (live_debug && connection.is_valid()) {
+		Array msg;
+		ERR_FAIL_COND(p_script_reload_chain.size() != p_script_new_code.size())
+		msg.push_back("live_script_reload");
+		msg.push_back(p_script_reload_chain);
+		msg.push_back(p_script_new_code);
+		ppeer->put_var(msg);
+	}
+
+}
+
 void ScriptEditorDebugger::set_breakpoint(const String& p_path,int p_line,bool p_enabled) {
 
 	if (connection.is_valid()) {
@@ -1659,6 +1672,8 @@ void ScriptEditorDebugger::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("live_debug_reparent_node"),&ScriptEditorDebugger::live_debug_reparent_node);
 	ObjectTypeDB::bind_method(_MD("_scene_tree_property_select_object"),&ScriptEditorDebugger::_scene_tree_property_select_object);
 	ObjectTypeDB::bind_method(_MD("_scene_tree_property_value_edited"),&ScriptEditorDebugger::_scene_tree_property_value_edited);
+
+	ObjectTypeDB::bind_method(_MD("live_debug_script_reload"), &ScriptEditorDebugger::live_debug_script_reload);
 
 	ADD_SIGNAL(MethodInfo("goto_script_line"));
 	ADD_SIGNAL(MethodInfo("breaked",PropertyInfo(Variant::BOOL,"reallydid"),PropertyInfo(Variant::BOOL,"can_debug")));

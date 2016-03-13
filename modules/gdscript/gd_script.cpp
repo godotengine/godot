@@ -33,6 +33,7 @@
 #include "os/file_access.h"
 #include "io/file_access_encrypted.h"
 #include "os/os.h"
+#include "scene/main/node.h"
 
 
 
@@ -1929,7 +1930,6 @@ void GDScript::_set_subclass_path(Ref<GDScript>& p_sc,const String& p_path) {
 Error GDScript::reload() {
 
 
-	ERR_FAIL_COND_V(instances.size(),ERR_ALREADY_IN_USE);
 
 	String basedir=path;
 
@@ -1939,10 +1939,19 @@ Error GDScript::reload() {
 	if (basedir!="")
 		basedir=basedir.get_base_dir();
 
+#if TOOLS_ENABLED
+	// If this script has instances, cache original members for updating them instances
+	ERR_FAIL_COND_V(instances.size() > 0 && placeholders.size() > 0, ERR_INVALID_DATA);
+
+	Map<StringName, MemberInfo> original_member_indices;
+
+	if (instances.size() > 0) {
+		original_member_indices = member_indices;
+	}
+#endif
 
 
-
-	valid=false;
+	valid = false;
 	GDParser parser;
 	Error err = parser.parse(source,basedir,false,path);
 	if (err) {
@@ -1979,13 +1988,109 @@ Error GDScript::reload() {
 		_set_subclass_path(E->get(),path);
 	}
 
-#ifdef TOOLS_ENABLED
-	/*for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
 
-		_update_placeholder(E->get());
-	}*/
+
+#ifdef TOOLS_ENABLED
+	if(can_run)
+	{
+		if(placeholders.size()>0) {
+			_convert_placeholders_to_instances();
+		}
+		else {
+			if(instances.size()>0) {
+				_update_instances(original_member_indices);
+			}
+		}
+	}
+	else {
+		if(instances.size()>0) {
+			_convert_instances_to_placeholders();
+		}
+	}
 #endif
+
 	return OK;
+}
+
+// Attempt to copy members from old indicies map to new one
+void GDScript::_update_instances(Map<StringName,MemberInfo> &p_original_member_indices) {
+#if TOOLS_ENABLED
+	Set<Object *>::Element *E=instances.front();
+	while (E) {
+		Set<Object *>::Element *E_next = E->next();
+
+		Object *object=E->get();
+		GDInstance *instance = static_cast<GDInstance *>(object->get_script_instance());
+
+		Vector<Variant> original_members=instance->members;
+
+		object->refresh_script_instance();
+		instance=static_cast<GDInstance *>(object->get_script_instance());
+		
+		for(Map<StringName, MemberInfo>::Element *original_element = p_original_member_indices.front(); original_element; original_element = original_element->next()) {
+			Map<StringName, MemberInfo>::Element *matching_element = member_indices.find(original_element->key());
+			if(matching_element) {
+				instance->members[matching_element->value().index] = original_members[original_element->value().index];
+			}
+		}
+		E = E_next;
+	}
+#endif
+}
+
+void GDScript::_convert_placeholders_to_instances() {
+#ifdef TOOLS_ENABLED
+	Set<PlaceHolderScriptInstance *>::Element *E=placeholders.front();
+	while(E) {
+		Set<PlaceHolderScriptInstance *>::Element *E_next=E->next();
+		PlaceHolderScriptInstance *instance=static_cast<PlaceHolderScriptInstance *>(E->get());
+		Object *object=instance->get_owner();
+
+		object->refresh_script_instance();
+
+		E = E_next;
+	}
+#endif
+}
+
+void GDScript::_convert_instances_to_placeholders() {
+#ifdef TOOLS_ENABLED
+	Set<Object *>::Element *E=instances.front();
+	while (E) {
+		Set<Object *>::Element *E_next=E->next();
+		Object *object=E->get();
+
+		object->refresh_script_instance();
+
+		E = E_next;
+	}
+#endif
+}
+
+const Set<Ref<Script> > GDScript::get_inherited_scripts() const {
+
+#ifdef TOOLS_ENABLED
+	Set<Ref<Script> > inherited_scripts;
+
+	//print_line("update exports for "+get_path()+" ic: "+itos(copy.size()));
+	for (Set<ObjectID>::Element *E=inheriters_cache.front(); E; E=E->next()) {
+		Object *id = ObjectDB::get_instance(E->get());
+		if (!id)
+			continue;
+		GDScript *s=id->cast_to<GDScript>();
+		if (!s)
+			continue;
+
+		Ref<GDScript> new_ref(s);
+		if (inherited_scripts.find(new_ref)==NULL) {
+			inherited_scripts.insert(new_ref);
+		}
+	}
+
+	return inherited_scripts;
+#else
+	return Set<Ref<Script> >();
+#endif
 }
 
 String GDScript::get_node_type() const {
@@ -2217,7 +2322,7 @@ StringName GDScript::debug_get_member_by_index(int p_idx) const {
 }
 
 
-Ref<GDScript> GDScript::get_base() const {
+Ref<Script> GDScript::get_base() const {
 
 	return base;
 }
