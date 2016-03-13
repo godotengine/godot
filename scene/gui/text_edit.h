@@ -156,6 +156,7 @@ class TextEdit : public Control  {
 		int from_line,from_column;
 		int to_line, to_column;
 		String text;
+		uint32_t prev_version;
 		uint32_t version;
 		bool chain_forward;
 		bool chain_backward;

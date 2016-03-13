@@ -2515,6 +2515,7 @@ void TextEdit::_insert_text(int p_line, int p_char,const String& p_text,int *r_e
 
 	//see if it shold just be set as current op
 	if (current_op.type!=op.type) {
+		op.prev_version = get_version();
 		_push_current_op();
 		current_op=op;
 
@@ -2522,6 +2523,7 @@ void TextEdit::_insert_text(int p_line, int p_char,const String& p_text,int *r_e
 	}
 	//see if it can be merged
 	if (current_op.to_line!=p_line || current_op.to_column!=p_char) {
+		op.prev_version = get_version();
 		_push_current_op();
 		current_op=op;
 		return; //set as current op, return
@@ -2565,6 +2567,7 @@ void TextEdit::_remove_text(int p_from_line, int p_from_column,int p_to_line,int
 
 	//see if it shold just be set as current op
 	if (current_op.type!=op.type) {
+		op.prev_version = get_version();
 		_push_current_op();
 		current_op=op;
 		return; //set as current op, return
@@ -2585,6 +2588,7 @@ void TextEdit::_remove_text(int p_from_line, int p_from_column,int p_to_line,int
 		//return; //update current op
 	}
 
+	op.prev_version = get_version();
 	_push_current_op();
 	current_op=op;
 
@@ -3418,11 +3422,15 @@ void TextEdit::undo() {
 	else
 		undo_stack_pos=undo_stack_pos->prev();
 
-	_do_text_op( undo_stack_pos->get(),true);
+	TextOperation op = undo_stack_pos->get();
+	_do_text_op(op, true);
+	current_op.version=op.prev_version;
 	if(undo_stack_pos->get().chain_backward) {
 		do {
 			undo_stack_pos = undo_stack_pos->prev();
-			_do_text_op(undo_stack_pos->get(), true);
+			op = undo_stack_pos->get();
+			_do_text_op(op, true);
+			current_op.version = op.prev_version;
 		} while(!undo_stack_pos->get().chain_forward);
 	}
 
@@ -3438,15 +3446,19 @@ void TextEdit::redo() {
 	if (undo_stack_pos==NULL)
 		return; //nothing to do.
 
-	_do_text_op(undo_stack_pos->get(), false);
+	TextOperation op = undo_stack_pos->get();
+	_do_text_op(op, false);
+	current_op.version = op.version;
 	if(undo_stack_pos->get().chain_forward) {
 		do {
 			undo_stack_pos=undo_stack_pos->next();
-			_do_text_op(undo_stack_pos->get(), false);
+			op = undo_stack_pos->get();
+			_do_text_op(op, false);
+			current_op.version = op.version;
 		} while(!undo_stack_pos->get().chain_backward);
 	}
-	cursor_set_line(undo_stack_pos->get().from_line);
-	cursor_set_column(undo_stack_pos->get().from_column);
+	cursor_set_line(undo_stack_pos->get().to_line);
+	cursor_set_column(undo_stack_pos->get().to_column);
 	undo_stack_pos=undo_stack_pos->next();
 	update();
 }
