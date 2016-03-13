@@ -50,6 +50,7 @@ enum MethodFlags {
 	METHOD_FLAG_CONST=8,
 	METHOD_FLAG_REVERSE=16, // used for events
 	METHOD_FLAG_VIRTUAL=32,
+	METHOD_FLAG_FROM_SCRIPT=64,
 	METHOD_FLAGS_DEFAULT=METHOD_FLAG_NORMAL,
 };
 
@@ -57,8 +58,8 @@ template<class T>
 struct VariantCaster {
 
 	static _FORCE_INLINE_ T cast(const Variant& p_variant) {
-	
-		return p_variant;			
+
+		return p_variant;
 	}
 };
 
@@ -66,8 +67,8 @@ template<class T>
 struct VariantCaster<T&> {
 
 	static _FORCE_INLINE_ T cast(const Variant& p_variant) {
-	
-		return p_variant;			
+
+		return p_variant;
 	}
 };
 
@@ -75,8 +76,8 @@ template<class T>
 struct VariantCaster<const T&> {
 
 	static _FORCE_INLINE_ T cast(const Variant& p_variant) {
-	
-		return p_variant;			
+
+		return p_variant;
 	}
 };
 

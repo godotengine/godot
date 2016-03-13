@@ -33,6 +33,7 @@
 
 #include "resource.h"
 #include "os/thread_safe.h"
+#include "core/io/config_file.h"
 
 class EditorPlugin;
 
@@ -56,7 +57,6 @@ public:
 		Vector<String> install_files;
 	};
 private:
-	Map<String,Plugin> plugins;
 
 	struct VariantContainer {
 		int order;
@@ -83,10 +83,7 @@ private:
 	Ref<Resource> clipboard;
 
 
-	EditorPlugin *_load_plugin_editor(const String& p_path);
-	Error _load_plugin(const String& p_path,Plugin& plugin);
-
-	void _load_defaults();
+	void _load_defaults(Ref<ConfigFile> p_extra_config = NULL);
 
 	String project_config_path;
 
@@ -107,13 +104,10 @@ public:
 	static EditorSettings *get_singleton();
 	void erase(String p_var);
 	String get_settings_path() const;
-	String get_global_settings_path() const;
+	//String get_global_settings_path() const;
 	String get_project_settings_path() const;
 
-	const Map<String,Plugin>& get_plugins() const { return plugins; }
 
-	void scan_plugins();
-	void enable_plugins();
 	void setup_network();
 
 	void raise_order(const String& p_name);
@@ -122,11 +116,6 @@ public:
 	static void destroy();
 
 	void notify_changes();
-
-	void set_plugin_enabled(const String& p_plugin,bool p_enabled);
-	bool is_plugin_enabled(const String& p_plugin);
-
-	void load_installed_plugin(const String& p_plugin);
 
 	void set_resource_clipboard(const Ref<Resource>& p_resource) { clipboard=p_resource; }
 	Ref<Resource> get_resource_clipboard() const { return clipboard; }

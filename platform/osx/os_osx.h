@@ -138,7 +138,7 @@ public:
 	virtual Point2 get_mouse_pos() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String& p_title);
-	
+
 	virtual Size2 get_window_size() const;
 
 	virtual void set_icon(const Image& p_icon);

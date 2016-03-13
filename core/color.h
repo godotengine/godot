@@ -37,13 +37,13 @@
 struct Color {
 
 	union {
-	
+
 		struct {
 			float r;
 			float g;
 			float b;
 			float a;
-		};		
+		};
 		float components[4];
 	};
 
@@ -58,28 +58,28 @@ struct Color {
 	float get_v() const;
 	void set_hsv(float p_h, float p_s, float p_v, float p_alpha=1.0);
 
-	_FORCE_INLINE_ float& operator[](int idx) { 
+	_FORCE_INLINE_ float& operator[](int idx) {
 		return components[idx];
 	}
-	_FORCE_INLINE_ const float& operator[](int idx) const { 
+	_FORCE_INLINE_ const float& operator[](int idx) const {
 		return components[idx];
 	}
-		
+
 	void invert();
 	void contrast();
 	Color inverted() const;
 	Color contrasted() const;
 
 	_FORCE_INLINE_ Color linear_interpolate(const Color& p_b, float p_t) const {
-	
+
 		Color res=*this;
-	
+
 		res.r+= (p_t * (p_b.r-r));
 		res.g+= (p_t * (p_b.g-g));
 		res.b+= (p_t * (p_b.b-b));
 		res.a+= (p_t * (p_b.a-a));
-	
-		return res;	
+
+		return res;
 	}
 
 	_FORCE_INLINE_ Color blend(const Color& p_over) const {

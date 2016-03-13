@@ -49,7 +49,7 @@ struct _IP_ResolverPrivate {
 			response = IP_Address();
 			hostname="";
 		};
-		
+
 		QueueItem() {
 			clear();
 		};

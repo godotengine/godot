@@ -43,18 +43,18 @@ template<class T>
 class DVector {
 
 	mutable MID mem;
-		
-		
+
+
 	void copy_on_write() {
-		
+
 		if (!mem.is_valid())
 			return;
 
 		if (dvector_lock)
 			dvector_lock->lock();
-					
+
 		MID_Lock lock( mem );
-		
+
 
 		if ( *(int*)lock.data()  == 1 ) {
 			// one reference, means no refcount changes
@@ -62,114 +62,114 @@ class DVector {
 				dvector_lock->unlock();
 			return;
 		}
-		
+
 		MID new_mem= dynalloc( mem.get_size() );
-		
+
 		if (!new_mem.is_valid()) {
-		
+
 			if (dvector_lock)
 				dvector_lock->unlock();
-			ERR_FAIL_COND( new_mem.is_valid() ); // out of memory		
+			ERR_FAIL_COND( new_mem.is_valid() ); // out of memory
 		}
-		
+
 		MID_Lock dst_lock( new_mem );
-		
+
 		int *rc = (int*)dst_lock.data();
-		
+
 		*rc=1;
-		
+
 		T * dst = (T*)(rc + 1 );
-		
+
 		T * src =(T*) ((int*)lock.data() + 1 );
-		
+
 		int count = (mem.get_size() - sizeof(int)) / sizeof(T);
-		
+
 		for (int i=0;i<count;i++) {
-		
+
 			memnew_placement( &dst[i], T(src[i]) );
 		}
-		
+
 		(*(int*)lock.data())--;
-		
+
 		// unlock all
 		dst_lock=MID_Lock();
 		lock=MID_Lock();
-		
+
 		mem=new_mem;
-				
+
 		if (dvector_lock)
 			dvector_lock->unlock();
-				
+
 	}
-	
+
 	void reference( const DVector& p_dvector ) {
-	
+
 		unreference();
-				
+
 		if (dvector_lock)
 			dvector_lock->lock();
-		
+
 		if (!p_dvector.mem.is_valid()) {
-		
+
 			if (dvector_lock)
 				dvector_lock->unlock();
-			return;			
+			return;
 		}
-		
+
 		MID_Lock lock(p_dvector.mem);
-		
+
 		int * rc = (int*)lock.data();
 		(*rc)++;
-		
+
 		lock = MID_Lock();
 		mem=p_dvector.mem;
-			
+
 		if (dvector_lock)
 			dvector_lock->unlock();
-			
+
 	}
-	
-	
+
+
 	void unreference() {
-	
+
 		if (dvector_lock)
 			dvector_lock->lock();
-		
+
 		if (!mem.is_valid()) {
-		
+
 			if (dvector_lock)
 				dvector_lock->unlock();
-			return;			
+			return;
 		}
-		
+
 		MID_Lock lock(mem);
-		
+
 		int * rc = (int*)lock.data();
 		(*rc)--;
-		
+
 		if (*rc==0) {
 			// no one else using it, destruct
-			
+
 			T * t= (T*)(rc+1);
 			int count = (mem.get_size() - sizeof(int)) / sizeof(T);
-			
+
 			for (int i=0;i<count;i++) {
-			
+
 				t[i].~T();
 			}
-						
+
 		}
-			
-		
+
+
 		lock = MID_Lock();
-		
+
 		mem = MID ();
-		
+
 		if (dvector_lock)
 			dvector_lock->unlock();
-					
+
 	}
-	
+
 public:
 
 	class Read {
@@ -177,10 +177,10 @@ public:
 		MID_Lock lock;
 		const T * mem;
 	public:
-	
+
 		_FORCE_INLINE_ const T& operator[](int p_index) const { return mem[p_index]; }
 		_FORCE_INLINE_ const T *ptr() const { return mem; }
-		
+
 		Read() { mem=NULL; }
 	};
 
@@ -189,32 +189,32 @@ public:
 		MID_Lock lock;
 		T * mem;
 	public:
-	
+
 		_FORCE_INLINE_ T& operator[](int p_index) { return mem[p_index]; }
 		_FORCE_INLINE_ T *ptr() { return mem; }
-		
+
 		Write() { mem=NULL; }
 	};
 
 
 	Read read() const {
-	
+
 		Read r;
-		if (mem.is_valid()) {		
+		if (mem.is_valid()) {
 			r.lock = MID_Lock( mem );
 			r.mem = (const T*)((int*)r.lock.data()+1);
 		}
-		return r;		
+		return r;
 	}
 	Write write() {
-	
+
 		Write w;
 		if (mem.is_valid()) {
 			copy_on_write();
 			w.lock = MID_Lock( mem );
 			w.mem = (T*)((int*)w.lock.data()+1);
 		}
-		return w;		
+		return w;
 	}
 
 	template<class MC>
@@ -280,12 +280,12 @@ public:
 
 
 	bool is_locked() const { return mem.is_locked(); }
-	
+
 	inline const T operator[](int p_index) const;
 
 	Error resize(int p_size);
-	
-	
+
+
 	void operator=(const DVector& p_dvector) { reference(p_dvector); }
 	DVector() {}
 	DVector(const DVector& p_dvector) { reference(p_dvector); }
@@ -308,7 +308,7 @@ T DVector<T>::get(int p_index) const {
 template<class T>
 void DVector<T>::set(int p_index, const T& p_val) {
 
-	if (p_index<0 || p_index>=size()) {		
+	if (p_index<0 || p_index>=size()) {
 		ERR_FAIL_COND(p_index<0 || p_index>=size());
 	}
 
@@ -332,7 +332,7 @@ const T DVector<T>::operator[](int p_index) const {
 	}
 
 	Read r = read();
-	
+
 	return r[p_index];
 }
 
@@ -344,83 +344,83 @@ Error DVector<T>::resize(int p_size) {
 		dvector_lock->lock();
 
 	bool same = p_size==size();
-	
+
 	if (dvector_lock)
 		dvector_lock->unlock();
-	// no further locking is necesary because we are supposed to own the only copy of this (using copy on write)	
-	
+	// no further locking is necesary because we are supposed to own the only copy of this (using copy on write)
+
 	if (same)
 		return OK;
 
 	if (p_size == 0 ) {
-	
+
 		unreference();
 		return OK;
 	}
 
 
 	copy_on_write(); // make it unique
-	
+
 	ERR_FAIL_COND_V( mem.is_locked(), ERR_LOCKED ); // if after copy on write, memory is locked, fail.
-	
+
 	if (p_size > size() ) {
-	
+
 		int oldsize=size();
-		
+
 		MID_Lock lock;
-		
+
 		if (oldsize==0) {
 
 			mem = dynalloc( p_size * sizeof(T) + sizeof(int) );
 			lock=MID_Lock(mem);
 			int *rc = ((int*)lock.data());
 			*rc=1;
-			
+
 		} else {
 
 			if (dynrealloc( mem, p_size * sizeof(T) + sizeof(int) )!=OK ) {
-			
+
 				ERR_FAIL_V(ERR_OUT_OF_MEMORY); // out of memory
 			}
-			
-			lock=MID_Lock(mem);			
+
+			lock=MID_Lock(mem);
 		}
-	
-	
-		
-		
+
+
+
+
 		T *t = (T*)((int*)lock.data() + 1);
-		
+
 		for (int i=oldsize;i<p_size;i++) {
-		
+
 			memnew_placement(&t[i], T );
 		}
-		
+
 		lock = MID_Lock(); // clear
 	} else {
-	
+
 		int oldsize=size();
-	
+
 		MID_Lock lock(mem);
-		
-		
+
+
 		T *t = (T*)((int*)lock.data() + 1);
-		
+
 		for (int i=p_size;i<oldsize;i++) {
-		
+
 			t[i].~T();
 		}
-		
+
 		lock = MID_Lock(); // clear
-	
+
 		if (dynrealloc( mem, p_size * sizeof(T) + sizeof(int) )!=OK ) {
-	
-			ERR_FAIL_V(ERR_OUT_OF_MEMORY); // wtf error		
+
+			ERR_FAIL_V(ERR_OUT_OF_MEMORY); // wtf error
 		}
-		
-		
+
+
 	}
-	
+
 	return OK;
 }
 

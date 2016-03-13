@@ -62,11 +62,11 @@ void Matrix3::invert() {
 	real_t det =	elements[0][0] * co[0]+
 			elements[0][1] * co[1]+
 			elements[0][2] * co[2];
-	
+
 	ERR_FAIL_COND( det == 0 );
 	real_t s = 1.0/det;
-	
-	set(  co[0]*s, cofac(0, 2, 2, 1) * s, cofac(0, 1, 1, 2) * s, 
+
+	set(  co[0]*s, cofac(0, 2, 2, 1) * s, cofac(0, 1, 1, 2) * s,
 	      co[1]*s, cofac(0, 0, 2, 2) * s, cofac(0, 2, 1, 0) * s,
 	      co[2]*s, cofac(0, 1, 2, 0) * s, cofac(0, 0, 1, 1) * s );
 
@@ -148,7 +148,7 @@ Vector3 Matrix3::get_scale() const {
 		Vector3(elements[0][1],elements[1][1],elements[2][1]).length(),
 		Vector3(elements[0][2],elements[1][2],elements[2][2]).length()
 	);
-		
+
 }
 void Matrix3::rotate(const Vector3& p_axis, real_t p_phi) {
 
@@ -223,7 +223,7 @@ bool Matrix3::operator==(const Matrix3& p_matrix) const {
 				return false;
 		}
 	}
-	
+
 	return true;
 }
 bool Matrix3::operator!=(const Matrix3& p_matrix) const {
@@ -235,16 +235,16 @@ Matrix3::operator String() const {
 
 	String mtx;
 	for (int i=0;i<3;i++) {
-	
+
 		for (int j=0;j<3;j++) {
-	
+
 			if (i!=0 || j!=0)
 				mtx+=", ";
-				
+
 			mtx+=rtos( elements[i][j] );
 		}
 	}
-	
+
 	return mtx;
 }
 
@@ -255,34 +255,34 @@ Matrix3::operator Quat() const {
 
 	real_t trace = m.elements[0][0] + m.elements[1][1] + m.elements[2][2];
 	real_t temp[4];
-	
-	if (trace > 0.0) 
+
+	if (trace > 0.0)
 	{
 		real_t s = Math::sqrt(trace + 1.0);
 		temp[3]=(s * 0.5);
 		s = 0.5 / s;
-		
+
 		temp[0]=((m.elements[2][1] - m.elements[1][2]) * s);
 		temp[1]=((m.elements[0][2] - m.elements[2][0]) * s);
 		temp[2]=((m.elements[1][0] - m.elements[0][1]) * s);
-	} 
-	else 
+	}
+	else
 	{
 		int i = m.elements[0][0] < m.elements[1][1] ?
 			(m.elements[1][1] < m.elements[2][2] ? 2 : 1) :
 			(m.elements[0][0] < m.elements[2][2] ? 2 : 0);
-		int j = (i + 1) % 3;  
+		int j = (i + 1) % 3;
 		int k = (i + 2) % 3;
-		
+
 		real_t s = Math::sqrt(m.elements[i][i] - m.elements[j][j] - m.elements[k][k] + 1.0);
 		temp[i] = s * 0.5;
 		s = 0.5 / s;
-		
+
 		temp[3] = (m.elements[k][j] - m.elements[j][k]) * s;
 		temp[j] = (m.elements[j][i] + m.elements[i][j]) * s;
 		temp[k] = (m.elements[k][i] + m.elements[i][k]) * s;
 	}
-	
+
 	return Quat(temp[0],temp[1],temp[2],temp[3]);
 
 }
@@ -439,7 +439,7 @@ void Matrix3::get_axis_and_angle(Vector3 &r_axis,real_t& r_angle) const {
 Matrix3::Matrix3(const Vector3& p_euler) {
 
 	set_euler( p_euler );
-		
+
 }
 
 Matrix3::Matrix3(const Quat& p_quat) {
@@ -450,8 +450,8 @@ Matrix3::Matrix3(const Quat& p_quat) {
 	real_t wx = p_quat.w * xs,  wy = p_quat.w * ys,  wz = p_quat.w * zs;
 	real_t xx = p_quat.x * xs,  xy = p_quat.x * ys,  xz = p_quat.x * zs;
 	real_t yy = p_quat.y * ys,  yz = p_quat.y * zs,  zz = p_quat.z * zs;
-	set(	1.0 - (yy + zz), xy - wz, xz + wy, 	
-		xy + wz, 1.0 - (xx + zz), yz - wx, 
+	set(	1.0 - (yy + zz), xy - wz, xz + wy,
+		xy + wz, 1.0 - (xx + zz), yz - wx,
 		xz - wy, yz + wx, 1.0 - (xx + yy))	;
 
 }

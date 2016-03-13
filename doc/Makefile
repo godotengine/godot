@@ -38,7 +38,7 @@ rst:
 	rm -rf $(OUTPUTDIR)/rst
 	mkdir -p $(OUTPUTDIR)/rst
 	pushd $(OUTPUTDIR)/rst
-	echo "TODO"
+	python2 $(TOOLSDIR)/makerst.py $(CLASSES)
 	popd
 
 textile:

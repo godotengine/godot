@@ -32,14 +32,14 @@
 
 void CollisionObject2D::_update_shapes_from_children() {
 
-	shapes.resize(0);
+	shapes.clear();
 	for(int i=0;i<get_child_count();i++) {
 
 		Node* n = get_child(i);
 		n->call("_add_to_collision_object",this);
 	}
 
-//	_update_shapes();
+	_update_shapes();
 }
 
 void CollisionObject2D::_notification(int p_what) {
@@ -261,7 +261,7 @@ void CollisionObject2D::add_shape(const Ref<Shape2D>& p_shape, const Matrix32& p
 	else
 		Physics2DServer::get_singleton()->body_add_shape(get_rid(),p_shape->get_rid(),p_transform);
 
-	shapes.push_back(sdata);	
+	shapes.push_back(sdata);
 
 }
 int CollisionObject2D::get_shape_count() const {

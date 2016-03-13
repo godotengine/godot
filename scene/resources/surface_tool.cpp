@@ -324,7 +324,7 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 
 				w=DVector<Color>::Write();
 				a[i]=array;
-			} break;	
+			} break;
 			case Mesh::ARRAY_FORMAT_BONES:
 			case Mesh::ARRAY_FORMAT_WEIGHTS: {
 

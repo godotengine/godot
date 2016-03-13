@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "cube_grid_theme_editor_plugin.h"
- 
+
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/physics_body.h"
 #include "scene/main/viewport.h"
@@ -337,7 +337,7 @@ MeshLibraryEditorPlugin::MeshLibraryEditorPlugin(EditorNode *p_node) {
 	theme_editor->set_anchor( MARGIN_RIGHT, Control::ANCHOR_END );
 	theme_editor->set_anchor( MARGIN_BOTTOM, Control::ANCHOR_BEGIN );
 	theme_editor->set_end( Point2(0,22) );
-	theme_editor->hide();	
+	theme_editor->hide();
 
 }
 

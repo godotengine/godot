@@ -88,7 +88,7 @@ public:
 	enum Parameter {
 		PARAM_DIRECTION,
 		PARAM_SPREAD,
-		PARAM_LINEAR_VELOCITY,		
+		PARAM_LINEAR_VELOCITY,
 		PARAM_SPIN_VELOCITY,
 		PARAM_ORBIT_VELOCITY,
 		PARAM_GRAVITY_DIRECTION,
@@ -150,7 +150,7 @@ private:
 	Point2 emissor_offset;
 	Vector2 initial_velocity;
 	Vector2 extents;
-	DVector<Vector2> emission_points;	
+	DVector<Vector2> emission_points;
 
 	float time;
 	int active_count;

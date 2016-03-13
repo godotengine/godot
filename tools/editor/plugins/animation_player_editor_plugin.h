@@ -41,7 +41,7 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-
+class AnimationKeyEditor;
 class AnimationPlayerEditor : public VBoxContainer {
 
 	OBJ_TYPE(AnimationPlayerEditor, VBoxContainer );
@@ -78,17 +78,16 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Button *autoplay;
 	Button *rename_anim;
 	Button *duplicate_anim;
-	Button *edit_anim;
+
 	Button *resource_edit_anim;
 	Button *load_anim;
 	MenuButton *save_anim;
 	Button *blend_anim;
 	Button *remove_anim;
 	MenuButton *tool_anim;
-	TextureButton *pin;
-	Label *nodename;
+	ToolButton *pin;
+	Button *nodename;
 	SpinBox *frame;
-	HSlider *seek;
 	LineEdit *scale;
 	LineEdit *name;
 	Label *name_title;
@@ -116,6 +115,9 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	bool updating;
 	bool updating_blends;
+
+	AnimationKeyEditor *key_editor;
+
 
 	void _select_anim_by_name(const String& p_anim);
 	void _play_pressed();
@@ -158,6 +160,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _animation_key_editor_seek(float p_pos);
 	void _animation_key_editor_anim_len_changed(float p_new);
+	void _animation_key_editor_anim_step_changed(float p_len);
+
 	void _unhandled_key_input(const InputEvent& p_ev);
 	void _animation_tool_menu(int p_option);
 	void _animation_save_menu(int p_option);
@@ -175,6 +179,7 @@ public:
 	AnimationPlayer *get_player() const;
 	static AnimationPlayerEditor *singleton;
 
+	AnimationKeyEditor* get_key_editor() { return key_editor; }
 	Dictionary get_state() const;
 	void set_state(const Dictionary& p_state);
 

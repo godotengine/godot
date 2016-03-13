@@ -37,13 +37,13 @@
 
 struct ParticleSystemSW {
 	enum {
-	
+
 		MAX_PARTICLES=1024
 	};
 
 	float particle_vars[VS::PARTICLE_VAR_MAX];
 	float particle_randomness[VS::PARTICLE_VAR_MAX];
-	
+
 	Vector3 emission_half_extents;
 	DVector<Vector3> emission_points;
 	Vector3 gravity_normal;
@@ -54,14 +54,14 @@ struct ParticleSystemSW {
 	AABB visibility_aabb;
 	bool sort;
 	bool local_coordinates;
-			
+
 	struct ColorPhase {
-		
+
 		float pos;
 		Color color;
 		ColorPhase() { pos=1.0; color=Color(0.0,0.0,1.0,1.0); }
 	};
-		
+
 	int color_phase_count;
 	ColorPhase color_phases[VS::MAX_PARTICLE_COLOR_PHASES];
 
@@ -71,12 +71,12 @@ struct ParticleSystemSW {
 		Vector3 pos;
 		float force;
 	};
-	
+
 	int attractor_count;
 	Attractor attractors[VS::MAX_PARTICLE_ATTRACTORS];
 
 
-	ParticleSystemSW();	
+	ParticleSystemSW();
 	~ParticleSystemSW();
 
 };
@@ -89,7 +89,7 @@ struct ParticleSystemProcessSW {
 	};
 
 	struct ParticleData {
-			
+
 		Vector3 pos;
 		Vector3 vel;
 		float rot;
@@ -102,7 +102,7 @@ struct ParticleSystemProcessSW {
 
 	bool valid;
 	float particle_system_time;
-	uint32_t rand_seed;	
+	uint32_t rand_seed;
 	Vector<ParticleData> particle_data;
 
 	void process(const ParticleSystemSW *p_system,const Transform& p_transform,float p_time);

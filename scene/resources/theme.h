@@ -33,28 +33,30 @@
 #include "scene/resources/font.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
+#include "scene/resources/shader.h"
 #include "io/resource_loader.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class Theme : public Resource {
-	
+
 	OBJ_TYPE( Theme, Resource );
 	RES_BASE_EXTENSION("thm");
-	
+
 	static Ref<Theme> default_theme;
-	
+
 	HashMap<StringName,HashMap<StringName,Ref<Texture>,StringNameHasher >, StringNameHasher >  icon_map;
 	HashMap<StringName,HashMap<StringName,Ref<StyleBox>,StringNameHasher >,StringNameHasher > style_map;
 	HashMap<StringName,HashMap<StringName,Ref<Font>,StringNameHasher >,StringNameHasher > font_map;
+	HashMap<StringName,HashMap<StringName,Ref<Shader>,StringNameHasher >, StringNameHasher >  shader_map;
 	HashMap<StringName,HashMap<StringName,Color,StringNameHasher >,StringNameHasher > color_map;
 	HashMap<StringName,HashMap<StringName,int,StringNameHasher>,StringNameHasher > constant_map;
 protected:
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list( List<PropertyInfo> *p_list) const;
-	
+
 	static Ref<Texture> default_icon;
 	static Ref<StyleBox> default_style;
 	static Ref<Font> default_font;
@@ -70,10 +72,10 @@ protected:
 
 	static void _bind_methods();
 public:
-	
+
 	static Ref<Theme> get_default();
 	static void set_default(const Ref<Theme>& p_default);
-	
+
 	static void set_default_icon( const Ref<Texture>& p_icon );
 	static void set_default_style( const Ref<StyleBox>& p_default_style);
 	static void set_default_font( const Ref<Font>& p_default_font );
@@ -86,7 +88,13 @@ public:
 	bool has_icon(const StringName& p_name,const StringName& p_type) const;
 	void clear_icon(const StringName& p_name,const StringName& p_type);
 	void get_icon_list(StringName p_type, List<StringName> *p_list) const;
-	
+
+	void set_shader(const StringName& p_name,const StringName& p_type,const Ref<Shader>& p_shader);
+	Ref<Shader> get_shader(const StringName& p_name,const StringName& p_type) const;
+	bool has_shader(const StringName& p_name,const StringName& p_type) const;
+	void clear_shader(const StringName& p_name,const StringName& p_type);
+	void get_shader_list(const StringName& p_name, List<StringName> *p_list) const;
+
 	void set_stylebox(const StringName& p_name,const StringName& p_type,const Ref<StyleBox>& p_style);
 	Ref<StyleBox> get_stylebox(const StringName& p_name,const StringName& p_type) const;
 	bool has_stylebox(const StringName& p_name,const StringName& p_type) const;

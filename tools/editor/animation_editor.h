@@ -212,7 +212,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 	ConfirmationDialog *scale_dialog;
 	SpinBox *scale;
 
-	PropertyEditor *key_editor;	
+	PropertyEditor *key_editor;
 
 	SceneTreeDialog *call_select;
 
@@ -262,7 +262,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 
 	EditorSelection *editor_selection;
 
-	AnimationKeyEditor();
+
 
 	float _get_zoom_scale() const;
 
@@ -302,7 +302,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 	void _select_at_anim(const Ref<Animation>& p_anim,int p_track,float p_pos);
 	void _curve_transition_changed(float p_what);
 
-	PropertyInfo _find_hint_for_track(int p_idx);
+	PropertyInfo _find_hint_for_track(int p_idx, NodePath &r_base_path);
 
 	void _create_value_item(int p_type);
 	void _pane_drag(const Point2& p_delta);
@@ -324,7 +324,7 @@ public:
 	Ref<Animation> get_current_animation() const;
 	void set_root(Node *p_root);
 	Node *get_root() const;
-	void set_keying(bool p_enabled);
+	void update_keying();
 	bool has_keying() const;
 
 	void cleanup();
@@ -334,7 +334,7 @@ public:
 	void insert_value_key(const String& p_property, const Variant& p_value, bool p_advance);
 	void insert_transform_key(Spatial *p_node,const String& p_sub,const Transform& p_xform);
 
-	AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_history, EditorSelection *p_selection);
+	AnimationKeyEditor();
 	~AnimationKeyEditor();
 };
 

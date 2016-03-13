@@ -233,7 +233,7 @@ bool CanvasItem::is_visible() const {
 
 	const CanvasItem *p=this;
 
-	while(p) {		
+	while(p) {
 		if (p->hidden)
 			return false;
 		p=p->get_parent_item();
@@ -310,11 +310,11 @@ void CanvasItem::hide() {
 }
 
 void CanvasItem::set_hidden(bool p_hidden) {
-	
+
 	if (hidden == p_hidden) {
 		return;
 	}
-	
+
 	_set_visible_(!p_hidden);
 }
 
@@ -1193,6 +1193,14 @@ bool CanvasItem::is_local_transform_notification_enabled() const {
 	return notify_local_transform;
 }
 
+int CanvasItem::get_canvas_layer() const {
+
+	if (canvas_layer)
+		return canvas_layer->get_layer();
+	else
+		return 0;
+}
+
 CanvasItem::CanvasItem() : xform_change(this) {
 
 
@@ -1201,7 +1209,7 @@ CanvasItem::CanvasItem() : xform_change(this) {
 	pending_update=false;
 	opacity=1;
 	self_opacity=1;
-	toplevel=false;	
+	toplevel=false;
 	pending_children_sort=false;
 	first_draw=false;
 	blend_mode=BLEND_MODE_MIX;

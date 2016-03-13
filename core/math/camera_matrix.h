@@ -48,8 +48,8 @@ struct CameraMatrix {
 	};
 
  	float matrix[4][4];
-		
-		
+
+
 	void set_identity();
 	void set_zero();
 	void set_light_bias();
@@ -67,12 +67,12 @@ struct CameraMatrix {
 	float get_z_near() const;
 	float get_aspect() const;
 	float get_fov() const;
-	
+
 	Vector<Plane> get_projection_planes(const Transform& p_transform) const;
-	
+
 	bool get_endpoints(const Transform& p_transform,Vector3 *p_8points) const;
 	void get_viewport_size(float& r_width, float& r_height) const;
-	
+
 	void invert();
 	CameraMatrix inverse() const;
 
@@ -80,15 +80,15 @@ struct CameraMatrix {
 
 	Plane xform4(const Plane& p_vec4);
 	_FORCE_INLINE_ Vector3 xform(const Vector3& p_vec3) const;
-	
+
 	operator String() const;
 
 	void scale_translate_to_fit(const AABB& p_aabb);
 	void make_scale(const Vector3 &p_scale);
 	operator Transform() const;
 
-	CameraMatrix();	
-	CameraMatrix(const Transform& p_transform);	
+	CameraMatrix();
+	CameraMatrix(const Transform& p_transform);
 	~CameraMatrix();
 
 };

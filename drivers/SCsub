@@ -63,7 +63,7 @@ import string
 if env['vsproj']=="yes":
 	env.AddToVSProject(env.drivers_sources)
 
-if (False): #split drivers, this used to be needed for windows until separate builders for windows were created
+if (env.split_drivers): #split drivers, this used to be needed for windows until separate builders for windows were created
 
 	for f in env.drivers_sources:
 		fname = ""

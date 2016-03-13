@@ -55,7 +55,7 @@ friend class BaseButton;
 public:
 
 	void get_button_list(List<BaseButton*> *p_buttons) const;
-	BaseButton *get_pressed_button() const;	
+	BaseButton *get_pressed_button() const;
 	BaseButton *get_focused_button() const;
 	void set_pressed_button(BaseButton *p_button);
 	int get_pressed_button_index() const;

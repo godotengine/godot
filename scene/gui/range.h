@@ -34,7 +34,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class Range : public Control {
-	
+
 	OBJ_TYPE( Range, Control );
 
 
@@ -57,15 +57,15 @@ class Range : public Control {
 	void _value_changed_notify();
 	void _changed_notify(const char *p_what="");
 
-protected:	
+protected:
 
 	virtual void _value_changed(double) {}
 
 	static void _bind_methods();
-	
+
 	bool _rounded_values;
 public:
-	
+
 	void set_val(double p_val);
 	void set_min(double p_min);
 	void set_max(double p_max);
@@ -89,7 +89,7 @@ public:
 	void share(Range *p_range);
 	void unshare();
 
-	Range();	
+	Range();
 	~Range();
 
 };

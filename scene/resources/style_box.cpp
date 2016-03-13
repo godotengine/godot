@@ -37,7 +37,7 @@ void StyleBox::set_default_margin(Margin p_margin, float p_value) {
 
 	margin[p_margin]=p_value;
 	emit_changed();
-	
+
 }
 float StyleBox::get_default_margin(Margin p_margin) const{
 
@@ -59,7 +59,7 @@ Size2 StyleBox::get_minimum_size() const {
 
 
 Point2 StyleBox::get_offset() const {
-	
+
 	return Point2( get_margin( MARGIN_LEFT), get_margin( MARGIN_TOP) );
 }
 
@@ -94,33 +94,33 @@ void StyleBox::_bind_methods() {
 }
 
 StyleBox::StyleBox() {
-	
+
 	for (int i=0;i<4;i++) {
-	
+
 		margin[i]=-1;
 	}
 }
 
 
 void StyleBoxTexture::set_texture(RES p_texture) {
-	
+
 	texture=p_texture;
 	emit_changed();
 
 }
 RES StyleBoxTexture::get_texture() const {
-	
+
 	return texture;
 }
 
 void StyleBoxTexture::set_margin_size(Margin p_margin,float p_size) {
-	
+
 	margin[p_margin]=p_size;
 	emit_changed();
 
 }
 float StyleBoxTexture::get_margin_size(Margin p_margin) const {
-	
+
 	return margin[p_margin];
 }
 
@@ -142,14 +142,14 @@ void StyleBoxTexture::draw(RID p_canvas_item,const Rect2& p_rect) const {
 }
 
 void StyleBoxTexture::set_draw_center(bool p_draw) {
-	
+
 	draw_center=p_draw;
 	emit_changed();
 
 }
 
 bool StyleBoxTexture::get_draw_center() const {
-	
+
 	return draw_center;
 }
 
@@ -204,18 +204,18 @@ void StyleBoxTexture::_bind_methods() {
 }
 
 StyleBoxTexture::StyleBoxTexture() {
-	
-	
+
+
 	for (int i=0;i<4;i++) {
 		margin[i]=0;
 		expand_margin[i]=0;
 	}
 	draw_center=true;
-	
+
 }
 StyleBoxTexture::~StyleBoxTexture() {
-	
-	
+
+
 }
 
 ////////////////

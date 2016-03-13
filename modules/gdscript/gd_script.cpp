@@ -1754,6 +1754,11 @@ Variant GDScript::_new(const Variant** p_args,int p_argcount,Variant::CallError&
 
 	/* STEP 1, CREATE */
 
+	if (!valid) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
+	}
+
 	r_error.error=Variant::CallError::CALL_OK;
 	REF ref;
 	Object *owner=NULL;
@@ -1783,7 +1788,7 @@ Variant GDScript::_new(const Variant** p_args,int p_argcount,Variant::CallError&
 		return Variant();
 	}
 
-	if (ref.is_valid()) {		
+	if (ref.is_valid()) {
 		return ref;
 	} else {
 		return owner;
@@ -2142,19 +2147,27 @@ Error GDScript::reload() {
 		if (ScriptDebugger::get_singleton()) {
 			GDScriptLanguage::get_singleton()->debug_break_parse(get_path(),parser.get_error_line(),"Parser Error: "+parser.get_error());
 		}
-		_err_print_error("GDScript::reload",path.empty()?"built-in":(const char*)path.utf8().get_data(),parser.get_error_line(),("Parse Error: "+parser.get_error()).utf8().get_data());
+		_err_print_error("GDScript::reload",path.empty()?"built-in":(const char*)path.utf8().get_data(),parser.get_error_line(),("Parse Error: "+parser.get_error()).utf8().get_data(),ERR_HANDLER_SCRIPT);
 		ERR_FAIL_V(ERR_PARSE_ERROR);
 	}
+
+
+	bool can_run = ScriptServer::is_scripting_enabled() || parser.is_tool_script();
 
 	GDCompiler compiler;
 	err = compiler.compile(&parser,this);
 
 	if (err) {
-		if (ScriptDebugger::get_singleton()) {
-			GDScriptLanguage::get_singleton()->debug_break_parse(get_path(),compiler.get_error_line(),"Parser Error: "+compiler.get_error());
+
+		if (can_run) {
+			if (ScriptDebugger::get_singleton()) {
+				GDScriptLanguage::get_singleton()->debug_break_parse(get_path(),compiler.get_error_line(),"Parser Error: "+compiler.get_error());
+			}
+			_err_print_error("GDScript::reload",path.empty()?"built-in":(const char*)path.utf8().get_data(),compiler.get_error_line(),("Compile Error: "+compiler.get_error()).utf8().get_data(),ERR_HANDLER_SCRIPT);
+			ERR_FAIL_V(ERR_COMPILATION_FAILED);
+		} else {
+			return err;
 		}
-		_err_print_error("GDScript::reload",path.empty()?"built-in":(const char*)path.utf8().get_data(),compiler.get_error_line(),("Compile Error: "+compiler.get_error()).utf8().get_data());
-		ERR_FAIL_V(ERR_COMPILATION_FAILED);
 	}
 
 	valid=true;
@@ -2267,7 +2280,7 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 
 void GDScript::_bind_methods() {
 
-	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo("new"));	
+	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo("new"));
 
 	ObjectTypeDB::bind_method(_MD("get_as_byte_code"),&GDScript::get_as_byte_code);
 
@@ -2320,7 +2333,7 @@ Error GDScript::load_byte_code(const String& p_path) {
 	GDParser parser;
 	Error err = parser.parse_bytecode(bytecode,basedir,get_path());
 	if (err) {
-		_err_print_error("GDScript::load_byte_code",path.empty()?"built-in":(const char*)path.utf8().get_data(),parser.get_error_line(),("Parse Error: "+parser.get_error()).utf8().get_data());
+		_err_print_error("GDScript::load_byte_code",path.empty()?"built-in":(const char*)path.utf8().get_data(),parser.get_error_line(),("Parse Error: "+parser.get_error()).utf8().get_data(),ERR_HANDLER_SCRIPT);
 		ERR_FAIL_V(ERR_PARSE_ERROR);
 	}
 
@@ -2328,7 +2341,7 @@ Error GDScript::load_byte_code(const String& p_path) {
 	err = compiler.compile(&parser,this);
 
 	if (err) {
-		_err_print_error("GDScript::load_byte_code",path.empty()?"built-in":(const char*)path.utf8().get_data(),compiler.get_error_line(),("Compile Error: "+compiler.get_error()).utf8().get_data());
+		_err_print_error("GDScript::load_byte_code",path.empty()?"built-in":(const char*)path.utf8().get_data(),compiler.get_error_line(),("Compile Error: "+compiler.get_error()).utf8().get_data(),ERR_HANDLER_SCRIPT);
 		ERR_FAIL_V(ERR_COMPILATION_FAILED);
 	}
 
@@ -2767,6 +2780,7 @@ void GDInstance::get_method_list(List<MethodInfo> *p_list) const {
 
 			MethodInfo mi;
 			mi.name=E->key();
+			mi.flags|=METHOD_FLAG_FROM_SCRIPT;
 			for(int i=0;i<E->get().get_argument_count();i++)
 				mi.arguments.push_back(PropertyInfo(Variant::NIL,"arg"+itos(i)));
 			p_list->push_back(mi);
@@ -3031,6 +3045,7 @@ void GDScriptLanguage::frame() {
 void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 
 	static const char *_reserved_words[]={
+<<<<<<< HEAD
 		"break",
 		"class",
 		"continue",
@@ -3054,15 +3069,52 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"var",
 		"setget",
 		"pass",
+=======
+		// operators
+>>>>>>> godotengine/master
 		"and",
+		"in",
+		"not",
 		"or",
-		"export",
-		"assert",
-		"yield",
-		"static",
+		// types and values
+		"false",
 		"float",
 		"int",
+		"null",
+		"PI",
+		"self",
+		"true",
+		// functions
+		"assert",
+<<<<<<< HEAD
+=======
+		"breakpoint",
+		"class",
+		"extends",
+		"func",
+		"preload",
+		"setget",
 		"signal",
+		"tool",
+>>>>>>> godotengine/master
+		"yield",
+		// var
+		"const",
+		"enum",
+		"export",
+		"onready",
+		"static",
+		"var",
+		// control flow
+		"break",
+		"continue",
+		"if",
+		"elif",
+		"else",
+		"for",
+		"pass",
+		"return",
+		"while",
 	0};
 
 

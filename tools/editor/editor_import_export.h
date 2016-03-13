@@ -46,6 +46,10 @@ protected:
 
 	static void _bind_methods();
 
+	String _validate_source_path(const String& p_path);
+	String _expand_source_path(const String& p_path);
+
+
 public:
 
 
@@ -136,8 +140,9 @@ public:
 	enum ExportFlags {
 		EXPORT_DUMB_CLIENT=1,
 		EXPORT_REMOTE_DEBUG=2,
-		EXPORT_VIEW_COLLISONS=4,
-		EXPORT_VIEW_NAVIGATION=8
+		EXPORT_REMOTE_DEBUG_LOCALHOST=4,
+		EXPORT_VIEW_COLLISONS=8,
+		EXPORT_VIEW_NAVIGATION=16,
 	};
 
 
@@ -284,7 +289,7 @@ protected:
 	Set<String> image_formats;
 
 	ExportFilter export_filter;
-	String export_custom_filter;
+	String export_custom_filter, export_custom_filter_exclude;
 	Map<StringName,FileAction> files;
 	Map<StringName,Ref<EditorExportPlatform> > exporters;
 	Map<StringName,ImageGroup> image_groups;
@@ -302,6 +307,9 @@ protected:
 
 	static EditorImportExport* singleton;
 
+	DVector<String> _get_export_file_list();
+	DVector<String> _get_export_platforms();
+
 	static void _bind_methods();
 public:
 
@@ -314,6 +322,7 @@ public:
 	Ref<EditorImportPlugin> get_import_plugin_by_name(const String& p_string) const;
 
 	void add_export_plugin(const Ref<EditorExportPlugin>& p_plugin);
+	void remove_export_plugin(const Ref<EditorExportPlugin>& p_plugin);
 	int get_export_plugin_count() const;
 	Ref<EditorExportPlugin> get_export_plugin(int p_idx) const;
 
@@ -331,7 +340,9 @@ public:
 	ExportFilter get_export_filter() const;
 
 	void set_export_custom_filter(const String& p_custom_filter);
+	void set_export_custom_filter_exclude(const String& p_custom_filter);
 	String get_export_custom_filter() const;
+	String get_export_custom_filter_exclude() const;
 
 	void set_export_image_action(ImageAction p_action);
 	ImageAction get_export_image_action() const;
@@ -388,7 +399,10 @@ public:
 	~EditorImportExport();
 };
 
+VARIANT_ENUM_CAST(EditorImportExport::FileAction);
+VARIANT_ENUM_CAST(EditorImportExport::ExportFilter);
 VARIANT_ENUM_CAST(EditorImportExport::ImageAction);
 VARIANT_ENUM_CAST(EditorImportExport::ScriptAction);
+VARIANT_ENUM_CAST(EditorImportExport::SampleAction);
 
 #endif // EDITOR_IMPORT_EXPORT_H

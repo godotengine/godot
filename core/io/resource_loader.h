@@ -47,7 +47,7 @@ public:
 	virtual Ref<Resource> get_resource()=0;
 	virtual Error poll()=0;
 	virtual int get_stage() const=0;
-	virtual int get_stage_count() const=0;	
+	virtual int get_stage_count() const=0;
 	virtual Error wait();
 
 	ResourceInteractiveLoader() {}
@@ -76,12 +76,12 @@ typedef void (*ResourceLoadErrorNotify)(void *p_ud,const String& p_text);
 typedef void (*DependencyErrorNotify)(void *p_ud,const String& p_loading,const String& p_which,const String& p_type);
 
 
-class ResourceLoader {	
-	
+class ResourceLoader {
+
 	enum {
 		MAX_LOADERS=64
 	};
-	
+
 	static ResourceFormatLoader *loader[MAX_LOADERS];
 	static int loader_count;
 	static bool timestamp_on_load;
@@ -96,7 +96,7 @@ class ResourceLoader {
 public:
 
 
-	
+
 	static Ref<ResourceInteractiveLoader> load_interactive(const String &p_path,const String& p_type_hint="",bool p_no_cache=false,Error *r_error=NULL);
 	static RES load(const String &p_path,const String& p_type_hint="",bool p_no_cache=false,Error *r_error=NULL);
 	static Ref<ResourceImportMetadata> load_import_metadata(const String &p_path);

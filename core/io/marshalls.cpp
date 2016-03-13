@@ -95,7 +95,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 			str.parse_utf8((const char*)buf,strlen);
 			r_variant=str;
 
-			if (r_len) {				
+			if (r_len) {
 				if (strlen%4)
 					(*r_len)+=4-strlen%4;
 				(*r_len)+=4+strlen;
@@ -294,7 +294,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 		} break;
 		case Variant::NODE_PATH: {
 
-			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);			
+			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
 			uint32_t strlen = decode_uint32(buf);
 
 			if (strlen&0x80000000) {
@@ -1077,7 +1077,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 
 			r_len+=data.size()+5*4+pad;
 
-		} break;		
+		} break;
 		/*case Variant::RESOURCE: {
 
 			ERR_EXPLAIN("Can't marshallize resources");
@@ -1238,7 +1238,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			DVector<uint8_t> data = p_variant;
 			int datalen=data.size();
 			int datasize=sizeof(uint8_t);
-			
+
 			if (buf) {
 				encode_uint32(datalen,buf);
 				buf+=4;

@@ -48,8 +48,8 @@ class ContextGL_OSX : public ContextGL {
 
 public:
 
-	virtual void release_current();	
-	virtual void make_current();	
+	virtual void release_current();
+	virtual void make_current();
 	virtual void swap_buffers();
 
 	virtual Error initialize();

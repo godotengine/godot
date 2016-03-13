@@ -88,6 +88,7 @@ private:
 	int hover;	// hovered tab
 
 	int get_tab_width(int p_idx) const;
+	void _ensure_no_over_offset();
 
 protected:
 

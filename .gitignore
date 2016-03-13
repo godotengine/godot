@@ -18,6 +18,7 @@ core/global_defaults.cpp
 drivers/unix/os_unix_global_settings_path.cpp
 tools/editor/register_exporters.cpp
 tools/editor/doc_data_compressed.h
+tools/editor/certs_compressed.h
 tools/editor/editor_icons.cpp
 -fpic
 .fscache
@@ -31,6 +32,8 @@ doc/_build/
 *.bc
 
 # Android specific
+platform/android/java/.gradle
+platform/android/java/.gradletasknamecache
 platform/android/java/local.properties
 platform/android/java/project.properties
 platform/android/java/AndroidManifest.xml

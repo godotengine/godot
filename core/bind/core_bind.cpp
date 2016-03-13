@@ -6,6 +6,15 @@
 #include "core/globals.h"
 #include "io/file_access_encrypted.h"
 #include "os/keyboard.h"
+
+/**
+ *  Time constants borrowed from loc_time.h
+ */
+#define EPOCH_YR  1970    /* EPOCH = Jan 1 1970 00:00:00 */
+#define SECS_DAY  (24L * 60L * 60L)
+#define LEAPYEAR(year)  (!((year) % 4) && (((year) % 100) || !((year) % 400)))
+#define YEARSIZE(year)  (LEAPYEAR(year) ? 366 : 365)
+
 _ResourceLoader *_ResourceLoader::singleton=NULL;
 
 Ref<ResourceInteractiveLoader> _ResourceLoader::load_interactive(const String& p_path,const String& p_type_hint) {
@@ -55,11 +64,17 @@ bool _ResourceLoader::has(const String &p_path) {
 	return ResourceCache::has(local_path);
 };
 
+Ref<ResourceImportMetadata> _ResourceLoader::load_import_metadata(const String& p_path) {
+
+	return ResourceLoader::load_import_metadata(p_path);
+}
+
 void _ResourceLoader::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("load_interactive:ResourceInteractiveLoader","path","type_hint"),&_ResourceLoader::load_interactive,DEFVAL(""));
 	ObjectTypeDB::bind_method(_MD("load:Resource","path","type_hint", "p_no_cache"),&_ResourceLoader::load,DEFVAL(""), DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("load_import_metadata:ResourceImportMetadata","path"),&_ResourceLoader::load_import_metadata);
 	ObjectTypeDB::bind_method(_MD("get_recognized_extensions_for_type","type"),&_ResourceLoader::get_recognized_extensions_for_type);
 	ObjectTypeDB::bind_method(_MD("set_abort_on_missing_resources","abort"),&_ResourceLoader::set_abort_on_missing_resources);
 	ObjectTypeDB::bind_method(_MD("get_dependencies","path"),&_ResourceLoader::get_dependencies);
@@ -245,6 +260,13 @@ bool _OS::is_window_maximized() const {
 	return OS::get_singleton()->is_window_maximized();
 }
 
+void _OS::set_borderless_window(bool p_borderless) {
+	OS::get_singleton()->set_borderless_window(p_borderless);
+}
+
+bool _OS::get_borderless_window() const {
+	return OS::get_singleton()->get_borderless_window();
+}
 
 void _OS::set_use_file_access_save_and_swap(bool p_enable) {
 
@@ -390,6 +412,12 @@ bool _OS::is_ok_left_and_cancel_right() const {
 	return OS::get_singleton()->get_swap_ok_cancel();
 }
 
+Error _OS::set_thread_name(const String& p_name) {
+
+	return Thread::set_name(p_name);
+};
+
+
 /*
 enum Weekday {
 	DAY_SUNDAY,
@@ -467,9 +495,8 @@ Dictionary _OS::get_date(bool utc) const {
 	dated["weekday"]=date.weekday;
 	dated["dst"]=date.dst;
 	return dated;
-
-
 }
+
 Dictionary _OS::get_time(bool utc) const {
 
 	OS::Time time = OS::get_singleton()->get_time(utc);
@@ -478,7 +505,67 @@ Dictionary _OS::get_time(bool utc) const {
 	timed["minute"]=time.min;
 	timed["second"]=time.sec;
 	return timed;
+}
 
+/**
+ *  Get a dictionary of time values when given epoc time
+ *
+ *  Dictionary Time values will be a union if values from #get_time
+ *    and #get_date dictionaries (with the exception of dst = 
+ *    day light standard time, as it cannot be determined from epoc)
+ */
+Dictionary _OS::get_time_from_unix_time( uint64_t unix_time_val) const {
+
+	OS::Date date;
+	OS::Time time;
+
+	unsigned long dayclock, dayno;
+	int year = EPOCH_YR;
+
+	dayclock = (unsigned long)unix_time_val % SECS_DAY;
+	dayno = (unsigned long)unix_time_val / SECS_DAY;
+
+	time.sec = dayclock % 60;
+	time.min = (dayclock % 3600) / 60;
+	time.hour = dayclock / 3600;
+
+	/* day 0 was a thursday */
+	date.weekday = static_cast<OS::Weekday>((dayno + 4) % 7);       
+
+	while (dayno >= YEARSIZE(year)) {
+		dayno -= YEARSIZE(year);
+		year++;
+	}
+
+	date.year = year; 
+
+	// Table of number of days in each month (for regular year and leap year)
+	const unsigned int _ytab[2][12] = {
+		{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
+		{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+	};
+
+	size_t imonth = 0;
+
+	while (dayno >= _ytab[LEAPYEAR(year)][imonth]) {
+		dayno -= _ytab[LEAPYEAR(year)][imonth];
+		imonth++;
+	}
+
+	date.month = static_cast<OS::Month>(imonth);
+
+	date.day = dayno + 1;
+
+	Dictionary timed;
+	timed["hour"]=time.hour;
+	timed["minute"]=time.min;
+	timed["second"]=time.sec;
+	timed["year"]=date.year;
+	timed["month"]=date.month;
+	timed["day"]=date.day;
+	timed["weekday"]=date.weekday;
+
+	return timed;
 }
 
 Dictionary _OS::get_time_zone_info() const {
@@ -683,6 +770,10 @@ void _OS::native_video_pause() {
 	OS::get_singleton()->native_video_pause();
 };
 
+void _OS::native_video_unpause() {
+	OS::get_singleton()->native_video_unpause();
+};
+
 void _OS::native_video_stop() {
 
 	OS::get_singleton()->native_video_stop();
@@ -708,6 +799,15 @@ _OS::ScreenOrientation _OS::get_screen_orientation() const {
 	return ScreenOrientation(OS::get_singleton()->get_screen_orientation());
 }
 
+void _OS::set_keep_screen_on(bool p_enabled) {
+
+	OS::get_singleton()->set_keep_screen_on(p_enabled);
+}
+
+bool _OS::is_keep_screen_on() const {
+
+	return OS::get_singleton()->is_keep_screen_on();
+}
 
 String _OS::get_system_dir(SystemDir p_dir) const {
 
@@ -772,9 +872,14 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_window_maximized", "enabled"),&_OS::set_window_maximized);
 	ObjectTypeDB::bind_method(_MD("is_window_maximized"),&_OS::is_window_maximized);
 
+	ObjectTypeDB::bind_method(_MD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
+	ObjectTypeDB::bind_method(_MD("get_borderless_window"), &_OS::get_borderless_window);
+
 	ObjectTypeDB::bind_method(_MD("set_screen_orientation","orientation"),&_OS::set_screen_orientation);
 	ObjectTypeDB::bind_method(_MD("get_screen_orientation"),&_OS::get_screen_orientation);
 
+	ObjectTypeDB::bind_method(_MD("set_keep_screen_on","enabled"),&_OS::set_keep_screen_on);
+	ObjectTypeDB::bind_method(_MD("is_keep_screen_on"),&_OS::is_keep_screen_on);
 
 	ObjectTypeDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_OS::set_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("get_iterations_per_second"),&_OS::get_iterations_per_second);
@@ -810,6 +915,8 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_time","utc"),&_OS::get_time,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_time_zone_info"),&_OS::get_time_zone_info);
 	ObjectTypeDB::bind_method(_MD("get_unix_time"),&_OS::get_unix_time);
+	ObjectTypeDB::bind_method(_MD("get_time_from_unix_time", "unix_time_val"),
+			&_OS::get_time_from_unix_time);
 	ObjectTypeDB::bind_method(_MD("get_system_time_secs"), &_OS::get_system_time_secs);
 
 	ObjectTypeDB::bind_method(_MD("set_icon","icon"),&_OS::set_icon);
@@ -857,6 +964,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("native_video_is_playing"),&_OS::native_video_is_playing);
 	ObjectTypeDB::bind_method(_MD("native_video_stop"),&_OS::native_video_stop);
 	ObjectTypeDB::bind_method(_MD("native_video_pause"),&_OS::native_video_pause);
+	ObjectTypeDB::bind_method(_MD("native_video_unpause"),&_OS::native_video_unpause);
 
 	ObjectTypeDB::bind_method(_MD("get_scancode_string","code"),&_OS::get_scancode_string);
 	ObjectTypeDB::bind_method(_MD("is_scancode_unicode","code"),&_OS::is_scancode_unicode);
@@ -865,6 +973,8 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
 
 	ObjectTypeDB::bind_method(_MD("alert","text","title"),&_OS::alert,DEFVAL("Alert!"));
+
+	ObjectTypeDB::bind_method(_MD("set_thread_name","name"),&_OS::set_thread_name);
 
 
 	BIND_CONSTANT( DAY_SUNDAY );
@@ -1295,6 +1405,15 @@ String _File::get_as_text() const {
 
 
 }
+
+
+String _File::get_md5(const String& p_path) const {
+
+	return FileAccess::get_md5(p_path);
+
+}
+
+
 String _File::get_line() const{
 
 	ERR_FAIL_COND_V(!f,String());
@@ -1302,9 +1421,9 @@ String _File::get_line() const{
 
 }
 
-Vector<String> _File::get_csv_line() const {
+Vector<String> _File::get_csv_line(String delim) const {
 	ERR_FAIL_COND_V(!f,Vector<String>());
-	return f->get_csv_line();
+	return f->get_csv_line(delim);
 }
 
 /**< use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
@@ -1483,11 +1602,12 @@ void _File::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_buffer","len"),&_File::get_buffer);
 	ObjectTypeDB::bind_method(_MD("get_line"),&_File::get_line);
 	ObjectTypeDB::bind_method(_MD("get_as_text"),&_File::get_as_text);
+	ObjectTypeDB::bind_method(_MD("get_md5","path"),&_File::get_md5);
 	ObjectTypeDB::bind_method(_MD("get_endian_swap"),&_File::get_endian_swap);
 	ObjectTypeDB::bind_method(_MD("set_endian_swap","enable"),&_File::set_endian_swap);
 	ObjectTypeDB::bind_method(_MD("get_error:Error"),&_File::get_error);
 	ObjectTypeDB::bind_method(_MD("get_var"),&_File::get_var);
-	ObjectTypeDB::bind_method(_MD("get_csv_line"),&_File::get_csv_line);
+	ObjectTypeDB::bind_method(_MD("get_csv_line","delim"),&_File::get_csv_line,DEFVAL(","));
 
 	ObjectTypeDB::bind_method(_MD("store_8","value"),&_File::store_8);
 	ObjectTypeDB::bind_method(_MD("store_16","value"),&_File::store_16);
@@ -1884,13 +2004,7 @@ void _Thread::_start_func(void *ud) {
 	Variant::CallError ce;
 	const Variant* arg[1]={&t->userdata};
 
-	// we don't know our thread pointer yet :(
-	if (t->name == "") {
-		// come up with a better name using maybe the filename on the Script?
-		//t->thread->set_name(t->target_method);
-	} else {
-		//t->thread->set_name(t->name);
-	};
+	Thread::set_name(t->target_method);
 
 	t->ret=t->target_instance->call(t->target_method,arg,1,ce);
 	if (ce.error!=Variant::CallError::CALL_OK) {
@@ -1961,7 +2075,6 @@ String _Thread::get_id() const {
 	return itos(thread->get_ID());
 }
 
-
 bool _Thread::is_active() const {
 
 	return active;
@@ -1981,24 +2094,12 @@ Variant _Thread::wait_to_finish() {
 	return r;
 }
 
-Error _Thread::set_name(const String &p_name) {
-
-	name = p_name;
-
-	if (thread) {
-		return thread->set_name(p_name);
-	};
-
-	return OK;
-};
-
 void _Thread::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("start:Error","instance","method","userdata","priority"),&_Thread::start,DEFVAL(Variant()),DEFVAL(PRIORITY_NORMAL));
 	ObjectTypeDB::bind_method(_MD("get_id"),&_Thread::get_id);
 	ObjectTypeDB::bind_method(_MD("is_active"),&_Thread::is_active);
 	ObjectTypeDB::bind_method(_MD("wait_to_finish:Variant"),&_Thread::wait_to_finish);
-	ObjectTypeDB::bind_method(_MD("set_name:Error", "name"),&_Thread::set_name);
 
 	BIND_CONSTANT( PRIORITY_LOW );
 	BIND_CONSTANT( PRIORITY_NORMAL );

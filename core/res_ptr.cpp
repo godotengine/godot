@@ -53,7 +53,7 @@ RefPtr::RefPtr(const RefPtr& p_other) {
 
 	Ref<Resource> *ref = reinterpret_cast<Ref<Resource>*>( &data[0] );
 	Ref<Resource> *ref_other = reinterpret_cast<Ref<Resource>*>( const_cast<char*>(&p_other.data[0]) );
-	
+
 	*ref = *ref_other;
 }
 

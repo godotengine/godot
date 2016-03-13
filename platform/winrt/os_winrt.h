@@ -122,7 +122,7 @@ class OSWinrt : public OS {
 	List<Joystick> joystick_change_queue;
 	int joystick_count;
 	Joystick joysticks[JOYSTICKS_MAX];
-	
+
 	VideoMode video_mode;
 
 	MainLoop *main_loop;
@@ -153,30 +153,30 @@ class OSWinrt : public OS {
 
 
 	// functions used by main to initialize/deintialize the OS
-protected:	
+protected:
 	virtual int get_video_driver_count() const;
 	virtual const char * get_video_driver_name(int p_driver) const;
-	
+
 	virtual VideoMode get_default_video_mode() const;
-	
+
 	virtual int get_audio_driver_count() const;
 	virtual const char * get_audio_driver_name(int p_driver) const;
-	
+
 	virtual void initialize_core();
 	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);
-	
-	virtual void set_main_loop( MainLoop * p_main_loop );    
+
+	virtual void set_main_loop( MainLoop * p_main_loop );
 	virtual void delete_main_loop();
-	
+
 	virtual void finalize();
 	virtual void finalize_core();
-	
+
 	void process_events();
 
 	void probe_joysticks();
 	void process_joysticks();
 	void process_key_events();
-	
+
 public:
 
 	void print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type);
@@ -191,7 +191,7 @@ public:
 	virtual Point2 get_mouse_pos() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String& p_title);
-	
+
 	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0);
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
@@ -199,7 +199,7 @@ public:
 	virtual MainLoop *get_main_loop() const;
 
 	virtual String get_name();
-	
+
 	virtual Date get_date(bool utc) const;
 	virtual Time get_time(bool utc) const;
 	virtual TimeZoneInfo get_time_zone_info() const;
@@ -208,7 +208,7 @@ public:
 	virtual bool can_draw() const;
 	virtual Error set_cwd(const String& p_cwd);
 
-	virtual void delay_usec(uint32_t p_usec) const; 
+	virtual void delay_usec(uint32_t p_usec) const;
 	virtual uint64_t get_ticks_usec() const;
 
 	virtual Error execute(const String& p_path, const List<String>& p_arguments,bool p_blocking,ProcessID *r_child_id=NULL,String* r_pipe=NULL,int *r_exitcode=NULL);

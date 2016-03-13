@@ -65,6 +65,7 @@ class StyleBoxEditorPlugin : public EditorPlugin {
 
 	StyleBoxEditor *stylebox_editor;
 	EditorNode *editor;
+	Button *button;
 
 public:
 

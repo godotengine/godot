@@ -36,6 +36,8 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	void video_write(void);
 	float get_time() const;
 
+	bool theora_eos;
+	bool vorbis_eos;
 
 	ogg_sync_state   oy;
 	ogg_page         og;

@@ -29,7 +29,7 @@ Revision History:
     20-June-2006        dougb
 
         Copied Jim's version replaced "DEFINE_DEVPROPKEY(DEVPKEY_" with "DEFINE_PROPERTYKEY(PKEY_"
-    
+
 --*/
 
 //#include <devpropdef.h>

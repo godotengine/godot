@@ -80,6 +80,13 @@ static Ref<Texture> make_icon(T p_src) {
 	return texture;
 }
 
+static Ref<Shader> make_shader(const char*vertex_code,const char*fragment_code,const char*lighting_code) {
+	Ref<Shader> shader = (memnew( Shader(Shader::MODE_CANVAS_ITEM) ));
+	shader->set_code(vertex_code, fragment_code, lighting_code);
+
+	return shader;
+}
+
 static Ref<Font> make_font(int p_height,int p_ascent, int p_valign, int p_charcount, const int *p_chars,const Ref<Texture> &p_texture) {
 
 
@@ -234,7 +241,15 @@ void make_default_theme() {
 
 	t->set_constant("hseparation","Button", 2);
 
+	// LinkButton
 
+	t->set_font("font","LinkButton", default_font );
+
+	t->set_color("font_color","LinkButton", control_font_color );
+	t->set_color("font_color_pressed","LinkButton", control_font_color_pressed );
+	t->set_color("font_color_hover","LinkButton", control_font_color_hover );
+
+	t->set_constant("underline_spacing","LinkButton", 2 );
 
 	// ColorPickerButton
 
@@ -257,8 +272,8 @@ void make_default_theme() {
 	// ToolButton
 
 	Ref<StyleBox> tb_empty = memnew( StyleBoxEmpty );
-	tb_empty->set_default_margin(MARGIN_LEFT,8);
-	tb_empty->set_default_margin(MARGIN_RIGHT,8);
+	tb_empty->set_default_margin(MARGIN_LEFT,6);
+	tb_empty->set_default_margin(MARGIN_RIGHT,6);
 	tb_empty->set_default_margin(MARGIN_TOP,4);
 	tb_empty->set_default_margin(MARGIN_BOTTOM,4);
 
@@ -543,10 +558,10 @@ void make_default_theme() {
 	t->set_constant("close_v_ofs","WindowDialog", 20 );
 	t->set_constant("titlebar_height","WindowDialog", 18 );
 	t->set_constant("title_height","WindowDialog", 20 );
-	
-	
+
+
 	// File Dialog
-	
+
 	t->set_icon("reload","FileDialog",make_icon( icon_reload_png ));
 
 
@@ -767,7 +782,11 @@ void make_default_theme() {
 	t->set_constant("label_width","ColorPicker", 20);
 	t->set_constant("hseparator","ColorPicker", 4);
 
+	t->set_icon("screen_picker","ColorPicker", make_icon( icon_color_pick_png ) );
+	t->set_icon("add_preset","ColorPicker", make_icon( icon_add_png ) );
 
+	t->set_shader("uv_editor", "ColorPicker", make_shader("", uv_editor_shader_code, ""));
+	t->set_shader("w_editor", "ColorPicker", make_shader("", w_editor_shader_code, ""));
 
 	// TooltipPanel
 
@@ -871,7 +890,18 @@ void make_default_theme() {
 	t->set_stylebox("border","ReferenceFrame", make_stylebox( reference_border_png,4,4,4,4) );
 	t->set_stylebox("panelnc","Panel", ttnc );
 	t->set_stylebox("panelf","Panel", tc_sb );
-	t->set_stylebox("panel","PanelContainer", tc_sb );
+
+	Ref<StyleBoxTexture> sb_pc = make_stylebox( tab_container_bg_png,4,4,4,4,7,7,7,7);
+	t->set_stylebox("panel","PanelContainer", sb_pc );
+
+
+
+	t->set_icon("minus","GraphEdit", make_icon(icon_zoom_less_png) );
+	t->set_icon("reset","GraphEdit", make_icon(icon_zoom_reset_png) );
+	t->set_icon("more","GraphEdit", make_icon(icon_zoom_more_png) );
+	t->set_stylebox("bg","GraphEdit", make_stylebox( tree_bg_png,4,4,4,5) );
+
+
 
 	t->set_icon( "logo","Icons", make_icon(logo_png) );
 

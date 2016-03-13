@@ -338,6 +338,8 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 									exp_beg=true;
 
 								} else if ((c=='-' || c=='+') && !exp_sign && !exp_beg) {
+									if (c=='-')
+										is_float=true;
 									exp_sign=true;
 
 								} else {
@@ -358,6 +360,7 @@ Error VariantParser::get_token(Stream *p_stream, Token& r_token, int &line, Stri
 
 
 					r_token.type=TK_NUMBER;
+
 					if (is_float)
 						r_token.value=num.to_double();
 					else
@@ -448,7 +451,7 @@ Error VariantParser::_parse_construct(Stream *p_stream,Vector<T>& r_construct,in
 		if (!first) {
 			get_token(p_stream,token,line,r_err_str);
 			if (token.type==TK_COMMA) {
-				//do none				
+				//do none
 			} else if (token.type==TK_PARENTHESIS_CLOSE) {
 				break;
 			} else {
@@ -542,7 +545,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			value=true;
 		else if (id=="false")
 			value=false;
-		else if (id=="null")
+		else if (id=="null" || id=="nil")
 			value=Variant();
 		else if (id=="Vector2"){
 
@@ -1203,7 +1206,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				get_token(p_stream,token,line,r_err_str);
 
 				if (token.type!=TK_STRING) {
-					r_err_str="Expected string";					
+					r_err_str="Expected string";
 					return ERR_PARSE_ERROR;
 				}
 
@@ -1282,7 +1285,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				arr.resize(len);
 				DVector<Color>::Write w = arr.write();
 				for(int i=0;i<len;i++) {
-					w[i]=Color(args[i*3+0],args[i*3+1],args[i*3+2],args[i*3+3]);
+					w[i]=Color(args[i*4+0],args[i*4+1],args[i*4+2],args[i*4+3]);
 				}
 			}
 
@@ -1673,7 +1676,7 @@ Error VariantParser::_parse_tag(Token& token, Stream *p_stream, int &line, Strin
 		if (err)
 			return err;
 
-		r_tag.fields[id]=value;		
+		r_tag.fields[id]=value;
 
 	}
 

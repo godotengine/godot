@@ -76,18 +76,18 @@ void MenuButton::_unhandled_key_input(InputEvent p_event) {
 
 
 void MenuButton::pressed() {
-	
+
 	emit_signal("about_to_show");
 	Size2 size=get_size();
 
 	Point2 gp = get_global_pos();
 	popup->set_global_pos( gp + Size2( 0, size.height ) );
-	popup->set_size( Size2( size.width, 0) );	
+	popup->set_size( Size2( size.width, 0) );
 	popup->set_parent_rect( Rect2(Point2(gp-popup->get_global_pos()),get_size()));
 	popup->popup();
 	popup->call_deferred("grab_click_focus");
 	popup->set_invalidate_click_until_motion();
-	
+
 }
 
 void MenuButton::_input_event(InputEvent p_event) {
@@ -111,7 +111,7 @@ void MenuButton::_input_event(InputEvent p_event) {
 }
 
 PopupMenu *MenuButton::get_popup() {
-	
+
 	return popup;
 }
 
@@ -136,7 +136,7 @@ void MenuButton::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("about_to_show") );
 }
 MenuButton::MenuButton() {
-	
+
 
 	set_flat(true);
 	set_focus_mode(FOCUS_NONE);

@@ -662,7 +662,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 		case OP_DIVIDE: {
 			switch(p_a.type) {
 
-				DEFAULT_OP_FAIL(NIL);				
+				DEFAULT_OP_FAIL(NIL);
 				DEFAULT_OP_NUM(/,BOOL,_bool);
 				case INT: {
 					switch(p_b.type) {
@@ -779,7 +779,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				}
 #endif
 				_RETURN( p_a._data._int % p_b._data._int );
-				
+
 			} else if (p_a.type==STRING) {
 				const String* format=reinterpret_cast<const String*>(p_a._data._mem);
 
@@ -2409,7 +2409,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				} if (str=="value") {
 					valid=true;
 					return ie.joy_motion.axis_value;
-				}				
+				}
 			}
 
 			if (ie.type==InputEvent::SCREEN_TOUCH) {
@@ -3429,6 +3429,65 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 	r_valid=false;
 	return Variant();
 
+}
+
+void Variant::blend(const Variant& a, const Variant& b, float c, Variant &r_dst) {
+	if (a.type!=b.type) {
+		if(a.is_num() && b.is_num()) {
+			real_t va=a;
+			real_t vb=b;
+			r_dst=va + vb * c;
+		} else {
+			r_dst=a;
+		}
+		return;
+	}
+
+	switch(a.type) {
+		case NIL: { r_dst=Variant(); } return;
+		case INT:{
+			int va=a._data._int;
+			int vb=b._data._int;
+			r_dst=int(va + vb * c + 0.5);
+		} return;
+		case REAL:{
+			double ra=a._data._real;
+			double rb=b._data._real;
+			r_dst=ra + rb * c;
+		} return;
+		case VECTOR2:{ r_dst=*reinterpret_cast<const Vector2*>(a._data._mem)+*reinterpret_cast<const Vector2*>(b._data._mem)*c; } return;
+		case RECT2:{
+					   const Rect2 *ra = reinterpret_cast<const Rect2*>(a._data._mem);
+					   const Rect2 *rb = reinterpret_cast<const Rect2*>(b._data._mem);
+					   r_dst=Rect2(ra->pos + rb->pos * c, ra->size + rb->size * c);
+				   } return;
+		case VECTOR3:{ r_dst=*reinterpret_cast<const Vector3*>(a._data._mem)+*reinterpret_cast<const Vector3*>(b._data._mem)*c; } return;
+		case _AABB:{
+					   const AABB *ra = reinterpret_cast<const AABB*>(a._data._mem);
+					   const AABB *rb = reinterpret_cast<const AABB*>(b._data._mem);
+					   r_dst=AABB(ra->pos + rb->pos * c, ra->size + rb->size * c);
+				   } return;
+		case QUAT:{
+					  Quat empty_rot;
+					  const Quat *qa = reinterpret_cast<const Quat*>(a._data._mem);
+					  const Quat *qb = reinterpret_cast<const Quat*>(b._data._mem);
+					  r_dst=*qa * empty_rot.slerp(*qb,c);
+				   } return;
+		case COLOR:{
+					   const Color *ca = reinterpret_cast<const Color*>(a._data._mem);
+					   const Color *cb = reinterpret_cast<const Color*>(b._data._mem);
+					   float r = ca->r + cb->r * c;
+					   float g = ca->g + cb->g * c;
+					   float b = ca->b + cb->b * c;
+					   float a = ca->a + cb->a * c;
+					   r = r > 1.0 ? 1.0 : r;
+					   g = g > 1.0 ? 1.0 : g;
+					   b = b > 1.0 ? 1.0 : b;
+					   a = a > 1.0 ? 1.0 : a;
+					   r_dst=Color(r, g, b, a);
+				   } return;
+		default:{ r_dst = c<0.5 ? a : b; } return;
+	}
 }
 
 void Variant::interpolate(const Variant& a, const Variant& b, float c,Variant &r_dst) {

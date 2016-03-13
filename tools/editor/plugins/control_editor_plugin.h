@@ -37,9 +37,9 @@
 
 #if 0
 class ControlEditor : public Control {
-	
-	OBJ_TYPE(ControlEditor, Control );	
-	
+
+	OBJ_TYPE(ControlEditor, Control );
+
 	EditorNode *editor;
 
 	enum {
@@ -103,13 +103,13 @@ class ControlEditor : public Control {
 
 	void _find_controls_span(Node *p_node, Rect2& r_rect);
 
-protected:	
+protected:
 	void _notification(int p_what);
-	void _input_event(InputEvent p_event);	
+	void _input_event(InputEvent p_event);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
-public:	
-	
+public:
+
 	bool get_remove_list(List<Node*> *p_list);
 	void set_undo_redo(UndoRedo *p_undo_redo) {undo_redo=p_undo_redo; }
 	void edit(Control *p_control);
@@ -117,14 +117,14 @@ public:
 };
 
 class ControlEditorPlugin : public EditorPlugin {
-	
+
 	OBJ_TYPE( ControlEditorPlugin, EditorPlugin );
-	
+
 	ControlEditor *control_editor;
 	EditorNode *editor;
-	
+
 public:
-	
+
 	virtual String get_name() const { return "GUI"; }
 	bool has_main_screen() const { return true; }
 	virtual void edit(Object *p_object);
@@ -132,7 +132,7 @@ public:
 	virtual void make_visible(bool p_visible);
 	virtual bool get_remove_list(List<Node*> *p_list) { return control_editor->get_remove_list(p_list); }
 
-		
+
 	ControlEditorPlugin(EditorNode *p_node);
 	~ControlEditorPlugin();
 

@@ -212,8 +212,6 @@ class ScriptEditor : public VBoxContainer {
 	Tree *disk_changed_list;
 	ConfirmationDialog *disk_changed;
 
-	VSplitContainer *v_split;
-
 	bool restoring_layout;
 
 	String _get_debug_tooltip(const String&p_text,Node *_ste);
@@ -297,7 +295,7 @@ public:
 
 	void swap_lines(TextEdit *tx, int line1, int line2);
 
-	void save_external_data();
+	void save_all_scripts();
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);

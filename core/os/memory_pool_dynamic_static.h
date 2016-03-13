@@ -40,19 +40,19 @@ class MemoryPoolDynamicStatic : public MemoryPoolDynamic {
 	enum {
 		MAX_CHUNKS=65536
 	};
-	
-	
+
+
 	struct Chunk {
-	
+
 		uint64_t lock;
 		uint64_t check;
 		void *mem;
 		size_t size;
-		const char *descr;	
-		
+		const char *descr;
+
 		Chunk() { mem=NULL; lock=0; check=0; }
 	};
-	
+
 	Chunk chunk[MAX_CHUNKS];
 	uint64_t last_check;
 	int last_alloc;
@@ -62,14 +62,14 @@ class MemoryPoolDynamicStatic : public MemoryPoolDynamic {
 	Chunk *get_chunk(ID p_id);
 	const Chunk *get_chunk(ID p_id) const;
 public:
-		
+
 	virtual ID alloc(size_t p_amount,const char* p_description);
 	virtual void free(ID p_id);
 	virtual Error realloc(ID p_id, size_t p_amount);
 	virtual bool is_valid(ID p_id);
 	virtual size_t get_size(ID p_id) const;
 	virtual const char* get_description(ID p_id) const;
-	
+
 	virtual bool is_locked(ID p_id) const;
 	virtual Error lock(ID p_id);
 	virtual void * get(ID p_ID);

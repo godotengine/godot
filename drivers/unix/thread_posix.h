@@ -55,13 +55,14 @@ class ThreadPosix : public Thread {
 	static Thread* create_func_posix(ThreadCreateCallback p_callback,void *,const Settings&);
 	static ID get_thread_ID_func_posix();
 	static void wait_to_finish_func_posix(Thread* p_thread);	
-	
+
+	static Error set_name_func_posix(const String& p_name);
+
 	ThreadPosix();	
 public:
 	
 	
 	virtual ID get_ID() const;
-	Error set_name(const String& p_name);
 	
 	static void make_default();
 	

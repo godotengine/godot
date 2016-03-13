@@ -197,7 +197,7 @@ private:
 
 	void mix_channel(Channel& p_channel);
 	int mix_chunk_left;
-	void mix_chunk();	
+	void mix_chunk();
 
 	float channel_nrg;
 	int channel_id_count;

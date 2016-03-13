@@ -112,6 +112,14 @@ float OS::get_target_fps() const {
 	return _target_fps;
 }
 
+void OS::set_keep_screen_on(bool p_enabled) {
+	_keep_screen_on=p_enabled;
+}
+
+bool OS::is_keep_screen_on() const {
+	return _keep_screen_on;
+}
+
 void OS::set_low_processor_usage_mode(bool p_enabled) {
 
 	low_processor_usage_mode=p_enabled;
@@ -470,6 +478,10 @@ void OS::native_video_pause() {
 
 };
 
+void OS::native_video_unpause() {
+
+};
+
 void OS::native_video_stop() {
 
 };
@@ -515,11 +527,16 @@ String OS::get_joy_guid(int p_device) const {
 	return "Default Joystick";
 }
 
+void OS::set_context(int p_context) {
+
+}
+
 OS::OS() {
 	last_error=NULL;
 	frames_drawn=0;
 	singleton=this;
 	ips=60;
+	_keep_screen_on=true; // set default value to true, because this had been true before godot 2.0.
 	low_processor_usage_mode=false;
 	_verbose_stdout=false;
 	_frame_delay=0;

@@ -34,11 +34,16 @@
 #include "optimized_save_dialog.h"
 #include "undo_redo.h"
 #include "editor_data.h"
-#include "editor_name_dialog.h"
+#include "scene/gui/tab_container.h"
+#include "editor_plugin_settings.h"
+
 //#include "project_export_settings.h"
 
 class ProjectSettings : public AcceptDialog {
 	OBJ_TYPE( ProjectSettings, AcceptDialog );
+
+
+	TabContainer *tab_container;
 
 	Timer *timer;
 	InputEvent::Type add_type;
@@ -48,6 +53,12 @@ class ProjectSettings : public AcceptDialog {
 	UndoRedo *undo_redo;
 	SectionedPropertyEditor *globals_editor;
 
+	HBoxContainer *search_bar;
+	ToolButton *search_button;
+	LineEdit *search_box;
+	ToolButton *clear_button;
+
+	HBoxContainer *add_prop_bar;
 	ConfirmationDialog *message;
 	LineEdit *category;
 	LineEdit *property;
@@ -60,8 +71,6 @@ class ProjectSettings : public AcceptDialog {
 	OptionButton *device_index;
 	Label *device_index_label;
 	MenuButton *popup_platform;
-
-	EditorNameDialog *rename_action;
 
 	LineEdit *action_name;
 	Tree *input_editor;
@@ -86,6 +95,9 @@ class ProjectSettings : public AcceptDialog {
 	LineEdit *autoload_add_name;
 	LineEdit *autoload_add_path;
 
+
+	EditorPluginSettings *plugin_settings;
+
 	void _update_autoload();
 	void _autoload_file_callback(const String& p_path);
 	void _autoload_add();
@@ -105,11 +117,11 @@ class ProjectSettings : public AcceptDialog {
 
 	void _action_adds(String);
 	void _action_add();
-	void _action_rename(const String& p_name);
 	void _device_input_add();
 
 	void _item_checked(const String& p_item, bool p_check);
-	void _action_persist_toggle();
+	void _action_selected();
+	void _action_edited();
 	void _action_button_pressed(Object* p_obj, int p_column,int p_id);
 	void _wait_for_key(const InputEvent& p_event);
 	void _press_a_key_confirm();
@@ -136,6 +148,11 @@ class ProjectSettings : public AcceptDialog {
 	void _translation_res_option_changed();
 	void _translation_res_option_delete(Object *p_item,int p_column, int p_button);
 
+	void _toggle_search_bar(bool p_pressed);
+	void _clear_search_box();
+
+
+
 	ProjectSettings();
 
 
@@ -150,6 +167,9 @@ public:
 	void add_translation(const String& p_translation);
 	static ProjectSettings *get_singleton() { return singleton; }
 	void popup_project_settings();
+	void set_plugins_page();
+
+	void queue_save();
 
 
 	ProjectSettings(EditorData *p_data);

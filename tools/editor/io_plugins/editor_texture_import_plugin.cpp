@@ -1549,7 +1549,7 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 	}
 
 	uint32_t flags = rimd->get_option("flags");
-	uint8_t shrink = rimd->has_option("shrink") ? rimd->get_option("shrink"): Variant(1);	
+	uint8_t shrink = rimd->has_option("shrink") ? rimd->get_option("shrink"): Variant(1);
 	uint8_t format = rimd->get_option("format");
 	uint8_t comp = (format==EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM)?uint8_t(p_platform->get_image_compression()):uint8_t(255);
 
@@ -1633,7 +1633,7 @@ EditorTextureImportPlugin::EditorTextureImportPlugin(EditorNode *p_editor, Mode 
 
 	singleton[p_mode]=this;
 	editor=p_editor;
-	mode=p_mode;	
+	mode=p_mode;
 	dialog = memnew( EditorTextureImportDialog(this,p_mode==MODE_TEXTURE_2D || p_mode==MODE_ATLAS || p_mode==MODE_LARGE,p_mode==MODE_ATLAS,p_mode==MODE_LARGE) );
 	editor->get_gui_base()->add_child(dialog);
 

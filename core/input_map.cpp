@@ -38,7 +38,7 @@ void InputMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_action_from_id","id"),&InputMap::get_action_from_id);
 	ObjectTypeDB::bind_method(_MD("add_action","action"),&InputMap::add_action);
 	ObjectTypeDB::bind_method(_MD("erase_action","action"),&InputMap::erase_action);
-	
+
 	ObjectTypeDB::bind_method(_MD("action_add_event","action","event"),&InputMap::action_add_event);
 	ObjectTypeDB::bind_method(_MD("action_has_event","action","event"),&InputMap::action_has_event);
 	ObjectTypeDB::bind_method(_MD("action_erase_event","action","event"),&InputMap::action_erase_event);
@@ -156,10 +156,7 @@ void InputMap::action_erase_event(const StringName& p_action,const InputEvent& p
 
 	List<InputEvent>::Element *E=_find_event(input_map[p_action].inputs,p_event);
 	if (E)
-		return; //already gots
-
-	input_map[p_action].inputs.erase(E);
-
+		input_map[p_action].inputs.erase(E);
 }
 
 

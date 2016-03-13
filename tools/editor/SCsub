@@ -26,6 +26,31 @@ def make_doc_header(target,source,env):
 
 
 
+def make_certs_header(target,source,env):
+
+	src = source[0].srcnode().abspath
+	dst = target[0].srcnode().abspath
+	f = open(src,"rb")
+	g = open(dst,"wb")
+	buf = f.read()
+	decomp_size = len(buf)
+	import zlib
+	buf = zlib.compress(buf)
+
+
+	g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+	g.write("#ifndef _CERTS_RAW_H\n")
+	g.write("#define _CERTS_RAW_H\n")
+	g.write("static const int _certs_compressed_size="+str(len(buf))+";\n")
+	g.write("static const int _certs_uncompressed_size="+str(decomp_size)+";\n")
+	g.write("static const unsigned char _certs_compressed[]={\n")
+	for i in range(len(buf)):
+		g.write(str(ord(buf[i]))+",\n")
+	g.write("};\n")
+	g.write("#endif")
+
+
+
 
 
 
@@ -46,6 +71,9 @@ if (env["tools"]=="yes"):
 
 	env.Depends("#tools/editor/doc_data_compressed.h","#doc/base/classes.xml")
 	env.Command("#tools/editor/doc_data_compressed.h","#doc/base/classes.xml",make_doc_header)
+
+	env.Depends("#tools/editor/certs_compressed.h","#tools/certs/ca-certificates.crt")
+	env.Command("#tools/editor/certs_compressed.h","#tools/certs/ca-certificates.crt",make_certs_header)
 
 	#make_doc_header(env.File("#tools/editor/doc_data_raw.h").srcnode().abspath,env.File("#doc/base/classes.xml").srcnode().abspath,env)
 

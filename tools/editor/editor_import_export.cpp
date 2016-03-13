@@ -63,13 +63,30 @@ String EditorImportPlugin::expand_source_path(const String& p_path) {
 	}
 }
 
+
+String EditorImportPlugin::_validate_source_path(const String& p_path) {
+
+	return validate_source_path(p_path);
+}
+
+String EditorImportPlugin::_expand_source_path(const String& p_path) {
+
+	return expand_source_path(p_path);
+}
+
 void EditorImportPlugin::_bind_methods() {
+
+
+	ObjectTypeDB::bind_method(_MD("validate_source_path","path"),&EditorImportPlugin::_validate_source_path);
+	ObjectTypeDB::bind_method(_MD("expand_source_path","path"),&EditorImportPlugin::_expand_source_path);
 
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::STRING,"get_name"));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::STRING,"get_visible_name"));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo("import_dialog",PropertyInfo(Variant::STRING,"from")));
-	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::INT,"import",PropertyInfo(Variant::STRING,"path"),PropertyInfo(Variant::OBJECT,"from",PROPERTY_HINT_RESOURCE_TYPE,"ResourceImportMetaData")));
-	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::RAW_ARRAY,"custom_export",PropertyInfo(Variant::STRING,"path")));
+	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::INT,"import",PropertyInfo(Variant::STRING,"path"),PropertyInfo(Variant::OBJECT,"from",PROPERTY_HINT_RESOURCE_TYPE,"ResourceImportMetadata")));
+	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::RAW_ARRAY,"custom_export",PropertyInfo(Variant::STRING,"path"),PropertyInfo(Variant::OBJECT,"platform",PROPERTY_HINT_RESOURCE_TYPE,"EditorExportPlatform")));
+
+//	BIND_VMETHOD( mi );
 }
 
 String EditorImportPlugin::get_name() const {
@@ -113,8 +130,8 @@ Error EditorImportPlugin::import(const String& p_path, const Ref<ResourceImportM
 
 Vector<uint8_t> EditorImportPlugin::custom_export(const String& p_path, const Ref<EditorExportPlatform> &p_platform) {
 
-	if (get_script_instance() && get_script_instance()->has_method("custom_export")) {
-		get_script_instance()->call("custom_export",p_path);
+	if (get_script_instance() && get_script_instance()->has_method("_custom_export")) {
+		get_script_instance()->call("_custom_export",p_path,p_platform);
 	}
 
 	return Vector<uint8_t>();
@@ -130,7 +147,10 @@ EditorImportPlugin::EditorImportPlugin() {
 
 void EditorExportPlugin::_bind_methods() {
 
-	BIND_VMETHOD( MethodInfo("custom_export:Dictionary",PropertyInfo(Variant::STRING,"name",PROPERTY_HINT_RESOURCE_TYPE,"EditorExportPlatformPC")) );
+	MethodInfo mi = MethodInfo("custom_export:Variant",PropertyInfo(Variant::STRING,"name"),PropertyInfo(Variant::OBJECT,"platform",PROPERTY_HINT_RESOURCE_TYPE,"EditorExportPlatform"));
+	mi.return_val.type=Variant::RAW_ARRAY;
+
+	BIND_VMETHOD( mi );
 }
 
 
@@ -141,6 +161,9 @@ Vector<uint8_t> EditorExportPlugin::custom_export(String& p_path,const Ref<Edito
 		Variant d = get_script_instance()->call("custom_export",p_path,p_platform);
 		if (d.get_type()==Variant::NIL)
 			return Vector<uint8_t>();
+		if (d.get_type()==Variant::RAW_ARRAY)
+			return d;
+
 		ERR_FAIL_COND_V(d.get_type()!=Variant::DICTIONARY,Vector<uint8_t>());
 		Dictionary dict=d;
 		ERR_FAIL_COND_V(!dict.has("name"),Vector<uint8_t>());
@@ -162,6 +185,7 @@ EditorExportPlugin::EditorExportPlugin() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+
 static void _add_to_list(EditorFileSystemDirectory *p_efsd,Set<StringName>& r_list) {
 
 	for(int i=0;i<p_efsd->get_subdir_count();i++) {
@@ -170,11 +194,9 @@ static void _add_to_list(EditorFileSystemDirectory *p_efsd,Set<StringName>& r_li
 	}
 
 	for(int i=0;i<p_efsd->get_file_count();i++) {
-
 		r_list.insert(p_efsd->get_file_path(i));
 	}
 }
-
 
 
 struct __EESortDepCmp {
@@ -187,7 +209,7 @@ struct __EESortDepCmp {
 
 
 
-static void _add_files_with_filter(DirAccess *da,const List<String>& p_filters,Set<StringName>& r_list) {
+static void _edit_files_with_filter(DirAccess *da,const List<String>& p_filters,Set<StringName>& r_list,bool exclude) {
 
 
 	List<String> files;
@@ -218,8 +240,17 @@ static void _add_files_with_filter(DirAccess *da,const List<String>& p_filters,S
 		for(const List<String>::Element *F=p_filters.front();F;F=F->next()) {
 
 			if (fullpath.matchn(F->get())) {
-				r_list.insert(fullpath);
-				print_line("Added: "+fullpath);
+				String act = "Added: ";
+
+				if (!exclude) {
+					r_list.insert(fullpath);
+				} else {
+					act = "Removed: ";
+					r_list.erase(fullpath);
+				}
+
+
+				print_line(act+fullpath);
 			}
 		}
 	}
@@ -230,13 +261,13 @@ static void _add_files_with_filter(DirAccess *da,const List<String>& p_filters,S
 		if (E->get().begins_with("."))
 			continue;
 		da->change_dir(E->get());
-		_add_files_with_filter(da,p_filters,r_list);
+		_edit_files_with_filter(da,p_filters,r_list,exclude);
 		da->change_dir("..");
 	}
 
 }
 
-static void _add_filter_to_list(Set<StringName>& r_list,const String& p_filter) {
+static void _edit_filter_list(Set<StringName>& r_list,const String& p_filter,bool exclude) {
 
 	if (p_filter=="")
 		return;
@@ -250,11 +281,17 @@ static void _add_filter_to_list(Set<StringName>& r_list,const String& p_filter) 
 	}
 
 	DirAccess *da = DirAccess::open("res://");
-	_add_files_with_filter(da,filters,r_list);
+	ERR_FAIL_NULL(da);
+	_edit_files_with_filter(da,filters,r_list,exclude);
 	memdelete(da);
+}
 
+static void _add_filter_to_list(Set<StringName>& r_list,const String& p_filter) {
+	_edit_filter_list(r_list,p_filter,false);
+}
 
-
+static void _remove_filter_from_list(Set<StringName>& r_list,const String& p_filter) {
+	_edit_filter_list(r_list,p_filter,true);
 }
 
 Vector<uint8_t> EditorExportPlatform::get_exported_file_default(String& p_fname) const {
@@ -307,6 +344,8 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 			cf+="*.flags";
 			_add_filter_to_list(exported,cf);
 
+			cf = EditorImportExport::get_singleton()->get_export_custom_filter_exclude();
+			_remove_filter_from_list(exported,cf);
 		}
 
 
@@ -379,6 +418,9 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 			cf+=",";
 		cf+="*.flags";
 		_add_filter_to_list(exported,cf);
+
+		cf = EditorImportExport::get_singleton()->get_export_custom_filter_exclude();
+		_remove_filter_from_list(exported,cf);
 
 
 	}
@@ -630,7 +672,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			} break; //use default
 			case EditorImportExport::IMAGE_ACTION_COMPRESS_RAM: {
 				group_format=EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM;
-			} break; //use default						
+			} break; //use default
 		}
 
 		String image_list_md5;
@@ -1000,6 +1042,9 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 
 	String host = EditorSettings::get_singleton()->get("network/debug_host");
 
+	if (p_flags&EXPORT_REMOTE_DEBUG_LOCALHOST)
+		host="localhost";
+
 	if (p_flags&EXPORT_DUMB_CLIENT) {
 		int port = EditorSettings::get_singleton()->get("file_server/port");
 		String passwd = EditorSettings::get_singleton()->get("file_server/password");
@@ -1014,6 +1059,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 	if (p_flags&EXPORT_REMOTE_DEBUG) {
 
 		r_flags.push_back("-rdebug");
+
 		r_flags.push_back(host+":"+String::num(GLOBAL_DEF("debug/debug_port", 6007)));
 
 		List<String> breakpoints;
@@ -1433,7 +1479,15 @@ Ref<EditorImportPlugin> EditorImportExport::get_import_plugin_by_name(const Stri
 
 void EditorImportExport::add_export_plugin(const Ref<EditorExportPlugin>& p_plugin) {
 
+	ERR_FAIL_COND( p_plugin.is_null() );
+
 	export_plugins.push_back(p_plugin);
+}
+
+void EditorImportExport::remove_export_plugin(const Ref<EditorExportPlugin>& p_plugin) {
+
+	ERR_FAIL_COND( p_plugin.is_null() );
+	export_plugins.erase(p_plugin);
 }
 
 int EditorImportExport::get_export_plugin_count() const{
@@ -1526,12 +1580,16 @@ EditorImportExport::ExportFilter EditorImportExport::get_export_filter() const{
 }
 
 void EditorImportExport::set_export_custom_filter(const String& p_custom_filter){
-
 	export_custom_filter=p_custom_filter;
 }
+void EditorImportExport::set_export_custom_filter_exclude(const String& p_custom_filter){
+	export_custom_filter_exclude=p_custom_filter;
+}
 String EditorImportExport::get_export_custom_filter() const{
-
 	return export_custom_filter;
+}
+String EditorImportExport::get_export_custom_filter_exclude() const{
+	return export_custom_filter_exclude;
 }
 
 void EditorImportExport::set_export_image_action(ImageAction p_action) {
@@ -1695,6 +1753,7 @@ void EditorImportExport::load_config() {
 
 
 	export_custom_filter=cf->get_value("export_filter","filter");
+	export_custom_filter_exclude=cf->get_value("export_filter","filter_exclude");
 	String t=cf->get_value("export_filter","type");
 	if (t=="selected")
 		export_filter=EXPORT_SELECTED;
@@ -1884,6 +1943,7 @@ void EditorImportExport::save_config() {
 	}
 
 	cf->set_value("export_filter","filter",export_custom_filter);
+	cf->set_value("export_filter", "filter_exclude",export_custom_filter_exclude);
 
 	String file_action_section = "export_filter_files";
 
@@ -2040,8 +2100,60 @@ bool EditorImportExport::sample_get_trim() const{
 	return sample_action_trim;
 }
 
+DVector<String> EditorImportExport::_get_export_file_list() {
+
+	DVector<String> fl;
+	for (Map<StringName,FileAction>::Element *E=files.front();E;E=E->next()) {
+
+		fl.push_back(E->key());
+	}
+
+	return fl;
+}
+
+DVector<String> EditorImportExport::_get_export_platforms() {
+
+	DVector<String> ep;
+	for (Map<StringName,Ref<EditorExportPlatform> >::Element *E=exporters.front();E;E=E->next()) {
+
+		ep.push_back(E->key());
+	}
+
+	return ep;
+
+}
 
 void EditorImportExport::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("add_import_plugin","plugin:EditorImportPlugin"),&EditorImportExport::add_import_plugin);
+	ObjectTypeDB::bind_method(_MD("remove_import_plugin","plugin:EditorImportPlugin"),&EditorImportExport::remove_import_plugin);
+	ObjectTypeDB::bind_method(_MD("get_import_plugin_count"),&EditorImportExport::get_import_plugin_count);
+	ObjectTypeDB::bind_method(_MD("get_import_plugin:EditorImportPlugin","idx"),&EditorImportExport::get_import_plugin);
+	ObjectTypeDB::bind_method(_MD("get_import_plugin_by_name:EditorImportPlugin","name"),&EditorImportExport::get_import_plugin_by_name);
+
+	ObjectTypeDB::bind_method(_MD("add_export_plugin","plugin:EditorExportPlugin"),&EditorImportExport::add_export_plugin);
+	ObjectTypeDB::bind_method(_MD("remove_export_plugin","plugin:EditorExportPlugin"),&EditorImportExport::remove_export_plugin);
+	ObjectTypeDB::bind_method(_MD("get_export_plugin_count"),&EditorImportExport::get_export_plugin_count);
+	ObjectTypeDB::bind_method(_MD("get_export_plugin:EditorExportPlugin","idx"),&EditorImportExport::get_export_plugin);
+
+	ObjectTypeDB::bind_method(_MD("set_export_file_action","file","action"),&EditorImportExport::set_export_file_action);
+	ObjectTypeDB::bind_method(_MD("get_export_file_action","file"),&EditorImportExport::get_export_file_action);
+	ObjectTypeDB::bind_method(_MD("get_export_file_list"),&EditorImportExport::_get_export_file_list);
+
+	ObjectTypeDB::bind_method(_MD("add_export_platform","platform:EditorExportplatform"),&EditorImportExport::add_export_platform);
+	//ObjectTypeDB::bind_method(_MD("remove_export_platform","platform:EditorExportplatform"),&EditorImportExport::add_export_platform);
+	ObjectTypeDB::bind_method(_MD("get_export_platform:EditorExportPlatform","name"),&EditorImportExport::get_export_platform);
+	ObjectTypeDB::bind_method(_MD("get_export_platforms"),&EditorImportExport::_get_export_platforms);
+
+	ObjectTypeDB::bind_method(_MD("set_export_filter","filter"),&EditorImportExport::set_export_filter);
+	ObjectTypeDB::bind_method(_MD("get_export_filter"),&EditorImportExport::get_export_filter);
+
+	ObjectTypeDB::bind_method(_MD("set_export_custom_filter","filter"),&EditorImportExport::set_export_custom_filter);
+	ObjectTypeDB::bind_method(_MD("get_export_custom_filter"),&EditorImportExport::get_export_custom_filter);
+
+	ObjectTypeDB::bind_method(_MD("set_export_custom_filter_exclude","filter_exclude"),&EditorImportExport::set_export_custom_filter_exclude);
+	ObjectTypeDB::bind_method(_MD("get_export_custom_filter_exclude"),&EditorImportExport::get_export_custom_filter_exclude);
+
 
 	ObjectTypeDB::bind_method(_MD("image_export_group_create"),&EditorImportExport::image_export_group_create);
 	ObjectTypeDB::bind_method(_MD("image_export_group_remove"),&EditorImportExport::image_export_group_remove);
@@ -2057,7 +2169,27 @@ void EditorImportExport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("script_get_action"),&EditorImportExport::script_get_action);
 	ObjectTypeDB::bind_method(_MD("script_get_encryption_key"),&EditorImportExport::script_get_encryption_key);
 
-}
+
+
+	BIND_CONSTANT( ACTION_NONE );
+	BIND_CONSTANT( ACTION_COPY );
+	BIND_CONSTANT( ACTION_BUNDLE );
+
+	BIND_CONSTANT( EXPORT_SELECTED );
+	BIND_CONSTANT( EXPORT_RESOURCES );
+	BIND_CONSTANT( EXPORT_ALL );
+
+	BIND_CONSTANT( IMAGE_ACTION_NONE );
+	BIND_CONSTANT( IMAGE_ACTION_COMPRESS_DISK );
+	BIND_CONSTANT( IMAGE_ACTION_COMPRESS_RAM );
+	BIND_CONSTANT( IMAGE_ACTION_KEEP  );
+
+	BIND_CONSTANT( SCRIPT_ACTION_NONE );
+	BIND_CONSTANT( SCRIPT_ACTION_COMPILE );
+	BIND_CONSTANT( SCRIPT_ACTION_ENCRYPT );
+};
+
+
 
 EditorImportExport::EditorImportExport() {
 
@@ -2086,5 +2218,3 @@ EditorImportExport::~EditorImportExport() {
 
 
 }
-
-

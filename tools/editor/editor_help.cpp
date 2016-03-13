@@ -405,29 +405,98 @@ void EditorHelpIndex::select_class(const String& p_class) {
 	class_list->ensure_cursor_is_visible();
 }
 
+void EditorHelpIndex::popup() {
+
+	popup_centered_ratio(0.6);
+
+	search_box->set_text("");
+	_update_class_list();
+}
+
 void EditorHelpIndex::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		class_list->clear();
-		tree_item_map.clear();
-		TreeItem *root = class_list->create_item();
-		class_list->set_hide_root(true);
+		_update_class_list();
+
 		connect("confirmed",this,"_tree_item_selected");
 
+	} else if (p_what==NOTIFICATION_POST_POPUP) {
 
-		for(Map<String,DocData::ClassDoc>::Element *E=EditorHelp::get_doc_data()->class_list.front();E;E=E->next()) {
+		search_box->call_deferred("grab_focus");
+	}
+}
 
+void EditorHelpIndex::_text_changed(const String& p_text) {
 
+	_update_class_list();
+}
+
+void EditorHelpIndex::_update_class_list() {
+
+	class_list->clear();
+	tree_item_map.clear();
+	TreeItem *root = class_list->create_item();
+	class_list->set_hide_root(true);
+
+	String filter = search_box->get_text().strip_edges();
+	String to_select = "";
+
+	for(Map<String,DocData::ClassDoc>::Element *E=EditorHelp::get_doc_data()->class_list.front();E;E=E->next()) {
+
+		if (filter == "") {
 			add_type(E->key(),tree_item_map,root);
-		}
+		} else {
 
+			bool found = false;
+			String type = E->key();
+
+			while(type != "") {
+				if (type.findn(filter)!=-1) {
+
+					if (to_select.empty()) {
+						to_select = type;
+					}
+
+					found=true;
+					break;
+				}
+
+				type = EditorHelp::get_doc_data()->class_list[type].inherits;
+			}
+
+			if (found) {
+				add_type(E->key(),tree_item_map,root);
+			}
+		}
+	}
+
+	if (tree_item_map.has(filter)) {
+		select_class(filter);
+	} else if (to_select != "") {
+		select_class(to_select);
+	}
+}
+
+
+void EditorHelpIndex::_sbox_input(const InputEvent& p_ie) {
+
+	if (p_ie.type==InputEvent::KEY && (
+		p_ie.key.scancode == KEY_UP ||
+		p_ie.key.scancode == KEY_DOWN ||
+		p_ie.key.scancode == KEY_PAGEUP ||
+		p_ie.key.scancode == KEY_PAGEDOWN ) ) {
+
+		class_list->call("_input_event",p_ie);
+		search_box->accept_event();
 	}
 }
 
 void EditorHelpIndex::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_tree_item_selected",&EditorHelpIndex::_tree_item_selected);
+	ObjectTypeDB::bind_method("_text_changed",&EditorHelpIndex::_text_changed);
+	ObjectTypeDB::bind_method("_sbox_input",&EditorHelpIndex::_sbox_input);
 	ObjectTypeDB::bind_method("select_class",&EditorHelpIndex::select_class);
 	ADD_SIGNAL( MethodInfo("open_class"));
 }
@@ -436,18 +505,24 @@ void EditorHelpIndex::_bind_methods() {
 
 EditorHelpIndex::EditorHelpIndex() {
 
-
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
 	set_child_rect(vbc);
 
+	search_box = memnew( LineEdit );
+	vbc->add_margin_child("Search:", search_box);
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	register_text_enter(search_box);
+
+	search_box->connect("text_changed", this, "_text_changed");
+	search_box->connect("input_event", this, "_sbox_input");
+
 	class_list = memnew( Tree );
-	vbc->add_margin_child("Class List: ",class_list,true);
+	vbc->add_margin_child("Class List: ", class_list, true);
 	class_list->set_v_size_flags(SIZE_EXPAND_FILL);
 
-
 	class_list->connect("item_activated",this,"_tree_item_selected");
-
 
 	get_ok()->set_text("Open");
 }
@@ -650,13 +725,63 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		class_desc->add_text("Inherits: ");
 		class_desc->pop();
 		class_desc->pop();
+
+		String inherits = cd.inherits;
+
 		class_desc->push_font(doc_font);
-		_add_type(cd.inherits);
+
+		while (inherits != "") {
+			_add_type(inherits);
+
+			inherits = doc->class_list[inherits].inherits;
+
+			if (inherits != "") {
+				class_desc->add_text(" , ");
+			}
+		}
+
 		class_desc->pop();
 		class_desc->add_newline();
-		class_desc->add_newline();
-
 	}
+
+	if (ObjectTypeDB::type_exists(cd.name)) {
+
+		bool found = false;
+		bool prev = false;
+
+		for (Map<String,DocData::ClassDoc>::Element *E=doc->class_list.front();E;E=E->next()) {
+
+			if (E->get().inherits == cd.name) {
+
+				if (!found) {
+					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+					class_desc->push_font(doc_title_font);
+					class_desc->add_text("Inherited by: ");
+					class_desc->pop();
+					class_desc->pop();
+
+					found = true;
+					class_desc->push_font(doc_font);
+				}
+
+				if (prev) {
+
+					class_desc->add_text(" , ");
+					prev = false;
+				}
+
+				_add_type(E->get().name);
+				prev = true;
+			}
+		}
+
+		if (found)
+			class_desc->pop();
+
+		class_desc->add_newline();
+	}
+
+	class_desc->add_newline();
 
 	if (cd.brief_description!="") {
 
@@ -1123,35 +1248,87 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 	class_desc->push_indent(1);*/
 	int pos = 0;
 
+	String bbcode=p_bbcode.replace("\t"," ").replace("\r"," ").strip_edges();
+
+	//find double newlines, keep them
+	for(int i=0;i<bbcode.length();i++) {
+
+		//find valid newlines (double)
+		if (bbcode[i]=='\n') {
+			bool dnl=false;
+			int j=i+1;
+			for(;j<p_bbcode.length();j++) {
+				if (bbcode[j]==' ')
+					continue;
+				if (bbcode[j]=='\n') {
+					dnl=true;
+					break;
+				}
+				break;
+			}
+
+			if (dnl) {
+				bbcode[i]=0xFFFF;
+				i=j;
+			} else {
+				bbcode[i]=' ';
+				i=j-1;
+			}
+		}
+	}
+
+	//remove double spaces or spaces after newlines
+	for(int i=0;i<bbcode.length();i++) {
+
+		if (bbcode[i]==' ' || bbcode[i]==0xFFFF) {
+
+			for(int j=i+1;j<p_bbcode.length();j++) {
+				if (bbcode[j]==' ') {
+					bbcode.remove(j);
+					j--;
+					continue;
+				} else {
+					break;
+				}
+			}
+		}
+	}
+
+	//change newlines to double newlines
+
+	CharType dnls[2]={0xFFFF,0};
+	bbcode=bbcode.replace(dnls,"\n");
+
+
 	List<String> tag_stack;
 
-	while(pos < p_bbcode.length()) {
+	while(pos < bbcode.length()) {
 
 
-		int brk_pos = p_bbcode.find("[",pos);
+		int brk_pos = bbcode.find("[",pos);
 
 		if (brk_pos<0)
-			brk_pos=p_bbcode.length();
+			brk_pos=bbcode.length();
 
 		if (brk_pos > pos) {
-			class_desc->add_text(p_bbcode.substr(pos,brk_pos-pos));
+			class_desc->add_text(bbcode.substr(pos,brk_pos-pos));
 
 		}
 
-		if (brk_pos==p_bbcode.length())
+		if (brk_pos==bbcode.length())
 			break; //nothing else o add
 
-		int brk_end = p_bbcode.find("]",brk_pos+1);
+		int brk_end = bbcode.find("]",brk_pos+1);
 
 		if (brk_end==-1) {
 			//no close, add the rest
-			class_desc->add_text(p_bbcode.substr(brk_pos,p_bbcode.length()-brk_pos));
+			class_desc->add_text(bbcode.substr(brk_pos,bbcode.length()-brk_pos));
 
 			break;
 		}
 
 
-		String tag = p_bbcode.substr(brk_pos+1,brk_end-brk_pos-1);
+		String tag = bbcode.substr(brk_pos+1,brk_end-brk_pos-1);
 
 
 		if (tag.begins_with("/")) {
@@ -1201,7 +1378,7 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 			class_desc->push_font(get_font("italic","Fonts"));
 			pos=brk_end+1;
 			tag_stack.push_front(tag);
-		} else if (tag=="code") {
+		} else if (tag=="code" || tag=="codeblock") {
 
 			//use monospace font
 			class_desc->push_font(get_font("source","EditorFonts"));
@@ -1234,10 +1411,10 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 		} else if (tag=="url") {
 
 			//use strikethrough (not supported underline instead)
-			int end=p_bbcode.find("[",brk_end);
+			int end=bbcode.find("[",brk_end);
 			if (end==-1)
-				end=p_bbcode.length();
-			String url = p_bbcode.substr(brk_end+1,end-brk_end-1);
+				end=bbcode.length();
+			String url = bbcode.substr(brk_end+1,end-brk_end-1);
 			class_desc->push_meta(url);
 
 			pos=brk_end+1;
@@ -1251,10 +1428,10 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 		} else if (tag=="img") {
 
 			//use strikethrough (not supported underline instead)
-			int end=p_bbcode.find("[",brk_end);
+			int end=bbcode.find("[",brk_end);
 			if (end==-1)
-				end=p_bbcode.length();
-			String image = p_bbcode.substr(brk_end+1,end-brk_end-1);
+				end=bbcode.length();
+			String image = bbcode.substr(brk_end+1,end-brk_end-1);
 
 			Ref<Texture> texture = ResourceLoader::load(base_path+"/"+image,"Texture");
 			if (texture.is_valid())

@@ -31,7 +31,6 @@
 #endif
 
 #ifdef TOOLS_ENABLED
-#include "pe_bliss/pe_bliss_godot.h"
 #include "platform/windows/export/export.h"
 #endif
 

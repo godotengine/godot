@@ -1129,7 +1129,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		if (file=="lib/armeabi/libgodot_android.so" && !export_arm) {
 			skip=true;
 		}
-		
+
 		if (file.begins_with("META-INF") && _signed) {
 			skip=true;
 		}
@@ -1168,7 +1168,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 	gen_export_flags(cl,p_flags);
 
-	if (p_flags) {
+	if (p_flags&EXPORT_DUMB_CLIENT) {
 
 		/*String host = EditorSettings::get_singleton()->get("file_server/host");
 		int port = EditorSettings::get_singleton()->get("file_server/post");
@@ -1493,6 +1493,16 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 		OS::get_singleton()->delay_usec(3000000);
 	}
 
+	if (EditorSettings::get_singleton()->get("android/shutdown_adb_on_exit")) {
+		String adb=EditorSettings::get_singleton()->get("android/adb");
+		if (!FileAccess::exists(adb)) {
+			return; //adb not configured
+		}
+
+		List<String> args;
+		args.push_back("kill-server");
+		OS::get_singleton()->execute(adb,args,true);
+	};
 }
 
 Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
@@ -1512,6 +1522,13 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 
 	//export_temp
 	ep.step("Exporting APK",0);
+
+
+	bool use_adb_over_usb = bool(EDITOR_DEF("android/use_remote_debug_over_adb",true));
+
+	if (use_adb_over_usb) {
+		p_flags|=EXPORT_REMOTE_DEBUG_LOCALHOST;
+	}
 
 	String export_to=EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmpexport.apk";
 	Error err = export_project(export_to,true,p_flags);
@@ -1558,6 +1575,35 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 		device_lock->unlock();
 		return ERR_CANT_CREATE;
 	}
+
+	if (use_adb_over_usb) {
+
+		args.clear();
+		args.push_back("reverse");
+		args.push_back("--remove-all");
+		err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
+
+		int port = Globals::get_singleton()->get("debug/debug_port");
+		args.clear();
+		args.push_back("reverse");
+		args.push_back("tcp:"+itos(port));
+		args.push_back("tcp:"+itos(port));
+
+		err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
+		print_line("Reverse result: "+itos(rv));
+
+		int fs_port = EditorSettings::get_singleton()->get("file_server/port");
+
+		args.clear();
+		args.push_back("reverse");
+		args.push_back("tcp:"+itos(fs_port));
+		args.push_back("tcp:"+itos(fs_port));
+
+		err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
+		print_line("Reverse result2: "+itos(rv));
+
+	}
+
 
 	ep.step("Running on Device..",3);
 	args.clear();
@@ -1724,6 +1770,7 @@ void register_android_exporter() {
 	//EDITOR_DEF("android/release_username","");
 	//EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"android/release_keystore",PROPERTY_HINT_GLOBAL_FILE,"*.keystore"));
 	EDITOR_DEF("android/timestamping_authority_url","");
+	EDITOR_DEF("android/use_remote_debug_over_adb",false);
 
 	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>( memnew(EditorExportPlatformAndroid) );
 	EditorImportExport::get_singleton()->add_export_platform(exporter);

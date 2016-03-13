@@ -482,7 +482,7 @@ void TreeItem::deselect(int p_column) {
 	_cell_deselected(p_column);
 }
 
-void TreeItem::add_button(int p_column,const Ref<Texture>& p_button,int p_id) {
+void TreeItem::add_button(int p_column, const Ref<Texture>& p_button, int p_id, bool p_disabled) {
 
 
 	ERR_FAIL_INDEX( p_column, cells.size() );
@@ -492,6 +492,7 @@ void TreeItem::add_button(int p_column,const Ref<Texture>& p_button,int p_id) {
 	if (p_id<0)
 		p_id=cells[p_column].buttons.size();
 	button.id=p_id;
+	button.disabled=p_disabled;
 	cells[p_column].buttons.push_back(button);
 	_changed_notify(p_column);
 }
@@ -533,6 +534,15 @@ int TreeItem::get_button_by_id(int p_column,int p_id) const {
 
 	return -1;
 }
+
+bool TreeItem::is_button_disabled(int p_column, int p_idx) const {
+
+	ERR_FAIL_INDEX_V( p_column, cells.size(), false );
+	ERR_FAIL_INDEX_V( p_idx, cells[p_column].buttons.size(), false );
+
+	return cells[p_column].buttons[p_idx].disabled;
+
+}
 void TreeItem::set_button(int p_column,int p_idx,const Ref<Texture>& p_button){
 
 	ERR_FAIL_COND(  p_button.is_null() );
@@ -564,7 +574,14 @@ void TreeItem::set_custom_color(int p_column,const Color& p_color) {
 	cells[p_column].color=p_color;
 	_changed_notify(p_column);
 }
+Color TreeItem::get_custom_color(int p_column) const {
 
+	ERR_FAIL_INDEX_V( p_column, cells.size(), Color() );
+	if (!cells[p_column].custom_color)
+		return Color();
+	return cells[p_column].color;
+
+}
 void TreeItem::clear_custom_color(int p_column) {
 
 	ERR_FAIL_INDEX( p_column, cells.size() );
@@ -672,10 +689,11 @@ void TreeItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("clear_custom_bg_color","column"),&TreeItem::clear_custom_bg_color);
 	ObjectTypeDB::bind_method(_MD("get_custom_bg_color","column"),&TreeItem::get_custom_bg_color);
 
-	ObjectTypeDB::bind_method(_MD("add_button","column","button:Texture","button_idx"),&TreeItem::add_button);
+	ObjectTypeDB::bind_method(_MD("add_button","column","button:Texture","button_idx","disabled"),&TreeItem::add_button,DEFVAL(-1),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_button_count","column"),&TreeItem::get_button_count);
 	ObjectTypeDB::bind_method(_MD("get_button:Texture","column","button_idx"),&TreeItem::get_button);
 	ObjectTypeDB::bind_method(_MD("erase_button","column","button_idx"),&TreeItem::erase_button);
+	ObjectTypeDB::bind_method(_MD("is_button_disabled","column","button_idx"),&TreeItem::is_button_disabled);
 
 	ObjectTypeDB::bind_method(_MD("set_tooltip","column","tooltip"),&TreeItem::set_tooltip);
 	ObjectTypeDB::bind_method(_MD("get_tooltip","column"),&TreeItem::get_tooltip);
@@ -1015,14 +1033,15 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 
 				Point2i o = Point2i( ofs+w-s.width, p_pos.y )-cache.offset+p_draw_ofs;
 
-				if (cache.click_type==Cache::CLICK_BUTTON && cache.click_item==p_item && cache.click_column==i) {
+				if (cache.click_type==Cache::CLICK_BUTTON && cache.click_item==p_item && cache.click_column==i && !p_item->cells[i].buttons[j].disabled) {
 					//being pressed
 					cache.button_pressed->draw(get_canvas_item(),Rect2(o,s));
 				}
 
 				o.y+=(label_h-s.height)/2;
 				o+=cache.button_pressed->get_offset();
-				b->draw(ci,o);
+
+				b->draw(ci,o,p_item->cells[i].buttons[j].disabled?Color(1,1,1,0.5):Color(1,1,1,1));
 				w-=s.width+cache.button_margin;
 				bw+=s.width+cache.button_margin;
 			}
@@ -1373,7 +1392,7 @@ void Tree::_range_click_timeout() {
 
 	if (range_item_last && !range_drag_enabled && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
 
-		Point2 pos = (Input::get_singleton()->get_mouse_pos()-get_global_pos())-cache.bg->get_offset();
+		Point2 pos = get_local_mouse_pos()-cache.bg->get_offset();
 		if (show_column_titles) {
 			pos.y-=_get_title_button_height();
 
@@ -1384,7 +1403,7 @@ void Tree::_range_click_timeout() {
 		}
 
 		click_handled=false;
-		InputModifierState mod = {}; // should be irrelevant..
+		InputModifierState mod = InputModifierState(); // should be irrelevant..
 
 		blocked++;
 		propagate_mouse_event(pos+cache.offset, 0, 0, false, root, BUTTON_LEFT, mod);
@@ -1413,6 +1432,10 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 
 	if (!skip && p_pos.y<item_h) {
 		// check event!
+
+		if (range_click_timer->get_time_left() > 0 && p_item != range_item_last) {
+			return -1;
+		}
 
 		if (!hide_folding && (p_pos.x >=x_ofs && p_pos.x < (x_ofs+cache.item_margin) )) {
 
@@ -1468,7 +1491,13 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 		for(int j=c.buttons.size()-1;j>=0;j--) {
 			Ref<Texture> b=c.buttons[j].texture;
 			int w = b->get_size().width + cache.button_pressed->get_minimum_size().width;
+
 			if (x>col_width-w) {
+				if (c.buttons[j].disabled) {
+					pressed_button=-1;
+					cache.click_type=Cache::CLICK_NONE;
+					return -1;
+				}
 				pressed_button=j;
 				cache.click_type=Cache::CLICK_BUTTON;
 				cache.click_index=j;
@@ -1714,6 +1743,22 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 
 	return item_h; // nothing found
 
+}
+
+
+void Tree::_text_editor_modal_close() {
+
+	if ( Input::get_singleton()->is_key_pressed(KEY_ESCAPE) ||
+	     Input::get_singleton()->is_key_pressed(KEY_ENTER) ||
+	     Input::get_singleton()->is_key_pressed(KEY_RETURN) ) {
+
+		return;
+	}
+
+	if (value_editor->has_point(value_editor->get_local_mouse_pos()))
+		return;
+
+	text_editor_enter(text_editor->get_text());
 }
 
 
@@ -2074,8 +2119,6 @@ void Tree::_input_event(InputEvent p_event) {
 				update_cache();
 			const InputEventMouseMotion& b=p_event.mouse_motion;
 
-			range_click_timer->stop();
-
 			Ref<StyleBox> bg = cache.bg;
 
 			Point2 pos = Point2(b.x,b.y) - bg->get_offset();
@@ -2128,7 +2171,7 @@ void Tree::_input_event(InputEvent p_event) {
 					float diff_y = -b.relative_y;
 					diff_y=Math::pow(ABS(diff_y),1.8)*SGN(diff_y);
 					diff_y*=0.1;
-					range_drag_base=CLAMP(range_drag_base + c.step * diff_y, c.min, c.max);					
+					range_drag_base=CLAMP(range_drag_base + c.step * diff_y, c.min, c.max);
 					popup_edited_item->set_range(popup_edited_item_col,range_drag_base);
 					item_edited(popup_edited_item_col,popup_edited_item);
 
@@ -2272,12 +2315,10 @@ void Tree::_input_event(InputEvent p_event) {
 				} break;
 				case BUTTON_WHEEL_UP: {
 
-					range_click_timer->stop();
 					v_scroll->set_val( v_scroll->get_val()-v_scroll->get_page()/8 );
 				} break;
 				case BUTTON_WHEEL_DOWN: {
 
-					range_click_timer->stop();
 					v_scroll->set_val( v_scroll->get_val()+v_scroll->get_page()/8 );
 				} break;
 			}
@@ -2302,7 +2343,7 @@ bool Tree::edit_selected() {
 		return false;
 
 	Rect2 rect;
-	rect.pos.y = get_item_offset(s) - v_scroll->get_val();
+	rect.pos.y = get_item_offset(s) - get_scroll().y;
 
 	for(int i=0;i<col;i++) {
 
@@ -3185,6 +3226,7 @@ void Tree::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_input_event"),&Tree::_input_event);
 	ObjectTypeDB::bind_method(_MD("_popup_select"),&Tree::popup_select);
 	ObjectTypeDB::bind_method(_MD("_text_editor_enter"),&Tree::text_editor_enter);
+	ObjectTypeDB::bind_method(_MD("_text_editor_modal_close"),&Tree::_text_editor_modal_close);
 	ObjectTypeDB::bind_method(_MD("_value_editor_changed"),&Tree::value_editor_changed);
 	ObjectTypeDB::bind_method(_MD("_scroll_moved"),&Tree::_scroll_moved);
 
@@ -3283,6 +3325,7 @@ Tree::Tree() {
 	h_scroll->connect("value_changed", this,"_scroll_moved");
 	v_scroll->connect("value_changed", this,"_scroll_moved");
 	text_editor->connect("text_entered", this,"_text_editor_enter");
+	text_editor->connect("modal_close", this,"_text_editor_modal_close");
 	popup_menu->connect("item_pressed", this,"_popup_select");
 	value_editor->connect("value_changed", this,"_value_editor_changed");
 

@@ -68,7 +68,7 @@ class AudioServerSW : public AudioServer {
 	SelfList<Voice>::List active_list;
 
 	struct Stream {
-		bool active;		
+		bool active;
 		List<Stream*>::Element *E;
 		AudioStream *audio_stream;
 		EventStream *event_stream;

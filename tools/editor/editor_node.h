@@ -56,7 +56,7 @@
 #include "tools/editor/editor_run.h"
 
 #include "tools/editor/pane_drag.h"
-#include "tools/editor/animation_editor.h"
+
 #include "tools/editor/script_create_dialog.h"
 #include "tools/editor/run_settings_dialog.h"
 #include "tools/editor/project_settings.h"
@@ -101,6 +101,19 @@ class EditorNode : public Node {
 
 	OBJ_TYPE( EditorNode, Node );
 
+public:
+	enum DockSlot {
+		DOCK_SLOT_LEFT_UL,
+		DOCK_SLOT_LEFT_BL,
+		DOCK_SLOT_LEFT_UR,
+		DOCK_SLOT_LEFT_BR,
+		DOCK_SLOT_RIGHT_UL,
+		DOCK_SLOT_RIGHT_BL,
+		DOCK_SLOT_RIGHT_UR,
+		DOCK_SLOT_RIGHT_BR,
+		DOCK_SLOT_MAX
+	};
+private:
 	enum {
 		HISTORY_SIZE=64
 	};
@@ -169,7 +182,6 @@ class EditorNode : public Node {
 		SETTINGS_LAYOUT_SAVE,
 		SETTINGS_LAYOUT_DELETE,
 		SETTINGS_LAYOUT_DEFAULT,
-		SETTINGS_SHOW_ANIMATION,
 		SETTINGS_LOAD_EXPORT_TEMPLATES,
 		SETTINGS_HELP,
 		SETTINGS_ABOUT,
@@ -183,17 +195,6 @@ class EditorNode : public Node {
 		OBJECT_METHOD_BASE=500
 	};
 
-	enum DockSlot {
-		DOCK_SLOT_LEFT_UL,
-		DOCK_SLOT_LEFT_BL,
-		DOCK_SLOT_LEFT_UR,
-		DOCK_SLOT_LEFT_BR,
-		DOCK_SLOT_RIGHT_UL,
-		DOCK_SLOT_RIGHT_BL,
-		DOCK_SLOT_RIGHT_UR,
-		DOCK_SLOT_RIGHT_BR,
-		DOCK_SLOT_MAX
-	};
 
 
 	//Node *edited_scene; //scene being edited
@@ -230,7 +231,6 @@ class EditorNode : public Node {
 	Control *vp_base;
 	PaneDrag *pd;
 	//PaneDrag *pd_anim;
-	TextureButton *anim_close;
 	Panel *menu_panel;
 
 
@@ -250,7 +250,6 @@ class EditorNode : public Node {
 	ToolButton *pause_button;
 	ToolButton *stop_button;
 	ToolButton *run_settings_button;
-	ToolButton *animation_menu;
 	ToolButton *play_scene_button;
 	ToolButton *play_custom_scene_button;
 	MenuButton *debug_button;
@@ -261,7 +260,7 @@ class EditorNode : public Node {
 	TextEdit *load_errors;
 	AcceptDialog *load_error_dialog;
 
-	Control *scene_root_base;
+	//Control *scene_root_base;
 	Ref<Theme> theme;
 
 	PopupMenu *recent_scenes;
@@ -316,15 +315,12 @@ class EditorNode : public Node {
 	String defer_export_platform;
 	bool defer_export_debug;
 	Node *_last_instanced_scene;
-	PanelContainer *animation_panel;
-	HBoxContainer *animation_panel_hb;
-	VBoxContainer *animation_vb;
 	EditorPath *editor_path;
 	ToolButton *resource_new_button;
 	ToolButton *resource_load_button;
 	MenuButton *resource_save_button;
 	MenuButton *editor_history_menu;
-	AnimationKeyEditor *animation_editor;
+
 	EditorLog *log;
 	CenterContainer *tabs_center;
 	EditorQuickOpen *quick_open;
@@ -361,6 +357,7 @@ class EditorNode : public Node {
 	Object *current;
 
 	bool _playing_edited;
+	String run_custom_filename;
 	bool reference_resource_mem;
 	bool save_external_resources_mem;
 	uint64_t saved_version;
@@ -387,16 +384,31 @@ class EditorNode : public Node {
 
 	EditorFileServer *file_server;
 
+
+	struct BottomPanelItem {
+		String name;
+		Control *control;
+		ToolButton *button;
+	};
+
+	Vector<BottomPanelItem> bottom_panel_items;
+
+	PanelContainer *bottom_panel;
+	HBoxContainer *bottom_panel_hb;
+	VBoxContainer *bottom_panel_vb;
+
+	void _bottom_panel_switch(bool p_enable, int p_idx);
+
 	String external_file;
 	List<String> previous_scenes;
 	bool opening_prev;
-	
+
 	void _dialog_action(String p_file);
 
 
 	void _edit_current();
 	void _dialog_display_file_error(String p_file,Error p_error);
-	
+
 	int current_option;
 	//void _animation_visibility_toggle();
 	void _resource_created();
@@ -411,7 +423,7 @@ class EditorNode : public Node {
 	void _select_history(int p_idx);
 	void _prepare_history();
 
-	
+
 	void _fs_changed();
 	void _sources_changed(bool p_exist);
 	void _imported(Node *p_node);
@@ -436,10 +448,9 @@ class EditorNode : public Node {
 	void _property_keyed(const String& p_keyed, const Variant& p_value, bool p_advance);
 	void _transform_keyed(Object *sp,const String& p_sub,const Transform& p_key);
 
-	void _update_keying();
 	void _hide_top_editors();
 	void _quick_opened();
-	void _quick_run(const String& p_resource);
+	void _quick_run();
 
 	void _run(bool p_current=false, const String &p_custom="");
 
@@ -469,6 +480,10 @@ class EditorNode : public Node {
 	Set<EditorFileDialog*> editor_file_dialogs;
 
 	Map<String,Ref<Texture> > icon_type_cache;
+
+	bool _initializing_addons;
+	Map<String,EditorPlugin*> plugin_addons;
+
 
 	static Ref<Texture> _file_dialog_get_icon(const String& p_path);
 	static void _file_dialog_register(FileDialog *p_dialog);
@@ -532,6 +547,8 @@ class EditorNode : public Node {
 	void _load_docks();
 	void _save_docks_to_config(Ref<ConfigFile> p_layout, const String& p_section);
 	void _load_docks_from_config(Ref<ConfigFile> p_layout, const String& p_section);
+	void _update_dock_slots_visibility();
+
 
 	void _update_layouts_menu();
 	void _layout_menu_option(int p_idx);
@@ -539,6 +556,9 @@ class EditorNode : public Node {
 	void _toggle_search_bar(bool p_pressed);
 	void _clear_search_box();
 	void _clear_undo_history();
+
+	void _update_addon_config();
+
 
 protected:
 	void _notification(int p_what);
@@ -561,9 +581,14 @@ public:
 	static void add_editor_plugin(EditorPlugin *p_editor);
 	static void remove_editor_plugin(EditorPlugin *p_editor);
 
+	void add_control_to_dock(DockSlot p_slot,Control* p_control);
+	void remove_control_from_dock(Control* p_control);
+
 	void add_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
 	void remove_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
 
+	void set_addon_plugin_enabled(const String& p_addon,bool p_enabled);
+	bool is_addon_plugin_enabled(const String &p_addon) const;
 
 	void edit_node(Node *p_node);
 	void edit_resource(const Ref<Resource>& p_resource);
@@ -586,13 +611,10 @@ public:
 
 	static EditorLog *get_log() { return singleton->log; }
 	Control* get_viewport();
-	AnimationKeyEditor *get_animation_editor() const { return animation_editor; }
-	Control *get_animation_panel() { return animation_vb; }
-	HBoxContainer *get_animation_panel_hb() { return animation_panel_hb; }
 
-	void animation_editor_make_visible(bool p_visible);
-	void hide_animation_player_editors();
-	void animation_panel_make_visible(bool p_visible);
+	//void animation_editor_make_visible(bool p_visible);
+	//void hide_animation_player_editors();
+	//void animation_panel_make_visible(bool p_visible);
 
 	void set_edited_scene(Node *p_scene);
 
@@ -612,6 +634,7 @@ public:
 	void set_current_scene(int p_idx);
 
 	static EditorData& get_editor_data() { return singleton->editor_data; }
+	EditorHistory * get_editor_history() { return &editor_history; }
 
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
 
@@ -632,7 +655,7 @@ public:
 	Ref<Theme> get_editor_theme() const { return theme; }
 
 
-	void show_warning(const String& p_text);
+	void show_warning(const String& p_text,const String& p_title="Warning!");
 
 
 	Error export_platform(const String& p_platform, const String& p_path, bool p_debug,const String& p_password,bool p_quit_after=false);
@@ -660,7 +683,17 @@ public:
 
 	void save_layout();
 
-	EditorNode();	
+	void update_keying();
+
+
+	ToolButton* add_bottom_panel_item(String p_text,Control *p_item);
+	bool are_bottom_panels_hidden() const;
+	void make_bottom_panel_item_visible(Control *p_item);
+	void raise_bottom_panel_item(Control *p_item);
+	void hide_bottom_panel();
+	void remove_bottom_panel_item(Control *p_item);
+
+	EditorNode();
 	~EditorNode();
 	void get_singleton(const char* arg1, bool arg2);
 

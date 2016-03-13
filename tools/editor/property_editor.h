@@ -174,7 +174,7 @@ class PropertyEditor : public Control {
 
 	Map<StringName,Map<StringName,String> > descr_cache;
 	Map<StringName,String > class_descr_cache;
-	
+
 	CustomPropertyEditor *custom_editor;
 
 	void _resource_edit_request();
@@ -245,7 +245,7 @@ public:
 
 	void set_subsection_selectable(bool p_selectable);
 
-	PropertyEditor();	
+	PropertyEditor();
 	~PropertyEditor();
 
 };
@@ -257,26 +257,27 @@ class SectionedPropertyEditor : public HBoxContainer {
 
 
 	OBJ_TYPE(SectionedPropertyEditor,HBoxContainer);
+
+	ObjectID obj;
+
 	ItemList *sections;
 	SectionedPropertyEditorFilter *filter;
-	LineEdit *search_box;
-	ToolButton *clear_button;
 	PropertyEditor *editor;
 
+
+	static void _bind_methods();
 	void _section_selected(int p_which);
 
-protected:
-
-	void _notification(int p_what);
-	static void _bind_methods();
 public:
 
 	PropertyEditor *get_property_editor();
 	void edit(Object* p_object);
 	String get_full_item_path(const String& p_item);
+
+	void set_current_section(const String& p_section);
 	String get_current_section() const;
 
-	void clear_search_box();
+	void update_category_list();
 
 	SectionedPropertyEditor();
 	~SectionedPropertyEditor();

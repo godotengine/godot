@@ -38,9 +38,11 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/instance_placeholder.h"
 #include "scene/main/viewport.h"
+#include "scene/main/http_request.h"
 #include "scene/gui/control.h"
 #include "scene/gui/texture_progress.h"
 #include "scene/gui/button.h"
+#include "scene/gui/link_button.h"
 #include "scene/gui/button_array.h"
 #include "scene/gui/button_group.h"
 #include "scene/gui/label.h"
@@ -273,6 +275,7 @@ void register_scene_types() {
 
 	ObjectTypeDB::register_type<Viewport>();
 	ObjectTypeDB::register_virtual_type<RenderTargetTexture>();
+	ObjectTypeDB::register_type<HTTPRequest>();
 	ObjectTypeDB::register_type<Timer>();
 	ObjectTypeDB::register_type<CanvasLayer>();
 	ObjectTypeDB::register_type<CanvasModulate>();
@@ -297,9 +300,10 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Popup>();
 	ObjectTypeDB::register_type<PopupPanel>();
 	ObjectTypeDB::register_type<MenuButton>();
-    ObjectTypeDB::register_type<CheckBox>();
+	ObjectTypeDB::register_type<CheckBox>();
 	ObjectTypeDB::register_type<CheckButton>();
 	ObjectTypeDB::register_type<ToolButton>();
+	ObjectTypeDB::register_type<LinkButton>();
 	ObjectTypeDB::register_type<Panel>();
 	ObjectTypeDB::register_type<Range>();
 
@@ -428,7 +432,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<ConeTwistJoint>();
 	ObjectTypeDB::register_type<Generic6DOFJoint>();
 
-	//scenariofx	
+	//scenariofx
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -608,6 +612,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
+	ObjectTypeDB::register_virtual_type<SceneState>();
 	ObjectTypeDB::register_type<PackedScene>();
 
 	ObjectTypeDB::register_type<SceneTree>();
@@ -624,9 +629,9 @@ void register_scene_types() {
 }
 
 void unregister_scene_types() {
-	
+
 	clear_default_theme();
-	
+
 	memdelete( resource_loader_image );
 	memdelete( resource_loader_wav );
 #ifdef TOOLS_ENABLED

@@ -39,20 +39,20 @@ class Matrix3 {
 public:
 
 	Vector3 elements[3];
-			
+
 	_FORCE_INLINE_ const Vector3& operator[](int axis) const {
-	
+
 		return elements[axis];
 	}
 	_FORCE_INLINE_ Vector3& operator[](int axis) {
-	
+
 		return elements[axis];
 	}
 
-	void invert(); 
+	void invert();
 	void transpose();
-	
-	Matrix3 inverse() const; 
+
+	Matrix3 inverse() const;
 	Matrix3 transposed() const;
 
 	_FORCE_INLINE_ float determinant() const;
@@ -90,7 +90,7 @@ public:
 	_FORCE_INLINE_ real_t tdotz(const Vector3& v) const {
 		return elements[0][2] * v[0] + elements[1][2] * v[1] + elements[2][2] * v[2];
 	}
-	
+
 	bool operator==(const Matrix3& p_matrix) const;
 	bool operator!=(const Matrix3& p_matrix) const;
 
@@ -110,7 +110,7 @@ public:
 
 
 	_FORCE_INLINE_ void set(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz) {
-	
+
 		elements[0][0]=xx;
 		elements[0][1]=xy;
 		elements[0][2]=xz;
@@ -119,15 +119,15 @@ public:
 		elements[1][2]=yz;
 		elements[2][0]=zx;
 		elements[2][1]=zy;
-		elements[2][2]=zz;	
+		elements[2][2]=zz;
 	}
 	_FORCE_INLINE_ Vector3 get_column(int i) const {
-			
+
 		return Vector3(elements[0][i],elements[1][i],elements[2][i]);
 	}
-		
+
 	_FORCE_INLINE_ Vector3 get_row(int i) const {
-			
+
 		return Vector3(elements[i][0],elements[i][1],elements[i][2]);
 	}
 	_FORCE_INLINE_ void set_row(int i, const Vector3& p_row) {
@@ -155,8 +155,8 @@ public:
 			elements[0].z * m[0].y + elements[1].z * m[1].y + elements[2].z * m[2].y,
 			elements[0].z * m[0].z + elements[1].z * m[1].z + elements[2].z * m[2].z);
 	}
-	Matrix3(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz) { 
-			
+	Matrix3(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz) {
+
 		set(xx, xy, xz, yx, yy, yz, zx, zy, zz);
 	}
 
@@ -170,7 +170,7 @@ public:
 	Matrix3(const Vector3& p_axis, real_t p_phi);
 
 	_FORCE_INLINE_ Matrix3() {
-	
+
 		elements[0][0]=1;
 		elements[0][1]=0;
 		elements[0][2]=0;
@@ -191,7 +191,7 @@ _FORCE_INLINE_ void Matrix3::operator*=(const Matrix3& p_matrix) {
 		p_matrix.tdotx(elements[0]), p_matrix.tdoty(elements[0]), p_matrix.tdotz(elements[0]),
 		p_matrix.tdotx(elements[1]), p_matrix.tdoty(elements[1]), p_matrix.tdotz(elements[1]),
 		p_matrix.tdotx(elements[2]), p_matrix.tdoty(elements[2]), p_matrix.tdotz(elements[2]));
-	
+
 }
 
 _FORCE_INLINE_ Matrix3 Matrix3::operator*(const Matrix3& p_matrix) const {

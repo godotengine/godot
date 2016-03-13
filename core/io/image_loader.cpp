@@ -30,16 +30,16 @@
 
 #include "print_string.h"
 bool ImageFormatLoader::recognize(const String& p_extension) const {
-	
-	
+
+
 	List<String> extensions;
 	get_recognized_extensions(&extensions);
 	for (List<String>::Element *E=extensions.front();E;E=E->next()) {
-		
+
 		if (E->get().nocasecmp_to(p_extension.extension())==0)
 			return true;
 	}
-	
+
 	return false;
 }
 
@@ -55,12 +55,12 @@ Error ImageLoader::load_image(String p_file,Image *p_image, FileAccess *p_custom
 			return err;
 		}
 	}
-				
+
 	String extension = p_file.extension();
 
 
 	for (int i=0;i<loader_count;i++) {
-	
+
 		if (!loader[i]->recognize(extension))
 			continue;
 		Error err = loader[i]->load_image(p_image,f);
@@ -73,25 +73,25 @@ Error ImageLoader::load_image(String p_file,Image *p_image, FileAccess *p_custom
 
 			return err;
 		}
-			
-		
+
+
 	}
 	print_line("NO LOADER?");
 
 	if (!p_custom)
-		memdelete(f);	
-		
+		memdelete(f);
+
 	return ERR_FILE_UNRECOGNIZED;
 
 }
 
 void ImageLoader::get_recognized_extensions(List<String> *p_extensions) {
-	
+
 	for (int i=0;i<loader_count;i++) {
-		
+
 		loader[i]->get_recognized_extensions(p_extensions);
-				
-	}	
+
+	}
 }
 
 bool ImageLoader::recognize(const String& p_extension) {

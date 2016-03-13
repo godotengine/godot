@@ -51,6 +51,8 @@ enum {
 	BUTTON_MIDDLE=3,
 	BUTTON_WHEEL_UP=4,
 	BUTTON_WHEEL_DOWN=5,
+	BUTTON_WHEEL_LEFT=6,
+	BUTTON_WHEEL_RIGHT=7,
 	BUTTON_MASK_LEFT=(1<<(BUTTON_LEFT-1)),
 	BUTTON_MASK_RIGHT=(1<<(BUTTON_RIGHT-1)),
 	BUTTON_MASK_MIDDLE=(1<<(BUTTON_MIDDLE-1)),
@@ -187,7 +189,7 @@ struct InputModifierState {
 struct InputEventKey  {
 
 	InputModifierState mod;
-		
+
 	bool pressed; /// otherwise release
 
 	uint32_t scancode; ///< check keyboard.h , KeyCode enum, without modifier masks
@@ -210,11 +212,11 @@ struct InputEventMouse  {
 
 struct InputEventMouseButton : public InputEventMouse {
 
-	
+
 	int button_index;
 	bool pressed; //otherwise released
 	bool doubleclick; //last even less than doubleclick time
-	
+
 };
 
 struct InputEventMouseMotion : public InputEventMouse {

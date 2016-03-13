@@ -10,7 +10,16 @@ common_haiku = [
 	'audio_driver_media_kit.cpp'
 ]
 
-env.Program(
+target = env.Program(
 	'#bin/godot',
 	['godot_haiku.cpp'] + common_haiku
 )
+
+command = env.Command('#bin/godot.rsrc', '#platform/haiku/godot.rdef',
+		['rc -o $TARGET $SOURCE'])
+
+def addResourcesAction(target = None, source = None, env = None):
+	return env.Execute('xres -o ' + File(target)[0].path + ' bin/godot.rsrc')
+
+env.AddPostAction(target, addResourcesAction)
+env.Depends(target, command)

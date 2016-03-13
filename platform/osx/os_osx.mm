@@ -650,7 +650,7 @@ static int translateKey(unsigned int key)
 	/* 4b */ KEY_KP_DIVIDE,
 	/* 4c */ KEY_KP_ENTER,
 	/* 4d */ KEY_UNKNOWN,
-	/* 4e */ KEY_KP_SUBSTRACT,
+	/* 4e */ KEY_KP_SUBTRACT,
 	/* 4f */ KEY_UNKNOWN,
 	/* 50 */ KEY_UNKNOWN,
 	/* 51 */ KEY_EQUAL, //wtf equal?
@@ -809,6 +809,21 @@ static int translateKey(unsigned int key)
 		OS_OSX::singleton->push_input(ev);
 	}
 
+	if (fabs(deltaX)) {
+
+		InputEvent ev;
+		ev.type=InputEvent::MOUSE_BUTTON;
+		ev.mouse_button.button_index=deltaX < 0 ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT;
+		ev.mouse_button.pressed=true;
+		ev.mouse_button.x=mouse_x;
+		ev.mouse_button.y=mouse_y;
+		ev.mouse_button.global_x=mouse_x;
+		ev.mouse_button.global_y=mouse_y;
+		ev.mouse_button.button_mask=button_mask;
+		OS_OSX::singleton->push_input(ev);
+		ev.mouse_button.pressed=false;
+		OS_OSX::singleton->push_input(ev);
+	}
 }
 
 @end
@@ -839,7 +854,7 @@ const char * OS_OSX::get_video_driver_name(int p_driver) const {
 OS::VideoMode OS_OSX::get_default_video_mode() const {
 
 	VideoMode vm;
-	vm.width=800;
+	vm.width=1024;
 	vm.height=600;
 	vm.fullscreen=false;
 	vm.resizable=true;

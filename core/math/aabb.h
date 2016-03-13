@@ -47,25 +47,26 @@ public:
 
 	float get_area() const; /// get area
 	_FORCE_INLINE_ bool has_no_area() const {
-	
+
 		return (size.x<=CMP_EPSILON || size.y<=CMP_EPSILON  || size.z<=CMP_EPSILON);
 	}
 
 	_FORCE_INLINE_ bool has_no_surface() const {
-	
+
 		return (size.x<=CMP_EPSILON && size.y<=CMP_EPSILON  && size.z<=CMP_EPSILON);
 	}
-	
+
 	const Vector3& get_pos() const { return pos; }
 	void set_pos(const Vector3& p_pos) { pos=p_pos; }
 	const Vector3& get_size() const { return size; }
 	void set_size(const Vector3& p_size) { size=p_size; }
 
-	
+
 	bool operator==(const AABB& p_rval) const;
 	bool operator!=(const AABB& p_rval) const;
 
 	_FORCE_INLINE_ bool intersects(const AABB& p_aabb) const; /// Both AABBs overlap
+	_FORCE_INLINE_ bool intersects_inclusive(const AABB& p_aabb) const; /// Both AABBs (or their faces) overlap
 	_FORCE_INLINE_ bool encloses(const AABB & p_aabb) const; /// p_aabb is completely inside this
 
 	AABB merge(const AABB& p_with) const;
@@ -126,6 +127,23 @@ inline bool AABB::intersects(const AABB& p_aabb) const {
         return true;
 }
 
+inline bool AABB::intersects_inclusive(const AABB& p_aabb) const {
+
+	if ( pos.x > (p_aabb.pos.x + p_aabb.size.x) )
+                return false;
+	if ( (pos.x+size.x) < p_aabb.pos.x  )
+                return false;
+	if ( pos.y > (p_aabb.pos.y + p_aabb.size.y) )
+                return false;
+	if ( (pos.y+size.y) < p_aabb.pos.y  )
+                return false;
+	if ( pos.z > (p_aabb.pos.z + p_aabb.size.z) )
+                return false;
+	if ( (pos.z+size.z) < p_aabb.pos.z  )
+                return false;
+
+        return true;
+}
 
 inline bool AABB::encloses(const AABB & p_aabb) const {
 
@@ -247,7 +265,7 @@ bool AABB::has_point(const Vector3& p_point) const {
 		return false;
 	if (p_point.z>pos.z+size.z)
 		return false;
-		
+
 	return true;
 }
 
@@ -279,11 +297,11 @@ void AABB::project_range_in_plane(const Plane& p_plane,float &r_min,float& r_max
 
 	Vector3 half_extents( size.x * 0.5, size.y * 0.5, size.z * 0.5 );
 	Vector3 center( pos.x + half_extents.x, pos.y + half_extents.y, pos.z + half_extents.z );
-		
+
 	float length = p_plane.normal.abs().dot(half_extents);
 	float distance = p_plane.distance_to( center );
 	r_min = distance - length;
-	r_max = distance + length;	
+	r_max = distance + length;
 }
 
 inline real_t AABB::get_longest_axis_size() const {

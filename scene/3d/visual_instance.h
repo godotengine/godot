@@ -65,7 +65,7 @@ public:
 	RID get_instance() const;
 	virtual AABB get_aabb() const=0;
 	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const=0;
-	
+
 	virtual AABB get_transformed_aabb() const; // helper
 
 	void set_base(const RID& p_base);
@@ -74,7 +74,7 @@ public:
 	uint32_t get_layer_mask() const;
 
 
-	VisualInstance();	
+	VisualInstance();
 	~VisualInstance();
 
 };
@@ -98,10 +98,17 @@ public:
 		FLAG_MAX=VS::INSTANCE_FLAG_MAX,
 	};
 
+	enum ShadowCastingSetting {
+		SHADOW_CASTING_SETTING_OFF=VS::SHADOW_CASTING_SETTING_OFF,
+		SHADOW_CASTING_SETTING_ON = VS::SHADOW_CASTING_SETTING_ON,
+		SHADOW_CASTING_SETTING_DOUBLE_SIDED=VS::SHADOW_CASTING_SETTING_DOUBLE_SIDED,
+		SHADOW_CASTING_SETTING_SHADOWS_ONLY=VS::SHADOW_CASTING_SETTING_SHADOWS_ONLY
+	};
 
 private:
 
 	bool flags[FLAG_MAX];
+	ShadowCastingSetting shadow_casting_setting;
 	Ref<Material> material_override;
 	float draw_begin;
 	float draw_end;
@@ -120,6 +127,9 @@ public:
 
 	void set_flag(Flags p_flag,bool p_value);
 	bool get_flag(Flags p_flag) const;
+
+	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
+	ShadowCastingSetting get_cast_shadows_setting() const;
 
 	void set_draw_range_begin(float p_dist);
 	float get_draw_range_begin() const;
@@ -140,5 +150,7 @@ public:
 };
 
 VARIANT_ENUM_CAST( GeometryInstance::Flags );
+VARIANT_ENUM_CAST( GeometryInstance::ShadowCastingSetting );
+
 
 #endif

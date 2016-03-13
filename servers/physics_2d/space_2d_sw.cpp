@@ -46,7 +46,7 @@ _FORCE_INLINE_ static bool _match_object_type_query(CollisionObject2DSW *p_objec
 }
 
 
-int Physics2DDirectSpaceStateSW::intersect_point(const Vector2& p_point,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
+int Physics2DDirectSpaceStateSW::intersect_point(const Vector2& p_point,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask,bool p_pick_point) {
 
 	if (p_result_max<=0)
 		return 0;
@@ -69,7 +69,7 @@ int Physics2DDirectSpaceStateSW::intersect_point(const Vector2& p_point,ShapeRes
 
 		const CollisionObject2DSW *col_obj=space->intersection_query_results[i];
 
-		if (!col_obj->is_pickable())
+		if (p_pick_point && !col_obj->is_pickable())
 			continue;
 
 		int shape_idx=space->intersection_query_subindex_results[i];
@@ -337,7 +337,7 @@ bool Physics2DDirectSpaceStateSW::cast_motion(const RID& p_shape, const Matrix32
 
 				Vector2 sep=mnormal; //important optimization for this to work fast enough
 				bool collided = CollisionSolver2DSW::solve(shape,p_xform,p_motion*(hi+space->contact_max_allowed_penetration),col_obj->get_shape(shape_idx),col_obj_xform,Vector2(),Physics2DServerSW::_shape_col_cbk,&cbk,&sep,p_margin);
-				if (!collided || cbk.amount==0) {					
+				if (!collided || cbk.amount==0) {
 					continue;
 				}
 
@@ -1256,7 +1256,7 @@ void Space2DSW::set_param(Physics2DServer::SpaceParameter p_param, real_t p_valu
 		case Physics2DServer::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION: contact_max_allowed_penetration=p_value; break;
 		case Physics2DServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_TRESHOLD: body_linear_velocity_sleep_treshold=p_value; break;
 		case Physics2DServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_TRESHOLD: body_angular_velocity_sleep_treshold=p_value; break;
-		case Physics2DServer::SPACE_PARAM_BODY_TIME_TO_SLEEP: body_time_to_sleep=p_value; break;		
+		case Physics2DServer::SPACE_PARAM_BODY_TIME_TO_SLEEP: body_time_to_sleep=p_value; break;
 		case Physics2DServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS: constraint_bias=p_value; break;
 	}
 }

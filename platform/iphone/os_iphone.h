@@ -167,6 +167,8 @@ public:
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
 
+	virtual void set_keep_screen_on(bool p_enabled);
+
 	virtual bool can_draw() const;
 
 	virtual bool has_virtual_keyboard() const;
@@ -174,7 +176,7 @@ public:
 	virtual void hide_virtual_keyboard();
 
 	virtual void set_cursor_shape(CursorShape p_shape);
-	
+
 	virtual Size2 get_window_size() const;
 
 	virtual bool has_touchscreen_ui_hint() const;
@@ -186,19 +188,19 @@ public:
 	Error shell_open(String p_uri);
 
 	String get_data_dir() const;
-	
+
 	void set_locale(String p_locale);
 	String get_locale() const;
 
 	void set_unique_ID(String p_ID);
 	String get_unique_ID() const;
 
-    virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
-    virtual bool native_video_is_playing() const;
-    virtual void native_video_pause();
+	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
+	virtual bool native_video_is_playing() const;
+	virtual void native_video_pause();
 	virtual void native_video_unpause();
 	virtual void native_video_focus_out();
-    virtual void native_video_stop();
+	virtual void native_video_stop();
 
 	OSIPhone(int width, int height);
 	~OSIPhone();

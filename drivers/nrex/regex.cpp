@@ -21,6 +21,7 @@ void RegEx::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_valid"),&RegEx::is_valid);
 	ObjectTypeDB::bind_method(_MD("get_capture_count"),&RegEx::get_capture_count);
 	ObjectTypeDB::bind_method(_MD("get_capture","capture"),&RegEx::get_capture);
+	ObjectTypeDB::bind_method(_MD("get_capture_start","capture"),&RegEx::get_capture_start);
 	ObjectTypeDB::bind_method(_MD("get_captures"),&RegEx::_bind_get_captures);
 
 };
@@ -65,6 +66,14 @@ String RegEx::get_capture(int capture) const {
 	ERR_FAIL_COND_V( get_capture_count() <= capture, String() );
 
 	return text.substr(captures[capture].start, captures[capture].length);
+
+}
+
+int RegEx::get_capture_start(int capture) const {
+
+	ERR_FAIL_COND_V( get_capture_count() <= capture, -1 );
+
+	return captures[capture].start;
 
 }
 

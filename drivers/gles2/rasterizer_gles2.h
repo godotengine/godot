@@ -829,7 +829,9 @@ class RasterizerGLES2 : public Rasterizer {
 
 	bool fragment_lighting;
 	RID shadow_material;
+	RID shadow_material_double_sided;
 	Material *shadow_mat_ptr;
+	Material *shadow_mat_double_sided_ptr;
 
 	int max_texture_units;
 	GLuint base_framebuffer;

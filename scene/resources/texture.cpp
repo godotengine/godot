@@ -163,7 +163,7 @@ bool ImageTexture::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= lossy_storage_quality;
 	else
 		return false;
-	
+
 	return true;
 }
 
@@ -171,8 +171,8 @@ bool ImageTexture::_get(const StringName& p_name,Variant &r_ret) const {
 
 
 void ImageTexture::_get_property_list( List<PropertyInfo> *p_list) const {
-	
-	
+
+
 	PropertyHint img_hint=PROPERTY_HINT_NONE;
 	if (storage==STORAGE_COMPRESS_LOSSY) {
 		img_hint=PROPERTY_HINT_IMAGE_COMPRESS_LOSSY;
@@ -207,16 +207,16 @@ void ImageTexture::_reload_hook(const RID& p_hook) {
 }
 
 void ImageTexture::create(int p_width, int p_height,Image::Format p_format,uint32_t p_flags) {
-	
+
 	flags=p_flags;
 	VisualServer::get_singleton()->texture_allocate(texture,p_width, p_height, p_format, p_flags);
 	format=p_format;
 	w=p_width;
 	h=p_height;
-	
+
 }
 void ImageTexture::create_from_image(const Image& p_image,  uint32_t p_flags) {
-	
+
 	flags=p_flags;
 	w=p_image.get_width();
 	h=p_image.get_height();
@@ -228,7 +228,7 @@ void ImageTexture::create_from_image(const Image& p_image,  uint32_t p_flags) {
 }
 
 void ImageTexture::set_flags(uint32_t p_flags) {
-	
+
 
 
 /*	uint32_t cube = flags & FLAG_CUBEMAP;
@@ -238,11 +238,11 @@ void ImageTexture::set_flags(uint32_t p_flags) {
 	flags=p_flags|cube;	*/
 	flags=p_flags;
 	VisualServer::get_singleton()->texture_set_flags(texture,p_flags);
-	
+
 }
 
 uint32_t ImageTexture::get_flags() const {
-	
+
 	return ImageTexture::flags;
 }
 
@@ -252,7 +252,7 @@ Image::Format ImageTexture::get_format() const {
 }
 
 void ImageTexture::load(const String& p_path) {
-	
+
     Image img;
     img.load(p_path);
     create_from_image(img);
@@ -260,7 +260,7 @@ void ImageTexture::load(const String& p_path) {
 }
 
 void ImageTexture::set_data(const Image& p_image) {
-	
+
 	VisualServer::get_singleton()->texture_set_data(texture,p_image);
 	VisualServer::get_singleton()->texture_set_reload_hook(texture,0,StringName()); //hook is erased if data is changed
 	_change_notify();
@@ -282,23 +282,23 @@ void ImageTexture::_resource_path_changed() {
 }
 
 Image ImageTexture::get_data() const {
-	
+
 	return VisualServer::get_singleton()->texture_get_data(texture);
 }
 
 int ImageTexture::get_width() const {
-	
-	return w;	
+
+	return w;
 }
 
 int ImageTexture::get_height() const {
-	
+
 	return h;
 }
 
 
 RID ImageTexture::get_rid() const {
-	
+
 	return texture;
 }
 
@@ -458,13 +458,13 @@ ImageTexture::ImageTexture() {
 	texture = VisualServer::get_singleton()->texture_create();
 	storage = STORAGE_RAW;
 	lossy_storage_quality=0.7;
-	
+
 
 }
 
 
 ImageTexture::~ImageTexture() {
-	
+
 	VisualServer::get_singleton()->free( texture );
 }
 

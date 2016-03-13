@@ -62,9 +62,9 @@ public:
 	bool intersects_segment(Vector3 p_begin, Vector3 p_end, Vector3* p_intersection)  const;
 
 	_FORCE_INLINE_ Vector3 project(const Vector3& p_point) const {
-	
+
 		return p_point - normal * distance_to(p_point);
-	}	
+	}
 
         /* misc */
 

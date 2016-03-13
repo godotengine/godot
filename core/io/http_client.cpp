@@ -31,10 +31,6 @@
 
 VARIANT_ENUM_CAST(HTTPClient::Status);
 
-Error HTTPClient::connect_url(const String& p_url) {
-
-	return OK;
-}
 
 Error HTTPClient::connect(const String &p_host, int p_port, bool p_ssl,bool p_verify_host){
 
@@ -306,17 +302,17 @@ Error HTTPClient::poll(){
 
 					for(int i=0;i<responses.size();i++) {
 
-						String s = responses[i].strip_edges();
-						s = s.to_lower();
+						String header = responses[i].strip_edges();
+						String s = header.to_lower();
 						if (s.length()==0)
-							continue;						
+							continue;
 						if (s.begins_with("content-length:")) {
 							body_size = s.substr(s.find(":")+1,s.length()).strip_edges().to_int();
 							body_left=body_size;
 						}
 
 						if (s.begins_with("transfer-encoding:")) {
-							String encoding = s.substr(s.find(":")+1,s.length()).strip_edges();
+							String encoding = header.substr(header.find(":")+1,header.length()).strip_edges();
 							//print_line("TRANSFER ENCODING: "+encoding);
 							if (encoding=="chunked") {
 								chunked=true;
@@ -330,7 +326,7 @@ Error HTTPClient::poll(){
 							response_num=num.to_int();
 						} else {
 
-							response_headers.push_back(s);
+							response_headers.push_back(header);
 						}
 
 					}

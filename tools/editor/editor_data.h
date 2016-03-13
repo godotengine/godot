@@ -165,6 +165,9 @@ public:
 	void add_editor_plugin(EditorPlugin *p_plugin);
 	void remove_editor_plugin(EditorPlugin *p_plugin);
 
+	int get_editor_plugin_count() const;
+	EditorPlugin *get_editor_plugin(int p_idx);
+
 	UndoRedo &get_undo_redo();
 
 	void save_editor_global_states();
@@ -196,6 +199,7 @@ public:
 	void set_edited_scene_live_edit_root(const NodePath& p_root);
 	NodePath get_edited_scene_live_edit_root();
 	bool check_and_update_scene(int p_idx);
+	void move_edited_scene_to_index(int p_idx);
 
 
 	void set_plugin_window_layout(Ref<ConfigFile> p_layout);
@@ -227,6 +231,7 @@ public:
 	List<Node*> selected_node_list;
 
 	void _update_nl();
+	Array _get_selected_nodes();
 protected:
 
 	static void _bind_methods();

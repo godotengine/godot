@@ -318,7 +318,7 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform&
 	}
 
 	p_closest_safe=best_safe;
-	p_closest_unsafe=best_unsafe;	
+	p_closest_unsafe=best_unsafe;
 
 	return true;
 }

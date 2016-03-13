@@ -48,7 +48,7 @@ public:
 	static KeySym get_keysym(unsigned int p_code);
 	static unsigned int get_unicode_from_keysym(KeySym p_keysym);
 	static KeySym get_keysym_from_unicode(unsigned int p_unicode);
-	
+
 };
 
 

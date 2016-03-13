@@ -310,8 +310,11 @@ Error DirAccessWindows::rename(String p_path,String p_new_path) {
 
 Error DirAccessWindows::remove(String p_path)  {
 
-	p_path=fix_path(p_path);
-	
+	if (p_path.is_rel_path())
+		p_path=get_current_dir().plus_file(p_path);
+	else
+		p_path=fix_path(p_path);
+
 	printf("erasing %s\n",p_path.utf8().get_data());
 	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
 	//DWORD fileAttr = GetFileAttributesExW(p_path.c_str(), GetFileExInfoStandard, &fileInfo);

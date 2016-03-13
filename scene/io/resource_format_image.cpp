@@ -32,7 +32,7 @@
 #include "globals.h"
 #include "os/os.h"
 RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_original_path, Error *r_error) {
-	
+
 	if (r_error)
 		*r_error=ERR_CANT_OPEN;
 
@@ -45,31 +45,31 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_origin
 		Error err;
 		FileAccess *f = FileAccess::open(p_path,FileAccess::READ,&err);
 		if (err) {
-		
+
 			ERR_FAIL_COND_V( err, RES() );
 		}
-		
+
 		String base_path=p_path.substr( 0, p_path.find_last("/")+1 );
 
 		for(int i=0;i<6;i++) {
-		
+
 			String file = f->get_line().strip_edges();
 			Image image;
-			
+
 			Error err = ImageLoader::load_image(base_path+file,&image);
 
-			
+
 			if (err) {
-			
+
 				memdelete(f);
 				ERR_FAIL_COND_V( err, RES() );
 			}
-			
+
 			if (i==0) {
-			
+
 				//cubemap->create(image.get_width(),image.get_height(),image.get_format(),Texture::FLAGS_DEFAULT|Texture::FLAG_CUBEMAP);
 			}
-			
+
 			static const CubeMap::Side cube_side[6]= {
 				CubeMap::SIDE_LEFT,
 				CubeMap::SIDE_RIGHT,
@@ -78,10 +78,10 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_origin
 				CubeMap::SIDE_FRONT,
 				CubeMap::SIDE_BACK
 			};
-			
+
 			cubemap->set_side(cube_side[i],image);
 		}
-		
+
 		memdelete(f);
 
 		cubemap->set_name(p_path.get_file());
@@ -89,9 +89,9 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_origin
 			*r_error=OK;
 
 		return cubemap;
-	
+
 	} else {
-		// simple image	
+		// simple image
 
 		ImageTexture* ptr = memnew(ImageTexture);
 		Ref<ImageTexture> texture( ptr );
@@ -115,7 +115,7 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_origin
 
 
 		ERR_EXPLAIN("Failed loading image: "+p_path);
-		ERR_FAIL_COND_V(err, RES());		
+		ERR_FAIL_COND_V(err, RES());
 		if (r_error)
 			*r_error=ERR_FILE_CORRUPT;
 
@@ -134,8 +134,8 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_origin
 		}
 #endif
 #endif
-		
-		
+
+
 		uint32_t flags=0;
 
 		FileAccess *f2 = FileAccess::open(p_path+".flags",FileAccess::READ);
@@ -186,7 +186,7 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_origin
 			if (flags_found["tolinear"])
 				flags|=Texture::FLAG_CONVERT_TO_LINEAR;
 		}
-		
+
 		if (flags_found.has("mirroredrepeat")) {
 			if (flags_found["mirroredrepeat"])
 				flags|=Texture::FLAG_MIRRORED_REPEAT;
@@ -210,7 +210,7 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_origin
 
 		return RES( texture );
 	}
-	
+
 
 }
 
@@ -220,7 +220,7 @@ bool ResourceFormatLoaderImage::handles_type(const String& p_type) const {
 }
 
 void ResourceFormatLoaderImage::get_recognized_extensions(List<String> *p_extensions) const {
-	
+
 	ImageLoader::get_recognized_extensions(p_extensions);
 	p_extensions->push_back("cube");
 }

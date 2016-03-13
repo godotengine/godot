@@ -339,7 +339,7 @@ void AudioMixerSW::mix_channel(Channel& c) {
 			c.mix.old_chorus_vol[i]=c.mix.chorus_vol[i];
 		}
 
-		c.first_mix=false;		
+		c.first_mix=false;
 	}
 
 
@@ -734,7 +734,7 @@ int AudioMixerSW::_get_channel(ChannelID p_channel) const {
 	if (channels[idx].check!=check) {
 		return -1;
 	}
-	if (!channels[idx].active) {	
+	if (!channels[idx].active) {
 		return -1;
 	}
 
@@ -918,7 +918,7 @@ void AudioMixerSW::channel_set_filter(ChannelID p_channel, FilterType p_type, fl
 
 	if (type_changed) {
 		//type changed reset filter
-		c.filter.old_coefs=c.filter.coefs;	
+		c.filter.old_coefs=c.filter.coefs;
 		c.mix.filter_l.ha[0]=0;
 		c.mix.filter_l.ha[1]=0;
 		c.mix.filter_l.hb[0]=0;

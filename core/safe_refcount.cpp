@@ -40,9 +40,9 @@ long atomic_conditional_increment( register long * pw ) {
 
 	while (true) {
 		long tmp = static_cast< long const volatile& >( *pw );
-		if( tmp == 0 ) 
+		if( tmp == 0 )
       return 0; // if zero, can't add to it anymore
-		if( InterlockedCompareExchange( pw, tmp + 1, tmp ) == tmp ) 
+		if( InterlockedCompareExchange( pw, tmp + 1, tmp ) == tmp )
 			return tmp+1;
 	}
 

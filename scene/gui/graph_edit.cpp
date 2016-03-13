@@ -1,6 +1,15 @@
 #include "graph_edit.h"
 #include "os/input.h"
 #include "os/keyboard.h"
+#include "scene/gui/box_container.h"
+
+
+#define ZOOM_SCALE 1.2
+
+#define MIN_ZOOM (((1/ZOOM_SCALE)/ZOOM_SCALE)/ZOOM_SCALE)
+#define MAX_ZOOM (1*ZOOM_SCALE*ZOOM_SCALE*ZOOM_SCALE)
+
+
 bool GraphEditFilter::has_point(const Point2& p_point) const {
 
 	return ge->_filter_input(p_point);
@@ -42,7 +51,6 @@ bool GraphEdit::is_node_connected(const StringName& p_from, int p_from_port,cons
 
 void GraphEdit::disconnect_node(const StringName& p_from, int p_from_port,const StringName& p_to,int p_to_port){
 
-
 	for(List<Connection>::Element *E=connections.front();E;E=E->next()) {
 
 		if (E->get().from==p_from && E->get().from_port==p_from_port && E->get().to==p_to && E->get().to_port==p_to_port) {
@@ -54,14 +62,22 @@ void GraphEdit::disconnect_node(const StringName& p_from, int p_from_port,const 
 	}
 }
 
+bool GraphEdit::clips_input() const {
+
+	return true;
+}
+
 void GraphEdit::get_connection_list(List<Connection> *r_connections) const {
 
 	*r_connections=connections;
 }
 
+Vector2 GraphEdit::get_scroll_ofs() const{
+
+	return Vector2(h_scroll->get_val(),v_scroll->get_val());
+}
 
 void GraphEdit::_scroll_moved(double) {
-
 
 	_update_scroll_offset();
 	top_layer->update();
@@ -75,9 +91,10 @@ void GraphEdit::_update_scroll_offset() {
 		if (!gn)
 			continue;
 
-		Point2 pos=gn->get_offset();
+		Point2 pos=gn->get_offset()*zoom;
 		pos-=Point2(h_scroll->get_val(),v_scroll->get_val());
 		gn->set_pos(pos);
+		gn->set_scale(Vector2(zoom,zoom));
 	}
 
 }
@@ -96,8 +113,8 @@ void GraphEdit::_update_scroll() {
 			continue;
 
 		Rect2 r;
-		r.pos=gn->get_offset();
-		r.size=gn->get_size();
+		r.pos=gn->get_offset()*zoom;
+		r.size=gn->get_size()*zoom;
 		screen = screen.merge(r);
 	}
 
@@ -149,6 +166,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 	top_layer->call_deferred("raise"); //top layer always on top!
 	GraphNode *gn = p_child->cast_to<GraphNode>();
 	if (gn) {
+		gn->set_scale(Vector2(zoom,zoom));
 		gn->connect("offset_changed",this,"_graph_node_moved",varray(gn));
 		gn->connect("raise_request",this,"_graph_node_raised",varray(gn));
 		_graph_node_moved(gn);
@@ -182,8 +200,11 @@ void GraphEdit::_notification(int p_what) {
 		h_scroll->set_anchor_and_margin(MARGIN_TOP,ANCHOR_END,hmin.height);
 		h_scroll->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END,0);
 
+//		zoom_icon->set_texture( get_icon("Zoom", "EditorIcons"));
+
 	}
 	if (p_what==NOTIFICATION_DRAW) {
+		draw_style_box( get_stylebox("bg"),Rect2(Point2(),get_size()) );
 		VS::get_singleton()->canvas_item_set_clip(get_canvas_item(),true);
 
 	}
@@ -382,8 +403,6 @@ void GraphEdit::_top_layer_input(const InputEvent& p_ev) {
 
 	}
 
-
-
 }
 
 void GraphEdit::_draw_cos_line(const Vector2& p_from, const Vector2& p_to,const Color& p_color) {
@@ -505,7 +524,7 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 		for(int i=get_child_count()-1;i>=0;i--) {
 			GraphNode *gn=get_child(i)->cast_to<GraphNode>();
 			if (gn && gn->is_selected())
-				gn->set_offset(gn->get_drag_from()+drag_accum);
+				gn->set_offset((gn->get_drag_from()*zoom+drag_accum)/zoom);
 		}
 	}
 
@@ -523,7 +542,9 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 			if (!gn)
 				continue;
 
-			bool in_box = gn->get_rect().intersects(box_selecting_rect);
+			Rect2 r = gn->get_rect();
+			r.size*=zoom;
+			bool in_box = r.intersects(box_selecting_rect);
 
 			if (in_box)
 				gn->set_selected(box_selection_mode_aditive);
@@ -552,7 +573,12 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 				}
 				top_layer->update();
 			} else {
-				emit_signal("popup_request", Vector2(b.global_x, b.global_y));
+				if (connecting) {
+					connecting = false;
+					top_layer->update();
+				} else {
+					emit_signal("popup_request", Vector2(b.global_x, b.global_y));
+				}
 			}
 		}
 
@@ -562,8 +588,12 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 				for(int i=get_child_count()-1;i>=0;i--) {
 					GraphNode *gn=get_child(i)->cast_to<GraphNode>();
 
-					if (gn && gn->get_rect().has_point(get_local_mouse_pos()))
-						gn->set_selected(false);
+					if (gn) {
+						Rect2 r = gn->get_rect();
+						r.size*=zoom;
+						if (r.has_point(get_local_mouse_pos()))
+							gn->set_selected(false);
+					}
 				}
 			}
 
@@ -587,13 +617,17 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 
 		if (b.button_index==BUTTON_LEFT && b.pressed) {
 
-			GraphNode *gn;
+			GraphNode *gn = NULL;
 			for(int i=get_child_count()-1;i>=0;i--) {
 
 				gn=get_child(i)->cast_to<GraphNode>();
 
-				if (gn && gn->get_rect().has_point(get_local_mouse_pos()))
-					break;
+				if (gn) {
+					Rect2 r = gn->get_rect();
+					r.size*=zoom;
+					if (r.has_point(get_local_mouse_pos()))
+						break;
+				}
 			}
 
 			if (gn) {
@@ -622,6 +656,11 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 				}
 
 			} else {
+				if (_filter_input(Vector2(b.x,b.y)))
+					return;
+				if (Input::get_singleton()->is_key_pressed(KEY_SPACE))
+					return;
+
 				box_selecting = true;
 				box_selecting_from = get_local_mouse_pos();
 				if (b.mod.control) {
@@ -666,6 +705,16 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 			previus_selected.clear();
 			top_layer->update();
 		}
+
+		if (b.button_index==BUTTON_WHEEL_UP && b.pressed) {
+			//too difficult to get right
+			//set_zoom(zoom*ZOOM_SCALE);
+		}
+
+		if (b.button_index==BUTTON_WHEEL_DOWN && b.pressed) {
+			//too difficult to get right
+			//set_zoom(zoom/ZOOM_SCALE);
+		}
 	}
 
 	if (p_ev.type==InputEvent::KEY && p_ev.key.scancode==KEY_D && p_ev.key.pressed && p_ev.key.mod.command) {
@@ -686,6 +735,37 @@ void GraphEdit::clear_connections() {
 	update();
 }
 
+void GraphEdit::set_zoom(float p_zoom) {
+
+	p_zoom=CLAMP(p_zoom,MIN_ZOOM,MAX_ZOOM);
+	if (zoom == p_zoom)
+		return;
+
+	zoom_minus->set_disabled(zoom==MIN_ZOOM);
+	zoom_plus->set_disabled(zoom==MAX_ZOOM);
+
+	Vector2 sbofs = (Vector2( h_scroll->get_val(), v_scroll->get_val() ) + get_size()/2)/zoom;
+
+	float prev_zoom = zoom;
+	zoom = p_zoom;
+	top_layer->update();
+
+	_update_scroll();
+
+	if (is_visible()) {
+
+		Vector2 ofs  = sbofs*zoom - get_size()/2;
+		h_scroll->set_val( ofs.x );
+		v_scroll->set_val( ofs.y );
+	}
+
+
+	update();
+}
+
+float GraphEdit::get_zoom() const {
+	return zoom;
+}
 
 void GraphEdit::set_right_disconnects(bool p_enable) {
 
@@ -712,12 +792,36 @@ Array GraphEdit::_get_connection_list() const {
 	}
 	return arr;
 }
+
+
+
+void GraphEdit::_zoom_minus() {
+
+
+	set_zoom(zoom/ZOOM_SCALE);
+}
+void GraphEdit::_zoom_reset() {
+
+
+	set_zoom(1);
+}
+
+void GraphEdit::_zoom_plus() {
+
+	set_zoom(zoom*ZOOM_SCALE);
+}
+
+
 void GraphEdit::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("connect_node:Error","from","from_port","to","to_port"),&GraphEdit::connect_node);
 	ObjectTypeDB::bind_method(_MD("is_node_connected","from","from_port","to","to_port"),&GraphEdit::is_node_connected);
 	ObjectTypeDB::bind_method(_MD("disconnect_node","from","from_port","to","to_port"),&GraphEdit::disconnect_node);
 	ObjectTypeDB::bind_method(_MD("get_connection_list"),&GraphEdit::_get_connection_list);
+	ObjectTypeDB::bind_method(_MD("get_scroll_ofs"),&GraphEdit::get_scroll_ofs);
+
+	ObjectTypeDB::bind_method(_MD("set_zoom","p_zoom"),&GraphEdit::set_zoom);
+	ObjectTypeDB::bind_method(_MD("get_zoom"),&GraphEdit::get_zoom);
 
 	ObjectTypeDB::bind_method(_MD("set_right_disconnects","enable"),&GraphEdit::set_right_disconnects);
 	ObjectTypeDB::bind_method(_MD("is_right_disconnects_enabled"),&GraphEdit::is_right_disconnects_enabled);
@@ -728,6 +832,9 @@ void GraphEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_top_layer_input"),&GraphEdit::_top_layer_input);
 	ObjectTypeDB::bind_method(_MD("_top_layer_draw"),&GraphEdit::_top_layer_draw);
 	ObjectTypeDB::bind_method(_MD("_scroll_moved"),&GraphEdit::_scroll_moved);
+	ObjectTypeDB::bind_method(_MD("_zoom_minus"),&GraphEdit::_zoom_minus);
+	ObjectTypeDB::bind_method(_MD("_zoom_reset"),&GraphEdit::_zoom_reset);
+	ObjectTypeDB::bind_method(_MD("_zoom_plus"),&GraphEdit::_zoom_plus);
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphEdit::_input_event);
 
@@ -770,4 +877,28 @@ GraphEdit::GraphEdit() {
 
 	h_scroll->connect("value_changed", this,"_scroll_moved");
 	v_scroll->connect("value_changed", this,"_scroll_moved");
+
+	zoom = 1;
+
+	HBoxContainer *zoom_hb = memnew( HBoxContainer );
+	top_layer->add_child(zoom_hb);
+	zoom_hb->set_pos(Vector2(10,10));
+
+
+	zoom_minus = memnew( ToolButton );
+	zoom_hb->add_child(zoom_minus);
+	zoom_minus->connect("pressed",this,"_zoom_minus");
+	zoom_minus->set_icon(get_icon("minus"));
+
+	zoom_reset = memnew( ToolButton );
+	zoom_hb->add_child(zoom_reset);
+	zoom_reset->connect("pressed",this,"_zoom_reset");
+	zoom_reset->set_icon(get_icon("reset"));
+
+	zoom_plus = memnew( ToolButton );
+	zoom_hb->add_child(zoom_plus);
+	zoom_plus->connect("pressed",this,"_zoom_plus");
+	zoom_plus->set_icon(get_icon("more"));
+
+
 }

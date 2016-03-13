@@ -29,6 +29,8 @@
 #include "editor_plugin.h"
 #include "plugins/canvas_item_editor_plugin.h"
 #include "plugins/spatial_editor_plugin.h"
+#include "tools/editor/editor_node.h"
+#include "tools/editor/editor_settings.h"
 
 void EditorPlugin::add_custom_type(const String& p_type, const String& p_base,const Ref<Script>& p_script, const Ref<Texture>& p_icon) {
 
@@ -41,8 +43,33 @@ void EditorPlugin::remove_custom_type(const String& p_type){
 }
 
 
+void EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
 
-void EditorPlugin::add_custom_control(CustomControlContainer p_location,Control *p_control) {
+	EditorNode::get_singleton()->add_bottom_panel_item(p_title,p_control);
+}
+
+void EditorPlugin::add_control_to_dock(DockSlot p_slot,Control *p_control) {
+
+	ERR_FAIL_NULL(p_control);
+	EditorNode::get_singleton()->add_control_to_dock(EditorNode::DockSlot(p_slot),p_control);
+
+}
+
+void EditorPlugin::remove_control_from_docks(Control *p_control) {
+
+	ERR_FAIL_NULL(p_control);
+	EditorNode::get_singleton()->remove_control_from_dock(p_control);
+
+}
+
+void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
+
+	ERR_FAIL_NULL(p_control);
+	EditorNode::get_singleton()->remove_bottom_panel_item(p_control);
+
+}
+
+void EditorPlugin::add_control_to_container(CustomControlContainer p_location,Control *p_control) {
 
 	switch(p_location) {
 
@@ -50,6 +77,7 @@ void EditorPlugin::add_custom_control(CustomControlContainer p_location,Control 
 
 			EditorNode::get_menu_hb()->add_child(p_control);
 		} break;
+
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
 
 			SpatialEditor::get_singleton()->add_control_to_menu_panel(p_control);
@@ -86,9 +114,13 @@ void EditorPlugin::add_custom_control(CustomControlContainer p_location,Control 
 	}
 }
 
-bool EditorPlugin::create_spatial_gizmo(Spatial* p_spatial) {
+Ref<SpatialEditorGizmo> EditorPlugin::create_spatial_gizmo(Spatial* p_spatial) {
 	//??
-	return false;
+	if (get_script_instance() && get_script_instance()->has_method("create_spatial_gizmo")) {
+		return get_script_instance()->call("create_spatial_gizmo",p_spatial);
+	}
+
+	return Ref<SpatialEditorGizmo>();
 }
 
 bool EditorPlugin::forward_input_event(const InputEvent& p_event) {
@@ -206,15 +238,70 @@ void EditorPlugin::get_window_layout(Ref<ConfigFile> p_layout){
 
 }
 
+EditorSelection* EditorPlugin::get_selection() {
+	return EditorNode::get_singleton()->get_editor_selection();
+}
+
+
+EditorSettings *EditorPlugin::get_editor_settings() {
+	return EditorSettings::get_singleton();
+}
+
+void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin>& p_editor_import) {
+
+	EditorNode::get_singleton()->add_editor_import_plugin(p_editor_import);
+}
+
+void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin>& p_editor_import){
+
+	EditorNode::get_singleton()->remove_editor_import_plugin(p_editor_import);
+
+}
+
+void EditorPlugin::add_export_plugin(const Ref<EditorExportPlugin>& p_editor_export){
+
+	EditorImportExport::get_singleton()->add_export_plugin(p_editor_export);
+}
+void EditorPlugin::remove_export_plugin(const Ref<EditorExportPlugin>& p_editor_export){
+
+	EditorImportExport::get_singleton()->remove_export_plugin(p_editor_export);
+
+}
+
+Control *EditorPlugin::get_base_control() {
+
+	return EditorNode::get_singleton()->get_gui_base();
+}
+
+
 void EditorPlugin::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_undo_redo"),&EditorPlugin::_get_undo_redo);
-	ObjectTypeDB::bind_method(_MD("add_custom_control","container","control"),&EditorPlugin::add_custom_control);
+	ObjectTypeDB::bind_method(_MD("add_control_to_container","container","control:Control"),&EditorPlugin::add_control_to_container);
+	ObjectTypeDB::bind_method(_MD("add_control_to_bottom_panel","control:Control","title"),&EditorPlugin::add_control_to_bottom_panel);
+	ObjectTypeDB::bind_method(_MD("add_control_to_dock","slot","control:Control"),&EditorPlugin::add_control_to_dock);
+	ObjectTypeDB::bind_method(_MD("remove_control_from_docks","control:Control"),&EditorPlugin::remove_control_from_docks);
+	ObjectTypeDB::bind_method(_MD("remove_control_from_bottom_panel","control:Control"),&EditorPlugin::remove_control_from_bottom_panel);
 	ObjectTypeDB::bind_method(_MD("add_custom_type","type","base","script:Script","icon:Texture"),&EditorPlugin::add_custom_type);
 	ObjectTypeDB::bind_method(_MD("remove_custom_type","type"),&EditorPlugin::remove_custom_type);
 
+	ObjectTypeDB::bind_method(_MD("add_import_plugin","plugin:EditorImportPlugin"),&EditorPlugin::add_import_plugin);
+	ObjectTypeDB::bind_method(_MD("remove_import_plugin","plugin:EditorImportPlugin"),&EditorPlugin::remove_import_plugin);
+
+	ObjectTypeDB::bind_method(_MD("add_export_plugin","plugin:EditorExportPlugin"),&EditorPlugin::add_export_plugin);
+	ObjectTypeDB::bind_method(_MD("remove_export_plugin","plugin:EditorExportPlugin"),&EditorPlugin::remove_export_plugin);
+
+
+	ObjectTypeDB::bind_method(_MD("get_base_control:Control"),&EditorPlugin::get_base_control);
+	ObjectTypeDB::bind_method(_MD("get_undo_redo:UndoRedo"),&EditorPlugin::_get_undo_redo);
+	ObjectTypeDB::bind_method(_MD("get_selection:EditorSelection"),&EditorPlugin::get_selection);
+	ObjectTypeDB::bind_method(_MD("get_editor_settings:EditorSettings"),&EditorPlugin::get_editor_settings);
+
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"forward_input_event",PropertyInfo(Variant::INPUT_EVENT,"event")));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"forward_spatial_input_event",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera"),PropertyInfo(Variant::INPUT_EVENT,"event")));
+	MethodInfo gizmo = MethodInfo(Variant::OBJECT,"create_spatial_gizmo",PropertyInfo(Variant::OBJECT,"for_spatial:Spatial"));
+	gizmo.return_val.hint=PROPERTY_HINT_RESOURCE_TYPE;
+	gizmo.return_val.hint_string="EditorSpatialGizmo";
+	ObjectTypeDB::add_virtual_method(get_type_static(),gizmo);
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::STRING,"get_name"));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"has_main_screen"));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo("make_visible",PropertyInfo(Variant::BOOL,"visible")));
@@ -232,6 +319,16 @@ void EditorPlugin::_bind_methods() {
 	BIND_CONSTANT( CONTAINER_SPATIAL_EDITOR_BOTTOM );
 	BIND_CONSTANT( CONTAINER_CANVAS_EDITOR_MENU );
 	BIND_CONSTANT( CONTAINER_CANVAS_EDITOR_SIDE );
+
+	BIND_CONSTANT( DOCK_SLOT_LEFT_UL );
+	BIND_CONSTANT( DOCK_SLOT_LEFT_BL );
+	BIND_CONSTANT( DOCK_SLOT_LEFT_UR );
+	BIND_CONSTANT( DOCK_SLOT_LEFT_BR );
+	BIND_CONSTANT( DOCK_SLOT_RIGHT_UL );
+	BIND_CONSTANT( DOCK_SLOT_RIGHT_BL );
+	BIND_CONSTANT( DOCK_SLOT_RIGHT_UR );
+	BIND_CONSTANT( DOCK_SLOT_RIGHT_BR );
+	BIND_CONSTANT( DOCK_SLOT_MAX );
 
 }
 

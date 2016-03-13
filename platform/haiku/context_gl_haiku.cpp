@@ -38,6 +38,6 @@ int ContextGL_Haiku::get_window_width() {
 
 int ContextGL_Haiku::get_window_height() {
 	return window->Bounds().IntegerHeight();
-} 
+}
 
 #endif

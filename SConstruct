@@ -1,5 +1,6 @@
 EnsureSConsVersion(0,14);
 
+
 import string
 import os
 import os.path
@@ -77,6 +78,9 @@ env_base.android_permission_chunk=""
 env_base.android_appattributes_chunk=""
 env_base.disabled_modules=[]
 
+env_base.split_drivers=False
+
+
 
 env_base.__class__.android_add_maven_repository=methods.android_add_maven_repository
 env_base.__class__.android_add_dependency=methods.android_add_dependency
@@ -90,6 +94,7 @@ env_base.__class__.android_add_to_attributes = methods.android_add_to_attributes
 env_base.__class__.disable_module = methods.disable_module
 
 env_base.__class__.add_source_files = methods.add_source_files
+env_base.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
 
 env_base["x86_opt_gcc"]=False
 env_base["x86_opt_vc"]=False

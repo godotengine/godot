@@ -172,6 +172,9 @@ void AudioDriverOSX::unlock() {
 
 void AudioDriverOSX::finish() {
 
+	if (active)
+		AudioOutputUnitStop(audio_unit);
+
 	memdelete_arr(samples_in);
 };
 

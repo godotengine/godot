@@ -1650,7 +1650,7 @@ Collada::Node* Collada::_parse_visual_scene_node(XMLParser& parser) {
 
 	String name;
 
-	String id = parser.get_attribute_value_safe("id");	
+	String id = parser.get_attribute_value_safe("id");
 
 	bool found_name=false;
 

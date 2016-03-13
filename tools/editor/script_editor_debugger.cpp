@@ -210,6 +210,8 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 		OS::get_singleton()->move_window_to_foreground();
 		tabs->set_current_tab(0);
 
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+
 	} else if (p_msg=="debug_exit") {
 
 		breaked=false;
@@ -358,7 +360,9 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 
 			if (EditorNode::get_log()->is_hidden()) {
 				log_forced_visible=true;
-				EditorNode::get_log()->show();
+				if (EditorNode::get_singleton()->are_bottom_panels_hidden()) {
+					EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
+				}
 			}
 			EditorNode::get_log()->add_message(t);
 
@@ -528,15 +532,14 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
+			inspector->edit(variables);
+
 			step->set_icon( get_icon("DebugStep","EditorIcons"));
 			next->set_icon( get_icon("DebugNext","EditorIcons"));
 			back->set_icon( get_icon("Back","EditorIcons"));
 			forward->set_icon( get_icon("Forward","EditorIcons"));
 			dobreak->set_icon( get_icon("Pause","EditorIcons"));
 			docontinue->set_icon( get_icon("DebugContinue","EditorIcons"));
-			tb->set_normal_texture( get_icon("Close","EditorIcons"));
-			tb->set_hover_texture( get_icon("CloseHover","EditorIcons"));
-			tb->set_pressed_texture( get_icon("Close","EditorIcons"));
 			scene_tree_refresh->set_icon( get_icon("Reload","EditorIcons"));
 			le_set->connect("pressed",this,"_live_edit_set");
 			le_clear->connect("pressed",this,"_live_edit_clear");
@@ -551,8 +554,14 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 				if (error_count==0) {
 					error_split->set_name("Errors");
+					debugger_button->set_text("Debugger");
+					debugger_button->set_icon(Ref<Texture>());
+					tabs->set_tab_icon(error_split->get_index(),Ref<Texture>());
 				} else {
 					error_split->set_name("Errors ("+itos(error_count)+")");
+					debugger_button->set_text("Debugger ("+itos(error_count)+")");
+					debugger_button->set_icon(get_icon("Error","EditorIcons"));
+					tabs->set_tab_icon(error_split->get_index(),get_icon("Error","EditorIcons"));
 				}
 				last_error_count=error_count;
 			}
@@ -569,8 +578,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 					ppeer->set_stream_peer(connection);
 
-					show();
-					emit_signal("show_debugger",true);
+					//EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+					//emit_signal("show_debugger",true);
 
 					dobreak->set_disabled(false);
 					tabs->set_current_tab(0);
@@ -727,7 +736,9 @@ void ScriptEditorDebugger::stop(){
 	message.clear();
 
 	if (log_forced_visible) {
-		EditorNode::get_log()->hide();
+		//EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+		if (EditorNode::get_log()->is_visible())
+			EditorNode::get_singleton()->hide_bottom_panel();
 		log_forced_visible=false;
 	}
 
@@ -738,7 +749,8 @@ void ScriptEditorDebugger::stop(){
 
 
 	if (hide_on_stop) {
-		hide();
+		if (is_visible())
+			EditorNode::get_singleton()->hide_bottom_panel();
 		emit_signal("show_debugger",false);
 	}
 
@@ -766,12 +778,6 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 	msg.push_back(d["frame"]);
 	ppeer->put_var(msg);
 
-}
-
-void ScriptEditorDebugger::_hide_request() {
-
-	hide();
-	emit_signal("show_debugger",false);
 }
 
 void ScriptEditorDebugger::_output_clear() {
@@ -1174,7 +1180,6 @@ void ScriptEditorDebugger::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("debug_break"),&ScriptEditorDebugger::debug_break);
 	ObjectTypeDB::bind_method(_MD("debug_continue"),&ScriptEditorDebugger::debug_continue);
 	ObjectTypeDB::bind_method(_MD("_output_clear"),&ScriptEditorDebugger::_output_clear);
-	ObjectTypeDB::bind_method(_MD("_hide_request"),&ScriptEditorDebugger::_hide_request);
 	ObjectTypeDB::bind_method(_MD("_performance_draw"),&ScriptEditorDebugger::_performance_draw);
 	ObjectTypeDB::bind_method(_MD("_performance_select"),&ScriptEditorDebugger::_performance_select);
 	ObjectTypeDB::bind_method(_MD("_scene_tree_request"),&ScriptEditorDebugger::_scene_tree_request);
@@ -1210,13 +1215,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	tabs->set_area_as_parent_rect();
 	add_child(tabs);
 
-	tb = memnew( TextureButton );
-	tb->connect("pressed",this,"_hide_request");
-	tb->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_END,20);
-	tb->set_margin(MARGIN_TOP,2);
-	add_child(tb);
-
-
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	vbc->set_name("Debugger");
@@ -1227,12 +1225,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	vbc->add_child(hbc);
 
 
-	reason = memnew( Label );
+	reason = memnew( LineEdit );
 	reason->set_text("");
+	reason->set_editable(false);
 	hbc->add_child(reason);
 	reason->add_color_override("font_color",Color(1,0.4,0.0,0.8));
 	reason->set_h_size_flags(SIZE_EXPAND_FILL);
-	reason->set_clip_text(true);
+	//reason->set_clip_text(true);
 
 	hbc->add_child( memnew( VSeparator) );
 
@@ -1295,7 +1294,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	pending_in_queue=0;
 
 	variables = memnew( ScriptEditorDebuggerVariables );
-	inspector->edit(variables);
+
 	breaked=false;
 
 	tabs->add_child(dbg);
@@ -1459,7 +1458,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	msgdialog = memnew( AcceptDialog );
 	add_child(msgdialog);
 
-	hide();
 	log_forced_visible=false;
 
 	p_editor->get_undo_redo()->set_method_notify_callback(_method_changeds,this);

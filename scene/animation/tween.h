@@ -57,7 +57,7 @@ public:
 
 		TRANS_COUNT,
     };
-        
+
     enum EaseType {
         EASE_IN,
         EASE_OUT,
@@ -206,7 +206,7 @@ public:
 		, String p_callback
 		, VARIANT_ARG_DECLARE
 	);
-	
+
 	bool interpolate_deferred_callback(Object *p_object
 		, real_t p_times_in_sec
 		, String p_callback
