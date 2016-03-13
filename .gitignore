@@ -65,6 +65,9 @@ platform/android/libs/play_licensing/gen/*
 .deps/*
 .dirstamp
 
+# Vim temp files
+*.swo
+*.swp
 
 # QT project files
 *.config

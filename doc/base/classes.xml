@@ -20639,6 +20639,18 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			</description>
 		</method>
+		<method name="get_time_from_unix_time" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="unix_time_val" type="int">
+			</argument>
+			<description>
+			Get a dictionary of time values when given epoch time.
+			Dictionary Time values will be a union of values from [method get_time]
+			and [method get_date] dictionaries (with the exception of dst = 
+			day light standard time, as it cannot be determined from epoc)
+			</description>
+		</method>
 		<method name="get_time_zone_info" qualifiers="const">
 			<return type="Dictionary">
 			</return>
@@ -20922,29 +20934,29 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="DAY_SATURDAY" value="6">
 		</constant>
-		<constant name="MONTH_JANUARY" value="0">
+		<constant name="MONTH_JANUARY" value="1">
 		</constant>
-		<constant name="MONTH_FEBRUARY" value="1">
+		<constant name="MONTH_FEBRUARY" value="2">
 		</constant>
-		<constant name="MONTH_MARCH" value="2">
+		<constant name="MONTH_MARCH" value="3">
 		</constant>
-		<constant name="MONTH_APRIL" value="3">
+		<constant name="MONTH_APRIL" value="4">
 		</constant>
-		<constant name="MONTH_MAY" value="4">
+		<constant name="MONTH_MAY" value="5">
 		</constant>
-		<constant name="MONTH_JUNE" value="5">
+		<constant name="MONTH_JUNE" value="6">
 		</constant>
-		<constant name="MONTH_JULY" value="6">
+		<constant name="MONTH_JULY" value="7">
 		</constant>
-		<constant name="MONTH_AUGUST" value="7">
+		<constant name="MONTH_AUGUST" value="8">
 		</constant>
-		<constant name="MONTH_SEPTEMBER" value="8">
+		<constant name="MONTH_SEPTEMBER" value="9">
 		</constant>
-		<constant name="MONTH_OCTOBER" value="9">
+		<constant name="MONTH_OCTOBER" value="10">
 		</constant>
-		<constant name="MONTH_NOVEMBER" value="10">
+		<constant name="MONTH_NOVEMBER" value="11">
 		</constant>
-		<constant name="MONTH_DECEMBER" value="11">
+		<constant name="MONTH_DECEMBER" value="12">
 		</constant>
 		<constant name="SCREEN_ORIENTATION_LANDSCAPE" value="0">
 		</constant>
