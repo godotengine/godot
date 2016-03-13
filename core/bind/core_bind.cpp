@@ -508,11 +508,11 @@ Dictionary _OS::get_time(bool utc) const {
 }
 
 /**
- *  Get a dictionary of time values when given epoc time
+ *  Get a dictionary of time values when given epoch time
  *
  *  Dictionary Time values will be a union if values from #get_time
  *    and #get_date dictionaries (with the exception of dst = 
- *    day light standard time, as it cannot be determined from epoc)
+ *    day light standard time, as it cannot be determined from epoch)
  */
 Dictionary _OS::get_time_from_unix_time( uint64_t unix_time_val) const {
 
@@ -552,7 +552,8 @@ Dictionary _OS::get_time_from_unix_time( uint64_t unix_time_val) const {
 		imonth++;
 	}
 
-	date.month = static_cast<OS::Month>(imonth);
+	/// Add 1 to month to make sure months are indexed starting at 1
+	date.month = static_cast<OS::Month>(imonth+1);
 
 	date.day = dayno + 1;
 

@@ -249,7 +249,11 @@ OS::Date OSNacl::get_date(bool utc) const {
 		lt=localtime(&t);
 	Date ret;
 	ret.year=lt->tm_year;
-	ret.month=(Month)lt->tm_mon;
+
+	// Index starting at 1 to match OS_Unix::get_date
+	//   and Windows SYSTEMTIME and tm_mon follows the typical structure 
+	//   of 0-11, noted here: http://www.cplusplus.com/reference/ctime/tm/
+	ret.month=(Month)(lt->tm_mon+1);
 	ret.day=lt->tm_mday;
 	ret.weekday=(Weekday)lt->tm_wday;
 	ret.dst=lt->tm_isdst;
