@@ -3045,33 +3045,6 @@ void GDScriptLanguage::frame() {
 void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 
 	static const char *_reserved_words[]={
-<<<<<<< HEAD
-		"break",
-		"class",
-		"continue",
-		"const",
-		"else",
-		"elif",
-		"enum",
-		"extends"	,
-		"for"	,
-		"func"	,
-		"if"	,
-		"in"	,
-		"null"	,
-		"not"	,
-		"return"	,
-		"self"	,
-		"while"	,
-		"true"	,
-		"false"	,
-		"tool",
-		"var",
-		"setget",
-		"pass",
-=======
-		// operators
->>>>>>> godotengine/master
 		"and",
 		"in",
 		"not",
@@ -3086,8 +3059,6 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"true",
 		// functions
 		"assert",
-<<<<<<< HEAD
-=======
 		"breakpoint",
 		"class",
 		"extends",
@@ -3096,7 +3067,6 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"setget",
 		"signal",
 		"tool",
->>>>>>> godotengine/master
 		"yield",
 		// var
 		"const",
