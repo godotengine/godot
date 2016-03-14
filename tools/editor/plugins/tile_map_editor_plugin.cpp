@@ -231,16 +231,10 @@ void TileMapEditor::_update_palette() {
 		if (tex.is_valid()) {
 			Rect2 region = tileset->tile_get_region(E->get());
 
-			if (!region.has_no_area()) {
-				Image data = VS::get_singleton()->texture_get_data(tex->get_rid());
+			if (!region.has_no_area())
+				palette->set_item_icon_region(palette->get_item_count()-1, region);
 
-				Ref<ImageTexture> img = memnew( ImageTexture );
-				img->create_from_image(data.get_rect(region));
-
-				palette->set_item_icon(palette->get_item_count()-1, img);
-			} else {
-				palette->set_item_icon(palette->get_item_count()-1, tex);
-			}
+			palette->set_item_icon(palette->get_item_count()-1, tex);
 		}
 
 		palette->set_item_metadata(palette->get_item_count()-1, E->get());
