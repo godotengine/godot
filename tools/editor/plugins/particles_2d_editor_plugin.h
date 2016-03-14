@@ -33,7 +33,7 @@
 #include "tools/editor/editor_node.h"
 #include "scene/2d/collision_polygon_2d.h"
 
-#include "scene/gui/separator.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/2d/particles_2d.h"
 
@@ -47,14 +47,14 @@ class Particles2DEditorPlugin : public EditorPlugin {
 		MENU_CLEAR_EMISSION_MASK
 	};
 
+	Particles2D *particles;
 
 	EditorFileDialog *file;
 	EditorNode *editor;
 
+	HBoxContainer *toolbar;
 	MenuButton *menu;
 
-	VSeparator *sep;
-	Particles2D *particles;
 	SpinBox *epoints;
 
 	UndoRedo *undo_redo;
