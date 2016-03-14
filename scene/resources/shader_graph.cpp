@@ -1351,13 +1351,21 @@ ShaderGraph::ShaderGraph(Mode p_mode) : Shader(p_mode) {
 
 	//shader = VisualServer::get_singleton()->shader_create();
 	_pending_update_shader=false;
-	Node out;
-	out.id=0;
-	out.pos=Vector2(250,20);
-	out.type=NODE_OUTPUT;
+
+	Node input;
+	input.id=1;
+	input.pos=Vector2(50,40);
+	input.type=NODE_INPUT;
+
+	Node output;
+	output.id=0;
+	output.pos=Vector2(350,40);
+	output.type=NODE_OUTPUT;
+
 	for(int i=0;i<3;i++) {
 
-		shader[i].node_map.insert(0,out);
+		shader[i].node_map.insert(0,output);
+		shader[i].node_map.insert(1,input);
 	}
 }
 
