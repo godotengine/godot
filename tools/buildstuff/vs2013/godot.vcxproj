@@ -198,7 +198,6 @@
     <ClInclude Include="..\..\..\core\path_remap.h" />
     <ClInclude Include="..\..\..\core\pool_allocator.h" />
     <ClInclude Include="..\..\..\core\print_string.h" />
-    <ClInclude Include="..\..\..\core\range_iterator.h" />
     <ClInclude Include="..\..\..\core\reference.h" />
     <ClInclude Include="..\..\..\core\ref_ptr.h" />
     <ClInclude Include="..\..\..\core\register_core_types.h" />
@@ -470,6 +469,7 @@
     <ClInclude Include="..\..\..\scene\gui\item_list.h" />
     <ClInclude Include="..\..\..\scene\gui\label.h" />
     <ClInclude Include="..\..\..\scene\gui\line_edit.h" />
+    <ClInclude Include="..\..\..\scene\gui\link_button.h" />
     <ClInclude Include="..\..\..\scene\gui\margin_container.h" />
     <ClInclude Include="..\..\..\scene\gui\menu_button.h" />
     <ClInclude Include="..\..\..\scene\gui\option_button.h" />
@@ -500,6 +500,7 @@
     <ClInclude Include="..\..\..\scene\io\resource_format_image.h" />
     <ClInclude Include="..\..\..\scene\io\resource_format_wav.h" />
     <ClInclude Include="..\..\..\scene\main\canvas_layer.h" />
+    <ClInclude Include="..\..\..\scene\main\http_request.h" />
     <ClInclude Include="..\..\..\scene\main\instance_placeholder.h" />
     <ClInclude Include="..\..\..\scene\main\misc.h" />
     <ClInclude Include="..\..\..\scene\main\node.h" />
@@ -750,6 +751,7 @@
     <ClInclude Include="..\..\..\tools\editor\settings_config_dialog.h" />
     <ClInclude Include="..\..\..\tools\editor\spatial_editor_gizmos.h" />
     <ClInclude Include="..\..\..\tools\pck\pck_packer.h" />
+    <ClInclude Include="..\..\editor\editor_initialize_ssl.h" />
     <ClInclude Include="..\..\editor\editor_plugin_settings.h" />
   </ItemGroup>
   <ItemGroup>
@@ -869,7 +871,6 @@
     <ClCompile Include="..\..\..\core\path_remap.cpp" />
     <ClCompile Include="..\..\..\core\pool_allocator.cpp" />
     <ClCompile Include="..\..\..\core\print_string.cpp" />
-    <ClCompile Include="..\..\..\core\range_iterator.cpp" />
     <ClCompile Include="..\..\..\core\reference.cpp" />
     <ClCompile Include="..\..\..\core\ref_ptr.cpp" />
     <ClCompile Include="..\..\..\core\register_core_types.cpp" />
@@ -1159,6 +1160,7 @@
     <ClCompile Include="..\..\..\scene\gui\item_list.cpp" />
     <ClCompile Include="..\..\..\scene\gui\label.cpp" />
     <ClCompile Include="..\..\..\scene\gui\line_edit.cpp" />
+    <ClCompile Include="..\..\..\scene\gui\link_button.cpp" />
     <ClCompile Include="..\..\..\scene\gui\margin_container.cpp" />
     <ClCompile Include="..\..\..\scene\gui\menu_button.cpp" />
     <ClCompile Include="..\..\..\scene\gui\option_button.cpp" />
@@ -1189,6 +1191,7 @@
     <ClCompile Include="..\..\..\scene\io\resource_format_image.cpp" />
     <ClCompile Include="..\..\..\scene\io\resource_format_wav.cpp" />
     <ClCompile Include="..\..\..\scene\main\canvas_layer.cpp" />
+    <ClCompile Include="..\..\..\scene\main\http_request.cpp" />
     <ClCompile Include="..\..\..\scene\main\instance_placeholder.cpp" />
     <ClCompile Include="..\..\..\scene\main\misc.cpp" />
     <ClCompile Include="..\..\..\scene\main\node.cpp" />
@@ -1439,6 +1442,7 @@
     <ClCompile Include="..\..\..\tools\editor\settings_config_dialog.cpp" />
     <ClCompile Include="..\..\..\tools\editor\spatial_editor_gizmos.cpp" />
     <ClCompile Include="..\..\..\tools\pck\pck_packer.cpp" />
+    <ClCompile Include="..\..\editor\editor_initialize_ssl.cpp" />
     <ClCompile Include="..\..\editor\editor_plugin_settings.cpp" />
   </ItemGroup>
   <ItemGroup>

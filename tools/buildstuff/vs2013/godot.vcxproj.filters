@@ -2271,11 +2271,17 @@
     <ClInclude Include="..\..\..\drivers\pnm\bitmap_loader_pnm.h">
       <Filter>drivers\pnm</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\core\range_iterator.h">
-      <Filter>core</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\editor\editor_plugin_settings.h">
       <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\editor\editor_initialize_ssl.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\scene\main\http_request.h">
+      <Filter>scene\main</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\scene\gui\link_button.h">
+      <Filter>scene\gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -4262,11 +4268,17 @@
     <ClCompile Include="..\..\..\drivers\pnm\bitmap_loader_pnm.cpp">
       <Filter>drivers\pnm</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\core\range_iterator.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\editor\editor_plugin_settings.cpp">
       <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\editor\editor_initialize_ssl.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\scene\main\http_request.cpp">
+      <Filter>scene\main</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\scene\gui\link_button.cpp">
+      <Filter>scene\gui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
