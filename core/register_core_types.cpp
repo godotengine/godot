@@ -81,7 +81,7 @@ extern void unregister_variant_methods();
 
 void register_core_types() {
 
-	
+
 	_global_mutex=Mutex::create();
 
 
@@ -92,7 +92,7 @@ void register_core_types() {
 
 
 	CoreStringNames::create();
-	
+
 	resource_format_po = memnew( TranslationLoaderPO );
 	ResourceLoader::add_resource_format_loader( resource_format_po );
 

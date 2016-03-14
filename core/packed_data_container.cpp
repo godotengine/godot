@@ -182,12 +182,12 @@ Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs,const Variant& p_key,boo
 			err=true;
 			return Variant();
 		}
-		
+
 	} else if (type==TYPE_DICT) {
 
 		uint32_t hash=p_key.hash();
 		uint32_t len = decode_uint32(r+4);
-		
+
 		bool found=false;
 		for(int i=0;i<len;i++) {
 			uint32_t khash=decode_uint32(r+8+i*12+0);
@@ -214,7 +214,7 @@ Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs,const Variant& p_key,boo
 		err=true;
 		return Variant();
 	}
- 
+
 
 }
 

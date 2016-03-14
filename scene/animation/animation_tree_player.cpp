@@ -420,7 +420,7 @@ void AnimationTreePlayer::_notification(int p_what) {
 				_process_animation( get_process_delta_time() );
 		} break;
 		case NOTIFICATION_FIXED_PROCESS: {
-		
+
 			if (animation_process_mode==ANIMATION_PROCESS_IDLE)
 				break;
 
@@ -507,7 +507,7 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 
 			if (!(*r_prev_anim))
 				active_list=an;
-			else 
+			else
 				(*r_prev_anim)->next=an;
 
 			an->next=NULL;
@@ -637,10 +637,15 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 		} break;
 		case NODE_TIMESCALE: {
 			TimeScaleNode *tsn = static_cast<TimeScaleNode*>(nb);
+			float rem;
 			if (p_seek)
-				return _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time,switched,true,p_filter,p_reverse_weight);
+				rem = _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time,switched,true,p_filter,p_reverse_weight);
 			else
-				return _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time*tsn->scale,switched,false,p_filter,p_reverse_weight);
+				rem = _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time*tsn->scale,switched,false,p_filter,p_reverse_weight);
+			if (tsn->scale == 0)
+				return INFINITY;
+			else
+				return rem / tsn->scale;
 
 		} break;
 		case NODE_TIMESEEK: {
@@ -861,8 +866,9 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 
 		if (!t.node)
 			continue;
-		//if (E->get()->t.type!=Animation::TYPE_TRANSFORM)
-		//	continue;
+
+		if(t.property)  // value track; was applied in step 2
+			continue;
 
 		Transform xform;
 		xform.basis=t.rot;
@@ -1830,7 +1836,7 @@ void AnimationTreePlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("reset"),&AnimationTreePlayer::reset);
 
-	ObjectTypeDB::bind_method(_MD("recompute_caches"),&AnimationTreePlayer::recompute_caches);	
+	ObjectTypeDB::bind_method(_MD("recompute_caches"),&AnimationTreePlayer::recompute_caches);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback/process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_animation_process_mode"), _SCS("get_animation_process_mode"));
 

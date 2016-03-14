@@ -260,7 +260,7 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant& p_va
 
 			if (mode==Physics2DServer::BODY_MODE_KINEMATIC) {
 
-				new_transform=p_variant;				
+				new_transform=p_variant;
 				//wakeup_neighbours();
 				set_active(true);
 				if (first_time_kinematic) {
@@ -396,7 +396,7 @@ void Body2DSW::_compute_area_gravity_and_dampenings(const Area2DSW *p_area) {
 	}
 
 	area_linear_damp += p_area->get_linear_damp();
-	area_angular_damp += p_area->get_angular_damp();	
+	area_angular_damp += p_area->get_angular_damp();
 }
 
 void Body2DSW::integrate_forces(real_t p_step) {
@@ -518,7 +518,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 
 	// damp_area=NULL; // clear the area, so it is set in the next frame
 	def_area=NULL; // clear the area, so it is set in the next frame
-	contact_count=0;	
+	contact_count=0;
 
 }
 
@@ -597,7 +597,7 @@ void Body2DSW::call_queries() {
 
 			set_force_integration_callback(0,StringName());
 		} else {
-			Variant::CallError ce;			
+			Variant::CallError ce;
 			if (fi_callback->callback_udata.get_type()) {
 
 				obj->call(fi_callback->method,vp,2,ce);

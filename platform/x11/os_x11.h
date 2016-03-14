@@ -78,7 +78,7 @@ class OS_X11 : public OS_Unix {
 	VideoMode current_videomode;
 	List<String> args;
 	Window x11_window;
-	MainLoop *main_loop;	
+	MainLoop *main_loop;
 	::Display* x11_display;
 	char *xmbstring;
 	int xmblen;
@@ -93,7 +93,7 @@ class OS_X11 : public OS_Unix {
 	uint64_t last_click_ms;
 	unsigned int event_id;
 	uint32_t last_button_state;
-	
+
 	PhysicsServer *physics_server;
 	unsigned int get_mouse_button_state(unsigned int p_x11_state);
 	InputModifierState get_key_modifier_state(unsigned int p_x11_state);
@@ -101,7 +101,7 @@ class OS_X11 : public OS_Unix {
 
 	MouseMode mouse_mode;
 	Point2i center;
-	
+
 	void handle_key_event(XKeyEvent *p_event,bool p_echo=false);
 	void process_xevents();
 	virtual void delete_main_loop();
@@ -154,16 +154,16 @@ class OS_X11 : public OS_Unix {
 protected:
 
 	virtual int get_video_driver_count() const;
-	virtual const char * get_video_driver_name(int p_driver) const;	
+	virtual const char * get_video_driver_name(int p_driver) const;
 	virtual VideoMode get_default_video_mode() const;
 
 	virtual int get_audio_driver_count() const;
 	virtual const char * get_audio_driver_name(int p_driver) const;
 
-	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);	
+	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);
 	virtual void finalize();
 
-	virtual void set_main_loop( MainLoop * p_main_loop );    
+	virtual void set_main_loop( MainLoop * p_main_loop );
 
 
 public:
@@ -183,7 +183,7 @@ public:
 	virtual void set_icon(const Image& p_icon);
 
 	virtual MainLoop *get_main_loop() const;
-	
+
 	virtual bool can_draw() const;
 
 	virtual void set_clipboard(const String& p_text);

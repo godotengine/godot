@@ -75,11 +75,11 @@ float Color::get_h() const {
 		h = 2 + ( b - r ) / delta;	// between cyan & yellow
 	else
 		h = 4 + ( r - g ) / delta;	// between magenta & cyan
-	
+
 	h/=6.0;
 	if (h<0)
 		h+=1.0;
-		
+
 	return h;
 }
 
@@ -119,7 +119,7 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 	p_h *=6.0;
 	p_h = Math::fmod(p_h,6);
 	i = Math::floor( p_h );
-	
+
 	f = p_h - i;
 	p = p_v * ( 1 - p_s );
 	q = p_v * ( 1 - p_s * f );
@@ -136,7 +136,7 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 			g = p_v;
 			b = p;
 			break;
-		case 2: 
+		case 2:
 			r = p;
 			g = p_v;
 			b = t;
@@ -162,8 +162,8 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 void Color::invert() {
 
 	r=1.0-r;
-	g=1.0-g;	
-	b=1.0-b;	
+	g=1.0-g;
+	b=1.0-b;
 }
 void Color::contrast() {
 
@@ -368,7 +368,7 @@ String Color::to_html(bool p_alpha) const {
 
 float Color::gray() const {
 
-	return (r+g+b)/3.0;	
+	return (r+g+b)/3.0;
 }
 
 Color::operator String() const {

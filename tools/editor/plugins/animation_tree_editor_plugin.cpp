@@ -593,7 +593,7 @@ void AnimationTreeEditor::_draw_node(const StringName& p_node) {
 
 		} break;
 		case AnimationTreePlayer::NODE_ONESHOT:
-		case AnimationTreePlayer::NODE_MIX:			
+		case AnimationTreePlayer::NODE_MIX:
 		case AnimationTreePlayer::NODE_BLEND2:
 		case AnimationTreePlayer::NODE_BLEND3:
 		case AnimationTreePlayer::NODE_BLEND4:
@@ -1155,7 +1155,7 @@ StringName AnimationTreeEditor::_add_node(int p_item) {
 	anim_tree->node_set_pos(name,Point2(last_x,last_y));
 	order.push_back(name);
 	last_x+=10;
-	last_y+=10;	
+	last_y+=10;
 	last_x=last_x % (int)get_size().width;
 	last_y=last_y % (int)get_size().height;
 	update();

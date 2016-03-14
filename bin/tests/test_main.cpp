@@ -64,7 +64,7 @@ const char ** tests_get_names()  {
 		"physics",
 		NULL
 	};
-	
+
 	return test_names;
 }
 
@@ -72,22 +72,22 @@ MainLoop* test_main(String p_test,const List<String>& p_args) {
 
 
 	if (p_test=="string") {
-	
+
 		return TestString::test();
 	}
-	
+
 	if (p_test=="containers") {
-	
+
 		return TestContainers::test();
 	}
-	
+
 	if (p_test=="math") {
-	
+
 		return TestMath::test();
 	}
-  
+
 	if (p_test=="physics") {
-	
+
 		return TestPhysics::test();
 	}
 
@@ -97,15 +97,15 @@ MainLoop* test_main(String p_test,const List<String>& p_args) {
 	}
 
   	if (p_test=="misc") {
-	
+
 		return TestMisc::test();
 	}
 
 	if (p_test=="render") {
-	
+
 		return TestRender::test();
 	}
-  
+
 	#ifndef _3D_DISABLED
 	if (p_test=="gui") {
 
@@ -119,17 +119,17 @@ MainLoop* test_main(String p_test,const List<String>& p_args) {
 	}
 
 	if (p_test=="io") {
-		
+
 		return TestIO::test();
 	}
-	
+
 	if (p_test=="particles") {
 
 		return TestParticles::test();
 	}
-	
+
 	if (p_test=="multimesh") {
-		
+
 		return TestMultiMesh::test();
 	}
 
@@ -171,7 +171,7 @@ MainLoop* test_main(String p_test,const List<String>& p_args) {
 #ifdef PYTHON_ENABLED
 
 	if (p_test=="python") {
-	
+
 		return TestPython::test();
 	}
 #endif

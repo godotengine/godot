@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "spatial.h"
- 
+
 #include "scene/main/viewport.h"
 #include "message_queue.h"
 #include "scene/scene_string_names.h"
@@ -99,14 +99,14 @@ void Spatial::_propagate_transform_changed(Spatial *p_origin) {
 //		return; //already dirty
 
 	data.children_lock++;
-		
+
 	for (List<Spatial*>::Element *E=data.children.front();E;E=E->next()) {
-	
+
 		if (E->get()->data.toplevel_active)
 			continue; //don't propagate to a toplevel
 		E->get()->_propagate_transform_changed(p_origin);
 	}
-	
+
 
 	if (!data.ignore_notification && !xform_change.in_list()) {
 
@@ -211,14 +211,14 @@ void Spatial::_notification(int p_what) {
 
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-		
+
 #ifdef TOOLS_ENABLED
 			if (data.gizmo.is_valid()) {
 				data.gizmo->transform();
 			}
 #endif
 		} break;
-	
+
 		default: {}
 	}
 }
@@ -257,7 +257,7 @@ Transform Spatial::get_transform() const {
 
 		_update_local_transform();
 	}
-	
+
 	return data.local_transform;
 }
 Transform Spatial::get_global_transform() const {
@@ -272,16 +272,16 @@ Transform Spatial::get_global_transform() const {
 		}
 
 		if (data.parent && !data.toplevel_active) {
-		
+
 			data.global_transform=data.parent->get_global_transform() * data.local_transform;
 		} else {
-		
+
 			data.global_transform=data.local_transform;
 		}
-		
+
 		data.dirty&=~DIRTY_GLOBAL;
 	}
-	
+
 	return data.global_transform;
 }
 #if 0
@@ -290,7 +290,7 @@ void Spatial::add_child_notify(Node *p_child) {
 	Spatial *s=p_child->cast_to<Spatial>();
 	if (!s)
 		return;
-		
+
 	ERR_FAIL_COND(data.children_lock>0);
 
 	s->data.dirty=DIRTY_GLOBAL; // don't allow global transform to be valid
@@ -305,12 +305,12 @@ void Spatial::remove_child_notify(Node *p_child) {
 	Spatial *s=p_child->cast_to<Spatial>();
 	if (!s)
 		return;
-	
+
 	ERR_FAIL_COND(data.children_lock>0);
-	
+
 	if (s->data.C)
 		data.children.erase(s->data.C);
-	s->data.parent=NULL;		
+	s->data.parent=NULL;
 	s->data.C=NULL;
 */
 }
@@ -595,11 +595,11 @@ bool Spatial::is_hidden() const{
 }
 
 void Spatial::set_hidden(bool p_hidden) {
-	
+
 	if (data.visible != p_hidden) {
 		return;
 	}
-	
+
 	_set_visible_(!p_hidden);
 }
 

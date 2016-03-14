@@ -302,11 +302,11 @@ class CanvasItemEditor : public VBoxContainer {
 	bool _select(CanvasItem *item, Point2 p_click_pos, bool p_append, bool p_drag=true);
 
 	ConfirmationDialog *snap_dialog;
-	
+
 	AcceptDialog *value_dialog;
 	Label *dialog_label;
 	SpinBox *dialog_val;
-	
+
 	CanvasItem *ref_item;
 
 	void _edit_set_pivot(const Vector2& mouse_pos);
@@ -369,29 +369,29 @@ protected:
 	bool box_selection_end();
 
 	HBoxContainer *get_panel_hb() { return hb; }
-	
+
 	struct compare_items_x {
 		bool operator()( const CanvasItem *a, const CanvasItem *b ) const {
 			return a->get_global_transform().elements[2].x < b->get_global_transform().elements[2].x;
 		}
 	};
-	
+
 	struct compare_items_y {
 		bool operator()( const CanvasItem *a, const CanvasItem *b ) const {
 			return a->get_global_transform().elements[2].y < b->get_global_transform().elements[2].y;
 		}
 	};
-	
+
 	struct proj_vector2_x {
 		float get( const Vector2 &v ) { return v.x; }
 		void set( Vector2 &v, float f ) { v.x = f; }
 	};
-	
+
 	struct proj_vector2_y {
 		float get( const Vector2 &v ) { return v.y; }
 		void set( Vector2 &v, float f ) { v.y = f; }
 	};
-	
+
 	template< class P, class C > void space_selected_items();
 
 	static CanvasItemEditor *singleton;

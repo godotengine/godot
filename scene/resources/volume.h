@@ -38,16 +38,16 @@
 */
 class Volume : public Resource {
 
-	OBJ_TYPE( Volume, Resource );	
+	OBJ_TYPE( Volume, Resource );
 	RID volume;
-	
+
 protected:
-	
+
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list( List<PropertyInfo> *p_list) const;
-	
-	static void _bind_methods();	
+
+	static void _bind_methods();
 public:
 
 	enum ShapeType {
@@ -59,22 +59,22 @@ public:
 		SHAPE_CONVEX_POLYGON = PhysicsServer::SHAPE_CONVEX_POLYGON, ///< array of planes:"planes"
 		SHAPE_CONCAVE_POLYGON = PhysicsServer::SHAPE_CONCAVE_POLYGON, ///< vector3 array:"triangles"
 	};
-	
+
 	void add_shape(ShapeType p_shape_type, const Variant& p_data, const Transform& p_transform=Transform ());
-	
+
 	void add_plane_shape(const Plane& p_plane,const Transform& p_transform);
 	void add_sphere_shape(float p_radius,const Transform& p_transform);
 	void add_box_shape(const Vector3& p_half_extents,const Transform& p_transform);
 	void add_cylinder_shape(float p_radius, float p_height,const Transform& p_transform);
 	void add_capsule_shape(float p_radius, float p_height,const Transform& p_transform);
-	
+
 	int get_shape_count() const;
 	ShapeType get_shape_type(int p_shape) const;
 	Transform get_shape_transform(int p_shape) const;
 	Variant get_shape(int p_shape) const;
 
 	virtual RID get_rid();
-	
+
 	Volume();
 	~Volume();
 

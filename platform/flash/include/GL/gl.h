@@ -35,7 +35,7 @@
 /**********************************************************************
  * Begin system-specific stuff. Do not do any of this when building
  * for SciTech SNAP, as this is all done before this header file is
- * included. 
+ * included.
  */
 #if !defined(__SCITECH_SNAP__)
 
@@ -60,7 +60,7 @@
 #    define GLAPI extern
 #  endif /* _STATIC_MESA support */
 #  if defined(__MINGW32__) && defined(GL_NO_STDCALL) || defined(UNDER_CE)  /* The generated DLLs by MingW with STDCALL are not compatible with the ones done by Microsoft's compilers */
-#    define GLAPIENTRY 
+#    define GLAPIENTRY
 #  else
 #    define GLAPIENTRY __stdcall
 #  endif

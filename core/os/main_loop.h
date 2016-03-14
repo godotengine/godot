@@ -36,7 +36,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class MainLoop : public Object {
-	
+
 	OBJ_TYPE( MainLoop, Object );
 	OBJ_CATEGORY("Main Loop");
 
@@ -44,7 +44,7 @@ class MainLoop : public Object {
 protected:
 	static void _bind_methods();
 
-public:	
+public:
 
 	enum {
 		NOTIFICATION_WM_MOUSE_ENTER = 3,
@@ -55,7 +55,7 @@ public:
 		NOTIFICATION_WM_UNFOCUS_REQUEST = 8,
 		NOTIFICATION_OS_MEMORY_WARNING = 9,
 	};
-	
+
 	virtual void input_event( const InputEvent& p_event );
 	virtual void input_text( const String& p_text );
 

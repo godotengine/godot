@@ -81,7 +81,7 @@ protected:
 
 public:
 
-	void add_line(const String& p_text, const Variant& p_meta=Variant(), const LineType p_type=LINE_NORMAL);	
+	void add_line(const String& p_text, const Variant& p_meta=Variant(), const LineType p_type=LINE_NORMAL);
 
 	OutputStrings();
 };

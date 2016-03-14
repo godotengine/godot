@@ -223,7 +223,7 @@ typedef signed   short int     khronos_int16_t;
 typedef unsigned short int     khronos_uint16_t;
 
 /*
- * Types that differ between LLP64 and LP64 architectures - in LLP64, 
+ * Types that differ between LLP64 and LP64 architectures - in LLP64,
  * pointers are 64 bits, but 'long' is still 32 bits. Win64 appears
  * to be the only LLP64 architecture in current use.
  */

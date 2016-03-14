@@ -776,7 +776,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 							if (named) {
 
-								key_idx = codegen.get_name_map_pos(static_cast<const GDParser::IdentifierNode*>(E->get()->arguments[1])->name);								
+								key_idx = codegen.get_name_map_pos(static_cast<const GDParser::IdentifierNode*>(E->get()->arguments[1])->name);
 								//printf("named key %x\n",key_idx);
 
 							} else {
@@ -1567,7 +1567,7 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 		GDScript::MemberInfo minfo;
 		minfo.index = p_script->member_indices.size();
 		minfo.setter = p_class->variables[i].setter;
-		minfo.getter = p_class->variables[i].getter;		
+		minfo.getter = p_class->variables[i].getter;
 		p_script->member_indices[name]=minfo;
 		p_script->members.insert(name);
 

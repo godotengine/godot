@@ -126,7 +126,7 @@ bool Tween::_get(const StringName& p_name,Variant &r_ret) const {
 	String name=p_name;
 
 	if (name=="playback/speed") { //bw compatibility
-	
+
 		r_ret=speed_scale;
 	} else if (name=="playback/active") {
 
@@ -149,7 +149,7 @@ void Tween::_get_property_list(List<PropertyInfo> *p_list) const {
 void Tween::_notification(int p_what) {
 
 	switch(p_what) {
-	
+
 		case NOTIFICATION_ENTER_TREE: {
 
 			if (!processing) {
@@ -170,7 +170,7 @@ void Tween::_notification(int p_what) {
 				_tween_process( get_process_delta_time() );
 		} break;
 		case NOTIFICATION_FIXED_PROCESS: {
-		
+
 			if (tween_process_mode==TWEEN_PROCESS_IDLE)
 				break;
 
@@ -178,7 +178,7 @@ void Tween::_notification(int p_what) {
 				_tween_process( get_fixed_process_delta_time() );
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-		
+
 			stop_all();
 		} break;
 	}
@@ -1183,7 +1183,7 @@ bool Tween::interpolate_callback(Object *p_object
 		args=2;
 	else if (p_arg1.get_type()!=Variant::NIL)
 		args=1;
-	else 
+	else
 		args=0;
 
 	data.args = args;
@@ -1247,7 +1247,7 @@ bool Tween::interpolate_deferred_callback(Object *p_object
 		args=2;
 	else if (p_arg1.get_type()!=Variant::NIL)
 		args=1;
-	else 
+	else
 		args=0;
 
 	data.args = args;

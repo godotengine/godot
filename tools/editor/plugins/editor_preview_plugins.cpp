@@ -725,7 +725,11 @@ Ref<Texture> EditorSamplePreviewPlugin::generate(const RES& p_from) {
 					} else {
 						half=1;
 						ofs=h/2;
-						v = ((j-(h/2))/(float)(h/2)) * 2.0 - 1.0;
+						if( (float)(h/2) != 0 ) {
+							v = ((j-(h/2))/(float)(h/2)) * 2.0 - 1.0;
+						} else {
+							v = ((j-(h/2))/(float)(1/2)) * 2.0 - 1.0;
+						}
 					}
 
 					uint8_t* imgofs = &imgw[(j*w+i)*3];

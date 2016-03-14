@@ -912,7 +912,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			default: valid=false; break;
 		}
 
-		if (valid) {			
+		if (valid) {
 			e.is_op=true;
 			e.op=op;
 			expression.push_back(e);

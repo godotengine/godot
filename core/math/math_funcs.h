@@ -91,25 +91,25 @@ public:
 
 	static uint32_t rand();
 	static double randf();
-	
+
 	static double round(double p_val);
 
 	static double random(double from, double to);
-	
+
 
 	static _FORCE_INLINE_ real_t abs(real_t g) {
 
-#ifdef REAL_T_IS_DOUBLE	
-	
-		return absd(g);		
+#ifdef REAL_T_IS_DOUBLE
+
+		return absd(g);
 #else
 
-		return absf(g);		
+		return absf(g);
 #endif
 	}
 
 	static _FORCE_INLINE_ float absf(float g) {
-		
+
 		union {
 			float f;
 			uint32_t i;
@@ -174,7 +174,7 @@ public:
 	static double pow(double x, double y);
 	static double log(double x);
 	static double exp(double x);
-	
+
 };
 
 

@@ -33,61 +33,61 @@
 
 template<class T>
 struct GetSimpleType {
-	
+
 	T type;
 };
 
 template<class T>
 struct GetSimpleTypeT {
-	
+
 	typedef T type_t;
 };
 
 template<class T>
 struct GetSimpleType<T&> {
-	
+
 	T type;
-	
+
 };
 
 template<class T>
 struct GetSimpleTypeT<T&> {
-	
+
 	typedef T type_t;
 };
 
 template<class T>
 struct GetSimpleType<T const> {
-	
+
 	T type;
 	_FORCE_INLINE_ GetSimpleType() { }
-	
+
 };
 
 template<class T>
 struct GetSimpleTypeT<T const> {
-	
+
 	typedef T type_t;
 };
 
 template<class T>
 struct GetSimpleType<const T&> {
-	
+
 	T type;
 	_FORCE_INLINE_ GetSimpleType() { }
-	
+
 };
 
 template<class T>
 struct GetSimpleType<T*> {
-	
+
 	T *type;
 	_FORCE_INLINE_ GetSimpleType() { type=NULL; }
 };
 
 template<class T>
 struct GetSimpleType<const T*> {
-	
+
 	T *type;
 	_FORCE_INLINE_ GetSimpleType() { type=NULL; }
 };

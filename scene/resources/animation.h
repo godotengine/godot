@@ -61,7 +61,7 @@ public:
 private:
 
 	struct Track {
-	
+
 		TrackType type;
 		InterpolationType interpolation;
 		NodePath path; // path to something
@@ -70,20 +70,20 @@ private:
 	};
 
 	struct Key {
-	
+
 		float transition;
-		float time; // time in secs		
+		float time; // time in secs
 		Key() { transition=1; }
 	};
-		
+
 	// transform key holds either Vector3 or Quaternion
 	template<class T>
 	struct TKey : public Key {
-		
+
 		float time;
 		T value;
 	};
-	
+
 
 	struct TransformKey {
 
@@ -93,45 +93,45 @@ private:
 	};
 
 	/* TRANSFORM TRACK */
-	
+
 	struct TransformTrack : public Track {
 
 		Vector< TKey<TransformKey> > transforms;
-		
+
 		TransformTrack() { type=TYPE_TRANSFORM; }
 	};
-	
+
 	/* PROPERTY VALUE TRACK */
 
 	struct ValueTrack : public Track {
 
 		bool continuous;
 		Vector< TKey<Variant> > values;
-		
+
 		ValueTrack() { type=TYPE_VALUE; continuous=true; }
 	};
 
 
 	/* METHOD TRACK */
-	
+
 	struct MethodKey : public Key {
-	
+
 		StringName method;
 		Vector<Variant> params;
 	};
-	
+
 	struct MethodTrack : public Track {
-			
+
 		Vector< MethodKey > methods;
 		MethodTrack() { type=TYPE_METHOD; }
-	};	
-		
+	};
+
 	Vector<Track*> tracks;
 
 	/*
 	template<class T>
 	int _insert_pos(float p_time, T& p_keys);*/
-	
+
 	template<class T>
 	void _clear(T& p_keys);
 
@@ -140,7 +140,7 @@ private:
 
 	template<class K>
 	inline int _find( const Vector<K>& p_keys, float p_time) const;
-	
+
 	_FORCE_INLINE_ Animation::TransformKey _interpolate( const Animation::TransformKey& p_a, const Animation::TransformKey& p_b, float p_c) const;
 
 	_FORCE_INLINE_ Vector3 _interpolate( const Vector3& p_a, const Vector3& p_b, float p_c) const;
@@ -163,9 +163,9 @@ private:
 	float length;
 	float step;
 	bool loop;
-	
+
 // bind helpers
-private:	
+private:
 
 	Array _transform_track_interpolate(int p_track, float p_time) const {
 		Vector3 loc;
@@ -180,25 +180,25 @@ private:
 	}
 
 	DVector<int> _value_track_get_key_indices(int p_track, float p_time, float p_delta) const {
-	
+
 		List<int> idxs;
 		value_track_get_key_indices(p_track,p_time,p_delta,&idxs);
 		DVector<int> idxr;
-		
+
 		for (List<int>::Element *E=idxs.front();E;E=E->next()) {
-			
+
 			idxr.push_back(E->get());
 		}
 		return idxr;
 	}
 	DVector<int> _method_track_get_key_indices(int p_track, float p_time, float p_delta) const {
-	
+
 		List<int> idxs;
 		method_track_get_key_indices(p_track,p_time,p_delta,&idxs);
 		DVector<int> idxr;
-		
+
 		for (List<int>::Element *E=idxs.front();E;E=E->next()) {
-			
+
 			idxr.push_back(E->get());
 		}
 		return idxr;
@@ -207,28 +207,28 @@ private:
 	bool _transform_track_optimize_key(const TKey<TransformKey> &t0,const TKey<TransformKey> &t1, const TKey<TransformKey> &t2, float p_alowed_linear_err,float p_alowed_angular_err,float p_max_optimizable_angle,const Vector3& p_norm);
 	void _transform_track_optimize(int p_idx, float p_allowed_err=0.05, float p_alowed_angular_err=0.01,float p_max_optimizable_angle=Math_PI*0.125);
 
-protected:	
+protected:
 
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list( List<PropertyInfo> *p_list) const;
-	
-	static void _bind_methods();	
-	
+
+	static void _bind_methods();
+
 public:
-	
+
 	int add_track(TrackType p_type,int p_at_pos=-1);
 	void remove_track(int p_track);
 
 	int get_track_count() const;
 	TrackType track_get_type(int p_track) const;
-	
+
 	void track_set_path(int p_track,const NodePath& p_path);
 	NodePath track_get_path(int p_track) const;
 	int find_track(const NodePath& p_path) const;
 	// transform
 
-	
+
 	void track_move_up(int p_track);
 	void track_move_down(int p_track);
 
@@ -248,9 +248,9 @@ public:
 	void track_set_interpolation_type(int p_track,InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
 
-	
+
 	Error transform_track_interpolate(int p_track, float p_time, Vector3 * r_loc, Quat *r_rot, Vector3 *r_scale) const;
-	
+
 	Variant value_track_interpolate(int p_track, float p_time) const;
 	void value_track_get_key_indices(int p_track, float p_time, float p_delta,List<int> *p_indices) const;
 	void value_track_set_continuous(int p_track, bool p_continuous);
@@ -259,11 +259,11 @@ public:
 	void method_track_get_key_indices(int p_track, float p_time, float p_delta,List<int> *p_indices) const;
 	Vector<Variant> method_track_get_params(int p_track,int p_key_idx) const;
 	StringName method_track_get_name(int p_track,int p_key_idx) const;
-	
+
 
 	void set_length(float p_length);
 	float get_length() const;
-	
+
 	void set_loop(bool p_enabled);
 	bool has_loop() const;
 
@@ -274,7 +274,7 @@ public:
 
 	void optimize(float p_allowed_linear_err=0.05,float p_allowed_angular_err=0.01,float p_max_optimizable_angle=Math_PI*0.125);
 
-	Animation();	
+	Animation();
 	~Animation();
 
 };

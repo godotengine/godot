@@ -211,7 +211,7 @@ DVector< DVector< Face3 > > Geometry::separate_objects( DVector< Face3 > p_array
 	int len = p_array.size();
 
 	DVector<Face3>::Read r=p_array.read();
-	
+
 	const Face3* arrayptr = r.ptr();
 
 	DVector< _FaceClassify> fc;
@@ -219,7 +219,7 @@ DVector< DVector< Face3 > > Geometry::separate_objects( DVector< Face3 > p_array
 	fc.resize( len );
 
 	DVector< _FaceClassify >::Write fcw=fc.write();
-	
+
 	_FaceClassify * _fcptr = fcw.ptr();
 
 	for (int i=0;i<len;i++) {
@@ -278,7 +278,7 @@ DVector< DVector< Face3 > > Geometry::separate_objects( DVector< Face3 > p_array
 /*** GEOMETRY WRAPPER ***/
 
 enum _CellFlags {
-	
+
 	_CELL_SOLID=1,
  	_CELL_EXTERIOR=2,
   	_CELL_STEP_MASK=0x1C,
@@ -299,7 +299,7 @@ enum _CellFlags {
 	_CELL_PREV_Z_POS=5<<5,
 	_CELL_PREV_Z_NEG=6<<5,
 	_CELL_PREV_FIRST=7<<5,
-	
+
 };
 
 static inline void _plot_face(uint8_t*** p_cell_status,int x,int y,int z,int len_x,int len_y,int len_z,const Vector3& voxelsize,const Face3& p_face) {
@@ -316,9 +316,9 @@ static inline void _plot_face(uint8_t*** p_cell_status,int x,int y,int z,int len
 		p_cell_status[x][y][z]=_CELL_SOLID;
 		return;
 	}
-	
-	
- 
+
+
+
 	int div_x=len_x>1?2:1;
 	int div_y=len_y>1?2:1;
 	int div_z=len_z>1?2:1;
@@ -343,14 +343,14 @@ static inline void _plot_face(uint8_t*** p_cell_status,int x,int y,int z,int len
 	int new_len_z;
 
 	for (int i=0;i<div_x;i++) {
-		
-		
+
+
 		_SPLIT(i,div_x,x,len_x,new_x,new_len_x);
-				
+
 		for (int j=0;j<div_y;j++) {
 
 			_SPLIT(j,div_y,y,len_y,new_y,new_len_y);
-			
+
 			for (int k=0;k<div_z;k++) {
 
 				_SPLIT(k,div_z,z,len_z,new_z,new_len_z);
@@ -365,39 +365,39 @@ static inline void _mark_outside(uint8_t*** p_cell_status,int x,int y,int z,int 
 
 	if (p_cell_status[x][y][z]&3)
 		return; // nothing to do, already used and/or visited
-	
+
 	p_cell_status[x][y][z]=_CELL_PREV_FIRST;
-	
+
 	while(true) {
-		
+
 		uint8_t &c = p_cell_status[x][y][z];
-		
+
 		//printf("at %i,%i,%i\n",x,y,z);
-		
-		if ( (c&_CELL_STEP_MASK)==_CELL_STEP_NONE) {	
+
+		if ( (c&_CELL_STEP_MASK)==_CELL_STEP_NONE) {
 			/* Haven't been in here, mark as outside */
 			p_cell_status[x][y][z]|=_CELL_EXTERIOR;
 			//printf("not marked as anything, marking exterior\n");
 		}
-		
+
 		//printf("cell step is %i\n",(c&_CELL_STEP_MASK));
-		
+
 		if ( (c&_CELL_STEP_MASK)!=_CELL_STEP_DONE) {
 			/* if not done, increase step */
 			c+=1<<2;
 			//printf("incrementing cell step\n");
 		}
-		
+
 		if ( (c&_CELL_STEP_MASK)==_CELL_STEP_DONE) {
 			/* Go back */
 			//printf("done, going back a cell\n");
-			
+
 			switch(c&_CELL_PREV_MASK) {
 				case _CELL_PREV_FIRST: {
-					//printf("at end, finished marking\n");				
+					//printf("at end, finished marking\n");
 					return;
 				} break;
-				case _CELL_PREV_Y_POS: {	
+				case _CELL_PREV_Y_POS: {
 					y++;
 					ERR_FAIL_COND(y>=len_y);
 				} break;
@@ -427,16 +427,16 @@ static inline void _mark_outside(uint8_t*** p_cell_status,int x,int y,int z,int 
 			}
 			continue;
 		}
-		
+
 		//printf("attempting new cell!\n");
-		
+
 		int next_x=x,next_y=y,next_z=z;
 		uint8_t prev=0;
-		
+
 		switch(c&_CELL_STEP_MASK) {
-			
+
 			case _CELL_STEP_Y_POS: {
-				
+
 				next_y++;
 				prev=_CELL_PREV_Y_NEG;
 			} break;
@@ -454,32 +454,32 @@ static inline void _mark_outside(uint8_t*** p_cell_status,int x,int y,int z,int 
 			} break;
 			case _CELL_STEP_Z_POS: {
 				next_z++;
-				prev=_CELL_PREV_Z_NEG;				
+				prev=_CELL_PREV_Z_NEG;
 			} break;
 			case _CELL_STEP_Z_NEG: {
 				next_z--;
-				prev=_CELL_PREV_Z_POS;				
+				prev=_CELL_PREV_Z_POS;
 			} break;
-			default: ERR_FAIL(); 
-			
+			default: ERR_FAIL();
+
 		}
-		
+
 		//printf("testing if new cell will be ok...!\n");
-		
+
 		if (next_x<0 || next_x>=len_x)
 			continue;
 		if (next_y<0 || next_y>=len_y)
 			continue;
 		if (next_z<0 || next_z>=len_z)
 			continue;
-			
+
 		//printf("testing if new cell is traversable\n");
-			
+
 		if (p_cell_status[next_x][next_y][next_z]&3)
 			continue;
-		
+
 		//printf("move to it\n");
-		
+
 		x=next_x;
 		y=next_y;
 		z=next_z;
@@ -488,14 +488,14 @@ static inline void _mark_outside(uint8_t*** p_cell_status,int x,int y,int z,int 
 }
 
 static inline void _build_faces(uint8_t*** p_cell_status,int x,int y,int z,int len_x,int len_y,int len_z,DVector<Face3>& p_faces) {
-	
+
 	ERR_FAIL_INDEX(x,len_x);
 	ERR_FAIL_INDEX(y,len_y);
 	ERR_FAIL_INDEX(z,len_z);
-	
+
 	if (p_cell_status[x][y][z]&_CELL_EXTERIOR)
-		return;	
-	
+		return;
+
 /*	static const Vector3 vertices[8]={
 		Vector3(0,0,0),
 		Vector3(0,0,1),
@@ -510,73 +510,73 @@ static inline void _build_faces(uint8_t*** p_cell_status,int x,int y,int z,int l
 #define vert(m_idx) Vector3( (m_idx&4)>>2, (m_idx&2)>>1, m_idx&1 )
 
 	static const uint8_t indices[6][4]={
-		{7,6,4,5},		
+		{7,6,4,5},
 		{7,3,2,6},
-		{7,5,1,3},				
-		{0,2,3,1},			
-		{0,1,5,4},		
+		{7,5,1,3},
+		{0,2,3,1},
+		{0,1,5,4},
 		{0,4,6,2},
 
 	};
-/*	
+/*
 
-		{0,1,2,3},			
-		{0,1,4,5},		
+		{0,1,2,3},
+		{0,1,4,5},
 		{0,2,4,6},
-		{4,5,6,7},		
+		{4,5,6,7},
 		{2,3,7,6},
-		{1,3,5,7},				
+		{1,3,5,7},
 
-		{0,2,3,1},			
-		{0,1,5,4},		
+		{0,2,3,1},
+		{0,1,5,4},
 		{0,4,6,2},
-		{7,6,4,5},		
+		{7,6,4,5},
 		{7,3,2,6},
-		{7,5,1,3},				
+		{7,5,1,3},
 */
-	
+
 	for (int i=0;i<6;i++) {
-			
+
 		Vector3 face_points[4];
 		int disp_x=x+((i%3)==0?((i<3)?1:-1):0);
 		int disp_y=y+(((i-1)%3)==0?((i<3)?1:-1):0);
 		int disp_z=z+(((i-2)%3)==0?((i<3)?1:-1):0);
-		
+
 		bool plot=false;
-		
+
 		if (disp_x<0 || disp_x>=len_x)
 			plot=true;
 		if (disp_y<0 || disp_y>=len_y)
 			plot=true;
 		if (disp_z<0 || disp_z>=len_z)
 			plot=true;
-		
+
 		if (!plot && (p_cell_status[disp_x][disp_y][disp_z]&_CELL_EXTERIOR))
 			plot=true;
-			
+
 		if (!plot)
 			continue;
-		
+
 		for (int j=0;j<4;j++)
 			face_points[j]=vert( indices[i][j] ) + Vector3(x,y,z);
-		
-		p_faces.push_back( 
-			Face3( 
+
+		p_faces.push_back(
+			Face3(
 				face_points[0],
 				face_points[1],
 				face_points[2]
 			     )
 		);
-    
-		p_faces.push_back( 
-			Face3( 
+
+		p_faces.push_back(
+			Face3(
 				face_points[2],
 				face_points[3],
 				face_points[0]
 			     )
 		);
-		
-	}	
+
+	}
 
 }
 
@@ -601,7 +601,7 @@ DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_erro
 			global_aabb.merge_with( faces[i].get_aabb() );
 		}
 	}
-	
+
 	global_aabb.grow_by(0.01); // avoid numerical error
 
 	// determine amount of cells in grid axis
@@ -649,7 +649,7 @@ DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_erro
 
 	// plot faces into cells
 	print_line("Wrapper (1/6): Plotting Faces");
-	
+
 	for (int i=0;i<face_count;i++) {
 
 		Face3 f=faces[i];
@@ -666,68 +666,68 @@ DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_erro
 	print_line("Wrapper (2/6) Flood Filling");
 
 	for (int i=0;i<div_x;i++) {
-		
+
 		for (int j=0;j<div_y;j++) {
-		
+
 			_mark_outside(cell_status,i,j,0,div_x,div_y,div_z);
 			_mark_outside(cell_status,i,j,div_z-1,div_x,div_y,div_z);
 		}
 	}
-	
+
 	for (int i=0;i<div_z;i++) {
-		
+
 		for (int j=0;j<div_y;j++) {
-		
+
 			_mark_outside(cell_status,0,j,i,div_x,div_y,div_z);
 			_mark_outside(cell_status,div_x-1,j,i,div_x,div_y,div_z);
 		}
 	}
-	
+
 	for (int i=0;i<div_x;i++) {
-		
+
 		for (int j=0;j<div_z;j++) {
-		
+
 			_mark_outside(cell_status,i,0,j,div_x,div_y,div_z);
 			_mark_outside(cell_status,i,div_y-1,j,div_x,div_y,div_z);
 		}
 	}
-	
+
 	// build faces for the inside-outside cell divisors
-	
+
 	print_line("Wrapper (3/6): Building Faces");
 
 	DVector<Face3> wrapped_faces;
-	
+
 	for (int i=0;i<div_x;i++) {
-		
+
 		for (int j=0;j<div_y;j++) {
-		
+
 			for (int k=0;k<div_z;k++) {
-			
-				_build_faces(cell_status,i,j,k,div_x,div_y,div_z,wrapped_faces);				
+
+				_build_faces(cell_status,i,j,k,div_x,div_y,div_z,wrapped_faces);
 			}
 		}
 	}
-	
+
 	print_line("Wrapper (4/6): Transforming Back Vertices");
 
 	// transform face vertices to global coords
-	
+
 	int wrapped_faces_count=wrapped_faces.size();
 	DVector<Face3>::Write wrapped_facesw=wrapped_faces.write();
 	Face3* wrapped_faces_ptr=wrapped_facesw.ptr();
-	
+
 	for(int i=0;i<wrapped_faces_count;i++) {
-	
+
 		for(int j=0;j<3;j++) {
-		
+
 			Vector3& v = wrapped_faces_ptr[i].vertex[j];
 			v=v*voxelsize;
 			v+=global_aabb.pos;
 		}
 	}
-	
-	// clean up grid 
+
+	// clean up grid
 	print_line("Wrapper (5/6): Grid Cleanup");
 
 	for(int i=0;i<div_x;i++) {
@@ -736,14 +736,14 @@ DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_erro
 
 			memdelete_arr( cell_status[i][j] );
 		}
-		
+
 		memdelete_arr( cell_status[i] );
 	}
-	
+
 	memdelete_arr(cell_status);
 	if (p_error)
 		*p_error=voxelsize.length();
-	
+
 	print_line("Wrapper (6/6): Finished.");
 	return wrapped_faces;
 }
@@ -751,67 +751,67 @@ DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_erro
 Geometry::MeshData Geometry::build_convex_mesh(const DVector<Plane> &p_planes) {
 
 	MeshData mesh;
-	
-	
+
+
 #define SUBPLANE_SIZE 1024.0
-	
+
 	float subplane_size = 1024.0; // should compute this from the actual plane
 	for (int i=0;i<p_planes.size();i++) {
-	
+
 		Plane p =p_planes[i];
-		
+
 		Vector3 ref=Vector3(0.0,1.0,0.0);
-		
+
 		if (ABS(p.normal.dot(ref))>0.95)
 			ref=Vector3(0.0,0.0,1.0); // change axis
-			
+
 		Vector3 right = p.normal.cross(ref).normalized();
 		Vector3 up = p.normal.cross( right ).normalized();
-				
+
 		Vector< Vector3 > vertices;
-		
+
 		Vector3 center = p.get_any_point();
 		// make a quad clockwise
 		vertices.push_back( center - up * subplane_size + right * subplane_size );
 		vertices.push_back( center - up * subplane_size - right * subplane_size );
 		vertices.push_back( center + up * subplane_size - right * subplane_size );
 		vertices.push_back( center + up * subplane_size + right * subplane_size );
-		
+
 		for (int j=0;j<p_planes.size();j++) {
 
 			if (j==i)
 				continue;
-			
+
 
 			Vector< Vector3 > new_vertices;
 			Plane clip=p_planes[j];
-			
+
 			if (clip.normal.dot(p.normal)>0.95)
 				continue;
-				
+
 			if (vertices.size()<3)
 				break;
-				
+
 			for(int k=0;k<vertices.size();k++) {
-			
+
 				int k_n=(k+1)%vertices.size();
-				
+
 				Vector3 edge0_A=vertices[k];
 				Vector3 edge1_A=vertices[k_n];
-				
+
 				real_t dist0 = clip.distance_to(edge0_A);
 				real_t dist1 = clip.distance_to(edge1_A);
-				
-							
-				if ( dist0 <= 0 ) { // behind plane 
-				
-					new_vertices.push_back(vertices[k]);					
+
+
+				if ( dist0 <= 0 ) { // behind plane
+
+					new_vertices.push_back(vertices[k]);
 				}
-				
-				
+
+
 				// check for different sides and non coplanar
-				if ( (dist0*dist1) < 0) { 
-					
+				if ( (dist0*dist1) < 0) {
+
 					// calculate intersection
 					Vector3 rel = edge1_A - edge0_A;
 
@@ -822,55 +822,55 @@ Geometry::MeshData Geometry::build_convex_mesh(const DVector<Plane> &p_planes) {
 					real_t dist=-(clip.normal.dot( edge0_A )-clip.d)/den;
 					Vector3 inters = edge0_A+rel*dist;
 					new_vertices.push_back(inters);
-				}			
+				}
 			}
-			
+
 			vertices=new_vertices;
 		}
-		
+
 		if (vertices.size()<3)
 			continue;
-		
-		
+
+
 		//result is a clockwise face
-		
+
 		MeshData::Face face;
-				
+
 		// add face indices
 		for (int j=0;j<vertices.size();j++) {
-		
-			
+
+
 			int idx=-1;
 			for (int k=0;k<mesh.vertices.size();k++) {
-		
+
 				if (mesh.vertices[k].distance_to(vertices[j])<0.001) {
-				
+
 					idx=k;
 					break;
 				}
 			}
-			
+
 			if (idx==-1) {
-			
+
 				idx=mesh.vertices.size();
 				mesh.vertices.push_back(vertices[j]);
 			}
-			
+
 			face.indices.push_back(idx);
 		}
 		face.plane=p;
 		mesh.faces.push_back(face);
-		
+
 		//add edge
-		
+
 		for(int j=0;j<face.indices.size();j++) {
-		
+
 			int a=face.indices[j];
 			int b=face.indices[(j+1)%face.indices.size()];
-		
+
 			bool found=false;
 			for(int k=0;k<mesh.edges.size();k++) {
-		
+
 				if (mesh.edges[k].a==a && mesh.edges[k].b==b) {
 					found=true;
 					break;
@@ -878,9 +878,9 @@ Geometry::MeshData Geometry::build_convex_mesh(const DVector<Plane> &p_planes) {
 				if (mesh.edges[k].b==a && mesh.edges[k].a==b) {
 					found=true;
 					break;
-				}				
+				}
 			}
-			
+
 			if (found)
 				continue;
 			MeshData::Edge edge;
@@ -888,8 +888,8 @@ Geometry::MeshData Geometry::build_convex_mesh(const DVector<Plane> &p_planes) {
 			edge.b=b;
 			mesh.edges.push_back(edge);
 		}
-		
-		
+
+
 	}
 
 	return mesh;
@@ -899,36 +899,36 @@ Geometry::MeshData Geometry::build_convex_mesh(const DVector<Plane> &p_planes) {
 DVector<Plane> Geometry::build_box_planes(const Vector3& p_extents) {
 
 	DVector<Plane> planes;
-	
+
 	planes.push_back( Plane( Vector3(1,0,0), p_extents.x ) );
 	planes.push_back( Plane( Vector3(-1,0,0), p_extents.x ) );
 	planes.push_back( Plane( Vector3(0,1,0), p_extents.y ) );
 	planes.push_back( Plane( Vector3(0,-1,0), p_extents.y ) );
 	planes.push_back( Plane( Vector3(0,0,1), p_extents.z ) );
 	planes.push_back( Plane( Vector3(0,0,-1), p_extents.z ) );
-	
+
 	return planes;
 }
 
 DVector<Plane> Geometry::build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis) {
 
 	DVector<Plane> planes;
-	
+
 	for (int i=0;i<p_sides;i++) {
-	
+
 		Vector3 normal;
 		normal[(p_axis+1)%3]=Math::cos(i*(2.0*Math_PI)/p_sides);
 		normal[(p_axis+2)%3]=Math::sin(i*(2.0*Math_PI)/p_sides);
-		
+
 		planes.push_back( Plane( normal, p_radius ) );
 	}
-	
+
 	Vector3 axis;
 	axis[p_axis]=1.0;
-	
+
 	planes.push_back( Plane( axis, p_height*0.5 ) );
 	planes.push_back( Plane( -axis, p_height*0.5 ) );
-	
+
 	return planes;
 
 }
@@ -972,34 +972,34 @@ DVector<Plane> Geometry::build_sphere_planes(float p_radius, int p_lats,int p_lo
 DVector<Plane> Geometry::build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
 
 	DVector<Plane> planes;
-	
+
 		Vector3 axis;
 	axis[p_axis]=1.0;
-	
-	Vector3 axis_neg;	
+
+	Vector3 axis_neg;
 	axis_neg[(p_axis+1)%3]=1.0;
 	axis_neg[(p_axis+2)%3]=1.0;
 	axis_neg[p_axis]=-1.0;
-	
+
 	for (int i=0;i<p_sides;i++) {
-	
+
 		Vector3 normal;
 		normal[(p_axis+1)%3]=Math::cos(i*(2.0*Math_PI)/p_sides);
 		normal[(p_axis+2)%3]=Math::sin(i*(2.0*Math_PI)/p_sides);
-		
+
 		planes.push_back( Plane( normal, p_radius ) );
-		
+
 		for (int j=1;j<=p_lats;j++) {
-			
+
 			Vector3 angle = normal.linear_interpolate(axis,j/(float)p_lats).normalized();
 			Vector3 pos = axis*p_height*0.5 + angle*p_radius;
 			planes.push_back( Plane( pos, angle ) );
 			planes.push_back( Plane( pos * axis_neg, angle * axis_neg) );
-			
+
 		}
 	}
 
-		
+
 	return planes;
 
 }

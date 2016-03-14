@@ -6372,6 +6372,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 	const BakedLightData *prev_baked_light=NULL;
 	RID prev_baked_light_texture;
 	const float *prev_morph_values=NULL;
+	int prev_receive_shadows_state=-1;
 
 	Geometry::Type prev_geometry_type=Geometry::GEOMETRY_INVALID;
 
@@ -6411,6 +6412,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		const Geometry *geometry_cmp = e->geometry_cmp;
 		const BakedLightData *baked_light = e->instance->baked_light;
 		const float *morph_values = e->instance->morph_values.ptr();
+		int receive_shadows_state = e->instance->receive_shadows == true ? 1 : 0;
 
 		bool rebind=false;
 		bool bind_baked_light_octree=false;
@@ -6434,6 +6436,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 				prev_skeleton =NULL;
 				prev_sort_flags=0xFF;
 				prev_morph_values=NULL;
+				prev_receive_shadows_state=-1;
 				prev_geometry_type=Geometry::GEOMETRY_INVALID;
 				glEnable(GL_BLEND);
 				glDepthMask(GL_TRUE);
@@ -6442,7 +6445,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 			}
 
-			if (light_type!=prev_light_type) {
+			if (light_type!=prev_light_type || receive_shadows_state!=prev_receive_shadows_state) {
 
 				if (material->flags[VS::MATERIAL_FLAG_UNSHADED] || current_debug==VS::SCENARIO_DEBUG_SHADELESS) {
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_TYPE_DIRECTIONAL,false);
@@ -6456,9 +6459,16 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_TYPE_DIRECTIONAL,(light_type&0x3)==VS::LIGHT_DIRECTIONAL);
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_TYPE_OMNI,(light_type&0x3)==VS::LIGHT_OMNI);
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_TYPE_SPOT,(light_type&0x3)==VS::LIGHT_SPOT);
-					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_SHADOW,(light_type&0x8));
-					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM,(light_type&0x10));
-					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM4,(light_type&0x20));
+					if (receive_shadows_state==1) {
+						material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_SHADOW,(light_type&0x8));
+						material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM,(light_type&0x10));
+						material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM4,(light_type&0x20));
+					}
+					else {
+						material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_SHADOW,false);
+						material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM,false);
+						material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM4,false);
+					}
 					material_shader.set_conditional(MaterialShaderGLES2::SHADELESS,false);
 				}
 
@@ -6800,6 +6810,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		prev_baked_light=baked_light;
 		prev_morph_values=morph_values;
 //		prev_geometry_type=geometry->type;
+		prev_receive_shadows_state=receive_shadows_state;
 	}
 
 	//print_line("shaderchanges: "+itos(p_alpha_pass)+": "+itos(_rinfo.shader_change_count));

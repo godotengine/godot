@@ -185,12 +185,12 @@ double Math::fmod(double p_x,double p_y) {
 double Math::fposmod(double p_x,double p_y) {
 
 	if (p_x>=0) {
-	
+
 		return Math::fmod(p_x,p_y);
-		
+
 	} else {
-	
-		return p_y-Math::fmod(-p_x,p_y); 
+
+		return p_y-Math::fmod(-p_x,p_y);
 	}
 
 }
@@ -205,7 +205,7 @@ double Math::ceil(double p_x) {
 }
 
 int Math::decimals(double p_step) {
-	
+
 	int max=4;
 	double llimit = Math::pow(0.1,max);
 	double ulimit = 1.0-llimit;
@@ -220,7 +220,7 @@ int Math::decimals(double p_step) {
 		max--;
 		i++;
 	}
-	
+
 	return i;
 
 }
@@ -251,11 +251,11 @@ double Math::ease(double p_x, double p_c) {
 }
 
 double Math::stepify(double p_value,double p_step) {
-	
+
 	if (p_step!=0) {
-		
-		p_value=floor( p_value / p_step + 0.5 ) * p_step;		
-	}	
+
+		p_value=floor( p_value / p_step + 0.5 ) * p_step;
+	}
 	return p_value;
 }
 

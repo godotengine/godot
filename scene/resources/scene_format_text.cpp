@@ -1144,7 +1144,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 			if (packed_scene->get_state()->is_node_instance_placeholder(i))
 				continue;
 
-			Ref<PackedScene> instance=packed_scene->get_state()->get_node_instance(i);			
+			Ref<PackedScene> instance=packed_scene->get_state()->get_node_instance(i);
 			if (instance.is_valid() && !external_resources.has(instance)) {
 				int index = external_resources.size();
 				external_resources[instance]=index;

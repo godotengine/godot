@@ -71,42 +71,43 @@ public:
 		RENDER_SEPARATE_THREAD
 	};
 	struct VideoMode {
-	
+
 		int width,height;
 		bool fullscreen;
 		bool resizable;
+		bool borderless_window;
 		float get_aspect() const { return (float)width/(float)height; }
-		VideoMode(int p_width=1024,int p_height=600,bool p_fullscreen=false, bool p_resizable = true) {width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; }
+		VideoMode(int p_width=1024,int p_height=600,bool p_fullscreen=false, bool p_resizable = true,bool p_borderless_window=false) { width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; borderless_window=p_borderless_window; }
 	};
 protected:
 friend class Main;
-	
+
 	RenderThreadMode _render_thread_mode;
 
 	// functions used by main to initialize/deintialize the OS
 	virtual int get_video_driver_count() const=0;
 	virtual const char * get_video_driver_name(int p_driver) const=0;
-	
+
 	virtual VideoMode get_default_video_mode() const=0;
-	
+
 	virtual int get_audio_driver_count() const=0;
 	virtual const char * get_audio_driver_name(int p_driver) const=0;
-	
+
 	virtual void initialize_core()=0;
 	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver)=0;
-	
-	virtual void set_main_loop( MainLoop * p_main_loop )=0;    
+
+	virtual void set_main_loop( MainLoop * p_main_loop )=0;
 	virtual void delete_main_loop()=0;
-	
+
 	virtual void finalize()=0;
 	virtual void finalize_core()=0;
 
 	virtual void set_cmdline(const char* p_execpath, const List<String>& p_args);
 
 	void _ensure_data_dir();
-	
+
 public:
-	
+
 	typedef int64_t ProcessID;
 
 	static OS* get_singleton();
@@ -148,7 +149,7 @@ public:
 
 	virtual void set_clipboard(const String& p_text);
 	virtual String get_clipboard() const;
-	
+
 	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0)=0;
 	virtual VideoMode get_video_mode(int p_screen=0) const=0;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const=0;
@@ -172,6 +173,8 @@ public:
 	virtual void set_window_maximized(bool p_enabled) {}
 	virtual bool is_window_maximized() const { return true; }
 
+	virtual void set_borderless_window(int p_borderless) {}
+	virtual bool get_borderless_window() { return 0; }
 
 
 
@@ -219,9 +222,11 @@ public:
 		DAY_FRIDAY,
 		DAY_SATURDAY
 	};
-	
+
 	enum Month {
-		MONTH_JANUARY,
+		/// Start at 1 to follow Windows SYSTEMTIME structure
+		/// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724950(v=vs.85).aspx
+		MONTH_JANUARY = 1,
 		MONTH_FEBRUARY,
 		MONTH_MARCH,
 		MONTH_APRIL,
@@ -236,7 +241,7 @@ public:
 	};
 
 	struct Date {
-		
+
 		int year;
 		Month month;
 		int day;
@@ -245,7 +250,7 @@ public:
 	};
 
 	struct Time {
-	
+
 		int hour;
 		int min;
 		int sec;
@@ -262,7 +267,7 @@ public:
 	virtual uint64_t get_unix_time() const;
 	virtual uint64_t get_system_time_secs() const;
 
-	virtual void delay_usec(uint32_t p_usec) const=0; 
+	virtual void delay_usec(uint32_t p_usec) const=0;
 	virtual uint64_t get_ticks_usec() const=0;
 	uint32_t get_ticks_msec() const;
 	uint64_t get_splash_tick_msec() const;
@@ -412,7 +417,7 @@ public:
 
 	virtual void set_context(int p_context);
 
-	OS();	
+	OS();
 	virtual ~OS();
 
 };

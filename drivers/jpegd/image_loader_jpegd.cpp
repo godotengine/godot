@@ -17,23 +17,9 @@
 #include <string.h>
 
 
-Error ImageLoaderJPG::load_image(Image *p_image,FileAccess *f) {
+Error jpeg_load_image_from_buffer(Image *p_image,const uint8_t* p_buffer, int p_buffer_len) {
 
-
-	DVector<uint8_t> src_image;
-	int src_image_len = f->get_len();
-	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
-	src_image.resize(src_image_len);
-
-	DVector<uint8_t>::Write w = src_image.write();
-
-	f->get_buffer(&w[0],src_image_len);
-
-	f->close();
-
-
-
-	jpgd::jpeg_decoder_mem_stream mem_stream(w.ptr(),src_image_len);
+	jpgd::jpeg_decoder_mem_stream mem_stream(p_buffer,p_buffer_len);
 
 	jpgd::jpeg_decoder decoder(&mem_stream);
 
@@ -85,11 +71,33 @@ Error ImageLoaderJPG::load_image(Image *p_image,FileAccess *f) {
 		fmt=Image::FORMAT_RGBA;
 
 	dw = DVector<uint8_t>::Write();
-	w = DVector<uint8_t>::Write();
-
 	p_image->create(image_width,image_height,0,fmt,data);
 
 	return OK;
+
+}
+
+
+Error ImageLoaderJPG::load_image(Image *p_image,FileAccess *f) {
+
+
+	DVector<uint8_t> src_image;
+	int src_image_len = f->get_len();
+	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
+	src_image.resize(src_image_len);
+
+	DVector<uint8_t>::Write w = src_image.write();
+
+	f->get_buffer(&w[0],src_image_len);
+
+	f->close();
+
+
+	Error err = jpeg_load_image_from_buffer(p_image,w.ptr(),src_image_len);
+
+	w = DVector<uint8_t>::Write();
+
+	return err;
 
 }
 
@@ -100,9 +108,17 @@ void ImageLoaderJPG::get_recognized_extensions(List<String> *p_extensions) const
 }
 
 
+static Image _jpegd_mem_loader_func(const uint8_t* p_png,int p_size) {
+
+	Image img;
+	Error err = jpeg_load_image_from_buffer(&img,p_png,p_size);
+
+	return img;
+}
+
 ImageLoaderJPG::ImageLoaderJPG() {
 
-
+	Image::_jpg_mem_loader_func=_jpegd_mem_loader_func;
 }
 
 

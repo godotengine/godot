@@ -45,10 +45,10 @@ float Vector2::length_squared() const {
 }
 
 void Vector2::normalize() {
-	
+
 	float l = x*x + y*y;
 	if (l!=0) {
-		
+
 		l=Math::sqrt(l);
 		x/=l;
 		y/=l;
@@ -56,14 +56,14 @@ void Vector2::normalize() {
 }
 
 Vector2 Vector2::normalized() const {
-	
+
 	Vector2 v=*this;
 	v.normalize();
 	return v;
 }
 
 float Vector2::distance_to(const Vector2& p_vector2) const {
-	
+
 	return Math::sqrt( (x-p_vector2.x)*(x-p_vector2.x) + (y-p_vector2.y)*(y-p_vector2.y));
 }
 
@@ -73,7 +73,7 @@ float Vector2::distance_squared_to(const Vector2& p_vector2) const {
 }
 
 float Vector2::angle_to(const Vector2& p_vector2) const  {
-	
+
 	return Math::atan2( tangent().dot(p_vector2), dot(p_vector2) );
 }
 
@@ -83,7 +83,7 @@ float Vector2::angle_to_point(const Vector2& p_vector2) const  {
 }
 
 float Vector2::dot(const Vector2& p_other) const {
-	
+
 	return x*p_other.x + y*p_other.y;
 }
 
@@ -99,62 +99,62 @@ Vector2 Vector2::cross(real_t p_other) const {
 
 
 Vector2 Vector2::operator+(const Vector2& p_v) const {
-	
+
 	return Vector2(x+p_v.x,y+p_v.y);
 }
 void Vector2::operator+=(const Vector2& p_v) {
-	
+
 	x+=p_v.x; y+=p_v.y;
 }
 Vector2 Vector2::operator-(const Vector2& p_v) const {
-	
+
 	return Vector2(x-p_v.x,y-p_v.y);
 }
 void Vector2::operator-=(const Vector2& p_v) {
-	
+
 	x-=p_v.x; y-=p_v.y;
 }
 
 Vector2 Vector2::operator*(const Vector2 &p_v1) const {
-	
+
 	return Vector2(x * p_v1.x, y * p_v1.y);
 };
 
 Vector2 Vector2::operator*(const float &rvalue) const {
-	
+
 	return Vector2(x * rvalue, y * rvalue);
 };
 void Vector2::operator*=(const float &rvalue) {
-	
+
 	x *= rvalue; y *= rvalue;
 };
 
 Vector2 Vector2::operator/(const Vector2 &p_v1) const {
-	
+
 	return Vector2(x / p_v1.x, y / p_v1.y);
 };
 
 Vector2 Vector2::operator/(const float &rvalue) const {
-	
+
 	return Vector2(x / rvalue, y / rvalue);
 };
 
 void Vector2::operator/=(const float &rvalue) {
-	
+
 	x /= rvalue; y /= rvalue;
 };
 
 Vector2 Vector2::operator-() const {
-	
+
 	return Vector2(-x,-y);
 }
 
 bool Vector2::operator==(const Vector2& p_vec2) const {
-	
+
 	return x==p_vec2.x && y==p_vec2.y;
 }
 bool Vector2::operator!=(const Vector2& p_vec2) const {
-	
+
 	return x!=p_vec2.x || y!=p_vec2.y;
 }
 Vector2 Vector2::floor() const {
@@ -621,25 +621,25 @@ float Matrix32::basis_determinant() const {
 }
 
 Matrix32 Matrix32::interpolate_with(const Matrix32& p_transform, float p_c) const {
-	
+
 	//extract parameters
 	Vector2 p1 = get_origin();
 	Vector2 p2 = p_transform.get_origin();
-	
+
 	real_t r1 = get_rotation();
 	real_t r2 = p_transform.get_rotation();
-	
+
 	Vector2 s1 = get_scale();
 	Vector2 s2 = p_transform.get_scale();
-	
+
 	//slerp rotation
 	Vector2 v1(Math::cos(r1), Math::sin(r1));
 	Vector2 v2(Math::cos(r2), Math::sin(r2));
-	
+
 	real_t dot = v1.dot(v2);
-	
+
 	dot = (dot < -1.0) ? -1.0 : ((dot > 1.0) ? 1.0 : dot); //clamp dot to [-1,1]
-	
+
 	Vector2 v;
 
 	if (dot > 0.9995) {
@@ -649,7 +649,7 @@ Matrix32 Matrix32::interpolate_with(const Matrix32& p_transform, float p_c) cons
 		Vector2 v3 = (v2 - v1*dot).normalized();
 		v = v1*Math::cos(angle) + v3*Math::sin(angle);
 	}
-	
+
 	//construct matrix
 	Matrix32 res(Math::atan2(v.y, v.x), Vector2::linear_interpolate(p1, p2, p_c));
 	res.scale_basis(Vector2::linear_interpolate(s1, s2, p_c));

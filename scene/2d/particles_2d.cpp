@@ -504,7 +504,7 @@ void Particles2D::_notification(int p_what) {
 				invxform=get_global_transform().affine_inverse();
 
 			int start_particle = (int)(time * (float)particle_count / lifetime);
-			
+
 			for (int id=0;id<particle_count;++id) {
 				int i = start_particle + id;
 				if (i >= particle_count) {
@@ -645,7 +645,7 @@ static const char* _particlesframe_property_rnames[Particles2D::PARAM_MAX]={
 	"randomness/gravity_strength",
 	"randomness/radial_accel",
 	"randomness/tangential_accel",
-	"randomness/damping",	
+	"randomness/damping",
 	"randomness/initial_angle",
 	"randomness/initial_size",
 	"randomness/final_size",

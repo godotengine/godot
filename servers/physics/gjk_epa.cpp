@@ -15,7 +15,7 @@
 
 	// Config
 
-/* GJK	*/ 
+/* GJK	*/
 #define GJK_MAX_ITERATIONS	128
 #define GJK_ACCURARY		((real_t)0.0001)
 #define GJK_MIN_DISTANCE	((real_t)0.0001)
@@ -24,7 +24,7 @@
 #define GJK_SIMPLEX3_EPS	((real_t)0.0)
 #define GJK_SIMPLEX4_EPS	((real_t)0.0)
 
-/* EPA	*/ 
+/* EPA	*/
 #define EPA_MAX_VERTICES	64
 #define EPA_MAX_FACES		(EPA_MAX_VERTICES*2)
 #define EPA_MAX_ITERATIONS	255
@@ -38,12 +38,12 @@ namespace GjkEpa2 {
 
 struct sResults	{
 	enum eStatus {
-		Separated,		/* Shapes doesnt penetrate */ 
-		Penetrating,	/* Shapes are penetrating */ 
-		GJK_Failed,		/* GJK phase fail, no big issue, shapes are probably just 'touching'	*/ 
-		EPA_Failed /* EPA phase fail, bigger problem, need to save parameters, and debug	*/ 
+		Separated,		/* Shapes doesnt penetrate */
+		Penetrating,	/* Shapes are penetrating */
+		GJK_Failed,		/* GJK phase fail, no big issue, shapes are probably just 'touching'	*/
+		EPA_Failed /* EPA phase fail, bigger problem, need to save parameters, and debug	*/
 	} status;
-		
+
 	Vector3	witnesses[2];
 	Vector3	normal;
 	real_t	distance;
@@ -65,15 +65,15 @@ struct	MinkowskiDiff {
 	_FORCE_INLINE_ Vector3 Support0 ( const Vector3& d ) const {
 		return transform_A.xform( m_shapes[0]->get_support( transform_A.basis.xform_inv(d).normalized() ) );
 	}
-	
+
 	_FORCE_INLINE_ Vector3 Support1 ( const Vector3& d ) const {
 		return transform_B.xform( m_shapes[1]->get_support( transform_B.basis.xform_inv(d).normalized() ) );
 	}
-	
+
 	_FORCE_INLINE_ Vector3 Support ( const Vector3& d ) const {
 		return ( Support0 ( d )-Support1 ( -d ) );
 	}
-	
+
 	_FORCE_INLINE_ Vector3	Support ( const Vector3& d,U index ) const
 	{
 		if ( index )
@@ -89,7 +89,7 @@ typedef	MinkowskiDiff tShape;
 // GJK
 struct	GJK
 {
-	/* Types		*/ 
+	/* Types		*/
 	struct	sSV
 	{
 		Vector3	d,w;
@@ -104,7 +104,7 @@ struct	GJK
 		Valid,
 		Inside,
 		Failed		};};
-		/* Fields		*/ 
+		/* Fields		*/
 		tShape			m_shape;
 		Vector3		m_ray;
 		real_t		m_distance;
@@ -115,7 +115,7 @@ struct	GJK
 		U				m_current;
 		sSimplex*		m_simplex;
 		eStatus::_		m_status;
-		/* Methods		*/ 
+		/* Methods		*/
 		GJK()
 		{
 			Initialize();
@@ -135,7 +135,7 @@ struct	GJK
 			real_t	alpha=0;
 			Vector3	lastw[4];
 			U			clastw=0;
-			/* Initialize solver		*/ 
+			/* Initialize solver		*/
 			m_free[0]			=	&m_store[0];
 			m_free[1]			=	&m_store[1];
 			m_free[2]			=	&m_store[2];
@@ -145,31 +145,31 @@ struct	GJK
 			m_status			=	eStatus::Valid;
 			m_shape				=	shapearg;
 			m_distance			=	0;
-			/* Initialize simplex		*/ 
+			/* Initialize simplex		*/
 			m_simplices[0].rank	=	0;
 			m_ray				=	guess;
 			const real_t	sqrl=	m_ray.length_squared();
 			appendvertice(m_simplices[0],sqrl>0?-m_ray:Vector3(1,0,0));
 			m_simplices[0].p[0]	=	1;
-			m_ray				=	m_simplices[0].c[0]->w;	
+			m_ray				=	m_simplices[0].c[0]->w;
 			sqdist				=	sqrl;
 			lastw[0]			=
 				lastw[1]			=
 				lastw[2]			=
 				lastw[3]			=	m_ray;
-			/* Loop						*/ 
+			/* Loop						*/
 			do	{
 				const U		next=1-m_current;
 				sSimplex&	cs=m_simplices[m_current];
 				sSimplex&	ns=m_simplices[next];
-				/* Check zero							*/ 
+				/* Check zero							*/
 				const real_t	rl=m_ray.length();
 				if(rl<GJK_MIN_DISTANCE)
-				{/* Touching or inside				*/ 
+				{/* Touching or inside				*/
 					m_status=eStatus::Inside;
 					break;
 				}
-				/* Append new vertice in -'v' direction	*/ 
+				/* Append new vertice in -'v' direction	*/
 				appendvertice(cs,-m_ray);
 				const Vector3&	w=cs.c[cs.rank-1]->w;
 				bool				found=false;
@@ -179,23 +179,23 @@ struct	GJK
 					{ found=true;break; }
 				}
 				if(found)
-				{/* Return old simplex				*/ 
+				{/* Return old simplex				*/
 					removevertice(m_simplices[m_current]);
 					break;
 				}
 				else
-				{/* Update lastw					*/ 
+				{/* Update lastw					*/
 					lastw[clastw=(clastw+1)&3]=w;
 				}
-				/* Check for termination				*/ 
+				/* Check for termination				*/
 				const real_t	omega=vec3_dot(m_ray,w)/rl;
 				alpha=MAX(omega,alpha);
 				if(((rl-alpha)-(GJK_ACCURARY*rl))<=0)
-				{/* Return old simplex				*/ 
+				{/* Return old simplex				*/
 					removevertice(m_simplices[m_current]);
 					break;
-				}		
-				/* Reduce simplex						*/ 
+				}
+				/* Reduce simplex						*/
 				real_t	weights[4];
 				U			mask=0;
 				switch(cs.rank)
@@ -214,7 +214,7 @@ struct	GJK
 								weights,mask);break;
 				}
 				if(sqdist>=0)
-				{/* Valid	*/ 
+				{/* Valid	*/
 					ns.rank		=	0;
 					m_ray		=	Vector3(0,0,0);
 					m_current	=	next;
@@ -234,7 +234,7 @@ struct	GJK
 					if(mask==15) m_status=eStatus::Inside;
 				}
 				else
-				{/* Return old simplex				*/ 
+				{/* Return old simplex				*/
 					removevertice(m_simplices[m_current]);
 					break;
 				}
@@ -246,7 +246,7 @@ struct	GJK
 			case	eStatus::Valid:		m_distance=m_ray.length();break;
 			case	eStatus::Inside:	m_distance=0;break;
 			default: {}
-			}	
+			}
 			return(m_status);
 		}
 		bool					EncloseOrigin()
@@ -314,7 +314,7 @@ struct	GJK
 			}
 			return(false);
 		}
-		/* Internals	*/ 
+		/* Internals	*/
 		void				getsupport(const Vector3& d,sSV& sv) const
 		{
 			sv.d	=	d/d.length();
@@ -378,13 +378,13 @@ struct	GJK
 							m			=	static_cast<U>(((subm&1)?1<<i:0)+((subm&2)?1<<j:0));
 							w[i]		=	subw[0];
 							w[j]		=	subw[1];
-							w[imd3[j]]	=	0;				
+							w[imd3[j]]	=	0;
 						}
 					}
 				}
 				if(mindist<0)
 				{
-					const real_t	d=vec3_dot(a,n);	
+					const real_t	d=vec3_dot(a,n);
 					const real_t	s=Math::sqrt(l);
 					const Vector3	p=n*(d/l);
 					mindist	=	p.length_squared();
@@ -451,7 +451,7 @@ struct	GJK
 	// EPA
 	struct	EPA
 	{
-		/* Types		*/ 
+		/* Types		*/
 		typedef	GJK::sSV	sSV;
 		struct	sFace
 		{
@@ -482,13 +482,13 @@ struct	GJK
 			Touching,
 			Degenerated,
 			NonConvex,
-			InvalidHull,		
+			InvalidHull,
 			OutOfFaces,
 			OutOfVertices,
 			AccuraryReached,
 			FallBack,
 			Failed		};};
-			/* Fields		*/ 
+			/* Fields		*/
 			eStatus::_		m_status;
 			GJK::sSimplex	m_result;
 			Vector3		m_normal;
@@ -498,10 +498,10 @@ struct	GJK
 			U				m_nextsv;
 			sList			m_hull;
 			sList			m_stock;
-			/* Methods		*/ 
+			/* Methods		*/
 			EPA()
 			{
-				Initialize();	
+				Initialize();
 			}
 
 
@@ -544,7 +544,7 @@ struct	GJK
 				if((simplex.rank>1)&&gjk.EncloseOrigin())
 				{
 
-					/* Clean up				*/ 
+					/* Clean up				*/
 					while(m_hull.root)
 					{
 						sFace*	f = m_hull.root;
@@ -553,7 +553,7 @@ struct	GJK
 					}
 					m_status	=	eStatus::Valid;
 					m_nextsv	=	0;
-					/* Orient simplex		*/ 
+					/* Orient simplex		*/
 					if(gjk.det(	simplex.c[0]->w-simplex.c[3]->w,
 						simplex.c[1]->w-simplex.c[3]->w,
 						simplex.c[2]->w-simplex.c[3]->w)<0)
@@ -561,7 +561,7 @@ struct	GJK
 						SWAP(simplex.c[0],simplex.c[1]);
 						SWAP(simplex.p[0],simplex.p[1]);
 					}
-					/* Build initial hull	*/ 
+					/* Build initial hull	*/
 					sFace*	tetra[]={newface(simplex.c[0],simplex.c[1],simplex.c[2],true),
 						newface(simplex.c[1],simplex.c[0],simplex.c[3],true),
 						newface(simplex.c[2],simplex.c[1],simplex.c[3],true),
@@ -582,10 +582,10 @@ struct	GJK
 						for(;iterations<EPA_MAX_ITERATIONS;++iterations)
 						{
 							if(m_nextsv<EPA_MAX_VERTICES)
-							{	
+							{
 								sHorizon		horizon;
 								sSV*			w=&m_sv_store[m_nextsv++];
-								bool			valid=true;					
+								bool			valid=true;
 								best->pass	=	(U1)(++pass);
 								gjk.getsupport(best->n,*w);
 								const real_t	wdist=vec3_dot(best->n,w->w)-best->d;
@@ -628,7 +628,7 @@ struct	GJK
 						return(m_status);
 					}
 				}
-				/* Fallback		*/ 
+				/* Fallback		*/
 				m_status	=	eStatus::FallBack;
 				m_normal	=	-guess;
 				const real_t	nl=m_normal.length();
@@ -639,7 +639,7 @@ struct	GJK
 				m_depth	=	0;
 				m_result.rank=1;
 				m_result.c[0]=simplex.c[0];
-				m_result.p[0]=1;	
+				m_result.p[0]=1;
 				return(m_status);
 			}
 			sFace*				newface(sSV* a,sSV* b,sSV* c,bool forced)
@@ -739,16 +739,16 @@ struct	GJK
 		tShape& shape,
 		bool withmargins)
 	{
-		/* Results		*/ 
+		/* Results		*/
 		results.witnesses[0]	=
 			results.witnesses[1]	=	Vector3(0,0,0);
 		results.status			=	sResults::Separated;
-		/* Shape		*/ 
+		/* Shape		*/
 		shape.m_shapes[0]		=	shape0;
 		shape.m_shapes[1]		=	shape1;
 		shape.transform_A		=	wtrs0;
 		shape.transform_B		=	wtrs1;
-		
+
 	}
 
 
@@ -808,7 +808,7 @@ bool Penetration(	const ShapeSW*	shape0,
 {
 	tShape			shape;
 	Initialize(shape0,wtrs0,shape1,wtrs1,results,shape,false);
-	GJK				gjk;	
+	GJK				gjk;
 	GJK::eStatus::_	gjk_status=gjk.Evaluate(shape,-guess);
 	switch(gjk_status)
 	{
@@ -841,7 +841,7 @@ bool Penetration(	const ShapeSW*	shape0,
 }
 
 
-/* Symbols cleanup		*/ 
+/* Symbols cleanup		*/
 
 #undef GJK_MAX_ITERATIONS
 #undef GJK_ACCURARY
@@ -885,7 +885,7 @@ bool gjk_epa_calculate_distance(const ShapeSW *p_shape_A, const Transform& p_tra
 bool gjk_epa_calculate_penetration(const ShapeSW *p_shape_A, const Transform& p_transform_A, const ShapeSW *p_shape_B, const Transform& p_transform_B, CollisionSolverSW::CallbackResult p_result_callback,void *p_userdata, bool p_swap ) {
 
 	GjkEpa2::sResults res;
-	
+
 	if (GjkEpa2::Penetration(p_shape_A,p_transform_A,p_shape_B,p_transform_B,p_transform_B.origin-p_transform_A.origin,res)) {
 		if (p_result_callback) {
 			if (p_swap)
@@ -894,8 +894,8 @@ bool gjk_epa_calculate_penetration(const ShapeSW *p_shape_A, const Transform& p_
 				p_result_callback(res.witnesses[0],res.witnesses[1],p_userdata);
 		}
 		return true;
-	} 
-	
+	}
+
 	return false;
 }
 

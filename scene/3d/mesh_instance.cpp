@@ -139,7 +139,7 @@ AABB MeshInstance::get_aabb() const {
 
 	if (!mesh.is_null())
 		return mesh->get_aabb();
-		
+
 	return AABB();
 }
 
@@ -150,7 +150,7 @@ DVector<Face3> MeshInstance::get_faces(uint32_t p_usage_flags) const {
 
 	if (mesh.is_null())
 		return DVector<Face3>();
-		
+
 	return mesh->get_faces();
 }
 
@@ -177,7 +177,7 @@ void MeshInstance::create_trimesh_collision() {
 	StaticBody* static_body = create_trimesh_collision_node()->cast_to<StaticBody>();
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name( String(get_name()) + "_col" );
-	
+
 	add_child(static_body);
 	if (get_owner())
 		static_body->set_owner( get_owner() );
@@ -233,7 +233,7 @@ void MeshInstance::_notification(int p_what) {
 
 
 void MeshInstance::_bind_methods() {
-	
+
 	ObjectTypeDB::bind_method(_MD("set_mesh","mesh:Mesh"),&MeshInstance::set_mesh);
 	ObjectTypeDB::bind_method(_MD("get_mesh:Mesh"),&MeshInstance::get_mesh);
 	ObjectTypeDB::bind_method(_MD("set_skeleton_path","skeleton_path:NodePath"),&MeshInstance::set_skeleton_path);

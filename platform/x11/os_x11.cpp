@@ -109,15 +109,15 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	if (get_render_thread_mode()==RENDER_SEPARATE_THREAD) {
 		XInitThreads();
 	}
-	
+
 	/** XLIB INITIALIZATION **/
 	x11_display = XOpenDisplay(NULL);
-	
+
 	char * modifiers = XSetLocaleModifiers ("@im=none");
 	ERR_FAIL_COND( modifiers == NULL );
-	
+
 	xim = XOpenIM (x11_display, NULL, NULL, NULL);
-	
+
 
 	if (xim == NULL) {
 		WARN_PRINT("XOpenIM failed");
@@ -130,19 +130,19 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		if (imvalret != NULL || xim_styles == NULL) {
 			fprintf (stderr, "Input method doesn't support any styles\n");
 		}
-		
+
 		if (xim_styles) {
 			xim_style = 0L;
 			for (int i=0;i<xim_styles->count_styles;i++) {
-				
+
 				if (xim_styles->supported_styles[i] ==
 				    (XIMPreeditNothing | XIMStatusNothing)) {
-					    
+
 					    xim_style = xim_styles->supported_styles[i];
 					    break;
 				    }
 			}
-			
+
 			XFree (xim_styles);
 		}
 		XFree( imvalret );
@@ -225,7 +225,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		} else {
 			XGetWindowAttributes(x11_display,x11_window,&xwa);
 		}
-		xsh->min_width = xwa.width; 
+		xsh->min_width = xwa.width;
 		xsh->max_width = xwa.width;
 		xsh->min_height = xwa.height;
 		xsh->max_height = xwa.height;
@@ -282,7 +282,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
 	spatial_sound_2d_server->init();
 
-	
+
 	ERR_FAIL_COND(!visual_server);
 	ERR_FAIL_COND(x11_window==0);
 
@@ -302,7 +302,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 			   ColormapChangeMask | OwnerGrabButtonMask;
 
 	XChangeWindowAttributes(x11_display, x11_window,CWEventMask,&new_attr);
-	
+
 	XClassHint* classHint;
 
 	/* set the titlebar name */
@@ -317,19 +317,19 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	XSetClassHint(x11_display, x11_window, classHint);
 	XFree(classHint);
 
-	wm_delete = XInternAtom(x11_display, "WM_DELETE_WINDOW", true);	
+	wm_delete = XInternAtom(x11_display, "WM_DELETE_WINDOW", true);
 	XSetWMProtocols(x11_display, x11_window, &wm_delete, 1);
-		
+
 
 	if (xim && xim_style) {
-		
+
 		xic = XCreateIC (xim,XNInputStyle, xim_style,XNClientWindow,x11_window,XNFocusWindow, x11_window, (char*)NULL);
 	} else {
-		
+
 		xic=NULL;
 		WARN_PRINT("XCreateIC couldn't create xic");
 
-	}	
+	}
 
 	XcursorSetTheme(x11_display,"default");
 	cursor_size = XcursorGetDefaultSize(x11_display);
@@ -459,7 +459,7 @@ void OS_X11::finalize() {
 	visual_server->finish();
 	memdelete(visual_server);
 	memdelete(rasterizer);
-	
+
 	physics_server->finish();
 	memdelete(physics_server);
 
@@ -474,10 +474,10 @@ void OS_X11::finalize() {
 #endif
 	for(int i=0;i<CURSOR_MAX;i++) {
 		if( cursors[i] != None )
-			XFreeCursor( x11_display, cursors[i] );		
+			XFreeCursor( x11_display, cursors[i] );
 		if( img[i] != NULL )
 			XcursorImageDestroy( img[i] );
-	};	
+	};
 
 	XDestroyIC( xic );
 	XCloseIM( xim );
@@ -486,7 +486,7 @@ void OS_X11::finalize() {
 	if (xmbstring)
 		memfree(xmbstring);
 
-		
+
 	args.clear();
 }
 
@@ -630,7 +630,7 @@ int OS_X11::get_screen_count() const {
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
 	if( !ext_okay ) return 0;
-	
+
 	int count;
 	XineramaScreenInfo* xsi = XineramaQueryScreens(x11_display, &count);
 	XFree(xsi);
@@ -647,7 +647,7 @@ int OS_X11::get_current_screen() const {
 		Point2i pos = get_screen_position(i);
 		Size2i size = get_screen_size(i);
 		if( (x >= pos.x && x <pos.x + size.width) && (y >= pos.y && y < pos.y + size.height) )
-			return i;	
+			return i;
 	}
 	return 0;
 }
@@ -655,7 +655,7 @@ int OS_X11::get_current_screen() const {
 void OS_X11::set_current_screen(int p_screen) {
 	int count = get_screen_count();
 	if(p_screen >= count) return;
-		
+
 	if( current_videomode.fullscreen ) {
 		Point2i position = get_screen_position(p_screen);
 		Size2i size = get_screen_size(p_screen);
@@ -677,13 +677,13 @@ Point2 OS_X11::get_screen_position(int p_screen) const {
 	if( !ext_okay ) {
 		return Point2i(0,0);
 	}
-	
+
 	int count;
 	XineramaScreenInfo* xsi = XineramaQueryScreens(x11_display, &count);
 	if( p_screen >= count ) {
 		return Point2i(0,0);
 	}
-	
+
 	Point2i position = Point2i(xsi[p_screen].x_org, xsi[p_screen].y_org);
 
 	XFree(xsi);
@@ -696,11 +696,11 @@ Size2 OS_X11::get_screen_size(int p_screen) const {
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
 	if( !ext_okay ) return Size2i(0,0);
-	
+
 	int count;
 	XineramaScreenInfo* xsi = XineramaQueryScreens(x11_display, &count);
 	if( p_screen >= count ) return Size2i(0,0);
-	
+
 	Size2i size = Point2i(xsi[p_screen].width, xsi[p_screen].height);
 	XFree(xsi);
 	return size;
@@ -714,12 +714,12 @@ Point2 OS_X11::get_window_position() const {
 	int screen = get_current_screen();
 	Point2i screen_position = get_screen_position(screen);
 
-	return Point2i(x-screen_position.x, y-screen_position.y);		
+	return Point2i(x-screen_position.x, y-screen_position.y);
 }
 
 void OS_X11::set_window_position(const Point2& p_position) {
 	// Using EWMH -- Extended Window Manager Hints
-	// to get the size of the decoration 
+	// to get the size of the decoration
 #if 0
 	Atom property = XInternAtom(x11_display,"_NET_FRAME_EXTENTS", True);
 	Atom type;
@@ -742,17 +742,17 @@ void OS_X11::set_window_position(const Point2& p_position) {
 		&len,
 		&remaining,
 		&data
-	);	
+	);
 
 	long left = 0L;
 	long top = 0L;
 
 	if( result == Success ) {
 		long *extends = (long *) data;
-	
+
 		left = extends[0];
 		top = extends[2];
-	
+
 		XFree(data);
 	}
 
@@ -794,7 +794,7 @@ void OS_X11::set_window_resizable(bool p_enabled) {
 	if(!p_enabled) {
 		XWindowAttributes xwa;
 		XGetWindowAttributes(x11_display,x11_window,&xwa);
-		xsh->min_width = xwa.width; 
+		xsh->min_width = xwa.width;
 		xsh->max_width = xwa.width;
 		xsh->min_height = xwa.height;
 		xsh->max_height = xwa.height;
@@ -821,7 +821,7 @@ void OS_X11::set_window_minimized(bool p_enabled) {
         xev.xclient.data.l[0] = p_enabled ? WM_IconicState : WM_NormalState;
 
         XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
-	
+
         //XEvent xev;
 	Atom wm_state     =  XInternAtom(x11_display, "_NET_WM_STATE", False);
 	Atom wm_hidden    =  XInternAtom(x11_display, "_NET_WM_STATE_HIDDEN", False);
@@ -834,7 +834,7 @@ void OS_X11::set_window_minimized(bool p_enabled) {
 	xev.xclient.data.l[0] = _NET_WM_STATE_ADD;
 	xev.xclient.data.l[1] = wm_hidden;
 
-	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);	
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 }
 
 bool OS_X11::is_window_minimized() const {
@@ -863,14 +863,14 @@ bool OS_X11::is_window_minimized() const {
 
 	if( result == Success ) {
 		long *state = (long *) data;
-		if( state[0] == WM_IconicState ) 
+		if( state[0] == WM_IconicState )
 			return true;
 	}
 	return false;
 }
 
 void OS_X11::set_window_maximized(bool p_enabled) {
-	// Using EWMH -- Extended Window Manager Hints 
+	// Using EWMH -- Extended Window Manager Hints
 	XEvent xev;
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
 	Atom wm_max_horz = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
@@ -928,7 +928,7 @@ bool OS_X11::is_window_maximized() const {
                 &data
         );
 
-	if(result == Success) { 
+	if(result == Success) {
 		Atom *atoms = (Atom*) data;
 		Atom wm_max_horz = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
 		Atom wm_max_vert = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
@@ -952,65 +952,65 @@ bool OS_X11::is_window_maximized() const {
 
 
 InputModifierState OS_X11::get_key_modifier_state(unsigned int p_x11_state) {
-	
+
 	InputModifierState state;
-	
+
 	state.shift = (p_x11_state&ShiftMask);
 	state.control = (p_x11_state&ControlMask);
 	state.alt = (p_x11_state&Mod1Mask /*|| p_x11_state&Mod5Mask*/); //altgr should not count as alt
 	state.meta = (p_x11_state&Mod4Mask);
-	
+
 	return state;
 }
 
 unsigned int OS_X11::get_mouse_button_state(unsigned int p_x11_state) {
 
 	unsigned int state=0;
-		
+
 	if (p_x11_state&Button1Mask) {
-		
+
 		state|=1<<0;
 	}
 
 	if (p_x11_state&Button3Mask) {
-		
+
 		state|=1<<1;
 	}
 
 	if (p_x11_state&Button2Mask) {
-		
+
 		state|=1<<2;
 	}
-	
+
 	if (p_x11_state&Button4Mask) {
-		
+
 		state|=1<<3;
 	}
 
 	if (p_x11_state&Button5Mask) {
-		
+
 		state|=1<<4;
 	}
 
 	last_button_state=state;
 	return state;
 }
-	
+
 void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
-			
+
 	// X11 functions don't know what const is
 	XKeyEvent *xkeyevent = p_event;
-	
+
 	// This code was pretty difficult to write.
 	// The docs stink and every toolkit seems to
-	// do it in a different way. 
-	
+	// do it in a different way.
+
 	/* Phase 1, obtain a proper keysym */
-	
+
 	// This was also very difficult to figure out.
 	// You'd expect you could just use Keysym provided by
-	// XKeycodeToKeysym to obtain internationalized 
-	// input.. WRONG!! 
+	// XKeycodeToKeysym to obtain internationalized
+	// input.. WRONG!!
 	// you must use XLookupString (???) which not only wastes
 	// cycles generating an unnecesary string, but also
 	// still works in half the cases. (won't handle deadkeys)
@@ -1019,57 +1019,57 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	// So.. then you have to chosse which of both results
 	// you want to keep.
 	// This is a real bizarreness and cpu waster.
-		
+
 	KeySym keysym_keycode=0; // keysym used to find a keycode
 	KeySym keysym_unicode=0; // keysym used to find unicode
-					
+
 	// XLookupString returns keysyms usable as nice scancodes/
 	char str[256+1];
 	XLookupString(xkeyevent, str, 256, &keysym_keycode, NULL);
-						 
+
  	// Meanwhile, XLookupString returns keysyms useful for unicode.
-	
-	
+
+
 	if (!xmbstring) {
 		// keep a temporary buffer for the string
 		xmbstring=(char*)memalloc(sizeof(char)*8);
 		xmblen=8;
-	}			 
-	
+	}
+
 	if (xkeyevent->type == KeyPress && xic) {
 
 		Status status;
 		do {
-			
+
 			int mnbytes = XmbLookupString (xic, xkeyevent, xmbstring, xmblen - 1, &keysym_unicode, &status);
 			xmbstring[mnbytes] = '\0';
 
 			if (status == XBufferOverflow) {
 				xmblen = mnbytes + 1;
 				xmbstring = (char*)memrealloc (xmbstring, xmblen);
-			} 
+			}
 		} while (status == XBufferOverflow);
-	} 		
+	}
 
-	
+
 	/* Phase 2, obtain a pigui keycode from the keysym */
-	
+
 	// KeyMappingX11 just translated the X11 keysym to a PIGUI
 	// keysym, so it works in all platforms the same.
 
 	unsigned int keycode = KeyMappingX11::get_keycode(keysym_keycode);
-	
+
 	/* Phase 3, obtain an unicode character from the keysym */
-	
+
 	// KeyMappingX11 also translates keysym to unicode.
 	// It does a binary search on a table to translate
-	// most properly. 
+	// most properly.
 	//print_line("keysym_unicode: "+rtos(keysym_unicode));
 	unsigned int unicode = keysym_unicode>0? KeyMappingX11::get_unicode_from_keysym(keysym_unicode):0;
-	
+
 
 	/* Phase 4, determine if event must be filtered */
-	
+
 	// This seems to be a side-effect of using XIM.
 	// XEventFilter looks like a core X11 funciton,
 	// but it's actually just used to see if we must
@@ -1078,47 +1078,47 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	// Guess it was a design problem of the extension
 
 	bool keypress = xkeyevent->type == KeyPress;
-	
+
 	if (xkeyevent->type == KeyPress && xic) {
                 if (XFilterEvent((XEvent*)xkeyevent, x11_window))
-                	return;  
+                	return;
 	}
-	
+
 	if (keycode==0 && unicode==0)
 		return;
 
 	/* Phase 5, determine modifier mask */
-		
+
 	// No problems here, except I had no way to
 	// know Mod1 was ALT and Mod4 was META (applekey/winkey)
 	// just tried Mods until i found them.
 
 	//print_line("mod1: "+itos(xkeyevent->state&Mod1Mask)+" mod 5: "+itos(xkeyevent->state&Mod5Mask));
-	
+
 	InputModifierState state = get_key_modifier_state(xkeyevent->state);
-	
+
 	/* Phase 6, determine echo character */
-	
+
 	// Echo characters in X11 are a keyrelease and a keypress
 	// one after the other with the (almot) same timestamp.
 	// To detect them, i use XPeekEvent and check that their
 	// difference in time is below a treshold.
-	
+
 
 	if (xkeyevent->type != KeyPress) {
-				
+
 		// make sure there are events pending,
 		// so this call won't block.
 		if (XPending(x11_display)>0) {
 			XEvent peek_event;
 			XPeekEvent(x11_display, &peek_event);
-			
-			// I'm using a treshold of 5 msecs, 
+
+			// I'm using a treshold of 5 msecs,
 			// since sometimes there seems to be a little
 			// jitter. I'm still not convinced that all this approach
 			// is correct, but the xorg developers are
 			// not very helpful today.
-			
+
 			::Time tresh=ABS(peek_event.xkey.time-xkeyevent->time);
 			if (peek_event.type == KeyPress && tresh<5 ) {
 				KeySym rk;
@@ -1130,16 +1130,16 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 					return; //ignore current, echo next
 				}
 			}
-				
+
 			// use the time from peek_event so it always works
 		}
-	
-		// save the time to check for echo when keypress happens		
+
+		// save the time to check for echo when keypress happens
 	}
-	
-	
+
+
 	/* Phase 7, send event to Window */
-	
+
 	InputEvent event;
 	event.ID=++event_id;
 	event.type = InputEvent::KEY;
@@ -1234,24 +1234,24 @@ void OS_X11::process_xevents() {
 
 		case ConfigureNotify:
 		/* call resizeGLScene only if our window-size changed */
-		
-			if ((event.xconfigure.width == current_videomode.width) && 
+
+			if ((event.xconfigure.width == current_videomode.width) &&
 			(event.xconfigure.height == current_videomode.height))
 				break;
-				
+
 			current_videomode.width=event.xconfigure.width;
 			current_videomode.height=event.xconfigure.height;
 			break;
 		case ButtonPress:
 		case ButtonRelease: {
-			
+
 			/* exit in case of a mouse button press */
 			last_timestamp=event.xbutton.time;
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
 				event.xbutton.x=last_mouse_pos.x;
 				event.xbutton.y=last_mouse_pos.y;
 			}
-		
+
 			InputEvent mouse_event;
 			mouse_event.ID=++event_id;
 			mouse_event.type = InputEvent::MOUSE_BUTTON;
@@ -1267,31 +1267,31 @@ void OS_X11::process_xevents() {
 				mouse_event.mouse_button.button_index=3;
 			else if (mouse_event.mouse_button.button_index==3)
 				mouse_event.mouse_button.button_index=2;
-				
+
 			mouse_event.mouse_button.pressed=(event.type==ButtonPress);
 
 
 			if (event.type==ButtonPress && event.xbutton.button==1) {
-				
+
 				uint64_t diff = get_ticks_usec()/1000 - last_click_ms;
 
 				if (diff<400 && Point2(last_click_pos).distance_to(Point2(event.xbutton.x,event.xbutton.y))<5) {
-					
+
 					last_click_ms=0;
 					last_click_pos = Point2(-100,-100);
-					mouse_event.mouse_button.doubleclick=true;					
+					mouse_event.mouse_button.doubleclick=true;
 					mouse_event.ID=++event_id;
-					
+
 				} else {
-					last_click_ms+=diff;	
+					last_click_ms+=diff;
 					last_click_pos = Point2(event.xbutton.x,event.xbutton.y);
 				}
-			}	
+			}
 
 			input->parse_input_event( mouse_event);
 
-			
-		} break;	
+
+		} break;
 		case MotionNotify: {
 
 			// FUCK YOU X11 API YOU SERIOUSLY GROSS ME OUT
@@ -1304,7 +1304,7 @@ void OS_X11::process_xevents() {
 			// PLEASE DO ME A FAVOR AND DIE DROWNED IN A FECAL
 			// MOUNTAIN BECAUSE THAT'S WHERE YOU BELONG.
 
-			
+
 			while(true) {
 				if (mouse_mode==MOUSE_MODE_CAPTURED && event.xmotion.x==current_videomode.width/2 && event.xmotion.y==current_videomode.height/2) {
 					//this is likely the warp event since it was warped here
@@ -1326,7 +1326,7 @@ void OS_X11::process_xevents() {
 			}
 
 			last_timestamp=event.xmotion.time;
-		
+
 			// Motion is also simple.
 			// A little hack is in order
 			// to be able to send relative motion events.
@@ -1359,13 +1359,13 @@ void OS_X11::process_xevents() {
 					      0,0,0,0, (int)center.x, (int)center.y);
 #endif
 			}
-			
+
 			if (!last_mouse_pos_valid) {
-				
+
 				last_mouse_pos=pos;
 				last_mouse_pos_valid=true;
 			}
-			
+
 			Point2i rel = pos - last_mouse_pos;
 
 #ifdef NEW_WM_API
@@ -1379,7 +1379,7 @@ void OS_X11::process_xevents() {
 			motion_event.ID=++event_id;
 			motion_event.type=InputEvent::MOUSE_MOTION;
 			motion_event.device=0;
-			
+
 			motion_event.mouse_motion.mod = get_key_modifier_state(event.xmotion.state);
 			motion_event.mouse_motion.button_mask = get_mouse_button_state(event.xmotion.state);
 			motion_event.mouse_motion.x=pos.x;
@@ -1392,23 +1392,23 @@ void OS_X11::process_xevents() {
 
 			motion_event.mouse_motion.relative_x=rel.x;
 			motion_event.mouse_motion.relative_y=rel.y;
-						
+
 			last_mouse_pos=pos;
 
 			// printf("rel: %d,%d\n", rel.x, rel.y );
-			
+
 			input->parse_input_event( motion_event);
-			
-		} break;			
-		case KeyPress: 
+
+		} break;
+		case KeyPress:
 		case KeyRelease: {
 
 			last_timestamp=event.xkey.time;
-				
+
 			// key event is a little complex, so
 			// it will be handled in it's own function.
 			handle_key_event( (XKeyEvent*)&event );
-		} break;			
+		} break;
 		case SelectionRequest: {
 
 			XSelectionRequestEvent *req;
@@ -1455,8 +1455,8 @@ void OS_X11::process_xevents() {
 		} break;
 
 
-		case ClientMessage:    
-		
+		case ClientMessage:
+
 			if ((unsigned int)event.xclient.data.l[0]==(unsigned int)wm_delete)
 				main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 			break;
@@ -1464,7 +1464,7 @@ void OS_X11::process_xevents() {
 			break;
 		}
 	}
-	
+
 	XFlush(x11_display);
 
 	if (do_mouse_warp) {
@@ -1472,7 +1472,7 @@ void OS_X11::process_xevents() {
 		XWarpPointer(x11_display, None, x11_window,
 		 	      0,0,0,0, (int)current_videomode.width/2, (int)current_videomode.height/2);
 
-		/*	
+		/*
 		Window root, child;
 		int root_x, root_y;
 		int win_x, win_y;
@@ -1753,19 +1753,19 @@ void OS_X11::set_icon(const Image& p_icon) {
 void OS_X11::run() {
 
 	force_quit = false;
-	
+
 	if (!main_loop)
 		return;
-		
+
 	main_loop->init();
-		
+
 //	uint64_t last_ticks=get_ticks_usec();
-	
+
 //	int frames=0;
 //	uint64_t frame=0;
-	
+
 	while (!force_quit) {
-	
+
 		process_xevents(); // get rid of pending events
 #ifdef JOYDEV_ENABLED
 		event_id = joystick->process_joysticks(event_id);
@@ -1773,7 +1773,7 @@ void OS_X11::run() {
 		if (Main::iteration()==true)
 			break;
 	};
-	
+
 	main_loop->finish();
 }
 

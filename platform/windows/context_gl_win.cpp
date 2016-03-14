@@ -31,7 +31,7 @@
 //
 // C++ Implementation: context_gl_x11
 //
-// Description: 
+// Description:
 //
 //
 // Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
@@ -105,21 +105,21 @@ Error ContextGL_Win::initialize() {
 		PFD_DRAW_TO_WINDOW |						// Format Must Support Window
 		PFD_SUPPORT_OPENGL |						// Format Must Support OpenGL
 		PFD_DOUBLEBUFFER,
-		PFD_TYPE_RGBA,	
+		PFD_TYPE_RGBA,
 		24,
 		0, 0, 0, 0, 0, 0,							// Color Bits Ignored
 		0,// No Alpha Buffer
 		0,// Shift Bit Ignored
 		0,// No Accumulation Buffer
 		0, 0, 0, 0,// Accumulation Bits Ignored
-		24,// 24Bit Z-Buffer (Depth Buffer)  
+		24,// 24Bit Z-Buffer (Depth Buffer)
 		0,// No Stencil Buffer
 		0,// No Auxiliary Buffer
 		PFD_MAIN_PLANE, // Main Drawing Layer
 		0,// Reserved
 		0, 0, 0	// Layer Masks Ignored
 	};
-	
+
 	if (!(hDC=GetDC(hWnd))) {
 		MessageBox(NULL,"Can't Create A GL Device Context.","ERROR",MB_OK|MB_ICONEXCLAMATION);
 		return ERR_CANT_CREATE;								// Return FALSE

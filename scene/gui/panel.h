@@ -34,13 +34,13 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class Panel : public Control{
-	
+
 	OBJ_TYPE(Panel,Control);
 protected:
 
 	void _notification(int p_what);
 public:
-	Panel();	
+	Panel();
 	~Panel();
 
 };

@@ -45,7 +45,7 @@ Size2 Button::get_minimum_size() const {
 		_icon=icon;
 
 	if (!_icon.is_null()) {
-	
+
 		minsize.height=MAX( minsize.height, _icon->get_height() );
 		minsize.width+=_icon->get_width();
 		if (text!="")
@@ -53,48 +53,48 @@ Size2 Button::get_minimum_size() const {
 	}
 
 	return get_stylebox("normal" )->get_minimum_size() + minsize;
-	
+
 }
 
 
 void Button::_notification(int p_what) {
-	
+
 	if (p_what==NOTIFICATION_DRAW) {
-		
+
 		RID ci = get_canvas_item();
 		Size2 size=get_size();
 		Color color;
 
 		//print_line(get_text()+": "+itos(is_flat())+" hover "+itos(get_draw_mode()));
-		
+
 		switch( get_draw_mode() ) {
-		
+
 			case DRAW_NORMAL: {
-			
+
 				if (!flat)
 					get_stylebox("normal" )->draw(  ci, Rect2(Point2(0,0), size) );
-				color=get_color("font_color");			
+				color=get_color("font_color");
 			} break;
 			case DRAW_PRESSED: {
-			
+
 				get_stylebox("pressed" )->draw(  ci, Rect2(Point2(0,0), size) );
 				if (has_color("font_color_pressed"))
 					color=get_color("font_color_pressed");
 				else
 					color=get_color("font_color");
-			
+
 			} break;
 			case DRAW_HOVER: {
-			
+
 				get_stylebox("hover" )->draw(  ci, Rect2(Point2(0,0), size) );
 				color=get_color("font_color_hover");
-				
+
 			} break;
 			case DRAW_DISABLED: {
 
 				get_stylebox("disabled" )->draw(  ci, Rect2(Point2(0,0), size) );
 				color=get_color("font_color_disabled");
-			
+
 			} break;
 		}
 
@@ -139,12 +139,12 @@ void Button::_notification(int p_what) {
 		if (!_icon.is_null()) {
 
 			int valign = size.height-style->get_minimum_size().y;
-		
+
 			_icon->draw(ci,style->get_offset()+Point2(0, Math::floor( (valign-_icon->get_height())/2.0 ) ),is_disabled()?Color(1,1,1,0.4):Color(1,1,1) );
 		}
 
 
-				
+
 	}
 }
 
@@ -236,7 +236,7 @@ void Button::_bind_methods() {
 }
 
 Button::Button(const String &p_text) {
-	
+
 	flat=false;
 	clip_text=false;
 	set_stop_mouse(true);

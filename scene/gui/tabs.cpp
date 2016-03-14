@@ -493,7 +493,7 @@ void Tabs::set_current_tab(int p_current) {
 	ERR_FAIL_INDEX( p_current, get_tab_count() );
 
     //printf("DEBUG %p: set_current_tab to %i\n", this, p_current);
-	current=p_current;	
+	current=p_current;
 
 	_change_notify("current_tab");
 	//emit_signal("tab_changed",current);

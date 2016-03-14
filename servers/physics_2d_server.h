@@ -533,7 +533,7 @@ public:
 	virtual void damped_string_joint_set_param(RID p_joint, DampedStringParam p_param, real_t p_value)=0;
 	virtual real_t damped_string_joint_get_param(RID p_joint, DampedStringParam p_param) const=0;
 
-	virtual JointType joint_get_type(RID p_joint) const=0;	
+	virtual JointType joint_get_type(RID p_joint) const=0;
 
 	/* QUERY API */
 

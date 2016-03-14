@@ -96,7 +96,7 @@ public:
 
 	struct Triangle {
 
-		AABB aabb;	
+		AABB aabb;
 		Vector3 vertices[3];
 		Vector2 uvs[3];
 		Vector2 bake_uvs[3];

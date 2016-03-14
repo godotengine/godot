@@ -33,17 +33,17 @@
 #include "error_macros.h"
 
 Error FileAccessBuffered::set_error(Error p_error) const {
-	
+
 	return (last_error = p_error);
 };
 
 void FileAccessBuffered::set_cache_size(int p_size) {
-	
+
 	cache_size = p_size;
 };
 
 int FileAccessBuffered::get_cache_size() {
-	
+
 	return cache_size;
 };
 
@@ -66,27 +66,27 @@ int FileAccessBuffered::cache_data_left() const {
 };
 
 void FileAccessBuffered::seek(size_t p_position) {
-	
+
 	file.offset = p_position;
 };
 
 void FileAccessBuffered::seek_end(int64_t p_position) {
-	
+
 	file.offset = file.size + p_position;
 };
 
 size_t FileAccessBuffered::get_pos() const {
-	
+
 	return file.offset;
 };
 
 size_t FileAccessBuffered::get_len() const {
-	
+
 	return file.size;
 };
 
 bool FileAccessBuffered::eof_reached() const {
-	
+
 	return file.offset > file.size;
 };
 
@@ -165,12 +165,12 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest,int p_elements) const {
 };
 
 bool FileAccessBuffered::is_open() const {
-	
+
 	return file.open;
 };
 
 Error FileAccessBuffered::get_error() const {
-	
+
 	return last_error;
 };
 
@@ -180,5 +180,5 @@ FileAccessBuffered::FileAccessBuffered() {
 };
 
 FileAccessBuffered::~FileAccessBuffered(){
-	
+
 }

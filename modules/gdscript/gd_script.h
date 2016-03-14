@@ -260,7 +260,7 @@ friend class GDScriptLanguage;
 	Map<StringName,Variant> constants;
 	Map<StringName,GDFunction> member_functions;
 	Map<StringName,MemberInfo> member_indices; //members are just indices to the instanced script.
-	Map<StringName,Ref<GDScript> > subclasses;	
+	Map<StringName,Ref<GDScript> > subclasses;
 	Map<StringName,Vector<StringName> > _signals;
 
 #ifdef TOOLS_ENABLED

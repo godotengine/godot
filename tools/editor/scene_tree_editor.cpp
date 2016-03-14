@@ -211,7 +211,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 }
 
 void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
-	
+
 	if (!p_node)
 		return;
 
@@ -252,7 +252,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 	else
 		icon=get_icon( (has_icon(p_node->get_type(),"EditorIcons")?p_node->get_type():String("Object")),"EditorIcons");
 	item->set_icon(0, icon );
-	item->set_metadata( 0,p_node->get_path() );	
+	item->set_metadata( 0,p_node->get_path() );
 
 	if (part_of_subscene) {
 
@@ -260,7 +260,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 		item->set_custom_color(0,Color(0.8,0.4,0.20));
 
 	} else if (marked.has(p_node)) {
-				
+
 		item->set_selectable(0,marked_selectable);
 		item->set_custom_color(0,Color(0.8,0.1,0.10));
 	} else if (!marked_selectable && !marked_children_selectable) {
@@ -344,9 +344,9 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 			item->select(0);
 		item->set_as_cursor(0);
 	}
-		
+
 	for (int i=0;i<p_node->get_child_count();i++) {
-		
+
 		_add_nodes(p_node->get_child(i),item);
 	}
 }
@@ -406,7 +406,7 @@ void SceneTreeEditor::_node_script_changed(Node *p_node) {
 }
 
 void SceneTreeEditor::_node_removed(Node *p_node) {
-	
+
 	if (p_node->is_connected("script_changed",this,"_node_script_changed"))
 		p_node->disconnect("script_changed",this,"_node_script_changed");
 
@@ -419,8 +419,8 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 		selected=NULL;
 		emit_signal("node_selected");
 	}
-		
-	
+
+
 }
 void SceneTreeEditor::_update_tree() {
 
@@ -492,11 +492,11 @@ void SceneTreeEditor::_tree_changed() {
 
 void SceneTreeEditor::_selected_changed() {
 
-	
+
 	TreeItem *s = tree->get_selected();
 	ERR_FAIL_COND(!s);
 	NodePath np = s->get_metadata(0);
-	
+
 	Node *n=get_node(np);
 
 
@@ -509,8 +509,8 @@ void SceneTreeEditor::_selected_changed() {
 	blocked++;
 	emit_signal("node_selected");
 	blocked--;
-	
-	
+
+
 }
 
 
@@ -540,7 +540,7 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object,int p_cell,bool p_se
 }
 
 void SceneTreeEditor::_notification(int p_what) {
-	
+
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		get_tree()->connect("tree_changed",this,"_tree_changed");
@@ -570,20 +570,20 @@ TreeItem* SceneTreeEditor::_find(TreeItem *p_node,const NodePath& p_path) {
 
 	if (!p_node)
 		return NULL;
-		
+
 	NodePath np=p_node->get_metadata(0);
 	if (np==p_path)
 		return p_node;
-		
+
 	TreeItem *children=p_node->get_children();
 	while(children) {
-	
+
 		TreeItem *n=_find(children,p_path);
 		if (n)
 			return n;
 		children=children->get_next();
 	}
-	
+
 	return NULL;
 }
 
@@ -598,24 +598,24 @@ void SceneTreeEditor::set_selected(Node *p_node,bool p_emit_selected) {
 
 	if (selected==p_node)
 		return;
-		
-	
+
+
 	TreeItem* item=p_node?_find(tree->get_root(),p_node->get_path()):NULL;
 
 	if (item) {
 		item->select(0);
 		item->set_as_cursor(0);
-		selected=p_node;	
+		selected=p_node;
 		tree->ensure_cursor_is_visible();
 	} else {
 		if (!p_node)
 			selected=NULL;
 		_update_tree();
-		selected=p_node;	
+		selected=p_node;
 		if (p_emit_selected)
 			emit_signal("node_selected");
 	}
-	
+
 }
 
 void SceneTreeEditor::_rename_node(ObjectID p_node,const String& p_name) {
@@ -787,10 +787,10 @@ void SceneTreeEditor::_cell_collapsed(Object *p_obj) {
 
 
 void SceneTreeEditor::_bind_methods() {
-	
+
 	ObjectTypeDB::bind_method("_tree_changed",&SceneTreeEditor::_tree_changed);
 	ObjectTypeDB::bind_method("_update_tree",&SceneTreeEditor::_update_tree);
-	ObjectTypeDB::bind_method("_node_removed",&SceneTreeEditor::_node_removed);	
+	ObjectTypeDB::bind_method("_node_removed",&SceneTreeEditor::_node_removed);
 	ObjectTypeDB::bind_method("_selected_changed",&SceneTreeEditor::_selected_changed);
 	ObjectTypeDB::bind_method("_renamed",&SceneTreeEditor::_renamed);
 	ObjectTypeDB::bind_method("_rename_node",&SceneTreeEditor::_rename_node);
@@ -817,7 +817,7 @@ void SceneTreeEditor::_bind_methods() {
 
 
 SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open_instance) {
-	
+
 
 	undo_redo=NULL;
 	tree_dirty=true;
@@ -829,23 +829,23 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	can_open_instance=p_can_open_instance;
 	display_foreign=false;
 	editor_selection=NULL;
-	
+
 	if (p_label) {
 		Label *label = memnew( Label );
 		label->set_pos( Point2(10, 0));
 		label->set_text("Scene Tree (Nodes):");
-		
+
 		add_child(label);
 	}
-	
+
 	tree = memnew( Tree );
 	tree->set_anchor( MARGIN_RIGHT, ANCHOR_END );
-	tree->set_anchor( MARGIN_BOTTOM, ANCHOR_END );	
+	tree->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
 	tree->set_begin( Point2(0,p_label?18:0 ));
 	tree->set_end( Point2(0,0 ));
-	
+
 	add_child( tree );
-		
+
 	tree->connect("cell_selected", this,"_selected_changed");
 	tree->connect("item_edited", this,"_renamed",varray(),CONNECT_DEFERRED);
 	tree->connect("multi_selected",this,"_cell_multi_selected");
@@ -889,7 +889,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 
 
 SceneTreeEditor::~SceneTreeEditor() {
-	
+
 }
 
 

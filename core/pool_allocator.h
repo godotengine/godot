@@ -41,66 +41,66 @@
 */
 
 enum {
-	
+
 	POOL_ALLOCATOR_INVALID_ID=-1 ///< default invalid value. use INVALID_ID( id ) to test
 };
 
 class PoolAllocator {
-public:	
+public:
 	typedef int ID;
-private:	
+private:
 	enum {
 		CHECK_BITS=8,
   		CHECK_LEN=(1<<CHECK_BITS),
 		CHECK_MASK=CHECK_LEN-1
-	
+
 	};
-	
-	
+
+
 	struct Entry {
-		
+
 		unsigned int pos;
 		unsigned int len;
 		unsigned int lock;
-		unsigned int check;		
-		
+		unsigned int check;
+
 		inline void clear() { pos=0; len=0; lock=0; check=0; }
 		Entry() { clear(); }
 	};
-	
-	
+
+
 	typedef int EntryArrayPos;
 	typedef int EntryIndicesPos;
-	
+
 	Entry *entry_array;
 	int *entry_indices;
 	int entry_max;
 	int entry_count;
-	
+
 	uint8_t *pool;
 	void *mem_ptr;
 	int pool_size;
-	
+
 	int free_mem;
 	int free_mem_peak;
 
 	unsigned int check_count;
 	int align;
-	
+
 	bool needs_locking;
-	
-	inline int entry_end(const Entry& p_entry) const { 
-		return p_entry.pos+aligned(p_entry.len); 
+
+	inline int entry_end(const Entry& p_entry) const {
+		return p_entry.pos+aligned(p_entry.len);
 	}
 	inline int aligned(int p_size) const {
-			
+
 		int rem=p_size%align;
 		if (rem)
 			p_size+=align-rem;
-			
+
 		return p_size;
 	}
-	
+
 	void compact(int p_up_to=-1);
 	void compact_up(int p_from=0);
 	bool get_free_entry(EntryArrayPos* p_pos);
@@ -108,14 +108,14 @@ private:
 	bool find_entry_index(EntryIndicesPos *p_map_pos,Entry *p_entry);
 	Entry* get_entry(ID p_mem);
 	const Entry* get_entry(ID p_mem) const;
-	
+
 	void create_pool(void * p_mem,int p_size,int p_max_entries);
-protected:	
+protected:
 	virtual void mt_lock() const; ///< Reimplement for custom mt locking
 	virtual void mt_unlock() const; ///< Reimplement for custom mt locking
-	
+
 public:
-	
+
 	enum {
 		DEFAULT_MAX_ALLOCS=4096,
 	};
@@ -124,7 +124,7 @@ public:
 	void free(ID p_mem); ///< Free allocated memory
 	Error resize(ID p_mem,int p_new_size); ///< resize a memory chunk
 	int get_size(ID p_mem) const;
-	
+
 	int get_free_mem(); ///< get free memory
 	int get_used_mem() const;
 	int get_free_peak(); ///< get free memory
@@ -134,13 +134,13 @@ public:
 	const void *get(ID p_mem) const;
 	void unlock(ID p_mem);
 	bool is_locked(ID p_mem) const;
-		
+
 	PoolAllocator(int p_size,bool p_needs_locking=false,int p_max_entries=DEFAULT_MAX_ALLOCS);
 	PoolAllocator(void * p_mem,int p_size, int p_align = 1, bool p_needs_locking=false,int p_max_entries=DEFAULT_MAX_ALLOCS);
 	PoolAllocator(int p_align,int p_size,bool p_needs_locking=false,int p_max_entries=DEFAULT_MAX_ALLOCS);
-		
+
 	virtual ~PoolAllocator();
-	
+
 };
 
 #endif

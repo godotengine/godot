@@ -34,11 +34,11 @@ ParticleSystemSW::ParticleSystemSW() {
 
 	amount=8;
 	emitting=true;
-	
+
 	for (int i=0;i<VS::PARTICLE_VAR_MAX;i++) {
 		particle_randomness[i]=0.0;
 	}
-	
+
 	particle_vars[VS::PARTICLE_LIFETIME]=2.0;//
 	particle_vars[VS::PARTICLE_SPREAD]=0.2;//
 	particle_vars[VS::PARTICLE_GRAVITY]=9.8;//
@@ -89,7 +89,7 @@ _FORCE_INLINE_ static float _rand_from_seed(uint32_t *seed) {
 	if (s < 0)
 		s += 2147483647;
 	(*seed) = s;
-	
+
 	float v=((float)((*seed) & 0xFFFFF))/(float)0xFFFFF;
 	v=v*2.0-1.0;
 	return v;
@@ -144,10 +144,10 @@ void ParticleSystemProcessSW::process(const ParticleSystemSW *p_system,const Tra
 	}
 
 	float next_time = particle_system_time+p_time;
-	
+
 	if (next_time > lifetime)
 		next_time=Math::fmod(next_time,lifetime);
-		
+
 
 	ParticleData *pdata=&particle_data[0];
 	Vector3 attractor_positions[VS::MAX_PARTICLE_ATTRACTORS];
@@ -159,13 +159,13 @@ void ParticleSystemProcessSW::process(const ParticleSystemSW *p_system,const Tra
 
 
 	for(int i=0;i<particle_count;i++) {
-	
+
 		ParticleData &p=pdata[i];
-		
+
 		float restart_time = (i * lifetime / p_system->amount);
-		
+
 		bool restart=false;
-		
+
 		if ( next_time < particle_system_time ) {
 
 			if (restart_time > particle_system_time || restart_time < next_time )
@@ -191,11 +191,11 @@ void ParticleSystemProcessSW::process(const ParticleSystemSW *p_system,const Tra
 					else
 						p.pos = p_transform.xform( r[_irand_from_seed(&rand_seed)%emission_point_count] );
 				}
-							
-				
+
+
 				float angle1 = _rand_from_seed(&rand_seed)*p_system->particle_vars[VS::PARTICLE_SPREAD]*Math_PI;
 				float angle2 = _rand_from_seed(&rand_seed)*20.0*Math_PI; // make it more random like
-				
+
 				Vector3 rot_xz=Vector3( Math::sin(angle1), 0.0, Math::cos(angle1) );
 				Vector3 rot = Vector3( Math::cos(angle2)*rot_xz.x,Math::sin(angle2)*rot_xz.x, rot_xz.z);
 
@@ -204,22 +204,22 @@ void ParticleSystemProcessSW::process(const ParticleSystemSW *p_system,const Tra
 					p.vel=p_transform.basis.xform( p.vel );
 
 				p.vel+=p_system->emission_base_velocity;
-				
-				p.rot=p_system->particle_vars[VS::PARTICLE_INITIAL_ANGLE]+p_system->particle_randomness[VS::PARTICLE_INITIAL_ANGLE]*_rand_from_seed(&rand_seed);				
+
+				p.rot=p_system->particle_vars[VS::PARTICLE_INITIAL_ANGLE]+p_system->particle_randomness[VS::PARTICLE_INITIAL_ANGLE]*_rand_from_seed(&rand_seed);
 				p.active=true;
 				for(int r=0;r<PARTICLE_RANDOM_NUMBERS;r++)
 					p.random[r]=_rand_from_seed(&rand_seed);
 
 			} else {
-			
+
 				p.pos=Vector3();
 				p.rot=0;
 				p.vel=Vector3();
 				p.active=false;
 			}
-		
+
 		} else {
-		
+
 			if (!p.active)
 				continue;
 

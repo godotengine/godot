@@ -32,7 +32,7 @@
 
 void movemem_system(void *to, void *from,int amount) {
 
-  memmove(to,from,amount);  
+  memmove(to,from,amount);
 
 }
 

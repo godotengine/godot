@@ -2162,7 +2162,7 @@ void PropertyEditor::_check_reload_status(const String&p_name, TreeItem* item) {
 
 			//}
 
-		}		
+		}
 
 	}
 

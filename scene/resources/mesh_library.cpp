@@ -103,7 +103,7 @@ void MeshLibrary::create_item(int p_item) {
 void MeshLibrary::set_item_name(int p_item,const String& p_name) {
 
 	ERR_FAIL_COND(!item_map.has(p_item));
-	item_map[p_item].name=p_name;	
+	item_map[p_item].name=p_name;
 	emit_changed();
 	_change_notify();
 

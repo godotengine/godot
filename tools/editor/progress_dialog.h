@@ -86,12 +86,14 @@ class ProgressDialog : public Popup {
 	VBoxContainer *main;
 	uint64_t last_progress_tick;
 
+	static ProgressDialog *singleton;
 	void _popup();
 protected:
 
 	void _notification(int p_what);
 public:
 
+	static ProgressDialog *get_singleton() { return singleton; }
 	void add_task(const String& p_task,const String& p_label, int p_steps);
 	void task_step(const String& p_task, const String& p_state, int p_step=-1, bool p_force_redraw=true);
 	void end_task(const String& p_task);

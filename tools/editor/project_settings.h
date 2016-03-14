@@ -34,13 +34,16 @@
 #include "optimized_save_dialog.h"
 #include "undo_redo.h"
 #include "editor_data.h"
-
+#include "scene/gui/tab_container.h"
 #include "editor_plugin_settings.h"
 
 //#include "project_export_settings.h"
 
 class ProjectSettings : public AcceptDialog {
 	OBJ_TYPE( ProjectSettings, AcceptDialog );
+
+
+	TabContainer *tab_container;
 
 	Timer *timer;
 	InputEvent::Type add_type;
@@ -164,6 +167,7 @@ public:
 	void add_translation(const String& p_translation);
 	static ProjectSettings *get_singleton() { return singleton; }
 	void popup_project_settings();
+	void set_plugins_page();
 
 	void queue_save();
 

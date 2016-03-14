@@ -53,7 +53,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 	bool ticks_on_borders;
-	
+
 public:
 
 	virtual Size2 get_minimum_size() const;
