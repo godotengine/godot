@@ -1087,7 +1087,7 @@ class DaeExporter:
 			self.writel(S_LAMPS,5,'<color>'+strarr(light.color)+'</color>')
 			att_by_distance = 2.0 / light.distance # convert to linear attenuation
 			self.writel(S_LAMPS,5,'<linear_attenuation>'+str(att_by_distance)+'</linear_attenuation>')
-			self.writel(S_LAMPS,5,'<falloff_angle>'+str(math.degrees(light.spot_size))+'</falloff_angle>')
+			self.writel(S_LAMPS,5,'<falloff_angle>'+str(math.degrees(light.spot_size/2))+'</falloff_angle>')
 			self.writel(S_LAMPS,4,'</spot>')
 
 
