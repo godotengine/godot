@@ -1307,6 +1307,8 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	// Add menu items
 	toolbar = memnew( HBoxContainer );
+	toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
+	toolbar->set_alignment(BoxContainer::ALIGN_END);
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(toolbar);
 
 	options = memnew( MenuButton );
@@ -1320,9 +1322,8 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_item("Pick Tile", OPTION_PICK_TILE, KEY_CONTROL);
 	p->add_separator();
-	p->add_item("Select", OPTION_SELECT, KEY_MASK_SHIFT+KEY_B);
+	p->add_item("Select", OPTION_SELECT, KEY_MASK_CMD+KEY_B);
 	p->add_item("Duplicate Selection", OPTION_DUPLICATE, KEY_MASK_CMD+KEY_D);
-	p->add_separator();
 	p->add_item("Erase Selection", OPTION_ERASE_SELECTION, KEY_DELETE);
 
 	p->connect("item_pressed", this, "_menu_option");
