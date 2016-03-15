@@ -274,6 +274,11 @@ void LineEdit::_input_event(InputEvent p_event) {
 					} break;
 					case KEY_DELETE: {
 
+						if (k.mod.shift && !k.mod.command && !k.mod.alt && editable) {
+							cut_text();
+							break;
+						}
+
 						if (editable) {
 							undo_text = text;
 							if (selection.enabled)
