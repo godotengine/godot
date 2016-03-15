@@ -138,6 +138,8 @@ void UndoRedo::add_undo_property(Object *p_object,const String& p_property,const
 
 	ERR_FAIL_COND(action_level<=0);
 	ERR_FAIL_COND((current_action+1)>=actions.size());
+	if (merging)
+		return; //- no undo if merging
 
 	Operation undo_op;
 	undo_op.object=p_object->get_instance_ID();
@@ -167,6 +169,9 @@ void UndoRedo::add_undo_reference(Object *p_object) {
 
 	ERR_FAIL_COND(action_level<=0);
 	ERR_FAIL_COND((current_action+1)>=actions.size());
+	if (merging)
+		return; //- no undo if merging
+
 	Operation undo_op;
 	undo_op.object=p_object->get_instance_ID();
 	if (p_object->cast_to<Resource>())
