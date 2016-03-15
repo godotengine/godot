@@ -22,7 +22,7 @@
 #include "pnm/bitmap_loader_pnm.h"
 
 
-#ifdef TOOLS_ENABLED
+#ifdef SQUISH_ENABLED
 #include "squish/image_compress_squish.h"
 #endif
 
@@ -233,12 +233,10 @@ void register_driver_types() {
 #endif
 
 
-#ifdef TOOLS_ENABLED
 #ifdef SQUISH_ENABLED
 
 	Image::set_compress_bc_func(image_compress_squish);
 
-#endif
 #endif
 
 #ifdef ETC1_ENABLED

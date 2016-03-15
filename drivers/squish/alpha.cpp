@@ -24,7 +24,7 @@
    -------------------------------------------------------------------------- */
    
 #include "alpha.h"
-#include <algorithm>
+#include "algorithm.h"
 
 namespace squish {
 
