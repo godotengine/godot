@@ -1957,6 +1957,12 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					if (readonly)
 						break;
+
+					if (k.mod.shift && !k.mod.command && !k.mod.alt) {
+						cut();
+						break;
+					}
+
 					int curline_len = text[cursor.line].length();
 
 					if (cursor.line==text.size()-1 && cursor.column==curline_len)
@@ -2169,35 +2175,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						break;
 					}
 
-					if (!selection.active){
-
-						String clipboard = text[cursor.line];
-						OS::get_singleton()->set_clipboard(clipboard);
-						cursor_set_line(cursor.line);
-						cursor_set_column(0);
-						_remove_text(cursor.line,0,cursor.line,text[cursor.line].length());
-
-						backspace_at_cursor();
-						update();
-						cursor_set_line(cursor.line+1);
-						cut_copy_line = true;
-
-					}
-					else
-					{
-
-						String clipboard = _base_get_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
-						OS::get_singleton()->set_clipboard(clipboard);
-
-						cursor_set_line(selection.from_line);
-						cursor_set_column(selection.from_column);
-
-						_remove_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
-						selection.active=false;
-						selection.selecting_mode=Selection::MODE_NONE;
-						update();
-						cut_copy_line = false;
-					}
+					cut();
 
 				} break;
 				case KEY_C: {
@@ -2207,16 +2185,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						break;
 					}
 
-					if (!selection.active){
-						String clipboard = _base_get_text(cursor.line,0,cursor.line,text[cursor.line].length());
-						OS::get_singleton()->set_clipboard(clipboard);
-						cut_copy_line = true;
-					}
-					else{
-						String clipboard = _base_get_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
-						OS::get_singleton()->set_clipboard(clipboard);
-						cut_copy_line = false;
-					}
+					copy();
+
 				} break;
 				case KEY_Z: {
 
@@ -2237,25 +2207,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						break;
 					}
 
-					String clipboard = OS::get_singleton()->get_clipboard();
+					paste();
 
-					if (selection.active) {
-						selection.active=false;
-						_remove_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
-						cursor_set_line(selection.from_line);
-						cursor_set_column(selection.from_column);
-
-					}
-					else if (cut_copy_line)
-					{
-						cursor_set_column(0);
-						String ins="\n";
-						clipboard += ins;
-					}
-
-					_insert_text_at_cursor(clipboard);
-
-					update();
 				} break;
 				case KEY_SPACE: {
 #ifdef OSX_ENABLED
@@ -3028,39 +2981,23 @@ void TextEdit::set_auto_indent(bool p_auto_indent) {
 
 void TextEdit::cut() {
 
-	if (!selection.active)
-		return;
+	if (!selection.active) {
 
-	String clipboard = _base_get_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
-	OS::get_singleton()->set_clipboard(clipboard);
+		String clipboard = text[cursor.line];
+		OS::get_singleton()->set_clipboard(clipboard);
+		cursor_set_line(cursor.line);
+		cursor_set_column(0);
+		_remove_text(cursor.line,0,cursor.line,text[cursor.line].length());
 
-	cursor_set_line(selection.from_line);
-	cursor_set_column(selection.from_column);
+		backspace_at_cursor();
+		update();
+		cursor_set_line(cursor.line+1);
+		cut_copy_line = true;
 
-	_remove_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
-	selection.active=false;
-	selection.selecting_mode=Selection::MODE_NONE;
-	update();
+	} else {
 
-}
-
-void TextEdit::copy() {
-
-	if (!selection.active)
-		return;
-
-	print_line("from line: "+itos(selection.from_line));
-	print_line("from column: "+itos(selection.from_column));
-	print_line("to line: "+itos(selection.to_line));
-	print_line("to column: "+itos(selection.to_column));
-
-	String clipboard = _base_get_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
-	OS::get_singleton()->set_clipboard(clipboard);
-
-}
-void TextEdit::paste() {
-
-	if (selection.active) {
+		String clipboard = _base_get_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
+		OS::get_singleton()->set_clipboard(clipboard);
 
 		cursor_set_line(selection.from_line);
 		cursor_set_column(selection.from_column);
@@ -3068,13 +3005,48 @@ void TextEdit::paste() {
 		_remove_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
 		selection.active=false;
 		selection.selecting_mode=Selection::MODE_NONE;
-
+		update();
+		cut_copy_line = false;
 	}
+}
+
+void TextEdit::copy() {
+
+	if (!selection.active)
+		return;
+
+	if (!selection.active) {
+		String clipboard = _base_get_text(cursor.line,0,cursor.line,text[cursor.line].length());
+		OS::get_singleton()->set_clipboard(clipboard);
+		cut_copy_line = true;
+	} else {
+		String clipboard = _base_get_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
+		OS::get_singleton()->set_clipboard(clipboard);
+		cut_copy_line = false;
+	}
+}
+
+void TextEdit::paste() {
 
 	String clipboard = OS::get_singleton()->get_clipboard();
+
+	if (selection.active) {
+
+		selection.active=false;
+		selection.selecting_mode=Selection::MODE_NONE;
+		_remove_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
+		cursor_set_line(selection.from_line);
+		cursor_set_column(selection.from_column);
+
+	} else if (cut_copy_line) {
+
+		cursor_set_column(0);
+		String ins="\n";
+		clipboard += ins;
+	}
+
 	_insert_text_at_cursor(clipboard);
 	update();
-
 }
 
 void TextEdit::select_all() {
