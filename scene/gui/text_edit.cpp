@@ -1957,6 +1957,12 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					if (readonly)
 						break;
+
+					if (k.mod.shift && !k.mod.command && !k.mod.alt) {
+						cut();
+						break;
+					}
+
 					int curline_len = text[cursor.line].length();
 
 					if (cursor.line==text.size()-1 && cursor.column==curline_len)
