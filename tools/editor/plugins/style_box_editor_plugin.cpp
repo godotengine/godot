@@ -92,6 +92,7 @@ void StyleBoxEditorPlugin::make_visible(bool p_visible){
 
 	if (p_visible) {
 		button->show();
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(stylebox_editor);
 
 	} else {
 		if (stylebox_editor->is_visible())
