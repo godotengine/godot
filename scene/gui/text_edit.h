@@ -81,6 +81,7 @@ class TextEdit : public Control  {
 		Color breakpoint_color;
 		Color current_line_color;
 		Color brace_mismatch_color;
+		Color word_highlighted_color;
 
 		int row_height;
 		int line_spacing;
@@ -212,6 +213,7 @@ class TextEdit : public Control  {
 	bool undo_enabled;
 	bool line_numbers;
 
+	bool highlight_all_occurrences;
 	bool scroll_past_end_of_file_enabled;
 	bool auto_brace_completion_enabled;
 	bool brace_matching_enabled;
@@ -269,6 +271,8 @@ class TextEdit : public Control  {
 	void _base_insert_text(int p_line, int p_column,const String& p_text,int &r_end_line,int &r_end_column);
 	String _base_get_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column) const;
 	void _base_remove_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column);
+
+	int _get_column_pos_of_word(const String &p_key, const String &p_search, int p_from_column);
 
 	DVector<int> _search_bind(const String &p_key,uint32_t p_search_flags, int p_from_line,int p_from_column) const;
 
@@ -364,6 +368,7 @@ public:
 	void select(int p_from_line,int p_from_column,int p_to_line,int p_to_column);
 	void deselect();
 
+	void set_highlight_all_occurrences(const bool p_enabled);
 	bool is_selection_active() const;
 	int get_selection_from_line() const;
     int get_selection_from_column() const;
