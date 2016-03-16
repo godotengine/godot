@@ -261,6 +261,7 @@ OS::Date OS_Unix::get_date(bool utc) const {
 	
 	return ret;
 }
+
 OS::Time OS_Unix::get_time(bool utc) const {
 	time_t t=time(NULL);
 	struct tm *lt;
