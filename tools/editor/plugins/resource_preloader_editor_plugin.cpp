@@ -60,36 +60,40 @@ void ResourcePreloaderEditor::_notification(int p_what) {
 	}
 }
 
-void ResourcePreloaderEditor::_file_load_request(const String& p_path) {
+void ResourcePreloaderEditor::_files_load_request(const Vector<String>& p_path) {
+
+	for(int i=0;i<p_path.size();i++) {
+
+		String path = p_path[i];
+
+		RES resource;
+		resource = ResourceLoader::load(path);
+
+		if (resource.is_null()) {
+			dialog->set_text("ERROR: Couldn't load resource!");
+			dialog->set_title("Error!");
+			//dialog->get_cancel()->set_text("Close");
+			dialog->get_ok()->set_text("Close");
+			dialog->popup_centered_minsize();
+			return; ///beh should show an error i guess
+		}
 
 
-	RES resource;
+		String basename = path.get_file().basename();
+		String name=basename;
+		int counter=1;
+		while(preloader->has_resource(name)) {
+			counter++;
+			name=basename+" "+itos(counter);
+		}
 
-	resource = ResourceLoader::load(p_path);
-
-	if (resource.is_null()) {
-		dialog->set_text("ERROR: Couldn't load resource!");
-		dialog->set_title("Error!");
-		//dialog->get_cancel()->set_text("Close");
-		dialog->get_ok()->set_text("Close");
-		dialog->popup_centered_minsize();
-		return; ///beh should show an error i guess
+		undo_redo->create_action("Add Resource");
+		undo_redo->add_do_method(preloader,"add_resource",name,resource);
+		undo_redo->add_undo_method(preloader,"remove_resource",name);
+		undo_redo->add_do_method(this,"_update_library");
+		undo_redo->add_undo_method(this,"_update_library");
+		undo_redo->commit_action();
 	}
-
-	String basename = p_path.get_file().basename();
-	String name=basename;
-	int counter=1;
-	while(preloader->has_resource(name)) {
-		counter++;
-		name=basename+" "+itos(counter);
-	}
-
-	undo_redo->create_action("Add Resource");
-	undo_redo->add_do_method(preloader,"add_resource",name,resource);
-	undo_redo->add_undo_method(preloader,"remove_resource",name);
-	undo_redo->add_do_method(this,"_update_library");
-	undo_redo->add_undo_method(this,"_update_library");
-	undo_redo->commit_action();
 }
 
 void ResourcePreloaderEditor::_load_pressed() {
@@ -102,7 +106,7 @@ void ResourcePreloaderEditor::_load_pressed() {
 	for(int i=0;i<extensions.size();i++)
 		file->add_filter("*."+extensions[i]);
 
-	file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file->set_mode(EditorFileDialog::MODE_OPEN_FILES);
 
 	file->popup_centered_ratio();
 
@@ -283,7 +287,7 @@ void ResourcePreloaderEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_delete_pressed"),&ResourcePreloaderEditor::_delete_pressed);
 	ObjectTypeDB::bind_method(_MD("_paste_pressed"),&ResourcePreloaderEditor::_paste_pressed);
 	ObjectTypeDB::bind_method(_MD("_delete_confirm_pressed"),&ResourcePreloaderEditor::_delete_confirm_pressed);
-	ObjectTypeDB::bind_method(_MD("_file_load_request"),&ResourcePreloaderEditor::_file_load_request);
+	ObjectTypeDB::bind_method(_MD("_files_load_request"),&ResourcePreloaderEditor::_files_load_request);
 	ObjectTypeDB::bind_method(_MD("_update_library"),&ResourcePreloaderEditor::_update_library);
 }
 
@@ -330,7 +334,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	load->connect("pressed", this,"_load_pressed");
 	_delete->connect("pressed", this,"_delete_pressed");
 	paste->connect("pressed", this,"_paste_pressed");
-	file->connect("file_selected", this,"_file_load_request");
+	file->connect("files_selected", this,"_files_load_request");
 	//dialog->connect("confirmed", this,"_delete_confirm_pressed");
 	tree->connect("item_edited", this,"_item_edited");
 	loading_scene=false;

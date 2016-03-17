@@ -58,7 +58,7 @@ class ResourcePreloaderEditor : public PanelContainer {
 
 	void _load_pressed();
 	void _load_scene_pressed();
-	void _file_load_request(const String& p_path);
+	void _files_load_request(const Vector<String>& p_path);
 	void _paste_pressed();
 	void _delete_pressed();
 	void _delete_confirm_pressed();
