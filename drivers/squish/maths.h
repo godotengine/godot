@@ -27,7 +27,7 @@
 #define SQUISH_MATHS_H
 
 #include <cmath>
-#include <algorithm>
+#include "algorithm.h"
 #include "config.h"
 
 namespace squish {
