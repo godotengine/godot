@@ -56,6 +56,7 @@ protected:
 public:
 
 	void add_spacer(bool p_begin=false);
+	void add_margin(int margin);
 
 	void set_alignment(AlignMode p_align);
 	AlignMode get_alignment() const;

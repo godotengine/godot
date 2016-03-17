@@ -290,6 +290,17 @@ void BoxContainer::add_spacer(bool p_begin) {
 		move_child(c,0);
 }
 
+void BoxContainer::add_margin(int margin) {
+
+	Control *c = memnew( Control );
+	if (vertical)
+		c->set_custom_minimum_size(Size2(0, margin));
+	else
+		c->set_custom_minimum_size(Size2(margin, 0));
+
+	add_child(c);
+}
+
 BoxContainer::BoxContainer(bool p_vertical) {
 
 	vertical=p_vertical;
@@ -302,6 +313,7 @@ void BoxContainer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_alignment"),&BoxContainer::get_alignment);
 	ObjectTypeDB::bind_method(_MD("set_alignment","alignment"),&BoxContainer::set_alignment);
+	ObjectTypeDB::bind_method(_MD("add_margin","margin"),&BoxContainer::add_margin);
 
 	BIND_CONSTANT( ALIGN_BEGIN );
 	BIND_CONSTANT( ALIGN_CENTER );
