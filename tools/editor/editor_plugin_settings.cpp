@@ -44,7 +44,7 @@ void EditorPluginSettings::_notification(int p_what) {
 void EditorPluginSettings::update_plugins() {
 
 
-	plugin_list->clear();
+	//plugin_list->clear();
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	Error err = da->change_dir("res://addons");

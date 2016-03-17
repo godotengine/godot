@@ -1682,43 +1682,52 @@ Variant RasterizerGLES2::shader_get_default_param(RID p_shader, const StringName
 /* COMMON MATERIAL API */
 
 
-RID RasterizerGLES2::material_create() {
+RID RasterizerGLES2::material_create(const int p_pass_count) {
 
-	RID material = material_owner.make_rid( memnew( Material ) );
+	Material *mat = memnew(Material);
+	mat->set_pass_count(p_pass_count);
+	RID material = material_owner.make_rid(mat);
 	return material;
 }
 
-void RasterizerGLES2::material_set_shader(RID p_material, RID p_shader) {
+void RasterizerGLES2::material_set_shader(RID p_material, const int p_pass_index, RID p_shader) {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
-	if (material->shader==p_shader)
+	Material::Pass *pass=&material->passes[p_pass_index];
+	ERR_FAIL_COND(!pass);
+
+	if (pass->shader==p_shader)
 		return;
-	material->shader=p_shader;
-	material->shader_version=0;
+	pass->shader=p_shader;
+	pass->shader_version=0;
 
 }
 
-RID RasterizerGLES2::material_get_shader(RID p_material) const {
+RID RasterizerGLES2::material_get_shader(RID p_material, const int p_pass_index) const {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND_V(!material,RID());
-	return material->shader;
+	Material::Pass *pass=&material->passes[p_pass_index];
+	ERR_FAIL_COND_V(!pass,RID());
+	return pass->shader;
 }
 
 
-void RasterizerGLES2::material_set_param(RID p_material, const StringName& p_param, const Variant& p_value) {
+void RasterizerGLES2::material_set_param(RID p_material, const int p_pass_index, const StringName& p_param, const Variant& p_value) {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
+	Material::Pass *pass = &material->passes[p_pass_index];
+	ERR_FAIL_COND(!pass);
 
-	Map<StringName,Material::UniformData>::Element *E=material->shader_params.find(p_param);
+	Map<StringName,Material::Pass::UniformData>::Element *E=pass->shader_params.find(p_param);
 	if (E) {
 
 		if (p_value.get_type()==Variant::NIL) {
 
-			material->shader_params.erase(E);
-			material->shader_version=0; //get default!
+			pass->shader_params.erase(E);
+			pass->shader_version=0; //get default!
 		} else {
 			E->get().value=p_value;
 			E->get().inuse=true;
@@ -1728,116 +1737,150 @@ void RasterizerGLES2::material_set_param(RID p_material, const StringName& p_par
 		if (p_value.get_type()==Variant::NIL)
 			return;
 
-		Material::UniformData ud;
+		Material::Pass::UniformData ud;
 		ud.index=-1;
 		ud.value=p_value;
 		ud.istexture=p_value.get_type()==Variant::_RID; /// cache it being texture
 		ud.inuse=true;
-		material->shader_params[p_param]=ud; //may be got at some point, or erased
+		pass->shader_params[p_param]=ud; //may be got at some point, or erased
 
 	}
 }
-Variant RasterizerGLES2::material_get_param(RID p_material, const StringName& p_param) const {
+Variant RasterizerGLES2::material_get_param(RID p_material,const int p_pass_index,const StringName& p_param) const {
 
 	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material,Variant());
+	ERR_FAIL_COND_V(!material, Variant());
+	Material::Pass *pass = &material->passes[p_pass_index];
+	ERR_FAIL_COND_V(!pass, Variant());
 
 
-	if (material->shader.is_valid()) {
+	if (pass->shader.is_valid()) {
 		//update shader params if necesary
 		//make sure the shader is compiled and everything
 		//so the actual parameters can be properly retrieved!
-		material->shader_cache=shader_owner.get( material->shader );
-		if (!material->shader_cache) {
+		pass->shader_cache=shader_owner.get(pass->shader);
+		if (!pass->shader_cache) {
 			//invalidate
-			material->shader=RID();
-			material->shader_cache=NULL;
+			pass->shader=RID();
+			pass->shader_cache = NULL;
 		} else {
 
-			if (material->shader_cache->dirty_list.in_list())
-				_update_shader(material->shader_cache);
-			if (material->shader_cache->valid && material->shader_cache->version!=material->shader_version) {
+			if (pass->shader_cache->dirty_list.in_list())
+				_update_shader(pass->shader_cache);
+			if (pass->shader_cache->valid && pass->shader_cache->version!=pass->shader_version) {
 				//validate
-				_update_material_shader_params(material);
+				_update_material_pass_shader_params(pass);
 			}
 		}
 	}
 
 
-	if (material->shader_params.has(p_param) && material->shader_params[p_param].inuse)
-		return material->shader_params[p_param].value;
+	if (pass->shader_params.has(p_param) && pass->shader_params[p_param].inuse)
+		return pass->shader_params[p_param].value;
 	else
 		return Variant();
 }
 
 
-void RasterizerGLES2::material_set_flag(RID p_material, VS::MaterialFlag p_flag,bool p_enabled) {
+void RasterizerGLES2::material_set_flag(RID p_material,const int p_pass_index,VS::MaterialFlag p_flag, bool p_enabled) {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
-	ERR_FAIL_INDEX(p_flag,VS::MATERIAL_FLAG_MAX);
+	Material::Pass *pass = &material->passes[p_pass_index];
+	ERR_FAIL_COND(!pass);
 
-	material->flags[p_flag]=p_enabled;
+	ERR_FAIL_INDEX(p_flag, VS::MATERIAL_FLAG_MAX);
 
+	pass->flags[p_flag] = p_enabled;
 }
-bool RasterizerGLES2::material_get_flag(RID p_material,VS::MaterialFlag p_flag) const {
+bool RasterizerGLES2::material_get_flag(RID p_material,const int p_pass_index,VS::MaterialFlag p_flag) const {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND_V(!material,false);
+	Material::Pass *pass = &material->passes[p_pass_index];
+	ERR_FAIL_COND_V(!pass, false);
+
 	ERR_FAIL_INDEX_V(p_flag,VS::MATERIAL_FLAG_MAX,false);
-	return material->flags[p_flag];
+	return pass->flags[p_flag];
 
 
 }
 
-void RasterizerGLES2::material_set_depth_draw_mode(RID p_material, VS::MaterialDepthDrawMode p_mode) {
+void RasterizerGLES2::material_set_depth_draw_mode(RID p_material,const int p_pass_index,VS::MaterialDepthDrawMode p_mode) {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
-	material->depth_draw_mode=p_mode;
+	Material::Pass *pass = &material->passes[p_pass_index];
+	ERR_FAIL_COND(!pass);
 
+	pass->depth_draw_mode = p_mode;
 }
 
-VS::MaterialDepthDrawMode RasterizerGLES2::material_get_depth_draw_mode(RID p_material) const {
+VS::MaterialDepthDrawMode RasterizerGLES2::material_get_depth_draw_mode(RID p_material, const int p_pass_index) const {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND_V(!material,VS::MATERIAL_DEPTH_DRAW_ALWAYS);
-	return material->depth_draw_mode;
+	Material::Pass *pass = &material->passes[p_pass_index];
+	ERR_FAIL_COND_V(!pass, VS::MATERIAL_DEPTH_DRAW_ALWAYS);
 
+	return pass->depth_draw_mode;
 }
 
 
 
-void RasterizerGLES2::material_set_blend_mode(RID p_material,VS::MaterialBlendMode p_mode) {
+void RasterizerGLES2::material_set_blend_mode(RID p_material,const int p_pass_index,VS::MaterialBlendMode p_mode) {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
-	material->blend_mode=p_mode;
+	Material::Pass *pass = &material->passes[p_pass_index];
+	ERR_FAIL_COND(!pass);
 
+	pass->blend_mode = p_mode;
 }
-VS::MaterialBlendMode RasterizerGLES2::material_get_blend_mode(RID p_material) const {
+VS::MaterialBlendMode RasterizerGLES2::material_get_blend_mode(RID p_material, const int p_pass_index) const {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND_V(!material,VS::MATERIAL_BLEND_MODE_ADD);
-	return material->blend_mode;
+	Material::Pass *pass = &material->passes[p_pass_index];
+	ERR_FAIL_COND_V(!pass, VS::MATERIAL_BLEND_MODE_ADD);
+
+	return pass->blend_mode;
 }
 
-void RasterizerGLES2::material_set_line_width(RID p_material,float p_line_width) {
+void RasterizerGLES2::material_set_line_width(RID p_material,const int p_pass_index,float p_line_width) {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
-	material->line_width=p_line_width;
+	Material::Pass *pass = &material->passes[p_pass_index];
+	ERR_FAIL_COND(!pass);
 
+	pass->line_width = p_line_width;
 }
-float RasterizerGLES2::material_get_line_width(RID p_material) const {
+float RasterizerGLES2::material_get_line_width(RID p_material, const int p_pass_index) const {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND_V(!material,0);
+	Material::Pass *pass = &material->passes[p_pass_index];
+	ERR_FAIL_COND_V(!pass,0);
 
-	return material->line_width;
+	return pass->line_width;
 }
 
+void RasterizerGLES2::material_set_pass_count(RID p_material, const int p_pass_count) {
 
+	Material *material = material_owner.get(p_material);
+	ERR_FAIL_COND(!material);
+
+	material->set_pass_count(p_pass_count);
+}
+
+int RasterizerGLES2::material_get_pass_count(RID p_material) const {
+
+	Material *material = material_owner.get(p_material);
+	ERR_FAIL_COND_V(!material, -1);
+
+	return material->passes.size();
+}
 
 /* MESH API */
 
@@ -4756,225 +4799,236 @@ void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceD
 
 	ERR_FAIL_COND(!m);
 
-	if (m->last_pass!=frame) {
+	for (int i = 0; i < m->passes.size(); i++) {
+		Material::Pass *pass = &m->passes[i];
 
-		if (m->shader.is_valid()) {
+		if (pass->last_pass!=frame) {
 
-			m->shader_cache=shader_owner.get(m->shader);
-			if (m->shader_cache) {
+			if (pass->shader.is_valid()) {
 
+				pass->shader_cache=shader_owner.get(pass->shader);
+				if (pass->shader_cache) {
 
-
-				if (!m->shader_cache->valid) {
-					m->shader_cache=NULL;
+					if (!pass->shader_cache->valid) {
+						pass->shader_cache=NULL;
+					} else {
+						if (pass->shader_cache->has_texscreen)
+							texscreen_used=true;
+					}
 				} else {
-					if (m->shader_cache->has_texscreen)
-						texscreen_used=true;
+					pass->shader=RID();
 				}
 			} else {
-				m->shader=RID();
+				pass->shader_cache=NULL;
 			}
 
-		} else {
-			m->shader_cache=NULL;
+			pass->last_pass=frame;
 		}
 
-		m->last_pass=frame;
-	}
 
 
+		RenderList *render_list=NULL;
 
-	RenderList *render_list=NULL;
-
-	bool has_base_alpha=(m->shader_cache && m->shader_cache->has_alpha);
-	bool has_blend_alpha=m->blend_mode!=VS::MATERIAL_BLEND_MODE_MIX || m->flags[VS::MATERIAL_FLAG_ONTOP];
-	bool has_alpha = has_base_alpha || has_blend_alpha;
-
-
-	if (shadow) {
-
-		if (has_blend_alpha || (has_base_alpha && m->depth_draw_mode!=VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA))
-			return; //bye
-
-		if (!m->shader_cache || (!m->shader_cache->writes_vertex && !m->shader_cache->uses_discard && m->depth_draw_mode!=VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA)) {
-			//shader does not use discard and does not write a vertex position, use generic material
-			if (p_instance->cast_shadows == VS::SHADOW_CASTING_SETTING_DOUBLE_SIDED)
-				m = shadow_mat_double_sided_ptr;
-			else
-				m = shadow_mat_ptr;
-			if (m->last_pass!=frame) {
-
-				if (m->shader.is_valid()) {
-
-					m->shader_cache=shader_owner.get(m->shader);
-					if (m->shader_cache) {
+		bool has_base_alpha=(pass->shader_cache && pass->shader_cache->has_alpha);
+		bool has_blend_alpha=pass->blend_mode!=VS::MATERIAL_BLEND_MODE_MIX || pass->flags[VS::MATERIAL_FLAG_ONTOP];
+		bool has_alpha = has_base_alpha || has_blend_alpha;
 
 
-						if (!m->shader_cache->valid)
-							m->shader_cache=NULL;
-					} else {
-						m->shader=RID();
+		if (shadow) {
+
+			if (has_blend_alpha || (has_base_alpha && pass->depth_draw_mode != VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA))
+				return; //bye
+
+			if (!pass->shader_cache || (!pass->shader_cache->writes_vertex && !pass->shader_cache->uses_discard && pass->depth_draw_mode != VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA)) {
+				//shader does not use discard and does not write a vertex position, use generic material
+				if (p_instance->cast_shadows == VS::SHADOW_CASTING_SETTING_DOUBLE_SIDED)
+					m = shadow_mat_double_sided_ptr;
+				else
+					m = shadow_mat_ptr;
+				if (pass->last_pass != frame) {
+
+					if (pass->shader.is_valid()) {
+
+						pass->shader_cache = shader_owner.get(pass->shader);
+						if (pass->shader_cache) {
+
+
+							if (!pass->shader_cache->valid)
+								pass->shader_cache = NULL;
+						}
+						else {
+							pass->shader = RID();
+						}
+
+					}
+					else {
+						pass->shader_cache = NULL;
 					}
 
-				} else {
-					m->shader_cache=NULL;
+					pass->last_pass = frame;
 				}
+			}
 
-				m->last_pass=frame;
+			render_list = &opaque_render_list;
+			/* notyet
+				if (!pass->shader_cache || pass->shader_cache->can_zpass)
+				render_list = &alpha_render_list;
+				} else {
+				render_list = &opaque_render_list;
+				}*/
+
+		}
+		else {
+			if (has_alpha) {
+				render_list = &alpha_render_list;
+			}
+			else {
+				render_list = &opaque_render_list;
+
 			}
 		}
 
-		render_list = &opaque_render_list;
-	/* notyet
-		if (!m->shader_cache || m->shader_cache->can_zpass)
-			render_list = &alpha_render_list;
-		} else {
-			render_list = &opaque_render_list;
-		}*/
 
-	} else {
-		if (has_alpha) {
-			render_list = &alpha_render_list;
-		} else {
-			render_list = &opaque_render_list;
+		RenderList::Element *e = render_list->add_element();
 
-		}
-	}
-
-
-	RenderList::Element *e = render_list->add_element();
-
-	if (!e)
-		return;
-
-	e->geometry=p_geometry;
-	e->geometry_cmp=p_geometry_cmp;
-	e->material=m;
-	e->instance=p_instance;
-	if (camera_ortho) {
-		e->depth=camera_plane.distance_to(p_instance->transform.origin);
-	} else {
-		e->depth=camera_transform.origin.distance_to(p_instance->transform.origin);
-	}
-	e->owner=p_owner;
-	e->light_type=0;
-	e->additive=false;
-	e->additive_ptr=&e->additive;
-	e->sort_flags=0;
-
-
-	if (p_instance->skeleton.is_valid()) {
-		e->skeleton=skeleton_owner.get(p_instance->skeleton);
-		if (!e->skeleton)
-			const_cast<InstanceData*>(p_instance)->skeleton=RID();
-		else
-			e->sort_flags|=RenderList::SORT_FLAG_SKELETON;
-	} else {
-		e->skeleton=NULL;
-
-	}
-
-	if (e->geometry->type==Geometry::GEOMETRY_MULTISURFACE)
-		e->sort_flags|=RenderList::SORT_FLAG_INSTANCING;
-
-
-	e->mirror=p_instance->mirror;
-	if (m->flags[VS::MATERIAL_FLAG_INVERT_FACES])
-		e->mirror=!e->mirror;
-
-	//e->light_type=0xFF; // no lights!
-	e->light_type=3; //light type 3 is no light?
-	e->light=0xFFFF;
-
-	if (!shadow && !has_blend_alpha && has_alpha && m->depth_draw_mode==VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA) {
-
-		//if nothing exists, add this element as opaque too
-		RenderList::Element *oe = opaque_render_list.add_element();
-
-		if (!oe)
+		if (!e)
 			return;
 
-		memcpy(oe,e,sizeof(RenderList::Element));
-		oe->additive_ptr=&oe->additive;
-	}
+		e->geometry = p_geometry;
+		e->geometry_cmp = p_geometry_cmp;
+		e->material = m;
+		e->instance = p_instance;
+		if (camera_ortho) {
+			e->depth = camera_plane.distance_to(p_instance->transform.origin);
+		}
+		else {
+			e->depth = camera_transform.origin.distance_to(p_instance->transform.origin);
+		}
+		e->owner = p_owner;
+		e->light_type = 0;
+		e->additive = false;
+		e->additive_ptr = &e->additive;
+		e->sort_flags = 0;
 
-	if (shadow || m->flags[VS::MATERIAL_FLAG_UNSHADED] || current_debug==VS::SCENARIO_DEBUG_SHADELESS) {
 
-		e->light_type=0x7F; //unshaded is zero
-	} else {
-
-		bool duplicate=false;
-
-
-		for(int i=0;i<directional_light_count;i++) {
-			uint16_t sort_key = directional_lights[i]->sort_key;
-			uint8_t light_type = VS::LIGHT_DIRECTIONAL;
-			if (directional_lights[i]->base->shadow_enabled) {
-				light_type|=0x8;
-				if (directional_lights[i]->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS)
-					light_type|=0x10;
-				else if (directional_lights[i]->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS)
-					light_type|=0x30;
-
-			}
-
-			RenderList::Element *ec;
-			if (duplicate) {
-
-				ec = render_list->add_element();
-				memcpy(ec,e,sizeof(RenderList::Element));
-			} else {
-
-				ec=e;
-				duplicate=true;
-			}
-
-			ec->light_type=light_type;
-			ec->light=sort_key;
-			ec->additive_ptr=&e->additive;
+		if (p_instance->skeleton.is_valid()) {
+			e->skeleton = skeleton_owner.get(p_instance->skeleton);
+			if (!e->skeleton)
+				const_cast<InstanceData*>(p_instance)->skeleton = RID();
+			else
+				e->sort_flags |= RenderList::SORT_FLAG_SKELETON;
+		}
+		else {
+			e->skeleton = NULL;
 
 		}
 
-
-		const RID *liptr = p_instance->light_instances.ptr();
-		int ilc=p_instance->light_instances.size();
-
+		if (e->geometry->type == Geometry::GEOMETRY_MULTISURFACE)
+			e->sort_flags |= RenderList::SORT_FLAG_INSTANCING;
 
 
-		for(int i=0;i<ilc;i++) {
+		e->mirror = p_instance->mirror;
+		if (pass->flags[VS::MATERIAL_FLAG_INVERT_FACES])
+			e->mirror = !e->mirror;
 
-			LightInstance *li=light_instance_owner.get( liptr[i] );
-			if (!li || li->last_pass!=scene_pass) //lit by light not in visible scene
-				continue;
-			uint8_t light_type=li->base->type|0x40; //penalty to ensure directionals always go first
-			if (li->base->shadow_enabled) {
-				light_type|=0x8;
+		//e->light_type=0xFF; // no lights!
+		e->light_type = 3; //light type 3 is no light?
+		e->light = 0xFFFF;
+
+		e->pass = pass;
+
+		if (!shadow && !has_blend_alpha && has_alpha && pass->depth_draw_mode == VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA) {
+
+			//if nothing exists, add this element as opaque too
+			RenderList::Element *oe = opaque_render_list.add_element();
+
+			if (!oe)
+				return;
+
+			memcpy(oe, e, sizeof(RenderList::Element));
+			oe->additive_ptr = &oe->additive;
+		}
+
+		if (shadow || pass->flags[VS::MATERIAL_FLAG_UNSHADED] || current_debug == VS::SCENARIO_DEBUG_SHADELESS) {
+
+			e->light_type = 0x7F; //unshaded is zero
+		}
+		else {
+
+			bool duplicate = false;
+
+
+			for (int i = 0; i < directional_light_count; i++) {
+				uint16_t sort_key = directional_lights[i]->sort_key;
+				uint8_t light_type = VS::LIGHT_DIRECTIONAL;
+				if (directional_lights[i]->base->shadow_enabled) {
+					light_type |= 0x8;
+					if (directional_lights[i]->base->directional_shadow_mode == VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS)
+						light_type |= 0x10;
+					else if (directional_lights[i]->base->directional_shadow_mode == VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS)
+						light_type |= 0x30;
+
+				}
+
+				RenderList::Element *ec;
+				if (duplicate) {
+
+					ec = render_list->add_element();
+					memcpy(ec, e, sizeof(RenderList::Element));
+				}
+				else {
+
+					ec = e;
+					duplicate = true;
+				}
+
+				ec->light_type = light_type;
+				ec->light = sort_key;
+				ec->additive_ptr = &e->additive;
+
 			}
-			uint16_t sort_key =li->sort_key;
 
-			RenderList::Element *ec;
-			if (duplicate) {
 
-				ec = render_list->add_element();
-				memcpy(ec,e,sizeof(RenderList::Element));
-			} else {
+			const RID *liptr = p_instance->light_instances.ptr();
+			int ilc = p_instance->light_instances.size();
 
-				duplicate=true;
-				ec=e;
+
+
+			for (int i = 0; i < ilc; i++) {
+
+				LightInstance *li = light_instance_owner.get(liptr[i]);
+				if (!li || li->last_pass != scene_pass) //lit by light not in visible scene
+					continue;
+				uint8_t light_type = li->base->type | 0x40; //penalty to ensure directionals always go first
+				if (li->base->shadow_enabled) {
+					light_type |= 0x8;
+				}
+				uint16_t sort_key = li->sort_key;
+
+				RenderList::Element *ec;
+				if (duplicate) {
+
+					ec = render_list->add_element();
+					memcpy(ec, e, sizeof(RenderList::Element));
+				}
+				else {
+
+					duplicate = true;
+					ec = e;
+				}
+
+				ec->light_type = light_type;
+				ec->light = sort_key;
+				ec->additive_ptr = &e->additive;
+
 			}
 
-			ec->light_type=light_type;
-			ec->light=sort_key;
-			ec->additive_ptr=&e->additive;
+
 
 		}
 
-
-
+		DEBUG_TEST_ERROR("Add Geometry");
 	}
-
-	DEBUG_TEST_ERROR("Add Geometry");
-
 }
 
 void RasterizerGLES2::add_mesh( const RID& p_mesh, const InstanceData *p_data) {
@@ -5076,43 +5130,43 @@ void RasterizerGLES2::_set_cull(bool p_front,bool p_reverse_cull) {
 }
 
 
-_FORCE_INLINE_ void RasterizerGLES2::_update_material_shader_params(Material *p_material) const {
+_FORCE_INLINE_ void RasterizerGLES2::_update_material_pass_shader_params(Material::Pass *p_material_pass) const {
 
-
-	Map<StringName,Material::UniformData> old_mparams=p_material->shader_params;
-	Map<StringName,Material::UniformData> &mparams=p_material->shader_params;
+	Map<StringName, Material::Pass::UniformData> old_mparams = p_material_pass->shader_params;
+	Map<StringName, Material::Pass::UniformData> &mparams = p_material_pass->shader_params;
 	mparams.clear();
-	int idx=0;
-	for(Map<StringName,ShaderLanguage::Uniform>::Element *E=p_material->shader_cache->uniforms.front();E;E=E->next()) {
+	int idx = 0;
+	for (Map<StringName, ShaderLanguage::Uniform>::Element *E = p_material_pass->shader_cache->uniforms.front(); E; E = E->next()) {
 
-		Material::UniformData ud;
+		Material::Pass::UniformData ud;
 
-		bool keep=true; //keep material value
+		bool keep = true; //keep material value
 
-		Map<StringName,Material::UniformData>::Element *OLD=old_mparams.find(E->key());
+		Map<StringName, Material::Pass::UniformData>::Element *OLD = old_mparams.find(E->key());
 		bool has_old = OLD;
-		bool old_inuse=has_old && old_mparams[E->key()].inuse;
+		bool old_inuse = has_old && old_mparams[E->key()].inuse;
 
-		ud.istexture=(E->get().type==ShaderLanguage::TYPE_TEXTURE || E->get().type==ShaderLanguage::TYPE_CUBEMAP);
+		ud.istexture = (E->get().type == ShaderLanguage::TYPE_TEXTURE || E->get().type == ShaderLanguage::TYPE_CUBEMAP);
 
 		if (!has_old || !old_inuse) {
-			keep=false;
+			keep = false;
 		}
-		else if (OLD->get().value.get_type()!=E->value().default_value.get_type()) {
+		else if (OLD->get().value.get_type() != E->value().default_value.get_type()) {
 
-			if (OLD->get().value.get_type()==Variant::INT && E->get().type==ShaderLanguage::TYPE_FLOAT) {
+			if (OLD->get().value.get_type() == Variant::INT && E->get().type == ShaderLanguage::TYPE_FLOAT) {
 				//handle common mistake using shaders (feeding ints instead of float)
-				OLD->get().value=float(OLD->get().value);
-				keep=true;
-			} else if (!ud.istexture && E->value().default_value.get_type()!=Variant::NIL) {
+				OLD->get().value = float(OLD->get().value);
+				keep = true;
+			}
+			else if (!ud.istexture && E->value().default_value.get_type() != Variant::NIL) {
 
 				keep=false;
 			}
 			//type changed between old and new
 			/*	if (old_mparams[E->key()].value.get_type()==Variant::OBJECT) {
 				if (E->value().default_value.get_type()!=Variant::_RID) //hackfor textures
-					keep=false;
-			} else if (!old_mparams[E->key()].value.is_num() || !E->value().default_value.get_type())
+				keep=false;
+				} else if (!old_mparams[E->key()].value.is_num() || !E->value().default_value.get_type())
 				keep=false;*/
 
 			//value is invalid because type differs and default is not null
@@ -5124,9 +5178,10 @@ _FORCE_INLINE_ void RasterizerGLES2::_update_material_shader_params(Material *p_
 			ud.value=old_mparams[E->key()].value;
 
 			//print_line("KEEP: "+String(E->key()));
-		} else {
-			if (ud.istexture && p_material->shader_cache->default_textures.has(E->key()))
-				ud.value=p_material->shader_cache->default_textures[E->key()];
+		}
+		else {
+			if (ud.istexture && p_material_pass->shader_cache->default_textures.has(E->key()))
+				ud.value = p_material_pass->shader_cache->default_textures[E->key()];
 			else
 				ud.value=E->value().default_value;
 			old_inuse=false; //if reverted to default, obviously did not work
@@ -5142,13 +5197,12 @@ _FORCE_INLINE_ void RasterizerGLES2::_update_material_shader_params(Material *p_
 		mparams[E->key()]=ud;
 	}
 
-	p_material->shader_version=p_material->shader_cache->version;
-
+	p_material_pass->shader_version = p_material_pass->shader_cache->version;
 }
 
-bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material *p_material,bool p_no_const_light,bool p_opaque_pass) {
+bool RasterizerGLES2::_setup_material_pass(const Material::Pass *p_material_pass,bool p_opaque_pass) {
 
-	if (p_material->flags[VS::MATERIAL_FLAG_DOUBLE_SIDED]) {
+	if (p_material_pass->flags[VS::MATERIAL_FLAG_DOUBLE_SIDED]) {
 		glDisable(GL_CULL_FACE);
 	} else {
 		glEnable(GL_CULL_FACE);
@@ -5163,8 +5217,8 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 		glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	*/
 
-	if (p_material->line_width)
-		glLineWidth(p_material->line_width);
+	if (p_material_pass->line_width)
+		glLineWidth(p_material_pass->line_width);
 
 
 	//all goes to false by default
@@ -5172,10 +5226,10 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PCF,shadow_filter==SHADOW_FILTER_PCF5 || shadow_filter==SHADOW_FILTER_PCF13);
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PCF_HQ,shadow_filter==SHADOW_FILTER_PCF13);
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_ESM,shadow_filter==SHADOW_FILTER_ESM);
-	material_shader.set_conditional(MaterialShaderGLES2::USE_LIGHTMAP_ON_UV2,p_material->flags[VS::MATERIAL_FLAG_LIGHTMAP_ON_UV2]);
-	material_shader.set_conditional(MaterialShaderGLES2::USE_COLOR_ATTRIB_SRGB_TO_LINEAR,p_material->flags[VS::MATERIAL_FLAG_COLOR_ARRAY_SRGB] && current_env && current_env->fx_enabled[VS::ENV_FX_SRGB]);
+	material_shader.set_conditional(MaterialShaderGLES2::USE_LIGHTMAP_ON_UV2,p_material_pass->flags[VS::MATERIAL_FLAG_LIGHTMAP_ON_UV2]);
+	material_shader.set_conditional(MaterialShaderGLES2::USE_COLOR_ATTRIB_SRGB_TO_LINEAR,p_material_pass->flags[VS::MATERIAL_FLAG_COLOR_ARRAY_SRGB] && current_env && current_env->fx_enabled[VS::ENV_FX_SRGB]);
 
-	if (p_opaque_pass && p_material->depth_draw_mode==VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA && p_material->shader_cache && p_material->shader_cache->has_alpha) {
+	if (p_opaque_pass && p_material_pass->depth_draw_mode == VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA && p_material_pass->shader_cache && p_material_pass->shader_cache->has_alpha) {
 
 		material_shader.set_conditional(MaterialShaderGLES2::ENABLE_CLIP_ALPHA,true);
 	} else {
@@ -5186,8 +5240,8 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 
 	if (!shadow) {
 
-		bool depth_test=!p_material->flags[VS::MATERIAL_FLAG_ONTOP];
-		bool depth_write=p_material->depth_draw_mode!=VS::MATERIAL_DEPTH_DRAW_NEVER && (p_opaque_pass || p_material->depth_draw_mode==VS::MATERIAL_DEPTH_DRAW_ALWAYS);
+		bool depth_test=!p_material_pass->flags[VS::MATERIAL_FLAG_ONTOP];
+		bool depth_write=p_material_pass->depth_draw_mode!=VS::MATERIAL_DEPTH_DRAW_NEVER && (p_opaque_pass || p_material_pass->depth_draw_mode==VS::MATERIAL_DEPTH_DRAW_ALWAYS);
 		//bool depth_write=!p_material->hints[VS::MATERIAL_HINT_NO_DEPTH_DRAW] && (p_opaque_pass || !p_material->hints[VS::MATERIAL_HINT_NO_DEPTH_DRAW_FOR_ALPHA]);
 
 		if (current_depth_mask!=depth_write) {
@@ -5218,7 +5272,7 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 
 	bool rebind=false;
 
-	if (p_material->shader_cache && p_material->shader_cache->valid) {
+	if (p_material_pass->shader_cache && p_material_pass->shader_cache->valid) {
 
 	//	// reduce amount of conditional compilations
 	//	for(int i=0;i<_tex_version_count;i++)
@@ -5227,20 +5281,20 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 
 	//	material_shader.set_custom_shader(p_material->shader_cache->custom_code_id);
 
-		if (p_material->shader_version!=p_material->shader_cache->version) {
+		if (p_material_pass->shader_version != p_material_pass->shader_cache->version) {
 			//shader changed somehow, must update uniforms
 
-			_update_material_shader_params((Material*)p_material);
+			_update_material_pass_shader_params((Material::Pass *)p_material_pass);
 
 		}
-		material_shader.set_custom_shader(p_material->shader_cache->custom_code_id);
+		material_shader.set_custom_shader(p_material_pass->shader_cache->custom_code_id);
 		rebind = material_shader.bind();
 
 		DEBUG_TEST_ERROR("Shader Bind");
 
 		//set uniforms!
 		int texcoord=0;
-		for (Map<StringName,Material::UniformData>::Element *E=p_material->shader_params.front();E;E=E->next()) {
+		for (Map<StringName,Material::Pass::UniformData>::Element *E=p_material_pass->shader_params.front();E;E=E->next()) {
 
 
 			if (E->get().index<0)
@@ -5268,7 +5322,7 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 				if (t) {
 					if (t->render_target)
 						t->render_target->last_pass=frame;
-					if (E->key()==p_material->shader_cache->first_texture) {
+					if (E->key()==p_material_pass->shader_cache->first_texture) {
 						tc0_idx=texcoord;
 						tc0_id_cache=t->tex_id;
 					}
@@ -5287,7 +5341,7 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 		}
 
 
-		if (p_material->shader_cache->has_texscreen && framebuffer.active) {
+		if (p_material_pass->shader_cache->has_texscreen && framebuffer.active) {
 			material_shader.set_uniform(MaterialShaderGLES2::TEXSCREEN_SCREEN_MULT,Vector2(float(viewport.width)/framebuffer.width,float(viewport.height)/framebuffer.height));
 			material_shader.set_uniform(MaterialShaderGLES2::TEXSCREEN_SCREEN_CLAMP,Color(0,0,float(viewport.width)/framebuffer.width,float(viewport.height)/framebuffer.height));
 			material_shader.set_uniform(MaterialShaderGLES2::TEXSCREEN_TEX,texcoord);
@@ -5295,12 +5349,12 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 			glBindTexture(GL_TEXTURE_2D,framebuffer.sample_color);
 
 		}
-		if (p_material->shader_cache->has_screen_uv) {
+		if (p_material_pass->shader_cache->has_screen_uv) {
 			material_shader.set_uniform(MaterialShaderGLES2::SCREEN_UV_MULT,Vector2(1.0/viewport.width,1.0/viewport.height));
 		}
 		DEBUG_TEST_ERROR("Material arameters");
 
-		if (p_material->shader_cache->uses_time) {
+		if (p_material_pass->shader_cache->uses_time) {
 			material_shader.set_uniform(MaterialShaderGLES2::TIME,Math::fmod(last_time,shader_time_rollback));
 			draw_next_frame=true;
 		}
@@ -5579,7 +5633,7 @@ void RasterizerGLES2::_skeleton_xform(const uint8_t * p_src_array, int p_src_str
 }
 
 
-Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Material* p_material, const Skeleton *p_skeleton,const float *p_morphs) {
+Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Skeleton *p_skeleton,const float *p_morphs) {
 
 
 	switch(p_geometry->type) {
@@ -5990,7 +6044,7 @@ static const GLenum gl_primitive[]={
 
 
 
-void RasterizerGLES2::_render(const Geometry *p_geometry,const Material *p_material, const Skeleton* p_skeleton, const GeometryOwner *p_owner,const Transform& p_xform) {
+void RasterizerGLES2::_render(const Geometry *p_geometry, const Skeleton* p_skeleton, const GeometryOwner *p_owner,const Transform& p_xform) {
 
 
 	_rinfo.object_count++;
@@ -6377,7 +6431,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 	}
 
-	const Material *prev_material=NULL;
+	const Material::Pass *prev_pass=NULL;
 	uint16_t prev_light=0x777E;
 	const Geometry *prev_geometry_cmp=NULL;
 	uint8_t prev_light_type=0xEF;
@@ -6416,7 +6470,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 	for (int i=0;i<p_render_list->element_count;i++) {
 
 		RenderList::Element *e = p_render_list->elements[i];
-		const Material *material = e->material;
+		const Material::Pass *pass = e->pass;
 		uint16_t light = e->light;
 		uint8_t light_type = e->light_type;
 		uint8_t sort_flags= e->sort_flags;
@@ -6435,12 +6489,12 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 		if (!shadow) {
 
-			if (texscreen_used && !texscreen_copied && material->shader_cache && material->shader_cache->valid && material->shader_cache->has_texscreen) {
+			if (texscreen_used && !texscreen_copied && pass->shader_cache && pass->shader_cache->valid && pass->shader_cache->has_texscreen) {
 				texscreen_copied=true;
 				_copy_to_texscreen();
 
 				//force reset state
-				prev_material=NULL;
+				prev_pass=NULL;
 				prev_light=0x777E;
 				prev_geometry_cmp=NULL;
 				prev_light_type=0xEF;
@@ -6457,7 +6511,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 			if (light_type!=prev_light_type || receive_shadows_state!=prev_receive_shadows_state) {
 
-				if (material->flags[VS::MATERIAL_FLAG_UNSHADED] || current_debug==VS::SCENARIO_DEBUG_SHADELESS) {
+				if (pass->flags[VS::MATERIAL_FLAG_UNSHADED] || current_debug==VS::SCENARIO_DEBUG_SHADELESS) {
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_TYPE_DIRECTIONAL,false);
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_TYPE_OMNI,false);
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_TYPE_SPOT,false);
@@ -6507,7 +6561,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 				desired_blend_mode=VS::MATERIAL_BLEND_MODE_ADD;
 			} else {
 				desired_blend=p_alpha_pass;
-				desired_blend_mode=material->blend_mode;
+				desired_blend_mode=pass->blend_mode;
 			}
 
 			if (prev_blend!=desired_blend) {
@@ -6574,7 +6628,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_COLOR, false);
 
 
-			if (material->flags[VS::MATERIAL_FLAG_UNSHADED] == false && current_debug != VS::SCENARIO_DEBUG_SHADELESS) {
+			if (pass->flags[VS::MATERIAL_FLAG_UNSHADED] == false && current_debug != VS::SCENARIO_DEBUG_SHADELESS) {
 
 				if (baked_light != NULL) {
 					if (baked_light->realtime_color_enabled) {
@@ -6687,9 +6741,9 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 				_setup_skeleton(NULL);
 		}
 
-		if (material!=prev_material || rebind) {
+		if (pass!=prev_pass || rebind) {
 
-			rebind = _setup_material(e->geometry,material,additive,!p_alpha_pass);
+			rebind = _setup_material_pass(pass,!p_alpha_pass);
 
 			DEBUG_TEST_ERROR("Setup material");
 			_rinfo.mat_change_count++;
@@ -6705,7 +6759,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 		if (geometry_cmp!=prev_geometry_cmp || prev_skeleton!=skeleton) {
 
-			_setup_geometry(e->geometry, material,e->skeleton,e->instance->morph_values.ptr());
+			_setup_geometry(e->geometry,e->skeleton,e->instance->morph_values.ptr());
 			_rinfo.surface_count++;
 			DEBUG_TEST_ERROR("Setup geometry");
 		};
@@ -6819,10 +6873,10 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		material_shader.set_uniform(MaterialShaderGLES2::CONST_LIGHT_MULT,additive?0.0:1.0);
 
 
-		_render(e->geometry, material, skeleton,e->owner,e->instance->transform);
+		_render(e->geometry,skeleton,e->owner,e->instance->transform);
 		DEBUG_TEST_ERROR("Rendering");
 
-		prev_material=material;
+		prev_pass=pass;
 		prev_skeleton=skeleton;
 		prev_geometry_cmp=geometry_cmp;
 		prev_light=e->light;
@@ -7340,7 +7394,7 @@ void RasterizerGLES2::end_scene() {
 	current_blend_mode=VS::MATERIAL_BLEND_MODE_MIX;
 
 	//material_shader.set_conditional(MaterialShaderGLES2::USE_GLOW,current_env && current_env->fx_enabled[VS::ENV_FX_GLOW]);
-	opaque_render_list.sort_mat_light_type_flags();
+	opaque_render_list.sort_mat_pass_light_type_flags();
 	_render_list_forward(&opaque_render_list,camera_transform,camera_transform_inverse,camera_projection,false,fragment_lighting);
 
 	if (draw_tex_background) {
@@ -7700,7 +7754,7 @@ void RasterizerGLES2::end_shadow_map() {
 
 	Transform light_transform_inverse = light_transform.affine_inverse();
 
-	opaque_render_list.sort_mat_geom();
+	opaque_render_list.sort_mat_pass_geom();
 	_render_list_forward(&opaque_render_list,light_transform,light_transform_inverse,cm,flip_facing,false);
 
 	material_shader.set_conditional(MaterialShaderGLES2::USE_DUAL_PARABOLOID,false);
@@ -10996,13 +11050,13 @@ void RasterizerGLES2::init() {
 	}
 
 
-	shadow_material = material_create(); //empty with nothing
+	shadow_material = material_create(1); //empty with nothing
 	shadow_mat_ptr = material_owner.get(shadow_material);
 
 	// Now create a second shadow material for double-sided shadow instances
-	shadow_material_double_sided = material_create();
+	shadow_material_double_sided = material_create(1);
 	shadow_mat_double_sided_ptr = material_owner.get(shadow_material_double_sided);
-	shadow_mat_double_sided_ptr->flags[VS::MATERIAL_FLAG_DOUBLE_SIDED] = true;
+	shadow_mat_double_sided_ptr->passes.get(0).flags[VS::MATERIAL_FLAG_DOUBLE_SIDED] = true;
 
 	overdraw_material = create_overdraw_debug_material();
 	copy_shader.set_conditional(CopyShaderGLES2::USE_8BIT_HDR,!use_fp16_fb);
@@ -11309,10 +11363,13 @@ void RasterizerGLES2::reload_vram() {
 
 
 		Material *m = material_owner.get(E->get());
-		RID shader = m->shader;
-		m->shader_version=0;
-		material_set_shader(E->get(),shader);
+		for (int i = 0; i < m->passes.size(); i++) {
+			Material::Pass *pass = &m->passes[i];
 
+			RID shader = pass->shader;
+			pass->shader_version = 0;
+			material_set_shader(E->get(), i, shader);
+		}
 	}
 
 

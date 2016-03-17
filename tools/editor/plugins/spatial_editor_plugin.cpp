@@ -3134,8 +3134,8 @@ void SpatialEditor::_init_indicators() {
 	{
 
 		indicator_mat = VisualServer::get_singleton()->fixed_material_create();
-		VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_UNSHADED, true );
-		VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_ONTOP, false );
+		VisualServer::get_singleton()->material_set_flag( indicator_mat, 0, VisualServer::MATERIAL_FLAG_UNSHADED, true );
+		VisualServer::get_singleton()->material_set_flag( indicator_mat, 0, VisualServer::MATERIAL_FLAG_ONTOP, false );
 		VisualServer::get_singleton()->fixed_material_set_flag(indicator_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
 		VisualServer::get_singleton()->fixed_material_set_flag(indicator_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
 
@@ -3230,7 +3230,7 @@ void SpatialEditor::_init_indicators() {
 		cursor_points.push_back(Vector3(0,0,-cs));
 		cursor_material=VisualServer::get_singleton()->fixed_material_create();
 		VisualServer::get_singleton()->fixed_material_set_param(cursor_material,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(0,1,1));
-		VisualServer::get_singleton()->material_set_flag( cursor_material, VisualServer::MATERIAL_FLAG_UNSHADED, true );
+		VisualServer::get_singleton()->material_set_flag( cursor_material, 0, VisualServer::MATERIAL_FLAG_UNSHADED, true );
 		VisualServer::get_singleton()->fixed_material_set_flag(cursor_material, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
 		VisualServer::get_singleton()->fixed_material_set_flag(cursor_material, VisualServer::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
 
