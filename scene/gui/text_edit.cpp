@@ -643,6 +643,12 @@ void TextEdit::_notification(int p_what) {
 			int deregion=0; //force it to clear inrgion
 			Point2 cursor_pos;
 
+			// get the highlighted words
+			String highlighted_text;
+			if (is_selection_active()) {
+				highlighted_text = get_selection_text();
+			}
+
 			for (int i=0;i<visible_rows;i++) {
 
 				int line=i+cursor.line_ofs;
@@ -658,6 +664,12 @@ void TextEdit::_notification(int p_what) {
 				bool prev_is_char=false;
 				bool in_keyword=false;
 				Color keyword_color;
+
+				// check if line contains highlighted word
+				int highlighted_text_col = -1;
+				if (is_selection_active()) {
+					highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, 0);
+				}
 
 				if (cache.line_number_w) {
 					Color fcol = cache.font_color;
@@ -798,6 +810,20 @@ void TextEdit::_notification(int p_what) {
 						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin, ofs_y ), Size2i(char_w,get_row_height())),cache.selection_color);
 					}
 
+					if (highlight_all_occurrences) {
+						if (highlighted_text_col != -1) {
+
+							// if we are at the end check for new word on same line
+							if (j > highlighted_text_col+highlighted_text.length()) {
+								highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, j);
+							}
+
+							bool in_highlighted_word = (j >= highlighted_text_col && j < highlighted_text_col+highlighted_text.length());
+							if (in_highlighted_word) {
+								VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin, ofs_y ), Size2i(char_w, get_row_height())),cache.word_highlighted_color);
+							}
+						}
+					}
 
 					if (brace_matching_enabled) {
 						if ( (brace_open_match_line==line && brace_open_match_column==j) ||
@@ -2921,6 +2947,7 @@ void TextEdit::_update_caches() {
 	cache.current_line_color=get_color("current_line_color");
 	cache.breakpoint_color=get_color("breakpoint_color");
 	cache.brace_mismatch_color=get_color("brace_mismatch_color");
+	cache.word_highlighted_color=get_color("word_highlighted_color");
 	cache.line_spacing=get_constant("line_spacing");
 	cache.row_height = cache.font->get_height() + cache.line_spacing;
 	cache.tab_icon=get_icon("tab");
@@ -3180,6 +3207,34 @@ String TextEdit::get_word_under_cursor() const {
 	if (prev_cc == cursor.column || next_cc == cursor.column)
 		return "";
 	return text[cursor.line].substr(prev_cc, next_cc-prev_cc);
+}
+
+void TextEdit::set_highlight_all_occurrences(const bool p_enabled) {
+	highlight_all_occurrences = p_enabled;
+	update();
+}
+
+int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_search, int p_from_column) {
+	int col = -1;
+
+	if (p_key.length() > 0 && p_search.length() > 0) {
+		if (p_from_column < 0 || p_from_column > p_search.length()) {
+			p_from_column = 0;
+		}
+
+		// match case
+		col = p_search.findn(p_key, p_from_column);
+
+		// whole words only
+		if (col != -1) {
+			if (col > 0 && _is_text_char(p_search[col-1])) {
+				col = -1;
+		} else if (_is_text_char(p_search[col+p_key.length()])) {
+				col = -1;
+			}
+		}
+	}
+	return col;
 }
 
 DVector<int> TextEdit::_search_bind(const String &p_key,uint32_t p_search_flags, int p_from_line,int p_from_column) const {
