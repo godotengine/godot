@@ -644,10 +644,7 @@ void TextEdit::_notification(int p_what) {
 			Point2 cursor_pos;
 
 			// get the highlighted words
-			String highlighted_text;
-			if (is_selection_active()) {
-				highlighted_text = get_selection_text();
-			}
+			String highlighted_text = get_selection_text();
 
 			for (int i=0;i<visible_rows;i++) {
 
@@ -667,7 +664,7 @@ void TextEdit::_notification(int p_what) {
 
 				// check if line contains highlighted word
 				int highlighted_text_col = -1;
-				if (is_selection_active()) {
+				if (highlighted_text.length() != 0) {
 					highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, 0);
 				}
 
