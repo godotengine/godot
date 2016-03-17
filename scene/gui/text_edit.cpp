@@ -644,10 +644,7 @@ void TextEdit::_notification(int p_what) {
 			Point2 cursor_pos;
 
 			// get the highlighted words
-			String highlighted_text;
-			if (is_selection_active()) {
-				highlighted_text = get_selection_text();
-			}
+			String highlighted_text = get_selection_text();
 
 			for (int i=0;i<visible_rows;i++) {
 
@@ -667,7 +664,7 @@ void TextEdit::_notification(int p_what) {
 
 				// check if line contains highlighted word
 				int highlighted_text_col = -1;
-				if (is_selection_active()) {
+				if (highlighted_text.length() != 0) {
 					highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, 0);
 				}
 
@@ -3222,16 +3219,22 @@ int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_searc
 			p_from_column = 0;
 		}
 
-		// match case
-		col = p_search.findn(p_key, p_from_column);
+		 while (col == -1 && p_from_column <= p_search.length()) {
+			// match case
+			col = p_search.findn(p_key, p_from_column);
 
-		// whole words only
-		if (col != -1) {
-			if (col > 0 && _is_text_char(p_search[col-1])) {
-				col = -1;
-		} else if (_is_text_char(p_search[col+p_key.length()])) {
-				col = -1;
+			// whole words only
+			if (col != -1) {
+				p_from_column=col;
+
+				if (col > 0 && _is_text_char(p_search[col-1])) {
+					col = -1;
+				} else if (_is_text_char(p_search[col+p_key.length()])) {
+					col = -1;
+				}
 			}
+
+			p_from_column+=1;
 		}
 	}
 	return col;
