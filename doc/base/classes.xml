@@ -20629,6 +20629,18 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="utc" type="bool" default="false">
 			</argument>
 			<description>
+				Returns current date in a dictionary of keys: year, month,
+				day, weekday, dst (daylight savings time).
+			</description>
+		</method>
+		<method name="get_datetime" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="utc" type="bool" default="false">
+			</argument>
+			<description>
+				Returns current datetime in a dictionary of keys: year,
+				month, day, weekday, dst (daylight savings time), hour, minute, second
 			</description>
 		</method>
 		<method name="get_time" qualifiers="const">
@@ -20637,9 +20649,11 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="utc" type="bool" default="false">
 			</argument>
 			<description>
+				Returns current time in a dictionary of keys:
+				hour, minute, second
 			</description>
 		</method>
-		<method name="get_time_from_unix_time" qualifiers="const">
+		<method name="get_datetime_from_unix_time" qualifiers="const">
 			<return type="Dictionary">
 			</return>
 			<argument index="0" name="unix_time_val" type="int">
@@ -20649,6 +20663,22 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Dictionary Time values will be a union of values from [method get_time]
 			and [method get_date] dictionaries (with the exception of dst = 
 			day light standard time, as it cannot be determined from epoc)
+			</description>
+		</method>
+		<method name="get_unix_time_from_datetime" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="datetime" type="Dictionary">
+			</argument>
+			<description>
+				Get an epoch time value from a dictionary of time values
+				datetime must be populated with the following keys:
+				day, hour, minute, month, second, year. You can pass the output from
+				[method get_datetime_from_unix_time] directly into this function. Day
+				light savings time (dst), if present, is ignored.
+
+				To be accurate, datetime dictionary must have keys for: year, month, day,
+				hour, minute, second
 			</description>
 		</method>
 		<method name="get_time_zone_info" qualifiers="const">
