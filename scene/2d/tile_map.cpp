@@ -504,6 +504,7 @@ void TileMap::_update_dirty_quadrants() {
 		}
 
 		dirty_quadrant_list.remove( dirty_quadrant_list.first() );
+		quadrant_order_dirty=true;
 	}
 
 
@@ -522,6 +523,14 @@ void TileMap::_update_dirty_quadrants() {
 		}
 
 		quadrant_order_dirty=false;
+	}
+
+	for(int i=0;i<get_child_count();i++) {
+
+		CanvasItem *c=get_child(i)->cast_to<CanvasItem>();
+
+		if (c)
+			VS::get_singleton()->canvas_item_raise(c->get_canvas_item());
 	}
 
 	_recompute_rect_cache();
