@@ -60,11 +60,11 @@ void ResourcePreloaderEditor::_notification(int p_what) {
 	}
 }
 
-void ResourcePreloaderEditor::_files_load_request(const Vector<String>& p_path) {
+void ResourcePreloaderEditor::_files_load_request(const Vector<String>& p_paths) {
 
-	for(int i=0;i<p_path.size();i++) {
+	for(int i=0;i<p_paths.size();i++) {
 
-		String path = p_path[i];
+		String path = p_paths[i];
 
 		RES resource;
 		resource = ResourceLoader::load(path);
