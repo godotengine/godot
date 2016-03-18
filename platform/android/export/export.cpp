@@ -1567,6 +1567,7 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 	args.push_back("-s");
 	args.push_back(devices[p_device].id);
 	args.push_back("install");
+	args.push_back("-r");
 	args.push_back(export_to);
 
 	err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
