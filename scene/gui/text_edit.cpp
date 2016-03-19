@@ -1630,6 +1630,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						clear=(!k.mod.command || k.mod.shift || k.mod.alt );
 						break;
 					case KEY_DELETE:
+						if (!k.mod.shift) {
+							accept_event();
+							clear=true; dobreak=true;
+						} else if (k.mod.command || k.mod.alt) {
+							dobreak=true;
+						}
+						break;
 					case KEY_BACKSPACE:
 						accept_event();
 						clear=true; dobreak=true;
