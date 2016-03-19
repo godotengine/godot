@@ -996,8 +996,17 @@ void ScriptDebuggerRemote::live_script_reload(const Array &p_script_name_array, 
 		String source_code = script_source_code_array[0];
 		Ref<Script> script = ResourceLoader::load(path);
 		if (script.is_valid()) {
-			script->set_source_code(source_code);
-			script->reload();
+
+			if (path.find("local://") == -1 && path.find("::")) {
+				if (script->is_used()) {
+					script->set_source_code(source_code);
+					script->reload();
+				}
+			}
+			else {
+				script->set_source_code(source_code);
+				script->reload();
+			}
 		}
 		script_name_array.pop_back();
 		script_source_code_array.pop_back();

@@ -106,6 +106,7 @@ public:
 
 	virtual Ref<Script> get_base() const=0;
 	virtual const Set<Ref<Script> > get_inherited_scripts() const=0;
+	virtual const bool is_used() const=0;
 
 	Script() {}
 };

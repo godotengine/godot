@@ -2367,6 +2367,18 @@ void GDScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 
 }
 
+const bool GDScript::is_used() const {
+#ifdef TOOLS_ENABLED
+	if (placeholders.size() > 0 || instances.size() > 0 || inheriters_cache.size() > 0) {
+#else
+	if (instances.size() > 0) {
+#endif
+		return true;
+	}
+	else {
+		return false;
+	}
+}
 
 GDScript::GDScript() {
 

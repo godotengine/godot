@@ -350,6 +350,7 @@ public:
 	virtual bool has_script_signal(const StringName& p_signal) const;
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const;
 
+	virtual const bool is_used() const;
 
 	bool is_tool() const { return tool; }
 	virtual Ref<Script> get_base() const;

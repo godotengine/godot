@@ -206,11 +206,30 @@ class ScriptEditor : public VBoxContainer {
 	int history_pos;
 
 
+	//
+	enum {
+		RESOURCE_LOAD,
+		RESOURCE_SAVE
+	};
+
+	Ref<Resource> pending_save_script;
+	bool reload_dirty_list_after_save;
+
+	EditorFileDialog *file;
+	AcceptDialog *accept;
+	int current_option;
+
+	void _dialog_action(String p_file);
+
+	virtual void _script_save_in_path(const Ref<Resource>& p_resource, const String& p_path);
+	virtual void _script_save(const Ref<Resource>& p_resource);
+	virtual void _script_save_as(const Ref<Resource>& p_resource);
+
 	EditorHelpIndex *help_index;
 
 	Vector<Ref<Script> > script_dirty_list;
 
-	void add_script_to_dirty_list(Ref<Script> p_script);
+	void add_script_to_dirty_list(Ref<Script> p_script, const bool allow_duplicates);
 	void add_script_base_to_dirty_list(Ref<Script> p_script);
 	void add_script_inheritors_to_dirty_list(Ref<Script> p_script);
 
