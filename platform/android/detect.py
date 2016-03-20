@@ -22,13 +22,14 @@ def get_opts():
 	return [
 			('ANDROID_NDK_ROOT', 'the path to Android NDK', os.environ.get("ANDROID_NDK_ROOT", 0)),
 			('NDK_TOOLCHAIN', 'toolchain to use for the NDK',"arm-eabi-4.4.0"),
-			('NDK_TARGET', 'toolchain to use for the NDK',"arm-linux-androideabi-4.8"),
-			('NDK_TARGET_X86', 'toolchain to use for the NDK x86',"x86-4.8"),
+			('NDK_TARGET', 'toolchain to use for the NDK',os.environ.get("NDK_TARGET", "arm-linux-androideabi-4.9")),
+			('NDK_TARGET_X86', 'toolchain to use for the NDK x86',os.environ.get("NDK_TARGET_X86", "x86-4.9")),
 			('ndk_platform', 'compile for platform: (android-<api> , example: android-15)',"android-15"),
 			('android_arch', 'select compiler architecture: (armv7/armv6/x86)',"armv7"),
 			('android_neon','enable neon (armv7 only)',"yes"),
 			('android_stl','enable STL support in android port (for modules)',"no")
 	]
+
 
 def get_flags():
 
@@ -232,16 +233,17 @@ def configure(env):
 		#env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/libs/armeabi/libstdc++.a"])
 	else:
 
-		env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gabi++/include"])
+		env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.9/include"])
 		env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cpufeatures"])
 		if env['android_arch']=='x86':
-			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gabi++/libs/x86"])
+			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.9/libs/x86"])
 		elif env["android_arch"]=="armv6":
-			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gabi++/libs/armeabi"])
+			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi"])
 		elif env["android_arch"]=="armv7":
-			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gabi++/libs/armeabi-v7a"])
-		env.Append(LIBS=['gabi++_static'])
+			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi-v7a"])
+		env.Append(LIBS=['gnustl_static'])
 		env.Append(CCFLAGS=["-fno-exceptions",'-DNO_SAFE_CAST'])
+
 
 	import methods
 	env.Append( BUILDERS = { 'GLSL120' : env.Builder(action = methods.build_legacygl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
