@@ -39,6 +39,7 @@
 */
 
 class Camera;
+class Listener;
 class Control;
 class CanvasItem;
 class Panel;
@@ -92,6 +93,9 @@ friend class RenderTargetTexture;
 	Control *parent_control;
 	Viewport *parent;
 
+	Listener *listener;
+	Set<Listener*> listeners;
+
 	Camera *camera;
 	Set<Camera*> cameras;
 
@@ -100,10 +104,10 @@ friend class RenderTargetTexture;
 	RID current_canvas;
 
 	bool audio_listener;
-	RID listener;
+	RID internal_listener;
 
 	bool audio_listener_2d;
-	RID listener_2d;
+	RID internal_listener_2d;
 
 	Matrix32 canvas_transform;
 	Matrix32 global_canvas_transform;
@@ -262,6 +266,13 @@ friend class Control;
 
 	Control *_gui_get_focus_owner();
 
+friend class Listener;
+	void _listener_transform_changed_notify();
+	void _listener_set(Listener* p_listener);
+	bool _listener_add(Listener* p_listener); //true if first
+	void _listener_remove(Listener* p_listener);
+	void _listener_make_next_current(Listener* p_exclude);
+
 friend class Camera;
 	void _camera_transform_changed_notify();
 	void _camera_set(Camera* p_camera);
@@ -275,7 +286,7 @@ protected:
 	static void _bind_methods();
 public:
 
-
+	Listener* get_listener() const;
 	Camera* get_camera() const;
 
 	void set_as_audio_listener(bool p_enable);
