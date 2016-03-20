@@ -1771,6 +1771,7 @@ void register_android_exporter() {
 	//EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"android/release_keystore",PROPERTY_HINT_GLOBAL_FILE,"*.keystore"));
 	EDITOR_DEF("android/timestamping_authority_url","");
 	EDITOR_DEF("android/use_remote_debug_over_adb",false);
+	EDITOR_DEF("android/shutdown_adb_on_exit",true);
 
 	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>( memnew(EditorExportPlatformAndroid) );
 	EditorImportExport::get_singleton()->add_export_platform(exporter);
