@@ -47,6 +47,15 @@ static bool _is_symbol(CharType c) {
 	return c!='_' && ((c>='!' && c<='/') || (c>=':' && c<='@') || (c>='[' && c<='`') || (c>='{' && c<='~') || c=='\t');
 }
 
+static bool _is_char(CharType c) {
+
+	return (c>='a' && c<='z') || (c>='A' && c<='Z') || c=='_';
+}
+
+static bool _is_number(CharType c) {
+	return (c >= '0' && c <= '9');
+}
+
 static bool _is_pair_right_symbol(CharType c) {
 	return
 			c == '"'  ||
@@ -659,7 +668,9 @@ void TextEdit::_notification(int p_what) {
 				int char_ofs=0;
 				int ofs_y=i*get_row_height()+cache.line_spacing/2;
 				bool prev_is_char=false;
+				bool prev_is_number = false;
 				bool in_keyword=false;
+				bool in_word = false;
 				Color keyword_color;
 
 				// check if line contains highlighted word
@@ -712,11 +723,30 @@ void TextEdit::_notification(int p_what) {
 
 						color = cache.font_color; //reset
 						//find keyword
-						bool is_char = _is_text_char(str[j]);
-						bool is_symbol=_is_symbol(str[j]);
+						bool is_char   = _is_text_char(str[j]);
+						bool is_symbol = _is_symbol(str[j]);
+						bool is_number = _is_number(str[j]);
 
 						if (j==0 && in_region>=0 && color_regions[in_region].line_only) {
 							in_region=-1; //reset regions that end at end of line
+						}
+
+						if (!in_word && _is_char(str[j])) {
+							in_word = true;
+						}
+
+						if (in_keyword || in_word) {
+							is_number = false;
+						}
+
+						// check for dot in floating point number
+						if (str[j] == '.' && !in_word && prev_is_number)  {
+							is_number = true;
+							is_symbol = false;
+						}
+
+						if (is_symbol && str[j] != '.' && in_word) {
+							in_word = false;
 						}
 
 						if (is_symbol && cri_map.has(j)) {
@@ -767,8 +797,11 @@ void TextEdit::_notification(int p_what) {
 							color=keyword_color;
 						else if (is_symbol)
 							color=symbol_color;
+						else if (is_number)
+							color=cache.number_color;
 
 						prev_is_char=is_char;
+						prev_is_number=is_number;
 
 					}
 					int char_w;
@@ -2946,6 +2979,7 @@ void TextEdit::_update_caches() {
 	cache.font_color=get_color("font_color");
 	cache.font_selected_color=get_color("font_selected_color");
 	cache.keyword_color=get_color("keyword_color");
+	cache.number_color=get_color("number_color");
 	cache.selection_color=get_color("selection_color");
 	cache.mark_color=get_color("mark_color");
 	cache.current_line_color=get_color("current_line_color");
