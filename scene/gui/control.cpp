@@ -525,8 +525,8 @@ void Control::_notification(int p_notification) {
 
 			if (!is_visible()) {
 
-
-				get_viewport()->_gui_hid_control(this);
+				if(get_viewport() != NULL)
+					get_viewport()->_gui_hid_control(this);
 				_modal_stack_remove();
 				minimum_size_changed();
 
