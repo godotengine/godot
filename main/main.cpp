@@ -57,9 +57,9 @@
 #include "tools/editor/editor_node.h"
 #include "tools/editor/project_manager.h"
 
-#include "tools/pck/pck_packer.h"
-#endif
 
+#endif
+#include "scene/io/pck_packer.h"
 #include "io/file_access_network.h"
 #include "tools/doc/doc_data.h"
 
@@ -964,9 +964,9 @@ Error Main::setup2() {
 	}
 #ifdef TOOLS_ENABLED
 	EditorNode::register_editor_types();
-	ObjectTypeDB::register_type<PCKPacker>(); // todo: move somewhere else
-#endif
 
+#endif
+    ObjectTypeDB::register_type<PCKPacker>(); // todo: move somewhere else
 	MAIN_PRINT("Main: Load Scripts, Modules, Drivers");
 
 	register_module_types();
