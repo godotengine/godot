@@ -31,6 +31,8 @@
 #include "scene/gui/margin_container.h"
 #include "globals.h"
 #include "editor_file_system.h"
+#include "input_editor.h"
+
 void EditorSettingsDialog::ok_pressed() {
 
 	if (!EditorSettings::get_singleton())
@@ -139,6 +141,12 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	property_editor->get_property_editor()->register_text_enter(search_box);
 	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(property_editor);
+
+	InputEditor *input_editor = memnew(InputEditor(true));
+	input_editor->set_name("Shortcuts");
+	tabs->add_child(input_editor);
+	input_editor->set_area_as_parent_rect();
+	input_editor->connect("settings_changed", this, "_settings_changed");
 
 	vbc = memnew( VBoxContainer );
 	tabs->add_child(vbc);

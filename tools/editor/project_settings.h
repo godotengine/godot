@@ -31,7 +31,6 @@
 
 #include "scene/gui/dialogs.h"
 #include "property_editor.h"
-#include "optimized_save_dialog.h"
 #include "undo_redo.h"
 #include "editor_data.h"
 #include "scene/gui/tab_container.h"
@@ -46,8 +45,6 @@ class ProjectSettings : public AcceptDialog {
 	TabContainer *tab_container;
 
 	Timer *timer;
-	InputEvent::Type add_type;
-	String add_at;
 
 	EditorData *data;
 	UndoRedo *undo_redo;
@@ -63,21 +60,11 @@ class ProjectSettings : public AcceptDialog {
 	LineEdit *category;
 	LineEdit *property;
 	OptionButton *type;
-	PopupMenu *popup_add;
-	ConfirmationDialog *press_a_key;
-	Label*press_a_key_label;
-	ConfirmationDialog *device_input;
-	SpinBox *device_id;
-	OptionButton *device_index;
-	Label *device_index_label;
 	MenuButton *popup_platform;
 
-	LineEdit *action_name;
-	Tree *input_editor;
 	bool setting;
 	bool updating_translations;
 
-	InputEvent last_wait_for_key;
 
 	EditorFileDialog *translation_file_open;
 	Tree *translation_list;
@@ -111,28 +98,14 @@ class ProjectSettings : public AcceptDialog {
 	void _item_adds(String);
 	void _item_add();
 	void _item_del();
-	void _update_actions();
 	void _save();
-	void _add_item(int p_item);
-
-	void _action_adds(String);
-	void _action_add();
-	void _device_input_add();
 
 	void _item_checked(const String& p_item, bool p_check);
-	void _action_selected();
-	void _action_edited();
-	void _action_button_pressed(Object* p_obj, int p_column,int p_id);
-	void _wait_for_key(const InputEvent& p_event);
-	void _press_a_key_confirm();
-
 
 	void _settings_prop_edited(const String& p_name);
 	void _settings_changed();
 
-	//ProjectExportSettings *export_settings;
 	void _copy_to_platform(int p_which);
-
 
 	void _translation_file_open();
 	void _translation_add(const String& p_path);
@@ -151,10 +124,7 @@ class ProjectSettings : public AcceptDialog {
 	void _toggle_search_bar(bool p_pressed);
 	void _clear_search_box();
 
-
-
 	ProjectSettings();
-
 
 	static ProjectSettings *singleton;
 protected:
