@@ -59,7 +59,7 @@
 
 
 #endif
-#include "scene/io/pck_packer.h"
+#include "tools/pck/pck_packer.h"
 #include "io/file_access_network.h"
 #include "tools/doc/doc_data.h"
 

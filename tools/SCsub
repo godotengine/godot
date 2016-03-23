@@ -12,8 +12,8 @@ if (env["tools"]!="no"):
 	SConscript('docdump/SCsub');
 	SConscript('freetype/SCsub');
 	SConscript('doc/SCsub')
-	
+SConscript('pck/SCsub')
 
-	lib = env.Library("tool",env.tool_sources)
+lib = env.Library("tool",env.tool_sources)
 
-	env.Prepend(LIBS=[lib])
+env.Prepend(LIBS=[lib])
