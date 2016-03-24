@@ -116,6 +116,15 @@ public:
 	void set_ao_strength(float p_ao_strength);
 	float get_ao_strength() const;
 
+	void set_realtime_color_enabled(const bool p_enabled);
+	bool get_realtime_color_enabled() const;
+
+	void set_realtime_color(const Color& p_realtime_color);
+	Color get_realtime_color() const;
+
+	void set_realtime_energy(const float p_realtime_energy);
+	float get_realtime_energy() const;
+
 	void set_bake_flag(BakeFlags p_flags,bool p_enable);
 	bool get_bake_flag(BakeFlags p_flags) const;
 

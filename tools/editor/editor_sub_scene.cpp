@@ -219,7 +219,7 @@ EditorSubScene::EditorSubScene() {
 	tree = memnew( Tree );
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	vb->add_margin_child("Import From Node:",tree,true);
-	tree->connect("item_activated",this,"_ok");
+	tree->connect("item_activated",this,"_ok",make_binds(),CONNECT_DEFERRED);
 
 	file_dialog = memnew( EditorFileDialog );
 	List<String> extensions;

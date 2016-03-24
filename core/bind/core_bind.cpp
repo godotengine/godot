@@ -14,6 +14,20 @@
 #define SECS_DAY  (24L * 60L * 60L)
 #define LEAPYEAR(year)  (!((year) % 4) && (((year) % 100) || !((year) % 400)))
 #define YEARSIZE(year)  (LEAPYEAR(year) ? 366 : 365)
+#define SECOND_KEY "second"
+#define MINUTE_KEY "minute"
+#define HOUR_KEY "hour"
+#define DAY_KEY "day"
+#define MONTH_KEY "month"
+#define YEAR_KEY "year"
+#define WEEKDAY_KEY "weekday"
+#define DST_KEY "dst"
+
+/// Table of number of days in each month (for regular year and leap year)
+static const unsigned int MONTH_DAYS_TABLE[2][12] = {
+	{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
+	{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+};
 
 _ResourceLoader *_ResourceLoader::singleton=NULL;
 
@@ -485,15 +499,34 @@ void _OS::set_icon(const Image& p_icon) {
 	OS::get_singleton()->set_icon(p_icon);
 }
 
+/**
+ *  Get current datetime with consideration for utc and 
+ *     dst
+ */ 
+Dictionary _OS::get_datetime(bool utc) const {
+
+	Dictionary dated = get_date(utc);
+	Dictionary timed = get_time(utc);
+
+	List<Variant> keys;
+	timed.get_key_list(&keys);
+
+	for(int i = 0; i < keys.size(); i++) {
+		dated[keys[i]] = timed[keys[i]];
+	}
+
+	return dated;
+}
+
 Dictionary _OS::get_date(bool utc) const {
 
 	OS::Date date = OS::get_singleton()->get_date(utc);
 	Dictionary dated;
-	dated["year"]=date.year;
-	dated["month"]=date.month;
-	dated["day"]=date.day;
-	dated["weekday"]=date.weekday;
-	dated["dst"]=date.dst;
+	dated[YEAR_KEY]=date.year;
+	dated[MONTH_KEY]=date.month;
+	dated[DAY_KEY]=date.day;
+	dated[WEEKDAY_KEY]=date.weekday;
+	dated[DST_KEY]=date.dst;
 	return dated;
 }
 
@@ -501,10 +534,97 @@ Dictionary _OS::get_time(bool utc) const {
 
 	OS::Time time = OS::get_singleton()->get_time(utc);
 	Dictionary timed;
-	timed["hour"]=time.hour;
-	timed["minute"]=time.min;
-	timed["second"]=time.sec;
+	timed[HOUR_KEY]=time.hour;
+	timed[MINUTE_KEY]=time.min;
+	timed[SECOND_KEY]=time.sec;
 	return timed;
+}
+
+/**
+ *  Get a epoch time value from a dictionary of time values
+ *  @p datetime must be populated with the following keys:
+ *    day, hour, minute, month, second, year. (dst is ignored).
+ *
+ *    You can pass the output from
+ *   get_datetime_from_unix_time directly into this function
+ *
+ * @param datetime dictionary of date and time values to convert
+ *
+ * @return epoch calculated
+ */
+uint64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
+
+	// Bunch of conversion constants
+	static const unsigned int SECONDS_PER_MINUTE = 60;
+	static const unsigned int MINUTES_PER_HOUR = 60;
+	static const unsigned int HOURS_PER_DAY = 24;
+	static const unsigned int SECONDS_PER_HOUR = MINUTES_PER_HOUR *
+		SECONDS_PER_MINUTE;
+	static const unsigned int SECONDS_PER_DAY = SECONDS_PER_HOUR * HOURS_PER_DAY;
+
+	// Get all time values from the dictionary, set to zero if it doesn't exist.
+	//   Risk incorrect calculation over throwing errors
+	unsigned int second = ((datetime.has(SECOND_KEY))? 
+			static_cast<unsigned int>(datetime[SECOND_KEY]): 0);
+	unsigned int minute = ((datetime.has(MINUTE_KEY))? 
+			static_cast<unsigned int>(datetime[MINUTE_KEY]): 0);
+	unsigned int hour = ((datetime.has(HOUR_KEY))? 
+			static_cast<unsigned int>(datetime[HOUR_KEY]): 0);
+	unsigned int day = ((datetime.has(DAY_KEY))? 
+			static_cast<unsigned int>(datetime[DAY_KEY]): 0);
+	unsigned int month = ((datetime.has(MONTH_KEY))? 
+			static_cast<unsigned int>(datetime[MONTH_KEY]) -1: 0);
+	unsigned int year = ((datetime.has(YEAR_KEY))? 
+			static_cast<unsigned int>(datetime[YEAR_KEY]):0);
+
+	/// How many days come before each month (0-12)
+	static const unsigned short int DAYS_PAST_THIS_YEAR_TABLE[2][13] =
+	{
+		/* Normal years.  */
+		{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
+		/* Leap years.  */
+		{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
+	};
+
+	ERR_EXPLAIN("Invalid second value of: " + itos(second));
+	ERR_FAIL_COND_V( second > 59, 0);
+
+	ERR_EXPLAIN("Invalid minute value of: " + itos(minute));
+	ERR_FAIL_COND_V( minute > 59, 0);
+
+	ERR_EXPLAIN("Invalid hour value of: " + itos(hour));
+	ERR_FAIL_COND_V( hour > 23, 0);
+
+	ERR_EXPLAIN("Invalid month value of: " + itos(month+1));
+	ERR_FAIL_COND_V( month+1 > 12, 0);
+
+	// Do this check after month is tested as valid
+	ERR_EXPLAIN("Invalid day value of: " + itos(day) + " which is larger "
+			"than "+ itos(MONTH_DAYS_TABLE[LEAPYEAR(year)][month]));
+	ERR_FAIL_COND_V( day > MONTH_DAYS_TABLE[LEAPYEAR(year)][month], 0);
+
+	// Calculate all the seconds from months past in this year
+	uint64_t SECONDS_FROM_MONTHS_PAST_THIS_YEAR = 
+		DAYS_PAST_THIS_YEAR_TABLE[LEAPYEAR(year)][month] * SECONDS_PER_DAY;
+
+	uint64_t SECONDS_FROM_YEARS_PAST = 0;
+	for(unsigned int iyear = EPOCH_YR; iyear < year; iyear++) {
+
+		SECONDS_FROM_YEARS_PAST += YEARSIZE(iyear) *
+			SECONDS_PER_DAY;
+	}
+
+	uint64_t epoch = 
+		second + 
+		minute * SECONDS_PER_MINUTE + 
+		hour * SECONDS_PER_HOUR +
+		// Subtract 1 from day, since the current day isn't over yet
+		//   and we cannot count all 24 hours.
+		(day-1) * SECONDS_PER_DAY + 
+		SECONDS_FROM_MONTHS_PAST_THIS_YEAR +
+		SECONDS_FROM_YEARS_PAST;
+	return epoch;
+
 }
 
 /**
@@ -513,8 +633,18 @@ Dictionary _OS::get_time(bool utc) const {
  *  Dictionary Time values will be a union if values from #get_time
  *    and #get_date dictionaries (with the exception of dst = 
  *    day light standard time, as it cannot be determined from epoch)
+ *
+ * @param unix_time_val epoch time to convert
+ *
+ * @return dictionary of date and time values
  */
-Dictionary _OS::get_time_from_unix_time( uint64_t unix_time_val) const {
+Dictionary _OS::get_datetime_from_unix_time( uint64_t unix_time_val) const {
+
+	// Just fail if unix time is negative (when interpreted as an int).
+	//  This means the user passed in a negative value by accident
+	ERR_EXPLAIN("unix_time_val was really huge!"+ itos(unix_time_val) +
+			" You probably passed in a negative value!");
+	ERR_FAIL_COND_V( (int64_t)unix_time_val < 0, Dictionary());
 
 	OS::Date date;
 	OS::Time time;
@@ -539,16 +669,10 @@ Dictionary _OS::get_time_from_unix_time( uint64_t unix_time_val) const {
 
 	date.year = year; 
 
-	// Table of number of days in each month (for regular year and leap year)
-	const unsigned int _ytab[2][12] = {
-		{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
-		{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
-	};
-
 	size_t imonth = 0;
 
-	while (dayno >= _ytab[LEAPYEAR(year)][imonth]) {
-		dayno -= _ytab[LEAPYEAR(year)][imonth];
+	while (dayno >= MONTH_DAYS_TABLE[LEAPYEAR(year)][imonth]) {
+		dayno -= MONTH_DAYS_TABLE[LEAPYEAR(year)][imonth];
 		imonth++;
 	}
 
@@ -558,13 +682,13 @@ Dictionary _OS::get_time_from_unix_time( uint64_t unix_time_val) const {
 	date.day = dayno + 1;
 
 	Dictionary timed;
-	timed["hour"]=time.hour;
-	timed["minute"]=time.min;
-	timed["second"]=time.sec;
-	timed["year"]=date.year;
-	timed["month"]=date.month;
-	timed["day"]=date.day;
-	timed["weekday"]=date.weekday;
+	timed[HOUR_KEY]=time.hour;
+	timed[MINUTE_KEY]=time.min;
+	timed[SECOND_KEY]=time.sec;
+	timed[YEAR_KEY]=date.year;
+	timed[MONTH_KEY]=date.month;
+	timed[DAY_KEY]=date.day;
+	timed[WEEKDAY_KEY]=date.weekday;
 
 	return timed;
 }
@@ -580,7 +704,7 @@ Dictionary _OS::get_time_zone_info() const {
 uint64_t _OS::get_unix_time() const {
 
 	return OS::get_singleton()->get_unix_time();
-};
+}
 
 uint64_t _OS::get_system_time_secs() const {
 	return OS::get_singleton()->get_system_time_secs();
@@ -912,12 +1036,15 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_cmdline_args"),&_OS::get_cmdline_args);
 	ObjectTypeDB::bind_method(_MD("get_main_loop"),&_OS::get_main_loop);
 
+	ObjectTypeDB::bind_method(_MD("get_datetime","utc"),&_OS::get_datetime,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_date","utc"),&_OS::get_date,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_time","utc"),&_OS::get_time,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_time_zone_info"),&_OS::get_time_zone_info);
 	ObjectTypeDB::bind_method(_MD("get_unix_time"),&_OS::get_unix_time);
-	ObjectTypeDB::bind_method(_MD("get_time_from_unix_time", "unix_time_val"),
-			&_OS::get_time_from_unix_time);
+	ObjectTypeDB::bind_method(_MD("get_datetime_from_unix_time", "unix_time_val"),
+			&_OS::get_datetime_from_unix_time);
+	ObjectTypeDB::bind_method(_MD("get_unix_time_from_datetime", "datetime"),
+			&_OS::get_unix_time_from_datetime);
 	ObjectTypeDB::bind_method(_MD("get_system_time_secs"), &_OS::get_system_time_secs);
 
 	ObjectTypeDB::bind_method(_MD("set_icon","icon"),&_OS::set_icon);

@@ -399,12 +399,19 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("text_editor/engine_type_color",Color::html("83d3ff"));
 	set("text_editor/comment_color",Color::html("983d1b"));
 	set("text_editor/string_color",Color::html("ef6ebe"));
+	set("text_editor/number_color",Color::html("EB9532"));
 	set("text_editor/symbol_color",Color::html("badfff"));
 	set("text_editor/selection_color",Color::html("7b5dbe"));
 	set("text_editor/brace_mismatch_color",Color(1,0.2,0.2));
 	set("text_editor/current_line_color",Color(0.3,0.5,0.8,0.15));
+	set("text_editor/word_highlighted_color",Color(0.8,0.9,0.9,0.15));
 
+	set("text_editor/highlight_all_occurrences", true);
 	set("text_editor/scroll_past_end_of_file", false);
+
+	set("text_editor/tab_size", 4);
+	hints["text_editor/tab_size"]=PropertyInfo(Variant::INT,"text_editor/tab_size",PROPERTY_HINT_RANGE,"1, 64, 1"); // size of 0 crashes.
+	set("text_editor/draw_tabs", true);
 
 	set("text_editor/idle_parse_delay",2);
 	set("text_editor/create_signal_callbacks",true);
