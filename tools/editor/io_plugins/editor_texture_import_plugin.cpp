@@ -589,7 +589,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	save_path = memnew( LineEdit );
 	save_path->set_h_size_flags(SIZE_EXPAND_FILL);
 	hbc->add_child(save_path);
-
+	save_path->set_text("res://");
 	Button * save_choose = memnew( Button );
 	save_choose->set_text(" .. ");
 	hbc->add_child(save_choose);
