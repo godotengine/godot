@@ -44,7 +44,7 @@ static bool _is_text_char(CharType c) {
 
 static bool _is_symbol(CharType c) {
 
-	return c!='_' && ((c>='!' && c<='/') || (c>=':' && c<='@') || (c>='[' && c<='`') || (c>='{' && c<='~') || c=='\t');
+	return c!='_' && ((c>='!' && c<='/') || (c>=':' && c<='@') || (c>='[' && c<='`') || (c>='{' && c<='~') || c=='\t' || c==' ');
 }
 
 static bool _is_char(CharType c) {
