@@ -75,8 +75,9 @@ public:
 		int width,height;
 		bool fullscreen;
 		bool resizable;
+		bool borderless_window;
 		float get_aspect() const { return (float)width/(float)height; }
-		VideoMode(int p_width=1024,int p_height=600,bool p_fullscreen=false, bool p_resizable = true) {width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; }
+		VideoMode(int p_width=1024,int p_height=600,bool p_fullscreen=false, bool p_resizable = true,bool p_borderless_window=false) { width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; borderless_window=p_borderless_window; }
 	};
 protected:
 friend class Main;
@@ -172,6 +173,8 @@ public:
 	virtual void set_window_maximized(bool p_enabled) {}
 	virtual bool is_window_maximized() const { return true; }
 
+	virtual void set_borderless_window(int p_borderless) {}
+	virtual bool get_borderless_window() { return 0; }
 
 
 
@@ -221,7 +224,9 @@ public:
 	};
 
 	enum Month {
-		MONTH_JANUARY,
+		/// Start at 1 to follow Windows SYSTEMTIME structure
+		/// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724950(v=vs.85).aspx
+		MONTH_JANUARY = 1,
 		MONTH_FEBRUARY,
 		MONTH_MARCH,
 		MONTH_APRIL,

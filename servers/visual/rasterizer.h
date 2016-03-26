@@ -528,6 +528,10 @@ public:
 		int octree_steps;
 		Vector2 octree_tex_pixel_size;
 		Vector2 light_tex_pixel_size;
+
+		bool realtime_color_enabled;
+		Color realtime_color;
+		float realtime_energy;
 	};
 
 	struct InstanceData {
@@ -546,6 +550,7 @@ public:
 		bool depth_scale :8;
 		bool billboard :8;
 		bool billboard_y :8;
+		bool receive_shadows : 8;
 
 	};
 

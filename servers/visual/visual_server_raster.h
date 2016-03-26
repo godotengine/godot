@@ -169,7 +169,6 @@ class VisualServerRaster : public VisualServer {
 		AABB transformed_aabb;
 		uint32_t object_ID;
 		bool visible;
-		bool receive_shadows;
 		bool visible_in_all_rooms;
 		uint32_t layer_mask;
 		float draw_range_begin;
@@ -300,7 +299,7 @@ class VisualServerRaster : public VisualServer {
 			update=false;
 			visible=true;
 			data.cast_shadows=SHADOW_CASTING_SETTING_ON;
-			receive_shadows=true;
+			data.receive_shadows=true;
 			data.depth_scale=false;
 			data.billboard=false;
 			data.billboard_y=false;
@@ -949,6 +948,15 @@ public:
 
 	virtual void baked_light_add_lightmap(RID p_baked_light,const RID p_texture,int p_id);
 	virtual void baked_light_clear_lightmaps(RID p_baked_light);
+
+	virtual void baked_light_set_realtime_color_enabled(RID p_baked_light, const bool p_enabled);
+	virtual bool baked_light_get_realtime_color_enabled(RID p_baked_light) const;
+
+	virtual void baked_light_set_realtime_color(RID p_baked_light, const Color& p_color);
+	virtual Color baked_light_get_realtime_color(RID p_baked_light) const;
+
+	virtual void baked_light_set_realtime_energy(RID p_baked_light, const float p_energy);
+	virtual float baked_light_get_realtime_energy(RID p_baked_light) const;
 
 	/* BAKED LIGHT SAMPLER */
 

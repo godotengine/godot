@@ -73,6 +73,7 @@
 #include "core/os/thread.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/file_access_zip.h"
+#include "core/io/stream_peer_ssl.h"
 #include "translation.h"
 #include "version.h"
 #include "main/input_default.h"
@@ -635,6 +636,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	if (editor) {
 		packed_data->set_disabled(true);
 		globals->set_disable_platform_override(true);
+		StreamPeerSSL::initialize_certs=false; //will be initialized by editor
 	}
 
 #endif
@@ -689,6 +691,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		video_mode.fullscreen=globals->get("display/fullscreen");
 	if (use_custom_res && globals->has("display/resizable"))
 		video_mode.resizable=globals->get("display/resizable");
+	if (use_custom_res && globals->has("display/borderless_window"))
+		video_mode.borderless_window = globals->get("display/borderless_window");
 
 	if (!force_res && use_custom_res && globals->has("display/test_width") && globals->has("display/test_height")) {
 		int tw = globals->get("display/test_width");
@@ -704,6 +708,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	GLOBAL_DEF("display/height",video_mode.height);
 	GLOBAL_DEF("display/fullscreen",video_mode.fullscreen);
 	GLOBAL_DEF("display/resizable",video_mode.resizable);
+	GLOBAL_DEF("display/borderless_window", video_mode.borderless_window);
 	GLOBAL_DEF("display/test_width",0);
 	GLOBAL_DEF("display/test_height",0);
 	OS::get_singleton()->_pixel_snap=GLOBAL_DEF("display/use_2d_pixel_snap",false);

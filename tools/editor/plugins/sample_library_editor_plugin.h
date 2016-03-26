@@ -48,23 +48,19 @@ class SampleLibraryEditor : public Panel {
 
 	SamplePlayer *player;
 	Ref<SampleLibrary> sample_library;
-	Button *stop;
-	Button *play;
 	Button *load;
-	Button *_delete;
 	Tree *tree;
+	bool is_playing;
+	Object *last_sample_playing;
 
 	EditorFileDialog *file;
 
 	ConfirmationDialog *dialog;
 
 
-	void _play_pressed();
-	void _stop_pressed();
 	void _load_pressed();
 	void _file_load_request(const DVector<String>& p_path);
 	void _delete_pressed();
-	void _delete_confirm_pressed();
 	void _update_library();
 	void _item_edited();
 
@@ -79,7 +75,6 @@ protected:
 public:
 
 	void set_undo_redo(UndoRedo *p_undo_redo) {undo_redo=p_undo_redo; }
-
 	void edit(Ref<SampleLibrary> p_sample);
 	SampleLibraryEditor();
 };

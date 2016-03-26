@@ -76,11 +76,13 @@ class TextEdit : public Control  {
 		Color font_color;
 		Color font_selected_color;
 		Color keyword_color;
+		Color number_color;
 		Color selection_color;
 		Color mark_color;
 		Color breakpoint_color;
 		Color current_line_color;
 		Color brace_mismatch_color;
+		Color word_highlighted_color;
 
 		int row_height;
 		int line_spacing;
@@ -156,6 +158,7 @@ class TextEdit : public Control  {
 		int from_line,from_column;
 		int to_line, to_column;
 		String text;
+		uint32_t prev_version;
 		uint32_t version;
 		bool chain_forward;
 		bool chain_backward;
@@ -211,6 +214,7 @@ class TextEdit : public Control  {
 	bool undo_enabled;
 	bool line_numbers;
 
+	bool highlight_all_occurrences;
 	bool scroll_past_end_of_file_enabled;
 	bool auto_brace_completion_enabled;
 	bool brace_matching_enabled;
@@ -268,6 +272,8 @@ class TextEdit : public Control  {
 	void _base_insert_text(int p_line, int p_column,const String& p_text,int &r_end_line,int &r_end_column);
 	String _base_get_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column) const;
 	void _base_remove_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column);
+
+	int _get_column_pos_of_word(const String &p_key, const String &p_search, int p_from_column);
 
 	DVector<int> _search_bind(const String &p_key,uint32_t p_search_flags, int p_from_line,int p_from_column) const;
 
@@ -363,6 +369,7 @@ public:
 	void select(int p_from_line,int p_from_column,int p_to_line,int p_to_column);
 	void deselect();
 
+	void set_highlight_all_occurrences(const bool p_enabled);
 	bool is_selection_active() const;
 	int get_selection_from_line() const;
     int get_selection_from_column() const;
@@ -378,7 +385,7 @@ public:
 	void redo();
 	void clear_undo_history();
 
-
+	void set_tab_size(const int p_size);
 	void set_draw_tabs(bool p_draw);
 	bool is_drawing_tabs() const;
 

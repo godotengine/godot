@@ -177,6 +177,7 @@ void OS_Windows::initialize_core() {
 	//RedirectIOToConsole();
 	maximized=false;
 	minimized=false;
+	borderless=false;
 
 	ThreadWindows::make_default();
 	SemaphoreWindows::make_default();
@@ -884,7 +885,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	DWORD		dwExStyle;
 	DWORD		dwStyle;
 
-	if (video_mode.fullscreen) {
+	if (video_mode.fullscreen||video_mode.borderless_window) {
 
 		dwExStyle=WS_EX_APPWINDOW;
 		dwStyle=WS_POPUP;
@@ -930,7 +931,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 		video_mode.fullscreen = false;
 	} else {
 
-		if (!(hWnd=CreateWindowExW(dwExStyle,L"Engine",L"", dwStyle|WS_CLIPSIBLINGS|WS_CLIPCHILDREN, 0, 0,WindowRect.right-WindowRect.left,WindowRect.bottom-WindowRect.top, NULL,NULL,	hInstance,NULL))) {
+		if (!(hWnd=CreateWindowExW(dwExStyle,L"Engine",L"", dwStyle|WS_CLIPSIBLINGS|WS_CLIPCHILDREN, (GetSystemMetrics(SM_CXSCREEN)-WindowRect.right)/2, (GetSystemMetrics(SM_CYSCREEN)-WindowRect.bottom)/2, WindowRect.right-WindowRect.left,WindowRect.bottom-WindowRect.top, NULL,NULL, hInstance,NULL))) {
 			MessageBoxW(NULL,L"Window Creation Error.",L"ERROR",MB_OK|MB_ICONEXCLAMATION);
 			return;								// Return FALSE
 		}
@@ -1527,6 +1528,14 @@ bool OS_Windows::is_window_maximized() const{
 	return maximized;
 }
 
+
+void OS_Windows::set_borderless_window(int p_borderless) {
+	video_mode.borderless_window = p_borderless;
+}
+
+bool OS_Windows::get_borderless_window() {
+	return video_mode.borderless_window;
+}
 
 void OS_Windows::print_error(const char* p_function, const char* p_file, int p_line, const char* p_code, const char* p_rationale, ErrorType p_type) {
 

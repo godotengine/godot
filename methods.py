@@ -1096,6 +1096,8 @@ def update_version():
 	f.write("#define VERSION_NAME "+str(version.name)+"\n")
 	f.write("#define VERSION_MAJOR "+str(version.major)+"\n")
 	f.write("#define VERSION_MINOR "+str(version.minor)+"\n")
+	if (hasattr(version, 'patch')):
+	    f.write("#define VERSION_PATCH "+str(version.patch)+"\n")
 	f.write("#define VERSION_REVISION "+str(rev)+"\n")
 	f.write("#define VERSION_STATUS "+str(version.status)+"\n")
 	import datetime

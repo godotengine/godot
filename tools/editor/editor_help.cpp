@@ -92,7 +92,7 @@ void EditorHelpSearch::_update_search() {
 
 	DocData *doc=EditorHelp::get_doc_data();
 	String term = search_box->get_text();
-	if (term.length()<3)
+	if (term.length()<2)
 		return;
 
 	TreeItem *root = search_options->create_item();

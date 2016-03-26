@@ -107,7 +107,7 @@
 #include "tools/editor/io_plugins/editor_export_scene.h"
 
 #include "plugins/editor_preview_plugins.h"
-
+#include "editor_initialize_ssl.h"
 #include "script_editor_debugger.h"
 
 EditorNode *EditorNode::singleton=NULL;
@@ -1267,23 +1267,20 @@ void EditorNode::_dialog_action(String p_file) {
 			if (FileAccess::exists(p_file)) {
 				ml=ResourceLoader::load(p_file,"TileSet");
 
-				if (!file_export_lib_merge->is_pressed()) {
+				if (ml.is_null()) {
+					if (file_export_lib_merge->is_pressed()) {
+						current_option=-1;
+						//accept->get_cancel()->hide();
+						accept->get_ok()->set_text("I see..");
+						accept->set_text("Can't load TileSet for merging!.");
+						accept->popup_centered_minsize();
+						return;
+					}
+				} else if (!file_export_lib_merge->is_pressed()) {
 					ml->clear();
 				}
 
-			}
-
-			if (ml.is_null()) {
-
-				if (file_export_lib_merge->is_pressed()) {
-					current_option=-1;
-					//accept->get_cancel()->hide();
-					accept->get_ok()->set_text("I see..");
-					accept->set_text("Can't load TileSet for merging!.");
-					accept->popup_centered_minsize();
-					return;
-				}
-
+			} else {
 				ml = Ref<TileSet>( memnew( TileSet ));
 			}
 
@@ -4148,9 +4145,10 @@ Error EditorNode::export_platform(const String& p_platform, const String& p_path
 	return OK;
 }
 
-void EditorNode::show_warning(const String& p_text) {
+void EditorNode::show_warning(const String& p_text, const String &p_title) {
 
 	warning->set_text(p_text);
+	warning->set_title(p_title);
 	warning->popup_centered_minsize();
 }
 
@@ -4953,6 +4951,7 @@ EditorNode::EditorNode() {
 
 	EditorHelp::generate_doc(); //before any editor classes are crated
 	SceneState::set_disable_placeholders(true);
+	editor_initialize_certificates(); //for asset sharing
 
 
 	InputDefault *id = Input::get_singleton()->cast_to<InputDefault>();

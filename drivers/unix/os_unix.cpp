@@ -251,6 +251,9 @@ OS::Date OS_Unix::get_date(bool utc) const {
 		lt=localtime(&t);
 	Date ret;
 	ret.year=1900+lt->tm_year;
+	// Index starting at 1 to match OS_Unix::get_date
+	//   and Windows SYSTEMTIME and tm_mon follows the typical structure 
+	//   of 0-11, noted here: http://www.cplusplus.com/reference/ctime/tm/
 	ret.month=(Month)(lt->tm_mon + 1);
 	ret.day=lt->tm_mday;
 	ret.weekday=(Weekday)lt->tm_wday;
@@ -258,6 +261,7 @@ OS::Date OS_Unix::get_date(bool utc) const {
 	
 	return ret;
 }
+
 OS::Time OS_Unix::get_time(bool utc) const {
 	time_t t=time(NULL);
 	struct tm *lt;

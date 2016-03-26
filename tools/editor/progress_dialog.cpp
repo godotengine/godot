@@ -140,6 +140,9 @@ void BackgroundProgress::end_task(const String& p_task){
 
 ////////////////////////////////////////////////
 
+
+ProgressDialog *ProgressDialog::singleton=NULL;
+
 void ProgressDialog::_notification(int p_what) {
 
 	switch(p_what) {
@@ -237,4 +240,5 @@ ProgressDialog::ProgressDialog() {
 	main->set_area_as_parent_rect();
 	set_exclusive(true);
 	last_progress_tick=0;
+	singleton=this;
 }

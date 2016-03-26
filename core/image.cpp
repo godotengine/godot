@@ -2214,6 +2214,8 @@ void Image::blit_rect(const Image& p_src, const Rect2& p_src_rect,const Point2& 
 
 
 Image (*Image::_png_mem_loader_func)(const uint8_t*,int)=NULL;
+Image (*Image::_jpg_mem_loader_func)(const uint8_t*,int)=NULL;
+
 void (*Image::_image_compress_bc_func)(Image *)=NULL;
 void (*Image::_image_compress_pvrtc2_func)(Image *)=NULL;
 void (*Image::_image_compress_pvrtc4_func)(Image *)=NULL;
@@ -2388,7 +2390,7 @@ String Image::get_format_name(Format p_format) {
 	return format_names[p_format];
 }
 
-Image::Image(const uint8_t* p_png,int p_len) {
+Image::Image(const uint8_t* p_mem_png_jpg, int p_len) {
 
 	width=0;
 	height=0;
@@ -2396,8 +2398,13 @@ Image::Image(const uint8_t* p_png,int p_len) {
 	format=FORMAT_GRAYSCALE;
 
 	if (_png_mem_loader_func) {
-		*this = _png_mem_loader_func(p_png,p_len);
+		*this = _png_mem_loader_func(p_mem_png_jpg,p_len);
 	}
+
+	if (empty() && _jpg_mem_loader_func) {
+		*this = _jpg_mem_loader_func(p_mem_png_jpg,p_len);
+	}
+
 }
 
 Image::Image() {

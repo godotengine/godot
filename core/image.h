@@ -97,6 +97,7 @@ public:
 	};
 
 	static Image (*_png_mem_loader_func)(const uint8_t* p_png,int p_size);
+	static Image (*_jpg_mem_loader_func)(const uint8_t* p_png,int p_size);
 	static void (*_image_compress_bc_func)(Image *);
 	static void (*_image_compress_pvrtc2_func)(Image *);
 	static void (*_image_compress_pvrtc4_func)(Image *);
@@ -355,7 +356,7 @@ public:
 	static void set_compress_bc_func(void (*p_compress_func)(Image *));
 	static String get_format_name(Format p_format);
 
-	Image(const uint8_t* p_mem_png, int p_len=-1);
+	Image(const uint8_t* p_mem_png_jpg, int p_len=-1);
 	Image(const char **p_xpm);
 	~Image();
 

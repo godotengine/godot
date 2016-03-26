@@ -179,6 +179,7 @@ protected:
 	Vector<MonitorInfo> monitor_info;
 	bool maximized;
 	bool minimized;
+	bool borderless;
 
 	static BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor,  LPARAM dwData);
 
@@ -222,6 +223,9 @@ public:
 	virtual bool is_window_minimized() const;
 	virtual void set_window_maximized(bool p_enabled);
 	virtual bool is_window_maximized() const;
+
+	virtual void set_borderless_window(int p_borderless);
+	virtual bool get_borderless_window();
 
 	virtual MainLoop *get_main_loop() const;
 
