@@ -84,7 +84,7 @@ protected:
 		ObjectTypeDB::bind_method("body_changed_transform",&TestPhysicsMainLoop::body_changed_transform);
 	}
 
-	RID create_body(PhysicsServer::ShapeType p_shape, PhysicsServer::BodyMode p_body,const Transform p_location,bool p_active_default=true,const Transform&p_shape_xform=Transform()) {
+	RID create_body(PhysicsServer::ShapeType p_shape, PhysicsServer::BodyMode p_body,const Transform& p_location,bool p_active_default=true,const Transform&p_shape_xform=Transform()) {
 
 		VisualServer *vs=VisualServer::get_singleton();
 		PhysicsServer * ps = PhysicsServer::get_singleton();

@@ -2150,7 +2150,7 @@ Variant::operator IP_Address() const {
 	return IP_Address( operator String() );
 }
 
-Variant::Variant(bool p_bool) {
+Variant::Variant(bool p_bool) : VARIANT_ALLOCATE_DATA() {
 
 	type=BOOL;
 	_data._bool=p_bool;
@@ -2164,13 +2164,13 @@ Variant::Variant(long unsigned int p_long) {
 };
 */
 
-Variant::Variant(signed int p_int) {
+Variant::Variant(signed int p_int) : VARIANT_ALLOCATE_DATA() {
 
 	type=INT;
 	_data._int=p_int;
 
 }
-Variant::Variant(unsigned int p_int) {
+Variant::Variant(unsigned int p_int) : VARIANT_ALLOCATE_DATA() {
 
 	type=INT;
 	_data._int=p_int;
@@ -2193,167 +2193,167 @@ Variant::Variant(unsigned long p_int) {
 }
 #endif
 
-Variant::Variant(int64_t p_int) {
+Variant::Variant(int64_t p_int) : VARIANT_ALLOCATE_DATA() {
 
 	type=INT;
 	_data._int=p_int;
 
 }
 
-Variant::Variant(uint64_t p_int) {
+Variant::Variant(uint64_t p_int) : VARIANT_ALLOCATE_DATA() {
 
 	type=INT;
 	_data._int=p_int;
 
 }
 
-Variant::Variant(signed short p_short) {
+Variant::Variant(signed short p_short) : VARIANT_ALLOCATE_DATA() {
 
 	type=INT;
 	_data._int=p_short;
 
 }
-Variant::Variant(unsigned short p_short) {
+Variant::Variant(unsigned short p_short) : VARIANT_ALLOCATE_DATA() {
 
 	type=INT;
 	_data._int=p_short;
 
 }
-Variant::Variant(signed char p_char) {
+Variant::Variant(signed char p_char) : VARIANT_ALLOCATE_DATA() {
 
 	type=INT;
 	_data._int=p_char;
 
 }
-Variant::Variant(unsigned char p_char) {
+Variant::Variant(unsigned char p_char) : VARIANT_ALLOCATE_DATA() {
 
 	type=INT;
 	_data._int=p_char;
 
 }
-Variant::Variant(float p_float) {
+Variant::Variant(float p_float) : VARIANT_ALLOCATE_DATA() {
 
 	type=REAL;
 	_data._real=p_float;
 
 }
-Variant::Variant(double p_double) {
+Variant::Variant(double p_double) : VARIANT_ALLOCATE_DATA() {
 
 	type=REAL;
 	_data._real=p_double;
 }
 
-Variant::Variant(const StringName& p_string) {
+Variant::Variant(const StringName& p_string) : VARIANT_ALLOCATE_DATA() {
 
 	type=STRING;
 	memnew_placement( _data._mem, String( p_string.operator String() ) );
 
 }
-Variant::Variant(const String& p_string) {
+Variant::Variant(const String& p_string) : VARIANT_ALLOCATE_DATA() {
 
 	type=STRING;
 	memnew_placement( _data._mem, String( p_string ) );
 
 }
 
-Variant::Variant(const char * const p_cstring) {
+Variant::Variant(const char * const p_cstring) : VARIANT_ALLOCATE_DATA() {
 
 	type=STRING;
 	memnew_placement( _data._mem, String( (const char*)p_cstring ) );
 
 }
 
-Variant::Variant(const CharType * p_wstring) {
+Variant::Variant(const CharType * p_wstring) : VARIANT_ALLOCATE_DATA() {
 
 	type=STRING;
 	memnew_placement( _data._mem, String( p_wstring ) );
 
 }
-Variant::Variant(const Vector3& p_vector3) {
+Variant::Variant(const Vector3& p_vector3) : VARIANT_ALLOCATE_DATA() {
 
 	type=VECTOR3;
 	memnew_placement( _data._mem, Vector3( p_vector3 ) );
 
 }
-Variant::Variant(const Vector2& p_vector2) {
+Variant::Variant(const Vector2& p_vector2) : VARIANT_ALLOCATE_DATA() {
 
 	type=VECTOR2;
 	memnew_placement( _data._mem, Vector2( p_vector2 ) );
 
 }
-Variant::Variant(const Rect2& p_rect2) {
+Variant::Variant(const Rect2& p_rect2) : VARIANT_ALLOCATE_DATA() {
 
 	type=RECT2;
 	memnew_placement( _data._mem, Rect2( p_rect2 ) );
 
 }
 
-Variant::Variant(const Plane& p_plane) {
+Variant::Variant(const Plane& p_plane) : VARIANT_ALLOCATE_DATA() {
 
 	type=PLANE;
 	memnew_placement( _data._mem, Plane( p_plane ) );
 
 }
-Variant::Variant(const AABB& p_aabb) {
+Variant::Variant(const AABB& p_aabb) : VARIANT_ALLOCATE_DATA() {
 
 	type=_AABB;
 	_data._aabb = memnew( AABB( p_aabb ) );
 }
 
-Variant::Variant(const Matrix3& p_matrix) {
+Variant::Variant(const Matrix3& p_matrix) : VARIANT_ALLOCATE_DATA() {
 
 	type=MATRIX3;
 	_data._matrix3= memnew( Matrix3( p_matrix ) );
 
 }
 
-Variant::Variant(const Quat& p_quat) {
+Variant::Variant(const Quat& p_quat) : VARIANT_ALLOCATE_DATA() {
 
 	type=QUAT;
 	memnew_placement( _data._mem, Quat( p_quat ) );
 
 }
-Variant::Variant(const Transform& p_transform) {
+Variant::Variant(const Transform& p_transform) : VARIANT_ALLOCATE_DATA() {
 
 	type=TRANSFORM;
 	_data._transform = memnew( Transform( p_transform ) );
 
 }
 
-Variant::Variant(const Matrix32& p_transform) {
+Variant::Variant(const Matrix32& p_transform) : VARIANT_ALLOCATE_DATA() {
 
 	type=MATRIX32;
 	_data._matrix32 = memnew( Matrix32( p_transform ) );
 
 }
-Variant::Variant(const Color& p_color) {
+Variant::Variant(const Color& p_color) : VARIANT_ALLOCATE_DATA() {
 
 	type=COLOR;
 	memnew_placement( _data._mem, Color(p_color) );
 
 }
-Variant::Variant(const Image& p_image) {
+Variant::Variant(const Image& p_image) : VARIANT_ALLOCATE_DATA() {
 
 	type=IMAGE;
 	_data._image=memnew( Image(p_image) );
 
 }
 
-Variant::Variant(const NodePath& p_node_path) {
+Variant::Variant(const NodePath& p_node_path) : VARIANT_ALLOCATE_DATA() {
 
 	type=NODE_PATH;
 	memnew_placement( _data._mem, NodePath(p_node_path) );
 
 }
 
-Variant::Variant(const InputEvent& p_input_event) {
+Variant::Variant(const InputEvent& p_input_event) : VARIANT_ALLOCATE_DATA() {
 
 	type=INPUT_EVENT;
 	_data._input_event = memnew( InputEvent(p_input_event) );
 
 }
 
-Variant::Variant(const RefPtr& p_resource) {
+Variant::Variant(const RefPtr& p_resource) : VARIANT_ALLOCATE_DATA() {
 
 	type=OBJECT;
 	memnew_placement( _data._mem, ObjData );
@@ -2363,14 +2363,14 @@ Variant::Variant(const RefPtr& p_resource) {
 
 }
 
-Variant::Variant(const RID& p_rid) {
+Variant::Variant(const RID& p_rid) : VARIANT_ALLOCATE_DATA() {
 
 	type=_RID;
 	memnew_placement( _data._mem, RID(p_rid) );
 
 }
 
-Variant::Variant(const Object* p_object) {
+Variant::Variant(const Object* p_object) : VARIANT_ALLOCATE_DATA() {
 
 	type=OBJECT;
 
@@ -2378,21 +2378,21 @@ Variant::Variant(const Object* p_object) {
 	_get_obj().obj=const_cast<Object*>(p_object);
 }
 
-Variant::Variant(const Dictionary& p_dictionary) {
+Variant::Variant(const Dictionary& p_dictionary) : VARIANT_ALLOCATE_DATA() {
 
 	type=DICTIONARY;
 	memnew_placement( _data._mem, (Dictionary)( p_dictionary) );
 
 }
 
-Variant::Variant(const Array& p_array) {
+Variant::Variant(const Array& p_array) : VARIANT_ALLOCATE_DATA() {
 
 	type=ARRAY;
 	memnew_placement( _data._mem, Array(p_array) );
 
 }
 
-Variant::Variant(const DVector<Plane>& p_array) {
+Variant::Variant(const DVector<Plane>& p_array) : VARIANT_ALLOCATE_DATA() {
 
 
 	type=ARRAY;
@@ -2407,7 +2407,7 @@ Variant::Variant(const DVector<Plane>& p_array) {
 	}
 }
 
-Variant::Variant(const Vector<Plane>& p_array) {
+Variant::Variant(const Vector<Plane>& p_array) : VARIANT_ALLOCATE_DATA() {
 
 
 	type=ARRAY;
@@ -2422,7 +2422,7 @@ Variant::Variant(const Vector<Plane>& p_array) {
 	}
 }
 
-Variant::Variant(const Vector<RID>& p_array) {
+Variant::Variant(const Vector<RID>& p_array) : VARIANT_ALLOCATE_DATA() {
 
 
 	type=ARRAY;
@@ -2437,7 +2437,7 @@ Variant::Variant(const Vector<RID>& p_array) {
 	}
 }
 
-Variant::Variant(const Vector<Vector2>& p_array) {
+Variant::Variant(const Vector<Vector2>& p_array) : VARIANT_ALLOCATE_DATA() {
 
 
 	type=NIL;
@@ -2455,50 +2455,50 @@ Variant::Variant(const Vector<Vector2>& p_array) {
 }
 
 
-Variant::Variant(const DVector<uint8_t>& p_raw_array) {
+Variant::Variant(const DVector<uint8_t>& p_raw_array) : VARIANT_ALLOCATE_DATA() {
 
 	type=RAW_ARRAY;
 	memnew_placement( _data._mem, DVector<uint8_t>(p_raw_array) );
 
 }
-Variant::Variant(const DVector<int>& p_int_array) {
+Variant::Variant(const DVector<int>& p_int_array) : VARIANT_ALLOCATE_DATA() {
 
 	type=INT_ARRAY;
 	memnew_placement( _data._mem, DVector<int>(p_int_array) );
 
 }
-Variant::Variant(const DVector<real_t>& p_real_array) {
+Variant::Variant(const DVector<real_t>& p_real_array) : VARIANT_ALLOCATE_DATA() {
 
 	type=REAL_ARRAY;
 	memnew_placement( _data._mem, DVector<real_t>(p_real_array) );
 
 }
-Variant::Variant(const DVector<String>& p_string_array) {
+Variant::Variant(const DVector<String>& p_string_array) : VARIANT_ALLOCATE_DATA() {
 
 	type=STRING_ARRAY;
 	memnew_placement( _data._mem, DVector<String>(p_string_array) );
 
 }
-Variant::Variant(const DVector<Vector3>& p_vector3_array) {
+Variant::Variant(const DVector<Vector3>& p_vector3_array) : VARIANT_ALLOCATE_DATA() {
 
 	type=VECTOR3_ARRAY;
 	memnew_placement( _data._mem, DVector<Vector3>(p_vector3_array) );
 
 }
 
-Variant::Variant(const DVector<Vector2>& p_vector2_array) {
+Variant::Variant(const DVector<Vector2>& p_vector2_array) : VARIANT_ALLOCATE_DATA() {
 
 	type=VECTOR2_ARRAY;
 	memnew_placement( _data._mem, DVector<Vector2>(p_vector2_array) );
 
 }
-Variant::Variant(const DVector<Color>& p_color_array) {
+Variant::Variant(const DVector<Color>& p_color_array) : VARIANT_ALLOCATE_DATA() {
 
 	type=COLOR_ARRAY;
 	memnew_placement( _data._mem, DVector<Color>(p_color_array) );
 }
 
-Variant::Variant(const DVector<Face3>& p_face_array) {
+Variant::Variant(const DVector<Face3>& p_face_array) : VARIANT_ALLOCATE_DATA() {
 
 
 	DVector<Vector3> vertices;
@@ -2527,7 +2527,7 @@ Variant::Variant(const DVector<Face3>& p_face_array) {
 
 /* helpers */
 
-Variant::Variant(const Vector<Variant>& p_array) {
+Variant::Variant(const Vector<Variant>& p_array) : VARIANT_ALLOCATE_DATA() {
 
 	type=NIL;
 	Array v;
@@ -2538,7 +2538,7 @@ Variant::Variant(const Vector<Variant>& p_array) {
 	*this=v;
 }
 
-Variant::Variant(const Vector<uint8_t>& p_array) {
+Variant::Variant(const Vector<uint8_t>& p_array) : VARIANT_ALLOCATE_DATA() {
 
 	type=NIL;
 	DVector<uint8_t> v;
@@ -2549,7 +2549,7 @@ Variant::Variant(const Vector<uint8_t>& p_array) {
 	*this=v;
 }
 
-Variant::Variant(const Vector<int>& p_array) {
+Variant::Variant(const Vector<int>& p_array) : VARIANT_ALLOCATE_DATA() {
 
 	type=NIL;
 	DVector<int> v;
@@ -2560,7 +2560,7 @@ Variant::Variant(const Vector<int>& p_array) {
 	*this=v;
 }
 
-Variant::Variant(const Vector<real_t>& p_array) {
+Variant::Variant(const Vector<real_t>& p_array) : VARIANT_ALLOCATE_DATA() {
 
 	type=NIL;
 	DVector<real_t> v;
@@ -2571,7 +2571,7 @@ Variant::Variant(const Vector<real_t>& p_array) {
 	*this=v;
 }
 
-Variant::Variant(const Vector<String>& p_array) {
+Variant::Variant(const Vector<String>& p_array) : VARIANT_ALLOCATE_DATA() {
 
 	type=NIL;
 	DVector<String> v;
@@ -2582,7 +2582,7 @@ Variant::Variant(const Vector<String>& p_array) {
 	*this=v;
 }
 
-Variant::Variant(const Vector<Vector3>& p_array) {
+Variant::Variant(const Vector<Vector3>& p_array) : VARIANT_ALLOCATE_DATA() {
 
 	type=NIL;
 	DVector<Vector3> v;
@@ -2598,7 +2598,7 @@ Variant::Variant(const Vector<Vector3>& p_array) {
 	*this=v;
 }
 
-Variant::Variant(const Vector<Color>& p_array) {
+Variant::Variant(const Vector<Color>& p_array) : VARIANT_ALLOCATE_DATA() {
 
 	type=NIL;
 	DVector<Color> v;
@@ -2614,13 +2614,13 @@ void Variant::operator=(const Variant& p_variant) {
 	reference(p_variant);
 }
 
-Variant::Variant(const IP_Address& p_address) {
+Variant::Variant(const IP_Address& p_address) : VARIANT_ALLOCATE_DATA() {
 
 	type=STRING;
 	memnew_placement( _data._mem, String( p_address ) );
 }
 
-Variant::Variant(const Variant& p_variant) {
+Variant::Variant(const Variant& p_variant) : VARIANT_ALLOCATE_DATA() {
 
 	type=NIL;
 	reference(p_variant);

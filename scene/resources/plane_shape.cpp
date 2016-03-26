@@ -64,7 +64,7 @@ void PlaneShape::_update_shape() {
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(),plane);
 }
 
-void PlaneShape::set_plane(Plane p_plane) {
+void PlaneShape::set_plane(const Plane& p_plane=Plane()) {
 
 	plane=p_plane;
 	_update_shape();

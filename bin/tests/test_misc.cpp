@@ -167,7 +167,7 @@ struct TConvex {
 	float CylinderHalfHeight() const { return half_height; }
 };
 
-float GetDistanceFromLine2(Vector3 v, Vector3 & project, const Vector3 & pointA, const Vector3 & pointB)
+float GetDistanceFromLine2(const Vector3 & v, Vector3 & project, const Vector3 & pointA, const Vector3 & pointB)
 {
 	Vector3 ba = pointB - pointA;
 

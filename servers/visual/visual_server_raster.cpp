@@ -5152,7 +5152,7 @@ void VisualServerRaster::_light_instance_update_pssm_shadow(Instance *p_light,Sc
 }
 
 
-CameraMatrix _lispm_look( const Vector3 pos, const Vector3 dir, const Vector3 up) {
+CameraMatrix _lispm_look( const Vector3& pos, const Vector3& dir, const Vector3& up) {
 
 	Vector3 dirN;
 	Vector3 upN;

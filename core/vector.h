@@ -39,6 +39,12 @@
 #include "safe_refcount.h"
 #include "sort.h"
 
+#if DEFAULT_ALIGNMENT == 1
+#define VECTOR_DATA_OFFSET	(sizeof(SafeRefCount)+sizeof(int))
+#else
+#define VECTOR_DATA_OFFSET	(((sizeof(SafeRefCount)+sizeof(int))/DEFAULT_ALIGNMENT + 1) * DEFAULT_ALIGNMENT)
+#endif
+
 template<class T>
 class Vector {
 
@@ -51,14 +57,14 @@ class Vector {
 		if (!_ptr)
  			return NULL;
 
-		return reinterpret_cast<SafeRefCount*>((uint8_t*)_ptr-sizeof(int)-sizeof(SafeRefCount));
+		return reinterpret_cast<SafeRefCount*>((uint8_t*)_ptr-VECTOR_DATA_OFFSET);
  	}
 
 	_FORCE_INLINE_ int* _get_size() const  {
 
 		if (!_ptr)
  			return NULL;
-		return reinterpret_cast<int*>((uint8_t*)_ptr-sizeof(int));
+		return reinterpret_cast<int*>(((uint8_t*)_ptr-VECTOR_DATA_OFFSET)+sizeof(SafeRefCount));
 
  	}
 	_FORCE_INLINE_ T* _get_data() const {
@@ -70,8 +76,7 @@ class Vector {
  	}
 
 	_FORCE_INLINE_ size_t _get_alloc_size(size_t p_elements) const {
-		//return nearest_power_of_2_templated(p_elements*sizeof(T)+sizeof(SafeRefCount)+sizeof(int));
-		return nearest_power_of_2(p_elements*sizeof(T)+sizeof(SafeRefCount)+sizeof(int));
+		return nearest_power_of_2((p_elements*sizeof(T))+VECTOR_DATA_OFFSET);
 	}
 
 	_FORCE_INLINE_ bool _get_alloc_size_checked(size_t p_elements, size_t *out) const {
@@ -79,7 +84,7 @@ class Vector {
 		size_t o;
 		size_t p;
 		if (_mul_overflow(p_elements, sizeof(T), &o)) return false;
-		if (_add_overflow(o, sizeof(SafeRefCount)+sizeof(int), &p)) return false;
+		if (_add_overflow(o, VECTOR_DATA_OFFSET, &p)) return false;
 		*out = nearest_power_of_2(p);
 		return true;
 #else
@@ -190,14 +195,14 @@ void Vector<T>::_unref(void *p_data) {
 	if (!p_data)
 		return;
 
-	SafeRefCount *src = reinterpret_cast<SafeRefCount*>((uint8_t*)p_data-sizeof(int)-sizeof(SafeRefCount));
+	SafeRefCount *src = reinterpret_cast<SafeRefCount*>((uint8_t*)p_data-VECTOR_DATA_OFFSET);
 
 	if (!src->unref())
 		return; // still in use
 	// clean up
 
 	int *count = (int*)(src+1);
-	T *data = (T*)(count+1);
+	T *data = (T*)p_data;
 
 	for (int i=0;i<*count;i++) {
 		// call destructors
@@ -205,7 +210,7 @@ void Vector<T>::_unref(void *p_data) {
 	}
 
 	// free mem
-	memfree((uint8_t*)p_data-sizeof(int)-sizeof(SafeRefCount));
+	memfree((uint8_t*)p_data-VECTOR_DATA_OFFSET);
 
 }
 
@@ -223,7 +228,7 @@ void Vector<T>::_copy_on_write() {
 		int * _size = (int*)(src_new+1);
 		*_size=*_get_size();
 
-		T*_data=(T*)(_size+1);
+		T*_data=(T*)((uint8_t*)mem_new+VECTOR_DATA_OFFSET);
 
 		// initialize new elements
 		for (int i=0;i<*_size;i++) {
@@ -282,14 +287,14 @@ Error Vector<T>::resize(int p_size) {
 			// alloc from scratch
 			void* ptr=memalloc(alloc_size);
 			ERR_FAIL_COND_V( !ptr ,ERR_OUT_OF_MEMORY);
-			_ptr=(T*)((uint8_t*)ptr+sizeof(int)+sizeof(SafeRefCount));
+			_ptr=(T*)((uint8_t*)ptr+VECTOR_DATA_OFFSET);
 			_get_refcount()->init(); // init refcount
 			*_get_size()=0; // init size (currently, none)
 
 		} else {
-			void *_ptrnew = (T*)memrealloc((uint8_t*)_ptr-sizeof(int)-sizeof(SafeRefCount), alloc_size);
+			void *_ptrnew = (T*)memrealloc((uint8_t*)_ptr-VECTOR_DATA_OFFSET, alloc_size);
 			ERR_FAIL_COND_V( !_ptrnew ,ERR_OUT_OF_MEMORY);
-			_ptr=(T*)((uint8_t*)_ptrnew+sizeof(int)+sizeof(SafeRefCount));
+			_ptr=(T*)((uint8_t*)_ptrnew+VECTOR_DATA_OFFSET);
 		}
 
 		// construct the newly created elements
@@ -311,10 +316,10 @@ Error Vector<T>::resize(int p_size) {
 			t->~T();
 		}
 
-		void *_ptrnew = (T*)memrealloc((uint8_t*)_ptr-sizeof(int)-sizeof(SafeRefCount), alloc_size);
+		void *_ptrnew = (T*)memrealloc((uint8_t*)_ptr-VECTOR_DATA_OFFSET, alloc_size);
 		ERR_FAIL_COND_V( !_ptrnew ,ERR_OUT_OF_MEMORY);
 
-		_ptr=(T*)((uint8_t*)_ptrnew+sizeof(int)+sizeof(SafeRefCount));
+		_ptr=(T*)((uint8_t*)_ptrnew+VECTOR_DATA_OFFSET);
 
 		*_get_size()=p_size;
 

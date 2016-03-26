@@ -30,7 +30,7 @@
 #include "core_string_names.h"
 
 template<class T>
-static _FORCE_INLINE_ T _bezier_interp(real_t t, T start, T control_1, T control_2, T end) {
+static _FORCE_INLINE_ T _bezier_interp(real_t t, const T& start, const T& control_1, const T& control_2, const T& end) {
     /* Formula from Wikipedia article on Bezier curves. */
 	real_t omt = (1.0 - t);
 	real_t omt2 = omt*omt;

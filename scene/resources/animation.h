@@ -232,7 +232,7 @@ public:
 	void track_move_up(int p_track);
 	void track_move_down(int p_track);
 
-	int transform_track_insert_key(int p_track, float p_time, const Vector3 p_loc, const Quat& p_rot=Quat(), const Vector3& p_scale=Vector3());
+	int transform_track_insert_key(int p_track, float p_time, const Vector3& p_loc=Vector3(), const Quat& p_rot=Quat(), const Vector3& p_scale=Vector3());
 	void track_insert_key(int p_track, float p_time, const Variant& p_key, float p_transition=1);
 	void track_set_key_transition(int p_track, int p_key_idx,float p_transition);
 	void track_set_key_value(int p_track, int p_key_idx,const Variant& p_value);
