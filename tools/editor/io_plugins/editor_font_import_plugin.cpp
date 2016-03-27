@@ -524,6 +524,16 @@ class EditorFontImportDialog : public ConfirmationDialog {
 			dest->get_line_edit()->set_text(dest->get_line_edit()->get_text().get_base_dir() + "/" + source->get_line_edit()->get_text().get_file().basename() + ".fnt" );
 		}
 
+		if (dest->get_line_edit()->get_text().extension() == dest->get_line_edit()->get_text()) {
+			dest->get_line_edit()->set_text(dest->get_line_edit()->get_text() + ".fnt");
+		}
+
+		if (dest->get_line_edit()->get_text().extension().to_lower() != "fnt") {
+			error_dialog->set_text("Invalid file extension. \nPlease use .fnt");
+			error_dialog->popup_centered(Size2(200,100));
+			return;
+		}
+
 		Ref<ResourceImportMetadata> rimd = get_rimd();
 
 		if (rimd.is_null()) {
