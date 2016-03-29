@@ -1037,10 +1037,10 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 	 {
 
 		EditorNode *en = editor;
-		EditorPlugin *over_plugin = en->get_editor_plugin_over();
+		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 
-		if (over_plugin) {
-			bool discard = over_plugin->forward_input_event(p_event);
+		if (!over_plugin_list->empty()) {
+			bool discard = over_plugin_list->forward_input_event(p_event);
 			if (discard) {
 				accept_event();
 				return;

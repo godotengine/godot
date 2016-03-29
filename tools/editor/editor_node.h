@@ -95,7 +95,7 @@
 
 typedef void (*EditorNodeInitCallback)();
 
-
+class EditorPluginList;
 
 class EditorNode : public Node {
 
@@ -372,7 +372,7 @@ private:
 
 	Vector<EditorPlugin*> editor_plugins;
 	EditorPlugin *editor_plugin_screen;
-	EditorPlugin *editor_plugin_over;
+	EditorPluginList *editor_plugins_over;
 
 	EditorHistory editor_history;
 	EditorData editor_data;
@@ -449,6 +449,10 @@ private:
 	void _transform_keyed(Object *sp,const String& p_sub,const Transform& p_key);
 
 	void _hide_top_editors();
+	void _display_top_editors(bool p_display);
+	void _set_top_editors(Vector<EditorPlugin*> p_editor_plugins_over);
+	void _set_editing_top_editors(Object * p_current_object);
+        
 	void _quick_opened();
 	void _quick_run();
 
@@ -575,7 +579,7 @@ public:
 
 
 	EditorPlugin *get_editor_plugin_screen() { return editor_plugin_screen; }
-	EditorPlugin *get_editor_plugin_over() { return editor_plugin_over; }
+	EditorPluginList *get_editor_plugins_over() { return editor_plugins_over; }
 	PropertyEditor *get_property_editor() { return property_editor; }
 
 	static void add_editor_plugin(EditorPlugin *p_editor);
@@ -709,6 +713,32 @@ struct EditorProgress {
 	EditorProgress(const String& p_task,const String& p_label,int p_amount) { EditorNode::progress_add_task(p_task,p_label,p_amount); task=p_task; }
 	~EditorProgress() { EditorNode::progress_end_task(task); }
 };
+
+class EditorPluginList : public Object {
+private:
+	Vector<EditorPlugin*> plugins_list;
+
+public:
+
+	void set_plugins_list(Vector<EditorPlugin*> p_plugins_list) {
+		plugins_list = p_plugins_list;
+	}
+
+	Vector<EditorPlugin*> get_plugins_list() {
+		return plugins_list;
+	}
+
+	void make_visible(bool p_visible);
+	void edit(Object *p_object);
+	bool forward_input_event(const InputEvent& p_event);
+	bool forward_spatial_input_event(Camera* p_camera, const InputEvent& p_event);
+	void clear();
+	bool empty();
+
+	EditorPluginList();
+	~EditorPluginList();
+
+} ; 
 
 struct EditorProgressBG {
 
