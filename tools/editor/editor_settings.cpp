@@ -409,6 +409,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("text_editor/current_line_color",Color(0.3,0.5,0.8,0.15));
 	set("text_editor/word_highlighted_color",Color(0.8,0.9,0.9,0.15));
 
+	set("text_editor/syntax_highlighting", true);
+
 	set("text_editor/highlight_all_occurrences", true);
 	set("text_editor/scroll_past_end_of_file", false);
 
