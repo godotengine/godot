@@ -44,6 +44,7 @@ class InverseKinematics : public Spatial {
 	void _check_unbind();
 	int iterations;
 	float precision;
+	float speed;
 
 protected:
 	bool _set(const StringName& p_name, const Variant& p_value);
@@ -62,6 +63,8 @@ public:
 	int get_chain_size() const;
 	void set_precision(float p);
 	float get_precision() const;
+	void set_speed(float p);
+	float get_speed() const;
 	InverseKinematics();
 };
 

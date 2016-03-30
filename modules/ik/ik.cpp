@@ -196,6 +196,25 @@ float InverseKinematics::get_precision() const
 	return precision;
 }
 
+void InverseKinematics::set_speed(float p)
+{
+
+	if (is_inside_tree())
+		_check_unbind();
+
+	speed=p;
+
+	if (is_inside_tree())
+		_check_bind();
+}
+
+float InverseKinematics::get_speed() const
+{
+
+	return speed;
+}
+
+
 
 void InverseKinematics::_notification(int p_what)
 {
@@ -254,7 +273,7 @@ void InverseKinematics::_notification(int p_what)
 					Quat q2 = Quat(mod2.basis).normalized();
 					if (psign < 0.0)
 						q2 = q2.inverse();
-					Quat q = q1.slerp(q2, 0.2 / (1.0 + 500.0 * depth)).normalized();
+					Quat q = q1.slerp(q2, speed / (1.0 + 500.0 * depth)).normalized();
 					Transform fin = Transform(q);
 					fin.origin = mod.origin;
 					skel->set_bone_global_pose(cur_bone, fin);
@@ -282,9 +301,12 @@ void InverseKinematics::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_chain_size"),&InverseKinematics::get_chain_size);
 	ObjectTypeDB::bind_method(_MD("set_precision","precision"),&InverseKinematics::set_precision);
 	ObjectTypeDB::bind_method(_MD("get_precision"),&InverseKinematics::get_precision);
+	ObjectTypeDB::bind_method(_MD("set_speed","speed"),&InverseKinematics::set_speed);
+	ObjectTypeDB::bind_method(_MD("get_speed"),&InverseKinematics::get_speed);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "iterations"), _SCS("set_iterations"), _SCS("get_iterations"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "chain_size"), _SCS("set_chain_size"), _SCS("get_chain_size"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "precision"), _SCS("set_precision"), _SCS("get_precision"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "speed"), _SCS("set_speed"), _SCS("get_speed"));
 }
 
 InverseKinematics::InverseKinematics()
@@ -293,6 +315,7 @@ InverseKinematics::InverseKinematics()
 	chain_size = 2;
 	iterations = 100;
 	precision = 0.001;
+	speed = 0.2;
 
 }
 
