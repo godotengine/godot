@@ -45,6 +45,7 @@ class InverseKinematics : public Spatial {
 	int iterations;
 	float precision;
 	float speed;
+	bool changed;
 
 protected:
 	bool _set(const StringName& p_name, const Variant& p_value);
@@ -53,6 +54,7 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
+	void update_parameters();
 public:
 	Skeleton *get_skeleton();
 	void set_bone_name(const String& p_name);

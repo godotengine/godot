@@ -48,6 +48,7 @@ bool InverseKinematics::_set(const StringName& p_name, const Variant& p_value)
 	if (String(p_name)=="ik_bone") {
 
 		set_bone_name(p_value);
+		changed = true;
 		return true;
 	}
 
@@ -87,9 +88,9 @@ void InverseKinematics::_check_bind()
 		int idx = sk->find_bone(ik_bone);
 		if (idx!=-1) {
 			ik_bone_no = idx;
-			skel = sk;
 			bound=true;
 		}
+		skel = sk;
 	}
 }
 
@@ -101,10 +102,12 @@ void InverseKinematics::_check_unbind()
 		if (get_parent() && get_parent()->cast_to<Skeleton>()) {
 			Skeleton *sk = get_parent()->cast_to<Skeleton>();
 			int idx = sk->find_bone(ik_bone);
-			if (idx!=-1) {
+			if (idx!=-1)
 				ik_bone_no = idx;
-				skel = sk;
-			}
+			else
+				ik_bone_no = 0;
+			skel = sk;
+
 		}
 		bound=false;
 	}
@@ -121,6 +124,7 @@ void InverseKinematics::set_bone_name(const String& p_name)
 
 	if (is_inside_tree())
 		_check_bind();
+	changed = true;
 }
 
 String InverseKinematics::get_bone_name() const
@@ -139,6 +143,7 @@ void InverseKinematics::set_iterations(int itn)
 
 	if (is_inside_tree())
 		_check_bind();
+	changed = true;
 }
 
 int InverseKinematics::get_iterations() const
@@ -149,27 +154,17 @@ int InverseKinematics::get_iterations() const
 
 void InverseKinematics::set_chain_size(int cs)
 {
-
 	if (is_inside_tree())
 		_check_unbind();
 
 	chain_size=cs;
 	chain.clear();
-	int cur_bone = ik_bone_no;
-	int its = chain_size;
-	set_process(false);
-	print_line("wtf clean: " + itos(chain.size()) + "/" + itos(chain_size) + " wtf ik bone: " + itos(ik_bone_no));
-	while (its > 0 && cur_bone >= 0) {
-		print_line("wtf pushing: " + itos(chain.size()));
-		chain.push_back(cur_bone);
-		cur_bone = skel->get_bone_parent(cur_bone);
-		its--;
-	}
-	set_process(true);
-	print_line("wtf size: " + itos(chain.size()));
+	if (bound)
+		update_parameters();
 
 	if (is_inside_tree())
 		_check_bind();
+	changed = true;
 }
 
 int InverseKinematics::get_chain_size() const
@@ -188,6 +183,7 @@ void InverseKinematics::set_precision(float p)
 
 	if (is_inside_tree())
 		_check_bind();
+	changed = true;
 }
 
 float InverseKinematics::get_precision() const
@@ -206,6 +202,7 @@ void InverseKinematics::set_speed(float p)
 
 	if (is_inside_tree())
 		_check_bind();
+	changed = true;
 }
 
 float InverseKinematics::get_speed() const
@@ -214,7 +211,20 @@ float InverseKinematics::get_speed() const
 	return speed;
 }
 
-
+void InverseKinematics::update_parameters()
+{
+	tail_bone = -1;
+	for (int i = 0; i < skel->get_bone_count(); i++)
+		if (skel->get_bone_parent(i) == ik_bone_no)
+			tail_bone = i;
+	int cur_bone = ik_bone_no;
+	int its = chain_size;
+	while (its > 0 && cur_bone >= 0) {
+		chain.push_back(cur_bone);
+		cur_bone = skel->get_bone_parent(cur_bone);
+		its--;
+	}
+}
 
 void InverseKinematics::_notification(int p_what)
 {
@@ -224,18 +234,9 @@ void InverseKinematics::_notification(int p_what)
 		case NOTIFICATION_ENTER_TREE: {
 
 			_check_bind();
-			tail_bone = -1;
 			if (bound) {
-				for (int i = 0; i < skel->get_bone_count(); i++)
-					if (skel->get_bone_parent(i) == ik_bone_no)
-						tail_bone = i;
-				int cur_bone = ik_bone_no;
-				int its = chain_size;
-				while (its > 0 && cur_bone >= 0) {
-					chain.push_back(cur_bone);
-					cur_bone = skel->get_bone_parent(cur_bone);
-					its--;
-				}
+				update_parameters();
+				changed = false;
 				set_process(true);
 			}
 		} break;
@@ -246,6 +247,10 @@ void InverseKinematics::_notification(int p_what)
 				break;
 			if (!sksp)
 				break;
+			if (changed) {
+				update_parameters();
+				changed = false;
+			}
 			Vector3 to = get_translation();
 			for (int hump = 0; hump < iterations; hump++) {
 				int depth = 0;
