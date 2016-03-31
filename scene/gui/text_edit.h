@@ -220,6 +220,7 @@ class TextEdit : public Control  {
 	bool brace_matching_enabled;
 	bool auto_indent;
 	bool cut_copy_line;
+	bool insert_mode;
 
 	uint64_t last_dblclk;
 
@@ -388,6 +389,9 @@ public:
 	void set_tab_size(const int p_size);
 	void set_draw_tabs(bool p_draw);
 	bool is_drawing_tabs() const;
+
+	void set_insert_mode(bool p_enabled);
+	bool is_insert_mode() const;
 
 	void add_keyword_color(const String& p_keyword,const Color& p_color);
 	void add_color_region(const String& p_begin_key=String(),const String& p_end_key=String(),const Color &p_color=Color(),bool p_line_only=false);
