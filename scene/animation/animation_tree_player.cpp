@@ -652,14 +652,14 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 		case NODE_TIMESEEK: {
 
 			TimeSeekNode *tsn = static_cast<TimeSeekNode*>(nb);
-			if (tsn->seek_pos>=0) {
+			if (tsn->seek_pos>=0 && !p_seek) {
 
-				float res = _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,tsn->seek_pos,true,p_filter,p_reverse_weight);
-				tsn->seek_pos=-1;
-				return res;
+				p_time = tsn->seek_pos;
+				p_seek = true;
+			}
+			tsn->seek_pos=-1;
 
-			} else
-				return _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time,p_seek);
+			return _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time,p_seek);
 
 		}   break;
 		case NODE_TRANSITION: {
