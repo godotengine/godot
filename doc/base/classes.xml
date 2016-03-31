@@ -19650,6 +19650,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="2" name="owned" type="bool" default="true">
 			</argument>
 			<description>
+				Find a descendant of this node whose name matches [code]mask[/code] as in [method String.match] (i.e. case sensitive, but '*' matches zero or more characters and '?' matches any single character except '.'). Note that it does not match against the full path, just against individual node names.
 			</description>
 		</method>
 		<method name="has_node_and_resource" qualifiers="const">
@@ -34891,7 +34892,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="expr" type="String">
 			</argument>
 			<description>
-			Do a simple expression matching, using ? and * wildcards.
+			Do a simple expression match, where '*' matches zero or more arbitrary characters and '?' matches any single character except '.'.
 			</description>
 		</method>
 		<method name="matchn">
@@ -34900,7 +34901,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="expr" type="String">
 			</argument>
 			<description>
-			Do a simple, case insensitive, expression matching, using ? and * wildcards.
+			Do a simple case insensitive expression match, using ? and * wildcards (see [method match]).
 			</description>
 		</method>
 		<method name="md5_buffer">
