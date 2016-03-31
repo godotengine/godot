@@ -674,7 +674,7 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 				else
 					tn->time+=p_time;
 
-				if (tn->input_data[tn->current].auto_advance && rem < tn->xfade) {
+				if (tn->input_data[tn->current].auto_advance && rem <= tn->xfade) {
 
 					tn->prev=tn->current;
 					tn->current++;
