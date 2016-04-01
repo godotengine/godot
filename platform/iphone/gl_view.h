@@ -36,7 +36,7 @@
 
 @protocol GLViewDelegate;
 
-@interface GLView : UIView<UIKeyInput>
+@interface GLView : UIView<UIKeyInput, UITextInput>
 {
 	@private
 	// The pixel dimensions of the backbuffer
@@ -69,6 +69,12 @@
 	BOOL delegateSetup;
 	BOOL active;
 	float screen_scale;
+
+    NSString *markedText_;
+    CGRect caretRect_;
+    CGRect originalRect_;
+    NSNotification *keyboardShowNotification_;
+    BOOL isKeyboardShown_;
 }
 
 @property(nonatomic, assign) id<GLViewDelegate> delegate;
@@ -83,9 +89,21 @@
 @property(strong, nonatomic) MPMoviePlayerController *moviePlayerController;
 @property(strong, nonatomic) UIWindow *backgroundWindow;
 
+@property(nonatomic, readonly) UITextPosition *beginningOfDocument;
+@property(nonatomic, readonly) UITextPosition *endOfDocument;
+@property(nonatomic, assign) id<UITextInputDelegate> inputDelegate;
+@property(nonatomic, readonly) UITextRange *markedTextRange;
+@property (nonatomic, copy) NSDictionary *markedTextStyle;
+@property(readwrite, copy) UITextRange *selectedTextRange;
+@property(nonatomic, readonly) id<UITextInputTokenizer> tokenizer;
+@property(nonatomic, readonly, getter = isKeyboardShown) BOOL isKeyboardShown;
+@property(nonatomic, copy) NSNotification* keyboardShowNotification;
+
 -(void)startAnimation;
 -(void)stopAnimation;
 -(void)drawView;
+-(void)doAnimationWhenKeyboardMoveWithDuration:(float) duration distance:(float) dis;
+-(void)doAnimationWhenAnotherEditBeClicked;
 
 - (BOOL)canBecomeFirstResponder;
 
