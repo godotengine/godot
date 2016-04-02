@@ -5,7 +5,7 @@ import sys
 
 def is_active():
 	return True
-	
+
 def get_name():
 	return "OSX"
 

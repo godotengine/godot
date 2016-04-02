@@ -1,4 +1,4 @@
-# 
+#
 # 	tested on               | Windows native    | Linux cross-compilation
 #	------------------------+-------------------+---------------------------
 #	MSVS C++ 2010 Express   | WORKS             | n/a
@@ -24,11 +24,11 @@
 #		( example : "C:/Mingw-w32", "C:/Mingw-w64" )
 #
 #	- if you want to compile faster using the "-j" option, don't forget
-#	to install the appropriate version of the Pywin32 python extension 
+#	to install the appropriate version of the Pywin32 python extension
 #	available from : http://sourceforge.net/projects/pywin32/files/
 #
-#	- before running scons, you must add into the environment path 
-#	the path to the "/bin" directory of the Mingw version you want 
+#	- before running scons, you must add into the environment path
+#	the path to the "/bin" directory of the Mingw version you want
 #	to use :
 #
 #		set PATH=C:/Mingw-w32/bin;%PATH%
@@ -37,9 +37,9 @@
 #	- Mingw-w32 only compiles 32bits.
 #	- Mingw-w64 only compiles 64bits.
 #
-#	- it is possible to add them both at the same time into the PATH env, 
-#	if you also define the MINGW32_PREFIX and MINGW64_PREFIX environment 
-#	variables. 
+#	- it is possible to add them both at the same time into the PATH env,
+#	if you also define the MINGW32_PREFIX and MINGW64_PREFIX environment
+#	variables.
 #	For instance, you could store that set of commands into a .bat script
 #	that you would run just before scons :
 #
@@ -61,14 +61,14 @@
 #
 #	- it is possible to manually override prefixes by defining
 #	the MINGW32_PREFIX and MINGW64_PREFIX environment variables.
-#	
+#
 #####
 # Notes about Mingw under Windows :
 #
-#	- this is the MinGW version from http://mingw.org/ 
+#	- this is the MinGW version from http://mingw.org/
 #	- install it into a path that does not contain spaces
 #		( example : "C:/MinGW" )
-#	- several DirectX headers might be missing. You can copy them into 
+#	- several DirectX headers might be missing. You can copy them into
 #	the C:/MinGW/include" directory from this page :
 #	 https://code.google.com/p/mingw-lib/source/browse/trunk/working/avcodec_to_widget_5/directx_include/
 #	- before running scons, add the path to the "/bin" directory :
@@ -84,7 +84,7 @@
 #	- confirm it works well with other Visual Studio versions.
 #	- update the wiki about the pywin32 extension required for the "-j" option under Windows.
 #	- update the wiki to document MINGW32_PREFIX and MINGW64_PREFIX
-# 	
+#
 
 import os
 
@@ -93,16 +93,16 @@ import sys
 
 def is_active():
 	return True
-        
+
 def get_name():
         return "Windows"
 
 def can_build():
-	
+
 	if (os.name=="nt"):
 		#building natively on windows!
 		if (os.getenv("VSINSTALLDIR")):
-			return True 
+			return True
 		else:
 			print("\nMSVC not detected, attempting Mingw.")
 			mingw32 = ""
@@ -111,7 +111,7 @@ def can_build():
 				mingw32 = os.getenv("MINGW32_PREFIX")
 			if ( os.getenv("MINGW64_PREFIX") ) :
 				mingw64 = os.getenv("MINGW64_PREFIX")
-				
+
 			test = "gcc --version > NUL 2>&1"
 			if os.system(test)!= 0 and os.system(mingw32+test)!=0 and os.system(mingw64+test)!=0 :
 				print("- could not detect gcc.")
@@ -119,27 +119,27 @@ def can_build():
 				return False
 			else:
 				print("- gcc detected.")
-				
+
 			return True
-			
+
 	if (os.name=="posix"):
 
 		mingw = "i586-mingw32msvc-"
 		mingw64 = "x86_64-w64-mingw32-"
 		mingw32 = "i686-w64-mingw32-"
-		
+
 		if (os.getenv("MINGW32_PREFIX")):
 			mingw32=os.getenv("MINGW32_PREFIX")
 			mingw = mingw32
 		if (os.getenv("MINGW64_PREFIX")):
 			mingw64=os.getenv("MINGW64_PREFIX")
-			
+
 		test = "gcc --version &>/dev/null"
 		if (os.system(mingw+test) == 0 or os.system(mingw64+test) == 0 or os.system(mingw32+test) == 0):
 			return True
-			
+
 	return False
-		
+
 def get_opts():
 
 	mingw=""
@@ -149,10 +149,10 @@ def get_opts():
 		mingw = "i586-mingw32msvc-"
 		mingw32 = "i686-w64-mingw32-"
 		mingw64 = "x86_64-w64-mingw32-"
-		
+
 		if os.system(mingw32+"gcc --version &>/dev/null") != 0 :
 			mingw32 = mingw
-	
+
 	if (os.getenv("MINGW32_PREFIX")):
 		mingw32=os.getenv("MINGW32_PREFIX")
 		mingw = mingw32
@@ -164,14 +164,14 @@ def get_opts():
 		('mingw_prefix','Mingw Prefix',mingw32),
 		('mingw_prefix_64','Mingw Prefix 64 bits',mingw64),
 	]
-  
+
 def get_flags():
 
 	return [
 		('freetype','builtin'), #use builtin freetype
 		('openssl','builtin'), #use builtin openssl
 	]
-			
+
 def build_res_file( target, source, env ):
 
 	cmdbase = ""
@@ -245,7 +245,7 @@ def configure(env):
 		env.Append(CCFLAGS=['/DGLEW_ENABLED'])
 		LIBS=['winmm','opengl32','dsound','kernel32','ole32','oleaut32','user32','gdi32', 'IPHLPAPI','Shlwapi', 'wsock32', 'shell32','advapi32','dinput8','dxguid']
 		env.Append(LINKFLAGS=[p+env["LIBSUFFIX"] for p in LIBS])
-		
+
 		env.Append(LIBPATH=[os.getenv("WindowsSdkDir")+"/Lib"])
                 if (os.getenv("DXSDK_DIR")):
                         DIRECTX_PATH=os.getenv("DXSDK_DIR")
@@ -304,7 +304,7 @@ def configure(env):
 			# sys.exit(255)
 
 		if (env["target"]=="release"):
-			
+
 			env.Append(CCFLAGS=['-msse2'])
 
 			if (env["bits"]=="64"):
@@ -319,7 +319,7 @@ def configure(env):
 			env.Append(CCFLAGS=['-O2','-DDEBUG_ENABLED'])
 
 		elif (env["target"]=="debug"):
-					
+
 			env.Append(CCFLAGS=['-g', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
 
 		if (env["freetype"]!="no"):
@@ -366,4 +366,4 @@ def configure(env):
 	env.Append( BUILDERS = { 'HLSL9' : env.Builder(action = methods.build_hlsl_dx9_headers, suffix = 'hlsl.h',src_suffix = '.hlsl') } )
 	env.Append( BUILDERS = { 'GLSL120GLES' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 
-	
+
