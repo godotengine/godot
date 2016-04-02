@@ -1,0 +1,74 @@
+[gd_scene load_steps=4 format=1]
+
+[ext_resource path="res://font.fnt" type="Font" id=1]
+
+[sub_resource type="Animation" id=1]
+
+resource/name = "zoomin_zoomout"
+length = 10.0
+loop = true
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("base:transform/scale")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":true, "times":FloatArray( 0, 5 ), "transitions":FloatArray( -2, -2 ), "values":[ Vector2( 0.5, 0.5 ), Vector2( 20, 20 ) ] }
+
+[sub_resource type="Animation" id=2]
+
+length = 15.0
+loop = true
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("base:transform/rot")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":true, "times":FloatArray( 0, 15 ), "transitions":FloatArray( 1, 1 ), "values":[ 0.0, -360.0 ] }
+
+[node name="node" type="Node2D"]
+
+[node name="base" type="Position2D" parent="."]
+
+transform/pos = Vector2( 376.532, 275.119 )
+transform/scale = Vector2( 0.5, 0.5 )
+
+[node name="Label" type="Label" parent="base"]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+margin/left = -132.0
+margin/top = -34.0
+margin/right = 124.0
+margin/bottom = 64.0
+custom_fonts/font = ExtResource( 1 )
+custom_colors/font_color = Color( 0.853858, 0.771714, 0.753746, 1 )
+custom_colors/font_color_shadow = Color( 0.56592, 0.454525, 0.518426, 1 )
+text = "Signed Distance\nField Font!!"
+align = 1
+percent_visible = 1.0
+lines_skipped = 0
+max_lines_visible = -1
+
+[node name="zoom" type="AnimationPlayer" parent="."]
+
+playback/process_mode = 1
+playback/default_blend_time = 0.0
+root/root = NodePath("..")
+anims/zoomin_zoomout = SubResource( 1 )
+playback/active = true
+playback/speed = 1.0
+blend_times = [  ]
+autoplay = "zoomin_zoomout"
+
+[node name="rotate" type="AnimationPlayer" parent="."]
+
+playback/process_mode = 1
+playback/default_blend_time = 0.0
+root/root = NodePath("..")
+anims/rotate = SubResource( 2 )
+anims/zoomin_zoomout = SubResource( 1 )
+playback/active = true
+playback/speed = 1.0
+blend_times = [  ]
+autoplay = "rotate"
+
+
