@@ -39982,6 +39982,13 @@ This method controls whether the position between two cached points is interpola
 			Returns the result of the linear interpolation between this vector and "b", by amount "t".
 			</description>
 		</method>
+		<method name="negate">
+			<return type="Vector2">
+			</return>
+			<description>
+			Returns a vector with the same magnitude, but in the opposite direction.
+			</description>
+		</method>
 		<method name="normalized">
 			<return type="Vector2">
 			</return>
@@ -40232,6 +40239,13 @@ This method controls whether the position between two cached points is interpola
 			</return>
 			<description>
 			Returns AXIS_X, AXIS_Y or AXIS_Z depending on which axis is the smallest.
+			</description>
+		</method>
+		<method name="negate">
+			<return type="Vector3">
+			</return>
+			<description>
+			Returns a vector with the same magnitude, but in the opposite direction.
 			</description>
 		</method>
 		<method name="normalized">
