@@ -1256,10 +1256,9 @@ void ScriptEditor::_menu_option(int p_option) {
 				{
 					int begin = tx->get_selection_from_line();
 					int end = tx->get_selection_to_line();
-					int column_end = tx->get_selection_to_column();
 
 					// End of selection ends on the first column of the last line, ignore it.
-					if(column_end == 0)
+					if(tx->get_selection_to_column() == 0)
 						end -= 1;
 					
 					for (int i = begin; i <= end; i++)
