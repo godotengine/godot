@@ -60,7 +60,7 @@ def make_class_list(class_list, columns):
 
 	row_max = 0
 	f.write("\n")
-	
+
 	for n in range(0, columns):
 		if len(fit_columns[n]) > row_max:
 			row_max = len(fit_columns[n])
@@ -69,7 +69,7 @@ def make_class_list(class_list, columns):
 	for n in range(0, columns):
 		f.write(" | |")
 
-	f.write("\n")		
+	f.write("\n")
 	f.write("+")
 	for n in range(0, columns):
 		f.write("--+-------+")
@@ -265,7 +265,7 @@ def make_method(
 		t = '- '
 	else:
 		t = ""
-		
+
 	ret_type = 'void'
 	args = list(m)
 	mdata = {}
@@ -332,7 +332,7 @@ def make_method(
 	if (not declare):
 		if (pp!=None):
 			pp.append( (t,s) )
-		else:	
+		else:
 			f.write("- "+t+" "+s+"\n")
 	else:
 		f.write(t+s+"\n")
@@ -366,24 +366,24 @@ def make_rst_class(node):
 				f.write(" **<** ")
 			else:
 				first=False
-		
+
 			f.write(make_type(inh))
 			inode = classes[inh]
 			if ('inherits' in inode.attrib):
 				inh=inode.attrib['inherits'].strip()
 			else:
 				inh=None
-			
-		
+
+
 		f.write("\n\n")
-		
+
 	inherited=[]
 	for cn in classes:
-		c=classes[cn]	
+		c=classes[cn]
 		if 'inherits' in c.attrib:
 			if (c.attrib['inherits'].strip()==name):
 				inherited.append(c.attrib['name'])
-				
+
 	if (len(inherited)):
 		f.write('**Inherited By:** ')
 		for i in range(len(inherited)):
@@ -415,7 +415,7 @@ def make_rst_class(node):
 			tl = len(s[1])
 			if (tl>longest_t):
 				longest_t=tl
-				
+
 		sep="+"
 		for i in range(longest_s+2):
 			sep+="-"

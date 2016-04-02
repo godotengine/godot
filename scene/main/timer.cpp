@@ -121,6 +121,20 @@ void Timer::stop() {
 	autostart=false;
 }
 
+
+void Timer::set_active(bool p_active) {
+	if (active == p_active)
+		return;
+
+	active = p_active;
+	_set_process(processing);
+
+}
+
+bool Timer::is_active() const {
+	return active;
+}
+
 float Timer::get_time_left() const {
 
 	return time_left >0 ? time_left : 0;
@@ -157,9 +171,10 @@ Timer::TimerProcessMode Timer::get_timer_process_mode() const{
 void Timer::_set_process(bool p_process, bool p_force)
 {
 	switch (timer_process_mode) {
-		case TIMER_PROCESS_FIXED: set_fixed_process(p_process); break;
-		case TIMER_PROCESS_IDLE: set_process(p_process); break;
+		case TIMER_PROCESS_FIXED: set_fixed_process(p_process && active); break;
+		case TIMER_PROCESS_IDLE: set_process(p_process && active); break;
 	}
+	processing = p_process;
 }
 
 void Timer::_bind_methods() {
@@ -175,6 +190,9 @@ void Timer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("start"),&Timer::start);
 	ObjectTypeDB::bind_method(_MD("stop"),&Timer::stop);
+
+	ObjectTypeDB::bind_method(_MD("set_active", "active"), &Timer::set_active);
+	ObjectTypeDB::bind_method(_MD("is_active"), &Timer::is_active);
 
 	ObjectTypeDB::bind_method(_MD("get_time_left"),&Timer::get_time_left);
 
@@ -198,5 +216,7 @@ Timer::Timer() {
 	autostart=false;
 	wait_time=1;
 	one_shot=false;
-	time_left=-1;
+	time_left = -1;
+	processing = false;
+	active = true;
 }

@@ -1,0 +1,201 @@
+[gd_scene load_steps=4 format=1]
+
+[ext_resource path="res://bg_gradient.png" type="Texture" id=1]
+[ext_resource path="res://small_star.png" type="Texture" id=2]
+[ext_resource path="res://big_star.png" type="Texture" id=3]
+
+[node name="parallax" type="ParallaxBackground"]
+
+layer = -1
+offset = Vector2( 0, 0 )
+rotation = 0.0
+scale = Vector2( 1, 1 )
+scroll/offset = Vector2( 0, 0 )
+scroll/base_offset = Vector2( 0, 0 )
+scroll/base_scale = Vector2( 1, 1 )
+scroll/limit_begin = Vector2( 0, 0 )
+scroll/limit_end = Vector2( 0, 0 )
+scroll/ignore_camera_zoom = true
+
+[node name="bg_layer" type="ParallaxLayer" parent="."]
+
+motion/scale = Vector2( 0.2, 1 )
+motion/mirroring = Vector2( 1024, 0 )
+
+[node name="gradient" type="Sprite" parent="bg_layer"]
+
+transform/scale = Vector2( 128, 1 )
+texture = ExtResource( 1 )
+centered = false
+
+[node name="Sprite" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 73.6643, 65.0701 )
+texture = ExtResource( 2 )
+
+[node name="Sprite1" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 127.685, 206.26 )
+texture = ExtResource( 2 )
+
+[node name="Sprite2" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 60.1591, 255.369 )
+texture = ExtResource( 2 )
+
+[node name="Sprite3" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 252.914, 142.418 )
+texture = ExtResource( 2 )
+
+[node name="Sprite4" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 241.864, 335.172 )
+texture = ExtResource( 2 )
+
+[node name="Sprite5" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 127.685, 455.491 )
+texture = ExtResource( 2 )
+
+[node name="Sprite6" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 289.746, 547.571 )
+texture = ExtResource( 2 )
+
+[node name="Sprite7" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 56.4759, 559.848 )
+texture = ExtResource( 2 )
+
+[node name="Sprite8" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 487.412, 166.972 )
+texture = ExtResource( 2 )
+
+[node name="Sprite9" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 358.499, 77.3474 )
+texture = ExtResource( 2 )
+
+[node name="Sprite10" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 647.018, 71.2088 )
+texture = ExtResource( 2 )
+
+[node name="Sprite11" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 592.997, 270.102 )
+texture = ExtResource( 2 )
+
+[node name="Sprite12" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 868.011, 252.914 )
+texture = ExtResource( 2 )
+
+[node name="Sprite13" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 869.238, 93.308 )
+texture = ExtResource( 2 )
+
+[node name="Sprite14" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 965.002, 95.7635 )
+texture = ExtResource( 2 )
+
+[node name="Sprite15" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 968.685, 559.848 )
+texture = ExtResource( 2 )
+
+[node name="Sprite16" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 815.218, 470.224 )
+texture = ExtResource( 2 )
+
+[node name="Sprite17" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 475.134, 530.383 )
+texture = ExtResource( 2 )
+
+[node name="Sprite18" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 550.026, 421.114 )
+texture = ExtResource( 2 )
+
+[node name="Sprite19" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 696.127, 574.581 )
+texture = ExtResource( 2 )
+
+[node name="Sprite20" type="Sprite" parent="bg_layer"]
+
+transform/pos = Vector2( 990.784, 423.569 )
+texture = ExtResource( 2 )
+
+[node name="bg_layer2" type="ParallaxLayer" parent="."]
+
+motion/scale = Vector2( 0.5, 1 )
+motion/mirroring = Vector2( 1024, 0 )
+
+[node name="Sprite" type="Sprite" parent="bg_layer2"]
+
+transform/pos = Vector2( 88, 114 )
+texture = ExtResource( 3 )
+
+[node name="Sprite1" type="Sprite" parent="bg_layer2"]
+
+transform/pos = Vector2( 349, 254 )
+texture = ExtResource( 3 )
+
+[node name="Sprite2" type="Sprite" parent="bg_layer2"]
+
+transform/pos = Vector2( 472, 80 )
+texture = ExtResource( 3 )
+
+[node name="Sprite3" type="Sprite" parent="bg_layer2"]
+
+transform/pos = Vector2( 803, 107 )
+texture = ExtResource( 3 )
+
+[node name="Sprite4" type="Sprite" parent="bg_layer2"]
+
+transform/pos = Vector2( 93, 363 )
+texture = ExtResource( 3 )
+
+[node name="Sprite5" type="Sprite" parent="bg_layer2"]
+
+transform/pos = Vector2( 891, 519 )
+texture = ExtResource( 3 )
+
+[node name="Sprite6" type="Sprite" parent="bg_layer2"]
+
+transform/pos = Vector2( 934, 338 )
+texture = ExtResource( 3 )
+
+[node name="Sprite7" type="Sprite" parent="bg_layer2"]
+
+transform/pos = Vector2( 665, 332 )
+texture = ExtResource( 3 )
+
+[node name="Sprite8" type="Sprite" parent="bg_layer2"]
+
+transform/pos = Vector2( 218, 423 )
+texture = ExtResource( 3 )
+
+[node name="Sprite9" type="Sprite" parent="bg_layer2"]
+
+transform/pos = Vector2( 564, 568 )
+texture = ExtResource( 3 )
+
+[node name="Sprite10" type="Sprite" parent="bg_layer2"]
+
+transform/pos = Vector2( 753, 466 )
+texture = ExtResource( 3 )
+
+[node name="Sprite11" type="Sprite" parent="bg_layer2"]
+
+transform/pos = Vector2( 77.9999, 570 )
+texture = ExtResource( 3 )
+
+

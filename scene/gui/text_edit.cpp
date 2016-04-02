@@ -671,6 +671,7 @@ void TextEdit::_notification(int p_what) {
 				bool prev_is_number = false;
 				bool in_keyword=false;
 				bool in_word = false;
+				bool in_function_name = false;
 				Color keyword_color;
 
 				// check if line contains highlighted word
@@ -790,11 +791,28 @@ void TextEdit::_notification(int p_what) {
 							}
 						}
 
+						if (!in_function_name && in_word && !in_keyword) {
+
+							int k = j;
+							while(k < str.length() && !_is_symbol(str[k]) && str[k] != '\t' && str[k] != ' ') {
+								k++;
+							}
+
+							if (str[k] == '(') {
+								in_function_name = true;
+							}
+						}
+
+						if (is_symbol) {
+							in_function_name = false;
+						}
 
 						if (in_region>=0)
 							color=color_regions[in_region].color;
 						else if (in_keyword)
 							color=keyword_color;
+						else if (in_function_name)
+							color=cache.function_color;
 						else if (is_symbol)
 							color=symbol_color;
 						else if (is_number)
@@ -890,7 +908,12 @@ void TextEdit::_notification(int p_what) {
 					if (cursor.column==j && cursor.line==line) {
 
 						cursor_pos = Point2i( char_ofs+char_margin, ofs_y );
-						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
+						if (insert_mode) {
+							cursor_pos.y += get_row_height();
+							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(char_w,1)),cache.font_color);
+						} else {
+							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
+						}
 
 
 					}
@@ -901,8 +924,13 @@ void TextEdit::_notification(int p_what) {
 				if (cursor.column==str.length() && cursor.line==line && (char_ofs+char_margin)>=xmargin_beg) {
 
 					cursor_pos=Point2i( char_ofs+char_margin, ofs_y );
-					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
-
+					if (insert_mode) {
+						cursor_pos.y += get_row_height();
+						int char_w = cache.font->get_char_size(' ').width;
+						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(char_w,1)),cache.font_color);
+					} else {
+						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
+					}
 				}
 			}
 
@@ -2335,12 +2363,28 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 		}
 	    }
 */
+			if (k.scancode==KEY_INSERT) {
+				set_insert_mode(!insert_mode);
+				accept_event();
+				return;
+			}
+
 			if (!scancode_handled && !k.mod.command) { //for german kbds
 
 				if (k.unicode>=32) {
 
 					if (readonly)
 						break;
+
+					// remove the old character if in insert mode
+					if (insert_mode) {
+						_begin_compex_operation();
+
+						// make sure we don't try and remove empty space
+						if (cursor.column < get_line(cursor.line).length()) {
+							_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
+						}
+					}
 
 					const CharType chr[2] = {(CharType)k.unicode, 0};
 
@@ -2353,6 +2397,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						_insert_text_at_cursor(chr);
 					}
 
+					if (insert_mode) {
+						_end_compex_operation();
+					}
 					accept_event();
 				} else {
 
@@ -2979,6 +3026,7 @@ void TextEdit::_update_caches() {
 	cache.font_color=get_color("font_color");
 	cache.font_selected_color=get_color("font_selected_color");
 	cache.keyword_color=get_color("keyword_color");
+	cache.function_color=get_color("function_color");
 	cache.number_color=get_color("number_color");
 	cache.selection_color=get_color("selection_color");
 	cache.mark_color=get_color("mark_color");
@@ -3595,6 +3643,15 @@ bool TextEdit::is_drawing_tabs() const{
 	return draw_tabs;
 }
 
+void TextEdit::set_insert_mode(bool p_enabled) {
+	insert_mode = p_enabled;
+	update();
+}
+
+bool TextEdit::is_insert_mode() const {
+	return insert_mode;
+}
+
 uint32_t TextEdit::get_version() const {
 	return current_op.version;
 }
@@ -4087,6 +4144,7 @@ TextEdit::TextEdit()  {
 	auto_brace_completion_enabled=false;
 	brace_matching_enabled=false;
 	auto_indent=false;
+	insert_mode = false;
 }
 
 TextEdit::~TextEdit()

@@ -1,0 +1,330 @@
+[gd_scene load_steps=25 format=1]
+
+[ext_resource path="res://player.gd" type="Script" id=1]
+[ext_resource path="res://robot_demo.png" type="Texture" id=2]
+[ext_resource path="res://bullet.png" type="Texture" id=3]
+[ext_resource path="res://sound_coin.wav" type="Sample" id=4]
+[ext_resource path="res://sound_jump.wav" type="Sample" id=5]
+[ext_resource path="res://sound_shoot.wav" type="Sample" id=6]
+[ext_resource path="res://osb_left.png" type="Texture" id=7]
+[ext_resource path="res://osb_right.png" type="Texture" id=8]
+[ext_resource path="res://osb_jump.png" type="Texture" id=9]
+[ext_resource path="res://osb_fire.png" type="Texture" id=10]
+
+[sub_resource type="RayShape2D" id=1]
+
+custom_solver_bias = 0.5
+length = 20.0
+
+[sub_resource type="ConvexPolygonShape2D" id=2]
+
+custom_solver_bias = 0.0
+points = Vector2Array( -19.902, -24.8691, 19.3625, -24.6056, -0.138023, 16.5036 )
+
+[sub_resource type="ColorRamp" id=3]
+
+offsets = FloatArray( 0, 1 )
+colors = ColorArray( 1, 1, 1, 1, 0, 0, 0, 0.0442478 )
+
+[sub_resource type="Animation" id=4]
+
+resource/name = "crouch"
+length = 0.01
+loop = true
+step = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0 ), "transitions":FloatArray( 1 ), "values":[ 22 ] }
+
+[sub_resource type="Animation" id=5]
+
+resource/name = "falling"
+length = 0.01
+loop = true
+step = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0 ), "transitions":FloatArray( 1 ), "values":[ 21 ] }
+
+[sub_resource type="Animation" id=6]
+
+resource/name = "falling_weapon"
+length = 0.5
+loop = true
+step = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0 ), "transitions":FloatArray( 1 ), "values":[ 26 ] }
+
+[sub_resource type="Animation" id=7]
+
+length = 7.0
+loop = true
+step = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0, 1.25, 1.5, 2, 4.5, 4.75, 5, 5.25 ), "transitions":FloatArray( 1, 1, 1, 1, 1, 1, 1, 1 ), "values":[ 16, 17, 18, 16, 19, 20, 19, 16 ] }
+
+[sub_resource type="Animation" id=8]
+
+length = 0.5
+loop = true
+step = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0 ), "transitions":FloatArray( 1 ), "values":[ 25 ] }
+
+[sub_resource type="Animation" id=9]
+
+length = 0.5
+loop = true
+step = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0, 0.25, 0.5 ), "transitions":FloatArray( 1, 1, 1 ), "values":[ 23, 24, 23 ] }
+
+[sub_resource type="Animation" id=10]
+
+length = 0.5
+loop = true
+step = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0 ), "transitions":FloatArray( 1 ), "values":[ 26 ] }
+
+[sub_resource type="Animation" id=11]
+
+length = 1.25
+loop = true
+step = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0, 0.25, 0.5, 0.75, 1, 1.25 ), "transitions":FloatArray( 1, 1, 1, 1, 1, 1 ), "values":[ 0, 1, 2, 3, 4, 0 ] }
+
+[sub_resource type="Animation" id=12]
+
+length = 1.25
+loop = true
+step = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0, 0.25, 0.5, 0.75, 1, 1.25 ), "transitions":FloatArray( 1, 1, 1, 1, 1, 1 ), "values":[ 5, 6, 7, 8, 9, 5 ] }
+
+[sub_resource type="Animation" id=13]
+
+length = 1.25
+loop = true
+step = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0, 0.25, 0.5, 0.75, 1, 1.25 ), "transitions":FloatArray( 1, 1, 1, 1, 1, 1 ), "values":[ 10, 11, 12, 13, 14, 5 ] }
+
+[sub_resource type="SampleLibrary" id=14]
+
+samples/jump = { "db":0.0, "pitch":1.0, "sample":ExtResource( 5 ) }
+samples/shoot = { "db":0.0, "pitch":1.0, "sample":ExtResource( 6 ) }
+samples/coin = { "db":0.0, "pitch":1.0, "sample":ExtResource( 4 ) }
+
+[node name="player" type="RigidBody2D"]
+
+input/pickable = false
+shapes/0/shape = SubResource( 1 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1.76469, 0.291992, -12.1587 )
+shapes/0/trigger = false
+shapes/1/shape = SubResource( 2 )
+shapes/1/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/1/trigger = false
+collision/layers = 1
+collision/mask = 1
+mode = 2
+mass = 3.0
+friction = 0.0
+bounce = 0.0
+gravity_scale = 1.0
+custom_integrator = true
+continuous_cd = 0
+contacts_reported = 3
+contact_monitor = false
+sleeping = false
+can_sleep = true
+velocity/linear = Vector2( 0, 0 )
+velocity/angular = 0.0
+damp_override/linear = -1.0
+damp_override/angular = -1.0
+script/script = ExtResource( 1 )
+
+[node name="sprite" type="Sprite" parent="."]
+
+texture = ExtResource( 2 )
+vframes = 2
+hframes = 16
+
+[node name="smoke" type="Particles2D" parent="sprite"]
+
+visibility/self_opacity = 0.363636
+visibility/blend_mode = 1
+transform/pos = Vector2( 20.7312, 3.21187 )
+transform/rot = 83.4504
+config/amount = 4
+config/lifetime = 0.3
+config/emit_timeout = 0.3
+config/emitting = false
+config/local_space = false
+config/explosiveness = 0.1
+config/texture = ExtResource( 3 )
+params/direction = 0.0
+params/spread = 180.0
+params/linear_velocity = 20.0
+params/spin_velocity = 1.0
+params/orbit_velocity = 0.0
+params/gravity_direction = 0.0
+params/gravity_strength = 9.8
+params/radial_accel = 0.0
+params/tangential_accel = 0.0
+params/damping = 0.0
+params/initial_angle = 0.0
+params/initial_size = 2.0
+params/final_size = 2.0
+params/hue_variation = 0.0
+params/anim_speed_scale = 1.0
+params/anim_initial_pos = 0.0
+randomness/spin_velocity = 2.0
+color/color_ramp = SubResource( 3 )
+
+[node name="anim" type="AnimationPlayer" parent="."]
+
+playback/process_mode = 1
+playback/default_blend_time = 0.0
+root/root = NodePath("..")
+anims/crouch = SubResource( 4 )
+anims/falling = SubResource( 5 )
+anims/falling_weapon = SubResource( 6 )
+anims/idle = SubResource( 7 )
+anims/idle_weapon = SubResource( 8 )
+anims/jumping = SubResource( 9 )
+anims/jumping_weapon = SubResource( 10 )
+anims/run = SubResource( 11 )
+anims/run_weapon = SubResource( 12 )
+anims/standing_weapon_ready = SubResource( 13 )
+playback/active = true
+playback/speed = 2.0
+blend_times = [  ]
+autoplay = ""
+
+[node name="camera" type="Camera2D" parent="."]
+
+anchor_mode = 1
+rotating = false
+current = true
+zoom = Vector2( 1, 1 )
+limit/left = 0
+limit/top = 0
+limit/right = 10000000
+limit/bottom = 10000000
+drag_margin/h_enabled = true
+drag_margin/v_enabled = true
+smoothing/enable = false
+smoothing/speed = 5.0
+drag_margin/left = 0.2
+drag_margin/top = 0.2
+drag_margin/right = 0.2
+drag_margin/bottom = 0.2
+
+[node name="bullet_shoot" type="Position2D" parent="."]
+
+transform/pos = Vector2( 31.2428, 4.08784 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+transform/pos = Vector2( 0.291992, -12.1587 )
+transform/scale = Vector2( 1, 1.76469 )
+shape = SubResource( 1 )
+trigger = false
+_update_shape_index = -1
+
+[node name="sound" type="SamplePlayer" parent="."]
+
+config/polyphony = 1
+config/samples = SubResource( 14 )
+default/volume_db = 0.0
+default/pitch_scale = 1.0
+default/pan = 0.0
+default/depth = 0.0
+default/height = 0.0
+default/filter/type = 0
+default/filter/cutoff = 0.0
+default/filter/resonance = 0.0
+default/filter/gain = 0.0
+default/reverb_room = 2
+default/reverb_send = 0.0
+default/chorus_send = 0.0
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+
+build_mode = 0
+polygon = Vector2Array( -0.138023, 16.5036, -19.902, -24.8691, 19.3625, -24.6056 )
+shape_range = Vector2( -1, -1 )
+trigger = false
+
+[node name="ui" type="CanvasLayer" parent="."]
+
+layer = 0
+offset = Vector2( 0, 0 )
+rotation = 0.0
+scale = Vector2( 1, 1 )
+
+[node name="left" type="TouchScreenButton" parent="ui"]
+
+transform/pos = Vector2( 27.7593, 360.87 )
+transform/scale = Vector2( 1.49157, 1.46265 )
+normal = ExtResource( 7 )
+pressed = null
+bitmask = null
+passby_press = true
+action = "move_left"
+visibility_mode = 1
+
+[node name="right" type="TouchScreenButton" parent="ui"]
+
+transform/pos = Vector2( 121.542, 361.415 )
+transform/scale = Vector2( 1.49157, 1.46265 )
+normal = ExtResource( 8 )
+pressed = null
+bitmask = null
+passby_press = true
+action = "move_right"
+visibility_mode = 1
+
+[node name="jump" type="TouchScreenButton" parent="ui"]
+
+transform/pos = Vector2( 666.224, 359.02 )
+transform/scale = Vector2( 1.49157, 1.46265 )
+normal = ExtResource( 9 )
+pressed = null
+bitmask = null
+passby_press = false
+action = "jump"
+visibility_mode = 1
+
+[node name="fire" type="TouchScreenButton" parent="ui"]
+
+transform/pos = Vector2( 668.073, 262.788 )
+transform/scale = Vector2( 1.49157, 1.46265 )
+normal = ExtResource( 10 )
+pressed = null
+bitmask = null
+passby_press = false
+action = "shoot"
+visibility_mode = 1
+
+

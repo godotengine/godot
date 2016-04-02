@@ -6,7 +6,7 @@ template_typed="""
 template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>
 class MethodBind$argc$$ifret R$$ifconst C$ : public MethodBind {
 public:
-	
+
 	$ifret R$ $ifnoret void$ (T::*method)($arg, P@$) $ifconst const$;
 #ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
@@ -16,13 +16,13 @@ public:
 		$
 		return Variant::NIL;
 	}
-#endif	
+#endif
 	virtual String get_instance_type() const {
 		return T::get_type_static();
 	}
 
 	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Variant::CallError& r_error) {
-	
+
 		T *instance=p_object->cast_to<T>();
 		r_error.error=Variant::CallError::CALL_OK;
 #ifdef DEBUG_METHODS_ENABLED
@@ -47,7 +47,7 @@ public:
 		$ifret return Variant(ret);$
 		$ifnoret return Variant();$
 	}
-	
+
 
 	MethodBind$argc$$ifret R$$ifconst C$ () {
 #ifdef DEBUG_METHODS_ENABLED
@@ -55,14 +55,14 @@ public:
 		_generate_argument_types($argc$);
 #else
 		set_argument_count($argc$);
-#endif		
+#endif
 	};
 };
 
 template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>
 MethodBind* create_method_bind($ifret R$ $ifnoret void$ (T::*p_method)($arg, P@$) $ifconst const$ ) {
 
-	MethodBind$argc$$ifret R$$ifconst C$<T $ifret ,R$ $ifargs ,$ $arg, P@$> * a = memnew( (MethodBind$argc$$ifret R$$ifconst C$<T $ifret ,R$ $ifargs ,$ $arg, P@$>) );	
+	MethodBind$argc$$ifret R$$ifconst C$<T $ifret ,R$ $ifargs ,$ $arg, P@$> * a = memnew( (MethodBind$argc$$ifret R$$ifconst C$<T $ifret ,R$ $ifargs ,$ $arg, P@$>) );
 	a->method=p_method;
 	return a;
 }
@@ -88,7 +88,7 @@ public:
 		$
 		return Variant::NIL;
 	}
-#endif	
+#endif
 	virtual String get_instance_type() const {
 		return type_name;
 	}
@@ -105,15 +105,15 @@ public:
 			r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			r_error.argument=get_argument_count();
 			return Variant();
-		} 
-		
+		}
+
 		if (p_arg_count<(get_argument_count()-get_default_argument_count())) {
 
 			r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument=get_argument_count()-get_default_argument_count();
 			return Variant();
 		}
-		
+
 		$arg CHECK_ARG(@);
 		$
 #endif
@@ -128,7 +128,7 @@ public:
 		_generate_argument_types($argc$);
 #else
 		set_argument_count($argc$);
-#endif		
+#endif
 	};
 };
 
@@ -151,12 +151,12 @@ MethodBind* create_method_bind($ifret R$ $ifnoret void$ (T::*p_method)($arg, P@$
 
 
 def make_version(template,nargs,argmax,const,ret):
-	
+
 	intext=template
 	from_pos=0
 	outtext=""
-	
-	while(True): 
+
+	while(True):
 		to_pos=intext.find("$",from_pos)
 		if (to_pos==-1):
 			outtext+=intext[from_pos:]
@@ -169,13 +169,13 @@ def make_version(template,nargs,argmax,const,ret):
 		macro=intext[to_pos+1:end]
 		cmd=""
 		data=""
-		
+
 		if (macro.find(" ")!=-1):
 			cmd=macro[0:macro.find(" ")]
 			data=macro[macro.find(" ")+1:]
 		else:
 			cmd=macro
-			
+
 		if (cmd=="argc"):
 			outtext+=str(nargs)
 		if (cmd=="ifret" and ret):
@@ -206,11 +206,11 @@ def make_version(template,nargs,argmax,const,ret):
 		elif (cmd=="noarg"):
 			for i in range(nargs+1,argmax+1):
 				outtext+=data.replace("@",str(i))
-		
+
 		from_pos=end+1
-	
+
 	return outtext
-		
+
 
 def run(target, source, env):
 
@@ -244,9 +244,9 @@ def run(target, source, env):
 	f.write(text_ext)
 	f.close()
 
-		
-			
-		
-		
-		
+
+
+
+
+
 

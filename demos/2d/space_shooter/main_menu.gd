@@ -8,4 +8,4 @@ func _ready():
 
 func _on_play_pressed():
 	get_node("/root/game_state").points = 0
-	get_tree().change_scene("res://level.scn")
+	get_tree().change_scene("res://level.tscn")
