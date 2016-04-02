@@ -890,7 +890,12 @@ void TextEdit::_notification(int p_what) {
 					if (cursor.column==j && cursor.line==line) {
 
 						cursor_pos = Point2i( char_ofs+char_margin, ofs_y );
-						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
+						if (insert_mode) {
+							cursor_pos.y += get_row_height();
+							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(char_w,1)),cache.font_color);
+						} else {
+							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
+						}
 
 
 					}
@@ -901,8 +906,13 @@ void TextEdit::_notification(int p_what) {
 				if (cursor.column==str.length() && cursor.line==line && (char_ofs+char_margin)>=xmargin_beg) {
 
 					cursor_pos=Point2i( char_ofs+char_margin, ofs_y );
-					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
-
+					if (insert_mode) {
+						cursor_pos.y += get_row_height();
+						int char_w = cache.font->get_char_size(' ').width;
+						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(char_w,1)),cache.font_color);
+					} else {
+						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
+					}
 				}
 			}
 
@@ -2335,12 +2345,28 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 		}
 	    }
 */
+			if (k.scancode==KEY_INSERT) {
+				set_insert_mode(!insert_mode);
+				accept_event();
+				return;
+			}
+
 			if (!scancode_handled && !k.mod.command) { //for german kbds
 
 				if (k.unicode>=32) {
 
 					if (readonly)
 						break;
+
+					// remove the old character if in insert mode
+					if (insert_mode) {
+						_begin_compex_operation();
+
+						// make sure we don't try and remove empty space
+						if (cursor.column < get_line(cursor.line).length()) {
+							_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
+						}
+					}
 
 					const CharType chr[2] = {(CharType)k.unicode, 0};
 
@@ -2353,6 +2379,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						_insert_text_at_cursor(chr);
 					}
 
+					if (insert_mode) {
+						_end_compex_operation();
+					}
 					accept_event();
 				} else {
 
@@ -3595,6 +3624,15 @@ bool TextEdit::is_drawing_tabs() const{
 	return draw_tabs;
 }
 
+void TextEdit::set_insert_mode(bool p_enabled) {
+	insert_mode = p_enabled;
+	update();
+}
+
+bool TextEdit::is_insert_mode() const {
+	return insert_mode;
+}
+
 uint32_t TextEdit::get_version() const {
 	return current_op.version;
 }
@@ -4087,6 +4125,7 @@ TextEdit::TextEdit()  {
 	auto_brace_completion_enabled=false;
 	brace_matching_enabled=false;
 	auto_indent=false;
+	insert_mode = false;
 }
 
 TextEdit::~TextEdit()
