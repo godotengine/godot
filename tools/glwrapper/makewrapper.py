@@ -4,27 +4,27 @@ import sys
 if (len(sys.argv)<2):
   print("usage: makewrapper.py <headers>")
   sys.exit(255)
-  
+
 
 functions=[]
 types=[]
 constants=[]
-  
+
 READ_FUNCTIONS=0
 READ_TYPES=1
 READ_CONSTANTS=2
-  
+
 read_what=READ_TYPES
-  
+
 for x in (range(len(sys.argv)-1)):
   f=open(sys.argv[x+1],"r")
-  
+
   while(True):
-  
+
     line=f.readline()
     if (line==""):
       break
-      
+
     line=line.replace("\n","").strip()
     """
     if (line.find("[types]")!=-1):
@@ -37,7 +37,7 @@ for x in (range(len(sys.argv)-1)):
       read_what=READ_FUNCTIONS
       continue
      """
-     
+
     if (line.find("#define")!=-1):
       if (line.find("0x")==-1 and line.find("GL_VERSION")==-1):
         continue
@@ -51,48 +51,48 @@ for x in (range(len(sys.argv)-1)):
       if (line.find("ARB")!=-1 or line.find("EXT")!=-1 or line.find("NV")!=-1):
         continue
 
-      line=line.replace("APIENTRY","")   
-      line=line.replace("GLAPI","")   
-      
+      line=line.replace("APIENTRY","")
+      line=line.replace("GLAPI","")
+
       glpos=line.find(" gl")
       if (glpos==-1):
-      
+
        glpos=line.find("\tgl")
        if (glpos==-1):
           continue
-   
+
       ret=line[:glpos].strip();
-      
+
       line=line[glpos:].strip()
       namepos=line.find("(")
-      
+
       if (namepos==-1):
         continue
-        
+
       name=line[:namepos].strip()
       line=line[namepos:]
-      
+
       argpos=line.rfind(")")
       if (argpos==-1):
         continue
-        
+
       args=line[1:argpos]
-      
+
       funcdata={}
       funcdata["ret"]=ret
       funcdata["name"]=name
       funcdata["args"]=args
-      
+
       functions.append(funcdata)
       print(funcdata)
-            
-  
-    
+
+
+
 #print(types)
 #print(constants)
 #print(functions)
-      
-    
+
+
 f=open("glwrapper.h","w")
 
 f.write("#ifndef GL_WRAPPER\n")
@@ -109,10 +109,10 @@ header_code="""\
 #error glATI.h included before glwrapper.h
 #endif
 
-#define __gl_h_    
-#define __GL_H__   
-#define __glext_h_ 
-#define __GLEXT_H_ 
+#define __gl_h_
+#define __GL_H__
+#define __glext_h_
+#define __GLEXT_H_
 #define __gl_ATI_h_
 
 #define GL_TRUE 1
@@ -138,7 +138,7 @@ f.write("#define GLWRP_APIENTRY \n")
 f.write("#endif\n\n");
 for x in types:
   f.write(x+"\n")
-  
+
 f.write("\n\n")
 
 for x in constants:
@@ -153,24 +153,24 @@ for x in functions:
 f.write("\n\n")
 f.write("typedef void (*GLWrapperFuncPtr)(void);\n\n");
 f.write("void glWrapperInit( GLWrapperFuncPtr (*wrapperFunc)(const char*) );\n")
-  
+
 f.write("#ifdef __cplusplus\n}\n#endif\n")
 
 f.write("#endif\n\n")
-  
+
 f=open("glwrapper.c","w")
 
 f.write("\n\n")
 f.write("#include \"glwrapper.h\"\n")
 f.write("\n\n")
-  
+
 for x in functions:
   f.write(x["ret"]+" GLWRP_APIENTRY (*__wrapper_"+x["name"]+")("+x["args"]+")=NULL;\n")
-  
+
 f.write("\n\n")
 f.write("void glWrapperInit( GLWrapperFuncPtr (*wrapperFunc)(const char*) )  {\n")
 f.write("\n")
-  
+
 for x in functions:
   f.write("\t__wrapper_"+x["name"]+"=("+x["ret"]+" GLWRP_APIENTRY (*)("+x["args"]+"))wrapperFunc(\""+x["name"]+"\");\n")
 
@@ -180,5 +180,4 @@ f.write("\n\n")
 
 
 
-      
-    
+

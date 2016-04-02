@@ -171,38 +171,38 @@ class DaeExporter:
 	def export_image(self,image):
 		if (image in self.image_cache):
 			return self.image_cache[image]
-			
+
 		imgpath = image.filepath
 		if (imgpath.find("//")==0 or imgpath.find("\\\\")==0):
 			#if relative, convert to absolute
 			imgpath = bpy.path.abspath(imgpath)
 
 		#path is absolute, now do something!
-		
+
 		if (self.config["use_copy_images"]):
 			#copy image
 			basedir = os.path.dirname(self.path)+"/images"
 			if (not os.path.isdir(basedir)):
 				os.makedirs(basedir)
-			
+
 			if os.path.isfile(imgpath):
 				dstfile=basedir+"/"+os.path.basename(imgpath)
-				
+
 				if (not os.path.isfile(dstfile)):
 					shutil.copy(imgpath,dstfile)
 				imgpath="images/"+os.path.basename(imgpath)
 			else:
 				### if file is not found save it as png file in the destination folder
-				img_tmp_path = image.filepath	
+				img_tmp_path = image.filepath
 				if img_tmp_path.endswith((".bmp",".rgb",".png",".jpeg",".jpg",".jp2",".tga",".cin",".dpx",".exr",".hdr",".tif")):
 					image.filepath = basedir+"/"+os.path.basename(img_tmp_path)
-				else:	
+				else:
 					image.filepath = basedir+"/"+image.name+".png"
-					
+
 				dstfile=basedir+"/"+os.path.basename(image.filepath)
-				
+
 				if (not os.path.isfile(dstfile)):
-					
+
 					image.save()
 				imgpath="images/"+os.path.basename(image.filepath)
 				image.filepath = img_tmp_path
@@ -211,15 +211,15 @@ class DaeExporter:
 			#export relative, always, no one wants absolute paths.
 			try:
 				imgpath = os.path.relpath(imgpath,os.path.dirname(self.path)).replace("\\","/") # export unix compatible always
-				
+
 			except:
 				pass #fails sometimes, not sure why
-		
+
 
 		imgid = self.new_id("image")
 
 		print("FOR: "+imgpath)
-		
+
 #		if (not os.path.isfile(imgpath)):
 #			print("NOT FILE?")
 #			if imgpath.endswith((".bmp",".rgb",".png",".jpeg",".jpg",".jp2",".tga",".cin",".dpx",".exr",".hdr",".tif")):
@@ -956,7 +956,7 @@ class DaeExporter:
 			self.writel(S_NODES,il,'<instance_controller url="#'+meshdata["morph_id"]+'">')
 			close_controller=True
 		elif (armature==None):
-			self.writel(S_NODES,il,'<instance_geometry url="#'+meshdata["id"]+'">')		
+			self.writel(S_NODES,il,'<instance_geometry url="#'+meshdata["id"]+'">')
 
 
 		if (len(meshdata["material_assign"])>0):
@@ -1520,7 +1520,7 @@ class DaeExporter:
 				tmp_bone_mat.append(Matrix(bone.matrix_basis))
 				bone.matrix_basis = Matrix()
 			tmp_mat.append([Matrix(s.matrix_local),tmp_bone_mat])
-			
+
 		self.writel(S_ANIM,0,'<library_animations>')
 
 
@@ -1561,11 +1561,11 @@ class DaeExporter:
 								if (not y in allowed_skeletons):
 									allowed_skeletons.append(y)
 						y.animation_data.action=x;
-						
+
 						y.matrix_local = tmp_mat[i][0]
 						for j,bone in enumerate(s.pose.bones):
 							bone.matrix_basis = Matrix()
-							
+
 
 				#print("allowed skeletons "+str(allowed_skeletons))
 
@@ -1600,9 +1600,9 @@ class DaeExporter:
 
 		else:
 			self.export_animation(self.scene.frame_start,self.scene.frame_end)
-		
-			
-		
+
+
+
 		self.writel(S_ANIM,0,'</library_animations>')
 
 	def export(self):
@@ -1684,7 +1684,7 @@ class DaeExporter:
 		self.valid_nodes=[]
 		self.armature_for_morph={}
 		self.used_bones=[]
-		self.wrongvtx_report=False		
+		self.wrongvtx_report=False
 
 
 

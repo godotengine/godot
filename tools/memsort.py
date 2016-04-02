@@ -33,4 +33,3 @@ while(l!=""):
 
 for x in sum:
 	print(x.strip()+"("+str(cnt[x])+"):\n: "+str(sum[x]))
-	

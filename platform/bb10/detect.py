@@ -6,7 +6,7 @@ import methods
 
 def is_active():
 	return True
-	
+
 def get_name():
 	return "BlackBerry 10"
 
@@ -36,7 +36,7 @@ def get_flags():
 		('tools', 'no'),
 		('nedmalloc', 'no'),
 		('theora', 'no'),
-		
+
 	]
 
 def configure(env):
