@@ -671,6 +671,7 @@ void TextEdit::_notification(int p_what) {
 				bool prev_is_number = false;
 				bool in_keyword=false;
 				bool in_word = false;
+				bool in_function_name = false;
 				Color keyword_color;
 
 				// check if line contains highlighted word
@@ -790,11 +791,28 @@ void TextEdit::_notification(int p_what) {
 							}
 						}
 
+						if (!in_function_name && in_word && !in_keyword) {
+
+							int k = j;
+							while(k < str.length() && !_is_symbol(str[k]) && str[k] != '\t' && str[k] != ' ') {
+								k++;
+							}
+
+							if (str[k] == '(') {
+								in_function_name = true;
+							}
+						}
+
+						if (is_symbol) {
+							in_function_name = false;
+						}
 
 						if (in_region>=0)
 							color=color_regions[in_region].color;
 						else if (in_keyword)
 							color=keyword_color;
+						else if (in_function_name)
+							color=cache.function_color;
 						else if (is_symbol)
 							color=symbol_color;
 						else if (is_number)
@@ -3008,6 +3026,7 @@ void TextEdit::_update_caches() {
 	cache.font_color=get_color("font_color");
 	cache.font_selected_color=get_color("font_selected_color");
 	cache.keyword_color=get_color("keyword_color");
+	cache.function_color=get_color("function_color");
 	cache.number_color=get_color("number_color");
 	cache.selection_color=get_color("selection_color");
 	cache.mark_color=get_color("mark_color");

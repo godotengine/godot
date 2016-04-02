@@ -77,6 +77,7 @@ class TextEdit : public Control  {
 		Color font_selected_color;
 		Color keyword_color;
 		Color number_color;
+		Color function_color;
 		Color selection_color;
 		Color mark_color;
 		Color breakpoint_color;
