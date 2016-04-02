@@ -1,0 +1,52 @@
+[gd_scene load_steps=4 format=1]
+
+[ext_resource path="res://moving_platform.gd" type="Script" id=1]
+[ext_resource path="res://moving_platform.png" type="Texture" id=2]
+
+[sub_resource type="ConvexPolygonShape2D" id=1]
+
+custom_solver_bias = 0.0
+points = Vector2Array( -88, 24, -88, -24, 88, -24, 88, 24 )
+
+[node name="moving_platform" type="Node2D"]
+
+script/script = ExtResource( 1 )
+motion = Vector2( 0, 0 )
+cycle = 1.0
+
+[node name="platform" type="RigidBody2D" parent="."]
+
+input/pickable = false
+shapes/0/shape = SubResource( 1 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/0/trigger = false
+collision/layers = 1
+collision/mask = 1
+mode = 3
+mass = 1.0
+friction = 1.0
+bounce = 0.0
+gravity_scale = 1.0
+custom_integrator = false
+continuous_cd = 0
+contacts_reported = 0
+contact_monitor = false
+sleeping = false
+can_sleep = true
+velocity/linear = Vector2( 0, 0 )
+velocity/angular = 0.0
+damp_override/linear = -1.0
+damp_override/angular = -1.0
+
+[node name="Sprite" type="Sprite" parent="platform"]
+
+texture = ExtResource( 2 )
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="platform"]
+
+build_mode = 0
+polygon = Vector2Array( -88, -24, 88, -24, 88, 24, -88, 24 )
+shape_range = Vector2( -1, -1 )
+trigger = false
+
+
