@@ -108,6 +108,7 @@ struct Vector2 {
 
 	Vector2 slide(const Vector2& p_vec) const;
 	Vector2 reflect(const Vector2& p_vec) const;
+	Vector2 negate(void);
 
 	Vector2 operator+(const Vector2& p_v) const;
 	void operator+=(const Vector2& p_v);

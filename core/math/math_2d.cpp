@@ -283,7 +283,14 @@ Vector2 Vector2::slide(const Vector2& p_vec) const {
 Vector2 Vector2::reflect(const Vector2& p_vec) const {
 
 	return p_vec - *this * this->dot(p_vec) * 2.0;
+}
 
+Vector2 Vector2::negate(void) {
+
+	Vector2 v=*this;
+	v.x *= -1;
+	v.y *= -1;
+	return v;
 }
 
 

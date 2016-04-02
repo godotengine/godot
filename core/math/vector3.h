@@ -117,6 +117,7 @@ struct Vector3 {
 
 	_FORCE_INLINE_ Vector3 slide(const Vector3& p_vec) const;
 	_FORCE_INLINE_ Vector3 reflect(const Vector3& p_vec) const;
+    _FORCE_INLINE_ Vector3 negate(void);
 
 
         /* Operators */
@@ -393,7 +394,15 @@ Vector3 Vector3::slide(const Vector3& p_vec) const {
 Vector3 Vector3::reflect(const Vector3& p_vec) const {
 
 	return p_vec - *this * this->dot(p_vec) * 2.0;
+}
 
+Vector3 Vector3::negate(void) {
+
+    Vector3 v=*this;
+    v.x *= -1;
+    v.y *= -1;
+    v.z *= -1;
+    return v;
 }
 
 #endif
