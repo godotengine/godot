@@ -1933,6 +1933,7 @@ void ScriptEditor::edit(const Ref<Script>& p_script) {
 	ste->get_text_edit()->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/auto_brace_complete"));
 	ste->get_text_edit()->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
 	ste->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
+	ste->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
 	ste->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
 	ste->get_text_edit()->set_callhint_settings(
 		EditorSettings::get_singleton()->get("text_editor/put_callhint_tooltip_below_current_line"),
@@ -2073,6 +2074,7 @@ void ScriptEditor::_editor_settings_changed() {
 		ste->get_text_edit()->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/scroll_past_end_of_file"));
 		ste->get_text_edit()->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
 		ste->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
+		ste->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
 		ste->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
 	}
 

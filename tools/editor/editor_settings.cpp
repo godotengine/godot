@@ -413,6 +413,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["text_editor/tab_size"]=PropertyInfo(Variant::INT,"text_editor/tab_size",PROPERTY_HINT_RANGE,"1, 64, 1"); // size of 0 crashes.
 	set("text_editor/draw_tabs", true);
 
+	set("text_editor/show_line_numbers", true);
+
 	set("text_editor/idle_parse_delay",2);
 	set("text_editor/create_signal_callbacks",true);
 	set("text_editor/autosave_interval_secs",0);
