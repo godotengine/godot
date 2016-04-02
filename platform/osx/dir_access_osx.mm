@@ -47,9 +47,9 @@ DirAccess *DirAccessOSX::create_fs() {
 }
 
 bool DirAccessOSX::list_dir_begin() {
-	
+
 	list_dir_end(); //close any previous dir opening!
-	
+
 
 //	char real_current_dir_name[2048]; //is this enough?!
 	//getcwd(real_current_dir_name,2048);
@@ -63,7 +63,7 @@ bool DirAccessOSX::list_dir_begin() {
 }
 
 bool DirAccessOSX::file_exists(String p_file) {
-	
+
 	GLOBAL_LOCK_FUNCTION
 
 
@@ -207,7 +207,7 @@ Error DirAccessOSX::make_dir(String p_dir) {
 	GLOBAL_LOCK_FUNCTION
 
 	p_dir=fix_path(p_dir);
-	
+
 	char real_current_dir_name[2048];
 	getcwd(real_current_dir_name,2048);
 	chdir(current_dir.utf8().get_data()); //ascii since this may be unicode or wathever the host os wants
@@ -326,7 +326,7 @@ size_t DirAccessOSX::get_space_left() {
 #else
 #warning THIS IS BROKEN
 	return 0;
-#endif	
+#endif
 };
 
 

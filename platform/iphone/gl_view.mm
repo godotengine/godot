@@ -107,7 +107,7 @@ bool _play_video(String p_path, float p_volume, String p_audio_track, String p_s
 	{
 		NSString* language = [[track locale] localeIdentifier];
 		NSLog(@"subtitle lang: %@", language);
-        
+
         if ([language isEqualToString:[NSString stringWithUTF8String:p_audio_track.utf8()]])
         {
 			AVMutableAudioMixInputParameters *audioInputParams = [AVMutableAudioMixInputParameters audioMixInputParameters];
@@ -132,7 +132,7 @@ bool _play_video(String p_path, float p_volume, String p_audio_track, String p_s
 	{
 		NSString* language = [[track locale] localeIdentifier];
 		NSLog(@"subtitle lang: %@", language);
-        
+
         if ([language isEqualToString:[NSString stringWithUTF8String:p_subtitle_track.utf8()]])
         {
             [_instance.avPlayer.currentItem selectMediaOption:track inMediaSelectionGroup: subtitlesGroup];
@@ -147,7 +147,7 @@ bool _play_video(String p_path, float p_volume, String p_audio_track, String p_s
 
 bool _is_video_playing() {
 	if (_instance.avPlayer.error) {
-		printf("Error during playback\n");	
+		printf("Error during playback\n");
 	}
 	return (_instance.avPlayer.rate > 0 && !_instance.avPlayer.error);
 }
@@ -257,7 +257,7 @@ static void clear_touches() {
 	if((self = [super initWithCoder:coder]))
 	{
 		self = [self initGLES];
-	}	
+	}
 	return self;
 }
 
@@ -265,14 +265,14 @@ static void clear_touches() {
 {
 	// Get our backing layer
 	CAEAGLLayer *eaglLayer = (CAEAGLLayer*) self.layer;
-	
+
 	// Configure it so that it is opaque, does not retain the contents of the backbuffer when displayed, and uses RGBA8888 color.
 	eaglLayer.opaque = YES;
 	eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
 										[NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking,
 										kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
 										nil];
-	
+
 	// Create our EAGLContext, and if successful make it current and create our framebuffer.
 	context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
 
@@ -281,7 +281,7 @@ static void clear_touches() {
 		[self release];
 		return nil;
 	}
-	
+
 	// Default the animation interval to 1/60th of a second.
 	animationInterval = 1.0 / 60.0;
 	return self;
@@ -327,17 +327,17 @@ static void clear_touches() {
 
 	glGenFramebuffersOES(1, &viewFramebuffer);
 	glGenRenderbuffersOES(1, &viewRenderbuffer);
-	
+
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
 	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
 	// This call associates the storage for the current render buffer with the EAGLDrawable (our CAEAGLLayer)
 	// allowing us to draw into a buffer that will later be rendered to screen whereever the layer is (which corresponds with our view).
 	[context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(id<EAGLDrawable>)self.layer];
 	glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
-	
+
 	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
 	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
-	
+
 	// For this sample, we also need a depth buffer, so we'll create and attach one via another renderbuffer.
 	glGenRenderbuffersOES(1, &depthRenderbuffer);
 	glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
@@ -371,7 +371,7 @@ static void clear_touches() {
 	viewFramebuffer = 0;
 	glDeleteRenderbuffersOES(1, &viewRenderbuffer);
 	viewRenderbuffer = 0;
-	
+
 	if(depthRenderbuffer)
 	{
 		glDeleteRenderbuffersOES(1, &depthRenderbuffer);
@@ -461,21 +461,21 @@ static void clear_touches() {
 
 	// Make sure that you are drawing to the current context
 	[EAGLContext setCurrentContext:context];
-	
+
 	// If our drawing delegate needs to have the view setup, then call -setupView: and flag that it won't need to be called again.
 	if(!delegateSetup)
 	{
 		[delegate setupView:self];
 		delegateSetup = YES;
 	}
-	
+
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
 
 	[delegate drawView:self];
-	
+
 	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
 	[context presentRenderbuffer:GL_RENDERBUFFER_OES];
-	
+
 #ifdef DEBUG_ENABLED
 	GLenum err = glGetError();
 	if(err)
@@ -487,9 +487,9 @@ static void clear_touches() {
 {
 	NSArray* tlist = [[event allTouches] allObjects];
 	for (unsigned int i=0; i< [tlist count]; i++) {
-		
+
 		if ( [touches containsObject:[tlist objectAtIndex:i]] ) {
-			
+
 			UITouch* touch = [tlist objectAtIndex:i];
 			if (touch.phase != UITouchPhaseBegan)
 				continue;
@@ -506,9 +506,9 @@ static void clear_touches() {
 
 	NSArray* tlist = [[event allTouches] allObjects];
 	for (unsigned int i=0; i< [tlist count]; i++) {
-		
+
 		if ( [touches containsObject:[tlist objectAtIndex:i]] ) {
-			
+
 			UITouch* touch = [tlist objectAtIndex:i];
 			if (touch.phase != UITouchPhaseMoved)
 				continue;
@@ -527,9 +527,9 @@ static void clear_touches() {
 {
 	NSArray* tlist = [[event allTouches] allObjects];
 	for (unsigned int i=0; i< [tlist count]; i++) {
-		
+
 		if ( [touches containsObject:[tlist objectAtIndex:i]] ) {
-			
+
 			UITouch* touch = [tlist objectAtIndex:i];
 			if (touch.phase != UITouchPhaseEnded)
 				continue;
@@ -543,7 +543,7 @@ static void clear_touches() {
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-	
+
 	OSIPhone::get_singleton()->touches_cancelled();
 	clear_touches();
 };
@@ -652,12 +652,12 @@ static void clear_touches() {
 - (void)dealloc
 {
 	[self stopAnimation];
-	
+
 	if([EAGLContext currentContext] == context)
 	{
 		[EAGLContext setCurrentContext:nil];
 	}
-	
+
 	[context release];
 	context = nil;
 
@@ -673,8 +673,8 @@ static void clear_touches() {
             video_found_error = true;
         }
 
-        if(_instance.avPlayer.status == AVPlayerStatusReadyToPlay && 
-        	_instance.avPlayerItem.status == AVPlayerItemStatusReadyToPlay && 
+        if(_instance.avPlayer.status == AVPlayerStatusReadyToPlay &&
+        	_instance.avPlayerItem.status == AVPlayerItemStatusReadyToPlay &&
         	CMTIME_COMPARE_INLINE(video_current_time, ==, kCMTimeZero)) {
 
         	//NSLog(@"time: %@", video_current_time);
@@ -703,7 +703,7 @@ static void clear_touches() {
 
 /*
 - (void)moviePlayBackDidFinish:(NSNotification*)notification {
-    
+
 
     NSNumber* reason = [[notification userInfo] objectForKey:MPMoviePlayerPlaybackDidFinishReasonUserInfoKey];
     switch ([reason intValue]) {

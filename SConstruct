@@ -329,7 +329,7 @@ if selected_platform in platform_list:
 
 	if (env['theora']=='yes'):
 		env['theoralib']='yes'
-		env.Append(CPPFLAGS=['-DTHEORA_ENABLED']);		
+		env.Append(CPPFLAGS=['-DTHEORA_ENABLED']);
 	if (env['theoralib']=='yes'):
 		env.Append(CPPFLAGS=['-DTHEORALIB_ENABLED']);
 

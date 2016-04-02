@@ -4,7 +4,7 @@ import sys
 
 if (len(sys.argv)!=2):
   print("Pass me a .fnt argument!")
-  
+
 f = open(sys.argv[1],"rb")
 
 name = sys.argv[1].lower().replace(".fnt","")
@@ -24,7 +24,7 @@ while(l!=""):
     l=f.readline()
     continue
   t  = l[0:fs]
-  
+
   dv = l[fs+1:].split(" ")
   d = {}
   for x in dv:
@@ -32,12 +32,12 @@ while(l!=""):
       continue
     s = x.split("=")
     d[ s[0] ] = s[1]
-    
-  
+
+
   if (t=="common"):
     font_height=d["lineHeight"]
     font_ascent=d["base"]
-    
+
   if (t=="char"):
     font_chars.append(d["id"])
     font_chars.append(d["x"])
@@ -48,11 +48,11 @@ while(l!=""):
     font_chars.append(d["yoffset"])
     font_chars.append(d["xadvance"])
     font_cc+=1
- 
-    
- 
+
+
+
   l = f.readline()
-  
+
 
 print("static const int _bi_font_"+name+"_height="+str(font_height)+";")
 print("static const int _bi_font_"+name+"_ascent="+str(font_ascent)+";")
@@ -60,11 +60,11 @@ print("static const int _bi_font_"+name+"_charcount="+str(font_cc)+";")
 cstr="static const int _bi_font_"+name+"_characters={"
 for i in range(len(font_chars)):
 
-  c=font_chars[i]  
+  c=font_chars[i]
   if (i>0):
     cstr+=", "
   cstr+=c
-  
+
 cstr+=("};")
- 
+
 print(cstr)
