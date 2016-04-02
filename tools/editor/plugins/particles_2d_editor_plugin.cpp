@@ -165,7 +165,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	undo_redo=editor->get_undo_redo();
 
 	toolbar = memnew( HBoxContainer );
-	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
+	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(toolbar);
 	toolbar->hide();
 
 	toolbar->add_child( memnew( VSeparator ) );
