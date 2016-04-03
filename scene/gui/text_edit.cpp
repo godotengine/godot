@@ -1625,8 +1625,10 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				k.mod.shift=false;
 			}
 
-			// stuff to do when selection is active..
+			// save here for insert mode, just in case it is cleared in the following section
+			bool had_selection = selection.active;
 
+			// stuff to do when selection is active..
 			if (selection.active) {
 
 				if (readonly)
@@ -2376,8 +2378,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					if (readonly)
 						break;
 
-					// remove the old character if in insert mode
-					if (insert_mode) {
+					// remove the old character if in insert mode and no selection
+					if (insert_mode && !had_selection) {
 						_begin_compex_operation();
 
 						// make sure we don't try and remove empty space
@@ -2397,7 +2399,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						_insert_text_at_cursor(chr);
 					}
 
-					if (insert_mode) {
+					if (insert_mode && !had_selection) {
 						_end_compex_operation();
 					}
 					accept_event();
