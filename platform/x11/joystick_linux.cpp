@@ -89,6 +89,8 @@ joystick_linux::joystick_linux(InputDefault *in)
 joystick_linux::~joystick_linux() {
 	exit_udev = true;
 	Thread::wait_to_finish(joy_thread);
+	memdelete(joy_thread);
+	memdelete(joy_mutex);
 	close_joystick();
 }
 
