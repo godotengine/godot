@@ -1596,7 +1596,22 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 							if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
 								_consume_pair_symbol(chr[0]);
 							} else {
+
+								// remove the old character if in insert mode
+								if (insert_mode) {
+									_begin_compex_operation();
+
+									// make sure we don't try and remove empty space
+									if (cursor.column < get_line(cursor.line).length()) {
+										_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
+									}
+								}
+
 								_insert_text_at_cursor(chr);
+
+								if (insert_mode) {
+									_end_compex_operation();
+								}
 							}
 						}
 
