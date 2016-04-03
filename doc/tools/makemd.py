@@ -54,7 +54,7 @@ def make_class_list(class_list, columns):
 
 	row_max = 0
 	f.write("\n")
-	
+
 	for n in range(0, columns):
 		if len(fit_columns[n]) > row_max:
 			row_max = len(fit_columns[n])
@@ -63,7 +63,7 @@ def make_class_list(class_list, columns):
 	for n in range(0, columns):
 		f.write(" | |")
 
-	f.write("\n")		
+	f.write("\n")
 	f.write("| ")
 	for n in range(0, columns):
 		f.write(" --- | ------- |")

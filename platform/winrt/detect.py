@@ -2,13 +2,13 @@
 
 import os
 
-import sys	
+import sys
 import string
 
 
 def is_active():
 	return True
-        
+
 def get_name():
 		return "WinRT"
 
@@ -16,12 +16,12 @@ def can_build():
 	if (os.name=="nt"):
 		#building natively on windows!
 		if (os.getenv("VSINSTALLDIR")):
-			return True 
+			return True
 	return False
-		
+
 def get_opts():
 	return []
-  
+
 def get_flags():
 
 	return []

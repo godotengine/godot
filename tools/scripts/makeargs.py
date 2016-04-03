@@ -40,7 +40,7 @@ text="""
 			visual_server->m_func($argp);\\
 		}\\
 	}
-	
+
 
 #define FUNC$num(m_func,$argt)\\
 	virtual void m_func($argtp) { \\
@@ -59,8 +59,8 @@ text="""
 			visual_server->m_func($argp);\\
 		}\\
 	}
-	
-	
+
+
 """
 
 
@@ -81,7 +81,7 @@ for i in range(1,8):
 
 	t = text.replace("$argtp",tp).replace("$argp",p).replace("$argt",t).replace("$num",str(i))
 	print(t)
-		
+
 
 
 

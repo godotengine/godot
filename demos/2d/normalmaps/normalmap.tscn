@@ -1,0 +1,63 @@
+[gd_scene load_steps=5 format=1]
+
+[ext_resource path="res://normal_material.tres" type="CanvasItemMaterial" id=1]
+[ext_resource path="res://diffuse.jpg" type="Texture" id=2]
+[ext_resource path="res://light.png" type="Texture" id=3]
+
+[sub_resource type="Animation" id=1]
+
+resource/name = "motion"
+length = 10.0
+loop = true
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("light:transform/pos")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":true, "times":FloatArray( 0, 2.5, 5, 7.5 ), "transitions":FloatArray( -2, -2, -2, -2 ), "values":[ Vector2( 177.912, 174.508 ), Vector2( 612.159, 161.147 ), Vector2( 667.275, 526.917 ), Vector2( 177.912, 526.917 ) ] }
+
+[node name="base" type="Node2D"]
+
+[node name="sprite" type="Sprite" parent="."]
+
+material/material = ExtResource( 1 )
+transform/pos = Vector2( 400, 300 )
+texture = ExtResource( 2 )
+
+[node name="ambient" type="CanvasModulate" parent="."]
+
+color = Color( 0.0657094, 0.202485, 0.328838, 1 )
+
+[node name="light" type="Light2D" parent="."]
+
+transform/pos = Vector2( 177.912, 174.508 )
+enabled = true
+texture = ExtResource( 3 )
+offset = Vector2( 0, 0 )
+scale = 0.8
+color = Color( 1, 1, 1, 1 )
+energy = 1.0
+mode = 0
+range/height = 200.0
+range/z_min = -1024
+range/z_max = 1024
+range/layer_min = 0
+range/layer_max = 0
+range/item_mask = 1
+shadow/enabled = false
+shadow/color = Color( 0, 0, 0, 0 )
+shadow/buffer_size = 2048
+shadow/esm_multiplier = 80.0
+shadow/item_mask = 1
+
+[node name="anim" type="AnimationPlayer" parent="."]
+
+playback/process_mode = 1
+playback/default_blend_time = 0.0
+root/root = NodePath("..")
+anims/motion = SubResource( 1 )
+playback/active = true
+playback/speed = 1.0
+blend_times = [  ]
+autoplay = "motion"
+
+

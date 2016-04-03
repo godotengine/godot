@@ -47,7 +47,7 @@ var shoot_time = 1e20
 
 var MAX_SHOOT_POSE_TIME = 0.3
 
-var bullet = preload("res://bullet.xml")
+var bullet = preload("res://bullet.tscn")
 
 var floor_h_velocity = 0.0
 var enemy
@@ -220,7 +220,7 @@ func _integrate_forces(s):
 
 
 func _ready():
-	enemy = ResourceLoader.load("res://enemy.xml")
+	enemy = ResourceLoader.load("res://enemy.tscn")
 	
 #	if !Globals.has_singleton("Facebook"):
 #		return
