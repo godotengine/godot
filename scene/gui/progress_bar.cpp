@@ -35,7 +35,9 @@ Size2 ProgressBar::get_minimum_size() const {
 	Ref<Font> font = get_font("font");
 
 	Size2 ms=bg->get_minimum_size()+bg->get_center_size();
-	ms.height=MAX(ms.height,bg->get_minimum_size().height+font->get_height());
+	if (percent_visible) {
+		ms.height=MAX(ms.height,bg->get_minimum_size().height+font->get_height());
+	}
 	return ms;
 }
 
