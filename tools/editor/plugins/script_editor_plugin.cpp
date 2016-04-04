@@ -1257,6 +1257,11 @@ void ScriptEditor::_menu_option(int p_option) {
 				{
 					int begin = tx->get_selection_from_line();
 					int end = tx->get_selection_to_line();
+
+					// End of selection ends on the first column of the last line, ignore it.
+					if(tx->get_selection_to_column() == 0)
+						end -= 1;
+					
 					for (int i = begin; i <= end; i++)
 					{
 						String line_text = tx->get_line(i);
