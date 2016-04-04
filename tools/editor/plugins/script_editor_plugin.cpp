@@ -2710,7 +2710,7 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("text_editor/script_temperature_history_size",15);
 	EDITOR_DEF("text_editor/script_temperature_hot_color",Color(1,0,0,0.3));
 	EDITOR_DEF("text_editor/script_temperature_cold_color",Color(0,0,1,0.3));
-	EDITOR_DEF("text_editor/group_help_pages",false);
+	EDITOR_DEF("text_editor/group_help_pages",true);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"external_editor/exec_path",PROPERTY_HINT_GLOBAL_FILE));
 	EDITOR_DEF("external_editor/exec_flags","");
 
