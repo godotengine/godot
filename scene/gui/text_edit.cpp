@@ -1132,7 +1132,7 @@ void TextEdit::_consume_pair_symbol(CharType ch) {
 
 		int new_column,new_line;
 
-		_begin_compex_operation();
+		_begin_complex_operation();
 		_insert_text(get_selection_from_line(), get_selection_from_column(),
 			     ch_single,
 			     &new_line, &new_column);
@@ -1145,7 +1145,7 @@ void TextEdit::_consume_pair_symbol(CharType ch) {
 			     get_selection_to_column() + to_col_offset,
 			     ch_single_pair,
 			     &new_line,&new_column);
-		_end_compex_operation();
+		_end_complex_operation();
 
 		cursor_set_line(get_selection_to_line());
 		cursor_set_column(get_selection_to_column() + to_col_offset);
@@ -1599,7 +1599,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 								// remove the old character if in insert mode
 								if (insert_mode) {
-									_begin_compex_operation();
+									_begin_complex_operation();
 
 									// make sure we don't try and remove empty space
 									if (cursor.column < get_line(cursor.line).length()) {
@@ -1610,7 +1610,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 								_insert_text_at_cursor(chr);
 
 								if (insert_mode) {
-									_end_compex_operation();
+									_end_complex_operation();
 								}
 							}
 						}
@@ -1686,10 +1686,10 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 							cursor_set_line(selection.from_line);
 							cursor_set_column(selection.from_column);
-							_begin_compex_operation();
+							_begin_complex_operation();
 							_remove_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
 							_insert_text_at_cursor(txt);
-							_end_compex_operation();
+							_end_complex_operation();
 							selection.active=true;
 							selection.from_column=sel_column;
 							selection.from_line=sel_line;
@@ -1747,7 +1747,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				}
 				if (clear) {
 
-					_begin_compex_operation();
+					_begin_complex_operation();
 					selection.active=false;
 					update();
 					_remove_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
@@ -2396,7 +2396,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					// remove the old character if in insert mode and no selection
 					if (insert_mode && !had_selection) {
-						_begin_compex_operation();
+						_begin_complex_operation();
 
 						// make sure we don't try and remove empty space
 						if (cursor.column < get_line(cursor.line).length()) {
@@ -2416,11 +2416,11 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					}
 
 					if (insert_mode && !had_selection) {
-						_end_compex_operation();
+						_end_complex_operation();
 					}
 
 					if (selection.active != had_selection) {
-						_end_compex_operation();
+						_end_complex_operation();
 					}
 					accept_event();
 				} else {
@@ -3613,12 +3613,12 @@ void TextEdit::clear_undo_history() {
 
 }
 
-void TextEdit::_begin_compex_operation() {
+void TextEdit::_begin_complex_operation() {
 	_push_current_op();
 	next_operation_is_complex=true;
 }
 
-void TextEdit::_end_compex_operation() {
+void TextEdit::_end_complex_operation() {
 
 	_push_current_op();
 	ERR_FAIL_COND(undo_stack.size() == 0);

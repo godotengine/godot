@@ -265,8 +265,8 @@ class TextEdit : public Control  {
 	void _cursor_changed_emit();
 	void _text_changed_emit();
 
-	void _begin_compex_operation();
-	void _end_compex_operation();
+	void _begin_complex_operation();
+	void _end_complex_operation();
 	void _push_current_op();
 
 	/* super internal api, undo/redo builds on it */
