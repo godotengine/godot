@@ -1747,6 +1747,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				}
 				if (clear) {
 
+					_begin_compex_operation();
 					selection.active=false;
 					update();
 					_remove_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
@@ -2415,6 +2416,10 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					}
 
 					if (insert_mode && !had_selection) {
+						_end_compex_operation();
+					}
+
+					if (selection.active != had_selection) {
 						_end_compex_operation();
 					}
 					accept_event();
