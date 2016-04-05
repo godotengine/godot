@@ -398,6 +398,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("text_editor/base_type_color",Color::html("a4ffd4"));
 	set("text_editor/engine_type_color",Color::html("83d3ff"));
 	set("text_editor/function_color",Color::html("66a2ce"));
+	set("text_editor/member_variable_color",Color::html("e64e59"));
 	set("text_editor/comment_color",Color::html("983d1b"));
 	set("text_editor/string_color",Color::html("ef6ebe"));
 	set("text_editor/number_color",Color::html("EB9532"));
