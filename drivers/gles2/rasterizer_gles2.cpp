@@ -11050,6 +11050,7 @@ void RasterizerGLES2::finish() {
 
 	free(default_material);
 	free(shadow_material);
+	free(shadow_material_double_sided);
 	free(canvas_shadow_blur);
 	free( overdraw_material );
 }
