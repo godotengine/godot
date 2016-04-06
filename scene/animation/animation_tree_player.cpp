@@ -571,8 +571,8 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 
 			if (!p_seek) {
 				osn->time+=p_time;
-				osn->remaining-=p_time;
-				if (osn->remaining<0)
+				osn->remaining=os_rem;
+				if (osn->remaining<=0)
 					osn->active=false;
 			}
 
