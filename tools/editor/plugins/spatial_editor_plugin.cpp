@@ -51,7 +51,31 @@
 #define GIZMO_SCALE_DEFAULT 0.15
 
 
-//void SpatialEditorViewport::_update_camera();
+void SpatialEditorViewport::_update_camera() {
+	if (orthogonal) {
+		Size2 size = get_size();
+		Size2 vpsize = Point2(cursor.distance*size.get_aspect(), cursor.distance / size.get_aspect());
+		//camera->set_orthogonal(size.width*cursor.distance,get_znear(),get_zfar());
+		camera->set_orthogonal(2 * cursor.distance, 0.1, 8192);
+	}
+	else
+		camera->set_perspective(get_fov(), get_znear(), get_zfar());
+
+	Transform camera_transform;
+	camera_transform.translate(cursor.pos);
+	camera_transform.basis.rotate(Vector3(0, 1, 0), cursor.y_rot);
+	camera_transform.basis.rotate(Vector3(1, 0, 0), cursor.x_rot);
+
+	if (orthogonal)
+		camera_transform.translate(0, 0, 4096);
+	else
+		camera_transform.translate(0, 0, cursor.distance);
+
+	if (camera->get_global_transform() != camera_transform) {
+		camera->set_global_transform(camera_transform);
+		update_transform_gizmo_view();
+	}
+}
 
 String SpatialEditorGizmo::get_handle_name(int p_idx) const {
 
@@ -1787,6 +1811,10 @@ void SpatialEditorViewport::_notification(int p_what) {
 		bool visible=is_visible();
 
 		set_process(visible);
+
+		if (visible)
+			_update_camera();
+		
 		call_deferred("update_transform_gizmo_view");
 	}
 
@@ -1808,28 +1836,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 		}
 		*/
 
-		if (orthogonal) {
-			Size2 size=get_size();
-			Size2 vpsize = Point2(cursor.distance*size.get_aspect(),cursor.distance/size.get_aspect());
-			//camera->set_orthogonal(size.width*cursor.distance,get_znear(),get_zfar());
-			camera->set_orthogonal(2*cursor.distance,0.1,8192);
-		} else
-			camera->set_perspective(get_fov(),get_znear(),get_zfar());
-
-		Transform camera_transform;
-		camera_transform.translate( cursor.pos );
-		camera_transform.basis.rotate(Vector3(0,1,0),cursor.y_rot);
-		camera_transform.basis.rotate(Vector3(1,0,0),cursor.x_rot);
-
-		if (orthogonal)
-			camera_transform.translate(0,0,4096);
-		else
-			camera_transform.translate(0,0,cursor.distance);
-
-		if (camera->get_global_transform()!=camera_transform) {
-			camera->set_global_transform( camera_transform );
-			update_transform_gizmo_view();
-		}
+		_update_camera();
 
 		Map<Node*,Object*> &selection = editor_selection->get_selection();
 
@@ -1932,7 +1939,6 @@ void SpatialEditorViewport::_notification(int p_what) {
 		surface->connect("mouse_enter",this,"_smouseenter");
 		preview_camera->set_icon(get_icon("Camera","EditorIcons"));
 		_init_gizmo_instance(index);
-
 	}
 	if (p_what==NOTIFICATION_EXIT_TREE) {
 
