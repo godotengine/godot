@@ -62,6 +62,7 @@ public:
 	StringName exit_tree;
 	StringName size_flags_changed;
 	StringName minimum_size_changed;
+	StringName sleeping_state_changed;
 	StringName idle;
 	StringName iteration;
 	StringName update;
