@@ -288,6 +288,7 @@ void ScriptTextEditor::_load_theme_settings() {
 
 	get_text_edit()->set_custom_bg_color(EDITOR_DEF("text_editor/background_color",Color(0,0,0,0)));
 	get_text_edit()->add_color_override("font_color",EDITOR_DEF("text_editor/text_color",Color(0,0,0)));
+	get_text_edit()->add_color_override("caret_color",EDITOR_DEF("text_editor/caret_color",Color(0,0,0)));
 	get_text_edit()->add_color_override("font_selected_color",EDITOR_DEF("text_editor/text_selected_color",Color(1,1,1)));
 	get_text_edit()->add_color_override("selection_color",EDITOR_DEF("text_editor/selection_color",Color(0.2,0.2,1)));
 	get_text_edit()->add_color_override("brace_mismatch_color",EDITOR_DEF("text_editor/brace_mismatch_color",Color(1,0.2,0.2)));
@@ -295,10 +296,10 @@ void ScriptTextEditor::_load_theme_settings() {
 	get_text_edit()->add_color_override("word_highlighted_color",EDITOR_DEF("text_editor/word_highlighted_color",Color(0.8,0.9,0.9,0.15)));
 	get_text_edit()->add_color_override("number_color",EDITOR_DEF("text_editor/number_color",Color(0.9,0.6,0.0,2)));
 	get_text_edit()->add_color_override("function_color",EDITOR_DEF("text_editor/function_color",Color(0.4,0.6,0.8)));
+	get_text_edit()->add_color_override("member_variable_color",EDITOR_DEF("text_editor/member_variable_color",Color(0.9,0.3,0.3)));
 
 	Color keyword_color= EDITOR_DEF("text_editor/keyword_color",Color(0.5,0.0,0.2));
 
-	get_text_edit()->set_syntax_coloring(true);
 	List<String> keywords;
 	script->get_language()->get_reserved_words(&keywords);
 	for(List<String>::Element *E=keywords.front();E;E=E->next()) {
@@ -1071,6 +1072,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (scr.is_null())
 					return;
 
+				tx->begin_complex_operation();
 				if (tx->is_selection_active())
 				{
 					int from_line = tx->get_selection_from_line();
@@ -1102,6 +1104,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 					swap_lines(tx, line_id, next_id);
 				}
+				tx->end_complex_operation();
 				tx->update();
 
 			} break;
@@ -1112,6 +1115,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (scr.is_null())
 					return;
 
+				tx->begin_complex_operation();
 				if (tx->is_selection_active())
 				{
 					int from_line = tx->get_selection_from_line();
@@ -1143,6 +1147,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 					swap_lines(tx, line_id, next_id);
 				}
+				tx->end_complex_operation();
 				tx->update();
 
 			} break;
@@ -1153,27 +1158,10 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (scr.is_null())
 					return;
 
-
+				tx->begin_complex_operation();
 				if (tx->is_selection_active())
 				{
-					int begin = tx->get_selection_from_line();
-					int end = tx->get_selection_to_line();
-					for (int i = begin; i <= end; i++)
-					{
-						String line_text = tx->get_line(i);
-						// begins with tab
-						if (line_text.begins_with("\t"))
-						{
-							line_text = line_text.substr(1, line_text.length());
-							tx->set_line(i, line_text);
-						}
-						// begins with 4 spaces
-						else if (line_text.begins_with("    "))
-						{
-							line_text = line_text.substr(4, line_text.length());
-							tx->set_line(i, line_text);
-						}
-					}
+					tx->indent_selection_left();
 				}
 				else
 				{
@@ -1192,6 +1180,7 @@ void ScriptEditor::_menu_option(int p_option) {
 						tx->set_line(begin, line_text);
 					}
 				}
+				tx->end_complex_operation();
 				tx->update();
 				//tx->deselect();
 
@@ -1203,16 +1192,10 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (scr.is_null())
 					return;
 
+				tx->begin_complex_operation();
 				if (tx->is_selection_active())
 				{
-					int begin = tx->get_selection_from_line();
-					int end = tx->get_selection_to_line();
-					for (int i = begin; i <= end; i++)
-					{
-						String line_text = tx->get_line(i);
-						line_text = '\t' + line_text;
-						tx->set_line(i, line_text);
-					}
+					tx->indent_selection_right();
 				}
 				else
 				{
@@ -1221,6 +1204,7 @@ void ScriptEditor::_menu_option(int p_option) {
 					line_text = '\t' + line_text;
 					tx->set_line(begin, line_text);
 				}
+				tx->end_complex_operation();
 				tx->update();
 				//tx->deselect();
 
@@ -1252,7 +1236,7 @@ void ScriptEditor::_menu_option(int p_option) {
 					return;
 
 
-
+				tx->begin_complex_operation();
 				if (tx->is_selection_active())
 				{
 					int begin = tx->get_selection_from_line();
@@ -1284,6 +1268,7 @@ void ScriptEditor::_menu_option(int p_option) {
 						line_text = "#" + line_text;
 					tx->set_line(begin, line_text);
 				}
+				tx->end_complex_operation();
 				tx->update();
 				//tx->deselect();
 
@@ -1940,6 +1925,7 @@ void ScriptEditor::edit(const Ref<Script>& p_script) {
 	ste->get_text_edit()->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
 	ste->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
 	ste->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
+	ste->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
 	ste->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
 	ste->get_text_edit()->set_callhint_settings(
 		EditorSettings::get_singleton()->get("text_editor/put_callhint_tooltip_below_current_line"),
@@ -2081,6 +2067,7 @@ void ScriptEditor::_editor_settings_changed() {
 		ste->get_text_edit()->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
 		ste->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
 		ste->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
+		ste->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
 		ste->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
 	}
 
