@@ -300,7 +300,6 @@ void ScriptTextEditor::_load_theme_settings() {
 
 	Color keyword_color= EDITOR_DEF("text_editor/keyword_color",Color(0.5,0.0,0.2));
 
-	get_text_edit()->set_syntax_coloring(true);
 	List<String> keywords;
 	script->get_language()->get_reserved_words(&keywords);
 	for(List<String>::Element *E=keywords.front();E;E=E->next()) {
@@ -1950,6 +1949,7 @@ void ScriptEditor::edit(const Ref<Script>& p_script) {
 	ste->get_text_edit()->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
 	ste->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
 	ste->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
+	ste->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
 	ste->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
 	ste->get_text_edit()->set_callhint_settings(
 		EditorSettings::get_singleton()->get("text_editor/put_callhint_tooltip_below_current_line"),
@@ -2091,6 +2091,7 @@ void ScriptEditor::_editor_settings_changed() {
 		ste->get_text_edit()->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
 		ste->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
 		ste->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
+		ste->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
 		ste->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
 	}
 
