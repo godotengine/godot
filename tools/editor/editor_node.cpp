@@ -2076,8 +2076,12 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			Node *scene = editor_data.get_edited_scene_root();
 			if (scene && scene->get_filename()!="") {
 
-				//_save_scene(scene->get_filename());
-				_save_scene_with_preview(scene->get_filename());
+				// save in background if in the script editor
+				if (_get_current_main_editor() == EDITOR_SCRIPT) {
+					_save_scene(scene->get_filename());
+				} else {
+					_save_scene_with_preview(scene->get_filename());
+				}
 				return;
 			};
 			// fallthrough to save_as

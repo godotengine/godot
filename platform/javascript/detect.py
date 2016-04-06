@@ -4,7 +4,7 @@ import string
 
 def is_active():
 	return True
-	
+
 def get_name():
 	return "JavaScript"
 
@@ -95,7 +95,7 @@ def configure(env):
 	env.Append(LINKFLAGS=['-s','ASM_JS=1'])
 	env.Append(LINKFLAGS=['-O2'])
 	#env.Append(LINKFLAGS=['-g4'])
-	
+
 	#print "CCCOM is:", env.subst('$CCCOM')
 	#print "P: ", env['p'], " Platofrm: ", env['platform']
 

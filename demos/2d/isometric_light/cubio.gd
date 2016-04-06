@@ -19,7 +19,7 @@ func _input(event):
 	if (event.type == InputEvent.MOUSE_BUTTON and event.button_index == 1 and event.pressed and shoot_countdown <= 0):
 		var pos = get_canvas_transform().affine_inverse()*event.pos
 		var dir = (pos - get_global_pos()).normalized()
-		var bullet = preload("res://shoot.scn").instance()
+		var bullet = preload("res://shoot.tscn").instance()
 		bullet.advance_dir = dir
 		bullet.set_pos(get_global_pos() + dir*60)
 		get_parent().add_child(bullet)

@@ -1,0 +1,206 @@
+[gd_scene load_steps=12 format=1]
+
+[ext_resource path="res://enemy.gd" type="Script" id=1]
+[ext_resource path="res://enemy.png" type="Texture" id=2]
+[ext_resource path="res://bullet.png" type="Texture" id=3]
+[ext_resource path="res://sound_explode.wav" type="Sample" id=4]
+[ext_resource path="res://sound_hit.wav" type="Sample" id=5]
+
+[sub_resource type="CircleShape2D" id=1]
+
+custom_solver_bias = 0.0
+radius = 14.0
+
+[sub_resource type="Animation" id=2]
+
+resource/name = "explode"
+length = 6.0
+loop = false
+step = 0.0
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:visibility/self_opacity")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":true, "times":FloatArray( 3.58422, 4.33851 ), "transitions":FloatArray( 1, 1 ), "values":[ 1.0, 0.0 ] }
+tracks/1/type = "value"
+tracks/1/path = NodePath("sprite:frame")
+tracks/1/interp = 1
+tracks/1/keys = { "cont":true, "times":FloatArray( 0 ), "transitions":FloatArray( 1 ), "values":[ 4 ] }
+tracks/2/type = "value"
+tracks/2/path = NodePath("Particles2D:config/emitting")
+tracks/2/interp = 1
+tracks/2/keys = { "cont":false, "times":FloatArray( 3.47394 ), "transitions":FloatArray( 1 ), "values":[ true ] }
+tracks/3/type = "method"
+tracks/3/path = NodePath(".")
+tracks/3/interp = 1
+tracks/3/keys = { "times":FloatArray( 3.20357, 5.07305 ), "transitions":FloatArray( 1, 1 ), "values":[ { "args":[  ], "method":"_pre_explode" }, { "args":[  ], "method":"_die" } ] }
+
+[sub_resource type="Animation" id=3]
+
+length = 6.75
+loop = true
+step = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0, 0.75, 1.5, 2.25, 3, 3.75, 4.5, 5.25, 6, 6.75 ), "transitions":FloatArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ), "values":[ 5, 6, 5, 6, 5, 6, 7, 6, 7, 5 ] }
+
+[sub_resource type="Animation" id=4]
+
+resource/name = "walk"
+length = 1.25
+loop = true
+step = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0, 0.25, 0.5, 0.75, 1, 1.25 ), "transitions":FloatArray( 1, 1, 1, 1, 1, 1 ), "values":[ 0, 1, 2, 3, 4, 0 ] }
+
+[sub_resource type="ColorRamp" id=5]
+
+offsets = FloatArray( 0, 1 )
+colors = ColorArray( 1, 0.884956, 0.823009, 1, 0.768627, 0.389381, 0, 0 )
+
+[sub_resource type="SampleLibrary" id=6]
+
+samples/explode = { "db":0.0, "pitch":1.0, "sample":ExtResource( 4 ) }
+samples/hit = { "db":0.0, "pitch":1.0, "sample":ExtResource( 5 ) }
+
+[node name="enemy" type="RigidBody2D"]
+
+input/pickable = false
+shapes/0/shape = SubResource( 1 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, -1.08072, -2.16144 )
+shapes/0/trigger = false
+shapes/1/shape = SubResource( 1 )
+shapes/1/transform = Matrix32( 1, 0, 0, 1, 6.48431, 3.24216 )
+shapes/1/trigger = false
+shapes/2/shape = SubResource( 1 )
+shapes/2/transform = Matrix32( 1, 0, 0, 1, -12.495, 3.53415 )
+shapes/2/trigger = false
+collision/layers = 1
+collision/mask = 1
+mode = 2
+mass = 1.0
+friction = 0.0
+bounce = 0.0
+gravity_scale = 1.0
+custom_integrator = false
+continuous_cd = 0
+contacts_reported = 4
+contact_monitor = false
+sleeping = false
+can_sleep = true
+velocity/linear = Vector2( 0, 0 )
+velocity/angular = 0.0
+damp_override/linear = -1.0
+damp_override/angular = -1.0
+script/script = ExtResource( 1 )
+
+[node name="enabler" type="VisibilityEnabler2D" parent="."]
+
+transform/pos = Vector2( 16.2569, 11.0034 )
+transform/scale = Vector2( 23.5056, 10.8629 )
+rect = Rect2( -10, -10, 20, 20 )
+enabler/pause_animations = true
+enabler/freeze_bodies = true
+enabler/pause_particles = true
+enabler/process_parent = false
+enabler/fixed_process_parent = false
+
+[node name="anim" type="AnimationPlayer" parent="."]
+
+playback/process_mode = 1
+playback/default_blend_time = 0.0
+root/root = NodePath("..")
+anims/explode = SubResource( 2 )
+anims/idle = SubResource( 3 )
+anims/walk = SubResource( 4 )
+playback/active = true
+playback/speed = 3.0
+blend_times = [  ]
+autoplay = ""
+
+[node name="sprite" type="Sprite" parent="."]
+
+texture = ExtResource( 2 )
+hframes = 8
+frame = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+transform/pos = Vector2( -1.08072, -2.16144 )
+shape = SubResource( 1 )
+trigger = false
+_update_shape_index = -1
+
+[node name="CollisionShape2D 2" type="CollisionShape2D" parent="."]
+
+transform/pos = Vector2( 6.48431, 3.24216 )
+shape = SubResource( 1 )
+trigger = false
+_update_shape_index = -1
+
+[node name="CollisionShape2D 3" type="CollisionShape2D" parent="."]
+
+transform/pos = Vector2( -12.495, 3.53415 )
+shape = SubResource( 1 )
+trigger = false
+_update_shape_index = -1
+
+[node name="raycast_left" type="RayCast2D" parent="."]
+
+transform/pos = Vector2( -33.2868, -9.34363 )
+enabled = true
+cast_to = Vector2( 0, 45 )
+layer_mask = 1
+type_mask = 15
+
+[node name="raycast_right" type="RayCast2D" parent="."]
+
+transform/pos = Vector2( 29.1987, -9.34363 )
+enabled = true
+cast_to = Vector2( 0, 45 )
+layer_mask = 1
+type_mask = 15
+
+[node name="Particles2D" type="Particles2D" parent="."]
+
+visibility/self_opacity = 0.121212
+visibility/blend_mode = 1
+config/amount = 32
+config/lifetime = 0.5
+config/emit_timeout = 0.5
+config/emitting = false
+config/explosiveness = 0.1
+config/texture = ExtResource( 3 )
+params/direction = 0.0
+params/spread = 180.0
+params/linear_velocity = 90.0
+params/spin_velocity = 2.0
+params/orbit_velocity = 0.0
+params/gravity_direction = 0.0
+params/gravity_strength = 9.8
+params/radial_accel = 0.0
+params/tangential_accel = 0.0
+params/damping = 0.0
+params/initial_angle = 0.0
+params/initial_size = 2.0
+params/final_size = 3.0
+params/hue_variation = 0.0
+params/anim_speed_scale = 1.0
+params/anim_initial_pos = 0.0
+randomness/spin_velocity = 1.0
+color/color_ramp = SubResource( 5 )
+
+[node name="sound" type="SamplePlayer2D" parent="."]
+
+params/volume_db = 0.0
+params/pitch_scale = 1.0
+params/attenuation/min_distance = 1.0
+params/attenuation/max_distance = 2048.0
+params/attenuation/distance_exp = 1.0
+config/polyphony = 3
+config/samples = SubResource( 6 )
+config/pitch_random = 0.0
+
+

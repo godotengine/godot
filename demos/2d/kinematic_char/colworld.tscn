@@ -1,0 +1,422 @@
+[gd_scene load_steps=19 format=1]
+
+[ext_resource path="res://colworld.gd" type="Script" id=1]
+[ext_resource path="res://obstacle.png" type="Texture" id=2]
+[ext_resource path="res://player.tscn" type="PackedScene" id=3]
+[ext_resource path="res://princess.png" type="Texture" id=4]
+[ext_resource path="res://circle.png" type="Texture" id=5]
+[ext_resource path="res://long_obstacle.png" type="Texture" id=6]
+
+[sub_resource type="RectangleShape2D" id=1]
+
+custom_solver_bias = 0.0
+extents = Vector2( 8, 8 )
+
+[sub_resource type="TileSet" id=2]
+
+0/name = ""
+0/texture = ExtResource( 2 )
+0/tex_offset = Vector2( 0, 0 )
+0/region = Rect2( 0, 0, 0, 0 )
+0/occluder_offset = Vector2( 0, 0 )
+0/navigation_offset = Vector2( 0, 0 )
+0/shape_offset = Vector2( 8, 8 )
+0/shapes = [ SubResource( 1 ) ]
+
+[sub_resource type="RectangleShape2D" id=3]
+
+custom_solver_bias = 0.0
+extents = Vector2( 8, 8 )
+
+[sub_resource type="Animation" id=4]
+
+length = 10.0
+loop = true
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:transform/pos")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":true, "times":FloatArray( 0, 1, 5, 6 ), "transitions":FloatArray( 1, 1, 1, 1 ), "values":[ Vector2( 184, 152 ), Vector2( 184, 152 ), Vector2( 328.086, 152 ), Vector2( 328.086, 152 ) ] }
+
+[sub_resource type="Animation" id=5]
+
+resource/name = "leftright"
+length = 10.0
+loop = true
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:transform/pos")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":true, "times":FloatArray( 0, 1, 5, 6 ), "transitions":FloatArray( 1, 1, 1, 1 ), "values":[ Vector2( 184, 152 ), Vector2( 184, 152 ), Vector2( 328.086, 152 ), Vector2( 328.086, 152 ) ] }
+
+[sub_resource type="Animation" id=6]
+
+length = 10.0
+loop = true
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:transform/pos")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":true, "times":FloatArray( 0, 1, 5, 6 ), "transitions":FloatArray( 1, 1, 1, 1 ), "values":[ Vector2( 88.3493, 296 ), Vector2( 88.3493, 296 ), Vector2( 88.3493, 152 ), Vector2( 88.3493, 152 ) ] }
+
+[sub_resource type="RectangleShape2D" id=7]
+
+custom_solver_bias = 0.0
+extents = Vector2( 8, 8 )
+
+[sub_resource type="RectangleShape2D" id=8]
+
+custom_solver_bias = 0.0
+extents = Vector2( 10, 4 )
+
+[sub_resource type="CircleShape2D" id=9]
+
+custom_solver_bias = 0.0
+radius = 32.0
+
+[sub_resource type="RectangleShape2D" id=10]
+
+custom_solver_bias = 0.0
+extents = Vector2( 8, 8 )
+
+[sub_resource type="Animation" id=11]
+
+length = 20.0
+loop = true
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:transform/rot")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":true, "times":FloatArray( 0, 5, 10, 15 ), "transitions":FloatArray( -2, -2, -2, -2 ), "values":[ 0.0, 90.0, 0.0, -90.0 ] }
+
+[sub_resource type="RectangleShape2D" id=12]
+
+custom_solver_bias = 0.0
+extents = Vector2( 32, 8 )
+
+[node name="colworld" type="Node2D"]
+
+script/script = ExtResource( 1 )
+
+[node name="TileMap" type="TileMap" parent="."]
+
+mode = 0
+tile_set = SubResource( 2 )
+cell/size = Vector2( 16, 16 )
+cell/quadrant_size = 16
+cell/custom_transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+cell/half_offset = 2
+cell/tile_origin = 0
+cell/y_sort = false
+collision/use_kinematic = false
+collision/friction = 1.0
+collision/bounce = 0.0
+collision/layers = 1
+collision/mask = 1
+occluder/light_mask = 1
+tile_data = IntArray( 0, 0, 1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 7, 0, 8, 0, 9, 0, 10, 0, 11, 0, 12, 0, 13, 0, 14, 0, 15, 0, 16, 0, 17, 0, 18, 0, 19, 0, 20, 0, 21, 0, 22, 0, 23, 0, 24, 0, 25, 0, 26, 0, 27, 0, 28, 0, 29, 0, 30, 0, 31, 0, 32, 0, 65536, 0, 65537, 0, 65538, 0, 65539, 0, 65540, 0, 65541, 0, 65542, 0, 65543, 0, 65544, 0, 65545, 0, 65546, 0, 65547, 0, 65548, 0, 65549, 0, 65550, 0, 65551, 0, 65552, 0, 65553, 0, 65554, 0, 65555, 0, 65556, 0, 65557, 0, 65558, 0, 65559, 0, 65560, 0, 65561, 0, 65562, 0, 65563, 0, 65564, 0, 65565, 0, 65566, 0, 65567, 0, 65568, 0, 131072, 0, 131073, 0, 131103, 0, 131104, 0, 196608, 0, 196609, 0, 196639, 0, 196640, 0, 262144, 0, 262145, 0, 262175, 0, 262176, 0, 327680, 0, 327681, 0, 327685, 0, 327686, 0, 327687, 0, 327688, 0, 327689, 0, 327690, 0, 327691, 0, 327692, 0, 327693, 0, 327697, 0, 327711, 0, 327712, 0, 393216, 0, 393217, 0, 393237, 0, 393238, 0, 393247, 0, 393248, 0, 458752, 0, 458753, 0, 458783, 0, 458784, 0, 524288, 0, 524289, 0, 524313, 0, 524314, 0, 524319, 0, 524320, 0, 589824, 0, 589825, 0, 589830, 0, 589831, 0, 589832, 0, 589833, 0, 589834, 0, 589845, 0, 589846, 0, 589847, 0, 589855, 0, 589856, 0, 655360, 0, 655361, 0, 655391, 0, 655392, 0, 720896, 0, 720897, 0, 720927, 0, 720928, 0, 786432, 0, 786433, 0, 786463, 0, 786464, 0, 851968, 0, 851969, 0, 851999, 0, 852000, 0, 917504, 0, 917505, 0, 917535, 0, 917536, 0, 983040, 0, 983041, 0, 983071, 0, 983072, 0, 1048576, 0, 1048577, 0, 1048607, 0, 1048608, 0, 1114112, 0, 1114113, 0, 1114143, 0, 1114144, 0, 1179648, 0, 1179649, 0, 1179654, 0, 1179655, 0, 1179656, 0, 1179679, 0, 1179680, 0, 1245184, 0, 1245185, 0, 1245204, 0, 1245205, 0, 1245206, 0, 1245207, 0, 1245215, 0, 1245216, 0, 1310720, 0, 1310721, 0, 1310751, 0, 1310752, 0, 1376256, 0, 1376257, 0, 1376285, 0, 1376286, 0, 1376287, 0, 1376288, 0, 1441792, 0, 1441793, 0, 1441823, 0, 1441824, 0, 1507328, 0, 1507329, 0, 1507355, 0, 1507356, 0, 1507359, 0, 1507360, 0, 1572864, 0, 1572865, 0, 1572895, 0, 1572896, 0, 1638400, 0, 1638401, 0, 1638413, 0, 1638425, 0, 1638426, 0, 1638431, 0, 1638432, 0, 1703936, 0, 1703937, 0, 1703948, 0, 1703965, 0, 1703966, 0, 1703967, 0, 1703968, 0, 1769472, 0, 1769473, 0, 1769482, 0, 1769483, 0, 1769500, 0, 1769501, 0, 1769503, 0, 1769504, 0, 1835008, 0, 1835009, 0, 1835012, 0, 1835018, 0, 1835019, 0, 1835034, 0, 1835035, 0, 1835039, 0, 1835040, 0, 1900544, 0, 1900545, 0, 1900546, 0, 1900547, 0, 1900548, 0, 1900549, 0, 1900550, 0, 1900551, 0, 1900552, 0, 1900553, 0, 1900554, 0, 1900555, 0, 1900556, 0, 1900557, 0, 1900558, 0, 1900559, 0, 1900560, 0, 1900561, 0, 1900562, 0, 1900563, 0, 1900564, 0, 1900565, 0, 1900566, 0, 1900567, 0, 1900568, 0, 1900569, 0, 1900570, 0, 1900571, 0, 1900572, 0, 1900573, 0, 1900574, 0, 1900575, 0, 1900576, 0, 1966080, 0, 1966081, 0, 1966082, 0, 1966083, 0, 1966084, 0, 1966085, 0, 1966086, 0, 1966087, 0, 1966088, 0, 1966089, 0, 1966090, 0, 1966091, 0, 1966092, 0, 1966093, 0, 1966094, 0, 1966095, 0, 1966096, 0, 1966097, 0, 1966098, 0, 1966099, 0, 1966100, 0, 1966101, 0, 1966102, 0, 1966103, 0, 1966104, 0, 1966105, 0, 1966106, 0, 1966107, 0, 1966108, 0, 1966109, 0, 1966110, 0, 1966111, 0, 1966112, 0, 2031616, 0, 2031617, 0, 2031618, 0, 2031619, 0, 2031620, 0, 2031621, 0, 2031622, 0, 2031623, 0, 2031624, 0, 2031625, 0, 2031626, 0, 2031627, 0, 2031628, 0, 2031629, 0, 2031630, 0, 2031631, 0, 2031632, 0, 2031633, 0, 2031634, 0, 2031635, 0, 2031636, 0, 2031637, 0, 2031638, 0, 2031639, 0, 2031640, 0, 2031641, 0, 2031642, 0, 2031643, 0, 2031644, 0, 2031645, 0, 2031646, 0, 2031647, 0, 2031648, 0 )
+
+[node name="player" parent="." instance=ExtResource( 3 )]
+
+transform/pos = Vector2( 72, 430 )
+collision/margin = 0.05
+
+[node name="moving_platform1" type="KinematicBody2D" parent="."]
+
+transform/pos = Vector2( 274.142, 152 )
+input/pickable = false
+shapes/0/shape = SubResource( 3 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/0/trigger = false
+collision/layers = 1
+collision/mask = 1
+collision/margin = 0.01
+
+[node name="collision" type="CollisionShape2D" parent="moving_platform1"]
+
+shape = SubResource( 3 )
+trigger = false
+_update_shape_index = -1
+
+[node name="sprite" type="Sprite" parent="moving_platform1"]
+
+texture = ExtResource( 2 )
+
+[node name="anim" type="AnimationPlayer" parent="moving_platform1"]
+
+playback/process_mode = 0
+playback/default_blend_time = 0.0
+root/root = NodePath("..")
+anims/leftright = SubResource( 4 )
+playback/active = true
+playback/speed = 1.0
+blend_times = [  ]
+autoplay = "leftright"
+
+[node name="moving_platform2" type="KinematicBody2D" parent="."]
+
+transform/pos = Vector2( 88.3493, 284.689 )
+input/pickable = false
+shapes/0/shape = SubResource( 3 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/0/trigger = false
+collision/layers = 1
+collision/mask = 1
+collision/margin = 0.01
+
+[node name="collision" type="CollisionShape2D" parent="moving_platform2"]
+
+shape = SubResource( 3 )
+trigger = false
+_update_shape_index = -1
+
+[node name="sprite" type="Sprite" parent="moving_platform2"]
+
+texture = ExtResource( 2 )
+
+[node name="anim" type="AnimationPlayer" parent="moving_platform2"]
+
+playback/process_mode = 0
+playback/default_blend_time = 0.0
+root/root = NodePath("..")
+anims/leftright = SubResource( 5 )
+anims/updown = SubResource( 6 )
+playback/active = true
+playback/speed = 1.0
+blend_times = [  ]
+autoplay = "updown"
+
+[node name="princess" type="Area2D" parent="."]
+
+transform/pos = Vector2( 97, 72 )
+input/pickable = true
+shapes/0/shape = SubResource( 7 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/0/trigger = false
+gravity_vec = Vector2( 0, 1 )
+gravity = 98.0
+linear_damp = 0.1
+angular_damp = 1.0
+
+[node name="collision" type="CollisionShape2D" parent="princess"]
+
+shape = SubResource( 7 )
+trigger = false
+_update_shape_index = -1
+
+[node name="Sprite" type="Sprite" parent="princess"]
+
+texture = ExtResource( 4 )
+
+[node name="youwin" type="Label" parent="."]
+
+visibility/visible = false
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+margin/left = 196.0
+margin/top = 41.0
+margin/right = 344.0
+margin/bottom = 67.0
+text = "Thank You Cubio\nYou Saved The Princess!"
+align = 1
+percent_visible = 1.0
+lines_skipped = 0
+max_lines_visible = -1
+
+[node name="oneway1" type="KinematicBody2D" parent="."]
+
+transform/pos = Vector2( 439, 301 )
+input/pickable = false
+shapes/0/shape = SubResource( 8 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/0/trigger = false
+collision/layers = 1
+collision/mask = 1
+one_way_collision/direction = Vector2( 0, 1 )
+one_way_collision/max_depth = 6.0
+collision/margin = 0.01
+
+[node name="sprite" type="Sprite" parent="oneway1"]
+
+transform/scale = Vector2( 1, 0.3 )
+texture = ExtResource( 2 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="oneway1"]
+
+shape = SubResource( 8 )
+trigger = false
+_update_shape_index = -1
+
+[node name="oneway2" type="KinematicBody2D" parent="."]
+
+transform/pos = Vector2( 456, 301 )
+input/pickable = false
+shapes/0/shape = SubResource( 8 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/0/trigger = false
+collision/layers = 1
+collision/mask = 1
+one_way_collision/direction = Vector2( 0, 1 )
+one_way_collision/max_depth = 6.0
+collision/margin = 0.01
+
+[node name="sprite" type="Sprite" parent="oneway2"]
+
+transform/scale = Vector2( 1, 0.3 )
+texture = ExtResource( 2 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="oneway2"]
+
+shape = SubResource( 8 )
+trigger = false
+_update_shape_index = -1
+
+[node name="oneway3" type="KinematicBody2D" parent="."]
+
+transform/pos = Vector2( 472, 301 )
+input/pickable = false
+shapes/0/shape = SubResource( 8 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/0/trigger = false
+collision/layers = 1
+collision/mask = 1
+one_way_collision/direction = Vector2( 0, 1 )
+one_way_collision/max_depth = 6.0
+collision/margin = 0.01
+
+[node name="sprite" type="Sprite" parent="oneway3"]
+
+transform/scale = Vector2( 1, 0.3 )
+texture = ExtResource( 2 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="oneway3"]
+
+shape = SubResource( 8 )
+trigger = false
+_update_shape_index = -1
+
+[node name="oneway4" type="KinematicBody2D" parent="."]
+
+transform/pos = Vector2( 487, 301 )
+input/pickable = false
+shapes/0/shape = SubResource( 8 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/0/trigger = false
+collision/layers = 1
+collision/mask = 1
+one_way_collision/direction = Vector2( 0, 1 )
+one_way_collision/max_depth = 6.0
+collision/margin = 0.01
+
+[node name="sprite" type="Sprite" parent="oneway4"]
+
+transform/scale = Vector2( 1, 0.3 )
+texture = ExtResource( 2 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="oneway4"]
+
+shape = SubResource( 8 )
+trigger = false
+_update_shape_index = -1
+
+[node name="circle" type="KinematicBody2D" parent="."]
+
+transform/pos = Vector2( 241.169, 304.126 )
+input/pickable = false
+shapes/0/shape = SubResource( 9 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/0/trigger = false
+shapes/1/shape = SubResource( 10 )
+shapes/1/transform = Matrix32( 1, 0, 0, 1, -0.440125, -37.0904 )
+shapes/1/trigger = false
+collision/layers = 1
+collision/mask = 1
+collision/margin = 0.08
+
+[node name="sprite" type="Sprite" parent="circle"]
+
+texture = ExtResource( 5 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="circle"]
+
+shape = SubResource( 9 )
+trigger = false
+_update_shape_index = -1
+
+[node name="anim" type="AnimationPlayer" parent="circle"]
+
+playback/process_mode = 1
+playback/default_blend_time = 0.0
+root/root = NodePath("..")
+anims/turn = SubResource( 11 )
+playback/active = true
+playback/speed = 1.0
+blend_times = [  ]
+autoplay = "turn"
+
+[node name="box" type="CollisionShape2D" parent="circle"]
+
+transform/pos = Vector2( -0.440125, -37.0904 )
+shape = SubResource( 10 )
+trigger = false
+_update_shape_index = -1
+
+[node name="boxsprite" type="Sprite" parent="circle"]
+
+transform/pos = Vector2( 0, -37.4108 )
+texture = ExtResource( 2 )
+
+[node name="platform" type="StaticBody2D" parent="."]
+
+transform/pos = Vector2( 251.44, 396.557 )
+transform/rot = 24.5257
+input/pickable = false
+shapes/0/shape = SubResource( 12 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/0/trigger = false
+collision/layers = 1
+collision/mask = 1
+constant_linear_velocity = Vector2( 0, 0 )
+constant_angular_velocity = 0.0
+friction = 1.0
+bounce = 0.0
+
+[node name="sprite" type="Sprite" parent="platform"]
+
+texture = ExtResource( 6 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="platform"]
+
+shape = SubResource( 12 )
+trigger = false
+_update_shape_index = -1
+
+[node name="platform1" type="StaticBody2D" parent="."]
+
+transform/pos = Vector2( 369.116, 394.016 )
+transform/rot = -26.6959
+input/pickable = false
+shapes/0/shape = SubResource( 12 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/0/trigger = false
+collision/layers = 1
+collision/mask = 1
+constant_linear_velocity = Vector2( 0, 0 )
+constant_angular_velocity = 0.0
+friction = 1.0
+bounce = 0.0
+
+[node name="sprite" type="Sprite" parent="platform1"]
+
+texture = ExtResource( 6 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="platform1"]
+
+shape = SubResource( 12 )
+trigger = false
+_update_shape_index = -1
+
+[connection signal="body_enter" from="princess" to="." method="_on_princess_body_enter"]
+
+

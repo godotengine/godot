@@ -179,35 +179,35 @@ Error InAppStore::request_product_info(Variant p_params) {
 			ret["result"] = "ok";
 			ret["product_id"] = pid;
             ret["transaction_id"] = transactionId;
-            
+
             NSData* receipt = nil;
             int sdk_version = 6;
-            
+
             if([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0){
-                
+
                 NSURL *receiptFileURL = nil;
                 NSBundle *bundle = [NSBundle mainBundle];
                 if ([bundle respondsToSelector:@selector(appStoreReceiptURL)]) {
-                    
+
                     // Get the transaction receipt file path location in the app bundle.
                     receiptFileURL = [bundle appStoreReceiptURL];
-                    
+
                     // Read in the contents of the transaction file.
                     receipt = [NSData dataWithContentsOfURL:receiptFileURL];
                     sdk_version = 7;
-                    
+
                 } else {
                     // Fall back to deprecated transaction receipt,
                     // which is still available in iOS 7.
-                    
+
                     // Use SKPaymentTransaction's transactionReceipt.
                     receipt = transaction.transactionReceipt;
                 }
-                
+
             }else{
                 receipt = transaction.transactionReceipt;
             }
-            
+
             NSString* receipt_to_send = nil;
             if (receipt != nil)
             {
@@ -217,16 +217,16 @@ Error InAppStore::request_product_info(Variant p_params) {
             receipt_ret["receipt"] = String::utf8(receipt_to_send != nil ? [receipt_to_send UTF8String] : "");
             receipt_ret["sdk"] = sdk_version;
             ret["receipt"] = receipt_ret;
-            
+
 			InAppStore::get_singleton()->_post_event(ret);
-            
+
             if (auto_finish_transactions){
                 [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
             }
             else{
                 [pending_transactions setObject:transaction forKey:transaction.payment.productIdentifier];
             }
-			
+
 			#ifdef MODULE_FUSEBOXX_ENABLED
 			printf("Registering transaction on Fuseboxx!\n");
 			[FuseSDK registerInAppPurchase: transaction];
@@ -251,7 +251,7 @@ Error InAppStore::request_product_info(Variant p_params) {
 
 		default:
             printf("status default %i!\n", (int)transaction.transactionState);
-                
+
 			break;
 		};
 	};
@@ -322,7 +322,7 @@ InAppStore::InAppStore() {
 
 void InAppStore::finish_transaction(String product_id){
     NSString* prod_id = [NSString stringWithCString:product_id.utf8().get_data() encoding:NSUTF8StringEncoding];
-    
+
 	if ([pending_transactions objectForKey:prod_id]){
 		[[SKPaymentQueue defaultQueue] finishTransaction:[pending_transactions objectForKey:prod_id]];
         [pending_transactions removeObjectForKey:prod_id];

@@ -59,7 +59,7 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
     # List of operator properties, the attributes will be assigned
     # to the class instance from the operator settings before calling.
 
-   
+
     object_types = EnumProperty(
             name="Object Types",
             options={'ENUM_FLAG'},

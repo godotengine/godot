@@ -50,7 +50,7 @@ Module.expectedDataFileDownloads++;
     function handleError(error) {
       console.error('package error:', error);
     };
-  
+
       var fetched = null, fetchedCallback = null;
       fetchRemotePackage('data.pck', function(data) {
         if (fetchedCallback) {
@@ -60,7 +60,7 @@ Module.expectedDataFileDownloads++;
           fetched = data;
         }
       }, handleError);
-    
+
   function runWithFS() {
 
 function assert(check, msg) {
@@ -113,13 +113,13 @@ function assert(check, msg) {
     var PACKAGE_NAME = 'data.pck';
     var REMOTE_PACKAGE_NAME = 'data.pck';
     var PACKAGE_UUID = 'b39761ce-0348-4959-9b16-302ed8e1592e';
-  
+
     function processPackageData(arrayBuffer) {
       Module.finishedDataFileDownloads++;
       assert(arrayBuffer, 'Loading data file failed.');
       var byteArray = new Uint8Array(arrayBuffer);
       var curr;
-      
+
       // Reuse the bytearray from the XHR as the source for file reads.
       DataRequest.prototype.byteArray = byteArray;
           DataRequest.prototype.requests["/data.pck"].onload();
@@ -127,9 +127,9 @@ function assert(check, msg) {
 
     };
     Module['addRunDependency']('datafile_datapack');
-  
+
     if (!Module.preloadResults) Module.preloadResults = {};
-  
+
       Module.preloadResults[PACKAGE_NAME] = {fromCache: false};
       if (fetched) {
         processPackageData(fetched);
@@ -137,7 +137,7 @@ function assert(check, msg) {
       } else {
         fetchedCallback = processPackageData;
       }
-    
+
   }
   if (Module['calledRun']) {
     runWithFS();

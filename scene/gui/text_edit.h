@@ -77,6 +77,7 @@ class TextEdit : public Control  {
 		Color font_selected_color;
 		Color keyword_color;
 		Color number_color;
+		Color function_color;
 		Color selection_color;
 		Color mark_color;
 		Color breakpoint_color;
@@ -220,6 +221,7 @@ class TextEdit : public Control  {
 	bool brace_matching_enabled;
 	bool auto_indent;
 	bool cut_copy_line;
+	bool insert_mode;
 
 	uint64_t last_dblclk;
 
@@ -263,8 +265,6 @@ class TextEdit : public Control  {
 	void _cursor_changed_emit();
 	void _text_changed_emit();
 
-	void _begin_compex_operation();
-	void _end_compex_operation();
 	void _push_current_op();
 
 	/* super internal api, undo/redo builds on it */
@@ -315,6 +315,9 @@ public:
 
 	//void delete_char();
 	//void delete_line();
+
+	void begin_complex_operation();
+	void end_complex_operation();
 
 	void set_text(String p_text);
 	void insert_text_at_cursor(const String& p_text);
@@ -388,6 +391,9 @@ public:
 	void set_tab_size(const int p_size);
 	void set_draw_tabs(bool p_draw);
 	bool is_drawing_tabs() const;
+
+	void set_insert_mode(bool p_enabled);
+	bool is_insert_mode() const;
 
 	void add_keyword_color(const String& p_keyword,const Color& p_color);
 	void add_color_region(const String& p_begin_key=String(),const String& p_end_key=String(),const Color &p_color=Color(),bool p_line_only=false);

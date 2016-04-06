@@ -1,0 +1,327 @@
+[gd_scene load_steps=173 format=1]
+
+[ext_resource path="res://cubio.gd" type="Script" id=1]
+[ext_resource path="res://character_shader.tres" type="CanvasItemMaterial" id=2]
+[ext_resource path="res://cubio/idle0001.png" type="Texture" id=3]
+[ext_resource path="res://cubio/idle0002.png" type="Texture" id=4]
+[ext_resource path="res://cubio/idle0003.png" type="Texture" id=5]
+[ext_resource path="res://cubio/idle0004.png" type="Texture" id=6]
+[ext_resource path="res://cubio/idle0005.png" type="Texture" id=7]
+[ext_resource path="res://cubio/idle0006.png" type="Texture" id=8]
+[ext_resource path="res://cubio/idle0007.png" type="Texture" id=9]
+[ext_resource path="res://cubio/idle0008.png" type="Texture" id=10]
+[ext_resource path="res://cubio/idle0009.png" type="Texture" id=11]
+[ext_resource path="res://cubio/idle0010.png" type="Texture" id=12]
+[ext_resource path="res://cubio/idle0011.png" type="Texture" id=13]
+[ext_resource path="res://cubio/idle0012.png" type="Texture" id=14]
+[ext_resource path="res://cubio/idle0013.png" type="Texture" id=15]
+[ext_resource path="res://cubio/idle0014.png" type="Texture" id=16]
+[ext_resource path="res://cubio/idle0015.png" type="Texture" id=17]
+[ext_resource path="res://cubio/idle0016.png" type="Texture" id=18]
+[ext_resource path="res://cubio/idle0017.png" type="Texture" id=19]
+[ext_resource path="res://cubio/idle0018.png" type="Texture" id=20]
+[ext_resource path="res://cubio/idle0019.png" type="Texture" id=21]
+[ext_resource path="res://cubio/idle0020.png" type="Texture" id=22]
+[ext_resource path="res://cubio/idle0021.png" type="Texture" id=23]
+[ext_resource path="res://cubio/idle0022.png" type="Texture" id=24]
+[ext_resource path="res://cubio/idle0023.png" type="Texture" id=25]
+[ext_resource path="res://cubio/idle0024.png" type="Texture" id=26]
+[ext_resource path="res://cubio/idle0025.png" type="Texture" id=27]
+[ext_resource path="res://cubio/idle0026.png" type="Texture" id=28]
+[ext_resource path="res://cubio/idle0027.png" type="Texture" id=29]
+[ext_resource path="res://cubio/idle0028.png" type="Texture" id=30]
+[ext_resource path="res://cubio/idle0029.png" type="Texture" id=31]
+[ext_resource path="res://cubio/idle0030.png" type="Texture" id=32]
+[ext_resource path="res://cubio/idle0031.png" type="Texture" id=33]
+[ext_resource path="res://cubio/idle0032.png" type="Texture" id=34]
+[ext_resource path="res://cubio/idle0033.png" type="Texture" id=35]
+[ext_resource path="res://cubio/idle0034.png" type="Texture" id=36]
+[ext_resource path="res://cubio/idle0035.png" type="Texture" id=37]
+[ext_resource path="res://cubio/idle0036.png" type="Texture" id=38]
+[ext_resource path="res://cubio/idle0037.png" type="Texture" id=39]
+[ext_resource path="res://cubio/idle0038.png" type="Texture" id=40]
+[ext_resource path="res://cubio/idle0039.png" type="Texture" id=41]
+[ext_resource path="res://cubio/idle0040.png" type="Texture" id=42]
+[ext_resource path="res://cubio/idle0041.png" type="Texture" id=43]
+[ext_resource path="res://cubio/idle0042.png" type="Texture" id=44]
+[ext_resource path="res://cubio/idle0043.png" type="Texture" id=45]
+[ext_resource path="res://cubio/idle0044.png" type="Texture" id=46]
+[ext_resource path="res://cubio/idle0045.png" type="Texture" id=47]
+[ext_resource path="res://cubio/idle0046.png" type="Texture" id=48]
+[ext_resource path="res://cubio/idle0047.png" type="Texture" id=49]
+[ext_resource path="res://cubio/idle0048.png" type="Texture" id=50]
+[ext_resource path="res://cubio/idle0049.png" type="Texture" id=51]
+[ext_resource path="res://cubio/idle0050.png" type="Texture" id=52]
+[ext_resource path="res://cubio/idle0051.png" type="Texture" id=53]
+[ext_resource path="res://cubio/idle0052.png" type="Texture" id=54]
+[ext_resource path="res://cubio/idle0053.png" type="Texture" id=55]
+[ext_resource path="res://cubio/idle0054.png" type="Texture" id=56]
+[ext_resource path="res://cubio/idle0055.png" type="Texture" id=57]
+[ext_resource path="res://cubio/idle0056.png" type="Texture" id=58]
+[ext_resource path="res://cubio/idle0057.png" type="Texture" id=59]
+[ext_resource path="res://cubio/idle0058.png" type="Texture" id=60]
+[ext_resource path="res://cubio/idle0059.png" type="Texture" id=61]
+[ext_resource path="res://cubio/idle0060.png" type="Texture" id=62]
+[ext_resource path="res://cubio/norm-b-0001.png" type="Texture" id=63]
+[ext_resource path="res://cubio/norm-b-0002.png" type="Texture" id=64]
+[ext_resource path="res://cubio/norm-b-0003.png" type="Texture" id=65]
+[ext_resource path="res://cubio/norm-b-0004.png" type="Texture" id=66]
+[ext_resource path="res://cubio/norm-b-0005.png" type="Texture" id=67]
+[ext_resource path="res://cubio/norm-b-0006.png" type="Texture" id=68]
+[ext_resource path="res://cubio/norm-b-0007.png" type="Texture" id=69]
+[ext_resource path="res://cubio/norm-b-0008.png" type="Texture" id=70]
+[ext_resource path="res://cubio/norm-b-0009.png" type="Texture" id=71]
+[ext_resource path="res://cubio/norm-b-0010.png" type="Texture" id=72]
+[ext_resource path="res://cubio/norm-b-0011.png" type="Texture" id=73]
+[ext_resource path="res://cubio/norm-b-0012.png" type="Texture" id=74]
+[ext_resource path="res://cubio/norm-b-0013.png" type="Texture" id=75]
+[ext_resource path="res://cubio/norm-b-0014.png" type="Texture" id=76]
+[ext_resource path="res://cubio/norm-b-0015.png" type="Texture" id=77]
+[ext_resource path="res://cubio/norm-b-0016.png" type="Texture" id=78]
+[ext_resource path="res://cubio/norm-b-0017.png" type="Texture" id=79]
+[ext_resource path="res://cubio/norm-b-0018.png" type="Texture" id=80]
+[ext_resource path="res://cubio/norm-b-0019.png" type="Texture" id=81]
+[ext_resource path="res://cubio/norm-b-0020.png" type="Texture" id=82]
+[ext_resource path="res://cubio/norm-bl-0001.png" type="Texture" id=83]
+[ext_resource path="res://cubio/norm-bl-0002.png" type="Texture" id=84]
+[ext_resource path="res://cubio/norm-bl-0003.png" type="Texture" id=85]
+[ext_resource path="res://cubio/norm-bl-0004.png" type="Texture" id=86]
+[ext_resource path="res://cubio/norm-bl-0005.png" type="Texture" id=87]
+[ext_resource path="res://cubio/norm-bl-0006.png" type="Texture" id=88]
+[ext_resource path="res://cubio/norm-bl-0007.png" type="Texture" id=89]
+[ext_resource path="res://cubio/norm-bl-0008.png" type="Texture" id=90]
+[ext_resource path="res://cubio/norm-bl-0009.png" type="Texture" id=91]
+[ext_resource path="res://cubio/norm-bl-0010.png" type="Texture" id=92]
+[ext_resource path="res://cubio/norm-bl-0011.png" type="Texture" id=93]
+[ext_resource path="res://cubio/norm-bl-0012.png" type="Texture" id=94]
+[ext_resource path="res://cubio/norm-bl-0013.png" type="Texture" id=95]
+[ext_resource path="res://cubio/norm-bl-0014.png" type="Texture" id=96]
+[ext_resource path="res://cubio/norm-bl-0015.png" type="Texture" id=97]
+[ext_resource path="res://cubio/norm-bl-0016.png" type="Texture" id=98]
+[ext_resource path="res://cubio/norm-bl-0017.png" type="Texture" id=99]
+[ext_resource path="res://cubio/norm-bl-0018.png" type="Texture" id=100]
+[ext_resource path="res://cubio/norm-bl-0019.png" type="Texture" id=101]
+[ext_resource path="res://cubio/norm-bl-0020.png" type="Texture" id=102]
+[ext_resource path="res://cubio/norm-l-0001.png" type="Texture" id=103]
+[ext_resource path="res://cubio/norm-l-0002.png" type="Texture" id=104]
+[ext_resource path="res://cubio/norm-l-0003.png" type="Texture" id=105]
+[ext_resource path="res://cubio/norm-l-0004.png" type="Texture" id=106]
+[ext_resource path="res://cubio/norm-l-0005.png" type="Texture" id=107]
+[ext_resource path="res://cubio/norm-l-0006.png" type="Texture" id=108]
+[ext_resource path="res://cubio/norm-l-0007.png" type="Texture" id=109]
+[ext_resource path="res://cubio/norm-l-0008.png" type="Texture" id=110]
+[ext_resource path="res://cubio/norm-l-0009.png" type="Texture" id=111]
+[ext_resource path="res://cubio/norm-l-0010.png" type="Texture" id=112]
+[ext_resource path="res://cubio/norm-l-0011.png" type="Texture" id=113]
+[ext_resource path="res://cubio/norm-l-0012.png" type="Texture" id=114]
+[ext_resource path="res://cubio/norm-l-0013.png" type="Texture" id=115]
+[ext_resource path="res://cubio/norm-l-0014.png" type="Texture" id=116]
+[ext_resource path="res://cubio/norm-l-0015.png" type="Texture" id=117]
+[ext_resource path="res://cubio/norm-l-0016.png" type="Texture" id=118]
+[ext_resource path="res://cubio/norm-l-0017.png" type="Texture" id=119]
+[ext_resource path="res://cubio/norm-l-0018.png" type="Texture" id=120]
+[ext_resource path="res://cubio/norm-l-0019.png" type="Texture" id=121]
+[ext_resource path="res://cubio/norm-l-0020.png" type="Texture" id=122]
+[ext_resource path="res://cubio/norm-u-0001.png" type="Texture" id=123]
+[ext_resource path="res://cubio/norm-u-0002.png" type="Texture" id=124]
+[ext_resource path="res://cubio/norm-u-0003.png" type="Texture" id=125]
+[ext_resource path="res://cubio/norm-u-0004.png" type="Texture" id=126]
+[ext_resource path="res://cubio/norm-u-0005.png" type="Texture" id=127]
+[ext_resource path="res://cubio/norm-u-0006.png" type="Texture" id=128]
+[ext_resource path="res://cubio/norm-u-0007.png" type="Texture" id=129]
+[ext_resource path="res://cubio/norm-u-0008.png" type="Texture" id=130]
+[ext_resource path="res://cubio/norm-u-0009.png" type="Texture" id=131]
+[ext_resource path="res://cubio/norm-u-0010.png" type="Texture" id=132]
+[ext_resource path="res://cubio/norm-u-0011.png" type="Texture" id=133]
+[ext_resource path="res://cubio/norm-u-0012.png" type="Texture" id=134]
+[ext_resource path="res://cubio/norm-u-0013.png" type="Texture" id=135]
+[ext_resource path="res://cubio/norm-u-0014.png" type="Texture" id=136]
+[ext_resource path="res://cubio/norm-u-0015.png" type="Texture" id=137]
+[ext_resource path="res://cubio/norm-u-0016.png" type="Texture" id=138]
+[ext_resource path="res://cubio/norm-u-0017.png" type="Texture" id=139]
+[ext_resource path="res://cubio/norm-u-0018.png" type="Texture" id=140]
+[ext_resource path="res://cubio/norm-u-0019.png" type="Texture" id=141]
+[ext_resource path="res://cubio/norm-u-0020.png" type="Texture" id=142]
+[ext_resource path="res://cubio/norm-ul-0001.png" type="Texture" id=143]
+[ext_resource path="res://cubio/norm-ul-0002.png" type="Texture" id=144]
+[ext_resource path="res://cubio/norm-ul-0003.png" type="Texture" id=145]
+[ext_resource path="res://cubio/norm-ul-0004.png" type="Texture" id=146]
+[ext_resource path="res://cubio/norm-ul-0005.png" type="Texture" id=147]
+[ext_resource path="res://cubio/norm-ul-0006.png" type="Texture" id=148]
+[ext_resource path="res://cubio/norm-ul-0007.png" type="Texture" id=149]
+[ext_resource path="res://cubio/norm-ul-0008.png" type="Texture" id=150]
+[ext_resource path="res://cubio/norm-ul-0009.png" type="Texture" id=151]
+[ext_resource path="res://cubio/norm-ul-0010.png" type="Texture" id=152]
+[ext_resource path="res://cubio/norm-ul-0011.png" type="Texture" id=153]
+[ext_resource path="res://cubio/norm-ul-0012.png" type="Texture" id=154]
+[ext_resource path="res://cubio/norm-ul-0013.png" type="Texture" id=155]
+[ext_resource path="res://cubio/norm-ul-0014.png" type="Texture" id=156]
+[ext_resource path="res://cubio/norm-ul-0015.png" type="Texture" id=157]
+[ext_resource path="res://cubio/norm-ul-0016.png" type="Texture" id=158]
+[ext_resource path="res://cubio/norm-ul-0017.png" type="Texture" id=159]
+[ext_resource path="res://cubio/norm-ul-0018.png" type="Texture" id=160]
+[ext_resource path="res://cubio/norm-ul-0019.png" type="Texture" id=161]
+[ext_resource path="res://cubio/norm-ul-0020.png" type="Texture" id=162]
+[ext_resource path="res://light2.png" type="Texture" id=163]
+[ext_resource path="res://shadow_blob.png" type="Texture" id=164]
+
+[sub_resource type="CircleShape2D" id=1]
+
+custom_solver_bias = 0.0
+radius = 20.0
+
+[sub_resource type="SpriteFrames" id=2]
+
+frames = [ ExtResource( 3 ), ExtResource( 4 ), ExtResource( 5 ), ExtResource( 6 ), ExtResource( 7 ), ExtResource( 8 ), ExtResource( 9 ), ExtResource( 10 ), ExtResource( 11 ), ExtResource( 12 ), ExtResource( 13 ), ExtResource( 14 ), ExtResource( 15 ), ExtResource( 16 ), ExtResource( 17 ), ExtResource( 18 ), ExtResource( 19 ), ExtResource( 20 ), ExtResource( 21 ), ExtResource( 22 ), ExtResource( 23 ), ExtResource( 24 ), ExtResource( 25 ), ExtResource( 26 ), ExtResource( 27 ), ExtResource( 28 ), ExtResource( 29 ), ExtResource( 30 ), ExtResource( 31 ), ExtResource( 32 ), ExtResource( 33 ), ExtResource( 34 ), ExtResource( 35 ), ExtResource( 36 ), ExtResource( 37 ), ExtResource( 38 ), ExtResource( 39 ), ExtResource( 40 ), ExtResource( 41 ), ExtResource( 42 ), ExtResource( 43 ), ExtResource( 44 ), ExtResource( 45 ), ExtResource( 46 ), ExtResource( 47 ), ExtResource( 48 ), ExtResource( 49 ), ExtResource( 50 ), ExtResource( 51 ), ExtResource( 52 ), ExtResource( 53 ), ExtResource( 54 ), ExtResource( 55 ), ExtResource( 56 ), ExtResource( 57 ), ExtResource( 58 ), ExtResource( 59 ), ExtResource( 60 ), ExtResource( 61 ), ExtResource( 62 ), ExtResource( 63 ), ExtResource( 64 ), ExtResource( 65 ), ExtResource( 66 ), ExtResource( 67 ), ExtResource( 68 ), ExtResource( 69 ), ExtResource( 70 ), ExtResource( 71 ), ExtResource( 72 ), ExtResource( 73 ), ExtResource( 74 ), ExtResource( 75 ), ExtResource( 76 ), ExtResource( 77 ), ExtResource( 78 ), ExtResource( 79 ), ExtResource( 80 ), ExtResource( 81 ), ExtResource( 82 ), ExtResource( 83 ), ExtResource( 84 ), ExtResource( 85 ), ExtResource( 86 ), ExtResource( 87 ), ExtResource( 88 ), ExtResource( 89 ), ExtResource( 90 ), ExtResource( 91 ), ExtResource( 92 ), ExtResource( 93 ), ExtResource( 94 ), ExtResource( 95 ), ExtResource( 96 ), ExtResource( 97 ), ExtResource( 98 ), ExtResource( 99 ), ExtResource( 100 ), ExtResource( 101 ), ExtResource( 102 ), ExtResource( 103 ), ExtResource( 104 ), ExtResource( 105 ), ExtResource( 106 ), ExtResource( 107 ), ExtResource( 108 ), ExtResource( 109 ), ExtResource( 110 ), ExtResource( 111 ), ExtResource( 112 ), ExtResource( 113 ), ExtResource( 114 ), ExtResource( 115 ), ExtResource( 116 ), ExtResource( 117 ), ExtResource( 118 ), ExtResource( 119 ), ExtResource( 120 ), ExtResource( 121 ), ExtResource( 122 ), ExtResource( 123 ), ExtResource( 124 ), ExtResource( 125 ), ExtResource( 126 ), ExtResource( 127 ), ExtResource( 128 ), ExtResource( 129 ), ExtResource( 130 ), ExtResource( 131 ), ExtResource( 132 ), ExtResource( 133 ), ExtResource( 134 ), ExtResource( 135 ), ExtResource( 136 ), ExtResource( 137 ), ExtResource( 138 ), ExtResource( 139 ), ExtResource( 140 ), ExtResource( 141 ), ExtResource( 142 ), ExtResource( 143 ), ExtResource( 144 ), ExtResource( 145 ), ExtResource( 146 ), ExtResource( 147 ), ExtResource( 148 ), ExtResource( 149 ), ExtResource( 150 ), ExtResource( 151 ), ExtResource( 152 ), ExtResource( 153 ), ExtResource( 154 ), ExtResource( 155 ), ExtResource( 156 ), ExtResource( 157 ), ExtResource( 158 ), ExtResource( 159 ), ExtResource( 160 ), ExtResource( 161 ), ExtResource( 162 ) ]
+
+[sub_resource type="Animation" id=3]
+
+resource/name = "bottom"
+length = 0.95
+loop = true
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("frames:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95 ), "transitions":FloatArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ), "values":[ 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79 ] }
+
+[sub_resource type="Animation" id=4]
+
+length = 0.95
+loop = true
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("frames:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95 ), "transitions":FloatArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ), "values":[ 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99 ] }
+
+[sub_resource type="Animation" id=5]
+
+length = 3.0
+loop = true
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("frames:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.35, 1.4, 1.45, 1.5, 1.55, 1.6, 1.65, 1.7, 1.75, 1.8, 1.85, 1.9, 1.95, 2, 2.05, 2.1, 2.15, 2.2, 2.25, 2.3, 2.35, 2.4, 2.45, 2.5, 2.55, 2.6, 2.65, 2.7, 2.75, 2.8, 2.85, 2.9, 2.95, 3 ), "transitions":FloatArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ), "values":[ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 55, 56, 57, 58, 59 ] }
+
+[sub_resource type="Animation" id=6]
+
+length = 0.95
+loop = true
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("frames:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95 ), "transitions":FloatArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ), "values":[ 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119 ] }
+
+[sub_resource type="Animation" id=7]
+
+length = 0.95
+loop = true
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("frames:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95 ), "transitions":FloatArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ), "values":[ 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139 ] }
+
+[sub_resource type="Animation" id=8]
+
+length = 0.95
+loop = true
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("frames:frame")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95 ), "transitions":FloatArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ), "values":[ 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159 ] }
+
+[node name="cubio" type="KinematicBody2D"]
+
+visibility/light_mask = 2
+input/pickable = false
+shapes/0/shape = SubResource( 1 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, -0.397217, -9.30363 )
+shapes/0/trigger = false
+collision/layers = 1
+collision/mask = 1
+collision/margin = 0.08
+script/script = ExtResource( 1 )
+
+[node name="frames" type="AnimatedSprite" parent="."]
+
+material/material = ExtResource( 2 )
+frames = SubResource( 2 )
+frame = 140
+offset = Vector2( 0.397217, -52.4323 )
+
+[node name="shape" type="CollisionShape2D" parent="."]
+
+transform/pos = Vector2( -0.397217, -9.30363 )
+shape = SubResource( 1 )
+trigger = false
+_update_shape_index = -1
+
+[node name="camera" type="Camera2D" parent="."]
+
+anchor_mode = 1
+rotating = false
+current = true
+zoom = Vector2( 1, 1 )
+limit/left = -10000000
+limit/top = -10000000
+limit/right = 10000000
+limit/bottom = 10000000
+drag_margin/h_enabled = true
+drag_margin/v_enabled = true
+smoothing/enable = false
+smoothing/speed = 5.0
+drag_margin/left = 0.2
+drag_margin/top = 0.2
+drag_margin/right = 0.2
+drag_margin/bottom = 0.2
+
+[node name="anim" type="AnimationPlayer" parent="."]
+
+playback/process_mode = 1
+playback/default_blend_time = 0.0
+root/root = NodePath("..")
+anims/bottom = SubResource( 3 )
+anims/bottom_left = SubResource( 4 )
+anims/idle = SubResource( 5 )
+anims/left = SubResource( 6 )
+anims/top = SubResource( 7 )
+anims/top_left = SubResource( 8 )
+playback/active = true
+playback/speed = 1.0
+blend_times = [  ]
+autoplay = "idle"
+
+[node name="Light2D" type="Light2D" parent="."]
+
+transform/pos = Vector2( -0.140442, 2.64355 )
+enabled = true
+texture = ExtResource( 163 )
+offset = Vector2( 0, 0 )
+scale = 8.0
+color = Color( 1, 1, 1, 1 )
+energy = 1.0
+mode = 0
+range/height = 100.0
+range/z_min = -1024
+range/z_max = 1024
+range/layer_min = 0
+range/layer_max = 0
+range/item_mask = 3
+shadow/enabled = true
+shadow/color = Color( 0, 0, 0, 0 )
+shadow/buffer_size = 2048
+shadow/esm_multiplier = 80.0
+shadow/item_mask = 1
+
+[node name="Sprite" type="Sprite" parent="."]
+
+visibility/opacity = 0.3
+texture = ExtResource( 164 )
+offset = Vector2( 0, -5.72164 )
+
+

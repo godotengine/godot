@@ -37,7 +37,7 @@ func _process(delta):
 	
 	if (shooting and not prev_shooting):
 		# Just pressed
-		var shot = preload("res://shot.scn").instance()
+		var shot = preload("res://shot.tscn").instance()
 		# Use the Position2D as reference
 		shot.set_pos(get_node("shootfrom").get_global_pos())
 		# Put it two parents above, so it is not moved by us
@@ -78,4 +78,4 @@ func _on_ship_area_enter(area):
 
 
 func _on_back_to_menu_pressed():
-	get_tree().change_scene("res://main_menu.scn")
+	get_tree().change_scene("res://main_menu.tscn")
