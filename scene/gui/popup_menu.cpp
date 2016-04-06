@@ -740,15 +740,33 @@ int PopupMenu::get_item_count() const {
 	return items.size();
 }
 
-int PopupMenu::find_item_by_accelerator(uint32_t p_accel) const {
+bool PopupMenu::activate_item_by_accelerator(uint32_t p_accel) {
 
 	int il=items.size();
 	for(int i=0;i<il;i++) {
+		if (is_item_disabled(i))
+			continue;
 
-		if (items[i].accel==p_accel)
-			return i;
+		if (items[i].accel==p_accel) {
+			activate_item(i);
+			return true;
+		}
+
+		if (items[i].submenu!="") {
+			Node* n = get_node(items[i].submenu);
+			if(!n)
+				continue;
+
+			PopupMenu* pm = n->cast_to<PopupMenu>();
+			if(!pm)
+				continue;
+
+			if(pm->activate_item_by_accelerator(p_accel)) {
+				return true;
+			}
+		}
 	}
-	return -1;
+	return false;
 }
 
 void PopupMenu::activate_item(int p_item) {

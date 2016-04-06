@@ -3345,7 +3345,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	PopupMenu *p2 = memnew(PopupMenu);
 	p->add_child(p2);
 	p2->set_name("skeleton");
-	p2->add_item("Make Bones",SKELETON_MAKE_BONES,KEY_MASK_CMD|KEY_SHIFT|KEY_B);
+	p2->add_item("Make Bones",SKELETON_MAKE_BONES,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_B);
 	p2->add_item("Clear Bones",SKELETON_CLEAR_BONES);
 	p2->add_separator();
 	p2->add_item("Make IK Chain",SKELETON_SET_IK_CHAIN);

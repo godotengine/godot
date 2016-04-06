@@ -117,7 +117,7 @@ public:
 
 	int get_item_count() const;
 
-	int find_item_by_accelerator(uint32_t p_accel) const;
+	bool activate_item_by_accelerator(uint32_t p_accel);
 	void activate_item(int p_item);
 
 	void remove_item(int p_idx);
