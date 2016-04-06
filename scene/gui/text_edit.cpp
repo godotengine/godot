@@ -1229,6 +1229,66 @@ void TextEdit::backspace_at_cursor() {
 
 }
 
+void TextEdit::indent_selection_right() {
+
+	if (!is_selection_active()) {
+		return;
+	}
+	begin_complex_operation();
+	int start_line = get_selection_from_line();
+	int end_line = get_selection_to_line();
+
+	// ignore if the cursor is not past the first column
+	if (get_selection_to_column() == 0) {
+		end_line--;
+	}
+
+	for (int i = start_line; i <= end_line; i++) {
+		String line_text = get_line(i);
+		line_text = '\t' + line_text;
+		set_line(i, line_text);
+	}
+
+	// fix selection being off by one on the last line
+	selection.to_column++;
+	end_complex_operation();
+	update();
+}
+
+void TextEdit::indent_selection_left() {
+
+	if (!is_selection_active()) {
+		return;
+	}
+	begin_complex_operation();
+	int start_line = get_selection_from_line();
+	int end_line = get_selection_to_line();
+
+	// ignore if the cursor is not past the first column
+	if (get_selection_to_column() == 0) {
+		end_line--;
+	}
+	String last_line_text = get_line(end_line);
+
+	for (int i = start_line; i <= end_line; i++) {
+		String line_text = get_line(i);
+
+		if (line_text.begins_with("\t")) {
+			line_text = line_text.substr(1, line_text.length());
+			set_line(i, line_text);
+		} else if (line_text.begins_with("    ")) {
+			line_text = line_text.substr(4, line_text.length());
+			set_line(i, line_text);
+		}
+	}
+
+	// fix selection being off by one on the last line
+	if (last_line_text != get_line(end_line) && selection.to_column > 0) {
+		selection.to_column--;
+	}
+	end_complex_operation();
+	update();
+}
 
 void TextEdit::_get_mouse_pos(const Point2i& p_mouse, int &r_row, int &r_col) const {
 
@@ -1656,51 +1716,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				switch(k.scancode) {
 
 					case KEY_TAB: {
-
-						String txt = _base_get_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
-						String prev_txt=txt;
-
 						if (k.mod.shift) {
-
-							for(int i=0;i<txt.length();i++) {
-								if (((i>0 && txt[i-1]=='\n') || (i==0 /*&& selection.from_column==0*/)) && (txt[i]=='\t' || txt[i]==' ')) {
-									txt.remove(i);
-									//i--;
-								}
-							}
+							indent_selection_left();
 						} else {
-
-							for(int i=0;i<txt.length();i++) {
-
-								if (((i>0 && txt[i-1]=='\n') || (i==0 /*&& selection.from_column==0*/))) {
-									txt=txt.insert(i,"\t");
-									//i--;
-								}
-							}
+							indent_selection_right();
 						}
-
-						if (txt!=prev_txt) {
-
-							int sel_line=selection.from_line;
-							int sel_column=selection.from_column;
-
-							cursor_set_line(selection.from_line);
-							cursor_set_column(selection.from_column);
-							begin_complex_operation();
-							_remove_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
-							_insert_text_at_cursor(txt);
-							end_complex_operation();
-							selection.active=true;
-							selection.from_column=sel_column;
-							selection.from_line=sel_line;
-							selection.to_column=cursor.column;
-							selection.to_line=cursor.line;
-							update();
-						}
-
 						dobreak=true;
 						accept_event();
-
 					} break;
 					case KEY_X:
 					case KEY_C:
