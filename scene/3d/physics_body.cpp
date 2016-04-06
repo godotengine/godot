@@ -419,7 +419,10 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 	set_global_transform(state->get_transform());
 	linear_velocity=state->get_linear_velocity();
 	angular_velocity=state->get_angular_velocity();
-	sleeping=state->is_sleeping();
+	if(sleeping!=state->is_sleeping()) {
+		sleeping=state->is_sleeping();
+		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
+	}
 	if (get_script_instance())
 		get_script_instance()->call("_integrate_forces",state);
 	set_ignore_transform_notification(false);
@@ -811,6 +814,7 @@ void RigidBody::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("body_exit_shape",PropertyInfo(Variant::INT,"body_id"),PropertyInfo(Variant::OBJECT,"body"),PropertyInfo(Variant::INT,"body_shape"),PropertyInfo(Variant::INT,"local_shape")));
 	ADD_SIGNAL( MethodInfo("body_enter",PropertyInfo(Variant::OBJECT,"body")));
 	ADD_SIGNAL( MethodInfo("body_exit",PropertyInfo(Variant::OBJECT,"body")));
+	ADD_SIGNAL( MethodInfo("sleeping_state_changed"));
 
 	BIND_CONSTANT( MODE_STATIC );
 	BIND_CONSTANT( MODE_KINEMATIC );
