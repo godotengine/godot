@@ -334,6 +334,9 @@ public:
     void set_line(int line, String new_text);
 	void backspace_at_cursor();
 
+	void indent_selection_left();
+	void indent_selection_right();
+
 	inline void set_scroll_pass_end_of_file(bool p_enabled) {
 		scroll_past_end_of_file_enabled = p_enabled;
 		update();

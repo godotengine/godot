@@ -1161,24 +1161,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				tx->begin_complex_operation();
 				if (tx->is_selection_active())
 				{
-					int begin = tx->get_selection_from_line();
-					int end = tx->get_selection_to_line();
-					for (int i = begin; i <= end; i++)
-					{
-						String line_text = tx->get_line(i);
-						// begins with tab
-						if (line_text.begins_with("\t"))
-						{
-							line_text = line_text.substr(1, line_text.length());
-							tx->set_line(i, line_text);
-						}
-						// begins with 4 spaces
-						else if (line_text.begins_with("    "))
-						{
-							line_text = line_text.substr(4, line_text.length());
-							tx->set_line(i, line_text);
-						}
-					}
+					tx->indent_selection_left();
 				}
 				else
 				{
@@ -1212,14 +1195,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				tx->begin_complex_operation();
 				if (tx->is_selection_active())
 				{
-					int begin = tx->get_selection_from_line();
-					int end = tx->get_selection_to_line();
-					for (int i = begin; i <= end; i++)
-					{
-						String line_text = tx->get_line(i);
-						line_text = '\t' + line_text;
-						tx->set_line(i, line_text);
-					}
+					tx->indent_selection_right();
 				}
 				else
 				{
