@@ -246,6 +246,7 @@ private:
 		float xfade;
 
 		TransitionNode() { type=NODE_TRANSITION;  xfade=0; inputs.resize(1); input_data.resize(1); current=0; prev=-1; prev_time=0; prev_xfading=0; switched=false; }
+		void set_current(int p_current);
 	};
 
 

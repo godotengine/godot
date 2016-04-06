@@ -676,14 +676,7 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 
 				if (tn->input_data[tn->current].auto_advance && rem <= tn->xfade) {
 
-					tn->prev=tn->current;
-					tn->current++;
-					if (tn->current>=tn->inputs.size())
-						tn->current=0;
-					tn->prev_xfading=tn->xfade;
-					tn->prev_time=tn->time;
-					tn->time=0;
-					tn->switched=true;
+					tn->set_current((tn->current+1) % tn->inputs.size());
 				}
 
 
@@ -1156,21 +1149,24 @@ void AnimationTreePlayer::transition_node_set_xfade_time(const StringName& p_nod
 	n->xfade=p_time;
 }
 
+void AnimationTreePlayer::TransitionNode::set_current(int p_current) {
+	ERR_FAIL_INDEX(p_current,inputs.size());
+
+	if (current==p_current)
+		return;
+
+	prev=current;
+	prev_xfading=xfade;
+	prev_time=time;
+	time=0;
+	current=p_current;
+	switched=true;
+}
 
 void AnimationTreePlayer::transition_node_set_current(const StringName& p_node, int p_current) {
 
 	GET_NODE( NODE_TRANSITION, TransitionNode );
-	ERR_FAIL_INDEX(p_current,n->inputs.size());
-
-	if (n->current==p_current)
-		return;
-
-	n->prev=n->current;
-	n->prev_xfading=n->xfade;
-	n->prev_time=n->time;
-	n->time=0;
-	n->current=p_current;
-
+	n->set_current(p_current);
 }
 
 
