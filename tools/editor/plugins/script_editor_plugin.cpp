@@ -1071,6 +1071,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (scr.is_null())
 					return;
 
+				tx->begin_complex_operation();
 				if (tx->is_selection_active())
 				{
 					int from_line = tx->get_selection_from_line();
@@ -1102,6 +1103,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 					swap_lines(tx, line_id, next_id);
 				}
+				tx->end_complex_operation();
 				tx->update();
 
 			} break;
@@ -1112,6 +1114,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (scr.is_null())
 					return;
 
+				tx->begin_complex_operation();
 				if (tx->is_selection_active())
 				{
 					int from_line = tx->get_selection_from_line();
@@ -1143,6 +1146,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 					swap_lines(tx, line_id, next_id);
 				}
+				tx->end_complex_operation();
 				tx->update();
 
 			} break;
@@ -1153,7 +1157,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (scr.is_null())
 					return;
 
-
+				tx->begin_complex_operation();
 				if (tx->is_selection_active())
 				{
 					int begin = tx->get_selection_from_line();
@@ -1192,6 +1196,7 @@ void ScriptEditor::_menu_option(int p_option) {
 						tx->set_line(begin, line_text);
 					}
 				}
+				tx->end_complex_operation();
 				tx->update();
 				//tx->deselect();
 
@@ -1203,6 +1208,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (scr.is_null())
 					return;
 
+				tx->begin_complex_operation();
 				if (tx->is_selection_active())
 				{
 					int begin = tx->get_selection_from_line();
@@ -1221,6 +1227,7 @@ void ScriptEditor::_menu_option(int p_option) {
 					line_text = '\t' + line_text;
 					tx->set_line(begin, line_text);
 				}
+				tx->end_complex_operation();
 				tx->update();
 				//tx->deselect();
 
@@ -1252,7 +1259,7 @@ void ScriptEditor::_menu_option(int p_option) {
 					return;
 
 
-
+				tx->begin_complex_operation();
 				if (tx->is_selection_active())
 				{
 					int begin = tx->get_selection_from_line();
@@ -1284,6 +1291,7 @@ void ScriptEditor::_menu_option(int p_option) {
 						line_text = "#" + line_text;
 					tx->set_line(begin, line_text);
 				}
+				tx->end_complex_operation();
 				tx->update();
 				//tx->deselect();
 
