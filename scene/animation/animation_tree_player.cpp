@@ -1604,6 +1604,7 @@ void AnimationTreePlayer::set_active(bool p_active) {
 
 	active = p_active;
 	processing = active;
+	reset_request = p_active;
 	_set_process(processing, true);
 }
 
@@ -1621,7 +1622,7 @@ AnimationTreePlayer::ConnectError AnimationTreePlayer::get_last_error() const {
 void AnimationTreePlayer::reset() {
 
 
-	reset_request=false;
+	reset_request=true;
 }
 
 
@@ -1863,7 +1864,7 @@ AnimationTreePlayer::AnimationTreePlayer() {
 	processing = false;
 	active=false;
 	dirty_caches=true;
-	reset_request=false;
+	reset_request=true;
 	last_error=CONNECT_INCOMPLETE;
 	base_path=String("..");
 }
