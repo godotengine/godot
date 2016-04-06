@@ -265,8 +265,6 @@ class TextEdit : public Control  {
 	void _cursor_changed_emit();
 	void _text_changed_emit();
 
-	void _begin_complex_operation();
-	void _end_complex_operation();
 	void _push_current_op();
 
 	/* super internal api, undo/redo builds on it */
@@ -317,6 +315,9 @@ public:
 
 	//void delete_char();
 	//void delete_line();
+
+	void begin_complex_operation();
+	void end_complex_operation();
 
 	void set_text(String p_text);
 	void insert_text_at_cursor(const String& p_text);
