@@ -925,9 +925,9 @@ void TextEdit::_notification(int p_what) {
 						cursor_pos = Point2i( char_ofs+char_margin, ofs_y );
 						if (insert_mode) {
 							cursor_pos.y += get_row_height();
-							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(char_w,1)),cache.font_color);
+							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(char_w,1)),cache.caret_color);
 						} else {
-							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
+							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.caret_color);
 						}
 
 
@@ -942,9 +942,9 @@ void TextEdit::_notification(int p_what) {
 					if (insert_mode) {
 						cursor_pos.y += get_row_height();
 						int char_w = cache.font->get_char_size(' ').width;
-						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(char_w,1)),cache.font_color);
+						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(char_w,1)),cache.caret_color);
 					} else {
-						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
+						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.caret_color);
 					}
 				}
 			}
@@ -3060,6 +3060,7 @@ void TextEdit::_update_caches() {
 	cache.style_normal=get_stylebox("normal");
 	cache.style_focus=get_stylebox("focus");
 	cache.font=get_font("font");
+	cache.caret_color=get_color("caret_color");
 	cache.font_color=get_color("font_color");
 	cache.font_selected_color=get_color("font_selected_color");
 	cache.keyword_color=get_color("keyword_color");
