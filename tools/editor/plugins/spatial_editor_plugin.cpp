@@ -834,10 +834,10 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 	{
 
 		EditorNode *en = editor;
-		EditorPlugin *over_plugin = en->get_editor_plugin_over();
+		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 
-		if (over_plugin) {
-			bool discard = over_plugin->forward_spatial_input_event(camera,p_event);
+		if (!over_plugin_list->empty()) {
+			bool discard = over_plugin_list->forward_spatial_input_event(camera,p_event);
 			if (discard)
 				return;
 		}
@@ -3576,9 +3576,9 @@ void SpatialEditor::_unhandled_key_input(InputEvent p_event) {
 	{
 
 		EditorNode *en = editor;
-		EditorPlugin *over_plugin = en->get_editor_plugin_over();
+		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 
-		if (over_plugin && over_plugin->forward_input_event(p_event)) {
+		if (!over_plugin_list->empty() && over_plugin_list->forward_input_event(p_event)) {
 
 			return; //ate the over input event
 		}

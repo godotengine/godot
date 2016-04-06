@@ -1571,14 +1571,26 @@ void EditorNode::_imported(Node *p_node) {
 }
 
 
-
-
 void EditorNode::_hide_top_editors() {
 
-	if (editor_plugin_over)
-		editor_plugin_over->make_visible(false);
-	editor_plugin_over=NULL;
+	_display_top_editors(false);
+
+	editor_plugins_over->clear();
 }
+
+void EditorNode::_display_top_editors(bool p_display) {
+	editor_plugins_over->make_visible(p_display);
+}
+
+void EditorNode::_set_top_editors(Vector<EditorPlugin*> p_editor_plugins_over) {
+	editor_plugins_over->set_plugins_list(p_editor_plugins_over);
+}
+
+void EditorNode::_set_editing_top_editors(Object* p_current_object) {
+	editor_plugins_over->edit(p_current_object);
+}
+
+
 
 void EditorNode::_edit_current() {
 
@@ -1598,8 +1610,7 @@ void EditorNode::_edit_current() {
 		property_editor->edit( NULL );
 		object_menu->set_disabled(true);
 
-		if (editor_plugin_over)
-			editor_plugin_over->make_visible(false);
+		_display_top_editors(false);
 
 		return;
 	}
@@ -1679,20 +1690,18 @@ void EditorNode::_edit_current() {
 
 	}
 
-	EditorPlugin *sub_plugin = editor_data.get_subeditor(current_obj);
+	Vector<EditorPlugin*> sub_plugins = editor_data.get_subeditors(current_obj);
 
-	if (sub_plugin) {
+	if (!sub_plugins.empty()) {
+		_display_top_editors(false);
 
+		_set_top_editors(sub_plugins);
+		_set_editing_top_editors(current_obj);
+		_display_top_editors(true);
+                
+	} else if (!editor_plugins_over->get_plugins_list().empty()) {
 
-		if (editor_plugin_over)
-			editor_plugin_over->make_visible(false);
-		editor_plugin_over=sub_plugin;
-		editor_plugin_over->edit(current_obj);
-		editor_plugin_over->make_visible(true);
-	} else if (editor_plugin_over) {
-
-		editor_plugin_over->make_visible(false);
-		editor_plugin_over=NULL;
+		_hide_top_editors();
 
 	}
 /*
@@ -2583,10 +2592,9 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			}
 
 			editor_data.get_undo_redo().clear_history();
-			if (editor_plugin_over) { //reload editor plugin
-				editor_plugin_over->edit(NULL);
-				editor_plugin_over->edit(current);
-			}
+
+			_set_editing_top_editors(NULL);
+			_set_editing_top_editors(current);
 
 		} break;
 		case OBJECT_CALL_METHOD: {
@@ -6138,7 +6146,7 @@ EditorNode::EditorNode() {
 	_rebuild_import_menu();
 
 	editor_plugin_screen=NULL;
-	editor_plugin_over=NULL;
+	editor_plugins_over = memnew(EditorPluginList);
 
 //	force_top_viewport(true);
 	_edit_current();
@@ -6270,12 +6278,72 @@ EditorNode::EditorNode() {
 
 
 EditorNode::~EditorNode() {
-
-
+        
 	memdelete( EditorHelp::get_doc_data() );
 	memdelete(editor_selection);
+	memdelete(editor_plugins_over);
 	memdelete(file_server);
 	EditorSettings::destroy();
 }
+
+/*
+ * EDITOR PLUGIN LIST
+ */
+
+
+void EditorPluginList::make_visible(bool p_visible) {
+	if (!plugins_list.empty()) {
+		for (int i = 0; i < plugins_list.size(); i++) {
+			plugins_list[i]->make_visible(p_visible);
+		}
+	}
+}
+
+void EditorPluginList::edit(Object* p_object) {
+	if (!plugins_list.empty()) {
+		for (int i = 0; i < plugins_list.size(); i++) {
+			plugins_list[i]->edit(p_object);
+		}
+	}
+}
+
+bool EditorPluginList::forward_input_event(const InputEvent& p_event) {
+	bool discard = false;
+	if (!plugins_list.empty()) {
+		for (int i = 0; i < plugins_list.size(); i++) {
+			if (plugins_list[i]->forward_input_event(p_event)) {
+				discard = true;
+			}
+		}
+	}
+	return discard;
+}
+
+bool EditorPluginList::forward_spatial_input_event(Camera* p_camera, const InputEvent& p_event) {
+	bool discard = false;
+	if (!plugins_list.empty()) {
+		for (int i = 0; i < plugins_list.size(); i++) {
+			if (plugins_list[i]->forward_spatial_input_event(p_camera, p_event)) {
+				discard = true;
+			}
+		}
+	}
+	return discard;
+}
+
+bool EditorPluginList::empty() {
+	return plugins_list.empty();
+}
+
+void EditorPluginList::clear() {
+	plugins_list.clear();
+}
+
+EditorPluginList::EditorPluginList() {
+}
+
+EditorPluginList::~EditorPluginList() {
+}
+        
 
 

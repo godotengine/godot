@@ -1098,8 +1098,7 @@ void SceneTreeDock::_delete_confirm() {
 		return;
 
 
-	if (editor->get_editor_plugin_over())
-		editor->get_editor_plugin_over()->make_visible(false);
+	editor->get_editor_plugins_over()->make_visible(false);
 
 	editor_data->get_undo_redo().create_action("Remove Node(s)");
 
