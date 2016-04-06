@@ -672,6 +672,7 @@ void TextEdit::_notification(int p_what) {
 				bool in_keyword=false;
 				bool in_word = false;
 				bool in_function_name = false;
+				bool in_member_variable = false;
 				Color keyword_color;
 
 				// check if line contains highlighted word
@@ -803,14 +804,28 @@ void TextEdit::_notification(int p_what) {
 							}
 						}
 
+						if (!in_function_name && !in_member_variable && !in_keyword && !is_number && in_word) {
+							int k = j;
+							while(k > 0 && !_is_symbol(str[k]) && str[k] != '\t' && str[k] != ' ') {
+								k--;
+							}
+
+							if (str[k] == '.') {
+								in_member_variable = true;
+							}
+						}
+
 						if (is_symbol) {
 							in_function_name = false;
+							in_member_variable = false;
 						}
 
 						if (in_region>=0)
 							color=color_regions[in_region].color;
 						else if (in_keyword)
 							color=keyword_color;
+						else if (in_member_variable)
+							color=cache.member_variable_color;
 						else if (in_function_name)
 							color=cache.function_color;
 						else if (is_symbol)
@@ -3049,6 +3064,7 @@ void TextEdit::_update_caches() {
 	cache.font_selected_color=get_color("font_selected_color");
 	cache.keyword_color=get_color("keyword_color");
 	cache.function_color=get_color("function_color");
+	cache.member_variable_color=get_color("member_variable_color");
 	cache.number_color=get_color("number_color");
 	cache.selection_color=get_color("selection_color");
 	cache.mark_color=get_color("mark_color");
