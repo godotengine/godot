@@ -3602,6 +3602,17 @@ void SpatialEditor::_unhandled_key_input(InputEvent p_event) {
 				case KEY_E: _menu_item_pressed(MENU_TOOL_ROTATE); break;
 				case KEY_R: _menu_item_pressed(MENU_TOOL_SCALE); break;
 
+				case KEY_Z: {
+					if (k.mod.shift || k.mod.control || k.mod.command)
+						break;
+
+					if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME))) {
+						_menu_item_pressed(MENU_VIEW_DISPLAY_NORMAL);
+					} else {
+						_menu_item_pressed(MENU_VIEW_DISPLAY_WIREFRAME);
+					}
+				} break;
+
 #if 0
 #endif
 			}
