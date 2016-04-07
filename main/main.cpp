@@ -919,14 +919,16 @@ Error Main::setup2() {
 			MAIN_PRINT("Main: Image");
 			VisualServer::get_singleton()->set_boot_image(splash, boot_splash_bg_color,false);
 #endif
-			MAIN_PRINT("Main: DCC");
-			VisualServer::get_singleton()->set_default_clear_color(GLOBAL_DEF("render/default_clear_color",Color(0.3,0.3,0.3)));
-			MAIN_PRINT("Main: END");
 		}
 
 		Image icon(app_icon_png);
 		OS::get_singleton()->set_icon(icon);
 	}
+
+	MAIN_PRINT("Main: DCC");
+	VisualServer::get_singleton()->set_default_clear_color(GLOBAL_DEF("render/default_clear_color",Color(0.3,0.3,0.3)));
+	MAIN_PRINT("Main: END");
+
 	GLOBAL_DEF("application/icon",String());
 	Globals::get_singleton()->set_custom_property_info("application/icon",PropertyInfo(Variant::STRING,"application/icon",PROPERTY_HINT_FILE,"*.png,*.webp"));
 
