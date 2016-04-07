@@ -39,6 +39,7 @@
 #include "scene/gui/grid_container.h"
 #include "tools/editor/animation_editor.h"
 #include "tools/editor/plugins/animation_player_editor_plugin.h"
+#include "scene/resources/packed_scene.h"
 
 class SnapDialog : public ConfirmationDialog {
 
@@ -415,6 +416,14 @@ void CanvasItemEditor::_keying_changed() {
 		animation_hb->hide();
 }
 
+bool CanvasItemEditor::_is_part_of_subscene(CanvasItem *p_item) {
+
+	Node* scene_node = get_tree()->get_edited_scene_root();
+	Node* item_owner = p_item->get_owner();
+
+	return item_owner && item_owner!=scene_node && p_item!=scene_node && item_owner->get_filename()!="";
+}
+
 // slow but modern computers should have no problem
 CanvasItem* CanvasItemEditor::_select_canvas_item_at_pos(const Point2& p_pos,Node* p_node,const Matrix32& p_parent_xform,const Matrix32& p_canvas_xform) {
 
@@ -441,8 +450,7 @@ CanvasItem* CanvasItemEditor::_select_canvas_item_at_pos(const Point2& p_pos,Nod
 			return r;
 	}
 
-
-	if (c && c->is_visible() && !c->has_meta("_edit_lock_") && !c->cast_to<CanvasLayer>()) {
+	if (c && c->is_visible() && !c->has_meta("_edit_lock_") && !_is_part_of_subscene(c) && !c->cast_to<CanvasLayer>()) {
 
 		Rect2 rect = c->get_item_rect();
 		Point2 local_pos = (p_parent_xform * p_canvas_xform * c->get_transform()).affine_inverse().xform(p_pos);
