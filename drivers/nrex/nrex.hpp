@@ -1,7 +1,7 @@
 //  NREX: Node RegEx
-//  Version 0.1
+//  Version 0.2
 //
-//  Copyright (c) 2015, Zher Huei Lee
+//  Copyright (c) 2015-2016, Zher Huei Lee
 //  All rights reserved.
 //
 //  This software is provided 'as-is', without any express or implied
@@ -57,7 +57,8 @@ class nrex_node;
 class nrex
 {
     private:
-        int _capturing;
+        unsigned int _capturing;
+        unsigned int _lookahead_depth;
         nrex_node* _root;
     public:
 
