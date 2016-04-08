@@ -604,8 +604,11 @@ void Control::_notification(int p_notification) {
 
 				if(get_viewport() != NULL)
 					get_viewport()->_gui_hid_control(this);
-				_modal_stack_remove();
-				minimum_size_changed();
+
+				if(is_inside_tree()) {
+					_modal_stack_remove();
+					minimum_size_changed();
+				}
 
 				//remove key focus
 				//remove modalness

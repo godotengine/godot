@@ -53,23 +53,7 @@ void MenuButton::_unhandled_key_input(InputEvent p_event) {
 			code|=KEY_MASK_SHIFT;
 
 
-		int item = popup->find_item_by_accelerator(code);
-
-
-		if (item>=0 && ! popup->is_item_disabled(item))
-			popup->activate_item(item);
-		/*
-		for(int i=0;i<items.size();i++) {
-
-
-			if (items[i].accel==0)
-				continue;
-
-			if (items[i].accel==code) {
-
-				emit_signal("item_pressed",items[i].ID);
-			}
-		}*/
+		int item = popup->activate_item_by_accelerator(code);
 	}
 
 }

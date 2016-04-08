@@ -48,6 +48,7 @@ SceneStringNames::SceneStringNames() {
 	item_rect_changed=StaticCString::create("item_rect_changed");
 	size_flags_changed=StaticCString::create("size_flags_changed");
 	minimum_size_changed=StaticCString::create("minimum_size_changed");
+	sleeping_state_changed=StaticCString::create("sleeping_state_changed");
 
 	finished=StaticCString::create("finished");
 	animation_changed=StaticCString::create("animation_changed");

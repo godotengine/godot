@@ -73,11 +73,13 @@ class TextEdit : public Control  {
 		Ref<StyleBox> style_normal;
 		Ref<StyleBox> style_focus;
 		Ref<Font> font;
+		Color caret_color;
 		Color font_color;
 		Color font_selected_color;
 		Color keyword_color;
 		Color number_color;
 		Color function_color;
+		Color member_variable_color;
 		Color selection_color;
 		Color mark_color;
 		Color breakpoint_color;
@@ -265,8 +267,6 @@ class TextEdit : public Control  {
 	void _cursor_changed_emit();
 	void _text_changed_emit();
 
-	void _begin_compex_operation();
-	void _end_compex_operation();
 	void _push_current_op();
 
 	/* super internal api, undo/redo builds on it */
@@ -318,6 +318,9 @@ public:
 	//void delete_char();
 	//void delete_line();
 
+	void begin_complex_operation();
+	void end_complex_operation();
+
 	void set_text(String p_text);
 	void insert_text_at_cursor(const String& p_text);
     void insert_at(const String& p_text, int at);
@@ -330,6 +333,9 @@ public:
 	String get_line(int line) const;
     void set_line(int line, String new_text);
 	void backspace_at_cursor();
+
+	void indent_selection_left();
+	void indent_selection_right();
 
 	inline void set_scroll_pass_end_of_file(bool p_enabled) {
 		scroll_past_end_of_file_enabled = p_enabled;

@@ -51,7 +51,31 @@
 #define GIZMO_SCALE_DEFAULT 0.15
 
 
-//void SpatialEditorViewport::_update_camera();
+void SpatialEditorViewport::_update_camera() {
+	if (orthogonal) {
+		Size2 size = get_size();
+		Size2 vpsize = Point2(cursor.distance*size.get_aspect(), cursor.distance / size.get_aspect());
+		//camera->set_orthogonal(size.width*cursor.distance,get_znear(),get_zfar());
+		camera->set_orthogonal(2 * cursor.distance, 0.1, 8192);
+	}
+	else
+		camera->set_perspective(get_fov(), get_znear(), get_zfar());
+
+	Transform camera_transform;
+	camera_transform.translate(cursor.pos);
+	camera_transform.basis.rotate(Vector3(0, 1, 0), cursor.y_rot);
+	camera_transform.basis.rotate(Vector3(1, 0, 0), cursor.x_rot);
+
+	if (orthogonal)
+		camera_transform.translate(0, 0, 4096);
+	else
+		camera_transform.translate(0, 0, cursor.distance);
+
+	if (camera->get_global_transform() != camera_transform) {
+		camera->set_global_transform(camera_transform);
+		update_transform_gizmo_view();
+	}
+}
 
 String SpatialEditorGizmo::get_handle_name(int p_idx) const {
 
@@ -810,15 +834,14 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 	{
 
 		EditorNode *en = editor;
-		EditorPlugin *over_plugin = en->get_editor_plugin_over();
+		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 
-		if (over_plugin) {
-			bool discard = over_plugin->forward_spatial_input_event(camera,p_event);
+		if (!over_plugin_list->empty()) {
+			bool discard = over_plugin_list->forward_spatial_input_event(camera,p_event);
 			if (discard)
 				return;
 		}
 	}
-
 
 	switch(p_event.type) {
 		case InputEvent::MOUSE_BUTTON: {
@@ -1204,11 +1227,9 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 			}
 		} break;
 		case InputEvent::MOUSE_MOTION: {
-
 			const InputEventMouseMotion &m=p_event.mouse_motion;
 			_edit.mouse_pos=Point2(p_event.mouse_motion.x,p_event.mouse_motion.y);
-
-
+			
 			if (spatial_editor->get_selected()) {
 
 
@@ -1244,7 +1265,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 			NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_scheme");
 			NavigationMode nav_mode = NAVIGATION_NONE;
-
+			
 			if (_edit.gizmo.is_valid()) {
 
 				Plane plane=Plane(_edit.gizmo_initial_pos,_get_camera_normal());
@@ -1558,6 +1579,26 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					if (m.mod.alt)
 						nav_mode = NAVIGATION_PAN;
 				}
+			}else{
+				// Handle trackpad (no external mouse) use case
+				int mod = 0;
+				if (m.mod.shift)
+					mod=KEY_SHIFT;
+				if (m.mod.alt)
+					mod=KEY_ALT;
+				if (m.mod.control)
+					mod=KEY_CONTROL;
+				if (m.mod.meta)
+					mod=KEY_META;
+				
+				if(mod){
+					if (mod == _get_key_modifier("3d_editor/pan_modifier"))
+						nav_mode = NAVIGATION_PAN;
+					else if (mod == _get_key_modifier("3d_editor/zoom_modifier"))
+						nav_mode = NAVIGATION_ZOOM;
+					else if (mod == _get_key_modifier("3d_editor/orbit_modifier"))
+						nav_mode = NAVIGATION_ORBIT;
+				}
 			}
 
 			switch(nav_mode) {
@@ -1770,6 +1811,10 @@ void SpatialEditorViewport::_notification(int p_what) {
 		bool visible=is_visible();
 
 		set_process(visible);
+
+		if (visible)
+			_update_camera();
+		
 		call_deferred("update_transform_gizmo_view");
 	}
 
@@ -1791,28 +1836,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 		}
 		*/
 
-		if (orthogonal) {
-			Size2 size=get_size();
-			Size2 vpsize = Point2(cursor.distance*size.get_aspect(),cursor.distance/size.get_aspect());
-			//camera->set_orthogonal(size.width*cursor.distance,get_znear(),get_zfar());
-			camera->set_orthogonal(2*cursor.distance,0.1,8192);
-		} else
-			camera->set_perspective(get_fov(),get_znear(),get_zfar());
-
-		Transform camera_transform;
-		camera_transform.translate( cursor.pos );
-		camera_transform.basis.rotate(Vector3(0,1,0),cursor.y_rot);
-		camera_transform.basis.rotate(Vector3(1,0,0),cursor.x_rot);
-
-		if (orthogonal)
-			camera_transform.translate(0,0,4096);
-		else
-			camera_transform.translate(0,0,cursor.distance);
-
-		if (camera->get_global_transform()!=camera_transform) {
-			camera->set_global_transform( camera_transform );
-			update_transform_gizmo_view();
-		}
+		_update_camera();
 
 		Map<Node*,Object*> &selection = editor_selection->get_selection();
 
@@ -1915,7 +1939,6 @@ void SpatialEditorViewport::_notification(int p_what) {
 		surface->connect("mouse_enter",this,"_smouseenter");
 		preview_camera->set_icon(get_icon("Camera","EditorIcons"));
 		_init_gizmo_instance(index);
-
 	}
 	if (p_what==NOTIFICATION_EXIT_TREE) {
 
@@ -3553,9 +3576,9 @@ void SpatialEditor::_unhandled_key_input(InputEvent p_event) {
 	{
 
 		EditorNode *en = editor;
-		EditorPlugin *over_plugin = en->get_editor_plugin_over();
+		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 
-		if (over_plugin && over_plugin->forward_input_event(p_event)) {
+		if (!over_plugin_list->empty() && over_plugin_list->forward_input_event(p_event)) {
 
 			return; //ate the over input event
 		}
@@ -3578,6 +3601,17 @@ void SpatialEditor::_unhandled_key_input(InputEvent p_event) {
 				case KEY_W: _menu_item_pressed(MENU_TOOL_MOVE); break;
 				case KEY_E: _menu_item_pressed(MENU_TOOL_ROTATE); break;
 				case KEY_R: _menu_item_pressed(MENU_TOOL_SCALE); break;
+
+				case KEY_Z: {
+					if (k.mod.shift || k.mod.control || k.mod.command)
+						break;
+
+					if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME))) {
+						_menu_item_pressed(MENU_VIEW_DISPLAY_NORMAL);
+					} else {
+						_menu_item_pressed(MENU_VIEW_DISPLAY_WIREFRAME);
+					}
+				} break;
 
 #if 0
 #endif

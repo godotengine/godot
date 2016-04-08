@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="2.0.stable.custom_build" name="Engine Types">
+<doc version="2.1.alpha.custom_build" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 	Built-in GDScript functions.
@@ -591,7 +591,7 @@
 		<method name="hash">
 			<return type="int">
 			</return>
-			<argument index="0" name="Variant" type="Variant">
+			<argument index="0" name="var:Variant" type="Variant">
 			</argument>
 			<description>
 			Hash the variable passed and return an integer.
@@ -638,7 +638,7 @@
 			</description>
 		</method>
 		<method name="yield">
-			<return type="Object">
+			<return type="Nil">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
@@ -5149,6 +5149,42 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_realtime_color_enabled">
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_realtime_color_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_realtime_color">
+			<argument index="0" name="tint" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_realtime_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_realtime_energy">
+			<argument index="0" name="energy" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_realtime_energy" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_format">
 			<argument index="0" name="format" type="int">
 			</argument>
@@ -5506,6 +5542,12 @@
 	Base class for Box containers. It arranges children controls vertically or horizontally, and rearranges them automatically when their minimum size changes.
 	</description>
 	<methods>
+		<method name="add_spacer">
+			<argument index="0" name="begin" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_alignment" qualifiers="const">
 			<return type="int">
 			</return>
@@ -10074,7 +10116,9 @@ Returns an empty String "" at the end of the list.
 		</constant>
 		<constant name="MODE_OPEN_DIR" value="2">
 		</constant>
-		<constant name="MODE_SAVE_FILE" value="3">
+		<constant name="MODE_OPEN_ANY" value="3">
+		</constant>
+		<constant name="MODE_SAVE_FILE" value="4">
 		</constant>
 		<constant name="ACCESS_RESOURCES" value="0">
 		</constant>
@@ -11756,7 +11800,9 @@ Returns an empty String "" at the end of the list.
 		<constant name="MODE_OPEN_DIR" value="2">
 			The dialog functions as a folder selector, disallowing the selection of any file.
 		</constant>
-		<constant name="MODE_SAVE_FILE" value="3">
+		<constant name="MODE_OPEN_ANY" value="3">
+		</constant>
+		<constant name="MODE_SAVE_FILE" value="4">
 			The dialog will warn when a file exists.
 		</constant>
 		<constant name="ACCESS_RESOURCES" value="0">
@@ -12646,6 +12692,18 @@ Returns an empty String "" at the end of the list.
 			<description>
 			</description>
 		</method>
+		<method name="set_cast_shadows_setting">
+			<argument index="0" name="shadow_casting_setting" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_cast_shadows_setting" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_draw_range_begin">
 			<argument index="0" name="mode" type="float">
 			</argument>
@@ -12711,6 +12769,14 @@ Returns an empty String "" at the end of the list.
 		<constant name="FLAG_VISIBLE_IN_ALL_ROOMS" value="6">
 		</constant>
 		<constant name="FLAG_MAX" value="8">
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_OFF" value="0">
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_ON" value="1">
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_DOUBLE_SIDED" value="2">
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3">
 		</constant>
 	</constants>
 </class>
@@ -14032,6 +14098,134 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<constant name="RESPONSE_INSUFFICIENT_STORAGE" value="507">
 		</constant>
 		<constant name="RESPONSE_NOT_EXTENDED" value="510">
+		</constant>
+	</constants>
+</class>
+<class name="HTTPRequest" inherits="Node" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="request">
+			<return type="int">
+			</return>
+			<argument index="0" name="url" type="String">
+			</argument>
+			<argument index="1" name="custom_headers" type="StringArray" default="StringArray()">
+			</argument>
+			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="cancel_request">
+			<description>
+			</description>
+		</method>
+		<method name="get_http_client_status" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_use_threads">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_using_threads" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_body_size_limit">
+			<argument index="0" name="bytes" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_body_size_limit" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_max_redirects">
+			<argument index="0" name="amount" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_max_redirects" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_download_file">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_download_file" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_downloaded_bytes" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_body_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="request_completed">
+			<argument index="0" name="result" type="int">
+			</argument>
+			<argument index="1" name="response_code" type="int">
+			</argument>
+			<argument index="2" name="headers" type="StringArray">
+			</argument>
+			<argument index="3" name="body" type="RawArray">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="RESULT_SUCCESS" value="0">
+		</constant>
+		<constant name="RESULT_CHUNKED_BODY_SIZE_MISMATCH" value="1">
+		</constant>
+		<constant name="RESULT_CANT_CONNECT" value="2">
+		</constant>
+		<constant name="RESULT_CANT_RESOLVE" value="3">
+		</constant>
+		<constant name="RESULT_CONNECTION_ERROR" value="4">
+		</constant>
+		<constant name="RESULT_SSL_HANDSHAKE_ERROR" value="5">
+		</constant>
+		<constant name="RESULT_NO_RESPONSE" value="6">
+		</constant>
+		<constant name="RESULT_BODY_SIZE_LIMIT_EXCEEDED" value="7">
+		</constant>
+		<constant name="RESULT_REQUEST_FAILED" value="8">
+		</constant>
+		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="11">
+		</constant>
+		<constant name="RESULT_DOWNLOAD_FILE_WRITE_ERROR" value="10">
 		</constant>
 	</constants>
 </class>
@@ -15846,6 +16040,76 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	<constants>
 	</constants>
 </class>
+<class name="InverseKinematics" inherits="Spatial" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="set_bone_name">
+			<argument index="0" name="ik_bone" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_iterations">
+			<argument index="0" name="iterations" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_iterations" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_chain_size">
+			<argument index="0" name="chain_size" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_chain_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_precision">
+			<argument index="0" name="precision" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_precision" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_speed">
+			<argument index="0" name="speed" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_speed" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="ItemList" inherits="Control" category="Core">
 	<brief_description>
 	</brief_description>
@@ -15896,6 +16160,22 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</method>
 		<method name="get_item_icon" qualifiers="const">
 			<return type="Texture">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_icon_region">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_icon_region" qualifiers="const">
+			<return type="Rect2">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -17422,6 +17702,56 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</methods>
 	<constants>
 	</constants>
+</class>
+<class name="LinkButton" inherits="BaseButton" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="set_text">
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_underline_mode">
+			<argument index="0" name="underline_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_underline_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="UNDERLINE_MODE_ALWAYS" value="0">
+		</constant>
+		<constant name="UNDERLINE_MODE_ON_HOVER" value="1">
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="underline_spacing" type="int">
+		</theme_item>
+		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="font_color_hover" type="Color">
+		</theme_item>
+		<theme_item name="font_color_pressed" type="Color">
+		</theme_item>
+		<theme_item name="font" type="Font">
+		</theme_item>
+	</theme_items>
 </class>
 <class name="MainLoop" inherits="Object" category="Core">
 	<brief_description>
@@ -19650,7 +19980,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="2" name="owned" type="bool" default="true">
 			</argument>
 			<description>
-				Find a descendant of this node whose name matches [code]mask[/code] as in [method String.match] (i.e. case sensitive, but '*' matches zero or more characters and '?' matches any single character except '.'). Note that it does not match against the full path, just against individual node names.
+			Find a descendant of this node whose name matches [code]mask[/code] as in [method String.match] (i.e. case sensitive, but '*' matches zero or more characters and '?' matches any single character except '.'). Note that it does not match against the full path, just against individual node names.
 			</description>
 		</method>
 		<method name="has_node_and_resource" qualifiers="const">
@@ -20444,6 +20774,18 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			</description>
 		</method>
+		<method name="set_borderless_window">
+			<argument index="0" name="borderless" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_borderless_window" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_screen_orientation">
 			<argument index="0" name="orientation" type="int">
 			</argument>
@@ -20624,24 +20966,22 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Return the main loop object (see [MainLoop]).
 			</description>
 		</method>
-		<method name="get_date" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="utc" type="bool" default="false">
-			</argument>
-			<description>
-				Returns current date in a dictionary of keys: year, month,
-				day, weekday, dst (daylight savings time).
-			</description>
-		</method>
 		<method name="get_datetime" qualifiers="const">
 			<return type="Dictionary">
 			</return>
 			<argument index="0" name="utc" type="bool" default="false">
 			</argument>
 			<description>
-				Returns current datetime in a dictionary of keys: year,
-				month, day, weekday, dst (daylight savings time), hour, minute, second
+			Returns current datetime as a dictionary of keys: year, month, day, weekday, dst (daylight savings time), hour, minute, second.
+			</description>
+		</method>
+		<method name="get_date" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="utc" type="bool" default="false">
+			</argument>
+			<description>
+			Returns current date as a dictionary of keys: year, month, day, weekday, dst (daylight savings time).
 			</description>
 		</method>
 		<method name="get_time" qualifiers="const">
@@ -20650,36 +20990,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="utc" type="bool" default="false">
 			</argument>
 			<description>
-				Returns current time in a dictionary of keys:
-				hour, minute, second
-			</description>
-		</method>
-		<method name="get_datetime_from_unix_time" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="unix_time_val" type="int">
-			</argument>
-			<description>
-			Get a dictionary of time values when given epoch time.
-			Dictionary Time values will be a union of values from [method get_time]
-			and [method get_date] dictionaries (with the exception of dst = 
-			day light standard time, as it cannot be determined from epoc)
-			</description>
-		</method>
-		<method name="get_unix_time_from_datetime" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="datetime" type="Dictionary">
-			</argument>
-			<description>
-				Get an epoch time value from a dictionary of time values
-				datetime must be populated with the following keys:
-				day, hour, minute, month, second, year. You can pass the output from
-				[method get_datetime_from_unix_time] directly into this function. Day
-				light savings time (dst), if present, is ignored.
-
-				To be accurate, datetime dictionary must have keys for: year, month, day,
-				hour, minute, second
+			Returns current time as a dictionary of keys: hour, minute, second
 			</description>
 		</method>
 		<method name="get_time_zone_info" qualifiers="const">
@@ -20692,6 +21003,27 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="int">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="get_datetime_from_unix_time" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="unix_time_val" type="int">
+			</argument>
+			<description>
+			Get a dictionary of time values when given epoch time.
+			Dictionary Time values will be a union of values from [method get_time] and [method get_date] dictionaries (with the exception of dst = day light standard time, as it cannot be determined from epoch).
+			</description>
+		</method>
+		<method name="get_unix_time_from_datetime" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="datetime" type="Dictionary">
+			</argument>
+			<description>
+			Get an epoch time value from a dictionary of time values.
+			[code]datetime[/code] must be populated with the following keys: year, month, day, hour, minute, second.
+			You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight savings time (dst), if present, is ignored.
 			</description>
 		</method>
 		<method name="get_system_time_secs" qualifiers="const">
@@ -29430,6 +29762,10 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</signal>
+		<signal name="sleeping_state_changed">
+			<description>
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="MODE_STATIC" value="1">
@@ -29777,6 +30113,10 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			Emitted when a body shape exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
 			This signal not only receives the body that stopped colliding with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body stopped colliding with.
+			</description>
+		</signal>
+		<signal name="sleeping_state_changed">
+			<description>
 			</description>
 		</signal>
 	</signals>
@@ -34503,14 +34843,14 @@ This method controls whether the position between two cached points is interpola
 	</description>
 	<methods>
 		<method name="set_stream">
-			<argument index="0" name="stream" type="Stream">
+			<argument index="0" name="stream" type="AudioStream">
 			</argument>
 			<description>
 			Set the [EventStream] this player will play.
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
-			<return type="Stream">
+			<return type="AudioStream">
 			</return>
 			<description>
 			Return the currently assigned stream.
@@ -37719,6 +38059,18 @@ This method controls whether the position between two cached points is interpola
 		<method name="stop">
 			<description>
 			Stop (cancel) the timer.
+			</description>
+		</method>
+		<method name="set_active">
+			<argument index="0" name="active" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_active" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_time_left" qualifiers="const">
