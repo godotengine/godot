@@ -45,6 +45,7 @@ class MeshLibrary : public Resource {
 		Ref<Mesh> mesh;
 		Ref<Shape> shape;
 		Ref<Texture> preview;
+		Dictionary metadata;
 	};
 
 	Map<int,Item> item_map;
@@ -64,10 +65,15 @@ public:
 	void set_item_mesh(int p_item,const Ref<Mesh>& p_mesh);
 	void set_item_shape(int p_item,const Ref<Shape>& p_shape);
 	void set_item_preview(int p_item,const Ref<Texture>& p_preview);
+	void set_item_meta(int p_item, const String& p_name, const Variant& p_value );
 	String get_item_name(int p_item) const;
 	Ref<Mesh> get_item_mesh(int p_item) const;
 	Ref<Shape> get_item_shape(int p_item) const;
 	Ref<Texture> get_item_preview(int p_item) const;
+	Variant get_item_meta(int p_item, const String& p_name) const;
+
+	bool item_has_meta(int p_item, const String& p_name) const;
+	DVector<String> get_item_meta_list(int p_item) const;
 
 	void remove_item(int p_item);
 	bool has_item(int p_item) const;

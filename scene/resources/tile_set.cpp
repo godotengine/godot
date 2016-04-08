@@ -317,6 +317,44 @@ Vector<Ref<Shape2D> > TileSet::tile_get_shapes(int p_id) const {
 	return tile_map[p_id].shapes;
 }
 
+void TileSet::tile_set_meta(int p_id, const String& p_name, const Variant& p_value ) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	if (p_value.get_type() == Variant::NIL) {
+		tile_map[p_id].metadata.erase(p_name);
+		return;
+	};
+
+	tile_map[p_id].metadata[p_name]=p_value;
+}
+
+Variant TileSet::tile_get_meta(int p_id, const String& p_name) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id) || !tile_map[p_id].metadata.has(p_name),Variant());
+	return tile_map[p_id].metadata[p_name];
+}
+
+bool TileSet::tile_has_meta(int p_id, const String& p_name) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id),false);
+	return tile_map[p_id].metadata.has(p_name);
+}
+
+DVector<String> TileSet::tile_get_meta_list(int p_id) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), DVector<String>());
+	DVector<String> _metaret;
+
+	List<Variant> keys;
+	tile_map[p_id].metadata.get_key_list(&keys);
+	for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
+
+		_metaret.push_back(E->get());
+	}
+
+	return _metaret;
+}
+
 void TileSet::_tile_set_shapes(int p_id,const Array& p_shapes) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
@@ -432,6 +470,10 @@ void TileSet::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("tile_get_light_occluder:OccluderPolygon2D","id"),&TileSet::tile_get_light_occluder);
 	ObjectTypeDB::bind_method(_MD("tile_set_occluder_offset","id","occluder_offset"),&TileSet::tile_set_occluder_offset);
 	ObjectTypeDB::bind_method(_MD("tile_get_occluder_offset","id"),&TileSet::tile_get_occluder_offset);
+	ObjectTypeDB::bind_method(_MD("tile_set_meta","id","name","value"),&TileSet::tile_set_meta);
+	ObjectTypeDB::bind_method(_MD("tile_get_meta","id","name"),&TileSet::tile_get_meta);
+	ObjectTypeDB::bind_method(_MD("tile_has_meta","id","name"),&TileSet::tile_has_meta);
+	ObjectTypeDB::bind_method(_MD("tile_get_meta_list","id"),&TileSet::tile_get_meta_list);
 
 	ObjectTypeDB::bind_method(_MD("remove_tile","id"),&TileSet::remove_tile);
 	ObjectTypeDB::bind_method(_MD("clear"),&TileSet::clear);

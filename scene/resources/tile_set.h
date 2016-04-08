@@ -52,6 +52,7 @@ class TileSet : public Resource {
 		Vector2 navigation_polygon_offset;
 		Ref<NavigationPolygon> navigation_polygon;
 		Ref<CanvasItemMaterial> material;
+		Dictionary metadata;
 	};
 
 	Map<int,Data> tile_map;
@@ -108,6 +109,11 @@ public:
 
 	void tile_set_shapes(int p_id,const Vector<Ref<Shape2D> > &p_shapes);
 	Vector<Ref<Shape2D> > tile_get_shapes(int p_id) const;
+
+	void tile_set_meta(int p_id, const String& p_name, const Variant& p_value );
+	Variant tile_get_meta(int p_id, const String& p_name) const;
+	bool tile_has_meta(int p_id, const String& p_name) const;
+	DVector<String> tile_get_meta_list(int p_id) const;
 
 	void remove_tile(int p_id);
 
