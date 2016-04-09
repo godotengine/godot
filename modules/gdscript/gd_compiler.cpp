@@ -1421,7 +1421,22 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 
 			if (path.is_rel_path()) {
 
-				String base = p_script->get_path();
+				String base;
+
+				if (p_owner) {
+					GDScript *current_class = p_owner;
+					while (current_class != NULL) {
+						base=current_class->get_path();
+						if (base=="")
+							current_class = current_class->_owner;
+						else
+							break;
+					}
+				}
+				else {
+					base = p_script->get_path();
+				}
+
 				if (base=="" || base.is_rel_path()) {
 					_set_error("Could not resolve relative path for parent class: "+path,p_class);
 					return ERR_FILE_NOT_FOUND;
