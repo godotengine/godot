@@ -33,7 +33,7 @@
 void RayCast::set_cast_to(const Vector3& p_point) {
 
 	cast_to=p_point;
-	if (is_inside_tree() && get_tree()->is_editor_hint())
+	if (is_inside_tree() && (get_tree()->is_editor_hint() || get_tree()->is_debugging_collisions_hint()))
 		update_gizmo();
 
 }
