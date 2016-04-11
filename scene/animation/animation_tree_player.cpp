@@ -1860,7 +1860,6 @@ AnimationTreePlayer::AnimationTreePlayer() {
 	out_name="out";
 	out->pos=Point2(40,40);
 	node_map.insert( out_name , out);
-	AnimationProcessMode animation_process_mode;
 	animation_process_mode = ANIMATION_PROCESS_IDLE;
 	processing = false;
 	active=false;
