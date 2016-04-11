@@ -4,7 +4,8 @@ javascript_files = [
 	"os_javascript.cpp",
 	"audio_driver_javascript.cpp",
 	"javascript_main.cpp",
-	"audio_server_javascript.cpp"
+	"audio_server_javascript.cpp",
+	"javascript_eval.cpp"
 ]
 
 #obj = env.SharedObject('godot_javascript.cpp')

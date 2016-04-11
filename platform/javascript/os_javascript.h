@@ -42,6 +42,7 @@
 #include "audio_driver_javascript.h"
 #include "main/input_default.h"
 #include "emscripten/html5.h"
+#include "javascript_eval.h"
 
 typedef void (*GFXInitFunc)(void *ud,bool gl2,int w, int h, bool fs);
 typedef int (*OpenURIFunc)(const String&);
@@ -87,6 +88,10 @@ private:
 	OpenURIFunc open_uri_func;
 	GetDataDirFunc get_data_dir_func;
 	GetLocaleFunc get_locale_func;
+
+#ifdef JAVASCRIPT_EVAL_ENABLED
+	JavaScript* javascript_eval;
+#endif
 
 	static void _close_notification_funcs(const String& p_file,int p_flags);
 

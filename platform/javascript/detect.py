@@ -18,7 +18,8 @@ def can_build():
 def get_opts():
 
 	return [
-		['compress','Compress JS Executable','no']
+		['compress','Compress JS Executable','no'],
+		['javascript_eval','Enable JavaScript eval interface','yes']
 	]
 
 def get_flags():
@@ -86,6 +87,10 @@ def configure(env):
 	env.Append(CPPFLAGS=['-s','ASM_JS=1'])
 	env.Append(CPPFLAGS=['-s','FULL_ES2=1'])
 #	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED','-DMPC_FIXED_POINT'])
+
+	if env['javascript_eval'] == 'yes':
+		env.Append(CPPFLAGS=['-DJAVASCRIPT_EVAL_ENABLED'])
+
 	if (env["compress"]=="yes"):
 		lzma_binpath = em_path+"/third_party/lzma.js/lzma-native"
 		lzma_decoder = em_path+"/third_party/lzma.js/lzma-decoder.js"
