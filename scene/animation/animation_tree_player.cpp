@@ -432,7 +432,7 @@ void AnimationTreePlayer::_notification(int p_what) {
 }
 
 
-float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode **r_prev_anim,float p_weight, float p_time, bool switched, bool p_seek,const HashMap<NodePath,bool> *p_filter, float p_reverse_weight) {
+float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode **r_prev_anim,float p_weight, float p_time, bool p_seek,const HashMap<NodePath,bool> *p_filter, float p_reverse_weight) {
 
 	ERR_FAIL_COND_V(!node_map.has(p_node), 0);
 	NodeBase *nb=node_map[p_node];
@@ -445,7 +445,7 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 		case NODE_OUTPUT: {
 
 			NodeOut *on = static_cast<NodeOut*>(nb);
-			return _process_node(on->inputs[0].node,r_prev_anim,p_weight,p_time,switched,p_seek);
+			return _process_node(on->inputs[0].node,r_prev_anim,p_weight,p_time,p_seek);
 
 		} break;
 		case NODE_ANIMATION: {
@@ -478,9 +478,6 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 				} else if (an->time > anim_size) {
 
 					an->time=anim_size;
-				}
-				if (switched && an->time >= anim_size) {
-					an->time = 0.0;
 				}
 
 				an->skip=true;
@@ -523,13 +520,17 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 
 			if (!osn->active) {
 				//make it as if this node doesn't exist, pass input 0 by.
-				return _process_node(osn->inputs[0].node,r_prev_anim,p_weight,p_time,switched,p_seek,p_filter,p_reverse_weight);
+				return _process_node(osn->inputs[0].node,r_prev_anim,p_weight,p_time,p_seek,p_filter,p_reverse_weight);
 			}
+
+			float os_seek = p_seek;
 
 			if (p_seek)
 				osn->time=p_time;
-			if (osn->start)
+			if (osn->start) {
 				osn->time=0;
+				os_seek = true;
+			}
 
 			float blend;
 
@@ -554,13 +555,13 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 
 			if (!osn->filter.empty()) {
 
-				main_rem = _process_node(osn->inputs[0].node,r_prev_anim,(osn->mix?p_weight:p_weight*(1.0-blend)),p_time,switched,p_seek,&osn->filter,p_weight);
-				os_rem = _process_node(osn->inputs[1].node,r_prev_anim,p_weight*blend,p_time,osn->start,p_seek,&osn->filter,-1);
+				main_rem = _process_node(osn->inputs[0].node,r_prev_anim,(osn->mix?p_weight:p_weight*(1.0-blend)),p_time,p_seek,&osn->filter,p_weight);
+				os_rem = _process_node(osn->inputs[1].node,r_prev_anim,p_weight*blend,p_time,os_seek,&osn->filter,-1);
 
 			} else {
 
-				main_rem = _process_node(osn->inputs[0].node,r_prev_anim,(osn->mix?p_weight:p_weight*(1.0-blend)),p_time,switched,p_seek);
-				os_rem = _process_node(osn->inputs[1].node,r_prev_anim,p_weight*blend,p_time,osn->start,p_seek);
+				main_rem = _process_node(osn->inputs[0].node,r_prev_anim,(osn->mix?p_weight:p_weight*(1.0-blend)),p_time,p_seek);
+				os_rem = _process_node(osn->inputs[1].node,r_prev_anim,p_weight*blend,p_time,os_seek);
 			}
 
 			if (osn->start) {
@@ -570,8 +571,8 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 
 			if (!p_seek) {
 				osn->time+=p_time;
-				osn->remaining-=p_time;
-				if (osn->remaining<0)
+				osn->remaining=os_rem;
+				if (osn->remaining<=0)
 					osn->active=false;
 			}
 
@@ -581,8 +582,8 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 			MixNode *mn = static_cast<MixNode*>(nb);
 
 
-			float rem = _process_node(mn->inputs[0].node,r_prev_anim,p_weight,p_time,switched,p_seek,p_filter,p_reverse_weight);
-			_process_node(mn->inputs[1].node,r_prev_anim,p_weight*mn->amount,p_time,switched,p_seek,p_filter,p_reverse_weight);
+			float rem = _process_node(mn->inputs[0].node,r_prev_anim,p_weight,p_time,p_seek,p_filter,p_reverse_weight);
+			_process_node(mn->inputs[1].node,r_prev_anim,p_weight*mn->amount,p_time,p_seek,p_filter,p_reverse_weight);
 			return rem;
 
 		} break;
@@ -593,12 +594,12 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 			float rem;
 			if (!bn->filter.empty()) {
 
-				rem = _process_node(bn->inputs[0].node,r_prev_anim,p_weight*(1.0-bn->value),p_time,switched,p_seek,&bn->filter,p_weight);
-				_process_node(bn->inputs[1].node,r_prev_anim,p_weight*bn->value,p_time,switched,p_seek,&bn->filter,-1);
+				rem = _process_node(bn->inputs[0].node,r_prev_anim,p_weight*(1.0-bn->value),p_time,p_seek,&bn->filter,p_weight);
+				_process_node(bn->inputs[1].node,r_prev_anim,p_weight*bn->value,p_time,p_seek,&bn->filter,-1);
 
 			} else {
-				rem = _process_node(bn->inputs[0].node,r_prev_anim,p_weight*(1.0-bn->value),p_time,switched,p_seek,p_filter,p_reverse_weight*(1.0-bn->value));
-				_process_node(bn->inputs[1].node,r_prev_anim,p_weight*bn->value,p_time,switched,p_seek,p_filter,p_reverse_weight*bn->value);
+				rem = _process_node(bn->inputs[0].node,r_prev_anim,p_weight*(1.0-bn->value),p_time,p_seek,p_filter,p_reverse_weight*(1.0-bn->value));
+				_process_node(bn->inputs[1].node,r_prev_anim,p_weight*bn->value,p_time,p_seek,p_filter,p_reverse_weight*bn->value);
 			}
 
 			return rem;
@@ -618,19 +619,19 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 				upper_blend = bn->value;
 			}
 
-			rem = _process_node(bn->inputs[1].node,r_prev_anim,p_weight*blend,p_time,switched,p_seek,p_filter,p_reverse_weight*blend);
-			_process_node(bn->inputs[2].node,r_prev_anim,p_weight*upper_blend,p_time,switched,p_seek,p_filter,p_reverse_weight*upper_blend);
-			_process_node(bn->inputs[0].node,r_prev_anim,p_weight*lower_blend,p_time,switched,p_seek,p_filter,p_reverse_weight*lower_blend);
+			rem = _process_node(bn->inputs[1].node,r_prev_anim,p_weight*blend,p_time,p_seek,p_filter,p_reverse_weight*blend);
+			_process_node(bn->inputs[2].node,r_prev_anim,p_weight*upper_blend,p_time,p_seek,p_filter,p_reverse_weight*upper_blend);
+			_process_node(bn->inputs[0].node,r_prev_anim,p_weight*lower_blend,p_time,p_seek,p_filter,p_reverse_weight*lower_blend);
 
 			return rem;
 		} break;
 		case NODE_BLEND4: {
 			Blend4Node *bn = static_cast<Blend4Node*>(nb);
 
-			float rem = _process_node(bn->inputs[0].node,r_prev_anim,p_weight*(1.0-bn->value.x),p_time,switched,p_seek,p_filter,p_reverse_weight*(1.0-bn->value.x));
-			_process_node(bn->inputs[1].node,r_prev_anim,p_weight*bn->value.x,p_time,switched,p_seek,p_filter,p_reverse_weight*bn->value.x);
-			float rem2 = _process_node(bn->inputs[2].node,r_prev_anim,p_weight*(1.0-bn->value.y),p_time,switched,p_seek,p_filter,p_reverse_weight*(1.0-bn->value.y));
-			_process_node(bn->inputs[3].node,r_prev_anim,p_weight*bn->value.y,p_time,switched,p_seek,p_filter,p_reverse_weight*bn->value.y);
+			float rem = _process_node(bn->inputs[0].node,r_prev_anim,p_weight*(1.0-bn->value.x),p_time,p_seek,p_filter,p_reverse_weight*(1.0-bn->value.x));
+			_process_node(bn->inputs[1].node,r_prev_anim,p_weight*bn->value.x,p_time,p_seek,p_filter,p_reverse_weight*bn->value.x);
+			float rem2 = _process_node(bn->inputs[2].node,r_prev_anim,p_weight*(1.0-bn->value.y),p_time,p_seek,p_filter,p_reverse_weight*(1.0-bn->value.y));
+			_process_node(bn->inputs[3].node,r_prev_anim,p_weight*bn->value.y,p_time,p_seek,p_filter,p_reverse_weight*bn->value.y);
 
 			return MAX(rem,rem2);
 
@@ -639,9 +640,9 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 			TimeScaleNode *tsn = static_cast<TimeScaleNode*>(nb);
 			float rem;
 			if (p_seek)
-				rem = _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time,switched,true,p_filter,p_reverse_weight);
+				rem = _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time,true,p_filter,p_reverse_weight);
 			else
-				rem = _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time*tsn->scale,switched,false,p_filter,p_reverse_weight);
+				rem = _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time*tsn->scale,false,p_filter,p_reverse_weight);
 			if (tsn->scale == 0)
 				return INFINITY;
 			else
@@ -651,68 +652,58 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 		case NODE_TIMESEEK: {
 
 			TimeSeekNode *tsn = static_cast<TimeSeekNode*>(nb);
-			if (tsn->seek_pos>=0) {
+			if (tsn->seek_pos>=0 && !p_seek) {
 
-				float res = _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,tsn->seek_pos,switched,true,p_filter,p_reverse_weight);
-				tsn->seek_pos=-1;
-				return res;
+				p_time = tsn->seek_pos;
+				p_seek = true;
+			}
+			tsn->seek_pos=-1;
 
-			} else
-				return _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time,switched,p_seek);
+			return _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time,p_seek);
 
 		}   break;
 		case NODE_TRANSITION: {
 
 			TransitionNode *tn = static_cast<TransitionNode*>(nb);
 
-			if (tn->prev<0) {
+			if (tn->prev<0) {  // process current animation, check for transition
 
-				float rem = _process_node(tn->inputs[tn->current].node,r_prev_anim,p_weight,p_time,switched,p_seek,p_filter,p_reverse_weight);
+				float rem = _process_node(tn->inputs[tn->current].node,r_prev_anim,p_weight,p_time,p_seek,p_filter,p_reverse_weight);
 				if (p_seek)
 					tn->time=p_time;
 				else
 					tn->time+=p_time;
 
-				if (tn->input_data[tn->current].auto_advance && rem < tn->xfade) {
+				if (tn->input_data[tn->current].auto_advance && rem <= tn->xfade) {
 
-					tn->prev=tn->current;
-					tn->current++;
-					if (tn->current>=tn->inputs.size())
-						tn->current=0;
-					tn->prev_xfading=tn->xfade;
-					tn->prev_time=tn->time;
-					tn->time=0;
-					tn->switched=true;
+					tn->set_current((tn->current+1) % tn->inputs.size());
 				}
 
 
 				return rem;
-			} else {
+			} else {  // cross-fading from tn->prev to tn->current
 
 
 				float blend = tn->xfade? (tn->prev_xfading/tn->xfade) : 1;
 
 				float rem;
 
-				if (!p_seek && tn->switched) { //just switched
+				if (!p_seek && tn->switched) { //just switched, seek to start of current
 
-					rem = _process_node(tn->inputs[tn->current].node,r_prev_anim,p_weight*(1.0-blend),0,true,true,p_filter,p_reverse_weight*(1.0-blend));
+					rem = _process_node(tn->inputs[tn->current].node,r_prev_anim,p_weight*(1.0-blend),0,true,p_filter,p_reverse_weight*(1.0-blend));
 				} else {
 
-					rem = _process_node(tn->inputs[tn->current].node,r_prev_anim,p_weight*(1.0-blend),p_time,switched,p_seek,p_filter,p_reverse_weight*(1.0-blend));
+					rem = _process_node(tn->inputs[tn->current].node,r_prev_anim,p_weight*(1.0-blend),p_time,p_seek,p_filter,p_reverse_weight*(1.0-blend));
 
 				}
 
 				tn->switched=false;
 
-				//if (!p_seek)
-
-
-				if (p_seek) {
-					_process_node(tn->inputs[tn->prev].node,r_prev_anim,p_weight*blend,0,true,false,p_filter,p_reverse_weight*blend);
+				if (p_seek) {  // don't seek prev animation
+					_process_node(tn->inputs[tn->prev].node,r_prev_anim,p_weight*blend,0,false,p_filter,p_reverse_weight*blend);
 					tn->time=p_time;
 				} else {
-					_process_node(tn->inputs[tn->prev].node,r_prev_anim,p_weight*blend,p_time,switched,false,p_filter,p_reverse_weight*blend);
+					_process_node(tn->inputs[tn->prev].node,r_prev_anim,p_weight*blend,p_time,false,p_filter,p_reverse_weight*blend);
 					tn->time+=p_time;
 					tn->prev_xfading-=p_time;
 					if (tn->prev_xfading<0) {
@@ -749,10 +740,10 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 	AnimationNode *prev=NULL;
 
 	if (reset_request) {
-		_process_node(out_name,&prev, 1.0, 0, true, true );
+		_process_node(out_name,&prev, 1.0, 0, true);
 		reset_request=false;
 	} else
-		_process_node(out_name,&prev, 1.0, p_delta, false, false );
+		_process_node(out_name,&prev, 1.0, p_delta);
 
 	if (dirty_caches) {
 		//some animation changed.. ignore this pass
@@ -1158,21 +1149,24 @@ void AnimationTreePlayer::transition_node_set_xfade_time(const StringName& p_nod
 	n->xfade=p_time;
 }
 
+void AnimationTreePlayer::TransitionNode::set_current(int p_current) {
+	ERR_FAIL_INDEX(p_current,inputs.size());
+
+	if (current==p_current)
+		return;
+
+	prev=current;
+	prev_xfading=xfade;
+	prev_time=time;
+	time=0;
+	current=p_current;
+	switched=true;
+}
 
 void AnimationTreePlayer::transition_node_set_current(const StringName& p_node, int p_current) {
 
 	GET_NODE( NODE_TRANSITION, TransitionNode );
-	ERR_FAIL_INDEX(p_current,n->inputs.size());
-
-	if (n->current==p_current)
-		return;
-
-	n->prev=n->current;
-	n->prev_xfading=n->xfade;
-	n->prev_time=n->time;
-	n->time=0;
-	n->current=p_current;
-
+	n->set_current(p_current);
 }
 
 
@@ -1606,6 +1600,7 @@ void AnimationTreePlayer::set_active(bool p_active) {
 
 	active = p_active;
 	processing = active;
+	reset_request = p_active;
 	_set_process(processing, true);
 }
 
@@ -1623,7 +1618,7 @@ AnimationTreePlayer::ConnectError AnimationTreePlayer::get_last_error() const {
 void AnimationTreePlayer::reset() {
 
 
-	reset_request=false;
+	reset_request=true;
 }
 
 
@@ -1865,7 +1860,7 @@ AnimationTreePlayer::AnimationTreePlayer() {
 	processing = false;
 	active=false;
 	dirty_caches=true;
-	reset_request=false;
+	reset_request=true;
 	last_error=CONNECT_INCOMPLETE;
 	base_path=String("..");
 }

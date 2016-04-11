@@ -246,6 +246,7 @@ private:
 		float xfade;
 
 		TransitionNode() { type=NODE_TRANSITION;  xfade=0; inputs.resize(1); input_data.resize(1); current=0; prev=-1; prev_time=0; prev_xfading=0; switched=false; }
+		void set_current(int p_current);
 	};
 
 
@@ -267,7 +268,7 @@ private:
 	Map<StringName,NodeBase*> node_map;
 
 	// return time left to finish animation
-	float _process_node(const StringName& p_node,AnimationNode **r_prev_anim, float p_weight,float p_step, bool switched, bool p_seek=false,const HashMap<NodePath,bool> *p_filter=NULL, float p_reverse_weight=0);
+	float _process_node(const StringName& p_node,AnimationNode **r_prev_anim, float p_weight,float p_step, bool p_seek=false,const HashMap<NodePath,bool> *p_filter=NULL, float p_reverse_weight=0);
 	void _process_animation(float p_delta);
 	bool reset_request;
 
