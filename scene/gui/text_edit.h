@@ -74,6 +74,7 @@ class TextEdit : public Control  {
 		Ref<StyleBox> style_focus;
 		Ref<Font> font;
 		Color caret_color;
+		Color line_number_color;
 		Color font_color;
 		Color font_selected_color;
 		Color keyword_color;

@@ -682,14 +682,12 @@ void TextEdit::_notification(int p_what) {
 				}
 
 				if (cache.line_number_w) {
-					Color fcol = cache.font_color;
-					fcol.a*=0.4;
 					String fc = String::num(line+1);
 					while (fc.length() < line_number_char_count) {
 						fc="0"+fc;
 					}
 
-					cache.font->draw(ci,Point2(cache.style_normal->get_margin(MARGIN_LEFT),ofs_y+cache.font->get_ascent()),fc,fcol);
+					cache.font->draw(ci,Point2(cache.style_normal->get_margin(MARGIN_LEFT),ofs_y+cache.font->get_ascent()),fc,cache.line_number_color);
 				}
 
 				const Map<int,Text::ColorRegionInfo>& cri_map=text.get_color_region_info(line);
@@ -3083,6 +3081,7 @@ void TextEdit::_update_caches() {
 	cache.style_focus=get_stylebox("focus");
 	cache.font=get_font("font");
 	cache.caret_color=get_color("caret_color");
+	cache.line_number_color=get_color("line_number_color");
 	cache.font_color=get_color("font_color");
 	cache.font_selected_color=get_color("font_selected_color");
 	cache.keyword_color=get_color("keyword_color");
