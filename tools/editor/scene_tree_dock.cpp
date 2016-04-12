@@ -1317,6 +1317,7 @@ void SceneTreeDock::_create() {
 		if (n==edited_scene) {
 			edited_scene=newnode;
 			editor->set_edited_scene(newnode);
+			newnode->set_editable_instances(n->get_editable_instances());
 		}
 
 		//small hack to make collisionshapes and other kind of nodes to work
