@@ -109,6 +109,8 @@ private:
 		Quat rot;
 		Vector3 scale;
 
+		Variant value;
+
 	};
 
 

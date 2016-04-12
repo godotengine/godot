@@ -766,9 +766,8 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 		t.scale.y=0;
 		t.scale.z=0;
 
-		Variant value = t.object->get(t.property);
-		value.zero();
-		t.object->set(t.property, value);
+		t.value = t.object->get(t.property);
+		t.value.zero();
 	}
 
 
@@ -815,9 +814,9 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 					case Animation::TYPE_VALUE: { ///< Set a value in a property, can be interpolated.
 
 						if (a->value_track_is_continuous(tr.local_track)) {
-							Variant blended, value = a->value_track_interpolate(tr.local_track,anim_list->time);
-							Variant::blend(tr.track->object->get(tr.track->property),value,blend,blended);
-							tr.track->object->set(tr.track->property,blended);
+							Variant value = a->value_track_interpolate(tr.local_track,anim_list->time);
+							Variant::blend(tr.track->value,value,blend,tr.track->value);
+							tr.track->object->set(tr.track->property,tr.track->value);
 						} else {
 
 							List<int> indices;
