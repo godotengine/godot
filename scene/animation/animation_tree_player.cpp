@@ -766,9 +766,9 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 		t.scale.y=0;
 		t.scale.z=0;
 
-		Variant value = t.node->get(t.property);
+		Variant value = t.object->get(t.property);
 		value.zero();
-		t.node->set(t.property, value);
+		t.object->set(t.property, value);
 	}
 
 
@@ -816,8 +816,8 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 
 						if (a->value_track_is_continuous(tr.local_track)) {
 							Variant blended, value = a->value_track_interpolate(tr.local_track,anim_list->time);
-							Variant::blend(tr.track->node->get(tr.track->property),value,blend,blended);
-							tr.track->node->set(tr.track->property,blended);
+							Variant::blend(tr.track->object->get(tr.track->property),value,blend,blended);
+							tr.track->object->set(tr.track->property,blended);
 						} else {
 
 							List<int> indices;
@@ -825,7 +825,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 							for(List<int>::Element *E=indices.front();E;E=E->next()) {
 
 								Variant value = a->track_get_key_value(tr.local_track,E->get());
-								tr.track->node->set(tr.track->property,value);
+								tr.track->object->set(tr.track->property,value);
 							}
 						}
 					} break;
@@ -838,7 +838,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 							StringName method = a->method_track_get_name(tr.local_track,E->get());
 							Vector<Variant> args=a->method_track_get_params(tr.local_track,E->get());
 							args.resize(VARIANT_ARG_MAX);
-							tr.track->node->call(method,args[0],args[1],args[2],args[3],args[4]);
+							tr.track->object->call(method,args[0],args[1],args[2],args[3],args[4]);
 						}
 					} break;
 				}
@@ -855,7 +855,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 
 		Track &t = E->get();
 
-		if (!t.node)
+		if (!t.object)
 			continue;
 
 		if(t.property)  // value track; was applied in step 2
@@ -1494,7 +1494,8 @@ AnimationTreePlayer::Track* AnimationTreePlayer::_find_track(const NodePath& p_p
 	Node *parent=get_node(base_path);
 	ERR_FAIL_COND_V(!parent,NULL);
 
-	Node *child=parent->get_node(p_path);
+	RES resource;
+	Node *child=parent->get_node_and_resource(p_path,resource);
 	if (!child) {
 		String err = "Animation track references unknown Node: '"+String(p_path)+"'.";
 		WARN_PRINT(err.ascii().get_data());
@@ -1522,7 +1523,7 @@ AnimationTreePlayer::Track* AnimationTreePlayer::_find_track(const NodePath& p_p
 
 		Track tr;
 		tr.id=id;
-		tr.node=child;
+		tr.object=resource.is_valid()?(Object*)resource.ptr():(Object*)child;
 		tr.skeleton=child->cast_to<Skeleton>();
 		tr.spatial=child->cast_to<Spatial>();
 		tr.bone_idx=bone_idx;
