@@ -457,6 +457,8 @@ void PhysicsServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("area_remove_shape","area","shape_idx"),&PhysicsServer::area_remove_shape);
 	ObjectTypeDB::bind_method(_MD("area_clear_shapes","area"),&PhysicsServer::area_clear_shapes);
 
+	ObjectTypeDB::bind_method(_MD("area_set_layer_mask","area","mask"),&PhysicsServer::area_set_layer_mask);
+	ObjectTypeDB::bind_method(_MD("area_set_collision_mask","area","mask"),&PhysicsServer::area_set_collision_mask);
 
 	ObjectTypeDB::bind_method(_MD("area_set_param","area","param","value"),&PhysicsServer::area_set_param);
 	ObjectTypeDB::bind_method(_MD("area_set_transform","area","transform"),&PhysicsServer::area_set_transform);
@@ -479,6 +481,12 @@ void PhysicsServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("body_set_mode","body","mode"),&PhysicsServer::body_set_mode);
 	ObjectTypeDB::bind_method(_MD("body_get_mode","body"),&PhysicsServer::body_get_mode);
+
+	ObjectTypeDB::bind_method(_MD("body_set_layer_mask","body","mask"),&PhysicsServer::body_set_layer_mask);
+	ObjectTypeDB::bind_method(_MD("body_get_layer_mask","body"),&PhysicsServer::body_get_layer_mask);
+
+	ObjectTypeDB::bind_method(_MD("body_set_collision_mask","body","mask"),&PhysicsServer::body_set_collision_mask);
+	ObjectTypeDB::bind_method(_MD("body_get_collision_mask","body"),&PhysicsServer::body_get_collision_mask);
 
 	ObjectTypeDB::bind_method(_MD("body_add_shape","body","shape","transform"),&PhysicsServer::body_add_shape,DEFVAL(Transform()));
 	ObjectTypeDB::bind_method(_MD("body_set_shape","body","shape_idx","shape"),&PhysicsServer::body_set_shape);
