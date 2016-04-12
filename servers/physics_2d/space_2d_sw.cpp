@@ -198,7 +198,7 @@ int Physics2DDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Matri
 	Rect2 aabb = p_xform.xform(shape->get_aabb());
 	aabb=aabb.grow(p_margin);
 
-	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,Space2DSW::INTERSECTION_QUERY_MAX,space->intersection_query_subindex_results);
+	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,p_result_max,space->intersection_query_subindex_results);
 
 	bool collided=false;
 	int cc=0;
