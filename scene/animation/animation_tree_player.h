@@ -99,7 +99,7 @@ private:
 
 	struct Track {
 		uint32_t id;
-		Node *node;
+		Object *object;
 		Spatial* spatial;
 		Skeleton *skeleton;
 		int bone_idx;
