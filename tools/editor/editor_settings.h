@@ -84,6 +84,9 @@ private:
 
 
 	void _load_defaults(Ref<ConfigFile> p_extra_config = NULL);
+	void _load_default_text_editor_theme();
+
+	bool _save_text_editor_theme(String p_file);
 
 	String project_config_path;
 
@@ -129,6 +132,12 @@ public:
 	Vector<String> get_recent_dirs() const;
 
 	void load_favorites();
+
+	void list_text_editor_themes();
+	void load_text_editor_theme();
+	bool import_text_editor_theme(String p_file);
+	bool save_text_editor_theme();
+	bool save_text_editor_theme_as(String p_file);
 
 	EditorSettings();
 	~EditorSettings();

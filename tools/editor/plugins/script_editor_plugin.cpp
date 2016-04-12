@@ -951,6 +951,23 @@ void ScriptEditor::swap_lines(TextEdit *tx, int line1, int line2)
     tx->cursor_set_line(line2);
 }
 
+void ScriptEditor::_file_dialog_action(String p_file) {
+
+	switch (file_dialog_option) {
+		case FILE_SAVE_THEME_AS: {
+			if(!EditorSettings::get_singleton()->save_text_editor_theme_as(p_file)) {
+				editor->show_warning(TTR("Error while saving theme"), TTR("Error saving"));
+			}
+		} break;
+		case FILE_IMPORT_THEME: {
+			if(!EditorSettings::get_singleton()->import_text_editor_theme(p_file)) {
+				editor->show_warning(TTR("Error importing theme"), TTR("Error importing"));
+			}
+		} break;
+	}
+	file_dialog_option = -1;
+}
+
 void ScriptEditor::_menu_option(int p_option) {
 
 
@@ -989,6 +1006,33 @@ void ScriptEditor::_menu_option(int p_option) {
 			}
 
 #endif
+		} break;
+		case FILE_IMPORT_THEME: {
+			file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+			file_dialog_option = FILE_IMPORT_THEME;
+			file_dialog->clear_filters();
+			file_dialog->add_filter("*.tet");
+			file_dialog->popup_centered_ratio();
+			file_dialog->set_title(TTR("Import Theme"));
+		} break;
+		case FILE_RELOAD_THEME: {
+			EditorSettings::get_singleton()->load_text_editor_theme();
+		} break;
+		case FILE_SAVE_THEME: {
+			if(!EditorSettings::get_singleton()->save_text_editor_theme()) {
+				editor->show_warning(TTR("Error while saving theme"), TTR("Error saving"));
+			}
+		} break;
+		case FILE_SAVE_THEME_AS: {
+			file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+			file_dialog_option = FILE_SAVE_THEME_AS;
+			file_dialog->clear_filters();
+			file_dialog->add_filter("*.tet");
+			file_dialog->set_current_path(EditorSettings::get_singleton()->get_settings_path() + "/text_editor_themes/" + EditorSettings::get_singleton()->get("text_editor/color_theme"));
+			file_dialog->popup_centered_ratio();
+			file_dialog->set_title(TTR("Save Theme As.."));
 		} break;
 		case SEARCH_HELP: {
 
@@ -2122,6 +2166,13 @@ void ScriptEditor::_editor_settings_changed() {
 		autosave_timer->stop();
 	}
 
+	if (current_theme == "") {
+		current_theme = EditorSettings::get_singleton()->get("text_editor/color_theme");
+	} else if (current_theme != EditorSettings::get_singleton()->get("text_editor/color_theme")) {
+		current_theme = EditorSettings::get_singleton()->get("text_editor/color_theme");
+		EditorSettings::get_singleton()->load_text_editor_theme();
+	}
+
 	for(int i=0;i<tab_container->get_child_count();i++) {
 
 		ScriptTextEditor *ste = tab_container->get_child(i)->cast_to<ScriptTextEditor>();
@@ -2364,6 +2415,7 @@ void ScriptEditor::set_scene_root_script( Ref<Script> p_script ) {
 
 void ScriptEditor::_bind_methods() {
 
+	ObjectTypeDB::bind_method("_file_dialog_action",&ScriptEditor::_file_dialog_action);
 	ObjectTypeDB::bind_method("_tab_changed",&ScriptEditor::_tab_changed);
 	ObjectTypeDB::bind_method("_menu_option",&ScriptEditor::_menu_option);
 	ObjectTypeDB::bind_method("_close_current_tab",&ScriptEditor::_close_current_tab);
@@ -2394,6 +2446,8 @@ void ScriptEditor::_bind_methods() {
 }
 
 ScriptEditor::ScriptEditor(EditorNode *p_editor) {
+
+	current_theme = "";
 
 	completion_cache = memnew( EditorScriptCodeCompletionCache );
 	restoring_layout=false;
@@ -2432,6 +2486,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_item(TTR("History Prev"),WINDOW_PREV,KEY_MASK_CTRL|KEY_MASK_ALT|KEY_LEFT);
 	file_menu->get_popup()->add_item(TTR("History Next"),WINDOW_NEXT,KEY_MASK_CTRL|KEY_MASK_ALT|KEY_RIGHT);
+	file_menu->get_popup()->add_separator();
+	file_menu->get_popup()->add_item(TTR("Import Theme"), FILE_IMPORT_THEME);
+	file_menu->get_popup()->add_item(TTR("Reload Theme"), FILE_RELOAD_THEME);
+	file_menu->get_popup()->add_item(TTR("Save Theme"), FILE_SAVE_THEME);
+	file_menu->get_popup()->add_item(TTR("Save Theme As"), FILE_SAVE_THEME_AS);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_item(TTR("Close"),FILE_CLOSE,KEY_MASK_CMD|KEY_W);
 	file_menu->get_popup()->connect("item_pressed", this,"_menu_option");
@@ -2585,6 +2644,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_create_dialog->set_title(TTR("Create Script"));
 	add_child(script_create_dialog);
 	script_create_dialog->connect("script_created", this, "_script_created");
+
+	file_dialog_option = -1;
+	file_dialog = memnew( EditorFileDialog );
+	add_child(file_dialog);
+	file_dialog->connect("file_selected", this,"_file_dialog_action");
 
 	goto_line_dialog = memnew(GotoLineDialog);
 	add_child(goto_line_dialog);

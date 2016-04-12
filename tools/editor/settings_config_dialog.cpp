@@ -45,6 +45,7 @@ void EditorSettingsDialog::_settings_changed() {
 
 
 	timer->start();
+	property_editor->get_property_editor()->update_tree(); // else color's won't update when theme is selected.
 }
 
 void EditorSettingsDialog::_settings_save() {
@@ -69,6 +70,8 @@ void EditorSettingsDialog::popup_edit_settings() {
 
 	if (!EditorSettings::get_singleton())
 		return;
+
+	EditorSettings::get_singleton()->list_text_editor_themes(); // make sure we have an up to date list of themes
 
 	property_editor->edit(EditorSettings::get_singleton());
 	property_editor->get_property_editor()->update_tree();
