@@ -5655,6 +5655,20 @@
 			Return the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overriding _draw() or connecting to "draw" signal. The visual state of the button is defined by the DRAW_* enum.
 			</description>
 		</method>
+		<method name="set_enabled_focus_mode">
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			Sets the focus access mode to use when switching between enabled/disabled (see [method Control.set_focus_mode] and [method set_disabled]).
+			</description>
+		</method>
+		<method name="get_enabled_focus_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			Returns focus access mode used when switching between enabled/disabled (see [method Control.set_focus_mode] and [method set_disabled]).
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="released">
@@ -9086,6 +9100,13 @@
 			</argument>
 			<description>
 			Set the focus access mode for the control (FOCUS_NONE, FOCUS_CLICK, FOCUS_ALL). Only one Control can be focused at the same time, and it will receive keyboard signals.
+			</description>
+		</method>
+		<method name="get_focus_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			Returns the focus access mode for the control (FOCUS_NONE, FOCUS_CLICK, FOCUS_ALL) (see [method set_focus_mode]).
 			</description>
 		</method>
 		<method name="has_focus" qualifiers="const">

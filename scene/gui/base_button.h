@@ -42,6 +42,7 @@ class BaseButton : public Control {
 	OBJ_TYPE( BaseButton, Control );
 
 	bool toggle_mode;
+	FocusMode enabled_focus_mode;
 
 	struct Status {
 
@@ -96,6 +97,9 @@ public:
 
 	void set_click_on_press(bool p_click_on_press);
 	bool get_click_on_press() const;
+
+	void set_enabled_focus_mode(FocusMode p_mode);
+	FocusMode get_enabled_focus_mode() const;
 
 
 	BaseButton();
