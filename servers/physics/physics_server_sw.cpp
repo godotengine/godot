@@ -418,6 +418,22 @@ Transform PhysicsServerSW::area_get_transform(RID p_area) const {
 	return area->get_transform();
 };
 
+void PhysicsServerSW::area_set_layer_mask(RID p_area,uint32_t p_mask) {
+
+	AreaSW *area = area_owner.get(p_area);
+	ERR_FAIL_COND(!area);
+
+	area->set_layer_mask(p_mask);
+}
+
+void PhysicsServerSW::area_set_collision_mask(RID p_area,uint32_t p_mask) {
+
+	AreaSW *area = area_owner.get(p_area);
+	ERR_FAIL_COND(!area);
+
+	area->set_collision_mask(p_mask);
+}
+
 void PhysicsServerSW::area_set_monitorable(RID p_area,bool p_monitorable) {
 
 	AreaSW *area = area_owner.get(p_area);
@@ -654,6 +670,25 @@ uint32_t PhysicsServerSW::body_get_layer_mask(RID p_body, uint32_t p_mask) const
 	ERR_FAIL_COND_V(!body,0);
 
 	return body->get_layer_mask();
+
+}
+
+void PhysicsServerSW::body_set_collision_mask(RID p_body, uint32_t p_mask) {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_collision_mask(p_mask);
+	body->wakeup();
+
+}
+
+uint32_t PhysicsServerSW::body_get_collision_mask(RID p_body, uint32_t p_mask) const{
+
+	const BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body,0);
+
+	return body->get_collision_mask();
 
 }
 

@@ -131,6 +131,9 @@ public:
 	virtual void area_set_ray_pickable(RID p_area,bool p_enable);
 	virtual bool area_is_ray_pickable(RID p_area) const;
 
+	virtual void area_set_collision_mask(RID p_area,uint32_t p_mask);
+	virtual void area_set_layer_mask(RID p_area,uint32_t p_mask);
+
 	virtual void area_set_monitorable(RID p_area,bool p_monitorable);
 
 	virtual void area_set_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method);
@@ -170,6 +173,9 @@ public:
 
 	virtual void body_set_layer_mask(RID p_body, uint32_t p_mask);
 	virtual uint32_t body_get_layer_mask(RID p_body, uint32_t p_mask) const;
+
+	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask);
+	virtual uint32_t body_get_collision_mask(RID p_body, uint32_t p_mask) const;
 
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags);
 	virtual uint32_t body_get_user_flags(RID p_body, uint32_t p_flags) const;
