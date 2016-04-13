@@ -440,6 +440,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0R(Dictionary,empty);
 	VCALL_LOCALMEM0(Dictionary,clear);
 	VCALL_LOCALMEM1R(Dictionary,has);
+	VCALL_LOCALMEM1R(Dictionary,has_all);
 	VCALL_LOCALMEM1(Dictionary,erase);
 	VCALL_LOCALMEM0R(Dictionary,hash);
 	VCALL_LOCALMEM0R(Dictionary,keys);
@@ -1423,6 +1424,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(DICTIONARY,BOOL,Dictionary,empty,varray());
 	ADDFUNC0(DICTIONARY,NIL,Dictionary,clear,varray());
 	ADDFUNC1(DICTIONARY,BOOL,Dictionary,has,NIL,"value",varray());
+	ADDFUNC1(DICTIONARY,BOOL,Dictionary,has_all,ARRAY,"values",varray());
 	ADDFUNC1(DICTIONARY,NIL,Dictionary,erase,NIL,"value",varray());
 	ADDFUNC0(DICTIONARY,INT,Dictionary,hash,varray());
 	ADDFUNC0(DICTIONARY,ARRAY,Dictionary,keys,varray());

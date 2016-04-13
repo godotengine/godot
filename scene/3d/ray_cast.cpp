@@ -43,6 +43,26 @@ Vector3 RayCast::get_cast_to() const{
 	return cast_to;
 }
 
+void RayCast::set_layer_mask(uint32_t p_mask) {
+
+	layer_mask=p_mask;
+}
+
+uint32_t RayCast::get_layer_mask() const {
+
+	return layer_mask;
+}
+
+void RayCast::set_type_mask(uint32_t p_mask) {
+
+	type_mask=p_mask;
+}
+
+uint32_t RayCast::get_type_mask() const {
+
+	return type_mask;
+}
+
 bool RayCast::is_colliding() const{
 
 	return collided;
@@ -130,7 +150,7 @@ void RayCast::_notification(int p_what) {
 
 			PhysicsDirectSpaceState::RayResult rr;
 
-			if (dss->intersect_ray(gt.get_origin(),gt.xform(to),rr,exclude)) {
+			if (dss->intersect_ray(gt.get_origin(),gt.xform(to),rr,exclude, layer_mask, type_mask)) {
 
 				collided=true;
 				against=rr.collider_id;
@@ -206,8 +226,16 @@ void RayCast::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("clear_exceptions"),&RayCast::clear_exceptions);
 
+	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"),&RayCast::set_layer_mask);
+	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&RayCast::get_layer_mask);
+
+	ObjectTypeDB::bind_method(_MD("set_type_mask","mask"),&RayCast::set_type_mask);
+	ObjectTypeDB::bind_method(_MD("get_type_mask"),&RayCast::get_type_mask);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3,"cast_to"),_SCS("set_cast_to"),_SCS("get_cast_to"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"layer_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"type_mask",PROPERTY_HINT_FLAGS,"Static,Kinematic,Rigid,Character,Area"),_SCS("set_type_mask"),_SCS("get_type_mask"));
 }
 
 RayCast::RayCast() {
@@ -216,5 +244,7 @@ RayCast::RayCast() {
 	against=0;
 	collided=false;
 	against_shape=0;
+	layer_mask=1;
+	type_mask=PhysicsDirectSpaceState::TYPE_MASK_COLLISION;
 	cast_to=Vector3(0,-1,0);
 }

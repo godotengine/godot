@@ -53,6 +53,7 @@ private:
 	RID self;
 	ObjectID instance_id;
 	uint32_t layer_mask;
+	uint32_t collision_mask;
 
 	struct Shape {
 
@@ -135,6 +136,13 @@ public:
 
 	_FORCE_INLINE_ void set_layer_mask(uint32_t p_mask) { layer_mask=p_mask; }
 	_FORCE_INLINE_ uint32_t get_layer_mask() const { return layer_mask; }
+
+	_FORCE_INLINE_ void set_collision_mask(uint32_t p_mask) { collision_mask=p_mask; }
+	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collision_mask; }
+
+	_FORCE_INLINE_ bool test_collision_mask(CollisionObjectSW* p_other) const {
+		return layer_mask&p_other->collision_mask || p_other->layer_mask&collision_mask;
+	}
 
 	void remove_shape(ShapeSW *p_shape);
 	void remove_shape(int p_index);

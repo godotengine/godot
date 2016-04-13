@@ -69,6 +69,50 @@ uint32_t PhysicsBody::get_layer_mask() const {
 	return layer_mask;
 }
 
+void PhysicsBody::set_collision_mask(uint32_t p_mask) {
+
+	collision_mask=p_mask;
+	PhysicsServer::get_singleton()->body_set_collision_mask(get_rid(),p_mask);
+}
+
+uint32_t PhysicsBody::get_collision_mask() const {
+
+	return collision_mask;
+}
+
+void PhysicsBody::set_collision_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_mask();
+	if (p_value)
+		mask|=1<<p_bit;
+	else
+		mask&=~(1<<p_bit);
+	set_collision_mask(mask);
+
+}
+
+bool PhysicsBody::get_collision_mask_bit(int p_bit) const{
+
+	return get_collision_mask()&(1<<p_bit);
+}
+
+
+void PhysicsBody::set_layer_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_layer_mask();
+	if (p_value)
+		mask|=1<<p_bit;
+	else
+		mask&=~(1<<p_bit);
+	set_layer_mask(mask);
+
+}
+
+bool PhysicsBody::get_layer_mask_bit(int p_bit) const{
+
+	return get_layer_mask()&(1<<p_bit);
+}
+
 void PhysicsBody::add_collision_exception_with(Node* p_node) {
 
 	ERR_FAIL_NULL(p_node);
@@ -92,17 +136,42 @@ void PhysicsBody::remove_collision_exception_with(Node* p_node) {
 	PhysicsServer::get_singleton()->body_remove_collision_exception(get_rid(),physics_body->get_rid());
 }
 
+void PhysicsBody::_set_layers(uint32_t p_mask) {
+	set_layer_mask(p_mask);
+	set_collision_mask(p_mask);
+}
+
+uint32_t PhysicsBody::_get_layers() const{
+
+	return get_layer_mask();
+}
 
 void PhysicsBody::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"),&PhysicsBody::set_layer_mask);
 	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&PhysicsBody::get_layer_mask);
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+
+	ObjectTypeDB::bind_method(_MD("set_collision_mask","mask"),&PhysicsBody::set_collision_mask);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask"),&PhysicsBody::get_collision_mask);
+
+	ObjectTypeDB::bind_method(_MD("set_collision_mask_bit","bit","value"),&PhysicsBody::set_collision_mask_bit);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask_bit","bit"),&PhysicsBody::get_collision_mask_bit);
+
+	ObjectTypeDB::bind_method(_MD("set_layer_mask_bit","bit","value"),&PhysicsBody::set_layer_mask_bit);
+	ObjectTypeDB::bind_method(_MD("get_layer_mask_bit","bit"),&PhysicsBody::get_layer_mask_bit);
+
+	ObjectTypeDB::bind_method(_MD("_set_layers","mask"),&PhysicsBody::_set_layers);
+	ObjectTypeDB::bind_method(_MD("_get_layers"),&PhysicsBody::_get_layers);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_ALL_FLAGS,"",0),_SCS("_set_layers"),_SCS("_get_layers")); //for backwards compat
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision/mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
 }
 
 
 PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode) : CollisionObject( PhysicsServer::get_singleton()->body_create(p_mode), false) {
 
 	layer_mask=1;
+	collision_mask=1;
 
 }
 

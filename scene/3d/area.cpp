@@ -519,6 +519,60 @@ bool Area::overlaps_body(Node* p_body) const{
 	return E->get().in_tree;
 
 }
+void Area::set_collision_mask(uint32_t p_mask) {
+
+	collision_mask=p_mask;
+	PhysicsServer::get_singleton()->area_set_collision_mask(get_rid(),p_mask);
+}
+
+uint32_t Area::get_collision_mask() const {
+
+	return collision_mask;
+}
+void Area::set_layer_mask(uint32_t p_mask) {
+
+	layer_mask=p_mask;
+	PhysicsServer::get_singleton()->area_set_layer_mask(get_rid(),p_mask);
+}
+
+uint32_t Area::get_layer_mask() const {
+
+	return layer_mask;
+}
+
+void Area::set_collision_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_mask();
+	if (p_value)
+		mask|=1<<p_bit;
+	else
+		mask&=~(1<<p_bit);
+	set_collision_mask(mask);
+
+}
+
+bool Area::get_collision_mask_bit(int p_bit) const{
+
+	return get_collision_mask()&(1<<p_bit);
+}
+
+
+void Area::set_layer_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_layer_mask();
+	if (p_value)
+		mask|=1<<p_bit;
+	else
+		mask&=~(1<<p_bit);
+	set_layer_mask(mask);
+
+}
+
+bool Area::get_layer_mask_bit(int p_bit) const{
+
+	return get_layer_mask()&(1<<p_bit);
+}
+
 
 void Area::_bind_methods() {
 
@@ -551,6 +605,18 @@ void Area::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_priority","priority"),&Area::set_priority);
 	ObjectTypeDB::bind_method(_MD("get_priority"),&Area::get_priority);
+
+	ObjectTypeDB::bind_method(_MD("set_collision_mask","collision_mask"),&Area::set_collision_mask);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask"),&Area::get_collision_mask);
+
+	ObjectTypeDB::bind_method(_MD("set_layer_mask","layer_mask"),&Area::set_layer_mask);
+	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&Area::get_layer_mask);
+
+	ObjectTypeDB::bind_method(_MD("set_collision_mask_bit","bit","value"),&Area::set_collision_mask_bit);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask_bit","bit"),&Area::get_collision_mask_bit);
+
+	ObjectTypeDB::bind_method(_MD("set_layer_mask_bit","bit","value"),&Area::set_layer_mask_bit);
+	ObjectTypeDB::bind_method(_MD("get_layer_mask_bit","bit"),&Area::get_layer_mask_bit);
 
 	ObjectTypeDB::bind_method(_MD("set_monitorable","enable"),&Area::set_monitorable);
 	ObjectTypeDB::bind_method(_MD("is_monitorable"),&Area::is_monitorable);
@@ -589,6 +655,8 @@ void Area::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"priority",PROPERTY_HINT_RANGE,"0,128,1"),_SCS("set_priority"),_SCS("get_priority"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitoring"),_SCS("set_enable_monitoring"),_SCS("is_monitoring_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitorable"),_SCS("set_monitorable"),_SCS("is_monitorable"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
 
 }
 
@@ -604,6 +672,8 @@ Area::Area() : CollisionObject(PhysicsServer::get_singleton()->area_create(),tru
 	angular_damp=1;
 	priority=0;
 	monitoring=false;
+	collision_mask=1;
+	layer_mask=1;
 	set_ray_pickable(false);
 	set_enable_monitoring(true);
 	set_monitorable(true);

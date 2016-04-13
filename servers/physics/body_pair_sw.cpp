@@ -221,7 +221,7 @@ bool BodyPairSW::_test_ccd(float p_step,BodySW *p_A, int p_shape_A,const Transfo
 bool BodyPairSW::setup(float p_step) {
 
 	//cannot collide
-	if ((A->get_layer_mask()&B->get_layer_mask())==0 || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported()==0 && B->get_max_contacts_reported()==0)) {
+	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported()==0 && B->get_max_contacts_reported()==0)) {
 		collided=false;
 		return false;
 	}
