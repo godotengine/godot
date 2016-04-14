@@ -892,7 +892,7 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 									NULL, keyboardLayoutChanged,
 									kTISNotifySelectedKeyboardInputSourceChanged, NULL,
 									CFNotificationSuspensionBehaviorDeliverImmediately);
-    
+
 	window_delegate = [[GodotWindowDelegate alloc] init];
 
        // Don't use accumulation buffer support; it's not accelerated
@@ -1170,7 +1170,7 @@ void OS_OSX::warp_mouse_pos(const Point2& p_to) {
         mouse_y = p_to.y;
     }
     else{ //set OS position
-        
+
 	/* this code has not been tested, please be a kind soul and fix it if it fails! */
 
 	//local point in window coords

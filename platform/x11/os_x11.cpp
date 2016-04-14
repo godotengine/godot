@@ -541,6 +541,8 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 	} else {
 		do_mouse_warp=false;
 	}
+
+	XFlush(x11_display);
 }
 
 void OS_X11::warp_mouse_pos(const Point2& p_to) {

@@ -1500,7 +1500,8 @@ bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
 void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		anim_editor->show();
+
+		editor->make_bottom_panel_item_visible(anim_editor);
 		anim_editor->set_process(true);
 		anim_editor->ensure_visibility();
 //		editor->animation_panel_make_visible(true);

@@ -6561,7 +6561,18 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_LIGHTMAP,false);
 			material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_DP_SAMPLER,false);
 
+			material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_COLOR, false);
+
+
 			if (material->flags[VS::MATERIAL_FLAG_UNSHADED] == false && current_debug != VS::SCENARIO_DEBUG_SHADELESS) {
+
+				if (baked_light != NULL) {
+					if (baked_light->realtime_color_enabled) {
+						float realtime_energy = baked_light->realtime_energy;
+						material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_COLOR, true);
+						material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_COLOR, Vector3(baked_light->realtime_color.r*realtime_energy, baked_light->realtime_color.g*realtime_energy, baked_light->realtime_color.b*realtime_energy));
+					}
+				}
 
 				if (e->instance->sampled_light.is_valid()) {
 
@@ -10769,9 +10780,16 @@ bool RasterizerGLES2::_test_depth_shadow_buffer() {
 
 void RasterizerGLES2::init() {
 
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		print_line("Using GLES2 video driver");
+	}
+
 #ifdef GLEW_ENABLED
 	GLuint res = glewInit();
 	ERR_FAIL_COND(res!=GLEW_OK);
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		print_line(String("GLES2: Using GLEW ") + (const char*) glewGetString(GLEW_VERSION));
+	}
 #endif
 
 
@@ -11032,6 +11050,7 @@ void RasterizerGLES2::finish() {
 
 	free(default_material);
 	free(shadow_material);
+	free(shadow_material_double_sided);
 	free(canvas_shadow_blur);
 	free( overdraw_material );
 }

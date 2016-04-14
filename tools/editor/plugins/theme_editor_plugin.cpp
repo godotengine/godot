@@ -833,10 +833,12 @@ void ThemeEditorPlugin::make_visible(bool p_visible){
 	if (p_visible) {
 		theme_editor->set_process(true);
 		button->show();
+		editor->make_bottom_panel_item_visible(theme_editor);
+
 	} else {
 		theme_editor->set_process(false);
 		if (theme_editor->is_visible())
-			EditorNode::get_singleton()->hide_bottom_panel();
+			editor->hide_bottom_panel();
 		button->hide();
 	}
 }
@@ -848,7 +850,7 @@ ThemeEditorPlugin::ThemeEditorPlugin(EditorNode *p_node) {
 	theme_editor->set_custom_minimum_size(Size2(0,500));
 
 //	p_node->get_viewport()->add_child(theme_editor);
-	button=EditorNode::get_singleton()->add_bottom_panel_item("Theme",theme_editor);
+	button=editor->add_bottom_panel_item("Theme",theme_editor);
 	button->hide();
 
 

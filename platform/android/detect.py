@@ -5,7 +5,7 @@ import platform
 
 def is_active():
 	return True
-	
+
 def get_name():
 	return "Android"
 
@@ -22,13 +22,14 @@ def get_opts():
 	return [
 			('ANDROID_NDK_ROOT', 'the path to Android NDK', os.environ.get("ANDROID_NDK_ROOT", 0)),
 			('NDK_TOOLCHAIN', 'toolchain to use for the NDK',"arm-eabi-4.4.0"),
-			('NDK_TARGET', 'toolchain to use for the NDK',"arm-linux-androideabi-4.8"),
-			('NDK_TARGET_X86', 'toolchain to use for the NDK x86',"x86-4.8"),
+			('NDK_TARGET', 'toolchain to use for the NDK',os.environ.get("NDK_TARGET", "arm-linux-androideabi-4.9")),
+			('NDK_TARGET_X86', 'toolchain to use for the NDK x86',os.environ.get("NDK_TARGET_X86", "x86-4.9")),
 			('ndk_platform', 'compile for platform: (android-<api> , example: android-15)',"android-15"),
 			('android_arch', 'select compiler architecture: (armv7/armv6/x86)',"armv7"),
 			('android_neon','enable neon (armv7 only)',"yes"),
 			('android_stl','enable STL support in android port (for modules)',"no")
 	]
+
 
 def get_flags():
 
@@ -55,9 +56,9 @@ def configure(env):
 	# http://www.scons.org/wiki/LongCmdLinesOnWin32
 	import os
 	if (os.name=="nt"):
-	
+
 		import subprocess
-			
+
 		def mySubProcess(cmdline,env):
 			#print "SPAWNED : " + cmdline
 			startupinfo = subprocess.STARTUPINFO()
@@ -71,26 +72,26 @@ def configure(env):
 				print err
 				print "====="
 			return rv
-				
+
 		def mySpawn(sh, escape, cmd, args, env):
-								
+
 			newargs = ' '.join(args[1:])
 			cmdline = cmd + " " + newargs
-				
+
 			rv=0
 			if len(cmdline) > 32000 and cmd.endswith("ar") :
 				cmdline = cmd + " " + args[1] + " " + args[2] + " "
 				for i in range(3,len(args)) :
 					rv = mySubProcess( cmdline + args[i], env )
 					if rv :
-						break	
-			else:				
+						break
+			else:
 				rv = mySubProcess( cmdline, env )
-					
+
 			return rv
-				
+
 		env['SPAWN'] = mySpawn
-	
+
 	ndk_platform=env['ndk_platform']
 
 	if env['android_arch'] not in ['armv7','armv6','x86']:
@@ -113,7 +114,7 @@ def configure(env):
 	print("Godot Android!!!!! ("+env['android_arch']+")"+neon_text)
 
 	env.Append(CPPPATH=['#platform/android'])
-	
+
 	if env['android_arch']=='x86':
 		env.extra_suffix=".x86"+env.extra_suffix
 	elif env['android_arch']=='armv6':
@@ -125,7 +126,7 @@ def configure(env):
 			env.extra_suffix=".armv7"+env.extra_suffix
 
 	gcc_path=env["ANDROID_NDK_ROOT"]+"/toolchains/"+env["NDK_TARGET"]+"/prebuilt/";
-	
+
 	import os
 	if (sys.platform.find("linux")==0):
 		if (platform.architecture()[0]=='64bit' or os.path.isdir(gcc_path+"linux-x86_64/bin")): # check was not working
@@ -137,8 +138,8 @@ def configure(env):
 		env['SHLINKFLAGS'][1] = '-shared'
 	elif (os.name=="nt"):
 		gcc_path=gcc_path+"/windows-x86_64/bin" #this may be wrong
-	
-	
+
+
 
 	env['ENV']['PATH'] = gcc_path+":"+env['ENV']['PATH']
 	if env['android_arch']=='x86':
@@ -223,7 +224,7 @@ def configure(env):
 		elif env["android_arch"]=="armv7":
 			env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi-v7a/include"])
 			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi-v7a"])
-		
+
 		env.Append(LIBS=["gnustl_static","supc++"])
 		env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cpufeatures"])
 
@@ -232,16 +233,17 @@ def configure(env):
 		#env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/libs/armeabi/libstdc++.a"])
 	else:
 
-		env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gabi++/include"])
+		env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.9/include"])
 		env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cpufeatures"])
 		if env['android_arch']=='x86':
-			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gabi++/libs/x86"])
+			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.9/libs/x86"])
 		elif env["android_arch"]=="armv6":
-			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gabi++/libs/armeabi"])
+			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi"])
 		elif env["android_arch"]=="armv7":
-			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gabi++/libs/armeabi-v7a"])
-		env.Append(LIBS=['gabi++_static'])
+			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi-v7a"])
+		env.Append(LIBS=['gnustl_static'])
 		env.Append(CCFLAGS=["-fno-exceptions",'-DNO_SAFE_CAST'])
+
 
 	import methods
 	env.Append( BUILDERS = { 'GLSL120' : env.Builder(action = methods.build_legacygl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )

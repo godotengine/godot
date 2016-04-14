@@ -10,7 +10,7 @@ func _process(delta):
 	timeout -= delta
 	if (timeout < 0):
 		timeout = EMIT_INTERVAL
-		var ball = preload("res://ball.scn").instance()
+		var ball = preload("res://ball.tscn").instance()
 		ball.set_pos(Vector2(randf()*get_viewport_rect().size.x, 0))
 		add_child(ball)
 

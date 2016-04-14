@@ -181,12 +181,10 @@ void FileDialog::_action_pressed() {
 
 	String f=dir_access->get_current_dir().plus_file(file->get_text());
 
-	if (mode==MODE_OPEN_FILE && dir_access->file_exists(f)) {
+	if ((mode==MODE_OPEN_ANY || mode==MODE_OPEN_FILE) && dir_access->file_exists(f)) {
 		emit_signal("file_selected",f);
 		hide();
-	}
-
-	if (mode==MODE_OPEN_DIR) {
+	}else if (mode==MODE_OPEN_ANY || mode==MODE_OPEN_DIR) {
 
 
 		String path=dir_access->get_current_dir();
@@ -304,7 +302,7 @@ void FileDialog::_tree_dc_selected() {
 	if (d["dir"]) {
 
 		dir_access->change_dir(d["name"]);
-		if (mode==MODE_OPEN_FILE || mode==MODE_OPEN_FILES || mode==MODE_OPEN_DIR)
+		if (mode==MODE_OPEN_FILE || mode==MODE_OPEN_FILES || mode==MODE_OPEN_DIR || mode==MODE_OPEN_ANY)
 			file->set_text("");
 		call_deferred("_update_file_list");
 		call_deferred("_update_dir");
@@ -552,8 +550,9 @@ void FileDialog::set_mode(Mode p_mode) {
 
 		case MODE_OPEN_FILE: get_ok()->set_text("Open"); set_title("Open a File"); makedir->hide(); break;
 		case MODE_OPEN_FILES: get_ok()->set_text("Open"); set_title("Open File(s)"); makedir->hide(); break;
-		case MODE_SAVE_FILE: get_ok()->set_text("Save"); set_title("Save a File"); makedir->show(); break;
 		case MODE_OPEN_DIR: get_ok()->set_text("Open"); set_title("Open a Directory"); makedir->show(); break;
+		case MODE_OPEN_ANY: get_ok()->set_text("Open"); set_title("Open a File or Directory"); makedir->show(); break;
+		case MODE_SAVE_FILE: get_ok()->set_text("Save"); set_title("Save a File"); makedir->show(); break;
 	}
 
 	if (mode==MODE_OPEN_FILES) {
@@ -710,6 +709,8 @@ void FileDialog::_bind_methods() {
 	BIND_CONSTANT( MODE_OPEN_FILE );
 	BIND_CONSTANT( MODE_OPEN_FILES );
 	BIND_CONSTANT( MODE_OPEN_DIR );
+	BIND_CONSTANT( MODE_OPEN_ANY );
+
 	BIND_CONSTANT( MODE_SAVE_FILE );
 
 	BIND_CONSTANT( ACCESS_RESOURCES );
@@ -877,3 +878,4 @@ LineEditFileChooser::LineEditFileChooser() {
 	dialog->connect("files_selected",this,"_chosen");
 
 }
+

@@ -17,7 +17,7 @@ func _process(delta):
 		shoot_timeout = SHOOT_INTERVAL
 		
 		# Instance a shot
-		var shot = preload("res://enemy_shot.scn").instance()
+		var shot = preload("res://enemy_shot.tscn").instance()
 		# Set pos as "shoot_from" Position2D node
 		shot.set_pos(get_node("shoot_from").get_global_pos())
 		# Add it to parent, so it has world coordinates

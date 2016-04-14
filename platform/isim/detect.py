@@ -4,10 +4,10 @@ import sys
 
 def is_active():
 	return False
-	
+
 def get_name():
 	return "iSIM"
-	
+
 
 def can_build():
 

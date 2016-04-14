@@ -618,6 +618,12 @@ uniform float ambient_dp_sampler_multiplier;
 
 #endif
 
+#ifdef ENABLE_AMBIENT_COLOR
+
+uniform vec3 ambient_color;
+
+#endif
+
 FRAGMENT_SHADER_GLOBALS
 
 
@@ -1262,7 +1268,9 @@ LIGHT_SHADER_CODE
 
 
 #if defined(ENABLE_AMBIENT_OCTREE) || defined(ENABLE_AMBIENT_LIGHTMAP) || defined(ENABLE_AMBIENT_DP_SAMPLER)
-
+#if defined(ENABLE_AMBIENT_COLOR)
+	ambientmap_color*=ambient_color;
+#endif
 	diffuse.rgb+=ambientmap_color;
 #endif
 

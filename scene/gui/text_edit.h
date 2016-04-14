@@ -73,14 +73,20 @@ class TextEdit : public Control  {
 		Ref<StyleBox> style_normal;
 		Ref<StyleBox> style_focus;
 		Ref<Font> font;
+		Color caret_color;
+		Color line_number_color;
 		Color font_color;
 		Color font_selected_color;
 		Color keyword_color;
+		Color number_color;
+		Color function_color;
+		Color member_variable_color;
 		Color selection_color;
 		Color mark_color;
 		Color breakpoint_color;
 		Color current_line_color;
 		Color brace_mismatch_color;
+		Color word_highlighted_color;
 
 		int row_height;
 		int line_spacing;
@@ -212,11 +218,13 @@ class TextEdit : public Control  {
 	bool undo_enabled;
 	bool line_numbers;
 
+	bool highlight_all_occurrences;
 	bool scroll_past_end_of_file_enabled;
 	bool auto_brace_completion_enabled;
 	bool brace_matching_enabled;
 	bool auto_indent;
 	bool cut_copy_line;
+	bool insert_mode;
 
 	uint64_t last_dblclk;
 
@@ -260,8 +268,6 @@ class TextEdit : public Control  {
 	void _cursor_changed_emit();
 	void _text_changed_emit();
 
-	void _begin_compex_operation();
-	void _end_compex_operation();
 	void _push_current_op();
 
 	/* super internal api, undo/redo builds on it */
@@ -269,6 +275,8 @@ class TextEdit : public Control  {
 	void _base_insert_text(int p_line, int p_column,const String& p_text,int &r_end_line,int &r_end_column);
 	String _base_get_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column) const;
 	void _base_remove_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column);
+
+	int _get_column_pos_of_word(const String &p_key, const String &p_search, int p_from_column);
 
 	DVector<int> _search_bind(const String &p_key,uint32_t p_search_flags, int p_from_line,int p_from_column) const;
 
@@ -311,6 +319,9 @@ public:
 	//void delete_char();
 	//void delete_line();
 
+	void begin_complex_operation();
+	void end_complex_operation();
+
 	void set_text(String p_text);
 	void insert_text_at_cursor(const String& p_text);
     void insert_at(const String& p_text, int at);
@@ -323,6 +334,9 @@ public:
 	String get_line(int line) const;
     void set_line(int line, String new_text);
 	void backspace_at_cursor();
+
+	void indent_selection_left();
+	void indent_selection_right();
 
 	inline void set_scroll_pass_end_of_file(bool p_enabled) {
 		scroll_past_end_of_file_enabled = p_enabled;
@@ -364,6 +378,7 @@ public:
 	void select(int p_from_line,int p_from_column,int p_to_line,int p_to_column);
 	void deselect();
 
+	void set_highlight_all_occurrences(const bool p_enabled);
 	bool is_selection_active() const;
 	int get_selection_from_line() const;
     int get_selection_from_column() const;
@@ -382,6 +397,9 @@ public:
 	void set_tab_size(const int p_size);
 	void set_draw_tabs(bool p_draw);
 	bool is_drawing_tabs() const;
+
+	void set_insert_mode(bool p_enabled);
+	bool is_insert_mode() const;
 
 	void add_keyword_color(const String& p_keyword,const Color& p_color);
 	void add_color_region(const String& p_begin_key=String(),const String& p_end_key=String(),const Color &p_color=Color(),bool p_line_only=false);

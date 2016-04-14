@@ -1,0 +1,115 @@
+[gd_scene load_steps=6 format=1]
+
+[ext_resource path="res://bullet.gd" type="Script" id=1]
+[ext_resource path="res://bullet.png" type="Texture" id=2]
+
+[sub_resource type="CircleShape2D" id=1]
+
+custom_solver_bias = 0.0
+radius = 10.0
+
+[sub_resource type="ColorRamp" id=2]
+
+offsets = FloatArray( 0, 1 )
+colors = ColorArray( 1, 1, 1, 1, 1, 0, 0, 0 )
+
+[sub_resource type="Animation" id=3]
+
+length = 1.5
+loop = false
+step = 0.0
+tracks/0/type = "value"
+tracks/0/path = NodePath("particles:config/emitting")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0 ), "transitions":FloatArray( 1 ), "values":[ false ] }
+tracks/1/type = "value"
+tracks/1/path = NodePath("sprite:visibility/self_opacity")
+tracks/1/interp = 1
+tracks/1/keys = { "cont":true, "times":FloatArray( 0, 1.00394 ), "transitions":FloatArray( 1, 1 ), "values":[ 1.0, 0.0 ] }
+tracks/2/type = "method"
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/keys = { "times":FloatArray( 1.31 ), "transitions":FloatArray( 1 ), "values":[ { "args":[  ], "method":"queue_free" } ] }
+
+[node name="bullet" type="RigidBody2D"]
+
+input/pickable = false
+shapes/0/shape = SubResource( 1 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/0/trigger = false
+collision/layers = 1
+collision/mask = 1
+mode = 0
+mass = 1.0
+friction = 1.0
+bounce = 0.0
+gravity_scale = 1.0
+custom_integrator = false
+continuous_cd = 2
+contacts_reported = 0
+contact_monitor = false
+sleeping = false
+can_sleep = true
+velocity/linear = Vector2( 0, 0 )
+velocity/angular = 0.0
+damp_override/linear = -1.0
+damp_override/angular = -1.0
+script/script = ExtResource( 1 )
+
+[node name="particles" type="Particles2D" parent="."]
+
+visibility/opacity = 0.559322
+visibility/blend_mode = 1
+config/amount = 24
+config/lifetime = 0.1
+config/local_space = false
+config/texture = ExtResource( 2 )
+params/direction = 0.0
+params/spread = 10.0
+params/linear_velocity = 0.0
+params/spin_velocity = 0.0
+params/orbit_velocity = 0.0
+params/gravity_direction = 0.0
+params/gravity_strength = 0.0
+params/radial_accel = 0.0
+params/tangential_accel = 0.0
+params/damping = 0.0
+params/initial_angle = 0.0
+params/initial_size = 1.0
+params/final_size = 0.0
+params/hue_variation = 0.0
+params/anim_speed_scale = 1.0
+params/anim_initial_pos = 0.0
+color/color_ramp = SubResource( 2 )
+
+[node name="sprite" type="Sprite" parent="."]
+
+texture = ExtResource( 2 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+shape = SubResource( 1 )
+trigger = false
+_update_shape_index = -1
+
+[node name="Timer" type="Timer" parent="."]
+
+process_mode = 1
+wait_time = 1.0
+one_shot = true
+autostart = false
+
+[node name="anim" type="AnimationPlayer" parent="."]
+
+playback/process_mode = 1
+playback/default_blend_time = 0.0
+root/root = NodePath("..")
+anims/shutdown = SubResource( 3 )
+playback/active = true
+playback/speed = 1.0
+blend_times = [  ]
+autoplay = ""
+
+[connection signal="timeout" from="Timer" to="." method="disable"]
+
+

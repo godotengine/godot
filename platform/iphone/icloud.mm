@@ -49,7 +49,7 @@ void ICloud::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_key_value"),&ICloud::get_key_value);
 	ObjectTypeDB::bind_method(_MD("synchronize_key_values"),&ICloud::synchronize_key_values);
 	ObjectTypeDB::bind_method(_MD("get_all_key_values"),&ICloud::get_all_key_values);
-	
+
 	ObjectTypeDB::bind_method(_MD("get_pending_event_count"),&ICloud::get_pending_event_count);
 	ObjectTypeDB::bind_method(_MD("pop_pending_event"),&ICloud::pop_pending_event);
 };
@@ -83,7 +83,7 @@ Variant nsobject_to_variant(NSObject* object) {
 		if ([data length] > 0) {
 			ret.resize([data length]);
 			{
-				ByteArray::Write w = ret.write();			
+				ByteArray::Write w = ret.write();
 				copymem(w.ptr(), [data bytes], [data length]);
 			}
 		}
@@ -101,14 +101,14 @@ Variant nsobject_to_variant(NSObject* object) {
 	else if ([object isKindOfClass:[NSDictionary class]]) {
 		Dictionary result;
 		NSDictionary* dic = (NSDictionary*)object;
-		
-		
+
+
 		NSArray* keys =  [dic allKeys];
 		int count = [keys count];
 		for (int i=0; i < count; ++i) {
 			NSObject* k = [ keys objectAtIndex:i];
 			NSObject* v = [dic objectForKey:k];
-			
+
 			result[nsobject_to_variant(k)] = nsobject_to_variant(v);
 		}
 		return result;
@@ -121,29 +121,29 @@ Variant nsobject_to_variant(NSObject* object) {
 		NSNumber* num = (NSNumber*)object;
 		if(strcmp([num objCType], @encode(BOOL)) == 0) {
 			return Variant((int)[num boolValue]);
-		}	
+		}
 		else if(strcmp([num objCType], @encode(char)) == 0) {
 			return Variant((int)[num charValue]);
-		}	
+		}
 		else if(strcmp([num objCType], @encode(int)) == 0) {
 			return Variant([num intValue]);
-		}	
+		}
 		else if(strcmp([num objCType], @encode(unsigned int)) == 0) {
 			return Variant((int)[num unsignedIntValue]);
-		}	
+		}
 		else if(strcmp([num objCType], @encode(long long)) == 0) {
 			return Variant((int)[num longValue]);
-		}	
+		}
 		else if(strcmp([num objCType], @encode(float)) == 0) {
 			return Variant([num floatValue]);
-		}	
+		}
 		else if(strcmp([num objCType], @encode(double)) == 0) {
 			return Variant((float)[num doubleValue]);
 		}
 	}
 	else if ([object isKindOfClass:[NSDate class]]) {
 		//this is a type that icloud supports...but how did you submit it in the first place?
-		//I guess this is a type that *might* show up, if you were, say, trying to make your game 
+		//I guess this is a type that *might* show up, if you were, say, trying to make your game
 		//compatible with existing cloud data written by another engine's version of your game
 		WARN_PRINT("NSDate unsupported, returning null Variant")
 		return Variant();
@@ -177,13 +177,13 @@ NSObject* variant_to_nsobject(Variant v) {
 		for (unsigned int i = 0; i < keys.size(); ++i) {
 			NSString* key = [[[NSString alloc] initWithUTF8String:((String)(keys[i])).utf8().get_data()] autorelease];
 			NSObject* value = variant_to_nsobject(dic[keys[i]]);
-			
+
 			if (key == NULL || value == NULL) {
 				return NULL;
 			}
-			
+
 			[result setObject:value forKey:key];
-		}			
+		}
 		return result;
 	}
 	else if (v.get_type() == Variant::ARRAY) {
@@ -213,13 +213,13 @@ NSObject* variant_to_nsobject(Variant v) {
 Error ICloud::remove_key(Variant p_param) {
 	String param = p_param;
 	NSString* key = [[[NSString alloc] initWithUTF8String:param.utf8().get_data()] autorelease];
-	
+
 	NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
-	
+
 	if (![[store dictionaryRepresentation] objectForKey:key]) {
 		return ERR_INVALID_PARAMETER;
 	}
-	
+
 	[store removeObjectForKey:key];
 	return OK;
 }
@@ -228,26 +228,26 @@ Error ICloud::remove_key(Variant p_param) {
 Variant ICloud::set_key_values(Variant p_params) {
 	Dictionary params = p_params;
 	Array keys = params.keys();
-	
+
 	Array error_keys;
-	
+
 	for (unsigned int i = 0; i < keys.size(); ++i) {
 		String variant_key = keys[i];
 		Variant variant_value = params[variant_key];
-		
+
 		NSString* key = [[[NSString alloc] initWithUTF8String:variant_key.utf8().get_data()] autorelease];
 		if (key == NULL) {
 			error_keys.push_back(variant_key);
 			continue;
 		}
-		
+
 		NSObject* value = variant_to_nsobject(variant_value);
-		
+
 		if (value == NULL) {
 			error_keys.push_back(variant_key);
 			continue;
 		}
-		
+
 		NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
 		[store setObject:value forKey:key];
 	}
@@ -257,37 +257,37 @@ Variant ICloud::set_key_values(Variant p_params) {
 
 Variant ICloud::get_key_value(Variant p_param) {
 	String param = p_param;
-	
+
 	NSString* key = [[[NSString alloc] initWithUTF8String:param.utf8().get_data()] autorelease];
 	NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
-	
+
 	if (![[store dictionaryRepresentation] objectForKey:key]) {
 		return Variant();
 	}
-	
+
 	Variant result = nsobject_to_variant([[store dictionaryRepresentation] objectForKey:key]);
-	
+
 	return result;
 }
 
 Variant ICloud::get_all_key_values() {
 	Dictionary result;
-	
+
 	NSUbiquitousKeyValueStore* store = [NSUbiquitousKeyValueStore defaultStore];
 	NSDictionary* store_dictionary = [store dictionaryRepresentation];
-	
+
 	NSArray* keys =  [store_dictionary allKeys];
 	int count = [keys count];
 	for (int i=0; i < count; ++i) {
 		NSString* k = [ keys objectAtIndex:i];
 		NSObject* v = [store_dictionary objectForKey:k];
-		
+
 		const char* str = [k UTF8String];
 		if (str != NULL) {
 			result[String::utf8(str)] = nsobject_to_variant(v);
 		}
 	}
-		
+
 	return result;
 }
 
@@ -320,7 +320,7 @@ ICloud::ICloud() {
 	ERR_FAIL_COND(instance != NULL);
 	instance = this;
 	//connected = false;
-	
+
 	[
 		//[NSNotificationCenter defaultCenter] addObserverForName: @"notify"
 		[NSNotificationCenter defaultCenter] addObserverForName: NSUbiquitousKeyValueStoreDidChangeExternallyNotification
@@ -337,7 +337,7 @@ ICloud::ICloud() {
 			//Array result_values;
 			Dictionary keyValues;
 			String reason = "";
-	
+
 			if (change == NSUbiquitousKeyValueStoreServerChange) {
 				reason = "server";
 			}
@@ -350,27 +350,27 @@ ICloud::ICloud() {
 			else if (change == NSUbiquitousKeyValueStoreAccountChange) {
 				reason = "account";
 			}
-			 
+
 			ret["reason"] = reason;
-			
-		
+
+
 			NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
-		
+
 			NSArray * keys = [userInfo objectForKey:NSUbiquitousKeyValueStoreChangedKeysKey];
 			for (NSString* key in keys) {
 				const char* str = [key UTF8String];
 				if (str == NULL) {
 					continue;
 				}
-		
+
 				NSObject* object = [store objectForKey:key];
-				
+
 				//figure out what kind of object it is
 				Variant value = nsobject_to_variant(object);
-				
+
 				keyValues[String::utf8(str)] = value;
 			}
-	
+
 			ret["changed_values"] = keyValues;
 			pending_events.push_back(ret);
 		}

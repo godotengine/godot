@@ -1,0 +1,52 @@
+[gd_scene load_steps=5 format=1]
+
+[ext_resource path="res://wall_shader.tres" type="CanvasItemMaterial" id=1]
+[ext_resource path="res://faceColor.png" type="Texture" id=2]
+
+[sub_resource type="CircleShape2D" id=1]
+
+custom_solver_bias = 0.0
+radius = 20.0
+
+[sub_resource type="OccluderPolygon2D" id=2]
+
+closed = false
+cull_mode = 0
+polygon = Vector2Array( -16.1183, 62.9508, 4.32091, 74.9223, 23.3002, 65.2867 )
+
+[node name="column" type="StaticBody2D"]
+
+input/pickable = false
+shapes/0/shape = SubResource( 1 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, 1.36365, 7.83751 )
+shapes/0/trigger = false
+collision/layers = 1
+collision/mask = 1
+constant_linear_velocity = Vector2( 0, 0 )
+constant_angular_velocity = 0.0
+friction = 1.0
+bounce = 0.0
+
+[node name="Sprite" type="Sprite" parent="."]
+
+material/material = ExtResource( 1 )
+transform/pos = Vector2( 0.487671, 0.487679 )
+texture = ExtResource( 2 )
+offset = Vector2( -4.37984, -50.8523 )
+region = true
+region_rect = Rect2( 569, 179, 48, 154 )
+
+[node name="occluder" type="LightOccluder2D" parent="."]
+
+transform/pos = Vector2( -3.90138, -50.97 )
+occluder = SubResource( 2 )
+light_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+transform/pos = Vector2( 1.36365, 7.83751 )
+shape = SubResource( 1 )
+trigger = false
+_update_shape_index = -1
+
+

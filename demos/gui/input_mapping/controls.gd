@@ -51,4 +51,6 @@ func _ready():
 		# We assume that the key binding that we want is the first one (0), if there are several
 		input_event = InputMap.get_action_list(action)[0]
 		# See note at the beginning of the script
-		get_node("bindings").get_node(action).get_node("Button").set_text(OS.get_scancode_string(input_event.scancode))
+		var button = get_node("bindings").get_node(action).get_node("Button")
+		button.set_text(OS.get_scancode_string(input_event.scancode))
+		button.connect("pressed", self, "wait_for_input", [action])

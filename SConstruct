@@ -63,7 +63,12 @@ elif (os.name=="nt"):
 	if (os.getenv("VSINSTALLDIR")==None or platform_arg=="android"):
 		custom_tools=['mingw']
 
-env_base=Environment(tools=custom_tools,ENV = {'PATH' : os.environ['PATH']});
+env_base=Environment(
+	tools=custom_tools,
+	ENV={
+		'PATH' : os.getenv('PATH'),
+		'PKG_CONFIG_PATH' : os.getenv('PKG_CONFIG_PATH')
+});
 
 #env_base=Environment(tools=custom_tools);
 env_base.global_defaults=global_defaults
@@ -324,7 +329,7 @@ if selected_platform in platform_list:
 
 	if (env['theora']=='yes'):
 		env['theoralib']='yes'
-		env.Append(CPPFLAGS=['-DTHEORA_ENABLED']);		
+		env.Append(CPPFLAGS=['-DTHEORA_ENABLED']);
 	if (env['theoralib']=='yes'):
 		env.Append(CPPFLAGS=['-DTHEORALIB_ENABLED']);
 

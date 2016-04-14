@@ -2750,6 +2750,15 @@ void Tree::clear() {
 		ERR_FAIL_COND(blocked>0);
 	}
 
+	if (pressing_for_editor) {
+		if (range_drag_enabled) {
+			range_drag_enabled = false;
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+			warp_mouse(range_drag_capture_pos);
+		}
+		pressing_for_editor = false;
+	}
+
 	if (root) {
 		memdelete( root );
 		root = NULL;
@@ -2759,7 +2768,6 @@ void Tree::clear() {
 	edited_item=NULL;
 	popup_edited_item=NULL;
 	selected_item=NULL;
-	pressing_for_editor=false;
 
 	update();
 };
