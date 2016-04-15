@@ -38,6 +38,7 @@
 
 #include "core/globals.h"
 #include "emscripten.h"
+#include "dom_keys.h"
 
 int OS_JavaScript::get_video_driver_count() const {
 
@@ -74,6 +75,49 @@ void OS_JavaScript::set_opengl_extensions(const char* p_gl_extensions) {
 
 	ERR_FAIL_COND(!p_gl_extensions);
 	gl_extensions=p_gl_extensions;
+}
+
+static InputEvent _setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {
+
+	InputEvent ev;
+	ev.type = InputEvent::KEY;
+	ev.key.echo = emscripten_event->repeat;
+	ev.key.mod.alt = emscripten_event->altKey;
+	ev.key.mod.shift = emscripten_event->shiftKey;
+	ev.key.mod.control = emscripten_event->ctrlKey;
+	ev.key.mod.meta = emscripten_event->metaKey;
+	ev.key.scancode = dom2godot_scancode(emscripten_event->keyCode);
+
+	String unicode = String::utf8(emscripten_event->key);
+	if (unicode.length()!=1) {
+		unicode = String::utf8(emscripten_event->charValue);
+	}
+	if (unicode.length()==1) {
+		ev.key.unicode=unicode[0];
+	}
+
+	return ev;
+}
+
+static EM_BOOL _keydown_callback(int event_type, const EmscriptenKeyboardEvent *key_event, void *user_data) {
+
+	ERR_FAIL_COND_V(event_type!=EMSCRIPTEN_EVENT_KEYDOWN, false);
+
+	InputEvent ev = _setup_key_event(key_event);
+	ev.key.pressed = true;
+	static_cast<OS_JavaScript*>(user_data)->push_input(ev);
+	return ev.key.scancode!=KEY_UNKNOWN && ev.key.scancode!=0;
+}
+
+static EM_BOOL _keyup_callback(int event_type, const EmscriptenKeyboardEvent *key_event, void *user_data) {
+
+	ERR_FAIL_COND_V(event_type!=EMSCRIPTEN_EVENT_KEYUP, false);
+
+	InputEvent ev = _setup_key_event(key_event);
+	ev.key.pressed = false;
+	static_cast<OS_JavaScript*>(user_data)->push_input(ev);
+	return ev.key.scancode!=KEY_UNKNOWN && ev.key.scancode!=0;
+
 }
 
 static EM_BOOL joy_callback_func(int p_type, const EmscriptenGamepadEvent *p_event, void *p_user) {
@@ -150,8 +194,22 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 
 	input = memnew( InputDefault );
 
-	emscripten_set_gamepadconnected_callback(NULL, true, &joy_callback_func);
-	emscripten_set_gamepaddisconnected_callback(NULL, true, &joy_callback_func);
+	EMSCRIPTEN_RESULT result = emscripten_set_keydown_callback(NULL, this , true, &_keydown_callback);
+	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
+		ERR_PRINTS( "Error while setting Emscripten keydown callback: Code " + itos(result) );
+	}
+	result = emscripten_set_keyup_callback(NULL, this, true, &_keyup_callback);
+	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
+		ERR_PRINTS( "Error while setting Emscripten keyup callback: Code " + itos(result) );
+	}
+	result = emscripten_set_gamepadconnected_callback(NULL, true, &joy_callback_func);
+	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
+		ERR_PRINTS( "Error while setting Emscripten gamepadconnected callback: Code " + itos(result) );
+	}
+	result = emscripten_set_gamepaddisconnected_callback(NULL, true, &joy_callback_func);
+	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
+		ERR_PRINTS( "Error while setting Emscripten gamepaddisconnected callback: Code " + itos(result) );
+	}
 }
 
 void OS_JavaScript::set_main_loop( MainLoop * p_main_loop ) {
@@ -692,12 +750,6 @@ OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, Ope
 	FileAccessUnix::close_notification_func=_close_notification_funcs;
 
 	time_to_save_sync=-1;
-
-	for (int i = 0; i < 256; i++) {
-		key_pressed[i] = false;
-		if (i < 121)
-			skey_pressed[i] = false;
-	}
 }
 
 OS_JavaScript::~OS_JavaScript() {

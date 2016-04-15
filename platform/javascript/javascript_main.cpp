@@ -30,7 +30,6 @@
 #include "os_javascript.h"
 #include "main/main.h"
 #include "io/resource_loader.h"
-#include "os/keyboard.h"
 #include "emscripten.h"
 #include <string.h>
 
@@ -42,110 +41,6 @@ static void _gfx_init(void *ud,bool gl2,int w, int h,bool fs) {
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutCreateWindow("godot");
 
-}
-
-
-static void _glut_skey(bool pressed,int key) {
-
-	InputEvent ev;
-	ev.type=InputEvent::KEY;
-	ev.key.pressed=pressed;
-	switch(key) {
-		case GLUT_KEY_F1: ev.key.scancode=KEY_F1; break;
-		case GLUT_KEY_F2: ev.key.scancode=KEY_F2; break;
-		case GLUT_KEY_F3: ev.key.scancode=KEY_F3; break;
-		case GLUT_KEY_F4: ev.key.scancode=KEY_F4; break;
-		case GLUT_KEY_F5: ev.key.scancode=KEY_F5; break;
-		case GLUT_KEY_F6: ev.key.scancode=KEY_F6; break;
-		case GLUT_KEY_F7: ev.key.scancode=KEY_F7; break;
-		case GLUT_KEY_F8: ev.key.scancode=KEY_F8; break;
-		case GLUT_KEY_F9: ev.key.scancode=KEY_F9; break;
-		case GLUT_KEY_F10: ev.key.scancode=KEY_F10; break;
-		case GLUT_KEY_F11: ev.key.scancode=KEY_F11; break;
-		case GLUT_KEY_F12: ev.key.scancode=KEY_F12; break;
-		case GLUT_KEY_LEFT: ev.key.scancode=KEY_LEFT; break;
-		case GLUT_KEY_UP: ev.key.scancode=KEY_UP; break;
-		case GLUT_KEY_RIGHT: ev.key.scancode=KEY_RIGHT; break;
-		case GLUT_KEY_DOWN: ev.key.scancode=KEY_DOWN; break;
-		case GLUT_KEY_PAGE_UP: ev.key.scancode=KEY_PAGEUP; break;
-		case GLUT_KEY_PAGE_DOWN: ev.key.scancode=KEY_PAGEDOWN; break;
-		case GLUT_KEY_HOME: ev.key.scancode=KEY_HOME; break;
-		case GLUT_KEY_END: ev.key.scancode=KEY_END; break;
-		case GLUT_KEY_INSERT: ev.key.scancode=KEY_INSERT; break;
-	}
-
-	if (pressed) {
-		if (os->skey_pressed[key])
-			ev.key.echo = true;
-		else
-			os->skey_pressed[key] = true;
-	}
-	else {
-		os->skey_pressed[key] = false;
-	}
-
-	uint32_t m = glutGetModifiers();
-	ev.key.mod.alt=(m&GLUT_ACTIVE_ALT)!=0;
-	ev.key.mod.shift=(m&GLUT_ACTIVE_SHIFT)!=0;
-	ev.key.mod.control=(m&GLUT_ACTIVE_CTRL)!=0;
-
-	os->push_input(ev);
-}
-
-static void _glut_skey_up(int key, int x, int y) {
-
-	_glut_skey(false,key);
-}
-
-static void _glut_skey_down(int key, int x, int y) {
-
-	_glut_skey(true,key);
-}
-
-static void _glut_key(bool pressed,unsigned char key) {
-
-	InputEvent ev;
-	ev.type=InputEvent::KEY;
-	ev.key.pressed=pressed;
-	switch(key) {
-		case '\n': ev.key.scancode=KEY_RETURN; break;
-		case 0x1b: ev.key.scancode=KEY_ESCAPE; break;
-		case 8: ev.key.scancode=KEY_BACKSPACE; break;
-		case 0x7f: ev.key.scancode=KEY_DELETE; break;
-		case 0x20: ev.key.scancode=KEY_SPACE; ev.key.unicode=key; break;
-		default: {
-			ev.key.unicode=key;
-		}
-
-		if (pressed) {
-			if (os->key_pressed[key])
-				ev.key.echo = true;
-			else
-				os->key_pressed[key] = true;
-		}
-		else {
-			os->key_pressed[key] = false;
-		}
-	}
-
-
-	uint32_t m = glutGetModifiers();
-	ev.key.mod.alt=(m&GLUT_ACTIVE_ALT)!=0;
-	ev.key.mod.shift=(m&GLUT_ACTIVE_SHIFT)!=0;
-	ev.key.mod.control=(m&GLUT_ACTIVE_CTRL)!=0;
-
-	os->push_input(ev);
-
-}
-
-static void _glut_key_up(unsigned char key, int x, int y) {
-
-	_glut_key(false,key);
-}
-
-static void _glut_key_down(unsigned char key, int x, int y) {
-
-	_glut_key(true,key);
 }
 
 static uint32_t _mouse_button_mask=0;
@@ -265,11 +160,6 @@ int main(int argc, char *argv[]) {
 #endif
 	ResourceLoader::set_abort_on_missing_resources(false); //ease up compatibility
 
-
-	glutSpecialUpFunc(_glut_skey_up);
-	glutSpecialFunc(_glut_skey_down);
-	glutKeyboardUpFunc(_glut_key_up);
-	glutKeyboardFunc(_glut_key_down);
 	glutMouseFunc(_glut_mouse_button);
 	glutMotionFunc(_glut_mouse_motion);
 	glutMotionFunc(_glut_mouse_motion);
