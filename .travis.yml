@@ -71,4 +71,4 @@ before_script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$GODOT_TARGET" = "android" ]; then brew update; brew install android-sdk android-ndk; export ANDROID_HOME=/usr/local/opt/android-sdk; export ANDROID_NDK_ROOT=/usr/local/opt/android-ndk; fi
 
 script:
-  - scons platform=$GODOT_TARGET CXX=$CXX
+  - scons platform=$GODOT_TARGET CXX=$CXX openssl=builtin
