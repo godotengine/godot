@@ -269,7 +269,7 @@ static int dsa_priv_decode(EVP_PKEY *pkey, PKCS8_PRIV_KEY_INFO *p8)
     goto done;
 
  decerr:
-    DSAerr(DSA_F_DSA_PRIV_DECODE, EVP_R_DECODE_ERROR);
+    DSAerr(DSA_F_DSA_PRIV_DECODE, DSA_R_DECODE_ERROR);
  dsaerr:
     DSA_free(dsa);
  done:
@@ -602,10 +602,14 @@ static int dsa_pkey_ctrl(EVP_PKEY *pkey, int op, long arg1, void *arg2)
             X509_ALGOR_set0(alg2, OBJ_nid2obj(snid), V_ASN1_UNDEF, 0);
         }
         return 1;
+
+    case ASN1_PKEY_CTRL_CMS_RI_TYPE:
+        *(int *)arg2 = CMS_RECIPINFO_NONE;
+        return 1;
 #endif
 
     case ASN1_PKEY_CTRL_DEFAULT_MD_NID:
-        *(int *)arg2 = NID_sha1;
+        *(int *)arg2 = NID_sha256;
         return 2;
 
     default:
