@@ -602,6 +602,10 @@ void Rasterizer::flush_frame() {
 
 Rasterizer::Rasterizer() {
 
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		print_line("Video driver: " + driver_name);
+	}
+
 	static const char* fm_names[VS::FIXED_MATERIAL_PARAM_MAX]={
 	"diffuse",
 	"detail",

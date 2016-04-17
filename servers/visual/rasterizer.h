@@ -173,6 +173,9 @@ public:
 		SHADOW_FILTER_VSM,
 	};
 
+	/* INTROSPECTION API */
+	const String driver_name = "???";
+
 
 
 	/* TEXTURE API */

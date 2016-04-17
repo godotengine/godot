@@ -64,6 +64,8 @@
 */
 class RasterizerGLES2 : public Rasterizer {
 
+	const String driver_name = "GLES2";
+
 	enum {
 
 		MAX_SCENE_LIGHTS=2048,
