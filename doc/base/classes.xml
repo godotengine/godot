@@ -3561,6 +3561,62 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_collision_mask">
+			<argument index="0" name="collision_mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_layer_mask">
+			<argument index="0" name="layer_mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_layer_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_collision_mask_bit">
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_layer_mask_bit">
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_layer_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_monitorable">
 			<argument index="0" name="enable" type="bool">
 			</argument>
@@ -9681,6 +9737,14 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 			Return true if the dictionary has a given key.
+			</description>
+		</method>
+		<method name="has_all">
+			<return type="bool">
+			</return>
+			<argument index="0" name="values" type="Array">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="hash">
@@ -25065,6 +25129,50 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="set_collision_mask">
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_collision_mask_bit">
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_layer_mask_bit">
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_layer_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="add_collision_exception_with">
 			<argument index="0" name="body" type="PhysicsBody">
 			</argument>
@@ -25681,6 +25789,22 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="area_set_layer_mask">
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_set_collision_mask">
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="area_set_param">
 			<argument index="0" name="area" type="RID">
 			</argument>
@@ -25795,6 +25919,42 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_layer_mask">
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_layer_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_collision_mask">
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_collision_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="int">
 			</argument>
 			<description>
 			</description>
@@ -28262,6 +28422,30 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="clear_exceptions">
+			<description>
+			</description>
+		</method>
+		<method name="set_layer_mask">
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_layer_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_type_mask">
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_type_mask" qualifiers="const">
+			<return type="int">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -35077,6 +35261,14 @@ This method controls whether the position between two cached points is interpola
 			</return>
 			<description>
 			Return true if the string is empty.
+			</description>
+		</method>
+		<method name="ends_with">
+			<return type="bool">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="extension">
