@@ -168,6 +168,7 @@ public:
 	Error connect(const String &p_host,int p_port,bool p_ssl=false,bool p_verify_host=true);
 
 	void set_connection(const Ref<StreamPeer>& p_connection);
+	Ref<StreamPeer> get_connection() const;
 
 	Error request( Method p_method, const String& p_url, const Vector<String>& p_headers,const String& p_body=String());
 	Error send_body_text(const String& p_body);
