@@ -380,6 +380,14 @@ static void setup_crldp(X509 *x)
         setup_dp(x, sk_DIST_POINT_value(x->crldp, i));
 }
 
+#define V1_ROOT (EXFLAG_V1|EXFLAG_SS)
+#define ku_reject(x, usage) \
+        (((x)->ex_flags & EXFLAG_KUSAGE) && !((x)->ex_kusage & (usage)))
+#define xku_reject(x, usage) \
+        (((x)->ex_flags & EXFLAG_XKUSAGE) && !((x)->ex_xkusage & (usage)))
+#define ns_reject(x, usage) \
+        (((x)->ex_flags & EXFLAG_NSCERT) && !((x)->ex_nscert & (usage)))
+
 static void x509v3_cache_extensions(X509 *x)
 {
     BASIC_CONSTRAINTS *bs;
@@ -395,9 +403,6 @@ static void x509v3_cache_extensions(X509 *x)
 #ifndef OPENSSL_NO_SHA
     X509_digest(x, EVP_sha1(), x->sha1_hash, NULL);
 #endif
-    /* Does subject name match issuer ? */
-    if (!X509_NAME_cmp(X509_get_subject_name(x), X509_get_issuer_name(x)))
-        x->ex_flags |= EXFLAG_SI;
     /* V1 should mean no extensions ... */
     if (!X509_get_version(x))
         x->ex_flags |= EXFLAG_V1;
@@ -479,6 +484,10 @@ static void x509v3_cache_extensions(X509 *x)
             case NID_dvcs:
                 x->ex_xkusage |= XKU_DVCS;
                 break;
+
+            case NID_anyExtendedKeyUsage:
+                x->ex_xkusage |= XKU_ANYEKU;
+                break;
             }
         }
         sk_ASN1_OBJECT_pop_free(extusage, ASN1_OBJECT_free);
@@ -494,6 +503,14 @@ static void x509v3_cache_extensions(X509 *x)
     }
     x->skid = X509_get_ext_d2i(x, NID_subject_key_identifier, NULL, NULL);
     x->akid = X509_get_ext_d2i(x, NID_authority_key_identifier, NULL, NULL);
+    /* Does subject name match issuer ? */
+    if (!X509_NAME_cmp(X509_get_subject_name(x), X509_get_issuer_name(x))) {
+        x->ex_flags |= EXFLAG_SI;
+        /* If SKID matches AKID also indicate self signed */
+        if (X509_check_akid(x, x->akid) == X509_V_OK &&
+            !ku_reject(x, KU_KEY_CERT_SIGN))
+            x->ex_flags |= EXFLAG_SS;
+    }
     x->altname = X509_get_ext_d2i(x, NID_subject_alt_name, NULL, NULL);
     x->nc = X509_get_ext_d2i(x, NID_name_constraints, &i, NULL);
     if (!x->nc && (i != -1))
@@ -529,14 +546,6 @@ static void x509v3_cache_extensions(X509 *x)
  * 3 basicConstraints absent but self signed V1.
  * 4 basicConstraints absent but keyUsage present and keyCertSign asserted.
  */
-
-#define V1_ROOT (EXFLAG_V1|EXFLAG_SS)
-#define ku_reject(x, usage) \
-        (((x)->ex_flags & EXFLAG_KUSAGE) && !((x)->ex_kusage & (usage)))
-#define xku_reject(x, usage) \
-        (((x)->ex_flags & EXFLAG_XKUSAGE) && !((x)->ex_xkusage & (usage)))
-#define ns_reject(x, usage) \
-        (((x)->ex_flags & EXFLAG_NSCERT) && !((x)->ex_nscert & (usage)))
 
 static int check_ca(const X509 *x)
 {
@@ -598,14 +607,22 @@ static int check_purpose_ssl_client(const X509_PURPOSE *xp, const X509 *x,
         return 0;
     if (ca)
         return check_ssl_ca(x);
-    /* We need to do digital signatures with it */
-    if (ku_reject(x, KU_DIGITAL_SIGNATURE))
+    /* We need to do digital signatures or key agreement */
+    if (ku_reject(x, KU_DIGITAL_SIGNATURE | KU_KEY_AGREEMENT))
         return 0;
     /* nsCertType if present should allow SSL client use */
     if (ns_reject(x, NS_SSL_CLIENT))
         return 0;
     return 1;
 }
+
+/*
+ * Key usage needed for TLS/SSL server: digital signature, encipherment or
+ * key agreement. The ssl code can check this more thoroughly for individual
+ * key types.
+ */
+#define KU_TLS \
+        KU_DIGITAL_SIGNATURE|KU_KEY_ENCIPHERMENT|KU_KEY_AGREEMENT
 
 static int check_purpose_ssl_server(const X509_PURPOSE *xp, const X509 *x,
                                     int ca)
@@ -617,8 +634,7 @@ static int check_purpose_ssl_server(const X509_PURPOSE *xp, const X509 *x,
 
     if (ns_reject(x, NS_SSL_SERVER))
         return 0;
-    /* Now as for keyUsage: we'll at least need to sign OR encipher */
-    if (ku_reject(x, KU_DIGITAL_SIGNATURE | KU_KEY_ENCIPHERMENT))
+    if (ku_reject(x, KU_TLS))
         return 0;
 
     return 1;
