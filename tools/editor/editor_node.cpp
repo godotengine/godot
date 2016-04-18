@@ -2672,6 +2672,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				break;
 			}
 
+			_menu_option_confirm(RUN_STOP,true);
 			get_tree()->quit();
 			String exec = OS::get_singleton()->get_executable_path();
 
