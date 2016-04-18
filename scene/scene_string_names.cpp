@@ -52,6 +52,7 @@ SceneStringNames::SceneStringNames() {
 
 	finished=StaticCString::create("finished");
 	animation_changed=StaticCString::create("animation_changed");
+	animation_started=StaticCString::create("animation_started");
 
 	mouse_enter=StaticCString::create("mouse_enter");
 	mouse_exit=StaticCString::create("mouse_exit");
