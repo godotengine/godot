@@ -64,7 +64,7 @@
 */
 class RasterizerGLES2 : public Rasterizer {
 
-	const String driver_name = "GLES2";
+	virtual String get_driver_name() const { return "GLES2"; }
 
 	enum {
 

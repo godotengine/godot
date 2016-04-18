@@ -40,6 +40,12 @@
 class Rasterizer {
 protected:
 
+	/* Introspection API */
+
+	virtual String get_driver_name() const = 0;
+
+
+	/* Misc API */
 
 	typedef void (*CanvasItemDrawViewportFunc)(VisualServer*owner,void*ud,const Rect2& p_rect);
 
@@ -172,10 +178,6 @@ public:
 		SHADOW_FILTER_ESM,
 		SHADOW_FILTER_VSM,
 	};
-
-	/* INTROSPECTION API */
-	const String driver_name = "???";
-
 
 
 	/* TEXTURE API */
