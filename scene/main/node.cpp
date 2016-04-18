@@ -1374,6 +1374,16 @@ bool Node::is_editable_instance(Node *p_node) const {
 	return data.editable_instances.has(p);
 }
 
+void Node::set_editable_instances(const HashMap<NodePath,int>& p_editable_instances) {
+
+	data.editable_instances=p_editable_instances;
+}
+
+HashMap<NodePath,int> Node::get_editable_instances() const {
+
+	return data.editable_instances;
+}
+
 
 #if 0
 
