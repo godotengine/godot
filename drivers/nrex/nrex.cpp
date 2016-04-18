@@ -68,9 +68,9 @@ class nrex_array
         {
         }
 
-        nrex_array(unsigned int size)
-            : _data(NREX_NEW_ARRAY(T, size))
-            , _reserved(size)
+        nrex_array(unsigned int reserved)
+            : _data(NREX_NEW_ARRAY(T, reserved ? reserved : 1))
+            , _reserved(reserved ? reserved : 1)
             , _size(0)
         {
         }
@@ -87,6 +87,12 @@ class nrex_array
 
         void reserve(unsigned int size)
         {
+            if (size < _size) {
+                size = _size;
+            }
+            if (size == 0) {
+                size = 1;
+            }
             T* old = _data;
             _data = NREX_NEW_ARRAY(T, size);
             _reserved = size;
@@ -207,8 +213,8 @@ struct nrex_search
             : str(str)
             , captures(captures)
             , end(0)
+            , lookahead_pos(lookahead)
         {
-            lookahead_pos.reserve(lookahead);
         }
 };
 
