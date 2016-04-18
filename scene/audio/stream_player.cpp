@@ -388,7 +388,7 @@ void StreamPlayer::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::REAL, "stream/volume_db", PROPERTY_HINT_RANGE,"-80,24,0.01"), _SCS("set_volume_db"), _SCS("get_volume_db") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/autoplay"), _SCS("set_autoplay"), _SCS("has_autoplay") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/paused"), _SCS("set_paused"), _SCS("is_paused") );
-	ADD_PROPERTY( PropertyInfo(Variant::INT, "stream/loop_restart_time"), _SCS("set_loop_restart_time"), _SCS("get_loop_restart_time") );
+	ADD_PROPERTY( PropertyInfo(Variant::REAL, "stream/loop_restart_time"), _SCS("set_loop_restart_time"), _SCS("get_loop_restart_time") );
 	ADD_PROPERTY( PropertyInfo(Variant::INT, "stream/buffering_ms"), _SCS("set_buffering_msec"), _SCS("get_buffering_msec") );
 
 	ADD_SIGNAL(MethodInfo("finished"));
