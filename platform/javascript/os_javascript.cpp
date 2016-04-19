@@ -99,14 +99,30 @@ static InputEvent _setup_key_event(const EmscriptenKeyboardEvent *emscripten_eve
 	return ev;
 }
 
+static InputEvent deferred_key_event;
+
 static EM_BOOL _keydown_callback(int event_type, const EmscriptenKeyboardEvent *key_event, void *user_data) {
 
 	ERR_FAIL_COND_V(event_type!=EMSCRIPTEN_EVENT_KEYDOWN, false);
 
 	InputEvent ev = _setup_key_event(key_event);
 	ev.key.pressed = true;
+	if (ev.key.unicode==0 && keycode_has_unicode(ev.key.scancode)) {
+		// defer to keypress event for legacy unicode retrieval
+		deferred_key_event = ev;
+		return false; // do not suppress keypress event
+	}
 	static_cast<OS_JavaScript*>(user_data)->push_input(ev);
-	return ev.key.scancode!=KEY_UNKNOWN && ev.key.scancode!=0;
+	return true;
+}
+
+static EM_BOOL _keypress_callback(int event_type, const EmscriptenKeyboardEvent *key_event, void *user_data) {
+
+	ERR_FAIL_COND_V(event_type!=EMSCRIPTEN_EVENT_KEYPRESS, false);
+
+	deferred_key_event.key.unicode = key_event->charCode;
+	static_cast<OS_JavaScript*>(user_data)->push_input(deferred_key_event);
+	return true;
 }
 
 static EM_BOOL _keyup_callback(int event_type, const EmscriptenKeyboardEvent *key_event, void *user_data) {
@@ -197,6 +213,10 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 	EMSCRIPTEN_RESULT result = emscripten_set_keydown_callback(NULL, this , true, &_keydown_callback);
 	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
 		ERR_PRINTS( "Error while setting Emscripten keydown callback: Code " + itos(result) );
+	}
+	result = emscripten_set_keypress_callback(NULL, this, true, &_keypress_callback);
+	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
+		ERR_PRINTS( "Error while setting Emscripten keypress callback: Code " + itos(result) );
 	}
 	result = emscripten_set_keyup_callback(NULL, this, true, &_keyup_callback);
 	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
