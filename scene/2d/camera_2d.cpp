@@ -145,7 +145,7 @@ Matrix32 Camera2D::get_camera_transform()  {
 		screen_offset = screen_offset.rotated(angle);
 	}
 
-	Rect2 screen_rect(-screen_offset+ret_camera_pos,screen_size);
+	Rect2 screen_rect(-screen_offset+ret_camera_pos,screen_size*zoom);
 	if (screen_rect.pos.x + screen_rect.size.x > limit[MARGIN_RIGHT])
 		screen_rect.pos.x = limit[MARGIN_RIGHT] - screen_rect.size.x;
 
