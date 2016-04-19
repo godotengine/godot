@@ -10,6 +10,7 @@ common_win=[
 	"packet_peer_udp_winsock.cpp",
 	"stream_peer_winsock.cpp",
 	"joystick.cpp",
+	"power_windows.cpp",
 ]
 
 restarget="godot_res"+env["OBJSUFFIX"]

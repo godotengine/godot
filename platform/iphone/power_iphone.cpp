@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joystick_linux.h                                                     */
+/*  power_iphone.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,69 +27,46 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-//author: Andreas Haas <hondres,  liugam3@gmail.com>
-#ifndef JOYSTICK_LINUX_H
-#define JOYSTICK_LINUX_H
-#ifdef JOYDEV_ENABLED
-#include "main/input_default.h"
-#include "os/thread.h"
-#include "os/mutex.h"
+#include "power_iphone.h"
 
-struct input_absinfo;
+bool PowerState::UpdatePowerInfo() {
+	return false;
+}
 
-class JoystickLinux
-{
-public:
-	JoystickLinux(InputDefault *in);
-	~JoystickLinux();
-	uint32_t process_joysticks(uint32_t p_event_id);
-private:
 
-	enum {
-		JOYSTICKS_MAX = 16,
-		MAX_ABS = 63,
-		MAX_KEY = 767,   // Hack because <linux/input.h> can't be included here
-	};
+PowerState PowerIphone::get_power_state() {
+	if (UpdatePowerInfo()) {
+		return power_state;
+	}
+	else {
+		return POWERSTATE_UNKNOWN;
+	}
+}
 
-	struct Joystick {
-		InputDefault::JoyAxis curr_axis[MAX_ABS];
-		int key_map[MAX_KEY];
-		int abs_map[MAX_ABS];
-		int dpad;
-		int fd;
+int PowerIphone::get_power_seconds_left() {
+	if (UpdatePowerInfo()) {
+		return nsecs_left;
+	}
+	else {
+		return -1;
+	}
+}
 
-		String devpath;
-		input_absinfo *abs_info[MAX_ABS];
+int PowerIphone::get_power_percent_left() {
+	if (UpdatePowerInfo()) {
+		return percent_left;
+	}
+	else {
+		return -1;
+	}
+}
 
-		Joystick();
-		~Joystick();
-		void reset();
-	};
+PowerIphone::PowerIphone() : nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
+	// TODO Auto-generated constructor stub
 
-	bool exit_udev;
-	Mutex *joy_mutex;
-	Thread *joy_thread;
-	InputDefault *input;
-	Joystick joysticks[JOYSTICKS_MAX];
-	Vector<String> attached_devices;
+}
 
-	static void joy_thread_func(void *p_user);
+PowerIphone::~PowerIphone() {
+	// TODO Auto-generated destructor stub
+}
 
-	int get_joy_from_path(String path) const;
-	int get_free_joy_slot() const;
-
-	void setup_joystick_properties(int p_id);
-	void close_joystick(int p_id = -1);
-#ifdef UDEV_ENABLED
-	void enumerate_joysticks(struct udev *_udev);
-	void monitor_joysticks(struct udev *_udev);
-#endif
-	void monitor_joysticks();
-	void run_joystick_thread();
-	void open_joystick(const char* path);
-
-	InputDefault::JoyAxis axis_correct(const input_absinfo *abs, int value) const;
-};
-
-#endif
-#endif // JOYSTICK_LINUX_H

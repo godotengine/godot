@@ -6,6 +6,7 @@ files = [
 	'gl_context_egl.cpp',
 	'app.cpp',
 	'os_winrt.cpp',
+	'power_winrt.cpp',
 ]
 
 env.Program('#bin/godot', files)

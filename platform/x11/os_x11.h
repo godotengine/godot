@@ -48,10 +48,13 @@
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 #include "main/input_default.h"
 #include "joystick_linux.h"
-
+#include "power_x11.h"
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xcursor/Xcursor.h>
+
+
+
 
 // Hints for X11 fullscreen
 typedef struct {
@@ -127,7 +130,7 @@ class OS_X11 : public OS_Unix {
 	InputDefault *input;
 
 #ifdef JOYDEV_ENABLED
-	joystick_linux *joystick;
+	JoystickLinux *joystick;
 #endif
 
 #ifdef RTAUDIO_ENABLED
@@ -143,6 +146,8 @@ class OS_X11 : public OS_Unix {
 #endif
 
 	Atom net_wm_icon;
+
+	PowerX11 *power_manager;
 
 	int audio_driver_index;
 	unsigned int capture_idle;
@@ -227,6 +232,10 @@ public:
 	virtual String get_joy_guid(int p_device) const;
 
 	virtual void set_context(int p_context);
+
+	virtual PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
 
 	void run();
 

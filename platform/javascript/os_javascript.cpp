@@ -150,6 +150,8 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 
 	input = memnew( InputDefault );
 
+	power_manager = memnew( PowerJavascript );
+
 	emscripten_set_gamepadconnected_callback(NULL, true, &joy_callback_func);
 	emscripten_set_gamepaddisconnected_callback(NULL, true, &joy_callback_func);
 }
@@ -670,6 +672,19 @@ bool OS_JavaScript::is_joy_known(int p_device) {
 String OS_JavaScript::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
+
+PowerState OS_JavaScript::get_power_state() {
+	return power_manager->get_power_state();
+}
+
+int OS_JavaScript::get_power_seconds_left() {
+	return power_manager->get_power_seconds_left();
+}
+
+int OS_JavaScript::get_power_percent_left() {
+	return power_manager->get_power_percent_left();
+}
+
 
 OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func) {
 

@@ -426,8 +426,11 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	input = memnew( InputDefault );
 #ifdef JOYDEV_ENABLED
-	joystick = memnew( joystick_linux(input));
+	joystick = memnew( JoystickLinux(input));
 #endif
+
+	power_manager = memnew ( PowerX11 );
+
 	_ensure_data_dir();
 }
 
@@ -1801,6 +1804,18 @@ void OS_X11::set_context(int p_context) {
 		XSetClassHint(x11_display, x11_window, classHint);
 		XFree(classHint);
 	}
+}
+
+PowerState OS_X11::get_power_state() {
+	return power_manager->get_power_state();
+}
+
+int OS_X11::get_power_seconds_left() {
+	return power_manager->get_power_seconds_left();
+}
+
+int OS_X11::get_power_percent_left() {
+	return power_manager->get_power_percent_left();
 }
 
 OS_X11::OS_X11() {

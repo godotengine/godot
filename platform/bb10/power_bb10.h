@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joystick_linux.h                                                     */
+/*  power_bb10.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,69 +27,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-//author: Andreas Haas <hondres,  liugam3@gmail.com>
-#ifndef JOYSTICK_LINUX_H
-#define JOYSTICK_LINUX_H
-#ifdef JOYDEV_ENABLED
-#include "main/input_default.h"
-#include "os/thread.h"
-#include "os/mutex.h"
+#ifndef PLATFORM_BB10_POWER_BB10_H_
+#define PLATFORM_BB10_POWER_BB10_H_
 
-struct input_absinfo;
-
-class JoystickLinux
-{
-public:
-	JoystickLinux(InputDefault *in);
-	~JoystickLinux();
-	uint32_t process_joysticks(uint32_t p_event_id);
+class PowerBB10 {
 private:
+	int nsecs_left;
+	int percent_left;
+	PowerState power_state;
 
-	enum {
-		JOYSTICKS_MAX = 16,
-		MAX_ABS = 63,
-		MAX_KEY = 767,   // Hack because <linux/input.h> can't be included here
-	};
+	bool UpdatePowerInfo();
+public:
+	PowerBB10();
+	virtual ~PowerBB10();
 
-	struct Joystick {
-		InputDefault::JoyAxis curr_axis[MAX_ABS];
-		int key_map[MAX_KEY];
-		int abs_map[MAX_ABS];
-		int dpad;
-		int fd;
-
-		String devpath;
-		input_absinfo *abs_info[MAX_ABS];
-
-		Joystick();
-		~Joystick();
-		void reset();
-	};
-
-	bool exit_udev;
-	Mutex *joy_mutex;
-	Thread *joy_thread;
-	InputDefault *input;
-	Joystick joysticks[JOYSTICKS_MAX];
-	Vector<String> attached_devices;
-
-	static void joy_thread_func(void *p_user);
-
-	int get_joy_from_path(String path) const;
-	int get_free_joy_slot() const;
-
-	void setup_joystick_properties(int p_id);
-	void close_joystick(int p_id = -1);
-#ifdef UDEV_ENABLED
-	void enumerate_joysticks(struct udev *_udev);
-	void monitor_joysticks(struct udev *_udev);
-#endif
-	void monitor_joysticks();
-	void run_joystick_thread();
-	void open_joystick(const char* path);
-
-	InputDefault::JoyAxis axis_correct(const input_absinfo *abs, int value) const;
+	PowerState get_power_state();
+	int get_power_seconds_left();
+	int get_power_percent_left();
 };
 
-#endif
-#endif // JOYSTICK_LINUX_H
+#endif /* PLATFORM_BB10_POWER_BB10_H_ */

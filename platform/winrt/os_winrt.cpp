@@ -196,6 +196,7 @@ void OSWinrt::initialize(const VideoMode& p_desired,int p_video_driver,int p_aud
 	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
 	spatial_sound_2d_server->init();
 
+	power_manager = memnew ( PowerWinRT );
 
 	_ensure_data_dir();
 }
@@ -666,6 +667,19 @@ String OSWinrt::get_data_dir() const {
 	Windows::Storage::StorageFolder ^data_folder = Windows::Storage::ApplicationData::Current->LocalFolder;
 
 	return data_folder->Path->Data();
+}
+
+
+PowerState OSWinrt::get_power_state() {
+	return power_manager->get_power_state();
+}
+
+int OSWinrt::get_power_seconds_left() {
+	return power_manager->get_power_seconds_left();
+}
+
+int OSWinrt::get_power_percent_left() {
+	return power_manager->get_power_percent_left();
 }
 
 

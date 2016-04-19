@@ -31,6 +31,7 @@
 
 
 #include "os/input.h"
+#include "power_osx.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
 #include "servers/visual_server.h"
@@ -107,6 +108,9 @@ public:
 	Vector<Rect2> screens;
 	int current_screen;
 	Rect2 restore_rect;
+
+	power_osx power_manager;
+
 protected:
 
 	virtual int get_video_driver_count() const;

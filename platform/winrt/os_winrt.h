@@ -51,6 +51,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include "main/input_default.h"
+#include "power_winrt.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -132,6 +133,8 @@ class OSWinrt : public OS {
 	SampleManagerMallocSW *sample_manager;
 	SpatialSoundServerSW *spatial_sound_server;
 	SpatialSound2DServerSW *spatial_sound_2d_server;
+
+	PowerWinRT *power_manager;
 
 	MouseMode mouse_mode;
 	bool alt_mem;
@@ -246,6 +249,10 @@ public:
 	virtual bool get_swap_ok_cancel() { return true; }
 
 	void input_event(InputEvent &p_event);
+
+	virtual PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
 
 	OSWinrt();
 	~OSWinrt();

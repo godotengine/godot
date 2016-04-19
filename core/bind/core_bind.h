@@ -7,6 +7,7 @@
 #include "os/dir_access.h"
 #include "os/thread.h"
 #include "os/semaphore.h"
+#include "os/power.h"
 
 
 class _ResourceLoader : public Object  {
@@ -280,6 +281,10 @@ public:
 	bool is_ok_left_and_cancel_right() const;
 
 	Error set_thread_name(const String& p_name);
+
+	PowerState get_power_state();
+	int get_power_seconds_left();
+	int get_power_percent_left();
 
 	static _OS *get_singleton() { return singleton; }
 

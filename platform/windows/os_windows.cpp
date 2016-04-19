@@ -986,6 +986,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 
 	input = memnew( InputDefault );
 	joystick = memnew (joystick_windows(input, &hWnd));
+	power_manager = memnew( PowerWindows );
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -2135,6 +2136,18 @@ bool OS_Windows::is_joy_known(int p_device) {
 
 String OS_Windows::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
+}
+
+PowerState OS_Windows::get_power_state() {
+	return power_manager->get_power_state();
+}
+
+int OS_Windows::get_power_seconds_left() {
+	return power_manager->get_power_seconds_left();
+}
+
+int OS_Windows::get_power_percent_left() {
+	return power_manager->get_power_percent_left();
 }
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {

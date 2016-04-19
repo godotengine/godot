@@ -431,6 +431,19 @@ Error _OS::set_thread_name(const String& p_name) {
 	return Thread::set_name(p_name);
 };
 
+PowerState _OS::get_power_state() {
+	return OS::get_singleton()->get_power_state();
+}
+
+int _OS::get_power_seconds_left() {
+	return OS::get_singleton()->get_power_seconds_left();
+}
+
+int _OS::get_power_percent_left() {
+	return OS::get_singleton()->get_power_percent_left();
+}
+
+
 
 /*
 enum Weekday {
@@ -1104,6 +1117,10 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_thread_name","name"),&_OS::set_thread_name);
 
+	ObjectTypeDB::bind_method(_MD("get_power_state"),&_OS::get_power_state);
+	ObjectTypeDB::bind_method(_MD("get_power_seconds_left"),&_OS::get_power_seconds_left);
+	ObjectTypeDB::bind_method(_MD("get_power_percent_left"),&_OS::get_power_percent_left);
+
 
 	BIND_CONSTANT( DAY_SUNDAY );
 	BIND_CONSTANT( DAY_MONDAY );
@@ -1142,6 +1159,12 @@ void _OS::_bind_methods() {
 	BIND_CONSTANT( SYSTEM_DIR_MUSIC );
 	BIND_CONSTANT( SYSTEM_DIR_PICTURES );
 	BIND_CONSTANT( SYSTEM_DIR_RINGTONES );
+
+	BIND_CONSTANT( POWERSTATE_UNKNOWN );
+	BIND_CONSTANT( POWERSTATE_ON_BATTERY );
+	BIND_CONSTANT( POWERSTATE_NO_BATTERY );
+	BIND_CONSTANT( POWERSTATE_CHARGING );
+	BIND_CONSTANT( POWERSTATE_CHARGED );
 
 }
 

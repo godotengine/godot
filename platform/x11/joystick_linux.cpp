@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joystick_linux.cpp                                                   */
+/*  JoystickLinux.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -47,7 +47,7 @@
 
 static const char* ignore_str = "/dev/input/js";
 
-joystick_linux::Joystick::Joystick() {
+JoystickLinux::Joystick::Joystick() {
 	fd = -1;
 	dpad = 0;
 	devpath = "";
@@ -56,7 +56,7 @@ joystick_linux::Joystick::Joystick() {
 	}
 }
 
-joystick_linux::Joystick::~Joystick() {
+JoystickLinux::Joystick::~Joystick() {
 
 	for (int i = 0; i < MAX_ABS; i++) {
 		if (abs_info[i]) {
@@ -65,7 +65,7 @@ joystick_linux::Joystick::~Joystick() {
 	}
 }
 
-void joystick_linux::Joystick::reset() {
+void JoystickLinux::Joystick::reset() {
 	dpad        = 0;
 	fd          = -1;
 
@@ -78,7 +78,7 @@ void joystick_linux::Joystick::reset() {
 	}
 }
 
-joystick_linux::joystick_linux(InputDefault *in)
+JoystickLinux::JoystickLinux(InputDefault *in)
 {
 	exit_udev = false;
 	input = in;
@@ -86,7 +86,7 @@ joystick_linux::joystick_linux(InputDefault *in)
 	joy_thread = Thread::create(joy_thread_func, this);
 }
 
-joystick_linux::~joystick_linux() {
+JoystickLinux::~JoystickLinux() {
 	exit_udev = true;
 	Thread::wait_to_finish(joy_thread);
 	memdelete(joy_thread);
@@ -94,16 +94,16 @@ joystick_linux::~joystick_linux() {
 	close_joystick();
 }
 
-void joystick_linux::joy_thread_func(void *p_user) {
+void JoystickLinux::joy_thread_func(void *p_user) {
 
 	if (p_user) {
-		joystick_linux* joy = (joystick_linux*) p_user;
+		JoystickLinux* joy = (JoystickLinux*) p_user;
 		joy->run_joystick_thread();
 	}
 	return;
 }
 
-void joystick_linux::run_joystick_thread() {
+void JoystickLinux::run_joystick_thread() {
 #ifdef UDEV_ENABLED
 	udev *_udev = udev_new();
 	ERR_FAIL_COND(!_udev);
@@ -116,7 +116,7 @@ void joystick_linux::run_joystick_thread() {
 }
 
 #ifdef UDEV_ENABLED
-void joystick_linux::enumerate_joysticks(udev *p_udev) {
+void JoystickLinux::enumerate_joysticks(udev *p_udev) {
 
 	udev_enumerate *enumerate;
 	udev_list_entry *devices, *dev_list_entry;
@@ -148,7 +148,7 @@ void joystick_linux::enumerate_joysticks(udev *p_udev) {
 	udev_enumerate_unref(enumerate);
 }
 
-void joystick_linux::monitor_joysticks(udev *p_udev) {
+void JoystickLinux::monitor_joysticks(udev *p_udev) {
 
 	udev_device *dev = NULL;
 	udev_monitor *mon = udev_monitor_new_from_netlink(p_udev, "udev");
@@ -203,7 +203,7 @@ void joystick_linux::monitor_joysticks(udev *p_udev) {
 }
 #endif
 
-void joystick_linux::monitor_joysticks() {
+void JoystickLinux::monitor_joysticks() {
 
 	while (!exit_udev) {
 		joy_mutex->lock();
@@ -219,7 +219,7 @@ void joystick_linux::monitor_joysticks() {
 	}
 }
 
-int joystick_linux::get_free_joy_slot() const {
+int JoystickLinux::get_free_joy_slot() const {
 
 	for (int i = 0; i < JOYSTICKS_MAX; i++) {
 
@@ -228,7 +228,7 @@ int joystick_linux::get_free_joy_slot() const {
 	return -1;
 }
 
-int joystick_linux::get_joy_from_path(String p_path) const {
+int JoystickLinux::get_joy_from_path(String p_path) const {
 
 	for (int i = 0; i < JOYSTICKS_MAX; i++) {
 
@@ -239,7 +239,7 @@ int joystick_linux::get_joy_from_path(String p_path) const {
 	return -2;
 }
 
-void joystick_linux::close_joystick(int p_id) {
+void JoystickLinux::close_joystick(int p_id) {
 	if (p_id == -1) {
 		for (int i=0; i<JOYSTICKS_MAX; i++) {
 
@@ -272,7 +272,7 @@ static String _hex_str(uint8_t p_byte) {
 	return ret;
 };
 
-void joystick_linux::setup_joystick_properties(int p_id) {
+void JoystickLinux::setup_joystick_properties(int p_id) {
 
 	Joystick* joy = &joysticks[p_id];
 
@@ -319,7 +319,7 @@ void joystick_linux::setup_joystick_properties(int p_id) {
 }
 
 
-void joystick_linux::open_joystick(const char *p_path) {
+void JoystickLinux::open_joystick(const char *p_path) {
 
 	int joy_num = get_free_joy_slot();
 	int fd = open(p_path, O_RDONLY | O_NONBLOCK);
@@ -392,7 +392,7 @@ void joystick_linux::open_joystick(const char *p_path) {
 	}
 }
 
-InputDefault::JoyAxis joystick_linux::axis_correct(const input_absinfo *p_abs, int p_value) const {
+InputDefault::JoyAxis JoystickLinux::axis_correct(const input_absinfo *p_abs, int p_value) const {
 
 	int min = p_abs->minimum;
 	int max = p_abs->maximum;
@@ -412,7 +412,7 @@ InputDefault::JoyAxis joystick_linux::axis_correct(const input_absinfo *p_abs, i
 	return jx;
 }
 
-uint32_t joystick_linux::process_joysticks(uint32_t p_event_id) {
+uint32_t JoystickLinux::process_joysticks(uint32_t p_event_id) {
 
 	if (joy_mutex->try_lock() != OK) {
 		return p_event_id;

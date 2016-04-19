@@ -1055,6 +1055,8 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	physics_2d_server->init();
 
 	input = memnew( InputDefault );
+	
+	power_manager = memnew( power_osx );
 
 	_ensure_data_dir();
 
@@ -1639,6 +1641,18 @@ OS::MouseMode OS_OSX::get_mouse_mode() const {
     return mouse_mode;
 }
 
+PowerState OS_OSX::get_power_state() {
+	return power_manager->get_power_state();
+}
+
+int OS_OSX::get_power_seconds_left() {
+	return power_manager->get_power_seconds_left();
+}
+
+int OS_OSX::get_power_percent_left() {
+	return power_manager->get_power_percent_left();
+}
+
 OS_OSX* OS_OSX::singleton=NULL;
 
 OS_OSX::OS_OSX() {
@@ -1691,4 +1705,5 @@ OS_OSX::OS_OSX() {
 	maximized = false;
 	minimized = false;
 	zoomed = false;
+	
 }

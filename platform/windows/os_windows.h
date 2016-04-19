@@ -33,6 +33,7 @@
 
 #include "os/input.h"
 #include "os/os.h"
+#include "power_windows.h"
 #include "context_gl_win.h"
 #include "servers/visual_server.h"
 #include "servers/visual/rasterizer.h"
@@ -129,6 +130,8 @@ class OS_Windows : public OS {
 
 	InputDefault *input;
 	joystick_windows *joystick;
+	
+	PowerWindows *power_manager;
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;
@@ -276,6 +279,11 @@ public:
 
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device) const;
+
+
+	virtual PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
 
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();

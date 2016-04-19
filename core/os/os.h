@@ -33,6 +33,7 @@
 #include "list.h"
 #include "vector.h"
 #include "os/main_loop.h"
+#include "power.h"
 #include <stdarg.h>
 
 /**
@@ -416,6 +417,11 @@ public:
 	};
 
 	virtual void set_context(int p_context);
+
+	virtual PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
+
 
 	OS();
 	virtual ~OS();

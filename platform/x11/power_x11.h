@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joystick_linux.h                                                     */
+/*  power_x11.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,69 +27,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-//author: Andreas Haas <hondres,  liugam3@gmail.com>
-#ifndef JOYSTICK_LINUX_H
-#define JOYSTICK_LINUX_H
-#ifdef JOYDEV_ENABLED
-#include "main/input_default.h"
-#include "os/thread.h"
-#include "os/mutex.h"
+#ifndef X11_POWER_H_
+#define X11_POWER_H_
 
-struct input_absinfo;
+#include "os/dir_access.h"
+#include "os/file_access.h"
+#include "os/power.h"
 
-class JoystickLinux
-{
-public:
-	JoystickLinux(InputDefault *in);
-	~JoystickLinux();
-	uint32_t process_joysticks(uint32_t p_event_id);
+
+class PowerX11 {
+
 private:
+	int nsecs_left;
+	int percent_left;
+	PowerState power_state;
 
-	enum {
-		JOYSTICKS_MAX = 16,
-		MAX_ABS = 63,
-		MAX_KEY = 767,   // Hack because <linux/input.h> can't be included here
-	};
 
-	struct Joystick {
-		InputDefault::JoyAxis curr_axis[MAX_ABS];
-		int key_map[MAX_KEY];
-		int abs_map[MAX_ABS];
-		int dpad;
-		int fd;
+	FileAccessRef open_power_file(const char* base, const char* node, const char* key);
+	bool read_power_file(const char* base, const char* node, const char* key, char* buf, size_t buflen);
+	bool make_proc_acpi_key_val(char **_ptr, char **_key, char **_val);
+	void check_proc_acpi_battery(const char * node, bool * have_battery, bool * charging);
+	void check_proc_acpi_ac_adapter(const char * node, bool * have_ac);
+	bool GetPowerInfo_Linux_proc_acpi();
+	bool next_string(char **_ptr, char **_str);
+	bool int_string(char *str, int *val);
+	bool GetPowerInfo_Linux_proc_apm();
+	bool GetPowerInfo_Linux_sys_class_power_supply();
+	bool UpdatePowerInfo();
 
-		String devpath;
-		input_absinfo *abs_info[MAX_ABS];
 
-		Joystick();
-		~Joystick();
-		void reset();
-	};
+public:
+	PowerX11();
+	virtual ~PowerX11();
 
-	bool exit_udev;
-	Mutex *joy_mutex;
-	Thread *joy_thread;
-	InputDefault *input;
-	Joystick joysticks[JOYSTICKS_MAX];
-	Vector<String> attached_devices;
-
-	static void joy_thread_func(void *p_user);
-
-	int get_joy_from_path(String path) const;
-	int get_free_joy_slot() const;
-
-	void setup_joystick_properties(int p_id);
-	void close_joystick(int p_id = -1);
-#ifdef UDEV_ENABLED
-	void enumerate_joysticks(struct udev *_udev);
-	void monitor_joysticks(struct udev *_udev);
-#endif
-	void monitor_joysticks();
-	void run_joystick_thread();
-	void open_joystick(const char* path);
-
-	InputDefault::JoyAxis axis_correct(const input_absinfo *abs, int value) const;
+	PowerState get_power_state();
+	int get_power_seconds_left();
+	int get_power_percent_left();
 };
 
-#endif
-#endif // JOYSTICK_LINUX_H
+#endif /* X11_POWER_H_ */

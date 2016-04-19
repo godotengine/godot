@@ -122,6 +122,8 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 	spatial_sound_server->init();
 	spatial_sound_2d_server = memnew(SpatialSound2DServerSW);
 	spatial_sound_2d_server->init();
+
+	power_manager = memnew( PowerHaiku );
 }
 
 void OS_Haiku::finalize() {

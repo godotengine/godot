@@ -32,6 +32,7 @@
 #include "os/input.h"
 #include "drivers/unix/os_unix.h"
 #include "os/main_loop.h"
+#include "os/power.h"
 #include "servers/physics/physics_server_sw.h"
 #include "servers/spatial_sound/spatial_sound_server_sw.h"
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
@@ -150,6 +151,8 @@ private:
 	VideoPauseFunc video_pause_func;
 	VideoStopFunc video_stop_func;
 	SetKeepScreenOnFunc set_keep_screen_on_func;
+
+	power_android power_manager;
 
 public:
 
