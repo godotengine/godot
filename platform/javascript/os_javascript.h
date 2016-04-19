@@ -56,9 +56,6 @@ public:
 		Point2 pos;
 	};
 
-	bool skey_pressed[121];
-	bool key_pressed[256];
-
 private:
 
 	Vector<TouchPos> touch;
