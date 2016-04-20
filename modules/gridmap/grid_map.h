@@ -47,7 +47,7 @@ class GridMap : public Spatial {
 	OBJ_TYPE( GridMap, Spatial );
 
 	enum {
-	MAP_DIRTY_TRANSFORMS=1,
+		MAP_DIRTY_TRANSFORMS=1,
 		MAP_DIRTY_INSTANCES=2,
 	};
 
