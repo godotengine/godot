@@ -487,6 +487,19 @@ void CanvasItem::_enter_canvas() {
 
 	} else {
 
+		if (!canvas_layer) {
+			// Find CanvasLayer in parent nodes
+			Node *n = get_parent();
+			while (n) {
+				CanvasLayer * l_canvas_layer = n->cast_to<CanvasLayer>();
+				if (l_canvas_layer) {
+					canvas_layer = l_canvas_layer;
+					break;
+				}
+				n = n->get_parent();
+			}
+		}
+
 		CanvasItem *parent = get_parent_item();
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item,parent->get_canvas_item());
 		parent->_queue_sort_children();
