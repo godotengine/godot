@@ -266,6 +266,9 @@ public:
 	void set_applied_force(const Vector2& p_force);
 	Vector2 get_applied_force() const;
 
+	void set_applied_torque(const float p_torque);
+	float get_applied_torque() const;
+
 
 
 	Array get_colliding_bodies() const; //function for script

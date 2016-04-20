@@ -782,6 +782,16 @@ Vector2 RigidBody2D::get_applied_force() const {
 	return Physics2DServer::get_singleton()->body_get_applied_force(get_rid());
 };
 
+void RigidBody2D::set_applied_torque(const float p_torque) {
+
+	Physics2DServer::get_singleton()->body_set_applied_torque(get_rid(), p_torque);
+};
+
+float RigidBody2D::get_applied_torque() const {
+
+	return Physics2DServer::get_singleton()->body_get_applied_torque(get_rid());
+};
+
 
 void RigidBody2D::set_continuous_collision_detection_mode(CCDMode p_mode) {
 
@@ -899,6 +909,9 @@ void RigidBody2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_applied_force","force"),&RigidBody2D::set_applied_force);
 	ObjectTypeDB::bind_method(_MD("get_applied_force"),&RigidBody2D::get_applied_force);
+
+	ObjectTypeDB::bind_method(_MD("set_applied_torque","torque"),&RigidBody2D::set_applied_torque);
+	ObjectTypeDB::bind_method(_MD("get_applied_torque"),&RigidBody2D::get_applied_torque);
 
 	ObjectTypeDB::bind_method(_MD("set_sleeping","sleeping"),&RigidBody2D::set_sleeping);
 	ObjectTypeDB::bind_method(_MD("is_sleeping"),&RigidBody2D::is_sleeping);
