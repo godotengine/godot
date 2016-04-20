@@ -35,6 +35,7 @@
 #include "io/marshalls.h"
 #include "scene/scene_string_names.h"
 #include "os/os.h"
+#include "scene/resources/mesh_library.h"
 
 bool GridMap::_set(const StringName& p_name, const Variant& p_value) {
 
@@ -450,6 +451,7 @@ void GridMap::set_cell_item(int p_x,int p_y,int p_z, int p_item,int p_rot){
 		if (theme.is_valid() && theme->has_item(p_item)) {
 			ii.mesh=theme->get_item_mesh(p_item);
 			ii.shape=theme->get_item_shape(p_item);
+			ii.navmesh=theme->get_item_navmesh(p_item);
 		}
 		ii.multimesh = Ref<MultiMesh>( memnew( MultiMesh ) );
 		ii.multimesh->set_mesh(ii.mesh);
@@ -521,6 +523,52 @@ int GridMap::get_cell_item_orientation(int p_x,int p_y,int p_z) const{
 
 }
 
+void GridMap::_octant_enter_tree(const OctantKey &p_key){
+	ERR_FAIL_COND(!octant_map.has(p_key));
+	if(navigation){
+		Octant&g = *octant_map[p_key];
+
+		Vector3 ofs(cell_size*0.5*int(center_x),cell_size*0.5*int(center_y),cell_size*0.5*int(center_z));
+		_octant_clear_navmesh(p_key);
+
+		for(Map<int,Octant::ItemInstances>::Element *E=g.items.front();E;E=E->next()) {
+			Octant::ItemInstances &ii=E->get();
+
+			for(Set<IndexKey>::Element *F=ii.cells.front();F;F=F->next()) {
+
+				IndexKey ik=F->get();
+				Map<IndexKey,Cell>::Element *C=cell_map.find(ik);
+				ERR_CONTINUE(!C);
+
+				Vector3 cellpos = Vector3(ik.x,ik.y,ik.z );
+
+				Transform xform;
+
+				if (clip && ( (clip_above && cellpos[clip_axis]>clip_floor) || (!clip_above && cellpos[clip_axis]<clip_floor))) {
+
+					xform.basis.set_zero();
+
+				} else {
+
+					xform.basis.set_orthogonal_index(C->get().rot);
+				}
+
+
+				xform.set_origin( cellpos*cell_size+ofs);
+				xform.basis.scale(Vector3(cell_scale,cell_scale,cell_scale));
+				// add the item's navmesh at given xform to GridMap's Navigation ancestor
+				if(ii.navmesh.is_valid()){
+					int nm_id = navigation->navmesh_create(ii.navmesh,xform,this);
+					Octant::NavMesh nm;
+					nm.id=nm_id;
+					nm.xform=xform;
+					g.navmesh_ids[ik]=nm;
+				}
+			}
+		}
+	}
+}
+
 void GridMap::_octant_enter_world(const OctantKey &p_key) {
 
 	ERR_FAIL_COND(!octant_map.has(p_key));
@@ -560,7 +608,6 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 			}
 		}
 	}
-
 }
 
 
@@ -589,9 +636,20 @@ void GridMap::_octant_transform(const OctantKey &p_key) {
 
 }
 
+void GridMap::_octant_clear_navmesh(const OctantKey &p_key){
+	Octant&g = *octant_map[p_key];
+	if (navigation) {
+		for(Map<IndexKey,Octant::NavMesh>::Element *E=g.navmesh_ids.front();E;E=E->next()) {
+			Octant::NavMesh *nvm = &E->get();
+			if(nvm && nvm->id){
+				navigation->navmesh_remove(E->get().id);
+			}
+		}
+		g.navmesh_ids.clear();
+	}
+}
 
 void GridMap::_octant_update(const OctantKey &p_key) {
-
 	ERR_FAIL_COND(!octant_map.has(p_key));
 	Octant&g = *octant_map[p_key];
 	if (!g.dirty)
@@ -599,6 +657,7 @@ void GridMap::_octant_update(const OctantKey &p_key) {
 
 	Ref<Mesh> mesh;
 
+	_octant_clear_navmesh(p_key);
 	PhysicsServer::get_singleton()->body_clear_shapes(g.static_body);
 
 	if (g.collision_debug.is_valid()) {
@@ -608,11 +667,16 @@ void GridMap::_octant_update(const OctantKey &p_key) {
 
 	DVector<Vector3> col_debug;
 
+	/*
+	 * foreach item in this octant,
+	 * set item's multimesh's instance count to number of cells which have this item
+	 * and set said multimesh bounding box to one containing all cells which have this item
+	 */
 	for(Map<int,Octant::ItemInstances>::Element *E=g.items.front();E;E=E->next()) {
 
 		Octant::ItemInstances &ii=E->get();
-		ii.multimesh->set_instance_count(ii.cells.size());
 
+		ii.multimesh->set_instance_count(ii.cells.size());
 
 		AABB aabb;
 		AABB mesh_aabb = ii.mesh.is_null()?AABB():ii.mesh->get_aabb();
@@ -622,6 +686,7 @@ void GridMap::_octant_update(const OctantKey &p_key) {
 
 		//print_line("OCTANT, CELLS: "+itos(ii.cells.size()));
 		int idx=0;
+		// foreach cell containing this item type
 		for(Set<IndexKey>::Element *F=ii.cells.front();F;F=F->next()) {
 			IndexKey ik=F->get();
 			Map<IndexKey,Cell>::Element *C=cell_map.find(ik);
@@ -658,14 +723,26 @@ void GridMap::_octant_update(const OctantKey &p_key) {
 				aabb.merge_with(xform.xform(mesh_aabb));
 			}
 
+			// add the item's shape at given xform to octant's static_body
 			if (ii.shape.is_valid()) {
-
+				// add the item's shape
 				PhysicsServer::get_singleton()->body_add_shape(g.static_body,ii.shape->get_rid(),xform);
 				if (g.collision_debug.is_valid()) {
 					ii.shape->add_vertices_to_array(col_debug,xform);
 				}
 
 			//	print_line("PHIS x: "+xform);
+			}
+
+			// add the item's navmesh at given xform to GridMap's Navigation ancestor
+			if(navigation){
+				if(ii.navmesh.is_valid()){
+					int nm_id = navigation->navmesh_create(ii.navmesh,xform,this);
+					Octant::NavMesh nm;
+					nm.id=nm_id;
+					nm.xform=xform;
+					g.navmesh_ids[ik]=nm;
+				}
 			}
 
 			idx++;
@@ -970,10 +1047,41 @@ void GridMap::_notification(int p_what) {
 
 			}
 
-
 			//_queue_dirty_map(MAP_DIRTY_INSTANCES|MAP_DIRTY_TRANSFORMS);
 			//_update_dirty_map_callback();
 			//_update_area_instances();
+
+		} break;
+		case NOTIFICATION_ENTER_TREE: {
+
+			Spatial *c=this;
+			while(c) {
+				navigation=c->cast_to<Navigation>();
+				if (navigation) {
+					break;
+				}
+
+				c=c->get_parent()->cast_to<Spatial>();
+			}
+
+			if(navigation){
+				for(Map<OctantKey,Octant*>::Element *E=octant_map.front();E;E=E->next()) {
+					if (navigation) {
+						_octant_enter_tree(E->key());
+					}
+				}
+			}
+
+		   _queue_dirty_map();
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			for(Map<OctantKey,Octant*>::Element *E=octant_map.front();E;E=E->next()) {
+				if (navigation) {
+					_octant_clear_navmesh(E->key());
+				}
+			}
+
+			navigation=NULL;
 
 		} break;
 	}
@@ -1734,3 +1842,4 @@ GridMap::~GridMap() {
 	clear();
 
 }
+
