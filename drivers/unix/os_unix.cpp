@@ -44,6 +44,10 @@
 #include "stream_peer_tcp_posix.h"
 #include "packet_peer_udp_posix.h"
 
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
+
 #ifdef __FreeBSD__
 #include <sys/param.h>
 #endif
@@ -508,6 +512,23 @@ String OS_Unix::get_executable_path() const {
 	realpath(OS::get_executable_path().utf8().get_data(), resolved_path);
 
 	return String(resolved_path);
+#elif defined(__APPLE__)
+	char temp_path[1];
+	uint32_t buff_size=1;
+	_NSGetExecutablePath(temp_path, &buff_size);
+
+	char* resolved_path = new char[buff_size + 1];
+
+	if (_NSGetExecutablePath(resolved_path, &buff_size) == 1)
+		WARN_PRINT("MAXPATHLEN is too small");
+
+	String path(resolved_path);
+	delete[] resolved_path;
+
+	return path;
+#elif defined(EMSCRIPTEN)
+	// We return nothing
+	return String();
 #else
 	ERR_PRINT("Warning, don't know how to obtain executable path on this OS! Please override this function properly.");
 	return OS::get_executable_path();
