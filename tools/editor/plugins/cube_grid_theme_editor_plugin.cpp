@@ -35,6 +35,7 @@
 #include "tools/editor/editor_node.h"
 #include "main/main.h"
 #include "tools/editor/editor_settings.h"
+#include "scene/3d/navigation_mesh.h"
 
 void MeshLibraryEditor::edit(const Ref<MeshLibrary>& p_theme) {
 
@@ -107,6 +108,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 		Ref<Shape> collision;
 
+
 		for(int j=0;j<mi->get_child_count();j++) {
 #if 1
 			Node *child2 = mi->get_child(j);
@@ -125,9 +127,20 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 			p_library->set_item_shape(id,collision);
 		}
-
+		Ref<NavigationMesh> navmesh;
+		for(int j=0;j<mi->get_child_count();j++) {
+				Node *child2 = mi->get_child(j);
+				if (!child2->cast_to<NavigationMeshInstance>())
+					continue;
+				NavigationMeshInstance *sb = child2->cast_to<NavigationMeshInstance>();
+				navmesh=sb->get_navigation_mesh();
+				if (!navmesh.is_null())
+					break;
+		}
+		if(!navmesh.is_null()){
+			p_library->set_item_navmesh(id, navmesh);
+		}
 	 }
-
 
 	 //generate previews!
 
