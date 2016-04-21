@@ -186,6 +186,10 @@ float Body2DSW::get_param(Physics2DServer::BodyParameter p_param) const {
 		case Physics2DServer::BODY_PARAM_MASS: {
 			return mass;
 		} break;
+		case Physics2DServer::BODY_PARAM_INERTIA: {
+			if(_inv_inertia == 0) return INFINITY;
+			else return 1.0 / _inv_inertia;
+		} break;
 		case Physics2DServer::BODY_PARAM_GRAVITY_SCALE: {
 			return gravity_scale;
 		} break;

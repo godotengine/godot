@@ -24867,13 +24867,15 @@ This method controls whether the position between two cached points is interpola
 		</constant>
 		<constant name="BODY_PARAM_MASS" value="2">
 		</constant>
-		<constant name="BODY_PARAM_GRAVITY_SCALE" value="3">
+		<constant name="BODY_PARAM_INERTIA" value="3">
 		</constant>
-		<constant name="BODY_PARAM_LINEAR_DAMP" value="4">
+		<constant name="BODY_PARAM_GRAVITY_SCALE" value="4">
 		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP" value="5">
+		<constant name="BODY_PARAM_LINEAR_DAMP" value="5">
 		</constant>
-		<constant name="BODY_PARAM_MAX" value="6">
+		<constant name="BODY_PARAM_ANGULAR_DAMP" value="6">
+		</constant>
+		<constant name="BODY_PARAM_MAX" value="7">
 		</constant>
 		<constant name="BODY_STATE_TRANSFORM" value="0">
 		</constant>
@@ -30035,6 +30037,13 @@ This method controls whether the position between two cached points is interpola
 			Return the body mass.
 			</description>
 		</method>
+		<method name="get_inertia" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			Return the body's moment of inertia. This is automatically computed from the mass and the shapes, so you can't set it. But at least you can find out what it's current value is...
+			</description>
+		</method>
 		<method name="set_weight">
 			<argument index="0" name="weight" type="float">
 			</argument>
@@ -30238,12 +30247,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="torque" type="float">
 			</argument>
 			<description>
+			Set a constant torque which will be applied to this body.
 			</description>
 		</method>
 		<method name="get_applied_torque" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the torque which is being applied to this body.
 			</description>
 		</method>
 		<method name="set_sleeping">

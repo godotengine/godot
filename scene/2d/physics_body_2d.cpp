@@ -602,6 +602,11 @@ real_t RigidBody2D::get_mass() const{
 	return mass;
 }
 
+real_t RigidBody2D::get_inertia() const{
+
+	return Physics2DServer::get_singleton()->body_get_param(get_rid(),Physics2DServer::BODY_PARAM_INERTIA);
+}
+
 void RigidBody2D::set_weight(real_t p_weight){
 
 	set_mass(p_weight/9.8);
@@ -867,6 +872,8 @@ void RigidBody2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_mass","mass"),&RigidBody2D::set_mass);
 	ObjectTypeDB::bind_method(_MD("get_mass"),&RigidBody2D::get_mass);
+
+	ObjectTypeDB::bind_method(_MD("get_inertia"),&RigidBody2D::get_inertia);
 
 	ObjectTypeDB::bind_method(_MD("set_weight","weight"),&RigidBody2D::set_weight);
 	ObjectTypeDB::bind_method(_MD("get_weight"),&RigidBody2D::get_weight);
