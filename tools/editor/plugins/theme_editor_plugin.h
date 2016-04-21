@@ -67,6 +67,7 @@ class ThemeEditor : public Control {
 		POPUP_ADD,
 		POPUP_CLASS_ADD,
 		POPUP_REMOVE,
+		POPUP_CLASS_REMOVE,
 		POPUP_CREATE_TEMPLATE
 	};
 
