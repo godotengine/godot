@@ -106,7 +106,7 @@ List<InputEvent>::Element *InputMap::_find_event(List<InputEvent> &p_list,const 
 			} break;
 			case InputEvent::JOYSTICK_MOTION: {
 
-				same=(e.joy_motion.axis==p_event.joy_motion.axis);
+				same=(e.joy_motion.axis==p_event.joy_motion.axis && (e.joy_motion.axis_value < 0) == (p_event.joy_motion.axis_value < 0));
 
 			} break;
 		}
