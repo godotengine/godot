@@ -620,6 +620,34 @@ void ScriptEditor::_script_created(Ref<Script> p_script) {
 	editor->push_item(p_script.operator->());
 }
 
+void ScriptEditor::_trim_trailing_whitespace(TextEdit *tx) {
+
+	bool trimed_whitespace = false;
+	for (int i = 0; i < tx->get_line_count(); i++) {
+		String line = tx->get_line(i);
+		if (line.ends_with(" ") || line.ends_with("\t")) {
+
+			if (!trimed_whitespace) {
+				tx->begin_complex_operation();
+				trimed_whitespace = true;
+			}
+
+			int end = 0;
+			for (int j = line.length() - 1; j > -1; j--) {
+				if (line[j] != ' ' && line[j] != '\t') {
+					end = j+1;
+					break;
+				}
+			}
+			tx->set_line(i, line.substr(0, end));
+		}
+	}
+	if (trimed_whitespace) {
+		tx->end_complex_operation();
+		tx->update();
+	}
+}
+
 void ScriptEditor::_goto_script_line2(int p_line) {
 
 	int selected = tab_container->get_current_tab();
@@ -778,7 +806,9 @@ void ScriptEditor::_resave_scripts(const String& p_str) {
 		if (script->get_path()=="" || script->get_path().find("local://")!=-1 || script->get_path().find("::")!=-1)
 			continue; //internal script, who cares
 
-
+		if (trim_trailing_whitespace_on_save) {
+			_trim_trailing_whitespace(ste->get_text_edit());
+		}
 		editor->save_resource(script);
 		ste->get_text_edit()->tag_saved_version();
 	}
@@ -1029,11 +1059,17 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (_test_script_times_on_disk())
 					return;
 
+				if (trim_trailing_whitespace_on_save) {
+					_trim_trailing_whitespace(current->get_text_edit());
+				}
 				editor->save_resource( current->get_edited_script() );
 
 			} break;
 			case FILE_SAVE_AS: {
 
+				if (trim_trailing_whitespace_on_save) {
+					_trim_trailing_whitespace(current->get_text_edit());
+				}
 				editor->save_resource_as( current->get_edited_script() );
 
 			} break;
@@ -1246,7 +1282,7 @@ void ScriptEditor::_menu_option(int p_option) {
 					// End of selection ends on the first column of the last line, ignore it.
 					if(tx->get_selection_to_column() == 0)
 						end -= 1;
-					
+
 					for (int i = begin; i <= end; i++)
 					{
 						String line_text = tx->get_line(i);
@@ -1298,6 +1334,9 @@ void ScriptEditor::_menu_option(int p_option) {
 				te->set_text(text);
 
 
+			} break;
+			case EDIT_TRIM_TRAILING_WHITESAPCE: {
+				_trim_trailing_whitespace(current->get_text_edit());
 			} break;
 			case SEARCH_FIND: {
 
@@ -1953,6 +1992,10 @@ void ScriptEditor::save_all_scripts() {
 		if (!ste)
 			continue;
 
+
+		if (trim_trailing_whitespace_on_save) {
+			_trim_trailing_whitespace(ste->get_text_edit());
+		}
 		if (ste->get_text_edit()->get_version()==ste->get_text_edit()->get_saved_version())
 			continue;
 
@@ -2049,6 +2092,7 @@ void ScriptEditor::_add_callback(Object *p_obj, const String& p_function, const 
 void ScriptEditor::_editor_settings_changed() {
 
 	print_line("settings changed");
+	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/trim_trailing_whitespace_on_save");
 	float autosave_time = EditorSettings::get_singleton()->get("text_editor/autosave_interval_secs");
 	if (autosave_time>0) {
 		autosave_timer->set_wait_time(autosave_time);
@@ -2394,6 +2438,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 #else
 	edit_menu->get_popup()->add_item("Complete Symbol",EDIT_COMPLETE,KEY_MASK_CMD|KEY_SPACE);
 #endif
+	edit_menu->get_popup()->add_item("Trim Trailing Whitespace", EDIT_TRIM_TRAILING_WHITESAPCE, KEY_MASK_CTRL|KEY_MASK_ALT|KEY_T);
 	edit_menu->get_popup()->add_item("Auto Indent",EDIT_AUTO_INDENT,KEY_MASK_CMD|KEY_I);
 	edit_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
@@ -2584,7 +2629,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 //	debugger_gui->hide();
 
 	edit_pass=0;
-
+	trim_trailing_whitespace_on_save = false;
 }
 
 
