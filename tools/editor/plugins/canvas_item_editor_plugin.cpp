@@ -1579,7 +1579,13 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 
 			dfrom = drag_point_from;
+			if(p_event.key.mod.control){
+				snap_grid = !snap_grid;
+			}
 			dto = snap_point(dto - (drag == DRAG_ALL ? drag_from - drag_point_from : Vector2(0, 0)), drag_point_from);
+			if(p_event.key.mod.control){
+				snap_grid = !snap_grid;
+			}
 
 			Vector2 drag_vector =
 					canvas_item->get_global_transform_with_canvas().affine_inverse().xform(dto) -
