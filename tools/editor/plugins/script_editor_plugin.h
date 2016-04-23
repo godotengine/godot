@@ -131,6 +131,7 @@ class ScriptEditor : public VBoxContainer {
 		EDIT_SELECT_ALL,
 		EDIT_COMPLETE,
 		EDIT_AUTO_INDENT,
+		EDIT_TRIM_TRAILING_WHITESAPCE,
 		EDIT_TOGGLE_COMMENT,
 		EDIT_MOVE_LINE_UP,
 		EDIT_MOVE_LINE_DOWN,
@@ -237,6 +238,10 @@ class ScriptEditor : public VBoxContainer {
 
 	void _add_callback(Object *p_obj, const String& p_function, const StringArray& p_args);
 	void _res_saved_callback(const Ref<Resource>& p_res);
+
+	bool trim_trailing_whitespace_on_save;
+
+	void _trim_trailing_whitespace(TextEdit *tx);
 
 	void _goto_script_line2(int p_line);
 	void _goto_script_line(REF p_script,int p_line);
