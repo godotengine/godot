@@ -816,16 +816,9 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 						if (a->value_track_is_continuous(tr.local_track)) {
 							Variant value = a->value_track_interpolate(tr.local_track,anim_list->time);
 							Variant::blend(tr.track->value,value,blend,tr.track->value);
-							tr.track->object->set(tr.track->property,tr.track->value);
 						} else {
-
-							List<int> indices;
-							a->value_track_get_key_indices(tr.local_track,anim_list->time,anim_list->step,&indices);
-							for(List<int>::Element *E=indices.front();E;E=E->next()) {
-
-								Variant value = a->track_get_key_value(tr.local_track,E->get());
-								tr.track->object->set(tr.track->property,value);
-							}
+							int index = a->track_find_key(tr.local_track,anim_list->time+anim_list->step);
+							tr.track->value = a->track_get_key_value(tr.local_track, index);
 						}
 					} break;
 					case Animation::TYPE_METHOD: { ///< Call any method on a specific node.
@@ -857,8 +850,10 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 		if (!t.object)
 			continue;
 
-		if(t.property)  // value track; was applied in step 2
+		if(t.property) {  // value track
+			t.object->set(t.property,t.value);
 			continue;
+		}
 
 		Transform xform;
 		xform.basis=t.rot;
