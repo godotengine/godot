@@ -204,10 +204,10 @@ public:
 	_FORCE_INLINE_ real_t get_biased_angular_velocity() const { return biased_angular_velocity; }
 
 
-	_FORCE_INLINE_ void apply_impulse(const Vector2& p_pos, const Vector2& p_j) {
+	_FORCE_INLINE_ void apply_impulse(const Vector2& p_offset, const Vector2& p_impulse) {
 
-		linear_velocity += p_j * _inv_mass;
-		angular_velocity += _inv_inertia * p_pos.cross(p_j);
+		linear_velocity += p_impulse * _inv_mass;
+		angular_velocity += _inv_inertia * p_offset.cross(p_impulse);
 	}
 
 	_FORCE_INLINE_ void apply_bias_impulse(const Vector2& p_pos, const Vector2& p_j) {

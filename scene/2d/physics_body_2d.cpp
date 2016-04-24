@@ -772,9 +772,9 @@ int RigidBody2D::get_max_contacts_reported() const{
 	return max_contacts_reported;
 }
 
-void RigidBody2D::apply_impulse(const Vector2& p_pos, const Vector2& p_impulse) {
+void RigidBody2D::apply_impulse(const Vector2& p_offset, const Vector2& p_impulse) {
 
-	Physics2DServer::get_singleton()->body_apply_impulse(get_rid(),p_pos,p_impulse);
+	Physics2DServer::get_singleton()->body_apply_impulse(get_rid(),p_offset,p_impulse);
 }
 
 void RigidBody2D::set_applied_force(const Vector2& p_force) {

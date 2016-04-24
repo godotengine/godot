@@ -263,7 +263,7 @@ public:
 	void set_continuous_collision_detection_mode(CCDMode p_mode);
 	CCDMode get_continuous_collision_detection_mode() const;
 
-	void apply_impulse(const Vector2& p_pos, const Vector2& p_impulse);
+	void apply_impulse(const Vector2& p_offset, const Vector2& p_impulse);
 
 	void set_applied_force(const Vector2& p_force);
 	Vector2 get_applied_force() const;
