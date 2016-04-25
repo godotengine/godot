@@ -42,7 +42,7 @@ protected:
 
 	/* Introspection API */
 
-	virtual String get_driver_name() const { return "???"; }
+	static String get_driver_name() { return "???"; }
 
 
 	/* Misc API */
