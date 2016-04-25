@@ -633,7 +633,7 @@ Rasterizer::Rasterizer() {
 
 void Rasterizer::init() {
 	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("Uses " + driver_name + " video driver");
+		print_line("Uses " + String(driver_name) + " video driver");
 	}
 }
 
