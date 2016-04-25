@@ -239,8 +239,12 @@ void AnimationTreeEditor::_play_toggled() {
 
 void AnimationTreeEditor::_master_anim_menu_item(int p_item) {
 
-	String str = master_anim_popup->get_item_text(p_item);
-	anim_tree->animation_node_set_master_animation(edited_node,str);
+	if(p_item == 0) _edit_filters();
+	else {
+
+		String str = master_anim_popup->get_item_text(p_item);
+		anim_tree->animation_node_set_master_animation(edited_node,str);
+	}
 	update();
 }
 
@@ -291,6 +295,8 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 
 					AnimationPlayer *ap = anim_tree->get_node(anim_tree->get_master_player())->cast_to<AnimationPlayer>();
 					master_anim_popup->clear();
+					master_anim_popup->add_item("Edit Filters");
+					master_anim_popup->add_separator();
 					List<StringName> sn;
 					ap->get_animation_list(&sn);
 					sn.sort_custom<StringName::AlphCompare>();
@@ -652,39 +658,35 @@ AnimationTreeEditor::ClickType AnimationTreeEditor::_locate_click(const Point2& 
 
 		float y = pos.y-style->get_offset().height;
 
-		if (y<h)
+		if (y<2*h)
 			return CLICK_NODE;
-		y-=h;
+		y-=2*h;
 
-		if (y<h)
-			return CLICK_NODE;
-
-		y-=h;
-
-		int count=0; // title and name
 		int inputs = anim_tree->node_get_input_count(node);
-		count += inputs?inputs:1;
+		int count = MAX(inputs,1);
+
+		if (inputs==0 || (pos.x > size.width/2 && type != AnimationTreePlayer::NODE_OUTPUT)) {
+
+			if (y<count*h) {
+
+				if (p_slot_index)
+					*p_slot_index=0;
+				return CLICK_OUTPUT_SLOT;
+			}
+		}
 
 		for(int i=0;i<count;i++) {
 
 			if (y<h) {
-
-				if (inputs==0 || ( type!=AnimationTreePlayer::NODE_OUTPUT && pos.x > size.width/2))	{
-
-					if (p_slot_index)
-						*p_slot_index=0;
-					return CLICK_OUTPUT_SLOT;
-				} else {
-
-					if (p_slot_index)
-						*p_slot_index=i;
-					return CLICK_INPUT_SLOT;
-				}
+				if (p_slot_index)
+					*p_slot_index=i;
+				return CLICK_INPUT_SLOT;
 			}
 			y-=h;
 		}
 
-		return (type!=AnimationTreePlayer::NODE_OUTPUT && type!=AnimationTreePlayer::NODE_TIMESEEK)?CLICK_PARAMETER:CLICK_NODE;
+		bool has_parameters = type!=AnimationTreePlayer::NODE_OUTPUT && type!=AnimationTreePlayer::NODE_TIMESEEK;
+		return has_parameters ? CLICK_PARAMETER : CLICK_NODE;
 	}
 
 	return CLICK_NONE;
@@ -1243,6 +1245,8 @@ void AnimationTreeEditor::_filter_edited() {
 		anim_tree->oneshot_node_set_filter_path(edited_node,ed->get_metadata(0),ed->is_checked(0));
 	} else if (anim_tree->node_get_type(edited_node)==AnimationTreePlayer::NODE_BLEND2) {
 		anim_tree->blend2_node_set_filter_path(edited_node,ed->get_metadata(0),ed->is_checked(0));
+	} else if (anim_tree->node_get_type(edited_node)==AnimationTreePlayer::NODE_ANIMATION) {
+		anim_tree->animation_node_set_filter_path(edited_node,ed->get_metadata(0),ed->is_checked(0));
 	}
 
 }
@@ -1310,6 +1314,8 @@ void AnimationTreeEditor::_edit_filters() {
 			it->set_checked(0, anim_tree->oneshot_node_is_path_filtered(edited_node,E->get()));
 		} else if (anim_tree->node_get_type(edited_node)==AnimationTreePlayer::NODE_BLEND2) {
 			it->set_checked(0, anim_tree->blend2_node_is_path_filtered(edited_node,E->get()));
+		} else if (anim_tree->node_get_type(edited_node)==AnimationTreePlayer::NODE_ANIMATION) {
+			it->set_checked(0, anim_tree->animation_node_is_path_filtered(edited_node,E->get()));
 		}
 		pm[E->get()]=it;
 	}

@@ -111,6 +111,7 @@ private:
 
 		Variant value;
 
+		bool skip;
 	};
 
 
@@ -162,6 +163,9 @@ private:
 		float step;
 		String from;
 		bool skip;
+
+		HashMap<NodePath,bool> filter;
+
 		AnimationNode() { type=NODE_ANIMATION;  next=NULL; last_version=0; skip=false; }
 	};
 
@@ -309,6 +313,10 @@ public:
 	Ref<Animation> animation_node_get_animation(const StringName& p_node) const;
 	void animation_node_set_master_animation(const StringName& p_node,const String& p_master_animation);
 	String animation_node_get_master_animation(const StringName& p_node) const;
+
+	void animation_node_set_filter_path(const StringName& p_node,const NodePath& p_filter,bool p_enable);
+	void animation_node_set_get_filtered_paths(const StringName& p_node,List<NodePath> *r_paths) const;
+	bool animation_node_is_path_filtered(const StringName& p_node,const NodePath& p_path) const;
 
 	/* ONE SHOT NODE */
 
