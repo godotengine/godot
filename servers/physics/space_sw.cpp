@@ -620,11 +620,28 @@ const SelfList<AreaSW>::List& SpaceSW::get_moved_area_list() const {
 
 void SpaceSW::call_queries() {
 
+	// Set all bodies to toplevel temporarily
+	active_list = get_active_body_list();
+	SelfList<BodySW> *curr = active_list.first();
+	while (curr) {
+		BodySW * b = curr->self();
+		b->set_as_toplevel(true);
+		curr = curr->next();
+	}
+
 	while(state_query_list.first()) {
 
 		BodySW * b = state_query_list.first()->self();
 		b->call_queries();
 		state_query_list.remove(state_query_list.first());
+	}
+
+	// Now set them back
+	curr = active_list.first();
+	while (curr) {
+		BodySW * b = curr->self();
+		b->set_as_toplevel(false);
+		curr = curr->next();
 	}
 
 	while(monitor_query_list.first()) {

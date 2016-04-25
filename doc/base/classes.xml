@@ -8069,6 +8069,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="calculate_center_of_mass">
+			<description>
+				Automatically determine this rigid body's center of mass by calculating the median of all [CollisionShape] node children.
+			</description>
+		</method>
 		<method name="clear_shapes">
 			<description>
 			</description>
@@ -8077,6 +8082,20 @@
 			<return type="bool">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="get_center_of_mass" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Return the center of mass of this rigid body in local space.
+			</description>
+		</method>
+		<method name="get_global_center_of_mass" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Return the center of mass of this rigid body in world space.
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">
@@ -8131,6 +8150,13 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="set_center_of_mass">
+			<argument index="0" name="center_of_mass" type="Vector3">
+			</argument>
+			<description>
+				Manually assign a value which will be used as this rigid body's local center of mass.
 			</description>
 		</method>
 		<method name="set_ray_pickable">
