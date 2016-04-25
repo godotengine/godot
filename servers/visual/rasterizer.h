@@ -42,7 +42,7 @@ protected:
 
 	/* Introspection API */
 
-	static const char* driver_name = "???";
+	static const char* driver_name;
 
 
 	/* Misc API */
