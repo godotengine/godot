@@ -64,8 +64,6 @@
 */
 class RasterizerGLES2 : public Rasterizer {
 
-	static String get_driver_name() { return "GLES2"; }
-
 	enum {
 
 		MAX_SCENE_LIGHTS=2048,
