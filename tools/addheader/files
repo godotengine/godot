@@ -117,8 +117,6 @@
 ./script/multiscript/multi_script.cpp
 ./script/multiscript/multi_script.h
 ./script/register_script_types.h
-./platform/nacl/*.h
-./platform/nacl/*.cpp
 ./platform/android/*.h
 ./platform/android/*.cpp
 ./platform/android/java/src/com/android/godot/*.java
