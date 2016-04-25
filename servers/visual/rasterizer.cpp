@@ -602,10 +602,6 @@ void Rasterizer::flush_frame() {
 
 Rasterizer::Rasterizer() {
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("Uses " + get_driver_name() + " video driver");
-	}
-
 	static const char* fm_names[VS::FIXED_MATERIAL_PARAM_MAX]={
 	"diffuse",
 	"detail",
@@ -629,6 +625,12 @@ Rasterizer::Rasterizer() {
 
 	ERR_FAIL_COND( sizeof(FixedMaterialShaderKey)!=4);
 
+}
+
+Rasterizer::init() {
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		print_line("Uses " + driver_name + " video driver");
+	}
 }
 
 RID Rasterizer::create_overdraw_debug_material() {

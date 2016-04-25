@@ -10780,6 +10780,8 @@ bool RasterizerGLES2::_test_depth_shadow_buffer() {
 
 void RasterizerGLES2::init() {
 
+	Rasterizer::init();
+
 #ifdef GLEW_ENABLED
 	GLuint res = glewInit();
 	ERR_FAIL_COND(res!=GLEW_OK);

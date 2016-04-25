@@ -42,7 +42,7 @@ protected:
 
 	/* Introspection API */
 
-	static String get_driver_name() { return "???"; }
+	static const char* driver_name = "???";
 
 
 	/* Misc API */
@@ -1030,7 +1030,7 @@ public:
 
 	virtual void free(const RID& p_rid)=0;
 
-	virtual void init()=0;
+	virtual void init();
 	virtual void finish()=0;
 
 	virtual bool needs_to_draw_next_frame() const=0;
