@@ -79,6 +79,7 @@ public:
 
 	StringName finished;
 	StringName animation_changed;
+	StringName animation_started;
 
 	StringName body_enter_shape;
 	StringName body_enter;

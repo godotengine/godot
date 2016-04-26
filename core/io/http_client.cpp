@@ -81,6 +81,12 @@ void HTTPClient::set_connection(const Ref<StreamPeer>& p_connection){
 }
 
 
+Ref<StreamPeer> HTTPClient::get_connection() const {
+
+	return connection;
+}
+
+
 Error HTTPClient::request( Method p_method, const String& p_url, const Vector<String>& p_headers,const String& p_body) {
 
 	ERR_FAIL_INDEX_V(p_method,METHOD_MAX,ERR_INVALID_PARAMETER);
@@ -578,6 +584,7 @@ void HTTPClient::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("connect:Error","host","port","use_ssl","verify_host"),&HTTPClient::connect,DEFVAL(false),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("set_connection","connection:StreamPeer"),&HTTPClient::set_connection);
+	ObjectTypeDB::bind_method(_MD("get_connection:StreamPeer"),&HTTPClient::get_connection);
 	ObjectTypeDB::bind_method(_MD("request","method","url","headers","body"),&HTTPClient::request,DEFVAL(String()));
 	ObjectTypeDB::bind_method(_MD("send_body_text","body"),&HTTPClient::send_body_text);
 	ObjectTypeDB::bind_method(_MD("send_body_data","body"),&HTTPClient::send_body_data);

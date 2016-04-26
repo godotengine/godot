@@ -284,7 +284,7 @@ Vector<String> FileAccess::get_csv_line(String delim) const {
 	String l;
 	int qc=0;
 	do {
-		l+=get_line();
+		l+=get_line()+"\n";
 		qc=0;
 		for(int i=0;i<l.length();i++) {
 
@@ -294,6 +294,8 @@ Vector<String> FileAccess::get_csv_line(String delim) const {
 
 
 	} while (qc%2);
+
+	l=l.substr(0, l.length()-1);
 
 	Vector<String> strings;
 

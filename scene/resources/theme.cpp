@@ -370,6 +370,13 @@ void Theme::get_stylebox_list(StringName p_type, List<StringName> *p_list) const
 
 }
 
+void Theme::get_stylebox_types(List<StringName> *p_list) const {
+	const StringName *key=NULL;
+	while((key=style_map.next(key))) {
+		p_list->push_back(*key);
+	}	
+}
+
 void Theme::set_font(const StringName& p_name,const StringName& p_type,const Ref<Font>& p_font) {
 
 	ERR_FAIL_COND(p_font.is_null());
@@ -380,7 +387,6 @@ void Theme::set_font(const StringName& p_name,const StringName& p_type,const Ref
 	if (new_value) {
 		_change_notify();
 		emit_changed();;
-
 	}
 }
 Ref<Font> Theme::get_font(const StringName& p_name,const StringName& p_type) const {
@@ -604,6 +610,7 @@ void Theme::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("has_stylebox","name","type"),&Theme::has_stylebox);
 	ObjectTypeDB::bind_method(_MD("clear_stylebox","name","type"),&Theme::clear_stylebox);
 	ObjectTypeDB::bind_method(_MD("get_stylebox_list","type"),&Theme::_get_stylebox_list);
+	ObjectTypeDB::bind_method(_MD("get_stylebox_types"),&Theme::_get_stylebox_types);
 
 	ObjectTypeDB::bind_method(_MD("set_font","name","type","font:Font"),&Theme::set_font);
 	ObjectTypeDB::bind_method(_MD("get_font:Font","name","type"),&Theme::get_font);

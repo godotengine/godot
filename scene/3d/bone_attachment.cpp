@@ -80,6 +80,7 @@ void BoneAttachment::_check_bind() {
 		int idx = sk->find_bone(bone_name);
 		if (idx!=-1) {
 			sk->bind_child_node_to_bone(idx,this);;
+			set_transform(sk->get_bone_global_pose(idx));
 			bound=true;
 		}
 	}
