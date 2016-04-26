@@ -13027,18 +13027,21 @@ Returns an empty String "" at the end of the list.
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the scroll offset.
 			</description>
 		</method>
 		<method name="set_zoom">
 			<argument index="0" name="p_zoom" type="float">
 			</argument>
 			<description>
+			Set the zoom value of the GraphEdit. Zoom value is between [0.01; 1.728].
 			</description>
 		</method>
 		<method name="get_zoom" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current zoom value.
 			</description>
 		</method>
 		<method name="set_right_disconnects">
@@ -13059,20 +13062,24 @@ Returns an empty String "" at the end of the list.
 	<signals>
 		<signal name="delete_nodes_request">
 			<description>
+			Signal sent when a GraphNode is attempted to be removed from the GraphEdit.
 			</description>
 		</signal>
 		<signal name="duplicate_nodes_request">
 			<description>
+			Signal sent when a GraphNode is attempted to be duplicated in the GraphEdit.
 			</description>
 		</signal>
 		<signal name="popup_request">
 			<argument index="0" name="p_position" type="Vector2">
 			</argument>
 			<description>
+			Signal sent when a popup is requested. Happens on right-clicking in the GraphEdit. 'p_position' is the position of the mouse pointer when the signal is sent.
 			</description>
 		</signal>
 		<signal name="_begin_node_move">
 			<description>
+			Signal sent at the beginning of a GraphNode movement.
 			</description>
 		</signal>
 		<signal name="disconnection_request">
@@ -13103,6 +13110,7 @@ Returns an empty String "" at the end of the list.
 		</signal>
 		<signal name="_end_node_move">
 			<description>
+			Signal sent at the end of a GraphNode movement.
 			</description>
 		</signal>
 	</signals>
