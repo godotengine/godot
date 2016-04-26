@@ -20425,21 +20425,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
-			Set the position of the 2d node.
+			Set the position of the 2D node.
 			</description>
 		</method>
 		<method name="set_rot">
 			<argument index="0" name="rot" type="float">
 			</argument>
 			<description>
-			Set the rotation of the 2d node.
+			Set the rotation of the 2D node.
 			</description>
 		</method>
 		<method name="set_scale">
 			<argument index="0" name="scale" type="Vector2">
 			</argument>
 			<description>
-			Set the scale of the 2d node.
+			Set the scale of the 2D node.
 			</description>
 		</method>
 		<method name="get_pos" qualifiers="const">
@@ -20467,6 +20467,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
+			Apply a 'radians' rotation to the 2D node, starting from its current rotation.
 			</description>
 		</method>
 		<method name="move_local_x">
@@ -20475,6 +20476,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="scaled" type="bool" default="false">
 			</argument>
 			<description>
+			Apply a local translation on X axis to the 2D node according to the 'delta' of the process. If 'scaled' is false, the movement is normalized.
 			</description>
 		</method>
 		<method name="move_local_y">
@@ -20483,30 +20485,35 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="scaled" type="bool" default="false">
 			</argument>
 			<description>
+			Apply a local translation on Y axis to the 2D node according to the 'delta' of the process. If 'scaled' is false, the movement is normalized.
 			</description>
 		</method>
 		<method name="translate">
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
+			Apply a local translation of 'offset' to the 2D node, starting from its current local position.
 			</description>
 		</method>
 		<method name="global_translate">
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
+			Apply a global translation of 'offset' to the 2D node, starting from its current global position.
 			</description>
 		</method>
 		<method name="scale">
 			<argument index="0" name="ratio" type="Vector2">
 			</argument>
 			<description>
+			Apply the 'ratio' scale to the 2D node, according to its current scale value.
 			</description>
 		</method>
 		<method name="set_global_pos">
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+			Set the global position of the 2D node to 'pos'.
 			</description>
 		</method>
 		<method name="get_global_pos" qualifiers="const">
@@ -20520,18 +20527,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="xform" type="Matrix32">
 			</argument>
 			<description>
+			Set the local transform [Matrix32] of the 2D node.
 			</description>
 		</method>
 		<method name="set_global_transform">
 			<argument index="0" name="xform" type="Matrix32">
 			</argument>
 			<description>
+			Set the global transform [Matrix32] of the 2D node.
 			</description>
 		</method>
 		<method name="look_at">
 			<argument index="0" name="point" type="Vector2">
 			</argument>
 			<description>
+			Rotate the 2d node so it points at 'point' position.
 			</description>
 		</method>
 		<method name="get_angle_to" qualifiers="const">
@@ -20540,36 +20550,42 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="point" type="Vector2">
 			</argument>
 			<description>
+			Return the rotation angle needed for the 2d node to point at 'point' position.
 			</description>
 		</method>
 		<method name="set_z">
 			<argument index="0" name="z" type="int">
 			</argument>
 			<description>
+			Set the Z-index value of the 2D node.
 			</description>
 		</method>
 		<method name="get_z" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the Z-index of the 2D node.
 			</description>
 		</method>
 		<method name="set_z_as_relative">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set the Z-index value as relative to the parent node of this 2D node. Thus, if this 2D node's Z-index value is 2 and its parent's effective Z-index is 3, then the effective Z-index value of this 2D node would be 3 + 2 = 5.
 			</description>
 		</method>
 		<method name="is_z_relative" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if the Z-index value of this 2D node is relative to its parent's. Else, return false.
 			</description>
 		</method>
 		<method name="edit_set_pivot">
 			<argument index="0" name="pivot" type="Vector2">
 			</argument>
 			<description>
+			Set the pivot position of the 2D node to 'pivot' value. This method is implemented only in some nodes that inherit Node2D.
 			</description>
 		</method>
 		<method name="get_relative_transform_to_parent" qualifiers="const">
@@ -20578,6 +20594,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="parent" type="Object">
 			</argument>
 			<description>
+			Return the transform [Matrix32] calculated relatively to the parent of this 2D node.
 			</description>
 		</method>
 	</methods>
