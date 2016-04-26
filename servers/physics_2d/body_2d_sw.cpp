@@ -33,7 +33,7 @@
 
 void Body2DSW::_update_inertia() {
 
-	if (get_space() && !inertia_update_list.in_list())
+	if (!user_inertia && get_space() && !inertia_update_list.in_list())
 		get_space()->body_add_to_inertia_update_list(&inertia_update_list);
 
 }
@@ -47,6 +47,8 @@ void Body2DSW::update_inertias() {
 	switch(mode) {
 
 		case Physics2DServer::BODY_MODE_RIGID: {
+
+			if(user_inertia) break;
 
 			//update tensor for allshapes, not the best way but should be somehow OK. (inspired from bullet)
 			float total_area=0;
@@ -157,6 +159,15 @@ void Body2DSW::set_param(Physics2DServer::BodyParameter p_param, float p_value) 
 			_update_inertia();
 
 		} break;
+		case Physics2DServer::BODY_PARAM_INERTIA: {
+			if(p_value<=0) {
+				user_inertia = false;
+				_update_inertia();
+			} else {
+				user_inertia = true;
+				_inv_inertia = 1.0 / p_value;
+			}
+		} break;
 		case Physics2DServer::BODY_PARAM_GRAVITY_SCALE: {
 			gravity_scale=p_value;
 		} break;
@@ -187,8 +198,7 @@ float Body2DSW::get_param(Physics2DServer::BodyParameter p_param) const {
 			return mass;
 		} break;
 		case Physics2DServer::BODY_PARAM_INERTIA: {
-			if(_inv_inertia == 0) return INFINITY;
-			else return 1.0 / _inv_inertia;
+			return _inv_inertia==0 ? 0 : 1.0 / _inv_inertia;
 		} break;
 		case Physics2DServer::BODY_PARAM_GRAVITY_SCALE: {
 			return gravity_scale;
@@ -669,6 +679,7 @@ Body2DSW::Body2DSW() : CollisionObject2DSW(TYPE_BODY), active_list(this), inerti
 	angular_velocity=0;
 	biased_angular_velocity=0;
 	mass=1;
+	user_inertia=false;
 	_inv_inertia=0;
 	_inv_mass=1;
 	bounce=0;

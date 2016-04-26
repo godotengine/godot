@@ -602,6 +602,12 @@ real_t RigidBody2D::get_mass() const{
 	return mass;
 }
 
+void RigidBody2D::set_inertia(real_t p_inertia) {
+
+	ERR_FAIL_COND(p_inertia<=0);
+	Physics2DServer::get_singleton()->body_set_param(get_rid(),Physics2DServer::BODY_PARAM_INERTIA,p_inertia);
+}
+
 real_t RigidBody2D::get_inertia() const{
 
 	return Physics2DServer::get_singleton()->body_get_param(get_rid(),Physics2DServer::BODY_PARAM_INERTIA);
@@ -797,6 +803,10 @@ float RigidBody2D::get_applied_torque() const {
 	return Physics2DServer::get_singleton()->body_get_applied_torque(get_rid());
 };
 
+void RigidBody2D::add_force(const Vector2& p_offset, const Vector2& p_force) {
+
+	Physics2DServer::get_singleton()->body_add_force(get_rid(),p_offset,p_force);
+}
 
 void RigidBody2D::set_continuous_collision_detection_mode(CCDMode p_mode) {
 
@@ -874,6 +884,7 @@ void RigidBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_mass"),&RigidBody2D::get_mass);
 
 	ObjectTypeDB::bind_method(_MD("get_inertia"),&RigidBody2D::get_inertia);
+	ObjectTypeDB::bind_method(_MD("set_inertia","inertia"),&RigidBody2D::set_inertia);
 
 	ObjectTypeDB::bind_method(_MD("set_weight","weight"),&RigidBody2D::set_weight);
 	ObjectTypeDB::bind_method(_MD("get_weight"),&RigidBody2D::get_weight);
@@ -912,13 +923,15 @@ void RigidBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_continuous_collision_detection_mode"),&RigidBody2D::get_continuous_collision_detection_mode);
 
 	ObjectTypeDB::bind_method(_MD("set_axis_velocity","axis_velocity"),&RigidBody2D::set_axis_velocity);
-	ObjectTypeDB::bind_method(_MD("apply_impulse","pos","impulse"),&RigidBody2D::apply_impulse);
+	ObjectTypeDB::bind_method(_MD("apply_impulse","offset","impulse"),&RigidBody2D::apply_impulse);
 
 	ObjectTypeDB::bind_method(_MD("set_applied_force","force"),&RigidBody2D::set_applied_force);
 	ObjectTypeDB::bind_method(_MD("get_applied_force"),&RigidBody2D::get_applied_force);
 
 	ObjectTypeDB::bind_method(_MD("set_applied_torque","torque"),&RigidBody2D::set_applied_torque);
 	ObjectTypeDB::bind_method(_MD("get_applied_torque"),&RigidBody2D::get_applied_torque);
+
+	ObjectTypeDB::bind_method(_MD("add_force","offset","force"),&RigidBody2D::add_force);
 
 	ObjectTypeDB::bind_method(_MD("set_sleeping","sleeping"),&RigidBody2D::set_sleeping);
 	ObjectTypeDB::bind_method(_MD("is_sleeping"),&RigidBody2D::is_sleeping);

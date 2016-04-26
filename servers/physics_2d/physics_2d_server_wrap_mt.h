@@ -205,6 +205,7 @@ public:
 	FUNC2(body_set_applied_torque,RID,float);
 	FUNC1RC(float,body_get_applied_torque,RID);
 
+	FUNC3(body_add_force,RID,const Vector2&,const Vector2&);
 	FUNC3(body_apply_impulse,RID,const Vector2&,const Vector2&);
 	FUNC2(body_set_axis_velocity,RID,const Vector2&);
 

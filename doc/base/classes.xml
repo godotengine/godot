@@ -24580,6 +24580,17 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="body_add_force">
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="offset" type="Vector2">
+			</argument>
+			<argument index="2" name="force" type="Vector2">
+			</argument>
+			<description>
+			Add a positioned force to the applied force and torque. As with [method body_apply_impulse], both the force and the offset from the body origin are in global coordinates.
+			</description>
+		</method>
 		<method name="body_set_axis_velocity">
 			<argument index="0" name="body" type="RID">
 			</argument>
@@ -30041,7 +30052,14 @@ This method controls whether the position between two cached points is interpola
 			<return type="float">
 			</return>
 			<description>
-			Return the body's moment of inertia. This is automatically computed from the mass and the shapes, so you can't set it. But at least you can find out what it's current value is...
+				Return the body's moment of inertia. This is usually automatically computed from the mass and the shapes.  Note that this doesn't seem to work in a [code]_ready[/code] function: it apparently has not been auto-computed yet.
+			</description>
+		</method>
+		<method name="set_inertia">
+			<argument index="0" name="inertia" type="float">
+			</argument>
+			<description>
+			Set the body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body. The moment of inertia is usually computed automatically from the mass and the shapes, but this function allows you to set a custom value. Set 0 (or negative) inertia to return to automatically computing it.
 			</description>
 		</method>
 		<method name="set_weight">
@@ -30221,12 +30239,12 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="apply_impulse">
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<argument index="1" name="impulse" type="Vector2">
 			</argument>
 			<description>
-			Apply a positioned impulse (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once.
+			Apply a positioned impulse (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once. Both the impulse and the offset from the body origin are in global coordinates.
 			</description>
 		</method>
 		<method name="set_applied_force">
@@ -30255,6 +30273,15 @@ This method controls whether the position between two cached points is interpola
 			</return>
 			<description>
 			Return the torque which is being applied to this body.
+			</description>
+		</method>
+		<method name="add_force">
+			<argument index="0" name="offset" type="Vector2">
+			</argument>
+			<argument index="1" name="force" type="Vector2">
+			</argument>
+			<description>
+			Add a positioned force to the applied force and torque. As with [method apply_impulse], both the force and the offset from the body origin are in global coordinates.
 			</description>
 		</method>
 		<method name="set_sleeping">

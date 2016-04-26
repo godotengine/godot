@@ -217,7 +217,8 @@ public:
 	void set_mass(real_t p_mass);
 	real_t get_mass() const;
 
-	real_t get_inertia() const;  // read-only: auto-computed from mass & shapes.
+	void set_inertia(real_t p_inertia);
+	real_t get_inertia() const;
 
 	void set_weight(real_t p_weight);
 	real_t get_weight() const;
@@ -270,6 +271,8 @@ public:
 
 	void set_applied_torque(const float p_torque);
 	float get_applied_torque() const;
+
+	void add_force(const Vector2& p_offset, const Vector2& p_force);
 
 
 

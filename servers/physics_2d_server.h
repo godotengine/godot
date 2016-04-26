@@ -451,7 +451,9 @@ public:
 	virtual void body_set_applied_torque(RID p_body, float p_torque)=0;
 	virtual float body_get_applied_torque(RID p_body) const=0;
 
-	virtual void body_apply_impulse(RID p_body, const Vector2& p_pos, const Vector2& p_impulse)=0;
+	virtual void body_add_force(RID p_body, const Vector2& p_offset, const Vector2& p_force)=0;
+
+	virtual void body_apply_impulse(RID p_body, const Vector2& p_offset, const Vector2& p_impulse)=0;
 	virtual void body_set_axis_velocity(RID p_body, const Vector2& p_axis_velocity)=0;
 
 	//fix
