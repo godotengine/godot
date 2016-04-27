@@ -43298,14 +43298,17 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="WeakRef" inherits="Reference" category="Core">
 	<brief_description>
+	Holds a [Reference] object, but does not contribute to the reference count of that reference.
 	</brief_description>
 	<description>
+	A weakref holds a [Reference], without contributing to it's reference counter. A weakref can be created from a reference using [method @GDScript.weakref]. Weakrefs are useful in cases where multiple classes have variables that refer to eachother. Without weakrefs, using these classes could lead to memory leaks, since both references keep eachother from being released. Making part of the variables a weakref can prevent this cyclic dependency, and allows the references to be released. 
 	</description>
 	<methods>
 		<method name="get_ref" qualifiers="const">
-			<return type="Object">
+			<return type="Reference">
 			</return>
 			<description>
+			Returns the reference this weakref is referring to.
 			</description>
 		</method>
 	</methods>
