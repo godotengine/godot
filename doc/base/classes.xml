@@ -2900,6 +2900,12 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="animation_started">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="animation_changed">
 			<argument index="0" name="old_name" type="String">
 			</argument>
@@ -13895,6 +13901,12 @@ Returns an empty String "" at the end of the list.
 			<description>
 			</description>
 		</method>
+		<method name="get_connection" qualifiers="const">
+			<return type="StreamPeer">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="request">
 			<return type="int">
 			</return>
@@ -19126,6 +19138,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Set the mesh of the item.
 			</description>
 		</method>
+		<method name="set_item_navmesh">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="navmesh" type="NavigationMesh">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_item_shape">
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -19150,6 +19170,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 			Return the mesh of the item.
+			</description>
+		</method>
+		<method name="get_item_navmesh" qualifiers="const">
+			<return type="NavigationMesh">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_item_shape" qualifiers="const">
@@ -36094,6 +36122,22 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="add_triangle_fan">
+			<argument index="0" name="vertexes" type="Vector3Array">
+			</argument>
+			<argument index="1" name="uvs" type="Vector2Array" default="[Vector2Array]">
+			</argument>
+			<argument index="2" name="colors" type="ColorArray" default="ColorArray([ColorArray])">
+			</argument>
+			<argument index="3" name="uv2s" type="Vector2Array" default="[Vector2Array]">
+			</argument>
+			<argument index="4" name="normals" type="Vector3Array" default="Vector3Array()">
+			</argument>
+			<argument index="5" name="tangents" type="Array" default="Array()">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_material">
 			<argument index="0" name="material" type="Material">
 			</argument>
@@ -37333,6 +37377,12 @@ This method controls whether the position between two cached points is interpola
 			</return>
 			<argument index="0" name="type" type="String">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_stylebox_types" qualifiers="const">
+			<return type="StringArray">
+			</return>
 			<description>
 			</description>
 		</method>
