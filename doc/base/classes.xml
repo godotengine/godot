@@ -5684,12 +5684,14 @@
 			<argument index="0" name="texture" type="Texture">
 			</argument>
 			<description>
+			Set the icon that will be displayed next to the text inside the button area.
 			</description>
 		</method>
 		<method name="get_button_icon" qualifiers="const">
 			<return type="Texture">
 			</return>
 			<description>
+			Return the button icon.
 			</description>
 		</method>
 		<method name="set_flat">
@@ -5717,23 +5719,34 @@
 			<argument index="0" name="align" type="int">
 			</argument>
 			<description>
+			Set the text alignment policy, using one of the ALIGN_* constants.
 			</description>
 		</method>
 		<method name="get_text_align" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the text alignment policy.
 			</description>
 		</method>
 		<method name="is_flat" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-			Return the state of the [i]flat[/i] property (see [method set_flat])
+			Return the state of the [i]flat[/i] property (see [method set_flat]).
 			</description>
 		</method>
 	</methods>
 	<constants>
+		<constant name="ALIGN_LEFT" value="0">
+			Align the text to the left.
+		</constant>
+		<constant name="ALIGN_CENTER" value="1">
+			Center the text.
+		</constant>
+		<constant name="ALIGN_RIGHT" value="2">
+			Align the text to the right.
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="hseparation" type="int">
@@ -5765,57 +5778,60 @@
 	Array of Buttons.
 	</brief_description>
 	<description>
-	Array of Buttons. A Button array is useful to have an array of buttons laid out vertically or horizontally. Only one can be selected. This is useful for joy pad based interfaces and option menus.
+	Array of Buttons. A ButtonArray is useful to have an array of buttons laid out vertically or horizontally. Only one button can be selected, and is referenced by its index in the array (first button is 0, second button is 1, etc.).
+	This is useful [i]e.g.[/i] for joypad-friendly interfaces and option menus.
 	</description>
 	<methods>
 		<method name="add_button">
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-			Add a new button.
+			Append a new button to the array, with the specified text.
 			</description>
 		</method>
 		<method name="add_icon_button">
-			<argument index="0" name="icon" type="Object">
+			<argument index="0" name="icon" type="Texture">
 			</argument>
 			<argument index="1" name="text" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
+			Append a new button to the array, with the specified icon and text.
 			</description>
 		</method>
 		<method name="set_button_text">
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button_idx" type="int">
 			</argument>
 			<argument index="1" name="text" type="String">
 			</argument>
 			<description>
+			Define the text of the specified button.
 			</description>
 		</method>
 		<method name="set_button_icon">
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button_idx" type="int">
 			</argument>
-			<argument index="1" name="icon" type="Object">
+			<argument index="1" name="icon" type="Texture">
 			</argument>
 			<description>
-			Set the icon of an existing button.
+			Set the icon of the specified button.
 			</description>
 		</method>
 		<method name="get_button_text" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button_idx" type="int">
 			</argument>
 			<description>
-			Return the text of an existing button.
+			Return the text of the specified button.
 			</description>
 		</method>
 		<method name="get_button_icon" qualifiers="const">
-			<return type="Object">
+			<return type="Texture">
 			</return>
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button_idx" type="int">
 			</argument>
 			<description>
-			Return the icon of an existing button.
+			Return the icon of the specified button.
 			</description>
 		</method>
 		<method name="get_button_count" qualifiers="const">
@@ -5829,42 +5845,42 @@
 			<return type="int">
 			</return>
 			<description>
-			Return the currently selected button in the array.
+			Return the index of the currently selected button in the array.
 			</description>
 		</method>
 		<method name="get_hovered" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-			Return the currently hovered button in the array.
+			Return the index of the currently hovered button in the array.
 			</description>
 		</method>
 		<method name="set_selected">
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button_idx" type="int">
 			</argument>
 			<description>
-			Select a button in the array.
+			Select a button in the array based on the given index.
 			</description>
 		</method>
 		<method name="erase_button">
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button_idx" type="int">
 			</argument>
 			<description>
-			Remove a button in the array, by index.
+			Remove the specified button in the array.
 			</description>
 		</method>
 		<method name="clear">
 			<description>
-			Clear the button array.
+			Remove all buttons from the array.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="button_selected">
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button_idx" type="int">
 			</argument>
 			<description>
-			A Button was selected (returns the index).
+			A button has been selected, its index is given as the argument.
 			</description>
 		</signal>
 	</signals>
@@ -43309,7 +43325,7 @@ This method controls whether the position between two cached points is interpola
 	Holds an [Object], but does not contribute to the reference count if the object is a reference.
 	</brief_description>
 	<description>
-	A weakref can hold a [Reference], without contributing to the reference counter. A weakref can be created from an [Object] using [method @GDScript.weakref]. If this object is not a reference, weakref still works, however, it does not have any effect on the object. Weakrefs are useful in cases where multiple classes have variables that refer to eachother. Without weakrefs, using these classes could lead to memory leaks, since both references keep eachother from being released. Making part of the variables a weakref can prevent this cyclic dependency, and allows the references to be released. 
+	A weakref can hold a [Reference], without contributing to the reference counter. A weakref can be created from an [Object] using [method @GDScript.weakref]. If this object is not a reference, weakref still works, however, it does not have any effect on the object. Weakrefs are useful in cases where multiple classes have variables that refer to eachother. Without weakrefs, using these classes could lead to memory leaks, since both references keep eachother from being released. Making part of the variables a weakref can prevent this cyclic dependency, and allows the references to be released.
 	</description>
 	<methods>
 		<method name="get_ref" qualifiers="const">
