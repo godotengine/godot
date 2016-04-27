@@ -303,6 +303,7 @@ Error HTTPClient::poll(){
 					chunked=false;
 					body_left=0;
 					chunk_left=0;
+					response_str.clear();
 					response_headers.clear();
 					response_num = RESPONSE_OK;
 
