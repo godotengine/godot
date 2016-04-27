@@ -7101,6 +7101,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				This function will anchor the container children to the top left corner of the the container boundaries, moving all its children to that position, (the children new center will be the top left corner of the container).
 			</description>
 		</method>
 		<method name="is_using_top_left" qualifiers="const">
@@ -7115,8 +7116,10 @@
 </class>
 <class name="CheckBox" inherits="Button" category="Core">
 	<brief_description>
+		Binary choice user interface widget
 	</brief_description>
 	<description>
+		A checkbox allows the user to make a binary choice (choosing only one of two posible options), for example Answer 'yes' or 'no'.
 	</description>
 	<methods>
 	</methods>
@@ -13394,20 +13397,24 @@ Returns an empty String "" at the end of the list.
 </class>
 <class name="GridContainer" inherits="Container" category="Core">
 	<brief_description>
+		Grid container used to arrange elements in a grid like layout
 	</brief_description>
 	<description>
+		Grid container will arrange its children in a grid like structure, the grid columns are specified using the [method set_columns] method and the number of rows will be equal to the number of children in the container divided by the number of columns, for example: if the container has 5 children, and 2 columns, there will be 3 rows in the container. Notice that grid layout will preserve the columns and rows for every size of the container.
 	</description>
 	<methods>
 		<method name="set_columns">
 			<argument index="0" name="columns" type="int">
 			</argument>
 			<description>
+				Sets the numbers of columns in the container, then reorder its children to accommodate the new layout
 			</description>
 		</method>
 		<method name="get_columns" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of columns in this container
 			</description>
 		</method>
 	</methods>
@@ -40199,6 +40206,7 @@ This method controls whether the position between two cached points is interpola
 	Vector used for 2D Math.
 	</brief_description>
 	<description>
+		2-element structure that can be used to represent positions in 2d-space, or any other pair of numeric values.
 	</description>
 	<methods>
 		<method name="angle">
