@@ -2057,7 +2057,17 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						scancode_handled=false;
 						break;
 					}
-#ifdef APPLE_STYLE_KEYS
+#ifndef APPLE_STYLE_KEYS
+					if (k.mod.command) {
+						_scroll_lines_up();
+						break;
+					}
+#else
+					if (k.mod.command && k.mod.alt) {
+						_scroll_lines_up();
+						break;
+					}
+
 					if (k.mod.command)
 						cursor_set_line(0);
 					else
@@ -2084,7 +2094,17 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						scancode_handled=false;
 						break;
 					}
-#ifdef APPLE_STYLE_KEYS
+#ifndef APPLE_STYLE_KEYS
+					if (k.mod.command) {
+						_scroll_lines_down();
+						break;
+					}
+#else
+					if (k.mod.command && k.mod.alt) {
+						_scroll_lines_down();
+						break;
+					}
+
 					if (k.mod.command)
 						cursor_set_line(text.size()-1);
 					else
@@ -2496,6 +2516,36 @@ void TextEdit::_post_shift_selection() {
 
 
 	selection.selecting_text=true;
+}
+
+void TextEdit::_scroll_lines_up() {
+	// adjust the vertical scroll
+	if (get_v_scroll() > 0) {
+		set_v_scroll(get_v_scroll() - 1);
+	}
+
+	// adjust the cursor
+	if (cursor_get_line() >= (get_visible_rows() + get_v_scroll()) && !selection.active) {
+		cursor_set_line((get_visible_rows() + get_v_scroll()) - 1, false);
+	}
+}
+
+void TextEdit::_scroll_lines_down() {
+	// calculate the maximum vertical scroll position
+	int max_v_scroll = get_line_count() - 1;
+	if (!scroll_past_end_of_file_enabled) {
+		max_v_scroll -= get_visible_rows() - 1;
+	}
+
+	// adjust the vertical scroll
+	if (get_v_scroll() < max_v_scroll) {
+		set_v_scroll(get_v_scroll() + 1);
+	}
+
+	// adjust the cursor
+	if ((cursor_get_line()) <= get_v_scroll() - 1 && !selection.active) {
+		cursor_set_line(get_v_scroll(), false);
+	}
 }
 
 /**** TEXT EDIT CORE API ****/
