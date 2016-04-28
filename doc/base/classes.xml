@@ -27168,80 +27168,94 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="Polygon2D" inherits="Node2D" category="Core">
 	<brief_description>
+		2D polygon representation
 	</brief_description>
 	<description>
+		A Polygon2D is defined by a set of n points connected together by line segments, meaning that the point 1 will be connected with point 2, point 2 with point 3 ..., point n-1 with point n and point n with point 1 in order to close the loop and define a plane.
 	</description>
 	<methods>
 		<method name="set_polygon">
 			<argument index="0" name="polygon" type="Vector2Array">
 			</argument>
 			<description>
+				Defines the set of points that will represent the polygon.
 			</description>
 		</method>
 		<method name="get_polygon" qualifiers="const">
 			<return type="Vector2Array">
 			</return>
 			<description>
+				Returns the set of points that defines this polygon
 			</description>
 		</method>
 		<method name="set_uv">
 			<argument index="0" name="uv" type="Vector2Array">
 			</argument>
 			<description>
+				Sets the uv value for every point of the polygon
 			</description>
 		</method>
 		<method name="get_uv" qualifiers="const">
 			<return type="Vector2Array">
 			</return>
 			<description>
+				Returns the uv value associated with every point of the polygon
 			</description>
 		</method>
 		<method name="set_color">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+				Sets the polygon fill color, if the polygon has a texture defined, the defined texture will be tinted to the polygon fill color.
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
+				Returns the polygon fill color
 			</description>
 		</method>
 		<method name="set_texture">
 			<argument index="0" name="texture" type="Object">
 			</argument>
 			<description>
+				Sets the polygon texture.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="Object">
 			</return>
 			<description>
+				Returns the polygon texture
 			</description>
 		</method>
 		<method name="set_texture_offset">
 			<argument index="0" name="texture_offset" type="Vector2">
 			</argument>
 			<description>
+				Sets the offset of the polygon texture. Initially the texture will appear anchored to the polygon position, the offset is used to move the texture location away from that point (notice that the texture origin is set to its top left corner, so when offset is 0,0 the top left corner of the texture is at the polygon position), for example setting the offset to 10, 10 will move the texture 10 units to the left and 10 units to the top.
 			</description>
 		</method>
 		<method name="get_texture_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the polygon texture offset
 			</description>
 		</method>
 		<method name="set_texture_rotation">
 			<argument index="0" name="texture_rotation" type="float">
 			</argument>
 			<description>
+				Sets the amount of rotation of the polygon texture, [code]texture_rotation[/code] is specified in degrees and clockwise rotation, meaning that if the texture rotation is set to 45 degrees, the texture will be rotated 45 degrees clockwise along the polygon position plus the texture offset.
 			</description>
 		</method>
 		<method name="get_texture_rotation" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Returns the rotation in degrees of the texture polygon
 			</description>
 		</method>
 		<method name="set_texture_scale">
@@ -27260,12 +27274,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="invert" type="bool">
 			</argument>
 			<description>
+				Sets the polygon as the defined polygon bounding box minus the defined polygon (the defined polygon will appear as a hole on square that contains the defined polygon).
 			</description>
 		</method>
 		<method name="get_invert" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether this polygon is inverted or not
 			</description>
 		</method>
 		<method name="set_invert_border">
