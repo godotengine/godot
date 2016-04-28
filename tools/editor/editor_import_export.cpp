@@ -294,6 +294,39 @@ static void _remove_filter_from_list(Set<StringName>& r_list,const String& p_fil
 	_edit_filter_list(r_list,p_filter,true);
 }
 
+bool EditorExportPlatform::_set(const StringName& p_name, const Variant& p_value) {
+
+	String n = p_name;
+
+	if (n=="debug/debugging_enabled") {
+		set_debugging_enabled(p_value);
+	} else {
+		return false;
+	}
+
+	return true;
+
+}
+
+bool EditorExportPlatform::_get(const StringName& p_name,Variant &r_ret) const {
+
+	String n = p_name;
+
+	if (n=="debug/debugging_enabled") {
+		r_ret=is_debugging_enabled();
+	} else {
+		return false;
+	}
+
+	return true;
+
+}
+
+void EditorExportPlatform::_get_property_list( List<PropertyInfo> *p_list) const {
+
+	p_list->push_front( PropertyInfo( Variant::BOOL, "debug/debugging_enabled"));
+}
+
 Vector<uint8_t> EditorExportPlatform::get_exported_file_default(String& p_fname) const {
 
 	FileAccess *f = FileAccess::open(p_fname,FileAccess::READ);
@@ -481,8 +514,15 @@ bool EditorExportPlatform::exists_export_template(String template_file_name, Str
 
 
 
+bool EditorExportPlatform::is_debugging_enabled() const {
 
+	return debugging_enabled;
+}
 
+void EditorExportPlatform::set_debugging_enabled(bool p_enabled) {
+
+	debugging_enabled = p_enabled;
+}
 
 bool EditorExportPlatformPC::_set(const StringName& p_name, const Variant& p_value) {
 
@@ -1258,6 +1298,11 @@ Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles, int p
 	}
 
 	return OK;
+}
+
+EditorExportPlatform::EditorExportPlatform() {
+
+	debugging_enabled = true;
 }
 
 Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug, int p_flags) {
