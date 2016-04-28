@@ -86,7 +86,16 @@ class EditorExportPlatform : public Reference {
 public:
 
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total);
+
+private:
+
+	bool debugging_enabled;
+
 protected:
+
+	bool _set(const StringName& p_name, const Variant& p_value);
+	bool _get(const StringName& p_name,Variant &r_ret) const;
+	void _get_property_list( List<PropertyInfo> *p_list) const;
 
 	Vector<uint8_t> get_exported_file_default(String& p_fname) const;
 	virtual Vector<uint8_t> get_exported_file(String& p_fname) const;
@@ -145,6 +154,8 @@ public:
 		EXPORT_VIEW_NAVIGATION=16,
 	};
 
+	bool is_debugging_enabled() const;
+	void set_debugging_enabled( bool p_enabled );
 
 	Error export_project_files(EditorExportSaveFunction p_func, void* p_udata,bool p_make_bundles);
 
@@ -164,11 +175,11 @@ public:
 	virtual bool can_export(String *r_error=NULL) const=0;
 
 
-	virtual bool requieres_password(bool p_debug) const { return false; }
+	virtual bool requires_password(bool p_debug) const { return false; }
 	virtual String get_binary_extension() const=0;
 	virtual Error export_project(const String& p_path,bool p_debug,int p_flags=0)=0;
 
-	EditorExportPlatform() {};
+	EditorExportPlatform();
 };
 
 class EditorExportPlatformPC : public EditorExportPlatform {
