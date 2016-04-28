@@ -27300,12 +27300,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
+				Sets the amount of distance from the polygon points from the polygon position, for example if the offset is set to 10,10 then all the polygon points will move 10 units to the right and 10 units to the bottom.
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the polygon points offset to the polygon position.
 			</description>
 		</method>
 	</methods>
