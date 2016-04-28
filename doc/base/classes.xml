@@ -3029,6 +3029,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="animation_node_set_filter_path">
+			<argument index="0" name="id" type="String">
+			</argument>
+			<argument index="1" name="path" type="NodePath">
+			</argument>
+			<argument index="2" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="oneshot_node_set_fadein_time">
 			<argument index="0" name="id" type="String">
 			</argument>
