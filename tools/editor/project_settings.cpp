@@ -56,6 +56,20 @@ static const char* _button_names[JOY_BUTTON_MAX]={
 "D-Pad Right"
 };
 
+static const char* _axis_names[JOY_AXIS_MAX*2] = {
+	" (Left Stick Left)",
+	" (Left Stick Right)",
+	" (Left Stick Up)",
+	" (Left Stick Down)",
+	" (Right Stick Left)",
+	" (Right Stick Right)",
+	" (Right Stick Up)",
+	" (Right Stick Down)",
+	"","","","",
+	"", " (L2)",
+	"", " (R2)"
+};
+
 void ProjectSettings::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
@@ -342,19 +356,7 @@ void ProjectSettings::_add_item(int p_item){
 			device_index->clear();
 			for(int i=0;i<JOY_AXIS_MAX*2;i++) {
 
-				String desc;
-
-				int ax=i/2;
-				if (ax==0 || ax==1)
-					desc=" (Left Stick)";
-				else if (ax==2 || ax==3)
-					desc=" (Right Stick)";
-				else if (ax==6)
-					desc=" (L2)";
-				else if (ax==7)
-					desc=" (R2)";
-
-
+				String desc = _axis_names[i];
 				device_index->add_item("Axis "+itos(i/2)+" "+(i&1?"+":"-")+desc);
 			}
 			device_input->popup_centered(Size2(350,95));
@@ -541,18 +543,10 @@ void ProjectSettings::_update_actions() {
 				} break;
 				case InputEvent::JOYSTICK_MOTION: {
 
-					String desc;
 					int ax = ie.joy_motion.axis;
-
-					if (ax==0 || ax==1)
-						desc=" (Left Stick).";
-					else if (ax==2 || ax==3)
-						desc=" (Right Stick).";
-					else if (ax==6)
-						desc=" (L2).";
-					else if (ax==7)
-						desc=" (R2).";
-					String str = "Device "+itos(ie.device)+", Axis "+itos(ie.joy_motion.axis)+" "+(ie.joy_motion.axis_value<0?"-":"+")+desc;
+					int n = 2*ax + (ie.joy_motion.axis_value<0 ? 0:1);
+					String desc = _axis_names[n];
+					String str = "Device "+itos(ie.device)+", Axis "+itos(ax)+" "+(ie.joy_motion.axis_value<0?"-":"+")+desc +".";
 					action->set_text(0,str);
 					action->set_icon(0,get_icon("JoyAxis","EditorIcons"));
 				} break;
