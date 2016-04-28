@@ -297,7 +297,6 @@ class EditorNode : public Node {
 	FileDialog *file_export;
 	FileDialog *file_export_lib;
 	FileDialog *file_script;
-	CheckButton *file_export_check;
 	CheckButton *file_export_lib_merge;
 	LineEdit *file_export_password;
 	String current_path;
