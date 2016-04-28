@@ -28515,39 +28515,45 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="RayCast2D" inherits="Node2D" category="Core">
 	<brief_description>
+		Query the closest object intersecting a ray
 	</brief_description>
 	<description>
+		A RayCast2D represents a line from its origin to its destination position [code]cast_to[/code], it is used to query the 2D space in order to find the closest object intersecting with the ray.
 	</description>
 	<methods>
 		<method name="set_enabled">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+				Enables the RayCast2D. Only enabled raycasts will be able to query the space and report collisions.
 			</description>
 		</method>
 		<method name="is_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether this raycast is enabled or not
 			</description>
 		</method>
 		<method name="set_cast_to">
 			<argument index="0" name="local_point" type="Vector2">
 			</argument>
 			<description>
+				Sets the ray destination point, so that the ray will test from the ray's origin to [code]local_point[/code]
 			</description>
 		</method>
 		<method name="get_cast_to" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+				Return the destination point of this ray object
 			</description>
 		</method>
 		<method name="is_colliding" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-			Return whether the closest object the ray is pointing to is colliding with the vector, with the vector length considered.
+			Return whether the closest object the ray is pointing to is colliding with the vector (considering the vector length).
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
@@ -28561,18 +28567,21 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<description>
+				Returns the collision shape of the closest object the ray is pointing to.
 			</description>
 		</method>
 		<method name="get_collision_point" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the collision point in which the ray intersects the closest object.
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the normal of the intersecting object shape face containing the collision point.
 			</description>
 		</method>
 		<method name="add_exception_rid">
@@ -28585,6 +28594,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="node" type="Object">
 			</argument>
 			<description>
+				Adds a collision exception so the ray does not report collisions with the specified [code]node[/code].
 			</description>
 		</method>
 		<method name="remove_exception_rid">
@@ -28597,10 +28607,12 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="node" type="Object">
 			</argument>
 			<description>
+				Removes a collision exception so the ray does report collisions with the specified [code]node[/code].
 			</description>
 		</method>
 		<method name="clear_exceptions">
 			<description>
+				Removes all collision exception for this ray.
 			</description>
 		</method>
 		<method name="set_layer_mask">
@@ -28613,6 +28625,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<description>
+				Returns the layer mask for this ray.
 			</description>
 		</method>
 		<method name="set_type_mask">
