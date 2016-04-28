@@ -7015,20 +7015,24 @@
 </class>
 <class name="CanvasModulate" inherits="Node2D" category="Core">
 	<brief_description>
+		Tint the entire canvas
 	</brief_description>
 	<description>
+		CanvasModulate tints the canvas elements using its asigned color
 	</description>
 	<methods>
 		<method name="set_color">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+				Sets the canvas tint color
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
+				Gets the canvas tint color
 			</description>
 		</method>
 	</methods>
@@ -8001,30 +8005,35 @@
 			<argument index="0" name="mode" type="bool">
 			</argument>
 			<description>
+				When set to true, every color channel will be represented as a value from 0 to 1, insetead of 0, 255.
 			</description>
 		</method>
 		<method name="is_raw_mode" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether this color picker is in raw mode or not
 			</description>
 		</method>
 		<method name="set_edit_alpha">
 			<argument index="0" name="show" type="bool">
 			</argument>
 			<description>
+				Set true if you want the color to have an alpha channel (transparency), or false if you want a solid color.
 			</description>
 		</method>
 		<method name="is_editing_alpha" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether the color has transparency or not.
 			</description>
 		</method>
 		<method name="add_preset">
 			<argument index="0" name="arg0" type="Color">
 			</argument>
 			<description>
+				Adds the current selected to color to a list of colors (presets), the presets will be displayed in the color picker and the user will be able to select them, notice that the presets list is only for this color picker.
 			</description>
 		</method>
 	</methods>
@@ -8033,7 +8042,7 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-			Emitted when the color changes.
+			Emitted when the color is changed.
 			</description>
 		</signal>
 	</signals>
@@ -8058,32 +8067,38 @@
 </class>
 <class name="ColorPickerButton" inherits="Button" category="Core">
 	<brief_description>
+		Button that pops out a [ColorPicker]
 	</brief_description>
 	<description>
+		Encapsulates a [ColorPicker] making it accesible by pressing a button, pressing the button will toggle the [ColorPicker] visibility
 	</description>
 	<methods>
 		<method name="set_color">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+				Sets the current color
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
+				Gets the current color
 			</description>
 		</method>
 		<method name="set_edit_alpha">
 			<argument index="0" name="show" type="bool">
 			</argument>
 			<description>
+				See [method ColorPicker.set_edit_alpha]
 			</description>
 		</method>
 		<method name="is_editing_alpha" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				See [method ColorPicker.is_edit_alpha]
 			</description>
 		</method>
 	</methods>
@@ -8092,6 +8107,7 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+				Emitted when the color is changed.
 			</description>
 		</signal>
 	</signals>
