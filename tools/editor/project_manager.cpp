@@ -262,7 +262,7 @@ public:
 			pn->show();
 			project_name->show();
 
-			popup_centered(Size2(500,145));
+			popup_centered(Size2(500,175));
 
 		}
 
