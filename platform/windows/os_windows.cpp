@@ -55,6 +55,7 @@
 
 #include "shlobj.h"
 #include <regstr.h>
+#include <process.h>
 
 static const WORD MAX_CONSOLE_LINES = 1500;
 
@@ -1883,6 +1884,10 @@ Error OS_Windows::kill(const ProcessID& p_pid) {
 
 	return ret != 0?OK:FAILED;
 };
+
+int OS_Windows::get_process_ID() const {
+	return _getpid();
+}
 
 Error OS_Windows::set_cwd(const String& p_cwd) {
 
