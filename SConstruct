@@ -23,7 +23,7 @@ platform_exporters=[]
 global_defaults=[]
 
 for x in glob.glob("platform/*"):
-	if (not os.path.isdir(x)):
+	if (not os.path.isdir(x) or not os.path.exists(x+"/detect.py")):
 		continue
 	tmppath="./"+x
 
