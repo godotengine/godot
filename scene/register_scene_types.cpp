@@ -570,12 +570,16 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<LargeTexture>();
 	ObjectTypeDB::register_type<CubeMap>();
 	ObjectTypeDB::register_type<Animation>();
-	ObjectTypeDB::register_type<Font>();
+	ObjectTypeDB::register_virtual_type<Font>();
+	ObjectTypeDB::register_type<BitmapFont>();
 	ObjectTypeDB::register_type<StyleBoxEmpty>();
 	ObjectTypeDB::register_type<StyleBoxTexture>();
 	ObjectTypeDB::register_type<StyleBoxFlat>();
 	ObjectTypeDB::register_type<StyleBoxImageMask>();
 	ObjectTypeDB::register_type<Theme>();
+
+	ObjectTypeDB::add_compatibility_type("Font","BitmapFont");
+
 
 	ObjectTypeDB::register_type<PolygonPathFinder>();
 	ObjectTypeDB::register_type<BitMap>();

@@ -31,10 +31,10 @@
 #include "doc_title_font.h"
 #include "doc_code_font.h"
 
-static Ref<Font> make_font(int p_height,int p_ascent, int p_valign, int p_charcount, const int *p_chars,const Ref<Texture> &p_texture) {
+static Ref<BitmapFont> make_font(int p_height,int p_ascent, int p_valign, int p_charcount, const int *p_chars,const Ref<Texture> &p_texture) {
 
 
-	Ref<Font> font( memnew( Font ) );
+	Ref<BitmapFont> font( memnew( BitmapFont ) );
 	font->add_texture( p_texture );
 
 	for (int i=0;i<p_charcount;i++) {
@@ -65,9 +65,9 @@ static Ref<Font> make_font(int p_height,int p_ascent, int p_valign, int p_charco
 void editor_register_fonts(Ref<Theme> p_theme) {
 
 
-	Ref<Font> doc_font = make_font(_bi_font_doc_font_height,_bi_font_doc_font_ascent,0,_bi_font_doc_font_charcount,_bi_font_doc_font_characters,p_theme->get_icon("DocFont","EditorIcons"));
-	Ref<Font> doc_code_font = make_font(_bi_font_doc_code_font_height,_bi_font_doc_code_font_ascent,0,_bi_font_doc_code_font_charcount,_bi_font_doc_code_font_characters,p_theme->get_icon("DocCodeFont","EditorIcons"));
-	Ref<Font> doc_title_font = make_font(_bi_font_doc_title_font_height,_bi_font_doc_title_font_ascent,0,_bi_font_doc_title_font_charcount,_bi_font_doc_title_font_characters,p_theme->get_icon("DocTitleFont","EditorIcons"));
+	Ref<BitmapFont> doc_font = make_font(_bi_font_doc_font_height,_bi_font_doc_font_ascent,0,_bi_font_doc_font_charcount,_bi_font_doc_font_characters,p_theme->get_icon("DocFont","EditorIcons"));
+	Ref<BitmapFont> doc_code_font = make_font(_bi_font_doc_code_font_height,_bi_font_doc_code_font_ascent,0,_bi_font_doc_code_font_charcount,_bi_font_doc_code_font_characters,p_theme->get_icon("DocCodeFont","EditorIcons"));
+	Ref<BitmapFont> doc_title_font = make_font(_bi_font_doc_title_font_height,_bi_font_doc_title_font_ascent,0,_bi_font_doc_title_font_charcount,_bi_font_doc_title_font_characters,p_theme->get_icon("DocTitleFont","EditorIcons"));
 	p_theme->set_font("doc","EditorFonts",doc_font);
 	p_theme->set_font("doc_code","EditorFonts",doc_code_font);
 	p_theme->set_font("doc_title","EditorFonts",doc_title_font);

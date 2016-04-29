@@ -42,7 +42,7 @@ class EditorFontImportPlugin : public EditorImportPlugin {
 	EditorFontImportDialog *dialog;
 public:
 
-	Ref<Font> generate_font(const Ref<ResourceImportMetadata>& p_from,const String& p_existing=String()); //used by editor
+	Ref<BitmapFont> generate_font(const Ref<ResourceImportMetadata>& p_from,const String& p_existing=String()); //used by editor
 
 	virtual String get_name() const;
 	virtual String get_visible_name() const;
