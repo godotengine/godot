@@ -2041,6 +2041,8 @@
 			<argument index="2" name="action" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
+			Add custom button to the dialog and return the created button.
+			The button titled with [i]text[/i] and the [i]action[/i] will be passed to [custom_action] signal when it is pressed.
 			</description>
 		</method>
 		<method name="add_cancel">
@@ -2049,6 +2051,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+			Add custom cancel button to the dialog and return the created button.
 			</description>
 		</method>
 		<method name="register_text_enter">
@@ -2202,6 +2205,7 @@
 	<signals>
 		<signal name="frame_changed">
 			<description>
+			Emmited when frame is changed.
 			</description>
 		</signal>
 	</signals>
@@ -5434,12 +5438,14 @@
 	<methods>
 		<method name="_pressed" qualifiers="virtual">
 			<description>
+			Called when button is pressed.
 			</description>
 		</method>
 		<method name="_toggled" qualifiers="virtual">
 			<argument index="0" name="pressed" type="bool">
 			</argument>
 			<description>
+			Called when button is toggled (only if toggle_mode is active).
 			</description>
 		</method>
 		<method name="set_pressed">
@@ -5460,6 +5466,7 @@
 			<return type="bool">
 			</return>
 			<description>
+			Return true if mouse entered the button before it exit.
 			</description>
 		</method>
 		<method name="set_toggle_mode">
@@ -5515,6 +5522,7 @@
 	<signals>
 		<signal name="released">
 			<description>
+			This signal is emitted when the button was released.
 			</description>
 		</signal>
 		<signal name="toggled">
@@ -5532,12 +5540,16 @@
 	</signals>
 	<constants>
 		<constant name="DRAW_NORMAL" value="0">
+		The normal state(Are not pressed, not hovered, not toggled and enabled) of buttons.
 		</constant>
 		<constant name="DRAW_PRESSED" value="1">
+		The state of buttons are pressed.
 		</constant>
 		<constant name="DRAW_HOVER" value="2">
+		The state of buttons are hovered.
 		</constant>
 		<constant name="DRAW_DISABLED" value="3">
+		The state of buttons are disabled.
 		</constant>
 	</constants>
 </class>
@@ -7801,6 +7813,7 @@
 			<argument index="0" name="over" type="Color">
 			</argument>
 			<description>
+			Return a new color blended with anothor one.
 			</description>
 		</method>
 		<method name="contrasted">
@@ -12372,6 +12385,7 @@ Returns an empty String "" at the end of the list.
 			<return type="bool">
 			</return>
 			<description>
+				Should put children to the top left corner instead of center of the container.
 			</description>
 		</method>
 	</methods>
