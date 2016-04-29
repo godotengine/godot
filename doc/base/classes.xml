@@ -5430,16 +5430,16 @@
 	</signals>
 	<constants>
 		<constant name="DRAW_NORMAL" value="0">
-		The normal state(Are not pressed, not hovered, not toggled and enabled) of buttons.
+			The normal state (i.e. not pressed, not hovered, not toggled and enabled) of buttons.
 		</constant>
 		<constant name="DRAW_PRESSED" value="1">
-		The state of buttons are pressed.
+			The state of buttons are pressed.
 		</constant>
 		<constant name="DRAW_HOVER" value="2">
-		The state of buttons are hovered.
+			The state of buttons are hovered.
 		</constant>
 		<constant name="DRAW_DISABLED" value="3">
-		The state of buttons are disabled.
+			The state of buttons are disabled.
 		</constant>
 	</constants>
 </class>
@@ -5544,13 +5544,13 @@
 	</methods>
 	<constants>
 		<constant name="ALIGN_BEGIN" value="0">
-		Align children with beginning of the container.
+			Align children with beginning of the container.
 		</constant>
 		<constant name="ALIGN_CENTER" value="1">
-		Align children with center of the container.
+			Align children with center of the container.
 		</constant>
 		<constant name="ALIGN_END" value="2">
-		Align children with end of the container.
+			Align children with end of the container.
 		</constant>
 	</constants>
 </class>
@@ -6927,24 +6927,24 @@
 </class>
 <class name="CanvasModulate" inherits="Node2D" category="Core">
 	<brief_description>
-		Tint the entire canvas
+	Tint the entire canvas
 	</brief_description>
 	<description>
-		CanvasModulate tints the canvas elements using its asigned color
+	CanvasModulate tints the canvas elements using its asigned color
 	</description>
 	<methods>
 		<method name="set_color">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the canvas tint color
+			Sets the canvas tint color
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
-				Gets the canvas tint color
+			Gets the canvas tint color
 			</description>
 		</method>
 	</methods>
@@ -7043,14 +7043,14 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				This function will anchor the container children to the top left corner of the the container boundaries, moving all its children to that position, (the children new center will be the top left corner of the container).
+			This function will anchor the container children to the top left corner of the the container boundaries, moving all its children to that position, (the children new center will be the top left corner of the container).
 			</description>
 		</method>
 		<method name="is_using_top_left" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Should put children to the top left corner instead of center of the container.
+			Should put children to the top left corner instead of center of the container.
 			</description>
 		</method>
 	</methods>
@@ -7059,10 +7059,10 @@
 </class>
 <class name="CheckBox" inherits="Button" category="Core">
 	<brief_description>
-		Binary choice user interface widget
+	Binary choice user interface widget
 	</brief_description>
 	<description>
-		A checkbox allows the user to make a binary choice (choosing only one of two posible options), for example Answer 'yes' or 'no'.
+	A checkbox allows the user to make a binary choice (choosing only one of two posible options), for example Answer 'yes' or 'no'.
 	</description>
 	<methods>
 	</methods>
@@ -7919,35 +7919,35 @@
 			<argument index="0" name="mode" type="bool">
 			</argument>
 			<description>
-				When set to true, every color channel will be represented as a value from 0 to 1, insetead of 0, 255.
+			When set to true, every color channel will be represented as a value from 0 to 1, insetead of 0, 255.
 			</description>
 		</method>
 		<method name="is_raw_mode" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether this color picker is in raw mode or not
+			Returns whether this color picker is in raw mode or not
 			</description>
 		</method>
 		<method name="set_edit_alpha">
 			<argument index="0" name="show" type="bool">
 			</argument>
 			<description>
-				Set true if you want the color to have an alpha channel (transparency), or false if you want a solid color.
+			Set true if you want the color to have an alpha channel (transparency), or false if you want a solid color.
 			</description>
 		</method>
 		<method name="is_editing_alpha" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether the color has transparency or not.
+			Returns whether the color has transparency or not.
 			</description>
 		</method>
 		<method name="add_preset">
 			<argument index="0" name="arg0" type="Color">
 			</argument>
 			<description>
-				Adds the current selected to color to a list of colors (presets), the presets will be displayed in the color picker and the user will be able to select them, notice that the presets list is only for this color picker.
+			Adds the current selected to color to a list of colors (presets), the presets will be displayed in the color picker and the user will be able to select them, notice that the presets list is only for this color picker.
 			</description>
 		</method>
 	</methods>
@@ -7981,38 +7981,38 @@
 </class>
 <class name="ColorPickerButton" inherits="Button" category="Core">
 	<brief_description>
-		Button that pops out a [ColorPicker]
+	Button that pops out a [ColorPicker]
 	</brief_description>
 	<description>
-		Encapsulates a [ColorPicker] making it accesible by pressing a button, pressing the button will toggle the [ColorPicker] visibility
+	Encapsulates a [ColorPicker] making it accesible by pressing a button, pressing the button will toggle the [ColorPicker] visibility
 	</description>
 	<methods>
 		<method name="set_color">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the current color
+			Sets the current color
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
-				Gets the current color
+			Gets the current color
 			</description>
 		</method>
 		<method name="set_edit_alpha">
 			<argument index="0" name="show" type="bool">
 			</argument>
 			<description>
-				See [method ColorPicker.set_edit_alpha]
+			See [method ColorPicker.set_edit_alpha]
 			</description>
 		</method>
 		<method name="is_editing_alpha" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				See [method ColorPicker.is_edit_alpha]
+			See [method ColorPicker.is_edit_alpha]
 			</description>
 		</method>
 	</methods>
@@ -8021,7 +8021,7 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-				Emitted when the color is changed.
+			Emitted when the color is changed.
 			</description>
 		</signal>
 	</signals>
@@ -9698,6 +9698,14 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 			Return true if the dictionary has a given key.
+			</description>
+		</method>
+		<method name="has_all">
+			<return type="bool">
+			</return>
+			<argument index="0" name="values" type="Array">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="hash">
@@ -11606,7 +11614,7 @@ Returns an empty String "" at the end of the list.
 			<return type="bool">
 			</return>
 			<description>
-				Should put children to the top left corner instead of center of the container.
+			Should put children to the top left corner instead of center of the container.
 			</description>
 		</method>
 	</methods>
@@ -12661,24 +12669,24 @@ Returns an empty String "" at the end of the list.
 </class>
 <class name="GridContainer" inherits="Container" category="Core">
 	<brief_description>
-		Grid container used to arrange elements in a grid like layout
+	Grid container used to arrange elements in a grid like layout
 	</brief_description>
 	<description>
-		Grid container will arrange its children in a grid like structure, the grid columns are specified using the [method set_columns] method and the number of rows will be equal to the number of children in the container divided by the number of columns, for example: if the container has 5 children, and 2 columns, there will be 3 rows in the container. Notice that grid layout will preserve the columns and rows for every size of the container.
+	Grid container will arrange its children in a grid like structure, the grid columns are specified using the [method set_columns] method and the number of rows will be equal to the number of children in the container divided by the number of columns, for example: if the container has 5 children, and 2 columns, there will be 3 rows in the container. Notice that grid layout will preserve the columns and rows for every size of the container.
 	</description>
 	<methods>
 		<method name="set_columns">
 			<argument index="0" name="columns" type="int">
 			</argument>
 			<description>
-				Sets the numbers of columns in the container, then reorder its children to accommodate the new layout
+			Sets the numbers of columns in the container, then reorder its children to accommodate the new layout
 			</description>
 		</method>
 		<method name="get_columns" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of columns in this container
+			Returns the number of columns in this container
 			</description>
 		</method>
 	</methods>
@@ -26006,94 +26014,94 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="Polygon2D" inherits="Node2D" category="Core">
 	<brief_description>
-		2D polygon representation
+	2D polygon representation
 	</brief_description>
 	<description>
-		A Polygon2D is defined by a set of n points connected together by line segments, meaning that the point 1 will be connected with point 2, point 2 with point 3 ..., point n-1 with point n and point n with point 1 in order to close the loop and define a plane.
+	A Polygon2D is defined by a set of n points connected together by line segments, meaning that the point 1 will be connected with point 2, point 2 with point 3 ..., point n-1 with point n and point n with point 1 in order to close the loop and define a plane.
 	</description>
 	<methods>
 		<method name="set_polygon">
 			<argument index="0" name="polygon" type="Vector2Array">
 			</argument>
 			<description>
-				Defines the set of points that will represent the polygon.
+			Defines the set of points that will represent the polygon.
 			</description>
 		</method>
 		<method name="get_polygon" qualifiers="const">
 			<return type="Vector2Array">
 			</return>
 			<description>
-				Returns the set of points that defines this polygon
+			Returns the set of points that defines this polygon
 			</description>
 		</method>
 		<method name="set_uv">
 			<argument index="0" name="uv" type="Vector2Array">
 			</argument>
 			<description>
-				Sets the uv value for every point of the polygon
+			Sets the uv value for every point of the polygon
 			</description>
 		</method>
 		<method name="get_uv" qualifiers="const">
 			<return type="Vector2Array">
 			</return>
 			<description>
-				Returns the uv value associated with every point of the polygon
+			Returns the uv value associated with every point of the polygon
 			</description>
 		</method>
 		<method name="set_color">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the polygon fill color, if the polygon has a texture defined, the defined texture will be tinted to the polygon fill color.
+			Sets the polygon fill color, if the polygon has a texture defined, the defined texture will be tinted to the polygon fill color.
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
-				Returns the polygon fill color
+			Returns the polygon fill color
 			</description>
 		</method>
 		<method name="set_texture">
 			<argument index="0" name="texture" type="Object">
 			</argument>
 			<description>
-				Sets the polygon texture.
+			Sets the polygon texture.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="Object">
 			</return>
 			<description>
-				Returns the polygon texture
+			Returns the polygon texture
 			</description>
 		</method>
 		<method name="set_texture_offset">
 			<argument index="0" name="texture_offset" type="Vector2">
 			</argument>
 			<description>
-				Sets the offset of the polygon texture. Initially the texture will appear anchored to the polygon position, the offset is used to move the texture location away from that point (notice that the texture origin is set to its top left corner, so when offset is 0,0 the top left corner of the texture is at the polygon position), for example setting the offset to 10, 10 will move the texture 10 units to the left and 10 units to the top.
+			Sets the offset of the polygon texture. Initially the texture will appear anchored to the polygon position, the offset is used to move the texture location away from that point (notice that the texture origin is set to its top left corner, so when offset is 0,0 the top left corner of the texture is at the polygon position), for example setting the offset to 10, 10 will move the texture 10 units to the left and 10 units to the top.
 			</description>
 		</method>
 		<method name="get_texture_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the polygon texture offset
+			Returns the polygon texture offset
 			</description>
 		</method>
 		<method name="set_texture_rotation">
 			<argument index="0" name="texture_rotation" type="float">
 			</argument>
 			<description>
-				Sets the amount of rotation of the polygon texture, [code]texture_rotation[/code] is specified in degrees and clockwise rotation, meaning that if the texture rotation is set to 45 degrees, the texture will be rotated 45 degrees clockwise along the polygon position plus the texture offset.
+			Sets the amount of rotation of the polygon texture, [code]texture_rotation[/code] is specified in degrees and clockwise rotation, meaning that if the texture rotation is set to 45 degrees, the texture will be rotated 45 degrees clockwise along the polygon position plus the texture offset.
 			</description>
 		</method>
 		<method name="get_texture_rotation" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Returns the rotation in degrees of the texture polygon
+			Returns the rotation in degrees of the texture polygon
 			</description>
 		</method>
 		<method name="set_texture_scale">
@@ -26112,14 +26120,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="invert" type="bool">
 			</argument>
 			<description>
-				Sets the polygon as the defined polygon bounding box minus the defined polygon (the defined polygon will appear as a hole on square that contains the defined polygon).
+			Sets the polygon as the defined polygon bounding box minus the defined polygon (the defined polygon will appear as a hole on square that contains the defined polygon).
 			</description>
 		</method>
 		<method name="get_invert" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether this polygon is inverted or not
+			Returns whether this polygon is inverted or not
 			</description>
 		</method>
 		<method name="set_invert_border">
@@ -26138,14 +26146,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
-				Sets the amount of distance from the polygon points from the polygon position, for example if the offset is set to 10,10 then all the polygon points will move 10 units to the right and 10 units to the bottom.
+			Sets the amount of distance from the polygon points from the polygon position, for example if the offset is set to 10,10 then all the polygon points will move 10 units to the right and 10 units to the bottom.
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the polygon points offset to the polygon position.
+			Returns the polygon points offset to the polygon position.
 			</description>
 		</method>
 	</methods>
@@ -27347,38 +27355,38 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="RayCast2D" inherits="Node2D" category="Core">
 	<brief_description>
-		Query the closest object intersecting a ray
+	Query the closest object intersecting a ray
 	</brief_description>
 	<description>
-		A RayCast2D represents a line from its origin to its destination position [code]cast_to[/code], it is used to query the 2D space in order to find the closest object intersecting with the ray.
+	A RayCast2D represents a line from its origin to its destination position [code]cast_to[/code], it is used to query the 2D space in order to find the closest object intersecting with the ray.
 	</description>
 	<methods>
 		<method name="set_enabled">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Enables the RayCast2D. Only enabled raycasts will be able to query the space and report collisions.
+			Enables the RayCast2D. Only enabled raycasts will be able to query the space and report collisions.
 			</description>
 		</method>
 		<method name="is_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether this raycast is enabled or not
+			Returns whether this raycast is enabled or not
 			</description>
 		</method>
 		<method name="set_cast_to">
 			<argument index="0" name="local_point" type="Vector2">
 			</argument>
 			<description>
-				Sets the ray destination point, so that the ray will test from the ray's origin to [code]local_point[/code]
+			Sets the ray destination point, so that the ray will test from the ray's origin to [code]local_point[/code]
 			</description>
 		</method>
 		<method name="get_cast_to" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the destination point of this ray object
+			Return the destination point of this ray object
 			</description>
 		</method>
 		<method name="is_colliding" qualifiers="const">
@@ -27399,21 +27407,21 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<description>
-				Returns the collision shape of the closest object the ray is pointing to.
+			Returns the collision shape of the closest object the ray is pointing to.
 			</description>
 		</method>
 		<method name="get_collision_point" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the collision point in which the ray intersects the closest object.
+			Returns the collision point in which the ray intersects the closest object.
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the normal of the intersecting object shape face containing the collision point.
+			Returns the normal of the intersecting object shape face containing the collision point.
 			</description>
 		</method>
 		<method name="add_exception_rid">
@@ -27426,7 +27434,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="node" type="Object">
 			</argument>
 			<description>
-				Adds a collision exception so the ray does not report collisions with the specified [code]node[/code].
+			Adds a collision exception so the ray does not report collisions with the specified [code]node[/code].
 			</description>
 		</method>
 		<method name="remove_exception_rid">
@@ -27439,12 +27447,12 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="node" type="Object">
 			</argument>
 			<description>
-				Removes a collision exception so the ray does report collisions with the specified [code]node[/code].
+			Removes a collision exception so the ray does report collisions with the specified [code]node[/code].
 			</description>
 		</method>
 		<method name="clear_exceptions">
 			<description>
-				Removes all collision exception for this ray.
+			Removes all collision exception for this ray.
 			</description>
 		</method>
 		<method name="set_layer_mask">
@@ -27457,7 +27465,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<description>
-				Returns the layer mask for this ray.
+			Returns the layer mask for this ray.
 			</description>
 		</method>
 		<method name="set_type_mask">
@@ -32950,7 +32958,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
-			 Set visibility of the split dragger([i]mode[/i] must be one of [DRAGGER_VISIBLE], [DRAGGER_HIDDEN] or [DRAGGER_HIDDEN_COLLAPSED]).
+			Set visibility of the split dragger([i]mode[/i] must be one of [DRAGGER_VISIBLE], [DRAGGER_HIDDEN] or [DRAGGER_HIDDEN_COLLAPSED]).
 			</description>
 		</method>
 		<method name="get_dragger_visibility" qualifiers="const">
@@ -32972,13 +32980,13 @@ This method controls whether the position between two cached points is interpola
 	</signals>
 	<constants>
 		<constant name="DRAGGER_VISIBLE" value="0">
-		The split dragger is visible.
+			The split dragger is visible.
 		</constant>
 		<constant name="DRAGGER_HIDDEN" value="1">
-		The split dragger is invisible.
+			The split dragger is invisible.
 		</constant>
 		<constant name="DRAGGER_HIDDEN_COLLAPSED" value="2">
-		The split dragger is invisible and collapsed.
+			The split dragger is invisible and collapsed.
 		</constant>
 	</constants>
 </class>
@@ -33928,14 +33936,14 @@ This method controls whether the position between two cached points is interpola
 	</description>
 	<methods>
 		<method name="set_stream">
-			<argument index="0" name="stream" type="Stream">
+			<argument index="0" name="stream" type="AudioStream">
 			</argument>
 			<description>
 			Set the [EventStream] this player will play.
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
-			<return type="Stream">
+			<return type="AudioStream">
 			</return>
 			<description>
 			Return the currently assigned stream.
@@ -38973,7 +38981,7 @@ This method controls whether the position between two cached points is interpola
 	Vector used for 2D Math.
 	</brief_description>
 	<description>
-		2-element structure that can be used to represent positions in 2d-space, or any other pair of numeric values.
+	2-element structure that can be used to represent positions in 2d-space, or any other pair of numeric values.
 	</description>
 	<methods>
 		<method name="angle">
@@ -39154,16 +39162,12 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="x" type="float">
-		The X axis value when treated as point(The first value in the pair).
 		</member>
 		<member name="y" type="float">
-		The Y axis value when treated as point(The second value in the pair).
 		</member>
 		<member name="width" type="float">
-		The width value when treated as size(The first value in the pair).
 		</member>
 		<member name="height" type="float">
-		The height value when treated as size(The second value in the pair).
 		</member>
 	</members>
 	<constants>
