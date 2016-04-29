@@ -9784,6 +9784,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="values" type="Array">
 			</argument>
 			<description>
+			Return true if the dictionary has all of the keys in the given array.
 			</description>
 		</method>
 		<method name="hash">
@@ -9806,6 +9807,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="json" type="String">
 			</argument>
 			<description>
+			Parse json text to the dictionary. Return OK when successed or the error code when failed.
 			</description>
 		</method>
 		<method name="size">
@@ -9819,6 +9821,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<return type="String">
 			</return>
 			<description>
+			Return the dictionary as json text.
 			</description>
 		</method>
 	</methods>
