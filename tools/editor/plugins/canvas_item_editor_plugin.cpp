@@ -1578,8 +1578,21 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 			}
 
 
+			bool uniform = m.mod.shift;
+			bool symmetric=m.mod.alt;
+
+			dto = dto - (drag == DRAG_ALL ? drag_from - drag_point_from : Vector2(0, 0));
+
+			if(uniform && drag == DRAG_ALL) {
+				if(ABS(dto.x - drag_point_from.x) > ABS(dto.y - drag_point_from.y)) {
+					dto.y = drag_point_from.y;
+				} else {
+					dto.x = drag_point_from.x;
+				}
+			}
+
 			dfrom = drag_point_from;
-			dto = snap_point(dto - (drag == DRAG_ALL ? drag_from - drag_point_from : Vector2(0, 0)), drag_point_from);
+			dto = snap_point(dto, drag_point_from);
 
 			Vector2 drag_vector =
 					canvas_item->get_global_transform_with_canvas().affine_inverse().xform(dto) -
@@ -1589,8 +1602,6 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 			Vector2 begin=local_rect.pos;
 			Vector2 end=local_rect.pos+local_rect.size;
 			Vector2 minsize = canvas_item->edit_get_minimum_size();
-			bool uniform = m.mod.shift;
-			bool symmetric=m.mod.alt;
 
 			if (uniform) {
 				float aspect = local_rect.size.get_aspect();
