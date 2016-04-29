@@ -5633,27 +5633,34 @@
 			<argument index="0" name="begin" type="bool">
 			</argument>
 			<description>
+			Add a control to the box as a spacer.
+			If [i]begin[/i] is true the spacer control will be inserted in front of other children.
 			</description>
 		</method>
 		<method name="get_alignment" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the alignment of children in the container.
 			</description>
 		</method>
 		<method name="set_alignment">
 			<argument index="0" name="alignment" type="int">
 			</argument>
 			<description>
+			Set the alignment of children in the container(Must be one of ALIGN_BEGIN, ALIGN_CENTER or ALIGN_END).
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="ALIGN_BEGIN" value="0">
+		Align children with beginning of the container.
 		</constant>
 		<constant name="ALIGN_CENTER" value="1">
+		Align children with center of the container.
 		</constant>
 		<constant name="ALIGN_END" value="2">
+		Align children with end of the container.
 		</constant>
 	</constants>
 </class>
@@ -11879,24 +11886,28 @@ Returns an empty String "" at the end of the list.
 			<argument index="0" name="access" type="int">
 			</argument>
 			<description>
+			Set the file access permission of the dialog(Must be one of [ACCESS_RESOURCES], [ACCESS_USERDATA] or [ACCESS_FILESYSTEM]).
 			</description>
 		</method>
 		<method name="get_access" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the file access permission of the dialog.
 			</description>
 		</method>
 		<method name="set_show_hidden_files">
 			<argument index="0" name="show" type="bool">
 			</argument>
 			<description>
+			Set the dialog should show hidden files.
 			</description>
 		</method>
 		<method name="is_showing_hidden_files" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if the diaog allows show hidden files.
 			</description>
 		</method>
 		<method name="invalidate">
@@ -11909,12 +11920,14 @@ Returns an empty String "" at the end of the list.
 			<argument index="0" name="paths" type="StringArray">
 			</argument>
 			<description>
+			Event emitted when the user selects multiple files.
 			</description>
 		</signal>
 		<signal name="dir_selected">
 			<argument index="0" name="dir" type="String">
 			</argument>
 			<description>
+			Event emitted when the user selects a directory.
 			</description>
 		</signal>
 		<signal name="file_selected">
@@ -11941,10 +11954,13 @@ Returns an empty String "" at the end of the list.
 			The dialog will warn when a file exists.
 		</constant>
 		<constant name="ACCESS_RESOURCES" value="0">
+			The dialog allows the selection of file and directory.
 		</constant>
 		<constant name="ACCESS_USERDATA" value="1">
+			The dialog allows ascess files under [Resource] path(res://) .
 		</constant>
 		<constant name="ACCESS_FILESYSTEM" value="2">
+			The dialog allows ascess files in whole file system.
 		</constant>
 	</constants>
 	<theme_items>
@@ -31951,48 +31967,56 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set allows horizontal scrool.
 			</description>
 		</method>
 		<method name="is_h_scroll_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if horizontal scrool is allowed.
 			</description>
 		</method>
 		<method name="set_enable_v_scroll">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set allows vertical scrool.
 			</description>
 		</method>
 		<method name="is_v_scroll_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if vertical scrool is allowed.
 			</description>
 		</method>
 		<method name="set_h_scroll">
 			<argument index="0" name="val" type="int">
 			</argument>
 			<description>
+			Set horizontal scroll value.
 			</description>
 		</method>
 		<method name="get_h_scroll" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return current horizontal scroll value.
 			</description>
 		</method>
 		<method name="set_v_scroll">
 			<argument index="0" name="val" type="int">
 			</argument>
 			<description>
+			Set vertical scroll value.
 			</description>
 		</method>
 		<method name="get_v_scroll" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return current vertical scroll value.
 			</description>
 		</method>
 	</methods>
@@ -34252,19 +34276,21 @@ This method controls whether the position between two cached points is interpola
 			<return type="bool">
 			</return>
 			<description>
-			Return if the split is collapsed.
+			Return true if the split is collapsed.
 			</description>
 		</method>
 		<method name="set_dragger_visibility">
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+			 Set visibility of the split dragger([i]mode[/i] must be one of [DRAGGER_VISIBLE], [DRAGGER_HIDDEN] or [DRAGGER_HIDDEN_COLLAPSED]).
 			</description>
 		</method>
 		<method name="get_dragger_visibility" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return visibility of the split dragger(One of [DRAGGER_VISIBLE], [DRAGGER_HIDDEN] or [DRAGGER_HIDDEN_COLLAPSED]).
 			</description>
 		</method>
 	</methods>
@@ -34273,15 +34299,19 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="offset" type="int">
 			</argument>
 			<description>
+			Emmited when the dragger is gragged by user.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="DRAGGER_VISIBLE" value="0">
+		The split dragger is visible.
 		</constant>
 		<constant name="DRAGGER_HIDDEN" value="1">
+		The split dragger is invisible.
 		</constant>
 		<constant name="DRAGGER_HIDDEN_COLLAPSED" value="2">
+		The split dragger is invisible and collapsed.
 		</constant>
 	</constants>
 </class>
@@ -35871,12 +35901,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
+			Append a string element at end of the array.
 			</description>
 		</method>
 		<method name="resize">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Reset the size of the array.
 			</description>
 		</method>
 		<method name="set">
@@ -35891,6 +35923,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<description>
+			Return the size of the array.
 			</description>
 		</method>
 		<method name="StringArray">
@@ -40432,6 +40465,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="Vector2">
 			</return>
 			<description>
+			Remove the fractional part of x and y.
 			</description>
 		</method>
 		<method name="get_aspect">
@@ -40530,12 +40564,16 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="x" type="float">
+		The X axis value when treated as point(The first value in the pair).
 		</member>
 		<member name="y" type="float">
+		The Y axis value when treated as point(The second value in the pair).
 		</member>
 		<member name="width" type="float">
+		The width value when treated as size(The first value in the pair).
 		</member>
 		<member name="height" type="float">
+		The height value when treated as size(The second value in the pair).
 		</member>
 	</members>
 	<constants>
