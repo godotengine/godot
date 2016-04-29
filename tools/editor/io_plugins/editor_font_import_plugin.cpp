@@ -69,16 +69,22 @@ public:
 	enum CharacterSet {
 
 		CHARSET_ASCII,
-		CHARSET_LATIN,
 		CHARSET_UNICODE,
-		CHARSET_CUSTOM,
-		CHARSET_CUSTOM_LATIN
+		CHARSET_SELECTION
 	};
 
 
 	FontMode font_mode;
 
 	CharacterSet character_set;
+	bool charset_selection_latin;
+	bool charset_selection_latin_number;
+	bool charset_selection_arabic;
+	bool charset_selection_persian;
+	bool charset_selection_arabic_number;
+	bool charset_selection_persian_number;
+	bool charset_selection_arabic_harka;
+	bool charset_selection_custom;
 	String custom_file;
 
 	bool shadow;
@@ -122,6 +128,23 @@ public:
 
 		else if (n=="character_set/mode") {
 			character_set=CharacterSet(int(p_value));
+			_change_notify();
+		} else if (n=="character_set/selection_latin")
+			charset_selection_latin=p_value;
+		else if (n=="character_set/selection_latin_number")
+			charset_selection_latin_number=p_value;
+		else if (n=="character_set/selection_arabic")
+			charset_selection_arabic=p_value;
+		else if (n=="character_set/selection_persian")
+			charset_selection_persian=p_value;
+		else if (n=="character_set/selection_arabic_number")
+			charset_selection_arabic_number=p_value;
+		else if (n=="character_set/selection_persian_number")
+			charset_selection_persian_number=p_value;
+		else if (n=="character_set/selection_arabic_harka")
+			charset_selection_arabic_harka=p_value;
+		else if (n=="character_set/selection_custom") {
+			charset_selection_custom=p_value;
 			_change_notify();
 		} else if (n=="character_set/custom")
 			custom_file=p_value;
@@ -193,6 +216,22 @@ public:
 
 		else if (n=="character_set/mode")
 			r_ret=character_set;
+		else if (n=="character_set/selection_latin")
+			r_ret=charset_selection_latin;
+		else if (n=="character_set/selection_latin_number")
+			r_ret=charset_selection_latin_number;
+		else if (n=="character_set/selection_arabic")
+			r_ret=charset_selection_arabic;
+		else if (n=="character_set/selection_persian")
+			r_ret=charset_selection_persian;
+		else if (n=="character_set/selection_arabic_number")
+			r_ret=charset_selection_arabic_number;
+		else if (n=="character_set/selection_persian_number")
+			r_ret=charset_selection_persian_number;
+		else if (n=="character_set/selection_arabic_harka")
+			r_ret=charset_selection_arabic_harka;
+		else if (n=="character_set/selection_custom")
+			r_ret=charset_selection_custom;
 		else if (n=="character_set/custom")
 			r_ret=custom_file;
 
@@ -251,9 +290,20 @@ public:
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/space",PROPERTY_HINT_RANGE,"-64,64,1"));
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/top",PROPERTY_HINT_RANGE,"-64,64,1"));
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/bottom",PROPERTY_HINT_RANGE,"-64,64,1"));
-		p_list->push_back(PropertyInfo(Variant::INT,"character_set/mode",PROPERTY_HINT_ENUM,"Ascii,Latin,Unicode,Custom,Custom&Latin"));
+		p_list->push_back(PropertyInfo(Variant::INT,"character_set/mode",PROPERTY_HINT_ENUM,"Ascii,Unicode,Selection"));
 
-		if (character_set>=CHARSET_CUSTOM)
+		if (character_set>=CHARSET_SELECTION)
+		{
+		  p_list->push_back(PropertyInfo(Variant::BOOL,"character_set/selection_latin"));
+		  p_list->push_back(PropertyInfo(Variant::BOOL,"character_set/selection_latin_number"));
+		  p_list->push_back(PropertyInfo(Variant::BOOL,"character_set/selection_arabic"));
+		  p_list->push_back(PropertyInfo(Variant::BOOL,"character_set/selection_persian"));
+		  p_list->push_back(PropertyInfo(Variant::BOOL,"character_set/selection_arabic_number"));
+		  p_list->push_back(PropertyInfo(Variant::BOOL,"character_set/selection_persian_number"));
+		  p_list->push_back(PropertyInfo(Variant::BOOL,"character_set/selection_arabic_harka"));
+		  p_list->push_back(PropertyInfo(Variant::BOOL,"character_set/selection_custom"));
+		}
+		if (charset_selection_custom)
 			p_list->push_back(PropertyInfo(Variant::STRING,"character_set/custom",PROPERTY_HINT_FILE));
 
 		int usage = PROPERTY_USAGE_DEFAULT;
@@ -315,7 +365,15 @@ public:
 		bottom_extra_spacing=0;
 		space_extra_spacing=0;
 
-		character_set=CHARSET_LATIN;
+		character_set=CHARSET_SELECTION;
+		charset_selection_latin=true;
+		charset_selection_latin_number=false;
+		charset_selection_arabic=false;
+		charset_selection_persian=false;
+		charset_selection_arabic_number=false;
+		charset_selection_persian_number=false;
+		charset_selection_arabic_harka=false;
+		charset_selection_custom=false;
 
 		shadow=false;
 		shadow_radius=2;
@@ -348,7 +406,15 @@ public:
 		bottom_extra_spacing=0;
 		space_extra_spacing=0;
 
-		character_set=CHARSET_LATIN;
+		character_set=CHARSET_SELECTION;
+		charset_selection_latin=true;
+		charset_selection_latin_number=false;
+		charset_selection_arabic=false;
+		charset_selection_persian=false;
+		charset_selection_arabic_number=false;
+		charset_selection_persian_number=false;
+		charset_selection_arabic_harka=false;
+		charset_selection_custom=false;
 
 		shadow=false;
 		shadow_radius=2;
@@ -378,7 +444,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 
 	OBJ_TYPE(EditorFontImportDialog, ConfirmationDialog);
 
-
+	bool in_update;
 	EditorLineEditFileChooser *source;
 	EditorLineEditFileChooser *dest;
 	SpinBox *font_size;
@@ -440,6 +506,15 @@ class EditorFontImportDialog : public ConfirmationDialog {
 		Ref<BitmapFont> font = plugin->generate_font(imd);
 		test_label->add_font_override("font",font);
 		_update_text();
+		if (!in_update)
+		{
+			in_update=true;
+			Ref<ResourceImportMetadata> imd = get_rimd();
+			Ref<Font> font = plugin->generate_font(imd);
+			test_label->add_font_override("font",font);
+			_update_text();
+			in_update=false;
+		} else timer->start();
 	}
 
 	void _font_size_changed(double) {
@@ -974,9 +1049,18 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 	Set<CharType> import_chars;
 
 	int import_mode = from->get_option("character_set/mode");
+	bool import_selection_latin = from->get_option("character_set/selection_latin");
+	bool import_selection_latin_number = from->get_option("character_set/selection_latin_number");
+	bool import_selection_arabic = from->get_option("character_set/selection_arabic");
+	bool import_selection_persian = from->get_option("character_set/selection_persian");
+	bool import_selection_arabic_number = from->get_option("character_set/selection_arabic_number");
+	bool import_selection_persian_number = from->get_option("character_set/selection_persian_number");
+	bool import_selection_arabic_harka = from->get_option("character_set/selection_arabic_harka");
+	bool import_selection_custom = from->get_option("character_set/selection_custom");
+	
 	bool round_advance = from->get_option("advanced/round_advance");
 
-	if (import_mode>=_EditorFontImportOptions::CHARSET_CUSTOM) {
+	if (import_mode==_EditorFontImportOptions::CHARSET_SELECTION && import_selection_custom) {
 
 		//load from custom text
 		String path = from->get_option("character_set/custom");
@@ -1000,11 +1084,6 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 			}
 		}
 
-		if (import_mode==_EditorFontImportOptions::CHARSET_CUSTOM_LATIN) {
-
-			for(int i=32;i<128;i++)
-				import_chars.insert(i);
-		}
 
 		memdelete(fa);
 	}
@@ -1024,10 +1103,34 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 			switch(import_mode) {
 
 				case _EditorFontImportOptions::CHARSET_ASCII: skip = charcode>127; break;
-				case _EditorFontImportOptions::CHARSET_LATIN: skip = charcode>255 ;break;
 				case _EditorFontImportOptions::CHARSET_UNICODE: break; //none
-				case _EditorFontImportOptions::CHARSET_CUSTOM:
-				case _EditorFontImportOptions::CHARSET_CUSTOM_LATIN: skip = !import_chars.has(charcode); break;
+				case _EditorFontImportOptions::CHARSET_SELECTION: {
+				  bool chars = false;
+				  if(import_selection_latin) 
+				    chars = charcode<=255;
+				  if(!chars && import_selection_latin_number) 
+				    chars = charcode>=48 && charcode<=57;
+				  if(!chars && import_selection_arabic) 
+				    chars = (charcode>=1569 && charcode<=1594) || (charcode>=1601 && charcode<=1610)
+				    || (charcode>=65152 && charcode<=65276) || charcode==65279 || charcode==65010 
+				    || (charcode>=64830 && charcode<=64831) || charcode==1563 || charcode==1567;
+				  if(!chars && import_selection_persian) 
+				    chars = (charcode>=64342 && charcode<=64345) || (charcode>=64378 && charcode<=64381)
+				    || (charcode>=64394 && charcode<=64395) || (charcode>=64398 && charcode<=64405)
+				    || (charcode>=64508 && charcode<=64511) || charcode==1670 || charcode==1688 
+				    || charcode==1711 || charcode==1740 || charcode==1662 || charcode==1705;
+				  if(!chars && import_selection_arabic_number) 
+				    chars = charcode>=1632 && charcode<=1641;
+				  if(!chars && import_selection_persian_number) 
+				    chars = charcode>=1776 && charcode<=1785;
+				  if(!chars && import_selection_arabic_harka) 
+				    chars = (charcode>=1560 && charcode<=1562) || (charcode>=1611 && charcode<=1621)
+				    || (charcode>=64606 && charcode<=64611);
+				  if(!chars && import_selection_custom) 
+				    chars = import_chars.has(charcode);
+				  skip=!chars;
+				}
+				break;
 
 			}
 		}
@@ -1091,21 +1194,21 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 		fdata->advance+=font_spacing;
 
 
-		if (charcode<127) {
-			int top = fdata->valign;
-			int hmax = h/scaler;
+		//if (charcode<127) { // this 'if' have problem. editor crashes when select only none latin glyphs
+		int top = fdata->valign;
+		int hmax = h/scaler;
 
-			if (top>max_up) {
+		if (top>max_up) {
 
-				max_up=top;
-			}
-
-
-			if ( (top - hmax)<max_down ) {
-
-				max_down=top - hmax;
-			}
+			max_up=top;
 		}
+
+
+		if ( (top - hmax)<max_down ) {
+
+			max_down=top - hmax;
+		}
+		//}
 
 		if (font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD) {
 
