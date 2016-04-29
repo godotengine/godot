@@ -7137,6 +7137,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Should put children to the top left corner instead of center of the container.
 			</description>
 		</method>
 	</methods>
