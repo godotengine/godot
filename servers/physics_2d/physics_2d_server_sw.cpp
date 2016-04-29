@@ -860,6 +860,15 @@ void Physics2DServerSW::body_apply_impulse(RID p_body, const Vector2& p_pos, con
 	body->wakeup();
 };
 
+void Physics2DServerSW::body_add_force(RID p_body, const Vector2& p_offset, const Vector2& p_force) {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->add_force(p_force,p_offset);
+	body->wakeup();
+};
+
 void Physics2DServerSW::body_set_axis_velocity(RID p_body, const Vector2& p_axis_velocity) {
 
 	Body2DSW *body = body_owner.get(p_body);

@@ -597,6 +597,7 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("body_get_state","body","state"),&Physics2DServer::body_get_state);
 
 	ObjectTypeDB::bind_method(_MD("body_apply_impulse","body","pos","impulse"),&Physics2DServer::body_apply_impulse);
+	ObjectTypeDB::bind_method(_MD("body_add_force","body","offset","force"),&Physics2DServer::body_add_force);
 	ObjectTypeDB::bind_method(_MD("body_set_axis_velocity","body","axis_velocity"),&Physics2DServer::body_set_axis_velocity);
 
 	ObjectTypeDB::bind_method(_MD("body_add_collision_exception","body","excepted_body"),&Physics2DServer::body_add_collision_exception);
@@ -677,6 +678,7 @@ void Physics2DServer::_bind_methods() {
 	BIND_CONSTANT( BODY_PARAM_BOUNCE );
 	BIND_CONSTANT( BODY_PARAM_FRICTION );
 	BIND_CONSTANT( BODY_PARAM_MASS );
+	BIND_CONSTANT( BODY_PARAM_INERTIA );
 	BIND_CONSTANT( BODY_PARAM_GRAVITY_SCALE );
 	BIND_CONSTANT( BODY_PARAM_LINEAR_DAMP);
 	BIND_CONSTANT( BODY_PARAM_ANGULAR_DAMP);
