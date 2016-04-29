@@ -91,8 +91,6 @@ void ShaderTextEditor::_load_theme_settings() {
 
 	Color keyword_color= EDITOR_DEF("text_editor/keyword_color",Color(0.5,0.0,0.2));
 
-	get_text_edit()->set_syntax_coloring(true);
-
 
 	List<String> keywords;
 	ShaderLanguage::get_keyword_list(type,&keywords);
@@ -361,9 +359,36 @@ void ShaderEditor::_params_changed() {
 	light_editor->_validate_script();
 }
 
+void ShaderEditor::_editor_settings_changed() {
+
+		vertex_editor->get_text_edit()->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/auto_brace_complete"));
+		vertex_editor->get_text_edit()->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/scroll_past_end_of_file"));
+		vertex_editor->get_text_edit()->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
+		vertex_editor->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
+		vertex_editor->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
+		vertex_editor->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
+		vertex_editor->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
+
+		fragment_editor->get_text_edit()->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/auto_brace_complete"));
+		fragment_editor->get_text_edit()->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/scroll_past_end_of_file"));
+		fragment_editor->get_text_edit()->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
+		fragment_editor->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
+		fragment_editor->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
+		fragment_editor->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
+		fragment_editor->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
+
+		light_editor->get_text_edit()->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/auto_brace_complete"));
+		light_editor->get_text_edit()->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/scroll_past_end_of_file"));
+		light_editor->get_text_edit()->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
+		light_editor->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
+		light_editor->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
+		light_editor->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
+		light_editor->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
+}
 
 void ShaderEditor::_bind_methods() {
 
+	ObjectTypeDB::bind_method("_editor_settings_changed",&ShaderEditor::_editor_settings_changed);
 	ObjectTypeDB::bind_method("_tab_changed",&ShaderEditor::_tab_changed);
 	ObjectTypeDB::bind_method("_menu_option",&ShaderEditor::_menu_option);
 	ObjectTypeDB::bind_method("_params_changed",&ShaderEditor::_params_changed);
@@ -512,6 +537,9 @@ ShaderEditor::ShaderEditor() {
 	vertex_editor->connect("script_changed", this,"apply_shaders");
 	fragment_editor->connect("script_changed", this,"apply_shaders");
 	light_editor->connect("script_changed", this,"apply_shaders");
+	EditorSettings::get_singleton()->connect("settings_changed",this,"_editor_settings_changed");
+
+	_editor_settings_changed();
 }
 
 
