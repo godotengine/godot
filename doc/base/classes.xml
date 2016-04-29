@@ -4178,10 +4178,12 @@
 		</method>
 		<method name="pop_back">
 			<description>
+			Remove the last element of the array.
 			</description>
 		</method>
 		<method name="pop_front">
 			<description>
+			Remove the first element of the array.
 			</description>
 		</method>
 		<method name="push_back">
@@ -4195,6 +4197,7 @@
 			<argument index="0" name="value" type="var">
 			</argument>
 			<description>
+			Add an element at the beginning of the array.
 			</description>
 		</method>
 		<method name="remove">
@@ -7138,6 +7141,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Should put children to the top left corner instead of center of the container.
 			</description>
 		</method>
 	</methods>
@@ -9796,6 +9800,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="values" type="Array">
 			</argument>
 			<description>
+			Return true if the dictionary has all of the keys in the given array.
 			</description>
 		</method>
 		<method name="hash">
@@ -9818,6 +9823,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="json" type="String">
 			</argument>
 			<description>
+			Parse json text to the dictionary. Return OK when successed or the error code when failed.
 			</description>
 		</method>
 		<method name="size">
@@ -9831,6 +9837,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<return type="String">
 			</return>
 			<description>
+			Return the dictionary as json text.
 			</description>
 		</method>
 	</methods>
