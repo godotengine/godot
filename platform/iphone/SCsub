@@ -14,6 +14,7 @@ iphone_lib = [
 	'in_app_store.mm',
 	'icloud.mm',
 	'Appirater.m',
+	'ios.mm',
 ]
 
 #env.Depends('#core/math/vector3.h', 'vector3_psp.h')
