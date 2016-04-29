@@ -4178,10 +4178,12 @@
 		</method>
 		<method name="pop_back">
 			<description>
+			Remove the last element of the array.
 			</description>
 		</method>
 		<method name="pop_front">
 			<description>
+			Remove the first element of the array.
 			</description>
 		</method>
 		<method name="push_back">
@@ -4195,6 +4197,7 @@
 			<argument index="0" name="value" type="var">
 			</argument>
 			<description>
+			Add an element at the beginning of the array.
 			</description>
 		</method>
 		<method name="remove">
