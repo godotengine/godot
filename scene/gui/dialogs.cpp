@@ -285,7 +285,7 @@ Button* AcceptDialog::add_cancel(const String &p_cancel) {
 	String c = p_cancel;
 	if (p_cancel=="")
 		c="Cancel";
-	Button *b = swap_ok_cancel ? add_button("Cancel",true) : add_button("Cancel");
+	Button *b = swap_ok_cancel ? add_button(c,true) : add_button(c);
 	b->connect("pressed",this,"_closed");
 	return b;
 }
