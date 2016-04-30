@@ -46,6 +46,8 @@
 
 #include "sem_iphone.h"
 
+#include "ios.h"
+
 int OSIPhone::get_video_driver_count() const {
 
 	return 1;
@@ -167,6 +169,7 @@ void OSIPhone::initialize(const VideoMode& p_desired,int p_video_driver,int p_au
 	Globals::get_singleton()->add_singleton(Globals::Singleton("ICloud", icloud));
 	//icloud->connect();
 #endif
+	Globals::get_singleton()->add_singleton(Globals::Singleton("iOS", memnew(iOS)));
 };
 
 MainLoop *OSIPhone::get_main_loop() const {

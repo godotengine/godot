@@ -398,7 +398,55 @@ void ThemeEditor::_dialog_cbk() {
 			}
 
 
-		} break;
+		} break; 
+		case POPUP_CLASS_REMOVE: {
+			StringName fromtype = type_edit->get_text();
+			List<StringName> names;
+
+			{
+				names.clear();
+				Theme::get_default()->get_icon_list(fromtype,&names);
+				for(List<StringName>::Element *E=names.front();E;E=E->next()) {
+					theme->clear_icon(E->get(),fromtype);
+
+				}
+
+			}
+			{
+				names.clear();
+				Theme::get_default()->get_stylebox_list(fromtype,&names);
+				for(List<StringName>::Element *E=names.front();E;E=E->next()) {
+					theme->clear_stylebox(E->get(),fromtype);
+
+				}
+
+			}
+			{
+				names.clear();
+				Theme::get_default()->get_font_list(fromtype,&names);
+				for(List<StringName>::Element *E=names.front();E;E=E->next()) {
+					theme->clear_font(E->get(),fromtype);
+
+				}
+			}
+			{
+				names.clear();
+				Theme::get_default()->get_color_list(fromtype,&names);
+				for(List<StringName>::Element *E=names.front();E;E=E->next()) {
+					theme->clear_color(E->get(),fromtype);
+
+				}
+			}
+			{
+				names.clear();
+				Theme::get_default()->get_constant_list(fromtype,&names);
+				for(List<StringName>::Element *E=names.front();E;E=E->next()) {
+					theme->clear_constant(E->get(),fromtype);
+
+				}
+			}
+
+		}break;
 	}
 
 }
@@ -453,6 +501,19 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 		base_theme=theme;
 
+	} else if (p_option==POPUP_CLASS_REMOVE) {
+
+		add_del_dialog->set_title("Remove All Items");
+		add_del_dialog->get_ok()->set_text("Remove All");
+		add_del_dialog->popup_centered(Size2(240,85));
+
+		base_theme=Theme::get_default();
+
+		type_select->hide();
+		name_select_label->hide();
+		type_select_label->hide();
+		name_edit->hide();
+		name_menu->hide();
 	}
 	popup_mode=p_option;
 
@@ -538,6 +599,7 @@ ThemeEditor::ThemeEditor() {
 	theme_menu->get_popup()->add_item("Add Item",POPUP_ADD);
 	theme_menu->get_popup()->add_item("Add Class Items",POPUP_CLASS_ADD);
 	theme_menu->get_popup()->add_item("Remove Item",POPUP_REMOVE);
+	theme_menu->get_popup()->add_item("Remove Class Items",POPUP_CLASS_REMOVE);
 	theme_menu->get_popup()->add_separator();
 	theme_menu->get_popup()->add_item("Create Template",POPUP_CREATE_TEMPLATE);
 	hb_menu->add_child(theme_menu);

@@ -437,7 +437,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 	void _update() {
 
 		Ref<ResourceImportMetadata> imd = get_rimd();
-		Ref<Font> font = plugin->generate_font(imd);
+		Ref<BitmapFont> font = plugin->generate_font(imd);
 		test_label->add_font_override("font",font);
 		_update_text();
 	}
@@ -454,7 +454,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 
 	void _import_inc(String p_font) {
 
-		Ref<Font> font = ResourceLoader::load(p_font);
+		Ref<BitmapFont> font = ResourceLoader::load(p_font);
 		if (!font.is_valid())
 			return;
 		Ref<ImageTexture> tex = font->get_texture(0);
@@ -471,12 +471,12 @@ class EditorFontImportDialog : public ConfirmationDialog {
 
 		for(int i=0;i<ck.size();i++) {
 			CharType k=ck[i];
-			Font::Character c=font->get_character(k);
+			BitmapFont::Character c=font->get_character(k);
 			f->store_line("{"+itos(k)+","+rtos(c.rect.pos.x)+","+rtos(c.rect.pos.y)+","+rtos(c.rect.size.x)+","+rtos(c.rect.size.y)+","+rtos(c.v_align)+","+rtos(c.h_align)+","+rtos(c.advance)+"},");
 		}
 		f->store_line("};");
 
-		Vector<Font::KerningPairKey> kp=font->get_kerning_pair_keys();
+		Vector<BitmapFont::KerningPairKey> kp=font->get_kerning_pair_keys();
 		f->store_line("static const int _builtin_font_kerning_pair_count="+itos(kp.size())+";");
 		f->store_line("static const int _builtin_font_kerning_pairs["+itos(kp.size())+"][3]={");
 		for(int i=0;i<kp.size();i++) {
@@ -634,7 +634,7 @@ public:
 		dest = memnew( EditorLineEditFileChooser );
 		//
 		List<String> fl;
-		Ref<Font> font= memnew(Font);
+		Ref<BitmapFont> font= memnew(BitmapFont);
 		dest->get_file_dialog()->add_filter("*.fnt ; Font" );
 		//ResourceSaver::get_recognized_extensions(font,&fl);
 		//for(List<String>::Element *E=fl.front();E;E=E->next()) {
@@ -875,12 +875,12 @@ static unsigned char get_SDF_radial(
 }
 
 
-Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata>& p_from, const String &p_existing) {
+Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata>& p_from, const String &p_existing) {
 
 
 
 	Ref<ResourceImportMetadata> from = p_from;
-	ERR_FAIL_COND_V(from->get_source_count()!=1,Ref<Font>());
+	ERR_FAIL_COND_V(from->get_source_count()!=1,Ref<BitmapFont>());
 
 	String src_path = EditorImportPlugin::expand_source_path(from->get_source_path(0));
 
@@ -888,15 +888,15 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 
 		if (ResourceLoader::load(src_path).is_valid()) {
 			EditorNode::get_singleton()->show_warning("Path: "+src_path+"\nIs a Godot font file, please supply a BMFont type file instead.");
-			return Ref<Font>();
+			return Ref<BitmapFont>();
 		}
 
-		Ref<Font> font;
+		Ref<BitmapFont> font;
 		font.instance();
 		Error err = font->create_from_fnt(src_path);
 		if (err) {
 			EditorNode::get_singleton()->show_warning("Path: "+src_path+"\nFailed opening as BMFont file.");
-			return Ref<Font>();
+			return Ref<BitmapFont>();
 		}
 
 		return font;
@@ -913,7 +913,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	int error = FT_Init_FreeType( &library );
 
 	ERR_EXPLAIN("Error initializing FreeType.");
-	ERR_FAIL_COND_V( error !=0, Ref<Font>() );
+	ERR_FAIL_COND_V( error !=0, Ref<BitmapFont>() );
 
 	print_line("loadfrom: "+src_path);
 	error = FT_New_Face( library, src_path.utf8().get_data(),0,&face );
@@ -928,7 +928,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 
 	}
 
-	ERR_FAIL_COND_V(error,Ref<Font>());
+	ERR_FAIL_COND_V(error,Ref<BitmapFont>());
 
 
 	int height=0;
@@ -940,7 +940,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	if ( error ) {
 		FT_Done_FreeType( library );
 		ERR_EXPLAIN("Invalid font size. ");
-		ERR_FAIL_COND_V( error,Ref<Font>() );
+		ERR_FAIL_COND_V( error,Ref<BitmapFont>() );
 
 	}
 
@@ -987,7 +987,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 
 			FT_Done_FreeType( library );
 			ERR_EXPLAIN("Invalid font custom source. ");
-			ERR_FAIL_COND_V( !fa,Ref<Font>() );
+			ERR_FAIL_COND_V( !fa,Ref<BitmapFont>() );
 
 		}
 
@@ -1546,15 +1546,15 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	int bottom_space = from->get_option("extra_space/bottom");
 	bool disable_filter = from->get_option("advanced/disable_filter");
 
-	Ref<Font> font;
+	Ref<BitmapFont> font;
 
 	if (p_existing!=String() && ResourceCache::has(p_existing)) {
 
-		font = Ref<Font>( ResourceCache::get(p_existing)->cast_to<Font>());
+		font = Ref<BitmapFont>( ResourceCache::get(p_existing)->cast_to<BitmapFont>());
 	}
 
 	if (font.is_null()) {
-		 font = Ref<Font>( memnew( Font ) );
+		 font = Ref<BitmapFont>( memnew( BitmapFont ) );
 	}
 
 	font->clear();
@@ -1596,7 +1596,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	return font;
 #else
 
-	return Ref<Font>();
+	return Ref<BitmapFont>();
 #endif
 }
 
@@ -1616,7 +1616,7 @@ void EditorFontImportPlugin::import_dialog(const String& p_from){
 Error EditorFontImportPlugin::import(const String& p_path, const Ref<ResourceImportMetadata>& p_from){
 
 
-	Ref<Font> font  = EditorFontImportPlugin::generate_font(p_from,p_path);
+	Ref<BitmapFont> font  = EditorFontImportPlugin::generate_font(p_from,p_path);
 	if (!font.is_valid())
 		return ERR_CANT_CREATE;
 

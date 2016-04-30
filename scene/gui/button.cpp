@@ -227,6 +227,10 @@ void Button::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_text_align"),&Button::get_text_align);
 	ObjectTypeDB::bind_method(_MD("is_flat"),&Button::is_flat);
 
+	BIND_CONSTANT( ALIGN_LEFT );
+	BIND_CONSTANT( ALIGN_CENTER );
+	BIND_CONSTANT( ALIGN_RIGHT );
+
 	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "text", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT_INTL ), _SCS("set_text"),_SCS("get_text") );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture" ), _SCS("set_button_icon"),_SCS("get_button_icon") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flat" ), _SCS("set_flat"),_SCS("is_flat") );

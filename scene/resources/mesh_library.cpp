@@ -48,6 +48,8 @@ bool MeshLibrary::_set(const StringName& p_name, const Variant& p_value) {
 			set_item_shape(idx,p_value);
 		else if(what=="preview")
 			set_item_preview(idx,p_value);
+		else if(what=="navmesh")
+			set_item_navmesh(idx,p_value);
 		else
 			return false;
 
@@ -70,6 +72,8 @@ bool MeshLibrary::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= get_item_mesh(idx);
 	else if(what=="shape")
 		r_ret= get_item_shape(idx);
+	else if(what=="navmesh")
+		r_ret= get_item_navmesh(idx);
 	else if(what=="preview")
 		r_ret= get_item_preview(idx);
 	else
@@ -86,6 +90,7 @@ void MeshLibrary::_get_property_list( List<PropertyInfo> *p_list) const {
 		p_list->push_back( PropertyInfo(Variant::STRING,name+"name"));
 		p_list->push_back( PropertyInfo(Variant::OBJECT,name+"mesh",PROPERTY_HINT_RESOURCE_TYPE,"Mesh"));
 		p_list->push_back( PropertyInfo(Variant::OBJECT,name+"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape"));
+		p_list->push_back( PropertyInfo(Variant::OBJECT,name+"navmesh",PROPERTY_HINT_RESOURCE_TYPE,"NavigationMesh"));
 		p_list->push_back( PropertyInfo(Variant::OBJECT,name+"preview",PROPERTY_HINT_RESOURCE_TYPE,"Texture",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_EDITOR_HELPER));
 	}
 }
@@ -130,6 +135,18 @@ void MeshLibrary::set_item_shape(int p_item,const Ref<Shape>& p_shape) {
 
 }
 
+
+void MeshLibrary::set_item_navmesh(int p_item,const Ref<NavigationMesh>& p_navmesh) {
+
+	ERR_FAIL_COND(!item_map.has(p_item));
+	item_map[p_item].navmesh=p_navmesh;
+	_change_notify();
+	notify_change_to_owners();
+	emit_changed();
+	_change_notify();
+
+}
+
 void MeshLibrary::set_item_preview(int p_item,const Ref<Texture>& p_preview) {
 
 	ERR_FAIL_COND(!item_map.has(p_item));
@@ -156,6 +173,13 @@ Ref<Shape> MeshLibrary::get_item_shape(int p_item) const {
 	ERR_FAIL_COND_V(!item_map.has(p_item),Ref<Shape>());
 	return item_map[p_item].shape;
 }
+
+Ref<NavigationMesh> MeshLibrary::get_item_navmesh(int p_item) const {
+
+	ERR_FAIL_COND_V(!item_map.has(p_item),Ref<NavigationMesh>());
+	return item_map[p_item].navmesh;
+}
+
 
 Ref<Texture> MeshLibrary::get_item_preview(int p_item) const {
 
@@ -223,9 +247,11 @@ void MeshLibrary::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("create_item","id"),&MeshLibrary::create_item);
 	ObjectTypeDB::bind_method(_MD("set_item_name","id","name"),&MeshLibrary::set_item_name);
 	ObjectTypeDB::bind_method(_MD("set_item_mesh","id","mesh:Mesh"),&MeshLibrary::set_item_mesh);
+	ObjectTypeDB::bind_method(_MD("set_item_navmesh","id","navmesh:NavigationMesh"),&MeshLibrary::set_item_navmesh);
 	ObjectTypeDB::bind_method(_MD("set_item_shape","id","shape:Shape"),&MeshLibrary::set_item_shape);
 	ObjectTypeDB::bind_method(_MD("get_item_name","id"),&MeshLibrary::get_item_name);
 	ObjectTypeDB::bind_method(_MD("get_item_mesh:Mesh","id"),&MeshLibrary::get_item_mesh);
+	ObjectTypeDB::bind_method(_MD("get_item_navmesh:NavigationMesh","id"),&MeshLibrary::get_item_navmesh);
 	ObjectTypeDB::bind_method(_MD("get_item_shape:Shape","id"),&MeshLibrary::get_item_shape);
 	ObjectTypeDB::bind_method(_MD("remove_item","id"),&MeshLibrary::remove_item);
 	ObjectTypeDB::bind_method(_MD("clear"),&MeshLibrary::clear);

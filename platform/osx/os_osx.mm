@@ -921,7 +921,7 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
 	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) {
 	    [window_view setWantsBestResolutionOpenGLSurface:YES];
-	    if (current_videomode.resizable)
+	    //if (current_videomode.resizable)
 		[window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 	}
 #endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/

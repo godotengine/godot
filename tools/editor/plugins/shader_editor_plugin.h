@@ -105,7 +105,7 @@ class ShaderEditor : public Control {
 
 	void _close_callback();
 
-
+	void _editor_settings_changed();
 
 protected:
 	void _notification(int p_what);
