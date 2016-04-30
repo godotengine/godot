@@ -616,6 +616,9 @@ void AnimationPlayerEditor::_blend_edited() {
 
 void AnimationPlayerEditor::ensure_visibility() {
 
+	if (player && pin->is_pressed())
+		return; // another player is pinned, don't reset
+
 	_animation_edit();
 }
 
