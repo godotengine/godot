@@ -8288,8 +8288,10 @@
 </class>
 <class name="ColorRamp" inherits="Resource" category="Core">
 	<brief_description>
+		Color interpolator node
 	</brief_description>
 	<description>
+		Given a set of colors, this node will interpolate them in order, meaning, that if you have color 1, color 2 and color3, the ramp will interpolate (generate the colors between two colors) from color 1 to color 2 and from color 2 to color 3. Initially the ramp will have 2 colors (black and white), one (black) at ramp lower offset offset 0 and the other (white) at the ramp higher offset 1.
 	</description>
 	<methods>
 		<method name="add_point">
@@ -8298,12 +8300,14 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+				Adds the specified color to the end of the ramp, with the specified offset
 			</description>
 		</method>
 		<method name="remove_point">
 			<argument index="0" name="offset" type="int">
 			</argument>
 			<description>
+				Removes the color at the index [i]offset[/i]
 			</description>
 		</method>
 		<method name="set_offset">
@@ -8312,6 +8316,7 @@
 			<argument index="1" name="offset" type="float">
 			</argument>
 			<description>
+				Sets the offset for the ramp color at index [i]point[/i]
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
@@ -8320,6 +8325,7 @@
 			<argument index="0" name="point" type="int">
 			</argument>
 			<description>
+				Returns the offset of the ramp color at index [i]point[/i]
 			</description>
 		</method>
 		<method name="set_color">
@@ -8328,6 +8334,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+				Sets the color of the ramp color at index [i]point[/i]
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
@@ -8336,6 +8343,7 @@
 			<argument index="0" name="point" type="int">
 			</argument>
 			<description>
+				Returns the color of the ramp color at index [i]point[/i]
 			</description>
 		</method>
 		<method name="interpolate">
@@ -8344,36 +8352,42 @@
 			<argument index="0" name="offset" type="float">
 			</argument>
 			<description>
+				Returns the interpolated color specified by [i]offset[/i]
 			</description>
 		</method>
 		<method name="get_point_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of colors in the ramp
 			</description>
 		</method>
 		<method name="set_offsets">
 			<argument index="0" name="offsets" type="RealArray">
 			</argument>
 			<description>
+				Sets the offset for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accomodate the new elements, all new colors will be black by default.
 			</description>
 		</method>
 		<method name="get_offsets" qualifiers="const">
 			<return type="RealArray">
 			</return>
 			<description>
+				Returns the offsets for the colors in this ramp
 			</description>
 		</method>
 		<method name="set_colors">
 			<argument index="0" name="colors" type="ColorArray">
 			</argument>
 			<description>
+				Sets the colors for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accomodate the new elements.
 			</description>
 		</method>
 		<method name="get_colors" qualifiers="const">
 			<return type="ColorArray">
 			</return>
 			<description>
+				Returns the colors in the ramp
 			</description>
 		</method>
 	</methods>
