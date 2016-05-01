@@ -102,9 +102,7 @@ def configure(env):
 		env["x86_opt_gcc"]=True
 
 	if env['PLATFORM'] == 'win32':
-		import methods
 		env.Tool('gcc')
-		#env['SPAWN'] = methods.win32_spawn
 		env['SHLIBSUFFIX'] = '.so'
 
 
@@ -127,7 +125,6 @@ def configure(env):
 
 	gcc_path=env["ANDROID_NDK_ROOT"]+"/toolchains/"+env["NDK_TARGET"]+"/prebuilt/";
 
-	import os
 	if (sys.platform.find("linux")==0):
 		if (platform.architecture()[0]=='64bit' or os.path.isdir(gcc_path+"linux-x86_64/bin")): # check was not working
 			gcc_path=gcc_path+"/linux-x86_64/bin"
@@ -136,6 +133,7 @@ def configure(env):
 	elif (sys.platform=="darwin"):
 		gcc_path=gcc_path+"/darwin-x86_64/bin" #this may be wrong
 		env['SHLINKFLAGS'][1] = '-shared'
+		env['SHLIBSUFFIX'] = '.so'
 	elif (os.name=="nt"):
 		gcc_path=gcc_path+"/windows-x86_64/bin" #this may be wrong
 
