@@ -27518,6 +27518,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="minsize" type="Vector2" default="Vector2(0,0)">
 			</argument>
 			<description>
+			Popup (show the control in modal form) in the center of the screen, ensuring the size is never smaller than [code]minsize[/code].
 			</description>
 		</method>
 		<method name="popup">
@@ -27529,18 +27530,21 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Make the popup hide other popups when shown on the screen.
 			</description>
 		</method>
 		<method name="is_exclusive" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether the popup will hide other popups when shown on the screen.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="popup_hide">
 			<description>
+			This signal is emitted when a popup is hidden.
 			</description>
 		</signal>
 		<signal name="about_to_show">
@@ -27551,8 +27555,10 @@ This method controls whether the position between two cached points is interpola
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_POST_POPUP" value="80">
+			Notification sent right after the popup is shown.
 		</constant>
 		<constant name="NOTIFICATION_POPUP_HIDE" value="81">
+			Notification sent right after the popup is hidden.
 		</constant>
 	</constants>
 </class>
@@ -27561,6 +27567,7 @@ This method controls whether the position between two cached points is interpola
 	Base class for Popup Dialogs.
 	</brief_description>
 	<description>
+	PopupDialog is a base class for popup dialogs, along with [WindowDialog].
 	</description>
 	<methods>
 	</methods>
@@ -27585,7 +27592,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="accel" type="int" default="0">
 			</argument>
 			<description>
-			Add a new item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index.
+			Add a new item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator keybinding. If no id is provided, one will be created from the index.
 			</description>
 		</method>
 		<method name="add_item">
@@ -27596,7 +27603,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="2" name="accel" type="int" default="0">
 			</argument>
 			<description>
-			Add a new item with text "label". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index.
+			Add a new item with text "label". An id can optionally be provided, as well as an accelerator keybinding. If no id is provided, one will be created from the index.
 			</description>
 		</method>
 		<method name="add_icon_check_item">
@@ -27609,7 +27616,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="accel" type="int" default="0">
 			</argument>
 			<description>
-			Add a new check able item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+			Add a new checkable item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="add_check_item">
@@ -27631,6 +27638,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="2" name="id" type="int" default="-1">
 			</argument>
 			<description>
+			Adds an item with a submenu. The submenu is the name of a child PopupMenu node that would be shown when the item is clicked. An id can optionally be provided, but if is isn't provided, one will be created from the index.
 			</description>
 		</method>
 		<method name="set_item_text">
@@ -27666,6 +27674,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="metadata" type="Variant">
 			</argument>
 			<description>
+			Sets the metadata of an item, which might be of any type. You can later get it with [method get_item_metadata], which provides a simple way of assigning context data to items.
 			</description>
 		</method>
 		<method name="set_item_checked">
@@ -27683,6 +27692,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
+			Sets whether the item at index "idx" is disabled or not. When it is disabled it can't be selected, or its action invoked.
 			</description>
 		</method>
 		<method name="set_item_submenu">
@@ -27691,6 +27701,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="submenu" type="String">
 			</argument>
 			<description>
+			Sets the submenu of the item at index "idx". The submenu is the name of a child PopupMenu node that would be shown when the item is clicked.
 			</description>
 		</method>
 		<method name="set_item_as_separator">
@@ -27699,6 +27710,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+			Mark the item at index "idx" as a seperator, which means that it would be displayed as a mere line.
 			</description>
 		</method>
 		<method name="set_item_as_checkable">
@@ -27707,6 +27719,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+			Set whether the item at index "idx" has a checkbox. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="set_item_ID">
@@ -27740,6 +27753,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Return the metadata of an item, which might be of any type. You can set it with [method set_item_metadata], which provides a simple way of assigning context data to items.
 			</description>
 		</method>
 		<method name="get_item_accelerator" qualifiers="const">
@@ -27757,6 +27771,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Return the submenu name of the item at index "idx".
 			</description>
 		</method>
 		<method name="is_item_separator" qualifiers="const">
@@ -27765,6 +27780,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Return whether the item is a seperator. If it is, it would be displayed as a line.
 			</description>
 		</method>
 		<method name="is_item_checkable" qualifiers="const">
@@ -27773,6 +27789,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Return whether the item at index "idx" has a checkbox. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="is_item_checked" qualifiers="const">
@@ -27790,6 +27807,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Return whether the item at index "idx" is disabled. When it is disabled it can't be selected, or its action invoked.
 			</description>
 		</method>
 		<method name="get_item_ID" qualifiers="const">
@@ -27826,11 +27844,12 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Removes the item at index "idx" from the menu. Note that the indexes of items after the removed item are going to be shifted by one.
 			</description>
 		</method>
 		<method name="clear">
 			<description>
-			Clear the popup menu.
+			Clear the popup menu, in effect removing all items.
 			</description>
 		</method>
 	</methods>
@@ -27878,9 +27897,10 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="PopupPanel" inherits="Popup" category="Core">
 	<brief_description>
-	Base class for Popup Panels
+	Class for displaying popups with a panel background.
 	</brief_description>
 	<description>
+	Class for displaying popups with a panel background. In some cases it might be simpler to use than [Popup], since it provides a configurable background. If you are making windows, better check [WindowDialog].
 	</description>
 	<methods>
 	</methods>
@@ -39638,9 +39658,11 @@ This method controls whether the position between two cached points is interpola
 		</constant>
 		<constant name="CELL_MODE_RANGE" value="2">
 		</constant>
-		<constant name="CELL_MODE_ICON" value="3">
+		<constant name="CELL_MODE_RANGE_EXPRESSION" value="3">
 		</constant>
-		<constant name="CELL_MODE_CUSTOM" value="4">
+		<constant name="CELL_MODE_ICON" value="4">
+		</constant>
+		<constant name="CELL_MODE_CUSTOM" value="5">
 		</constant>
 	</constants>
 </class>
