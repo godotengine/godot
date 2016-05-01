@@ -313,43 +313,10 @@ void Tabs::_notification(int p_what) {
 					continue;
 				tabs[i].ofs_cache=w;
 
-				String s = tabs[i].text;
-				int lsize=0;
-				int slen=font->get_string_size(s).width;
-				lsize+=slen;
+				int lsize = get_tab_width(i);
 
-
-
-				Ref<Texture> icon;
-				if (tabs[i].icon.is_valid()) {
-					icon = tabs[i].icon;
-					if (icon.is_valid()) {
-						lsize+=icon->get_width();
-						if (s!="")
-							lsize+=get_constant("hseparation");
-
-					}
-				}
-
-				if (tabs[i].right_button.is_valid()) {
-					Ref<StyleBox> style = get_stylebox("button");
-					Ref<Texture> rb=tabs[i].right_button;
-
-					lsize+=get_constant("hseparation");
-					//lsize+=style->get_margin(MARGIN_LEFT);
-					lsize+=rb->get_width();
-					//lsize+=style->get_margin(MARGIN_RIGHT);
-
-				}
-
-
-				if (cb_displaypolicy==CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy==CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i==current)) {
-
-					lsize+=get_constant("hseparation");
-					//lsize+=style->get_margin(MARGIN_LEFT);
-					lsize+=close->get_width();
-					//lsize+=style->get_margin(MARGIN_RIGHT);
-				}
+				String text = tabs[i].text;
+				int slen = font->get_string_size(text).width;
 
 				if (w+lsize > limit) {
 					max_drawn_tab=i-1;
@@ -366,7 +333,6 @@ void Tabs::_notification(int p_what) {
 				Color col;
 
 				if (i==current) {
-
 					sb=tab_fg;
 					va=label_valign_fg;
 					col=color_fg;
@@ -377,21 +343,22 @@ void Tabs::_notification(int p_what) {
 				}
 
 
-				Size2i sb_ms = sb->get_minimum_size();
-				Rect2 sb_rect = Rect2( w, 0, lsize+sb_ms.width, h);
-				sb->draw(ci, sb_rect );
+				Rect2 sb_rect = Rect2(w, 0, lsize, h);
+				sb->draw(ci, sb_rect);
 
 				w+=sb->get_margin(MARGIN_LEFT);
 
+				Size2i sb_ms = sb->get_minimum_size();
+				Ref<Texture> icon = tabs[i].icon;
 				if (icon.is_valid()) {
 
 					icon->draw(ci, Point2i( w, sb->get_margin(MARGIN_TOP)+((sb_rect.size.y-sb_ms.y)-icon->get_height())/2 ) );
-					if (s!="")
+					if (text!="")
 						w+=icon->get_width()+get_constant("hseparation");
 
 				}
 
-				font->draw(ci, Point2i( w, sb->get_margin(MARGIN_TOP)+((sb_rect.size.y-sb_ms.y)-font->get_height())/2+font->get_ascent() ), s, col );
+				font->draw(ci, Point2i( w, sb->get_margin(MARGIN_TOP)+((sb_rect.size.y-sb_ms.y)-font->get_height())/2+font->get_ascent() ), text, col );
 
 				w+=slen;
 
