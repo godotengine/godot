@@ -22993,56 +22993,66 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="Particles2D" inherits="Node2D" category="Core">
 	<brief_description>
+		2D Particle emitter
 	</brief_description>
 	<description>
+		Particles2D is a particle system 2D [Node] that is used to simulate several types of particle effects, such as explosions, rain, snow, fireflies, or other magical-like shinny sparkles. Particles are drawn using impostors, and given their dynamic behavior, the user must provide a visibility AABB (although helpers to create one automatically exist).
 	</description>
 	<methods>
 		<method name="set_emitting">
 			<argument index="0" name="active" type="bool">
 			</argument>
 			<description>
+				If this is set to true then the particle emitter will emit particles, if its false it will not.
 			</description>
 		</method>
 		<method name="is_emitting" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether this emitter is currently emitting or not
 			</description>
 		</method>
 		<method name="set_amount">
 			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
+				Sets the amount of particles spawned at each emission
 			</description>
 		</method>
 		<method name="get_amount" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the amount of particles spawned at each emission
 			</description>
 		</method>
 		<method name="set_lifetime">
 			<argument index="0" name="lifetime" type="float">
 			</argument>
 			<description>
+				Sets the amount of seconds that each particle will be visible.
 			</description>
 		</method>
 		<method name="get_lifetime" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Gets the amount of seconds that each particle will be visible.
 			</description>
 		</method>
 		<method name="set_time_scale">
 			<argument index="0" name="time_scale" type="float">
 			</argument>
 			<description>
+				Sets the increment or decrement for the particle lifetime. for example: if the time scale is set to 2, the particles will die and move twice as fast.
 			</description>
 		</method>
 		<method name="get_time_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Returns the emitter time scale
 			</description>
 		</method>
 		<method name="set_pre_process_time">
@@ -23061,12 +23071,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
+				Sets the amount of seconds during which the emitter will spawn particles, after the specified seconds the emitter state will be set to non emitting, so calling [method is_emitting] will return false. If the timeout is 0 the emitter will spawn forever.
 			</description>
 		</method>
 		<method name="get_emit_timeout" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Returns the amount of seconds during which the emitter will spawn particles
 			</description>
 		</method>
 		<method name="set_param">
@@ -23075,6 +23087,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
+				Sets the value of the specified emitter parameter (see the constants secction for the list of parameters)
 			</description>
 		</method>
 		<method name="get_param" qualifiers="const">
@@ -23083,6 +23096,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="param" type="int">
 			</argument>
 			<description>
+				Returns the value of the specified emitter parameter
 			</description>
 		</method>
 		<method name="set_randomness">
@@ -23091,6 +23105,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
+				Sets the randomness value of the specified emitter parameter (see the constants secction for the list of parameters), 0 means no randomness, so every particle will have the parameters specified, 1 means that the parameter will be choosen at random, the closer the randomness value gets to 0 the more conservative the variation of the parameter will be.
 			</description>
 		</method>
 		<method name="get_randomness" qualifiers="const">
@@ -23099,6 +23114,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="param" type="int">
 			</argument>
 			<description>
+				Returns the randomness value of the specified emitter parameter
 			</description>
 		</method>
 		<method name="set_texture">
@@ -23107,24 +23123,28 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="texture" type="Object">
 			</argument>
 			<description>
+				Sets the texture for each particle
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="Texture">
 			</return>
 			<description>
+				Returns the texture for emitted particles
 			</description>
 		</method>
 		<method name="set_color">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+				Set the tint color for each particle.
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
+				Returns the tint color for each particle.
 			</description>
 		</method>
 		<method name="set_color_ramp">
@@ -23133,24 +23153,28 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="color_ramp" type="Object">
 			</argument>
 			<description>
+				Sets the [ColorRamp] used to tint each particle. Particle will be tinted according to their lifetimes.
 			</description>
 		</method>
 		<method name="get_color_ramp" qualifiers="const">
 			<return type="ColorRamp">
 			</return>
 			<description>
+				Returns the [ColorRamp] used to tint each particle
 			</description>
 		</method>
 		<method name="set_emissor_offset">
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
+				Sets the particle spawn origin position relative to the emitter center. for example if this value is set to (50, 50), the particle will spawn 50 units to the right and  50 units to the bottom of the emitter center.
 			</description>
 		</method>
 		<method name="get_emissor_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the particle spawn origin position relative to the emitter.
 			</description>
 		</method>
 		<method name="set_flip_h">
@@ -23205,12 +23229,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="extents" type="Vector2">
 			</argument>
 			<description>
+				Sets the half extents of the emission box, particles will be spawned at random inside this box.
 			</description>
 		</method>
 		<method name="get_emission_half_extents" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the half extents of the emission box.
 			</description>
 		</method>
 		<method name="set_color_phases">
@@ -23318,30 +23344,40 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</methods>
 	<constants>
 		<constant name="PARAM_DIRECTION" value="0">
+			Direction in degrees at which the particles will be launched, Notice that when the direction is set to 0 the particles will be launched to the negative 
 		</constant>
 		<constant name="PARAM_SPREAD" value="1">
 		</constant>
 		<constant name="PARAM_LINEAR_VELOCITY" value="2">
+			Velocity at which the particles will be launched.
 		</constant>
 		<constant name="PARAM_SPIN_VELOCITY" value="3">
+			The speed at which particles will spin around its own center.
 		</constant>
 		<constant name="PARAM_ORBIT_VELOCITY" value="4">
+			Velocity at which the particles will orbit around the emitter center
 		</constant>
 		<constant name="PARAM_GRAVITY_DIRECTION" value="5">
+			Direction in degrees at which the particles will be attracted
 		</constant>
 		<constant name="PARAM_GRAVITY_STRENGTH" value="6">
+			Strength of the gravitation attraction for each particle
 		</constant>
 		<constant name="PARAM_RADIAL_ACCEL" value="7">
 		</constant>
 		<constant name="PARAM_TANGENTIAL_ACCEL" value="8">
 		</constant>
 		<constant name="PARAM_DAMPING" value="9">
+			Amount of damping for each particle
 		</constant>
 		<constant name="PARAM_INITIAL_ANGLE" value="10">
+			Initial angle at which each particle will be spawned
 		</constant>
 		<constant name="PARAM_INITIAL_SIZE" value="11">
+			Initial size of each particle
 		</constant>
 		<constant name="PARAM_FINAL_SIZE" value="12">
+			Final size of each particle, the particle size will interpolate to this value during its lifetime.
 		</constant>
 		<constant name="PARAM_HUE_VARIATION" value="13">
 		</constant>
