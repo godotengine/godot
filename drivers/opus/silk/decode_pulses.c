@@ -24,19 +24,16 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
-#include "opus/silk/silk_main.h"
+#include "opus/silk/main.h"
 
 /*********************************************/
 /* Decode quantization indices of excitation */
 /*********************************************/
 void silk_decode_pulses(
     ec_dec                      *psRangeDec,                    /* I/O  Compressor data structure                   */
-    opus_int                    pulses[],                       /* O    Excitation signal                           */
+    opus_int16                  pulses[],                       /* O    Excitation signal                           */
     const opus_int              signalType,                     /* I    Sigtype                                     */
     const opus_int              quantOffsetType,                /* I    quantOffsetType                             */
     const opus_int              frame_length                    /* I    Frame length                                */
@@ -44,7 +41,7 @@ void silk_decode_pulses(
 {
     opus_int   i, j, k, iter, abs_q, nLS, RateLevelIndex;
     opus_int   sum_pulses[ MAX_NB_SHELL_BLOCKS ], nLshifts[ MAX_NB_SHELL_BLOCKS ];
-    opus_int   *pulses_ptr;
+    opus_int16 *pulses_ptr;
     const opus_uint8 *cdf_ptr;
 
     /*********************/
@@ -69,9 +66,9 @@ void silk_decode_pulses(
         sum_pulses[ i ] = ec_dec_icdf( psRangeDec, cdf_ptr, 8 );
 
         /* LSB indication */
-        while( sum_pulses[ i ] == MAX_PULSES + 1 ) {
+        while( sum_pulses[ i ] == SILK_MAX_PULSES + 1 ) {
             nLshifts[ i ]++;
-            /* When we've already got 10 LSBs, we shift the table to not allow (MAX_PULSES + 1) */
+            /* When we've already got 10 LSBs, we shift the table to not allow (SILK_MAX_PULSES + 1) */
             sum_pulses[ i ] = ec_dec_icdf( psRangeDec,
                     silk_pulses_per_block_iCDF[ N_RATE_LEVELS - 1] + ( nLshifts[ i ] == 10 ), 8 );
         }
@@ -84,7 +81,7 @@ void silk_decode_pulses(
         if( sum_pulses[ i ] > 0 ) {
             silk_shell_decoder( &pulses[ silk_SMULBB( i, SHELL_CODEC_FRAME_LENGTH ) ], psRangeDec, sum_pulses[ i ] );
         } else {
-            silk_memset( &pulses[ silk_SMULBB( i, SHELL_CODEC_FRAME_LENGTH ) ], 0, SHELL_CODEC_FRAME_LENGTH * sizeof( opus_int ) );
+            silk_memset( &pulses[ silk_SMULBB( i, SHELL_CODEC_FRAME_LENGTH ) ], 0, SHELL_CODEC_FRAME_LENGTH * sizeof( pulses[0] ) );
         }
     }
 

@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "opus/silk/float/SigProc_FLP.h"
 #include "opus/silk/SigProc_FIX.h"
 #include "opus/silk/float/structs_FLP.h"
-#include "opus/silk/silk_main.h"
+#include "opus/silk/main.h"
 #include "opus/silk/define.h"
 #include "opus/silk/debug.h"
 #include "opus/celt/entenc.h"
@@ -205,7 +205,8 @@ void silk_quant_LTP_gains_FLP(
     const silk_float                W[ MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER ], /* I    Error weights                        */
     const opus_int                  mu_Q10,                             /* I    Mu value (R/D tradeoff)                     */
     const opus_int                  lowComplexity,                      /* I    Flag for low complexity                     */
-    const opus_int                  nb_subfr                            /* I    number of subframes                         */
+    const opus_int                  nb_subfr,                           /* I    number of subframes                         */
+    int                             arch                                /* I    Run-time architecture                       */
 );
 
 /* Residual energy: nrg = wxx - 2 * wXx * c + c' * wXX * c */

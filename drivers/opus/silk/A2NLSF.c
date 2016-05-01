@@ -30,10 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
 /* A piecewise linear approximation maps LSF <-> cos(LSF)       */
 /* Therefore the result is not accurate NLSFs, but the two      */
 /* functions are accurate inverses of each other                */
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/silk/SigProc_FIX.h"
 #include "opus/silk/tables.h"
@@ -71,8 +68,23 @@ static OPUS_INLINE opus_int32 silk_A2NLSF_eval_poly( /* return the polynomial ev
 
     y32 = p[ dd ];                                  /* Q16 */
     x_Q16 = silk_LSHIFT( x, 4 );
-    for( n = dd - 1; n >= 0; n-- ) {
-        y32 = silk_SMLAWW( p[ n ], y32, x_Q16 );    /* Q16 */
+
+    if ( opus_likely( 8 == dd ) )
+    {
+        y32 = silk_SMLAWW( p[ 7 ], y32, x_Q16 );
+        y32 = silk_SMLAWW( p[ 6 ], y32, x_Q16 );
+        y32 = silk_SMLAWW( p[ 5 ], y32, x_Q16 );
+        y32 = silk_SMLAWW( p[ 4 ], y32, x_Q16 );
+        y32 = silk_SMLAWW( p[ 3 ], y32, x_Q16 );
+        y32 = silk_SMLAWW( p[ 2 ], y32, x_Q16 );
+        y32 = silk_SMLAWW( p[ 1 ], y32, x_Q16 );
+        y32 = silk_SMLAWW( p[ 0 ], y32, x_Q16 );
+    }
+    else
+    {
+        for( n = dd - 1; n >= 0; n-- ) {
+            y32 = silk_SMLAWW( p[ n ], y32, x_Q16 );    /* Q16 */
+        }
     }
     return y32;
 }

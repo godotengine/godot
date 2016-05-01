@@ -1,6 +1,6 @@
-/* Copyright (c) 2008-2011 Xiph.Org Foundation
-   Written by Jean-Marc Valin */
-/*
+/* Copyright (c) 2014, Cisco Systems, INC
+   Written by XiangMingZhu WeiZhou MinPeng YanWang
+
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
@@ -25,26 +25,41 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef OPUS_ENABLED
+#ifndef CELT_LPC_SSE_H
+#define CELT_LPC_SSE_H
 #include "opus/opus_config.h"
+
+#if defined(OPUS_X86_MAY_HAVE_SSE4_1) && defined(FIXED_POINT)
+#define OVERRIDE_CELT_FIR
+
+void celt_fir_sse4_1(
+         const opus_val16 *x,
+         const opus_val16 *num,
+         opus_val16 *y,
+         int N,
+         int ord,
+         opus_val16 *mem,
+         int arch);
+
+#if defined(OPUS_X86_PRESUME_SSE4_1)
+#define celt_fir(x, num, y, N, ord, mem, arch) \
+    ((void)arch, celt_fir_sse4_1(x, num, y, N, ord, mem, arch))
+
+#else
+
+extern void (*const CELT_FIR_IMPL[OPUS_ARCHMASK + 1])(
+         const opus_val16 *x,
+         const opus_val16 *num,
+         opus_val16 *y,
+         int N,
+         int ord,
+         opus_val16 *mem,
+         int arch);
+
+#  define celt_fir(x, num, y, N, ord, mem, arch) \
+    ((*CELT_FIR_IMPL[(arch) & OPUS_ARCHMASK])(x, num, y, N, ord, mem, arch))
+
+#endif
 #endif
 
-#include "opus/opus_types.h"
-#include <stdio.h>
-
-int main(void)
-{
-   opus_int16 i = 1;
-   i <<= 14;
-   if (i>>14 != 1)
-   {
-      fprintf(stderr, "opus_int16 isn't 16 bits\n");
-      return 1;
-   }
-   if (sizeof(opus_int16)*2 != sizeof(opus_int32))
-   {
-      fprintf(stderr, "16*2 != 32\n");
-      return 1;
-   }
-   return 0;
-}
+#endif

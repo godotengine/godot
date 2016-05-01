@@ -9,9 +9,7 @@
  * by the Xiph.Org Foundation and contributors http://www.xiph.org/ *
  *                                                                  *
  ********************************************************************/
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/internal.h"
 #include <ctype.h>
@@ -721,7 +719,7 @@ static struct addrinfo *op_resolve(const char *_host,unsigned _port){
   char             service[6];
   memset(&hints,0,sizeof(hints));
   hints.ai_socktype=SOCK_STREAM;
-#if !defined(_WIN32)
+#if defined(AI_NUMERICSERV)
   hints.ai_flags=AI_NUMERICSERV;
 #endif
   OP_ASSERT(_port<=65535U);
@@ -3273,8 +3271,22 @@ static void *op_url_stream_create_impl(OpusFileCallbacks *_cb,const char *_url,
 #endif
 }
 
-void *op_url_stream_vcreate(OpusFileCallbacks *_cb,
- const char *_url,va_list _ap){
+/*The actual implementation of op_url_stream_vcreate().
+  We have to do a careful dance here to avoid potential memory leaks if
+   OpusServerInfo is requested, since this function is also used by
+   op_vopen_url() and op_vtest_url().
+  Even if this function succeeds, those functions might ultimately fail.
+  If they do, they should return without having touched the OpusServerInfo
+   passed by the application.
+  Therefore, if this function succeeds and OpusServerInfo is requested, the
+   actual info will be stored in *_info and a pointer to the application's
+   storage will be placed in *_pinfo.
+  If this function fails or if the application did not request OpusServerInfo,
+   *_pinfo will be NULL.
+  Our caller is responsible for copying *_info to **_pinfo if it ultimately
+   succeeds, or for clearing *_info if it ultimately fails.*/
+void *op_url_stream_vcreate_impl(OpusFileCallbacks *_cb,
+ const char *_url,OpusServerInfo *_info,OpusServerInfo **_pinfo,va_list _ap){
   int             skip_certificate_check;
   const char     *proxy_host;
   opus_int32      proxy_port;
@@ -3318,18 +3330,28 @@ void *op_url_stream_vcreate(OpusFileCallbacks *_cb,
   }
   /*If the caller has requested server information, proxy it to a local copy to
      simplify error handling.*/
+  *_pinfo=NULL;
   if(pinfo!=NULL){
-    OpusServerInfo  info;
-    void           *ret;
-    opus_server_info_init(&info);
+    void *ret;
+    opus_server_info_init(_info);
     ret=op_url_stream_create_impl(_cb,_url,skip_certificate_check,
-     proxy_host,proxy_port,proxy_user,proxy_pass,&info);
-    if(ret!=NULL)*pinfo=*&info;
-    else opus_server_info_clear(&info);
+     proxy_host,proxy_port,proxy_user,proxy_pass,_info);
+    if(ret!=NULL)*_pinfo=pinfo;
+    else opus_server_info_clear(_info);
     return ret;
   }
   return op_url_stream_create_impl(_cb,_url,skip_certificate_check,
    proxy_host,proxy_port,proxy_user,proxy_pass,NULL);
+}
+
+void *op_url_stream_vcreate(OpusFileCallbacks *_cb,
+ const char *_url,va_list _ap){
+  OpusServerInfo   info;
+  OpusServerInfo *pinfo;
+  void *ret;
+  ret=op_url_stream_vcreate_impl(_cb,_url,&info,&pinfo,_ap);
+  if(pinfo!=NULL)*pinfo=*&info;
+  return ret;
 }
 
 void *op_url_stream_create(OpusFileCallbacks *_cb,
@@ -3347,14 +3369,21 @@ void *op_url_stream_create(OpusFileCallbacks *_cb,
 OggOpusFile *op_vopen_url(const char *_url,int *_error,va_list _ap){
   OpusFileCallbacks  cb;
   OggOpusFile       *of;
+  OpusServerInfo     info;
+  OpusServerInfo    *pinfo;
   void              *source;
-  source=op_url_stream_vcreate(&cb,_url,_ap);
+  source=op_url_stream_vcreate_impl(&cb,_url,&info,&pinfo,_ap);
   if(OP_UNLIKELY(source==NULL)){
+    OP_ASSERT(pinfo==NULL);
     if(_error!=NULL)*_error=OP_EFAULT;
     return NULL;
   }
   of=op_open_callbacks(source,&cb,NULL,0,_error);
-  if(OP_UNLIKELY(of==NULL))(*cb.close)(source);
+  if(OP_UNLIKELY(of==NULL)){
+    if(pinfo!=NULL)opus_server_info_clear(&info);
+    (*cb.close)(source);
+  }
+  else if(pinfo!=NULL)*pinfo=*&info;
   return of;
 }
 
@@ -3370,14 +3399,21 @@ OggOpusFile *op_open_url(const char *_url,int *_error,...){
 OggOpusFile *op_vtest_url(const char *_url,int *_error,va_list _ap){
   OpusFileCallbacks  cb;
   OggOpusFile       *of;
+  OpusServerInfo     info;
+  OpusServerInfo    *pinfo;
   void              *source;
-  source=op_url_stream_vcreate(&cb,_url,_ap);
+  source=op_url_stream_vcreate_impl(&cb,_url,&info,&pinfo,_ap);
   if(OP_UNLIKELY(source==NULL)){
+    OP_ASSERT(pinfo==NULL);
     if(_error!=NULL)*_error=OP_EFAULT;
     return NULL;
   }
   of=op_test_callbacks(source,&cb,NULL,0,_error);
-  if(OP_UNLIKELY(of==NULL))(*cb.close)(source);
+  if(OP_UNLIKELY(of==NULL)){
+    if(pinfo!=NULL)opus_server_info_clear(&info);
+    (*cb.close)(source);
+  }
+  else if(pinfo!=NULL)*pinfo=*&info;
   return of;
 }
 

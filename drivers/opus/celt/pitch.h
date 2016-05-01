@@ -34,15 +34,21 @@
 #ifndef PITCH_H
 #define PITCH_H
 
-#include "opus/celt/opus_modes.h"
+#include "opus/celt/modes.h"
 #include "opus/celt/cpu_support.h"
 
-#if defined(__SSE__) && !defined(OPUS_FIXED_POINT)
-#include "x86/pitch_sse.h"
+#if (defined(OPUS_X86_MAY_HAVE_SSE) && !defined(FIXED_POINT)) \
+  || ((defined(OPUS_X86_MAY_HAVE_SSE4_1) || defined(OPUS_X86_MAY_HAVE_SSE2)) && defined(FIXED_POINT))
+#include "opus/celt/x86/pitch_sse.h"
 #endif
 
-#if defined(OPUS_ARM_ASM) && defined(OPUS_FIXED_POINT)
-# include "arm/pitch_arm.h"
+#if defined(MIPSr1_ASM)
+#include "opus/celt/mips/pitch_mipsr1.h"
+#endif
+
+#if ((defined(OPUS_ARM_ASM) && defined(FIXED_POINT)) \
+  || defined(OPUS_ARM_MAY_HAVE_NEON_INTR))
+# include "opus/celt/arm/pitch_arm.h"
 #endif
 
 void pitch_downsample(celt_sig * OPUS_RESTRICT x[], opus_val16 * OPUS_RESTRICT x_lp,
@@ -52,12 +58,12 @@ void pitch_search(const opus_val16 * OPUS_RESTRICT x_lp, opus_val16 * OPUS_RESTR
                   int len, int max_pitch, int *pitch, int arch);
 
 opus_val16 remove_doubling(opus_val16 *x, int maxperiod, int minperiod,
-      int N, int *T0, int prev_period, opus_val16 prev_gain);
+      int N, int *T0, int prev_period, opus_val16 prev_gain, int arch);
+
 
 /* OPT: This is the kernel you really want to optimize. It gets used a lot
    by the prefilter and by the PLC. */
-#ifndef OVERRIDE_XCORR_KERNEL
-static OPUS_INLINE void xcorr_kernel(const opus_val16 * x, const opus_val16 * y, opus_val32 sum[4], int len)
+static OPUS_INLINE void xcorr_kernel_c(const opus_val16 * x, const opus_val16 * y, opus_val32 sum[4], int len)
 {
    int j;
    opus_val16 y_0, y_1, y_2, y_3;
@@ -122,10 +128,14 @@ static OPUS_INLINE void xcorr_kernel(const opus_val16 * x, const opus_val16 * y,
       sum[3] = MAC16_16(sum[3],tmp,y_1);
    }
 }
+
+#ifndef OVERRIDE_XCORR_KERNEL
+#define xcorr_kernel(x, y, sum, len, arch) \
+    ((void)(arch),xcorr_kernel_c(x, y, sum, len))
 #endif /* OVERRIDE_XCORR_KERNEL */
 
-#ifndef OVERRIDE_DUAL_INNER_PROD
-static OPUS_INLINE void dual_inner_prod(const opus_val16 *x, const opus_val16 *y01, const opus_val16 *y02,
+
+static OPUS_INLINE void dual_inner_prod_c(const opus_val16 *x, const opus_val16 *y01, const opus_val16 *y02,
       int N, opus_val32 *xy1, opus_val32 *xy2)
 {
    int i;
@@ -139,7 +149,34 @@ static OPUS_INLINE void dual_inner_prod(const opus_val16 *x, const opus_val16 *y
    *xy1 = xy01;
    *xy2 = xy02;
 }
+
+#ifndef OVERRIDE_DUAL_INNER_PROD
+# define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) \
+    ((void)(arch),dual_inner_prod_c(x, y01, y02, N, xy1, xy2))
 #endif
+
+/*We make sure a C version is always available for cases where the overhead of
+  vectorization and passing around an arch flag aren't worth it.*/
+static OPUS_INLINE opus_val32 celt_inner_prod_c(const opus_val16 *x,
+      const opus_val16 *y, int N)
+{
+   int i;
+   opus_val32 xy=0;
+   for (i=0;i<N;i++)
+      xy = MAC16_16(xy, x[i], y[i]);
+   return xy;
+}
+
+#if !defined(OVERRIDE_CELT_INNER_PROD)
+# define celt_inner_prod(x, y, N, arch) \
+    ((void)(arch),celt_inner_prod_c(x, y, N))
+#endif
+
+#ifdef NON_STATIC_COMB_FILTER_CONST_C
+void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
+     opus_val16 g10, opus_val16 g11, opus_val16 g12);
+#endif
+
 
 #ifdef OPUS_FIXED_POINT
 opus_val32
@@ -151,9 +188,11 @@ celt_pitch_xcorr_c(const opus_val16 *_x, const opus_val16 *_y,
 
 #if !defined(OVERRIDE_PITCH_XCORR)
 /*Is run-time CPU detection enabled on this platform?*/
-# if defined(OPUS_HAVE_RTCD)
+# if defined(OPUS_HAVE_RTCD) && (defined(OPUS_ARM_ASM) \
+   || (defined(OPUS_ARM_MAY_HAVE_NEON_INTR) \
+   && !defined(OPUS_ARM_PRESUME_NEON_INTR)))
 extern
-#  if defined(OPUS_FIXED_POINT)
+#  if defined(FIXED_POINT)
 opus_val32
 #  else
 void
@@ -161,12 +200,20 @@ void
 (*const CELT_PITCH_XCORR_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *,
       const opus_val16 *, opus_val32 *, int, int);
 
+#  define OVERRIDE_PITCH_XCORR
 #  define celt_pitch_xcorr(_x, _y, xcorr, len, max_pitch, arch) \
   ((*CELT_PITCH_XCORR_IMPL[(arch)&OPUS_ARCHMASK])(_x, _y, \
         xcorr, len, max_pitch))
 # else
-#  define celt_pitch_xcorr(_x, _y, xcorr, len, max_pitch, arch) \
-  ((void)(arch),celt_pitch_xcorr_c(_x, _y, xcorr, len, max_pitch))
+
+#ifdef OPUS_FIXED_POINT
+opus_val32
+#else
+void
+#endif
+celt_pitch_xcorr(const opus_val16 *_x, const opus_val16 *_y,
+      opus_val32 *xcorr, int len, int max_pitch, int arch);
+
 # endif
 #endif
 

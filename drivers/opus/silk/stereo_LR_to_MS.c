@@ -24,12 +24,9 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
-#include "opus/silk/silk_main.h"
+#include "opus/silk/main.h"
 #include "opus/celt/stack_alloc.h"
 
 /* Convert Left/Right stereo signal to adaptive Mid/Side representation */

@@ -31,10 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
  * Second order ARMA filter                                             *
  * Can handle slowly varying filter coefficients                        *
  *                                                                      */
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/silk/SigProc_FIX.h"
 

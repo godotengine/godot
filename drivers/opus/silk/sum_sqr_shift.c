@@ -24,10 +24,7 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/silk/SigProc_FIX.h"
 
@@ -53,6 +50,7 @@ void silk_sum_sqr_shift(
             /* Scale down */
             nrg = (opus_int32)silk_RSHIFT_uint( (opus_uint32)nrg, 2 );
             shft = 2;
+            i+=2;
             break;
         }
     }

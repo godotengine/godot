@@ -1,4 +1,10 @@
-/* Copyright (C) 2013 Mozilla Corporation */
+/* Copyright (c) 2015 Xiph.Org Foundation
+   Written by Viswanath Puttagunta */
+/**
+   @file fft_arm.h
+   @brief ARM Neon Intrinsic optimizations for fft using NE10 library
+ */
+
 /*
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -24,14 +30,43 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-; Set the following to 1 if we have EDSP instructions
-;  (LDRD/STRD, etc., ARMv5E and later).
-OPUS_ARM_MAY_HAVE_EDSP  * 
 
-; Set the following to 1 if we have ARMv6 media instructions.
-OPUS_ARM_MAY_HAVE_MEDIA * 
+#if !defined(FFT_ARM_H)
+#define FFT_ARM_H
 
-; Set the following to 1 if we have NEON (some ARMv7)
-OPUS_ARM_MAY_HAVE_NEON  * 
+#include "opus/opus_config.h"
+#include "opus/celt/kiss_fft.h"
 
-END
+#if defined(HAVE_ARM_NE10)
+
+int opus_fft_alloc_arm_neon(kiss_fft_state *st);
+void opus_fft_free_arm_neon(kiss_fft_state *st);
+
+void opus_fft_neon(const kiss_fft_state *st,
+                   const kiss_fft_cpx *fin,
+                   kiss_fft_cpx *fout);
+
+void opus_ifft_neon(const kiss_fft_state *st,
+                    const kiss_fft_cpx *fin,
+                    kiss_fft_cpx *fout);
+
+#if !defined(OPUS_HAVE_RTCD)
+#define OVERRIDE_OPUS_FFT (1)
+
+#define opus_fft_alloc_arch(_st, arch) \
+   ((void)(arch), opus_fft_alloc_arm_neon(_st))
+
+#define opus_fft_free_arch(_st, arch) \
+   ((void)(arch), opus_fft_free_arm_neon(_st))
+
+#define opus_fft(_st, _fin, _fout, arch) \
+   ((void)(arch), opus_fft_neon(_st, _fin, _fout))
+
+#define opus_ifft(_st, _fin, _fout, arch) \
+   ((void)(arch), opus_ifft_neon(_st, _fin, _fout))
+
+#endif /* OPUS_HAVE_RTCD */
+
+#endif /* HAVE_ARM_NE10 */
+
+#endif

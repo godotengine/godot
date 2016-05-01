@@ -65,10 +65,6 @@
       do{ (m).r = ADD32(S_MUL((a).r,(b).r) , S_MUL((a).i,(b).i)); \
           (m).i = SUB32(S_MUL((a).i,(b).r) , S_MUL((a).r,(b).i)); }while(0)
 
-#   define C_MUL4(m,a,b) \
-      do{ (m).r = SHR32(SUB32(S_MUL((a).r,(b).r) , S_MUL((a).i,(b).i)),2); \
-          (m).i = SHR32(ADD32(S_MUL((a).r,(b).i) , S_MUL((a).i,(b).r)),2); }while(0)
-
 #   define C_MULBYSCALAR( c, s ) \
       do{ (c).r =  S_MUL( (c).r , s ) ;\
           (c).i =  S_MUL( (c).i , s ) ; }while(0)
@@ -95,14 +91,17 @@
     }while(0)
 
 #if defined(OPUS_ARM_INLINE_ASM)
-#include "arm/kiss_fft_armv4.h"
+#include "opus/celt/arm/kiss_fft_armv4.h"
 #endif
 
 #if defined(OPUS_ARM_INLINE_EDSP)
-#include "arm/kiss_fft_armv5e.h"
+#include "opus/celt/arm/kiss_fft_armv5e.h"
+#endif
+#if defined(MIPSr1_ASM)
+#include "opus/celt/mips/kiss_fft_mipsr1.h"
 #endif
 
-#else  /* not OPUS_FIXED_POINT*/
+#else  /* not FIXED_POINT*/
 
 #   define S_MUL(a,b) ( (a)*(b) )
 #define C_MUL(m,a,b) \
@@ -153,8 +152,8 @@
 #endif /* C_ADD defined */
 
 #ifdef OPUS_FIXED_POINT
-#  define KISS_FFT_COS(phase)  TRIG_UPSCALE*floor(MIN(32767,MAX(-32767,.5+32768 * cos (phase))))
-#  define KISS_FFT_SIN(phase)  TRIG_UPSCALE*floor(MIN(32767,MAX(-32767,.5+32768 * sin (phase))))
+/*#  define KISS_FFT_COS(phase)  TRIG_UPSCALE*floor(MIN(32767,MAX(-32767,.5+32768 * cos (phase))))
+#  define KISS_FFT_SIN(phase)  TRIG_UPSCALE*floor(MIN(32767,MAX(-32767,.5+32768 * sin (phase))))*/
 #  define KISS_FFT_COS(phase)  floor(.5+TWID_MAX*cos (phase))
 #  define KISS_FFT_SIN(phase)  floor(.5+TWID_MAX*sin (phase))
 #  define HALF_OF(x) ((x)>>1)

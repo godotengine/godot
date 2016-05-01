@@ -35,7 +35,12 @@
 
 #include "opus/celt/entenc.h"
 #include "opus/celt/entdec.h"
-#include "opus/celt/opus_modes.h"
+#include "opus/celt/modes.h"
+
+#if defined(MIPSr1_ASM)
+#include "opus/celt/mips/vq_mipsr1.h"
+#endif
+
 
 /** Algebraic pulse-vector quantiser. The signal x is replaced by the sum of
   * the pitch and a combination of pulses such that its norm is still equal
@@ -63,8 +68,8 @@ unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B,
 unsigned alg_unquant(celt_norm *X, int N, int K, int spread, int B,
       ec_dec *dec, opus_val16 gain);
 
-void renormalise_vector(celt_norm *X, int N, opus_val16 gain);
+void renormalise_vector(celt_norm *X, int N, opus_val16 gain, int arch);
 
-int stereo_itheta(celt_norm *X, celt_norm *Y, int stereo, int N);
+int stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int N, int arch);
 
 #endif /* VQ_H */

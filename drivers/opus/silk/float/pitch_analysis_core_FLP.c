@@ -24,10 +24,7 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 /*****************************************************************************
 * Pitch analyser function
@@ -182,8 +179,8 @@ opus_int silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voiced, 
 
         /* Calculate first vector products before loop */
         cross_corr = xcorr[ max_lag_4kHz - min_lag_4kHz ];
-        normalizer = silk_energy_FLP( target_ptr, sf_length_8kHz ) + 
-                     silk_energy_FLP( basis_ptr,  sf_length_8kHz ) + 
+        normalizer = silk_energy_FLP( target_ptr, sf_length_8kHz ) +
+                     silk_energy_FLP( basis_ptr,  sf_length_8kHz ) +
                      sf_length_8kHz * 4000.0f;
 
         C[ 0 ][ min_lag_4kHz ] += (silk_float)( 2 * cross_corr / normalizer );

@@ -24,14 +24,21 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/silk/fixed/main_FIX.h"
 #include "opus/celt/stack_alloc.h"
 #include "opus/silk/tuning_parameters.h"
+
+#if defined(MIPSr1_ASM)
+#include "opus/silk/fixed/mips/prefilter_FIX_mipsr1.h"
+#endif
+
+
+#if !defined(OVERRIDE_silk_warped_LPC_analysis_filter_FIX)
+#define silk_warped_LPC_analysis_filter_FIX(state, res_Q2, coef_Q13, input, lambda_Q16, length, order, arch) \
+    ((void)(arch),silk_warped_LPC_analysis_filter_FIX_c(state, res_Q2, coef_Q13, input, lambda_Q16, length, order))
+#endif
 
 /* Prefilter for finding Quantizer input signal */
 static OPUS_INLINE void silk_prefilt_FIX(
@@ -45,7 +52,7 @@ static OPUS_INLINE void silk_prefilt_FIX(
     opus_int                    length                      /* I    Length of signals                   */
 );
 
-void silk_warped_LPC_analysis_filter_FIX(
+void silk_warped_LPC_analysis_filter_FIX_c(
           opus_int32            state[],                    /* I/O  State [order + 1]                   */
           opus_int32            res_Q2[],                   /* O    Residual signal [length]            */
     const opus_int16            coef_Q13[],                 /* I    Coefficients [order]                */
@@ -130,7 +137,7 @@ void silk_prefilter_FIX(
 
         /* Short term FIR filtering*/
         silk_warped_LPC_analysis_filter_FIX( P->sAR_shp, st_res_Q2, AR1_shp_Q13, px,
-            psEnc->sCmn.warping_Q16, psEnc->sCmn.subfr_length, psEnc->sCmn.shapingLPCOrder );
+            psEnc->sCmn.warping_Q16, psEnc->sCmn.subfr_length, psEnc->sCmn.shapingLPCOrder, psEnc->sCmn.arch );
 
         /* Reduce (mainly) low frequencies during harmonic emphasis */
         B_Q10[ 0 ] = silk_RSHIFT_ROUND( psEncCtrl->GainsPre_Q14[ k ], 4 );
@@ -155,6 +162,7 @@ void silk_prefilter_FIX(
     RESTORE_STACK;
 }
 
+#ifndef OVERRIDE_silk_prefilt_FIX
 /* Prefilter for finding Quantizer input signal */
 static OPUS_INLINE void silk_prefilt_FIX(
     silk_prefilter_state_FIX    *P,                         /* I/O  state                               */
@@ -207,3 +215,4 @@ static OPUS_INLINE void silk_prefilt_FIX(
     P->sLF_MA_shp_Q12   = sLF_MA_shp_Q12;
     P->sLTP_shp_buf_idx = LTP_shp_buf_idx;
 }
+#endif /* OVERRIDE_silk_prefilt_FIX */

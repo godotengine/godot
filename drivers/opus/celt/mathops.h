@@ -254,5 +254,5 @@ static OPUS_INLINE opus_val16 celt_atan2p(opus_val16 y, opus_val16 x)
    }
 }
 
-#endif /* OPUS_FIXED_POINT */
+#endif /* FIXED_POINT */
 #endif /* MATHOPS_H */
