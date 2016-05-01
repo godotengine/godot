@@ -254,7 +254,7 @@ public:
 		p_list->push_back(PropertyInfo(Variant::INT,"character_set/mode",PROPERTY_HINT_ENUM,"Ascii,Latin,Unicode,Custom,Custom&Latin"));
 
 		if (character_set>=CHARSET_CUSTOM)
-			p_list->push_back(PropertyInfo(Variant::STRING,"character_set/custom",PROPERTY_HINT_FILE));
+			p_list->push_back(PropertyInfo(Variant::STRING,"character_set/custom",PROPERTY_HINT_GLOBAL_FILE));
 
 		int usage = PROPERTY_USAGE_DEFAULT;
 
@@ -290,7 +290,7 @@ public:
 				p_list->push_back(PropertyInfo(Variant::COLOR,"color/end",PROPERTY_HINT_NONE,"",usage));
 			}
 			if (color_type==COLOR_GRADIENT_IMAGE) {
-				p_list->push_back(PropertyInfo(Variant::STRING,"color/image",PROPERTY_HINT_FILE,"",usage));
+				p_list->push_back(PropertyInfo(Variant::STRING,"color/image",PROPERTY_HINT_GLOBAL_FILE,"",usage));
 			}
 			p_list->push_back(PropertyInfo(Variant::BOOL,"color/monochrome",PROPERTY_HINT_NONE,"",usage));
 		}
