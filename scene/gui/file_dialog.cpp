@@ -614,7 +614,6 @@ FileDialog::Access FileDialog::get_access() const{
 
 void FileDialog::_make_dir_confirm() {
 
-
 	Error err = dir_access->make_dir( makedirname->get_text() );
 	if (err==OK) {
 		dir_access->change_dir(makedirname->get_text());
@@ -624,6 +623,7 @@ void FileDialog::_make_dir_confirm() {
 	} else {
 		mkdirerr->popup_centered_minsize(Size2(250,50));
 	}
+	makedirname->set_text(""); // reset label
 }
 
 
