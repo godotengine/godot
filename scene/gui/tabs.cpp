@@ -620,6 +620,7 @@ int Tabs::get_tab_width(int p_idx) const {
 
 	Ref<Texture> tex = tabs[p_idx].icon;
 	if (tex.is_valid()) {
+		x+=tex->get_width();
 		if (tabs[p_idx].text!="")
 			x+=get_constant("hseparation");
 
