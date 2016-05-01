@@ -348,11 +348,8 @@ void Tabs::_notification(int p_what) {
 							style->draw(ci,rb_rect);
 					}
 
-					w+=style->get_margin(MARGIN_LEFT);
-
-					rb->draw(ci,Point2i( w,rb_rect.pos.y+style->get_margin(MARGIN_TOP) ));
+					rb->draw(ci,Point2i( w+style->get_margin(MARGIN_LEFT), rb_rect.pos.y+style->get_margin(MARGIN_TOP) ));
 					w+=rb->get_width();
-					w+=style->get_margin(MARGIN_RIGHT);
 					tabs[i].rb_rect=rb_rect;
 
 				}
@@ -376,7 +373,7 @@ void Tabs::_notification(int p_what) {
 							style->draw(ci,cb_rect);
 					}
 
-					cb->draw(ci,Point2i( w,cb_rect.pos.y+style->get_margin(MARGIN_TOP) ));
+					cb->draw(ci,Point2i( w+style->get_margin(MARGIN_LEFT), cb_rect.pos.y+style->get_margin(MARGIN_TOP) ));
 					w+=cb->get_width();
 					tabs[i].cb_rect=cb_rect;
 				}
