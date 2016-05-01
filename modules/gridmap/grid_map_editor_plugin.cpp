@@ -1236,9 +1236,9 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->get_popup()->add_item("Cursor Rotate X",MENU_OPTION_CURSOR_ROTATE_X,KEY_A);
 	options->get_popup()->add_item("Cursor Rotate Y",MENU_OPTION_CURSOR_ROTATE_Y,KEY_S);
 	options->get_popup()->add_item("Cursor Rotate Z",MENU_OPTION_CURSOR_ROTATE_Z,KEY_D);
-	options->get_popup()->add_item("Cursor Back Rotate X",MENU_OPTION_CURSOR_ROTATE_X,KEY_MASK_SHIFT+KEY_A);
-	options->get_popup()->add_item("Cursor Back Rotate Y",MENU_OPTION_CURSOR_ROTATE_Y,KEY_MASK_SHIFT+KEY_S);
-	options->get_popup()->add_item("Cursor Back Rotate Z",MENU_OPTION_CURSOR_ROTATE_Z,KEY_MASK_SHIFT+KEY_D);
+	options->get_popup()->add_item("Cursor Back Rotate X",MENU_OPTION_CURSOR_BACK_ROTATE_X,KEY_MASK_SHIFT+KEY_A);
+	options->get_popup()->add_item("Cursor Back Rotate Y",MENU_OPTION_CURSOR_BACK_ROTATE_Y,KEY_MASK_SHIFT+KEY_S);
+	options->get_popup()->add_item("Cursor Back Rotate Z",MENU_OPTION_CURSOR_BACK_ROTATE_Z,KEY_MASK_SHIFT+KEY_D);
 	options->get_popup()->add_item("Cursor Clear Rotation",MENU_OPTION_CURSOR_CLEAR_ROTATION,KEY_W);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_check_item("Duplicate Selects",MENU_OPTION_DUPLICATE_SELECTS);
