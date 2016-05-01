@@ -728,10 +728,11 @@ void AnimationPlayer::_animation_process(float p_delta) {
 				emit_signal(SceneStringNames::get_singleton()->animation_changed, old, new_name);
 			} else {
                 //stop();
+				String name = playback.assigned;
 				playing = false;
 				_set_process(false);
 				end_notify=false;
-				emit_signal(SceneStringNames::get_singleton()->finished);
+				emit_signal(SceneStringNames::get_singleton()->finished, name);
 			}
 		}
 
@@ -1347,7 +1348,7 @@ void AnimationPlayer::_bind_methods() {
         ADD_PROPERTY( PropertyInfo( Variant::REAL, "playback/default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), _SCS("set_default_blend_time"), _SCS("get_default_blend_time"));
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "root/root"), _SCS("set_root"), _SCS("get_root"));
 
-	ADD_SIGNAL( MethodInfo("finished") );
+	ADD_SIGNAL( MethodInfo("finished", PropertyInfo(Variant::STRING,"name"))  );
 	ADD_SIGNAL( MethodInfo("animation_changed", PropertyInfo(Variant::STRING,"old_name"), PropertyInfo(Variant::STRING,"new_name")) );
 	ADD_SIGNAL( MethodInfo("animation_started", PropertyInfo(Variant::STRING,"name")) );
 
