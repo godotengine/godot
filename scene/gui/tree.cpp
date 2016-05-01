@@ -154,7 +154,7 @@ void TreeItem::set_text(int p_column,String p_text) {
 	ERR_FAIL_INDEX( p_column, cells.size() );
 	cells[p_column].text=p_text;
 
-	if (cells[p_column].mode==TreeItem::CELL_MODE_RANGE) {
+	if (cells[p_column].mode==TreeItem::CELL_MODE_RANGE || cells[p_column].mode==TreeItem::CELL_MODE_RANGE_EXPRESSION) {
 
 		cells[p_column].min=0;
 		cells[p_column].max=p_text.get_slice_count(",");
@@ -704,6 +704,7 @@ void TreeItem::_bind_methods() {
 	BIND_CONSTANT( CELL_MODE_STRING );
 	BIND_CONSTANT( CELL_MODE_CHECK );
 	BIND_CONSTANT( CELL_MODE_RANGE );
+	BIND_CONSTANT( CELL_MODE_RANGE_EXPRESSION );
 	BIND_CONSTANT( CELL_MODE_ICON );
 	BIND_CONSTANT( CELL_MODE_CUSTOM );
 
@@ -1127,7 +1128,8 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 					//font->draw( ci, text_pos, p_item->cells[i].text, col,item_rect.size.x-check_w );
 
 				} break;
-				case TreeItem::CELL_MODE_RANGE: {
+				case TreeItem::CELL_MODE_RANGE:
+				case TreeItem::CELL_MODE_RANGE_EXPRESSION: {
 
 					if (p_item->cells[i].text!="") {
 
@@ -1594,7 +1596,8 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 				}
 
 			} break;
-			case TreeItem::CELL_MODE_RANGE: {
+			case TreeItem::CELL_MODE_RANGE:
+			case TreeItem::CELL_MODE_RANGE_EXPRESSION: {
 
 
 				if (c.text!="") {
@@ -1793,6 +1796,13 @@ void Tree::text_editor_enter(String p_text) {
 				c.val=c.max;
 
 			//popup_edited_item->edited_signal.call( popup_edited_item_col );
+		} break;
+		case TreeItem::CELL_MODE_RANGE_EXPRESSION: {
+
+			if(evaluator)
+				c.val=evaluator->eval(p_text);
+			else
+				c.val=p_text.to_double();
 		} break;
 	default: { ERR_FAIL(); }
 	}
@@ -2372,7 +2382,7 @@ bool Tree::edit_selected() {
 		item_edited(col,s);
 
 		return true;
-	} else if (c.mode==TreeItem::CELL_MODE_RANGE && c.text!="") {
+	} else if ((c.mode==TreeItem::CELL_MODE_RANGE||c.mode==TreeItem::CELL_MODE_RANGE_EXPRESSION) && c.text!="") {
 
 		popup_menu->clear();
 		for (int i=0;i<c.text.get_slice_count(",");i++) {
@@ -2389,7 +2399,7 @@ bool Tree::edit_selected() {
 		popup_edited_item_col=col;
 		return true;
 
-	} else if (c.mode==TreeItem::CELL_MODE_STRING || c.mode==TreeItem::CELL_MODE_RANGE) {
+	} else if (c.mode==TreeItem::CELL_MODE_STRING || c.mode==TreeItem::CELL_MODE_RANGE || c.mode==TreeItem::CELL_MODE_RANGE_EXPRESSION ) {
 
 		Point2i textedpos=get_global_pos() + rect.pos;
 		text_editor->set_pos( textedpos );
@@ -2398,7 +2408,7 @@ bool Tree::edit_selected() {
 		text_editor->set_text( c.mode==TreeItem::CELL_MODE_STRING?c.text:rtos(c.val) );
 		text_editor->select_all();
 
-		if (c.mode==TreeItem::CELL_MODE_RANGE) {
+		if (c.mode==TreeItem::CELL_MODE_RANGE || c.mode==TreeItem::CELL_MODE_RANGE_EXPRESSION ) {
 
 			value_editor->set_pos(textedpos + Point2i(0,text_editor->get_size().height) );
 			value_editor->set_size( Size2(rect.size.width,1));
@@ -3227,6 +3237,9 @@ bool Tree::is_folding_hidden() const {
 	return hide_folding;
 }
 
+void Tree::set_value_evaluator(ValueEvaluator *p_evaluator) {
+	evaluator = p_evaluator;
+}
 
 void Tree::_bind_methods() {
 
@@ -3367,6 +3380,7 @@ Tree::Tree() {
 
 	hide_folding=false;
 
+	evaluator=NULL;
 }
 
 

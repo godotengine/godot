@@ -34,6 +34,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
+#include "core/helper/value_evaluator.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -52,6 +53,7 @@ public:
 		CELL_MODE_STRING, ///< just a string
 		CELL_MODE_CHECK, ///< string + check
 		CELL_MODE_RANGE, ///< Contains a range
+		CELL_MODE_RANGE_EXPRESSION, ///< Contains a range
 		CELL_MODE_ICON, ///< Contains a icon, not editable
 		CELL_MODE_CUSTOM, ///< Contains a custom value, show a string, and an edit button
 	};
@@ -422,6 +424,8 @@ friend class TreeItem;
 
 	bool hide_folding;
 
+	ValueEvaluator *evaluator;
+
 protected:
 	static void _bind_methods();
 
@@ -482,7 +486,7 @@ public:
 	void set_hide_folding(bool p_hide);
 	bool is_folding_hidden() const;
 
-
+	void set_value_evaluator(ValueEvaluator *p_evaluator);
 
 	Tree();
 	~Tree();
