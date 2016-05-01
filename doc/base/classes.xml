@@ -43884,20 +43884,24 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="YSort" inherits="Node2D" category="Core">
 	<brief_description>
+		Sort all child nodes based on their Y positions.
 	</brief_description>
 	<description>
+		Sort all child nodes based on their Y positions. The child node must inherit from [CanvasItem] for it to be sorted. Nodes that have a higher Y position will be drawn later, so they will appear on top of nodes that have a lower Y position.
 	</description>
 	<methods>
 		<method name="set_sort_enabled">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+				Set whether the children nodes are sorted or not. (default true)
 			</description>
 		</method>
 		<method name="is_sort_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if the children nodes are being sorted.
 			</description>
 		</method>
 	</methods>
