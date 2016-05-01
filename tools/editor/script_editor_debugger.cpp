@@ -206,7 +206,7 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 		breaked=true;
 		dobreak->set_disabled(true);
 		docontinue->set_disabled(false);
-		emit_signal("breaked",true,can_continue);
+		emit_signal("breaked",static_cast<Variant>(true),static_cast<Variant>(can_continue));
 		OS::get_singleton()->move_window_to_foreground();
 		tabs->set_current_tab(0);
 
@@ -223,7 +223,7 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 		forward->set_disabled(true);
 		dobreak->set_disabled(false);
 		docontinue->set_disabled(true);
-		emit_signal("breaked",false,false);
+		emit_signal("breaked",static_cast<Variant>(false),static_cast<Variant>(false));
 		//tabs->set_current_tab(0);
 
 	} else if (p_msg=="message:click_ctrl") {
