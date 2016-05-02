@@ -43929,6 +43929,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="int">
 			</argument>
 			<description>
+				Cast an [int] value to a boolean value, this method will return true if called with an integer value different to 0 and false in other case.
 			</description>
 		</method>
 		<method name="bool">
@@ -43937,6 +43938,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="float">
 			</argument>
 			<description>
+				Cast a [float] value to a boolean value, this method will return true if called with a floating point value different to 0 and false in other case.
 			</description>
 		</method>
 		<method name="bool">
@@ -43945,6 +43947,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
+				Cast a [String] value to a boolean value, this method will return true if called with a non empty string and false in other case. Examples: [code]bool('False')[/code] returns true, [code]bool('')[/code]. returns false
 			</description>
 		</method>
 	</methods>
