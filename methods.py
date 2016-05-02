@@ -665,43 +665,42 @@ def build_hlsl_dx9_headers( target, source, env ):
 
 
 class LegacyGLHeaderStruct:
-	vertex_lines=[]
-	fragment_lines=[]
-	uniforms=[]
-	attributes=[]
-	fbos=[]
-	conditionals=[]
-	enums={}
-	texunits=[]
-	texunit_names=[]
-	ubos=[]
-	ubo_names=[]
-	
-	vertex_included_files=[]
-	fragment_included_files=[]
-	
-	line_offset=0
-	vertex_offset=0
-	fragment_offset=0
+	def __init__(self):
+		self.vertex_lines=[]
+		self.fragment_lines=[]
+		self.uniforms=[]
+		self.attributes=[]
+		self.fbos=[]
+		self.conditionals=[]
+		self.enums={}
+		self.texunits=[]
+		self.texunit_names=[]
+		self.ubos=[]
+		self.ubo_names=[]
+		
+		self.vertex_included_files=[]
+		self.fragment_included_files=[]
+		
+		self.reading=""
+		self.line_offset=0
+		self.vertex_offset=0
+		self.fragment_offset=0
 	
 def include_file_in_legacygl_header( filename, header_data, depth ):
 	fs = open(filename,"r")
-	
 	line=fs.readline()
 
-	reading=""
-	
 	while(line):
 
 		if (line.find("[vertex]")!=-1):
-			reading="vertex"
+			header_data.reading="vertex"
 			line=fs.readline()
 			header_data.line_offset+=1
 			header_data.vertex_offset=header_data.line_offset
 			continue
 
 		if (line.find("[fragment]")!=-1):
-			reading="fragment"
+			header_data.reading="fragment"
 			line=fs.readline()
 			header_data.line_offset+=1
 			header_data.fragment_offset=header_data.line_offset
@@ -713,11 +712,11 @@ def include_file_in_legacygl_header( filename, header_data, depth ):
 			import os.path
 			
 			included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
-			if (not included_file in header_data.vertex_included_files and reading=="vertex"):
+			if (not included_file in header_data.vertex_included_files and header_data.reading=="vertex"):
 				header_data.vertex_included_files+=[included_file]
 				if(include_file_in_legacygl_header( included_file, header_data, depth + 1 ) == None):
 					 print "Error in file '" + filename + "': #include " + includeline + "could not be found!"
-			elif (not included_file in header_data.fragment_included_files and reading=="fragment"):
+			elif (not included_file in header_data.fragment_included_files and header_data.reading=="fragment"):
 				header_data.fragment_included_files+=[included_file]
 				if(include_file_in_legacygl_header( included_file, header_data, depth + 1 ) == None):
 					 print "Error in file '" + filename + "': #include " + includeline + "could not be found!"
@@ -808,9 +807,9 @@ def include_file_in_legacygl_header( filename, header_data, depth ):
 		#line=line.replace("\"","\\\"")
 		#line=line+"\\n\\"
 
-		if (reading=="vertex"):
+		if (header_data.reading=="vertex"):
 			header_data.vertex_lines+=[line]
-		if (reading=="fragment"):
+		if (header_data.reading=="fragment"):
 			header_data.fragment_lines+=[line]
 
 		line=fs.readline()
