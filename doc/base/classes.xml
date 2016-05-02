@@ -2733,12 +2733,14 @@
 			<argument index="1" name="custom_blend" type="float" default="-1">
 			</argument>
 			<description>
+				Play a given animation by the animation name in reverse.
 			</description>
 		</method>
 		<method name="stop">
 			<argument index="0" name="reset" type="bool" default="true">
 			</argument>
 			<description>
+				Stop the currently playing animation.
 			</description>
 		</method>
 		<method name="stop_all">
@@ -2898,6 +2900,7 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
+				Used to skip ahead or skip back in an animation. Delta is the time in seconds to skip.
 			</description>
 		</method>
 	</methods>
