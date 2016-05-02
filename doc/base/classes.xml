@@ -43999,6 +43999,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="bool">
 			</argument>
 			<description>
+				Cast a [bool] value to an integer value, [code]int(true)[/code] will be equals to 1 and [code]int(false)[/code] will be equals to 0.
 			</description>
 		</method>
 		<method name="int">
@@ -44007,6 +44008,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="float">
 			</argument>
 			<description>
+				Cast a float value to an integer value, this method simply removes the number fractions, so for example [code]int(2.7)[/code] will be equals to 2, [code]int(.1)[/code] will be equals to 0 and [code]int(-2.7)[/code] will be equals to -2.
 			</description>
 		</method>
 		<method name="int">
@@ -44015,6 +44017,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
+				Cast a [String] value to an integer value, this method is an integer parser from a string, so calling this method with an invalid integer string will return 0, a valid string will be something like [code]'1.7'[/code]. This method will ignore all non-number characters, so calling [code]int('1e3')[/code] will return 13.
 			</description>
 		</method>
 	</methods>
