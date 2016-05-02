@@ -2735,12 +2735,14 @@
 			<argument index="1" name="custom_blend" type="float" default="-1">
 			</argument>
 			<description>
+				Play a given animation by the animation name in reverse.
 			</description>
 		</method>
 		<method name="stop">
 			<argument index="0" name="reset" type="bool" default="true">
 			</argument>
 			<description>
+				Stop the currently playing animation.
 			</description>
 		</method>
 		<method name="stop_all">
@@ -2900,6 +2902,7 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
+				Used to skip ahead or skip back in an animation. Delta is the time in seconds to skip.
 			</description>
 		</method>
 	</methods>
@@ -2908,6 +2911,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Notifies when an animation starts playing.
 			</description>
 		</signal>
 		<signal name="animation_changed">
@@ -38535,6 +38539,7 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="Timer" inherits="Node" category="Core">
 	<brief_description>
+		A simple Timer node.
 	</brief_description>
 	<description>
 	Timer node. This is a simple node that will emit a timeout callback when the timer runs out. It can optionally be set to loop.
@@ -38596,12 +38601,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="active" type="bool">
 			</argument>
 			<description>
+				Set whether the timer is active or not. An inactive timer will be paused until it is activated again.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Return if the timer is active or not.
 			</description>
 		</method>
 		<method name="get_time_left" qualifiers="const">
