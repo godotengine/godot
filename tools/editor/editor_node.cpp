@@ -3554,6 +3554,7 @@ Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bo
 	load_errors->clear();
 	String lpath = Globals::get_singleton()->localize_path(p_scene);
 
+	print_line("LOCAL PATH: "+lpath+" from "+p_scene);
 	if (!lpath.begins_with("res://")) {
 
 		current_option=-1;
