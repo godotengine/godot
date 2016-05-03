@@ -61,6 +61,26 @@ void DocData::merge_from(const DocData& p_data) {
 					continue;
 				if (cf.methods[j].arguments.size()!=m.arguments.size())
 					continue;
+				// since polymorphic functions are allowed we need to check the type of
+				// the arguments so we make sure they are different.
+				int arg_count = cf.methods[j].arguments.size();
+				bool arg_used[arg_count];
+				for (int l = 0; l < arg_count; ++l) arg_used[l] = false;
+				// also there is no guarantee that argument ordering will match, so we
+				// have to check one by one so we make sure we have an exact match
+				for (int k = 0; k < arg_count; ++k) {
+					for (int l = 0; l < arg_count; ++l)
+						if (cf.methods[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
+							arg_used[l] = true;
+							break;
+						}
+				}
+				bool not_the_same = false;
+				for (int l = 0; l < arg_count; ++l)
+					if (!arg_used[l]) // at least one of the arguments was different
+						not_the_same = true;
+				if (not_the_same)
+					continue;
 
 				const MethodDoc &mf = cf.methods[j];
 
