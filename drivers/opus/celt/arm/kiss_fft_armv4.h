@@ -116,6 +116,6 @@
     } \
     while(0)
 
-#endif /* OPUS_FIXED_POINT */
+#endif /* FIXED_POINT */
 
 #endif /* KISS_FFT_ARMv4_H */

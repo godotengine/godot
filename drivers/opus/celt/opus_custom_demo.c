@@ -25,10 +25,7 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/opus_custom.h"
 #include "opus/celt/arch.h"
@@ -52,7 +49,7 @@ int main(int argc, char *argv[])
    int bytes_per_packet;
    unsigned char data[MAX_PACKET];
    int complexity;
-#if !(defined (OPUS_FIXED_POINT) && !defined(CUSTOM_MODES)) && defined(RESYNTH)
+#if !(defined (FIXED_POINT) && !defined(CUSTOM_MODES)) && defined(RESYNTH)
    int i;
    double rmsd = 0;
 #endif
@@ -174,7 +171,7 @@ int main(int argc, char *argv[])
       for (i=0;i<ret*channels;i++)
          out[i] = in[i];
 #endif
-#if !(defined (OPUS_FIXED_POINT) && !defined(CUSTOM_MODES)) && defined(RESYNTH)
+#if !(defined (FIXED_POINT) && !defined(CUSTOM_MODES)) && defined(RESYNTH)
       for (i=0;i<ret*channels;i++)
       {
          rmsd += (in[i]-out[i])*1.0*(in[i]-out[i]);
@@ -194,7 +191,7 @@ int main(int argc, char *argv[])
    opus_custom_mode_destroy(mode);
    free(in);
    free(out);
-#if !(defined (OPUS_FIXED_POINT) && !defined(CUSTOM_MODES)) && defined(RESYNTH)
+#if !(defined (FIXED_POINT) && !defined(CUSTOM_MODES)) && defined(RESYNTH)
    if (rmsd > 0)
    {
       rmsd = sqrt(rmsd/(1.0*frame_size*channels*count));

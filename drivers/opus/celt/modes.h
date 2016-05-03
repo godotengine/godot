@@ -27,8 +27,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef OPUS_MODES_H
-#define OPUS_MODES_H
+#ifndef MODES_H
+#define MODES_H
 
 #include "opus/opus_types.h"
 #include "opus/celt/celt.h"
@@ -38,14 +38,6 @@
 #include "opus/celt/entdec.h"
 
 #define MAX_PERIOD 1024
-
-#ifndef OVERLAP
-#define OVERLAP(mode) ((mode)->overlap)
-#endif
-
-#ifndef FRAMESIZE
-#define FRAMESIZE(mode) ((mode)->mdctSize)
-#endif
 
 typedef struct {
    int size;
@@ -75,7 +67,7 @@ struct OpusCustomMode {
    const opus_int16 *logN;
 
    const opus_val16 *window;
-   celt_mdct_lookup mdct;
+   mdct_lookup mdct;
    PulseCache cache;
 };
 

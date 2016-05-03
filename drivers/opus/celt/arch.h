@@ -69,11 +69,8 @@ static OPUS_INLINE void _celt_fatal(const char *str, const char *file, int line)
 
 #define IMUL32(a,b) ((a)*(b))
 
-#define ABS(x) ((x) < 0 ? (-(x)) : (x))      /**< Absolute integer value. */
-#define ABS16(x) ((x) < 0 ? (-(x)) : (x))    /**< Absolute 16-bit value.  */
 #define MIN16(a,b) ((a) < (b) ? (a) : (b))   /**< Minimum 16-bit value.   */
 #define MAX16(a,b) ((a) > (b) ? (a) : (b))   /**< Maximum 16-bit value.   */
-#define ABS32(x) ((x) < 0 ? (-(x)) : (x))    /**< Absolute 32-bit value.  */
 #define MIN32(a,b) ((a) < (b) ? (a) : (b))   /**< Minimum 32-bit value.   */
 #define MAX32(a,b) ((a) > (b) ? (a) : (b))   /**< Maximum 32-bit value.   */
 #define IMIN(a,b) ((a) < (b) ? (a) : (b))   /**< Minimum int value.   */
@@ -108,6 +105,13 @@ typedef opus_val32 celt_ener;
 #define SCALEIN(a)      (a)
 #define SCALEOUT(a)     (a)
 
+#define ABS16(x) ((x) < 0 ? (-(x)) : (x))
+#define ABS32(x) ((x) < 0 ? (-(x)) : (x))
+
+static OPUS_INLINE opus_int16 SAT16(opus_int32 x) {
+   return x > 32767 ? 32767 : x < -32768 ? -32768 : (opus_int16)x;
+}
+
 #ifdef FIXED_DEBUG
 #include "opus/celt/fixed_debug.h"
 #else
@@ -115,9 +119,9 @@ typedef opus_val32 celt_ener;
 #include "opus/celt/fixed_generic.h"
 
 #ifdef OPUS_ARM_INLINE_EDSP
-#include "arm/fixed_armv5e.h"
+#include "opus/celt/arm/fixed_armv5e.h"
 #elif defined (OPUS_ARM_INLINE_ASM)
-#include "arm/fixed_armv4.h"
+#include "opus/celt/arm/fixed_armv4.h"
 #elif defined (BFIN_ASM)
 #include "fixed_bfin.h"
 #elif defined (TI_C5X_ASM)
@@ -128,7 +132,7 @@ typedef opus_val32 celt_ener;
 
 #endif
 
-#else /* OPUS_FIXED_POINT */
+#else /* FIXED_POINT */
 
 typedef float opus_val16;
 typedef float opus_val32;
@@ -136,6 +140,22 @@ typedef float opus_val32;
 typedef float celt_sig;
 typedef float celt_norm;
 typedef float celt_ener;
+
+#ifdef FLOAT_APPROX
+/* This code should reliably detect NaN/inf even when -ffast-math is used.
+   Assumes IEEE 754 format. */
+static OPUS_INLINE int celt_isnan(float x)
+{
+   union {float f; opus_uint32 i;} in;
+   in.f = x;
+   return ((in.i>>23)&0xFF)==0xFF && (in.i&0x007FFFFF)!=0;
+}
+#else
+#ifdef __FAST_MATH__
+#error Cannot build libopus with -ffast-math unless FLOAT_APPROX is defined. This could result in crashes on extreme (e.g. NaN) input
+#endif
+#define celt_isnan(x) ((x)!=(x))
+#endif
 
 #define Q15ONE 1.0f
 
@@ -145,6 +165,10 @@ typedef float celt_ener;
 #define VERY_SMALL 1e-30f
 #define VERY_LARGE16 1e15f
 #define Q15_ONE ((opus_val16)1.f)
+
+/* This appears to be the same speed as C99's fabsf() but it's more portable. */
+#define ABS16(x) ((float)fabs(x))
+#define ABS32(x) ((float)fabs(x))
 
 #define QCONST16(x,bits) (x)
 #define QCONST32(x,bits) (x)
@@ -184,6 +208,7 @@ typedef float celt_ener;
 #define MULT32_32_Q31(a,b)     ((a)*(b))
 
 #define MAC16_32_Q15(c,a,b)     ((c)+(a)*(b))
+#define MAC16_32_Q16(c,a,b)     ((c)+(a)*(b))
 
 #define MULT16_16_Q11_32(a,b)     ((a)*(b))
 #define MULT16_16_Q11(a,b)     ((a)*(b))
@@ -201,7 +226,9 @@ typedef float celt_ener;
 #define SCALEIN(a)      ((a)*CELT_SIG_SCALE)
 #define SCALEOUT(a)     ((a)*(1/CELT_SIG_SCALE))
 
-#endif /* !OPUS_FIXED_POINT */
+#define SIG2WORD16(x) (x)
+
+#endif /* !FIXED_POINT */
 
 #ifndef GLOBAL_STACK_SIZE
 #ifdef OPUS_FIXED_POINT

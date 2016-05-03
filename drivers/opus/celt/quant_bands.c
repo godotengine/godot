@@ -25,10 +25,7 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/celt/quant_bands.h"
 #include "opus/celt/laplace.h"
@@ -292,7 +289,7 @@ void quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd,
 #endif
    }
    if (lfe)
-      max_decay=3;
+      max_decay = QCONST16(3.f,DB_SHIFT);
    enc_start_state = *enc;
 
    ALLOC(oldEBands_intra, C*m->nbEBands, opus_val16);

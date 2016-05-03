@@ -15,10 +15,7 @@
    action, so I'm giving up and re-implementing it locally.
 
   [1] <http://rt.openssl.org/Ticket/Display.html?id=2158>*/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/internal.h"
 #if defined(OP_ENABLE_HTTP)&&defined(_WIN32)

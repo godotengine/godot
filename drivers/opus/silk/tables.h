@@ -47,8 +47,8 @@ extern const opus_uint8  silk_pitch_contour_NB_iCDF[ 11 ];                      
 extern const opus_uint8  silk_pitch_contour_10_ms_iCDF[ 12 ];                                       /*  12 */
 extern const opus_uint8  silk_pitch_contour_10_ms_NB_iCDF[ 3 ];                                     /*   3 */
 
-extern const opus_uint8  silk_pulses_per_block_iCDF[ N_RATE_LEVELS ][ MAX_PULSES + 2 ];             /* 180 */
-extern const opus_uint8  silk_pulses_per_block_BITS_Q5[ N_RATE_LEVELS - 1 ][ MAX_PULSES + 2 ];      /* 162 */
+extern const opus_uint8  silk_pulses_per_block_iCDF[ N_RATE_LEVELS ][ SILK_MAX_PULSES + 2 ];        /* 180 */
+extern const opus_uint8  silk_pulses_per_block_BITS_Q5[ N_RATE_LEVELS - 1 ][ SILK_MAX_PULSES + 2 ]; /* 162 */
 
 extern const opus_uint8  silk_rate_levels_iCDF[ 2 ][ N_RATE_LEVELS - 1 ];                           /*  18 */
 extern const opus_uint8  silk_rate_levels_BITS_Q5[ 2 ][ N_RATE_LEVELS - 1 ];                        /*  18 */
@@ -59,7 +59,7 @@ extern const opus_uint8  silk_shell_code_table0[ 152 ];                         
 extern const opus_uint8  silk_shell_code_table1[ 152 ];                                             /* 152 */
 extern const opus_uint8  silk_shell_code_table2[ 152 ];                                             /* 152 */
 extern const opus_uint8  silk_shell_code_table3[ 152 ];                                             /* 152 */
-extern const opus_uint8  silk_shell_code_table_offsets[ MAX_PULSES + 1 ];                           /*  17 */
+extern const opus_uint8  silk_shell_code_table_offsets[ SILK_MAX_PULSES + 1 ];                      /*  17 */
 
 extern const opus_uint8  silk_lsb_iCDF[ 2 ];                                                        /*   2 */
 

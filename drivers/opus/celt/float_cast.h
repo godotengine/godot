@@ -90,14 +90,14 @@
 #include <math.h>
 #define float2int(x) lrint(x)
 
-#elif (defined(_MSC_VER) && _MSC_VER >= 1400) && (defined (WIN64) || defined (_WIN64))
+#elif (defined(_MSC_VER) && _MSC_VER >= 1400) && defined (_M_X64)
         #include <xmmintrin.h>
 
         __inline long int float2int(float value)
         {
                 return _mm_cvtss_si32(_mm_load_ss(&value));
         }
-#elif (defined(_MSC_VER) && _MSC_VER >= 1400) && (defined (WIN32) || defined (_WIN32))
+#elif (defined(_MSC_VER) && _MSC_VER >= 1400) && defined (_M_IX86)
         #include <math.h>
 
         /*      Win32 doesn't seem to have these functions.
