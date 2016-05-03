@@ -64,7 +64,7 @@ void DocData::merge_from(const DocData& p_data) {
 				// since polymorphic functions are allowed we need to check the type of
 				// the arguments so we make sure they are different.
 				int arg_count = cf.methods[j].arguments.size();
-				bool arg_used[arg_count];
+				bool* arg_used = new bool[arg_count];
 				for (int l = 0; l < arg_count; ++l) arg_used[l] = false;
 				// also there is no guarantee that argument ordering will match, so we
 				// have to check one by one so we make sure we have an exact match

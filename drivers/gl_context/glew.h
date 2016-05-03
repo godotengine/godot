@@ -153,8 +153,7 @@ typedef unsigned short wchar_t;
 #endif
 #if !defined(_PTRDIFF_T_DEFINED) && !defined(_PTRDIFF_T_)
 #  ifdef _WIN64
-//typedef __int64 ptrdiff_t;
-typedef long int ptrdiff_t;
+typedef __int64 ptrdiff_t;
 #  else
 typedef _W64 int ptrdiff_t;
 #  endif
