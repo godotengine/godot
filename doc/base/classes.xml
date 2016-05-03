@@ -17963,39 +17963,47 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="LinkButton" inherits="BaseButton" category="Core">
 	<brief_description>
+		Simple button used to represent a link to some resource
 	</brief_description>
 	<description>
+		This kind of buttons are primarily used when the interaction with the button causes a context change (like linking to a web page).
 	</description>
 	<methods>
 		<method name="set_text">
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
+				Sets the text of the button.
 			</description>
 		</method>
 		<method name="get_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Returns the text of the button.
 			</description>
 		</method>
 		<method name="set_underline_mode">
 			<argument index="0" name="underline_mode" type="int">
 			</argument>
 			<description>
+				Sets the underline mode for this button, the argument must be one of the [LinkButton] constants (see constants section).
 			</description>
 		</method>
 		<method name="get_underline_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the underline mode for this button.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="UNDERLINE_MODE_ALWAYS" value="0">
+			The LinkButton will always show an underline at the bottom of its text
 		</constant>
 		<constant name="UNDERLINE_MODE_ON_HOVER" value="1">
+			The LinkButton will show an underline at the bottom of its text when the mouse cursor is over it.
 		</constant>
 	</constants>
 	<theme_items>
