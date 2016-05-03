@@ -289,6 +289,8 @@ def configure(env):
                         print "Compiled program architecture will be a 32 bit executable. (forcing bits=32)."
                 else:
                         print "Failed to detect MSVC compiler architecture version... Defaulting to 32bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup."                        
+		if env["bits"]=="64":
+			env.Append(CCFLAGS=['/D_WIN64'])
 	else:
 
 		# Workaround for MinGW. See:
