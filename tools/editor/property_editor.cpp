@@ -321,7 +321,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 					ofs.y+=22*i;
 					for(int j=0;j<10;j++) {
 
-						Button *c=checks20[i*10+j];
+						CheckBox *c=checks20[i*10+j];
 						Point2 o=ofs;
 						o.x+=j*22;
 						if (j>=5)
@@ -1721,7 +1721,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	}
 
 	for(int i=0;i<20;i++) {
-		checks20[i]=memnew( Button );
+		checks20[i]=memnew( CheckBox );
 		checks20[i]->set_toggle_mode(true);
 		checks20[i]->set_focus_mode(FOCUS_NONE);
 		add_child(checks20[i]);

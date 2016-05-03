@@ -31,6 +31,7 @@
 
 #include "scene/gui/tree.h"
 #include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
 #include "tools/editor/editor_file_dialog.h"
 #include "scene/gui/dialogs.h"
@@ -95,7 +96,7 @@ class CustomPropertyEditor : public Popup {
 	ColorPicker *color_picker;
 	TextEdit *text_edit;
 	bool read_only;
-	Button *checks20[20];
+	CheckBox *checks20[20];
 	SpinBox *spinbox;
 	HSlider *slider;
 
