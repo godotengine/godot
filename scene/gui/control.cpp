@@ -652,7 +652,23 @@ bool Control::has_point(const Point2& p_point) const {
 	return Rect2( Point2(), get_size() ).has_point(p_point);
 }
 
+void Control::set_drag_forwarding(Control* p_target) {
+
+	if (p_target)
+		data.drag_owner=p_target->get_instance_ID();
+	else
+		data.drag_owner=0;
+}
+
 Variant Control::get_drag_data(const Point2& p_point) {
+
+	if (data.drag_owner) {
+		Object *obj = ObjectDB::get_instance(data.drag_owner);
+		if (obj) {
+			Control *c = obj->cast_to<Control>();
+			return c->call("get_drag_data_fw",p_point,this);
+		}
+	}
 
 	if (get_script_instance()) {
 		Variant v=p_point;
@@ -669,6 +685,14 @@ Variant Control::get_drag_data(const Point2& p_point) {
 
 bool Control::can_drop_data(const Point2& p_point,const Variant& p_data) const {
 
+	if (data.drag_owner) {
+		Object *obj = ObjectDB::get_instance(data.drag_owner);
+		if (obj) {
+			Control *c = obj->cast_to<Control>();
+			return c->call("can_drop_data_fw",p_point,p_data,this);
+		}
+	}
+
 	if (get_script_instance()) {
 		Variant v=p_point;
 		const Variant *p[2]={&v,&p_data};
@@ -682,6 +706,15 @@ bool Control::can_drop_data(const Point2& p_point,const Variant& p_data) const {
 
 }
 void Control::drop_data(const Point2& p_point,const Variant& p_data){
+
+	if (data.drag_owner) {
+		Object *obj = ObjectDB::get_instance(data.drag_owner);
+		if (obj) {
+			Control *c = obj->cast_to<Control>();
+			c->call("drop_data_fw",p_point,p_data,this);
+			return;
+		}
+	}
 
 	if (get_script_instance()) {
 		Variant v=p_point;
@@ -707,7 +740,6 @@ void Control::set_drag_preview(Control *p_control) {
 	ERR_FAIL_COND(!is_inside_tree());
 	get_viewport()->_gui_set_drag_preview(this,p_control);
 }
-
 
 
 
@@ -2273,6 +2305,7 @@ void Control::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("grab_click_focus"),&Control::grab_click_focus);
 
+	ObjectTypeDB::bind_method(_MD("set_drag_forwarding;","target:Control"),&Control::set_drag_forwarding);
 	ObjectTypeDB::bind_method(_MD("set_drag_preview","control:Control"),&Control::set_drag_preview);
 
 	ObjectTypeDB::bind_method(_MD("warp_mouse","to_pos"),&Control::warp_mouse);
@@ -2380,6 +2413,7 @@ Control::Control() {
 	data.rotation=0;
 	data.parent_canvas_item=NULL;
 	data.scale=Vector2(1,1);
+	data.drag_owner=0;
 
 
 	for (int i=0;i<4;i++) {
