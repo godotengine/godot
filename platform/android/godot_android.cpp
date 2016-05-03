@@ -789,7 +789,7 @@ void android_main(struct android_app* state) {
 	     ASENSOR_TYPE_ACCELEROMETER);
      // assuming the Android API is uniform
      engine.magnetometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
-	     ASENSOR_TYPE_MAGNETOMETER);
+	     ASENSOR_TYPE_MAGNETIC_FIELD);
      engine.sensorEventQueue = ASensorManager_createEventQueue(engine.sensorManager,
 	     state->looper, LOOPER_ID_USER, NULL, NULL);
 
