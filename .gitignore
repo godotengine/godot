@@ -58,7 +58,6 @@ platform/android/libs/play_licensing/gen/*
 *.os
 *.Plo
 *.lo
-*.Po
 
 # Libs generated files
 .deps/*
