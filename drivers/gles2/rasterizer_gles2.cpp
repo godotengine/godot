@@ -11359,7 +11359,7 @@ void RasterizerGLES2::set_force_16_bits_fbo(bool p_force) {
 RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,bool p_default_fragment_lighting,bool p_use_reload_hooks) {
 
 	_singleton = this;
-
+	shrink_textures_x2=false;
 	RenderList::max_elements=GLOBAL_DEF("rasterizer/max_render_elements",(int)RenderList::DEFAULT_MAX_ELEMENTS);
 	if (RenderList::max_elements>64000)
 		RenderList::max_elements=64000;
