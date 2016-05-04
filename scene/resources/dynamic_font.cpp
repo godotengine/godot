@@ -261,6 +261,8 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 
 	if (tex_index==-1) {
 		//could not find texture to fit, create one
+		tex_x = 0;
+		tex_y = 0;
 
 		int texsize = MAX(size*8,256);
 		if (mw>texsize)
@@ -280,6 +282,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 		{
 			//zero texture
 			DVector<uint8_t>::Write w = tex.imgdata.write();
+			ERR_FAIL_COND(texsize*texsize*2 > tex.imgdata.size());
 			for(int i=0;i<texsize*texsize*2;i++) {
 				w[i]=0;
 			}
@@ -305,6 +308,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 			for(int j=0;j<w;j++) {
 
 				int ofs = ( (i+tex_y+rect_margin)*tex.texture_size+j+tex_x+rect_margin)*2;
+				ERR_FAIL_COND(ofs >= tex.imgdata.size());
 				wr[ofs+0]=255; //grayscale as 1
 				wr[ofs+1]=cpbitmap[i*w+j]; //alpha as 0
 			}
