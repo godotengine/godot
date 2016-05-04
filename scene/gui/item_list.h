@@ -61,6 +61,8 @@ private:
 	int max_columns;
 	Size2 min_icon_size;
 
+	int defer_select_single;
+
 	void _scroll_changed(double);
 	void _input_event(const InputEvent& p_event);
 protected:

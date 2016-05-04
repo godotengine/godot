@@ -297,6 +297,7 @@ void ItemList::remove_item(int p_idx){
 	items.remove(p_idx);
 	update();
 	shape_changed=true;
+	defer_select_single=-1;
 
 
 }
@@ -307,6 +308,7 @@ void ItemList::clear(){
 	current=-1;
 	ensure_selected_visible=false;
 	update();
+	defer_select_single=-1;
 
 }
 
@@ -392,6 +394,20 @@ Size2 ItemList::Item::get_icon_size() const {
 }
 
 void ItemList::_input_event(const InputEvent& p_event) {
+
+	if (defer_select_single>=0 && p_event.type==InputEvent::MOUSE_MOTION) {
+		defer_select_single=-1;
+		return;
+	}
+	if (defer_select_single>=0 && p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_LEFT && !p_event.mouse_button.pressed) {
+
+		select(defer_select_single,true);
+
+		emit_signal("multi_selected",defer_select_single,true);
+		defer_select_single=-1;
+		return;
+	}
+
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_LEFT && p_event.mouse_button.pressed) {
 
 		const InputEventMouseButton &mb = p_event.mouse_button;
@@ -445,7 +461,13 @@ void ItemList::_input_event(const InputEvent& p_event) {
 						emit_signal("multi_selected",i,true);
 				}
 			} else {
+
+				if (!mb.mod.command && select_mode==SELECT_MULTI && items[i].selectable && items[i].selected) {
+					defer_select_single=i;
+					return;
+				}
 				bool selected = !items[i].selected;
+
 				select(i,select_mode==SELECT_SINGLE || !mb.mod.command);
 				if (selected) {
 					if (select_mode==SELECT_SINGLE) {
@@ -1186,6 +1208,7 @@ ItemList::ItemList() {
 	current_columns=1;
 	search_time_msec=0;
 	ensure_selected_visible=false;
+	defer_select_single=-1;
 
 }
 
