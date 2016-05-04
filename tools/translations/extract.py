@@ -53,7 +53,7 @@ for fname in matches:
 	f.close()
 
 
-f = open("template.pot","wb")
+f = open("tools.pot","wb")
 f.write(main_po)
 f.close()
 	
