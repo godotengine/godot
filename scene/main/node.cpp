@@ -2022,7 +2022,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_child:Node","idx"),&Node::get_child);
 	ObjectTypeDB::bind_method(_MD("has_node","path"),&Node::has_node);
 	ObjectTypeDB::bind_method(_MD("get_node:Node","path"),&Node::get_node);
-	ObjectTypeDB::bind_method(_MD("get_parent:Parent"),&Node::get_parent);
+	ObjectTypeDB::bind_method(_MD("get_parent:Node"),&Node::get_parent);
 	ObjectTypeDB::bind_method(_MD("find_node:Node","mask","recursive","owned"),&Node::find_node,DEFVAL(true),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("has_node_and_resource","path"),&Node::has_node_and_resource);
 	ObjectTypeDB::bind_method(_MD("get_node_and_resource","path"),&Node::_get_node_and_resource);

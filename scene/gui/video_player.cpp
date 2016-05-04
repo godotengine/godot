@@ -360,8 +360,8 @@ bool VideoPlayer::has_autoplay() const {
 
 void VideoPlayer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_stream","stream:Stream"),&VideoPlayer::set_stream);
-	ObjectTypeDB::bind_method(_MD("get_stream:Stream"),&VideoPlayer::get_stream);
+	ObjectTypeDB::bind_method(_MD("set_stream","stream:VideoStream"),&VideoPlayer::set_stream);
+	ObjectTypeDB::bind_method(_MD("get_stream:VideoStream"),&VideoPlayer::get_stream);
 
 	ObjectTypeDB::bind_method(_MD("play"),&VideoPlayer::play);
 	ObjectTypeDB::bind_method(_MD("stop"),&VideoPlayer::stop);
