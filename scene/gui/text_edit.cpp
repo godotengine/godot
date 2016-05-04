@@ -3926,6 +3926,10 @@ void TextEdit::_update_completion_candidates() {
 	int ci_match=0;
 	for(int i=0;i<completion_strings.size();i++) {
 		if (completion_strings[i].begins_with(s)) {
+			// don't remove duplicates if no input is provided
+			if (completion_options.find(completion_strings[i]) != -1 && s != "") {
+				continue;
+			}
 			completion_options.push_back(completion_strings[i]);
 			int m=0;
 			int max=MIN(completion_current.length(),completion_strings[i].length());

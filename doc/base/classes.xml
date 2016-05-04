@@ -2735,12 +2735,14 @@
 			<argument index="1" name="custom_blend" type="float" default="-1">
 			</argument>
 			<description>
+			Play a given animation by the animation name in reverse.
 			</description>
 		</method>
 		<method name="stop">
 			<argument index="0" name="reset" type="bool" default="true">
 			</argument>
 			<description>
+			Stop the currently playing animation.
 			</description>
 		</method>
 		<method name="stop_all">
@@ -2900,6 +2902,7 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
+			Used to skip ahead or skip back in an animation. Delta is the time in seconds to skip.
 			</description>
 		</method>
 	</methods>
@@ -2908,6 +2911,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+			Notifies when an animation starts playing.
 			</description>
 		</signal>
 		<signal name="animation_changed">
@@ -8288,10 +8292,10 @@
 </class>
 <class name="ColorRamp" inherits="Resource" category="Core">
 	<brief_description>
-		Color interpolator node
+	Color interpolator node
 	</brief_description>
 	<description>
-		Given a set of colors, this node will interpolate them in order, meaning, that if you have color 1, color 2 and color3, the ramp will interpolate (generate the colors between two colors) from color 1 to color 2 and from color 2 to color 3. Initially the ramp will have 2 colors (black and white), one (black) at ramp lower offset offset 0 and the other (white) at the ramp higher offset 1.
+	Given a set of colors, this node will interpolate them in order, meaning, that if you have color 1, color 2 and color3, the ramp will interpolate (generate the colors between two colors) from color 1 to color 2 and from color 2 to color 3. Initially the ramp will have 2 colors (black and white), one (black) at ramp lower offset offset 0 and the other (white) at the ramp higher offset 1.
 	</description>
 	<methods>
 		<method name="add_point">
@@ -8300,14 +8304,14 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Adds the specified color to the end of the ramp, with the specified offset
+			Adds the specified color to the end of the ramp, with the specified offset
 			</description>
 		</method>
 		<method name="remove_point">
 			<argument index="0" name="offset" type="int">
 			</argument>
 			<description>
-				Removes the color at the index [i]offset[/i]
+			Removes the color at the index [i]offset[/i]
 			</description>
 		</method>
 		<method name="set_offset">
@@ -8316,7 +8320,7 @@
 			<argument index="1" name="offset" type="float">
 			</argument>
 			<description>
-				Sets the offset for the ramp color at index [i]point[/i]
+			Sets the offset for the ramp color at index [i]point[/i]
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
@@ -8325,7 +8329,7 @@
 			<argument index="0" name="point" type="int">
 			</argument>
 			<description>
-				Returns the offset of the ramp color at index [i]point[/i]
+			Returns the offset of the ramp color at index [i]point[/i]
 			</description>
 		</method>
 		<method name="set_color">
@@ -8334,7 +8338,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the color of the ramp color at index [i]point[/i]
+			Sets the color of the ramp color at index [i]point[/i]
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
@@ -8343,7 +8347,7 @@
 			<argument index="0" name="point" type="int">
 			</argument>
 			<description>
-				Returns the color of the ramp color at index [i]point[/i]
+			Returns the color of the ramp color at index [i]point[/i]
 			</description>
 		</method>
 		<method name="interpolate">
@@ -8352,42 +8356,42 @@
 			<argument index="0" name="offset" type="float">
 			</argument>
 			<description>
-				Returns the interpolated color specified by [i]offset[/i]
+			Returns the interpolated color specified by [i]offset[/i]
 			</description>
 		</method>
 		<method name="get_point_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of colors in the ramp
+			Returns the number of colors in the ramp
 			</description>
 		</method>
 		<method name="set_offsets">
 			<argument index="0" name="offsets" type="RealArray">
 			</argument>
 			<description>
-				Sets the offset for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accomodate the new elements, all new colors will be black by default.
+			Sets the offset for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accomodate the new elements, all new colors will be black by default.
 			</description>
 		</method>
 		<method name="get_offsets" qualifiers="const">
 			<return type="RealArray">
 			</return>
 			<description>
-				Returns the offsets for the colors in this ramp
+			Returns the offsets for the colors in this ramp
 			</description>
 		</method>
 		<method name="set_colors">
 			<argument index="0" name="colors" type="ColorArray">
 			</argument>
 			<description>
-				Sets the colors for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accomodate the new elements.
+			Sets the colors for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accomodate the new elements.
 			</description>
 		</method>
 		<method name="get_colors" qualifiers="const">
 			<return type="ColorArray">
 			</return>
 			<description>
-				Returns the colors in the ramp
+			Returns the colors in the ramp
 			</description>
 		</method>
 	</methods>
@@ -10213,6 +10217,50 @@ Returns an empty String "" at the end of the list.
 			<description>
 			</description>
 		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="DynamicFont" inherits="Font" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="set_font_data">
+			<argument index="0" name="data" type="DynamicFontData">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_font_data" qualifiers="const">
+			<return type="DynamicFontData">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_size">
+			<argument index="0" name="data" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="DynamicFontData" inherits="Resource" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
 	</methods>
 	<constants>
 	</constants>
@@ -14983,8 +15031,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="Input" inherits="Object" category="Core">
 	<brief_description>
+	A Singleton that deals with inputs.
 	</brief_description>
 	<description>
+	A Singleton that deals with inputs. This includes key presses, mouse buttons and movement, joysticks, and input actions.
 	</description>
 	<methods>
 		<method name="is_key_pressed">
@@ -14993,6 +15043,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="scancode" type="int">
 			</argument>
 			<description>
+			Returns true or false depending on whether the key is pressed or not. You can pass KEY_*, which are pre-defined constants listed in [@Global Scope].
 			</description>
 		</method>
 		<method name="is_mouse_button_pressed">
@@ -15021,6 +15072,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Returns true or false depending on whether the action event is pressed. Actions and their events can be set in the Project Settings / Input Map tab. Or be set with [InputMap].
 			</description>
 		</method>
 		<method name="add_joy_mapping">
@@ -15081,48 +15133,56 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="Vector3">
 			</return>
 			<description>
+			If the device has an accelerometer, this will return the movement.
 			</description>
 		</method>
 		<method name="get_mouse_speed" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Returns the mouse speed.
 			</description>
 		</method>
 		<method name="get_mouse_button_mask" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Returns mouse buttons as a bitmask. If multiple mouse buttons are pressed at the same time the bits are added together.
 			</description>
 		</method>
 		<method name="set_mouse_mode">
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+			Set the mouse mode. See the constants for more information.
 			</description>
 		</method>
 		<method name="get_mouse_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the mouse mode. See the constants for more information.
 			</description>
 		</method>
 		<method name="warp_mouse_pos">
 			<argument index="0" name="to" type="Vector2">
 			</argument>
 			<description>
+			Sets the mouse position to the specified vector.
 			</description>
 		</method>
 		<method name="action_press">
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			This will simulate pressing the specificed action.
 			</description>
 		</method>
 		<method name="action_release">
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			If the specified action is already pressed, this will release it.
 			</description>
 		</method>
 		<method name="set_custom_mouse_cursor">
@@ -15131,6 +15191,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="hotspot" type="Vector2" default="Vector2(0,0)">
 			</argument>
 			<description>
+			Set a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified.
 			</description>
 		</method>
 	</methods>
@@ -15147,10 +15208,13 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</signals>
 	<constants>
 		<constant name="MOUSE_MODE_VISIBLE" value="0">
+		Makes the mouse cursor visible if it is hidden.
 		</constant>
 		<constant name="MOUSE_MODE_HIDDEN" value="1">
+		Makes the mouse cursor hidden if it is visible.
 		</constant>
 		<constant name="MOUSE_MODE_CAPTURED" value="2">
+		Captures the mouse. The mouse will be hidden and unable to leave the game window. But it will still register movement and mouse button presses.
 		</constant>
 	</constants>
 </class>
@@ -23007,66 +23071,66 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="Particles2D" inherits="Node2D" category="Core">
 	<brief_description>
-		2D Particle emitter
+	2D Particle emitter
 	</brief_description>
 	<description>
-		Particles2D is a particle system 2D [Node] that is used to simulate several types of particle effects, such as explosions, rain, snow, fireflies, or other magical-like shinny sparkles. Particles are drawn using impostors, and given their dynamic behavior, the user must provide a visibility AABB (although helpers to create one automatically exist).
+	Particles2D is a particle system 2D [Node] that is used to simulate several types of particle effects, such as explosions, rain, snow, fireflies, or other magical-like shinny sparkles. Particles are drawn using impostors, and given their dynamic behavior, the user must provide a visibility AABB (although helpers to create one automatically exist).
 	</description>
 	<methods>
 		<method name="set_emitting">
 			<argument index="0" name="active" type="bool">
 			</argument>
 			<description>
-				If this is set to true then the particle emitter will emit particles, if its false it will not.
+			If this is set to true then the particle emitter will emit particles, if its false it will not.
 			</description>
 		</method>
 		<method name="is_emitting" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether this emitter is currently emitting or not
+			Returns whether this emitter is currently emitting or not
 			</description>
 		</method>
 		<method name="set_amount">
 			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
-				Sets the amount of particles spawned at each emission
+			Sets the amount of particles spawned at each emission
 			</description>
 		</method>
 		<method name="get_amount" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the amount of particles spawned at each emission
+			Returns the amount of particles spawned at each emission
 			</description>
 		</method>
 		<method name="set_lifetime">
 			<argument index="0" name="lifetime" type="float">
 			</argument>
 			<description>
-				Sets the amount of seconds that each particle will be visible.
+			Sets the amount of seconds that each particle will be visible.
 			</description>
 		</method>
 		<method name="get_lifetime" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Gets the amount of seconds that each particle will be visible.
+			Gets the amount of seconds that each particle will be visible.
 			</description>
 		</method>
 		<method name="set_time_scale">
 			<argument index="0" name="time_scale" type="float">
 			</argument>
 			<description>
-				Sets the increment or decrement for the particle lifetime. for example: if the time scale is set to 2, the particles will die and move twice as fast.
+			Sets the increment or decrement for the particle lifetime. for example: if the time scale is set to 2, the particles will die and move twice as fast.
 			</description>
 		</method>
 		<method name="get_time_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Returns the emitter time scale
+			Returns the emitter time scale
 			</description>
 		</method>
 		<method name="set_pre_process_time">
@@ -23085,14 +23149,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				Sets the amount of seconds during which the emitter will spawn particles, after the specified seconds the emitter state will be set to non emitting, so calling [method is_emitting] will return false. If the timeout is 0 the emitter will spawn forever.
+			Sets the amount of seconds during which the emitter will spawn particles, after the specified seconds the emitter state will be set to non emitting, so calling [method is_emitting] will return false. If the timeout is 0 the emitter will spawn forever.
 			</description>
 		</method>
 		<method name="get_emit_timeout" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Returns the amount of seconds during which the emitter will spawn particles
+			Returns the amount of seconds during which the emitter will spawn particles
 			</description>
 		</method>
 		<method name="set_param">
@@ -23101,7 +23165,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
-				Sets the value of the specified emitter parameter (see the constants secction for the list of parameters)
+			Sets the value of the specified emitter parameter (see the constants secction for the list of parameters)
 			</description>
 		</method>
 		<method name="get_param" qualifiers="const">
@@ -23110,7 +23174,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="param" type="int">
 			</argument>
 			<description>
-				Returns the value of the specified emitter parameter
+			Returns the value of the specified emitter parameter
 			</description>
 		</method>
 		<method name="set_randomness">
@@ -23119,7 +23183,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
-				Sets the randomness value of the specified emitter parameter (see the constants secction for the list of parameters), 0 means no randomness, so every particle will have the parameters specified, 1 means that the parameter will be choosen at random, the closer the randomness value gets to 0 the more conservative the variation of the parameter will be.
+			Sets the randomness value of the specified emitter parameter (see the constants secction for the list of parameters), 0 means no randomness, so every particle will have the parameters specified, 1 means that the parameter will be choosen at random, the closer the randomness value gets to 0 the more conservative the variation of the parameter will be.
 			</description>
 		</method>
 		<method name="get_randomness" qualifiers="const">
@@ -23128,7 +23192,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="param" type="int">
 			</argument>
 			<description>
-				Returns the randomness value of the specified emitter parameter
+			Returns the randomness value of the specified emitter parameter
 			</description>
 		</method>
 		<method name="set_texture">
@@ -23137,28 +23201,28 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="texture" type="Object">
 			</argument>
 			<description>
-				Sets the texture for each particle
+			Sets the texture for each particle
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="Texture">
 			</return>
 			<description>
-				Returns the texture for emitted particles
+			Returns the texture for emitted particles
 			</description>
 		</method>
 		<method name="set_color">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-				Set the tint color for each particle.
+			Set the tint color for each particle.
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
-				Returns the tint color for each particle.
+			Returns the tint color for each particle.
 			</description>
 		</method>
 		<method name="set_color_ramp">
@@ -23167,28 +23231,28 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="color_ramp" type="Object">
 			</argument>
 			<description>
-				Sets the [ColorRamp] used to tint each particle. Particle will be tinted according to their lifetimes.
+			Sets the [ColorRamp] used to tint each particle. Particle will be tinted according to their lifetimes.
 			</description>
 		</method>
 		<method name="get_color_ramp" qualifiers="const">
 			<return type="ColorRamp">
 			</return>
 			<description>
-				Returns the [ColorRamp] used to tint each particle
+			Returns the [ColorRamp] used to tint each particle
 			</description>
 		</method>
 		<method name="set_emissor_offset">
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
-				Sets the particle spawn origin position relative to the emitter center. for example if this value is set to (50, 50), the particle will spawn 50 units to the right and  50 units to the bottom of the emitter center.
+			Sets the particle spawn origin position relative to the emitter center. for example if this value is set to (50, 50), the particle will spawn 50 units to the right and  50 units to the bottom of the emitter center.
 			</description>
 		</method>
 		<method name="get_emissor_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the particle spawn origin position relative to the emitter.
+			Returns the particle spawn origin position relative to the emitter.
 			</description>
 		</method>
 		<method name="set_flip_h">
@@ -23243,14 +23307,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="extents" type="Vector2">
 			</argument>
 			<description>
-				Sets the half extents of the emission box, particles will be spawned at random inside this box.
+			Sets the half extents of the emission box, particles will be spawned at random inside this box.
 			</description>
 		</method>
 		<method name="get_emission_half_extents" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the half extents of the emission box.
+			Returns the half extents of the emission box.
 			</description>
 		</method>
 		<method name="set_color_phases">
@@ -23358,7 +23422,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</methods>
 	<constants>
 		<constant name="PARAM_DIRECTION" value="0">
-			Direction in degrees at which the particles will be launched, Notice that when the direction is set to 0 the particles will be launched to the negative 
+			Direction in degrees at which the particles will be launched, Notice that when the direction is set to 0 the particles will be launched to the negative
 		</constant>
 		<constant name="PARAM_SPREAD" value="1">
 		</constant>
@@ -38535,6 +38599,7 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="Timer" inherits="Node" category="Core">
 	<brief_description>
+	A simple Timer node.
 	</brief_description>
 	<description>
 	Timer node. This is a simple node that will emit a timeout callback when the timer runs out. It can optionally be set to loop.
@@ -38596,12 +38661,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="active" type="bool">
 			</argument>
 			<description>
+			Set whether the timer is active or not. An inactive timer will be paused until it is activated again.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return if the timer is active or not.
 			</description>
 		</method>
 		<method name="get_time_left" qualifiers="const">
@@ -43884,24 +43951,24 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="YSort" inherits="Node2D" category="Core">
 	<brief_description>
-		Sort all child nodes based on their Y positions.
+	Sort all child nodes based on their Y positions.
 	</brief_description>
 	<description>
-		Sort all child nodes based on their Y positions. The child node must inherit from [CanvasItem] for it to be sorted. Nodes that have a higher Y position will be drawn later, so they will appear on top of nodes that have a lower Y position.
+	Sort all child nodes based on their Y positions. The child node must inherit from [CanvasItem] for it to be sorted. Nodes that have a higher Y position will be drawn later, so they will appear on top of nodes that have a lower Y position.
 	</description>
 	<methods>
 		<method name="set_sort_enabled">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Set whether the children nodes are sorted or not. (default true)
+			Set whether the children nodes are sorted or not. (default true)
 			</description>
 		</method>
 		<method name="is_sort_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns true if the children nodes are being sorted.
+			Returns true if the children nodes are being sorted.
 			</description>
 		</method>
 	</methods>
@@ -43922,6 +43989,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="int">
 			</argument>
 			<description>
+			Cast an [int] value to a boolean value, this method will return true if called with an integer value different to 0 and false in other case.
 			</description>
 		</method>
 		<method name="bool">
@@ -43930,6 +43998,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="float">
 			</argument>
 			<description>
+			Cast a [float] value to a boolean value, this method will return true if called with a floating point value different to 0 and false in other case.
 			</description>
 		</method>
 		<method name="bool">
@@ -43938,6 +44007,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
+			Cast a [String] value to a boolean value, this method will return true if called with a non empty string and false in other case. Examples: [code]bool('False')[/code] returns true, [code]bool('')[/code]. returns false
 			</description>
 		</method>
 	</methods>
@@ -43946,8 +44016,10 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="float" category="Built-In Types">
 	<brief_description>
+	Float built-in type
 	</brief_description>
 	<description>
+	Float built-in type.
 	</description>
 	<methods>
 		<method name="float">
@@ -43956,6 +44028,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="bool">
 			</argument>
 			<description>
+			Cast a [bool] value to a floating point value, [code]float(true)[/code] will be equals to 1.0 and [code]float(false)[/code] will be equals to 0.0.
 			</description>
 		</method>
 		<method name="float">
@@ -43964,6 +44037,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="int">
 			</argument>
 			<description>
+			Cast an [int] value to a floating point value, [code]float(1)[/code] will be equals to 1.0.
 			</description>
 		</method>
 		<method name="float">
@@ -43972,6 +44046,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
+			Cast a [String] value to a floating point value. This method accepts float value strings like [code] '1.23' [/code] and exponential notation strings for its parameter so calling [code] float('1e3') [/code] will return 1000.0 and calling [code] float('1e-3') [/code] will return -0.001.
 			</description>
 		</method>
 	</methods>
@@ -43992,6 +44067,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="bool">
 			</argument>
 			<description>
+			Cast a [bool] value to an integer value, [code]int(true)[/code] will be equals to 1 and [code]int(false)[/code] will be equals to 0.
 			</description>
 		</method>
 		<method name="int">
@@ -44000,6 +44076,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="float">
 			</argument>
 			<description>
+			Cast a float value to an integer value, this method simply removes the number fractions, so for example [code]int(2.7)[/code] will be equals to 2, [code]int(.1)[/code] will be equals to 0 and [code]int(-2.7)[/code] will be equals to -2.
 			</description>
 		</method>
 		<method name="int">
@@ -44008,6 +44085,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
+			Cast a [String] value to an integer value, this method is an integer parser from a string, so calling this method with an invalid integer string will return 0, a valid string will be something like [code]'1.7'[/code]. This method will ignore all non-number characters, so calling [code]int('1e3')[/code] will return 13.
 			</description>
 		</method>
 	</methods>

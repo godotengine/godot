@@ -111,7 +111,8 @@ opus_int silk_Decode(                                   /* O    Returns error co
     opus_int                        newPacketFlag,      /* I    Indicates first decoder call for this packet    */
     ec_dec                          *psRangeDec,        /* I/O  Compressor data structure                       */
     opus_int16                      *samplesOut,        /* O    Decoded output speech vector                    */
-    opus_int32                      *nSamplesOut        /* O    Number of samples decoded                       */
+    opus_int32                      *nSamplesOut,       /* O    Number of samples decoded                       */
+    int                             arch                /* I    Run-time architecture                           */
 );
 
 #if 0

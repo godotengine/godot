@@ -24,10 +24,7 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/silk/fixed/main_FIX.h"
 #include "opus/silk/tuning_parameters.h"
@@ -50,7 +47,8 @@ void silk_find_LTP_FIX(
     const opus_int                  subfr_length,                           /* I    subframe length                                                             */
     const opus_int                  nb_subfr,                               /* I    number of subframes                                                         */
     const opus_int                  mem_offset,                             /* I    number of samples in LTP memory                                             */
-    opus_int                        corr_rshifts[ MAX_NB_SUBFR ]            /* O    right shifts applied to correlations                                        */
+    opus_int                        corr_rshifts[ MAX_NB_SUBFR ],           /* O    right shifts applied to correlations                                        */
+    int                             arch                                    /* I    Run-time architecture                                                       */
 )
 {
     opus_int   i, k, lshift;
@@ -84,10 +82,10 @@ void silk_find_LTP_FIX(
             rr_shifts += ( LTP_CORRS_HEAD_ROOM - LZs );
         }
         corr_rshifts[ k ] = rr_shifts;
-        silk_corrMatrix_FIX( lag_ptr, subfr_length, LTP_ORDER, LTP_CORRS_HEAD_ROOM, WLTP_ptr, &corr_rshifts[ k ] );  /* WLTP_fix_ptr in Q( -corr_rshifts[ k ] ) */
+        silk_corrMatrix_FIX( lag_ptr, subfr_length, LTP_ORDER, LTP_CORRS_HEAD_ROOM, WLTP_ptr, &corr_rshifts[ k ], arch );  /* WLTP_fix_ptr in Q( -corr_rshifts[ k ] ) */
 
         /* The correlation vector always has lower max abs value than rr and/or RR so head room is assured */
-        silk_corrVector_FIX( lag_ptr, r_ptr, subfr_length, LTP_ORDER, Rr, corr_rshifts[ k ] );  /* Rr_fix_ptr   in Q( -corr_rshifts[ k ] ) */
+        silk_corrVector_FIX( lag_ptr, r_ptr, subfr_length, LTP_ORDER, Rr, corr_rshifts[ k ], arch );  /* Rr_fix_ptr   in Q( -corr_rshifts[ k ] ) */
         if( corr_rshifts[ k ] > rr_shifts ) {
             rr[ k ] = silk_RSHIFT( rr[ k ], corr_rshifts[ k ] - rr_shifts ); /* rr[ k ] in Q( -corr_rshifts[ k ] ) */
         }

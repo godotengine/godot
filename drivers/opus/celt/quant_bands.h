@@ -30,7 +30,7 @@
 #define QUANT_BANDS
 
 #include "opus/celt/arch.h"
-#include "opus/celt/opus_modes.h"
+#include "opus/celt/modes.h"
 #include "opus/celt/entenc.h"
 #include "opus/celt/entdec.h"
 #include "opus/celt/mathops.h"

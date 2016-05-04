@@ -24,10 +24,7 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 /*
     Elliptic/Cauer filters designed with 0.1 dB passband ripple,
@@ -35,7 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
     [0.95 : 0.15 : 0.35] normalized cut off frequencies.
 */
 
-#include "opus/silk/silk_main.h"
+#include "opus/silk/main.h"
 
 /* Helper function, interpolates the filter taps */
 static OPUS_INLINE void silk_LP_interpolate_filter_taps(

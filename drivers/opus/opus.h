@@ -616,7 +616,10 @@ OPUS_EXPORT void opus_pcm_soft_clip(float *pcm, int frame_size, int channels, fl
   * merged. Splitting valid Opus packets is always guaranteed to succeed,
   * whereas merging valid packets only succeeds if all frames have the same
   * mode, bandwidth, and frame size, and when the total duration of the merged
-  * packet is no more than 120 ms.
+  * packet is no more than 120 ms. The 120 ms limit comes from the
+  * specification and limits decoder memory requirements at a point where
+  * framing overhead becomes negligible.
+  *
   * The repacketizer currently only operates on elementary Opus
   * streams. It will not manipualte multistream packets successfully, except in
   * the degenerate case where they consist of data from a single stream.

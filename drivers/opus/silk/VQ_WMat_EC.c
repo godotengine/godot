@@ -24,15 +24,12 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
-#include "opus/silk/silk_main.h"
+#include "opus/silk/main.h"
 
 /* Entropy constrained matrix-weighted VQ, hard-coded to 5-element vectors, for a single input data vector */
-void silk_VQ_WMat_EC(
+void silk_VQ_WMat_EC_c(
     opus_int8                   *ind,                           /* O    index of best codebook vector               */
     opus_int32                  *rate_dist_Q14,                 /* O    best weighted quant error + mu * rate       */
     opus_int                    *gain_Q7,                       /* O    sum of absolute LTP coefficients            */
@@ -55,7 +52,7 @@ void silk_VQ_WMat_EC(
     *rate_dist_Q14 = silk_int32_MAX;
     cb_row_Q7 = cb_Q7;
     for( k = 0; k < L; k++ ) {
-	    gain_tmp_Q7 = cb_gain_Q7[k];
+        gain_tmp_Q7 = cb_gain_Q7[k];
 
         diff_Q14[ 0 ] = in_Q14[ 0 ] - silk_LSHIFT( cb_row_Q7[ 0 ], 7 );
         diff_Q14[ 1 ] = in_Q14[ 1 ] - silk_LSHIFT( cb_row_Q7[ 1 ], 7 );
@@ -66,8 +63,8 @@ void silk_VQ_WMat_EC(
         /* Weighted rate */
         sum1_Q14 = silk_SMULBB( mu_Q9, cl_Q5[ k ] );
 
-		/* Penalty for too large gain */
-		sum1_Q14 = silk_ADD_LSHIFT32( sum1_Q14, silk_max( silk_SUB32( gain_tmp_Q7, max_gain_Q7 ), 0 ), 10 );
+        /* Penalty for too large gain */
+        sum1_Q14 = silk_ADD_LSHIFT32( sum1_Q14, silk_max( silk_SUB32( gain_tmp_Q7, max_gain_Q7 ), 0 ), 10 );
 
         silk_assert( sum1_Q14 >= 0 );
 
@@ -111,7 +108,7 @@ void silk_VQ_WMat_EC(
         if( sum1_Q14 < *rate_dist_Q14 ) {
             *rate_dist_Q14 = sum1_Q14;
             *ind = (opus_int8)k;
-			*gain_Q7 = gain_tmp_Q7;
+            *gain_Q7 = gain_tmp_Q7;
         }
 
         /* Go to next cbk vector */

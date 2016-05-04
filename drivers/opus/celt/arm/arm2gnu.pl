@@ -1,7 +1,33 @@
 #!/usr/bin/perl
+# Copyright (C) 2002-2013 Xiph.org Foundation
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# - Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#
+# - Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+# OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+# PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+# LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 my $bigend;  # little/big endian
 my $nxstack;
+my $apple = 0;
+my $symprefix = "";
 
 $nxstack = 0;
 
@@ -10,10 +36,15 @@ eval 'exec /usr/local/bin/perl -S $0 ${1+"$@"}'
 
 while ($ARGV[0] =~ /^-/) {
     $_ = shift;
-  last if /^--/;
-    if (/^-n/) {
+  last if /^--$/;
+    if (/^-n$/) {
     $nflag++;
     next;
+    }
+    if (/^--apple$/) {
+        $apple = 1;
+        $symprefix = "_";
+        next;
     }
     die "I don't recognize this switch: $_\\n";
 }
@@ -24,6 +55,8 @@ $n=0;
 
 $thumb = 0;     # ARM mode by default, not Thumb.
 @proc_stack = ();
+
+printf ("    .syntax unified\n");
 
 LINE:
 while (<>) {
@@ -53,7 +86,7 @@ while (<>) {
     s/\bINCLUDE[ \t]*([^ \t\n]+)/.include \"$1\"/;
     s/\bGET[ \t]*([^ \t\n]+)/.include \"${ my $x=$1; $x =~ s|\.s|-gnu.S|; \$x }\"/;
     s/\bIMPORT\b/.extern/;
-    s/\bEXPORT\b/.global/;
+    s/\bEXPORT\b\s*/.global $symprefix/;
     s/^(\s+)\[/$1IF/;
     s/^(\s+)\|/$1ELSE/;
     s/^(\s+)\]/$1ENDIF/;
@@ -109,7 +142,7 @@ while (<>) {
             # won't match the original source file (we could use the .line
             # directive, which is documented to be obsolete, but then gdb will
             # show the wrong line in the translated source file).
-            s/$/;   .arch armv7-a\n   .fpu neon\n   .object_arch armv4t/;
+            s/$/;   .arch armv7-a\n   .fpu neon\n   .object_arch armv4t/ unless ($apple);
         }
     }
 
@@ -131,9 +164,13 @@ while (<>) {
         $prefix = "";
         if ($proc)
         {
-            $prefix = $prefix.sprintf("\t.type\t%s, %%function; ",$proc);
+            $prefix = $prefix.sprintf("\t.type\t%s, %%function; ",$proc) unless ($apple);
+            # Make sure we $prefix isn't empty here (for the $apple case).
+            # We handle mangling the label here, make sure it doesn't match
+            # the label handling below (if $prefix would be empty).
+            $prefix = "; ";
             push(@proc_stack, $proc);
-            s/^[A-Za-z_\.]\w+/$&:/;
+            s/^[A-Za-z_\.]\w+/$symprefix$&:/;
         }
         $prefix = $prefix."\t.thumb_func; " if ($thumb);
         s/\bPROC\b/@ $&/;
@@ -146,7 +183,7 @@ while (<>) {
         my $proc;
         s/\bENDP\b/@ $&/;
         $proc = pop(@proc_stack);
-        $_ = "\t.size $proc, .-$proc".$_ if ($proc);
+        $_ = "\t.size $proc, .-$proc".$_ if ($proc && !$apple);
     }
     s/\bSUBT\b/@ $&/;
     s/\bDATA\b/@ $&/;   # DATA directive is deprecated -- Asm guide, p.7-25
@@ -311,6 +348,6 @@ while (<>) {
 }
 #If we had a code section, mark that this object doesn't need an executable
 # stack.
-if ($nxstack) {
+if ($nxstack && !$apple) {
     printf ("    .section\t.note.GNU-stack,\"\",\%\%progbits\n");
 }

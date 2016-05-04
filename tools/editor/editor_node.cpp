@@ -4668,8 +4668,13 @@ void EditorNode::_scene_tab_script_edited(int p_tab) {
 void EditorNode::_scene_tab_closed(int p_tab) {
 	current_option = SCENE_TAB_CLOSE;
 	tab_closing = p_tab;
-	if (unsaved_cache) {
+
+	bool unsaved = (p_tab==editor_data.get_edited_scene()) ?
+			saved_version!=editor_data.get_undo_redo().get_version() :
+			editor_data.get_scene_version(p_tab)!=0;
+	if (unsaved) {
 		confirmation->get_ok()->set_text(TTR("Yes"));
+
 		//confirmation->get_cancel()->show();
 		confirmation->set_text(TTR("Close scene? (Unsaved changes will be lost)"));
 		confirmation->popup_centered_minsize();

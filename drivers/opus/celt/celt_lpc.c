@@ -24,10 +24,7 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/celt/celt_lpc.h"
 #include "opus/celt/stack_alloc.h"
@@ -88,12 +85,15 @@ int          p
 #endif
 }
 
-void celt_fir(const opus_val16 *_x,
+
+void celt_fir_c(
+         const opus_val16 *_x,
          const opus_val16 *num,
          opus_val16 *_y,
          int N,
          int ord,
-         opus_val16 *mem)
+         opus_val16 *mem,
+         int arch)
 {
    int i,j;
    VARDECL(opus_val16, rnum);
@@ -111,6 +111,7 @@ void celt_fir(const opus_val16 *_x,
    for(i=0;i<ord;i++)
       mem[i] = _x[N-i-1];
 #ifdef SMALL_FOOTPRINT
+   (void)arch;
    for (i=0;i<N;i++)
    {
       opus_val32 sum = SHL32(EXTEND32(_x[i]), SIG_SHIFT);
@@ -124,7 +125,7 @@ void celt_fir(const opus_val16 *_x,
    for (i=0;i<N-3;i+=4)
    {
       opus_val32 sum[4]={0,0,0,0};
-      xcorr_kernel(rnum, x+i, sum, ord);
+      xcorr_kernel(rnum, x+i, sum, ord, arch);
       _y[i  ] = SATURATE16(ADD32(EXTEND32(_x[i  ]), PSHR32(sum[0], SIG_SHIFT)));
       _y[i+1] = SATURATE16(ADD32(EXTEND32(_x[i+1]), PSHR32(sum[1], SIG_SHIFT)));
       _y[i+2] = SATURATE16(ADD32(EXTEND32(_x[i+2]), PSHR32(sum[2], SIG_SHIFT)));
@@ -146,10 +147,12 @@ void celt_iir(const opus_val32 *_x,
          opus_val32 *_y,
          int N,
          int ord,
-         opus_val16 *mem)
+         opus_val16 *mem,
+         int arch)
 {
 #ifdef SMALL_FOOTPRINT
    int i,j;
+   (void)arch;
    for (i=0;i<N;i++)
    {
       opus_val32 sum = _x[i];
@@ -187,7 +190,7 @@ void celt_iir(const opus_val32 *_x,
       sum[1]=_x[i+1];
       sum[2]=_x[i+2];
       sum[3]=_x[i+3];
-      xcorr_kernel(rden, y+i, sum, ord);
+      xcorr_kernel(rden, y+i, sum, ord, arch);
 
       /* Patch up the result to compensate for the fact that this is an IIR */
       y[i+ord  ] = -ROUND16(sum[0],SIG_SHIFT);
