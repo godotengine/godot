@@ -267,6 +267,7 @@ void DocData::generate(bool p_basic_types) {
 							case Variant::INT_ARRAY:
 							case Variant::REAL_ARRAY:
 							case Variant::STRING_ARRAY:	//25
+							case Variant::VECTOR2_ARRAY:
 							case Variant::VECTOR3_ARRAY:
 							case Variant::COLOR_ARRAY:
 								default_arg_text=Variant::get_type_name(default_arg.get_type())+"("+default_arg_text+")";
