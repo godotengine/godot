@@ -921,7 +921,7 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 		texture->alloc_height = texture->height;
 	};
 
-	if (shrink_textures_x2) {
+	if (!(p_flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) && shrink_textures_x2) {
 		texture->alloc_height = MAX(1,texture->alloc_height/2);
 		texture->alloc_width = MAX(1,texture->alloc_width/2);
 	}
