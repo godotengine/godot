@@ -257,13 +257,13 @@ void EditorSettings::create() {
 
 		if (!dir->file_exists(config_file)) {
 			memdelete(dir);
-			WARN_PRINT("Config file does not exist, creating.")
+			WARN_PRINT("Config file does not exist, creating.");
 			goto fail;
 		}
 
 		memdelete(dir);
 
-		singleton = ResourceLoader::load(config_file_path,"EditorSettings");
+		singleton = ResourceLoader::load(config_file_path,TTR("EditorSettings"));
 		if (singleton.is_null()) {
 			WARN_PRINT("Could not open config file.");
 			goto fail;
@@ -275,7 +275,7 @@ void EditorSettings::create() {
 
 		if (OS::get_singleton()->is_stdout_verbose()) {
 
-			print_line("EditorSettings: Load OK!");
+			print_line(TTR("EditorSettings: Load OK!"));
 		}
 
 		singleton->setup_network();
@@ -365,7 +365,7 @@ void EditorSettings::save() {
 	}
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("EditorSettings Save OK!");
+		print_line(TTR("EditorSettings Save OK!"));
 	}
 
 }
@@ -462,7 +462,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	set("game_window_placement/rect",0);
 	hints["game_window_placement/rect"]=PropertyInfo(Variant::INT,"game_window_placement/rect",PROPERTY_HINT_ENUM,"Default,Centered,Custom Position,Force Maximized,Force Full Screen");
-	String screen_hints="Default (Same as Editor)";
+	String screen_hints=TTR("Default (Same as Editor)");
 	for(int i=0;i<OS::get_singleton()->get_screen_count();i++) {
 		screen_hints+=",Monitor "+itos(i+1);
 	}
@@ -498,7 +498,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #else
 	hints["import/pvrtc_texture_tool"]=PropertyInfo(Variant::STRING,"import/pvrtc_texture_tool",PROPERTY_HINT_GLOBAL_FILE,"");
 #endif
-	set("PVRTC/fast_conversion",false);
+	set(TTR("PVRTC/fast_conversion"),false);
 
 
 	set("run/auto_save_before_running",true);

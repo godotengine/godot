@@ -318,20 +318,20 @@ EditorHelpSearch::EditorHelpSearch() {
 	search_box = memnew( LineEdit );
 	sb_hb->add_child(search_box);
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	Button *sb = memnew( Button("Search"));
+	Button *sb = memnew( Button(TTR("Search")));
 	sb->connect("pressed",this,"_update_search");
 	sb_hb->add_child(sb);
-	vbc->add_margin_child("Search:",sb_hb);
+	vbc->add_margin_child(TTR("Search:"),sb_hb);
 	search_box->connect("text_changed",this,"_text_changed");
 	search_box->connect("input_event",this,"_sbox_input");
 	search_options = memnew( Tree );
-	vbc->add_margin_child("Matches:",search_options,true);
-	get_ok()->set_text("Open");
+	vbc->add_margin_child(TTR("Matches:"),search_options,true);
+	get_ok()->set_text(TTR("Open"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	search_options->connect("item_activated",this,"_confirmed");
-	set_title("Search Classes");
+	set_title(TTR("Search Classes"));
 
 //	search_options->set_hide_root(true);
 
@@ -510,7 +510,7 @@ EditorHelpIndex::EditorHelpIndex() {
 	set_child_rect(vbc);
 
 	search_box = memnew( LineEdit );
-	vbc->add_margin_child("Search:", search_box);
+	vbc->add_margin_child(TTR("Search:"), search_box);
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	register_text_enter(search_box);
@@ -519,12 +519,12 @@ EditorHelpIndex::EditorHelpIndex() {
 	search_box->connect("input_event", this, "_sbox_input");
 
 	class_list = memnew( Tree );
-	vbc->add_margin_child("Class List: ", class_list, true);
+	vbc->add_margin_child(TTR("Class List: "), class_list, true);
 	class_list->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	class_list->connect("item_activated",this,"_tree_item_selected");
 
-	get_ok()->set_text("Open");
+	get_ok()->set_text(TTR("Open"));
 }
 
 
@@ -618,7 +618,7 @@ void EditorHelp::_class_desc_select(const String& p_select) {
 
 
 
-//	print_line("LINK: "+p_select);
+//	print_line(TTR("LINK: ")+p_select);
 	if (p_select.begins_with("#")) {
 		//_goto_desc(p_select.substr(1,p_select.length()));
 		emit_signal("go_to_help","class_name:"+p_select.substr(1,p_select.length()));
@@ -710,7 +710,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 	class_desc->push_font(doc_title_font);
 	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
-	class_desc->add_text("Class: ");
+	class_desc->add_text(TTR("Class: "));
 	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/base_type_color"));
 	_add_text(p_class);
 	class_desc->pop();
@@ -722,7 +722,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Inherits: ");
+		class_desc->add_text(TTR("Inherits: "));
 		class_desc->pop();
 		class_desc->pop();
 
@@ -787,7 +787,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Brief Description:");
+		class_desc->add_text(TTR("Brief Description:"));
 		class_desc->pop();
 		class_desc->pop();
 
@@ -810,7 +810,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Public Methods:");
+		class_desc->add_text(TTR("Public Methods:"));
 		class_desc->pop();
 		class_desc->pop();
 
@@ -895,7 +895,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Members:");
+		class_desc->add_text(TTR("Members:"));
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->add_newline();
@@ -939,7 +939,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("GUI Theme Items:");
+		class_desc->add_text(TTR("GUI Theme Items:"));
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->add_newline();
@@ -981,7 +981,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Signals:");
+		class_desc->add_text(TTR("Signals:"));
 		class_desc->pop();
 		class_desc->pop();
 
@@ -1046,7 +1046,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Constants:");
+		class_desc->add_text(TTR("Constants:"));
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->push_indent(1);
@@ -1091,7 +1091,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		description_line=class_desc->get_line_count()-2;
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Description:");
+		class_desc->add_text(TTR("Description:"));
 		class_desc->pop();
 		class_desc->pop();
 
@@ -1112,7 +1112,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Method Description:");
+		class_desc->add_text(TTR("Method Description:"));
 		class_desc->pop();
 		class_desc->pop();
 
@@ -1650,8 +1650,8 @@ EditorHelp::EditorHelp() {
 	search_dialog->set_child_rect(search_vb);
 	search = memnew( LineEdit );
 	search_dialog->register_text_enter(search);
-	search_vb->add_margin_child("Search Text",search);
-	search_dialog->get_ok()->set_text("Find");
+	search_vb->add_margin_child(TTR("Search Text"),search);
+	search_dialog->get_ok()->set_text(TTR("Find"));
 	search_dialog->connect("confirmed",this,"_search_cbk");
 	search_dialog->set_hide_on_ok(false);
 	search_dialog->set_self_opacity(0.8);

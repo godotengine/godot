@@ -198,7 +198,7 @@ EditorSubScene::EditorSubScene() {
 
 	scene=NULL;
 
-	set_title("Select Sub-Scene..");
+	set_title(TTR("Select Sub-Scene.."));
 	set_hide_on_ok(false);
 
 	VBoxContainer *vb = memnew( VBoxContainer );
@@ -214,11 +214,11 @@ EditorSubScene::EditorSubScene() {
 	b->set_text(" .. ");
 	hb->add_child(b);
 	b->connect("pressed",this,"_path_browse");
-	vb->add_margin_child("Scene Path:",hb);
+	vb->add_margin_child(TTR("Scene Path:"),hb);
 
 	tree = memnew( Tree );
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
-	vb->add_margin_child("Import From Node:",tree,true);
+	vb->add_margin_child(TTR("Import From Node:"),tree,true);
 	tree->connect("item_activated",this,"_ok",make_binds(),CONNECT_DEFERRED);
 
 	file_dialog = memnew( EditorFileDialog );

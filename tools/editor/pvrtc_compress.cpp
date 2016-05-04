@@ -82,7 +82,7 @@ static void _compress_image(Image::CompressMode p_mode,Image *p_image) {
 
 	}
 
-	if (EditorSettings::get_singleton()->get("PVRTC/fast_conversion").operator bool()) {
+	if (EditorSettings::get_singleton()->get(TTR("PVRTC/fast_conversion")).operator bool()) {
 		args.push_back("-pvrtcfast");
 	}
 	if (p_image->get_mipmaps()>0)
@@ -93,13 +93,13 @@ static void _compress_image(Image::CompressMode p_mode,Image *p_image) {
 	ResourceSaver::save(src_img,t);
 
 	Error err = OS::get_singleton()->execute(ttpath,args,true);
-	ERR_EXPLAIN("Could not execute PVRTC Tool: "+ttpath);
+	ERR_EXPLAIN(TTR("Could not execute PVRTC Tool: ")+ttpath);
 	ERR_FAIL_COND(err!=OK);
 
 
 	t=ResourceLoader::load(dst_img,"Texture");
 
-	ERR_EXPLAIN("Can't load back converted image using PVRTC Tool: "+dst_img);
+	ERR_EXPLAIN(TTR("Can't load back converted image using PVRTC Tool: ")+dst_img);
 	ERR_FAIL_COND(t.is_null());
 
 	*p_image=t->get_data();

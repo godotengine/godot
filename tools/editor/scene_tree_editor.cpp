@@ -168,13 +168,13 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 
 			Spatial *ci = n->cast_to<Spatial>();
 			if (!ci->is_visible() && ci->get_parent_spatial() && !ci->get_parent_spatial()->is_visible()) {
-				error->set_text("This item cannot be made visible because the parent is hidden. Unhide the parent first.");
+				error->set_text(TTR("This item cannot be made visible because the parent is hidden. Unhide the parent first."));
 				error->popup_centered_minsize();
 				return;
 			}
 
 			bool v = !bool(n->call("is_hidden"));
-			undo_redo->create_action("Toggle Spatial Visible");
+			undo_redo->create_action(TTR("Toggle Spatial Visible"));
 			undo_redo->add_do_method(n,"_set_visible_",!v);
 			undo_redo->add_undo_method(n,"_set_visible_",v);
 			undo_redo->commit_action();
@@ -182,12 +182,12 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 
 			CanvasItem *ci = n->cast_to<CanvasItem>();
 			if (!ci->is_visible() && ci->get_parent_item() && !ci->get_parent_item()->is_visible()) {
-				error->set_text("This item cannot be made visible because the parent is hidden. Unhide the parent first.");
+				error->set_text(TTR("This item cannot be made visible because the parent is hidden. Unhide the parent first."));
 				error->popup_centered_minsize();
 				return;
 			}
 			bool v = !bool(n->call("is_hidden"));
-			undo_redo->create_action("Toggle CanvasItem Visible");
+			undo_redo->create_action(TTR("Toggle CanvasItem Visible"));
 			undo_redo->add_do_method(n,v?"hide":"show");
 			undo_redo->add_undo_method(n,v?"show":"hide");
 			undo_redo->commit_action();
@@ -278,11 +278,11 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 
 	if (p_node==get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
 		item->add_button(0,get_icon("InstanceOptions","EditorIcons"),BUTTON_SUBSCENE);
-		item->set_tooltip(0,"Inherits: "+p_node->get_scene_inherited_state()->get_path()+"\nType: "+p_node->get_type());
+		item->set_tooltip(0,TTR("Inherits: ")+p_node->get_scene_inherited_state()->get_path()+"\nType: "+p_node->get_type());
 	} else if (p_node!=get_scene_node() && p_node->get_filename()!="" && can_open_instance) {
 
 		item->add_button(0,get_icon("InstanceOptions","EditorIcons"),BUTTON_SUBSCENE);
-		item->set_tooltip(0,"Instance: "+p_node->get_filename()+"\nType: "+p_node->get_type());
+		item->set_tooltip(0,TTR("Instance: ")+p_node->get_filename()+"\nType: "+p_node->get_type());
 	} else {
 		item->set_tooltip(0,String(p_node->get_name())+"\nType: "+p_node->get_type());
 	}
@@ -666,7 +666,7 @@ void SceneTreeEditor::_renamed() {
 		which->set_metadata(0,n->get_path());
 		emit_signal("node_renamed");
 	} else {
-		undo_redo->create_action("Rename Node");
+		undo_redo->create_action(TTR("Rename Node"));
 		emit_signal("node_prerename",n,new_name);
 		undo_redo->add_do_method(this,"_rename_node",n->get_instance_ID(),new_name);
 		undo_redo->add_undo_method(this,"_rename_node",n->get_instance_ID(),n->get_name());
@@ -833,7 +833,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	if (p_label) {
 		Label *label = memnew( Label );
 		label->set_pos( Point2(10, 0));
-		label->set_text("Scene Tree (Nodes):");
+		label->set_text(TTR("Scene Tree (Nodes):"));
 
 		add_child(label);
 	}
@@ -863,24 +863,24 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	blocked=0;
 
 	instance_menu = memnew( PopupMenu );
-	instance_menu->add_check_item("Editable Children",SCENE_MENU_EDITABLE_CHILDREN);
-	instance_menu->add_check_item("Load As Placeholder",SCENE_MENU_USE_PLACEHOLDER);
+	instance_menu->add_check_item(TTR("Editable Children"),SCENE_MENU_EDITABLE_CHILDREN);
+	instance_menu->add_check_item(TTR("Load As Placeholder"),SCENE_MENU_USE_PLACEHOLDER);
 	instance_menu->add_separator();
-	instance_menu->add_item("Open in Editor",SCENE_MENU_OPEN);
+	instance_menu->add_item(TTR("Open in Editor"),SCENE_MENU_OPEN);
 	instance_menu->connect("item_pressed",this,"_subscene_option");
 	add_child(instance_menu);
 
 	inheritance_menu = memnew( PopupMenu );
-	inheritance_menu->add_item("Clear Inheritance",SCENE_MENU_CLEAR_INHERITANCE);
+	inheritance_menu->add_item(TTR("Clear Inheritance"),SCENE_MENU_CLEAR_INHERITANCE);
 	inheritance_menu->add_separator();
-	inheritance_menu->add_item("Open in Editor",SCENE_MENU_OPEN_INHERITED);
+	inheritance_menu->add_item(TTR("Open in Editor"),SCENE_MENU_OPEN_INHERITED);
 	inheritance_menu->connect("item_pressed",this,"_subscene_option");
 
 	add_child(inheritance_menu);
 
 	clear_inherit_confirm = memnew( ConfirmationDialog );
-	clear_inherit_confirm->set_text("Clear Inheritance? (No Undo!)");
-	clear_inherit_confirm->get_ok()->set_text("Clear!");
+	clear_inherit_confirm->set_text(TTR("Clear Inheritance? (No Undo!)"));
+	clear_inherit_confirm->get_ok()->set_text(TTR("Clear!"));
 	add_child(clear_inherit_confirm);
 
 
@@ -946,7 +946,7 @@ void SceneTreeDialog::_bind_methods() {
 
 SceneTreeDialog::SceneTreeDialog() {
 
-	set_title("Select a Node");
+	set_title(TTR("Select a Node"));
 
 	tree = memnew( SceneTreeEditor(false,false) );
 	add_child(tree);

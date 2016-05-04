@@ -203,7 +203,7 @@ public:
 	virtual Dictionary get_state() const { return anim_editor->get_state(); }
 	virtual void set_state(const Dictionary& p_state)  { anim_editor->set_state(p_state); }
 
-	virtual String get_name() const { return "Anim"; }
+	virtual String get_name() const { return TTR("Anim"); }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
 	virtual bool handles(Object *p_node) const;

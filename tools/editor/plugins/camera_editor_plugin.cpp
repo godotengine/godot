@@ -87,7 +87,7 @@ CameraEditor::CameraEditor() {
 	preview = memnew( Button );
 	add_child(preview);
 
-	preview->set_text("Preview");
+	preview->set_text(TTR("Preview"));
 	preview->set_toggle_mode(true);
 	preview->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
 	preview->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);

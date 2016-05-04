@@ -70,10 +70,10 @@ void ResourcePreloaderEditor::_files_load_request(const Vector<String>& p_paths)
 		resource = ResourceLoader::load(path);
 
 		if (resource.is_null()) {
-			dialog->set_text("ERROR: Couldn't load resource!");
-			dialog->set_title("Error!");
-			//dialog->get_cancel()->set_text("Close");
-			dialog->get_ok()->set_text("Close");
+			dialog->set_text(TTR("ERROR: Couldn't load resource!"));
+			dialog->set_title(TTR("Error!"));
+			//dialog->get_cancel()->set_text(TTR("Close"));
+			dialog->get_ok()->set_text(TTR("Close"));
 			dialog->popup_centered_minsize();
 			return; ///beh should show an error i guess
 		}
@@ -87,7 +87,7 @@ void ResourcePreloaderEditor::_files_load_request(const Vector<String>& p_paths)
 			name=basename+" "+itos(counter);
 		}
 
-		undo_redo->create_action("Add Resource");
+		undo_redo->create_action(TTR("Add Resource"));
 		undo_redo->add_do_method(preloader,"add_resource",name,resource);
 		undo_redo->add_undo_method(preloader,"remove_resource",name);
 		undo_redo->add_do_method(this,"_update_library");
@@ -134,7 +134,7 @@ void ResourcePreloaderEditor::_item_edited() {
 		}
 
 		RES samp = preloader->get_resource(old_name);
-		undo_redo->create_action("Rename Resource");
+		undo_redo->create_action(TTR("Rename Resource"));
 		undo_redo->add_do_method(preloader,"remove_resource",old_name);
 		undo_redo->add_do_method(preloader,"add_resource",new_name,samp);
 		undo_redo->add_undo_method(preloader,"remove_resource",new_name);
@@ -154,7 +154,7 @@ void ResourcePreloaderEditor::_delete_confirm_pressed() {
 		return;
 
 	String to_remove = tree->get_selected()->get_text(0);
-	undo_redo->create_action("Delete Resource");
+	undo_redo->create_action(TTR("Delete Resource"));
 	undo_redo->add_do_method(preloader,"remove_resource",to_remove);
 	undo_redo->add_undo_method(preloader,"add_resource",to_remove,preloader->get_resource(to_remove));
 	undo_redo->add_do_method(this,"_update_library");
@@ -167,10 +167,10 @@ void ResourcePreloaderEditor::_paste_pressed() {
 
 	RES r=EditorSettings::get_singleton()->get_resource_clipboard();
 	if (!r.is_valid()) {
-		dialog->set_text("Resource clipboard is empty!");
-		dialog->set_title("Error!");
-		//dialog->get_cancel()->set_text("Close");
-		dialog->get_ok()->set_text("Close");
+		dialog->set_text(TTR("Resource clipboard is empty!"));
+		dialog->set_title(TTR("Error!"));
+		//dialog->get_cancel()->set_text(TTR("Close"));
+		dialog->get_ok()->set_text(TTR("Close"));
 		dialog->popup_centered_minsize();
 		return; ///beh should show an error i guess
 	}
@@ -188,7 +188,7 @@ void ResourcePreloaderEditor::_paste_pressed() {
 		name=basename+" "+itos(counter);
 	}
 
-	undo_redo->create_action("Paste Resource");
+	undo_redo->create_action(TTR("Paste Resource"));
 	undo_redo->add_do_method(preloader,"add_resource",name,r);
 	undo_redo->add_undo_method(preloader,"remove_resource",name);
 	undo_redo->add_do_method(this,"_update_library");
@@ -206,11 +206,11 @@ void ResourcePreloaderEditor::_delete_pressed() {
 
 	_delete_confirm_pressed(); //it has undo.. why bother with a dialog..
 	/*
-	dialog->set_title("Confirm...");
-	dialog->set_text("Remove Resource '"+tree->get_selected()->get_text(0)+"' ?");
-	//dialog->get_cancel()->set_text("Cancel");
+	dialog->set_title(TTR("Confirm..."));
+	dialog->set_text(TTR("Remove Resource '")+tree->get_selected()->get_text(0)+"' ?");
+	//dialog->get_cancel()->set_text(TTR("Cancel"));
 	//dialog->get_ok()->show();
-	dialog->get_ok()->set_text("Remove");
+	dialog->get_ok()->set_text(TTR("Remove"));
 	dialog->popup_centered(Size2(300,60));*/
 
 }
@@ -302,7 +302,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	vbc->add_child(hbc);
 
 	load = memnew( Button );
-	load->set_tooltip("Load Resource");
+	load->set_tooltip(TTR("Load Resource"));
 	hbc->add_child(load);
 
 
@@ -311,7 +311,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	hbc->add_child(_delete);
 
 	paste = memnew( Button );
-	paste->set_text("Paste");
+	paste->set_text(TTR("Paste"));
 	hbc->add_child(paste);
 
 	file = memnew( EditorFileDialog );

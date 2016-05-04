@@ -173,7 +173,7 @@ void SpriteRegionEditor::_region_input(const InputEvent& p_input)
 
 			} else if (drag) {
 
-				undo_redo->create_action("Set region_rect");
+				undo_redo->create_action(TTR("Set region_rect"));
 				undo_redo->add_do_method(node,"set_region_rect",node->get_region_rect());
 				undo_redo->add_undo_method(node,"set_region_rect",rect_prev);
 				undo_redo->add_do_method(edit_draw,"update");
@@ -420,7 +420,7 @@ SpriteRegionEditor::SpriteRegionEditor(EditorNode* p_editor)
 
 	dlg_editor = memnew( AcceptDialog );
 	add_child(dlg_editor);
-	dlg_editor->set_title("Sprite Region Editor");
+	dlg_editor->set_title(TTR("Sprite Region Editor"));
 	dlg_editor->set_self_opacity(0.9);
 
 	VBoxContainer *main_vb = memnew( VBoxContainer );
@@ -431,24 +431,24 @@ SpriteRegionEditor::SpriteRegionEditor(EditorNode* p_editor)
 
 	b_snap_enable = memnew( ToolButton );
 	hb_tools->add_child(b_snap_enable);
-	b_snap_enable->set_text("Snap");
+	b_snap_enable->set_text(TTR("Snap"));
 	b_snap_enable->set_focus_mode(FOCUS_NONE);
 	b_snap_enable->set_toggle_mode(true);
 	b_snap_enable->set_pressed(use_snap);
-	b_snap_enable->set_tooltip("Enable Snap");
+	b_snap_enable->set_tooltip(TTR("Enable Snap"));
 	b_snap_enable->connect("toggled",this,"_set_use_snap");
 
 	b_snap_grid = memnew( ToolButton );
 	hb_tools->add_child(b_snap_grid);
-	b_snap_grid->set_text("Grid");
+	b_snap_grid->set_text(TTR("Grid"));
 	b_snap_grid->set_focus_mode(FOCUS_NONE);
 	b_snap_grid->set_toggle_mode(true);
 	b_snap_grid->set_pressed(snap_show_grid);
-	b_snap_grid->set_tooltip("Show Grid");
+	b_snap_grid->set_tooltip(TTR("Show Grid"));
 	b_snap_grid->connect("toggled",this,"_set_show_grid");
 
 	hb_tools->add_child( memnew( VSeparator ));
-	hb_tools->add_child( memnew( Label("Grid Offset:") ) );
+	hb_tools->add_child( memnew( Label(TTR("Grid Offset:")) ) );
 
 	sb_off_x = memnew( SpinBox );
 	sb_off_x->set_min(-256);
@@ -469,7 +469,7 @@ SpriteRegionEditor::SpriteRegionEditor(EditorNode* p_editor)
 	hb_tools->add_child(sb_off_y);
 
 	hb_tools->add_child( memnew( VSeparator ));
-	hb_tools->add_child( memnew( Label("Grid Step:") ) );
+	hb_tools->add_child( memnew( Label(TTR("Grid Step:")) ) );
 
 	sb_step_x = memnew( SpinBox );
 	sb_step_x->set_min(-256);

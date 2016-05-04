@@ -43,7 +43,7 @@ void GroupsEditor::_add_group(const String& p_group) {
 	if (node->is_in_group(name))
 		return;
 
-	undo_redo->create_action("Add to Group");
+	undo_redo->create_action(TTR("Add to Group"));
 
 	undo_redo->add_do_method(node,"add_to_group",name,true);
 	undo_redo->add_do_method(this,"update_tree");
@@ -66,7 +66,7 @@ void GroupsEditor::_remove_group(Object *p_item, int p_column, int p_id) {
 
 	String name = ti->get_text(0);
 
-	undo_redo->create_action("Remove from Group");
+	undo_redo->create_action(TTR("Remove from Group"));
 
 	undo_redo->add_do_method(node,"remove_from_group",name);
 	undo_redo->add_do_method(this,"update_tree");
@@ -125,14 +125,14 @@ GroupsEditor::GroupsEditor() {
 
 	node=NULL;
 
-	set_title("Group Editor");
+	set_title(TTR("Group Editor"));
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
 	set_child_rect(vbc);
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
-	vbc->add_margin_child("Group", hbc);
+	vbc->add_margin_child(TTR("Group"), hbc);
 
 	group_name = memnew( LineEdit );
 	group_name->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -140,17 +140,17 @@ GroupsEditor::GroupsEditor() {
 	group_name->connect("text_entered",this,"_add_group");
 
 	add = memnew( Button );
-	add->set_text("Add");
+	add->set_text(TTR("Add"));
 	hbc->add_child(add);
 	add->connect("pressed", this,"_add_group", varray(String()));
 
 	tree = memnew( Tree );
 	tree->set_hide_root(true);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
-	vbc->add_margin_child("Node Group(s)", tree, true);
+	vbc->add_margin_child(TTR("Node Group(s)"), tree, true);
 	tree->connect("button_pressed",this,"_remove_group");
 
-	get_ok()->set_text("Close");
+	get_ok()->set_text(TTR("Close"));
 }
 
 GroupsEditor::~GroupsEditor()

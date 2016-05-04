@@ -76,7 +76,7 @@ void SamplePlayerEditor::_stop() {
 		return;
 
 	node->call("stop_all");
-	print_line("STOP ALL!!");
+	print_line(TTR("STOP ALL!!"));
 	stop->set_pressed(true);
 	play->set_pressed(false);
 

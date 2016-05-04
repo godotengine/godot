@@ -72,10 +72,10 @@ void SpriteFramesEditor::_file_load_request(const DVector<String>& p_path) {
 		resource = ResourceLoader::load(p_path[i]);
 
 		if (resource.is_null()) {
-			dialog->set_text("ERROR: Couldn't load frame resource!");
-			dialog->set_title("Error!");
-			//dialog->get_cancel()->set_text("Close");
-			dialog->get_ok()->set_text("Close");
+			dialog->set_text(TTR("ERROR: Couldn't load frame resource!"));
+			dialog->set_title(TTR("Error!"));
+			//dialog->get_cancel()->set_text(TTR("Close"));
+			dialog->get_ok()->set_text(TTR("Close"));
 			dialog->popup_centered_minsize();
 			return; ///beh should show an error i guess
 		}
@@ -89,7 +89,7 @@ void SpriteFramesEditor::_file_load_request(const DVector<String>& p_path) {
 		return;
 	}
 
-	undo_redo->create_action("Add Frame");
+	undo_redo->create_action(TTR("Add Frame"));
 	int fc=frames->get_frame_count();
 
 	for(List< Ref<Texture> >::Element *E=resources.front();E;E=E->next() ) {
@@ -144,7 +144,7 @@ void SpriteFramesEditor::_item_edited() {
 		}
 
 		RES samp = frames->get_resource(old_name);
-		undo_redo->create_action("Rename Resource");
+		undo_redo->create_action(TTR("Rename Resource"));
 		undo_redo->add_do_method(frames,"remove_resource",old_name);
 		undo_redo->add_do_method(frames,"add_resource",new_name,samp);
 		undo_redo->add_undo_method(frames,"remove_resource",new_name);
@@ -170,7 +170,7 @@ void SpriteFramesEditor::_delete_confirm_pressed() {
 	int to_remove = tree->get_selected()->get_metadata(0);
 	sel=to_remove;
 	Ref<Texture> r = frames->get_frame(to_remove);
-	undo_redo->create_action("Delete Resource");
+	undo_redo->create_action(TTR("Delete Resource"));
 	undo_redo->add_do_method(frames,"remove_frame",to_remove);
 	undo_redo->add_undo_method(frames,"add_frame",r,to_remove);
 	undo_redo->add_do_method(this,"_update_library");
@@ -184,16 +184,16 @@ void SpriteFramesEditor::_paste_pressed() {
 
 	Ref<Texture> r=EditorSettings::get_singleton()->get_resource_clipboard();
 	if (!r.is_valid()) {
-		dialog->set_text("Resource clipboard is empty or not a texture!");
-		dialog->set_title("Error!");
-		//dialog->get_cancel()->set_text("Close");
-		dialog->get_ok()->set_text("Close");
+		dialog->set_text(TTR("Resource clipboard is empty or not a texture!"));
+		dialog->set_title(TTR("Error!"));
+		//dialog->get_cancel()->set_text(TTR("Close"));
+		dialog->get_ok()->set_text(TTR("Close"));
 		dialog->popup_centered_minsize();
 		return; ///beh should show an error i guess
 	}
 
 
-	undo_redo->create_action("Paste Frame");
+	undo_redo->create_action(TTR("Paste Frame"));
 	undo_redo->add_do_method(frames,"add_frame",r);
 	undo_redo->add_undo_method(frames,"remove_frame",frames->get_frame_count());
 	undo_redo->add_do_method(this,"_update_library");
@@ -220,7 +220,7 @@ void SpriteFramesEditor::_empty_pressed() {
 
 	Ref<Texture> r;
 
-	undo_redo->create_action("Add Empty");
+	undo_redo->create_action(TTR("Add Empty"));
 	undo_redo->add_do_method(frames,"add_frame",r,from);
 	undo_redo->add_undo_method(frames,"remove_frame",from);
 	undo_redo->add_do_method(this,"_update_library");
@@ -247,7 +247,7 @@ void SpriteFramesEditor::_empty2_pressed() {
 
 	Ref<Texture> r;
 
-	undo_redo->create_action("Add Empty");
+	undo_redo->create_action(TTR("Add Empty"));
 	undo_redo->add_do_method(frames,"add_frame",r,from+1);
 	undo_redo->add_undo_method(frames,"remove_frame",from+1);
 	undo_redo->add_do_method(this,"_update_library");
@@ -268,7 +268,7 @@ void SpriteFramesEditor::_up_pressed() {
 	sel-=1;
 
 	Ref<Texture> r = frames->get_frame(to_move);
-	undo_redo->create_action("Delete Resource");
+	undo_redo->create_action(TTR("Delete Resource"));
 	undo_redo->add_do_method(frames,"set_frame",to_move,frames->get_frame(to_move-1));
 	undo_redo->add_do_method(frames,"set_frame",to_move-1,frames->get_frame(to_move));
 	undo_redo->add_undo_method(frames,"set_frame",to_move,frames->get_frame(to_move));
@@ -291,7 +291,7 @@ void SpriteFramesEditor::_down_pressed() {
 	sel+=1;
 
 	Ref<Texture> r = frames->get_frame(to_move);
-	undo_redo->create_action("Delete Resource");
+	undo_redo->create_action(TTR("Delete Resource"));
 	undo_redo->add_do_method(frames,"set_frame",to_move,frames->get_frame(to_move+1));
 	undo_redo->add_do_method(frames,"set_frame",to_move+1,frames->get_frame(to_move));
 	undo_redo->add_undo_method(frames,"set_frame",to_move,frames->get_frame(to_move));
@@ -313,11 +313,11 @@ void SpriteFramesEditor::_delete_pressed() {
 
 	_delete_confirm_pressed(); //it has undo.. why bother with a dialog..
 	/*
-	dialog->set_title("Confirm...");
-	dialog->set_text("Remove Resource '"+tree->get_selected()->get_text(0)+"' ?");
-	//dialog->get_cancel()->set_text("Cancel");
+	dialog->set_title(TTR("Confirm..."));
+	dialog->set_text(TTR("Remove Resource '")+tree->get_selected()->get_text(0)+"' ?");
+	//dialog->get_cancel()->set_text(TTR("Cancel"));
 	//dialog->get_ok()->show();
-	dialog->get_ok()->set_text("Remove");
+	dialog->get_ok()->set_text(TTR("Remove"));
 	dialog->popup_centered(Size2(300,60));*/
 
 }
@@ -342,10 +342,10 @@ void SpriteFramesEditor::_update_library() {
 
 		if (frames->get_frame(i).is_null()) {
 
-			ti->set_text(0,"Frame "+itos(i)+" (empty)");
+			ti->set_text(0,TTR("Frame ")+itos(i)+" (empty)");
 
 		} else {
-			ti->set_text(0,"Frame "+itos(i)+" ("+frames->get_frame(i)->get_name()+")");
+			ti->set_text(0,TTR("Frame ")+itos(i)+" ("+frames->get_frame(i)->get_name()+")");
 			ti->set_icon(0,frames->get_frame(i));
 		}
 		if (frames->get_frame(i).is_valid())
@@ -405,30 +405,30 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	vbc->add_child(hbc);
 
 	load = memnew( Button );
-	load->set_tooltip("Load Resource");
+	load->set_tooltip(TTR("Load Resource"));
 	hbc->add_child(load);
 
 
 
 
 	paste = memnew( Button );
-	paste->set_text("Paste");
+	paste->set_text(TTR("Paste"));
 	hbc->add_child(paste);
 
 	empty = memnew( Button );
-	empty->set_text("Insert Empty (Before)");
+	empty->set_text(TTR("Insert Empty (Before)"));
 	hbc->add_child(empty);
 
 	empty2 = memnew( Button );
-	empty2->set_text("Insert Empty (After)");
+	empty2->set_text(TTR("Insert Empty (After)"));
 	hbc->add_child(empty2);
 
 	move_up = memnew( Button );
-	move_up->set_text("Up");
+	move_up->set_text(TTR("Up"));
 	hbc->add_child(move_up);
 
 	move_down = memnew( Button );
-	move_down->set_text("Down");
+	move_down->set_text(TTR("Down"));
 	hbc->add_child(move_down);
 
 	_delete = memnew( Button );

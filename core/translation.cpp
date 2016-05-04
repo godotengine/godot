@@ -665,6 +665,22 @@ void TranslationServer::setup() {
 
 }
 
+void TranslationServer::set_tool_translation(const Ref<Translation>& p_translation) {
+	tool_translation=p_translation;
+}
+
+StringName TranslationServer::tool_translate(const StringName& p_message) const {
+
+	if (tool_translation.is_valid()) {
+		StringName r = tool_translation->tr(p_message);
+		if (r)
+			return r;
+	}
+
+	return p_message;
+}
+
+
 void TranslationServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_locale","locale"),&TranslationServer::set_locale);

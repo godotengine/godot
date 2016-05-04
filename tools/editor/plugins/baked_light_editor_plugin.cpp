@@ -97,7 +97,7 @@ void BakedLightEditor::_notification(int p_option) {
 
 					}
 				}
-				print_line("MSCOL: "+itos(OS::get_singleton()->get_ticks_msec()-t));
+				print_line(TTR("MSCOL: ")+itos(OS::get_singleton()->get_ticks_msec()-t));
 				t = OS::get_singleton()->get_ticks_msec();
 
 				Array a;
@@ -132,14 +132,14 @@ void BakedLightEditor::_notification(int p_option) {
 
 				bake_info->set_text("rays/s: "+itos(rays_sec));
 				update_timeout=1;
-				print_line("MSUPDATE: "+itos(OS::get_singleton()->get_ticks_msec()-t));
+				print_line(TTR("MSUPDATE: ")+itos(OS::get_singleton()->get_ticks_msec()-t));
 				t=OS::get_singleton()->get_ticks_msec();
 				node->get_baked_light()->set_octree(octree_texture);
 				node->get_baked_light()->set_light(light_texture);
 				node->get_baked_light()->set_sampler_octree(octree_sampler);
 				node->get_baked_light()->set_edited(true);
 
-				print_line("MSSET: "+itos(OS::get_singleton()->get_ticks_msec()-t));
+				print_line(TTR("MSSET: ")+itos(OS::get_singleton()->get_ticks_msec()-t));
 
 
 
@@ -179,7 +179,7 @@ void BakedLightEditor::_bake_pressed() {
 
 	ERR_FAIL_COND(!node);
 	if (node->get_baked_light().is_null()) {
-		err_dialog->set_text("BakedLightInstance does not contain a BakedLight resource.");
+		err_dialog->set_text(TTR("BakedLightInstance does not contain a BakedLight resource."));
 		err_dialog->popup_centered_minsize();
 		button_bake->set_pressed(false);
 		return;
@@ -264,7 +264,7 @@ BakedLightEditor::BakedLightEditor() {
 
 	bake_hbox = memnew( HBoxContainer );
 	button_bake = memnew( ToolButton );
-	button_bake->set_text("Bake!");
+	button_bake->set_text(TTR("Bake!"));
 	button_bake->set_toggle_mode(true);
 	button_reset = memnew( Button );
 	button_make_lightmaps = memnew( Button );
@@ -289,7 +289,7 @@ BakedLightEditor::BakedLightEditor() {
 	button_reset->connect("pressed",this,"_clear_pressed");
 	button_make_lightmaps->connect("pressed",this,"_bake_lightmaps");
 	button_reset->hide();
-	button_reset->set_tooltip("Reset the lightmap octree baking process (start over).");
+	button_reset->set_tooltip(TTR("Reset the lightmap octree baking process (start over)."));
 
 
 	update_timeout=0;

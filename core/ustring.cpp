@@ -3955,3 +3955,14 @@ String String::sprintf(const Array& values, bool* error) const {
 	*error = false;
 	return formatted;
 }
+
+#include "translation.h"
+
+String TTR(const String& p_text) {
+
+	if (TranslationServer::get_singleton()) {
+		return TranslationServer::get_singleton()->translate(p_text);
+	}
+
+	return p_text;
+}

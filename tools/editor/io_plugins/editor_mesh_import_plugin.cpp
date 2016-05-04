@@ -202,7 +202,7 @@ public:
 
 		Vector<String> meshes = import_path->get_text().split(",");
 		if (meshes.size()==0) {
-			error_dialog->set_text("No meshes to import!");
+			error_dialog->set_text(TTR("No meshes to import!"));
 			error_dialog->popup_centered_minsize();
 			return;
 		}
@@ -226,7 +226,7 @@ public:
 
 			String dst = save_path->get_text();
 			if (dst=="") {
-				error_dialog->set_text("Save path is empty!");
+				error_dialog->set_text(TTR("Save path is empty!"));
 				error_dialog->popup_centered_minsize();
 				return;
 			}
@@ -261,7 +261,7 @@ public:
 
 		plugin=p_plugin;
 
-		set_title("Single Mesh Import");
+		set_title(TTR("Single Mesh Import"));
 		set_hide_on_ok(false);
 
 		VBoxContainer *vbc = memnew( VBoxContainer );
@@ -269,7 +269,7 @@ public:
 		set_child_rect(vbc);
 
 		HBoxContainer *hbc = memnew( HBoxContainer );
-		vbc->add_margin_child("Source Mesh(es):",hbc);
+		vbc->add_margin_child(TTR("Source Mesh(es):"),hbc);
 
 		import_path = memnew( LineEdit );
 		import_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -282,7 +282,7 @@ public:
 		import_choose->connect("pressed", this,"_browse");
 
 		hbc = memnew( HBoxContainer );
-		vbc->add_margin_child("Target Path:",hbc);
+		vbc->add_margin_child(TTR("Target Path:"),hbc);
 
 		save_path = memnew( LineEdit );
 		save_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -306,7 +306,7 @@ public:
 		save_select->connect("dir_selected", this,"_choose_save_dir");
 
 		get_ok()->connect("pressed", this,"_import");
-		get_ok()->set_text("Import");
+		get_ok()->set_text(TTR("Import"));
 
 		error_dialog = memnew( AcceptDialog );
 		add_child(error_dialog);
@@ -315,7 +315,7 @@ public:
 
 		option_editor = memnew( PropertyEditor );
 		option_editor->hide_top_label();
-		vbc->add_margin_child("Options:",option_editor,true);
+		vbc->add_margin_child(TTR("Options:"),option_editor,true);
 	}
 
 	~EditorMeshImportDialog() {
@@ -362,7 +362,7 @@ Error EditorMeshImportPlugin::import(const String& p_path, const Ref<ResourceImp
 				if (mesh->surface_get_name(i)!="")
 					name=mesh->surface_get_name(i);
 				else
-					name="Surface "+itos(i+1);
+					name=TTR("Surface ")+itos(i+1);
 
 				name_map[name]=mesh->surface_get_material(i);
 			}
@@ -498,7 +498,7 @@ Error EditorMeshImportPlugin::import(const String& p_path, const Ref<ResourceImp
 				surf_tool->index();
 				mesh = surf_tool->commit(mesh);
 				if (name=="")
-					name="Surface "+itos(mesh->get_surface_count()-1);
+					name=TTR("Surface ")+itos(mesh->get_surface_count()-1);
 				mesh->surface_set_name(mesh->get_surface_count()-1,name);
 				name="";
 				surf_tool->clear();

@@ -258,7 +258,7 @@ void ProjectExportDialog::_script_edited(Variant v) {
 	if (updating_script)
 		return;
 	updating_script=true;
-	EditorNode::get_undo_redo()->create_action("Edit Script Options");
+	EditorNode::get_undo_redo()->create_action(TTR("Edit Script Options"));
 	EditorNode::get_undo_redo()->add_do_method(EditorImportExport::get_singleton(),"script_set_action",script_mode->get_selected());
 	EditorNode::get_undo_redo()->add_undo_method(EditorImportExport::get_singleton(),"script_set_action",EditorImportExport::get_singleton()->script_get_action());
 	EditorNode::get_undo_redo()->add_do_method(EditorImportExport::get_singleton(),"script_set_encryption_key",script_key->get_text());
@@ -454,10 +454,10 @@ void ProjectExportDialog::_export_action(const String& p_file) {
 
 	while(true) {
 
-		print_line("TESTING: "+location.plus_file("engine.cfg"));
+		print_line(TTR("TESTING: ")+location.plus_file("engine.cfg"));
 		if (FileAccess::exists(location.plus_file("engine.cfg"))) {
 
-			error->set_text("Please export outside the project folder!");
+			error->set_text(TTR("Please export outside the project folder!"));
 			error->popup_centered_minsize();
 			return;
 		}
@@ -484,7 +484,7 @@ void ProjectExportDialog::_export_action(const String& p_file) {
 	bool debugging_enabled = EditorImportExport::get_singleton()->get_export_platform(platform)->is_debugging_enabled();
 	Error err = export_platform(platform,p_file,debugging_enabled,file_export_password->get_text(),false);
 	if (err!=OK) {
-		error->set_text("Error exporting project!");
+		error->set_text(TTR("Error exporting project!"));
 		error->popup_centered_minsize();
 	}
 
@@ -505,7 +505,7 @@ void ProjectExportDialog::_export_action_pck(const String& p_file) {
 	if (p_file.ends_with(".pck")) {
 		FileAccess *f = FileAccess::open(p_file,FileAccess::WRITE);
 		if (!f) {
-			error->set_text("Error exporting project PCK! Can't write");
+			error->set_text(TTR("Error exporting project PCK! Can't write"));
 			error->popup_centered_minsize();
 		}
 		ERR_FAIL_COND(!f);
@@ -514,7 +514,7 @@ void ProjectExportDialog::_export_action_pck(const String& p_file) {
 		memdelete(f);
 
 		if (err!=OK) {
-			error->set_text("Error exporting project!");
+			error->set_text(TTR("Error exporting project!"));
 			error->popup_centered_minsize();
 			return;
 		}
@@ -523,7 +523,7 @@ void ProjectExportDialog::_export_action_pck(const String& p_file) {
 		Error err = exporter->save_zip(p_file,false);
 
 		if (err!=OK) {
-			error->set_text("Error exporting project!");
+			error->set_text(TTR("Error exporting project!"));
 			error->popup_centered_minsize();
 			return;
 		}
@@ -539,7 +539,7 @@ Error ProjectExportDialog::export_platform(const String& p_platform, const Strin
 
 		List<StringName> platforms;
 		EditorImportExport::get_singleton()->get_export_platforms(&platforms);
-		print_line("Valid export plaftorms are:");
+		print_line(TTR("Valid export plaftorms are:"));
 		for (List<StringName>::Element *E=platforms.front();E;E=E->next())
 			print_line("    \""+E->get()+"\"");
 
@@ -552,7 +552,7 @@ Error ProjectExportDialog::export_platform(const String& p_platform, const Strin
 	}
 	Error err = exporter->export_project(p_path,p_debug);
 	if (err!=OK) {
-		error->set_text("Error exporting project!");
+		error->set_text(TTR("Error exporting project!"));
 		error->popup_centered_minsize();
 		ERR_PRINT("Exporting failed!");
 		if (p_quit_after) {
@@ -586,7 +586,7 @@ void ProjectExportDialog::custom_action(const String&) {
 	Ref<EditorExportPlatform> exporter = EditorImportExport::get_singleton()->get_export_platform(platform);
 
 	if (exporter.is_null()) {
-		error->set_text("No exporter for platform '"+platform+"' yet.");
+		error->set_text(TTR("No exporter for platform '")+platform+"' yet.");
 		error->popup_centered_minsize();
 		return;
 	}
@@ -715,7 +715,7 @@ bool ProjectExportDialog::_update_group_treef(TreeItem *p_parent,EditorFileSyste
 
 	String filter=group_images_filter->get_text();
 	StringName current_group = _get_selected_group();
-	String check_text="Include";
+	String check_text=TTR("Include");
 
 	for(int i=0;i<p_dir->get_file_count();i++) {
 
@@ -805,7 +805,7 @@ void ProjectExportDialog::_group_changed(Variant v) {
 		return;
 	updating=true;
 	StringName name = _get_selected_group();
-	EditorNode::get_undo_redo()->create_action("Change Image Group");
+	EditorNode::get_undo_redo()->create_action(TTR("Change Image Group"));
 	EditorNode::get_undo_redo()->add_do_method(EditorImportExport::get_singleton(),"image_export_group_set_image_action",name,group_image_action->get_selected());
 	EditorNode::get_undo_redo()->add_do_method(EditorImportExport::get_singleton(),"image_export_group_set_make_atlas",name,group_atlas->is_pressed());
 	EditorNode::get_undo_redo()->add_do_method(EditorImportExport::get_singleton(),"image_export_group_set_shrink",name,group_shrink->get_val());
@@ -841,7 +841,7 @@ void ProjectExportDialog::_group_item_edited() {
 	}
 
 	print_line("changed "+path+" to group: "+group);
-	EditorNode::get_undo_redo()->create_action("Change Image Group");
+	EditorNode::get_undo_redo()->create_action(TTR("Change Image Group"));
 	EditorNode::get_undo_redo()->add_do_method(EditorImportExport::get_singleton(),"image_add_to_export_group",path,group);
 	EditorNode::get_undo_redo()->add_undo_method(EditorImportExport::get_singleton(),"image_add_to_export_group",path,EditorImportExport::get_singleton()->image_get_export_group(path));
 	EditorNode::get_undo_redo()->add_undo_method(this,"_update_group_tree");
@@ -858,17 +858,17 @@ void ProjectExportDialog::_group_add() {
 
 	if (name=="") {
 		group_new_name_error->show();
-		group_new_name_error->set_text("Group Name Can't be Empty!");
+		group_new_name_error->set_text(TTR("Group Name Can't be Empty!"));
 		return;
 	}
 	if (name.find("/")!=-1 || name.find(":")!=-1 || name.find(",")!=-1 || name.find("-")!=-1) {
-		group_new_name_error->set_text("Invalid Character in Group Name!");
+		group_new_name_error->set_text(TTR("Invalid Character in Group Name!"));
 		group_new_name_error->show();
 		return;
 	}
 
 	if (EditorImportExport::get_singleton()->image_export_has_group(name)) {
-		group_new_name_error->set_text("Group Name Already Exists!");
+		group_new_name_error->set_text(TTR("Group Name Already Exists!"));
 		group_new_name_error->show();
 		return;
 	}
@@ -877,7 +877,7 @@ void ProjectExportDialog::_group_add() {
 	String current=_get_selected_group();
 
 
-	EditorNode::get_undo_redo()->create_action("Add Image Group");
+	EditorNode::get_undo_redo()->create_action(TTR("Add Image Group"));
 	EditorNode::get_undo_redo()->add_do_method(EditorImportExport::get_singleton(),"image_export_group_create",name);
 	EditorNode::get_undo_redo()->add_undo_method(EditorImportExport::get_singleton(),"image_export_group_remove",name);
 	EditorNode::get_undo_redo()->add_do_method(this,"_update_group_list");
@@ -903,7 +903,7 @@ void ProjectExportDialog::_group_del(Object *p_item, int p_column, int p_button)
 		return;
 	String name = item->get_text(0);
 
-	EditorNode::get_undo_redo()->create_action("Delete Image Group");
+	EditorNode::get_undo_redo()->create_action(TTR("Delete Image Group"));
 	List<StringName> images_used;
 	EditorImportExport::get_singleton()->image_export_get_images_in_group(name,&images_used);
 	for (List<StringName>::Element*E=images_used.front();E;E=E->next()) {
@@ -962,7 +962,7 @@ void ProjectExportDialog::_group_select_all() {
 	if (items.size()==0)
 		return;
 
-	EditorNode::get_undo_redo()->create_action("Select All");
+	EditorNode::get_undo_redo()->create_action(TTR("Select All"));
 
 	for (List<StringName>::Element *E=items.front();E;E=E->next()) {
 
@@ -1001,7 +1001,7 @@ void ProjectExportDialog::_group_select_none(){
 	if (items.size()==0)
 		return;
 
-	EditorNode::get_undo_redo()->create_action("Select All");
+	EditorNode::get_undo_redo()->create_action(TTR("Select All"));
 
 	for (List<StringName>::Element *E=items.front();E;E=E->next()) {
 
@@ -1061,13 +1061,13 @@ void ProjectExportDialog::_group_atlas_preview() {
 	Error err = plugin->import2(dst_file,imd,EditorExportPlatform::IMAGE_COMPRESSION_NONE,true);
 	if (err) {
 
-		EditorNode::add_io_error("Error saving atlas! "+dst_file.get_file());
+		EditorNode::add_io_error(TTR("Error saving atlas! ")+dst_file.get_file());
 		return;
 	}
 
 	Ref<Texture> tex = ResourceLoader::load(dst_file);
 	atlas_preview_frame->set_texture(tex); //clear previous
-	atlas_preview_dialog->set_title("Atlas Preview ("+itos(tex->get_width())+"x"+itos(tex->get_height())+")");
+	atlas_preview_dialog->set_title(TTR("Atlas Preview (")+itos(tex->get_width())+"x"+itos(tex->get_height())+")");
 	atlas_preview_dialog->popup_centered_ratio(0.9);
 
 }
@@ -1136,7 +1136,7 @@ void ProjectExportDialog::_bind_methods() {
 ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 
 	editor=p_editor;
-	set_title("Project Export Settings");
+	set_title(TTR("Project Export Settings"));
 
 	sections = memnew( TabContainer );
 	add_child(sections);
@@ -1144,7 +1144,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 
 	VBoxContainer *pvbox = memnew( VBoxContainer );
 	sections->add_child(pvbox);
-	pvbox->set_name("Target");
+	pvbox->set_name(TTR("Target"));
 
 	HBoxContainer *phbox = memnew( HBoxContainer );
 	pvbox->add_child(phbox);
@@ -1162,7 +1162,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	phbox->add_child(vb);
 	platforms = memnew( Tree );
 	platforms->set_hide_root(true);
-	vb->add_margin_child("Export to Platform",platforms,true);
+	vb->add_margin_child(TTR("Export to Platform"),platforms,true);
 
 	platforms->connect("cell_selected",this,"_platform_selected");
 
@@ -1173,7 +1173,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	vb->set_v_size_flags(SIZE_EXPAND_FILL);
 	platform_options = memnew( PropertyEditor() );
 	platform_options->hide_top_label();
-	vb->add_margin_child("Options",platform_options,true);
+	vb->add_margin_child(TTR("Options"),platform_options,true);
 	platform_options->connect("property_edited",this,"_prop_edited");
 
 
@@ -1181,16 +1181,16 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	//////////////////
 
 	vb = memnew( VBoxContainer );
-	vb->set_name("Resources");
+	vb->set_name(TTR("Resources"));
 	sections->add_child(vb);
 
 	export_mode = memnew( OptionButton );
-	export_mode->add_item("Export selected resources (including dependencies).");
-	export_mode->add_item("Export all resources in the project.");
-	export_mode->add_item("Export all files in the project directory.");
+	export_mode->add_item(TTR("Export selected resources (including dependencies)."));
+	export_mode->add_item(TTR("Export all resources in the project."));
+	export_mode->add_item(TTR("Export all files in the project directory."));
 	export_mode->connect("item_selected",this,"_export_mode_changed");
 
-	vb->add_margin_child("Export Mode:",export_mode);
+	vb->add_margin_child(TTR("Export Mode:"),export_mode);
 
 
 
@@ -1199,36 +1199,36 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	tree_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	tree = memnew( Tree );
-	tree_vb->add_margin_child("Resources to Export:",tree,true);
+	tree_vb->add_margin_child(TTR("Resources to Export:"),tree,true);
 
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	tree->connect("item_edited",this,"_tree_changed");
 	tree->set_columns(2);
 	tree->set_column_titles_visible(true);
-	tree->set_column_title(0,"File");
-	tree->set_column_title(1,"Action");
+	tree->set_column_title(0,TTR("File"));
+	tree->set_column_title(1,TTR("Action"));
 	tree->set_column_expand(1,false);
 	tree->set_column_min_width(1,90);
 
 	filters = memnew( LineEdit );
-	vb->add_margin_child("Filters to export non-resource files (Comma Separated, eg: *.json, *.txt):",filters);
+	vb->add_margin_child(TTR("Filters to export non-resource files (Comma Separated, eg: *.json, *.txt):"),filters);
 	filters->connect("text_changed",this,"_filters_edited");
 	filters_exclude = memnew( LineEdit );
-	vb->add_margin_child("Filters to exclude from export (Comma Separated, eg: *.json, *.txt):",filters_exclude);
+	vb->add_margin_child(TTR("Filters to exclude from export (Comma Separated, eg: *.json, *.txt):"),filters_exclude);
 	filters_exclude->connect("text_changed",this,"_filters_exclude_edited");
 
 	convert_text_scenes = memnew( CheckButton );
-	convert_text_scenes->set_text("Convert text scenes to binary on export");
+	convert_text_scenes->set_text(TTR("Convert text scenes to binary on export"));
 	vb->add_child(convert_text_scenes);
 	convert_text_scenes->connect("toggled",this,"_export_mode_changed");
 
 	image_vb = memnew( VBoxContainer );
-	image_vb->set_name("Images");
+	image_vb->set_name(TTR("Images"));
 	image_action = memnew( OptionButton );
-	image_action->add_item("Keep Original");
-	image_action->add_item("Compress for Disk (Lossy, WebP)");
-	image_action->add_item("Compress for RAM (BC/PVRTC/ETC)");
-	image_vb->add_margin_child("Convert Images (*.png):",image_action);
+	image_action->add_item(TTR("Keep Original"));
+	image_action->add_item(TTR("Compress for Disk (Lossy, WebP)"));
+	image_action->add_item(TTR("Compress for RAM (BC/PVRTC/ETC)"));
+	image_vb->add_margin_child(TTR("Convert Images (*.png):"),image_action);
 	HBoxContainer *qhb = memnew( HBoxContainer );
 	image_quality = memnew( HSlider );
 	qhb->add_child(image_quality);
@@ -1239,12 +1239,12 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	image_quality->set_min(0);
 	image_quality->set_max(1);
 	image_quality->set_step(0.01);
-	image_vb->add_margin_child("Compress for Disk (Lossy) Quality:",qhb);
+	image_vb->add_margin_child(TTR("Compress for Disk (Lossy) Quality:"),qhb);
 	image_shrink = memnew( SpinBox );
 	image_shrink->set_min(1);
 	image_shrink->set_max(8);
 	image_shrink->set_step(0.1);
-	image_vb->add_margin_child("Shrink All Images:",image_shrink);
+	image_vb->add_margin_child(TTR("Shrink All Images:"),image_shrink);
 	sections->add_child(image_vb);
 
 	image_formats=memnew(Tree);
@@ -1260,11 +1260,11 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 		fmt->set_editable(0,true);
 		formats.push_back(fmt);
 	}
-	image_vb->add_margin_child("Compress Formats: ",image_formats,true);
+	image_vb->add_margin_child(TTR("Compress Formats: "),image_formats,true);
 
 	/// groups
 	HBoxContainer *group_hb = memnew( HBoxContainer );
-	group_hb->set_name("Image Groups");
+	group_hb->set_name(TTR("Image Groups"));
 	sections->add_child(group_hb);
 	VBoxContainer *group_vb_left = memnew( VBoxContainer);
 	group_hb->add_child(group_vb_left);
@@ -1293,18 +1293,18 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	groups->set_hide_root(true);
 	gvb->add_child(groups);
 
-	group_vb_left->add_margin_child("Groups:",gvb,true);
+	group_vb_left->add_margin_child(TTR("Groups:"),gvb,true);
 	//group_vb_left->add_child( memnew( HSeparator));
 	group_options = memnew(VBoxContainer);
 	group_vb_left->add_child(group_options);
 
 
 	group_image_action = memnew(OptionButton);
-	group_image_action->add_item("Default");
-	group_image_action->add_item("Compress Disk");
-	group_image_action->add_item("Compress RAM");
-	group_image_action->add_item("Keep Original");
-	group_options->add_margin_child("Compress Mode:",group_image_action);
+	group_image_action->add_item(TTR("Default"));
+	group_image_action->add_item(TTR("Compress Disk"));
+	group_image_action->add_item(TTR("Compress RAM"));
+	group_image_action->add_item(TTR("Keep Original"));
+	group_options->add_margin_child(TTR("Compress Mode:"),group_image_action);
 	group_image_action->connect("item_selected",this,"_group_changed");
 
 	group_lossy_quality = memnew( HSlider );
@@ -1312,12 +1312,12 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_lossy_quality->set_max(1.0);
 	group_lossy_quality->set_step(0.1);
 	group_lossy_quality->set_val(0.7);
-	group_options->add_margin_child("Lossy Quality:",group_lossy_quality);
+	group_options->add_margin_child(TTR("Lossy Quality:"),group_lossy_quality);
 	group_lossy_quality->connect("value_changed",this,"_quality_edited");
 
 	group_atlas = memnew(CheckButton);
-	group_atlas->set_pressed("Generate Atlas");
-	group_options->add_margin_child("Atlas:",group_atlas);
+	group_atlas->set_pressed(true);
+	group_options->add_margin_child(TTR("Atlas:"),group_atlas);
 	group_atlas->connect("toggled",this,"_group_changed");
 
 	group_shrink = memnew(SpinBox);
@@ -1325,11 +1325,11 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_shrink->set_max(8);
 	group_shrink->set_val(1);
 	group_shrink->set_step(0.001);
-	group_options->add_margin_child("Shrink By:",group_shrink);
+	group_options->add_margin_child(TTR("Shrink By:"),group_shrink);
 	group_shrink->connect("value_changed",this,"_group_changed");
 
 	atlas_preview = memnew( Button );
-	atlas_preview->set_text("Preview Atlas");
+	atlas_preview->set_text(TTR("Preview Atlas"));
 	group_options->add_child(atlas_preview);
 	atlas_preview->show();
 	atlas_preview->connect("pressed",this,"_group_atlas_preview");
@@ -1344,21 +1344,21 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	HBoxContainer *filter_hb = memnew (HBoxContainer);
 
 	group_images_filter = memnew( LineEdit );
-	group_vb_right->add_margin_child("Image Filter:",filter_hb);
+	group_vb_right->add_margin_child(TTR("Image Filter:"),filter_hb);
 	filter_hb->add_child(group_images_filter);
 	group_images_filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	group_images_filter->connect("text_changed",this,"_image_filter_changed");
 	group_images = memnew( Tree );
 	group_images->set_v_size_flags(SIZE_EXPAND_FILL);
-	group_vb_right->add_margin_child("Images:",group_images,true);
+	group_vb_right->add_margin_child(TTR("Images:"),group_images,true);
 
 	Button *filt_select_all = memnew( Button );
-	filt_select_all->set_text("Select All");
+	filt_select_all->set_text(TTR("Select All"));
 	filter_hb->add_child(filt_select_all);
 	filt_select_all->connect("pressed",this,"_group_select_all");
 
 	Button *filt_select_none = memnew( Button );
-	filt_select_none->set_text("Select None");
+	filt_select_none->set_text(TTR("Select None"));
 	filter_hb->add_child(filt_select_none);
 	filt_select_none->connect("pressed",this,"_group_select_none");
 
@@ -1378,7 +1378,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_images->set_column_min_width(1,100);
 	group_images->set_column_titles_visible(true);
 	group_images->set_column_title(0,"Image");
-	group_images->set_column_title(1,"Group");
+	group_images->set_column_title(1,TTR("Group"));
 	group_images->connect("item_edited",this,"_group_item_edited",varray(),CONNECT_DEFERRED);
 
 /*	SpinBox *group_shrink;
@@ -1405,30 +1405,30 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 
 
 	sample_vbox = memnew( VBoxContainer );
-	sample_vbox->set_name("Samples");
+	sample_vbox->set_name(TTR("Samples"));
 	sections->add_child(sample_vbox);
 	sample_mode = memnew( OptionButton );
-	sample_vbox->add_margin_child("Sample Conversion Mode: (.wav files):",sample_mode);
-	sample_mode->add_item("Keep");
-	sample_mode->add_item("Compress (RAM - IMA-ADPCM)");
+	sample_vbox->add_margin_child(TTR("Sample Conversion Mode: (.wav files):"),sample_mode);
+	sample_mode->add_item(TTR("Keep"));
+	sample_mode->add_item(TTR("Compress (RAM - IMA-ADPCM)"));
 	sample_max_hz = memnew( SpinBox );
 	sample_max_hz->set_max(192000);
 	sample_max_hz->set_min(8000);
-	sample_vbox->add_margin_child("Sampling Rate Limit: (hz)",sample_max_hz);
+	sample_vbox->add_margin_child(TTR("Sampling Rate Limit: (hz)"),sample_max_hz);
 	sample_trim = memnew( CheckButton );
-	sample_trim->set_text("Trim");
-	sample_vbox->add_margin_child("Trailing Silence:",sample_trim);
+	sample_trim->set_text(TTR("Trim"));
+	sample_vbox->add_margin_child(TTR("Trailing Silence:"),sample_trim);
 
 	script_vbox = memnew( VBoxContainer );
 	script_vbox->set_name("Script");
 	sections->add_child(script_vbox);
 	script_mode = memnew( OptionButton );
-	script_vbox->add_margin_child("Script Export Mode:",script_mode);
-	script_mode->add_item("Text");
-	script_mode->add_item("Compiled");
-	script_mode->add_item("Encrypted (Provide Key Below)");
+	script_vbox->add_margin_child(TTR("Script Export Mode:"),script_mode);
+	script_mode->add_item(TTR("Text"));
+	script_mode->add_item(TTR("Compiled"));
+	script_mode->add_item(TTR("Encrypted (Provide Key Below)"));
 	script_key = memnew( LineEdit );
-	script_vbox->add_margin_child("Script Encryption Key (256-bits as hex):",script_key);
+	script_vbox->add_margin_child(TTR("Script Encryption Key (256-bits as hex):"),script_key);
 
 
 
@@ -1441,7 +1441,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	add_child(confirm);
 	confirm->connect("confirmed",this,"_confirmed");
 
-	get_ok()->set_text("Export PCK/Zip");
+	get_ok()->set_text(TTR("Export PCK/Zip"));
 
 
 	expopt="--,Export,Bundle";
@@ -1451,24 +1451,24 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	file_export->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_export->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_export_path") );
 
-	file_export->set_title("Export Project");
+	file_export->set_title(TTR("Export Project"));
 	file_export->connect("file_selected", this,"_export_action");
 
 	file_export_password = memnew( LineEdit );
 	file_export_password->set_secret(true);
 	file_export_password->set_editable(false);
-	file_export->get_vbox()->add_margin_child("Password:",file_export_password);
+	file_export->get_vbox()->add_margin_child(TTR("Password:"),file_export_password);
 
 	pck_export = memnew( EditorFileDialog );
 	pck_export->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	pck_export->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_export_path") );
-	pck_export->set_title("Export Project PCK");
+	pck_export->set_title(TTR("Export Project PCK"));
 	pck_export->connect("file_selected", this,"_export_action_pck");
 	pck_export->add_filter("*.pck ; Data Pack");
 	pck_export->add_filter("*.zip ; Zip");
 	add_child(pck_export);
 
-	button_export = add_button("Export..",!OS::get_singleton()->get_swap_ok_cancel(),"export_pck");
+	button_export = add_button(TTR("Export.."),!OS::get_singleton()->get_swap_ok_cancel(),"export_pck");
 	updating_script=false;
 
 	ei="EditorIcons";
@@ -1522,7 +1522,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 	String preset_path=Globals::get_singleton()->get("export_presets_path/"+selected);
 	if (preset_path=="") {
 
-		error->set_text("Export path empty, see export options");
+		error->set_text(TTR("Export path empty, see export options"));
 		error->popup_centered_minsize(Size2(300,100));
 		ERR_FAIL_V(ERR_INVALID_DATA);
 	}
@@ -1544,9 +1544,9 @@ Error ProjectExport::export_project(const String& p_preset) {
 	}
 	if (pc%3 != 0 ) {
 		memdelete(d);
-		error->set_text("Corrupted export data..");
+		error->set_text(TTR("Corrupted export data.."));
 		error->popup_centered_minsize(Size2(300,100));
-		ERR_EXPLAIN("Corrupted export data...");
+		ERR_EXPLAIN(TTR("Corrupted export data..."));
 		ERR_FAIL_V(ERR_INVALID_DATA);
 	}
 
@@ -1681,7 +1681,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 		else
 			preset=names[E->get().action-2];
 
-		print_line("Exporting "+itos(idx)+"/"+itos(export_action.size())+": "+path);
+		print_line(TTR("Exporting ")+itos(idx)+"/"+itos(export_action.size())+": "+path);
 
 		String base_dir = Globals::get_singleton()->localize_path(path.get_base_dir()).replace("\\","/").replace("res://","");
 		DirAccess *da=DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -1699,7 +1699,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 				if (err!=OK) {
 					memdelete(da);
 					memdelete(d);
-					ERR_EXPLAIN("Cannot make dir: "+cwd+"/"+p);
+					ERR_EXPLAIN(TTR("Cannot make dir: ")+cwd+"/"+p);
 					ERR_FAIL_V(ERR_CANT_CREATE);
 				}
 
@@ -1707,7 +1707,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 					memdelete(da);
 					memdelete(d);
-					ERR_EXPLAIN("Cannot change to dir: "+cwd+"/"+p);
+					ERR_EXPLAIN(TTR("Cannot change to dir: ")+cwd+"/"+p);
 					ERR_FAIL_V(ERR_CANT_CREATE);
 				}
 
@@ -1721,7 +1721,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 		String source_file;
 
-		print_line("Exporting: "+source_file);
+		print_line(TTR("Exporting: ")+source_file);
 		bool delete_source=false;
 		if (preset=="") {
 			//just copy!
@@ -1735,7 +1735,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 			if (!Globals::get_singleton()->has("optimizer_presets/"+preset)) {
 				memdelete(d);
-				ERR_EXPLAIN("Unknown optimizer preset: "+preset);
+				ERR_EXPLAIN(TTR("Unknown optimizer preset: ")+preset);
 				ERR_FAIL_V(ERR_INVALID_DATA);
 			}
 
@@ -1756,7 +1756,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 			if (saver.is_null()) {
 				memdelete(d);
-				ERR_EXPLAIN("Preset '"+preset+"' references nonexistent saver: "+type);
+				ERR_EXPLAIN(TTR("Preset '")+preset+"' references nonexistent saver: "+type);
 				ERR_FAIL_COND_V(saver.is_null(),ERR_INVALID_DATA);
 			}
 
@@ -1800,7 +1800,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 				if (res.is_null()) {
 
 					memdelete(d);
-					ERR_EXPLAIN("Errr loading resource to optimize: "+path);
+					ERR_EXPLAIN(TTR("Errr loading resource to optimize: ")+path);
 					ERR_FAIL_V(ERR_INVALID_DATA);
 				}
 
@@ -1819,11 +1819,11 @@ Error ProjectExport::export_project(const String& p_preset) {
 				String write_file = path+".opt.res";
 
 
-				print_line("DST RES FILE: "+write_file);
+				print_line(TTR("DST RES FILE: ")+write_file);
 				Error err = ResourceSaver::save(write_file,res,flags,saver);
 				if (err) {
 					memdelete(d);
-					ERR_EXPLAIN("Errr saving optimized resource: "+write_file);
+					ERR_EXPLAIN(TTR("Errr saving optimized resource: ")+write_file);
 					ERR_FAIL_COND_V(err,ERR_CANT_OPEN);
 				}
 				source_file=write_file;
@@ -1846,7 +1846,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 		if (err) {
 
 
-			ERR_EXPLAIN("Error copying from: "+source_file+" to "+dst_file+".");
+			ERR_EXPLAIN(TTR("Error copying from: ")+source_file+" to "+dst_file+".");
 			ERR_FAIL_COND_V(err,err);
 		}
 
@@ -1898,13 +1898,13 @@ ProjectExport::ProjectExport(EditorData* p_data) {
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
 	set_child_rect(vbc);
-	set_title("Project Export");
+	set_title(TTR("Project Export"));
 	label = memnew( Label );
-	label->set_text("Export Preset:");
+	label->set_text(TTR("Export Preset:"));
 	vbc->add_child(label);
 	export_preset = memnew (OptionButton);
 	vbc->add_child(export_preset);
-	get_ok()->set_text("Export");
+	get_ok()->set_text(TTR("Export"));
 	set_hide_on_ok(false);
 	error = memnew( AcceptDialog );
 	add_child(error);

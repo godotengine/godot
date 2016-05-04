@@ -99,7 +99,7 @@ void ImportSettingsDialog::_button_pressed(Object *p_button, int p_col, int p_id
 	if (!ti)
 		return;
 	String path = ti->get_metadata(0);
-	print_line("PATH: "+path);
+	print_line(TTR("PATH: ")+path);
 	Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(path);
 	ERR_FAIL_COND(rimd.is_null());
 	Ref<EditorImportPlugin> rimp = EditorImportExport::get_singleton()->get_import_plugin_by_name(rimd->get_editor());
@@ -256,7 +256,7 @@ void ImportSettingsDialog::ok_pressed() {
 		return;
 
 	String path = ti->get_metadata(0);
-	print_line("PATH: "+path);
+	print_line(TTR("PATH: ")+path);
 	Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(path);
 	ERR_FAIL_COND(rimd.is_null());
 	Ref<EditorImportPlugin> rimp = EditorImportExport::get_singleton()->get_import_plugin_by_name(rimd->get_editor());
@@ -271,14 +271,14 @@ ImportSettingsDialog::ImportSettingsDialog(EditorNode *p_editor) {
 
 	editor=p_editor;
 
-	get_ok()->set_text("Close");
+	get_ok()->set_text(TTR("Close"));
 
 	tree = memnew( Tree );
 	add_child(tree);
 	set_child_rect(tree);
-	set_title("Imported Resources");
+	set_title(TTR("Imported Resources"));
 
-	texformat="Keep,None,Disk,VRAM";
+	texformat=TTR("Keep,None,Disk,VRAM");
 
 	tree->set_hide_root(true);
 	tree->set_columns(2);
@@ -288,9 +288,9 @@ ImportSettingsDialog::ImportSettingsDialog(EditorNode *p_editor) {
 	tree->connect("item_edited",this,"_item_edited");
 	tree->connect("button_pressed",this,"_button_pressed");
 
-//	add_button("Re-Import","reimport");
-	get_ok()->set_text("Re-Import");
-	get_cancel()->set_text("Close");
+//	add_button(TTR("Re-Import"),"reimport");
+	get_ok()->set_text(TTR("Re-Import"));
+	get_cancel()->set_text(TTR("Close"));
 
 	updating=false;
 	edited=NULL;

@@ -347,15 +347,15 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				type_button->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,3);
 				type_button->set_anchor_and_margin(MARGIN_TOP,ANCHOR_END,25);
 				type_button->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END,7);
-				type_button->set_text("Preset..");
+				type_button->set_text(TTR("Preset.."));
 				type_button->get_popup()->clear();
-				type_button->get_popup()->add_item("Linear",EASING_LINEAR);
-				type_button->get_popup()->add_item("Ease In",EASING_EASE_IN);
-				type_button->get_popup()->add_item("Ease Out",EASING_EASE_OUT);
+				type_button->get_popup()->add_item(TTR("Linear"),EASING_LINEAR);
+				type_button->get_popup()->add_item(TTR("Ease In"),EASING_EASE_IN);
+				type_button->get_popup()->add_item(TTR("Ease Out"),EASING_EASE_OUT);
 				if (hint_text!="attenuation") {
-					type_button->get_popup()->add_item("Zero",EASING_ZERO);
-					type_button->get_popup()->add_item("Easing In-Out",EASING_IN_OUT);
-					type_button->get_popup()->add_item("Easing Out-In",EASING_OUT_IN);
+					type_button->get_popup()->add_item(TTR("Zero"),EASING_ZERO);
+					type_button->get_popup()->add_item(TTR("Easing In-Out"),EASING_IN_OUT);
+					type_button->get_popup()->add_item(TTR("Easing Out-In"),EASING_OUT_IN);
 				}
 
 				type_button->show();
@@ -393,15 +393,15 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 			if (hint==PROPERTY_HINT_FILE || hint==PROPERTY_HINT_GLOBAL_FILE) {
 
 				List<String> names;
-				names.push_back("File..");
-				names.push_back("Clear");
+				names.push_back(TTR("File.."));
+				names.push_back(TTR("Clear"));
 				config_action_buttons(names);
 
 			} else if (hint==PROPERTY_HINT_DIR || hint==PROPERTY_HINT_GLOBAL_DIR) {
 
 				List<String> names;
-				names.push_back("Dir..");
-				names.push_back("Clear");
+				names.push_back(TTR("Dir.."));
+				names.push_back(TTR("Clear"));
 				config_action_buttons(names);
 			} else if (hint==PROPERTY_HINT_ENUM) {
 
@@ -414,8 +414,8 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 				//action_buttons[0];
 
-				int button_margin = get_constant("button_margin","Dialogs");
-				int margin = get_constant("margin","Dialogs");
+				int button_margin = get_constant("button_margin",TTR("Dialogs"));
+				int margin = get_constant("margin",TTR("Dialogs"));
 
 				action_buttons[0]->set_anchor( MARGIN_LEFT, ANCHOR_END );
 				action_buttons[0]->set_anchor( MARGIN_TOP, ANCHOR_END );
@@ -423,7 +423,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				action_buttons[0]->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
 				action_buttons[0]->set_begin( Point2( 70, button_margin-5 ) );
 				action_buttons[0]->set_end( Point2( margin, margin ) );
-				action_buttons[0]->set_text("Close");
+				action_buttons[0]->set_text(TTR("Close"));
 				action_buttons[0]->show();
 
 			} else {
@@ -634,17 +634,17 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 		case Variant::IMAGE: {
 
 			List<String> names;
-			names.push_back("New");
-			names.push_back("Load");
-			names.push_back("Clear");
+			names.push_back(TTR("New"));
+			names.push_back(TTR("Load"));
+			names.push_back(TTR("Clear"));
 			config_action_buttons(names);
 
 		} break;
 		case Variant::NODE_PATH: {
 
 			List<String> names;
-			names.push_back("Assign");
-			names.push_back("Clear");
+			names.push_back(TTR("Assign"));
+			names.push_back(TTR("Clear"));
 			config_action_buttons(names);
 
 		} break;
@@ -689,7 +689,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 							menu->add_icon_item(get_icon(t,"EditorIcons"),"New "+t,id);
 						} else {
 
-							menu->add_item("New "+t,id);
+							menu->add_item(TTR("New ")+t,id);
 						}
 
 						idx++;
@@ -745,12 +745,12 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 				if (!RES(v).is_null()) {
 
-					menu->add_item("Copy",OBJ_MENU_COPY);
+					menu->add_item(TTR("Copy"),OBJ_MENU_COPY);
 				}
 
 				if (paste_valid) {
 
-					menu->add_item("Paste",OBJ_MENU_PASTE);
+					menu->add_item(TTR("Paste"),OBJ_MENU_PASTE);
 				}
 			}
 
@@ -830,7 +830,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 
 			RES res = ResourceLoader::load(p_file,type);
 			if (res.is_null()) {
-				error->set_text("Error loading file: Not a resource!");
+				error->set_text(TTR("Error loading file: Not a resource!"));
 				error->popup_centered_minsize();
 				break;
 			}
@@ -842,7 +842,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 
 			Image image;
 			Error err = ImageLoader::load_image(p_file,&image);
-			ERR_EXPLAIN("Couldn't load image");
+			ERR_EXPLAIN(TTR("Couldn't load image"));
 			ERR_FAIL_COND(err);
 			v=image;
 			emit_signal("variant_changed");
@@ -931,7 +931,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 
 		if (owner->is_type("Node"))
 			node = owner->cast_to<Node>();
-		else if (owner->is_type("ArrayPropertyEdit"))
+		else if (owner->is_type(TTR("ArrayPropertyEdit")))
 			node = owner->cast_to<ArrayPropertyEdit>()->get_node();
 
 		if (!node) {
@@ -1727,7 +1727,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		add_child(checks20[i]);
 		checks20[i]->hide();
 		checks20[i]->connect("pressed",this,"_action_pressed",make_binds(i));
-		checks20[i]->set_tooltip("Bit "+itos(i)+", val "+itos(1<<i)+".");
+		checks20[i]->set_tooltip(TTR("Bit ")+itos(i)+", val "+itos(1<<i)+".");
 	}
 
 	text_edit = memnew( TextEdit );
@@ -1767,7 +1767,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	file->connect("dir_selected", this,"_file_selected");
 
 	error = memnew( ConfirmationDialog );
-	error->set_title("Error!");
+	error->set_title(TTR("Error!"));
 	add_child(error);
 	//error->get_cancel()->hide();
 
@@ -2465,11 +2465,11 @@ void PropertyEditor::update_tree() {
 	TreeItem *title = tree->create_item(root);
 
 	title->set_custom_bg_color(0,get_color("prop_section","Editor"));
-	title->set_text(0,"Property"); // todo, fetch name if ID exists in database
+	title->set_text(0,TTR("Property")); // todo, fetch name if ID exists in database
 	title->set_editable(0,false);
 	title->set_selectable(0,false);
 	title->set_custom_bg_color(1,get_color("prop_section","Editor"));
-	title->set_text(1,"Value"); // todo, fetch name if ID exists in database
+	title->set_text(1,TTR("Value")); // todo, fetch name if ID exists in database
 	title->set_editable(1,false);
 	title->set_selectable(1,false);
 */
@@ -2478,7 +2478,7 @@ void PropertyEditor::update_tree() {
 	if (obj->cast_to<Node>() || obj->cast_to<Resource>()) {
 		TreeItem *type = tree->create_item(root);
 
-		type->set_text(0,"Type"); // todo, fetch name if ID exists in database
+		type->set_text(0,TTR("Type")); // todo, fetch name if ID exists in database
 		type->set_text(1,obj->get_type()); // todo, fetch name if ID exists in database
 		if (has_icon(obj->get_type(),"EditorIcons"))
 			type->set_icon(1,get_icon(obj->get_type(),"EditorIcons") );
@@ -2491,7 +2491,7 @@ void PropertyEditor::update_tree() {
 
 		TreeItem *name = tree->create_item(root);
 
-		name->set_text(0,"Name"); // todo, fetch name if ID exists in database
+		name->set_text(0,TTR("Name")); // todo, fetch name if ID exists in database
 		if (obj->is_type("Resource"))
 			name->set_text(1,obj->cast_to<Resource>()->get_name());
 		else if (obj->is_type("Node"))
@@ -2552,7 +2552,7 @@ void PropertyEditor::update_tree() {
 				sep->set_icon(0,get_icon(type,"EditorIcons") );
 			else
 				sep->set_icon(0,get_icon("Object","EditorIcons") );
-			print_line("CATEGORY: "+type);
+			print_line(TTR("CATEGORY: ")+type);
 			*/
 			sep->set_text(0,type);
 			sep->set_selectable(0,false);
@@ -2574,7 +2574,7 @@ void PropertyEditor::update_tree() {
 
 				}
 
-				sep->set_tooltip(0,"Class: "+p.name+":\n\n"+class_descr_cache[type]);
+				sep->set_tooltip(0,TTR("Class: ")+p.name+":\n\n"+class_descr_cache[type]);
 			}
 			//sep->set_custom_color(0,Color(1,1,1));
 
@@ -2671,7 +2671,7 @@ void PropertyEditor::update_tree() {
 					descr_cache[type][setter]=descr;
 				}
 
-				item->set_tooltip(0, "Property: "+p.name+"\n\n"+descr);
+				item->set_tooltip(0, TTR("Property: ")+p.name+"\n\n"+descr);
 			}
 		}
 		//EditorHelp::get_doc_data();
@@ -2702,7 +2702,7 @@ void PropertyEditor::update_tree() {
 			case Variant::BOOL: {
 
 				item->set_cell_mode( 1, TreeItem::CELL_MODE_CHECK );
-				item->set_text(1,"On");
+				item->set_text(1,TTR("On"));
 				item->set_checked( 1, obj->get( p.name ) );
 				if (show_type_icons)
 					item->set_icon( 0, get_icon("Bool","EditorIcons") );
@@ -3240,7 +3240,7 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 	} else {
 
 
-		undo_redo->create_action("Set "+p_name,true);
+		undo_redo->create_action(TTR("Set ")+p_name,true);
 		undo_redo->add_do_property(obj,p_name,p_value);
 		undo_redo->add_undo_property(obj,p_name,obj->get(p_name));
 		undo_redo->add_do_method(this,"_changed_callback",obj,p_name);
@@ -3752,7 +3752,7 @@ PropertyEditor::PropertyEditor() {
 	update_tree_pending=false;
 
 	top_label = memnew( Label );
-	top_label->set_text("Properties:");
+	top_label->set_text(TTR("Properties:"));
 	top_label->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	top_label->set_begin( Point2( 10,0) );
 	top_label->set_end( Point2( 0,12) );
@@ -4003,7 +4003,7 @@ void SectionedPropertyEditor::update_category_list() {
 		} else {
 			if (!existing_sections.has("")) {
 				existing_sections.insert("");
-				sections->add_item("Global");
+				sections->add_item(TTR("Global"));
 				sections->set_item_metadata(sections->get_item_count()-1,"");
 			}
 		}
@@ -4026,7 +4026,7 @@ SectionedPropertyEditor::SectionedPropertyEditor() {
 	sections = memnew( ItemList );
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	left_vb->add_margin_child("Sections:",sections,true);
+	left_vb->add_margin_child(TTR("Sections:"),sections,true);
 
 	VBoxContainer *right_vb = memnew( VBoxContainer);
 	right_vb->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -4035,7 +4035,7 @@ SectionedPropertyEditor::SectionedPropertyEditor() {
 	filter = memnew( SectionedPropertyEditorFilter );
 	editor = memnew( PropertyEditor );
 	editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	right_vb->add_margin_child("Properties:",editor,true);
+	right_vb->add_margin_child(TTR("Properties:"),editor,true);
 
 	editor->get_scene_tree()->set_column_titles_visible(false);
 

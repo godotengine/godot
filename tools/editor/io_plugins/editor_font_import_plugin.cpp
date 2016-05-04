@@ -509,13 +509,13 @@ class EditorFontImportDialog : public ConfirmationDialog {
 	void _import() {
 
 		if (source->get_line_edit()->get_text()=="") {
-			error_dialog->set_text("No source font file!");
+			error_dialog->set_text(TTR("No source font file!"));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
 
 		if (dest->get_line_edit()->get_text()=="") {
-			error_dialog->set_text("No target font resource!");
+			error_dialog->set_text(TTR("No target font resource!"));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
@@ -527,7 +527,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 		Ref<ResourceImportMetadata> rimd = get_rimd();
 
 		if (rimd.is_null()) {
-			error_dialog->set_text("Can't load/process source font");
+			error_dialog->set_text(TTR("Can't load/process source font"));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
@@ -535,7 +535,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 		Error err = plugin->import(dest->get_line_edit()->get_text(),rimd);
 
 		if (err!=OK) {
-			error_dialog->set_text("Couldn't save font.");
+			error_dialog->set_text(TTR("Couldn't save font."));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
@@ -624,9 +624,9 @@ public:
 		source->get_file_dialog()->add_filter("*.fnt;BMFont");
 		source->get_line_edit()->connect("text_entered",this,"_src_changed");
 
-		vbl->add_margin_child("Source Font:",source);
+		vbl->add_margin_child(TTR("Source Font:"),source);
 		font_size = memnew( SpinBox );
-		vbl->add_margin_child("Source Font Size:",font_size);
+		vbl->add_margin_child(TTR("Source Font Size:"),font_size);
 		font_size->set_min(3);
 		font_size->set_max(256);
 		font_size->set_val(16);
@@ -641,10 +641,10 @@ public:
 		//	dest->get_file_dialog()->add_filter("*."+E->get());
 		//}
 
-		vbl->add_margin_child("Dest Resource:",dest);
+		vbl->add_margin_child(TTR("Dest Resource:"),dest);
 		HBoxContainer *testhb = memnew( HBoxContainer );
 		test_string = memnew( LineEdit );
-		test_string->set_text("The quick brown fox jumps over the lazy dog.");
+		test_string->set_text(TTR("The quick brown fox jumps over the lazy dog."));
 		test_string->set_h_size_flags(SIZE_EXPAND_FILL);
 		test_string->set_stretch_ratio(5);
 
@@ -657,19 +657,19 @@ public:
 		testhb->add_child(test_color);
 
 		vbl->add_spacer();
-		vbl->add_margin_child("Test: ",testhb);
+		vbl->add_margin_child(TTR("Test: "),testhb);
 		/*
 		HBoxContainer *upd_hb = memnew( HBoxContainer );
 //		vbl->add_child(upd_hb);
 		upd_hb->add_spacer();
 		Button *update = memnew( Button);
 		upd_hb->add_child(update);
-		update->set_text("Update");
+		update->set_text(TTR("Update"));
 		update->connect("pressed",this,"_update");
 */
 		options = memnew( _EditorFontImportOptions );
 		prop_edit = memnew( PropertyEditor() );
-		vbr->add_margin_child("Options:",prop_edit,true);
+		vbr->add_margin_child(TTR("Options:"),prop_edit,true);
 		options->connect("changed",this,"_prop_changed");
 
 		prop_edit->hide_top_label();
@@ -682,7 +682,7 @@ public:
 		test_label->set_area_as_parent_rect();
 		panel->set_v_size_flags(SIZE_EXPAND_FILL);
 		test_string->connect("text_changed",this,"_update_text2");
-		set_title("Font Import");
+		set_title(TTR("Font Import"));
 		timer = memnew( Timer );
 		add_child(timer);
 		timer->connect("timeout",this,"_update");
@@ -690,11 +690,11 @@ public:
 		timer->set_one_shot(true);
 
 		get_ok()->connect("pressed", this,"_import");
-		get_ok()->set_text("Import");
+		get_ok()->set_text(TTR("Import"));
 
 		error_dialog = memnew ( ConfirmationDialog );
 		add_child(error_dialog);
-		error_dialog->get_ok()->set_text("Accept");
+		error_dialog->get_ok()->set_text(TTR("Accept"));
 		set_hide_on_ok(false);
 
 
@@ -887,7 +887,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 	if (src_path.extension().to_lower()=="fnt") {
 
 		if (ResourceLoader::load(src_path).is_valid()) {
-			EditorNode::get_singleton()->show_warning("Path: "+src_path+"\nIs a Godot font file, please supply a BMFont type file instead.");
+			EditorNode::get_singleton()->show_warning(TTR("Path: ")+src_path+"\nIs a Godot font file, please supply a BMFont type file instead.");
 			return Ref<BitmapFont>();
 		}
 
@@ -895,7 +895,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 		font.instance();
 		Error err = font->create_from_fnt(src_path);
 		if (err) {
-			EditorNode::get_singleton()->show_warning("Path: "+src_path+"\nFailed opening as BMFont file.");
+			EditorNode::get_singleton()->show_warning(TTR("Path: ")+src_path+"\nFailed opening as BMFont file.");
 			return Ref<BitmapFont>();
 		}
 
@@ -912,18 +912,18 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 
 	int error = FT_Init_FreeType( &library );
 
-	ERR_EXPLAIN("Error initializing FreeType.");
+	ERR_EXPLAIN(TTR("Error initializing FreeType."));
 	ERR_FAIL_COND_V( error !=0, Ref<BitmapFont>() );
 
 	print_line("loadfrom: "+src_path);
 	error = FT_New_Face( library, src_path.utf8().get_data(),0,&face );
 
 	if ( error == FT_Err_Unknown_File_Format ) {
-		ERR_EXPLAIN("Unknown font format.");
+		ERR_EXPLAIN(TTR("Unknown font format."));
 		FT_Done_FreeType( library );
 	} else if ( error ) {
 
-		ERR_EXPLAIN("Error loading font.");
+		ERR_EXPLAIN(TTR("Error loading font."));
 		FT_Done_FreeType( library );
 
 	}
@@ -939,7 +939,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 
 	if ( error ) {
 		FT_Done_FreeType( library );
-		ERR_EXPLAIN("Invalid font size. ");
+		ERR_EXPLAIN(TTR("Invalid font size. "));
 		ERR_FAIL_COND_V( error,Ref<BitmapFont>() );
 
 	}
@@ -986,7 +986,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 		if ( !fa ) {
 
 			FT_Done_FreeType( library );
-			ERR_EXPLAIN("Invalid font custom source. ");
+			ERR_EXPLAIN(TTR("Invalid font custom source. "));
 			ERR_FAIL_COND_V( !fa,Ref<BitmapFont>() );
 
 		}
@@ -1506,7 +1506,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 	EditorAtlas::fit(sizes,res,res_size);
 	res_size.x=nearest_power_of_2(res_size.x);
 	res_size.y=nearest_power_of_2(res_size.y);
-	print_line("Atlas size: "+res_size);
+	print_line(TTR("Atlas size: ")+res_size);
 
 	Image atlas(res_size.x,res_size.y,0,Image::FORMAT_RGBA);
 

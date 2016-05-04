@@ -124,13 +124,13 @@ void EditorFileServer::_subthread_start(void*s) {
 				s.parse_utf8(fileutf8.ptr());
 
 				if (cmd==FileAccessNetwork::COMMAND_FILE_EXISTS) {
-					print_line("FILE EXISTS: "+s);
+					print_line(TTR("FILE EXISTS: ")+s);
 				}
 				if (cmd==FileAccessNetwork::COMMAND_GET_MODTIME) {
-					print_line("MOD TIME: "+s);
+					print_line(TTR("MOD TIME: ")+s);
 				}
 				if (cmd==FileAccessNetwork::COMMAND_OPEN_FILE) {
-					print_line("OPEN: "+s);
+					print_line(TTR("OPEN: ")+s);
 				}
 
 				if ( !s.begins_with("res://")) {
@@ -218,7 +218,7 @@ void EditorFileServer::_subthread_start(void*s) {
 				int read = cd->files[id]->get_buffer(buf.ptr(),blocklen);
 				ERR_CONTINUE(read<0);
 
-				print_line("GET BLOCK - offset: "+itos(offset)+", blocklen: "+itos(blocklen));
+				print_line(TTR("GET BLOCK - offset: ")+itos(offset)+", blocklen: "+itos(blocklen));
 
 				//not found, continue
 				encode_uint32(id,buf4);
@@ -235,7 +235,7 @@ void EditorFileServer::_subthread_start(void*s) {
 			} break;
 			case FileAccessNetwork::COMMAND_CLOSE: {
 
-				print_line("CLOSED");
+				print_line(TTR("CLOSED"));
 				ERR_CONTINUE(!cd->files.has(id));
 				memdelete(cd->files[id]);
 				cd->files.erase(id);

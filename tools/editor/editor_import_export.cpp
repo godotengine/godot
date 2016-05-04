@@ -220,7 +220,7 @@ static void _edit_files_with_filter(DirAccess *da,const List<String>& p_filters,
 	String f = da->get_next();
 	while(f!="") {
 
-		print_line("HOHO: "+f);
+		print_line(TTR("HOHO: ")+f);
 		if (da->current_is_dir())
 			dirs.push_back(f);
 		else
@@ -233,19 +233,19 @@ static void _edit_files_with_filter(DirAccess *da,const List<String>& p_filters,
 	if (!r.ends_with("/"))
 		r+="/";
 
-	print_line("AT: "+r);
+	print_line(TTR("AT: ")+r);
 
 	for(List<String>::Element *E=files.front();E;E=E->next()) {
 		String fullpath=r+E->get();
 		for(const List<String>::Element *F=p_filters.front();F;F=F->next()) {
 
 			if (fullpath.matchn(F->get())) {
-				String act = "Added: ";
+				String act = TTR("Added: ");
 
 				if (!exclude) {
 					r_list.insert(fullpath);
 				} else {
-					act = "Removed: ";
+					act = TTR("Removed: ");
 					r_list.erase(fullpath);
 				}
 
@@ -410,15 +410,15 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 
 		EditorImportExport::get_singleton()->get_export_file_list(&toexport);
 
-		print_line("TO EXPORT: "+itos(toexport.size()));
+		print_line(TTR("TO EXPORT: ")+itos(toexport.size()));
 
 
 		for (List<StringName>::Element *E=toexport.front();E;E=E->next()) {
 
-			print_line("DEP: "+String(E->get()));
+			print_line(TTR("DEP: ")+String(E->get()));
 			exported.insert(E->get());
 			if (p_bundles && EditorImportExport::get_singleton()->get_export_file_action(E->get())==EditorImportExport::ACTION_BUNDLE) {
-				print_line("NO BECAUSE OF BUNDLE!");
+				print_line(TTR("NO BECAUSE OF BUNDLE!"));
 				continue; //no dependencies needed to be copied
 			}
 
@@ -747,7 +747,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 		FileAccess *f=NULL;
 
 		if (!FileAccess::exists(EditorSettings::get_singleton()->get_settings_path()+"/tmp/atlas-"+md5)) {
-			print_line("NO MD5 INVALID");
+			print_line(TTR("NO MD5 INVALID"));
 			atlas_valid=false;
 		}
 
@@ -766,7 +766,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 				atlas_valid=false;
 
 			if (!atlas_valid)
-				print_line("JSON INVALID");
+				print_line(TTR("JSON INVALID"));
 
 		}
 
@@ -775,7 +775,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			//check md5 of list of image /names/
 			if (f->get_line().strip_edges()!=image_list_md5) {
 				atlas_valid=false;
-				print_line("IMAGE MD5 INVALID!");
+				print_line(TTR("IMAGE MD5 INVALID!"));
 			}
 
 		}
@@ -792,7 +792,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 				if (slices.size()!=10) {
 					atlas_valid=false;
-					print_line("CANT SLICE IN 10");
+					print_line(TTR("CANT SLICE IN 10"));
 					break;
 				}
 				uint64_t mod_time = slices[0].to_int64();
@@ -804,7 +804,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 					if (image_md5!=file_md5) {
 						atlas_valid=false;
-						print_line("IMAGE INVALID "+slices[0]);
+						print_line(TTR("IMAGE INVALID ")+slices[0]);
 						break;
 					} else {
 						resave_deps=true;
@@ -825,7 +825,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			f=NULL;
 		}
 
-		print_line("ATLAS VALID? "+itos(atlas_valid)+" RESAVE DEPS? "+itos(resave_deps));
+		print_line(TTR("ATLAS VALID? ")+itos(atlas_valid)+" RESAVE DEPS? "+itos(resave_deps));
 		if (!atlas_valid) {
 			rects.clear();
 			//oh well, atlas is not valid. need to make new one....
@@ -866,7 +866,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			Error err = plugin->import2(dst_file,imd,get_image_compression(),true);
 			if (err) {
 
-				EditorNode::add_io_error("Error saving atlas! "+dst_file.get_file());
+				EditorNode::add_io_error(TTR("Error saving atlas! ")+dst_file.get_file());
 				return ERR_CANT_CREATE;
 			}
 
@@ -916,7 +916,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 				String path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmpatlas.atex";
 				Error err = ResourceSaver::save(path,atex);
 				if (err!=OK) {
-					EditorNode::add_io_error("Could not save atlas subtexture: "+path);
+					EditorNode::add_io_error(TTR("Could not save atlas subtexture: ")+path);
 					return ERR_CANT_CREATE;
 				}
 				Vector<uint8_t> data = FileAccess::get_file_as_array(path);
@@ -1016,7 +1016,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 		if (remap_files.size()) {
 			Vector<String> remapsprop;
 			for(Map<StringName,StringName>::Element *E=remap_files.front();E;E=E->next()) {
-				print_line("REMAP: "+String(E->key())+" -> "+E->get());
+				print_line(TTR("REMAP: ")+String(E->key())+" -> "+E->get());
 				remapsprop.push_back(E->key());
 				remapsprop.push_back(E->get());
 			}
@@ -1157,7 +1157,7 @@ Error EditorExportPlatform::save_pack_file(void *p_userdata,const String& p_path
 		MD5Final(&ctx);
 		pd->f->store_buffer(ctx.digest,16);
 	}
-	pd->ep->step("Storing File: "+p_path,2+p_file*100/p_total,false);
+	pd->ep->step(TTR("Storing File: ")+p_path,2+p_file*100/p_total,false);
 	pd->count++;
 	pd->ftmp->store_buffer(p_data.ptr(),p_data.size());
 	if (pd->alignment > 1) {
@@ -1195,7 +1195,7 @@ Error EditorExportPlatform::save_zip_file(void *p_userdata,const String& p_path,
 	zipWriteInFileInZip(zip,p_data.ptr(),p_data.size());
 	zipCloseFileInZip(zip);
 
-	zd->ep->step("Storing File: "+p_path,2+p_file*100/p_total,false);
+	zd->ep->step(TTR("Storing File: ")+p_path,2+p_file*100/p_total,false);
 	zd->count++;
 	return OK;
 
@@ -1203,7 +1203,7 @@ Error EditorExportPlatform::save_zip_file(void *p_userdata,const String& p_path,
 
 Error EditorExportPlatform::save_zip(const String& p_path, bool p_make_bundles) {
 
-	EditorProgress ep("savezip","Packing",102);
+	EditorProgress ep("savezip",TTR("Packing"),102);
 
 	//FileAccess *tmp = FileAccess::open(tmppath,FileAccess::WRITE);
 
@@ -1226,7 +1226,7 @@ Error EditorExportPlatform::save_zip(const String& p_path, bool p_make_bundles) 
 
 Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles, int p_alignment) {
 
-	EditorProgress ep("savepack","Packing",102);
+	EditorProgress ep("savepack",TTR("Packing"),102);
 
 	String tmppath = EditorSettings::get_singleton()->get_settings_path()+"/tmp/packtmp";
 	FileAccess *tmp = FileAccess::open(tmppath,FileAccess::WRITE);
@@ -1309,13 +1309,13 @@ Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug,
 
 
 
-	EditorProgress ep("export","Exporting for "+get_name(),102);
+	EditorProgress ep("export",TTR("Exporting for ")+get_name(),102);
 
 	const int BUFSIZE = 32768;
 
 
 
-	ep.step("Setting Up..",0);
+	ep.step(TTR("Setting Up.."),0);
 
 	String exe_path="";
 

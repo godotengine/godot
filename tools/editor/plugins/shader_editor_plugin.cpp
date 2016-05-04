@@ -481,28 +481,28 @@ ShaderEditor::ShaderEditor() {
 	edit_menu = memnew( MenuButton );
 	add_child(edit_menu);
 	edit_menu->set_pos(Point2(5,-1));
-	edit_menu->set_text("Edit");
-	edit_menu->get_popup()->add_item("Undo",EDIT_UNDO,KEY_MASK_CMD|KEY_Z);
-	edit_menu->get_popup()->add_item("Redo",EDIT_REDO,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_Z);
+	edit_menu->set_text(TTR("Edit"));
+	edit_menu->get_popup()->add_item(TTR("Undo"),EDIT_UNDO,KEY_MASK_CMD|KEY_Z);
+	edit_menu->get_popup()->add_item(TTR("Redo"),EDIT_REDO,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_Z);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_item("Cut",EDIT_CUT,KEY_MASK_CMD|KEY_X);
-	edit_menu->get_popup()->add_item("Copy",EDIT_COPY,KEY_MASK_CMD|KEY_C);
-	edit_menu->get_popup()->add_item("Paste",EDIT_PASTE,KEY_MASK_CMD|KEY_V);
+	edit_menu->get_popup()->add_item(TTR("Cut"),EDIT_CUT,KEY_MASK_CMD|KEY_X);
+	edit_menu->get_popup()->add_item(TTR("Copy"),EDIT_COPY,KEY_MASK_CMD|KEY_C);
+	edit_menu->get_popup()->add_item(TTR("Paste"),EDIT_PASTE,KEY_MASK_CMD|KEY_V);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_item("Select All",EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
+	edit_menu->get_popup()->add_item(TTR("Select All"),EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
 	edit_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 
 	search_menu = memnew( MenuButton );
 	add_child(search_menu);
 	search_menu->set_pos(Point2(38,-1));
-	search_menu->set_text("Search");
-	search_menu->get_popup()->add_item("Find..",SEARCH_FIND,KEY_MASK_CMD|KEY_F);
-	search_menu->get_popup()->add_item("Find Next",SEARCH_FIND_NEXT,KEY_F3);
-	search_menu->get_popup()->add_item("Replace..",SEARCH_REPLACE,KEY_MASK_CMD|KEY_R);
+	search_menu->set_text(TTR("Search"));
+	search_menu->get_popup()->add_item(TTR("Find.."),SEARCH_FIND,KEY_MASK_CMD|KEY_F);
+	search_menu->get_popup()->add_item(TTR("Find Next"),SEARCH_FIND_NEXT,KEY_F3);
+	search_menu->get_popup()->add_item(TTR("Replace.."),SEARCH_REPLACE,KEY_MASK_CMD|KEY_R);
 	search_menu->get_popup()->add_separator();
-//	search_menu->get_popup()->add_item("Locate Symbol..",SEARCH_LOCATE_SYMBOL,KEY_MASK_CMD|KEY_K);
-	search_menu->get_popup()->add_item("Goto Line..",SEARCH_GOTO_LINE,KEY_MASK_CMD|KEY_G);
+//	search_menu->get_popup()->add_item(TTR("Locate Symbol.."),SEARCH_LOCATE_SYMBOL,KEY_MASK_CMD|KEY_K);
+	search_menu->get_popup()->add_item(TTR("Goto Line.."),SEARCH_GOTO_LINE,KEY_MASK_CMD|KEY_G);
 	search_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 
@@ -521,15 +521,15 @@ ShaderEditor::ShaderEditor() {
 
 	vertex_editor = memnew( ShaderTextEditor );
 	tab_container->add_child(vertex_editor);
-	vertex_editor->set_name("Vertex");
+	vertex_editor->set_name(TTR("Vertex"));
 
 	fragment_editor = memnew( ShaderTextEditor );
 	tab_container->add_child(fragment_editor);
-	fragment_editor->set_name("Fragment");
+	fragment_editor->set_name(TTR("Fragment"));
 
 	light_editor = memnew( ShaderTextEditor );
 	tab_container->add_child(light_editor);
-	light_editor->set_name("Lighting");
+	light_editor->set_name(TTR("Lighting"));
 
 	tab_container->set_current_tab(1);
 

@@ -123,7 +123,7 @@ void ScenesDock::_update_tree() {
 	TreeItem *root = tree->create_item();
 	TreeItem *favorites = tree->create_item(root);
 	favorites->set_icon(0, get_icon("Favorites","EditorIcons") );
-	favorites->set_text(0,"Favorites:");
+	favorites->set_text(0,TTR("Favorites:"));
 	favorites->set_selectable(0,false);
 	Vector<String> faves = 	EditorSettings::get_singleton()->get_favorite_dirs();
 	for(int i=0;i<faves.size();i++) {
@@ -451,7 +451,7 @@ void ScenesDock::_update_files(bool p_keep_selection) {
 			img.resize(thumbnail_size,thumbnail_size);
 			Ref<ImageTexture> resized_folder = Ref<ImageTexture>( memnew( ImageTexture));
 			resized_folder->create_from_image(img,0);
-			Theme::get_default()->set_icon("ResizedFolder","EditorIcons",resized_folder);
+			Theme::get_default()->set_icon(TTR("ResizedFolder"),"EditorIcons",resized_folder);
 		}
 
 		folder_thumbnail = get_icon("ResizedFolder","EditorIcons");
@@ -462,7 +462,7 @@ void ScenesDock::_update_files(bool p_keep_selection) {
 			img.resize(thumbnail_size,thumbnail_size);
 			Ref<ImageTexture> resized_file = Ref<ImageTexture>( memnew( ImageTexture));
 			resized_file->create_from_image(img,0);
-			Theme::get_default()->set_icon("ResizedFile","EditorIcons",resized_file);
+			Theme::get_default()->set_icon(TTR("ResizedFile"),"EditorIcons",resized_file);
 		}
 
 		file_thumbnail = get_icon("ResizedFile","EditorIcons");
@@ -715,7 +715,7 @@ void ScenesDock::_find_remaps(EditorFileSystemDirectory *efsd,Map<String,String>
 void ScenesDock::_rename_operation(const String& p_to_path) {
 
 	if (move_files[0]==p_to_path) {
-		EditorNode::get_singleton()->show_warning("Same source and destination files, doing nothing.");
+		EditorNode::get_singleton()->show_warning(TTR("Same source and destination files, doing nothing."));
 		return;
 	}
 	if (FileAccess::exists(p_to_path)) {
@@ -762,7 +762,7 @@ void ScenesDock::_rename_operation(const String& p_to_path) {
 void ScenesDock::_move_operation(const String& p_to_path) {
 
 	if (p_to_path==path) {
-		EditorNode::get_singleton()->show_warning("Same source and destination paths, doing nothing.");
+		EditorNode::get_singleton()->show_warning(TTR("Same source and destination paths, doing nothing."));
 		return;
 	}
 
@@ -772,7 +772,7 @@ void ScenesDock::_move_operation(const String& p_to_path) {
 
 	for(int i=0;i<move_dirs.size();i++) {
 		if (p_to_path.begins_with(move_dirs[i])) {
-			EditorNode::get_singleton()->show_warning("Can't move directories to within themselves");
+			EditorNode::get_singleton()->show_warning(TTR("Can't move directories to within themselves"));
 			return;
 		}
 
@@ -876,7 +876,7 @@ void ScenesDock::_file_option(int p_option) {
 					continue;
 
 				 if (files->get_item_text(i)=="..") {
-					 EditorNode::get_singleton()->show_warning("Can't operate on '..'");
+					 EditorNode::get_singleton()->show_warning(TTR("Can't operate on '..'"));
 					 return;
 				 }
 
@@ -895,7 +895,7 @@ void ScenesDock::_file_option(int p_option) {
 				rename_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 				rename_dialog->set_current_path(move_files[0]);
 				rename_dialog->popup_centered_ratio();
-				rename_dialog->set_title("Pick New Name and Location For: "+move_files[0].get_file());
+				rename_dialog->set_title(TTR("Pick New Name and Location For: ")+move_files[0].get_file());
 
 
 			} else {
@@ -918,7 +918,7 @@ void ScenesDock::_file_option(int p_option) {
 			}
 
 			if (torem.empty()) {
-				EditorNode::get_singleton()->show_warning("No files selected!");
+				EditorNode::get_singleton()->show_warning(TTR("No files selected!"));
 				break;
 			}
 
@@ -1111,21 +1111,21 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 	button_hist_prev = memnew( ToolButton );
 	toolbar_hbc->add_child(button_hist_prev);
 	button_hist_prev->set_disabled(true);
-	button_hist_prev->set_tooltip("Previous Directory");
+	button_hist_prev->set_tooltip(TTR("Previous Directory"));
 
 	button_hist_next = memnew( ToolButton );
 	toolbar_hbc->add_child(button_hist_next);
 	button_hist_next->set_disabled(true);
 	button_hist_prev->set_focus_mode(FOCUS_NONE);
 	button_hist_next->set_focus_mode(FOCUS_NONE);
-	button_hist_next->set_tooltip("Next Directory");
+	button_hist_next->set_tooltip(TTR("Next Directory"));
 
 	button_reload = memnew( Button );
 	button_reload->set_flat(true);
 	button_reload->connect("pressed",this,"_rescan");
 	toolbar_hbc->add_child(button_reload);
 	button_reload->set_focus_mode(FOCUS_NONE);
-	button_reload->set_tooltip("Re-Scan Filesystem");
+	button_reload->set_tooltip(TTR("Re-Scan Filesystem"));
 
 	toolbar_hbc->add_spacer();
 
@@ -1134,21 +1134,21 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 	toolbar_hbc->add_child(button_fav_up);
 	button_fav_up->set_disabled(true);
 	button_fav_up->connect("pressed",this,"_fav_up_pressed");
-	button_fav_up->set_tooltip("Move Favorite Up");
+	button_fav_up->set_tooltip(TTR("Move Favorite Up"));
 
 	button_fav_down = memnew( ToolButton );
 	button_fav_down->set_flat(true);
 	toolbar_hbc->add_child(button_fav_down);
 	button_fav_down->set_disabled(true);
 	button_fav_down->connect("pressed",this,"_fav_down_pressed");
-	button_fav_down->set_tooltip("Move Favorite Down");
+	button_fav_down->set_tooltip(TTR("Move Favorite Down"));
 
 	button_favorite = memnew( Button );
 	button_favorite->set_flat(true);
 	button_favorite->set_toggle_mode(true);
 	button_favorite->connect("pressed",this,"_favorites_pressed");
 	toolbar_hbc->add_child(button_favorite);
-	button_favorite->set_tooltip("Toggle folder status as Favorite");
+	button_favorite->set_tooltip(TTR("Toggle folder status as Favorite"));
 
 	button_favorite->set_focus_mode(FOCUS_NONE);
 	button_fav_up->set_focus_mode(FOCUS_NONE);
@@ -1170,20 +1170,20 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 	toolbar_hbc->add_child(button_instance);
 	button_instance->hide();
 	button_instance->set_focus_mode(FOCUS_NONE);
-	button_instance->set_tooltip("Instance the selected scene(s) as child of the selected node.");
+	button_instance->set_tooltip(TTR("Instance the selected scene(s) as child of the selected node."));
 
 
 	file_options = memnew( MenuButton );
 	toolbar_hbc->add_child(file_options);
-	file_options->get_popup()->add_item("Rename or Move",FILE_MOVE);
-	file_options->get_popup()->add_item("Delete",FILE_REMOVE);
+	file_options->get_popup()->add_item(TTR("Rename or Move"),FILE_MOVE);
+	file_options->get_popup()->add_item(TTR("Delete"),FILE_REMOVE);
 	file_options->get_popup()->add_separator();
-	file_options->get_popup()->add_item("Edit Dependencies",FILE_DEPENDENCIES);
-	file_options->get_popup()->add_item("View Owners",FILE_OWNERS);
-	//file_options->get_popup()->add_item("Info",FILE_INFO);
+	file_options->get_popup()->add_item(TTR("Edit Dependencies"),FILE_DEPENDENCIES);
+	file_options->get_popup()->add_item(TTR("View Owners"),FILE_OWNERS);
+	//file_options->get_popup()->add_item(TTR("Info"),FILE_INFO);
 	file_options->hide();
 	file_options->set_focus_mode(FOCUS_NONE);
-	file_options->set_tooltip("Miscenaneous options related to resources on disk.");
+	file_options->set_tooltip(TTR("Miscenaneous options related to resources on disk."));
 
 	tree = memnew( Tree );
 
@@ -1240,7 +1240,7 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 	move_dialog = memnew( EditorDirDialog );
 	add_child(move_dialog);
 	move_dialog->connect("dir_selected",this,"_move_operation");
-	move_dialog->get_ok()->set_text("Move");
+	move_dialog->get_ok()->set_text(TTR("Move"));
 
 	rename_dialog = memnew( EditorFileDialog );
 	rename_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);

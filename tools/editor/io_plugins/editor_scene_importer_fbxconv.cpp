@@ -160,7 +160,7 @@ void EditorSceneImporterFBXConv::_detect_bones_in_nodes(State& state,const Array
 		if (d.has("isBone") && bool(d["isBone"])) {
 
 			String bone_name=_id(d["id"]);
-			print_line("IS BONE: "+bone_name);
+			print_line(TTR("IS BONE: ")+bone_name);
 			if (!state.bones.has(bone_name)) {
 				state.bones.insert(bone_name,BoneInfo());
 			}
@@ -367,14 +367,14 @@ Error EditorSceneImporterFBXConv::_parse_nodes(State& state,const Array &p_nodes
 			id=_id(n["id"]);
 		}
 
-		print_line("ID: "+id);
+		print_line(TTR("ID: ")+id);
 
 		if (state.skeletons.has(id)) {
 
 			Skeleton *skeleton = state.skeletons[id];
 			node=skeleton;
 			skeleton->localize_rests();
-			print_line("IS SKELETON! ");
+			print_line(TTR("IS SKELETON! "));
 		} else if (state.bones.has(id)) {
 			if (p_base)
 				node=p_base->cast_to<Spatial>();
@@ -507,15 +507,15 @@ void EditorSceneImporterFBXConv::_parse_materials(State& state) {
 				if (tex.is_valid() && texture.has("type")) {
 
 					String type=texture["type"];
-					if (type=="DIFFUSE")
+					if (type==TTR("DIFFUSE"))
 						mat->set_texture(FixedMaterial::PARAM_DIFFUSE,tex);
-					else if (type=="SPECULAR")
+					else if (type==TTR("SPECULAR"))
 						mat->set_texture(FixedMaterial::PARAM_SPECULAR,tex);
-					else if (type=="SHININESS")
+					else if (type==TTR("SHININESS"))
 						mat->set_texture(FixedMaterial::PARAM_SPECULAR_EXP,tex);
 					else if (type=="NORMAL")
 						mat->set_texture(FixedMaterial::PARAM_NORMAL,tex);
-					else if (type=="EMISSIVE")
+					else if (type==TTR("EMISSIVE"))
 						mat->set_texture(FixedMaterial::PARAM_EMISSION,tex);
 				}
 
@@ -538,7 +538,7 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 		ERR_CONTINUE(!mesh.has("vertices"));
 		ERR_CONTINUE(!mesh.has("parts"));
 
-		print_line("MESH #"+itos(i));
+		print_line(TTR("MESH #")+itos(i));
 
 		Array attrlist=mesh["attributes"];
 		Array vertices=mesh["vertices"];
@@ -570,13 +570,13 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 				exists[Mesh::ARRAY_COLOR]=true;
 				ofs[Mesh::ARRAY_COLOR]=stride;
 				stride+=4;
-			} else if (attr=="COLORPACKED") {
+			} else if (attr==TTR("COLORPACKED")) {
 				stride+=1; //ignore
-			} else if (attr=="TANGENT") {
+			} else if (attr==TTR("TANGENT")) {
 				exists[Mesh::ARRAY_TANGENT]=true;
 				ofs[Mesh::ARRAY_TANGENT]=stride;
 				stride+=3;
-			} else if (attr=="BINORMAL") {
+			} else if (attr==TTR("BINORMAL")) {
 				binormal_ofs=stride;
 				stride+=3;
 			} else if (attr=="TEXCOORD0") {
@@ -587,10 +587,10 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 				exists[Mesh::ARRAY_TEX_UV2]=true;
 				ofs[Mesh::ARRAY_TEX_UV2]=stride;
 				stride+=2;
-			} else if (attr.begins_with("TEXCOORD")) {
+			} else if (attr.begins_with(TTR("TEXCOORD"))) {
 				stride+=2;
-			} else if (attr.begins_with("BLENDWEIGHT")) {
-				int idx=attr.replace("BLENDWEIGHT","").to_int();
+			} else if (attr.begins_with(TTR("BLENDWEIGHT"))) {
+				int idx=attr.replace(TTR("BLENDWEIGHT"),"").to_int();
 				if (idx==0) {
 					exists[Mesh::ARRAY_BONES]=true;
 					ofs[Mesh::ARRAY_BONES]=stride;
@@ -604,7 +604,7 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 				stride+=2;
 			}
 
-			print_line("ATTR "+attr+" OFS: "+itos(stride));
+			print_line(TTR("ATTR ")+attr+" OFS: "+itos(stride));
 
 		}
 
@@ -618,7 +618,7 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 			ERR_CONTINUE(!part.has("indices"));
 			ERR_CONTINUE(!part.has("id"));
 
-			print_line("PART: "+String(part["id"]));
+			print_line(TTR("PART: ")+String(part["id"]));
 			Array indices=part["indices"];
 			Map<int,int> iarray;
 			Map<int,int> array;
@@ -799,13 +799,13 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 
 			if (part.has("type")) {
 				String type=part["type"];
-				if (type=="LINES")
+				if (type==TTR("LINES"))
 					pt=Mesh::PRIMITIVE_LINES;
-				else if (type=="POINTS")
+				else if (type==TTR("POINTS"))
 					pt=Mesh::PRIMITIVE_POINTS;
-				else if (type=="TRIANGLE_STRIP")
+				else if (type==TTR("TRIANGLE_STRIP"))
 					pt=Mesh::PRIMITIVE_TRIANGLE_STRIP;
-				else if (type=="LINE_STRIP")
+				else if (type==TTR("LINE_STRIP"))
 					pt=Mesh::PRIMITIVE_LINE_STRIP;
 			}
 
@@ -903,7 +903,7 @@ Error EditorSceneImporterFBXConv::_parse_animations(State& state) {
 
 				}
 
-				print_line("BONE XFD "+String(Variant(xform_dict)));
+				print_line(TTR("BONE XFD ")+String(Variant(xform_dict)));
 
 				Array keyframes=bone_track["keyframes"];
 
@@ -1022,7 +1022,7 @@ Error EditorSceneImporterFBXConv::_parse_json(State& state, const String &p_path
 			return err;
 	}
 
-	print_line("JSON PARSED O-K!");
+	print_line(TTR("JSON PARSED O-K!"));
 
 	return OK;
 }
@@ -1056,7 +1056,7 @@ Error EditorSceneImporterFBXConv::_parse_fbx(State& state,const String& p_path) 
 	}
 
 	args.push_back("-o");
-	args.push_back("G3DJ");
+	args.push_back(TTR("G3DJ"));
 	args.push_back(path);
 
 	int res;

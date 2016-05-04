@@ -561,7 +561,7 @@ void SpatialEditorViewport::_select_region() {
 
 void SpatialEditorViewport::_update_name() {
 
-	String ortho = orthogonal?"Orthogonal":"Perspective";
+	String ortho = orthogonal?TTR("Orthogonal"):"Perspective";
 
 	if (name!="")
 		view_menu->set_text("[ "+name+" "+ortho+" ]");
@@ -984,7 +984,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						}
 						surface->update();
 						//VisualServer::get_singleton()->poly_clear(indicators);
-						set_message("Transform Aborted.",3);
+						set_message(TTR("Transform Aborted."),3);
 					}
 				} break;
 				case BUTTON_MIDDLE: {
@@ -996,26 +996,26 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 							case TRANSFORM_VIEW: {
 
 								_edit.plane=TRANSFORM_X_AXIS;
-								set_message("View Plane Transform.",2);
+								set_message(TTR("View Plane Transform."),2);
 								name="";
 								_update_name();
 							} break;
 							case TRANSFORM_X_AXIS: {
 
 								_edit.plane=TRANSFORM_Y_AXIS;
-								set_message("X-Axis Transform.",2);
+								set_message(TTR("X-Axis Transform."),2);
 
 							} break;
 							case TRANSFORM_Y_AXIS: {
 
 								_edit.plane=TRANSFORM_Z_AXIS;
-								set_message("Y-Axis Transform.",2);
+								set_message(TTR("Y-Axis Transform."),2);
 
 							} break;
 							case TRANSFORM_Z_AXIS: {
 
 								_edit.plane=TRANSFORM_VIEW;
-								set_message("Z-Axis Transform.",2);
+								set_message(TTR("Z-Axis Transform."),2);
 
 							} break;
 						}
@@ -1156,7 +1156,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 										_edit.gizmo_handle=gizmo_handle;
 										//_edit.gizmo_initial_pos=seg->get_handle_pos(gizmo_handle);
 										_edit.gizmo_initial_value=seg->get_handle_value(gizmo_handle);
-										//print_line("GIZMO: "+itos(gizmo_handle)+" FROMPOS: "+_edit.orig_gizmo_pos);
+										//print_line(TTR("GIZMO: ")+itos(gizmo_handle)+" FROMPOS: "+_edit.orig_gizmo_pos);
 										break;
 
 									}
@@ -1353,7 +1353,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 								scale = Math::stepify(scale,spatial_editor->get_scale_snap());
 							}
 
-							set_message("Scaling to "+String::num(scale,1)+"%.");
+							set_message(TTR("Scaling to ")+String::num(scale,1)+"%.");
 							scale/=100.0;
 
 							Transform r;
@@ -1431,7 +1431,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 								motion.snap(snap);
 							}
 
-							//set_message("Translating: "+motion);
+							//set_message(TTR("Translating: ")+motion);
 
 							List<Node*> &selection = editor_selection->get_selected_node_list();
 
@@ -1493,13 +1493,13 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 								if (snap) {
 									angle=Math::rad2deg(angle)+snap*0.5; //else it wont reach +180
 									angle-=Math::fmod(angle,snap);
-									set_message("Rotating "+rtos(angle)+" degrees.");
+									set_message(TTR("Rotating ")+rtos(angle)+" degrees.");
 									angle=Math::deg2rad(angle);
 								} else
-									set_message("Rotating "+rtos(Math::rad2deg(angle))+" degrees.");
+									set_message(TTR("Rotating ")+rtos(Math::rad2deg(angle))+" degrees.");
 
 							} else {
-								set_message("Rotating "+rtos(Math::rad2deg(angle))+" degrees.");
+								set_message(TTR("Rotating ")+rtos(Math::rad2deg(angle))+" degrees.");
 							}
 
 
@@ -1681,14 +1681,14 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					cursor.y_rot=0;
 					if (k.mod.shift) {
 						cursor.x_rot=-Math_PI/2.0;
-						set_message("Bottom View.",2);
-						name="Bottom";
+						set_message(TTR("Bottom View."),2);
+						name=TTR("Bottom");
 						_update_name();
 
 					} else {
 						cursor.x_rot=Math_PI/2.0;
-						set_message("Top View.",2);
-						name="Top";
+						set_message(TTR("Top View."),2);
+						name=TTR("Top");
 						_update_name();
 					}
 				} break;
@@ -1700,14 +1700,14 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					cursor.x_rot=0;
 					if (k.mod.shift) {
 						cursor.y_rot=Math_PI;
-						set_message("Rear View.",2);
-						name="Rear";
+						set_message(TTR("Rear View."),2);
+						name=TTR("Rear");
 						_update_name();
 
 					} else {
 						cursor.y_rot=0;
-						set_message("Front View.",2);
-						name="Front";
+						set_message(TTR("Front View."),2);
+						name=TTR("Front");
 						_update_name();
 					}
 
@@ -1720,13 +1720,13 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					cursor.x_rot=0;
 					if (k.mod.shift) {
 						cursor.y_rot=Math_PI/2.0;
-						set_message("Left View.",2);
-						name="Left";
+						set_message(TTR("Left View."),2);
+						name=TTR("Left");
 						_update_name();
 					} else {
 						cursor.y_rot=-Math_PI/2.0;
-						set_message("Right View.",2);
-						name="Right";
+						set_message(TTR("Right View."),2);
+						name=TTR("Right");
 						_update_name();
 					}
 
@@ -1749,7 +1749,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						break;
 
 					if (!AnimationPlayerEditor::singleton->get_key_editor()->has_keying()) {
-						set_message("Keying is disabled (no key inserted).");
+						set_message(TTR("Keying is disabled (no key inserted)."));
 						break;
 					}
 
@@ -1765,7 +1765,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					}
 
 
-					set_message("Animation Key Inserted.");
+					set_message(TTR("Animation Key Inserted."));
 
 
 
@@ -1967,7 +1967,7 @@ void SpatialEditorViewport::_draw() {
 	if (surface->has_focus()) {
 		Size2 size = surface->get_size();
 		Rect2 r =Rect2(Point2(),size);
-		get_stylebox("EditorFocus","EditorStyles")->draw(surface->get_canvas_item(),r);
+		get_stylebox(TTR("EditorFocus"),"EditorStyles")->draw(surface->get_canvas_item(),r);
 	}
 
 
@@ -2041,14 +2041,14 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
 			cursor.x_rot=Math_PI/2.0;
 			cursor.y_rot=0;
-			name="Top";
+			name=TTR("Top");
 			_update_name();
 		} break;
 		case VIEW_BOTTOM: {
 
 			cursor.x_rot=-Math_PI/2.0;
 			cursor.y_rot=0;
-			name="Bottom";
+			name=TTR("Bottom");
 			_update_name();
 
 		} break;
@@ -2056,7 +2056,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
 			cursor.y_rot=Math_PI/2.0;
 			cursor.x_rot=0;
-			name="Left";
+			name=TTR("Left");
 			_update_name();
 
 		} break;
@@ -2064,7 +2064,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
 			cursor.y_rot=-Math_PI/2.0;
 			cursor.x_rot=0;
-			name="Right";
+			name=TTR("Right");
 			_update_name();
 
 		} break;
@@ -2072,7 +2072,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
 			cursor.y_rot=0;
 			cursor.x_rot=0;
-			name="Front";
+			name=TTR("Front");
 			_update_name();
 
 		} break;
@@ -2080,7 +2080,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
 			cursor.y_rot=Math_PI;
 			cursor.x_rot=0;
-			name="Rear";
+			name=TTR("Rear");
 			_update_name();
 
 		} break;
@@ -2123,7 +2123,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
 			List<Node*> &selection = editor_selection->get_selected_node_list();
 
-			undo_redo->create_action("Align with view");
+			undo_redo->create_action(TTR("Align with view"));
 			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 				Spatial *sp = E->get()->cast_to<Spatial>();
@@ -2420,7 +2420,7 @@ void SpatialEditorViewport::reset() {
 	message_time=0;
 	message="";
 	last_message="";
-	name="Top";
+	name=TTR("Top");
 
 	cursor.x_rot=0;
 	cursor.y_rot=0;
@@ -2471,28 +2471,28 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->set_pos( Point2(4,4));
 	view_menu->set_self_opacity(0.5);
 
-	view_menu->get_popup()->add_item("Top (Num7)",VIEW_TOP);
-	view_menu->get_popup()->add_item("Bottom (Shift+Num7)",VIEW_BOTTOM);
-	view_menu->get_popup()->add_item("Left (Num3)",VIEW_LEFT);
-	view_menu->get_popup()->add_item("Right (Shift+Num3)",VIEW_RIGHT);
-	view_menu->get_popup()->add_item("Front (Num1)",VIEW_FRONT);
-	view_menu->get_popup()->add_item("Rear (Shift+Num1)",VIEW_REAR);
+	view_menu->get_popup()->add_item(TTR("Top (Num7)"),VIEW_TOP);
+	view_menu->get_popup()->add_item(TTR("Bottom (Shift+Num7)"),VIEW_BOTTOM);
+	view_menu->get_popup()->add_item(TTR("Left (Num3)"),VIEW_LEFT);
+	view_menu->get_popup()->add_item(TTR("Right (Shift+Num3)"),VIEW_RIGHT);
+	view_menu->get_popup()->add_item(TTR("Front (Num1)"),VIEW_FRONT);
+	view_menu->get_popup()->add_item(TTR("Rear (Shift+Num1)"),VIEW_REAR);
 	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_check_item("Perspective (Num5)",VIEW_PERSPECTIVE);
-	view_menu->get_popup()->add_check_item("Orthogonal (Num5)",VIEW_ORTHOGONAL);
+	view_menu->get_popup()->add_check_item(TTR("Perspective (Num5)"),VIEW_PERSPECTIVE);
+	view_menu->get_popup()->add_check_item(TTR("Orthogonal (Num5)"),VIEW_ORTHOGONAL);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_PERSPECTIVE),true);
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_item("Environment",VIEW_ENVIRONMENT);
 	view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(VIEW_ENVIRONMENT),true);
 	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_check_item("Audio Listener",VIEW_AUDIO_LISTENER);
+	view_menu->get_popup()->add_check_item(TTR("Audio Listener"),VIEW_AUDIO_LISTENER);
 	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_check_item("Gizmos",VIEW_GIZMOS);
+	view_menu->get_popup()->add_check_item(TTR("Gizmos"),VIEW_GIZMOS);
 	view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(VIEW_GIZMOS),true);
 
 	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_item("Selection (F)",VIEW_CENTER_TO_SELECTION);
-	view_menu->get_popup()->add_item("Align with view (Ctrl+Shift+F)",VIEW_ALIGN_SELECTION_WITH_VIEW);
+	view_menu->get_popup()->add_item(TTR("Selection (F)"),VIEW_CENTER_TO_SELECTION);
+	view_menu->get_popup()->add_item(TTR("Align with view (Ctrl+Shift+F)"),VIEW_ALIGN_SELECTION_WITH_VIEW);
 	view_menu->get_popup()->connect("item_pressed",this,"_menu_option");
 
 	preview_camera = memnew( Button );
@@ -2519,7 +2519,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	}
 
 
-	name="Top";
+	name=TTR("Top");
 	_update_name();
 
 	EditorSettings::get_singleton()->connect("settings_changed",this,"update_transform_gizmo_view");
@@ -2896,7 +2896,7 @@ void SpatialEditor::_xform_dialog_action() {
 	}
 
 
-	undo_redo->create_action("XForm Dialog");
+	undo_redo->create_action(TTR("XForm Dialog"));
 
 	List<Node*> &selection = editor_selection->get_selected_node_list();
 
@@ -2941,7 +2941,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 				tool_button[i]->set_pressed(i==p_option);
 			tool_mode=(ToolMode)p_option;
 
-			static const char *_mode[]={"Selection Mode.","Translation Mode.","Rotation Mode.","Scale Mode.","List Selection Mode."};
+	//		static const char *_mode[]={"Selection Mode.","Translation Mode.","Rotation Mode.","Scale Mode.","List Selection Mode."};
 //			set_message(_mode[p_option],3);
 			update_transform_gizmo();
 
@@ -3545,16 +3545,16 @@ void SpatialEditor::_instance_scene() {
 	ERR_FAIL_COND(!en);
 	String path = en->get_scenes_dock()->get_selected_path();
 	if (path=="") {
-		set_message("No scene selected to instance!");
+		set_message(TTR("No scene selected to instance!"));
 		return;
 	}
 
-	undo_redo->create_action("Instance at Cursor");
+	undo_redo->create_action(TTR("Instance at Cursor"));
 
 	Node* scene = en->request_instance_scene(path);
 
 	if (!scene) {
-		set_message("Could not instance scene!");
+		set_message(TTR("Could not instance scene!"));
 		undo_redo->commit_action(); //bleh
 		return;
 	}
@@ -3912,7 +3912,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_MOVE]->set_flat(true);
 	button_binds[0]=MENU_TOOL_MOVE;
 	tool_button[TOOL_MODE_MOVE]->connect("pressed", this,"_menu_item_pressed",button_binds);
-	tool_button[TOOL_MODE_MOVE]->set_tooltip("Move Mode (W)");
+	tool_button[TOOL_MODE_MOVE]->set_tooltip(TTR("Move Mode (W)"));
 
 	tool_button[TOOL_MODE_ROTATE] = memnew( ToolButton );
 	hbc_menu->add_child( tool_button[TOOL_MODE_ROTATE] );
@@ -3920,7 +3920,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_ROTATE]->set_flat(true);
 	button_binds[0]=MENU_TOOL_ROTATE;
 	tool_button[TOOL_MODE_ROTATE]->connect("pressed", this,"_menu_item_pressed",button_binds);
-	tool_button[TOOL_MODE_ROTATE]->set_tooltip("Rotate Mode (E)");
+	tool_button[TOOL_MODE_ROTATE]->set_tooltip(TTR("Rotate Mode (E)"));
 
 	tool_button[TOOL_MODE_SCALE] = memnew( ToolButton );
 	hbc_menu->add_child( tool_button[TOOL_MODE_SCALE] );
@@ -3928,7 +3928,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_SCALE]->set_flat(true);
 	button_binds[0]=MENU_TOOL_SCALE;
 	tool_button[TOOL_MODE_SCALE]->connect("pressed", this,"_menu_item_pressed",button_binds);
-	tool_button[TOOL_MODE_SCALE]->set_tooltip("Scale Mode (R)");
+	tool_button[TOOL_MODE_SCALE]->set_tooltip(TTR("Scale Mode (R)"));
 
 	instance_button = memnew( Button );
 	hbc_menu->add_child( instance_button );
@@ -3958,25 +3958,25 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	hbc_menu->add_child( transform_menu );
 
 	p = transform_menu->get_popup();
-	p->add_check_item("Use Snap",MENU_TRANSFORM_USE_SNAP);
-	p->add_item("Configure Snap..",MENU_TRANSFORM_CONFIGURE_SNAP);
+	p->add_check_item(TTR("Use Snap"),MENU_TRANSFORM_USE_SNAP);
+	p->add_item(TTR("Configure Snap.."),MENU_TRANSFORM_CONFIGURE_SNAP);
 	p->add_separator();
-	p->add_check_item("Local Coords",MENU_TRANSFORM_LOCAL_COORDS);
+	p->add_check_item(TTR("Local Coords"),MENU_TRANSFORM_LOCAL_COORDS);
 	//p->set_item_checked(p->get_item_count()-1,true);
 	p->add_separator();
-	p->add_item("Transform Dialog..",MENU_TRANSFORM_DIALOG);
+	p->add_item(TTR("Transform Dialog.."),MENU_TRANSFORM_DIALOG);
 
 	p->connect("item_pressed", this,"_menu_item_pressed");
 
 	view_menu = memnew( MenuButton );
-	view_menu->set_text("View");
+	view_menu->set_text(TTR("View"));
 	view_menu->set_pos( Point2( 212,0) );
 	hbc_menu->add_child( view_menu );
 
 	p = view_menu->get_popup();
 
-	p->add_check_item("Use Default Light",MENU_VIEW_USE_DEFAULT_LIGHT);
-	p->add_check_item("Use Default sRGB",MENU_VIEW_USE_DEFAULT_SRGB);
+	p->add_check_item(TTR("Use Default Light"),MENU_VIEW_USE_DEFAULT_LIGHT);
+	p->add_check_item(TTR("Use Default sRGB"),MENU_VIEW_USE_DEFAULT_SRGB);
 	p->add_separator();
 
 	p->add_check_item("1 Viewport",MENU_VIEW_USE_1_VIEWPORT,KEY_MASK_CMD+KEY_1);
@@ -3987,15 +3987,15 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_check_item("4 Viewports",MENU_VIEW_USE_4_VIEWPORTS,KEY_MASK_CMD+KEY_4);
 	p->add_separator();
 
-	p->add_check_item("Display Normal",MENU_VIEW_DISPLAY_NORMAL);
-	p->add_check_item("Display Wireframe",MENU_VIEW_DISPLAY_WIREFRAME);
-	p->add_check_item("Display Overdraw",MENU_VIEW_DISPLAY_OVERDRAW);
-	p->add_check_item("Display Shadeless",MENU_VIEW_DISPLAY_SHADELESS);
+	p->add_check_item(TTR("Display Normal"),MENU_VIEW_DISPLAY_NORMAL);
+	p->add_check_item(TTR("Display Wireframe"),MENU_VIEW_DISPLAY_WIREFRAME);
+	p->add_check_item(TTR("Display Overdraw"),MENU_VIEW_DISPLAY_OVERDRAW);
+	p->add_check_item(TTR("Display Shadeless"),MENU_VIEW_DISPLAY_SHADELESS);
 	p->add_separator();
-	p->add_check_item("View Origin",MENU_VIEW_ORIGIN);
-	p->add_check_item("View Grid",MENU_VIEW_GRID);
+	p->add_check_item(TTR("View Origin"),MENU_VIEW_ORIGIN);
+	p->add_check_item(TTR("View Grid"),MENU_VIEW_GRID);
 	p->add_separator();
-	p->add_item("Settings",MENU_VIEW_CAMERA_SETTINGS);
+	p->add_item(TTR("Settings"),MENU_VIEW_CAMERA_SETTINGS);
 
 
 	p->set_item_checked( p->get_item_index(MENU_VIEW_USE_DEFAULT_LIGHT), true );
@@ -4033,7 +4033,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	/* SNAP DIALOG */
 
 	snap_dialog = memnew( ConfirmationDialog );
-	snap_dialog->set_title("Snap Settings");
+	snap_dialog->set_title(TTR("Snap Settings"));
 	add_child(snap_dialog);
 
 	VBoxContainer *snap_dialog_vbc = memnew( VBoxContainer );
@@ -4042,20 +4042,20 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	snap_translate = memnew( LineEdit );
 	snap_translate->set_text("1");
-	snap_dialog_vbc->add_margin_child("Translate Snap:",snap_translate);
+	snap_dialog_vbc->add_margin_child(TTR("Translate Snap:"),snap_translate);
 
 	snap_rotate = memnew( LineEdit );
 	snap_rotate->set_text("5");
-	snap_dialog_vbc->add_margin_child("Rotate Snap (deg.):",snap_rotate);
+	snap_dialog_vbc->add_margin_child(TTR("Rotate Snap (deg.):"),snap_rotate);
 
 	snap_scale = memnew( LineEdit );
 	snap_scale->set_text("5");
-	snap_dialog_vbc->add_margin_child("Scale Snap (%):",snap_scale);
+	snap_dialog_vbc->add_margin_child(TTR("Scale Snap (%):"),snap_scale);
 
 	/* SETTINGS DIALOG */
 
 	settings_dialog = memnew( ConfirmationDialog );
-	settings_dialog->set_title("Viewport Settings");
+	settings_dialog->set_title(TTR("Viewport Settings"));
 	add_child(settings_dialog);
 	settings_vbc = memnew( VBoxContainer );
 	settings_vbc->set_custom_minimum_size(Size2(200,0));
@@ -4067,7 +4067,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_light_base = memnew( Control );
 	settings_light_base->set_custom_minimum_size(Size2(128,128));
 	settings_light_base->connect("input_event",this,"_default_light_angle_input");
-	settings_vbc->add_margin_child("Default Light Normal:",settings_light_base);
+	settings_vbc->add_margin_child(TTR("Default Light Normal:"),settings_light_base);
 	settings_light_vp = memnew( Viewport );
 	settings_light_vp->set_disable_input(true);
 	settings_light_vp->set_use_own_world(true);
@@ -4092,7 +4092,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 
 	settings_ambient_color = memnew( ColorPickerButton );
-	settings_vbc->add_margin_child("Ambient Light Color:",settings_ambient_color);
+	settings_vbc->add_margin_child(TTR("Ambient Light Color:"),settings_ambient_color);
 	settings_ambient_color->connect("color_changed",this,"_update_ambient_light_color");
 
 	viewport_environment->set_enable_fx(Environment::FX_AMBIENT_LIGHT,true);
@@ -4105,30 +4105,30 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_fov->set_min(1);
 	settings_fov->set_step(0.01);
 	settings_fov->set_val(EDITOR_DEF("3d_editor/default_fov",60.0));
-	settings_vbc->add_margin_child("Perspective FOV (deg.):",settings_fov);
+	settings_vbc->add_margin_child(TTR("Perspective FOV (deg.):"),settings_fov);
 
 	settings_znear = memnew( SpinBox );
 	settings_znear->set_max(10000);
 	settings_znear->set_min(0.1);
 	settings_znear->set_step(0.01);
 	settings_znear->set_val(EDITOR_DEF("3d_editor/default_z_near",0.1));
-	settings_vbc->add_margin_child("View Z-Near:",settings_znear);
+	settings_vbc->add_margin_child(TTR("View Z-Near:"),settings_znear);
 
 	settings_zfar = memnew( SpinBox );
 	settings_zfar->set_max(10000);
 	settings_zfar->set_min(0.1);
 	settings_zfar->set_step(0.01);
 	settings_zfar->set_val(EDITOR_DEF("3d_editor/default_z_far",1500));
-	settings_vbc->add_margin_child("View Z-Far:",settings_zfar);
+	settings_vbc->add_margin_child(TTR("View Z-Far:"),settings_zfar);
 
 	//settings_dialog->get_cancel()->hide();
 	/* XFORM DIALOG */
 
 	xform_dialog = memnew( ConfirmationDialog );
-	xform_dialog->set_title("Transform Change");
+	xform_dialog->set_title(TTR("Transform Change"));
 	add_child(xform_dialog);
 	Label *l = memnew(Label);
-	l->set_text("Translate:");
+	l->set_text(TTR("Translate:"));
 	l->set_pos(Point2(5,5));
 	xform_dialog->add_child(l);
 
@@ -4141,7 +4141,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	}
 
 	l = memnew(Label);
-	l->set_text("Rotate (deg.):");
+	l->set_text(TTR("Rotate (deg.):"));
 	l->set_pos(Point2(5,45));
 	xform_dialog->add_child(l);
 
@@ -4153,7 +4153,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	}
 
 	l = memnew(Label);
-	l->set_text("Scale (ratio):");
+	l->set_text(TTR("Scale (ratio):"));
 	l->set_pos(Point2(5,85));
 	xform_dialog->add_child(l);
 
@@ -4165,7 +4165,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	}
 
 	l = memnew(Label);
-	l->set_text("Transform Type");
+	l->set_text(TTR("Transform Type"));
 	l->set_pos(Point2(5,125));
 	xform_dialog->add_child(l);
 
@@ -4173,8 +4173,8 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	xform_type->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	xform_type->set_begin( Point2(15,142) );
 	xform_type->set_end( Point2(15,75) );
-	xform_type->add_item("Pre");
-	xform_type->add_item("Post");
+	xform_type->add_item(TTR("Pre"));
+	xform_type->add_item(TTR("Post"));
 	xform_dialog->add_child(xform_type);
 
 	xform_dialog->connect("confirmed", this,"_xform_dialog_action");

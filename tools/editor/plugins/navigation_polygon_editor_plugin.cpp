@@ -39,7 +39,7 @@ void NavigationPolygonEditor::_create_nav()  {
 	if (!node)
 		return;
 
-	undo_redo->create_action("Create Navigation Polygon");
+	undo_redo->create_action(TTR("Create Navigation Polygon"));
 	undo_redo->add_do_method(node,"set_navigation_polygon",Ref<NavigationPolygon>(memnew( NavigationPolygon)));
 	undo_redo->add_undo_method(node,"set_navigation_polygon",Variant(REF()));
 	undo_redo->commit_action();
@@ -70,7 +70,7 @@ void NavigationPolygonEditor::_wip_close() {
 
 	if (wip.size()>=3) {
 
-		undo_redo->create_action("Create Poly");
+		undo_redo->create_action(TTR("Create Poly"));
 		undo_redo->add_undo_method(node->get_navigation_polygon().ptr(),"remove_outline",node->get_navigation_polygon()->get_outline_count());
 		undo_redo->add_do_method(node->get_navigation_polygon().ptr(),"add_outline",wip);
 		undo_redo->add_do_method(node->get_navigation_polygon().ptr(),"make_polygons_from_outlines");
@@ -271,7 +271,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 								DVector<Vector2> poly = node->get_navigation_polygon()->get_outline(edited_outline);
 								ERR_FAIL_INDEX_V(edited_point,poly.size(),false);
 								poly.set(edited_point,edited_point_pos);
-								undo_redo->create_action("Edit Poly");
+								undo_redo->create_action(TTR("Edit Poly"));
 								undo_redo->add_do_method(node->get_navigation_polygon().ptr(),"set_outline",edited_outline,poly);
 								undo_redo->add_undo_method(node->get_navigation_polygon().ptr(),"set_outline",edited_outline,pre_move_edit);
 								undo_redo->add_do_method(node->get_navigation_polygon().ptr(),"make_polygons_from_outlines");
@@ -320,7 +320,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 							DVector<Vector2> poly = node->get_navigation_polygon()->get_outline(closest_outline);
 
 							if (poly.size()>3) {
-								undo_redo->create_action("Edit Poly (Remove Point)");
+								undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
 								undo_redo->add_undo_method(node->get_navigation_polygon().ptr(),"set_outline",closest_outline,poly);
 								poly.remove(closest_idx);
 								undo_redo->add_do_method(node->get_navigation_polygon().ptr(),"set_outline",closest_outline,poly);
@@ -331,7 +331,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 								undo_redo->commit_action();
 							} else {
 
-								undo_redo->create_action("Remove Poly And Point");
+								undo_redo->create_action(TTR("Remove Poly And Point"));
 								undo_redo->add_undo_method(node->get_navigation_polygon().ptr(),"add_outline_at_index",poly,closest_outline);
 								poly.remove(closest_idx);
 								undo_redo->add_do_method(node->get_navigation_polygon().ptr(),"remove_outline",closest_outline);
@@ -469,7 +469,7 @@ NavigationPolygonEditor::NavigationPolygonEditor(EditorNode *p_editor) {
 	add_child(button_create);
 	button_create->connect("pressed",this,"_menu_option",varray(MODE_CREATE));
 	button_create->set_toggle_mode(true);
-	button_create->set_tooltip("Create a new polygon from scratch");
+	button_create->set_tooltip(TTR("Create a new polygon from scratch"));
 
 	button_edit = memnew( ToolButton );
 	add_child(button_edit);
@@ -478,7 +478,7 @@ NavigationPolygonEditor::NavigationPolygonEditor(EditorNode *p_editor) {
 	button_edit->set_tooltip("Edit existing polygon:\nLMB: Move Point.\nCtrl+LMB: Split Segment.\nRMB: Erase Point.");
 	create_nav = memnew( ConfirmationDialog );
 	add_child(create_nav);
-	create_nav->get_ok()->set_text("Create");
+	create_nav->get_ok()->set_text(TTR("Create"));
 
 
 	//add_constant_override("separation",0);
@@ -487,8 +487,8 @@ NavigationPolygonEditor::NavigationPolygonEditor(EditorNode *p_editor) {
 	options = memnew( MenuButton );
 	add_child(options);
 	options->set_area_as_parent_rect();
-	options->set_text("Polygon");
-	//options->get_popup()->add_item("Parse BBCODE",PARSE_BBCODE);
+	options->set_text(TTR("Polygon"));
+	//options->get_popup()->add_item(TTR("Parse BBCODE"),PARSE_BBCODE);
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 #endif
 

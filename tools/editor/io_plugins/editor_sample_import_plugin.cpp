@@ -251,24 +251,24 @@ public:
 		Vector<String> samples = import_path->get_text().split(",");
 
 		if (samples.size()==0) {
-			error_dialog->set_text("No samples to import!");
+			error_dialog->set_text(TTR("No samples to import!"));
 			error_dialog->popup_centered(Size2(200,100));
 		}
 
 		if (save_path->get_text().strip_edges()=="") {
-			error_dialog->set_text("Target path is empty.");
+			error_dialog->set_text(TTR("Target path is empty."));
 			error_dialog->popup_centered_minsize();
 			return;
 		}
 
 		if (!save_path->get_text().begins_with("res://")) {
-			error_dialog->set_text("Target path must be full resource path.");
+			error_dialog->set_text(TTR("Target path must be full resource path."));
 			error_dialog->popup_centered_minsize();
 			return;
 		}
 
 		if (!DirAccess::exists(save_path->get_text())) {
-			error_dialog->set_text("Target path must exist.");
+			error_dialog->set_text(TTR("Target path must exist."));
 			error_dialog->popup_centered_minsize();
 			return;
 		}
@@ -292,7 +292,7 @@ public:
 
 			String dst = save_path->get_text();
 			if (dst=="") {
-				error_dialog->set_text("Save path is empty!");
+				error_dialog->set_text(TTR("Save path is empty!"));
 				error_dialog->popup_centered(Size2(200,100));
 			}
 
@@ -331,7 +331,7 @@ public:
 		plugin=p_plugin;
 
 
-		set_title("Import Audio Samples");
+		set_title(TTR("Import Audio Samples"));
 
 		VBoxContainer *vbc = memnew( VBoxContainer );
 		add_child(vbc);
@@ -339,7 +339,7 @@ public:
 
 
 		HBoxContainer *hbc = memnew( HBoxContainer );
-		vbc->add_margin_child("Source Sample(s):",hbc);
+		vbc->add_margin_child(TTR("Source Sample(s):"),hbc);
 
 		import_path = memnew( LineEdit );
 		import_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -352,7 +352,7 @@ public:
 		import_choose->connect("pressed", this,"_browse");
 
 		hbc = memnew( HBoxContainer );
-		vbc->add_margin_child("Target Path:",hbc);
+		vbc->add_margin_child(TTR("Target Path:"),hbc);
 
 		save_path = memnew( LineEdit );
 		save_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -377,12 +377,12 @@ public:
 		save_select->connect("dir_selected", this,"_choose_save_dir");
 
 		get_ok()->connect("pressed", this,"_import");
-		get_ok()->set_text("Import");
+		get_ok()->set_text(TTR("Import"));
 
 
 		error_dialog = memnew ( ConfirmationDialog );
 		add_child(error_dialog);
-		error_dialog->get_ok()->set_text("Accept");
+		error_dialog->get_ok()->set_text(TTR("Accept"));
 	//	error_dialog->get_cancel()->hide();
 
 		set_hide_on_ok(false);
@@ -390,7 +390,7 @@ public:
 
 		option_editor = memnew( PropertyEditor );
 		option_editor->hide_top_label();
-		vbc->add_margin_child("Options:",option_editor,true);
+		vbc->add_margin_child(TTR("Options:"),option_editor,true);
 	}
 
 	~EditorSampleImportDialog() {
@@ -406,7 +406,7 @@ String EditorSampleImportPlugin::get_name() const {
 }
 String EditorSampleImportPlugin::get_visible_name() const{
 
-	return "Audio Sample";
+	return TTR("Audio Sample");
 }
 void EditorSampleImportPlugin::import_dialog(const String& p_from){
 
@@ -431,7 +431,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 	int loop_beg = smp->get_loop_begin();
 	int loop_end = smp->get_loop_end();
 
-	print_line("Input Sample: ");
+	print_line(TTR("Input Sample: "));
 	print_line("\tlen: "+itos(len));
 	print_line("\tchans: "+itos(chans));
 	print_line("\t16bits: "+itos(is16));
@@ -612,7 +612,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 			_compress_ima_adpcm(data,dst_data);
 		} else {
 
-			print_line("INTERLEAAVE!");
+			print_line(TTR("INTERLEAAVE!"));
 
 
 
