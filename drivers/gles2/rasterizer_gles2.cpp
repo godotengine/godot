@@ -921,6 +921,11 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 		texture->alloc_height = texture->height;
 	};
 
+	if (shrink_textures_x2) {
+		texture->alloc_height = MAX(1,texture->alloc_height/2);
+		texture->alloc_width = MAX(1,texture->alloc_width/2);
+	}
+
 
 	texture->gl_components_cache=components;
 	texture->gl_format_cache=format;
@@ -970,8 +975,15 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 
 	if (texture->alloc_width != img.get_width() || texture->alloc_height != img.get_height()) {
 
-		if (img.get_format() <= Image::FORMAT_INDEXED_ALPHA)
+
+		if (texture->alloc_width == img.get_width()/2 && texture->alloc_height == img.get_height()/2) {
+
+			img.shrink_x2();
+		} else if (img.get_format() <= Image::FORMAT_INDEXED_ALPHA) {
+
 			img.resize(texture->alloc_width, texture->alloc_height, Image::INTERPOLATE_BILINEAR);
+
+		}
 	};
 
 
@@ -1450,6 +1462,11 @@ void RasterizerGLES2::texture_debug_usage(List<VS::TextureInfo> *r_info){
 		r_info->push_back(tinfo);
 	}
 
+}
+
+void RasterizerGLES2::texture_set_shrink_all_x2_on_set_data(bool p_enable) {
+
+	shrink_textures_x2=p_enable;
 }
 
 /* SHADER API */

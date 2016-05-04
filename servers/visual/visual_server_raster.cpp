@@ -127,6 +127,11 @@ void VisualServerRaster::texture_debug_usage(List<TextureInfo> *r_info){
 	rasterizer->texture_debug_usage(r_info);
 }
 
+void VisualServerRaster::texture_set_shrink_all_x2_on_set_data(bool p_enable) {
+
+	rasterizer->texture_set_shrink_all_x2_on_set_data(p_enable);
+}
+
 /* SHADER API */
 
 RID VisualServerRaster::shader_create(ShaderMode p_mode) {

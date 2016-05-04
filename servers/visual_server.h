@@ -138,6 +138,8 @@ public:
 	virtual void texture_set_path(RID p_texture,const String& p_path)=0;
 	virtual String texture_get_path(RID p_texture) const=0;
 
+	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable)=0;
+
 	struct TextureInfo {
 		RID texture;
 		Size2 size;

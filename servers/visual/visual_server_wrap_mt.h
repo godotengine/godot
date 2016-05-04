@@ -101,6 +101,8 @@ public:
 	FUNC2(texture_set_path,RID,const String&);
 	FUNC1RC(String,texture_get_path,RID);
 
+	FUNC1(texture_set_shrink_all_x2_on_set_data,bool);
+
 	virtual void texture_debug_usage(List<TextureInfo> *r_info) {
 		//pass directly, should lock the server anyway
 		visual_server->texture_debug_usage(r_info);

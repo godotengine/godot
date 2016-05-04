@@ -196,6 +196,8 @@ public:
 	virtual String texture_get_path(RID p_texture) const=0;
 	virtual void texture_debug_usage(List<VS::TextureInfo> *r_info)=0;
 
+	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable)=0;
+
 	/* SHADER API */
 
 	virtual RID shader_create(VS::ShaderMode p_mode=VS::SHADER_MATERIAL)=0;

@@ -901,6 +901,66 @@ static void _generate_po2_mipmap(const uint8_t* p_src, uint8_t* p_dst, uint32_t 
 }
 
 
+void Image::shrink_x2() {
+
+	ERR_FAIL_COND(format==FORMAT_INDEXED || format==FORMAT_INDEXED_ALPHA);
+	ERR_FAIL_COND( data.size()==0 );
+
+
+
+	if (mipmaps) {
+
+		//just use the lower mipmap as base and copy all
+		DVector<uint8_t> new_img;
+
+		int ofs = get_mipmap_offset(1);
+
+		int new_size = data.size()-ofs;
+		new_img.resize(new_size);
+
+
+		{
+			DVector<uint8_t>::Write w=new_img.write();
+			DVector<uint8_t>::Read r=data.read();
+
+			copymem(w.ptr(),&r[ofs],new_size);
+		}
+
+		mipmaps--;
+		width/=2;
+		height/=2;
+		data=new_img;
+
+	} else {
+
+		DVector<uint8_t> new_img;
+
+		ERR_FAIL_COND( format>=FORMAT_INDEXED );
+		int ps = get_format_pixel_size(format);
+		new_img.resize((width/2)*(height/2)*ps);
+
+		{
+			DVector<uint8_t>::Write w=new_img.write();
+			DVector<uint8_t>::Read r=data.read();
+
+			switch(format) {
+
+				case FORMAT_GRAYSCALE:
+				case FORMAT_INTENSITY: _generate_po2_mipmap<1>(r.ptr(), w.ptr(), width,height); break;
+				case FORMAT_GRAYSCALE_ALPHA: _generate_po2_mipmap<2>(r.ptr(), w.ptr(), width,height); break;
+				case FORMAT_RGB: _generate_po2_mipmap<3>(r.ptr(), w.ptr(), width,height); break;
+				case FORMAT_RGBA: _generate_po2_mipmap<4>(r.ptr(), w.ptr(), width,height); break;
+				default: {}
+			}
+		}
+
+		width/=2;
+		height/=2;
+		data=new_img;
+
+	}
+}
+
 Error Image::generate_mipmaps(int p_mipmaps,bool p_keep_existing)  {
 
 	if (!_can_modify(format)) {
