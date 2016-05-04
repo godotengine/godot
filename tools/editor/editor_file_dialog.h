@@ -35,7 +35,6 @@
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
-#include "scene/gui/dialogs.h"
 #include "os/dir_access.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/texture_frame.h"
