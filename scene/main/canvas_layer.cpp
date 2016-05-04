@@ -225,7 +225,7 @@ void CanvasLayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_scale","scale"),&CanvasLayer::set_scale);
 	ObjectTypeDB::bind_method(_MD("get_scale"),&CanvasLayer::get_scale);
 
-	ObjectTypeDB::bind_method(_MD("get_world_2d:Canvas"),&CanvasLayer::get_world_2d);
+	ObjectTypeDB::bind_method(_MD("get_world_2d:World2D"),&CanvasLayer::get_world_2d);
 	ObjectTypeDB::bind_method(_MD("get_viewport"),&CanvasLayer::get_viewport);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"layer",PROPERTY_HINT_RANGE,"-128,128,1"),_SCS("set_layer"),_SCS("get_layer") );

@@ -3252,7 +3252,7 @@ void Tree::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_scroll_moved"),&Tree::_scroll_moved);
 
 	ObjectTypeDB::bind_method(_MD("clear"),&Tree::clear);
-	ObjectTypeDB::bind_method(_MD("create_item:TreeItem","parent:TreeItem"),&Tree::_create_item,DEFVAL((Object*)NULL));
+	ObjectTypeDB::bind_method(_MD("create_item:TreeItem","parent:TreeItem"),&Tree::_create_item,DEFVAL(Variant()));
 
 	ObjectTypeDB::bind_method(_MD("get_root:TreeItem"),&Tree::get_root);
 	ObjectTypeDB::bind_method(_MD("set_column_min_width","column","min_width"),&Tree::set_column_min_width);
