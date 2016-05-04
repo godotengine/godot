@@ -1156,7 +1156,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 										_edit.gizmo_handle=gizmo_handle;
 										//_edit.gizmo_initial_pos=seg->get_handle_pos(gizmo_handle);
 										_edit.gizmo_initial_value=seg->get_handle_value(gizmo_handle);
-										//print_line(TTR("GIZMO: ")+itos(gizmo_handle)+" FROMPOS: "+_edit.orig_gizmo_pos);
+										//print_line("GIZMO: "+itos(gizmo_handle)+" FROMPOS: "+_edit.orig_gizmo_pos);
 										break;
 
 									}

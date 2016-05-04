@@ -431,7 +431,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 	int loop_beg = smp->get_loop_begin();
 	int loop_end = smp->get_loop_end();
 
-	print_line(TTR("Input Sample: "));
+	print_line("Input Sample: ");
 	print_line("\tlen: "+itos(len));
 	print_line("\tchans: "+itos(chans));
 	print_line("\t16bits: "+itos(is16));
@@ -612,7 +612,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 			_compress_ima_adpcm(data,dst_data);
 		} else {
 
-			print_line(TTR("INTERLEAAVE!"));
+			print_line("INTERLEAAVE!");
 
 
 

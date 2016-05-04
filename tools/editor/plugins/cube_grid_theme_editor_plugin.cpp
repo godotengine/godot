@@ -220,7 +220,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 void MeshLibraryEditor::_import_scene_cbk(const String& p_str) {
 
 
-	print_line(TTR("Impot Callback!"));
+	print_line("Impot Callback!");
 
 	Ref<PackedScene> ps = ResourceLoader::load(p_str,"PackedScene");
 	ERR_FAIL_COND(ps.is_null());

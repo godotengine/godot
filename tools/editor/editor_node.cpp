@@ -788,7 +788,7 @@ bool EditorNode::_find_and_save_resource(RES res,Map<RES,bool>& processed,int32_
 	if (res->get_path().is_resource_file()) {
 		if (changed || subchanged) {
 			//save
-			print_line(TTR("Also saving modified external resource: ")+res->get_path());
+			print_line("Also saving modified external resource: "+res->get_path());
 			Error err = ResourceSaver::save(res->get_path(),res,flags);
 
 		}
@@ -1181,7 +1181,7 @@ void EditorNode::_dialog_action(String p_file) {
 		} break;
 		case FILE_RUN_SCRIPT: {
 
-			print_line(TTR("RUN: ")+p_file);
+			print_line("RUN: "+p_file);
 			Ref<Script> scr = ResourceLoader::load(p_file,"Script",true);
 			if (scr.is_null()) {
 				add_io_error("Script Failed to Load:\n"+p_file);
@@ -3758,7 +3758,7 @@ void EditorNode::_transform_keyed(Object *sp,const String& p_sub,const Transform
 
 void EditorNode::update_keying() {
 
-	//print_line(TTR("KR: ")+itos(p_enabled));
+	//print_line("KR: "+itos(p_enabled));
 
 	bool valid=false;
 

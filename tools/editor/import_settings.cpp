@@ -99,7 +99,7 @@ void ImportSettingsDialog::_button_pressed(Object *p_button, int p_col, int p_id
 	if (!ti)
 		return;
 	String path = ti->get_metadata(0);
-	print_line(TTR("PATH: ")+path);
+	print_line("PATH: "+path);
 	Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(path);
 	ERR_FAIL_COND(rimd.is_null());
 	Ref<EditorImportPlugin> rimp = EditorImportExport::get_singleton()->get_import_plugin_by_name(rimd->get_editor());
@@ -256,7 +256,7 @@ void ImportSettingsDialog::ok_pressed() {
 		return;
 
 	String path = ti->get_metadata(0);
-	print_line(TTR("PATH: ")+path);
+	print_line("PATH: "+path);
 	Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(path);
 	ERR_FAIL_COND(rimd.is_null());
 	Ref<EditorImportPlugin> rimp = EditorImportExport::get_singleton()->get_import_plugin_by_name(rimd->get_editor());

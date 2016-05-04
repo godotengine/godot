@@ -2552,7 +2552,7 @@ void PropertyEditor::update_tree() {
 				sep->set_icon(0,get_icon(type,"EditorIcons") );
 			else
 				sep->set_icon(0,get_icon("Object","EditorIcons") );
-			print_line(TTR("CATEGORY: ")+type);
+			print_line("CATEGORY: "+type);
 			*/
 			sep->set_text(0,type);
 			sep->set_selectable(0,false);

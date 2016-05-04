@@ -739,7 +739,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 
 
 	String save_file = save_path->get_text().plus_file(import_path->get_text().get_file().basename()+".scn");
-	print_line(TTR("Saving to: ")+save_file);
+	print_line("Saving to: "+save_file);
 
 
 
@@ -752,7 +752,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 
 	rim->add_source(EditorImportPlugin::validate_source_path(import_path->get_text()));
 	rim->set_option("flags",flags);
-	print_line(TTR("GET FLAGS: ")+itos(texture_options->get_flags()));
+	print_line("GET FLAGS: "+itos(texture_options->get_flags()));
 	rim->set_option("texture_flags",texture_options->get_flags());
 	rim->set_option("texture_format",texture_options->get_format());
 	rim->set_option("texture_quality",texture_options->get_quality());
@@ -973,7 +973,7 @@ void EditorSceneImportDialog::_dialog_hid() {
 
 	if (wip_blocked)
 		return;
-	print_line(TTR("DIALOGHID!"));
+	print_line("DIALOGHID!");
 	if (wip_import) {
 		memdelete(wip_import);
 		wip_import=NULL;
@@ -2285,11 +2285,11 @@ void EditorSceneImportPlugin::_merge_materials(Node *p_node,Node *p_imported) {
 	_scan_materials(p_node,p_node,mesh_materials,override_materials);
 
 	for (Map<String,Ref<Material> >::Element *E=mesh_materials.front();E;E=E->next()) {
-		print_line(TTR("Mats: ")+String(E->key()));
+		print_line("Mats: "+String(E->key()));
 	}
 
 	for (Map<String,Ref<Material> >::Element *E=override_materials.front();E;E=E->next()) {
-		print_line(TTR("Overrides: ")+String(E->key()));
+		print_line("Overrides: "+String(E->key()));
 	}
 
 	Set<Ref<Mesh> > mp;
@@ -2517,7 +2517,7 @@ void EditorSceneImportPlugin::_filter_anim_tracks(Ref<Animation> anim,Set<String
 	Ref<Animation> a = anim;
 	ERR_FAIL_COND(!a.is_valid());
 
-	print_line(TTR("From Anim ")+anim->get_name()+":");
+	print_line("From Anim "+anim->get_name()+":");
 
 	for(int j=0;j<a->get_track_count();j++) {
 
@@ -2525,7 +2525,7 @@ void EditorSceneImportPlugin::_filter_anim_tracks(Ref<Animation> anim,Set<String
 
 		if (!keep.has(path)) {
 
-			print_line(TTR("Remove: ")+path);
+			print_line("Remove: "+path);
 			a->remove_track(j);
 			j--;
 		}
@@ -2639,10 +2639,10 @@ void EditorSceneImportPlugin::_filter_tracks(Node *scene, const String& p_text) 
 			for(Set<String>::Element *F=keep_local.front();F;F=F->next()) {
 				keep.insert(F->get());
 			}
-			print_line(TTR("FILTERING ANIM: ")+String(E->get()));
+			print_line("FILTERING ANIM: "+String(E->get()));
 			_filter_anim_tracks(anim->get_animation(name),keep);
 		} else {
-			print_line(TTR("NOT FILTERING ANIM: ")+String(E->get()));
+			print_line("NOT FILTERING ANIM: "+String(E->get()));
 
 		}
 
@@ -2907,7 +2907,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	packer->set_path(p_dest_path);
 	packer->set_import_metadata(from);
 
-	print_line(TTR("SAVING TO: ")+p_dest_path);
+	print_line("SAVING TO: "+p_dest_path);
 	err = ResourceSaver::save(p_dest_path,packer,ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	//EditorFileSystem::get_singleton()->update_resource(packer);

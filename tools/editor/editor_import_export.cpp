@@ -220,7 +220,7 @@ static void _edit_files_with_filter(DirAccess *da,const List<String>& p_filters,
 	String f = da->get_next();
 	while(f!="") {
 
-		print_line(TTR("HOHO: ")+f);
+		print_line("HOHO: "+f);
 		if (da->current_is_dir())
 			dirs.push_back(f);
 		else
@@ -233,7 +233,7 @@ static void _edit_files_with_filter(DirAccess *da,const List<String>& p_filters,
 	if (!r.ends_with("/"))
 		r+="/";
 
-	print_line(TTR("AT: ")+r);
+	print_line("AT: "+r);
 
 	for(List<String>::Element *E=files.front();E;E=E->next()) {
 		String fullpath=r+E->get();
@@ -410,15 +410,15 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 
 		EditorImportExport::get_singleton()->get_export_file_list(&toexport);
 
-		print_line(TTR("TO EXPORT: ")+itos(toexport.size()));
+		print_line("TO EXPORT: "+itos(toexport.size()));
 
 
 		for (List<StringName>::Element *E=toexport.front();E;E=E->next()) {
 
-			print_line(TTR("DEP: ")+String(E->get()));
+			print_line("DEP: "+String(E->get()));
 			exported.insert(E->get());
 			if (p_bundles && EditorImportExport::get_singleton()->get_export_file_action(E->get())==EditorImportExport::ACTION_BUNDLE) {
-				print_line(TTR("NO BECAUSE OF BUNDLE!"));
+				print_line("NO BECAUSE OF BUNDLE!");
 				continue; //no dependencies needed to be copied
 			}
 
@@ -747,7 +747,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 		FileAccess *f=NULL;
 
 		if (!FileAccess::exists(EditorSettings::get_singleton()->get_settings_path()+"/tmp/atlas-"+md5)) {
-			print_line(TTR("NO MD5 INVALID"));
+			print_line("NO MD5 INVALID");
 			atlas_valid=false;
 		}
 
@@ -766,7 +766,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 				atlas_valid=false;
 
 			if (!atlas_valid)
-				print_line(TTR("JSON INVALID"));
+				print_line("JSON INVALID");
 
 		}
 
@@ -775,7 +775,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			//check md5 of list of image /names/
 			if (f->get_line().strip_edges()!=image_list_md5) {
 				atlas_valid=false;
-				print_line(TTR("IMAGE MD5 INVALID!"));
+				print_line("IMAGE MD5 INVALID!");
 			}
 
 		}
@@ -792,7 +792,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 				if (slices.size()!=10) {
 					atlas_valid=false;
-					print_line(TTR("CANT SLICE IN 10"));
+					print_line("CANT SLICE IN 10");
 					break;
 				}
 				uint64_t mod_time = slices[0].to_int64();
@@ -804,7 +804,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 					if (image_md5!=file_md5) {
 						atlas_valid=false;
-						print_line(TTR("IMAGE INVALID ")+slices[0]);
+						print_line("IMAGE INVALID "+slices[0]);
 						break;
 					} else {
 						resave_deps=true;
@@ -825,7 +825,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			f=NULL;
 		}
 
-		print_line(TTR("ATLAS VALID? ")+itos(atlas_valid)+" RESAVE DEPS? "+itos(resave_deps));
+		print_line("ATLAS VALID? "+itos(atlas_valid)+" RESAVE DEPS? "+itos(resave_deps));
 		if (!atlas_valid) {
 			rects.clear();
 			//oh well, atlas is not valid. need to make new one....
@@ -1016,7 +1016,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 		if (remap_files.size()) {
 			Vector<String> remapsprop;
 			for(Map<StringName,StringName>::Element *E=remap_files.front();E;E=E->next()) {
-				print_line(TTR("REMAP: ")+String(E->key())+" -> "+E->get());
+				print_line("REMAP: "+String(E->key())+" -> "+E->get());
 				remapsprop.push_back(E->key());
 				remapsprop.push_back(E->get());
 			}

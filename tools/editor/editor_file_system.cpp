@@ -873,7 +873,7 @@ void EditorFileSystem::scan_sources() {
 		s.priority=Thread::PRIORITY_LOW;
 		thread_sources = Thread::create(_thread_func_sources,this,s);
 		//tree->hide();
-		//print_line(TTR("SCAN BEGIN!"));
+		//print_line("SCAN BEGIN!");
 		//progress->show();
 	}
 
@@ -900,7 +900,7 @@ void EditorFileSystem::_notification(int p_what) {
 				Thread::wait_to_finish(thread);
 				memdelete(thread);
 				thread=NULL;
-				WARN_PRINTS(TTR("Scan thread aborted..."));
+				WARN_PRINTS("Scan thread aborted...");
 				set_process(false);
 
 			}
@@ -1247,7 +1247,7 @@ void EditorFileSystem::update_file(const String& p_file) {
 
     }
 
-	//print_line(TTR("UPDATING: ")+p_file);
+	//print_line("UPDATING: "+p_file);
 	fs->files[cpos]->type=type;
 	fs->files[cpos]->modified_time=FileAccess::get_modified_time(p_file);
 	fs->files[cpos]->meta=_get_meta(p_file);

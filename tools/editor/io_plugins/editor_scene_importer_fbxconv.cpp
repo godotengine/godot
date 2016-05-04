@@ -160,7 +160,7 @@ void EditorSceneImporterFBXConv::_detect_bones_in_nodes(State& state,const Array
 		if (d.has("isBone") && bool(d["isBone"])) {
 
 			String bone_name=_id(d["id"]);
-			print_line(TTR("IS BONE: ")+bone_name);
+			print_line("IS BONE: "+bone_name);
 			if (!state.bones.has(bone_name)) {
 				state.bones.insert(bone_name,BoneInfo());
 			}
@@ -367,14 +367,14 @@ Error EditorSceneImporterFBXConv::_parse_nodes(State& state,const Array &p_nodes
 			id=_id(n["id"]);
 		}
 
-		print_line(TTR("ID: ")+id);
+		print_line("ID: "+id);
 
 		if (state.skeletons.has(id)) {
 
 			Skeleton *skeleton = state.skeletons[id];
 			node=skeleton;
 			skeleton->localize_rests();
-			print_line(TTR("IS SKELETON! "));
+			print_line("IS SKELETON! ");
 		} else if (state.bones.has(id)) {
 			if (p_base)
 				node=p_base->cast_to<Spatial>();
@@ -538,7 +538,7 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 		ERR_CONTINUE(!mesh.has("vertices"));
 		ERR_CONTINUE(!mesh.has("parts"));
 
-		print_line(TTR("MESH #")+itos(i));
+		print_line("MESH #"+itos(i));
 
 		Array attrlist=mesh["attributes"];
 		Array vertices=mesh["vertices"];
@@ -604,7 +604,7 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 				stride+=2;
 			}
 
-			print_line(TTR("ATTR ")+attr+" OFS: "+itos(stride));
+			print_line("ATTR "+attr+" OFS: "+itos(stride));
 
 		}
 
@@ -618,7 +618,7 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 			ERR_CONTINUE(!part.has("indices"));
 			ERR_CONTINUE(!part.has("id"));
 
-			print_line(TTR("PART: ")+String(part["id"]));
+			print_line("PART: "+String(part["id"]));
 			Array indices=part["indices"];
 			Map<int,int> iarray;
 			Map<int,int> array;
@@ -903,7 +903,7 @@ Error EditorSceneImporterFBXConv::_parse_animations(State& state) {
 
 				}
 
-				print_line(TTR("BONE XFD ")+String(Variant(xform_dict)));
+				print_line("BONE XFD "+String(Variant(xform_dict)));
 
 				Array keyframes=bone_track["keyframes"];
 
@@ -1022,7 +1022,7 @@ Error EditorSceneImporterFBXConv::_parse_json(State& state, const String &p_path
 			return err;
 	}
 
-	print_line(TTR("JSON PARSED O-K!"));
+	print_line("JSON PARSED O-K!");
 
 	return OK;
 }

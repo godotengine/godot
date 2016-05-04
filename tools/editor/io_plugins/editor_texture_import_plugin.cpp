@@ -918,7 +918,7 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 
 		//if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
 //
-		//	print_line(TTR("CONVERT BECAUSE: ")+itos(flags));
+		//	print_line("CONVERT BECAUSE: "+itos(flags));
 		//	image.srgb_to_linear();
 		//}
 
@@ -1021,7 +1021,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 				piece.blit_rect(img,Rect2(i,j,w,h),Point2(0,0));
 				if (!piece.is_invisible()) {
 					pieces[Vector2(i,j)]=piece;
-					//print_line(TTR("ADDING PIECE AT ")+Vector2(i,j));
+					//print_line("ADDING PIECE AT "+Vector2(i,j));
 				}
 			}
 		}
@@ -1131,7 +1131,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			if (source_md5.has(*cmp)) {
 				int sidx=source_md5[*cmp];
 				source_map[sidx].push_back(i);
-				print_line(TTR("REUSING ")+from->get_source_path(i));
+				print_line("REUSING "+from->get_source_path(i));
 
 			} else {
 				int sidx=sources.size();
@@ -1161,7 +1161,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			Size2i s;
 			if (crop) {
 				Rect2 crop = sources[j].get_used_rect();
-				print_line(TTR("CROP: ")+crop);
+				print_line("CROP: "+crop);
 				s=crop.size;
 				crops.push_back(crop);
 			} else {
@@ -1231,7 +1231,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 				at->set_margin(margin);
 				at->set_path(apath);
 				atlases[E->get()]=at;
-				print_line(TTR("Atlas Tex: ")+apath);
+				print_line("Atlas Tex: "+apath);
 			}
 		}
 		if (ResourceCache::has(p_path)) {
@@ -1391,7 +1391,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 		//if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
 //
-		//	print_line(TTR("CONVERT BECAUSE: ")+itos(flags));
+		//	print_line("CONVERT BECAUSE: "+itos(flags));
 		//	image.srgb_to_linear();
 		//}
 

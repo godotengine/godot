@@ -618,7 +618,7 @@ void EditorHelp::_class_desc_select(const String& p_select) {
 
 
 
-//	print_line(TTR("LINK: ")+p_select);
+//	print_line("LINK: "+p_select);
 	if (p_select.begins_with("#")) {
 		//_goto_desc(p_select.substr(1,p_select.length()));
 		emit_signal("go_to_help","class_name:"+p_select.substr(1,p_select.length()));

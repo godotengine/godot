@@ -454,7 +454,7 @@ void ProjectExportDialog::_export_action(const String& p_file) {
 
 	while(true) {
 
-		print_line(TTR("TESTING: ")+location.plus_file("engine.cfg"));
+		print_line("TESTING: "+location.plus_file("engine.cfg"));
 		if (FileAccess::exists(location.plus_file("engine.cfg"))) {
 
 			error->set_text(TTR("Please export outside the project folder!"));
@@ -539,7 +539,7 @@ Error ProjectExportDialog::export_platform(const String& p_platform, const Strin
 
 		List<StringName> platforms;
 		EditorImportExport::get_singleton()->get_export_platforms(&platforms);
-		print_line(TTR("Valid export plaftorms are:"));
+		print_line("Valid export plaftorms are:");
 		for (List<StringName>::Element *E=platforms.front();E;E=E->next())
 			print_line("    \""+E->get()+"\"");
 
@@ -1681,7 +1681,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 		else
 			preset=names[E->get().action-2];
 
-		print_line(TTR("Exporting ")+itos(idx)+"/"+itos(export_action.size())+": "+path);
+		print_line("Exporting "+itos(idx)+"/"+itos(export_action.size())+": "+path);
 
 		String base_dir = Globals::get_singleton()->localize_path(path.get_base_dir()).replace("\\","/").replace("res://","");
 		DirAccess *da=DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -1721,7 +1721,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 		String source_file;
 
-		print_line(TTR("Exporting: ")+source_file);
+		print_line("Exporting: "+source_file);
 		bool delete_source=false;
 		if (preset=="") {
 			//just copy!
@@ -1819,7 +1819,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 				String write_file = path+".opt.res";
 
 
-				print_line(TTR("DST RES FILE: ")+write_file);
+				print_line("DST RES FILE: "+write_file);
 				Error err = ResourceSaver::save(write_file,res,flags,saver);
 				if (err) {
 					memdelete(d);

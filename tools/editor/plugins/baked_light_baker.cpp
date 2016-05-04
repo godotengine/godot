@@ -1533,7 +1533,7 @@ void BakedLightBaker::_make_octree_texture() {
 
 
 	baked_octree_texture_h=nearest_power_of_2(baked_octree_texture_h);
-	print_line(TTR("RESULT! ")+itos(baked_octree_texture_w)+","+itos(baked_octree_texture_h));
+	print_line("RESULT! "+itos(baked_octree_texture_w)+","+itos(baked_octree_texture_h));
 
 }
 
@@ -1810,7 +1810,7 @@ void BakedLightBaker::update_octree_sampler(DVector<int> &p_sampler) {
 					if (octant.children[j]) {
 						tmp_smp.push_back(octants[octant.children[j]].sampler_ofs);
 						if (octants[octant.children[j]].sampler_ofs==0) {
-							print_line(TTR("FUUUUUUUUCK"));
+							print_line("FUUUUUUUUCK");
 						}
 					}
 				}

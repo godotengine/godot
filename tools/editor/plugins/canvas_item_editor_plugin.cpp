@@ -1730,7 +1730,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 					if ((leaf_pos.distance_to(root_pos)) > total_len) {
 						//oops dude you went too far
-						//print_line(TTR("TOO FAR!"));
+						//print_line("TOO FAR!");
 						Vector2 rel = leaf_pos - root_pos;
 						rel = rel.normalized() * total_len;
 						leaf_pos=root_pos+rel;
@@ -1739,7 +1739,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 					bone_ik_list.front()->get().pos=leaf_pos;
 
-					//print_line(TTR("BONE IK LIST ")+itos(bone_ik_list.size()));
+					//print_line("BONE IK LIST "+itos(bone_ik_list.size()));
 
 
 					if (bone_ik_list.size()>2) {
@@ -1764,22 +1764,22 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 									//print_line("back");
 
 									Vector2 rel = E->get().pos - E->next()->get().pos;
-									//print_line(TTR("PREV ")+E->get().pos);
+									//print_line("PREV "+E->get().pos);
 									Vector2 desired = E->next()->get().pos+rel.normalized()*len;
-									//print_line(TTR("DESIRED ")+desired);
+									//print_line("DESIRED "+desired);
 									E->get().pos=E->get().pos.linear_interpolate(desired,solver_k);
-									//print_line(TTR("POST ")+E->get().pos);
+									//print_line("POST "+E->get().pos);
 
 
 								} else if (E==bone_ik_list.front()) {
 									//only adjust parent
 									//print_line("front");
 									Vector2 rel = E->next()->get().pos - E->get().pos;
-									//print_line(TTR("PREV ")+E->next()->get().pos);
+									//print_line("PREV "+E->next()->get().pos);
 									Vector2 desired = E->get().pos+rel.normalized()*len;
-									//print_line(TTR("DESIRED ")+desired);
+									//print_line("DESIRED "+desired);
 									E->next()->get().pos=E->next()->get().pos.linear_interpolate(desired,solver_k);
-									//print_line(TTR("POST ")+E->next()->get().pos);
+									//print_line("POST "+E->next()->get().pos);
 								} else {
 
 									Vector2 rel = E->next()->get().pos - E->get().pos;

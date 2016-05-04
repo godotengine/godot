@@ -97,7 +97,7 @@ void BakedLightEditor::_notification(int p_option) {
 
 					}
 				}
-				print_line(TTR("MSCOL: ")+itos(OS::get_singleton()->get_ticks_msec()-t));
+				print_line("MSCOL: "+itos(OS::get_singleton()->get_ticks_msec()-t));
 				t = OS::get_singleton()->get_ticks_msec();
 
 				Array a;
@@ -132,14 +132,14 @@ void BakedLightEditor::_notification(int p_option) {
 
 				bake_info->set_text("rays/s: "+itos(rays_sec));
 				update_timeout=1;
-				print_line(TTR("MSUPDATE: ")+itos(OS::get_singleton()->get_ticks_msec()-t));
+				print_line("MSUPDATE: "+itos(OS::get_singleton()->get_ticks_msec()-t));
 				t=OS::get_singleton()->get_ticks_msec();
 				node->get_baked_light()->set_octree(octree_texture);
 				node->get_baked_light()->set_light(light_texture);
 				node->get_baked_light()->set_sampler_octree(octree_sampler);
 				node->get_baked_light()->set_edited(true);
 
-				print_line(TTR("MSSET: ")+itos(OS::get_singleton()->get_ticks_msec()-t));
+				print_line("MSSET: "+itos(OS::get_singleton()->get_ticks_msec()-t));
 
 
 

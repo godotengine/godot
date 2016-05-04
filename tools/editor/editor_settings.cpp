@@ -275,7 +275,7 @@ void EditorSettings::create() {
 
 		if (OS::get_singleton()->is_stdout_verbose()) {
 
-			print_line(TTR("EditorSettings: Load OK!"));
+			print_line("EditorSettings: Load OK!");
 		}
 
 		singleton->setup_network();
@@ -365,7 +365,7 @@ void EditorSettings::save() {
 	}
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line(TTR("EditorSettings Save OK!"));
+		print_line("EditorSettings Save OK!");
 	}
 
 }
