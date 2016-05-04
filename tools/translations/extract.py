@@ -14,11 +14,11 @@ for root, dirnames, filenames in os.walk('.'):
 		if (filename.find("collada")!=-1):
 			continue
 		matches.append(os.path.join(root, filename))
-		
+
 
 unique_str=[]
 main_po=""
-	
+
 for fname in matches:
 
 	f = open(fname,"rb")
@@ -28,8 +28,8 @@ for fname in matches:
 	l = f.readline()
 	lc=1
 	while(l):
-	
-		pos = 0		
+
+		pos = 0
 		while(pos>=0):
 			pos = l.find('TTR(\"',pos)
 			if (pos==-1):
@@ -40,7 +40,7 @@ for fname in matches:
 			while (pos < len(l) and (l[pos]!='"' or l[pos-1]=='\\') ):
 				msg+=l[pos]
 				pos+=1
-				
+
 			if (not msg in unique_str):
 				main_po+="\n#:"+fname+":"+str(lc)+"\n"
 				main_po+='msgid "'+msg+'"\n'
@@ -56,5 +56,3 @@ for fname in matches:
 f = open("tools.pot","wb")
 f.write(main_po)
 f.close()
-	
-
