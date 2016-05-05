@@ -678,54 +678,79 @@
 	</methods>
 	<members>
 		<member name="Performance" type="Performance">
+			[Performance] singleton
 		</member>
 		<member name="Globals" type="Globals">
+			[Globals] singleton
 		</member>
 		<member name="IP" type="IP">
+			[IP] singleton
 		</member>
 		<member name="Geometry" type="Geometry">
+			[Geometry] singleton
 		</member>
 		<member name="ResourceLoader" type="ResourceLoader">
+			[ResourceLoader] singleton
 		</member>
 		<member name="ResourceSaver" type="ResourceSaver">
+			[ResourceSaver] singleton
 		</member>
 		<member name="PathRemap" type="PathRemap">
+			[PathRemap] singleton
 		</member>
 		<member name="OS" type="OS">
+			[OS] singleton
 		</member>
 		<member name="Marshalls" type="Reference">
+			[Marshalls] singleton
 		</member>
 		<member name="TranslationServer" type="TranslationServer">
+			[TranslationServer] singleton
 		</member>
 		<member name="TS" type="TranslationServer">
+			[TranslationServer] singleton
 		</member>
 		<member name="Input" type="Input">
+			[Input] singleton
 		</member>
 		<member name="InputMap" type="InputMap">
+			[InputMap] singleton
 		</member>
 		<member name="VisualServer" type="VisualServer">
+			[VisualServer] singleton
 		</member>
 		<member name="VS" type="VisualServer">
+			[VisualServer] singleton
 		</member>
 		<member name="AudioServer" type="AudioServer">
+			[AudioServer] singleton
 		</member>
 		<member name="AS" type="AudioServer">
+			[AudioServer] singleton
 		</member>
 		<member name="PhysicsServer" type="PhysicsServer">
+			[PhysicsServer] singleton
 		</member>
 		<member name="PS" type="PhysicsServer">
+			[PhysicsServer] singleton
 		</member>
 		<member name="Physics2DServer" type="Physics2DServer">
+			[Physics2DServer] singleton
 		</member>
 		<member name="PS2D" type="Physics2DServer">
+			[Physics2DServer] singleton
 		</member>
 		<member name="SpatialSoundServer" type="SpatialSoundServer">
+			[SpatialSoundServer] singleton
 		</member>
 		<member name="SS" type="SpatialSoundServer">
+			[SpatialSoundServer] singleton
 		</member>
 		<member name="SpatialSound2DServer" type="SpatialSound2DServer">
+			[SpatialSound2DServer] singleton
 		</member>
 		<member name="SS2D" type="SpatialSound2DServer">
+			[SpatialSound2DServer] singleton
 		</member>
 	</members>
 	<constants>
@@ -943,34 +968,45 @@
 			Number 9 on Numpad
 		</constant>
 		<constant name="KEY_SUPER_L" value="16777260">
+			Super Left key (windows key)
 		</constant>
 		<constant name="KEY_SUPER_R" value="16777261">
+			Super Left key (windows key)
 		</constant>
 		<constant name="KEY_MENU" value="16777262">
+			Context menu key
 		</constant>
 		<constant name="KEY_HYPER_L" value="16777263">
 		</constant>
 		<constant name="KEY_HYPER_R" value="16777264">
 		</constant>
 		<constant name="KEY_HELP" value="16777265">
+			Help key
 		</constant>
 		<constant name="KEY_DIRECTION_L" value="16777266">
 		</constant>
 		<constant name="KEY_DIRECTION_R" value="16777267">
 		</constant>
 		<constant name="KEY_BACK" value="16777280">
+			Back key
 		</constant>
 		<constant name="KEY_FORWARD" value="16777281">
+			Forward key
 		</constant>
 		<constant name="KEY_STOP" value="16777282">
+			Stop key
 		</constant>
 		<constant name="KEY_REFRESH" value="16777283">
+			Refresh key
 		</constant>
 		<constant name="KEY_VOLUMEDOWN" value="16777284">
+			Volume down key
 		</constant>
 		<constant name="KEY_VOLUMEMUTE" value="16777285">
+			Mute volume key
 		</constant>
 		<constant name="KEY_VOLUMEUP" value="16777286">
+			Volume up key
 		</constant>
 		<constant name="KEY_BASSBOOST" value="16777287">
 		</constant>
@@ -983,20 +1019,28 @@
 		<constant name="KEY_TREBLEDOWN" value="16777291">
 		</constant>
 		<constant name="KEY_MEDIAPLAY" value="16777292">
+			Media play key
 		</constant>
 		<constant name="KEY_MEDIASTOP" value="16777293">
+			Media stop key
 		</constant>
 		<constant name="KEY_MEDIAPREVIOUS" value="16777294">
+			Previous song key
 		</constant>
 		<constant name="KEY_MEDIANEXT" value="16777295">
+			Next song key
 		</constant>
 		<constant name="KEY_MEDIARECORD" value="16777296">
+			Media record key
 		</constant>
 		<constant name="KEY_HOMEPAGE" value="16777297">
+			Home page key
 		</constant>
 		<constant name="KEY_FAVORITES" value="16777298">
+			Favorites key
 		</constant>
 		<constant name="KEY_SEARCH" value="16777299">
+			Search key
 		</constant>
 		<constant name="KEY_STANDBY" value="16777300">
 		</constant>
@@ -1044,34 +1088,49 @@
 			Space Key
 		</constant>
 		<constant name="KEY_EXCLAM" value="33">
+			! key
 		</constant>
 		<constant name="KEY_QUOTEDBL" value="34">
+			" key
 		</constant>
 		<constant name="KEY_NUMBERSIGN" value="35">
+			# key
 		</constant>
 		<constant name="KEY_DOLLAR" value="36">
+			$ key
 		</constant>
 		<constant name="KEY_PERCENT" value="37">
+			% key
 		</constant>
 		<constant name="KEY_AMPERSAND" value="38">
+			& key
 		</constant>
 		<constant name="KEY_APOSTROPHE" value="39">
+			' key
 		</constant>
 		<constant name="KEY_PARENLEFT" value="40">
+			( key
 		</constant>
 		<constant name="KEY_PARENRIGHT" value="41">
+			) key
 		</constant>
 		<constant name="KEY_ASTERISK" value="42">
+			* key
 		</constant>
 		<constant name="KEY_PLUS" value="43">
+			+ key
 		</constant>
 		<constant name="KEY_COMMA" value="44">
+			, key
 		</constant>
 		<constant name="KEY_MINUS" value="45">
+			- key
 		</constant>
 		<constant name="KEY_PERIOD" value="46">
+			. key
 		</constant>
 		<constant name="KEY_SLASH" value="47">
+			/ key
 		</constant>
 		<constant name="KEY_0" value="48">
 			Number 0
@@ -1104,18 +1163,25 @@
 			Number 9
 		</constant>
 		<constant name="KEY_COLON" value="58">
+			: key
 		</constant>
 		<constant name="KEY_SEMICOLON" value="59">
+			; key
 		</constant>
 		<constant name="KEY_LESS" value="60">
+			Lower than key
 		</constant>
 		<constant name="KEY_EQUAL" value="61">
+			= key
 		</constant>
 		<constant name="KEY_GREATER" value="62">
+			Greater than key
 		</constant>
 		<constant name="KEY_QUESTION" value="63">
+			? key
 		</constant>
 		<constant name="KEY_AT" value="64">
+			@ key
 		</constant>
 		<constant name="KEY_A" value="65">
 			A Key
@@ -1196,30 +1262,40 @@
 			Z Key
 		</constant>
 		<constant name="KEY_BRACKETLEFT" value="91">
+			[ key
 		</constant>
 		<constant name="KEY_BACKSLASH" value="92">
+			\ key
 		</constant>
 		<constant name="KEY_BRACKETRIGHT" value="93">
+			] key
 		</constant>
 		<constant name="KEY_ASCIICIRCUM" value="94">
+			^ key
 		</constant>
 		<constant name="KEY_UNDERSCORE" value="95">
+			_ key
 		</constant>
 		<constant name="KEY_QUOTELEFT" value="96">
 		</constant>
 		<constant name="KEY_BRACELEFT" value="123">
+			{ key
 		</constant>
 		<constant name="KEY_BAR" value="124">
+			| key
 		</constant>
 		<constant name="KEY_BRACERIGHT" value="125">
+			} key
 		</constant>
 		<constant name="KEY_ASCIITILDE" value="126">
+			~ key
 		</constant>
 		<constant name="KEY_NOBREAKSPACE" value="160">
 		</constant>
 		<constant name="KEY_EXCLAMDOWN" value="161">
 		</constant>
 		<constant name="KEY_CENT" value="162">
+			¢ key
 		</constant>
 		<constant name="KEY_STERLING" value="163">
 		</constant>
@@ -1228,42 +1304,58 @@
 		<constant name="KEY_YEN" value="165">
 		</constant>
 		<constant name="KEY_BROKENBAR" value="166">
+			¦ key
 		</constant>
 		<constant name="KEY_SECTION" value="167">
+			§ key
 		</constant>
 		<constant name="KEY_DIAERESIS" value="168">
+			¨ key
 		</constant>
 		<constant name="KEY_COPYRIGHT" value="169">
+			© key
 		</constant>
 		<constant name="KEY_ORDFEMININE" value="170">
 		</constant>
 		<constant name="KEY_GUILLEMOTLEFT" value="171">
+			« key
 		</constant>
 		<constant name="KEY_NOTSIGN" value="172">
+			» key
 		</constant>
 		<constant name="KEY_HYPHEN" value="173">
+			‐ key
 		</constant>
 		<constant name="KEY_REGISTERED" value="174">
+			® key
 		</constant>
 		<constant name="KEY_MACRON" value="175">
 		</constant>
 		<constant name="KEY_DEGREE" value="176">
+			° key
 		</constant>
 		<constant name="KEY_PLUSMINUS" value="177">
+			± key
 		</constant>
 		<constant name="KEY_TWOSUPERIOR" value="178">
+			² key
 		</constant>
 		<constant name="KEY_THREESUPERIOR" value="179">
+			³ key
 		</constant>
 		<constant name="KEY_ACUTE" value="180">
+			´ key
 		</constant>
 		<constant name="KEY_MU" value="181">
+			µ key
 		</constant>
 		<constant name="KEY_PARAGRAPH" value="182">
 		</constant>
 		<constant name="KEY_PERIODCENTERED" value="183">
+			· key
 		</constant>
 		<constant name="KEY_CEDILLA" value="184">
+			¬ key
 		</constant>
 		<constant name="KEY_ONESUPERIOR" value="185">
 		</constant>
@@ -1274,6 +1366,7 @@
 		<constant name="KEY_ONEQUARTER" value="188">
 		</constant>
 		<constant name="KEY_ONEHALF" value="189">
+			½ key
 		</constant>
 		<constant name="KEY_THREEQUARTERS" value="190">
 		</constant>
@@ -1375,12 +1468,16 @@
 			Middle Mouse Button
 		</constant>
 		<constant name="BUTTON_WHEEL_UP" value="4">
+			Mouse wheel up
 		</constant>
 		<constant name="BUTTON_WHEEL_DOWN" value="5">
+			Mouse wheel down
 		</constant>
 		<constant name="BUTTON_WHEEL_LEFT" value="6">
+			Mouse wheel left button
 		</constant>
 		<constant name="BUTTON_WHEEL_RIGHT" value="7">
+			Mouse wheel right button
 		</constant>
 		<constant name="BUTTON_MASK_LEFT" value="1">
 		</constant>
@@ -1440,36 +1537,52 @@
 			Joystick Button 16
 		</constant>
 		<constant name="JOY_SNES_A" value="1">
+			Super Nintendo Entertaiment System controller A button
 		</constant>
 		<constant name="JOY_SNES_B" value="0">
+			Super Nintendo Entertaiment System controller B button
 		</constant>
 		<constant name="JOY_SNES_X" value="3">
+			Super Nintendo Entertaiment System controller X button
 		</constant>
 		<constant name="JOY_SNES_Y" value="2">
+			Super Nintendo Entertaiment System controller Y button
 		</constant>
 		<constant name="JOY_SONY_CIRCLE" value="1">
+			DUALSHOCK circle button
 		</constant>
 		<constant name="JOY_SONY_X" value="0">
+			DUALSHOCK X button
 		</constant>
 		<constant name="JOY_SONY_SQUARE" value="2">
+			DUALSHOCK square button
 		</constant>
 		<constant name="JOY_SONY_TRIANGLE" value="3">
+			DUALSHOCK triangle button
 		</constant>
 		<constant name="JOY_SEGA_B" value="1">
+			SEGA controller B button
 		</constant>
 		<constant name="JOY_SEGA_A" value="0">
+			SEGA controller A button
 		</constant>
 		<constant name="JOY_SEGA_X" value="2">
+			SEGA controller X button
 		</constant>
 		<constant name="JOY_SEGA_Y" value="3">
+			SEGA controller Y button
 		</constant>
 		<constant name="JOY_XBOX_B" value="1">
+			XBOX controller B button
 		</constant>
 		<constant name="JOY_XBOX_A" value="0">
+			XBOX controller A button
 		</constant>
 		<constant name="JOY_XBOX_X" value="2">
+			XBOX controller X button
 		</constant>
 		<constant name="JOY_XBOX_Y" value="3">
+			XBOX controller Y button
 		</constant>
 		<constant name="JOY_DS_A" value="1">
 		</constant>
@@ -1721,13 +1834,13 @@
 			Variable is of type nil (only applied for null).
 		</constant>
 		<constant name="TYPE_BOOL" value="1">
-			Variable is of type bool.
+			Variable is of type [bool].
 		</constant>
 		<constant name="TYPE_INT" value="2">
-			Variable is of type integer.
+			Variable is of type [int].
 		</constant>
 		<constant name="TYPE_REAL" value="3">
-			Variable is of type float/real.
+			Variable is of type [float]/real.
 		</constant>
 		<constant name="TYPE_STRING" value="4">
 			Variable is of type [String].
