@@ -170,8 +170,8 @@ public:
 	String left(int p_pos) const;
 	String right(int p_pos) const;
 	String strip_edges() const;
-	String strip_edges_left() const;
-	String strip_edges_right() const;
+	String strip_edge_left() const;
+	String strip_edge_right() const;
 	String strip_escapes() const;
 	String extension() const;
 	String basename() const;

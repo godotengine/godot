@@ -258,6 +258,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(String,left);
 	VCALL_LOCALMEM1R(String,right);
 	VCALL_LOCALMEM0R(String,strip_edges);
+	VCALL_LOCALMEM0R(String,strip_edge_left);
+	VCALL_LOCALMEM0R(String,strip_edge_right);
 	VCALL_LOCALMEM0R(String,extension);
 	VCALL_LOCALMEM0R(String,basename);
 	VCALL_LOCALMEM1R(String,plus_file);
@@ -1278,6 +1280,8 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(STRING,STRING,String,left,INT,"pos",varray());
 	ADDFUNC1(STRING,STRING,String,right,INT,"pos",varray());
 	ADDFUNC0(STRING,STRING,String,strip_edges,varray());
+	ADDFUNC0(STRING,STRING,String,strip_edge_left,varray());
+	ADDFUNC0(STRING,STRING,String,strip_edge_right,varray());
 	ADDFUNC0(STRING,STRING,String,extension,varray());
 	ADDFUNC0(STRING,STRING,String,basename,varray());
 	ADDFUNC1(STRING,STRING,String,plus_file,STRING,"file",varray());
