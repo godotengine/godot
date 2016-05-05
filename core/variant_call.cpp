@@ -440,7 +440,6 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0R(Dictionary,empty);
 	VCALL_LOCALMEM0(Dictionary,clear);
 	VCALL_LOCALMEM1R(Dictionary,has);
-	VCALL_LOCALMEM1R(Dictionary,has_all);
 	VCALL_LOCALMEM1(Dictionary,erase);
 	VCALL_LOCALMEM0R(Dictionary,hash);
 	VCALL_LOCALMEM0R(Dictionary,keys);
@@ -594,6 +593,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_PTR0R(Image, get_data);
 	VCALL_PTR3(Image, blit_rect);
 	VCALL_PTR1R(Image, converted);
+	VCALL_PTR0(Image, fix_alpha_edges);
 
 	VCALL_PTR0R( AABB, get_area );
 	VCALL_PTR0R( AABB, has_no_area );
@@ -1409,6 +1409,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(IMAGE, RAW_ARRAY, Image, get_data, varray());
 	ADDFUNC3(IMAGE, NIL, Image, blit_rect, IMAGE, "src", RECT2, "src_rect", VECTOR2, "dest", varray(0));
 	ADDFUNC1(IMAGE, IMAGE, Image, converted, INT, "format", varray(0));
+	ADDFUNC0(IMAGE, NIL, Image, fix_alpha_edges, varray());
 
 	ADDFUNC0(_RID,INT,RID,get_id,varray());
 
@@ -1424,7 +1425,6 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(DICTIONARY,BOOL,Dictionary,empty,varray());
 	ADDFUNC0(DICTIONARY,NIL,Dictionary,clear,varray());
 	ADDFUNC1(DICTIONARY,BOOL,Dictionary,has,NIL,"value",varray());
-	ADDFUNC1(DICTIONARY,BOOL,Dictionary,has_all,ARRAY,"values",varray());
 	ADDFUNC1(DICTIONARY,NIL,Dictionary,erase,NIL,"value",varray());
 	ADDFUNC0(DICTIONARY,INT,Dictionary,hash,varray());
 	ADDFUNC0(DICTIONARY,ARRAY,Dictionary,keys,varray());
