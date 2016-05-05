@@ -2872,7 +2872,7 @@ String String::strip_edges() const {
 	int len=length();
 	int beg=0,end=len;
 
-	for (int i=0;i<length();i++) {
+	for (int i=0;i<len;i++) {
 
 		if (operator[](i)<=32)
 			beg++;
@@ -2880,7 +2880,7 @@ String String::strip_edges() const {
 			break;
 	}
 
-	for (int i=(int)(length()-1);i>=0;i--) {
+	for (int i=(int)(len-1);i>=0;i--) {
 
 		if (operator[](i)<=32)
 			end--;
@@ -2892,6 +2892,14 @@ String String::strip_edges() const {
 		return *this;
 
 	return substr(beg,end-beg);
+}
+
+String String::strip_edges_left() const {
+
+}
+
+String String::strip_edges_left() const {
+
 }
 
 String String::strip_escapes() const {
