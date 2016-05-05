@@ -57,9 +57,9 @@ bool DirAccessOSX::list_dir_begin() {
 	dir_stream = opendir(current_dir.utf8().get_data());
 	//chdir(real_current_dir_name);
 	if (!dir_stream)
-		return true; //error!
+		return false; //error!
 
-	return false;
+	return true;
 }
 
 bool DirAccessOSX::file_exists(String p_file) {
