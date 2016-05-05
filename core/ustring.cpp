@@ -3629,13 +3629,14 @@ String String::percent_decode() const {
 
 	CharString pe;
 
-	for(int i=0;i<length();i++) {
-
-		uint8_t c=operator[](i);
+	CharString cs = utf8();
+	for(int i=0;i<cs.length();i++) {
+		
+		uint8_t c = cs[i];
 		if (c=='%' && i<length()-2) {
 
-			uint8_t a = LOWERCASE(operator[](i+1));
-			uint8_t b = LOWERCASE(operator[](i+2));
+			uint8_t a = LOWERCASE(cs[i+1]);
+			uint8_t b = LOWERCASE(cs[i+2]);
 
 			c=0;
 			if (a>='0' && a<='9')
