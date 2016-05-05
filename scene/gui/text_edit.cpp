@@ -1659,35 +1659,27 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					if (k.unicode>32) {
 
-						if (cursor.column<text[cursor.line].length() && text[cursor.line][cursor.column]==k.unicode) {
-							//same char, move ahead
-							cursor_set_column(cursor.column+1);
-
+						const CharType chr[2] = {(CharType)k.unicode, 0};
+						if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
+							_consume_pair_symbol(chr[0]);
 						} else {
-							//different char, go back
-							const CharType chr[2] = {(CharType)k.unicode, 0};
-							if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
-								_consume_pair_symbol(chr[0]);
-							} else {
 
-								// remove the old character if in insert mode
-								if (insert_mode) {
-									begin_complex_operation();
+							// remove the old character if in insert mode
+							if (insert_mode) {
+								begin_complex_operation();
 
-									// make sure we don't try and remove empty space
-									if (cursor.column < get_line(cursor.line).length()) {
-										_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
-									}
-								}
-
-								_insert_text_at_cursor(chr);
-
-								if (insert_mode) {
-									end_complex_operation();
+								// make sure we don't try and remove empty space
+								if (cursor.column < get_line(cursor.line).length()) {
+									_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
 								}
 							}
-						}
 
+							_insert_text_at_cursor(chr);
+
+							if (insert_mode) {
+								end_complex_operation();
+							}
+						}
 						_update_completion_candidates();
 						accept_event();
 
