@@ -116,7 +116,6 @@ opus_sources_lib = [
 	"opus/info.c",
 	"opus/stream.c",
 	"opus/opus_decoder.c",
-	"opus/opus_compare.c",
 	"opus/internal.c",
 	"opus/wincerts.c",
 	"opus/opus.c",
