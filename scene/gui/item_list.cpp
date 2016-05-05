@@ -1115,7 +1115,7 @@ int ItemList::find_metadata(const Variant& p_metadata) const {
 
 void ItemList::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("add_item","text","icon:Texture","selectable"),&ItemList::add_item,DEFVAL(Ref<Texture>()),DEFVAL(true));
+	ObjectTypeDB::bind_method(_MD("add_item","text","icon:Texture","selectable"),&ItemList::add_item,DEFVAL(Variant()),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("add_icon_item","icon:Texture","selectable"),&ItemList::add_icon_item,DEFVAL(true));
 
 	ObjectTypeDB::bind_method(_MD("set_item_text","idx","text"),&ItemList::set_item_text);

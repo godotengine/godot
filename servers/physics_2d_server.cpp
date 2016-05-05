@@ -630,7 +630,7 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("groove_joint_create","groove1_a","groove2_a","anchor_b","body_a","body_b"),&Physics2DServer::groove_joint_create,DEFVAL(RID()),DEFVAL(RID()));
 	ObjectTypeDB::bind_method(_MD("damped_spring_joint_create","anchor_a","anchor_b","body_a","body_b"),&Physics2DServer::damped_spring_joint_create,DEFVAL(RID()));
 
-	ObjectTypeDB::bind_method(_MD("damped_string_joint_set_param","joint","param","value"),&Physics2DServer::damped_string_joint_set_param,DEFVAL(RID()));
+	ObjectTypeDB::bind_method(_MD("damped_string_joint_set_param","joint","param","value"),&Physics2DServer::damped_string_joint_set_param);
 	ObjectTypeDB::bind_method(_MD("damped_string_joint_get_param","joint","param"),&Physics2DServer::damped_string_joint_get_param);
 
 	ObjectTypeDB::bind_method(_MD("joint_get_type","joint"),&Physics2DServer::joint_get_type);
