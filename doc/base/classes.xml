@@ -17963,39 +17963,47 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="LinkButton" inherits="BaseButton" category="Core">
 	<brief_description>
+		Simple button used to represent a link to some resource
 	</brief_description>
 	<description>
+		This kind of buttons are primarily used when the interaction with the button causes a context change (like linking to a web page).
 	</description>
 	<methods>
 		<method name="set_text">
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
+				Sets the text of the button.
 			</description>
 		</method>
 		<method name="get_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Returns the text of the button.
 			</description>
 		</method>
 		<method name="set_underline_mode">
 			<argument index="0" name="underline_mode" type="int">
 			</argument>
 			<description>
+				Sets the underline mode for this button, the argument must be one of the [LinkButton] constants (see constants section).
 			</description>
 		</method>
 		<method name="get_underline_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the underline mode for this button.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="UNDERLINE_MODE_ALWAYS" value="0">
+			The LinkButton will always show an underline at the bottom of its text
 		</constant>
 		<constant name="UNDERLINE_MODE_ON_HOVER" value="1">
+			The LinkButton will show an underline at the bottom of its text when the mouse cursor is over it.
 		</constant>
 	</constants>
 	<theme_items>
@@ -20963,12 +20971,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="int">
 			</return>
 			<description>
+			Returns the number of displays attached to the host machine
 			</description>
 		</method>
 		<method name="get_current_screen" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Returns the current screen index (0 padded).
 			</description>
 		</method>
 		<method name="set_current_screen">
@@ -20991,54 +21001,63 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="screen" type="int" default="0">
 			</argument>
 			<description>
+			Returns the dimensions in pixels of the specified screen.
 			</description>
 		</method>
 		<method name="get_window_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Returns the window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.
 			</description>
 		</method>
 		<method name="set_window_position">
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
+			Sets the position of the window to the specified position (this function could be restricted by the window manager, meaning that there could be some unreachable areas of the screen).
 			</description>
 		</method>
 		<method name="get_window_size" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Returns the size of the window (without counting window manager decorations).
 			</description>
 		</method>
 		<method name="set_window_size">
 			<argument index="0" name="size" type="Vector2">
 			</argument>
 			<description>
+				Sets the window size to the specified size.
 			</description>
 		</method>
 		<method name="set_window_fullscreen">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Sets window fullscreen mode to the [i]enabled[/i] argument, [i]enabled[/i] is a toggle for the fullscreen mode, calling the function with [i]enabled[/i] true when the screen is not on fullscreen mode will cause the screen to go to fullscreen mode, calling the function with [i]enabled[/i] false when the screen is in fullscreen mode will cause the window to exit the fullscreen mode.
 			</description>
 		</method>
 		<method name="is_window_fullscreen" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether the window is in fullscreen mode or not.
 			</description>
 		</method>
 		<method name="set_window_resizable">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Set the window resizable state, if the window is not resizable it will preserve the dimensions specified in the project settings.
 			</description>
 		</method>
 		<method name="is_window_resizable" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether the window is resizable or not.
 			</description>
 		</method>
 		<method name="set_window_minimized">
@@ -21081,12 +21100,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="orientation" type="int">
 			</argument>
 			<description>
+			Sets the current screen orientation, the argument value must be one of the SCREEN_ORIENTATION constants in this class.
 			</description>
 		</method>
 		<method name="get_screen_orientation" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the current screen orientation, the return value will be one of the SCREEN_ORIENTATION constants in this class.
 			</description>
 		</method>
 		<method name="set_keep_screen_on">
@@ -21100,6 +21121,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether the screen is being kept on or not.
 			</description>
 		</method>
 		<method name="set_iterations_per_second">
@@ -21151,6 +21173,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="title" type="String">
 			</argument>
 			<description>
+			Sets the window title to the specified string.
 			</description>
 		</method>
 		<method name="set_low_processor_usage_mode">
@@ -21171,6 +21194,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="int">
 			</return>
 			<description>
+			Returns the number of cores available in the host machine.
 			</description>
 		</method>
 		<method name="get_executable_path" qualifiers="const">
@@ -21201,7 +21225,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="pid" type="int">
 			</argument>
 			<description>
-			Kill a process ID.
+			Kill a process ID (this method can be used to kill processes that were not spawned by the game).
 			</description>
 		</method>
 		<method name="shell_open">
@@ -21216,6 +21240,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="int">
 			</return>
 			<description>
+			Returns the game process ID
 			</description>
 		</method>
 		<method name="get_environment" qualifiers="const">
@@ -21482,6 +21507,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="float">
 			</return>
 			<description>
+			Returns the frames per second of the running game.
 			</description>
 		</method>
 		<method name="print_all_textures_by_size">
