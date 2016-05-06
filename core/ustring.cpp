@@ -2867,69 +2867,35 @@ CharType String::ord_at(int p_idx) const {
 	return operator[](p_idx);
 }
 
-String String::strip_edges() const {
+String String::strip_edges(bool left, bool right) const {
 
 	int len=length();
 	int beg=0,end=len;
 
-	for (int i=0;i<len;i++) {
+	if(left) {
+		for (int i=0;i<len;i++) {
 
-		if (operator[](i)<=32)
-			beg++;
-		else
-			break;
+			if (operator[](i)<=32)
+				beg++;
+			else
+				break;
+		}
 	}
 
-	for (int i=(int)(len-1);i>=0;i--) {
+	if(right) {
+		for (int i=(int)(len-1);i>=0;i--) {
 
-		if (operator[](i)<=32)
-			end--;
-		else
-			break;
+			if (operator[](i)<=32)
+				end--;
+			else
+				break;
+		}
 	}
 
 	if (beg==0 && end==len)
 		return *this;
 
 	return substr(beg,end-beg);
-}
-
-String String::strip_edge_left() const {
-
-	int len = length();
-	int beg = 0, end = len;
-
-	for (int i = 0; i<len; i++) {
-
-		if (operator[](i) <= 32)
-			beg++;
-		else
-			break;
-	}
-
-	if (beg == 0)
-		return *this;
-
-	return substr(beg, len - beg);
-}
-
-String String::strip_edge_right() const {
-
-	int len = length();
-	int end = len;
-
-	for (int i = (int)(len - 1); i >= 0; i--) {
-
-		if (operator[](i) <= 32)
-			end--;
-		else
-			break;
-	}
-
-	if (end == len)
-		return *this;
-
-	return substr(0, end);
 }
 
 String String::strip_escapes() const {
