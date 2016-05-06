@@ -458,7 +458,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 					bool selected = !items[j].selected;
 					select(j,false);
 					if (selected)
-						emit_signal("multi_selected",i,true);
+						emit_signal("multi_selected",j,true);
 				}
 			} else {
 
@@ -1221,4 +1221,3 @@ ItemList::ItemList() {
 ItemList::~ItemList() {
 
 }
-
