@@ -2157,17 +2157,9 @@ bool Control::is_text_field() const {
 }
 
 
-void Control::_set_rotation_deg(float p_rot) {
-	set_rotation(Math::deg2rad(p_rot));
-}
+void Control::set_rotation(float p_radians) {
 
-float Control::_get_rotation_deg() const {
-	return Math::rad2deg(get_rotation());
-}
-
-void Control::set_rotation(float p_rotation) {
-
-	data.rotation=p_rotation;
+	data.rotation=p_radians;
 	update();
 	_notify_transform();
 }
@@ -2175,6 +2167,25 @@ void Control::set_rotation(float p_rotation) {
 float Control::get_rotation() const{
 
 	return data.rotation;
+}
+
+void Control::set_rotation_deg(float p_degrees) {
+	set_rotation(Math::deg2rad(p_degrees));
+}
+
+float Control::get_rotation_deg() const {
+	return Math::rad2deg(get_rotation());
+}
+
+// Kept for compatibility after rename to {s,g}et_rotation_deg.
+// Could be removed after a couple releases.
+void Control::_set_rotation_deg(float p_degrees) {
+	WARN_PRINT("Deprecated method Control._set_rotation_deg(): This method was renamed to set_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
+	set_rotation_deg(p_degrees);
+}
+float Control::_get_rotation_deg() const {
+	WARN_PRINT("Deprecated method Control._get_rotation_deg(): This method was renamed to get_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
+	return get_rotation_deg();
 }
 
 void Control::set_scale(const Vector2& p_scale){
@@ -2232,8 +2243,10 @@ void Control::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_size","size"),&Control::set_size);
 	ObjectTypeDB::bind_method(_MD("set_custom_minimum_size","size"),&Control::set_custom_minimum_size);
 	ObjectTypeDB::bind_method(_MD("set_global_pos","pos"),&Control::set_global_pos);
-	ObjectTypeDB::bind_method(_MD("set_rotation","rotation"),&Control::set_rotation);
-	ObjectTypeDB::bind_method(_MD("_set_rotation_deg","rotation"),&Control::_set_rotation_deg);
+	ObjectTypeDB::bind_method(_MD("set_rotation","radians"),&Control::set_rotation);
+	ObjectTypeDB::bind_method(_MD("set_rotation_deg","degrees"),&Control::set_rotation_deg);
+	// TODO: Obsolete this method (old name) properly (GH-4397)
+	ObjectTypeDB::bind_method(_MD("_set_rotation_deg","degrees"),&Control::_set_rotation_deg);
 	ObjectTypeDB::bind_method(_MD("set_scale","scale"),&Control::set_scale);
 	ObjectTypeDB::bind_method(_MD("get_margin","margin"),&Control::get_margin);
 	ObjectTypeDB::bind_method(_MD("get_begin"),&Control::get_begin);
@@ -2241,12 +2254,14 @@ void Control::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_pos"),&Control::get_pos);
 	ObjectTypeDB::bind_method(_MD("get_size"),&Control::get_size);
 	ObjectTypeDB::bind_method(_MD("get_rotation"),&Control::get_rotation);
+	ObjectTypeDB::bind_method(_MD("get_rotation_deg"),&Control::get_rotation_deg);
+	// TODO: Obsolete this method (old name) properly (GH-4397)
+	ObjectTypeDB::bind_method(_MD("_get_rotation_deg"),&Control::_get_rotation_deg);
 	ObjectTypeDB::bind_method(_MD("get_scale"),&Control::get_scale);
 	ObjectTypeDB::bind_method(_MD("get_custom_minimum_size"),&Control::get_custom_minimum_size);
 	ObjectTypeDB::bind_method(_MD("get_parent_area_size"),&Control::get_size);
 	ObjectTypeDB::bind_method(_MD("get_global_pos"),&Control::get_global_pos);
 	ObjectTypeDB::bind_method(_MD("get_rect"),&Control::get_rect);
-	ObjectTypeDB::bind_method(_MD("_get_rotation_deg"),&Control::_get_rotation_deg);
 	ObjectTypeDB::bind_method(_MD("get_global_rect"),&Control::get_global_rect);
 	ObjectTypeDB::bind_method(_MD("set_area_as_parent_rect","margin"),&Control::set_area_as_parent_rect,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("show_modal","exclusive"),&Control::show_modal,DEFVAL(false));
@@ -2325,7 +2340,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect/pos", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), _SCS("set_pos"),_SCS("get_pos") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect/size", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), _SCS("set_size"),_SCS("get_size") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect/min_size"), _SCS("set_custom_minimum_size"),_SCS("get_custom_minimum_size") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"rect/rotation",PROPERTY_HINT_RANGE,"-1080,1080,0.01"), _SCS("_set_rotation_deg"),_SCS("_get_rotation_deg") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"rect/rotation",PROPERTY_HINT_RANGE,"-1080,1080,0.01"), _SCS("set_rotation_deg"),_SCS("get_rotation_deg") );
 	ADD_PROPERTYNO( PropertyInfo(Variant::VECTOR2,"rect/scale"), _SCS("set_scale"),_SCS("get_scale") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"hint/tooltip", PROPERTY_HINT_MULTILINE_TEXT), _SCS("set_tooltip"),_SCS("_get_tooltip") );
 	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/left" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_LEFT );

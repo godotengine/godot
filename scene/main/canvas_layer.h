@@ -48,7 +48,7 @@ class CanvasLayer : public Node {
 	RID viewport;
 	Viewport *vp;
 
-
+	// Deprecated, should be removed in a future version.
 	void _set_rotationd(real_t p_rotation);
 	real_t _get_rotationd() const;
 
@@ -70,8 +70,11 @@ public:
 	void set_offset(const Vector2& p_offset);
 	Vector2 get_offset() const;
 
-	void set_rotation(real_t p_rotation);
+	void set_rotation(real_t p_radians);
 	real_t get_rotation() const;
+
+	void set_rotationd(real_t p_degrees);
+	real_t get_rotationd() const;
 
 	void set_scale(const Vector2& p_scale);
 	Vector2 get_scale() const;
