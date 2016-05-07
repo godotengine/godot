@@ -1,4 +1,5 @@
 Import('env')
+Import('env_ssl')
 
 openssl_sources = [
 "nocpuid.c",
@@ -642,17 +643,14 @@ openssl_sources = [
 
 #env.drivers_sources+=openssl_sources
 
-env_bossl = env.Clone()
+env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto"])
+env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/openssl"])
+env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/evp"])
+env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/asn1"])
+env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/modes"])
+#env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/store"])
+env_ssl.Append(CPPFLAGS=["-DOPENSSL_NO_ASM","-DOPENSSL_THREADS","-DL_ENDIAN"])
 
-env_bossl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto"])
-env_bossl.Append(CPPPATH=["#drivers/builtin_openssl2/openssl"])
-env_bossl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/evp"])
-env_bossl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/asn1"])
-env_bossl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/modes"])
-#env_bossl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/store"])
-env_bossl.Append(CPPFLAGS=["-DOPENSSL_NO_ASM","-DOPENSSL_THREADS","-DL_ENDIAN"])
-
-env_bossl.add_source_files(env.drivers_sources,openssl_sources)
+env_ssl.add_source_files(env.drivers_sources,openssl_sources)
 
 
-Export('env_bossl')
