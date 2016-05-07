@@ -11,8 +11,19 @@ SConscript('pulseaudio/SCsub');
 SConscript('windows/SCsub');
 SConscript('gles2/SCsub');
 SConscript('gl_context/SCsub');
-SConscript('openssl/SCsub');
 SConscript('pnm/SCsub');
+
+if (env['openssl']!='no'):
+	env_ssl = env.Clone()
+	Export('env_ssl')
+
+	env_ssl.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
+	if (env['openssl']=="builtin"):
+		env_ssl.Append(CPPPATH=['#drivers/builtin_openssl2'])
+		SConscript("builtin_openssl2/SCsub");
+
+	SConscript('openssl/SCsub')
+
 
 if (env["png"]=="yes"):
 	SConscript("png/SCsub");
@@ -26,8 +37,6 @@ SConscript("pvr/SCsub");
 SConscript("etc1/SCsub")
 if (env["builtin_zlib"]=="yes"):
 	SConscript("builtin_zlib/SCsub");
-if (env["openssl"]=="builtin"):
-	SConscript("builtin_openssl2/SCsub");
 
 SConscript("rtaudio/SCsub");
 SConscript("nedmalloc/SCsub");
