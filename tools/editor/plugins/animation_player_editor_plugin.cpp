@@ -116,7 +116,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		tool_anim->set_icon(get_icon("Tools","EditorIcons"));
 		tool_anim->get_popup()->connect("item_pressed",this,"_animation_tool_menu");
 
-		blend_editor.next->connect("text_changed",this,"_blend_editor_next_changed");
+		blend_editor.next->connect("item_selected", this, "_blend_editor_next_changed");
 
 		nodename->set_icon(get_icon("AnimationPlayer","EditorIcons"));
 
@@ -536,14 +536,19 @@ void AnimationPlayerEditor::_animation_name_edited() {
 }
 
 
-void AnimationPlayerEditor::_blend_editor_next_changed(const String& p_string) {
+void AnimationPlayerEditor::_blend_editor_next_changed(const int p_idx) {
 
 	if (animation->get_item_count()==0)
 		return;
 
 	String current = animation->get_item_text(animation->get_selected());
-	player->animation_set_next(current,p_string);
 
+	undo_redo->create_action(TTR("Blend Next Changed"));
+	undo_redo->add_do_method(player,"animation_set_next",current,blend_editor.next->get_item_text(p_idx));
+	undo_redo->add_undo_method(player,"animation_set_next",current,player->animation_get_next(current));
+	undo_redo->add_do_method(this,"_animation_player_changed",player);
+	undo_redo->add_undo_method(this,"_animation_player_changed",player);
+	undo_redo->commit_action();
 }
 
 void AnimationPlayerEditor::_animation_blend() {
@@ -569,6 +574,11 @@ void AnimationPlayerEditor::_animation_blend() {
 	TreeItem *root = blend_editor.tree->create_item();
 	updating_blends=true;
 
+	int i = 0;
+	bool anim_found = false;
+	blend_editor.next->clear();
+	blend_editor.next->add_item("", i);
+
 	for(List<StringName>::Element *E=anims.front();E;E=E->next()) {
 
 		String to=E->get();
@@ -579,9 +589,20 @@ void AnimationPlayerEditor::_animation_blend() {
 		blend->set_cell_mode(1,TreeItem::CELL_MODE_RANGE);
 		blend->set_range_config(1,0,3600,0.001);
 		blend->set_range(1,player->get_blend_time(current,to));
+
+		i++;
+		blend_editor.next->add_item(to, i);
+		if (to == player->animation_get_next(current)) {
+			blend_editor.next->select(i);
+			anim_found = true;
+		}
 	}
 
-	blend_editor.next->set_text( player->animation_get_next(current) );
+	// make sure we reset it else it becomes out of sync and could contain a deleted animation
+	if (!anim_found) {
+		blend_editor.next->select(0);
+		player->animation_set_next(current, blend_editor.next->get_item_text(0));
+	}
 
 	updating_blends=false;
 }
@@ -913,6 +934,7 @@ void AnimationPlayerEditor::_animation_duplicate() {
 	undo_redo->create_action(TTR("Duplicate Animation"));
 	undo_redo->add_do_method(player,"add_animation",new_name,new_anim);
 	undo_redo->add_undo_method(player,"remove_animation",new_name);
+	undo_redo->add_do_method(player,"animation_set_next",new_name,player->animation_get_next(current));
 	undo_redo->add_do_method(this,"_animation_player_changed",player);
 	undo_redo->add_undo_method(this,"_animation_player_changed",player);
 	undo_redo->commit_action();
@@ -1438,7 +1460,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	blend_editor.tree = memnew( Tree );
 	blend_editor.tree->set_columns(2);
 	blend_vb->add_margin_child(TTR("Blend Times: "),blend_editor.tree,true);
-	blend_editor.next = memnew( LineEdit );
+	blend_editor.next = memnew( OptionButton );
 	blend_vb->add_margin_child(TTR("Next (Auto Queue):"),blend_editor.next);
 	blend_editor.dialog->set_title(TTR("Cross-Animation Blend Times"));
 	updating_blends=false;
