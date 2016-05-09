@@ -285,7 +285,7 @@ public:
 
 	Error resize(int p_size);
 
-        void invert();
+	void invert();
 
 	void operator=(const DVector& p_dvector) { reference(p_dvector); }
 	DVector() {}
