@@ -3903,7 +3903,7 @@ void TextEdit::_update_completion_candidates() {
 		}
 	}
 
-	if (l[cursor.column - 1] == '(' && !pre_keyword) {
+	if (l[cursor.column - 1] == '(' && !pre_keyword && !completion_strings[0].begins_with("\"")) {
 		cancel = true;
 	}
 
