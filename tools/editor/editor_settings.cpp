@@ -426,6 +426,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("text_editor/create_signal_callbacks",true);
 	set("text_editor/autosave_interval_secs",0);
 
+	set("text_editor/caret_blink", false);
+	set("text_editor/caret_blink_speed", 0.65);
+	hints["text_editor/caret_blink_speed"]=PropertyInfo(Variant::REAL,"text_editor/caret_blink_speed",PROPERTY_HINT_RANGE,"0.1, 10, 0.1");
+
 	set("text_editor/font","");
 	hints["text_editor/font"]=PropertyInfo(Variant::STRING,"text_editor/font",PROPERTY_HINT_GLOBAL_FILE,"*.fnt");
 	set("text_editor/auto_brace_complete", false);
