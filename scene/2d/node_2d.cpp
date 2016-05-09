@@ -148,13 +148,26 @@ void Node2D::set_pos(const Point2& p_pos) {
 
 }
 
-void Node2D::set_rot(float p_angle) {
+void Node2D::set_rot(float p_radians) {
 
 	if (_xform_dirty)
 		((Node2D*)this)->_update_xform_values();
-	angle=p_angle;
+	angle=p_radians;
 	_update_transform();
 	_change_notify("transform/rot");
+}
+
+void Node2D::set_rotd(float p_degrees) {
+
+	set_rot(Math::deg2rad(p_degrees));
+}
+
+// Kept for compatibility after rename to set_rotd.
+// Could be removed after a couple releases.
+void Node2D::_set_rotd(float p_degrees) {
+
+	WARN_PRINT("Deprecated method Node2D._set_rotd(): This method was renamed to set_rotd. Please adapt your code accordingly, as the old method will be obsoleted.");
+	set_rotd(p_degrees);
 }
 
 void Node2D::set_scale(const Size2& p_scale) {
@@ -183,21 +196,22 @@ float Node2D::get_rot() const {
 
 	return angle;
 }
+float Node2D::get_rotd() const {
+
+	return Math::rad2deg(get_rot());
+}
+// Kept for compatibility after rename to get_rotd.
+// Could be removed after a couple releases.
+float Node2D::_get_rotd() const {
+
+	WARN_PRINT("Deprecated method Node2D._get_rotd(): This method was renamed to get_rotd. Please adapt your code accordingly, as the old method will be obsoleted.");
+	return get_rotd();
+}
 Size2 Node2D::get_scale() const {
 	if (_xform_dirty)
 		((Node2D*)this)->_update_xform_values();
 
 	return _scale;
-}
-
-void Node2D::_set_rotd(float p_angle) {
-
-	set_rot(Math::deg2rad(p_angle));
-}
-
-float Node2D::_get_rotd() const {
-
-	return Math::rad2deg(get_rot());
 }
 
 
@@ -361,16 +375,18 @@ float Node2D::get_angle_to(const Vector2& p_pos) const {
 void Node2D::_bind_methods() {
 
 
-
+	// TODO: Obsolete those two methods (old name) properly (GH-4397)
 	ObjectTypeDB::bind_method(_MD("_get_rotd"),&Node2D::_get_rotd);
-	ObjectTypeDB::bind_method(_MD("_set_rotd"),&Node2D::_set_rotd);
+	ObjectTypeDB::bind_method(_MD("_set_rotd","degrees"),&Node2D::_set_rotd);
 
 	ObjectTypeDB::bind_method(_MD("set_pos","pos"),&Node2D::set_pos);
-	ObjectTypeDB::bind_method(_MD("set_rot","rot"),&Node2D::set_rot);
+	ObjectTypeDB::bind_method(_MD("set_rot","radians"),&Node2D::set_rot);
+	ObjectTypeDB::bind_method(_MD("set_rotd","degrees"),&Node2D::set_rotd);
 	ObjectTypeDB::bind_method(_MD("set_scale","scale"),&Node2D::set_scale);
 
 	ObjectTypeDB::bind_method(_MD("get_pos"),&Node2D::get_pos);
 	ObjectTypeDB::bind_method(_MD("get_rot"),&Node2D::get_rot);
+	ObjectTypeDB::bind_method(_MD("get_rotd"),&Node2D::get_rotd);
 	ObjectTypeDB::bind_method(_MD("get_scale"),&Node2D::get_scale);
 
 	ObjectTypeDB::bind_method(_MD("rotate","radians"),&Node2D::rotate);
@@ -400,7 +416,7 @@ void Node2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_relative_transform_to_parent","parent"),&Node2D::get_relative_transform_to_parent);
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"transform/pos"),_SCS("set_pos"),_SCS("get_pos"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"transform/rot",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_rotd"),_SCS("_get_rotd"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"transform/rot",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("set_rotd"),_SCS("get_rotd"));
 	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2,"transform/scale"),_SCS("set_scale"),_SCS("get_scale"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT,"z/z",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z"),_SCS("get_z"));
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL,"z/relative"),_SCS("set_z_as_relative"),_SCS("is_z_relative"));
