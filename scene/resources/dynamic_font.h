@@ -51,9 +51,16 @@ friend class DynamicFont;
 
 
 	Ref<DynamicFontAtSize> _get_dynamic_font_at_size(int p_size);
+
+protected:
+
+	static void _bind_methods();
+
 public:
 
 	void set_font_data(const DVector<uint8_t>& p_font);
+	const DVector<uint8_t>& get_font_data();
+
 	DynamicFontData();
 	~DynamicFontData();
 };

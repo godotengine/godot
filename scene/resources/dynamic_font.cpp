@@ -26,6 +26,14 @@ void DynamicFontData::unlock() {
 	fr = DVector<uint8_t>::Read();
 }
 
+void DynamicFontData::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_font_data","data"),&DynamicFontData::set_font_data);
+	ObjectTypeDB::bind_method(_MD("get_font_data"),&DynamicFontData::get_font_data);
+
+	ADD_PROPERTY(PropertyInfo(Variant::RAW_ARRAY,"data"),_SCS("set_font_data"),_SCS("get_font_data"));
+}
+
 void DynamicFontData::set_font_data(const DVector<uint8_t>& p_font) {
 	//clear caches and stuff
 	ERR_FAIL_COND(font_data.size())	;
@@ -55,6 +63,10 @@ void DynamicFontData::set_font_data(const DVector<uint8_t>& p_font) {
 	//clear existing stuff
 
 	ERR_FAIL_COND(!valid);
+}
+
+const DVector<uint8_t>& DynamicFontData::get_font_data() {
+	return font_data;
 }
 
 Ref<DynamicFontAtSize> DynamicFontData::_get_dynamic_font_at_size(int p_size) {
@@ -520,4 +532,3 @@ String ResourceFormatLoaderDynamicFont::get_resource_type(const String &p_path) 
 		return "DynamicFontData";
 	return "";
 }
-
