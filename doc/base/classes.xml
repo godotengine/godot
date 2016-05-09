@@ -2680,6 +2680,22 @@
 			Get the list of names of the animations stored in the player.
 			</description>
 		</method>
+		<method name="animation_set_next">
+			<argument index="0" name="anim_from" type="String">
+			</argument>
+			<argument index="1" name="anim_to" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="animation_get_next" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="anim_from" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_blend_time">
 			<argument index="0" name="anim_from" type="String">
 			</argument>
@@ -6766,9 +6782,9 @@
 			</argument>
 			<argument index="1" name="colors" type="ColorArray">
 			</argument>
-			<argument index="2" name="uvs" type="Vector2Array" default="Array()">
+			<argument index="2" name="uvs" type="Vector2Array">
 			</argument>
-			<argument index="3" name="texture" type="Texture" default="Object()">
+			<argument index="3" name="texture" type="Texture" default="NULL">
 			</argument>
 			<argument index="4" name="width" type="float" default="1">
 			</argument>
@@ -6781,9 +6797,9 @@
 			</argument>
 			<argument index="1" name="colors" type="ColorArray">
 			</argument>
-			<argument index="2" name="uvs" type="Vector2Array" default="Array()">
+			<argument index="2" name="uvs" type="Vector2Array" default="Vector2Array()">
 			</argument>
-			<argument index="3" name="texture" type="Texture" default="Object()">
+			<argument index="3" name="texture" type="Texture" default="NULL">
 			</argument>
 			<description>
 			Draw a polygon of any amount of points, convex or concave.
@@ -6794,9 +6810,9 @@
 			</argument>
 			<argument index="1" name="color" type="Color">
 			</argument>
-			<argument index="2" name="uvs" type="Vector2Array" default="Array()">
+			<argument index="2" name="uvs" type="Vector2Array" default="Vector2Array()">
 			</argument>
-			<argument index="3" name="texture" type="Texture" default="Object()">
+			<argument index="3" name="texture" type="Texture" default="NULL">
 			</argument>
 			<description>
 			Draw a colored polygon of any amount of points, convex or concave.
@@ -7118,7 +7134,7 @@
 			</description>
 		</method>
 		<method name="set_rotation">
-			<argument index="0" name="rotation" type="float">
+			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
 			Set the base rotation for this layer (helper).
@@ -7129,6 +7145,18 @@
 			</return>
 			<description>
 			Return the base rotation for this layer (helper).
+			</description>
+		</method>
+		<method name="set_rotationd">
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_rotationd" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="set_scale">
@@ -7146,7 +7174,7 @@
 			</description>
 		</method>
 		<method name="get_world_2d" qualifiers="const">
-			<return type="Canvas">
+			<return type="World2D">
 			</return>
 			<description>
 			Return the [World2D] used by this layer.
@@ -8779,7 +8807,13 @@
 			</description>
 		</method>
 		<method name="set_rotation">
-			<argument index="0" name="rotation" type="float">
+			<argument index="0" name="radians" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_rotation_deg">
+			<argument index="0" name="degrees" type="float">
 			</argument>
 			<description>
 			</description>
@@ -8827,6 +8861,12 @@
 			</description>
 		</method>
 		<method name="get_rotation" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_rotation_deg" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -9172,6 +9212,12 @@
 			</description>
 		</method>
 		<method name="grab_click_focus">
+			<description>
+			</description>
+		</method>
+		<method name="set_drag_forwarding">
+			<argument index="0" name="target" type="Control">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -14065,6 +14111,20 @@ Returns an empty String "" at the end of the list.
 			<description>
 			</description>
 		</method>
+		<method name="request_raw">
+			<return type="int">
+			</return>
+			<argument index="0" name="method" type="int">
+			</argument>
+			<argument index="1" name="url" type="String">
+			</argument>
+			<argument index="2" name="headers" type="StringArray">
+			</argument>
+			<argument index="3" name="body" type="RawArray" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="request">
 			<return type="int">
 			</return>
@@ -14688,6 +14748,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			</description>
 		</method>
+		<method name="fix_alpha_edges">
+			<description>
+			</description>
+		</method>
 		<method name="get_data">
 			<return type="RawArray">
 			</return>
@@ -15208,13 +15272,13 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</signals>
 	<constants>
 		<constant name="MOUSE_MODE_VISIBLE" value="0">
-		Makes the mouse cursor visible if it is hidden.
+			Makes the mouse cursor visible if it is hidden.
 		</constant>
 		<constant name="MOUSE_MODE_HIDDEN" value="1">
-		Makes the mouse cursor hidden if it is visible.
+			Makes the mouse cursor hidden if it is visible.
 		</constant>
 		<constant name="MOUSE_MODE_CAPTURED" value="2">
-		Captures the mouse. The mouse will be hidden and unable to leave the game window. But it will still register movement and mouse button presses.
+			Captures the mouse. The mouse will be hidden and unable to leave the game window. But it will still register movement and mouse button presses.
 		</constant>
 	</constants>
 </class>
@@ -16377,7 +16441,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="add_item">
 			<argument index="0" name="text" type="String">
 			</argument>
-			<argument index="1" name="icon" type="Texture" default="Object()">
+			<argument index="1" name="icon" type="Texture" default="NULL">
 			</argument>
 			<argument index="2" name="selectable" type="bool" default="true">
 			</argument>
@@ -17963,38 +18027,38 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="LinkButton" inherits="BaseButton" category="Core">
 	<brief_description>
-		Simple button used to represent a link to some resource
+	Simple button used to represent a link to some resource
 	</brief_description>
 	<description>
-		This kind of buttons are primarily used when the interaction with the button causes a context change (like linking to a web page).
+	This kind of buttons are primarily used when the interaction with the button causes a context change (like linking to a web page).
 	</description>
 	<methods>
 		<method name="set_text">
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-				Sets the text of the button.
+			Sets the text of the button.
 			</description>
 		</method>
 		<method name="get_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Returns the text of the button.
+			Returns the text of the button.
 			</description>
 		</method>
 		<method name="set_underline_mode">
 			<argument index="0" name="underline_mode" type="int">
 			</argument>
 			<description>
-				Sets the underline mode for this button, the argument must be one of the [LinkButton] constants (see constants section).
+			Sets the underline mode for this button, the argument must be one of the [LinkButton] constants (see constants section).
 			</description>
 		</method>
 		<method name="get_underline_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the underline mode for this button.
+			Returns the underline mode for this button.
 			</description>
 		</method>
 	</methods>
@@ -20246,7 +20310,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</description>
 		</method>
 		<method name="get_parent" qualifiers="const">
-			<return type="Parent">
+			<return type="Node">
 			</return>
 			<description>
 			Return the parent [Node] of the current [Node], or an empty Object if the node lacks a parent.
@@ -20639,10 +20703,16 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</description>
 		</method>
 		<method name="set_rot">
-			<argument index="0" name="rot" type="float">
+			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
 			Set the rotation of the 2D node.
+			</description>
+		</method>
+		<method name="set_rotd">
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_scale">
@@ -20664,6 +20734,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</return>
 			<description>
 			Return the rotation of the 2D node.
+			</description>
+		</method>
+		<method name="get_rotd" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_scale" qualifiers="const">
@@ -21029,7 +21105,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="size" type="Vector2">
 			</argument>
 			<description>
-				Sets the window size to the specified size.
+			Sets the window size to the specified size.
 			</description>
 		</method>
 		<method name="set_window_fullscreen">
@@ -21107,7 +21183,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="int">
 			</return>
 			<description>
-				Returns the current screen orientation, the return value will be one of the SCREEN_ORIENTATION constants in this class.
+			Returns the current screen orientation, the return value will be one of the SCREEN_ORIENTATION constants in this class.
 			</description>
 		</method>
 		<method name="set_keep_screen_on">
@@ -25033,7 +25109,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="param" type="int">
 			</argument>
-			<argument index="2" name="value" type="float" default="RID()">
+			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
 			</description>
@@ -33787,12 +33863,24 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="set_rotation">
-			<argument index="0" name="rotation" type="Vector3">
+			<argument index="0" name="rotation_rad" type="Vector3">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="get_rotation" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_rotation_deg">
+			<argument index="0" name="rotation_deg" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_rotation_deg" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
@@ -34183,13 +34271,13 @@ This method controls whether the position between two cached points is interpola
 	</description>
 	<methods>
 		<method name="set_stream">
-			<argument index="0" name="stream" type="Stream">
+			<argument index="0" name="stream" type="AudioStream">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
-			<return type="Stream">
+			<return type="AudioStream">
 			</return>
 			<description>
 			</description>
@@ -36479,11 +36567,11 @@ This method controls whether the position between two cached points is interpola
 		<method name="add_triangle_fan">
 			<argument index="0" name="vertexes" type="Vector3Array">
 			</argument>
-			<argument index="1" name="uvs" type="Vector2Array" default="[Vector2Array]">
+			<argument index="1" name="uvs" type="Vector2Array" default="Vector2Array()">
 			</argument>
 			<argument index="2" name="colors" type="ColorArray" default="ColorArray([ColorArray])">
 			</argument>
-			<argument index="3" name="uv2s" type="Vector2Array" default="[Vector2Array]">
+			<argument index="3" name="uv2s" type="Vector2Array" default="Vector2Array()">
 			</argument>
 			<argument index="4" name="normals" type="Vector3Array" default="Vector3Array()">
 			</argument>
@@ -36513,7 +36601,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="commit">
 			<return type="Mesh">
 			</return>
-			<argument index="0" name="existing" type="Mesh" default="Object()">
+			<argument index="0" name="existing" type="Mesh" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -39130,7 +39218,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="create_item">
 			<return type="TreeItem">
 			</return>
-			<argument index="0" name="parent" type="TreeItem" default="Object()">
+			<argument index="0" name="parent" type="TreeItem" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -41264,13 +41352,13 @@ This method controls whether the position between two cached points is interpola
 	</description>
 	<methods>
 		<method name="set_stream">
-			<argument index="0" name="stream" type="Stream">
+			<argument index="0" name="stream" type="VideoStream">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
-			<return type="Stream">
+			<return type="VideoStream">
 			</return>
 			<description>
 			</description>
@@ -42083,6 +42171,12 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<argument index="0" name="arg0" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_set_shrink_all_x2_on_set_data">
+			<argument index="0" name="shrink" type="bool">
 			</argument>
 			<description>
 			</description>

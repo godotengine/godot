@@ -2320,7 +2320,7 @@ void Control::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("grab_click_focus"),&Control::grab_click_focus);
 
-	ObjectTypeDB::bind_method(_MD("set_drag_forwarding;","target:Control"),&Control::set_drag_forwarding);
+	ObjectTypeDB::bind_method(_MD("set_drag_forwarding","target:Control"),&Control::set_drag_forwarding);
 	ObjectTypeDB::bind_method(_MD("set_drag_preview","control:Control"),&Control::set_drag_preview);
 
 	ObjectTypeDB::bind_method(_MD("warp_mouse","to_pos"),&Control::warp_mouse);
