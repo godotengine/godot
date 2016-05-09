@@ -712,6 +712,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 					//Hide the cursor
 					if(hCursor == NULL)
 						hCursor = SetCursor(NULL);
+					else
+						SetCursor(NULL);
 				}
 				else {
 					if(hCursor != NULL) {
