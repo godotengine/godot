@@ -650,6 +650,7 @@ env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/asn1"])
 env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/modes"])
 #env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/store"])
 env_ssl.Append(CPPFLAGS=["-DOPENSSL_NO_ASM","-DOPENSSL_THREADS","-DL_ENDIAN"])
+env_ssl.Append(CFLAGS=["-Wno-error=implicit-function-declaration"]);
 
 env_ssl.add_source_files(env.drivers_sources,openssl_sources)
 
