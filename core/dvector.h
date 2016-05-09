@@ -285,6 +285,7 @@ public:
 
 	Error resize(int p_size);
 
+	void invert();
 
 	void operator=(const DVector& p_dvector) { reference(p_dvector); }
 	DVector() {}
@@ -424,6 +425,16 @@ Error DVector<T>::resize(int p_size) {
 	return OK;
 }
 
+template<class T>
+void DVector<T>::invert() {
+	T temp;
+
+	for(int i=0;i<size()/2;i++) {
+		temp = get(i);
+		set(i, get(size()-i-1));
+		set(size()-i-1, temp);
+        }
+}
 
 
 #endif
