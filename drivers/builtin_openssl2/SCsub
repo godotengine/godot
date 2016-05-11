@@ -650,8 +650,10 @@ env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/asn1"])
 env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/modes"])
 #env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/store"])
 env_ssl.Append(CPPFLAGS=["-DOPENSSL_NO_ASM","-DOPENSSL_THREADS","-DL_ENDIAN"])
-env_ssl.Append(CFLAGS=["-Wno-error=implicit-function-declaration"]);
+
+# Workaround for compilation error with MinGW
+import os
+if (os.name=="nt" and os.getenv("VSINSTALLDIR")==None): # Windows and not MSVC, so likely MinGW
+	env_ssl.Append(CFLAGS=["-Wno-error=implicit-function-declaration"]);
 
 env_ssl.add_source_files(env.drivers_sources,openssl_sources)
-
-
