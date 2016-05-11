@@ -38,7 +38,6 @@ class GDInstance;
 class GDScript;
 
 
-
 class GDFunction {
 public:
 
@@ -281,6 +280,7 @@ friend class GDScriptLanguage;
 
 	int subclass_count;
 	Set<Object*> instances;
+	Mutex *thread_lock;
 	//exported members
 	String source;
 	String path;
@@ -357,6 +357,7 @@ public:
 	virtual ScriptLanguage *get_language() const;
 
 	GDScript();
+	virtual ~GDScript();
 };
 
 class GDInstance : public ScriptInstance {
