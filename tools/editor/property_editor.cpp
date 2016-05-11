@@ -43,7 +43,8 @@
 #include "array_property_edit.h"
 #include "editor_help.h"
 #include "scene/resources/packed_scene.h"
-
+#include "scene/main/viewport.h"
+#include "editor_file_system.h"
 
 void CustomPropertyEditor::_notification(int p_what) {
 
@@ -222,6 +223,10 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 	}
 
 
+}
+
+void CustomPropertyEditor::hide_menu() {
+	menu->hide();
 }
 
 Variant CustomPropertyEditor::get_variant() const {
@@ -2257,6 +2262,179 @@ void PropertyEditor::_check_reload_status(const String&p_name, TreeItem* item) {
 	}
 }
 
+
+
+bool PropertyEditor::_is_drop_valid(const Dictionary& p_drag_data, const Dictionary& p_item_data) const {
+
+	Dictionary d = p_item_data;
+
+	if (d.has("type")) {
+
+		int type = d["type"];
+		if (type==Variant::OBJECT && d.has("hint") && d.has("hint_text") && int(d["hint"])==PROPERTY_HINT_RESOURCE_TYPE) {
+
+
+			String allowed_type=d["hint_text"];
+
+			Dictionary drag_data = p_drag_data;
+			if (drag_data.has("type") && String(drag_data["type"])=="resource") {
+				Ref<Resource> res = drag_data["resource"];
+				for(int i=0;i<allowed_type.get_slice_count(",");i++) {
+					String at = allowed_type.get_slice(",",i).strip_edges();
+					if (res.is_valid() && ObjectTypeDB::is_type(res->get_type(),at)) {
+						return true;
+					}
+				}
+
+			}
+			if (drag_data.has("type") && String(drag_data["type"])=="files") {
+
+				Vector<String> files = drag_data["files"];
+
+				if (files.size()==1) {
+					String file = files[0];
+					String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+					if (ftype!="") {
+
+						for(int i=0;i<allowed_type.get_slice_count(",");i++) {
+							String at = allowed_type.get_slice(",",i).strip_edges();
+							if (ObjectTypeDB::is_type(ftype,at)) {
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+	return false;
+
+}
+void PropertyEditor::_mark_drop_fields(TreeItem* p_at) {
+
+	if (_is_drop_valid(get_viewport()->gui_get_drag_data(),p_at->get_metadata(0)))
+		p_at->set_custom_bg_color(1,Color(0.7,0.5,0.2),true);
+
+	if (p_at->get_children()) {
+		_mark_drop_fields(p_at->get_children());
+	}
+
+	if (p_at->get_next()) {
+		_mark_drop_fields(p_at->get_next());
+	}
+}
+
+Variant PropertyEditor::get_drag_data_fw(const Point2& p_point,Control* p_from) {
+
+	TreeItem *item = tree->get_item_at_pos(p_point);
+	if (!item)
+		return Variant();
+
+	int col = tree->get_column_at_pos(p_point);
+	if (col!=1)
+		return Variant();
+
+
+	Dictionary d = item->get_metadata(0);
+	if (!d.has("name"))
+		return Variant();
+
+	Variant val = obj->get(d["name"]);
+
+	if (val.get_type()==Variant::OBJECT) {
+		RES res = val;
+		if (res.is_valid()) {
+
+			custom_editor->hide_menu();
+			return EditorNode::get_singleton()->drag_resource(res,p_from);
+		}
+	}
+
+	return Variant();
+}
+
+bool PropertyEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const{
+
+	TreeItem *item = tree->get_item_at_pos(p_point);
+	if (!item)
+		return false;
+
+	int col = tree->get_column_at_pos(p_point);
+	if (col!=1)
+		return false;
+
+	return _is_drop_valid(p_data,item->get_metadata(0));
+
+}
+void PropertyEditor::drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from){
+
+	TreeItem *item = tree->get_item_at_pos(p_point);
+	if (!item)
+		return;
+
+	int col = tree->get_column_at_pos(p_point);
+	if (col!=1)
+		return;
+
+	if (!_is_drop_valid(p_data,item->get_metadata(0)))
+		return;
+
+	Dictionary d = item->get_metadata(0);
+
+	if (!d.has("name"))
+		return;
+
+	String name=d["name"];
+
+	Dictionary drag_data = p_data;
+	if (drag_data.has("type") && String(drag_data["type"])=="resource") {
+		Ref<Resource> res = drag_data["resource"];
+		if (res.is_valid()) {
+			_edit_set(name,res);
+			return;
+		}
+	}
+
+	if (drag_data.has("type") && String(drag_data["type"])=="files") {
+
+		Vector<String> files = drag_data["files"];
+
+		if (files.size()==1) {
+			String file = files[0];
+			RES res = ResourceLoader::load(file);
+			if (res.is_valid()) {
+				_edit_set(name,res);
+				return;
+			}
+		}
+	}
+}
+
+
+void PropertyEditor::_clear_drop_fields(TreeItem* p_at) {
+
+	Dictionary d = p_at->get_metadata(0);
+
+	if (d.has("type")) {
+
+		int type = d["type"];
+		if (type==Variant::OBJECT) {
+			p_at->clear_custom_bg_color(1);
+		}
+
+	}
+
+	if (p_at->get_children()) {
+		_clear_drop_fields(p_at->get_children());
+	}
+
+	if (p_at->get_next()) {
+		_clear_drop_fields(p_at->get_next());
+	}
+}
+
 void PropertyEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
@@ -2269,6 +2447,20 @@ void PropertyEditor::_notification(int p_what) {
 		edit(NULL);
 	}
 
+
+	if (p_what==NOTIFICATION_DRAG_BEGIN) {
+
+		if (is_visible() && tree->get_root()) {
+			_mark_drop_fields(tree->get_root());
+		}
+	}
+
+	if (p_what==NOTIFICATION_DRAG_END) {
+		if (is_visible() && tree->get_root()) {
+			_clear_drop_fields(tree->get_root());
+		}
+
+	}
 
 	if (p_what==NOTIFICATION_FIXED_PROCESS) {
 
@@ -3661,6 +3853,10 @@ void PropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method( "_filter_changed",&PropertyEditor::_filter_changed);
 	ObjectTypeDB::bind_method( "update_tree",&PropertyEditor::update_tree);
 
+	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &PropertyEditor::get_drag_data_fw);
+	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &PropertyEditor::can_drop_data_fw);
+	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &PropertyEditor::drop_data_fw);
+
 	ADD_SIGNAL( MethodInfo("property_toggled",PropertyInfo( Variant::STRING, "property"),PropertyInfo( Variant::BOOL, "value")));
 	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );
 	ADD_SIGNAL( MethodInfo("property_keyed",PropertyInfo( Variant::STRING, "property")));
@@ -3777,6 +3973,8 @@ PropertyEditor::PropertyEditor() {
 
 	tree->connect("item_edited", this,"_item_edited",varray(),CONNECT_DEFERRED);
 	tree->connect("cell_selected", this,"_item_selected");
+
+	tree->set_drag_forwarding(this);
 
 	set_fixed_process(true);
 

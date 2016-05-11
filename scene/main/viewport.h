@@ -159,6 +159,7 @@ friend class RenderTargetTexture;
 
 	void _propagate_enter_world(Node *p_node);
 	void _propagate_exit_world(Node *p_node);
+	void _propagate_viewport_notification(Node *p_node, int p_what);
 
 
 	void _update_stretch_transform();
@@ -361,6 +362,7 @@ public:
 
 	bool gui_has_modal_stack() const;
 
+	Variant gui_get_drag_data() const;
 
 	Viewport();
 	~Viewport();

@@ -572,6 +572,8 @@ bool CanvasItemEditor::_select(CanvasItem *item, Point2 p_click_pos, bool p_appe
 		_append_canvas_item(item);
 		viewport->update();
 
+		return true;
+
 	} else {
 		//regular selection
 

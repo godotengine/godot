@@ -142,6 +142,9 @@ class ScenesDock : public VBoxContainer {
 	void _instance_pressed();
 	void _open_pressed();
 
+	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
+	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
+	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
 
 protected:
 	void _notification(int p_what);

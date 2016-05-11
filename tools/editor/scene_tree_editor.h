@@ -111,8 +111,14 @@ class SceneTreeEditor : public Control {
 	void _node_visibility_changed(Node *p_node);
 	void _subscene_option(int p_idx);
 
+
 	void _selection_changed();
 	Node *get_scene_node();
+
+	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
+	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
+	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
+
 public:
 
 

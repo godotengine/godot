@@ -102,6 +102,8 @@ class SceneTreeDock : public VBoxContainer {
 
 	Node *_duplicate(Node *p_node, Map<Node*,Node*> &duplimap);
 	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
+	void _do_reparent(Node* p_new_parent, int p_position_in_parent, Vector<Node*> p_nodes, bool p_keep_global_xform);
+
 	void _set_owners(Node *p_owner, const Array& p_nodes);
 	void _load_request(const String& p_path);
 	void _script_open_request(const Ref<Script>& p_script);
@@ -127,6 +129,8 @@ class SceneTreeDock : public VBoxContainer {
 	void _selection_changed();
 
 	void _fill_path_renames(Vector<StringName> base_path,Vector<StringName> new_base_path,Node * p_node, List<Pair<NodePath,NodePath> > *p_renames);
+
+	void _nodes_dragged(Array p_nodes,NodePath p_to,int p_type);
 
 protected:
 

@@ -79,7 +79,9 @@ friend class Tree;
 		bool custom_color;
 		Color color;
 		bool custom_bg_color;
+		bool custom_bg_outline;
 		Color bg_color;
+
 		Variant meta;
 		String tooltip;
 
@@ -226,7 +228,7 @@ public:
 	Color get_custom_color(int p_column) const;
 	void clear_custom_color(int p_column);
 
-	void set_custom_bg_color(int p_column,const Color& p_color);
+	void set_custom_bg_color(int p_column, const Color& p_color, bool p_bg_outline=false);
 	void clear_custom_bg_color(int p_column);
 	Color get_custom_bg_color(int p_column) const;
 
@@ -257,6 +259,12 @@ public:
             SELECT_MULTI
 	};
 
+	enum DropModeFlags {
+		DROP_MODE_DISABLED=0,
+		DROP_MODE_ON_ITEM=1,
+		DROP_MODE_INBETWEEN=2
+	};
+
 private:
 friend class TreeItem;
 
@@ -265,6 +273,11 @@ friend class TreeItem;
 	TreeItem *selected_item;
 	TreeItem *edited_item;
 
+	TreeItem *drop_mode_over;
+	int drop_mode_section;
+
+	TreeItem *single_select_defer;
+	int single_select_defer_column;
 
 	int pressed_button;
 	bool pressing_for_editor;
@@ -288,6 +301,8 @@ friend class TreeItem;
 	SelectMode select_mode;
 
 	int blocked;
+
+	int drop_mode_flags;
 
 	struct ColumnInfo {
 
@@ -361,6 +376,8 @@ friend class TreeItem;
 		Color font_color;
 		Color font_color_selected;
 		Color guide_color;
+		Color drop_position_color;
+
 		int hseparation;
 		int vseparation;
 		int item_margin;
@@ -405,7 +422,7 @@ friend class TreeItem;
 
 	TreeItem* _search_item_text(TreeItem *p_at, const String& p_find,int *r_col,bool p_selectable,bool p_backwards=false);
 
-	TreeItem* _find_item_at_pos(TreeItem *p_current, const Point2& p_pos,int& r_column,int &h) const;
+	TreeItem* _find_item_at_pos(TreeItem *p_current, const Point2& p_pos, int& r_column, int &h, int &section) const;
 
 /*	float drag_speed;
 	float drag_accum;
@@ -426,6 +443,8 @@ friend class TreeItem;
 
 	ValueEvaluator *evaluator;
 
+	int _count_selected_items(TreeItem* p_from) const;
+
 protected:
 	static void _bind_methods();
 
@@ -433,9 +452,15 @@ protected:
 	Object* _create_item(Object *p_parent) { return create_item(p_parent->cast_to<TreeItem>() ); }
 	TreeItem *_get_next_selected(Object *p_item) { return get_next_selected(p_item->cast_to<TreeItem>() ); }
 	Rect2 _get_item_rect(Object *p_item,int p_column) const { return get_item_rect(p_item->cast_to<TreeItem>(),p_column ); }
+
+
 public:
 
 	virtual String get_tooltip(const Point2& p_pos) const;
+
+	TreeItem* get_item_at_pos(const Point2& p_pos) const;
+	int get_column_at_pos(const Point2& p_pos) const;
+	int get_drop_section_at_pos(const Point2& p_pos) const;
 
 	void clear();
 
@@ -485,6 +510,9 @@ public:
 
 	void set_hide_folding(bool p_hide);
 	bool is_folding_hidden() const;
+
+	void set_drop_mode_flags(int p_flags);
+	int get_drop_mode_flags() const;
 
 	void set_value_evaluator(ValueEvaluator *p_evaluator);
 

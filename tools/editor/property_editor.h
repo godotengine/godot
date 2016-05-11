@@ -137,6 +137,10 @@ protected:
 	static void _bind_methods();
 
 public:
+
+
+	void hide_menu();
+
 	Variant get_variant() const;
 	String get_name() const;
 
@@ -218,6 +222,15 @@ class PropertyEditor : public Control {
 	void _set_range_def(Object *p_item, String prop, float p_frame);
 
 	void _filter_changed(const String& p_text);
+
+	void _mark_drop_fields(TreeItem* p_at);
+	void _clear_drop_fields(TreeItem* p_at);
+
+	bool _is_drop_valid(const Dictionary& p_drag_data, const Dictionary& p_item_data) const;
+	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
+	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
+	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
+
 
 	UndoRedo *undo_redo;
 protected:

@@ -1044,8 +1044,7 @@ void ItemList::_scroll_changed(double) {
 	update();
 }
 
-
-String ItemList::get_tooltip(const Point2& p_pos) const {
+int ItemList::get_item_at_pos(const Point2& p_pos) const {
 
 	Vector2 pos=p_pos;
 	Ref<StyleBox> bg = get_stylebox("bg");
@@ -1074,6 +1073,13 @@ String ItemList::get_tooltip(const Point2& p_pos) const {
 		}
 	}
 
+	return closest;
+}
+
+String ItemList::get_tooltip(const Point2& p_pos) const {
+
+	int closest = get_item_at_pos(p_pos);
+
 	if (closest!=-1) {
 		if (items[closest].tooltip!="") {
 			return items[closest].tooltip;
@@ -1084,8 +1090,6 @@ String ItemList::get_tooltip(const Point2& p_pos) const {
 	}
 
 	return Control::get_tooltip(p_pos);
-
-
 }
 
 void ItemList::sort_items_by_text() {
@@ -1169,6 +1173,8 @@ void ItemList::_bind_methods(){
 
 	ObjectTypeDB::bind_method(_MD("set_min_icon_size","size"),&ItemList::set_min_icon_size);
 	ObjectTypeDB::bind_method(_MD("get_min_icon_size"),&ItemList::get_min_icon_size);
+
+	ObjectTypeDB::bind_method(_MD("get_item_at_pos","pos"),&ItemList::get_item_at_pos);
 
 	ObjectTypeDB::bind_method(_MD("ensure_current_is_visible"),&ItemList::ensure_current_is_visible);
 

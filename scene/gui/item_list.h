@@ -140,6 +140,7 @@ public:
 	int find_metadata(const Variant& p_metadata) const;
 
 	virtual String get_tooltip(const Point2& p_pos) const;
+	int get_item_at_pos(const Point2& p_pos) const;
 
 	ItemList();
 	~ItemList();

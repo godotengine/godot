@@ -451,7 +451,7 @@ void ScenesDock::_update_files(bool p_keep_selection) {
 			img.resize(thumbnail_size,thumbnail_size);
 			Ref<ImageTexture> resized_folder = Ref<ImageTexture>( memnew( ImageTexture));
 			resized_folder->create_from_image(img,0);
-			Theme::get_default()->set_icon(TTR("ResizedFolder"),"EditorIcons",resized_folder);
+			Theme::get_default()->set_icon("ResizedFolder","EditorIcons",resized_folder);
 		}
 
 		folder_thumbnail = get_icon("ResizedFolder","EditorIcons");
@@ -462,7 +462,7 @@ void ScenesDock::_update_files(bool p_keep_selection) {
 			img.resize(thumbnail_size,thumbnail_size);
 			Ref<ImageTexture> resized_file = Ref<ImageTexture>( memnew( ImageTexture));
 			resized_file->create_from_image(img,0);
-			Theme::get_default()->set_icon(TTR("ResizedFile"),"EditorIcons",resized_file);
+			Theme::get_default()->set_icon("ResizedFile","EditorIcons",resized_file);
 		}
 
 		file_thumbnail = get_icon("ResizedFile","EditorIcons");
@@ -1073,6 +1073,142 @@ void ScenesDock::set_use_thumbnails(bool p_use) {
 	display_mode->set_pressed(!p_use);
 }
 
+
+Variant ScenesDock::get_drag_data_fw(const Point2& p_point,Control* p_from) {
+
+	if (p_from==files) {
+
+		List<int> seldirs;
+		List<int> selfiles;
+
+		for (int i = 0; i<files->get_item_count(); i++) {
+			if (files->is_selected(i)) {
+				String path = files->get_item_metadata(i);
+				if (path.ends_with("/"))
+					seldirs.push_back(i);
+				else
+					selfiles.push_back(i);
+			}
+		}
+
+		if (seldirs.empty() && selfiles.empty())
+			return Variant();
+		//if (seldirs.size() && selfiles.size())
+		//	return Variant(); //can't really mix files and dirs (i think?) - yes you can, commenting
+
+		/*if (selfiles.size()==1) {
+			Ref<Resource> resource = ResourceLoader::load(files->get_item_metadata(selfiles.front()->get()));
+			if (resource.is_valid()) {
+				return EditorNode::get_singleton()->drag_resource(resource,p_from);
+			}
+		}*/
+
+		if (selfiles.size()>0 && seldirs.size()==0) {
+			Vector<String> fnames;
+			for(List<int>::Element *E=selfiles.front();E;E=E->next()) {
+				fnames.push_back(files->get_item_metadata(E->get()));
+			}
+			return EditorNode::get_singleton()->drag_files(fnames,p_from);
+		}
+
+		if (selfiles.size()>0 || seldirs.size()>0) {
+			Vector<String> fnames;
+			for(List<int>::Element *E=selfiles.front();E;E=E->next()) {
+				fnames.push_back(files->get_item_metadata(E->get()));
+			}
+			for(List<int>::Element *E=seldirs.front();E;E=E->next()) {
+				fnames.push_back(files->get_item_metadata(E->get()));
+			}
+			return EditorNode::get_singleton()->drag_files_and_dirs(fnames,p_from);
+		}
+
+	}
+
+	return Variant();
+}
+
+bool ScenesDock::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const{
+
+	Dictionary drag_data = p_data;
+
+	print_line("CAN IT DROP DATA?");
+	if (drag_data.has("type") && String(drag_data["type"])=="resource") {
+		return true;
+	}
+
+	if (drag_data.has("type") && ( String(drag_data["type"])=="files" || String(drag_data["type"])=="files_and_dirs")) {
+
+		Vector<String> fnames = drag_data["files"];
+
+		if (p_from==files) {
+
+			int at_pos = files->get_item_at_pos(p_point);
+			if (at_pos!=-1) {
+
+				String dir = files->get_item_metadata(at_pos);
+				if (dir.ends_with("/"))
+					return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+void ScenesDock::drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from){
+
+	if (!can_drop_data_fw(p_point,p_data,p_from))
+		return;
+	Dictionary drag_data = p_data;
+
+	if (drag_data.has("type") && String(drag_data["type"])=="resource") {
+		Ref<Resource> res = drag_data["resource"];
+
+		if (!res.is_valid()) {
+			return;
+		}
+
+		String save_path=path;
+
+		int at_pos = files->get_item_at_pos(p_point);
+		if (at_pos!=-1) {
+			String to_dir = files->get_item_metadata(at_pos);
+			if (to_dir.ends_with("/")) {
+				save_path=to_dir;
+				if (save_path!="res://")
+					save_path=save_path.substr(0,save_path.length()-1);
+			}
+
+		}
+
+		EditorNode::get_singleton()->save_resource_as(res,save_path);
+		return;
+	}
+
+	if (drag_data.has("type") && ( String(drag_data["type"])=="files" || String(drag_data["type"])=="files_and_dirs")) {
+
+		int at_pos = files->get_item_at_pos(p_point);
+		ERR_FAIL_COND(at_pos==-1);
+		String to_dir = files->get_item_metadata(at_pos);
+		ERR_FAIL_COND(!to_dir.ends_with("/"));
+
+		Vector<String> fnames = drag_data["files"];
+		move_files.clear();
+		move_dirs.clear();
+
+		for(int i=0;i<fnames.size();i++) {
+			if (fnames[i].ends_with("/"))
+				move_dirs.push_back(fnames[i]);
+			else
+				move_files.push_back(fnames[i]);
+		}
+
+		_move_operation(to_dir);
+	}
+
+}
+
+
 void ScenesDock::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_update_tree"),&ScenesDock::_update_tree);
@@ -1095,6 +1231,10 @@ void ScenesDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_file_option"), &ScenesDock::_file_option);
 	ObjectTypeDB::bind_method(_MD("_move_operation"), &ScenesDock::_move_operation);
 	ObjectTypeDB::bind_method(_MD("_rename_operation"), &ScenesDock::_rename_operation);
+
+	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &ScenesDock::get_drag_data_fw);
+	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &ScenesDock::can_drop_data_fw);
+	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &ScenesDock::drop_data_fw);
 
 	ADD_SIGNAL(MethodInfo("instance"));
 	ADD_SIGNAL(MethodInfo("open"));
@@ -1199,6 +1339,7 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 	files = memnew( ItemList );
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
 	files->set_select_mode(ItemList::SELECT_MULTI);
+	files->set_drag_forwarding(this);
 
 	path_hb = memnew( HBoxContainer );
 	button_back  = memnew( ToolButton );

@@ -655,6 +655,7 @@ void make_default_theme() {
 	t->set_color("selection_color","Tree", Color(0.1,0.1,1,0.8) );
 	t->set_color("cursor_color","Tree", Color(0,0,0) );
 	t->set_color("guide_color","Tree", Color(0,0,0,0.1) );
+	t->set_color("drop_position_color","Tree", Color(1,0.3,0.2) );
 
 	t->set_constant("hseparation","Tree",4);
 	t->set_constant("vseparation","Tree",4);

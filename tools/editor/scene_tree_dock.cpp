@@ -40,6 +40,9 @@
 #include "tools/editor/plugins/animation_player_editor_plugin.h"
 #include "animation_editor.h"
 
+
+
+
 void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 
 	uint32_t sc = p_event.key.get_scancode_with_modifiers();
@@ -943,16 +946,37 @@ bool SceneTreeDock::_validate_no_foreign() {
 void SceneTreeDock::_node_reparent(NodePath p_path,bool p_keep_global_xform) {
 
 
-	Node *node = scene_tree->get_selected();
-	ERR_FAIL_COND(!node);
-	ERR_FAIL_COND(node==edited_scene);
 	Node *new_parent = scene_root->get_node(p_path);
+	ERR_FAIL_COND(!new_parent);
+
+	//ok all valid
+
+	List<Node*> selection = editor_selection->get_selected_node_list();
+
+	if (selection.empty())
+		return; //nothing to reparent
+
+	Vector<Node*> nodes;
+
+	for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+		nodes.push_back(E->get());
+	}
+
+	_do_reparent(new_parent,-1,nodes,p_keep_global_xform);
+
+}
+
+
+void SceneTreeDock::_do_reparent(Node* p_new_parent,int p_position_in_parent,Vector<Node*> p_nodes,bool p_keep_global_xform) {
+
+
+	Node *new_parent = p_new_parent;
 	ERR_FAIL_COND(!new_parent);
 
 	Node *validate=new_parent;
 	while(validate) {
 
-		if (editor_selection->is_selected(validate)) {
+		if (p_nodes.find(validate)!=-1) {
 			ERR_EXPLAIN("Selection changed at some point.. can't reparent");
 			ERR_FAIL();
 			return;
@@ -964,20 +988,20 @@ void SceneTreeDock::_node_reparent(NodePath p_path,bool p_keep_global_xform) {
 
 	List<Node*> selection = editor_selection->get_selected_node_list();
 
-	if (selection.empty())
+	if (p_nodes.size()==0)
 		return; //nothing to reparent
 
 	//sort by tree order, so re-adding is easy
-	selection.sort_custom<Node::Comparator>();
+	p_nodes.sort_custom<Node::Comparator>();
 
 	editor_data->get_undo_redo().create_action(TTR("Reparent Node"));
 
 	List<Pair<NodePath,NodePath> > path_renames;
 
-	for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+	for(int ni=0;ni<p_nodes.size();ni++) {
 
 		//no undo for now, sorry
-		Node *node = E->get();
+		Node *node = p_nodes[ni];
 
 		fill_path_renames(node,new_parent,&path_renames);
 
@@ -993,6 +1017,9 @@ void SceneTreeDock::_node_reparent(NodePath p_path,bool p_keep_global_xform) {
 
 		editor_data->get_undo_redo().add_do_method(node->get_parent(),"remove_child",node);
 		editor_data->get_undo_redo().add_do_method(new_parent,"add_child",node);
+
+		if (p_position_in_parent>=0)
+			editor_data->get_undo_redo().add_do_method(new_parent,"move_child",node,p_position_in_parent+ni);
 
 		ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
 		String new_name = new_parent->validate_child_name(node->get_name());
@@ -1030,9 +1057,9 @@ void SceneTreeDock::_node_reparent(NodePath p_path,bool p_keep_global_xform) {
 
 
 
-	for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+	for(int ni=0;ni<p_nodes.size();ni++) {
 
-		Node *node = E->get();
+		Node *node = p_nodes[ni];
 
 		List<Node*> owned;
 		node->get_owned_by(node->get_owner(),&owned);
@@ -1077,7 +1104,6 @@ void SceneTreeDock::_node_reparent(NodePath p_path,bool p_keep_global_xform) {
 	editor_data->get_undo_redo().commit_action();
 	//node->set_owner(owner);
 }
-
 
 void SceneTreeDock::_script_created(Ref<Script> p_script) {
 
@@ -1431,6 +1457,161 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 
 }
 
+static bool _is_node_visible(Node* p_node) {
+
+	if (!p_node->get_owner())
+		return false;
+	if (p_node->get_owner()!=EditorNode::get_singleton()->get_edited_scene() && !EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(p_node->get_owner()))
+		return false;
+
+	return true;
+
+}
+
+static bool _has_visible_children(Node* p_node) {
+
+	bool collapsed = p_node->has_meta("_editor_collapsed") ? (bool)p_node->get_meta("_editor_collapsed") : false;
+	if (collapsed)
+		return false;
+
+	for(int i=0;i<p_node->get_child_count();i++) {
+
+		Node* child = p_node->get_child(i);
+		if (!_is_node_visible(p_node))
+			continue;
+
+		return true;
+	}
+
+	return false;
+
+}
+
+
+static Node* _find_last_visible(Node*p_node) {
+
+	Node*last=NULL;
+	for(int i=0;i<p_node->get_child_count();i++) {
+		if (_is_node_visible(p_node->get_child(i))) {
+			last=p_node->get_child(i);
+		}
+	}
+
+	if (last) {
+		Node* lastc=_find_last_visible(last);
+		if (lastc)
+			last=lastc;
+
+
+	} else {
+		last=p_node;
+	}
+
+	return last;
+}
+
+void SceneTreeDock::_nodes_dragged(Array p_nodes,NodePath p_to,int p_type) {
+
+	Vector<Node*> nodes;
+	Node *to_node;
+
+	for(int i=0;i<p_nodes.size();i++) {
+		Node *n=get_node((p_nodes[i]));
+		nodes.push_back(n);
+	}
+
+	if (nodes.size()==0)
+		return;
+
+	to_node=get_node(p_to);
+	if (!to_node)
+		return;
+
+
+	int to_pos=-1;
+
+	if (p_type==1 && to_node==EditorNode::get_singleton()->get_edited_scene()) {
+		//if at lower sibling of root node
+		to_pos=0; //just insert at begining of root node
+	} else if (p_type==-1) {
+		//drop at above selected node
+		ERR_FAIL_COND(to_node==EditorNode::get_singleton()->get_edited_scene());
+		Node* upper_sibling=NULL;
+
+		for(int i=0;i<to_node->get_index();i++) {
+			Node *c =to_node->get_parent()->get_child(i);
+			if (_is_node_visible(c)) {
+				upper_sibling=c;
+			}
+		}
+
+
+		if (upper_sibling) {
+			//quite complicated, look for next visible in tree
+			upper_sibling=_find_last_visible(upper_sibling);
+
+			if (upper_sibling->get_parent()==to_node->get_parent()) {
+				//just insert over this node because nothing is above at an upper level
+				to_pos=to_node->get_index();
+				to_node=to_node->get_parent();
+			} else {
+				to_pos=-1; //insert last in whathever is up
+				to_node=upper_sibling->get_parent(); //insert at a parent of whathever is up
+			}
+
+
+		} else {
+			//just insert over this node because nothing is above at the same level
+			to_pos=to_node->get_index();
+			to_node=to_node->get_parent();
+		}
+
+	} else if (p_type==1) {
+			//drop at below selected node
+			ERR_FAIL_COND(to_node==EditorNode::get_singleton()->get_edited_scene());
+
+
+			Node* lower_sibling=NULL;
+
+			for(int i=to_node->get_index()+1;i<to_node->get_parent()->get_child_count();i++) {
+				Node *c =to_node->get_parent()->get_child(i);
+				if (_is_node_visible(c)) {
+					lower_sibling=c;
+				}
+			}
+
+			if (lower_sibling) {
+				to_pos=lower_sibling->get_index();
+			}
+
+			to_node=to_node->get_parent();
+#if 0
+				//quite complicated, look for next visible in tree
+				upper_sibling=_find_last_visible(upper_sibling);
+
+				if (upper_sibling->get_parent()==to_node->get_parent()) {
+					//just insert over this node because nothing is above at an upper level
+					to_pos=to_node->get_index();
+					to_node=to_node->get_parent();
+				} else {
+					to_pos=-1; //insert last in whathever is up
+					to_node=upper_sibling->get_parent(); //insert at a parent of whathever is up
+				}
+
+
+			} else {
+				//just insert over this node because nothing is above at the same level
+				to_pos=to_node->get_index();
+				to_node=to_node->get_parent();
+			}
+#endif
+
+	}
+
+	_do_reparent(to_node,to_pos,nodes,true);
+
+}
+
 void SceneTreeDock::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_tool_selected"),&SceneTreeDock::_tool_selected);
@@ -1449,6 +1630,8 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_import_subscene"),&SceneTreeDock::_import_subscene);
 	ObjectTypeDB::bind_method(_MD("_selection_changed"),&SceneTreeDock::_selection_changed);
 	ObjectTypeDB::bind_method(_MD("_new_scene_from"),&SceneTreeDock::_new_scene_from);
+	ObjectTypeDB::bind_method(_MD("_nodes_dragged"),&SceneTreeDock::_nodes_dragged);
+
 
 	ObjectTypeDB::bind_method(_MD("instance"),&SceneTreeDock::instance);
 }
@@ -1518,6 +1701,8 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	scene_tree->connect("node_prerename", this,"_node_prerenamed");
 	scene_tree->connect("open",this,"_load_request");
 	scene_tree->connect("open_script",this,"_script_open_request");
+	scene_tree->connect("nodes_rearranged",this,"_nodes_dragged");
+
 	scene_tree->set_undo_redo(&editor_data->get_undo_redo());
 	scene_tree->set_editor_selection(editor_selection);
 
@@ -1611,6 +1796,8 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	new_scene_from_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	add_child(new_scene_from_dialog);
 	new_scene_from_dialog->connect("file_selected",this,"_new_scene_from");
+
+
 
 	first_enter=true;
 

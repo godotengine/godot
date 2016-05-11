@@ -523,7 +523,7 @@ void EditorNode::save_resource(const Ref<Resource>& p_resource) {
 	}
 }
 
-void EditorNode::save_resource_as(const Ref<Resource>& p_resource) {
+void EditorNode::save_resource_as(const Ref<Resource>& p_resource,const String& p_at_path) {
 
 	file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	bool relpaths =  (p_resource->has_meta("__editor_relpaths__") && p_resource->get_meta("__editor_relpaths__").operator bool());
@@ -546,7 +546,21 @@ void EditorNode::save_resource_as(const Ref<Resource>& p_resource) {
 	}
 
 	//file->set_current_path(current_path);
-	if (p_resource->get_path()!="") {
+
+	if (p_at_path!=String()) {
+
+		file->set_current_dir(p_at_path);
+		if (p_resource->get_path().is_resource_file()) {
+			file->set_current_file(p_resource->get_path().get_file());
+		} else {
+			if (extensions.size())	{
+				file->set_current_file("new_"+p_resource->get_type().to_lower()+"."+preferred.front()->get().to_lower());
+			} else {
+				file->set_current_file(String());
+			}
+		}
+	} else if (p_resource->get_path()!="") {
+
 		file->set_current_path(p_resource->get_path());
 		if (extensions.size()) {
 			String ext=p_resource->get_path().extension().to_lower();
@@ -4879,6 +4893,114 @@ void EditorNode::remove_control_from_dock(Control* p_control) {
 
 	dock->remove_child(p_control);
 	_update_dock_slots_visibility();
+}
+
+Variant EditorNode::drag_resource(const Ref<Resource>& p_res,Control* p_from) {
+
+
+	Control *drag_control = memnew( Control );
+	TextureFrame *drag_preview = memnew( TextureFrame );
+	Label* label=memnew( Label );
+
+	Ref<Texture> preview;
+
+	{
+		//todo make proper previews
+		Ref<ImageTexture> pic = gui_base->get_icon("FileBig","EditorIcons");
+		Image img = pic->get_data();
+		img.resize(48,48); //meh
+		Ref<ImageTexture> resized_pic = Ref<ImageTexture>( memnew( ImageTexture) );
+		resized_pic->create_from_image(img);
+		preview=resized_pic;
+	}
+
+	drag_preview->set_texture(preview);
+	drag_control->add_child(drag_preview);
+	if (p_res->get_path().is_resource_file()) {
+		label->set_text(p_res->get_path().get_file());
+	} else if (p_res->get_name()!="") {
+		label->set_text(p_res->get_name());
+	} else {
+		label->set_text(p_res->get_type());
+
+	}
+
+	drag_control->add_child(label);
+
+	p_from->set_drag_preview(drag_control); //wait until it enters scene
+
+	label->set_pos( Point2((preview->get_width()-label->get_minimum_size().width)/2,preview->get_height()) );
+
+	Dictionary drag_data;
+	drag_data["type"]="resource";
+	drag_data["resource"]=p_res;
+	drag_data["from"]=p_from;
+
+
+	return drag_data;
+
+}
+
+Variant EditorNode::drag_files(const Vector<String>& p_files, Control *p_from){
+
+	VBoxContainer *files = memnew( VBoxContainer );
+
+	int max_files=6;
+
+	for(int i=0;i<MIN(max_files,p_files.size());i++) {
+
+		Label* label=memnew( Label );
+		label->set_text(p_files[i].get_file());
+		files->add_child(label);
+	}
+
+	if (p_files.size()>max_files) {
+
+		Label* label=memnew( Label );
+		label->set_text(itos(p_files.size()-max_files)+" "+TTR("More File(s)"));
+		files->add_child(label);
+
+	}
+	Dictionary drag_data;
+	drag_data["type"]="files";
+	drag_data["files"]=p_files;
+	drag_data["from"]=p_from;
+
+	p_from->set_drag_preview(files); //wait until it enters scene
+
+	return drag_data;
+
+}
+
+Variant EditorNode::drag_files_and_dirs(const Vector<String>& p_files, Control *p_from){
+
+	VBoxContainer *files = memnew( VBoxContainer );
+
+	int max_files=6;
+
+	for(int i=0;i<MIN(max_files,p_files.size());i++) {
+
+		Label* label=memnew( Label );
+		label->set_text(p_files[i].get_file());
+		files->add_child(label);
+	}
+
+	if (p_files.size()>max_files) {
+
+		Label* label=memnew( Label );
+		label->set_text(itos(p_files.size()-max_files)+" "+TTR("More File(s) and/or Directory(s)"));
+		files->add_child(label);
+
+	}
+	Dictionary drag_data;
+	drag_data["type"]="files_and_dirs";
+	drag_data["files"]=p_files;
+	drag_data["from"]=p_from;
+
+	p_from->set_drag_preview(files); //wait until it enters scene
+
+	return drag_data;
+
 }
 
 void EditorNode::_bind_methods() {

@@ -584,6 +584,9 @@ public:
 	static void add_editor_plugin(EditorPlugin *p_editor);
 	static void remove_editor_plugin(EditorPlugin *p_editor);
 
+
+
+
 	void add_control_to_dock(DockSlot p_slot,Control* p_control);
 	void remove_control_from_dock(Control* p_control);
 
@@ -599,7 +602,7 @@ public:
 
 	void save_resource_in_path(const Ref<Resource>& p_resource,const String& p_path);
 	void save_resource(const Ref<Resource>& p_resource);
-	void save_resource_as(const Ref<Resource>& p_resource);
+	void save_resource_as(const Ref<Resource>& p_resource, const String &p_at_path=String());
 
 	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
 
@@ -695,6 +698,11 @@ public:
 	void raise_bottom_panel_item(Control *p_item);
 	void hide_bottom_panel();
 	void remove_bottom_panel_item(Control *p_item);
+
+	Variant drag_resource(const Ref<Resource>& p_res,Control* p_from);
+	Variant drag_files(const Vector<String>& p_files,Control* p_from);
+	Variant drag_files_and_dirs(const Vector<String>& p_files,Control* p_from);
+
 
 	EditorNode();
 	~EditorNode();

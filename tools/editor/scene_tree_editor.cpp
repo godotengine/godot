@@ -784,6 +784,96 @@ void SceneTreeEditor::_cell_collapsed(Object *p_obj) {
 
 }
 
+Variant SceneTreeEditor::get_drag_data_fw(const Point2& p_point,Control* p_from) {
+	if (!can_rename)
+		return Variant(); //not editable tree
+
+	Vector<Node*> selected;
+	Vector<Ref<Texture> > icons;
+	TreeItem *next=tree->get_next_selected(NULL);
+	while (next) {
+
+		NodePath np = next->get_metadata(0);
+
+		Node *n=get_node(np);
+		if (n) {
+
+			selected.push_back(n);
+			icons.push_back(next->get_icon(0));
+		}
+		next=tree->get_next_selected(next);
+	}
+
+	if (selected.empty())
+		return Variant();
+
+	VBoxContainer *vb = memnew( VBoxContainer );
+	Array objs;
+	for(int i=0;i<selected.size();i++) {
+
+		HBoxContainer *hb = memnew( HBoxContainer );
+		TextureFrame *tf = memnew(TextureFrame);
+		tf->set_texture(icons[i]);
+		hb->add_child(tf);
+		Label *label = memnew( Label( selected[i]->get_name() ) );
+		hb->add_child(label);
+		vb->add_child(hb);
+		NodePath p = selected[i]->get_path();
+		objs.push_back(p);
+	}
+
+	set_drag_preview(vb);
+	Dictionary drag_data;
+	drag_data["type"]="nodes";
+	drag_data["nodes"]=objs;
+
+	tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN|Tree::DROP_MODE_ON_ITEM);
+
+
+	return drag_data;
+}
+
+bool SceneTreeEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const {
+
+	if (!can_rename)
+		return false; //not editable tree
+
+	Dictionary d=p_data;
+	if (!d.has("type") || String(d["type"])!="nodes")
+		return false;
+	TreeItem *item = tree->get_item_at_pos(p_point);
+	if (!item)
+		return false;
+	int section = tree->get_drop_section_at_pos(p_point);
+	if (section<-1 || (section==-1 && !item->get_parent()))
+		return false;
+
+	return true;
+}
+void SceneTreeEditor::drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) {
+
+	if (!can_drop_data_fw(p_point,p_data,p_from))
+		return;
+
+	TreeItem *item = tree->get_item_at_pos(p_point);
+	if (!item)
+		return;
+	int section = tree->get_drop_section_at_pos(p_point);
+	if (section<-1)
+		return;
+
+	NodePath np = item->get_metadata(0);
+	Node *n=get_node(np);
+	if (!n)
+		return;
+
+	Dictionary d=p_data;
+
+	Array nodes=d["nodes"];
+
+	emit_signal("nodes_rearranged",nodes,np,section);
+
+}
 
 
 void SceneTreeEditor::_bind_methods() {
@@ -804,10 +894,15 @@ void SceneTreeEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_node_script_changed",&SceneTreeEditor::_node_script_changed);
 	ObjectTypeDB::bind_method("_node_visibility_changed",&SceneTreeEditor::_node_visibility_changed);
 
+	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &SceneTreeEditor::get_drag_data_fw);
+	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &SceneTreeEditor::can_drop_data_fw);
+	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &SceneTreeEditor::drop_data_fw);
+
 	ADD_SIGNAL( MethodInfo("node_selected") );
 	ADD_SIGNAL( MethodInfo("node_renamed") );
 	ADD_SIGNAL( MethodInfo("node_prerename") );
 	ADD_SIGNAL( MethodInfo("node_changed") );
+	ADD_SIGNAL( MethodInfo("nodes_rearranged",PropertyInfo(Variant::ARRAY,"paths"),PropertyInfo(Variant::NODE_PATH,"to_path"),PropertyInfo(Variant::INT,"type") ) );
 
 	ADD_SIGNAL( MethodInfo("open") );
 	ADD_SIGNAL( MethodInfo("open_script") );
@@ -845,6 +940,8 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	tree->set_end( Point2(0,0 ));
 
 	add_child( tree );
+
+	tree->set_drag_forwarding(this);
 
 	tree->connect("cell_selected", this,"_selected_changed");
 	tree->connect("item_edited", this,"_renamed",varray(),CONNECT_DEFERRED);

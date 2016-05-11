@@ -985,6 +985,16 @@ void Viewport::_propagate_enter_world(Node *p_node) {
 	}
 }
 
+void Viewport::_propagate_viewport_notification(Node* p_node,int p_what) {
+
+	p_node->notification(p_what);
+	for(int i=0;i<p_node->get_child_count();i++) {
+		Node *c = p_node->get_child(i);
+		if (c->cast_to<Viewport>())
+			continue;
+		_propagate_viewport_notification(c,p_what);
+	}
+}
 
 void Viewport::_propagate_exit_world(Node *p_node) {
 
@@ -1676,6 +1686,9 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 					if (p_event.mouse_button.button_index==BUTTON_LEFT) {
 						gui.drag_accum=Vector2();
 						gui.drag_attempted=false;
+						if (gui.drag_data.get_type()!=Variant::NIL) {
+							_propagate_viewport_notification(this,NOTIFICATION_DRAG_END);
+						}
 						gui.drag_data=Variant();
 					}
 
@@ -1736,6 +1749,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 						gui.mouse_over->drop_data(pos,gui.drag_data);
 						gui.drag_data=Variant();
+						_propagate_viewport_notification(this,NOTIFICATION_DRAG_END);
 						//change mouse accordingly
 					}
 
@@ -1759,6 +1773,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 				}
 
 				if (gui.drag_data.get_type()!=Variant::NIL && p_event.mouse_button.button_index==BUTTON_LEFT) {
+					_propagate_viewport_notification(this,NOTIFICATION_DRAG_END);
 					gui.drag_data=Variant(); //always clear
 				}
 
@@ -1790,6 +1805,10 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 						gui.mouse_focus=NULL;
 					}
 					gui.drag_attempted=true;
+					if (gui.drag_data.get_type()!=Variant::NIL) {
+
+						_propagate_viewport_notification(this,NOTIFICATION_DRAG_BEGIN);
+					}
 				}
 			}
 
@@ -1813,6 +1832,8 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 					break; // don't send motion event to anything below modal stack top
 				}
 			}
+
+
 
 			if (over!=gui.mouse_over) {
 
@@ -1896,7 +1917,15 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 			if (gui.drag_data.get_type()!=Variant::NIL && p_event.mouse_motion.button_mask&BUTTON_MASK_LEFT) {
 
-				/*bool can_drop =*/ over->can_drop_data(pos,gui.drag_data);
+
+				bool can_drop = over->can_drop_data(pos,gui.drag_data);
+
+				if (!can_drop) {
+					OS::get_singleton()->set_cursor_shape( OS::CURSOR_FORBIDDEN );
+				} else {
+					OS::get_singleton()->set_cursor_shape( OS::CURSOR_CAN_DROP );
+
+				}
 				//change mouse accordingly i guess
 			}
 
@@ -2367,6 +2396,9 @@ bool Viewport::is_input_disabled() const {
 	return disable_input;
 }
 
+Variant Viewport::gui_get_drag_data() const {
+	return gui.drag_data;
+}
 void Viewport::_bind_methods() {
 
 
@@ -2452,6 +2484,7 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("warp_mouse","to_pos"), &Viewport::warp_mouse);
 
 	ObjectTypeDB::bind_method(_MD("gui_has_modal_stack"), &Viewport::gui_has_modal_stack);
+	ObjectTypeDB::bind_method(_MD("gui_get_drag_data:Variant"), &Viewport::gui_get_drag_data);
 
 	ObjectTypeDB::bind_method(_MD("set_disable_input","disable"), &Viewport::set_disable_input);
 	ObjectTypeDB::bind_method(_MD("is_input_disabled"), &Viewport::is_input_disabled);
