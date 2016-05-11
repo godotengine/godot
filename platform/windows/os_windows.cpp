@@ -705,6 +705,25 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 			joystick->probe_joysticks();
 		} break;
+		case WM_SETCURSOR: {
+
+			if(LOWORD(lParam) == HTCLIENT) {
+				if(mouse_mode == MOUSE_MODE_HIDDEN) {
+					//Hide the cursor
+					if(hCursor == NULL)
+						hCursor = SetCursor(NULL);
+					else
+						SetCursor(NULL);
+				}
+				else {
+					if(hCursor != NULL) {
+						SetCursor(hCursor);
+						hCursor = NULL;
+					}
+				}
+			}
+
+		} break;
 
 		default: {
 
@@ -1211,7 +1230,6 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 
 	if (mouse_mode==p_mode)
 		return;
-	ShowCursor(p_mode==MOUSE_MODE_VISIBLE);
 	mouse_mode=p_mode;
 	if (p_mode==MOUSE_MODE_CAPTURED) {
 		RECT clipRect;
