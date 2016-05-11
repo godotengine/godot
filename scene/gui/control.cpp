@@ -1287,14 +1287,13 @@ void Control::set_anchor(Margin p_margin,AnchorType p_anchor, bool p_keep_margin
 
 void Control::_set_anchor(Margin p_margin,AnchorType p_anchor) {
 	#ifdef TOOLS_ENABLED
-	SceneTree *st=OS::get_singleton()->get_main_loop()->cast_to<SceneTree>();
-	if (st && st->is_editor_hint()) {
+	if (is_inside_tree() && get_tree()->is_editor_hint()) {
 		set_anchor(p_margin, p_anchor, EDITOR_DEF("2d_editor/keep_margins_when_changing_anchors", false));
 	} else {
-		set_anchor(p_margin, p_anchor);
+		set_anchor(p_margin, p_anchor, false);
 	}
 	#else
-	set_anchor(p_margin, p_anchor);
+	set_anchor(p_margin, p_anchor, false);
 	#endif
 }
 
