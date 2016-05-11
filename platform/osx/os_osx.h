@@ -184,7 +184,7 @@ public:
 	virtual bool is_window_minimized() const;
 	virtual void set_window_maximized(bool p_enabled);
 	virtual bool is_window_maximized() const;
-	Size2 get_screen_size(int p_screen);
+	Size2 get_screen_size(int p_screen=0) const;
 
 
 	void run();

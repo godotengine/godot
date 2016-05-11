@@ -1354,7 +1354,7 @@ Point2 OS_OSX::get_screen_position(int p_screen) const {
 	return screens[p_screen].pos;
 };
 
-Size2 OS_OSX::get_screen_size(int p_screen) {
+Size2 OS_OSX::get_screen_size(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, screens.size(), Point2());
 	return screens[p_screen].size;
