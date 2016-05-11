@@ -2867,25 +2867,29 @@ CharType String::ord_at(int p_idx) const {
 	return operator[](p_idx);
 }
 
-String String::strip_edges() const {
+String String::strip_edges(bool left, bool right) const {
 
 	int len=length();
 	int beg=0,end=len;
 
-	for (int i=0;i<length();i++) {
+	if(left) {
+		for (int i=0;i<len;i++) {
 
-		if (operator[](i)<=32)
-			beg++;
-		else
-			break;
+			if (operator[](i)<=32)
+				beg++;
+			else
+				break;
+		}
 	}
 
-	for (int i=(int)(length()-1);i>=0;i--) {
+	if(right) {
+		for (int i=(int)(len-1);i>=0;i--) {
 
-		if (operator[](i)<=32)
-			end--;
-		else
-			break;
+			if (operator[](i)<=32)
+				end--;
+			else
+				break;
+		}
 	}
 
 	if (beg==0 && end==len)
