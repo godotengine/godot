@@ -210,6 +210,10 @@ class TextEdit : public Control  {
 	bool syntax_coloring;
 	int tab_size;
 
+	Timer *caret_blink_timer;
+	bool caret_blink_enabled;
+	bool draw_caret;
+
 	bool setting_row;
 	bool wrap;
 	bool draw_tabs;
@@ -266,6 +270,9 @@ class TextEdit : public Control  {
 	Size2 get_minimum_size();
 
 	int get_row_height() const;
+
+	void _reset_caret_blink_timer();
+	void _toggle_draw_caret();
 
 	void _update_caches();
 	void _cursor_changed_emit();
@@ -363,6 +370,12 @@ public:
 
 	int cursor_get_column() const;
 	int cursor_get_line() const;
+
+	bool cursor_get_blink_enabled() const;
+	void cursor_set_blink_enabled(const bool p_enabled);
+
+	float cursor_get_blink_speed() const;
+	void cursor_set_blink_speed(const float p_speed);
 
 	void set_readonly(bool p_readonly);
 
