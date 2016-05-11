@@ -1131,7 +1131,7 @@ bool ScenesDock::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Co
 
 	Dictionary drag_data = p_data;
 
-	print_line("CAN IT DROP DATA?");
+
 	if (drag_data.has("type") && String(drag_data["type"])=="resource") {
 		return true;
 	}

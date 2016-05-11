@@ -59,7 +59,7 @@ void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 	}
 }
 
-Node* SceneTreeDock::instance(const String& p_file) {
+void SceneTreeDock::instance(const String& p_file) {
 
 	Node *parent = scene_tree->get_selected();
 	if (!parent || !edited_scene) {
@@ -69,60 +69,106 @@ Node* SceneTreeDock::instance(const String& p_file) {
 		accept->get_ok()->set_text(TTR("Ok :( "));
 		accept->set_text(TTR("No parent to instance a child at."));
 		accept->popup_centered_minsize();
-		return NULL;
+		return;
 	};
 
-	ERR_FAIL_COND_V(!parent,NULL);
+	ERR_FAIL_COND(!parent);
 
-	Node*instanced_scene=NULL;
-	Ref<PackedScene> sdata = ResourceLoader::load(p_file);
-	if (sdata.is_valid())
-		instanced_scene=sdata->instance(true);
+	Vector<String> scenes;
+	scenes.push_back(p_file);
+	instance_scenes(scenes,parent,-1);
+
+}
+
+void SceneTreeDock::instance_scenes(const Vector<String>& p_files,Node* parent,int p_pos) {
 
 
-	if (!instanced_scene) {
 
-		current_option=-1;
-		//accept->get_cancel()->hide();
-		accept->get_ok()->set_text(TTR("Ugh"));
-		accept->set_text(String(TTR("Error loading scene from "))+p_file);
-		accept->popup_centered_minsize();
-		return NULL;
-	}
+	ERR_FAIL_COND(!parent);
 
-	// If the scene hasn't been saved yet a cyclical dependency cannot exist.
-	if (edited_scene->get_filename()!="") {
 
-		if (_cyclical_dependency_exists(edited_scene->get_filename(), instanced_scene)) {
+	Vector<Node*> instances;
 
-			accept->get_ok()->set_text(TTR("Ok"));
-			accept->set_text(String(TTR("Cannot instance the scene '"))+p_file+String("' because the current scene exists within one of its' nodes."));
+	bool error=false;
+
+	for(int i=0;i<p_files.size();i++) {
+
+		Ref<PackedScene> sdata = ResourceLoader::load(p_files[i]);
+		if (!sdata.is_valid()) {
+			current_option=-1;
+			//accept->get_cancel()->hide();
+			accept->get_ok()->set_text(TTR("Ugh"));
+			accept->set_text(String(TTR("Error loading scene from "))+p_files[i]);
 			accept->popup_centered_minsize();
-			return NULL;
+			error=true;
+			break;
+
 		}
+
+		Node*instanced_scene=sdata->instance(true);
+		if (!instanced_scene) {
+			current_option=-1;
+			//accept->get_cancel()->hide();
+			accept->get_ok()->set_text(TTR("Ugh"));
+			accept->set_text(String(TTR("Error instancing scene from "))+p_files[i]);
+			accept->popup_centered_minsize();
+			error=true;
+			break;
+
+		}
+
+		if (edited_scene->get_filename()!="") {
+
+			if (_cyclical_dependency_exists(edited_scene->get_filename(), instanced_scene)) {
+
+				accept->get_ok()->set_text(TTR("Ok"));
+				accept->set_text(String(TTR("Cannot instance the scene '"))+p_files[i]+String(TTR("' because the current scene exists within one of its' nodes.")));
+				accept->popup_centered_minsize();
+				error=true;
+				break;
+			}
+		}
+
+		instanced_scene->set_filename( Globals::get_singleton()->localize_path(p_files[i]) );
+
+		instances.push_back(instanced_scene);
 	}
+
+	if (error) {
+		for(int i=0;i<instances.size();i++) {
+			memdelete(instances[i]);
+		}
+		return;
+	}
+
+
 
 	//instanced_scene->generate_instance_state();
-	instanced_scene->set_filename( Globals::get_singleton()->localize_path(p_file) );
 
-	editor_data->get_undo_redo().create_action(TTR("Instance Scene"));
-	editor_data->get_undo_redo().add_do_method(parent,"add_child",instanced_scene);
-	editor_data->get_undo_redo().add_do_method(instanced_scene,"set_owner",edited_scene);
-	editor_data->get_undo_redo().add_do_method(editor_selection,"clear");
-	editor_data->get_undo_redo().add_do_method(editor_selection,"add_node",instanced_scene);
-	editor_data->get_undo_redo().add_do_reference(instanced_scene);
-	editor_data->get_undo_redo().add_undo_method(parent,"remove_child",instanced_scene);
+	editor_data->get_undo_redo().create_action(TTR("Instance Scene(s)"));
 
+	for(int i=0;i<instances.size();i++) {
 
-	String new_name = parent->validate_child_name(instanced_scene->get_name());
-	ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
-	editor_data->get_undo_redo().add_do_method(sed,"live_debug_instance_node",edited_scene->get_path_to(parent),p_file,new_name);
-	editor_data->get_undo_redo().add_undo_method(sed,"live_debug_remove_node",NodePath(String(edited_scene->get_path_to(parent))+"/"+new_name));
+		Node* instanced_scene=instances[i];
+
+		editor_data->get_undo_redo().add_do_method(parent,"add_child",instanced_scene);
+		if (p_pos>=0) {
+			editor_data->get_undo_redo().add_do_method(parent,"move_child",instanced_scene,p_pos+i);
+		}
+		editor_data->get_undo_redo().add_do_method(instanced_scene,"set_owner",edited_scene);
+		editor_data->get_undo_redo().add_do_method(editor_selection,"clear");
+		editor_data->get_undo_redo().add_do_method(editor_selection,"add_node",instanced_scene);
+		editor_data->get_undo_redo().add_do_reference(instanced_scene);
+		editor_data->get_undo_redo().add_undo_method(parent,"remove_child",instanced_scene);
+
+		String new_name = parent->validate_child_name(instanced_scene->get_name());
+		ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
+		editor_data->get_undo_redo().add_do_method(sed,"live_debug_instance_node",edited_scene->get_path_to(parent),p_files[i],new_name);
+		editor_data->get_undo_redo().add_undo_method(sed,"live_debug_remove_node",NodePath(String(edited_scene->get_path_to(parent))+"/"+new_name));
+	}
 
 	editor_data->get_undo_redo().commit_action();
 
-
-	return instanced_scene;
 
 }
 
@@ -1510,32 +1556,20 @@ static Node* _find_last_visible(Node*p_node) {
 	return last;
 }
 
-void SceneTreeDock::_nodes_dragged(Array p_nodes,NodePath p_to,int p_type) {
 
-	Vector<Node*> nodes;
-	Node *to_node;
+void SceneTreeDock::_normalize_drop(Node*& to_node, int &to_pos,int p_type) {
 
-	for(int i=0;i<p_nodes.size();i++) {
-		Node *n=get_node((p_nodes[i]));
-		nodes.push_back(n);
-	}
-
-	if (nodes.size()==0)
-		return;
-
-	to_node=get_node(p_to);
-	if (!to_node)
-		return;
-
-
-	int to_pos=-1;
+	to_pos=-1;
 
 	if (p_type==1 && to_node==EditorNode::get_singleton()->get_edited_scene()) {
 		//if at lower sibling of root node
 		to_pos=0; //just insert at begining of root node
 	} else if (p_type==-1) {
 		//drop at above selected node
-		ERR_FAIL_COND(to_node==EditorNode::get_singleton()->get_edited_scene());
+		if (to_node==EditorNode::get_singleton()->get_edited_scene()) {
+			to_node=NULL;
+			ERR_FAIL_COND(to_node==EditorNode::get_singleton()->get_edited_scene());
+		}
 		Node* upper_sibling=NULL;
 
 		for(int i=0;i<to_node->get_index();i++) {
@@ -1568,7 +1602,10 @@ void SceneTreeDock::_nodes_dragged(Array p_nodes,NodePath p_to,int p_type) {
 
 	} else if (p_type==1) {
 			//drop at below selected node
-			ERR_FAIL_COND(to_node==EditorNode::get_singleton()->get_edited_scene());
+			if (to_node==EditorNode::get_singleton()->get_edited_scene()) {
+				to_node=NULL;
+				ERR_FAIL_COND(to_node==EditorNode::get_singleton()->get_edited_scene());
+			}
 
 
 			Node* lower_sibling=NULL;
@@ -1608,6 +1645,38 @@ void SceneTreeDock::_nodes_dragged(Array p_nodes,NodePath p_to,int p_type) {
 
 	}
 
+}
+
+void SceneTreeDock::_files_dropped(Vector<String> p_files,NodePath p_to,int p_type) {
+
+	Node *node = get_node(p_to);
+	ERR_FAIL_COND(!node);
+
+	int to_pos=-1;
+	_normalize_drop(node,to_pos,p_type);
+	instance_scenes(p_files,node,to_pos);
+}
+
+void SceneTreeDock::_nodes_dragged(Array p_nodes,NodePath p_to,int p_type) {
+
+	Vector<Node*> nodes;
+	Node *to_node;
+
+	for(int i=0;i<p_nodes.size();i++) {
+		Node *n=get_node((p_nodes[i]));
+		nodes.push_back(n);
+	}
+
+	if (nodes.size()==0)
+		return;
+
+	to_node=get_node(p_to);
+	if (!to_node)
+		return;
+
+	int to_pos=-1;
+
+	_normalize_drop(to_node,to_pos,p_type);
 	_do_reparent(to_node,to_pos,nodes,true);
 
 }
@@ -1631,6 +1700,7 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_selection_changed"),&SceneTreeDock::_selection_changed);
 	ObjectTypeDB::bind_method(_MD("_new_scene_from"),&SceneTreeDock::_new_scene_from);
 	ObjectTypeDB::bind_method(_MD("_nodes_dragged"),&SceneTreeDock::_nodes_dragged);
+	ObjectTypeDB::bind_method(_MD("_files_dropped"),&SceneTreeDock::_files_dropped);
 
 
 	ObjectTypeDB::bind_method(_MD("instance"),&SceneTreeDock::instance);
@@ -1702,6 +1772,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	scene_tree->connect("open",this,"_load_request");
 	scene_tree->connect("open_script",this,"_script_open_request");
 	scene_tree->connect("nodes_rearranged",this,"_nodes_dragged");
+	scene_tree->connect("files_dropped",this,"_files_dropped");
 
 	scene_tree->set_undo_redo(&editor_data->get_undo_redo());
 	scene_tree->set_editor_selection(editor_selection);

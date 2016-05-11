@@ -130,7 +130,10 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _fill_path_renames(Vector<StringName> base_path,Vector<StringName> new_base_path,Node * p_node, List<Pair<NodePath,NodePath> > *p_renames);
 
+	void _normalize_drop(Node*& to_node, int &to_pos,int p_type);
+
 	void _nodes_dragged(Array p_nodes,NodePath p_to,int p_type);
+	void _files_dropped(Vector<String> p_files,NodePath p_to,int p_type);
 
 protected:
 
@@ -140,7 +143,8 @@ public:
 
 	void import_subscene();
 	void set_edited_scene(Node* p_scene);
-	Node* instance(const String& p_path);
+	void instance(const String& p_path);
+	void instance_scenes(const Vector<String>& p_files,Node* parent,int p_pos);
 	void set_selected(Node *p_node, bool p_emit_selected=false);
 	void fill_path_renames(Node* p_node, Node *p_new_parent, List<Pair<NodePath,NodePath> > *p_renames);
 	void perform_node_renames(Node* p_base,List<Pair<NodePath,NodePath> > *p_renames, Map<Ref<Animation>, Set<int> > *r_rem_anims=NULL);

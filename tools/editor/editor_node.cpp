@@ -3739,10 +3739,9 @@ void EditorNode::open_request(const String& p_path) {
 	//_menu_option_confirm(FILE_EXTERNAL_OPEN_SCENE,false);
 }
 
+void EditorNode::request_instance_scene(const String &p_path) {
 
-Node* EditorNode::request_instance_scene(const String &p_path) {
-
-	return scene_tree_dock->instance(p_path);
+	scene_tree_dock->instance(p_path);
 
 }
 

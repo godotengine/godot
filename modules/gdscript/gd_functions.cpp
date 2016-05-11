@@ -1046,7 +1046,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 		} break;
 		case FUNC_MAX: {
 
-			ERR_FAIL_V();
+			ERR_FAIL();
 		} break;
 
 	}

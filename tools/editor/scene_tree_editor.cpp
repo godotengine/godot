@@ -839,16 +839,43 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_da
 		return false; //not editable tree
 
 	Dictionary d=p_data;
-	if (!d.has("type") || String(d["type"])!="nodes")
-		return false;
-	TreeItem *item = tree->get_item_at_pos(p_point);
-	if (!item)
-		return false;
-	int section = tree->get_drop_section_at_pos(p_point);
-	if (section<-1 || (section==-1 && !item->get_parent()))
+	if (!d.has("type"))
 		return false;
 
-	return true;
+	if (String(d["type"])=="files") {
+
+		Vector<String> files = d["files"];
+
+		if (files.size()==0)
+			return false; //weird
+
+
+		for(int i=0;i<files.size();i++) {
+			String file = files[0];
+			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+			if (ftype!="PackedScene")
+				return false;
+		}
+
+		tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN|Tree::DROP_MODE_ON_ITEM); //so it works..
+
+		return true;
+	}
+
+
+	if (String(d["type"])=="nodes") {
+		TreeItem *item = tree->get_item_at_pos(p_point);
+		if (!item)
+			return false;
+		int section = tree->get_drop_section_at_pos(p_point);
+		if (section<-1 || (section==-1 && !item->get_parent()))
+			return false;
+
+		return true;
+
+	}
+
+	return false;
 }
 void SceneTreeEditor::drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) {
 
@@ -869,9 +896,15 @@ void SceneTreeEditor::drop_data_fw(const Point2& p_point,const Variant& p_data,C
 
 	Dictionary d=p_data;
 
-	Array nodes=d["nodes"];
+	if (String(d["type"])=="nodes") {
+		Array nodes=d["nodes"];
+		emit_signal("nodes_rearranged",nodes,np,section);
+	}
 
-	emit_signal("nodes_rearranged",nodes,np,section);
+	if (String(d["type"])=="files") {
+
+		emit_signal("files_dropped",d["files"],np,section);
+	}
 
 }
 
@@ -903,6 +936,7 @@ void SceneTreeEditor::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("node_prerename") );
 	ADD_SIGNAL( MethodInfo("node_changed") );
 	ADD_SIGNAL( MethodInfo("nodes_rearranged",PropertyInfo(Variant::ARRAY,"paths"),PropertyInfo(Variant::NODE_PATH,"to_path"),PropertyInfo(Variant::INT,"type") ) );
+	ADD_SIGNAL( MethodInfo("files_dropped",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::NODE_PATH,"to_path"),PropertyInfo(Variant::INT,"type") ) );
 
 	ADD_SIGNAL( MethodInfo("open") );
 	ADD_SIGNAL( MethodInfo("open_script") );

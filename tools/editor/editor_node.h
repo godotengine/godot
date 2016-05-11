@@ -644,7 +644,7 @@ public:
 
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
 
-	Node* request_instance_scene(const String &p_path);
+	void request_instance_scene(const String &p_path);
 	ScenesDock *get_scenes_dock();
 	static UndoRedo* get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 

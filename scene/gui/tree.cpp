@@ -3440,6 +3440,8 @@ void Tree::set_value_evaluator(ValueEvaluator *p_evaluator) {
 }
 
 void Tree::set_drop_mode_flags(int p_flags) {
+	if (drop_mode_flags==p_flags)
+		return;
 	drop_mode_flags=p_flags;
 	if (drop_mode_flags==0) {
 		drop_mode_over=NULL;
