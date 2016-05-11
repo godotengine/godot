@@ -37075,6 +37075,34 @@ This method controls whether the position between two cached points is interpola
 			Return the line the editing cursor is at.
 			</description>
 		</method>
+		<method name="cursor_set_blink_enabled">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			Set the text editor caret to blink.
+			</description>
+		</method>
+		<method name="cursor_get_blink_enabled" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			Gets whether the text editor caret is blinking.
+			</description>
+		</method>
+		<method name="cursor_set_blink_speed">
+			<argument index="0" name="blink_speed" type="float">
+			</argument>
+			<description>
+			Set the text editor caret blink speed. Cannot be less then or equal to 0.
+			</description>
+		</method>
+		<method name="cursor_get_blink_speed" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			Gets the text editor caret blink speed.
+			</description>
+		</method>
 		<method name="set_readonly">
 			<argument index="0" name="enable" type="bool">
 			</argument>
