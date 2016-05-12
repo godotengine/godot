@@ -2,7 +2,6 @@ Import('env')
 Import('env_ssl')
 
 openssl_sources = [
-"nocpuid.c",
 "ssl/t1_lib.c",
 "ssl/t1_ext.c",
 "ssl/s3_srvr.c",
