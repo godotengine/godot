@@ -207,7 +207,7 @@ Error ConfigFile::load(const String& p_path) {
 void ConfigFile::_bind_methods(){
 
 	ObjectTypeDB::bind_method(_MD("set_value","section","key","value"),&ConfigFile::set_value);
-	ObjectTypeDB::bind_method(_MD("get_value","section","key","default"),&ConfigFile::get_value,DEFVAL(Variant()));
+	ObjectTypeDB::bind_method(_MD("get_value:Variant","section","key","default"),&ConfigFile::get_value,DEFVAL(Variant()));
 
 	ObjectTypeDB::bind_method(_MD("has_section","section"),&ConfigFile::has_section);
 	ObjectTypeDB::bind_method(_MD("has_section_key","section","key"),&ConfigFile::has_section_key);
