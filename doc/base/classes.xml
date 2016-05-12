@@ -3619,7 +3619,7 @@
 			</description>
 		</method>
 		<method name="overlaps_body" qualifiers="const">
-			<return type="PhysicsBody">
+			<return type="bool">
 			</return>
 			<argument index="0" name="body" type="Object">
 			</argument>
@@ -3627,7 +3627,7 @@
 			</description>
 		</method>
 		<method name="overlaps_area" qualifiers="const">
-			<return type="Area">
+			<return type="bool">
 			</return>
 			<argument index="0" name="area" type="Object">
 			</argument>
@@ -34703,6 +34703,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="right" type="bool" default="True">
 			</argument>
 			<description>
+			Return a copy of the string stripped of any non-printable character at the beginning and the end. The optional arguments are used to toggle stripping on the left and right edges respectively.
 			</description>
 		</method>
 		<method name="substr">
