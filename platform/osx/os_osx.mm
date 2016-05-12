@@ -1330,6 +1330,21 @@ OS::VideoMode OS_OSX::get_video_mode(int p_screen) const {
 }
 void OS_OSX::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 
+	VideoMode vm;
+
+	vm.fullscreen=true;
+	vm.resizable=false;
+
+	NSArray* array  =  (__bridge NSArray *)(CGDisplayCopyAllDisplayModes (p_screen, nil));
+	if (array == NULL)
+		return;
+
+	for (id mode in array) {
+		CGDisplayModeRef ref = (__bridge CGDisplayModeRef)(mode);
+		vm.width=CGDisplayModeGetWidth(ref);
+		vm.height=CGDisplayModeGetHeight(ref);
+		p_list->push_back(vm);
+	}
 }
 
 
