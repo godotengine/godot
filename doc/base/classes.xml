@@ -8519,8 +8519,23 @@
 </class>
 <class name="ConfigFile" inherits="Reference" category="Core">
 	<brief_description>
+	Helper class to handle INI-style files.
 	</brief_description>
 	<description>
+	This helper class can be used to store [Variant] values on the filesystem using an INI-style formatting. The stored values as referenced by a section and a key. The stored data can be saved to or parsed from a file, though ConfigFile objects can also be used directly with accessing the filesystem.
+	The following example shows how to parse a INI-style file from the system, read its contents and store new values in it:
+	[codeblock]
+	var config = ConfigFile.new()
+	var err = config.load("user://settings.cfg")
+	if err == OK: # if not, something went wrong with the file loading
+	    # Look for the display/width pair, and default to 1024 if missing
+	    var screen_width = get_value("display", "width", 1024)
+	    # Store a variable if and only it hasn't been defined yet
+		if not config.has_section_key("audio", "mute"):
+		    config.set_value("audio", "mute", false)
+	    # Save the changes by overwriting the previous file
+		config.save("user://settings.cfg")
+	[/codeblock]
 	</description>
 	<methods>
 		<method name="set_value">
@@ -8531,9 +8546,12 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
+			Assign a value to the specified key of the the specified section. If the section and/or the key do not exist, they are created. Passing a [code]NULL[/code] value deletes the specified key if it exists (and deletes the section if it ends up empty once the key has been removed).
 			</description>
 		</method>
 		<method name="get_value" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="section" type="String">
 			</argument>
 			<argument index="1" name="key" type="String">
@@ -8541,6 +8559,7 @@
 			<argument index="2" name="default" type="Variant" default="NULL">
 			</argument>
 			<description>
+			Return the current value for the specified section and key. If the section and/or the key do not exist, the method returns the value of the optional [i]default[/i] argument (and thus [code]NULL[/code] if not specified).
 			</description>
 		</method>
 		<method name="has_section" qualifiers="const">
@@ -8549,6 +8568,7 @@
 			<argument index="0" name="section" type="String">
 			</argument>
 			<description>
+			Check if the specified section exists.
 			</description>
 		</method>
 		<method name="has_section_key" qualifiers="const">
@@ -8559,12 +8579,14 @@
 			<argument index="1" name="key" type="String">
 			</argument>
 			<description>
+			Check if the specified section-key pair exists.
 			</description>
 		</method>
 		<method name="get_sections" qualifiers="const">
 			<return type="StringArray">
 			</return>
 			<description>
+			Return an array of all defined section identifiers.
 			</description>
 		</method>
 		<method name="get_section_keys" qualifiers="const">
@@ -8573,6 +8595,7 @@
 			<argument index="0" name="section" type="String">
 			</argument>
 			<description>
+			Return an array of all defined key identifiers in the specified section.
 			</description>
 		</method>
 		<method name="load">
@@ -8581,6 +8604,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Load the config file specified as a parameter. The file's contents are parsed and loaded in the ConfigFile object from which the method was called. The return value is one of the OK, FAILED or ERR_* constants listed in [@Global Scope] (if the load was successful, it returns OK).
 			</description>
 		</method>
 		<method name="save">
@@ -8589,6 +8613,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Save the contents of the ConfigFile object to the file specified as a parameter. The output file uses an INI-style structure.
+			The return value is one of the OK, FAILED or ERR_* constants listed in [@Global Scope] (if the save was successful, it returns OK).
 			</description>
 		</method>
 	</methods>
@@ -10111,22 +10137,22 @@ This approximation makes straight segments between each point, then subdivides t
 	Type used to handle the filesystem.
 	</brief_description>
 	<description>
-	Directory type. Is used to manage directories and their content (not restricted to the project folder).
-	Example for how to iterate through the files of a directory:
+	Directory type. It is used to manage directories and their content (not restricted to the project folder).
+	Here is an example on how to iterate through the files of a directory:
 	[codeblock]
-	func dir(path):
-	    var d = Directory.new()
-	    if d.open( path )==0:
-	        d.list_dir_begin()
-	        var file_name = d.get_next()
-	        while(file_name!=""):
-	            if d.current_is_dir():
+	func dir_contents(path):
+	    var dir = Directory.new()
+	    if dir.open(path) == OK:
+	        dir.list_dir_begin()
+	        var file_name = dir.get_next()
+	        while (file_name != ""):
+	            if dir.current_is_dir():
 	                print("Found directory: " + file_name)
 	            else:
-	                print("Found file:" + file_name)
-	            file_name = d.get_next()
+	                print("Found file: " + file_name)
+	            file_name = dir.get_next()
 	    else:
-	        print("Some open Error, maybe directory not found?")
+	        print("An error occurred when trying to access the path.")
 	[/codeblock]
 	</description>
 	<methods>
@@ -10136,40 +10162,42 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-			Opens a directory to work with. Needs a path, example "res://folder"
+			Open an existing directory of the filesystem. The [i]path[/i] argument can be within the project tree ([code]res://folder[/code]), the user directory ([code]user://folder[/code]) or an absolute path of the user filesystem (e.g. [code]/tmp/folder[/code] or [code]C:\tmp\folder[/code]).
+			The method returns one of the error code constants defined in [@Global Scope] (OK or ERR_*).
 			</description>
 		</method>
 		<method name="list_dir_begin">
 			<return type="bool">
 			</return>
 			<description>
-			Loads all file names of the current directory (prepares the get_next() function).
+			Initialise the stream used to list all files and directories using the [method get_next] function, closing the current opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
+			Return false if the stream could not be initialised.
 			</description>
 		</method>
 		<method name="get_next">
 			<return type="String">
 			</return>
 			<description>
-			Is used to iterate through the files of the current directory. Returns the name(no path) of the current file/directory, it also contains "." and ".." .
-Returns an empty String "" at the end of the list.
+			Return the next element (file or directory) in the current directory (including [code].[/code] and [code]..[/code]). The name of the file or directory is returned (and not its full path). Once the stream has been fully processed, the method returns an empty String and closes the stream automatically (i.e. [method list_dir_end] would not be mandatory in such a case).
 			</description>
 		</method>
 		<method name="current_is_dir" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-			Returns true if the current file you are looking at with get_next() is a directory or "." or ".." otherwise false.
+			Return whether the current item processed with the last [method get_next] call is a directory ([code].[/code] and [code]..[/code] are considered directories).
 			</description>
 		</method>
 		<method name="list_dir_end">
 			<description>
-			Run this to empty the list of remaining files in get_next(). You can use it to end the iteration, as soon as your goal is reached.
+			Close the current stream opened with [method list_dir_begin] (whether it has been fully processed with [method get_next] or not does not matter).
 			</description>
 		</method>
 		<method name="get_drive_count">
 			<return type="int">
 			</return>
 			<description>
+			On Windows, return the number of drives (partitions) mounted on the current filesystem. On other platforms, the method returns 0.
 			</description>
 		</method>
 		<method name="get_drive">
@@ -10178,6 +10206,7 @@ Returns an empty String "" at the end of the list.
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			On Windows, return the name of the drive (partition) passed as an argument (e.g. [code]C:[/code]). On other platforms, or if the requested drive does not existed, the method returns an empty String.
 			</description>
 		</method>
 		<method name="change_dir">
@@ -10186,53 +10215,60 @@ Returns an empty String "" at the end of the list.
 			<argument index="0" name="todir" type="String">
 			</argument>
 			<description>
-			Needs a path or name to the next directory. When the target directory is in the current directory you can use "newfolder" otherwise you need the full path "res://currentfolder/newfolder"
+			Change the currently opened directory to the one passed as an argument. The argument can be relative to the current directory (e.g. [code]newdir[/code] or [code]../newdir[/code]), or an absolute path (e.g. [code]/tmp/newdir[/code] or [code]res://somedir/newdir[/code]).
+			The method returns one of the error code constants defined in [@Global Scope] (OK or ERR_*).
 			</description>
 		</method>
 		<method name="get_current_dir">
 			<return type="String">
 			</return>
 			<description>
-			Returns a path to the current directory, example: "res://folder"
+			Return the absolute path to the currently opened directory (e.g. [code]res://folder[/code] or [code]C:\tmp\folder[/code]).
 			</description>
 		</method>
 		<method name="make_dir">
 			<return type="Error">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Create a directory. The argument can be relative to the current directory, or an absolute path. The target directory should be placed in an already existing directory (to create the full path recursively, see [method make_dir_recursive]).
+			The method returns one of the error code constants defined in [@Global Scope] (OK, FAILED or ERR_*).
 			</description>
 		</method>
 		<method name="make_dir_recursive">
 			<return type="Error">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Create a target directory and all necessary intermediate directories in its path, by calling [method make_dir] recursively. The argument can be relative to the current directory, or an absolute path.
+			Returns one of the error code constants defined in [@Global Scope] (OK, FAILED or ERR_*).
 			</description>
 		</method>
 		<method name="file_exists">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Return whether the target file exists. The argument can be relative to the current directory, or an absolute path.
 			</description>
 		</method>
 		<method name="dir_exists">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-			Returns true if directory exists otherwise false. Needs a path, example: "res://folder"
+			Return whether the target directory exists. The argument can be relative to the current directory, or an absolute path.
 			</description>
 		</method>
 		<method name="get_space_left">
 			<return type="int">
 			</return>
 			<description>
+			On Unix desktop systems, return the available space on the current directory's disk. On other platforms, this information is not available and the method returns 0 or -1.
 			</description>
 		</method>
 		<method name="copy">
@@ -10243,6 +10279,8 @@ Returns an empty String "" at the end of the list.
 			<argument index="1" name="to" type="String">
 			</argument>
 			<description>
+			Copy the [i]from[/i] file to the [i]to[/i] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
+			Returns one of the error code constants defined in [@Global Scope] (OK, FAILED or ERR_*).
 			</description>
 		</method>
 		<method name="rename">
@@ -10253,14 +10291,18 @@ Returns an empty String "" at the end of the list.
 			<argument index="1" name="to" type="String">
 			</argument>
 			<description>
+			Rename (move) the [i]from[/i] file to the [i]to[/i] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
+			Returns one of the error code constants defined in [@Global Scope] (OK or FAILED).
 			</description>
 		</method>
 		<method name="remove">
 			<return type="Error">
 			</return>
-			<argument index="0" name="file" type="String">
+			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Delete the target file or an empty directory. The argument can be relative to the current directory, or an absolute path. If the target directory is not empty, the operation will fail.
+			Returns one of the error code constants defined in [@Global Scope] (OK or FAILED).
 			</description>
 		</method>
 	</methods>
@@ -16696,6 +16738,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			</description>
 		</method>
+		<method name="get_item_at_pos" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="ensure_current_is_visible">
 			<description>
 			</description>
@@ -20678,6 +20728,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<constant name="NOTIFICATION_UNPAUSED" value="15">
 		</constant>
 		<constant name="NOTIFICATION_INSTANCED" value="20">
+		</constant>
+		<constant name="NOTIFICATION_DRAG_BEGIN" value="21">
+		</constant>
+		<constant name="NOTIFICATION_DRAG_END" value="22">
 		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0">
 		</constant>
@@ -36072,8 +36126,12 @@ This method controls whether the position between two cached points is interpola
 		<method name="strip_edges">
 			<return type="String">
 			</return>
+			<argument index="0" name="left" type="bool" default="True">
+			</argument>
+			<argument index="1" name="right" type="bool" default="True">
+			</argument>
 			<description>
-			Return a copy of the string stripped of any non-printable character at the beginning and the end.
+			Return a copy of the string stripped of any non-printable character at the beginning and the end. The optional arguments are used to toggle stripping on the left and right edges respectively.
 			</description>
 		</method>
 		<method name="substr">
@@ -37083,7 +37141,7 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="cursor_get_blink_enabled" qualifiers="const">
-			<return type="float">
+			<return type="bool">
 			</return>
 			<description>
 			Gets whether the text editor caret is blinking.
@@ -39359,6 +39417,22 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="get_item_at_pos" qualifiers="const">
+			<return type="TreeItem">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_column_at_pos" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="ensure_cursor_is_visible">
 			<description>
 			</description>
@@ -39405,6 +39479,18 @@ This method controls whether the position between two cached points is interpola
 		</method>
 		<method name="is_folding_hidden" qualifiers="const">
 			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_drop_mode_flags">
+			<argument index="0" name="flags" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_drop_mode_flags" qualifiers="const">
+			<return type="int">
 			</return>
 			<description>
 			</description>
@@ -39467,6 +39553,12 @@ This method controls whether the position between two cached points is interpola
 		</constant>
 		<constant name="SELECT_MULTI" value="2">
 		</constant>
+		<constant name="DROP_MODE_DISABLED" value="0">
+		</constant>
+		<constant name="DROP_MODE_ON_ITEM" value="1">
+		</constant>
+		<constant name="DROP_MODE_INBETWEEN" value="2">
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="item_margin" type="int">
@@ -39490,6 +39582,8 @@ This method controls whether the position between two cached points is interpola
 		<theme_item name="font_color_selected" type="Color">
 		</theme_item>
 		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="drop_position_color" type="Color">
 		</theme_item>
 		<theme_item name="arrow" type="Texture">
 		</theme_item>
@@ -39819,6 +39913,8 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="column" type="int">
 			</argument>
 			<argument index="1" name="color" type="Color">
+			</argument>
+			<argument index="2" name="just_outline" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -41856,6 +41952,12 @@ This method controls whether the position between two cached points is interpola
 		</method>
 		<method name="gui_has_modal_stack" qualifiers="const">
 			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="gui_get_drag_data" qualifiers="const">
+			<return type="Variant">
 			</return>
 			<description>
 			</description>
