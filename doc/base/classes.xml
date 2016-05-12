@@ -20767,6 +20767,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="degrees" type="float">
 			</argument>
 			<description>
+			Set the rotation of the 2D node.
 			</description>
 		</method>
 		<method name="set_scale">
@@ -20890,7 +20891,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="point" type="Vector2">
 			</argument>
 			<description>
-			Return the rotation angle needed for the 2d node to point at 'point' position.
+			Return the rotation angle in radians needed for the 2d node to point at 'point' position.
 			</description>
 		</method>
 		<method name="set_z">
@@ -23578,7 +23579,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</methods>
 	<constants>
 		<constant name="PARAM_DIRECTION" value="0">
-			Direction in degrees at which the particles will be launched, Notice that when the direction is set to 0 the particles will be launched to the negative
+			Direction in radians at which the particles will be launched, Notice that when the direction is set to 0 the particles will be launched to the negative
 		</constant>
 		<constant name="PARAM_SPREAD" value="1">
 		</constant>
@@ -23592,7 +23593,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Velocity at which the particles will orbit around the emitter center
 		</constant>
 		<constant name="PARAM_GRAVITY_DIRECTION" value="5">
-			Direction in degrees at which the particles will be attracted
+			Direction in radians at which the particles will be attracted
 		</constant>
 		<constant name="PARAM_GRAVITY_STRENGTH" value="6">
 			Strength of the gravitation attraction for each particle
@@ -23605,7 +23606,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Amount of damping for each particle
 		</constant>
 		<constant name="PARAM_INITIAL_ANGLE" value="10">
-			Initial angle at which each particle will be spawned
+			Initial angle in radians at which each particle will be spawned
 		</constant>
 		<constant name="PARAM_INITIAL_SIZE" value="11">
 			Initial size of each particle
@@ -27613,21 +27614,21 @@ This method controls whether the position between two cached points is interpola
 			<return type="Vector2">
 			</return>
 			<description>
-			Returns the polygon texture offset
+			Returns the polygon texture offset.
 			</description>
 		</method>
 		<method name="set_texture_rotation">
 			<argument index="0" name="texture_rotation" type="float">
 			</argument>
 			<description>
-			Sets the amount of rotation of the polygon texture, [code]texture_rotation[/code] is specified in degrees and clockwise rotation, meaning that if the texture rotation is set to 45 degrees, the texture will be rotated 45 degrees clockwise along the polygon position plus the texture offset.
+			Sets the amount of rotation of the polygon texture, [code]texture_rotation[/code] is specified in radians and clockwise rotation.
 			</description>
 		</method>
 		<method name="get_texture_rotation" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-			Returns the rotation in degrees of the texture polygon
+			Returns the rotation in radians of the texture polygon.
 			</description>
 		</method>
 		<method name="set_texture_scale">
