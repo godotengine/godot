@@ -4026,7 +4026,7 @@
 			</description>
 		</method>
 		<method name="overlaps_body" qualifiers="const">
-			<return type="PhysicsBody2D">
+			<return type="bool">
 			</return>
 			<argument index="0" name="body" type="Object">
 			</argument>
@@ -4035,7 +4035,7 @@
 			</description>
 		</method>
 		<method name="overlaps_area" qualifiers="const">
-			<return type="Area2D">
+			<return type="bool">
 			</return>
 			<argument index="0" name="area" type="Object">
 			</argument>
