@@ -68,7 +68,11 @@ addons:
 
 before_script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; brew install scons; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$GODOT_TARGET" = "android" ]; then brew update; brew install -v android-sdk android-ndk; export ANDROID_HOME=/usr/local/opt/android-sdk; export ANDROID_NDK_ROOT=/usr/local/opt/android-ndk; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$GODOT_TARGET" = "android" ]; then
+      brew update; brew install -v android-sdk;
+      brew install -v android-ndk | grep -v inflating;
+      export ANDROID_HOME=/usr/local/opt/android-sdk; export ANDROID_NDK_ROOT=/usr/local/opt/android-ndk;
+    fi
 
 script:
   - scons platform=$GODOT_TARGET CXX=$CXX openssl=builtin
