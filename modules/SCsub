@@ -1,0 +1,21 @@
+Import('env')
+
+env_modules = env.Clone()
+
+Export('env_modules')
+
+env.modules_sources=[
+	"register_module_types.cpp",
+]
+#env.add_source_files(env.modules_sources,"*.cpp")
+Export('env')
+
+for x in env.module_list:
+	if (x in env.disabled_modules):
+		continue
+	env_modules.Append(CPPFLAGS=["-DMODULE_"+x.upper()+"_ENABLED"])
+	SConscript(x+"/SCsub")
+
+lib = env_modules.Library("modules",env.modules_sources)
+
+env.Prepend(LIBS=[lib])

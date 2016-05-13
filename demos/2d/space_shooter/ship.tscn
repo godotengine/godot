@@ -1,0 +1,229 @@
+[gd_scene load_steps=12 format=1]
+
+[ext_resource path="res://rail.gd" type="Script" id=1]
+[ext_resource path="res://ship.gd" type="Script" id=2]
+[ext_resource path="res://ship.png" type="Texture" id=3]
+[ext_resource path="res://fire.png" type="Texture" id=4]
+[ext_resource path="res://explosion.tscn" type="PackedScene" id=5]
+[ext_resource path="res://sound_shoot.wav" type="Sample" id=6]
+[ext_resource path="res://sound_explode.wav" type="Sample" id=7]
+
+[sub_resource type="ConvexPolygonShape2D" id=1]
+
+custom_solver_bias = 0.0
+points = Vector2Array( 25.9104, 1.3603, -20.5637, 14.8656, -20.5637, -15.3227 )
+
+[sub_resource type="ColorRamp" id=2]
+
+offsets = FloatArray( 0, 0.474062, 0.653631, 1 )
+colors = ColorArray( 0.154794, 0.413313, 0.991004, 1, 0.555474, 0.971578, 0, 1, 0.82934, 0.989088, 0.616085, 0.383915, 1, 1, 1, 0 )
+
+[sub_resource type="Animation" id=3]
+
+length = 1.0
+loop = false
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:visibility/visible")
+tracks/0/interp = 1
+tracks/0/keys = { "cont":false, "times":FloatArray( 0, 0.1 ), "transitions":FloatArray( 1, 1 ), "values":[ true, false ] }
+tracks/1/type = "value"
+tracks/1/path = NodePath("thruster:config/emitting")
+tracks/1/interp = 1
+tracks/1/keys = { "cont":false, "times":FloatArray( 0 ), "transitions":FloatArray( 1 ), "values":[ false ] }
+tracks/2/type = "value"
+tracks/2/path = NodePath("explosion:config/emitting")
+tracks/2/interp = 1
+tracks/2/keys = { "cont":false, "times":FloatArray( 0, 0.1 ), "transitions":FloatArray( 1, 1 ), "values":[ true, false ] }
+
+[sub_resource type="SampleLibrary" id=4]
+
+samples/shoot = { "db":0.0, "pitch":1.0, "sample":ExtResource( 6 ) }
+samples/sound_explode = { "db":0.0, "pitch":1.0, "sample":ExtResource( 7 ) }
+
+[node name="rail" type="Node2D"]
+
+script/script = ExtResource( 1 )
+
+[node name="ship" type="Area2D" parent="."]
+
+transform/pos = Vector2( 253.607, 282.275 )
+input/pickable = true
+shapes/0/shape = SubResource( 1 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/0/trigger = false
+gravity_vec = Vector2( 0, 1 )
+gravity = 98.0
+linear_damp = 0.1
+angular_damp = 1.0
+script/script = ExtResource( 2 )
+
+[node name="sprite" type="Sprite" parent="ship"]
+
+texture = ExtResource( 3 )
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="ship"]
+
+build_mode = 0
+polygon = Vector2Array( -20.5637, -15.3227, 25.9104, 1.3603, -20.5637, 14.8656 )
+shape_range = Vector2( -1, -1 )
+trigger = false
+
+[node name="thruster" type="Particles2D" parent="ship"]
+
+visibility/blend_mode = 1
+transform/pos = Vector2( -26.528, -0.358481 )
+transform/rot = -91.1436
+config/amount = 32
+config/lifetime = 2.0
+config/time_scale = 5.0
+config/emitting = false
+config/local_space = false
+config/texture = ExtResource( 4 )
+params/direction = 0.0
+params/spread = 10.0
+params/linear_velocity = 20.0
+params/spin_velocity = 0.0
+params/orbit_velocity = 0.0
+params/gravity_direction = 0.0
+params/gravity_strength = 0.0
+params/radial_accel = 0.0
+params/tangential_accel = 0.0
+params/damping = 0.0
+params/initial_angle = 0.0
+params/initial_size = 1.0
+params/final_size = 1.0
+params/hue_variation = 0.0
+params/anim_speed_scale = 1.0
+params/anim_initial_pos = 0.0
+color/color_ramp = SubResource( 2 )
+
+[node name="anim" type="AnimationPlayer" parent="ship"]
+
+playback/process_mode = 1
+playback/default_blend_time = 0.0
+root/root = NodePath("..")
+anims/explode = SubResource( 3 )
+playback/active = true
+playback/speed = 1.0
+blend_times = [  ]
+autoplay = ""
+
+[node name="shootfrom" type="Position2D" parent="ship"]
+
+transform/pos = Vector2( 35.3307, 0.875969 )
+
+[node name="explosion" parent="ship" instance=ExtResource( 5 )]
+
+transform/rot = -91.1436
+config/explosiveness = 0.1
+params/gravity_strength = 9.8
+
+[node name="sfx" type="SamplePlayer" parent="ship"]
+
+config/polyphony = 1
+config/samples = SubResource( 4 )
+default/volume_db = 0.0
+default/pitch_scale = 1.0
+default/pan = 0.0
+default/depth = 0.0
+default/height = 0.0
+default/filter/type = 0
+default/filter/cutoff = 0.0
+default/filter/resonance = 0.0
+default/filter/gain = 0.0
+default/reverb_room = 2
+default/reverb_send = 0.0
+default/chorus_send = 0.0
+
+[node name="camera" type="Camera2D" parent="."]
+
+anchor_mode = 0
+rotating = false
+current = true
+zoom = Vector2( 1, 1 )
+limit/left = -10000000
+limit/top = -10000000
+limit/right = 10000000
+limit/bottom = 10000000
+drag_margin/h_enabled = true
+drag_margin/v_enabled = true
+smoothing/enable = false
+smoothing/speed = 5.0
+drag_margin/left = 0.2
+drag_margin/top = 0.2
+drag_margin/right = 0.2
+drag_margin/bottom = 0.2
+
+[node name="hud" type="CanvasLayer" parent="."]
+
+layer = 1
+offset = Vector2( 0, 0 )
+rotation = 0.0
+scale = Vector2( 1, 1 )
+
+[node name="score" type="Label" parent="hud"]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+margin/left = 15.0
+margin/top = 13.0
+margin/right = 66.0
+margin/bottom = 26.0
+text = "SCORE:"
+percent_visible = 1.0
+lines_skipped = 0
+max_lines_visible = -1
+
+[node name="score_points" type="Label" parent="hud"]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+margin/left = 70.0
+margin/top = 13.0
+margin/right = 121.0
+margin/bottom = 26.0
+text = "0"
+align = 1
+percent_visible = 1.0
+lines_skipped = 0
+max_lines_visible = -1
+
+[node name="back_to_menu" type="Button" parent="hud"]
+
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 911.0
+margin/top = 10.0
+margin/right = 1006.0
+margin/bottom = 31.0
+toggle_mode = false
+text = "Back to Menu"
+flat = false
+
+[node name="game_over" type="Label" parent="hud"]
+
+visibility/visible = false
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+margin/left = 482.0
+margin/top = 286.0
+margin/right = 564.0
+margin/bottom = 299.0
+text = "GAME_OVER"
+percent_visible = 1.0
+lines_skipped = 0
+max_lines_visible = -1
+
+[connection signal="body_enter" from="ship" to="ship" method="_on_ship_body_enter"]
+
+[connection signal="area_enter" from="ship" to="ship" method="_on_ship_area_enter"]
+
+[connection signal="pressed" from="hud/back_to_menu" to="ship" method="_on_back_to_menu_pressed"]
+
+

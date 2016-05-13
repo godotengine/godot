@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='utf-8' standalone='no'?>
+<qnx xmlns="http://www.qnx.com/schemas/application/1.0">
+    <!-- BlackBerry® 10 application descriptor file.
+
+    Specifies parameters for identifying, installing, and launching native applications on BlackBerry® 10 OS.
+-->
+    <!-- A universally unique application identifier. Must be unique across all BlackBerry applications.
+         Using a reverse DNS-style name as the id is recommended. (Eg. com.example.ExampleApplication.) Required. -->
+    <id>com.godot.game</id>
+    <!-- The name that is displayed in the BlackBerry application installer. 
+         May have multiple values for each language. See samples or xsd schema file. Optional. -->
+    <name>Godot Game</name>
+    <!-- A string value of the format <0-999>.<0-999>.<0-999> that represents application version which can be used to check for application upgrade. 
+         Values can also be 1-part or 2-part. It is not necessary to have a 3-part value.
+         An updated version of application must have a versionNumber value higher than the previous version. Required. -->
+    <versionNumber>0.0.1</versionNumber>
+    <!-- Fourth digit segment of the package version. First three segments are taken from the 
+         <versionNumber> element.  Must be an integer from 0 to 2^16-1 -->
+    <buildId>0</buildId>
+    <!-- Description, displayed in the BlackBerry application installer.
+         May have multiple values for each language. See samples or xsd schema file. Optional. -->
+    <description>Game made with Godot Engine</description>
+    <!--  Name of author which is used for signing. Must match the developer name of your development certificate. -->
+    <author>You Name or Company</author>
+    <authorId>authorIDherePlease</authorId>
+    <!--  Unique author ID assigned by signing authority. Required if using debug tokens. -->
+    <!-- <authorId>ABC1234YjsnUk235h</authorId> -->
+    <initialWindow>
+        <aspectRatio>landscape</aspectRatio>
+        <autoOrients>false</autoOrients>
+        <systemChrome>none</systemChrome>
+        <transparent>false</transparent>
+    </initialWindow>
+    <!--  The category where the application appears. Either core.games or core.media. -->
+    <category>core.games</category>
+    <permission>read_device_identifying_information</permission>
+    <permission>access_internet</permission>
+    <asset path="data.pck">data.pck</asset>
+    <configuration name="Device-Debug">
+        <platformArchitecture>armle-v7</platformArchitecture>
+        <asset type="Qnx/Elf" path="godot.bb10.debug.qnx.armle" entry="true">godot.bb10.debug.qnx.armle</asset>
+    </configuration>
+    <configuration name="Device-Release">
+        <platformArchitecture>armle-v7</platformArchitecture>
+        <asset type="Qnx/Elf" path="godot.bb10.opt.qnx.armle" entry="true">godot.bb10.opt.qnx.armle</asset>
+    </configuration>
+    <!--  The icon for the application. -->
+    <icon>
+        <image>icon.png</image>
+    </icon>
+    <!-- Ensure that shared libraries in the package are found at run-time. -->
+    <env value="app/native/lib:/usr/lib/qt4/lib" var="LD_LIBRARY_PATH"/>
+</qnx>

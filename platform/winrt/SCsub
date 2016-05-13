@@ -1,0 +1,11 @@
+Import('env')
+
+files = [
+	'thread_winrt.cpp',
+#	'#platform/windows/stream_peer_winsock.cpp',
+	'gl_context_egl.cpp',
+	'app.cpp',
+	'os_winrt.cpp',
+]
+
+env.Program('#bin/godot', files)

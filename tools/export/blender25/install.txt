@@ -1,0 +1,11 @@
+Godot Author's Own Collada Exporter
+-----------------------------------
+
+1) Copy the "io_scene_dae" directory  to wherever blender stores the 
+   scripts/addons folder (You will see many other io_scene_blahblah like
+   folders). Copy the entire dir, not just the contents, make it just like
+   the others.
+2) Go to Blender settings and enable the "Better Collada" plugin
+3) Enjoy proper Collada export.
+4) If it's broken, contact us.
+   

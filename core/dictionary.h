@@ -1,0 +1,90 @@
+/*************************************************************************/
+/*  dictionary.h                                                         */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+#ifndef DICTIONARY_H
+#define DICTIONARY_H
+
+
+#include "list.h"
+#include "array.h"
+#include "ustring.h"
+class Variant;
+
+
+struct DictionaryPrivate;
+
+
+class Dictionary {
+
+	mutable DictionaryPrivate *_p;
+
+	void _copy_on_write() const;
+	void _ref(const Dictionary& p_from) const;
+	void _unref() const;
+public:
+
+	void get_key_list( List<Variant> *p_keys) const;
+
+	Variant& operator[](const Variant& p_key);
+	const Variant& operator[](const Variant& p_key) const;
+
+	const Variant* getptr(const Variant& p_key) const;
+	Variant* getptr(const Variant& p_key);
+
+	Variant get_valid(const Variant& p_key) const;
+
+	int size() const;
+	bool empty() const;
+	void clear();
+
+
+	Error parse_json(const String& p_json);
+	String to_json() const;
+
+	bool is_shared() const;
+
+	bool has(const Variant& p_key) const;
+	bool has_all(const Array& p_keys) const;
+
+	void erase(const Variant& p_key);
+
+	bool operator==(const Dictionary& p_dictionary) const;
+
+	uint32_t hash() const;
+	void operator=(const Dictionary& p_dictionary);
+
+	const Variant* next(const Variant* p_key=NULL) const;
+
+	Array keys() const;
+
+	Dictionary(const Dictionary& p_from);
+	Dictionary(bool p_shared=false);
+	~Dictionary();
+};
+
+#endif // DICTIONARY_H

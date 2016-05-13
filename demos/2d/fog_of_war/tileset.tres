@@ -1,0 +1,32 @@
+[gd_resource type="TileSet" load_steps=3 format=1]
+
+[ext_resource path="res://fog.png" type="Texture" id=1]
+[ext_resource path="res://floor.png" type="Texture" id=2]
+
+[resource]
+
+0/name = "fog opaque"
+0/texture = ExtResource( 1 )
+0/tex_offset = Vector2( -48, -48 )
+0/region = Rect2( 0, 0, 144, 144 )
+0/occluder_offset = Vector2( 0, 0 )
+0/navigation_offset = Vector2( 0, 0 )
+0/shape_offset = Vector2( 0, 0 )
+0/shapes = [  ]
+1/name = "fog transparent"
+1/texture = ExtResource( 1 )
+1/tex_offset = Vector2( -48, -48 )
+1/region = Rect2( 144, 0, 144, 144 )
+1/occluder_offset = Vector2( 0, 0 )
+1/navigation_offset = Vector2( 0, 0 )
+1/shape_offset = Vector2( 0, 0 )
+1/shapes = [  ]
+2/name = "floor"
+2/texture = ExtResource( 2 )
+2/tex_offset = Vector2( 0, 0 )
+2/region = Rect2( 0, 0, 0, 0 )
+2/occluder_offset = Vector2( 24, 24 )
+2/navigation_offset = Vector2( 24, 24 )
+2/shape_offset = Vector2( 0, 0 )
+2/shapes = [  ]
+
