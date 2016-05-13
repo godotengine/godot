@@ -749,6 +749,16 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 
 }
 
+void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name) {
+	add_child(p_child, p_legible_unique_name);
+
+	if (is_a_parent_of(p_node)) {
+		move_child(p_child, p_node->get_position_in_parent() + 1);
+	} else {
+		WARN_PRINTS("Cannot move under node " + p_node->get_name() + " as " + p_child->get_name() + " does not share a parent")
+	}
+}
+
 
 void Node::_propagate_validate_owner() {
 
@@ -2011,6 +2021,8 @@ void Node::clear_internal_tree_resource_paths() {
 }
 
 void Node::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("_add_child_below_node","node:Node","child_node:Node","legible_unique_name"),&Node::add_child_below_node,DEFVAL(false));
 
 	ObjectTypeDB::bind_method(_MD("set_name","name"),&Node::set_name);
 	ObjectTypeDB::bind_method(_MD("get_name"),&Node::get_name);
