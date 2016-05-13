@@ -36,7 +36,7 @@
 #include "os/thread_safe.h"
 class FileAccess;
 
-struct EditorProgressBG;
+class EditorProgressBG;
 class EditorFileSystemDirectory : public Object {
 
 	OBJ_TYPE( EditorFileSystemDirectory,Object );

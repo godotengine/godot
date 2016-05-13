@@ -36,7 +36,7 @@
 
 class EditorExportPlatform;
 class FileAccess;
-struct EditorProgress;
+class EditorProgress;
 
 class EditorImportPlugin : public Reference {
 
