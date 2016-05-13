@@ -989,6 +989,8 @@ Error DocData::save(const String& p_path) {
 
 				PropertyDoc &p=c.properties[i];
 				_write_string(f,2,"<member name=\""+p.name+"\" type=\""+p.type+"\">");
+				if (p.description!="")
+					_write_string(f,3,p.description.xml_escape());
 				_write_string(f,2,"</member>");
 
 			}
