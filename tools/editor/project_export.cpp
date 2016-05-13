@@ -1310,10 +1310,17 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_lossy_quality = memnew( HSlider );
 	group_lossy_quality->set_min(0.1);
 	group_lossy_quality->set_max(1.0);
-	group_lossy_quality->set_step(0.1);
+	group_lossy_quality->set_step(0.01);
 	group_lossy_quality->set_val(0.7);
-	group_options->add_margin_child(TTR("Lossy Quality:"),group_lossy_quality);
 	group_lossy_quality->connect("value_changed",this,"_quality_edited");
+
+	HBoxContainer *gqhb = memnew( HBoxContainer );
+	SpinBox *gqspin = memnew( SpinBox );
+	group_lossy_quality->share(gqspin);
+	group_lossy_quality->set_h_size_flags(SIZE_EXPAND_FILL);
+	gqhb->add_child(group_lossy_quality);
+	gqhb->add_child(gqspin);
+	group_options->add_margin_child(TTR("Lossy Quality:"),gqhb);
 
 	group_atlas = memnew(CheckButton);
 	group_atlas->set_pressed(true);
