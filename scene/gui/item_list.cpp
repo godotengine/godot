@@ -462,7 +462,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 				}
 			} else {
 
-				if (!mb.mod.command && select_mode==SELECT_MULTI && items[i].selectable && items[i].selected) {
+				if (!mb.doubleclick && !mb.mod.command && select_mode==SELECT_MULTI && items[i].selectable && items[i].selected) {
 					defer_select_single=i;
 					return;
 				}
