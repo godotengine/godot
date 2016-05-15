@@ -410,16 +410,18 @@ void ItemList::_input_event(const InputEvent& p_event) {
 		defer_select_single=-1;
 		return;
 	}
+
 	if (defer_select_single>=0 && p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_LEFT && !p_event.mouse_button.pressed) {
 
 		select(defer_select_single,true);
+
 
 		emit_signal("multi_selected",defer_select_single,true);
 		defer_select_single=-1;
 		return;
 	}
 
-	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_LEFT && p_event.mouse_button.pressed) {
+	if (p_event.type==InputEvent::MOUSE_BUTTON && (p_event.mouse_button.button_index==BUTTON_LEFT || (allow_rmb_select && p_event.mouse_button.button_index==BUTTON_RIGHT)) && p_event.mouse_button.pressed) {
 
 		const InputEventMouseButton &mb = p_event.mouse_button;
 
@@ -458,6 +460,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 			if (select_mode==SELECT_MULTI && items[i].selected && mb.mod.command) {
 				unselect(i);
 				emit_signal("multi_selected",i,false);
+
 			} else if (select_mode==SELECT_MULTI && mb.mod.shift && current>=0 && current<items.size() && current!=i) {
 
 				int from = current;
@@ -471,29 +474,45 @@ void ItemList::_input_event(const InputEvent& p_event) {
 					if (selected)
 						emit_signal("multi_selected",i,true);
 				}
+
+				if (p_event.mouse_button.button_index==BUTTON_RIGHT) {
+
+					emit_signal("item_rmb_selected",i,Vector2(mb.x,mb.y));
+				}
 			} else {
 
-				if (!mb.doubleclick && !mb.mod.command && select_mode==SELECT_MULTI && items[i].selectable && items[i].selected) {
+				if (!mb.doubleclick && !mb.mod.command && select_mode==SELECT_MULTI && items[i].selectable && items[i].selected && p_event.mouse_button.button_index==BUTTON_LEFT) {
 					defer_select_single=i;
 					return;
 				}
-				bool selected = !items[i].selected;
 
-				select(i,select_mode==SELECT_SINGLE || !mb.mod.command);
-				if (selected) {
-					if (select_mode==SELECT_SINGLE) {
-						emit_signal("item_selected",i);
-					} else
-						emit_signal("multi_selected",i,true);
+				if (items[i].selected && p_event.mouse_button.button_index==BUTTON_RIGHT) {
+
+					emit_signal("item_rmb_selected",i,Vector2(mb.x,mb.y));
+				} else {
+					bool selected = !items[i].selected;
+
+
+					select(i,select_mode==SELECT_SINGLE || !mb.mod.command);
+
+					if (selected) {
+						if (select_mode==SELECT_SINGLE) {
+							emit_signal("item_selected",i);
+						} else
+							emit_signal("multi_selected",i,true);
+
+
+					}
+
+					if (p_event.mouse_button.button_index==BUTTON_RIGHT) {
+
+						emit_signal("item_rmb_selected",i,Vector2(mb.x,mb.y));
+					} else if (/*select_mode==SELECT_SINGLE &&*/ mb.doubleclick) {
+
+						emit_signal("item_activated",i);
+
+					}
 				}
-
-				if (/*select_mode==SELECT_SINGLE &&*/ mb.doubleclick) {
-
-					emit_signal("item_activated",i);
-
-				}
-
-
 			}
 
 
@@ -1172,6 +1191,16 @@ int ItemList::find_metadata(const Variant& p_metadata) const {
 
 }
 
+
+void ItemList::set_allow_rmb_select(bool p_allow) {
+	allow_rmb_select=p_allow;
+}
+
+bool ItemList::get_allow_rmb_select() const {
+
+	return allow_rmb_select;
+}
+
 void ItemList::_bind_methods(){
 
 	ObjectTypeDB::bind_method(_MD("add_item","text","icon:Texture","selectable"),&ItemList::add_item,DEFVAL(Variant()),DEFVAL(true));
@@ -1232,6 +1261,9 @@ void ItemList::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("set_max_icon_size","size"),&ItemList::set_max_icon_size);
 	ObjectTypeDB::bind_method(_MD("get_max_icon_size"),&ItemList::get_max_icon_size);
 
+	ObjectTypeDB::bind_method(_MD("set_allow_rmb_select","allow"),&ItemList::set_allow_rmb_select);
+	ObjectTypeDB::bind_method(_MD("get_allow_rmb_select"),&ItemList::get_allow_rmb_select);
+
 	ObjectTypeDB::bind_method(_MD("get_item_at_pos","pos","exact"),&ItemList::get_item_at_pos,DEFVAL(false));
 
 	ObjectTypeDB::bind_method(_MD("ensure_current_is_visible"),&ItemList::ensure_current_is_visible);
@@ -1245,6 +1277,7 @@ void ItemList::_bind_methods(){
 	BIND_CONSTANT( SELECT_MULTI );
 
 	ADD_SIGNAL( MethodInfo("item_selected",PropertyInfo(Variant::INT,"index")));
+	ADD_SIGNAL( MethodInfo("item_rmb_selected",PropertyInfo(Variant::INT,"index"),PropertyInfo(Variant::VECTOR2,"atpos")));
 	ADD_SIGNAL( MethodInfo("multi_selected",PropertyInfo(Variant::INT,"index"),PropertyInfo(Variant::BOOL,"selected")));
 	ADD_SIGNAL( MethodInfo("item_activated",PropertyInfo(Variant::INT,"index")));
 }
@@ -1273,6 +1306,7 @@ ItemList::ItemList() {
 	search_time_msec=0;
 	ensure_selected_visible=false;
 	defer_select_single=-1;
+	allow_rmb_select=false;
 
 }
 
