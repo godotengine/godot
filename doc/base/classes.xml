@@ -2074,6 +2074,7 @@
 			<argument index="1" name="to" type="Vector3">
 			</argument>
 			<description>
+			Return true if the [AABB] intersects the line segment between from and to
 			</description>
 		</method>
 		<method name="merge">
@@ -2099,10 +2100,13 @@
 	</methods>
 	<members>
 		<member name="pos" type="Vector3">
+		Position (starting corner).
 		</member>
 		<member name="size" type="Vector3">
+		Size from position to end.
 		</member>
 		<member name="end" type="Vector3">
+		Ending corner.
 		</member>
 	</members>
 	<constants>
@@ -8196,26 +8200,37 @@
 	</methods>
 	<members>
 		<member name="r" type="float">
+		Red (0 to 1)
 		</member>
 		<member name="g" type="float">
+		Green (0 to 1)
 		</member>
 		<member name="b" type="float">
+		Blue (0 to 1)
 		</member>
 		<member name="a" type="float">
+		Alpha (0 to 1)
 		</member>
 		<member name="h" type="float">
+		Hue (0 to 1)
 		</member>
 		<member name="s" type="float">
+		Saturation (0 to 1)
 		</member>
 		<member name="v" type="float">
+		Value (0 to 1)
 		</member>
 		<member name="r8" type="int">
+		Red (0 to 255)
 		</member>
 		<member name="g8" type="int">
+		Green (0 to 255)
 		</member>
 		<member name="b8" type="int">
+		Blue (0 to 255)
 		</member>
 		<member name="a8" type="int">
+		Alpha (0 to 255)
 		</member>
 	</members>
 	<constants>
@@ -29376,10 +29391,13 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="pos" type="Vector2">
+		Position (starting corner).
 		</member>
 		<member name="size" type="Vector2">
+		Size from position to end.
 		</member>
 		<member name="end" type="Vector2">
+		Ending corner.
 		</member>
 	</members>
 	<constants>
@@ -39167,6 +39185,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="Transform">
 			</return>
 			<description>
+			Returns the inverse of the transfrom, even if the transform has scale or the axis vectors are not orthogonal.
 			</description>
 		</method>
 		<method name="inverse">
@@ -39184,12 +39203,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="up" type="Vector3">
 			</argument>
 			<description>
+			Rotate the transform around the up vector to face the target.
 			</description>
 		</method>
 		<method name="orthonormalized">
 			<return type="Transform">
 			</return>
 			<description>
+			Returns a transfrom with the basis orthogonal (90 degrees), and normalized axis vectors.
 			</description>
 		</method>
 		<method name="rotated">
@@ -39200,6 +39221,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
+			Rotate the transform locally.
 			</description>
 		</method>
 		<method name="scaled">
@@ -39208,6 +39230,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="scale" type="Vector3">
 			</argument>
 			<description>
+			Scale the transform locally.
 			</description>
 		</method>
 		<method name="translated">
@@ -39216,6 +39239,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="ofs" type="Vector3">
 			</argument>
 			<description>
+			Translate the transform locally.
 			</description>
 		</method>
 		<method name="xform">
@@ -39248,6 +39272,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="origin" type="Vector3">
 			</argument>
 			<description>
+			Construct the Transform from four Vector3. Each axis creates the basis.
 			</description>
 		</method>
 		<method name="Transform">
@@ -39258,6 +39283,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="origin" type="Vector3">
 			</argument>
 			<description>
+			Construct the Transform from a Matrix3 and Vector3.
 			</description>
 		</method>
 		<method name="Transform">
@@ -39266,6 +39292,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="Matrix32">
 			</argument>
 			<description>
+			Construct the Transform from a Matrix32.
 			</description>
 		</method>
 		<method name="Transform">
@@ -39274,6 +39301,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="Quat">
 			</argument>
 			<description>
+			Construct the Transform from a Quat. The origin will be Vector3(0, 0, 0)
 			</description>
 		</method>
 		<method name="Transform">
@@ -39282,13 +39310,16 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="Matrix3">
 			</argument>
 			<description>
+			Construct the Transform from a Matrix3. The origin will be Vector3(0, 0, 0)
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="basis" type="Matrix3">
+		The basis contains 3 [Vector3]. X axis, Y axis, and Z axis.
 		</member>
 		<member name="origin" type="Vector3">
+		The origin of the transform. Which is the translation offset.
 		</member>
 	</members>
 	<constants>
@@ -41065,12 +41096,16 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="x" type="float">
+		X component of the vector.
 		</member>
 		<member name="y" type="float">
+		Y component of the vector.
 		</member>
 		<member name="width" type="float">
+		Width of the vector (Same as X).
 		</member>
 		<member name="height" type="float">
+		Height of the vector (Same as Y).
 		</member>
 	</members>
 	<constants>
@@ -41314,10 +41349,13 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="x" type="float">
+		X component of the vector.
 		</member>
 		<member name="y" type="float">
+		Y component of the vector.
 		</member>
 		<member name="z" type="float">
+		Z component of the vector.
 		</member>
 	</members>
 	<constants>
