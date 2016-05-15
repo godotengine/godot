@@ -2057,8 +2057,9 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		case FILE_QUICK_OPEN_FILE: {
 
 
-			quick_open->popup("Resource", false, true);
-			quick_open->set_title(TTR("Quick Search File.."));
+			//quick_open->popup("Resource", false, true);
+			//quick_open->set_title(TTR("Quick Search File.."));
+			scenes_dock->focus_on_filter();
 
 		} break;
 		case FILE_RUN_SCRIPT: {
@@ -3942,12 +3943,6 @@ void EditorNode::_update_recent_scenes() {
 
 void EditorNode::_quick_opened() {
 
-	if (current_option==FILE_QUICK_OPEN_FILE) {
-		String res_path = quick_open->get_selected();
-
-		scenes_dock->open(res_path);
-		return;
-	}
 
 	Vector<String> files = quick_open->get_selected_files();
 
