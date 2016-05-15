@@ -30,6 +30,7 @@
 
 #include "scene/scene_string_names.h"
 #include "scene/2d/physics_body_2d.h"
+#include "scene/2d/animated_sprite.h"
 #include "scene/animation/animation_player.h"
 #include "scene/scene_string_names.h"
 #include "particles_2d.h"
@@ -204,6 +205,16 @@ void VisibilityEnabler2D::_find_nodes(Node* p_node) {
 
 	}
 
+	if (enabler[ENABLER_PAUSE_ANIMATED_SPRITES]) {
+
+		AnimatedSprite *as = p_node->cast_to<AnimatedSprite>();
+		if (as) {
+			add=true;
+		}
+
+	}
+
+
 	if (enabler[ENABLER_PAUSE_PARTICLES]) {
 
 		Particles2D *ps = p_node->cast_to<Particles2D>();
@@ -301,6 +312,17 @@ void VisibilityEnabler2D::_change_node_state(Node* p_node,bool p_enabled) {
 			ap->set_active(p_enabled);
 		}
 	}
+	{
+		AnimatedSprite *as=p_node->cast_to<AnimatedSprite>();
+
+		if (as) {
+
+			if (p_enabled)
+				as->play();
+			else
+				as->stop();
+		}
+	}
 
 	{
 		Particles2D *ps=p_node->cast_to<Particles2D>();
@@ -333,12 +355,14 @@ void VisibilityEnabler2D::_bind_methods(){
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/pause_animations"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_ANIMATIONS );
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/freeze_bodies"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_FREEZE_BODIES);
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/pause_particles"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_PARTICLES);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/pause_animated_sprites"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_ANIMATED_SPRITES);
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/process_parent"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PARENT_PROCESS);
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/fixed_process_parent"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PARENT_FIXED_PROCESS);
 
 	BIND_CONSTANT( ENABLER_FREEZE_BODIES );
 	BIND_CONSTANT( ENABLER_PAUSE_ANIMATIONS );
 	BIND_CONSTANT( ENABLER_PAUSE_PARTICLES );
+	BIND_CONSTANT( ENABLER_PAUSE_ANIMATED_SPRITES );
 	BIND_CONSTANT( ENABLER_PARENT_PROCESS );
 	BIND_CONSTANT( ENABLER_PARENT_FIXED_PROCESS );
 	BIND_CONSTANT( ENABLER_MAX);

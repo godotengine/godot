@@ -463,6 +463,11 @@ void Object::get_property_list(List<PropertyInfo> *p_list,bool p_reversed) const
 	}
 
 }
+
+void Object::_validate_property(PropertyInfo& property) const {
+
+}
+
 void Object::get_method_list(List<MethodInfo> *p_list) const {
 
 	ObjectTypeDB::get_method_list(get_type_name(),p_list);

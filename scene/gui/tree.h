@@ -439,6 +439,8 @@ friend class TreeItem;
 	bool drag_touching_deaccel;
 	bool click_handled;
 
+	bool force_select_on_already_selected;
+
 	bool hide_folding;
 
 	ValueEvaluator *evaluator;
@@ -513,6 +515,9 @@ public:
 
 	void set_drop_mode_flags(int p_flags);
 	int get_drop_mode_flags() const;
+
+	void set_single_select_cell_editing_only_when_already_selected(bool p_enable);
+	bool get_single_select_cell_editing_only_when_already_selected() const;
 
 	void set_value_evaluator(ValueEvaluator *p_evaluator);
 

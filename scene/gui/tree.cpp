@@ -1566,7 +1566,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 		if (p_button==BUTTON_LEFT) {
 			/* process selection */
 
-			if (p_doubleclick && (!c.editable || c.mode==TreeItem::CELL_MODE_CUSTOM || c.mode==TreeItem::CELL_MODE_ICON || c.mode==TreeItem::CELL_MODE_CHECK)) {
+			if (p_doubleclick && (!c.editable || c.mode==TreeItem::CELL_MODE_CUSTOM || c.mode==TreeItem::CELL_MODE_ICON /*|| c.mode==TreeItem::CELL_MODE_CHECK*/)) { //it' s confusing for check
 
 				emit_signal("item_activated");
 				return -1;
@@ -1626,7 +1626,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 
 		/* editing */
 
-		bool bring_up_editor=c.selected;// && already_selected;
+		bool bring_up_editor=force_select_on_already_selected ? (c.selected && already_selected) : c.selected;
 		bool bring_up_value_editor=false;
 		String editor_text=c.text;
 
@@ -3455,6 +3455,16 @@ int Tree::get_drop_mode_flags() const {
 	return drop_mode_flags;
 }
 
+void Tree::set_single_select_cell_editing_only_when_already_selected(bool p_enable) {
+
+	force_select_on_already_selected=p_enable;
+}
+
+bool Tree::get_single_select_cell_editing_only_when_already_selected() const {
+
+	return force_select_on_already_selected;
+}
+
 void Tree::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_range_click_timeout"),&Tree::_range_click_timeout);
@@ -3505,6 +3515,8 @@ void Tree::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_drop_mode_flags","flags"),&Tree::set_drop_mode_flags);
 	ObjectTypeDB::bind_method(_MD("get_drop_mode_flags"),&Tree::get_drop_mode_flags);
 
+	ObjectTypeDB::bind_method(_MD("set_single_select_cell_editing_only_when_already_selected","enable"),&Tree::set_single_select_cell_editing_only_when_already_selected);
+	ObjectTypeDB::bind_method(_MD("get_single_select_cell_editing_only_when_already_selected"),&Tree::get_single_select_cell_editing_only_when_already_selected);
 
 	ADD_SIGNAL( MethodInfo("item_selected"));
 	ADD_SIGNAL( MethodInfo("cell_selected"));
@@ -3610,6 +3622,7 @@ Tree::Tree() {
 	drop_mode_over=NULL;
 	drop_mode_section=0;
 	single_select_defer=NULL;
+	force_select_on_already_selected=false;
 }
 
 

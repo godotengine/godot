@@ -290,6 +290,123 @@ void SampleLibraryEditor::edit(Ref<SampleLibrary> p_sample_library) {
 
 }
 
+Variant SampleLibraryEditor::get_drag_data_fw(const Point2& p_point,Control* p_from) {
+
+	TreeItem*ti =tree->get_item_at_pos(p_point);
+	if (!ti)
+		return Variant();
+
+	String name = ti->get_metadata(0);
+
+	RES res = sample_library->get_sample(name);
+	if (!res.is_valid())
+		return Variant();
+
+	return EditorNode::get_singleton()->drag_resource(res,p_from);
+
+
+}
+
+bool SampleLibraryEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const {
+
+
+
+	Dictionary d = p_data;
+
+	if (!d.has("type"))
+		return false;
+
+	if (d.has("from") && (Object*)(d["from"])==tree)
+		return false;
+
+	if (String(d["type"])=="resource" && d.has("resource")) {
+		RES r=d["resource"];
+
+		Ref<Sample> sample = r;
+
+		if (sample.is_valid()) {
+
+			return true;
+		}
+	}
+
+
+	if (String(d["type"])=="files") {
+
+		Vector<String> files = d["files"];
+
+		if (files.size()==0)
+			return false;
+
+		for(int i=0;i<files.size();i++) {
+			String file = files[0];
+			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+
+			if (ftype!="Sample") {
+				return false;
+			}
+
+		}
+
+		return true;
+
+	}
+	return false;
+}
+
+void SampleLibraryEditor::drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) {
+
+	if (!can_drop_data_fw(p_point,p_data,p_from))
+		return;
+
+	Dictionary d = p_data;
+
+	if (!d.has("type"))
+		return;
+
+
+	if (String(d["type"])=="resource" && d.has("resource")) {
+		RES r=d["resource"];
+
+		Ref<Sample> sample = r;
+
+		if (sample.is_valid()) {
+
+			String basename;
+			if (sample->get_name()!="") {
+				basename=sample->get_name();
+			} else if (sample->get_path().is_resource_file()) {
+				basename = sample->get_path().basename();
+			} else {
+				basename="Sample";
+			}
+
+			String name=basename;
+			int counter=0;
+			while(sample_library->has_sample(name)) {
+				counter++;
+				name=basename+"_"+itos(counter);
+			}
+
+			undo_redo->create_action(TTR("Add Sample"));
+			undo_redo->add_do_method(sample_library.operator->(),"add_sample",name,sample);
+			undo_redo->add_undo_method(sample_library.operator->(),"remove_sample",name);
+			undo_redo->add_do_method(this,"_update_library");
+			undo_redo->add_undo_method(this,"_update_library");
+			undo_redo->commit_action();
+		}
+	}
+
+
+	if (String(d["type"])=="files") {
+
+		DVector<String> files = d["files"];
+
+		_file_load_request(files);
+
+	}
+
+}
 
 
 void SampleLibraryEditor::_bind_methods() {
@@ -301,6 +418,11 @@ void SampleLibraryEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_file_load_request"),&SampleLibraryEditor::_file_load_request);
 	ObjectTypeDB::bind_method(_MD("_update_library"),&SampleLibraryEditor::_update_library);
 	ObjectTypeDB::bind_method(_MD("_button_pressed"),&SampleLibraryEditor::_button_pressed);
+
+	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &SampleLibraryEditor::get_drag_data_fw);
+	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &SampleLibraryEditor::can_drop_data_fw);
+	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &SampleLibraryEditor::drop_data_fw);
+
 }
 
 SampleLibraryEditor::SampleLibraryEditor() {
@@ -348,6 +470,8 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	tree->set_column_expand(3,false);
 	tree->set_column_expand(4,false);
 	tree->set_column_expand(5,false);
+
+	tree->set_drag_forwarding(this);
 
 	dialog = memnew( ConfirmationDialog );
 	add_child( dialog );
