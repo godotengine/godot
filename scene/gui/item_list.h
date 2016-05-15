@@ -60,6 +60,7 @@ private:
 	int max_text_lines;
 	int max_columns;
 	Size2 min_icon_size;
+	Size2 max_icon_size;
 
 	int defer_select_single;
 
@@ -134,13 +135,16 @@ public:
 	void set_min_icon_size(const Size2& p_size);
 	Size2 get_min_icon_size() const;
 
+	void set_max_icon_size(const Size2& p_size);
+	Size2 get_max_icon_size() const;
+
 	void ensure_current_is_visible();
 
 	void sort_items_by_text();
 	int find_metadata(const Variant& p_metadata) const;
 
 	virtual String get_tooltip(const Point2& p_pos) const;
-	int get_item_at_pos(const Point2& p_pos) const;
+	int get_item_at_pos(const Point2& p_pos,bool p_exact=false) const;
 
 	ItemList();
 	~ItemList();

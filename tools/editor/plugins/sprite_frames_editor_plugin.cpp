@@ -49,6 +49,9 @@ void SpriteFramesEditor::_notification(int p_what) {
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 		load->set_icon( get_icon("Folder","EditorIcons") );
 		_delete->set_icon( get_icon("Del","EditorIcons") );
+		new_anim->set_icon( get_icon("New","EditorIcons") );
+		remove_anim->set_icon( get_icon("Del","EditorIcons") );
+
 	}
 
 	if (p_what==NOTIFICATION_READY) {
@@ -61,8 +64,9 @@ void SpriteFramesEditor::_notification(int p_what) {
 	}
 }
 
-void SpriteFramesEditor::_file_load_request(const DVector<String>& p_path) {
+void SpriteFramesEditor::_file_load_request(const DVector<String>& p_path,int p_at_pos) {
 
+	ERR_FAIL_COND(!frames->has_animation(edited_anim));
 
 	List< Ref<Texture> > resources;
 
@@ -85,28 +89,32 @@ void SpriteFramesEditor::_file_load_request(const DVector<String>& p_path) {
 
 
 	if (resources.empty()) {
-		print_line("added frames!");
+		//print_line("added frames!");
 		return;
 	}
 
 	undo_redo->create_action(TTR("Add Frame"));
-	int fc=frames->get_frame_count();
+	int fc=frames->get_frame_count(edited_anim);
+
+	int count=0;
 
 	for(List< Ref<Texture> >::Element *E=resources.front();E;E=E->next() ) {
 
-		undo_redo->add_do_method(frames,"add_frame",E->get());
-		undo_redo->add_undo_method(frames,"remove_frame",fc++);
+		undo_redo->add_do_method(frames,"add_frame",edited_anim,E->get(),p_at_pos==-1?-1:p_at_pos+count);
+		undo_redo->add_undo_method(frames,"remove_frame",edited_anim,p_at_pos==-1?fc:p_at_pos);
+		count++;
 
 	}
 	undo_redo->add_do_method(this,"_update_library");
 	undo_redo->add_undo_method(this,"_update_library");
 
 	undo_redo->commit_action();
-	print_line("added frames!");
+	//print_line("added frames!");
 }
 
 void SpriteFramesEditor::_load_pressed() {
 
+	ERR_FAIL_COND(!frames->has_animation(edited_anim));
 	loading_scene=false;
 
 	file->clear_filters();
@@ -160,19 +168,21 @@ void SpriteFramesEditor::_item_edited() {
 
 void SpriteFramesEditor::_delete_confirm_pressed() {
 
-	if (!tree->get_selected())
+	ERR_FAIL_COND(!frames->has_animation(edited_anim));
+
+	if (tree->get_current()<0)
 		return;
 
 	sel-=1;
-	if (sel<0 && frames->get_frame_count())
+	if (sel<0 && frames->get_frame_count(edited_anim))
 		sel=0;
 
-	int to_remove = tree->get_selected()->get_metadata(0);
+	int to_remove = tree->get_current();
 	sel=to_remove;
-	Ref<Texture> r = frames->get_frame(to_remove);
+	Ref<Texture> r = frames->get_frame(edited_anim,to_remove);
 	undo_redo->create_action(TTR("Delete Resource"));
-	undo_redo->add_do_method(frames,"remove_frame",to_remove);
-	undo_redo->add_undo_method(frames,"add_frame",r,to_remove);
+	undo_redo->add_do_method(frames,"remove_frame",edited_anim,to_remove);
+	undo_redo->add_undo_method(frames,"add_frame",edited_anim,r,to_remove);
 	undo_redo->add_do_method(this,"_update_library");
 	undo_redo->add_undo_method(this,"_update_library");
 	undo_redo->commit_action();
@@ -181,6 +191,8 @@ void SpriteFramesEditor::_delete_confirm_pressed() {
 
 
 void SpriteFramesEditor::_paste_pressed() {
+
+	ERR_FAIL_COND(!frames->has_animation(edited_anim));
 
 	Ref<Texture> r=EditorSettings::get_singleton()->get_resource_clipboard();
 	if (!r.is_valid()) {
@@ -194,8 +206,8 @@ void SpriteFramesEditor::_paste_pressed() {
 
 
 	undo_redo->create_action(TTR("Paste Frame"));
-	undo_redo->add_do_method(frames,"add_frame",r);
-	undo_redo->add_undo_method(frames,"remove_frame",frames->get_frame_count());
+	undo_redo->add_do_method(frames,"add_frame",edited_anim,r);
+	undo_redo->add_undo_method(frames,"remove_frame",edited_anim,frames->get_frame_count(edited_anim));
 	undo_redo->add_do_method(this,"_update_library");
 	undo_redo->add_undo_method(this,"_update_library");
 	undo_redo->commit_action();
@@ -204,16 +216,17 @@ void SpriteFramesEditor::_paste_pressed() {
 
 void SpriteFramesEditor::_empty_pressed() {
 
+	ERR_FAIL_COND(!frames->has_animation(edited_anim));
 
 	int from=-1;
 
-	if (tree->get_selected()) {
+	if (tree->get_current()>=0) {
 
-		from = tree->get_selected()->get_metadata(0);
+		from = tree->get_current();
 		sel=from;
 
 	} else {
-		from=frames->get_frame_count();
+		from=frames->get_frame_count(edited_anim);
 	}
 
 
@@ -221,8 +234,8 @@ void SpriteFramesEditor::_empty_pressed() {
 	Ref<Texture> r;
 
 	undo_redo->create_action(TTR("Add Empty"));
-	undo_redo->add_do_method(frames,"add_frame",r,from);
-	undo_redo->add_undo_method(frames,"remove_frame",from);
+	undo_redo->add_do_method(frames,"add_frame",edited_anim,r,from);
+	undo_redo->add_undo_method(frames,"remove_frame",edited_anim,from);
 	undo_redo->add_do_method(this,"_update_library");
 	undo_redo->add_undo_method(this,"_update_library");
 	undo_redo->commit_action();
@@ -231,16 +244,17 @@ void SpriteFramesEditor::_empty_pressed() {
 
 void SpriteFramesEditor::_empty2_pressed() {
 
+	ERR_FAIL_COND(!frames->has_animation(edited_anim));
 
 	int from=-1;
 
-	if (tree->get_selected()) {
+	if (tree->get_current()>=0) {
 
-		from = tree->get_selected()->get_metadata(0);
+		from = tree->get_current();
 		sel=from;
 
 	} else {
-		from=frames->get_frame_count();
+		from=frames->get_frame_count(edited_anim);
 	}
 
 
@@ -248,8 +262,8 @@ void SpriteFramesEditor::_empty2_pressed() {
 	Ref<Texture> r;
 
 	undo_redo->create_action(TTR("Add Empty"));
-	undo_redo->add_do_method(frames,"add_frame",r,from+1);
-	undo_redo->add_undo_method(frames,"remove_frame",from+1);
+	undo_redo->add_do_method(frames,"add_frame",edited_anim,r,from+1);
+	undo_redo->add_undo_method(frames,"remove_frame",edited_anim,from+1);
 	undo_redo->add_do_method(this,"_update_library");
 	undo_redo->add_undo_method(this,"_update_library");
 	undo_redo->commit_action();
@@ -258,21 +272,24 @@ void SpriteFramesEditor::_empty2_pressed() {
 
 void SpriteFramesEditor::_up_pressed() {
 
-	if (!tree->get_selected())
+	ERR_FAIL_COND(!frames->has_animation(edited_anim));
+
+	if (tree->get_current()<0)
 		return;
-	int to_move = tree->get_selected()->get_metadata(0);
+
+	int to_move = tree->get_current();
 	if (to_move<1)
 		return;
 
 	sel=to_move;
 	sel-=1;
 
-	Ref<Texture> r = frames->get_frame(to_move);
+	Ref<Texture> r = frames->get_frame(edited_anim,to_move);
 	undo_redo->create_action(TTR("Delete Resource"));
-	undo_redo->add_do_method(frames,"set_frame",to_move,frames->get_frame(to_move-1));
-	undo_redo->add_do_method(frames,"set_frame",to_move-1,frames->get_frame(to_move));
-	undo_redo->add_undo_method(frames,"set_frame",to_move,frames->get_frame(to_move));
-	undo_redo->add_undo_method(frames,"set_frame",to_move-1,frames->get_frame(to_move-1));
+	undo_redo->add_do_method(frames,"set_frame",edited_anim,to_move,frames->get_frame(edited_anim,to_move-1));
+	undo_redo->add_do_method(frames,"set_frame",edited_anim,to_move-1,frames->get_frame(edited_anim,to_move));
+	undo_redo->add_undo_method(frames,"set_frame",edited_anim,to_move,frames->get_frame(edited_anim,to_move));
+	undo_redo->add_undo_method(frames,"set_frame",edited_anim,to_move-1,frames->get_frame(edited_anim,to_move-1));
 	undo_redo->add_do_method(this,"_update_library");
 	undo_redo->add_undo_method(this,"_update_library");
 	undo_redo->commit_action();
@@ -281,21 +298,24 @@ void SpriteFramesEditor::_up_pressed() {
 
 void SpriteFramesEditor::_down_pressed() {
 
-	if (!tree->get_selected())
+	ERR_FAIL_COND(!frames->has_animation(edited_anim));
+
+	if (tree->get_current()<0)
 		return;
-	int to_move = tree->get_selected()->get_metadata(0);
-	if (to_move<0 || to_move>=frames->get_frame_count()-1)
+
+	int to_move = tree->get_current();
+	if (to_move<0 || to_move>=frames->get_frame_count(edited_anim)-1)
 		return;
 
 	sel=to_move;
 	sel+=1;
 
-	Ref<Texture> r = frames->get_frame(to_move);
+	Ref<Texture> r = frames->get_frame(edited_anim,to_move);
 	undo_redo->create_action(TTR("Delete Resource"));
-	undo_redo->add_do_method(frames,"set_frame",to_move,frames->get_frame(to_move+1));
-	undo_redo->add_do_method(frames,"set_frame",to_move+1,frames->get_frame(to_move));
-	undo_redo->add_undo_method(frames,"set_frame",to_move,frames->get_frame(to_move));
-	undo_redo->add_undo_method(frames,"set_frame",to_move+1,frames->get_frame(to_move+1));
+	undo_redo->add_do_method(frames,"set_frame",edited_anim,to_move,frames->get_frame(edited_anim,to_move+1));
+	undo_redo->add_do_method(frames,"set_frame",edited_anim,to_move+1,frames->get_frame(edited_anim,to_move));
+	undo_redo->add_undo_method(frames,"set_frame",edited_anim,to_move,frames->get_frame(edited_anim,to_move));
+	undo_redo->add_undo_method(frames,"set_frame",edited_anim,to_move+1,frames->get_frame(edited_anim,to_move+1));
 	undo_redo->add_do_method(this,"_update_library");
 	undo_redo->add_undo_method(this,"_update_library");
 	undo_redo->commit_action();
@@ -308,7 +328,7 @@ void SpriteFramesEditor::_down_pressed() {
 void SpriteFramesEditor::_delete_pressed() {
 
 
-	if (!tree->get_selected())
+	if (tree->get_current()<0)
 		return;
 
 	_delete_confirm_pressed(); //it has undo.. why bother with a dialog..
@@ -323,39 +343,211 @@ void SpriteFramesEditor::_delete_pressed() {
 }
 
 
-void SpriteFramesEditor::_update_library() {
+void SpriteFramesEditor::_animation_select() {
 
-	tree->clear();
-	tree->set_hide_root(true);
-	TreeItem *root = tree->create_item(NULL);
+	if (updating)
+		return;
 
-	if (sel>=frames->get_frame_count())
-		sel=frames->get_frame_count()-1;
-	else if (sel<0 && frames->get_frame_count())
-		sel=0;
+	TreeItem *selected = animations->get_selected();
+	ERR_FAIL_COND(!selected);
+	edited_anim=selected->get_text(0);
+	_update_library(true);
 
-	for(int i=0;i<frames->get_frame_count();i++) {
+}
 
-		TreeItem *ti = tree->create_item(root);
-		ti->set_cell_mode(0,TreeItem::CELL_MODE_STRING);
-		ti->set_selectable(0,true);
+void SpriteFramesEditor::_animation_name_edited(){
 
-		if (frames->get_frame(i).is_null()) {
+	if (updating)
+		return;
 
-			ti->set_text(0,TTR("Frame ")+itos(i)+" (empty)");
+	if (!frames->has_animation(edited_anim))
+		return;
 
-		} else {
-			ti->set_text(0,TTR("Frame ")+itos(i)+" ("+frames->get_frame(i)->get_name()+")");
-			ti->set_icon(0,frames->get_frame(i));
-		}
-		if (frames->get_frame(i).is_valid())
-			ti->set_tooltip(0,frames->get_frame(i)->get_path());
-		ti->set_metadata(0,i);
-		ti->set_icon_max_width(0,96);
-		if (sel==i)
-			ti->select(0);
+	TreeItem *edited = animations->get_edited();
+	if (!edited)
+		return;
+
+	String new_name = edited->get_text(0);
+
+	if (new_name==String(edited_anim))
+		return;
+
+	new_name=new_name.replace("/","_").replace(","," ");
+
+	String name=new_name;
+	int counter=0;
+	while(frames->has_animation(name)) {
+		counter++;
+		name=new_name+" "+itos(counter);
 	}
 
+	undo_redo->create_action(TTR("Rename Animation"));
+	undo_redo->add_do_method(frames,"rename_animation",edited_anim,name);
+	undo_redo->add_undo_method(frames,"rename_animation",name,edited_anim);
+	undo_redo->add_do_method(this,"_update_library");
+	undo_redo->add_undo_method(this,"_update_library");
+
+	edited_anim=new_name;
+
+	undo_redo->commit_action();
+
+
+
+}
+void SpriteFramesEditor::_animation_add(){
+
+
+	String new_name = "New Anim";
+
+	String name=new_name;
+	int counter=0;
+	while(frames->has_animation(name)) {
+		counter++;
+		name=new_name+" "+itos(counter);
+	}
+
+	undo_redo->create_action(TTR("Add Animation"));
+	undo_redo->add_do_method(frames,"add_animation",name);
+	undo_redo->add_undo_method(frames,"remove_animation",name);
+	undo_redo->add_do_method(this,"_update_library");
+	undo_redo->add_undo_method(this,"_update_library");
+
+	edited_anim=new_name;
+
+	undo_redo->commit_action();
+
+}
+void SpriteFramesEditor::_animation_remove(){
+
+	//fuck everything
+	if (updating)
+		return;
+
+	if (!frames->has_animation(edited_anim))
+		return;
+
+	undo_redo->create_action(TTR("Remove Animation"));
+	undo_redo->add_do_method(frames,"remove_animation",edited_anim);
+	undo_redo->add_undo_method(frames,"add_animation",edited_anim);
+	undo_redo->add_undo_method(frames,"set_animation_speed",edited_anim,frames->get_animation_speed(edited_anim));
+	undo_redo->add_undo_method(frames,"set_animation_loop",edited_anim,frames->get_animation_loop(edited_anim));
+	int fc = frames->get_frame_count(edited_anim);
+	for(int i=0;i<fc;i++) {
+		Ref<Texture> frame = frames->get_frame(edited_anim,i);
+		undo_redo->add_undo_method(frames,"add_frame",edited_anim,frame);
+	}
+	undo_redo->add_do_method(this,"_update_library");
+	undo_redo->add_undo_method(this,"_update_library");
+
+	undo_redo->commit_action();
+
+}
+
+
+void SpriteFramesEditor::_animation_loop_changed() {
+
+	if (updating)
+		return;
+
+	undo_redo->create_action(TTR("Change Animation Loop"));
+	undo_redo->add_do_method(frames,"set_animation_loop",edited_anim,anim_loop->is_pressed());
+	undo_redo->add_undo_method(frames,"set_animation_loop",edited_anim,frames->get_animation_loop(edited_anim));
+	undo_redo->add_do_method(this,"_update_library",true);
+	undo_redo->add_undo_method(this,"_update_library",true);
+	undo_redo->commit_action();
+
+}
+
+void SpriteFramesEditor::_animation_fps_changed(double p_value) {
+
+	if (updating)
+		return;
+
+	undo_redo->create_action(TTR("Change Animation FPS"),true);
+	undo_redo->add_do_method(frames,"set_animation_speed",edited_anim,p_value);
+	undo_redo->add_undo_method(frames,"set_animation_speed",edited_anim,frames->get_animation_speed(edited_anim));
+	undo_redo->add_do_method(this,"_update_library",true);
+	undo_redo->add_undo_method(this,"_update_library",true);
+
+	undo_redo->commit_action();
+
+}
+
+void SpriteFramesEditor::_update_library(bool p_skip_selector) {
+
+	updating=true;
+
+	if (!p_skip_selector) {
+		animations->clear();
+
+		TreeItem *anim_root=animations->create_item();
+
+		List<StringName> anim_names;
+
+		anim_names.sort_custom<StringName::AlphCompare>();
+
+		frames->get_animation_list(&anim_names);
+
+		anim_names.sort_custom<StringName::AlphCompare>();
+
+		for(List<StringName>::Element *E=anim_names.front();E;E=E->next()) {
+
+			String name = E->get();
+
+			TreeItem *it = animations->create_item(anim_root);
+
+			it->set_metadata(0,name);
+
+				it->set_text(0,name);
+			it->set_editable(0,true);
+
+			if (E->get()==edited_anim) {
+				it->select(0);
+			}
+		}
+	}
+
+
+	tree->clear();
+
+	if (!frames->has_animation(edited_anim)) {
+		updating=false;
+		return;
+	}
+
+
+	if (sel>=frames->get_frame_count(edited_anim))
+		sel=frames->get_frame_count(edited_anim)-1;
+	else if (sel<0 && frames->get_frame_count(edited_anim))
+		sel=0;
+
+	for(int i=0;i<frames->get_frame_count(edited_anim);i++) {
+
+
+		String name;
+		Ref<Texture> icon;
+
+
+		if (frames->get_frame(edited_anim,i).is_null()) {
+
+			name=itos(i)+TTR(": (empty)");
+
+		} else {
+			name=itos(i)+": "+frames->get_frame(edited_anim,i)->get_name();
+			icon=frames->get_frame(edited_anim,i);
+		}
+
+		tree->add_item(name,icon);
+		if (frames->get_frame(edited_anim,i).is_valid())
+			tree->set_item_tooltip(tree->get_item_count()-1,frames->get_frame(edited_anim,i)->get_path());
+		if (sel==i)
+			tree->select(tree->get_item_count()-1);
+	}
+
+	anim_speed->set_val(frames->get_animation_speed(edited_anim));
+	anim_loop->set_pressed(frames->get_animation_loop(edited_anim));
+
+	updating=false;
 	//player->add_resource("default",resource);
 }
 
@@ -363,10 +555,27 @@ void SpriteFramesEditor::_update_library() {
 
 void SpriteFramesEditor::edit(SpriteFrames* p_frames) {
 
+	if (frames==p_frames)
+		return;
+
 	frames=p_frames;
 
 
 	if (p_frames) {
+
+		if (!p_frames->has_animation(edited_anim)) {
+
+			List<StringName> anim_names;
+			frames->get_animation_list(&anim_names);
+			anim_names.sort_custom<StringName::AlphCompare>();
+			if (anim_names.size()) {
+				edited_anim=anim_names.front()->get();
+			} else {
+				edited_anim=StringName();
+			}
+
+		}
+
 		_update_library();
 	} else {
 
@@ -376,6 +585,110 @@ void SpriteFramesEditor::edit(SpriteFrames* p_frames) {
 
 }
 
+
+Variant SpriteFramesEditor::get_drag_data_fw(const Point2& p_point,Control* p_from) {
+
+	if (!frames->has_animation(edited_anim))
+		return false;
+
+	int idx = tree->get_item_at_pos(p_point,true);
+
+	if (idx<0 || idx>=frames->get_frame_count(edited_anim))
+		return Variant();
+
+	RES frame = frames->get_frame(edited_anim,idx);
+
+	if (frame.is_null())
+		return Variant();
+
+	return EditorNode::get_singleton()->drag_resource(frame,p_from);
+
+
+}
+
+bool SpriteFramesEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const{
+
+	Dictionary d = p_data;
+
+	if (!d.has("type"))
+		return false;
+
+	if (d.has("from") && (Object*)(d["from"])==tree)
+		return false;
+
+	if (String(d["type"])=="resource" && d.has("resource")) {
+		RES r=d["resource"];
+
+		Ref<Texture> texture = r;
+
+		if (texture.is_valid()) {
+
+			return true;
+		}
+	}
+
+
+	if (String(d["type"])=="files") {
+
+		Vector<String> files = d["files"];
+
+		if (files.size()==0)
+			return false;
+
+		for(int i=0;i<files.size();i++) {
+			String file = files[0];
+			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+
+			if (!ObjectTypeDB::is_type(ftype,"Texture")) {
+				return false;
+			}
+
+		}
+
+		return true;
+
+	}
+	return false;
+}
+
+void SpriteFramesEditor::drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from){
+
+	if (!can_drop_data_fw(p_point,p_data,p_from))
+		return;
+
+	Dictionary d = p_data;
+
+	if (!d.has("type"))
+		return;
+
+	int at_pos = tree->get_item_at_pos(p_point,true);
+
+	if (String(d["type"])=="resource" && d.has("resource")) {
+		RES r=d["resource"];
+
+		Ref<Texture> texture = r;
+
+		if (texture.is_valid()) {
+
+			undo_redo->create_action(TTR("Add Frame"));
+			undo_redo->add_do_method(frames,"add_frame",edited_anim,texture,at_pos==-1?-1:at_pos);
+			undo_redo->add_undo_method(frames,"remove_frame",edited_anim,at_pos==-1?frames->get_frame_count(edited_anim):at_pos);
+			undo_redo->add_do_method(this,"_update_library");
+			undo_redo->add_undo_method(this,"_update_library");
+			undo_redo->commit_action();
+
+		}
+	}
+
+
+	if (String(d["type"])=="files") {
+
+		DVector<String> files = d["files"];
+
+		_file_load_request(files,at_pos);
+	}
+
+}
 
 
 void SpriteFramesEditor::_bind_methods() {
@@ -388,28 +701,93 @@ void SpriteFramesEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_delete_pressed"),&SpriteFramesEditor::_delete_pressed);
 	ObjectTypeDB::bind_method(_MD("_paste_pressed"),&SpriteFramesEditor::_paste_pressed);
 	ObjectTypeDB::bind_method(_MD("_delete_confirm_pressed"),&SpriteFramesEditor::_delete_confirm_pressed);
-	ObjectTypeDB::bind_method(_MD("_file_load_request"),&SpriteFramesEditor::_file_load_request);
-	ObjectTypeDB::bind_method(_MD("_update_library"),&SpriteFramesEditor::_update_library);
+	ObjectTypeDB::bind_method(_MD("_file_load_request","files","atpos"),&SpriteFramesEditor::_file_load_request,DEFVAL(-1));
+	ObjectTypeDB::bind_method(_MD("_update_library","skipsel"),&SpriteFramesEditor::_update_library,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("_up_pressed"),&SpriteFramesEditor::_up_pressed);
 	ObjectTypeDB::bind_method(_MD("_down_pressed"),&SpriteFramesEditor::_down_pressed);
+	ObjectTypeDB::bind_method(_MD("_animation_select"),&SpriteFramesEditor::_animation_select);
+	ObjectTypeDB::bind_method(_MD("_animation_name_edited"),&SpriteFramesEditor::_animation_name_edited);
+	ObjectTypeDB::bind_method(_MD("_animation_add"),&SpriteFramesEditor::_animation_add);
+	ObjectTypeDB::bind_method(_MD("_animation_remove"),&SpriteFramesEditor::_animation_remove);
+	ObjectTypeDB::bind_method(_MD("_animation_loop_changed"),&SpriteFramesEditor::_animation_loop_changed);
+	ObjectTypeDB::bind_method(_MD("_animation_fps_changed"),&SpriteFramesEditor::_animation_fps_changed);
+	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &SpriteFramesEditor::get_drag_data_fw);
+	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &SpriteFramesEditor::can_drop_data_fw);
+	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &SpriteFramesEditor::drop_data_fw);
+
+
 }
+
 
 SpriteFramesEditor::SpriteFramesEditor() {
 
 	//add_style_override("panel", get_stylebox("panel","Panel"));
 
+	split = memnew( HSplitContainer );
+	add_child(split);
+
+	VBoxContainer *vbc_animlist = memnew( VBoxContainer );
+	split->add_child(vbc_animlist);
+	vbc_animlist->set_custom_minimum_size(Size2(150,0));
+	//vbc_animlist->set_v_size_flags(SIZE_EXPAND_FILL);
+
+
+	VBoxContainer *sub_vb = memnew( VBoxContainer );
+	vbc_animlist->add_margin_child(TTR("Animations"),sub_vb,true);
+	sub_vb->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	HBoxContainer *hbc_animlist = memnew( HBoxContainer );
+	sub_vb->add_child(hbc_animlist);
+
+	new_anim = memnew( Button );
+	hbc_animlist->add_child(new_anim);
+	new_anim->connect("pressed",this,"_animation_add");
+
+
+	hbc_animlist->add_spacer();
+
+	remove_anim = memnew( Button );
+	hbc_animlist->add_child(remove_anim);
+	remove_anim->connect("pressed",this,"_animation_remove");
+
+	animations = memnew( Tree );
+	sub_vb->add_child(animations);
+	animations->set_v_size_flags(SIZE_EXPAND_FILL);
+	animations->set_hide_root(true);
+	animations->connect("cell_selected",this,"_animation_select");
+	animations->connect("item_edited",this,"_animation_name_edited");
+	animations->set_single_select_cell_editing_only_when_already_selected(true);
+
+
+	anim_speed = memnew( SpinBox);
+	vbc_animlist->add_margin_child(TTR("Speed (FPS):"),anim_speed);
+	anim_speed->set_min(0);
+	anim_speed->set_max(100);
+	anim_speed->set_step(0.01);
+	anim_speed->connect("value_changed",this,"_animation_fps_changed");
+
+	anim_loop = memnew( CheckButton );
+	anim_loop->set_text(TTR("Loop"));
+	vbc_animlist->add_child(anim_loop);
+	anim_loop->connect("pressed",this,"_animation_loop_changed");
+
 	VBoxContainer *vbc = memnew( VBoxContainer );
-	add_child(vbc);
+	split->add_child(vbc);
+	vbc->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	sub_vb = memnew( VBoxContainer );
+	vbc->add_margin_child(TTR("Animation Frames"),sub_vb,true);
+
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
-	vbc->add_child(hbc);
+	sub_vb->add_child(hbc);
+
+	//animations = memnew( ItemList );
+
 
 	load = memnew( Button );
 	load->set_tooltip(TTR("Load Resource"));
 	hbc->add_child(load);
-
-
-
 
 	paste = memnew( Button );
 	paste->set_text(TTR("Paste"));
@@ -438,15 +816,22 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	add_child(file);
 
 
-	tree = memnew( Tree );
-	tree->set_columns(2);
-	tree->set_column_min_width(0,3);
-	tree->set_column_min_width(1,1);
-	tree->set_column_expand(0,true);
-	tree->set_column_expand(1,true);
+	tree = memnew( ItemList );
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->set_icon_mode(ItemList::ICON_MODE_TOP);
 
-	vbc->add_child(tree);
+	int thumbnail_size = 96;
+	tree->set_max_columns(0);
+	tree->set_icon_mode(ItemList::ICON_MODE_TOP);
+	tree->set_fixed_column_width(thumbnail_size*3/2);
+	tree->set_max_text_lines(2);
+	tree->set_max_icon_size(Size2(thumbnail_size,thumbnail_size));
+	//tree->set_min_icon_size(Size2(thumbnail_size,thumbnail_size));
+	tree->set_drag_forwarding(this);
+
+
+
+	sub_vb->add_child(tree);
 
 	dialog = memnew( AcceptDialog );
 	add_child( dialog );
@@ -460,9 +845,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	move_down->connect("pressed", this,"_down_pressed");
 	file->connect("files_selected", this,"_file_load_request");
 	//dialog->connect("confirmed", this,"_delete_confirm_pressed");
-	tree->connect("item_edited", this,"_item_edited");
+	//tree->connect("item_selected", this,"_item_edited");
 	loading_scene=false;
 	sel=-1;
+
+	updating=false;
+
+	edited_anim="default";
 
 }
 

@@ -67,6 +67,11 @@ class ResourcePreloaderEditor : public PanelContainer {
 
 	UndoRedo *undo_redo;
 
+	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
+	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
+	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
+
+
 protected:
 	void _notification(int p_what);
 	void _input_event(InputEvent p_event);

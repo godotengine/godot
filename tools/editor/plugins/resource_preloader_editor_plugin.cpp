@@ -279,6 +279,106 @@ void ResourcePreloaderEditor::edit(ResourcePreloader* p_preloader) {
 
 
 
+Variant ResourcePreloaderEditor::get_drag_data_fw(const Point2& p_point,Control* p_from) {
+
+	TreeItem*ti =tree->get_item_at_pos(p_point);
+	if (!ti)
+		return Variant();
+
+	String name = ti->get_metadata(0);
+
+	RES res = preloader->get_resource(name);
+	if (!res.is_valid())
+		return Variant();
+
+	return EditorNode::get_singleton()->drag_resource(res,p_from);
+
+}
+
+bool ResourcePreloaderEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const {
+
+
+
+	Dictionary d = p_data;
+
+	if (!d.has("type"))
+		return false;
+
+	if (d.has("from") && (Object*)(d["from"])==tree)
+		return false;
+
+	if (String(d["type"])=="resource" && d.has("resource")) {
+		RES r=d["resource"];
+
+		return r.is_valid();
+	}
+
+
+	if (String(d["type"])=="files") {
+
+		Vector<String> files = d["files"];
+
+		if (files.size()==0)
+			return false;
+
+		return true;
+
+	}
+	return false;
+}
+
+void ResourcePreloaderEditor::drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) {
+
+	if (!can_drop_data_fw(p_point,p_data,p_from))
+		return;
+
+	Dictionary d = p_data;
+
+	if (!d.has("type"))
+		return;
+
+
+	if (String(d["type"])=="resource" && d.has("resource")) {
+		RES r=d["resource"];
+
+		if (r.is_valid()) {
+
+			String basename;
+			if (r->get_name()!="") {
+				basename=r->get_name();
+			} else if (r->get_path().is_resource_file()) {
+				basename = r->get_path().basename();
+			} else {
+				basename="Resource";
+			}
+
+			String name=basename;
+			int counter=0;
+			while(preloader->has_resource(name)) {
+				counter++;
+				name=basename+"_"+itos(counter);
+			}
+
+			undo_redo->create_action(TTR("Add Resource"));
+			undo_redo->add_do_method(preloader,"add_resource",name,r);
+			undo_redo->add_undo_method(preloader,"remove_resource",name);
+			undo_redo->add_do_method(this,"_update_library");
+			undo_redo->add_undo_method(this,"_update_library");
+			undo_redo->commit_action();
+		}
+	}
+
+
+	if (String(d["type"])=="files") {
+
+		Vector<String> files = d["files"];
+
+		_files_load_request(files);
+	}
+}
+
+
+
 void ResourcePreloaderEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&ResourcePreloaderEditor::_input_event);
@@ -289,6 +389,13 @@ void ResourcePreloaderEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_delete_confirm_pressed"),&ResourcePreloaderEditor::_delete_confirm_pressed);
 	ObjectTypeDB::bind_method(_MD("_files_load_request"),&ResourcePreloaderEditor::_files_load_request);
 	ObjectTypeDB::bind_method(_MD("_update_library"),&ResourcePreloaderEditor::_update_library);
+
+
+	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
+	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
+	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &ResourcePreloaderEditor::drop_data_fw);
+
+
 }
 
 ResourcePreloaderEditor::ResourcePreloaderEditor() {
@@ -326,6 +433,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	tree->set_column_expand(1,true);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	tree->set_drag_forwarding(this);
 	vbc->add_child(tree);
 
 	dialog = memnew( AcceptDialog );
