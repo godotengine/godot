@@ -2037,7 +2037,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			if (scene) {
 				file->set_current_path(scene->get_filename());
 			};
-			file->set_title(p_option==FILE_OPEN_SCENE?TTR("Open Scene"):"Open Base Scene");
+			file->set_title(p_option==FILE_OPEN_SCENE?TTR("Open Scene"):TTR("Open Base Scene"));
 			file->popup_centered_ratio();
 
 		} break;
@@ -3381,6 +3381,7 @@ Dictionary EditorNode::_get_main_scene_state() {
 	state["scene_tree_offset"]=scene_tree_dock->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->get_val();
 	state["property_edit_offset"]=get_property_editor()->get_scene_tree()->get_vscroll_bar()->get_val();
 	state["saved_version"]=saved_version;
+	state["node_filter"]=scene_tree_dock->get_filter();
 	//print_line(" getting main tab: "+itos(state["main_tab"]));
 	return state;
 }
@@ -3445,6 +3446,8 @@ void EditorNode::_set_main_scene_state(Dictionary p_state) {
 	if (p_state.has("property_edit_offset"))
 		get_property_editor()->get_scene_tree()->get_vscroll_bar()->set_val(p_state["property_edit_offset"]);
 
+	if (p_state.has("node_filter"))
+		scene_tree_dock->set_filter(p_state["node_filter"]);
 	//print_line("set current 8 ");
 
 	//this should only happen at the very end
