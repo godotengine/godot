@@ -94,9 +94,6 @@ class SceneTreeDock : public VBoxContainer {
 	EditorSubScene *import_subscene_dialog;
 	EditorFileDialog *new_scene_from_dialog;
 
-	LineEdit *filter;
-	TextureFrame *filter_icon;
-
 	PopupMenu * menu;
 
 	bool first_enter;
@@ -143,16 +140,11 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _tree_rmb(const Vector2& p_menu_pos);
 
-	void _filter_changed(const String& p_filter);
-
 protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
 public:
-
-	String get_filter();
-	void set_filter(const String& p_filter);
 
 	void import_subscene();
 	void set_edited_scene(Node* p_scene);

@@ -584,7 +584,6 @@ public:
 	static void add_editor_plugin(EditorPlugin *p_editor);
 	static void remove_editor_plugin(EditorPlugin *p_editor);
 
-	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE,false); }
 
 
 
