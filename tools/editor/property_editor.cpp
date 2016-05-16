@@ -2287,7 +2287,6 @@ bool PropertyEditor::_is_drop_valid(const Dictionary& p_drag_data, const Diction
 				}
 
 			}
-
 			if (drag_data.has("type") && String(drag_data["type"])=="files") {
 
 				Vector<String> files = drag_data["files"];

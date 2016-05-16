@@ -172,6 +172,4 @@ SceneStringNames::SceneStringNames() {
 	speed=StaticCString::create("speed");
 
 	path_pp=NodePath("..");
-
-	_default=StaticCString::create("default");
 }

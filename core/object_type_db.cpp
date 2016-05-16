@@ -619,22 +619,14 @@ void ObjectTypeDB::add_property(StringName p_type,const PropertyInfo& p_pinfo, c
 }
 
 
-void ObjectTypeDB::get_property_list(StringName p_type, List<PropertyInfo> *p_list, bool p_no_inheritance,const Object *p_validator) {
+void ObjectTypeDB::get_property_list(StringName p_type,List<PropertyInfo> *p_list,bool p_no_inheritance) {
 
 	TypeInfo *type=types.getptr(p_type);
 	TypeInfo *check=type;
 	while(check) {
 
 		for(List<PropertyInfo>::Element *E=type->property_list.front();E;E=E->next()) {
-
-
-			if (p_validator) {
-				PropertyInfo pi = E->get();
-				p_validator->_validate_property(pi);
-				p_list->push_back(pi);
-			} else {
-				p_list->push_back(E->get());
-			}
+			p_list->push_back(E->get());
 		}
 
 		if (p_no_inheritance)

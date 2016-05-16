@@ -182,7 +182,6 @@ public:
 
 	NodePath path_pp;
 
-	StringName _default;
 
 };
 
