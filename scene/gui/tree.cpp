@@ -3555,7 +3555,6 @@ void Tree::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_single_select_cell_editing_only_when_already_selected"),&Tree::get_single_select_cell_editing_only_when_already_selected);
 
 	ADD_SIGNAL( MethodInfo("item_selected"));
-	ADD_SIGNAL( MethodInfo("item_rmb_selected",PropertyInfo(Variant::VECTOR2,"pos")));
 	ADD_SIGNAL( MethodInfo("cell_selected"));
 	ADD_SIGNAL( MethodInfo("multi_selected",PropertyInfo(Variant::OBJECT,"item"),PropertyInfo(Variant::INT,"column"),PropertyInfo(Variant::BOOL,"selected")) );
 	ADD_SIGNAL( MethodInfo("item_rmb_selected",PropertyInfo(Variant::VECTOR2,"pos")));
