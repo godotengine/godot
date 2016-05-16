@@ -1681,9 +1681,50 @@ void SceneTreeDock::_nodes_dragged(Array p_nodes,NodePath p_to,int p_type) {
 
 }
 
+void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
+
+	List<Node*> selection = editor_selection->get_selected_node_list();
+
+	if (selection.size()==0)
+		return;
+	menu->clear();
+
+
+	if (selection.size()==1) {
+		menu->add_item("Add Child Node",TOOL_NEW,KEY_MASK_CMD|KEY_A);
+		menu->add_item("Instance Child",TOOL_INSTANCE);
+		menu->add_separator();
+		menu->add_item("Change Type",TOOL_REPLACE);
+		menu->add_separator();
+		menu->add_item("Edit Groups",TOOL_GROUP);
+		menu->add_item("Edit Connections",TOOL_CONNECT);
+		menu->add_separator();
+		menu->add_item("Add Script",TOOL_SCRIPT);
+		menu->add_separator();
+	}
+
+	menu->add_item("Move Up",TOOL_MOVE_UP,KEY_MASK_CMD|KEY_UP);
+	menu->add_item("Move Down",TOOL_MOVE_DOWN,KEY_MASK_CMD|KEY_DOWN);
+	menu->add_item("Duplicate",TOOL_DUPLICATE,KEY_MASK_CMD|KEY_D);
+	menu->add_item("Reparent",TOOL_REPARENT);
+
+	if (selection.size()==1) {
+		menu->add_separator();
+		menu->add_item("Save Branch as Scene",TOOL_NEW_SCENE_FROM);
+	}
+	menu->add_separator();
+
+	menu->add_item("Delete Node(s)",TOOL_ERASE,KEY_DELETE);
+
+	menu->set_size(Size2(1,1));
+	menu->set_pos(p_menu_pos);
+	menu->popup();
+
+}
+
 void SceneTreeDock::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_tool_selected"),&SceneTreeDock::_tool_selected);
+	ObjectTypeDB::bind_method(_MD("_tool_selected"),&SceneTreeDock::_tool_selected,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("_create"),&SceneTreeDock::_create);
 	//ObjectTypeDB::bind_method(_MD("_script_created"),&SceneTreeDock::_script_created);
 	ObjectTypeDB::bind_method(_MD("_node_reparent"),&SceneTreeDock::_node_reparent);
@@ -1701,6 +1742,7 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_new_scene_from"),&SceneTreeDock::_new_scene_from);
 	ObjectTypeDB::bind_method(_MD("_nodes_dragged"),&SceneTreeDock::_nodes_dragged);
 	ObjectTypeDB::bind_method(_MD("_files_dropped"),&SceneTreeDock::_files_dropped);
+	ObjectTypeDB::bind_method(_MD("_tree_rmb"),&SceneTreeDock::_tree_rmb);
 
 
 	ObjectTypeDB::bind_method(_MD("instance"),&SceneTreeDock::instance);
@@ -1765,6 +1807,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	scene_tree = memnew( SceneTreeEditor(false,true,true ));
 	vbc->add_child(scene_tree);
 	scene_tree->set_v_size_flags(SIZE_EXPAND|SIZE_FILL);
+	scene_tree->connect("rmb_pressed",this,"_tree_rmb");
 
 	scene_tree->connect("node_selected", this,"_node_selected",varray(),CONNECT_DEFERRED);
 	scene_tree->connect("node_renamed", this,"_node_renamed",varray(),CONNECT_DEFERRED);
@@ -1869,7 +1912,9 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	new_scene_from_dialog->connect("file_selected",this,"_new_scene_from");
 
 
-
+	menu = memnew( PopupMenu );
+	add_child(menu);
+	menu->connect("item_pressed",this,"_tool_selected");
 	first_enter=true;
 
 

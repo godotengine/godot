@@ -1563,7 +1563,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 			col_width-=w+cache.button_margin;
 		}
 
-		if (p_button==BUTTON_LEFT) {
+		if (p_button==BUTTON_LEFT || (p_button==BUTTON_RIGHT && allow_rmb_select)) {
 			/* process selection */
 
 			if (p_doubleclick && (!c.editable || c.mode==TreeItem::CELL_MODE_CUSTOM || c.mode==TreeItem::CELL_MODE_ICON /*|| c.mode==TreeItem::CELL_MODE_CHECK*/)) { //it' s confusing for check
@@ -1574,10 +1574,13 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 
 			if (select_mode==SELECT_MULTI && p_mod.command && c.selectable) {
 
-				if (!c.selected) {
+				if (!c.selected || p_button==BUTTON_RIGHT) {
 
 					p_item->select(col);
 					emit_signal("multi_selected",p_item,col,true);
+					if (p_button==BUTTON_RIGHT) {
+						emit_signal("item_rmb_selected",get_local_mouse_pos());
+					}
 
 
 					//p_item->selected_signal.call(col);
@@ -1597,15 +1600,25 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 						bool inrange=false;
 
 						select_single_item( p_item, root, col,selected_item,&inrange );
+						if (p_button==BUTTON_RIGHT) {
+							emit_signal("item_rmb_selected",get_local_mouse_pos());
+						}
 					} else {
 
 						int icount = _count_selected_items(root);
 
-						if (select_mode==SELECT_MULTI && icount>1) {
+						if (select_mode==SELECT_MULTI && icount>1 && p_button!=BUTTON_RIGHT) {
 							single_select_defer=p_item;
 							single_select_defer_column=col;
 						} else {
-							select_single_item( p_item, root, col );
+
+							if (p_button!=BUTTON_RIGHT || !c.selected) {
+								select_single_item( p_item, root, col );
+							}
+
+							if (p_button==BUTTON_RIGHT) {
+								emit_signal("item_rmb_selected",get_local_mouse_pos());
+							}
 						}
 					}
 
@@ -2348,12 +2361,13 @@ void Tree::_input_event(InputEvent p_event) {
 			}
 
 			switch(b.button_index) {
+				case BUTTON_RIGHT:
 				case BUTTON_LEFT: {
 					Ref<StyleBox> bg = cache.bg;
 
 					Point2 pos = Point2(b.x,b.y) - bg->get_offset();
 					cache.click_type=Cache::CLICK_NONE;
-					if (show_column_titles) {
+					if (show_column_titles && b.button_index==BUTTON_LEFT) {
 						pos.y-=_get_title_button_height();
 
 						if (pos.y<0) {
@@ -2389,6 +2403,9 @@ void Tree::_input_event(InputEvent p_event) {
 						pressing_pos=Point2(b.x,b.y);
 					}
 
+
+					if (b.button_index==BUTTON_RIGHT)
+						break;
 
 					if (drag_touching) {
 						set_fixed_process(false);
@@ -3465,6 +3482,17 @@ bool Tree::get_single_select_cell_editing_only_when_already_selected() const {
 	return force_select_on_already_selected;
 }
 
+
+void Tree::set_allow_rmb_select(bool p_allow) {
+
+	allow_rmb_select=p_allow;
+}
+
+bool Tree::get_allow_rmb_select() const{
+
+	return allow_rmb_select;
+}
+
 void Tree::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_range_click_timeout"),&Tree::_range_click_timeout);
@@ -3515,10 +3543,15 @@ void Tree::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_drop_mode_flags","flags"),&Tree::set_drop_mode_flags);
 	ObjectTypeDB::bind_method(_MD("get_drop_mode_flags"),&Tree::get_drop_mode_flags);
 
+	ObjectTypeDB::bind_method(_MD("set_allow_rmb_select","allow"),&Tree::set_allow_rmb_select);
+	ObjectTypeDB::bind_method(_MD("get_allow_rmb_select"),&Tree::get_allow_rmb_select);
+
+
 	ObjectTypeDB::bind_method(_MD("set_single_select_cell_editing_only_when_already_selected","enable"),&Tree::set_single_select_cell_editing_only_when_already_selected);
 	ObjectTypeDB::bind_method(_MD("get_single_select_cell_editing_only_when_already_selected"),&Tree::get_single_select_cell_editing_only_when_already_selected);
 
 	ADD_SIGNAL( MethodInfo("item_selected"));
+	ADD_SIGNAL( MethodInfo("item_rmb_selected",PropertyInfo(Variant::VECTOR2,"pos")));
 	ADD_SIGNAL( MethodInfo("cell_selected"));
 	ADD_SIGNAL( MethodInfo("multi_selected",PropertyInfo(Variant::OBJECT,"item"),PropertyInfo(Variant::INT,"column"),PropertyInfo(Variant::BOOL,"selected")) );
 	ADD_SIGNAL( MethodInfo("item_edited"));
@@ -3623,6 +3656,8 @@ Tree::Tree() {
 	drop_mode_section=0;
 	single_select_defer=NULL;
 	force_select_on_already_selected=false;
+
+	allow_rmb_select=false;
 }
 
 
