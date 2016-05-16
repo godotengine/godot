@@ -1698,8 +1698,8 @@ void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
 	if (!EditorNode::get_singleton()->get_edited_scene()) {
 
 		menu->clear();
-		menu->add_item("New Scene Root",TOOL_NEW,KEY_MASK_CMD|KEY_A);
-		menu->add_item("Inherit Scene",TOOL_INSTANCE);
+		menu->add_item(TTR("New Scene Root"),TOOL_NEW,KEY_MASK_CMD|KEY_A);
+		menu->add_item(TTR("Inherit Scene"),TOOL_INSTANCE);
 
 		menu->set_size(Size2(1,1));
 		menu->set_pos(p_menu_pos);
@@ -1716,30 +1716,30 @@ void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
 
 
 	if (selection.size()==1) {
-		menu->add_item("Add Child Node",TOOL_NEW,KEY_MASK_CMD|KEY_A);
-		menu->add_item("Instance Child",TOOL_INSTANCE);
+		menu->add_item(TTR("Add Child Node"),TOOL_NEW,KEY_MASK_CMD|KEY_A);
+		menu->add_item(TTR("Instance Child Scene"),TOOL_INSTANCE);
 		menu->add_separator();
-		menu->add_item("Change Type",TOOL_REPLACE);
+		menu->add_item(TTR("Change Type"),TOOL_REPLACE);
 		menu->add_separator();
-		menu->add_item("Edit Groups",TOOL_GROUP);
-		menu->add_item("Edit Connections",TOOL_CONNECT);
+		menu->add_item(TTR("Edit Groups"),TOOL_GROUP);
+		menu->add_item(TTR("Edit Connections"),TOOL_CONNECT);
 		menu->add_separator();
-		menu->add_item("Add Script",TOOL_SCRIPT);
+		menu->add_item(TTR("Add Script"),TOOL_SCRIPT);
 		menu->add_separator();
 	}
 
-	menu->add_item("Move Up",TOOL_MOVE_UP,KEY_MASK_CMD|KEY_UP);
-	menu->add_item("Move Down",TOOL_MOVE_DOWN,KEY_MASK_CMD|KEY_DOWN);
-	menu->add_item("Duplicate",TOOL_DUPLICATE,KEY_MASK_CMD|KEY_D);
-	menu->add_item("Reparent",TOOL_REPARENT);
+	menu->add_item(TTR("Move Up"),TOOL_MOVE_UP,KEY_MASK_CMD|KEY_UP);
+	menu->add_item(TTR("Move Down"),TOOL_MOVE_DOWN,KEY_MASK_CMD|KEY_DOWN);
+	menu->add_item(TTR("Duplicate"),TOOL_DUPLICATE,KEY_MASK_CMD|KEY_D);
+	menu->add_item(TTR("Reparent"),TOOL_REPARENT);
 
 	if (selection.size()==1) {
 		menu->add_separator();
-		menu->add_item("Save Branch as Scene",TOOL_NEW_SCENE_FROM);
+		menu->add_item(TTR("Save Branch as Scene"),TOOL_NEW_SCENE_FROM);
 	}
 	menu->add_separator();
 
-	menu->add_item("Delete Node(s)",TOOL_ERASE,KEY_DELETE);
+	menu->add_item(TTR("Delete Node(s)"),TOOL_ERASE,KEY_DELETE);
 
 	menu->set_size(Size2(1,1));
 	menu->set_pos(p_menu_pos);
