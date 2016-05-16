@@ -908,6 +908,10 @@ void SceneTreeEditor::drop_data_fw(const Point2& p_point,const Variant& p_data,C
 
 }
 
+void SceneTreeEditor::_rmb_select(const Vector2& p_pos) {
+
+	emit_signal("rmb_pressed",tree->get_global_transform().xform(p_pos));
+}
 
 void SceneTreeEditor::_bind_methods() {
 
@@ -923,6 +927,7 @@ void SceneTreeEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_cell_button_pressed",&SceneTreeEditor::_cell_button_pressed);
 	ObjectTypeDB::bind_method("_cell_collapsed",&SceneTreeEditor::_cell_collapsed);
 	ObjectTypeDB::bind_method("_subscene_option",&SceneTreeEditor::_subscene_option);
+	ObjectTypeDB::bind_method("_rmb_select",&SceneTreeEditor::_rmb_select);
 
 	ObjectTypeDB::bind_method("_node_script_changed",&SceneTreeEditor::_node_script_changed);
 	ObjectTypeDB::bind_method("_node_visibility_changed",&SceneTreeEditor::_node_visibility_changed);
@@ -937,6 +942,7 @@ void SceneTreeEditor::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("node_changed") );
 	ADD_SIGNAL( MethodInfo("nodes_rearranged",PropertyInfo(Variant::ARRAY,"paths"),PropertyInfo(Variant::NODE_PATH,"to_path"),PropertyInfo(Variant::INT,"type") ) );
 	ADD_SIGNAL( MethodInfo("files_dropped",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::NODE_PATH,"to_path"),PropertyInfo(Variant::INT,"type") ) );
+	ADD_SIGNAL( MethodInfo("rmb_pressed",PropertyInfo(Variant::VECTOR2,"pos")) ) ;
 
 	ADD_SIGNAL( MethodInfo("open") );
 	ADD_SIGNAL( MethodInfo("open_script") );
@@ -976,6 +982,9 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	add_child( tree );
 
 	tree->set_drag_forwarding(this);
+	if (p_can_rename)
+		tree->set_allow_rmb_select(true);
+	tree->connect("item_rmb_selected",this,"_rmb_select");
 
 	tree->connect("cell_selected", this,"_selected_changed");
 	tree->connect("item_edited", this,"_renamed",varray(),CONNECT_DEFERRED);
