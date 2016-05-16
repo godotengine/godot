@@ -34,6 +34,7 @@
 
 #include "globals.h"
 #include "message_queue.h"
+#include "tools/editor/editor_node.h"
 
 #define TAB_PIXELS
 
@@ -1518,6 +1519,32 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					update();
 				}
+				
+#ifdef TOOLS_ENABLED
+				if (mb.button_index == BUTTON_MIDDLE) {
+
+					// Hacky solution
+					int row, col;
+					if (!_get_mouse_pos(Point2i(mb.x, mb.y), row, col))
+						return;
+
+					int prev_col = cursor.column;
+					int prev_line = cursor.line;
+
+					cursor_set_line(row);
+					cursor_set_column(col);
+
+					String text = get_word_under_cursor();
+					if (text != "") {
+						EditorNode *singleton = EditorNode::get_singleton();
+						if (singleton)
+								singleton->emit_signal("request_help", text);
+					}
+
+					cursor_set_line(prev_line);
+					cursor_set_column(prev_col);
+				}
+#endif
 			} else {
 
 				if (mb.button_index==BUTTON_LEFT)
