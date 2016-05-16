@@ -35,7 +35,6 @@
 #include "scene/gui/button.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/popup_menu.h"
 #include "scene_tree_editor.h"
 #include "create_dialog.h"
 #include "editor_data.h"
@@ -94,8 +93,6 @@ class SceneTreeDock : public VBoxContainer {
 	EditorSubScene *import_subscene_dialog;
 	EditorFileDialog *new_scene_from_dialog;
 
-	PopupMenu * menu;
-
 	bool first_enter;
 
 	void _create();
@@ -137,8 +134,6 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _nodes_dragged(Array p_nodes,NodePath p_to,int p_type);
 	void _files_dropped(Vector<String> p_files,NodePath p_to,int p_type);
-
-	void _tree_rmb(const Vector2& p_menu_pos);
 
 protected:
 
