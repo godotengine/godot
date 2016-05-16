@@ -1518,6 +1518,15 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					update();
 				}
+
+				if (mb.button_index==BUTTON_RIGHT) {
+
+					menu->set_pos(get_global_transform().xform(get_local_mouse_pos()));
+					menu->set_size(Vector2(1,1));
+					menu->popup();
+					grab_focus();
+
+				}
 			} else {
 
 				if (mb.button_index==BUTTON_LEFT)
@@ -4146,6 +4155,38 @@ bool TextEdit::is_text_field() const {
 
     return true;
 }
+
+void TextEdit::menu_option(int p_option) {
+
+	switch( p_option ) {
+		case MENU_CUT: {
+
+			cut();
+		} break;
+		case MENU_COPY: {
+			copy();
+		} break;
+		case MENU_PASTE: {
+
+			paste();
+		} break;
+		case MENU_CLEAR: {
+			clear();
+		} break;
+		case MENU_SELECT_ALL: {
+			select_all();
+		} break;
+		case MENU_UNDO: {
+			undo();
+		} break;
+
+	};
+}
+
+PopupMenu *TextEdit::get_menu() const {
+	return menu;
+}
+
 void TextEdit::_bind_methods() {
 
 
@@ -4215,6 +4256,8 @@ void TextEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_symbol_color","color"),&TextEdit::set_symbol_color);
 	ObjectTypeDB::bind_method(_MD("set_custom_bg_color","color"),&TextEdit::set_custom_bg_color);
 	ObjectTypeDB::bind_method(_MD("clear_colors"),&TextEdit::clear_colors);
+	ObjectTypeDB::bind_method(_MD("menu_option"),&TextEdit::menu_option);
+	ObjectTypeDB::bind_method(_MD("get_menu:PopupMenu"),&TextEdit::get_menu);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret/caret_blink"), _SCS("cursor_set_blink_enabled"), _SCS("cursor_get_blink_enabled"));;
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "caret/caret_blink_speed",PROPERTY_HINT_RANGE,"0.1,10,0.1"), _SCS("cursor_set_blink_speed"),_SCS("cursor_get_blink_speed") );
@@ -4222,6 +4265,15 @@ void TextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("cursor_changed"));
 	ADD_SIGNAL(MethodInfo("text_changed"));
 	ADD_SIGNAL(MethodInfo("request_completion"));
+
+	BIND_CONSTANT( MENU_CUT );
+	BIND_CONSTANT( MENU_COPY );
+	BIND_CONSTANT( MENU_PASTE );
+	BIND_CONSTANT( MENU_CLEAR );
+	BIND_CONSTANT( MENU_SELECT_ALL );
+	BIND_CONSTANT( MENU_UNDO );
+	BIND_CONSTANT( MENU_MAX );
+
 
 }
 
@@ -4327,6 +4379,20 @@ TextEdit::TextEdit()  {
 	brace_matching_enabled=false;
 	auto_indent=false;
 	insert_mode = false;
+
+	menu = memnew( PopupMenu );
+	add_child(menu);
+	menu->add_item(TTR("Cut"),MENU_CUT,KEY_MASK_CMD|KEY_X);
+	menu->add_item(TTR("Copy"),MENU_COPY,KEY_MASK_CMD|KEY_C);
+	menu->add_item(TTR("Paste"),MENU_PASTE,KEY_MASK_CMD|KEY_V);
+	menu->add_separator();
+	menu->add_item(TTR("Select All"),MENU_SELECT_ALL,KEY_MASK_CMD|KEY_A);
+	menu->add_item(TTR("Clear"),MENU_CLEAR);
+	menu->add_separator();
+	menu->add_item(TTR("Undo"),MENU_UNDO,KEY_MASK_CMD|KEY_Z);
+	menu->connect("item_pressed",this,"menu_option");
+
+
 }
 
 TextEdit::~TextEdit()
