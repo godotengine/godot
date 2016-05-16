@@ -61,9 +61,8 @@ private:
 	int max_columns;
 	Size2 min_icon_size;
 	Size2 max_icon_size;
-	int defer_select_single;
 
-	bool allow_rmb_select;
+	int defer_select_single;
 
 	void _scroll_changed(double);
 	void _input_event(const InputEvent& p_event);
@@ -138,9 +137,6 @@ public:
 
 	void set_max_icon_size(const Size2& p_size);
 	Size2 get_max_icon_size() const;
-
-	void set_allow_rmb_select(bool p_allow);
-	bool get_allow_rmb_select() const;
 
 	void ensure_current_is_visible();
 
