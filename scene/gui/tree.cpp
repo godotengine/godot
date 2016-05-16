@@ -2389,8 +2389,12 @@ void Tree::_input_event(InputEvent p_event) {
 						}
 
 					}
-					if (!root)
+					if (!root || (!root->get_children() && hide_root)) {
+						if (b.button_index==BUTTON_RIGHT && allow_rmb_select) {
+							emit_signal("empty_tree_rmb_selected",get_local_mouse_pos());
+						}
 						break;
+					}
 
 					click_handled=false;
 					pressing_for_editor=false;
@@ -3551,9 +3555,10 @@ void Tree::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_single_select_cell_editing_only_when_already_selected"),&Tree::get_single_select_cell_editing_only_when_already_selected);
 
 	ADD_SIGNAL( MethodInfo("item_selected"));
-	ADD_SIGNAL( MethodInfo("item_rmb_selected",PropertyInfo(Variant::VECTOR2,"pos")));
 	ADD_SIGNAL( MethodInfo("cell_selected"));
 	ADD_SIGNAL( MethodInfo("multi_selected",PropertyInfo(Variant::OBJECT,"item"),PropertyInfo(Variant::INT,"column"),PropertyInfo(Variant::BOOL,"selected")) );
+	ADD_SIGNAL( MethodInfo("item_rmb_selected",PropertyInfo(Variant::VECTOR2,"pos")));
+	ADD_SIGNAL( MethodInfo("empty_tree_rmb_selected",PropertyInfo(Variant::VECTOR2,"pos")));
 	ADD_SIGNAL( MethodInfo("item_edited"));
 	ADD_SIGNAL( MethodInfo("item_collapsed",PropertyInfo(Variant::OBJECT,"item")));
 	//ADD_SIGNAL( MethodInfo("item_doubleclicked" ) );

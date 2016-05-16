@@ -66,6 +66,8 @@ class SceneTreeEditor : public Control {
 	PopupMenu *inheritance_menu;
 	ObjectID instance_node;
 
+	String filter;
+
 	AcceptDialog *error;
 	ConfirmationDialog *clear_inherit_confirm;
 
@@ -73,7 +75,7 @@ class SceneTreeEditor : public Control {
 
 	void _compute_hash(Node *p_node,uint64_t &hash);
 
-	void _add_nodes(Node *p_node,TreeItem *p_parent);
+	bool _add_nodes(Node *p_node,TreeItem *p_parent);
 	void _test_update_tree();
 	void _update_tree();
 	void _tree_changed();
@@ -124,6 +126,8 @@ class SceneTreeEditor : public Control {
 
 public:
 
+	void set_filter(const String& p_filter);
+	String get_filter() const;
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo=p_undo_redo; };
 	void set_display_foreign_nodes(bool p_display);
