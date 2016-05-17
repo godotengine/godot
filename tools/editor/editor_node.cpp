@@ -4940,7 +4940,13 @@ Variant EditorNode::drag_resource(const Ref<Resource>& p_res,Control* p_from) {
 
 Variant EditorNode::drag_files(const Vector<String>& p_files, Control *p_from){
 
+	Vector2 offset(5,5);
+	Panel *panel = memnew( Panel );
+	panel->set_self_opacity(0.6f);
+
 	VBoxContainer *files = memnew( VBoxContainer );
+	files->set_margin(MARGIN_LEFT, offset.x);
+	files->set_margin(MARGIN_TOP, offset.y);
 
 	int max_files=6;
 
@@ -4948,13 +4954,19 @@ Variant EditorNode::drag_files(const Vector<String>& p_files, Control *p_from){
 
 		Label* label=memnew( Label );
 		label->set_text(p_files[i].get_file());
+		label->set("custom_colors/font_color_shadow", Color(0,0,0));
+		label->set("custom_constants/shadow_as_outline", 1);
 		files->add_child(label);
+
 	}
 
 	if (p_files.size()>max_files) {
 
 		Label* label=memnew( Label );
-		label->set_text(itos(p_files.size()-max_files)+" "+TTR("More File(s)"));
+		label->set_text("... "+itos(p_files.size()-max_files)+" "+TTR("More File(s)"));
+		label->set("custom_colors/font_color", Color(1,1,0.3));
+		label->set("custom_colors/font_color_shadow", Color(0,0,0));
+		label->set("custom_constants/shadow_as_outline", 1);
 		files->add_child(label);
 
 	}
@@ -4963,7 +4975,9 @@ Variant EditorNode::drag_files(const Vector<String>& p_files, Control *p_from){
 	drag_data["files"]=p_files;
 	drag_data["from"]=p_from;
 
-	p_from->set_drag_preview(files); //wait until it enters scene
+	panel->set_size(files->get_minimum_size() + offset*2);
+	panel->add_child(files);
+	p_from->set_drag_preview(panel); //wait until it enters scene
 
 	return drag_data;
 
@@ -4971,21 +4985,36 @@ Variant EditorNode::drag_files(const Vector<String>& p_files, Control *p_from){
 
 Variant EditorNode::drag_files_and_dirs(const Vector<String>& p_files, Control *p_from){
 
+	Vector2 offset(5,5);
+	Panel *panel = memnew( Panel );
+	panel->set_self_opacity(0.6f);
+
 	VBoxContainer *files = memnew( VBoxContainer );
+	files->set_margin(MARGIN_LEFT, offset.x);
+	files->set_margin(MARGIN_TOP, offset.y);
 
 	int max_files=6;
 
 	for(int i=0;i<MIN(max_files,p_files.size());i++) {
 
 		Label* label=memnew( Label );
-		label->set_text(p_files[i].get_file());
+		String filename(p_files[i].get_file());
+		if (filename.size()==0){ // for folder name
+			filename=p_files[i].get_base_dir().get_file();
+		}
+		label->set_text(filename);
+		label->set("custom_colors/font_color_shadow", Color(0,0,0));
+		label->set("custom_constants/shadow_as_outline", 1);
 		files->add_child(label);
 	}
 
 	if (p_files.size()>max_files) {
 
 		Label* label=memnew( Label );
-		label->set_text(itos(p_files.size()-max_files)+" "+TTR("More File(s) and/or Directory(s)"));
+		label->set_text("... "+itos(p_files.size()-max_files)+" "+TTR("More File(s) and/or Directory(s)"));
+		label->set("custom_colors/font_color", Color(1,1,0.3));
+		label->set("custom_colors/font_color_shadow", Color(0,0,0));
+		label->set("custom_constants/shadow_as_outline", 1);
 		files->add_child(label);
 
 	}
@@ -4994,7 +5023,9 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String>& p_files, Control *
 	drag_data["files"]=p_files;
 	drag_data["from"]=p_from;
 
-	p_from->set_drag_preview(files); //wait until it enters scene
+	panel->set_size(files->get_minimum_size() + offset*2);
+	panel->add_child(files);
+	p_from->set_drag_preview(panel); //wait until it enters scene
 
 	return drag_data;
 
