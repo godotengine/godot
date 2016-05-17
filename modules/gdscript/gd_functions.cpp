@@ -1226,12 +1226,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_ISNAN: {
-			MethodInfo mi("isnan",PropertyInfo(Variant::REAL,"s"));
+			MethodInfo mi("is_nan",PropertyInfo(Variant::REAL,"s"));
 			mi.return_val.type=Variant::REAL;
 			return mi;
 		} break;
 		case MATH_ISINF: {
-			MethodInfo mi("isinf",PropertyInfo(Variant::REAL,"s"));
+			MethodInfo mi("is_inf",PropertyInfo(Variant::REAL,"s"));
 			mi.return_val.type=Variant::REAL;
 			return mi;
 		} break;
