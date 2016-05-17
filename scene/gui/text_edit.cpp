@@ -56,6 +56,10 @@ static bool _is_number(CharType c) {
 	return (c >= '0' && c <= '9');
 }
 
+static bool _is_hex_symbol(CharType c) {
+	return ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
+}
+
 static bool _is_pair_right_symbol(CharType c) {
 	return
 			c == '"'  ||
@@ -673,6 +677,7 @@ void TextEdit::_notification(int p_what) {
 				bool in_word = false;
 				bool in_function_name = false;
 				bool in_member_variable = false;
+				bool is_hex_notation = false;
 				Color keyword_color;
 
 				// check if line contains highlighted word
@@ -731,18 +736,29 @@ void TextEdit::_notification(int p_what) {
 							in_region=-1; //reset regions that end at end of line
 						}
 
+						// allow ABCDEF in hex notation
+						if (is_hex_notation && (_is_hex_symbol(str[j]) || is_number)) {
+							is_number = true;
+						} else {
+							is_hex_notation = false;
+						}
+
+						// check for dot or 'x' for hex notation in floating point number
+						if ((str[j] == '.' || str[j] == 'x') && !in_word && prev_is_number && !is_number)  {
+							is_number = true;
+							is_symbol = false;
+
+							if (str[j] == 'x' && str[j-1] == '0') {
+								is_hex_notation = true;
+							}
+						}
+
 						if (!in_word && _is_char(str[j])) {
 							in_word = true;
 						}
 
-						if (in_keyword || in_word) {
+						if ((in_keyword || in_word) && !is_hex_notation) {
 							is_number = false;
-						}
-
-						// check for dot in floating point number
-						if (str[j] == '.' && !in_word && prev_is_number)  {
-							is_number = true;
-							is_symbol = false;
 						}
 
 						if (is_symbol && str[j] != '.' && in_word) {
