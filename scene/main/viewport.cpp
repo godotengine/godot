@@ -1157,6 +1157,8 @@ void Viewport::set_as_render_target(bool p_enable){
 
 	render_target_texture->set_flags(render_target_texture->flags);
 	render_target_texture->emit_changed();
+
+	update_configuration_warning();
 }
 
 bool Viewport::is_set_as_render_target() const{
@@ -2399,6 +2401,18 @@ bool Viewport::is_input_disabled() const {
 Variant Viewport::gui_get_drag_data() const {
 	return gui.drag_data;
 }
+
+
+String Viewport::get_configuration_warning() const {
+
+	if (get_parent() && !get_parent()->cast_to<Control>() && !render_target) {
+
+		return TTR("This viewport is not set as render target. If you intend for it to display it's contents directly to the screen, make it a child of a Control so it can obtain a size. Otherwise, make it a RenderTarget and assign it's internal texture to some node for display.");
+	}
+
+	return String();
+}
+
 void Viewport::_bind_methods() {
 
 

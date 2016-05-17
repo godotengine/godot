@@ -317,6 +317,10 @@ public:
 
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
 
+	virtual String get_configuration_warning() const;
+
+	void update_configuration_warning();
+
 	/* CANVAS */
 
 	Node();

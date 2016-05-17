@@ -171,6 +171,8 @@ SceneStringNames::SceneStringNames() {
 	blend_times=StaticCString::create("blend_times");
 	speed=StaticCString::create("speed");
 
+	node_configuration_warning_changed = StaticCString::create("node_configuration_warning_changed");
+
 	path_pp=NodePath("..");
 
 	_default=StaticCString::create("default");

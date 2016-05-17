@@ -612,26 +612,8 @@ void SceneTreeDock::_notification(int p_what) {
 				canvas_item_plugin->get_canvas_item_editor()->connect("item_group_status_changed", scene_tree, "_update_tree");
 				scene_tree->connect("node_changed", canvas_item_plugin->get_canvas_item_editor()->get_viewport_control(), "update");
 			}
-			static const char* button_names[TOOL_BUTTON_MAX]={
-				"New",
-				"Add",
-				"Replace",
-				"Connect",
-				"Groups",
-				"Script",
-				"MoveUp",
-				"MoveDown",
-				"Duplicate",
-				"Reparent",
-				"CreateNewSceneFrom",
-				"MultiNodeEdit",
-				"Remove",
-			};
-
-
-
-			for(int i=0;i<TOOL_BUTTON_MAX;i++)
-				tool_buttons[i]->set_icon(get_icon(button_names[i],"EditorIcons"));
+			button_add->set_icon(get_icon("Add","EditorIcons"));
+			button_instance->set_icon(get_icon("Instance","EditorIcons"));
 
 			filter_icon->set_texture(get_icon("Zoom","EditorIcons"));
 
@@ -1246,33 +1228,11 @@ void SceneTreeDock::_delete_confirm() {
 
 	}
 	editor_data->get_undo_redo().commit_action();
-	_update_tool_buttons();
-
-}
-
-void SceneTreeDock::_update_tool_buttons() {
-
-	Node *sel = scene_tree->get_selected();
-	bool disable = !sel || (sel!=edited_scene && sel->get_owner()!=edited_scene);
-	disable = disable || (edited_scene->get_scene_inherited_state().is_valid() && edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(sel))>=0);
-	bool disable_root = disable || sel->get_parent()==scene_root;
-	bool disable_edit = !sel;
-
-	tool_buttons[TOOL_INSTANCE]->set_disabled(disable_edit);
-	tool_buttons[TOOL_REPLACE]->set_disabled(disable);
-	tool_buttons[TOOL_CONNECT]->set_disabled(disable_edit);
-	tool_buttons[TOOL_GROUP]->set_disabled(disable_edit);
-	tool_buttons[TOOL_SCRIPT]->set_disabled(disable_edit);
-	tool_buttons[TOOL_MOVE_UP]->set_disabled(disable_root);
-	tool_buttons[TOOL_MOVE_DOWN]->set_disabled(disable_root);
-	tool_buttons[TOOL_DUPLICATE]->set_disabled(disable_root);
-	tool_buttons[TOOL_REPARENT]->set_disabled(disable_root);
-	tool_buttons[TOOL_ERASE]->set_disabled(disable);
-	tool_buttons[TOOL_NEW_SCENE_FROM]->set_disabled(disable_root);
-	tool_buttons[TOOL_MULTI_EDIT]->set_disabled(EditorNode::get_singleton()->get_editor_selection()->get_selection().size()<2);
 
 
 }
+
+
 
 
 void SceneTreeDock::_selection_changed() {
@@ -1415,7 +1375,7 @@ void SceneTreeDock::_create() {
 
 		memdelete(n);
 
-		_update_tool_buttons();
+
 
 	}
 
@@ -1430,7 +1390,7 @@ void SceneTreeDock::set_edited_scene(Node* p_scene) {
 void SceneTreeDock::set_selected(Node *p_node, bool p_emit_selected ) {
 
 	scene_tree->set_selected(p_node,p_emit_selected);
-	_update_tool_buttons();
+
 }
 
 void SceneTreeDock::import_subscene() {
@@ -1803,50 +1763,23 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 	VBoxContainer *vbc = this;
 
-	HBoxContainer *hbc_top = memnew( HBoxContainer );
-	vbc->add_child(hbc_top);
-
+	HBoxContainer *filter_hbc = memnew( HBoxContainer );
 	ToolButton *tb;
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_NEW, false));
 	tb->set_tooltip("Add/Create a New Node\n("+keycode_get_string(KEY_MASK_CMD|KEY_A)+")");
-	hbc_top->add_child(tb);
-	tool_buttons[TOOL_NEW]=tb;
+	filter_hbc->add_child(tb);
+	button_add=tb;
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_INSTANCE, false));
-	tb->set_tooltip(TTR("Instance a scene file as a Node."));
-	hbc_top->add_child(tb);
-	tool_buttons[TOOL_INSTANCE]=tb;
+	tb->set_tooltip(TTR("Instance a scene file as a Node. Creates an inherited scene if no root node exists."));
+	filter_hbc->add_child(tb);
+	button_instance=tb;
 
-	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_REPLACE, false));
-	tb->set_tooltip(TTR("Replace a Node by Another Node Type"));
-	hbc_top->add_child(tb);
-	tool_buttons[TOOL_REPLACE]=tb;
 
-	hbc_top->add_spacer();
 
-	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_CONNECT, false));
-	tb->set_tooltip(TTR("Edit the Node Connections"));
-	hbc_top->add_child(tb);
-	tool_buttons[TOOL_CONNECT]=tb;
-
-	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_GROUP, false));
-	tb->set_tooltip(TTR("Edit the Node Groups"));
-	hbc_top->add_child(tb);
-	tool_buttons[TOOL_GROUP]=tb;
-
-	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_SCRIPT, false));
-	tb->set_tooltip(TTR("Edit/Create the Node Script"));
-	hbc_top->add_child(tb);
-	tool_buttons[TOOL_SCRIPT]=tb;
-
-	HBoxContainer *filter_hbc = memnew( HBoxContainer );
 	vbc->add_child(filter_hbc);
 	filter = memnew( LineEdit );
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1874,54 +1807,6 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	scene_tree->set_undo_redo(&editor_data->get_undo_redo());
 	scene_tree->set_editor_selection(editor_selection);
 
-
-	HBoxContainer *hbc_bottom = memnew( HBoxContainer );
-	vbc->add_child(hbc_bottom);
-	hbc_bottom->add_constant_override("separation", 0);
-
-	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_MOVE_UP, false));
-	tb->set_tooltip("Move Node Up\n("+keycode_get_string(KEY_MASK_CMD|KEY_UP)+")");
-	hbc_bottom->add_child(tb);
-	tool_buttons[TOOL_MOVE_UP]=tb;
-
-	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_MOVE_DOWN, false));
-	tb->set_tooltip("Move Node Down\n("+keycode_get_string(KEY_MASK_CMD|KEY_DOWN)+")");
-	hbc_bottom->add_child(tb);
-	tool_buttons[TOOL_MOVE_DOWN]=tb;
-
-	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_DUPLICATE, false));
-	tb->set_tooltip("Duplicate Selected Node(s)\n("+keycode_get_string(KEY_MASK_CMD|KEY_D)+")");
-	hbc_bottom->add_child(tb);
-	tool_buttons[TOOL_DUPLICATE]=tb;
-
-	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_REPARENT, false));
-	tb->set_tooltip(TTR("Reparent Selected Node(s)"));
-	hbc_bottom->add_child(tb);
-	tool_buttons[TOOL_REPARENT]=tb;
-
-	hbc_bottom->add_spacer();
-
-	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_NEW_SCENE_FROM, false));
-	tb->set_tooltip(TTR("Create New Scene From Node(s)"));
-	hbc_bottom->add_child(tb);
-	tool_buttons[TOOL_NEW_SCENE_FROM]=tb;
-
-	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_MULTI_EDIT, false));
-	tb->set_tooltip(TTR("Multi-Edit Selected Nodes"));
-	hbc_bottom->add_child(tb);
-	tool_buttons[TOOL_MULTI_EDIT]=tb;
-
-	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_ERASE, false));
-	tb->set_tooltip(TTR("Erase Selected Node(s)"));
-	hbc_bottom->add_child(tb);
-	tool_buttons[TOOL_ERASE]=tb;
 
 	create_dialog = memnew( CreateDialog );
 	create_dialog->set_base_type("Node");
@@ -1970,12 +1855,6 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	add_child(menu);
 	menu->connect("item_pressed",this,"_tool_selected");
 	first_enter=true;
-
-	if (!EditorSettings::get_singleton()->get("scenetree_editor/display_old_action_buttons")) {
-		for(int i=0;i<TOOL_BUTTON_MAX;i++) {
-			tool_buttons[i]->hide();
-		}
-	}
 
 
 	vbc->add_constant_override("separation",4);

@@ -257,6 +257,17 @@ struct NoCaseComparator {
  /* end of namespace */
 
 //tool translate
+#ifdef TOOLS_ENABLED
+
 String TTR(const String&);
+
+#else
+
+#define TTR(m_val) (String())
+
+#endif
+
+//tool or regular translate
+String RTR(const String&);
 
 #endif

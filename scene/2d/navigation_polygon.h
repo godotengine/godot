@@ -77,6 +77,8 @@ public:
 	void set_navigation_polygon(const Ref<NavigationPolygon>& p_navpoly);
 	Ref<NavigationPolygon> get_navigation_polygon() const;
 
+	String get_configuration_warning() const;
+
 	NavigationPolygonInstance();
 };
 

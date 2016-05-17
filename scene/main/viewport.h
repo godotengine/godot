@@ -364,6 +364,8 @@ public:
 
 	Variant gui_get_drag_data() const;
 
+	virtual String get_configuration_warning() const;
+
 	Viewport();
 	~Viewport();
 

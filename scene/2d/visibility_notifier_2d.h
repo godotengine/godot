@@ -103,6 +103,8 @@ public:
 	void set_enabler(Enabler p_enabler,bool p_enable);
 	bool is_enabler_enabled(Enabler p_enabler) const;
 
+	String get_configuration_warning() const;
+
 	VisibilityEnabler2D();
 
 };

@@ -452,6 +452,7 @@ void AnimatedSprite::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 	_change_notify();
 	_reset_timeout();
 	update();
+	update_configuration_warning();
 
 }
 
@@ -485,6 +486,8 @@ void AnimatedSprite::set_frame(int p_frame) {
 	update();
 	_change_notify("frame");
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
+
+
 
 }
 int AnimatedSprite::get_frame() const {
@@ -644,6 +647,15 @@ void AnimatedSprite::set_animation(const StringName& p_animation){
 StringName AnimatedSprite::get_animation() const{
 
 	return animation;
+}
+
+String AnimatedSprite::get_configuration_warning() const {
+
+	if (frames.is_null()) {
+		return TTR("A SpriteFrames resource must be created or set in the 'Frames' property in order for AnimatedSprite to display frames.");
+	}
+
+	return String();
 }
 
 void AnimatedSprite::_bind_methods() {

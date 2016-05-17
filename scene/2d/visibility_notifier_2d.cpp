@@ -346,6 +346,16 @@ void VisibilityEnabler2D::_node_removed(Node* p_node) {
 
 }
 
+String VisibilityEnabler2D::get_configuration_warning() const {
+
+	if (is_inside_tree() && get_parent() && (get_parent()->get_filename()==String() && get_parent()!=get_tree()->get_edited_scene_root())) {
+		return TTR("VisibilityEnable2D works best when used with the edited scene root directly as parent.");
+	}
+
+	return String();
+}
+
+
 void VisibilityEnabler2D::_bind_methods(){
 
 	ObjectTypeDB::bind_method(_MD("set_enabler","enabler","enabled"),&VisibilityEnabler2D::set_enabler);

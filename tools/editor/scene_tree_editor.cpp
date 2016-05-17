@@ -207,6 +207,15 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 			_update_tree();
 			emit_signal("node_changed");
 		}
+	} else if (p_id==BUTTON_WARNING) {
+
+		String config_err = n->get_configuration_warning();
+		if (config_err==String())
+			return;
+		config_err=config_err.world_wrap(80);
+		warning->set_text(config_err);
+		warning->popup_centered_minsize();
+
 	}
 }
 
@@ -274,6 +283,12 @@ bool SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 			}
 			node=node->get_parent();
 		}
+	}
+
+	String warning = p_node->get_configuration_warning();
+
+	if (warning!=String()) {
+		item->add_button(0,get_icon("NodeWarning","EditorIcons"),BUTTON_WARNING);
 	}
 
 	if (p_node==get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
@@ -558,6 +573,8 @@ void SceneTreeEditor::_notification(int p_what) {
 
 		get_tree()->connect("tree_changed",this,"_tree_changed");
 		get_tree()->connect("node_removed",this,"_node_removed");
+		get_tree()->connect("node_configuration_warning_changed",this,"_warning_changed");
+
 		instance_menu->set_item_icon(3,get_icon("Load","EditorIcons"));
 		tree->connect("item_collapsed",this,"_cell_collapsed");
 		inheritance_menu->set_item_icon(2,get_icon("Load","EditorIcons"));
@@ -574,6 +591,7 @@ void SceneTreeEditor::_notification(int p_what) {
 		get_tree()->disconnect("node_removed",this,"_node_removed");
 		tree->disconnect("item_collapsed",this,"_cell_collapsed");
 		clear_inherit_confirm->disconnect("confirmed",this,"_subscene_option");
+		get_tree()->disconnect("node_configuration_warning_changed",this,"_warning_changed");
 	}
 
 }
@@ -666,7 +684,7 @@ void SceneTreeEditor::_renamed() {
 	String new_name=which->get_text(0);
 	if (new_name.find(".") != -1 || new_name.find("/") != -1) {
 
-		error->set_text("Invalid node name, the following characters are not allowed:\n  \".\", \"/\"");
+		error->set_text(TTR("Invalid node name, the following characters are not allowed:\n  \".\", \"/\""));
 		error->popup_centered_minsize();
 		new_name=n->get_name();
 	}
@@ -949,6 +967,13 @@ void SceneTreeEditor::_rmb_select(const Vector2& p_pos) {
 }
 
 
+void SceneTreeEditor::_warning_changed(Node* p_for_node) {
+
+	//should use a timer
+	update_timer->start();
+//	print_line("WARNING CHANGED "+String(p_for_node->get_name()));
+
+}
 
 void SceneTreeEditor::_bind_methods() {
 
@@ -965,6 +990,7 @@ void SceneTreeEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_cell_collapsed",&SceneTreeEditor::_cell_collapsed);
 	ObjectTypeDB::bind_method("_subscene_option",&SceneTreeEditor::_subscene_option);
 	ObjectTypeDB::bind_method("_rmb_select",&SceneTreeEditor::_rmb_select);
+	ObjectTypeDB::bind_method("_warning_changed",&SceneTreeEditor::_warning_changed);
 
 	ObjectTypeDB::bind_method("_node_script_changed",&SceneTreeEditor::_node_script_changed);
 	ObjectTypeDB::bind_method("_node_visibility_changed",&SceneTreeEditor::_node_visibility_changed);
@@ -972,6 +998,7 @@ void SceneTreeEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &SceneTreeEditor::get_drag_data_fw);
 	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &SceneTreeEditor::can_drop_data_fw);
 	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &SceneTreeEditor::drop_data_fw);
+
 
 	ADD_SIGNAL( MethodInfo("node_selected") );
 	ADD_SIGNAL( MethodInfo("node_renamed") );
@@ -1034,6 +1061,11 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	error = memnew( AcceptDialog );
 	add_child(error);
 
+	warning = memnew( AcceptDialog );
+	add_child(warning);
+	warning->set_title("Node Configuration Warning!");
+
+
 	show_enabled_subscene=false;
 
 	last_hash=0;
@@ -1062,6 +1094,11 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	clear_inherit_confirm->get_ok()->set_text(TTR("Clear!"));
 	add_child(clear_inherit_confirm);
 
+	update_timer = memnew(Timer);
+	update_timer->connect("timeout",this,"_update_tree");
+	update_timer->set_one_shot(true);
+	update_timer->set_wait_time(0.5);
+	add_child(update_timer);
 
 }
 

@@ -3048,3 +3048,47 @@ String Variant::get_call_error_text(Object* p_base, const StringName& p_method,c
 	}
 	return "'"+class_name+"::"+String(p_method)+"': "+err_text;
 }
+
+
+String vformat(const String& p_text, const Variant& p1,const Variant& p2,const Variant& p3,const Variant& p4,const Variant& p5) {
+
+	Array args;
+	if (p1.get_type()!=Variant::NIL) {
+
+		args.push_back(p1);
+
+		if (p2.get_type()!=Variant::NIL) {
+
+			args.push_back(p2);
+
+			if (p3.get_type()!=Variant::NIL) {
+
+				args.push_back(p3);
+
+				if (p4.get_type()!=Variant::NIL) {
+
+					args.push_back(p4);
+
+					if (p5.get_type()!=Variant::NIL) {
+
+						args.push_back(p5);
+
+					}
+
+				}
+
+
+			}
+
+		}
+
+	}
+
+	bool error=false;
+	String fmt = p_text.sprintf(args,&error);
+
+	ERR_FAIL_COND_V(error,String());
+
+	return fmt;
+
+}

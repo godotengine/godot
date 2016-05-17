@@ -600,6 +600,14 @@ float SamplePlayer::get_default_reverb() const {
 	return _default.reverb_send;
 }
 
+String SamplePlayer::get_configuration_warning() const {
+
+	if (library.is_null()) {
+		return TTR("A SampleLibrary resource must be created or set in the 'samples' property in order for SamplePlayer to play sound.");
+	}
+
+	return String();
+}
 
 void SamplePlayer::_bind_methods() {
 

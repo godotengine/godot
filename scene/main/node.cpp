@@ -2020,6 +2020,23 @@ void Node::clear_internal_tree_resource_paths() {
 
 }
 
+String Node::get_configuration_warning() const {
+
+	return String();
+}
+
+void Node::update_configuration_warning() {
+
+#ifdef TOOLS_ENABLED
+	if (!is_inside_tree())
+		return;
+	if (get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()==this || get_tree()->get_edited_scene_root()->is_a_parent_of(this))) {
+		get_tree()->emit_signal(SceneStringNames::get_singleton()->node_configuration_warning_changed,this);
+	}
+#endif
+
+}
+
 void Node::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_add_child_below_node","node:Node","child_node:Node","legible_unique_name"),&Node::add_child_below_node,DEFVAL(false));
@@ -2088,6 +2105,10 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_viewport"),&Node::get_viewport);
 
 	ObjectTypeDB::bind_method(_MD("queue_free"),&Node::queue_delete);
+
+
+
+
 #ifdef TOOLS_ENABLED
 	ObjectTypeDB::bind_method(_MD("_set_import_path","import_path"),&Node::set_import_path);
 	ObjectTypeDB::bind_method(_MD("_get_import_path"),&Node::get_import_path);

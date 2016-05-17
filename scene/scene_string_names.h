@@ -184,6 +184,8 @@ public:
 
 	StringName _default;
 
+	StringName node_configuration_warning_changed;
+
 };
 
 

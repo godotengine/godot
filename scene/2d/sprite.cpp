@@ -529,6 +529,25 @@ Rect2 ViewportSprite::get_item_rect() const {
 	return Rect2(ofs,s);
 }
 
+String ViewportSprite::get_configuration_warning() const {
+
+	if (!has_node(viewport_path) || !get_node(viewport_path) || !get_node(viewport_path)->cast_to<Viewport>()) {
+		return TTR("Path property must point to a valid Viewport node to work. Such Viewport must be set to 'render target' mode.");
+	} else {
+
+		Node *n = get_node(viewport_path);
+		if (n) {
+			Viewport *vp = n->cast_to<Viewport>();
+			if (!vp->is_set_as_render_target()) {
+
+				return TTR("The Viewport set in the path property must be set as 'render taget' in order for this sprite to work");
+			}
+		}
+	}
+
+	return String();
+
+}
 
 void ViewportSprite::_bind_methods() {
 

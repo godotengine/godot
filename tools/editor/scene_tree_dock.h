@@ -74,7 +74,9 @@ class SceneTreeDock : public VBoxContainer {
 	int current_option;
 	CreateDialog *create_dialog;
 
-	ToolButton *tool_buttons[TOOL_BUTTON_MAX];
+	ToolButton *button_add;
+	ToolButton *button_instance;
+
 	SceneTreeEditor *scene_tree;
 
 	HBoxContainer *tool_hbc;
@@ -121,7 +123,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _script_created(Ref<Script> p_script);
 
 	void _delete_confirm();
-	void _update_tool_buttons();
+
 
 	void _node_prerenamed(Node* p_node, const String& p_new_name);
 

@@ -417,6 +417,7 @@ void make_default_theme() {
 	t->set_constant("shadow_offset_x","Label", 1 );
 	t->set_constant("shadow_offset_y","Label", 1 );
 	t->set_constant("shadow_as_outline","Label", 0 );
+	t->set_constant("line_spacing","Label", 3 );
 
 
 
