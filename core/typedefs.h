@@ -78,9 +78,8 @@
 #endif
 
 #ifndef DEFAULT_ALIGNMENT
-#define DEFAULT_ALIGNMENT 1
+#define DEFAULT_ALIGNMENT 16
 #endif
-
 
 //custom, gcc-safe offsetof, because gcc complains a lot.
 template<class T>
@@ -139,6 +138,13 @@ T *_nullptr() { T*t=NULL; return t; }
 #ifndef CLAMP
 #define CLAMP(m_a,m_min,m_max) (((m_a)<(m_min))?(m_min):(((m_a)>(m_max))?m_max:m_a))
 #endif
+
+
+/**
+ * Declare the default aligned integer - it is used for side data in containers
+ */
+#define DEFAULT_ALIGNED_INTEGER (MAX(sizeof(int), DEFAULT_ALIGNMENT))
+
 
 /** Generic swap template */
 #ifndef SWAP
