@@ -834,15 +834,22 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2& p_point,Control* p_from)
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	Array objs;
+	int list_max = 10;
+	float opacity_step = 1.0f / list_max;
+	float opacity_item = 1.0f;
 	for(int i=0;i<selected.size();i++) {
 
-		HBoxContainer *hb = memnew( HBoxContainer );
-		TextureFrame *tf = memnew(TextureFrame);
-		tf->set_texture(icons[i]);
-		hb->add_child(tf);
-		Label *label = memnew( Label( selected[i]->get_name() ) );
-		hb->add_child(label);
-		vb->add_child(hb);
+		if (i<list_max){
+			HBoxContainer *hb = memnew( HBoxContainer );
+			TextureFrame *tf = memnew(TextureFrame);
+			tf->set_texture(icons[i]);
+			hb->add_child(tf);
+			Label *label = memnew( Label( selected[i]->get_name() ) );
+			hb->add_child(label);
+			vb->add_child(hb);
+			hb->set_opacity(opacity_item);
+			opacity_item -= opacity_step;
+		}
 		NodePath p = selected[i]->get_path();
 		objs.push_back(p);
 	}
