@@ -233,8 +233,6 @@ void SpriteFrames::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_animation_loop","anim","loop"),&SpriteFrames::set_animation_loop);
 	ObjectTypeDB::bind_method(_MD("get_animation_loop","anim"),&SpriteFrames::get_animation_loop);
 
-	ObjectTypeDB::bind_method(_MD("add_frame","frame","atpos"),&SpriteFrames::add_frame,DEFVAL(-1));
-
 	ObjectTypeDB::bind_method(_MD("add_frame","anim","frame","atpos"),&SpriteFrames::add_frame,DEFVAL(-1));
 	ObjectTypeDB::bind_method(_MD("get_frame_count","anim"),&SpriteFrames::get_frame_count);
 	ObjectTypeDB::bind_method(_MD("get_frame","anim","idx"),&SpriteFrames::get_frame);
