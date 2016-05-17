@@ -49,7 +49,7 @@ for fname in matches:
 				pos+=1
 
 			if (not msg in unique_str):
-				main_po+="\n#:"+fname+":"+str(lc)+"\n"
+				main_po+="\n#: "+os.path.relpath(fname).replace('\\','/')+":"+str(lc)+"\n"
 				main_po+='msgid "'+msg+'"\n'
 				main_po+='msgstr ""\n'
 				unique_str.append(msg)
