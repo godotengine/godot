@@ -3,6 +3,11 @@
 import fnmatch
 import os
 import re
+import shutil
+import subprocess
+
+if (not os.path.exists("tools")):
+	os.sys.exit("ERROR: This script should be started from the root of the git repo.")
 
 matches = []
 for root, dirnames, filenames in os.walk('.'):
@@ -18,6 +23,8 @@ for root, dirnames, filenames in os.walk('.'):
 
 unique_str=[]
 main_po=""
+
+print("Updating the tools.pot template...")
 
 for fname in matches:
 
@@ -56,3 +63,12 @@ for fname in matches:
 f = open("tools.pot","wb")
 f.write(main_po)
 f.close()
+
+shutil.move("tools.pot", "tools/translations/tools.pot")
+
+# TODO: Make that in a portable way, if we care; if not, kudos to Unix users
+if (os.name == "posix"):
+	added = subprocess.check_output("git diff tools/translations/tools.pot | grep \+msgid | wc -l", shell=True)
+	removed = subprocess.check_output("git diff tools/translations/tools.pot | grep \\\-msgid | wc -l", shell=True)
+	print("Template changes compared to the staged status:")
+	print("  Additions: %s msgids.\n  Deletions: %s msgids." % (int(added), int(removed)))
