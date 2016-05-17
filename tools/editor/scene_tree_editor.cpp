@@ -345,7 +345,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 		item->set_as_cursor(0);
 	}
 
-	bool keep= ( filter==String() || String(p_node->get_name()).find(filter)!=-1 );
+	bool keep= ( filter==String() || String(p_node->get_name()).to_lower().find(filter.to_lower())!=-1 );
 
 	for (int i=0;i<p_node->get_child_count();i++) {
 
