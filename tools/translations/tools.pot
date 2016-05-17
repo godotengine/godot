@@ -1,4 +1,116 @@
 
+#: scene/audio/sample_player.cpp:606
+msgid "A SampleLibrary resource must be created or set in the 'samples' property in order for SamplePlayer to play sound."
+msgstr ""
+
+#: scene/3d/body_shape.cpp:404
+msgid "CollisionShape only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
+msgstr ""
+
+#: scene/3d/body_shape.cpp:408
+msgid "A shape must be provided for CollisionShape to function. Please create a shape resource for it!"
+msgstr ""
+
+#: scene/3d/collision_polygon.cpp:237
+msgid "CollisionPolygon only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
+msgstr ""
+
+#: scene/3d/collision_polygon.cpp:241
+msgid "An empty CollisionPolygon has no effect on collision."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp:93
+msgid "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
+msgstr ""
+
+#: scene/3d/spatial_sample_player.cpp:197
+msgid "A SampleLibrary resource must be created or set in the 'samples' property in order for SpatialSamplePlayer to play sound."
+msgstr ""
+
+#: scene/3d/navigation_mesh.cpp:347
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr ""
+
+#: scene/3d/navigation_mesh.cpp:358
+msgid "NavigationMeshInstance must be a child or grandchild to a Navigation node. It only provides navigation data."
+msgstr ""
+
+#: scene/2d/particles_2d.cpp:211
+msgid "Path property must point to a valid Particles2D node to work."
+msgstr ""
+
+#: scene/2d/parallax_layer.cpp:125
+msgid "ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+
+#: scene/2d/visibility_notifier_2d.cpp:352
+msgid "VisibilityEnable2D works best when used with the edited scene root directly as parent."
+msgstr ""
+
+#: scene/2d/light_occluder_2d.cpp:187
+msgid "An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr ""
+
+#: scene/2d/light_occluder_2d.cpp:191
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
+msgstr ""
+
+#: scene/2d/navigation_polygon.cpp:438
+msgid "A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon."
+msgstr ""
+
+#: scene/2d/navigation_polygon.cpp:450
+msgid "NavigationPolygonInstance must be a child or grandchild to a Navigation2D node. It only provides navigation data."
+msgstr ""
+
+#: scene/2d/sprite.cpp:535
+msgid "Path property must point to a valid Viewport node to work. Such Viewport must be set to 'render target' mode."
+msgstr ""
+
+#: scene/2d/sprite.cpp:543
+msgid "The Viewport set in the path property must be set as 'render taget' in order for this sprite to work"
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp:303
+msgid "CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
+msgstr ""
+
+#: scene/2d/collision_polygon_2d.cpp:307
+msgid "An empty CollisionPolygon2D has no effect on collision."
+msgstr ""
+
+#: scene/2d/path_2d.cpp:246
+msgid "PathFolow2D only works when set as a child of a Path2D node."
+msgstr ""
+
+#: scene/2d/canvas_modulate.cpp:65
+msgid "Only one visible CanvasModulate is allowed per scene (or set of instanced scenes). The first one created will work, while the rest will be ignored."
+msgstr ""
+
+#: scene/2d/animated_sprite.cpp:655
+msgid "A SpriteFrames resource must be created or set in the 'Frames' property in order for AnimatedSprite to display frames."
+msgstr ""
+
+#: scene/2d/remote_transform_2d.cpp:113
+msgid "Path property must point to a valid Node2D node to work."
+msgstr ""
+
+#: scene/2d/collision_shape_2d.cpp:207
+msgid "CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
+msgstr ""
+
+#: scene/2d/collision_shape_2d.cpp:211
+msgid "A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!"
+msgstr ""
+
+#: scene/2d/light_2d.cpp:290
+msgid "A texture with the shape of the light must be supplied to the 'texture' property."
+msgstr ""
+
+#: scene/gui/popup.cpp:290
+msgid "Popups will hide by default unless you call popup() or any of the popup*() functions. Making them visible for editing is fine though, but they will hide upon running."
+msgstr ""
+
 #: scene/gui/text_edit.cpp:4401
 msgid "Cut"
 msgstr ""
@@ -21,6 +133,10 @@ msgstr ""
 
 #: scene/gui/text_edit.cpp:4408
 msgid "Undo"
+msgstr ""
+
+#: scene/main/viewport.cpp:2410
+msgid "This viewport is not set as render target. If you intend for it to display it's contents directly to the screen, make it a child of a Control so it can obtain a size. Otherwise, make it a RenderTarget and assign it's internal texture to some node for display."
 msgstr ""
 
 #: tools/editor/project_export.cpp:261
@@ -1603,47 +1719,51 @@ msgstr ""
 msgid "Toggle CanvasItem Visible"
 msgstr ""
 
-#: tools/editor/scene_tree_editor.cpp:281
+#: tools/editor/scene_tree_editor.cpp:296
 msgid "Inherits: "
 msgstr ""
 
-#: tools/editor/scene_tree_editor.cpp:285
+#: tools/editor/scene_tree_editor.cpp:300
 msgid "Instance: "
 msgstr ""
 
-#: tools/editor/scene_tree_editor.cpp:682
+#: tools/editor/scene_tree_editor.cpp:687
+msgid "Invalid node name, the following characters are not allowed:\n  \".\", \"/\""
+msgstr ""
+
+#: tools/editor/scene_tree_editor.cpp:700
 msgid "Rename Node"
 msgstr ""
 
-#: tools/editor/scene_tree_editor.cpp:1008
+#: tools/editor/scene_tree_editor.cpp:1035
 msgid "Scene Tree (Nodes):"
 msgstr ""
 
-#: tools/editor/scene_tree_editor.cpp:1045
+#: tools/editor/scene_tree_editor.cpp:1077
 msgid "Editable Children"
 msgstr ""
 
-#: tools/editor/scene_tree_editor.cpp:1046
+#: tools/editor/scene_tree_editor.cpp:1078
 msgid "Load As Placeholder"
 msgstr ""
 
-#: tools/editor/scene_tree_editor.cpp:1048
+#: tools/editor/scene_tree_editor.cpp:1080
 msgid "Open in Editor"
 msgstr ""
 
-#: tools/editor/scene_tree_editor.cpp:1053
+#: tools/editor/scene_tree_editor.cpp:1085
 msgid "Clear Inheritance"
 msgstr ""
 
-#: tools/editor/scene_tree_editor.cpp:1061
+#: tools/editor/scene_tree_editor.cpp:1093
 msgid "Clear Inheritance? (No Undo!)"
 msgstr ""
 
-#: tools/editor/scene_tree_editor.cpp:1062
+#: tools/editor/scene_tree_editor.cpp:1094
 msgid "Clear!"
 msgstr ""
 
-#: tools/editor/scene_tree_editor.cpp:1128
+#: tools/editor/scene_tree_editor.cpp:1165
 msgid "Select a Node"
 msgstr ""
 
@@ -2847,116 +2967,84 @@ msgstr ""
 msgid "Save New Scene As.."
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:977
+#: tools/editor/scene_tree_dock.cpp:959
 msgid "Makes Sense!"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:978
+#: tools/editor/scene_tree_dock.cpp:960
 msgid "Can't operate on nodes from a foreign scene!"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:987
+#: tools/editor/scene_tree_dock.cpp:969
 msgid "Can't operate on nodes the current scene inherits from!"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1181
+#: tools/editor/scene_tree_dock.cpp:1163
 msgid "Remove Node(s)"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1316
+#: tools/editor/scene_tree_dock.cpp:1276
 msgid "Create Node"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1454
+#: tools/editor/scene_tree_dock.cpp:1414
 msgid "Import Subscene"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1488
+#: tools/editor/scene_tree_dock.cpp:1448
 msgid "Couldn't save new scene. Likely dependencies (instances) couldn't be satisfied."
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1503
+#: tools/editor/scene_tree_dock.cpp:1463
 msgid "Error saving scene."
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1510
+#: tools/editor/scene_tree_dock.cpp:1470
 msgid "Error duplicating scene to save it."
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1701
+#: tools/editor/scene_tree_dock.cpp:1661
 msgid "New Scene Root"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1702
+#: tools/editor/scene_tree_dock.cpp:1662
 msgid "Inherit Scene"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1719
+#: tools/editor/scene_tree_dock.cpp:1679
 msgid "Add Child Node"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1720
+#: tools/editor/scene_tree_dock.cpp:1680
 msgid "Instance Child Scene"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1722
+#: tools/editor/scene_tree_dock.cpp:1682
 msgid "Change Type"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1724
+#: tools/editor/scene_tree_dock.cpp:1684
 msgid "Edit Groups"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1725
+#: tools/editor/scene_tree_dock.cpp:1685
 msgid "Edit Connections"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1727
+#: tools/editor/scene_tree_dock.cpp:1687
 msgid "Add Script"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1738
+#: tools/editor/scene_tree_dock.cpp:1698
 msgid "Save Branch as Scene"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1742
+#: tools/editor/scene_tree_dock.cpp:1702
 msgid "Delete Node(s)"
 msgstr ""
 
-#: tools/editor/scene_tree_dock.cpp:1819
-msgid "Instance a scene file as a Node."
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp:1825
-msgid "Replace a Node by Another Node Type"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp:1833
-msgid "Edit the Node Connections"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp:1839
-msgid "Edit the Node Groups"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp:1845
-msgid "Edit/Create the Node Script"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp:1902
-msgid "Reparent Selected Node(s)"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp:1910
-msgid "Create New Scene From Node(s)"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp:1916
-msgid "Multi-Edit Selected Nodes"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp:1922
-msgid "Erase Selected Node(s)"
+#: tools/editor/scene_tree_dock.cpp:1777
+msgid "Instance a scene file as a Node. Creates an inherited scene if no root node exists."
 msgstr ""
 
 #: tools/editor/create_dialog.cpp:254
