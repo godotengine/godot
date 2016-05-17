@@ -67,7 +67,9 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MERGE_FROM_SCENE,
 		TOOL_MULTI_EDIT,
 		TOOL_ERASE,
-		TOOL_BUTTON_MAX
+		TOOL_BUTTON_MAX,
+		TOOL_APPLY_CHANGES,
+		TOOL_REVERT_CHANGES
 	};
 
 
@@ -91,6 +93,7 @@ class SceneTreeDock : public VBoxContainer {
 	ScriptCreateDialog *script_create_dialog;
 	AcceptDialog *accept;
 	ConfirmationDialog *delete_dialog;
+	ConfirmationDialog *apply_changes_dialog;
 
 	ReparentDialog *reparent_dialog;
 	EditorFileDialog *file;
@@ -124,6 +127,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _script_created(Ref<Script> p_script);
 
 	void _delete_confirm();
+	void _apply_changes_confirm();
 
 
 	void _node_prerenamed(Node* p_node, const String& p_new_name);

@@ -596,6 +596,68 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			new_scene_from_dialog->set_title(TTR("Save New Scene As.."));
 
 		} break;
+		case TOOL_APPLY_CHANGES: {
+			Node *scene = editor_data->get_edited_scene_root();
+			
+
+			if (!scene) {
+				accept->get_ok()->set_text(TTR("I see.."));
+				accept->set_text("This operation can't be done without a scene.");
+				accept->popup_centered_minsize();
+				break;
+			}
+
+			List<Node*> selection = editor_selection->get_selected_node_list();
+
+			if (selection.size()!=1) {
+				accept->get_ok()->set_text(TTR("I see.."));
+				accept->set_text(TTR("This operation requires a single selected node."));
+				accept->popup_centered_minsize();
+				break;
+			}
+
+			Node *toapply = selection.front()->get();
+			
+			if (scene == toapply || toapply->get_filename() == "") {
+				accept->get_ok()->set_text(TTR("I see.."));
+				accept->set_text(TTR("This operation requires a instanced scene."));
+				accept->popup_centered_minsize();
+				break;
+			}
+			
+			apply_changes_dialog->set_text("This operation will override scene at " + toapply->get_filename());
+			apply_changes_dialog->popup_centered_minsize();
+		} break;
+		case TOOL_REVERT_CHANGES: {
+			Node *scene = editor_data->get_edited_scene_root();
+			
+
+			if (!scene) {
+				accept->get_ok()->set_text(TTR("I see.."));
+				accept->set_text("This operation can't be done without a scene.");
+				accept->popup_centered_minsize();
+				break;
+			}
+
+			List<Node*> selection = editor_selection->get_selected_node_list();
+			Node *torevert = selection.front()->get();
+		
+			if (scene == torevert || torevert->get_filename() == "") {
+				accept->get_ok()->set_text(TTR("I see.."));
+				accept->set_text(TTR("This operation requires a instanced scene."));
+				accept->popup_centered_minsize();
+				break;
+			}
+			Vector<String> torevert_path;
+			torevert_path.push_back(torevert->get_filename());
+			Node *parent = torevert->get_parent();
+			int index = torevert->get_index();
+			parent->remove_child(torevert);
+			instance_scenes(torevert_path, parent, index);
+			memdelete(torevert);
+			//torevert->replace_by()
+			
+		} break;
 
 	}
 
@@ -1234,8 +1296,45 @@ void SceneTreeDock::_delete_confirm() {
 	}
 	editor_data->get_undo_redo().commit_action();
 
-
 }
+
+void SceneTreeDock::_apply_changes_confirm() {
+	List<Node*> selection = editor_selection->get_selected_node_list();
+
+	if (selection.size()!=1) {
+		accept->get_ok()->set_text(TTR("I see.."));
+		accept->set_text(TTR("This operation requires a single selected node."));
+		accept->popup_centered_minsize();
+		return;
+	}
+	
+	Node *base = selection.front()->get();
+	
+	Ref<PackedScene> sdata = memnew( PackedScene );
+	Error err = sdata->pack(base);
+	
+	if (err!=OK) {
+		accept->get_ok()->set_text(TTR("I see.."));
+		accept->set_text(TTR("Couldn't save new scene. Likely dependencies (instances) couldn't be satisfied."));
+		accept->popup_centered_minsize();
+		return;
+	}
+
+	int flg=0;
+	if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
+		flg|=ResourceSaver::FLAG_COMPRESS;
+	if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
+		flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
+
+	err = ResourceSaver::save(base->get_filename(),sdata,flg);
+	if (err!=OK) {
+		accept->get_ok()->set_text(TTR("I see.."));
+		accept->set_text(TTR("Error saving scene."));
+		accept->popup_centered_minsize();
+		return;
+	}
+}
+
 
 
 
@@ -1702,6 +1801,8 @@ void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
 		menu->add_separator();
 		menu->add_icon_item(get_icon("Blend","EditorIcons"),TTR("Merge From Scene"),TOOL_MERGE_FROM_SCENE);
 		menu->add_icon_item(get_icon("Save","EditorIcons"),TTR("Save Branch as Scene"),TOOL_NEW_SCENE_FROM);
+        menu->add_icon_item(get_icon("Save", "EditorIcons"), TTR("Apply changes"), TOOL_APPLY_CHANGES);
+        menu->add_icon_item(get_icon("History", "EditorIcons"), TTR("Revert changes"), TOOL_REVERT_CHANGES);
 	}
 	menu->add_separator();
 
@@ -1744,6 +1845,7 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_script_open_request"),&SceneTreeDock::_script_open_request);
 	ObjectTypeDB::bind_method(_MD("_unhandled_key_input"),&SceneTreeDock::_unhandled_key_input);
 	ObjectTypeDB::bind_method(_MD("_delete_confirm"),&SceneTreeDock::_delete_confirm);
+	ObjectTypeDB::bind_method(_MD("_apply_changes_confirm"),&SceneTreeDock::_apply_changes_confirm);
 	ObjectTypeDB::bind_method(_MD("_node_prerenamed"),&SceneTreeDock::_node_prerenamed);
 	ObjectTypeDB::bind_method(_MD("_import_subscene"),&SceneTreeDock::_import_subscene);
 	ObjectTypeDB::bind_method(_MD("_selection_changed"),&SceneTreeDock::_selection_changed);
@@ -1847,6 +1949,10 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	delete_dialog = memnew( ConfirmationDialog );
 	add_child(delete_dialog);
 	delete_dialog->connect("confirmed",this,"_delete_confirm");
+	
+	apply_changes_dialog = memnew( ConfirmationDialog );
+	add_child(apply_changes_dialog);
+	apply_changes_dialog->connect("confirmed", this, "_apply_changes_confirm");
 
 	import_subscene_dialog = memnew( EditorSubScene );
 	add_child(import_subscene_dialog);
