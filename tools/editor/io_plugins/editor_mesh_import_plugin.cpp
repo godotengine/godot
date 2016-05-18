@@ -207,6 +207,13 @@ public:
 			return;
 		}
 
+		String dst = save_path->get_text();
+		if (dst=="") {
+			error_dialog->set_text(TTR("Save path is empty!"));
+			error_dialog->popup_centered_minsize();
+			return;
+		}
+
 		for(int i=0;i<meshes.size();i++) {
 
 			Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
@@ -224,16 +231,9 @@ public:
 
 			imd->add_source(EditorImportPlugin::validate_source_path(meshes[i]));
 
-			String dst = save_path->get_text();
-			if (dst=="") {
-				error_dialog->set_text(TTR("Save path is empty!"));
-				error_dialog->popup_centered_minsize();
-				return;
-			}
+			String file_path = dst.plus_file(meshes[i].get_file().basename()+".msh");
 
-			dst = dst.plus_file(meshes[i].get_file().basename()+".msh");
-
-			plugin->import(dst,imd);
+			plugin->import(file_path,imd);
 		}
 
 		hide();
