@@ -1508,7 +1508,21 @@ void Viewport::_gui_call_input(Control *p_control,const InputEvent& p_input) {
 			break;
 		if (p_control->data.stop_mouse && (p_input.type==InputEvent::MOUSE_BUTTON || p_input.type==InputEvent::MOUSE_MOTION))
 			break;
-		p_control=p_control->data.parent;
+
+		// input event pass to grandparent/parent/children tree
+		//	grandparent(Control)
+		//		parent(Node2D)
+		//			children(Control) focus/ignore_mouse is True
+		Node *node = p_control;
+		while(node != NULL) {
+
+			node = node->get_parent();
+			if(node == NULL)
+				break;
+			p_control = node->cast_to<Control>();
+			if(p_control != NULL)
+				break;
+		}
 	}
 
 	//_unblock();
