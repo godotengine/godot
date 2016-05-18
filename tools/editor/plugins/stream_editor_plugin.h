@@ -69,7 +69,7 @@ class StreamEditorPlugin : public EditorPlugin {
 
 public:
 
-	virtual String get_name() const { return TTR("Stream"); }
+	virtual String get_name() const { return "Stream"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
 	virtual bool handles(Object *p_node) const;

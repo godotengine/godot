@@ -251,7 +251,7 @@ void CreateDialog::_notification(int p_what) {
 void CreateDialog::set_base_type(const String& p_base) {
 
 	base_type=p_base;
-	set_title(TTR("Create New ")+p_base);
+	set_title(TTR("Create New")+" "+p_base);
 	_update_search();
 }
 
@@ -541,7 +541,7 @@ void CreateDialog::_bind_methods() {
 
 void CreateDialog::set_base_type(const String& p_base) {
 
-	set_title(TTR("Create ")+p_base+" Type");
+	set_title(vformat(TTR("Create %s Type"),p_base));
 
 	if (base==p_base)
 		return;

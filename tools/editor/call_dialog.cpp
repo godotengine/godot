@@ -239,7 +239,7 @@ void CallDialog::set_object(Object *p_object,StringName p_selected) {
 	return_value->clear();
 
 	_update_method_list();
-	method_label->set_text(TTR("Method List For ' ")+p_object->get_type()+" ':");
+	method_label->set_text(vformat(TTR("Method List For '%s':"),p_object->get_type()));
 }
 
 CallDialog::CallDialog() {

@@ -93,13 +93,13 @@ static void _compress_image(Image::CompressMode p_mode,Image *p_image) {
 	ResourceSaver::save(src_img,t);
 
 	Error err = OS::get_singleton()->execute(ttpath,args,true);
-	ERR_EXPLAIN(TTR("Could not execute PVRTC Tool: ")+ttpath);
+	ERR_EXPLAIN(TTR("Could not execute PVRTC tool:")+" "+ttpath);
 	ERR_FAIL_COND(err!=OK);
 
 
 	t=ResourceLoader::load(dst_img,"Texture");
 
-	ERR_EXPLAIN(TTR("Can't load back converted image using PVRTC Tool: ")+dst_img);
+	ERR_EXPLAIN(TTR("Can't load back converted image using PVRTC tool:")+" "+dst_img);
 	ERR_FAIL_COND(t.is_null());
 
 	*p_image=t->get_data();

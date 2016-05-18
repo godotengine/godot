@@ -66,7 +66,7 @@ void SceneTreeDock::instance(const String& p_file) {
 
 		current_option=-1;
 		//accept->get_cancel()->hide();
-		accept->get_ok()->set_text(TTR("Ok :( "));
+		accept->get_ok()->set_text(TTR("OK :("));
 		accept->set_text(TTR("No parent to instance a child at."));
 		accept->popup_centered_minsize();
 		return;
@@ -98,7 +98,7 @@ void SceneTreeDock::instance_scenes(const Vector<String>& p_files,Node* parent,i
 			current_option=-1;
 			//accept->get_cancel()->hide();
 			accept->get_ok()->set_text(TTR("Ugh"));
-			accept->set_text(String(TTR("Error loading scene from "))+p_files[i]);
+			accept->set_text(vformat(TTR("Error loading scene from %s"),p_files[i]));
 			accept->popup_centered_minsize();
 			error=true;
 			break;
@@ -110,7 +110,7 @@ void SceneTreeDock::instance_scenes(const Vector<String>& p_files,Node* parent,i
 			current_option=-1;
 			//accept->get_cancel()->hide();
 			accept->get_ok()->set_text(TTR("Ugh"));
-			accept->set_text(String(TTR("Error instancing scene from "))+p_files[i]);
+			accept->set_text(vformat(TTR("Error instancing scene from %s"),p_files[i]));
 			accept->popup_centered_minsize();
 			error=true;
 			break;
@@ -122,7 +122,7 @@ void SceneTreeDock::instance_scenes(const Vector<String>& p_files,Node* parent,i
 			if (_cyclical_dependency_exists(edited_scene->get_filename(), instanced_scene)) {
 
 				accept->get_ok()->set_text(TTR("Ok"));
-				accept->set_text(String(TTR("Cannot instance the scene '"))+p_files[i]+String(TTR("' because the current scene exists within one of its' nodes.")));
+				accept->set_text(vformat(TTR("Cannot instance the scene '%s' because the current scene exists within one of its nodes."),p_files[i]));
 				accept->popup_centered_minsize();
 				error=true;
 				break;

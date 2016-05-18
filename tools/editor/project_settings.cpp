@@ -139,7 +139,7 @@ void ProjectSettings::_action_edited() {
 		ti->set_text(0,old_name);
 		add_at="input/"+old_name;
 
-		message->set_text(TTR("Invalid Action (Anything goes but / or :)."));
+		message->set_text(TTR("Invalid action (anything goes but '/' or ':')."));
 		message->popup_centered(Size2(300,100));
 		return;
 	}
@@ -151,7 +151,7 @@ void ProjectSettings::_action_edited() {
 		ti->set_text(0,old_name);
 		add_at="input/"+old_name;
 
-		message->set_text(TTR("Action '")+new_name+"' already exists!.");
+		message->set_text(vformat(TTR("Action '%s' already exists!"),new_name));
 		message->popup_centered(Size2(300,100));
 		return;
 	}
@@ -357,7 +357,7 @@ void ProjectSettings::_add_item(int p_item){
 			for(int i=0;i<JOY_AXIS_MAX*2;i++) {
 
 				String desc = _axis_names[i];
-				device_index->add_item(TTR("Axis ")+itos(i/2)+" "+(i&1?"+":"-")+desc);
+				device_index->add_item(TTR("Axis")+" "+itos(i/2)+" "+(i&1?"+":"-")+desc);
 			}
 			device_input->popup_centered(Size2(350,95));
 
@@ -517,7 +517,7 @@ void ProjectSettings::_update_actions() {
 				} break;
 				case InputEvent::JOYSTICK_BUTTON: {
 
-					String str = TTR("Device ")+itos(ie.device)+", Button "+itos(ie.joy_button.button_index);
+					String str = TTR("Device")+" "+itos(ie.device)+", "+TTR("Button")+" "+itos(ie.joy_button.button_index);
 					if (ie.joy_button.button_index>=0 && ie.joy_button.button_index<JOY_BUTTON_MAX)
 						str+=String()+" ("+_button_names[ie.joy_button.button_index]+").";
 					else
@@ -528,14 +528,14 @@ void ProjectSettings::_update_actions() {
 				} break;
 				case InputEvent::MOUSE_BUTTON: {
 
-					String str = TTR("Device ")+itos(ie.device)+", ";
+					String str = TTR("Device")+" "+itos(ie.device)+", ";
 					switch (ie.mouse_button.button_index) {
 						case BUTTON_LEFT: str+=TTR("Left Button."); break;
 						case BUTTON_RIGHT: str+=TTR("Right Button."); break;
 						case BUTTON_MIDDLE: str+=TTR("Middle Button."); break;
 						case BUTTON_WHEEL_UP: str+=TTR("Wheel Up."); break;
 						case BUTTON_WHEEL_DOWN: str+=TTR("Wheel Down."); break;
-						default: str+=TTR("Button ")+itos(ie.mouse_button.button_index)+".";
+						default: str+=TTR("Button")+" "+itos(ie.mouse_button.button_index)+".";
 					}
 
 					action->set_text(0,str);
@@ -546,7 +546,7 @@ void ProjectSettings::_update_actions() {
 					int ax = ie.joy_motion.axis;
 					int n = 2*ax + (ie.joy_motion.axis_value<0 ? 0:1);
 					String desc = _axis_names[n];
-					String str = TTR("Device ")+itos(ie.device)+", Axis "+itos(ax)+" "+(ie.joy_motion.axis_value<0?"-":"+")+desc +".";
+					String str = TTR("Device")+" "+itos(ie.device)+", "+TTR("Axis")+" "+itos(ax)+" "+(ie.joy_motion.axis_value<0?"-":"+")+desc +".";
 					action->set_text(0,str);
 					action->set_icon(0,get_icon("JoyAxis","EditorIcons"));
 				} break;
@@ -650,13 +650,13 @@ void ProjectSettings::_action_add() {
 
 	String action = action_name->get_text();
 	if (action.find("/")!=-1 || action.find(":")!=-1 || action=="") {
-		message->set_text(TTR("Invalid Action (Anything goes but / or :)."));
+		message->set_text(TTR("Invalid action (anything goes but '/' or ':')."));
 		message->popup_centered(Size2(300,100));
 		return;
 	}
 
 	if (Globals::get_singleton()->has("input/"+action)) {
-		message->set_text(TTR("Action '")+action+"' already exists!.");
+		message->set_text(vformat(TTR("Action '%s' already exists!"),action));
 		message->popup_centered(Size2(300,100));
 		return;
 	}
@@ -710,7 +710,7 @@ void ProjectSettings::_item_checked(const String& p_item, bool p_check) {
 void ProjectSettings::_save() {
 
 	Error err = Globals::get_singleton()->save();
-	message->set_text(err!=OK?TTR("Error saving settings."):"Settings Saved OK.");
+	message->set_text(err!=OK?TTR("Error saving settings."):TTR("Settings saved OK."));
 	message->popup_centered(Size2(300,100));
 }
 
@@ -851,7 +851,7 @@ void ProjectSettings::_autoload_edited() {
 	if (checked)
 		path="*"+path;
 
-	undo_redo->create_action(TTR("Toggle Autoload GlobalVar"));
+	undo_redo->create_action(TTR("Toggle AutoLoad Globals"));
 	undo_redo->add_do_property(Globals::get_singleton(),base,path);
 	undo_redo->add_undo_property(Globals::get_singleton(),base,Globals::get_singleton()->get(base));
 	undo_redo->add_do_method(Globals::get_singleton(),"set_order",base,order); // keep order, as config order matters for these
@@ -869,7 +869,7 @@ void ProjectSettings::_autoload_add() {
 
 	String name = autoload_add_name->get_text();
 	if (!name.is_valid_identifier()) {
-		message->set_text("Invalid Name.\nValid characters: a-z,A-Z,0-9 or _");
+		message->set_text(TTR("Invalid name.")+"\n"+TTR("Valid characters:")+" a-z, A-Z, 0-9 or _");
 		message->popup_centered(Size2(300,100));
 		return;
 
@@ -877,7 +877,7 @@ void ProjectSettings::_autoload_add() {
 
 	if (ObjectTypeDB::type_exists(name)) {
 
-		message->set_text(TTR("Invalid Name.Must not collide with an existing engine class name."));
+		message->set_text(TTR("Invalid name. Must not collide with an existing engine class name."));
 		message->popup_centered(Size2(300,100));
 		return;
 
@@ -886,7 +886,7 @@ void ProjectSettings::_autoload_add() {
 	for(int i=0;i<Variant::VARIANT_MAX;i++) {
 		if (Variant::get_type_name(Variant::Type(i))==name) {
 
-			message->set_text(TTR("Invalid Name.Must not collide with an existing buit-in type name."));
+			message->set_text(TTR("Invalid name. Must not collide with an existing buit-in type name."));
 			message->popup_centered(Size2(300,100));
 			return;
 
@@ -897,7 +897,7 @@ void ProjectSettings::_autoload_add() {
 
 		if (GlobalConstants::get_global_constant_name(i)==name) {
 
-			message->set_text(TTR("Invalid Name.Must not collide with an existing global constant name."));
+			message->set_text(TTR("Invalid name. Must not collide with an existing global constant name."));
 			message->popup_centered(Size2(300,100));
 			return;
 		}

@@ -362,7 +362,7 @@ Error EditorMeshImportPlugin::import(const String& p_path, const Ref<ResourceImp
 				if (mesh->surface_get_name(i)!="")
 					name=mesh->surface_get_name(i);
 				else
-					name=TTR("Surface ")+itos(i+1);
+					name=vformat(TTR("Surface %i"),i+1);
 
 				name_map[name]=mesh->surface_get_material(i);
 			}
@@ -498,7 +498,7 @@ Error EditorMeshImportPlugin::import(const String& p_path, const Ref<ResourceImp
 				surf_tool->index();
 				mesh = surf_tool->commit(mesh);
 				if (name=="")
-					name=TTR("Surface ")+itos(mesh->get_surface_count()-1);
+					name=vformat(TTR("Surface %i"),mesh->get_surface_count()-1);
 				mesh->surface_set_name(mesh->get_surface_count()-1,name);
 				name="";
 				surf_tool->clear();

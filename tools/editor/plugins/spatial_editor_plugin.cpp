@@ -561,7 +561,7 @@ void SpatialEditorViewport::_select_region() {
 
 void SpatialEditorViewport::_update_name() {
 
-	String ortho = orthogonal?TTR("Orthogonal"):"Perspective";
+	String ortho = orthogonal?TTR("Orthogonal"):TTR("Perspective");
 
 	if (name!="")
 		view_menu->set_text("[ "+name+" "+ortho+" ]");
@@ -1353,7 +1353,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 								scale = Math::stepify(scale,spatial_editor->get_scale_snap());
 							}
 
-							set_message(TTR("Scaling to ")+String::num(scale,1)+"%.");
+							set_message(vformat(TTR("Scaling to %s\%."),String::num(scale,1)));
 							scale/=100.0;
 
 							Transform r;
@@ -1431,7 +1431,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 								motion.snap(snap);
 							}
 
-							//set_message(TTR("Translating: ")+motion);
+							//set_message("Translating: "+motion);
 
 							List<Node*> &selection = editor_selection->get_selected_node_list();
 
@@ -1493,13 +1493,13 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 								if (snap) {
 									angle=Math::rad2deg(angle)+snap*0.5; //else it wont reach +180
 									angle-=Math::fmod(angle,snap);
-									set_message(TTR("Rotating ")+rtos(angle)+" degrees.");
+									set_message(vformat(TTR("Rotating %s degrees."),rtos(angle)));
 									angle=Math::deg2rad(angle);
 								} else
-									set_message(TTR("Rotating ")+rtos(Math::rad2deg(angle))+" degrees.");
+									set_message(vformat(TTR("Rotating %s degrees."),rtos(Math::rad2deg(angle))));
 
 							} else {
-								set_message(TTR("Rotating ")+rtos(Math::rad2deg(angle))+" degrees.");
+								set_message(vformat(TTR("Rotating %s degrees."),rtos(Math::rad2deg(angle))));
 							}
 
 
@@ -1967,7 +1967,7 @@ void SpatialEditorViewport::_draw() {
 	if (surface->has_focus()) {
 		Size2 size = surface->get_size();
 		Rect2 r =Rect2(Point2(),size);
-		get_stylebox(TTR("EditorFocus"),"EditorStyles")->draw(surface->get_canvas_item(),r);
+		get_stylebox("EditorFocus","EditorStyles")->draw(surface->get_canvas_item(),r);
 	}
 
 

@@ -293,13 +293,13 @@ bool SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 
 	if (p_node==get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
 		item->add_button(0,get_icon("InstanceOptions","EditorIcons"),BUTTON_SUBSCENE);
-		item->set_tooltip(0,TTR("Inherits: ")+p_node->get_scene_inherited_state()->get_path()+"\nType: "+p_node->get_type());
+		item->set_tooltip(0,TTR("Inherits:")+" "+p_node->get_scene_inherited_state()->get_path()+"\n"+TTR("Type:")+" "+p_node->get_type());
 	} else if (p_node!=get_scene_node() && p_node->get_filename()!="" && can_open_instance) {
 
 		item->add_button(0,get_icon("InstanceOptions","EditorIcons"),BUTTON_SUBSCENE);
-		item->set_tooltip(0,TTR("Instance: ")+p_node->get_filename()+"\nType: "+p_node->get_type());
+		item->set_tooltip(0,TTR("Instance:")+" "+p_node->get_filename()+"\n"+TTR("Type:")+" "+p_node->get_type());
 	} else {
-		item->set_tooltip(0,String(p_node->get_name())+"\nType: "+p_node->get_type());
+		item->set_tooltip(0,String(p_node->get_name())+"\n"+TTR("Type:")+" "+p_node->get_type());
 	}
 
 	if (can_open_instance) {
@@ -684,7 +684,7 @@ void SceneTreeEditor::_renamed() {
 	String new_name=which->get_text(0);
 	if (new_name.find(".") != -1 || new_name.find("/") != -1) {
 
-		error->set_text(TTR("Invalid node name, the following characters are not allowed:\n  \".\", \"/\""));
+		error->set_text(TTR("Invalid node name, the following characters are not allowed:")+"\n  \".\", \"/\"");
 		error->popup_centered_minsize();
 		new_name=n->get_name();
 	}

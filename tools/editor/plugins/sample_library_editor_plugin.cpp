@@ -248,7 +248,7 @@ void SampleLibraryEditor::_update_library() {
 		ti->set_cell_mode(2,TreeItem::CELL_MODE_STRING);
 		ti->set_editable(2,false);
 		ti->set_selectable(2,false);
-		ti->set_text(2,String()+/*itos(smp->get_length())+" frames ("+String::num(smp->get_length()/(float)smp->get_mix_rate(),2)+" smp), "+*/(smp->get_format()==Sample::FORMAT_PCM16?"16 Bits, ":(smp->get_format()==Sample::FORMAT_PCM8?"8 bits, ":TTR("IMA-ADPCM,")))+(smp->is_stereo()?"Stereo":"Mono"));
+		ti->set_text(2,String()+(smp->get_format()==Sample::FORMAT_PCM16?"16 Bits, ":(smp->get_format()==Sample::FORMAT_PCM8?"8 bits, ":"IMA-ADPCM,"))+(smp->is_stereo()?TTR("Stereo"):TTR("Mono")));
 
 		// Volume dB
 		ti->set_cell_mode(3,TreeItem::CELL_MODE_RANGE);

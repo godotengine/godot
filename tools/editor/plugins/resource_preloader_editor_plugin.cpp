@@ -206,11 +206,11 @@ void ResourcePreloaderEditor::_delete_pressed() {
 
 	_delete_confirm_pressed(); //it has undo.. why bother with a dialog..
 	/*
-	dialog->set_title(TTR("Confirm..."));
-	dialog->set_text(TTR("Remove Resource '")+tree->get_selected()->get_text(0)+"' ?");
-	//dialog->get_cancel()->set_text(TTR("Cancel"));
+	dialog->set_title("Confirm...");
+	dialog->set_text("Remove Resource '"+tree->get_selected()->get_text(0)+"' ?");
+	//dialog->get_cancel()->set_text("Cancel");
 	//dialog->get_ok()->show();
-	dialog->get_ok()->set_text(TTR("Remove"));
+	dialog->get_ok()->set_text("Remove");
 	dialog->popup_centered(Size2(300,60));*/
 
 }

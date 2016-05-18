@@ -249,7 +249,7 @@ void ParticlesEditor::_generate_emission_points() {
 
 		if (gcount==0) {
 
-			err_dialog->set_text(TTR("No Faces!"));
+			err_dialog->set_text(TTR("No faces!"));
 			err_dialog->popup_centered_minsize();
 			return;
 		}

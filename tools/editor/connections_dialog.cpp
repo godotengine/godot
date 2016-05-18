@@ -429,7 +429,7 @@ ConnectDialog::ConnectDialog() {
 	make_callback = memnew( CheckButton );
 	make_callback->set_toggle_mode(true);
 	make_callback->set_pressed( EDITOR_DEF("text_editor/create_signal_callbacks",true));
-	make_callback->set_text(TTR("Make Function  "));
+	make_callback->set_text(TTR("Make Function"));
 	dstm_hb->add_child(make_callback);
 
 	deferred = memnew( CheckButton );
@@ -447,7 +447,7 @@ ConnectDialog::ConnectDialog() {
 	realtime->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	realtime->set_begin( Point2( 120, button_margin-10 ) );
 	realtime->set_end( Point2( 80, margin ) );
-	realtime->set_text(TTR("Realtime"));
+	realtime->set_text("Realtime");
 	add_child(realtime);
 */
 
@@ -511,7 +511,7 @@ void ConnectionsDialog::_connect() {
 	StringArray args =  it->get_metadata(0).operator Dictionary()["args"];
 	int flags = CONNECT_PERSIST | (defer?CONNECT_DEFERRED:0) | (oshot?CONNECT_ONESHOT:0);
 
-	undo_redo->create_action(TTR("Connect '")+signal+"' to '"+String(dst_method)+"'");
+	undo_redo->create_action(vformat(TTR("Connect '%s' to '%s'"),signal,String(dst_method)));
 	undo_redo->add_do_method(node,"connect",signal,target,dst_method,binds,flags);
 	undo_redo->add_undo_method(node,"disconnect",signal,target,dst_method);
 	undo_redo->add_do_method(this,"update_tree");

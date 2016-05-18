@@ -859,7 +859,7 @@ void ScenesDock::_move_operation(const String& p_to_path) {
 
 	for(int i=0;i<move_dirs.size();i++) {
 		if (p_to_path.begins_with(move_dirs[i])) {
-			EditorNode::get_singleton()->show_warning(TTR("Can't move directories to within themselves"));
+			EditorNode::get_singleton()->show_warning(TTR("Can't move directories to within themselves."));
 			return;
 		}
 
@@ -1036,7 +1036,7 @@ void ScenesDock::_file_option(int p_option) {
 				rename_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 				rename_dialog->set_current_path(move_files[0]);
 				rename_dialog->popup_centered_ratio();
-				rename_dialog->set_title(TTR("Pick New Name and Location For: ")+move_files[0].get_file());
+				rename_dialog->set_title(TTR("Pick New Name and Location For:")+" "+move_files[0].get_file());
 
 
 			} else {

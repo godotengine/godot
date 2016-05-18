@@ -278,7 +278,7 @@ ImportSettingsDialog::ImportSettingsDialog(EditorNode *p_editor) {
 	set_child_rect(tree);
 	set_title(TTR("Imported Resources"));
 
-	texformat=TTR("Keep,None,Disk,VRAM");
+//	texformat="Keep,None,Disk,VRAM";
 
 	tree->set_hide_root(true);
 	tree->set_columns(2);

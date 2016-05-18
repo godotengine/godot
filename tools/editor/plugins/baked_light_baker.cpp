@@ -728,14 +728,14 @@ void BakedLightBaker::_make_octree() {
 	for(int i=0;i<8;i++)
 		root->children[i]=0;
 
-	EditorProgress ep("bake_octree",TTR("Parsing ")+itos(triangles.size())+" Triangles:",triangles.size());
+	EditorProgress ep("bake_octree",vformat(TTR("Parsing %i Triangles:"), triangles.size()),triangles.size());
 
 	for(int i=0;i<triangles.size();i++) {
 
 		_octree_insert(0,&triangles[i],octree_depth-1);
 		if ((i%1000)==0) {
 
-			ep.step(TTR("Triangle# ")+itos(i),i);
+			ep.step(TTR("Triangle #")+itos(i),i);
 		}
 	}
 

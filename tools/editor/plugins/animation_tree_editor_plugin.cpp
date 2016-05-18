@@ -990,12 +990,12 @@ void AnimationTreeEditor::_notification(int p_what) {
 				case AnimationTreePlayer::CONNECT_OK: {
 
 					Ref<Font> f = get_font("font","Label");
-					f->draw(get_canvas_item(),Point2(5,25+f->get_ascent()),TTR("Animation Tree is Valid."),Color(0,1,0.6,0.8));
+					f->draw(get_canvas_item(),Point2(5,25+f->get_ascent()),TTR("Animation tree is valid."),Color(0,1,0.6,0.8));
 				} break;
 				default: {
 
 					   Ref<Font> f = get_font("font","Label");
-					   f->draw(get_canvas_item(),Point2(5,25+f->get_ascent()),TTR("Animation Tree is Invalid."),Color(1,0.6,0.0,0.8));
+					   f->draw(get_canvas_item(),Point2(5,25+f->get_ascent()),TTR("Animation tree is invalid."),Color(1,0.6,0.0,0.8));
 				} break;
 			}
 
@@ -1369,7 +1369,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	p->add_item(TTR("TimeSeek Node"),AnimationTreePlayer::NODE_TIMESEEK);
 	p->add_item(TTR("Transition Node"),AnimationTreePlayer::NODE_TRANSITION);
 	p->add_separator();
-	p->add_item(TTR("Import Animations..."), MENU_IMPORT_ANIMATIONS); // wtf
+	p->add_item(TTR("Import Animations.."), MENU_IMPORT_ANIMATIONS); // wtf
 	p->add_separator();
 	p->add_item(TTR("Clear"),MENU_GRAPH_CLEAR);
 
@@ -1524,7 +1524,7 @@ AnimationTreeEditorPlugin::AnimationTreeEditorPlugin(EditorNode *p_node) {
 	anim_tree_editor = memnew( AnimationTreeEditor );
 	anim_tree_editor->set_custom_minimum_size(Size2(0,300));
 
-	button=editor->add_bottom_panel_item(TTR("AnimationTree"),anim_tree_editor);
+	button=editor->add_bottom_panel_item("AnimationTree",anim_tree_editor);
 	button->hide();
 
 

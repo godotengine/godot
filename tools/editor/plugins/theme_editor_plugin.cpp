@@ -199,7 +199,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 	if (!file) {
 
 
-		ERR_EXPLAIN(TTR("Can't save theme to file: ")+filename);
+		ERR_EXPLAIN(TTR("Can't save theme to file:")+" "+filename);
 		return;
 	}
 	file->store_line("; ******************* ");

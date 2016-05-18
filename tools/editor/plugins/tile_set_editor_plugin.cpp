@@ -175,7 +175,7 @@ void TileSetEditor::_name_dialog_confirm(const String& name) {
 			if (tileset->has_tile(id)) {
 				tileset->remove_tile(id);
 			} else {
-				err_dialog->set_text(TTR("Could not find tile: ") + name);
+				err_dialog->set_text(TTR("Could not find tile:")+" " + name);
 				err_dialog->popup_centered(Size2(300, 60));
 			}
 		} break;

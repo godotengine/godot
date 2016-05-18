@@ -507,15 +507,15 @@ void EditorSceneImporterFBXConv::_parse_materials(State& state) {
 				if (tex.is_valid() && texture.has("type")) {
 
 					String type=texture["type"];
-					if (type==TTR("DIFFUSE"))
+					if (type=="DIFFUSE")
 						mat->set_texture(FixedMaterial::PARAM_DIFFUSE,tex);
-					else if (type==TTR("SPECULAR"))
+					else if (type=="SPECULAR")
 						mat->set_texture(FixedMaterial::PARAM_SPECULAR,tex);
-					else if (type==TTR("SHININESS"))
+					else if (type=="SHININESS")
 						mat->set_texture(FixedMaterial::PARAM_SPECULAR_EXP,tex);
 					else if (type=="NORMAL")
 						mat->set_texture(FixedMaterial::PARAM_NORMAL,tex);
-					else if (type==TTR("EMISSIVE"))
+					else if (type=="EMISSIVE")
 						mat->set_texture(FixedMaterial::PARAM_EMISSION,tex);
 				}
 
@@ -570,13 +570,13 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 				exists[Mesh::ARRAY_COLOR]=true;
 				ofs[Mesh::ARRAY_COLOR]=stride;
 				stride+=4;
-			} else if (attr==TTR("COLORPACKED")) {
+			} else if (attr=="COLORPACKED") {
 				stride+=1; //ignore
-			} else if (attr==TTR("TANGENT")) {
+			} else if (attr=="TANGENT") {
 				exists[Mesh::ARRAY_TANGENT]=true;
 				ofs[Mesh::ARRAY_TANGENT]=stride;
 				stride+=3;
-			} else if (attr==TTR("BINORMAL")) {
+			} else if (attr=="BINORMAL") {
 				binormal_ofs=stride;
 				stride+=3;
 			} else if (attr=="TEXCOORD0") {
@@ -587,10 +587,10 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 				exists[Mesh::ARRAY_TEX_UV2]=true;
 				ofs[Mesh::ARRAY_TEX_UV2]=stride;
 				stride+=2;
-			} else if (attr.begins_with(TTR("TEXCOORD"))) {
+			} else if (attr.begins_with("TEXCOORD")) {
 				stride+=2;
-			} else if (attr.begins_with(TTR("BLENDWEIGHT"))) {
-				int idx=attr.replace(TTR("BLENDWEIGHT"),"").to_int();
+			} else if (attr.begins_with("BLENDWEIGHT")) {
+				int idx=attr.replace("BLENDWEIGHT","").to_int();
 				if (idx==0) {
 					exists[Mesh::ARRAY_BONES]=true;
 					ofs[Mesh::ARRAY_BONES]=stride;
@@ -799,13 +799,13 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 
 			if (part.has("type")) {
 				String type=part["type"];
-				if (type==TTR("LINES"))
+				if (type=="LINES")
 					pt=Mesh::PRIMITIVE_LINES;
-				else if (type==TTR("POINTS"))
+				else if (type=="POINTS")
 					pt=Mesh::PRIMITIVE_POINTS;
-				else if (type==TTR("TRIANGLE_STRIP"))
+				else if (type=="TRIANGLE_STRIP")
 					pt=Mesh::PRIMITIVE_TRIANGLE_STRIP;
-				else if (type==TTR("LINE_STRIP"))
+				else if (type=="LINE_STRIP")
 					pt=Mesh::PRIMITIVE_LINE_STRIP;
 			}
 
@@ -1056,7 +1056,7 @@ Error EditorSceneImporterFBXConv::_parse_fbx(State& state,const String& p_path) 
 	}
 
 	args.push_back("-o");
-	args.push_back(TTR("G3DJ"));
+	args.push_back("G3DJ");
 	args.push_back(path);
 
 	int res;

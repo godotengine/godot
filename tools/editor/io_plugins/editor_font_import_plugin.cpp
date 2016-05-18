@@ -527,7 +527,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 		Ref<ResourceImportMetadata> rimd = get_rimd();
 
 		if (rimd.is_null()) {
-			error_dialog->set_text(TTR("Can't load/process source font"));
+			error_dialog->set_text(TTR("Can't load/process source font."));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
@@ -657,7 +657,7 @@ public:
 		testhb->add_child(test_color);
 
 		vbl->add_spacer();
-		vbl->add_margin_child(TTR("Test: "),testhb);
+		vbl->add_margin_child(TTR("Test:")+" ",testhb);
 		/*
 		HBoxContainer *upd_hb = memnew( HBoxContainer );
 //		vbl->add_child(upd_hb);
@@ -887,7 +887,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 	if (src_path.extension().to_lower()=="fnt") {
 
 		if (ResourceLoader::load(src_path).is_valid()) {
-			EditorNode::get_singleton()->show_warning(TTR("Path: ")+src_path+"\nIs a Godot font file, please supply a BMFont type file instead.");
+			EditorNode::get_singleton()->show_warning(TTR("Path:")+" "+src_path+"\n"+TTR("This file is already a Godot font file, please supply a BMFont type file instead."));
 			return Ref<BitmapFont>();
 		}
 
@@ -895,7 +895,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 		font.instance();
 		Error err = font->create_from_fnt(src_path);
 		if (err) {
-			EditorNode::get_singleton()->show_warning(TTR("Path: ")+src_path+"\nFailed opening as BMFont file.");
+			EditorNode::get_singleton()->show_warning(TTR("Path:")+" "+src_path+"\n"+TTR("Failed opening as BMFont file."));
 			return Ref<BitmapFont>();
 		}
 
@@ -939,7 +939,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 
 	if ( error ) {
 		FT_Done_FreeType( library );
-		ERR_EXPLAIN(TTR("Invalid font size. "));
+		ERR_EXPLAIN(TTR("Invalid font size."));
 		ERR_FAIL_COND_V( error,Ref<BitmapFont>() );
 
 	}
@@ -986,7 +986,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 		if ( !fa ) {
 
 			FT_Done_FreeType( library );
-			ERR_EXPLAIN(TTR("Invalid font custom source. "));
+			ERR_EXPLAIN(TTR("Invalid font custom source."));
 			ERR_FAIL_COND_V( !fa,Ref<BitmapFont>() );
 
 		}
