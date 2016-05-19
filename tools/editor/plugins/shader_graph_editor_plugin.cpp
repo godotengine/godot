@@ -2311,7 +2311,9 @@ void ShaderGraphView::_create_node(int p_id) {
 		TextureFrame *tex = memnew( TextureFrame );
 		tex->set_expand(true);
 		tex->set_custom_minimum_size(Size2(80,80));
+		tex->set_drag_forwarding(this);
 		gn->add_child(tex);
+		tex->set_ignore_mouse(false);
 		tex->set_texture(graph->texture_input_node_get_value(type,p_id));
 		ToolButton *edit = memnew( ToolButton );
 		edit->set_text("edit..");
@@ -2517,6 +2519,105 @@ void ShaderGraphView::_sg_updated() {
 	}
 }
 
+Variant ShaderGraphView::get_drag_data_fw(const Point2 &p_point, Control *p_from)
+{
+	TextureFrame* frame = p_from->cast_to<TextureFrame>();
+	if (!frame)
+		return Variant();
+
+	if (!frame->get_texture().is_valid())
+		return Variant();
+
+	RES res = frame->get_texture();
+	return EditorNode::get_singleton()->drag_resource(res,p_from);
+
+	return Variant();
+}
+
+bool ShaderGraphView::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const
+{
+	if (p_data.get_type() != Variant::DICTIONARY)
+		return false;
+
+	Dictionary d = p_data;
+
+	if (d.has("type")){
+		if (d["type"] == "resource" && d.has("resource")) {
+			Variant val = d["resource"];
+
+			if (val.get_type()==Variant::OBJECT) {
+				RES res = val;
+				if (res.is_valid() && res->cast_to<Texture>())
+					return true;
+			}
+		}
+		else if (d["type"] == "files" && d.has("files")) {
+			Vector<String> files = d["files"];
+			if (files.size() != 1)
+				return false;
+			return (ResourceLoader::get_resource_type(files[0]) == "ImageTexture");
+		}
+	}
+
+	return false;
+}
+
+void ShaderGraphView::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from)
+{
+	if (!can_drop_data_fw(p_point, p_data, p_from))
+		return;
+
+	TextureFrame *frame = p_from->cast_to<TextureFrame>();
+	if (!frame)
+		return;
+
+	Dictionary d = p_data;
+	Ref<Texture> tex;
+
+	if (d.has("type")) {
+		if (d["type"] == "resource" && d.has("resource")){
+			Variant val = d["resource"];
+
+			if (val.get_type()==Variant::OBJECT) {
+				RES res = val;
+				if (res.is_valid())
+					tex = Ref<Texture>(res->cast_to<Texture>());
+			}
+		}
+		else if (d["type"] == "files" && d.has("files")) {
+			Vector<String> files = d["files"];
+			RES res = ResourceLoader::load(files[0]);
+			if (res.is_valid())
+				tex = Ref<Texture>(res->cast_to<Texture>());
+		}
+	}
+
+	if (!tex.is_valid()) return;
+
+	GraphNode *gn = frame->get_parent()->cast_to<GraphNode>();
+	if (!gn) return;
+
+	int id = -1;
+	for(Map<int,GraphNode*>::Element *E = node_map.front();E;E=E->next())
+		if (E->get() == gn) {
+			id = E->key();
+			break;
+		}
+	print_line(String::num(double(id)));
+	if (id < 0) return;
+
+	if (graph->node_get_type(type,id)==ShaderGraph::NODE_TEXTURE_INPUT) {
+
+		UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
+		ur->create_action(TTR("Change Texture Uniform"));
+		ur->add_do_method(graph.ptr(),"texture_input_node_set_value",type,id,tex);
+		ur->add_undo_method(graph.ptr(),"texture_input_node_set_value",type,id,graph->texture_input_node_get_value(type,id));
+		ur->add_do_method(this,"_update_graph");
+		ur->add_undo_method(this,"_update_graph");
+		ur->commit_action();
+	}
+}
+
 void ShaderGraphView::set_graph(Ref<ShaderGraph> p_graph){
 
 
@@ -2622,6 +2723,10 @@ void ShaderGraphView::_bind_methods() {
 	ObjectTypeDB::bind_method("_comment_edited",&ShaderGraphView::_comment_edited);
 	ObjectTypeDB::bind_method("_color_ramp_changed",&ShaderGraphView::_color_ramp_changed);
 	ObjectTypeDB::bind_method("_curve_changed",&ShaderGraphView::_curve_changed);
+
+	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &ShaderGraphView::get_drag_data_fw);
+	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &ShaderGraphView::can_drop_data_fw);
+	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &ShaderGraphView::drop_data_fw);
 
 	ObjectTypeDB::bind_method("_sg_updated",&ShaderGraphView::_sg_updated);
 }
