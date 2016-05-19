@@ -1252,16 +1252,35 @@ void ScriptEditor::_menu_option(int p_option) {
 				Ref<Script> scr = current->get_edited_script();
 				if (scr.is_null())
 					return;
-				int line = tx->cursor_get_line();
-				int next_line = line + 1;
+
+				int from_line = tx->cursor_get_line();
+				int to_line = tx->cursor_get_line();
 				int column = tx->cursor_get_column();
 
-				if (line >= tx->get_line_count() - 1)
-					tx->set_line(line, tx->get_line(line) + "\n");
+				if (tx->is_selection_active()) {
+					from_line = tx->get_selection_from_line();
+					to_line = tx->get_selection_to_line();
+					column = tx->cursor_get_column();
+				}
+				int next_line = to_line + 1;
 
-				String line_clone = tx->get_line(line);
-				tx->insert_at(line_clone, next_line);
+				tx->begin_complex_operation();
+				for (int i = from_line; i <= to_line; i++) {
+
+					if (i >= tx->get_line_count() - 1) {
+							tx->set_line(i, tx->get_line(i) + "\n");
+					}
+					String line_clone = tx->get_line(i);
+					tx->insert_at(line_clone, next_line);
+					next_line++;
+				}
+
 				tx->cursor_set_column(column);
+				if (tx->is_selection_active()) {
+					tx->select(to_line + 1, tx->get_selection_from_column(), next_line - 1, tx->get_selection_to_column());
+				}
+
+				tx->end_complex_operation();
 				tx->update();
 
 			} break;
