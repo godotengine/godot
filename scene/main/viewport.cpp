@@ -1839,8 +1839,10 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 			if (over!=gui.mouse_over) {
 
-				if (gui.mouse_over)
+				if (gui.mouse_over){
 					gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_EXIT);
+					_gui_cancel_tooltip();
+				}
 
 				if (over)
 					over->notification(Control::NOTIFICATION_MOUSE_ENTER);
@@ -1848,8 +1850,6 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 			}
 
 			gui.mouse_over=over;
-
-			_gui_cancel_tooltip();
 
 			if (gui.drag_preview) {
 				gui.drag_preview->set_pos(mpos);
