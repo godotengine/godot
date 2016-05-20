@@ -3,7 +3,7 @@ buildscript {
 		jcenter()
 	}
 	dependencies {
-		classpath 'com.android.tools.build:gradle:1.2.0'
+		classpath 'com.android.tools.build:gradle:1.3.1'
 	}
 }
 
@@ -25,10 +25,12 @@ android {
 
 	lintOptions {
 		abortOnError false
+		disable 'MissingTranslation'
 	}
 
-	compileSdkVersion 19
-	buildToolsVersion "19.1"
+	compileSdkVersion 23
+	buildToolsVersion "23.0.3"
+	useLibrary 'org.apache.http.legacy'
 
 	packagingOptions {
 		exclude 'META-INF/LICENSE'
@@ -36,7 +38,7 @@ android {
 	}
 	defaultConfig {
 		minSdkVersion 14
-		targetSdkVersion 19
+		targetSdkVersion 23
 	}
 	sourceSets {
 		main {

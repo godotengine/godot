@@ -58,7 +58,7 @@ public class V14CustomNotification implements DownloadNotification.ICustomNotifi
     }
 
     @Override
-    public Notification updateNotification(Context c) {
+    public Notification.Builder updateNotification(Context c) {
         Notification.Builder builder = new Notification.Builder(c);
         builder.setContentTitle(mTitle);
         if (mTotalKB > 0 && -1 != mCurrentKB) {
@@ -80,7 +80,7 @@ public class V14CustomNotification implements DownloadNotification.ICustomNotifi
         builder.setContentIntent(mPendingIntent);
         builder.setOnlyAlertOnce(true);
 
-        return builder.getNotification();
+        return builder;
     }
 
     @Override
