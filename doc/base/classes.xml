@@ -7033,12 +7033,14 @@
 			<argument index="0" name="degrees" type="float">
 			</argument>
 			<description>
+			Set rotation of the layer in degree.
 			</description>
 		</method>
 		<method name="get_rotationd" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Get rotation of the layer in degree.
 			</description>
 		</method>
 		<method name="set_scale">
@@ -11290,18 +11292,21 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="dir" type="String">
 			</argument>
 			<description>
+			Set the current working directory of the file dialog.
 			</description>
 		</method>
 		<method name="set_current_file">
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
+			Set the current selected file name of the file dialog.
 			</description>
 		</method>
 		<method name="set_current_path">
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Set the current selected file path of the file dialog.
 			</description>
 		</method>
 		<method name="set_mode">
@@ -11322,6 +11327,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<return type="VBoxContainer">
 			</return>
 			<description>
+			Return the vertical box container of the dialog, custom controls can be added to it.
 			</description>
 		</method>
 		<method name="set_access">
@@ -11354,6 +11360,7 @@ This approximation makes straight segments between each point, then subdivides t
 		</method>
 		<method name="invalidate">
 			<description>
+			Invalidate and update the current dialog content list.
 			</description>
 		</method>
 	</methods>
@@ -20135,24 +20142,28 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Set whether the window is minimized.
 			</description>
 		</method>
 		<method name="is_window_minimized" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if the window is minimized.
 			</description>
 		</method>
 		<method name="set_window_maximized">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Set the window size to maximized.
 			</description>
 		</method>
 		<method name="is_window_maximized" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if the window is maximized.
 			</description>
 		</method>
 		<method name="set_screen_orientation">
@@ -20367,6 +20378,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="int">
 			</return>
 			<description>
+			Return	the current unix timestamp.
 			</description>
 		</method>
 		<method name="get_system_time_secs" qualifiers="const">
@@ -20508,6 +20520,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="String">
 			</return>
 			<description>
+			Return the absolute directory path of user data path([user://]).
 			</description>
 		</method>
 		<method name="get_system_dir" qualifiers="const">
