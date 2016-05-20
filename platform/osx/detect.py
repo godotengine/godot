@@ -68,9 +68,12 @@ def configure(env):
 		if (env["bits"]=="64"):
 		    env.Append(CCFLAGS=['-arch', 'x86_64'])
 		    env.Append(LINKFLAGS=['-arch', 'x86_64'])
-		else:
+		elif (env["bits"]=="32"):
 		    env.Append(CCFLAGS=['-arch', 'i386'])
 		    env.Append(LINKFLAGS=['-arch', 'i386'])
+		else:
+		    env.Append(CCFLAGS=['-arch', 'i386', '-arch', 'x86_64'])
+		    env.Append(LINKFLAGS=['-arch', 'i386', '-arch', 'x86_64'])
 	else:
 		#osxcross build
 		root=os.environ.get("OSXCROSS_ROOT",0)
