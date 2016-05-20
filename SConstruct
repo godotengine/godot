@@ -117,7 +117,7 @@ if profile:
 
 opts=Variables(customs, ARGUMENTS)
 opts.Add('target', 'Compile Target (debug/release_debug/release).', "debug")
-opts.Add('bits', 'Compile Target Bits (default/32/64).', "default")
+opts.Add('bits', 'Compile Target Bits (default/32/64/fat).', "default")
 opts.Add('platform','Platform: '+str(platform_list)+'.',"")
 opts.Add('p','Platform (same as platform=).',"")
 opts.Add('tools','Build Tools (Including Editor): (yes/no)','yes')
@@ -276,6 +276,8 @@ if selected_platform in platform_list:
 		suffix+=".32"
 	elif (env["bits"]=="64"):
 		suffix+=".64"
+	elif (env["bits"]=="fat"):
+		suffix+=".fat"
 
 	suffix+=env.extra_suffix
 
