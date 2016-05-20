@@ -2482,7 +2482,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_check_item(TTR("Orthogonal (Num5)"),VIEW_ORTHOGONAL);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_PERSPECTIVE),true);
 	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_check_item("Environment",VIEW_ENVIRONMENT);
+	view_menu->get_popup()->add_check_item(TTR("Environment"),VIEW_ENVIRONMENT);
 	view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(VIEW_ENVIRONMENT),true);
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_item(TTR("Audio Listener"),VIEW_AUDIO_LISTENER);

@@ -252,7 +252,7 @@ msgid "Filters to exclude from export (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
 
 #: tools/editor/project_export.cpp:1221
-msgid "Convert text scenes to binary on export"
+msgid "Convert text scenes to binary on export."
 msgstr ""
 
 #: tools/editor/project_export.cpp:1226
@@ -495,10 +495,6 @@ msgstr ""
 msgid "Method in target Node must be specified!"
 msgstr ""
 
-#: tools/editor/connections_dialog.cpp:297
-msgid "Dialogs"
-msgstr ""
-
 #: tools/editor/connections_dialog.cpp:303
 msgid "Connect To Node:"
 msgstr ""
@@ -521,10 +517,6 @@ msgstr ""
 
 #: tools/editor/connections_dialog.cpp:400
 msgid "Method In Node:"
-msgstr ""
-
-#: tools/editor/connections_dialog.cpp:419
-msgid "List.."
 msgstr ""
 
 #: tools/editor/connections_dialog.cpp:432
@@ -553,10 +545,6 @@ msgstr ""
 
 #: tools/editor/connections_dialog.cpp:575
 msgid "Create Subscription"
-msgstr ""
-
-#: tools/editor/connections_dialog.cpp:613
-msgid "Remove Subscription"
 msgstr ""
 
 #: tools/editor/connections_dialog.cpp:792
@@ -727,24 +715,8 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: tools/editor/spatial_editor_gizmos.cpp:734
-msgid "Radius"
-msgstr ""
-
-#: tools/editor/spatial_editor_gizmos.cpp:736
-msgid "Aperture"
-msgstr ""
-
 #: tools/editor/spatial_editor_gizmos.cpp:833
 msgid "Change Light Radius"
-msgstr ""
-
-#: tools/editor/spatial_editor_gizmos.cpp:1033
-msgid "FOV"
-msgstr ""
-
-#: tools/editor/spatial_editor_gizmos.cpp:1035
-msgid "Size"
 msgstr ""
 
 #: tools/editor/spatial_editor_gizmos.cpp:1083
@@ -753,14 +725,6 @@ msgstr ""
 
 #: tools/editor/spatial_editor_gizmos.cpp:1096
 msgid "Change Camera Size"
-msgstr ""
-
-#: tools/editor/spatial_editor_gizmos.cpp:1703
-msgid "Extents"
-msgstr ""
-
-#: tools/editor/spatial_editor_gizmos.cpp:1713
-msgid "Length"
 msgstr ""
 
 #: tools/editor/spatial_editor_gizmos.cpp:1841
@@ -1260,7 +1224,7 @@ msgid "Errors:"
 msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp:1317
-msgid "Stack Trace (if applies):"
+msgid "Stack Trace (if applicable):"
 msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp:1328
@@ -1327,7 +1291,7 @@ msgstr ""
 msgid "Imported Resources"
 msgstr ""
 
-#: tools/editor/import_settings.cpp:291
+#: tools/editor/import_settings.cpp:292
 msgid "Re-Import"
 msgstr ""
 
@@ -1575,10 +1539,6 @@ msgstr ""
 msgid "Del"
 msgstr ""
 
-#: tools/editor/project_settings.cpp:1559
-msgid "Save"
-msgstr ""
-
 #: tools/editor/project_settings.cpp:1567
 msgid "Copy To Platform.."
 msgstr ""
@@ -1716,7 +1676,7 @@ msgid "Open"
 msgstr ""
 
 #: tools/editor/editor_reimport_dialog.cpp:35
-msgid "Please wait for scan to complete"
+msgid "Please wait for scan to complete."
 msgstr ""
 
 #: tools/editor/editor_reimport_dialog.cpp:72
@@ -1813,10 +1773,6 @@ msgstr ""
 
 #: tools/editor/reparent_dialog.cpp:105
 msgid "Keep Global Transform"
-msgstr ""
-
-#: tools/editor/reparent_dialog.cpp:110
-msgid "Options:"
 msgstr ""
 
 #: tools/editor/reparent_dialog.cpp:114
@@ -1949,6 +1905,10 @@ msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp:692
 msgid "All Files (*)"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp:774
+msgid "Save"
 msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp:1215
@@ -2135,18 +2095,6 @@ msgstr ""
 msgid "Couldn't save scene. Likely dependencies (instances) couldn't be satisfied."
 msgstr ""
 
-#: tools/editor/editor_node.cpp:1074
-msgid "Ugh"
-msgstr ""
-
-#: tools/editor/editor_node.cpp:1075
-msgid "Error importing scene."
-msgstr ""
-
-#: tools/editor/editor_node.cpp:1091
-msgid "Error load scene to update."
-msgstr ""
-
 #: tools/editor/editor_node.cpp:1173
 msgid "Failed to load resource."
 msgstr ""
@@ -2219,10 +2167,6 @@ msgstr ""
 msgid "Make Sub-Resources Unique"
 msgstr ""
 
-#: tools/editor/editor_node.cpp:1772
-msgid "All Methods"
-msgstr ""
-
 #: tools/editor/editor_node.cpp:1835
 msgid "There is no defined scene to run."
 msgstr ""
@@ -2233,10 +2177,6 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp:1927
 msgid "Could not start subprocess!"
-msgstr ""
-
-#: tools/editor/editor_node.cpp:2004
-msgid "Yes"
 msgstr ""
 
 #: tools/editor/editor_node.cpp:2041
@@ -2255,8 +2195,8 @@ msgstr ""
 msgid "Quick Open Script.."
 msgstr ""
 
-#: tools/editor/editor_node.cpp:2062
-msgid "Quick Search File.."
+#: tools/editor/editor_node.cpp:2081
+msgid "Yes"
 msgstr ""
 
 #: tools/editor/editor_node.cpp:2083
@@ -2315,12 +2255,8 @@ msgstr ""
 msgid "Quick Run Scene.."
 msgstr ""
 
-#: tools/editor/editor_node.cpp:2712
-msgid "Enable File Server"
-msgstr ""
-
-#: tools/editor/editor_node.cpp:2716
-msgid "Disable File Server"
+#: tools/editor/editor_node.cpp:3581
+msgid "Ugh"
 msgstr ""
 
 #: tools/editor/editor_node.cpp:3582
@@ -2395,6 +2331,10 @@ msgstr ""
 msgid "Open Recent"
 msgstr ""
 
+#: tools/editor/editor_node.cpp:5466
+msgid "Quick Search File.."
+msgstr ""
+
 #: tools/editor/editor_node.cpp:5472
 msgid "Convert To.."
 msgstr ""
@@ -2431,34 +2371,6 @@ msgstr ""
 msgid "Quit to Project List"
 msgstr ""
 
-#: tools/editor/editor_node.cpp:5525
-msgid "Move Up"
-msgstr ""
-
-#: tools/editor/editor_node.cpp:5526
-msgid "Move Down"
-msgstr ""
-
-#: tools/editor/editor_node.cpp:5528
-msgid "Duplicate"
-msgstr ""
-
-#: tools/editor/editor_node.cpp:5530
-msgid "Remove (Branch)"
-msgstr ""
-
-#: tools/editor/editor_node.cpp:5531
-msgid "Remove (Element)"
-msgstr ""
-
-#: tools/editor/editor_node.cpp:5533
-msgid "Edit Subscriptions.."
-msgstr ""
-
-#: tools/editor/editor_node.cpp:5534
-msgid "Edit Groups.."
-msgstr ""
-
 #: tools/editor/editor_node.cpp:5543
 msgid "Import assets to the project."
 msgstr ""
@@ -2477,10 +2389,6 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp:5597
 msgid "Play the project (F5)."
-msgstr ""
-
-#: tools/editor/editor_node.cpp:5607
-msgid "Pause the scene (F7)."
 msgstr ""
 
 #: tools/editor/editor_node.cpp:5615
@@ -2525,14 +2433,6 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp:5725
 msgid "Settings"
-msgstr ""
-
-#: tools/editor/editor_node.cpp:5730
-msgid "Export Settings"
-msgstr ""
-
-#: tools/editor/editor_node.cpp:5732
-msgid "Optimization Presets"
 msgstr ""
 
 #: tools/editor/editor_node.cpp:5738
@@ -2653,14 +2553,6 @@ msgstr ""
 
 #: tools/editor/call_dialog.cpp:308
 msgid "Return:"
-msgstr ""
-
-#: tools/editor/call_dialog.cpp:326
-msgid "Parameters:"
-msgstr ""
-
-#: tools/editor/pvrtc_compress.cpp:85
-msgid "PVRTC/fast_conversion"
 msgstr ""
 
 #: tools/editor/pvrtc_compress.cpp:96
@@ -2851,6 +2743,10 @@ msgstr ""
 msgid "Instance Scene(s)"
 msgstr ""
 
+#: tools/editor/scene_tree_dock.cpp:311
+msgid "This operation can't be done on the tree root."
+msgstr ""
+
 #: tools/editor/scene_tree_dock.cpp:344
 msgid "Move Node In Parent"
 msgstr ""
@@ -2867,8 +2763,16 @@ msgstr ""
 msgid "Delete Node(s)?"
 msgstr ""
 
+#: tools/editor/scene_tree_dock.cpp:551
+msgid "This operation can't be done without a scene."
+msgstr ""
+
 #: tools/editor/scene_tree_dock.cpp:560
 msgid "This operation requires a single selected node."
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp:569
+msgid "This operation can't be done on instanced scenes."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp:591
@@ -2893,10 +2797,6 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp:1276
 msgid "Create Node"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp:1414
-msgid "Import Subscene"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp:1448
@@ -2943,6 +2843,18 @@ msgstr ""
 msgid "Add Script"
 msgstr ""
 
+#: tools/editor/scene_tree_dock.cpp:1691
+msgid "Move Up"
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp:1692
+msgid "Move Down"
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp:1693
+msgid "Duplicate"
+msgstr ""
+
 #: tools/editor/scene_tree_dock.cpp:1698
 msgid "Save Branch as Scene"
 msgstr ""
@@ -2951,16 +2863,16 @@ msgstr ""
 msgid "Delete Node(s)"
 msgstr ""
 
+#: tools/editor/scene_tree_dock.cpp:1771
+msgid "Add/Create a New Node"
+msgstr ""
+
 #: tools/editor/scene_tree_dock.cpp:1777
 msgid "Instance a scene file as a Node. Creates an inherited scene if no root node exists."
 msgstr ""
 
 #: tools/editor/create_dialog.cpp:254
 msgid "Create New"
-msgstr ""
-
-#: tools/editor/create_dialog.cpp:544
-msgid "Create %s Type"
 msgstr ""
 
 #: tools/editor/plugins/rich_text_editor_plugin.cpp:110
@@ -2996,6 +2908,14 @@ msgid "Delete Sample"
 msgstr ""
 
 #: tools/editor/plugins/sample_library_editor_plugin.cpp:251
+msgid "16 Bits"
+msgstr ""
+
+#: tools/editor/plugins/sample_library_editor_plugin.cpp:251
+msgid "8 Bits"
+msgstr ""
+
+#: tools/editor/plugins/sample_library_editor_plugin.cpp:251
 msgid "Stereo"
 msgstr ""
 
@@ -3005,6 +2925,10 @@ msgstr ""
 
 #: tools/editor/plugins/sample_library_editor_plugin.cpp:457
 msgid "Preview"
+msgstr ""
+
+#: tools/editor/plugins/sample_library_editor_plugin.cpp:460
+msgid "Pitch"
 msgstr ""
 
 #: tools/editor/plugins/collision_polygon_editor_plugin.cpp:95
@@ -3017,14 +2941,6 @@ msgstr ""
 
 #: tools/editor/plugins/collision_polygon_editor_plugin.cpp:319
 msgid "Edit Poly (Remove Point)"
-msgstr ""
-
-#: tools/editor/plugins/collision_polygon_editor_plugin.cpp:562
-msgid "Polygon"
-msgstr ""
-
-#: tools/editor/plugins/collision_polygon_editor_plugin.cpp:563
-msgid "Parse BBCODE"
 msgstr ""
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp:147
@@ -3188,7 +3104,23 @@ msgid "Create Occluder Polygon"
 msgstr ""
 
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp:424
-msgid "Create a new polygon from scratch"
+msgid "Create a new polygon from scratch."
+msgstr ""
+
+#: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp:430
+msgid "Edit existing polygon:"
+msgstr ""
+
+#: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp:430
+msgid "LMB: Move Point."
+msgstr ""
+
+#: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp:430
+msgid "Ctrl+LMB: Split Segment."
+msgstr ""
+
+#: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp:430
+msgid "RMB: Erase Point."
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp:65
@@ -3225,10 +3157,6 @@ msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp:1214
 msgid "Edit CanvasItem"
-msgstr ""
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp:2232
-msgid "Align Top Left"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp:2467
@@ -3413,6 +3341,22 @@ msgstr ""
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp:728
 msgid "Erase TileMap"
+msgstr ""
+
+#: tools/editor/plugins/tile_map_editor_plugin.cpp:1321
+msgid "Bucket"
+msgstr ""
+
+#: tools/editor/plugins/tile_map_editor_plugin.cpp:1323
+msgid "Pick Tile"
+msgstr ""
+
+#: tools/editor/plugins/tile_map_editor_plugin.cpp:1325
+msgid "Select"
+msgstr ""
+
+#: tools/editor/plugins/tile_map_editor_plugin.cpp:1327
+msgid "Erase Selection"
 msgstr ""
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp:1337
@@ -3619,14 +3563,6 @@ msgstr ""
 msgid "Surface source is invalid (no faces)."
 msgstr ""
 
-#: tools/editor/plugins/multimesh_editor_plugin.cpp:156
-msgid "Parent is not of type VisualInstance."
-msgstr ""
-
-#: tools/editor/plugins/multimesh_editor_plugin.cpp:159
-msgid "Multimesh not present."
-msgstr ""
-
 #: tools/editor/plugins/multimesh_editor_plugin.cpp:168
 msgid "Parent has no solid faces to populate."
 msgstr ""
@@ -3703,10 +3639,6 @@ msgstr ""
 msgid "Replace.."
 msgstr ""
 
-#: tools/editor/plugins/shader_editor_plugin.cpp:510
-msgid "Locate Symbol.."
-msgstr ""
-
 #: tools/editor/plugins/shader_editor_plugin.cpp:511
 msgid "Goto Line.."
 msgstr ""
@@ -3745,6 +3677,10 @@ msgstr ""
 
 #: tools/editor/plugins/theme_editor_plugin.cpp:600
 msgid "Add Class Items"
+msgstr ""
+
+#: tools/editor/plugins/theme_editor_plugin.cpp:602
+msgid "Remove Class Items"
 msgstr ""
 
 #: tools/editor/plugins/theme_editor_plugin.cpp:604
@@ -3795,14 +3731,6 @@ msgstr ""
 msgid "Tab 3"
 msgstr ""
 
-#: tools/editor/plugins/theme_editor_plugin.cpp:760
-msgid "Line Edit"
-msgstr ""
-
-#: tools/editor/plugins/theme_editor_plugin.cpp:794
-msgid "Open File Dialog"
-msgstr ""
-
 #: tools/editor/plugins/theme_editor_plugin.cpp:849
 msgid "Data Type:"
 msgstr ""
@@ -3813,6 +3741,14 @@ msgstr ""
 
 #: tools/editor/plugins/theme_editor_plugin.cpp:854
 msgid "Style"
+msgstr ""
+
+#: tools/editor/plugins/theme_editor_plugin.cpp:855
+msgid "Font"
+msgstr ""
+
+#: tools/editor/plugins/theme_editor_plugin.cpp:856
+msgid "Color"
 msgstr ""
 
 #: tools/editor/plugins/baked_light_editor_plugin.cpp:182
@@ -4003,6 +3939,10 @@ msgstr ""
 msgid "Orthogonal (Num5)"
 msgstr ""
 
+#: tools/editor/plugins/spatial_editor_plugin.cpp:2485
+msgid "Environment"
+msgstr ""
+
 #: tools/editor/plugins/spatial_editor_plugin.cpp:2488
 msgid "Audio Listener"
 msgstr ""
@@ -4179,6 +4119,10 @@ msgstr ""
 msgid "Complete Symbol"
 msgstr ""
 
+#: tools/editor/plugins/script_editor_plugin.cpp:2444
+msgid "Trim Trailing Whitespace"
+msgstr ""
+
 #: tools/editor/plugins/script_editor_plugin.cpp:2445
 msgid "Auto Indent"
 msgstr ""
@@ -4193,10 +4137,6 @@ msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp:2472
 msgid "Toggle Breakpoint"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp:2480
-msgid "Show Debugger"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp:2481
@@ -4259,6 +4199,10 @@ msgstr ""
 msgid "Create Script"
 msgstr ""
 
+#: tools/editor/plugins/script_editor_plugin.cpp:2584
+msgid "The following files are newer on disk.\nWhat action should be taken?:"
+msgstr ""
+
 #: tools/editor/plugins/script_editor_plugin.cpp:2592
 msgid "Reload"
 msgstr ""
@@ -4277,14 +4221,6 @@ msgstr ""
 
 #: tools/editor/plugins/sample_editor_plugin.cpp:331
 msgid "%i frames"
-msgstr ""
-
-#: tools/editor/plugins/sample_editor_plugin.cpp:331
-msgid "16 Bits"
-msgstr ""
-
-#: tools/editor/plugins/sample_editor_plugin.cpp:331
-msgid "8 Bits"
 msgstr ""
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp:677
@@ -4425,6 +4361,22 @@ msgstr ""
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp:854
 msgid "Polygon 2D UV Editor"
+msgstr ""
+
+#: tools/editor/plugins/polygon_2d_editor_plugin.cpp:871
+msgid "Move Point"
+msgstr ""
+
+#: tools/editor/plugins/polygon_2d_editor_plugin.cpp:871
+msgid "Ctrl: Rotate"
+msgstr ""
+
+#: tools/editor/plugins/polygon_2d_editor_plugin.cpp:871
+msgid "Shift: Move All"
+msgstr ""
+
+#: tools/editor/plugins/polygon_2d_editor_plugin.cpp:871
+msgid "Shift+Ctrl: Scale"
 msgstr ""
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp:872
@@ -4593,14 +4545,6 @@ msgstr ""
 
 #: tools/editor/plugins/particles_2d_editor_plugin.cpp:193
 msgid "Generated Point Count:"
-msgstr ""
-
-#: tools/editor/plugins/control_editor_plugin.cpp:115
-msgid "Edit Control"
-msgstr ""
-
-#: tools/editor/plugins/control_editor_plugin.cpp:765
-msgid "Snap:"
 msgstr ""
 
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp:168
@@ -5155,6 +5099,10 @@ msgstr ""
 msgid "Invalid/broken script for post-import."
 msgstr ""
 
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp:776
+msgid "Error importing scene."
+msgstr ""
+
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp:1038
 msgid "Import 3D Scene"
 msgstr ""
@@ -5175,12 +5123,20 @@ msgstr ""
 msgid "Target Texture Folder:"
 msgstr ""
 
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp:1081
+msgid "Options:"
+msgstr ""
+
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp:1132
 msgid "Post-Process Script:"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp:1166
 msgid "Overwrite Existing Scene"
+msgstr ""
+
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp:1167
+msgid "Overwrite Existing, Keep Materials"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp:1168
@@ -5341,10 +5297,6 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_sample_import_plugin.cpp:342
 msgid "Source Sample(s):"
-msgstr ""
-
-#: tools/editor/io_plugins/editor_sample_import_plugin.cpp:409
-msgid "Audio Sample"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp:205

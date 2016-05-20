@@ -76,7 +76,7 @@ void SampleLibraryEditor::_file_load_request(const DVector<String>& p_path) {
 		if (sample.is_null()) {
 			dialog->set_text(TTR("ERROR: Couldn't load sample!"));
 			dialog->set_title(TTR("Error!"));
-			//dialog->get_cancel()->set_text(TTR("Close"));
+			//dialog->get_cancel()->set_text("Close");
 			dialog->get_ok()->set_text(TTR("Close"));
 			dialog->popup_centered_minsize();
 			return; ///beh should show an error i guess
@@ -248,7 +248,7 @@ void SampleLibraryEditor::_update_library() {
 		ti->set_cell_mode(2,TreeItem::CELL_MODE_STRING);
 		ti->set_editable(2,false);
 		ti->set_selectable(2,false);
-		ti->set_text(2,String()+(smp->get_format()==Sample::FORMAT_PCM16?"16 Bits, ":(smp->get_format()==Sample::FORMAT_PCM8?"8 bits, ":"IMA-ADPCM,"))+(smp->is_stereo()?TTR("Stereo"):TTR("Mono")));
+		ti->set_text(2,String()+(smp->get_format()==Sample::FORMAT_PCM16?TTR("16 Bits")+", ":(smp->get_format()==Sample::FORMAT_PCM8?TTR("8 Bits")+", ":"IMA-ADPCM,"))+(smp->is_stereo()?TTR("Stereo"):TTR("Mono")));
 
 		// Volume dB
 		ti->set_cell_mode(3,TreeItem::CELL_MODE_RANGE);
@@ -457,7 +457,7 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	tree->set_column_title(1,TTR("Preview"));
 	tree->set_column_title(2,TTR("Format"));
 	tree->set_column_title(3,"dB");
-	tree->set_column_title(4,"Pitch");
+	tree->set_column_title(4,TTR("Pitch"));
 	tree->set_column_title(5,"");
 
 	tree->set_column_min_width(1,150);

@@ -406,7 +406,7 @@ String EditorSampleImportPlugin::get_name() const {
 }
 String EditorSampleImportPlugin::get_visible_name() const{
 
-	return TTR("Audio Sample");
+	return "Audio Sample";
 }
 void EditorSampleImportPlugin::import_dialog(const String& p_from){
 

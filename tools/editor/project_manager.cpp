@@ -822,8 +822,8 @@ void ProjectManager::_bind_methods() {
 
 ProjectManager::ProjectManager() {
 
-	int margin = get_constant("margin",TTR("Dialogs"));
-	int button_margin = get_constant("button_margin",TTR("Dialogs"));
+	int margin = get_constant("margin","Dialogs");
+	int button_margin = get_constant("button_margin","Dialogs");
 
 	// load settings
 	if (!EditorSettings::get_singleton())
@@ -999,8 +999,8 @@ ProjectManager::ProjectManager() {
 		_scan_begin( EditorSettings::get_singleton()->get("global/autoscan_project_path") );
 	}
 
-	//get_ok()->set_text(TTR("Open"));
-	//get_ok()->set_text(TTR("Exit"));
+	//get_ok()->set_text("Open");
+	//get_ok()->set_text("Exit");
 
 	last_clicked = "";
 }

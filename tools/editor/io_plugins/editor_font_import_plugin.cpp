@@ -664,7 +664,7 @@ public:
 		upd_hb->add_spacer();
 		Button *update = memnew( Button);
 		upd_hb->add_child(update);
-		update->set_text(TTR("Update"));
+		update->set_text("Update");
 		update->connect("pressed",this,"_update");
 */
 		options = memnew( _EditorFontImportOptions );

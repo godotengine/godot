@@ -507,7 +507,7 @@ ShaderEditor::ShaderEditor() {
 	search_menu->get_popup()->add_item(TTR("Find Next"),SEARCH_FIND_NEXT,KEY_F3);
 	search_menu->get_popup()->add_item(TTR("Replace.."),SEARCH_REPLACE,KEY_MASK_CMD|KEY_R);
 	search_menu->get_popup()->add_separator();
-//	search_menu->get_popup()->add_item(TTR("Locate Symbol.."),SEARCH_LOCATE_SYMBOL,KEY_MASK_CMD|KEY_K);
+//	search_menu->get_popup()->add_item("Locate Symbol..",SEARCH_LOCATE_SYMBOL,KEY_MASK_CMD|KEY_K);
 	search_menu->get_popup()->add_item(TTR("Goto Line.."),SEARCH_GOTO_LINE,KEY_MASK_CMD|KEY_G);
 	search_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 

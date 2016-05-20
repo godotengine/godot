@@ -88,7 +88,7 @@ RunSettingsDialog::RunSettingsDialog() {
 	arguments->set_editable(false);
 
 	get_ok()->set_text(TTR("Close"));
-	//get_cancel()->set_text(TTR("Close"));
+	//get_cancel()->set_text("Close");
 
 	arguments->set_text("-l $scene");
 

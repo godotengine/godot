@@ -1314,7 +1314,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	errvb = memnew( VBoxContainer );
 	errvb->set_h_size_flags(SIZE_EXPAND_FILL);
 	error_stack = memnew( ItemList );
-	errvb->add_margin_child(TTR("Stack Trace (if applies):"),error_stack,true);
+	errvb->add_margin_child(TTR("Stack Trace (if applicable):"),error_stack,true);
 	error_split->add_child(errvb);
 
 	error_split->set_name(TTR("Errors"));

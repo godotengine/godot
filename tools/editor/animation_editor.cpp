@@ -2096,7 +2096,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 /*
 						if (ofsx < remove_icon->get_width()) {
 
-							undo_redo->create_action(TTR("Remove Anim Track"));
+							undo_redo->create_action("Remove Anim Track");
 							undo_redo->add_do_method(animation.ptr(),"remove_track",idx);
 							undo_redo->add_undo_method(animation.ptr(),"add_track",animation->track_get_type(idx),idx);
 							undo_redo->add_undo_method(animation.ptr(),"track_set_path",idx,animation->track_get_path(idx));
@@ -2129,7 +2129,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 						if (ofsx < move_down_icon->get_width()) {
 
 							if (idx < animation->get_track_count() -1) {
-								undo_redo->create_action(TTR("Move Anim Track Down"));
+								undo_redo->create_action("Move Anim Track Down");
 								undo_redo->add_do_method(animation.ptr(),"track_move_up",idx);
 								undo_redo->add_undo_method(animation.ptr(),"track_move_down",idx+1);
 								undo_redo->commit_action();
@@ -2142,7 +2142,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 						if (ofsx < move_up_icon->get_width()) {
 
 							if (idx >0) {
-								undo_redo->create_action(TTR("Move Anim Track Up"));
+								undo_redo->create_action("Move Anim Track Up");
 								undo_redo->add_do_method(animation.ptr(),"track_move_down",idx);
 								undo_redo->add_undo_method(animation.ptr(),"track_move_up",idx-1);
 								undo_redo->commit_action();

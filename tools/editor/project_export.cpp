@@ -1218,7 +1218,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	filters_exclude->connect("text_changed",this,"_filters_exclude_edited");
 
 	convert_text_scenes = memnew( CheckButton );
-	convert_text_scenes->set_text(TTR("Convert text scenes to binary on export"));
+	convert_text_scenes->set_text(TTR("Convert text scenes to binary on export."));
 	vb->add_child(convert_text_scenes);
 	convert_text_scenes->connect("toggled",this,"_export_mode_changed");
 

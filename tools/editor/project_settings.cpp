@@ -1556,7 +1556,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	save->set_anchor(MARGIN_BOTTOM,ANCHOR_END);
 	save->set_begin( Point2(80,28) );
 	save->set_end( Point2(10,20) );
-	save->set_text(TTR("Save"));
+	save->set_text("Save");
 	save->connect("pressed",this,"_save");
 */
 
@@ -1684,7 +1684,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	save->set_anchor(MARGIN_BOTTOM,ANCHOR_END);
 	save->set_begin( Point2(80,28) );
 	save->set_end( Point2(10,20) );
-	save->set_text(TTR("Save"));
+	save->set_text("Save");
 	save->connect("pressed",this,"_save");
 */
 	setting=false;
@@ -1861,7 +1861,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	/*
 	Control * es = memnew( Control );
-	es->set_name(TTR("Export"));
+	es->set_name("Export");
 	tab_container->add_child(es);
 	export_settings = memnew( ProjectExportSettings );
 	es->add_child(export_settings);

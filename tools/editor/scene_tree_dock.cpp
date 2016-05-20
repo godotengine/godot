@@ -225,7 +225,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				/* should be legal now
 				current_option=-1;
 				//confirmation->get_cancel()->hide();
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done without a tree root.");
 				accept->popup_centered_minsize();
 				*/
@@ -308,7 +308,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				current_option=-1;
 				//accept->get_cancel()->hide();
 				accept->get_ok()->set_text(TTR("I see.."));
-				accept->set_text("This operation can't be done on the tree root.");
+				accept->set_text(TTR("This operation can't be done on the tree root."));
 				accept->popup_centered_minsize();
 				break;
 			}
@@ -376,7 +376,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				current_option=-1;
 				//accept->get_cancel()->hide();
 				accept->get_ok()->set_text(TTR("I see.."));
-				accept->set_text("This operation can't be done on the tree root.");
+				accept->set_text(TTR("This operation can't be done on the tree root."));
 				accept->popup_centered_minsize();
 				break;
 			}
@@ -488,7 +488,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				current_option=-1;
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text(TTR("I see.."));
-				accept->set_text("This operation can't be done on the tree root.");
+				accept->set_text(TTR("This operation can't be done on the tree root."));
 				accept->popup_centered_minsize();
 				break;
 			}
@@ -548,7 +548,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			if (!scene) {
 				accept->get_ok()->set_text(TTR("I see.."));
-				accept->set_text("This operation can't be done without a scene.");
+				accept->set_text(TTR("This operation can't be done without a scene."));
 				accept->popup_centered_minsize();
 				break;
 			}
@@ -566,7 +566,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			if (tocopy!=editor_data->get_edited_scene_root() && tocopy->get_filename()!="") {
 				accept->get_ok()->set_text(TTR("I see.."));
-				accept->set_text("This operation can't be done on instanced scenes.");
+				accept->set_text(TTR("This operation can't be done on instanced scenes."));
 				accept->popup_centered_minsize();
 				break;
 			}
@@ -1411,7 +1411,7 @@ void SceneTreeDock::_import_subscene() {
 
 
 /*
-	editor_data->get_undo_redo().create_action(TTR("Import Subscene"));
+	editor_data->get_undo_redo().create_action("Import Subscene");
 	editor_data->get_undo_redo().add_do_method(parent,"add_child",ss);
 	//editor_data->get_undo_redo().add_do_method(editor_selection,"clear");
 	//editor_data->get_undo_redo().add_do_method(editor_selection,"add_node",child);
@@ -1768,7 +1768,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_NEW, false));
-	tb->set_tooltip("Add/Create a New Node\n("+keycode_get_string(KEY_MASK_CMD|KEY_A)+")");
+	tb->set_tooltip(TTR("Add/Create a New Node")+"\n("+keycode_get_string(KEY_MASK_CMD|KEY_A)+")");
 	filter_hbc->add_child(tb);
 	button_add=tb;
 

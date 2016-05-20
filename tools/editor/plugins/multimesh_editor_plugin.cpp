@@ -153,10 +153,10 @@ void MultiMeshEditor::_populate() {
 	node->populate_parent(populate_rotate_random->get_val(),populate_tilt_random->get_val(),populate_scale_random->get_val(),populate_scale->get_val());
 
 
-	ERR_EXPLAIN(TTR("Parent is not of type VisualInstance."));
+	ERR_EXPLAIN("Parent is not of type VisualInstance.");
 	ERR_FAIL_COND(!get_parent() || !get_parent()->is_type("VisualInstance"));
 
-	ERR_EXPLAIN(TTR("Multimesh not present."));
+	ERR_EXPLAIN("Multimesh not present.");
 	ERR_FAIL_COND(multimesh.is_null());
 
 	VisualInstance *vi = get_parent()->cast_to<VisualInstance>();

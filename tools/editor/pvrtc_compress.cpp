@@ -82,7 +82,7 @@ static void _compress_image(Image::CompressMode p_mode,Image *p_image) {
 
 	}
 
-	if (EditorSettings::get_singleton()->get(TTR("PVRTC/fast_conversion")).operator bool()) {
+	if (EditorSettings::get_singleton()->get("PVRTC/fast_conversion").operator bool()) {
 		args.push_back("-pvrtcfast");
 	}
 	if (p_image->get_mipmaps()>0)

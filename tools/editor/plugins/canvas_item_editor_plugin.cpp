@@ -2229,7 +2229,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		key_insert_button->set_icon(get_icon("Key","EditorIcons"));
 
 
-		//anchor_menu->add_icon_override(TTR("Align Top Left"));
+		//anchor_menu->add_icon_override("Align Top Left");
 		anchor_menu->set_icon(get_icon("Anchor","EditorIcons"));
 		PopupMenu *p=anchor_menu->get_popup();
 
@@ -3147,7 +3147,7 @@ void CanvasItemEditor::end_drag() {
 
 	if (undo_redo) {
 
-		undo_redo->create_action(TTR("Edit CanvasItem"));
+		undo_redo->create_action("Edit CanvasItem");
 		for(CanvasItemMap::Element *E=canvas_items.front();E;E=E->next()) {
 			CanvasItem *canvas_item = E->key();
 			Variant state=canvas_item->edit_get_state();

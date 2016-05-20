@@ -731,9 +731,9 @@ Vector3 EditorSpatialGizmo::get_handle_pos(int p_idx) const {
 String LightSpatialGizmo::get_handle_name(int p_idx) const {
 
 	if (p_idx==0)
-		return TTR("Radius");
+		return "Radius";
 	else
-		return TTR("Aperture");
+		return "Aperture";
 }
 
 
@@ -1030,9 +1030,9 @@ LightSpatialGizmo::LightSpatialGizmo(Light* p_light){
 String CameraSpatialGizmo::get_handle_name(int p_idx) const {
 
 	if (camera->get_projection()==Camera::PROJECTION_PERSPECTIVE) {
-		return TTR("FOV");
+		return "FOV";
 	} else {
-		return TTR("Size");
+		return "Size";
 	}
 }
 Variant CameraSpatialGizmo::get_handle_value(int p_idx) const{
@@ -1695,22 +1695,22 @@ String CollisionShapeSpatialGizmo::get_handle_name(int p_idx) const {
 
 	if (s->cast_to<SphereShape>()) {
 
-		return TTR("Radius");
+		return "Radius";
 	}
 
 	if (s->cast_to<BoxShape>()) {
 
-		return TTR("Extents");
+		return "Extents";
 	}
 
 	if (s->cast_to<CapsuleShape>()) {
 
-		return p_idx==0?TTR("Radius"):"Height";
+		return p_idx==0?"Radius":"Height";
 	}
 
 	if (s->cast_to<RayShape>()) {
 
-		return TTR("Length");
+		return "Length";
 	}
 
 	return "";

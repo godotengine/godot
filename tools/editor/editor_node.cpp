@@ -1071,8 +1071,8 @@ void EditorNode::_import_action(const String& p_action) {
 
 			current_option=-1;
 			//accept->get_cancel()->hide();
-			accept->get_ok()->set_text(TTR("Ugh"));
-			accept->set_text(TTR("Error importing scene."));
+			accept->get_ok()->set_text("Ugh");
+			accept->set_text("Error importing scene.");
 			accept->popup_centered(Size2(300,70));;
 			return;
 		}
@@ -1087,8 +1087,8 @@ void EditorNode::_import_action(const String& p_action) {
 
 			memdelete(src);
 			//accept->get_cancel()->hide();
-			accept->get_ok()->set_text(TTR("Ugh"));
-			accept->set_text(TTR("Error load scene to update."));
+			accept->get_ok()->set_text("Ugh");
+			accept->set_text("Error load scene to update.");
 			accept->popup_centered(Size2(300,70));;
 			return;
 		}
@@ -1128,8 +1128,8 @@ void EditorNode::_import(const String &p_file) {
 
 		current_option=-1;
 		//accept->get_cancel()->hide();
-		accept->get_ok()->set_text(TTR("Ugh"));
-		accept->set_text(TTR("Error importing scene."));
+		accept->get_ok()->set_text("Ugh");
+		accept->set_text("Error importing scene.");
 		accept->popup_centered(Size2(300,70));;
 		return;
 	}
@@ -1769,7 +1769,7 @@ void EditorNode::_edit_current() {
 	}
 
 	//p->add_separator();
-	//p->add_item(TTR("All Methods"),OBJECT_CALL_METHOD);
+	//p->add_item("All Methods",OBJECT_CALL_METHOD);
 
 
 	update_keying();
@@ -2001,7 +2001,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			// TODO: Drop such obsolete commented code
 			/*
 			if (!p_confirmed) {
-				confirmation->get_ok()->set_text(TTR("Yes"));
+				confirmation->get_ok()->set_text("Yes");
 				//confirmation->get_cancel()->show();
 				confirmation->set_text("Start a New Scene? (Current will be lost)");
 				confirmation->popup_centered_minsize();
@@ -2059,7 +2059,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 
 			//quick_open->popup("Resource", false, true);
-			//quick_open->set_title(TTR("Quick Search File.."));
+			//quick_open->set_title("Quick Search File..");
 			scenes_dock->focus_on_filter();
 
 		} break;
@@ -2222,7 +2222,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 				current_option=-1;
 				//confirmation->get_cancel()->hide();
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done without a tree root.");
 				accept->popup_centered(Size2(300,70));;
 				break;
@@ -2244,8 +2244,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			} else {
 				current_option=-1;
 				//confirmation->get_cancel()->hide();
-				accept->get_ok()->set_text(TTR("I see.."));
-				accept->set_text(TTR("Please save the scene first."));
+				accept->get_ok()->set_text("I see..");
+				accept->set_text("Please save the scene first.");
 				accept->popup_centered(Size2(300,70));;
 				break;
 
@@ -2709,11 +2709,11 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			if (ischecked) {
 				file_server->stop();
 				//debug_button->set_icon(gui_base->get_icon("FileServer","EditorIcons"));
-				//debug_button->get_popup()->set_item_text( debug_button->get_popup()->get_item_index(RUN_FILE_SERVER),TTR("Enable File Server"));
+				//debug_button->get_popup()->set_item_text( debug_button->get_popup()->get_item_index(RUN_FILE_SERVER),"Enable File Server");
 			} else {
 				file_server->start();
 				//debug_button->set_icon(gui_base->get_icon("FileServerActive","EditorIcons"));
-				//debug_button->get_popup()->set_item_text( debug_button->get_popup()->get_item_index(RUN_FILE_SERVER),TTR("Disable File Server"));
+				//debug_button->get_popup()->set_item_text( debug_button->get_popup()->get_item_index(RUN_FILE_SERVER),"Disable File Server");
 			}
 
 			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_FILE_SERVER),!ischecked);
@@ -3922,7 +3922,7 @@ void EditorNode::_save_optimized() {
 	if (err) {
 
 		//accept->"()->hide();
-		accept->get_ok()->set_text(TTR("I see.."));
+		accept->get_ok()->set_text("I see..");
 		accept->set_text("Error saving optimized scene: "+path);
 		accept->popup_centered(Size2(300,70));;
 		return;
@@ -5518,20 +5518,20 @@ EditorNode::EditorNode() {
 	menu_panel->add_child( node_menu );
 
 	p=node_menu->get_popup();
-	p->add_item(TTR("Create"),NODE_CREATE);
-	p->add_item(TTR("Instance"),NODE_INSTANCE);
+	p->add_item("Create",NODE_CREATE);
+	p->add_item("Instance",NODE_INSTANCE);
 	p->add_separator();
-	p->add_item(TTR("Reparent"),NODE_REPARENT);
-	p->add_item(TTR("Move Up"),NODE_MOVE_UP);
-	p->add_item(TTR("Move Down"),NODE_MOVE_DOWN);
+	p->add_item("Reparent",NODE_REPARENT);
+	p->add_item("Move Up",NODE_MOVE_UP);
+	p->add_item("Move Down",NODE_MOVE_DOWN);
 	p->add_separator();
-	p->add_item(TTR("Duplicate"),NODE_DUPLICATE);
+	p->add_item("Duplicate",NODE_DUPLICATE);
 	p->add_separator();
-	p->add_item(TTR("Remove (Branch)"),NODE_REMOVE_BRANCH);
-	p->add_item(TTR("Remove (Element)"),NODE_REMOVE_ELEMENT);
+	p->add_item("Remove (Branch)",NODE_REMOVE_BRANCH);
+	p->add_item("Remove (Element)",NODE_REMOVE_ELEMENT);
 	p->add_separator();
-	p->add_item(TTR("Edit Subscriptions.."),NODE_CONNECTIONS);
-	p->add_item(TTR("Edit Groups.."),NODE_GROUPS);
+	p->add_item("Edit Subscriptions..",NODE_CONNECTIONS);
+	p->add_item("Edit Groups..",NODE_GROUPS);
 
 	resource_menu = memnew( MenuButton );
 	resource_menu->set_text("Resource");
@@ -5604,7 +5604,7 @@ EditorNode::EditorNode() {
 	pause_button->set_icon(gui_base->get_icon("Pause","EditorIcons"));
 	pause_button->set_focus_mode(Control::FOCUS_NONE);
 	pause_button->connect("pressed", this,"_menu_option",make_binds(RUN_PAUSE));
-	pause_button->set_tooltip(TTR("Pause the scene (F7)."));
+	pause_button->set_tooltip("Pause the scene (F7).");
 */
 	stop_button = memnew( ToolButton );
 	play_hb->add_child(stop_button);
@@ -5727,9 +5727,9 @@ EditorNode::EditorNode() {
 	right_menu_hb->add_child( settings_menu );
 	p=settings_menu->get_popup();
 
-	//p->add_item(TTR("Export Settings"),SETTINGS_EXPORT_PREFERENCES);
+	//p->add_item("Export Settings",SETTINGS_EXPORT_PREFERENCES);
 	p->add_item(TTR("Editor Settings"),SETTINGS_PREFERENCES);
-	//p->add_item(TTR("Optimization Presets"),SETTINGS_OPTIMIZED_PRESETS);
+	//p->add_item("Optimization Presets",SETTINGS_OPTIMIZED_PRESETS);
 	p->add_separator();
 	editor_layouts = memnew( PopupMenu );
 	editor_layouts->set_name("Layouts");
@@ -5787,7 +5787,7 @@ EditorNode::EditorNode() {
 	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(scene_tree_dock);
 #if 0
 	resources_dock = memnew( ResourcesDock(this) );
-	resources_dock->set_name(TTR("Resources"));
+	resources_dock->set_name("Resources");
 	//top_pallete->add_child(resources_dock);
 	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(resources_dock);
 	//top_pallete->set_v_size_flags(Control::SIZE_EXPAND_FILL);

@@ -323,7 +323,7 @@ CallDialog::CallDialog() {
 
 	label->set_begin( Point2( 15,54) );
 	label->set_end( Point2( 16,44) );
-	label->set_text(TTR("Parameters:"));
+	label->set_text("Parameters:");
 
 	add_child(label);
 	*/

@@ -541,7 +541,7 @@ void CreateDialog::_bind_methods() {
 
 void CreateDialog::set_base_type(const String& p_base) {
 
-	set_title(vformat(TTR("Create %s Type"),p_base));
+	set_title(vformat("Create %s Type",p_base));
 
 	if (base==p_base)
 		return;
@@ -562,14 +562,14 @@ CreateDialog::CreateDialog() {
 	add_child(vbc);
 	set_child_rect(vbc);
 
-	get_ok()->set_text(TTR("Create"));
+	get_ok()->set_text("Create");
 
 	tree = memnew( Tree );
-	vbc->add_margin_child(TTR("Type:"),tree,true);
+	vbc->add_margin_child("Type:",tree,true);
 	//tree->set_hide_root(true);
 
 	filter = memnew( LineEdit );
-	vbc->add_margin_child(TTR("Filter:"),filter);
+	vbc->add_margin_child("Filter:",filter);
 
 	base="Node";
 	set_as_toplevel(true);

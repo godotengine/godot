@@ -419,8 +419,8 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 				//action_buttons[0];
 
-				int button_margin = get_constant("button_margin",TTR("Dialogs"));
-				int margin = get_constant("margin",TTR("Dialogs"));
+				int button_margin = get_constant("button_margin","Dialogs");
+				int margin = get_constant("margin","Dialogs");
 
 				action_buttons[0]->set_anchor( MARGIN_LEFT, ANCHOR_END );
 				action_buttons[0]->set_anchor( MARGIN_TOP, ANCHOR_END );
