@@ -1103,7 +1103,7 @@
 			% key
 		</constant>
 		<constant name="KEY_AMPERSAND" value="38">
-			& key
+			&amp; key
 		</constant>
 		<constant name="KEY_APOSTROPHE" value="39">
 			' key
