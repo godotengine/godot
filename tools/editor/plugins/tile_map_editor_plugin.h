@@ -130,7 +130,7 @@ class TileMapEditor : public VBoxContainer {
 
 	void _fill_points(const DVector<Vector2> p_points, const Dictionary& p_op);
 	void _erase_points(const DVector<Vector2> p_points);
-	
+
 	void _select(const Point2i& p_from, const Point2i& p_to);
 
 	void _draw_cell(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Matrix32& p_xform);

@@ -1712,7 +1712,7 @@ void EditorNode::_edit_current() {
 		_set_top_editors(sub_plugins);
 		_set_editing_top_editors(current_obj);
 		_display_top_editors(true);
-                
+
 	} else if (!editor_plugins_over->get_plugins_list().empty()) {
 
 		_hide_top_editors();
@@ -6400,7 +6400,7 @@ EditorNode::EditorNode() {
 
 
 EditorNode::~EditorNode() {
-        
+
 	memdelete( EditorHelp::get_doc_data() );
 	memdelete(editor_selection);
 	memdelete(editor_plugins_over);
@@ -6466,6 +6466,6 @@ EditorPluginList::EditorPluginList() {
 
 EditorPluginList::~EditorPluginList() {
 }
-        
+
 
 

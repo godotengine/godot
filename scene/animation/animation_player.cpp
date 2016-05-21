@@ -1012,7 +1012,7 @@ void AnimationPlayer::play(const StringName& p_name, float p_custom_blend, float
 		queued.clear();
 	_set_process(true); // always process when starting an animation
 	playing = true;
-	
+
 	emit_signal(SceneStringNames::get_singleton()->animation_started, c.assigned);
 
 	if (is_inside_tree() &&  get_tree()->is_editor_hint())

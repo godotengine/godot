@@ -374,7 +374,7 @@ void Theme::get_stylebox_types(List<StringName> *p_list) const {
 	const StringName *key=NULL;
 	while((key=style_map.next(key))) {
 		p_list->push_back(*key);
-	}	
+	}
 }
 
 void Theme::set_font(const StringName& p_name,const StringName& p_type,const Ref<Font>& p_font) {

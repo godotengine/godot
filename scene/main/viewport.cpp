@@ -1841,7 +1841,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 				if (gui.mouse_over)
 					gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_EXIT);
-					
+
 				_gui_cancel_tooltip();
 
 				if (over)
