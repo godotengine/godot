@@ -18,6 +18,8 @@ env:
   - GODOT_TARGET=windows
 
 matrix:
+  include:
+    - env: STATIC_CHECKS=true
   exclude:
     - os: linux
       env: GODOT_TARGET=iphone
@@ -75,4 +77,8 @@ before_script:
     fi
 
 script:
-  - scons platform=$GODOT_TARGET CXX=$CXX openssl=builtin
+  - if [ "$STATIC_CHECKS" = "true" ]; then
+      .travis/check_whitespace.sh;
+    else
+      scons platform=$GODOT_TARGET CXX=$CXX openssl=builtin;
+    fi
