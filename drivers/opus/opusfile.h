@@ -107,7 +107,7 @@ extern "C" {
 # include <stdarg.h>
 # include <stdio.h>
 # include <ogg/ogg.h>
-# include <opus/opus_multistream.h>
+# include "opus/opus_multistream.h"
 
 /**@cond PRIVATE*/
 
@@ -503,6 +503,22 @@ int opus_tags_add(OpusTags *_tags,const char *_tag,const char *_value)
 int opus_tags_add_comment(OpusTags *_tags,const char *_comment)
  OP_ARG_NONNULL(1) OP_ARG_NONNULL(2);
 
+/**Replace the binary suffix data at the end of the packet (if any).
+   \param _tags An initialized #OpusTags structure.
+   \param _data A buffer of binary data to append after the encoded user
+                 comments.
+                The least significant bit of the first byte of this data must
+                 be set (to ensure the data is preserved by other editors).
+   \param _len  The number of bytes of binary data to append.
+                This may be zero to remove any existing binary suffix data.
+   \return 0 on success, or a negative value on error.
+   \retval #OP_EINVAL \a _len was negative, or \a _len was positive but
+                       \a _data was <code>NULL</code> or the least significant
+                       bit of the first byte was not set.
+   \retval #OP_EFAULT An internal memory allocation failed.*/
+int opus_tags_set_binary_suffix(OpusTags *_tags,
+ const unsigned char *_data,int _len) OP_ARG_NONNULL(1);
+
 /**Look up a comment value by its tag.
    \param _tags  An initialized #OpusTags structure.
    \param _tag   The tag to look up.
@@ -529,6 +545,32 @@ const char *opus_tags_query(const OpusTags *_tags,const char *_tag,int _count)
    \param _tag  The tag to look up.
    \return The number of instances of this particular tag.*/
 int opus_tags_query_count(const OpusTags *_tags,const char *_tag)
+ OP_ARG_NONNULL(1) OP_ARG_NONNULL(2);
+
+/**Retrieve the binary suffix data at the end of the packet (if any).
+   \param      _tags An initialized #OpusTags structure.
+   \param[out] _len  Returns the number of bytes of binary suffix data returned.
+   \return A pointer to the binary suffix data, or <code>NULL</code> if none
+            was present.*/
+const unsigned char *opus_tags_get_binary_suffix(const OpusTags *_tags,
+ int *_len) OP_ARG_NONNULL(1) OP_ARG_NONNULL(2);
+
+/**Get the album gain from an R128_ALBUM_GAIN tag, if one was specified.
+   This searches for the first R128_ALBUM_GAIN tag with a valid signed,
+    16-bit decimal integer value and returns the value.
+   This routine is exposed merely for convenience for applications which wish
+    to do something special with the album gain (i.e., display it).
+   If you simply wish to apply the album gain instead of the header gain, you
+    can use op_set_gain_offset() with an #OP_ALBUM_GAIN type and no offset.
+   \param      _tags    An initialized #OpusTags structure.
+   \param[out] _gain_q8 The album gain, in 1/256ths of a dB.
+                        This will lie in the range [-32768,32767], and should
+                         be applied in <em>addition</em> to the header gain.
+                        On error, no value is returned, and the previous
+                         contents remain unchanged.
+   \return 0 on success, or a negative value on error.
+   \retval #OP_FALSE There was no album gain available in the given tags.*/
+int opus_tags_get_album_gain(const OpusTags *_tags,int *_gain_q8)
  OP_ARG_NONNULL(1) OP_ARG_NONNULL(2);
 
 /**Get the track gain from an R128_TRACK_GAIN tag, if one was specified.
@@ -1763,6 +1805,10 @@ void op_set_decode_callback(OggOpusFile *_of,
 #define OP_HEADER_GAIN   (0)
 
 /**Gain offset type that indicates that the provided offset is relative to the
+    R128_ALBUM_GAIN value (if any), in addition to the header gain.*/
+#define OP_ALBUM_GAIN    (3007)
+
+/**Gain offset type that indicates that the provided offset is relative to the
     R128_TRACK_GAIN value (if any), in addition to the header gain.*/
 #define OP_TRACK_GAIN    (3008)
 
@@ -1782,8 +1828,8 @@ void op_set_decode_callback(OggOpusFile *_of,
    It is meant for setting a target volume level, rather than applying smooth
     fades, etc.
    \param _of             The \c OggOpusFile on which to set the gain offset.
-   \param _gain_type      One of #OP_HEADER_GAIN, #OP_TRACK_GAIN, or
-                           #OP_ABSOLUTE_GAIN.
+   \param _gain_type      One of #OP_HEADER_GAIN, #OP_ALBUM_GAIN,
+                           #OP_TRACK_GAIN, or #OP_ABSOLUTE_GAIN.
    \param _gain_offset_q8 The gain offset to apply, in 1/256ths of a dB.
    \return 0 on success or a negative value on error.
    \retval #OP_EINVAL The \a _gain_type was unrecognized.*/

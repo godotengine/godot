@@ -66,7 +66,7 @@ void Particles2DEditorPlugin::_file_selected(const String& p_file) {
 
 	Image img;
 	Error err = ImageLoader::load_image(p_file,&img);
-	ERR_EXPLAIN("Error loading image: "+p_file);
+	ERR_EXPLAIN(TTR("Error loading image: ")+p_file);
 	ERR_FAIL_COND(err!=OK);
 
 	img.convert(Image::FORMAT_GRAYSCALE_ALPHA);
@@ -92,7 +92,7 @@ void Particles2DEditorPlugin::_file_selected(const String& p_file) {
 
 	valid_positions.resize(vpc);
 
-	ERR_EXPLAIN("No pixels with transparency > 128 in image..");
+	ERR_EXPLAIN(TTR("No pixels with transparency > 128 in image.."));
 	ERR_FAIL_COND(valid_positions.size()==0);
 
 	DVector<Point2> epoints;
@@ -110,7 +110,7 @@ void Particles2DEditorPlugin::_file_selected(const String& p_file) {
 
 	w = DVector<Point2>::Write();
 
-	undo_redo->create_action("Set Emission Mask");
+	undo_redo->create_action(TTR("Set Emission Mask"));
 	undo_redo->add_do_method(particles,"set_emission_points",epoints);
 	undo_redo->add_do_method(particles,"set_emission_half_extents",extents);
 	undo_redo->add_undo_method(particles,"set_emission_points",particles->get_emission_points());
@@ -130,7 +130,7 @@ void Particles2DEditorPlugin::_menu_callback(int p_idx) {
 		} break;
 		case MENU_CLEAR_EMISSION_MASK: {
 
-			undo_redo->create_action("Clear Emission Mask");
+			undo_redo->create_action(TTR("Clear Emission Mask"));
 			undo_redo->add_do_method(particles,"set_emission_points",DVector<Vector2>());
 			undo_redo->add_undo_method(particles,"set_emission_points",particles->get_emission_points());
 			undo_redo->commit_action();
@@ -171,8 +171,8 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	toolbar->add_child( memnew( VSeparator ) );
 
 	menu = memnew( MenuButton );
-	menu->get_popup()->add_item("Load Emission Mask",MENU_LOAD_EMISSION_MASK);
-	menu->get_popup()->add_item("Clear Emission Mask",MENU_CLEAR_EMISSION_MASK);
+	menu->get_popup()->add_item(TTR("Load Emission Mask"),MENU_LOAD_EMISSION_MASK);
+	menu->get_popup()->add_item(TTR("Clear Emission Mask"),MENU_CLEAR_EMISSION_MASK);
 	menu->set_text("Particles");
 	toolbar->add_child(menu);
 
@@ -190,7 +190,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	epoints->set_max(8192);
 	epoints->set_step(1);
 	epoints->set_val(512);
-	file->get_vbox()->add_margin_child("Generated Point Count:",epoints);
+	file->get_vbox()->add_margin_child(TTR("Generated Point Count:"),epoints);
 }
 
 Particles2DEditorPlugin::~Particles2DEditorPlugin()

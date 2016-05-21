@@ -180,6 +180,8 @@ public:
 		NOTIFICATION_PARENTED=18,
 		NOTIFICATION_UNPARENTED=19,
 		NOTIFICATION_INSTANCED=20,
+		NOTIFICATION_DRAG_BEGIN=21,
+		NOTIFICATION_DRAG_END=22,
 	};
 
 	/* NODE/TREE */
@@ -188,6 +190,7 @@ public:
 	void set_name(const String& p_name);
 
 	void add_child(Node *p_child,bool p_legible_unique_name=false);
+	void add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name=false);
 	void remove_child(Node *p_child);
 
 	int get_child_count() const;
@@ -313,6 +316,10 @@ public:
 	void clear_internal_tree_resource_paths();
 
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
+
+	virtual String get_configuration_warning() const;
+
+	void update_configuration_warning();
 
 	/* CANVAS */
 

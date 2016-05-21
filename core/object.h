@@ -274,12 +274,12 @@ virtual void _get_property_listv(List<PropertyInfo> *p_list,bool p_reversed) con
 	}\
 	p_list->push_back( PropertyInfo(Variant::NIL,get_type_static(),PROPERTY_HINT_NONE,String(),PROPERTY_USAGE_CATEGORY));\
 	if (!_is_gpl_reversed())\
-		ObjectTypeDB::get_property_list(#m_type,p_list,true);\
+		ObjectTypeDB::get_property_list(#m_type,p_list,true,this);\
 	if (m_type::_get_get_property_list() != m_inherits::_get_get_property_list()) {\
 		_get_property_list(p_list);\
 	}\
 	if (_is_gpl_reversed())\
-		ObjectTypeDB::get_property_list(#m_type,p_list,true);\
+		ObjectTypeDB::get_property_list(#m_type,p_list,true,this);\
 	if (p_reversed) {\
 		m_inherits::_get_property_listv(p_list,p_reversed);\
 	}\
@@ -461,6 +461,9 @@ protected:
 	Array _get_method_list_bind() const;
 
 	void _clear_internal_resource_paths(const Variant &p_var);
+
+friend class ObjectTypeDB;
+	virtual void _validate_property(PropertyInfo& property) const;
 
 public: //should be protected, but bug in clang++
 	static void initialize_type();

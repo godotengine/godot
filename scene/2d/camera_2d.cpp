@@ -240,6 +240,10 @@ void Camera2D::_notification(int p_what) {
 			add_to_group(group_name);
 			add_to_group(canvas_group_name);
 
+			if(get_tree()->is_editor_hint()) {
+				set_fixed_process(false);
+			}
+
 			_update_scroll();
 			first=true;
 

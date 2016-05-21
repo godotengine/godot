@@ -86,7 +86,6 @@ private:
 
 	EditorFileDialog *pck_export;
 	EditorFileDialog *file_export;
-	CheckButton *file_export_check;
 	LineEdit *file_export_password;
 
 	Button *button_export;

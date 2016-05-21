@@ -257,7 +257,7 @@ EditorAddonLibraryItemDescription::EditorAddonLibraryItemDescription() {
 
 	previews->add_child(preview_hb);
 	get_ok()->set_text("Install");
-	get_cancel()->set_text("Close");
+	get_cancel()->set_text(TTR("Close"));
 
 
 
@@ -1085,24 +1085,24 @@ EditorAddonLibrary::EditorAddonLibrary() {
 
 
 
-	search_hb->add_child( memnew( Label("Search: ")));
+	search_hb->add_child( memnew( Label(TTR("Search: "))));
 	filter =memnew( LineEdit );
 	search_hb->add_child(filter);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->connect("text_entered",this,"_search");
-	search = memnew( Button("Search"));
+	search = memnew( Button(TTR("Search")));
 	search->connect("pressed",this,"_search");
 	search_hb->add_child(search);
 
 	search_hb->add_child(memnew( VSeparator ));
 
 	Button * open_asset = memnew( Button );
-	open_asset->set_text("Import");
+	open_asset->set_text(TTR("Import"));
 	search_hb->add_child(open_asset);
 	open_asset->connect("pressed",this,"_asset_open");
 
 	Button * plugins = memnew( Button );
-	plugins->set_text("Plugins");
+	plugins->set_text(TTR("Plugins"));
 	search_hb->add_child(plugins);
 	plugins->connect("pressed",this,"_manage_plugins");
 
@@ -1142,7 +1142,7 @@ EditorAddonLibrary::EditorAddonLibrary() {
 	search_hb2->add_child( memnew( Label("Site: ")));
 	repository = memnew( OptionButton );
 
-	repository->add_item("Godot");
+	repository->add_item(TTR("Godot"));
 	search_hb2->add_child(repository);
 	repository->set_h_size_flags(SIZE_EXPAND_FILL);
 

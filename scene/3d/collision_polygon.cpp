@@ -231,6 +231,19 @@ float CollisionPolygon::get_depth() const {
 	return depth;
 }
 
+String CollisionPolygon::get_configuration_warning() const {
+
+	if (!get_parent()->cast_to<CollisionObject>()) {
+		return TTR("CollisionPolygon only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
+	}
+
+	if (polygon.empty()) {
+		return TTR("An empty CollisionPolygon has no effect on collision.");
+
+	}
+
+	return String();
+}
 
 void CollisionPolygon::_bind_methods() {
 

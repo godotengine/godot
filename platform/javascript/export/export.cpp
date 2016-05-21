@@ -86,7 +86,7 @@ public:
 	virtual String get_device_info(int p_device) const { return "Run exported HTML in the system's default browser."; }
 	virtual Error run(int p_device,int p_flags=0);
 
-	virtual bool requieres_password(bool p_debug) const { return false; }
+	virtual bool requires_password(bool p_debug) const { return false; }
 	virtual String get_binary_extension() const { return "html"; }
 	virtual Error export_project(const String& p_path,bool p_debug,int p_flags=0);
 

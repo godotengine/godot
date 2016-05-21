@@ -24,10 +24,7 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include <stddef.h>
 #include "opus/celt/os_support.h"
@@ -138,7 +135,7 @@ void ec_dec_init(ec_dec *_this,unsigned char *_buf,opus_uint32 _storage){
 
 unsigned ec_decode(ec_dec *_this,unsigned _ft){
   unsigned s;
-  _this->ext=_this->rng/_ft;
+  _this->ext=celt_udiv(_this->rng,_ft);
   s=(unsigned)(_this->val/_this->ext);
   return _ft-EC_MINI(s+1,_ft);
 }

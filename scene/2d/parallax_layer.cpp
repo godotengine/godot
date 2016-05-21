@@ -118,6 +118,16 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2& p_offset,float p_sca
 
 }
 
+
+String ParallaxLayer::get_configuration_warning() const {
+
+	if (!get_parent() || !get_parent()->cast_to<ParallaxBackground>()) {
+		return TTR("ParallaxLayer node only works when set as child of a ParallaxBackground node.");
+	}
+
+	return String();
+}
+
 void ParallaxLayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_motion_scale","scale"),&ParallaxLayer::set_motion_scale);

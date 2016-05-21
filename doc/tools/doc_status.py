@@ -14,6 +14,7 @@ flags = {
 	'c': platform.platform() != 'Windows', # Disable by default on windows, since we use ANSI escape codes
 	'b': False,
 	'g': False,
+	's': False,
 	'u': False,
 	'h': False,
 	'p': False,
@@ -24,6 +25,7 @@ flag_descriptions = {
 	'c': 'Toggle colors when outputting.',
 	'b': 'Toggle showing only not fully described classes.',
 	'g': 'Toggle showing only completed classes.',
+	's': 'Toggle showing comments about the status.',
 	'u': 'Toggle URLs to docs.',
 	'h': 'Show help and exit.',
 	'p': 'Toggle showing percentage as well as counts.',
@@ -32,7 +34,6 @@ flag_descriptions = {
 }
 long_flags = {
 	'colors': 'c',
-	'color': 'c',
 	'use-colors': 'c',
 
 	'bad': 'b',
@@ -41,29 +42,27 @@ long_flags = {
 	'good': 'g',
 	'only-good': 'g',
 
+	'comments': 's',
+	'status': 's',
+
 	'urls': 'u',
-	'url': 'u',
-	'generate-urls': 'u',
 	'gen-url': 'u',
 
 	'help': 'h',
 
 	'percent': 'p',
-	'percentages': 'p',
 	'use-percentages': 'p',
 
 	'overall': 'o',
 	'use-overall': 'o',
 
 	'items': 'i',
-	'collapse-items': 'i',
 	'collapse': 'i',
-	'narrow': 'i',
 }
 table_columns = ['name', 'brief_description', 'description', 'methods', 'constants', 'members', 'signals']
-table_column_names = ['Name', 'Brief Description', 'Description', 'Methods', 'Constants', 'Members', 'Signals']
+table_column_names = ['Name', 'Brief Desc.', 'Desc.', 'Methods', 'Constants', 'Members', 'Signals']
 colors = {
-	'name': [34], # blue
+	'name': [36], # cyan
 	'part_big_problem': [4, 31], # underline, red
 	'part_problem': [31], # red
 	'part_mostly_good': [33], # yellow
@@ -201,11 +200,12 @@ class ClassStatus:
 
 		if self.name.startswith('Total'):
 			output['url'] = color('url', 'http://docs.godotengine.org/en/latest/classes/_classes.html')
-			output['comment'] = color('part_good', 'ALL OK')
+			if flags['s']:
+				output['comment'] = color('part_good', 'ALL OK')
 		else:
 			output['url'] = color('url', 'http://docs.godotengine.org/en/latest/classes/class_{name}.html'.format(name=self.name.lower()))
 
-			if not flags['g'] and self.is_ok():
+			if flags['s'] and not flags['g'] and self.is_ok():
 				output['comment'] = color('part_good', 'ALL OK')
 
 		return output

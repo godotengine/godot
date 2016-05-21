@@ -104,6 +104,8 @@ public:
 
 	virtual Rect2 get_item_rect() const;
 
+	String get_configuration_warning() const;
+
 	Light2D();
 	~Light2D();
 };

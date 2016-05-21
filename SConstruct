@@ -23,7 +23,7 @@ platform_exporters=[]
 global_defaults=[]
 
 for x in glob.glob("platform/*"):
-	if (not os.path.isdir(x)):
+	if (not os.path.isdir(x) or not os.path.exists(x+"/detect.py")):
 		continue
 	tmppath="./"+x
 
@@ -307,10 +307,10 @@ if selected_platform in platform_list:
 	if (env['musepack']=='yes'):
 		env.Append(CPPFLAGS=['-DMUSEPACK_ENABLED']);
 
-	if (env['openssl']!='no'):
-		env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
-		if (env['openssl']=="builtin"):
-			env.Append(CPPPATH=['#drivers/builtin_openssl2'])
+	#if (env['openssl']!='no'):
+	#	env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
+	#	if (env['openssl']=="builtin"):
+	#		env.Append(CPPPATH=['#drivers/builtin_openssl2'])
 
 	if (env["builtin_zlib"]=='yes'):
 		env.Append(CPPPATH=['#drivers/builtin_zlib/zlib'])

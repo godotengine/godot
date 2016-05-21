@@ -54,7 +54,7 @@ String Globals::localize_path(const String& p_path) const {
 	if (resource_path=="")
 		return p_path; //not initialied yet
 
-	if (p_path.find(":/") != -1)
+	if (p_path.begins_with("res://") || p_path.begins_with("user://"))
 		return p_path.simplify_path();
 
 
@@ -82,6 +82,8 @@ String Globals::localize_path(const String& p_path) const {
 		if (sep == -1) {
 			return "res://"+path;
 		};
+
+
 		String parent = path.substr(0, sep);
 
 		String plocal = localize_path(parent);

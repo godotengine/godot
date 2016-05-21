@@ -182,6 +182,9 @@ public:
 
 	NodePath path_pp;
 
+	StringName _default;
+
+	StringName node_configuration_warning_changed;
 
 };
 

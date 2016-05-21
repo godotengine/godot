@@ -108,6 +108,8 @@ class RasterizerGLES2 : public Rasterizer {
 	bool use_half_float;
 	bool low_memory_2d;
 
+	bool shrink_textures_x2;
+
 	Vector<float> skel_default;
 
 	Image _get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_internal_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed);
@@ -1335,6 +1337,8 @@ public:
 	virtual void texture_set_path(RID p_texture,const String& p_path);
 	virtual String texture_get_path(RID p_texture) const;
 	virtual void texture_debug_usage(List<VS::TextureInfo> *r_info);
+
+	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable);
 
 	GLuint _texture_get_name(RID p_tex);
 

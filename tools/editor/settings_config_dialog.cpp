@@ -107,7 +107,7 @@ void EditorSettingsDialog::_bind_methods() {
 
 EditorSettingsDialog::EditorSettingsDialog() {
 
-	set_title("Editor Settings");
+	set_title(TTR("Editor Settings"));
 
 	tabs = memnew( TabContainer );
 	add_child(tabs);
@@ -115,14 +115,14 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	tabs->add_child(vbc);
-	vbc->set_name("General");
+	vbc->set_name(TTR("General"));
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(hbc);
 
 	Label *l = memnew( Label );
-	l->set_text("Search: ");
+	l->set_text(TTR("Search: "));
 	hbc->add_child(l);
 
 	search_box = memnew( LineEdit );
@@ -142,20 +142,20 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	vbc = memnew( VBoxContainer );
 	tabs->add_child(vbc);
-	vbc->set_name("Plugins");
+	vbc->set_name(TTR("Plugins"));
 
 	hbc = memnew( HBoxContainer );
 	vbc->add_child(hbc);
-	hbc->add_child( memnew( Label("Plugin List: ")));
+	hbc->add_child( memnew( Label(TTR("Plugin List: "))));
 	hbc->add_spacer();
 	//Button *load = memnew( Button );
-	//load->set_text("Load..");
+	//load->set_text(TTR("Load.."));
 	//hbc->add_child(load);
 
 
-	//get_ok()->set_text("Apply");
+	//get_ok()->set_text(TTR("Apply"));
 	set_hide_on_ok(true);
-	//get_cancel()->set_text("Close");
+	//get_cancel()->set_text(TTR("Close"));
 
 	timer = memnew( Timer );
 	timer->set_wait_time(1.5);
@@ -163,7 +163,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	timer->set_one_shot(true);
 	add_child(timer);
 	EditorSettings::get_singleton()->connect("settings_changed",this,"_settings_changed");
-	get_ok()->set_text("Close");
+	get_ok()->set_text(TTR("Close"));
 
 	updating=false;
 

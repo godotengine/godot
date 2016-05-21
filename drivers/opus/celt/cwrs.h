@@ -43,6 +43,6 @@ void get_required_bits(opus_int16 *bits, int N, int K, int frac);
 
 void encode_pulses(const int *_y, int N, int K, ec_enc *enc);
 
-void decode_pulses(int *_y, int N, int K, ec_dec *dec);
+opus_val32 decode_pulses(int *_y, int N, int K, ec_dec *dec);
 
 #endif /* CWRS_H */

@@ -129,6 +129,7 @@ private:
 		bool stop_mouse;
 
 		Control *parent;
+		ObjectID drag_owner;
 		bool modal;
 		bool modal_exclusive;
 		Ref<Theme> theme;
@@ -179,7 +180,8 @@ private:
 	void _size_changed();
 	String _get_tooltip() const;
 
-	void _set_rotation_deg(float p_rot);
+	// Deprecated, should be removed in a future version.
+	void _set_rotation_deg(float p_degrees);
 	float _get_rotation_deg() const;
 
 friend class Viewport;
@@ -229,6 +231,7 @@ public:
 	virtual Size2 get_combined_minimum_size() const;
 	virtual bool has_point(const Point2& p_point) const;
 	virtual bool clips_input() const;
+	virtual void set_drag_forwarding(Control* p_target);
 	virtual Variant get_drag_data(const Point2& p_point);
 	virtual bool can_drop_data(const Point2& p_point,const Variant& p_data) const;
 	virtual void drop_data(const Point2& p_point,const Variant& p_data);
@@ -273,8 +276,10 @@ public:
 	Rect2 get_global_rect() const;
 	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the visual server
 
-	void set_rotation(float p_rotation);
+	void set_rotation(float p_radians);
+	void set_rotation_deg(float p_degrees);
 	float get_rotation() const;
+	float get_rotation_deg() const;
 
 	void set_scale(const Vector2& p_scale);
 	Vector2 get_scale() const;

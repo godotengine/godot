@@ -24,12 +24,9 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
-#include "opus/silk/silk_main.h"
+#include "opus/silk/main.h"
 #include "opus/celt/stack_alloc.h"
 #include "opus/silk/PLC.h"
 
@@ -42,18 +39,16 @@ opus_int silk_decode_frame(
     opus_int16                  pOut[],                         /* O    Pointer to output speech frame              */
     opus_int32                  *pN,                            /* O    Pointer to size of output frame             */
     opus_int                    lostFlag,                       /* I    0: no loss, 1 loss, 2 decode fec            */
-    opus_int                    condCoding                      /* I    The type of conditional coding to use       */
+    opus_int                    condCoding,                     /* I    The type of conditional coding to use       */
+    int                         arch                            /* I    Run-time architecture                       */
 )
 {
     VARDECL( silk_decoder_control, psDecCtrl );
     opus_int         L, mv_len, ret = 0;
-    VARDECL( opus_int, pulses );
     SAVE_STACK;
 
     L = psDec->frame_length;
     ALLOC( psDecCtrl, 1, silk_decoder_control );
-    ALLOC( pulses, (L + SHELL_CODEC_FRAME_LENGTH - 1) &
-                   ~(SHELL_CODEC_FRAME_LENGTH - 1), opus_int );
     psDecCtrl->LTP_scale_Q14 = 0;
 
     /* Safety checks */
@@ -62,6 +57,9 @@ opus_int silk_decode_frame(
     if(   lostFlag == FLAG_DECODE_NORMAL ||
         ( lostFlag == FLAG_DECODE_LBRR && psDec->LBRR_flags[ psDec->nFramesDecoded ] == 1 ) )
     {
+        VARDECL( opus_int16, pulses );
+        ALLOC( pulses, (L + SHELL_CODEC_FRAME_LENGTH - 1) &
+                       ~(SHELL_CODEC_FRAME_LENGTH - 1), opus_int16 );
         /*********************************************/
         /* Decode quantization indices of side info  */
         /*********************************************/
@@ -81,12 +79,12 @@ opus_int silk_decode_frame(
         /********************************************************/
         /* Run inverse NSQ                                      */
         /********************************************************/
-        silk_decode_core( psDec, psDecCtrl, pOut, pulses );
+        silk_decode_core( psDec, psDecCtrl, pOut, pulses, arch );
 
         /********************************************************/
         /* Update PLC state                                     */
         /********************************************************/
-        silk_PLC( psDec, psDecCtrl, pOut, 0 );
+        silk_PLC( psDec, psDecCtrl, pOut, 0, arch );
 
         psDec->lossCnt = 0;
         psDec->prevSignalType = psDec->indices.signalType;
@@ -96,7 +94,7 @@ opus_int silk_decode_frame(
         psDec->first_frame_after_reset = 0;
     } else {
         /* Handle packet loss by extrapolation */
-        silk_PLC( psDec, psDecCtrl, pOut, 1 );
+        silk_PLC( psDec, psDecCtrl, pOut, 1, arch );
     }
 
     /*************************/
@@ -107,15 +105,15 @@ opus_int silk_decode_frame(
     silk_memmove( psDec->outBuf, &psDec->outBuf[ psDec->frame_length ], mv_len * sizeof(opus_int16) );
     silk_memcpy( &psDec->outBuf[ mv_len ], pOut, psDec->frame_length * sizeof( opus_int16 ) );
 
-    /****************************************************************/
-    /* Ensure smooth connection of extrapolated and good frames     */
-    /****************************************************************/
-    silk_PLC_glue_frames( psDec, pOut, L );
-
     /************************************************/
     /* Comfort noise generation / estimation        */
     /************************************************/
     silk_CNG( psDec, psDecCtrl, pOut, L );
+
+    /****************************************************************/
+    /* Ensure smooth connection of extrapolated and good frames     */
+    /****************************************************************/
+    silk_PLC_glue_frames( psDec, pOut, L );
 
     /* Update some decoder state variables */
     psDec->lagPrev = psDecCtrl->pitchL[ psDec->nb_subfr - 1 ];

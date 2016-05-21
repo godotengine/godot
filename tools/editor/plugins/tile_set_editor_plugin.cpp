@@ -175,7 +175,7 @@ void TileSetEditor::_name_dialog_confirm(const String& name) {
 			if (tileset->has_tile(id)) {
 				tileset->remove_tile(id);
 			} else {
-				err_dialog->set_text("Could not find tile: " + name);
+				err_dialog->set_text(TTR("Could not find tile: ") + name);
 				err_dialog->popup_centered(Size2(300, 60));
 			}
 		} break;
@@ -193,18 +193,18 @@ void TileSetEditor::_menu_cbk(int p_option) {
 		} break;
 		case MENU_OPTION_REMOVE_ITEM: {
 
-			nd->set_title("Remove Item");
-			nd->set_text("Item name or ID:");
+			nd->set_title(TTR("Remove Item"));
+			nd->set_text(TTR("Item name or ID:"));
 			nd->popup_centered(Size2(300, 95));
 		} break;
 		case MENU_OPTION_CREATE_FROM_SCENE: {
 
-			cd->set_text("Create from scene?");
+			cd->set_text(TTR("Create from scene?"));
 			cd->popup_centered(Size2(300,60));
 		} break;
 		case MENU_OPTION_MERGE_FROM_SCENE: {
 
-			cd->set_text("Merge from scene?");
+			cd->set_text(TTR("Merge from scene?"));
 			cd->popup_centered(Size2(300,60));
 		} break;
 	}
@@ -235,11 +235,11 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	panel->add_child(options);
 	options->set_pos(Point2(1,1));
 	options->set_text("Theme");
-	options->get_popup()->add_item("Add Item",MENU_OPTION_ADD_ITEM);
-	options->get_popup()->add_item("Remove Item",MENU_OPTION_REMOVE_ITEM);
+	options->get_popup()->add_item(TTR("Add Item"),MENU_OPTION_ADD_ITEM);
+	options->get_popup()->add_item(TTR("Remove Item"),MENU_OPTION_REMOVE_ITEM);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Create from Scene",MENU_OPTION_CREATE_FROM_SCENE);
-	options->get_popup()->add_item("Merge from Scene",MENU_OPTION_MERGE_FROM_SCENE);
+	options->get_popup()->add_item(TTR("Create from Scene"),MENU_OPTION_CREATE_FROM_SCENE);
+	options->get_popup()->add_item(TTR("Merge from Scene"),MENU_OPTION_MERGE_FROM_SCENE);
 	options->get_popup()->connect("item_pressed", this,"_menu_cbk");
 	editor=p_editor;
 	cd = memnew(ConfirmationDialog);
@@ -254,7 +254,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
-	err_dialog->set_title("Error");
+	err_dialog->set_title(TTR("Error"));
 }
 
 void TileSetEditorPlugin::edit(Object *p_node) {

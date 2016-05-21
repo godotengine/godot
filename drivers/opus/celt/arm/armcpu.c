@@ -26,10 +26,7 @@
 */
 
 /* Original code from libtheora modified to suit to Opus */
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #ifdef OPUS_HAVE_RTCD
 
@@ -73,7 +70,7 @@ static OPUS_INLINE opus_uint32 opus_cpu_capabilities(void){
   __except(GetExceptionCode()==EXCEPTION_ILLEGAL_INSTRUCTION){
     /*Ignore exception.*/
   }
-#   if defined(OPUS_ARM_MAY_HAVE_NEON)
+#   if defined(OPUS_ARM_MAY_HAVE_NEON) || defined(OPUS_ARM_MAY_HAVE_NEON_INTR)
   __try{
     /*VORR q0,q0,q0*/
     __emit(0xF2200150);
@@ -107,7 +104,7 @@ opus_uint32 opus_cpu_capabilities(void)
 
     while(fgets(buf, 512, cpuinfo) != NULL)
     {
-# if defined(OPUS_ARM_MAY_HAVE_EDSP) || defined(OPUS_ARM_MAY_HAVE_NEON)
+# if defined(OPUS_ARM_MAY_HAVE_EDSP) || defined(OPUS_ARM_MAY_HAVE_NEON) || defined(OPUS_ARM_MAY_HAVE_NEON_INTR)
       /* Search for edsp and neon flag */
       if(memcmp(buf, "Features", 8) == 0)
       {
@@ -118,7 +115,7 @@ opus_uint32 opus_cpu_capabilities(void)
           flags |= OPUS_CPU_ARM_EDSP;
 #  endif
 
-#  if defined(OPUS_ARM_MAY_HAVE_NEON)
+#  if defined(OPUS_ARM_MAY_HAVE_NEON) || defined(OPUS_ARM_MAY_HAVE_NEON_INTR)
         p = strstr(buf, " neon");
         if(p != NULL && (p[5] == ' ' || p[5] == '\n'))
           flags |= OPUS_CPU_ARM_NEON;

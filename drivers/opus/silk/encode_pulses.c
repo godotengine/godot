@@ -24,12 +24,9 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
-#include "opus/silk/silk_main.h"
+#include "opus/silk/main.h"
 #include "opus/celt/stack_alloc.h"
 
 /*********************************************/
@@ -142,7 +139,7 @@ void silk_encode_pulses(
         sumBits_Q5 = silk_rate_levels_BITS_Q5[ signalType >> 1 ][ k ];
         for( i = 0; i < iter; i++ ) {
             if( nRshifts[ i ] > 0 ) {
-                sumBits_Q5 += nBits_ptr[ MAX_PULSES + 1 ];
+                sumBits_Q5 += nBits_ptr[ SILK_MAX_PULSES + 1 ];
             } else {
                 sumBits_Q5 += nBits_ptr[ sum_pulses[ i ] ];
             }
@@ -162,9 +159,9 @@ void silk_encode_pulses(
         if( nRshifts[ i ] == 0 ) {
             ec_enc_icdf( psRangeEnc, sum_pulses[ i ], cdf_ptr, 8 );
         } else {
-            ec_enc_icdf( psRangeEnc, MAX_PULSES + 1, cdf_ptr, 8 );
+            ec_enc_icdf( psRangeEnc, SILK_MAX_PULSES + 1, cdf_ptr, 8 );
             for( k = 0; k < nRshifts[ i ] - 1; k++ ) {
-                ec_enc_icdf( psRangeEnc, MAX_PULSES + 1, silk_pulses_per_block_iCDF[ N_RATE_LEVELS - 1 ], 8 );
+                ec_enc_icdf( psRangeEnc, SILK_MAX_PULSES + 1, silk_pulses_per_block_iCDF[ N_RATE_LEVELS - 1 ], 8 );
             }
             ec_enc_icdf( psRangeEnc, sum_pulses[ i ], silk_pulses_per_block_iCDF[ N_RATE_LEVELS - 1 ], 8 );
         }

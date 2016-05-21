@@ -139,6 +139,11 @@ bool AnimationTreePlayer::_set(const StringName& p_name, const Variant& p_value)
 					animation_node_set_master_animation(id,node.get_valid("from"));
 				else
 					animation_node_set_animation(id,node.get_valid("animation"));
+				Array filters= node.get_valid("filter");
+				for(int i=0;i<filters.size();i++) {
+
+					animation_node_set_filter_path(id,filters[i],true);
+				}
 			   } break;
 			case NODE_ONESHOT: {
 
@@ -276,6 +281,15 @@ bool AnimationTreePlayer::_get(const StringName& p_name,Variant &r_ret) const {
 				} else {
 					node["animation"]=an->animation;
 				}
+				Array k;
+				List<NodePath> keys;
+				an->filter.get_key_list(&keys);
+				k.resize(keys.size());
+				int i=0;
+				for(List<NodePath>::Element *E=keys.front();E;E=E->next()) {
+					k[i++]=E->get();
+				}
+				node["filter"]=k;
 			   } break;
 			case NODE_ONESHOT: {
 				OneShotNode *osn = static_cast<OneShotNode*>(n);
@@ -439,7 +453,6 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 
 	//transform to seconds...
 
-
 	switch(nb->type) {
 
 		case NODE_OUTPUT: {
@@ -464,7 +477,7 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 					an->time=p_time;
 					an->step=0;
 				} else {
-					an->time+=p_time;
+					an->time=MAX(0,an->time+p_time);
 					an->step=p_time;
 				}
 
@@ -482,14 +495,12 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 
 				an->skip=true;
 				for (List<AnimationNode::TrackRef>::Element *E=an->tref.front();E;E=E->next()) {
-
-					if (p_filter && p_filter->has(an->animation->track_get_path(E->get().local_track))) {
-
-						if (p_reverse_weight<0)
-							E->get().weight=0;
-						else
-							E->get().weight=p_reverse_weight;
-
+					NodePath track_path = an->animation->track_get_path(E->get().local_track);
+					if (p_filter && p_filter->has(track_path)) {
+						E->get().weight = MAX(0, p_reverse_weight);
+					} else if(an->filter.has(track_path)) {
+						E->get().weight = 0;
+						E->get().track->skip = true;
 					} else {
 						E->get().weight=p_weight;
 					}
@@ -552,17 +563,16 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 
 			float main_rem;
 			float os_rem;
+			float os_reverse_weight = p_reverse_weight;
 
 			if (!osn->filter.empty()) {
-
-				main_rem = _process_node(osn->inputs[0].node,r_prev_anim,(osn->mix?p_weight:p_weight*(1.0-blend)),p_time,p_seek,&osn->filter,p_weight);
-				os_rem = _process_node(osn->inputs[1].node,r_prev_anim,p_weight*blend,p_time,os_seek,&osn->filter,-1);
-
-			} else {
-
-				main_rem = _process_node(osn->inputs[0].node,r_prev_anim,(osn->mix?p_weight:p_weight*(1.0-blend)),p_time,p_seek);
-				os_rem = _process_node(osn->inputs[1].node,r_prev_anim,p_weight*blend,p_time,os_seek);
+				p_filter = &osn->filter;
+				p_reverse_weight = p_weight;
+				os_reverse_weight = -1;
 			}
+
+			main_rem = _process_node(osn->inputs[0].node,r_prev_anim,(osn->mix?p_weight:p_weight*(1.0-blend)),p_time,p_seek,p_filter,p_reverse_weight);
+			os_rem = _process_node(osn->inputs[1].node,r_prev_anim,p_weight*blend,p_time,os_seek,p_filter,os_reverse_weight);
 
 			if (osn->start) {
 				osn->remaining=os_rem;
@@ -768,6 +778,8 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 
 		t.value = t.object->get(t.property);
 		t.value.zero();
+
+		t.skip = false;
 	}
 
 
@@ -816,16 +828,9 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 						if (a->value_track_is_continuous(tr.local_track)) {
 							Variant value = a->value_track_interpolate(tr.local_track,anim_list->time);
 							Variant::blend(tr.track->value,value,blend,tr.track->value);
-							tr.track->object->set(tr.track->property,tr.track->value);
 						} else {
-
-							List<int> indices;
-							a->value_track_get_key_indices(tr.local_track,anim_list->time,anim_list->step,&indices);
-							for(List<int>::Element *E=indices.front();E;E=E->next()) {
-
-								Variant value = a->track_get_key_value(tr.local_track,E->get());
-								tr.track->object->set(tr.track->property,value);
-							}
+							int index = a->track_find_key(tr.local_track,anim_list->time);
+							tr.track->value = a->track_get_key_value(tr.local_track, index);
 						}
 					} break;
 					case Animation::TYPE_METHOD: { ///< Call any method on a specific node.
@@ -854,11 +859,13 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 
 		Track &t = E->get();
 
-		if (!t.object)
+		if (t.skip || !t.object)
 			continue;
 
-		if(t.property)  // value track; was applied in step 2
+		if(t.property) {  // value track
+			t.object->set(t.property,t.value);
 			continue;
+		}
 
 		Transform xform;
 		xform.basis=t.rot;
@@ -981,6 +988,24 @@ void AnimationTreePlayer::animation_node_set_master_animation(const StringName& 
 		_update_sources();
 
 
+}
+
+void AnimationTreePlayer::animation_node_set_filter_path(const StringName& p_node,const NodePath& p_track_path,bool p_filter) {
+
+	GET_NODE( NODE_ANIMATION, AnimationNode );
+
+	if (p_filter)
+		n->filter[p_track_path]=true;
+	else
+		n->filter.erase(p_track_path);
+
+}
+
+void AnimationTreePlayer::animation_node_set_get_filtered_paths(const StringName& p_node,List<NodePath> *r_paths) const{
+
+	GET_NODE( NODE_ANIMATION, AnimationNode );
+
+	n->filter.get_key_list(r_paths);
 }
 
 void AnimationTreePlayer::oneshot_node_set_fadein_time(const StringName& p_node,float p_time) {
@@ -1208,6 +1233,12 @@ String AnimationTreePlayer::animation_node_get_master_animation(const StringName
 	GET_NODE_V(NODE_ANIMATION, AnimationNode, String());
 	return n->from;
 
+}
+
+bool AnimationTreePlayer::animation_node_is_path_filtered(const StringName& p_node,const NodePath& p_path) const {
+
+	GET_NODE_V(NODE_ANIMATION, AnimationNode, 0 );
+	return n->filter.has(p_path);
 }
 
 float AnimationTreePlayer::oneshot_node_get_fadein_time(const StringName& p_node) const {
@@ -1750,6 +1781,7 @@ void AnimationTreePlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("animation_node_set_master_animation","id","source"),&AnimationTreePlayer::animation_node_set_master_animation);
 	ObjectTypeDB::bind_method(_MD("animation_node_get_master_animation","id"),&AnimationTreePlayer::animation_node_get_master_animation);
+	ObjectTypeDB::bind_method(_MD("animation_node_set_filter_path","id","path","enable"),&AnimationTreePlayer::animation_node_set_filter_path);
 
 	ObjectTypeDB::bind_method(_MD("oneshot_node_set_fadein_time","id","time_sec"),&AnimationTreePlayer::oneshot_node_set_fadein_time);
 	ObjectTypeDB::bind_method(_MD("oneshot_node_get_fadein_time","id"),&AnimationTreePlayer::oneshot_node_get_fadein_time);

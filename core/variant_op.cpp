@@ -3513,7 +3513,7 @@ void Variant::interpolate(const Variant& a, const Variant& b, float c,Variant &r
 		case INT:{
 			int va=a._data._int;
 			int vb=b._data._int;
-			r_dst=int((1.0-c) * va + vb * c + 0.5);
+			r_dst=int((1.0-c) * va + vb * c);
 		} return;
 		case REAL:{
 			real_t va=a._data._real;

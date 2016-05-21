@@ -180,7 +180,7 @@ class AnimationTreeEditorPlugin : public EditorPlugin {
 
 public:
 
-	virtual String get_name() const { return "AnimTree"; }
+	virtual String get_name() const { return TTR("AnimTree"); }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
 	virtual bool handles(Object *p_node) const;

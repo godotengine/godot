@@ -68,6 +68,10 @@ class SampleLibraryEditor : public Panel {
 
 	void _button_pressed(Object *p_item,int p_column, int p_id);
 
+	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
+	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
+	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
+
 protected:
 	void _notification(int p_what);
 	void _input_event(InputEvent p_event);

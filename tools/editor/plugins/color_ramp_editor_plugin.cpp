@@ -63,9 +63,9 @@ void ColorRampEditorPlugin::_ramp_changed() {
 		Vector<Color> old_colors=color_ramp_ref->get_colors();
 
 		if (old_offsets.size()!=new_offsets.size())
-			ur->create_action("Add/Remove Color Ramp Point");
+			ur->create_action(TTR("Add/Remove Color Ramp Point"));
 		else
-			ur->create_action("Modify Color Ramp",true);
+			ur->create_action(TTR("Modify Color Ramp"),true);
 		ur->add_do_method(this,"undo_redo_color_ramp",new_offsets,new_colors);
 		ur->add_undo_method(this,"undo_redo_color_ramp",old_offsets,old_colors);
 		ur->commit_action();

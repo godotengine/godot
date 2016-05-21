@@ -1,10 +1,9 @@
-# GoDot auto generated files
+# Godot auto generated files
 platform/server/logo.h
 platform/android/logo.h
 platform/bb10/logo.h
 platform/iphone/logo.h
 platform/javascript/logo.h
-platform/nacl/logo.h
 platform/osx/logo.h
 platform/windows/logo.h
 platform/x11/logo.h
@@ -59,7 +58,6 @@ platform/android/libs/play_licensing/gen/*
 *.os
 *.Plo
 *.lo
-*.Po
 
 # Libs generated files
 .deps/*
@@ -301,3 +299,7 @@ godot.creator.*
 
 projects/
 platform/windows/godot_res.res
+
+# Visual Studio Code folder (and files) that are created
+# when the C/C++ extension (https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) is used
+/.vscode

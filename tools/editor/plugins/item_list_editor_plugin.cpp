@@ -129,7 +129,7 @@ int ItemListOptionButtonPlugin::get_flags() const {
 
 void ItemListOptionButtonPlugin::add_item() {
 
-	ob->add_item( "Item "+itos(ob->get_item_count()));
+	ob->add_item( TTR("Item ")+itos(ob->get_item_count()));
 	_change_notify();
 }
 
@@ -171,7 +171,7 @@ int ItemListPopupMenuPlugin::get_flags() const {
 
 void ItemListPopupMenuPlugin::add_item() {
 
-	pp->add_item( "Item "+itos(pp->get_item_count()));
+	pp->add_item( TTR("Item ")+itos(pp->get_item_count()));
 	_change_notify();
 }
 
@@ -299,12 +299,12 @@ ItemListEditor::ItemListEditor() {
 	add_child( memnew( VSeparator ) );
 
 	toolbar_button = memnew( ToolButton );
-	toolbar_button->set_text("Items");
+	toolbar_button->set_text(TTR("Items"));
 	add_child(toolbar_button);
 	toolbar_button->connect("pressed",this,"_edit_items");
 
 	dialog = memnew( AcceptDialog );
-	dialog->set_title("Item List Editor");
+	dialog->set_title(TTR("Item List Editor"));
 	add_child( dialog );
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
@@ -316,14 +316,14 @@ ItemListEditor::ItemListEditor() {
 	vbc->add_child(hbc);
 
 	add_button = memnew( Button );
-	add_button->set_text("Add");
+	add_button->set_text(TTR("Add"));
 	hbc->add_child(add_button);
 	add_button->connect("pressed",this,"_add_button");
 
 	hbc->add_spacer();
 
 	del_button = memnew( Button );
-	del_button->set_text("Delete");
+	del_button->set_text(TTR("Delete"));
 	hbc->add_child(del_button);
 	del_button->connect("pressed",this,"_delete_button");
 

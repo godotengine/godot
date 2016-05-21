@@ -421,6 +421,7 @@ public:
 		BODY_PARAM_BOUNCE,
 		BODY_PARAM_FRICTION,
 		BODY_PARAM_MASS, ///< unused for static, always infinite
+		BODY_PARAM_INERTIA,  // read-only: computed from mass & shapes
 		BODY_PARAM_GRAVITY_SCALE,
 		BODY_PARAM_LINEAR_DAMP,
 		BODY_PARAM_ANGULAR_DAMP,
@@ -450,7 +451,9 @@ public:
 	virtual void body_set_applied_torque(RID p_body, float p_torque)=0;
 	virtual float body_get_applied_torque(RID p_body) const=0;
 
-	virtual void body_apply_impulse(RID p_body, const Vector2& p_pos, const Vector2& p_impulse)=0;
+	virtual void body_add_force(RID p_body, const Vector2& p_offset, const Vector2& p_force)=0;
+
+	virtual void body_apply_impulse(RID p_body, const Vector2& p_offset, const Vector2& p_impulse)=0;
 	virtual void body_set_axis_velocity(RID p_body, const Vector2& p_axis_velocity)=0;
 
 	//fix

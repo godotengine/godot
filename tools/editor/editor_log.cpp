@@ -185,7 +185,7 @@ EditorLog::EditorLog() {
 
 	clearbutton = memnew( Button );
 	hb->add_child(clearbutton);
-	clearbutton->set_text("Clear");
+	clearbutton->set_text(TTR("Clear"));
 	clearbutton->connect("pressed", this,"_clear_request");
 
 	ec = memnew( Control);

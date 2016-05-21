@@ -1660,6 +1660,7 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("tree_changed") );
 	ADD_SIGNAL( MethodInfo("node_removed",PropertyInfo( Variant::OBJECT, "node") ) );
 	ADD_SIGNAL( MethodInfo("screen_resized") );
+	ADD_SIGNAL( MethodInfo("node_configuration_warning_changed",PropertyInfo( Variant::OBJECT, "node")) );
 
 	ADD_SIGNAL( MethodInfo("idle_frame"));
 	ADD_SIGNAL( MethodInfo("fixed_frame"));

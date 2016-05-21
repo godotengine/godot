@@ -103,7 +103,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 		AcceptDialog * dialog;
 		Tree *tree;
-		LineEdit *next;
+		OptionButton *next;
 
 	} blend_editor;
 
@@ -146,7 +146,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _dialog_action(String p_file);
 	void _seek_frame_changed(const String& p_frame);
 	void _seek_value_changed(float p_value);
-	void _blend_editor_next_changed(const String& p_string);
+	void _blend_editor_next_changed(const int p_idx);
 
 	void _list_changed();
 	void _update_animation();
@@ -203,7 +203,7 @@ public:
 	virtual Dictionary get_state() const { return anim_editor->get_state(); }
 	virtual void set_state(const Dictionary& p_state)  { anim_editor->set_state(p_state); }
 
-	virtual String get_name() const { return "Anim"; }
+	virtual String get_name() const { return TTR("Anim"); }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
 	virtual bool handles(Object *p_node) const;

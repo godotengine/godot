@@ -87,10 +87,10 @@ static Ref<Shader> make_shader(const char*vertex_code,const char*fragment_code,c
 	return shader;
 }
 
-static Ref<Font> make_font(int p_height,int p_ascent, int p_valign, int p_charcount, const int *p_chars,const Ref<Texture> &p_texture) {
+static Ref<BitmapFont> make_font(int p_height,int p_ascent, int p_valign, int p_charcount, const int *p_chars,const Ref<Texture> &p_texture) {
 
 
-	Ref<Font> font( memnew( Font ) );
+	Ref<BitmapFont> font( memnew( BitmapFont ) );
 	font->add_texture( p_texture );
 
 	for (int i=0;i<p_charcount;i++) {
@@ -117,10 +117,10 @@ static Ref<Font> make_font(int p_height,int p_ascent, int p_valign, int p_charco
 	return font;
 }
 
-static Ref<Font> make_font2(int p_height,int p_ascent, int p_charcount, const int *p_char_rects,int p_kerning_count,const int *p_kernings,int p_w, int p_h, const unsigned char *p_img) {
+static Ref<BitmapFont> make_font2(int p_height,int p_ascent, int p_charcount, const int *p_char_rects,int p_kerning_count,const int *p_kernings,int p_w, int p_h, const unsigned char *p_img) {
 
 
-	Ref<Font> font( memnew( Font ) );
+	Ref<BitmapFont> font( memnew( BitmapFont ) );
 
 	DVector<uint8_t> img;
 	img.resize(p_w*p_h*2);
@@ -187,10 +187,10 @@ void make_default_theme() {
 
 	Ref<Theme> t( memnew( Theme ) );
 
-	//Ref<Font> default_font = make_font(_bi_font_normal_height,_bi_font_normal_ascent,_bi_font_normal_valign,_bi_font_normal_charcount,_bi_font_normal_characters,make_icon(font_normal_png));
-	Ref<Font> default_font=make_font2(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,_builtin_normal_font_img_data);
-	Ref<Font> source_font=make_font2(_builtin_source_font_height,_builtin_source_font_ascent,_builtin_source_font_charcount,&_builtin_source_font_charrects[0][0],_builtin_source_font_kerning_pair_count,&_builtin_source_font_kerning_pairs[0][0],_builtin_source_font_img_width,_builtin_source_font_img_height,_builtin_source_font_img_data);
-	Ref<Font> large_font=make_font2(_builtin_large_font_height,_builtin_large_font_ascent,_builtin_large_font_charcount,&_builtin_large_font_charrects[0][0],_builtin_large_font_kerning_pair_count,&_builtin_large_font_kerning_pairs[0][0],_builtin_large_font_img_width,_builtin_large_font_img_height,_builtin_large_font_img_data);
+	//Ref<BitmapFont> default_font = make_font(_bi_font_normal_height,_bi_font_normal_ascent,_bi_font_normal_valign,_bi_font_normal_charcount,_bi_font_normal_characters,make_icon(font_normal_png));
+	Ref<BitmapFont> default_font=make_font2(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,_builtin_normal_font_img_data);
+	Ref<BitmapFont> source_font=make_font2(_builtin_source_font_height,_builtin_source_font_ascent,_builtin_source_font_charcount,&_builtin_source_font_charrects[0][0],_builtin_source_font_kerning_pair_count,&_builtin_source_font_kerning_pairs[0][0],_builtin_source_font_img_width,_builtin_source_font_img_height,_builtin_source_font_img_data);
+	Ref<BitmapFont> large_font=make_font2(_builtin_large_font_height,_builtin_large_font_ascent,_builtin_large_font_charcount,&_builtin_large_font_charrects[0][0],_builtin_large_font_kerning_pair_count,&_builtin_large_font_kerning_pairs[0][0],_builtin_large_font_img_width,_builtin_large_font_img_height,_builtin_large_font_img_data);
 
 	// Font Colors
 
@@ -417,6 +417,7 @@ void make_default_theme() {
 	t->set_constant("shadow_offset_x","Label", 1 );
 	t->set_constant("shadow_offset_y","Label", 1 );
 	t->set_constant("shadow_as_outline","Label", 0 );
+	t->set_constant("line_spacing","Label", 3 );
 
 
 
@@ -655,6 +656,7 @@ void make_default_theme() {
 	t->set_color("selection_color","Tree", Color(0.1,0.1,1,0.8) );
 	t->set_color("cursor_color","Tree", Color(0,0,0) );
 	t->set_color("guide_color","Tree", Color(0,0,0,0.1) );
+	t->set_color("drop_position_color","Tree", Color(1,0.3,0.2) );
 
 	t->set_constant("hseparation","Tree",4);
 	t->set_constant("vseparation","Tree",4);
@@ -836,7 +838,10 @@ void make_default_theme() {
 
 	t->set_constant("separation","HBoxContainer",4);
 	t->set_constant("separation","VBoxContainer",4);
-	t->set_constant("margin","MarginContainer",8);
+	t->set_constant("margin_left","MarginContainer",8);
+	t->set_constant("margin_top","MarginContainer",0);
+	t->set_constant("margin_right","MarginContainer",0);
+	t->set_constant("margin_bottom","MarginContainer",0);
 	t->set_constant("hseparation","GridContainer",4);
 	t->set_constant("vseparation","GridContainer",4);
 	t->set_constant("separation","HSplitContainer",12);
@@ -939,7 +944,7 @@ void make_default_theme() {
 		style->set_default_margin(  Margin(),8);
 	}
 
-	Ref<Font> f = make_default_font();
+	Ref<BitmapFont> f = make_default_font();
 	Theme::set_default( t );
 	Theme::set_default_icon( texture );
 	Theme::set_default_style( style );

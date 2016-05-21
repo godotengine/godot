@@ -24,10 +24,7 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/silk/fixed/main_FIX.h"
 
@@ -45,7 +42,7 @@ void silk_LTP_analysis_filter_FIX(
     const opus_int16 *x_ptr, *x_lag_ptr;
     opus_int16   Btmp_Q14[ LTP_ORDER ];
     opus_int16   *LTP_res_ptr;
-    opus_int     k, i, j;
+    opus_int     k, i;
     opus_int32   LTP_est;
 
     x_ptr = x;
@@ -53,9 +50,12 @@ void silk_LTP_analysis_filter_FIX(
     for( k = 0; k < nb_subfr; k++ ) {
 
         x_lag_ptr = x_ptr - pitchL[ k ];
-        for( i = 0; i < LTP_ORDER; i++ ) {
-            Btmp_Q14[ i ] = LTPCoef_Q14[ k * LTP_ORDER + i ];
-        }
+
+        Btmp_Q14[ 0 ] = LTPCoef_Q14[ k * LTP_ORDER ];
+        Btmp_Q14[ 1 ] = LTPCoef_Q14[ k * LTP_ORDER + 1 ];
+        Btmp_Q14[ 2 ] = LTPCoef_Q14[ k * LTP_ORDER + 2 ];
+        Btmp_Q14[ 3 ] = LTPCoef_Q14[ k * LTP_ORDER + 3 ];
+        Btmp_Q14[ 4 ] = LTPCoef_Q14[ k * LTP_ORDER + 4 ];
 
         /* LTP analysis FIR filter */
         for( i = 0; i < subfr_length + pre_length; i++ ) {
@@ -63,9 +63,11 @@ void silk_LTP_analysis_filter_FIX(
 
             /* Long-term prediction */
             LTP_est = silk_SMULBB( x_lag_ptr[ LTP_ORDER / 2 ], Btmp_Q14[ 0 ] );
-            for( j = 1; j < LTP_ORDER; j++ ) {
-                LTP_est = silk_SMLABB_ovflw( LTP_est, x_lag_ptr[ LTP_ORDER / 2 - j ], Btmp_Q14[ j ] );
-            }
+            LTP_est = silk_SMLABB_ovflw( LTP_est, x_lag_ptr[ 1 ], Btmp_Q14[ 1 ] );
+            LTP_est = silk_SMLABB_ovflw( LTP_est, x_lag_ptr[ 0 ], Btmp_Q14[ 2 ] );
+            LTP_est = silk_SMLABB_ovflw( LTP_est, x_lag_ptr[ -1 ], Btmp_Q14[ 3 ] );
+            LTP_est = silk_SMLABB_ovflw( LTP_est, x_lag_ptr[ -2 ], Btmp_Q14[ 4 ] );
+
             LTP_est = silk_RSHIFT_ROUND( LTP_est, 14 ); /* round and -> Q0*/
 
             /* Subtract long-term prediction */

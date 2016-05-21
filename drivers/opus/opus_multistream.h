@@ -111,9 +111,9 @@ extern "C" {
   * duration, can be computed without any special negotiation.
   *
   * The format for multistream Opus packets is defined in the
-  * <a href="http://tools.ietf.org/html/draft-terriberry-oggopus">Ogg
+  * <a href="https://tools.ietf.org/html/draft-ietf-codec-oggopus">Ogg
   * encapsulation specification</a> and is based on the self-delimited Opus
-  * framing described in Appendix B of <a href="http://tools.ietf.org/html/rfc6716">RFC 6716</a>.
+  * framing described in Appendix B of <a href="https://tools.ietf.org/html/rfc6716">RFC 6716</a>.
   * Normal Opus packets are just a degenerate case of multistream Opus packets,
   * and can be encoded or decoded with the multistream API by setting
   * <code>streams</code> to <code>1</code> when initializing the encoder or
@@ -140,7 +140,7 @@ extern "C" {
   *
   * The output channels specified by the encoder
   * should use the
-  * <a href="http://www.xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-800004.3.9">Vorbis
+  * <a href="https://www.xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-810004.3.9">Vorbis
   * channel ordering</a>. A decoder may wish to apply an additional permutation
   * to the mapping the encoder used to achieve a different output channel
   * order (e.g. for outputing in WAV order).

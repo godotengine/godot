@@ -1893,15 +1893,15 @@ void _Directory::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_drive","idx"),&_Directory::get_drive);
 	ObjectTypeDB::bind_method(_MD("change_dir:Error","todir"),&_Directory::change_dir);
 	ObjectTypeDB::bind_method(_MD("get_current_dir"),&_Directory::get_current_dir);
-	ObjectTypeDB::bind_method(_MD("make_dir:Error","name"),&_Directory::make_dir);
-	ObjectTypeDB::bind_method(_MD("make_dir_recursive:Error","name"),&_Directory::make_dir_recursive);
-	ObjectTypeDB::bind_method(_MD("file_exists","name"),&_Directory::file_exists);
-	ObjectTypeDB::bind_method(_MD("dir_exists","name"),&_Directory::dir_exists);
+	ObjectTypeDB::bind_method(_MD("make_dir:Error","path"),&_Directory::make_dir);
+	ObjectTypeDB::bind_method(_MD("make_dir_recursive:Error","path"),&_Directory::make_dir_recursive);
+	ObjectTypeDB::bind_method(_MD("file_exists","path"),&_Directory::file_exists);
+	ObjectTypeDB::bind_method(_MD("dir_exists","path"),&_Directory::dir_exists);
 //	ObjectTypeDB::bind_method(_MD("get_modified_time","file"),&_Directory::get_modified_time);
 	ObjectTypeDB::bind_method(_MD("get_space_left"),&_Directory::get_space_left);
 	ObjectTypeDB::bind_method(_MD("copy:Error","from","to"),&_Directory::copy);
 	ObjectTypeDB::bind_method(_MD("rename:Error","from","to"),&_Directory::rename);
-	ObjectTypeDB::bind_method(_MD("remove:Error","file"),&_Directory::remove);
+	ObjectTypeDB::bind_method(_MD("remove:Error","path"),&_Directory::remove);
 
 }
 

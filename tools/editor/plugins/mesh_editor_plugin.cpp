@@ -27,7 +27,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 	Ref<Mesh> mesh = node->get_mesh();
 	if (mesh.is_null()) {
-		err_dialog->set_text("Mesh is empty!");
+		err_dialog->set_text(TTR("Mesh is empty!"));
 		err_dialog->popup_centered_minsize();
 		return;
 	}
@@ -56,9 +56,9 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 				Node *owner = node==get_tree()->get_edited_scene_root() ? node : node->get_owner();
 
 				if (trimesh_shape)
-					ur->create_action("Create Static Trimesh Body");
+					ur->create_action(TTR("Create Static Trimesh Body"));
 				else
-					ur->create_action("Create Static Convex Body");
+					ur->create_action(TTR("Create Static Convex Body"));
 
 				ur->add_do_method(node,"add_child",body);
 				ur->add_do_method(body,"set_owner",owner);
@@ -70,9 +70,9 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			}
 
 			if (trimesh_shape)
-				ur->create_action("Create Static Trimesh Body");
+				ur->create_action(TTR("Create Static Trimesh Body"));
 			else
-				ur->create_action("Create Static Convex Body");
+				ur->create_action(TTR("Create Static Convex Body"));
 
 			for (List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
@@ -110,7 +110,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CREATE_CONVEX_COLLISION_SHAPE: {
 
 			if (node==get_tree()->get_edited_scene_root()) {
-				err_dialog->set_text("This doesn't work on scene root!");
+				err_dialog->set_text(TTR("This doesn't work on scene root!"));
 				err_dialog->popup_centered_minsize();
 				return;
 			}
@@ -129,9 +129,9 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
 			if (trimesh_shape)
-				ur->create_action("Create Trimesh Shape");
+				ur->create_action(TTR("Create Trimesh Shape"));
 			else
-				ur->create_action("Create Convex Shape");
+				ur->create_action(TTR("Create Convex Shape"));
 
 			ur->add_do_method(node->get_parent(),"add_child",cshape);
 			ur->add_do_method(node->get_parent(),"move_child",cshape,node->get_index()+1);
@@ -156,7 +156,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			Node *owner = node==get_tree()->get_edited_scene_root() ? node : node->get_owner();
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-			ur->create_action("Create Navigation Mesh");
+			ur->create_action(TTR("Create Navigation Mesh"));
 
 			ur->add_do_method(node,"add_child",nmi);
 			ur->add_do_method(nmi,"set_owner",owner);
@@ -178,7 +178,7 @@ void MeshInstanceEditor::_create_outline_mesh() {
 
 	Ref<Mesh> mesh = node->get_mesh();
 	if (mesh.is_null()) {
-		err_dialog->set_text("MeshInstance lacks a Mesh!");
+		err_dialog->set_text(TTR("MeshInstance lacks a Mesh!"));
 		err_dialog->popup_centered_minsize();
 		return;
 	}
@@ -186,7 +186,7 @@ void MeshInstanceEditor::_create_outline_mesh() {
 	Ref<Mesh> mesho = mesh->create_outline(outline_size->get_val());
 
 	if (mesho.is_null()) {
-		err_dialog->set_text("Could not create outline!");
+		err_dialog->set_text(TTR("Could not create outline!"));
 		err_dialog->popup_centered_minsize();
 		return;
 	}
@@ -200,7 +200,7 @@ void MeshInstanceEditor::_create_outline_mesh() {
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
-	ur->create_action("Create Outline");
+	ur->create_action(TTR("Create Outline"));
 
 	ur->add_do_method(node,"add_child",mi);
 	ur->add_do_method(mi,"set_owner",owner);
@@ -225,21 +225,21 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	options->set_text("Mesh");
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MeshInstance","EditorIcons"));
 
-	options->get_popup()->add_item("Create Trimesh Static Body",MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
-	options->get_popup()->add_item("Create Convex Static Body",MENU_OPTION_CREATE_STATIC_CONVEX_BODY);
+	options->get_popup()->add_item(TTR("Create Trimesh Static Body"),MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
+	options->get_popup()->add_item(TTR("Create Convex Static Body"),MENU_OPTION_CREATE_STATIC_CONVEX_BODY);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Create Trimesh Collision Sibling",MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE);
-	options->get_popup()->add_item("Create Convex Collision Sibling",MENU_OPTION_CREATE_CONVEX_COLLISION_SHAPE);
+	options->get_popup()->add_item(TTR("Create Trimesh Collision Sibling"),MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE);
+	options->get_popup()->add_item(TTR("Create Convex Collision Sibling"),MENU_OPTION_CREATE_CONVEX_COLLISION_SHAPE);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Create Navigation Mesh",MENU_OPTION_CREATE_NAVMESH);
+	options->get_popup()->add_item(TTR("Create Navigation Mesh"),MENU_OPTION_CREATE_NAVMESH);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Create Outline Mesh..",MENU_OPTION_CREATE_OUTLINE_MESH);
+	options->get_popup()->add_item(TTR("Create Outline Mesh.."),MENU_OPTION_CREATE_OUTLINE_MESH);
 
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 
 	outline_dialog = memnew( ConfirmationDialog );
-	outline_dialog->set_title("Create Outline Mesh");
-	outline_dialog->get_ok()->set_text("Create");
+	outline_dialog->set_title(TTR("Create Outline Mesh"));
+	outline_dialog->get_ok()->set_text(TTR("Create"));
 
 	VBoxContainer *outline_dialog_vbc = memnew( VBoxContainer );
 	outline_dialog->add_child(outline_dialog_vbc);
@@ -250,7 +250,7 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	outline_size->set_max(1024);
 	outline_size->set_step(0.001);
 	outline_size->set_val(0.05);
-	outline_dialog_vbc->add_margin_child("Outline Size:",outline_size);
+	outline_dialog_vbc->add_margin_child(TTR("Outline Size:"),outline_size);
 
 	add_child(outline_dialog);
 	outline_dialog->connect("confirmed",this,"_create_outline_mesh");

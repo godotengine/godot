@@ -314,7 +314,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 
 
-	EditorProgressBG scan_progress("efs","ScanFS",1000);
+	EditorProgressBG scan_progress("efs",TTR("ScanFS"),1000);
 
 	ScanProgress sp;
 	sp.low=0;
@@ -609,7 +609,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir,DirAccess 
 
 			da->change_dir("..");
 		} else {
-			ERR_PRINTS("Can't go into subdir: "+E->get());
+			ERR_PRINTS(TTR("Can't go into subdir: ")+E->get());
 		}
 
 		p_progress.update(idx,total);
@@ -823,7 +823,7 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 
 	EditorFileSystem *efs = (EditorFileSystem*)_userdata;
 	if (efs->filesystem) {
-		EditorProgressBG pr("sources","ScanSources",1000);
+		EditorProgressBG pr("sources",TTR("ScanSources"),1000);
 		ScanProgress sp;
 		sp.progress=&pr;
 		sp.hi=1;
@@ -851,7 +851,7 @@ void EditorFileSystem::scan_sources() {
 
 	if (!use_threads) {
 		if (filesystem) {
-			EditorProgressBG pr("sources","ScanSources",1000);
+			EditorProgressBG pr("sources",TTR("ScanSources"),1000);
 			ScanProgress sp;
 			sp.progress=&pr;
 			sp.hi=1;
@@ -900,7 +900,7 @@ void EditorFileSystem::_notification(int p_what) {
 				Thread::wait_to_finish(thread);
 				memdelete(thread);
 				thread=NULL;
-				WARN_PRINT("Scan thread aborted...");
+				WARN_PRINTS("Scan thread aborted...");
 				set_process(false);
 
 			}

@@ -638,8 +638,8 @@ void Area2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_overlapping_bodies"),&Area2D::get_overlapping_bodies);
 	ObjectTypeDB::bind_method(_MD("get_overlapping_areas"),&Area2D::get_overlapping_areas);
 
-	ObjectTypeDB::bind_method(_MD("overlaps_body:PhysicsBody2D","body"),&Area2D::overlaps_body);
-	ObjectTypeDB::bind_method(_MD("overlaps_area:Area2D","area"),&Area2D::overlaps_area);
+	ObjectTypeDB::bind_method(_MD("overlaps_body","body"),&Area2D::overlaps_body);
+	ObjectTypeDB::bind_method(_MD("overlaps_area","area"),&Area2D::overlaps_area);
 
 	ObjectTypeDB::bind_method(_MD("_body_inout"),&Area2D::_body_inout);
 	ObjectTypeDB::bind_method(_MD("_area_inout"),&Area2D::_area_inout);

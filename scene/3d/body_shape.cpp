@@ -398,6 +398,19 @@ int CollisionShape::_get_update_shape_index() const{
 	return update_shape_index;
 }
 
+String CollisionShape::get_configuration_warning() const {
+
+	if (!get_parent()->cast_to<CollisionObject>()) {
+		return TTR("CollisionShape only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
+	}
+
+	if (!shape.is_valid()) {
+		return TTR("A shape must be provided for CollisionShape to function. Please create a shape resource for it!");
+	}
+
+	return String();
+}
+
 
 void CollisionShape::_bind_methods() {
 

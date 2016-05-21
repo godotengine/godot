@@ -581,7 +581,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 
 							if (id!=TileMap::INVALID_CELL && paint_undo.size()) {
 
-								undo_redo->create_action("Paint TileMap");
+								undo_redo->create_action(TTR("Paint TileMap"));
 								for (Map<Point2i,CellOp>::Element *E=paint_undo.front();E;E=E->next()) {
 
 									Point2 p=E->key();
@@ -630,7 +630,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 
 							Point2 ofs = over_tile-rectangle.pos;
 
-							undo_redo->create_action("Duplicate");
+							undo_redo->create_action(TTR("Duplicate"));
 							for (List<TileData>::Element *E=copydata.front();E;E=E->next()) {
 
 								_set_cell(E->get().pos+ofs,E->get().cell,E->get().flip_h,E->get().flip_v,E->get().transpose,true);
@@ -725,7 +725,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 					if (tool==TOOL_ERASING || tool==TOOL_RECTANGLE_ERASE || tool==TOOL_LINE_ERASE) {
 
 						if (paint_undo.size()) {
-							undo_redo->create_action("Erase TileMap");
+							undo_redo->create_action(TTR("Erase TileMap"));
 							for (Map<Point2i,CellOp>::Element *E=paint_undo.front();E;E=E->next()) {
 
 								Point2 p=E->key();
@@ -1323,7 +1323,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	p->add_item("Pick Tile", OPTION_PICK_TILE, KEY_CONTROL);
 	p->add_separator();
 	p->add_item("Select", OPTION_SELECT, KEY_MASK_CMD+KEY_B);
-	p->add_item("Duplicate Selection", OPTION_DUPLICATE, KEY_MASK_CMD+KEY_D);
+	p->add_item(TTR("Duplicate Selection"), OPTION_DUPLICATE, KEY_MASK_CMD+KEY_D);
 	p->add_item("Erase Selection", OPTION_ERASE_SELECTION, KEY_DELETE);
 
 	p->connect("item_pressed", this, "_menu_option");
@@ -1334,19 +1334,19 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	transp = memnew( ToolButton );
 	transp->set_toggle_mode(true);
-	transp->set_tooltip("Transpose");
+	transp->set_tooltip(TTR("Transpose"));
 	transp->set_focus_mode(FOCUS_NONE);
 	transp->connect("pressed", this, "_update_transform_buttons", make_binds(transp));
 	toolbar->add_child(transp);
 	mirror_x = memnew( ToolButton );
 	mirror_x->set_toggle_mode(true);
-	mirror_x->set_tooltip("Mirror X (A)");
+	mirror_x->set_tooltip(TTR("Mirror X (A)"));
 	mirror_x->set_focus_mode(FOCUS_NONE);
 	mirror_x->connect("pressed", this, "_update_transform_buttons", make_binds(mirror_x));
 	toolbar->add_child(mirror_x);
 	mirror_y = memnew( ToolButton );
 	mirror_y->set_toggle_mode(true);
-	mirror_y->set_tooltip("Mirror Y (S)");
+	mirror_y->set_tooltip(TTR("Mirror Y (S)"));
 	mirror_y->set_focus_mode(FOCUS_NONE);
 	mirror_y->connect("pressed", this, "_update_transform_buttons", make_binds(mirror_y));
 	toolbar->add_child(mirror_y);
@@ -1355,25 +1355,25 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	rotate_0 = memnew( ToolButton );
 	rotate_0->set_toggle_mode(true);
-	rotate_0->set_tooltip("Rotate 0 degrees");
+	rotate_0->set_tooltip(TTR("Rotate 0 degrees"));
 	rotate_0->set_focus_mode(FOCUS_NONE);
 	rotate_0->connect("pressed", this, "_update_transform_buttons", make_binds(rotate_0));
 	toolbar->add_child(rotate_0);
 	rotate_90 = memnew( ToolButton );
 	rotate_90->set_toggle_mode(true);
-	rotate_90->set_tooltip("Rotate 90 degrees");
+	rotate_90->set_tooltip(TTR("Rotate 90 degrees"));
 	rotate_90->set_focus_mode(FOCUS_NONE);
 	rotate_90->connect("pressed", this, "_update_transform_buttons", make_binds(rotate_90));
 	toolbar->add_child(rotate_90);
 	rotate_180 = memnew( ToolButton );
 	rotate_180->set_toggle_mode(true);
-	rotate_180->set_tooltip("Rotate 180 degrees");
+	rotate_180->set_tooltip(TTR("Rotate 180 degrees"));
 	rotate_180->set_focus_mode(FOCUS_NONE);
 	rotate_180->connect("pressed", this, "_update_transform_buttons", make_binds(rotate_180));
 	toolbar->add_child(rotate_180);
 	rotate_270 = memnew( ToolButton );
 	rotate_270->set_toggle_mode(true);
-	rotate_270->set_tooltip("Rotate 270 degrees");
+	rotate_270->set_tooltip(TTR("Rotate 270 degrees"));
 	rotate_270->set_focus_mode(FOCUS_NONE);
 	rotate_270->connect("pressed", this, "_update_transform_buttons", make_binds(rotate_270));
 	toolbar->add_child(rotate_270);

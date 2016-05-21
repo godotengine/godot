@@ -57,7 +57,7 @@ void CollisionPolygon2DEditor::_menu_option(int p_option) {
 
 void CollisionPolygon2DEditor::_wip_close() {
 
-	undo_redo->create_action("Create Poly");
+	undo_redo->create_action(TTR("Create Poly"));
 	undo_redo->add_undo_method(node,"set_polygon",node->get_polygon());
 	undo_redo->add_do_method(node,"set_polygon",wip);
 	undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -149,7 +149,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 								if (poly.size() < 3) {
 
-									undo_redo->create_action("Edit Poly");
+									undo_redo->create_action(TTR("Edit Poly"));
 									undo_redo->add_undo_method(node,"set_polygon",poly);
 									poly.push_back(cpoint);
 									undo_redo->add_do_method(node,"set_polygon",poly);
@@ -229,7 +229,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 								ERR_FAIL_INDEX_V(edited_point,poly.size(),false);
 								poly[edited_point]=edited_point_pos;
-								undo_redo->create_action("Edit Poly");
+								undo_redo->create_action(TTR("Edit Poly"));
 								undo_redo->add_do_method(node,"set_polygon",poly);
 								undo_redo->add_undo_method(node,"set_polygon",pre_move_edit);
 								undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -263,7 +263,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 						if (closest_idx>=0) {
 
 
-							undo_redo->create_action("Edit Poly (Remove Point)");
+							undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
 							undo_redo->add_undo_method(node,"set_polygon",poly);
 							poly.remove(closest_idx);
 							undo_redo->add_do_method(node,"set_polygon",poly);
@@ -390,7 +390,7 @@ CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) {
 	add_child(button_create);
 	button_create->connect("pressed",this,"_menu_option",varray(MODE_CREATE));
 	button_create->set_toggle_mode(true);
-	button_create->set_tooltip("Create a new polygon from scratch");
+	button_create->set_tooltip(TTR("Create a new polygon from scratch"));
 
 	button_edit = memnew( ToolButton );
 	add_child(button_edit);
@@ -404,8 +404,8 @@ CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) {
 	options = memnew( MenuButton );
 	add_child(options);
 	options->set_area_as_parent_rect();
-	options->set_text("Polygon");
-	//options->get_popup()->add_item("Parse BBCODE",PARSE_BBCODE);
+	options->set_text(TTR("Polygon"));
+	//options->get_popup()->add_item(TTR("Parse BBCODE"),PARSE_BBCODE);
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 #endif
 

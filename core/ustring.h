@@ -169,7 +169,7 @@ public:
 
 	String left(int p_pos) const;
 	String right(int p_pos) const;
-	String strip_edges() const;
+	String strip_edges(bool left = true, bool right = true) const;
 	String strip_escapes() const;
 	String extension() const;
 	String basename() const;
@@ -256,5 +256,18 @@ struct NoCaseComparator {
 
  /* end of namespace */
 
+//tool translate
+#ifdef TOOLS_ENABLED
+
+String TTR(const String&);
+
+#else
+
+#define TTR(m_val) (String())
+
+#endif
+
+//tool or regular translate
+String RTR(const String&);
 
 #endif
