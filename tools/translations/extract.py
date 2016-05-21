@@ -35,7 +35,19 @@ for root, dirnames, filenames in os.walk('.'):
 
 unique_str = []
 unique_loc = {}
-main_po = ""
+main_po = """
+# LANGUAGE translation of the Godot Engine editor
+# Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
+# This file is distributed under the same license as the Godot source code.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine editor\\n"
+"Content-Type: text/plain; charset=UTF-8\\n"
+"Content-Transfer-Encoding: 8-bit\\n"
+"""
 
 print("Updating the tools.pot template...")
 
@@ -84,6 +96,10 @@ for fname in matches:
 f = open("tools.pot", "wb")
 f.write(main_po)
 f.close()
+
+if (os.name == "posix"):
+	os.system("msgmerge -w80 tools.pot tools.pot > tools.pot.wrap")
+	shutil.move("tools.pot.wrap", "tools.pot")
 
 shutil.move("tools.pot", "tools/translations/tools.pot")
 
