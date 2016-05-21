@@ -728,7 +728,7 @@ void BakedLightBaker::_make_octree() {
 	for(int i=0;i<8;i++)
 		root->children[i]=0;
 
-	EditorProgress ep("bake_octree",vformat(TTR("Parsing %i Triangles:"), triangles.size()),triangles.size());
+	EditorProgress ep("bake_octree",vformat(TTR("Parsing %d Triangles:"), triangles.size()),triangles.size());
 
 	for(int i=0;i<triangles.size();i++) {
 

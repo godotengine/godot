@@ -1732,7 +1732,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		add_child(checks20[i]);
 		checks20[i]->hide();
 		checks20[i]->connect("pressed",this,"_action_pressed",make_binds(i));
-		checks20[i]->set_tooltip(vformat(TTR("Bit %i, val %i."), i, 1<<i));
+		checks20[i]->set_tooltip(vformat(TTR("Bit %d, val %i."), i, 1<<i));
 	}
 
 	text_edit = memnew( TextEdit );

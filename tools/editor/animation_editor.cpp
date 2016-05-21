@@ -3115,7 +3115,7 @@ void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 			if (insert_data.size()==1)
 				insert_confirm->set_text(vformat(TTR("Create NEW track for %s and insert key?"),p_id.query));
 			else
-				insert_confirm->set_text(vformat(TTR("Create %i NEW tracks and insert keys?"),insert_data.size()));
+				insert_confirm->set_text(vformat(TTR("Create %d NEW tracks and insert keys?"),insert_data.size()));
 
 			insert_confirm->get_ok()->set_text(TTR("Create"));
 			insert_confirm->popup_centered_minsize();

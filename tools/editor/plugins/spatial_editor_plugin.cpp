@@ -1353,7 +1353,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 								scale = Math::stepify(scale,spatial_editor->get_scale_snap());
 							}
 
-							set_message(vformat(TTR("Scaling to %s\%."),String::num(scale,1)));
+							set_message(vformat(TTR("Scaling to %s%%."),String::num(scale,1)));
 							scale/=100.0;
 
 							Transform r;

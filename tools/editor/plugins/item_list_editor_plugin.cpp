@@ -129,7 +129,7 @@ int ItemListOptionButtonPlugin::get_flags() const {
 
 void ItemListOptionButtonPlugin::add_item() {
 
-	ob->add_item( vformat(TTR("Item %i"),ob->get_item_count()));
+	ob->add_item( vformat(TTR("Item %d"),ob->get_item_count()));
 	_change_notify();
 }
 
@@ -171,7 +171,7 @@ int ItemListPopupMenuPlugin::get_flags() const {
 
 void ItemListPopupMenuPlugin::add_item() {
 
-	pp->add_item( vformat(TTR("Item %i"),pp->get_item_count()));
+	pp->add_item( vformat(TTR("Item %d"),pp->get_item_count()));
 	_change_notify();
 }
 

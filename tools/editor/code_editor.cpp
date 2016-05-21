@@ -216,7 +216,7 @@ void FindReplaceDialog::_replace() {
 
 		text_edit->set_v_scroll(vsval);
 //		text_edit->set_h_scroll(hsval);
-		error_label->set_text(vformat(TTR("Replaced %i ocurrence(s)."),rc));
+		error_label->set_text(vformat(TTR("Replaced %d ocurrence(s)."),rc));
 
 
 		//hide();

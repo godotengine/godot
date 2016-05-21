@@ -256,7 +256,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 			if (p.begins_with("/MeshLibrary/item") && p.get_slice_count("/")>=3) {
 
 				to_erase = p.get_slice("/",3).to_int();
-				cd->set_text(vformat(TTR("Remove item %i?"),to_erase));
+				cd->set_text(vformat(TTR("Remove item %d?"),to_erase));
 				cd->popup_centered(Size2(300,60));
 			}
 		} break;

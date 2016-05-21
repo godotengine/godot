@@ -523,7 +523,7 @@ void OrphanResourcesDialog::ok_pressed() {
 	if (paths.empty())
 		return;
 
-	delete_confirm->set_text(vformat(TTR("Permanently delete %i item(s)? (No undo!)"),paths.size()));
+	delete_confirm->set_text(vformat(TTR("Permanently delete %d item(s)? (No undo!)"),paths.size()));
 	delete_confirm->popup_centered_minsize();
 }
 

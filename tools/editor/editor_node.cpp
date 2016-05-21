@@ -4955,7 +4955,7 @@ Variant EditorNode::drag_files(const Vector<String>& p_files, Control *p_from){
 	if (p_files.size()>max_files) {
 
 		Label* label=memnew( Label );
-		label->set_text(vformat(TTR("%i more file(s)"), p_files.size()-max_files));
+		label->set_text(vformat(TTR("%d more file(s)"), p_files.size()-max_files));
 		files->add_child(label);
 
 	}
@@ -4986,7 +4986,7 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String>& p_files, Control *
 	if (p_files.size()>max_files) {
 
 		Label* label=memnew( Label );
-		label->set_text(vformat(TTR("%i more file(s) or folder(s)"), p_files.size()-max_files));
+		label->set_text(vformat(TTR("%d more file(s) or folder(s)"), p_files.size()-max_files));
 		files->add_child(label);
 
 	}

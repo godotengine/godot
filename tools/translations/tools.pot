@@ -448,7 +448,7 @@ msgid "Next"
 msgstr ""
 
 #: tools/editor/code_editor.cpp:219
-msgid "Replaced %i ocurrence(s)."
+msgid "Replaced %d ocurrence(s)."
 msgstr ""
 
 #: tools/editor/code_editor.cpp:277
@@ -692,7 +692,7 @@ msgid "Errors loading!"
 msgstr ""
 
 #: tools/editor/dependency_editor.cpp:526
-msgid "Permanently delete %i item(s)? (No undo!)"
+msgid "Permanently delete %d item(s)? (No undo!)"
 msgstr ""
 
 #: tools/editor/dependency_editor.cpp:679
@@ -992,7 +992,7 @@ msgid "Create NEW track for %s and insert key?"
 msgstr ""
 
 #: tools/editor/animation_editor.cpp:3118
-msgid "Create %i NEW tracks and insert keys?"
+msgid "Create %d NEW tracks and insert keys?"
 msgstr ""
 
 #: tools/editor/animation_editor.cpp:3292
@@ -1799,67 +1799,71 @@ msgstr ""
 msgid "Can't move directories to within themselves."
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1020
+#: tools/editor/scenes_dock.cpp:1027
 msgid "Can't operate on '..'"
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1039
+#: tools/editor/scenes_dock.cpp:1046
 msgid "Pick New Name and Location For:"
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1062
+#: tools/editor/scenes_dock.cpp:1069
 msgid "No files selected!"
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1400
+#: tools/editor/scenes_dock.cpp:1407
 msgid "Instance"
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1406
+#: tools/editor/scenes_dock.cpp:1413
 msgid "Edit Dependencies.."
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1407
+#: tools/editor/scenes_dock.cpp:1414
 msgid "View Owners.."
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1412
+#: tools/editor/scenes_dock.cpp:1419
 msgid "Rename or Move.."
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1414
+#: tools/editor/scenes_dock.cpp:1421
 msgid "Move To.."
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1470
+#: tools/editor/scenes_dock.cpp:1428
+msgid "Show In File Manager"
+msgstr ""
+
+#: tools/editor/scenes_dock.cpp:1481
 msgid "Previous Directory"
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1477
+#: tools/editor/scenes_dock.cpp:1488
 msgid "Next Directory"
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1484
+#: tools/editor/scenes_dock.cpp:1495
 msgid "Re-Scan Filesystem"
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1493
+#: tools/editor/scenes_dock.cpp:1504
 msgid "Move Favorite Up"
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1500
+#: tools/editor/scenes_dock.cpp:1511
 msgid "Move Favorite Down"
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1507
+#: tools/editor/scenes_dock.cpp:1518
 msgid "Toggle folder status as Favorite"
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1529
+#: tools/editor/scenes_dock.cpp:1540
 msgid "Instance the selected scene(s) as child of the selected node."
 msgstr ""
 
-#: tools/editor/scenes_dock.cpp:1615
+#: tools/editor/scenes_dock.cpp:1626
 msgid "Move"
 msgstr ""
 
@@ -2004,7 +2008,7 @@ msgid "Couldn't load image"
 msgstr ""
 
 #: tools/editor/property_editor.cpp:1735
-msgid "Bit %i, val %i."
+msgid "Bit %d, val %i."
 msgstr ""
 
 #: tools/editor/property_editor.cpp:2770
@@ -2284,11 +2288,11 @@ msgid "Switch Scene Tab"
 msgstr ""
 
 #: tools/editor/editor_node.cpp:4958
-msgid "%i more file(s)"
+msgid "%d more file(s)"
 msgstr ""
 
 #: tools/editor/editor_node.cpp:4989
-msgid "%i more file(s) or folder(s)"
+msgid "%d more file(s) or folder(s)"
 msgstr ""
 
 #: tools/editor/editor_node.cpp:5433
@@ -3764,7 +3768,7 @@ msgid "Reset the lightmap octree baking process (start over)."
 msgstr ""
 
 #: tools/editor/plugins/baked_light_baker.cpp:731
-msgid "Parsing %i Triangles:"
+msgid "Parsing %d Triangles:"
 msgstr ""
 
 #: tools/editor/plugins/baked_light_baker.cpp:738
@@ -3840,7 +3844,7 @@ msgid "Z-Axis Transform."
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp:1356
-msgid "Scaling to %s\%."
+msgid "Scaling to %s%%."
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp:1496
@@ -4087,127 +4091,127 @@ msgstr ""
 msgid "Post"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2412
+#: tools/editor/plugins/script_editor_plugin.cpp:2431
 msgid "Save All"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2414
+#: tools/editor/plugins/script_editor_plugin.cpp:2433
 msgid "History Prev"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2415
+#: tools/editor/plugins/script_editor_plugin.cpp:2434
 msgid "History Next"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2434
+#: tools/editor/plugins/script_editor_plugin.cpp:2453
 msgid "Indent Left"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2435
+#: tools/editor/plugins/script_editor_plugin.cpp:2454
 msgid "Indent Right"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2436
+#: tools/editor/plugins/script_editor_plugin.cpp:2455
 msgid "Toggle Comment"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2437
+#: tools/editor/plugins/script_editor_plugin.cpp:2456
 msgid "Clone Down"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2440
+#: tools/editor/plugins/script_editor_plugin.cpp:2459
 msgid "Complete Symbol"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2444
+#: tools/editor/plugins/script_editor_plugin.cpp:2463
 msgid "Trim Trailing Whitespace"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2445
+#: tools/editor/plugins/script_editor_plugin.cpp:2464
 msgid "Auto Indent"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2456
+#: tools/editor/plugins/script_editor_plugin.cpp:2475
 msgid "Goto Function.."
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2471
+#: tools/editor/plugins/script_editor_plugin.cpp:2490
 msgid "Debug"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2472
+#: tools/editor/plugins/script_editor_plugin.cpp:2491
 msgid "Toggle Breakpoint"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2481
+#: tools/editor/plugins/script_editor_plugin.cpp:2500
 msgid "Keep Debugger Open"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2493
+#: tools/editor/plugins/script_editor_plugin.cpp:2512
 msgid "Window"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2496
+#: tools/editor/plugins/script_editor_plugin.cpp:2515
 msgid "Move Left"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2497
+#: tools/editor/plugins/script_editor_plugin.cpp:2516
 msgid "Move Right"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2505
+#: tools/editor/plugins/script_editor_plugin.cpp:2524
 msgid "Help"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2506
+#: tools/editor/plugins/script_editor_plugin.cpp:2525
 msgid "Contextual"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2523
+#: tools/editor/plugins/script_editor_plugin.cpp:2542
 msgid "Tutorials"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2526
+#: tools/editor/plugins/script_editor_plugin.cpp:2545
 msgid "Open https://godotengine.org at tutorials section."
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2529
+#: tools/editor/plugins/script_editor_plugin.cpp:2548
 msgid "Classes"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2532
+#: tools/editor/plugins/script_editor_plugin.cpp:2551
 msgid "Search the class hierarchy."
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2535
+#: tools/editor/plugins/script_editor_plugin.cpp:2554
 msgid "Search Help"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2538
+#: tools/editor/plugins/script_editor_plugin.cpp:2557
 msgid "Search the reference documentation."
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2546
+#: tools/editor/plugins/script_editor_plugin.cpp:2565
 msgid "Go to previous edited document."
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2552
+#: tools/editor/plugins/script_editor_plugin.cpp:2571
 msgid "Go to next edited document."
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2566
+#: tools/editor/plugins/script_editor_plugin.cpp:2585
 msgid "Create Script"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2584
+#: tools/editor/plugins/script_editor_plugin.cpp:2603
 msgid "The following files are newer on disk.\nWhat action should be taken?:"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2592
+#: tools/editor/plugins/script_editor_plugin.cpp:2611
 msgid "Reload"
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp:2594
+#: tools/editor/plugins/script_editor_plugin.cpp:2613
 msgid "Resave"
 msgstr ""
 
@@ -4220,7 +4224,7 @@ msgid "Length:"
 msgstr ""
 
 #: tools/editor/plugins/sample_editor_plugin.cpp:331
-msgid "%i frames"
+msgid "%d frames"
 msgstr ""
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp:677
@@ -4339,15 +4343,15 @@ msgstr ""
 msgid "Delete Shader Graph Node(s)"
 msgstr ""
 
-#: tools/editor/plugins/shader_graph_editor_plugin.cpp:2515
+#: tools/editor/plugins/shader_graph_editor_plugin.cpp:2517
 msgid "Error: Cyclic Connection Link"
 msgstr ""
 
-#: tools/editor/plugins/shader_graph_editor_plugin.cpp:2516
+#: tools/editor/plugins/shader_graph_editor_plugin.cpp:2518
 msgid "Error: Missing Input Connections"
 msgstr ""
 
-#: tools/editor/plugins/shader_graph_editor_plugin.cpp:2576
+#: tools/editor/plugins/shader_graph_editor_plugin.cpp:2677
 msgid "Add Shader Graph Node"
 msgstr ""
 
@@ -4556,7 +4560,7 @@ msgid "Thumbnail.."
 msgstr ""
 
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp:259
-msgid "Remove item %i?"
+msgid "Remove item %d?"
 msgstr ""
 
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp:291
@@ -4628,7 +4632,7 @@ msgid "Volume"
 msgstr ""
 
 #: tools/editor/plugins/item_list_editor_plugin.cpp:132
-msgid "Item %i"
+msgid "Item %d"
 msgstr ""
 
 #: tools/editor/plugins/item_list_editor_plugin.cpp:302
@@ -5312,5 +5316,5 @@ msgid "Source Mesh(es):"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp:365
-msgid "Surface %i"
+msgid "Surface %d"
 msgstr ""
