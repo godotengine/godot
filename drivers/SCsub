@@ -13,8 +13,8 @@ SConscript('gles2/SCsub');
 SConscript('gl_context/SCsub');
 SConscript('pnm/SCsub');
 
+env_ssl = env.Clone()
 if (env['openssl']!='no'):
-	env_ssl = env.Clone()
 	Export('env_ssl')
 
 	env_ssl.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
@@ -43,11 +43,11 @@ SConscript("nedmalloc/SCsub");
 SConscript("nrex/SCsub");
 SConscript("chibi/SCsub");
 if (env["vorbis"]=="yes" or env["speex"]=="yes" or env["theoralib"]=="yes" or env["opus"]=="yes"):
-        SConscript("ogg/SCsub");
+	SConscript("ogg/SCsub");
 if (env["vorbis"]=="yes"):
-        SConscript("vorbis/SCsub");
+	SConscript("vorbis/SCsub");
 if (env["opus"]=="yes"):
-		SConscript('opus/SCsub');
+	SConscript('opus/SCsub');
 if (env["tools"]=="yes"):
 	SConscript("convex_decomp/SCsub");
 
@@ -108,6 +108,9 @@ if (env.split_drivers): #split drivers, this used to be needed for windows until
 
 	env.Prepend(LIBS=lib_list)
 else:
-	env.add_source_files(env.drivers_sources,"*.cpp")
+	if (env['openssl'] != 'no'):
+		env_ssl.add_source_files(env.drivers_sources, "*.cpp")
+	else:
+		env.add_source_files(env.drivers_sources, "*.cpp")
 	lib = env.Library("drivers",env.drivers_sources)
 	env.Prepend(LIBS=[lib])
