@@ -1436,7 +1436,7 @@ void SceneTreeDock::set_edited_scene(Node* p_scene) {
 			new_root->set_margin(MARGIN_RIGHT, -80);
 			new_root->set_margin(MARGIN_TOP, 60);
 			new_root->set_margin(MARGIN_BOTTOM, 5);
-			new_root->set_icon(get_icon("New","EditorIcons"));
+			new_root->set_icon(get_icon("Add","EditorIcons"));
 			new_root->set_text(TTR("New Scene Root"));
 			new_root->connect("pressed",this,"_tool_selected",make_binds(TOOL_NEW, false));
 			scene_tree->add_child(new_root);
@@ -1449,7 +1449,7 @@ void SceneTreeDock::set_edited_scene(Node* p_scene) {
 			inherit_root->set_margin(MARGIN_RIGHT, -80);
 			inherit_root->set_margin(MARGIN_TOP, -5);
 			inherit_root->set_margin(MARGIN_BOTTOM, -60);
-			inherit_root->set_icon(get_icon("CreateNewSceneFrom","EditorIcons"));
+			inherit_root->set_icon(get_icon("Instance","EditorIcons"));
 			inherit_root->set_text(TTR("Inherit Scene"));
 			inherit_root->connect("pressed",this,"_tool_selected",make_binds(TOOL_INSTANCE, false));
 			scene_tree->add_child(inherit_root);
