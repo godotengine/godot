@@ -2008,7 +2008,7 @@ msgid "Couldn't load image"
 msgstr ""
 
 #: tools/editor/property_editor.cpp:1735
-msgid "Bit %d, val %i."
+msgid "Bit %d, val %d."
 msgstr ""
 
 #: tools/editor/property_editor.cpp:2770
