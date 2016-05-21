@@ -470,7 +470,7 @@ void ProjectExportDialog::_export_action(const String& p_file) {
 	/* Checked if the export location is outside the project directory,
 	 * now will check if a file name has been entered */
 	if (p_file.ends_with("/")) {
-		
+
 		error->set_text("Please enter a file name!");
 		error->popup_centered_minsize();
 		return;

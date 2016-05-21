@@ -1229,7 +1229,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 		case InputEvent::MOUSE_MOTION: {
 			const InputEventMouseMotion &m=p_event.mouse_motion;
 			_edit.mouse_pos=Point2(p_event.mouse_motion.x,p_event.mouse_motion.y);
-			
+
 			if (spatial_editor->get_selected()) {
 
 
@@ -1265,7 +1265,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 			NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_scheme");
 			NavigationMode nav_mode = NAVIGATION_NONE;
-			
+
 			if (_edit.gizmo.is_valid()) {
 
 				Plane plane=Plane(_edit.gizmo_initial_pos,_get_camera_normal());
@@ -1591,7 +1591,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					mod=KEY_CONTROL;
 				if (m.mod.meta)
 					mod=KEY_META;
-				
+
 				if(mod){
 					if (mod == _get_key_modifier("3d_editor/pan_modifier"))
 						nav_mode = NAVIGATION_PAN;
@@ -1815,7 +1815,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 		if (visible)
 			_update_camera();
-		
+
 		call_deferred("update_transform_gizmo_view");
 	}
 

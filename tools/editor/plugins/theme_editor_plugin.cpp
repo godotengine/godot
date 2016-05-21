@@ -398,7 +398,7 @@ void ThemeEditor::_dialog_cbk() {
 			}
 
 
-		} break; 
+		} break;
 		case POPUP_CLASS_REMOVE: {
 			StringName fromtype = type_edit->get_text();
 			List<StringName> names;

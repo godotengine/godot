@@ -116,7 +116,7 @@ Error HTTPClient::request_raw( Method p_method, const String& p_url, const Vecto
 	}
 	request+="\r\n";
 	CharString cs=request.utf8();
-	
+
 	DVector<uint8_t> data;
 
 	//Maybe this goes faster somehow?

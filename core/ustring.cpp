@@ -3635,7 +3635,7 @@ String String::percent_decode() const {
 
 	CharString cs = utf8();
 	for(int i=0;i<cs.length();i++) {
-		
+
 		uint8_t c = cs[i];
 		if (c=='%' && i<length()-2) {
 
