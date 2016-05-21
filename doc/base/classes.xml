@@ -41505,16 +41505,13 @@ This method controls whether the position between two cached points is interpola
 			<return type="Vector3">
 			</return>
 			<description>
-			Returns the vehicle body speed or velocity in a 3D vector, to get the speed in scalar value 
-			get the length of the return vector, the scalar value is in Godot units/seconds, if you 
-			assume 1.0 is a meter, then it is in meters/sec
-			Example:
-			    # vehicle is an instance of VehicleBody, 1.0 asumed as 1 meter:
-			    var speed_ms = vehicle.get_linear_velocity().length()
-				# Lets convert it to Km/h:
-				var speed_kms = speed_ms * 3.6   
+			Returns the VehicleBody's velocity vector. To get the absolute speed in scalar value, get the length of the return vector in pixels/second. Example:
+			[codeblock]
+			# vehicle is an instance of VehicleBody
+			var speed = vehicle.get_linear_velocity().length()
+			[/codeblock]
 			</description>
-		</method>		
+		</method>
 	</methods>
 	<constants>
 	</constants>
