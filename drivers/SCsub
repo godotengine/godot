@@ -2,10 +2,11 @@ Import('env')
 
 env_drivers = env.Clone()
 
-env_drivers.drivers_sources=[]
+env.drivers_sources=[]
 #env.add_source_files(env.drivers_sources,"*.cpp")
 env_drivers.Append(CPPPATH=["vorbis"])
-Export(env = env_drivers)
+
+Export('env_drivers')
 
 SConscript('unix/SCsub');
 SConscript('alsa/SCsub');
@@ -61,7 +62,7 @@ if (env["squish"]=="yes" and env["tools"]=="yes"):
 
 num = 0
 cur_base = ""
-total = len(env_drivers.drivers_sources)
+total = len(env.drivers_sources)
 max_src = 64
 list = []
 lib_list = []
@@ -69,11 +70,11 @@ lib_list = []
 import string
 
 if env['vsproj']=="yes":
-	env.AddToVSProject(env_drivers.drivers_sources)
+	env.AddToVSProject(env.drivers_sources)
 
 if (env.split_drivers): #split drivers, this used to be needed for windows until separate builders for windows were created
 
-	for f in env_drivers.drivers_sources:
+	for f in env.drivers_sources:
 		fname = ""
 		if type(f) == type(""):
 			fname = env.File(f).path
@@ -107,6 +108,6 @@ if (env.split_drivers): #split drivers, this used to be needed for windows until
 
 	env.Prepend(LIBS=lib_list)
 else:
-	env_drivers.add_source_files(env_drivers.drivers_sources,"*.cpp")
-	lib = env_drivers.Library("drivers",env_drivers.drivers_sources)
+	env_drivers.add_source_files(env.drivers_sources,"*.cpp")
+	lib = env_drivers.Library("drivers",env.drivers_sources)
 	env.Prepend(LIBS=[lib])
