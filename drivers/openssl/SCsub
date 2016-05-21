@@ -1,6 +1,5 @@
-Import('env_ssl')
 Import('env')
 
-env_ssl.add_source_files(env.drivers_sources,"*.cpp")
-env_ssl.add_source_files(env.drivers_sources,"*.c")
+env.add_source_files(env.drivers_sources,"*.cpp")
+env.add_source_files(env.drivers_sources,"*.c")
 

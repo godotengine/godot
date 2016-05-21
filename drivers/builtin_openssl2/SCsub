@@ -1,5 +1,4 @@
 Import('env')
-Import('env_ssl')
 
 openssl_sources = [
 "ssl/t1_lib.c",
@@ -642,17 +641,17 @@ openssl_sources = [
 
 #env.drivers_sources+=openssl_sources
 
-env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto"])
-env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/openssl"])
-env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/evp"])
-env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/asn1"])
-env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/modes"])
+env.Append(CPPPATH=["#drivers/builtin_openssl2/crypto"])
+env.Append(CPPPATH=["#drivers/builtin_openssl2/openssl"])
+env.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/evp"])
+env.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/asn1"])
+env.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/modes"])
 #env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/store"])
-env_ssl.Append(CPPFLAGS=["-DOPENSSL_NO_ASM","-DOPENSSL_THREADS","-DL_ENDIAN"])
+env.Append(CPPFLAGS=["-DOPENSSL_NO_ASM","-DOPENSSL_THREADS","-DL_ENDIAN"])
 
 # Workaround for compilation error with GCC/Clang when -Werror is too greedy (GH-4517)
 import os
 if not (os.name=="nt" and os.getenv("VSINSTALLDIR")!=None): # not Windows and not MSVC
-	env_ssl.Append(CFLAGS=["-Wno-error=implicit-function-declaration"])
+	env.Append(CFLAGS=["-Wno-error=implicit-function-declaration"])
 
-env_ssl.add_source_files(env.drivers_sources,openssl_sources)
+env.add_source_files(env.drivers_sources,openssl_sources)
