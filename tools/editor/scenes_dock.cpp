@@ -961,13 +961,8 @@ void ScenesDock::_file_option(int p_option) {
 
 			String path = files->get_item_metadata(idx);
 			if (p_option == FILE_SHOW_IN_EXPLORER) {
-				String dir = DirAccess::get_full_path("res://", DirAccess::ACCESS_FILESYSTEM);
-				const int res_begin = String("res://").length();
-				const int last_sep = path.find_last("/");
-				if (last_sep > res_begin) {
-					dir += "/";
-					dir += path.substr(res_begin, last_sep - res_begin);
-				}
+				String dir = Globals::get_singleton()->globalize_path(path);
+				dir = dir.substr(0, dir.find_last("/"));
 				OS::get_singleton()->shell_open(String("file://")+dir);
 				return;
 			}
@@ -1430,7 +1425,7 @@ void ScenesDock::_files_list_rmb_select(int p_item,const Vector2& p_pos) {
 	//file_options->add_item(TTR("Info"),FILE_INFO);
 
 	file_options->add_separator();
-	file_options->add_item(TTR("Show In System"),FILE_SHOW_IN_EXPLORER);
+	file_options->add_item(TTR("Show In File Manager"),FILE_SHOW_IN_EXPLORER);
 
 	file_options->set_pos(files->get_global_pos() + p_pos);
 	file_options->popup();
