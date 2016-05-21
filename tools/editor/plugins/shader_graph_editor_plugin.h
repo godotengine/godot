@@ -116,7 +116,7 @@ public:
 	GraphCurveMapEdit();
 };
 
-class ShaderGraphView : public Node {
+class ShaderGraphView : public Control {
 
 	OBJ_TYPE(ShaderGraphView,Node);
 
@@ -181,6 +181,10 @@ class ShaderGraphView : public Node {
 	void _curve_changed(int p_id,Node* p_curve);
 	void _sg_updated();
 	Map<int,GraphNode*> node_map;
+
+	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
+	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
+	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
