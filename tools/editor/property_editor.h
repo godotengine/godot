@@ -31,6 +31,7 @@
 
 #include "scene/gui/tree.h"
 #include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
 #include "tools/editor/editor_file_dialog.h"
 #include "scene/gui/dialogs.h"
@@ -45,6 +46,8 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
+class PropertyValueEvaluator;
 
 class CustomPropertyEditor : public Popup {
 
@@ -93,7 +96,7 @@ class CustomPropertyEditor : public Popup {
 	ColorPicker *color_picker;
 	TextEdit *text_edit;
 	bool read_only;
-	Button *checks20[20];
+	CheckBox *checks20[20];
 	SpinBox *spinbox;
 	HSlider *slider;
 
@@ -103,6 +106,8 @@ class CustomPropertyEditor : public Popup {
 	Object* owner;
 
 	bool updating;
+
+	PropertyValueEvaluator *evaluator;
 
 	void _text_edit_changed();
 	void _file_selected(String p_file);
@@ -132,10 +137,16 @@ protected:
 	static void _bind_methods();
 
 public:
+
+
+	void hide_menu();
+
 	Variant get_variant() const;
 	String get_name() const;
 
 	void set_read_only(bool p_read_only) { read_only=p_read_only; }
+
+	void set_value_evaluator( PropertyValueEvaluator *p_evaluator) { evaluator=p_evaluator; }
 
 	bool edit(Object* p_owner,const String& p_name,Variant::Type p_type, const Variant& p_variant,int p_hint,String p_hint_text);
 
@@ -150,6 +161,8 @@ class PropertyEditor : public Control {
 	Label *top_label;
 	//Object *object;
 	LineEdit *search_box;
+
+	PropertyValueEvaluator *evaluator;
 
 	Object* obj;
 
@@ -209,6 +222,15 @@ class PropertyEditor : public Control {
 	void _set_range_def(Object *p_item, String prop, float p_frame);
 
 	void _filter_changed(const String& p_text);
+
+	void _mark_drop_fields(TreeItem* p_at);
+	void _clear_drop_fields(TreeItem* p_at);
+
+	bool _is_drop_valid(const Dictionary& p_drag_data, const Dictionary& p_item_data) const;
+	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
+	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
+	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
+
 
 	UndoRedo *undo_redo;
 protected:
@@ -281,6 +303,26 @@ public:
 
 	SectionedPropertyEditor();
 	~SectionedPropertyEditor();
+};
+
+class PropertyValueEvaluator : public ValueEvaluator {
+	OBJ_TYPE( PropertyValueEvaluator, ValueEvaluator );
+
+	Object *obj;
+	ScriptLanguage *script_language;
+	String _build_script(const String& p_text);
+
+	_FORCE_INLINE_ double _default_eval(const String& p_text) {
+		return p_text.to_double();
+	}
+
+public:
+
+	void edit(Object *p_obj);
+	double eval(const String& p_text);
+
+	PropertyValueEvaluator();
+	~PropertyValueEvaluator();
 };
 
 #endif

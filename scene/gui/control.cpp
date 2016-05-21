@@ -652,7 +652,23 @@ bool Control::has_point(const Point2& p_point) const {
 	return Rect2( Point2(), get_size() ).has_point(p_point);
 }
 
+void Control::set_drag_forwarding(Control* p_target) {
+
+	if (p_target)
+		data.drag_owner=p_target->get_instance_ID();
+	else
+		data.drag_owner=0;
+}
+
 Variant Control::get_drag_data(const Point2& p_point) {
+
+	if (data.drag_owner) {
+		Object *obj = ObjectDB::get_instance(data.drag_owner);
+		if (obj) {
+			Control *c = obj->cast_to<Control>();
+			return c->call("get_drag_data_fw",p_point,this);
+		}
+	}
 
 	if (get_script_instance()) {
 		Variant v=p_point;
@@ -669,6 +685,14 @@ Variant Control::get_drag_data(const Point2& p_point) {
 
 bool Control::can_drop_data(const Point2& p_point,const Variant& p_data) const {
 
+	if (data.drag_owner) {
+		Object *obj = ObjectDB::get_instance(data.drag_owner);
+		if (obj) {
+			Control *c = obj->cast_to<Control>();
+			return c->call("can_drop_data_fw",p_point,p_data,this);
+		}
+	}
+
 	if (get_script_instance()) {
 		Variant v=p_point;
 		const Variant *p[2]={&v,&p_data};
@@ -682,6 +706,15 @@ bool Control::can_drop_data(const Point2& p_point,const Variant& p_data) const {
 
 }
 void Control::drop_data(const Point2& p_point,const Variant& p_data){
+
+	if (data.drag_owner) {
+		Object *obj = ObjectDB::get_instance(data.drag_owner);
+		if (obj) {
+			Control *c = obj->cast_to<Control>();
+			c->call("drop_data_fw",p_point,p_data,this);
+			return;
+		}
+	}
 
 	if (get_script_instance()) {
 		Variant v=p_point;
@@ -707,7 +740,6 @@ void Control::set_drag_preview(Control *p_control) {
 	ERR_FAIL_COND(!is_inside_tree());
 	get_viewport()->_gui_set_drag_preview(this,p_control);
 }
-
 
 
 
@@ -1255,14 +1287,13 @@ void Control::set_anchor(Margin p_margin,AnchorType p_anchor, bool p_keep_margin
 
 void Control::_set_anchor(Margin p_margin,AnchorType p_anchor) {
 	#ifdef TOOLS_ENABLED
-	SceneTree *st=OS::get_singleton()->get_main_loop()->cast_to<SceneTree>();
-	if (st && st->is_editor_hint()) {
+	if (is_inside_tree() && get_tree()->is_editor_hint()) {
 		set_anchor(p_margin, p_anchor, EDITOR_DEF("2d_editor/keep_margins_when_changing_anchors", false));
 	} else {
-		set_anchor(p_margin, p_anchor);
+		set_anchor(p_margin, p_anchor, false);
 	}
 	#else
-	set_anchor(p_margin, p_anchor);
+	set_anchor(p_margin, p_anchor, false);
 	#endif
 }
 
@@ -2125,17 +2156,9 @@ bool Control::is_text_field() const {
 }
 
 
-void Control::_set_rotation_deg(float p_rot) {
-	set_rotation(Math::deg2rad(p_rot));
-}
+void Control::set_rotation(float p_radians) {
 
-float Control::_get_rotation_deg() const {
-	return Math::rad2deg(get_rotation());
-}
-
-void Control::set_rotation(float p_rotation) {
-
-	data.rotation=p_rotation;
+	data.rotation=p_radians;
 	update();
 	_notify_transform();
 }
@@ -2143,6 +2166,25 @@ void Control::set_rotation(float p_rotation) {
 float Control::get_rotation() const{
 
 	return data.rotation;
+}
+
+void Control::set_rotation_deg(float p_degrees) {
+	set_rotation(Math::deg2rad(p_degrees));
+}
+
+float Control::get_rotation_deg() const {
+	return Math::rad2deg(get_rotation());
+}
+
+// Kept for compatibility after rename to {s,g}et_rotation_deg.
+// Could be removed after a couple releases.
+void Control::_set_rotation_deg(float p_degrees) {
+	WARN_PRINT("Deprecated method Control._set_rotation_deg(): This method was renamed to set_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
+	set_rotation_deg(p_degrees);
+}
+float Control::_get_rotation_deg() const {
+	WARN_PRINT("Deprecated method Control._get_rotation_deg(): This method was renamed to get_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
+	return get_rotation_deg();
 }
 
 void Control::set_scale(const Vector2& p_scale){
@@ -2200,8 +2242,10 @@ void Control::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_size","size"),&Control::set_size);
 	ObjectTypeDB::bind_method(_MD("set_custom_minimum_size","size"),&Control::set_custom_minimum_size);
 	ObjectTypeDB::bind_method(_MD("set_global_pos","pos"),&Control::set_global_pos);
-	ObjectTypeDB::bind_method(_MD("set_rotation","rotation"),&Control::set_rotation);
-	ObjectTypeDB::bind_method(_MD("_set_rotation_deg","rotation"),&Control::_set_rotation_deg);
+	ObjectTypeDB::bind_method(_MD("set_rotation","radians"),&Control::set_rotation);
+	ObjectTypeDB::bind_method(_MD("set_rotation_deg","degrees"),&Control::set_rotation_deg);
+	// TODO: Obsolete this method (old name) properly (GH-4397)
+	ObjectTypeDB::bind_method(_MD("_set_rotation_deg","degrees"),&Control::_set_rotation_deg);
 	ObjectTypeDB::bind_method(_MD("set_scale","scale"),&Control::set_scale);
 	ObjectTypeDB::bind_method(_MD("get_margin","margin"),&Control::get_margin);
 	ObjectTypeDB::bind_method(_MD("get_begin"),&Control::get_begin);
@@ -2209,12 +2253,14 @@ void Control::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_pos"),&Control::get_pos);
 	ObjectTypeDB::bind_method(_MD("get_size"),&Control::get_size);
 	ObjectTypeDB::bind_method(_MD("get_rotation"),&Control::get_rotation);
+	ObjectTypeDB::bind_method(_MD("get_rotation_deg"),&Control::get_rotation_deg);
+	// TODO: Obsolete this method (old name) properly (GH-4397)
+	ObjectTypeDB::bind_method(_MD("_get_rotation_deg"),&Control::_get_rotation_deg);
 	ObjectTypeDB::bind_method(_MD("get_scale"),&Control::get_scale);
 	ObjectTypeDB::bind_method(_MD("get_custom_minimum_size"),&Control::get_custom_minimum_size);
 	ObjectTypeDB::bind_method(_MD("get_parent_area_size"),&Control::get_size);
 	ObjectTypeDB::bind_method(_MD("get_global_pos"),&Control::get_global_pos);
 	ObjectTypeDB::bind_method(_MD("get_rect"),&Control::get_rect);
-	ObjectTypeDB::bind_method(_MD("_get_rotation_deg"),&Control::_get_rotation_deg);
 	ObjectTypeDB::bind_method(_MD("get_global_rect"),&Control::get_global_rect);
 	ObjectTypeDB::bind_method(_MD("set_area_as_parent_rect","margin"),&Control::set_area_as_parent_rect,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("show_modal","exclusive"),&Control::show_modal,DEFVAL(false));
@@ -2273,6 +2319,7 @@ void Control::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("grab_click_focus"),&Control::grab_click_focus);
 
+	ObjectTypeDB::bind_method(_MD("set_drag_forwarding","target:Control"),&Control::set_drag_forwarding);
 	ObjectTypeDB::bind_method(_MD("set_drag_preview","control:Control"),&Control::set_drag_preview);
 
 	ObjectTypeDB::bind_method(_MD("warp_mouse","to_pos"),&Control::warp_mouse);
@@ -2292,7 +2339,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect/pos", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), _SCS("set_pos"),_SCS("get_pos") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect/size", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), _SCS("set_size"),_SCS("get_size") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect/min_size"), _SCS("set_custom_minimum_size"),_SCS("get_custom_minimum_size") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"rect/rotation",PROPERTY_HINT_RANGE,"-1080,1080,0.01"), _SCS("_set_rotation_deg"),_SCS("_get_rotation_deg") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"rect/rotation",PROPERTY_HINT_RANGE,"-1080,1080,0.01"), _SCS("set_rotation_deg"),_SCS("get_rotation_deg") );
 	ADD_PROPERTYNO( PropertyInfo(Variant::VECTOR2,"rect/scale"), _SCS("set_scale"),_SCS("get_scale") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"hint/tooltip", PROPERTY_HINT_MULTILINE_TEXT), _SCS("set_tooltip"),_SCS("_get_tooltip") );
 	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/left" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_LEFT );
@@ -2380,6 +2427,7 @@ Control::Control() {
 	data.rotation=0;
 	data.parent_canvas_item=NULL;
 	data.scale=Vector2(1,1);
+	data.drag_owner=0;
 
 
 	for (int i=0;i<4;i++) {

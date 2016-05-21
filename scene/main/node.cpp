@@ -749,6 +749,16 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 
 }
 
+void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name) {
+	add_child(p_child, p_legible_unique_name);
+
+	if (is_a_parent_of(p_node)) {
+		move_child(p_child, p_node->get_position_in_parent() + 1);
+	} else {
+		WARN_PRINTS("Cannot move under node " + p_node->get_name() + " as " + p_child->get_name() + " does not share a parent")
+	}
+}
+
 
 void Node::_propagate_validate_owner() {
 
@@ -2010,7 +2020,26 @@ void Node::clear_internal_tree_resource_paths() {
 
 }
 
+String Node::get_configuration_warning() const {
+
+	return String();
+}
+
+void Node::update_configuration_warning() {
+
+#ifdef TOOLS_ENABLED
+	if (!is_inside_tree())
+		return;
+	if (get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()==this || get_tree()->get_edited_scene_root()->is_a_parent_of(this))) {
+		get_tree()->emit_signal(SceneStringNames::get_singleton()->node_configuration_warning_changed,this);
+	}
+#endif
+
+}
+
 void Node::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("_add_child_below_node","node:Node","child_node:Node","legible_unique_name"),&Node::add_child_below_node,DEFVAL(false));
 
 	ObjectTypeDB::bind_method(_MD("set_name","name"),&Node::set_name);
 	ObjectTypeDB::bind_method(_MD("get_name"),&Node::get_name);
@@ -2022,7 +2051,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_child:Node","idx"),&Node::get_child);
 	ObjectTypeDB::bind_method(_MD("has_node","path"),&Node::has_node);
 	ObjectTypeDB::bind_method(_MD("get_node:Node","path"),&Node::get_node);
-	ObjectTypeDB::bind_method(_MD("get_parent:Parent"),&Node::get_parent);
+	ObjectTypeDB::bind_method(_MD("get_parent:Node"),&Node::get_parent);
 	ObjectTypeDB::bind_method(_MD("find_node:Node","mask","recursive","owned"),&Node::find_node,DEFVAL(true),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("has_node_and_resource","path"),&Node::has_node_and_resource);
 	ObjectTypeDB::bind_method(_MD("get_node_and_resource","path"),&Node::_get_node_and_resource);
@@ -2076,6 +2105,10 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_viewport"),&Node::get_viewport);
 
 	ObjectTypeDB::bind_method(_MD("queue_free"),&Node::queue_delete);
+
+
+
+
 #ifdef TOOLS_ENABLED
 	ObjectTypeDB::bind_method(_MD("_set_import_path","import_path"),&Node::set_import_path);
 	ObjectTypeDB::bind_method(_MD("_get_import_path"),&Node::get_import_path);
@@ -2095,6 +2128,8 @@ void Node::_bind_methods() {
 	BIND_CONSTANT( NOTIFICATION_PAUSED );
 	BIND_CONSTANT( NOTIFICATION_UNPAUSED );
 	BIND_CONSTANT( NOTIFICATION_INSTANCED );
+	BIND_CONSTANT( NOTIFICATION_DRAG_BEGIN );
+	BIND_CONSTANT( NOTIFICATION_DRAG_END );
 
 
 

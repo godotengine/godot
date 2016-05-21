@@ -1493,7 +1493,7 @@ int SceneState::get_connection_flags(int p_idx) const{
 
 Array SceneState::get_connection_binds(int p_idx) const {
 
-	ERR_FAIL_INDEX_V(p_idx,connections.size(),-1);
+	ERR_FAIL_INDEX_V(p_idx,connections.size(),Array());
 	Array binds;
 	for(int i=0;i<connections[p_idx].binds.size();i++) {
 		binds.push_back(variants[connections[p_idx].binds[i]]);

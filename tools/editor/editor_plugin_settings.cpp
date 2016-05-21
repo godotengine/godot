@@ -152,7 +152,7 @@ EditorPluginSettings::EditorPluginSettings() {
 	HBoxContainer *title_hb = memnew( HBoxContainer );
 	title_hb->add_child(memnew( Label("Installed Plugins:")));
 	title_hb->add_spacer();
-	update_list = memnew( Button("Update") );
+	update_list = memnew( Button(TTR("Update")) );
 	update_list->connect("pressed",this,"update_plugins");
 	title_hb->add_child(update_list);
 	add_child(title_hb);
@@ -161,7 +161,7 @@ EditorPluginSettings::EditorPluginSettings() {
 	plugin_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	plugin_list->set_columns(4);
 	plugin_list->set_column_titles_visible(true);
-	plugin_list->set_column_title(0,"Name:");
+	plugin_list->set_column_title(0,TTR("Name:"));
 	plugin_list->set_column_title(1,"Version:");
 	plugin_list->set_column_title(2,"Author:");
 	plugin_list->set_column_title(3,"Status:");

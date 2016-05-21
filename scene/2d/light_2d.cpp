@@ -61,6 +61,8 @@ void Light2D::set_texture( const Ref<Texture>& p_texture) {
 		VS::get_singleton()->canvas_light_set_texture(canvas_light,texture->get_rid());
 	else
 		VS::get_singleton()->canvas_light_set_texture(canvas_light,RID());
+
+	update_configuration_warning();
 }
 
 Ref<Texture> Light2D::get_texture() const {
@@ -281,6 +283,16 @@ void Light2D::_notification(int p_what) {
 	}
 
 }
+
+String Light2D::get_configuration_warning() const {
+
+	if (!texture.is_valid()) {
+		return TTR("A texture with the shape of the light must be supplied to the 'texture' property.");
+	}
+
+	return String();
+}
+
 
 void Light2D::_bind_methods() {
 

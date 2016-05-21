@@ -1,6 +1,0 @@
-{
-  "program": {
-	"x86-64": {"url": "godot_nacl.x86_64.nexe"},
-	"x86-32": {"url": "godot_nacl.i686.nexe"}
-  }
-}

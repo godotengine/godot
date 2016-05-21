@@ -55,6 +55,8 @@ public:
 	int get_collision_object_first_shape() const { return shape_from; }
 	int get_collision_object_last_shape() const { return shape_to; }
 
+	String get_configuration_warning() const;
+
 	CollisionPolygon();
 };
 

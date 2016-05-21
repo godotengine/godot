@@ -65,6 +65,7 @@ public:
 	void set_as_minsize();
 	virtual void popup();
 
+	virtual String get_configuration_warning() const;
 
 	Popup();
 	~Popup();

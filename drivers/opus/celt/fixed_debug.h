@@ -496,6 +496,7 @@ static OPUS_INLINE int MULT16_32_PX_(int a, opus_int64 b, int Q, char *file, int
 
 #define MULT16_32_Q15(a,b) MULT16_32_QX(a,b,15)
 #define MAC16_32_Q15(c,a,b) (celt_mips-=2,ADD32((c),MULT16_32_Q15((a),(b))))
+#define MAC16_32_Q16(c,a,b) (celt_mips-=2,ADD32((c),MULT16_32_Q16((a),(b))))
 
 static OPUS_INLINE int SATURATE(int a, int b)
 {
@@ -766,6 +767,16 @@ static OPUS_INLINE int DIV32_(opus_int64 a, opus_int64 b, char *file, int line)
    celt_mips+=70;
    return res;
 }
+
+static OPUS_INLINE opus_val16 SIG2WORD16_generic(celt_sig x)
+{
+   x = PSHR32(x, SIG_SHIFT);
+   x = MAX32(x, -32768);
+   x = MIN32(x, 32767);
+   return EXTRACT16(x);
+}
+#define SIG2WORD16(x) (SIG2WORD16_generic(x))
+
 
 #undef PRINT_MIPS
 #define PRINT_MIPS(file) do {fprintf (file, "total complexity = %llu MIPS\n", celt_mips);} while (0);

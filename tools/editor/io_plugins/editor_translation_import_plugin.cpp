@@ -64,7 +64,7 @@ public:
 		FileAccess *f = FileAccess::open(p_path,FileAccess::READ);
 		if (!f) {
 
-			error_dialog->set_text("Invalid source!");
+			error_dialog->set_text(TTR("Invalid source!"));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 
@@ -75,7 +75,7 @@ public:
 
 		if (csvh.size()<2) {
 
-			error_dialog->set_text("Invalid translation source!");
+			error_dialog->set_text(TTR("Invalid translation source!"));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 
@@ -86,8 +86,8 @@ public:
 		TreeItem *root = columns->create_item();
 		columns->set_hide_root(true);
 		columns->set_column_titles_visible(true);
-		columns->set_column_title(0,"Column");
-		columns->set_column_title(1,"Language");
+		columns->set_column_title(0,TTR("Column"));
+		columns->set_column_title(1,TTR("Language"));
 		Vector<String> langs = TranslationServer::get_all_locales();
 		Vector<String> names = TranslationServer::get_all_locale_names();
 		if (csvh[0]=="")
@@ -231,16 +231,16 @@ public:
 
 
 		if (items.size()==0) {
-			error_dialog->set_text("No items to import!");
+			error_dialog->set_text(TTR("No items to import!"));
 			error_dialog->popup_centered(Size2(200,100));
 		}
 
 		if (!save_path->get_text().begins_with("res://")) {
-			error_dialog->set_text("No target path!!");
+			error_dialog->set_text(TTR("No target path!!"));
 			error_dialog->popup_centered(Size2(200,100));
 		}
 
-		EditorProgress progress("import_xl","Import Translations",items.size());
+		EditorProgress progress("import_xl",TTR("Import Translations"),items.size());
 		for(int i=0;i<items.size();i++) {
 
 			progress.step(items[i]->get_metadata(1),i);
@@ -258,7 +258,7 @@ public:
 			String savefile = save_path->get_text().plus_file(import_path->get_text().get_file().basename()+"."+locale+".xl");
 			Error err = plugin->import(savefile,imd);
 			if (err!=OK) {
-				error_dialog->set_text("Couldnt import!");
+				error_dialog->set_text(TTR("Couldnt import!"));
 				error_dialog->popup_centered(Size2(200,100));
 			} else if (add_to_project->is_pressed()) {
 
@@ -295,7 +295,7 @@ public:
 		plugin=p_plugin;
 
 
-		set_title("Import Translation");
+		set_title(TTR("Import Translation"));
 
 		VBoxContainer *vbc = memnew( VBoxContainer );
 		add_child(vbc);
@@ -307,13 +307,13 @@ public:
 
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		csvb->add_child(hbc);
-		vbc->add_margin_child("Source CSV:",csvb);
+		vbc->add_margin_child(TTR("Source CSV:"),csvb);
 
 		import_path = memnew( LineEdit );
 		import_path->set_h_size_flags(SIZE_EXPAND_FILL);
 		hbc->add_child(import_path);
 		ignore_first = memnew( CheckButton );
-		ignore_first->set_text("Ignore First Row");
+		ignore_first->set_text(TTR("Ignore First Row"));
 		csvb->add_child(ignore_first);
 
 		Button * import_choose = memnew( Button );
@@ -325,7 +325,7 @@ public:
 		VBoxContainer *tcomp = memnew( VBoxContainer);
 		hbc = memnew( HBoxContainer );
 		tcomp->add_child(hbc);
-		vbc->add_margin_child("Target Path:",tcomp);
+		vbc->add_margin_child(TTR("Target Path:"),tcomp);
 
 		save_path = memnew( LineEdit );
 		save_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -339,12 +339,12 @@ public:
 
 		compress = memnew( CheckButton);
 		compress->set_pressed(true);
-		compress->set_text("Compress");
+		compress->set_text(TTR("Compress"));
 		tcomp->add_child(compress);
 
 		add_to_project = memnew( CheckButton);
 		add_to_project->set_pressed(true);
-		add_to_project->set_text("Add to Project (engine.cfg)");
+		add_to_project->set_text(TTR("Add to Project (engine.cfg)"));
 		tcomp->add_child(add_to_project);
 
 		file_select = memnew(EditorFileDialog);
@@ -360,18 +360,18 @@ public:
 		save_select->connect("dir_selected", this,"_choose_save_dir");
 
 		get_ok()->connect("pressed", this,"_import");
-		get_ok()->set_text("Import");
+		get_ok()->set_text(TTR("Import"));
 
 
 		error_dialog = memnew ( ConfirmationDialog );
 		add_child(error_dialog);
-		error_dialog->get_ok()->set_text("Accept");
+		error_dialog->get_ok()->set_text(TTR("Accept"));
 	//	error_dialog->get_cancel()->hide();
 
 		set_hide_on_ok(false);
 
 		columns = memnew( Tree );
-		vbc->add_margin_child("Import Languages:",columns,true);
+		vbc->add_margin_child(TTR("Import Languages:"),columns,true);
 	}
 
 	~EditorTranslationImportDialog() {

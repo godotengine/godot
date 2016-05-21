@@ -49,6 +49,7 @@ class SceneTreeEditor : public Control {
 		BUTTON_SCRIPT=2,
 		BUTTON_LOCK=3,
 		BUTTON_GROUP=4,
+		BUTTON_WARNING=5
 	};
 
 	enum {
@@ -66,14 +67,17 @@ class SceneTreeEditor : public Control {
 	PopupMenu *inheritance_menu;
 	ObjectID instance_node;
 
+	String filter;
+
 	AcceptDialog *error;
+	AcceptDialog *warning;
 	ConfirmationDialog *clear_inherit_confirm;
 
 	int blocked;
 
 	void _compute_hash(Node *p_node,uint64_t &hash);
 
-	void _add_nodes(Node *p_node,TreeItem *p_parent);
+	bool _add_nodes(Node *p_node,TreeItem *p_parent);
 	void _test_update_tree();
 	void _update_tree();
 	void _tree_changed();
@@ -111,10 +115,25 @@ class SceneTreeEditor : public Control {
 	void _node_visibility_changed(Node *p_node);
 	void _subscene_option(int p_idx);
 
+
+
 	void _selection_changed();
 	Node *get_scene_node();
+
+	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
+	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
+	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
+
+	void _rmb_select(const Vector2& p_pos);
+
+	void _warning_changed(Node* p_for_node);
+
+	Timer* update_timer;
+
 public:
 
+	void set_filter(const String& p_filter);
+	String get_filter() const;
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo=p_undo_redo; };
 	void set_display_foreign_nodes(bool p_display);

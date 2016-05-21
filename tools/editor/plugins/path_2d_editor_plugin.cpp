@@ -113,7 +113,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 								return true;
 							} else if  ((mb.button_index==BUTTON_RIGHT && mode==MODE_EDIT) || (mb.button_index==BUTTON_LEFT && mode==MODE_DELETE)) {
 
-								undo_redo->create_action("Remove Point from Curve");
+								undo_redo->create_action(TTR("Remove Point from Curve"));
 								undo_redo->add_do_method(curve.ptr(),"remove_point",i);
 								undo_redo->add_undo_method(curve.ptr(),"add_point",curve->get_point_pos(i),curve->get_point_in(i),curve->get_point_out(i),i);
 								undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -162,7 +162,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 				Ref<Curve2D> curve = node->get_curve();
 
-				undo_redo->create_action("Add Point to Curve");
+				undo_redo->create_action(TTR("Add Point to Curve"));
 				undo_redo->add_do_method(curve.ptr(),"add_point",cpoint);
 				undo_redo->add_undo_method(curve.ptr(),"remove_point",curve->get_point_count());
 				undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -190,7 +190,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 					case ACTION_MOVING_POINT: {
 
 
-						undo_redo->create_action("Move Point in Curve");
+						undo_redo->create_action(TTR("Move Point in Curve"));
 						undo_redo->add_do_method(curve.ptr(),"set_point_pos",action_point,cpoint);
 						undo_redo->add_undo_method(curve.ptr(),"set_point_pos",action_point,moving_from);
 						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -200,7 +200,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 					} break;
 					case ACTION_MOVING_IN: {
 
-						undo_redo->create_action("Move In-Control in Curve");
+						undo_redo->create_action(TTR("Move In-Control in Curve"));
 						undo_redo->add_do_method(curve.ptr(),"set_point_in",action_point,new_pos);
 						undo_redo->add_undo_method(curve.ptr(),"set_point_in",action_point,moving_from);
 						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -210,7 +210,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 					} break;
 					case ACTION_MOVING_OUT: {
 
-						undo_redo->create_action("Move Out-Control in Curve");
+						undo_redo->create_action(TTR("Move Out-Control in Curve"));
 						undo_redo->add_do_method(curve.ptr(),"set_point_out",action_point,new_pos);
 						undo_redo->add_undo_method(curve.ptr(),"set_point_out",action_point,moving_from);
 						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -280,7 +280,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 								if (poly.size() < 3) {
 
-									undo_redo->create_action("Edit Poly");
+									undo_redo->create_action(TTR("Edit Poly"));
 									undo_redo->add_undo_method(node,"set_polygon",poly);
 									poly.push_back(cpoint);
 									undo_redo->add_do_method(node,"set_polygon",poly);
@@ -360,7 +360,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 								ERR_FAIL_INDEX_V(edited_point,poly.size(),false);
 								poly[edited_point]=edited_point_pos;
-								undo_redo->create_action("Edit Poly");
+								undo_redo->create_action(TTR("Edit Poly"));
 								undo_redo->add_do_method(node,"set_polygon",poly);
 								undo_redo->add_undo_method(node,"set_polygon",pre_move_edit);
 								undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -394,7 +394,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 						if (closest_idx>=0) {
 
 
-							undo_redo->create_action("Edit Poly (Remove Point)");
+							undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
 							undo_redo->add_undo_method(node,"set_polygon",poly);
 							poly.remove(closest_idx);
 							undo_redo->add_do_method(node,"set_polygon",poly);
@@ -596,7 +596,7 @@ void Path2DEditor::_mode_selected(int p_mode) {
 		if (begin.distance_to(end)<CMP_EPSILON)
 			return;
 
-		undo_redo->create_action("Remove Point from Curve");
+		undo_redo->create_action(TTR("Remove Point from Curve"));
 		undo_redo->add_do_method(node->get_curve().ptr(),"add_point",begin);
 		undo_redo->add_undo_method(node->get_curve().ptr(),"remove_point",node->get_curve()->get_point_count());
 		undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -622,8 +622,8 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	options = memnew( MenuButton );
 	add_child(options);
 	options->set_area_as_parent_rect();
-	options->set_text("Polygon");
-	//options->get_popup()->add_item("Parse BBCODE",PARSE_BBCODE);
+	options->set_text(TTR("Polygon"));
+	//options->get_popup()->add_item(TTR("Parse BBCODE"),PARSE_BBCODE);
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 #endif
 
@@ -643,7 +643,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	curve_edit_curve->set_icon(CanvasItemEditor::get_singleton()->get_icon("CurveCurve","EditorIcons"));
 	curve_edit_curve->set_toggle_mode(true);
 	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
-	curve_edit_curve->set_tooltip("Select Control Points (Shift+Drag)");
+	curve_edit_curve->set_tooltip(TTR("Select Control Points (Shift+Drag)"));
 	curve_edit_curve->connect("pressed",this,"_mode_selected",varray(MODE_EDIT_CURVE));
 	base_hb->add_child(curve_edit_curve);
 	curve_create = memnew( ToolButton );
@@ -657,13 +657,13 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	curve_del->set_icon(CanvasItemEditor::get_singleton()->get_icon("CurveDelete","EditorIcons"));
 	curve_del->set_toggle_mode(true);
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
-	curve_del->set_tooltip("Delete Point.");
+	curve_del->set_tooltip(TTR("Delete Point."));
 	curve_del->connect("pressed",this,"_mode_selected",varray(MODE_DELETE));
 	base_hb->add_child(curve_del);
 	curve_close = memnew( ToolButton );
 	curve_close->set_icon(CanvasItemEditor::get_singleton()->get_icon("CurveClose","EditorIcons"));
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
-	curve_close->set_tooltip("Close Curve");
+	curve_close->set_tooltip(TTR("Close Curve"));
 	curve_close->connect("pressed",this,"_mode_selected",varray(ACTION_CLOSE));
 	base_hb->add_child(curve_close);
 	base_hb->hide();

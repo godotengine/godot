@@ -237,6 +237,19 @@ void PathFollow2D::_get_property_list( List<PropertyInfo> *p_list) const{
 }
 
 
+String PathFollow2D::get_configuration_warning() const {
+
+	if (!is_visible() || !is_inside_tree())
+		return String();
+
+	if (!get_parent() || !get_parent()->cast_to<Path2D>()) {
+		return TTR("PathFolow2D only works when set as a child of a Path2D node.");
+	}
+
+	return String();
+
+}
+
 void PathFollow2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&PathFollow2D::set_offset);

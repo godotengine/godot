@@ -66,6 +66,8 @@ public:
 	void set_occluder_light_mask(int p_mask);
 	int get_occluder_light_mask() const;
 
+	String get_configuration_warning() const;
+
 	LightOccluder2D();
 	~LightOccluder2D();
 };

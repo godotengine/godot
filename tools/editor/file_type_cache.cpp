@@ -85,7 +85,7 @@ void FileTypeCache::save() {
 	FileAccess *f =FileAccess::open(project+"/file_type_cache.cch",FileAccess::WRITE);
 	if (!f) {
 
-		ERR_EXPLAIN("Can't open file_type_cache.cch for writing, not saving file type cache!");
+		ERR_EXPLAIN(TTR("Can't open file_type_cache.cch for writing, not saving file type cache!"));
 		ERR_FAIL();
 	}
 

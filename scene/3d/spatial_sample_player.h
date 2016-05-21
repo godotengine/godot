@@ -78,6 +78,7 @@ public:
 	void stop_voice(VoiceID p_voice);
 	void stop_all();
 
+	String get_configuration_warning() const;
 
 	SpatialSamplePlayer();
 	~SpatialSamplePlayer();

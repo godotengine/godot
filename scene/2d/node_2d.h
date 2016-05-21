@@ -47,6 +47,7 @@ class Node2D : public CanvasItem {
 
 	void _update_transform();
 
+	// Deprecated, should be removed in a future version.
 	void _set_rotd(float p_angle);
 	float _get_rotd() const;
 
@@ -69,7 +70,8 @@ public:
 	virtual bool edit_has_pivot() const;
 
 	void set_pos(const Point2& p_pos);
-	void set_rot(float p_angle);
+	void set_rot(float p_radians);
+	void set_rotd(float p_degrees);
 	void set_scale(const Size2& p_scale);
 
 	void rotate(float p_radians);
@@ -81,6 +83,7 @@ public:
 
 	Point2 get_pos() const;
 	float get_rot() const;
+	float get_rotd() const;
 	Size2 get_scale() const;
 
 	Point2 get_global_pos() const;

@@ -12,7 +12,6 @@ extends Node2D
 var joy_num
 var cur_joy
 var axis_value
-var btn_state
 
 const DEADZONE = 0.2
 
@@ -26,11 +25,12 @@ func _fixed_process(delta):
 		get_node("joy_name").set_text(Input.get_joy_name(joy_num))
 
 	# Loop through the axes and show their current values
-	for axis in range(0, 8):
+	for axis in range(JOY_ANALOG_0_X, JOY_AXIS_MAX):
 		axis_value = Input.get_joy_axis(joy_num, axis)
 		get_node("axis_prog" + str(axis)).set_value(100*axis_value)
 		get_node("axis_val" + str(axis)).set_text(str(axis_value))
-		if (axis < 4):
+		# Show joystick direction indicators
+		if (axis <= JOY_ANALOG_1_Y):
 			if (abs(axis_value) < DEADZONE):
 				get_node("diagram/axes/" + str(axis) + "+").hide()
 				get_node("diagram/axes/" + str(axis) + "-").hide()
@@ -40,8 +40,7 @@ func _fixed_process(delta):
 				get_node("diagram/axes/" + str(axis) + "-").show()
 
 	# Loop through the buttons and highlight the ones that are pressed
-	for btn in range(0, 16):
-		btn_state = 1
+	for btn in range(JOY_BUTTON_0, JOY_BUTTON_MAX):
 		if (Input.is_joy_button_pressed(joy_num, btn)):
 			get_node("btn" + str(btn)).add_color_override("font_color", Color(1, 1, 1, 1))
 			get_node("diagram/buttons/" + str(btn)).show()

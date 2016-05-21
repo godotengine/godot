@@ -106,9 +106,9 @@ RichTextEditor::RichTextEditor() {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 	options->set_area_as_parent_rect();
 
-	options->set_text("RichText");
-	options->get_popup()->add_item("Parse BBCODE",PARSE_BBCODE);
-	options->get_popup()->add_item("Clear",CLEAR);
+	options->set_text(TTR("RichText"));
+	options->get_popup()->add_item(TTR("Parse BBCODE"),PARSE_BBCODE);
+	options->get_popup()->add_item(TTR("Clear"),CLEAR);
 
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 	file_dialog = memnew( EditorFileDialog );

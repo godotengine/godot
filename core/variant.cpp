@@ -1556,6 +1556,18 @@ Variant::operator String() const {
 
 			return str;
 		} break;
+		case VECTOR2_ARRAY: {
+
+			DVector<Vector2> vec = operator DVector<Vector2>();
+			String str;
+			for(int i=0;i<vec.size();i++) {
+
+				if (i>0)
+					str+=", ";
+				str=str+Variant( vec[i] );
+			}
+			return str;
+		} break;
 		case VECTOR3_ARRAY: {
 
 			DVector<Vector3> vec = operator DVector<Vector3>();
@@ -3035,4 +3047,48 @@ String Variant::get_call_error_text(Object* p_base, const StringName& p_method,c
 		class_name+="("+script->get_path().get_file()+")";
 	}
 	return "'"+class_name+"::"+String(p_method)+"': "+err_text;
+}
+
+
+String vformat(const String& p_text, const Variant& p1,const Variant& p2,const Variant& p3,const Variant& p4,const Variant& p5) {
+
+	Array args;
+	if (p1.get_type()!=Variant::NIL) {
+
+		args.push_back(p1);
+
+		if (p2.get_type()!=Variant::NIL) {
+
+			args.push_back(p2);
+
+			if (p3.get_type()!=Variant::NIL) {
+
+				args.push_back(p3);
+
+				if (p4.get_type()!=Variant::NIL) {
+
+					args.push_back(p4);
+
+					if (p5.get_type()!=Variant::NIL) {
+
+						args.push_back(p5);
+
+					}
+
+				}
+
+
+			}
+
+		}
+
+	}
+
+	bool error=false;
+	String fmt = p_text.sprintf(args,&error);
+
+	ERR_FAIL_COND_V(error,String());
+
+	return fmt;
+
 }

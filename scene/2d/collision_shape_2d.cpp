@@ -201,6 +201,19 @@ int CollisionShape2D::_get_update_shape_index() const{
 	return update_shape_index;
 }
 
+String CollisionShape2D::get_configuration_warning() const {
+
+	if (!get_parent()->cast_to<CollisionObject2D>()) {
+		return TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
+	}
+
+	if (!shape.is_valid()) {
+		return TTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!");
+	}
+
+	return String();
+}
+
 
 void CollisionShape2D::_bind_methods() {
 

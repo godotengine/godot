@@ -45,6 +45,8 @@ RID OccluderPolygon2D::get_rid() const {
 	return occ_polygon;
 }
 
+
+
 void OccluderPolygon2D::_bind_methods() {
 
 
@@ -176,6 +178,20 @@ void LightOccluder2D::set_occluder_light_mask(int p_mask) {
 int LightOccluder2D::get_occluder_light_mask() const{
 
 	return mask;
+}
+
+
+String LightOccluder2D::get_configuration_warning() const {
+
+	if (!occluder_polygon.is_valid()) {
+		return TTR("An occluder polygon must be set (or drawn) for this occluder to take effect.");
+	}
+
+	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().size()==0) {
+		return TTR("The occluder polygon for this occluder is empty. Please draw a polygon!");
+	}
+
+	return String();
 }
 
 void LightOccluder2D::_bind_methods() {

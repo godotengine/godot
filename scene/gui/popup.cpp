@@ -44,6 +44,8 @@ void Popup::_notification(int p_what) {
 			notification(NOTIFICATION_POPUP_HIDE);
 			emit_signal("popup_hide");
 		}
+
+		update_configuration_warning();
 	}
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
@@ -282,6 +284,14 @@ Popup::Popup() {
 	hide();
 }
 
+String Popup::get_configuration_warning() const {
+
+	if (is_visible()) {
+		return TTR("Popups will hide by default unless you call popup() or any of the popup*() functions. Making them visible for editing is fine though, but they will hide upon running.");
+	}
+
+	return String();
+}
 
 Popup::~Popup()
 {
