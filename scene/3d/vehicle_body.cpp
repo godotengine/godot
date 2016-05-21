@@ -936,7 +936,7 @@ void VehicleBody::_direct_state_changed(Object *p_state) {
 		wheel.m_deltaRotation *= real_t(0.99);//damping of rotation when not in contact
 
 	}
-
+	linear_velocity = s->get_linear_velocity();
 }
 
 void VehicleBody::set_mass(real_t p_mass) {
@@ -990,6 +990,10 @@ float VehicleBody::get_steering() const{
 	return m_steeringValue;
 }
 
+Vector3 VehicleBody::get_linear_velocity()
+{
+	return linear_velocity;	
+}
 
 void VehicleBody::_bind_methods(){
 
@@ -1007,6 +1011,8 @@ void VehicleBody::_bind_methods(){
 
 	ObjectTypeDB::bind_method(_MD("set_steering","steering"),&VehicleBody::set_steering);
 	ObjectTypeDB::bind_method(_MD("get_steering"),&VehicleBody::get_steering);
+
+	ObjectTypeDB::bind_method(_MD("get_linear_velocity"),&VehicleBody::get_linear_velocity);
 
 	ObjectTypeDB::bind_method(_MD("_direct_state_changed"),&VehicleBody::_direct_state_changed);
 
