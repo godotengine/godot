@@ -1,9 +1,12 @@
 Import('env')
 
+env_drivers = env.Clone()
+
 env.drivers_sources=[]
 #env.add_source_files(env.drivers_sources,"*.cpp")
-env.Append(CPPPATH=["vorbis"])
-Export('env')
+env_drivers.Append(CPPPATH=["vorbis"])
+
+Export('env_drivers')
 
 SConscript('unix/SCsub');
 SConscript('alsa/SCsub');
@@ -14,12 +17,9 @@ SConscript('gl_context/SCsub');
 SConscript('pnm/SCsub');
 
 if (env['openssl']!='no'):
-	env_ssl = env.Clone()
-	Export('env_ssl')
-
-	env_ssl.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
+	env_drivers.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
 	if (env['openssl']=="builtin"):
-		env_ssl.Append(CPPPATH=['#drivers/builtin_openssl2'])
+		env_drivers.Append(CPPPATH=['#drivers/builtin_openssl2'])
 		SConscript("builtin_openssl2/SCsub");
 
 	SConscript('openssl/SCsub')
@@ -47,7 +47,7 @@ if (env["vorbis"]=="yes" or env["speex"]=="yes" or env["theoralib"]=="yes" or en
 if (env["vorbis"]=="yes"):
         SConscript("vorbis/SCsub");
 if (env["opus"]=="yes"):
-		SConscript('opus/SCsub');
+	SConscript('opus/SCsub');
 if (env["tools"]=="yes"):
 	SConscript("convex_decomp/SCsub");
 
@@ -84,14 +84,14 @@ if (env.split_drivers): #split drivers, this used to be needed for windows until
 		base = string.join(fname.split("/")[:2], "/")
 		if base != cur_base and len(list) > max_src:
 			if num > 0:
-				lib = env.Library("drivers"+str(num), list)
+				lib = env_drivers.Library("drivers"+str(num), list)
 				lib_list.append(lib)
 				list = []
 			num = num+1
 		cur_base = base
 		list.append(f)
 
-	lib = env.Library("drivers"+str(num), list)
+	lib = env_drivers.Library("drivers"+str(num), list)
 	lib_list.append(lib)
 
 	if len(lib_list) > 0:
@@ -99,15 +99,15 @@ if (env.split_drivers): #split drivers, this used to be needed for windows until
 		if os.name=='posix' and sys.platform=='msys':
 			env.Replace(ARFLAGS=['rcsT'])
 
-			lib = env.Library("drivers_collated", lib_list)
+			lib = env_drivers.Library("drivers_collated", lib_list)
 			lib_list = [lib]
 
 	drivers_base=[]
-	env.add_source_files(drivers_base,"*.cpp")
-	lib_list.insert(0, env.Library("drivers", drivers_base))
+	env_drivers.add_source_files(drivers_base,"*.cpp")
+	lib_list.insert(0, env_drivers.Library("drivers", drivers_base))
 
 	env.Prepend(LIBS=lib_list)
 else:
-	env.add_source_files(env.drivers_sources,"*.cpp")
-	lib = env.Library("drivers",env.drivers_sources)
+	env_drivers.add_source_files(env.drivers_sources,"*.cpp")
+	lib = env_drivers.Library("drivers",env.drivers_sources)
 	env.Prepend(LIBS=[lib])
