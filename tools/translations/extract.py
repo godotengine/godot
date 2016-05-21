@@ -22,6 +22,7 @@ for root, dirnames, filenames in os.walk('.'):
 
 
 unique_str = []
+unique_loc = {}
 main_po = ""
 
 print("Updating the tools.pot template...")
@@ -46,11 +47,19 @@ for fname in matches:
 				msg += l[pos]
 				pos += 1
 
+			location = os.path.relpath(fname).replace('\\','/') + ":" + str(lc)
+
 			if (not msg in unique_str):
-				main_po += "\n#: " + os.path.relpath(fname).replace('\\','/') + ":" + str(lc) + "\n"
+				main_po += "\n#: " + location + "\n"
 				main_po += 'msgid "' + msg + '"\n'
 				main_po += 'msgstr ""\n'
 				unique_str.append(msg)
+				unique_loc[msg] = [location]
+			elif (not location in unique_loc[msg]):
+				# Add additional location to previous occurence too
+				msg_pos = main_po.find('\nmsgid "' + msg)
+				main_po = main_po[:msg_pos] + ' ' + location + main_po[msg_pos:]
+				unique_loc[msg].append(location)
 
 		l = f.readline()
 		lc += 1
