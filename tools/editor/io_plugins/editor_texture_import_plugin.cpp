@@ -53,17 +53,17 @@ static const char *flag_names[]={
 
 #if 0 // not used
 static const char *flag_short_names[]={
-	TTR("Stream"),
-	TTR("FixBorder"),
-	TTR("AlphBit"),
-	TTR("ExtComp"),
-	TTR("NoMipMap"),
-	TTR("Repeat"),
-	TTR("Filter"),
-	TTR("PMAlpha"),
-	TTR("ToLinear"),
-	TTR("ToRG"),
-	TTR("Anisoropic"),
+	"Stream",
+	"FixBorder",
+	"AlphBit",
+	"ExtComp",
+	"NoMipMap",
+	"Repeat",
+	"Filter",
+	"PMAlpha",
+	"ToLinear",
+	"ToRG",
+	"Anisoropic",
 	NULL
 };
 #endif
@@ -343,7 +343,7 @@ void EditorTextureImportDialog::_import() {
 	}
 
 	if (!save_path->get_text().begins_with("res://")) {
-		error_dialog->set_text(TTR("Target path must be full resource path."));
+		error_dialog->set_text(TTR("Target path must be a complete resource path."));
 		error_dialog->popup_centered_minsize();
 		return;
 	}
@@ -382,7 +382,7 @@ void EditorTextureImportDialog::_import() {
 		Error err = plugin->import(dst_file,imd);
 		if (err) {
 
-			error_dialog->set_text(TTR("Error importing: ")+dst_file.get_file());
+			error_dialog->set_text(TTR("Error importing:")+" "+dst_file.get_file());
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 
@@ -391,7 +391,7 @@ void EditorTextureImportDialog::_import() {
 
 		if (files.size()!=1) {
 
-			error_dialog->set_text(TTR("Only one file is required for large texture"));
+			error_dialog->set_text(TTR("Only one file is required for large texture."));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 
@@ -414,7 +414,7 @@ void EditorTextureImportDialog::_import() {
 		Error err = plugin->import(dst_file,imd);
 		if (err) {
 
-			error_dialog->set_text(TTR("Error importing: ")+dst_file.get_file());
+			error_dialog->set_text(TTR("Error importing:")+" "+dst_file.get_file());
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 
@@ -438,7 +438,7 @@ void EditorTextureImportDialog::_import() {
 			Error err = plugin->import(dst_file,imd);
 			if (err) {
 
-				error_dialog->set_text(TTR("Error importing: ")+dst_file.get_file());
+				error_dialog->set_text(TTR("Error importing:")+" "+dst_file.get_file());
 				error_dialog->popup_centered(Size2(200,100));
 				return;
 
@@ -499,7 +499,7 @@ void EditorTextureImportDialog::_notification(int p_what) {
 
 		List<String> extensions;
 		ImageLoader::get_recognized_extensions(&extensions);
-	//	ResourceLoader::get_recognized_extensions_for_type(TTR("PackedTexture"),&extensions);
+	//	ResourceLoader::get_recognized_extensions_for_type("PackedTexture",&extensions);
 		file_select->clear_filters();
 		for(int i=0;i<extensions.size();i++) {
 
@@ -579,7 +579,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 
 	if (p_atlas) {
 		size->set_val(2048);
-		vbc->add_margin_child(TTR("Max Texture size:"),size);
+		vbc->add_margin_child(TTR("Max Texture Size:"),size);
 	} else {
 		size->set_val(256);
 		vbc->add_margin_child(TTR("Cell Size:"),size);
@@ -612,9 +612,9 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	save_file_select->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	save_file_select->clear_filters();
 	if (large)
-		save_file_select->add_filter("*.ltex;Large Texture");
+		save_file_select->add_filter("*.ltex;"+TTR("Large Texture"));
 	else
-		save_file_select->add_filter("*.tex;Base Atlas Texture");
+		save_file_select->add_filter("*.tex;"+TTR("Base Atlas Texture"));
 	save_file_select->connect("file_selected", this,"_choose_save_dir");
 
 	save_select = memnew(	EditorDirDialog );
@@ -1057,7 +1057,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 		err = ResourceSaver::save(p_path,existing);
 		if (err!=OK) {
-			EditorNode::add_io_error(TTR("Couldn't save large texture: ")+p_path);
+			EditorNode::add_io_error(TTR("Couldn't save large texture:")+" "+p_path);
 			return err;
 		}
 
@@ -1072,7 +1072,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		bool alpha=false;
 		bool crop = from->get_option("crop");
 
-		EditorProgress ep("make_atlas",TTR("Build Atlas For: ")+p_path.get_file(),from->get_source_count()+3);
+		EditorProgress ep("make_atlas",TTR("Build Atlas For:")+" "+p_path.get_file(),from->get_source_count()+3);
 
 		print_line("sources: "+itos(from->get_source_count()));
 
@@ -1081,12 +1081,12 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			String path = EditorImportPlugin::expand_source_path(from->get_source_path(i));
 			String md5 = FileAccess::get_md5(path);
 			from->set_source_md5(i,FileAccess::get_md5(path));
-			ep.step(TTR("Loading Image: ")+path,i);
+			ep.step(TTR("Loading Image:")+" "+path,i);
 			print_line("source path: "+path+" md5 "+md5);
 			Image src;
 			Error err = ImageLoader::load_image(path,&src);
 			if (err) {
-				EditorNode::add_io_error(TTR("Couldn't load image: ")+path);
+				EditorNode::add_io_error(TTR("Couldn't load image:")+" "+path);
 				return err;
 			}
 
@@ -1176,7 +1176,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		Size2i dst_size;
 		EditorAtlas::fit(src_sizes,dst_positions,dst_size);
 
-		print_line("size that workeD: "+itos(dst_size.width)+","+itos(dst_size.height));
+		print_line("size that worked: "+itos(dst_size.width)+","+itos(dst_size.height));
 
 		ep.step(TTR("Blitting Images"),sources.size()+2);
 
@@ -1291,7 +1291,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 				atlases[i]->set_atlas(texture);
 				Error err = ResourceSaver::save(apath,atlases[i]);
 				if (err) {
-					EditorNode::add_io_error(TTR("Couldn't save atlas image: ")+apath);
+					EditorNode::add_io_error(TTR("Couldn't save atlas image:")+" "+apath);
 					return err;
 				}
 				//from->set_source_md5(i,FileAccess::get_md5(apath));
@@ -1433,7 +1433,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 	Error err = ResourceSaver::save(p_path,texture,save_flags);
 	if (err!=OK) {
-		EditorNode::add_io_error(TTR("Couldn't save converted texture: ")+p_path);
+		EditorNode::add_io_error(TTR("Couldn't save converted texture:")+" "+p_path);
 		return err;
 	}
 

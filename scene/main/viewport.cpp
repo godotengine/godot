@@ -2407,7 +2407,7 @@ String Viewport::get_configuration_warning() const {
 
 	if (get_parent() && !get_parent()->cast_to<Control>() && !render_target) {
 
-		return TTR("This viewport is not set as render target. If you intend for it to display it's contents directly to the screen, make it a child of a Control so it can obtain a size. Otherwise, make it a RenderTarget and assign it's internal texture to some node for display.");
+		return TTR("This viewport is not set as render target. If you intend for it to display its contents directly to the screen, make it a child of a Control so it can obtain a size. Otherwise, make it a RenderTarget and assign its internal texture to some node for display.");
 	}
 
 	return String();

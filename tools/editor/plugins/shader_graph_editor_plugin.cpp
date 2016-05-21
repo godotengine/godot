@@ -743,7 +743,7 @@ void ShaderGraphView::_vec_op_changed(int p_op, int p_id){
 void ShaderGraphView::_vec_scalar_op_changed(int p_op, int p_id){
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action(TTR("Change VecxScalar Operator"));
+	ur->create_action(TTR("Change Vec Scalar Operator"));
 	ur->add_do_method(graph.ptr(),"vec_scalar_op_node_set_op",type,p_id,p_op);
 	ur->add_undo_method(graph.ptr(),"vec_scalar_op_node_set_op",type,p_id,graph->vec_scalar_op_node_get_op(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -902,7 +902,7 @@ void ShaderGraphView::_variant_edited() {
 				break;
 			}
 		UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-		ur->create_action(TTR("Change default value"));
+		ur->create_action(TTR("Change Default Value"));
 		ur->add_do_method(graph.ptr(),"default_set_value",type,edited_id,edited_def, v);
 		ur->add_undo_method(graph.ptr(),"default_set_value",type,edited_id,edited_def, v2);
 		ur->add_do_method(this,"_update_graph");
@@ -1427,7 +1427,7 @@ void ShaderGraphView::_create_node(int p_id) {
 
 	} break; // all inputs (case Shader type dependent)
 	case ShaderGraph::NODE_SCALAR_CONST: {
-		gn->set_title(TTR("Scalar"));
+		gn->set_title("Scalar");
 		SpinBox *sb = memnew( SpinBox );
 		sb->set_min(-100000);
 		sb->set_max(100000);
@@ -1440,7 +1440,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; //scalar constant
 	case ShaderGraph::NODE_VEC_CONST: {
 
-		gn->set_title(TTR("Vector"));
+		gn->set_title("Vector");
 		Array v3p(true);
 		for(int i=0;i<3;i++) {
 			HBoxContainer *hbc = memnew( HBoxContainer );
@@ -1469,11 +1469,11 @@ void ShaderGraphView::_create_node(int p_id) {
 		cpb->connect("color_changed",this,"_rgb_const_changed",varray(p_id));
 		gn->add_child(cpb);
 		Label *l = memnew( Label );
-		l->set_text(TTR("RGB"));
+		l->set_text("RGB");
 		l->set_align(Label::ALIGN_RIGHT);
 		gn->add_child(l);
 		l = memnew( Label );
-		l->set_text(TTR("Alpha"));
+		l->set_text("Alpha");
 		l->set_align(Label::ALIGN_RIGHT);
 		gn->add_child(l);
 
@@ -1482,7 +1482,7 @@ void ShaderGraphView::_create_node(int p_id) {
 
 	} break; //rgb constant (shows a color picker instead)
 	case ShaderGraph::NODE_XFORM_CONST: {
-		gn->set_title(TTR("XForm"));
+		gn->set_title("XForm");
 		ToolButton *edit = memnew( ToolButton );
 		edit->set_text("edit..");
 		edit->connect("pressed",this,"_xform_const_changed",varray(p_id,edit));
@@ -1492,7 +1492,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // 4x4 matrix constant
 	case ShaderGraph::NODE_TIME: {
 
-		gn->set_title(TTR("Time"));
+		gn->set_title("Time");
 		Label *l = memnew( Label );
 		l->set_text("(s)");
 		l->set_align(Label::ALIGN_RIGHT);
@@ -1502,24 +1502,24 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // time in seconds
 	case ShaderGraph::NODE_SCREEN_TEX: {
 
-		gn->set_title(TTR("ScreenTex"));
+		gn->set_title("ScreenTex");
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		hbc->add_constant_override("separation",0);
 		if (!graph->is_slot_connected(type,p_id,0)) {
 			Vector3 v = graph->default_get_value(type, p_id, 0);
-			hbc->add_child(make_editor(TTR("UV: ") + v,gn,p_id,0,Variant::VECTOR3));
+			hbc->add_child(make_editor("UV: " + v,gn,p_id,0,Variant::VECTOR3));
 		} else {
-			hbc->add_child(make_label(TTR("UV"),Variant::VECTOR3));
+			hbc->add_child(make_label("UV",Variant::VECTOR3));
 		}
 		hbc->add_spacer();
-		hbc->add_child( memnew(Label(TTR("RGB"))));
+		hbc->add_child( memnew(Label("RGB")));
 		gn->add_child(hbc);
 		gn->set_slot(0,true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC],true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC]);
 
 	} break; // screen texture sampler (takes UV) (only usable in fragment case Shader)
 	case ShaderGraph::NODE_SCALAR_OP: {
 
-		gn->set_title(TTR("ScalarOp"));
+		gn->set_title("ScalarOp");
 		static const char* op_name[ShaderGraph::SCALAR_MAX_OP]={
 			("Add"),
 			("Sub"),
@@ -1567,7 +1567,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // scalar vs scalar op (mul: { } break; add: { } break; div: { } break; etc)
 	case ShaderGraph::NODE_VEC_OP: {
 
-		gn->set_title(TTR("VecOp"));
+		gn->set_title("VecOp");
 		static const char* op_name[ShaderGraph::VEC_MAX_OP]={
 			("Add"),
 			("Sub"),
@@ -1615,7 +1615,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // vec3 vs vec3 op (mul: { } break;ad: { } break;div: { } break;crossprod: { } break;etc)
 	case ShaderGraph::NODE_VEC_SCALAR_OP: {
 
-		gn->set_title(TTR("VecScalarOp"));
+		gn->set_title("VecScalarOp");
 		static const char* op_name[ShaderGraph::VEC_SCALAR_MAX_OP]={
 			("Mul"),
 			("Div"),
@@ -1657,7 +1657,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // vec3 vs scalar op (mul: { } break; add: { } break; div: { } break; etc)
 	case ShaderGraph::NODE_RGB_OP: {
 
-		gn->set_title(TTR("RGB Op"));
+		gn->set_title("RGB Op");
 		static const char* op_name[ShaderGraph::RGB_MAX_OP]={
 			("Screen"),
 			("Difference"),
@@ -1702,7 +1702,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // vec3 vs vec3 rgb op (with scalar amount): { } break; like brighten: { } break; darken: { } break; burn: { } break; dodge: { } break; multiply: { } break; etc.
 	case ShaderGraph::NODE_XFORM_MULT: {
 
-		gn->set_title(TTR("XFMult"));
+		gn->set_title("XFMult");
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		if (graph->is_slot_connected(type, p_id, 0)) {
 			hbc->add_child(make_label("a",Variant::TRANSFORM));
@@ -1725,9 +1725,9 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // mat4 x mat4
 	case ShaderGraph::NODE_XFORM_VEC_MULT: {
 
-		gn->set_title(TTR("XFVecMult"));
+		gn->set_title("XFVecMult");
 
-		CheckBox *button = memnew (CheckBox(TTR("RotOnly")));
+		CheckBox *button = memnew (CheckBox("RotOnly"));
 		button->set_pressed(graph->xform_vec_mult_node_get_no_translation(type,p_id));
 		button->connect("toggled",this,"_xform_inv_rev_changed",varray(p_id));
 
@@ -1758,10 +1758,10 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break;
 	case ShaderGraph::NODE_XFORM_VEC_INV_MULT: {
 
-		gn->set_title(TTR("XFVecInvMult"));
+		gn->set_title("XFVecInvMult");
 
 
-		CheckBox *button = memnew( CheckBox(TTR("RotOnly")));
+		CheckBox *button = memnew( CheckBox("RotOnly"));
 		button->set_pressed(graph->xform_vec_mult_node_get_no_translation(type,p_id));
 		button->connect("toggled",this,"_xform_inv_rev_changed",varray(p_id));
 
@@ -1793,7 +1793,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // mat4 x vec3 inverse mult (with no-translation option)
 	case ShaderGraph::NODE_SCALAR_FUNC: {
 
-		gn->set_title(TTR("ScalarFunc"));
+		gn->set_title("ScalarFunc");
 		static const char* func_name[ShaderGraph::SCALAR_MAX_FUNC]={
 			("Sin"),
 			("Cos"),
@@ -1846,7 +1846,7 @@ void ShaderGraphView::_create_node(int p_id) {
 
 
 
-		gn->set_title(TTR("VecFunc"));
+		gn->set_title("VecFunc");
 		static const char* func_name[ShaderGraph::VEC_MAX_FUNC]={
 			("Normalize"),
 			("Saturate"),
@@ -1882,7 +1882,7 @@ void ShaderGraphView::_create_node(int p_id) {
 
 	} break; // vector function (normalize: { } break; negate: { } break; reciprocal: { } break; rgb2hsv: { } break; hsv2rgb: { } break; etc: { } break; etc)
 	case ShaderGraph::NODE_VEC_LEN: {
-		gn->set_title(TTR("VecLength"));
+		gn->set_title("VecLength");
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		if (graph->is_slot_connected(type, p_id, 0)) {
 			hbc->add_child(make_label("in", Variant::VECTOR3));
@@ -1899,7 +1899,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // vec3 length
 	case ShaderGraph::NODE_DOT_PROD: {
 
-		gn->set_title(TTR("DotProduct"));
+		gn->set_title("DotProduct");
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		hbc->add_constant_override("separation",0);
 		if (graph->is_slot_connected(type, p_id, 0)) {
@@ -1924,7 +1924,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // vec3 . vec3 (dot product -> scalar output)
 	case ShaderGraph::NODE_VEC_TO_SCALAR: {
 
-		gn->set_title(TTR("Vec2Scalar"));
+		gn->set_title("Vec2Scalar");
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		hbc->add_constant_override("separation",0);
 		if (graph->is_slot_connected(type, p_id, 0)) {
@@ -1955,7 +1955,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // 1 vec3 input: { } break; 3 scalar outputs
 	case ShaderGraph::NODE_SCALAR_TO_VEC: {
 
-		gn->set_title(TTR("Scalar2Vec"));
+		gn->set_title("Scalar2Vec");
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		if (graph->is_slot_connected(type, p_id, 0)) {
 			hbc->add_child(make_label("x", Variant::REAL));
@@ -1986,7 +1986,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // 3 scalar input: { } break; 1 vec3 output
 	case ShaderGraph::NODE_VEC_TO_XFORM: {
 
-		gn->set_title(TTR("Vec2XForm"));
+		gn->set_title("Vec2XForm");
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		hbc->add_constant_override("separation",0);
 		if (graph->is_slot_connected(type, p_id, 0)) {
@@ -2025,7 +2025,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // 3 vec input: { } break; 1 xform output
 	case ShaderGraph::NODE_XFORM_TO_VEC: {
 
-		gn->set_title(TTR("XForm2Vec"));
+		gn->set_title("XForm2Vec");
 
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		hbc->add_constant_override("separation",0);
@@ -2057,7 +2057,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // 3 vec input: { } break; 1 xform output
 	case ShaderGraph::NODE_SCALAR_INTERP: {
 
-		gn->set_title(TTR("ScalarInterp"));
+		gn->set_title("ScalarInterp");
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		hbc->add_constant_override("separation",0);
 		if (graph->is_slot_connected(type, p_id, 0)) {
@@ -2090,7 +2090,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // scalar interpolation (with optional curve)
 	case ShaderGraph::NODE_VEC_INTERP: {
 
-		gn->set_title(TTR("VecInterp"));
+		gn->set_title("VecInterp");
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		if (graph->is_slot_connected(type, p_id, 0)) {
 			hbc->add_child(make_label("a", Variant::VECTOR3));
@@ -2174,7 +2174,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // scalar interpolation (with optional curve)
 	case ShaderGraph::NODE_CURVE_MAP: {
 
-		gn->set_title(TTR("CurveMap"));
+		gn->set_title("CurveMap");
 		GraphCurveMapEdit * map  = memnew( GraphCurveMapEdit );
 
 		DVector<Vector2> points = graph->curve_map_node_get_points(type,p_id);
@@ -2221,7 +2221,7 @@ void ShaderGraphView::_create_node(int p_id) {
 
 	case ShaderGraph::NODE_SCALAR_INPUT: {
 
-		gn->set_title(TTR("ScalarUniform"));
+		gn->set_title("ScalarUniform");
 		LineEdit *le = memnew( LineEdit );
 		gn->add_child(le);
 		le->set_text(graph->input_node_get_name(type,p_id));
@@ -2238,7 +2238,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // scalar uniform (assignable in material)
 	case ShaderGraph::NODE_VEC_INPUT: {
 
-		gn->set_title(TTR("VectorUniform"));
+		gn->set_title("VectorUniform");
 		LineEdit *le = memnew( LineEdit );
 		gn->add_child(le);
 		le->set_text(graph->input_node_get_name(type,p_id));
@@ -2265,7 +2265,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // vec3 uniform (assignable in material)
 	case ShaderGraph::NODE_RGB_INPUT: {
 
-		gn->set_title(TTR("ColorUniform"));
+		gn->set_title("ColorUniform");
 		LineEdit *le = memnew( LineEdit );
 		gn->add_child(le);
 		le->set_text(graph->input_node_get_name(type,p_id));
@@ -2275,11 +2275,11 @@ void ShaderGraphView::_create_node(int p_id) {
 		cpb->connect("color_changed",this,"_rgb_input_changed",varray(p_id));
 		gn->add_child(cpb);
 		Label *l = memnew( Label );
-		l->set_text(TTR("RGB"));
+		l->set_text("RGB");
 		l->set_align(Label::ALIGN_RIGHT);
 		gn->add_child(l);
 		l = memnew( Label );
-		l->set_text(TTR("Alpha"));
+		l->set_text("Alpha");
 		l->set_align(Label::ALIGN_RIGHT);
 		gn->add_child(l);
 
@@ -2289,7 +2289,7 @@ void ShaderGraphView::_create_node(int p_id) {
 
 	} break; // color uniform (assignable in material)
 	case ShaderGraph::NODE_XFORM_INPUT: {
-		gn->set_title(TTR("XFUniform"));
+		gn->set_title("XFUniform");
 		LineEdit *le = memnew( LineEdit );
 		gn->add_child(le);
 		le->set_text(graph->input_node_get_name(type,p_id));
@@ -2303,7 +2303,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // mat4 uniform (assignable in material)
 	case ShaderGraph::NODE_TEXTURE_INPUT: {
 
-		gn->set_title(TTR("TexUniform"));
+		gn->set_title("TexUniform");
 		LineEdit *le = memnew( LineEdit );
 		gn->add_child(le);
 		le->set_text(graph->input_node_get_name(type,p_id));
@@ -2323,18 +2323,18 @@ void ShaderGraphView::_create_node(int p_id) {
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		hbc->add_constant_override("separation",0);
 		if (graph->is_slot_connected(type, p_id, 0)) {
-			hbc->add_child(make_label(TTR("UV"), Variant::VECTOR3));
+			hbc->add_child(make_label("UV", Variant::VECTOR3));
 		} else {
 			Vector3 v = graph->default_get_value(type,p_id,0);
-			hbc->add_child(make_editor(String(TTR("UV: "))+v,gn,p_id,0,Variant::VECTOR3));
+			hbc->add_child(make_editor(String("UV: ")+v,gn,p_id,0,Variant::VECTOR3));
 		}
 		hbc->add_spacer();
-		Label *l=memnew(Label(TTR("RGB")));
+		Label *l=memnew(Label("RGB"));
 		l->set_align(Label::ALIGN_RIGHT);
 		hbc->add_child(l);
 		gn->add_child(hbc);
 		l = memnew( Label );
-		l->set_text(TTR("Alpha"));
+		l->set_text("Alpha");
 		l->set_align(Label::ALIGN_RIGHT);
 		gn->add_child(l);
 
@@ -2344,7 +2344,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // texture input (assignable in material)
 	case ShaderGraph::NODE_CUBEMAP_INPUT: {
 
-		gn->set_title(TTR("TexUniform"));
+		gn->set_title("TexUniform");
 		LineEdit *le = memnew( LineEdit );
 		gn->add_child(le);
 		le->set_text(graph->input_node_get_name(type,p_id));
@@ -2359,18 +2359,18 @@ void ShaderGraphView::_create_node(int p_id) {
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		hbc->add_constant_override("separation",0);
 		if (graph->is_slot_connected(type, p_id, 0)) {
-			hbc->add_child(make_label(TTR("UV"), Variant::VECTOR3));
+			hbc->add_child(make_label("UV", Variant::VECTOR3));
 		} else {
 			Vector3 v = graph->default_get_value(type,p_id,0);
-			hbc->add_child(make_editor(String(TTR("UV: "))+v,gn,p_id,0,Variant::VECTOR3));
+			hbc->add_child(make_editor(String("UV: ")+v,gn,p_id,0,Variant::VECTOR3));
 		}
 		hbc->add_spacer();
-		Label *l=memnew(Label(TTR("RGB")));
+		Label *l=memnew(Label("RGB"));
 		l->set_align(Label::ALIGN_RIGHT);
 		hbc->add_child(l);
 		gn->add_child(hbc);
 		l = memnew( Label );
-		l->set_text(TTR("Alpha"));
+		l->set_text("Alpha");
 		l->set_align(Label::ALIGN_RIGHT);
 		gn->add_child(l);
 
@@ -2380,22 +2380,22 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // cubemap input (assignable in material)
 	case ShaderGraph::NODE_DEFAULT_TEXTURE: {
 
-		gn->set_title(TTR("CanvasItemTex"));
+		gn->set_title("CanvasItemTex");
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		hbc->add_constant_override("separation",0);
 		if (graph->is_slot_connected(type, p_id, 0)) {
-			hbc->add_child(make_label(TTR("UV"), Variant::VECTOR3));
+			hbc->add_child(make_label("UV", Variant::VECTOR3));
 		} else {
 			Vector3 v = graph->default_get_value(type,p_id,0);
-			hbc->add_child(make_editor(String(TTR("UV: "))+v,gn,p_id,0,Variant::VECTOR3));
+			hbc->add_child(make_editor(String("UV: ")+v,gn,p_id,0,Variant::VECTOR3));
 		}
 		hbc->add_spacer();
-		Label *l=memnew(Label(TTR("RGB")));
+		Label *l=memnew(Label("RGB"));
 		l->set_align(Label::ALIGN_RIGHT);
 		hbc->add_child(l);
 		gn->add_child(hbc);
 		l = memnew( Label );
-		l->set_text(TTR("Alpha"));
+		l->set_text("Alpha");
 		l->set_align(Label::ALIGN_RIGHT);
 		gn->add_child(l);
 
@@ -2406,7 +2406,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	} break; // screen texture sampler (takes UV) (only usable in fragment case Shader)
 
 	case ShaderGraph::NODE_OUTPUT: {
-		gn->set_title(TTR("Output"));
+		gn->set_title("Output");
 		gn->set_show_close_button(false);
 
 		List<ShaderGraph::SlotInfo> si;
@@ -2414,22 +2414,22 @@ void ShaderGraphView::_create_node(int p_id) {
 
 		Array colors;
 		colors.push_back("Color");
-		colors.push_back(TTR("LightColor"));
+		colors.push_back("LightColor");
 		colors.push_back("Light");
-		colors.push_back(TTR("Diffuse"));
-		colors.push_back(TTR("Specular"));
-		colors.push_back(TTR("Emmision"));
+		colors.push_back("Diffuse");
+		colors.push_back("Specular");
+		colors.push_back("Emmision");
 		Array reals;
-		reals.push_back(TTR("Alpha"));
-		reals.push_back(TTR("DiffuseAlpha"));
-		reals.push_back(TTR("NormalMapDepth"));
-		reals.push_back(TTR("SpecExp"));
-		reals.push_back(TTR("Glow"));
-		reals.push_back(TTR("ShadeParam"));
-		reals.push_back(TTR("SpecularExp"));
-		reals.push_back(TTR("LightAlpha"));
-		reals.push_back(TTR("PointSize"));
-		reals.push_back(TTR("Discard"));
+		reals.push_back("Alpha");
+		reals.push_back("DiffuseAlpha");
+		reals.push_back("NormalMapDepth");
+		reals.push_back("SpecExp");
+		reals.push_back("Glow");
+		reals.push_back("ShadeParam");
+		reals.push_back("SpecularExp");
+		reals.push_back("LightAlpha");
+		reals.push_back("PointSize");
+		reals.push_back("Discard");
 
 		int idx=0;
 		for (List<ShaderGraph::SlotInfo>::Element *E=si.front();E;E=E->next()) {
@@ -2450,7 +2450,7 @@ void ShaderGraphView::_create_node(int p_id) {
 
 	} break; // output (case Shader type dependent)
 	case ShaderGraph::NODE_COMMENT: {
-		gn->set_title(TTR("Comment"));
+		gn->set_title("Comment");
 		TextEdit *te = memnew(TextEdit);
 		te->set_custom_minimum_size(Size2(100,100));
 		gn->add_child(te);

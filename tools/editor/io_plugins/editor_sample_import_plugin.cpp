@@ -262,7 +262,7 @@ public:
 		}
 
 		if (!save_path->get_text().begins_with("res://")) {
-			error_dialog->set_text(TTR("Target path must be full resource path."));
+			error_dialog->set_text(TTR("Target path must be a complete resource path."));
 			error_dialog->popup_centered_minsize();
 			return;
 		}
@@ -406,7 +406,7 @@ String EditorSampleImportPlugin::get_name() const {
 }
 String EditorSampleImportPlugin::get_visible_name() const{
 
-	return TTR("Audio Sample");
+	return "Audio Sample";
 }
 void EditorSampleImportPlugin::import_dialog(const String& p_from){
 

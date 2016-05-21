@@ -199,7 +199,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 	if (!file) {
 
 
-		ERR_EXPLAIN(TTR("Can't save theme to file: ")+filename);
+		ERR_EXPLAIN(TTR("Can't save theme to file:")+" "+filename);
 		return;
 	}
 	file->store_line("; ******************* ");
@@ -599,7 +599,7 @@ ThemeEditor::ThemeEditor() {
 	theme_menu->get_popup()->add_item(TTR("Add Item"),POPUP_ADD);
 	theme_menu->get_popup()->add_item(TTR("Add Class Items"),POPUP_CLASS_ADD);
 	theme_menu->get_popup()->add_item(TTR("Remove Item"),POPUP_REMOVE);
-	theme_menu->get_popup()->add_item("Remove Class Items",POPUP_CLASS_REMOVE);
+	theme_menu->get_popup()->add_item(TTR("Remove Class Items"),POPUP_CLASS_REMOVE);
 	theme_menu->get_popup()->add_separator();
 	theme_menu->get_popup()->add_item(TTR("Create Template"),POPUP_CREATE_TEMPLATE);
 	hb_menu->add_child(theme_menu);
@@ -757,7 +757,7 @@ ThemeEditor::ThemeEditor() {
 	line_edit = memnew( LineEdit );
 	line_edit->set_pos( Point2( 25, 275 ) );
 	line_edit->set_size( Point2( 150, 5 ) );
-	line_edit->set_text(TTR("Line Edit"));
+	line_edit->set_text("Line Edit");
 	panel->add_child(line_edit);
 
 	test_v_scroll = memnew( VScrollBar );
@@ -786,12 +786,12 @@ ThemeEditor::ThemeEditor() {
 	item = test_tree->create_item( test_tree->get_root() );
 	item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
 	item->set_editable(0,true);
-	item->set_text(0,TTR("Have,Many,Several,Options!"));
+	item->set_text(0,"Have,Many,Several,Options!"));
 	item->set_range(0,2);
 
 	Button *fd_button= memnew( Button );
 	fd_button->set_pos(Point2(300,275));
-	fd_button->set_text(TTR("Open File Dialog"));
+	fd_button->set_text("Open File Dialog");
 	panel->add_child(fd_button);
 
 	test_file_dialog = memnew( EditorFileDialog );
@@ -852,8 +852,8 @@ ThemeEditor::ThemeEditor() {
 	type_select = memnew( OptionButton );
 	type_select->add_item(TTR("Icon"));
 	type_select->add_item(TTR("Style"));
-	type_select->add_item("Font");
-	type_select->add_item("Color");
+	type_select->add_item(TTR("Font"));
+	type_select->add_item(TTR("Color"));
 	type_select->add_item(TTR("Constant"));
 	type_select->set_pos( Point2( 400,25 ) );
 	type_select->set_size( Point2( 80,5 ) );

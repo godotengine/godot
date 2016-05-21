@@ -1318,13 +1318,13 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	PopupMenu *p = options->get_popup();
 
-	p->add_item("Bucket", OPTION_BUCKET);
+	p->add_item(TTR("Bucket"), OPTION_BUCKET);
 	p->add_separator();
-	p->add_item("Pick Tile", OPTION_PICK_TILE, KEY_CONTROL);
+	p->add_item(TTR("Pick Tile"), OPTION_PICK_TILE, KEY_CONTROL);
 	p->add_separator();
-	p->add_item("Select", OPTION_SELECT, KEY_MASK_CMD+KEY_B);
+	p->add_item(TTR("Select"), OPTION_SELECT, KEY_MASK_CMD+KEY_B);
 	p->add_item(TTR("Duplicate Selection"), OPTION_DUPLICATE, KEY_MASK_CMD+KEY_D);
-	p->add_item("Erase Selection", OPTION_ERASE_SELECTION, KEY_DELETE);
+	p->add_item(TTR("Erase Selection"), OPTION_ERASE_SELECTION, KEY_DELETE);
 
 	p->connect("item_pressed", this, "_menu_option");
 

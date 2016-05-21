@@ -677,7 +677,7 @@ void EditorFileDialog::update_filters() {
 		if (max_filters<filters.size())
 			all_filters+=", ...";
 
-		filter->add_item(TTR("All Recognized ( ")+all_filters+" )");
+		filter->add_item(TTR("All Recognized")+" ( "+all_filters+" )");
 	}
 	for(int i=0;i<filters.size();i++) {
 

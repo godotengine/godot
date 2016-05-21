@@ -505,7 +505,7 @@ void ProjectExportDialog::_export_action_pck(const String& p_file) {
 	if (p_file.ends_with(".pck")) {
 		FileAccess *f = FileAccess::open(p_file,FileAccess::WRITE);
 		if (!f) {
-			error->set_text(TTR("Error exporting project PCK! Can't write"));
+			error->set_text(TTR("Error writing the project PCK!"));
 			error->popup_centered_minsize();
 		}
 		ERR_FAIL_COND(!f);
@@ -586,7 +586,7 @@ void ProjectExportDialog::custom_action(const String&) {
 	Ref<EditorExportPlatform> exporter = EditorImportExport::get_singleton()->get_export_platform(platform);
 
 	if (exporter.is_null()) {
-		error->set_text(TTR("No exporter for platform '")+platform+"' yet.");
+		error->set_text(vformat(TTR("No exporter for platform '%s' yet."),platform));
 		error->popup_centered_minsize();
 		return;
 	}
@@ -858,17 +858,17 @@ void ProjectExportDialog::_group_add() {
 
 	if (name=="") {
 		group_new_name_error->show();
-		group_new_name_error->set_text(TTR("Group Name Can't be Empty!"));
+		group_new_name_error->set_text(TTR("Group name can't be empty!"));
 		return;
 	}
 	if (name.find("/")!=-1 || name.find(":")!=-1 || name.find(",")!=-1 || name.find("-")!=-1) {
-		group_new_name_error->set_text(TTR("Invalid Character in Group Name!"));
+		group_new_name_error->set_text(TTR("Invalid character in group name!"));
 		group_new_name_error->show();
 		return;
 	}
 
 	if (EditorImportExport::get_singleton()->image_export_has_group(name)) {
-		group_new_name_error->set_text(TTR("Group Name Already Exists!"));
+		group_new_name_error->set_text(TTR("Group name already exists!"));
 		group_new_name_error->show();
 		return;
 	}
@@ -1061,13 +1061,13 @@ void ProjectExportDialog::_group_atlas_preview() {
 	Error err = plugin->import2(dst_file,imd,EditorExportPlatform::IMAGE_COMPRESSION_NONE,true);
 	if (err) {
 
-		EditorNode::add_io_error(TTR("Error saving atlas! ")+dst_file.get_file());
+		EditorNode::add_io_error(TTR("Error saving atlas:")+" "+dst_file.get_file());
 		return;
 	}
 
 	Ref<Texture> tex = ResourceLoader::load(dst_file);
 	atlas_preview_frame->set_texture(tex); //clear previous
-	atlas_preview_dialog->set_title(TTR("Atlas Preview (")+itos(tex->get_width())+"x"+itos(tex->get_height())+")");
+	atlas_preview_dialog->set_title(TTR("Atlas Preview")+" ("+itos(tex->get_width())+"x"+itos(tex->get_height())+")");
 	atlas_preview_dialog->popup_centered_ratio(0.9);
 
 }
@@ -1211,14 +1211,14 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	tree->set_column_min_width(1,90);
 
 	filters = memnew( LineEdit );
-	vb->add_margin_child(TTR("Filters to export non-resource files (Comma Separated, eg: *.json, *.txt):"),filters);
+	vb->add_margin_child(TTR("Filters to export non-resource files (comma-separated, e.g.: *.json, *.txt):"),filters);
 	filters->connect("text_changed",this,"_filters_edited");
 	filters_exclude = memnew( LineEdit );
-	vb->add_margin_child(TTR("Filters to exclude from export (Comma Separated, eg: *.json, *.txt):"),filters_exclude);
+	vb->add_margin_child(TTR("Filters to exclude from export (comma-separated, e.g.: *.json, *.txt):"),filters_exclude);
 	filters_exclude->connect("text_changed",this,"_filters_exclude_edited");
 
 	convert_text_scenes = memnew( CheckButton );
-	convert_text_scenes->set_text(TTR("Convert text scenes to binary on export"));
+	convert_text_scenes->set_text(TTR("Convert text scenes to binary on export."));
 	vb->add_child(convert_text_scenes);
 	convert_text_scenes->connect("toggled",this,"_export_mode_changed");
 
@@ -1260,7 +1260,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 		fmt->set_editable(0,true);
 		formats.push_back(fmt);
 	}
-	image_vb->add_margin_child(TTR("Compress Formats: "),image_formats,true);
+	image_vb->add_margin_child(TTR("Compress Formats:")+" ",image_formats,true);
 
 	/// groups
 	HBoxContainer *group_hb = memnew( HBoxContainer );
@@ -1421,7 +1421,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	sample_max_hz = memnew( SpinBox );
 	sample_max_hz->set_max(192000);
 	sample_max_hz->set_min(8000);
-	sample_vbox->add_margin_child(TTR("Sampling Rate Limit: (hz)"),sample_max_hz);
+	sample_vbox->add_margin_child(TTR("Sampling Rate Limit (Hz):"),sample_max_hz);
 	sample_trim = memnew( CheckButton );
 	sample_trim->set_text(TTR("Trim"));
 	sample_vbox->add_margin_child(TTR("Trailing Silence:"),sample_trim);
@@ -1529,7 +1529,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 	String preset_path=Globals::get_singleton()->get("export_presets_path/"+selected);
 	if (preset_path=="") {
 
-		error->set_text(TTR("Export path empty, see export options"));
+		error->set_text("Export path empty, see export options");
 		error->popup_centered_minsize(Size2(300,100));
 		ERR_FAIL_V(ERR_INVALID_DATA);
 	}
@@ -1551,9 +1551,9 @@ Error ProjectExport::export_project(const String& p_preset) {
 	}
 	if (pc%3 != 0 ) {
 		memdelete(d);
-		error->set_text(TTR("Corrupted export data.."));
+		error->set_text("Corrupted export data..");
 		error->popup_centered_minsize(Size2(300,100));
-		ERR_EXPLAIN(TTR("Corrupted export data..."));
+		ERR_EXPLAIN("Corrupted export data...");
 		ERR_FAIL_V(ERR_INVALID_DATA);
 	}
 
@@ -1706,7 +1706,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 				if (err!=OK) {
 					memdelete(da);
 					memdelete(d);
-					ERR_EXPLAIN(TTR("Cannot make dir: ")+cwd+"/"+p);
+					ERR_EXPLAIN("Cannot make dir: "+cwd+"/"+p);
 					ERR_FAIL_V(ERR_CANT_CREATE);
 				}
 
@@ -1714,7 +1714,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 					memdelete(da);
 					memdelete(d);
-					ERR_EXPLAIN(TTR("Cannot change to dir: ")+cwd+"/"+p);
+					ERR_EXPLAIN("Cannot change to dir: "+cwd+"/"+p);
 					ERR_FAIL_V(ERR_CANT_CREATE);
 				}
 
@@ -1742,7 +1742,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 			if (!Globals::get_singleton()->has("optimizer_presets/"+preset)) {
 				memdelete(d);
-				ERR_EXPLAIN(TTR("Unknown optimizer preset: ")+preset);
+				ERR_EXPLAIN("Unknown optimizer preset: "+preset);
 				ERR_FAIL_V(ERR_INVALID_DATA);
 			}
 
@@ -1763,7 +1763,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 			if (saver.is_null()) {
 				memdelete(d);
-				ERR_EXPLAIN(TTR("Preset '")+preset+"' references nonexistent saver: "+type);
+				ERR_EXPLAIN("Preset '"+preset+"' references nonexistent saver: "+type);
 				ERR_FAIL_COND_V(saver.is_null(),ERR_INVALID_DATA);
 			}
 
@@ -1807,7 +1807,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 				if (res.is_null()) {
 
 					memdelete(d);
-					ERR_EXPLAIN(TTR("Errr loading resource to optimize: ")+path);
+					ERR_EXPLAIN("Error loading resource to optimize: "+path);
 					ERR_FAIL_V(ERR_INVALID_DATA);
 				}
 
@@ -1830,7 +1830,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 				Error err = ResourceSaver::save(write_file,res,flags,saver);
 				if (err) {
 					memdelete(d);
-					ERR_EXPLAIN(TTR("Errr saving optimized resource: ")+write_file);
+					ERR_EXPLAIN("Error saving optimized resource: "+write_file);
 					ERR_FAIL_COND_V(err,ERR_CANT_OPEN);
 				}
 				source_file=write_file;
@@ -1853,7 +1853,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 		if (err) {
 
 
-			ERR_EXPLAIN(TTR("Error copying from: ")+source_file+" to "+dst_file+".");
+			ERR_EXPLAIN("Error copying from: "+source_file+" to "+dst_file+".");
 			ERR_FAIL_COND_V(err,err);
 		}
 

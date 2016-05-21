@@ -198,7 +198,7 @@ EditorSubScene::EditorSubScene() {
 
 	scene=NULL;
 
-	set_title(TTR("Select Sub-Scene.."));
+	set_title(TTR("Select Node(s) to Import"));
 	set_hide_on_ok(false);
 
 	VBoxContainer *vb = memnew( VBoxContainer );

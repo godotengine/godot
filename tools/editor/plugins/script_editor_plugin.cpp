@@ -2460,7 +2460,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 #else
 	edit_menu->get_popup()->add_item(TTR("Complete Symbol"),EDIT_COMPLETE,KEY_MASK_CMD|KEY_SPACE);
 #endif
-	edit_menu->get_popup()->add_item("Trim Trailing Whitespace", EDIT_TRIM_TRAILING_WHITESAPCE, KEY_MASK_CTRL|KEY_MASK_ALT|KEY_T);
+	edit_menu->get_popup()->add_item(TTR("Trim Trailing Whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE, KEY_MASK_CTRL|KEY_MASK_ALT|KEY_T);
 	edit_menu->get_popup()->add_item(TTR("Auto Indent"),EDIT_AUTO_INDENT,KEY_MASK_CMD|KEY_I);
 	edit_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
@@ -2496,7 +2496,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	debug_menu->get_popup()->add_item(TTR("Break"),DEBUG_BREAK);
 	debug_menu->get_popup()->add_item(TTR("Continue"),DEBUG_CONTINUE);
 	debug_menu->get_popup()->add_separator();
-	//debug_menu->get_popup()->add_check_item(TTR("Show Debugger"),DEBUG_SHOW);
+	//debug_menu->get_popup()->add_check_item("Show Debugger",DEBUG_SHOW);
 	debug_menu->get_popup()->add_check_item(TTR("Keep Debugger Open"),DEBUG_SHOW_KEEP_OPEN);
 	debug_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
@@ -2542,7 +2542,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	site_search->set_text(TTR("Tutorials"));
 	site_search->connect("pressed",this,"_menu_option",varray(SEARCH_WEBSITE));
 	menu_hb->add_child(site_search);
-	site_search->set_tooltip(TTR("Open http://www.godotengine.org at tutorials section."));
+	site_search->set_tooltip(TTR("Open https://godotengine.org at tutorials section."));
 
 	class_search = memnew( ToolButton );
 	class_search->set_text(TTR("Classes"));
@@ -2600,7 +2600,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 		disk_changed->set_child_rect(vbc);
 
 		Label *dl = memnew( Label );
-		dl->set_text("The following files are newer on disk.\nWhat action should be taken?:");
+		dl->set_text(TTR("The following files are newer on disk.\nWhat action should be taken?:"));
 		vbc->add_child(dl);
 
 		disk_changed_list = memnew( Tree );

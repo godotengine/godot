@@ -314,7 +314,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 
 
-	EditorProgressBG scan_progress("efs",TTR("ScanFS"),1000);
+	EditorProgressBG scan_progress("efs","ScanFS",1000);
 
 	ScanProgress sp;
 	sp.low=0;
@@ -609,7 +609,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir,DirAccess 
 
 			da->change_dir("..");
 		} else {
-			ERR_PRINTS(TTR("Can't go into subdir: ")+E->get());
+			ERR_PRINTS(TTR("Cannot go into subdir:")+" "+E->get());
 		}
 
 		p_progress.update(idx,total);

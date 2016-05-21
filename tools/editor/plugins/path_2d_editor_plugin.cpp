@@ -622,8 +622,8 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	options = memnew( MenuButton );
 	add_child(options);
 	options->set_area_as_parent_rect();
-	options->set_text(TTR("Polygon"));
-	//options->get_popup()->add_item(TTR("Parse BBCODE"),PARSE_BBCODE);
+	options->set_text("Polygon");
+	//options->get_popup()->add_item("Parse BBCode",PARSE_BBCODE);
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 #endif
 
@@ -636,7 +636,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	curve_edit->set_icon(CanvasItemEditor::get_singleton()->get_icon("CurveEdit","EditorIcons"));
 	curve_edit->set_toggle_mode(true);
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
-	curve_edit->set_tooltip("Select Points\nShift+Drag: Select Control Points\n"+keycode_get_string(KEY_MASK_CMD)+"Click: Add Point\nRight Click: Delete Point.");
+	curve_edit->set_tooltip(TTR("Select Points")+"\n"+TTR("Shift+Drag: Select Control Points")+"\n"+keycode_get_string(KEY_MASK_CMD)+TTR("Click: Add Point")+"\n"+TTR("Right Click: Delete Point"));
 	curve_edit->connect("pressed",this,"_mode_selected",varray(MODE_EDIT));
 	base_hb->add_child(curve_edit);
 	curve_edit_curve = memnew( ToolButton );
@@ -650,14 +650,14 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	curve_create->set_icon(CanvasItemEditor::get_singleton()->get_icon("CurveCreate","EditorIcons"));
 	curve_create->set_toggle_mode(true);
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
-	curve_create->set_tooltip("Add Point (in empty space)\nSplit Segment (in curve).");
+	curve_create->set_tooltip(TTR("Add Point (in empty space)")+"\n"+TTR("Split Segment (in curve)"));
 	curve_create->connect("pressed",this,"_mode_selected",varray(MODE_CREATE));
 	base_hb->add_child(curve_create);
 	curve_del = memnew( ToolButton );
 	curve_del->set_icon(CanvasItemEditor::get_singleton()->get_icon("CurveDelete","EditorIcons"));
 	curve_del->set_toggle_mode(true);
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
-	curve_del->set_tooltip(TTR("Delete Point."));
+	curve_del->set_tooltip(TTR("Delete Point"));
 	curve_del->connect("pressed",this,"_mode_selected",varray(MODE_DELETE));
 	base_hb->add_child(curve_del);
 	curve_close = memnew( ToolButton );

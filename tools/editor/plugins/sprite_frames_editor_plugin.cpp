@@ -78,7 +78,7 @@ void SpriteFramesEditor::_file_load_request(const DVector<String>& p_path,int p_
 		if (resource.is_null()) {
 			dialog->set_text(TTR("ERROR: Couldn't load frame resource!"));
 			dialog->set_title(TTR("Error!"));
-			//dialog->get_cancel()->set_text(TTR("Close"));
+			//dialog->get_cancel()->set_text("Close");
 			dialog->get_ok()->set_text(TTR("Close"));
 			dialog->popup_centered_minsize();
 			return; ///beh should show an error i guess
@@ -152,7 +152,7 @@ void SpriteFramesEditor::_item_edited() {
 		}
 
 		RES samp = frames->get_resource(old_name);
-		undo_redo->create_action(TTR("Rename Resource"));
+		undo_redo->create_action("Rename Resource");
 		undo_redo->add_do_method(frames,"remove_resource",old_name);
 		undo_redo->add_do_method(frames,"add_resource",new_name,samp);
 		undo_redo->add_undo_method(frames,"remove_resource",new_name);
@@ -198,7 +198,7 @@ void SpriteFramesEditor::_paste_pressed() {
 	if (!r.is_valid()) {
 		dialog->set_text(TTR("Resource clipboard is empty or not a texture!"));
 		dialog->set_title(TTR("Error!"));
-		//dialog->get_cancel()->set_text(TTR("Close"));
+		//dialog->get_cancel()->set_text("Close");
 		dialog->get_ok()->set_text(TTR("Close"));
 		dialog->popup_centered_minsize();
 		return; ///beh should show an error i guess
@@ -333,11 +333,11 @@ void SpriteFramesEditor::_delete_pressed() {
 
 	_delete_confirm_pressed(); //it has undo.. why bother with a dialog..
 	/*
-	dialog->set_title(TTR("Confirm..."));
-	dialog->set_text(TTR("Remove Resource '")+tree->get_selected()->get_text(0)+"' ?");
-	//dialog->get_cancel()->set_text(TTR("Cancel"));
+	dialog->set_title("Confirm...");
+	dialog->set_text("Remove Resource '"+tree->get_selected()->get_text(0)+"' ?");
+	//dialog->get_cancel()->set_text("Cancel");
 	//dialog->get_ok()->show();
-	dialog->get_ok()->set_text(TTR("Remove"));
+	dialog->get_ok()->set_text("Remove");
 	dialog->popup_centered(Size2(300,60));*/
 
 }
@@ -530,7 +530,7 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 
 		if (frames->get_frame(edited_anim,i).is_null()) {
 
-			name=itos(i)+TTR(": (empty)");
+			name=itos(i)+": "+TTR("(empty)");
 
 		} else {
 			name=itos(i)+": "+frames->get_frame(edited_anim,i)->get_name();

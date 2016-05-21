@@ -686,7 +686,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	}
 
 	if (!save_path->get_text().begins_with("res://")) {
-		error_dialog->set_text(TTR("Target path must be full resource path."));
+		error_dialog->set_text(TTR("Target path must be a complete resource path."));
 		error_dialog->popup_centered_minsize();
 		return;
 	}
@@ -721,7 +721,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	if (script_path->get_text()!="") {
 		Ref<Script> scr = ResourceLoader::load(script_path->get_text());
 		if (!scr.is_valid()) {
-			error_dialog->set_text(TTR("Couldn't load Post-Import Script."));
+			error_dialog->set_text(TTR("Couldn't load post-import script."));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
@@ -730,7 +730,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 		pi->set_script(scr.get_ref_ptr());
 		if (!pi->get_script_instance()) {
 
-			error_dialog->set_text(TTR("Invalid/Broken Script for Post-Import."));
+			error_dialog->set_text(TTR("Invalid/broken script for post-import."));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
@@ -816,7 +816,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 
 	if (err) {
 
-		error_dialog->set_text(TTR("Error importing scene."));
+		error_dialog->set_text("Error importing scene.");
 		error_dialog->popup_centered(Size2(200,100));
 		return;
 	}
@@ -1164,14 +1164,14 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 
 	this_import = memnew( OptionButton );
 	this_import->add_item(TTR("Overwrite Existing Scene"));
-	this_import->add_item("Overwrite Existing, Keep Materials");
+	this_import->add_item(TTR("Overwrite Existing, Keep Materials"));
 	this_import->add_item(TTR("Keep Existing, Merge with New"));
 	this_import->add_item(TTR("Keep Existing, Ignore New"));
 	vbc->add_margin_child(TTR("This Time:"),this_import);
 
 	next_import = memnew( OptionButton );
 	next_import->add_item(TTR("Overwrite Existing Scene"));
-	next_import->add_item("Overwrite Existing, Keep Materials");
+	next_import->add_item(TTR("Overwrite Existing, Keep Materials"));
 	next_import->add_item(TTR("Keep Existing, Merge with New"));
 	next_import->add_item(TTR("Keep Existing, Ignore New"));
 	vbc->add_margin_child(TTR("Next Time:"),next_import);
@@ -2735,13 +2735,13 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 		post_import_script_path = post_import_script_path;
 		Ref<Script> scr = ResourceLoader::load(post_import_script_path);
 		if (!scr.is_valid()) {
-			EditorNode::add_io_error(TTR("Couldn't load post-import script: '")+post_import_script_path);
+			EditorNode::add_io_error(TTR("Couldn't load post-import script:")+" "+post_import_script_path);
 		} else {
 
 			post_import_script = Ref<EditorScenePostImport>( memnew( EditorScenePostImport ) );
 			post_import_script->set_script(scr.get_ref_ptr());
 			if (!post_import_script->get_script_instance()) {
-				EditorNode::add_io_error(TTR("Invalid/Broken Script for Post-Import: '")+post_import_script_path);
+				EditorNode::add_io_error(TTR("Invalid/broken script for post-import:")+" "+post_import_script_path);
 				post_import_script.unref();
 			}
 		}
@@ -2751,7 +2751,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	if (post_import_script.is_valid()) {
 		scene = post_import_script->post_import(scene);
 		if (!scene) {
-			EditorNode::add_io_error(TTR("Error running Post-Import script: '")+post_import_script_path);
+			EditorNode::add_io_error(TTR("Error running post-import script:")+" "+post_import_script_path);
 			return err;
 		}
 
@@ -2780,18 +2780,18 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 		String path = texture->get_path();
 		String fname= path.get_file();
 		String target_path = Globals::get_singleton()->localize_path(target_res_path.plus_file(fname));
-		progress.step(TTR("Import Img: ")+fname,3+(idx)*100/imagemap.size());
+		progress.step(TTR("Import Image:")+" "+fname,3+(idx)*100/imagemap.size());
 
 		idx++;
 
 		if (path==target_path) {
 
-			EditorNode::add_io_error(TTR("Can't import a file over itself: '")+target_path);
+			EditorNode::add_io_error(TTR("Can't import a file over itself:")+" "+target_path);
 			continue;
 		}
 
 		if (!target_path.begins_with("res://")) {
-			EditorNode::add_io_error(TTR("Couldn't localize path: '")+target_path+"' (already local)");
+			EditorNode::add_io_error(vformat(TTR("Couldn't localize path: %s (already local)"),target_path));
 			continue;
 		}
 

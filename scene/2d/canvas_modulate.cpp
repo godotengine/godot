@@ -62,7 +62,7 @@ String CanvasModulate::get_configuration_warning() const {
 	get_tree()->get_nodes_in_group("_canvas_modulate_"+itos(get_canvas().get_id()),&nodes);
 
 	if (nodes.size()>1) {
-		return TTR("Only one visible CanvasModulate is allowed per scene (or set of instanced scenes). The first one created will work, while the rest will be ignored.");
+		return TTR("Only one visible CanvasModulate is allowed per scene (or set of instanced scenes). The first created one will work, while the rest will be ignored.");
 	}
 
 	return String();

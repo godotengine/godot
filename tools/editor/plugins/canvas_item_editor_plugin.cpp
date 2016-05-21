@@ -1906,7 +1906,7 @@ void CanvasItemEditor::_viewport_draw() {
 		if (h_scroll->is_visible())
 			size.height-=h_scroll->get_size().height;
 
-		get_stylebox(TTR("EditorFocus"),"EditorStyles")->draw(ci,Rect2(Point2(),size));
+		get_stylebox("EditorFocus","EditorStyles")->draw(ci,Rect2(Point2(),size));
 	}
 
 	Ref<Texture> lock = get_icon("Lock","EditorIcons");
@@ -2229,7 +2229,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		key_insert_button->set_icon(get_icon("Key","EditorIcons"));
 
 
-		//anchor_menu->add_icon_override(TTR("Align Top Left"));
+		//anchor_menu->add_icon_override("Align Top Left");
 		anchor_menu->set_icon(get_icon("Anchor","EditorIcons"));
 		PopupMenu *p=anchor_menu->get_popup();
 
@@ -3147,7 +3147,7 @@ void CanvasItemEditor::end_drag() {
 
 	if (undo_redo) {
 
-		undo_redo->create_action(TTR("Edit CanvasItem"));
+		undo_redo->create_action("Edit CanvasItem");
 		for(CanvasItemMap::Element *E=canvas_items.front();E;E=E->next()) {
 			CanvasItem *canvas_item = E->key();
 			Variant state=canvas_item->edit_get_state();
@@ -3285,7 +3285,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(select_button);
 	select_button->connect("pressed",this,"_tool_select",make_binds(TOOL_SELECT));
 	select_button->set_pressed(true);
-	select_button->set_tooltip("Select Mode (Q)\n"+keycode_get_string(KEY_MASK_CMD)+"Drag: Rotate\nAlt+Drag: Move\nPress 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving).\nAlt+RMB: Depth list selection");
+	select_button->set_tooltip(TTR("Select Mode (Q)")+"\n"+keycode_get_string(KEY_MASK_CMD)+TTR("Drag: Rotate")+"\n"+TTR("Alt+Drag: Move")+"\n"+TTR("Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving).")+"\n"+TTR("Alt+RMB: Depth list selection"));
 
 
 	move_button = memnew( ToolButton );
@@ -3306,13 +3306,13 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	list_select_button->set_toggle_mode(true);
 	hb->add_child(list_select_button);
 	list_select_button->connect("pressed",this,"_tool_select",make_binds(TOOL_LIST_SELECT));
-	list_select_button->set_tooltip("Show a list of all objects at the position clicked\n(same as Alt+RMB in selet mode).");
+	list_select_button->set_tooltip(TTR("Show a list of all objects at the position clicked\n(same as Alt+RMB in select mode)."));
 
 	pivot_button = memnew( ToolButton );
 	pivot_button->set_toggle_mode(true);
 	hb->add_child(pivot_button);
 	pivot_button->connect("pressed",this,"_tool_select",make_binds(TOOL_EDIT_PIVOT));
-	pivot_button->set_tooltip(TTR("Click to change object's rotation pivot"));
+	pivot_button->set_tooltip(TTR("Click to change object's rotation pivot."));
 
 	pan_button = memnew( ToolButton );
 	pan_button->set_toggle_mode(true);
@@ -3326,7 +3326,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(lock_button);
 
 	lock_button->connect("pressed",this,"_popup_callback",varray(LOCK_SELECTED));
-	lock_button->set_tooltip("Lock the selected object in-place (can't be moved).");
+	lock_button->set_tooltip(TTR("Lock the selected object in place (can't be moved)."));
 
 	unlock_button = memnew( ToolButton );
 	hb->add_child(unlock_button);
@@ -3336,12 +3336,12 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	group_button = memnew( ToolButton );
 	hb->add_child(group_button);
 	group_button->connect("pressed",this,"_popup_callback",varray(GROUP_SELECTED));
-	group_button->set_tooltip("Makes sure the object's' children are not selectable.");
+	group_button->set_tooltip(TTR("Makes sure the object's children are not selectable."));
 
 	ungroup_button = memnew( ToolButton );
 	hb->add_child(ungroup_button);
 	ungroup_button->connect("pressed",this,"_popup_callback",varray(UNGROUP_SELECTED));
-	ungroup_button->set_tooltip("Restores the object's' children ability to be selected.");
+	ungroup_button->set_tooltip(TTR("Restores the object's children's ability to be selected."));
 
 	hb->add_child(memnew(VSeparator));
 
@@ -3375,10 +3375,10 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 
 	/*
-	p->add_item(TTR("Align Horizontal"),ALIGN_HORIZONTAL);
-	p->add_item(TTR("Align Vertical"),ALIGN_VERTICAL);
-	p->add_item(TTR("Space Horizontal"),SPACE_HORIZONTAL);
-	p->add_item(TTR("Space Vertical"),SPACE_VERTICAL);*/
+	p->add_item("Align Horizontal",ALIGN_HORIZONTAL);
+	p->add_item("Align Vertical",ALIGN_VERTICAL);
+	p->add_item("Space Horizontal",SPACE_HORIZONTAL);
+	p->add_item("Space Vertical",SPACE_VERTICAL);*/
 
 	view_menu = memnew( MenuButton );
 	view_menu->set_text(TTR("View"));
@@ -3436,7 +3436,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_insert_button = memnew( Button );
 	key_insert_button->set_focus_mode(FOCUS_NONE);
 	key_insert_button->connect("pressed",this,"_popup_callback",varray(ANIM_INSERT_KEY));
-	key_insert_button->set_tooltip(TTR("Insert Keys (Insert)"));
+	key_insert_button->set_tooltip(TTR("Insert Keys (Ins)"));
 
 	animation_hb->add_child(key_insert_button);
 

@@ -112,7 +112,7 @@ void ControlEditor::_key_move(const Vector2& p_dir, bool p_snap) {
 	if (p_snap)
 		motion*=snap_val->get_text().to_double();
 
-	undo_redo->create_action(TTR("Edit Control"));
+	undo_redo->create_action("Edit Control");
 	for(ControlMap::Element *E=controls.front();E;E=E->next()) {
 		Control *control = E->key();
 		undo_redo->add_do_method(control,"set_pos",control->get_pos()+motion);
@@ -156,7 +156,7 @@ void ControlEditor::_input_event(InputEvent p_event) {
 
 				if (undo_redo) {
 
-					undo_redo->create_action(TTR("Edit Control"));
+					undo_redo->create_action("Edit Control");
 					for(ControlMap::Element *E=controls.front();E;E=E->next()) {
 						Control *control = E->key();
 						undo_redo->add_do_method(control,"set_pos",control->get_pos());
@@ -752,17 +752,17 @@ ControlEditor::ControlEditor(EditorNode *p_editor) {
 	handle_len=10;
 
 	popup=memnew( PopupMenu );
-	popup->add_check_item(TTR("Use Snap"));
-	popup->add_item(TTR("Configure Snap.."));
+	popup->add_check_item("Use Snap");
+	popup->add_item("Configure Snap..");
 	add_child(popup);
 
 	snap_dialog = memnew( ConfirmationDialog );
 	snap_dialog->get_ok()->hide();
-	snap_dialog->get_cancel()->set_text(TTR("Close"));
+	snap_dialog->get_cancel()->set_text("Close");
 	add_child(snap_dialog);
 
 	Label *l = memnew(Label);
-	l->set_text(TTR("Snap:"));
+	l->set_text("Snap:");
 	l->set_pos(Point2(5,5));
 	snap_dialog->add_child(l);
 

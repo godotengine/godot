@@ -1085,7 +1085,7 @@ EditorAddonLibrary::EditorAddonLibrary() {
 
 
 
-	search_hb->add_child( memnew( Label(TTR("Search: "))));
+	search_hb->add_child( memnew( Label(TTR("Search:")+" ")));
 	filter =memnew( LineEdit );
 	search_hb->add_child(filter);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1112,7 +1112,7 @@ EditorAddonLibrary::EditorAddonLibrary() {
 	HBoxContainer *search_hb2 = memnew( HBoxContainer );
 	library_main->add_child(search_hb2);
 
-	search_hb2->add_child( memnew( Label("Sort: ")));
+	search_hb2->add_child( memnew( Label(TTR("Sort:")+" ")));
 	sort = memnew( OptionButton );
 	for(int i=0;i<SORT_MAX;i++) {
 		sort->add_item(sort_text[i]);
@@ -1123,26 +1123,26 @@ EditorAddonLibrary::EditorAddonLibrary() {
 	sort->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	reverse = memnew( CheckBox);
-	reverse->set_text("Reverse");
+	reverse->set_text(TTR("Reverse"));
 	search_hb2->add_child(reverse);
 
 	search_hb2->add_child(memnew(VSeparator));
 
 	//search_hb2->add_spacer();
 
-	search_hb2->add_child( memnew( Label("Category: ")));
+	search_hb2->add_child( memnew( Label(TTR("Category:")+" ")));
 	categories = memnew( OptionButton );
-	categories->add_item("All");
+	categories->add_item(TTR("All"));
 	search_hb2->add_child(categories);
 	categories->set_h_size_flags(SIZE_EXPAND_FILL);
 	//search_hb2->add_spacer();
 
 	search_hb2->add_child(memnew(VSeparator));
 
-	search_hb2->add_child( memnew( Label("Site: ")));
+	search_hb2->add_child( memnew( Label(TTR("Site:")+" ")));
 	repository = memnew( OptionButton );
 
-	repository->add_item(TTR("Godot"));
+	repository->add_item("Godot");
 	search_hb2->add_child(repository);
 	repository->set_h_size_flags(SIZE_EXPAND_FILL);
 
@@ -1232,7 +1232,7 @@ EditorAddonLibrary::EditorAddonLibrary() {
 	asset_open = memnew( EditorFileDialog );
 
 	asset_open->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	asset_open->add_filter("*.zip ; Assets ZIP File");
+	asset_open->add_filter("*.zip ; "+TTR("Assets ZIP File"));
 	asset_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	add_child(asset_open);
 	asset_open->connect("file_selected",this,"_asset_file_selected");

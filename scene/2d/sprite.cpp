@@ -540,7 +540,7 @@ String ViewportSprite::get_configuration_warning() const {
 			Viewport *vp = n->cast_to<Viewport>();
 			if (!vp->is_set_as_render_target()) {
 
-				return TTR("The Viewport set in the path property must be set as 'render taget' in order for this sprite to work");
+				return TTR("The Viewport set in the path property must be set as 'render target' in order for this sprite to work.");
 			}
 		}
 	}

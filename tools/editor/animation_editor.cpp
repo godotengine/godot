@@ -889,7 +889,7 @@ void AnimationKeyEditor::_menu_track(int p_type) {
 				case TRACK_MENU_SET_ALL_TRANS_OUTIN: t=-2.0; break;
 			}
 
-			undo_redo->create_action(TTR("Set Transitions to: ")+rtos(t));
+			undo_redo->create_action(TTR("Set Transitions to:")+" "+rtos(t));
 
 			for(Map<SelectedKey,KeyInfo>::Element *E=selection.back();E;E=E->prev()) {
 
@@ -2096,7 +2096,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 /*
 						if (ofsx < remove_icon->get_width()) {
 
-							undo_redo->create_action(TTR("Remove Anim Track"));
+							undo_redo->create_action("Remove Anim Track");
 							undo_redo->add_do_method(animation.ptr(),"remove_track",idx);
 							undo_redo->add_undo_method(animation.ptr(),"add_track",animation->track_get_type(idx),idx);
 							undo_redo->add_undo_method(animation.ptr(),"track_set_path",idx,animation->track_get_path(idx));
@@ -2129,7 +2129,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 						if (ofsx < move_down_icon->get_width()) {
 
 							if (idx < animation->get_track_count() -1) {
-								undo_redo->create_action(TTR("Move Anim Track Down"));
+								undo_redo->create_action("Move Anim Track Down");
 								undo_redo->add_do_method(animation.ptr(),"track_move_up",idx);
 								undo_redo->add_undo_method(animation.ptr(),"track_move_down",idx+1);
 								undo_redo->commit_action();
@@ -2142,7 +2142,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 						if (ofsx < move_up_icon->get_width()) {
 
 							if (idx >0) {
-								undo_redo->create_action(TTR("Move Anim Track Up"));
+								undo_redo->create_action("Move Anim Track Up");
 								undo_redo->add_do_method(animation.ptr(),"track_move_down",idx);
 								undo_redo->add_undo_method(animation.ptr(),"track_move_up",idx-1);
 								undo_redo->commit_action();
@@ -2893,7 +2893,7 @@ void AnimationKeyEditor::_notification(int p_what) {
 				optimize_dialog->connect("confirmed",this,"_animation_optimize");
 
 				menu_track->get_popup()->add_child(tpp);
-				//menu_track->get_popup()->add_submenu_item(TTR("Set Transitions.."),"Transitions");
+				//menu_track->get_popup()->add_submenu_item("Set Transitions..","Transitions");
 				//menu_track->get_popup()->add_separator();
 				menu_track->get_popup()->add_item(TTR("Optimize Animation"),TRACK_MENU_OPTIMIZE);
 				menu_track->get_popup()->add_item(TTR("Clean-Up Animation"),TRACK_MENU_CLEAN_UP);
@@ -3113,9 +3113,9 @@ void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 		if (bool(EDITOR_DEF("animation/confirm_insert_track",true))) {
 			//potential new key, does not exist
 			if (insert_data.size()==1)
-				insert_confirm->set_text(TTR("Create NEW track for ")+p_id.query+TTR(" and insert key?"));
+				insert_confirm->set_text(vformat(TTR("Create NEW track for %s and insert key?"),p_id.query));
 			else
-				insert_confirm->set_text(TTR("Create ")+itos(insert_data.size())+TTR(" NEW tracks and insert keys?"));
+				insert_confirm->set_text(vformat(TTR("Create %i NEW tracks and insert keys?"),insert_data.size()));
 
 			insert_confirm->get_ok()->set_text(TTR("Create"));
 			insert_confirm->popup_centered_minsize();
@@ -3510,7 +3510,7 @@ void AnimationKeyEditor::_insert_delay() {
 		return;
 	}
 
-	undo_redo->create_action(TTR("Anim  Insert"));
+	undo_redo->create_action(TTR("Anim Insert"));
 
 	int last_track = animation->get_track_count();
 	bool advance=false;
@@ -3818,7 +3818,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	hb->add_child( memnew( VSeparator ) );
 
 	Label *l = memnew( Label );
-	l->set_text(TTR("Len(s):"));
+	l->set_text(TTR("Length (s):"));
 	hb->add_child(l);
 
 	length = memnew( SpinBox );
@@ -3833,7 +3833,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	length->connect("value_changed",this,"_animation_len_changed");
 
 	l = memnew( Label );
-	l->set_text(TTR("Step(s):"));
+	l->set_text(TTR("Step (s):"));
 	hb->add_child(l);
 
 	step = memnew( SpinBox );
@@ -3929,7 +3929,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 
 	/*keying = memnew( Button );
 	keying->set_toggle_mode(true);
-	//keying->set_text(TTR("Keys"));
+	//keying->set_text("Keys");
 	keying->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_END,60);
 	keying->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,10);
 	keying->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_BEGIN,55);
@@ -3939,7 +3939,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	*/
 
 /*	l = memnew( Label );
-	l->set_text(TTR("Base: "));
+	l->set_text("Base: ");
 	l->set_pos(Point2(0,3));
 //	dr_panel->add_child(l);*/
 
@@ -4089,10 +4089,10 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	cleanup_vb->add_child(cleanup_tracks);
 
 	cleanup_all = memnew( CheckButton );
-	cleanup_all->set_text(TTR("Clean-Up all animations"));
+	cleanup_all->set_text(TTR("Clean-up all animations"));
 	cleanup_vb->add_child(cleanup_all);
 
-	cleanup_dialog->set_title(TTR("Clean up Animation(s) (NO UNDO!)"));
+	cleanup_dialog->set_title(TTR("Clean-Up Animation(s) (NO UNDO!)"));
 	cleanup_dialog->get_ok()->set_text(TTR("Clean-Up"));
 
 	cleanup_dialog->connect("confirmed",this,"_menu_track",varray(TRACK_MENU_CLEAN_UP_CONFIRM));

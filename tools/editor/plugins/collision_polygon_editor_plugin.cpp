@@ -559,8 +559,8 @@ CollisionPolygonEditor::CollisionPolygonEditor(EditorNode *p_editor) {
 	options = memnew( MenuButton );
 	add_child(options);
 	options->set_area_as_parent_rect();
-	options->set_text(TTR("Polygon"));
-	//options->get_popup()->add_item(TTR("Parse BBCODE"),PARSE_BBCODE);
+	options->set_text("Polygon");
+	//options->get_popup()->add_item("Parse BBCode",PARSE_BBCODE);
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 #endif
 

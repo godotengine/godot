@@ -263,7 +263,7 @@ void EditorSettings::create() {
 
 		memdelete(dir);
 
-		singleton = ResourceLoader::load(config_file_path,TTR("EditorSettings"));
+		singleton = ResourceLoader::load(config_file_path,"EditorSettings");
 		if (singleton.is_null()) {
 			WARN_PRINT("Could not open config file.");
 			goto fail;
@@ -505,7 +505,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #else
 	hints["import/pvrtc_texture_tool"]=PropertyInfo(Variant::STRING,"import/pvrtc_texture_tool",PROPERTY_HINT_GLOBAL_FILE,"");
 #endif
-	set(TTR("PVRTC/fast_conversion"),false);
+	// TODO: Rename to "import/pvrtc_fast_conversion" to match other names?
+	set("PVRTC/fast_conversion",false);
 
 
 	set("run/auto_save_before_running",true);
