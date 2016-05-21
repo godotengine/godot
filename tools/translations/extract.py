@@ -12,55 +12,53 @@ if (not os.path.exists("tools")):
 matches = []
 for root, dirnames, filenames in os.walk('.'):
 	for filename in fnmatch.filter(filenames, '*.cpp'):
-		if (filename.find("collada")!=-1):
+		if (filename.find("collada") != -1):
 			continue
 		matches.append(os.path.join(root, filename))
 	for filename in fnmatch.filter(filenames, '*.h'):
-		if (filename.find("collada")!=-1):
+		if (filename.find("collada") != -1):
 			continue
 		matches.append(os.path.join(root, filename))
 
 
-unique_str=[]
-main_po=""
+unique_str = []
+main_po = ""
 
 print("Updating the tools.pot template...")
 
 for fname in matches:
 
-	f = open(fname,"rb")
-
-	new_f = ""
+	f = open(fname, "rb")
 
 	l = f.readline()
-	lc=1
-	while(l):
+	lc = 1
+	while (l):
 
 		pos = 0
-		while(pos>=0):
-			pos = l.find('TTR(\"',pos)
-			if (pos==-1):
+		while (pos >= 0):
+			pos = l.find('TTR(\"', pos)
+			if (pos == -1):
 				break
-			pos+=5
+			pos += 5
 
-			msg=""
-			while (pos < len(l) and (l[pos]!='"' or l[pos-1]=='\\') ):
-				msg+=l[pos]
-				pos+=1
+			msg = ""
+			while (pos < len(l) and (l[pos] != '"' or l[pos - 1] == '\\')):
+				msg += l[pos]
+				pos += 1
 
 			if (not msg in unique_str):
-				main_po+="\n#: "+os.path.relpath(fname).replace('\\','/')+":"+str(lc)+"\n"
-				main_po+='msgid "'+msg+'"\n'
-				main_po+='msgstr ""\n'
+				main_po += "\n#: " + os.path.relpath(fname).replace('\\','/') + ":" + str(lc) + "\n"
+				main_po += 'msgid "' + msg + '"\n'
+				main_po += 'msgstr ""\n'
 				unique_str.append(msg)
 
 		l = f.readline()
-		lc+=1
+		lc += 1
 
 	f.close()
 
 
-f = open("tools.pot","wb")
+f = open("tools.pot", "wb")
 f.write(main_po)
 f.close()
 
@@ -68,7 +66,7 @@ shutil.move("tools.pot", "tools/translations/tools.pot")
 
 # TODO: Make that in a portable way, if we care; if not, kudos to Unix users
 if (os.name == "posix"):
-	added = subprocess.check_output("git diff tools/translations/tools.pot | grep \+msgid | wc -l", shell=True)
-	removed = subprocess.check_output("git diff tools/translations/tools.pot | grep \\\-msgid | wc -l", shell=True)
+	added = subprocess.check_output("git diff tools/translations/tools.pot | grep \+msgid | wc -l", shell = True)
+	removed = subprocess.check_output("git diff tools/translations/tools.pot | grep \\\-msgid | wc -l", shell = True)
 	print("Template changes compared to the staged status:")
 	print("  Additions: %s msgids.\n  Deletions: %s msgids." % (int(added), int(removed)))
