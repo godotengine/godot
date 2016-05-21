@@ -2,12 +2,24 @@
 
 import fnmatch
 import os
-import re
 import shutil
 import subprocess
+import sys
+
+
+line_nb = False
+
+for arg in sys.argv[1:]:
+	if (arg == "--with-line-nb"):
+		print("Enabling line numbers in the context locations.")
+		line_nb = True
+	else:
+		os.sys.exit("Non supported argument '" + arg + "'. Aborting.")
+
 
 if (not os.path.exists("tools")):
 	os.sys.exit("ERROR: This script should be started from the root of the git repo.")
+
 
 matches = []
 for root, dirnames, filenames in os.walk('.'):
@@ -47,7 +59,9 @@ for fname in matches:
 				msg += l[pos]
 				pos += 1
 
-			location = os.path.relpath(fname).replace('\\','/') + ":" + str(lc)
+			location = os.path.relpath(fname).replace('\\','/')
+			if (line_nb):
+				location += ":" + str(lc)
 
 			if (not msg in unique_str):
 				main_po += "\n#: " + location + "\n"
