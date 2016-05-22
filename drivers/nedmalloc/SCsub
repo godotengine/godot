@@ -1,5 +1,8 @@
 Import('env')
-Export('env');
+Import('env_drivers')
 
-env.add_source_files(env.drivers_sources,"*.cpp")
-#env.add_source_files(env.drivers_sources,"*.c")
+env_drivers.add_source_files(env.drivers_sources,"*.cpp")
+#env_drivers.add_source_files(env.drivers_sources,"*.c")
+
+Export('env_drivers')
+Export('env')

@@ -1,4 +1,5 @@
 Import('env')
+Import('env_drivers')
 
 opus_sources = [
 	"opus/audio_stream_opus.cpp",
@@ -125,7 +126,7 @@ opus_sources_lib = [
 ]
 
 if("opus_fixed_point" in env and env.opus_fixed_point=="yes"):
-	env.Append(CFLAGS=["-DOPUS_FIXED_POINT"])
+	env_drivers.Append(CFLAGS=["-DOPUS_FIXED_POINT"])
 	opus_sources_silk = [
 		"opus/silk/fixed/schur64_FIX.c",
 		"opus/silk/fixed/residual_energy16_FIX.c",
@@ -193,4 +194,5 @@ env.drivers_sources+=opus_sources_silk
 env.drivers_sources+=opus_sources_lib
 env.drivers_sources+=opus_sources
 
+Export('env_drivers')
 Export('env')

@@ -16,8 +16,8 @@ squish_sources=[
 
 
 if (env["tools"]=="yes"):
-	env.drivers_sources+=squish_sources
+    env.drivers_sources+=squish_sources
 
-#env.add_source_files(env.drivers_sources, squish_sources)
+#env_drivers.add_source_files(env.drivers_sources, squish_sources)
 
 Export('env')
