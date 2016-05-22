@@ -92,45 +92,11 @@ void SceneTreeDock::instance_scenes(const Vector<String>& p_files,Node* parent,i
 	bool error=false;
 
 	for(int i=0;i<p_files.size();i++) {
-
-		Ref<PackedScene> sdata = ResourceLoader::load(p_files[i]);
-		if (!sdata.is_valid()) {
-			current_option=-1;
-			//accept->get_cancel()->hide();
-			accept->get_ok()->set_text(TTR("Ugh"));
-			accept->set_text(vformat(TTR("Error loading scene from %s"),p_files[i]));
-			accept->popup_centered_minsize();
-			error=true;
-			break;
-
-		}
-
-		Node*instanced_scene=sdata->instance(true);
+		Node *instanced_scene = _instance_if_valid(p_files[i]);
 		if (!instanced_scene) {
-			current_option=-1;
-			//accept->get_cancel()->hide();
-			accept->get_ok()->set_text(TTR("Ugh"));
-			accept->set_text(vformat(TTR("Error instancing scene from %s"),p_files[i]));
-			accept->popup_centered_minsize();
-			error=true;
+			error = true;
 			break;
-
 		}
-
-		if (edited_scene->get_filename()!="") {
-
-			if (_cyclical_dependency_exists(edited_scene->get_filename(), instanced_scene)) {
-
-				accept->get_ok()->set_text(TTR("Ok"));
-				accept->set_text(vformat(TTR("Cannot instance the scene '%s' because the current scene exists within one of its nodes."),p_files[i]));
-				accept->popup_centered_minsize();
-				error=true;
-				break;
-			}
-		}
-
-		instanced_scene->set_filename( Globals::get_singleton()->localize_path(p_files[i]) );
-
 		instances.push_back(instanced_scene);
 	}
 
@@ -648,15 +614,31 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				accept->popup_centered_minsize();
 				break;
 			}
-			Vector<String> torevert_path;
-			torevert_path.push_back(torevert->get_filename());
+
+			Node *replacement = _instance_if_valid(torevert->get_filename());
+			if (!replacement)
+				break;
 			Node *parent = torevert->get_parent();
-			int index = torevert->get_index();
-			parent->remove_child(torevert);
-			instance_scenes(torevert_path, parent, index);
-			memdelete(torevert);
-			//torevert->replace_by()
+
+			editor_data->get_undo_redo().create_action("Revert Changes");
+
+			editor_data->get_undo_redo().add_do_method(parent, "remove_child", torevert);
+			editor_data->get_undo_redo().add_do_method(parent, "add_child", replacement);
+			editor_data->get_undo_redo().add_do_method(parent, "move_child", replacement, torevert->get_index());
+			editor_data->get_undo_redo().add_do_method(replacement, "set_name", torevert->get_name());
+			editor_data->get_undo_redo().add_do_method(replacement, "set_owner", edited_scene);
+			editor_data->get_undo_redo().add_do_method(editor_selection, "clear");
+			editor_data->get_undo_redo().add_do_reference(torevert);
 			
+			editor_data->get_undo_redo().add_undo_method(parent, "remove_child", replacement);
+			editor_data->get_undo_redo().add_undo_method(parent, "add_child", torevert);
+			editor_data->get_undo_redo().add_undo_method(parent, "move_child", torevert, torevert->get_index());
+			editor_data->get_undo_redo().add_undo_method(torevert, "set_owner", edited_scene);
+			editor_data->get_undo_redo().add_undo_method(editor_selection, "clear");
+			editor_data->get_undo_redo().add_undo_reference(replacement);
+
+			editor_data->get_undo_redo().commit_action();
+
 		} break;
 
 	}
@@ -1204,6 +1186,42 @@ void SceneTreeDock::_do_reparent(Node* p_new_parent,int p_position_in_parent,Vec
 
 	editor_data->get_undo_redo().commit_action();
 	//node->set_owner(owner);
+}
+
+Node *SceneTreeDock::_instance_if_valid(const String& p_path) {
+	Ref<PackedScene> sdata = ResourceLoader::load(p_path);
+	if (!sdata.is_valid()) {
+		current_option=-1;
+		accept->get_ok()->set_text(TTR("Ugh"));
+		accept->set_text(vformat(TTR("Error loading scene from %s"),p_path));
+		accept->popup_centered_minsize();
+		return NULL;
+	}
+
+
+	Node*instanced_scene=sdata->instance(true);
+	if (!instanced_scene) {
+		current_option=-1;
+		accept->get_ok()->set_text(TTR("Ugh"));
+		accept->set_text(vformat(TTR("Error instancing scene from %s"),p_path));
+		accept->popup_centered_minsize();
+		return NULL;
+	}
+
+	if (edited_scene->get_filename()!="") {
+
+		if (_cyclical_dependency_exists(edited_scene->get_filename(), instanced_scene)) {
+
+			accept->get_ok()->set_text(TTR("Ok"));
+			accept->set_text(vformat(TTR("Cannot instance the scene '%s' because the current scene exists within one of its nodes."),p_path));
+			accept->popup_centered_minsize();
+			memdelete(instanced_scene);
+			return NULL;
+		}
+	}
+
+	instanced_scene->set_filename( Globals::get_singleton()->localize_path(p_path) );
+	return instanced_scene;
 }
 
 void SceneTreeDock::_script_created(Ref<Script> p_script) {
