@@ -103,7 +103,7 @@ class OS_Windows : public OS {
 	HDC		hDC;	// Private GDI Device Context
 	HINSTANCE	hInstance;		// Holds The Instance Of The Application
 	HWND hWnd;
-	
+
 	HCURSOR hCursor;
 
 	Size2 window_rect;

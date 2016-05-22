@@ -1252,16 +1252,35 @@ void ScriptEditor::_menu_option(int p_option) {
 				Ref<Script> scr = current->get_edited_script();
 				if (scr.is_null())
 					return;
-				int line = tx->cursor_get_line();
-				int next_line = line + 1;
+
+				int from_line = tx->cursor_get_line();
+				int to_line = tx->cursor_get_line();
 				int column = tx->cursor_get_column();
 
-				if (line >= tx->get_line_count() - 1)
-					tx->set_line(line, tx->get_line(line) + "\n");
+				if (tx->is_selection_active()) {
+					from_line = tx->get_selection_from_line();
+					to_line = tx->get_selection_to_line();
+					column = tx->cursor_get_column();
+				}
+				int next_line = to_line + 1;
 
-				String line_clone = tx->get_line(line);
-				tx->insert_at(line_clone, next_line);
+				tx->begin_complex_operation();
+				for (int i = from_line; i <= to_line; i++) {
+
+					if (i >= tx->get_line_count() - 1) {
+							tx->set_line(i, tx->get_line(i) + "\n");
+					}
+					String line_clone = tx->get_line(i);
+					tx->insert_at(line_clone, next_line);
+					next_line++;
+				}
+
 				tx->cursor_set_column(column);
+				if (tx->is_selection_active()) {
+					tx->select(to_line + 1, tx->get_selection_from_column(), next_line - 1, tx->get_selection_to_column());
+				}
+
+				tx->end_complex_operation();
 				tx->update();
 
 			} break;
@@ -2441,7 +2460,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 #else
 	edit_menu->get_popup()->add_item(TTR("Complete Symbol"),EDIT_COMPLETE,KEY_MASK_CMD|KEY_SPACE);
 #endif
-	edit_menu->get_popup()->add_item("Trim Trailing Whitespace", EDIT_TRIM_TRAILING_WHITESAPCE, KEY_MASK_CTRL|KEY_MASK_ALT|KEY_T);
+	edit_menu->get_popup()->add_item(TTR("Trim Trailing Whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE, KEY_MASK_CTRL|KEY_MASK_ALT|KEY_T);
 	edit_menu->get_popup()->add_item(TTR("Auto Indent"),EDIT_AUTO_INDENT,KEY_MASK_CMD|KEY_I);
 	edit_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
@@ -2477,7 +2496,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	debug_menu->get_popup()->add_item(TTR("Break"),DEBUG_BREAK);
 	debug_menu->get_popup()->add_item(TTR("Continue"),DEBUG_CONTINUE);
 	debug_menu->get_popup()->add_separator();
-	//debug_menu->get_popup()->add_check_item(TTR("Show Debugger"),DEBUG_SHOW);
+	//debug_menu->get_popup()->add_check_item("Show Debugger",DEBUG_SHOW);
 	debug_menu->get_popup()->add_check_item(TTR("Keep Debugger Open"),DEBUG_SHOW_KEEP_OPEN);
 	debug_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
@@ -2523,7 +2542,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	site_search->set_text(TTR("Tutorials"));
 	site_search->connect("pressed",this,"_menu_option",varray(SEARCH_WEBSITE));
 	menu_hb->add_child(site_search);
-	site_search->set_tooltip(TTR("Open http://www.godotengine.org at tutorials section."));
+	site_search->set_tooltip(TTR("Open https://godotengine.org at tutorials section."));
 
 	class_search = memnew( ToolButton );
 	class_search->set_text(TTR("Classes"));
@@ -2581,7 +2600,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 		disk_changed->set_child_rect(vbc);
 
 		Label *dl = memnew( Label );
-		dl->set_text("The following files are newer on disk.\nWhat action should be taken?:");
+		dl->set_text(TTR("The following files are newer on disk.\nWhat action should be taken?:"));
 		vbc->add_child(dl);
 
 		disk_changed_list = memnew( Tree );

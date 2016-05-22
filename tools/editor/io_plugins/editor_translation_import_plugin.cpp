@@ -236,7 +236,7 @@ public:
 		}
 
 		if (!save_path->get_text().begins_with("res://")) {
-			error_dialog->set_text(TTR("No target path!!"));
+			error_dialog->set_text(TTR("No target path!"));
 			error_dialog->popup_centered(Size2(200,100));
 		}
 
@@ -258,7 +258,7 @@ public:
 			String savefile = save_path->get_text().plus_file(import_path->get_text().get_file().basename()+"."+locale+".xl");
 			Error err = plugin->import(savefile,imd);
 			if (err!=OK) {
-				error_dialog->set_text(TTR("Couldnt import!"));
+				error_dialog->set_text(TTR("Couldn't import!"));
 				error_dialog->popup_centered(Size2(200,100));
 			} else if (add_to_project->is_pressed()) {
 

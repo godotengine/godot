@@ -122,7 +122,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	vbc->add_child(hbc);
 
 	Label *l = memnew( Label );
-	l->set_text(TTR("Search: "));
+	l->set_text(TTR("Search:")+" ");
 	hbc->add_child(l);
 
 	search_box = memnew( LineEdit );
@@ -146,16 +146,16 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	hbc = memnew( HBoxContainer );
 	vbc->add_child(hbc);
-	hbc->add_child( memnew( Label(TTR("Plugin List: "))));
+	hbc->add_child( memnew( Label(TTR("Plugin List:")+" ") ));
 	hbc->add_spacer();
 	//Button *load = memnew( Button );
-	//load->set_text(TTR("Load.."));
+	//load->set_text("Load..");
 	//hbc->add_child(load);
 
 
-	//get_ok()->set_text(TTR("Apply"));
+	//get_ok()->set_text("Apply");
 	set_hide_on_ok(true);
-	//get_cancel()->set_text(TTR("Close"));
+	//get_cancel()->set_text("Close");
 
 	timer = memnew( Timer );
 	timer->set_wait_time(1.5);

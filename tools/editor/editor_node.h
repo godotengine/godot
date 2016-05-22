@@ -451,7 +451,7 @@ private:
 	void _display_top_editors(bool p_display);
 	void _set_top_editors(Vector<EditorPlugin*> p_editor_plugins_over);
 	void _set_editing_top_editors(Object * p_current_object);
-        
+
 	void _quick_opened();
 	void _quick_run();
 
@@ -748,7 +748,7 @@ public:
 	EditorPluginList();
 	~EditorPluginList();
 
-} ; 
+} ;
 
 struct EditorProgressBG {
 

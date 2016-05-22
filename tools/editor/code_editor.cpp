@@ -216,7 +216,7 @@ void FindReplaceDialog::_replace() {
 
 		text_edit->set_v_scroll(vsval);
 //		text_edit->set_h_scroll(hsval);
-		error_label->set_text(TTR("Replaced ")+itos(rc)+TTR(" ocurrence(s)."));
+		error_label->set_text(vformat(TTR("Replaced %d ocurrence(s)."),rc));
 
 
 		//hide();
@@ -274,7 +274,7 @@ bool FindReplaceDialog::_search() {
 		return true;
 	} else {
 
-		set_error(TTR("Not Found!"));
+		set_error(TTR("Not found!"));
 		return false;
 	}
 
@@ -498,7 +498,7 @@ FindReplaceDialog::FindReplaceDialog() {
 
 void CodeTextEditor::_line_col_changed() {
 
-	String text = String()+TTR("Line: ")+itos(text_editor->cursor_get_line()+1)+TTR(", Col: ")+itos(text_editor->cursor_get_column());
+	String text = String()+TTR("Line:")+" "+itos(text_editor->cursor_get_line()+1)+", "+TTR("Col:")+" "+itos(text_editor->cursor_get_column());
 	line_col->set_text(text);
 }
 

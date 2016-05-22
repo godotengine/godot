@@ -125,7 +125,7 @@ class ControlEditorPlugin : public EditorPlugin {
 
 public:
 
-	virtual String get_name() const { return TTR("GUI"); }
+	virtual String get_name() const { return "GUI"; }
 	bool has_main_screen() const { return true; }
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;

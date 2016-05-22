@@ -263,7 +263,7 @@ void EditorSettings::create() {
 
 		memdelete(dir);
 
-		singleton = ResourceLoader::load(config_file_path,TTR("EditorSettings"));
+		singleton = ResourceLoader::load(config_file_path,"EditorSettings");
 		if (singleton.is_null()) {
 			WARN_PRINT("Could not open config file.");
 			goto fail;
@@ -464,7 +464,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("2d_editor/bone_color2",Color(0.75,0.75,0.75,0.9));
 	set("2d_editor/bone_selected_color",Color(0.9,0.45,0.45,0.9));
 	set("2d_editor/bone_ik_color",Color(0.9,0.9,0.45,0.9));
-	
+
 	set("2d_editor/keep_margins_when_changing_anchors", false);
 
 	set("game_window_placement/rect",0);
@@ -505,7 +505,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #else
 	hints["import/pvrtc_texture_tool"]=PropertyInfo(Variant::STRING,"import/pvrtc_texture_tool",PROPERTY_HINT_GLOBAL_FILE,"");
 #endif
-	set(TTR("PVRTC/fast_conversion"),false);
+	// TODO: Rename to "import/pvrtc_fast_conversion" to match other names?
+	set("PVRTC/fast_conversion",false);
 
 
 	set("run/auto_save_before_running",true);

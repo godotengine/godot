@@ -66,7 +66,7 @@ void Particles2DEditorPlugin::_file_selected(const String& p_file) {
 
 	Image img;
 	Error err = ImageLoader::load_image(p_file,&img);
-	ERR_EXPLAIN(TTR("Error loading image: ")+p_file);
+	ERR_EXPLAIN(TTR("Error loading image:")+" "+p_file);
 	ERR_FAIL_COND(err!=OK);
 
 	img.convert(Image::FORMAT_GRAYSCALE_ALPHA);

@@ -9,7 +9,7 @@ bool MultiNodeEdit::_set(const StringName& p_name, const Variant& p_value){
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
 
-	ur->create_action(TTR("MultiNode Set ")+String(p_name));
+	ur->create_action(TTR("MultiNode Set")+" "+String(p_name));
 	for (const List<NodePath>::Element *E=nodes.front();E;E=E->next()) {
 
 		if (!es->has_node(E->get()))

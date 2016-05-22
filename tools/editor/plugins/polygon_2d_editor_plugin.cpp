@@ -840,8 +840,8 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	options = memnew( MenuButton );
 	add_child(options);
 	options->set_area_as_parent_rect();
-	options->set_text(TTR("Polygon"));
-	//options->get_popup()->add_item(TTR("Parse BBCODE"),PARSE_BBCODE);
+	options->set_text("Polygon");
+	//options->get_popup()->add_item("Parse BBCode",PARSE_BBCODE);
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 #endif
 
@@ -868,7 +868,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 		uv_button[i]->set_focus_mode(FOCUS_NONE);
 	}
 
-	uv_button[0]->set_tooltip("Move Point\nCtrl: Rotate\nShift: Move All\n:Shift+Ctrl: Scale");
+	uv_button[0]->set_tooltip(TTR("Move Point")+"\n"+TTR("Ctrl: Rotate")+"\n"+TTR("Shift: Move All")+"\n"+TTR("Shift+Ctrl: Scale"));
 	uv_button[1]->set_tooltip(TTR("Move Polygon"));
 	uv_button[2]->set_tooltip(TTR("Rotate Polygon"));
 	uv_button[3]->set_tooltip(TTR("Scale Polygon"));

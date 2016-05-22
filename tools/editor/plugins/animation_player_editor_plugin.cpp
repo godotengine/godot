@@ -496,7 +496,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 	}
 
 	if (player->has_animation(new_name)) {
-		error_dialog->set_text(TTR("ERROR: Animation Name Already Exists!"));
+		error_dialog->set_text(TTR("ERROR: Animation name already exists!"));
 		error_dialog->popup_centered_minsize();
 		return;
 	}
@@ -1022,7 +1022,7 @@ void AnimationPlayerEditor::_editor_store() {
 		return; //already there
 
 
-	undo_redo->create_action(TTR("Store anim in editor"));
+	undo_redo->create_action("Store anim in editor");
 	undo_redo->add_do_method(key_editor,"set_animation",anim);
 	undo_redo->add_undo_method(key_editor,"remove_animation",anim);
 	undo_redo->commit_action();
@@ -1044,7 +1044,7 @@ void AnimationPlayerEditor::_editor_load(){
 	String base=anim->get_name();
 	bool noname=false;
 	if (base=="") {
-		base=TTR("New Anim");
+		base="New Anim";
 		noname=true;
 	}
 
@@ -1063,7 +1063,7 @@ void AnimationPlayerEditor::_editor_load(){
 	if (noname)
 		anim->set_name(base);
 
-	undo_redo->create_action(TTR("Add Animation From Editor"));
+	undo_redo->create_action("Add Animation From Editor");
 	undo_redo->add_do_method(player,"add_animation",base,anim);
 	undo_redo->add_undo_method(player,"remove_animation",base);
 	undo_redo->add_do_method(this,"_animation_player_changed",player);
@@ -1298,7 +1298,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	Label * l;
 
 	/*l= memnew( Label );
-	l->set_text(TTR("Animation Player:"));
+	l->set_text("Animation Player:");
 	add_child(l);*/
 
 	HBoxContainer *hb = memnew( HBoxContainer );
@@ -1306,11 +1306,11 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 
 	play_bw_from = memnew( ToolButton );
-	play_bw_from->set_tooltip(TTR("Play backwards selected animation from current pos. (A)"));
+	play_bw_from->set_tooltip(TTR("Play selected animation backwards from current pos. (A)"));
 	hb->add_child(play_bw_from);
 
 	play_bw = memnew( ToolButton );
-	play_bw->set_tooltip(TTR("Play backwards selected animation from end. (Shift+A)"));
+	play_bw->set_tooltip(TTR("Play selected animation backwards from end. (Shift+A)"));
 	hb->add_child(play_bw);
 
 	stop = memnew( ToolButton );
@@ -1391,7 +1391,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 	autoplay = memnew( ToolButton );
 	hb->add_child(autoplay);
-	autoplay->set_tooltip(TTR("Autoplay On Load"));
+	autoplay->set_tooltip(TTR("Autoplay on Load"));
 
 
 
@@ -1405,7 +1405,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	tool_anim->get_popup()->add_item(TTR("Copy Animation"),TOOL_COPY_ANIM);
 	tool_anim->get_popup()->add_item(TTR("Paste Animation"),TOOL_PASTE_ANIM);
 	//tool_anim->get_popup()->add_separator();
-	//tool_anim->get_popup()->add_item(TTR("Edit Anim Resource"),TOOL_PASTE_ANIM);
+	//tool_anim->get_popup()->add_item("Edit Anim Resource",TOOL_PASTE_ANIM);
 	hb->add_child(tool_anim);
 
 	nodename = memnew( Button );
@@ -1444,7 +1444,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 	error_dialog = memnew( ConfirmationDialog );
 	error_dialog->get_ok()->set_text(TTR("Close"));
-	//error_dialog->get_cancel()->set_text(TTR("Close"));
+	//error_dialog->get_cancel()->set_text("Close");
 	error_dialog->set_text(TTR("Error!"));
 	add_child(error_dialog);
 
@@ -1459,7 +1459,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	blend_editor.dialog->set_child_rect(blend_vb);
 	blend_editor.tree = memnew( Tree );
 	blend_editor.tree->set_columns(2);
-	blend_vb->add_margin_child(TTR("Blend Times: "),blend_editor.tree,true);
+	blend_vb->add_margin_child(TTR("Blend Times:"),blend_editor.tree,true);
 	blend_editor.next = memnew( OptionButton );
 	blend_vb->add_margin_child(TTR("Next (Auto Queue):"),blend_editor.next);
 	blend_editor.dialog->set_title(TTR("Cross-Animation Blend Times"));

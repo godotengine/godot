@@ -859,7 +859,7 @@ void ScenesDock::_move_operation(const String& p_to_path) {
 
 	for(int i=0;i<move_dirs.size();i++) {
 		if (p_to_path.begins_with(move_dirs[i])) {
-			EditorNode::get_singleton()->show_warning(TTR("Can't move directories to within themselves"));
+			EditorNode::get_singleton()->show_warning(TTR("Can't move directories to within themselves."));
 			return;
 		}
 
@@ -944,6 +944,7 @@ void ScenesDock::_file_option(int p_option) {
 	switch(p_option) {
 
 
+		case FILE_SHOW_IN_EXPLORER:
 		case FILE_OPEN: {
 			int idx=-1;
 			for(int i=0;i<files->get_item_count();i++) {
@@ -959,6 +960,12 @@ void ScenesDock::_file_option(int p_option) {
 
 
 			String path = files->get_item_metadata(idx);
+			if (p_option == FILE_SHOW_IN_EXPLORER) {
+				String dir = Globals::get_singleton()->globalize_path(path);
+				dir = dir.substr(0, dir.find_last("/"));
+				OS::get_singleton()->shell_open(String("file://")+dir);
+				return;
+			}
 
 			if (path.ends_with("/")) {
 				if (path!="res://") {
@@ -1036,7 +1043,7 @@ void ScenesDock::_file_option(int p_option) {
 				rename_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 				rename_dialog->set_current_path(move_files[0]);
 				rename_dialog->popup_centered_ratio();
-				rename_dialog->set_title(TTR("Pick New Name and Location For: ")+move_files[0].get_file());
+				rename_dialog->set_title(TTR("Pick New Name and Location For:")+" "+move_files[0].get_file());
 
 
 			} else {
@@ -1416,6 +1423,10 @@ void ScenesDock::_files_list_rmb_select(int p_item,const Vector2& p_pos) {
 
 	file_options->add_item(TTR("Delete"),FILE_REMOVE);
 	//file_options->add_item(TTR("Info"),FILE_INFO);
+
+	file_options->add_separator();
+	file_options->add_item(TTR("Show In File Manager"),FILE_SHOW_IN_EXPLORER);
+
 	file_options->set_pos(files->get_global_pos() + p_pos);
 	file_options->popup();
 
@@ -1635,4 +1646,3 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 ScenesDock::~ScenesDock() {
 
 }
-

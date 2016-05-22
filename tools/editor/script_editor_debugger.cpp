@@ -292,7 +292,7 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 				it->set_icon(0,get_icon(type,"EditorIcons"));
 		}
 
-		vmem_total->set_tooltip(TTR("Bytes: ")+itos(total));
+		vmem_total->set_tooltip(TTR("Bytes:")+" "+itos(total));
 		vmem_total->set_text(String::humanize_size(total));
 
 	} else if (p_msg=="stack_dump") {
@@ -412,12 +412,12 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 		String time = String("%d:%02d:%02d:%04d").sprintf(vals,&e);
 		String txt=time+" - "+String(err[8]);
 
-		String tooltip=TTR("Type:")+String(warning?"Warning":"Error");
-		tooltip+="\nDescription: "+String(err[8]);
-		tooltip+="\nTime: "+time;
-		tooltip+="\nC Error: "+String(err[7]);
-		tooltip+="\nC Source: "+String(err[5])+":"+String(err[6]);
-		tooltip+="\nC Function: "+String(err[4]);
+		String tooltip=TTR("Type:")+String(warning?TTR("Warning"):TTR("Error"));
+		tooltip+="\n"+TTR("Description:")+" "+String(err[8]);
+		tooltip+="\n"+TTR("Time:")+" "+time;
+		tooltip+="\nC "+TTR("Error:")+" "+String(err[7]);
+		tooltip+="\nC "+TTR("Source:")+" "+String(err[5])+":"+String(err[6]);
+		tooltip+="\nC "+TTR("Function:")+" "+String(err[4]);
 
 
 
@@ -702,8 +702,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					debugger_button->set_icon(Ref<Texture>());
 					tabs->set_tab_icon(error_split->get_index(),Ref<Texture>());
 				} else {
-					error_split->set_name(TTR("Errors (")+itos(error_count)+")");
-					debugger_button->set_text(TTR("Debugger (")+itos(error_count)+")");
+					error_split->set_name(TTR("Errors")+" ("+itos(error_count)+")");
+					debugger_button->set_text(TTR("Debugger")+" ("+itos(error_count)+")");
 					debugger_button->set_icon(get_icon("Error","EditorIcons"));
 					tabs->set_tab_icon(error_split->get_index(),get_icon("Error","EditorIcons"));
 				}
@@ -1350,7 +1350,7 @@ void ScriptEditorDebugger::_error_selected(int p_idx) {
 
 		error_stack->add_item(str);
 		error_stack->set_item_metadata(error_stack->get_item_count()-1,md);
-		error_stack->set_item_tooltip(error_stack->get_item_count()-1,TTR("File: ")+String(st[i])+"\nLine: "+itos(line));
+		error_stack->set_item_tooltip(error_stack->get_item_count()-1,TTR("File:")+" "+String(st[i])+"\n"+TTR("Line:")+" "+itos(line));
 	}
 }
 
@@ -1484,7 +1484,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 
 	forward = memnew( Button );
 	hbc->add_child(forward);
-	back->set_tooltip(TTR("Inspect Next Instance"));
+	forward->set_tooltip(TTR("Inspect Next Instance"));
 
 
 	HSplitContainer *sc = memnew( HSplitContainer );
@@ -1533,7 +1533,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	errvb = memnew( VBoxContainer );
 	errvb->set_h_size_flags(SIZE_EXPAND_FILL);
 	error_stack = memnew( ItemList );
-	errvb->add_margin_child(TTR("Stack Trace (if applies):"),error_stack,true);
+	errvb->add_margin_child(TTR("Stack Trace (if applicable):"),error_stack,true);
 	error_split->add_child(errvb);
 
 	error_split->set_name(TTR("Errors"));
@@ -1591,10 +1591,10 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 
 	VBoxContainer *vmem_vb = memnew( VBoxContainer );
 	HBoxContainer *vmem_hb = memnew( HBoxContainer );
-	Label *vmlb = memnew(Label(TTR("List of Video Memory Usage by Resource: ")) );
+	Label *vmlb = memnew(Label(TTR("List of Video Memory Usage by Resource:")+" ") );
 	vmlb->set_h_size_flags(SIZE_EXPAND_FILL);
 	vmem_hb->add_child( vmlb );
-	vmem_hb->add_child( memnew(Label(TTR("Total: "))) );
+	vmem_hb->add_child( memnew(Label(TTR("Total:")+" ")) );
 	vmem_total = memnew( LineEdit );
 	vmem_total->set_editable(false);
 	vmem_total->set_custom_minimum_size(Size2(100,1));

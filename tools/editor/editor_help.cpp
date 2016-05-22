@@ -519,7 +519,7 @@ EditorHelpIndex::EditorHelpIndex() {
 	search_box->connect("input_event", this, "_sbox_input");
 
 	class_list = memnew( Tree );
-	vbc->add_margin_child(TTR("Class List: "), class_list, true);
+	vbc->add_margin_child(TTR("Class List:")+" ", class_list, true);
 	class_list->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	class_list->connect("item_activated",this,"_tree_item_selected");
@@ -710,7 +710,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 	class_desc->push_font(doc_title_font);
 	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
-	class_desc->add_text(TTR("Class: "));
+	class_desc->add_text(TTR("Class:")+" ");
 	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/base_type_color"));
 	_add_text(p_class);
 	class_desc->pop();
@@ -722,7 +722,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text(TTR("Inherits: "));
+		class_desc->add_text(TTR("Inherits:")+" ");
 		class_desc->pop();
 		class_desc->pop();
 
@@ -756,7 +756,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 				if (!found) {
 					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 					class_desc->push_font(doc_title_font);
-					class_desc->add_text("Inherited by: ");
+					class_desc->add_text(TTR("Inherited by:")+" ");
 					class_desc->pop();
 					class_desc->pop();
 

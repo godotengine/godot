@@ -73,7 +73,7 @@ void MultiMeshEditor::_populate() {
 
 		if (!ms_node) {
 
-			err_dialog->set_text(TTR("Mesh source is invalid (Invalid Path)."));
+			err_dialog->set_text(TTR("Mesh source is invalid (invalid path)."));
 			err_dialog->popup_centered_minsize();
 			return;
 		}
@@ -82,7 +82,7 @@ void MultiMeshEditor::_populate() {
 
 		if (!ms_instance) {
 
-			err_dialog->set_text(TTR("Mesh source is invalid (Not a MeshInstance)."));
+			err_dialog->set_text(TTR("Mesh source is invalid (not a MeshInstance)."));
 			err_dialog->popup_centered_minsize();
 			return;
 		}
@@ -91,7 +91,7 @@ void MultiMeshEditor::_populate() {
 
 		if (mesh.is_null()) {
 
-			err_dialog->set_text(TTR("Mesh source is invalid (Contains no Mesh resource)."));
+			err_dialog->set_text(TTR("Mesh source is invalid (contains no Mesh resource)."));
 			err_dialog->popup_centered_minsize();
 			return;
 		}
@@ -109,7 +109,7 @@ void MultiMeshEditor::_populate() {
 
 	if (!ss_node) {
 
-		err_dialog->set_text(TTR("Surface source is invalid (Invalid Path)."));
+		err_dialog->set_text(TTR("Surface source is invalid (invalid path)."));
 		err_dialog->popup_centered_minsize();
 		return;
 	}
@@ -118,7 +118,7 @@ void MultiMeshEditor::_populate() {
 
 	if (!ss_instance) {
 
-		err_dialog->set_text(TTR("Surface source is invalid (Not Geometry)."));
+		err_dialog->set_text(TTR("Surface source is invalid (no geometry)."));
 		err_dialog->popup_centered_minsize();
 		return;
 	}
@@ -129,7 +129,7 @@ void MultiMeshEditor::_populate() {
 
 	if (geometry.size()==0) {
 
-		err_dialog->set_text(TTR("Surface source is invalid (No Faces)."));
+		err_dialog->set_text(TTR("Surface source is invalid (no faces)."));
 		err_dialog->popup_centered_minsize();
 		return;
 	}
@@ -153,10 +153,10 @@ void MultiMeshEditor::_populate() {
 	node->populate_parent(populate_rotate_random->get_val(),populate_tilt_random->get_val(),populate_scale_random->get_val(),populate_scale->get_val());
 
 
-	ERR_EXPLAIN(TTR("Parent is not of type VisualInstance."));
+	ERR_EXPLAIN("Parent is not of type VisualInstance.");
 	ERR_FAIL_COND(!get_parent() || !get_parent()->is_type("VisualInstance"));
 
-	ERR_EXPLAIN(TTR("Multimesh not present"));
+	ERR_EXPLAIN("Multimesh not present.");
 	ERR_FAIL_COND(multimesh.is_null());
 
 	VisualInstance *vi = get_parent()->cast_to<VisualInstance>();
@@ -184,9 +184,9 @@ void MultiMeshEditor::_populate() {
 		area_accum+=area;
 	}
 
-	ERR_EXPLAIN(TTR("Couldn't map area"));
+	ERR_EXPLAIN(TTR("Couldn't map area."));
 	ERR_FAIL_COND(triangle_area_map.size()==0);
-	ERR_EXPLAIN(TTR("Couldn't map area"));
+	ERR_EXPLAIN(TTR("Couldn't map area."));
 	ERR_FAIL_COND(area_accum==0);
 
 

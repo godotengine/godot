@@ -390,7 +390,7 @@ CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) {
 	add_child(button_create);
 	button_create->connect("pressed",this,"_menu_option",varray(MODE_CREATE));
 	button_create->set_toggle_mode(true);
-	button_create->set_tooltip(TTR("Create a new polygon from scratch"));
+	button_create->set_tooltip(TTR("Create a new polygon from scratch."));
 
 	button_edit = memnew( ToolButton );
 	add_child(button_edit);
@@ -404,8 +404,8 @@ CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) {
 	options = memnew( MenuButton );
 	add_child(options);
 	options->set_area_as_parent_rect();
-	options->set_text(TTR("Polygon"));
-	//options->get_popup()->add_item(TTR("Parse BBCODE"),PARSE_BBCODE);
+	options->set_text("Polygon");
+	//options->get_popup()->add_item("Parse BBCode",PARSE_BBCODE);
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 #endif
 

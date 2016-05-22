@@ -1103,7 +1103,7 @@
 			% key
 		</constant>
 		<constant name="KEY_AMPERSAND" value="38">
-			& key
+			&amp; key
 		</constant>
 		<constant name="KEY_APOSTROPHE" value="39">
 			' key
@@ -7268,12 +7268,14 @@
 			<argument index="0" name="degrees" type="float">
 			</argument>
 			<description>
+			Set rotation of the layer in degree.
 			</description>
 		</method>
 		<method name="get_rotationd" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Get rotation of the layer in degree.
 			</description>
 		</method>
 		<method name="set_scale">
@@ -12250,18 +12252,21 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="dir" type="String">
 			</argument>
 			<description>
+			Set the current working directory of the file dialog.
 			</description>
 		</method>
 		<method name="set_current_file">
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
+			Set the current selected file name of the file dialog.
 			</description>
 		</method>
 		<method name="set_current_path">
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Set the current selected file path of the file dialog.
 			</description>
 		</method>
 		<method name="set_mode">
@@ -12282,6 +12287,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<return type="VBoxContainer">
 			</return>
 			<description>
+			Return the vertical box container of the dialog, custom controls can be added to it.
 			</description>
 		</method>
 		<method name="set_access">
@@ -12314,6 +12320,7 @@ This approximation makes straight segments between each point, then subdivides t
 		</method>
 		<method name="invalidate">
 			<description>
+			Invalidate and update the current dialog content list.
 			</description>
 		</method>
 	</methods>
@@ -12351,6 +12358,7 @@ This approximation makes straight segments between each point, then subdivides t
 			The dialog functions as a folder selector, disallowing the selection of any file.
 		</constant>
 		<constant name="MODE_OPEN_ANY" value="3">
+			The dialog allows the selection of a file or a directory.
 		</constant>
 		<constant name="MODE_SAVE_FILE" value="4">
 			The dialog will warn when a file exists.
@@ -21323,24 +21331,28 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Set whether the window is minimized.
 			</description>
 		</method>
 		<method name="is_window_minimized" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if the window is minimized.
 			</description>
 		</method>
 		<method name="set_window_maximized">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Set the window size to maximized.
 			</description>
 		</method>
 		<method name="is_window_maximized" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if the window is maximized.
 			</description>
 		</method>
 		<method name="set_borderless_window">
@@ -21578,6 +21590,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="int">
 			</return>
 			<description>
+			Return	the current unix timestamp.
 			</description>
 		</method>
 		<method name="get_datetime_from_unix_time" qualifiers="const">
@@ -21740,6 +21753,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="String">
 			</return>
 			<description>
+			Return the absolute directory path of user data path([user://]).
 			</description>
 		</method>
 		<method name="get_system_dir" qualifiers="const">
@@ -41485,6 +41499,17 @@ This method controls whether the position between two cached points is interpola
 			<return type="float">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="get_linear_velocity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			Returns the VehicleBody's velocity vector. To get the absolute speed in scalar value, get the length of the return vector in pixels/second. Example:
+			[codeblock]
+			# vehicle is an instance of VehicleBody
+			var speed = vehicle.get_linear_velocity().length()
+			[/codeblock]
 			</description>
 		</method>
 	</methods>

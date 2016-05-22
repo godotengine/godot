@@ -32,7 +32,7 @@
 void EditorReImportDialog::popup_reimport() {
 
 	if (EditorFileSystem::get_singleton()->is_scanning()) {
-		error->set_text(TTR("Please wait for scan to complete"));
+		error->set_text(TTR("Please wait for scan to complete."));
 		error->popup_centered_minsize();
 		return;
 	}
@@ -92,7 +92,7 @@ void EditorReImportDialog::popup_reimport() {
 void EditorReImportDialog::ok_pressed() {
 
 	if (EditorFileSystem::get_singleton()->is_scanning()) {
-		error->set_text(TTR("Please wait for scan to complete"));
+		error->set_text(TTR("Please wait for scan to complete."));
 		error->popup_centered_minsize();
 		return;
 	}

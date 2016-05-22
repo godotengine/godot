@@ -16,7 +16,7 @@ public:
 	void set_color(const Color& p_color);
 	Color get_color() const;
 
-	String CanvasModulate::get_configuration_warning() const;
+	String get_configuration_warning() const;
 
 	CanvasModulate();
 	~CanvasModulate();

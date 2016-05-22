@@ -27,7 +27,7 @@ void DependencyEditor::_load_pressed(Object* p_item,int p_cell,int p_button){
 	String fname = ti->get_text(0);
 	replacing = ti->get_text(1);
 
-	search->set_title(TTR("Search Replacement For: ")+replacing.get_file());
+	search->set_title(TTR("Search Replacement For:")+" "+replacing.get_file());
 
 	search->clear_filters();
 	List<String> ext;
@@ -180,7 +180,7 @@ void DependencyEditor::_update_list() {
 		String name = path.get_file();
 
 		Ref<Texture> icon;
-		if (has_icon(type,TTR("EditorIcons"))) {
+		if (has_icon(type,"EditorIcons")) {
 			icon=get_icon(type,"EditorIcons");
 		} else {
 			icon=get_icon("Object","EditorIcons");
@@ -209,15 +209,15 @@ void DependencyEditor::edit(const String& p_path) {
 
 
 	editing=p_path;
-	set_title(TTR("Dependencies For: ")+p_path.get_file());
+	set_title(TTR("Dependencies For:")+" "+p_path.get_file());
 
 	_update_list();
 	popup_centered_ratio();
 
 	if (EditorNode::get_singleton()->is_scene_open(p_path)) {
-		EditorNode::get_singleton()->show_warning(TTR("Scene '")+p_path.get_file()+"' is currently being edited.\nChanges will not take effect unless reloaded.");
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Scene '%s' is currently being edited.\nChanges will not take effect unless reloaded."),p_path.get_file()));
 	} else if (ResourceCache::has(p_path)) {
-		EditorNode::get_singleton()->show_warning(TTR("Resource '")+p_path.get_file()+"' is in use.\nChanges will take effect when reloaded.");
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Resource '%s' is in use.\nChanges will take effect when reloaded."),p_path.get_file()));
 	}
 }
 
@@ -301,7 +301,7 @@ void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
 
 		Ref<Texture> icon;
 		String type=efsd->get_file_type(i);
-		if (!has_icon(type,TTR("EditorIcons"))) {
+		if (!has_icon(type,"EditorIcons")) {
 			icon=get_icon("Object","EditorIcons");
 		} else {
 			icon=get_icon(type,"EditorIcons");
@@ -319,7 +319,7 @@ void DependencyEditorOwners::show(const String& p_path) {
 	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem());
 	popup_centered_ratio();
 
-	set_title(TTR("Owners Of: ")+p_path.get_file());
+	set_title(TTR("Owners Of:")+" "+p_path.get_file());
 
 }
 
@@ -362,7 +362,7 @@ void DependencyRemoveDialog::_fill_owners(EditorFileSystemDirectory *efsd) {
 
 		Ref<Texture> icon;
 		String type=efsd->get_file_type(i);
-		if (!has_icon(type,TTR("EditorIcons"))) {
+		if (!has_icon(type,"EditorIcons")) {
 			icon=get_icon("Object","EditorIcons");
 		} else {
 			icon=get_icon(type,"EditorIcons");
@@ -448,7 +448,7 @@ void DependencyErrorDialog::show(const String& p_for_file,const Vector<String> &
 
 
 	for_file=p_for_file;
-	set_title(TTR("Error loading: ")+p_for_file.get_file());
+	set_title(TTR("Error loading:")+" "+p_for_file.get_file());
 	files->clear();
 
 	TreeItem *root = files->create_item(NULL);
@@ -461,7 +461,7 @@ void DependencyErrorDialog::show(const String& p_for_file,const Vector<String> &
 			type=report[i].get_slice("::",1);
 
 		Ref<Texture> icon;
-		if (!has_icon(type,TTR("EditorIcons"))) {
+		if (!has_icon(type,"EditorIcons")) {
 			icon=get_icon("Object","EditorIcons");
 		} else {
 			icon=get_icon(type,"EditorIcons");
@@ -523,7 +523,7 @@ void OrphanResourcesDialog::ok_pressed() {
 	if (paths.empty())
 		return;
 
-	delete_confirm->set_text(TTR("Permanently Delete ")+itos(paths.size())+" Item(s) ? (No Undo!!)");
+	delete_confirm->set_text(vformat(TTR("Permanently delete %d item(s)? (No undo!)"),paths.size()));
 	delete_confirm->popup_centered_minsize();
 }
 
@@ -580,7 +580,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd,HashMap
 				String type=efsd->get_file_type(i);
 
 				Ref<Texture> icon;
-				if (has_icon(type,TTR("EditorIcons"))) {
+				if (has_icon(type,"EditorIcons")) {
 					icon=get_icon(type,"EditorIcons");
 				} else {
 					icon=get_icon("Object","EditorIcons");

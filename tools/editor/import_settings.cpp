@@ -278,7 +278,7 @@ ImportSettingsDialog::ImportSettingsDialog(EditorNode *p_editor) {
 	set_child_rect(tree);
 	set_title(TTR("Imported Resources"));
 
-	texformat=TTR("Keep,None,Disk,VRAM");
+//	texformat="Keep,None,Disk,VRAM";
 
 	tree->set_hide_root(true);
 	tree->set_columns(2);
@@ -288,7 +288,7 @@ ImportSettingsDialog::ImportSettingsDialog(EditorNode *p_editor) {
 	tree->connect("item_edited",this,"_item_edited");
 	tree->connect("button_pressed",this,"_button_pressed");
 
-//	add_button(TTR("Re-Import"),"reimport");
+//	add_button("Re-Import","reimport");
 	get_ok()->set_text(TTR("Re-Import"));
 	get_cancel()->set_text(TTR("Close"));
 

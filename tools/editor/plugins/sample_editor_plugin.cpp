@@ -328,7 +328,7 @@ void SampleEditor::_update_sample() {
 		return; //bye or unsupported
 
 	generate_preview_texture(sample,peakdisplay);
-	info_label->set_text(TTR("Length: ")+itos(sample->get_length())+" frames ("+String::num(sample->get_length()/(float)sample->get_mix_rate(),2)+" s), "+(sample->get_format()==Sample::FORMAT_PCM16?"16 Bits, ":"8 bits, ")+(sample->is_stereo()?"Stereo.":"Mono."));
+	info_label->set_text(TTR("Length:")+" "+vformat(TTR("%d frames"), sample->get_length())+" ("+String::num(sample->get_length()/(float)sample->get_mix_rate(),2)+" s), "+(sample->get_format()==Sample::FORMAT_PCM16?TTR("16 Bits"):TTR("8 Bits"))+", "+(sample->is_stereo()?TTR("Stereo"):TTR("Mono"))+".");
 
 	library->add_sample("default",sample);
 }

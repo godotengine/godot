@@ -207,6 +207,13 @@ public:
 			return;
 		}
 
+		String dst = save_path->get_text();
+		if (dst=="") {
+			error_dialog->set_text(TTR("Save path is empty!"));
+			error_dialog->popup_centered_minsize();
+			return;
+		}
+
 		for(int i=0;i<meshes.size();i++) {
 
 			Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
@@ -224,16 +231,9 @@ public:
 
 			imd->add_source(EditorImportPlugin::validate_source_path(meshes[i]));
 
-			String dst = save_path->get_text();
-			if (dst=="") {
-				error_dialog->set_text(TTR("Save path is empty!"));
-				error_dialog->popup_centered_minsize();
-				return;
-			}
+			String file_path = dst.plus_file(meshes[i].get_file().basename()+".msh");
 
-			dst = dst.plus_file(meshes[i].get_file().basename()+".msh");
-
-			plugin->import(dst,imd);
+			plugin->import(file_path,imd);
 		}
 
 		hide();
@@ -362,7 +362,7 @@ Error EditorMeshImportPlugin::import(const String& p_path, const Ref<ResourceImp
 				if (mesh->surface_get_name(i)!="")
 					name=mesh->surface_get_name(i);
 				else
-					name=TTR("Surface ")+itos(i+1);
+					name=vformat(TTR("Surface %d"),i+1);
 
 				name_map[name]=mesh->surface_get_material(i);
 			}
@@ -498,7 +498,7 @@ Error EditorMeshImportPlugin::import(const String& p_path, const Ref<ResourceImp
 				surf_tool->index();
 				mesh = surf_tool->commit(mesh);
 				if (name=="")
-					name=TTR("Surface ")+itos(mesh->get_surface_count()-1);
+					name=vformat(TTR("Surface %d"),mesh->get_surface_count()-1);
 				mesh->surface_set_name(mesh->get_surface_count()-1,name);
 				name="";
 				surf_tool->clear();

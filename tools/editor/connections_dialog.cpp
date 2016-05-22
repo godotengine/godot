@@ -294,8 +294,8 @@ void ConnectDialog::_bind_methods() {
 
 ConnectDialog::ConnectDialog() {
 
-	int margin = get_constant("margin",TTR("Dialogs"));
-	int button_margin = get_constant("button_margin",TTR("Dialogs"));
+	int margin = get_constant("margin","Dialogs");
+	int button_margin = get_constant("button_margin","Dialogs");
 
 
 	Label * label = memnew( Label );
@@ -416,7 +416,7 @@ ConnectDialog::ConnectDialog() {
 
 
 	/*dst_method_list = memnew( MenuButton );
-	dst_method_list->set_text(TTR("List.."));
+	dst_method_list->set_text("List..");
 	dst_method_list->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	dst_method_list->set_anchor( MARGIN_LEFT, ANCHOR_END );
 	dst_method_list->set_anchor( MARGIN_TOP, ANCHOR_END );
@@ -429,7 +429,7 @@ ConnectDialog::ConnectDialog() {
 	make_callback = memnew( CheckButton );
 	make_callback->set_toggle_mode(true);
 	make_callback->set_pressed( EDITOR_DEF("text_editor/create_signal_callbacks",true));
-	make_callback->set_text(TTR("Make Function  "));
+	make_callback->set_text(TTR("Make Function"));
 	dstm_hb->add_child(make_callback);
 
 	deferred = memnew( CheckButton );
@@ -447,7 +447,7 @@ ConnectDialog::ConnectDialog() {
 	realtime->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	realtime->set_begin( Point2( 120, button_margin-10 ) );
 	realtime->set_end( Point2( 80, margin ) );
-	realtime->set_text(TTR("Realtime"));
+	realtime->set_text("Realtime");
 	add_child(realtime);
 */
 
@@ -465,7 +465,7 @@ ConnectDialog::ConnectDialog() {
 	add_child(error);
 	error->get_ok()->set_text(TTR("Close"));
 	get_ok()->set_text(TTR("Connect"));
-//	error->get_cancel()->set_text(TTR("Close"));
+//	error->get_cancel()->set_text("Close");
 
 
 
@@ -511,7 +511,7 @@ void ConnectionsDialog::_connect() {
 	StringArray args =  it->get_metadata(0).operator Dictionary()["args"];
 	int flags = CONNECT_PERSIST | (defer?CONNECT_DEFERRED:0) | (oshot?CONNECT_ONESHOT:0);
 
-	undo_redo->create_action(TTR("Connect '")+signal+"' to '"+String(dst_method)+"'");
+	undo_redo->create_action(vformat(TTR("Connect '%s' to '%s'"),signal,String(dst_method)));
 	undo_redo->add_do_method(node,"connect",signal,target,dst_method,binds,flags);
 	undo_redo->add_undo_method(node,"disconnect",signal,target,dst_method);
 	undo_redo->add_do_method(this,"update_tree");
@@ -610,7 +610,7 @@ void ConnectionsDialog::_remove_confirm() {
 
 	Dictionary meta=selected->get_metadata(0);
 
-	undo_redo->create_action(TTR("Remove Subscription"));
+	undo_redo->create_action("Remove Subscription");
 	undo_redo->add_do_method(node,"unsubscribe_path_event",meta["from_event"].operator String(),meta["from_path"].operator NodePath(),meta["to_method"].operator String());
 	undo_redo->add_undo_method(node,"subscribe_path_event_persist",meta["from_event"].operator String(),meta["from_path"].operator NodePath(),meta["to_method"].operator String(),Array(),false);
 	undo_redo->add_do_method(this,"update_tree");
