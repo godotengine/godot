@@ -1461,14 +1461,18 @@ GDInstance* GDScript::_create_instance(const Variant** p_args,int p_argcount,Obj
 
 	/* STEP 2, INITIALIZE AND CONSRTUCT */
 
+	thread_lock->lock();
 	instances.insert(instance->owner);
+	thread_lock->unlock();
 
 	initializer->call(instance,p_args,p_argcount,r_error);
 
 	if (r_error.error!=Variant::CallError::CALL_OK) {
 		instance->script=Ref<GDScript>();
 		instance->owner->set_script_instance(NULL);
+		thread_lock->lock();
 		instances.erase(p_owner);
+		thread_lock->unlock();
 		ERR_FAIL_COND_V(r_error.error!=Variant::CallError::CALL_OK, NULL); //error constructing
 	}
 
@@ -1667,7 +1671,10 @@ ScriptInstance* GDScript::instance_create(Object *p_this) {
 }
 bool GDScript::instance_has(const Object *p_this) const {
 
-	return instances.has((Object*)p_this);
+	thread_lock->lock();
+	bool result = instances.has((Object*)p_this);
+	thread_lock->unlock();
+	return result;
 }
 
 bool GDScript::has_source_code() const {
@@ -1859,7 +1866,10 @@ void GDScript::_set_subclass_path(Ref<GDScript>& p_sc,const String& p_path) {
 Error GDScript::reload() {
 
 
-	ERR_FAIL_COND_V(instances.size(),ERR_ALREADY_IN_USE);
+	thread_lock->lock();
+	int instance_size = instances.size();
+	thread_lock->unlock();
+	ERR_FAIL_COND_V(instance_size > 0,ERR_ALREADY_IN_USE);
 
 	String basedir=path;
 
@@ -2206,9 +2216,15 @@ GDScript::GDScript() {
 #ifdef TOOLS_ENABLED
 	source_changed_cache=false;
 #endif
+	thread_lock = Mutex::create();
 
 }
 
+
+GDScript::~GDScript() {
+
+	memdelete(thread_lock);
+}
 
 
 
@@ -2576,7 +2592,9 @@ GDInstance::GDInstance() {
 
 GDInstance::~GDInstance() {
 	if (script.is_valid() && owner) {
+		script->thread_lock->lock();
 		script->instances.erase(owner);
+		script->thread_lock->unlock();
 	}
 }
 
