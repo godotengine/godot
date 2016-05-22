@@ -94,6 +94,8 @@ private:
 	//int cursor_metric;
 	int hover_metric;
 
+	float graph_height;
+
 	bool seeking;
 
 	Timer *frame_delay;
