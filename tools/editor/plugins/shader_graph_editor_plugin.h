@@ -118,7 +118,7 @@ public:
 
 class ShaderGraphView : public Control {
 
-	OBJ_TYPE(ShaderGraphView,Node);
+	OBJ_TYPE(ShaderGraphView,Control);
 
 
 
