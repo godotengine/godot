@@ -487,12 +487,12 @@ static String _disassemble_addr(const Ref<GDScript>& p_script,const GDFunction& 
 static void _disassemble_class(const Ref<GDScript>& p_class,const Vector<String>& p_code) {
 
 
-	const Map<StringName,GDFunction>& mf = p_class->debug_get_member_functions();
+	const Map<StringName,GDFunction*>& mf = p_class->debug_get_member_functions();
 
-	for(const Map<StringName,GDFunction>::Element *E=mf.front();E;E=E->next()) {
+	for(const Map<StringName,GDFunction*>::Element *E=mf.front();E;E=E->next()) {
 
 
-		const GDFunction &func=E->get();
+		const GDFunction &func=*E->get();
 		const int *code = func.get_code();
 		int codelen=func.get_code_size();
 		String defargs;

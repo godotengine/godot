@@ -159,7 +159,7 @@ private:
 		OBJECT_CALL_METHOD,
 		OBJECT_REQUEST_HELP,
 		RUN_PLAY,
-		RUN_PAUSE,
+
 		RUN_STOP,
 		RUN_PLAY_SCENE,
 		RUN_PLAY_NATIVE,
@@ -691,6 +691,8 @@ public:
 	void save_layout();
 
 	void update_keying();
+
+	ToolButton *get_pause_button() { return pause_button; }
 
 
 	ToolButton* add_bottom_panel_item(String p_text,Control *p_item);

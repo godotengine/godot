@@ -125,6 +125,10 @@ static ObjectID safe_get_instance_id(const Variant& p_v) {
 
 void ScriptDebuggerRemote::debug(ScriptLanguage *p_script,bool p_can_continue) {
 
+	//this function is called when there is a debugger break (bug on script)
+	//or when execution is paused from editor
+
+
 	if (!tcp_client->is_connected()) {
 		ERR_EXPLAIN("Script Debugger failed to connect, but being used anyway.");
 		ERR_FAIL();
@@ -134,6 +138,8 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script,bool p_can_continue) {
 	packet_peer_stream->put_var(2);
 	packet_peer_stream->put_var(p_can_continue);
 	packet_peer_stream->put_var(p_script->debug_get_error());
+
+	skip_profile_frame=true; // to avoid super long frame time for the frame
 
 	Input::MouseMode mouse_mode=Input::get_singleton()->get_mouse_mode();
 	if (mouse_mode!=Input::MOUSE_MODE_VISIBLE)
@@ -372,7 +378,7 @@ void ScriptDebuggerRemote::line_poll() {
 
 	//the purpose of this is just processing events every now and then when the script might get too busy
 	//otherwise bugs like infinite loops cant be catched
-	if (poll_every%512==0)
+	if (poll_every%2048==0)
 		_poll_events();
 	poll_every++;
 
@@ -535,6 +541,9 @@ bool ScriptDebuggerRemote::_parse_live_edit(const Array& cmd) {
 
 void ScriptDebuggerRemote::_poll_events() {
 
+	//this si called from ::idle_poll, happens only when running the game,
+	//does not get called while on debug break
+
 	while(packet_peer_stream->get_available_packet_count()>0) {
 
 		_get_output();
@@ -566,6 +575,31 @@ void ScriptDebuggerRemote::_poll_events() {
 		} else if (command=="request_video_mem") {
 
 			_send_video_memory();
+		} else if (command=="start_profiling") {
+
+			for(int i=0;i<ScriptServer::get_language_count();i++) {
+				ScriptServer::get_language(i)->profiling_start();
+			}
+
+			max_frame_functions=cmd[1];
+			profiler_function_signature_map.clear();
+			profiling=true;
+			frame_time=0;
+			idle_time=0;
+			fixed_time=0;
+			fixed_frame_time=0;
+
+			print_line("PROFILING ALRIGHT!");
+
+		} else if (command=="stop_profiling") {
+
+			for(int i=0;i<ScriptServer::get_language_count();i++) {
+				ScriptServer::get_language(i)->profiling_stop();
+			}
+			profiling=false;
+			_send_profiling_data(false);
+			print_line("PROFILING END!");
+
 		} else if (command=="breakpoint") {
 
 			bool set = cmd[3];
@@ -582,7 +616,112 @@ void ScriptDebuggerRemote::_poll_events() {
 }
 
 
+void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
+
+
+
+
+	int ofs=0;
+
+	for(int i=0;i<ScriptServer::get_language_count();i++) {
+		if (p_for_frame)
+			ofs+=ScriptServer::get_language(i)->profiling_get_frame_data(&profile_info[ofs],profile_info.size()-ofs);
+		else
+			ofs+=ScriptServer::get_language(i)->profiling_get_accumulated_data(&profile_info[ofs],profile_info.size()-ofs);
+	}
+
+	for(int i=0;i<ofs;i++) {
+		profile_info_ptrs[i]=&profile_info[i];
+	}
+
+	SortArray<ScriptLanguage::ProfilingInfo*,ProfileInfoSort> sa;
+	sa.sort(profile_info_ptrs.ptr(),ofs);
+
+	int to_send=MIN(ofs,max_frame_functions);
+
+	//check signatures first
+	uint64_t total_script_time=0;
+
+	for(int i=0;i<to_send;i++) {
+
+		if (!profiler_function_signature_map.has(profile_info_ptrs[i]->signature)) {
+
+			int idx = profiler_function_signature_map.size();
+			packet_peer_stream->put_var("profile_sig");
+			packet_peer_stream->put_var(2);
+			packet_peer_stream->put_var(profile_info_ptrs[i]->signature);
+			packet_peer_stream->put_var(idx);
+
+			profiler_function_signature_map[profile_info_ptrs[i]->signature]=idx;
+
+
+		}
+
+		total_script_time+=profile_info_ptrs[i]->self_time;
+	}
+
+	//send frames then
+
+	if (p_for_frame) {
+		packet_peer_stream->put_var("profile_frame");
+		packet_peer_stream->put_var(8+profile_frame_data.size()*2+to_send*4);
+	} else {
+		packet_peer_stream->put_var("profile_total");
+		packet_peer_stream->put_var(8+to_send*4);
+	}
+
+
+	packet_peer_stream->put_var(OS::get_singleton()->get_frames_drawn()); //total frame time
+	packet_peer_stream->put_var(frame_time); //total frame time
+	packet_peer_stream->put_var(idle_time); //idle frame time
+	packet_peer_stream->put_var(fixed_time); //fixed frame time
+	packet_peer_stream->put_var(fixed_frame_time); //fixed frame time
+
+	packet_peer_stream->put_var(USEC_TO_SEC(total_script_time)); //total script execution time
+
+	if (p_for_frame) {
+
+		packet_peer_stream->put_var(profile_frame_data.size());	//how many profile framedatas to send
+		packet_peer_stream->put_var(to_send); //how many script functions to send
+		for (int i=0;i<profile_frame_data.size();i++) {
+
+
+			packet_peer_stream->put_var(profile_frame_data[i].name);
+			packet_peer_stream->put_var(profile_frame_data[i].data);
+		}
+	} else {
+		packet_peer_stream->put_var(0); //how many script functions to send
+		packet_peer_stream->put_var(to_send); //how many script functions to send
+	}
+
+
+
+	for(int i=0;i<to_send;i++) {
+
+		int sig_id=-1;
+
+		if (profiler_function_signature_map.has(profile_info_ptrs[i]->signature)) {
+			sig_id=profiler_function_signature_map[profile_info_ptrs[i]->signature];
+		}
+
+
+
+		packet_peer_stream->put_var(sig_id);
+		packet_peer_stream->put_var(profile_info_ptrs[i]->call_count);
+		packet_peer_stream->put_var(profile_info_ptrs[i]->total_time/1000000.0);
+		packet_peer_stream->put_var(profile_info_ptrs[i]->self_time/1000000.0);
+	}
+
+	if (p_for_frame) {
+		profile_frame_data.clear();
+	}
+
+}
+
 void ScriptDebuggerRemote::idle_poll() {
+
+	// this function is called every frame, except when there is a debugger break (::debug() in this class)
+	// execution stops and remains in the ::debug function
 
 	    _get_output();
 
@@ -613,6 +752,16 @@ void ScriptDebuggerRemote::idle_poll() {
 			packet_peer_stream->put_var(arr);
 
 		}
+	    }
+
+	    if (profiling) {
+
+		    if (skip_profile_frame) {
+			    skip_profile_frame=false;
+		    } else {
+			//send profiling info normally
+			_send_profiling_data(true);
+		    }
 	    }
 
 	    _poll_events();
@@ -687,6 +836,50 @@ void ScriptDebuggerRemote::set_live_edit_funcs(LiveEditFuncs *p_funcs) {
 	live_edit_funcs=p_funcs;
 }
 
+bool ScriptDebuggerRemote::is_profiling() const {
+
+	return profiling;
+}
+void ScriptDebuggerRemote::add_profiling_frame_data(const StringName& p_name,const Array& p_data){
+
+	int idx=-1;
+	for(int i=0;i<profile_frame_data.size();i++) {
+		if (profile_frame_data[i].name==p_name) {
+			idx=i;
+			break;
+		}
+	}
+
+	FrameData fd;
+	fd.name=p_name;
+	fd.data=p_data;
+
+	if (idx==-1) {
+		profile_frame_data.push_back(fd);
+	} else {
+		profile_frame_data[idx]=fd;
+	}
+}
+
+void ScriptDebuggerRemote::profiling_start() {
+	//ignores this, uses it via connnection
+}
+
+void ScriptDebuggerRemote::profiling_end() {
+	//ignores this, uses it via connnection
+}
+
+void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_fixed_time, float p_fixed_frame_time) {
+
+	frame_time=p_frame_time;
+	idle_time=p_idle_time;
+	fixed_time=p_fixed_time;
+	fixed_frame_time=p_fixed_frame_time;
+
+
+}
+
+
 ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func=NULL;
 
 ScriptDebuggerRemote::ScriptDebuggerRemote() {
@@ -710,10 +903,16 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() {
 	char_count=0;
 	msec_count=0;
 	last_msec=0;
+	skip_profile_frame=false;
 
 	eh.errfunc=_err_handler;
 	eh.userdata=this;
 	add_error_handler(&eh);
+
+	profile_info.resize(CLAMP(int(Globals::get_singleton()->get("debug/profiler_max_functions")),128,65535));
+	profile_info_ptrs.resize(profile_info.size());
+	profiling=false;
+	max_frame_functions=16;
 
 }
 
@@ -722,5 +921,6 @@ ScriptDebuggerRemote::~ScriptDebuggerRemote() {
 	remove_print_handler(&phl);
 	remove_error_handler(&eh);
 	memdelete(mutex);
+
 
 }

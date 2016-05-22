@@ -59,6 +59,20 @@ public:
 
 class SpaceSW {
 
+public:
+
+	enum ElapsedTime {
+		ELAPSED_TIME_INTEGRATE_FORCES,
+		ELAPSED_TIME_GENERATE_ISLANDS,
+		ELAPSED_TIME_SETUP_CONSTRAINTS,
+		ELAPSED_TIME_SOLVE_CONSTRAINTS,
+		ELAPSED_TIME_INTEGRATE_VELOCITIES,
+		ELAPSED_TIME_MAX
+
+	};
+private:
+
+	uint64_t elapsed_time[ELAPSED_TIME_MAX];
 
 	PhysicsDirectSpaceStateSW *direct_access;
 	RID self;
@@ -178,6 +192,8 @@ public:
 	void set_static_global_body(RID p_body) { static_global_body=p_body; }
 	RID get_static_global_body() { return static_global_body; }
 
+	void set_elapsed_time(ElapsedTime p_time,uint64_t p_msec) { elapsed_time[p_time]=p_msec; }
+	uint64_t get_elapsed_time(ElapsedTime p_time) const { return elapsed_time[p_time]; }
 
 	SpaceSW();
 	~SpaceSW();

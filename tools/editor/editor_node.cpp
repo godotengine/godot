@@ -187,7 +187,7 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 			break;
 			case KEY_F5: _menu_option_confirm((p_event.key.mod.control&&p_event.key.mod.shift)?RUN_PLAY_CUSTOM_SCENE:RUN_PLAY,true); break;
 			case KEY_F6: _menu_option_confirm(RUN_PLAY_SCENE,true); break;
-			case KEY_F7: _menu_option_confirm(RUN_PAUSE,true); break;
+			//case KEY_F7: _menu_option_confirm(RUN_PAUSE,true); break;
 			case KEY_F8: _menu_option_confirm(RUN_STOP,true); break;
 		}
 
@@ -2634,11 +2634,6 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				_menu_option_confirm(RUN_STOP,true);
 				_run(false,last_custom_scene);
 			}
-
-		} break;
-		case RUN_PAUSE: {
-
-			emit_signal("pause_pressed");
 
 		} break;
 		case RUN_STOP: {
@@ -5597,14 +5592,16 @@ EditorNode::EditorNode() {
 
 
 
-	/*pause_button = memnew( ToolButton );
+	pause_button = memnew( ToolButton );
 	//menu_panel->add_child(pause_button); - not needed for now?
 	pause_button->set_toggle_mode(true);
 	pause_button->set_icon(gui_base->get_icon("Pause","EditorIcons"));
 	pause_button->set_focus_mode(Control::FOCUS_NONE);
-	pause_button->connect("pressed", this,"_menu_option",make_binds(RUN_PAUSE));
-	pause_button->set_tooltip(TTR("Pause the scene (F7)."));
-*/
+	//pause_button->connect("pressed", this,"_menu_option",make_binds(RUN_PAUSE));
+	pause_button->set_tooltip(TTR("Pause the scene"));
+	pause_button->set_disabled(true);
+	play_hb->add_child(pause_button);
+
 	stop_button = memnew( ToolButton );
 	play_hb->add_child(stop_button);
 	//stop_button->set_toggle_mode(true);

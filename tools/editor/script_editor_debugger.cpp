@@ -41,6 +41,8 @@
 #include "globals.h"
 #include "editor_node.h"
 #include "main/performance.h"
+#include "editor_profiler.h"
+#include "editor_settings.h"
 
 class ScriptEditorDebuggerVariables : public Object {
 
@@ -208,7 +210,13 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 		docontinue->set_disabled(false);
 		emit_signal("breaked",true,can_continue);
 		OS::get_singleton()->move_window_to_foreground();
-		tabs->set_current_tab(0);
+		if (!profiler->is_seeking())
+			tabs->set_current_tab(0);
+
+		profiler->set_enabled(false);
+
+		EditorNode::get_singleton()->get_pause_button()->set_pressed(true);
+
 
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 
@@ -225,6 +233,11 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 		docontinue->set_disabled(true);
 		emit_signal("breaked",false,false);
 		//tabs->set_current_tab(0);
+		profiler->set_enabled(true);
+		profiler->disable_seeking();
+
+		EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
+
 
 	} else if (p_msg=="message:click_ctrl") {
 
@@ -441,6 +454,137 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 		packet_peer_stream->put_var(oe.warning);
 		packet_peer_stream->put_var(oe.callstack);
 		*/
+
+	} else if (p_msg=="profile_sig") {
+		//cache a signature
+		print_line("SIG: "+String(Variant(p_data)));
+		profiler_signature[p_data[1]]=p_data[0];
+
+	} else if (p_msg=="profile_frame" || p_msg=="profile_total") {
+
+		EditorProfiler::Metric metric;
+		metric.valid=true;
+		metric.frame_number=p_data[0];
+		metric.frame_time=p_data[1];
+		metric.idle_time=p_data[2];
+		metric.fixed_time=p_data[3];
+		metric.fixed_frame_time=p_data[4];
+		int frame_data_amount = p_data[6];
+		int frame_function_amount = p_data[7];
+
+
+		if (frame_data_amount) {
+			EditorProfiler::Metric::Category frame_time;
+			frame_time.signature="category_frame_time";
+			frame_time.name="Frame Time";
+			frame_time.total_time=metric.frame_time;
+
+			EditorProfiler::Metric::Category::Item item;
+			item.calls=1;
+			item.line=0;
+			item.name="Fixed Time";
+			item.total=metric.fixed_time;
+			item.self=item.total;
+			item.signature="fixed_time";
+
+
+			frame_time.items.push_back(item);
+
+			item.name="Idle Time";
+			item.total=metric.idle_time;
+			item.self=item.total;
+			item.signature="idle_time";
+
+			frame_time.items.push_back(item);
+
+			item.name="Fixed Frame Time";
+			item.total=metric.fixed_frame_time;
+			item.self=item.total;
+			item.signature="fixed_frame_time";
+
+			frame_time.items.push_back(item);
+
+			metric.categories.push_back(frame_time);
+
+		}
+
+
+
+		int idx=8;
+		for(int i=0;i<frame_data_amount;i++) {
+
+			EditorProfiler::Metric::Category c;
+			String name=p_data[idx++];
+			Array values=p_data[idx++];
+			c.name=name.capitalize();
+			c.items.resize(values.size()/2);
+			c.total_time=0;
+			c.signature="categ::"+name;
+			for(int i=0;i<values.size();i+=2) {
+
+				EditorProfiler::Metric::Category::Item item;
+				item.name=values[i];
+				item.calls=1;
+				item.self=values[i+1];
+				item.total=item.self;
+				item.signature="categ::"+name+"::"+item.name;
+				item.name=item.name.capitalize();
+				c.total_time+=item.total;
+				c.items[i/2]=item;
+
+
+			}
+			metric.categories.push_back(c);
+		}
+
+		EditorProfiler::Metric::Category funcs;
+		funcs.total_time=p_data[5]; //script time
+		funcs.items.resize(frame_function_amount);
+		funcs.name="Script Functions";
+		funcs.signature="script_functions";
+		for(int i=0;i<frame_function_amount;i++) {
+
+			int signature = p_data[idx++];
+			int calls = p_data[idx++];
+			float total = p_data[idx++];
+			float self = p_data[idx++];
+
+
+
+			EditorProfiler::Metric::Category::Item item;
+			if (profiler_signature.has(signature)) {
+
+				item.signature=profiler_signature[signature];
+
+				String name = profiler_signature[signature];
+				Vector<String> strings = name.split("::");
+				if (strings.size()==3) {
+					item.name=strings[2];
+					item.script=strings[0];
+					item.line=strings[1].to_int();
+				}
+
+			} else {
+				item.name="SigErr "+itos(signature);
+			}
+
+
+
+
+			item.calls=calls;
+			item.self=self;
+			item.total=total;
+			funcs.items[i]=item;
+
+		}
+
+		metric.categories.push_back(funcs);
+
+		if (p_msg=="profile_frame")
+			profiler->add_frame_metric(metric,false);
+		else
+			profiler->add_frame_metric(metric,true);
+
 	} else if (p_msg=="kill_me") {
 
 		editor->call_deferred("stop_child_process");
@@ -586,15 +730,25 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 					reason->set_text(TTR("Child Process Connected"));
 					reason->set_tooltip(TTR("Child Process Connected"));
+					profiler->clear();
+
 					scene_tree->clear();
 					le_set->set_disabled(true);
 					le_clear->set_disabled(false);
 					error_list->clear();
 					error_stack->clear();
 					error_count=0;
+					profiler_signature.clear();
 					//live_edit_root->set_text("/root");
 
+					EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
+					EditorNode::get_singleton()->get_pause_button()->set_disabled(false);
+
 					update_live_edit_root();
+					if (profiler->is_profiling()) {
+						_profiler_activate(true);
+					}
+
 
 				} else {
 
@@ -656,6 +810,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 						}
 
 						message_type=cmd;
+						//print_line("GOT: "+message_type);
 
 						ret = ppeer->get_var(cmd);
 						if (ret!=OK) {
@@ -744,8 +899,14 @@ void ScriptEditorDebugger::stop(){
 
 	node_path_cache.clear();
 	res_path_cache.clear();
+	profiler_signature.clear();
 	le_clear->set_disabled(false);
 	le_set->set_disabled(true);
+	profiler->set_enabled(true);
+
+	EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
+	EditorNode::get_singleton()->get_pause_button()->set_disabled(true);
+
 
 
 	if (hide_on_stop) {
@@ -754,6 +915,44 @@ void ScriptEditorDebugger::stop(){
 		emit_signal("show_debugger",false);
 	}
 
+}
+
+void ScriptEditorDebugger::_profiler_activate(bool p_enable) {
+
+	if (!connection.is_valid())
+		return;
+
+
+	if (p_enable) {
+		profiler_signature.clear();
+		Array msg;
+		msg.push_back("start_profiling");
+		int max_funcs = EditorSettings::get_singleton()->get("debugger/profiler_frame_max_functions");
+		max_funcs = CLAMP(max_funcs,16,512);
+		msg.push_back(max_funcs);
+		ppeer->put_var(msg);
+
+		print_line("BEGIN PROFILING!");
+
+	} else {
+		Array msg;
+		msg.push_back("stop_profiling");
+		ppeer->put_var(msg);
+
+		print_line("END PROFILING!");
+
+	}
+
+}
+
+void ScriptEditorDebugger::_profiler_seeked() {
+
+	if (!connection.is_valid() || !connection->is_connected())
+		return;
+
+	if (breaked)
+		return;
+	debug_break();;
 }
 
 
@@ -1172,6 +1371,21 @@ void ScriptEditorDebugger::set_hide_on_stop(bool p_hide) {
 	hide_on_stop=p_hide;
 }
 
+void ScriptEditorDebugger::_paused() {
+
+	ERR_FAIL_COND(connection.is_null());
+	ERR_FAIL_COND(!connection->is_connected());
+
+	if (!breaked && EditorNode::get_singleton()->get_pause_button()->is_pressed()) {
+		debug_break();
+	}
+
+	if (breaked && !EditorNode::get_singleton()->get_pause_button()->is_pressed()) {
+		debug_continue();
+	}
+
+}
+
 void ScriptEditorDebugger::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_stack_dump_frame_selected"),&ScriptEditorDebugger::_stack_dump_frame_selected);
@@ -1189,6 +1403,11 @@ void ScriptEditorDebugger::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_error_selected"),&ScriptEditorDebugger::_error_selected);
 	ObjectTypeDB::bind_method(_MD("_error_stack_selected"),&ScriptEditorDebugger::_error_stack_selected);
+	ObjectTypeDB::bind_method(_MD("_profiler_activate"),&ScriptEditorDebugger::_profiler_activate);
+	ObjectTypeDB::bind_method(_MD("_profiler_seeked"),&ScriptEditorDebugger::_profiler_seeked);
+
+	ObjectTypeDB::bind_method(_MD("_paused"),&ScriptEditorDebugger::_paused);
+
 
 	ObjectTypeDB::bind_method(_MD("live_debug_create_node"),&ScriptEditorDebugger::live_debug_create_node);
 	ObjectTypeDB::bind_method(_MD("live_debug_instance_node"),&ScriptEditorDebugger::live_debug_instance_node);
@@ -1320,6 +1539,12 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	error_split->set_name(TTR("Errors"));
 	tabs->add_child(error_split);
 
+	profiler = memnew( EditorProfiler );
+	profiler->set_name("Profiler");
+	tabs->add_child(profiler);
+	profiler->connect("enable_profiling",this,"_profiler_activate");
+	profiler->connect("break_request",this,"_profiler_seeked");
+
 
 	HSplitContainer *hsp = memnew( HSplitContainer );
 
@@ -1334,7 +1559,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	perf_draw = memnew( Control );
 	perf_draw->connect("draw",this,"_performance_draw");
 	hsp->add_child(perf_draw);
-	hsp->set_name("Performance");
+	hsp->set_name("Metrics");
 	hsp->set_split_offset(300);
 	tabs->add_child(hsp);
 	perf_max.resize(Performance::MONITOR_MAX);
@@ -1467,6 +1692,8 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	error_count=0;
 	hide_on_stop=true;
 	last_error_count=0;
+
+	EditorNode::get_singleton()->get_pause_button()->connect("pressed",this,"_paused");
 
 
 }

@@ -34,6 +34,7 @@
 #include "core/io/tcp_server.h"
 #include "core/io/packet_peer.h"
 
+
 class Tree;
 class PropertyEditor;
 class EditorNode;
@@ -46,6 +47,7 @@ class AcceptDialog;
 class TreeItem;
 class HSplitContainer;
 class ItemList;
+class EditorProfiler;
 
 class ScriptEditorDebugger : public Control {
 
@@ -93,6 +95,8 @@ class ScriptEditorDebugger : public Control {
 	Vector<float> perf_max;
 	Vector<TreeItem*> perf_items;
 
+	Map<int,String> profiler_signature;
+
 	Tree *perf_monitors;
 	Control *perf_draw;
 
@@ -115,6 +119,7 @@ class ScriptEditorDebugger : public Control {
 	int last_path_id;
 	Map<String,int> res_path_cache;
 
+	EditorProfiler *profiler;
 
 	EditorNode *editor;
 
@@ -147,6 +152,13 @@ class ScriptEditorDebugger : public Control {
 
 	void _error_selected(int p_idx);
 	void _error_stack_selected(int p_idx);
+
+	void _profiler_activate(bool p_enable);
+	void _profiler_seeked();
+
+
+
+	void _paused();
 
 protected:
 

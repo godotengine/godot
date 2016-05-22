@@ -108,7 +108,7 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_origin
 		Error err = ImageLoader::load_image(p_path,&image);
 
 		if (!err && debug_load_times) {
-			double total=(double)(OS::get_singleton()->get_ticks_usec()-begtime)/1000000.0;
+			double total=USEC_TO_SEC((OS::get_singleton()->get_ticks_usec()-begtime));
 			print_line("IMAGE: "+itos(image.get_width())+"x"+itos(image.get_height()));
 			print_line("  -load: "+rtos(total));
 		}
@@ -201,7 +201,7 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_origin
 
 
 		if (debug_load_times) {
-			total=(double)(OS::get_singleton()->get_ticks_usec()-begtime)/1000000.0;
+			total=USEC_TO_SEC(OS::get_singleton()->get_ticks_usec()-begtime);
 			print_line("  -make texture: "+rtos(total));
 		}
 

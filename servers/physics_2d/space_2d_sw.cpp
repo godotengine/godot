@@ -1325,7 +1325,8 @@ Space2DSW::Space2DSW() {
 	direct_access->space=this;
 
 
-
+	for(int i=0;i<ELAPSED_TIME_MAX;i++)
+		elapsed_time[i]=0;
 
 }
 

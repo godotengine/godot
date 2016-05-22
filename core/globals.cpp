@@ -1528,6 +1528,7 @@ Globals::Globals() {
 	custom_prop_info["render/thread_model"]=PropertyInfo(Variant::INT,"render/thread_model",PROPERTY_HINT_ENUM,"Single-Unsafe,Single-Safe,Multi-Threaded");
 	custom_prop_info["physics_2d/thread_model"]=PropertyInfo(Variant::INT,"physics_2d/thread_model",PROPERTY_HINT_ENUM,"Single-Unsafe,Single-Safe,Multi-Threaded");
 
+	set("debug/profiler_max_functions",16384);
 	using_datapack=false;
 }
 

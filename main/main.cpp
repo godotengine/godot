@@ -105,7 +105,7 @@ static Vector2 init_custom_pos;
 static int video_driver_idx=-1;
 static int audio_driver_idx=-1;
 static String locale;
-
+static bool use_debug_profiler=false;
 
 static int init_screen=-1;
 
@@ -257,6 +257,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	Vector<String> breakpoints;
 	bool use_custom_res=true;
 	bool force_res=false;
+	bool profile=false;
 
 	I=args.front();
 
@@ -360,6 +361,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		} else if (I->get()=="-w") { // video driver
 
 			init_windowed=true;
+		} else if (I->get()=="-profile") { // video driver
+
+			use_debug_profiler=true;
 		} else if (I->get()=="-vd") { // video driver
 
 			if (I->next()) {
@@ -588,11 +592,11 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 			memdelete(sdr);
 		} else {
 			script_debugger=sdr;
-
 		}
 	} else if (debug_mode=="local") {
 
 		script_debugger = memnew( ScriptDebuggerLocal );
+
 	}
 
 
@@ -987,6 +991,9 @@ Error Main::setup2() {
 
 
 
+	if (use_debug_profiler && script_debugger) {
+		script_debugger->profiling_start();
+	}
 	_start_success=true;
 	locale=String();
 
@@ -1494,6 +1501,7 @@ uint32_t Main::frames=0;
 uint32_t Main::frame=0;
 bool Main::force_redraw_requested = false;
 
+//for performance metrics
 static uint64_t fixed_process_max=0;
 static uint64_t idle_process_max=0;
 
@@ -1508,6 +1516,10 @@ bool Main::iteration() {
 
 //	if (time_accum+step < frame_slice)
 //		return false;
+
+
+	uint64_t fixed_process_ticks=0;
+	uint64_t idle_process_ticks=0;
 
 	frame+=ticks_elapsed;
 
@@ -1551,6 +1563,7 @@ bool Main::iteration() {
 		//if (AudioServer::get_singleton())
 		//	AudioServer::get_singleton()->update();
 
+		fixed_process_ticks=MAX(fixed_process_ticks,OS::get_singleton()->get_ticks_usec()-fixed_begin); // keep the largest one for reference
 		fixed_process_max=MAX(OS::get_singleton()->get_ticks_usec()-fixed_begin,fixed_process_max);
 		iters++;
 	}
@@ -1585,14 +1598,20 @@ bool Main::iteration() {
 	if (AudioServer::get_singleton())
 		AudioServer::get_singleton()->update();
 
+	idle_process_ticks=OS::get_singleton()->get_ticks_usec()-idle_begin;
+	idle_process_max=MAX(idle_process_ticks,idle_process_max);
+	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
+
 	for(int i=0;i<ScriptServer::get_language_count();i++) {
 		ScriptServer::get_language(i)->frame();
 	}
 
-	idle_process_max=MAX(OS::get_singleton()->get_ticks_usec()-idle_begin,idle_process_max);
-
-	if (script_debugger)
+	if (script_debugger) {
+		if (script_debugger->is_profiling()) {
+			script_debugger->profiling_set_frame_times(USEC_TO_SEC(frame_time),USEC_TO_SEC(idle_process_ticks),USEC_TO_SEC(fixed_process_ticks),frame_slice);
+		}
 		script_debugger->idle_poll();
+	}
 
 
 	//	x11_delay_usec(10000);
@@ -1605,8 +1624,8 @@ bool Main::iteration() {
 		};
 
 		OS::get_singleton()->_fps=frames;
-		performance->set_process_time(idle_process_max/1000000.0);
-		performance->set_fixed_process_time(fixed_process_max/1000000.0);
+		performance->set_process_time(USEC_TO_SEC(idle_process_max));
+		performance->set_fixed_process_time(USEC_TO_SEC(fixed_process_max));
 		idle_process_max=0;
 		fixed_process_max=0;
 
@@ -1650,8 +1669,13 @@ void Main::cleanup() {
 
 	ERR_FAIL_COND(!_start_success);
 
-	if (script_debugger)
+	if (script_debugger) {
+		if (use_debug_profiler) {
+			script_debugger->profiling_end();
+		}
+
 		memdelete(script_debugger);
+	}
 
 	OS::get_singleton()->delete_main_loop();
 

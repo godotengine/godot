@@ -44,6 +44,23 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	};
 
 
+	struct ProfileInfoSort {
+
+		bool operator()(ScriptLanguage::ProfilingInfo*A,ScriptLanguage::ProfilingInfo*B) const {
+			return A->total_time < B->total_time;
+		}
+	};
+
+	Vector<ScriptLanguage::ProfilingInfo> profile_info;
+	Vector<ScriptLanguage::ProfilingInfo*> profile_info_ptrs;
+
+	Map<StringName,int> profiler_function_signature_map;
+	float frame_time,idle_time,fixed_time,fixed_frame_time;
+
+	bool profiling;
+	int max_frame_functions;
+	bool skip_profile_frame;
+
 
 	Ref<StreamPeerTCP> tcp_client;
 	Ref<PacketPeerStream> packet_peer_stream;
@@ -88,6 +105,7 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	uint32_t poll_every;
 
 
+
 	bool _parse_live_edit(const Array &p_command);
 
 	RequestSceneTreeMessageFunc request_scene_tree;
@@ -98,6 +116,17 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 
 	ErrorHandlerList eh;
 	static void _err_handler(void*,const char*,const char*,int p_line,const char *, const char *,ErrorHandlerType p_type);
+
+	void _send_profiling_data(bool p_for_frame);
+
+
+	struct FrameData {
+
+		StringName name;
+		Array data;
+	};
+
+	Vector<FrameData> profile_frame_data;
 
 
 public:
@@ -128,6 +157,13 @@ public:
 
 	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata);
 	virtual void set_live_edit_funcs(LiveEditFuncs *p_funcs);
+
+	virtual bool is_profiling() const;
+	virtual void add_profiling_frame_data(const StringName& p_name,const Array& p_data);
+
+	virtual void profiling_start();
+	virtual void profiling_end();
+	virtual void profiling_set_frame_times(float p_frame_time,float p_idle_time,float p_fixed_time,float p_fixed_frame_time);
 
 	ScriptDebuggerRemote();
 	~ScriptDebuggerRemote();

@@ -1249,6 +1249,7 @@ void Object::emit_signal(const StringName& p_name,VARIANT_ARG_DECLARE) {
 		argc++;
 	}
 
+
 	emit_signal(p_name,argptr,argc);
 
 }

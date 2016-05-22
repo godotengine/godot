@@ -736,6 +736,10 @@ SpaceSW::SpaceSW() {
 
 	direct_access = memnew( PhysicsDirectSpaceStateSW );
 	direct_access->space=this;
+
+	for(int i=0;i<ELAPSED_TIME_MAX;i++)
+		elapsed_time[i]=0;
+
 }
 
 SpaceSW::~SpaceSW() {
