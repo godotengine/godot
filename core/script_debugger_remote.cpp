@@ -283,6 +283,14 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script,bool p_can_continue) {
 			} else if (command=="request_video_mem") {
 
 				_send_video_memory();
+			} else if (command=="inspect_object") {
+
+				ObjectID id = cmd[1];
+				_send_object_id(id);
+			} else if (command=="set_object_property") {
+
+				_set_object_property(cmd[1],cmd[2],cmd[3]);
+
 			} else if (command=="breakpoint") {
 
 				bool set = cmd[3];
@@ -539,6 +547,89 @@ bool ScriptDebuggerRemote::_parse_live_edit(const Array& cmd) {
 	return true;
 }
 
+
+void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
+
+	Object* obj = ObjectDB::get_instance(p_id);
+	if (!obj)
+		return;
+
+	List<PropertyInfo> pinfo;
+	obj->get_property_list(&pinfo,true);
+
+	int props_to_send=0;
+	for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+
+		if (E->get().usage&(PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_CATEGORY)) {
+			props_to_send++;
+		}
+	}
+
+	packet_peer_stream->put_var("message:inspect_object");
+	packet_peer_stream->put_var(props_to_send*5+4);
+	packet_peer_stream->put_var(p_id);
+	packet_peer_stream->put_var(obj->get_type());
+	if (obj->is_type("Resource") || obj->is_type("Node"))
+		packet_peer_stream->put_var(obj->call("get_path"));
+	else
+		packet_peer_stream->put_var("");
+
+	packet_peer_stream->put_var(props_to_send);
+
+	for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+
+		if (E->get().usage&(PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_CATEGORY)) {
+
+			if (E->get().usage&PROPERTY_USAGE_CATEGORY) {
+				packet_peer_stream->put_var("*"+E->get().name);
+			} else {
+				packet_peer_stream->put_var(E->get().name);
+			}
+
+			Variant var = obj->get(E->get().name);
+
+			if (E->get().type==Variant::OBJECT || var.get_type()==Variant::OBJECT) {
+
+				ObjectID id2;
+				Object *obj=var;
+				if (obj) {
+					id2=obj->get_instance_ID();
+				} else {
+					id2=0;
+				}
+
+				packet_peer_stream->put_var(Variant::INT); //hint string
+				packet_peer_stream->put_var(PROPERTY_HINT_OBJECT_ID); //hint
+				packet_peer_stream->put_var(E->get().hint_string); //hint string
+				packet_peer_stream->put_var(id2);	 //value
+			} else {
+				packet_peer_stream->put_var(E->get().type);
+				packet_peer_stream->put_var(E->get().hint);
+				packet_peer_stream->put_var(E->get().hint_string);
+				//only send information that can be sent..
+				if (var.get_type()==Variant::IMAGE) {
+					var=Image();
+				}
+				if (var.get_type()>=Variant::DICTIONARY) {
+					var=Array(); //send none for now, may be to big
+				}
+				packet_peer_stream->put_var(var);
+			}
+
+		}
+	}
+
+}
+
+void ScriptDebuggerRemote::_set_object_property(ObjectID p_id, const String& p_property, const Variant& p_value) {
+
+	Object* obj = ObjectDB::get_instance(p_id);
+	if (!obj)
+		return;
+
+	obj->set(p_property,p_value);
+}
+
 void ScriptDebuggerRemote::_poll_events() {
 
 	//this si called from ::idle_poll, happens only when running the game,
@@ -575,6 +666,14 @@ void ScriptDebuggerRemote::_poll_events() {
 		} else if (command=="request_video_mem") {
 
 			_send_video_memory();
+		} else if (command=="inspect_object") {
+
+			ObjectID id = cmd[1];
+			_send_object_id(id);
+		} else if (command=="set_object_property") {
+
+			_set_object_property(cmd[1],cmd[2],cmd[3]);
+
 		} else if (command=="start_profiling") {
 
 			for(int i=0;i<ScriptServer::get_language_count();i++) {

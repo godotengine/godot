@@ -67,6 +67,7 @@ enum PropertyHint {
 	PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
 	PROPERTY_HINT_IMAGE_COMPRESS_LOSSY,
 	PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS,
+	PROPERTY_HINT_OBJECT_ID,
 	PROPERTY_HINT_MAX,
 };
 

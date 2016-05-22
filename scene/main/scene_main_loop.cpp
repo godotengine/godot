@@ -1002,6 +1002,7 @@ static void _fill_array(Node *p_node, Array& array, int p_level) {
 	array.push_back(p_level);
 	array.push_back(p_node->get_name());
 	array.push_back(p_node->get_type());
+	array.push_back(p_node->get_instance_ID());
 	for(int i=0;i<p_node->get_child_count();i++) {
 
 		_fill_array(p_node->get_child(i),array,p_level+1);

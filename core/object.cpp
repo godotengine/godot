@@ -1396,7 +1396,7 @@ Error Object::connect(const StringName& p_signal, Object *p_to_object, const Str
 			signal_is_valid=true;
 
 		if (!signal_is_valid) {
-			ERR_EXPLAIN("Attempt to connect nonexistent signal '"+p_signal+"' to method '"+p_to_method+"'");
+			ERR_EXPLAIN("In Object of type '"+String(get_type())+"': Attempt to connect nonexistent signal '"+p_signal+"' to method '"+p_to_object->get_type()+"."+p_to_method+"'");
 			ERR_FAIL_COND_V(!signal_is_valid,ERR_INVALID_PARAMETER);
 		}
 		signal_map[p_signal]=Signal();

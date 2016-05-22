@@ -111,6 +111,9 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	RequestSceneTreeMessageFunc request_scene_tree;
 	void *request_scene_tree_ud;
 
+	void _set_object_property(ObjectID p_id, const String& p_property, const Variant& p_value);
+
+	void _send_object_id(ObjectID p_id);
 	void _send_video_memory();
 	LiveEditFuncs *live_edit_funcs;
 

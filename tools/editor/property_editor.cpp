@@ -2989,6 +2989,32 @@ void PropertyEditor::update_tree() {
 					item->set_range(1, obj->get( p.name ) );
 					item->set_editable(1,!read_only);
 					break;
+				} else if (p.hint==PROPERTY_HINT_OBJECT_ID) {
+
+//					int c = p.hint_string.get_slice_count(",");
+					item->set_cell_mode(1,TreeItem::CELL_MODE_CUSTOM);
+
+					String type=p.hint_string;
+					if (type=="")
+						type="Object";
+
+					ObjectID id = obj->get( p.name );
+					if (id!=0) {
+						item->set_text(1,type+" ID: "+itos(id));
+						item->add_button(1,get_icon("EditResource","EditorIcons"));
+					} else {
+						item->set_text(1,"[Empty]");
+					}
+
+					if (has_icon(p.hint_string,"EditorIcons")) {
+						type=p.hint_string;
+					} else {
+						type="Object";
+					}
+
+					item->set_icon(0,get_icon(type,"EditorIcons"));
+
+					break;
 
 				} else {
 					if (p.type == Variant::REAL) {
@@ -3758,6 +3784,11 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 
 				emit_signal("resource_selected",r,n);
 			}
+		} else if (t==Variant::INT && h==PROPERTY_HINT_OBJECT_ID) {
+
+			emit_signal("object_id_selected",obj->get(n));
+			print_line("OBJ ID SELECTED");
+
 		} else if (t==Variant::ARRAY || t==Variant::INT_ARRAY || t==Variant::REAL_ARRAY || t==Variant::STRING_ARRAY || t==Variant::VECTOR2_ARRAY || t==Variant::VECTOR3_ARRAY || t==Variant::COLOR_ARRAY || t==Variant::RAW_ARRAY) {
 
 			Variant v = obj->get(n);
@@ -3860,6 +3891,7 @@ void PropertyEditor::_bind_methods() {
 
 	ADD_SIGNAL( MethodInfo("property_toggled",PropertyInfo( Variant::STRING, "property"),PropertyInfo( Variant::BOOL, "value")));
 	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );
+	ADD_SIGNAL( MethodInfo("object_id_selected", PropertyInfo( Variant::INT, "id")) );
 	ADD_SIGNAL( MethodInfo("property_keyed",PropertyInfo( Variant::STRING, "property")));
 	ADD_SIGNAL( MethodInfo("property_edited",PropertyInfo( Variant::STRING, "property")));
 }
