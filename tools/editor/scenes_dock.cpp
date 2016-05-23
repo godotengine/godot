@@ -1335,7 +1335,7 @@ void ScenesDock::drop_data_fw(const Point2& p_point,const Variant& p_data,Contro
 
 				int at_pos = files->get_item_at_pos(p_point);
 				ERR_FAIL_COND(at_pos==-1);
-				String to_dir = files->get_item_metadata(at_pos);
+				to_dir = files->get_item_metadata(at_pos);
 			}  else {
 				TreeItem *ti = tree->get_item_at_pos(p_point);
 				if (!ti)
