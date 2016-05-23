@@ -110,6 +110,12 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location,Co
 			CanvasItemEditor::get_singleton()->get_bottom_split()->add_child(p_control);
 
 		} break;
+		case CONTAINER_PROPERTY_EDITOR_BOTTOM: {
+
+			EditorNode::get_singleton()->get_property_editor_vb()->add_child(p_control);
+
+		} break;
+
 
 	}
 }
@@ -319,6 +325,8 @@ void EditorPlugin::_bind_methods() {
 	BIND_CONSTANT( CONTAINER_SPATIAL_EDITOR_BOTTOM );
 	BIND_CONSTANT( CONTAINER_CANVAS_EDITOR_MENU );
 	BIND_CONSTANT( CONTAINER_CANVAS_EDITOR_SIDE );
+	BIND_CONSTANT( CONTAINER_PROPERTY_EDITOR_BOTTOM );
+
 
 	BIND_CONSTANT( DOCK_SLOT_LEFT_UL );
 	BIND_CONSTANT( DOCK_SLOT_LEFT_BL );

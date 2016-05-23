@@ -269,6 +269,7 @@ private:
 	SceneTreeDock *scene_tree_dock;
 	//ResourcesDock *resources_dock;
 	PropertyEditor *property_editor;
+	VBoxContainer *prop_editor_vb;
 	ScenesDock *scenes_dock;
 	EditorRunNative *run_native;
 
@@ -580,6 +581,7 @@ public:
 	EditorPlugin *get_editor_plugin_screen() { return editor_plugin_screen; }
 	EditorPluginList *get_editor_plugins_over() { return editor_plugins_over; }
 	PropertyEditor *get_property_editor() { return property_editor; }
+	VBoxContainer *get_property_editor_vb() { return prop_editor_vb; }
 
 	static void add_editor_plugin(EditorPlugin *p_editor);
 	static void remove_editor_plugin(EditorPlugin *p_editor);

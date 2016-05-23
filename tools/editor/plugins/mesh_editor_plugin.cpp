@@ -1,300 +1,199 @@
 #include "mesh_editor_plugin.h"
 
-#include "scene/3d/physics_body.h"
-#include "scene/3d/body_shape.h"
-#include "scene/gui/box_container.h"
-#include "scene/3d/navigation_mesh.h"
-#include "spatial_editor_plugin.h"
+void MeshEditor::_input_event(InputEvent p_event) {
 
-void MeshInstanceEditor::_node_removed(Node *p_node) {
 
-	if(p_node==node) {
-		node=NULL;
-		options->hide();
+	if (p_event.type==InputEvent::MOUSE_MOTION && p_event.mouse_motion.button_mask&BUTTON_MASK_LEFT) {
+
+		rot_x-=p_event.mouse_motion.relative_y*0.01;
+		rot_y-=p_event.mouse_motion.relative_x*0.01;
+		if (rot_x<-Math_PI/2)
+			rot_x=-Math_PI/2;
+		else if (rot_x>Math_PI/2) {
+			rot_x=Math_PI/2;
+		}
+		_update_rotation();
+	}
+}
+
+void MeshEditor::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_FIXED_PROCESS) {
+
 	}
 
+
+	if (p_what==NOTIFICATION_READY) {
+
+		//get_scene()->connect("node_removed",this,"_node_removed");
+
+		if (first_enter) {
+			//it's in propertyeditor so.. could be moved around
+
+			light_1_switch->set_normal_texture(get_icon("MaterialPreviewLight1","EditorIcons"));
+			light_1_switch->set_pressed_texture(get_icon("MaterialPreviewLight1Off","EditorIcons"));
+			light_2_switch->set_normal_texture(get_icon("MaterialPreviewLight2","EditorIcons"));
+			light_2_switch->set_pressed_texture(get_icon("MaterialPreviewLight2Off","EditorIcons"));
+			first_enter=false;
+		}
+
+	}
+
+	if (p_what==NOTIFICATION_DRAW) {
+
+
+		Ref<Texture> checkerboard = get_icon("Checkerboard","EditorIcons");
+		Size2 size = get_size();
+
+		draw_texture_rect(checkerboard,Rect2(Point2(),size),true);
+
+	}
 }
 
+void MeshEditor::_update_rotation() {
 
-
-void MeshInstanceEditor::edit(MeshInstance *p_mesh) {
-
-	node=p_mesh;
+	Transform t;
+	t.basis.rotate(Vector3(0, 1, 0), rot_y);
+	t.basis.rotate(Vector3(1, 0, 0), rot_x);
+	mesh_instance->set_transform(t);
 
 }
 
-void MeshInstanceEditor::_menu_option(int p_option) {
+void MeshEditor::edit(Ref<Mesh> p_mesh) {
 
-	Ref<Mesh> mesh = node->get_mesh();
+	mesh=p_mesh;
+	mesh_instance->set_mesh(mesh);
+
 	if (mesh.is_null()) {
-		err_dialog->set_text(TTR("Mesh is empty!"));
-		err_dialog->popup_centered_minsize();
+
+		hide();
+	} else {
+		rot_x=0;
+		rot_y=0;
+		_update_rotation();
+	}
+
+}
+
+
+void MeshEditor::_button_pressed(Node* p_button) {
+
+	if (p_button==light_1_switch) {
+		light1->set_enabled(!light_1_switch->is_pressed());
+	}
+
+	if (p_button==light_2_switch) {
+		light2->set_enabled(!light_2_switch->is_pressed());
+	}
+
+
+}
+
+void MeshEditor::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("_input_event"),&MeshEditor::_input_event);
+	ObjectTypeDB::bind_method(_MD("_button_pressed"),&MeshEditor::_button_pressed);
+
+}
+
+MeshEditor::MeshEditor() {
+
+	viewport = memnew( Viewport );
+	Ref<World> world;
+	world.instance();
+	viewport->set_world(world); //use own world
+	add_child(viewport);
+	viewport->set_process_input(false);
+
+	camera = memnew( Camera );
+	camera->set_transform(Transform(Matrix3(),Vector3(0,0,3)));
+	camera->set_perspective(45,0.1,10);
+	viewport->add_child(camera);
+
+	light1 = memnew( DirectionalLight );
+	light1->set_transform(Transform().looking_at(Vector3(-1,-1,-1),Vector3(0,1,0)));
+	viewport->add_child(light1);
+
+	light2 = memnew( DirectionalLight );
+	light2->set_transform(Transform().looking_at(Vector3(0,1,0),Vector3(0,0,1)));
+	light2->set_color(Light::COLOR_DIFFUSE,Color(0.7,0.7,0.7));
+	light2->set_color(Light::COLOR_SPECULAR,Color(0.7,0.7,0.7));
+	viewport->add_child(light2);
+
+	mesh_instance = memnew( MeshInstance );
+	viewport->add_child(mesh_instance);
+
+
+
+	set_custom_minimum_size(Size2(1,150));
+
+	HBoxContainer *hb = memnew( HBoxContainer );
+	add_child(hb);
+	hb->set_area_as_parent_rect(2);
+
+	hb->add_spacer();
+
+	VBoxContainer *vb_light = memnew( VBoxContainer );
+	hb->add_child(vb_light);
+
+	light_1_switch = memnew( TextureButton );
+	light_1_switch->set_toggle_mode(true);
+	vb_light->add_child(light_1_switch);
+	light_1_switch->connect("pressed",this,"_button_pressed",varray(light_1_switch));
+
+	light_2_switch = memnew( TextureButton );
+	light_2_switch->set_toggle_mode(true);
+	vb_light->add_child(light_2_switch);
+	light_2_switch->connect("pressed",this,"_button_pressed",varray(light_2_switch));
+
+	first_enter=true;
+
+	rot_x=0;
+	rot_y=0;
+
+
+}
+
+
+void MeshEditorPlugin::edit(Object *p_object) {
+
+	Mesh * s = p_object->cast_to<Mesh>();
+	if (!s)
 		return;
-	}
 
-	switch(p_option) {
-		case MENU_OPTION_CREATE_STATIC_TRIMESH_BODY:
-		case MENU_OPTION_CREATE_STATIC_CONVEX_BODY: {
-
-			bool trimesh_shape = (p_option==MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
-
-			EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-
-			List<Node*> selection = editor_selection->get_selected_node_list();
-
-			if (selection.empty()) {
-				Ref<Shape> shape = trimesh_shape ? mesh->create_trimesh_shape() : mesh->create_convex_shape();
-				if (shape.is_null())
-					return;
-
-				CollisionShape *cshape = memnew( CollisionShape );
-				cshape->set_shape(shape);
-				StaticBody *body = memnew( StaticBody );
-				body->add_child(cshape);
-
-				Node *owner = node==get_tree()->get_edited_scene_root() ? node : node->get_owner();
-
-				if (trimesh_shape)
-					ur->create_action(TTR("Create Static Trimesh Body"));
-				else
-					ur->create_action(TTR("Create Static Convex Body"));
-
-				ur->add_do_method(node,"add_child",body);
-				ur->add_do_method(body,"set_owner",owner);
-				ur->add_do_method(cshape,"set_owner",owner);
-				ur->add_do_reference(body);
-				ur->add_undo_method(node,"remove_child",body);
-				ur->commit_action();
-				return;
-			}
-
-			if (trimesh_shape)
-				ur->create_action(TTR("Create Static Trimesh Body"));
-			else
-				ur->create_action(TTR("Create Static Convex Body"));
-
-			for (List<Node*>::Element *E=selection.front();E;E=E->next()) {
-
-				MeshInstance *instance = E->get()->cast_to<MeshInstance>();
-				if (!instance)
-					continue;
-
-				Ref<Mesh> m = instance->get_mesh();
-				if (m.is_null())
-					continue;
-
-				Ref<Shape> shape = trimesh_shape ? m->create_trimesh_shape() : m->create_convex_shape();
-				if (shape.is_null())
-					continue;
-
-				CollisionShape *cshape = memnew( CollisionShape );
-				cshape->set_shape(shape);
-				StaticBody *body = memnew( StaticBody );
-				body->add_child(cshape);
-
-				Node *owner = instance==get_tree()->get_edited_scene_root() ? instance : instance->get_owner();
-
-				ur->add_do_method(instance,"add_child",body);
-				ur->add_do_method(body,"set_owner",owner);
-				ur->add_do_method(cshape,"set_owner",owner);
-				ur->add_do_reference(body);
-				ur->add_undo_method(instance,"remove_child",body);
-			}
-
-			ur->commit_action();
-
-		} break;
-
-		case MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE:
-		case MENU_OPTION_CREATE_CONVEX_COLLISION_SHAPE: {
-
-			if (node==get_tree()->get_edited_scene_root()) {
-				err_dialog->set_text(TTR("This doesn't work on scene root!"));
-				err_dialog->popup_centered_minsize();
-				return;
-			}
-
-			bool trimesh_shape = (p_option==MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE);
-
-			Ref<Shape> shape = trimesh_shape ? mesh->create_trimesh_shape() : mesh->create_convex_shape();
-			if (shape.is_null())
-				return;
-
-			CollisionShape *cshape = memnew( CollisionShape );
-			cshape->set_shape(shape);
-
-			Node *owner =  node->get_owner();
-
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-
-			if (trimesh_shape)
-				ur->create_action(TTR("Create Trimesh Shape"));
-			else
-				ur->create_action(TTR("Create Convex Shape"));
-
-			ur->add_do_method(node->get_parent(),"add_child",cshape);
-			ur->add_do_method(node->get_parent(),"move_child",cshape,node->get_index()+1);
-			ur->add_do_method(cshape,"set_owner",owner);
-			ur->add_do_reference(cshape);
-			ur->add_undo_method(node->get_parent(),"remove_child",cshape);
-			ur->commit_action();
-
-		} break;
-
-		case MENU_OPTION_CREATE_NAVMESH: {
-
-			Ref<NavigationMesh> nmesh = memnew( NavigationMesh );
-
-			if (nmesh.is_null())
-				return;
-
-			nmesh->create_from_mesh(mesh);
-			NavigationMeshInstance *nmi = memnew(  NavigationMeshInstance );
-			nmi->set_navigation_mesh(nmesh);
-
-			Node *owner = node==get_tree()->get_edited_scene_root() ? node : node->get_owner();
-
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-			ur->create_action(TTR("Create Navigation Mesh"));
-
-			ur->add_do_method(node,"add_child",nmi);
-			ur->add_do_method(nmi,"set_owner",owner);
-
-			ur->add_do_reference(nmi);
-			ur->add_undo_method(node,"remove_child",nmi);
-			ur->commit_action();
-		} break;
-
-		case MENU_OPTION_CREATE_OUTLINE_MESH: {
-
-			outline_dialog->popup_centered(Vector2(200, 90));
-		} break;
-	}
-
+	mesh_editor->edit(Ref<Mesh>(s));
 }
 
-void MeshInstanceEditor::_create_outline_mesh() {
+bool MeshEditorPlugin::handles(Object *p_object) const {
 
-	Ref<Mesh> mesh = node->get_mesh();
-	if (mesh.is_null()) {
-		err_dialog->set_text(TTR("MeshInstance lacks a Mesh!"));
-		err_dialog->popup_centered_minsize();
-		return;
-	}
-
-	Ref<Mesh> mesho = mesh->create_outline(outline_size->get_val());
-
-	if (mesho.is_null()) {
-		err_dialog->set_text(TTR("Could not create outline!"));
-		err_dialog->popup_centered_minsize();
-		return;
-	}
-
-	MeshInstance *mi = memnew( MeshInstance );
-	mi->set_mesh(mesho);
-	Node *owner=node->get_owner();
-	if (get_tree()->get_edited_scene_root()==node) {
-		owner=node;
-	}
-
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-
-	ur->create_action(TTR("Create Outline"));
-
-	ur->add_do_method(node,"add_child",mi);
-	ur->add_do_method(mi,"set_owner",owner);
-
-	ur->add_do_reference(mi);
-	ur->add_undo_method(node,"remove_child",mi);
-	ur->commit_action();
+	return p_object->is_type("Mesh");
 }
 
-void MeshInstanceEditor::_bind_methods() {
-
-	ObjectTypeDB::bind_method("_menu_option",&MeshInstanceEditor::_menu_option);
-	ObjectTypeDB::bind_method("_create_outline_mesh",&MeshInstanceEditor::_create_outline_mesh);
-}
-
-MeshInstanceEditor::MeshInstanceEditor() {
-
-
-	options = memnew( MenuButton );
-	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
-
-	options->set_text("Mesh");
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MeshInstance","EditorIcons"));
-
-	options->get_popup()->add_item(TTR("Create Trimesh Static Body"),MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
-	options->get_popup()->add_item(TTR("Create Convex Static Body"),MENU_OPTION_CREATE_STATIC_CONVEX_BODY);
-	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Create Trimesh Collision Sibling"),MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE);
-	options->get_popup()->add_item(TTR("Create Convex Collision Sibling"),MENU_OPTION_CREATE_CONVEX_COLLISION_SHAPE);
-	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Create Navigation Mesh"),MENU_OPTION_CREATE_NAVMESH);
-	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Create Outline Mesh.."),MENU_OPTION_CREATE_OUTLINE_MESH);
-
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
-
-	outline_dialog = memnew( ConfirmationDialog );
-	outline_dialog->set_title(TTR("Create Outline Mesh"));
-	outline_dialog->get_ok()->set_text(TTR("Create"));
-
-	VBoxContainer *outline_dialog_vbc = memnew( VBoxContainer );
-	outline_dialog->add_child(outline_dialog_vbc);
-	outline_dialog->set_child_rect(outline_dialog_vbc);
-
-	outline_size = memnew( SpinBox );
-	outline_size->set_min(0.001);
-	outline_size->set_max(1024);
-	outline_size->set_step(0.001);
-	outline_size->set_val(0.05);
-	outline_dialog_vbc->add_margin_child(TTR("Outline Size:"),outline_size);
-
-	add_child(outline_dialog);
-	outline_dialog->connect("confirmed",this,"_create_outline_mesh");
-
-	err_dialog = memnew( AcceptDialog );
-	add_child(err_dialog);
-
-}
-
-
-void MeshInstanceEditorPlugin::edit(Object *p_object) {
-
-	mesh_editor->edit(p_object->cast_to<MeshInstance>());
-}
-
-bool MeshInstanceEditorPlugin::handles(Object *p_object) const {
-
-	return p_object->is_type("MeshInstance");
-}
-
-void MeshInstanceEditorPlugin::make_visible(bool p_visible) {
+void MeshEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		mesh_editor->options->show();
+		mesh_editor->show();
+//		mesh_editor->set_process(true);
 	} else {
 
-		mesh_editor->options->hide();
-		mesh_editor->edit(NULL);
+		mesh_editor->hide();
+//		mesh_editor->set_process(false);
 	}
 
 }
 
-MeshInstanceEditorPlugin::MeshInstanceEditorPlugin(EditorNode *p_node) {
+MeshEditorPlugin::MeshEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
-	mesh_editor = memnew( MeshInstanceEditor );
-	editor->get_viewport()->add_child(mesh_editor);
+	mesh_editor = memnew( MeshEditor );
+	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM,mesh_editor);
+	mesh_editor->hide();
 
-	mesh_editor->options->hide();
+
+
 }
 
 
-MeshInstanceEditorPlugin::~MeshInstanceEditorPlugin()
+MeshEditorPlugin::~MeshEditorPlugin()
 {
 }
-
-

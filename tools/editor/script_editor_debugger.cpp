@@ -944,6 +944,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				}
 				last_error_count=error_count;
 			}
+
 			if (connection.is_null()) {
 
 				if (server->is_connection_available()) {

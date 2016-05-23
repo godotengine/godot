@@ -30,7 +30,7 @@ public:
 	virtual bool handles(Object *p_node) const;
 	virtual void make_visible(bool p_visible);
 
-	ColorRampEditorPlugin(EditorNode *p_node, bool p_2d);
+	ColorRampEditorPlugin(EditorNode *p_node);
 	~ColorRampEditorPlugin();
 
 };

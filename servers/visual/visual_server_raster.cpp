@@ -3661,8 +3661,11 @@ void VisualServerRaster::canvas_item_add_texture_rect(RID p_item, const Rect2& p
 	rect->modulate=p_modulate;
 	rect->rect=p_rect;
 	rect->flags=0;
-	if (p_tile)
+	if (p_tile) {
 		rect->flags|=Rasterizer::CANVAS_RECT_TILE;
+		rect->flags|=Rasterizer::CANVAS_RECT_REGION;
+		rect->source=Rect2(0,0,p_rect.size.width,p_rect.size.height);
+	}
 
 	if (p_rect.size.x<0) {
 

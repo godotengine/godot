@@ -328,7 +328,7 @@ void SampleEditor::_update_sample() {
 		return; //bye or unsupported
 
 	generate_preview_texture(sample,peakdisplay);
-	info_label->set_text(TTR("Length:")+" "+vformat(TTR("%d frames"), sample->get_length())+" ("+String::num(sample->get_length()/(float)sample->get_mix_rate(),2)+" s), "+(sample->get_format()==Sample::FORMAT_PCM16?TTR("16 Bits"):TTR("8 Bits"))+", "+(sample->is_stereo()?TTR("Stereo"):TTR("Mono"))+".");
+	info_label->set_text(TTR("Length:")+" "+String::num(sample->get_length()/(float)sample->get_mix_rate(),2)+"s");
 
 	library->add_sample("default",sample);
 }
@@ -404,6 +404,8 @@ SampleEditor::SampleEditor() {
 	play->connect("pressed", this,"_play_pressed");
 	stop->connect("pressed", this,"_stop_pressed");
 
+	set_custom_minimum_size(Size2(1,150));
+
 }
 
 
@@ -438,10 +440,7 @@ SampleEditorPlugin::SampleEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
 	sample_editor = memnew( SampleEditor );
-	editor->get_viewport()->add_child(sample_editor);
-	sample_editor->set_area_as_parent_rect();
-	sample_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
-	sample_editor->set_margin( MARGIN_TOP, 120 );
+	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM,sample_editor);
 	sample_editor->hide();
 
 
