@@ -13,7 +13,7 @@ Godot has been developed by Juan Linietsky and Ariel Manzur for several years, a
 
 ### Documentation
 
-Documentation has been moved to [ReadTheDocs](http://docs.godotengine.org).
+Documentation is hosted on [ReadTheDocs](http://docs.godotengine.org).
 
 ### Binary Downloads, Community, etc.
 
