@@ -513,6 +513,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("resources/save_compressed_resources",true);
 	set("resources/auto_reload_modified_images",true);
 
+	// Since this feature is still somewhat experimental, recommend keeping it off by default until it's been more intensively tested.
+	set("text_editor/dynamic_script_reloading_enabled", false);
+
 	if (p_extra_config.is_valid()) {
 
 		if (p_extra_config->has_section("init_projects") && p_extra_config->has_section_key("init_projects", "list")) {

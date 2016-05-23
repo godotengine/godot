@@ -31,6 +31,8 @@
 #include "io/ip.h"
 #include "globals.h"
 #include "os/input.h"
+#include "io/resource_loader.h"
+
 void ScriptDebuggerRemote::_send_video_memory() {
 
 	List<ResourceUsage> usage;
@@ -539,8 +541,11 @@ bool ScriptDebuggerRemote::_parse_live_edit(const Array& cmd) {
 
 		live_edit_funcs->tree_reparent_node_func(live_edit_funcs->udata,cmd[1],cmd[2],cmd[3],cmd[4]);
 
-	} else {
-
+	}
+	else if (cmdstr == "live_script_reload") {
+		live_script_reload(cmd[1], cmd[2]);
+	}
+	else {
 		return false;
 	}
 
@@ -979,6 +984,34 @@ void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p
 }
 
 
+void ScriptDebuggerRemote::live_script_reload(const Array &p_script_name_array, const Array &p_script_source_code_array) {
+	// Messy, could use better reload hooks
+	Array script_name_array = p_script_name_array;
+	Array script_source_code_array = p_script_source_code_array;
+
+	ERR_FAIL_COND(script_name_array.size()!=script_source_code_array.size());
+
+	while (script_name_array.size() > 0) {
+		String path = script_name_array[0];
+		String source_code = script_source_code_array[0];
+		Ref<Script> script = ResourceLoader::load(path);
+		if (script.is_valid()) {
+
+			if (path.find("local://") == -1 && path.find("::")) {
+				if (script->is_used()) {
+					script->set_source_code(source_code);
+					script->reload();
+				}
+			}
+			else {
+				script->set_source_code(source_code);
+				script->reload();
+			}
+		}
+		script_name_array.pop_back();
+		script_source_code_array.pop_back();
+	}
+}
 ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func=NULL;
 
 ScriptDebuggerRemote::ScriptDebuggerRemote() {
