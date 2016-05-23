@@ -770,6 +770,7 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	Ref<ConfigFile> cf = memnew( ConfigFile );	// hex is better?
 	cf->set_value(theme_section, "background_color", ((Color)get("text_editor/background_color")).to_html());
 	cf->set_value(theme_section, "caret_color", ((Color)get("text_editor/caret_color")).to_html());
+	cf->set_value(theme_section, "line_number_color", ((Color)get("text_editor/line_number_color")).to_html());
 	cf->set_value(theme_section, "text_color", ((Color)get("text_editor/text_color")).to_html());
 	cf->set_value(theme_section, "text_selected_color", ((Color)get("text_editor/text_selected_color")).to_html());
 	cf->set_value(theme_section, "keyword_color", ((Color)get("text_editor/keyword_color")).to_html());
