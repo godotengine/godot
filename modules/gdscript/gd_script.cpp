@@ -812,7 +812,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				if (E) {
 
-					*dst=((GDFunction*)&E->get())->call(p_instance,(const Variant**)argptrs,argc,err);
+					*dst=E->get()->call(p_instance,(const Variant**)argptrs,argc,err);
 				} else if (gds->native.ptr()) {
 
 					if (*methodname!=GDScriptLanguage::get_singleton()->strings._init) {
