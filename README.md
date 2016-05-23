@@ -23,7 +23,7 @@ https://godotengine.org
 
 ### Compiling from Source
 
-Compilation instructions for every platform can be found in the Wiki:
+See docs for compilation instructions for every platform:
 http://docs.godotengine.org/en/latest/reference/_compiling.html
 
 [![Build Status](https://travis-ci.org/godotengine/godot.svg?branch=master)](https://travis-ci.org/godotengine/godot)
