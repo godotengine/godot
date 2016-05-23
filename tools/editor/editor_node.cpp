@@ -2151,7 +2151,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 				String existing;
 				if (extensions.size()) {
-					existing="new_scene."+extensions.front()->get().to_lower();
+					String root_name(get_edited_scene()->get_name());
+					existing=root_name+"."+extensions.front()->get().to_lower();
 				}
 				file->set_current_path(existing);
 
