@@ -1,6 +1,6 @@
 ![GODOT](/logo.png)
 
-http://www.godotengine.org
+https://godotengine.org
 
 ### The Engine
 
@@ -19,7 +19,7 @@ Documentation is hosted on [ReadTheDocs](http://docs.godotengine.org).
 
 Binary downloads, community, etc. can be found in Godot homepage:
 
-http://www.godotengine.org
+https://godotengine.org
 
 ### Compiling from Source
 
