@@ -1639,7 +1639,7 @@ bool Main::iteration() {
 	}
 
 	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !OS::get_singleton()->can_draw())
-		OS::get_singleton()->delay_usec(25000); //apply some delay to force idle time
+		OS::get_singleton()->delay_usec(16600); //apply some delay to force idle time (results in about 60 FPS max)
 	else {
 		uint32_t frame_delay = OS::get_singleton()->get_frame_delay();
 		if (frame_delay)
