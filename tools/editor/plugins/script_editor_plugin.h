@@ -122,6 +122,10 @@ class ScriptEditor : public VBoxContainer {
 		FILE_SAVE,
 		FILE_SAVE_AS,
 		FILE_SAVE_ALL,
+		FILE_IMPORT_THEME,
+		FILE_RELOAD_THEME,
+		FILE_SAVE_THEME,
+		FILE_SAVE_THEME_AS,
 		FILE_CLOSE,
 		EDIT_UNDO,
 		EDIT_REDO,
@@ -179,12 +183,15 @@ class ScriptEditor : public VBoxContainer {
 	ItemList *script_list;
 	HSplitContainer *script_split;
 	TabContainer *tab_container;
+	EditorFileDialog *file_dialog;
 	FindReplaceDialog *find_replace_dialog;
 	GotoLineDialog *goto_line_dialog;
 	ConfirmationDialog *erase_tab_confirm;
 	ScriptCreateDialog *script_create_dialog;
 	ScriptEditorDebugger* debugger;
 	ToolButton *scripts_visible;
+
+	String current_theme;
 
 	TextureFrame *script_icon;
 	Label *script_name_label;
@@ -277,6 +284,8 @@ class ScriptEditor : public VBoxContainer {
 	void _update_script_colors();
 	void _update_modified_scripts_for_external_editor();
 
+	int file_dialog_option;
+	void _file_dialog_action(String p_file);
 
 	static ScriptEditor *script_editor;
 protected:

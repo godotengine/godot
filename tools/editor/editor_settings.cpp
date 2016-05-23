@@ -221,6 +221,12 @@ void EditorSettings::create() {
 			dir->change_dir("..");
 		}
 
+		if (dir->change_dir("text_editor_themes")!=OK) {
+			dir->make_dir("text_editor_themes");
+		} else {
+			dir->change_dir("..");
+		}
+
 		if (dir->change_dir("tmp")!=OK) {
 			dir->make_dir("tmp");
 		} else {
@@ -280,6 +286,7 @@ void EditorSettings::create() {
 
 		singleton->setup_network();
 		singleton->load_favorites();
+		singleton->list_text_editor_themes();
 
 		return;
 
@@ -304,7 +311,7 @@ void EditorSettings::create() {
 	singleton->settings_path=config_path+"/"+config_dir;
 	singleton->_load_defaults(extra_config);
 	singleton->setup_network();
-
+	singleton->list_text_editor_themes();
 
 }
 
@@ -391,24 +398,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("global/default_project_export_path","");
 	hints["global/default_project_export_path"]=PropertyInfo(Variant::STRING,"global/default_project_export_path",PROPERTY_HINT_GLOBAL_DIR);
 	set("global/show_script_in_scene_tabs",false);
-	set("text_editor/background_color",Color::html("3b000000"));
-	set("text_editor/caret_color",Color::html("aaaaaa"));
-	set("text_editor/line_number_color",Color::html("66aaaaaa"));
-	set("text_editor/text_color",Color::html("aaaaaa"));
-	set("text_editor/text_selected_color",Color::html("000000"));
-	set("text_editor/keyword_color",Color::html("ffffb3"));
-	set("text_editor/base_type_color",Color::html("a4ffd4"));
-	set("text_editor/engine_type_color",Color::html("83d3ff"));
-	set("text_editor/function_color",Color::html("66a2ce"));
-	set("text_editor/member_variable_color",Color::html("e64e59"));
-	set("text_editor/comment_color",Color::html("676767"));
-	set("text_editor/string_color",Color::html("ef6ebe"));
-	set("text_editor/number_color",Color::html("EB9532"));
-	set("text_editor/symbol_color",Color::html("badfff"));
-	set("text_editor/selection_color",Color::html("7b5dbe"));
-	set("text_editor/brace_mismatch_color",Color(1,0.2,0.2));
-	set("text_editor/current_line_color",Color(0.3,0.5,0.8,0.15));
-	set("text_editor/word_highlighted_color",Color(0.8,0.9,0.9,0.15));
+
+	set("text_editor/color_theme","Default");
+	hints["text_editor/color_theme"]=PropertyInfo(Variant::STRING,"text_editor/color_theme",PROPERTY_HINT_ENUM,"Default");
+
+	_load_default_text_editor_theme();
 
 	set("text_editor/syntax_highlighting", true);
 
@@ -544,6 +538,27 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 }
 
+void EditorSettings::_load_default_text_editor_theme() {
+	set("text_editor/background_color",Color::html("3b000000"));
+	set("text_editor/caret_color",Color::html("aaaaaa"));
+	set("text_editor/line_number_color",Color::html("66aaaaaa"));
+	set("text_editor/text_color",Color::html("aaaaaa"));
+	set("text_editor/text_selected_color",Color::html("000000"));
+	set("text_editor/keyword_color",Color::html("ffffb3"));
+	set("text_editor/base_type_color",Color::html("a4ffd4"));
+	set("text_editor/engine_type_color",Color::html("83d3ff"));
+	set("text_editor/function_color",Color::html("66a2ce"));
+	set("text_editor/member_variable_color",Color::html("e64e59"));
+	set("text_editor/comment_color",Color::html("676767"));
+	set("text_editor/string_color",Color::html("ef6ebe"));
+	set("text_editor/number_color",Color::html("EB9532"));
+	set("text_editor/symbol_color",Color::html("badfff"));
+	set("text_editor/selection_color",Color::html("7b5dbe"));
+	set("text_editor/brace_mismatch_color",Color(1,0.2,0.2));
+	set("text_editor/current_line_color",Color(0.3,0.5,0.8,0.15));
+	set("text_editor/word_highlighted_color",Color(0.8,0.9,0.9,0.15));
+}
+
 void EditorSettings::notify_changes() {
 
 	_THREAD_SAFE_METHOD_
@@ -644,6 +659,139 @@ void EditorSettings::load_favorites() {
 
 }
 
+void EditorSettings::list_text_editor_themes() {
+	String themes="Default";
+	DirAccess *d = DirAccess::open(settings_path + "/text_editor_themes");
+	if (d) {
+		d->list_dir_begin();
+		String file = d->get_next();
+		while(file != String()) {
+			if (file.extension() == "tet" && file.basename().to_lower() != "default") {
+				themes += "," + file.basename();
+			}
+			file = d->get_next();
+		}
+		d->list_dir_end();
+		memdelete(d);
+	}
+	add_property_hint(PropertyInfo(Variant::STRING,"text_editor/color_theme",PROPERTY_HINT_ENUM,themes));
+}
+
+void EditorSettings::load_text_editor_theme() {
+	if (get("text_editor/color_theme") == "Default") {
+		_load_default_text_editor_theme();	// sorry for "Settings changed" console spam
+		return;
+	}
+
+	String theme_path = get_settings_path() + "/text_editor_themes/" + get("text_editor/color_theme") + ".tet";
+
+	Ref<ConfigFile> cf = memnew( ConfigFile );
+	Error err = cf->load(theme_path);
+
+	if (err != OK) {
+		return;
+	}
+
+	List<String> keys;
+	cf->get_section_keys("color_theme", &keys);
+
+	for(List<String>::Element *E=keys.front();E;E=E->next()) {
+		String key = E->get();
+		String val = cf->get_value("color_theme", key);
+
+		// don't load if it's not already there!
+		if (has("text_editor/" + key)) {
+
+			// make sure it is actually a color
+			if (val.is_valid_html_color() && key.find("color") >= 0) {
+				props["text_editor/"+key].variant = Color::html(val);	// change manually to prevent "Settings changed" console spam
+			}
+		}
+	}
+	emit_signal("settings_changed");
+	// if it doesn't load just use what is currently loaded
+}
+
+bool EditorSettings::import_text_editor_theme(String p_file) {
+
+	if (!p_file.ends_with(".tet")) {
+		return false;
+	} else {
+		if (p_file.get_file().to_lower() == "default.tet") {
+			return false;
+		}
+
+		DirAccess *d = DirAccess::open(settings_path + "/text_editor_themes");
+		if (d) {
+			d->copy(p_file, settings_path + "/text_editor_themes/" + p_file.get_file());
+			memdelete(d);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool EditorSettings::save_text_editor_theme() {
+
+	String p_file = get("text_editor/color_theme");
+
+	if (p_file.get_file().to_lower() == "default") {
+		return false;
+	}
+	String theme_path = get_settings_path() + "/text_editor_themes/" + p_file + ".tet";
+	return _save_text_editor_theme(theme_path);
+}
+
+bool EditorSettings::save_text_editor_theme_as(String p_file) {
+	if (!p_file.ends_with(".tet")) {
+		p_file += ".tet";
+	}
+
+	if (p_file.get_file().to_lower() == "default.tet") {
+		return false;
+	}
+	if(_save_text_editor_theme(p_file)) {
+
+		// switch to theme is saved in the theme directory
+		list_text_editor_themes();
+		String theme_name = p_file.substr(0, p_file.length() - 4).get_file();
+
+		if (p_file.get_base_dir() == get_settings_path() + "/text_editor_themes") {
+			set("text_editor/color_theme", theme_name);
+			load_text_editor_theme();
+		}
+		return true;
+	}
+	return false;
+}
+
+bool EditorSettings::_save_text_editor_theme(String p_file) {
+	String theme_section = "color_theme";
+	Ref<ConfigFile> cf = memnew( ConfigFile );	// hex is better?
+	cf->set_value(theme_section, "background_color", ((Color)get("text_editor/background_color")).to_html());
+	cf->set_value(theme_section, "caret_color", ((Color)get("text_editor/caret_color")).to_html());
+	cf->set_value(theme_section, "text_color", ((Color)get("text_editor/text_color")).to_html());
+	cf->set_value(theme_section, "text_selected_color", ((Color)get("text_editor/text_selected_color")).to_html());
+	cf->set_value(theme_section, "keyword_color", ((Color)get("text_editor/keyword_color")).to_html());
+	cf->set_value(theme_section, "base_type_color", ((Color)get("text_editor/base_type_color")).to_html());
+	cf->set_value(theme_section, "engine_type_color", ((Color)get("text_editor/engine_type_color")).to_html());
+	cf->set_value(theme_section, "function_color", ((Color)get("text_editor/function_color")).to_html());
+	cf->set_value(theme_section, "member_variable_color", ((Color)get("text_editor/member_variable_color")).to_html());
+	cf->set_value(theme_section, "comment_color", ((Color)get("text_editor/comment_color")).to_html());
+	cf->set_value(theme_section, "string_color", ((Color)get("text_editor/string_color")).to_html());
+	cf->set_value(theme_section, "number_color", ((Color)get("text_editor/number_color")).to_html());
+	cf->set_value(theme_section, "symbol_color", ((Color)get("text_editor/symbol_color")).to_html());
+	cf->set_value(theme_section, "selection_color", ((Color)get("text_editor/selection_color")).to_html());
+	cf->set_value(theme_section, "brace_mismatch_color", ((Color)get("text_editor/brace_mismatch_color")).to_html());
+	cf->set_value(theme_section, "current_line_color", ((Color)get("text_editor/current_line_color")).to_html());
+	cf->set_value(theme_section, "word_highlighted_color", ((Color)get("text_editor/word_highlighted_color")).to_html());
+	Error err = cf->save(p_file);
+
+	if (err == OK) {
+		return true;
+	}
+	return false;
+}
 
 void EditorSettings::_bind_methods() {
 
