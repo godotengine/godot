@@ -1,5 +1,6 @@
 EnsureSConsVersion(0,14);
 
+CacheDir('.cache')
 
 import string
 import os
