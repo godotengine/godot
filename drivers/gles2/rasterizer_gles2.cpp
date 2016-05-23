@@ -1018,10 +1018,12 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 	if (texture->flags&VS::TEXTURE_FLAG_FILTER) {
 
 		glTexParameteri(texture->target,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	// Linear Filtering
+		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_LINEAR);	// Linear Filtering
 
 	} else {
 
 		glTexParameteri(texture->target,GL_TEXTURE_MAG_FILTER,GL_NEAREST);	// raw Filtering
+		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_NEAREST);	// raw Filtering
 	}
 
 	bool force_clamp_to_edge = !(texture->flags&VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps) && (nearest_power_of_2(texture->alloc_height)!=texture->alloc_height || nearest_power_of_2(texture->alloc_width)!=texture->alloc_width);
@@ -1339,10 +1341,12 @@ void RasterizerGLES2::texture_set_flags(RID p_texture,uint32_t p_flags) {
 	if (texture->flags&VS::TEXTURE_FLAG_FILTER) {
 
 		glTexParameteri(texture->target,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	// Linear Filtering
+		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_LINEAR);	// Linear Filtering
 
 	} else {
 
 		glTexParameteri(texture->target,GL_TEXTURE_MAG_FILTER,GL_NEAREST);	// raw Filtering
+		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_NEAREST);	// raw Filtering
 	}
 }
 uint32_t RasterizerGLES2::texture_get_flags(RID p_texture) const {
