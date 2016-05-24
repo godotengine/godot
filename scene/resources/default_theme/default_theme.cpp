@@ -468,7 +468,7 @@ void make_default_theme() {
 	t->set_color("mark_color","TextEdit", Color(1.0,0.4,0.4,0.4) );
 	t->set_color("breakpoint_color","TextEdit", Color(0.8,0.8,0.4,0.2) );
 	t->set_color("current_line_color","TextEdit", Color(0.25,0.25,0.26,0.8) );
-	t->set_color("cursor_color","TextEdit", control_font_color );
+	t->set_color("caret_color","TextEdit", control_font_color );
 	t->set_color("symbol_color","TextEdit", control_font_color_hover );
 	t->set_color("brace_mismatch_color","TextEdit", Color(1,0.2,0.2) );
 
