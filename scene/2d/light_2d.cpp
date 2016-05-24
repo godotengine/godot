@@ -357,11 +357,11 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"scale",PROPERTY_HINT_RANGE,"0.01,4096,0.01"),_SCS("set_texture_scale"),_SCS("get_texture_scale"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"scale",PROPERTY_HINT_RANGE,"0.01,50,0.01"),_SCS("set_texture_scale"),_SCS("get_texture_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"energy"),_SCS("set_energy"),_SCS("get_energy"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"energy",PROPERTY_HINT_RANGE,"0.01,100,0.01"),_SCS("set_energy"),_SCS("get_energy"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Add,Sub,Mix,Mask"),_SCS("set_mode"),_SCS("get_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"range/height"),_SCS("set_height"),_SCS("get_height"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"range/height",PROPERTY_HINT_RANGE,"-100,100,0.1"),_SCS("set_height"),_SCS("get_height"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/z_min",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_min"),_SCS("get_z_range_min"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/z_max",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_max"),_SCS("get_z_range_max"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/layer_min",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_min"),_SCS("get_layer_range_min"));
