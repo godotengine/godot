@@ -22,6 +22,7 @@ import com.google.android.vending.expansion.downloader.Helpers;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.support.v4.app.NotificationCompat;
 
 public class V14CustomNotification implements DownloadNotification.ICustomNotification {
 
@@ -53,13 +54,13 @@ public class V14CustomNotification implements DownloadNotification.ICustomNotifi
         mCurrentKB = currentBytes;
     }
 
-    void setProgress(Notification.Builder builder) {
+    void setProgress(NotificationCompat.Builder builder) {
 
     }
 
     @Override
-    public Notification.Builder updateNotification(Context c) {
-        Notification.Builder builder = new Notification.Builder(c);
+    public NotificationCompat.Builder updateNotification(Context c) {
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(c);
         builder.setContentTitle(mTitle);
         if (mTotalKB > 0 && -1 != mCurrentKB) {
             builder.setProgress((int) (mTotalKB >> 8), (int) (mCurrentKB >> 8), false);
