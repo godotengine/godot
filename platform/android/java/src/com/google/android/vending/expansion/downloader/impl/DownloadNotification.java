@@ -27,6 +27,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.os.Messenger;
+import android.support.v4.app.NotificationCompat;
 
 /**
  * This class handles displaying the notification associated with the download
@@ -48,8 +49,8 @@ public class DownloadNotification implements IDownloaderClient {
 
     private IDownloaderClient mClientProxy;
     final ICustomNotification mCustomNotification;
-    private Notification.Builder mNotificationBuilder;
-    private Notification.Builder mCurrentNotificationBuilder;
+    private NotificationCompat.Builder mNotificationBuilder;
+    private NotificationCompat.Builder mCurrentNotificationBuilder;
     private CharSequence mLabel;
     private String mCurrentText;
     private PendingIntent mContentIntent;
@@ -185,7 +186,7 @@ public class DownloadNotification implements IDownloaderClient {
 
         void setTimeRemaining(long timeRemaining);
 
-        Notification.Builder updateNotification(Context c);
+		NotificationCompat.Builder updateNotification(Context c);
     }
 
     /**
@@ -218,7 +219,7 @@ public class DownloadNotification implements IDownloaderClient {
                 mContext.getSystemService(Context.NOTIFICATION_SERVICE);
         mCustomNotification = CustomNotificationFactory
                 .createCustomNotification();
-        mNotificationBuilder = new Notification.Builder(ctx);
+        mNotificationBuilder = new NotificationCompat.Builder(ctx);
         mCurrentNotificationBuilder = mNotificationBuilder;
 
     }
