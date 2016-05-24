@@ -1208,6 +1208,16 @@ void TileMapEditor::_tileset_settings_changed() {
 		canvas_item_editor->update();
 }
 
+void TileMapEditor::_icon_size_changed(float p_value) {
+	if (node) {
+		Size2 size = node->get_cell_size() * p_value;
+		palette->set_min_icon_size(size + Size2(4, 0)); //4px gap between tiles
+		palette->set_icon_stretch_to_max_size(true);
+		palette->set_max_icon_size(size);
+		_update_palette();
+	}
+}
+
 void TileMapEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_text_entered"),&TileMapEditor::_text_entered);
@@ -1222,6 +1232,8 @@ void TileMapEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_fill_points"),&TileMapEditor::_fill_points);
 	ObjectTypeDB::bind_method(_MD("_erase_points"),&TileMapEditor::_erase_points);
+
+	ObjectTypeDB::bind_method(_MD("_icon_size_changed"), &TileMapEditor::_icon_size_changed);
 }
 
 TileMapEditor::CellOp TileMapEditor::_get_op_from_cell(const Point2i& p_pos)
@@ -1296,6 +1308,15 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	search_box->connect("text_changed", this, "_text_changed");
 	search_box->connect("input_event", this, "_sbox_input");
 	add_child(search_box);
+
+	size_slider = memnew( HSlider );
+	size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+	size_slider->set_min(0.1f);
+	size_slider->set_max(4.0f);
+	size_slider->set_step(0.1f);
+	size_slider->set_val(1.0f);
+	size_slider->connect("value_changed", this, "_icon_size_changed");
+	add_child(size_slider);
 
 	int mw = EDITOR_DEF("tile_map/palette_min_width", 80);
 

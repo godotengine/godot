@@ -76,6 +76,7 @@ class TileMapEditor : public VBoxContainer {
 	Control *canvas_item_editor;
 
 	LineEdit *search_box;
+	HSlider  *size_slider;
 	ItemList *palette;
 
 	HBoxContainer *toolbar;
@@ -151,6 +152,7 @@ class TileMapEditor : public VBoxContainer {
 	void _canvas_mouse_enter();
 	void _canvas_mouse_exit();
 	void _tileset_settings_changed();
+	void _icon_size_changed(float p_value);
 
 protected:
 

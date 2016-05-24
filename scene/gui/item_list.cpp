@@ -720,7 +720,7 @@ void ItemList::ensure_current_is_visible() {
 	update();
 }
 
-static Size2 _adjust_to_max_size(Size2 p_size, Size2 p_max_size) {
+static Size2 _adjust_to_max_size(Size2 p_size, Size2 p_max_size, bool p_stretch) {
 
 	if (p_max_size.x<=0)
 		p_max_size.x=1e20;
@@ -729,6 +729,10 @@ static Size2 _adjust_to_max_size(Size2 p_size, Size2 p_max_size) {
 
 
 	Size2 new_size;
+
+	if (p_stretch && (p_size.x * p_size.y < p_max_size.x * p_max_size.y)) {
+		return p_max_size;
+	}
 
 	if (p_size.x > p_max_size.x) {
 
@@ -831,7 +835,7 @@ void ItemList::_notification(int p_what) {
 				Size2 minsize;
 				if (items[i].icon.is_valid()) {
 
-					minsize=_adjust_to_max_size(items[i].get_icon_size(),max_icon_size);
+					minsize=_adjust_to_max_size(items[i].get_icon_size(),max_icon_size, icon_stretch);
 
 					if (items[i].text!="") {
 						if (icon_mode==ICON_MODE_TOP) {
@@ -976,7 +980,7 @@ void ItemList::_notification(int p_what) {
 			Vector2 text_ofs;
 			if (items[i].icon.is_valid()) {
 
-				Size2 icon_size = _adjust_to_max_size(items[i].get_icon_size(),max_icon_size);
+				Size2 icon_size = _adjust_to_max_size(items[i].get_icon_size(),max_icon_size, icon_stretch);
 
 				Vector2 icon_ofs;
 				if (min_icon_size!=Vector2()) {
@@ -1201,6 +1205,16 @@ bool ItemList::get_allow_rmb_select() const {
 	return allow_rmb_select;
 }
 
+void ItemList::set_icon_stretch_to_max_size(bool p_stretch) {
+
+	icon_stretch = p_stretch;
+}
+
+bool ItemList::get_icon_stretch_to_max_size() const {
+
+	return icon_stretch;
+}
+
 void ItemList::_bind_methods(){
 
 	ObjectTypeDB::bind_method(_MD("add_item","text","icon:Texture","selectable"),&ItemList::add_item,DEFVAL(Variant()),DEFVAL(true));
@@ -1261,6 +1275,9 @@ void ItemList::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("set_max_icon_size","size"),&ItemList::set_max_icon_size);
 	ObjectTypeDB::bind_method(_MD("get_max_icon_size"),&ItemList::get_max_icon_size);
 
+	ObjectTypeDB::bind_method(_MD("set_icon_stretch_to_max_size","stretch"),&ItemList::set_icon_stretch_to_max_size);
+	ObjectTypeDB::bind_method(_MD("get_icon_stretch_to_max_size"),&ItemList::get_icon_stretch_to_max_size);
+
 	ObjectTypeDB::bind_method(_MD("set_allow_rmb_select","allow"),&ItemList::set_allow_rmb_select);
 	ObjectTypeDB::bind_method(_MD("get_allow_rmb_select"),&ItemList::get_allow_rmb_select);
 
@@ -1307,6 +1324,8 @@ ItemList::ItemList() {
 	ensure_selected_visible=false;
 	defer_select_single=-1;
 	allow_rmb_select=false;
+
+	icon_stretch = false;
 
 }
 
