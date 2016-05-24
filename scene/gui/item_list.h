@@ -45,6 +45,8 @@ private:
 
 	bool ensure_selected_visible;
 
+	bool icon_stretch;
+
 	Vector<Item> items;
 	Vector<int> separators;
 
@@ -149,6 +151,9 @@ public:
 
 	virtual String get_tooltip(const Point2& p_pos) const;
 	int get_item_at_pos(const Point2& p_pos,bool p_exact=false) const;
+
+	void set_icon_stretch_to_max_size(bool p_stretch);
+	bool get_icon_stretch_to_max_size() const;
 
 	ItemList();
 	~ItemList();
