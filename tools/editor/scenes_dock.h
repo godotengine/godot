@@ -77,15 +77,13 @@ class ScenesDock : public VBoxContainer {
 
 	Button *button_reload;
 	Button *button_favorite;
-	Button *button_fav_up;
-	Button *button_fav_down;
 	Button *button_back;
 	Button *display_mode;
 	Button *button_hist_next;
 	Button *button_hist_prev;
 	LineEdit *current_path;
 	LineEdit *search_box;
-	Button *search_button;
+	TextureFrame *search_icon;
 	HBoxContainer *path_hb;
 
 	bool split_mode;
@@ -137,8 +135,6 @@ class ScenesDock : public VBoxContainer {
 	void _push_to_history();
 
 
-	void _fav_up_pressed();
-	void _fav_down_pressed();
 	void _dir_selected();
 	void _update_tree();
 	void _rescan();
@@ -147,7 +143,6 @@ class ScenesDock : public VBoxContainer {
 
 	void _favorites_pressed();
 	void _open_pressed();
-	void _search_toggled();
 	void _search_changed(const String& p_text);
 
 

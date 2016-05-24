@@ -36,10 +36,19 @@
 class TextureFrame : public Control {
 
 	OBJ_TYPE(TextureFrame,Control);
-
+public:
+	enum StretchMode {
+		STRETCH_SCALE_ON_EXPAND, //default, for backwards compatibility
+		STRETCH_SCALE,
+		STRETCH_TILE,
+		STRETCH_KEEP,
+		STRETCH_KEEP_CENTERED,
+	};
+private:
 	bool expand;
 	Color modulate;
 	Ref<Texture> texture;
+	StretchMode stretch_mode;
 protected:
 
 	void _notification(int p_what);
@@ -57,9 +66,13 @@ public:
 	void set_expand(bool p_expand);
 	bool has_expand() const;
 
+	void set_stretch_mode(StretchMode p_mode);
+	StretchMode get_stretch_mode() const;
+
 	TextureFrame();
 	~TextureFrame();
 
 };
 
+VARIANT_ENUM_CAST( TextureFrame::StretchMode );
 #endif // TEXTURE_FRAME_H
