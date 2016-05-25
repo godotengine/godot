@@ -416,6 +416,7 @@ SpriteRegionEditor::SpriteRegionEditor(EditorNode* p_editor)
 	add_child( memnew( VSeparator ));
 	edit_node = memnew( ToolButton );
 	add_child(edit_node);
+	edit_node->set_tooltip(TTR("Sprite Region Editor"));
 	edit_node->connect("pressed",this,"_edit_node");
 
 	dlg_editor = memnew( AcceptDialog );
