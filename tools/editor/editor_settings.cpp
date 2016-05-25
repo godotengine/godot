@@ -556,6 +556,8 @@ void EditorSettings::_load_default_text_editor_theme() {
 	set("text_editor/selection_color",Color::html("7b5dbe"));
 	set("text_editor/brace_mismatch_color",Color(1,0.2,0.2));
 	set("text_editor/current_line_color",Color(0.3,0.5,0.8,0.15));
+	set("text_editor/mark_color", Color(1.0,0.4,0.4,0.4));
+	set("text_editor/breakpoint_color", Color(0.8,0.8,0.4,0.2));
 	set("text_editor/word_highlighted_color",Color(0.8,0.9,0.9,0.15));
 }
 
@@ -785,6 +787,8 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	cf->set_value(theme_section, "selection_color", ((Color)get("text_editor/selection_color")).to_html());
 	cf->set_value(theme_section, "brace_mismatch_color", ((Color)get("text_editor/brace_mismatch_color")).to_html());
 	cf->set_value(theme_section, "current_line_color", ((Color)get("text_editor/current_line_color")).to_html());
+	cf->set_value(theme_section, "mark_color", ((Color)get("text_editor/mark_color")).to_html());
+	cf->set_value(theme_section, "breakpoint_color", ((Color)get("text_editor/breakpoint_color")).to_html());
 	cf->set_value(theme_section, "word_highlighted_color", ((Color)get("text_editor/word_highlighted_color")).to_html());
 	Error err = cf->save(p_file);
 
