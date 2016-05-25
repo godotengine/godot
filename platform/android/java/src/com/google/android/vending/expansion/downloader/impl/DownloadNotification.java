@@ -49,6 +49,7 @@ public class DownloadNotification implements IDownloaderClient {
 
     private IDownloaderClient mClientProxy;
     final ICustomNotification mCustomNotification;
+    // NotificationCompat.Builder is used to support API < 16. This can be changed to Notification.Builder if minimum API >= 16.
     private NotificationCompat.Builder mNotificationBuilder;
     private NotificationCompat.Builder mCurrentNotificationBuilder;
     private CharSequence mLabel;
@@ -186,7 +187,7 @@ public class DownloadNotification implements IDownloaderClient {
 
         void setTimeRemaining(long timeRemaining);
 
-		NotificationCompat.Builder updateNotification(Context c);
+        NotificationCompat.Builder updateNotification(Context c);
     }
 
     /**

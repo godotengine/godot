@@ -60,7 +60,8 @@ public class V14CustomNotification implements DownloadNotification.ICustomNotifi
 
     @Override
     public NotificationCompat.Builder updateNotification(Context c) {
-		NotificationCompat.Builder builder = new NotificationCompat.Builder(c);
+        // NotificationCompat.Builder is used to support API < 16. This can be changed to Notification.Builder if minimum API >= 16.
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(c);
         builder.setContentTitle(mTitle);
         if (mTotalKB > 0 && -1 != mCurrentKB) {
             builder.setProgress((int) (mTotalKB >> 8), (int) (mCurrentKB >> 8), false);
