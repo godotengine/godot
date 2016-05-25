@@ -30227,6 +30227,12 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="set_meta_interactive" type="bool" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>Enables the meta_mouse_hovering signal.
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="meta_clicked">

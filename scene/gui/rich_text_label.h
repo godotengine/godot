@@ -271,6 +271,7 @@ private:
 	Item *_get_next_item(Item* p_item, bool p_free=false);
 
 	bool use_bbcode;
+	bool meta_interactive;
 	String bbcode;
 
 	void _update_all_lines();
@@ -332,6 +333,8 @@ public:
 	Error append_bbcode(const String& p_bbcode);
 
 	void set_use_bbcode(bool p_enable);
+	void set_meta_interactive(bool p_enable);
+	
 	bool is_using_bbcode() const;
 
 	void set_bbcode(const String& p_bbcode);
