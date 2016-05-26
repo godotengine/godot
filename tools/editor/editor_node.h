@@ -195,6 +195,7 @@ private:
 		DEPENDENCY_LOAD_CHANGED_IMAGES,
 		DEPENDENCY_UPDATE_IMPORTED,
 		SCENE_TAB_CLOSE,
+		SCENE_RELOAD,
 
 		IMPORT_PLUGIN_BASE=100,
 
@@ -513,6 +514,8 @@ private:
 	void _cleanup_scene();
 	void _remove_edited_scene();
 	void _remove_scene(int index);
+	void _reload_edited_scene();
+	void _reload_edited_scene_if_changed();
 	bool _find_and_save_resource(RES p_res,Map<RES,bool>& processed,int32_t flags);
 	bool _find_and_save_edited_subresources(Object *obj,Map<RES,bool>& processed,int32_t flags);
 	void _save_edited_subresources(Node* scene,Map<RES,bool>& processed,int32_t flags);
