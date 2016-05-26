@@ -834,35 +834,104 @@ void ProjectSettings::_autoload_edited() {
 		return;
 
 	TreeItem *ti = autoload_list->get_edited();
-	if (!ti || autoload_list->get_edited_column()!=2)
+	int column = autoload_list->get_edited_column();
+
+	if (!ti || (column != 0 && column != 2))
 		return;
 
-	updating_autoload=true;
-	bool checked=ti->is_checked(2);
+	if (column == 0) {
+		String name = ti->get_text(0);
+		String old_name = selected_autoload.substr(selected_autoload.find("/")+1,selected_autoload.length());
 
-	String base="autoload/"+ti->get_text(0);
+		if (!name.is_valid_identifier()) {
+			ti->set_text(0,old_name);
+			message->set_text(TTR("Invalid name.")+"\n"+TTR("Valid characters:")+" a-z, A-Z, 0-9 or _");
+			message->popup_centered(Size2(300,100));
+			return;
+		}
 
-	String path = Globals::get_singleton()->get(base);
-	int order = Globals::get_singleton()->get_order(base);
+		if (ObjectTypeDB::type_exists(name)) {
+			ti->set_text(0,old_name);
+			message->set_text(TTR("Invalid name. Must not collide with an existing engine class name."));
+			message->popup_centered(Size2(400,100));
+			return;
+		}
 
-	if (path.begins_with("*"))
-		path=path.substr(1,path.length());
+		for(int i=0;i<Variant::VARIANT_MAX;i++) {
+			if (Variant::get_type_name(Variant::Type(i))==name) {
+				ti->set_text(0,old_name);
+				message->set_text(TTR("Invalid name. Must not collide with an existing buit-in type name."));
+				message->popup_centered(Size2(400,100));
+				return;
+			}
+		}
 
-	if (checked)
-		path="*"+path;
+		for(int i=0;i<GlobalConstants::get_global_constant_count();i++) {
+			if (GlobalConstants::get_global_constant_name(i)==name) {
+				ti->set_text(0,old_name);
+				message->set_text(TTR("Invalid name. Must not collide with an existing global constant name."));
+				message->popup_centered(Size2(400,100));
+				return;
+			}
+		}
 
-	undo_redo->create_action(TTR("Toggle AutoLoad Globals"));
-	undo_redo->add_do_property(Globals::get_singleton(),base,path);
-	undo_redo->add_undo_property(Globals::get_singleton(),base,Globals::get_singleton()->get(base));
-	undo_redo->add_do_method(Globals::get_singleton(),"set_order",base,order); // keep order, as config order matters for these
-	undo_redo->add_undo_method(Globals::get_singleton(),"set_order",base,order);
-	undo_redo->add_do_method(this,"_update_autoload");
-	undo_redo->add_undo_method(this,"_update_autoload");
-	undo_redo->add_do_method(this,"_settings_changed");
-	undo_redo->add_undo_method(this,"_settings_changed");
-	undo_redo->commit_action();
-	updating_autoload=false;
+		if (Globals::get_singleton()->has("autoload/"+name)) {
+			ti->set_text(0,old_name);
+			message->set_text(vformat(TTR("Autoload '%s' already exists!"),name));
+			message->popup_centered(Size2(300,100));
+			return;
+		}
 
+		updating_autoload = true;
+
+		name = "autoload/"+name;
+		String path = Globals::get_singleton()->get(selected_autoload);
+		bool is_persisting = Globals::get_singleton()->is_persisting(selected_autoload);
+		int order = Globals::get_singleton()->get_order(selected_autoload);
+
+		undo_redo->create_action(TTR("Rename Autoload"));
+		undo_redo->add_do_property(Globals::get_singleton(),name,path);
+		undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",name,is_persisting);
+		undo_redo->add_do_method(Globals::get_singleton(),"set_order",name,order);
+		undo_redo->add_do_method(Globals::get_singleton(),"clear",selected_autoload);
+		undo_redo->add_undo_property(Globals::get_singleton(),selected_autoload,path);
+		undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",selected_autoload,is_persisting);
+		undo_redo->add_undo_method(Globals::get_singleton(),"set_order",selected_autoload,order);
+		undo_redo->add_undo_method(Globals::get_singleton(),"clear",name);
+		undo_redo->add_do_method(this,"_update_autoload");
+		undo_redo->add_undo_method(this,"_update_autoload");
+		undo_redo->add_do_method(this,"_settings_changed");
+		undo_redo->add_undo_method(this,"_settings_changed");
+		undo_redo->commit_action();
+
+		selected_autoload = name;
+	} else if (column == 2) {
+		updating_autoload = true;
+
+		bool checked = ti->is_checked(2);
+		String base = "autoload/"+ti->get_text(0);
+		String path = Globals::get_singleton()->get(base);
+		int order = Globals::get_singleton()->get_order(base);
+
+		if (path.begins_with("*"))
+			path = path.substr(1,path.length());
+
+		if (checked)
+			path = "*" + path;
+
+		undo_redo->create_action(TTR("Toggle AutoLoad Globals"));
+		undo_redo->add_do_property(Globals::get_singleton(),base,path);
+		undo_redo->add_undo_property(Globals::get_singleton(),base,Globals::get_singleton()->get(base));
+		undo_redo->add_do_method(Globals::get_singleton(),"set_order",base,order); // keep order, as config order matters for these
+		undo_redo->add_undo_method(Globals::get_singleton(),"set_order",base,order);
+		undo_redo->add_do_method(this,"_update_autoload");
+		undo_redo->add_undo_method(this,"_update_autoload");
+		undo_redo->add_do_method(this,"_settings_changed");
+		undo_redo->add_undo_method(this,"_settings_changed");
+		undo_redo->commit_action();
+	}
+
+	updating_autoload = false;
 }
 
 void ProjectSettings::_autoload_add() {
@@ -990,6 +1059,14 @@ void ProjectSettings::_autoload_delete(Object *p_item,int p_column, int p_button
 
 }
 
+void ProjectSettings::_autoload_selected() {
+	TreeItem *ti = autoload_list->get_selected();
+
+	if (!ti)
+		return;
+
+	selected_autoload = "autoload/"+ti->get_text(0);
+}
 
 void ProjectSettings::_translation_delete(Object *p_item,int p_column, int p_button) {
 
@@ -1348,6 +1425,7 @@ void ProjectSettings::_update_autoload() {
 		}
 		TreeItem *t = autoload_list->create_item(root);
 		t->set_text(0,name);
+		t->set_editable(0,true);
 		t->set_text(1,path);
 		t->set_cell_mode(2,TreeItem::CELL_MODE_CHECK);
 		t->set_editable(2,true);
@@ -1436,6 +1514,7 @@ void ProjectSettings::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_update_autoload"),&ProjectSettings::_update_autoload);
 	ObjectTypeDB::bind_method(_MD("_autoload_delete"),&ProjectSettings::_autoload_delete);
 	ObjectTypeDB::bind_method(_MD("_autoload_edited"),&ProjectSettings::_autoload_edited);
+	ObjectTypeDB::bind_method(_MD("_autoload_selected"),&ProjectSettings::_autoload_selected);
 
 	ObjectTypeDB::bind_method(_MD("_clear_search_box"),&ProjectSettings::_clear_search_box);
 	ObjectTypeDB::bind_method(_MD("_toggle_search_bar"),&ProjectSettings::_toggle_search_bar);
@@ -1838,6 +1917,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 		autoload_list->connect("button_pressed",this,"_autoload_delete");
 		autoload_list->connect("item_edited",this,"_autoload_edited");
+		autoload_list->connect("cell_selected", this, "_autoload_selected");
 
 		updating_autoload=false;
 
