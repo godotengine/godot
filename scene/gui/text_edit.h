@@ -91,6 +91,7 @@ class TextEdit : public Control  {
 		int row_height;
 		int line_spacing;
 		int line_number_w;
+		int breakpoint_gutter_width;
 		Size2 size;
 	} cache;
 
@@ -221,6 +222,8 @@ class TextEdit : public Control  {
 	bool text_changed_dirty;
 	bool undo_enabled;
 	bool line_numbers;
+	bool draw_breakpoint_gutter;
+	int breakpoint_gutter_width;
 
 	bool highlight_all_occurrences;
 	bool scroll_past_end_of_file_enabled;
@@ -434,6 +437,12 @@ public:
 	void tag_saved_version();
 
 	void set_show_line_numbers(bool p_show);
+
+	void set_draw_breakpoint_gutter(bool p_draw);
+	bool is_drawing_breakpoint_gutter() const;
+
+	void set_breakpoint_gutter_width(int p_gutter_width);
+	int get_breakpoint_gutter_width() const;
 
 	void set_tooltip_request_func(Object *p_obj, const StringName& p_function, const Variant& p_udata);
 
