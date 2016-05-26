@@ -314,6 +314,10 @@ void TextEdit::_update_scrollbars() {
 	if (line_numbers)
 		total_width += cache.line_number_w;
 
+	if (draw_breakpoint_gutter) {
+		total_width += cache.breakpoint_gutter_width;
+	}
+
 	bool use_hscroll=true;
 	bool use_vscroll=true;
 
@@ -415,6 +419,12 @@ void TextEdit::_notification(int p_what) {
 		};
 		case NOTIFICATION_DRAW: {
 
+			if (draw_breakpoint_gutter) {
+				cache.breakpoint_gutter_width = breakpoint_gutter_width;
+			} else {
+				cache.breakpoint_gutter_width = 0;
+			}
+
 			int line_number_char_count=0;
 
 			{
@@ -439,7 +449,7 @@ void TextEdit::_notification(int p_what) {
 
 
 			RID ci = get_canvas_item();
-			int xmargin_beg=cache.style_normal->get_margin(MARGIN_LEFT)+cache.line_number_w;
+			int xmargin_beg=cache.style_normal->get_margin(MARGIN_LEFT)+cache.line_number_w+cache.breakpoint_gutter_width;
 			int xmargin_end=cache.size.width-cache.style_normal->get_margin(MARGIN_RIGHT);
 			//let's do it easy for now:
 			cache.style_normal->draw(ci,Rect2(Point2(),cache.size));
@@ -692,7 +702,7 @@ void TextEdit::_notification(int p_what) {
 						fc="0"+fc;
 					}
 
-					cache.font->draw(ci,Point2(cache.style_normal->get_margin(MARGIN_LEFT),ofs_y+cache.font->get_ascent()),fc,cache.line_number_color);
+					cache.font->draw(ci,Point2(cache.style_normal->get_margin(MARGIN_LEFT)+cache.breakpoint_gutter_width,ofs_y+cache.font->get_ascent()),fc,cache.line_number_color);
 				}
 
 				const Map<int,Text::ColorRegionInfo>& cri_map=text.get_color_region_info(line);
@@ -706,6 +716,14 @@ void TextEdit::_notification(int p_what) {
 				if (text.is_breakpoint(line)) {
 
 					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(xmargin_beg, ofs_y,xmargin_end-xmargin_beg,get_row_height()),cache.breakpoint_color);
+
+					// draw breakpoint marker
+					if (draw_breakpoint_gutter) {
+						int vertical_gap = cache.breakpoint_gutter_width / 2;
+						int marker_size = cache.breakpoint_gutter_width - vertical_gap;
+						// no transparency on marker
+						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cache.style_normal->get_margin(MARGIN_LEFT) + 1, ofs_y + vertical_gap ,marker_size, marker_size),Color(cache.breakpoint_color.r, cache.breakpoint_color.g, cache.breakpoint_color.b));
+					}
 				}
 
 
@@ -1347,7 +1365,7 @@ void TextEdit::_get_mouse_pos(const Point2i& p_mouse, int &r_row, int &r_col) co
 		col=text[row].size();
 	} else {
 
-		col=p_mouse.x-(cache.style_normal->get_margin(MARGIN_LEFT)+cache.line_number_w);
+		col=p_mouse.x-(cache.style_normal->get_margin(MARGIN_LEFT)+cache.line_number_w+cache.breakpoint_gutter_width);
 		col+=cursor.x_ofs;
 		col=get_char_pos_for( col, get_line(row) );
 	}
@@ -1420,6 +1438,15 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					int row,col;
 					_get_mouse_pos(Point2i(mb.x,mb.y), row,col);
+
+					// toggle breakpoint on gutter click
+					if (draw_breakpoint_gutter) {
+						int gutter=cache.style_normal->get_margin(MARGIN_LEFT);
+						if (mb.x > gutter && mb.x <= gutter + cache.breakpoint_gutter_width + 3) {
+							set_line_as_breakpoint(row, !is_line_set_as_breakpoint(row));
+							return;
+						}
+					}
 
 					int prev_col=cursor.column;
 					int prev_line=cursor.line;
@@ -2846,7 +2873,7 @@ void TextEdit::adjust_viewport_to_cursor() {
 	if (cursor.line_ofs>cursor.line)
 		cursor.line_ofs=cursor.line;
 
-	int visible_width=cache.size.width-cache.style_normal->get_minimum_size().width-cache.line_number_w;
+	int visible_width=cache.size.width-cache.style_normal->get_minimum_size().width-cache.line_number_w-cache.breakpoint_gutter_width;
 	if (v_scroll->is_visible())
 		visible_width-=v_scroll->get_combined_minimum_size().width;
 	visible_width-=20; // give it a little more space
@@ -3075,7 +3102,8 @@ void TextEdit::insert_text_at_cursor(const String& p_text) {
 }
 
 Control::CursorShape TextEdit::get_cursor_shape(const Point2& p_pos) const {
-	if(completion_active && completion_rect.has_point(p_pos)) {
+	int gutter=cache.style_normal->get_margin(MARGIN_LEFT)+cache.line_number_w+cache.breakpoint_gutter_width;
+	if((completion_active && completion_rect.has_point(p_pos)) || p_pos.x < gutter) {
 		return CURSOR_ARROW;
 	}
 	return CURSOR_IBEAM;
@@ -4167,6 +4195,24 @@ void TextEdit::set_show_line_numbers(bool p_show) {
 	update();
 }
 
+void TextEdit::set_draw_breakpoint_gutter(bool p_draw) {
+	draw_breakpoint_gutter = p_draw;
+	update();
+}
+
+bool TextEdit::is_drawing_breakpoint_gutter() const {
+	return draw_breakpoint_gutter;
+}
+
+void TextEdit::set_breakpoint_gutter_width(int p_gutter_width) {
+	breakpoint_gutter_width = p_gutter_width;
+	update();
+}
+
+int TextEdit::get_breakpoint_gutter_width() const {
+	return cache.breakpoint_gutter_width;
+}
+
 bool TextEdit::is_text_field() const {
 
     return true;
@@ -4308,6 +4354,8 @@ TextEdit::TextEdit()  {
 	cache.row_height=1;
 	cache.line_spacing=1;
 	cache.line_number_w=1;
+	cache.breakpoint_gutter_width=0;
+	breakpoint_gutter_width = 0;
 
 	tab_size=4;
 	text.set_tab_size(tab_size);
@@ -4389,6 +4437,7 @@ TextEdit::TextEdit()  {
 	completion_line_ofs=0;
 	tooltip_obj=NULL;
 	line_numbers=false;
+	draw_breakpoint_gutter=false;
 	next_operation_is_complex=false;
 	scroll_past_end_of_file_enabled=false;
 	auto_brace_completion_enabled=false;
