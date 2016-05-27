@@ -45,8 +45,6 @@ private:
 
 	bool ensure_selected_visible;
 
-	bool icon_stretch;
-
 	Vector<Item> items;
 	Vector<int> separators;
 
@@ -66,6 +64,8 @@ private:
 	int defer_select_single;
 
 	bool allow_rmb_select;
+
+	real_t icon_scale;
 
 	void _scroll_changed(double);
 	void _input_event(const InputEvent& p_event);
@@ -152,8 +152,8 @@ public:
 	virtual String get_tooltip(const Point2& p_pos) const;
 	int get_item_at_pos(const Point2& p_pos,bool p_exact=false) const;
 
-	void set_icon_stretch_to_max_size(bool p_stretch);
-	bool get_icon_stretch_to_max_size() const;
+	void set_icon_scale(real_t p_scale);
+	real_t get_icon_scale() const;
 
 	ItemList();
 	~ItemList();
