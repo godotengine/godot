@@ -135,7 +135,7 @@ size_t FileAccessMemory::get_len() const {
 
 bool FileAccessMemory::eof_reached() const {
 
-	return pos >= length;
+	return pos > length;
 }
 
 uint8_t FileAccessMemory::get_8() const {

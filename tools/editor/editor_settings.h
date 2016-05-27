@@ -34,7 +34,7 @@
 #include "resource.h"
 #include "os/thread_safe.h"
 #include "core/io/config_file.h"
-
+#include "translation.h"
 class EditorPlugin;
 
 class EditorSettings : public Resource {
@@ -93,6 +93,8 @@ private:
 	Vector<String> favorite_dirs;
 	Vector<String> recent_dirs;
 
+	Vector<Ref<Translation> > translations;
+
 protected:
 
 	static void _bind_methods();
@@ -111,6 +113,7 @@ public:
 	String get_project_settings_path() const;
 
 
+	void setup_language();
 	void setup_network();
 
 	void raise_order(const String& p_name);

@@ -19,6 +19,7 @@ tools/editor/register_exporters.cpp
 tools/editor/doc_data_compressed.h
 tools/editor/certs_compressed.h
 tools/editor/editor_icons.cpp
+tools/editor/translations.h
 -fpic
 .fscache
 make.bat

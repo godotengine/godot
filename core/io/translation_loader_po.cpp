@@ -30,13 +30,8 @@
 #include "os/file_access.h"
 #include "translation.h"
 
-RES TranslationLoaderPO::load(const String &p_path, const String& p_original_path, Error *r_error) {
 
-	if (r_error)
-		*r_error=ERR_CANT_OPEN;
-
-	FileAccess *f=FileAccess::open(p_path,FileAccess::READ);
-	ERR_FAIL_COND_V(!f,RES());
+RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const String &p_path) {
 
 	String l = f->get_line();
 
@@ -52,6 +47,8 @@ RES TranslationLoaderPO::load(const String &p_path, const String& p_original_pat
 	String msg_id;
 	String msg_str;
 	String config;
+	int msg_line=0;
+
 	if (r_error)
 		*r_error=ERR_FILE_CORRUPT;
 
@@ -87,7 +84,7 @@ RES TranslationLoaderPO::load(const String &p_path, const String& p_original_pat
 			if (status==STATUS_READING_ID) {
 
 				memdelete(f);
-				ERR_EXPLAIN(p_path+":"+itos(line)+" nexpected 'msgid', was expecting 'msgstr' while parsing: ");
+				ERR_EXPLAIN(p_path+":"+itos(line)+" Unexpected 'msgid', was expecting 'msgstr' while parsing: ");
 				ERR_FAIL_V(RES());
 			}
 
@@ -100,6 +97,7 @@ RES TranslationLoaderPO::load(const String &p_path, const String& p_original_pat
 			status=STATUS_READING_ID;
 			msg_id="";
 			msg_str="";
+			msg_line=line;
 		}
 
 		if (l.begins_with("msgstr")) {
@@ -113,6 +111,7 @@ RES TranslationLoaderPO::load(const String &p_path, const String& p_original_pat
 
 			l=l.substr(6,l.length()).strip_edges();
 			status=STATUS_READING_STRING;
+			msg_line=line;
 		}
 
 		if (l=="" || l.begins_with("#")) {
@@ -183,6 +182,18 @@ RES TranslationLoaderPO::load(const String &p_path, const String& p_original_pat
 		*r_error=OK;
 
 	return translation;
+}
+
+RES TranslationLoaderPO::load(const String &p_path, const String& p_original_path, Error *r_error) {
+
+	if (r_error)
+		*r_error=ERR_CANT_OPEN;
+
+	FileAccess *f=FileAccess::open(p_path,FileAccess::READ);
+	ERR_FAIL_COND_V(!f,RES());
+
+
+	return load_translation(f,r_error);
 
 }
 

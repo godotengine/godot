@@ -672,9 +672,11 @@ void TranslationServer::set_tool_translation(const Ref<Translation>& p_translati
 StringName TranslationServer::tool_translate(const StringName& p_message) const {
 
 	if (tool_translation.is_valid()) {
-		StringName r = tool_translation->tr(p_message);
-		if (r)
+		StringName r = tool_translation->get_message(p_message);
+
+		if (r) {
 			return r;
+		}
 	}
 
 	return p_message;
