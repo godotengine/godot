@@ -650,6 +650,7 @@ static bool resized_reload=false;
 static bool quit_request=false;
 static Size2 new_size;
 static Vector3 accelerometer;
+static Vector3 magnetometer;
 static HashMap<String,JNISingleton*> jni_singletons;
 static jobject godot_io;
 
@@ -1088,6 +1089,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv * env, jo
 
 	os_android->process_accelerometer(accelerometer);
 
+	os_android->process_magnetometer(magnetometer);
+
 	if (os_android->main_loop_iterate()==true) {
 
 		jclass cls = env->FindClass("org/godotengine/godot/Godot");
@@ -1484,6 +1487,14 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_accelerometer(JNIEnv 
 
 	input_mutex->lock();
 	accelerometer=Vector3(x,y,z);
+	input_mutex->unlock();
+
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_magnetometer(JNIEnv * env, jobject obj,  jfloat x, jfloat y, jfloat z) {
+
+	input_mutex->lock();
+	magnetometer=Vector3(x,y,z);
 	input_mutex->unlock();
 
 }

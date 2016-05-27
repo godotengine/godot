@@ -75,6 +75,7 @@ public:
 	virtual void warp_mouse_pos(const Vector2& p_to)=0;
 
 	virtual Vector3 get_accelerometer()=0;
+	virtual Vector3 get_magnetometer()=0;
 
 	virtual void action_press(const StringName& p_action)=0;
 	virtual void action_release(const StringName& p_action)=0;

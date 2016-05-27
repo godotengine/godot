@@ -609,6 +609,11 @@ void OS_Android::process_accelerometer(const Vector3& p_accelerometer) {
 	input->set_accelerometer(p_accelerometer);
 }
 
+void OS_Android::process_magnetometer(const Vector3& p_magnetometer) {
+
+	input->set_magnetometer(p_magnetometer);
+}
+
 bool OS_Android::has_touchscreen_ui_hint() const {
 
 	return true;
