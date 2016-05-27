@@ -211,7 +211,7 @@ void * operator new(size_t p_size,void *p_pointer,size_t check, const char *p_de
 
 #ifdef DEBUG_MEMORY_ENABLED
 
-#define memalloc(m_size) Memory::alloc_static(m_size, __FILE__":"__STR(__LINE__)", memalloc.")
+#define memalloc(m_size) Memory::alloc_static(m_size, __FILE__ ":" __STR(__LINE__) ", memalloc.")
 #define memrealloc(m_mem,m_size) Memory::realloc_static(m_mem,m_size)
 #define memfree(m_size) Memory::free_static(m_size)
 
@@ -224,8 +224,7 @@ void * operator new(size_t p_size,void *p_pointer,size_t check, const char *p_de
 #endif
 
 #ifdef DEBUG_MEMORY_ENABLED
-
-#define dynalloc(m_size) Memory::alloc_dynamic(m_size, __FILE__":"__STR(__LINE__)", type: DYNAMIC")
+#define dynalloc(m_size) Memory::alloc_dynamic(m_size, __FILE__ ":" __STR(__LINE__) ", type: DYNAMIC")
 #define dynrealloc(m_mem,m_size) m_mem.resize(m_size)
 
 #else
@@ -248,7 +247,7 @@ _ALWAYS_INLINE_ T *_post_initialize(T *p_obj) {
 
 #ifdef DEBUG_MEMORY_ENABLED
 
-#define memnew(m_class) _post_initialize(new(__FILE__":"__STR(__LINE__)", memnew type: "__STR(m_class)) m_class)
+#define memnew(m_class) _post_initialize(new(__FILE__ ":" __STR(__LINE__) ", memnew type: " __STR(m_class)) m_class)
 
 #else
 
@@ -291,7 +290,7 @@ void memdelete_allocator(T *p_class) {
 #define memdelete_notnull(m_v) { if (m_v) memdelete(m_v); }
 #ifdef DEBUG_MEMORY_ENABLED
 
-#define memnew_arr( m_class, m_count ) memnew_arr_template<m_class>(m_count,__FILE__":"__STR(__LINE__)", memnew_arr type: "_STR(m_class))
+#define memnew_arr( m_class, m_count ) memnew_arr_template<m_class>(m_count,__FILE__ ":" __STR(__LINE__) ", memnew_arr type: " _STR(m_class))
 
 #else
 
