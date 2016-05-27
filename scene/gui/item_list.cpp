@@ -325,6 +325,18 @@ int ItemList::get_fixed_column_width() const{
 	return fixed_column_width;
 }
 
+void ItemList::set_same_column_width(bool p_enable){
+
+	same_column_width=p_enable;
+	update();
+	shape_changed=true;
+
+}
+int ItemList::is_same_column_width() const{
+
+	return same_column_width;
+}
+
 void ItemList::set_max_text_lines(int p_lines){
 
 	ERR_FAIL_COND(p_lines<1);
@@ -824,6 +836,8 @@ void ItemList::_notification(int p_what) {
 		}
 
 		if (shape_changed) {
+			
+			float max_column_width = 0;
 
 			//1- compute item minimum sizes
 			for(int i=0;i<items.size();i++) {
@@ -864,10 +878,11 @@ void ItemList::_notification(int p_what) {
 				}
 
 
-
-				items[i].rect_cache.size=minsize;
 				if (fixed_column_width>0)
-					items[i].rect_cache.size.x=fixed_column_width;
+					minsize.x=fixed_column_width;
+				max_column_width=MAX(max_column_width,minsize.x);
+				items[i].rect_cache.size=minsize;
+				items[i].min_rect_cache.size=minsize;
 
 			}
 
@@ -896,22 +911,32 @@ void ItemList::_notification(int p_what) {
 						break;
 					}
 
+					items[i].rect_cache=items[i].min_rect_cache;
+					if(same_column_width)
+						items[i].rect_cache.size.x=max_column_width;
 					items[i].rect_cache.pos=ofs;
 					max_h=MAX(max_h,items[i].rect_cache.size.y);
-					ofs.x+=items[i].rect_cache.size.x;
+					ofs.x+=items[i].rect_cache.size.x + hseparation;
 					//print_line("item "+itos(i)+" ofs "+rtos(items[i].rect_cache.size.x));
-					if (col>0)
-						ofs.x+=hseparation;
 					col++;
 					if (col==current_columns) {
 
 						if (i<items.size()-1)
 							separators.push_back(ofs.y+max_h+vseparation/2);
+						
+						for(int j=i;j>=0 && col>0;j--, col--) {
+							items[j].rect_cache.size.y = max_h;
+						}
+						
 						ofs.x=0;
 						ofs.y+=max_h+vseparation;
 						col=0;
 						max_h=0;
 					}
+				}
+
+				for(int j=items.size()-1;j>=0 && col>0;j--, col--) {
+					items[j].rect_cache.size.y = max_h;
 				}
 
 				if (all_fit) {
@@ -988,7 +1013,12 @@ void ItemList::_notification(int p_what) {
 				if (icon_mode==ICON_MODE_TOP) {
 
 					pos.x += Math::floor((items[i].rect_cache.size.width - icon_size.width)/2);
+					pos.y += MIN(
+						Math::floor((items[i].rect_cache.size.height - icon_size.height)/2),
+						items[i].rect_cache.size.height - items[i].min_rect_cache.size.height
+					);
 					text_ofs.y = MAX(icon_size.height, min_icon_size.y) + icon_margin;
+					text_ofs.y += items[i].rect_cache.size.height - items[i].min_rect_cache.size.height;
 				} else {
 
 					pos.y += Math::floor((items[i].rect_cache.size.height - icon_size.height)/2);
@@ -1014,6 +1044,8 @@ void ItemList::_notification(int p_what) {
 				Vector2 size = font->get_string_size(items[i].text);
 				if (fixed_column_width)
 					max_len=fixed_column_width;
+				else if(same_column_width)
+					max_len=items[i].rect_cache.size.x;
 				else
 					max_len=size.x;
 
@@ -1251,6 +1283,9 @@ void ItemList::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("set_fixed_column_width","width"),&ItemList::set_fixed_column_width);
 	ObjectTypeDB::bind_method(_MD("get_fixed_column_width"),&ItemList::get_fixed_column_width);
 
+	ObjectTypeDB::bind_method(_MD("set_same_column_width","enable"),&ItemList::set_same_column_width);
+	ObjectTypeDB::bind_method(_MD("is_same_column_width"),&ItemList::is_same_column_width);
+
 	ObjectTypeDB::bind_method(_MD("set_max_text_lines","lines"),&ItemList::set_max_text_lines);
 	ObjectTypeDB::bind_method(_MD("get_max_text_lines"),&ItemList::get_max_text_lines);
 
@@ -1303,6 +1338,7 @@ ItemList::ItemList() {
 	icon_mode=ICON_MODE_LEFT;
 
 	fixed_column_width=0;
+	same_column_width = false;
 	max_text_lines=1;
 	max_columns=1;
 

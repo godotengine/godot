@@ -33,6 +33,7 @@ private:
 		Color custom_bg;
 
 		Rect2 rect_cache;
+		Rect2 min_rect_cache;
 
 		Size2 get_icon_size() const;
 
@@ -44,6 +45,7 @@ private:
 	bool shape_changed;
 
 	bool ensure_selected_visible;
+	bool same_column_width;
 
 	Vector<Item> items;
 	Vector<int> separators;
@@ -59,8 +61,12 @@ private:
 	int fixed_column_width;
 	int max_text_lines;
 	int max_columns;
+
 	Size2 min_icon_size;
 	Size2 max_icon_size;
+
+	Size2 max_item_size_cache;
+
 	int defer_select_single;
 
 	bool allow_rmb_select;
@@ -122,6 +128,9 @@ public:
 
 	void set_fixed_column_width(int p_size);
 	int get_fixed_column_width() const;
+
+	void set_same_column_width(bool p_enable);
+	int is_same_column_width() const;
 
 	void set_max_text_lines(int p_amount);
 	int get_max_text_lines() const;
