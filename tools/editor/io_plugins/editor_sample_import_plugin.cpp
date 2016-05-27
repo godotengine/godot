@@ -823,6 +823,58 @@ void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,D
 EditorSampleImportPlugin* EditorSampleImportPlugin::singleton=NULL;
 
 
+void EditorSampleImportPlugin::import_from_drop(const Vector<String>& p_drop, const String &p_dest_path) {
+
+
+	Vector<String> files;
+	for(int i=0;i<p_drop.size();i++) {
+		String ext = p_drop[i].extension().to_lower();
+
+		if (ext=="wav") {
+
+			files.push_back(p_drop[i]);
+		}
+	}
+
+	if (files.size()) {
+		import_dialog();
+		dialog->_choose_files(files);
+		dialog->_choose_save_dir(p_dest_path);
+	}
+}
+
+void EditorSampleImportPlugin::reimport_multiple_files(const Vector<String>& p_list) {
+
+	if (p_list.size()==0)
+		return;
+
+	Vector<String> sources;
+	for(int i=0;i<p_list.size();i++) {
+		int idx;
+		EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->find_file(p_list[i],&idx);
+		if (efsd) {
+			for(int j=0;j<efsd->get_source_count(idx);j++) {
+				String file = expand_source_path(efsd->get_source_file(idx,j));
+				if (sources.find(file)==-1) {
+					sources.push_back(file);
+				}
+
+			}
+		}
+	}
+
+	if (sources.size()) {
+
+		dialog->popup_import(p_list[0]);
+		dialog->_choose_files(sources);
+		dialog->_choose_save_dir(p_list[0].get_base_dir());
+	}
+}
+
+bool EditorSampleImportPlugin::can_reimport_multiple_files() const {
+
+	return true;
+}
 
 EditorSampleImportPlugin::EditorSampleImportPlugin(EditorNode* p_editor) {
 
@@ -863,6 +915,7 @@ Vector<uint8_t> EditorSampleExportPlugin::custom_export(String& p_path,const Ref
 	return FileAccess::get_file_as_array(savepath);
 
 }
+
 
 
 EditorSampleExportPlugin::EditorSampleExportPlugin() {

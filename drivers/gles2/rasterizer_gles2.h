@@ -1070,7 +1070,7 @@ class RasterizerGLES2 : public Rasterizer {
 
 	Plane camera_plane;
 
-	void _add_geometry( const Geometry* p_geometry, const InstanceData *p_instance, const Geometry *p_geometry_cmp, const GeometryOwner *p_owner);
+	void _add_geometry( const Geometry* p_geometry, const InstanceData *p_instance, const Geometry *p_geometry_cmp, const GeometryOwner *p_owner,int p_material=-1);
 	void _render_list_forward(RenderList *p_render_list,const Transform& p_view_transform,const Transform& p_view_transform_inverse, const CameraMatrix& p_projection,bool p_reverse_cull=false,bool p_fragment_light=false,bool p_alpha_pass=false);
 
 	//void _setup_light(LightInstance* p_instance, int p_idx);

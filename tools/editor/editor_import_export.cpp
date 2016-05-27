@@ -85,6 +85,9 @@ void EditorImportPlugin::_bind_methods() {
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo("import_dialog",PropertyInfo(Variant::STRING,"from")));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::INT,"import",PropertyInfo(Variant::STRING,"path"),PropertyInfo(Variant::OBJECT,"from",PROPERTY_HINT_RESOURCE_TYPE,"ResourceImportMetadata")));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::RAW_ARRAY,"custom_export",PropertyInfo(Variant::STRING,"path"),PropertyInfo(Variant::OBJECT,"platform",PROPERTY_HINT_RESOURCE_TYPE,"EditorExportPlatform")));
+	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo("import_from_drop",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::STRING,"dest_path")));
+	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo("reimport_multiple_files",PropertyInfo(Variant::STRING_ARRAY,"files")));
+	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"can_reimport_multiple_files"));
 
 //	BIND_VMETHOD( mi );
 }
@@ -130,11 +133,35 @@ Error EditorImportPlugin::import(const String& p_path, const Ref<ResourceImportM
 
 Vector<uint8_t> EditorImportPlugin::custom_export(const String& p_path, const Ref<EditorExportPlatform> &p_platform) {
 
-	if (get_script_instance() && get_script_instance()->has_method("_custom_export")) {
-		get_script_instance()->call("_custom_export",p_path,p_platform);
+	if (get_script_instance() && get_script_instance()->has_method("custom_export")) {
+		get_script_instance()->call("custom_export",p_path,p_platform);
 	}
 
 	return Vector<uint8_t>();
+}
+
+bool EditorImportPlugin::can_reimport_multiple_files() const {
+
+	if (get_script_instance() && get_script_instance()->has_method("can_reimport_multiple_files")) {
+		return get_script_instance()->call("can_reimport_multiple_files");
+	}
+
+	return false;
+}
+void EditorImportPlugin::reimport_multiple_files(const Vector<String>& p_list) {
+
+	if (get_script_instance() && get_script_instance()->has_method("reimport_multiple_files")) {
+		get_script_instance()->call("reimport_multiple_files",p_list);
+	}
+
+}
+
+void EditorImportPlugin::import_from_drop(const Vector<String>& p_drop, const String &p_dest_path) {
+
+	if (get_script_instance() && get_script_instance()->has_method("import_from_drop")) {
+		get_script_instance()->call("import_from_drop",p_drop,p_dest_path);
+	}
+
 }
 
 EditorImportPlugin::EditorImportPlugin() {

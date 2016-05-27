@@ -36,14 +36,24 @@ void EditorResourcePreview::_preview_ready(const String& p_str,const Ref<Texture
 	//print_line("preview is ready");
 	preview_mutex->lock();
 
+	String path = p_str;
+	uint32_t hash=0;
+
+	if (p_str.begins_with("ID:")) {
+		hash=p_str.get_slicec(':',2).to_int();
+		path="ID:"+p_str.get_slicec(':',1);
+	}
+
 	Item item;
 	item.order=order++;
 	item.preview=p_texture;
-	cache[p_str]=item;
+	item.last_hash=hash;
+
+	cache[path]=item;
 
 	Object *recv = ObjectDB::get_instance(id);
 	if (recv) {
-		recv->call_deferred(p_func,p_str,p_texture,p_ud);
+		recv->call_deferred(p_func,path,p_texture,p_ud);
 	}
 
 	preview_mutex->unlock();
@@ -51,7 +61,12 @@ void EditorResourcePreview::_preview_ready(const String& p_str,const Ref<Texture
 
 Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem& p_item,const String& cache_base) {
 
-	String type = ResourceLoader::get_resource_type(p_item.path);
+	String type;
+
+	if (p_item.resource.is_valid())
+		type=p_item.resource->get_type();
+	else
+		type=ResourceLoader::get_resource_type(p_item.path);
 	//print_line("resource type is: "+type);
 
 	if (type=="")
@@ -62,24 +77,31 @@ Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem& p_item,co
 	for(int i=0;i<preview_generators.size();i++) {
 		if (!preview_generators[i]->handles(type))
 			continue;
-		generated = preview_generators[i]->generate_from_path(p_item.path);
+		if (p_item.resource.is_valid()) {
+			generated = preview_generators[i]->generate(p_item.resource);
+		} else {
+			generated = preview_generators[i]->generate_from_path(p_item.path);
+		}
 
 		break;
 	}
 
-	if (generated.is_valid()) {
-		//print_line("was generated");
-		int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
-		//wow it generated a preview... save cache
-		ResourceSaver::save(cache_base+".png",generated);
-		FileAccess *f=FileAccess::open(cache_base+".txt",FileAccess::WRITE);
-		f->store_line(itos(thumbnail_size));
-		f->store_line(itos(FileAccess::get_modified_time(p_item.path)));
-		f->store_line(FileAccess::get_md5(p_item.path));
-		memdelete(f);
-	} else {
-		//print_line("was not generated");
+	if (!p_item.resource.is_valid()) {
+		// cache the preview in case it's a resource on disk
+		if (generated.is_valid()) {
+			//print_line("was generated");
+			int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+			//wow it generated a preview... save cache
+			ResourceSaver::save(cache_base+".png",generated);
+			FileAccess *f=FileAccess::open(cache_base+".txt",FileAccess::WRITE);
+			f->store_line(itos(thumbnail_size));
+			f->store_line(itos(FileAccess::get_modified_time(p_item.path)));
+			f->store_line(FileAccess::get_md5(p_item.path));
+			memdelete(f);
+		} else {
+			//print_line("was not generated");
 
+		}
 	}
 
 	return generated;
@@ -113,7 +135,16 @@ void EditorResourcePreview::_thread() {
 
 			if (cache.has(item.path)) {
 				//already has it because someone loaded it, just let it know it's ready
+				if (item.resource.is_valid()) {
+					item.path+=":"+itos(cache[item.path].last_hash); //keep last hash (see description of what this is in condition below)
+				}
 				call_deferred("_preview_ready",item.path,cache[item.path].preview,item.id,item.function,item.userdata);
+
+			} else if (item.resource.is_valid()){
+
+				texture=_generate_preview(item,String());
+				//adding hash to the end of path (should be ID:<objid>:<hash>) because of 5 argument limit to call_deferred
+				call_deferred("_preview_ready",item.path+":"+itos(item.resource->hash_edited_version()),texture,item.id,item.function,item.userdata);
 
 			} else {
 
@@ -194,6 +225,35 @@ void EditorResourcePreview::_thread() {
 
 
 
+void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource>& p_res, Object* p_receiver, const StringName& p_receiver_func, const Variant& p_userdata) {
+
+	ERR_FAIL_NULL(p_receiver);
+	ERR_FAIL_COND(!p_res.is_valid());
+
+	preview_mutex->lock();
+
+	String path_id = "ID:"+itos(p_res->get_instance_ID());
+	if (cache.has(path_id) && cache[path_id].last_hash==p_res->hash_edited_version()) {
+
+		cache[path_id].order=order++;
+		p_receiver->call_deferred(p_receiver_func,path_id,cache[path_id].preview,p_userdata);
+		preview_mutex->unlock();
+		return;
+
+	}
+
+	//print_line("send to thread "+p_path);
+	QueueItem item;
+	item.function=p_receiver_func;
+	item.id=p_receiver->get_instance_ID();
+	item.resource=p_res;
+	item.path=path_id;
+	item.userdata=p_userdata;
+
+	queue.push_back(item);
+	preview_mutex->unlock();
+	preview_sem->post();
+}
 
 void EditorResourcePreview::queue_resource_preview(const String& p_path, Object* p_receiver, const StringName& p_receiver_func, const Variant& p_userdata) {
 
@@ -204,7 +264,6 @@ void EditorResourcePreview::queue_resource_preview(const String& p_path, Object*
 		p_receiver->call_deferred(p_receiver_func,p_path,cache[p_path].preview,p_userdata);
 		preview_mutex->unlock();
 		return;
-
 	}
 
 	//print_line("send to thread "+p_path);

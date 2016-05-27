@@ -153,6 +153,8 @@ class ScenesDock : public VBoxContainer {
 		String name;
 		String path;
 		StringName type;
+		int import_status; //0 not imported, 1 - ok, 2- must reimport, 3- broken
+		Vector<String> sources;
 
 		bool operator<(const FileInfo& fi) const {
 			return name < fi.name;
@@ -171,6 +173,8 @@ protected:
 public:
 
 	String get_selected_path() const;
+
+	String get_current_path() const;
 	void focus_on_filter();
 
 	void fix_dependencies(const String& p_for_file);

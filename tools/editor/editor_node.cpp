@@ -288,6 +288,7 @@ void EditorNode::_notification(int p_what) {
 		get_tree()->get_root()->set_as_audio_listener(false);
 		get_tree()->get_root()->set_as_audio_listener_2d(false);
 		get_tree()->set_auto_accept_quit(false);
+		get_tree()->connect("files_dropped",this,"_dropped_files");
 				//VisualServer::get_singleton()->viewport_set_hide_canvas(editor->get_scene_root()->get_viewport(),false);
 
 		//import_monitor->scan_changes();
@@ -375,6 +376,7 @@ void EditorNode::_notification(int p_what) {
 			_menu_option_confirm(DEPENDENCY_LOAD_CHANGED_IMAGES,true);
 		}
 
+		waiting_for_sources_changed=true;
 		EditorFileSystem::get_singleton()->scan_sources();
 
 	}
@@ -412,6 +414,42 @@ void EditorNode::_fs_changed() {
 
 void EditorNode::_sources_changed(bool p_exist) {
 
+	if (p_exist && bool(EditorSettings::get_singleton()->get("import/automatic_reimport_on_sources_changed"))) {
+		p_exist=false;
+
+		List<String> changed_sources;
+		EditorFileSystem::get_singleton()->get_changed_sources(&changed_sources);
+
+
+		EditorProgress ep("reimport",TTR("Re-Importing"),changed_sources.size());
+		int step_idx=0;
+
+		for(List<String>::Element *E=changed_sources.front();E;E=E->next()) {
+
+			ep.step(TTR("Importing:")+" "+E->get(),step_idx++);
+
+			Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(E->get());
+			ERR_CONTINUE(rimd.is_null());
+			String editor = rimd->get_editor();
+			if (editor.begins_with("texture_")) {
+				editor="texture"; //compatibility fix for old versions
+			}
+			Ref<EditorImportPlugin> eip = EditorImportExport::get_singleton()->get_import_plugin_by_name(editor);
+			ERR_CONTINUE(eip.is_null());
+			Error err = eip->import(E->get(),rimd);
+			if (err!=OK) {
+				EditorNode::add_io_error("Error Re Importing:\n  "+E->get());
+			}
+
+		}
+
+		EditorFileSystem::get_singleton()->scan_sources();
+		waiting_for_sources_changed=false;
+
+		return;
+	}
+
+
 	if (p_exist) {
 
 		sources_button->set_icon(gui_base->get_icon("DependencyChanged","EditorIcons"));
@@ -424,6 +462,8 @@ void EditorNode::_sources_changed(bool p_exist) {
 
 	}
 
+	waiting_for_sources_changed=false;
+
 }
 
 void EditorNode::_vp_resized() {
@@ -435,13 +475,13 @@ void EditorNode::_rebuild_import_menu()
 {
 	PopupMenu* p = import_menu->get_popup();
 	p->clear();
-	p->add_item(TTR("Node From Scene"), FILE_IMPORT_SUBSCENE);
-	p->add_separator();
+	//p->add_item(TTR("Node From Scene"), FILE_IMPORT_SUBSCENE);
+	//p->add_separator();
 	for (int i = 0; i < editor_import_export->get_import_plugin_count(); i++) {
 		p->add_item(editor_import_export->get_import_plugin(i)->get_visible_name(), IMPORT_PLUGIN_BASE + i);
 	}
-	p->add_separator();
-	p->add_item(TTR("Re-Import.."), SETTINGS_IMPORT);
+	//p->add_separator();
+	//p->add_item(TTR("Re-Import.."), SETTINGS_IMPORT);
 }
 
 void EditorNode::_node_renamed() {
@@ -2858,6 +2898,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 
 		} break;
+
 		default: {
 
 			if (p_option>=OBJECT_METHOD_BASE) {
@@ -4899,6 +4940,7 @@ Variant EditorNode::drag_resource(const Ref<Resource>& p_res,Control* p_from) {
 	TextureFrame *drag_preview = memnew( TextureFrame );
 	Label* label=memnew( Label );
 
+	waiting_for_sources_changed=true; //
 	Ref<Texture> preview;
 
 	{
@@ -5000,6 +5042,15 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String>& p_files, Control *
 
 }
 
+
+void EditorNode::_dropped_files(const Vector<String>& p_files,int p_screen) {
+
+	String cur_path = scenes_dock->get_current_path();
+	for(int i=0;i<EditorImportExport::get_singleton()->get_import_plugin_count();i++) {
+		EditorImportExport::get_singleton()->get_import_plugin(i)->import_from_drop(p_files,cur_path);
+	}
+}
+
 void EditorNode::_bind_methods() {
 
 
@@ -5067,6 +5118,9 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("_toggle_search_bar",&EditorNode::_toggle_search_bar);
 	ObjectTypeDB::bind_method("_clear_search_box",&EditorNode::_clear_search_box);
 	ObjectTypeDB::bind_method("_clear_undo_history",&EditorNode::_clear_undo_history);
+	ObjectTypeDB::bind_method("_dropped_files",&EditorNode::_dropped_files);
+
+
 
 	ObjectTypeDB::bind_method(_MD("add_editor_import_plugin", "plugin"), &EditorNode::add_editor_import_plugin);
 	ObjectTypeDB::bind_method(_MD("remove_editor_import_plugin", "plugin"), &EditorNode::remove_editor_import_plugin);
@@ -6185,10 +6239,7 @@ EditorNode::EditorNode() {
 	file_server = memnew( EditorFileServer );
 
 
-	editor_import_export->add_import_plugin( Ref<EditorTextureImportPlugin>( memnew(EditorTextureImportPlugin(this,EditorTextureImportPlugin::MODE_TEXTURE_2D) )));
-	editor_import_export->add_import_plugin( Ref<EditorTextureImportPlugin>( memnew(EditorTextureImportPlugin(this,EditorTextureImportPlugin::MODE_ATLAS) )));
-	editor_import_export->add_import_plugin( Ref<EditorTextureImportPlugin>( memnew(EditorTextureImportPlugin(this,EditorTextureImportPlugin::MODE_LARGE) )));
-	editor_import_export->add_import_plugin( Ref<EditorTextureImportPlugin>( memnew(EditorTextureImportPlugin(this,EditorTextureImportPlugin::MODE_TEXTURE_3D) )));
+	editor_import_export->add_import_plugin( Ref<EditorTextureImportPlugin>( memnew(EditorTextureImportPlugin(this) )));
 	Ref<EditorSceneImportPlugin> _scene_import =  memnew(EditorSceneImportPlugin(this) );
 	Ref<EditorSceneImporterCollada> _collada_import = memnew( EditorSceneImporterCollada);
 	_scene_import->add_importer(_collada_import);
@@ -6399,6 +6450,7 @@ EditorNode::EditorNode() {
 
 
 	_load_docks();
+
 
 
 }

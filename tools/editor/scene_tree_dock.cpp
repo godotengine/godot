@@ -542,6 +542,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 		} break;
+		case TOOL_MERGE_FROM_SCENE: {
+
+			EditorNode::get_singleton()->merge_from_scene();
+		} break;
 		case TOOL_NEW_SCENE_FROM: {
 
 			Node *scene = editor_data->get_edited_scene_root();
@@ -1696,6 +1700,7 @@ void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
 
 	if (selection.size()==1) {
 		menu->add_separator();
+		menu->add_item(TTR("Merge From Scene"),TOOL_MERGE_FROM_SCENE);
 		menu->add_item(TTR("Save Branch as Scene"),TOOL_NEW_SCENE_FROM);
 	}
 	menu->add_separator();

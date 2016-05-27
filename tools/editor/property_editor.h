@@ -131,6 +131,7 @@ class CustomPropertyEditor : public Popup {
 	void config_value_editors(int p_amount, int p_columns,int p_label_w,const List<String>& p_strings);
 	void config_action_buttons(const List<String>& p_strings);
 
+
 protected:
 
 	void _notification(int p_what);
@@ -231,6 +232,7 @@ class PropertyEditor : public Control {
 	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
 	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
 
+	void _resource_preview_done(const String& p_path,const Ref<Texture>& p_preview,Variant p_ud);
 
 	UndoRedo *undo_redo;
 protected:

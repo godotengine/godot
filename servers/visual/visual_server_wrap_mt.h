@@ -525,6 +525,8 @@ public:
 	FUNC3(instance_set_morph_target_weight,RID,int, float);
 	FUNC2RC(float,instance_get_morph_target_weight,RID,int);
 
+	FUNC3(instance_set_surface_material,RID,int, RID);
+
 	FUNC2(instance_set_transform,RID, const Transform&);
 	FUNC1RC(Transform,instance_get_transform,RID);
 

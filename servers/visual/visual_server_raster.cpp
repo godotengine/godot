@@ -398,7 +398,7 @@ void VisualServerRaster::mesh_add_custom_surface(RID p_mesh,const Variant& p_dat
 void VisualServerRaster::mesh_add_surface(RID p_mesh,PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes,bool p_alpha_sort) {
 
 	VS_CHANGED;
-	_dependency_queue_update(p_mesh,true);
+	_dependency_queue_update(p_mesh,true,true);
 	rasterizer->mesh_add_surface(p_mesh,p_primitive,p_arrays,p_blend_shapes,p_alpha_sort);
 
 }
@@ -452,6 +452,7 @@ VisualServer::PrimitiveType VisualServerRaster::mesh_surface_get_primitive_type(
 void VisualServerRaster::mesh_remove_surface(RID p_mesh,int p_surface){
 
 	rasterizer->mesh_remove_surface(p_mesh,p_surface);
+	_dependency_queue_update(p_mesh,true,true);
 }
 
 int VisualServerRaster::mesh_get_surface_count(RID p_mesh) const{
@@ -480,6 +481,8 @@ void VisualServerRaster::mesh_clear(RID p_mesh) {
 	while(rasterizer->mesh_get_surface_count(p_mesh)) {
 		rasterizer->mesh_remove_surface(p_mesh,0);
 	}
+
+	_dependency_queue_update(p_mesh,true,true);
 }
 
 
@@ -2038,7 +2041,7 @@ Variant VisualServerRaster::environment_fx_get_param(RID p_env,EnvironmentFxPara
 
 /* SCENARIO API */
 
-void VisualServerRaster::_dependency_queue_update(RID p_rid,bool p_update_aabb) {
+void VisualServerRaster::_dependency_queue_update(RID p_rid,bool p_update_aabb,bool p_update_materials) {
 
 	Map< RID, Set<RID> >::Element * E = instance_dependency_map.find( p_rid );
 
@@ -2051,17 +2054,19 @@ void VisualServerRaster::_dependency_queue_update(RID p_rid,bool p_update_aabb) 
 	while(I) {
 
 		Instance *ins = instance_owner.get( I->get() );
-		_instance_queue_update( ins , p_update_aabb );
+		_instance_queue_update( ins , p_update_aabb, p_update_materials );
 
 		I = I->next();
 	}
 
 }
 
-void VisualServerRaster::_instance_queue_update(Instance *p_instance,bool p_update_aabb) {
+void VisualServerRaster::_instance_queue_update(Instance *p_instance,bool p_update_aabb,bool p_update_materials) {
 
 	if (p_update_aabb)
 		p_instance->update_aabb=true;
+	if (p_update_materials)
+		p_instance->update_materials=true;
 
 	if (p_instance->update)
 		return;
@@ -2273,6 +2278,7 @@ void VisualServerRaster::instance_set_base(RID p_instance, RID p_base) {
 		}
 
 		instance->data.morph_values.clear();
+		instance->data.materials.clear();
 
 	}
 
@@ -2286,6 +2292,7 @@ void VisualServerRaster::instance_set_base(RID p_instance, RID p_base) {
 		if (rasterizer->is_mesh(p_base)) {
 			instance->base_type=INSTANCE_MESH;
 			instance->data.morph_values.resize( rasterizer->mesh_get_morph_target_count(p_base));
+			instance->data.materials.resize( rasterizer->mesh_get_surface_count(p_base));
 		} else if (rasterizer->is_multimesh(p_base)) {
 			instance->base_type=INSTANCE_MULTIMESH;
 		} else if (rasterizer->is_immediate(p_base)) {
@@ -2509,6 +2516,16 @@ float VisualServerRaster::instance_get_morph_target_weight(RID p_instance,int p_
 	ERR_FAIL_INDEX_V( p_shape, instance->data.morph_values.size(), 0 );
 	return instance->data.morph_values[p_shape];
 }
+
+void VisualServerRaster::instance_set_surface_material(RID p_instance,int p_surface, RID p_material) {
+
+	VS_CHANGED;
+	Instance *instance = instance_owner.get( p_instance );
+	ERR_FAIL_COND( !instance);
+	ERR_FAIL_INDEX( p_surface, instance->data.materials.size() );
+	instance->data.materials[p_surface]=p_material;
+}
+
 
 void VisualServerRaster::instance_set_transform(RID p_instance, const Transform& p_transform) {
 	VS_CHANGED;
@@ -3046,6 +3063,7 @@ void VisualServerRaster::_update_instance(Instance *p_instance) {
 
 	}
 
+
 	if (p_instance->aabb.has_no_surface())
 		return;
 
@@ -3301,10 +3319,17 @@ void VisualServerRaster::_update_instances() {
 		if (instance->update_aabb)
 			_update_instance_aabb(instance);
 
+		if (instance->update_materials) {
+			if (instance->base_type==INSTANCE_MESH) {
+				instance->data.materials.resize(rasterizer->mesh_get_surface_count(instance->base_rid));
+			}
+		}
+
 		_update_instance(instance);
 
 		instance->update=false;
 		instance->update_aabb=false;
+		instance->update_materials=false;
 		instance->update_next=0;
 	}
 }

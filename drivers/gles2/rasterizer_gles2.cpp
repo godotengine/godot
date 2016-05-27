@@ -4737,10 +4737,10 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 }
 
 
-void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceData *p_instance, const Geometry *p_geometry_cmp, const GeometryOwner *p_owner) {
+void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceData *p_instance, const Geometry *p_geometry_cmp, const GeometryOwner *p_owner,int p_material) {
 
 	Material *m=NULL;
-	RID m_src=p_instance->material_override.is_valid() ? p_instance->material_override : p_geometry->material;
+	RID m_src=p_instance->material_override.is_valid() ? p_instance->material_override :(p_material>=0?p_instance->materials[p_material]:p_geometry->material);
 
 #ifdef DEBUG_ENABLED
 	if (current_debug==VS::SCENARIO_DEBUG_OVERDRAW) {
@@ -4988,8 +4988,9 @@ void RasterizerGLES2::add_mesh( const RID& p_mesh, const InstanceData *p_data) {
 
 	for (int i=0;i<ssize;i++) {
 
+		int mat_idx = p_data->materials[i].is_valid() ? i : -1;
 		Surface *s = mesh->surfaces[i];
-		_add_geometry(s,p_data,s,NULL);
+		_add_geometry(s,p_data,s,NULL,mat_idx);
 	}
 
 	mesh->last_pass=frame;

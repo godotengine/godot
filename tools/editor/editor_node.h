@@ -366,6 +366,8 @@ private:
 	String open_navigate;
 	bool changing_scene;
 
+	bool waiting_for_sources_changed;
+
 	uint32_t circle_step_msec;
 	uint64_t circle_step_frame;
 	int circle_step;
@@ -464,6 +466,7 @@ private:
 	void _add_to_recent_scenes(const String& p_scene);
 	void _update_recent_scenes();
 	void _open_recent_scene(int p_idx);
+	void _dropped_files(const Vector<String>& p_files,int p_screen);
 	//void _open_recent_scene_confirm();
 	String _recent_scene;
 
@@ -606,6 +609,8 @@ public:
 	void save_resource_in_path(const Ref<Resource>& p_resource,const String& p_path);
 	void save_resource(const Ref<Resource>& p_resource);
 	void save_resource_as(const Ref<Resource>& p_resource, const String &p_at_path=String());
+
+	void merge_from_scene() { _menu_option_confirm(FILE_IMPORT_SUBSCENE,false); }
 
 	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
 

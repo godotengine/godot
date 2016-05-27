@@ -388,6 +388,7 @@ friend void postinitialize_handler(Object*);
 	bool _can_translate;
 #ifdef TOOLS_ENABLED
 	bool _edited;
+	uint32_t _edited_version;
 #endif
 	ScriptInstance *script_instance;
 	RefPtr script;
@@ -589,6 +590,7 @@ public:
 #ifdef TOOLS_ENABLED
 	void set_edited(bool p_edited);
 	bool is_edited() const;
+	uint32_t get_edited_version() const; //this function is used to check when something changed beyond a point, it's used mainly for generating previews
 #endif
 
 	void set_script_instance(ScriptInstance *p_instance);

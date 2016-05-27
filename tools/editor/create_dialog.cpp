@@ -255,6 +255,15 @@ void CreateDialog::set_base_type(const String& p_base) {
 	_update_search();
 }
 
+String CreateDialog::get_selected_type() {
+
+	TreeItem *selected = search_options->get_selected();
+	if (selected)
+		return selected->get_text(0);
+	else
+		return String();
+}
+
 Object *CreateDialog::instance_selected() {
 
 	TreeItem *selected = search_options->get_selected();

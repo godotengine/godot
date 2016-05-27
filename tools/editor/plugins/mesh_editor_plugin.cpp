@@ -71,6 +71,22 @@ void MeshEditor::edit(Ref<Mesh> p_mesh) {
 		rot_x=0;
 		rot_y=0;
 		_update_rotation();
+
+		AABB aabb= mesh->get_aabb();
+		Vector3 ofs = aabb.pos + aabb.size*0.5;
+		aabb.pos-=ofs;
+		float m = MAX(aabb.size.x,aabb.size.y)*0.5;
+		if (m!=0) {
+			m=1.0/m;
+			m*=0.5;
+			//print_line("scale: "+rtos(m));
+			Transform xform;
+			xform.basis.scale(Vector3(m,m,m));
+			xform.origin=-xform.basis.xform(ofs); //-ofs*m;
+			xform.origin.z-=aabb.size.z*2;
+			mesh_instance->set_transform(xform);
+		}
+
 	}
 
 }

@@ -41,6 +41,7 @@
 #include "scene/3d/physics_body.h"
 #include "scene/3d/portal.h"
 #include "scene/3d/vehicle_body.h"
+#include "tools/editor/create_dialog.h"
 #include "os/os.h"
 
 
@@ -94,6 +95,7 @@ class EditorImportAnimationOptions : public VBoxContainer {
 	Tree *clips_tree;
 	Tree *optimization_tree;
 	Vector<TreeItem*> items;
+
 
 	bool updating;
 	bool validating;
@@ -167,6 +169,7 @@ class EditorSceneImportDialog : public ConfirmationDialog  {
 	EditorFileDialog *script_select;
 	EditorDirDialog *save_select;
 	OptionButton *texture_action;
+	CreateDialog *root_type_choose;
 
 	ConfirmationDialog *confirm_open;
 
@@ -178,8 +181,13 @@ class EditorSceneImportDialog : public ConfirmationDialog  {
 	Map<Ref<Mesh>,Ref<Shape> > collision_map;
 	ConfirmationDialog *error_dialog;
 
-	OptionButton *this_import;
-	OptionButton *next_import;
+	Button *root_type;
+	CheckBox *root_default;
+
+
+	void _root_default_pressed();
+	void _root_type_pressed();
+	void _set_root_type();
 
 	void _choose_file(const String& p_path);
 	void _choose_save_file(const String& p_path);
@@ -205,6 +213,11 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 public:
+
+	void setup_popup(const String& p_from,const String& p_to_path) {
+		_choose_file(p_from);
+		_choose_save_file(p_to_path);
+	}
 
 	Error import(const String& p_from, const String& p_to, const String& p_preset);
 	void popup_import(const String& p_from);
@@ -764,9 +777,10 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	rim->set_option("animation_filters",animation_options->get_filter());
 	rim->set_option("animation_clips",animation_options->get_clips());
 	rim->set_option("post_import_script",script_path->get_text());
-	rim->set_option("import_this_time",this_import->get_selected());
-	rim->set_option("import_next_time",next_import->get_selected());
 	rim->set_option("reimport",true);
+	if (!root_default->is_pressed()) {
+		rim->set_option("root_type",root_type->get_text());
+	}
 
 	List<String> missing;
 	Error err = plugin->import1(rim,&scene,&missing);
@@ -909,12 +923,24 @@ void EditorSceneImportDialog::popup_import(const String &p_from) {
 		if (rimd->has_option("animation_optimizer_max_angle"))
 			animation_options->set_optimize_max_angle(rimd->get_option("animation_optimizer_max_angle"));
 
+		if (rimd->has_option("root_type")) {
+			root_default->set_pressed(false);
+			String type = rimd->get_option("root_type");
+			root_type->set_text(type);
+			root_type->set_disabled(false);
+
+			if (has_icon(type,"EditorIcons")) {
+				root_type->set_icon(get_icon(type,"EditorIcons"));
+			} else {
+				root_type->set_icon(get_icon("Object","EditorIcons"));
+			}
+
+		} else {
+			root_default->set_pressed(true);
+			root_type->set_disabled(true);
+		}
 
 		script_path->set_text(rimd->get_option("post_import_script"));
-		if (rimd->has_option("import_this_time"))
-			this_import->select(rimd->get_option("import_this_time"));
-		if (rimd->has_option("import_next_time"))
-			next_import->select(rimd->get_option("import_next_time"));
 
 		save_path->set_text(p_from.get_base_dir());
 		import_path->set_text(EditorImportPlugin::expand_source_path(rimd->get_source_path(0)));
@@ -931,6 +957,9 @@ void EditorSceneImportDialog::_notification(int p_what) {
 
 		List<String> extensions;
 		file_select->clear_filters();
+		root_type->set_icon(get_icon("Spatial","EditorIcons"));
+		root_type->set_text("Spatial");
+		root_type->set_disabled(true);
 
 		for(int i=0;i<plugin->get_importers().size();i++) {
 			plugin->get_importers()[i]->get_extensions(&extensions);
@@ -981,7 +1010,30 @@ void EditorSceneImportDialog::_dialog_hid() {
 		wip_rimd=Ref<ResourceImportMetadata>();
 	}
 }
+void EditorSceneImportDialog::_root_default_pressed() {
 
+	root_type->set_disabled(root_default->is_pressed());
+}
+
+void EditorSceneImportDialog::_root_type_pressed() {
+
+
+	root_type_choose->popup(false);
+}
+
+
+void EditorSceneImportDialog::_set_root_type() {
+
+	String type = root_type_choose->get_selected_type();
+	if (type==String())
+		return;
+	root_type->set_text(type);
+	if (has_icon(type,"EditorIcons")) {
+		root_type->set_icon(get_icon(type,"EditorIcons"));
+	} else {
+		root_type->set_icon(get_icon("Object","EditorIcons"));
+	}
+}
 
 void EditorSceneImportDialog::_bind_methods() {
 
@@ -996,10 +1048,13 @@ void EditorSceneImportDialog::_bind_methods() {
 	ObjectTypeDB::bind_method("_dialog_hid",&EditorSceneImportDialog::_dialog_hid);
 	ObjectTypeDB::bind_method("_import_confirm",&EditorSceneImportDialog::_import_confirm);
 	ObjectTypeDB::bind_method("_open_and_import",&EditorSceneImportDialog::_open_and_import);
+	ObjectTypeDB::bind_method("_root_default_pressed",&EditorSceneImportDialog::_root_default_pressed);
+	ObjectTypeDB::bind_method("_root_type_pressed",&EditorSceneImportDialog::_root_type_pressed);
+	ObjectTypeDB::bind_method("_set_root_type",&EditorSceneImportDialog::_set_root_type);
+
 
 	ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
 }
-
 
 
 
@@ -1162,6 +1217,23 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	error_dialog->get_ok()->set_text(TTR("Accept"));
 //	error_dialog->get_cancel()->hide();
 
+
+	HBoxContainer *custom_root_hb = memnew( HBoxContainer );
+	vbc->add_margin_child(TTR("Custom Root Node Type:"),custom_root_hb);
+	root_type = memnew(Button);
+	root_type->set_h_size_flags(SIZE_EXPAND_FILL);
+	root_type->set_text_align(Button::ALIGN_LEFT);
+	root_type->connect("pressed",this,"_root_type_pressed");
+	custom_root_hb->add_child(root_type);
+
+	root_default = memnew(CheckBox);
+	root_default->set_text("Auto");
+	root_default->set_pressed(true);
+	root_default->connect("pressed",this,"_root_default_pressed");
+	custom_root_hb->add_child(root_default);
+
+
+	/*
 	this_import = memnew( OptionButton );
 	this_import->add_item(TTR("Overwrite Existing Scene"));
 	this_import->add_item(TTR("Overwrite Existing, Keep Materials"));
@@ -1175,13 +1247,14 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	next_import->add_item(TTR("Keep Existing, Merge with New"));
 	next_import->add_item(TTR("Keep Existing, Ignore New"));
 	vbc->add_margin_child(TTR("Next Time:"),next_import);
-
+*/
 	set_hide_on_ok(false);
 
 	GLOBAL_DEF("import/shared_textures","res://");
 	Globals::get_singleton()->set_custom_property_info("import/shared_textures",PropertyInfo(Variant::STRING,"import/shared_textures",PROPERTY_HINT_DIR));
 
 	import_hb->add_constant_override("separation",30);
+
 
 	VBoxContainer *ovb = memnew( VBoxContainer);
 	ovb->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1232,6 +1305,10 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	wip_open=false;
 	//texture_options->set_format(EditorImport::IMAGE_FORMAT_C);
 
+	root_type_choose = memnew( CreateDialog );
+	add_child(root_type_choose);
+	root_type_choose->set_base_type("Node");
+	root_type_choose->connect("create",this,"_set_root_type");
 }
 
 
@@ -1247,7 +1324,7 @@ String EditorSceneImportPlugin::get_name() const {
 
 String EditorSceneImportPlugin::get_visible_name() const{
 
-	return "3D Scene";
+	return "Scene";
 }
 
 void EditorSceneImportPlugin::import_dialog(const String& p_from){
@@ -1906,397 +1983,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 }
 
 
-void EditorSceneImportPlugin::_merge_existing_node(Node *p_node,Node *p_imported_scene,Set<Ref<Resource> >& checked_resources,Set<Node*> &checked_nodes) {
 
-
-	NodePath path = p_node->get_import_path();
-
-	if (!path.is_empty() && p_imported_scene->has_node(path)) {
-
-		Node *imported_node = p_imported_scene->get_node(path);
-
-		if (imported_node->get_type()==p_node->get_type()) {
-			//same thing, check what it is
-
-			if (p_node->get_type()=="MeshInstance") {
-
-				//merge mesh instance, this is a special case!
-				MeshInstance *mi_imported=imported_node->cast_to<MeshInstance>();
-				MeshInstance *mi_node=p_node->cast_to<MeshInstance>();
-
-				Ref<Mesh> mesh_imported = mi_imported->get_mesh();
-				Ref<Mesh> mesh_node = mi_node->get_mesh();
-
-				if (mesh_node.is_null() && mesh_imported.is_valid()) {
-
-					mi_node->set_mesh(mesh_imported);
-
-				} else if (mesh_node.is_valid() && mesh_imported.is_valid()) {
-
-					if (checked_resources.has(mesh_imported)) {
-
-						mi_node->set_mesh(mesh_imported);
-					} else {
-						//mix up meshes
-						//import new geometry but keep materials
-						for(int i=0;i<mesh_imported->get_surface_count();i++) {
-
-							String name = mesh_imported->surface_get_name(i);
-
-							for(int j=0;j<mesh_node->get_surface_count();j++) {
-
-								Ref<Material> mat = mesh_node->surface_get_material(j);
-								if (mat.is_valid() && mesh_node->surface_get_name(j)==name  ) {
-
-									mesh_imported->surface_set_material(i,mat);
-									break;
-								}
-							}
-						}
-						// was imported, do nothing further
-						checked_resources.insert(mesh_imported);
-						mi_node->set_mesh(mesh_imported);
-					}
-
-				}
-			} else if (p_node->get_type()=="Path") {
-				//for paths, overwrite path
-				Path *path_imported =imported_node->cast_to<Path>();
-				Path *path_node =p_node->cast_to<Path>();
-
-				if (path_imported->get_curve().is_valid()) {
-
-					path_node->set_curve(path_imported->get_curve());
-				}
-			} else if (p_node->get_type()=="Portal") {
-				//for paths, overwrite path
-
-				Portal *portal_imported =imported_node->cast_to<Portal>();
-				Portal *portal_node =p_node->cast_to<Portal>();
-
-				portal_node->set_shape( portal_imported->get_shape() );
-
-			} else if (p_node->get_type()=="Room") {
-				//for paths, overwrite path
-
-				Room *room_imported =imported_node->cast_to<Room>();
-				Room *room_node =p_node->cast_to<Room>();
-
-				room_node->set_room( room_imported->get_room() );
-
-			} else if (p_node->get_type()=="Skeleton") {
-				//for paths, overwrite path
-
-				Skeleton *skeleton_imported =imported_node->cast_to<Skeleton>();
-				Skeleton *skeleton_node =p_node->cast_to<Skeleton>();
-
-				//use imported bones, obviously
-				skeleton_node->clear_bones();
-				for(int i=0;i<skeleton_imported->get_bone_count();i++) {
-
-					skeleton_node->add_bone(skeleton_imported->get_bone_name(i));
-					skeleton_node->set_bone_parent(i,skeleton_imported->get_bone_parent(i));
-					skeleton_node->set_bone_rest(i,skeleton_imported->get_bone_rest(i));
-					//skeleton_node->set_bone_pose(i,skeleton_imported->get_bone_pose(i)); // not in a scene, will throw errors
-				}
-			}
-			else if (p_node->get_type() == "AnimationPlayer") {
-				//for paths, overwrite path
-				AnimationPlayer *aplayer_imported = imported_node->cast_to<AnimationPlayer>();
-				AnimationPlayer *aplayer_node = p_node->cast_to<AnimationPlayer>();
-
-				//use imported bones, obviously
-				List<StringName> anims;
-				List<StringName> existing_anims;
-				aplayer_imported->get_animation_list(&anims);
-				aplayer_node->get_animation_list(&existing_anims);
-
-				//use imported animations
-				for (List<StringName>::Element *N = anims.front(); N; N = N->next()) {
-
-					Ref<Animation> candidate = aplayer_imported->get_animation(N->get());
-
-					if (aplayer_node->has_animation(N->get())) {
-
-						Ref<Animation> found = aplayer_node->get_animation(N->get());
-
-						candidate->set_loop(found->has_loop());
-						candidate->set_step(found->get_step());
-
-						//For each track candidate
-						for (int i = 0; i < candidate->get_track_count(); i++) {
-
-							NodePath track_path = candidate->track_get_path(i);
-							// For each track existing
-							for (int x = 0; x < found->get_track_count(); x++) {
-
-								NodePath path_to_compare = found->track_get_path(x);
-
-								if (track_path.hash() == path_to_compare.hash() && candidate->track_get_type(x) == found->track_get_type(i)) {
-
-									//Tracks matches
-									if (candidate->track_get_interpolation_type(i) != found->track_get_interpolation_type(x))
-										candidate->track_set_interpolation_type(i, found->track_get_interpolation_type(x));
-									if (candidate->track_get_type(i) == Animation::TYPE_VALUE && candidate->value_track_is_continuous(i) != found->value_track_is_continuous(x))
-										candidate->value_track_set_continuous(i, found->value_track_is_continuous(x));
-
-									//Key transitions might have changed, but the animation remained unchanged
-									if (candidate->track_get_key_count(i) == found->track_get_key_count(x)) {
-										for (int k = 0; k < candidate->track_get_key_count(i); k++) {
-
-											if (candidate->track_get_key_transition(i, k) != found->track_get_key_transition(x, k))
-												candidate->track_set_key_transition(i, k, found->track_get_key_transition(x, k));
-										}
-									}
-
-								}
-
-							}
-						}
-
-						// Append function callbacks and values
-						for (int x = 0; x < found->get_track_count(); x++) {
-							if (found->track_get_type(x) == Animation::TYPE_METHOD || found->track_get_type(x) == Animation::TYPE_VALUE)
-								candidate->add_track(found->track_get_type(x), candidate->get_track_count());
-
-							for (int k = 0; k < found->track_get_key_count(x); k++)
-								candidate->track_insert_key(x, found->track_get_key_time(x, k), found->track_get_key_value(x, k), found->track_get_key_transition(x, k));
-						}
-					}
-
-					aplayer_node->add_animation(N->get(), candidate);
-				}
-
-			} else if (p_node->get_type()=="CollisionShape") {
-				//for paths, overwrite path
-
-				CollisionShape *collision_imported =imported_node->cast_to<CollisionShape>();
-				CollisionShape *collision_node =p_node->cast_to<CollisionShape>();
-
-				collision_node->set_shape( collision_imported->get_shape() );
-			}
-		}
-
-		if (p_node->cast_to<Spatial>() && imported_node->cast_to<Spatial>()) {
-			//apply transform if changed
-			Spatial *snode = p_node->cast_to<Spatial>();
-			Spatial *simp = imported_node->cast_to<Spatial>();
-
-			if (snode->get_import_transform() == snode->get_transform()) {
-				//not moved, apply new
-				snode->set_import_transform(simp->get_transform());
-				snode->set_transform(simp->get_transform());
-			} else if (snode->get_import_transform() == simp->get_import_transform()) {
-				//do nothing, nothing changed keep local changes
-			} else {
-				//changed both, imported and edited, merge
-				Transform local_xform = snode->get_import_transform().affine_inverse() * snode->get_transform();
-				snode->set_import_transform(simp->get_import_transform());
-				snode->set_transform(simp->get_import_transform() * local_xform);
-			}
-		}
-
-		checked_nodes.insert(imported_node);
-
-	}
-#if 0
-	else {
-
-		if (p_node!=p_root && p_existing->has_node(p_root->get_path_to(p_node->get_parent()))) {
-
-			Node *parent = p_existing->get_node(p_root->get_path_to(p_node->get_parent()));
-			NodePath path = p_root->get_path_to(p_node);
-
-			//add it.. because not existing in existing scene
-			Object *o = ObjectTypeDB::instance(p_existing->get_type());
-			Node *n=NULL;
-			if (o)
-				n=o->cast_to<Node>();
-
-			if (n) {
-
-				List<PropertyInfo> pl;
-				p_existing->get_property_list(&pl);
-				for(List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
-					if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
-						continue;
-					n->set( E->get().name, p_existing->get(E->get().name) );
-				}
-
-				parent->add_child(n);
-
-				valid=true;
-			}
-		}
-
-	}
-#endif
-
-	for(int i=0;i<p_node->get_child_count();i++) {
-		_merge_existing_node(p_node->get_child(i),p_imported_scene,checked_resources,checked_nodes);
-	}
-}
-
-
-void EditorSceneImportPlugin::_add_new_nodes(Node *p_node,Node *p_imported,Node *p_imported_scene,Node *p_existing_scene,Set<Node*> &checked_nodes) {
-
-
-	for(int i=0;i<p_imported->get_child_count();i++) {
-
-
-		Node *imported_node = p_imported->get_child(i);
-
-		if (imported_node->get_owner()!=p_imported_scene) {
-		//	print_line("skipping because not imported at "+String(imported_node->get_name()));
-			continue; //end of the road
-		}
-
-		Vector<StringName> nn;
-		nn.push_back(imported_node->get_name());
-		NodePath imported_path(nn,false);
-		//print_line("check for: "+String(imported_path));
-
-		if (!p_node->has_node(imported_path) && !checked_nodes.has(imported_node)) {
-			//not there, re-add it
-			//add it.. because not existing in existing scene
-			Object *o = ObjectTypeDB::instance(imported_node->get_type());
-			Node *n=NULL;
-			if (o)
-				n=o->cast_to<Node>();
-
-			//print_line("creating node of same type..");
-
-			if (n) {
-
-				//print_line("copy props and add");
-				List<PropertyInfo> pl;
-				imported_node->get_property_list(&pl);
-				for(List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
-					if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
-						continue;
-					n->set( E->get().name, imported_node->get(E->get().name) );
-				}
-
-				p_node->add_child(n);
-				n->set_owner(p_existing_scene);
-			}
-
-		} else {
-			//print_line("already exists");
-		}
-
-
-		if (p_node->has_node(imported_path)) {
-
-			Node *other_node = p_node->get_node(imported_path);
-
-			_add_new_nodes(other_node,imported_node,p_imported_scene,p_existing_scene,checked_nodes);
-
-		}
-
-	}
-}
-
-
-void EditorSceneImportPlugin::_merge_scenes(Node *p_node,Node *p_imported) {
-
-	Set<Ref<Resource> > checked_resources;
-	Set<Node*> checked_nodes;
-	_merge_existing_node(p_node,p_imported,checked_resources,checked_nodes);
-	_add_new_nodes(p_node,p_imported,p_imported,p_node,checked_nodes);
-	//add existing.. ?
-}
-
-
-void EditorSceneImportPlugin::_scan_materials(Node*p_base,Node *p_node,Map<String,Ref<Material> > &mesh_materials,Map<String,Ref<Material> >& override_materials) {
-
-	if (!p_base && p_node->get_owner()!=p_base)
-		return;
-	MeshInstance *mi=p_node->cast_to<MeshInstance>();
-
-	if (mi) {
-		if (mi->get_material_override().is_valid()) {
-			String path = p_base->get_path_to(p_node);
-			override_materials[path]=mi->get_material_override();
-		}
-		Ref<Mesh> mesh = mi->get_mesh();
-		if (mesh.is_valid()) {
-
-			for(int i=0;i<mesh->get_surface_count();i++) {
-
-				String name = mesh->get_name()+":"+mesh->surface_get_name(i);
-				if (!mesh_materials.has(name)) {
-					mesh_materials[name]=mesh->surface_get_material(i);
-				}
-			}
-		}
-	}
-
-	for(int i=0;i<p_node->get_child_count();i++) {
-		_scan_materials(p_base,p_node->get_child(i),mesh_materials,override_materials);
-	}
-}
-
-
-void EditorSceneImportPlugin::_apply_materials(Node*p_base,Node *p_node,Map<String,Ref<Material> > &mesh_materials,Map<String,Ref<Material> >& override_materials,Set<Ref<Mesh> >& meshes_processed) {
-
-	if (p_node!=p_base && p_node->get_owner()!=p_base)
-		return;
-
-	MeshInstance *mi=p_node->cast_to<MeshInstance>();
-
-	if (mi) {
-
-		print_line("is mesh "+String(p_node->get_name()));
-		String path = p_base->get_path_to(p_node);
-		if (override_materials.has(path)) {
-			print_line("is in material overrides");
-			mi->set_material_override(override_materials[path]);
-		}
-
-		Ref<Mesh> mesh = mi->get_mesh();
-		if (mesh.is_valid() && !meshes_processed.has(mesh)) {
-			print_line("mesh was not processed");
-			meshes_processed.insert(mesh);
-			for(int i=0;i<mesh->get_surface_count();i++) {
-
-				String name = mesh->get_name()+":"+mesh->surface_get_name(i);
-				print_line("name for surface "+itos(i)+": "+name);
-				if (mesh_materials.has(name)) {
-
-					Ref<Material> mat = mesh_materials[name];
-					mesh->surface_set_material(i,mat);
-					print_line("overriding!");
-				}
-			}
-		}
-	}
-
-	for(int i=0;i<p_node->get_child_count();i++) {
-		_apply_materials(p_base,p_node->get_child(i),mesh_materials,override_materials,meshes_processed);
-	}
-}
-
-void EditorSceneImportPlugin::_merge_materials(Node *p_node,Node *p_imported) {
-
-	Map<String,Ref<Material> > mesh_materials;
-	Map<String,Ref<Material> > override_materials;
-
-	_scan_materials(p_node,p_node,mesh_materials,override_materials);
-
-	for (Map<String,Ref<Material> >::Element *E=mesh_materials.front();E;E=E->next()) {
-		print_line("Mats: "+String(E->key()));
-	}
-
-	for (Map<String,Ref<Material> >::Element *E=override_materials.front();E;E=E->next()) {
-		print_line("Overrides: "+String(E->key()));
-	}
-
-	Set<Ref<Mesh> > mp;
-	_apply_materials(p_imported,p_imported,mesh_materials,override_materials,mp);
-
-
-}
 
 #if 0
 
@@ -2395,6 +2082,21 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 	Node *scene = importer->import_scene(src_path,import_flags,fps,r_missing,&err);
 	if (!scene || err!=OK) {
 		return err;
+	}
+
+	if (from->has_option("root_type")) {
+		String type = from->get_option("root_type");
+		Object *base = ObjectTypeDB::instance(type);
+		Node *base_node = NULL;
+		if (base)
+			base_node=base->cast_to<Node>();
+
+		if (base_node) {
+
+			scene->replace_by(base_node);
+			memdelete(scene);
+			scene=base_node;
+		}
 	}
 
 	_tag_import_paths(scene,scene);
@@ -2839,65 +2541,11 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 				}
 			}
 
-			Error err = EditorTextureImportPlugin::get_singleton(EditorTextureImportPlugin::MODE_TEXTURE_3D)->import(target_path,imd);
+			Error err = EditorTextureImportPlugin::get_singleton()->import(target_path,imd);
 
 		}
 	}
 
-
-	/// BEFORE SAVING - MERGE
-
-
-	if (import_action!=SCENE_UPDATE_REPLACE_WITH_NEW) {
-
-
-		progress.step(TTR("Merging.."),103);
-
-		FileAccess *fa = FileAccess::create(FileAccess::ACCESS_RESOURCES);
-
-		if (fa->file_exists(p_dest_path)) {
-
-
-			//try to merge
-
-			Ref<PackedScene> s = ResourceLoader::load(p_dest_path);
-			if (s.is_valid()) {
-
-				Node *existing = s->instance(true);
-
-				if (existing) {
-
-
-					switch(import_action) {
-
-						case SCENE_UPDATE_REPLACE_WITH_NEW: break;
-						case SCENE_UPDATE_REPLACE_WITH_NEW_KEEP_MATERIALS: {
-
-							_merge_materials(existing,scene);
-							memdelete(existing);
-
-						} break;
-						case SCENE_UPDATE_KEEP_OLD_MERGE_CHANGES: {
-
-							_merge_scenes(existing,scene);
-							memdelete(scene);
-							scene=existing;
-
-						} break;
-						case SCENE_UPDATE_KEEP_OLD: {
-
-							memdelete(scene);
-							scene=existing;
-						} break;
-					}
-
-				}
-			}
-
-		}
-
-		memdelete(fa);
-	}
 
 
 	progress.step(TTR("Saving.."),104);
@@ -2955,6 +2603,30 @@ Error EditorSceneImportPlugin::import(const String& p_dest_path, const Ref<Resou
 void EditorSceneImportPlugin::add_importer(const Ref<EditorSceneImporter>& p_importer) {
 
 	importers.push_back(p_importer);
+}
+
+void EditorSceneImportPlugin::import_from_drop(const Vector<String>& p_drop,const String& p_dest_path) {
+
+	List<String> extensions;
+	for(int i=0;i<importers.size();i++) {
+		importers[i]->get_extensions(&extensions);
+	}
+	//bool warn_compatible=false;
+	for(int i=0;i<p_drop.size();i++) {
+
+		String extension = p_drop[i].extension().to_lower();
+
+		for(List<String>::Element *E=extensions.front();E;E=E->next()) {
+
+			if (E->get()==extension) {
+
+				dialog->popup_import(String());
+				dialog->setup_popup(p_drop[i],p_dest_path);
+				return;
+			}
+		}
+	}
+
 }
 
 

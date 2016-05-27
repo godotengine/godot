@@ -542,6 +542,7 @@ public:
 		RID skeleton;
 		RID material_override;
 		RID sampled_light;
+		Vector<RID> materials;
 		Vector<RID> light_instances;
 		Vector<float> morph_values;
 		BakedLightData *baked_light;

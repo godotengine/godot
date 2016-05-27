@@ -326,6 +326,10 @@ String ScenesDock::get_selected_path() const {
 	return "res://"+path;
 }
 
+String ScenesDock::get_current_path() const {
+
+	return path;
+}
 
 void ScenesDock::_thumbnail_done(const String& p_path,const Ref<Texture>& p_preview, const Variant& p_udata) {
 
@@ -388,6 +392,25 @@ void ScenesDock::_search(EditorFileSystemDirectory *p_path,List<FileInfo>* match
 			fi.name=file;
 			fi.type=p_path->get_file_type(i);
 			fi.path=p_path->get_file_path(i);
+			if (p_path->get_file_meta(i)) {
+				if (p_path->is_missing_sources(i)) {
+					fi.import_status=3;
+				} else if (p_path->have_sources_changed(i)) {
+					fi.import_status=2;
+				} else {
+					fi.import_status=1;
+				}
+			} else {
+				fi.import_status=0;
+			}
+			for(int j=0;j<p_path->get_source_count(i);j++) {
+				String s = EditorImportPlugin::expand_source_path(p_path->get_source_file(i,j));
+				if (p_path->is_source_file_missing(i,j)) {
+					s+=" (Missing)";
+				}
+				fi.sources.push_back(s);
+			}
+
 			matches->push_back(fi);
 			if (matches->size()>p_max_items)
 				return;
@@ -517,6 +540,27 @@ void ScenesDock::_update_files(bool p_keep_selection) {
 			fi.name=efd->get_file(i);
 			fi.path=path.plus_file(fi.name);
 			fi.type=efd->get_file_type(i);
+			if (efd->get_file_meta(i)) {
+				if (efd->is_missing_sources(i)) {
+					fi.import_status=3;
+				} else if (efd->have_sources_changed(i)) {
+					fi.import_status=2;
+				} else {
+					fi.import_status=1;
+				}
+
+				for(int j=0;j<efd->get_source_count(i);j++) {
+					String s = EditorImportPlugin::expand_source_path(efd->get_source_file(i,j));
+					if (efd->is_source_file_missing(i,j)) {
+						s+=" (Missing)";
+					}
+					fi.sources.push_back(s);
+				}
+			} else {
+				fi.import_status=0;
+			}
+
+
 
 			filelist.push_back(fi);
 		}
@@ -533,11 +577,32 @@ void ScenesDock::_update_files(bool p_keep_selection) {
 
 		Ref<Texture> type_icon;
 
-		if (has_icon(type,ei)) {
-			type_icon=get_icon(type,ei);
-		} else {
-			type_icon=get_icon(oi,ei);
+		String tooltip=fname;
+
+		if (E->get().import_status==0) {
+
+			if (has_icon(type,ei)) {
+				type_icon=get_icon(type,ei);
+			} else {
+				type_icon=get_icon(oi,ei);
+			}
+		} else if (E->get().import_status==1) {
+			type_icon=get_icon("DependencyOk","EditorIcons");
+		} else if (E->get().import_status==2) {
+			type_icon=get_icon("DependencyChanged","EditorIcons");
+			tooltip+"\nStatus: Needs Re-Import";
+		} else if (E->get().import_status==3) {
+			type_icon=get_icon("ImportFail","EditorIcons");
+			tooltip+"\nStatus: Missing Dependencies";
 		}
+
+		if (E->get().sources.size()) {
+			for(int i=0;i<E->get().sources.size();i++) {
+				tooltip+="\nSource: "+E->get().sources[i];
+			}
+		}
+
+
 
 		if (use_thumbnails) {
 			files->add_item(fname,file_thumbnail,true);
@@ -556,6 +621,9 @@ void ScenesDock::_update_files(bool p_keep_selection) {
 
 		if (cselection.has(fname))
 			files->select(files->get_item_count()-1,false);
+
+		files->set_item_tooltip(files->get_item_count()-1,tooltip);
+
 
 	}
 
@@ -997,6 +1065,40 @@ void ScenesDock::_file_option(int p_option) {
 		case FILE_INFO: {
 
 		} break;
+		case FILE_REIMPORT: {
+
+
+			Vector<String> reimport;
+			for(int i=0;i<files->get_item_count();i++) {
+
+				if (!files->is_selected(i))
+					continue;
+
+				String path = files->get_item_metadata(i);
+				reimport.push_back(path);
+			}
+
+			ERR_FAIL_COND(reimport.size()==0);
+
+			Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(reimport[0]);
+			ERR_FAIL_COND(!rimd.is_valid());
+			String editor=rimd->get_editor();
+
+			if (editor.begins_with("texture_")) { //compatibility fix for old texture format
+				editor="texture";
+			}
+
+			Ref<EditorImportPlugin> rimp = EditorImportExport::get_singleton()->get_import_plugin_by_name(editor);
+			ERR_FAIL_COND(!rimp.is_valid());
+
+			if (reimport.size()==1) {
+				rimp->import_dialog(reimport[0]);
+			} else {
+				rimp->reimport_multiple_files(reimport);
+
+			}
+
+		} break;
 
 	}
 }
@@ -1362,6 +1464,8 @@ void ScenesDock::_files_list_rmb_select(int p_item,const Vector2& p_pos) {
 	Vector<String> filenames;
 
 	bool all_scenes=true;
+	bool all_can_reimport=true;
+	Set<String> types;
 
 	for(int i=0;i<files->get_item_count();i++) {
 
@@ -1380,6 +1484,38 @@ void ScenesDock::_files_list_rmb_select(int p_item,const Vector2& p_pos) {
 			return;
 		}
 
+
+		EditorFileSystemDirectory *efsd=NULL;
+		int pos;
+
+		efsd = EditorFileSystem::get_singleton()->find_file(path,&pos);
+
+		if (efsd) {
+
+
+			if (!efsd->get_file_meta(pos)) {
+				all_can_reimport=false;
+
+
+			} else {
+				Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(path);
+				if (rimd.is_valid()) {
+
+					String editor=rimd->get_editor();
+					if (editor.begins_with("texture_")) { //compatibility fix for old texture format
+						editor="texture";
+					}
+					types.insert(editor);
+
+				} else {
+					all_can_reimport=false;
+
+				}
+			}
+		} else {
+			all_can_reimport=false;
+
+		}
 
 		filenames.push_back(path);
 		if (EditorFileSystem::get_singleton()->get_file_type(path)!="PackedScene")
@@ -1412,11 +1548,33 @@ void ScenesDock::_files_list_rmb_select(int p_item,const Vector2& p_pos) {
 		file_options->add_item(TTR("Move To.."),FILE_MOVE);
 	}
 
+
 	file_options->add_item(TTR("Delete"),FILE_REMOVE);
+
 	//file_options->add_item(TTR("Info"),FILE_INFO);
 
 	file_options->add_separator();
 	file_options->add_item(TTR("Show In File Manager"),FILE_SHOW_IN_EXPLORER);
+
+	if (all_can_reimport && types.size()==1) { //all can reimport and are of the same type
+
+
+		bool valid=true;
+		Ref<EditorImportPlugin> rimp = EditorImportExport::get_singleton()->get_import_plugin_by_name(types.front()->get());
+		if (rimp.is_valid()) {
+
+			if (filenames.size()>1 && !rimp->can_reimport_multiple_files())	{
+				valid=false;
+			}
+		} else {
+			valid=false;
+		}
+
+		if (valid) {
+			file_options->add_separator();
+			file_options->add_item(TTR("Re-Import.."),FILE_REIMPORT);
+		}
+	}
 
 	file_options->set_pos(files->get_global_pos() + p_pos);
 	file_options->popup();

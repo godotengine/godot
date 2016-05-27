@@ -601,6 +601,13 @@ public:
 		}
 	}
 
+
+	void set_source_and_dest(const String& p_font,const String& p_dest) {
+		source->get_line_edit()->set_text(p_font);
+		dest->get_line_edit()->set_text(p_dest);
+		_prop_changed();
+	}
+
 	EditorFontImportDialog(EditorFontImportPlugin *p_plugin) {
 		plugin=p_plugin;
 		VBoxContainer *vbc = memnew( VBoxContainer );
@@ -1627,6 +1634,20 @@ Error EditorFontImportPlugin::import(const String& p_path, const Ref<ResourceImp
 
 	return ResourceSaver::save(p_path,font);
 
+}
+
+void EditorFontImportPlugin::import_from_drop(const Vector<String>& p_drop, const String &p_dest_path) {
+
+	for(int i=0;i<p_drop.size();i++) {
+		String ext = p_drop[i].extension().to_lower();
+		String file = p_drop[i].get_file();
+		if (ext=="ttf" || ext=="otf" || ext=="fnt") {
+
+			import_dialog();
+			dialog->set_source_and_dest(p_drop[i],p_dest_path.plus_file(file.basename()+".fnt"));
+			break;
+		}
+	}
 }
 
 

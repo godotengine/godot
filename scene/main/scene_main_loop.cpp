@@ -1593,6 +1593,14 @@ void SceneTree::_live_edit_reparent_node_func(const NodePath& p_at,const NodePat
 
 
 #endif
+
+
+void SceneTree::drop_files(const Vector<String>& p_files,int p_from_screen) {
+
+	emit_signal("files_dropped",p_files,p_from_screen);
+	MainLoop::drop_files(p_files,p_from_screen);
+}
+
 void SceneTree::_bind_methods() {
 
 
@@ -1665,6 +1673,8 @@ void SceneTree::_bind_methods() {
 
 	ADD_SIGNAL( MethodInfo("idle_frame"));
 	ADD_SIGNAL( MethodInfo("fixed_frame"));
+
+	ADD_SIGNAL( MethodInfo("files_dropped",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::INT,"screen")) );
 
 	BIND_CONSTANT( GROUP_CALL_DEFAULT );
 	BIND_CONSTANT( GROUP_CALL_REVERSE );

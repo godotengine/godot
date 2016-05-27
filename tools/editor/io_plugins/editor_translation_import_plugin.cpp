@@ -394,6 +394,26 @@ void EditorTranslationImportPlugin::import_dialog(const String& p_from) {
 	dialog->popup_import(p_from);
 }
 
+
+
+void EditorTranslationImportPlugin::import_from_drop(const Vector<String>& p_drop, const String &p_dest_path) {
+
+
+	for(int i=0;i<p_drop.size();i++) {
+		String ext = p_drop[i].extension().to_lower();
+
+		if (ext=="csv") {
+
+			import_dialog();
+			dialog->_choose_file(p_drop[i]);
+			dialog->_choose_save_dir(p_dest_path);
+			break;
+		}
+	}
+
+
+}
+
 Error EditorTranslationImportPlugin::import(const String& p_path, const Ref<ResourceImportMetadata>& p_from) {
 
 	Ref<ResourceImportMetadata> from = p_from;

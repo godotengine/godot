@@ -1673,6 +1673,7 @@ void CustomPropertyEditor::config_value_editors(int p_amount, int p_columns,int 
 
 }
 
+
 void CustomPropertyEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_focus_enter", &CustomPropertyEditor::_focus_enter);
@@ -1689,6 +1690,7 @@ void CustomPropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_drag_easing",&CustomPropertyEditor::_drag_easing);
 	ObjectTypeDB::bind_method( "_text_edit_changed",&CustomPropertyEditor::_text_edit_changed);
 	ObjectTypeDB::bind_method( "_menu_option",&CustomPropertyEditor::_menu_option);
+
 
 
 	ADD_SIGNAL( MethodInfo("variant_changed") );
@@ -2178,6 +2180,11 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 
 						}
 					}
+				}
+
+				if (!res->is_type("Texture")) {
+					//texture already previews via itself
+					EditorResourcePreview::get_singleton()->queue_edited_resource_preview(res,this,"_resource_preview_done",p_item->get_instance_ID());
 				}
 
 
@@ -3357,6 +3364,10 @@ void PropertyEditor::update_tree() {
 					} else if (res.is_valid()) {
 						item->set_tooltip(1,res->get_name()+" ("+res->get_type()+")");
 					}
+					if (!res->is_type("Texture")) {
+						//texture already previews via itself
+						EditorResourcePreview::get_singleton()->queue_edited_resource_preview(res,this,"_resource_preview_done",item->get_instance_ID());
+					}
 
 				}
 
@@ -3870,6 +3881,29 @@ void PropertyEditor::_filter_changed(const String& p_text) {
 	update_tree();
 }
 
+
+
+void PropertyEditor::_resource_preview_done(const String& p_path,const Ref<Texture>& p_preview,Variant p_ud) {
+
+	if (p_preview.is_null())
+		return; //don't bother with empty preview
+
+	ObjectID id = p_ud;
+	Object *obj = ObjectDB::get_instance(id);
+
+	if (!obj)
+		return;
+
+	TreeItem *ti = obj->cast_to<TreeItem>();
+
+	ERR_FAIL_COND(!ti);
+
+	int tw = EditorSettings::get_singleton()->get("property_editor/texture_preview_width");
+
+	ti->set_icon(1,p_preview); //should be scaled I think?
+	ti->set_icon_max_width(1,tw);
+	ti->set_text(1,"");
+}
 void PropertyEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method( "_item_edited",&PropertyEditor::_item_edited);
@@ -3884,6 +3918,7 @@ void PropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method( "_set_range_def",&PropertyEditor::_set_range_def);
 	ObjectTypeDB::bind_method( "_filter_changed",&PropertyEditor::_filter_changed);
 	ObjectTypeDB::bind_method( "update_tree",&PropertyEditor::update_tree);
+	ObjectTypeDB::bind_method( "_resource_preview_done",&PropertyEditor::_resource_preview_done);
 
 	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &PropertyEditor::get_drag_data_fw);
 	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &PropertyEditor::can_drop_data_fw);

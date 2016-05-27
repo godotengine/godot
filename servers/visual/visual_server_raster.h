@@ -160,6 +160,7 @@ class VisualServerRaster : public VisualServer {
 		Scenario *scenario;
 		bool update;
 		bool update_aabb;
+		bool update_materials;
 		Instance *update_next;
 		InstanceType base_type;
 
@@ -317,6 +318,8 @@ class VisualServerRaster : public VisualServer {
 			draw_range_end=0;
 			extra_margin=0;
 			visible_in_all_rooms=false;
+			update_aabb=false;
+			update_materials=false;
 
 			baked_light=NULL;
 			baked_light_info=NULL;
@@ -583,8 +586,8 @@ class VisualServerRaster : public VisualServer {
 
 	void _portal_disconnect(Instance *p_portal,bool p_cleanup=false);
 	void _portal_attempt_connect(Instance *p_portal);
-	void _dependency_queue_update(RID p_rid,bool p_update_aabb=false);
-	_FORCE_INLINE_ void _instance_queue_update(Instance *p_instance,bool p_update_aabb=false);
+	void _dependency_queue_update(RID p_rid, bool p_update_aabb=false, bool p_update_materials=false);
+	_FORCE_INLINE_ void _instance_queue_update(Instance *p_instance,bool p_update_aabb=false,bool p_update_materials=false);
 	void _update_instances();
 	void _update_instance_aabb(Instance *p_instance);
 	void _update_instance(Instance *p_instance);
@@ -1082,6 +1085,9 @@ public:
 
 	virtual void instance_set_morph_target_weight(RID p_instance,int p_shape, float p_weight);
 	virtual float instance_get_morph_target_weight(RID p_instance,int p_shape) const;
+
+	virtual void instance_set_surface_material(RID p_instance,int p_surface, RID p_material);
+
 
 	virtual void instance_set_transform(RID p_instance, const Transform& p_transform);
 	virtual Transform instance_get_transform(RID p_instance) const;

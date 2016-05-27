@@ -331,7 +331,7 @@ String EditorMeshImportPlugin::get_name() const {
 }
 String EditorMeshImportPlugin::get_visible_name() const{
 
-	return "3D Mesh";
+	return "Mesh";
 }
 void EditorMeshImportPlugin::import_dialog(const String& p_from){
 
@@ -535,6 +535,26 @@ Error EditorMeshImportPlugin::import(const String& p_path, const Ref<ResourceImp
 	return err;
 }
 
+
+void EditorMeshImportPlugin::import_from_drop(const Vector<String>& p_drop, const String &p_dest_path) {
+
+
+	Vector<String> files;
+	for(int i=0;i<p_drop.size();i++) {
+		String ext = p_drop[i].extension().to_lower();
+		String file = p_drop[i].get_file();
+		if (ext=="obj") {
+
+			files.push_back(p_drop[i]);
+		}
+	}
+
+	if (files.size()) {
+		import_dialog();
+		dialog->_choose_files(files);
+		dialog->_choose_save_dir(p_dest_path);
+	}
+}
 
 EditorMeshImportPlugin::EditorMeshImportPlugin(EditorNode* p_editor) {
 

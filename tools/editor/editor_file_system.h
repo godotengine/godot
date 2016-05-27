@@ -55,7 +55,7 @@ class EditorFileSystemDirectory : public Object {
 			String path;
 			String md5;
 			uint64_t modified_time;
-			bool missing;
+			bool missing;			
 
 		};
 
@@ -63,6 +63,7 @@ class EditorFileSystemDirectory : public Object {
 		String import_editor;
 		Vector<String> deps;
 		bool enabled;
+		bool sources_changed;
 
 	};
 
@@ -102,8 +103,12 @@ public:
 	StringName get_file_type(int p_idx) const;
 	bool get_file_meta(int p_idx) const;
 	bool is_missing_sources(int p_idx) const;
+	bool have_sources_changed(int p_idx) const;
 	Vector<String> get_missing_sources(int p_idx) const;
 	Vector<String> get_file_deps(int p_idx) const;
+	int get_source_count(int p_idx) const;
+	String get_source_file(int p_idx,int p_source) const;
+	bool is_source_file_missing(int p_idx,int p_source) const;
 
 	EditorFileSystemDirectory *get_parent();
 
@@ -230,6 +235,7 @@ public:
 	String find_resource_from_source(const String& p_path) const;
 	EditorFileSystemDirectory *get_path(const String& p_path);
 	String get_file_type(const String& p_file) const;
+	EditorFileSystemDirectory* find_file(const String& p_file,int* r_index) const;
 	EditorFileSystem();
 	~EditorFileSystem();
 };
