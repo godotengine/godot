@@ -2732,8 +2732,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			String exec = OS::get_singleton()->get_executable_path();
 
 			List<String> args;
-			//args.push_back ( "-path" );
-			//args.push_back (exec.get_base_dir() );
+			args.push_back("-path");
+			args.push_back(exec.get_base_dir());
 			args.push_back("-pm");
 
 			OS::ProcessID pid=0;
