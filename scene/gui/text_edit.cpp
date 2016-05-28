@@ -3566,10 +3566,8 @@ bool TextEdit::search(const String &p_key,uint32_t p_search_flags, int p_from_li
 				//wrapped
 
 				if (p_search_flags&SEARCH_BACKWARDS) {
-					text_line=text_line.substr(from_column,text_line.length());
 					from_column=text_line.length();
 				} else {
-					text_line=text_line.substr(0,from_column);
 					from_column=0;
 				}
 
@@ -3580,7 +3578,6 @@ bool TextEdit::search(const String &p_key,uint32_t p_search_flags, int p_from_li
 
 
 		} else {
-			//text_line=text_line.substr(0,p_from_column); //wrap around for missing begining.
 			if (p_search_flags&SEARCH_BACKWARDS)
 				from_column=text_line.length()-1;
 			else
@@ -3589,12 +3586,25 @@ bool TextEdit::search(const String &p_key,uint32_t p_search_flags, int p_from_li
 
 		pos=-1;
 
-		if (!(p_search_flags&SEARCH_BACKWARDS)) {
+		int pos_from=0;
+		int last_pos=-1;
+		while ((last_pos=(p_search_flags&SEARCH_MATCH_CASE)?text_line.find(p_key,pos_from):text_line.findn(p_key,pos_from))!=-1) {
 
-			pos = (p_search_flags&SEARCH_MATCH_CASE)?text_line.find(p_key,from_column):text_line.findn(p_key,from_column);
-		} else {
+			if (p_search_flags&SEARCH_BACKWARDS) {
 
-			pos = (p_search_flags&SEARCH_MATCH_CASE)?text_line.rfind(p_key,from_column):text_line.rfindn(p_key,from_column);
+				if (last_pos>from_column)
+					break;
+				pos=last_pos;
+
+			} else {
+
+				if (last_pos>=from_column) {
+					pos=last_pos;
+					break;
+				}
+			}
+
+			pos_from=last_pos+p_key.length();
 		}
 
 		if (pos!=-1 && (p_search_flags&SEARCH_WHOLE_WORDS)) {
