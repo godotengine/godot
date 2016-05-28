@@ -5123,41 +5123,50 @@
 </class>
 <class name="BackBufferCopy" inherits="Node2D" category="Core">
 	<brief_description>
+	Copies a region of the screen (or the whole screen) to a buffer so it can be accessed with the texscreen() shader instruction.
 	</brief_description>
 	<description>
+	Node for back-buffering the currently displayed screen. The region defined in the BackBufferCopy node is bufferized with the content of the screen it covers, or the entire screen according to the copy mode set. Accessing this buffer is done with the texscreen() shader instruction.
 	</description>
 	<methods>
 		<method name="set_rect">
 			<argument index="0" name="rect" type="Rect2">
 			</argument>
 			<description>
+			Defines the area covered by the BackBufferCopy.
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
+			Return the area covered by the BackBufferCopy.
 			</description>
 		</method>
 		<method name="set_copy_mode">
 			<argument index="0" name="copy_mode" type="int">
 			</argument>
 			<description>
+			Set the copy mode of the BackBufferCopy (refer to constants section).
 			</description>
 		</method>
 		<method name="get_copy_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the copy mode currently applied to the BackBufferCopy (refer to constants section).
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="COPY_MODE_DISABLED" value="0">
+		Disables the buffering mode. This means the BackBufferCopy node will directly use the portion of screen it covers.
 		</constant>
 		<constant name="COPY_MODE_RECT" value="1">
+		Sets the copy mode to a region.
 		</constant>
 		<constant name="COPY_MODE_VIEWPORT" value="2">
+		Sets the copy mode to the entire screen.
 		</constant>
 	</constants>
 </class>
