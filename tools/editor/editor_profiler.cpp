@@ -425,10 +425,10 @@ void EditorProfiler::_activate_pressed() {
 	if (activate->is_pressed()) {
 		clear();
 		activate->set_icon(get_icon("Stop","EditorIcons"));
-		activate->set_text(TTR("Stop Profilinng"));
+		activate->set_text(TTR("Stop Profiling"));
 	} else {
 		activate->set_icon(get_icon("Play","EditorIcons"));
-		activate->set_text(TTR("Start Profilinng"));
+		activate->set_text(TTR("Start Profiling"));
 
 
 	}
@@ -672,7 +672,7 @@ EditorProfiler::EditorProfiler()
 
 	hb->add_spacer();
 
-	hb->add_child( memnew( Label(TTR("Frame#:") ) ) );
+	hb->add_child( memnew( Label(TTR("Frame #:") ) ) );
 
 	cursor_metric_edit = memnew( SpinBox );
 	cursor_metric_edit->set_h_size_flags(SIZE_FILL);
