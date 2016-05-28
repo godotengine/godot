@@ -5123,41 +5123,50 @@
 </class>
 <class name="BackBufferCopy" inherits="Node2D" category="Core">
 	<brief_description>
+	Copies a region of the screen (or the whole screen) to a buffer so it can be accessed with the texscreen() shader instruction.
 	</brief_description>
 	<description>
+	Node for back-buffering the currently displayed screen. The region defined in the BackBufferCopy node is bufferized with the content of the screen it covers, or the entire screen according to the copy mode set. Accessing this buffer is done with the texscreen() shader instruction.
 	</description>
 	<methods>
 		<method name="set_rect">
 			<argument index="0" name="rect" type="Rect2">
 			</argument>
 			<description>
+			Defines the area covered by the BackBufferCopy.
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
+			Return the area covered by the BackBufferCopy.
 			</description>
 		</method>
 		<method name="set_copy_mode">
 			<argument index="0" name="copy_mode" type="int">
 			</argument>
 			<description>
+			Set the copy mode of the BackBufferCopy (refer to constants section).
 			</description>
 		</method>
 		<method name="get_copy_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the copy mode currently applied to the BackBufferCopy (refer to constants section).
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="COPY_MODE_DISABLED" value="0">
+		Disables the buffering mode. This means the BackBufferCopy node will directly use the portion of screen it covers.
 		</constant>
 		<constant name="COPY_MODE_RECT" value="1">
+		Sets the copy mode to a region.
 		</constant>
 		<constant name="COPY_MODE_VIEWPORT" value="2">
+		Sets the copy mode to the entire screen.
 		</constant>
 	</constants>
 </class>
@@ -17742,266 +17751,314 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="Light2D" inherits="Node2D" category="Core">
 	<brief_description>
+	Node that casts light in a 2D environment.
 	</brief_description>
 	<description>
+	Node that casts light in a 2D environment. Light is defined by a (usually grayscale) texture, a color, an energy value, a mode (see constants), and various other parameters (range and shadows-related). Note that Light2D can be used as a mask.
 	</description>
 	<methods>
 		<method name="set_enabled">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Switches the Light2D on or off, depending on the 'enabled' parameter.
 			</description>
 		</method>
 		<method name="is_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if the Light2D is enabled, false if it is not.
 			</description>
 		</method>
 		<method name="set_texture">
 			<argument index="0" name="texture" type="Object">
 			</argument>
 			<description>
+			Set the texture of the Light2D.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="Object">
 			</return>
 			<description>
+			Return the texture of the Light2D.
 			</description>
 		</method>
 		<method name="set_texture_offset">
 			<argument index="0" name="texture_offset" type="Vector2">
 			</argument>
 			<description>
+			Set the offset of the light texture.
 			</description>
 		</method>
 		<method name="get_texture_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the offset of the light texture.
 			</description>
 		</method>
 		<method name="set_color">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+			Set the color of the Light2D.
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
+			Return the color of the Light2D.
 			</description>
 		</method>
 		<method name="set_height">
 			<argument index="0" name="height" type="float">
 			</argument>
 			<description>
+			Set the height of the Light2D. Used with 2D normalmapping.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the height of the Light2D. Used with 2D normalmapping.
 			</description>
 		</method>
 		<method name="set_energy">
 			<argument index="0" name="energy" type="float">
 			</argument>
 			<description>
+			Set the energy value of the Light2D. The bigger the value, the stronger the light.
 			</description>
 		</method>
 		<method name="get_energy" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the energy value of the Light2D.
 			</description>
 		</method>
 		<method name="set_texture_scale">
 			<argument index="0" name="texture_scale" type="float">
 			</argument>
 			<description>
+			Set the scale value of the light texture.
 			</description>
 		</method>
 		<method name="get_texture_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the scale value of the light texture.
 			</description>
 		</method>
 		<method name="set_z_range_min">
 			<argument index="0" name="z" type="int">
 			</argument>
 			<description>
+			Set the minimum Z value that objects of the scene have to be in order to be affected by the Light2D.
 			</description>
 		</method>
 		<method name="get_z_range_min" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Get the minimum Z value that objects of the scene have to be in order to be affected by the Light2D.
 			</description>
 		</method>
 		<method name="set_z_range_max">
 			<argument index="0" name="z" type="int">
 			</argument>
 			<description>
+			Set the maximum Z value that objects of the scene can be in order to be affected by the Light2D.
 			</description>
 		</method>
 		<method name="get_z_range_max" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Get the maximum Z value that objects of the scene can be in order to be affected by the Light2D.
 			</description>
 		</method>
 		<method name="set_layer_range_min">
 			<argument index="0" name="layer" type="int">
 			</argument>
 			<description>
+			Set the minimum layer value of objects of the scene that are affected by the Light2D.
 			</description>
 		</method>
 		<method name="get_layer_range_min" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Get the minimum layer value of objects of the scene that are affected by the Light2D.
 			</description>
 		</method>
 		<method name="set_layer_range_max">
 			<argument index="0" name="layer" type="int">
 			</argument>
 			<description>
+			Set the maximum layer value of objects of the scene that are affected by the Light2D.
 			</description>
 		</method>
 		<method name="get_layer_range_max" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Set the maximum layer value of objects of the scene that are affected by the Light2D.
 			</description>
 		</method>
 		<method name="set_item_mask">
 			<argument index="0" name="item_mask" type="int">
 			</argument>
 			<description>
+			Set the item mask of the Light2D to 'item_mask' value.
 			</description>
 		</method>
 		<method name="get_item_mask" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the item mask of the Light2D.
 			</description>
 		</method>
 		<method name="set_item_shadow_mask">
 			<argument index="0" name="item_shadow_mask" type="int">
 			</argument>
 			<description>
+			Set the item shadow mask to 'item_shadow_mask' value.
 			</description>
 		</method>
 		<method name="get_item_shadow_mask" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the item shadow mask of the Light2D.
 			</description>
 		</method>
 		<method name="set_mode">
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+			Set the behaviour mode of the Light2D. Use constants defined in the constants section.
 			</description>
 		</method>
 		<method name="get_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the current mode set to the Light2D.
 			</description>
 		</method>
 		<method name="set_shadow_enabled">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Enable or disable shadows casting from this Light2D according to the 'enabled' parameter.
 			</description>
 		</method>
 		<method name="is_shadow_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if shadow casting is enabled for this Light2D, else return false.
 			</description>
 		</method>
 		<method name="set_shadow_buffer_size">
 			<argument index="0" name="size" type="int">
 			</argument>
 			<description>
+			Set the shadow buffer size.
 			</description>
 		</method>
 		<method name="get_shadow_buffer_size" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the shadow buffer size.
 			</description>
 		</method>
 		<method name="set_shadow_esm_multiplier">
 			<argument index="0" name="multiplier" type="float">
 			</argument>
 			<description>
+			Set the Exponential Shadow Multiplier (ESM) value of the Light2D.
 			</description>
 		</method>
 		<method name="get_shadow_esm_multiplier" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the Exponential Shadow Multiplier (ESM) value of the Light2D. 
 			</description>
 		</method>
 		<method name="set_shadow_color">
 			<argument index="0" name="shadow_color" type="Color">
 			</argument>
 			<description>
+			Set the color of casted shadows for this Light2D.
 			</description>
 		</method>
 		<method name="get_shadow_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
+			Return the color of casted shadows for this Light2D.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="MODE_ADD" value="0">
+		Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behaviour of a light.
 		</constant>
 		<constant name="MODE_SUB" value="1">
+		Substract the value of pixels corresponding to the Light2D to the values of pixels under it, resulting in inversed light effect.
 		</constant>
 		<constant name="MODE_MIX" value="2">
+		Mix the value of pixels corresponding to the Light2D to the values of pixels under it by linear interpolation.
 		</constant>
 		<constant name="MODE_MASK" value="3">
+		The light texture of the Light2D is used as a mask, hiding or revealing parts of the screen underneath depending on the value of each pixel of the light (mask) texture.
 		</constant>
 	</constants>
 </class>
 <class name="LightOccluder2D" inherits="Node2D" category="Core">
 	<brief_description>
+	Occludes light cast by a Light2D, thus casting shadows.
 	</brief_description>
 	<description>
+	Occludes light cast by a Light2D, thus casting shadows. The LightOccluder2D must be provided with a shape (see OccluderPolygon2D) that allows the shadow to be computed. This shape affects the resulting shadow, while the shape of the representating asset shadowed does not actually affect shadows.
 	</description>
 	<methods>
 		<method name="set_occluder_polygon">
 			<argument index="0" name="polygon" type="OccluderPolygon2D">
 			</argument>
 			<description>
+			Set the OccluderPolygon2D that defines the LightOccluder2D.
 			</description>
 		</method>
 		<method name="get_occluder_polygon" qualifiers="const">
 			<return type="OccluderPolygon2D">
 			</return>
 			<description>
+			Return the OccluderPolygon2D that defines the LightOccluder2D.
 			</description>
 		</method>
 		<method name="set_occluder_light_mask">
 			<argument index="0" name="mask" type="int">
 			</argument>
 			<description>
+			Set the LightOccluder2D light mask. The LightOccluder2D will cast shadows only from Light2Ds that belong to the same light mask(s).
 			</description>
 		</method>
 		<method name="get_occluder_light_mask" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the light mask of the LightOccluder2D.
 			</description>
 		</method>
 	</methods>
