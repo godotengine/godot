@@ -76,6 +76,7 @@ class ShaderEditor : public Control {
 		EDIT_SELECT_ALL,
 		SEARCH_FIND,
 		SEARCH_FIND_NEXT,
+		SEARCH_FIND_PREV,
 		SEARCH_REPLACE,
 		//SEARCH_LOCATE_SYMBOL,
 		SEARCH_GOTO_LINE,
@@ -88,7 +89,6 @@ class ShaderEditor : public Control {
 	uint64_t idle;
 
 	TabContainer *tab_container;
-	FindReplaceDialog *find_replace_dialog;
 	GotoLineDialog *goto_line_dialog;
 	ConfirmationDialog *erase_tab_confirm;
 

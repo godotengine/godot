@@ -144,6 +144,7 @@ class ScriptEditor : public VBoxContainer {
 		EDIT_CLONE_DOWN,
 		SEARCH_FIND,
 		SEARCH_FIND_NEXT,
+		SEARCH_FIND_PREV,
 		SEARCH_REPLACE,
 		SEARCH_LOCATE_FUNCTION,
 		SEARCH_GOTO_LINE,
@@ -184,7 +185,6 @@ class ScriptEditor : public VBoxContainer {
 	HSplitContainer *script_split;
 	TabContainer *tab_container;
 	EditorFileDialog *file_dialog;
-	FindReplaceDialog *find_replace_dialog;
 	GotoLineDialog *goto_line_dialog;
 	ConfirmationDialog *erase_tab_confirm;
 	ScriptCreateDialog *script_create_dialog;
