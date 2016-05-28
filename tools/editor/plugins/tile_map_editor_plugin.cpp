@@ -1214,8 +1214,6 @@ void TileMapEditor::_tileset_settings_changed() {
 
 void TileMapEditor::_icon_size_changed(float p_value) {
 	if (node) {
-		//Size2 size = node->get_cell_size() * p_value;
-		//palette->set_min_icon_size(size + Size2(4, 0)); //4px gap between tiles
 		palette->set_icon_scale(p_value);
 		_update_palette();
 	}
