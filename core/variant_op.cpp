@@ -861,7 +861,6 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 		} break;
 		//logic
 		case OP_AND: {
-
 			bool l = p_a.booleanize(r_valid);
 			if (!r_valid)
 				return;
@@ -978,6 +977,8 @@ Variant Variant::get_named(const StringName& p_index, bool *r_valid) const {
 			int index = p_index;\
 			m_type *arr=reinterpret_cast<m_type* >(_data._mem);\
 \
+			if (index<0)\
+				index += arr->size();\
 			if (index>=0 && index<arr->size()) {\
 				valid=true;\
 				cmd;\
@@ -1011,7 +1012,10 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 			int idx=p_index;
 			String *str=reinterpret_cast<String*>(_data._mem);
-			if (idx <0 || idx>=str->length())
+			int len = str->length();
+			if (idx<0)
+				idx += len;
+			if (idx<0 || idx>=len)
 				return;
 
 			String chr;
@@ -1025,7 +1029,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 				return;
 			}
 
-			*str = str->substr(0,idx)+chr+str->substr(idx+1,str->length());
+			*str = str->substr(0,idx)+chr+str->substr(idx+1, len);
 			valid=true;
 			return;
 
@@ -1040,6 +1044,8 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 				// scalar index
 				int idx=p_index;
 
+				if (idx<0)
+					idx += 2;
 				if (idx>=0 && idx<2) {
 
 					Vector2 *v=reinterpret_cast<Vector2*>(_data._mem);
@@ -1098,6 +1104,8 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 				int index = p_index;
 
+				if (index<0)
+					index += 3;
 				if (index>=0 && index<3) {
 					Matrix32 *v=_data._matrix32;
 
@@ -1134,6 +1142,8 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 				//scalar index
 				int idx=p_index;
+				if (idx<0)
+					idx += 3;
 				if (idx>=0 && idx<3) {
 
 					Vector3 *v=reinterpret_cast<Vector3*>(_data._mem);
@@ -1268,6 +1278,8 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 				int index = p_index;
 
+				if (index<0)
+					index += 3;
 				if (index>=0 && index<3) {
 					Matrix3 *v=_data._matrix3;
 
@@ -1306,6 +1318,8 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 				int index = p_index;
 
+				if (index<0)
+					index += 4;
 				if (index>=0 && index<4) {
 					Transform *v=_data._transform;
 					valid=true;
@@ -1394,6 +1408,8 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 			} else if (p_index.get_type()==Variant::INT) {
 
 				int idx = p_index;
+				if (idx<0)
+					idx += 4;
 				if (idx>=0 || idx<4) {
 					Color *v=reinterpret_cast<Color*>(_data._mem);
 					(*v)[idx]=p_value;
@@ -1841,6 +1857,8 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 
 				int idx=p_index;
 				const String *str=reinterpret_cast<const String*>(_data._mem);
+				if (idx<0)
+					idx += str->length();
 				if (idx >=0 && idx<str->length()) {
 
 					valid=true;
@@ -1854,6 +1872,8 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 				// scalar index
 				int idx=p_index;
+				if (idx<0)
+					idx += 2;
 				if (idx>=0 && idx<2) {
 
 					const Vector2 *v=reinterpret_cast<const Vector2*>(_data._mem);
@@ -1899,6 +1919,8 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 				//scalar index
 				int idx=p_index;
+				if (idx<0)
+					idx += 3;
 				if (idx>=0 && idx<3) {
 
 					const Vector3 *v=reinterpret_cast<const Vector3*>(_data._mem);
@@ -1929,6 +1951,8 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 
 				int index = p_index;
 
+				if (index<0)
+					index += 3;
 				if (index>=0 && index<3) {
 					const Matrix32 *v=_data._matrix32;
 
@@ -2024,7 +2048,8 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 
 				int index = p_index;
-
+				if (index<0)
+					index += 3;
 				if (index>=0 && index<3) {
 					const Matrix3 *v=_data._matrix3;
 
@@ -2054,7 +2079,8 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 
 				int index = p_index;
-
+				if (index<0)
+					index += 4;
 				if (index>=0 && index<4) {
 					const Transform *v=_data._transform;
 					valid=true;
@@ -2118,6 +2144,8 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 			}  else if (p_index.get_type()==Variant::INT) {
 
 				int idx = p_index;
+				if (idx<0)
+					idx += 4;
 				if (idx>=0 || idx<4) {
 					const Color *v=reinterpret_cast<const Color*>(_data._mem);
 					valid=true;
