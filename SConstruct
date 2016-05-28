@@ -396,14 +396,25 @@ if selected_platform in platform_list:
 		AddToVSProject(env.servers_sources)
 		AddToVSProject(env.tool_sources)
 
+		# this env flag won't work, it needs to be set in env_base=Environment(MSVC_VERSION='9.0')
+		# Even then, SCons still seems to ignore it and builds with the latest MSVC...
+		# That said, it's not needed to be set so far but I'm leaving it here so that this comment
+		# has a purpose.
 		#env['MSVS_VERSION']='9.0'
-		env['MSVSBUILDCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
-		env['MSVSREBUILDCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes vsproj=true"
-		env['MSVSCLEANCOM'] = "scons --clean platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
-
-		debug_variants = ['Debug|Win32']+['Debug|x64']
-		release_variants = ['Release|Win32']+['Release|x64']
-		release_debug_variants = ['Release_Debug|Win32']+['Release_Debug|x64']
+		
+		
+		# Calls a CMD with /C(lose) and /V(delayed environment variable expansion) options.
+		# And runs vcvarsall bat for the propper arhitecture and scons for propper configuration
+		env['MSVSBUILDCOM'] = 'cmd /V /C set "plat=$(PlatformTarget)" ^& (if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64")) ^& set "tools=yes" ^& (if "$(Configuration)"=="release" (set "tools=no")) ^& call "$(VCInstallDir)vcvarsall.bat" !plat! ^& scons platform=windows target=$(Configuration) tools=!tools! -j2'
+		env['MSVSREBUILDCOM'] = 'cmd /V /C set "plat=$(PlatformTarget)" ^& (if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64")) ^& set "tools=yes" ^& (if "$(Configuration)"=="release" (set "tools=no")) & call "$(VCInstallDir)vcvarsall.bat" !plat! ^& scons platform=windows target=$(Configuration) tools=!tools! vsproj=yes -j2'
+		env['MSVSCLEANCOM'] = 'cmd /V /C set "plat=$(PlatformTarget)" ^& (if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64")) ^& set "tools=yes" ^& (if "$(Configuration)"=="release" (set "tools=no")) ^& call "$(VCInstallDir)vcvarsall.bat" !plat! ^& scons --clean platform=windows target=$(Configuration) tools=!tools! -j2'
+		
+		# This version information (Win32, x64, Debug, Release, Release_Debug seems to be
+		# required for Visual Studio to understand that it needs to generate an NMAKE
+		# project. Do not modify without knowing what you are doing.
+		debug_variants = ['debug|Win32']+['debug|x64']
+		release_variants = ['release|Win32']+['release|x64']
+		release_debug_variants = ['release_debug|Win32']+['release_debug|x64']
 		variants = debug_variants + release_variants + release_debug_variants
 		debug_targets = ['Debug']+['Debug']
 		release_targets = ['Release']+['Release']
