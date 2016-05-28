@@ -105,6 +105,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	last_timestamp=0;
 	last_mouse_pos_valid=false;
 	last_keyrelease_time=0;
+	xdnd_version = 0;
 
 	if (get_render_thread_mode()==RENDER_SEPARATE_THREAD) {
 		XInitThreads();
@@ -415,6 +416,19 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	}
 	set_cursor_shape(CURSOR_BUSY);
 
+	//Set Xdnd (drag & drop) support
+	Atom XdndAware = XInternAtom(x11_display, "XdndAware", False);
+	Atom version=5;
+	XChangeProperty(x11_display, x11_window, XdndAware, XA_ATOM, 32, PropModeReplace, (unsigned char*)&version, 1);
+
+	xdnd_enter = XInternAtom(x11_display, "XdndEnter", False);
+	xdnd_position = XInternAtom(x11_display, "XdndPosition", False);
+	xdnd_status = XInternAtom(x11_display, "XdndStatus", False);
+	xdnd_action_copy = XInternAtom(x11_display, "XdndActionCopy", False);
+	xdnd_drop = XInternAtom(x11_display, "XdndDrop", False);
+	xdnd_finished = XInternAtom(x11_display, "XdndFinished", False);
+	xdnd_selection = XInternAtom(x11_display, "XdndSelection", False);
+	requested = None;
 
 	visual_server->init();
 	//
@@ -1166,6 +1180,21 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	input->parse_input_event( event);
 }
 
+static Atom pick_target_from_atoms(Display* p_disp, Atom p_t1, Atom p_t2, Atom p_t3) {
+
+	static const char* target_type = "text/uri-list";
+	if (p_t1 != None && String(XGetAtomName(p_disp, p_t1)) == target_type)
+		return p_t1;
+
+	if (p_t2 != None && String(XGetAtomName(p_disp, p_t2)) == target_type)
+		return p_t2;
+
+	if (p_t3 != None && String(XGetAtomName(p_disp, p_t3)) == target_type)
+		return p_t3;
+
+	return None;
+}
+
 void OS_X11::process_xevents() {
 
 	//printf("checking events %i\n", XPending(x11_display));
@@ -1456,11 +1485,108 @@ void OS_X11::process_xevents() {
 			XFlush (x11_display);
 		} break;
 
+		case SelectionNotify:
+
+			if (event.xselection.target == requested) {
+
+				Atom actual_type;
+				int actual_format;
+				unsigned long nitems;
+				unsigned long bytes_after;
+				unsigned char *ret=0;
+
+				int read_bytes = 1024;
+
+				//Keep trying to read the property until there are no
+				//bytes unread.
+				do
+				{
+					if(ret != 0)
+						XFree(ret);
+					XGetWindowProperty(x11_display, x11_window, XInternAtom(x11_display, "PRIMARY", 0), 0, read_bytes, False, AnyPropertyType,
+									   &actual_type, &actual_format, &nitems, &bytes_after,
+									   &ret);
+
+					read_bytes *= 2;
+				}while(bytes_after != 0);
+
+				Vector<String> files = String((char *)ret).split("\n", false);
+				for (int i = 0; i < files.size(); i++) {
+					files[i] = files[i].replace("file://", "").replace("%20", " ").strip_escapes();
+				}
+				main_loop->drop_files(files);
+
+				//Reply that all is well.
+				XClientMessageEvent m;
+				memset(&m, sizeof(m), 0);
+				m.type = ClientMessage;
+				m.display = x11_display;
+				m.window = xdnd_source_window;
+				m.message_type = xdnd_finished;
+				m.format=32;
+				m.data.l[0] = x11_window;
+				m.data.l[1] = 1;
+				m.data.l[2] = xdnd_action_copy; //We only ever copy.
+
+				XSendEvent(x11_display, xdnd_source_window, False, NoEventMask, (XEvent*)&m);
+			}
+			break;
 
 		case ClientMessage:
 
 			if ((unsigned int)event.xclient.data.l[0]==(unsigned int)wm_delete)
 				main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
+
+			else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_enter) {
+
+				//File(s) have been dragged over the window, check for supported target (text/uri-list)
+				xdnd_version = ( event.xclient.data.l[1] >> 24);
+				requested = pick_target_from_atoms(x11_display, event.xclient.data.l[2],event.xclient.data.l[3], event.xclient.data.l[4]);
+			}
+			else if ((unsigned int)event.xclient.message_type == (unsigned int )xdnd_position) {
+
+				//xdnd position event, reply with an XDND status message
+				//just depending on type of data for now
+				XClientMessageEvent m;
+				memset(&m, sizeof(m), 0);
+				m.type = ClientMessage;
+				m.display = event.xclient.display;
+				m.window = event.xclient.data.l[0];
+				m.message_type = xdnd_status;
+				m.format=32;
+				m.data.l[0] = x11_window;
+				m.data.l[1] = (requested != None);
+				m.data.l[2] = 0; //empty rectangle
+				m.data.l[3] = 0;
+				m.data.l[4] = xdnd_action_copy;
+
+				XSendEvent(x11_display, event.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
+				XFlush(x11_display);
+			}
+			else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_drop) {
+
+				if (requested != None) {
+					xdnd_source_window = event.xclient.data.l[0];
+					if(xdnd_version >= 1)
+						XConvertSelection(x11_display, xdnd_selection, requested, XInternAtom(x11_display, "PRIMARY", 0), x11_window, event.xclient.data.l[2]);
+					else
+						XConvertSelection(x11_display, xdnd_selection, requested, XInternAtom(x11_display, "PRIMARY", 0), x11_window, CurrentTime);
+				}
+				else {
+					//Reply that we're not interested.
+					XClientMessageEvent m;
+					memset(&m, sizeof(m), 0);
+					m.type = ClientMessage;
+					m.display = event.xclient.display;
+					m.window = event.xclient.data.l[0];
+					m.message_type = xdnd_finished;
+					m.format=32;
+					m.data.l[0] = x11_window;
+					m.data.l[1] = 0;
+					m.data.l[2] = None; //Failed.
+					XSendEvent(x11_display, event.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
+				}
+			}
 			break;
 		default:
 			break;
