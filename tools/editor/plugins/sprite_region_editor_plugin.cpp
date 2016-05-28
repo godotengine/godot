@@ -386,6 +386,7 @@ void SpriteRegionEditor::_edit_node()
 
 	rect=node->get_region_rect();
 	dlg_editor->popup_centered_ratio(0.85);
+	dlg_editor->get_ok()->release_focus();
 }
 
 inline float _snap_scalar(float p_offset, float p_step, float p_target) {
