@@ -948,6 +948,15 @@ Ref<CanvasItemMaterial> CanvasItem::get_material() const{
 	return material;
 }
 
+Vector2 CanvasItem::make_canvas_pos_local(const Vector2& screen_point) const {
+
+	ERR_FAIL_COND_V(!is_inside_tree(),screen_point);
+
+	Matrix32 local_matrix = (get_canvas_transform() * 
+			get_global_transform()).affine_inverse();
+
+	return local_matrix.xform(screen_point);
+}
 
 InputEvent CanvasItem::make_input_local(const InputEvent& p_event) const {
 
@@ -1052,6 +1061,8 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_use_parent_material","enable"),&CanvasItem::set_use_parent_material);
 	ObjectTypeDB::bind_method(_MD("get_use_parent_material"),&CanvasItem::get_use_parent_material);
 
+	ObjectTypeDB::bind_method(_MD("make_canvas_pos_local","screen_point"),
+			&CanvasItem::make_canvas_pos_local);
 	ObjectTypeDB::bind_method(_MD("make_input_local","event"),&CanvasItem::make_input_local);
 
 	BIND_VMETHOD(MethodInfo("_draw"));
