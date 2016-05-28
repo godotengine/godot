@@ -1892,7 +1892,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					if (completion_hint!="") {
 						completion_hint="";
 						update();
-
+					} else {
+						scancode_handled=false;
 					}
 				} break;
 				case KEY_TAB: {
