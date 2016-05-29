@@ -32,6 +32,7 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 	String signature;
 	String copyright;
 	bool use64;
+	bool useFat;
 	bool high_resolution;
 
 	Ref<ImageTexture> logo;
@@ -95,6 +96,8 @@ bool EditorExportPlatformOSX::_set(const StringName& p_name, const Variant& p_va
 		copyright=p_value;
 	else if (n=="application/64_bits")
 		use64=p_value;
+	else if (n=="application/fat_bits")
+		useFat=p_value;
 	else if (n=="display/high_res")
 		high_resolution=p_value;
 	else
@@ -129,6 +132,8 @@ bool EditorExportPlatformOSX::_get(const StringName& p_name,Variant &r_ret) cons
 		r_ret=copyright;
 	else if (n=="application/64_bits")
 		r_ret=use64;
+	else if (n=="application/fat_bits")
+		r_ret=useFat;
 	else if (n=="display/high_res")
 		r_ret=high_resolution;
 	else
@@ -150,6 +155,7 @@ void EditorExportPlatformOSX::_get_property_list( List<PropertyInfo> *p_list) co
 	p_list->push_back( PropertyInfo( Variant::STRING, "application/version") );
 	p_list->push_back( PropertyInfo( Variant::STRING, "application/copyright") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "application/64_bits") );
+	p_list->push_back( PropertyInfo( Variant::BOOL, "application/fat_bits") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "display/high_res") );
 
 
@@ -287,7 +293,7 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 	io2.opaque=&dst_f;
 	zipFile	dpkg=zipOpen2(p_path.utf8().get_data(),APPEND_STATUS_CREATE,NULL,&io2);
 
-	String binary_to_use="godot_osx_"+String(p_debug?"debug":"release")+"."+String(use64?"64":"32");
+	String binary_to_use="godot_osx_"+String(p_debug?"debug":"release")+"."+String(useFat?"fat":use64?"64":"32");
 
 	print_line("binary: "+binary_to_use);
 	String pkg_name;
@@ -459,6 +465,7 @@ EditorExportPlatformOSX::EditorExportPlatformOSX() {
 	short_version="1.0";
 	version="1.0";
 	use64=false;
+	useFat=false;
 	high_resolution=false;
 
 }
