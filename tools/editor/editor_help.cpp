@@ -1659,6 +1659,7 @@ EditorHelp::EditorHelp() {
 		pc->add_child(class_desc);
 		class_desc->set_area_as_parent_rect(8);
 		class_desc->connect("meta_clicked",this,"_class_desc_select");
+		class_desc->connect("meta_mouse_hovering",this,"_class_desc_select");
 	}
 
 	class_desc->get_v_scroll()->connect("value_changed",this,"_scroll_changed");

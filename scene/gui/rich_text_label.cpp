@@ -831,13 +831,17 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2& p_pos) const 
 
 	int line=0;
 	Item *item=NULL;
+ 
 
 	((RichTextLabel*)(this))->_find_click(main,p_pos,&item,&line);
 
-
-	if (item && ((RichTextLabel*)(this))->_find_meta(item,NULL))
+	Variant meta;
+	if (item && ((RichTextLabel*)(this))->_find_meta(item,&meta)){
+		if(meta_interactive) {
+		      ((RichTextLabel*)(this))->emit_signal("meta_mouse_hovering", meta);
+		}
 		return CURSOR_POINTING_HAND;
-
+	}
 	return CURSOR_ARROW;
 }
 
@@ -857,7 +861,6 @@ void RichTextLabel::_input_event(InputEvent p_event) {
 
 				if (true) {
 
-
 					if (b.pressed && !b.doubleclick) {
 						int line=0;
 						Item *item=NULL;
@@ -872,6 +875,7 @@ void RichTextLabel::_input_event(InputEvent p_event) {
 								//meta clicked
 
 								emit_signal("meta_clicked",meta);
+								
 							} else if (selection.enabled) {
 
 								selection.click=item;
@@ -1928,6 +1932,12 @@ void RichTextLabel::set_use_bbcode(bool p_enable) {
 		parse_bbcode(bbcode);
 }
 
+void RichTextLabel::set_meta_interactive(bool p_enable) {
+	if (meta_interactive==p_enable)
+		return;
+	meta_interactive=p_enable;
+}
+
 bool RichTextLabel::is_using_bbcode() const {
 
 	return use_bbcode;
@@ -1986,12 +1996,14 @@ void RichTextLabel::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_use_bbcode","enable"),&RichTextLabel::set_use_bbcode);
 	ObjectTypeDB::bind_method(_MD("is_using_bbcode"),&RichTextLabel::is_using_bbcode);
+	ObjectTypeDB::bind_method(_MD("set_meta_interactive","enable"),&RichTextLabel::set_meta_interactive);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"bbcode/enabled"),_SCS("set_use_bbcode"),_SCS("is_using_bbcode"));
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"bbcode/bbcode",PROPERTY_HINT_MULTILINE_TEXT),_SCS("set_bbcode"),_SCS("get_bbcode"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"visible_characters",PROPERTY_HINT_RANGE,"-1,128000,1"),_SCS("set_visible_characters"),_SCS("get_visible_characters"));
 
 	ADD_SIGNAL( MethodInfo("meta_clicked",PropertyInfo(Variant::NIL,"meta")));
+	ADD_SIGNAL( MethodInfo("meta_mouse_hovering",PropertyInfo(Variant::NIL,"meta")));
 
 	BIND_CONSTANT( ALIGN_LEFT );
 	BIND_CONSTANT( ALIGN_CENTER );
@@ -2070,7 +2082,7 @@ RichTextLabel::RichTextLabel() {
 	vscroll->hide();
 	current_idx=1;
 	use_bbcode=false;
-
+	meta_interactive=false;
 	selection.click=NULL;
 	selection.active=false;
 	selection.enabled=false;
