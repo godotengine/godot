@@ -329,6 +329,7 @@ void NavigationMeshInstance::set_navigation_mesh(const Ref<NavigationMesh>& p_na
 		nav_id = navigation->navmesh_create(navmesh,get_relative_transform(navigation),this);
 	}
 	update_gizmo();
+	update_configuration_warning();
 
 }
 
@@ -336,6 +337,27 @@ Ref<NavigationMesh> NavigationMeshInstance::get_navigation_mesh() const{
 
 	return navmesh;
 }
+
+String NavigationMeshInstance::get_configuration_warning() const {
+
+	if (!is_visible() || !is_inside_tree())
+		return String();
+
+	if (!navmesh.is_valid()) {
+		return TTR("A NavigationMesh resource must be set or created for this node to work.");
+	}
+	const Spatial *c=this;
+	while(c) {
+
+		if (c->cast_to<Navigation>())
+			return String();
+
+		c=c->get_parent()->cast_to<Spatial>();
+	}
+
+	return TTR("NavigationMeshInstance must be a child or grandchild to a Navigation node. It only provides navigation data.");
+}
+
 
 void NavigationMeshInstance::_bind_methods() {
 

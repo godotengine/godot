@@ -195,6 +195,21 @@ public:
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const=0;
 	virtual void get_public_constants(List<Pair<String,Variant> > *p_constants) const=0;
 
+	struct ProfilingInfo {
+		StringName signature;
+		uint64_t call_count;
+		uint64_t total_time;
+		uint64_t self_time;
+
+	};
+
+	virtual void profiling_start()=0;
+	virtual void profiling_stop()=0;
+
+	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr,int p_info_max)=0;
+	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr,int p_info_max)=0;
+
+
 	virtual void frame();
 
 	virtual ~ScriptLanguage() {};
@@ -308,6 +323,13 @@ public:
 
 	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata) {}
 	virtual void set_live_edit_funcs(LiveEditFuncs *p_funcs) {}
+
+	virtual bool is_profiling() const=0;
+	virtual void add_profiling_frame_data(const StringName& p_name,const Array& p_data)=0;
+	virtual void profiling_start()=0;
+	virtual void profiling_end()=0;
+	virtual void profiling_set_frame_times(float p_frame_time,float p_idle_time,float p_fixed_time,float p_fixed_frame_time)=0;
+
 
 	ScriptDebugger();
 	virtual ~ScriptDebugger() {singleton=NULL;}

@@ -78,14 +78,20 @@ void ShaderTextEditor::_load_theme_settings() {
 
 	get_text_edit()->set_custom_bg_color(EDITOR_DEF("text_editor/background_color",Color(0,0,0,0)));
 	get_text_edit()->add_color_override("font_color",EDITOR_DEF("text_editor/text_color",Color(0,0,0)));
+	get_text_edit()->add_color_override("line_number_color",EDITOR_DEF("text_editor/line_number_color",Color(0,0,0)));
+	get_text_edit()->add_color_override("caret_color",EDITOR_DEF("text_editor/caret_color",Color(0,0,0)));
 	get_text_edit()->add_color_override("font_selected_color",EDITOR_DEF("text_editor/text_selected_color",Color(1,1,1)));
 	get_text_edit()->add_color_override("selection_color",EDITOR_DEF("text_editor/selection_color",Color(0.2,0.2,1)));
 	get_text_edit()->add_color_override("brace_mismatch_color",EDITOR_DEF("text_editor/brace_mismatch_color",Color(1,0.2,0.2)));
 	get_text_edit()->add_color_override("current_line_color",EDITOR_DEF("text_editor/current_line_color",Color(0.3,0.5,0.8,0.15)));
+	get_text_edit()->add_color_override("word_highlighted_color",EDITOR_DEF("text_editor/word_highlighted_color",Color(0.8,0.9,0.9,0.15)));
+	get_text_edit()->add_color_override("number_color",EDITOR_DEF("text_editor/number_color",Color(0.9,0.6,0.0,2)));
+	get_text_edit()->add_color_override("function_color",EDITOR_DEF("text_editor/function_color",Color(0.4,0.6,0.8)));
+	get_text_edit()->add_color_override("member_variable_color",EDITOR_DEF("text_editor/member_variable_color",Color(0.9,0.3,0.3)));
+	get_text_edit()->add_color_override("mark_color", EDITOR_DEF("text_editor/mark_color", Color(1.0,0.4,0.4,0.4)));
+	get_text_edit()->add_color_override("breakpoint_color", EDITOR_DEF("text_editor/breakpoint_color", Color(0.8,0.8,0.4,0.2)));
 
 	Color keyword_color= EDITOR_DEF("text_editor/keyword_color",Color(0.5,0.0,0.2));
-
-	get_text_edit()->set_syntax_coloring(true);
 
 
 	List<String> keywords;
@@ -355,9 +361,42 @@ void ShaderEditor::_params_changed() {
 	light_editor->_validate_script();
 }
 
+void ShaderEditor::_editor_settings_changed() {
+
+		vertex_editor->get_text_edit()->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/auto_brace_complete"));
+		vertex_editor->get_text_edit()->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/scroll_past_end_of_file"));
+		vertex_editor->get_text_edit()->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
+		vertex_editor->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
+		vertex_editor->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
+		vertex_editor->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
+		vertex_editor->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
+		vertex_editor->get_text_edit()->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/caret_blink"));
+		vertex_editor->get_text_edit()->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/caret_blink_speed"));
+
+		fragment_editor->get_text_edit()->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/auto_brace_complete"));
+		fragment_editor->get_text_edit()->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/scroll_past_end_of_file"));
+		fragment_editor->get_text_edit()->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
+		fragment_editor->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
+		fragment_editor->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
+		fragment_editor->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
+		fragment_editor->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
+		fragment_editor->get_text_edit()->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/caret_blink"));
+		fragment_editor->get_text_edit()->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/caret_blink_speed"));
+
+		light_editor->get_text_edit()->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/auto_brace_complete"));
+		light_editor->get_text_edit()->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/scroll_past_end_of_file"));
+		light_editor->get_text_edit()->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
+		light_editor->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
+		light_editor->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
+		light_editor->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
+		light_editor->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
+		light_editor->get_text_edit()->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/caret_blink"));
+		light_editor->get_text_edit()->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/caret_blink_speed"));
+}
 
 void ShaderEditor::_bind_methods() {
 
+	ObjectTypeDB::bind_method("_editor_settings_changed",&ShaderEditor::_editor_settings_changed);
 	ObjectTypeDB::bind_method("_tab_changed",&ShaderEditor::_tab_changed);
 	ObjectTypeDB::bind_method("_menu_option",&ShaderEditor::_menu_option);
 	ObjectTypeDB::bind_method("_params_changed",&ShaderEditor::_params_changed);
@@ -450,28 +489,28 @@ ShaderEditor::ShaderEditor() {
 	edit_menu = memnew( MenuButton );
 	add_child(edit_menu);
 	edit_menu->set_pos(Point2(5,-1));
-	edit_menu->set_text("Edit");
-	edit_menu->get_popup()->add_item("Undo",EDIT_UNDO,KEY_MASK_CMD|KEY_Z);
-	edit_menu->get_popup()->add_item("Redo",EDIT_REDO,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_Z);
+	edit_menu->set_text(TTR("Edit"));
+	edit_menu->get_popup()->add_item(TTR("Undo"),EDIT_UNDO,KEY_MASK_CMD|KEY_Z);
+	edit_menu->get_popup()->add_item(TTR("Redo"),EDIT_REDO,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_Z);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_item("Cut",EDIT_CUT,KEY_MASK_CMD|KEY_X);
-	edit_menu->get_popup()->add_item("Copy",EDIT_COPY,KEY_MASK_CMD|KEY_C);
-	edit_menu->get_popup()->add_item("Paste",EDIT_PASTE,KEY_MASK_CMD|KEY_V);
+	edit_menu->get_popup()->add_item(TTR("Cut"),EDIT_CUT,KEY_MASK_CMD|KEY_X);
+	edit_menu->get_popup()->add_item(TTR("Copy"),EDIT_COPY,KEY_MASK_CMD|KEY_C);
+	edit_menu->get_popup()->add_item(TTR("Paste"),EDIT_PASTE,KEY_MASK_CMD|KEY_V);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_item("Select All",EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
+	edit_menu->get_popup()->add_item(TTR("Select All"),EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
 	edit_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 
 	search_menu = memnew( MenuButton );
 	add_child(search_menu);
 	search_menu->set_pos(Point2(38,-1));
-	search_menu->set_text("Search");
-	search_menu->get_popup()->add_item("Find..",SEARCH_FIND,KEY_MASK_CMD|KEY_F);
-	search_menu->get_popup()->add_item("Find Next",SEARCH_FIND_NEXT,KEY_F3);
-	search_menu->get_popup()->add_item("Replace..",SEARCH_REPLACE,KEY_MASK_CMD|KEY_R);
+	search_menu->set_text(TTR("Search"));
+	search_menu->get_popup()->add_item(TTR("Find.."),SEARCH_FIND,KEY_MASK_CMD|KEY_F);
+	search_menu->get_popup()->add_item(TTR("Find Next"),SEARCH_FIND_NEXT,KEY_F3);
+	search_menu->get_popup()->add_item(TTR("Replace.."),SEARCH_REPLACE,KEY_MASK_CMD|KEY_R);
 	search_menu->get_popup()->add_separator();
 //	search_menu->get_popup()->add_item("Locate Symbol..",SEARCH_LOCATE_SYMBOL,KEY_MASK_CMD|KEY_K);
-	search_menu->get_popup()->add_item("Goto Line..",SEARCH_GOTO_LINE,KEY_MASK_CMD|KEY_G);
+	search_menu->get_popup()->add_item(TTR("Goto Line.."),SEARCH_GOTO_LINE,KEY_MASK_CMD|KEY_G);
 	search_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 
@@ -490,15 +529,15 @@ ShaderEditor::ShaderEditor() {
 
 	vertex_editor = memnew( ShaderTextEditor );
 	tab_container->add_child(vertex_editor);
-	vertex_editor->set_name("Vertex");
+	vertex_editor->set_name(TTR("Vertex"));
 
 	fragment_editor = memnew( ShaderTextEditor );
 	tab_container->add_child(fragment_editor);
-	fragment_editor->set_name("Fragment");
+	fragment_editor->set_name(TTR("Fragment"));
 
 	light_editor = memnew( ShaderTextEditor );
 	tab_container->add_child(light_editor);
-	light_editor->set_name("Lighting");
+	light_editor->set_name(TTR("Lighting"));
 
 	tab_container->set_current_tab(1);
 
@@ -506,6 +545,9 @@ ShaderEditor::ShaderEditor() {
 	vertex_editor->connect("script_changed", this,"apply_shaders");
 	fragment_editor->connect("script_changed", this,"apply_shaders");
 	light_editor->connect("script_changed", this,"apply_shaders");
+	EditorSettings::get_singleton()->connect("settings_changed",this,"_editor_settings_changed");
+
+	_editor_settings_changed();
 }
 
 

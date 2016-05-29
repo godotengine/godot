@@ -251,8 +251,17 @@ void CreateDialog::_notification(int p_what) {
 void CreateDialog::set_base_type(const String& p_base) {
 
 	base_type=p_base;
-	set_title("Create New "+p_base);
+	set_title(TTR("Create New")+" "+p_base);
 	_update_search();
+}
+
+String CreateDialog::get_selected_type() {
+
+	TreeItem *selected = search_options->get_selected();
+	if (selected)
+		return selected->get_text(0);
+	else
+		return String();
 }
 
 Object *CreateDialog::instance_selected() {
@@ -316,12 +325,12 @@ CreateDialog::CreateDialog() {
 	add_child(vbc);
 	set_child_rect(vbc);
 	search_box = memnew( LineEdit );
-	vbc->add_margin_child("Search:",search_box);
+	vbc->add_margin_child(TTR("Search:"),search_box);
 	search_box->connect("text_changed",this,"_text_changed");
 	search_box->connect("input_event",this,"_sbox_input");
 	search_options = memnew( Tree );
-	vbc->add_margin_child("Matches:",search_options,true);
-	get_ok()->set_text("Create");
+	vbc->add_margin_child(TTR("Matches:"),search_options,true);
+	get_ok()->set_text(TTR("Create"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
@@ -541,7 +550,7 @@ void CreateDialog::_bind_methods() {
 
 void CreateDialog::set_base_type(const String& p_base) {
 
-	set_title("Create "+p_base+" Type");
+	set_title(vformat("Create %s Type",p_base));
 
 	if (base==p_base)
 		return;

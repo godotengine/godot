@@ -108,6 +108,8 @@ class RasterizerGLES2 : public Rasterizer {
 	bool use_half_float;
 	bool low_memory_2d;
 
+	bool shrink_textures_x2;
+
 	Vector<float> skel_default;
 
 	Image _get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_internal_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed);
@@ -1068,7 +1070,7 @@ class RasterizerGLES2 : public Rasterizer {
 
 	Plane camera_plane;
 
-	void _add_geometry( const Geometry* p_geometry, const InstanceData *p_instance, const Geometry *p_geometry_cmp, const GeometryOwner *p_owner);
+	void _add_geometry( const Geometry* p_geometry, const InstanceData *p_instance, const Geometry *p_geometry_cmp, const GeometryOwner *p_owner,int p_material=-1);
 	void _render_list_forward(RenderList *p_render_list,const Transform& p_view_transform,const Transform& p_view_transform_inverse, const CameraMatrix& p_projection,bool p_reverse_cull=false,bool p_fragment_light=false,bool p_alpha_pass=false);
 
 	//void _setup_light(LightInstance* p_instance, int p_idx);
@@ -1335,6 +1337,8 @@ public:
 	virtual void texture_set_path(RID p_texture,const String& p_path);
 	virtual String texture_get_path(RID p_texture) const;
 	virtual void texture_debug_usage(List<VS::TextureInfo> *r_info);
+
+	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable);
 
 	GLuint _texture_get_name(RID p_tex);
 

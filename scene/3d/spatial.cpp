@@ -346,14 +346,14 @@ void Spatial::set_translation(const Vector3& p_translation) {
 
 }
 
-void Spatial::set_rotation(const Vector3& p_euler){
+void Spatial::set_rotation(const Vector3& p_euler_rad){
 
 	if (data.dirty&DIRTY_VECTORS) {
 		data.scale=data.local_transform.basis.get_scale();
 		data.dirty&=~DIRTY_VECTORS;
 	}
 
-	data.rotation=p_euler;
+	data.rotation=p_euler_rad;
 	data.dirty|=DIRTY_LOCAL;
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
@@ -361,6 +361,18 @@ void Spatial::set_rotation(const Vector3& p_euler){
 	}
 
 }
+
+void Spatial::set_rotation_deg(const Vector3& p_euler_deg) {
+
+	set_rotation(p_euler_deg * Math_PI / 180.0);
+}
+
+void Spatial::_set_rotation_deg(const Vector3& p_euler_deg) {
+
+	WARN_PRINT("Deprecated method Spatial._set_rotation_deg(): This method was renamed to set_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
+	set_rotation_deg(p_euler_deg);
+}
+
 void Spatial::set_scale(const Vector3& p_scale){
 
 	if (data.dirty&DIRTY_VECTORS) {
@@ -381,6 +393,7 @@ Vector3 Spatial::get_translation() const{
 
 	return data.local_transform.origin;
 }
+
 Vector3 Spatial::get_rotation() const{
 
 	if (data.dirty&DIRTY_VECTORS) {
@@ -391,6 +404,20 @@ Vector3 Spatial::get_rotation() const{
 
 	return data.rotation;
 }
+
+Vector3 Spatial::get_rotation_deg() const {
+
+	return get_rotation() * 180.0 / Math_PI;
+}
+
+// Kept for compatibility after rename to set_rotd.
+// Could be removed after a couple releases.
+Vector3 Spatial::_get_rotation_deg() const {
+
+	WARN_PRINT("Deprecated method Spatial._get_rotation_deg(): This method was renamed to get_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
+	return get_rotation_deg();
+}
+
 Vector3 Spatial::get_scale() const{
 
 	if (data.dirty&DIRTY_VECTORS) {
@@ -493,16 +520,6 @@ void Spatial::set_as_toplevel(bool p_enabled) {
 bool Spatial::is_set_as_toplevel() const{
 
 	return data.toplevel;
-}
-
-void Spatial::_set_rotation_deg(const Vector3& p_deg) {
-
-	set_rotation(p_deg * Math_PI / 180.0);
-}
-
-Vector3 Spatial::_get_rotation_deg() const {
-
-	return get_rotation() * 180.0 / Math_PI;
 }
 
 Ref<World> Spatial::get_world() const {
@@ -722,8 +739,10 @@ void Spatial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_transform"), &Spatial::get_transform);
 	ObjectTypeDB::bind_method(_MD("set_translation","translation"), &Spatial::set_translation);
 	ObjectTypeDB::bind_method(_MD("get_translation"), &Spatial::get_translation);
-	ObjectTypeDB::bind_method(_MD("set_rotation","rotation"), &Spatial::set_rotation);
+	ObjectTypeDB::bind_method(_MD("set_rotation","rotation_rad"), &Spatial::set_rotation);
 	ObjectTypeDB::bind_method(_MD("get_rotation"), &Spatial::get_rotation);
+	ObjectTypeDB::bind_method(_MD("set_rotation_deg","rotation_deg"), &Spatial::set_rotation_deg);
+	ObjectTypeDB::bind_method(_MD("get_rotation_deg"), &Spatial::get_rotation_deg);
 	ObjectTypeDB::bind_method(_MD("set_scale","scale"), &Spatial::set_scale);
 	ObjectTypeDB::bind_method(_MD("get_scale"), &Spatial::get_scale);
 	ObjectTypeDB::bind_method(_MD("set_global_transform","global"), &Spatial::set_global_transform);
@@ -732,9 +751,11 @@ void Spatial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_ignore_transform_notification","enabled"), &Spatial::set_ignore_transform_notification);
 	ObjectTypeDB::bind_method(_MD("set_as_toplevel","enable"), &Spatial::set_as_toplevel);
 	ObjectTypeDB::bind_method(_MD("is_set_as_toplevel"), &Spatial::is_set_as_toplevel);
+	ObjectTypeDB::bind_method(_MD("get_world:World"), &Spatial::get_world);
+
+	// TODO: Obsolete those two methods (old name) properly (GH-4397)
 	ObjectTypeDB::bind_method(_MD("_set_rotation_deg","rotation_deg"), &Spatial::_set_rotation_deg);
 	ObjectTypeDB::bind_method(_MD("_get_rotation_deg"), &Spatial::_get_rotation_deg);
-	ObjectTypeDB::bind_method(_MD("get_world:World"), &Spatial::get_world);
 
 #ifdef TOOLS_ENABLED
 	ObjectTypeDB::bind_method(_MD("_update_gizmo"), &Spatial::_update_gizmo);
@@ -789,7 +810,7 @@ void Spatial::_bind_methods() {
 	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), _SCS("set_global_transform"), _SCS("get_global_transform") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::TRANSFORM,"transform/local",PROPERTY_HINT_NONE,""), _SCS("set_transform"), _SCS("get_transform") );
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/translation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_translation"), _SCS("get_translation") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/rotation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("_set_rotation_deg"), _SCS("_get_rotation_deg") );
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/rotation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_rotation_deg"), _SCS("get_rotation_deg") );
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/rotation_rad",PROPERTY_HINT_NONE,"",0), _SCS("set_rotation"), _SCS("get_rotation") );
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/scale",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_scale"), _SCS("get_scale") );
 	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visibility/visible"), _SCS("_set_visible_"), _SCS("_is_visible_") );

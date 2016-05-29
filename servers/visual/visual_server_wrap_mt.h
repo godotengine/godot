@@ -101,6 +101,8 @@ public:
 	FUNC2(texture_set_path,RID,const String&);
 	FUNC1RC(String,texture_get_path,RID);
 
+	FUNC1(texture_set_shrink_all_x2_on_set_data,bool);
+
 	virtual void texture_debug_usage(List<TextureInfo> *r_info) {
 		//pass directly, should lock the server anyway
 		visual_server->texture_debug_usage(r_info);
@@ -522,6 +524,8 @@ public:
 
 	FUNC3(instance_set_morph_target_weight,RID,int, float);
 	FUNC2RC(float,instance_get_morph_target_weight,RID,int);
+
+	FUNC3(instance_set_surface_material,RID,int, RID);
 
 	FUNC2(instance_set_transform,RID, const Transform&);
 	FUNC1RC(Transform,instance_get_transform,RID);

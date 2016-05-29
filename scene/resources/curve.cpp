@@ -543,6 +543,7 @@ void Curve2D::_bake() const {
 	Vector2 pos=points[0].pos;
 	List<Vector2> pointlist;
 
+	pointlist.push_back(pos); //start always from origin
 
 	for(int i=0;i<points.size()-1;i++) {
 

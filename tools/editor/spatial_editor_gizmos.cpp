@@ -830,14 +830,14 @@ void LightSpatialGizmo::commit_handle(int p_idx,const Variant& p_restore,bool p_
 	} else if (p_idx==0) {
 
 		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-		ur->create_action("Change Light Radius");
+		ur->create_action(TTR("Change Light Radius"));
 		ur->add_do_method(light,"set_parameter",Light::PARAM_RADIUS,light->get_parameter(Light::PARAM_RADIUS));
 		ur->add_undo_method(light,"set_parameter",Light::PARAM_RADIUS,p_restore);
 		ur->commit_action();
 	} else if (p_idx==1) {
 
 		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-		ur->create_action("Change Light Radius");
+		ur->create_action(TTR("Change Light Radius"));
 		ur->add_do_method(light,"set_parameter",Light::PARAM_SPOT_ANGLE,light->get_parameter(Light::PARAM_SPOT_ANGLE));
 		ur->add_undo_method(light,"set_parameter",Light::PARAM_SPOT_ANGLE,p_restore);
 		ur->commit_action();
@@ -1080,7 +1080,7 @@ void CameraSpatialGizmo::commit_handle(int p_idx,const Variant& p_restore,bool p
 			camera->set("fov",p_restore);
 		} else {
 			UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-			ur->create_action("Change Camera FOV");
+			ur->create_action(TTR("Change Camera FOV"));
 			ur->add_do_property(camera,"fov",camera->get_fov());
 			ur->add_undo_property(camera,"fov",p_restore);
 			ur->commit_action();
@@ -1093,7 +1093,7 @@ void CameraSpatialGizmo::commit_handle(int p_idx,const Variant& p_restore,bool p
 			camera->set("size",p_restore);
 		} else {
 			UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-			ur->create_action("Change Camera Size");
+			ur->create_action(TTR("Change Camera Size"));
 			ur->add_do_property(camera,"size",camera->get_size());
 			ur->add_undo_property(camera,"size",p_restore);
 			ur->commit_action();
@@ -1838,7 +1838,7 @@ void CollisionShapeSpatialGizmo::commit_handle(int p_idx,const Variant& p_restor
 		}
 
 		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-		ur->create_action("Change Sphere Shape Radius");
+		ur->create_action(TTR("Change Sphere Shape Radius"));
 		ur->add_do_method(ss.ptr(),"set_radius",ss->get_radius());
 		ur->add_undo_method(ss.ptr(),"set_radius",p_restore);
 		ur->commit_action();
@@ -1854,7 +1854,7 @@ void CollisionShapeSpatialGizmo::commit_handle(int p_idx,const Variant& p_restor
 		}
 
 		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-		ur->create_action("Change Box Shape Extents");
+		ur->create_action(TTR("Change Box Shape Extents"));
 		ur->add_do_method(ss.ptr(),"set_extents",ss->get_extents());
 		ur->add_undo_method(ss.ptr(),"set_extents",p_restore);
 		ur->commit_action();
@@ -1873,11 +1873,11 @@ void CollisionShapeSpatialGizmo::commit_handle(int p_idx,const Variant& p_restor
 
 		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
 		if (p_idx==0) {
-			ur->create_action("Change Capsule Shape Radius");
+			ur->create_action(TTR("Change Capsule Shape Radius"));
 			ur->add_do_method(ss.ptr(),"set_radius",ss->get_radius());
 			ur->add_undo_method(ss.ptr(),"set_radius",p_restore);
 		} else {
-			ur->create_action("Change Capsule Shape Height");
+			ur->create_action(TTR("Change Capsule Shape Height"));
 			ur->add_do_method(ss.ptr(),"set_height",ss->get_height());
 			ur->add_undo_method(ss.ptr(),"set_height",p_restore);
 
@@ -1896,7 +1896,7 @@ void CollisionShapeSpatialGizmo::commit_handle(int p_idx,const Variant& p_restor
 		}
 
 		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-		ur->create_action("Change Ray Shape Length");
+		ur->create_action(TTR("Change Ray Shape Length"));
 		ur->add_do_method(ss.ptr(),"set_length",ss->get_length());
 		ur->add_undo_method(ss.ptr(),"set_length",p_restore);
 		ur->commit_action();
@@ -2243,7 +2243,7 @@ void VisibilityNotifierGizmo::commit_handle(int p_idx,const Variant& p_restore,b
 	}
 
 	UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-	ur->create_action("Change Notifier Extents");
+	ur->create_action(TTR("Change Notifier Extents"));
 	ur->add_do_method(notifier,"set_aabb",notifier->get_aabb());
 	ur->add_undo_method(notifier,"set_aabb",p_restore);
 	ur->commit_action();

@@ -5,7 +5,71 @@ env.add_source_files(env.tool_sources,"*.cpp")
 
 Export('env')
 
+
+def make_translations_header(target,source,env):
+
+
+	dst = target[0].srcnode().abspath
+
+	g = open(dst,"wb")
+
+	
+	""""
+	"""
+
+	g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+	g.write("#ifndef _EDITOR_TRANSLATIONS_H\n")
+	g.write("#define _EDITOR_TRANSLATIONS_H\n")
+
+	xl_names=[]
+	for i in range(len(source)):
+		print("Appending translation: "+source[i].srcnode().abspath)
+		f = open(source[i].srcnode().abspath,"rb")
+		buf = f.read()
+		decomp_size = len(buf)
+		import zlib
+		import os.path
+		buf = zlib.compress(buf)
+
+		name =  os.path.splitext(os.path.basename(source[i].srcnode().abspath))[0]
+
+		#g.write("static const int _translation_"+name+"_compressed_size="+str(len(buf))+";\n")
+		#g.write("static const int _translation_"+name+"_uncompressed_size="+str(decomp_size)+";\n")
+		g.write("static const unsigned char _translation_"+name+"_compressed[]={\n")
+		for i in range(len(buf)):
+			g.write(str(ord(buf[i]))+",\n")
+
+		g.write("};\n")
+
+		xl_names.append([name,len(buf),str(decomp_size)])
+
+	g.write("struct EditorTranslationList {\n")
+	g.write("\tconst char* lang;\n");
+	g.write("\tint comp_size;\n");
+	g.write("\tint uncomp_size;\n");
+	g.write("\tconst unsigned char* data;\n");
+	g.write("};\n\n");
+	g.write("static EditorTranslationList _editor_translations[]={\n")
+	for x in xl_names:
+		g.write("\t{ \""+x[0]+"\", "+str(x[1])+", "+str(x[2])+",_translation_"+x[0]+"_compressed},\n")
+	g.write("\t{NULL,0,0,NULL}\n")
+	g.write("};\n")
+
+	g.write("#endif")
+
+
+
 if (env["tools"]!="no"):
+
+	import glob
+
+	dir = env.Dir('.').abspath
+	tlist = glob.glob(dir + "/translations/*.po")
+
+	print("translations: ",tlist)
+	env.Depends('#tools/editor/translations.h',tlist)
+	env.Command('#tools/editor/translations.h',tlist,make_translations_header)
+
 	SConscript('editor/SCsub');
 	#SConscript('scintilla/SCsub');
 	SConscript('collada/SCsub');

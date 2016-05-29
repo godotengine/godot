@@ -494,7 +494,7 @@ HTTPRequest::HTTPRequest()
 	max_redirects=8;
 	body_len=-1;
 	got_response=false;
-	validate_ssl=false;	
+	validate_ssl=false;
 	use_ssl=false;
 	response_code=0;
 	request_sent=false;

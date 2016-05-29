@@ -34,6 +34,8 @@
 #include "io/resource_saver.h"
 #include "os/thread.h"
 #include "pair.h"
+#include "self_list.h"
+
 class GDInstance;
 class GDScript;
 
@@ -125,10 +127,6 @@ friend class GDCompiler;
 	Vector<StringName> global_names;
 	Vector<int> default_arguments;
 	Vector<int> code;
-#ifdef DEBUG_ENABLED
-	CharString func_cname;
-	const char*_func_cname;
-#endif
 
 #ifdef TOOLS_ENABLED
 	Vector<StringName> arg_names;
@@ -139,8 +137,31 @@ friend class GDCompiler;
 	_FORCE_INLINE_ Variant *_get_variant(int p_address,GDInstance *p_instance,GDScript *p_script,Variant &self,Variant *p_stack,String& r_error) const;
 	_FORCE_INLINE_ String _get_call_error(const Variant::CallError& p_err, const String& p_where,const Variant**argptrs) const;
 
+friend class GDScriptLanguage;
+
+	SelfList<GDFunction> function_list;
+#ifdef DEBUG_ENABLED
+	CharString func_cname;
+	const char*_func_cname;
+
+	struct Profile {
+		StringName signature;
+		uint64_t call_count;
+		uint64_t self_time;
+		uint64_t total_time;
+		uint64_t frame_call_count;
+		uint64_t frame_self_time;
+		uint64_t frame_total_time;
+		uint64_t last_frame_call_count;
+		uint64_t last_frame_self_time;
+		uint64_t last_frame_total_time;
+	} profile;
+
+#endif
 
 public:
+
+
 
 	struct CallState {
 
@@ -190,6 +211,7 @@ public:
 	Variant call(GDInstance *p_instance,const Variant **p_args, int p_argcount,Variant::CallError& r_err,CallState *p_state=NULL);
 
 	GDFunction();
+	~GDFunction();
 };
 
 
@@ -258,7 +280,7 @@ friend class GDScriptLanguage;
 
 	Set<StringName> members; //members are just indices to the instanced script.
 	Map<StringName,Variant> constants;
-	Map<StringName,GDFunction> member_functions;
+	Map<StringName,GDFunction*> member_functions;
 	Map<StringName,MemberInfo> member_indices; //members are just indices to the instanced script.
 	Map<StringName,Ref<GDScript> > subclasses;
 	Map<StringName,Vector<StringName> > _signals;
@@ -317,7 +339,7 @@ public:
 	const Map<StringName,Ref<GDScript> >& get_subclasses() const { return subclasses; }
 	const Map<StringName,Variant >& get_constants() const { return constants; }
 	const Set<StringName>& get_members() const { return members; }
-	const Map<StringName,GDFunction>& get_member_functions() const { return member_functions; }
+	const Map<StringName,GDFunction*>& get_member_functions() const { return member_functions; }
 	const Ref<GDNativeClass>& get_native() const { return native; }
 
 	virtual bool has_script_signal(const StringName& p_signal) const;
@@ -328,7 +350,7 @@ public:
 	Ref<GDScript> get_base() const;
 
 	const Map<StringName,MemberInfo>& debug_get_member_indices() const { return member_indices; }
-	const Map<StringName,GDFunction>& debug_get_member_functions() const; //this is debug only
+	const Map<StringName,GDFunction*>& debug_get_member_functions() const; //this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
 
 	Variant _new(const Variant** p_args,int p_argcount,Variant::CallError& r_error);
@@ -357,6 +379,7 @@ public:
 	virtual ScriptLanguage *get_language() const;
 
 	GDScript();
+	~GDScript();
 };
 
 class GDInstance : public ScriptInstance {
@@ -368,6 +391,7 @@ friend class GDFunctions;
 	Ref<GDScript> script;
 	Vector<Variant> members;
 	bool base_ref;
+
 
 	void _ml_call_reversed(GDScript *sptr,const StringName& p_method,const Variant** p_args,int p_argcount);
 
@@ -431,7 +455,14 @@ class GDScriptLanguage : public ScriptLanguage {
 	void _add_global(const StringName& p_name,const Variant& p_value);
 
 
+	Mutex *lock;
+friend class GDFunction;
+
+	SelfList<GDFunction>::List function_list;
+	bool profiling;
+	uint64_t script_frame_time;
 public:
+
 
 	int calls;
 
@@ -551,6 +582,12 @@ public:
 
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const;
 	virtual void get_public_constants(List<Pair<String,Variant> > *p_constants) const;
+
+	virtual void profiling_start();
+	virtual void profiling_stop();
+
+	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr,int p_info_max);
+	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr,int p_info_max);
 
 	/* LOADER FUNCTIONS */
 

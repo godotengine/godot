@@ -104,6 +104,8 @@ class OS_Windows : public OS {
 	HINSTANCE	hInstance;		// Holds The Instance Of The Application
 	HWND hWnd;
 
+	HCURSOR hCursor;
+
 	Size2 window_rect;
 	VideoMode video_mode;
 
@@ -245,6 +247,7 @@ public:
 
 	virtual Error execute(const String& p_path, const List<String>& p_arguments,bool p_blocking,ProcessID *r_child_id=NULL,String* r_pipe=NULL,int *r_exitcode=NULL);
 	virtual Error kill(const ProcessID& p_pid);
+	virtual int get_process_ID() const;
 
 	virtual bool has_environment(const String& p_var) const;
 	virtual String get_environment(const String& p_var) const;

@@ -664,44 +664,64 @@ def build_hlsl_dx9_headers( target, source, env ):
 	return 0
 
 
-def build_legacygl_header( filename, include, class_suffix, output_attribs ):
-
+class LegacyGLHeaderStruct:
+	def __init__(self):
+		self.vertex_lines=[]
+		self.fragment_lines=[]
+		self.uniforms=[]
+		self.attributes=[]
+		self.fbos=[]
+		self.conditionals=[]
+		self.enums={}
+		self.texunits=[]
+		self.texunit_names=[]
+		self.ubos=[]
+		self.ubo_names=[]
+		
+		self.vertex_included_files=[]
+		self.fragment_included_files=[]
+		
+		self.reading=""
+		self.line_offset=0
+		self.vertex_offset=0
+		self.fragment_offset=0
+	
+def include_file_in_legacygl_header( filename, header_data, depth ):
 	fs = open(filename,"r")
 	line=fs.readline()
-
-	vertex_lines=[]
-	fragment_lines=[]
-	uniforms=[]
-	attributes=[]
-	fbos=[]
-	conditionals=[]
-	enums={}
-	enum_constants=[]
-	texunits=[]
-	texunit_names=[]
-	ubos=[]
-	ubo_names=[]
-
-	reading=""
-	line_offset=0
-	vertex_offset=0
-	fragment_offset=0
 
 	while(line):
 
 		if (line.find("[vertex]")!=-1):
-			reading="vertex"
+			header_data.reading="vertex"
 			line=fs.readline()
-			line_offset+=1
-			vertex_offset=line_offset
+			header_data.line_offset+=1
+			header_data.vertex_offset=header_data.line_offset
 			continue
 
 		if (line.find("[fragment]")!=-1):
-			reading="fragment"
+			header_data.reading="fragment"
 			line=fs.readline()
-			line_offset+=1
-			fragment_offset=line_offset
+			header_data.line_offset+=1
+			header_data.fragment_offset=header_data.line_offset
 			continue
+			
+		while(line.find("#include ")!=-1):
+			includeline = line.replace("#include ","").strip()[1:-1]
+			
+			import os.path
+			
+			included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
+			if (not included_file in header_data.vertex_included_files and header_data.reading=="vertex"):
+				header_data.vertex_included_files+=[included_file]
+				if(include_file_in_legacygl_header( included_file, header_data, depth + 1 ) == None):
+					 print "Error in file '" + filename + "': #include " + includeline + "could not be found!"
+			elif (not included_file in header_data.fragment_included_files and header_data.reading=="fragment"):
+				header_data.fragment_included_files+=[included_file]
+				if(include_file_in_legacygl_header( included_file, header_data, depth + 1 ) == None):
+					 print "Error in file '" + filename + "': #include " + includeline + "could not be found!"
+			
+			line=fs.readline()
 
 		if (line.find("#ifdef ")!=-1 or line.find("#elif defined(")!=-1):
 			if (line.find("#ifdef ")!=-1):
@@ -715,13 +735,13 @@ def build_legacygl_header( filename, include, class_suffix, output_attribs ):
 				ifdefline = ifdefline.replace("_EN_","_")
 				line = line.replace("_EN_","_")
 #				print(enumbase+":"+ifdefline);
-				if (enumbase not in enums):
-					enums[enumbase]=[]
-				if (ifdefline not in enums[enumbase]):
-					enums[enumbase].append(ifdefline);
+				if (enumbase not in header_data.enums):
+					header_data.enums[enumbase]=[]
+				if (ifdefline not in header_data.enums[enumbase]):
+					header_data.enums[enumbase].append(ifdefline);
 
-			elif (not ifdefline in conditionals):
-				conditionals+=[ifdefline]
+			elif (not ifdefline in header_data.conditionals):
+				header_data.conditionals+=[ifdefline]
 
 		if (line.find("uniform")!=-1 and line.lower().find("texunit:")!=-1):
 			#texture unit
@@ -743,9 +763,9 @@ def build_legacygl_header( filename, include, class_suffix, output_attribs ):
 					#unfiorm array
 					x = x[ :x.find("[") ]
 
-				if (not x in texunit_names):
-					texunits+=[(x,texunit)]
-					texunit_names+=[x]
+				if (not x in header_data.texunit_names):
+					header_data.texunits+=[(x,texunit)]
+					header_data.texunit_names+=[x]
 
 
 
@@ -761,8 +781,8 @@ def build_legacygl_header( filename, include, class_suffix, output_attribs ):
 					#unfiorm array
 					x = x[ :x.find("[") ]
 
-				if (not x in uniforms):
-					uniforms+=[x]
+				if (not x in header_data.uniforms):
+					header_data.uniforms+=[x]
 
 
 		if ((line.strip().find("in ")==0 or line.strip().find("attribute ")==0) and line.find("attrib:")!=-1):
@@ -778,7 +798,7 @@ def build_legacygl_header( filename, include, class_suffix, output_attribs ):
 				if (bind.find("attrib:")!=-1):
 					name=name.strip()
 					bind=bind.replace("attrib:","").strip()
-					attributes+=[(name,bind)]
+					header_data.attributes+=[(name,bind)]
 
 
 		line=line.replace("\r","")
@@ -787,18 +807,29 @@ def build_legacygl_header( filename, include, class_suffix, output_attribs ):
 		#line=line.replace("\"","\\\"")
 		#line=line+"\\n\\"
 
-		if (reading=="vertex"):
-			vertex_lines+=[line]
-		if (reading=="fragment"):
-			fragment_lines+=[line]
+		if (header_data.reading=="vertex"):
+			header_data.vertex_lines+=[line]
+		if (header_data.reading=="fragment"):
+			header_data.fragment_lines+=[line]
 
 		line=fs.readline()
-		line_offset+=1
-
+		header_data.line_offset+=1
+		
 	fs.close();
+	
+	return header_data
+
+
+	
+def build_legacygl_header( filename, include, class_suffix, output_attribs ):
+	
+	header_data = LegacyGLHeaderStruct()
+	include_file_in_legacygl_header( filename, header_data, 0 )
 
 	out_file = filename+".h"
 	fd = open(out_file,"w")
+	
+	enum_constants=[]
 
 	fd.write("/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */\n");
 
@@ -819,21 +850,21 @@ def build_legacygl_header( filename, include, class_suffix, output_attribs ):
 
 	fd.write("public:\n\n");
 
-	if (len(conditionals)):
+	if (len(header_data.conditionals)):
 		fd.write("\tenum Conditionals {\n");
-		for x in conditionals:
+		for x in header_data.conditionals:
 			fd.write("\t\t"+x.upper()+",\n");
 		fd.write("\t};\n\n");
 
 
-	if (len(uniforms)):
+	if (len(header_data.uniforms)):
 		fd.write("\tenum Uniforms {\n");
-		for x in uniforms:
+		for x in header_data.uniforms:
 			fd.write("\t\t"+x.upper()+",\n");
 		fd.write("\t};\n\n");
 
 	fd.write("\t_FORCE_INLINE_ int get_uniform(Uniforms p_uniform) const { return _get_uniform(p_uniform); }\n\n");
-	if (len(conditionals)):
+	if (len(header_data.conditionals)):
 
 		fd.write("\t_FORCE_INLINE_ void set_conditional(Conditionals p_conditional,bool p_enable)  {  _set_conditional(p_conditional,p_enable); }\n\n");
 	fd.write("\t#define _FU if (get_uniform(p_uniform)<0) return; ERR_FAIL_COND( get_active()!=this );\n\n ");
@@ -940,16 +971,16 @@ def build_legacygl_header( filename, include, class_suffix, output_attribs ):
 
 	enum_value_count=0;
 
-	if (len(enums)):
+	if (len(header_data.enums)):
 
 		fd.write("\t\t//Written using math, given nonstandarity of 64 bits integer constants..\n");
 		fd.write("\t\tstatic const Enum _enums[]={\n")
 
-		bitofs=len(conditionals)
+		bitofs=len(header_data.conditionals)
 		enum_vals=[]
 
-		for xv in enums:
-			x=enums[xv]
+		for xv in header_data.enums:
+			x=header_data.enums[xv]
 			bits=1
 			amt = len(x);
 #			print(x)
@@ -985,70 +1016,70 @@ def build_legacygl_header( filename, include, class_suffix, output_attribs ):
 		fd.write("\t\tstatic const Enum *_enums=NULL;\n")
 		fd.write("\t\tstatic const EnumValue *_enum_values=NULL;\n")
 
-	if (len(conditionals)):
+	if (len(header_data.conditionals)):
 
 		fd.write("\t\tstatic const char* _conditional_strings[]={\n")
-		if (len(conditionals)):
-			for x in conditionals:
+		if (len(header_data.conditionals)):
+			for x in header_data.conditionals:
 				fd.write("\t\t\t\"#define "+x+"\\n\",\n");
 		fd.write("\t\t};\n\n");
 	else:
 		fd.write("\t\tstatic const char **_conditional_strings=NULL;\n")
 
-	if (len(uniforms)):
+	if (len(header_data.uniforms)):
 
 		fd.write("\t\tstatic const char* _uniform_strings[]={\n")
-		if (len(uniforms)):
-			for x in uniforms:
+		if (len(header_data.uniforms)):
+			for x in header_data.uniforms:
 				fd.write("\t\t\t\""+x+"\",\n");
 		fd.write("\t\t};\n\n");
 	else:
 		fd.write("\t\tstatic const char **_uniform_strings=NULL;\n")
 
 	if output_attribs:
-		if (len(attributes)):
+		if (len(header_data.attributes)):
 
 			fd.write("\t\tstatic AttributePair _attribute_pairs[]={\n")
-			for x in attributes:
+			for x in header_data.attributes:
 				fd.write("\t\t\t{\""+x[0]+"\","+x[1]+"},\n");
 			fd.write("\t\t};\n\n");
 		else:
 			fd.write("\t\tstatic AttributePair *_attribute_pairs=NULL;\n")
 
 
-	if (len(texunits)):
+	if (len(header_data.texunits)):
 		fd.write("\t\tstatic TexUnitPair _texunit_pairs[]={\n")
-		for x in texunits:
+		for x in header_data.texunits:
 			fd.write("\t\t\t{\""+x[0]+"\","+x[1]+"},\n");
 		fd.write("\t\t};\n\n");
 	else:
 		fd.write("\t\tstatic TexUnitPair *_texunit_pairs=NULL;\n")
 
 	fd.write("\t\tstatic const char _vertex_code[]={\n")
-	for x in vertex_lines:
+	for x in header_data.vertex_lines:
 		for i in range(len(x)):
 			fd.write(str(ord(x[i]))+",");
 
 		fd.write(str(ord('\n'))+",");
 	fd.write("\t\t0};\n\n");
 
-	fd.write("\t\tstatic const int _vertex_code_start="+str(vertex_offset)+";\n")
+	fd.write("\t\tstatic const int _vertex_code_start="+str(header_data.vertex_offset)+";\n")
 
 
 	fd.write("\t\tstatic const char _fragment_code[]={\n")
-	for x in fragment_lines:
+	for x in header_data.fragment_lines:
 		for i in range(len(x)):
 			fd.write(str(ord(x[i]))+",");
 
 		fd.write(str(ord('\n'))+",");
 	fd.write("\t\t0};\n\n");
 
-	fd.write("\t\tstatic const int _fragment_code_start="+str(fragment_offset)+";\n")
+	fd.write("\t\tstatic const int _fragment_code_start="+str(header_data.fragment_offset)+";\n")
 
 	if output_attribs:
-		fd.write("\t\tsetup(_conditional_strings,"+str(len(conditionals))+",_uniform_strings,"+str(len(uniforms))+",_attribute_pairs,"+str(len(attributes))+", _texunit_pairs,"+str(len(texunits))+",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
+		fd.write("\t\tsetup(_conditional_strings,"+str(len(header_data.conditionals))+",_uniform_strings,"+str(len(header_data.uniforms))+",_attribute_pairs,"+str(len(header_data.attributes))+", _texunit_pairs,"+str(len(header_data.texunits))+",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
 	else:
-		fd.write("\t\tsetup(_conditional_strings,"+str(len(conditionals))+",_uniform_strings,"+str(len(uniforms))+",_texunit_pairs,"+str(len(texunits))+",_enums,"+str(len(enums))+",_enum_values,"+str(enum_value_count)+",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
+		fd.write("\t\tsetup(_conditional_strings,"+str(len(header_data.conditionals))+",_uniform_strings,"+str(len(header_data.uniforms))+",_texunit_pairs,"+str(len(header_data.texunits))+",_enums,"+str(len(header_data.enums))+",_enum_values,"+str(enum_value_count)+",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
 
 	fd.write("\t};\n\n")
 

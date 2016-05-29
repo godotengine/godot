@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="2.0.stable.custom_build" name="Engine Types">
+<doc version="2.1.alpha.custom_build" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 	Built-in GDScript functions.
@@ -591,7 +591,7 @@
 		<method name="hash">
 			<return type="int">
 			</return>
-			<argument index="0" name="Variant" type="Variant">
+			<argument index="0" name="var:Variant" type="Variant">
 			</argument>
 			<description>
 			Hash the variable passed and return an integer.
@@ -638,7 +638,7 @@
 			</description>
 		</method>
 		<method name="yield">
-			<return type="Object">
+			<return type="Nil">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
@@ -678,54 +678,79 @@
 	</methods>
 	<members>
 		<member name="Performance" type="Performance">
+			[Performance] singleton
 		</member>
 		<member name="Globals" type="Globals">
+			[Globals] singleton
 		</member>
 		<member name="IP" type="IP">
+			[IP] singleton
 		</member>
 		<member name="Geometry" type="Geometry">
+			[Geometry] singleton
 		</member>
 		<member name="ResourceLoader" type="ResourceLoader">
+			[ResourceLoader] singleton
 		</member>
 		<member name="ResourceSaver" type="ResourceSaver">
+			[ResourceSaver] singleton
 		</member>
 		<member name="PathRemap" type="PathRemap">
+			[PathRemap] singleton
 		</member>
 		<member name="OS" type="OS">
+			[OS] singleton
 		</member>
 		<member name="Marshalls" type="Reference">
+			[Marshalls] singleton
 		</member>
 		<member name="TranslationServer" type="TranslationServer">
+			[TranslationServer] singleton
 		</member>
 		<member name="TS" type="TranslationServer">
+			[TranslationServer] singleton
 		</member>
 		<member name="Input" type="Input">
+			[Input] singleton
 		</member>
 		<member name="InputMap" type="InputMap">
+			[InputMap] singleton
 		</member>
 		<member name="VisualServer" type="VisualServer">
+			[VisualServer] singleton
 		</member>
 		<member name="VS" type="VisualServer">
+			[VisualServer] singleton
 		</member>
 		<member name="AudioServer" type="AudioServer">
+			[AudioServer] singleton
 		</member>
 		<member name="AS" type="AudioServer">
+			[AudioServer] singleton
 		</member>
 		<member name="PhysicsServer" type="PhysicsServer">
+			[PhysicsServer] singleton
 		</member>
 		<member name="PS" type="PhysicsServer">
+			[PhysicsServer] singleton
 		</member>
 		<member name="Physics2DServer" type="Physics2DServer">
+			[Physics2DServer] singleton
 		</member>
 		<member name="PS2D" type="Physics2DServer">
+			[Physics2DServer] singleton
 		</member>
 		<member name="SpatialSoundServer" type="SpatialSoundServer">
+			[SpatialSoundServer] singleton
 		</member>
 		<member name="SS" type="SpatialSoundServer">
+			[SpatialSoundServer] singleton
 		</member>
 		<member name="SpatialSound2DServer" type="SpatialSound2DServer">
+			[SpatialSound2DServer] singleton
 		</member>
 		<member name="SS2D" type="SpatialSound2DServer">
+			[SpatialSound2DServer] singleton
 		</member>
 	</members>
 	<constants>
@@ -943,34 +968,45 @@
 			Number 9 on Numpad
 		</constant>
 		<constant name="KEY_SUPER_L" value="16777260">
+			Super Left key (windows key)
 		</constant>
 		<constant name="KEY_SUPER_R" value="16777261">
+			Super Left key (windows key)
 		</constant>
 		<constant name="KEY_MENU" value="16777262">
+			Context menu key
 		</constant>
 		<constant name="KEY_HYPER_L" value="16777263">
 		</constant>
 		<constant name="KEY_HYPER_R" value="16777264">
 		</constant>
 		<constant name="KEY_HELP" value="16777265">
+			Help key
 		</constant>
 		<constant name="KEY_DIRECTION_L" value="16777266">
 		</constant>
 		<constant name="KEY_DIRECTION_R" value="16777267">
 		</constant>
 		<constant name="KEY_BACK" value="16777280">
+			Back key
 		</constant>
 		<constant name="KEY_FORWARD" value="16777281">
+			Forward key
 		</constant>
 		<constant name="KEY_STOP" value="16777282">
+			Stop key
 		</constant>
 		<constant name="KEY_REFRESH" value="16777283">
+			Refresh key
 		</constant>
 		<constant name="KEY_VOLUMEDOWN" value="16777284">
+			Volume down key
 		</constant>
 		<constant name="KEY_VOLUMEMUTE" value="16777285">
+			Mute volume key
 		</constant>
 		<constant name="KEY_VOLUMEUP" value="16777286">
+			Volume up key
 		</constant>
 		<constant name="KEY_BASSBOOST" value="16777287">
 		</constant>
@@ -983,20 +1019,28 @@
 		<constant name="KEY_TREBLEDOWN" value="16777291">
 		</constant>
 		<constant name="KEY_MEDIAPLAY" value="16777292">
+			Media play key
 		</constant>
 		<constant name="KEY_MEDIASTOP" value="16777293">
+			Media stop key
 		</constant>
 		<constant name="KEY_MEDIAPREVIOUS" value="16777294">
+			Previous song key
 		</constant>
 		<constant name="KEY_MEDIANEXT" value="16777295">
+			Next song key
 		</constant>
 		<constant name="KEY_MEDIARECORD" value="16777296">
+			Media record key
 		</constant>
 		<constant name="KEY_HOMEPAGE" value="16777297">
+			Home page key
 		</constant>
 		<constant name="KEY_FAVORITES" value="16777298">
+			Favorites key
 		</constant>
 		<constant name="KEY_SEARCH" value="16777299">
+			Search key
 		</constant>
 		<constant name="KEY_STANDBY" value="16777300">
 		</constant>
@@ -1044,34 +1088,49 @@
 			Space Key
 		</constant>
 		<constant name="KEY_EXCLAM" value="33">
+			! key
 		</constant>
 		<constant name="KEY_QUOTEDBL" value="34">
+			" key
 		</constant>
 		<constant name="KEY_NUMBERSIGN" value="35">
+			# key
 		</constant>
 		<constant name="KEY_DOLLAR" value="36">
+			$ key
 		</constant>
 		<constant name="KEY_PERCENT" value="37">
+			% key
 		</constant>
 		<constant name="KEY_AMPERSAND" value="38">
+			&amp; key
 		</constant>
 		<constant name="KEY_APOSTROPHE" value="39">
+			' key
 		</constant>
 		<constant name="KEY_PARENLEFT" value="40">
+			( key
 		</constant>
 		<constant name="KEY_PARENRIGHT" value="41">
+			) key
 		</constant>
 		<constant name="KEY_ASTERISK" value="42">
+			* key
 		</constant>
 		<constant name="KEY_PLUS" value="43">
+			+ key
 		</constant>
 		<constant name="KEY_COMMA" value="44">
+			, key
 		</constant>
 		<constant name="KEY_MINUS" value="45">
+			- key
 		</constant>
 		<constant name="KEY_PERIOD" value="46">
+			. key
 		</constant>
 		<constant name="KEY_SLASH" value="47">
+			/ key
 		</constant>
 		<constant name="KEY_0" value="48">
 			Number 0
@@ -1104,18 +1163,25 @@
 			Number 9
 		</constant>
 		<constant name="KEY_COLON" value="58">
+			: key
 		</constant>
 		<constant name="KEY_SEMICOLON" value="59">
+			; key
 		</constant>
 		<constant name="KEY_LESS" value="60">
+			Lower than key
 		</constant>
 		<constant name="KEY_EQUAL" value="61">
+			= key
 		</constant>
 		<constant name="KEY_GREATER" value="62">
+			Greater than key
 		</constant>
 		<constant name="KEY_QUESTION" value="63">
+			? key
 		</constant>
 		<constant name="KEY_AT" value="64">
+			@ key
 		</constant>
 		<constant name="KEY_A" value="65">
 			A Key
@@ -1196,30 +1262,40 @@
 			Z Key
 		</constant>
 		<constant name="KEY_BRACKETLEFT" value="91">
+			[ key
 		</constant>
 		<constant name="KEY_BACKSLASH" value="92">
+			\ key
 		</constant>
 		<constant name="KEY_BRACKETRIGHT" value="93">
+			] key
 		</constant>
 		<constant name="KEY_ASCIICIRCUM" value="94">
+			^ key
 		</constant>
 		<constant name="KEY_UNDERSCORE" value="95">
+			_ key
 		</constant>
 		<constant name="KEY_QUOTELEFT" value="96">
 		</constant>
 		<constant name="KEY_BRACELEFT" value="123">
+			{ key
 		</constant>
 		<constant name="KEY_BAR" value="124">
+			| key
 		</constant>
 		<constant name="KEY_BRACERIGHT" value="125">
+			} key
 		</constant>
 		<constant name="KEY_ASCIITILDE" value="126">
+			~ key
 		</constant>
 		<constant name="KEY_NOBREAKSPACE" value="160">
 		</constant>
 		<constant name="KEY_EXCLAMDOWN" value="161">
 		</constant>
 		<constant name="KEY_CENT" value="162">
+			¢ key
 		</constant>
 		<constant name="KEY_STERLING" value="163">
 		</constant>
@@ -1228,42 +1304,58 @@
 		<constant name="KEY_YEN" value="165">
 		</constant>
 		<constant name="KEY_BROKENBAR" value="166">
+			¦ key
 		</constant>
 		<constant name="KEY_SECTION" value="167">
+			§ key
 		</constant>
 		<constant name="KEY_DIAERESIS" value="168">
+			¨ key
 		</constant>
 		<constant name="KEY_COPYRIGHT" value="169">
+			© key
 		</constant>
 		<constant name="KEY_ORDFEMININE" value="170">
 		</constant>
 		<constant name="KEY_GUILLEMOTLEFT" value="171">
+			« key
 		</constant>
 		<constant name="KEY_NOTSIGN" value="172">
+			» key
 		</constant>
 		<constant name="KEY_HYPHEN" value="173">
+			‐ key
 		</constant>
 		<constant name="KEY_REGISTERED" value="174">
+			® key
 		</constant>
 		<constant name="KEY_MACRON" value="175">
 		</constant>
 		<constant name="KEY_DEGREE" value="176">
+			° key
 		</constant>
 		<constant name="KEY_PLUSMINUS" value="177">
+			± key
 		</constant>
 		<constant name="KEY_TWOSUPERIOR" value="178">
+			² key
 		</constant>
 		<constant name="KEY_THREESUPERIOR" value="179">
+			³ key
 		</constant>
 		<constant name="KEY_ACUTE" value="180">
+			´ key
 		</constant>
 		<constant name="KEY_MU" value="181">
+			µ key
 		</constant>
 		<constant name="KEY_PARAGRAPH" value="182">
 		</constant>
 		<constant name="KEY_PERIODCENTERED" value="183">
+			· key
 		</constant>
 		<constant name="KEY_CEDILLA" value="184">
+			¬ key
 		</constant>
 		<constant name="KEY_ONESUPERIOR" value="185">
 		</constant>
@@ -1274,6 +1366,7 @@
 		<constant name="KEY_ONEQUARTER" value="188">
 		</constant>
 		<constant name="KEY_ONEHALF" value="189">
+			½ key
 		</constant>
 		<constant name="KEY_THREEQUARTERS" value="190">
 		</constant>
@@ -1375,12 +1468,16 @@
 			Middle Mouse Button
 		</constant>
 		<constant name="BUTTON_WHEEL_UP" value="4">
+			Mouse wheel up
 		</constant>
 		<constant name="BUTTON_WHEEL_DOWN" value="5">
+			Mouse wheel down
 		</constant>
 		<constant name="BUTTON_WHEEL_LEFT" value="6">
+			Mouse wheel left button
 		</constant>
 		<constant name="BUTTON_WHEEL_RIGHT" value="7">
+			Mouse wheel right button
 		</constant>
 		<constant name="BUTTON_MASK_LEFT" value="1">
 		</constant>
@@ -1440,36 +1537,52 @@
 			Joystick Button 16
 		</constant>
 		<constant name="JOY_SNES_A" value="1">
+			Super Nintendo Entertaiment System controller A button
 		</constant>
 		<constant name="JOY_SNES_B" value="0">
+			Super Nintendo Entertaiment System controller B button
 		</constant>
 		<constant name="JOY_SNES_X" value="3">
+			Super Nintendo Entertaiment System controller X button
 		</constant>
 		<constant name="JOY_SNES_Y" value="2">
+			Super Nintendo Entertaiment System controller Y button
 		</constant>
 		<constant name="JOY_SONY_CIRCLE" value="1">
+			DUALSHOCK circle button
 		</constant>
 		<constant name="JOY_SONY_X" value="0">
+			DUALSHOCK X button
 		</constant>
 		<constant name="JOY_SONY_SQUARE" value="2">
+			DUALSHOCK square button
 		</constant>
 		<constant name="JOY_SONY_TRIANGLE" value="3">
+			DUALSHOCK triangle button
 		</constant>
 		<constant name="JOY_SEGA_B" value="1">
+			SEGA controller B button
 		</constant>
 		<constant name="JOY_SEGA_A" value="0">
+			SEGA controller A button
 		</constant>
 		<constant name="JOY_SEGA_X" value="2">
+			SEGA controller X button
 		</constant>
 		<constant name="JOY_SEGA_Y" value="3">
+			SEGA controller Y button
 		</constant>
 		<constant name="JOY_XBOX_B" value="1">
+			XBOX controller B button
 		</constant>
 		<constant name="JOY_XBOX_A" value="0">
+			XBOX controller A button
 		</constant>
 		<constant name="JOY_XBOX_X" value="2">
+			XBOX controller X button
 		</constant>
 		<constant name="JOY_XBOX_Y" value="3">
+			XBOX controller Y button
 		</constant>
 		<constant name="JOY_DS_A" value="1">
 		</constant>
@@ -1721,13 +1834,13 @@
 			Variable is of type nil (only applied for null).
 		</constant>
 		<constant name="TYPE_BOOL" value="1">
-			Variable is of type bool.
+			Variable is of type [bool].
 		</constant>
 		<constant name="TYPE_INT" value="2">
-			Variable is of type integer.
+			Variable is of type [int].
 		</constant>
 		<constant name="TYPE_REAL" value="3">
-			Variable is of type float/real.
+			Variable is of type [float]/real.
 		</constant>
 		<constant name="TYPE_STRING" value="4">
 			Variable is of type [String].
@@ -1961,6 +2074,7 @@
 			<argument index="1" name="to" type="Vector3">
 			</argument>
 			<description>
+			Return true if the [AABB] intersects the line segment between from and to
 			</description>
 		</method>
 		<method name="merge">
@@ -1986,10 +2100,13 @@
 	</methods>
 	<members>
 		<member name="pos" type="Vector3">
+		Position (starting corner).
 		</member>
 		<member name="size" type="Vector3">
+		Size from position to end.
 		</member>
 		<member name="end" type="Vector3">
+		Ending corner.
 		</member>
 	</members>
 	<constants>
@@ -2041,6 +2158,8 @@
 			<argument index="2" name="action" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
+			Add custom button to the dialog and return the created button.
+			The button titled with [i]text[/i] and the [i]action[/i] will be passed to [custom_action] signal when it is pressed.
 			</description>
 		</method>
 		<method name="add_cancel">
@@ -2049,6 +2168,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+			Add custom cancel button to the dialog and return the created button.
 			</description>
 		</method>
 		<method name="register_text_enter">
@@ -2202,6 +2322,7 @@
 	<signals>
 		<signal name="frame_changed">
 			<description>
+			Emmited when frame is changed.
 			</description>
 		</signal>
 	</signals>
@@ -2676,6 +2797,22 @@
 			Get the list of names of the animations stored in the player.
 			</description>
 		</method>
+		<method name="animation_set_next">
+			<argument index="0" name="anim_from" type="String">
+			</argument>
+			<argument index="1" name="anim_to" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="animation_get_next" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="anim_from" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_blend_time">
 			<argument index="0" name="anim_from" type="String">
 			</argument>
@@ -2731,12 +2868,14 @@
 			<argument index="1" name="custom_blend" type="float" default="-1">
 			</argument>
 			<description>
+			Play a given animation by the animation name in reverse.
 			</description>
 		</method>
 		<method name="stop">
 			<argument index="0" name="reset" type="bool" default="true">
 			</argument>
 			<description>
+			Stop the currently playing animation.
 			</description>
 		</method>
 		<method name="stop_all">
@@ -2896,10 +3035,18 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
+			Used to skip ahead or skip back in an animation. Delta is the time in seconds to skip.
 			</description>
 		</method>
 	</methods>
 	<signals>
+		<signal name="animation_started">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			Notifies when an animation starts playing.
+			</description>
+		</signal>
 		<signal name="animation_changed">
 			<argument index="0" name="old_name" type="String">
 			</argument>
@@ -3019,6 +3166,16 @@
 			<return type="String">
 			</return>
 			<argument index="0" name="id" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="animation_node_set_filter_path">
+			<argument index="0" name="id" type="String">
+			</argument>
+			<argument index="1" name="path" type="NodePath">
+			</argument>
+			<argument index="2" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -3561,6 +3718,62 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_collision_mask">
+			<argument index="0" name="collision_mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_layer_mask">
+			<argument index="0" name="layer_mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_layer_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_collision_mask_bit">
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_layer_mask_bit">
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_layer_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_monitorable">
 			<argument index="0" name="enable" type="bool">
 			</argument>
@@ -3930,7 +4143,7 @@
 			</description>
 		</method>
 		<method name="overlaps_body" qualifiers="const">
-			<return type="PhysicsBody2D">
+			<return type="bool">
 			</return>
 			<argument index="0" name="body" type="Object">
 			</argument>
@@ -3939,7 +4152,7 @@
 			</description>
 		</method>
 		<method name="overlaps_area" qualifiers="const">
-			<return type="Area2D">
+			<return type="bool">
 			</return>
 			<argument index="0" name="area" type="Object">
 			</argument>
@@ -4106,10 +4319,12 @@
 		</method>
 		<method name="pop_back">
 			<description>
+			Remove the last element of the array.
 			</description>
 		</method>
 		<method name="pop_front">
 			<description>
+			Remove the first element of the array.
 			</description>
 		</method>
 		<method name="push_back">
@@ -4123,6 +4338,7 @@
 			<argument index="0" name="value" type="var">
 			</argument>
 			<description>
+			Add an element at the beginning of the array.
 			</description>
 		</method>
 		<method name="remove">
@@ -4907,41 +5123,50 @@
 </class>
 <class name="BackBufferCopy" inherits="Node2D" category="Core">
 	<brief_description>
+	Copies a region of the screen (or the whole screen) to a buffer so it can be accessed with the texscreen() shader instruction.
 	</brief_description>
 	<description>
+	Node for back-buffering the currently displayed screen. The region defined in the BackBufferCopy node is bufferized with the content of the screen it covers, or the entire screen according to the copy mode set. Accessing this buffer is done with the texscreen() shader instruction.
 	</description>
 	<methods>
 		<method name="set_rect">
 			<argument index="0" name="rect" type="Rect2">
 			</argument>
 			<description>
+			Defines the area covered by the BackBufferCopy.
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
+			Return the area covered by the BackBufferCopy.
 			</description>
 		</method>
 		<method name="set_copy_mode">
 			<argument index="0" name="copy_mode" type="int">
 			</argument>
 			<description>
+			Set the copy mode of the BackBufferCopy (refer to constants section).
 			</description>
 		</method>
 		<method name="get_copy_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the copy mode currently applied to the BackBufferCopy (refer to constants section).
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="COPY_MODE_DISABLED" value="0">
+		Disables the buffering mode. This means the BackBufferCopy node will directly use the portion of screen it covers.
 		</constant>
 		<constant name="COPY_MODE_RECT" value="1">
+		Sets the copy mode to a region.
 		</constant>
 		<constant name="COPY_MODE_VIEWPORT" value="2">
+		Sets the copy mode to the entire screen.
 		</constant>
 	</constants>
 </class>
@@ -5149,6 +5374,42 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_realtime_color_enabled">
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_realtime_color_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_realtime_color">
+			<argument index="0" name="tint" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_realtime_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_realtime_energy">
+			<argument index="0" name="energy" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_realtime_energy" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_format">
 			<argument index="0" name="format" type="int">
 			</argument>
@@ -5323,12 +5584,14 @@
 	<methods>
 		<method name="_pressed" qualifiers="virtual">
 			<description>
+			Called when button is pressed.
 			</description>
 		</method>
 		<method name="_toggled" qualifiers="virtual">
 			<argument index="0" name="pressed" type="bool">
 			</argument>
 			<description>
+			Called when button is toggled (only if toggle_mode is active).
 			</description>
 		</method>
 		<method name="set_pressed">
@@ -5349,6 +5612,7 @@
 			<return type="bool">
 			</return>
 			<description>
+			Return true if mouse entered the button before it exit.
 			</description>
 		</method>
 		<method name="set_toggle_mode">
@@ -5404,6 +5668,7 @@
 	<signals>
 		<signal name="released">
 			<description>
+			This signal is emitted when the button was released.
 			</description>
 		</signal>
 		<signal name="toggled">
@@ -5421,12 +5686,16 @@
 	</signals>
 	<constants>
 		<constant name="DRAW_NORMAL" value="0">
+			The normal state (i.e. not pressed, not hovered, not toggled and enabled) of buttons.
 		</constant>
 		<constant name="DRAW_PRESSED" value="1">
+			The state of buttons are pressed.
 		</constant>
 		<constant name="DRAW_HOVER" value="2">
+			The state of buttons are hovered.
 		</constant>
 		<constant name="DRAW_DISABLED" value="3">
+			The state of buttons are disabled.
 		</constant>
 	</constants>
 </class>
@@ -5488,6 +5757,130 @@
 	<constants>
 	</constants>
 </class>
+<class name="BitmapFont" inherits="Font" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="create_from_fnt">
+			<return type="int">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_height">
+			<argument index="0" name="px" type="float">
+			</argument>
+			<description>
+			Set the total font height (ascent plus descent) in pixels.
+			</description>
+		</method>
+		<method name="set_ascent">
+			<argument index="0" name="px" type="float">
+			</argument>
+			<description>
+			Set the font ascent (number of pixels above the baseline).
+			</description>
+		</method>
+		<method name="add_kerning_pair">
+			<argument index="0" name="char_a" type="int">
+			</argument>
+			<argument index="1" name="char_b" type="int">
+			</argument>
+			<argument index="2" name="kerning" type="int">
+			</argument>
+			<description>
+			Add a kerning pair to the [BitmapFont] as a difference. Kerning pairs are special cases where a typeface advance is determined by the next character.
+			</description>
+		</method>
+		<method name="get_kerning_pair" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="char_a" type="int">
+			</argument>
+			<argument index="1" name="char_b" type="int">
+			</argument>
+			<description>
+			Return a kerning pair as a difference.
+			</description>
+		</method>
+		<method name="add_texture">
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+			Add a texture to the [BitmapFont].
+			</description>
+		</method>
+		<method name="add_char">
+			<argument index="0" name="character" type="int">
+			</argument>
+			<argument index="1" name="texture" type="int">
+			</argument>
+			<argument index="2" name="rect" type="Rect2">
+			</argument>
+			<argument index="3" name="align" type="Vector2" default="Vector2(0,0)">
+			</argument>
+			<argument index="4" name="advance" type="float" default="-1">
+			</argument>
+			<description>
+			Add a character to the font, where [i]character[/i] is the unicode value, [i]texture[/i] is the texture index, [i]rect[/i] is the region in the texture (in pixels!), [i]align[/i] is the (optional) alignment for the character and [i]advance[/i] is the (optional) advance.
+			</description>
+		</method>
+		<method name="get_texture_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_char_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="char" type="int">
+			</argument>
+			<argument index="1" name="next" type="int" default="0">
+			</argument>
+			<description>
+			Return the size of a character, optionally taking kerning into account if the next character is provided.
+			</description>
+		</method>
+		<method name="set_distance_field_hint">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear">
+			<description>
+			Clear all the font data.
+			</description>
+		</method>
+		<method name="set_fallback">
+			<argument index="0" name="fallback" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_fallback" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="BoneAttachment" inherits="Spatial" category="Core">
 	<brief_description>
 	</brief_description>
@@ -5506,25 +5899,38 @@
 	Base class for Box containers. It arranges children controls vertically or horizontally, and rearranges them automatically when their minimum size changes.
 	</description>
 	<methods>
+		<method name="add_spacer">
+			<argument index="0" name="begin" type="bool">
+			</argument>
+			<description>
+			Add a control to the box as a spacer.
+			If [i]begin[/i] is true the spacer control will be inserted in front of other children.
+			</description>
+		</method>
 		<method name="get_alignment" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the alignment of children in the container.
 			</description>
 		</method>
 		<method name="set_alignment">
 			<argument index="0" name="alignment" type="int">
 			</argument>
 			<description>
+			Set the alignment of children in the container(Must be one of ALIGN_BEGIN, ALIGN_CENTER or ALIGN_END).
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="ALIGN_BEGIN" value="0">
+			Align children with beginning of the container.
 		</constant>
 		<constant name="ALIGN_CENTER" value="1">
+			Align children with center of the container.
 		</constant>
 		<constant name="ALIGN_END" value="2">
+			Align children with end of the container.
 		</constant>
 	</constants>
 </class>
@@ -5580,12 +5986,14 @@
 			<argument index="0" name="texture" type="Texture">
 			</argument>
 			<description>
+			Set the icon that will be displayed next to the text inside the button area.
 			</description>
 		</method>
 		<method name="get_button_icon" qualifiers="const">
 			<return type="Texture">
 			</return>
 			<description>
+			Return the button icon.
 			</description>
 		</method>
 		<method name="set_flat">
@@ -5613,23 +6021,34 @@
 			<argument index="0" name="align" type="int">
 			</argument>
 			<description>
+			Set the text alignment policy, using one of the ALIGN_* constants.
 			</description>
 		</method>
 		<method name="get_text_align" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the text alignment policy.
 			</description>
 		</method>
 		<method name="is_flat" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-			Return the state of the [i]flat[/i] property (see [method set_flat])
+			Return the state of the [i]flat[/i] property (see [method set_flat]).
 			</description>
 		</method>
 	</methods>
 	<constants>
+		<constant name="ALIGN_LEFT" value="0">
+			Align the text to the left.
+		</constant>
+		<constant name="ALIGN_CENTER" value="1">
+			Center the text.
+		</constant>
+		<constant name="ALIGN_RIGHT" value="2">
+			Align the text to the right.
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="hseparation" type="int">
@@ -5661,57 +6080,60 @@
 	Array of Buttons.
 	</brief_description>
 	<description>
-	Array of Buttons. A Button array is useful to have an array of buttons laid out vertically or horizontally. Only one can be selected. This is useful for joy pad based interfaces and option menus.
+	Array of Buttons. A ButtonArray is useful to have an array of buttons laid out vertically or horizontally. Only one button can be selected, and is referenced by its index in the array (first button is 0, second button is 1, etc.).
+	This is useful [i]e.g.[/i] for joypad-friendly interfaces and option menus.
 	</description>
 	<methods>
 		<method name="add_button">
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-			Add a new button.
+			Append a new button to the array, with the specified text.
 			</description>
 		</method>
 		<method name="add_icon_button">
-			<argument index="0" name="icon" type="Object">
+			<argument index="0" name="icon" type="Texture">
 			</argument>
 			<argument index="1" name="text" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
+			Append a new button to the array, with the specified icon and text.
 			</description>
 		</method>
 		<method name="set_button_text">
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button_idx" type="int">
 			</argument>
 			<argument index="1" name="text" type="String">
 			</argument>
 			<description>
+			Define the text of the specified button.
 			</description>
 		</method>
 		<method name="set_button_icon">
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button_idx" type="int">
 			</argument>
-			<argument index="1" name="icon" type="Object">
+			<argument index="1" name="icon" type="Texture">
 			</argument>
 			<description>
-			Set the icon of an existing button.
+			Set the icon of the specified button.
 			</description>
 		</method>
 		<method name="get_button_text" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button_idx" type="int">
 			</argument>
 			<description>
-			Return the text of an existing button.
+			Return the text of the specified button.
 			</description>
 		</method>
 		<method name="get_button_icon" qualifiers="const">
-			<return type="Object">
+			<return type="Texture">
 			</return>
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button_idx" type="int">
 			</argument>
 			<description>
-			Return the icon of an existing button.
+			Return the icon of the specified button.
 			</description>
 		</method>
 		<method name="get_button_count" qualifiers="const">
@@ -5725,42 +6147,42 @@
 			<return type="int">
 			</return>
 			<description>
-			Return the currently selected button in the array.
+			Return the index of the currently selected button in the array.
 			</description>
 		</method>
 		<method name="get_hovered" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-			Return the currently hovered button in the array.
+			Return the index of the currently hovered button in the array.
 			</description>
 		</method>
 		<method name="set_selected">
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button_idx" type="int">
 			</argument>
 			<description>
-			Select a button in the array.
+			Select a button in the array based on the given index.
 			</description>
 		</method>
 		<method name="erase_button">
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button_idx" type="int">
 			</argument>
 			<description>
-			Remove a button in the array, by index.
+			Remove the specified button in the array.
 			</description>
 		</method>
 		<method name="clear">
 			<description>
-			Clear the button array.
+			Remove all buttons from the array.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="button_selected">
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button_idx" type="int">
 			</argument>
 			<description>
-			A Button was selected (returns the index).
+			A button has been selected, its index is given as the argument.
 			</description>
 		</signal>
 	</signals>
@@ -6486,9 +6908,9 @@
 			</argument>
 			<argument index="1" name="colors" type="ColorArray">
 			</argument>
-			<argument index="2" name="uvs" type="Vector2Array" default="Array()">
+			<argument index="2" name="uvs" type="Vector2Array">
 			</argument>
-			<argument index="3" name="texture" type="Texture" default="Object()">
+			<argument index="3" name="texture" type="Texture" default="NULL">
 			</argument>
 			<argument index="4" name="width" type="float" default="1">
 			</argument>
@@ -6501,9 +6923,9 @@
 			</argument>
 			<argument index="1" name="colors" type="ColorArray">
 			</argument>
-			<argument index="2" name="uvs" type="Vector2Array" default="Array()">
+			<argument index="2" name="uvs" type="Vector2Array" default="Vector2Array()">
 			</argument>
-			<argument index="3" name="texture" type="Texture" default="Object()">
+			<argument index="3" name="texture" type="Texture" default="NULL">
 			</argument>
 			<description>
 			Draw a polygon of any amount of points, convex or concave.
@@ -6514,9 +6936,9 @@
 			</argument>
 			<argument index="1" name="color" type="Color">
 			</argument>
-			<argument index="2" name="uvs" type="Vector2Array" default="Array()">
+			<argument index="2" name="uvs" type="Vector2Array" default="Vector2Array()">
 			</argument>
-			<argument index="3" name="texture" type="Texture" default="Object()">
+			<argument index="3" name="texture" type="Texture" default="NULL">
 			</argument>
 			<description>
 			Draw a colored polygon of any amount of points, convex or concave.
@@ -6838,7 +7260,7 @@
 			</description>
 		</method>
 		<method name="set_rotation">
-			<argument index="0" name="rotation" type="float">
+			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
 			Set the base rotation for this layer (helper).
@@ -6849,6 +7271,20 @@
 			</return>
 			<description>
 			Return the base rotation for this layer (helper).
+			</description>
+		</method>
+		<method name="set_rotationd">
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+			Set rotation of the layer in degree.
+			</description>
+		</method>
+		<method name="get_rotationd" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			Get rotation of the layer in degree.
 			</description>
 		</method>
 		<method name="set_scale">
@@ -6866,7 +7302,7 @@
 			</description>
 		</method>
 		<method name="get_world_2d" qualifiers="const">
-			<return type="Canvas">
+			<return type="World2D">
 			</return>
 			<description>
 			Return the [World2D] used by this layer.
@@ -6885,20 +7321,24 @@
 </class>
 <class name="CanvasModulate" inherits="Node2D" category="Core">
 	<brief_description>
+	Tint the entire canvas
 	</brief_description>
 	<description>
+	CanvasModulate tints the canvas elements using its asigned color
 	</description>
 	<methods>
 		<method name="set_color">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+			Sets the canvas tint color
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
+			Gets the canvas tint color
 			</description>
 		</method>
 	</methods>
@@ -6997,12 +7437,14 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			This function will anchor the container children to the top left corner of the the container boundaries, moving all its children to that position, (the children new center will be the top left corner of the container).
 			</description>
 		</method>
 		<method name="is_using_top_left" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Should put children to the top left corner instead of center of the container.
 			</description>
 		</method>
 	</methods>
@@ -7011,8 +7453,10 @@
 </class>
 <class name="CheckBox" inherits="Button" category="Core">
 	<brief_description>
+	Binary choice user interface widget
 	</brief_description>
 	<description>
+	A checkbox allows the user to make a binary choice (choosing only one of two posible options), for example Answer 'yes' or 'no'.
 	</description>
 	<methods>
 	</methods>
@@ -7660,6 +8104,7 @@
 			<argument index="0" name="over" type="Color">
 			</argument>
 			<description>
+			Return a new color blended with anothor one.
 			</description>
 		</method>
 		<method name="contrasted">
@@ -7766,26 +8211,37 @@
 	</methods>
 	<members>
 		<member name="r" type="float">
+		Red (0 to 1)
 		</member>
 		<member name="g" type="float">
+		Green (0 to 1)
 		</member>
 		<member name="b" type="float">
+		Blue (0 to 1)
 		</member>
 		<member name="a" type="float">
+		Alpha (0 to 1)
 		</member>
 		<member name="h" type="float">
+		Hue (0 to 1)
 		</member>
 		<member name="s" type="float">
+		Saturation (0 to 1)
 		</member>
 		<member name="v" type="float">
+		Value (0 to 1)
 		</member>
 		<member name="r8" type="int">
+		Red (0 to 255)
 		</member>
 		<member name="g8" type="int">
+		Green (0 to 255)
 		</member>
 		<member name="b8" type="int">
+		Blue (0 to 255)
 		</member>
 		<member name="a8" type="int">
+		Alpha (0 to 255)
 		</member>
 	</members>
 	<constants>
@@ -7868,30 +8324,35 @@
 			<argument index="0" name="mode" type="bool">
 			</argument>
 			<description>
+			When set to true, every color channel will be represented as a value from 0 to 1, insetead of 0, 255.
 			</description>
 		</method>
 		<method name="is_raw_mode" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether this color picker is in raw mode or not
 			</description>
 		</method>
 		<method name="set_edit_alpha">
 			<argument index="0" name="show" type="bool">
 			</argument>
 			<description>
+			Set true if you want the color to have an alpha channel (transparency), or false if you want a solid color.
 			</description>
 		</method>
 		<method name="is_editing_alpha" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether the color has transparency or not.
 			</description>
 		</method>
 		<method name="add_preset">
 			<argument index="0" name="arg0" type="Color">
 			</argument>
 			<description>
+			Adds the current selected to color to a list of colors (presets), the presets will be displayed in the color picker and the user will be able to select them, notice that the presets list is only for this color picker.
 			</description>
 		</method>
 	</methods>
@@ -7900,7 +8361,7 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-			Emitted when the color changes.
+			Emitted when the color is changed.
 			</description>
 		</signal>
 	</signals>
@@ -7925,32 +8386,38 @@
 </class>
 <class name="ColorPickerButton" inherits="Button" category="Core">
 	<brief_description>
+	Button that pops out a [ColorPicker]
 	</brief_description>
 	<description>
+	Encapsulates a [ColorPicker] making it accesible by pressing a button, pressing the button will toggle the [ColorPicker] visibility
 	</description>
 	<methods>
 		<method name="set_color">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+			Sets the current color
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
+			Gets the current color
 			</description>
 		</method>
 		<method name="set_edit_alpha">
 			<argument index="0" name="show" type="bool">
 			</argument>
 			<description>
+			See [method ColorPicker.set_edit_alpha]
 			</description>
 		</method>
 		<method name="is_editing_alpha" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			See [method ColorPicker.is_edit_alpha]
 			</description>
 		</method>
 	</methods>
@@ -7959,6 +8426,7 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+			Emitted when the color is changed.
 			</description>
 		</signal>
 	</signals>
@@ -7991,8 +8459,10 @@
 </class>
 <class name="ColorRamp" inherits="Resource" category="Core">
 	<brief_description>
+	Color interpolator node
 	</brief_description>
 	<description>
+	Given a set of colors, this node will interpolate them in order, meaning, that if you have color 1, color 2 and color3, the ramp will interpolate (generate the colors between two colors) from color 1 to color 2 and from color 2 to color 3. Initially the ramp will have 2 colors (black and white), one (black) at ramp lower offset offset 0 and the other (white) at the ramp higher offset 1.
 	</description>
 	<methods>
 		<method name="add_point">
@@ -8001,12 +8471,14 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+			Adds the specified color to the end of the ramp, with the specified offset
 			</description>
 		</method>
 		<method name="remove_point">
 			<argument index="0" name="offset" type="int">
 			</argument>
 			<description>
+			Removes the color at the index [i]offset[/i]
 			</description>
 		</method>
 		<method name="set_offset">
@@ -8015,6 +8487,7 @@
 			<argument index="1" name="offset" type="float">
 			</argument>
 			<description>
+			Sets the offset for the ramp color at index [i]point[/i]
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
@@ -8023,6 +8496,7 @@
 			<argument index="0" name="point" type="int">
 			</argument>
 			<description>
+			Returns the offset of the ramp color at index [i]point[/i]
 			</description>
 		</method>
 		<method name="set_color">
@@ -8031,6 +8505,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+			Sets the color of the ramp color at index [i]point[/i]
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
@@ -8039,6 +8514,7 @@
 			<argument index="0" name="point" type="int">
 			</argument>
 			<description>
+			Returns the color of the ramp color at index [i]point[/i]
 			</description>
 		</method>
 		<method name="interpolate">
@@ -8047,36 +8523,42 @@
 			<argument index="0" name="offset" type="float">
 			</argument>
 			<description>
+			Returns the interpolated color specified by [i]offset[/i]
 			</description>
 		</method>
 		<method name="get_point_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Returns the number of colors in the ramp
 			</description>
 		</method>
 		<method name="set_offsets">
 			<argument index="0" name="offsets" type="RealArray">
 			</argument>
 			<description>
+			Sets the offset for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accomodate the new elements, all new colors will be black by default.
 			</description>
 		</method>
 		<method name="get_offsets" qualifiers="const">
 			<return type="RealArray">
 			</return>
 			<description>
+			Returns the offsets for the colors in this ramp
 			</description>
 		</method>
 		<method name="set_colors">
 			<argument index="0" name="colors" type="ColorArray">
 			</argument>
 			<description>
+			Sets the colors for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accomodate the new elements.
 			</description>
 		</method>
 		<method name="get_colors" qualifiers="const">
 			<return type="ColorArray">
 			</return>
 			<description>
+			Returns the colors in the ramp
 			</description>
 		</method>
 	</methods>
@@ -8176,8 +8658,23 @@
 </class>
 <class name="ConfigFile" inherits="Reference" category="Core">
 	<brief_description>
+	Helper class to handle INI-style files.
 	</brief_description>
 	<description>
+	This helper class can be used to store [Variant] values on the filesystem using an INI-style formatting. The stored values as referenced by a section and a key. The stored data can be saved to or parsed from a file, though ConfigFile objects can also be used directly with accessing the filesystem.
+	The following example shows how to parse a INI-style file from the system, read its contents and store new values in it:
+	[codeblock]
+	var config = ConfigFile.new()
+	var err = config.load("user://settings.cfg")
+	if err == OK: # if not, something went wrong with the file loading
+	    # Look for the display/width pair, and default to 1024 if missing
+	    var screen_width = get_value("display", "width", 1024)
+	    # Store a variable if and only it hasn't been defined yet
+		if not config.has_section_key("audio", "mute"):
+		    config.set_value("audio", "mute", false)
+	    # Save the changes by overwriting the previous file
+		config.save("user://settings.cfg")
+	[/codeblock]
 	</description>
 	<methods>
 		<method name="set_value">
@@ -8188,9 +8685,12 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
+			Assign a value to the specified key of the the specified section. If the section and/or the key do not exist, they are created. Passing a [code]NULL[/code] value deletes the specified key if it exists (and deletes the section if it ends up empty once the key has been removed).
 			</description>
 		</method>
 		<method name="get_value" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<argument index="0" name="section" type="String">
 			</argument>
 			<argument index="1" name="key" type="String">
@@ -8198,6 +8698,7 @@
 			<argument index="2" name="default" type="Variant" default="NULL">
 			</argument>
 			<description>
+			Return the current value for the specified section and key. If the section and/or the key do not exist, the method returns the value of the optional [i]default[/i] argument (and thus [code]NULL[/code] if not specified).
 			</description>
 		</method>
 		<method name="has_section" qualifiers="const">
@@ -8206,6 +8707,7 @@
 			<argument index="0" name="section" type="String">
 			</argument>
 			<description>
+			Check if the specified section exists.
 			</description>
 		</method>
 		<method name="has_section_key" qualifiers="const">
@@ -8216,12 +8718,14 @@
 			<argument index="1" name="key" type="String">
 			</argument>
 			<description>
+			Check if the specified section-key pair exists.
 			</description>
 		</method>
 		<method name="get_sections" qualifiers="const">
 			<return type="StringArray">
 			</return>
 			<description>
+			Return an array of all defined section identifiers.
 			</description>
 		</method>
 		<method name="get_section_keys" qualifiers="const">
@@ -8230,6 +8734,7 @@
 			<argument index="0" name="section" type="String">
 			</argument>
 			<description>
+			Return an array of all defined key identifiers in the specified section.
 			</description>
 		</method>
 		<method name="load">
@@ -8238,6 +8743,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Load the config file specified as a parameter. The file's contents are parsed and loaded in the ConfigFile object from which the method was called. The return value is one of the OK, FAILED or ERR_* constants listed in [@Global Scope] (if the load was successful, it returns OK).
 			</description>
 		</method>
 		<method name="save">
@@ -8246,6 +8752,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Save the contents of the ConfigFile object to the file specified as a parameter. The output file uses an INI-style structure.
+			The return value is one of the OK, FAILED or ERR_* constants listed in [@Global Scope] (if the save was successful, it returns OK).
 			</description>
 		</method>
 	</methods>
@@ -8464,7 +8972,13 @@
 			</description>
 		</method>
 		<method name="set_rotation">
-			<argument index="0" name="rotation" type="float">
+			<argument index="0" name="radians" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_rotation_deg">
+			<argument index="0" name="degrees" type="float">
 			</argument>
 			<description>
 			</description>
@@ -8512,6 +9026,12 @@
 			</description>
 		</method>
 		<method name="get_rotation" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_rotation_deg" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -8857,6 +9377,12 @@
 			</description>
 		</method>
 		<method name="grab_click_focus">
+			<description>
+			</description>
+		</method>
+		<method name="set_drag_forwarding">
+			<argument index="0" name="target" type="Control">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -9641,6 +10167,15 @@ This approximation makes straight segments between each point, then subdivides t
 			Return true if the dictionary has a given key.
 			</description>
 		</method>
+		<method name="has_all">
+			<return type="bool">
+			</return>
+			<argument index="0" name="values" type="Array">
+			</argument>
+			<description>
+			Return true if the dictionary has all of the keys in the given array.
+			</description>
+		</method>
 		<method name="hash">
 			<return type="int">
 			</return>
@@ -9661,6 +10196,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="json" type="String">
 			</argument>
 			<description>
+			Parse json text to the dictionary. Return OK when successed or the error code when failed.
 			</description>
 		</method>
 		<method name="size">
@@ -9674,6 +10210,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<return type="String">
 			</return>
 			<description>
+			Return the dictionary as json text.
 			</description>
 		</method>
 	</methods>
@@ -9739,22 +10276,22 @@ This approximation makes straight segments between each point, then subdivides t
 	Type used to handle the filesystem.
 	</brief_description>
 	<description>
-	Directory type. Is used to manage directories and their content (not restricted to the project folder).
-	Example for how to iterate through the files of a directory:
+	Directory type. It is used to manage directories and their content (not restricted to the project folder).
+	Here is an example on how to iterate through the files of a directory:
 	[codeblock]
-	func dir(path):
-	    var d = Directory.new()
-	    if d.open( path )==0:
-	        d.list_dir_begin()
-	        var file_name = d.get_next()
-	        while(file_name!=""):
-	            if d.current_is_dir():
+	func dir_contents(path):
+	    var dir = Directory.new()
+	    if dir.open(path) == OK:
+	        dir.list_dir_begin()
+	        var file_name = dir.get_next()
+	        while (file_name != ""):
+	            if dir.current_is_dir():
 	                print("Found directory: " + file_name)
 	            else:
-	                print("Found file:" + file_name)
-	            file_name = d.get_next()
+	                print("Found file: " + file_name)
+	            file_name = dir.get_next()
 	    else:
-	        print("Some open Error, maybe directory not found?")
+	        print("An error occurred when trying to access the path.")
 	[/codeblock]
 	</description>
 	<methods>
@@ -9764,40 +10301,42 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-			Opens a directory to work with. Needs a path, example "res://folder"
+			Open an existing directory of the filesystem. The [i]path[/i] argument can be within the project tree ([code]res://folder[/code]), the user directory ([code]user://folder[/code]) or an absolute path of the user filesystem (e.g. [code]/tmp/folder[/code] or [code]C:\tmp\folder[/code]).
+			The method returns one of the error code constants defined in [@Global Scope] (OK or ERR_*).
 			</description>
 		</method>
 		<method name="list_dir_begin">
 			<return type="bool">
 			</return>
 			<description>
-			Loads all file names of the current directory (prepares the get_next() function).
+			Initialise the stream used to list all files and directories using the [method get_next] function, closing the current opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
+			Return false if the stream could not be initialised.
 			</description>
 		</method>
 		<method name="get_next">
 			<return type="String">
 			</return>
 			<description>
-			Is used to iterate through the files of the current directory. Returns the name(no path) of the current file/directory, it also contains "." and ".." .
-Returns an empty String "" at the end of the list.
+			Return the next element (file or directory) in the current directory (including [code].[/code] and [code]..[/code]). The name of the file or directory is returned (and not its full path). Once the stream has been fully processed, the method returns an empty String and closes the stream automatically (i.e. [method list_dir_end] would not be mandatory in such a case).
 			</description>
 		</method>
 		<method name="current_is_dir" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-			Returns true if the current file you are looking at with get_next() is a directory or "." or ".." otherwise false.
+			Return whether the current item processed with the last [method get_next] call is a directory ([code].[/code] and [code]..[/code] are considered directories).
 			</description>
 		</method>
 		<method name="list_dir_end">
 			<description>
-			Run this to empty the list of remaining files in get_next(). You can use it to end the iteration, as soon as your goal is reached.
+			Close the current stream opened with [method list_dir_begin] (whether it has been fully processed with [method get_next] or not does not matter).
 			</description>
 		</method>
 		<method name="get_drive_count">
 			<return type="int">
 			</return>
 			<description>
+			On Windows, return the number of drives (partitions) mounted on the current filesystem. On other platforms, the method returns 0.
 			</description>
 		</method>
 		<method name="get_drive">
@@ -9806,6 +10345,7 @@ Returns an empty String "" at the end of the list.
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			On Windows, return the name of the drive (partition) passed as an argument (e.g. [code]C:[/code]). On other platforms, or if the requested drive does not existed, the method returns an empty String.
 			</description>
 		</method>
 		<method name="change_dir">
@@ -9814,53 +10354,60 @@ Returns an empty String "" at the end of the list.
 			<argument index="0" name="todir" type="String">
 			</argument>
 			<description>
-			Needs a path or name to the next directory. When the target directory is in the current directory you can use "newfolder" otherwise you need the full path "res://currentfolder/newfolder"
+			Change the currently opened directory to the one passed as an argument. The argument can be relative to the current directory (e.g. [code]newdir[/code] or [code]../newdir[/code]), or an absolute path (e.g. [code]/tmp/newdir[/code] or [code]res://somedir/newdir[/code]).
+			The method returns one of the error code constants defined in [@Global Scope] (OK or ERR_*).
 			</description>
 		</method>
 		<method name="get_current_dir">
 			<return type="String">
 			</return>
 			<description>
-			Returns a path to the current directory, example: "res://folder"
+			Return the absolute path to the currently opened directory (e.g. [code]res://folder[/code] or [code]C:\tmp\folder[/code]).
 			</description>
 		</method>
 		<method name="make_dir">
 			<return type="Error">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Create a directory. The argument can be relative to the current directory, or an absolute path. The target directory should be placed in an already existing directory (to create the full path recursively, see [method make_dir_recursive]).
+			The method returns one of the error code constants defined in [@Global Scope] (OK, FAILED or ERR_*).
 			</description>
 		</method>
 		<method name="make_dir_recursive">
 			<return type="Error">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Create a target directory and all necessary intermediate directories in its path, by calling [method make_dir] recursively. The argument can be relative to the current directory, or an absolute path.
+			Returns one of the error code constants defined in [@Global Scope] (OK, FAILED or ERR_*).
 			</description>
 		</method>
 		<method name="file_exists">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Return whether the target file exists. The argument can be relative to the current directory, or an absolute path.
 			</description>
 		</method>
 		<method name="dir_exists">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-			Returns true if directory exists otherwise false. Needs a path, example: "res://folder"
+			Return whether the target directory exists. The argument can be relative to the current directory, or an absolute path.
 			</description>
 		</method>
 		<method name="get_space_left">
 			<return type="int">
 			</return>
 			<description>
+			On Unix desktop systems, return the available space on the current directory's disk. On other platforms, this information is not available and the method returns 0 or -1.
 			</description>
 		</method>
 		<method name="copy">
@@ -9871,6 +10418,8 @@ Returns an empty String "" at the end of the list.
 			<argument index="1" name="to" type="String">
 			</argument>
 			<description>
+			Copy the [i]from[/i] file to the [i]to[/i] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
+			Returns one of the error code constants defined in [@Global Scope] (OK, FAILED or ERR_*).
 			</description>
 		</method>
 		<method name="rename">
@@ -9881,16 +10430,64 @@ Returns an empty String "" at the end of the list.
 			<argument index="1" name="to" type="String">
 			</argument>
 			<description>
+			Rename (move) the [i]from[/i] file to the [i]to[/i] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
+			Returns one of the error code constants defined in [@Global Scope] (OK or FAILED).
 			</description>
 		</method>
 		<method name="remove">
 			<return type="Error">
 			</return>
-			<argument index="0" name="file" type="String">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			Delete the target file or an empty directory. The argument can be relative to the current directory, or an absolute path. If the target directory is not empty, the operation will fail.
+			Returns one of the error code constants defined in [@Global Scope] (OK or FAILED).
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="DynamicFont" inherits="Font" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="set_font_data">
+			<argument index="0" name="data" type="DynamicFontData">
 			</argument>
 			<description>
 			</description>
 		</method>
+		<method name="get_font_data" qualifiers="const">
+			<return type="DynamicFontData">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_size">
+			<argument index="0" name="data" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="DynamicFontData" inherits="Resource" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
 	</methods>
 	<constants>
 	</constants>
@@ -10074,7 +10671,9 @@ Returns an empty String "" at the end of the list.
 		</constant>
 		<constant name="MODE_OPEN_DIR" value="2">
 		</constant>
-		<constant name="MODE_SAVE_FILE" value="3">
+		<constant name="MODE_OPEN_ANY" value="3">
+		</constant>
+		<constant name="MODE_SAVE_FILE" value="4">
 		</constant>
 		<constant name="ACCESS_RESOURCES" value="0">
 		</constant>
@@ -11662,18 +12261,21 @@ Returns an empty String "" at the end of the list.
 			<argument index="0" name="dir" type="String">
 			</argument>
 			<description>
+			Set the current working directory of the file dialog.
 			</description>
 		</method>
 		<method name="set_current_file">
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
+			Set the current selected file name of the file dialog.
 			</description>
 		</method>
 		<method name="set_current_path">
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Set the current selected file path of the file dialog.
 			</description>
 		</method>
 		<method name="set_mode">
@@ -11694,34 +12296,40 @@ Returns an empty String "" at the end of the list.
 			<return type="VBoxContainer">
 			</return>
 			<description>
+			Return the vertical box container of the dialog, custom controls can be added to it.
 			</description>
 		</method>
 		<method name="set_access">
 			<argument index="0" name="access" type="int">
 			</argument>
 			<description>
+			Set the file access permission of the dialog(Must be one of [ACCESS_RESOURCES], [ACCESS_USERDATA] or [ACCESS_FILESYSTEM]).
 			</description>
 		</method>
 		<method name="get_access" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the file access permission of the dialog.
 			</description>
 		</method>
 		<method name="set_show_hidden_files">
 			<argument index="0" name="show" type="bool">
 			</argument>
 			<description>
+			Set the dialog should show hidden files.
 			</description>
 		</method>
 		<method name="is_showing_hidden_files" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if the diaog allows show hidden files.
 			</description>
 		</method>
 		<method name="invalidate">
 			<description>
+			Invalidate and update the current dialog content list.
 			</description>
 		</method>
 	</methods>
@@ -11730,12 +12338,14 @@ Returns an empty String "" at the end of the list.
 			<argument index="0" name="paths" type="StringArray">
 			</argument>
 			<description>
+			Event emitted when the user selects multiple files.
 			</description>
 		</signal>
 		<signal name="dir_selected">
 			<argument index="0" name="dir" type="String">
 			</argument>
 			<description>
+			Event emitted when the user selects a directory.
 			</description>
 		</signal>
 		<signal name="file_selected">
@@ -11756,14 +12366,20 @@ Returns an empty String "" at the end of the list.
 		<constant name="MODE_OPEN_DIR" value="2">
 			The dialog functions as a folder selector, disallowing the selection of any file.
 		</constant>
-		<constant name="MODE_SAVE_FILE" value="3">
+		<constant name="MODE_OPEN_ANY" value="3">
+			The dialog allows the selection of a file or a directory.
+		</constant>
+		<constant name="MODE_SAVE_FILE" value="4">
 			The dialog will warn when a file exists.
 		</constant>
 		<constant name="ACCESS_RESOURCES" value="0">
+			The dialog allows the selection of file and directory.
 		</constant>
 		<constant name="ACCESS_USERDATA" value="1">
+			The dialog allows ascess files under [Resource] path(res://) .
 		</constant>
 		<constant name="ACCESS_FILESYSTEM" value="2">
+			The dialog allows ascess files in whole file system.
 		</constant>
 	</constants>
 	<theme_items>
@@ -11954,33 +12570,19 @@ Returns an empty String "" at the end of the list.
 	Font contains an unicode compatible character set, as well as the ability to draw it with variable width, ascent, descent and kerning. For creating fonts from TTF files (or other font formats), see the editor support for fonts. TODO check wikipedia for graph of ascent/baseline/descent/height/etc.
 	</description>
 	<methods>
-		<method name="create_from_fnt">
-			<return type="int">
-			</return>
-			<argument index="0" name="path" type="String">
+		<method name="draw" qualifiers="const">
+			<argument index="0" name="canvas_item" type="RID">
+			</argument>
+			<argument index="1" name="pos" type="Vector2">
+			</argument>
+			<argument index="2" name="string" type="String">
+			</argument>
+			<argument index="3" name="modulate" type="Color" default="Color(1,1,1,1)">
+			</argument>
+			<argument index="4" name="clip_w" type="int" default="-1">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="set_height">
-			<argument index="0" name="px" type="float">
-			</argument>
-			<description>
-			Set the total font height (ascent plus descent) in pixels.
-			</description>
-		</method>
-		<method name="get_height" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			Return the total font height (ascent plus descent) in pixels.
-			</description>
-		</method>
-		<method name="set_ascent">
-			<argument index="0" name="px" type="float">
-			</argument>
-			<description>
-			Set the font ascent (number of pixels above the baseline).
+			Draw "string" into a canvas item using the font at a given "pos" position, with "modulate" color, and optionally clipping the width. "pos" specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
 			</description>
 		</method>
 		<method name="get_ascent" qualifiers="const">
@@ -11997,73 +12599,17 @@ Returns an empty String "" at the end of the list.
 			Return the font descent (number of pixels below the baseline).
 			</description>
 		</method>
-		<method name="add_kerning_pair">
-			<argument index="0" name="char_a" type="int">
-			</argument>
-			<argument index="1" name="char_b" type="int">
-			</argument>
-			<argument index="2" name="kerning" type="int">
-			</argument>
-			<description>
-			Add a kerning pair to the [Font] as a difference. Kerning pairs are special cases where a typeface advance is determined by the next character.
-			</description>
-		</method>
-		<method name="get_kerning_pair" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="char_a" type="int">
-			</argument>
-			<argument index="1" name="char_b" type="int">
-			</argument>
-			<description>
-			Return a kerning pair as a difference. Kerning pairs are special cases where a typeface advance is determined by the next character.
-			</description>
-		</method>
-		<method name="add_texture">
-			<argument index="0" name="texture" type="Texture">
-			</argument>
-			<description>
-			Add a texture to the [Font].
-			</description>
-		</method>
-		<method name="add_char">
-			<argument index="0" name="character" type="int">
-			</argument>
-			<argument index="1" name="texture" type="int">
-			</argument>
-			<argument index="2" name="rect" type="Rect2">
-			</argument>
-			<argument index="3" name="align" type="Vector2" default="Vector2(0,0)">
-			</argument>
-			<argument index="4" name="advance" type="float" default="-1">
-			</argument>
-			<description>
-			Add a character to the font, where "character" is the unicode value, "texture" is the texture index, "rect" is the region in the texture (in pixels!), "align" is the (optional) alignment for the character and "advance" is the (optional) advance.
-			</description>
-		</method>
-		<method name="get_texture_count" qualifiers="const">
-			<return type="int">
+		<method name="get_height" qualifiers="const">
+			<return type="float">
 			</return>
 			<description>
+			Return the total font height (ascent plus descent) in pixels.
 			</description>
 		</method>
-		<method name="get_texture" qualifiers="const">
-			<return type="Texture">
+		<method name="is_distance_field_hint" qualifiers="const">
+			<return type="bool">
 			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="get_char_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="char" type="int">
-			</argument>
-			<argument index="1" name="next" type="int" default="0">
-			</argument>
-			<description>
-			Return the size of a character, optionally taking kerning into account if the next character is provided.
 			</description>
 		</method>
 		<method name="get_string_size" qualifiers="const">
@@ -12073,38 +12619,6 @@ Returns an empty String "" at the end of the list.
 			</argument>
 			<description>
 			Return the size of a string, taking kerning and advance into account.
-			</description>
-		</method>
-		<method name="set_distance_field_hint">
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="is_distance_field_hint" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="clear">
-			<description>
-			Clear all the font data.
-			</description>
-		</method>
-		<method name="draw" qualifiers="const">
-			<argument index="0" name="canvas_item" type="RID">
-			</argument>
-			<argument index="1" name="pos" type="Vector2">
-			</argument>
-			<argument index="2" name="string" type="String">
-			</argument>
-			<argument index="3" name="modulate" type="Color" default="Color(1,1,1,1)">
-			</argument>
-			<argument index="4" name="clip_w" type="int" default="-1">
-			</argument>
-			<description>
-			Draw "string" into a canvas item using the font at a given "pos" position, with "modulate" color, and optionally clipping the width. "pos" specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
 			</description>
 		</method>
 		<method name="draw_char" qualifiers="const">
@@ -12122,18 +12636,6 @@ Returns an empty String "" at the end of the list.
 			</argument>
 			<description>
 			Draw character "char" into a canvas item using the font at a given "pos" position, with "modulate" color, and optionally kerning if "next" is passed. clipping the width. "pos" specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis. The width used by the character is returned, making this function useful for drawing strings character by character.
-			</description>
-		</method>
-		<method name="set_fallback">
-			<argument index="0" name="fallback" type="Object">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_fallback" qualifiers="const">
-			<return type="Object">
-			</return>
-			<description>
 			</description>
 		</method>
 	</methods>
@@ -12204,6 +12706,7 @@ Returns an empty String "" at the end of the list.
 			<return type="bool">
 			</return>
 			<description>
+			Should put children to the top left corner instead of center of the container.
 			</description>
 		</method>
 	</methods>
@@ -12646,6 +13149,18 @@ Returns an empty String "" at the end of the list.
 			<description>
 			</description>
 		</method>
+		<method name="set_cast_shadows_setting">
+			<argument index="0" name="shadow_casting_setting" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_cast_shadows_setting" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_draw_range_begin">
 			<argument index="0" name="mode" type="float">
 			</argument>
@@ -12711,6 +13226,14 @@ Returns an empty String "" at the end of the list.
 		<constant name="FLAG_VISIBLE_IN_ALL_ROOMS" value="6">
 		</constant>
 		<constant name="FLAG_MAX" value="8">
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_OFF" value="0">
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_ON" value="1">
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_DOUBLE_SIDED" value="2">
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3">
 		</constant>
 	</constants>
 </class>
@@ -12897,18 +13420,21 @@ Returns an empty String "" at the end of the list.
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the scroll offset.
 			</description>
 		</method>
 		<method name="set_zoom">
 			<argument index="0" name="p_zoom" type="float">
 			</argument>
 			<description>
+			Set the zoom value of the GraphEdit. Zoom value is between [0.01; 1.728].
 			</description>
 		</method>
 		<method name="get_zoom" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current zoom value.
 			</description>
 		</method>
 		<method name="set_right_disconnects">
@@ -12929,20 +13455,24 @@ Returns an empty String "" at the end of the list.
 	<signals>
 		<signal name="delete_nodes_request">
 			<description>
+			Signal sent when a GraphNode is attempted to be removed from the GraphEdit.
 			</description>
 		</signal>
 		<signal name="duplicate_nodes_request">
 			<description>
+			Signal sent when a GraphNode is attempted to be duplicated in the GraphEdit.
 			</description>
 		</signal>
 		<signal name="popup_request">
 			<argument index="0" name="p_position" type="Vector2">
 			</argument>
 			<description>
+			Signal sent when a popup is requested. Happens on right-clicking in the GraphEdit. 'p_position' is the position of the mouse pointer when the signal is sent.
 			</description>
 		</signal>
 		<signal name="_begin_node_move">
 			<description>
+			Signal sent at the beginning of a GraphNode movement.
 			</description>
 		</signal>
 		<signal name="disconnection_request">
@@ -12973,6 +13503,7 @@ Returns an empty String "" at the end of the list.
 		</signal>
 		<signal name="_end_node_move">
 			<description>
+			Signal sent at the end of a GraphNode movement.
 			</description>
 		</signal>
 	</signals>
@@ -13250,20 +13781,24 @@ Returns an empty String "" at the end of the list.
 </class>
 <class name="GridContainer" inherits="Container" category="Core">
 	<brief_description>
+	Grid container used to arrange elements in a grid like layout
 	</brief_description>
 	<description>
+	Grid container will arrange its children in a grid like structure, the grid columns are specified using the [method set_columns] method and the number of rows will be equal to the number of children in the container divided by the number of columns, for example: if the container has 5 children, and 2 columns, there will be 3 rows in the container. Notice that grid layout will preserve the columns and rows for every size of the container.
 	</description>
 	<methods>
 		<method name="set_columns">
 			<argument index="0" name="columns" type="int">
 			</argument>
 			<description>
+			Sets the numbers of columns in the container, then reorder its children to accommodate the new layout
 			</description>
 		</method>
 		<method name="get_columns" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Returns the number of columns in this container
 			</description>
 		</method>
 	</methods>
@@ -13757,6 +14292,26 @@ Returns an empty String "" at the end of the list.
 			<description>
 			</description>
 		</method>
+		<method name="get_connection" qualifiers="const">
+			<return type="StreamPeer">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="request_raw">
+			<return type="int">
+			</return>
+			<argument index="0" name="method" type="int">
+			</argument>
+			<argument index="1" name="url" type="String">
+			</argument>
+			<argument index="2" name="headers" type="StringArray">
+			</argument>
+			<argument index="3" name="body" type="RawArray" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="request">
 			<return type="int">
 			</return>
@@ -14035,6 +14590,134 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 	</constants>
 </class>
+<class name="HTTPRequest" inherits="Node" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="request">
+			<return type="int">
+			</return>
+			<argument index="0" name="url" type="String">
+			</argument>
+			<argument index="1" name="custom_headers" type="StringArray" default="StringArray()">
+			</argument>
+			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="cancel_request">
+			<description>
+			</description>
+		</method>
+		<method name="get_http_client_status" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_use_threads">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_using_threads" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_body_size_limit">
+			<argument index="0" name="bytes" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_body_size_limit" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_max_redirects">
+			<argument index="0" name="amount" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_max_redirects" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_download_file">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_download_file" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_downloaded_bytes" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_body_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="request_completed">
+			<argument index="0" name="result" type="int">
+			</argument>
+			<argument index="1" name="response_code" type="int">
+			</argument>
+			<argument index="2" name="headers" type="StringArray">
+			</argument>
+			<argument index="3" name="body" type="RawArray">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="RESULT_SUCCESS" value="0">
+		</constant>
+		<constant name="RESULT_CHUNKED_BODY_SIZE_MISMATCH" value="1">
+		</constant>
+		<constant name="RESULT_CANT_CONNECT" value="2">
+		</constant>
+		<constant name="RESULT_CANT_RESOLVE" value="3">
+		</constant>
+		<constant name="RESULT_CONNECTION_ERROR" value="4">
+		</constant>
+		<constant name="RESULT_SSL_HANDSHAKE_ERROR" value="5">
+		</constant>
+		<constant name="RESULT_NO_RESPONSE" value="6">
+		</constant>
+		<constant name="RESULT_BODY_SIZE_LIMIT_EXCEEDED" value="7">
+		</constant>
+		<constant name="RESULT_REQUEST_FAILED" value="8">
+		</constant>
+		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="11">
+		</constant>
+		<constant name="RESULT_DOWNLOAD_FILE_WRITE_ERROR" value="10">
+		</constant>
+	</constants>
+</class>
 <class name="HingeJoint" inherits="Joint" category="Core">
 	<brief_description>
 	</brief_description>
@@ -14249,6 +14932,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="empty">
 			<return type="bool">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="fix_alpha_edges">
 			<description>
 			</description>
 		</method>
@@ -14595,8 +15282,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="Input" inherits="Object" category="Core">
 	<brief_description>
+	A Singleton that deals with inputs.
 	</brief_description>
 	<description>
+	A Singleton that deals with inputs. This includes key presses, mouse buttons and movement, joysticks, and input actions.
 	</description>
 	<methods>
 		<method name="is_key_pressed">
@@ -14605,6 +15294,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="scancode" type="int">
 			</argument>
 			<description>
+			Returns true or false depending on whether the key is pressed or not. You can pass KEY_*, which are pre-defined constants listed in [@Global Scope].
 			</description>
 		</method>
 		<method name="is_mouse_button_pressed">
@@ -14633,6 +15323,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Returns true or false depending on whether the action event is pressed. Actions and their events can be set in the Project Settings / Input Map tab. Or be set with [InputMap].
 			</description>
 		</method>
 		<method name="add_joy_mapping">
@@ -14693,48 +15384,56 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="Vector3">
 			</return>
 			<description>
+			If the device has an accelerometer, this will return the movement.
 			</description>
 		</method>
 		<method name="get_mouse_speed" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Returns the mouse speed.
 			</description>
 		</method>
 		<method name="get_mouse_button_mask" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Returns mouse buttons as a bitmask. If multiple mouse buttons are pressed at the same time the bits are added together.
 			</description>
 		</method>
 		<method name="set_mouse_mode">
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+			Set the mouse mode. See the constants for more information.
 			</description>
 		</method>
 		<method name="get_mouse_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the mouse mode. See the constants for more information.
 			</description>
 		</method>
 		<method name="warp_mouse_pos">
 			<argument index="0" name="to" type="Vector2">
 			</argument>
 			<description>
+			Sets the mouse position to the specified vector.
 			</description>
 		</method>
 		<method name="action_press">
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			This will simulate pressing the specificed action.
 			</description>
 		</method>
 		<method name="action_release">
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			If the specified action is already pressed, this will release it.
 			</description>
 		</method>
 		<method name="set_custom_mouse_cursor">
@@ -14743,6 +15442,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="hotspot" type="Vector2" default="Vector2(0,0)">
 			</argument>
 			<description>
+			Set a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified.
 			</description>
 		</method>
 	</methods>
@@ -14759,10 +15459,13 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</signals>
 	<constants>
 		<constant name="MOUSE_MODE_VISIBLE" value="0">
+			Makes the mouse cursor visible if it is hidden.
 		</constant>
 		<constant name="MOUSE_MODE_HIDDEN" value="1">
+			Makes the mouse cursor hidden if it is visible.
 		</constant>
 		<constant name="MOUSE_MODE_CAPTURED" value="2">
+			Captures the mouse. The mouse will be hidden and unable to leave the game window. But it will still register movement and mouse button presses.
 		</constant>
 	</constants>
 </class>
@@ -15846,6 +16549,76 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	<constants>
 	</constants>
 </class>
+<class name="InverseKinematics" inherits="Spatial" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="set_bone_name">
+			<argument index="0" name="ik_bone" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_iterations">
+			<argument index="0" name="iterations" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_iterations" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_chain_size">
+			<argument index="0" name="chain_size" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_chain_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_precision">
+			<argument index="0" name="precision" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_precision" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_speed">
+			<argument index="0" name="speed" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_speed" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="ItemList" inherits="Control" category="Core">
 	<brief_description>
 	</brief_description>
@@ -15855,7 +16628,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="add_item">
 			<argument index="0" name="text" type="String">
 			</argument>
-			<argument index="1" name="icon" type="Texture" default="Object()">
+			<argument index="1" name="icon" type="Texture" default="NULL">
 			</argument>
 			<argument index="2" name="selectable" type="bool" default="true">
 			</argument>
@@ -15896,6 +16669,22 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</method>
 		<method name="get_item_icon" qualifiers="const">
 			<return type="Texture">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_icon_region">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_icon_region" qualifiers="const">
+			<return type="Rect2">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -16091,6 +16880,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="get_min_icon_size" qualifiers="const">
 			<return type="Vector2">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_at_pos" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -16954,266 +17751,314 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="Light2D" inherits="Node2D" category="Core">
 	<brief_description>
+	Node that casts light in a 2D environment.
 	</brief_description>
 	<description>
+	Node that casts light in a 2D environment. Light is defined by a (usually grayscale) texture, a color, an energy value, a mode (see constants), and various other parameters (range and shadows-related). Note that Light2D can be used as a mask.
 	</description>
 	<methods>
 		<method name="set_enabled">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Switches the Light2D on or off, depending on the 'enabled' parameter.
 			</description>
 		</method>
 		<method name="is_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if the Light2D is enabled, false if it is not.
 			</description>
 		</method>
 		<method name="set_texture">
 			<argument index="0" name="texture" type="Object">
 			</argument>
 			<description>
+			Set the texture of the Light2D.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="Object">
 			</return>
 			<description>
+			Return the texture of the Light2D.
 			</description>
 		</method>
 		<method name="set_texture_offset">
 			<argument index="0" name="texture_offset" type="Vector2">
 			</argument>
 			<description>
+			Set the offset of the light texture.
 			</description>
 		</method>
 		<method name="get_texture_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the offset of the light texture.
 			</description>
 		</method>
 		<method name="set_color">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+			Set the color of the Light2D.
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
+			Return the color of the Light2D.
 			</description>
 		</method>
 		<method name="set_height">
 			<argument index="0" name="height" type="float">
 			</argument>
 			<description>
+			Set the height of the Light2D. Used with 2D normalmapping.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the height of the Light2D. Used with 2D normalmapping.
 			</description>
 		</method>
 		<method name="set_energy">
 			<argument index="0" name="energy" type="float">
 			</argument>
 			<description>
+			Set the energy value of the Light2D. The bigger the value, the stronger the light.
 			</description>
 		</method>
 		<method name="get_energy" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the energy value of the Light2D.
 			</description>
 		</method>
 		<method name="set_texture_scale">
 			<argument index="0" name="texture_scale" type="float">
 			</argument>
 			<description>
+			Set the scale value of the light texture.
 			</description>
 		</method>
 		<method name="get_texture_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the scale value of the light texture.
 			</description>
 		</method>
 		<method name="set_z_range_min">
 			<argument index="0" name="z" type="int">
 			</argument>
 			<description>
+			Set the minimum Z value that objects of the scene have to be in order to be affected by the Light2D.
 			</description>
 		</method>
 		<method name="get_z_range_min" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Get the minimum Z value that objects of the scene have to be in order to be affected by the Light2D.
 			</description>
 		</method>
 		<method name="set_z_range_max">
 			<argument index="0" name="z" type="int">
 			</argument>
 			<description>
+			Set the maximum Z value that objects of the scene can be in order to be affected by the Light2D.
 			</description>
 		</method>
 		<method name="get_z_range_max" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Get the maximum Z value that objects of the scene can be in order to be affected by the Light2D.
 			</description>
 		</method>
 		<method name="set_layer_range_min">
 			<argument index="0" name="layer" type="int">
 			</argument>
 			<description>
+			Set the minimum layer value of objects of the scene that are affected by the Light2D.
 			</description>
 		</method>
 		<method name="get_layer_range_min" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Get the minimum layer value of objects of the scene that are affected by the Light2D.
 			</description>
 		</method>
 		<method name="set_layer_range_max">
 			<argument index="0" name="layer" type="int">
 			</argument>
 			<description>
+			Set the maximum layer value of objects of the scene that are affected by the Light2D.
 			</description>
 		</method>
 		<method name="get_layer_range_max" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Set the maximum layer value of objects of the scene that are affected by the Light2D.
 			</description>
 		</method>
 		<method name="set_item_mask">
 			<argument index="0" name="item_mask" type="int">
 			</argument>
 			<description>
+			Set the item mask of the Light2D to 'item_mask' value.
 			</description>
 		</method>
 		<method name="get_item_mask" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the item mask of the Light2D.
 			</description>
 		</method>
 		<method name="set_item_shadow_mask">
 			<argument index="0" name="item_shadow_mask" type="int">
 			</argument>
 			<description>
+			Set the item shadow mask to 'item_shadow_mask' value.
 			</description>
 		</method>
 		<method name="get_item_shadow_mask" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the item shadow mask of the Light2D.
 			</description>
 		</method>
 		<method name="set_mode">
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+			Set the behaviour mode of the Light2D. Use constants defined in the constants section.
 			</description>
 		</method>
 		<method name="get_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the current mode set to the Light2D.
 			</description>
 		</method>
 		<method name="set_shadow_enabled">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Enable or disable shadows casting from this Light2D according to the 'enabled' parameter.
 			</description>
 		</method>
 		<method name="is_shadow_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if shadow casting is enabled for this Light2D, else return false.
 			</description>
 		</method>
 		<method name="set_shadow_buffer_size">
 			<argument index="0" name="size" type="int">
 			</argument>
 			<description>
+			Set the shadow buffer size.
 			</description>
 		</method>
 		<method name="get_shadow_buffer_size" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the shadow buffer size.
 			</description>
 		</method>
 		<method name="set_shadow_esm_multiplier">
 			<argument index="0" name="multiplier" type="float">
 			</argument>
 			<description>
+			Set the Exponential Shadow Multiplier (ESM) value of the Light2D.
 			</description>
 		</method>
 		<method name="get_shadow_esm_multiplier" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the Exponential Shadow Multiplier (ESM) value of the Light2D. 
 			</description>
 		</method>
 		<method name="set_shadow_color">
 			<argument index="0" name="shadow_color" type="Color">
 			</argument>
 			<description>
+			Set the color of casted shadows for this Light2D.
 			</description>
 		</method>
 		<method name="get_shadow_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
+			Return the color of casted shadows for this Light2D.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="MODE_ADD" value="0">
+		Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behaviour of a light.
 		</constant>
 		<constant name="MODE_SUB" value="1">
+		Substract the value of pixels corresponding to the Light2D to the values of pixels under it, resulting in inversed light effect.
 		</constant>
 		<constant name="MODE_MIX" value="2">
+		Mix the value of pixels corresponding to the Light2D to the values of pixels under it by linear interpolation.
 		</constant>
 		<constant name="MODE_MASK" value="3">
+		The light texture of the Light2D is used as a mask, hiding or revealing parts of the screen underneath depending on the value of each pixel of the light (mask) texture.
 		</constant>
 	</constants>
 </class>
 <class name="LightOccluder2D" inherits="Node2D" category="Core">
 	<brief_description>
+	Occludes light cast by a Light2D, thus casting shadows.
 	</brief_description>
 	<description>
+	Occludes light cast by a Light2D, thus casting shadows. The LightOccluder2D must be provided with a shape (see OccluderPolygon2D) that allows the shadow to be computed. This shape affects the resulting shadow, while the shape of the representating asset shadowed does not actually affect shadows.
 	</description>
 	<methods>
 		<method name="set_occluder_polygon">
 			<argument index="0" name="polygon" type="OccluderPolygon2D">
 			</argument>
 			<description>
+			Set the OccluderPolygon2D that defines the LightOccluder2D.
 			</description>
 		</method>
 		<method name="get_occluder_polygon" qualifiers="const">
 			<return type="OccluderPolygon2D">
 			</return>
 			<description>
+			Return the OccluderPolygon2D that defines the LightOccluder2D.
 			</description>
 		</method>
 		<method name="set_occluder_light_mask">
 			<argument index="0" name="mask" type="int">
 			</argument>
 			<description>
+			Set the LightOccluder2D light mask. The LightOccluder2D will cast shadows only from Light2Ds that belong to the same light mask(s).
 			</description>
 		</method>
 		<method name="get_occluder_light_mask" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the light mask of the LightOccluder2D.
 			</description>
 		</method>
 	</methods>
@@ -17422,6 +18267,64 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</methods>
 	<constants>
 	</constants>
+</class>
+<class name="LinkButton" inherits="BaseButton" category="Core">
+	<brief_description>
+	Simple button used to represent a link to some resource
+	</brief_description>
+	<description>
+	This kind of buttons are primarily used when the interaction with the button causes a context change (like linking to a web page).
+	</description>
+	<methods>
+		<method name="set_text">
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+			Sets the text of the button.
+			</description>
+		</method>
+		<method name="get_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			Returns the text of the button.
+			</description>
+		</method>
+		<method name="set_underline_mode">
+			<argument index="0" name="underline_mode" type="int">
+			</argument>
+			<description>
+			Sets the underline mode for this button, the argument must be one of the [LinkButton] constants (see constants section).
+			</description>
+		</method>
+		<method name="get_underline_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			Returns the underline mode for this button.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="UNDERLINE_MODE_ALWAYS" value="0">
+			The LinkButton will always show an underline at the bottom of its text
+		</constant>
+		<constant name="UNDERLINE_MODE_ON_HOVER" value="1">
+			The LinkButton will show an underline at the bottom of its text when the mouse cursor is over it.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="underline_spacing" type="int">
+		</theme_item>
+		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="font_color_hover" type="Color">
+		</theme_item>
+		<theme_item name="font_color_pressed" type="Color">
+		</theme_item>
+		<theme_item name="font" type="Font">
+		</theme_item>
+	</theme_items>
 </class>
 <class name="MainLoop" inherits="Object" category="Core">
 	<brief_description>
@@ -18724,6 +19627,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Set the mesh of the item.
 			</description>
 		</method>
+		<method name="set_item_navmesh">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="navmesh" type="NavigationMesh">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_item_shape">
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -18748,6 +19659,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 			Return the mesh of the item.
+			</description>
+		</method>
+		<method name="get_item_navmesh" qualifiers="const">
+			<return type="NavigationMesh">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_item_shape" qualifiers="const">
@@ -19634,7 +20553,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</description>
 		</method>
 		<method name="get_parent" qualifiers="const">
-			<return type="Parent">
+			<return type="Node">
 			</return>
 			<description>
 			Return the parent [Node] of the current [Node], or an empty Object if the node lacks a parent.
@@ -19650,7 +20569,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="2" name="owned" type="bool" default="true">
 			</argument>
 			<description>
-				Find a descendant of this node whose name matches [code]mask[/code] as in [method String.match] (i.e. case sensitive, but '*' matches zero or more characters and '?' matches any single character except '.'). Note that it does not match against the full path, just against individual node names.
+			Find a descendant of this node whose name matches [code]mask[/code] as in [method String.match] (i.e. case sensitive, but '*' matches zero or more characters and '?' matches any single character except '.'). Note that it does not match against the full path, just against individual node names.
 			</description>
 		</method>
 		<method name="has_node_and_resource" qualifiers="const">
@@ -20003,6 +20922,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="NOTIFICATION_INSTANCED" value="20">
 		</constant>
+		<constant name="NOTIFICATION_DRAG_BEGIN" value="21">
+		</constant>
+		<constant name="NOTIFICATION_DRAG_END" value="22">
+		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0">
 		</constant>
 		<constant name="PAUSE_MODE_STOP" value="1">
@@ -20023,21 +20946,28 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
-			Set the position of the 2d node.
+			Set the position of the 2D node.
 			</description>
 		</method>
 		<method name="set_rot">
-			<argument index="0" name="rot" type="float">
+			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
-			Set the rotation of the 2d node.
+			Set the rotation of the 2D node.
+			</description>
+		</method>
+		<method name="set_rotd">
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+			Set the rotation of the 2D node.
 			</description>
 		</method>
 		<method name="set_scale">
 			<argument index="0" name="scale" type="Vector2">
 			</argument>
 			<description>
-			Set the scale of the 2d node.
+			Set the scale of the 2D node.
 			</description>
 		</method>
 		<method name="get_pos" qualifiers="const">
@@ -20054,6 +20984,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Return the rotation of the 2D node.
 			</description>
 		</method>
+		<method name="get_rotd" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_scale" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -20065,6 +21001,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
+			Apply a 'radians' rotation to the 2D node, starting from its current rotation.
 			</description>
 		</method>
 		<method name="move_local_x">
@@ -20073,6 +21010,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="scaled" type="bool" default="false">
 			</argument>
 			<description>
+			Apply a local translation on X axis to the 2D node according to the 'delta' of the process. If 'scaled' is false, the movement is normalized.
 			</description>
 		</method>
 		<method name="move_local_y">
@@ -20081,30 +21019,35 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="scaled" type="bool" default="false">
 			</argument>
 			<description>
+			Apply a local translation on Y axis to the 2D node according to the 'delta' of the process. If 'scaled' is false, the movement is normalized.
 			</description>
 		</method>
 		<method name="translate">
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
+			Apply a local translation of 'offset' to the 2D node, starting from its current local position.
 			</description>
 		</method>
 		<method name="global_translate">
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
+			Apply a global translation of 'offset' to the 2D node, starting from its current global position.
 			</description>
 		</method>
 		<method name="scale">
 			<argument index="0" name="ratio" type="Vector2">
 			</argument>
 			<description>
+			Apply the 'ratio' scale to the 2D node, according to its current scale value.
 			</description>
 		</method>
 		<method name="set_global_pos">
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+			Set the global position of the 2D node to 'pos'.
 			</description>
 		</method>
 		<method name="get_global_pos" qualifiers="const">
@@ -20118,18 +21061,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="xform" type="Matrix32">
 			</argument>
 			<description>
+			Set the local transform [Matrix32] of the 2D node.
 			</description>
 		</method>
 		<method name="set_global_transform">
 			<argument index="0" name="xform" type="Matrix32">
 			</argument>
 			<description>
+			Set the global transform [Matrix32] of the 2D node.
 			</description>
 		</method>
 		<method name="look_at">
 			<argument index="0" name="point" type="Vector2">
 			</argument>
 			<description>
+			Rotate the 2d node so it points at 'point' position.
 			</description>
 		</method>
 		<method name="get_angle_to" qualifiers="const">
@@ -20138,36 +21084,42 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="point" type="Vector2">
 			</argument>
 			<description>
+			Return the rotation angle in radians needed for the 2d node to point at 'point' position.
 			</description>
 		</method>
 		<method name="set_z">
 			<argument index="0" name="z" type="int">
 			</argument>
 			<description>
+			Set the Z-index value of the 2D node.
 			</description>
 		</method>
 		<method name="get_z" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the Z-index of the 2D node.
 			</description>
 		</method>
 		<method name="set_z_as_relative">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set the Z-index value as relative to the parent node of this 2D node. Thus, if this 2D node's Z-index value is 2 and its parent's effective Z-index is 3, then the effective Z-index value of this 2D node would be 3 + 2 = 5.
 			</description>
 		</method>
 		<method name="is_z_relative" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if the Z-index value of this 2D node is relative to its parent's. Else, return false.
 			</description>
 		</method>
 		<method name="edit_set_pivot">
 			<argument index="0" name="pivot" type="Vector2">
 			</argument>
 			<description>
+			Set the pivot position of the 2D node to 'pivot' value. This method is implemented only in some nodes that inherit Node2D.
 			</description>
 		</method>
 		<method name="get_relative_transform_to_parent" qualifiers="const">
@@ -20176,6 +21128,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="parent" type="Object">
 			</argument>
 			<description>
+			Return the transform [Matrix32] calculated relatively to the parent of this 2D node.
 			</description>
 		</method>
 	</methods>
@@ -20342,12 +21295,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="int">
 			</return>
 			<description>
+			Returns the number of displays attached to the host machine
 			</description>
 		</method>
 		<method name="get_current_screen" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Returns the current screen index (0 padded).
 			</description>
 		</method>
 		<method name="set_current_screen">
@@ -20370,75 +21325,100 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="screen" type="int" default="0">
 			</argument>
 			<description>
+			Returns the dimensions in pixels of the specified screen.
 			</description>
 		</method>
 		<method name="get_window_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Returns the window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.
 			</description>
 		</method>
 		<method name="set_window_position">
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
+			Sets the position of the window to the specified position (this function could be restricted by the window manager, meaning that there could be some unreachable areas of the screen).
 			</description>
 		</method>
 		<method name="get_window_size" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Returns the size of the window (without counting window manager decorations).
 			</description>
 		</method>
 		<method name="set_window_size">
 			<argument index="0" name="size" type="Vector2">
 			</argument>
 			<description>
+			Sets the window size to the specified size.
 			</description>
 		</method>
 		<method name="set_window_fullscreen">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Sets window fullscreen mode to the [i]enabled[/i] argument, [i]enabled[/i] is a toggle for the fullscreen mode, calling the function with [i]enabled[/i] true when the screen is not on fullscreen mode will cause the screen to go to fullscreen mode, calling the function with [i]enabled[/i] false when the screen is in fullscreen mode will cause the window to exit the fullscreen mode.
 			</description>
 		</method>
 		<method name="is_window_fullscreen" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether the window is in fullscreen mode or not.
 			</description>
 		</method>
 		<method name="set_window_resizable">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Set the window resizable state, if the window is not resizable it will preserve the dimensions specified in the project settings.
 			</description>
 		</method>
 		<method name="is_window_resizable" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether the window is resizable or not.
 			</description>
 		</method>
 		<method name="set_window_minimized">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Set whether the window is minimized.
 			</description>
 		</method>
 		<method name="is_window_minimized" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if the window is minimized.
 			</description>
 		</method>
 		<method name="set_window_maximized">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Set the window size to maximized.
 			</description>
 		</method>
 		<method name="is_window_maximized" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			Return true if the window is maximized.
+			</description>
+		</method>
+		<method name="set_borderless_window">
+			<argument index="0" name="borderless" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_borderless_window" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -20448,12 +21428,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="orientation" type="int">
 			</argument>
 			<description>
+			Sets the current screen orientation, the argument value must be one of the SCREEN_ORIENTATION constants in this class.
 			</description>
 		</method>
 		<method name="get_screen_orientation" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Returns the current screen orientation, the return value will be one of the SCREEN_ORIENTATION constants in this class.
 			</description>
 		</method>
 		<method name="set_keep_screen_on">
@@ -20467,6 +21449,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether the screen is being kept on or not.
 			</description>
 		</method>
 		<method name="set_iterations_per_second">
@@ -20518,6 +21501,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="title" type="String">
 			</argument>
 			<description>
+			Sets the window title to the specified string.
 			</description>
 		</method>
 		<method name="set_low_processor_usage_mode">
@@ -20538,6 +21522,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="int">
 			</return>
 			<description>
+			Returns the number of cores available in the host machine.
 			</description>
 		</method>
 		<method name="get_executable_path" qualifiers="const">
@@ -20568,7 +21553,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="pid" type="int">
 			</argument>
 			<description>
-			Kill a process ID.
+			Kill a process ID (this method can be used to kill processes that were not spawned by the game).
 			</description>
 		</method>
 		<method name="shell_open">
@@ -20583,6 +21568,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="int">
 			</return>
 			<description>
+			Returns the game process ID
 			</description>
 		</method>
 		<method name="get_environment" qualifiers="const">
@@ -20624,24 +21610,22 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Return the main loop object (see [MainLoop]).
 			</description>
 		</method>
-		<method name="get_date" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="utc" type="bool" default="false">
-			</argument>
-			<description>
-				Returns current date in a dictionary of keys: year, month,
-				day, weekday, dst (daylight savings time).
-			</description>
-		</method>
 		<method name="get_datetime" qualifiers="const">
 			<return type="Dictionary">
 			</return>
 			<argument index="0" name="utc" type="bool" default="false">
 			</argument>
 			<description>
-				Returns current datetime in a dictionary of keys: year,
-				month, day, weekday, dst (daylight savings time), hour, minute, second
+			Returns current datetime as a dictionary of keys: year, month, day, weekday, dst (daylight savings time), hour, minute, second.
+			</description>
+		</method>
+		<method name="get_date" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="utc" type="bool" default="false">
+			</argument>
+			<description>
+			Returns current date as a dictionary of keys: year, month, day, weekday, dst (daylight savings time).
 			</description>
 		</method>
 		<method name="get_time" qualifiers="const">
@@ -20650,36 +21634,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="utc" type="bool" default="false">
 			</argument>
 			<description>
-				Returns current time in a dictionary of keys:
-				hour, minute, second
-			</description>
-		</method>
-		<method name="get_datetime_from_unix_time" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="unix_time_val" type="int">
-			</argument>
-			<description>
-			Get a dictionary of time values when given epoch time.
-			Dictionary Time values will be a union of values from [method get_time]
-			and [method get_date] dictionaries (with the exception of dst = 
-			day light standard time, as it cannot be determined from epoc)
-			</description>
-		</method>
-		<method name="get_unix_time_from_datetime" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="datetime" type="Dictionary">
-			</argument>
-			<description>
-				Get an epoch time value from a dictionary of time values
-				datetime must be populated with the following keys:
-				day, hour, minute, month, second, year. You can pass the output from
-				[method get_datetime_from_unix_time] directly into this function. Day
-				light savings time (dst), if present, is ignored.
-
-				To be accurate, datetime dictionary must have keys for: year, month, day,
-				hour, minute, second
+			Returns current time as a dictionary of keys: hour, minute, second
 			</description>
 		</method>
 		<method name="get_time_zone_info" qualifiers="const">
@@ -20692,6 +21647,28 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="int">
 			</return>
 			<description>
+			Return	the current unix timestamp.
+			</description>
+		</method>
+		<method name="get_datetime_from_unix_time" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="unix_time_val" type="int">
+			</argument>
+			<description>
+			Get a dictionary of time values when given epoch time.
+			Dictionary Time values will be a union of values from [method get_time] and [method get_date] dictionaries (with the exception of dst = day light standard time, as it cannot be determined from epoch).
+			</description>
+		</method>
+		<method name="get_unix_time_from_datetime" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="datetime" type="Dictionary">
+			</argument>
+			<description>
+			Get an epoch time value from a dictionary of time values.
+			[code]datetime[/code] must be populated with the following keys: year, month, day, hour, minute, second.
+			You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight savings time (dst), if present, is ignored.
 			</description>
 		</method>
 		<method name="get_system_time_secs" qualifiers="const">
@@ -20833,6 +21810,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="String">
 			</return>
 			<description>
+			Return the absolute directory path of user data path([user://]).
 			</description>
 		</method>
 		<method name="get_system_dir" qualifiers="const">
@@ -20859,6 +21837,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="float">
 			</return>
 			<description>
+			Returns the frames per second of the running game.
 			</description>
 		</method>
 		<method name="print_all_textures_by_size">
@@ -22448,56 +23427,66 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="Particles2D" inherits="Node2D" category="Core">
 	<brief_description>
+	2D Particle emitter
 	</brief_description>
 	<description>
+	Particles2D is a particle system 2D [Node] that is used to simulate several types of particle effects, such as explosions, rain, snow, fireflies, or other magical-like shinny sparkles. Particles are drawn using impostors, and given their dynamic behavior, the user must provide a visibility AABB (although helpers to create one automatically exist).
 	</description>
 	<methods>
 		<method name="set_emitting">
 			<argument index="0" name="active" type="bool">
 			</argument>
 			<description>
+			If this is set to true then the particle emitter will emit particles, if its false it will not.
 			</description>
 		</method>
 		<method name="is_emitting" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether this emitter is currently emitting or not
 			</description>
 		</method>
 		<method name="set_amount">
 			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
+			Sets the amount of particles spawned at each emission
 			</description>
 		</method>
 		<method name="get_amount" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Returns the amount of particles spawned at each emission
 			</description>
 		</method>
 		<method name="set_lifetime">
 			<argument index="0" name="lifetime" type="float">
 			</argument>
 			<description>
+			Sets the amount of seconds that each particle will be visible.
 			</description>
 		</method>
 		<method name="get_lifetime" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Gets the amount of seconds that each particle will be visible.
 			</description>
 		</method>
 		<method name="set_time_scale">
 			<argument index="0" name="time_scale" type="float">
 			</argument>
 			<description>
+			Sets the increment or decrement for the particle lifetime. for example: if the time scale is set to 2, the particles will die and move twice as fast.
 			</description>
 		</method>
 		<method name="get_time_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the emitter time scale
 			</description>
 		</method>
 		<method name="set_pre_process_time">
@@ -22516,12 +23505,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
+			Sets the amount of seconds during which the emitter will spawn particles, after the specified seconds the emitter state will be set to non emitting, so calling [method is_emitting] will return false. If the timeout is 0 the emitter will spawn forever.
 			</description>
 		</method>
 		<method name="get_emit_timeout" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the amount of seconds during which the emitter will spawn particles
 			</description>
 		</method>
 		<method name="set_param">
@@ -22530,6 +23521,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
+			Sets the value of the specified emitter parameter (see the constants secction for the list of parameters)
 			</description>
 		</method>
 		<method name="get_param" qualifiers="const">
@@ -22538,6 +23530,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="param" type="int">
 			</argument>
 			<description>
+			Returns the value of the specified emitter parameter
 			</description>
 		</method>
 		<method name="set_randomness">
@@ -22546,6 +23539,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
+			Sets the randomness value of the specified emitter parameter (see the constants secction for the list of parameters), 0 means no randomness, so every particle will have the parameters specified, 1 means that the parameter will be choosen at random, the closer the randomness value gets to 0 the more conservative the variation of the parameter will be.
 			</description>
 		</method>
 		<method name="get_randomness" qualifiers="const">
@@ -22554,6 +23548,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="param" type="int">
 			</argument>
 			<description>
+			Returns the randomness value of the specified emitter parameter
 			</description>
 		</method>
 		<method name="set_texture">
@@ -22562,24 +23557,28 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="texture" type="Object">
 			</argument>
 			<description>
+			Sets the texture for each particle
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="Texture">
 			</return>
 			<description>
+			Returns the texture for emitted particles
 			</description>
 		</method>
 		<method name="set_color">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+			Set the tint color for each particle.
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
+			Returns the tint color for each particle.
 			</description>
 		</method>
 		<method name="set_color_ramp">
@@ -22588,24 +23587,28 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="color_ramp" type="Object">
 			</argument>
 			<description>
+			Sets the [ColorRamp] used to tint each particle. Particle will be tinted according to their lifetimes.
 			</description>
 		</method>
 		<method name="get_color_ramp" qualifiers="const">
 			<return type="ColorRamp">
 			</return>
 			<description>
+			Returns the [ColorRamp] used to tint each particle
 			</description>
 		</method>
 		<method name="set_emissor_offset">
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
+			Sets the particle spawn origin position relative to the emitter center. for example if this value is set to (50, 50), the particle will spawn 50 units to the right and  50 units to the bottom of the emitter center.
 			</description>
 		</method>
 		<method name="get_emissor_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Returns the particle spawn origin position relative to the emitter.
 			</description>
 		</method>
 		<method name="set_flip_h">
@@ -22660,12 +23663,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="extents" type="Vector2">
 			</argument>
 			<description>
+			Sets the half extents of the emission box, particles will be spawned at random inside this box.
 			</description>
 		</method>
 		<method name="get_emission_half_extents" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Returns the half extents of the emission box.
 			</description>
 		</method>
 		<method name="set_color_phases">
@@ -22773,30 +23778,40 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</methods>
 	<constants>
 		<constant name="PARAM_DIRECTION" value="0">
+			Direction in radians at which the particles will be launched, Notice that when the direction is set to 0 the particles will be launched to the negative
 		</constant>
 		<constant name="PARAM_SPREAD" value="1">
 		</constant>
 		<constant name="PARAM_LINEAR_VELOCITY" value="2">
+			Velocity at which the particles will be launched.
 		</constant>
 		<constant name="PARAM_SPIN_VELOCITY" value="3">
+			The speed at which particles will spin around its own center.
 		</constant>
 		<constant name="PARAM_ORBIT_VELOCITY" value="4">
+			Velocity at which the particles will orbit around the emitter center
 		</constant>
 		<constant name="PARAM_GRAVITY_DIRECTION" value="5">
+			Direction in radians at which the particles will be attracted
 		</constant>
 		<constant name="PARAM_GRAVITY_STRENGTH" value="6">
+			Strength of the gravitation attraction for each particle
 		</constant>
 		<constant name="PARAM_RADIAL_ACCEL" value="7">
 		</constant>
 		<constant name="PARAM_TANGENTIAL_ACCEL" value="8">
 		</constant>
 		<constant name="PARAM_DAMPING" value="9">
+			Amount of damping for each particle
 		</constant>
 		<constant name="PARAM_INITIAL_ANGLE" value="10">
+			Initial angle in radians at which each particle will be spawned
 		</constant>
 		<constant name="PARAM_INITIAL_SIZE" value="11">
+			Initial size of each particle
 		</constant>
 		<constant name="PARAM_FINAL_SIZE" value="12">
+			Final size of each particle, the particle size will interpolate to this value during its lifetime.
 		</constant>
 		<constant name="PARAM_HUE_VARIATION" value="13">
 		</constant>
@@ -24156,6 +25171,17 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="body_add_force">
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="offset" type="Vector2">
+			</argument>
+			<argument index="2" name="force" type="Vector2">
+			</argument>
+			<description>
+			Add a positioned force to the applied force and torque. As with [method body_apply_impulse], both the force and the offset from the body origin are in global coordinates.
+			</description>
+		</method>
 		<method name="body_set_axis_velocity">
 			<argument index="0" name="body" type="RID">
 			</argument>
@@ -24337,7 +25363,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="param" type="int">
 			</argument>
-			<argument index="2" name="value" type="float" default="RID()">
+			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
 			</description>
@@ -24443,13 +25469,15 @@ This method controls whether the position between two cached points is interpola
 		</constant>
 		<constant name="BODY_PARAM_MASS" value="2">
 		</constant>
-		<constant name="BODY_PARAM_GRAVITY_SCALE" value="3">
+		<constant name="BODY_PARAM_INERTIA" value="3">
 		</constant>
-		<constant name="BODY_PARAM_LINEAR_DAMP" value="4">
+		<constant name="BODY_PARAM_GRAVITY_SCALE" value="4">
 		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP" value="5">
+		<constant name="BODY_PARAM_LINEAR_DAMP" value="5">
 		</constant>
-		<constant name="BODY_PARAM_MAX" value="6">
+		<constant name="BODY_PARAM_ANGULAR_DAMP" value="6">
+		</constant>
+		<constant name="BODY_PARAM_MAX" value="7">
 		</constant>
 		<constant name="BODY_STATE_TRANSFORM" value="0">
 		</constant>
@@ -24730,6 +25758,50 @@ This method controls whether the position between two cached points is interpola
 		<method name="get_layer_mask" qualifiers="const">
 			<return type="int">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_collision_mask">
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_collision_mask_bit">
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_layer_mask_bit">
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_layer_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -25349,6 +26421,22 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="area_set_layer_mask">
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="area_set_collision_mask">
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="area_set_param">
 			<argument index="0" name="area" type="RID">
 			</argument>
@@ -25463,6 +26551,42 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_layer_mask">
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_layer_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_set_collision_mask">
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_get_collision_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="int">
 			</argument>
 			<description>
 			</description>
@@ -26616,80 +27740,94 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="Polygon2D" inherits="Node2D" category="Core">
 	<brief_description>
+	2D polygon representation
 	</brief_description>
 	<description>
+	A Polygon2D is defined by a set of n points connected together by line segments, meaning that the point 1 will be connected with point 2, point 2 with point 3 ..., point n-1 with point n and point n with point 1 in order to close the loop and define a plane.
 	</description>
 	<methods>
 		<method name="set_polygon">
 			<argument index="0" name="polygon" type="Vector2Array">
 			</argument>
 			<description>
+			Defines the set of points that will represent the polygon.
 			</description>
 		</method>
 		<method name="get_polygon" qualifiers="const">
 			<return type="Vector2Array">
 			</return>
 			<description>
+			Returns the set of points that defines this polygon
 			</description>
 		</method>
 		<method name="set_uv">
 			<argument index="0" name="uv" type="Vector2Array">
 			</argument>
 			<description>
+			Sets the uv value for every point of the polygon
 			</description>
 		</method>
 		<method name="get_uv" qualifiers="const">
 			<return type="Vector2Array">
 			</return>
 			<description>
+			Returns the uv value associated with every point of the polygon
 			</description>
 		</method>
 		<method name="set_color">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+			Sets the polygon fill color, if the polygon has a texture defined, the defined texture will be tinted to the polygon fill color.
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
 			<description>
+			Returns the polygon fill color
 			</description>
 		</method>
 		<method name="set_texture">
 			<argument index="0" name="texture" type="Object">
 			</argument>
 			<description>
+			Sets the polygon texture.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="Object">
 			</return>
 			<description>
+			Returns the polygon texture
 			</description>
 		</method>
 		<method name="set_texture_offset">
 			<argument index="0" name="texture_offset" type="Vector2">
 			</argument>
 			<description>
+			Sets the offset of the polygon texture. Initially the texture will appear anchored to the polygon position, the offset is used to move the texture location away from that point (notice that the texture origin is set to its top left corner, so when offset is 0,0 the top left corner of the texture is at the polygon position), for example setting the offset to 10, 10 will move the texture 10 units to the left and 10 units to the top.
 			</description>
 		</method>
 		<method name="get_texture_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Returns the polygon texture offset.
 			</description>
 		</method>
 		<method name="set_texture_rotation">
 			<argument index="0" name="texture_rotation" type="float">
 			</argument>
 			<description>
+			Sets the amount of rotation of the polygon texture, [code]texture_rotation[/code] is specified in radians and clockwise rotation.
 			</description>
 		</method>
 		<method name="get_texture_rotation" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Returns the rotation in radians of the texture polygon.
 			</description>
 		</method>
 		<method name="set_texture_scale">
@@ -26708,12 +27846,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="invert" type="bool">
 			</argument>
 			<description>
+			Sets the polygon as the defined polygon bounding box minus the defined polygon (the defined polygon will appear as a hole on square that contains the defined polygon).
 			</description>
 		</method>
 		<method name="get_invert" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether this polygon is inverted or not
 			</description>
 		</method>
 		<method name="set_invert_border">
@@ -26732,12 +27872,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
+			Sets the amount of distance from the polygon points from the polygon position, for example if the offset is set to 10,10 then all the polygon points will move 10 units to the right and 10 units to the bottom.
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Returns the polygon points offset to the polygon position.
 			</description>
 		</method>
 	</methods>
@@ -26846,6 +27988,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="minsize" type="Vector2" default="Vector2(0,0)">
 			</argument>
 			<description>
+			Popup (show the control in modal form) in the center of the screen, ensuring the size is never smaller than [code]minsize[/code].
 			</description>
 		</method>
 		<method name="popup">
@@ -26857,18 +28000,21 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Make the popup hide other popups when shown on the screen.
 			</description>
 		</method>
 		<method name="is_exclusive" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether the popup will hide other popups when shown on the screen.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="popup_hide">
 			<description>
+			This signal is emitted when a popup is hidden.
 			</description>
 		</signal>
 		<signal name="about_to_show">
@@ -26879,8 +28025,10 @@ This method controls whether the position between two cached points is interpola
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_POST_POPUP" value="80">
+			Notification sent right after the popup is shown.
 		</constant>
 		<constant name="NOTIFICATION_POPUP_HIDE" value="81">
+			Notification sent right after the popup is hidden.
 		</constant>
 	</constants>
 </class>
@@ -26889,6 +28037,7 @@ This method controls whether the position between two cached points is interpola
 	Base class for Popup Dialogs.
 	</brief_description>
 	<description>
+	PopupDialog is a base class for popup dialogs, along with [WindowDialog].
 	</description>
 	<methods>
 	</methods>
@@ -26913,7 +28062,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="accel" type="int" default="0">
 			</argument>
 			<description>
-			Add a new item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index.
+			Add a new item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator keybinding. If no id is provided, one will be created from the index.
 			</description>
 		</method>
 		<method name="add_item">
@@ -26924,7 +28073,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="2" name="accel" type="int" default="0">
 			</argument>
 			<description>
-			Add a new item with text "label". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index.
+			Add a new item with text "label". An id can optionally be provided, as well as an accelerator keybinding. If no id is provided, one will be created from the index.
 			</description>
 		</method>
 		<method name="add_icon_check_item">
@@ -26937,7 +28086,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="accel" type="int" default="0">
 			</argument>
 			<description>
-			Add a new check able item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+			Add a new checkable item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="add_check_item">
@@ -26959,6 +28108,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="2" name="id" type="int" default="-1">
 			</argument>
 			<description>
+			Adds an item with a submenu. The submenu is the name of a child PopupMenu node that would be shown when the item is clicked. An id can optionally be provided, but if is isn't provided, one will be created from the index.
 			</description>
 		</method>
 		<method name="set_item_text">
@@ -26994,6 +28144,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="metadata" type="Variant">
 			</argument>
 			<description>
+			Sets the metadata of an item, which might be of any type. You can later get it with [method get_item_metadata], which provides a simple way of assigning context data to items.
 			</description>
 		</method>
 		<method name="set_item_checked">
@@ -27011,6 +28162,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
+			Sets whether the item at index "idx" is disabled or not. When it is disabled it can't be selected, or its action invoked.
 			</description>
 		</method>
 		<method name="set_item_submenu">
@@ -27019,6 +28171,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="submenu" type="String">
 			</argument>
 			<description>
+			Sets the submenu of the item at index "idx". The submenu is the name of a child PopupMenu node that would be shown when the item is clicked.
 			</description>
 		</method>
 		<method name="set_item_as_separator">
@@ -27027,6 +28180,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+			Mark the item at index "idx" as a seperator, which means that it would be displayed as a mere line.
 			</description>
 		</method>
 		<method name="set_item_as_checkable">
@@ -27035,6 +28189,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+			Set whether the item at index "idx" has a checkbox. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="set_item_ID">
@@ -27068,6 +28223,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Return the metadata of an item, which might be of any type. You can set it with [method set_item_metadata], which provides a simple way of assigning context data to items.
 			</description>
 		</method>
 		<method name="get_item_accelerator" qualifiers="const">
@@ -27085,6 +28241,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Return the submenu name of the item at index "idx".
 			</description>
 		</method>
 		<method name="is_item_separator" qualifiers="const">
@@ -27093,6 +28250,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Return whether the item is a seperator. If it is, it would be displayed as a line.
 			</description>
 		</method>
 		<method name="is_item_checkable" qualifiers="const">
@@ -27101,6 +28259,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Return whether the item at index "idx" has a checkbox. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="is_item_checked" qualifiers="const">
@@ -27118,6 +28277,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Return whether the item at index "idx" is disabled. When it is disabled it can't be selected, or its action invoked.
 			</description>
 		</method>
 		<method name="get_item_ID" qualifiers="const">
@@ -27154,11 +28314,12 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Removes the item at index "idx" from the menu. Note that the indexes of items after the removed item are going to be shifted by one.
 			</description>
 		</method>
 		<method name="clear">
 			<description>
-			Clear the popup menu.
+			Clear the popup menu, in effect removing all items.
 			</description>
 		</method>
 	</methods>
@@ -27206,9 +28367,10 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="PopupPanel" inherits="Popup" category="Core">
 	<brief_description>
-	Base class for Popup Panels
+	Class for displaying popups with a panel background.
 	</brief_description>
 	<description>
+	Class for displaying popups with a panel background. In some cases it might be simpler to use than [Popup], since it provides a configurable background. If you are making windows, better check [WindowDialog].
 	</description>
 	<methods>
 	</methods>
@@ -27933,45 +29095,75 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="set_layer_mask">
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_layer_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_type_mask">
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_type_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
 </class>
 <class name="RayCast2D" inherits="Node2D" category="Core">
 	<brief_description>
+	Query the closest object intersecting a ray
 	</brief_description>
 	<description>
+	A RayCast2D represents a line from its origin to its destination position [code]cast_to[/code], it is used to query the 2D space in order to find the closest object intersecting with the ray.
 	</description>
 	<methods>
 		<method name="set_enabled">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Enables the RayCast2D. Only enabled raycasts will be able to query the space and report collisions.
 			</description>
 		</method>
 		<method name="is_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns whether this raycast is enabled or not
 			</description>
 		</method>
 		<method name="set_cast_to">
 			<argument index="0" name="local_point" type="Vector2">
 			</argument>
 			<description>
+			Sets the ray destination point, so that the ray will test from the ray's origin to [code]local_point[/code]
 			</description>
 		</method>
 		<method name="get_cast_to" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the destination point of this ray object
 			</description>
 		</method>
 		<method name="is_colliding" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-			Return whether the closest object the ray is pointing to is colliding with the vector, with the vector length considered.
+			Return whether the closest object the ray is pointing to is colliding with the vector (considering the vector length).
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
@@ -27985,18 +29177,21 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<description>
+			Returns the collision shape of the closest object the ray is pointing to.
 			</description>
 		</method>
 		<method name="get_collision_point" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Returns the collision point in which the ray intersects the closest object.
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Returns the normal of the intersecting object shape face containing the collision point.
 			</description>
 		</method>
 		<method name="add_exception_rid">
@@ -28009,6 +29204,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="node" type="Object">
 			</argument>
 			<description>
+			Adds a collision exception so the ray does not report collisions with the specified [code]node[/code].
 			</description>
 		</method>
 		<method name="remove_exception_rid">
@@ -28021,10 +29217,12 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="node" type="Object">
 			</argument>
 			<description>
+			Removes a collision exception so the ray does report collisions with the specified [code]node[/code].
 			</description>
 		</method>
 		<method name="clear_exceptions">
 			<description>
+			Removes all collision exception for this ray.
 			</description>
 		</method>
 		<method name="set_layer_mask">
@@ -28037,6 +29235,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<description>
+			Returns the layer mask for this ray.
 			</description>
 		</method>
 		<method name="set_type_mask">
@@ -28263,10 +29462,13 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="pos" type="Vector2">
+		Position (starting corner).
 		</member>
 		<member name="size" type="Vector2">
+		Size from position to end.
 		</member>
 		<member name="end" type="Vector2">
+		Ending corner.
 		</member>
 	</members>
 	<constants>
@@ -29430,6 +30632,10 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</signal>
+		<signal name="sleeping_state_changed">
+			<description>
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="MODE_STATIC" value="1">
@@ -29485,6 +30691,20 @@ This method controls whether the position between two cached points is interpola
 			</return>
 			<description>
 			Return the body mass.
+			</description>
+		</method>
+		<method name="get_inertia" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			Return the body's moment of inertia. This is usually automatically computed from the mass and the shapes.  Note that this doesn't seem to work in a [code]_ready[/code] function: it apparently has not been auto-computed yet.
+			</description>
+		</method>
+		<method name="set_inertia">
+			<argument index="0" name="inertia" type="float">
+			</argument>
+			<description>
+			Set the body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body. The moment of inertia is usually computed automatically from the mass and the shapes, but this function allows you to set a custom value. Set 0 (or negative) inertia to return to automatically computing it.
 			</description>
 		</method>
 		<method name="set_weight">
@@ -29664,12 +30884,12 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="apply_impulse">
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<argument index="1" name="impulse" type="Vector2">
 			</argument>
 			<description>
-			Apply a positioned impulse (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once.
+			Apply a positioned impulse (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once. Both the impulse and the offset from the body origin are in global coordinates.
 			</description>
 		</method>
 		<method name="set_applied_force">
@@ -29684,6 +30904,29 @@ This method controls whether the position between two cached points is interpola
 			</return>
 			<description>
 			Return the applied force vector.
+			</description>
+		</method>
+		<method name="set_applied_torque">
+			<argument index="0" name="torque" type="float">
+			</argument>
+			<description>
+			Set a constant torque which will be applied to this body.
+			</description>
+		</method>
+		<method name="get_applied_torque" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			Return the torque which is being applied to this body.
+			</description>
+		</method>
+		<method name="add_force">
+			<argument index="0" name="offset" type="Vector2">
+			</argument>
+			<argument index="1" name="force" type="Vector2">
+			</argument>
+			<description>
+			Add a positioned force to the applied force and torque. As with [method apply_impulse], both the force and the offset from the body origin are in global coordinates.
 			</description>
 		</method>
 		<method name="set_sleeping">
@@ -29777,6 +31020,10 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			Emitted when a body shape exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
 			This signal not only receives the body that stopped colliding with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body stopped colliding with.
+			</description>
+		</signal>
+		<signal name="sleeping_state_changed">
+			<description>
 			</description>
 		</signal>
 	</signals>
@@ -31223,48 +32470,56 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set allows horizontal scrool.
 			</description>
 		</method>
 		<method name="is_h_scroll_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if horizontal scrool is allowed.
 			</description>
 		</method>
 		<method name="set_enable_v_scroll">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set allows vertical scrool.
 			</description>
 		</method>
 		<method name="is_v_scroll_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if vertical scrool is allowed.
 			</description>
 		</method>
 		<method name="set_h_scroll">
 			<argument index="0" name="val" type="int">
 			</argument>
 			<description>
+			Set horizontal scroll value.
 			</description>
 		</method>
 		<method name="get_h_scroll" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return current horizontal scroll value.
 			</description>
 		</method>
 		<method name="set_v_scroll">
 			<argument index="0" name="val" type="int">
 			</argument>
 			<description>
+			Set vertical scroll value.
 			</description>
 		</method>
 		<method name="get_v_scroll" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return current vertical scroll value.
 			</description>
 		</method>
 	</methods>
@@ -32865,12 +34120,24 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="set_rotation">
-			<argument index="0" name="rotation" type="Vector3">
+			<argument index="0" name="rotation_rad" type="Vector3">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="get_rotation" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_rotation_deg">
+			<argument index="0" name="rotation_deg" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_rotation_deg" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
@@ -33261,13 +34528,13 @@ This method controls whether the position between two cached points is interpola
 	</description>
 	<methods>
 		<method name="set_stream">
-			<argument index="0" name="stream" type="Stream">
+			<argument index="0" name="stream" type="AudioStream">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
-			<return type="Stream">
+			<return type="AudioStream">
 			</return>
 			<description>
 			</description>
@@ -33524,19 +34791,21 @@ This method controls whether the position between two cached points is interpola
 			<return type="bool">
 			</return>
 			<description>
-			Return if the split is collapsed.
+			Return true if the split is collapsed.
 			</description>
 		</method>
 		<method name="set_dragger_visibility">
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+			Set visibility of the split dragger([i]mode[/i] must be one of [DRAGGER_VISIBLE], [DRAGGER_HIDDEN] or [DRAGGER_HIDDEN_COLLAPSED]).
 			</description>
 		</method>
 		<method name="get_dragger_visibility" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return visibility of the split dragger(One of [DRAGGER_VISIBLE], [DRAGGER_HIDDEN] or [DRAGGER_HIDDEN_COLLAPSED]).
 			</description>
 		</method>
 	</methods>
@@ -33545,15 +34814,19 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="offset" type="int">
 			</argument>
 			<description>
+			Emmited when the dragger is gragged by user.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="DRAGGER_VISIBLE" value="0">
+			The split dragger is visible.
 		</constant>
 		<constant name="DRAGGER_HIDDEN" value="1">
+			The split dragger is invisible.
 		</constant>
 		<constant name="DRAGGER_HIDDEN_COLLAPSED" value="2">
+			The split dragger is invisible and collapsed.
 		</constant>
 	</constants>
 </class>
@@ -34503,14 +35776,14 @@ This method controls whether the position between two cached points is interpola
 	</description>
 	<methods>
 		<method name="set_stream">
-			<argument index="0" name="stream" type="Stream">
+			<argument index="0" name="stream" type="AudioStream">
 			</argument>
 			<description>
 			Set the [EventStream] this player will play.
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
-			<return type="Stream">
+			<return type="AudioStream">
 			</return>
 			<description>
 			Return the currently assigned stream.
@@ -34737,6 +36010,14 @@ This method controls whether the position between two cached points is interpola
 			</return>
 			<description>
 			Return true if the string is empty.
+			</description>
+		</method>
+		<method name="ends_with">
+			<return type="bool">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="extension">
@@ -35048,8 +36329,12 @@ This method controls whether the position between two cached points is interpola
 		<method name="strip_edges">
 			<return type="String">
 			</return>
+			<argument index="0" name="left" type="bool" default="True">
+			</argument>
+			<argument index="1" name="right" type="bool" default="True">
+			</argument>
 			<description>
-			Return a copy of the string stripped of any non-printable character at the beginning and the end.
+			Return a copy of the string stripped of any non-printable character at the beginning and the end. The optional arguments are used to toggle stripping on the left and right edges respectively.
 			</description>
 		</method>
 		<method name="substr">
@@ -35135,12 +36420,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
+			Append a string element at end of the array.
 			</description>
 		</method>
 		<method name="resize">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Reset the size of the array.
 			</description>
 		</method>
 		<method name="set">
@@ -35155,6 +36442,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<description>
+			Return the size of the array.
 			</description>
 		</method>
 		<method name="StringArray">
@@ -35537,6 +36825,22 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="add_triangle_fan">
+			<argument index="0" name="vertexes" type="Vector3Array">
+			</argument>
+			<argument index="1" name="uvs" type="Vector2Array" default="Vector2Array()">
+			</argument>
+			<argument index="2" name="colors" type="ColorArray" default="ColorArray([ColorArray])">
+			</argument>
+			<argument index="3" name="uv2s" type="Vector2Array" default="Vector2Array()">
+			</argument>
+			<argument index="4" name="normals" type="Vector3Array" default="Vector3Array()">
+			</argument>
+			<argument index="5" name="tangents" type="Array" default="Array()">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_material">
 			<argument index="0" name="material" type="Material">
 			</argument>
@@ -35558,7 +36862,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="commit">
 			<return type="Mesh">
 			</return>
-			<argument index="0" name="existing" type="Mesh" default="Object()">
+			<argument index="0" name="existing" type="Mesh" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -36030,6 +37334,34 @@ This method controls whether the position between two cached points is interpola
 			</return>
 			<description>
 			Return the line the editing cursor is at.
+			</description>
+		</method>
+		<method name="cursor_set_blink_enabled">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			Set the text editor caret to blink.
+			</description>
+		</method>
+		<method name="cursor_get_blink_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			Gets whether the text editor caret is blinking.
+			</description>
+		</method>
+		<method name="cursor_set_blink_speed">
+			<argument index="0" name="blink_speed" type="float">
+			</argument>
+			<description>
+			Set the text editor caret blink speed. Cannot be less then or equal to 0.
+			</description>
+		</method>
+		<method name="cursor_get_blink_speed" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			Gets the text editor caret blink speed.
 			</description>
 		</method>
 		<method name="set_readonly">
@@ -36776,6 +38108,12 @@ This method controls whether the position between two cached points is interpola
 			</return>
 			<argument index="0" name="type" type="String">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_stylebox_types" qualifiers="const">
+			<return type="StringArray">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -37664,6 +39002,7 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="Timer" inherits="Node" category="Core">
 	<brief_description>
+	A simple Timer node.
 	</brief_description>
 	<description>
 	Timer node. This is a simple node that will emit a timeout callback when the timer runs out. It can optionally be set to loop.
@@ -37719,6 +39058,20 @@ This method controls whether the position between two cached points is interpola
 		<method name="stop">
 			<description>
 			Stop (cancel) the timer.
+			</description>
+		</method>
+		<method name="set_active">
+			<argument index="0" name="active" type="bool">
+			</argument>
+			<description>
+			Set whether the timer is active or not. An inactive timer will be paused until it is activated again.
+			</description>
+		</method>
+		<method name="is_active" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			Return if the timer is active or not.
 			</description>
 		</method>
 		<method name="get_time_left" qualifiers="const">
@@ -37903,6 +39256,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="Transform">
 			</return>
 			<description>
+			Returns the inverse of the transfrom, even if the transform has scale or the axis vectors are not orthogonal.
 			</description>
 		</method>
 		<method name="inverse">
@@ -37920,12 +39274,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="up" type="Vector3">
 			</argument>
 			<description>
+			Rotate the transform around the up vector to face the target.
 			</description>
 		</method>
 		<method name="orthonormalized">
 			<return type="Transform">
 			</return>
 			<description>
+			Returns a transfrom with the basis orthogonal (90 degrees), and normalized axis vectors.
 			</description>
 		</method>
 		<method name="rotated">
@@ -37936,6 +39292,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
+			Rotate the transform locally.
 			</description>
 		</method>
 		<method name="scaled">
@@ -37944,6 +39301,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="scale" type="Vector3">
 			</argument>
 			<description>
+			Scale the transform locally.
 			</description>
 		</method>
 		<method name="translated">
@@ -37952,6 +39310,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="ofs" type="Vector3">
 			</argument>
 			<description>
+			Translate the transform locally.
 			</description>
 		</method>
 		<method name="xform">
@@ -37984,6 +39343,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="origin" type="Vector3">
 			</argument>
 			<description>
+			Construct the Transform from four Vector3. Each axis creates the basis.
 			</description>
 		</method>
 		<method name="Transform">
@@ -37994,6 +39354,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="origin" type="Vector3">
 			</argument>
 			<description>
+			Construct the Transform from a Matrix3 and Vector3.
 			</description>
 		</method>
 		<method name="Transform">
@@ -38002,6 +39363,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="Matrix32">
 			</argument>
 			<description>
+			Construct the Transform from a Matrix32.
 			</description>
 		</method>
 		<method name="Transform">
@@ -38010,6 +39372,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="Quat">
 			</argument>
 			<description>
+			Construct the Transform from a Quat. The origin will be Vector3(0, 0, 0)
 			</description>
 		</method>
 		<method name="Transform">
@@ -38018,13 +39381,16 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="Matrix3">
 			</argument>
 			<description>
+			Construct the Transform from a Matrix3. The origin will be Vector3(0, 0, 0)
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="basis" type="Matrix3">
+		The basis contains 3 [Vector3]. X axis, Y axis, and Z axis.
 		</member>
 		<member name="origin" type="Vector3">
+		The origin of the transform. Which is the translation offset.
 		</member>
 	</members>
 	<constants>
@@ -38154,7 +39520,7 @@ This method controls whether the position between two cached points is interpola
 		<method name="create_item">
 			<return type="TreeItem">
 			</return>
-			<argument index="0" name="parent" type="TreeItem" default="Object()">
+			<argument index="0" name="parent" type="TreeItem" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -38267,6 +39633,22 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="get_item_at_pos" qualifiers="const">
+			<return type="TreeItem">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_column_at_pos" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="ensure_cursor_is_visible">
 			<description>
 			</description>
@@ -38313,6 +39695,18 @@ This method controls whether the position between two cached points is interpola
 		</method>
 		<method name="is_folding_hidden" qualifiers="const">
 			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_drop_mode_flags">
+			<argument index="0" name="flags" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_drop_mode_flags" qualifiers="const">
+			<return type="int">
 			</return>
 			<description>
 			</description>
@@ -38375,6 +39769,12 @@ This method controls whether the position between two cached points is interpola
 		</constant>
 		<constant name="SELECT_MULTI" value="2">
 		</constant>
+		<constant name="DROP_MODE_DISABLED" value="0">
+		</constant>
+		<constant name="DROP_MODE_ON_ITEM" value="1">
+		</constant>
+		<constant name="DROP_MODE_INBETWEEN" value="2">
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="item_margin" type="int">
@@ -38398,6 +39798,8 @@ This method controls whether the position between two cached points is interpola
 		<theme_item name="font_color_selected" type="Color">
 		</theme_item>
 		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="drop_position_color" type="Color">
 		</theme_item>
 		<theme_item name="arrow" type="Texture">
 		</theme_item>
@@ -38728,6 +40130,8 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="color" type="Color">
 			</argument>
+			<argument index="2" name="just_outline" type="bool" default="false">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -38825,9 +40229,11 @@ This method controls whether the position between two cached points is interpola
 		</constant>
 		<constant name="CELL_MODE_RANGE" value="2">
 		</constant>
-		<constant name="CELL_MODE_ICON" value="3">
+		<constant name="CELL_MODE_RANGE_EXPRESSION" value="3">
 		</constant>
-		<constant name="CELL_MODE_CUSTOM" value="4">
+		<constant name="CELL_MODE_ICON" value="4">
+		</constant>
+		<constant name="CELL_MODE_CUSTOM" value="5">
 		</constant>
 	</constants>
 </class>
@@ -39580,6 +40986,7 @@ This method controls whether the position between two cached points is interpola
 	Vector used for 2D Math.
 	</brief_description>
 	<description>
+	2-element structure that can be used to represent positions in 2d-space, or any other pair of numeric values.
 	</description>
 	<methods>
 		<method name="angle">
@@ -39661,6 +41068,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="Vector2">
 			</return>
 			<description>
+			Remove the fractional part of x and y.
 			</description>
 		</method>
 		<method name="get_aspect">
@@ -39759,12 +41167,16 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="x" type="float">
+		X component of the vector.
 		</member>
 		<member name="y" type="float">
+		Y component of the vector.
 		</member>
 		<member name="width" type="float">
+		Width of the vector (Same as X).
 		</member>
 		<member name="height" type="float">
+		Height of the vector (Same as Y).
 		</member>
 	</members>
 	<constants>
@@ -40008,10 +41420,13 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="x" type="float">
+		X component of the vector.
 		</member>
 		<member name="y" type="float">
+		Y component of the vector.
 		</member>
 		<member name="z" type="float">
+		Z component of the vector.
 		</member>
 	</members>
 	<constants>
@@ -40141,6 +41556,17 @@ This method controls whether the position between two cached points is interpola
 			<return type="float">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="get_linear_velocity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			Returns the VehicleBody's velocity vector. To get the absolute speed in scalar value, get the length of the return vector in pixels/second. Example:
+			[codeblock]
+			# vehicle is an instance of VehicleBody
+			var speed = vehicle.get_linear_velocity().length()
+			[/codeblock]
 			</description>
 		</method>
 	</methods>
@@ -40284,13 +41710,13 @@ This method controls whether the position between two cached points is interpola
 	</description>
 	<methods>
 		<method name="set_stream">
-			<argument index="0" name="stream" type="Stream">
+			<argument index="0" name="stream" type="VideoStream">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
-			<return type="Stream">
+			<return type="VideoStream">
 			</return>
 			<description>
 			</description>
@@ -40764,6 +42190,12 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="gui_get_drag_data" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_disable_input">
 			<argument index="0" name="disable" type="bool">
 			</argument>
@@ -41103,6 +42535,12 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<argument index="0" name="arg0" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_set_shrink_all_x2_on_set_data">
+			<argument index="0" name="shrink" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -42679,14 +44117,17 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="WeakRef" inherits="Reference" category="Core">
 	<brief_description>
+	Holds an [Object], but does not contribute to the reference count if the object is a reference.
 	</brief_description>
 	<description>
+	A weakref can hold a [Reference], without contributing to the reference counter. A weakref can be created from an [Object] using [method @GDScript.weakref]. If this object is not a reference, weakref still works, however, it does not have any effect on the object. Weakrefs are useful in cases where multiple classes have variables that refer to eachother. Without weakrefs, using these classes could lead to memory leaks, since both references keep eachother from being released. Making part of the variables a weakref can prevent this cyclic dependency, and allows the references to be released.
 	</description>
 	<methods>
 		<method name="get_ref" qualifiers="const">
 			<return type="Object">
 			</return>
 			<description>
+			Returns the [Object] this weakref is referring to.
 			</description>
 		</method>
 	</methods>
@@ -42994,20 +44435,24 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="YSort" inherits="Node2D" category="Core">
 	<brief_description>
+	Sort all child nodes based on their Y positions.
 	</brief_description>
 	<description>
+	Sort all child nodes based on their Y positions. The child node must inherit from [CanvasItem] for it to be sorted. Nodes that have a higher Y position will be drawn later, so they will appear on top of nodes that have a lower Y position.
 	</description>
 	<methods>
 		<method name="set_sort_enabled">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Set whether the children nodes are sorted or not. (default true)
 			</description>
 		</method>
 		<method name="is_sort_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Returns true if the children nodes are being sorted.
 			</description>
 		</method>
 	</methods>
@@ -43028,6 +44473,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="int">
 			</argument>
 			<description>
+			Cast an [int] value to a boolean value, this method will return true if called with an integer value different to 0 and false in other case.
 			</description>
 		</method>
 		<method name="bool">
@@ -43036,6 +44482,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="float">
 			</argument>
 			<description>
+			Cast a [float] value to a boolean value, this method will return true if called with a floating point value different to 0 and false in other case.
 			</description>
 		</method>
 		<method name="bool">
@@ -43044,6 +44491,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
+			Cast a [String] value to a boolean value, this method will return true if called with a non empty string and false in other case. Examples: [code]bool('False')[/code] returns true, [code]bool('')[/code]. returns false
 			</description>
 		</method>
 	</methods>
@@ -43052,8 +44500,10 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="float" category="Built-In Types">
 	<brief_description>
+	Float built-in type
 	</brief_description>
 	<description>
+	Float built-in type.
 	</description>
 	<methods>
 		<method name="float">
@@ -43062,6 +44512,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="bool">
 			</argument>
 			<description>
+			Cast a [bool] value to a floating point value, [code]float(true)[/code] will be equals to 1.0 and [code]float(false)[/code] will be equals to 0.0.
 			</description>
 		</method>
 		<method name="float">
@@ -43070,6 +44521,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="int">
 			</argument>
 			<description>
+			Cast an [int] value to a floating point value, [code]float(1)[/code] will be equals to 1.0.
 			</description>
 		</method>
 		<method name="float">
@@ -43078,6 +44530,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
+			Cast a [String] value to a floating point value. This method accepts float value strings like [code] '1.23' [/code] and exponential notation strings for its parameter so calling [code] float('1e3') [/code] will return 1000.0 and calling [code] float('1e-3') [/code] will return -0.001.
 			</description>
 		</method>
 	</methods>
@@ -43098,6 +44551,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="bool">
 			</argument>
 			<description>
+			Cast a [bool] value to an integer value, [code]int(true)[/code] will be equals to 1 and [code]int(false)[/code] will be equals to 0.
 			</description>
 		</method>
 		<method name="int">
@@ -43106,6 +44560,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="float">
 			</argument>
 			<description>
+			Cast a float value to an integer value, this method simply removes the number fractions, so for example [code]int(2.7)[/code] will be equals to 2, [code]int(.1)[/code] will be equals to 0 and [code]int(-2.7)[/code] will be equals to -2.
 			</description>
 		</method>
 		<method name="int">
@@ -43114,6 +44569,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
+			Cast a [String] value to an integer value, this method is an integer parser from a string, so calling this method with an invalid integer string will return 0, a valid string will be something like [code]'1.7'[/code]. This method will ignore all non-number characters, so calling [code]int('1e3')[/code] will return 13.
 			</description>
 		</method>
 	</methods>

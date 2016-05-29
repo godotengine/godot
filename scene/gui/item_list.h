@@ -45,6 +45,8 @@ private:
 
 	bool ensure_selected_visible;
 
+	bool icon_stretch;
+
 	Vector<Item> items;
 	Vector<int> separators;
 
@@ -60,6 +62,10 @@ private:
 	int max_text_lines;
 	int max_columns;
 	Size2 min_icon_size;
+	Size2 max_icon_size;
+	int defer_select_single;
+
+	bool allow_rmb_select;
 
 	void _scroll_changed(double);
 	void _input_event(const InputEvent& p_event);
@@ -68,6 +74,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 public:
+
 
 	void add_item(const String& p_item,const Ref<Texture>& p_texture=Ref<Texture>(),bool p_selectable=true);
 	void add_icon_item(const Ref<Texture>& p_item,bool p_selectable=true);
@@ -131,12 +138,22 @@ public:
 	void set_min_icon_size(const Size2& p_size);
 	Size2 get_min_icon_size() const;
 
+	void set_max_icon_size(const Size2& p_size);
+	Size2 get_max_icon_size() const;
+
+	void set_allow_rmb_select(bool p_allow);
+	bool get_allow_rmb_select() const;
+
 	void ensure_current_is_visible();
 
 	void sort_items_by_text();
 	int find_metadata(const Variant& p_metadata) const;
 
 	virtual String get_tooltip(const Point2& p_pos) const;
+	int get_item_at_pos(const Point2& p_pos,bool p_exact=false) const;
+
+	void set_icon_stretch_to_max_size(bool p_stretch);
+	bool get_icon_stretch_to_max_size() const;
 
 	ItemList();
 	~ItemList();

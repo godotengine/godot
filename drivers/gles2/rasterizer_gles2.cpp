@@ -921,6 +921,11 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 		texture->alloc_height = texture->height;
 	};
 
+	if (!(p_flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) && shrink_textures_x2) {
+		texture->alloc_height = MAX(1,texture->alloc_height/2);
+		texture->alloc_width = MAX(1,texture->alloc_width/2);
+	}
+
 
 	texture->gl_components_cache=components;
 	texture->gl_format_cache=format;
@@ -970,8 +975,15 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 
 	if (texture->alloc_width != img.get_width() || texture->alloc_height != img.get_height()) {
 
-		if (img.get_format() <= Image::FORMAT_INDEXED_ALPHA)
+
+		if (texture->alloc_width == img.get_width()/2 && texture->alloc_height == img.get_height()/2) {
+
+			img.shrink_x2();
+		} else if (img.get_format() <= Image::FORMAT_INDEXED_ALPHA) {
+
 			img.resize(texture->alloc_width, texture->alloc_height, Image::INTERPOLATE_BILINEAR);
+
+		}
 	};
 
 
@@ -1450,6 +1462,11 @@ void RasterizerGLES2::texture_debug_usage(List<VS::TextureInfo> *r_info){
 		r_info->push_back(tinfo);
 	}
 
+}
+
+void RasterizerGLES2::texture_set_shrink_all_x2_on_set_data(bool p_enable) {
+
+	shrink_textures_x2=p_enable;
 }
 
 /* SHADER API */
@@ -4720,10 +4737,10 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 }
 
 
-void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceData *p_instance, const Geometry *p_geometry_cmp, const GeometryOwner *p_owner) {
+void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceData *p_instance, const Geometry *p_geometry_cmp, const GeometryOwner *p_owner,int p_material) {
 
 	Material *m=NULL;
-	RID m_src=p_instance->material_override.is_valid() ? p_instance->material_override : p_geometry->material;
+	RID m_src=p_instance->material_override.is_valid() ? p_instance->material_override :(p_material>=0?p_instance->materials[p_material]:p_geometry->material);
 
 #ifdef DEBUG_ENABLED
 	if (current_debug==VS::SCENARIO_DEBUG_OVERDRAW) {
@@ -4971,8 +4988,9 @@ void RasterizerGLES2::add_mesh( const RID& p_mesh, const InstanceData *p_data) {
 
 	for (int i=0;i<ssize;i++) {
 
+		int mat_idx = p_data->materials[i].is_valid() ? i : -1;
 		Surface *s = mesh->surfaces[i];
-		_add_geometry(s,p_data,s,NULL);
+		_add_geometry(s,p_data,s,NULL,mat_idx);
 	}
 
 	mesh->last_pass=frame;
@@ -11342,7 +11360,7 @@ void RasterizerGLES2::set_force_16_bits_fbo(bool p_force) {
 RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,bool p_default_fragment_lighting,bool p_use_reload_hooks) {
 
 	_singleton = this;
-
+	shrink_textures_x2=false;
 	RenderList::max_elements=GLOBAL_DEF("rasterizer/max_render_elements",(int)RenderList::DEFAULT_MAX_ELEMENTS);
 	if (RenderList::max_elements>64000)
 		RenderList::max_elements=64000;

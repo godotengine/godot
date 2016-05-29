@@ -260,6 +260,16 @@ EditorPlugin* EditorData::get_subeditor(Object *p_object) {
 	return NULL;
 }
 
+Vector<EditorPlugin*> EditorData::get_subeditors(Object* p_object) {
+	Vector<EditorPlugin*> sub_plugins;
+	for (int i = 0; i < editor_plugins.size(); i++) {
+		if (!editor_plugins[i]->has_main_screen() && editor_plugins[i]->handles(p_object)) {
+			sub_plugins.push_back(editor_plugins[i]);
+		}
+	}
+	return sub_plugins;
+}
+
 EditorPlugin* EditorData::get_editor(String p_name) {
 
 	for(int i=0;i<editor_plugins.size();i++) {
@@ -559,12 +569,12 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		Ref<PackedScene> pscene;
 		pscene.instance();
 
-		EditorProgress ep("update_scene","Updating Scene",2);
-		ep.step("Storing local changes..",0);
+		EditorProgress ep("update_scene",TTR("Updating Scene"),2);
+		ep.step(TTR("Storing local changes.."),0);
 		//pack first, so it stores diffs to previous version of saved scene
 		Error err = pscene->pack(edited_scene[p_idx].root);
 		ERR_FAIL_COND_V(err!=OK,false);
-		ep.step("Updating scene..",1);
+		ep.step(TTR("Updating scene.."),1);
 		Node *new_scene = pscene->instance(true);
 		ERR_FAIL_COND_V(!new_scene,false);
 

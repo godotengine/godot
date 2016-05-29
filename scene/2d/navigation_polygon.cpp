@@ -413,6 +413,7 @@ void NavigationPolygonInstance::set_navigation_polygon(const Ref<NavigationPolyg
 	}
 	//update_gizmo();
 	_change_notify("navpoly");
+	update_configuration_warning();
 
 }
 
@@ -425,6 +426,28 @@ void NavigationPolygonInstance::_navpoly_changed() {
 
 	if (is_inside_tree() && (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()))
 		update();
+}
+
+
+String NavigationPolygonInstance::get_configuration_warning() const {
+
+	if (!is_visible() || !is_inside_tree())
+		return String();
+
+	if (!navpoly.is_valid()) {
+		return TTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon.");
+	}
+	const Node2D *c=this;
+	while(c) {
+
+		if (c->cast_to<Navigation2D>()) {
+			return String();
+		}
+
+		c=c->get_parent()->cast_to<Node2D>();
+	}
+
+	return TTR("NavigationPolygonInstance must be a child or grandchild to a Navigation2D node. It only provides navigation data.");
 }
 
 void NavigationPolygonInstance::_bind_methods() {

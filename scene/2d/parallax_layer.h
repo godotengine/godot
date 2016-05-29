@@ -56,6 +56,7 @@ public:
 
 	void set_base_offset_and_scale(const Point2& p_offsetf,float p_scale);
 
+	virtual String get_configuration_warning() const;
 	ParallaxLayer();
 };
 

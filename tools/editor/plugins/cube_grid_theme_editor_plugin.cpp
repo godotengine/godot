@@ -35,6 +35,7 @@
 #include "tools/editor/editor_node.h"
 #include "main/main.h"
 #include "tools/editor/editor_settings.h"
+#include "scene/3d/navigation_mesh.h"
 
 void MeshLibraryEditor::edit(const Ref<MeshLibrary>& p_theme) {
 
@@ -107,6 +108,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 		Ref<Shape> collision;
 
+
 		for(int j=0;j<mi->get_child_count();j++) {
 #if 1
 			Node *child2 = mi->get_child(j);
@@ -125,9 +127,20 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 			p_library->set_item_shape(id,collision);
 		}
-
+		Ref<NavigationMesh> navmesh;
+		for(int j=0;j<mi->get_child_count();j++) {
+				Node *child2 = mi->get_child(j);
+				if (!child2->cast_to<NavigationMeshInstance>())
+					continue;
+				NavigationMeshInstance *sb = child2->cast_to<NavigationMeshInstance>();
+				navmesh=sb->get_navigation_mesh();
+				if (!navmesh.is_null())
+					break;
+		}
+		if(!navmesh.is_null()){
+			p_library->set_item_navmesh(id, navmesh);
+		}
 	 }
-
 
 	 //generate previews!
 
@@ -152,7 +165,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		 VS::get_singleton()->camera_set_orthogonal(cam,1.0,0.01,1000.0);
 
 
-		 EditorProgress ep("mlib","Creating Mesh Library",ids.size());
+		 EditorProgress ep("mlib",TTR("Creating Mesh Library"),ids.size());
 
 		 for(int i=0;i<ids.size();i++) {
 
@@ -180,7 +193,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 			xform.origin.z-=rot_aabb.size.z*2;
 			RID inst = VS::get_singleton()->instance_create2(mesh->get_rid(),scen);
 			VS::get_singleton()->instance_set_transform(inst,xform);
-			ep.step("Thumbnail..",i);
+			ep.step(TTR("Thumbnail.."),i);
 			VS::get_singleton()->viewport_queue_screen_capture(vp);
 			Main::iteration();
 			Image img = VS::get_singleton()->viewport_get_screen_capture(vp);
@@ -243,7 +256,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 			if (p.begins_with("/MeshLibrary/item") && p.get_slice_count("/")>=3) {
 
 				to_erase = p.get_slice("/",3).to_int();
-				cd->set_text("Remove Item "+itos(to_erase)+"?");
+				cd->set_text(vformat(TTR("Remove item %d?"),to_erase));
 				cd->popup_centered(Size2(300,60));
 			}
 		} break;
@@ -275,7 +288,7 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene",&extensions);
 	file->clear_filters();
-	file->set_title("Import Scene");
+	file->set_title(TTR("Import Scene"));
 	for(int i=0;i<extensions.size();i++) {
 
 		file->add_filter("*."+extensions[i]+" ; "+extensions[i].to_upper());
@@ -290,11 +303,11 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	panel->add_child(options);
 	options->set_pos(Point2(1,1));
 	options->set_text("Theme");
-	options->get_popup()->add_item("Add Item",MENU_OPTION_ADD_ITEM);
-	options->get_popup()->add_item("Remove Selected Item",MENU_OPTION_REMOVE_ITEM);
+	options->get_popup()->add_item(TTR("Add Item"),MENU_OPTION_ADD_ITEM);
+	options->get_popup()->add_item(TTR("Remove Selected Item"),MENU_OPTION_REMOVE_ITEM);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Import from Scene",MENU_OPTION_IMPORT_FROM_SCENE);
-	options->get_popup()->add_item("Update from Scene",MENU_OPTION_UPDATE_FROM_SCENE);
+	options->get_popup()->add_item(TTR("Import from Scene"),MENU_OPTION_IMPORT_FROM_SCENE);
+	options->get_popup()->add_item(TTR("Update from Scene"),MENU_OPTION_UPDATE_FROM_SCENE);
 	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE),true);
 	options->get_popup()->connect("item_pressed", this,"_menu_cbk");
 	menu=options;

@@ -297,6 +297,7 @@ void ItemList::remove_item(int p_idx){
 	items.remove(p_idx);
 	update();
 	shape_changed=true;
+	defer_select_single=-1;
 
 
 }
@@ -307,6 +308,7 @@ void ItemList::clear(){
 	current=-1;
 	ensure_selected_visible=false;
 	update();
+	defer_select_single=-1;
 
 }
 
@@ -381,6 +383,17 @@ Size2 ItemList::get_min_icon_size() const {
 	return min_icon_size;
 }
 
+
+void ItemList::set_max_icon_size(const Size2& p_size) {
+
+	max_icon_size=p_size;
+	update();
+}
+
+Size2 ItemList::get_max_icon_size() const {
+
+	return max_icon_size;
+}
 Size2 ItemList::Item::get_icon_size() const {
 
 	if (icon.is_null())
@@ -392,7 +405,23 @@ Size2 ItemList::Item::get_icon_size() const {
 }
 
 void ItemList::_input_event(const InputEvent& p_event) {
-	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_LEFT && p_event.mouse_button.pressed) {
+
+	if (defer_select_single>=0 && p_event.type==InputEvent::MOUSE_MOTION) {
+		defer_select_single=-1;
+		return;
+	}
+
+	if (defer_select_single>=0 && p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_LEFT && !p_event.mouse_button.pressed) {
+
+		select(defer_select_single,true);
+
+
+		emit_signal("multi_selected",defer_select_single,true);
+		defer_select_single=-1;
+		return;
+	}
+
+	if (p_event.type==InputEvent::MOUSE_BUTTON && (p_event.mouse_button.button_index==BUTTON_LEFT || (allow_rmb_select && p_event.mouse_button.button_index==BUTTON_RIGHT)) && p_event.mouse_button.pressed) {
 
 		const InputEventMouseButton &mb = p_event.mouse_button;
 
@@ -431,6 +460,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 			if (select_mode==SELECT_MULTI && items[i].selected && mb.mod.command) {
 				unselect(i);
 				emit_signal("multi_selected",i,false);
+
 			} else if (select_mode==SELECT_MULTI && mb.mod.shift && current>=0 && current<items.size() && current!=i) {
 
 				int from = current;
@@ -444,23 +474,45 @@ void ItemList::_input_event(const InputEvent& p_event) {
 					if (selected)
 						emit_signal("multi_selected",i,true);
 				}
+
+				if (p_event.mouse_button.button_index==BUTTON_RIGHT) {
+
+					emit_signal("item_rmb_selected",i,Vector2(mb.x,mb.y));
+				}
 			} else {
-				bool selected = !items[i].selected;
-				select(i,select_mode==SELECT_SINGLE || !mb.mod.command);
-				if (selected) {
-					if (select_mode==SELECT_SINGLE) {
-						emit_signal("item_selected",i);
-					} else
-						emit_signal("multi_selected",i,true);
+
+				if (!mb.doubleclick && !mb.mod.command && select_mode==SELECT_MULTI && items[i].selectable && items[i].selected && p_event.mouse_button.button_index==BUTTON_LEFT) {
+					defer_select_single=i;
+					return;
 				}
 
-				if (/*select_mode==SELECT_SINGLE &&*/ mb.doubleclick) {
+				if (items[i].selected && p_event.mouse_button.button_index==BUTTON_RIGHT) {
 
-					emit_signal("item_activated",i);
+					emit_signal("item_rmb_selected",i,Vector2(mb.x,mb.y));
+				} else {
+					bool selected = !items[i].selected;
 
+
+					select(i,select_mode==SELECT_SINGLE || !mb.mod.command);
+
+					if (selected) {
+						if (select_mode==SELECT_SINGLE) {
+							emit_signal("item_selected",i);
+						} else
+							emit_signal("multi_selected",i,true);
+
+
+					}
+
+					if (p_event.mouse_button.button_index==BUTTON_RIGHT) {
+
+						emit_signal("item_rmb_selected",i,Vector2(mb.x,mb.y));
+					} else if (/*select_mode==SELECT_SINGLE &&*/ mb.doubleclick) {
+
+						emit_signal("item_activated",i);
+
+					}
 				}
-
-
 			}
 
 
@@ -668,6 +720,59 @@ void ItemList::ensure_current_is_visible() {
 	update();
 }
 
+static Size2 _adjust_to_max_size(Size2 p_size, Size2 p_max_size, bool p_stretch) {
+
+	if (p_max_size.x<=0)
+		p_max_size.x=1e20;
+	if (p_max_size.y<=0)
+		p_max_size.y=1e20;
+
+
+	Size2 new_size;
+
+	if (p_stretch && (p_size.x * p_size.y < p_max_size.x * p_max_size.y)) {
+		return p_max_size;
+	}
+
+	if (p_size.x > p_max_size.x) {
+
+		new_size.width=p_max_size.x;
+		new_size.height=p_size.height * p_max_size.width / p_size.width;
+
+		if (new_size.height > p_max_size.height) {
+			new_size=Size2(); //invalid
+		}
+	}
+
+
+	if (p_size.y > p_max_size.y) {
+
+		Size2 new_size2;
+		new_size2.height=p_max_size.y;
+		new_size2.width=p_size.width * p_max_size.height / p_size.height;
+
+		if (new_size2.width < p_max_size.width) {
+
+			if (new_size!=Size2()) {
+
+				if (new_size2.x*new_size2.y > new_size.x*new_size.y) {
+					new_size=new_size2;
+				}
+			} else {
+				new_size=new_size2;
+			}
+		}
+
+	}
+
+	if (new_size==Size2())
+		return p_size;
+	else
+		return new_size;
+
+
+}
+
 void ItemList::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_RESIZED) {
@@ -730,12 +835,7 @@ void ItemList::_notification(int p_what) {
 				Size2 minsize;
 				if (items[i].icon.is_valid()) {
 
-					minsize=items[i].get_icon_size();
-
-					if (min_icon_size.x!=0)
-						minsize.x = MAX(minsize.x,min_icon_size.x);
-					if (min_icon_size.y!=0)
-						minsize.y = MAX(minsize.y,min_icon_size.y);
+					minsize=_adjust_to_max_size(items[i].get_icon_size(),max_icon_size, icon_stretch);
 
 					if (items[i].text!="") {
 						if (icon_mode==ICON_MODE_TOP) {
@@ -880,7 +980,7 @@ void ItemList::_notification(int p_what) {
 			Vector2 text_ofs;
 			if (items[i].icon.is_valid()) {
 
-				Size2 icon_size = items[i].get_icon_size();
+				Size2 icon_size = _adjust_to_max_size(items[i].get_icon_size(),max_icon_size, icon_stretch);
 
 				Vector2 icon_ofs;
 				if (min_icon_size!=Vector2()) {
@@ -900,7 +1000,7 @@ void ItemList::_notification(int p_what) {
 				}
 
 				if (items[i].icon_region.has_no_area())
-					draw_texture(items[i].icon, pos);
+					draw_texture_rect(items[i].icon, Rect2(pos,icon_size) );
 				else
 					draw_texture_rect_region(items[i].icon, Rect2(pos, icon_size), items[i].icon_region);
 
@@ -1022,8 +1122,7 @@ void ItemList::_scroll_changed(double) {
 	update();
 }
 
-
-String ItemList::get_tooltip(const Point2& p_pos) const {
+int ItemList::get_item_at_pos(const Point2& p_pos, bool p_exact) const {
 
 	Vector2 pos=p_pos;
 	Ref<StyleBox> bg = get_stylebox("bg");
@@ -1046,11 +1145,18 @@ String ItemList::get_tooltip(const Point2& p_pos) const {
 		}
 
 		float dist = rc.distance_to(pos);
-		if (dist<closest_dist) {
+		if (!p_exact && dist<closest_dist) {
 			closest=i;
 			closest_dist=dist;
 		}
 	}
+
+	return closest;
+}
+
+String ItemList::get_tooltip(const Point2& p_pos) const {
+
+	int closest = get_item_at_pos(p_pos);
 
 	if (closest!=-1) {
 		if (items[closest].tooltip!="") {
@@ -1062,8 +1168,6 @@ String ItemList::get_tooltip(const Point2& p_pos) const {
 	}
 
 	return Control::get_tooltip(p_pos);
-
-
 }
 
 void ItemList::sort_items_by_text() {
@@ -1091,9 +1195,29 @@ int ItemList::find_metadata(const Variant& p_metadata) const {
 
 }
 
+
+void ItemList::set_allow_rmb_select(bool p_allow) {
+	allow_rmb_select=p_allow;
+}
+
+bool ItemList::get_allow_rmb_select() const {
+
+	return allow_rmb_select;
+}
+
+void ItemList::set_icon_stretch_to_max_size(bool p_stretch) {
+
+	icon_stretch = p_stretch;
+}
+
+bool ItemList::get_icon_stretch_to_max_size() const {
+
+	return icon_stretch;
+}
+
 void ItemList::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("add_item","text","icon:Texture","selectable"),&ItemList::add_item,DEFVAL(Ref<Texture>()),DEFVAL(true));
+	ObjectTypeDB::bind_method(_MD("add_item","text","icon:Texture","selectable"),&ItemList::add_item,DEFVAL(Variant()),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("add_icon_item","icon:Texture","selectable"),&ItemList::add_icon_item,DEFVAL(true));
 
 	ObjectTypeDB::bind_method(_MD("set_item_text","idx","text"),&ItemList::set_item_text);
@@ -1148,6 +1272,17 @@ void ItemList::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("set_min_icon_size","size"),&ItemList::set_min_icon_size);
 	ObjectTypeDB::bind_method(_MD("get_min_icon_size"),&ItemList::get_min_icon_size);
 
+	ObjectTypeDB::bind_method(_MD("set_max_icon_size","size"),&ItemList::set_max_icon_size);
+	ObjectTypeDB::bind_method(_MD("get_max_icon_size"),&ItemList::get_max_icon_size);
+
+	ObjectTypeDB::bind_method(_MD("set_icon_stretch_to_max_size","stretch"),&ItemList::set_icon_stretch_to_max_size);
+	ObjectTypeDB::bind_method(_MD("get_icon_stretch_to_max_size"),&ItemList::get_icon_stretch_to_max_size);
+
+	ObjectTypeDB::bind_method(_MD("set_allow_rmb_select","allow"),&ItemList::set_allow_rmb_select);
+	ObjectTypeDB::bind_method(_MD("get_allow_rmb_select"),&ItemList::get_allow_rmb_select);
+
+	ObjectTypeDB::bind_method(_MD("get_item_at_pos","pos","exact"),&ItemList::get_item_at_pos,DEFVAL(false));
+
 	ObjectTypeDB::bind_method(_MD("ensure_current_is_visible"),&ItemList::ensure_current_is_visible);
 
 	ObjectTypeDB::bind_method(_MD("_scroll_changed"),&ItemList::_scroll_changed);
@@ -1159,6 +1294,7 @@ void ItemList::_bind_methods(){
 	BIND_CONSTANT( SELECT_MULTI );
 
 	ADD_SIGNAL( MethodInfo("item_selected",PropertyInfo(Variant::INT,"index")));
+	ADD_SIGNAL( MethodInfo("item_rmb_selected",PropertyInfo(Variant::INT,"index"),PropertyInfo(Variant::VECTOR2,"atpos")));
 	ADD_SIGNAL( MethodInfo("multi_selected",PropertyInfo(Variant::INT,"index"),PropertyInfo(Variant::BOOL,"selected")));
 	ADD_SIGNAL( MethodInfo("item_activated",PropertyInfo(Variant::INT,"index")));
 }
@@ -1186,6 +1322,10 @@ ItemList::ItemList() {
 	current_columns=1;
 	search_time_msec=0;
 	ensure_selected_visible=false;
+	defer_select_single=-1;
+	allow_rmb_select=false;
+
+	icon_stretch = false;
 
 }
 

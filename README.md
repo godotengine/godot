@@ -1,6 +1,6 @@
 ![GODOT](/logo.png)
 
-http://www.godotengine.org
+https://godotengine.org
 
 ### The Engine
 
@@ -13,17 +13,18 @@ Godot has been developed by Juan Linietsky and Ariel Manzur for several years, a
 
 ### Documentation
 
-Documentation has been moved to [ReadTheDocs](http://docs.godotengine.org).
+Documentation is hosted on [ReadTheDocs](http://docs.godotengine.org).
 
 ### Binary Downloads, Community, etc.
 
 Binary downloads, community, etc. can be found in Godot homepage:
 
-http://www.godotengine.org
+https://godotengine.org
 
 ### Compiling from Source
 
-Compilation instructions for every platform can be found in the Wiki:
+See docs for compilation instructions for every platform:
 http://docs.godotengine.org/en/latest/reference/_compiling.html
 
 [![Build Status](https://travis-ci.org/godotengine/godot.svg?branch=master)](https://travis-ci.org/godotengine/godot)
+[![Code Triagers Badge](http://www.codetriage.com/godotengine/godot/badges/users.svg)](http://www.codetriage.com/godotengine/godot)

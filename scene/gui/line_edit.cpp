@@ -41,7 +41,15 @@ void LineEdit::_input_event(InputEvent p_event) {
 
 			const InputEventMouseButton &b = p_event.mouse_button;
 
-			if (b.button_index!=1)
+			if (b.pressed && b.button_index==BUTTON_RIGHT) {
+				menu->set_pos(get_global_transform().xform(get_local_mouse_pos()));
+				menu->set_size(Vector2(1,1));
+				menu->popup();
+				grab_focus();
+				return;
+			}
+
+			if (b.button_index!=BUTTON_LEFT)
 				break;
 
 			if (b.pressed) {
@@ -143,24 +151,10 @@ void LineEdit::_input_event(InputEvent p_event) {
 
 						if( k.mod.command && editable) {
 
-							int old_cursor_pos = cursor_pos;
-							text = undo_text;
+							undo();
 
-							Ref<Font> font = get_font("font");
-
-							cached_width = 0;
-							for (int i = 0; i<text.length(); i++)
-								cached_width += font->get_char_size(text[i]).width;
-
-							if(old_cursor_pos > text.length()) {
-								set_cursor_pos(text.length());
-							} else {
-								set_cursor_pos(old_cursor_pos);
-							}
 						}
 
-						emit_signal("text_changed",text);
-						_change_notify("text");
 
 					} break;
 
@@ -559,6 +553,28 @@ void LineEdit::paste_text() {
 
 }
 
+void LineEdit::undo() {
+
+	int old_cursor_pos = cursor_pos;
+	text = undo_text;
+
+	Ref<Font> font = get_font("font");
+
+	cached_width = 0;
+	for (int i = 0; i<text.length(); i++)
+		cached_width += font->get_char_size(text[i]).width;
+
+	if(old_cursor_pos > text.length()) {
+		set_cursor_pos(text.length());
+	} else {
+		set_cursor_pos(old_cursor_pos);
+	}
+
+	emit_signal("text_changed",text);
+	_change_notify("text");
+
+}
+
 void LineEdit::shift_selection_check_pre(bool p_shift) {
 
 	if (!selection.old_shift && p_shift)  {
@@ -669,6 +685,8 @@ void LineEdit::set_text(String p_text) {
 void LineEdit::clear() {
 
 	clear_internal();
+	emit_signal("text_changed",text);
+	_change_notify("text");
 }
 
 String LineEdit::get_text() const {
@@ -932,6 +950,39 @@ bool LineEdit::is_text_field() const {
     return true;
 }
 
+void LineEdit::menu_option(int p_option) {
+
+	switch(p_option) {
+		case MENU_CUT: {
+			cut_text();
+		} break;
+		case MENU_COPY: {
+
+			copy_text();
+		} break;
+		case MENU_PASTE: {
+
+			paste_text();
+		} break;
+		case MENU_CLEAR: {
+			clear();
+		} break;
+		case MENU_SELECT_ALL: {
+			select_all();
+		} break;
+		case MENU_UNDO: {
+
+			undo();
+		} break;
+
+	}
+
+}
+
+PopupMenu *LineEdit::get_menu() const {
+	return menu;
+}
+
 void LineEdit::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_align", "align"), &LineEdit::set_align);
@@ -952,6 +1003,8 @@ void LineEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_secret","enabled"),&LineEdit::set_secret);
 	ObjectTypeDB::bind_method(_MD("is_secret"),&LineEdit::is_secret);
 	ObjectTypeDB::bind_method(_MD("select","from","to"),&LineEdit::select,DEFVAL(0),DEFVAL(-1));
+	ObjectTypeDB::bind_method(_MD("menu_option","option"),&LineEdit::menu_option);
+	ObjectTypeDB::bind_method(_MD("get_menu:PopupMenu"),&LineEdit::get_menu);
 
 	ADD_SIGNAL( MethodInfo("text_changed", PropertyInfo( Variant::STRING, "text" )) );
 	ADD_SIGNAL( MethodInfo("text_entered", PropertyInfo( Variant::STRING, "text" )) );
@@ -961,11 +1014,21 @@ void LineEdit::_bind_methods() {
 	BIND_CONSTANT(ALIGN_RIGHT);
 	BIND_CONSTANT(ALIGN_FILL);
 
-	ADD_PROPERTY( PropertyInfo( Variant::STRING, "text" ), _SCS("set_text"),_SCS("get_text") );
+	BIND_CONSTANT( MENU_CUT );
+	BIND_CONSTANT( MENU_COPY );
+	BIND_CONSTANT( MENU_PASTE );
+	BIND_CONSTANT( MENU_CLEAR );
+	BIND_CONSTANT( MENU_SELECT_ALL );
+	BIND_CONSTANT( MENU_UNDO );
+	BIND_CONSTANT( MENU_MAX );
+
+	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "text" ), _SCS("set_text"),_SCS("get_text") );
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), _SCS("set_align"), _SCS("get_align"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_length" ), _SCS("set_max_length"),_SCS("get_max_length") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "editable" ), _SCS("set_editable"),_SCS("is_editable") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "secret" ), _SCS("set_secret"),_SCS("is_secret") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "max_length" ), _SCS("set_max_length"),_SCS("get_max_length") );
+	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "editable" ), _SCS("set_editable"),_SCS("is_editable") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "secret" ), _SCS("set_secret"),_SCS("is_secret") );
+
+
 }
 
 LineEdit::LineEdit() {
@@ -982,6 +1045,20 @@ LineEdit::LineEdit() {
 	editable=true;
 	set_default_cursor_shape(CURSOR_IBEAM);
 	set_stop_mouse(true);
+
+
+	menu = memnew( PopupMenu );
+	add_child(menu);
+	menu->add_item(TTR("Cut"),MENU_CUT,KEY_MASK_CMD|KEY_X);
+	menu->add_item(TTR("Copy"),MENU_COPY,KEY_MASK_CMD|KEY_C);
+	menu->add_item(TTR("Paste"),MENU_PASTE,KEY_MASK_CMD|KEY_V);
+	menu->add_separator();
+	menu->add_item(TTR("Select All"),MENU_SELECT_ALL,KEY_MASK_CMD|KEY_A);
+	menu->add_item(TTR("Clear"),MENU_CLEAR);
+	menu->add_separator();
+	menu->add_item(TTR("Undo"),MENU_UNDO,KEY_MASK_CMD|KEY_Z);
+	menu->connect("item_pressed",this,"menu_option");
+
 
 
 }

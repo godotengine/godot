@@ -135,18 +135,20 @@ double Math::rad2deg(double p_y) {
 
 double Math::round(double p_val) {
 
-	if (p_val>0) {
+	if (p_val>=0) {
 		return ::floor(p_val+0.5);
 	} else {
 		p_val=-p_val;
 		return -::floor(p_val+0.5);
 	}
 }
+
 double Math::asin(double p_x) {
 
 	return ::asin(p_x);
 
 }
+
 double Math::acos(double p_x) {
 
 	return ::acos(p_x);

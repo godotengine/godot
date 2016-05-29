@@ -103,7 +103,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 		AcceptDialog * dialog;
 		Tree *tree;
-		LineEdit *next;
+		OptionButton *next;
 
 	} blend_editor;
 
@@ -146,7 +146,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _dialog_action(String p_file);
 	void _seek_frame_changed(const String& p_frame);
 	void _seek_value_changed(float p_value);
-	void _blend_editor_next_changed(const String& p_string);
+	void _blend_editor_next_changed(const int p_idx);
 
 	void _list_changed();
 	void _update_animation();

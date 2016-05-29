@@ -463,6 +463,11 @@ void Object::get_property_list(List<PropertyInfo> *p_list,bool p_reversed) const
 	}
 
 }
+
+void Object::_validate_property(PropertyInfo& property) const {
+
+}
+
 void Object::get_method_list(List<MethodInfo> *p_list) const {
 
 	ObjectTypeDB::get_method_list(get_type_name(),p_list);
@@ -1244,6 +1249,7 @@ void Object::emit_signal(const StringName& p_name,VARIANT_ARG_DECLARE) {
 		argc++;
 	}
 
+
 	emit_signal(p_name,argptr,argc);
 
 }
@@ -1390,7 +1396,7 @@ Error Object::connect(const StringName& p_signal, Object *p_to_object, const Str
 			signal_is_valid=true;
 
 		if (!signal_is_valid) {
-			ERR_EXPLAIN("Attempt to connect nonexistent signal '"+p_signal+"' to method '"+p_to_method+"'");
+			ERR_EXPLAIN("In Object of type '"+String(get_type())+"': Attempt to connect nonexistent signal '"+p_signal+"' to method '"+p_to_object->get_type()+"."+p_to_method+"'");
 			ERR_FAIL_COND_V(!signal_is_valid,ERR_INVALID_PARAMETER);
 		}
 		signal_map[p_signal]=Signal();
@@ -1750,12 +1756,18 @@ bool Object::is_queued_for_deletion() const {
 void Object::set_edited(bool p_edited) {
 
 	_edited=p_edited;
+	_edited_version++;
 }
 
 bool Object::is_edited() const {
 
 	return _edited;
 
+}
+
+uint32_t Object::get_edited_version() const {
+
+	return _edited_version;
 }
 #endif
 
@@ -1772,6 +1784,7 @@ Object::Object() {
 #ifdef TOOLS_ENABLED
 
 	_edited=false;
+	_edited_version=0;
 #endif
 
 #ifdef DEBUG_ENABLED

@@ -1290,8 +1290,8 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 	//	gdfunc = &p_script->initializer;
 
 	//} else { //regular func
-		p_script->member_functions[func_name]=GDFunction();
-		gdfunc = &p_script->member_functions[func_name];
+		p_script->member_functions[func_name]=memnew(GDFunction);
+		gdfunc = p_script->member_functions[func_name];
 	//}
 
 	if (p_func)
@@ -1358,6 +1358,32 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 	gdfunc->_stack_size=codegen.stack_max;
 	gdfunc->_call_size=codegen.call_max;
 	gdfunc->name=func_name;
+#ifdef DEBUG_ENABLED
+	if (ScriptDebugger::get_singleton()){
+		String signature;
+		//path
+		if (p_script->get_path()!=String())
+			signature+=p_script->get_path();
+		//loc
+		if (p_func) {
+			signature+="::"+itos(p_func->body->line);
+		} else {
+			signature+="::0";
+		}
+
+		//funciton and class
+
+		if (p_class->name) {
+			signature+="::"+String(p_class->name)+"."+String(func_name);;
+		} else {
+			signature+="::"+String(func_name);
+		}
+
+
+
+		gdfunc->profile.signature=signature;
+	}
+#endif
 	gdfunc->_script=p_script;
 	gdfunc->source=source;
 
@@ -1396,6 +1422,9 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 	p_script->_base=NULL;
 	p_script->members.clear();
 	p_script->constants.clear();
+	for (Map<StringName,GDFunction*>::Element *E=p_script->member_functions.front();E;E=E->next()) {
+		memdelete(E->get());
+	}
 	p_script->member_functions.clear();
 	p_script->member_indices.clear();
 	p_script->member_info.clear();
@@ -1421,7 +1450,22 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 
 			if (path.is_rel_path()) {
 
-				String base = p_script->get_path();
+				String base;
+
+				if (p_owner) {
+					GDScript *current_class = p_owner;
+					while (current_class != NULL) {
+						base=current_class->get_path();
+						if (base=="")
+							current_class = current_class->_owner;
+						else
+							break;
+					}
+				}
+				else {
+					base = p_script->get_path();
+				}
+
 				if (base=="" || base.is_rel_path()) {
 					_set_error("Could not resolve relative path for parent class: "+path,p_class);
 					return ERR_FILE_NOT_FOUND;
@@ -1675,7 +1719,7 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 	for(int i=0;i<p_class->variables.size();i++) {
 
 		if (p_class->variables[i].setter) {
-			const Map<StringName,GDFunction>::Element *E=p_script->get_member_functions().find(p_class->variables[i].setter);
+			const Map<StringName,GDFunction*>::Element *E=p_script->get_member_functions().find(p_class->variables[i].setter);
 			if (!E) {
 				_set_error("Setter function '"+String(p_class->variables[i].setter)+"' not found in class.",NULL);
 				err_line=p_class->variables[i].line;
@@ -1683,7 +1727,7 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 				return ERR_PARSE_ERROR;
 			}
 
-			if (E->get().is_static()) {
+			if (E->get()->is_static()) {
 
 				_set_error("Setter function '"+String(p_class->variables[i].setter)+"' is static.",NULL);
 				err_line=p_class->variables[i].line;
@@ -1693,7 +1737,7 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 
 		}
 		if (p_class->variables[i].getter) {
-			const Map<StringName,GDFunction>::Element *E=p_script->get_member_functions().find(p_class->variables[i].getter);
+			const Map<StringName,GDFunction*>::Element *E=p_script->get_member_functions().find(p_class->variables[i].getter);
 			if (!E) {
 				_set_error("Getter function '"+String(p_class->variables[i].getter)+"' not found in class.",NULL);
 				err_line=p_class->variables[i].line;
@@ -1701,7 +1745,7 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 				return ERR_PARSE_ERROR;
 			}
 
-			if (E->get().is_static()) {
+			if (E->get()->is_static()) {
 
 				_set_error("Getter function '"+String(p_class->variables[i].getter)+"' is static.",NULL);
 				err_line=p_class->variables[i].line;

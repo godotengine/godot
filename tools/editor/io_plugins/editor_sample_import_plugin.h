@@ -49,6 +49,9 @@ public:
 	virtual String get_visible_name() const;
 	virtual void import_dialog(const String& p_from="");
 	virtual Error import(const String& p_path, const Ref<ResourceImportMetadata>& p_from);
+	void import_from_drop(const Vector<String>& p_drop, const String &p_dest_path);
+	virtual void reimport_multiple_files(const Vector<String>& p_list);
+	virtual bool can_reimport_multiple_files() const;
 
 
 	EditorSampleImportPlugin(EditorNode* p_editor);

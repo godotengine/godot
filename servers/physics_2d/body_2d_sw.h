@@ -57,6 +57,7 @@ class Body2DSW : public CollisionObject2DSW {
 
 	real_t _inv_mass;
 	real_t _inv_inertia;
+	bool user_inertia;
 
 	Vector2 gravity;
 	real_t area_linear_damp;
@@ -204,10 +205,10 @@ public:
 	_FORCE_INLINE_ real_t get_biased_angular_velocity() const { return biased_angular_velocity; }
 
 
-	_FORCE_INLINE_ void apply_impulse(const Vector2& p_pos, const Vector2& p_j) {
+	_FORCE_INLINE_ void apply_impulse(const Vector2& p_offset, const Vector2& p_impulse) {
 
-		linear_velocity += p_j * _inv_mass;
-		angular_velocity += _inv_inertia * p_pos.cross(p_j);
+		linear_velocity += p_impulse * _inv_mass;
+		angular_velocity += _inv_inertia * p_offset.cross(p_impulse);
 	}
 
 	_FORCE_INLINE_ void apply_bias_impulse(const Vector2& p_pos, const Vector2& p_j) {
@@ -243,6 +244,11 @@ public:
 	void set_applied_torque(real_t p_torque) { applied_torque=p_torque; }
 	real_t get_applied_torque() const { return applied_torque; }
 
+	_FORCE_INLINE_ void add_force(const Vector2& p_force, const Vector2& p_offset) {
+
+		applied_force += p_force;
+		applied_torque += p_offset.cross(p_force);
+	}
 
 	_FORCE_INLINE_ void set_continuous_collision_detection_mode(Physics2DServer::CCDMode p_mode) { continuous_cd_mode=p_mode; }
 	_FORCE_INLINE_ Physics2DServer::CCDMode get_continuous_collision_detection_mode() const { return continuous_cd_mode; }

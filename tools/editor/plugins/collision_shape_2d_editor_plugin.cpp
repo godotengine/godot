@@ -180,7 +180,7 @@ void CollisionShape2DEditor::set_handle(int idx, Point2& p_point) {
 void CollisionShape2DEditor::commit_handle(int idx, Variant& p_org) {
 
 	Control* c = canvas_item_editor->get_viewport_control();
-	undo_redo->create_action("Set Handle");
+	undo_redo->create_action(TTR("Set Handle"));
 
 	switch ( shape_type ) {
 		case CAPSULE_SHAPE: {

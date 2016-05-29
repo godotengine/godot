@@ -48,5 +48,7 @@ public:
 	void set_remote_node(const NodePath& p_remote_node);
 	NodePath get_remote_node() const;
 
+	virtual String get_configuration_warning() const;
+
 	RemoteTransform2D();
 };

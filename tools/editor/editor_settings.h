@@ -34,7 +34,7 @@
 #include "resource.h"
 #include "os/thread_safe.h"
 #include "core/io/config_file.h"
-
+#include "translation.h"
 class EditorPlugin;
 
 class EditorSettings : public Resource {
@@ -84,11 +84,16 @@ private:
 
 
 	void _load_defaults(Ref<ConfigFile> p_extra_config = NULL);
+	void _load_default_text_editor_theme();
+
+	bool _save_text_editor_theme(String p_file);
 
 	String project_config_path;
 
 	Vector<String> favorite_dirs;
 	Vector<String> recent_dirs;
+
+	Vector<Ref<Translation> > translations;
 
 protected:
 
@@ -108,6 +113,7 @@ public:
 	String get_project_settings_path() const;
 
 
+	void setup_language();
 	void setup_network();
 
 	void raise_order(const String& p_name);
@@ -129,6 +135,12 @@ public:
 	Vector<String> get_recent_dirs() const;
 
 	void load_favorites();
+
+	void list_text_editor_themes();
+	void load_text_editor_theme();
+	bool import_text_editor_theme(String p_file);
+	bool save_text_editor_theme();
+	bool save_text_editor_theme_as(String p_file);
 
 	EditorSettings();
 	~EditorSettings();

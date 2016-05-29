@@ -66,6 +66,7 @@ protected:
 public:
 
 	Object *instance_selected();
+	String get_selected_type();
 
 	void set_base_type(const String& p_base);
 	String get_base_type() const;

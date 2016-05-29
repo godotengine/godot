@@ -500,9 +500,9 @@ void _OS::set_icon(const Image& p_icon) {
 }
 
 /**
- *  Get current datetime with consideration for utc and 
+ *  Get current datetime with consideration for utc and
  *     dst
- */ 
+ */
 Dictionary _OS::get_datetime(bool utc) const {
 
 	Dictionary dated = get_date(utc);
@@ -564,17 +564,17 @@ uint64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 
 	// Get all time values from the dictionary, set to zero if it doesn't exist.
 	//   Risk incorrect calculation over throwing errors
-	unsigned int second = ((datetime.has(SECOND_KEY))? 
+	unsigned int second = ((datetime.has(SECOND_KEY))?
 			static_cast<unsigned int>(datetime[SECOND_KEY]): 0);
-	unsigned int minute = ((datetime.has(MINUTE_KEY))? 
+	unsigned int minute = ((datetime.has(MINUTE_KEY))?
 			static_cast<unsigned int>(datetime[MINUTE_KEY]): 0);
-	unsigned int hour = ((datetime.has(HOUR_KEY))? 
+	unsigned int hour = ((datetime.has(HOUR_KEY))?
 			static_cast<unsigned int>(datetime[HOUR_KEY]): 0);
-	unsigned int day = ((datetime.has(DAY_KEY))? 
+	unsigned int day = ((datetime.has(DAY_KEY))?
 			static_cast<unsigned int>(datetime[DAY_KEY]): 0);
-	unsigned int month = ((datetime.has(MONTH_KEY))? 
+	unsigned int month = ((datetime.has(MONTH_KEY))?
 			static_cast<unsigned int>(datetime[MONTH_KEY]) -1: 0);
-	unsigned int year = ((datetime.has(YEAR_KEY))? 
+	unsigned int year = ((datetime.has(YEAR_KEY))?
 			static_cast<unsigned int>(datetime[YEAR_KEY]):0);
 
 	/// How many days come before each month (0-12)
@@ -604,7 +604,7 @@ uint64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 	ERR_FAIL_COND_V( day > MONTH_DAYS_TABLE[LEAPYEAR(year)][month], 0);
 
 	// Calculate all the seconds from months past in this year
-	uint64_t SECONDS_FROM_MONTHS_PAST_THIS_YEAR = 
+	uint64_t SECONDS_FROM_MONTHS_PAST_THIS_YEAR =
 		DAYS_PAST_THIS_YEAR_TABLE[LEAPYEAR(year)][month] * SECONDS_PER_DAY;
 
 	uint64_t SECONDS_FROM_YEARS_PAST = 0;
@@ -614,13 +614,13 @@ uint64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 			SECONDS_PER_DAY;
 	}
 
-	uint64_t epoch = 
-		second + 
-		minute * SECONDS_PER_MINUTE + 
+	uint64_t epoch =
+		second +
+		minute * SECONDS_PER_MINUTE +
 		hour * SECONDS_PER_HOUR +
 		// Subtract 1 from day, since the current day isn't over yet
 		//   and we cannot count all 24 hours.
-		(day-1) * SECONDS_PER_DAY + 
+		(day-1) * SECONDS_PER_DAY +
 		SECONDS_FROM_MONTHS_PAST_THIS_YEAR +
 		SECONDS_FROM_YEARS_PAST;
 	return epoch;
@@ -631,7 +631,7 @@ uint64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
  *  Get a dictionary of time values when given epoch time
  *
  *  Dictionary Time values will be a union if values from #get_time
- *    and #get_date dictionaries (with the exception of dst = 
+ *    and #get_date dictionaries (with the exception of dst =
  *    day light standard time, as it cannot be determined from epoch)
  *
  * @param unix_time_val epoch time to convert
@@ -660,14 +660,14 @@ Dictionary _OS::get_datetime_from_unix_time( uint64_t unix_time_val) const {
 	time.hour = dayclock / 3600;
 
 	/* day 0 was a thursday */
-	date.weekday = static_cast<OS::Weekday>((dayno + 4) % 7);       
+	date.weekday = static_cast<OS::Weekday>((dayno + 4) % 7);
 
 	while (dayno >= YEARSIZE(year)) {
 		dayno -= YEARSIZE(year);
 		year++;
 	}
 
-	date.year = year; 
+	date.year = year;
 
 	size_t imonth = 0;
 
@@ -1893,15 +1893,15 @@ void _Directory::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_drive","idx"),&_Directory::get_drive);
 	ObjectTypeDB::bind_method(_MD("change_dir:Error","todir"),&_Directory::change_dir);
 	ObjectTypeDB::bind_method(_MD("get_current_dir"),&_Directory::get_current_dir);
-	ObjectTypeDB::bind_method(_MD("make_dir:Error","name"),&_Directory::make_dir);
-	ObjectTypeDB::bind_method(_MD("make_dir_recursive:Error","name"),&_Directory::make_dir_recursive);
-	ObjectTypeDB::bind_method(_MD("file_exists","name"),&_Directory::file_exists);
-	ObjectTypeDB::bind_method(_MD("dir_exists","name"),&_Directory::dir_exists);
+	ObjectTypeDB::bind_method(_MD("make_dir:Error","path"),&_Directory::make_dir);
+	ObjectTypeDB::bind_method(_MD("make_dir_recursive:Error","path"),&_Directory::make_dir_recursive);
+	ObjectTypeDB::bind_method(_MD("file_exists","path"),&_Directory::file_exists);
+	ObjectTypeDB::bind_method(_MD("dir_exists","path"),&_Directory::dir_exists);
 //	ObjectTypeDB::bind_method(_MD("get_modified_time","file"),&_Directory::get_modified_time);
 	ObjectTypeDB::bind_method(_MD("get_space_left"),&_Directory::get_space_left);
 	ObjectTypeDB::bind_method(_MD("copy:Error","from","to"),&_Directory::copy);
 	ObjectTypeDB::bind_method(_MD("rename:Error","from","to"),&_Directory::rename);
-	ObjectTypeDB::bind_method(_MD("remove:Error","file"),&_Directory::remove);
+	ObjectTypeDB::bind_method(_MD("remove:Error","path"),&_Directory::remove);
 
 }
 

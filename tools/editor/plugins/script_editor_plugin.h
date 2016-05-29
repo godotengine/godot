@@ -122,6 +122,10 @@ class ScriptEditor : public VBoxContainer {
 		FILE_SAVE,
 		FILE_SAVE_AS,
 		FILE_SAVE_ALL,
+		FILE_IMPORT_THEME,
+		FILE_RELOAD_THEME,
+		FILE_SAVE_THEME,
+		FILE_SAVE_THEME_AS,
 		FILE_CLOSE,
 		EDIT_UNDO,
 		EDIT_REDO,
@@ -131,6 +135,7 @@ class ScriptEditor : public VBoxContainer {
 		EDIT_SELECT_ALL,
 		EDIT_COMPLETE,
 		EDIT_AUTO_INDENT,
+		EDIT_TRIM_TRAILING_WHITESAPCE,
 		EDIT_TOGGLE_COMMENT,
 		EDIT_MOVE_LINE_UP,
 		EDIT_MOVE_LINE_DOWN,
@@ -178,12 +183,15 @@ class ScriptEditor : public VBoxContainer {
 	ItemList *script_list;
 	HSplitContainer *script_split;
 	TabContainer *tab_container;
+	EditorFileDialog *file_dialog;
 	FindReplaceDialog *find_replace_dialog;
 	GotoLineDialog *goto_line_dialog;
 	ConfirmationDialog *erase_tab_confirm;
 	ScriptCreateDialog *script_create_dialog;
 	ScriptEditorDebugger* debugger;
 	ToolButton *scripts_visible;
+
+	String current_theme;
 
 	TextureFrame *script_icon;
 	Label *script_name_label;
@@ -238,6 +246,10 @@ class ScriptEditor : public VBoxContainer {
 	void _add_callback(Object *p_obj, const String& p_function, const StringArray& p_args);
 	void _res_saved_callback(const Ref<Resource>& p_res);
 
+	bool trim_trailing_whitespace_on_save;
+
+	void _trim_trailing_whitespace(TextEdit *tx);
+
 	void _goto_script_line2(int p_line);
 	void _goto_script_line(REF p_script,int p_line);
 	void _breaked(bool p_breaked,bool p_can_debug);
@@ -272,6 +284,8 @@ class ScriptEditor : public VBoxContainer {
 	void _update_script_colors();
 	void _update_modified_scripts_for_external_editor();
 
+	int file_dialog_option;
+	void _file_dialog_action(String p_file);
 
 	static ScriptEditor *script_editor;
 protected:

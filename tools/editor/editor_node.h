@@ -95,7 +95,7 @@
 
 typedef void (*EditorNodeInitCallback)();
 
-
+class EditorPluginList;
 
 class EditorNode : public Node {
 
@@ -159,7 +159,7 @@ private:
 		OBJECT_CALL_METHOD,
 		OBJECT_REQUEST_HELP,
 		RUN_PLAY,
-		RUN_PAUSE,
+
 		RUN_STOP,
 		RUN_PLAY_SCENE,
 		RUN_PLAY_NATIVE,
@@ -269,6 +269,7 @@ private:
 	SceneTreeDock *scene_tree_dock;
 	//ResourcesDock *resources_dock;
 	PropertyEditor *property_editor;
+	VBoxContainer *prop_editor_vb;
 	ScenesDock *scenes_dock;
 	EditorRunNative *run_native;
 
@@ -299,7 +300,6 @@ private:
 	FileDialog *file_export;
 	FileDialog *file_export_lib;
 	FileDialog *file_script;
-	CheckButton *file_export_check;
 	CheckButton *file_export_lib_merge;
 	LineEdit *file_export_password;
 	String current_path;
@@ -366,13 +366,15 @@ private:
 	String open_navigate;
 	bool changing_scene;
 
+	bool waiting_for_sources_changed;
+
 	uint32_t circle_step_msec;
 	uint64_t circle_step_frame;
 	int circle_step;
 
 	Vector<EditorPlugin*> editor_plugins;
 	EditorPlugin *editor_plugin_screen;
-	EditorPlugin *editor_plugin_over;
+	EditorPluginList *editor_plugins_over;
 
 	EditorHistory editor_history;
 	EditorData editor_data;
@@ -449,6 +451,10 @@ private:
 	void _transform_keyed(Object *sp,const String& p_sub,const Transform& p_key);
 
 	void _hide_top_editors();
+	void _display_top_editors(bool p_display);
+	void _set_top_editors(Vector<EditorPlugin*> p_editor_plugins_over);
+	void _set_editing_top_editors(Object * p_current_object);
+
 	void _quick_opened();
 	void _quick_run();
 
@@ -460,6 +466,7 @@ private:
 	void _add_to_recent_scenes(const String& p_scene);
 	void _update_recent_scenes();
 	void _open_recent_scene(int p_idx);
+	void _dropped_files(const Vector<String>& p_files,int p_screen);
 	//void _open_recent_scene_confirm();
 	String _recent_scene;
 
@@ -575,11 +582,16 @@ public:
 
 
 	EditorPlugin *get_editor_plugin_screen() { return editor_plugin_screen; }
-	EditorPlugin *get_editor_plugin_over() { return editor_plugin_over; }
+	EditorPluginList *get_editor_plugins_over() { return editor_plugins_over; }
 	PropertyEditor *get_property_editor() { return property_editor; }
+	VBoxContainer *get_property_editor_vb() { return prop_editor_vb; }
 
 	static void add_editor_plugin(EditorPlugin *p_editor);
 	static void remove_editor_plugin(EditorPlugin *p_editor);
+
+	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE,false); }
+
+
 
 	void add_control_to_dock(DockSlot p_slot,Control* p_control);
 	void remove_control_from_dock(Control* p_control);
@@ -596,7 +608,9 @@ public:
 
 	void save_resource_in_path(const Ref<Resource>& p_resource,const String& p_path);
 	void save_resource(const Ref<Resource>& p_resource);
-	void save_resource_as(const Ref<Resource>& p_resource);
+	void save_resource_as(const Ref<Resource>& p_resource, const String &p_at_path=String());
+
+	void merge_from_scene() { _menu_option_confirm(FILE_IMPORT_SUBSCENE,false); }
 
 	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
 
@@ -638,7 +652,7 @@ public:
 
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
 
-	Node* request_instance_scene(const String &p_path);
+	void request_instance_scene(const String &p_path);
 	ScenesDock *get_scenes_dock();
 	static UndoRedo* get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 
@@ -685,6 +699,8 @@ public:
 
 	void update_keying();
 
+	ToolButton *get_pause_button() { return pause_button; }
+
 
 	ToolButton* add_bottom_panel_item(String p_text,Control *p_item);
 	bool are_bottom_panels_hidden() const;
@@ -692,6 +708,11 @@ public:
 	void raise_bottom_panel_item(Control *p_item);
 	void hide_bottom_panel();
 	void remove_bottom_panel_item(Control *p_item);
+
+	Variant drag_resource(const Ref<Resource>& p_res,Control* p_from);
+	Variant drag_files(const Vector<String>& p_files,Control* p_from);
+	Variant drag_files_and_dirs(const Vector<String>& p_files,Control* p_from);
+
 
 	EditorNode();
 	~EditorNode();
@@ -709,6 +730,32 @@ struct EditorProgress {
 	EditorProgress(const String& p_task,const String& p_label,int p_amount) { EditorNode::progress_add_task(p_task,p_label,p_amount); task=p_task; }
 	~EditorProgress() { EditorNode::progress_end_task(task); }
 };
+
+class EditorPluginList : public Object {
+private:
+	Vector<EditorPlugin*> plugins_list;
+
+public:
+
+	void set_plugins_list(Vector<EditorPlugin*> p_plugins_list) {
+		plugins_list = p_plugins_list;
+	}
+
+	Vector<EditorPlugin*> get_plugins_list() {
+		return plugins_list;
+	}
+
+	void make_visible(bool p_visible);
+	void edit(Object *p_object);
+	bool forward_input_event(const InputEvent& p_event);
+	bool forward_spatial_input_event(Camera* p_camera, const InputEvent& p_event);
+	void clear();
+	bool empty();
+
+	EditorPluginList();
+	~EditorPluginList();
+
+} ;
 
 struct EditorProgressBG {
 

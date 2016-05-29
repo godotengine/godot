@@ -257,7 +257,7 @@ EditorAddonLibraryItemDescription::EditorAddonLibraryItemDescription() {
 
 	previews->add_child(preview_hb);
 	get_ok()->set_text("Install");
-	get_cancel()->set_text("Close");
+	get_cancel()->set_text(TTR("Close"));
 
 
 
@@ -1085,24 +1085,24 @@ EditorAddonLibrary::EditorAddonLibrary() {
 
 
 
-	search_hb->add_child( memnew( Label("Search: ")));
+	search_hb->add_child( memnew( Label(TTR("Search:")+" ")));
 	filter =memnew( LineEdit );
 	search_hb->add_child(filter);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->connect("text_entered",this,"_search");
-	search = memnew( Button("Search"));
+	search = memnew( Button(TTR("Search")));
 	search->connect("pressed",this,"_search");
 	search_hb->add_child(search);
 
 	search_hb->add_child(memnew( VSeparator ));
 
 	Button * open_asset = memnew( Button );
-	open_asset->set_text("Import");
+	open_asset->set_text(TTR("Import"));
 	search_hb->add_child(open_asset);
 	open_asset->connect("pressed",this,"_asset_open");
 
 	Button * plugins = memnew( Button );
-	plugins->set_text("Plugins");
+	plugins->set_text(TTR("Plugins"));
 	search_hb->add_child(plugins);
 	plugins->connect("pressed",this,"_manage_plugins");
 
@@ -1112,7 +1112,7 @@ EditorAddonLibrary::EditorAddonLibrary() {
 	HBoxContainer *search_hb2 = memnew( HBoxContainer );
 	library_main->add_child(search_hb2);
 
-	search_hb2->add_child( memnew( Label("Sort: ")));
+	search_hb2->add_child( memnew( Label(TTR("Sort:")+" ")));
 	sort = memnew( OptionButton );
 	for(int i=0;i<SORT_MAX;i++) {
 		sort->add_item(sort_text[i]);
@@ -1123,23 +1123,23 @@ EditorAddonLibrary::EditorAddonLibrary() {
 	sort->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	reverse = memnew( CheckBox);
-	reverse->set_text("Reverse");
+	reverse->set_text(TTR("Reverse"));
 	search_hb2->add_child(reverse);
 
 	search_hb2->add_child(memnew(VSeparator));
 
 	//search_hb2->add_spacer();
 
-	search_hb2->add_child( memnew( Label("Category: ")));
+	search_hb2->add_child( memnew( Label(TTR("Category:")+" ")));
 	categories = memnew( OptionButton );
-	categories->add_item("All");
+	categories->add_item(TTR("All"));
 	search_hb2->add_child(categories);
 	categories->set_h_size_flags(SIZE_EXPAND_FILL);
 	//search_hb2->add_spacer();
 
 	search_hb2->add_child(memnew(VSeparator));
 
-	search_hb2->add_child( memnew( Label("Site: ")));
+	search_hb2->add_child( memnew( Label(TTR("Site:")+" ")));
 	repository = memnew( OptionButton );
 
 	repository->add_item("Godot");
@@ -1232,7 +1232,7 @@ EditorAddonLibrary::EditorAddonLibrary() {
 	asset_open = memnew( EditorFileDialog );
 
 	asset_open->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	asset_open->add_filter("*.zip ; Assets ZIP File");
+	asset_open->add_filter("*.zip ; "+TTR("Assets ZIP File"));
 	asset_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	add_child(asset_open);
 	asset_open->connect("file_selected",this,"_asset_file_selected");

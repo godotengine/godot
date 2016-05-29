@@ -24,16 +24,13 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/silk/SigProc_FIX.h"
 
 /* Approximation of 2^() (very close inverse of silk_lin2log()) */
 /* Convert input to a linear scale    */
-opus_int32 silk_log2lin( 
+opus_int32 silk_log2lin(
     const opus_int32            inLog_Q7            /* I  input on log scale                                            */
 )
 {
@@ -42,8 +39,8 @@ opus_int32 silk_log2lin(
     if( inLog_Q7 < 0 ) {
         return 0;
     } else if ( inLog_Q7 >= 3967 ) {
-		return silk_int32_MAX;
-	}
+        return silk_int32_MAX;
+    }
 
     out = silk_LSHIFT( 1, silk_RSHIFT( inLog_Q7, 7 ) );
     frac_Q7 = inLog_Q7 & 0x7F;

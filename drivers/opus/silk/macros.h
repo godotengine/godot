@@ -27,25 +27,47 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef SILK_MACROS_H
 #define SILK_MACROS_H
-
 #include "opus/opus_config.h"
 
 #include "opus/opus_types.h"
 #include "opus/opus_defines.h"
 
+#if OPUS_GNUC_PREREQ(3, 0)
+#define opus_likely(x)       (__builtin_expect(!!(x), 1))
+#define opus_unlikely(x)     (__builtin_expect(!!(x), 0))
+#else
+#define opus_likely(x)       (!!(x))
+#define opus_unlikely(x)     (!!(x))
+#endif
+
+/* Set this if opus_int64 is a native type of the CPU. */
+#define OPUS_FAST_INT64 (defined(__x86_64__) || defined(__LP64__) || defined(_WIN64))
+
 /* This is an OPUS_INLINE header file for general platform. */
 
 /* (a32 * (opus_int32)((opus_int16)(b32))) >> 16 output have to be 32bit int */
+#if OPUS_FAST_INT64
+#define silk_SMULWB(a32, b32)            (((a32) * (opus_int64)((opus_int16)(b32))) >> 16)
+#else
 #define silk_SMULWB(a32, b32)            ((((a32) >> 16) * (opus_int32)((opus_int16)(b32))) + ((((a32) & 0x0000FFFF) * (opus_int32)((opus_int16)(b32))) >> 16))
+#endif
 
 /* a32 + (b32 * (opus_int32)((opus_int16)(c32))) >> 16 output have to be 32bit int */
+#if OPUS_FAST_INT64
+#define silk_SMLAWB(a32, b32, c32)       ((a32) + (((b32) * (opus_int64)((opus_int16)(c32))) >> 16))
+#else
 #define silk_SMLAWB(a32, b32, c32)       ((a32) + ((((b32) >> 16) * (opus_int32)((opus_int16)(c32))) + ((((b32) & 0x0000FFFF) * (opus_int32)((opus_int16)(c32))) >> 16)))
+#endif
 
 /* (a32 * (b32 >> 16)) >> 16 */
 #define silk_SMULWT(a32, b32)            (((a32) >> 16) * ((b32) >> 16) + ((((a32) & 0x0000FFFF) * ((b32) >> 16)) >> 16))
 
 /* a32 + (b32 * (c32 >> 16)) >> 16 */
+#if OPUS_FAST_INT64
+#define silk_SMLAWT(a32, b32, c32)       ((a32) + (((b32) * ((opus_int64)(c32) >> 16)) >> 16))
+#else
 #define silk_SMLAWT(a32, b32, c32)       ((a32) + (((b32) >> 16) * ((c32) >> 16)) + ((((b32) & 0x0000FFFF) * ((c32) >> 16)) >> 16))
+#endif
 
 /* (opus_int32)((opus_int16)(a3))) * (opus_int32)((opus_int16)(b32)) output have to be 32bit int */
 #define silk_SMULBB(a32, b32)            ((opus_int32)((opus_int16)(a32)) * (opus_int32)((opus_int16)(b32)))
@@ -63,10 +85,18 @@ POSSIBILITY OF SUCH DAMAGE.
 #define silk_SMLAL(a64, b32, c32)        (silk_ADD64((a64), ((opus_int64)(b32) * (opus_int64)(c32))))
 
 /* (a32 * b32) >> 16 */
+#if OPUS_FAST_INT64
+#define silk_SMULWW(a32, b32)            (((opus_int64)(a32) * (b32)) >> 16)
+#else
 #define silk_SMULWW(a32, b32)            silk_MLA(silk_SMULWB((a32), (b32)), (a32), silk_RSHIFT_ROUND((b32), 16))
+#endif
 
 /* a32 + ((b32 * c32) >> 16) */
+#if OPUS_FAST_INT64
+#define silk_SMLAWW(a32, b32, c32)       ((a32) + (((opus_int64)(b32) * (c32)) >> 16))
+#else
 #define silk_SMLAWW(a32, b32, c32)       silk_MLA(silk_SMLAWB((a32), (b32), (c32)), (b32), silk_RSHIFT_ROUND((c32), 16))
+#endif
 
 /* add/subtract with output saturated */
 #define silk_ADD_SAT32(a, b)             ((((opus_uint32)(a) + (opus_uint32)(b)) & 0x80000000) == 0 ?                              \
@@ -77,17 +107,24 @@ POSSIBILITY OF SUCH DAMAGE.
                                         (( (a) & ((b)^0x80000000) & 0x80000000) ? silk_int32_MIN : (a)-(b)) :    \
                                         ((((a)^0x80000000) & (b)  & 0x80000000) ? silk_int32_MAX : (a)-(b)) )
 
-#include "opus/celt/ecintrin.h"
+#if defined(MIPSr1_ASM)
+#include "opus/silk/mips/macros_mipsr1.h"
+#endif
 
+#include "opus/celt/ecintrin.h"
+#ifndef OVERRIDE_silk_CLZ16
 static OPUS_INLINE opus_int32 silk_CLZ16(opus_int16 in16)
 {
     return 32 - EC_ILOG(in16<<16|0x8000);
 }
+#endif
 
+#ifndef OVERRIDE_silk_CLZ32
 static OPUS_INLINE opus_int32 silk_CLZ32(opus_int32 in32)
 {
     return in32 ? 32 - EC_ILOG(in32) : 32;
 }
+#endif
 
 /* Row based */
 #define matrix_ptr(Matrix_base_adr, row, column, N) \
@@ -102,11 +139,11 @@ static OPUS_INLINE opus_int32 silk_CLZ32(opus_int32 in32)
 #endif
 
 #ifdef OPUS_ARM_INLINE_ASM
-#include "arm/macros_armv4.h"
+#include "opus/silk/arm/macros_armv4.h"
 #endif
 
 #ifdef OPUS_ARM_INLINE_EDSP
-#include "arm/macros_armv5e.h"
+#include "opus/silk/arm/macros_armv5e.h"
 #endif
 
 #endif /* SILK_MACROS_H */

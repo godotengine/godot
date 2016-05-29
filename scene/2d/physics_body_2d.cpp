@@ -544,7 +544,10 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 		set_global_transform(state->get_transform());
 	linear_velocity=state->get_linear_velocity();
 	angular_velocity=state->get_angular_velocity();
-	sleeping=state->is_sleeping();
+	if(sleeping!=state->is_sleeping()) {
+		sleeping=state->is_sleeping();
+		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
+	}
 	if (get_script_instance())
 		get_script_instance()->call("_integrate_forces",state);
 	set_block_transform_notify(false); // want it back
@@ -597,6 +600,17 @@ void RigidBody2D::set_mass(real_t p_mass){
 real_t RigidBody2D::get_mass() const{
 
 	return mass;
+}
+
+void RigidBody2D::set_inertia(real_t p_inertia) {
+
+	ERR_FAIL_COND(p_inertia<=0);
+	Physics2DServer::get_singleton()->body_set_param(get_rid(),Physics2DServer::BODY_PARAM_INERTIA,p_inertia);
+}
+
+real_t RigidBody2D::get_inertia() const{
+
+	return Physics2DServer::get_singleton()->body_get_param(get_rid(),Physics2DServer::BODY_PARAM_INERTIA);
 }
 
 void RigidBody2D::set_weight(real_t p_weight){
@@ -764,9 +778,9 @@ int RigidBody2D::get_max_contacts_reported() const{
 	return max_contacts_reported;
 }
 
-void RigidBody2D::apply_impulse(const Vector2& p_pos, const Vector2& p_impulse) {
+void RigidBody2D::apply_impulse(const Vector2& p_offset, const Vector2& p_impulse) {
 
-	Physics2DServer::get_singleton()->body_apply_impulse(get_rid(),p_pos,p_impulse);
+	Physics2DServer::get_singleton()->body_apply_impulse(get_rid(),p_offset,p_impulse);
 }
 
 void RigidBody2D::set_applied_force(const Vector2& p_force) {
@@ -779,6 +793,20 @@ Vector2 RigidBody2D::get_applied_force() const {
 	return Physics2DServer::get_singleton()->body_get_applied_force(get_rid());
 };
 
+void RigidBody2D::set_applied_torque(const float p_torque) {
+
+	Physics2DServer::get_singleton()->body_set_applied_torque(get_rid(), p_torque);
+};
+
+float RigidBody2D::get_applied_torque() const {
+
+	return Physics2DServer::get_singleton()->body_get_applied_torque(get_rid());
+};
+
+void RigidBody2D::add_force(const Vector2& p_offset, const Vector2& p_force) {
+
+	Physics2DServer::get_singleton()->body_add_force(get_rid(),p_offset,p_force);
+}
 
 void RigidBody2D::set_continuous_collision_detection_mode(CCDMode p_mode) {
 
@@ -855,6 +883,9 @@ void RigidBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_mass","mass"),&RigidBody2D::set_mass);
 	ObjectTypeDB::bind_method(_MD("get_mass"),&RigidBody2D::get_mass);
 
+	ObjectTypeDB::bind_method(_MD("get_inertia"),&RigidBody2D::get_inertia);
+	ObjectTypeDB::bind_method(_MD("set_inertia","inertia"),&RigidBody2D::set_inertia);
+
 	ObjectTypeDB::bind_method(_MD("set_weight","weight"),&RigidBody2D::set_weight);
 	ObjectTypeDB::bind_method(_MD("get_weight"),&RigidBody2D::get_weight);
 
@@ -892,10 +923,15 @@ void RigidBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_continuous_collision_detection_mode"),&RigidBody2D::get_continuous_collision_detection_mode);
 
 	ObjectTypeDB::bind_method(_MD("set_axis_velocity","axis_velocity"),&RigidBody2D::set_axis_velocity);
-	ObjectTypeDB::bind_method(_MD("apply_impulse","pos","impulse"),&RigidBody2D::apply_impulse);
+	ObjectTypeDB::bind_method(_MD("apply_impulse","offset","impulse"),&RigidBody2D::apply_impulse);
 
 	ObjectTypeDB::bind_method(_MD("set_applied_force","force"),&RigidBody2D::set_applied_force);
 	ObjectTypeDB::bind_method(_MD("get_applied_force"),&RigidBody2D::get_applied_force);
+
+	ObjectTypeDB::bind_method(_MD("set_applied_torque","torque"),&RigidBody2D::set_applied_torque);
+	ObjectTypeDB::bind_method(_MD("get_applied_torque"),&RigidBody2D::get_applied_torque);
+
+	ObjectTypeDB::bind_method(_MD("add_force","offset","force"),&RigidBody2D::add_force);
 
 	ObjectTypeDB::bind_method(_MD("set_sleeping","sleeping"),&RigidBody2D::set_sleeping);
 	ObjectTypeDB::bind_method(_MD("is_sleeping"),&RigidBody2D::is_sleeping);
@@ -934,6 +970,7 @@ void RigidBody2D::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("body_exit_shape",PropertyInfo(Variant::INT,"body_id"),PropertyInfo(Variant::OBJECT,"body"),PropertyInfo(Variant::INT,"body_shape"),PropertyInfo(Variant::INT,"local_shape")));
 	ADD_SIGNAL( MethodInfo("body_enter",PropertyInfo(Variant::OBJECT,"body")));
 	ADD_SIGNAL( MethodInfo("body_exit",PropertyInfo(Variant::OBJECT,"body")));
+	ADD_SIGNAL( MethodInfo("sleeping_state_changed"));
 
 	BIND_CONSTANT( MODE_STATIC );
 	BIND_CONSTANT( MODE_KINEMATIC );

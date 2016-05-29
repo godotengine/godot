@@ -138,6 +138,8 @@ public:
 	virtual void texture_set_path(RID p_texture,const String& p_path)=0;
 	virtual String texture_get_path(RID p_texture) const=0;
 
+	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable)=0;
+
 	struct TextureInfo {
 		RID texture;
 		Size2 size;
@@ -916,6 +918,8 @@ public:
 
 	virtual void instance_set_morph_target_weight(RID p_instance,int p_shape, float p_weight)=0;
 	virtual float instance_get_morph_target_weight(RID p_instance,int p_shape) const=0;
+
+	virtual void instance_set_surface_material(RID p_instance,int p_surface, RID p_material)=0;
 
 	virtual void instance_attach_skeleton(RID p_instance,RID p_skeleton)=0;
 	virtual RID instance_get_skeleton(RID p_instance) const=0;

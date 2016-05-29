@@ -65,6 +65,7 @@ protected:
 
 	DVector<String> _get_icon_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_icon_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
 	DVector<String> _get_stylebox_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_stylebox_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
+	DVector<String> _get_stylebox_types(void) const { DVector<String> ilret; List<StringName> il; get_stylebox_types(&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
 	DVector<String> _get_font_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_font_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
 	DVector<String> _get_color_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_color_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
 	DVector<String> _get_constant_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_constant_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
@@ -100,6 +101,7 @@ public:
 	bool has_stylebox(const StringName& p_name,const StringName& p_type) const;
 	void clear_stylebox(const StringName& p_name,const StringName& p_type);
 	void get_stylebox_list(StringName p_type, List<StringName> *p_list) const;
+	void get_stylebox_types(List<StringName> *p_list) const;
 
 	void set_font(const StringName& p_name,const StringName& p_type,const Ref<Font>& p_font);
 	Ref<Font> get_font(const StringName& p_name,const StringName& p_type) const;

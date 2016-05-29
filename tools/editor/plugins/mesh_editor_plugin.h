@@ -1,68 +1,66 @@
 #ifndef MESH_EDITOR_PLUGIN_H
 #define MESH_EDITOR_PLUGIN_H
 
-
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
+#include "scene/resources/material.h"
+#include "scene/3d/light.h"
 #include "scene/3d/mesh_instance.h"
-#include "scene/gui/spin_box.h"
+#include "scene/3d/camera.h"
+
+class MeshEditor : public Control {
+
+	OBJ_TYPE(MeshEditor, Control);
 
 
-class MeshInstanceEditor : public Node {
 
-	OBJ_TYPE(MeshInstanceEditor, Node );
+	float rot_x;
+	float rot_y;
+
+	Viewport *viewport;
+	MeshInstance *mesh_instance;
+	DirectionalLight *light1;
+	DirectionalLight *light2;
+	Camera *camera;
+
+	Ref<Mesh> mesh;
 
 
-	enum Menu {
+	TextureButton *light_1_switch;
+	TextureButton *light_2_switch;
 
-		MENU_OPTION_CREATE_STATIC_TRIMESH_BODY,
-		MENU_OPTION_CREATE_STATIC_CONVEX_BODY,
-		MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE,
-		MENU_OPTION_CREATE_CONVEX_COLLISION_SHAPE,
-		MENU_OPTION_CREATE_NAVMESH,
-		MENU_OPTION_CREATE_OUTLINE_MESH,
-	};
+	void _button_pressed(Node* p_button);
+	bool first_enter;
 
-	MeshInstance *node;
-
-	MenuButton *options;
-
-	ConfirmationDialog *outline_dialog;
-	SpinBox *outline_size;
-
-	AcceptDialog *err_dialog;
-
-	void _menu_option(int p_option);
-	void _create_outline_mesh();
-
-friend class MeshInstanceEditorPlugin;
-
+	void _update_rotation();
 protected:
-	void _node_removed(Node *p_node);
+	void _notification(int p_what);
+	void _input_event(InputEvent p_event);
 	static void _bind_methods();
 public:
 
-	void edit(MeshInstance *p_mesh);
-	MeshInstanceEditor();
+	void edit(Ref<Mesh> p_mesh);
+	MeshEditor();
 };
 
-class MeshInstanceEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( MeshInstanceEditorPlugin, EditorPlugin );
+class MeshEditorPlugin : public EditorPlugin {
 
-	MeshInstanceEditor *mesh_editor;
+	OBJ_TYPE( MeshEditorPlugin, EditorPlugin );
+
+	MeshEditor *mesh_editor;
 	EditorNode *editor;
 
 public:
 
-	virtual String get_name() const { return "MeshInstance"; }
+	virtual String get_name() const { return "Mesh"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
 	virtual bool handles(Object *p_node) const;
 	virtual void make_visible(bool p_visible);
 
-	MeshInstanceEditorPlugin(EditorNode *p_node);
-	~MeshInstanceEditorPlugin();
+	MeshEditorPlugin(EditorNode *p_node);
+	~MeshEditorPlugin();
 
 };
 

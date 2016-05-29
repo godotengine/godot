@@ -638,8 +638,8 @@ void Area2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_overlapping_bodies"),&Area2D::get_overlapping_bodies);
 	ObjectTypeDB::bind_method(_MD("get_overlapping_areas"),&Area2D::get_overlapping_areas);
 
-	ObjectTypeDB::bind_method(_MD("overlaps_body:PhysicsBody2D","body"),&Area2D::overlaps_body);
-	ObjectTypeDB::bind_method(_MD("overlaps_area:Area2D","area"),&Area2D::overlaps_area);
+	ObjectTypeDB::bind_method(_MD("overlaps_body","body"),&Area2D::overlaps_body);
+	ObjectTypeDB::bind_method(_MD("overlaps_area","area"),&Area2D::overlaps_area);
 
 	ObjectTypeDB::bind_method(_MD("_body_inout"),&Area2D::_body_inout);
 	ObjectTypeDB::bind_method(_MD("_area_inout"),&Area2D::_area_inout);
@@ -660,9 +660,9 @@ void Area2D::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"gravity_point"),_SCS("set_gravity_is_point"),_SCS("is_gravity_a_point"));
 	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"gravity_distance_scale", PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_gravity_distance_scale"),_SCS("get_gravity_distance_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"gravity_vec"),_SCS("set_gravity_vector"),_SCS("get_gravity_vector"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity",PROPERTY_HINT_RANGE,"-1024,1024,0.01"),_SCS("set_gravity"),_SCS("get_gravity"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"linear_damp",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_linear_damp"),_SCS("get_linear_damp"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"angular_damp",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_angular_damp"),_SCS("get_angular_damp"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity",PROPERTY_HINT_RANGE,"-1024,1024,0.001"),_SCS("set_gravity"),_SCS("get_gravity"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"linear_damp",PROPERTY_HINT_RANGE,"0,100,0.01"),_SCS("set_linear_damp"),_SCS("get_linear_damp"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"angular_damp",PROPERTY_HINT_RANGE,"0,100,0.01"),_SCS("set_angular_damp"),_SCS("get_angular_damp"));
 	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"priority",PROPERTY_HINT_RANGE,"0,128,1"),_SCS("set_priority"),_SCS("get_priority"));
 	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"monitoring"),_SCS("set_enable_monitoring"),_SCS("is_monitoring_enabled"));
 	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"monitorable"),_SCS("set_monitorable"),_SCS("is_monitorable"));

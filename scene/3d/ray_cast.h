@@ -47,6 +47,9 @@ class RayCast : public Spatial {
 
 	Set<RID> exclude;
 
+	uint32_t layer_mask;
+	uint32_t type_mask;
+
 protected:
 
 	void _notification(int p_what);
@@ -58,6 +61,12 @@ public:
 
 	void set_cast_to(const Vector3& p_point);
 	Vector3 get_cast_to() const;
+
+	void set_layer_mask(uint32_t p_mask);
+	uint32_t get_layer_mask() const;
+
+	void set_type_mask(uint32_t p_mask);
+	uint32_t get_type_mask() const;
 
 	bool is_colliding() const;
 	Object *get_collider() const;

@@ -246,6 +246,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(String,match);
 	VCALL_LOCALMEM1R(String,matchn);
 	VCALL_LOCALMEM1R(String,begins_with);
+	VCALL_LOCALMEM1R(String,ends_with);
 	VCALL_LOCALMEM2R(String,replace);
 	VCALL_LOCALMEM2R(String,replacen);
 	VCALL_LOCALMEM2R(String,insert);
@@ -256,7 +257,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0R(String,to_lower);
 	VCALL_LOCALMEM1R(String,left);
 	VCALL_LOCALMEM1R(String,right);
-	VCALL_LOCALMEM0R(String,strip_edges);
+	VCALL_LOCALMEM2R(String,strip_edges);
 	VCALL_LOCALMEM0R(String,extension);
 	VCALL_LOCALMEM0R(String,basename);
 	VCALL_LOCALMEM1R(String,plus_file);
@@ -440,6 +441,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0R(Dictionary,empty);
 	VCALL_LOCALMEM0(Dictionary,clear);
 	VCALL_LOCALMEM1R(Dictionary,has);
+	VCALL_LOCALMEM1R(Dictionary,has_all);
 	VCALL_LOCALMEM1(Dictionary,erase);
 	VCALL_LOCALMEM0R(Dictionary,hash);
 	VCALL_LOCALMEM0R(Dictionary,keys);
@@ -593,6 +595,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_PTR0R(Image, get_data);
 	VCALL_PTR3(Image, blit_rect);
 	VCALL_PTR1R(Image, converted);
+	VCALL_PTR0(Image, fix_alpha_edges);
 
 	VCALL_PTR0R( AABB, get_area );
 	VCALL_PTR0R( AABB, has_no_area );
@@ -1260,6 +1263,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(STRING,BOOL,String,match,STRING,"expr",varray());
 	ADDFUNC1(STRING,BOOL,String,matchn,STRING,"expr",varray());
 	ADDFUNC1(STRING,BOOL,String,begins_with,STRING,"text",varray());
+	ADDFUNC1(STRING,BOOL,String,ends_with,STRING,"text",varray());
 
 	ADDFUNC2(STRING,STRING,String,replace,STRING,"what",STRING,"forwhat",varray());
 	ADDFUNC2(STRING,STRING,String,replacen,STRING,"what",STRING,"forwhat",varray());
@@ -1273,7 +1277,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 
 	ADDFUNC1(STRING,STRING,String,left,INT,"pos",varray());
 	ADDFUNC1(STRING,STRING,String,right,INT,"pos",varray());
-	ADDFUNC0(STRING,STRING,String,strip_edges,varray());
+	ADDFUNC2(STRING,STRING,String,strip_edges,BOOL,"left",BOOL,"right",varray(true,true));
 	ADDFUNC0(STRING,STRING,String,extension,varray());
 	ADDFUNC0(STRING,STRING,String,basename,varray());
 	ADDFUNC1(STRING,STRING,String,plus_file,STRING,"file",varray());
@@ -1408,6 +1412,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(IMAGE, RAW_ARRAY, Image, get_data, varray());
 	ADDFUNC3(IMAGE, NIL, Image, blit_rect, IMAGE, "src", RECT2, "src_rect", VECTOR2, "dest", varray(0));
 	ADDFUNC1(IMAGE, IMAGE, Image, converted, INT, "format", varray(0));
+	ADDFUNC0(IMAGE, NIL, Image, fix_alpha_edges, varray());
 
 	ADDFUNC0(_RID,INT,RID,get_id,varray());
 
@@ -1423,6 +1428,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(DICTIONARY,BOOL,Dictionary,empty,varray());
 	ADDFUNC0(DICTIONARY,NIL,Dictionary,clear,varray());
 	ADDFUNC1(DICTIONARY,BOOL,Dictionary,has,NIL,"value",varray());
+	ADDFUNC1(DICTIONARY,BOOL,Dictionary,has_all,ARRAY,"values",varray());
 	ADDFUNC1(DICTIONARY,NIL,Dictionary,erase,NIL,"value",varray());
 	ADDFUNC0(DICTIONARY,INT,Dictionary,hash,varray());
 	ADDFUNC0(DICTIONARY,ARRAY,Dictionary,keys,varray());

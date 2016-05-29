@@ -188,6 +188,8 @@ public:
 	ReverbRoomType get_default_reverb_room() const;
 	float get_default_reverb() const;
 
+	String get_configuration_warning() const;
+
 	SamplePlayer();
 	~SamplePlayer();
 };

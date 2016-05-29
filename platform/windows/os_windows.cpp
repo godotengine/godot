@@ -55,6 +55,7 @@
 
 #include "shlobj.h"
 #include <regstr.h>
+#include <process.h>
 
 static const WORD MAX_CONSOLE_LINES = 1500;
 
@@ -704,6 +705,51 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 			joystick->probe_joysticks();
 		} break;
+		case WM_SETCURSOR: {
+
+			if(LOWORD(lParam) == HTCLIENT) {
+				if(mouse_mode == MOUSE_MODE_HIDDEN) {
+					//Hide the cursor
+					if(hCursor == NULL)
+						hCursor = SetCursor(NULL);
+					else
+						SetCursor(NULL);
+				}
+				else {
+					if(hCursor != NULL) {
+						SetCursor(hCursor);
+						hCursor = NULL;
+					}
+				}
+			}
+
+		} break;
+		case WM_DROPFILES: {
+
+			HDROP hDropInfo = NULL;
+			hDropInfo = (HDROP) wParam;
+			const int buffsize=4096;
+			wchar_t buf[buffsize];
+
+			int fcount = DragQueryFileW(hDropInfo, 0xFFFFFFFF,NULL,0);
+
+			Vector<String> files;
+
+			for(int i=0;i<fcount;i++) {
+
+				DragQueryFileW(hDropInfo, i, buf, buffsize);
+				String file=buf;
+				files.push_back(file);
+			}
+
+			if (files.size() && main_loop) {
+				main_loop->drop_files(files,0);
+			}
+
+
+		} break;
+
+
 
 		default: {
 
@@ -1015,6 +1061,8 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 
 	_ensure_data_dir();
 
+	DragAcceptFiles(hWnd,true);
+
 
 }
 
@@ -1210,7 +1258,6 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 
 	if (mouse_mode==p_mode)
 		return;
-	ShowCursor(p_mode==MOUSE_MODE_VISIBLE);
 	mouse_mode=p_mode;
 	if (p_mode==MOUSE_MODE_CAPTURED) {
 		RECT clipRect;
@@ -1478,7 +1525,7 @@ void OS_Windows::set_window_resizable(bool p_enabled){
 		if (p_enabled) {
 			SetWindowLongPtr(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
 		} else {
-			SetWindowLongPtr(hWnd, GWL_STYLE, WS_CAPTION | WS_POPUPWINDOW | WS_VISIBLE);
+			SetWindowLongPtr(hWnd, GWL_STYLE, WS_CAPTION | WS_MINIMIZEBOX | WS_POPUPWINDOW | WS_VISIBLE);
 
 		}
 
@@ -1883,6 +1930,10 @@ Error OS_Windows::kill(const ProcessID& p_pid) {
 
 	return ret != 0?OK:FAILED;
 };
+
+int OS_Windows::get_process_ID() const {
+	return _getpid();
+}
 
 Error OS_Windows::set_cwd(const String& p_cwd) {
 

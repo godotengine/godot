@@ -24,10 +24,7 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/opus.h"
 #include "opus/opus_private.h"
@@ -219,8 +216,9 @@ opus_int32 opus_repacketizer_out_range_impl(OpusRepacketizer *rp, int begin, int
    }
    if (pad)
    {
-      for (i=ptr-data;i<maxlen;i++)
-         data[i] = 0;
+      /* Fill padding with zeros. */
+      while (ptr<data+maxlen)
+         *ptr++=0;
    }
    return tot_size;
 }

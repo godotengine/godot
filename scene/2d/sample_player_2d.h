@@ -83,6 +83,8 @@ public:
 	void set_random_pitch_scale(float p_scale);
 	float get_random_pitch_scale() const;
 
+	String get_configuration_warning() const;
+
 	SamplePlayer2D();
 	~SamplePlayer2D();
 

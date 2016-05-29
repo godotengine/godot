@@ -29,11 +29,11 @@
 # endif
 
 # include <stdlib.h>
-# include <opus/opusfile.h>
+# include "opus/opusfile.h"
 
 typedef struct OggOpusLink OggOpusLink;
 
-# if defined(OPUS_FIXED_POINT)
+# if defined(OP_FIXED_POINT)
 
 typedef opus_int16 op_sample;
 
@@ -186,6 +186,11 @@ struct OggOpusFile{
   opus_int32         cur_discard_count;
   /*The granule position of the previous packet (current packet start time).*/
   ogg_int64_t        prev_packet_gp;
+  /*The stream offset of the most recent page with completed packets, or -1.
+    This is only needed to recover continued packet data in the seeking logic,
+     when we use the current position as one of our bounds, only to later
+     discover it was the correct starting point.*/
+  opus_int64         prev_page_offset;
   /*The number of bytes read since the last bitrate query, including framing.*/
   opus_int64         bytes_tracked;
   /*The number of samples decoded since the last bitrate query.*/
@@ -227,7 +232,7 @@ struct OggOpusFile{
   /*The offset to apply to the gain.*/
   opus_int32         gain_offset_q8;
   /*Internal state for soft clipping and dithering float->short output.*/
-#if !defined(OPUS_FIXED_POINT)
+#if !defined(OP_FIXED_POINT)
 # if defined(OP_SOFT_CLIP)
   float              clip_state[OP_NCHANNELS_MAX];
 # endif

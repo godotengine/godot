@@ -90,6 +90,9 @@ public:
 
 	int get_collision_object_shape_index() const { return _get_update_shape_index(); }
 
+
+	String get_configuration_warning() const;
+
 	CollisionShape();
 	~CollisionShape();
 };

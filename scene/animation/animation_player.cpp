@@ -1013,6 +1013,8 @@ void AnimationPlayer::play(const StringName& p_name, float p_custom_blend, float
 	_set_process(true); // always process when starting an animation
 	playing = true;
 
+	emit_signal(SceneStringNames::get_singleton()->animation_started, c.assigned);
+
 	if (is_inside_tree() &&  get_tree()->is_editor_hint())
 		return; // no next in this case
 
@@ -1297,6 +1299,9 @@ void AnimationPlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_animation:Animation","name"),&AnimationPlayer::get_animation);
 	ObjectTypeDB::bind_method(_MD("get_animation_list"),&AnimationPlayer::_get_animation_list);
 
+	ObjectTypeDB::bind_method(_MD("animation_set_next", "anim_from", "anim_to"), &AnimationPlayer::animation_set_next);
+	ObjectTypeDB::bind_method(_MD("animation_get_next", "anim_from"), &AnimationPlayer::animation_get_next);
+
 	ObjectTypeDB::bind_method(_MD("set_blend_time","anim_from","anim_to","sec"),&AnimationPlayer::set_blend_time);
 	ObjectTypeDB::bind_method(_MD("get_blend_time","anim_from","anim_to"),&AnimationPlayer::get_blend_time);
 
@@ -1347,6 +1352,7 @@ void AnimationPlayer::_bind_methods() {
 
 	ADD_SIGNAL( MethodInfo("finished") );
 	ADD_SIGNAL( MethodInfo("animation_changed", PropertyInfo(Variant::STRING,"old_name"), PropertyInfo(Variant::STRING,"new_name")) );
+	ADD_SIGNAL( MethodInfo("animation_started", PropertyInfo(Variant::STRING,"name")) );
 
 	BIND_CONSTANT( ANIMATION_PROCESS_FIXED );
 	BIND_CONSTANT( ANIMATION_PROCESS_IDLE );

@@ -1,6 +1,8 @@
 # NREX: Node RegEx
 
-Version 0.1
+[![Build Status](https://travis-ci.org/leezh/nrex.svg?branch=master)](https://travis-ci.org/leezh/nrex)
+
+** Version 0.2 **
 
 Small node-based regular expression library. It only does text pattern
 matchhing, not replacement. To use add the files `nrex.hpp`, `nrex.cpp`
@@ -38,7 +40,7 @@ Currently supported features:
 
 ## License
 
-Copyright (c) 2015, Zher Huei Lee
+Copyright (c) 2015-2016, Zher Huei Lee
 All rights reserved.
 
 This software is provided 'as-is', without any express or implied
@@ -59,3 +61,15 @@ freely, subject to the following restrictions:
     
  3. This notice may not be removed or altered from any source
     distribution.
+
+
+# Changes
+
+## Version 0.2 (2016-08-04)
+ * Fixed capturing groups matching to invalid results
+ * Fixed parents of recursive quantifiers not expanding properly
+ * Fixed LookAhead sometimes adding to result
+ * More verbose unit testing
+
+## Version 0.1 (2015-12-04)
+ * Initial release
