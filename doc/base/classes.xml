@@ -15387,6 +15387,13 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			If the device has an accelerometer, this will return the movement.
 			</description>
 		</method>
+		<method name="get_magnetometer">
+			<return type="Vector3">
+			</return>
+			<description>
+			If the device has a magnetometer, this will return the magnetic field strength in micro-Tesla for all axes.
+			</description>
+		</method>
 		<method name="get_mouse_speed" qualifiers="const">
 			<return type="Vector2">
 			</return>
