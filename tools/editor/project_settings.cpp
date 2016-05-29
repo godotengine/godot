@@ -1761,7 +1761,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 		tmc->add_child(translation_remap_options);
 
 		translation_remap_options->set_columns(2);
-		translation_remap_options->set_column_title(0,"Path");
+		translation_remap_options->set_column_title(0,TTR("Path"));
 		translation_remap_options->set_column_title(1,TTR("Locale"));
 		translation_remap_options->set_column_titles_visible(true);
 		translation_remap_options->set_column_expand(0,true);
@@ -1827,7 +1827,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 		autoload_list->set_column_title(0,TTR("Name"));
 		autoload_list->set_column_expand(0,true);
 		autoload_list->set_column_min_width(0,100);
-		autoload_list->set_column_title(1,"Path");
+		autoload_list->set_column_title(1,TTR("Path"));
 		autoload_list->set_column_expand(1,true);
 		autoload_list->set_column_min_width(1,100);
 		autoload_list->set_column_title(2,TTR("Singleton"));

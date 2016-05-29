@@ -1016,7 +1016,7 @@ void ProjectListFilter::_setup_filters() {
 
 	filter_option->clear();
 	filter_option->add_item(TTR("Name"));
-	filter_option->add_item("Path");
+	filter_option->add_item(TTR("Path"));
 }
 
 void ProjectListFilter::_command(int p_command) {

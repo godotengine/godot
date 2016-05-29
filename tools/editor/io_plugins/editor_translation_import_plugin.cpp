@@ -387,7 +387,7 @@ String EditorTranslationImportPlugin::get_name() const {
 }
 String EditorTranslationImportPlugin::get_visible_name() const {
 
-	return "Translation";
+	return TTR("Translation");
 }
 void EditorTranslationImportPlugin::import_dialog(const String& p_from) {
 
