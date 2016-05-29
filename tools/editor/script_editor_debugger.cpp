@@ -615,7 +615,7 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 		bool warning = err[9];
 		bool e;
 		String time = String("%d:%02d:%02d:%04d").sprintf(vals,&e);
-		String txt=time+" - "+String(err[8]);
+		String txt=time+" - "+(err[8].is_zero()?String(err[7]):String(err[8]));
 
 		String tooltip=TTR("Type:")+String(warning?TTR("Warning"):TTR("Error"));
 		tooltip+="\n"+TTR("Description:")+" "+String(err[8]);
