@@ -1063,7 +1063,15 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	for (int i=0; i<[screenArray count]; i++) {
 
 		NSRect nsrect = [[screenArray objectAtIndex: i] visibleFrame];
-		screens.push_back(Rect2(nsrect.origin.x, nsrect.origin.y, nsrect.size.width, nsrect.size.height));
+		NSDictionary *description = [[screenArray objectAtIndex: i] deviceDescription];
+		NSSize displayPixelSize = [[description objectForKey:NSDeviceSize] sizeValue];
+		CGSize displayPhysicalSize = CGDisplayScreenSize([[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
+		ScreenInfo info;
+
+		info.rect = Rect2(nsrect.origin.x, nsrect.origin.y, nsrect.size.width, nsrect.size.height);
+		info.dpi = int((displayPixelSize.width / displayPhysicalSize.width) * 25.4f);
+
+		screens.push_back(info);
 		printf("added screen %i\n", screens.size());
 	};
 	restore_rect = Rect2(get_window_position(), get_window_size());
@@ -1351,13 +1359,19 @@ void OS_OSX::set_current_screen(int p_screen) {
 Point2 OS_OSX::get_screen_position(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, screens.size(), Point2());
-	return screens[p_screen].pos;
+	return screens[p_screen].rect.pos;
 };
 
 Size2 OS_OSX::get_screen_size(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, screens.size(), Point2());
-	return screens[p_screen].size;
+	return screens[p_screen].rect.size;
+};
+
+int OS_OSX::get_screen_dpi(int p_screen) const {
+
+	ERR_FAIL_INDEX_V(p_screen, screens.size(), 72);
+	return screens[p_screen].dpi;
 };
 
 Point2 OS_OSX::get_window_position() const {
