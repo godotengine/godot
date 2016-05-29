@@ -1449,9 +1449,9 @@ void Viewport::_gui_show_tooltip() {
 	}
 
 	Control *rp = gui.tooltip->get_root_parent_control();
-	if (!rp)
+	if (!rp) {
 		return;
-
+	}
 
 	gui.tooltip_popup = memnew( TooltipPanel );
 
@@ -2086,6 +2086,7 @@ void Viewport::_gui_force_drag(Control *p_base, const Variant& p_data, Control *
 
 void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 
+	ERR_FAIL_NULL(p_base);
 	ERR_FAIL_NULL(p_control);
 	ERR_FAIL_COND( !((Object*)p_control)->cast_to<Control>());
 	ERR_FAIL_COND(p_control->is_inside_tree());
