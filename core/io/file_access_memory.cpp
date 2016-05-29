@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -135,7 +135,7 @@ size_t FileAccessMemory::get_len() const {
 
 bool FileAccessMemory::eof_reached() const {
 
-	return pos >= length;
+	return pos > length;
 }
 
 uint8_t FileAccessMemory::get_8() const {

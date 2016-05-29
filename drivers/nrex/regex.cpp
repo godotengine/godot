@@ -5,7 +5,7 @@
 /*                GODOT ENGINE                   */
 /*************************************************/
 /*       Source code within this file is:        */
-/*  (c) 2007-2010 Juan Linietsky, Ariel Manzur   */
+/*  (c) 2007-2016 Juan Linietsky, Ariel Manzur   */
 /*             All Rights Reserved.              */
 /*************************************************/
 
@@ -15,12 +15,13 @@
 
 void RegEx::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("compile","pattern"),&RegEx::compile);
+	ObjectTypeDB::bind_method(_MD("compile","pattern", "capture"),&RegEx::compile, DEFVAL(9));
 	ObjectTypeDB::bind_method(_MD("find","text","start","end"),&RegEx::find, DEFVAL(0), DEFVAL(-1));
 	ObjectTypeDB::bind_method(_MD("clear"),&RegEx::clear);
 	ObjectTypeDB::bind_method(_MD("is_valid"),&RegEx::is_valid);
 	ObjectTypeDB::bind_method(_MD("get_capture_count"),&RegEx::get_capture_count);
 	ObjectTypeDB::bind_method(_MD("get_capture","capture"),&RegEx::get_capture);
+	ObjectTypeDB::bind_method(_MD("get_capture_start","capture"),&RegEx::get_capture_start);
 	ObjectTypeDB::bind_method(_MD("get_captures"),&RegEx::_bind_get_captures);
 
 };
@@ -54,7 +55,9 @@ bool RegEx::is_valid() const {
 };
 
 int RegEx::get_capture_count() const {
-	
+
+	ERR_FAIL_COND_V( !exp.valid(), 0 );
+
 	return exp.capture_size();
 }
 
@@ -66,11 +69,19 @@ String RegEx::get_capture(int capture) const {
 
 }
 
-Error RegEx::compile(const String& p_pattern) {
+int RegEx::get_capture_start(int capture) const {
+
+	ERR_FAIL_COND_V( get_capture_count() <= capture, -1 );
+
+	return captures[capture].start;
+
+}
+
+Error RegEx::compile(const String& p_pattern, int capture) {
 
 	clear();
 
-	exp.compile(p_pattern.c_str());
+	exp.compile(p_pattern.c_str(), capture);
 
 	ERR_FAIL_COND_V( !exp.valid(), FAILED );
 

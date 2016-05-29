@@ -1,5 +1,6 @@
 EnsureSConsVersion(0,14);
 
+
 import string
 import os
 import os.path
@@ -22,7 +23,7 @@ platform_exporters=[]
 global_defaults=[]
 
 for x in glob.glob("platform/*"):
-	if (not os.path.isdir(x)):
+	if (not os.path.isdir(x) or not os.path.exists(x+"/detect.py")):
 		continue
 	tmppath="./"+x
 
@@ -59,30 +60,50 @@ platform_arg = ARGUMENTS.get("platform", False)
 if (os.name=="posix"):
 	pass
 elif (os.name=="nt"):
-    if (os.getenv("VSINSTALLDIR")==None or platform_arg=="android"):
+	if (os.getenv("VSINSTALLDIR")==None or platform_arg=="android"):
 		custom_tools=['mingw']
 
-env_base=Environment(tools=custom_tools,ENV = {'PATH' : os.environ['PATH']});
+env_base=Environment(
+	tools=custom_tools,
+	ENV={
+		'PATH' : os.getenv('PATH'),
+		'PKG_CONFIG_PATH' : os.getenv('PKG_CONFIG_PATH')
+});
 
 #env_base=Environment(tools=custom_tools);
 env_base.global_defaults=global_defaults
-env_base.android_source_modules=[]
-env_base.android_source_files=[]
-env_base.android_module_libraries=[]
+env_base.android_maven_repos=[]
+env_base.android_dependencies=[]
+env_base.android_java_dirs=[]
+env_base.android_res_dirs=[]
+env_base.android_aidl_dirs=[]
+env_base.android_jni_dirs=[]
 env_base.android_manifest_chunk=""
 env_base.android_permission_chunk=""
 env_base.android_appattributes_chunk=""
 env_base.disabled_modules=[]
 
-env_base.__class__.android_module_source = methods.android_module_source
-env_base.__class__.android_module_library = methods.android_module_library
-env_base.__class__.android_module_file = methods.android_module_file
-env_base.__class__.android_module_manifest = methods.android_module_manifest
-env_base.__class__.android_module_permission = methods.android_module_permission
-env_base.__class__.android_module_attribute = methods.android_module_attribute
+env_base.split_drivers=False
+
+
+
+env_base.__class__.android_add_maven_repository=methods.android_add_maven_repository
+env_base.__class__.android_add_dependency=methods.android_add_dependency
+env_base.__class__.android_add_java_dir=methods.android_add_java_dir
+env_base.__class__.android_add_res_dir=methods.android_add_res_dir
+env_base.__class__.android_add_aidl_dir=methods.android_add_aidl_dir
+env_base.__class__.android_add_jni_dir=methods.android_add_jni_dir
+env_base.__class__.android_add_to_manifest = methods.android_add_to_manifest
+env_base.__class__.android_add_to_permissions = methods.android_add_to_permissions
+env_base.__class__.android_add_to_attributes = methods.android_add_to_attributes
 env_base.__class__.disable_module = methods.disable_module
 
 env_base.__class__.add_source_files = methods.add_source_files
+env_base.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
+
+env_base["x86_opt_gcc"]=False
+env_base["x86_opt_vc"]=False
+env_base["armv7_opt_gcc"]=False
 
 customs = ['custom.py']
 
@@ -96,16 +117,17 @@ if profile:
 
 opts=Variables(customs, ARGUMENTS)
 opts.Add('target', 'Compile Target (debug/release_debug/release).', "debug")
-opts.Add('bits', 'Compile Target Bits (default/32/64).', "default")
+opts.Add('bits', 'Compile Target Bits (default/32/64/fat).', "default")
 opts.Add('platform','Platform: '+str(platform_list)+'.',"")
 opts.Add('p','Platform (same as platform=).',"")
 opts.Add('tools','Build Tools (Including Editor): (yes/no)','yes')
 opts.Add('gdscript','Build GDSCript support: (yes/no)','yes')
 opts.Add('vorbis','Build Ogg Vorbis Support: (yes/no)','yes')
+opts.Add('opus','Build Opus Audio Format Support: (yes/no)','yes')
 opts.Add('minizip','Build Minizip Archive Support: (yes/no)','yes')
 opts.Add('squish','Squish BC Texture Compression in editor (yes/no)','yes')
 opts.Add('theora','Theora Video (yes/no)','yes')
-opts.Add('use_theoraplayer_binary', "Use precompiled binaries from libtheoraplayer for ogg/theora/vorbis (yes/no)", "no")
+opts.Add('theoralib','Theora Video (yes/no)','no')
 opts.Add('freetype','Freetype support in editor','yes')
 opts.Add('speex','Speex Audio (yes/no)','yes')
 opts.Add('xml','XML Save/Load support (yes/no)','yes')
@@ -122,6 +144,7 @@ opts.Add("CXX", "Compiler");
 opts.Add("CCFLAGS", "Custom flags for the C++ compiler");
 opts.Add("CFLAGS", "Custom flags for the C compiler");
 opts.Add("LINKFLAGS", "Custom flags for the linker");
+opts.Add('unix_global_settings_path', 'unix-specific path to system-wide settings. Currently only used by templates.','')
 opts.Add('disable_3d', 'Disable 3D nodes for smaller executable (yes/no)', "no")
 opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (yes/no)', "no")
 opts.Add('colored', 'Enable colored output for the compilation (yes/no)', 'no')
@@ -184,7 +207,7 @@ if selected_platform in platform_list:
 	if env['vsproj']=="yes":
 		env.vs_incs = []
 		env.vs_srcs = []
-		
+
 		def AddToVSProject( sources ):
 			for x in sources:
 				if type(x) == type(""):
@@ -196,12 +219,12 @@ if selected_platform in platform_list:
 					basename = pieces[0]
 					basename = basename.replace('\\\\','/')
 					env.vs_srcs = env.vs_srcs + [basename + ".cpp"]
-					env.vs_incs = env.vs_incs + [basename + ".h"]					
-					#print basename	
-		env.AddToVSProject = AddToVSProject				
-		
+					env.vs_incs = env.vs_incs + [basename + ".h"]
+					#print basename
+		env.AddToVSProject = AddToVSProject
+
 	env.extra_suffix=""
-	
+
 	if env["extra_suffix"] != '' :
 		env.extra_suffix += '.'+env["extra_suffix"]
 
@@ -228,7 +251,7 @@ if selected_platform in platform_list:
 	#must happen after the flags, so when flags are used by configure, stuff happens (ie, ssl on x11)
 	detect.configure(env)
 
-        #env['platform_libsuffix'] = env['LIBSUFFIX']
+	#env['platform_libsuffix'] = env['LIBSUFFIX']
 
 	suffix="."+selected_platform
 
@@ -253,6 +276,8 @@ if selected_platform in platform_list:
 		suffix+=".32"
 	elif (env["bits"]=="64"):
 		suffix+=".64"
+	elif (env["bits"]=="fat"):
+		suffix+=".fat"
 
 	suffix+=env.extra_suffix
 
@@ -283,10 +308,11 @@ if selected_platform in platform_list:
 
 	if (env['musepack']=='yes'):
 		env.Append(CPPFLAGS=['-DMUSEPACK_ENABLED']);
-        if (env['openssl']!='no'):
-            env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
-            if (env['openssl']=="builtin"):
-                env.Append(CPPPATH=['#drivers/builtin_openssl2'])
+
+	#if (env['openssl']!='no'):
+	#	env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
+	#	if (env['openssl']=="builtin"):
+	#		env.Append(CPPPATH=['#drivers/builtin_openssl2'])
 
 	if (env["builtin_zlib"]=='yes'):
 		env.Append(CPPPATH=['#drivers/builtin_zlib/zlib'])
@@ -299,9 +325,15 @@ if selected_platform in platform_list:
 
 	if (env['vorbis']=='yes'):
 		env.Append(CPPFLAGS=['-DVORBIS_ENABLED']);
+	if (env['opus']=='yes'):
+		env.Append(CPPFLAGS=['-DOPUS_ENABLED']);
+
 
 	if (env['theora']=='yes'):
+		env['theoralib']='yes'
 		env.Append(CPPFLAGS=['-DTHEORA_ENABLED']);
+	if (env['theoralib']=='yes'):
+		env.Append(CPPFLAGS=['-DTHEORALIB_ENABLED']);
 
 	if (env['png']=='yes'):
 		env.Append(CPPFLAGS=['-DPNG_ENABLED']);
@@ -334,7 +366,7 @@ if selected_platform in platform_list:
 
 	if (env['colored']=='yes'):
 		methods.colored(sys,env)
-		
+
 	if (env['etc1']=='yes'):
 		env.Append(CPPFLAGS=['-DETC1_ENABLED'])
 
@@ -353,22 +385,22 @@ if selected_platform in platform_list:
 	SConscript("main/SCsub")
 
 	SConscript("platform/"+selected_platform+"/SCsub"); # build selected platform
-	
-	# Microsoft Visual Studio Project Generation			
-	if (env['vsproj'])=="yes":		
-	
+
+	# Microsoft Visual Studio Project Generation
+	if (env['vsproj'])=="yes":
+
 		AddToVSProject(env.core_sources)
 		AddToVSProject(env.main_sources)
-		AddToVSProject(env.modules_sources)	
+		AddToVSProject(env.modules_sources)
 		AddToVSProject(env.scene_sources)
 		AddToVSProject(env.servers_sources)
 		AddToVSProject(env.tool_sources)
-		
+
 		#env['MSVS_VERSION']='9.0'
 		env['MSVSBUILDCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
 		env['MSVSREBUILDCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes vsproj=true"
 		env['MSVSCLEANCOM'] = "scons --clean platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
-			
+
 		debug_variants = ['Debug|Win32']+['Debug|x64']
 		release_variants = ['Release|Win32']+['Release|x64']
 		release_debug_variants = ['Release_Debug|Win32']+['Release_Debug|x64']
@@ -379,11 +411,11 @@ if selected_platform in platform_list:
 		targets = debug_targets + release_targets + release_debug_targets
 		msvproj = env.MSVSProject(target = ['#godot' + env['MSVSPROJECTSUFFIX'] ],
 								incs = env.vs_incs,
-								srcs = env.vs_srcs, 
-								runfile = targets, 
-								buildtarget = targets, 
-								auto_build_solution=1, 
-								variant = variants) 		
+								srcs = env.vs_srcs,
+								runfile = targets,
+								buildtarget = targets,
+								auto_build_solution=1,
+								variant = variants)
 
 else:
 

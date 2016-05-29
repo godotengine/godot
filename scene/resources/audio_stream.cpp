@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,76 +28,34 @@
 /*************************************************************************/
 #include "audio_stream.h"
 
+//////////////////////////////
 
 
-int AudioStream::InternalAudioStream::get_channel_count() const {
+void AudioStreamPlayback::_bind_methods() {
 
-	return owner->get_channel_count();
+	ObjectTypeDB::bind_method(_MD("play","from_pos_sec"),&AudioStreamPlayback::play,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("stop"),&AudioStreamPlayback::stop);
+	ObjectTypeDB::bind_method(_MD("is_playing"),&AudioStreamPlayback::is_playing);
 
-}
+	ObjectTypeDB::bind_method(_MD("set_loop","enabled"),&AudioStreamPlayback::set_loop);
+	ObjectTypeDB::bind_method(_MD("has_loop"),&AudioStreamPlayback::has_loop);
 
-void AudioStream::InternalAudioStream::set_mix_rate(int p_rate) {
+	ObjectTypeDB::bind_method(_MD("get_loop_count"),&AudioStreamPlayback::get_loop_count);
 
-	owner->_mix_rate=p_rate;
-}
+	ObjectTypeDB::bind_method(_MD("seek_pos","pos"),&AudioStreamPlayback::seek_pos);
+	ObjectTypeDB::bind_method(_MD("get_pos"),&AudioStreamPlayback::get_pos);
 
-bool AudioStream::InternalAudioStream::mix(int32_t *p_buffer,int p_frames) {
+	ObjectTypeDB::bind_method(_MD("get_length"),&AudioStreamPlayback::get_length);
+	ObjectTypeDB::bind_method(_MD("get_channels"),&AudioStreamPlayback::get_channels);
+	ObjectTypeDB::bind_method(_MD("get_mix_rate"),&AudioStreamPlayback::get_mix_rate);
+	ObjectTypeDB::bind_method(_MD("get_minimum_buffer_size"),&AudioStreamPlayback::get_minimum_buffer_size);
 
-	return owner->mix(p_buffer,p_frames);
-}
 
-bool AudioStream::InternalAudioStream::can_update_mt() const {
-
-	return owner->get_update_mode()==UPDATE_THREAD;
-}
-
-void AudioStream::InternalAudioStream::update() {
-
-	owner->update();
-}
-
-AudioServer::AudioStream *AudioStream::get_audio_stream() {
-
-	return internal_audio_stream;
 }
 
 
 void AudioStream::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("play"),&AudioStream::play);
-	ObjectTypeDB::bind_method(_MD("stop"),&AudioStream::stop);
-	ObjectTypeDB::bind_method(_MD("is_playing"),&AudioStream::is_playing);
-
-	ObjectTypeDB::bind_method(_MD("set_loop","enabled"),&AudioStream::set_loop);
-	ObjectTypeDB::bind_method(_MD("has_loop"),&AudioStream::has_loop);
-
-	ObjectTypeDB::bind_method(_MD("get_stream_name"),&AudioStream::get_stream_name);
-	ObjectTypeDB::bind_method(_MD("get_loop_count"),&AudioStream::get_loop_count);
-
-	ObjectTypeDB::bind_method(_MD("seek_pos","pos"),&AudioStream::seek_pos);
-	ObjectTypeDB::bind_method(_MD("get_pos"),&AudioStream::get_pos);
-
-	ObjectTypeDB::bind_method(_MD("get_length"),&AudioStream::get_length);
-
-	ObjectTypeDB::bind_method(_MD("get_update_mode"),&AudioStream::get_update_mode);
-
-	ObjectTypeDB::bind_method(_MD("update"),&AudioStream::update);
-
-	BIND_CONSTANT( UPDATE_NONE );
-	BIND_CONSTANT( UPDATE_IDLE );
-	BIND_CONSTANT( UPDATE_THREAD );
 
 }
 
-AudioStream::AudioStream() {
-
-	_mix_rate=44100;
-	internal_audio_stream = memnew( InternalAudioStream );
-	internal_audio_stream->owner=this;
-}
-
-
-AudioStream::~AudioStream()  {
-
-	memdelete(internal_audio_stream);
-}

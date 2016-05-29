@@ -13,7 +13,11 @@
 #include <stdio.h>
 
 #ifndef NO_FCNTL
-#include <sys/fcntl.h>
+	#ifdef __HAIKU__
+		#include <fcntl.h>
+	#else
+		#include <sys/fcntl.h>
+	#endif
 #else
 #include <sys/ioctl.h>
 #endif
@@ -117,7 +121,7 @@ Error PacketPeerUDPPosix::_poll(bool p_wait) {
 	struct sockaddr_in from = {0};
 	socklen_t len = sizeof(struct sockaddr_in);
 	int ret;
-	while ( (ret = recvfrom(sockfd, recv_buffer, MIN(sizeof(recv_buffer),rb.data_left()-12), p_wait?0:MSG_DONTWAIT, (struct sockaddr*)&from, &len)) > 0) {
+	while ( (ret = recvfrom(sockfd, recv_buffer, MIN((int)sizeof(recv_buffer),MAX(rb.space_left()-12, 0)), p_wait?0:MSG_DONTWAIT, (struct sockaddr*)&from, &len)) > 0) {
 		rb.write((uint8_t*)&from.sin_addr, 4);
 		uint32_t port = ntohs(from.sin_port);
 		rb.write((uint8_t*)&port, 4);
@@ -127,6 +131,8 @@ Error PacketPeerUDPPosix::_poll(bool p_wait) {
 		++queue_count;
 	};
 
+
+	// TODO: Should ECONNRESET be handled here?
 	if (ret == 0 || (ret == -1 && errno != EAGAIN) ) {
 		close();
 		return FAILED;

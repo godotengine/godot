@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -188,7 +188,7 @@ void AcceptDialog::_post_popup() {
 }
 
 void AcceptDialog::_notification(int p_what) {
-	
+
 	if (p_what==NOTIFICATION_MODAL_CLOSE) {
 
 		cancel_pressed();
@@ -197,7 +197,7 @@ void AcceptDialog::_notification(int p_what) {
 
 
 
-	}	
+	}
 }
 
 void AcceptDialog::_builtin_text_entered(const String& p_text) {
@@ -206,7 +206,7 @@ void AcceptDialog::_builtin_text_entered(const String& p_text) {
 }
 
 void AcceptDialog::_ok_pressed() {
-	
+
 	if (hide_on_ok)
 		hide();
 	ok_pressed();
@@ -214,7 +214,7 @@ void AcceptDialog::_ok_pressed() {
 
 }
 void AcceptDialog::_close_pressed() {
-	
+
 	cancel_pressed();
 }
 
@@ -223,7 +223,7 @@ String AcceptDialog::get_text() const {
 	return label->get_text();
 }
 void AcceptDialog::set_text(String p_text) {
-	
+
 	label->set_text(p_text);
 }
 
@@ -285,13 +285,13 @@ Button* AcceptDialog::add_cancel(const String &p_cancel) {
 	String c = p_cancel;
 	if (p_cancel=="")
 		c="Cancel";
-	Button *b = swap_ok_cancel ? add_button("Cancel",true) : add_button("Cancel");
+	Button *b = swap_ok_cancel ? add_button(c,true) : add_button(c);
 	b->connect("pressed",this,"_closed");
 	return b;
 }
 
 void AcceptDialog::_bind_methods() {
-	
+
 	ObjectTypeDB::bind_method(_MD("_ok"),&AcceptDialog::_ok_pressed);
 	ObjectTypeDB::bind_method(_MD("get_ok"),&AcceptDialog::get_ok);
 	ObjectTypeDB::bind_method(_MD("get_label"),&AcceptDialog::get_label);
@@ -308,7 +308,9 @@ void AcceptDialog::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("confirmed") );
 	ADD_SIGNAL( MethodInfo("custom_action",PropertyInfo(Variant::STRING,"action")) );
 
-	
+	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"dialog/text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL),_SCS("set_text"),_SCS("get_text"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "dialog/hide_on_ok"),_SCS("set_hide_on_ok"),_SCS("get_hide_on_ok") );
+
 }
 
 
@@ -319,11 +321,11 @@ void AcceptDialog::set_swap_ok_cancel(bool p_swap) {
 }
 
 AcceptDialog::AcceptDialog() {
-	
+
 	int margin = get_constant("margin","Dialogs");
 	int button_margin = get_constant("button_margin","Dialogs");
-	
-	
+
+
 	label = memnew( Label );
 	label->set_anchor(MARGIN_RIGHT,ANCHOR_END);
 	label->set_anchor(MARGIN_BOTTOM,ANCHOR_END);
@@ -343,8 +345,8 @@ AcceptDialog::AcceptDialog() {
 	hbc->add_child(ok);
 	hbc->add_spacer();
 	//add_child(ok);
-	
-	
+
+
 	ok->connect("pressed", this,"_ok");
 	set_as_toplevel(true);
 

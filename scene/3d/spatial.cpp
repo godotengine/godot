@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "spatial.h"
- 
+
 #include "scene/main/viewport.h"
 #include "message_queue.h"
 #include "scene/scene_string_names.h"
@@ -99,14 +99,14 @@ void Spatial::_propagate_transform_changed(Spatial *p_origin) {
 //		return; //already dirty
 
 	data.children_lock++;
-		
+
 	for (List<Spatial*>::Element *E=data.children.front();E;E=E->next()) {
-	
+
 		if (E->get()->data.toplevel_active)
 			continue; //don't propagate to a toplevel
 		E->get()->_propagate_transform_changed(p_origin);
 	}
-	
+
 
 	if (!data.ignore_notification && !xform_change.in_list()) {
 
@@ -211,14 +211,14 @@ void Spatial::_notification(int p_what) {
 
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-		
+
 #ifdef TOOLS_ENABLED
 			if (data.gizmo.is_valid()) {
 				data.gizmo->transform();
 			}
 #endif
 		} break;
-	
+
 		default: {}
 	}
 }
@@ -231,6 +231,11 @@ void Spatial::set_transform(const Transform& p_transform) {
 	_change_notify("transform/rotation");
 	_change_notify("transform/scale");
 	_propagate_transform_changed(this);
+	if (data.notify_local_transform) {
+		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+	}
+
+
 
 }
 
@@ -252,7 +257,7 @@ Transform Spatial::get_transform() const {
 
 		_update_local_transform();
 	}
-	
+
 	return data.local_transform;
 }
 Transform Spatial::get_global_transform() const {
@@ -267,16 +272,16 @@ Transform Spatial::get_global_transform() const {
 		}
 
 		if (data.parent && !data.toplevel_active) {
-		
+
 			data.global_transform=data.parent->get_global_transform() * data.local_transform;
 		} else {
-		
+
 			data.global_transform=data.local_transform;
 		}
-		
+
 		data.dirty&=~DIRTY_GLOBAL;
 	}
-	
+
 	return data.global_transform;
 }
 #if 0
@@ -285,7 +290,7 @@ void Spatial::add_child_notify(Node *p_child) {
 	Spatial *s=p_child->cast_to<Spatial>();
 	if (!s)
 		return;
-		
+
 	ERR_FAIL_COND(data.children_lock>0);
 
 	s->data.dirty=DIRTY_GLOBAL; // don't allow global transform to be valid
@@ -300,12 +305,12 @@ void Spatial::remove_child_notify(Node *p_child) {
 	Spatial *s=p_child->cast_to<Spatial>();
 	if (!s)
 		return;
-	
+
 	ERR_FAIL_COND(data.children_lock>0);
-	
+
 	if (s->data.C)
 		data.children.erase(s->data.C);
-	s->data.parent=NULL;		
+	s->data.parent=NULL;
 	s->data.C=NULL;
 */
 }
@@ -335,21 +340,39 @@ void Spatial::set_translation(const Vector3& p_translation) {
 
 	data.local_transform.origin=p_translation;
 	_propagate_transform_changed(this);
+	if (data.notify_local_transform) {
+		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+	}
 
 }
 
-void Spatial::set_rotation(const Vector3& p_euler){
+void Spatial::set_rotation(const Vector3& p_euler_rad){
 
 	if (data.dirty&DIRTY_VECTORS) {
 		data.scale=data.local_transform.basis.get_scale();
 		data.dirty&=~DIRTY_VECTORS;
 	}
 
-	data.rotation=p_euler;
+	data.rotation=p_euler_rad;
 	data.dirty|=DIRTY_LOCAL;
 	_propagate_transform_changed(this);
+	if (data.notify_local_transform) {
+		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+	}
 
 }
+
+void Spatial::set_rotation_deg(const Vector3& p_euler_deg) {
+
+	set_rotation(p_euler_deg * Math_PI / 180.0);
+}
+
+void Spatial::_set_rotation_deg(const Vector3& p_euler_deg) {
+
+	WARN_PRINT("Deprecated method Spatial._set_rotation_deg(): This method was renamed to set_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
+	set_rotation_deg(p_euler_deg);
+}
+
 void Spatial::set_scale(const Vector3& p_scale){
 
 	if (data.dirty&DIRTY_VECTORS) {
@@ -360,6 +383,9 @@ void Spatial::set_scale(const Vector3& p_scale){
 	data.scale=p_scale;
 	data.dirty|=DIRTY_LOCAL;
 	_propagate_transform_changed(this);
+	if (data.notify_local_transform) {
+		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+	}
 
 }
 
@@ -367,6 +393,7 @@ Vector3 Spatial::get_translation() const{
 
 	return data.local_transform.origin;
 }
+
 Vector3 Spatial::get_rotation() const{
 
 	if (data.dirty&DIRTY_VECTORS) {
@@ -377,6 +404,20 @@ Vector3 Spatial::get_rotation() const{
 
 	return data.rotation;
 }
+
+Vector3 Spatial::get_rotation_deg() const {
+
+	return get_rotation() * 180.0 / Math_PI;
+}
+
+// Kept for compatibility after rename to set_rotd.
+// Could be removed after a couple releases.
+Vector3 Spatial::_get_rotation_deg() const {
+
+	WARN_PRINT("Deprecated method Spatial._get_rotation_deg(): This method was renamed to get_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
+	return get_rotation_deg();
+}
+
 Vector3 Spatial::get_scale() const{
 
 	if (data.dirty&DIRTY_VECTORS) {
@@ -481,16 +522,6 @@ bool Spatial::is_set_as_toplevel() const{
 	return data.toplevel;
 }
 
-void Spatial::_set_rotation_deg(const Vector3& p_deg) {
-
-	set_rotation(p_deg * Math_PI / 180.0);
-}
-
-Vector3 Spatial::_get_rotation_deg() const {
-
-	return get_rotation() * 180.0 / Math_PI;
-}
-
 Ref<World> Spatial::get_world() const {
 
 	ERR_FAIL_COND_V(!is_inside_world(),Ref<World>());
@@ -578,6 +609,15 @@ bool Spatial::is_visible() const{
 bool Spatial::is_hidden() const{
 
 	return !data.visible;
+}
+
+void Spatial::set_hidden(bool p_hidden) {
+
+	if (data.visible != p_hidden) {
+		return;
+	}
+
+	_set_visible_(!p_hidden);
 }
 
 void Spatial::_set_visible_(bool p_visible) {
@@ -685,6 +725,13 @@ void Spatial::look_at_from_pos(const Vector3& p_pos,const Vector3& p_target, con
 
 }
 
+void Spatial::set_notify_local_transform(bool p_enable) {
+	data.notify_local_transform=p_enable;
+}
+
+bool Spatial::is_local_transform_notification_enabled() const {
+	return data.notify_local_transform;
+}
 
 void Spatial::_bind_methods() {
 
@@ -692,8 +739,10 @@ void Spatial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_transform"), &Spatial::get_transform);
 	ObjectTypeDB::bind_method(_MD("set_translation","translation"), &Spatial::set_translation);
 	ObjectTypeDB::bind_method(_MD("get_translation"), &Spatial::get_translation);
-	ObjectTypeDB::bind_method(_MD("set_rotation","rotation"), &Spatial::set_rotation);
+	ObjectTypeDB::bind_method(_MD("set_rotation","rotation_rad"), &Spatial::set_rotation);
 	ObjectTypeDB::bind_method(_MD("get_rotation"), &Spatial::get_rotation);
+	ObjectTypeDB::bind_method(_MD("set_rotation_deg","rotation_deg"), &Spatial::set_rotation_deg);
+	ObjectTypeDB::bind_method(_MD("get_rotation_deg"), &Spatial::get_rotation_deg);
 	ObjectTypeDB::bind_method(_MD("set_scale","scale"), &Spatial::set_scale);
 	ObjectTypeDB::bind_method(_MD("get_scale"), &Spatial::get_scale);
 	ObjectTypeDB::bind_method(_MD("set_global_transform","global"), &Spatial::set_global_transform);
@@ -702,9 +751,11 @@ void Spatial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_ignore_transform_notification","enabled"), &Spatial::set_ignore_transform_notification);
 	ObjectTypeDB::bind_method(_MD("set_as_toplevel","enable"), &Spatial::set_as_toplevel);
 	ObjectTypeDB::bind_method(_MD("is_set_as_toplevel"), &Spatial::is_set_as_toplevel);
+	ObjectTypeDB::bind_method(_MD("get_world:World"), &Spatial::get_world);
+
+	// TODO: Obsolete those two methods (old name) properly (GH-4397)
 	ObjectTypeDB::bind_method(_MD("_set_rotation_deg","rotation_deg"), &Spatial::_set_rotation_deg);
 	ObjectTypeDB::bind_method(_MD("_get_rotation_deg"), &Spatial::_get_rotation_deg);
-	ObjectTypeDB::bind_method(_MD("get_world:World"), &Spatial::get_world);
 
 #ifdef TOOLS_ENABLED
 	ObjectTypeDB::bind_method(_MD("_update_gizmo"), &Spatial::_update_gizmo);
@@ -721,9 +772,13 @@ void Spatial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("hide"), &Spatial::hide);
 	ObjectTypeDB::bind_method(_MD("is_visible"), &Spatial::is_visible);
 	ObjectTypeDB::bind_method(_MD("is_hidden"), &Spatial::is_hidden);
+	ObjectTypeDB::bind_method(_MD("set_hidden","hidden"), &Spatial::set_hidden);
 
 	ObjectTypeDB::bind_method(_MD("_set_visible_"), &Spatial::_set_visible_);
 	ObjectTypeDB::bind_method(_MD("_is_visible_"), &Spatial::_is_visible_);
+
+	ObjectTypeDB::bind_method(_MD("set_notify_local_transform","enable"), &Spatial::set_notify_local_transform);
+	ObjectTypeDB::bind_method(_MD("is_local_transform_notification_enabled"), &Spatial::is_local_transform_notification_enabled);
 
 	void rotate(const Vector3& p_normal,float p_radians);
 	void rotate_x(float p_radians);
@@ -755,7 +810,7 @@ void Spatial::_bind_methods() {
 	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), _SCS("set_global_transform"), _SCS("get_global_transform") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::TRANSFORM,"transform/local",PROPERTY_HINT_NONE,""), _SCS("set_transform"), _SCS("get_transform") );
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/translation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_translation"), _SCS("get_translation") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/rotation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("_set_rotation_deg"), _SCS("_get_rotation_deg") );
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/rotation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_rotation_deg"), _SCS("get_rotation_deg") );
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/rotation_rad",PROPERTY_HINT_NONE,"",0), _SCS("set_rotation"), _SCS("get_rotation") );
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/scale",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_scale"), _SCS("get_scale") );
 	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visibility/visible"), _SCS("_set_visible_"), _SCS("_is_visible_") );
@@ -783,6 +838,7 @@ Spatial::Spatial() : xform_change(this)
 	data.gizmo_disabled=false;
 	data.gizmo_dirty=false;
 #endif
+	data.notify_local_transform=false;
 	data.parent=NULL;
 	data.C=NULL;
 

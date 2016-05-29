@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,6 +42,7 @@ void Timer::_notification(int p_what) {
 					break;
 #endif
 				start();
+				autostart=false;
 			}
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -110,7 +111,7 @@ bool Timer::has_autostart() const {
 }
 
 void Timer::start() {
-	time_left=wait_time;	
+	time_left=wait_time;
 	_set_process(true);
 }
 
@@ -118,6 +119,20 @@ void Timer::stop() {
 	time_left=-1;
 	_set_process(false);
 	autostart=false;
+}
+
+
+void Timer::set_active(bool p_active) {
+	if (active == p_active)
+		return;
+
+	active = p_active;
+	_set_process(processing);
+
+}
+
+bool Timer::is_active() const {
+	return active;
 }
 
 float Timer::get_time_left() const {
@@ -153,12 +168,13 @@ Timer::TimerProcessMode Timer::get_timer_process_mode() const{
 }
 
 
-void Timer::_set_process(bool p_process, bool p_force) 
+void Timer::_set_process(bool p_process, bool p_force)
 {
 	switch (timer_process_mode) {
-		case TIMER_PROCESS_FIXED: set_fixed_process(p_process); break;
-		case TIMER_PROCESS_IDLE: set_process(p_process); break;
+		case TIMER_PROCESS_FIXED: set_fixed_process(p_process && active); break;
+		case TIMER_PROCESS_IDLE: set_process(p_process && active); break;
 	}
+	processing = p_process;
 }
 
 void Timer::_bind_methods() {
@@ -175,6 +191,9 @@ void Timer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("start"),&Timer::start);
 	ObjectTypeDB::bind_method(_MD("stop"),&Timer::stop);
 
+	ObjectTypeDB::bind_method(_MD("set_active", "active"), &Timer::set_active);
+	ObjectTypeDB::bind_method(_MD("is_active"), &Timer::is_active);
+
 	ObjectTypeDB::bind_method(_MD("get_time_left"),&Timer::get_time_left);
 
 	ObjectTypeDB::bind_method(_MD("set_timer_process_mode", "mode"), &Timer::set_timer_process_mode);
@@ -182,10 +201,13 @@ void Timer::_bind_methods() {
 
 	ADD_SIGNAL( MethodInfo("timeout") );
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_timer_process_mode"), _SCS("get_timer_process_mode"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_timer_process_mode"), _SCS("get_timer_process_mode") );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL, "wait_time", PROPERTY_HINT_EXP_RANGE, "0.01,4096,0.01" ), _SCS("set_wait_time"), _SCS("get_wait_time") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "one_shot" ), _SCS("set_one_shot"), _SCS("is_one_shot") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "autostart" ), _SCS("set_autostart"), _SCS("has_autostart") );
+
+	BIND_CONSTANT( TIMER_PROCESS_FIXED );
+	BIND_CONSTANT( TIMER_PROCESS_IDLE );
 
 }
 
@@ -194,5 +216,7 @@ Timer::Timer() {
 	autostart=false;
 	wait_time=1;
 	one_shot=false;
-	time_left=-1;
+	time_left = -1;
+	processing = false;
+	active = true;
 }

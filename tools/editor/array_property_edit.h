@@ -30,6 +30,8 @@ public:
 
 	void edit(Object* p_obj, const StringName& p_prop, Variant::Type p_deftype);
 
+	Node *get_node();
+
 	ArrayPropertyEdit();
 };
 

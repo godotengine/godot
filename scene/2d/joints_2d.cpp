@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -111,6 +111,19 @@ real_t Joint2D::get_bias() const{
 	return bias;
 }
 
+void Joint2D::set_exclude_nodes_from_collision(bool p_enable) {
+
+	if (exclude_from_collision==p_enable)
+		return;
+	exclude_from_collision=p_enable;
+	_update_joint();
+}
+
+bool Joint2D::get_exclude_nodes_from_collision() const{
+
+	return exclude_from_collision;
+}
+
 
 void Joint2D::_bind_methods() {
 
@@ -124,9 +137,14 @@ void Joint2D::_bind_methods() {
 	ObjectTypeDB::bind_method( _MD("set_bias","bias"), &Joint2D::set_bias );
 	ObjectTypeDB::bind_method( _MD("get_bias"), &Joint2D::get_bias );
 
+	ObjectTypeDB::bind_method( _MD("set_exclude_nodes_from_collision","enable"), &Joint2D::set_exclude_nodes_from_collision );
+	ObjectTypeDB::bind_method( _MD("get_exclude_nodes_from_collision"), &Joint2D::get_exclude_nodes_from_collision );
+
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "node_a"), _SCS("set_node_a"),_SCS("get_node_a") );
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "node_b"), _SCS("set_node_b"),_SCS("get_node_b") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "bias/bias",PROPERTY_HINT_RANGE,"0,0.9,0.01"), _SCS("set_bias"),_SCS("get_bias") );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "bias/bias",PROPERTY_HINT_RANGE,"0,0.9,0.001"), _SCS("set_bias"),_SCS("get_bias") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "collision/exclude_nodes"), _SCS("set_exclude_nodes_from_collision"),_SCS("get_exclude_nodes_from_collision") );
+
 
 }
 
@@ -135,6 +153,7 @@ void Joint2D::_bind_methods() {
 Joint2D::Joint2D() {
 
 	bias=0;
+	exclude_from_collision=true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -145,11 +164,17 @@ void PinJoint2D::_notification(int p_what) {
 
 	switch(p_what) {
 		case NOTIFICATION_DRAW: {
-			if (is_inside_tree() && get_tree()->is_editor_hint()) {
 
-				draw_line(Point2(-10,0),Point2(+10,0),Color(0.7,0.6,0.0,0.5),3);
-				draw_line(Point2(0,-10),Point2(0,+10),Color(0.7,0.6,0.0,0.5),3);
+			if (!is_inside_tree())
+				break;
+
+			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+				break;
 			}
+
+
+			draw_line(Point2(-10,0),Point2(+10,0),Color(0.7,0.6,0.0,0.5),3);
+			draw_line(Point2(0,-10),Point2(0,+10),Color(0.7,0.6,0.0,0.5),3);
 		} break;
 	}
 
@@ -173,17 +198,42 @@ RID PinJoint2D::_configure_joint() {
 		SWAP(body_a,body_b);
 	} else if (body_b) {
 		//add a collision exception between both
-		Physics2DServer::get_singleton()->body_add_collision_exception(body_a->get_rid(),body_b->get_rid());
+		if (get_exclude_nodes_from_collision())
+			Physics2DServer::get_singleton()->body_add_collision_exception(body_a->get_rid(),body_b->get_rid());
+		else
+			Physics2DServer::get_singleton()->body_remove_collision_exception(body_a->get_rid(),body_b->get_rid());
 	}
-
-	return Physics2DServer::get_singleton()->pin_joint_create(get_global_transform().get_origin(),body_a->get_rid(),body_b?body_b->get_rid():RID());
+	RID pj = Physics2DServer::get_singleton()->pin_joint_create(get_global_transform().get_origin(),body_a->get_rid(),body_b?body_b->get_rid():RID());
+	Physics2DServer::get_singleton()->pin_joint_set_param(pj, Physics2DServer::PIN_JOINT_SOFTNESS, softness);
+	return pj;
 
 }
 
+void PinJoint2D::set_softness(real_t p_softness) {
+
+	softness=p_softness;
+	update();
+	if (get_joint().is_valid())
+		Physics2DServer::get_singleton()->pin_joint_set_param(get_joint(), Physics2DServer::PIN_JOINT_SOFTNESS, p_softness);
+
+}
+
+real_t PinJoint2D::get_softness() const {
+
+	return softness;
+}
+
+void PinJoint2D::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_softness","softness"), &PinJoint2D::set_softness);
+	ObjectTypeDB::bind_method(_MD("get_softness"), &PinJoint2D::get_softness);
+
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "softness", PROPERTY_HINT_EXP_RANGE,"0.00,16,0.01"), _SCS("set_softness"), _SCS("get_softness"));
+}
 
 PinJoint2D::PinJoint2D() {
 
-
+	softness = 0;
 }
 
 
@@ -197,13 +247,17 @@ void GrooveJoint2D::_notification(int p_what) {
 
 	switch(p_what) {
 		case NOTIFICATION_DRAW: {
-			if (is_inside_tree() && get_tree()->is_editor_hint()) {
+			if (!is_inside_tree())
+				break;
 
-				draw_line(Point2(-10,0),Point2(+10,0),Color(0.7,0.6,0.0,0.5),3);
-				draw_line(Point2(-10,length),Point2(+10,length),Color(0.7,0.6,0.0,0.5),3);
-				draw_line(Point2(0,0),Point2(0,length),Color(0.7,0.6,0.0,0.5),3);
-				draw_line(Point2(-10,initial_offset),Point2(+10,initial_offset),Color(0.8,0.8,0.9,0.5),5);
+			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+				break;
 			}
+
+			draw_line(Point2(-10,0),Point2(+10,0),Color(0.7,0.6,0.0,0.5),3);
+			draw_line(Point2(-10,length),Point2(+10,length),Color(0.7,0.6,0.0,0.5),3);
+			draw_line(Point2(0,0),Point2(0,length),Color(0.7,0.6,0.0,0.5),3);
+			draw_line(Point2(-10,initial_offset),Point2(+10,initial_offset),Color(0.8,0.8,0.9,0.5),5);
 		} break;
 	}
 }
@@ -223,7 +277,11 @@ RID GrooveJoint2D::_configure_joint(){
 	if (!body_a || !body_b)
 		return RID();
 
-	Physics2DServer::get_singleton()->body_add_collision_exception(body_a->get_rid(),body_b->get_rid());
+
+	if (get_exclude_nodes_from_collision())
+		Physics2DServer::get_singleton()->body_add_collision_exception(body_a->get_rid(),body_b->get_rid());
+	else
+		Physics2DServer::get_singleton()->body_remove_collision_exception(body_a->get_rid(),body_b->get_rid());
 
 	Matrix32 gt = get_global_transform();
 	Vector2 groove_A1 = gt.get_origin();
@@ -291,12 +349,17 @@ void DampedSpringJoint2D::_notification(int p_what) {
 
 	switch(p_what) {
 		case NOTIFICATION_DRAW: {
-			if (is_inside_tree() && get_tree()->is_editor_hint()) {
 
-				draw_line(Point2(-10,0),Point2(+10,0),Color(0.7,0.6,0.0,0.5),3);
-				draw_line(Point2(-10,length),Point2(+10,length),Color(0.7,0.6,0.0,0.5),3);
-				draw_line(Point2(0,0),Point2(0,length),Color(0.7,0.6,0.0,0.5),3);
+			if (!is_inside_tree())
+				break;
+
+			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+				break;
 			}
+
+			draw_line(Point2(-10,0),Point2(+10,0),Color(0.7,0.6,0.0,0.5),3);
+			draw_line(Point2(-10,length),Point2(+10,length),Color(0.7,0.6,0.0,0.5),3);
+			draw_line(Point2(0,0),Point2(0,length),Color(0.7,0.6,0.0,0.5),3);
 		} break;
 	}
 }
@@ -316,7 +379,10 @@ RID DampedSpringJoint2D::_configure_joint(){
 	if (!body_a || !body_b)
 		return RID();
 
-	Physics2DServer::get_singleton()->body_add_collision_exception(body_a->get_rid(),body_b->get_rid());
+	if (get_exclude_nodes_from_collision())
+		Physics2DServer::get_singleton()->body_add_collision_exception(body_a->get_rid(),body_b->get_rid());
+	else
+		Physics2DServer::get_singleton()->body_remove_collision_exception(body_a->get_rid(),body_b->get_rid());
 
 	Matrix32 gt = get_global_transform();
 	Vector2 anchor_A = gt.get_origin();

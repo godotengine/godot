@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,15 +40,15 @@ class ScriptLanguage;
 
 class ScriptServer {
 	enum {
-		
+
 		MAX_LANGUAGES=4
 	};
-	
+
 	static ScriptLanguage *_languages[MAX_LANGUAGES];
 	static int _language_count;
 	static bool scripting_enabled;
-public:	
-	
+public:
+
 	static void set_scripting_enabled(bool p_enabled);
 	static bool is_scripting_enabled();
 	static int get_language_count();
@@ -76,13 +76,14 @@ protected:
 friend class PlaceHolderScriptInstance;
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {}
 public:
-	
+
 	virtual bool can_instance() const=0;
 
 	virtual StringName get_instance_base_type() const=0; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance* instance_create(Object *p_this)=0;
 	virtual bool instance_has(const Object *p_this) const=0;
-	
+
+
 	virtual bool has_source_code() const=0;
 	virtual String get_source_code() const=0;
 	virtual void set_source_code(const String& p_code)=0;
@@ -97,10 +98,11 @@ public:
 	virtual bool has_script_signal(const StringName& p_signal) const=0;
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const=0;
 
+	virtual bool get_property_default_value(const StringName& p_property,Variant& r_value) const=0;
 
 	virtual void update_exports() {} //editor tool
 
-	
+
 	Script() {}
 };
 
@@ -109,6 +111,9 @@ public:
 	virtual bool set(const StringName& p_name, const Variant& p_value)=0;
 	virtual bool get(const StringName& p_name, Variant &r_ret) const=0;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const=0;
+	virtual Variant::Type get_property_type(const StringName& p_name,bool *r_is_valid=NULL) const=0;
+
+	virtual void get_property_state(List<Pair<StringName,Variant> > &state);
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const=0;
 	virtual bool has_method(const StringName& p_method) const=0;
@@ -143,13 +148,13 @@ class ScriptLanguage {
 public:
 
 	virtual String get_name() const=0;
-	
+
 	/* LANGUAGE FUNCTIONS */
-	virtual void init()=0;	
+	virtual void init()=0;
 	virtual String get_type() const=0;
 	virtual String get_extension() const=0;
-	virtual Error execute_file(const String& p_path) =0;	
-	virtual void finish()=0;	
+	virtual Error execute_file(const String& p_path) =0;
+	virtual void finish()=0;
 
 	/* EDITOR FUNCTIONS */
 	virtual void get_reserved_words(List<String> *p_words) const=0;
@@ -163,6 +168,7 @@ public:
 	virtual String make_function(const String& p_class,const String& p_name,const StringArray& p_args) const=0;
 	virtual Error complete_code(const String& p_code, const String& p_base_path, Object*p_owner,List<String>* r_options,String& r_call_hint) { return ERR_UNAVAILABLE; }
 	virtual void auto_indent_code(String& p_code,int p_from_line,int p_to_line) const=0;
+	virtual void add_global_constant(const StringName& p_variable,const Variant& p_value)=0;
 
 	/* DEBUGGER FUNCTIONS */
 
@@ -189,9 +195,24 @@ public:
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const=0;
 	virtual void get_public_constants(List<Pair<String,Variant> > *p_constants) const=0;
 
+	struct ProfilingInfo {
+		StringName signature;
+		uint64_t call_count;
+		uint64_t total_time;
+		uint64_t self_time;
+
+	};
+
+	virtual void profiling_start()=0;
+	virtual void profiling_stop()=0;
+
+	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr,int p_info_max)=0;
+	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr,int p_info_max)=0;
+
+
 	virtual void frame();
 
-	virtual ~ScriptLanguage() {};	
+	virtual ~ScriptLanguage() {};
 };
 
 extern uint8_t script_encryption_key[32];
@@ -208,6 +229,7 @@ public:
 	virtual bool set(const StringName& p_name, const Variant& p_value);
 	virtual bool get(const StringName& p_name, Variant &r_ret) const;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
+	virtual Variant::Type get_property_type(const StringName& p_name,bool *r_is_valid=NULL) const;
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const {}
 	virtual bool has_method(const StringName& p_method) const { return false; }
@@ -301,6 +323,13 @@ public:
 
 	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata) {}
 	virtual void set_live_edit_funcs(LiveEditFuncs *p_funcs) {}
+
+	virtual bool is_profiling() const=0;
+	virtual void add_profiling_frame_data(const StringName& p_name,const Array& p_data)=0;
+	virtual void profiling_start()=0;
+	virtual void profiling_end()=0;
+	virtual void profiling_set_frame_times(float p_frame_time,float p_idle_time,float p_fixed_time,float p_fixed_frame_time)=0;
+
 
 	ScriptDebugger();
 	virtual ~ScriptDebugger() {singleton=NULL;}

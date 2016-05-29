@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -378,7 +378,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 				} break;
 				case OBJECT_INTERNAL_RESOURCE: {
 					uint32_t index=f->get_32();
-					String path = res_path+"::"+itos(index);					
+					String path = res_path+"::"+itos(index);
 					RES res = ResourceLoader::load(path);
 					if (res.is_null()) {
 						WARN_PRINT(String("Couldn't load resource: "+path).utf8().get_data());
@@ -725,7 +725,8 @@ Error ResourceInteractiveLoaderBinary::poll(){
 		}
 	} else {
 
-		path=res_path;
+		if (!ResourceCache::has(res_path))
+			path=res_path;
 	}
 
 	uint64_t offset = internal_resources[s].offset;
@@ -853,6 +854,8 @@ String ResourceInteractiveLoaderBinary::get_unicode_string() {
 	if (len>str_buf.size()) {
 		str_buf.resize(len);
 	}
+	if (len==0)
+		return String();
 	f->get_buffer((uint8_t*)&str_buf[0],len);
 	String s;
 	s.parse_utf8(&str_buf[0]);
@@ -905,7 +908,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 
 		error=ERR_FILE_UNRECOGNIZED;
 		ERR_EXPLAIN("Unrecognized binary resource file: "+local_path);
-		ERR_FAIL_V();
+		ERR_FAIL();
 	}
 
 	bool big_endian = f->get_32();
@@ -2097,7 +2100,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 					p.value=E->get()->get(F->get().name);
 					if ((F->get().usage&PROPERTY_USAGE_STORE_IF_NONZERO && p.value.is_zero())||(F->get().usage&PROPERTY_USAGE_STORE_IF_NONONE && p.value.is_one()) )
 						continue;
-					p.pi=F->get();										
+					p.pi=F->get();
 
 					rd.properties.push_back(p);
 
@@ -2172,10 +2175,11 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 
 			save_unicode_string("local://"+itos(r->get_subindex()));
 			if (takeover_paths) {
-				r->set_path(p_path+"::"+itos(ofs_pos.size()),true);
+				r->set_path(p_path+"::"+itos(r->get_subindex()),true);
 			}
-		} else
+		} else {
 			save_unicode_string(r->get_path()); //actual external
+		}
 		ofs_pos.push_back(f->get_pos());
 		f->store_64(0); //offset in 64 bits
 	}

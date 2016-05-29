@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ protected:
 public:
 
 	void set_value(const String& p_section, const String& p_key, const Variant& p_value);
-	Variant get_value(const String& p_section, const String& p_key) const;
+	Variant get_value(const String& p_section, const String& p_key, Variant p_default=Variant()) const;
 
 	bool has_section(const String& p_section) const;
 	bool has_section_key(const String& p_section,const String& p_key) const;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,11 @@
 */
 
 class Camera;
+class Control;
+class CanvasItem;
+class Panel;
+class Label;
+class Timer;
 class Viewport;
 
 class RenderTargetTexture : public Texture {
@@ -82,6 +87,9 @@ public:
 private:
 
 friend class RenderTargetTexture;
+
+
+	Control *parent_control;
 	Viewport *parent;
 
 	Camera *camera;
@@ -103,6 +111,11 @@ friend class RenderTargetTexture;
 
 	Rect2 rect;
 	Rect2 to_screen_rect;
+
+	RID contact_2d_debug;
+	RID contact_3d_debug_multimesh;
+	RID contact_3d_debug_instance;
+
 
 
 	bool size_override;
@@ -146,6 +159,7 @@ friend class RenderTargetTexture;
 
 	void _propagate_enter_world(Node *p_node);
 	void _propagate_exit_world(Node *p_node);
+	void _propagate_viewport_notification(Node *p_node, int p_what);
 
 
 	void _update_stretch_transform();
@@ -157,6 +171,49 @@ friend class RenderTargetTexture;
 	Ref<RenderTargetTexture> render_target_texture;
 
 
+	struct GUI {
+		// info used when this is a window
+
+		bool key_event_accepted;
+		Control *mouse_focus;
+		int mouse_focus_button;
+		Control *key_focus;
+		Control *mouse_over;
+		Control *tooltip;
+		Panel *tooltip_popup;
+		Label *tooltip_label;
+		Point2 tooltip_pos;
+		Point2 last_mouse_pos;
+		Point2 drag_accum;
+		bool drag_attempted;
+		Variant drag_data;
+		Control *drag_preview;
+		float tooltip_timer;
+		float tooltip_delay;
+		List<Control*> modal_stack;
+		unsigned int cancelled_input_ID;
+		Matrix32 focus_inv_xform;
+		bool subwindow_order_dirty;
+		List<Control*> subwindows;
+		bool roots_order_dirty;
+		List<Control*> roots;
+
+
+		GUI();
+	} gui;
+
+	bool disable_input;
+
+	void _gui_call_input(Control *p_control,const InputEvent& p_input);
+	void _gui_sort_subwindows();
+	void _gui_sort_roots();
+	void _gui_sort_modal_stack();
+	Control* _gui_find_control(const Point2& p_global);
+	Control* _gui_find_control_at_pos(CanvasItem* p_node,const Point2& p_global,const Matrix32& p_xform,Matrix32& r_inv_xform);
+
+	void _gui_input_event(InputEvent p_event);
+
+
 	void update_worlds();
 
 	_FORCE_INLINE_ Matrix32 _get_input_pre_xform() const;
@@ -165,14 +222,56 @@ friend class RenderTargetTexture;
 	void _vp_exit_tree();
 
 	void _vp_input(const InputEvent& p_ev);
+	void _vp_input_text(const String& p_text);
 	void _vp_unhandled_input(const InputEvent& p_ev);
 	void _make_input_local(InputEvent& ev);
 
+
+friend class Control;
+
+	List<Control*>::Element* _gui_add_root_control(Control* p_control);
+	List<Control*>::Element* _gui_add_subwindow_control(Control* p_control);
+
+	void _gui_set_subwindow_order_dirty();
+	void _gui_set_root_order_dirty();
+
+
+	void _gui_remove_modal_control(List<Control*>::Element *MI);
+	void _gui_remove_from_modal_stack(List<Control*>::Element *MI,ObjectID p_prev_focus_owner);
+	void _gui_remove_root_control(List<Control*>::Element *RI);
+	void _gui_remove_subwindow_control(List<Control*>::Element* SI);
+
+	void _gui_cancel_tooltip();
+	void _gui_show_tooltip();
+
+
+	void _gui_remove_control(Control *p_control);
+	void _gui_hid_control(Control *p_control);
+
+	void _gui_force_drag(Control *p_base,const Variant& p_data,Control *p_control);
+	void _gui_set_drag_preview(Control *p_base,Control *p_control);
+
+	bool _gui_is_modal_on_top(const Control* p_control);
+	List<Control*>::Element* _gui_show_modal(Control* p_control);
+
+	void _gui_remove_focus();
+	void _gui_unfocus_control(Control *p_control);
+	bool _gui_control_has_focus(const Control* p_control);
+	void _gui_control_grab_focus(Control* p_control);
+	void _gui_grab_click_focus(Control *p_control);
+	void _gui_accept_event();
+
+	Control *_gui_get_focus_owner();
+
 friend class Camera;
 	void _camera_transform_changed_notify();
-	void _set_camera(Camera* p_camera);
+	void _camera_set(Camera* p_camera);
+	bool _camera_add(Camera* p_camera); //true if first
+	void _camera_remove(Camera* p_camera);
+	void _camera_make_next_current(Camera* p_exclude);
 
-protected:	
+
+protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 public:
@@ -186,7 +285,7 @@ public:
 	void set_as_audio_listener_2d(bool p_enable);
 	bool is_audio_listener_2d() const;
 
-	void set_rect(const Rect2& p_rect);	
+	void set_rect(const Rect2& p_rect);
 	Rect2 get_rect() const;
 	Rect2 get_visible_rect() const;
 	RID get_viewport() const;
@@ -249,6 +348,9 @@ public:
 	void input(const InputEvent& p_event);
 	void unhandled_input(const InputEvent& p_event);
 
+	void set_disable_input(bool p_disable);
+	bool is_input_disabled() const;
+
 	void set_render_target_to_screen_rect(const Rect2& p_rect);
 	Rect2 get_render_target_to_screen_rect() const;
 
@@ -258,7 +360,13 @@ public:
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
 
-	Viewport();	
+	bool gui_has_modal_stack() const;
+
+	Variant gui_get_drag_data() const;
+
+	virtual String get_configuration_warning() const;
+
+	Viewport();
 	~Viewport();
 
 };

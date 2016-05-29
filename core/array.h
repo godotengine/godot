@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ public:
 	bool empty() const;
 	void clear();
 
-    bool is_shared() const;
+	bool is_shared() const;
 
 	bool operator==(const Array& p_array) const;
 
@@ -74,6 +74,10 @@ public:
 	int find(const Variant& p_value) const;
 
 	void erase(const Variant& p_value);
+
+	void push_front(const Variant& p_value);
+	void pop_back();
+	void pop_front();
 
 	Array(const Array& p_from);
 	Array(bool p_shared=false);

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -374,7 +374,7 @@ World2D::World2D() {
 	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_GRAVITY,GLOBAL_DEF("physics_2d/default_gravity",98));
 	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_GRAVITY_VECTOR,GLOBAL_DEF("physics_2d/default_gravity_vector",Vector2(0,1)));
 	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_LINEAR_DAMP,GLOBAL_DEF("physics_2d/default_density",0.1));
-	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_ANGULAR_DAMP,GLOBAL_DEF("physics_2d/default_density",1));
+	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_ANGULAR_DAMP,GLOBAL_DEF("physics_2d/default_angular_damp",1));
 	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_CONTACT_RECYCLE_RADIUS,1.0);
 	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_CONTACT_MAX_SEPARATION,1.5);
 	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION,0.3);

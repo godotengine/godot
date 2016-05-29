@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,8 @@ class Timer : public Node {
 	float wait_time;
 	bool one_shot;
 	bool autostart;
+	bool processing;
+	bool active;
 
 	double time_left;
 protected:
@@ -62,6 +64,8 @@ public:
 
 	void start();
 	void stop();
+	void set_active(bool p_active);
+	bool is_active() const;
 
 	float get_time_left() const;
 

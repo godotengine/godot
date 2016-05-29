@@ -273,13 +273,13 @@ void NavigationPolygonInstance::set_enabled(bool p_enabled) {
 
 			if (navpoly.is_valid()) {
 
-				nav_id = navigation->navpoly_create(navpoly,get_relative_transform(navigation),this);
+				nav_id = navigation->navpoly_create(navpoly,get_relative_transform_to_parent(navigation),this);
 			}
 		}
 
 	}
 
-	if (get_tree()->is_editor_hint())
+	if (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())
 		update();
 
 //	update_gizmo();
@@ -309,7 +309,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 
 					if (enabled && navpoly.is_valid()) {
 
-						nav_id = navigation->navpoly_create(navpoly,get_relative_transform(navigation),this);
+						nav_id = navigation->navpoly_create(navpoly,get_relative_transform_to_parent(navigation),this);
 					}
 					break;
 				}
@@ -321,7 +321,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
 			if (navigation && nav_id!=-1) {
-				navigation->navpoly_set_transform(nav_id,get_relative_transform(navigation));
+				navigation->navpoly_set_transform(nav_id,get_relative_transform_to_parent(navigation));
 			}
 
 		} break;
@@ -338,7 +338,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAW: {
 
-			if (is_inside_tree() && get_tree()->is_editor_hint() && navpoly.is_valid()) {
+			if (is_inside_tree() && (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
 
 				DVector<Vector2> verts=navpoly->get_vertices();
 				int vsize = verts.size();
@@ -348,9 +348,9 @@ void NavigationPolygonInstance::_notification(int p_what) {
 
 				Color color;
 				if (enabled) {
-					color=Color(0.1,0.8,1.0,0.4);
+					color=get_tree()->get_debug_navigation_color();
 				} else {
-					color=Color(1.0,0.8,0.1,0.4);
+					color=get_tree()->get_debug_navigation_disabled_color();
 				}
 				Vector<Color> colors;
 				Vector<Vector2> vertices;
@@ -409,10 +409,11 @@ void NavigationPolygonInstance::set_navigation_polygon(const Ref<NavigationPolyg
 	}
 
 	if (navigation && navpoly.is_valid() && enabled) {
-		nav_id = navigation->navpoly_create(navpoly,get_relative_transform(navigation),this);
+		nav_id = navigation->navpoly_create(navpoly,get_relative_transform_to_parent(navigation),this);
 	}
 	//update_gizmo();
 	_change_notify("navpoly");
+	update_configuration_warning();
 
 }
 
@@ -423,14 +424,36 @@ Ref<NavigationPolygon> NavigationPolygonInstance::get_navigation_polygon() const
 
 void NavigationPolygonInstance::_navpoly_changed() {
 
-	if (is_inside_tree() && get_tree()->is_editor_hint())
+	if (is_inside_tree() && (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()))
 		update();
+}
+
+
+String NavigationPolygonInstance::get_configuration_warning() const {
+
+	if (!is_visible() || !is_inside_tree())
+		return String();
+
+	if (!navpoly.is_valid()) {
+		return TTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon.");
+	}
+	const Node2D *c=this;
+	while(c) {
+
+		if (c->cast_to<Navigation2D>()) {
+			return String();
+		}
+
+		c=c->get_parent()->cast_to<Node2D>();
+	}
+
+	return TTR("NavigationPolygonInstance must be a child or grandchild to a Navigation2D node. It only provides navigation data.");
 }
 
 void NavigationPolygonInstance::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_navigation_polygon","navpoly"),&NavigationPolygonInstance::set_navigation_polygon);
-	ObjectTypeDB::bind_method(_MD("get_navigation_polygon"),&NavigationPolygonInstance::get_navigation_polygon);
+	ObjectTypeDB::bind_method(_MD("set_navigation_polygon","navpoly:NavigationPolygon"),&NavigationPolygonInstance::set_navigation_polygon);
+	ObjectTypeDB::bind_method(_MD("get_navigation_polygon:NavigationPolygon"),&NavigationPolygonInstance::get_navigation_polygon);
 
 	ObjectTypeDB::bind_method(_MD("set_enabled","enabled"),&NavigationPolygonInstance::set_enabled);
 	ObjectTypeDB::bind_method(_MD("is_enabled"),&NavigationPolygonInstance::is_enabled);

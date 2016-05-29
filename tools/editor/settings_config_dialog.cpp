@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,6 +45,7 @@ void EditorSettingsDialog::_settings_changed() {
 
 
 	timer->start();
+	property_editor->get_property_editor()->update_tree(); // else color's won't update when theme is selected.
 }
 
 void EditorSettingsDialog::_settings_save() {
@@ -70,186 +71,33 @@ void EditorSettingsDialog::popup_edit_settings() {
 	if (!EditorSettings::get_singleton())
 		return;
 
+	EditorSettings::get_singleton()->list_text_editor_themes(); // make sure we have an up to date list of themes
+
 	property_editor->edit(EditorSettings::get_singleton());
-	property_editor->update_tree();
+	property_editor->get_property_editor()->update_tree();
+
+	search_box->select_all();
+	search_box->grab_focus();
+
 	popup_centered_ratio(0.7);
 }
 
 
-void EditorSettingsDialog::_plugin_install() {
 
-	EditorSettings::Plugin plugin =	EditorSettings::get_singleton()->get_plugins()[plugin_setting_edit];
+void EditorSettingsDialog::_clear_search_box() {
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	da->change_dir("res://");
-	if (da->change_dir("plugins")!=OK) {
-
-		Error err = da->make_dir("plugins");
-		if (err)
-			memdelete(da);
-		ERR_FAIL_COND(err!=OK);
-		err = da->change_dir("plugins");
-		if (err)
-			memdelete(da);
-		ERR_FAIL_COND(err!=OK);
-	}
-
-	if (da->change_dir(plugin_setting_edit)!=OK) {
-
-		Error err = da->make_dir(plugin_setting_edit);
-		if (err)
-			memdelete(da);
-		ERR_FAIL_COND(err!=OK);
-		err = da->change_dir(plugin_setting_edit);
-		if (err)
-			memdelete(da);
-		ERR_FAIL_COND(err!=OK);
-	}
-
-	Vector<String> ifiles=plugin.install_files;
-
-	if (ifiles.find("plugin.cfg")==-1) {
-		ifiles.push_back("plugin.cfg");
-	}
-
-	if (ifiles.find(plugin.script)==-1) {
-		ifiles.push_back(plugin.script);
-	}
-
-	for(int i=0;i<ifiles.size();i++) {
-
-		String target = "res://plugins/"+plugin_setting_edit+"/"+ifiles[i];
-		Error err = da->copy(EditorSettings::get_singleton()->get_settings_path().plus_file("plugins/"+plugin_setting_edit+"/"+ifiles[i]),target);
-		if (err)
-			memdelete(da);
-		ERR_EXPLAIN("Error copying to file "+target);
-		ERR_FAIL_COND(err!=OK);
-		EditorFileSystem::get_singleton()->update_file(target);
-	}
-
-	memdelete(da);
-
-	Globals::get_singleton()->set("plugins/"+plugin_setting_edit,"res://plugins/"+plugin_setting_edit);
-	Globals::get_singleton()->set_persisting("plugins/"+plugin_setting_edit,true);
-	EditorSettings::get_singleton()->load_installed_plugin(plugin_setting_edit);
-	Globals::get_singleton()->save();
-
-
-	_update_plugins();
-}
-
-void EditorSettingsDialog::_rescan_plugins() {
-
-	EditorSettings::get_singleton()->scan_plugins();
-	_update_plugins();
-}
-
-void EditorSettingsDialog::_plugin_edited() {
-
-	if (updating)
+	if (search_box->get_text()=="")
 		return;
 
-	TreeItem *ti=plugins->get_edited();
-	if (!ti)
-		return;
-
-	String plugin = ti->get_metadata(0);
-	bool enabled = ti->is_checked(0);
-
-	EditorSettings::get_singleton()->set_plugin_enabled(plugin,enabled);
-}
-
-void EditorSettingsDialog::_plugin_settings(Object *p_obj,int p_cell,int p_index) {
-
-	TreeItem *ti=p_obj->cast_to<TreeItem>();
-
-	EditorSettings::Plugin plugin =	EditorSettings::get_singleton()->get_plugins()[ti->get_metadata(0)];
-
-	plugin_description->clear();
-	plugin_description->parse_bbcode(plugin.description);
-	plugin_setting_edit = ti->get_metadata(0);
-	if (plugin.installs) {
-		if (Globals::get_singleton()->has("plugins/"+plugin_setting_edit))
-			plugin_setting->get_ok()->set_text("Re-Install to Project");
-		else
-			plugin_setting->get_ok()->set_text("Install to Project");
-		plugin_setting->get_ok()->show();
-		plugin_setting->get_cancel()->set_text("Close");
-	} else {
-		plugin_setting->get_ok()->hide();
-		plugin_setting->get_cancel()->set_text("Close");
-	}
-
-	plugin_setting->set_title(plugin.name);
-	plugin_setting->popup_centered(Size2(300,200));
-}
-
-void EditorSettingsDialog::_update_plugins() {
-
-
-	updating=true;
-
-	plugins->clear();
-	TreeItem *root = plugins->create_item(NULL);
-	plugins->set_hide_root(true);
-
-	Color sc = get_color("prop_subsection","Editor");
-	TreeItem *editor = plugins->create_item(root);
-	editor->set_text(0,"Editor Plugins");
-	editor->set_custom_bg_color(0,sc);
-	editor->set_custom_bg_color(1,sc);
-	editor->set_custom_bg_color(2,sc);
-
-	TreeItem *install = plugins->create_item(root);
-	install->set_text(0,"Installable Plugins");
-	install->set_custom_bg_color(0,sc);
-	install->set_custom_bg_color(1,sc);
-	install->set_custom_bg_color(2,sc);
-
-	for (const Map<String,EditorSettings::Plugin>::Element *E=EditorSettings::get_singleton()->get_plugins().front();E;E=E->next()) {
-
-
-		TreeItem *ti = plugins->create_item(E->get().installs?install:editor);
-		if (!E->get().installs) {
-			ti->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
-			ti->set_editable(0,true);
-			if (EditorSettings::get_singleton()->is_plugin_enabled(E->key()))
-				ti->set_checked(0,true);
-
-			ti->set_text(0,E->get().name);
-		} else {
-
-			if (Globals::get_singleton()->has("plugins/"+E->key())) {
-
-				ti->set_text(0,E->get().name+" (Installed)");
-			} else {
-				ti->set_text(0,E->get().name);
-			}
-		}
-
-
-		ti->add_button(0,get_icon("Tools","EditorIcons"),0);
-		ti->set_text(1,E->get().author);
-		ti->set_text(2,E->get().version);
-		ti->set_metadata(0,E->key());
-
-	}
-
-	if (!editor->get_children())
-		memdelete(editor);
-	if (!install->get_children())
-		memdelete(install);
-
-	updating=false;
-
+	search_box->clear();
+	property_editor->get_property_editor()->update_tree();
 }
 
 void EditorSettingsDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		rescan_plugins->set_icon(get_icon("Reload","EditorIcons"));
-		_update_plugins();
+		clear_button->set_icon(get_icon("Close","EditorIcons"));
 	}
 }
 
@@ -257,62 +105,55 @@ void EditorSettingsDialog::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_settings_save"),&EditorSettingsDialog::_settings_save);
 	ObjectTypeDB::bind_method(_MD("_settings_changed"),&EditorSettingsDialog::_settings_changed);
-	ObjectTypeDB::bind_method(_MD("_rescan_plugins"),&EditorSettingsDialog::_rescan_plugins);
-	ObjectTypeDB::bind_method(_MD("_plugin_settings"),&EditorSettingsDialog::_plugin_settings);
-	ObjectTypeDB::bind_method(_MD("_plugin_edited"),&EditorSettingsDialog::_plugin_edited);
-	ObjectTypeDB::bind_method(_MD("_plugin_install"),&EditorSettingsDialog::_plugin_install);
+	ObjectTypeDB::bind_method(_MD("_clear_search_box"),&EditorSettingsDialog::_clear_search_box);
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
 
-	set_title("Editor Settings");
+	set_title(TTR("Editor Settings"));
 
 	tabs = memnew( TabContainer );
 	add_child(tabs);
 	set_child_rect(tabs);
 
-	property_editor = memnew( PropertyEditor );
-	property_editor->hide_top_label();
-	tabs->add_child(property_editor);
-	property_editor->set_name("General");
-
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	tabs->add_child(vbc);
-	vbc->set_name("Plugins");
+	vbc->set_name(TTR("General"));
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
+	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(hbc);
-	hbc->add_child( memnew( Label("Plugin List: ")));
+
+	Label *l = memnew( Label );
+	l->set_text(TTR("Search:")+" ");
+	hbc->add_child(l);
+
+	search_box = memnew( LineEdit );
+	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	hbc->add_child(search_box);
+
+	clear_button = memnew( ToolButton );
+	hbc->add_child(clear_button);
+	clear_button->connect("pressed",this,"_clear_search_box");
+
+	property_editor = memnew( SectionedPropertyEditor );
+	//property_editor->hide_top_label();
+	property_editor->get_property_editor()->set_use_filter(true);
+	property_editor->get_property_editor()->register_text_enter(search_box);
+	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc->add_child(property_editor);
+
+	vbc = memnew( VBoxContainer );
+	tabs->add_child(vbc);
+	vbc->set_name(TTR("Plugins"));
+
+	hbc = memnew( HBoxContainer );
+	vbc->add_child(hbc);
+	hbc->add_child( memnew( Label(TTR("Plugin List:")+" ") ));
 	hbc->add_spacer();
-	Button *load = memnew( Button );
-	load->set_text("Load..");
-	Button *rescan = memnew( Button );
-	rescan_plugins=rescan;
-	rescan_plugins->connect("pressed",this,"_rescan_plugins");
-	hbc->add_child(load);
-	hbc->add_child(rescan);
-	plugins = memnew( Tree );
-	MarginContainer *mc = memnew( MarginContainer);
-	vbc->add_child(mc);
-	mc->add_child(plugins);
-	mc->set_v_size_flags(SIZE_EXPAND_FILL);
-	plugins->set_columns(3);
-	plugins->set_column_title(0,"Name");
-	plugins->set_column_title(1,"Author");
-	plugins->set_column_title(2,"Version");
-	plugins->set_column_expand(2,false);
-	plugins->set_column_min_width(2,100);
-	plugins->set_column_titles_visible(true);
-	plugins->connect("button_pressed",this,"_plugin_settings");
-	plugins->connect("item_edited",this,"_plugin_edited");
-
-	plugin_setting = memnew( ConfirmationDialog );
-	add_child(plugin_setting);
-	plugin_description = memnew( RichTextLabel );
-	plugin_setting->add_child(plugin_description);
-	plugin_setting->set_child_rect(plugin_description);
-	plugin_setting->connect("confirmed",this,"_plugin_install");
-
+	//Button *load = memnew( Button );
+	//load->set_text("Load..");
+	//hbc->add_child(load);
 
 
 	//get_ok()->set_text("Apply");
@@ -325,9 +166,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	timer->set_one_shot(true);
 	add_child(timer);
 	EditorSettings::get_singleton()->connect("settings_changed",this,"_settings_changed");
-	get_ok()->set_text("Close");
-	install_confirm = memnew( ConfirmationDialog );
-	add_child(install_confirm);
+	get_ok()->set_text(TTR("Close"));
 
 	updating=false;
 

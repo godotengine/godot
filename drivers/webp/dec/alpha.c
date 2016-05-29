@@ -1,8 +1,10 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// This code is licensed under the same terms as WebM:
-//  Software License Agreement:  http://www.webmproject.org/license/software/
-//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
+// Use of this source code is governed by a BSD-style license
+// that can be found in the COPYING file in the root of the source
+// tree. An additional intellectual property rights grant can be found
+// in the file PATENTS. All contributing project authors may
+// be found in the AUTHORS file in the root of the source tree.
 // -----------------------------------------------------------------------------
 //
 // Alpha-plane decompression.
@@ -10,131 +12,156 @@
 // Author: Skal (pascal.massimino@gmail.com)
 
 #include <stdlib.h>
+#include "./alphai.h"
 #include "./vp8i.h"
 #include "./vp8li.h"
-#include "../utils/filters.h"
-#include "../utils/quant_levels.h"
-#include "../format_constants.h"
+#include "../dsp/dsp.h"
+#include "../utils/quant_levels_dec.h"
+#include "../utils/utils.h"
+#include "webp/format_constants.h"
 
-#if defined(__cplusplus) || defined(c_plusplus)
-extern "C" {
-#endif
+//------------------------------------------------------------------------------
+// ALPHDecoder object.
 
-// TODO(skal): move to dsp/ ?
-static void CopyPlane(const uint8_t* src, int src_stride,
-                      uint8_t* dst, int dst_stride, int width, int height) {
-  while (height-- > 0) {
-    memcpy(dst, src, width);
-    src += src_stride;
-    dst += dst_stride;
+ALPHDecoder* ALPHNew(void) {
+  ALPHDecoder* const dec = (ALPHDecoder*)WebPSafeCalloc(1ULL, sizeof(*dec));
+  return dec;
+}
+
+void ALPHDelete(ALPHDecoder* const dec) {
+  if (dec != NULL) {
+    VP8LDelete(dec->vp8l_dec_);
+    dec->vp8l_dec_ = NULL;
+    WebPSafeFree(dec);
   }
 }
 
 //------------------------------------------------------------------------------
-// Decodes the compressed data 'data' of size 'data_size' into the 'output'.
-// The 'output' buffer should be pre-allocated and must be of the same
-// dimension 'height'x'stride', as that of the image.
-//
-// Returns 1 on successfully decoding the compressed alpha and
-//         0 if either:
-//           error in bit-stream header (invalid compression mode or filter), or
-//           error returned by appropriate compression method.
+// Decoding.
 
-static int DecodeAlpha(const uint8_t* data, size_t data_size,
-                       int width, int height, int stride, uint8_t* output) {
-  uint8_t* decoded_data = NULL;
-  const size_t decoded_size = height * width;
-  uint8_t* unfiltered_data = NULL;
-  WEBP_FILTER_TYPE filter;
-  int pre_processing;
-  int rsrv;
+// Initialize alpha decoding by parsing the alpha header and decoding the image
+// header for alpha data stored using lossless compression.
+// Returns false in case of error in alpha header (data too short, invalid
+// compression method or filter, error in lossless header data etc).
+static int ALPHInit(ALPHDecoder* const dec, const uint8_t* data,
+                    size_t data_size, int width, int height, uint8_t* output) {
   int ok = 0;
-  int method;
+  const uint8_t* const alpha_data = data + ALPHA_HEADER_LEN;
+  const size_t alpha_data_size = data_size - ALPHA_HEADER_LEN;
+  int rsrv;
 
-  assert(width > 0 && height > 0 && stride >= width);
+  assert(width > 0 && height > 0);
   assert(data != NULL && output != NULL);
+
+  dec->width_ = width;
+  dec->height_ = height;
 
   if (data_size <= ALPHA_HEADER_LEN) {
     return 0;
   }
 
-  method = (data[0] >> 0) & 0x03;
-  filter = (data[0] >> 2) & 0x03;
-  pre_processing = (data[0] >> 4) & 0x03;
+  dec->method_ = (data[0] >> 0) & 0x03;
+  dec->filter_ = (data[0] >> 2) & 0x03;
+  dec->pre_processing_ = (data[0] >> 4) & 0x03;
   rsrv = (data[0] >> 6) & 0x03;
-  if (method < ALPHA_NO_COMPRESSION ||
-      method > ALPHA_LOSSLESS_COMPRESSION ||
-      filter >= WEBP_FILTER_LAST ||
-      pre_processing > ALPHA_PREPROCESSED_LEVELS ||
+  if (dec->method_ < ALPHA_NO_COMPRESSION ||
+      dec->method_ > ALPHA_LOSSLESS_COMPRESSION ||
+      dec->filter_ >= WEBP_FILTER_LAST ||
+      dec->pre_processing_ > ALPHA_PREPROCESSED_LEVELS ||
       rsrv != 0) {
     return 0;
   }
 
-  if (method == ALPHA_NO_COMPRESSION) {
-    ok = (data_size >= decoded_size);
-    decoded_data = (uint8_t*)data + ALPHA_HEADER_LEN;
+  if (dec->method_ == ALPHA_NO_COMPRESSION) {
+    const size_t alpha_decoded_size = dec->width_ * dec->height_;
+    ok = (alpha_data_size >= alpha_decoded_size);
   } else {
-    decoded_data = (uint8_t*)malloc(decoded_size);
-    if (decoded_data == NULL) return 0;
-    ok = VP8LDecodeAlphaImageStream(width, height,
-                                    data + ALPHA_HEADER_LEN,
-                                    data_size - ALPHA_HEADER_LEN,
-                                    decoded_data);
+    assert(dec->method_ == ALPHA_LOSSLESS_COMPRESSION);
+    ok = VP8LDecodeAlphaHeader(dec, alpha_data, alpha_data_size, output);
   }
-
-  if (ok) {
-    WebPFilterFunc unfilter_func = WebPUnfilters[filter];
-    if (unfilter_func != NULL) {
-      unfiltered_data = (uint8_t*)malloc(decoded_size);
-      if (unfiltered_data == NULL) {
-        ok = 0;
-        goto Error;
-      }
-      // TODO(vikas): Implement on-the-fly decoding & filter mechanism to decode
-      // and apply filter per image-row.
-      unfilter_func(decoded_data, width, height, 1, width, unfiltered_data);
-      // Construct raw_data (height x stride) from alpha data (height x width).
-      CopyPlane(unfiltered_data, width, output, stride, width, height);
-      free(unfiltered_data);
-    } else {
-      // Construct raw_data (height x stride) from alpha data (height x width).
-      CopyPlane(decoded_data, width, output, stride, width, height);
-    }
-    if (pre_processing == ALPHA_PREPROCESSED_LEVELS) {
-      ok = DequantizeLevels(decoded_data, width, height);
-    }
-  }
-
- Error:
-  if (method != ALPHA_NO_COMPRESSION) {
-    free(decoded_data);
-  }
+  VP8FiltersInit();
   return ok;
 }
 
+// Decodes, unfilters and dequantizes *at least* 'num_rows' rows of alpha
+// starting from row number 'row'. It assumes that rows up to (row - 1) have
+// already been decoded.
+// Returns false in case of bitstream error.
+static int ALPHDecode(VP8Decoder* const dec, int row, int num_rows) {
+  ALPHDecoder* const alph_dec = dec->alph_dec_;
+  const int width = alph_dec->width_;
+  const int height = alph_dec->height_;
+  WebPUnfilterFunc unfilter_func = WebPUnfilters[alph_dec->filter_];
+  uint8_t* const output = dec->alpha_plane_;
+  if (alph_dec->method_ == ALPHA_NO_COMPRESSION) {
+    const size_t offset = row * width;
+    const size_t num_pixels = num_rows * width;
+    assert(dec->alpha_data_size_ >= ALPHA_HEADER_LEN + offset + num_pixels);
+    memcpy(dec->alpha_plane_ + offset,
+           dec->alpha_data_ + ALPHA_HEADER_LEN + offset, num_pixels);
+  } else {  // alph_dec->method_ == ALPHA_LOSSLESS_COMPRESSION
+    assert(alph_dec->vp8l_dec_ != NULL);
+    if (!VP8LDecodeAlphaImageStream(alph_dec, row + num_rows)) {
+      return 0;
+    }
+  }
+
+  if (unfilter_func != NULL) {
+    unfilter_func(width, height, width, row, num_rows, output);
+  }
+
+  if (row + num_rows == dec->pic_hdr_.height_) {
+    dec->is_alpha_decoded_ = 1;
+  }
+  return 1;
+}
+
 //------------------------------------------------------------------------------
+// Main entry point.
 
 const uint8_t* VP8DecompressAlphaRows(VP8Decoder* const dec,
                                       int row, int num_rows) {
-  const int stride = dec->pic_hdr_.width_;
+  const int width = dec->pic_hdr_.width_;
+  const int height = dec->pic_hdr_.height_;
 
-  if (row < 0 || num_rows < 0 || row + num_rows > dec->pic_hdr_.height_) {
+  if (row < 0 || num_rows <= 0 || row + num_rows > height) {
     return NULL;    // sanity check.
   }
 
   if (row == 0) {
-    // Decode everything during the first call.
-    if (!DecodeAlpha(dec->alpha_data_, (size_t)dec->alpha_data_size_,
-                     dec->pic_hdr_.width_, dec->pic_hdr_.height_, stride,
-                     dec->alpha_plane_)) {
-      return NULL;  // Error.
+    // Initialize decoding.
+    assert(dec->alpha_plane_ != NULL);
+    dec->alph_dec_ = ALPHNew();
+    if (dec->alph_dec_ == NULL) return NULL;
+    if (!ALPHInit(dec->alph_dec_, dec->alpha_data_, dec->alpha_data_size_,
+                  width, height, dec->alpha_plane_)) {
+      ALPHDelete(dec->alph_dec_);
+      dec->alph_dec_ = NULL;
+      return NULL;
+    }
+    // if we allowed use of alpha dithering, check whether it's needed at all
+    if (dec->alph_dec_->pre_processing_ != ALPHA_PREPROCESSED_LEVELS) {
+      dec->alpha_dithering_ = 0;  // disable dithering
+    } else {
+      num_rows = height;          // decode everything in one pass
     }
   }
 
-  // Return a pointer to the current decoded row.
-  return dec->alpha_plane_ + row * stride;
-}
+  if (!dec->is_alpha_decoded_) {
+    int ok = 0;
+    assert(dec->alph_dec_ != NULL);
+    ok = ALPHDecode(dec, row, num_rows);
+    if (ok && dec->alpha_dithering_ > 0) {
+      ok = WebPDequantizeLevels(dec->alpha_plane_, width, height,
+                                dec->alpha_dithering_);
+    }
+    if (!ok || dec->is_alpha_decoded_) {
+      ALPHDelete(dec->alph_dec_);
+      dec->alph_dec_ = NULL;
+    }
+    if (!ok) return NULL;  // Error.
+  }
 
-#if defined(__cplusplus) || defined(c_plusplus)
-}    // extern "C"
-#endif
+  // Return a pointer to the current decoded row.
+  return dec->alpha_plane_ + row * width;
+}

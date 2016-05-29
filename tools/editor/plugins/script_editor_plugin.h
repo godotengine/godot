@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 #define SCRIPT_EDITOR_PLUGIN_H
 
 #include "tools/editor/editor_plugin.h"
+#include "tools/editor/script_create_dialog.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/menu_button.h"
@@ -40,6 +41,7 @@
 #include "tools/editor/code_editor.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/item_list.h"
+#include "tools/editor/editor_help.h"
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
 
@@ -101,7 +103,7 @@ public:
 	void reload_text();
 	String get_name() ;
 	Ref<Texture> get_icon() ;
-
+	bool is_unsaved();
 	ScriptTextEditor();
 
 };
@@ -115,11 +117,15 @@ class ScriptEditor : public VBoxContainer {
 
 	EditorNode *editor;
 	enum {
-
+		FILE_NEW,
 		FILE_OPEN,
 		FILE_SAVE,
 		FILE_SAVE_AS,
 		FILE_SAVE_ALL,
+		FILE_IMPORT_THEME,
+		FILE_RELOAD_THEME,
+		FILE_SAVE_THEME,
+		FILE_SAVE_THEME_AS,
 		FILE_CLOSE,
 		EDIT_UNDO,
 		EDIT_REDO,
@@ -129,6 +135,7 @@ class ScriptEditor : public VBoxContainer {
 		EDIT_SELECT_ALL,
 		EDIT_COMPLETE,
 		EDIT_AUTO_INDENT,
+		EDIT_TRIM_TRAILING_WHITESAPCE,
 		EDIT_TOGGLE_COMMENT,
 		EDIT_MOVE_LINE_UP,
 		EDIT_MOVE_LINE_DOWN,
@@ -140,15 +147,21 @@ class ScriptEditor : public VBoxContainer {
 		SEARCH_REPLACE,
 		SEARCH_LOCATE_FUNCTION,
 		SEARCH_GOTO_LINE,
+		SEARCH_HELP,
+		SEARCH_CLASSES,
+		SEARCH_WEBSITE,
 		DEBUG_TOGGLE_BREAKPOINT,
 		DEBUG_NEXT,
 		DEBUG_STEP,
 		DEBUG_BREAK,
 		DEBUG_CONTINUE,
 		DEBUG_SHOW,
-		HELP_CONTEXTUAL,		
+		DEBUG_SHOW_KEEP_OPEN,
+		HELP_CONTEXTUAL,
 		WINDOW_MOVE_LEFT,
 		WINDOW_MOVE_RIGHT,
+		WINDOW_NEXT,
+		WINDOW_PREV,
 		WINDOW_SELECT_BASE=100
 	};
 
@@ -156,27 +169,56 @@ class ScriptEditor : public VBoxContainer {
 	MenuButton *file_menu;
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
+	MenuButton *script_search_menu;
 	MenuButton *debug_menu;
 	MenuButton *help_menu;
 	Timer *autosave_timer;
 	uint64_t idle;
 
+	Button *help_search;
+	Button *site_search;
+	Button *class_search;
+	EditorHelpSearch *help_search_dialog;
+
 	ItemList *script_list;
 	HSplitContainer *script_split;
 	TabContainer *tab_container;
+	EditorFileDialog *file_dialog;
 	FindReplaceDialog *find_replace_dialog;
 	GotoLineDialog *goto_line_dialog;
 	ConfirmationDialog *erase_tab_confirm;
+	ScriptCreateDialog *script_create_dialog;
 	ScriptEditorDebugger* debugger;
 	ToolButton *scripts_visible;
+
+	String current_theme;
+
+	TextureFrame *script_icon;
+	Label *script_name_label;
+
+	ToolButton *script_back;
+	ToolButton *script_forward;
+
+
+	struct ScriptHistory {
+
+		Control *control;
+		int scroll_pos;
+		int cursor_column;
+		int cursor_row;
+	};
+
+	Vector<ScriptHistory> history;
+	int history_pos;
+
+
+	EditorHelpIndex *help_index;
 
 	void _tab_changed(int p_which);
 	void _menu_option(int p_optin);
 
 	Tree *disk_changed_list;
 	ConfirmationDialog *disk_changed;
-
-	VSplitContainer *v_split;
 
 	bool restoring_layout;
 
@@ -199,14 +241,21 @@ class ScriptEditor : public VBoxContainer {
 	void _editor_pause();
 	void _editor_stop();
 
+	int edit_pass;
+
 	void _add_callback(Object *p_obj, const String& p_function, const StringArray& p_args);
 	void _res_saved_callback(const Ref<Resource>& p_res);
+
+	bool trim_trailing_whitespace_on_save;
+
+	void _trim_trailing_whitespace(TextEdit *tx);
 
 	void _goto_script_line2(int p_line);
 	void _goto_script_line(REF p_script,int p_line);
 	void _breaked(bool p_breaked,bool p_can_debug);
 	void _show_debugger(bool p_show);
 	void _update_window_menu();
+	void _script_created(Ref<Script> p_script);
 
 	void _editor_settings_changed();
 	void _autosave_scripts();
@@ -221,7 +270,22 @@ class ScriptEditor : public VBoxContainer {
 
 	void _script_split_dragged(float);
 
+
+	void _history_forward();
+	void _history_back();
+
 	bool waiting_update_names;
+
+	void _help_class_open(const String& p_class);
+	void _help_class_goto(const String& p_desc);
+	void _update_history_arrows();
+	void _go_to_tab(int p_idx);
+	void _update_history_pos(int p_new_pos);
+	void _update_script_colors();
+	void _update_modified_scripts_for_external_editor();
+
+	int file_dialog_option;
+	void _file_dialog_action(String p_file);
 
 	static ScriptEditor *script_editor;
 protected:
@@ -245,10 +309,14 @@ public:
 
 	void swap_lines(TextEdit *tx, int line1, int line2);
 
-	void save_external_data();
+	void save_all_scripts();
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
+
+	void set_scene_root_script( Ref<Script> p_script );
+
+	virtual void edited_scene_changed();
 
 	ScriptEditorDebugger *get_debugger() { return debugger; }
 
@@ -286,6 +354,7 @@ public:
 
 	virtual void get_breakpoints(List<String> *p_breakpoints);
 
+	virtual void edited_scene_changed();
 
 	ScriptEditorPlugin(EditorNode *p_node);
 	~ScriptEditorPlugin();

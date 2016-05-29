@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,6 @@
 #include "os_bb10.h"
 
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles1/rasterizer_gles1.h"
 #include "servers/visual/visual_server_raster.h"
 #include "core/os/dir_access.h"
 
@@ -195,9 +194,10 @@ void OSBB10::finalize() {
 //		memdelete(debugger_connection_console);
 //}
 
+	memdelete(sample_manager);
+
 	audio_server->finish();
 	memdelete(audio_server);
-	memdelete(sample_manager);
 
 	visual_server->finish();
 	memdelete(visual_server);
@@ -604,6 +604,9 @@ String OSBB10::get_data_dir() const {
 	return data_dir;
 };
 
+Size2 OSBB10::get_window_size() const {
+	return Vector2(default_videomode.width, default_videomode.height);
+}
 
 OSBB10::OSBB10() {
 

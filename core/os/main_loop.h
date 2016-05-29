@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class MainLoop : public Object {
-	
+
 	OBJ_TYPE( MainLoop, Object );
 	OBJ_CATEGORY("Main Loop");
 
@@ -44,16 +44,18 @@ class MainLoop : public Object {
 protected:
 	static void _bind_methods();
 
-public:	
+public:
 
 	enum {
+		NOTIFICATION_WM_MOUSE_ENTER = 3,
+		NOTIFICATION_WM_MOUSE_EXIT = 4,
 		NOTIFICATION_WM_FOCUS_IN = 5,
 		NOTIFICATION_WM_FOCUS_OUT = 6,
 		NOTIFICATION_WM_QUIT_REQUEST = 7,
 		NOTIFICATION_WM_UNFOCUS_REQUEST = 8,
 		NOTIFICATION_OS_MEMORY_WARNING = 9,
 	};
-	
+
 	virtual void input_event( const InputEvent& p_event );
 	virtual void input_text( const String& p_text );
 
@@ -61,6 +63,8 @@ public:
 	virtual bool iteration(float p_time);
 	virtual bool idle(float p_time);
 	virtual void finish();
+
+	virtual void drop_files(const Vector<String>& p_files,int p_from_screen=0);
 
 	void set_init_script(const Ref<Script>& p_init_script);
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,10 @@
 
 #if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
 
+#ifdef PTHREAD_BSD_SET_NAME
+#include <pthread_np.h>
+#endif
+
 #include "os/memory.h"
 
 Thread::ID ThreadPosix::get_ID() const {
@@ -45,8 +49,8 @@ Thread* ThreadPosix::create_thread_posix() {
 void *ThreadPosix::thread_callback(void *userdata) {
 
 	ThreadPosix *t=reinterpret_cast<ThreadPosix*>(userdata);
-	t->callback(t->user);
 	t->id=(ID)pthread_self();
+	t->callback(t->user);
 	return NULL;
 }
 
@@ -77,13 +81,42 @@ void ThreadPosix::wait_to_finish_func_posix(Thread* p_thread) {
 	tp->pthread=0;		
 }
 
+Error ThreadPosix::set_name_func_posix(const String& p_name) {
+
+	pthread_t running_thread = pthread_self();
+
+	#ifdef PTHREAD_NO_RENAME
+	return ERR_UNAVAILABLE;
+
+	#else
+
+	#ifdef PTHREAD_RENAME_SELF
+
+	// check if thread is the same as caller
+	int err = pthread_setname_np(p_name.utf8().get_data());
+	
+	#else
+
+	#ifdef PTHREAD_BSD_SET_NAME
+	pthread_set_name_np(running_thread, p_name.utf8().get_data());
+	int err = 0; // Open/FreeBSD ignore errors in this function
+	#else
+	int err = pthread_setname_np(running_thread, p_name.utf8().get_data());
+	#endif // PTHREAD_BSD_SET_NAME
+
+	#endif // PTHREAD_RENAME_SELF
+
+	return err == 0 ? OK : ERR_INVALID_PARAMETER;
+
+	#endif // PTHREAD_NO_RENAME
+};
 
 void ThreadPosix::make_default() {
 
 	create_func=create_func_posix;
 	get_thread_ID_func=get_thread_ID_func_posix;
 	wait_to_finish_func=wait_to_finish_func_posix;
-	
+	set_name_func = set_name_func_posix;
 }
 
 ThreadPosix::ThreadPosix() {

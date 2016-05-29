@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,12 @@
 #define TRANSLATION_LOADER_PO_H
 
 #include "io/resource_loader.h"
-
+#include "translation.h"
+#include "os/file_access.h"
 class TranslationLoaderPO : public ResourceFormatLoader {
 public:
 
+	static RES load_translation(FileAccess *f, Error *r_error,const String& p_path=String());
 	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String& p_type) const;

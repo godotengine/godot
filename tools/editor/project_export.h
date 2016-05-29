@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,11 +70,12 @@ private:
 
 	TabContainer *sections;
 	bool updating_tree;
+	bool pending_update_tree;
 	AcceptDialog *error;
 	ConfirmationDialog *confirm;
 
 	Button *button_reload;
-	LineEdit *filters;
+	LineEdit *filters, *filters_exclude;
 	HBoxContainer *plat_errors;
 	Label *platform_error_string;
 
@@ -85,7 +86,6 @@ private:
 
 	EditorFileDialog *pck_export;
 	EditorFileDialog *file_export;
-	CheckButton *file_export_check;
 	LineEdit *file_export_password;
 
 	Button *button_export;
@@ -108,6 +108,7 @@ private:
 	PropertyEditor *platform_options;
 
 	OptionButton *export_mode;
+	CheckButton *convert_text_scenes;
 	VBoxContainer *tree_vb;
 
 	VBoxContainer *image_vb;
@@ -139,6 +140,10 @@ private:
 	OptionButton *script_mode;
 	LineEdit *script_key;
 
+	VBoxContainer *sample_vbox;
+	OptionButton *sample_mode;
+	SpinBox *sample_max_hz;
+	CheckButton *sample_trim;
 
 
 	void _export_mode_changed(int p_idx);
@@ -149,6 +154,7 @@ private:
 	void _platform_selected();
 
 	void _filters_edited(String what);
+	void _filters_exclude_edited(String what);
 	void _update_group_tree();
 
 	void _image_filter_changed(String);
@@ -161,6 +167,8 @@ private:
 	void _quality_edited(float what);
 	void _image_export_edited(int what);
 	void _shrink_edited(float what);
+
+	void _sample_convert_edited(int what);
 
 	void _update_group_list();
 	void _select_group(const String& p_by_name);
@@ -196,6 +204,7 @@ public:
 
 	Error export_platform(const String& p_platform, const String& p_path, bool p_debug,const String& p_password,bool p_quit_after=false);
 
+	void popup_export();
 	ProjectExportDialog(EditorNode *p_editor);
 	~ProjectExportDialog();
 };

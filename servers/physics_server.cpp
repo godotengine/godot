@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,13 +39,18 @@ void PhysicsDirectBodyState::integrate_forces() {
 
 	Vector3 av = get_angular_velocity();
 
-	float damp = 1.0 - step * get_total_density();
+	float linear_damp = 1.0 - step * get_total_linear_damp();
 
-	if (damp<0) // reached zero in the given time
-		damp=0;
+	if (linear_damp<0) // reached zero in the given time
+		linear_damp=0;
 
-	lv*=damp;
-	av*=damp;
+	float angular_damp = 1.0 - step * get_total_angular_damp();
+
+	if (angular_damp<0) // reached zero in the given time
+		angular_damp=0;
+
+	lv*=linear_damp;
+	av*=angular_damp;
 
 	set_linear_velocity(lv);
 	set_angular_velocity(av);
@@ -70,7 +75,8 @@ PhysicsServer * PhysicsServer::get_singleton() {
 void PhysicsDirectBodyState::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_total_gravity"),&PhysicsDirectBodyState::get_total_gravity);
-	ObjectTypeDB::bind_method(_MD("get_total_density"),&PhysicsDirectBodyState::get_total_density);
+	ObjectTypeDB::bind_method(_MD("get_total_linear_damp"),&PhysicsDirectBodyState::get_total_linear_damp);
+	ObjectTypeDB::bind_method(_MD("get_total_angular_damp"),&PhysicsDirectBodyState::get_total_angular_damp);
 
 	ObjectTypeDB::bind_method(_MD("get_inverse_mass"),&PhysicsDirectBodyState::get_inverse_mass);
 	ObjectTypeDB::bind_method(_MD("get_inverse_inertia"),&PhysicsDirectBodyState::get_inverse_inertia);
@@ -451,6 +457,8 @@ void PhysicsServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("area_remove_shape","area","shape_idx"),&PhysicsServer::area_remove_shape);
 	ObjectTypeDB::bind_method(_MD("area_clear_shapes","area"),&PhysicsServer::area_clear_shapes);
 
+	ObjectTypeDB::bind_method(_MD("area_set_layer_mask","area","mask"),&PhysicsServer::area_set_layer_mask);
+	ObjectTypeDB::bind_method(_MD("area_set_collision_mask","area","mask"),&PhysicsServer::area_set_collision_mask);
 
 	ObjectTypeDB::bind_method(_MD("area_set_param","area","param","value"),&PhysicsServer::area_set_param);
 	ObjectTypeDB::bind_method(_MD("area_set_transform","area","transform"),&PhysicsServer::area_set_transform);
@@ -461,7 +469,7 @@ void PhysicsServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("area_attach_object_instance_ID","area","id"),&PhysicsServer::area_attach_object_instance_ID);
 	ObjectTypeDB::bind_method(_MD("area_get_object_instance_ID","area"),&PhysicsServer::area_get_object_instance_ID);
 
-	ObjectTypeDB::bind_method(_MD("area_set_monitor_callback","receiver","method"),&PhysicsServer::area_set_monitor_callback);
+	ObjectTypeDB::bind_method(_MD("area_set_monitor_callback","area","receiver","method"),&PhysicsServer::area_set_monitor_callback);
 
 	ObjectTypeDB::bind_method(_MD("area_set_ray_pickable","area","enable"),&PhysicsServer::area_set_ray_pickable);
 	ObjectTypeDB::bind_method(_MD("area_is_ray_pickable","area"),&PhysicsServer::area_is_ray_pickable);
@@ -473,6 +481,12 @@ void PhysicsServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("body_set_mode","body","mode"),&PhysicsServer::body_set_mode);
 	ObjectTypeDB::bind_method(_MD("body_get_mode","body"),&PhysicsServer::body_get_mode);
+
+	ObjectTypeDB::bind_method(_MD("body_set_layer_mask","body","mask"),&PhysicsServer::body_set_layer_mask);
+	ObjectTypeDB::bind_method(_MD("body_get_layer_mask","body"),&PhysicsServer::body_get_layer_mask);
+
+	ObjectTypeDB::bind_method(_MD("body_set_collision_mask","body","mask"),&PhysicsServer::body_set_collision_mask);
+	ObjectTypeDB::bind_method(_MD("body_get_collision_mask","body"),&PhysicsServer::body_get_collision_mask);
 
 	ObjectTypeDB::bind_method(_MD("body_add_shape","body","shape","transform"),&PhysicsServer::body_add_shape,DEFVAL(Transform()));
 	ObjectTypeDB::bind_method(_MD("body_set_shape","body","shape_idx","shape"),&PhysicsServer::body_set_shape);
@@ -665,7 +679,7 @@ void PhysicsServer::_bind_methods() {
 	//ObjectTypeDB::bind_method(_MD("flush_queries"),&PhysicsServer::flush_queries);
 
 
-	ObjectTypeDB::bind_method(_MD("get_process_info"),&PhysicsServer::get_process_info);
+	ObjectTypeDB::bind_method(_MD("get_process_info","process_info"),&PhysicsServer::get_process_info);
 
 	BIND_CONSTANT( SHAPE_PLANE );
 	BIND_CONSTANT( SHAPE_RAY );
@@ -683,12 +697,15 @@ void PhysicsServer::_bind_methods() {
 	BIND_CONSTANT( AREA_PARAM_GRAVITY_IS_POINT );
 	BIND_CONSTANT( AREA_PARAM_GRAVITY_DISTANCE_SCALE );
 	BIND_CONSTANT( AREA_PARAM_GRAVITY_POINT_ATTENUATION );
-	BIND_CONSTANT( AREA_PARAM_DENSITY );
+	BIND_CONSTANT( AREA_PARAM_LINEAR_DAMP );
+	BIND_CONSTANT( AREA_PARAM_ANGULAR_DAMP );
 	BIND_CONSTANT( AREA_PARAM_PRIORITY );
 
-	BIND_CONSTANT( AREA_SPACE_OVERRIDE_COMBINE );
 	BIND_CONSTANT( AREA_SPACE_OVERRIDE_DISABLED );
+	BIND_CONSTANT( AREA_SPACE_OVERRIDE_COMBINE );
+	BIND_CONSTANT( AREA_SPACE_OVERRIDE_COMBINE_REPLACE );
 	BIND_CONSTANT( AREA_SPACE_OVERRIDE_REPLACE );
+	BIND_CONSTANT( AREA_SPACE_OVERRIDE_REPLACE_COMBINE );
 
 	BIND_CONSTANT( BODY_MODE_STATIC );
 	BIND_CONSTANT( BODY_MODE_KINEMATIC );
@@ -698,6 +715,9 @@ void PhysicsServer::_bind_methods() {
 	BIND_CONSTANT( BODY_PARAM_BOUNCE );
 	BIND_CONSTANT( BODY_PARAM_FRICTION );
 	BIND_CONSTANT( BODY_PARAM_MASS );
+	BIND_CONSTANT( BODY_PARAM_GRAVITY_SCALE );
+	BIND_CONSTANT( BODY_PARAM_ANGULAR_DAMP );
+	BIND_CONSTANT( BODY_PARAM_LINEAR_DAMP );
 	BIND_CONSTANT( BODY_PARAM_MAX );
 
 	BIND_CONSTANT( BODY_STATE_TRANSFORM );

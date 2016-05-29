@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@ void CollisionPolygonEditor::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 
 			button_create->set_icon( get_icon("Edit","EditorIcons"));
-			button_edit->set_icon( get_icon("MovePoint","EditorIcons"));			
+			button_edit->set_icon( get_icon("MovePoint","EditorIcons"));
 			button_edit->set_pressed(true);
 			get_tree()->connect("node_removed",this,"_node_removed");
 
@@ -92,7 +92,7 @@ void CollisionPolygonEditor::_menu_option(int p_option) {
 
 void CollisionPolygonEditor::_wip_close() {
 
-	undo_redo->create_action("Create Poly3D");
+	undo_redo->create_action(TTR("Create Poly3D"));
 	undo_redo->add_undo_method(node,"set_polygon",node->get_polygon());
 	undo_redo->add_do_method(node,"set_polygon",wip);
 	undo_redo->add_do_method(this,"_polygon_draw");
@@ -113,6 +113,7 @@ bool CollisionPolygonEditor::forward_spatial_input_event(Camera* p_camera,const 
 		return false;
 
 	Transform gt = node->get_global_transform();
+	Transform gi = gt.affine_inverse();
 	float depth = node->get_depth()*0.5;
 	Vector3 n = gt.basis.get_axis(2).normalized();
 	Plane p(gt.origin+n*depth,n);
@@ -134,6 +135,8 @@ bool CollisionPolygonEditor::forward_spatial_input_event(Camera* p_camera,const 
 
 			if (!p.intersects_ray(ray_from,ray_dir,&spoint))
 				break;
+
+			spoint = gi.xform(spoint);
 
 			Vector2 cpoint(spoint.x,spoint.y);
 
@@ -197,7 +200,7 @@ bool CollisionPolygonEditor::forward_spatial_input_event(Camera* p_camera,const 
 
 								if (poly.size() < 3) {
 
-									undo_redo->create_action("Edit Poly");
+									undo_redo->create_action(TTR("Edit Poly"));
 									undo_redo->add_undo_method(node,"set_polygon",poly);
 									poly.push_back(cpoint);
 									undo_redo->add_do_method(node,"set_polygon",poly);
@@ -279,7 +282,7 @@ bool CollisionPolygonEditor::forward_spatial_input_event(Camera* p_camera,const 
 
 								ERR_FAIL_INDEX_V(edited_point,poly.size(),false);
 								poly[edited_point]=edited_point_pos;
-								undo_redo->create_action("Edit Poly");
+								undo_redo->create_action(TTR("Edit Poly"));
 								undo_redo->add_do_method(node,"set_polygon",poly);
 								undo_redo->add_undo_method(node,"set_polygon",pre_move_edit);
 								undo_redo->add_do_method(this,"_polygon_draw");
@@ -313,7 +316,7 @@ bool CollisionPolygonEditor::forward_spatial_input_event(Camera* p_camera,const 
 						if (closest_idx>=0) {
 
 
-							undo_redo->create_action("Edit Poly (Remove Point)");
+							undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
 							undo_redo->add_undo_method(node,"set_polygon",poly);
 							poly.remove(closest_idx);
 							undo_redo->add_do_method(node,"set_polygon",poly);
@@ -348,6 +351,8 @@ bool CollisionPolygonEditor::forward_spatial_input_event(Camera* p_camera,const 
 
 				if (!p.intersects_ray(ray_from,ray_dir,&spoint))
 					break;
+
+				spoint = gi.xform(spoint);
 
 				Vector2 cpoint(spoint.x,spoint.y);
 
@@ -555,7 +560,7 @@ CollisionPolygonEditor::CollisionPolygonEditor(EditorNode *p_editor) {
 	add_child(options);
 	options->set_area_as_parent_rect();
 	options->set_text("Polygon");
-	//options->get_popup()->add_item("Parse BBCODE",PARSE_BBCODE);
+	//options->get_popup()->add_item("Parse BBCode",PARSE_BBCODE);
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 #endif
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -221,6 +221,24 @@ void Array::invert(){
 	_p->array.invert();
 }
 
+
+void Array::push_front(const Variant& p_value) {
+
+	_p->array.insert(0,p_value);
+}
+
+void Array::pop_back(){
+
+	if (!_p->array.empty())
+		_p->array.resize( _p->array.size() -1 );
+
+}
+void Array::pop_front(){
+
+	if (!_p->array.empty())
+		_p->array.remove(0);
+
+}
 
 
 Array::Array(const Array& p_from) {

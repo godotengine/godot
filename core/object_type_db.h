@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,9 +42,9 @@ struct ParamHint {
 	PropertyHint hint;
 	String hint_text;
 	Variant default_val;
-	
+
 	ParamHint(const String& p_name="", PropertyHint p_hint=PROPERTY_HINT_NONE, const String& p_hint_text="",Variant p_default_val=Variant()) {
-	
+
 		name=p_name;
 		hint=p_hint;
 		hint_text=p_hint_text;
@@ -73,9 +73,9 @@ struct MethodDefinition {
 
 	StringName name;
 	Vector<StringName> args;
-	MethodDefinition() {}	
+	MethodDefinition() {}
 	MethodDefinition(const char *p_name) { name=p_name; }
-	MethodDefinition(const StringName& p_name) { name=p_name; }	
+	MethodDefinition(const StringName& p_name) { name=p_name; }
 };
 
 
@@ -109,7 +109,7 @@ static _FORCE_INLINE_ const char* _MD(const char* m_name, ...) { return m_name; 
 #endif
 
 class ObjectTypeDB {
-	
+
 	struct PropertySetGet {
 
 		int index;
@@ -117,10 +117,11 @@ class ObjectTypeDB {
 		StringName getter;
 		MethodBind *_setptr;
 		MethodBind *_getptr;
+		Variant::Type type;
 	};
 
 	struct TypeInfo {
-		
+
 		TypeInfo *inherits_ptr;
 		HashMap<StringName,MethodBind*,StringNameHasher> method_map;
 		HashMap<StringName,int,StringNameHasher> constant_map;
@@ -142,12 +143,12 @@ class ObjectTypeDB {
 		TypeInfo();
 		~TypeInfo();
 	};
-	
+
 	template<class T>
 	static Object *creator() {
 		return memnew( T );
 	}
-	
+
 	static Mutex *lock;
 	static HashMap<StringName,TypeInfo,StringNameHasher> types;
 	static HashMap<StringName,StringName,StringNameHasher> resource_base_extensions;
@@ -162,8 +163,8 @@ class ObjectTypeDB {
 
 
 	static void _add_type2(const StringName& p_type, const StringName& p_inherits);
-public:	
-	
+public:
+
 	// DO NOT USE THIS!!!!!! NEEDS TO BE PUBLIC BUT DO NOT USE NO MATTER WHAT!!!
 	template<class T>
 	static void _add_type() {
@@ -194,7 +195,7 @@ public:
 
 	template<class T>
 	static void register_type() {
-		
+
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_type();
 		TypeInfo *t=types.getptr(T::get_type_static());
@@ -205,7 +206,7 @@ public:
 
 	template<class T>
 	static void register_virtual_type() {
-		
+
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_type();
 		//nothing
@@ -246,9 +247,9 @@ public:
 		ParamDef d4=ParamDef(),
 		ParamDef d5=ParamDef()
 		) {
-		
+
 		return bind_methodf(METHOD_FLAGS_DEFAULT,p_method_name, p_method, d1,d2,d3,d4,d5);
-	}	
+	}
 
 
 
@@ -455,9 +456,10 @@ public:
 	static void get_signal_list(StringName p_type,List<MethodInfo> *p_signals,bool p_no_inheritance=false);
 
 	static void add_property(StringName p_type,const PropertyInfo& p_pinfo, const StringName& p_setter, const StringName& p_getter, int p_index=-1);
-	static void get_property_list(StringName p_type,List<PropertyInfo> *p_list,bool p_no_inheritance=false);
-	static bool set_property(Object* p_object,const StringName& p_property, const Variant& p_value);
+	static void get_property_list(StringName p_type, List<PropertyInfo> *p_list, bool p_no_inheritance=false, const Object *p_validator=NULL);
+	static bool set_property(Object* p_object, const StringName& p_property, const Variant& p_value, bool *r_valid=NULL);
 	static bool get_property(Object* p_object,const StringName& p_property, Variant& r_value);
+	static Variant::Type get_property_type(const StringName& p_type, const StringName& p_property,bool *r_is_valid=NULL);
 
 
 
@@ -470,7 +472,7 @@ public:
 
 	static void add_virtual_method(const StringName& p_type,const MethodInfo& p_method,bool p_virtual=true );
 	static void get_virtual_methods(const StringName& p_type,List<MethodInfo> * p_methods,bool p_no_inheritance=false );
-	
+
 	static void bind_integer_constant(const StringName& p_type, const StringName &p_name, int p_constant);
 	static void get_integer_constant_list(const StringName& p_type, List<String> *p_constants, bool p_no_inheritance=false);
 	static int get_integer_constant(const StringName& p_type, const StringName &p_name, bool *p_success=NULL);

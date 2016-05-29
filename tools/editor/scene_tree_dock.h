@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/popup_menu.h"
 #include "scene_tree_editor.h"
 #include "create_dialog.h"
 #include "editor_data.h"
@@ -62,6 +63,8 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MOVE_DOWN,
 		TOOL_DUPLICATE,
 		TOOL_REPARENT,
+		TOOL_NEW_SCENE_FROM,
+		TOOL_MERGE_FROM_SCENE,
 		TOOL_MULTI_EDIT,
 		TOOL_ERASE,
 		TOOL_BUTTON_MAX
@@ -72,7 +75,9 @@ class SceneTreeDock : public VBoxContainer {
 	int current_option;
 	CreateDialog *create_dialog;
 
-	ToolButton *tool_buttons[TOOL_BUTTON_MAX];
+	ToolButton *button_add;
+	ToolButton *button_instance;
+
 	SceneTreeEditor *scene_tree;
 
 	HBoxContainer *tool_hbc;
@@ -90,6 +95,12 @@ class SceneTreeDock : public VBoxContainer {
 	ReparentDialog *reparent_dialog;
 	EditorFileDialog *file;
 	EditorSubScene *import_subscene_dialog;
+	EditorFileDialog *new_scene_from_dialog;
+
+	LineEdit *filter;
+	TextureFrame *filter_icon;
+
+	PopupMenu * menu;
 
 	bool first_enter;
 
@@ -99,7 +110,9 @@ class SceneTreeDock : public VBoxContainer {
 	EditorNode *editor;
 
 	Node *_duplicate(Node *p_node, Map<Node*,Node*> &duplimap);
-	void _node_reparent(NodePath p_path,bool p_node_only);
+	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
+	void _do_reparent(Node* p_new_parent, int p_position_in_parent, Vector<Node*> p_nodes, bool p_keep_global_xform);
+
 	void _set_owners(Node *p_owner, const Array& p_nodes);
 	void _load_request(const String& p_path);
 	void _script_open_request(const Ref<Script>& p_script);
@@ -111,7 +124,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _script_created(Ref<Script> p_script);
 
 	void _delete_confirm();
-	void _update_tool_buttons();
+
 
 	void _node_prerenamed(Node* p_node, const String& p_new_name);
 
@@ -119,10 +132,21 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _import_subscene();
 
+	void _new_scene_from(String p_file);
+
 	bool _validate_no_foreign();
 	void _selection_changed();
 
 	void _fill_path_renames(Vector<StringName> base_path,Vector<StringName> new_base_path,Node * p_node, List<Pair<NodePath,NodePath> > *p_renames);
+
+	void _normalize_drop(Node*& to_node, int &to_pos,int p_type);
+
+	void _nodes_dragged(Array p_nodes,NodePath p_to,int p_type);
+	void _files_dropped(Vector<String> p_files,NodePath p_to,int p_type);
+
+	void _tree_rmb(const Vector2& p_menu_pos);
+
+	void _filter_changed(const String& p_filter);
 
 protected:
 
@@ -130,9 +154,13 @@ protected:
 	static void _bind_methods();
 public:
 
+	String get_filter();
+	void set_filter(const String& p_filter);
+
 	void import_subscene();
 	void set_edited_scene(Node* p_scene);
-	Node* instance(const String& p_path);
+	void instance(const String& p_path);
+	void instance_scenes(const Vector<String>& p_files,Node* parent,int p_pos);
 	void set_selected(Node *p_node, bool p_emit_selected=false);
 	void fill_path_renames(Node* p_node, Node *p_new_parent, List<Pair<NodePath,NodePath> > *p_renames);
 	void perform_node_renames(Node* p_base,List<Pair<NodePath,NodePath> > *p_renames, Map<Ref<Animation>, Set<int> > *r_rem_anims=NULL);

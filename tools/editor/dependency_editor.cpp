@@ -27,7 +27,7 @@ void DependencyEditor::_load_pressed(Object* p_item,int p_cell,int p_button){
 	String fname = ti->get_text(0);
 	replacing = ti->get_text(1);
 
-	search->set_title("Search Replacement For: "+replacing.get_file());
+	search->set_title(TTR("Search Replacement For:")+" "+replacing.get_file());
 
 	search->clear_filters();
 	List<String> ext;
@@ -209,15 +209,15 @@ void DependencyEditor::edit(const String& p_path) {
 
 
 	editing=p_path;
-	set_title("Dependencies For: "+p_path.get_file());
+	set_title(TTR("Dependencies For:")+" "+p_path.get_file());
 
 	_update_list();
 	popup_centered_ratio();
 
 	if (EditorNode::get_singleton()->is_scene_open(p_path)) {
-		EditorNode::get_singleton()->show_warning("Scene '"+p_path.get_file()+"' is currently being edited.\nChanges will not take effect unless reloaded.");
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Scene '%s' is currently being edited.\nChanges will not take effect unless reloaded."),p_path.get_file()));
 	} else if (ResourceCache::has(p_path)) {
-		EditorNode::get_singleton()->show_warning("Resource '"+p_path.get_file()+"' is in use.\nChanges will take effect when reloaded.");
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Resource '%s' is in use.\nChanges will take effect when reloaded."),p_path.get_file()));
 	}
 }
 
@@ -233,7 +233,7 @@ void DependencyEditor::_bind_methods() {
 DependencyEditor::DependencyEditor() {
 
 	VBoxContainer *vb = memnew( VBoxContainer );
-	vb->set_name("Dependencies");
+	vb->set_name(TTR("Dependencies"));
 	add_child(vb);
 	set_child_rect(vb);
 
@@ -246,10 +246,10 @@ DependencyEditor::DependencyEditor() {
 	tree->connect("button_pressed",this,"_load_pressed");
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
-	Label *label = memnew( Label("Dependencies:"));
+	Label *label = memnew( Label(TTR("Dependencies:")));
 	hbc->add_child(label);
 	hbc->add_spacer();
-	fixdeps = memnew( Button("Fix Broken"));
+	fixdeps = memnew( Button(TTR("Fix Broken")));
 	hbc->add_child(fixdeps);
 	fixdeps->connect("pressed",this,"_fix_all");
 
@@ -261,11 +261,11 @@ DependencyEditor::DependencyEditor() {
 	mc->add_child(tree);
 	vb->add_child(mc);
 
-	set_title("Dependency Editor");
+	set_title(TTR("Dependency Editor"));
 	search = memnew( EditorFileDialog );
 	search->connect("file_selected",this,"_searched");
 	search->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-	search->set_title("Search Replacement Resource:");
+	search->set_title(TTR("Search Replacement Resource:"));
 	add_child(search);
 
 }
@@ -319,7 +319,7 @@ void DependencyEditorOwners::show(const String& p_path) {
 	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem());
 	popup_centered_ratio();
 
-	set_title("Owners Of: "+p_path.get_file());
+	set_title(TTR("Owners Of:")+" "+p_path.get_file());
 
 }
 
@@ -405,7 +405,7 @@ void DependencyRemoveDialog::show(const Vector<String> &to_erase) {
 		popup_centered_minsize(Size2(500,220));
 	} else {
 		owners->hide();
-		text->set_text("Remove selected files from the project? (no undo)");
+		text->set_text(TTR("Remove selected files from the project? (no undo)"));
 		popup_centered_minsize(Size2(400,100));
 	}
 
@@ -437,7 +437,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	owners->set_hide_root(true);
 	vb->add_child(owners);
 	owners->set_v_size_flags(SIZE_EXPAND_FILL);
-	get_ok()->set_text("Remove");
+	get_ok()->set_text(TTR("Remove"));
 }
 
 
@@ -448,7 +448,7 @@ void DependencyErrorDialog::show(const String& p_for_file,const Vector<String> &
 
 
 	for_file=p_for_file;
-	set_title("Error loading: "+p_for_file.get_file());
+	set_title(TTR("Error loading:")+" "+p_for_file.get_file());
 	files->clear();
 
 	TreeItem *root = files->create_item(NULL);
@@ -496,17 +496,198 @@ DependencyErrorDialog::DependencyErrorDialog() {
 
 	files = memnew( Tree );
 	files->set_hide_root(true);
-	vb->add_margin_child("Scene failed to load due to missing dependencies:",files,true);
+	vb->add_margin_child(TTR("Scene failed to load due to missing dependencies:"),files,true);
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
-	get_ok()->set_text("Open Anyway");
+	get_ok()->set_text(TTR("Open Anyway"));
 
 	text = memnew( Label );
 	vb->add_child(text);
-	text->set_text("Which action should be taken?");
+	text->set_text(TTR("Which action should be taken?"));
 
 
-	fdep=add_button("Fix Dependencies",true,"fixdeps");
+	fdep=add_button(TTR("Fix Dependencies"),true,"fixdeps");
 
-	set_title("Errors loading!");
+	set_title(TTR("Errors loading!"));
+
+}
+
+//////////////////////////////////////////////////////////////////////
+
+
+
+void OrphanResourcesDialog::ok_pressed() {
+
+	paths.clear();
+
+	_find_to_delete(files->get_root(),paths);
+	if (paths.empty())
+		return;
+
+	delete_confirm->set_text(vformat(TTR("Permanently delete %d item(s)? (No undo!)"),paths.size()));
+	delete_confirm->popup_centered_minsize();
+}
+
+bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd,HashMap<String,int>& refs,TreeItem* p_parent){
+
+
+	if (!efsd)
+		return false;
+
+	bool has_childs=false;
+
+	for(int i=0;i<efsd->get_subdir_count();i++) {
+
+		TreeItem *dir_item=NULL;
+		if (p_parent) {
+			dir_item = files->create_item(p_parent);
+			dir_item->set_text(0,efsd->get_subdir(i)->get_name());
+			dir_item->set_icon(0,get_icon("folder","FileDialog"));
+
+		}
+		bool children = _fill_owners(efsd->get_subdir(i),refs,dir_item);
+
+		if (p_parent) {
+			if (!children) {
+				memdelete(dir_item);
+			} else {
+				has_childs=true;
+			}
+		}
+
+	}
+
+
+	for(int i=0;i<efsd->get_file_count();i++) {
+
+		if (!p_parent) {
+			Vector<String> deps = efsd->get_file_deps(i);
+			//print_line(":::"+efsd->get_file_path(i));
+			for(int j=0;j<deps.size();j++) {
+
+				if (!refs.has(deps[j])) {
+					refs[deps[j]]=1;
+				}
+			}
+		} else {
+
+			String path = efsd->get_file_path(i);
+			if (!refs.has(path)) {
+				TreeItem *ti=files->create_item(p_parent);
+				ti->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
+				ti->set_text(0,efsd->get_file(i));
+				ti->set_editable(0,true);
+
+				String type=efsd->get_file_type(i);
+
+				Ref<Texture> icon;
+				if (has_icon(type,"EditorIcons")) {
+					icon=get_icon(type,"EditorIcons");
+				} else {
+					icon=get_icon("Object","EditorIcons");
+				}
+				ti->set_icon(0,icon);
+				int ds = efsd->get_file_deps(i).size();
+				ti->set_text(1,itos(ds));
+				if (ds) {
+					ti->add_button(1,get_icon("Visible","EditorIcons"));
+				}
+				ti->set_metadata(0,path);
+				has_childs=true;
+			}
+		}
+
+	}
+
+	return has_childs;
+}
+
+
+void OrphanResourcesDialog::refresh() {
+	HashMap<String,int> refs;
+	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem(),refs,NULL);
+	files->clear();
+	TreeItem *root=files->create_item();
+	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem(),refs,root);
+}
+
+
+void OrphanResourcesDialog::show(){
+
+	refresh();
+	popup_centered_ratio();
+}
+
+
+void OrphanResourcesDialog::_find_to_delete(TreeItem* p_item,List<String>& paths) {
+
+	while(p_item) {
+
+		if (p_item->get_cell_mode(0)==TreeItem::CELL_MODE_CHECK && p_item->is_checked(0)) {
+			paths.push_back(p_item->get_metadata(0));
+		}
+
+		if (p_item->get_children()) {
+			_find_to_delete(p_item->get_children(),paths);
+		}
+
+		p_item=p_item->get_next();
+	}
+
+
+}
+
+void OrphanResourcesDialog::_delete_confirm() {
+
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	for (List<String>::Element *E=paths.front();E;E=E->next()) {
+
+		da->remove(E->get());
+		EditorFileSystem::get_singleton()->update_file(E->get());
+	}
+	memdelete(da);
+	refresh();
+}
+
+void OrphanResourcesDialog::_button_pressed(Object *p_item,int p_column, int p_id) {
+
+	TreeItem *ti=p_item->cast_to<TreeItem>();
+
+	String path = ti->get_metadata(0);
+	dep_edit->edit(path);
+
+}
+
+void OrphanResourcesDialog::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("_delete_confirm"),&OrphanResourcesDialog::_delete_confirm);
+	ObjectTypeDB::bind_method(_MD("_button_pressed"),&OrphanResourcesDialog::_button_pressed);
+
+}
+
+OrphanResourcesDialog::OrphanResourcesDialog(){
+
+	VBoxContainer *vbc = memnew( VBoxContainer );
+	add_child(vbc);
+	set_child_rect(vbc);
+	files = memnew( Tree );
+	files->set_columns(2);
+	files->set_column_titles_visible(true);
+	files->set_column_min_width(1,100);
+	files->set_column_expand(0,true);
+	files->set_column_expand(1,false);
+	files->set_column_title(0,"Resource");
+	files->set_column_title(1,TTR("Owns"));
+	files->set_hide_root(true);
+	vbc->add_margin_child(TTR("Resources Without Explicit Ownership:"),files,true);
+	set_title(TTR("Orphan Resource Explorer"));
+	delete_confirm = memnew( ConfirmationDialog );
+	delete_confirm->set_text(TTR("Delete selected files?"));
+	get_ok()->set_text(TTR("Delete"));
+	add_child(delete_confirm);
+	dep_edit = memnew( DependencyEditor );
+	add_child(dep_edit);
+	files->connect("button_pressed",this,"_button_pressed");
+	delete_confirm->connect("confirmed",this,"_delete_confirm");
+	set_hide_on_ok(false);
 
 }

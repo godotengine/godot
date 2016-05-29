@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,34 @@
 
 #include "servers/physics_server.h"
 
+Vector<Vector3> PlaneShape::_gen_debug_mesh_lines() {
 
+	Plane p = get_plane();
+	Vector<Vector3> points;
+
+	Vector3 n1 = p.get_any_perpendicular_normal();
+	Vector3 n2 = p.normal.cross(n1).normalized();
+
+	Vector3 pface[4]={
+		p.normal*p.d+n1*10.0+n2*10.0,
+		p.normal*p.d+n1*10.0+n2*-10.0,
+		p.normal*p.d+n1*-10.0+n2*-10.0,
+		p.normal*p.d+n1*-10.0+n2*10.0,
+	};
+
+	points.push_back(pface[0]);
+	points.push_back(pface[1]);
+	points.push_back(pface[1]);
+	points.push_back(pface[2]);
+	points.push_back(pface[2]);
+	points.push_back(pface[3]);
+	points.push_back(pface[3]);
+	points.push_back(pface[0]);
+	points.push_back(p.normal*p.d);
+	points.push_back(p.normal*p.d+p.normal*3);
+
+	return points;
+}
 
 void PlaneShape::_update_shape() {
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -126,6 +126,7 @@ private:
 	bool block_transform_notify;
 	bool behind;
 	bool use_parent_material;
+	bool notify_local_transform;
 
 	Ref<CanvasItemMaterial> material;
 
@@ -155,7 +156,7 @@ private:
 
 protected:
 
-	_FORCE_INLINE_ void _notify_transform() { if (!is_inside_tree()) return; _notify_transform(this); if (!block_transform_notify) notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED); }
+	_FORCE_INLINE_ void _notify_transform() { if (!is_inside_tree()) return; _notify_transform(this); if (!block_transform_notify && notify_local_transform) notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED); }
 
 	void item_rect_changed();
 
@@ -189,13 +190,14 @@ public:
 	bool is_hidden() const;
 	void show();
 	void hide();
+	void set_hidden(bool p_hidden);
 
 	void update();
 
 	void set_blend_mode(BlendMode p_blend_mode);
 	BlendMode get_blend_mode() const;
 
-	void set_light_mask(int p_light_mask);
+	virtual void set_light_mask(int p_light_mask);
 	int get_light_mask() const;
 
 	void set_opacity(float p_opacity);
@@ -209,7 +211,7 @@ public:
 	void draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width=1.0);
 	void draw_rect(const Rect2& p_rect, const Color& p_color);
 	void draw_circle(const Point2& p_pos, float p_radius, const Color& p_color);
-	void draw_texture(const Ref<Texture>& p_texture,const Point2& p_pos);
+	void draw_texture(const Ref<Texture>& p_texture, const Point2& p_pos, const Color &p_modulate=Color(1,1,1,1));
 	void draw_texture_rect(const Ref<Texture>& p_texture, const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1), bool p_transpose=false);
 	void draw_texture_rect_region(const Ref<Texture>& p_texture,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1), bool p_transpose=false);
 	void draw_style_box(const Ref<StyleBox>& p_style_box,const Rect2& p_rect);
@@ -262,6 +264,11 @@ public:
 
 	Vector2 get_global_mouse_pos() const;
 	Vector2 get_local_mouse_pos() const;
+
+	void set_notify_local_transform(bool p_enable);
+	bool is_local_transform_notification_enabled() const;
+
+	int get_canvas_layer() const;
 
 	CanvasItem();
 	~CanvasItem();

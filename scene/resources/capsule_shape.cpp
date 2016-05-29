@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,46 @@
 #include "servers/physics_server.h"
 
 
+Vector<Vector3> CapsuleShape::_gen_debug_mesh_lines() {
+
+
+	float radius = get_radius();
+	float height = get_height();
+
+
+	Vector<Vector3> points;
+
+	Vector3 d(0,0,height*0.5);
+	for(int i=0;i<360;i++) {
+
+		float ra=Math::deg2rad(i);
+		float rb=Math::deg2rad(i+1);
+		Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*radius;
+		Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*radius;
+
+		points.push_back(Vector3(a.x,a.y,0)+d);
+		points.push_back(Vector3(b.x,b.y,0)+d);
+
+		points.push_back(Vector3(a.x,a.y,0)-d);
+		points.push_back(Vector3(b.x,b.y,0)-d);
+
+		if (i%90==0) {
+
+			points.push_back(Vector3(a.x,a.y,0)+d);
+			points.push_back(Vector3(a.x,a.y,0)-d);
+		}
+
+		Vector3 dud = i<180?d:-d;
+
+		points.push_back(Vector3(0,a.y,a.x)+dud);
+		points.push_back(Vector3(0,b.y,b.x)+dud);
+		points.push_back(Vector3(a.y,0,a.x)+dud);
+		points.push_back(Vector3(b.y,0,b.x)+dud);
+
+	}
+
+	return points;
+}
 
 void CapsuleShape::_update_shape() {
 
@@ -64,7 +104,6 @@ float CapsuleShape::get_height() const {
 
 	return height;
 }
-
 
 void CapsuleShape::_bind_methods() {
 

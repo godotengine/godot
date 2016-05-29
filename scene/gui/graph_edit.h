@@ -3,6 +3,9 @@
 
 #include "scene/gui/graph_node.h"
 #include "scene/gui/scroll_bar.h"
+#include "scene/gui/slider.h"
+#include "scene/gui/tool_button.h"
+#include "texture_frame.h"
 
 class GraphEdit;
 
@@ -10,7 +13,7 @@ class GraphEditFilter : public Control {
 
 	OBJ_TYPE(GraphEditFilter,Control);
 
-friend class GraphEdit;
+	friend class GraphEdit;
 	GraphEdit *ge;
 	virtual bool has_point(const Point2& p_point) const;
 
@@ -34,6 +37,15 @@ public:
 	};
 private:
 
+
+	ToolButton *zoom_minus;
+	ToolButton *zoom_reset;
+	ToolButton *zoom_plus;
+
+	void _zoom_minus();
+	void _zoom_reset();
+	void _zoom_plus();
+
 	HScrollBar* h_scroll;
 	VScrollBar* v_scroll;
 
@@ -49,7 +61,18 @@ private:
 	String connecting_target_to;
 	int connecting_target_index;
 
+	bool dragging;
+	bool just_selected;
+	Vector2 drag_accum;
 
+	float zoom;
+
+	bool box_selecting;
+	bool box_selection_mode_aditive;
+	Point2 box_selecting_from;
+	Point2 box_selecting_to;
+	Rect2 box_selecting_rect;
+	List<GraphNode*> previus_selected;
 
 	bool right_disconnects;
 	bool updating;
@@ -71,7 +94,7 @@ private:
 
 	Array _get_connection_list() const;
 
-friend class GraphEditFilter;
+	friend class GraphEditFilter;
 	bool _filter_input(const Point2& p_point);
 protected:
 
@@ -79,7 +102,7 @@ protected:
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	void _notification(int p_what);
-
+	virtual bool clips_input() const;
 public:
 
 	Error connect_node(const StringName& p_from, int p_from_port,const StringName& p_to,int p_to_port);
@@ -87,11 +110,16 @@ public:
 	void disconnect_node(const StringName& p_from, int p_from_port,const StringName& p_to,int p_to_port);
 	void clear_connections();
 
+	void set_zoom(float p_zoom);
+	float get_zoom() const;
+
 	GraphEditFilter *get_top_layer() const { return top_layer; }
 	void get_connection_list(List<Connection> *r_connections) const;
 
 	void set_right_disconnects(bool p_enable);
 	bool is_right_disconnects_enabled() const;
+
+	Vector2 get_scroll_ofs() const;
 
 
 	GraphEdit();

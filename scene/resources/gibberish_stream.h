@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 #ifndef GIBBERISH_STREAM_H
 #define GIBBERISH_STREAM_H
 
-
+#if 0
 #include "scene/resources/audio_stream.h"
 #include "scene/resources/sample_library.h"
 class AudioStreamGibberish : public AudioStream {
@@ -108,5 +108,7 @@ public:
 
 	AudioStreamGibberish();
 };
+
+#endif
 
 #endif // GIBBERISH_STREAM_H

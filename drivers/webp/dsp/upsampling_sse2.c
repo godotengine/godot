@@ -1,8 +1,10 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// This code is licensed under the same terms as WebM:
-//  Software License Agreement:  http://www.webmproject.org/license/software/
-//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
+// Use of this source code is governed by a BSD-style license
+// that can be found in the COPYING file in the root of the source
+// tree. An additional intellectual property rights grant can be found
+// in the file PATENTS. All contributing project authors may
+// be found in the AUTHORS file in the root of the source tree.
 // -----------------------------------------------------------------------------
 //
 // SSE2 version of YUV to RGB upsampling functions.
@@ -17,10 +19,6 @@
 #include <emmintrin.h>
 #include <string.h>
 #include "./yuv.h"
-
-#if defined(__cplusplus) || defined(c_plusplus)
-extern "C" {
-#endif
 
 #ifdef FANCY_UPSAMPLING
 
@@ -49,23 +47,23 @@ extern "C" {
   (out) = _mm_sub_epi8(tmp0, tmp4);    /* (k + in + 1) / 2 - lsb_correction */ \
 } while (0)
 
-// pack and store two alterning pixel rows
+// pack and store two alternating pixel rows
 #define PACK_AND_STORE(a, b, da, db, out) do {                                 \
-  const __m128i ta = _mm_avg_epu8(a, da);  /* (9a + 3b + 3c +  d + 8) / 16 */  \
-  const __m128i tb = _mm_avg_epu8(b, db);  /* (3a + 9b +  c + 3d + 8) / 16 */  \
-  const __m128i t1 = _mm_unpacklo_epi8(ta, tb);                                \
-  const __m128i t2 = _mm_unpackhi_epi8(ta, tb);                                \
-  _mm_store_si128(((__m128i*)(out)) + 0, t1);                                  \
-  _mm_store_si128(((__m128i*)(out)) + 1, t2);                                  \
+  const __m128i t_a = _mm_avg_epu8(a, da);  /* (9a + 3b + 3c +  d + 8) / 16 */ \
+  const __m128i t_b = _mm_avg_epu8(b, db);  /* (3a + 9b +  c + 3d + 8) / 16 */ \
+  const __m128i t_1 = _mm_unpacklo_epi8(t_a, t_b);                             \
+  const __m128i t_2 = _mm_unpackhi_epi8(t_a, t_b);                             \
+  _mm_store_si128(((__m128i*)(out)) + 0, t_1);                                 \
+  _mm_store_si128(((__m128i*)(out)) + 1, t_2);                                 \
 } while (0)
 
 // Loads 17 pixels each from rows r1 and r2 and generates 32 pixels.
 #define UPSAMPLE_32PIXELS(r1, r2, out) {                                       \
   const __m128i one = _mm_set1_epi8(1);                                        \
-  const __m128i a = _mm_loadu_si128((__m128i*)&(r1)[0]);                       \
-  const __m128i b = _mm_loadu_si128((__m128i*)&(r1)[1]);                       \
-  const __m128i c = _mm_loadu_si128((__m128i*)&(r2)[0]);                       \
-  const __m128i d = _mm_loadu_si128((__m128i*)&(r2)[1]);                       \
+  const __m128i a = _mm_loadu_si128((const __m128i*)&(r1)[0]);                 \
+  const __m128i b = _mm_loadu_si128((const __m128i*)&(r1)[1]);                 \
+  const __m128i c = _mm_loadu_si128((const __m128i*)&(r2)[0]);                 \
+  const __m128i d = _mm_loadu_si128((const __m128i*)&(r2)[1]);                 \
                                                                                \
   const __m128i s = _mm_avg_epu8(a, d);        /* s = (a + d + 1) / 2 */       \
   const __m128i t = _mm_avg_epu8(b, c);        /* t = (b + c + 1) / 2 */       \
@@ -85,8 +83,8 @@ extern "C" {
   GET_M(ad, s, diag2);                  /* diag2 = (3a + b + c + 3d) / 8 */    \
                                                                                \
   /* pack the alternate pixels */                                              \
-  PACK_AND_STORE(a, b, diag1, diag2, &(out)[0 * 32]);                          \
-  PACK_AND_STORE(c, d, diag2, diag1, &(out)[2 * 32]);                          \
+  PACK_AND_STORE(a, b, diag1, diag2, out +      0);  /* store top */           \
+  PACK_AND_STORE(c, d, diag2, diag1, out + 2 * 32);  /* store bottom */        \
 }
 
 // Turn the macro into a function for reducing code-size when non-critical
@@ -106,104 +104,140 @@ static void Upsample32Pixels(const uint8_t r1[], const uint8_t r2[],
   Upsample32Pixels(r1, r2, out);                                               \
 }
 
-#define CONVERT2RGB(FUNC, XSTEP, top_y, bottom_y, uv,                          \
+#define CONVERT2RGB(FUNC, XSTEP, top_y, bottom_y,                              \
                     top_dst, bottom_dst, cur_x, num_pixels) {                  \
   int n;                                                                       \
-  if (top_y) {                                                                 \
-    for (n = 0; n < (num_pixels); ++n) {                                       \
-      FUNC(top_y[(cur_x) + n], (uv)[n], (uv)[32 + n],                          \
-           top_dst + ((cur_x) + n) * XSTEP);                                   \
-    }                                                                          \
+  for (n = 0; n < (num_pixels); ++n) {                                         \
+    FUNC(top_y[(cur_x) + n], r_u[n], r_v[n],                                   \
+         top_dst + ((cur_x) + n) * XSTEP);                                     \
   }                                                                            \
-  if (bottom_y) {                                                              \
+  if (bottom_y != NULL) {                                                      \
     for (n = 0; n < (num_pixels); ++n) {                                       \
-      FUNC(bottom_y[(cur_x) + n], (uv)[64 + n], (uv)[64 + 32 + n],             \
+      FUNC(bottom_y[(cur_x) + n], r_u[64 + n], r_v[64 + n],                    \
            bottom_dst + ((cur_x) + n) * XSTEP);                                \
     }                                                                          \
   }                                                                            \
 }
+
+#define CONVERT2RGB_32(FUNC, XSTEP, top_y, bottom_y,                           \
+                       top_dst, bottom_dst, cur_x) do {                        \
+  FUNC##32(top_y + (cur_x), r_u, r_v, top_dst + (cur_x) * XSTEP);              \
+  if (bottom_y != NULL) {                                                      \
+    FUNC##32(bottom_y + (cur_x), r_u + 64, r_v + 64,                           \
+             bottom_dst + (cur_x) * XSTEP);                                    \
+  }                                                                            \
+} while (0)
 
 #define SSE2_UPSAMPLE_FUNC(FUNC_NAME, FUNC, XSTEP)                             \
 static void FUNC_NAME(const uint8_t* top_y, const uint8_t* bottom_y,           \
                       const uint8_t* top_u, const uint8_t* top_v,              \
                       const uint8_t* cur_u, const uint8_t* cur_v,              \
                       uint8_t* top_dst, uint8_t* bottom_dst, int len) {        \
-  int b;                                                                       \
-  /* 16 byte aligned array to cache reconstructed u and v */                   \
+  int uv_pos, pos;                                                             \
+  /* 16byte-aligned array to cache reconstructed u and v */                    \
   uint8_t uv_buf[4 * 32 + 15];                                                 \
-  uint8_t* const r_uv = (uint8_t*)((uintptr_t)(uv_buf + 15) & ~15);            \
-  const int uv_len = (len + 1) >> 1;                                           \
-  /* 17 pixels must be read-able for each block */                             \
-  const int num_blocks = (uv_len - 1) >> 4;                                    \
-  const int leftover = uv_len - num_blocks * 16;                               \
-  const int last_pos = 1 + 32 * num_blocks;                                    \
+  uint8_t* const r_u = (uint8_t*)((uintptr_t)(uv_buf + 15) & ~15);             \
+  uint8_t* const r_v = r_u + 32;                                               \
                                                                                \
-  const int u_diag = ((top_u[0] + cur_u[0]) >> 1) + 1;                         \
-  const int v_diag = ((top_v[0] + cur_v[0]) >> 1) + 1;                         \
-                                                                               \
-  assert(len > 0);                                                             \
-  /* Treat the first pixel in regular way */                                   \
-  if (top_y) {                                                                 \
-    const int u0 = (top_u[0] + u_diag) >> 1;                                   \
-    const int v0 = (top_v[0] + v_diag) >> 1;                                   \
-    FUNC(top_y[0], u0, v0, top_dst);                                           \
+  assert(top_y != NULL);                                                       \
+  {   /* Treat the first pixel in regular way */                               \
+    const int u_diag = ((top_u[0] + cur_u[0]) >> 1) + 1;                       \
+    const int v_diag = ((top_v[0] + cur_v[0]) >> 1) + 1;                       \
+    const int u0_t = (top_u[0] + u_diag) >> 1;                                 \
+    const int v0_t = (top_v[0] + v_diag) >> 1;                                 \
+    FUNC(top_y[0], u0_t, v0_t, top_dst);                                       \
+    if (bottom_y != NULL) {                                                    \
+      const int u0_b = (cur_u[0] + u_diag) >> 1;                               \
+      const int v0_b = (cur_v[0] + v_diag) >> 1;                               \
+      FUNC(bottom_y[0], u0_b, v0_b, bottom_dst);                               \
+    }                                                                          \
   }                                                                            \
-  if (bottom_y) {                                                              \
-    const int u0 = (cur_u[0] + u_diag) >> 1;                                   \
-    const int v0 = (cur_v[0] + v_diag) >> 1;                                   \
-    FUNC(bottom_y[0], u0, v0, bottom_dst);                                     \
+  /* For UPSAMPLE_32PIXELS, 17 u/v values must be read-able for each block */  \
+  for (pos = 1, uv_pos = 0; pos + 32 + 1 <= len; pos += 32, uv_pos += 16) {    \
+    UPSAMPLE_32PIXELS(top_u + uv_pos, cur_u + uv_pos, r_u);                    \
+    UPSAMPLE_32PIXELS(top_v + uv_pos, cur_v + uv_pos, r_v);                    \
+    CONVERT2RGB_32(FUNC, XSTEP, top_y, bottom_y, top_dst, bottom_dst, pos);    \
   }                                                                            \
-                                                                               \
-  for (b = 0; b < num_blocks; ++b) {                                           \
-    UPSAMPLE_32PIXELS(top_u, cur_u, r_uv + 0 * 32);                            \
-    UPSAMPLE_32PIXELS(top_v, cur_v, r_uv + 1 * 32);                            \
-    CONVERT2RGB(FUNC, XSTEP, top_y, bottom_y, r_uv, top_dst, bottom_dst,       \
-                32 * b + 1, 32)                                                \
-    top_u += 16;                                                               \
-    cur_u += 16;                                                               \
-    top_v += 16;                                                               \
-    cur_v += 16;                                                               \
+  if (len > 1) {                                                               \
+    const int left_over = ((len + 1) >> 1) - (pos >> 1);                       \
+    assert(left_over > 0);                                                     \
+    UPSAMPLE_LAST_BLOCK(top_u + uv_pos, cur_u + uv_pos, left_over, r_u);       \
+    UPSAMPLE_LAST_BLOCK(top_v + uv_pos, cur_v + uv_pos, left_over, r_v);       \
+    CONVERT2RGB(FUNC, XSTEP, top_y, bottom_y, top_dst, bottom_dst,             \
+                pos, len - pos);                                               \
   }                                                                            \
-                                                                               \
-  UPSAMPLE_LAST_BLOCK(top_u, cur_u, leftover, r_uv + 0 * 32);                  \
-  UPSAMPLE_LAST_BLOCK(top_v, cur_v, leftover, r_uv + 1 * 32);                  \
-  CONVERT2RGB(FUNC, XSTEP, top_y, bottom_y, r_uv, top_dst, bottom_dst,         \
-              last_pos, len - last_pos);                                       \
 }
 
 // SSE2 variants of the fancy upsampler.
-SSE2_UPSAMPLE_FUNC(UpsampleRgbLinePairSSE2,  VP8YuvToRgb,  3)
-SSE2_UPSAMPLE_FUNC(UpsampleBgrLinePairSSE2,  VP8YuvToBgr,  3)
-SSE2_UPSAMPLE_FUNC(UpsampleRgbaLinePairSSE2, VP8YuvToRgba, 4)
-SSE2_UPSAMPLE_FUNC(UpsampleBgraLinePairSSE2, VP8YuvToBgra, 4)
+SSE2_UPSAMPLE_FUNC(UpsampleRgbLinePair,  VP8YuvToRgb,  3)
+SSE2_UPSAMPLE_FUNC(UpsampleBgrLinePair,  VP8YuvToBgr,  3)
+SSE2_UPSAMPLE_FUNC(UpsampleRgbaLinePair, VP8YuvToRgba, 4)
+SSE2_UPSAMPLE_FUNC(UpsampleBgraLinePair, VP8YuvToBgra, 4)
 
 #undef GET_M
 #undef PACK_AND_STORE
 #undef UPSAMPLE_32PIXELS
 #undef UPSAMPLE_LAST_BLOCK
 #undef CONVERT2RGB
+#undef CONVERT2RGB_32
 #undef SSE2_UPSAMPLE_FUNC
 
 //------------------------------------------------------------------------------
+// Entry point
 
 extern WebPUpsampleLinePairFunc WebPUpsamplers[/* MODE_LAST */];
 
-void WebPInitUpsamplersSSE2(void) {
-  WebPUpsamplers[MODE_RGB]  = UpsampleRgbLinePairSSE2;
-  WebPUpsamplers[MODE_RGBA] = UpsampleRgbaLinePairSSE2;
-  WebPUpsamplers[MODE_BGR]  = UpsampleBgrLinePairSSE2;
-  WebPUpsamplers[MODE_BGRA] = UpsampleBgraLinePairSSE2;
-}
+extern void WebPInitUpsamplersSSE2(void);
 
-void WebPInitPremultiplySSE2(void) {
-  WebPUpsamplers[MODE_rgbA] = UpsampleRgbaLinePairSSE2;
-  WebPUpsamplers[MODE_bgrA] = UpsampleBgraLinePairSSE2;
+WEBP_TSAN_IGNORE_FUNCTION void WebPInitUpsamplersSSE2(void) {
+  VP8YUVInitSSE2();
+  WebPUpsamplers[MODE_RGB]  = UpsampleRgbLinePair;
+  WebPUpsamplers[MODE_RGBA] = UpsampleRgbaLinePair;
+  WebPUpsamplers[MODE_BGR]  = UpsampleBgrLinePair;
+  WebPUpsamplers[MODE_BGRA] = UpsampleBgraLinePair;
+  WebPUpsamplers[MODE_rgbA] = UpsampleRgbaLinePair;
+  WebPUpsamplers[MODE_bgrA] = UpsampleBgraLinePair;
 }
 
 #endif  // FANCY_UPSAMPLING
 
-#if defined(__cplusplus) || defined(c_plusplus)
-}    // extern "C"
-#endif
+//------------------------------------------------------------------------------
 
-#endif   // WEBP_USE_SSE2
+extern WebPYUV444Converter WebPYUV444Converters[/* MODE_LAST */];
+extern void WebPInitYUV444ConvertersSSE2(void);
+
+#define YUV444_FUNC(FUNC_NAME, CALL, XSTEP) \
+extern void WebP##FUNC_NAME##C(const uint8_t* y, const uint8_t* u,             \
+                               const uint8_t* v, uint8_t* dst, int len);       \
+static void FUNC_NAME(const uint8_t* y, const uint8_t* u, const uint8_t* v,    \
+                      uint8_t* dst, int len) {                                 \
+  int i;                                                                       \
+  const int max_len = len & ~31;                                               \
+  for (i = 0; i < max_len; i += 32) CALL(y + i, u + i, v + i, dst + i * XSTEP);\
+  if (i < len) {  /* C-fallback */                                             \
+    WebP##FUNC_NAME##C(y + i, u + i, v + i, dst + i * XSTEP, len - i);         \
+  }                                                                            \
+}
+
+YUV444_FUNC(Yuv444ToRgba, VP8YuvToRgba32, 4);
+YUV444_FUNC(Yuv444ToBgra, VP8YuvToBgra32, 4);
+YUV444_FUNC(Yuv444ToRgb, VP8YuvToRgb32, 3);
+YUV444_FUNC(Yuv444ToBgr, VP8YuvToBgr32, 3);
+
+WEBP_TSAN_IGNORE_FUNCTION void WebPInitYUV444ConvertersSSE2(void) {
+  VP8YUVInitSSE2();
+  WebPYUV444Converters[MODE_RGBA] = Yuv444ToRgba;
+  WebPYUV444Converters[MODE_BGRA] = Yuv444ToBgra;
+  WebPYUV444Converters[MODE_RGB]  = Yuv444ToRgb;
+  WebPYUV444Converters[MODE_BGR]  = Yuv444ToBgr;
+}
+
+#else
+
+WEBP_DSP_INIT_STUB(WebPInitYUV444ConvertersSSE2)
+
+#endif  // WEBP_USE_SSE2
+
+#if !(defined(FANCY_UPSAMPLING) && defined(WEBP_USE_SSE2))
+WEBP_DSP_INIT_STUB(WebPInitUpsamplersSSE2)
+#endif

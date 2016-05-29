@@ -47,6 +47,7 @@ class EditorResourcePreview : public Node {
 	static EditorResourcePreview* singleton;
 
 	struct QueueItem {
+		Ref<Resource> resource;
 		String path;
 		ObjectID id;
 		StringName function;
@@ -63,6 +64,7 @@ class EditorResourcePreview : public Node {
 	struct Item {
 		Ref<Texture> preview;
 		int order;
+		uint32_t last_hash;
 	};
 
 	int order;
@@ -84,7 +86,8 @@ public:
 	static EditorResourcePreview* get_singleton();
 
 	//callback funtion is callback(String p_path,Ref<Texture> preview,Variant udata) preview null if could not load
-	void queue_resource_preview(const String& p_path, Object* p_receiver, const StringName& p_receiver_func, const Variant& p_userdata);
+	void queue_resource_preview(const String& p_res, Object* p_receiver, const StringName& p_receiver_func, const Variant& p_userdata);
+	void queue_edited_resource_preview(const Ref<Resource>& p_path, Object* p_receiver, const StringName& p_receiver_func, const Variant& p_userdata);
 
 	void add_preview_generator(const Ref<EditorResourcePreviewGenerator>& p_generator);
 

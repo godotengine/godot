@@ -6,16 +6,30 @@
 #include "scene/resources/material.h"
 #include "scene/resources/sample.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/bit_mask.h"
 
 bool EditorTexturePreviewPlugin::handles(const String& p_type) const {
 
-	return ObjectTypeDB::is_type(p_type,"ImageTexture");
+	return (ObjectTypeDB::is_type(p_type,"ImageTexture") || ObjectTypeDB::is_type(p_type, "AtlasTexture"));
 }
 
 Ref<Texture> EditorTexturePreviewPlugin::generate(const RES& p_from) {
 
-	Ref<ImageTexture> tex =p_from;
-	Image img = tex->get_data();
+	Image img;
+	Ref<AtlasTexture> atex = p_from;
+	if (atex.is_valid()) {
+		Ref<ImageTexture> tex = atex->get_atlas();
+		if (!tex.is_valid()) {
+			return Ref<Texture>();
+		}
+		Image atlas = tex->get_data();
+		img = atlas.get_rect(atex->get_region());
+	}
+	else {
+		Ref<ImageTexture> tex = p_from;
+		img = tex->get_data();
+	}
+
 	if (img.empty())
 		return Ref<Texture>();
 
@@ -25,7 +39,7 @@ Ref<Texture> EditorTexturePreviewPlugin::generate(const RES& p_from) {
 	if (img.is_compressed()) {
 		if (img.decompress()!=OK)
 			return Ref<Texture>();
-	} else if (img.get_format()!=Image::FORMAT_RGB && img.get_format()!=Image::FORMAT_RGB) {
+    } else if (img.get_format()!=Image::FORMAT_RGB && img.get_format()!=Image::FORMAT_RGBA) {
 		img.convert(Image::FORMAT_RGBA);
 	}
 
@@ -54,6 +68,81 @@ Ref<Texture> EditorTexturePreviewPlugin::generate(const RES& p_from) {
 }
 
 EditorTexturePreviewPlugin::EditorTexturePreviewPlugin() {
+
+
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+bool EditorBitmapPreviewPlugin::handles(const String& p_type) const {
+
+	return ObjectTypeDB::is_type(p_type,"BitMap");
+}
+
+Ref<Texture> EditorBitmapPreviewPlugin::generate(const RES& p_from) {
+
+	Ref<BitMap> bm =p_from;
+
+	if (bm->get_size()==Size2()) {
+		return Ref<Texture>();
+	}
+
+	DVector<uint8_t> data;
+
+	data.resize(bm->get_size().width*bm->get_size().height);
+
+	{
+		DVector<uint8_t>::Write w=data.write();
+
+		for(int i=0;i<bm->get_size().width;i++) {
+			for(int j=0;j<bm->get_size().height;j++) {
+				if (bm->get_bit(Point2i(i,j))) {
+					w[j*bm->get_size().width+i]=255;
+				} else {
+					w[j*bm->get_size().width+i]=0;
+
+				}
+			}
+
+		}
+	}
+
+
+	Image img(bm->get_size().width,bm->get_size().height,0,Image::FORMAT_GRAYSCALE,data);
+
+	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+	if (img.is_compressed()) {
+		if (img.decompress()!=OK)
+			return Ref<Texture>();
+	} else if (img.get_format()!=Image::FORMAT_RGB && img.get_format()!=Image::FORMAT_RGBA) {
+		img.convert(Image::FORMAT_RGBA);
+	}
+
+	int width,height;
+	if (img.get_width() > thumbnail_size && img.get_width() >= img.get_height()) {
+
+		width=thumbnail_size;
+		height = img.get_height() * thumbnail_size / img.get_width();
+	} else if (img.get_height() > thumbnail_size &&  img.get_height() >= img.get_width()) {
+
+		height=thumbnail_size;
+		width = img.get_width() * thumbnail_size / img.get_height();
+	}  else {
+
+		width=img.get_width();
+		height=img.get_height();
+	}
+
+	img.resize(width,height);
+
+	Ref<ImageTexture> ptex = Ref<ImageTexture>( memnew( ImageTexture ));
+
+	ptex->create_from_image(img,0);
+	return ptex;
+
+}
+
+EditorBitmapPreviewPlugin::EditorBitmapPreviewPlugin() {
 
 
 }
@@ -491,8 +580,14 @@ Ref<Texture> EditorSamplePreviewPlugin::generate(const RES& p_from) {
 					ima_adpcm.last_nibble++;
 					const uint8_t *src_ptr=sdata;
 
+					int ofs = ima_adpcm.last_nibble>>1;
+
+					if (stereo)
+						ofs*=2;
+
+
 					nibble = (ima_adpcm.last_nibble&1)?
-							(src_ptr[ima_adpcm.last_nibble>>1]>>4):(src_ptr[ima_adpcm.last_nibble>>1]&0xF);
+							(src_ptr[ofs]>>4):(src_ptr[ofs]&0xF);
 					step=_ima_adpcm_step_table[ima_adpcm.step_index];
 
 					ima_adpcm.step_index += _ima_adpcm_index_table[nibble];
@@ -630,7 +725,11 @@ Ref<Texture> EditorSamplePreviewPlugin::generate(const RES& p_from) {
 					} else {
 						half=1;
 						ofs=h/2;
-						v = ((j-(h/2))/(float)(h/2)) * 2.0 - 1.0;
+						if( (float)(h/2) != 0 ) {
+							v = ((j-(h/2))/(float)(h/2)) * 2.0 - 1.0;
+						} else {
+							v = ((j-(h/2))/(float)(1/2)) * 2.0 - 1.0;
+						}
 					}
 
 					uint8_t* imgofs = &imgw[(j*w+i)*3];

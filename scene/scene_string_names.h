@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,6 +62,7 @@ public:
 	StringName exit_tree;
 	StringName size_flags_changed;
 	StringName minimum_size_changed;
+	StringName sleeping_state_changed;
 	StringName idle;
 	StringName iteration;
 	StringName update;
@@ -78,6 +79,7 @@ public:
 
 	StringName finished;
 	StringName animation_changed;
+	StringName animation_started;
 
 	StringName body_enter_shape;
 	StringName body_enter;
@@ -180,6 +182,15 @@ public:
 
 	NodePath path_pp;
 
+	StringName _default;
+
+	StringName node_configuration_warning_changed;
+
+	enum {
+		MAX_MATERIALS=32
+	};
+	StringName mesh_materials[MAX_MATERIALS];
+	StringName _mesh_changed;
 
 };
 

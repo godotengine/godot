@@ -14,6 +14,7 @@
   last mod: $Id: encint.h 16503 2009-08-22 18:14:02Z giles $
 
  ********************************************************************/
+ 
 #if !defined(_encint_H)
 # define _encint_H (1)
 # if defined(HAVE_CONFIG_H)

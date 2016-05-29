@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,6 +66,7 @@ protected:
 public:
 
 	Object *instance_selected();
+	String get_selected_type();
 
 	void set_base_type(const String& p_base);
 	String get_base_type() const;
@@ -82,37 +83,37 @@ public:
 //old create dialog, disabled
 
 class CreateDialog : public ConfirmationDialog {
-	
+
 	OBJ_TYPE( CreateDialog, ConfirmationDialog );
-	
+
 	Tree *tree;
 	Button *create;
 	Button *cancel;
 	LineEdit *filter;
 
-	
+
 	void update_tree();
 	void _create();
 	void _cancel();
-	void add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem 
+	void add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem
 	*p_root);
-		
+
 	String base;
 	void _text_changed(String p_text);
 	virtual void _post_popup() { tree->grab_focus();}
 
 protected:
-	static void _bind_methods();	
+	static void _bind_methods();
 	void _notification(int p_what);
 public:
-	
+
 
 
 	Object *instance_selected();
-	
+
 	void set_base_type(const String& p_base);
 	String get_base_type() const;
-	CreateDialog();	
+	CreateDialog();
 	~CreateDialog();
 
 };

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,8 +34,6 @@
 #import <MediaPlayer/MediaPlayer.h>
 #import <AVFoundation/AVFoundation.h>
 
-#define USE_CADISPLAYLINK      1   //iOS version 3.1+ is required
-
 @protocol GLViewDelegate;
 
 @interface GLView : UIView<UIKeyInput>
@@ -44,28 +42,28 @@
 	// The pixel dimensions of the backbuffer
 	GLint backingWidth;
 	GLint backingHeight;
-	
+
 	EAGLContext *context;
-	
+
 	// OpenGL names for the renderbuffer and framebuffers used to render to this view
 	GLuint viewRenderbuffer, viewFramebuffer;
-	
+
 	// OpenGL name for the depth buffer that is attached to viewFramebuffer, if it exists (0 if it does not exist)
 	GLuint depthRenderbuffer;
-	
-#if USE_CADISPLAYLINK
+
+	BOOL useCADisplayLink;
 	// CADisplayLink available on 3.1+ synchronizes the animation timer & drawing with the refresh rate of the display, only supports animation intervals of 1/60 1/30 & 1/15
 	CADisplayLink *displayLink;
-#else
+
 	// An animation timer that, when animation is started, will periodically call -drawView at the given rate.
+	// Only used if CADisplayLink is not
 	NSTimer *animationTimer;
-#endif
-	
+
 	NSTimeInterval animationInterval;
-	
+
 	// Delegate to do our drawing, called by -drawView, which can be called manually or via the animation timer.
 	id<GLViewDelegate> delegate;
-	
+
 	// Flag to denote that the -setupView method of a delegate has been called.
 	// Resets to NO whenever the delegate changes.
 	BOOL delegateSetup;
@@ -104,6 +102,7 @@
 - (void)audioRouteChangeListenerCallback:(NSNotification*)notification;
 
 @property NSTimeInterval animationInterval;
+@property(nonatomic, assign) BOOL useCADisplayLink;
 
 @end
 

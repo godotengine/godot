@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -126,7 +126,7 @@ bool Tween::_get(const StringName& p_name,Variant &r_ret) const {
 	String name=p_name;
 
 	if (name=="playback/speed") { //bw compatibility
-	
+
 		r_ret=speed_scale;
 	} else if (name=="playback/active") {
 
@@ -149,7 +149,7 @@ void Tween::_get_property_list(List<PropertyInfo> *p_list) const {
 void Tween::_notification(int p_what) {
 
 	switch(p_what) {
-	
+
 		case NOTIFICATION_ENTER_TREE: {
 
 			if (!processing) {
@@ -170,7 +170,7 @@ void Tween::_notification(int p_what) {
 				_tween_process( get_process_delta_time() );
 		} break;
 		case NOTIFICATION_FIXED_PROCESS: {
-		
+
 			if (tween_process_mode==TWEEN_PROCESS_IDLE)
 				break;
 
@@ -178,7 +178,7 @@ void Tween::_notification(int p_what) {
 				_tween_process( get_fixed_process_delta_time() );
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-		
+
 			stop_all();
 		} break;
 	}
@@ -1045,6 +1045,7 @@ bool Tween::interpolate_property(Object *p_object
 	if(p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
 
 	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 	ERR_FAIL_COND_V(p_initial_val.get_type() != p_final_val.get_type(), false);
 	ERR_FAIL_COND_V(p_times_in_sec <= 0, false);
 	ERR_FAIL_COND_V(p_trans_type < 0 || p_trans_type >= TRANS_COUNT, false);
@@ -1104,6 +1105,7 @@ bool Tween::interpolate_method(Object *p_object
 	if(p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
 
 	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 	ERR_FAIL_COND_V(p_initial_val.get_type() != p_final_val.get_type(), false);
 	ERR_FAIL_COND_V(p_times_in_sec <= 0, false);
 	ERR_FAIL_COND_V(p_trans_type < 0 || p_trans_type >= TRANS_COUNT, false);
@@ -1154,7 +1156,9 @@ bool Tween::interpolate_callback(Object *p_object
 		);
 		return true;
 	}
+
 	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 	ERR_FAIL_COND_V(p_times_in_sec < 0, false);
 
 	ERR_EXPLAIN("Object has no callback named: %s" + p_callback);
@@ -1183,7 +1187,7 @@ bool Tween::interpolate_callback(Object *p_object
 		args=2;
 	else if (p_arg1.get_type()!=Variant::NIL)
 		args=1;
-	else 
+	else
 		args=0;
 
 	data.args = args;
@@ -1219,6 +1223,7 @@ bool Tween::interpolate_deferred_callback(Object *p_object
 		return true;
 	}
 	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 	ERR_FAIL_COND_V(p_times_in_sec < 0, false);
 
 	ERR_EXPLAIN("Object has no callback named: %s" + p_callback);
@@ -1247,7 +1252,7 @@ bool Tween::interpolate_deferred_callback(Object *p_object
 		args=2;
 	else if (p_arg1.get_type()!=Variant::NIL)
 		args=1;
-	else 
+	else
 		args=0;
 
 	data.args = args;
@@ -1291,7 +1296,9 @@ bool Tween::follow_property(Object *p_object
 	if(p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
 
 	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 	ERR_FAIL_COND_V(p_target == NULL, false);
+	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_target), false);
 	ERR_FAIL_COND_V(p_times_in_sec <= 0, false);
 	ERR_FAIL_COND_V(p_trans_type < 0 || p_trans_type >= TRANS_COUNT, false);
 	ERR_FAIL_COND_V(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false);
@@ -1357,7 +1364,9 @@ bool Tween::follow_method(Object *p_object
 	if(p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
 
 	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 	ERR_FAIL_COND_V(p_target == NULL, false);
+	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_target), false);
 	ERR_FAIL_COND_V(p_times_in_sec <= 0, false);
 	ERR_FAIL_COND_V(p_trans_type < 0 || p_trans_type >= TRANS_COUNT, false);
 	ERR_FAIL_COND_V(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false);
@@ -1424,7 +1433,9 @@ bool Tween::targeting_property(Object *p_object
 	if(p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
 
 	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 	ERR_FAIL_COND_V(p_initial == NULL, false);
+	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_initial), false);
 	ERR_FAIL_COND_V(p_times_in_sec <= 0, false);
 	ERR_FAIL_COND_V(p_trans_type < 0 || p_trans_type >= TRANS_COUNT, false);
 	ERR_FAIL_COND_V(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false);
@@ -1495,7 +1506,9 @@ bool Tween::targeting_method(Object *p_object
 	if(p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
 
 	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 	ERR_FAIL_COND_V(p_initial == NULL, false);
+	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_initial), false);
 	ERR_FAIL_COND_V(p_times_in_sec <= 0, false);
 	ERR_FAIL_COND_V(p_trans_type < 0 || p_trans_type >= TRANS_COUNT, false);
 	ERR_FAIL_COND_V(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false);

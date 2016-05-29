@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "editor_run.h"
 #include "globals.h"
-
+#include "editor_settings.h"
 
 EditorRun::Status EditorRun::get_status() const {
 
@@ -60,6 +60,77 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 			args.push_back(cargs[i].replace("%20"," ").replace("$scene",p_edited_scene.replace(" ","%20")));
 		}
 	}
+
+	if (debug_collisions) {
+		args.push_back("-debugcol");
+	}
+
+	if (debug_navigation) {
+		args.push_back("-debugnav");
+	}
+
+	int screen = EditorSettings::get_singleton()->get("game_window_placement/screen");
+
+	if (screen==0) {
+		screen=OS::get_singleton()->get_current_screen();
+	} else {
+		screen--;
+	}
+
+	Rect2 screen_rect;
+	screen_rect.pos=OS::get_singleton()->get_screen_position(screen);
+	screen_rect.size=OS::get_singleton()->get_screen_size(screen);
+
+
+	Size2 desired_size;
+
+	desired_size.x=Globals::get_singleton()->get("display/width");
+	desired_size.y=Globals::get_singleton()->get("display/height");
+
+	Size2 test_size;
+	test_size.x=Globals::get_singleton()->get("display/test_width");
+	test_size.y=Globals::get_singleton()->get("display/test_height");
+	if (test_size.x>0 && test_size.y>0) {
+
+		desired_size=test_size;
+	}
+
+
+	int window_placement=EditorSettings::get_singleton()->get("game_window_placement/rect");
+
+	switch(window_placement) {
+		case 0: { // default
+
+			args.push_back("-p");
+			args.push_back(itos(screen_rect.pos.x)+"x"+itos(screen_rect.pos.y));
+		} break;
+		case 1: { // centered
+			Vector2 pos=screen_rect.pos+((screen_rect.size-desired_size)/2).floor();
+			args.push_back("-p");
+			args.push_back(itos(pos.x)+"x"+itos(pos.y));
+		} break;
+		case 2: { // custom pos
+			Vector2 pos = EditorSettings::get_singleton()->get("game_window_placement/rect_custom_position");
+			pos+=screen_rect.pos;
+			args.push_back("-p");
+			args.push_back(itos(pos.x)+"x"+itos(pos.y));
+		} break;
+		case 3: { // force maximized
+			Vector2 pos=screen_rect.pos;
+			args.push_back("-p");
+			args.push_back(itos(pos.x)+"x"+itos(pos.y));
+			args.push_back("-mx");
+
+		} break;
+		case 4: { // force fullscreen
+
+			Vector2 pos=screen_rect.pos;
+			args.push_back("-p");
+			args.push_back(itos(pos.x)+"x"+itos(pos.y));
+			args.push_back("-f");
+		} break;
+	}
+
 
 	if (p_breakpoints.size()) {
 
@@ -105,7 +176,31 @@ void EditorRun::stop() {
 	status=STATUS_STOP;
 }
 
+void EditorRun::set_debug_collisions(bool p_debug) {
+
+	debug_collisions=p_debug;
+}
+
+bool EditorRun::get_debug_collisions() const{
+
+	return debug_collisions;
+}
+
+void EditorRun::set_debug_navigation(bool p_debug) {
+
+	debug_navigation=p_debug;
+}
+
+bool EditorRun::get_debug_navigation() const{
+
+	return debug_navigation;
+}
+
+
 EditorRun::EditorRun() {
 
 	status=STATUS_STOP;
+	debug_collisions=false;
+	debug_navigation=false;
+
 }

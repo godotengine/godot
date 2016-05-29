@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,28 +33,30 @@
 #include "scene/resources/font.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
+#include "scene/resources/shader.h"
 #include "io/resource_loader.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class Theme : public Resource {
-	
+
 	OBJ_TYPE( Theme, Resource );
 	RES_BASE_EXTENSION("thm");
-	
+
 	static Ref<Theme> default_theme;
-	
+
 	HashMap<StringName,HashMap<StringName,Ref<Texture>,StringNameHasher >, StringNameHasher >  icon_map;
 	HashMap<StringName,HashMap<StringName,Ref<StyleBox>,StringNameHasher >,StringNameHasher > style_map;
 	HashMap<StringName,HashMap<StringName,Ref<Font>,StringNameHasher >,StringNameHasher > font_map;
+	HashMap<StringName,HashMap<StringName,Ref<Shader>,StringNameHasher >, StringNameHasher >  shader_map;
 	HashMap<StringName,HashMap<StringName,Color,StringNameHasher >,StringNameHasher > color_map;
 	HashMap<StringName,HashMap<StringName,int,StringNameHasher>,StringNameHasher > constant_map;
 protected:
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list( List<PropertyInfo> *p_list) const;
-	
+
 	static Ref<Texture> default_icon;
 	static Ref<StyleBox> default_style;
 	static Ref<Font> default_font;
@@ -63,6 +65,7 @@ protected:
 
 	DVector<String> _get_icon_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_icon_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
 	DVector<String> _get_stylebox_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_stylebox_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
+	DVector<String> _get_stylebox_types(void) const { DVector<String> ilret; List<StringName> il; get_stylebox_types(&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
 	DVector<String> _get_font_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_font_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
 	DVector<String> _get_color_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_color_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
 	DVector<String> _get_constant_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_constant_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
@@ -70,10 +73,10 @@ protected:
 
 	static void _bind_methods();
 public:
-	
+
 	static Ref<Theme> get_default();
 	static void set_default(const Ref<Theme>& p_default);
-	
+
 	static void set_default_icon( const Ref<Texture>& p_icon );
 	static void set_default_style( const Ref<StyleBox>& p_default_style);
 	static void set_default_font( const Ref<Font>& p_default_font );
@@ -86,12 +89,19 @@ public:
 	bool has_icon(const StringName& p_name,const StringName& p_type) const;
 	void clear_icon(const StringName& p_name,const StringName& p_type);
 	void get_icon_list(StringName p_type, List<StringName> *p_list) const;
-	
+
+	void set_shader(const StringName& p_name,const StringName& p_type,const Ref<Shader>& p_shader);
+	Ref<Shader> get_shader(const StringName& p_name,const StringName& p_type) const;
+	bool has_shader(const StringName& p_name,const StringName& p_type) const;
+	void clear_shader(const StringName& p_name,const StringName& p_type);
+	void get_shader_list(const StringName& p_name, List<StringName> *p_list) const;
+
 	void set_stylebox(const StringName& p_name,const StringName& p_type,const Ref<StyleBox>& p_style);
 	Ref<StyleBox> get_stylebox(const StringName& p_name,const StringName& p_type) const;
 	bool has_stylebox(const StringName& p_name,const StringName& p_type) const;
 	void clear_stylebox(const StringName& p_name,const StringName& p_type);
 	void get_stylebox_list(StringName p_type, List<StringName> *p_list) const;
+	void get_stylebox_types(List<StringName> *p_list) const;
 
 	void set_font(const StringName& p_name,const StringName& p_type,const Ref<Font>& p_font);
 	Ref<Font> get_font(const StringName& p_name,const StringName& p_type) const;

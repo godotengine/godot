@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,29 +48,29 @@ class SampleLibraryEditor : public Panel {
 
 	SamplePlayer *player;
 	Ref<SampleLibrary> sample_library;
-	Button *stop;
-	Button *play;
 	Button *load;
-	Button *_delete;
 	Tree *tree;
+	bool is_playing;
+	Object *last_sample_playing;
 
 	EditorFileDialog *file;
 
 	ConfirmationDialog *dialog;
 
 
-	void _play_pressed();
-	void _stop_pressed();
 	void _load_pressed();
 	void _file_load_request(const DVector<String>& p_path);
 	void _delete_pressed();
-	void _delete_confirm_pressed();
 	void _update_library();
 	void _item_edited();
 
 	UndoRedo *undo_redo;
 
 	void _button_pressed(Object *p_item,int p_column, int p_id);
+
+	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
+	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
+	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
 
 protected:
 	void _notification(int p_what);
@@ -79,7 +79,6 @@ protected:
 public:
 
 	void set_undo_redo(UndoRedo *p_undo_redo) {undo_redo=p_undo_redo; }
-
 	void edit(Ref<SampleLibrary> p_sample);
 	SampleLibraryEditor();
 };
@@ -90,6 +89,7 @@ class SampleLibraryEditorPlugin : public EditorPlugin {
 
 	SampleLibraryEditor *sample_library_editor;
 	EditorNode *editor;
+	Button *button;
 
 public:
 

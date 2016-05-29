@@ -13,6 +13,7 @@ class ColorRampEditorPlugin : public EditorPlugin {
 
 	OBJ_TYPE( ColorRampEditorPlugin, EditorPlugin );
 
+	bool _2d;
 	Ref<ColorRamp> color_ramp_ref;
 	ColorRampEdit *ramp_editor;
 	EditorNode *editor;

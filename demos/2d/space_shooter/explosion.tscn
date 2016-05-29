@@ -1,0 +1,37 @@
+[gd_scene load_steps=3 format=1]
+
+[ext_resource path="res://fire.png" type="Texture" id=1]
+
+[sub_resource type="ColorRamp" id=1]
+
+offsets = FloatArray( 0, 0.364725, 0.77494, 1 )
+colors = ColorArray( 1, 1, 1, 1, 1, 0, 0, 1, 0.184473, 0.181601, 0.181345, 1, 1, 1, 1, 0 )
+
+[node name="explosion" type="Particles2D"]
+
+transform/pos = Vector2( 0.918983, -2.11041 )
+transform/rot = -91.1436
+config/amount = 32
+config/lifetime = 0.5
+config/emitting = false
+config/explosiveness = 0.1
+config/texture = ExtResource( 1 )
+params/direction = 0.0
+params/spread = 180.0
+params/linear_velocity = 100.0
+params/spin_velocity = 0.0
+params/orbit_velocity = 0.0
+params/gravity_direction = 0.0
+params/gravity_strength = 9.8
+params/radial_accel = 0.0
+params/tangential_accel = 0.0
+params/damping = 0.0
+params/initial_angle = 0.0
+params/initial_size = 3.0
+params/final_size = 1.0
+params/hue_variation = 0.0
+params/anim_speed_scale = 1.0
+params/anim_initial_pos = 0.0
+color/color_ramp = SubResource( 1 )
+
+

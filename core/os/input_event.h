@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,6 +51,8 @@ enum {
 	BUTTON_MIDDLE=3,
 	BUTTON_WHEEL_UP=4,
 	BUTTON_WHEEL_DOWN=5,
+	BUTTON_WHEEL_LEFT=6,
+	BUTTON_WHEEL_RIGHT=7,
 	BUTTON_MASK_LEFT=(1<<(BUTTON_LEFT-1)),
 	BUTTON_MASK_RIGHT=(1<<(BUTTON_RIGHT-1)),
 	BUTTON_MASK_MIDDLE=(1<<(BUTTON_MIDDLE-1)),
@@ -143,6 +145,9 @@ enum {
 
 	JOY_ANALOG_2_X = JOY_AXIS_4,
 	JOY_ANALOG_2_Y = JOY_AXIS_5,
+
+	JOY_ANALOG_L2 = JOY_AXIS_6,
+	JOY_ANALOG_R2 = JOY_AXIS_7,
 };
 
 
@@ -184,7 +189,7 @@ struct InputModifierState {
 struct InputEventKey  {
 
 	InputModifierState mod;
-		
+
 	bool pressed; /// otherwise release
 
 	uint32_t scancode; ///< check keyboard.h , KeyCode enum, without modifier masks
@@ -207,11 +212,11 @@ struct InputEventMouse  {
 
 struct InputEventMouseButton : public InputEventMouse {
 
-	
+
 	int button_index;
 	bool pressed; //otherwise released
 	bool doubleclick; //last even less than doubleclick time
-	
+
 };
 
 struct InputEventMouseMotion : public InputEventMouse {

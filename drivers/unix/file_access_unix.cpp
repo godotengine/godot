@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,7 +63,7 @@ Error FileAccessUnix::_open(const String& p_path, int p_mode_flags) {
 		fclose(f);
 	f=NULL;
 
-	String path=fix_path(p_path);
+	path=fix_path(p_path);
 	//printf("opening %ls, %i\n", path.c_str(), Memory::get_static_mem_usage());
 
 	ERR_FAIL_COND_V(f,ERR_ALREADY_IN_USE);
@@ -75,6 +75,8 @@ Error FileAccessUnix::_open(const String& p_path, int p_mode_flags) {
 		mode_string="wb";
 	else if (p_mode_flags==READ_WRITE)
 		mode_string="rb+";
+	else if (p_mode_flags==WRITE_READ)
+		mode_string="wb+";
 	else
 		return ERR_INVALID_PARAMETER;
 
@@ -114,6 +116,9 @@ void FileAccessUnix::close() {
 		return;
 	fclose(f);
 	f = NULL;
+	if (close_notification_func) {
+		close_notification_func(path,flags);
+	}
 	if (save_path!="") {
 
 		//unlink(save_path.utf8().get_data());
@@ -240,6 +245,7 @@ FileAccess * FileAccessUnix::create_libc() {
 	return memnew( FileAccessUnix );
 }
 
+CloseNotificationFunc FileAccessUnix::close_notification_func=NULL;
 
 FileAccessUnix::FileAccessUnix() {
 

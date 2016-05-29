@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,6 +46,8 @@
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
+#include "main/input_default.h"
+#include "joystick_linux.h"
 
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
@@ -76,7 +78,7 @@ class OS_X11 : public OS_Unix {
 	VideoMode current_videomode;
 	List<String> args;
 	Window x11_window;
-	MainLoop *main_loop;	
+	MainLoop *main_loop;
 	::Display* x11_display;
 	char *xmbstring;
 	int xmblen;
@@ -91,7 +93,7 @@ class OS_X11 : public OS_Unix {
 	uint64_t last_click_ms;
 	unsigned int event_id;
 	uint32_t last_button_state;
-	
+
 	PhysicsServer *physics_server;
 	unsigned int get_mouse_button_state(unsigned int p_x11_state);
 	InputModifierState get_key_modifier_state(unsigned int p_x11_state);
@@ -99,7 +101,7 @@ class OS_X11 : public OS_Unix {
 
 	MouseMode mouse_mode;
 	Point2i center;
-	
+
 	void handle_key_event(XKeyEvent *p_event,bool p_echo=false);
 	void process_xevents();
 	virtual void delete_main_loop();
@@ -112,17 +114,21 @@ class OS_X11 : public OS_Unix {
 
 	bool force_quit;
 	bool minimized;
-	int dpad_last[2];
 
 	bool do_mouse_warp;
 
 	const char *cursor_theme;
 	int cursor_size;
+	XcursorImage *img[CURSOR_MAX];
 	Cursor cursors[CURSOR_MAX];
 	Cursor null_cursor;
 	CursorShape current_cursor;
 
 	InputDefault *input;
+
+#ifdef JOYDEV_ENABLED
+	joystick_linux *joystick;
+#endif
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;
@@ -136,31 +142,7 @@ class OS_X11 : public OS_Unix {
 	AudioDriverPulseAudio driver_pulseaudio;
 #endif
 
-	enum {
-		JOYSTICKS_MAX = 8,
-		MAX_JOY_AXIS = 32768, // I've no idea
-	};
-
-	struct Joystick {
-
-		int fd;
-		int last_axis[JOY_AXIS_MAX];
-
-		Joystick() {
-			fd = -1;
-			for (int i=0; i<JOY_AXIS_MAX; i++) {
-
-				last_axis[i] = 0;
-			};
-		};
-	};
-
 	Atom net_wm_icon;
-
-
-	int joystick_count;
-
-	Joystick joysticks[JOYSTICKS_MAX];
 
 	int audio_driver_index;
 	unsigned int capture_idle;
@@ -172,20 +154,16 @@ class OS_X11 : public OS_Unix {
 protected:
 
 	virtual int get_video_driver_count() const;
-	virtual const char * get_video_driver_name(int p_driver) const;	
+	virtual const char * get_video_driver_name(int p_driver) const;
 	virtual VideoMode get_default_video_mode() const;
 
 	virtual int get_audio_driver_count() const;
 	virtual const char * get_audio_driver_name(int p_driver) const;
 
-	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);	
+	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);
 	virtual void finalize();
 
-	virtual void set_main_loop( MainLoop * p_main_loop );    
-
-	void probe_joystick(int p_id = -1);
-	void process_joysticks();
-	void close_joystick(int p_id = -1);
+	virtual void set_main_loop( MainLoop * p_main_loop );
 
 
 public:
@@ -205,7 +183,7 @@ public:
 	virtual void set_icon(const Image& p_icon);
 
 	virtual MainLoop *get_main_loop() const;
-	
+
 	virtual bool can_draw() const;
 
 	virtual void set_clipboard(const String& p_text);
@@ -243,6 +221,12 @@ public:
 	virtual bool is_window_maximized() const;
 
 	virtual void move_window_to_foreground();
+	virtual void alert(const String& p_alert,const String& p_title="ALERT!");
+
+	virtual bool is_joy_known(int p_device);
+	virtual String get_joy_guid(int p_device) const;
+
+	virtual void set_context(int p_context);
 
 	void run();
 

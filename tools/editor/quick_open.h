@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,7 +61,10 @@ public:
 
 	StringName get_base_type() const;
 
-	void popup(const StringName& p_base,bool p_dontclear=false,bool p_add_dirs=false);
+	String get_selected() const;
+	Vector<String> get_selected_files() const;
+
+	void popup(const StringName& p_base,bool p_enable_multi=false,bool p_add_dirs=false,bool p_dontclear=false);
 	EditorQuickOpen();
 };
 

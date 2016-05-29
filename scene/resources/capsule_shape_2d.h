@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,6 +48,9 @@ public:
 
 	void set_radius(real_t p_radius);
 	real_t get_radius() const;
+
+	virtual void draw(const RID& p_to_rid,const Color& p_color);
+	virtual Rect2 get_rect() const ;
 
 	CapsuleShape2D();
 };

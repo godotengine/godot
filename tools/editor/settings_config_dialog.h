@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,36 +40,26 @@ class EditorSettingsDialog : public AcceptDialog {
 
 
 
-	ConfirmationDialog *install_confirm;
 	bool updating;
-	ConfirmationDialog *plugin_setting;
-	String plugin_setting_edit;
-
-	RichTextLabel *plugin_description;
 
 	TabContainer *tabs;
 
-	Button *rescan_plugins;
-	Tree *plugins;
-	PropertyEditor *property_editor;
+	LineEdit *search_box;
+	ToolButton *clear_button;
+	SectionedPropertyEditor *property_editor;
 
 	Timer *timer;
 
 	virtual void cancel_pressed();
 	virtual void ok_pressed();
 
-	void _plugin_edited();
-
-	void _plugin_settings(Object *p_obj,int p_cell,int p_index);
 	void _settings_changed();
 	void _settings_save();
 
-	void _plugin_install();
-
 	void _notification(int p_what);
 
-	void _rescan_plugins();
-	void _update_plugins();
+
+	void _clear_search_box();
 
 protected:
 

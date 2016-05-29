@@ -5,10 +5,22 @@
 
 class StreamPeerSSL : public StreamPeer {
 	OBJ_TYPE(StreamPeerSSL,StreamPeer);
+public:
+
+	typedef void (*LoadCertsFromMemory)(const ByteArray& p_certs);
 protected:
 	static StreamPeerSSL* (*_create)();
 	static void _bind_methods();
+
+	static LoadCertsFromMemory load_certs_func;
+	static bool available;
+
+
+friend class Main;
+	static bool initialize_certs;
+
 public:
+
 
 	enum Status {
 		STATUS_DISCONNECTED,
@@ -25,6 +37,8 @@ public:
 
 	static StreamPeerSSL* create();
 
+	static void load_certs_from_memory(const ByteArray& p_memory);
+	static bool is_available();
 
 	StreamPeerSSL();
 };

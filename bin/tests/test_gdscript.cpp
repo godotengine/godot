@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,7 +81,7 @@ static String _parser_expr(const GDParser::Node *p_expr) {
 
 		case GDParser::Node::TYPE_IDENTIFIER: {
 
-			const GDParser::IdentifierNode *id_node = static_cast<const GDParser::IdentifierNode *>(p_expr);			
+			const GDParser::IdentifierNode *id_node = static_cast<const GDParser::IdentifierNode *>(p_expr);
 			txt=id_node->name;
 		} break;
 		case GDParser::Node::TYPE_CONSTANT: {
@@ -487,12 +487,12 @@ static String _disassemble_addr(const Ref<GDScript>& p_script,const GDFunction& 
 static void _disassemble_class(const Ref<GDScript>& p_class,const Vector<String>& p_code) {
 
 
-	const Map<StringName,GDFunction>& mf = p_class->debug_get_member_functions();
+	const Map<StringName,GDFunction*>& mf = p_class->debug_get_member_functions();
 
-	for(const Map<StringName,GDFunction>::Element *E=mf.front();E;E=E->next()) {
+	for(const Map<StringName,GDFunction*>::Element *E=mf.front();E;E=E->next()) {
 
 
-		const GDFunction &func=E->get();
+		const GDFunction &func=*E->get();
 		const int *code = func.get_code();
 		int codelen=func.get_code_size();
 		String defargs;

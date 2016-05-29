@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,6 +44,10 @@
 #include "stream_peer_tcp_posix.h"
 #include "packet_peer_udp_posix.h"
 
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
+
 #ifdef __FreeBSD__
 #include <sys/param.h>
 #endif
@@ -65,15 +69,25 @@ void OS_Unix::print_error(const char* p_function,const char* p_file,int p_line,c
 	if (!_print_error_enabled)
 		return;
 
-	if (p_rationale && p_rationale[0]) {
+	const char* err_details;
+	if (p_rationale && p_rationale[0])
+		err_details=p_rationale;
+	else
+		err_details=p_code;
 
-		print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_rationale);
-		print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
-
-	} else {
-		print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_code);
-		print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
-
+	switch(p_type) {
+		case ERR_ERROR:
+			print("\E[1;31mERROR: %s: \E[0m\E[1m%s\n",p_function,err_details);
+			print("\E[0;31m   At: %s:%i.\E[0m\n",p_file,p_line);
+			break;
+		case ERR_WARNING:
+			print("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n",p_function,err_details);
+			print("\E[0;33m   At: %s:%i.\E[0m\n",p_file,p_line);
+			break;
+		case ERR_SCRIPT:
+			print("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m%s\n",p_function,err_details);
+			print("\E[0;35m   At: %s:%i.\E[0m\n",p_file,p_line);
+			break;
 	}
 }
 
@@ -139,8 +153,7 @@ void OS_Unix::finalize_core() {
 
 	if (mempool_dynamic)
 		memdelete( mempool_dynamic );
-	if (mempool_static)
-		delete mempool_static;
+	delete mempool_static;
 
 }
 
@@ -223,12 +236,12 @@ uint64_t OS_Unix::get_unix_time() const {
 	return time(NULL);
 };
 
-uint64_t OS_Unix::get_system_time_msec() const {
+uint64_t OS_Unix::get_system_time_secs() const {
 	struct timeval tv_now;
 	gettimeofday(&tv_now, NULL);
-	localtime(&tv_now.tv_usec);
-	uint64_t msec = tv_now.tv_usec/1000;
-	return msec;
+	//localtime(&tv_now.tv_usec);
+	//localtime((const long *)&tv_now.tv_usec);
+	return uint64_t(tv_now.tv_sec);
 }
 
 
@@ -242,13 +255,17 @@ OS::Date OS_Unix::get_date(bool utc) const {
 		lt=localtime(&t);
 	Date ret;
 	ret.year=1900+lt->tm_year;
-	ret.month=(Month)lt->tm_mon;
+	// Index starting at 1 to match OS_Unix::get_date
+	//   and Windows SYSTEMTIME and tm_mon follows the typical structure 
+	//   of 0-11, noted here: http://www.cplusplus.com/reference/ctime/tm/
+	ret.month=(Month)(lt->tm_mon + 1);
 	ret.day=lt->tm_mday;
 	ret.weekday=(Weekday)lt->tm_wday;
 	ret.dst=lt->tm_isdst;
 	
 	return ret;
 }
+
 OS::Time OS_Unix::get_time(bool utc) const {
 	time_t t=time(NULL);
 	struct tm *lt;
@@ -466,6 +483,14 @@ String OS_Unix::get_data_dir() const {
 
 }
 
+String OS_Unix::get_installed_templates_path() const {
+	String p=get_global_settings_path();
+	if (p!="")
+		return p+"/templates/";
+	else
+		return "";
+}
+
 String OS_Unix::get_executable_path() const {
 
 #ifdef __linux__
@@ -487,6 +512,23 @@ String OS_Unix::get_executable_path() const {
 	realpath(OS::get_executable_path().utf8().get_data(), resolved_path);
 
 	return String(resolved_path);
+#elif defined(__APPLE__)
+	char temp_path[1];
+	uint32_t buff_size=1;
+	_NSGetExecutablePath(temp_path, &buff_size);
+
+	char* resolved_path = new char[buff_size + 1];
+
+	if (_NSGetExecutablePath(resolved_path, &buff_size) == 1)
+		WARN_PRINT("MAXPATHLEN is too small");
+
+	String path(resolved_path);
+	delete[] resolved_path;
+
+	return path;
+#elif defined(EMSCRIPTEN)
+	// We return nothing
+	return String();
 #else
 	ERR_PRINT("Warning, don't know how to obtain executable path on this OS! Please override this function properly.");
 	return OS::get_executable_path();

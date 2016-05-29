@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -122,6 +122,13 @@ Error ImageLoaderPNG::_load_image(void *rf_up,png_rw_ptr p_func,Image *p_image) 
 	if (depth > 8) {
 		png_set_strip_16(png);
 		png_read_update_info(png, info);
+	}
+
+	if (png_get_valid(png,info,PNG_INFO_tRNS)) {
+//		png_set_expand_gray_1_2_4_to_8(png);
+		png_set_tRNS_to_alpha(png);
+		png_read_update_info(png, info);
+		png_get_IHDR(png, info, &width, &height, &depth, &color, NULL, NULL, NULL);
 	}
 
 	int palette_colors = 0;

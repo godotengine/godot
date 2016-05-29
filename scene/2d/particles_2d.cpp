@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -198,13 +198,21 @@ void ParticleAttractor2D::set_particles_path(NodePath p_path) {
 
 	path=p_path;
 	_update_owner();
+	update_configuration_warning();
 }
 NodePath ParticleAttractor2D::get_particles_path() const {
 
 	return path;
 }
 
+String ParticleAttractor2D::get_configuration_warning() const {
 
+	if (!has_node(path) || !get_node(path) || !get_node(path)->cast_to<Particles2D>()) {
+		return TTR("Path property must point to a valid Particles2D node to work.");
+	}
+
+	return String();
+}
 
 ParticleAttractor2D::ParticleAttractor2D() {
 
@@ -504,7 +512,7 @@ void Particles2D::_notification(int p_what) {
 				invxform=get_global_transform().affine_inverse();
 
 			int start_particle = (int)(time * (float)particle_count / lifetime);
-			
+
 			for (int id=0;id<particle_count;++id) {
 				int i = start_particle + id;
 				if (i >= particle_count) {
@@ -645,7 +653,7 @@ static const char* _particlesframe_property_rnames[Particles2D::PARAM_MAX]={
 	"randomness/gravity_strength",
 	"randomness/radial_accel",
 	"randomness/tangential_accel",
-	"randomness/damping",	
+	"randomness/damping",
 	"randomness/initial_angle",
 	"randomness/initial_size",
 	"randomness/final_size",
@@ -697,7 +705,7 @@ bool Particles2D::is_emitting() const {
 
 void Particles2D::set_amount(int p_amount) {
 
-	ERR_FAIL_INDEX(p_amount,1024);
+	ERR_FAIL_INDEX(p_amount,1024+1);
 
 	particles.resize(p_amount);
 }
@@ -719,7 +727,7 @@ float Particles2D::get_emit_timeout() const {
 
 void Particles2D::set_lifetime(float p_lifetime) {
 
-	ERR_FAIL_INDEX(p_lifetime,3600);
+	ERR_FAIL_INDEX(p_lifetime,3600+1);
 
 	lifetime=p_lifetime;
 }
@@ -994,6 +1002,15 @@ DVector<Vector2> Particles2D::get_emission_points() const{
 	return emission_points;
 }
 
+void Particles2D::reset() {
+
+	for(int i=0;i<particles.size();i++) {
+		particles[i].active=false;
+	}
+	time=0;
+	active_count=0;
+}
+
 void Particles2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_emitting","active"),&Particles2D::set_emitting);
@@ -1057,6 +1074,7 @@ void Particles2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_color_phase_pos","phase"),&Particles2D::get_color_phase_pos);
 
 	ObjectTypeDB::bind_method(_MD("pre_process","time"),&Particles2D::pre_process);
+	ObjectTypeDB::bind_method(_MD("reset"),&Particles2D::reset);
 
 	ObjectTypeDB::bind_method(_MD("set_use_local_space","enable"),&Particles2D::set_use_local_space);
 	ObjectTypeDB::bind_method(_MD("is_using_local_space"),&Particles2D::is_using_local_space);

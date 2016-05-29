@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -236,13 +236,12 @@ void AudioDriverOpenSL::start(){
 
 	ERR_FAIL_COND( res !=SL_RESULT_SUCCESS );
 	/* Initialize arrays required[] and iidArray[] */
-	int i;
 	SLboolean required[MAX_NUMBER_INTERFACES];
 	SLInterfaceID iidArray[MAX_NUMBER_INTERFACES];
 
 #if 0
 
-	for (i=0; i<MAX_NUMBER_INTERFACES; i++)
+	for (int i=0; i<MAX_NUMBER_INTERFACES; i++)
 	{
 	    required[i] = SL_BOOLEAN_FALSE;
 	    iidArray[i] = SL_IID_NULL;

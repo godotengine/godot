@@ -1,0 +1,16 @@
+[gd_resource type="CanvasItemMaterial" load_steps=4 format=1]
+
+[ext_resource path="res://faceMask.png" type="Texture" id=1]
+[ext_resource path="res://faceNormal.png" type="Texture" id=2]
+
+[sub_resource type="CanvasItemShader" id=1]
+
+_code = { "fragment":"uniform texture normal;\n\nvec2 ywnormal=tex( normal,UV).wy * vec2(2.0,2.0) - vec2(1.0,1.0);\nNORMAL=vec3(ywnormal,sqrt(1 - (ywnormal.x * ywnormal.x) - (ywnormal.y * ywnormal.y) ));\n", "fragment_ofs":0, "light":"// this is the half size of the tile in pixels\n\nvec2 tile_vec=vec2(47,22);\n\n// this mask is used to see which part of the tile is the background (^)\n// or the foregronud (v)\n\nuniform texture bg_mask;\n\nbool behind = tex(bg_mask,UV).a>0.5;\nfloat y_ofs;\n\nif (behind) {\n\t// ^ part\n\t\n\ty_ofs = tile_vec.y*2 - abs(VAR1.x * tile_vec.y / tile_vec.x);\n} else {\n\t// v part\n\t\n\ty_ofs = abs(VAR1.x * tile_vec.y / tile_vec.x);\n}\n\nvec2 point_2d = vec2(VAR1.x,(tile_vec.y - VAR1.y));\n\n// compute a pseudo 3D point for both the light and the texel\n// this makes the normalmap calculation work properly\n\nvec3 point_3d = vec3( point_2d.x, point_2d.y - y_ofs, y_ofs );\nvec3 light_3d = vec3(point_2d.x-LIGHT_VEC.x,LIGHT_HEIGHT,(-(VAR1.y - (LIGHT_VEC.y))+tile_vec.y));\n\n//this could be optimized\n//a rotation matrix is created to convert the normalmap vector\n//to the same coordinate space as our pseudo 3d point and light\n\nfloat r = asin(tile_vec.y / tile_vec.x);\nmat3 rot_mat = mat3( vec3(1,0,0), vec3(0,cos(r),-sin(r)), vec3(0,sin(r),cos(r)));\nvec3 n =  rot_mat * NORMAL;\nn.y=-n.y;\n\n//finally compute the dot product. Simple diffuse is computed here,\n//but specular could be added and it will look prettier\n\nfloat dp = max(dot(normalize(n),-normalize(light_3d-point_3d)),0);\nLIGHT=vec4(vec3(dp),1.0)*COLOR*LIGHT_COLOR*3.0;\n\n//finally, after light was cmoputed, make the light \"flat\"\n//this makes the shadows work properly\n//the +2 is added to avoid z-fighting between caster and pseudo 3d coords.\n\nLIGHT_VEC.y+=point_3d.y+2;\n\n", "light_ofs":0, "vertex":"//assign the local vertex coordinates to a varying\n//the center coordinates (0,0) matches the sprite center \n// (shows as a cross when the sprite is selected)\n\nVAR1.xy=SRC_VERTEX;\n", "vertex_ofs":0 }
+
+[resource]
+
+shader/shader = SubResource( 1 )
+shader/shading_mode = 0
+shader_param/normal = ExtResource( 2 )
+shader_param/bg_mask = ExtResource( 1 )
+

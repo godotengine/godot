@@ -57,11 +57,11 @@ public:
 	virtual int get_device_count() const { return 0; };
 	virtual String get_device_name(int p_device) const  { return String(); }
 	virtual String get_device_info(int p_device) const { return String(); }
-	virtual Error run(int p_device,bool p_dumb=false,bool p_remote_debug=false);
+	virtual Error run(int p_device,int p_flags=0);
 
-	virtual bool requieres_password(bool p_debug) const { return false; }
+	virtual bool requires_password(bool p_debug) const { return false; }
 	virtual String get_binary_extension() const { return "zip"; }
-	virtual Error export_project(const String& p_path,bool p_debug,bool p_dumb=false,bool p_remote_debug=false);
+	virtual Error export_project(const String& p_path,bool p_debug,int p_flags=0);
 
 	virtual bool can_export(String *r_error=NULL) const;
 
@@ -245,21 +245,25 @@ void EditorExportPlatformOSX::_fix_plist(Vector<uint8_t>& plist,const String& p_
 	}
 }
 
-Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug, bool p_dumb, bool p_remote_debug) {
+Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug, int p_flags) {
 
 	String src_pkg;
 
 	EditorProgress ep("export","Exporting for OSX",104);
 
-	String pkg_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/osx.zip";
 
-	if (p_debug) {
+	if (p_debug)
+		src_pkg=custom_debug_package;
+	else
+		src_pkg=custom_release_package;
 
-		src_pkg=custom_debug_package!=""?custom_debug_package:pkg_path;
-	} else {
-
-		src_pkg=custom_release_package!=""?custom_release_package:pkg_path;
-
+	if (src_pkg=="") {
+		String err;
+		src_pkg=find_export_template("osx.zip", &err);
+		if (src_pkg=="") {
+			EditorNode::add_io_error(err);
+			return ERR_FILE_NOT_FOUND;
+		}
 	}
 
 
@@ -437,7 +441,7 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 }
 
 
-Error EditorExportPlatformOSX::run(int p_device, bool p_dumb, bool p_remote_debug) {
+Error EditorExportPlatformOSX::run(int p_device, int p_flags) {
 
 	return OK;
 }
@@ -464,9 +468,8 @@ bool EditorExportPlatformOSX::can_export(String *r_error) const {
 
 	bool valid=true;
 	String err;
-	String exe_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
 
-	if (!FileAccess::exists(exe_path+"osx.zip")) {
+	if (!exists_export_template("osx.zip")) {
 		valid=false;
 		err+="No export templates found.\nDownload and install export templates.\n";
 	}

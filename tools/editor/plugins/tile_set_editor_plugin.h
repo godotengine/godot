@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 
 #include "scene/resources/tile_set.h"
 #include "tools/editor/editor_node.h"
+#include "tools/editor/editor_name_dialog.h"
 
 
 class TileSetEditor : public Control {
@@ -44,7 +45,8 @@ class TileSetEditor : public Control {
 	EditorNode *editor;
 	MenuButton *menu;
 	ConfirmationDialog *cd;
-	int to_erase;
+	EditorNameDialog *nd;
+	AcceptDialog *err_dialog;
 
 	enum {
 
@@ -56,7 +58,8 @@ class TileSetEditor : public Control {
 
 	int option;
 	void _menu_cbk(int p_option);
-	void _menu_confirm();	
+	void _menu_confirm();
+	void _name_dialog_confirm(const String& name);
 
 	static void _import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge);
 

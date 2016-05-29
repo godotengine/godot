@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,14 @@
 
 #include "servers/physics_server.h"
 
+Vector<Vector3> RayShape::_gen_debug_mesh_lines() {
 
+	Vector<Vector3> points;
+	points.push_back(Vector3());
+	points.push_back(Vector3(0,0,get_length()));
+
+	return points;
+}
 
 void RayShape::_update_shape() {
 

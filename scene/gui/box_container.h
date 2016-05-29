@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,15 +35,30 @@ class BoxContainer : public Container {
 
 	OBJ_TYPE(BoxContainer,Container);
 
+public:
+
+	enum AlignMode {
+		ALIGN_BEGIN,
+		ALIGN_CENTER,
+		ALIGN_END
+	};
+
+private:
 	bool vertical;
+	AlignMode align;
 
 	void _resort();
 protected:
 
 	void _notification(int p_what);
+
+	static void _bind_methods();
 public:
 
 	void add_spacer(bool p_begin=false);
+
+	void set_alignment(AlignMode p_align);
+	AlignMode get_alignment() const;
 
 	virtual Size2 get_minimum_size() const;
 
@@ -72,5 +87,7 @@ public:
 
 	VBoxContainer() : BoxContainer(true) {}
 };
+
+VARIANT_ENUM_CAST(BoxContainer::AlignMode);
 
 #endif // BOX_CONTAINER_H

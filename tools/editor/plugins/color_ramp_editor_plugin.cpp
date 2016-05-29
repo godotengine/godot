@@ -3,14 +3,17 @@
  */
 
 #include "color_ramp_editor_plugin.h"
+#include "spatial_editor_plugin.h"
+#include "canvas_item_editor_plugin.h"
 
 ColorRampEditorPlugin::ColorRampEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
 	ramp_editor = memnew( ColorRampEdit );
 
-	add_custom_control(CONTAINER_CANVAS_EDITOR_BOTTOM,ramp_editor);
-	//add_custom_control(CONTAINER_SPATIAL_EDITOR_BOTTOM,ramp_editor);
+
+	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM,ramp_editor);
+
 	ramp_editor->set_custom_minimum_size(Size2(100, 48));
 	ramp_editor->hide();
 	ramp_editor->connect("ramp_changed", this, "ramp_changed");
@@ -28,6 +31,7 @@ void ColorRampEditorPlugin::edit(Object *p_object) {
 bool ColorRampEditorPlugin::handles(Object *p_object) const {
 
 	return p_object->is_type("ColorRamp");
+
 }
 
 void ColorRampEditorPlugin::make_visible(bool p_visible) {
@@ -54,9 +58,9 @@ void ColorRampEditorPlugin::_ramp_changed() {
 		Vector<Color> old_colors=color_ramp_ref->get_colors();
 
 		if (old_offsets.size()!=new_offsets.size())
-			ur->create_action("Add/Remove Color Ramp Point");
+			ur->create_action(TTR("Add/Remove Color Ramp Point"));
 		else
-			ur->create_action("Modify Color Ramp",true);
+			ur->create_action(TTR("Modify Color Ramp"),true);
 		ur->add_do_method(this,"undo_redo_color_ramp",new_offsets,new_colors);
 		ur->add_undo_method(this,"undo_redo_color_ramp",old_offsets,old_colors);
 		ur->commit_action();

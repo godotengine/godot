@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 #include "io/marshalls.h"
+#include "tools/editor/editor_settings.h"
 
 class _EditorSampleImportOptions : public Object {
 
@@ -156,7 +157,7 @@ public:
 		edit_normalize=true;
 		edit_loop=false;
 
-		compress_mode=COMPRESS_MODE_DISABLED;
+		compress_mode=COMPRESS_MODE_RAM;
 		compress_bitrate=COMPRESS_128;
 	}
 
@@ -250,24 +251,24 @@ public:
 		Vector<String> samples = import_path->get_text().split(",");
 
 		if (samples.size()==0) {
-			error_dialog->set_text("No samples to import!");
+			error_dialog->set_text(TTR("No samples to import!"));
 			error_dialog->popup_centered(Size2(200,100));
 		}
 
 		if (save_path->get_text().strip_edges()=="") {
-			error_dialog->set_text("Target path is empty.");
+			error_dialog->set_text(TTR("Target path is empty."));
 			error_dialog->popup_centered_minsize();
 			return;
 		}
 
 		if (!save_path->get_text().begins_with("res://")) {
-			error_dialog->set_text("Target path must be full resource path.");
+			error_dialog->set_text(TTR("Target path must be a complete resource path."));
 			error_dialog->popup_centered_minsize();
 			return;
 		}
 
 		if (!DirAccess::exists(save_path->get_text())) {
-			error_dialog->set_text("Target path must exist.");
+			error_dialog->set_text(TTR("Target path must exist."));
 			error_dialog->popup_centered_minsize();
 			return;
 		}
@@ -291,7 +292,7 @@ public:
 
 			String dst = save_path->get_text();
 			if (dst=="") {
-				error_dialog->set_text("Save path is empty!");
+				error_dialog->set_text(TTR("Save path is empty!"));
 				error_dialog->popup_centered(Size2(200,100));
 			}
 
@@ -330,7 +331,7 @@ public:
 		plugin=p_plugin;
 
 
-		set_title("Import Audio Samples");
+		set_title(TTR("Import Audio Samples"));
 
 		VBoxContainer *vbc = memnew( VBoxContainer );
 		add_child(vbc);
@@ -338,7 +339,7 @@ public:
 
 
 		HBoxContainer *hbc = memnew( HBoxContainer );
-		vbc->add_margin_child("Source Sample(s):",hbc);
+		vbc->add_margin_child(TTR("Source Sample(s):"),hbc);
 
 		import_path = memnew( LineEdit );
 		import_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -351,7 +352,7 @@ public:
 		import_choose->connect("pressed", this,"_browse");
 
 		hbc = memnew( HBoxContainer );
-		vbc->add_margin_child("Target Path:",hbc);
+		vbc->add_margin_child(TTR("Target Path:"),hbc);
 
 		save_path = memnew( LineEdit );
 		save_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -376,12 +377,12 @@ public:
 		save_select->connect("dir_selected", this,"_choose_save_dir");
 
 		get_ok()->connect("pressed", this,"_import");
-		get_ok()->set_text("Import");
+		get_ok()->set_text(TTR("Import"));
 
 
 		error_dialog = memnew ( ConfirmationDialog );
 		add_child(error_dialog);
-		error_dialog->get_ok()->set_text("Accept");
+		error_dialog->get_ok()->set_text(TTR("Accept"));
 	//	error_dialog->get_cancel()->hide();
 
 		set_hide_on_ok(false);
@@ -389,7 +390,7 @@ public:
 
 		option_editor = memnew( PropertyEditor );
 		option_editor->hide_top_label();
-		vbc->add_margin_child("Options:",option_editor,true);
+		vbc->add_margin_child(TTR("Options:"),option_editor,true);
 	}
 
 	~EditorSampleImportDialog() {
@@ -480,10 +481,10 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 				float mu = pos-Math::floor(pos);
 				int ipos = int(Math::floor(pos));
 
-				float y0=data[MAX(0,ipos-i)];
-				float y1=data[ipos];
-				float y2=data[MIN(len-1,ipos+1)];
-				float y3=data[MIN(len-1,ipos+2)];
+				float y0=data[MAX(0,ipos-1)*chans+c];
+				float y1=data[ipos*chans+c];
+				float y2=data[MIN(len-1,ipos+1)*chans+c];
+				float y3=data[MIN(len-1,ipos+2)*chans+c];
 
 				float mu2 = mu*mu;
 				float a0 = y3 - y2 - y0 + y1;
@@ -580,8 +581,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 
 	int compression = from->get_option("compress/mode");
 	bool force_mono = from->get_option("force/mono");
-	if (compression==_EditorSampleImportOptions::COMPRESS_MODE_RAM)
-		force_mono=true;
+
 
 	if (force_mono && chans==2) {
 
@@ -608,9 +608,47 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 	if ( compression == _EditorSampleImportOptions::COMPRESS_MODE_RAM) {
 
 		dst_format=Sample::FORMAT_IMA_ADPCM;
+		if (chans==1) {
+			_compress_ima_adpcm(data,dst_data);
+		} else {
 
-		_compress_ima_adpcm(data,dst_data);
-		print_line("compressing ima-adpcm, resulting buffersize is "+itos(dst_data.size())+" from "+itos(data.size()));
+			print_line("INTERLEAAVE!");
+
+
+
+			//byte interleave
+			Vector<float> left;
+			Vector<float> right;
+
+			int tlen = data.size()/2;
+			left.resize(tlen);
+			right.resize(tlen);
+
+			for(int i=0;i<tlen;i++) {
+				left[i]=data[i*2+0];
+				right[i]=data[i*2+1];
+			}
+
+			DVector<uint8_t> bleft;
+			DVector<uint8_t> bright;
+
+			_compress_ima_adpcm(left,bleft);
+			_compress_ima_adpcm(right,bright);
+
+			int dl = bleft.size();
+			dst_data.resize( dl *2 );
+
+			DVector<uint8_t>::Write w=dst_data.write();
+			DVector<uint8_t>::Read rl=bleft.read();
+			DVector<uint8_t>::Read rr=bright.read();
+
+			for(int i=0;i<dl;i++) {
+				w[i*2+0]=rl[i];
+				w[i*2+1]=rr[i];
+			}
+		}
+
+//		print_line("compressing ima-adpcm, resulting buffersize is "+itos(dst_data.size())+" from "+itos(data.size()));
 
 	} else {
 
@@ -710,7 +748,7 @@ void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,D
 	*(out++) =0;
 
 	for (i=0;i<datalen;i++) {
-		int step,diff,vpdiff,signed_nibble,p,mask;
+		int step,diff,vpdiff,mask;
 		uint8_t nibble;
 		int16_t xm_sample;
 
@@ -781,9 +819,107 @@ void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,D
 
 }
 
+
+EditorSampleImportPlugin* EditorSampleImportPlugin::singleton=NULL;
+
+
+void EditorSampleImportPlugin::import_from_drop(const Vector<String>& p_drop, const String &p_dest_path) {
+
+
+	Vector<String> files;
+	for(int i=0;i<p_drop.size();i++) {
+		String ext = p_drop[i].extension().to_lower();
+
+		if (ext=="wav") {
+
+			files.push_back(p_drop[i]);
+		}
+	}
+
+	if (files.size()) {
+		import_dialog();
+		dialog->_choose_files(files);
+		dialog->_choose_save_dir(p_dest_path);
+	}
+}
+
+void EditorSampleImportPlugin::reimport_multiple_files(const Vector<String>& p_list) {
+
+	if (p_list.size()==0)
+		return;
+
+	Vector<String> sources;
+	for(int i=0;i<p_list.size();i++) {
+		int idx;
+		EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->find_file(p_list[i],&idx);
+		if (efsd) {
+			for(int j=0;j<efsd->get_source_count(idx);j++) {
+				String file = expand_source_path(efsd->get_source_file(idx,j));
+				if (sources.find(file)==-1) {
+					sources.push_back(file);
+				}
+
+			}
+		}
+	}
+
+	if (sources.size()) {
+
+		dialog->popup_import(p_list[0]);
+		dialog->_choose_files(sources);
+		dialog->_choose_save_dir(p_list[0].get_base_dir());
+	}
+}
+
+bool EditorSampleImportPlugin::can_reimport_multiple_files() const {
+
+	return true;
+}
+
 EditorSampleImportPlugin::EditorSampleImportPlugin(EditorNode* p_editor) {
 
+	singleton=this;
 	dialog = memnew( EditorSampleImportDialog(this));
 	p_editor->get_gui_base()->add_child(dialog);
 }
+
+Vector<uint8_t> EditorSampleExportPlugin::custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform) {
+
+
+
+	if (EditorImportExport::get_singleton()->sample_get_action()==EditorImportExport::SAMPLE_ACTION_NONE || p_path.extension().to_lower()!="wav") {
+
+		return Vector<uint8_t>();
+	}
+
+	Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
+
+	imd->add_source(EditorImportPlugin::validate_source_path(p_path));
+
+	imd->set_option("force/8_bit",false);
+	imd->set_option("force/mono",false);
+	imd->set_option("force/max_rate",true);
+	imd->set_option("force/max_rate_hz",EditorImportExport::get_singleton()->sample_get_max_hz());
+	imd->set_option("edit/trim",EditorImportExport::get_singleton()->sample_get_trim());
+	imd->set_option("edit/normalize",false);
+	imd->set_option("edit/loop",false);
+	imd->set_option("compress/mode",1);
+
+	String savepath = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp/smpconv.smp");
+	Error err = EditorSampleImportPlugin::singleton->import(savepath,imd);
+
+
+	ERR_FAIL_COND_V(err!=OK,Vector<uint8_t>());
+
+	p_path=p_path.basename()+".converted.smp";
+	return FileAccess::get_file_as_array(savepath);
+
+}
+
+
+
+EditorSampleExportPlugin::EditorSampleExportPlugin() {
+
+}
+
 

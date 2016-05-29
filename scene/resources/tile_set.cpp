@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -344,13 +344,13 @@ Array TileSet::_tile_get_shapes(int p_id) const{
 }
 
 Array TileSet::_get_tiles_ids() const{
-	
+
 	Array arr;
 
 	for (Map<int, Data>::Element *E = tile_map.front(); E; E = E->next()) {
-		arr.push_back(E->key());		
+		arr.push_back(E->key());
 	}
-	
+
 	return arr;
 }
 

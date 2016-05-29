@@ -1,3 +1,6 @@
+
+extends Control
+
 # Note for the reader:
 #
 # This demo conveniently uses the same names for actions and for the container nodes
@@ -9,11 +12,11 @@
 # action and the node, e.g.:
 # button.connect("pressed", self, "wait_for_input", [ button, action ])
 
-extends Control
-
+# Member variables
 var player_actions = [ "move_up", "move_down", "move_left", "move_right", "jump" ]
 var action # To register the action the UI is currently handling
 var button # Button node corresponding to the above action
+
 
 func wait_for_input(action_bind):
 	action = action_bind
@@ -21,6 +24,7 @@ func wait_for_input(action_bind):
 	button = get_node("bindings").get_node(action).get_node("Button")
 	get_node("contextual_help").set_text("Press a key to assign to the '" + action + "' action.")
 	set_process_input(true)
+
 
 func _input(event):
 	# Handle the first pressed key
@@ -39,6 +43,7 @@ func _input(event):
 			# Add the new key binding
 			InputMap.action_add_event(action, event)
 
+
 func _ready():
 	# Initialise each button with the default key binding from InputMap
 	var input_event
@@ -46,4 +51,6 @@ func _ready():
 		# We assume that the key binding that we want is the first one (0), if there are several
 		input_event = InputMap.get_action_list(action)[0]
 		# See note at the beginning of the script
-		get_node("bindings").get_node(action).get_node("Button").set_text(OS.get_scancode_string(input_event.scancode))
+		var button = get_node("bindings").get_node(action).get_node("Button")
+		button.set_text(OS.get_scancode_string(input_event.scancode))
+		button.connect("pressed", self, "wait_for_input", [action])

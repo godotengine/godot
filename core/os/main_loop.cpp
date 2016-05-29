@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,9 +43,11 @@ void MainLoop::_bind_methods() {
 	BIND_VMETHOD( MethodInfo("_initialize") );
 	BIND_VMETHOD( MethodInfo("_iteration",PropertyInfo(Variant::REAL,"delta")) );
 	BIND_VMETHOD( MethodInfo("_idle",PropertyInfo(Variant::REAL,"delta")) );
+	BIND_VMETHOD( MethodInfo("_drop_files",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::INT,"screen")) );
 	BIND_VMETHOD( MethodInfo("_finalize") );
 
-
+	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_ENTER);
+	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_EXIT);
 	BIND_CONSTANT(NOTIFICATION_WM_FOCUS_IN);
 	BIND_CONSTANT(NOTIFICATION_WM_FOCUS_OUT);
 	BIND_CONSTANT(NOTIFICATION_WM_QUIT_REQUEST);
@@ -107,6 +109,15 @@ bool MainLoop::idle(float p_time) {
 
 	return false;
 }
+
+void MainLoop::drop_files(const Vector<String>& p_files,int p_from_screen) {
+
+
+	if (get_script_instance())
+		get_script_instance()->call("_drop_files",p_files,p_from_screen);
+
+}
+
 void MainLoop::finish() {
 
 	if (get_script_instance()) {

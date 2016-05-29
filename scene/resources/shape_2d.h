@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,6 +53,8 @@ public:
 	Variant collide_with_motion_and_get_contacts(const Matrix32& p_local_xform, const Vector2& p_local_motion, const Ref<Shape2D>& p_shape, const Matrix32& p_shape_xform, const Vector2 &p_p_shape_motion);
 	Variant collide_and_get_contacts(const Matrix32& p_local_xform,  const Ref<Shape2D>& p_shape, const Matrix32& p_shape_xform);
 
+	virtual void draw(const RID& p_to_rid,const Color& p_color) {}
+	virtual Rect2 get_rect() const { return Rect2(); }
 	virtual RID get_rid() const;
 	Shape2D();
 	~Shape2D();

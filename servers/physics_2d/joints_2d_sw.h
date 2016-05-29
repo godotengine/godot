@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -121,6 +121,8 @@ public:
 	virtual bool setup(float p_step);
 	virtual void solve(float p_step);
 
+	void set_param(Physics2DServer::PinJointParam p_param, real_t p_value);
+	real_t get_param(Physics2DServer::PinJointParam p_param) const;
 
 	PinJoint2DSW(const Vector2& p_pos,Body2DSW* p_body_a,Body2DSW* p_body_b=NULL);
 	~PinJoint2DSW();

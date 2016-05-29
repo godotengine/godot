@@ -8,8 +8,6 @@ void Navigation2D::_navpoly_link(int p_id) {
 	NavMesh &nm=navpoly_map[p_id];
 	ERR_FAIL_COND(nm.linked);
 
-	print_line("LINK");
-
 	DVector<Vector2> vertices=nm.navpoly->get_vertices();
 	int len = vertices.size();
 	if (len==0)
@@ -47,7 +45,6 @@ void Navigation2D::_navpoly_link(int p_id) {
 			center+=ep;
 			e.point=_get_point(ep);
 			p.edges[j]=e;
-
 
 			int idxn = indices[(j+1)%plen];
 			if (idxn<0 || idxn>=len) {
@@ -121,7 +118,7 @@ void Navigation2D::_navpoly_unlink(int p_id) {
 	NavMesh &nm=navpoly_map[p_id];
 	ERR_FAIL_COND(!nm.linked);
 
-	print_line("UNLINK");
+	//print_line("UNLINK");
 
 	for (List<Polygon>::Element *E=nm.polygons.front();E;E=E->next()) {
 
@@ -358,7 +355,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 
 	if (!begin_poly || !end_poly) {
 
-		//print_line("No Path Path");
 		return Vector<Vector2>(); //no path
 	}
 
@@ -498,7 +494,29 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 
 		open_list.erase(least_cost_poly);
 	}
+#if 0
+debug path
+	{
+		       Polygon *p=end_poly;
+		       int idx=0;
 
+		       while(true) {
+			   int prev = p->prev_edge;
+			   int prev_n = (p->prev_edge+1)%p->edges.size();
+			   Vector2 point = (_get_vertex(p->edges[prev].point) + _get_vertex(p->edges[prev_n].point))*0.5;
+			   String points;
+			   for(int i=0;i<p->edges.size();i++) {
+				   if (i>0)
+					   points+=", ";
+				   points+=_get_vertex(p->edges[i].point);
+			   }
+			   //print_line("poly "+itos(idx++)+" - "+points);
+			   p = p->edges[prev].C;
+			   if (p==begin_poly)
+			       break;
+		       }
+		   }
+#endif
 	if (found_route) {
 
 		Vector<Vector2> path;
@@ -542,22 +560,29 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 
 				bool skip=false;
 
-			/*	print_line("-----\nAPEX: "+(apex_point-end_point));
+				/*
+				print_line("-----\nAPEX: "+(apex_point-end_point));
 				print_line("LEFT:");
 				print_line("\tPortal: "+(portal_left-end_point));
 				print_line("\tPoint: "+(left-end_point));
-				print_line("\tFree: "+itos(CLOCK_TANGENT(apex_point,portal_left,left) >= 0));
+				print_line("\tLeft Tangent: "+rtos(CLOCK_TANGENT(apex_point,portal_left,left)));
+				print_line("\tLeft Distance: "+rtos(portal_left.distance_squared_to(apex_point)));
+				print_line("\tLeft Test: "+rtos(CLOCK_TANGENT(apex_point,left,portal_right)));
 				print_line("RIGHT:");
 				print_line("\tPortal: "+(portal_right-end_point));
 				print_line("\tPoint: "+(right-end_point));
-				print_line("\tFree: "+itos(CLOCK_TANGENT(apex_point,portal_right,right) <= 0));
-*/
+				print_line("\tRight Tangent: "+rtos(CLOCK_TANGENT(apex_point,portal_right,right)));
+				print_line("\tRight Distance: "+rtos(portal_right.distance_squared_to(apex_point)));
+				print_line("\tRight Test: "+rtos(CLOCK_TANGENT(apex_point,right,portal_left)));
+				*/
+
 
 				if (CLOCK_TANGENT(apex_point,portal_left,left) >= 0){
 					//process
 					if (portal_left.distance_squared_to(apex_point)<CMP_EPSILON || CLOCK_TANGENT(apex_point,left,portal_right) > 0) {
 						left_poly=p;
 						portal_left=left;
+						//print_line("***ADVANCE LEFT");
 					} else {
 
 						//_clip_path(path,apex_poly,portal_right,right_poly);
@@ -572,6 +597,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 							path.push_back(apex_point);
 						skip=true;
 						//print_line("addpoint left");
+						//print_line("***CLIP LEFT");
 					}
 				}
 
@@ -580,6 +606,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 					if (portal_right.distance_squared_to(apex_point)<CMP_EPSILON || CLOCK_TANGENT(apex_point,right,portal_left) < 0) {
 						right_poly=p;
 						portal_right=right;
+						//print_line("***ADVANCE RIGHT");
 					} else {
 
 						//_clip_path(path,apex_poly,portal_left,left_poly);
@@ -593,6 +620,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 						if (path[path.size()-1].distance_to(apex_point)>CMP_EPSILON)
 							path.push_back(apex_point);
 						//print_line("addpoint right");
+						//print_line("***CLIP RIGHT");
 
 					}
 				}

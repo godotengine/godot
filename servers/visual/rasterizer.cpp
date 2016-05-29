@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -370,7 +370,7 @@ RID Rasterizer::fixed_material_create() {
 		material_set_param(mat,_fixed_material_param_names[i],fm.param[i]); //must be there
 	}
 	fixed_material_dirty_list.add(&fm.dirty_list);
-	//print_line("FMC: "+itos(mat.get_id()));	
+	//print_line("FMC: "+itos(mat.get_id()));
 	return mat;
 }
 

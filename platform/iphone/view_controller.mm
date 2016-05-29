@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,9 @@
 #include "os_iphone.h"
 
 extern "C" {
+
+int add_path(int, char**);
+int add_cmdline(int, char**);
 
 int add_path(int p_argc, char** p_args) {
 
@@ -129,10 +132,12 @@ int add_cmdline(int p_argc, char** p_args) {
 	return YES;
 }
 
+#ifdef GAME_CENTER_ENABLED
 - (void) gameCenterViewControllerDidFinish:(GKGameCenterViewController*) gameCenterViewController {
     //[gameCenterViewController dismissViewControllerAnimated:YES completion:^{GameCenter::get_singleton()->game_center_closed();}];//version for signaling when overlay is completely gone
     GameCenter::get_singleton()->game_center_closed();
     [gameCenterViewController dismissViewControllerAnimated:YES completion:nil];
 }
+#endif
 
 @end

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,8 +38,13 @@
 #include <string.h>
 #include <netdb.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
 #ifndef NO_FCNTL
-#include <sys/fcntl.h>
+	#ifdef __HAIKU__
+		#include <fcntl.h>
+	#else
+		#include <sys/fcntl.h>
+	#endif
 #else
 #include <sys/ioctl.h>
 #endif
@@ -363,6 +368,14 @@ Error StreamPeerTCPPosix::get_partial_data(uint8_t* p_buffer, int p_bytes,int &r
 	return read(p_buffer, p_bytes, r_received, false);
 };
 
+int StreamPeerTCPPosix::get_available_bytes() const {
+
+	unsigned long len;
+	int ret = ioctl(sockfd,FIONREAD,&len);
+	ERR_FAIL_COND_V(ret==-1,0)
+	return len;
+
+}
 IP_Address StreamPeerTCPPosix::get_connected_host() const {
 
 	return peer_host;

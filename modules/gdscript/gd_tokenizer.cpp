@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,6 +88,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "func",
 "class",
 "extends",
+"onready",
 "tool",
 "static",
 "export",
@@ -98,6 +99,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "assert",
 "yield",
 "signal",
+"breakpoint",
 "'['",
 "']'",
 "'{'",
@@ -110,6 +112,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "'?'",
 "':'",
 "'\\n'",
+"PI",
 "Error",
 "EOF",
 "Cursor"};
@@ -259,6 +262,7 @@ void GDTokenizerText::_advance() {
 				}
 
 				INCPOS(1);
+				line++;
 
 				while(GETCHAR(0)==' ' || GETCHAR(0)=='\t') {
 					INCPOS(1);
@@ -537,14 +541,14 @@ void GDTokenizerText::_advance() {
 				}
 				INCPOS(1);
 				is_node_path=true;
-				
+
 			case '\'':
 			case '"': {
-	
+
 				if (GETCHAR(0)=='\'')
 					string_mode=STRING_SINGLE_QUOTE;
-																	
-																	
+
+
 				int i=1;
 				if (string_mode==STRING_DOUBLE_QUOTE && GETCHAR(i)=='"' && GETCHAR(i+1)=='"') {
 					i+=2;
@@ -774,20 +778,15 @@ void GDTokenizerText::_advance() {
 							{Variant::INT,"int"},
 							{Variant::REAL,"float"},
 							{Variant::STRING,"String"},
-							{Variant::VECTOR2,"vec2"},
 							{Variant::VECTOR2,"Vector2"},
 							{Variant::RECT2,"Rect2"},
 							{Variant::MATRIX32,"Matrix32"},
-							{Variant::MATRIX32,"mat32"},
-							{Variant::VECTOR3,"vec3"},
 							{Variant::VECTOR3,"Vector3"},
 							{Variant::_AABB,"AABB"},
 							{Variant::_AABB,"Rect3"},
 							{Variant::PLANE,"Plane"},
 							{Variant::QUAT,"Quat"},
-							{Variant::MATRIX3,"mat3"},
 							{Variant::MATRIX3,"Matrix3"},
-							{Variant::TRANSFORM,"trn"},
 							{Variant::TRANSFORM,"Transform"},
 							{Variant::COLOR,"Color"},
 							{Variant::IMAGE,"Image"},
@@ -795,7 +794,6 @@ void GDTokenizerText::_advance() {
 							{Variant::OBJECT,"Object"},
 							{Variant::INPUT_EVENT,"InputEvent"},
 							{Variant::NODE_PATH,"NodePath"},
-							{Variant::DICTIONARY,"dict"},
 							{Variant::DICTIONARY,"Dictionary"},
 							{Variant::ARRAY,"Array"},
 							{Variant::RAW_ARRAY,"RawArray"},
@@ -854,9 +852,9 @@ void GDTokenizerText::_advance() {
 								{TK_OP_AND,"and"},
 								//func
 								{TK_PR_FUNCTION,"func"},
-								{TK_PR_FUNCTION,"function"},
 								{TK_PR_CLASS,"class"},
 								{TK_PR_EXTENDS,"extends"},
+								{TK_PR_ONREADY,"onready"},
 								{TK_PR_TOOL,"tool"},
 								{TK_PR_STATIC,"static"},
 								{TK_PR_EXPORT,"export"},
@@ -866,6 +864,7 @@ void GDTokenizerText::_advance() {
 								{TK_PR_ASSERT,"assert"},
 								{TK_PR_YIELD,"yield"},
 								{TK_PR_SIGNAL,"signal"},
+								{TK_PR_BREAKPOINT,"breakpoint"},
 								{TK_PR_CONST,"const"},
 								//controlflow
 								{TK_CF_IF,"if"},
@@ -880,6 +879,7 @@ void GDTokenizerText::_advance() {
 								{TK_CF_RETURN,"return"},
 								{TK_CF_PASS,"pass"},
 								{TK_SELF,"self"},
+								{TK_CONST_PI,"PI"},
 								{TK_ERROR,NULL}
 							};
 
@@ -1046,7 +1046,7 @@ void GDTokenizerText::advance(int p_amount) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define BYTECODE_VERSION 5
+#define BYTECODE_VERSION 10
 
 Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 
@@ -1054,7 +1054,7 @@ Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 	const uint8_t *buf=p_buffer.ptr();
 	int total_len=p_buffer.size();
 	ERR_FAIL_COND_V( p_buffer.size()<24 || p_buffer[0]!='G' || p_buffer[1]!='D' || p_buffer[2]!='S' || p_buffer[3]!='C',ERR_INVALID_DATA);
-	
+
 	int version = decode_uint32(&buf[4]);
 	if (version>BYTECODE_VERSION) {
 		ERR_EXPLAIN("Bytecode is too New! Please use a newer engine version.");
@@ -1066,13 +1066,13 @@ Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 	int token_count = decode_uint32(&buf[20]);
 
 	const uint8_t *b=buf;
-	
+
 	b=&buf[24];
 	total_len-=24;
-	
+
 	identifiers.resize(identifier_count);
 	for(int i=0;i<identifier_count;i++) {
-		
+
 		int len = decode_uint32(b);
 		ERR_FAIL_COND_V(len>total_len,ERR_INVALID_DATA);
 		b+=4;
@@ -1089,7 +1089,7 @@ Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 		total_len-=len+4;
 		identifiers[i]=s;
 	}
-	
+
 	constants.resize(constant_count);
 	for(int i=0;i<constant_count;i++) {
 

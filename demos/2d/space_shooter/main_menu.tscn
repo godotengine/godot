@@ -1,0 +1,64 @@
+[gd_scene load_steps=2 format=1]
+
+[ext_resource path="res://main_menu.gd" type="Script" id=1]
+
+[node name="main_screen" type="Control"]
+
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 0.0
+margin/bottom = 0.0
+script/script = ExtResource( 1 )
+
+[node name="title" type="Label" parent="."]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+margin/left = 405.0
+margin/top = 86.0
+margin/right = 547.0
+margin/bottom = 99.0
+text = "S P A C E  S H O O T E R"
+percent_visible = 1.0
+lines_skipped = 0
+max_lines_visible = -1
+
+[node name="score" type="Label" parent="."]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+margin/left = 349.0
+margin/top = 204.0
+margin/right = 585.0
+margin/bottom = 218.0
+text = "HIGH SCORE:"
+align = 1
+percent_visible = 1.0
+lines_skipped = 0
+max_lines_visible = -1
+
+[node name="play" type="Button" parent="."]
+
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 412.0
+margin/top = 390.0
+margin/right = 535.0
+margin/bottom = 442.0
+toggle_mode = false
+text = "PLAY"
+flat = false
+
+[connection signal="pressed" from="play" to="." method="_on_play_pressed"]
+
+

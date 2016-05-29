@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -150,6 +150,8 @@ private:
 
 	TileOrigin tile_origin;
 
+	int occluder_light_mask;
+
 	void _fix_cell_transform(Matrix32& xform, const Cell& p_cell, const Vector2 &p_offset, const Size2 &p_sc);
 
 	Map<PosKey,Quadrant>::Element *_create_quadrant(const PosKey& p_qk);
@@ -187,6 +189,7 @@ public:
 		INVALID_CELL=-1
 	};
 
+
 	void set_tileset(const Ref<TileSet>& p_tileset);
 	Ref<TileSet> get_tileset() const;
 
@@ -208,6 +211,7 @@ public:
 	bool is_cell_transposed(int p_x,int p_y) const;
 
 	void set_cellv(const Vector2& p_pos,int p_tile,bool p_flip_x=false,bool p_flip_y=false,bool p_transpose=false);
+	int get_cellv(const Vector2& p_pos) const;
 
 	Rect2 get_item_rect() const;
 
@@ -246,6 +250,11 @@ public:
 
 	void set_y_sort_mode(bool p_enable);
 	bool is_y_sort_mode_enabled() const;
+
+	void set_occluder_light_mask(int p_mask);
+	int get_occluder_light_mask() const;
+
+	virtual void set_light_mask(int p_light_mask);
 
 	void clear();
 

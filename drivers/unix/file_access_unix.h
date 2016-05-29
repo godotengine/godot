@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,10 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
+
+typedef void (*CloseNotificationFunc)(const String& p_file,int p_flags);
+
 class FileAccessUnix : public FileAccess {
 	
 	FILE *f;
@@ -45,10 +49,13 @@ class FileAccessUnix : public FileAccess {
 	void check_errors() const;
 	mutable Error last_error;
 	String save_path;
+	String path;
 	
-		static FileAccess* create_libc();
+	static FileAccess* create_libc();
 public:
 	
+	static CloseNotificationFunc close_notification_func;
+
 	virtual Error _open(const String& p_path, int p_mode_flags); ///< open a file
 	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open 

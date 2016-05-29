@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,6 @@
 #include "servers/audio/audio_server_sw.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
-#include "os/pc_joystick_map.h"
 #include "os/memory_pool_dynamic_prealloc.h"
 #include "globals.h"
 #include "io/marshalls.h"
@@ -96,7 +95,7 @@ void OSWinrt::initialize_core() {
 
 	ThreadWinrt::make_default();
 	//SemaphoreWindows::make_default();
-	MutexWindows::make_default();	
+	MutexWindows::make_default();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
@@ -108,7 +107,7 @@ void OSWinrt::initialize_core() {
 
 	//TCPServerWinsock::make_default();
 	//StreamPeerWinsock::make_default();
-	
+
 	mempool_static = new MemoryPoolStaticMalloc;
 #if 1
 	mempool_dynamic = memnew( MemoryPoolDynamicStatic );
@@ -118,7 +117,7 @@ void OSWinrt::initialize_core() {
 	mempool_dynamic = memnew( MemoryPoolDynamicPrealloc(buffer,DYNPOOL_SIZE) );
 
 #endif
-	
+
 	   // We need to know how often the clock is updated
 	if( !QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second) )
 		ticks_per_second = 1000;
@@ -176,7 +175,7 @@ void OSWinrt::initialize(const VideoMode& p_desired,int p_video_driver,int p_aud
 	physics_2d_server = memnew( Physics2DServerSW );
 	physics_2d_server->init();
 
-	visual_server->init();	
+	visual_server->init();
 
 	input = memnew( InputDefault );
 
@@ -308,7 +307,7 @@ void OSWinrt::finalize() {
 		memdelete(main_loop);
 
 	main_loop=NULL;
-	
+
 	visual_server->finish();
 	memdelete(visual_server);
 #ifdef OPENGL_ENABLED
@@ -327,9 +326,10 @@ void OSWinrt::finalize() {
 //		memdelete(debugger_connection_console);
 //}
 
+	memdelete(sample_manager);
+
 	audio_server->finish();
 	memdelete(audio_server);
-	memdelete(sample_manager);
 
 	memdelete(input);
 
@@ -344,8 +344,7 @@ void OSWinrt::finalize_core() {
 
 	if (mempool_dynamic)
 		memdelete( mempool_dynamic );
-	if (mempool_static)
-		delete mempool_static;
+	delete mempool_static;
 
 }
 
@@ -419,20 +418,30 @@ OS::VideoMode OSWinrt::get_video_mode(int p_screen) const {
 }
 void OSWinrt::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 
-	
+
 }
 
-void OSWinrt::print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type) {
+void OSWinrt::print_error(const char* p_function, const char* p_file, int p_line, const char* p_code, const char* p_rationale, ErrorType p_type) {
 
-	if (p_rationale && p_rationale[0]) {
+	const char* err_details;
+	if (p_rationale && p_rationale[0])
+		err_details = p_rationale;
+	else
+		err_details = p_code;
 
-		print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_rationale);
-		print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
-
-	} else {
-		print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_code);
-		print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
-
+	switch(p_type) {
+		case ERR_ERROR:
+			print("ERROR: %s: %s\n", p_function, err_details);
+			print("   At: %s:%i\n", p_file, p_line);
+			break;
+		case ERR_WARNING:
+			print("WARNING: %s: %s\n", p_function, err_details);
+			print("     At: %s:%i\n", p_file, p_line);
+			break;
+		case ERR_SCRIPT:
+			print("SCRIPT ERROR: %s: %s\n", p_function, err_details);
+			print("          At: %s:%i\n", p_file, p_line);
+			break;
 	}
 }
 
@@ -518,7 +527,7 @@ void OSWinrt::delay_usec(uint32_t p_usec) const {
 
 	// no Sleep()
 	WaitForSingleObjectEx(GetCurrentThread(), msec, false);
-	
+
 }
 uint64_t OSWinrt::get_ticks_usec() const {
 
@@ -624,22 +633,22 @@ void OSWinrt::run() {
 
 	if (!main_loop)
 		return;
-		
+
 	main_loop->init();
-		
+
 	uint64_t last_ticks=get_ticks_usec();
-	
+
 	int frames=0;
 	uint64_t frame=0;
-	
+
 	while (!force_quit) {
-	
+
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 		process_events(); // get rid of pending events
 		if (Main::iteration()==true)
 			break;
 	};
-	
+
 	main_loop->finish();
 
 }

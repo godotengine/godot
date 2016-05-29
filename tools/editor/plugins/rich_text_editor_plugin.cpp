@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -107,8 +107,8 @@ RichTextEditor::RichTextEditor() {
 	options->set_area_as_parent_rect();
 
 	options->set_text("RichText");
-	options->get_popup()->add_item("Parse BBCODE",PARSE_BBCODE);
-	options->get_popup()->add_item("Clear",CLEAR);
+	options->get_popup()->add_item(TTR("Parse BBCode"),PARSE_BBCODE);
+	options->get_popup()->add_item(TTR("Clear"),CLEAR);
 
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 	file_dialog = memnew( EditorFileDialog );

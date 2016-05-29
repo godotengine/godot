@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,72 +31,53 @@
 
 #include "resource.h"
 #include "servers/audio_server.h"
-#include "scene/resources/audio_stream.h"
 
-class AudioStream : public Resource {
+class AudioStreamPlayback : public Reference {
 
-	OBJ_TYPE( AudioStream, Resource );
-	OBJ_SAVE_TYPE( AudioStream ); //children are all saved as AudioStream, so they can be exchanged
-
-	friend class InternalAudioStream;
-
-	struct InternalAudioStream : public AudioServer::AudioStream {
-
-		::AudioStream *owner;
-		virtual int get_channel_count() const;
-		virtual void set_mix_rate(int p_rate); //notify the stream of the mix rate
-		virtual bool mix(int32_t *p_buffer,int p_frames);
-		virtual bool can_update_mt() const;
-		virtual void update();
-	};
-
-
-	int _mix_rate;
-	InternalAudioStream *internal_audio_stream;
+	OBJ_TYPE( AudioStreamPlayback, Reference );
 protected:
-
-	_FORCE_INLINE_ int get_mix_rate() const { return _mix_rate; }
-	virtual int get_channel_count() const=0;
-	virtual bool mix(int32_t *p_buffer, int p_frames)=0;
-
 	static void _bind_methods();
 public:
 
-	enum UpdateMode {
-		UPDATE_NONE,
-		UPDATE_IDLE,
-		UPDATE_THREAD
-	};
 
-	AudioServer::AudioStream *get_audio_stream();
-
-	virtual void play()=0;
+	virtual void play(float p_from_pos=0)=0;
 	virtual void stop()=0;
 	virtual bool is_playing() const=0;
-
-	virtual void set_paused(bool p_paused)=0;
-	virtual bool is_paused(bool p_paused) const=0;
 
 	virtual void set_loop(bool p_enable)=0;
 	virtual bool has_loop() const=0;
 
-	virtual float get_length() const=0;
-
-	virtual String get_stream_name() const=0;
+	virtual void set_loop_restart_time(float p_time)=0;
 
 	virtual int get_loop_count() const=0;
 
 	virtual float get_pos() const=0;
 	virtual void seek_pos(float p_time)=0;
 
-	virtual UpdateMode get_update_mode() const=0;
-	virtual void update()=0;
+	virtual int mix(int16_t* p_bufer,int p_frames)=0;
 
-	AudioStream();
-	~AudioStream();
+	virtual float get_length() const=0;
+	virtual String get_stream_name() const=0;
+
+	virtual int get_channels() const=0;
+	virtual int get_mix_rate() const=0;
+	virtual int get_minimum_buffer_size() const=0;
+
 };
 
+class AudioStream : public Resource {
 
-VARIANT_ENUM_CAST( AudioStream::UpdateMode );
+	OBJ_TYPE( AudioStream, Resource );
+	OBJ_SAVE_TYPE( AudioStream ); //children are all saved as AudioStream, so they can be exchanged
+
+protected:
+	static void _bind_methods();
+public:
+
+	virtual Ref<AudioStreamPlayback> instance_playback()=0;
+
+
+};
+
 
 #endif // AUDIO_STREAM_H

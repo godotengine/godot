@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -82,6 +82,17 @@ Error AudioDriverPulseAudio::init() {
 	return OK;
 }
 
+float AudioDriverPulseAudio::get_latency() {
+
+	if (latency==0)	{ //only do this once since it's approximate anyway
+		int error_code;
+		pa_usec_t palat = pa_simple_get_latency( pulse,&error_code);
+		latency=double(palat)/1000000.0;
+	}
+
+	return latency;
+}
+
 void AudioDriverPulseAudio::thread_func(void* p_udata) {
 
     AudioDriverPulseAudio* ad = (AudioDriverPulseAudio*)p_udata;
@@ -121,6 +132,7 @@ void AudioDriverPulseAudio::thread_func(void* p_udata) {
             ad->exit_thread = true;
             break;
         }
+
     }
 
     ad->thread_exited = true;
@@ -185,6 +197,7 @@ AudioDriverPulseAudio::AudioDriverPulseAudio() {
 	mutex = NULL;
     thread = NULL;
     pulse = NULL;
+    latency=0;
 }
 
 AudioDriverPulseAudio::~AudioDriverPulseAudio() {

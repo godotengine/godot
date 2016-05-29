@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,7 +77,7 @@ void BodyPair2DSW::_contact_added_callback(const Vector2& p_point_A,const Vector
 			contact.acc_normal_impulse=c.acc_normal_impulse;
 			contact.acc_tangent_impulse=c.acc_tangent_impulse;
 			contact.acc_bias_impulse=c.acc_bias_impulse;
-			new_index=i;			
+			new_index=i;
 			break;
 		}
 	}
@@ -259,10 +259,10 @@ bool BodyPair2DSW::setup(float p_step) {
 
 	if (A->get_continuous_collision_detection_mode()==Physics2DServer::CCD_MODE_CAST_SHAPE) {
 		motion_A=A->get_motion();
-	} 
+	}
 	if (B->get_continuous_collision_detection_mode()==Physics2DServer::CCD_MODE_CAST_SHAPE) {
 		motion_B=B->get_motion();
-	} 
+	}
 	//faster to set than to check..
 
 	//bool prev_collided=collided;
@@ -364,6 +364,9 @@ bool BodyPair2DSW::setup(float p_step) {
 
 
 	real_t inv_dt = 1.0/p_step;
+
+	bool do_process=false;
+
 	for (int i = 0; i < contact_count; i++) {
 
 		Contact& c = contacts[i];
@@ -379,7 +382,12 @@ bool BodyPair2DSW::setup(float p_step) {
 		}
 
 		c.active=true;
-
+#ifdef DEBUG_ENABLED
+		if (space->is_debugging_contacts()) {
+			space->add_debug_contact(global_A+offset_A);
+			space->add_debug_contact(global_B+offset_A);
+		}
+#endif
 		int gather_A = A->can_report_contacts();
 		int gather_B = B->can_report_contacts();
 
@@ -454,10 +462,11 @@ bool BodyPair2DSW::setup(float p_step) {
 			c.bounce = c.bounce * dv.dot(c.normal);
 		}
 
+		do_process=true;
 
 	}
 
-	return true;
+	return do_process;
 }
 
 void BodyPair2DSW::solve(float p_step) {

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -279,6 +279,18 @@ void PinJoint2DSW::solve(float p_step){
 	P += impulse;
 }
 
+void PinJoint2DSW::set_param(Physics2DServer::PinJointParam p_param, real_t p_value) {
+
+	if(p_param == Physics2DServer::PIN_JOINT_SOFTNESS)
+		softness = p_value;
+}
+
+real_t PinJoint2DSW::get_param(Physics2DServer::PinJointParam p_param) const {
+
+	if(p_param == Physics2DServer::PIN_JOINT_SOFTNESS)
+		return softness;
+	ERR_FAIL_V(0);
+}
 
 PinJoint2DSW::PinJoint2DSW(const Vector2& p_pos,Body2DSW* p_body_a,Body2DSW* p_body_b) : Joint2DSW(_arr,p_body_b?2:1) {
 

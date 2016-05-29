@@ -1,8 +1,8 @@
 
 /* pngwrite.c - general routines to write a PNG file
  *
- * Last changed in libpng 1.5.7 [December 15, 2011]
- * Copyright (c) 1998-2011 Glenn Randers-Pehrson
+ * Last changed in libpng 1.5.23 [July 23, 2015]
+ * Copyright (c) 1998-2002,2004,2006-2015 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -34,85 +34,87 @@ png_write_info_before_PLTE(png_structp png_ptr, png_infop info_ptr)
 
    if (!(png_ptr->mode & PNG_WROTE_INFO_BEFORE_PLTE))
    {
-   /* Write PNG signature */
-   png_write_sig(png_ptr);
+      /* Write PNG signature */
+      png_write_sig(png_ptr);
 
 #ifdef PNG_MNG_FEATURES_SUPPORTED
-   if ((png_ptr->mode&PNG_HAVE_PNG_SIGNATURE) && \
-       (png_ptr->mng_features_permitted))
-   {
-      png_warning(png_ptr, "MNG features are not allowed in a PNG datastream");
-      png_ptr->mng_features_permitted = 0;
-   }
+      if ((png_ptr->mode&PNG_HAVE_PNG_SIGNATURE) && \
+          (png_ptr->mng_features_permitted))
+      {
+         png_warning(png_ptr,
+             "MNG features are not allowed in a PNG datastream");
+         png_ptr->mng_features_permitted = 0;
+      }
 #endif
 
-   /* Write IHDR information. */
-   png_write_IHDR(png_ptr, info_ptr->width, info_ptr->height,
-       info_ptr->bit_depth, info_ptr->color_type, info_ptr->compression_type,
-       info_ptr->filter_type,
+      /* Write IHDR information. */
+      png_write_IHDR(png_ptr, info_ptr->width, info_ptr->height,
+          info_ptr->bit_depth, info_ptr->color_type,
+          info_ptr->compression_type, info_ptr->filter_type,
 #ifdef PNG_WRITE_INTERLACING_SUPPORTED
-       info_ptr->interlace_type);
+          info_ptr->interlace_type
 #else
-       0);
+          0
 #endif
-   /* The rest of these check to see if the valid field has the appropriate
-    * flag set, and if it does, writes the chunk.
-    */
+          );
+      /* The rest of these check to see if the valid field has the appropriate
+       * flag set, and if it does, writes the chunk.
+       */
 #ifdef PNG_WRITE_gAMA_SUPPORTED
-   if (info_ptr->valid & PNG_INFO_gAMA)
-      png_write_gAMA_fixed(png_ptr, info_ptr->gamma);
+      if (info_ptr->valid & PNG_INFO_gAMA)
+         png_write_gAMA_fixed(png_ptr, info_ptr->gamma);
 #endif
 #ifdef PNG_WRITE_sRGB_SUPPORTED
-   if (info_ptr->valid & PNG_INFO_sRGB)
-      png_write_sRGB(png_ptr, (int)info_ptr->srgb_intent);
+      if (info_ptr->valid & PNG_INFO_sRGB)
+         png_write_sRGB(png_ptr, (int)info_ptr->srgb_intent);
 #endif
 
 #ifdef PNG_WRITE_iCCP_SUPPORTED
-   if (info_ptr->valid & PNG_INFO_iCCP)
-      png_write_iCCP(png_ptr, info_ptr->iccp_name, PNG_COMPRESSION_TYPE_BASE,
-          (png_charp)info_ptr->iccp_profile, (int)info_ptr->iccp_proflen);
+      if (info_ptr->valid & PNG_INFO_iCCP)
+         png_write_iCCP(png_ptr, info_ptr->iccp_name, PNG_COMPRESSION_TYPE_BASE,
+             (png_charp)info_ptr->iccp_profile, (int)info_ptr->iccp_proflen);
 #endif
 #ifdef PNG_WRITE_sBIT_SUPPORTED
-   if (info_ptr->valid & PNG_INFO_sBIT)
-      png_write_sBIT(png_ptr, &(info_ptr->sig_bit), info_ptr->color_type);
+      if (info_ptr->valid & PNG_INFO_sBIT)
+         png_write_sBIT(png_ptr, &(info_ptr->sig_bit), info_ptr->color_type);
 #endif
 #ifdef PNG_WRITE_cHRM_SUPPORTED
-   if (info_ptr->valid & PNG_INFO_cHRM)
-      png_write_cHRM_fixed(png_ptr,
-          info_ptr->x_white, info_ptr->y_white,
-          info_ptr->x_red, info_ptr->y_red,
-          info_ptr->x_green, info_ptr->y_green,
-          info_ptr->x_blue, info_ptr->y_blue);
+      if (info_ptr->valid & PNG_INFO_cHRM)
+         png_write_cHRM_fixed(png_ptr,
+             info_ptr->x_white, info_ptr->y_white,
+             info_ptr->x_red, info_ptr->y_red,
+             info_ptr->x_green, info_ptr->y_green,
+             info_ptr->x_blue, info_ptr->y_blue);
 #endif
 
 #ifdef PNG_WRITE_UNKNOWN_CHUNKS_SUPPORTED
-   if (info_ptr->unknown_chunks_num)
-   {
-      png_unknown_chunk *up;
-
-      png_debug(5, "writing extra chunks");
-
-      for (up = info_ptr->unknown_chunks;
-           up < info_ptr->unknown_chunks + info_ptr->unknown_chunks_num;
-           up++)
+      if (info_ptr->unknown_chunks_num)
       {
-         int keep = png_handle_as_unknown(png_ptr, up->name);
+         png_unknown_chunk *up;
 
-         if (keep != PNG_HANDLE_CHUNK_NEVER &&
-             up->location &&
-             !(up->location & PNG_HAVE_PLTE) &&
-             !(up->location & PNG_HAVE_IDAT) &&
-             !(up->location & PNG_AFTER_IDAT) &&
-             ((up->name[3] & 0x20) || keep == PNG_HANDLE_CHUNK_ALWAYS ||
-             (png_ptr->flags & PNG_FLAG_KEEP_UNSAFE_CHUNKS)))
+         png_debug(5, "writing extra chunks");
+
+         for (up = info_ptr->unknown_chunks;
+              up < info_ptr->unknown_chunks + info_ptr->unknown_chunks_num;
+              up++)
          {
-            if (up->size == 0)
-               png_warning(png_ptr, "Writing zero-length unknown chunk");
+            int keep = png_handle_as_unknown(png_ptr, up->name);
 
-            png_write_chunk(png_ptr, up->name, up->data, up->size);
+            if (keep != PNG_HANDLE_CHUNK_NEVER &&
+                up->location &&
+                !(up->location & PNG_HAVE_PLTE) &&
+                !(up->location & PNG_HAVE_IDAT) &&
+                !(up->location & PNG_AFTER_IDAT) &&
+                ((up->name[3] & 0x20) || keep == PNG_HANDLE_CHUNK_ALWAYS ||
+                (png_ptr->flags & PNG_FLAG_KEEP_UNSAFE_CHUNKS)))
+            {
+               if (up->size == 0)
+                  png_warning(png_ptr, "Writing zero-length unknown chunk");
+
+               png_write_chunk(png_ptr, up->name, up->data, up->size);
+            }
          }
       }
-   }
 #endif
       png_ptr->mode |= PNG_WROTE_INFO_BEFORE_PLTE;
    }
@@ -223,11 +225,14 @@ png_write_info(png_structp png_ptr, png_infop info_ptr)
              info_ptr->text[i].lang,
              info_ptr->text[i].lang_key,
              info_ptr->text[i].text);
+         /* Mark this chunk as written */
+         if (info_ptr->text[i].compression == PNG_TEXT_COMPRESSION_NONE)
+            info_ptr->text[i].compression = PNG_TEXT_COMPRESSION_NONE_WR;
+         else
+            info_ptr->text[i].compression = PNG_TEXT_COMPRESSION_zTXt_WR;
 #else
-          png_warning(png_ptr, "Unable to write international text");
+         png_warning(png_ptr, "Unable to write international text");
 #endif
-          /* Mark this chunk as written */
-          info_ptr->text[i].compression = PNG_TEXT_COMPRESSION_NONE_WR;
       }
 
       /* If we want a compressed text chunk */
@@ -238,11 +243,11 @@ png_write_info(png_structp png_ptr, png_infop info_ptr)
          png_write_zTXt(png_ptr, info_ptr->text[i].key,
              info_ptr->text[i].text, 0,
              info_ptr->text[i].compression);
+         /* Mark this chunk as written */
+         info_ptr->text[i].compression = PNG_TEXT_COMPRESSION_zTXt_WR;
 #else
          png_warning(png_ptr, "Unable to write compressed text");
 #endif
-         /* Mark this chunk as written */
-         info_ptr->text[i].compression = PNG_TEXT_COMPRESSION_zTXt_WR;
       }
 
       else if (info_ptr->text[i].compression == PNG_TEXT_COMPRESSION_NONE)
@@ -305,6 +310,11 @@ png_write_end(png_structp png_ptr, png_infop info_ptr)
    if (!(png_ptr->mode & PNG_HAVE_IDAT))
       png_error(png_ptr, "No IDATs written into file");
 
+#ifdef PNG_WRITE_CHECK_FOR_INVALID_INDEX_SUPPORTED
+   if (png_ptr->num_palette_max > png_ptr->num_palette)
+      png_benign_error(png_ptr, "Wrote palette index exceeding num_palette");
+#endif
+
    /* See if user wants us to write information chunks */
    if (info_ptr != NULL)
    {
@@ -335,11 +345,11 @@ png_write_end(png_structp png_ptr, png_infop info_ptr)
                 info_ptr->text[i].lang,
                 info_ptr->text[i].lang_key,
                 info_ptr->text[i].text);
+            /* Mark this chunk as written */
+            info_ptr->text[i].compression = PNG_TEXT_COMPRESSION_NONE_WR;
 #else
             png_warning(png_ptr, "Unable to write international text");
 #endif
-            /* Mark this chunk as written */
-            info_ptr->text[i].compression = PNG_TEXT_COMPRESSION_NONE_WR;
          }
 
          else if (info_ptr->text[i].compression >= PNG_TEXT_COMPRESSION_zTXt)
@@ -349,11 +359,11 @@ png_write_end(png_structp png_ptr, png_infop info_ptr)
             png_write_zTXt(png_ptr, info_ptr->text[i].key,
                 info_ptr->text[i].text, 0,
                 info_ptr->text[i].compression);
+            /* Mark this chunk as written */
+            info_ptr->text[i].compression = PNG_TEXT_COMPRESSION_zTXt_WR;
 #else
             png_warning(png_ptr, "Unable to write compressed text");
 #endif
-            /* Mark this chunk as written */
-            info_ptr->text[i].compression = PNG_TEXT_COMPRESSION_zTXt_WR;
          }
 
          else if (info_ptr->text[i].compression == PNG_TEXT_COMPRESSION_NONE)
@@ -362,12 +372,11 @@ png_write_end(png_structp png_ptr, png_infop info_ptr)
             /* Write uncompressed chunk */
             png_write_tEXt(png_ptr, info_ptr->text[i].key,
                 info_ptr->text[i].text, 0);
+            /* Mark this chunk as written */
+            info_ptr->text[i].compression = PNG_TEXT_COMPRESSION_NONE_WR;
 #else
             png_warning(png_ptr, "Unable to write uncompressed text");
 #endif
-
-            /* Mark this chunk as written */
-            info_ptr->text[i].compression = PNG_TEXT_COMPRESSION_NONE_WR;
          }
       }
 #endif
@@ -415,7 +424,6 @@ png_write_end(png_structp png_ptr, png_infop info_ptr)
 }
 
 #ifdef PNG_CONVERT_tIME_SUPPORTED
-/* "tm" structure is not supported on WindowsCE */
 void PNGAPI
 png_convert_from_struct_tm(png_timep ptime, PNG_CONST struct tm FAR * ttime)
 {
@@ -450,9 +458,6 @@ png_create_write_struct,(png_const_charp user_png_ver, png_voidp error_ptr,
    return (png_create_write_struct_2(user_png_ver, error_ptr, error_fn,
        warn_fn, NULL, NULL, NULL));
 }
-
-/* Alternate initialize png_ptr structure, and allocate any memory needed */
-static void png_reset_filter_heuristics(png_structp png_ptr); /* forward decl */
 
 PNG_FUNCTION(png_structp,PNGAPI
 png_create_write_struct_2,(png_const_charp user_png_ver, png_voidp error_ptr,
@@ -495,13 +500,12 @@ png_create_write_struct_2,(png_const_charp user_png_ver, png_voidp error_ptr,
  */
 #ifdef USE_FAR_KEYWORD
    if (setjmp(tmp_jmpbuf))
+      png_memcpy(png_jmpbuf(png_ptr), tmp_jmpbuf, png_sizeof(jmp_buf));
+   PNG_ABORT();
 #else
    if (setjmp(png_jmpbuf(png_ptr))) /* sets longjmp to match setjmp */
-#endif
-#ifdef USE_FAR_KEYWORD
-   png_memcpy(png_jmpbuf(png_ptr), tmp_jmpbuf, png_sizeof(jmp_buf));
-#endif
       PNG_ABORT();
+#endif
 #endif
 
 #ifdef PNG_USER_MEM_SUPPORTED
@@ -515,7 +519,7 @@ png_create_write_struct_2,(png_const_charp user_png_ver, png_voidp error_ptr,
    /* Initialize zbuf - compression buffer */
    png_ptr->zbuf_size = PNG_ZBUF_SIZE;
 
-   if (!png_cleanup_needed)
+   if (png_cleanup_needed == 0)
    {
       png_ptr->zbuf = (png_bytep)png_malloc_warn(png_ptr,
           png_ptr->zbuf_size);
@@ -523,7 +527,7 @@ png_create_write_struct_2,(png_const_charp user_png_ver, png_voidp error_ptr,
          png_cleanup_needed = 1;
    }
 
-   if (png_cleanup_needed)
+   if (png_cleanup_needed != 0)
    {
        /* Clean up PNG structure and deallocate any memory. */
        png_free(png_ptr, png_ptr->zbuf);
@@ -538,10 +542,6 @@ png_create_write_struct_2,(png_const_charp user_png_ver, png_voidp error_ptr,
    }
 
    png_set_write_fn(png_ptr, NULL, NULL, NULL);
-
-#ifdef PNG_WRITE_WEIGHTED_FILTER_SUPPORTED
-   png_reset_filter_heuristics(png_ptr);
-#endif
 
    return (png_ptr);
 }
@@ -759,7 +759,7 @@ png_write_row(png_structp png_ptr, png_const_bytep row)
    {
       png_do_write_interlace(&row_info, png_ptr->row_buf + 1, png_ptr->pass);
       /* This should always get caught above, but still ... */
-      if (!(row_info.width))
+      if (row_info.width == 0)
       {
          png_write_finish_row(png_ptr);
          return;
@@ -796,6 +796,14 @@ png_write_row(png_structp png_ptr, png_const_bytep row)
       /* Intrapixel differencing */
       png_do_write_intrapixel(&row_info, png_ptr->row_buf + 1);
    }
+#endif
+
+/* Added at libpng-1.5.10 */
+#ifdef PNG_WRITE_CHECK_FOR_INVALID_INDEX_SUPPORTED
+   /* Check for out-of-range palette index */
+   if (row_info.color_type == PNG_COLOR_TYPE_PALETTE &&
+       png_ptr->num_palette_max >= 0)
+      png_do_check_palette_indexes(png_ptr, &row_info);
 #endif
 
    /* Find a filter if necessary, filter the row and write it out. */
@@ -851,7 +859,7 @@ png_write_flush(png_structp png_ptr)
             png_error(png_ptr, "zlib error");
       }
 
-      if (!(png_ptr->zstream.avail_out))
+      if ((png_ptr->zstream.avail_out) == 0)
       {
          /* Write the IDAT and reset the zlib output buffer */
          png_write_IDAT(png_ptr, png_ptr->zbuf, png_ptr->zbuf_size);
@@ -969,13 +977,6 @@ png_write_destroy(png_structp png_ptr)
    png_free(png_ptr, png_ptr->paeth_row);
 #endif
 
-#ifdef PNG_WRITE_WEIGHTED_FILTER_SUPPORTED
-   /* Use this to save a little code space, it doesn't free the filter_costs */
-   png_reset_filter_heuristics(png_ptr);
-   png_free(png_ptr, png_ptr->filter_costs);
-   png_free(png_ptr, png_ptr->inv_filter_costs);
-#endif
-
 #ifdef PNG_SETJMP_SUPPORTED
    /* Reset structure */
    png_memcpy(tmp_jmp, png_ptr->longjmp_buffer, png_sizeof(jmp_buf));
@@ -1029,6 +1030,7 @@ png_set_filter(png_structp png_ptr, int method, int filters)
          case 5:
          case 6:
          case 7: png_warning(png_ptr, "Unknown row filter for method 0");
+             /* FALL THROUGH */
 #endif /* PNG_WRITE_FILTER_SUPPORTED */
          case PNG_FILTER_VALUE_NONE:
             png_ptr->do_filter = PNG_FILTER_NONE; break;
@@ -1065,6 +1067,7 @@ png_set_filter(png_structp png_ptr, int method, int filters)
        */
       if (png_ptr->row_buf != NULL)
       {
+         png_ptr->do_filter = PNG_FILTER_NONE;
 #ifdef PNG_WRITE_FILTER_SUPPORTED
          if ((png_ptr->do_filter & PNG_FILTER_SUB) && png_ptr->sub_row == NULL)
          {
@@ -1125,8 +1128,8 @@ png_set_filter(png_structp png_ptr, int method, int filters)
          }
 
          if (png_ptr->do_filter == PNG_NO_FILTERS)
-#endif /* PNG_WRITE_FILTER_SUPPORTED */
             png_ptr->do_filter = PNG_FILTER_NONE;
+#endif /* PNG_WRITE_FILTER_SUPPORTED */
       }
    }
    else
@@ -1140,122 +1143,7 @@ png_set_filter(png_structp png_ptr, int method, int filters)
  * filtered data going to zlib more consistent, hopefully resulting in
  * better compression.
  */
-#ifdef PNG_WRITE_WEIGHTED_FILTER_SUPPORTED      /* GRR 970116 */
-/* Convenience reset API. */
-static void
-png_reset_filter_heuristics(png_structp png_ptr)
-{
-   /* Clear out any old values in the 'weights' - this must be done because if
-    * the app calls set_filter_heuristics multiple times with different
-    * 'num_weights' values we would otherwise potentially have wrong sized
-    * arrays.
-    */
-   png_ptr->num_prev_filters = 0;
-   png_ptr->heuristic_method = PNG_FILTER_HEURISTIC_UNWEIGHTED;
-   if (png_ptr->prev_filters != NULL)
-   {
-      png_bytep old = png_ptr->prev_filters;
-      png_ptr->prev_filters = NULL;
-      png_free(png_ptr, old);
-   }
-   if (png_ptr->filter_weights != NULL)
-   {
-      png_uint_16p old = png_ptr->filter_weights;
-      png_ptr->filter_weights = NULL;
-      png_free(png_ptr, old);
-   }
-
-   if (png_ptr->inv_filter_weights != NULL)
-   {
-      png_uint_16p old = png_ptr->inv_filter_weights;
-      png_ptr->inv_filter_weights = NULL;
-      png_free(png_ptr, old);
-   }
-
-   /* Leave the filter_costs - this array is fixed size. */
-}
-
-static int
-png_init_filter_heuristics(png_structp png_ptr, int heuristic_method,
-   int num_weights)
-{
-   if (png_ptr == NULL)
-      return 0;
-
-   /* Clear out the arrays */
-   png_reset_filter_heuristics(png_ptr);
-
-   /* Check arguments; the 'reset' function makes the correct settings for the
-    * unweighted case, but we must handle the weight case by initializing the
-    * arrays for the caller.
-    */
-   if (heuristic_method == PNG_FILTER_HEURISTIC_WEIGHTED)
-   {
-      int i;
-
-      if (num_weights > 0)
-      {
-         png_ptr->prev_filters = (png_bytep)png_malloc(png_ptr,
-             (png_uint_32)(png_sizeof(png_byte) * num_weights));
-
-         /* To make sure that the weighting starts out fairly */
-         for (i = 0; i < num_weights; i++)
-         {
-            png_ptr->prev_filters[i] = 255;
-         }
-
-         png_ptr->filter_weights = (png_uint_16p)png_malloc(png_ptr,
-             (png_uint_32)(png_sizeof(png_uint_16) * num_weights));
-
-         png_ptr->inv_filter_weights = (png_uint_16p)png_malloc(png_ptr,
-             (png_uint_32)(png_sizeof(png_uint_16) * num_weights));
-
-         for (i = 0; i < num_weights; i++)
-         {
-            png_ptr->inv_filter_weights[i] =
-            png_ptr->filter_weights[i] = PNG_WEIGHT_FACTOR;
-         }
-
-         /* Safe to set this now */
-         png_ptr->num_prev_filters = (png_byte)num_weights;
-      }
-
-      /* If, in the future, there are other filter methods, this would
-       * need to be based on png_ptr->filter.
-       */
-      if (png_ptr->filter_costs == NULL)
-      {
-         png_ptr->filter_costs = (png_uint_16p)png_malloc(png_ptr,
-             (png_uint_32)(png_sizeof(png_uint_16) * PNG_FILTER_VALUE_LAST));
-
-         png_ptr->inv_filter_costs = (png_uint_16p)png_malloc(png_ptr,
-             (png_uint_32)(png_sizeof(png_uint_16) * PNG_FILTER_VALUE_LAST));
-      }
-
-      for (i = 0; i < PNG_FILTER_VALUE_LAST; i++)
-      {
-         png_ptr->inv_filter_costs[i] =
-         png_ptr->filter_costs[i] = PNG_COST_FACTOR;
-      }
-
-      /* All the arrays are inited, safe to set this: */
-      png_ptr->heuristic_method = PNG_FILTER_HEURISTIC_WEIGHTED;
-
-      /* Return the 'ok' code. */
-      return 1;
-   }
-   else if (heuristic_method == PNG_FILTER_HEURISTIC_DEFAULT ||
-      heuristic_method == PNG_FILTER_HEURISTIC_UNWEIGHTED)
-   {
-      return 1;
-   }
-   else
-   {
-      png_warning(png_ptr, "Unknown filter heuristic method");
-      return 0;
-   }
-}
-
+#ifdef PNG_WRITE_WEIGHTED_FILTER_SUPPORTED /* DEPRECATED */
 /* Provide floating and fixed point APIs */
 #ifdef PNG_FLOATING_POINT_SUPPORTED
 void PNGAPI
@@ -1263,52 +1151,11 @@ png_set_filter_heuristics(png_structp png_ptr, int heuristic_method,
     int num_weights, png_const_doublep filter_weights,
     png_const_doublep filter_costs)
 {
-   png_debug(1, "in png_set_filter_heuristics");
-
-   /* The internal API allocates all the arrays and ensures that the elements of
-    * those arrays are set to the default value.
-    */
-   if (!png_init_filter_heuristics(png_ptr, heuristic_method, num_weights))
-      return;
-
-   /* If using the weighted method copy in the weights. */
-   if (heuristic_method == PNG_FILTER_HEURISTIC_WEIGHTED)
-   {
-      int i;
-      for (i = 0; i < num_weights; i++)
-      {
-         if (filter_weights[i] <= 0.0)
-         {
-            png_ptr->inv_filter_weights[i] =
-            png_ptr->filter_weights[i] = PNG_WEIGHT_FACTOR;
-         }
-
-         else
-         {
-            png_ptr->inv_filter_weights[i] =
-                (png_uint_16)(PNG_WEIGHT_FACTOR*filter_weights[i]+.5);
-
-            png_ptr->filter_weights[i] =
-                (png_uint_16)(PNG_WEIGHT_FACTOR/filter_weights[i]+.5);
-         }
-      }
-
-      /* Here is where we set the relative costs of the different filters.  We
-       * should take the desired compression level into account when setting
-       * the costs, so that Paeth, for instance, has a high relative cost at low
-       * compression levels, while it has a lower relative cost at higher
-       * compression settings.  The filter types are in order of increasing
-       * relative cost, so it would be possible to do this with an algorithm.
-       */
-      for (i = 0; i < PNG_FILTER_VALUE_LAST; i++) if (filter_costs[i] >= 1.0)
-      {
-         png_ptr->inv_filter_costs[i] =
-             (png_uint_16)(PNG_COST_FACTOR / filter_costs[i] + .5);
-
-         png_ptr->filter_costs[i] =
-             (png_uint_16)(PNG_COST_FACTOR * filter_costs[i] + .5);
-      }
-   }
+   PNG_UNUSED(png_ptr)
+   PNG_UNUSED(heuristic_method)
+   PNG_UNUSED(num_weights)
+   PNG_UNUSED(filter_weights)
+   PNG_UNUSED(filter_costs)
 }
 #endif /* FLOATING_POINT */
 
@@ -1318,67 +1165,16 @@ png_set_filter_heuristics_fixed(png_structp png_ptr, int heuristic_method,
     int num_weights, png_const_fixed_point_p filter_weights,
     png_const_fixed_point_p filter_costs)
 {
-   png_debug(1, "in png_set_filter_heuristics_fixed");
-
-   /* The internal API allocates all the arrays and ensures that the elements of
-    * those arrays are set to the default value.
-    */
-   if (!png_init_filter_heuristics(png_ptr, heuristic_method, num_weights))
-      return;
-
-   /* If using the weighted method copy in the weights. */
-   if (heuristic_method == PNG_FILTER_HEURISTIC_WEIGHTED)
-   {
-      int i;
-      for (i = 0; i < num_weights; i++)
-      {
-         if (filter_weights[i] <= 0)
-         {
-            png_ptr->inv_filter_weights[i] =
-            png_ptr->filter_weights[i] = PNG_WEIGHT_FACTOR;
-         }
-
-         else
-         {
-            png_ptr->inv_filter_weights[i] = (png_uint_16)
-               ((PNG_WEIGHT_FACTOR*filter_weights[i]+PNG_FP_HALF)/PNG_FP_1);
-
-            png_ptr->filter_weights[i] = (png_uint_16)((PNG_WEIGHT_FACTOR*
-               PNG_FP_1+(filter_weights[i]/2))/filter_weights[i]);
-         }
-      }
-
-      /* Here is where we set the relative costs of the different filters.  We
-       * should take the desired compression level into account when setting
-       * the costs, so that Paeth, for instance, has a high relative cost at low
-       * compression levels, while it has a lower relative cost at higher
-       * compression settings.  The filter types are in order of increasing
-       * relative cost, so it would be possible to do this with an algorithm.
-       */
-      for (i = 0; i < PNG_FILTER_VALUE_LAST; i++)
-         if (filter_costs[i] >= PNG_FP_1)
-      {
-         png_uint_32 tmp;
-
-         /* Use a 32 bit unsigned temporary here because otherwise the
-          * intermediate value will be a 32 bit *signed* integer (ANSI rules)
-          * and this will get the wrong answer on division.
-          */
-         tmp = PNG_COST_FACTOR*PNG_FP_1 + (filter_costs[i]/2);
-         tmp /= filter_costs[i];
-
-         png_ptr->inv_filter_costs[i] = (png_uint_16)tmp;
-
-         tmp = PNG_COST_FACTOR * filter_costs[i] + PNG_FP_HALF;
-         tmp /= PNG_FP_1;
-
-         png_ptr->filter_costs[i] = (png_uint_16)tmp;
-      }
-   }
+   PNG_UNUSED(png_ptr)
+   PNG_UNUSED(heuristic_method)
+   PNG_UNUSED(num_weights)
+   PNG_UNUSED(filter_weights)
+   PNG_UNUSED(filter_costs)
 }
 #endif /* FIXED_POINT */
-#endif /* PNG_WRITE_WEIGHTED_FILTER_SUPPORTED */
+#endif /* WRITE_WEIGHTED_FILTER */
 
+#ifdef PNG_WRITE_CUSTOMIZE_COMPRESSION_SUPPORTED
 void PNGAPI
 png_set_compression_level(png_structp png_ptr, int level)
 {
@@ -1457,6 +1253,7 @@ png_set_compression_method(png_structp png_ptr, int method)
    png_ptr->flags |= PNG_FLAG_ZLIB_CUSTOM_METHOD;
    png_ptr->zlib_method = method;
 }
+#endif /* WRITE_CUSTOMIZE_COMPRESSION */
 
 /* The following were added to libpng-1.5.4 */
 #ifdef PNG_WRITE_CUSTOMIZE_ZTXT_COMPRESSION_SUPPORTED
@@ -1514,10 +1311,10 @@ png_set_text_compression_window_bits(png_structp png_ptr, int window_bits)
 #ifndef WBITS_8_OK
    /* Avoid libpng bug with 256-byte windows */
    if (window_bits == 8)
-      {
-        png_warning(png_ptr, "Text compression window is being reset to 512");
-        window_bits = 9;
-      }
+   {
+      png_warning(png_ptr, "Text compression window is being reset to 512");
+      window_bits = 9;
+   }
 
 #endif
    png_ptr->flags |= PNG_FLAG_ZTXT_CUSTOM_WINDOW_BITS;

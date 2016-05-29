@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 
 #include "scene/resources/mesh_library.h"
 #include "scene/3d/spatial.h"
+#include "scene/3d/navigation.h"
 #include "scene/resources/multimesh.h"
 
 //heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
@@ -67,6 +68,9 @@ class GridMap : public Spatial {
 		IndexKey() { key=0; }
 	};
 
+	/**
+	 * @brief A Cell is a single cell in the cube map space; it is defined by its coordinates and the populating Item, identified by int id.
+	 */
 	union Cell {
 
 		struct {
@@ -79,26 +83,35 @@ class GridMap : public Spatial {
 		Cell() { item=0; rot=0; layer=0; }
 	};
 
+	/**
+	 * @brief An Octant is a prism containing Cells, and possibly belonging to an Area.
+	 * A GridMap can have multiple Octants.
+	 */
 	struct Octant {
 
-		struct ItemInstances {
+		struct NavMesh {
+			int id;
+			Transform xform;
+		};
 
+		struct ItemInstances {
 			Set<IndexKey> cells;
 			Ref<Mesh> mesh;
 			Ref<Shape> shape;
 			Ref<MultiMesh> multimesh;
 			RID multimesh_instance;
-
+			Ref<NavigationMesh> navmesh;
 		};
 
 		Ref<Mesh> baked;
 		RID bake_instance;
+		RID collision_debug;
+		RID collision_debug_instance;
 
 		bool dirty;
 		RID static_body;
-
 		Map<int,ItemInstances> items;
-
+		Map<IndexKey,NavMesh> navmesh_ids;
 	};
 
 	union OctantKey {
@@ -129,7 +142,7 @@ class GridMap : public Spatial {
 	bool center_x,center_y,center_z;
 	bool bake;
 	float cell_scale;
-
+	Navigation *navigation;
 
 	bool clip;
 	bool clip_above;
@@ -138,7 +151,9 @@ class GridMap : public Spatial {
 	Vector3::Axis clip_axis;
 
 
-
+	/**
+	 * @brief An Area is something like a room: it has doors, and Octants can choose to belong to it.
+	 */
 	struct Area {
 
 		String name;
@@ -186,10 +201,12 @@ class GridMap : public Spatial {
 	}
 
 	void _octant_enter_world(const OctantKey &p_key);
+	void _octant_enter_tree(const OctantKey &p_key);
 	void _octant_exit_world(const OctantKey &p_key);
 	void _octant_update(const OctantKey &p_key);
 	void _octant_transform(const OctantKey &p_key);
 	void _octant_clear_baked(const OctantKey &p_key);
+	void _octant_clear_navmesh(const GridMap::OctantKey&);
 	void _octant_bake(const OctantKey &p_key,const Ref<TriangleMesh>& p_tmesh=RES(),const Vector<BakeLight> &p_lights=Vector<BakeLight>(),List<Vector3> *r_prebake=NULL);
 	bool awaiting_update;
 

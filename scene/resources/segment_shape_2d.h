@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,6 +49,9 @@ public:
 	Vector2 get_a() const;
 	Vector2 get_b() const;
 
+	virtual void draw(const RID& p_to_rid,const Color& p_color);
+	virtual Rect2 get_rect() const;
+
 	SegmentShape2D();
 };
 
@@ -67,6 +70,8 @@ public:
 
 	void set_length(real_t p_length);
 	real_t get_length() const;
+	virtual void draw(const RID& p_to_rid,const Color& p_color);
+	virtual Rect2 get_rect() const;
 
 	RayShape2D();
 };

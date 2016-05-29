@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,6 +78,9 @@ class GridMapEditor : public VBoxContainer {
 	ToolButton *mode_thumbnail;
 	ToolButton *mode_list;
 	HBoxContainer *spatial_editor_hb;
+	ConfirmationDialog *settings_dialog;
+	VBoxContainer *settings_vbc;
+	SpinBox *settings_pick_distance;
 
 	struct SetItem {
 
@@ -165,8 +168,8 @@ class GridMapEditor : public VBoxContainer {
 		MENU_OPTION_SELECTION_MAKE_AREA,
 		MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR,
 		MENU_OPTION_SELECTION_CLEAR,
-		MENU_OPTION_REMOVE_AREA
-
+		MENU_OPTION_REMOVE_AREA,
+		MENU_OPTION_GRIDMAP_SETTINGS
 
 	};
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -310,13 +310,19 @@ void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(E->get().in_scene);
 
+	contact_monitor->locked=true;
+
 	E->get().in_scene=true;
 	emit_signal(SceneStringNames::get_singleton()->body_enter,node);
+
 
 	for(int i=0;i<E->get().shapes.size();i++) {
 
 		emit_signal(SceneStringNames::get_singleton()->body_enter_shape,p_id,node,E->get().shapes[i].body_shape,E->get().shapes[i].local_shape);
 	}
+
+	contact_monitor->locked=false;
+
 
 }
 
@@ -329,11 +335,18 @@ void RigidBody2D::_body_exit_tree(ObjectID p_id) {
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(!E->get().in_scene);
 	E->get().in_scene=false;
+
+	contact_monitor->locked=true;
+
 	emit_signal(SceneStringNames::get_singleton()->body_exit,node);
+
 	for(int i=0;i<E->get().shapes.size();i++) {
 
 		emit_signal(SceneStringNames::get_singleton()->body_exit_shape,p_id,node,E->get().shapes[i].body_shape,E->get().shapes[i].local_shape);
 	}
+
+	contact_monitor->locked=false;
+
 }
 
 void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,int p_local_shape) {
@@ -439,6 +452,8 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 
 	if (contact_monitor) {
 
+		contact_monitor->locked=true;
+
 		//untag all
 		int rc=0;
 		for( Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.front();E;E=E->next()) {
@@ -520,6 +535,8 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 			_body_inout(1,toadd[i].id,toadd[i].shape,toadd[i].local_shape);
 		}
 
+		contact_monitor->locked=false;
+
 	}
 
 	set_block_transform_notify(true); // don't want notify (would feedback loop)
@@ -527,7 +544,10 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 		set_global_transform(state->get_transform());
 	linear_velocity=state->get_linear_velocity();
 	angular_velocity=state->get_angular_velocity();
-	sleeping=state->is_sleeping();
+	if(sleeping!=state->is_sleeping()) {
+		sleeping=state->is_sleeping();
+		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
+	}
 	if (get_script_instance())
 		get_script_instance()->call("_integrate_forces",state);
 	set_block_transform_notify(false); // want it back
@@ -580,6 +600,17 @@ void RigidBody2D::set_mass(real_t p_mass){
 real_t RigidBody2D::get_mass() const{
 
 	return mass;
+}
+
+void RigidBody2D::set_inertia(real_t p_inertia) {
+
+	ERR_FAIL_COND(p_inertia<=0);
+	Physics2DServer::get_singleton()->body_set_param(get_rid(),Physics2DServer::BODY_PARAM_INERTIA,p_inertia);
+}
+
+real_t RigidBody2D::get_inertia() const{
+
+	return Physics2DServer::get_singleton()->body_get_param(get_rid(),Physics2DServer::BODY_PARAM_INERTIA);
 }
 
 void RigidBody2D::set_weight(real_t p_weight){
@@ -747,9 +778,9 @@ int RigidBody2D::get_max_contacts_reported() const{
 	return max_contacts_reported;
 }
 
-void RigidBody2D::apply_impulse(const Vector2& p_pos, const Vector2& p_impulse) {
+void RigidBody2D::apply_impulse(const Vector2& p_offset, const Vector2& p_impulse) {
 
-	Physics2DServer::get_singleton()->body_apply_impulse(get_rid(),p_pos,p_impulse);
+	Physics2DServer::get_singleton()->body_apply_impulse(get_rid(),p_offset,p_impulse);
 }
 
 void RigidBody2D::set_applied_force(const Vector2& p_force) {
@@ -762,6 +793,20 @@ Vector2 RigidBody2D::get_applied_force() const {
 	return Physics2DServer::get_singleton()->body_get_applied_force(get_rid());
 };
 
+void RigidBody2D::set_applied_torque(const float p_torque) {
+
+	Physics2DServer::get_singleton()->body_set_applied_torque(get_rid(), p_torque);
+};
+
+float RigidBody2D::get_applied_torque() const {
+
+	return Physics2DServer::get_singleton()->body_get_applied_torque(get_rid());
+};
+
+void RigidBody2D::add_force(const Vector2& p_offset, const Vector2& p_force) {
+
+	Physics2DServer::get_singleton()->body_add_force(get_rid(),p_offset,p_force);
+}
 
 void RigidBody2D::set_continuous_collision_detection_mode(CCDMode p_mode) {
 
@@ -803,6 +848,11 @@ void RigidBody2D::set_contact_monitor(bool p_enabled) {
 
 	if (!p_enabled) {
 
+		if (contact_monitor->locked) {
+			ERR_EXPLAIN("Can't disable contact monitoring during in/out callback. Use call_deferred(\"set_contact_monitor\",false) instead");
+		}
+		ERR_FAIL_COND(contact_monitor->locked);
+
 		for(Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.front();E;E=E->next()) {
 
 			//clean up mess
@@ -813,6 +863,7 @@ void RigidBody2D::set_contact_monitor(bool p_enabled) {
 	} else {
 
 		contact_monitor = memnew( ContactMonitor );
+		contact_monitor->locked=false;
 	}
 
 }
@@ -831,6 +882,9 @@ void RigidBody2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_mass","mass"),&RigidBody2D::set_mass);
 	ObjectTypeDB::bind_method(_MD("get_mass"),&RigidBody2D::get_mass);
+
+	ObjectTypeDB::bind_method(_MD("get_inertia"),&RigidBody2D::get_inertia);
+	ObjectTypeDB::bind_method(_MD("set_inertia","inertia"),&RigidBody2D::set_inertia);
 
 	ObjectTypeDB::bind_method(_MD("set_weight","weight"),&RigidBody2D::set_weight);
 	ObjectTypeDB::bind_method(_MD("get_weight"),&RigidBody2D::get_weight);
@@ -869,10 +923,15 @@ void RigidBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_continuous_collision_detection_mode"),&RigidBody2D::get_continuous_collision_detection_mode);
 
 	ObjectTypeDB::bind_method(_MD("set_axis_velocity","axis_velocity"),&RigidBody2D::set_axis_velocity);
-	ObjectTypeDB::bind_method(_MD("apply_impulse","pos","impulse"),&RigidBody2D::apply_impulse);
+	ObjectTypeDB::bind_method(_MD("apply_impulse","offset","impulse"),&RigidBody2D::apply_impulse);
 
 	ObjectTypeDB::bind_method(_MD("set_applied_force","force"),&RigidBody2D::set_applied_force);
 	ObjectTypeDB::bind_method(_MD("get_applied_force"),&RigidBody2D::get_applied_force);
+
+	ObjectTypeDB::bind_method(_MD("set_applied_torque","torque"),&RigidBody2D::set_applied_torque);
+	ObjectTypeDB::bind_method(_MD("get_applied_torque"),&RigidBody2D::get_applied_torque);
+
+	ObjectTypeDB::bind_method(_MD("add_force","offset","force"),&RigidBody2D::add_force);
 
 	ObjectTypeDB::bind_method(_MD("set_sleeping","sleeping"),&RigidBody2D::set_sleeping);
 	ObjectTypeDB::bind_method(_MD("is_sleeping"),&RigidBody2D::is_sleeping);
@@ -911,6 +970,7 @@ void RigidBody2D::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("body_exit_shape",PropertyInfo(Variant::INT,"body_id"),PropertyInfo(Variant::OBJECT,"body"),PropertyInfo(Variant::INT,"body_shape"),PropertyInfo(Variant::INT,"local_shape")));
 	ADD_SIGNAL( MethodInfo("body_enter",PropertyInfo(Variant::OBJECT,"body")));
 	ADD_SIGNAL( MethodInfo("body_exit",PropertyInfo(Variant::OBJECT,"body")));
+	ADD_SIGNAL( MethodInfo("sleeping_state_changed"));
 
 	BIND_CONSTANT( MODE_STATIC );
 	BIND_CONSTANT( MODE_KINEMATIC );
@@ -1250,7 +1310,7 @@ void KinematicBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_collider_velocity"),&KinematicBody2D::get_collider_velocity);
 	ObjectTypeDB::bind_method(_MD("get_collider:Object"),&KinematicBody2D::_get_collider);
 	ObjectTypeDB::bind_method(_MD("get_collider_shape"),&KinematicBody2D::get_collider_shape);
-	ObjectTypeDB::bind_method(_MD("get_collider_metadata"),&KinematicBody2D::get_collider_metadata);
+	ObjectTypeDB::bind_method(_MD("get_collider_metadata:Variant"),&KinematicBody2D::get_collider_metadata);
 
 	ObjectTypeDB::bind_method(_MD("set_collision_margin","pixels"),&KinematicBody2D::set_collision_margin);
 	ObjectTypeDB::bind_method(_MD("get_collision_margin","pixels"),&KinematicBody2D::get_collision_margin);

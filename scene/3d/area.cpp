@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,15 +83,25 @@ real_t Area::get_gravity() const{
 
 	return gravity;
 }
+void Area::set_linear_damp(real_t p_linear_damp){
 
-void Area::set_density(real_t p_density){
-
-	density=p_density;
-	PhysicsServer::get_singleton()->area_set_param(get_rid(),PhysicsServer::AREA_PARAM_DENSITY,p_density);
+	linear_damp=p_linear_damp;
+	PhysicsServer::get_singleton()->area_set_param(get_rid(),PhysicsServer::AREA_PARAM_LINEAR_DAMP,p_linear_damp);
 }
-real_t Area::get_density() const{
+real_t Area::get_linear_damp() const{
 
-	return density;
+	return linear_damp;
+}
+
+void Area::set_angular_damp(real_t p_angular_damp){
+
+	angular_damp=p_angular_damp;
+	PhysicsServer::get_singleton()->area_set_param(get_rid(),PhysicsServer::AREA_PARAM_ANGULAR_DAMP,p_angular_damp);
+}
+
+real_t Area::get_angular_damp() const{
+
+	return angular_damp;
 }
 
 void Area::set_priority(real_t p_priority){
@@ -509,6 +519,60 @@ bool Area::overlaps_body(Node* p_body) const{
 	return E->get().in_tree;
 
 }
+void Area::set_collision_mask(uint32_t p_mask) {
+
+	collision_mask=p_mask;
+	PhysicsServer::get_singleton()->area_set_collision_mask(get_rid(),p_mask);
+}
+
+uint32_t Area::get_collision_mask() const {
+
+	return collision_mask;
+}
+void Area::set_layer_mask(uint32_t p_mask) {
+
+	layer_mask=p_mask;
+	PhysicsServer::get_singleton()->area_set_layer_mask(get_rid(),p_mask);
+}
+
+uint32_t Area::get_layer_mask() const {
+
+	return layer_mask;
+}
+
+void Area::set_collision_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_mask();
+	if (p_value)
+		mask|=1<<p_bit;
+	else
+		mask&=~(1<<p_bit);
+	set_collision_mask(mask);
+
+}
+
+bool Area::get_collision_mask_bit(int p_bit) const{
+
+	return get_collision_mask()&(1<<p_bit);
+}
+
+
+void Area::set_layer_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_layer_mask();
+	if (p_value)
+		mask|=1<<p_bit;
+	else
+		mask&=~(1<<p_bit);
+	set_layer_mask(mask);
+
+}
+
+bool Area::get_layer_mask_bit(int p_bit) const{
+
+	return get_layer_mask()&(1<<p_bit);
+}
+
 
 void Area::_bind_methods() {
 
@@ -533,11 +597,26 @@ void Area::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_gravity","gravity"),&Area::set_gravity);
 	ObjectTypeDB::bind_method(_MD("get_gravity"),&Area::get_gravity);
 
-	ObjectTypeDB::bind_method(_MD("set_density","density"),&Area::set_density);
-	ObjectTypeDB::bind_method(_MD("get_density"),&Area::get_density);
+	ObjectTypeDB::bind_method(_MD("set_angular_damp","angular_damp"),&Area::set_angular_damp);
+	ObjectTypeDB::bind_method(_MD("get_angular_damp"),&Area::get_angular_damp);
+
+	ObjectTypeDB::bind_method(_MD("set_linear_damp","linear_damp"),&Area::set_linear_damp);
+	ObjectTypeDB::bind_method(_MD("get_linear_damp"),&Area::get_linear_damp);
 
 	ObjectTypeDB::bind_method(_MD("set_priority","priority"),&Area::set_priority);
 	ObjectTypeDB::bind_method(_MD("get_priority"),&Area::get_priority);
+
+	ObjectTypeDB::bind_method(_MD("set_collision_mask","collision_mask"),&Area::set_collision_mask);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask"),&Area::get_collision_mask);
+
+	ObjectTypeDB::bind_method(_MD("set_layer_mask","layer_mask"),&Area::set_layer_mask);
+	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&Area::get_layer_mask);
+
+	ObjectTypeDB::bind_method(_MD("set_collision_mask_bit","bit","value"),&Area::set_collision_mask_bit);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask_bit","bit"),&Area::get_collision_mask_bit);
+
+	ObjectTypeDB::bind_method(_MD("set_layer_mask_bit","bit","value"),&Area::set_layer_mask_bit);
+	ObjectTypeDB::bind_method(_MD("get_layer_mask_bit","bit"),&Area::get_layer_mask_bit);
 
 	ObjectTypeDB::bind_method(_MD("set_monitorable","enable"),&Area::set_monitorable);
 	ObjectTypeDB::bind_method(_MD("is_monitorable"),&Area::is_monitorable);
@@ -549,8 +628,8 @@ void Area::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_overlapping_bodies"),&Area::get_overlapping_bodies);
 	ObjectTypeDB::bind_method(_MD("get_overlapping_areas"),&Area::get_overlapping_areas);
 
-	ObjectTypeDB::bind_method(_MD("overlaps_body:PhysicsBody","body"),&Area::overlaps_body);
-	ObjectTypeDB::bind_method(_MD("overlaps_area:Area","area"),&Area::overlaps_area);
+	ObjectTypeDB::bind_method(_MD("overlaps_body","body"),&Area::overlaps_body);
+	ObjectTypeDB::bind_method(_MD("overlaps_area","area"),&Area::overlaps_area);
 
 	ObjectTypeDB::bind_method(_MD("_body_inout"),&Area::_body_inout);
 	ObjectTypeDB::bind_method(_MD("_area_inout"),&Area::_area_inout);
@@ -566,15 +645,18 @@ void Area::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("area_enter",PropertyInfo(Variant::OBJECT,"area",PROPERTY_HINT_RESOURCE_TYPE,"Area")));
 	ADD_SIGNAL( MethodInfo("area_exit",PropertyInfo(Variant::OBJECT,"area",PROPERTY_HINT_RESOURCE_TYPE,"Area")));
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"space_override",PROPERTY_HINT_ENUM,"Disabled,Combine,Replace"),_SCS("set_space_override_mode"),_SCS("get_space_override_mode"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"space_override",PROPERTY_HINT_ENUM,"Disabled,Combine,Combine-Replace,Replace,Replace-Combine"),_SCS("set_space_override_mode"),_SCS("get_space_override_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"gravity_point"),_SCS("set_gravity_is_point"),_SCS("is_gravity_a_point"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity_distance_scale", PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_gravity_distance_scale"),_SCS("get_gravity_distance_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"gravity_vec"),_SCS("set_gravity_vector"),_SCS("get_gravity_vector"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity",PROPERTY_HINT_RANGE,"-1024,1024,0.01"),_SCS("set_gravity"),_SCS("get_gravity"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"density",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_density"),_SCS("get_density"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"linear_damp",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_linear_damp"),_SCS("get_linear_damp"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"angular_damp",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_angular_damp"),_SCS("get_angular_damp"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"priority",PROPERTY_HINT_RANGE,"0,128,1"),_SCS("set_priority"),_SCS("get_priority"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitoring"),_SCS("set_enable_monitoring"),_SCS("is_monitoring_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitorable"),_SCS("set_monitorable"),_SCS("is_monitorable"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
 
 }
 
@@ -586,9 +668,12 @@ Area::Area() : CollisionObject(PhysicsServer::get_singleton()->area_create(),tru
 	set_gravity_vector(Vector3(0,-1,0));
 	gravity_is_point=false;
 	gravity_distance_scale=0;
-	density=0.1;
+	linear_damp=0.1;
+	angular_damp=1;
 	priority=0;
 	monitoring=false;
+	collision_mask=1;
+	layer_mask=1;
 	set_ray_pickable(false);
 	set_enable_monitoring(true);
 	set_monitorable(true);

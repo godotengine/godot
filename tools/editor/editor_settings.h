@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,8 @@
 
 #include "resource.h"
 #include "os/thread_safe.h"
-
+#include "core/io/config_file.h"
+#include "translation.h"
 class EditorPlugin;
 
 class EditorSettings : public Resource {
@@ -56,7 +57,6 @@ public:
 		Vector<String> install_files;
 	};
 private:
-	Map<String,Plugin> plugins;
 
 	struct VariantContainer {
 		int order;
@@ -83,15 +83,17 @@ private:
 	Ref<Resource> clipboard;
 
 
-	EditorPlugin *_load_plugin_editor(const String& p_path);
-	Error _load_plugin(const String& p_path,Plugin& plugin);
+	void _load_defaults(Ref<ConfigFile> p_extra_config = NULL);
+	void _load_default_text_editor_theme();
 
-	void _load_defaults();
+	bool _save_text_editor_theme(String p_file);
 
 	String project_config_path;
 
 	Vector<String> favorite_dirs;
 	Vector<String> recent_dirs;
+
+	Vector<Ref<Translation> > translations;
 
 protected:
 
@@ -107,12 +109,11 @@ public:
 	static EditorSettings *get_singleton();
 	void erase(String p_var);
 	String get_settings_path() const;
+	//String get_global_settings_path() const;
 	String get_project_settings_path() const;
 
-	const Map<String,Plugin>& get_plugins() const { return plugins; }
 
-	void scan_plugins();
-	void enable_plugins();
+	void setup_language();
 	void setup_network();
 
 	void raise_order(const String& p_name);
@@ -121,11 +122,6 @@ public:
 	static void destroy();
 
 	void notify_changes();
-
-	void set_plugin_enabled(const String& p_plugin,bool p_enabled);
-	bool is_plugin_enabled(const String& p_plugin);
-
-	void load_installed_plugin(const String& p_plugin);
 
 	void set_resource_clipboard(const Ref<Resource>& p_resource) { clipboard=p_resource; }
 	Ref<Resource> get_resource_clipboard() const { return clipboard; }
@@ -139,6 +135,12 @@ public:
 	Vector<String> get_recent_dirs() const;
 
 	void load_favorites();
+
+	void list_text_editor_themes();
+	void load_text_editor_theme();
+	bool import_text_editor_theme(String p_file);
+	bool save_text_editor_theme();
+	bool save_text_editor_theme_as(String p_file);
 
 	EditorSettings();
 	~EditorSettings();

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 #include "core/core_string_names.h"
 #include "scene/scene_string_names.h"
 #include "scene/main/viewport.h"
+#include "os/os.h"
 
 void Sprite::edit_set_pivot(const Point2& p_pivot) {
 
@@ -85,6 +86,9 @@ void Sprite::_notification(int p_what) {
 			Point2 ofs=offset;
 			if (centered)
 				ofs-=s/2;
+			if (OS::get_singleton()->get_use_pixel_snap()) {
+				ofs=ofs.floor();
+			}
 
 			Rect2 dst_rect(ofs,s);
 
@@ -184,12 +188,15 @@ bool Sprite::is_region() const{
 
 void Sprite::set_region_rect(const Rect2& p_region_rect) {
 
-	bool changed=region_rect!=p_region_rect;
+	if (region_rect==p_region_rect)
+		return;
+
 	region_rect=p_region_rect;
-	if (region && changed) {
-		update();
+
+	if (region)
 		item_rect_changed();
-	}
+
+	_change_notify("region_rect");
 }
 
 Rect2 Sprite::get_region_rect() const {
@@ -421,6 +428,9 @@ void ViewportSprite::_notification(int p_what) {
 			if (centered)
 				ofs-=s/2;
 
+			if (OS::get_singleton()->get_use_pixel_snap()) {
+				ofs=ofs.floor();
+			}
 			Rect2 dst_rect(ofs,s);
 			texture->draw_rect_region(ci,dst_rect,src_rect,modulate);
 
@@ -519,6 +529,25 @@ Rect2 ViewportSprite::get_item_rect() const {
 	return Rect2(ofs,s);
 }
 
+String ViewportSprite::get_configuration_warning() const {
+
+	if (!has_node(viewport_path) || !get_node(viewport_path) || !get_node(viewport_path)->cast_to<Viewport>()) {
+		return TTR("Path property must point to a valid Viewport node to work. Such Viewport must be set to 'render target' mode.");
+	} else {
+
+		Node *n = get_node(viewport_path);
+		if (n) {
+			Viewport *vp = n->cast_to<Viewport>();
+			if (!vp->is_set_as_render_target()) {
+
+				return TTR("The Viewport set in the path property must be set as 'render target' in order for this sprite to work.");
+			}
+		}
+	}
+
+	return String();
+
+}
 
 void ViewportSprite::_bind_methods() {
 

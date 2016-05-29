@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,18 +64,18 @@ public:
 
 
 private:
-	Mode mode;
+
 	EditorNode *editor;
 	EditorTextureImportDialog *dialog;
-	static EditorTextureImportPlugin *singleton[MODE_MAX];
+	static EditorTextureImportPlugin *singleton;
 	//used by other importers such as mesh
 
-	Error _process_texture_data(Ref<ImageTexture> &texture, int format, float quality, int flags,EditorExportPlatform::ImageCompression p_compr,int tex_flags,int shrink);
+	Error _process_texture_data(Ref<ImageTexture> &texture, int format, float quality, int flags,EditorExportPlatform::ImageCompression p_compr,int tex_flags,float shrink);
 	void compress_image(EditorExportPlatform::ImageCompression p_mode,Image& image,bool p_smaller);
 public:
 
 
-	static EditorTextureImportPlugin *get_singleton(Mode p_mode) { return singleton[p_mode]; }
+	static EditorTextureImportPlugin *get_singleton() { return singleton; }
 
 	enum ImageFormat {
 
@@ -100,7 +100,6 @@ public:
 		IMAGE_FLAG_USE_ANISOTROPY=1024, //convert image to linear
 	};
 
-	Mode get_mode() const { return mode; }
 	virtual String get_name() const;
 	virtual String get_visible_name() const;
 	virtual void import_dialog(const String& p_from="");
@@ -108,8 +107,11 @@ public:
 	virtual Error import2(const String& p_path, const Ref<ResourceImportMetadata>& p_from,EditorExportPlatform::ImageCompression p_compr, bool p_external=false);
 	virtual Vector<uint8_t> custom_export(const String& p_path,const Ref<EditorExportPlatform> &p_platform);
 
+	virtual void import_from_drop(const Vector<String>& p_drop,const String& p_dest_path);
+	virtual void reimport_multiple_files(const Vector<String>& p_list);
+	virtual bool can_reimport_multiple_files() const;
 
-	EditorTextureImportPlugin(EditorNode* p_editor=NULL,Mode p_mode=MODE_TEXTURE_2D);
+	EditorTextureImportPlugin(EditorNode* p_editor=NULL);
 };
 
 
@@ -123,6 +125,7 @@ public:
 	virtual Vector<uint8_t> custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform);
 	EditorTextureExportPlugin();
 };
+
 class EditorImportTextureOptions : public VBoxContainer {
 
 	OBJ_TYPE( EditorImportTextureOptions, VBoxContainer );
@@ -133,7 +136,7 @@ class EditorImportTextureOptions : public VBoxContainer {
 	HSlider *quality;
 	Tree *flags;
 	Vector<TreeItem*> items;
-	Label *notice_for_2d;
+
 
 	bool updating;
 

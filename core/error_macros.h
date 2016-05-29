@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,12 +33,12 @@
 /**
  * Error macros. Unlike exceptions and asserts, these macros try to mantain consistency and stability
  * inside the code. It is recommended to always return processable data, so in case of an error, the
- * engine can stay working well. 
+ * engine can stay working well.
  * In most cases, bugs and/or invalid data are not fatal and should never allow a perfectly running application
  * to fail or crash.
  */
 
-/** 
+/**
  * Pointer to the error macro priting function. Reassign to any function to have errors printed
  */
 
@@ -104,7 +104,7 @@ extern bool _err_error_exists;
 
 #define ERR_FAIL_INDEX(m_index,m_size) \
 	 do {if ((m_index)<0 || (m_index)>=(m_size)) { \
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Index "_STR(m_index)" out of size ("_STR(m_size)").");	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Index " _STR(m_index)" out of size (" _STR(m_size)").");	\
 		return;	\
 	} else _err_error_exists=false; } while(0);	\
 
@@ -115,7 +115,7 @@ extern bool _err_error_exists;
 
 #define ERR_FAIL_INDEX_V(m_index,m_size,m_retval) \
 	 do {if ((m_index)<0 || (m_index)>=(m_size)) { \
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Index "_STR(m_index)" out of size ("_STR(m_size)").");	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Index " _STR(m_index)" out of size (" _STR(m_size)").");	\
 		return m_retval;	 \
 	} else _err_error_exists=false;} while (0);
 
@@ -125,28 +125,28 @@ extern bool _err_error_exists;
 
  #define ERR_FAIL_NULL(m_param) \
 	 { if ( !m_param ) {	\
-		 _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Parameter ' "_STR(m_param)" ' is null.");	\
+         _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Parameter ' " _STR(m_param)" ' is null.");	\
 		 return;	 \
 	 }else _err_error_exists=false; }	\
 
 
 #define ERR_FAIL_NULL_V(m_param,m_retval) \
 	{ if ( !m_param ) {	\
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Parameter ' "_STR(m_param)" ' is null.");	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Parameter ' " _STR(m_param)" ' is null.");	\
 		return m_retval;	 \
 	}else _err_error_exists=false; }	\
 
-/** An error condition happened (m_cond tested true) (WARNING this is the opposite as assert(). 
+/** An error condition happened (m_cond tested true) (WARNING this is the opposite as assert().
  * the function will exit.
  */
 
 #define ERR_FAIL_COND(m_cond) \
 	{ if ( m_cond ) {	\
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' "_STR(m_cond)" ' is true.");	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' " _STR(m_cond)" ' is true.");	\
 		return;	 \
 	}else _err_error_exists=false; }	\
 
-/** An error condition happened (m_cond tested true) (WARNING this is the opposite as assert(). 
+/** An error condition happened (m_cond tested true) (WARNING this is the opposite as assert().
  * the function will exit.
  * This function returns an error value, if returning Error, please select the most
  * appropriate error condition from error_macros.h
@@ -154,27 +154,27 @@ extern bool _err_error_exists;
 
 #define ERR_FAIL_COND_V(m_cond,m_retval) \
 	{ if ( m_cond ) {	\
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' "_STR(m_cond)" ' is true. returned: "_STR(m_retval));	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' " _STR(m_cond)" ' is true. returned: " _STR(m_retval));	\
 		return m_retval;	 \
 	}else _err_error_exists=false; }	\
 
-/** An error condition happened (m_cond tested true) (WARNING this is the opposite as assert(). 
+/** An error condition happened (m_cond tested true) (WARNING this is the opposite as assert().
  * the loop will skip to the next iteration.
  */
 
 #define ERR_CONTINUE(m_cond) \
 	{ if ( m_cond ) {	\
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' "_STR(m_cond)" ' is true. Continuing..:");	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' " _STR(m_cond)" ' is true. Continuing..:");	\
 		continue;\
 	} else _err_error_exists=false;}	\
 
-/** An error condition happened (m_cond tested true) (WARNING this is the opposite as assert(). 
+/** An error condition happened (m_cond tested true) (WARNING this is the opposite as assert().
  * the loop will break
  */
 
 #define ERR_BREAK(m_cond) \
 	{ if ( m_cond ) {	\
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' "_STR(m_cond)" ' is true. Breaking..:");	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' " _STR(m_cond)" ' is true. Breaking..:");	\
 		break;\
 	} else _err_error_exists=false;}	\
 
@@ -193,7 +193,7 @@ extern bool _err_error_exists;
 
 #define ERR_FAIL_V(m_value) \
 { \
-		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Method/Function Failed, returning: "__STR(m_value));	\
+        _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Method/Function Failed, returning: " __STR(m_value));	\
 		_err_error_exists=false;	\
 		return m_value;\
 } \
@@ -207,6 +207,11 @@ extern bool _err_error_exists;
 		_err_error_exists=false;\
 	} \
 
+#define ERR_PRINTS(m_string) \
+	{ \
+		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,String(m_string).utf8().get_data());	\
+		_err_error_exists=false;\
+	} \
 
 /** Print a warning string.
  */
@@ -218,5 +223,10 @@ extern bool _err_error_exists;
 	} \
 
 
+#define WARN_PRINTS(m_string) \
+	{ \
+		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,String(m_string).utf8().get_data(),ERR_HANDLER_WARNING);	\
+		_err_error_exists=false;\
+	} \
 
 #endif

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 #include "segment_shape_2d.h"
 
 #include "servers/physics_2d_server.h"
+#include "servers/visual_server.h"
 
 void SegmentShape2D::_update_shape() {
 
@@ -62,6 +63,23 @@ Vector2 SegmentShape2D::get_b() const {
 	return b;
 }
 
+void SegmentShape2D::draw(const RID& p_to_rid,const Color& p_color) {
+
+	VisualServer::get_singleton()->canvas_item_add_line(p_to_rid,a,b,p_color,3);
+}
+
+Rect2 SegmentShape2D::get_rect() const{
+
+	Rect2 rect;
+	rect.pos=a;
+	rect.expand_to(b);
+	return rect;
+
+}
+
+
+
+
 void SegmentShape2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_a","a"),&SegmentShape2D::set_a);
@@ -93,6 +111,37 @@ void RayShape2D::_update_shape() {
 	emit_changed();
 
 }
+
+
+void RayShape2D::draw(const RID& p_to_rid,const Color& p_color) {
+
+
+	Vector2 tip = Vector2(0,get_length());
+	VS::get_singleton()->canvas_item_add_line(p_to_rid,Vector2(),tip,p_color,3);
+	Vector<Vector2> pts;
+	float tsize=4;
+	pts.push_back(tip+Vector2(0,tsize));
+	pts.push_back(tip+Vector2(0.707*tsize,0));
+	pts.push_back(tip+Vector2(-0.707*tsize,0));
+	Vector<Color> cols;
+	for(int i=0;i<3;i++)
+		cols.push_back(p_color);
+
+	VS::get_singleton()->canvas_item_add_primitive(p_to_rid,pts,cols,Vector<Point2>(),RID());
+
+
+
+}
+
+Rect2 RayShape2D::get_rect() const {
+
+	Rect2 rect;
+	rect.pos=Vector2();
+	rect.expand_to(Vector2(0,length));
+	rect=rect.grow(0.707*4);
+	return rect;
+}
+
 
 void RayShape2D::_bind_methods() {
 

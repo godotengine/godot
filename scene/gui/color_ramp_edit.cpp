@@ -185,7 +185,7 @@ void ColorRampEdit::_input_event(const InputEvent& p_event) {
 
 		int x = p_event.mouse_motion.x;
 		float newofs = CLAMP(x/float(total_w),0,1);
-		
+
 		//Snap to nearest point if holding shift
 		if (p_event.key.mod.shift) {
 			float snap_treshhold = 0.03;

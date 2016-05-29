@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,10 +36,13 @@
 #include "resources/default_theme/default_theme.h"
 #include "object_type_db.h"
 #include "scene/main/canvas_layer.h"
+#include "scene/main/instance_placeholder.h"
 #include "scene/main/viewport.h"
+#include "scene/main/http_request.h"
 #include "scene/gui/control.h"
 #include "scene/gui/texture_progress.h"
 #include "scene/gui/button.h"
+#include "scene/gui/link_button.h"
 #include "scene/gui/button_array.h"
 #include "scene/gui/button_group.h"
 #include "scene/gui/label.h"
@@ -123,11 +126,13 @@
 #include "scene/main/scene_main_loop.h"
 #include "scene/main/resource_preloader.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/main/scene_main_loop.h"
 
 
 #include "scene/resources/surface_tool.h"
 #include "scene/resources/mesh_data_tool.h"
 #include "scene/resources/scene_preloader.h"
+#include "scene/resources/dynamic_font.h"
 
 #include "scene/main/timer.h"
 
@@ -216,11 +221,11 @@
 #include "scene/3d/collision_polygon.h"
 #endif
 
-
+#include "scene/resources/scene_format_text.h"
 
 static ResourceFormatLoaderImage *resource_loader_image=NULL;
 static ResourceFormatLoaderWAV *resource_loader_wav=NULL;
-static ResourceFormatLoaderBitMap *resource_loader_bitmap=NULL;
+
 
 #ifdef TOOLS_ENABLED
 
@@ -228,6 +233,11 @@ static ResourceFormatLoaderBitMap *resource_loader_bitmap=NULL;
 #endif
 static ResourceFormatLoaderTheme *resource_loader_theme=NULL;
 static ResourceFormatLoaderShader *resource_loader_shader=NULL;
+
+static ResourceFormatSaverText *resource_saver_text=NULL;
+static ResourceFormatLoaderText *resource_loader_text=NULL;
+
+static ResourceFormatLoaderDynamicFont *resource_loader_dynamic_font=NULL;
 
 //static SceneStringNames *string_names;
 
@@ -245,8 +255,8 @@ void register_scene_types() {
 	resource_loader_wav = memnew( ResourceFormatLoaderWAV );
 	ResourceLoader::add_resource_format_loader( resource_loader_wav );
 
-	resource_loader_bitmap = memnew( ResourceFormatLoaderBitMap );
-	ResourceLoader::add_resource_format_loader( resource_loader_bitmap );
+	resource_loader_dynamic_font = memnew( ResourceFormatLoaderDynamicFont );
+	ResourceLoader::add_resource_format_loader( resource_loader_dynamic_font );
 
 #ifdef TOOLS_ENABLED
 
@@ -267,9 +277,11 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Object>();
 
 	ObjectTypeDB::register_type<Node>();
+	ObjectTypeDB::register_virtual_type<InstancePlaceholder>();
 
 	ObjectTypeDB::register_type<Viewport>();
 	ObjectTypeDB::register_virtual_type<RenderTargetTexture>();
+	ObjectTypeDB::register_type<HTTPRequest>();
 	ObjectTypeDB::register_type<Timer>();
 	ObjectTypeDB::register_type<CanvasLayer>();
 	ObjectTypeDB::register_type<CanvasModulate>();
@@ -294,9 +306,10 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Popup>();
 	ObjectTypeDB::register_type<PopupPanel>();
 	ObjectTypeDB::register_type<MenuButton>();
-    ObjectTypeDB::register_type<CheckBox>();
+	ObjectTypeDB::register_type<CheckBox>();
 	ObjectTypeDB::register_type<CheckButton>();
 	ObjectTypeDB::register_type<ToolButton>();
+	ObjectTypeDB::register_type<LinkButton>();
 	ObjectTypeDB::register_type<Panel>();
 	ObjectTypeDB::register_type<Range>();
 
@@ -425,7 +438,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<ConeTwistJoint>();
 	ObjectTypeDB::register_type<Generic6DOFJoint>();
 
-	//scenariofx	
+	//scenariofx
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -458,7 +471,6 @@ void register_scene_types() {
 
 
 	/* disable types by default, only editors should enable them */
-	ObjectTypeDB::set_type_enabled("CollisionShape",false);
 	//ObjectTypeDB::set_type_enabled("BodyVolumeSphere",false);
 	//ObjectTypeDB::set_type_enabled("BodyVolumeBox",false);
 	//ObjectTypeDB::set_type_enabled("BodyVolumeCapsule",false);
@@ -492,9 +504,12 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<OccluderPolygon2D>();
 	ObjectTypeDB::register_type<YSort>();
 	ObjectTypeDB::register_type<BackBufferCopy>();
-
-	ObjectTypeDB::set_type_enabled("CollisionShape2D",false);
-	ObjectTypeDB::set_type_enabled("CollisionPolygon2D",false);
+	if (bool(GLOBAL_DEF("physics/remove_collision_helpers_at_runtime",false))) {
+		ObjectTypeDB::set_type_enabled("CollisionShape2D",false);
+		ObjectTypeDB::set_type_enabled("CollisionPolygon2D",false);
+		ObjectTypeDB::set_type_enabled("CollisionShape",false);
+		ObjectTypeDB::set_type_enabled("CollisionPolygon",false);
+	}
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -561,12 +576,18 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<LargeTexture>();
 	ObjectTypeDB::register_type<CubeMap>();
 	ObjectTypeDB::register_type<Animation>();
-	ObjectTypeDB::register_type<Font>();
+	ObjectTypeDB::register_virtual_type<Font>();
+	ObjectTypeDB::register_type<BitmapFont>();
+	ObjectTypeDB::register_type<DynamicFontData>();
+	ObjectTypeDB::register_type<DynamicFont>();
 	ObjectTypeDB::register_type<StyleBoxEmpty>();
 	ObjectTypeDB::register_type<StyleBoxTexture>();
 	ObjectTypeDB::register_type<StyleBoxFlat>();
 	ObjectTypeDB::register_type<StyleBoxImageMask>();
 	ObjectTypeDB::register_type<Theme>();
+
+	ObjectTypeDB::add_compatibility_type("Font","BitmapFont");
+
 
 	ObjectTypeDB::register_type<PolygonPathFinder>();
 	ObjectTypeDB::register_type<BitMap>();
@@ -578,7 +599,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Sample>();
 	ObjectTypeDB::register_type<SampleLibrary>();
 	ObjectTypeDB::register_virtual_type<AudioStream>();
-	ObjectTypeDB::register_type<AudioStreamGibberish>();
+	ObjectTypeDB::register_virtual_type<AudioStreamPlayback>();
+//	ObjectTypeDB::register_type<AudioStreamGibberish>();
 	ObjectTypeDB::register_virtual_type<VideoStream>();
 
 	OS::get_singleton()->yield(); //may take time to init
@@ -602,6 +624,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
+	ObjectTypeDB::register_virtual_type<SceneState>();
 	ObjectTypeDB::register_type<PackedScene>();
 
 	ObjectTypeDB::register_type<SceneTree>();
@@ -609,15 +632,21 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 
+	resource_saver_text = memnew( ResourceFormatSaverText );
+	ResourceSaver::add_resource_format_saver(resource_saver_text);
+
+	resource_loader_text = memnew( ResourceFormatLoaderText );
+	ResourceLoader::add_resource_format_loader(resource_loader_text);
+
 }
 
 void unregister_scene_types() {
-	
+
 	clear_default_theme();
-	
+
 	memdelete( resource_loader_image );
 	memdelete( resource_loader_wav );
-	memdelete( resource_loader_bitmap );
+	memdelete( resource_loader_dynamic_font );
 #ifdef TOOLS_ENABLED
 
 
@@ -626,5 +655,12 @@ void unregister_scene_types() {
 
 	memdelete( resource_loader_theme );
 	memdelete( resource_loader_shader );
+
+	if (resource_saver_text) {
+		memdelete(resource_saver_text);
+	}
+	if (resource_loader_text) {
+		memdelete(resource_loader_text);
+	}
 	SceneStringNames::free();
 }

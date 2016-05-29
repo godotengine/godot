@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -194,7 +194,6 @@ bool BodyPairSW::_test_ccd(float p_step,BodySW *p_A, int p_shape_A,const Transfo
 
 	//cast a segment from support in motion normal, in the same direction of motion by motion length
 	//support is the worst case collision point, so real collision happened before
-	int a;
 	Vector3 s=p_A->get_shape(p_shape_A)->get_support(p_xform_A.basis.xform(mnormal).normalized());
 	Vector3 from = p_xform_A.xform(s);
 	Vector3 to = from + motion;
@@ -222,7 +221,7 @@ bool BodyPairSW::_test_ccd(float p_step,BodySW *p_A, int p_shape_A,const Transfo
 bool BodyPairSW::setup(float p_step) {
 
 	//cannot collide
-	if ((A->get_layer_mask()&B->get_layer_mask())==0 || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported()==0 && B->get_max_contacts_reported()==0)) {
+	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported()==0 && B->get_max_contacts_reported()==0)) {
 		collided=false;
 		return false;
 	}
@@ -298,6 +297,16 @@ bool BodyPairSW::setup(float p_step) {
 		}
 
 		c.active=true;
+
+#ifdef DEBUG_ENABLED
+
+
+		if (space->is_debugging_contacts()) {
+			space->add_debug_contact(global_A+offset_A);
+			space->add_debug_contact(global_B+offset_A);
+		}
+#endif
+
 
 		int gather_A = A->can_report_contacts();
 		int gather_B = B->can_report_contacts();

@@ -4,7 +4,7 @@ import string
 
 def is_active():
 	return True
-	
+
 def get_name():
 	return "JavaScript"
 
@@ -30,7 +30,6 @@ def get_flags():
 		('theora', 'no'),
 		('tools', 'no'),
 		('nedmalloc', 'no'),
-		('vorbis', 'no'),
 		('musepack', 'no'),
 		('squirrel', 'no'),
 		('squish', 'no'),
@@ -77,8 +76,11 @@ def configure(env):
 		#env.Append(CCFLAGS=['-D_DEBUG', '-Wall', '-g4', '-DDEBUG_ENABLED'])
 		env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
 
+	if(env["opus"]=="yes"):
+		env.opus_fixed_point="yes"
+
 	env.Append(CPPFLAGS=["-fno-exceptions",'-DNO_SAFE_CAST','-fno-rtti'])
-	env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL','-DMPC_FIXED_POINT','-DTYPED_METHOD_BIND','-DNO_THREADS'])
+	env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DPTHREAD_NO_RENAME', '-DNO_FCNTL','-DMPC_FIXED_POINT','-DTYPED_METHOD_BIND','-DNO_THREADS'])
 	env.Append(CPPFLAGS=['-DGLES2_ENABLED'])
 	env.Append(CPPFLAGS=['-DGLES_NO_CLIENT_ARRAYS'])
 	env.Append(CPPFLAGS=['-s','ASM_JS=1'])
@@ -93,6 +95,13 @@ def configure(env):
 	env.Append(LINKFLAGS=['-s','ASM_JS=1'])
 	env.Append(LINKFLAGS=['-O2'])
 	#env.Append(LINKFLAGS=['-g4'])
-	
+
 	#print "CCCOM is:", env.subst('$CCCOM')
 	#print "P: ", env['p'], " Platofrm: ", env['platform']
+
+	import methods
+
+	env.Append( BUILDERS = { 'GLSL120' : env.Builder(action = methods.build_legacygl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
+	env.Append( BUILDERS = { 'GLSL' : env.Builder(action = methods.build_glsl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
+	env.Append( BUILDERS = { 'GLSL120GLES' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
+	#env.Append( BUILDERS = { 'HLSL9' : env.Builder(action = methods.build_hlsl_dx9_headers, suffix = 'hlsl.h',src_suffix = '.hlsl') } )

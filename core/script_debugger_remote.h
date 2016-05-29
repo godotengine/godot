@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "io/stream_peer_tcp.h"
 #include "io/packet_peer.h"
 #include "list.h"
+
 class ScriptDebuggerRemote : public ScriptDebugger {
 
 	struct Message {
@@ -41,6 +42,25 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 		String message;
 		Array data;
 	};
+
+
+	struct ProfileInfoSort {
+
+		bool operator()(ScriptLanguage::ProfilingInfo*A,ScriptLanguage::ProfilingInfo*B) const {
+			return A->total_time < B->total_time;
+		}
+	};
+
+	Vector<ScriptLanguage::ProfilingInfo> profile_info;
+	Vector<ScriptLanguage::ProfilingInfo*> profile_info_ptrs;
+
+	Map<StringName,int> profiler_function_signature_map;
+	float frame_time,idle_time,fixed_time,fixed_frame_time;
+
+	bool profiling;
+	int max_frame_functions;
+	bool skip_profile_frame;
+
 
 	Ref<StreamPeerTCP> tcp_client;
 	Ref<PacketPeerStream> packet_peer_stream;
@@ -85,18 +105,48 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	uint32_t poll_every;
 
 
+
 	bool _parse_live_edit(const Array &p_command);
 
 	RequestSceneTreeMessageFunc request_scene_tree;
 	void *request_scene_tree_ud;
 
+	void _set_object_property(ObjectID p_id, const String& p_property, const Variant& p_value);
+
+	void _send_object_id(ObjectID p_id);
+	void _send_video_memory();
 	LiveEditFuncs *live_edit_funcs;
 
 	ErrorHandlerList eh;
 	static void _err_handler(void*,const char*,const char*,int p_line,const char *, const char *,ErrorHandlerType p_type);
 
+	void _send_profiling_data(bool p_for_frame);
+
+
+	struct FrameData {
+
+		StringName name;
+		Array data;
+	};
+
+	Vector<FrameData> profile_frame_data;
+
 
 public:
+
+	struct ResourceUsage {
+
+		String path;
+		String format;
+		String type;
+		RID id;
+		int vram;
+		bool operator<(const ResourceUsage& p_img) const { return vram==p_img.vram ? id<p_img.id : vram > p_img.vram; }
+	};
+
+	typedef void (*ResourceUsageFunc)(List<ResourceUsage>*);
+
+	static ResourceUsageFunc resource_usage_func;
 
 	Error connect_to_host(const String& p_host,uint16_t p_port);
 	virtual void debug(ScriptLanguage *p_script,bool p_can_continue=true);
@@ -110,6 +160,13 @@ public:
 
 	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata);
 	virtual void set_live_edit_funcs(LiveEditFuncs *p_funcs);
+
+	virtual bool is_profiling() const;
+	virtual void add_profiling_frame_data(const StringName& p_name,const Array& p_data);
+
+	virtual void profiling_start();
+	virtual void profiling_end();
+	virtual void profiling_set_frame_times(float p_frame_time,float p_idle_time,float p_fixed_time,float p_fixed_frame_time);
 
 	ScriptDebuggerRemote();
 	~ScriptDebuggerRemote();

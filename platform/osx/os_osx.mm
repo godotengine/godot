@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,7 @@
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "main/main.h"
 #include "os/keyboard.h"
+#include "dir_access_osx.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -512,12 +513,26 @@ static int button_mask=0;
 
 - (void)mouseExited:(NSEvent *)event
 {
+	if (!OS_OSX::singleton)
+		return;
+
+	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode!=OS::MOUSE_MODE_CAPTURED)
+		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
+	if (OS_OSX::singleton->input)
+		OS_OSX::singleton->input->set_mouse_in_window(false);
    // _glfwInputCursorEnter(window, GL_FALSE);
 }
 
 - (void)mouseEntered:(NSEvent *)event
 {
   //  _glfwInputCursorEnter(window, GL_TRUE);
+	if (!OS_OSX::singleton)
+		return;
+	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode!=OS::MOUSE_MODE_CAPTURED)
+		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
+	if (OS_OSX::singleton->input)
+		OS_OSX::singleton->input->set_mouse_in_window(true);
+
 }
 
 - (void)viewDidChangeBackingProperties
@@ -635,7 +650,7 @@ static int translateKey(unsigned int key)
 	/* 4b */ KEY_KP_DIVIDE,
 	/* 4c */ KEY_KP_ENTER,
 	/* 4d */ KEY_UNKNOWN,
-	/* 4e */ KEY_KP_SUBSTRACT,
+	/* 4e */ KEY_KP_SUBTRACT,
 	/* 4f */ KEY_UNKNOWN,
 	/* 50 */ KEY_UNKNOWN,
 	/* 51 */ KEY_EQUAL, //wtf equal?
@@ -794,6 +809,21 @@ static int translateKey(unsigned int key)
 		OS_OSX::singleton->push_input(ev);
 	}
 
+	if (fabs(deltaX)) {
+
+		InputEvent ev;
+		ev.type=InputEvent::MOUSE_BUTTON;
+		ev.mouse_button.button_index=deltaX < 0 ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT;
+		ev.mouse_button.pressed=true;
+		ev.mouse_button.x=mouse_x;
+		ev.mouse_button.y=mouse_y;
+		ev.mouse_button.global_x=mouse_x;
+		ev.mouse_button.global_y=mouse_y;
+		ev.mouse_button.button_mask=button_mask;
+		OS_OSX::singleton->push_input(ev);
+		ev.mouse_button.pressed=false;
+		OS_OSX::singleton->push_input(ev);
+	}
 }
 
 @end
@@ -824,7 +854,7 @@ const char * OS_OSX::get_video_driver_name(int p_driver) const {
 OS::VideoMode OS_OSX::get_default_video_mode() const {
 
 	VideoMode vm;
-	vm.width=800;
+	vm.width=1024;
 	vm.height=600;
 	vm.fullscreen=false;
 	vm.resizable=true;
@@ -835,6 +865,11 @@ OS::VideoMode OS_OSX::get_default_video_mode() const {
 void OS_OSX::initialize_core() {
 
 	OS_Unix::initialize_core();
+
+	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_RESOURCES);
+	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_USERDATA);
+	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_FILESYSTEM);
+
 	SemaphoreOSX::make_default();
 
 }
@@ -857,7 +892,7 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 									NULL, keyboardLayoutChanged,
 									kTISNotifySelectedKeyboardInputSourceChanged, NULL,
 									CFNotificationSuspensionBehaviorDeliverImmediately);
-    
+
 	window_delegate = [[GodotWindowDelegate alloc] init];
 
        // Don't use accumulation buffer support; it's not accelerated
@@ -886,7 +921,7 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
 	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) {
 	    [window_view setWantsBestResolutionOpenGLSurface:YES];
-	    if (current_videomode.resizable)
+	    //if (current_videomode.resizable)
 		[window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 	}
 #endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
@@ -1036,6 +1071,33 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 void OS_OSX::finalize() {
 
 	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), NULL, kTISNotifySelectedKeyboardInputSourceChanged, NULL);
+	delete_main_loop();
+
+	spatial_sound_server->finish();
+	memdelete(spatial_sound_server);
+	spatial_sound_2d_server->finish();
+	memdelete(spatial_sound_2d_server);
+
+
+	memdelete(input);
+
+	memdelete(sample_manager);
+
+	audio_server->finish();
+	memdelete(audio_server);
+
+	visual_server->finish();
+	memdelete(visual_server);
+	memdelete(rasterizer);
+
+	physics_server->finish();
+	memdelete(physics_server);
+
+	physics_2d_server->finish();
+	memdelete(physics_2d_server);
+
+	screens.clear();
+
 
 }
 
@@ -1048,6 +1110,8 @@ void OS_OSX::set_main_loop( MainLoop * p_main_loop ) {
 
 void OS_OSX::delete_main_loop() {
 
+	if (!main_loop)
+		return;
 	memdelete(main_loop);
 	main_loop=NULL;
 }
@@ -1106,7 +1170,7 @@ void OS_OSX::warp_mouse_pos(const Point2& p_to) {
         mouse_y = p_to.y;
     }
     else{ //set OS position
-        
+
 	/* this code has not been tested, please be a kind soul and fix it if it fails! */
 
 	//local point in window coords
@@ -1240,6 +1304,11 @@ Error OS_OSX::shell_open(String p_uri) {
 	return OK;
 }
 
+String OS_OSX::get_locale() const {
+  NSString* preferredLang = [[NSLocale preferredLanguages] objectAtIndex:0];
+	return [preferredLang UTF8String];
+}
+
 void OS_OSX::swap_buffers() {
 
 	[context flushBuffer];
@@ -1279,13 +1348,13 @@ void OS_OSX::set_current_screen(int p_screen) {
 	current_screen = p_screen;
 };
 
-Point2 OS_OSX::get_screen_position(int p_screen) {
+Point2 OS_OSX::get_screen_position(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, screens.size(), Point2());
 	return screens[p_screen].pos;
 };
 
-Size2 OS_OSX::get_screen_size(int p_screen) {
+Size2 OS_OSX::get_screen_size(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, screens.size(), Point2());
 	return screens[p_screen].size;

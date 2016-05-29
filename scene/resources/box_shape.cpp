@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,25 @@
 #include "box_shape.h"
 #include "servers/physics_server.h"
 
+
+Vector<Vector3> BoxShape::_gen_debug_mesh_lines() {
+
+
+	Vector<Vector3> lines;
+	AABB aabb;
+	aabb.pos=-get_extents();
+	aabb.size=aabb.pos*-2;
+
+	for(int i=0;i<12;i++) {
+		Vector3 a,b;
+		aabb.get_edge(i,a,b);
+		lines.push_back(a);
+		lines.push_back(b);
+	}
+
+
+	return lines;
+}
 
 void BoxShape::_update_shape() {
 

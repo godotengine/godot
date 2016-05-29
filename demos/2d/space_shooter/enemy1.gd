@@ -1,17 +1,15 @@
 
 extends Area2D
 
-# member variables here, example:
-# var a=2
-# var b="textvar"
+# Member variables
+const SPEED = -200
 
-const SPEED=-200
+var destroyed=false
+
 
 func _process(delta):
-	get_parent().translate(Vector2(SPEED*delta,0))
+	get_parent().translate(Vector2(SPEED*delta, 0))
 
-	
-var destroyed=false
 
 func is_enemy():
 	return not destroyed
@@ -19,19 +17,20 @@ func is_enemy():
 
 func destroy():
 	if (destroyed):
-		return	
-	destroyed=true
+		return
+	destroyed = true
 	get_node("anim").play("explode")
-	set_process(false)	
+	set_process(false)
 	get_node("sfx").play("sound_explode")
-	#accum points
-	get_node("/root/game_state").points+=5
+	# Accumulate points
+	get_node("/root/game_state").points += 5
+
 
 func _on_visibility_enter_screen():
 	set_process(true)
-	get_node("anim").play("zigzag")	
-	get_node("anim").seek(randf()*2.0) #make it start from any pos
+	get_node("anim").play("zigzag")
+	get_node("anim").seek(randf()*2.0) # Make it start from any pos
+
 
 func _on_visibility_exit_screen():
 	queue_free()
-	

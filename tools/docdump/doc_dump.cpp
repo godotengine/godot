@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -248,7 +248,7 @@ void DocDump::dump(const String& p_file) {
 		}
 
 
-		_write_string(f,1,"</methods>");		
+		_write_string(f,1,"</methods>");
 
 		List<MethodInfo> signal_list;
 		ObjectTypeDB::get_signal_list(name,&signal_list,true);

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -156,14 +156,14 @@ void Resource::_resource_path_changed() {
 
 
 }
-	
+
 void Resource::set_path(const String& p_path, bool p_take_over) {
 
 	if (path_cache==p_path)
 		return;
-		
+
 	if (path_cache!="") {
-		
+
 		ResourceCache::resources.erase(path_cache);
 	}
 
@@ -179,19 +179,19 @@ void Resource::set_path(const String& p_path, bool p_take_over) {
 
 	}
 	path_cache=p_path;
-	
+
 	if (path_cache!="") {
-		
+
 		ResourceCache::resources[path_cache]=this;;
 	}
 
 	_change_notify("resource/path");
 	_resource_path_changed();
-	
+
 }
 
 String Resource::get_path() const {
-	
+
 	return path_cache;
 }
 
@@ -278,7 +278,7 @@ void Resource::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_import_metadata","metadata"),&Resource::set_import_metadata);
 	ObjectTypeDB::bind_method(_MD("get_import_metadata"),&Resource::get_import_metadata);
 
-	ObjectTypeDB::bind_method(_MD("duplicate"),&Resource::duplicate,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("duplicate","subresources"),&Resource::duplicate,DEFVAL(false));
 	ADD_SIGNAL( MethodInfo("changed") );
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"resource/path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR ), _SCS("set_path"),_SCS("get_path"));
 	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"resource/name"), _SCS("set_name"),_SCS("get_name"));
@@ -330,6 +330,31 @@ Ref<ResourceImportMetadata> Resource::get_import_metadata() const {
 
 }
 
+#ifdef TOOLS_ENABLED
+
+uint32_t Resource::hash_edited_version() const {
+
+	uint32_t hash = hash_djb2_one_32(get_edited_version());
+
+	List<PropertyInfo> plist;
+	get_property_list(&plist);
+
+	for (List<PropertyInfo>::Element *E=plist.front();E;E=E->next()) {
+
+		if (E->get().type==Variant::OBJECT && E->get().hint==PROPERTY_HINT_RESOURCE_TYPE) {
+			RES res = get(E->get().name);
+			if (res.is_valid()) {
+				hash = hash_djb2_one_32(res->hash_edited_version(),hash);
+			}
+		}
+	}
+
+	return hash;
+
+}
+
+#endif
+
 
 Resource::Resource() {
 
@@ -341,8 +366,10 @@ Resource::Resource() {
 }
 
 
+
+
 Resource::~Resource() {
-	
+
 	if (path_cache!="")
 		ResourceCache::resources.erase(path_cache);
 	if (owners.size()) {
@@ -350,12 +377,12 @@ Resource::~Resource() {
 	}
 }
 
-HashMap<String,Resource*> ResourceCache::resources;	
+HashMap<String,Resource*> ResourceCache::resources;
 
 void ResourceCache::clear() {
 	if (resources.size())
 		ERR_PRINT("Resources Still in use at Exit!");
-		
+
 	resources.clear();
 }
 
@@ -374,18 +401,18 @@ void ResourceCache::reload_externals() {
 bool ResourceCache::has(const String& p_path) {
 
 	GLOBAL_LOCK_FUNCTION
-	
+
 	return resources.has(p_path);
 }
 Resource *ResourceCache::get(const String& p_path) {
-	
+
 	GLOBAL_LOCK_FUNCTION
-	
+
 	Resource **res = resources.getptr(p_path);
 	if (!res) {
 		return NULL;
 	}
-		
+
 	return *res;
 }
 

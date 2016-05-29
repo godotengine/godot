@@ -11,6 +11,7 @@ public:
 		MODE_ADD,
 		MODE_SUB,
 		MODE_MIX,
+		MODE_MASK,
 	};
 
 private:
@@ -34,6 +35,7 @@ private:
 	Ref<Texture> texture;
 	Vector2 texture_offset;
 
+	void _update_light_visibility();
 protected:
 
 	void _notification(int p_what);
@@ -101,6 +103,8 @@ public:
 
 
 	virtual Rect2 get_item_rect() const;
+
+	String get_configuration_warning() const;
 
 	Light2D();
 	~Light2D();

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,6 +44,7 @@ class ParallaxBackground : public CanvasLayer {
 	String group_name;
 	Point2 limit_begin;
 	Point2 limit_end;
+	bool ignore_camera_zoom;
 
 	void _update_scroll();
 protected:
@@ -71,6 +72,9 @@ public:
 
 	void set_limit_end(const Point2& p_ofs);
 	Point2 get_limit_end() const;
+
+    void set_ignore_camera_zoom(bool ignore);
+    bool is_ignore_camera_zoom();
 
 	ParallaxBackground();
 };

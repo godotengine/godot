@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -171,6 +171,7 @@ void CreateDialog::_update_search() {
 
 		if (EditorNode::get_editor_data().get_custom_types().has(type)) {
 			//there are custom types based on this... cool.
+			//print_line("there are custom types");
 
 
 			const Vector<EditorData::CustomType> &ct = EditorNode::get_editor_data().get_custom_types()[type];
@@ -250,8 +251,17 @@ void CreateDialog::_notification(int p_what) {
 void CreateDialog::set_base_type(const String& p_base) {
 
 	base_type=p_base;
-	set_title("Create New "+p_base);
+	set_title(TTR("Create New")+" "+p_base);
 	_update_search();
+}
+
+String CreateDialog::get_selected_type() {
+
+	TreeItem *selected = search_options->get_selected();
+	if (selected)
+		return selected->get_text(0);
+	else
+		return String();
 }
 
 Object *CreateDialog::instance_selected() {
@@ -259,7 +269,33 @@ Object *CreateDialog::instance_selected() {
 	TreeItem *selected = search_options->get_selected();
 	if (selected) {
 
-		return ObjectTypeDB::instance(selected->get_text(0));
+		String custom = selected->get_metadata(0);
+		if (custom!=String()) {
+			if (EditorNode::get_editor_data().get_custom_types().has(custom)) {
+
+				for(int i=0;i<EditorNode::get_editor_data().get_custom_types()[custom].size();i++) {
+					if (EditorNode::get_editor_data().get_custom_types()[custom][i].name==selected->get_text(0)) {
+						Ref<Texture> icon = EditorNode::get_editor_data().get_custom_types()[custom][i].icon;
+						Ref<Script> script = EditorNode::get_editor_data().get_custom_types()[custom][i].script;
+						String name = selected->get_text(0);
+
+						Object *ob = ObjectTypeDB::instance(custom);
+						ERR_FAIL_COND_V(!ob,NULL);
+						if (ob->is_type("Node")) {
+							ob->call("set_name",name);
+						}
+						ob->set_script(script.get_ref_ptr());
+						if (icon.is_valid())
+							ob->set_meta("_editor_icon",icon);
+						return ob;
+
+					}
+				}
+
+			}
+		} else {
+			return ObjectTypeDB::instance(selected->get_text(0));
+		}
 	}
 
 	return NULL;
@@ -289,12 +325,12 @@ CreateDialog::CreateDialog() {
 	add_child(vbc);
 	set_child_rect(vbc);
 	search_box = memnew( LineEdit );
-	vbc->add_margin_child("Search:",search_box);
+	vbc->add_margin_child(TTR("Search:"),search_box);
 	search_box->connect("text_changed",this,"_text_changed");
 	search_box->connect("input_event",this,"_sbox_input");
 	search_options = memnew( Tree );
-	vbc->add_margin_child("Matches:",search_options,true);
-	get_ok()->set_text("Create");
+	vbc->add_margin_child(TTR("Matches:"),search_options,true);
+	get_ok()->set_text(TTR("Create"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
@@ -310,116 +346,116 @@ CreateDialog::CreateDialog() {
 //old create dialog, disabled
 
 void CreateDialog::_notification(int p_what) {
-	
+
 	if (p_what==NOTIFICATION_READY) {
 		connect("confirmed",this,"_create");
 		update_tree();
 	}
 	if (p_what==NOTIFICATION_DRAW) {
-		
+
 		//RID ci = get_canvas_item();
 		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
-	}	
+	}
 }
 
 
 void CreateDialog::_create() {
-	
+
 	if (tree->get_selected())
 		emit_signal("create");
 	hide();
 }
 
 void CreateDialog::_cancel() {
-	
+
 	hide();
 }
 
 void CreateDialog::_text_changed(String p_text) {
-	
+
 	update_tree();
 }
 
 void CreateDialog::add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem *p_root) {
-	
+
 	if (p_types.has(p_type))
 		return;
 	if (!ObjectTypeDB::is_type(p_type,base) || p_type==base)
 		return;
-	
+
 	String inherits=ObjectTypeDB::type_inherits_from(p_type);
-	
+
 	TreeItem *parent=p_root;
 
-	
+
 	if (inherits.length()) {
-	
+
 		if (!p_types.has(inherits)) {
-			
+
 			add_type(inherits,p_types,p_root);
 		}
-			
+
 		if (p_types.has(inherits) )
-			parent=p_types[inherits];		
-	} 
-	
+			parent=p_types[inherits];
+	}
+
 	TreeItem *item = tree->create_item(parent);
 	item->set_text(0,p_type);
 	if (!ObjectTypeDB::can_instance(p_type)) {
 		item->set_custom_color(0, Color(0.5,0.5,0.5) );
 		item->set_selectable(0,false);
 	}
-	
-	
+
+
 	if (has_icon(p_type,"EditorIcons")) {
-		
+
 		item->set_icon(0, get_icon(p_type,"EditorIcons"));
 	}
 
 
-	
+
 	p_types[p_type]=item;
 }
 
 void CreateDialog::update_tree() {
 
 	tree->clear();
-	
+
 	List<String> type_list;
-	ObjectTypeDB::get_type_list(&type_list);	
-	
+	ObjectTypeDB::get_type_list(&type_list);
+
 	HashMap<String,TreeItem*> types;
-	
+
 	TreeItem *root = tree->create_item();
-		
+
 	root->set_text(0,base);
 
 	List<String>::Element *I=type_list.front();
-	
+
 	for(;I;I=I->next()) {
-				
-		
+
+
 		String type=I->get();
-		
+
 
 		if (!ObjectTypeDB::can_instance(type))
 			continue; // cant create what can't be instanced
 		if (filter->get_text()=="")
 			add_type(type,types,root);
 		else {
-			
+
 			bool found=false;
 			String type=I->get();
-			while(type!="" && ObjectTypeDB::is_type(type,base) && type!=base) { 	
+			while(type!="" && ObjectTypeDB::is_type(type,base) && type!=base) {
 				if (type.findn(filter->get_text())!=-1) {
-					
+
 					found=true;
 					break;
 				}
-				
+
 				type=ObjectTypeDB::type_inherits_from(type);
 			}
-			
+
 
 			if (found)
 				add_type(I->get(),types,root);
@@ -501,12 +537,12 @@ Object *CreateDialog::instance_selected() {
 
 
 void CreateDialog::_bind_methods() {
-	
+
 	ObjectTypeDB::bind_method("_create",&CreateDialog::_create);
 	ObjectTypeDB::bind_method("_cancel",&CreateDialog::_cancel);
 	ObjectTypeDB::bind_method("_text_changed", &CreateDialog::_text_changed);
 	ADD_SIGNAL( MethodInfo("create"));
-	
+
 }
 
 
@@ -514,13 +550,13 @@ void CreateDialog::_bind_methods() {
 
 void CreateDialog::set_base_type(const String& p_base) {
 
-	set_title("Create "+p_base+" Type");
+	set_title(vformat("Create %s Type",p_base));
 
 	if (base==p_base)
 		return;
 	base=p_base;
 	if (is_inside_scene())
-		update_tree();	
+		update_tree();
 }
 
 String CreateDialog::get_base_type() const {
@@ -536,14 +572,14 @@ CreateDialog::CreateDialog() {
 	set_child_rect(vbc);
 
 	get_ok()->set_text("Create");
-	
+
 	tree = memnew( Tree );
 	vbc->add_margin_child("Type:",tree,true);
 	//tree->set_hide_root(true);
-	
-	filter = memnew( LineEdit );	
+
+	filter = memnew( LineEdit );
 	vbc->add_margin_child("Filter:",filter);
-		
+
 	base="Node";
 	set_as_toplevel(true);
 

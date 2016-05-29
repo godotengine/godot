@@ -41,6 +41,8 @@ class Polygon2DEditor : public HBoxContainer {
 	UVMode uv_mode;
 	AcceptDialog *uv_edit;
 	ToolButton *uv_button[4];
+	ToolButton *b_snap_enable;
+	ToolButton *b_snap_grid;
 	Control *uv_edit_draw;
 	HSlider *uv_zoom;
 	SpinBox *uv_zoom_value;
@@ -78,6 +80,11 @@ class Polygon2DEditor : public HBoxContainer {
 	Vector<Vector2> wip;
 	bool wip_active;
 
+	bool use_snap;
+	bool snap_show_grid;
+	Vector2 snap_offset;
+	Vector2 snap_step;
+
 	void _uv_scroll_changed(float);
 	void _uv_input(const InputEvent& p_input);
 	void _uv_draw();
@@ -86,10 +93,20 @@ class Polygon2DEditor : public HBoxContainer {
 	void _canvas_draw();
 	void _menu_option(int p_option);
 
+	void _set_use_snap(bool p_use);
+	void _set_show_grid(bool p_show);
+	void _set_snap_off_x(float p_val);
+	void _set_snap_off_y(float p_val);
+	void _set_snap_step_x(float p_val);
+	void _set_snap_step_y(float p_val);
+
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
+
+	Vector2 snap_point(Vector2 p_target) const;
+
 public:
 
 	bool forward_input_event(const InputEvent& p_event);

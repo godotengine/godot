@@ -45,6 +45,8 @@ RID OccluderPolygon2D::get_rid() const {
 	return occ_polygon;
 }
 
+
+
 void OccluderPolygon2D::_bind_methods() {
 
 
@@ -93,11 +95,16 @@ void LightOccluder2D::_notification(int p_what) {
 
 		VS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder,get_canvas());
 		VS::get_singleton()->canvas_light_occluder_set_transform(occluder,get_global_transform());
+		VS::get_singleton()->canvas_light_occluder_set_enabled(occluder,is_visible());
 
 	}
 	if (p_what==NOTIFICATION_TRANSFORM_CHANGED) {
 
 		VS::get_singleton()->canvas_light_occluder_set_transform(occluder,get_global_transform());
+	}
+	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+
+		VS::get_singleton()->canvas_light_occluder_set_enabled(occluder,is_visible());
 	}
 
 	if (p_what==NOTIFICATION_DRAW) {
@@ -171,6 +178,20 @@ void LightOccluder2D::set_occluder_light_mask(int p_mask) {
 int LightOccluder2D::get_occluder_light_mask() const{
 
 	return mask;
+}
+
+
+String LightOccluder2D::get_configuration_warning() const {
+
+	if (!occluder_polygon.is_valid()) {
+		return TTR("An occluder polygon must be set (or drawn) for this occluder to take effect.");
+	}
+
+	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().size()==0) {
+		return TTR("The occluder polygon for this occluder is empty. Please draw a polygon!");
+	}
+
+	return String();
 }
 
 void LightOccluder2D::_bind_methods() {

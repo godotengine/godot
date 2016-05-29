@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,6 +67,7 @@ class ThemeEditor : public Control {
 		POPUP_ADD,
 		POPUP_CLASS_ADD,
 		POPUP_REMOVE,
+		POPUP_CLASS_REMOVE,
 		POPUP_CREATE_TEMPLATE
 	};
 
@@ -102,6 +103,7 @@ class ThemeEditorPlugin : public EditorPlugin {
 
 	ThemeEditor *theme_editor;
 	EditorNode *editor;
+	Button *button;
 
 public:
 

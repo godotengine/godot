@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,22 +42,22 @@ Size2 TextureButton::get_minimum_size() const {
 			else
 				rscale= hover->get_size();
 		} else
-			rscale= pressed->get_size()*scale;
+			rscale=pressed->get_size();
 
 	} else
 		rscale= normal->get_size();
 
-	return rscale*scale;
+	return rscale*scale.abs();
 }
 
 
 bool TextureButton::has_point(const Point2& p_point) const {
 
-	if (scale[0] <= 0 || scale[1] <= 0) {
+	if (scale[0] == 0 || scale[1] == 0) {
 		return false;
 	}
 
-	Point2 ppos = p_point/scale;
+	Point2 ppos = p_point/scale.abs();
 
 	if (click_mask.is_valid()) {
 
@@ -145,7 +145,7 @@ void TextureButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_disabled_texture","texture:Texture"),&TextureButton::set_disabled_texture);
 	ObjectTypeDB::bind_method(_MD("set_focused_texture","texture:Texture"),&TextureButton::set_focused_texture);
 	ObjectTypeDB::bind_method(_MD("set_click_mask","mask:BitMap"),&TextureButton::set_click_mask);
-	ObjectTypeDB::bind_method(_MD("set_scale","scale"),&TextureButton::set_scale);
+	ObjectTypeDB::bind_method(_MD("set_texture_scale","scale"),&TextureButton::set_texture_scale);
 	ObjectTypeDB::bind_method(_MD("set_modulate","color"),&TextureButton::set_modulate);
 
 	ObjectTypeDB::bind_method(_MD("get_normal_texture:Texture"),&TextureButton::get_normal_texture);
@@ -154,7 +154,7 @@ void TextureButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_disabled_texture:Texture"),&TextureButton::get_disabled_texture);
 	ObjectTypeDB::bind_method(_MD("get_focused_texture:Texture"),&TextureButton::get_focused_texture);
 	ObjectTypeDB::bind_method(_MD("get_click_mask:BitMap"),&TextureButton::get_click_mask);
-	ObjectTypeDB::bind_method(_MD("get_scale"),&TextureButton::get_scale);
+	ObjectTypeDB::bind_method(_MD("get_texture_scale"),&TextureButton::get_texture_scale);
 	ObjectTypeDB::bind_method(_MD("get_modulate"),&TextureButton::get_modulate);
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"textures/normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_normal_texture"), _SCS("get_normal_texture"));
@@ -163,7 +163,7 @@ void TextureButton::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"textures/disabled",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_disabled_texture"), _SCS("get_disabled_texture"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"textures/focused",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_focused_texture"), _SCS("get_focused_texture"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"textures/click_mask",PROPERTY_HINT_RESOURCE_TYPE,"BitMap"), _SCS("set_click_mask"), _SCS("get_click_mask")) ;
-	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2,"params/scale",PROPERTY_HINT_RANGE,"0.01,1024,0.01"), _SCS("set_scale"), _SCS("get_scale"));
+	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2,"params/scale",PROPERTY_HINT_RANGE,"0.01,1024,0.01"), _SCS("set_texture_scale"), _SCS("get_texture_scale"));
 	ADD_PROPERTYNO(PropertyInfo(Variant::COLOR,"params/modulate"), _SCS("set_modulate"), _SCS("get_modulate"));
 
 }
@@ -232,14 +232,14 @@ void TextureButton::set_focused_texture(const Ref<Texture>& p_focused) {
 	focused = p_focused;
 };
 
-void TextureButton::set_scale(Size2 p_scale) {
+void TextureButton::set_texture_scale(Size2 p_scale) {
 
 	scale=p_scale;
 	minimum_size_changed();
 	update();
 }
 
-Size2 TextureButton::get_scale() const{
+Size2 TextureButton::get_texture_scale() const{
 
 	return scale;
 }

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,14 @@
 
 #include "os/keyboard.h"
 
+void EditorHelpSearch::popup() {
+	popup_centered_ratio(0.6);
+	if (search_box->get_text()!="") {
+		search_box->select_all();
+		_update_search();
+	}
+	search_box->grab_focus();
+}
 
 void EditorHelpSearch::popup(const String& p_term) {
 
@@ -84,7 +92,7 @@ void EditorHelpSearch::_update_search() {
 
 	DocData *doc=EditorHelp::get_doc_data();
 	String term = search_box->get_text();
-	if (term.length()<3)
+	if (term.length()<2)
 		return;
 
 	TreeItem *root = search_options->create_item();
@@ -263,7 +271,7 @@ void EditorHelpSearch::_confirmed() {
 
 	String mdata=ti->get_metadata(0);
 	emit_signal("go_to_help",mdata);
-	editor->call("_editor_select",3); // in case EditorHelpSearch beeen invoked on top of other editor window
+	editor->call("_editor_select",EditorNode::EDITOR_SCRIPT); // in case EditorHelpSearch beeen invoked on top of other editor window
 	// go to that
 	hide();
 }
@@ -300,9 +308,9 @@ void EditorHelpSearch::_bind_methods() {
 }
 
 
-EditorHelpSearch::EditorHelpSearch(EditorNode *p_editor) {
+EditorHelpSearch::EditorHelpSearch() {
 
-	editor=p_editor;
+	editor=EditorNode::get_singleton();
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
 	set_child_rect(vbc);
@@ -310,25 +318,221 @@ EditorHelpSearch::EditorHelpSearch(EditorNode *p_editor) {
 	search_box = memnew( LineEdit );
 	sb_hb->add_child(search_box);
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	Button *sb = memnew( Button("Search"));
+	Button *sb = memnew( Button(TTR("Search")));
 	sb->connect("pressed",this,"_update_search");
 	sb_hb->add_child(sb);
-	vbc->add_margin_child("Search:",sb_hb);
+	vbc->add_margin_child(TTR("Search:"),sb_hb);
 	search_box->connect("text_changed",this,"_text_changed");
 	search_box->connect("input_event",this,"_sbox_input");
 	search_options = memnew( Tree );
-	vbc->add_margin_child("Matches:",search_options,true);
-	get_ok()->set_text("View");
+	vbc->add_margin_child(TTR("Matches:"),search_options,true);
+	get_ok()->set_text(TTR("Open"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	search_options->connect("item_activated",this,"_confirmed");
-	set_title("Search Classes");
+	set_title(TTR("Search Classes"));
+
 //	search_options->set_hide_root(true);
 
 }
 
+/////////////////////////////////
 
+////////////////////////////////////
+/// /////////////////////////////////
+
+
+
+void EditorHelpIndex::add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem *p_root) {
+
+	if (p_types.has(p_type))
+		return;
+//	if (!ObjectTypeDB::is_type(p_type,base) || p_type==base)
+//		return;
+
+	String inherits=EditorHelp::get_doc_data()->class_list[p_type].inherits;
+
+	TreeItem *parent=p_root;
+
+
+	if (inherits.length()) {
+
+		if (!p_types.has(inherits)) {
+
+			add_type(inherits,p_types,p_root);
+		}
+
+		if (p_types.has(inherits) )
+			parent=p_types[inherits];
+	}
+
+	TreeItem *item = class_list->create_item(parent);
+	item->set_metadata(0,p_type);
+	item->set_tooltip(0,EditorHelp::get_doc_data()->class_list[p_type].brief_description);
+	item->set_text(0,p_type);
+
+
+	if (has_icon(p_type,"EditorIcons")) {
+
+		item->set_icon(0, get_icon(p_type,"EditorIcons"));
+	}
+
+	p_types[p_type]=item;
+}
+
+
+void EditorHelpIndex::_tree_item_selected() {
+
+
+	TreeItem *s=class_list->get_selected();
+	if (!s)
+		return;
+
+	emit_signal("open_class",s->get_text(0));
+
+	hide();
+
+	//_goto_desc(s->get_text(0));
+
+}
+
+void EditorHelpIndex::select_class(const String& p_class) {
+
+	if (!tree_item_map.has(p_class))
+		return;
+	tree_item_map[p_class]->select(0);
+	class_list->ensure_cursor_is_visible();
+}
+
+void EditorHelpIndex::popup() {
+
+	popup_centered_ratio(0.6);
+
+	search_box->set_text("");
+	_update_class_list();
+}
+
+void EditorHelpIndex::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+
+		_update_class_list();
+
+		connect("confirmed",this,"_tree_item_selected");
+
+	} else if (p_what==NOTIFICATION_POST_POPUP) {
+
+		search_box->call_deferred("grab_focus");
+	}
+}
+
+void EditorHelpIndex::_text_changed(const String& p_text) {
+
+	_update_class_list();
+}
+
+void EditorHelpIndex::_update_class_list() {
+
+	class_list->clear();
+	tree_item_map.clear();
+	TreeItem *root = class_list->create_item();
+	class_list->set_hide_root(true);
+
+	String filter = search_box->get_text().strip_edges();
+	String to_select = "";
+
+	for(Map<String,DocData::ClassDoc>::Element *E=EditorHelp::get_doc_data()->class_list.front();E;E=E->next()) {
+
+		if (filter == "") {
+			add_type(E->key(),tree_item_map,root);
+		} else {
+
+			bool found = false;
+			String type = E->key();
+
+			while(type != "") {
+				if (type.findn(filter)!=-1) {
+
+					if (to_select.empty()) {
+						to_select = type;
+					}
+
+					found=true;
+					break;
+				}
+
+				type = EditorHelp::get_doc_data()->class_list[type].inherits;
+			}
+
+			if (found) {
+				add_type(E->key(),tree_item_map,root);
+			}
+		}
+	}
+
+	if (tree_item_map.has(filter)) {
+		select_class(filter);
+	} else if (to_select != "") {
+		select_class(to_select);
+	}
+}
+
+
+void EditorHelpIndex::_sbox_input(const InputEvent& p_ie) {
+
+	if (p_ie.type==InputEvent::KEY && (
+		p_ie.key.scancode == KEY_UP ||
+		p_ie.key.scancode == KEY_DOWN ||
+		p_ie.key.scancode == KEY_PAGEUP ||
+		p_ie.key.scancode == KEY_PAGEDOWN ) ) {
+
+		class_list->call("_input_event",p_ie);
+		search_box->accept_event();
+	}
+}
+
+void EditorHelpIndex::_bind_methods() {
+
+	ObjectTypeDB::bind_method("_tree_item_selected",&EditorHelpIndex::_tree_item_selected);
+	ObjectTypeDB::bind_method("_text_changed",&EditorHelpIndex::_text_changed);
+	ObjectTypeDB::bind_method("_sbox_input",&EditorHelpIndex::_sbox_input);
+	ObjectTypeDB::bind_method("select_class",&EditorHelpIndex::select_class);
+	ADD_SIGNAL( MethodInfo("open_class"));
+}
+
+
+
+EditorHelpIndex::EditorHelpIndex() {
+
+	VBoxContainer *vbc = memnew( VBoxContainer );
+	add_child(vbc);
+	set_child_rect(vbc);
+
+	search_box = memnew( LineEdit );
+	vbc->add_margin_child(TTR("Search:"), search_box);
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	register_text_enter(search_box);
+
+	search_box->connect("text_changed", this, "_text_changed");
+	search_box->connect("input_event", this, "_sbox_input");
+
+	class_list = memnew( Tree );
+	vbc->add_margin_child(TTR("Class List:")+" ", class_list, true);
+	class_list->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	class_list->connect("item_activated",this,"_tree_item_selected");
+
+	get_ok()->set_text(TTR("Open"));
+}
+
+
+
+/////////////////////////////////
+
+////////////////////////////////////
+/// /////////////////////////////////
 DocData *EditorHelp::doc=NULL;
 
 void EditorHelp::_unhandled_key_input(const InputEvent& p_ev) {
@@ -339,8 +543,6 @@ void EditorHelp::_unhandled_key_input(const InputEvent& p_ev) {
 
 		search->grab_focus();
 		search->select_all();
-	} else if (p_ev.key.mod.shift && p_ev.key.scancode==KEY_F1) {
-		class_search->popup();
 	}
 }
 
@@ -351,17 +553,19 @@ void EditorHelp::_search(const String&) {
 
 
 	String stext=search->get_text();
-	bool keep = prev_search==stext && class_list->get_selected() && prev_search_page==class_list->get_selected()->get_text(0);
+	bool keep = prev_search==stext;
 
-	class_desc->search(stext, keep);
+	bool ret = class_desc->search(stext, keep);
+	if (!ret) {
+		class_desc->search(stext, false);
+	}
 
 	prev_search=stext;
-	if (class_list->get_selected())
-		prev_search_page=class_list->get_selected()->get_text(0);
 
 
 }
 
+#if 0
 void EditorHelp::_button_pressed(int p_idx) {
 
 	if (p_idx==PAGE_CLASS_LIST) {
@@ -399,16 +603,11 @@ void EditorHelp::_button_pressed(int p_idx) {
 	} else if (p_idx==PAGE_SEARCH) {
 
 		_search("");
-	} else if (p_idx==CLASS_SEARCH) {
-
-		class_search->popup();
 	}
-
-
 }
 
 
-
+#endif
 
 void EditorHelp::_class_list_select(const String& p_select) {
 
@@ -417,16 +616,28 @@ void EditorHelp::_class_list_select(const String& p_select) {
 
 void EditorHelp::_class_desc_select(const String& p_select) {
 
+
+
+//	print_line("LINK: "+p_select);
 	if (p_select.begins_with("#")) {
-		_goto_desc(p_select.substr(1,p_select.length()));
+		//_goto_desc(p_select.substr(1,p_select.length()));
+		emit_signal("go_to_help","class_name:"+p_select.substr(1,p_select.length()));
 		return;
 	} else if (p_select.begins_with("@")) {
 
 		String m = p_select.substr(1,p_select.length());
-		if (!method_line.has(m))
-			return;
-		class_desc->scroll_to_line(method_line[m]);
-		return;
+
+		if (m.find(".")!=-1) {
+			//must go somewhere else
+
+			emit_signal("go_to_help","class_method:"+m.get_slice(".",0)+":"+m.get_slice(".",0));
+		} else {
+
+			if (!method_line.has(m))
+				return;
+			class_desc->scroll_to_line(method_line[m]);
+		}
+
 	}
 
 
@@ -449,68 +660,40 @@ void EditorHelp::_add_type(const String& p_type) {
 
 }
 
-void EditorHelp::_update_history_buttons() {
-
-	back->set_disabled(history_pos<2);
-	forward->set_disabled(history_pos>=history.size());
-
-}
-
-
 void EditorHelp::_scroll_changed(double p_scroll) {
 
 	if (scroll_locked)
 		return;
 
-	int p = history_pos -1;
-	if (p<0 || p>=history.size())
-		return;
-
 	if (class_desc->get_v_scroll()->is_hidden())
 		p_scroll=0;
 
-	history[p].scroll=p_scroll;
+	//history[p].scroll=p_scroll;
 }
 
-Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vscr) {
+Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 	//ERR_FAIL_COND(!doc->class_list.has(p_class));
 	if (!doc->class_list.has(p_class))
 		return ERR_DOES_NOT_EXIST;
 
 
-	if (tree_item_map.has(p_class)) {
+	//if (tree_item_map.has(p_class)) {
 		select_locked = true;
-		tree_item_map[p_class]->select(0);
-		class_list->ensure_cursor_is_visible();
-	}
+	//}
 
 	class_desc->show();
 	//tabs->set_current_tab(PAGE_CLASS_DESC);
-	edited_class->set_pressed(true);
-	class_list_button->set_pressed(false);
 	description_line=0;
 
-	if (p_class==edited_class->get_text())
+	if (p_class==edited_class)
 		return OK; //already there
 
 	scroll_locked=true;
 
-	if (p_update_history) {
-
-		history.resize(history_pos);
-		history_pos++;
-		History h;
-		h.c=p_class;
-		h.scroll=0;
-		history.push_back(h);
-		_update_history_buttons();
-		class_desc->get_v_scroll()->set_val(0);
-	}
-
 	class_desc->clear();
 	method_line.clear();
-	edited_class->set_text(p_class);
+	edited_class=p_class;
 	//edited_class->show();
 
 
@@ -527,9 +710,9 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 	class_desc->push_font(doc_title_font);
 	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
-	class_desc->add_text("Class: ");
+	class_desc->add_text(TTR("Class:")+" ");
 	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/base_type_color"));
-	class_desc->add_text(p_class);
+	_add_text(p_class);
 	class_desc->pop();
 	class_desc->pop();
 	class_desc->pop();
@@ -539,28 +722,84 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Inherits: ");
+		class_desc->add_text(TTR("Inherits:")+" ");
 		class_desc->pop();
 		class_desc->pop();
-		class_desc->push_font(doc_font);
-		_add_type(cd.inherits);
-		class_desc->pop();
-		class_desc->add_newline();
-		class_desc->add_newline();
 
+		String inherits = cd.inherits;
+
+		class_desc->push_font(doc_font);
+
+		while (inherits != "") {
+			_add_type(inherits);
+
+			inherits = doc->class_list[inherits].inherits;
+
+			if (inherits != "") {
+				class_desc->add_text(" , ");
+			}
+		}
+
+		class_desc->pop();
+		class_desc->add_newline();
 	}
+
+	if (ObjectTypeDB::type_exists(cd.name)) {
+
+		bool found = false;
+		bool prev = false;
+
+		for (Map<String,DocData::ClassDoc>::Element *E=doc->class_list.front();E;E=E->next()) {
+
+			if (E->get().inherits == cd.name) {
+
+				if (!found) {
+					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+					class_desc->push_font(doc_title_font);
+					class_desc->add_text(TTR("Inherited by:")+" ");
+					class_desc->pop();
+					class_desc->pop();
+
+					found = true;
+					class_desc->push_font(doc_font);
+				}
+
+				if (prev) {
+
+					class_desc->add_text(" , ");
+					prev = false;
+				}
+
+				_add_type(E->get().name);
+				prev = true;
+			}
+		}
+
+		if (found)
+			class_desc->pop();
+
+		class_desc->add_newline();
+	}
+
+	class_desc->add_newline();
 
 	if (cd.brief_description!="") {
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Brief Description:");
+		class_desc->add_text(TTR("Brief Description:"));
 		class_desc->pop();
 		class_desc->pop();
 
 		//class_desc->add_newline();
 		class_desc->add_newline();
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+		class_desc->push_font( get_font("normal","Fonts") );
+		class_desc->push_indent(1);
 		_add_text(cd.brief_description);
+		class_desc->pop();
+		class_desc->pop();
+		class_desc->pop();
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
@@ -571,27 +810,39 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Public Methods:");
+		class_desc->add_text(TTR("Public Methods:"));
 		class_desc->pop();
 		class_desc->pop();
 
 		//class_desc->add_newline();
-		class_desc->add_newline();
+//		class_desc->add_newline();
 
 		class_desc->push_indent(1);
+		class_desc->push_table(2);
+		class_desc->set_table_column_expand(1,1);
 
 		for(int i=0;i<cd.methods.size();i++) {
 
+			class_desc->push_cell();
+
+
 			method_line[cd.methods[i].name]=class_desc->get_line_count()-2;	//gets overriden if description
+			class_desc->push_align(RichTextLabel::ALIGN_RIGHT);
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.methods[i].return_type);
-			class_desc->add_text(" ");
+			//class_desc->add_text(" ");
+			class_desc->pop(); //align
+			class_desc->pop(); //font
+			class_desc->pop(); //cell
+			class_desc->push_cell();
+			class_desc->push_font(doc_code_font);
+
 			if (cd.methods[i].description!="") {
 				method_descr=true;
 				class_desc->push_meta("@"+cd.methods[i].name);
 			}
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-			class_desc->add_text(cd.methods[i].name);
+			_add_text(cd.methods[i].name);
 			class_desc->pop();
 			if (cd.methods[i].description!="")
 				class_desc->pop();
@@ -603,13 +854,14 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 				if (j>0)
 					class_desc->add_text(", ");
 				_add_type(cd.methods[i].arguments[j].type);
-				class_desc->add_text(" "+cd.methods[i].arguments[j].name);
+				class_desc->add_text(" ");
+				_add_text(cd.methods[i].arguments[j].name);
 				if (cd.methods[i].arguments[j].default_value!="") {
 
 					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
 					class_desc->add_text("=");
 					class_desc->pop();
-					class_desc->add_text(cd.methods[i].arguments[j].default_value);
+					_add_text(cd.methods[i].arguments[j].default_value);
 				}
 
 				class_desc->pop();
@@ -621,16 +873,19 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 			if (cd.methods[i].qualifiers!="") {
 
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
-				class_desc->add_text(" "+cd.methods[i].qualifiers);
+				class_desc->add_text(" ");
+				_add_text(cd.methods[i].qualifiers);
 				class_desc->pop();
 
 			}
 			class_desc->pop();//monofont
-			class_desc->add_newline();
+//			class_desc->add_newline();
+			class_desc->pop(); //cell
 
 		}
-
+		class_desc->pop(); //table
 		class_desc->pop();
+		class_desc->add_newline();
 		class_desc->add_newline();
 
 	}
@@ -640,7 +895,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Members:");
+		class_desc->add_text(TTR("Members:"));
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->add_newline();
@@ -655,7 +910,8 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.properties[i].type);
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-			class_desc->add_text(" "+cd.properties[i].name);
+			class_desc->add_text(" ");
+			_add_text(cd.properties[i].name);
 			class_desc->pop();
 			class_desc->pop();
 
@@ -663,7 +919,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 				class_desc->push_font(doc_font);
 				class_desc->add_text("  ");
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/comment_color"));
-				class_desc->add_text(cd.properties[i].description);
+				_add_text(cd.properties[i].description);
 				class_desc->pop();
 				class_desc->pop();
 
@@ -683,7 +939,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("GUI Theme Items:");
+		class_desc->add_text(TTR("GUI Theme Items:"));
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->add_newline();
@@ -698,7 +954,8 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.theme_properties[i].type);
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-			class_desc->add_text(" "+cd.theme_properties[i].name);
+			class_desc->add_text(" ");
+			_add_text(cd.theme_properties[i].name);
 			class_desc->pop();
 			class_desc->pop();
 
@@ -706,7 +963,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 				class_desc->push_font(doc_font);
 				class_desc->add_text("  ");
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/comment_color"));
-				class_desc->add_text(cd.theme_properties[i].description);
+				_add_text(cd.theme_properties[i].description);
 				class_desc->pop();
 				class_desc->pop();
 
@@ -724,7 +981,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Signals:");
+		class_desc->add_text(TTR("Signals:"));
 		class_desc->pop();
 		class_desc->pop();
 
@@ -736,11 +993,11 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 		for(int i=0;i<cd.signals.size();i++) {
 
 			signal_line[cd.signals[i].name]=class_desc->get_line_count()-2;	//gets overriden if description
-			class_desc->push_font(doc_code_font);
+			class_desc->push_font(doc_code_font);  // monofont
 			//_add_type("void");
 			//class_desc->add_text(" ");
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-			class_desc->add_text(cd.signals[i].name);
+			_add_text(cd.signals[i].name);
 			class_desc->pop();
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
 			class_desc->add_text(cd.signals[i].arguments.size()?"( ":"(");
@@ -750,13 +1007,14 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 				if (j>0)
 					class_desc->add_text(", ");
 				_add_type(cd.signals[i].arguments[j].type);
-				class_desc->add_text(" "+cd.signals[i].arguments[j].name);
+				class_desc->add_text(" ");
+				_add_text(cd.signals[i].arguments[j].name);
 				if (cd.signals[i].arguments[j].default_value!="") {
 
 					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
 					class_desc->add_text("=");
 					class_desc->pop();
-					class_desc->add_text(cd.signals[i].arguments[j].default_value);
+					_add_text(cd.signals[i].arguments[j].default_value);
 				}
 
 				class_desc->pop();
@@ -765,14 +1023,15 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
 			class_desc->add_text(cd.signals[i].arguments.size()?" )":")");
 			class_desc->pop();
+			class_desc->pop(); // end monofont
 			if (cd.signals[i].description!="") {
 
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/comment_color"));
-				class_desc->add_text(" "+cd.signals[i].description);
+				class_desc->add_text(" ");
+				_add_text(cd.signals[i].description);
 				class_desc->pop();
 
 			}
-			class_desc->pop();//monofont
 			class_desc->add_newline();
 
 		}
@@ -787,7 +1046,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Constants:");
+		class_desc->add_text(TTR("Constants:"));
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->push_indent(1);
@@ -800,20 +1059,20 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 			constant_line[cd.constants[i].name]=class_desc->get_line_count()-2;
 			class_desc->push_font(doc_code_font);
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/base_type_color"));
-			class_desc->add_text(cd.constants[i].name);
+			_add_text(cd.constants[i].name);
 			class_desc->pop();
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
 			class_desc->add_text(" = ");
 			class_desc->pop();
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
-			class_desc->add_text(cd.constants[i].value);
+			_add_text(cd.constants[i].value);
 			class_desc->pop();
 			class_desc->pop();
 			if (cd.constants[i].description!="") {
 				class_desc->push_font(doc_font);
 				class_desc->add_text("  ");
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/comment_color"));
-				class_desc->add_text(cd.constants[i].description);
+				_add_text(cd.constants[i].description);
 				class_desc->pop();
 				class_desc->pop();
 			}
@@ -832,13 +1091,19 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 		description_line=class_desc->get_line_count()-2;
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Description:");
+		class_desc->add_text(TTR("Description:"));
 		class_desc->pop();
 		class_desc->pop();
 
 		class_desc->add_newline();
 		class_desc->add_newline();
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+		class_desc->push_font( get_font("normal","Fonts") );
+		class_desc->push_indent(1);
 		_add_text(cd.description);
+		class_desc->pop();
+		class_desc->pop();
+		class_desc->pop();
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
@@ -847,7 +1112,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Method Description:");
+		class_desc->add_text(TTR("Method Description:"));
 		class_desc->pop();
 		class_desc->pop();
 
@@ -864,7 +1129,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 			class_desc->add_text(" ");
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-			class_desc->add_text(cd.methods[i].name);
+			_add_text(cd.methods[i].name);
 			class_desc->pop();
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
 			class_desc->add_text(cd.methods[i].arguments.size()?"( ":"(");
@@ -874,13 +1139,14 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 				if (j>0)
 					class_desc->add_text(", ");
 				_add_type(cd.methods[i].arguments[j].type);
-				class_desc->add_text(" "+cd.methods[i].arguments[j].name);
+				class_desc->add_text(" ");
+				_add_text(cd.methods[i].arguments[j].name);
 				if (cd.methods[i].arguments[j].default_value!="") {
 
 					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
 					class_desc->add_text("=");
 					class_desc->pop();
-					class_desc->add_text(cd.methods[i].arguments[j].default_value);
+					_add_text(cd.methods[i].arguments[j].default_value);
 				}
 
 				class_desc->pop();
@@ -892,7 +1158,8 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 			if (cd.methods[i].qualifiers!="") {
 
 				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
-				class_desc->add_text(" "+cd.methods[i].qualifiers);
+				class_desc->add_text(" ");
+				_add_text(cd.methods[i].qualifiers);
 				class_desc->pop();
 
 			}
@@ -900,8 +1167,14 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 			class_desc->pop();
 
 			class_desc->add_newline();
-			class_desc->add_newline();
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+			class_desc->push_font( get_font("normal","Fonts") );
+			class_desc->push_indent(1);
 			_add_text(cd.methods[i].description);
+			class_desc->pop();
+			class_desc->pop();
+			class_desc->pop();
+			class_desc->add_newline();
 			class_desc->add_newline();
 			class_desc->add_newline();
 
@@ -913,10 +1186,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 	}
 
-	if (!p_update_history) {
 
-		class_desc->get_v_scroll()->set_val(history[history_pos-1].scroll);
-	}
 
 	scroll_locked=false;
 
@@ -926,9 +1196,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 void EditorHelp::_request_help(const String& p_string) {
 	Error err = _goto_desc(p_string);
 	if (err==OK) {
-		editor->call("_editor_select",3);
-	} else {
-		class_search->popup(p_string);
+		editor->call("_editor_select",EditorNode::EDITOR_SCRIPT);
 	}
 	//100 palabras
 }
@@ -968,47 +1236,99 @@ void EditorHelp::_help_callback(const String& p_topic) {
 			line=constant_line[name];
 	}
 
-	class_desc->scroll_to_line(line);
+	class_desc->call_deferred("scroll_to_line", line);
 
 }
 
 void EditorHelp::_add_text(const String& p_bbcode) {
 
 
-	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+	/*class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
 	class_desc->push_font( get_font("normal","Fonts") );
-	class_desc->push_indent(1);
+	class_desc->push_indent(1);*/
 	int pos = 0;
+
+	String bbcode=p_bbcode.replace("\t"," ").replace("\r"," ").strip_edges();
+
+	//find double newlines, keep them
+	for(int i=0;i<bbcode.length();i++) {
+
+		//find valid newlines (double)
+		if (bbcode[i]=='\n') {
+			bool dnl=false;
+			int j=i+1;
+			for(;j<p_bbcode.length();j++) {
+				if (bbcode[j]==' ')
+					continue;
+				if (bbcode[j]=='\n') {
+					dnl=true;
+					break;
+				}
+				break;
+			}
+
+			if (dnl) {
+				bbcode[i]=0xFFFF;
+				i=j;
+			} else {
+				bbcode[i]=' ';
+				i=j-1;
+			}
+		}
+	}
+
+	//remove double spaces or spaces after newlines
+	for(int i=0;i<bbcode.length();i++) {
+
+		if (bbcode[i]==' ' || bbcode[i]==0xFFFF) {
+
+			for(int j=i+1;j<p_bbcode.length();j++) {
+				if (bbcode[j]==' ') {
+					bbcode.remove(j);
+					j--;
+					continue;
+				} else {
+					break;
+				}
+			}
+		}
+	}
+
+	//change newlines to double newlines
+
+	CharType dnls[2]={0xFFFF,0};
+	bbcode=bbcode.replace(dnls,"\n");
+
 
 	List<String> tag_stack;
 
-	while(pos < p_bbcode.length()) {
+	while(pos < bbcode.length()) {
 
 
-		int brk_pos = p_bbcode.find("[",pos);
+		int brk_pos = bbcode.find("[",pos);
 
 		if (brk_pos<0)
-			brk_pos=p_bbcode.length();
+			brk_pos=bbcode.length();
 
 		if (brk_pos > pos) {
-			class_desc->add_text(p_bbcode.substr(pos,brk_pos-pos));
+			class_desc->add_text(bbcode.substr(pos,brk_pos-pos));
 
 		}
 
-		if (brk_pos==p_bbcode.length())
+		if (brk_pos==bbcode.length())
 			break; //nothing else o add
 
-		int brk_end = p_bbcode.find("]",brk_pos+1);
+		int brk_end = bbcode.find("]",brk_pos+1);
 
 		if (brk_end==-1) {
 			//no close, add the rest
-			class_desc->add_text(p_bbcode.substr(brk_pos,p_bbcode.length()-brk_pos));
+			class_desc->add_text(bbcode.substr(brk_pos,bbcode.length()-brk_pos));
 
 			break;
 		}
 
 
-		String tag = p_bbcode.substr(brk_pos+1,brk_end-brk_pos-1);
+		String tag = bbcode.substr(brk_pos+1,brk_end-brk_pos-1);
 
 
 		if (tag.begins_with("/")) {
@@ -1055,10 +1375,10 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 		} else if (tag=="i") {
 
 			//use italics font
-			//class_desc->push_font(get_font("italic","Fonts"));
+			class_desc->push_font(get_font("italic","Fonts"));
 			pos=brk_end+1;
 			tag_stack.push_front(tag);
-		} else if (tag=="code") {
+		} else if (tag=="code" || tag=="codeblock") {
 
 			//use monospace font
 			class_desc->push_font(get_font("source","EditorFonts"));
@@ -1091,10 +1411,10 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 		} else if (tag=="url") {
 
 			//use strikethrough (not supported underline instead)
-			int end=p_bbcode.find("[",brk_end);
+			int end=bbcode.find("[",brk_end);
 			if (end==-1)
-				end=p_bbcode.length();
-			String url = p_bbcode.substr(brk_end+1,end-brk_end-1);
+				end=bbcode.length();
+			String url = bbcode.substr(brk_end+1,end-brk_end-1);
 			class_desc->push_meta(url);
 
 			pos=brk_end+1;
@@ -1108,10 +1428,10 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 		} else if (tag=="img") {
 
 			//use strikethrough (not supported underline instead)
-			int end=p_bbcode.find("[",brk_end);
+			int end=bbcode.find("[",brk_end);
 			if (end==-1)
-				end=p_bbcode.length();
-			String image = p_bbcode.substr(brk_end+1,end-brk_end-1);
+				end=bbcode.length();
+			String image = bbcode.substr(brk_end+1,end-brk_end-1);
 
 			Ref<Texture> texture = ResourceLoader::load(base_path+"/"+image,"Texture");
 			if (texture.is_valid())
@@ -1191,69 +1511,18 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 		}
 	}
 
+	/*class_desc->pop();
 	class_desc->pop();
-	class_desc->pop();
+	class_desc->pop();*/
 
 }
 
-
-void EditorHelp::add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem *p_root) {
-
-	if (p_types.has(p_type))
-		return;
-//	if (!ObjectTypeDB::is_type(p_type,base) || p_type==base)
-//		return;
-
-	String inherits=doc->class_list[p_type].inherits;
-
-	TreeItem *parent=p_root;
-
-
-	if (inherits.length()) {
-
-		if (!p_types.has(inherits)) {
-
-			add_type(inherits,p_types,p_root);
-		}
-
-		if (p_types.has(inherits) )
-			parent=p_types[inherits];
-	}
-
-	TreeItem *item = class_list->create_item(parent);
-	item->set_metadata(0,p_type);
-	item->set_tooltip(0,doc->class_list[p_type].brief_description);
-	item->set_text(0,p_type);
-
-
-	if (has_icon(p_type,"EditorIcons")) {
-
-		item->set_icon(0, get_icon(p_type,"EditorIcons"));
-	}
-
-	p_types[p_type]=item;
-}
 
 
 
 void EditorHelp::_update_doc() {
 
 
-	class_list->clear();
-
-	List<StringName> type_list;
-
-	tree_item_map.clear();
-
-	TreeItem *root = class_list->create_item();
-	class_list->set_hide_root(true);
-	List<StringName>::Element *I=type_list.front();
-
-	for(Map<String,DocData::ClassDoc>::Element *E=doc->class_list.front();E;E=E->next()) {
-
-
-		add_type(E->key(),tree_item_map,root);
-	}
 
 }
 
@@ -1277,233 +1546,125 @@ void EditorHelp::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 
 
-			forward->set_icon(get_icon("Forward","EditorIcons"));
-			back->set_icon(get_icon("Back","EditorIcons"));
+//			forward->set_icon(get_icon("Forward","EditorIcons"));
+//			back->set_icon(get_icon("Back","EditorIcons"));
 			_update_doc();
-			editor->connect("request_help",this,"_request_help");
 
 		} break;
 	}
 }
 
-void EditorHelp::_tree_item_selected() {
+void EditorHelp::go_to_help(const String& p_help) {
 
-	if (select_locked) {
-		select_locked = false;
-		return;
-	}
-	TreeItem *s=class_list->get_selected();
-	if (!s)
-		return;
-	select_locked=true;
-	_goto_desc(s->get_text(0));
-	select_locked=false;
+	_help_callback(p_help);
+}
+
+void EditorHelp::go_to_class(const String& p_class,int p_scroll) {
+
+	_goto_desc(p_class,p_scroll);
+}
+
+void EditorHelp::popup_search() {
+
+
+	search_dialog->popup_centered(Size2(250,80));
+	search->grab_focus();
+}
+
+void EditorHelp::_search_cbk() {
+
+	_search(search->get_text());
+}
+
+String EditorHelp::get_class_name() {
+
+	return edited_class;
+}
+
+void EditorHelp::search_again() {
+	_search(prev_search);
+}
+
+int EditorHelp::get_scroll() const {
+
+	return class_desc->get_v_scroll()->get_val();
+}
+void EditorHelp::set_scroll(int p_scroll) {
+
+
+	class_desc->get_v_scroll()->set_val(p_scroll);
+
 }
 
 void EditorHelp::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_class_list_select",&EditorHelp::_class_list_select);
 	ObjectTypeDB::bind_method("_class_desc_select",&EditorHelp::_class_desc_select);
-	ObjectTypeDB::bind_method("_button_pressed",&EditorHelp::_button_pressed);
+//	ObjectTypeDB::bind_method("_button_pressed",&EditorHelp::_button_pressed);
 	ObjectTypeDB::bind_method("_scroll_changed",&EditorHelp::_scroll_changed);
 	ObjectTypeDB::bind_method("_request_help",&EditorHelp::_request_help);
 	ObjectTypeDB::bind_method("_unhandled_key_input",&EditorHelp::_unhandled_key_input);
 	ObjectTypeDB::bind_method("_search",&EditorHelp::_search);
-	ObjectTypeDB::bind_method("_tree_item_selected",&EditorHelp::_tree_item_selected);
+	ObjectTypeDB::bind_method("_search_cbk",&EditorHelp::_search_cbk);
 	ObjectTypeDB::bind_method("_help_callback",&EditorHelp::_help_callback);
+
+	ADD_SIGNAL(MethodInfo("go_to_help"));
 
 }
 
-EditorHelp::EditorHelp(EditorNode *p_editor) {
+EditorHelp::EditorHelp() {
 
-	editor=p_editor;
+	editor=EditorNode::get_singleton();
 
 	VBoxContainer *vbc = this;
 
-	HBoxContainer *panel_hb = memnew( HBoxContainer );
 
-	Button *b = memnew( Button );
-	b->set_text("Class List");
-	panel_hb->add_child(b);
-	vbc->add_child(panel_hb);
-	b->set_toggle_mode(true);
-	b->set_pressed(true);
-	b->connect("pressed",this,"_button_pressed",make_binds(PAGE_CLASS_LIST));
-	class_list_button=b;
-	class_list_button->hide();
-
-	b = memnew( Button );
-	b->set_text("Class");
-	panel_hb->add_child(b);
-	edited_class=b;
-	edited_class->hide();
-	b->set_toggle_mode(true);
-	b->connect("pressed",this,"_button_pressed",make_binds(PAGE_CLASS_DESC));
-
-	b = memnew( Button );
-	b->set_text("Search in Classes");
-	panel_hb->add_child(b);
-	b->connect("pressed",this,"_button_pressed",make_binds(CLASS_SEARCH));
-
-	Control *expand = memnew( Control );
-	expand->set_h_size_flags(SIZE_EXPAND_FILL);
-	panel_hb->add_child(expand);
-
-	b = memnew( Button );
-	panel_hb->add_child(b);
-	back=b;
-	b->connect("pressed",this,"_button_pressed",make_binds(PAGE_CLASS_PREV));
-
-	b = memnew( Button );
-	panel_hb->add_child(b);
-	forward=b;
-	b->connect("pressed",this,"_button_pressed",make_binds(PAGE_CLASS_NEXT));
-
-	Separator *hs = memnew( VSeparator );
-	panel_hb->add_child(hs);
-	Control *ec = memnew( Control );
-	ec->set_custom_minimum_size(Size2(200,1));
-	panel_hb->add_child(ec);
-	search = memnew( LineEdit );
-	ec->add_child(search);
-	search->set_area_as_parent_rect();
-	search->connect("text_entered",this,"_search");
-
-	b = memnew( Button );
-	b->set_text("Find");
-	panel_hb->add_child(b);
-	b->connect("pressed",this,"_button_pressed",make_binds(PAGE_SEARCH));
-
-	hs = memnew( VSeparator );
-	panel_hb->add_child(hs);
-
-	h_split = memnew( HSplitContainer );
-	h_split->set_v_size_flags(SIZE_EXPAND_FILL);
-
-
-	vbc->add_child(h_split);
-
-	class_list = memnew( Tree );
-	h_split->add_child(class_list);
 	//class_list->connect("meta_clicked",this,"_class_list_select");
 	//class_list->set_selection_enabled(true);
 
 	{
-		PanelContainer *pc = memnew( PanelContainer );
+		Panel *pc = memnew( Panel );
 		Ref<StyleBoxFlat> style( memnew( StyleBoxFlat ) );
-		style->set_bg_color( EditorSettings::get_singleton()->get("text_editor/background_color") );	
+		style->set_bg_color( EditorSettings::get_singleton()->get("text_editor/background_color") );
+		pc->set_v_size_flags(SIZE_EXPAND_FILL);
 		pc->add_style_override("panel", style); //get_stylebox("normal","TextEdit"));
-		h_split->add_child(pc);
+		vbc->add_child(pc);
 		class_desc = memnew( RichTextLabel );
 		pc->add_child(class_desc);
+		class_desc->set_area_as_parent_rect(8);
 		class_desc->connect("meta_clicked",this,"_class_desc_select");
 	}
 
 	class_desc->get_v_scroll()->connect("value_changed",this,"_scroll_changed");
 	class_desc->set_selection_enabled(true);
-	editor=p_editor;
-	history_pos=0;
+
 	scroll_locked=false;
 	select_locked=false;
 	set_process_unhandled_key_input(true);
-	h_split->set_split_offset(200);
-	class_list->connect("cell_selected",this,"_tree_item_selected");
 	class_desc->hide();
 
-	class_search = memnew( EditorHelpSearch(editor) );
+	search_dialog = memnew( ConfirmationDialog );
+	add_child(search_dialog);
+	VBoxContainer *search_vb = memnew( VBoxContainer );
+	search_dialog->add_child(search_vb);
+	search_dialog->set_child_rect(search_vb);
+	search = memnew( LineEdit );
+	search_dialog->register_text_enter(search);
+	search_vb->add_margin_child(TTR("Search Text"),search);
+	search_dialog->get_ok()->set_text(TTR("Find"));
+	search_dialog->connect("confirmed",this,"_search_cbk");
+	search_dialog->set_hide_on_ok(false);
+	search_dialog->set_self_opacity(0.8);
+
+
+	/*class_search = memnew( EditorHelpSearch(editor) );
 	editor->get_gui_base()->add_child(class_search);
-	class_search->connect("go_to_help",this,"_help_callback");
+	class_search->connect("go_to_help",this,"_help_callback");*/
+
 //	prev_search_page=-1;
 }
 
 EditorHelp::~EditorHelp() {
-	if (doc)
-		memdelete(doc);
-}
-
-
-void EditorHelpPlugin::edit(Object *p_object) {
-
-	if (!p_object->cast_to<Script>())
-		return;
-
-	//editor_help->edit(p_object->cast_to<Script>());
-}
-
-bool EditorHelpPlugin::handles(Object *p_object) const {
-
-	return false;
-}
-
-void EditorHelpPlugin::make_visible(bool p_visible) {
-
-	if (p_visible) {
-		editor_help->show();
-	} else {
-
-		editor_help->hide();
-	}
 
 }
 
-void EditorHelpPlugin::selected_notify() {
-
-	//editor_help->ensure_select_current();
-}
-
-Dictionary EditorHelpPlugin::get_state() const {
-
-	return Dictionary();
-}
-
-void EditorHelpPlugin::set_state(const Dictionary& p_state) {
-
-	//editor_help->set_state(p_state);
-}
-void EditorHelpPlugin::clear() {
-
-	//editor_help->clear();
-}
-
-void EditorHelpPlugin::save_external_data() {
-
-	//editor_help->save_external_data();
-}
-
-void EditorHelpPlugin::apply_changes() {
-
-	//editor_help->apply_helps();
-}
-
-void EditorHelpPlugin::restore_global_state() {
-
-	//if (bool(EDITOR_DEF("text_editor/restore_helps_on_load",true))) {
-//		editor_help->_load_files_state();
-	//}
-
-}
-
-void EditorHelpPlugin::save_global_state() {
-
-	//if (bool(EDITOR_DEF("text_editor/restore_helps_on_load",true))) {
-//		editor_help->_save_files_state();
-//	}
-
-}
-
-
-EditorHelpPlugin::EditorHelpPlugin(EditorNode *p_node) {
-
-	editor=p_node;
-	editor_help = memnew( EditorHelp(p_node) );
-	editor->get_viewport()->add_child(editor_help);
-	editor_help->set_area_as_parent_rect();
-	editor_help->hide();
-
-
-}
-
-
-EditorHelpPlugin::~EditorHelpPlugin()
-{
-}

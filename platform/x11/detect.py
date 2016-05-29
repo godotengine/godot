@@ -1,11 +1,12 @@
 
 import os
-import sys	
+import sys
+import platform
 
 
 def is_active():
 	return True
-        
+
 def get_name():
         return "X11"
 
@@ -19,11 +20,11 @@ def can_build():
 		return False # no x11 on mac for now
 
 	errorval=os.system("pkg-config --version > /dev/null")
-	
+
 	if (errorval):
 		print("pkg-config not found.. x11 disabled.")
 		return False
-	
+
 	x11_error=os.system("pkg-config x11 --modversion > /dev/null ")
 	if (x11_error):
 		print("X11 not found.. x11 disabled.")
@@ -38,34 +39,36 @@ def can_build():
 	if (x11_error):
 		print("xcursor not found.. x11 disabled.")
 		return False
-	
+
 	x11_error=os.system("pkg-config xinerama --modversion > /dev/null ")
 	if (x11_error):
 		print("xinerama not found.. x11 disabled.")
 		return False
 
-	
+
 	return True # X11 enabled
-  
+
 def get_opts():
 
 	return [
 	('use_llvm','Use llvm compiler','no'),
+	('use_static_cpp','link stdc++ statically','no'),
 	('use_sanitizer','Use llvm compiler sanitize address','no'),
 	('use_leak_sanitizer','Use llvm compiler sanitize memory leaks','no'),
 	('pulseaudio','Detect & Use pulseaudio','yes'),
+	('udev','Use udev for gamepad connection callbacks','no'),
 	('new_wm_api', 'Use experimental window management API','no'),
 	('debug_release', 'Add debug symbols to release version','no'),
 	]
-  
+
 def get_flags():
 
 	return [
 	('builtin_zlib', 'no'),
 	("openssl", "yes"),
-	("theora","no"),
+	#("theora","no"),
         ]
-			
+
 
 
 def configure(env):
@@ -118,6 +121,8 @@ def configure(env):
 	elif (env["target"]=="release_debug"):
 
 		env.Append(CCFLAGS=['-O2','-ffast-math','-DDEBUG_ENABLED'])
+		if (env["debug_release"]=="yes"):
+			env.Append(CCFLAGS=['-g2'])
 
 	elif (env["target"]=="debug"):
 
@@ -131,12 +136,38 @@ def configure(env):
 		env.ParseConfig('pkg-config openssl --cflags --libs')
 
 
-	env.ParseConfig('pkg-config freetype2 --cflags --libs')
-	env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
+	if (env["freetype"]=="yes"):
+		env.ParseConfig('pkg-config freetype2 --cflags --libs')
 
-	
+
+	if (env["freetype"]!="no"):
+		env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
+		if (env["freetype"]=="builtin"):
+			env.Append(CPPPATH=['#tools/freetype'])
+			env.Append(CPPPATH=['#tools/freetype/freetype/include'])
+
+
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED','-DGLEW_ENABLED'])
-	env.Append(CPPFLAGS=["-DALSA_ENABLED"])
+
+	if os.system("pkg-config --exists alsa")==0:
+		print("Enabling ALSA")
+		env.Append(CPPFLAGS=["-DALSA_ENABLED"])
+		env.Append(LIBS=['asound'])
+	else:
+		print("ALSA libraries not found, disabling driver")
+
+	if (platform.system() == "Linux"):
+		env.Append(CPPFLAGS=["-DJOYDEV_ENABLED"])
+	if (env["udev"]=="yes"):
+		# pkg-config returns 0 when the lib exists...
+		found_udev = not os.system("pkg-config --exists libudev")
+
+		if (found_udev):
+			print("Enabling udev support")
+			env.Append(CPPFLAGS=["-DUDEV_ENABLED"])
+			env.ParseConfig('pkg-config libudev --cflags --libs')
+		else:
+			print("libudev development libraries not found, disabling udev support")
 
 	if (env["pulseaudio"]=="yes"):
 		if not os.system("pkg-config --exists libpulse-simple"):
@@ -147,7 +178,7 @@ def configure(env):
 			print("PulseAudio development libraries not found, disabling driver")
 
 	env.Append(CPPFLAGS=['-DX11_ENABLED','-DUNIX_ENABLED','-DGLES2_ENABLED','-DGLES_OVER_GL'])
-	env.Append(LIBS=['GL', 'GLU', 'pthread','asound','z']) #TODO detect linux/BSD!
+	env.Append(LIBS=['GL', 'GLU', 'pthread', 'z'])
 	#env.Append(CPPFLAGS=['-DMPC_FIXED_POINT'])
 
 #host compiler is default..
@@ -170,4 +201,9 @@ def configure(env):
 	if(env["new_wm_api"]=="yes"):
 		env.Append(CPPFLAGS=['-DNEW_WM_API'])
 		env.ParseConfig('pkg-config xinerama --cflags --libs')
+
+	if (env["use_static_cpp"]=="yes"):
+		env.Append(LINKFLAGS=['-static-libstdc++'])
+
+	env["x86_opt_gcc"]=True
 

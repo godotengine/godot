@@ -61,7 +61,7 @@ public:
 
 	bool is_point_inside(const Vector2& p_point) const;
 	Vector2 get_closest_point(const Vector2& p_point) const;
-	Vector<Vector2> get_intersections(const Vector2& p_from, const Vector2& p_to) const;	
+	Vector<Vector2> get_intersections(const Vector2& p_from, const Vector2& p_to) const;
 	Rect2 get_bounds() const;
 
 

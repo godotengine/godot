@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,7 +85,7 @@ void FileTypeCache::save() {
 	FileAccess *f =FileAccess::open(project+"/file_type_cache.cch",FileAccess::WRITE);
 	if (!f) {
 
-		ERR_EXPLAIN("Can't open file_type_cache.cch for writing, not saving file type cache!");
+		ERR_EXPLAIN(TTR("Can't open file_type_cache.cch for writing, not saving file type cache!"));
 		ERR_FAIL();
 	}
 

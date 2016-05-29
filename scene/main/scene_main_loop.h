@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,6 +45,8 @@ class SceneTree;
 class PackedScene;
 class Node;
 class Viewport;
+class Material;
+class Mesh;
 
 class SceneTree : public MainLoop {
 
@@ -74,7 +76,7 @@ private:
 	struct Group {
 
 		Vector<Node*> nodes;
-		uint64_t last_tree_version;		
+		uint64_t last_tree_version;
 		Group() { last_tree_version=0; };
 	};
 
@@ -87,6 +89,8 @@ private:
 	uint32_t last_id;
 
 	bool editor_hint;
+	bool debug_collisions_hint;
+	bool debug_navigation_hint;
 	bool pause;
 	int root_lock;
 
@@ -138,9 +142,20 @@ private:
 
 	Node *current_scene;
 
+	Color debug_collisions_color;
+	Color debug_collision_contact_color;
+	Color debug_navigation_color;
+	Color debug_navigation_disabled_color;
+	Ref<Mesh> debug_contact_mesh;
+	Ref<Material> navigation_material;
+	Ref<Material> navigation_disabled_material;
+	Ref<Material> collision_material;
+	int collision_debug_contacts;
+
 	void _change_scene(Node* p_to);
 	//void _call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,const Variant& p_arg1,const Variant& p_arg2);
 
+	static SceneTree *singleton;
 friend class Node;
 
 	void tree_changed();
@@ -264,11 +279,39 @@ public:
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
 
+	bool is_node_being_edited(const Node* p_node) const;
+
 	void set_pause(bool p_enabled);
 	bool is_paused() const;
 
 	void set_camera(const RID& p_camera);
 	RID get_camera() const;
+
+	void set_debug_collisions_hint(bool p_enabled);
+	bool is_debugging_collisions_hint() const;
+
+	void set_debug_navigation_hint(bool p_enabled);
+	bool is_debugging_navigation_hint() const;
+
+	void set_debug_collisions_color(const Color& p_color);
+	Color get_debug_collisions_color() const;
+
+	void set_debug_collision_contact_color(const Color& p_color);
+	Color get_debug_collision_contact_color() const;
+
+	void set_debug_navigation_color(const Color& p_color);
+	Color get_debug_navigation_color() const;
+
+	void set_debug_navigation_disabled_color(const Color& p_color);
+	Color get_debug_navigation_disabled_color() const;
+
+
+	Ref<Material> get_debug_navigation_material();
+	Ref<Material> get_debug_navigation_disabled_material();
+	Ref<Material> get_debug_collision_material();
+	Ref<Mesh> get_debug_contact_mesh();
+
+	int get_collision_debug_contact_count() { return collision_debug_contacts; }
 
 	int64_t get_frame() const;
 
@@ -277,6 +320,8 @@ public:
 	void queue_delete(Object *p_object);
 
 	void get_nodes_in_group(const StringName& p_group,List<Node*> *p_list);
+	bool has_group(const StringName& p_identifier) const;
+
 
 	void set_screen_stretch(StretchMode p_mode,StretchAspect p_aspect,const Size2 p_minsize);
 
@@ -297,7 +342,9 @@ public:
 	//used by Main::start, don't use otherwise
 	void add_current_scene(Node * p_current);
 
+	static SceneTree* get_singleton() { return singleton; }
 
+	void drop_files(const Vector<String>& p_files,int p_from_screen=0);
 
 	SceneTree();
 	~SceneTree();

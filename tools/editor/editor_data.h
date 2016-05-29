@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,9 +75,16 @@ friend class EditorData;
 
 public:
 
+	bool is_at_begining() const;
+	bool is_at_end() const;
+
 	void add_object(ObjectID p_object);
 	void add_object(ObjectID p_object,const String& p_subprop);
 	void add_object(ObjectID p_object,int p_relevel);
+
+	int get_history_len();
+	int get_history_pos();
+	ObjectID get_history_obj(int p_obj) const;
 
 	bool next();
 	bool previous();
@@ -137,10 +144,13 @@ private:
 	Vector<EditedScene> edited_scene;
 	int current_edited_scene;
 
+	bool _find_updated_instances(Node* p_root,Node *p_node,Set<String> &checked_paths);
+
 public:
 
 	EditorPlugin* get_editor(Object *p_object);
 	EditorPlugin* get_subeditor(Object *p_object);
+	Vector<EditorPlugin*> get_subeditors(Object *p_object);
 	EditorPlugin* get_editor(String p_name);
 
 	void copy_object_params(Object *p_object);
@@ -155,6 +165,9 @@ public:
 
 	void add_editor_plugin(EditorPlugin *p_plugin);
 	void remove_editor_plugin(EditorPlugin *p_plugin);
+
+	int get_editor_plugin_count() const;
+	EditorPlugin *get_editor_plugin(int p_idx);
 
 	UndoRedo &get_undo_redo();
 
@@ -186,6 +199,8 @@ public:
 	void clear_edited_scenes();
 	void set_edited_scene_live_edit_root(const NodePath& p_root);
 	NodePath get_edited_scene_live_edit_root();
+	bool check_and_update_scene(int p_idx);
+	void move_edited_scene_to_index(int p_idx);
 
 
 	void set_plugin_window_layout(Ref<ConfigFile> p_layout);
@@ -193,6 +208,7 @@ public:
 
 	void save_edited_scene_state(EditorSelection *p_selection,EditorHistory *p_history,const Dictionary& p_custom);
 	Dictionary restore_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history);
+	void notify_edited_scene_changed();
 
 
 	EditorData();
@@ -216,6 +232,7 @@ public:
 	List<Node*> selected_node_list;
 
 	void _update_nl();
+	Array _get_selected_nodes();
 protected:
 
 	static void _bind_methods();

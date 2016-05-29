@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,6 +52,7 @@ String GDScriptLanguage::get_template(const String& p_class_name, const String& 
 	"# var a=2\n"+
 	"# var b=\"textvar\"\n\n"+
 	"func _ready():\n"+
+	"\t# Called every time the node is added to the scene.\n"+
 	"\t# Initialization here\n"+
 	"\tpass\n"+
 	"\n"+
@@ -284,6 +285,30 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 	for(int i=0;i<GDFunctions::FUNC_MAX;i++) {
 
 		p_functions->push_back(GDFunctions::get_info(GDFunctions::Function(i)));
+	}
+
+	//not really "functions", but..
+	{
+		MethodInfo mi;
+		mi.name="preload:Resource";
+		mi.arguments.push_back(PropertyInfo(Variant::STRING,"path"));
+		mi.return_val=PropertyInfo(Variant::OBJECT,"",PROPERTY_HINT_RESOURCE_TYPE,"Resource");
+		p_functions->push_back(mi);
+	}
+	{
+		MethodInfo mi;
+		mi.name="yield";
+		mi.arguments.push_back(PropertyInfo(Variant::OBJECT,"object"));
+		mi.arguments.push_back(PropertyInfo(Variant::STRING,"signal"));
+		mi.default_arguments.push_back(Variant::NIL);
+		mi.default_arguments.push_back(Variant::STRING);
+		p_functions->push_back(mi);
+	}
+	{
+		MethodInfo mi;
+		mi.name="assert";
+		mi.arguments.push_back(PropertyInfo(Variant::BOOL,"condition"));
+		p_functions->push_back(mi);
 	}
 }
 
@@ -998,6 +1023,44 @@ static bool _guess_identifier_type_in_block(GDCompletionContext& context,int p_l
 	return false;
 }
 
+
+static bool _guess_identifier_from_assignment_in_function(GDCompletionContext& context,const StringName& p_identifier, const StringName& p_function,GDCompletionIdentifier &r_type) {
+
+	const GDParser::FunctionNode* func=NULL;
+	for(int i=0;i<context._class->functions.size();i++) {
+		if (context._class->functions[i]->name==p_function) {
+			func=context._class->functions[i];
+			break;
+		}
+	}
+
+	if (!func)
+		return false;
+
+	for(int i=0;i<func->body->statements.size();i++) {
+
+
+
+		if (func->body->statements[i]->type==GDParser::BlockNode::TYPE_OPERATOR) {
+			const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(func->body->statements[i]);
+			if (op->op==GDParser::OperatorNode::OP_ASSIGN) {
+
+				if (op->arguments.size() && op->arguments[0]->type==GDParser::Node::TYPE_IDENTIFIER) {
+
+					const GDParser::IdentifierNode *id = static_cast<const GDParser::IdentifierNode *>(op->arguments[0]);
+
+					if (id->name==p_identifier) {
+
+						return _guess_expression_type(context,op->arguments[1],func->body->statements[i]->line,r_type);
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
 static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const StringName& p_identifier,GDCompletionIdentifier &r_type) {
 
 	//go to block first
@@ -1089,14 +1152,74 @@ static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const
 					r_type=_get_type_from_pinfo(context._class->variables[i]._export);
 					return true;
 				} else if (context._class->variables[i].expression) {
-					return _guess_expression_type(context,context._class->variables[i].expression,context._class->variables[i].line,r_type);
+
+					bool rtype = _guess_expression_type(context,context._class->variables[i].expression,context._class->variables[i].line,r_type);
+					if (rtype && r_type.type!=Variant::NIL)
+						return true;
+					//return _guess_expression_type(context,context._class->variables[i].expression,context._class->variables[i].line,r_type);
 				}
+
+				//try to guess from assignment in construtor or _ready
+				if (_guess_identifier_from_assignment_in_function(context,p_identifier,"_ready",r_type))
+					return true;
+				if (_guess_identifier_from_assignment_in_function(context,p_identifier,"_enter_tree",r_type))
+					return true;
+				if (_guess_identifier_from_assignment_in_function(context,p_identifier,"_init",r_type))
+					return true;
+
+				return false;
 			}
 		}
 	}
 
+	//autoloads as singletons
+	List<PropertyInfo> props;
+	Globals::get_singleton()->get_property_list(&props);
+
+	for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
+
+		String s = E->get().name;
+		if (!s.begins_with("autoload/"))
+			continue;
+		String name = s.get_slice("/",1);
+		if (name==String(p_identifier)) {
+
+			String path = Globals::get_singleton()->get(s);
+			if (path.begins_with("*")) {
+				String script =path.substr(1,path.length());
+
+				if (!script.ends_with(".gd")) {
+					//not a script, try find the script anyway,
+					//may have some success
+					script=script.basename()+".gd";
+				}
+
+				if (FileAccess::exists(script)) {
+
+					//print_line("is a script");
 
 
+					Ref<Script> scr;
+					if (ScriptCodeCompletionCache::get_sigleton())
+						scr = ScriptCodeCompletionCache::get_sigleton()->get_cached_resource(script);
+					else
+						scr = ResourceLoader::load(script);
+
+
+					r_type.obj_type="Node";
+					r_type.type=Variant::OBJECT;
+					r_type.script=scr;
+					r_type.value=Variant();
+
+					return true;
+
+				}
+			}
+		}
+
+	}
+
+	//global
 	for(Map<StringName,int>::Element *E=GDScriptLanguage::get_singleton()->get_global_map().front();E;E=E->next()) {
 		if (E->key()==p_identifier) {
 
@@ -1187,9 +1310,9 @@ static void _find_identifiers_in_class(GDCompletionContext& context,bool p_stati
 				}
 			}
 
-			for (const Map<StringName,GDFunction>::Element *E=script->get_member_functions().front();E;E=E->next()) {
-				if (!p_static || E->get().is_static()) {
-					if (E->get().get_argument_count())
+			for (const Map<StringName,GDFunction*>::Element *E=script->get_member_functions().front();E;E=E->next()) {
+				if (!p_static || E->get()->is_static()) {
+					if (E->get()->get_argument_count())
 						result.insert(E->key().operator String()+"(");
 					else
 						result.insert(E->key().operator String()+"()");
@@ -1239,6 +1362,15 @@ static void _find_identifiers(GDCompletionContext& context,int p_line,bool p_onl
 
 	const GDParser::BlockNode *block=context.block;
 
+	if (context.function) {
+
+		const GDParser::FunctionNode* f = context.function;
+
+		for (int i=0;i<f->arguments.size();i++) {
+			result.insert(f->arguments[i].operator String());
+		}
+	}
+
 	while(block) {
 
 		GDCompletionContext c = context;
@@ -1274,6 +1406,24 @@ static void _find_identifiers(GDCompletionContext& context,int p_line,bool p_onl
 	for(int i=0;i<Variant::VARIANT_MAX;i++) {
 		result.insert(_type_names[i]);
 	}
+
+	//autoload singletons
+	List<PropertyInfo> props;
+	Globals::get_singleton()->get_property_list(&props);
+
+	for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
+
+		String s = E->get().name;
+		if (!s.begins_with("autoload/"))
+			continue;
+		String name = s.get_slice("/",1);
+		String path = Globals::get_singleton()->get(s);
+		if (path.begins_with("*")) {
+			result.insert(name);
+		}
+
+	}
+
 
 	for(const Map<StringName,int>::Element *E=GDScriptLanguage::get_singleton()->get_global_map().front();E;E=E->next()) {
 		result.insert(E->key().operator String());
@@ -1386,10 +1536,10 @@ static void _find_type_arguments(const GDParser::Node*p_node,int p_line,const St
 					if (scr) {
 						while (scr) {
 
-							for (const Map<StringName,GDFunction>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
-								if (E->get().is_static() && p_method==E->get().get_name()) {
+							for (const Map<StringName,GDFunction*>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
+								if (E->get()->is_static() && p_method==E->get()->get_name()) {
 									arghint="static func "+String(p_method)+"(";
-									for(int i=0;i<E->get().get_argument_count();i++) {
+									for(int i=0;i<E->get()->get_argument_count();i++) {
 										if (i>0)
 											arghint+=", ";
 										else
@@ -1397,12 +1547,12 @@ static void _find_type_arguments(const GDParser::Node*p_node,int p_line,const St
 										if (i==p_argidx) {
 											arghint+=String::chr(0xFFFF);
 										}
-										arghint+="var "+E->get().get_argument_name(i);
-										int deffrom = E->get().get_argument_count()-E->get().get_default_argument_count();
+										arghint+="var "+E->get()->get_argument_name(i);
+										int deffrom = E->get()->get_argument_count()-E->get()->get_default_argument_count();
 										if (i>=deffrom) {
 											int defidx = deffrom-i;
-											if (defidx>=0 && defidx<E->get().get_default_argument_count()) {
-												arghint+="="+E->get().get_default_argument(defidx).get_construct_string();
+											if (defidx>=0 && defidx<E->get()->get_default_argument_count()) {
+												arghint+="="+E->get()->get_default_argument(defidx).get_construct_string();
 											}
 										}
 										if (i==p_argidx) {
@@ -1520,10 +1670,10 @@ static void _find_type_arguments(const GDParser::Node*p_node,int p_line,const St
 
 						if (code=="") {
 
-							for (const Map<StringName,GDFunction>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
-								if (p_method==E->get().get_name()) {
+							for (const Map<StringName,GDFunction*>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
+								if (p_method==E->get()->get_name()) {
 									arghint="func "+String(p_method)+"(";
-									for(int i=0;i<E->get().get_argument_count();i++) {
+									for(int i=0;i<E->get()->get_argument_count();i++) {
 										if (i>0)
 											arghint+=", ";
 										else
@@ -1531,12 +1681,12 @@ static void _find_type_arguments(const GDParser::Node*p_node,int p_line,const St
 										if (i==p_argidx) {
 											arghint+=String::chr(0xFFFF);
 										}
-										arghint+="var "+E->get().get_argument_name(i);
-										int deffrom = E->get().get_argument_count()-E->get().get_default_argument_count();
+										arghint+="var "+E->get()->get_argument_name(i);
+										int deffrom = E->get()->get_argument_count()-E->get()->get_default_argument_count();
 										if (i>=deffrom) {
 											int defidx = deffrom-i;
-											if (defidx>=0 && defidx<E->get().get_default_argument_count()) {
-												arghint+="="+E->get().get_default_argument(defidx).get_construct_string();
+											if (defidx>=0 && defidx<E->get()->get_default_argument_count()) {
+												arghint+="="+E->get()->get_default_argument(defidx).get_construct_string();
 											}
 										}
 										if (i==p_argidx) {
@@ -1776,16 +1926,16 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 				if (script.is_valid()) {
 
 
-					for (const Map<StringName,GDFunction>::Element *E=script->get_member_functions().front();E;E=E->next()) {
+					for (const Map<StringName,GDFunction*>::Element *E=script->get_member_functions().front();E;E=E->next()) {
 
 						if (E->key()==id->name) {
 
-							if (context.function && context.function->_static && !E->get().is_static())
+							if (context.function && context.function->_static && !E->get()->is_static())
 								continue;
 
 
 							arghint = "func "+id->name.operator String()+String("(");
-							for(int i=0;i<E->get().get_argument_count();i++) {
+							for(int i=0;i<E->get()->get_argument_count();i++) {
 								if (i>0)
 									arghint+=", ";
 								else
@@ -1793,12 +1943,12 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 								if (i==p_argidx) {
 									arghint+=String::chr(0xFFFF);
 								}
-								arghint+=E->get().get_argument_name(i);
-								int deffrom = E->get().get_argument_count()-E->get().get_default_argument_count();
+								arghint+=E->get()->get_argument_name(i);
+								int deffrom = E->get()->get_argument_count()-E->get()->get_default_argument_count();
 								if (i>=deffrom) {
 									int defidx = deffrom-i;
-									if (defidx>=0 && defidx<E->get().get_default_argument_count()) {
-										arghint+="="+E->get().get_default_argument(defidx).get_construct_string();
+									if (defidx>=0 && defidx<E->get()->get_default_argument_count()) {
+										arghint+="="+E->get()->get_default_argument(defidx).get_construct_string();
 									}
 								}
 								if (i==p_argidx) {
@@ -1806,7 +1956,7 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 								}
 
 							}
-							if (E->get().get_argument_count()>0)
+							if (E->get()->get_argument_count()>0)
 								arghint+=" ";
 							arghint+=")";
 							return;
@@ -2028,8 +2178,8 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 											options.insert(E->key());
 										}
 									}
-									for (const Map<StringName,GDFunction>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
-										if (E->get().is_static())
+									for (const Map<StringName,GDFunction*>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
+										if (E->get()->is_static())
 											options.insert(E->key());
 									}
 
@@ -2116,8 +2266,8 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 											options.insert(E->key());
 										}
 									}
-									for (const Map<StringName,GDFunction>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
-										if (E->get().get_argument_count())
+									for (const Map<StringName,GDFunction*>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
+										if (E->get()->get_argument_count())
 											options.insert(String(E->key())+"()");
 										else
 											options.insert(String(E->key())+"(");
@@ -2175,8 +2325,8 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 								"# Key",
 								"# MouseMotion",
 								"# MouseButton",
-								"# JoyMotion",
-								"# JoyButton",
+								"# JoystickMotion",
+								"# JoystickButton",
 								"# ScreenTouch",
 								"# ScreenDrag",
 								"# Action"

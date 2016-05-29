@@ -9,6 +9,7 @@ class Polygon2D : public Node2D {
 
 	DVector<Vector2> polygon;
 	DVector<Vector2> uv;
+	DVector<Color> vertex_colors;
 	Color color;
 	Ref<Texture> texture;
 	Vector2 tex_scale;
@@ -39,6 +40,9 @@ public:
 
 	void set_color(const Color& p_color);
 	Color get_color() const;
+
+	void set_vertex_colors(const DVector<Color>& p_colors);
+	DVector<Color> get_vertex_colors() const;
 
 	void set_texture(const Ref<Texture>& p_texture);
 	Ref<Texture> get_texture() const;

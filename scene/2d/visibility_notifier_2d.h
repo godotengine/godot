@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,6 +76,7 @@ public:
 		ENABLER_PAUSE_PARTICLES,
 		ENABLER_PARENT_PROCESS,
 		ENABLER_PARENT_FIXED_PROCESS,
+		ENABLER_PAUSE_ANIMATED_SPRITES,
 		ENABLER_MAX
 	};
 
@@ -101,6 +102,8 @@ public:
 
 	void set_enabler(Enabler p_enabler,bool p_enable);
 	bool is_enabler_enabled(Enabler p_enabler) const;
+
+	String get_configuration_warning() const;
 
 	VisibilityEnabler2D();
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,17 +29,17 @@
 #ifndef LABEL_H
 #define LABEL_H
 
-#include "scene/gui/range.h"
+#include "scene/gui/control.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class Label : public Range {
-	
-	OBJ_TYPE( Label, Range );	
-public:	
-	
+class Label : public Control {
+
+	OBJ_TYPE( Label, Control );
+public:
+
 	enum Align {
-		
+
 		ALIGN_LEFT,
 		ALIGN_CENTER,
 		ALIGN_RIGHT,
@@ -63,11 +63,11 @@ private:
 	Size2 minsize;
 	int line_count;
 	bool uppercase;
-	
+
 	int get_longest_line_width() const;
-	
+
 	struct WordCache {
-		
+
 		enum {
 			CHAR_NEWLINE=-1,
 			CHAR_WRAPLINE=-2
@@ -78,23 +78,25 @@ private:
 		int space_count;
 		WordCache *next;
 		WordCache() { char_pos=0; word_len=0; pixel_width=0; next=0; space_count=0;}
-	};	
-	
+	};
+
 	bool word_cache_dirty;
 	void regenerate_word_cache();
 
 	float percent_visible;
-	
+
 	WordCache *word_cache;
 	int total_char_cache;
 	int visible_chars;
-protected:		
+	int lines_skipped;
+	int max_lines_visible;
+protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
 	// bind helpers
 public:
-	
+
 	virtual Size2 get_minimum_size() const;
 
 	void set_align(Align p_align);
@@ -105,7 +107,7 @@ public:
 
 	void set_text(const String& p_string);
 	String get_text() const;
-	
+
 	void set_autowrap(bool p_autowrap);
 	bool has_autowrap() const;
 
@@ -113,6 +115,7 @@ public:
 	bool is_uppercase() const;
 
 	void set_visible_characters(int p_amount);
+	int get_visible_characters() const;
 	int get_total_character_count() const;
 
 	void set_clip_text(bool p_clip);
@@ -121,6 +124,11 @@ public:
 	void set_percent_visible(float p_percent);
 	float get_percent_visible() const;
 
+	void set_lines_skipped(int p_lines);
+	int get_lines_skipped() const;
+
+	void set_max_lines_visible(int p_lines);
+	int get_max_lines_visible() const;
 
 	int get_line_height() const;
 	int get_line_count() const;

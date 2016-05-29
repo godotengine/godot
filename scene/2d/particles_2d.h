@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,6 +75,8 @@ public:
 	void set_particles_path(NodePath p_path);
 	NodePath get_particles_path() const;
 
+	virtual String get_configuration_warning() const;
+
 	ParticleAttractor2D();
 };
 
@@ -88,7 +90,7 @@ public:
 	enum Parameter {
 		PARAM_DIRECTION,
 		PARAM_SPREAD,
-		PARAM_LINEAR_VELOCITY,		
+		PARAM_LINEAR_VELOCITY,
 		PARAM_SPIN_VELOCITY,
 		PARAM_ORBIT_VELOCITY,
 		PARAM_GRAVITY_DIRECTION,
@@ -150,7 +152,7 @@ private:
 	Point2 emissor_offset;
 	Vector2 initial_velocity;
 	Vector2 extents;
-	DVector<Vector2> emission_points;	
+	DVector<Vector2> emission_points;
 
 	float time;
 	int active_count;
@@ -248,6 +250,7 @@ public:
 	DVector<Vector2> get_emission_points() const;
 
 	void pre_process(float p_delta);
+	void reset();
 
 	Particles2D();
 };

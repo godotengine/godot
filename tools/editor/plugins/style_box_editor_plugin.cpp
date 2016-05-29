@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,7 +61,7 @@ StyleBoxEditor::StyleBoxEditor() {
 	panel->set_area_as_parent_rect();
 
 	Label *l = memnew( Label );
-	l->set_text("StyleBox Preview:");
+	l->set_text(TTR("StyleBox Preview:"));
 	l->set_pos(Point2(5,5));
 	panel->add_child(l);
 
@@ -90,19 +90,25 @@ bool StyleBoxEditorPlugin::handles(Object *p_node) const{
 
 void StyleBoxEditorPlugin::make_visible(bool p_visible){
 
-	if (p_visible)
-		stylebox_editor->show();
-	else
-		stylebox_editor->hide();
+	if (p_visible) {
+		button->show();
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(stylebox_editor);
+
+	} else {
+		if (stylebox_editor->is_visible())
+			EditorNode::get_singleton()->hide_bottom_panel();
+		button->hide();
+	}
 }
 
 StyleBoxEditorPlugin::StyleBoxEditorPlugin(EditorNode *p_node) {
 
 	stylebox_editor = memnew( StyleBoxEditor );
+	stylebox_editor->set_custom_minimum_size(Size2(0,250));
 
-	p_node->get_viewport()->add_child(stylebox_editor);
-	stylebox_editor->set_area_as_parent_rect();
-	stylebox_editor->hide();
+	//p_node->get_viewport()->add_child(stylebox_editor);
+	button = p_node->add_bottom_panel_item("StyleBox",stylebox_editor);
+	button->hide();
 
 
 }

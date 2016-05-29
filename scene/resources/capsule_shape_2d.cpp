@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 #include "capsule_shape_2d.h"
 
 #include "servers/physics_2d_server.h"
+#include "servers/visual_server.h"
 
 void CapsuleShape2D::_update_shape() {
 
@@ -59,6 +60,32 @@ real_t CapsuleShape2D::get_height() const {
 	return height;
 }
 
+
+void CapsuleShape2D::draw(const RID& p_to_rid,const Color& p_color) {
+
+	Vector<Vector2> points;
+	for(int i=0;i<24;i++) {
+		Vector2 ofs = Vector2(0,(i>6 && i<=18) ? -get_height()*0.5 : get_height()*0.5);
+
+		points.push_back(Vector2(Math::sin(i*Math_PI*2/24.0),Math::cos(i*Math_PI*2/24.0))*get_radius() + ofs);
+		if (i==6 || i==18)
+			points.push_back(Vector2(Math::sin(i*Math_PI*2/24.0),Math::cos(i*Math_PI*2/24.0))*get_radius() - ofs);
+	}
+
+	Vector<Color> col;
+	col.push_back(p_color);
+	VisualServer::get_singleton()->canvas_item_add_polygon(p_to_rid,points,col);
+
+}
+
+Rect2 CapsuleShape2D::get_rect() const {
+
+	Vector2 he=Point2(get_radius(),get_radius()+get_height()*0.5);
+	Rect2 rect;
+	rect.pos=-he;
+	rect.size=he*2.0;
+	return rect;
+}
 
 void CapsuleShape2D::_bind_methods() {
 

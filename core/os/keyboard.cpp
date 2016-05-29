@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -82,7 +82,7 @@ static const _KeyCodeText _keycodes[]={
 		{KEY_KP_ENTER                      ,"Kp Enter"},
 		{KEY_KP_MULTIPLY                   ,"Kp Multiply"},
 		{KEY_KP_DIVIDE                     ,"Kp Divide"},
-		{KEY_KP_SUBSTRACT                  ,"Kp Substract"},
+		{KEY_KP_SUBTRACT                   ,"Kp Subtract"},
 		{KEY_KP_PERIOD                     ,"Kp Period"},
 		{KEY_KP_ADD                        ,"Kp Add"},
 		{KEY_KP_0                          ,"Kp 0"},

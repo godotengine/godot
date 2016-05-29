@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,7 @@ public:
 	typedef int VoiceID;
 
 
-private:	
+private:
 
 	Ref<SampleLibrary> library;
 	int polyphony;
@@ -78,6 +78,7 @@ public:
 	void stop_voice(VoiceID p_voice);
 	void stop_all();
 
+	String get_configuration_warning() const;
 
 	SpatialSamplePlayer();
 	~SpatialSamplePlayer();

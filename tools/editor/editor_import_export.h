@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,9 +33,10 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
+
 class EditorExportPlatform;
 class FileAccess;
-class EditorProgress;
+struct EditorProgress;
 
 class EditorImportPlugin : public Reference {
 
@@ -44,6 +45,10 @@ class EditorImportPlugin : public Reference {
 protected:
 
 	static void _bind_methods();
+
+	String _validate_source_path(const String& p_path);
+	String _expand_source_path(const String& p_path);
+
 
 public:
 
@@ -55,6 +60,9 @@ public:
 	virtual String get_visible_name() const;
 	virtual void import_dialog(const String& p_from="");
 	virtual Error import(const String& p_path, const Ref<ResourceImportMetadata>& p_from);
+	virtual void import_from_drop(const Vector<String>& p_drop,const String& p_dest_path);
+	virtual void reimport_multiple_files(const Vector<String>& p_list);
+	virtual bool can_reimport_multiple_files() const;
 	virtual Vector<uint8_t> custom_export(const String& p_path,const Ref<EditorExportPlatform> &p_platform);
 
 	EditorImportPlugin();
@@ -81,10 +89,22 @@ class EditorExportPlatform : public Reference {
 public:
 
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total);
+
+private:
+
+	bool debugging_enabled;
+
 protected:
 
+	bool _set(const StringName& p_name, const Variant& p_value);
+	bool _get(const StringName& p_name,Variant &r_ret) const;
+	void _get_property_list( List<PropertyInfo> *p_list) const;
+
+	Vector<uint8_t> get_exported_file_default(String& p_fname) const;
 	virtual Vector<uint8_t> get_exported_file(String& p_fname) const;
 	virtual Vector<StringName> get_dependencies(bool p_bundles) const;
+	virtual String find_export_template(String template_file_name, String *err=NULL) const;
+	virtual bool exists_export_template(String template_file_name, String *err=NULL) const;
 
 	struct TempData {
 
@@ -104,8 +124,17 @@ protected:
 
 	};
 
-	void gen_export_flags(Vector<String> &r_flags,bool p_dumb,bool p_remote_debug);
+	struct ZipData {
+
+		void* zip;
+		EditorProgress *ep;
+		int count;
+
+	};
+
+	void gen_export_flags(Vector<String> &r_flags, int p_flags);
 	static Error save_pack_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total);
+	static Error save_zip_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total);
 
 public:
 
@@ -120,10 +149,22 @@ public:
 		IMAGE_COMPRESSION_ETC2, // ericsson new compression format (can handle alpha)
 	};
 
+	enum ExportFlags {
+		EXPORT_DUMB_CLIENT=1,
+		EXPORT_REMOTE_DEBUG=2,
+		EXPORT_REMOTE_DEBUG_LOCALHOST=4,
+		EXPORT_VIEW_COLLISONS=8,
+		EXPORT_VIEW_NAVIGATION=16,
+	};
+
+	bool is_debugging_enabled() const;
+	void set_debugging_enabled( bool p_enabled );
 
 	Error export_project_files(EditorExportSaveFunction p_func, void* p_udata,bool p_make_bundles);
 
 	Error save_pack(FileAccess *p_where, bool p_make_bundles=false, int p_alignment = 1);
+	Error save_zip(const String& p_path, bool p_make_bundles=false);
+
 	virtual String get_name() const =0;
 	virtual ImageCompression get_image_compression() const=0;
 	virtual Ref<Texture> get_logo() const =0;
@@ -132,16 +173,16 @@ public:
 	virtual int get_device_count() const { return 0; }
 	virtual String get_device_name(int p_device) const { return ""; }
 	virtual String get_device_info(int p_device) const { return ""; }
-	virtual Error run(int p_device,bool p_dumb=false,bool p_remote_debug=false) { return OK; }
+	virtual Error run(int p_device,int p_flags) { return OK; }
 
 	virtual bool can_export(String *r_error=NULL) const=0;
 
 
-	virtual bool requieres_password(bool p_debug) const { return false; }
+	virtual bool requires_password(bool p_debug) const { return false; }
 	virtual String get_binary_extension() const=0;
-	virtual Error export_project(const String& p_path,bool p_debug,bool p_dumb=false,bool p_remote_debug=false)=0;
+	virtual Error export_project(const String& p_path,bool p_debug,int p_flags=0)=0;
 
-	EditorExportPlatform() {};
+	EditorExportPlatform();
 };
 
 class EditorExportPlatformPC : public EditorExportPlatform {
@@ -153,8 +194,7 @@ public:
 	enum ExportMode {
 		EXPORT_EXE,
 		EXPORT_PACK,
-		EXPORT_COPY,
-		EXPORT_BUNDLES
+		EXPORT_ZIP
 	};
 
 
@@ -176,6 +216,7 @@ private:
 	Ref<Texture> logo;
 
 	ExportMode export_mode;
+	bool bundle;
 protected:
 
 	bool _set(const StringName& p_name, const Variant& p_value);
@@ -189,7 +230,7 @@ public:
 	virtual ImageCompression get_image_compression() const { return IMAGE_COMPRESSION_BC; }
 
 	virtual String get_binary_extension() const { return binary_extension; }
-	virtual Error export_project(const String& p_path, bool p_debug, bool p_dumb=false, bool p_remote_debug=false);
+	virtual Error export_project(const String& p_path, bool p_debug, int p_flags=0);
 	virtual void set_release_binary32(const String& p_binary) { release_binary32=p_binary; }
 	virtual void set_debug_binary32(const String& p_binary) { debug_binary32=p_binary; }
 	virtual void set_release_binary64(const String& p_binary) { release_binary64=p_binary; }
@@ -227,12 +268,20 @@ public:
 		IMAGE_ACTION_NONE,
 		IMAGE_ACTION_COMPRESS_DISK,
 		IMAGE_ACTION_COMPRESS_RAM,
+		IMAGE_ACTION_KEEP //for group
+
 	};
 
 	enum ScriptAction {
 		SCRIPT_ACTION_NONE,
 		SCRIPT_ACTION_COMPILE,
 		SCRIPT_ACTION_ENCRYPT
+	};
+
+	enum SampleAction {
+
+		SAMPLE_ACTION_NONE,
+		SAMPLE_ACTION_COMPRESS_RAM,
 	};
 
 protected:
@@ -242,7 +291,7 @@ protected:
 		ImageAction action;
 		bool make_atlas;
 		float lossy_quality;
-		int shrink;
+		float shrink;
 	};
 
 	Vector<Ref<EditorExportPlugin> > export_plugins;
@@ -250,11 +299,11 @@ protected:
 	Map<String,int> by_idx;
 	ImageAction image_action;
 	float image_action_compress_quality;
-	int image_shrink;
+	float image_shrink;
 	Set<String> image_formats;
 
 	ExportFilter export_filter;
-	String export_custom_filter;
+	String export_custom_filter, export_custom_filter_exclude;
 	Map<StringName,FileAction> files;
 	Map<StringName,Ref<EditorExportPlatform> > exporters;
 	Map<StringName,ImageGroup> image_groups;
@@ -264,7 +313,16 @@ protected:
 	ScriptAction script_action;
 	String script_key;
 
+	SampleAction sample_action;
+	int sample_action_max_hz;
+	bool sample_action_trim;
+
+	bool convert_text_scenes;
+
 	static EditorImportExport* singleton;
+
+	DVector<String> _get_export_file_list();
+	DVector<String> _get_export_platforms();
 
 	static void _bind_methods();
 public:
@@ -278,6 +336,7 @@ public:
 	Ref<EditorImportPlugin> get_import_plugin_by_name(const String& p_string) const;
 
 	void add_export_plugin(const Ref<EditorExportPlugin>& p_plugin);
+	void remove_export_plugin(const Ref<EditorExportPlugin>& p_plugin);
 	int get_export_plugin_count() const;
 	Ref<EditorExportPlugin> get_export_plugin(int p_idx) const;
 
@@ -295,13 +354,15 @@ public:
 	ExportFilter get_export_filter() const;
 
 	void set_export_custom_filter(const String& p_custom_filter);
+	void set_export_custom_filter_exclude(const String& p_custom_filter);
 	String get_export_custom_filter() const;
+	String get_export_custom_filter_exclude() const;
 
 	void set_export_image_action(ImageAction p_action);
 	ImageAction get_export_image_action() const;
 
-	void set_export_image_shrink(int p_shrink);
-	int get_export_image_shrink() const;
+	void set_export_image_shrink(float p_shrink);
+	float get_export_image_shrink() const;
 
 	void set_export_image_quality(float p_quality);
 	float get_export_image_quality() const;
@@ -316,8 +377,8 @@ public:
 	ImageAction image_export_group_get_image_action(const StringName& p_export_group) const;
 	void image_export_group_set_make_atlas(const StringName& p_export_group,bool p_make);
 	bool image_export_group_get_make_atlas(const StringName& p_export_group) const;
-	void image_export_group_set_shrink(const StringName& p_export_group,int p_amount);
-	int image_export_group_get_shrink(const StringName& p_export_group) const;
+	void image_export_group_set_shrink(const StringName& p_export_group,float p_amount);
+	float image_export_group_get_shrink(const StringName& p_export_group) const;
 	void image_export_group_set_lossy_quality(const StringName& p_export_group,float p_quality);
 	float image_export_group_get_lossy_quality(const StringName& p_export_group) const;
 
@@ -333,6 +394,18 @@ public:
 	void script_set_encryption_key(const String& p_key);
 	String script_get_encryption_key() const;
 
+	void sample_set_action(SampleAction p_action);
+	SampleAction sample_get_action() const;
+
+	void sample_set_max_hz(int p_hz);
+	int sample_get_max_hz() const;
+
+	void sample_set_trim(bool p_trim);
+	bool sample_get_trim() const;
+
+	void set_convert_text_scenes(bool p_convert);
+	bool get_convert_text_scenes() const;
+
 	void load_config();
 	void save_config();
 
@@ -340,7 +413,10 @@ public:
 	~EditorImportExport();
 };
 
+VARIANT_ENUM_CAST(EditorImportExport::FileAction);
+VARIANT_ENUM_CAST(EditorImportExport::ExportFilter);
 VARIANT_ENUM_CAST(EditorImportExport::ImageAction);
 VARIANT_ENUM_CAST(EditorImportExport::ScriptAction);
+VARIANT_ENUM_CAST(EditorImportExport::SampleAction);
 
 #endif // EDITOR_IMPORT_EXPORT_H

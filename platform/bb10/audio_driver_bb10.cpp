@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,6 @@ Error AudioDriverBB10::init(const char* p_name) {
 		dev_name = (char *) p_name;
 	}
 	printf("******** reconnecting to device %s\n", dev_name);
-	int card, dev;
 	int ret = snd_pcm_open_name(&pcm_handle, dev_name, SND_PCM_OPEN_PLAYBACK);
 	ERR_FAIL_COND_V(ret < 0, FAILED);
 	pcm_open = true;

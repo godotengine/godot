@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,6 +57,7 @@ class Body2DSW : public CollisionObject2DSW {
 
 	real_t _inv_mass;
 	real_t _inv_inertia;
+	bool user_inertia;
 
 	Vector2 gravity;
 	real_t area_linear_damp;
@@ -81,6 +82,7 @@ class Body2DSW : public CollisionObject2DSW {
 	bool active;
 	bool can_sleep;
 	bool first_time_kinematic;
+	bool first_integration;
 	bool using_one_way_cache;
 	void _update_inertia();
 	virtual void _shapes_changed();
@@ -92,10 +94,11 @@ class Body2DSW : public CollisionObject2DSW {
 	struct AreaCMP {
 
 		Area2DSW *area;
+		int refCount;
 		_FORCE_INLINE_ bool operator==(const AreaCMP& p_cmp) const { return area->get_self() == p_cmp.area->get_self();}
 		_FORCE_INLINE_ bool operator<(const AreaCMP& p_cmp) const { return area->get_priority() < p_cmp.area->get_priority();}
 		_FORCE_INLINE_ AreaCMP() {}
-		_FORCE_INLINE_ AreaCMP(Area2DSW *p_area) { area=p_area;}
+		_FORCE_INLINE_ AreaCMP(Area2DSW *p_area) { area=p_area; refCount=1;}
 	};
 
 
@@ -132,7 +135,7 @@ class Body2DSW : public CollisionObject2DSW {
 	Body2DSW *island_next;
 	Body2DSW *island_list_next;
 
-	_FORCE_INLINE_ void _compute_area_gravity(const Area2DSW *p_area);
+	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const Area2DSW *p_area);
 
 friend class Physics2DDirectBodyStateSW; // i give up, too many functions to expose
 
@@ -142,8 +145,23 @@ public:
 	void set_force_integration_callback(ObjectID p_id, const StringName& p_method, const Variant &p_udata=Variant());
 
 
-	_FORCE_INLINE_ void add_area(Area2DSW *p_area) { areas.ordered_insert(AreaCMP(p_area)); }
-	_FORCE_INLINE_ void remove_area(Area2DSW *p_area) { areas.erase(AreaCMP(p_area)); }
+	_FORCE_INLINE_ void add_area(Area2DSW *p_area) {
+		int index = areas.find(AreaCMP(p_area));
+		if( index > -1 ) {
+			areas[index].refCount += 1;
+		} else {
+			areas.ordered_insert(AreaCMP(p_area));
+		}
+	}
+
+	_FORCE_INLINE_ void remove_area(Area2DSW *p_area) {
+		int index = areas.find(AreaCMP(p_area));
+		if( index > -1 ) {
+			areas[index].refCount -= 1;
+			if( areas[index].refCount < 1 )
+				areas.remove(index);
+		}
+	}
 
 	_FORCE_INLINE_ void set_max_contacts_reported(int p_size) { contacts.resize(p_size); contact_count=0; if (mode==Physics2DServer::BODY_MODE_KINEMATIC && p_size) set_active(true);}
 
@@ -187,10 +205,10 @@ public:
 	_FORCE_INLINE_ real_t get_biased_angular_velocity() const { return biased_angular_velocity; }
 
 
-	_FORCE_INLINE_ void apply_impulse(const Vector2& p_pos, const Vector2& p_j) {
+	_FORCE_INLINE_ void apply_impulse(const Vector2& p_offset, const Vector2& p_impulse) {
 
-		linear_velocity += p_j * _inv_mass;
-		angular_velocity += _inv_inertia * p_pos.cross(p_j);
+		linear_velocity += p_impulse * _inv_mass;
+		angular_velocity += _inv_inertia * p_offset.cross(p_impulse);
 	}
 
 	_FORCE_INLINE_ void apply_bias_impulse(const Vector2& p_pos, const Vector2& p_j) {
@@ -226,6 +244,11 @@ public:
 	void set_applied_torque(real_t p_torque) { applied_torque=p_torque; }
 	real_t get_applied_torque() const { return applied_torque; }
 
+	_FORCE_INLINE_ void add_force(const Vector2& p_force, const Vector2& p_offset) {
+
+		applied_force += p_force;
+		applied_torque += p_offset.cross(p_force);
+	}
 
 	_FORCE_INLINE_ void set_continuous_collision_detection_mode(Physics2DServer::CCDMode p_mode) { continuous_cd_mode=p_mode; }
 	_FORCE_INLINE_ Physics2DServer::CCDMode get_continuous_collision_detection_mode() const { return continuous_cd_mode; }
@@ -337,9 +360,9 @@ public:
 	Body2DSW *body;
 	real_t step;
 
-	virtual Vector2 get_total_gravity() const {  return body->get_gravity();  } // get gravity vector working on this body space/area
-	virtual float get_total_angular_damp() const {  return body->get_angular_damp();  } // get density of this body space/area
-	virtual float get_total_linear_damp() const {  return body->get_linear_damp();  } // get density of this body space/area
+	virtual Vector2 get_total_gravity() const {  return body->gravity;  } // get gravity vector working on this body space/area
+	virtual float get_total_angular_damp() const {  return body->area_angular_damp;  } // get density of this body space/area
+	virtual float get_total_linear_damp() const {  return body->area_linear_damp;  } // get density of this body space/area
 
 	virtual float get_inverse_mass() const {  return body->get_inv_mass();  } // get the mass
 	virtual real_t get_inverse_inertia() const { return body->get_inv_inertia();   } // get density of this body space
@@ -369,7 +392,7 @@ public:
 	virtual Vector2 get_contact_collider_pos(int p_contact_idx) const {  ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,Vector2());   return body->contacts[p_contact_idx].collider_pos;  }
 	virtual ObjectID get_contact_collider_id(int p_contact_idx) const {  ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,0);   return body->contacts[p_contact_idx].collider_instance_id;   }
 	virtual int get_contact_collider_shape(int p_contact_idx) const {  ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,0); return body->contacts[p_contact_idx].collider_shape;  }
-	virtual Variant get_contact_collider_shape_metadata(int p_contact_idx) const {  ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,Variant()); return body->get_shape_metadata(body->contacts[p_contact_idx].collider_shape);  }
+	virtual Variant get_contact_collider_shape_metadata(int p_contact_idx) const;
 
 	virtual Vector2 get_contact_collider_velocity_at_pos(int p_contact_idx) const {  ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,Vector2()); return body->contacts[p_contact_idx].collider_velocity_at_pos;  }
 

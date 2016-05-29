@@ -1,0 +1,240 @@
+[gd_resource type="TileSet" load_steps=27 format=1]
+
+[ext_resource path="res://WWT-01.png" type="Texture" id=1]
+[ext_resource path="res://WWT-02.png" type="Texture" id=2]
+[ext_resource path="res://WWT-11.png" type="Texture" id=3]
+[ext_resource path="res://WWT-12.png" type="Texture" id=4]
+[ext_resource path="res://WWT-13.png" type="Texture" id=5]
+[ext_resource path="res://WWT-14.png" type="Texture" id=6]
+[ext_resource path="res://WWT-15.png" type="Texture" id=7]
+[ext_resource path="res://WWT-16.png" type="Texture" id=8]
+[ext_resource path="res://WWT-17.png" type="Texture" id=9]
+[ext_resource path="res://WWT-18.png" type="Texture" id=10]
+[ext_resource path="res://WWT-19.png" type="Texture" id=11]
+[ext_resource path="res://WWT-20.png" type="Texture" id=12]
+[ext_resource path="res://WWT-03.png" type="Texture" id=13]
+[ext_resource path="res://WWT-21.png" type="Texture" id=14]
+[ext_resource path="res://WWT-22.png" type="Texture" id=15]
+[ext_resource path="res://WWT-23.png" type="Texture" id=16]
+[ext_resource path="res://WWT-24.png" type="Texture" id=17]
+[ext_resource path="res://WWT-25.png" type="Texture" id=18]
+[ext_resource path="res://WWT-26.png" type="Texture" id=19]
+[ext_resource path="res://WWT-04.png" type="Texture" id=20]
+[ext_resource path="res://WWT-05.png" type="Texture" id=21]
+[ext_resource path="res://WWT-06.png" type="Texture" id=22]
+[ext_resource path="res://WWT-07.png" type="Texture" id=23]
+[ext_resource path="res://WWT-08.png" type="Texture" id=24]
+[ext_resource path="res://WWT-09.png" type="Texture" id=25]
+[ext_resource path="res://WWT-10.png" type="Texture" id=26]
+
+[resource]
+
+0/name = "Tile 1"
+0/texture = ExtResource( 1 )
+0/tex_offset = Vector2( -24, -17 )
+0/region = Rect2( 0, 0, 0, 0 )
+0/occluder_offset = Vector2( -0, -0 )
+0/navigation_offset = Vector2( -0, -0 )
+0/shape_offset = Vector2( 0, 0 )
+0/shapes = [  ]
+1/name = "Tile 2"
+1/texture = ExtResource( 2 )
+1/tex_offset = Vector2( -24, -17 )
+1/region = Rect2( 0, 0, 0, 0 )
+1/occluder_offset = Vector2( -0, -0 )
+1/navigation_offset = Vector2( -0, -0 )
+1/shape_offset = Vector2( 0, 0 )
+1/shapes = [  ]
+2/name = "Tile 3"
+2/texture = ExtResource( 13 )
+2/tex_offset = Vector2( -24, -17 )
+2/region = Rect2( 0, 0, 0, 0 )
+2/occluder_offset = Vector2( -0, -0 )
+2/navigation_offset = Vector2( -0, -0 )
+2/shape_offset = Vector2( 0, 0 )
+2/shapes = [  ]
+3/name = "Tile 4"
+3/texture = ExtResource( 20 )
+3/tex_offset = Vector2( -24, -17 )
+3/region = Rect2( 0, 0, 0, 0 )
+3/occluder_offset = Vector2( -0, -0 )
+3/navigation_offset = Vector2( -0, -0 )
+3/shape_offset = Vector2( 0, 0 )
+3/shapes = [  ]
+4/name = "Tile 5"
+4/texture = ExtResource( 21 )
+4/tex_offset = Vector2( -24, -17 )
+4/region = Rect2( 0, 0, 0, 0 )
+4/occluder_offset = Vector2( -0, -0 )
+4/navigation_offset = Vector2( -0, -0 )
+4/shape_offset = Vector2( 0, 0 )
+4/shapes = [  ]
+5/name = "Tile 6"
+5/texture = ExtResource( 22 )
+5/tex_offset = Vector2( -24, -17 )
+5/region = Rect2( 0, 0, 0, 0 )
+5/occluder_offset = Vector2( -0, -0 )
+5/navigation_offset = Vector2( -0, -0 )
+5/shape_offset = Vector2( 0, 0 )
+5/shapes = [  ]
+6/name = "Tile 7"
+6/texture = ExtResource( 23 )
+6/tex_offset = Vector2( -24, -17 )
+6/region = Rect2( 0, 0, 0, 0 )
+6/occluder_offset = Vector2( -0, -0 )
+6/navigation_offset = Vector2( -0, -0 )
+6/shape_offset = Vector2( 0, 0 )
+6/shapes = [  ]
+7/name = "Tile 8"
+7/texture = ExtResource( 24 )
+7/tex_offset = Vector2( -24, -17 )
+7/region = Rect2( 0, 0, 0, 0 )
+7/occluder_offset = Vector2( -0, -0 )
+7/navigation_offset = Vector2( -0, -0 )
+7/shape_offset = Vector2( 0, 0 )
+7/shapes = [  ]
+8/name = "Tile 9"
+8/texture = ExtResource( 25 )
+8/tex_offset = Vector2( -24, -17 )
+8/region = Rect2( 0, 0, 0, 0 )
+8/occluder_offset = Vector2( -0, -0 )
+8/navigation_offset = Vector2( -0, -0 )
+8/shape_offset = Vector2( 0, 0 )
+8/shapes = [  ]
+9/name = "Tile 10"
+9/texture = ExtResource( 26 )
+9/tex_offset = Vector2( -24, -17 )
+9/region = Rect2( 0, 0, 0, 0 )
+9/occluder_offset = Vector2( -0, -0 )
+9/navigation_offset = Vector2( -0, -0 )
+9/shape_offset = Vector2( 0, 0 )
+9/shapes = [  ]
+10/name = "Tile 11"
+10/texture = ExtResource( 3 )
+10/tex_offset = Vector2( -24, -17 )
+10/region = Rect2( 0, 0, 0, 0 )
+10/occluder_offset = Vector2( -0, -0 )
+10/navigation_offset = Vector2( -0, -0 )
+10/shape_offset = Vector2( 0, 0 )
+10/shapes = [  ]
+11/name = "Tile 12"
+11/texture = ExtResource( 4 )
+11/tex_offset = Vector2( -24, -17 )
+11/region = Rect2( 0, 0, 0, 0 )
+11/occluder_offset = Vector2( -0, -0 )
+11/navigation_offset = Vector2( -0, -0 )
+11/shape_offset = Vector2( 0, 0 )
+11/shapes = [  ]
+12/name = "Tile 13"
+12/texture = ExtResource( 5 )
+12/tex_offset = Vector2( -24, -17 )
+12/region = Rect2( 0, 0, 0, 0 )
+12/occluder_offset = Vector2( -0, -0 )
+12/navigation_offset = Vector2( -0, -0 )
+12/shape_offset = Vector2( 0, 0 )
+12/shapes = [  ]
+13/name = "Tile 14"
+13/texture = ExtResource( 6 )
+13/tex_offset = Vector2( -24, -17 )
+13/region = Rect2( 0, 0, 0, 0 )
+13/occluder_offset = Vector2( -0, -0 )
+13/navigation_offset = Vector2( -0, -0 )
+13/shape_offset = Vector2( 0, 0 )
+13/shapes = [  ]
+14/name = "Tile 15"
+14/texture = ExtResource( 7 )
+14/tex_offset = Vector2( -24, -17 )
+14/region = Rect2( 0, 0, 0, 0 )
+14/occluder_offset = Vector2( -0, -0 )
+14/navigation_offset = Vector2( -0, -0 )
+14/shape_offset = Vector2( 0, 0 )
+14/shapes = [  ]
+15/name = "Tile 16"
+15/texture = ExtResource( 8 )
+15/tex_offset = Vector2( -24, -17 )
+15/region = Rect2( 0, 0, 0, 0 )
+15/occluder_offset = Vector2( -0, -0 )
+15/navigation_offset = Vector2( -0, -0 )
+15/shape_offset = Vector2( 0, 0 )
+15/shapes = [  ]
+16/name = "Tile 17"
+16/texture = ExtResource( 9 )
+16/tex_offset = Vector2( -24, -17 )
+16/region = Rect2( 0, 0, 0, 0 )
+16/occluder_offset = Vector2( -0, -0 )
+16/navigation_offset = Vector2( -0, -0 )
+16/shape_offset = Vector2( 0, 0 )
+16/shapes = [  ]
+17/name = "Tile 18"
+17/texture = ExtResource( 10 )
+17/tex_offset = Vector2( -24, -17 )
+17/region = Rect2( 0, 0, 0, 0 )
+17/occluder_offset = Vector2( -0, -0 )
+17/navigation_offset = Vector2( -0, -0 )
+17/shape_offset = Vector2( 0, 0 )
+17/shapes = [  ]
+18/name = "Tile 19"
+18/texture = ExtResource( 11 )
+18/tex_offset = Vector2( -24, -17 )
+18/region = Rect2( 0, 0, 0, 0 )
+18/occluder_offset = Vector2( -0, -0 )
+18/navigation_offset = Vector2( -0, -0 )
+18/shape_offset = Vector2( 0, 0 )
+18/shapes = [  ]
+19/name = "Tile 20"
+19/texture = ExtResource( 12 )
+19/tex_offset = Vector2( -24, -17 )
+19/region = Rect2( 0, 0, 0, 0 )
+19/occluder_offset = Vector2( -0, -0 )
+19/navigation_offset = Vector2( -0, -0 )
+19/shape_offset = Vector2( 0, 0 )
+19/shapes = [  ]
+20/name = "Tile 21"
+20/texture = ExtResource( 14 )
+20/tex_offset = Vector2( -24, -17 )
+20/region = Rect2( 0, 0, 0, 0 )
+20/occluder_offset = Vector2( -0, -0 )
+20/navigation_offset = Vector2( -0, -0 )
+20/shape_offset = Vector2( 0, 0 )
+20/shapes = [  ]
+21/name = "Tile 22"
+21/texture = ExtResource( 15 )
+21/tex_offset = Vector2( -24, -17 )
+21/region = Rect2( 0, 0, 0, 0 )
+21/occluder_offset = Vector2( -0, -0 )
+21/navigation_offset = Vector2( -0, -0 )
+21/shape_offset = Vector2( 0, 0 )
+21/shapes = [  ]
+22/name = "Tile 23"
+22/texture = ExtResource( 16 )
+22/tex_offset = Vector2( -24, -17 )
+22/region = Rect2( 0, 0, 0, 0 )
+22/occluder_offset = Vector2( -0, -0 )
+22/navigation_offset = Vector2( -0, -0 )
+22/shape_offset = Vector2( 0, 0 )
+22/shapes = [  ]
+23/name = "Tile 24"
+23/texture = ExtResource( 17 )
+23/tex_offset = Vector2( -24, -17 )
+23/region = Rect2( 0, 0, 0, 0 )
+23/occluder_offset = Vector2( -0, -0 )
+23/navigation_offset = Vector2( -0, -0 )
+23/shape_offset = Vector2( 0, 0 )
+23/shapes = [  ]
+24/name = "Tile 25"
+24/texture = ExtResource( 18 )
+24/tex_offset = Vector2( -24, -17 )
+24/region = Rect2( 0, 0, 0, 0 )
+24/occluder_offset = Vector2( -0, -0 )
+24/navigation_offset = Vector2( -0, -0 )
+24/shape_offset = Vector2( 0, 0 )
+24/shapes = [  ]
+25/name = "Tile 26"
+25/texture = ExtResource( 19 )
+25/tex_offset = Vector2( -24, -17 )
+25/region = Rect2( 0, 0, 0, 0 )
+25/occluder_offset = Vector2( -0, -0 )
+25/navigation_offset = Vector2( -0, -0 )
+25/shape_offset = Vector2( 0, 0 )
+25/shapes = [  ]
+

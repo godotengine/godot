@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,7 @@ class Node2D : public CanvasItem {
 
 	void _update_transform();
 
+	// Deprecated, should be removed in a future version.
 	void _set_rotd(float p_angle);
 	float _get_rotd() const;
 
@@ -69,7 +70,8 @@ public:
 	virtual bool edit_has_pivot() const;
 
 	void set_pos(const Point2& p_pos);
-	void set_rot(float p_angle);
+	void set_rot(float p_radians);
+	void set_rotd(float p_degrees);
 	void set_scale(const Size2& p_scale);
 
 	void rotate(float p_radians);
@@ -81,6 +83,7 @@ public:
 
 	Point2 get_pos() const;
 	float get_rot() const;
+	float get_rotd() const;
 	Size2 get_scale() const;
 
 	Point2 get_global_pos() const;
@@ -99,7 +102,7 @@ public:
 	void set_z_as_relative(bool p_enabled);
 	bool is_z_relative() const;
 
-	Matrix32 get_relative_transform(const Node *p_parent) const;
+	Matrix32 get_relative_transform_to_parent(const Node *p_parent) const;
 
 
 

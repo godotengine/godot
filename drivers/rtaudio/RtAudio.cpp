@@ -139,8 +139,7 @@ void RtAudio :: getCompiledApi( std::vector<RtAudio::Api> &apis ) throw()
 
 void RtAudio :: openRtApi( RtAudio::Api api )
 {
-  if ( rtapi_ )
-    delete rtapi_;
+  delete rtapi_;
   rtapi_ = 0;
 
 #if defined(__UNIX_JACK__)
@@ -216,8 +215,7 @@ RtAudio :: RtAudio( RtAudio::Api api )
 
 RtAudio :: ~RtAudio() throw()
 {
-  if ( rtapi_ )
-    delete rtapi_;
+  delete rtapi_;
 }
 
 void RtAudio :: openStream( RtAudio::StreamParameters *outputParameters,

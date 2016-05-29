@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -91,6 +91,7 @@ class RasterizerGLES2 : public Rasterizer {
 	bool srgb_supported;
 	bool float_supported;
 	bool float_linear_supported;
+	bool use_16bits_fbo;
 
 	ShadowFilterTechnique shadow_filter;
 
@@ -105,16 +106,19 @@ class RasterizerGLES2 : public Rasterizer {
 	float anisotropic_level;
 
 	bool use_half_float;
+	bool low_memory_2d;
 
+	bool shrink_textures_x2;
 
 	Vector<float> skel_default;
 
 	Image _get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_internal_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed);
 
-	class RenderTarget;
+	struct RenderTarget;
 
 	struct Texture {
 
+		String path;
 		uint32_t flags;
 		int width,height;
 		int alloc_width, alloc_height;
@@ -135,6 +139,8 @@ class RasterizerGLES2 : public Rasterizer {
 		ObjectID reloader;
 		StringName reloader_func;
 		Image image[6];
+
+		int mipmaps;
 
 		bool active;
 		GLuint tex_id;
@@ -157,6 +163,7 @@ class RasterizerGLES2 : public Rasterizer {
 			compressed=false;
 			total_data_size=0;
 			target=GL_TEXTURE_2D;
+			mipmaps=0;
 
 			reloader=0;
 		}
@@ -304,7 +311,7 @@ class RasterizerGLES2 : public Rasterizer {
 		virtual ~GeometryOwner() {}
 	};
 
-	class Mesh;
+	struct Mesh;
 
 	struct Surface : public Geometry {
 
@@ -824,7 +831,9 @@ class RasterizerGLES2 : public Rasterizer {
 
 	bool fragment_lighting;
 	RID shadow_material;
+	RID shadow_material_double_sided;
 	Material *shadow_mat_ptr;
+	Material *shadow_mat_double_sided_ptr;
 
 	int max_texture_units;
 	GLuint base_framebuffer;
@@ -1061,7 +1070,7 @@ class RasterizerGLES2 : public Rasterizer {
 
 	Plane camera_plane;
 
-	void _add_geometry( const Geometry* p_geometry, const InstanceData *p_instance, const Geometry *p_geometry_cmp, const GeometryOwner *p_owner);
+	void _add_geometry( const Geometry* p_geometry, const InstanceData *p_instance, const Geometry *p_geometry_cmp, const GeometryOwner *p_owner,int p_material=-1);
 	void _render_list_forward(RenderList *p_render_list,const Transform& p_view_transform,const Transform& p_view_transform_inverse, const CameraMatrix& p_projection,bool p_reverse_cull=false,bool p_fragment_light=false,bool p_alpha_pass=false);
 
 	//void _setup_light(LightInstance* p_instance, int p_idx);
@@ -1324,6 +1333,12 @@ public:
 	virtual bool texture_has_alpha(RID p_texture) const;
 	virtual void texture_set_size_override(RID p_texture,int p_width, int p_height);
 	virtual void texture_set_reload_hook(RID p_texture,ObjectID p_owner,const StringName& p_function) const;
+
+	virtual void texture_set_path(RID p_texture,const String& p_path);
+	virtual String texture_get_path(RID p_texture) const;
+	virtual void texture_debug_usage(List<VS::TextureInfo> *r_info);
+
+	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable);
 
 	GLuint _texture_get_name(RID p_tex);
 
@@ -1695,8 +1710,12 @@ public:
 	void reload_vram();
 
 	virtual bool has_feature(VS::Features p_feature) const;
+	
+	virtual void restore_framebuffer();
 
 	static RasterizerGLES2* get_singleton();
+
+	virtual void set_force_16_bits_fbo(bool p_force);
 
 	RasterizerGLES2(bool p_compress_arrays=false,bool p_keep_ram_copy=true,bool p_default_fragment_lighting=true,bool p_use_reload_hooks=false);
 	virtual ~RasterizerGLES2();

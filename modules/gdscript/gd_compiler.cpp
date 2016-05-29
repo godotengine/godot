@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -776,7 +776,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 							if (named) {
 
-								key_idx = codegen.get_name_map_pos(static_cast<const GDParser::IdentifierNode*>(E->get()->arguments[1])->name);								
+								key_idx = codegen.get_name_map_pos(static_cast<const GDParser::IdentifierNode*>(E->get()->arguments[1])->name);
 								//printf("named key %x\n",key_idx);
 
 							} else {
@@ -1156,6 +1156,10 @@ Error GDCompiler::_parse_block(CodeGen& codegen,const GDParser::BlockNode *p_blo
 				codegen.opcodes.push_back(GDFunction::OPCODE_ASSERT);
 				codegen.opcodes.push_back(ret);
 			} break;
+			case GDParser::Node::TYPE_BREAKPOINT: {
+				// try subblocks
+				codegen.opcodes.push_back(GDFunction::OPCODE_BREAKPOINT);
+			} break;
 			case GDParser::Node::TYPE_LOCAL_VAR: {
 
 
@@ -1181,7 +1185,7 @@ Error GDCompiler::_parse_block(CodeGen& codegen,const GDParser::BlockNode *p_blo
 }
 
 
-Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *p_class,const GDParser::FunctionNode *p_func) {
+Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *p_class,const GDParser::FunctionNode *p_func,bool p_for_ready) {
 
 	Vector<int> bytecode;
 	CodeGen codegen;
@@ -1212,9 +1216,9 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 
 	/* Parse initializer -if applies- */
 
-	bool is_initializer=false || !p_func;
+	bool is_initializer=!p_for_ready && !p_func;
 
-	if (!p_func || String(p_func->name)=="_init") {
+	if (is_initializer || (p_func && String(p_func->name)=="_init")) {
 		//parse initializer for class members
 		if (!p_func && p_class->extends_used && p_script->native.is_null()){
 
@@ -1232,12 +1236,24 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 
 	}
 
+	if (p_for_ready || (p_func && String(p_func->name)=="_ready")) {
+		//parse initializer for class members
+		if (p_class->ready->statements.size()) {
+			Error err = _parse_block(codegen,p_class->ready,stack_level);
+			if (err)
+				return err;
+		}
+
+	}
+
+
 	/* Parse default argument code -if applies- */
 
 	Vector<int> defarg_addr;
 	StringName func_name;
 
 	if (p_func) {
+
 		if (p_func->default_values.size()) {
 
 			codegen.opcodes.push_back(GDFunction::OPCODE_JUMP_TO_DEF_ARGUMENT);
@@ -1260,7 +1276,10 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 
 		func_name=p_func->name;
 	} else {
-		func_name="_init";
+		if (p_for_ready)
+			func_name="_ready";
+		else
+			func_name="_init";
 	}
 
 	codegen.opcodes.push_back(GDFunction::OPCODE_END);
@@ -1271,8 +1290,8 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 	//	gdfunc = &p_script->initializer;
 
 	//} else { //regular func
-		p_script->member_functions[func_name]=GDFunction();
-		gdfunc = &p_script->member_functions[func_name];
+		p_script->member_functions[func_name]=memnew(GDFunction);
+		gdfunc = p_script->member_functions[func_name];
 	//}
 
 	if (p_func)
@@ -1328,7 +1347,7 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 	if (defarg_addr.size()) {
 
 		gdfunc->default_arguments=defarg_addr;
-		gdfunc->_default_arg_count=defarg_addr.size();
+		gdfunc->_default_arg_count=defarg_addr.size()-1;
 		gdfunc->_default_arg_ptr=&gdfunc->default_arguments[0];
 	} else {
 		gdfunc->_default_arg_count=0;
@@ -1339,6 +1358,32 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 	gdfunc->_stack_size=codegen.stack_max;
 	gdfunc->_call_size=codegen.call_max;
 	gdfunc->name=func_name;
+#ifdef DEBUG_ENABLED
+	if (ScriptDebugger::get_singleton()){
+		String signature;
+		//path
+		if (p_script->get_path()!=String())
+			signature+=p_script->get_path();
+		//loc
+		if (p_func) {
+			signature+="::"+itos(p_func->body->line);
+		} else {
+			signature+="::0";
+		}
+
+		//funciton and class
+
+		if (p_class->name) {
+			signature+="::"+String(p_class->name)+"."+String(func_name);;
+		} else {
+			signature+="::"+String(func_name);
+		}
+
+
+
+		gdfunc->profile.signature=signature;
+	}
+#endif
 	gdfunc->_script=p_script;
 	gdfunc->source=source;
 
@@ -1377,6 +1422,9 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 	p_script->_base=NULL;
 	p_script->members.clear();
 	p_script->constants.clear();
+	for (Map<StringName,GDFunction*>::Element *E=p_script->member_functions.front();E;E=E->next()) {
+		memdelete(E->get());
+	}
 	p_script->member_functions.clear();
 	p_script->member_indices.clear();
 	p_script->member_info.clear();
@@ -1402,7 +1450,22 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 
 			if (path.is_rel_path()) {
 
-				String base = p_script->get_path();
+				String base;
+
+				if (p_owner) {
+					GDScript *current_class = p_owner;
+					while (current_class != NULL) {
+						base=current_class->get_path();
+						if (base=="")
+							current_class = current_class->_owner;
+						else
+							break;
+					}
+				}
+				else {
+					base = p_script->get_path();
+				}
+
 				if (base=="" || base.is_rel_path()) {
 					_set_error("Could not resolve relative path for parent class: "+path,p_class);
 					return ERR_FILE_NOT_FOUND;
@@ -1548,7 +1611,7 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 		GDScript::MemberInfo minfo;
 		minfo.index = p_script->member_indices.size();
 		minfo.setter = p_class->variables[i].setter;
-		minfo.getter = p_class->variables[i].getter;		
+		minfo.getter = p_class->variables[i].getter;
 		p_script->member_indices[name]=minfo;
 		p_script->members.insert(name);
 
@@ -1614,10 +1677,14 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 	//parse methods
 
 	bool has_initializer=false;
+	bool has_ready=false;
+
 	for(int i=0;i<p_class->functions.size();i++) {
 
 		if (!has_initializer && p_class->functions[i]->name=="_init")
 			has_initializer=true;
+		if (!has_ready && p_class->functions[i]->name=="_ready")
+			has_ready=true;
 		Error err = _parse_function(p_script,p_class,p_class->functions[i]);
 		if (err)
 			return err;
@@ -1640,12 +1707,19 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 			return err;
 	}
 
+	if (!has_ready && p_class->ready->statements.size()) {
+		//create a constructor
+		Error err = _parse_function(p_script,p_class,NULL,true);
+		if (err)
+			return err;
+	}
+
 #ifdef DEBUG_ENABLED
 	//validate setters/getters if debug is enabled
 	for(int i=0;i<p_class->variables.size();i++) {
 
 		if (p_class->variables[i].setter) {
-			const Map<StringName,GDFunction>::Element *E=p_script->get_member_functions().find(p_class->variables[i].setter);
+			const Map<StringName,GDFunction*>::Element *E=p_script->get_member_functions().find(p_class->variables[i].setter);
 			if (!E) {
 				_set_error("Setter function '"+String(p_class->variables[i].setter)+"' not found in class.",NULL);
 				err_line=p_class->variables[i].line;
@@ -1653,7 +1727,7 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 				return ERR_PARSE_ERROR;
 			}
 
-			if (E->get().is_static()) {
+			if (E->get()->is_static()) {
 
 				_set_error("Setter function '"+String(p_class->variables[i].setter)+"' is static.",NULL);
 				err_line=p_class->variables[i].line;
@@ -1663,7 +1737,7 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 
 		}
 		if (p_class->variables[i].getter) {
-			const Map<StringName,GDFunction>::Element *E=p_script->get_member_functions().find(p_class->variables[i].getter);
+			const Map<StringName,GDFunction*>::Element *E=p_script->get_member_functions().find(p_class->variables[i].getter);
 			if (!E) {
 				_set_error("Getter function '"+String(p_class->variables[i].getter)+"' not found in class.",NULL);
 				err_line=p_class->variables[i].line;
@@ -1671,7 +1745,7 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 				return ERR_PARSE_ERROR;
 			}
 
-			if (E->get().is_static()) {
+			if (E->get()->is_static()) {
 
 				_set_error("Getter function '"+String(p_class->variables[i].getter)+"' is static.",NULL);
 				err_line=p_class->variables[i].line;
@@ -1682,6 +1756,8 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 		}
 	}
 #endif
+
+	p_script->valid=true;
 	return OK;
 }
 

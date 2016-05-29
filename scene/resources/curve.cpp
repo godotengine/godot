@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -543,6 +543,7 @@ void Curve2D::_bake() const {
 	Vector2 pos=points[0].pos;
 	List<Vector2> pointlist;
 
+	pointlist.push_back(pos); //start always from origin
 
 	for(int i=0;i<points.size()-1;i++) {
 

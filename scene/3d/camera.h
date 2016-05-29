@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@ class Camera : public Spatial {
 	OBJ_TYPE( Camera, Spatial );
 public:
 	enum Projection {
-		
+
 		PROJECTION_PERSPECTIVE,
 		PROJECTION_ORTHOGONAL
 	};
@@ -57,28 +57,25 @@ private:
 	bool current;
 
 	Projection mode;
-	
+
 	float fov;
 	float size;
 	float near,far;
 	float v_offset;
 	float h_offset;
 	KeepAspect keep_aspect;
-	
+
 	RID camera;
 	RID scenario_id;
 
-	String camera_group;
+	//String camera_group;
 
 	uint32_t layers;
 
-	Viewport *viewport_ptr;
 	Ref<Environment> environment;
 
 	virtual bool _can_gizmo_scale() const;
 	virtual RES _get_gizmo_geometry() const;
-
-	void _camera_make_next_current(Node *p_exclude);
 
 
 	//void _camera_make_current(Node *p_camera);
@@ -89,14 +86,14 @@ protected:
 	void _update_camera();
 	virtual void _request_camera_update();
 	void _update_camera_mode();
-	
+
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list( List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
-	
+
 	static void _bind_methods();
-	
+
 public:
 
 	enum {
@@ -107,7 +104,7 @@ public:
 
 	void set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far);
 	void set_orthogonal(float p_size, float p_z_near, float p_z_far);
-	
+
 	void make_current();
 	void clear_current();
 	bool is_current() const;
@@ -148,7 +145,7 @@ public:
 	float get_h_offset() const;
 
 
-	Camera();	
+	Camera();
 	~Camera();
 
 };

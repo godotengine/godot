@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -182,7 +182,7 @@ public:
 
 	};
 
-	virtual int intersect_point(const Vector2& p_point,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION)=0;
+	virtual int intersect_point(const Vector2& p_point,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION,bool p_pick_point=false)=0;
 
 	virtual int intersect_shape(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,float p_margin,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION)=0;
 
@@ -293,6 +293,9 @@ public:
 	// this function only works on fixed process, errors and returns null otherwise
 	virtual Physics2DDirectSpaceState* space_get_direct_state(RID p_space)=0;
 
+	virtual void space_set_debug_contacts(RID p_space,int p_max_contacts)=0;
+	virtual Vector<Vector2> space_get_contacts(RID p_space) const=0;
+	virtual int space_get_contact_count(RID p_space) const=0;
 
 	//missing space parameters
 
@@ -322,7 +325,9 @@ public:
 	enum AreaSpaceOverrideMode {
 		AREA_SPACE_OVERRIDE_DISABLED,
 		AREA_SPACE_OVERRIDE_COMBINE,
+		AREA_SPACE_OVERRIDE_COMBINE_REPLACE, // Combines, then discards all subsequent calculations
 		AREA_SPACE_OVERRIDE_REPLACE,
+		AREA_SPACE_OVERRIDE_REPLACE_COMBINE // Discards all previous calculations, then keeps combining
 	};
 
 	virtual void area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode)=0;
@@ -416,6 +421,7 @@ public:
 		BODY_PARAM_BOUNCE,
 		BODY_PARAM_FRICTION,
 		BODY_PARAM_MASS, ///< unused for static, always infinite
+		BODY_PARAM_INERTIA,  // read-only: computed from mass & shapes
 		BODY_PARAM_GRAVITY_SCALE,
 		BODY_PARAM_LINEAR_DAMP,
 		BODY_PARAM_ANGULAR_DAMP,
@@ -445,7 +451,9 @@ public:
 	virtual void body_set_applied_torque(RID p_body, float p_torque)=0;
 	virtual float body_get_applied_torque(RID p_body) const=0;
 
-	virtual void body_apply_impulse(RID p_body, const Vector2& p_pos, const Vector2& p_impulse)=0;
+	virtual void body_add_force(RID p_body, const Vector2& p_offset, const Vector2& p_force)=0;
+
+	virtual void body_apply_impulse(RID p_body, const Vector2& p_offset, const Vector2& p_impulse)=0;
 	virtual void body_set_axis_velocity(RID p_body, const Vector2& p_axis_velocity)=0;
 
 	//fix
@@ -513,6 +521,13 @@ public:
 	virtual RID groove_joint_create(const Vector2& p_a_groove1,const Vector2& p_a_groove2, const Vector2& p_b_anchor, RID p_body_a,RID p_body_b)=0;
 	virtual RID damped_spring_joint_create(const Vector2& p_anchor_a,const Vector2& p_anchor_b,RID p_body_a,RID p_body_b=RID())=0;
 
+	enum PinJointParam {
+		PIN_JOINT_SOFTNESS
+	};
+
+	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value)=0;
+	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const=0;
+
 	enum DampedStringParam {
 		DAMPED_STRING_REST_LENGTH,
 		DAMPED_STRING_STIFFNESS,
@@ -521,7 +536,7 @@ public:
 	virtual void damped_string_joint_set_param(RID p_joint, DampedStringParam p_param, real_t p_value)=0;
 	virtual real_t damped_string_joint_get_param(RID p_joint, DampedStringParam p_param) const=0;
 
-	virtual JointType joint_get_type(RID p_joint) const=0;	
+	virtual JointType joint_get_type(RID p_joint) const=0;
 
 	/* QUERY API */
 
@@ -547,7 +562,9 @@ public:
 
 		INFO_ACTIVE_OBJECTS,
 		INFO_COLLISION_PAIRS,
-		INFO_ISLAND_COUNT
+		INFO_ISLAND_COUNT,
+		INFO_STEP_TIME,
+		INFO_BROAD_PHASE_TIME
 	};
 
 	virtual int get_process_info(ProcessInfo p_info)=0;

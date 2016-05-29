@@ -19,4 +19,3 @@ if env['bb10_lgles_override'] == "yes":
 
 prog = None
 prog = env_bps.Program('#bin/godot', bb10_lib)
-

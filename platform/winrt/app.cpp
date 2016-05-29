@@ -61,7 +61,7 @@ void App::Initialize(CoreApplicationView^ applicationView)
 {
     // Register event handlers for app lifecycle. This example includes Activated, so that we
     // can make the CoreWindow active and start rendering on the window.
-    applicationView->Activated += 
+    applicationView->Activated +=
         ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^>(this, &App::OnActivated);
 
     // Logic for other event handlers could go here.
@@ -78,10 +78,10 @@ void App::SetWindow(CoreWindow^ p_window)
     window->VisibilityChanged +=
         ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &App::OnVisibilityChanged);
 
-    window->Closed += 
+    window->Closed +=
         ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &App::OnWindowClosed);
 
-    window->SizeChanged += 
+    window->SizeChanged +=
         ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &App::OnWindowSizeChanged);
 
 #if !(WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)

@@ -1,9 +1,9 @@
 
 /* pngconf.h - machine configurable file for libpng
  *
- * libpng version 1.5.7 - December 15, 2011
+ * libpng version 1.5.26, December 17, 2015
  *
- * Copyright (c) 1998-2011 Glenn Randers-Pehrson
+ * Copyright (c) 1998-2002,2004,2006-2013 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -11,9 +11,7 @@
  * For conditions of distribution and use, see the disclaimer
  * and license in png.h
  *
- */
-
-/* Any machine specific code is near the front of this file, so if you
+ * Any machine specific code is near the front of this file, so if you
  * are configuring libpng for a machine, you may want to read the section
  * starting here down to where it starts to typedef png_color, png_text,
  * and png_info.
@@ -25,7 +23,7 @@
 #ifndef PNG_BUILDING_SYMBOL_TABLE
 /* PNG_NO_LIMITS_H may be used to turn off the use of the standard C
  * definition file for  machine specific limits, this may impact the
- * correctness of the definitons below (see uses of INT_MAX).
+ * correctness of the definitions below (see uses of INT_MAX).
  */
 #  ifndef PNG_NO_LIMITS_H
 #    include <limits.h>
@@ -51,8 +49,8 @@
 
 /* This controls optimization of the reading of 16 and 32 bit values
  * from PNG files.  It can be set on a per-app-file basis - it
- * just changes whether a macro is used to the function is called.
- * The library builder sets the default, if read functions are not
+ * just changes whether a macro is used when the function is called.
+ * The library builder sets the default; if read functions are not
  * built into the library the macro implementation is forced on.
  */
 #ifndef PNG_READ_INT_FUNCTIONS_SUPPORTED
@@ -177,18 +175,16 @@
  * ==========================
  * This code is used at build time to find PNG_IMPEXP, the API settings
  * and PNG_EXPORT_TYPE(), it may also set a macro to indicate the DLL
- * import processing is possible.  On Windows/x86 systems it also sets
+ * import processing is possible.  On Windows systems it also sets
  * compiler-specific macros to the values required to change the calling
  * conventions of the various functions.
  */
-#if ( defined(_Windows) || defined(_WINDOWS) || defined(WIN32) ||\
-      defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__) ) &&\
-    ( defined(_X86_) || defined(_X64_) || defined(_M_IX86) ||\
-      defined(_M_X64) || defined(_M_IA64) )
-  /* Windows system (DOS doesn't support DLLs) running on x86/x64.  Includes
-   * builds under Cygwin or MinGW.  Also includes Watcom builds but these need
-   * special treatment because they are not compatible with GCC or Visual C
-   * because of different calling conventions.
+#if defined(_Windows) || defined(_WINDOWS) || defined(WIN32) ||\
+    defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
+  /* Windows system (DOS doesn't support DLLs).  Includes builds under Cygwin or
+   * MinGW on any architecture currently supported by Windows.  Also includes
+   * Watcom builds but these need special treatment because they are not
+   * compatible with GCC or Visual C because of different calling conventions.
    */
 #  if PNG_API_RULE == 2
     /* If this line results in an error, either because __watcall is not
@@ -199,9 +195,12 @@
 #    define PNGCAPI __watcall
 #  endif
 
-#  if defined(__GNUC__) || (defined (_MSC_VER) && (_MSC_VER >= 800))
+#  if defined(__GNUC__) || (defined(_MSC_VER) && (_MSC_VER >= 800))
 #    define PNGCAPI __cdecl
 #    if PNG_API_RULE == 1
+       /* If this line results in an error __stdcall is not understood and
+        * PNG_API_RULE should not have been set to '1'.
+        */
 #      define PNGAPI __stdcall
 #    endif
 #  else
@@ -239,7 +238,7 @@
 #    endif
 #  endif /* compiler */
 
-#else /* !Windows/x86 */
+#else /* !Windows */
 #  if (defined(__IBMC__) || defined(__IBMCPP__)) && defined(__OS2__)
 #    define PNGAPI _System
 #  else /* !Windows/x86 && !OS/2 */
@@ -337,6 +336,7 @@
    * functions in png.h will generate compiler warnings.  Added at libpng
    * version 1.2.41.
    */
+
 #  if defined(__GNUC__)
 #    ifndef PNG_USE_RESULT
 #      define PNG_USE_RESULT __attribute__((__warn_unused_result__))
@@ -344,21 +344,23 @@
 #    ifndef PNG_NORETURN
 #      define PNG_NORETURN   __attribute__((__noreturn__))
 #    endif
-#    ifndef PNG_ALLOCATED
-#      define PNG_ALLOCATED  __attribute__((__malloc__))
-#    endif
-#    ifndef PNG_DEPRECATED
-#      define PNG_DEPRECATED __attribute__((__deprecated__))
-#    endif
-#    ifndef PNG_PRIVATE
-#      if 0 /* Doesn't work so we use deprecated instead*/
-#        define PNG_PRIVATE \
-          __attribute__((warning("This function is not exported by libpng.")))
-#      else
-#        define PNG_PRIVATE \
-          __attribute__((__deprecated__))
+#    if __GNUC__ >= 3
+#      ifndef PNG_ALLOCATED
+#        define PNG_ALLOCATED  __attribute__((__malloc__))
 #      endif
-#    endif
+#      ifndef PNG_DEPRECATED
+#        define PNG_DEPRECATED __attribute__((__deprecated__))
+#      endif
+#      ifndef PNG_PRIVATE
+#        if 0 /* Doesn't work so we use deprecated instead*/
+#          define PNG_PRIVATE \
+            __attribute__((warning("This function is not exported by libpng.")))
+#        else
+#          define PNG_PRIVATE \
+            __attribute__((__deprecated__))
+#        endif
+#      endif
+#    endif /* __GNUC__ >= 3 */
 #  endif /* __GNUC__ */
 
 #  if defined(_MSC_VER)  && (_MSC_VER >= 1300)
@@ -400,7 +402,7 @@
 #ifndef PNG_FP_EXPORT     /* A floating point API. */
 #  ifdef PNG_FLOATING_POINT_SUPPORTED
 #     define PNG_FP_EXPORT(ordinal, type, name, args)\
-         PNG_EXPORT(ordinal, type, name, args)
+         PNG_EXPORT(ordinal, type, name, args);
 #  else                   /* No floating point APIs */
 #     define PNG_FP_EXPORT(ordinal, type, name, args)
 #  endif
@@ -408,7 +410,7 @@
 #ifndef PNG_FIXED_EXPORT  /* A fixed point API. */
 #  ifdef PNG_FIXED_POINT_SUPPORTED
 #     define PNG_FIXED_EXPORT(ordinal, type, name, args)\
-         PNG_EXPORT(ordinal, type, name, args)
+         PNG_EXPORT(ordinal, type, name, args);
 #  else                   /* No fixed point APIs */
 #     define PNG_FIXED_EXPORT(ordinal, type, name, args)
 #  endif
