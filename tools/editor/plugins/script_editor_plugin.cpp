@@ -1437,6 +1437,61 @@ void ScriptEditor::_menu_option(int p_option) {
 				current->get_text_edit()->set_line_as_breakpoint(line,dobreak);
 				get_debugger()->set_breakpoint(current->get_edited_script()->get_path(),line+1,dobreak);
 			} break;
+			case DEBUG_REMOVE_ALL_BREAKPOINTS: {
+				List<int> bpoints;
+				current->get_text_edit()->get_breakpoints(&bpoints);
+
+				for(List<int>::Element *E=bpoints.front();E;E=E->next()) {
+					int line = E->get();
+					bool dobreak = !current->get_text_edit()->is_line_set_as_breakpoint(line);
+					current->get_text_edit()->set_line_as_breakpoint(line,dobreak);
+					get_debugger()->set_breakpoint(current->get_edited_script()->get_path(),line+1,dobreak);
+				}
+			}
+			case DEBUG_GOTO_NEXT_BREAKPOINT: {
+				List<int> bpoints;
+				current->get_text_edit()->get_breakpoints(&bpoints);
+				if (bpoints.size() <= 0) {
+					return;
+				}
+
+				int line=current->get_text_edit()->cursor_get_line();
+				// wrap around
+				if (line >= bpoints[bpoints.size() - 1]) {
+					current->get_text_edit()->cursor_set_line(bpoints[0]);
+				} else {
+					for(List<int>::Element *E=bpoints.front();E;E=E->next()) {
+						int bline = E->get();
+						if (bline > line) {
+							current->get_text_edit()->cursor_set_line(bline);
+							return;
+						}
+					}
+				}
+
+			} break;
+			case DEBUG_GOTO_PREV_BREAKPOINT: {
+				List<int> bpoints;
+				current->get_text_edit()->get_breakpoints(&bpoints);
+				if (bpoints.size() <= 0) {
+					return;
+				}
+
+				int line=current->get_text_edit()->cursor_get_line();
+				// wrap around
+				if (line <= bpoints[0]) {
+					current->get_text_edit()->cursor_set_line(bpoints[bpoints.size() - 1]);
+				} else {
+					for(List<int>::Element *E=bpoints.back();E;E=E->prev()) {
+						int bline = E->get();
+						if (bline < line) {
+							current->get_text_edit()->cursor_set_line(bline);
+							return;
+						}
+					}
+				}
+
+			} break;
 			case DEBUG_NEXT: {
 
 				if (debugger)
@@ -2556,6 +2611,9 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	menu_hb->add_child(debug_menu);
 	debug_menu->set_text(TTR("Debug"));
 	debug_menu->get_popup()->add_item(TTR("Toggle Breakpoint"),DEBUG_TOGGLE_BREAKPOINT,KEY_F9);
+	debug_menu->get_popup()->add_item(TTR("Remove All Breakpoints"), DEBUG_REMOVE_ALL_BREAKPOINTS, KEY_MASK_CTRL|KEY_MASK_SHIFT|KEY_F9);
+	debug_menu->get_popup()->add_item(TTR("Goto Next Breakpoint"), DEBUG_GOTO_NEXT_BREAKPOINT, KEY_MASK_CTRL|KEY_PERIOD);
+	debug_menu->get_popup()->add_item(TTR("Goto Previous Breakpoint"), DEBUG_GOTO_PREV_BREAKPOINT, KEY_MASK_CTRL|KEY_COMMA);
 	debug_menu->get_popup()->add_separator();
 	debug_menu->get_popup()->add_item(TTR("Step Over"),DEBUG_NEXT,KEY_F10);
 	debug_menu->get_popup()->add_item(TTR("Step Into"),DEBUG_STEP,KEY_F11);
