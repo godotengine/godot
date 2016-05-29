@@ -130,6 +130,7 @@ void EditorHelpSearch::_update_search() {
 		else
 			cicon=def_icon;
 
+
 		for(int i=0;i<c.methods.size();i++) {
 			if( (term.begins_with(".") && c.methods[i].name.begins_with(term.right(1)))
 				|| (term.ends_with("(") && c.methods[i].name.ends_with(term.left(term.length()-1).strip_edges()))
@@ -697,13 +698,13 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 	//edited_class->show();
 
 
-	DocData::ClassDoc &cd=doc->class_list[p_class];
+	DocData::ClassDoc cd=doc->class_list[p_class]; //make a copy, so we can sort without worrying
 
 	Color h_color;
 
-	Ref<Font> doc_font = get_font("normal","Fonts");
-	Ref<Font> doc_code_font = get_font("source","Fonts");
-	Ref<Font> doc_title_font = get_font("large","Fonts");
+	Ref<Font> doc_font = get_font("doc","EditorFonts");
+	Ref<Font> doc_title_font = get_font("doc_title","EditorFonts");
+	Ref<Font> doc_code_font = get_font("doc_source","EditorFonts");
 
 
 	h_color=Color(1,1,1,1);
@@ -794,7 +795,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		//class_desc->add_newline();
 		class_desc->add_newline();
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-		class_desc->push_font( get_font("normal","Fonts") );
+		class_desc->push_font( doc_font );
 		class_desc->push_indent(1);
 		_add_text(cd.brief_description);
 		class_desc->pop();
@@ -805,8 +806,13 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 	}
 
 	bool method_descr=false;
+	bool sort_methods = EditorSettings::get_singleton()->get("help/sort_functions_alphabetically");
+
 
 	if (cd.methods.size()) {
+
+		if (sort_methods)
+			cd.methods.sort();
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
@@ -979,6 +985,9 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 	}
 	if (cd.signals.size()) {
 
+		if (sort_methods) {
+			cd.signals.sort();
+		}
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Signals:"));
@@ -1098,7 +1107,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		class_desc->add_newline();
 		class_desc->add_newline();
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-		class_desc->push_font( get_font("normal","Fonts") );
+		class_desc->push_font( doc_font );
 		class_desc->push_indent(1);
 		_add_text(cd.description);
 		class_desc->pop();
@@ -1168,7 +1177,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 			class_desc->add_newline();
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-			class_desc->push_font( get_font("normal","Fonts") );
+			class_desc->push_font( doc_font );
 			class_desc->push_indent(1);
 			_add_text(cd.methods[i].description);
 			class_desc->pop();
@@ -1248,9 +1257,12 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 	class_desc->push_indent(1);*/
 	int pos = 0;
 
+	Ref<Font> doc_font = get_font("doc","EditorFonts");
+	Ref<Font> doc_code_font = get_font("doc_source","EditorFonts");
+
 	String bbcode=p_bbcode.replace("\t"," ").replace("\r"," ").strip_edges();
 
-	//find double newlines, keep them
+	//change newlines for double newlines
 	for(int i=0;i<bbcode.length();i++) {
 
 		//find valid newlines (double)
@@ -1269,10 +1281,13 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 
 			if (dnl) {
 				bbcode[i]=0xFFFF;
+				//keep
 				i=j;
 			} else {
-				bbcode[i]=' ';
-				i=j-1;
+				bbcode=bbcode.insert(i,"\n");
+				i++;
+				//bbcode[i]=' ';
+				//i=j-1;
 			}
 		}
 	}
@@ -1280,7 +1295,7 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 	//remove double spaces or spaces after newlines
 	for(int i=0;i<bbcode.length();i++) {
 
-		if (bbcode[i]==' ' || bbcode[i]==0xFFFF) {
+		if (bbcode[i]==' ' || bbcode[i]=='\n' || bbcode[i]==0xFFFF) {
 
 			for(int j=i+1;j<p_bbcode.length();j++) {
 				if (bbcode[j]==' ') {
@@ -1353,35 +1368,45 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 		} else if (tag.begins_with("method ")) {
 
 			String m = tag.substr(7,tag.length());
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 			class_desc->push_meta("@"+m);
 			class_desc->add_text(m+"()");
+			class_desc->pop();
 			class_desc->pop();
 			pos=brk_end+1;
 
 		} else if (doc->class_list.has(tag)) {
 
 
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 			class_desc->push_meta("#"+tag);
 			class_desc->add_text(tag);
+			class_desc->pop();
 			class_desc->pop();
 			pos=brk_end+1;
 
 		} else if (tag=="b") {
 
 			//use bold font
-			class_desc->push_font(get_font("source","Fonts"));
+			class_desc->push_font(doc_code_font);
 			pos=brk_end+1;
 			tag_stack.push_front(tag);
 		} else if (tag=="i") {
 
 			//use italics font
-			class_desc->push_font(get_font("italic","Fonts"));
+			Color text_color = EditorSettings::get_singleton()->get("text_editor/text_color");
+			//no italics so emphasize with color
+			text_color.r*=1.1;
+			text_color.g*=1.1;
+			text_color.b*=1.1;
+			class_desc->push_color(text_color);
+			//class_desc->push_font(get_font("italic","Fonts"));
 			pos=brk_end+1;
 			tag_stack.push_front(tag);
 		} else if (tag=="code" || tag=="codeblock") {
 
 			//use monospace font
-			class_desc->push_font(get_font("source","EditorFonts"));
+			class_desc->push_font(doc_code_font);
 			pos=brk_end+1;
 			tag_stack.push_front(tag);
 		} else if (tag=="center") {
@@ -1496,7 +1521,7 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 			if (font.is_valid())
 				class_desc->push_font(font);
 			else {
-				class_desc->push_font(get_font("source","rFonts"));
+				class_desc->push_font(doc_font);
 			}
 
 			pos=brk_end+1;
@@ -1618,6 +1643,7 @@ EditorHelp::EditorHelp() {
 
 	VBoxContainer *vbc = this;
 
+	EDITOR_DEF("help/sort_functions_alphabetically",true);
 
 	//class_list->connect("meta_clicked",this,"_class_list_select");
 	//class_list->set_selection_enabled(true);

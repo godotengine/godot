@@ -204,8 +204,8 @@ def configure(env):
 
 		if (env["freetype"]!="no"):
 			env.Append(CCFLAGS=['/DFREETYPE_ENABLED'])
-			env.Append(CPPPATH=['#tools/freetype'])
-			env.Append(CPPPATH=['#tools/freetype/freetype/include'])
+			env.Append(CPPPATH=['#drivers/freetype'])
+			env.Append(CPPPATH=['#drivers/freetype/freetype/include'])
 
 		if (env["target"]=="release"):
 

@@ -544,7 +544,7 @@ void CodeTextEditor::set_error(const String& p_error) {
 
 }
 
-void CodeTextEditor::_on_settings_change() {
+void CodeTextEditor::_update_font() {
 
 	// FONTS
 	String editor_font = EDITOR_DEF("text_editor/font", "");
@@ -557,7 +557,12 @@ void CodeTextEditor::_on_settings_change() {
 		}
 	}
 	if(!font_overrode)
-		text_editor->add_font_override("font",get_font("source","Fonts"));
+		text_editor->add_font_override("font",get_font("source","EditorFonts"));
+}
+
+void CodeTextEditor::_on_settings_change() {
+
+	_update_font();
 
 	// AUTO BRACE COMPLETION
 	text_editor->set_auto_brace_completion(
@@ -588,6 +593,9 @@ void CodeTextEditor::_notification(int p_what) {
 
 	if (p_what==EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED)
 		_load_theme_settings();
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+		_update_font();
+	}
 }
 
 void CodeTextEditor::_bind_methods() {
@@ -606,19 +614,6 @@ CodeTextEditor::CodeTextEditor() {
 	add_child(text_editor);
 	text_editor->set_area_as_parent_rect();
 	text_editor->set_margin(MARGIN_BOTTOM,20);
-
-	String editor_font = EDITOR_DEF("text_editor/font", "");
-	bool font_overrode = false;
-	if (editor_font!="") {
-		Ref<Font> fnt = ResourceLoader::load(editor_font);
-		if (fnt.is_valid()) {
-			text_editor->add_font_override("font",fnt);
-			font_overrode = true;
-		}
-	}
-
-	if (!font_overrode)
-		text_editor->add_font_override("font",get_font("source","Fonts"));
 
 	text_editor->set_show_line_numbers(true);
 	text_editor->set_brace_matching(true);

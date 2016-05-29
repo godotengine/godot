@@ -30,7 +30,7 @@
 #include "hash_map.h"
 #include "core/io/image_loader.h"
 #include "core/os/copymem.h"
-
+#include "hq2x.h"
 #include "print_string.h"
 #include <stdio.h>
 
@@ -900,6 +900,44 @@ static void _generate_po2_mipmap(const uint8_t* p_src, uint8_t* p_dst, uint32_t 
 	}
 }
 
+
+void Image::expand_x2_hq2x() {
+
+	ERR_FAIL_COND(format>=FORMAT_INDEXED);
+
+	Format current = format;
+	bool mipmaps=get_mipmaps();
+	if (mipmaps) {
+		clear_mipmaps();
+	}
+
+	if (current!=FORMAT_RGBA)
+		convert(FORMAT_RGBA);
+
+	DVector<uint8_t> dest;
+	dest.resize(width*2*height*2*4);
+
+	{
+		DVector<uint8_t>::Read r = data.read();
+		DVector<uint8_t>::Write w = dest.write();
+
+		hq2x_resize((const uint32_t*)r.ptr(),width,height,(uint32_t*)w.ptr());
+
+	}
+
+	width*=2;
+	height*=2;
+	data=dest;
+
+
+	if (current!=FORMAT_RGBA)
+		convert(current);
+
+	if (mipmaps) {
+		generate_mipmaps();
+	}
+
+}
 
 void Image::shrink_x2() {
 

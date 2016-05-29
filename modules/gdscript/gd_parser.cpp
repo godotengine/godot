@@ -86,7 +86,7 @@ bool GDParser::_enter_indent_block(BlockNode* p_block) {
 	while(true) {
 
 		if (tokenizer->get_token()!=GDTokenizer::TK_NEWLINE) {
-			print_line("no newline");
+
 			return false; //wtf
 		} else if (tokenizer->get_token(1)!=GDTokenizer::TK_NEWLINE) {
 

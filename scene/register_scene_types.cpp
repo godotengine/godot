@@ -133,6 +133,7 @@
 #include "scene/resources/mesh_data_tool.h"
 #include "scene/resources/scene_preloader.h"
 #include "scene/resources/dynamic_font.h"
+#include "scene/resources/dynamic_font_stb.h"
 
 #include "scene/main/timer.h"
 
@@ -254,7 +255,6 @@ void register_scene_types() {
 
 	resource_loader_wav = memnew( ResourceFormatLoaderWAV );
 	ResourceLoader::add_resource_format_loader( resource_loader_wav );
-
 	resource_loader_dynamic_font = memnew( ResourceFormatLoaderDynamicFont );
 	ResourceLoader::add_resource_format_loader( resource_loader_dynamic_font );
 
@@ -578,8 +578,10 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Animation>();
 	ObjectTypeDB::register_virtual_type<Font>();
 	ObjectTypeDB::register_type<BitmapFont>();
+
 	ObjectTypeDB::register_type<DynamicFontData>();
 	ObjectTypeDB::register_type<DynamicFont>();
+
 	ObjectTypeDB::register_type<StyleBoxEmpty>();
 	ObjectTypeDB::register_type<StyleBoxTexture>();
 	ObjectTypeDB::register_type<StyleBoxFlat>();
@@ -647,6 +649,7 @@ void unregister_scene_types() {
 	memdelete( resource_loader_image );
 	memdelete( resource_loader_wav );
 	memdelete( resource_loader_dynamic_font );
+
 #ifdef TOOLS_ENABLED
 
 

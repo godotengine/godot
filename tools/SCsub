@@ -58,7 +58,41 @@ def make_translations_header(target,source,env):
 	g.write("#endif")
 
 
+def make_fonts_header(target,source,env):
 
+
+	dst = target[0].srcnode().abspath
+
+	g = open(dst,"wb")
+
+	
+	""""
+	"""
+
+	g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+	g.write("#ifndef _EDITOR_FONTS_H\n")
+	g.write("#define _EDITOR_FONTS_H\n")
+
+	#saving uncompressed, since freetype will reference from memory pointer
+	xl_names=[]
+	for i in range(len(source)):
+		print("Appending font: "+source[i].srcnode().abspath)
+		f = open(source[i].srcnode().abspath,"rb")
+		buf = f.read()
+		import os.path
+	
+		name =  os.path.splitext(os.path.basename(source[i].srcnode().abspath))[0]
+
+		g.write("static const int _font_"+name+"_size="+str(len(buf))+";\n")
+		g.write("static const unsigned char _font_"+name+"[]={\n")
+		for i in range(len(buf)):
+			g.write(str(ord(buf[i]))+",\n")
+
+		g.write("};\n")
+	
+	g.write("#endif")
+	
+	
 if (env["tools"]!="no"):
 
 	import glob
@@ -70,11 +104,18 @@ if (env["tools"]!="no"):
 	env.Depends('#tools/editor/translations.h',tlist)
 	env.Command('#tools/editor/translations.h',tlist,make_translations_header)
 
+	flist = glob.glob(dir + "/editor_fonts/*.ttf")
+	flist.append( glob.glob(dir + "/editor_fonts/*.otf") )
+
+	print("fonts: ",flist)
+	env.Depends('#tools/editor/builtin_fonts.h',flist)
+	env.Command('#tools/editor/builtin_fonts.h',flist,make_fonts_header)
+
 	SConscript('editor/SCsub');
 	#SConscript('scintilla/SCsub');
 	SConscript('collada/SCsub');
 	SConscript('docdump/SCsub');
-	SConscript('freetype/SCsub');
+	#SConscript('freetype/SCsub');
 	SConscript('doc/SCsub')
 	SConscript('pck/SCsub')
 

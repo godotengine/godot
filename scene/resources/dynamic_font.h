@@ -1,9 +1,13 @@
-#ifndef DYNAMICFONT_H
-#define DYNAMICFONT_H
+#ifndef DYNAMIC_FONT_H
+#define DYNAMIC_FONT_H
 
-#include "font.h"
-#include "stb_truetype.h"
+#ifdef FREETYPE_ENABLED
+#include "scene/resources/font.h"
+#include "os/thread_safe.h"
 #include "io/resource_loader.h"
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 
 class DynamicFontAtSize;
@@ -13,39 +17,16 @@ class DynamicFontData : public Resource {
 
 	OBJ_TYPE(DynamicFontData,Resource);
 
-	bool valid;
-
-	DVector<uint8_t> font_data;
-	DVector<uint8_t>::Read fr;
-	const uint8_t* last_data_ptr;
-
-	struct KerningPairKey {
-
-		union {
-			struct {
-				uint32_t A,B;
-			};
-
-			uint64_t pair;
-		};
-
-		_FORCE_INLINE_ bool operator<(const KerningPairKey& p_r) const { return pair<p_r.pair; }
-	};
-
-	Map<KerningPairKey,int> kerning_map;
 
 
+	const uint8_t *font_mem;
+	int font_mem_size;
+	bool force_autohinter;
+
+	String font_path;
 	Map<int,DynamicFontAtSize*> size_cache;
 
-friend class DynamicFontAtSize;
-
-	stbtt_fontinfo info;
-	int ascent;
-	int descent;
-	int linegap;
-
-	void lock();
-	void unlock();
+	friend class DynamicFontAtSize;
 
 friend class DynamicFont;
 
@@ -53,7 +34,10 @@ friend class DynamicFont;
 	Ref<DynamicFontAtSize> _get_dynamic_font_at_size(int p_size);
 public:
 
-	void set_font_data(const DVector<uint8_t>& p_font);
+	void set_font_ptr(const uint8_t* p_font_mem,int p_font_mem_size);
+	void set_font_path(const String& p_path);
+	void set_force_autohinter(bool p_force);
+
 	DynamicFontData();
 	~DynamicFontData();
 };
@@ -61,10 +45,20 @@ public:
 
 class DynamicFontAtSize : public Reference {
 
-	OBJ_TYPE(DynamicFontAtSize,Reference);
+	OBJ_TYPE(DynamicFontAtSize,Reference)
 
+	_THREAD_SAFE_CLASS_
 
+	FT_Library   library;   /* handle to library     */
+	FT_Face      face;      /* handle to face object */
+	FT_StreamRec stream;
+
+	int ascent;
+	int descent;
+	int linegap;
 	int rect_margin;
+
+	bool valid;
 
 	struct CharTexture {
 
@@ -88,6 +82,8 @@ class DynamicFontAtSize : public Reference {
 	};
 
 
+	static unsigned long _ft_stream_io(FT_Stream      stream,  unsigned long   offset,  unsigned char*  buffer,  unsigned long   count );
+	static void _ft_stream_close(FT_Stream       stream);
 
 	HashMap< CharType, Character > char_map;
 
@@ -95,12 +91,17 @@ class DynamicFontAtSize : public Reference {
 
 friend class DynamicFontData;
 	Ref<DynamicFontData> font;
-	float scale;
 	int size;
 
+
+
+	Error _load();
 protected:
 
+
+
 public:
+
 
 	float get_height() const;
 
@@ -126,7 +127,7 @@ class DynamicFont : public Font {
 	Ref<DynamicFontData> data;
 	Ref<DynamicFontAtSize> data_at_size;
 	int size;
-
+	bool valid;
 
 protected:
 
@@ -171,5 +172,6 @@ public:
 };
 
 
+#endif
 
-#endif // DYNAMICFONT_H
+#endif

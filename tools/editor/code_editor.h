@@ -135,6 +135,7 @@ class CodeTextEditor : public Control {
 
 	void _on_settings_change();
 
+	void _update_font();
 	void _complete_request();
 protected:
 

@@ -412,7 +412,7 @@ void TextEdit::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 
 			_update_caches();
-		};
+		} break;
 		case NOTIFICATION_DRAW: {
 
 			int line_number_char_count=0;

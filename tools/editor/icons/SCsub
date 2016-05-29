@@ -35,7 +35,9 @@ def make_editor_icons_action(target, source, env):
 
 	s.write("static Ref<ImageTexture> make_icon(const uint8_t* p_png) {\n")
 	s.write("\tRef<ImageTexture> texture( memnew( ImageTexture ) );\n")
-	s.write("\ttexture->create_from_image( Image(p_png),ImageTexture::FLAG_FILTER );\n")
+	s.write("\tImage img(p_png);\n")
+	#s.write("\timg.expand_x2_hq2x();\n")
+	s.write("\ttexture->create_from_image( img,ImageTexture::FLAG_FILTER );\n")
 	s.write("\treturn texture;\n")
 	s.write("}\n\n")
 
