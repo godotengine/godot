@@ -849,20 +849,18 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2& p_pos) const 
 void RichTextLabel::_input_event(InputEvent p_event) {
 
 	switch(p_event.type) {
- 
+
 		case InputEvent::MOUSE_BUTTON: {
 
 			if (main->first_invalid_line<main->lines.size())
 				return;
 
 			const InputEventMouseButton& b = p_event.mouse_button;
-			 
 
 			if (b.button_index==BUTTON_LEFT) {
 
 				if (true) {
-				  
-				  
+
 					if (b.pressed && !b.doubleclick) {
 						int line=0;
 						Item *item=NULL;
@@ -1998,7 +1996,6 @@ void RichTextLabel::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_use_bbcode","enable"),&RichTextLabel::set_use_bbcode);
 	ObjectTypeDB::bind_method(_MD("is_using_bbcode"),&RichTextLabel::is_using_bbcode);
-	
 	ObjectTypeDB::bind_method(_MD("set_meta_interactive","enable"),&RichTextLabel::set_meta_interactive);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"bbcode/enabled"),_SCS("set_use_bbcode"),_SCS("is_using_bbcode"));
@@ -2086,7 +2083,6 @@ RichTextLabel::RichTextLabel() {
 	current_idx=1;
 	use_bbcode=false;
 	meta_interactive=false;
-	
 	selection.click=NULL;
 	selection.active=false;
 	selection.enabled=false;

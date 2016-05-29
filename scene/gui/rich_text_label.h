@@ -334,7 +334,6 @@ public:
 
 	void set_use_bbcode(bool p_enable);
 	void set_meta_interactive(bool p_enable);
-	
 	bool is_using_bbcode() const;
 
 	void set_bbcode(const String& p_bbcode);
