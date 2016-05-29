@@ -58,10 +58,10 @@ if (env["freetype"]=="builtin"):
 		else:
 			half1.append(x)
 
-	lib = env.Library("freetype_builtin1",half1)
-	env.Prepend(LIBS=[lib])
-	lib = env.Library("freetype_builtin2",half2)
-	env.Prepend(LIBS=[lib])
+	lib = env.Library("freetype_builtin1",half2)
+	env.Append(LIBS=[lib])
+	lib = env.Library("freetype_builtin2",half1)
+	env.Append(LIBS=[lib])
 
 #   lib = env.Library("freetype_builtin",ft_sources)
 #   env.Prepend(LIBS=[lib])

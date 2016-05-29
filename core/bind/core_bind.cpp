@@ -226,6 +226,11 @@ Size2 _OS::get_screen_size(int p_screen) const {
 	return OS::get_singleton()->get_screen_size(p_screen);
 }
 
+int _OS::get_screen_dpi(int p_screen) const {
+
+	return  OS::get_singleton()->get_screen_dpi(p_screen);
+}
+
 Point2 _OS::get_window_position() const {
 	return OS::get_singleton()->get_window_position();
 }
@@ -984,6 +989,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_current_screen","screen"),&_OS::set_current_screen);
 	ObjectTypeDB::bind_method(_MD("get_screen_position","screen"),&_OS::get_screen_position,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_screen_size","screen"),&_OS::get_screen_size,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("get_screen_dpi","screen"),&_OS::get_screen_dpi,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_window_position"),&_OS::get_window_position);
 	ObjectTypeDB::bind_method(_MD("set_window_position","position"),&_OS::set_window_position);
 	ObjectTypeDB::bind_method(_MD("get_window_size"),&_OS::get_window_size);
