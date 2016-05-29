@@ -104,7 +104,11 @@ public:
 	bool minimized;
 	bool maximized;
 	bool zoomed;
-	Vector<Rect2> screens;
+	struct ScreenInfo {
+		Rect2 rect;
+		int dpi;
+	};
+	Vector<ScreenInfo> screens;
 	int current_screen;
 	Rect2 restore_rect;
 protected:
@@ -184,7 +188,8 @@ public:
 	virtual bool is_window_minimized() const;
 	virtual void set_window_maximized(bool p_enabled);
 	virtual bool is_window_maximized() const;
-	Size2 get_screen_size(int p_screen=0) const;
+	virtual Size2 get_screen_size(int p_screen=0) const;
+	virtual int get_screen_dpi(int p_screen=0) const;
 
 
 	void run();
