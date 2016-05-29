@@ -331,7 +331,7 @@ String EditorMeshImportPlugin::get_name() const {
 }
 String EditorMeshImportPlugin::get_visible_name() const{
 
-	return "Mesh";
+	return TTR("Mesh");
 }
 void EditorMeshImportPlugin::import_dialog(const String& p_from){
 
@@ -561,4 +561,3 @@ EditorMeshImportPlugin::EditorMeshImportPlugin(EditorNode* p_editor) {
 	dialog = memnew( EditorMeshImportDialog(this));
 	p_editor->get_gui_base()->add_child(dialog);
 }
-

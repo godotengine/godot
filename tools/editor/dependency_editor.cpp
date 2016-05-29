@@ -240,8 +240,8 @@ DependencyEditor::DependencyEditor() {
 	tree = memnew( Tree );
 	tree->set_columns(2);
 	tree->set_column_titles_visible(true);
-	tree->set_column_title(0,"Resource");
-	tree->set_column_title(1,"Path");
+	tree->set_column_title(0,TTR("Resource"));
+	tree->set_column_title(1,TTR("Path"));
 	tree->set_hide_root(true);
 	tree->connect("button_pressed",this,"_load_pressed");
 
@@ -401,7 +401,7 @@ void DependencyRemoveDialog::show(const Vector<String> &to_erase) {
 
 	if (exist) {
 		owners->show();
-		text->set_text("The files being removed are required by other resources in order for them to work.\nRemove them anyway? (no undo)");
+		text->set_text(TTR("The files being removed are required by other resources in order for them to work.\nRemove them anyway? (no undo)"));
 		popup_centered_minsize(Size2(500,220));
 	} else {
 		owners->hide();
@@ -675,7 +675,7 @@ OrphanResourcesDialog::OrphanResourcesDialog(){
 	files->set_column_min_width(1,100);
 	files->set_column_expand(0,true);
 	files->set_column_expand(1,false);
-	files->set_column_title(0,"Resource");
+	files->set_column_title(0,TTR("Resource"));
 	files->set_column_title(1,TTR("Owns"));
 	files->set_hide_root(true);
 	vbc->add_margin_child(TTR("Resources Without Explicit Ownership:"),files,true);

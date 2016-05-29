@@ -2647,7 +2647,7 @@ String EditorSceneAnimationImportPlugin::get_name() const {
 String EditorSceneAnimationImportPlugin::get_visible_name() const{
 
 
-	return "3D Scene Animation";
+	return TTR("3D Scene Animation");
 }
 void EditorSceneAnimationImportPlugin::import_dialog(const String& p_from){
 
@@ -2662,4 +2662,3 @@ EditorSceneAnimationImportPlugin::EditorSceneAnimationImportPlugin(EditorNode* p
 
 
 }
-

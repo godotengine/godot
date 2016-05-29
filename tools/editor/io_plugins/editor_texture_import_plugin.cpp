@@ -828,7 +828,7 @@ String EditorTextureImportPlugin::get_name() const {
 
 String EditorTextureImportPlugin::get_visible_name() const {
 
-	return "Texture";
+	return TTR("Texture");
 
 }
 void EditorTextureImportPlugin::import_dialog(const String& p_from) {
@@ -1805,7 +1805,7 @@ EditorTextureImportPlugin *EditorTextureImportPlugin::singleton=NULL;
 EditorTextureImportPlugin::EditorTextureImportPlugin(EditorNode *p_editor) {
 
 	singleton=this;
-	editor=p_editor;	
+	editor=p_editor;
 	dialog = memnew( EditorTextureImportDialog(this) );
 	editor->get_gui_base()->add_child(dialog);
 

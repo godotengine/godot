@@ -1614,7 +1614,7 @@ String EditorFontImportPlugin::get_name() const {
 }
 String EditorFontImportPlugin::get_visible_name() const{
 
-	return "Font";
+	return TTR("Font");
 }
 void EditorFontImportPlugin::import_dialog(const String& p_from){
 
