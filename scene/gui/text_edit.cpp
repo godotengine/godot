@@ -682,9 +682,13 @@ void TextEdit::_notification(int p_what) {
 
 				// check if line contains highlighted word
 				int highlighted_text_col = -1;
-				if (highlighted_text.length() != 0) {
-					highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, 0);
-				}
+				int search_text_col = -1;
+
+				if (!search_text.empty())
+					search_text_col = _get_column_pos_of_word(search_text, str, search_flags, 0);
+
+				if (highlighted_text.length() != 0 && highlighted_text != search_text)
+					highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE|SEARCH_WHOLE_WORDS, 0);
 
 				if (cache.line_number_w) {
 					String fc = String::num(line+1);
@@ -879,12 +883,37 @@ void TextEdit::_notification(int p_what) {
 							break;
 					}
 
-					bool in_selection = (selection.active && line>=selection.from_line && line<=selection.to_line && (line>selection.from_line || j>=selection.from_column) && (line<selection.to_line || j<selection.to_column));
+					bool in_search_result=false;
 
+					if (search_text_col != -1) {
+						// if we are at the end check for new search result on same line
+						if (j >= search_text_col+search_text.length())
+							search_text_col = _get_column_pos_of_word(search_text, str, search_flags, j);
+
+						in_search_result = j >= search_text_col && j < search_text_col+search_text.length();
+
+						if (in_search_result) {
+							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin, ofs_y ), Size2i(char_w, get_row_height())),cache.search_result_color);
+						}
+					}
+
+					bool in_selection = (selection.active && line>=selection.from_line && line<=selection.to_line && (line>selection.from_line || j>=selection.from_column) && (line<selection.to_line || j<selection.to_column));
 
 					if (in_selection) {
 						//inside selection!
 						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin, ofs_y ), Size2i(char_w,get_row_height())),cache.selection_color);
+					}
+
+					if (in_search_result) {
+						Color border_color=(line==search_result_line && j>=search_result_col && j<search_result_col+search_text.length())?cache.font_color:cache.search_result_border_color;
+
+						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin, ofs_y ), Size2i(char_w,1)),border_color);
+						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin, ofs_y+get_row_height()-1 ), Size2i(char_w,1)),border_color);
+
+						if (j==search_text_col)
+							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin, ofs_y ), Size2i(1,get_row_height())),border_color);
+						if (j==search_text_col+search_text.length()-1)
+							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin+char_w-1, ofs_y ), Size2i(1,get_row_height())),border_color);
 					}
 
 					if (highlight_all_occurrences) {
@@ -892,7 +921,7 @@ void TextEdit::_notification(int p_what) {
 
 							// if we are at the end check for new word on same line
 							if (j > highlighted_text_col+highlighted_text.length()) {
-								highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, j);
+								highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE|SEARCH_WHOLE_WORDS, j);
 							}
 
 							bool in_highlighted_word = (j >= highlighted_text_col && j < highlighted_text_col+highlighted_text.length());
@@ -1892,7 +1921,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					if (completion_hint!="") {
 						completion_hint="";
 						update();
-
+					} else {
+						scancode_handled=false;
 					}
 				} break;
 				case KEY_TAB: {
@@ -3220,6 +3250,8 @@ void TextEdit::_update_caches() {
 	cache.breakpoint_color=get_color("breakpoint_color");
 	cache.brace_mismatch_color=get_color("brace_mismatch_color");
 	cache.word_highlighted_color=get_color("word_highlighted_color");
+	cache.search_result_color=get_color("search_result_color");
+	cache.search_result_border_color=get_color("search_result_border_color");
 	cache.line_spacing=get_constant("line_spacing");
 	cache.row_height = cache.font->get_height() + cache.line_spacing;
 	cache.tab_icon=get_icon("tab");
@@ -3481,12 +3513,25 @@ String TextEdit::get_word_under_cursor() const {
 	return text[cursor.line].substr(prev_cc, next_cc-prev_cc);
 }
 
+void TextEdit::set_search_text(const String &p_search_text) {
+	search_text = p_search_text;
+}
+
+void TextEdit::set_search_flags(uint32_t p_flags) {
+	search_flags = p_flags;
+}
+
+void TextEdit::set_current_search_result(int line, int col) {
+	search_result_line = line;
+	search_result_col = col;
+}
+
 void TextEdit::set_highlight_all_occurrences(const bool p_enabled) {
 	highlight_all_occurrences = p_enabled;
 	update();
 }
 
-int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_search, int p_from_column) {
+int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_search, uint32_t p_search_flags, int p_from_column) {
 	int col = -1;
 
 	if (p_key.length() > 0 && p_search.length() > 0) {
@@ -3494,12 +3539,15 @@ int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_searc
 			p_from_column = 0;
 		}
 
-		 while (col == -1 && p_from_column <= p_search.length()) {
-			// match case
-			col = p_search.findn(p_key, p_from_column);
+		while (col == -1 && p_from_column <= p_search.length()) {
+			if (p_search_flags&SEARCH_MATCH_CASE) {
+				col = p_search.find(p_key,p_from_column);
+			} else {
+				col = p_search.findn(p_key,p_from_column);
+			}
 
 			// whole words only
-			if (col != -1) {
+			if (col != -1 && p_search_flags&SEARCH_WHOLE_WORDS) {
 				p_from_column=col;
 
 				if (col > 0 && _is_text_char(p_search[col-1])) {
@@ -3565,10 +3613,8 @@ bool TextEdit::search(const String &p_key,uint32_t p_search_flags, int p_from_li
 				//wrapped
 
 				if (p_search_flags&SEARCH_BACKWARDS) {
-					text_line=text_line.substr(from_column,text_line.length());
 					from_column=text_line.length();
 				} else {
-					text_line=text_line.substr(0,from_column);
 					from_column=0;
 				}
 
@@ -3579,7 +3625,6 @@ bool TextEdit::search(const String &p_key,uint32_t p_search_flags, int p_from_li
 
 
 		} else {
-			//text_line=text_line.substr(0,p_from_column); //wrap around for missing begining.
 			if (p_search_flags&SEARCH_BACKWARDS)
 				from_column=text_line.length()-1;
 			else
@@ -3588,12 +3633,25 @@ bool TextEdit::search(const String &p_key,uint32_t p_search_flags, int p_from_li
 
 		pos=-1;
 
-		if (!(p_search_flags&SEARCH_BACKWARDS)) {
+		int pos_from=0;
+		int last_pos=-1;
+		while ((last_pos=(p_search_flags&SEARCH_MATCH_CASE)?text_line.find(p_key,pos_from):text_line.findn(p_key,pos_from))!=-1) {
 
-			pos = (p_search_flags&SEARCH_MATCH_CASE)?text_line.find(p_key,from_column):text_line.findn(p_key,from_column);
-		} else {
+			if (p_search_flags&SEARCH_BACKWARDS) {
 
-			pos = (p_search_flags&SEARCH_MATCH_CASE)?text_line.rfind(p_key,from_column):text_line.rfindn(p_key,from_column);
+				if (last_pos>from_column)
+					break;
+				pos=last_pos;
+
+			} else {
+
+				if (last_pos>=from_column) {
+					pos=last_pos;
+					break;
+				}
+			}
+
+			pos_from=last_pos+p_key.length();
 		}
 
 		if (pos!=-1 && (p_search_flags&SEARCH_WHOLE_WORDS)) {

@@ -88,6 +88,8 @@ class TextEdit : public Control  {
 		Color current_line_color;
 		Color brace_mismatch_color;
 		Color word_highlighted_color;
+		Color search_result_color;
+		Color search_result_border_color;
 
 		int row_height;
 		int line_spacing;
@@ -249,6 +251,11 @@ class TextEdit : public Control  {
 	bool callhint_below;
 	Vector2 callhint_offset;
 
+	String search_text;
+	uint32_t search_flags;
+	int search_result_line;
+	int search_result_col;
+
 	int get_visible_rows() const;
 
 	int get_char_count();
@@ -287,7 +294,7 @@ class TextEdit : public Control  {
 	String _base_get_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column) const;
 	void _base_remove_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column);
 
-	int _get_column_pos_of_word(const String &p_key, const String &p_search, int p_from_column);
+	int _get_column_pos_of_word(const String &p_key, const String &p_search, uint32_t p_search_flags, int p_from_column);
 
 	DVector<int> _search_bind(const String &p_key,uint32_t p_search_flags, int p_from_line,int p_from_column) const;
 
@@ -407,6 +414,10 @@ public:
 	void select_all();
 	void select(int p_from_line,int p_from_column,int p_to_line,int p_to_column);
 	void deselect();
+
+	void set_search_text(const String& p_search_text);
+	void set_search_flags(uint32_t p_flags);
+	void set_current_search_result(int line, int col);
 
 	void set_highlight_all_occurrences(const bool p_enabled);
 	bool is_selection_active() const;

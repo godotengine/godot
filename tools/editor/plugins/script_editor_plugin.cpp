@@ -300,6 +300,8 @@ void ScriptTextEditor::_load_theme_settings() {
 	get_text_edit()->add_color_override("member_variable_color",EDITOR_DEF("text_editor/member_variable_color",Color(0.9,0.3,0.3)));
 	get_text_edit()->add_color_override("mark_color", EDITOR_DEF("text_editor/mark_color", Color(1.0,0.4,0.4,0.4)));
 	get_text_edit()->add_color_override("breakpoint_color", EDITOR_DEF("text_editor/breakpoint_color", Color(0.8,0.8,0.4,0.2)));
+	get_text_edit()->add_color_override("search_result_color",EDITOR_DEF("text_editor/search_result_color",Color(0.05,0.25,0.05,1)));
+	get_text_edit()->add_color_override("search_result_border_color",EDITOR_DEF("text_editor/search_result_border_color",Color(0.1,0.45,0.1,1)));
 
 	Color keyword_color= EDITOR_DEF("text_editor/keyword_color",Color(0.5,0.0,0.2));
 
@@ -1405,18 +1407,19 @@ void ScriptEditor::_menu_option(int p_option) {
 			} break;
 			case SEARCH_FIND: {
 
-				find_replace_dialog->set_text_edit(current->get_text_edit());
-				find_replace_dialog->popup_search();
+				current->get_find_replace_bar()->popup_search();
 			} break;
 			case SEARCH_FIND_NEXT: {
 
-				find_replace_dialog->set_text_edit(current->get_text_edit());
-				find_replace_dialog->search_next();
+				current->get_find_replace_bar()->search_next();
+			} break;
+			case SEARCH_FIND_PREV: {
+
+				current->get_find_replace_bar()->search_prev();
 			} break;
 			case SEARCH_REPLACE: {
 
-				find_replace_dialog->set_text_edit(current->get_text_edit());
-				find_replace_dialog->popup_replace();
+				current->get_find_replace_bar()->popup_replace();
 			} break;
 			case SEARCH_LOCATE_FUNCTION: {
 
@@ -2531,6 +2534,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	search_menu->set_text(TTR("Search"));
 	search_menu->get_popup()->add_item(TTR("Find.."),SEARCH_FIND,KEY_MASK_CMD|KEY_F);
 	search_menu->get_popup()->add_item(TTR("Find Next"),SEARCH_FIND_NEXT,KEY_F3);
+	search_menu->get_popup()->add_item(TTR("Find Previous"),SEARCH_FIND_PREV,KEY_MASK_SHIFT|KEY_F3);
 	search_menu->get_popup()->add_item(TTR("Replace.."),SEARCH_REPLACE,KEY_MASK_CMD|KEY_R);
 	search_menu->get_popup()->add_separator();
 	search_menu->get_popup()->add_item(TTR("Goto Function.."),SEARCH_LOCATE_FUNCTION,KEY_MASK_SHIFT|KEY_MASK_CMD|KEY_F);
@@ -2634,9 +2638,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 
 	tab_container->connect("tab_changed", this,"_tab_changed");
-
-	find_replace_dialog = memnew(FindReplaceDialog);
-	add_child(find_replace_dialog);
 
 	erase_tab_confirm = memnew( ConfirmationDialog );
 	add_child(erase_tab_confirm);
