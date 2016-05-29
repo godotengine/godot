@@ -83,7 +83,9 @@ for fname in matches:
 				unique_loc[msg] = [location]
 			elif (not location in unique_loc[msg]):
 				# Add additional location to previous occurence too
-				msg_pos = main_po.find('\nmsgid "' + msg)
+				msg_pos = main_po.find('\nmsgid "' + msg + '"')
+				if (msg_pos == -1):
+					print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")
 				main_po = main_po[:msg_pos] + ' ' + location + main_po[msg_pos:]
 				unique_loc[msg].append(location)
 
