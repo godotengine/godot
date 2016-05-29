@@ -1180,6 +1180,57 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	input->parse_input_event( event);
 }
 
+struct Property
+{
+	unsigned char *data;
+	int format, nitems;
+	Atom type;
+};
+
+static Property read_property(Display* p_display, Window p_window, Atom p_property) {
+
+	Atom actual_type;
+	int actual_format;
+	unsigned long nitems;
+	unsigned long bytes_after;
+	unsigned char *ret=0;
+
+	int read_bytes = 1024;
+
+	//Keep trying to read the property until there are no
+	//bytes unread.
+	do
+	{
+		if(ret != 0)
+			XFree(ret);
+
+		XGetWindowProperty(p_display, p_window, p_property, 0, read_bytes, False, AnyPropertyType,
+					   &actual_type, &actual_format, &nitems, &bytes_after,
+					   &ret);
+
+		read_bytes *= 2;
+
+	}while(bytes_after != 0);
+
+	Property p = {ret, actual_format, nitems, actual_type};
+
+	return p;
+}
+
+static Atom pick_target_from_list(Display* p_display, Atom *p_list, int p_count) {
+
+	static const char* target_type = "text/uri-list";
+
+	for (int i = 0; i < p_count; i++) {
+
+		Atom atom = p_list[i];
+
+		if (atom != None && String(XGetAtomName(p_display, atom)) == target_type)
+				return atom;
+	}
+	return None;
+}
+
 static Atom pick_target_from_atoms(Display* p_disp, Atom p_t1, Atom p_t2, Atom p_t3) {
 
 	static const char* target_type = "text/uri-list";
@@ -1489,28 +1540,9 @@ void OS_X11::process_xevents() {
 
 			if (event.xselection.target == requested) {
 
-				Atom actual_type;
-				int actual_format;
-				unsigned long nitems;
-				unsigned long bytes_after;
-				unsigned char *ret=0;
+				Property p = read_property(x11_display, x11_window, XInternAtom(x11_display, "PRIMARY", 0));
 
-				int read_bytes = 1024;
-
-				//Keep trying to read the property until there are no
-				//bytes unread.
-				do
-				{
-					if(ret != 0)
-						XFree(ret);
-					XGetWindowProperty(x11_display, x11_window, XInternAtom(x11_display, "PRIMARY", 0), 0, read_bytes, False, AnyPropertyType,
-									   &actual_type, &actual_format, &nitems, &bytes_after,
-									   &ret);
-
-					read_bytes *= 2;
-				}while(bytes_after != 0);
-
-				Vector<String> files = String((char *)ret).split("\n", false);
+				Vector<String> files = String((char *)p.data).split("\n", false);
 				for (int i = 0; i < files.size(); i++) {
 					files[i] = files[i].replace("file://", "").replace("%20", " ").strip_escapes();
 				}
@@ -1541,7 +1573,14 @@ void OS_X11::process_xevents() {
 
 				//File(s) have been dragged over the window, check for supported target (text/uri-list)
 				xdnd_version = ( event.xclient.data.l[1] >> 24);
-				requested = pick_target_from_atoms(x11_display, event.xclient.data.l[2],event.xclient.data.l[3], event.xclient.data.l[4]);
+				Window source = event.xclient.data.l[0];
+				bool more_than_3 = event.xclient.data.l[1] & 1;
+				if (more_than_3) {
+					Property p = read_property(x11_display, source, XInternAtom(x11_display, "XdndTypeList", False));
+					requested = pick_target_from_list(x11_display, (Atom*)p.data, p.nitems);
+				}
+				else
+					requested = pick_target_from_atoms(x11_display, event.xclient.data.l[2],event.xclient.data.l[3], event.xclient.data.l[4]);
 			}
 			else if ((unsigned int)event.xclient.message_type == (unsigned int )xdnd_position) {
 
