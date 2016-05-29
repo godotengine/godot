@@ -1876,7 +1876,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				}
 				if (clear) {
 
-					begin_complex_operation();
+					if (!dobreak) {
+						begin_complex_operation();
+					}
 					selection.active=false;
 					update();
 					_remove_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
