@@ -319,7 +319,11 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 		if (OS::get_singleton()->is_stdout_verbose())
 			print_line("load resource: "+local_path+" (cached)");
 
-		return RES( ResourceCache::get(local_path ) );
+		Ref<Resource> res_cached = ResourceCache::get(local_path);
+		Ref<ResourceInteractiveLoaderDefault> ril = Ref<ResourceInteractiveLoaderDefault>(memnew(ResourceInteractiveLoaderDefault));
+
+		ril->resource = res_cached;
+		return ril;
 	}
 
 	if (OS::get_singleton()->is_stdout_verbose())
