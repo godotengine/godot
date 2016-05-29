@@ -370,7 +370,7 @@ def configure(env):
 		env.Append(CCFLAGS=['-DWINDOWS_ENABLED','-mwindows'])
 		env.Append(CPPFLAGS=['-DRTAUDIO_ENABLED'])
 		env.Append(CCFLAGS=['-DGLES2_ENABLED','-DGLEW_ENABLED'])
-		env.Append(LIBS=['mingw32','opengl32', 'dsound', 'ole32', 'd3d9','winmm','gdi32','iphlpapi','shlwapi','wsock32','shcore','kernel32', 'oleaut32', 'dinput8', 'dxguid'])
+		env.Append(LIBS=['mingw32','opengl32', 'dsound', 'ole32', 'd3d9','winmm','gdi32','iphlpapi','shlwapi','wsock32','kernel32', 'oleaut32', 'dinput8', 'dxguid'])
 
 		# if (env["bits"]=="32"):
 			# env.Append(LIBS=['gcc_s'])
