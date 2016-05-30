@@ -6,13 +6,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "PO-Revision-Date: 2016-05-30 16:42+0800\n"
 "Last-Translator: Wesley <ZX_WT@ymail.com>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
 "Language: zh_HK\n"
 "MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 
 #: scene/audio/sample_player.cpp scene/2d/sample_player_2d.cpp
 msgid ""
@@ -61,8 +61,8 @@ msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
-"NavigationMeshInstance must be a child or grandchild to a Navigation node. "
-"It only provides navigation data."
+"NavigationMeshInstance must be a child or grandchild to a Navigation node. It "
+"only provides navigation data."
 msgstr ""
 
 #: scene/resources/dynamic_font.cpp
@@ -123,14 +123,14 @@ msgstr ""
 
 #: scene/2d/sprite.cpp
 msgid ""
-"Path property must point to a valid Viewport node to work. Such Viewport "
-"must be set to 'render target' mode."
+"Path property must point to a valid Viewport node to work. Such Viewport must "
+"be set to 'render target' mode."
 msgstr ""
 
 #: scene/2d/sprite.cpp
 msgid ""
-"The Viewport set in the path property must be set as 'render target' in "
-"order for this sprite to work."
+"The Viewport set in the path property must be set as 'render target' in order "
+"for this sprite to work."
 msgstr ""
 
 #: scene/2d/collision_polygon_2d.cpp
@@ -186,8 +186,8 @@ msgstr ""
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will "
-"hide upon running."
+"functions. Making them visible for editing is fine though, but they will hide "
+"upon running."
 msgstr ""
 
 #: scene/gui/text_edit.cpp scene/gui/line_edit.cpp
@@ -213,8 +213,7 @@ msgid "Paste"
 msgstr "貼上"
 
 #: scene/gui/text_edit.cpp scene/gui/line_edit.cpp
-#: tools/editor/project_export.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
+#: tools/editor/project_export.cpp tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Select All"
 msgstr "全選"
@@ -227,8 +226,8 @@ msgstr "全選"
 msgid "Clear"
 msgstr "清空"
 
-#: scene/gui/text_edit.cpp scene/gui/line_edit.cpp
-#: tools/editor/editor_node.cpp tools/editor/plugins/shader_editor_plugin.cpp
+#: scene/gui/text_edit.cpp scene/gui/line_edit.cpp tools/editor/editor_node.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Undo"
 msgstr "復原"
@@ -309,8 +308,7 @@ msgstr "目標"
 msgid "Export to Platform"
 msgstr ""
 
-#: tools/editor/project_export.cpp
-#: tools/editor/plugins/theme_editor_plugin.cpp
+#: tools/editor/project_export.cpp tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Options"
 msgstr "選項"
 
@@ -338,8 +336,7 @@ msgstr ""
 msgid "Resources to Export:"
 msgstr ""
 
-#: tools/editor/project_export.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/project_export.cpp tools/editor/plugins/script_editor_plugin.cpp
 msgid "File"
 msgstr "檔案"
 
@@ -882,8 +879,7 @@ msgid "Delete selected files?"
 msgstr "要刪除選中檔案?"
 
 #: tools/editor/dependency_editor.cpp tools/editor/scenes_dock.cpp
-#: tools/editor/editor_node.cpp
-#: tools/editor/plugins/item_list_editor_plugin.cpp
+#: tools/editor/editor_node.cpp tools/editor/plugins/item_list_editor_plugin.cpp
 msgid "Delete"
 msgstr "刪除"
 
@@ -1905,8 +1901,7 @@ msgid "Frame #:"
 msgstr ""
 
 #: tools/editor/quick_open.cpp tools/editor/editor_help.cpp
-#: tools/editor/create_dialog.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/create_dialog.cpp tools/editor/plugins/script_editor_plugin.cpp
 msgid "Matches:"
 msgstr ""
 
@@ -2532,8 +2527,8 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid ""
-"Error loading scene, it must be inside the project path. Use 'Import' to "
-"open the scene, then save it inside the project path."
+"Error loading scene, it must be inside the project path. Use 'Import' to open "
+"the scene, then save it inside the project path."
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -3021,8 +3016,8 @@ msgstr "Ok"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid ""
-"Cannot instance the scene '%s' because the current scene exists within one "
-"of its nodes."
+"Cannot instance the scene '%s' because the current scene exists within one of "
+"its nodes."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
