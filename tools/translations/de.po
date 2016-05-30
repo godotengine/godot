@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-05-30 13:24+0200\n"
+"PO-Revision-Date: 2016-05-30 13:28+0200\n"
 "Last-Translator: Sebastian Thewes <minzky@minzky.com>\n"
 "Language-Team: Sebastian Thewes <minzky@minzky.com>\n"
 "Language: de\n"
@@ -136,6 +136,7 @@ msgstr ""
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
 msgstr ""
+"Das Okkluder Polygon für diesen Okkluder ist leer. Bitte zeichne ein Polygon."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
