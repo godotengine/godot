@@ -1892,7 +1892,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 		vmem_hb->add_child( memnew(Label(TTR("Total:")+" ")) );
 		vmem_total = memnew( LineEdit );
 		vmem_total->set_editable(false);
-		vmem_total->set_custom_minimum_size(Size2(100,1));
+		vmem_total->set_custom_minimum_size(Size2(100,1)*EDSCALE);
 		vmem_hb->add_child(vmem_total);
 		vmem_refresh = memnew( Button );
 		vmem_hb->add_child(vmem_refresh);

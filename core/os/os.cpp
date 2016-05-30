@@ -548,6 +548,7 @@ OS::OS() {
 	_render_thread_mode=RENDER_THREAD_SAFE;
 	_time_scale=1.0;
 	_pixel_snap=false;
+	_allow_hidpi=true;
 	Math::seed(1234567);
 }
 

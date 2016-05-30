@@ -404,7 +404,7 @@ SampleEditor::SampleEditor() {
 	play->connect("pressed", this,"_play_pressed");
 	stop->connect("pressed", this,"_stop_pressed");
 
-	set_custom_minimum_size(Size2(1,150));
+	set_custom_minimum_size(Size2(1,150)*EDSCALE);
 
 }
 

@@ -984,6 +984,7 @@ void EditorNode::_save_scene_with_preview(String p_file) {
 	save.step(TTR("Creating Thumbnail"),3);
 	Image img = VS::get_singleton()->viewport_get_screen_capture(viewport);
 	int preview_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");;
+	preview_size*=EDSCALE;
 	int width,height;
 	if (img.get_width() > preview_size && img.get_width() >= img.get_height()) {
 
@@ -2389,7 +2390,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				confirmation->get_ok()->set_text(TTR("Quit"));
 				//confirmation->get_cancel()->show();
 				confirmation->set_text(TTR("Exit the editor?"));
-				confirmation->popup_centered(Size2(180,70));
+				confirmation->popup_centered(Size2(180,70)*EDSCALE);
 				break;
 			}
 
@@ -2826,7 +2827,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		} break;
 		case SETTINGS_ABOUT: {
 
-			about->popup_centered(Size2(500,130));
+			about->popup_centered(Size2(500,130)*EDSCALE);
 		} break;
 		case SOURCES_REIMPORT: {
 
@@ -5381,7 +5382,7 @@ EditorNode::EditorNode() {
 	dock_vb->add_child(dock_hb);
 
 	dock_select = memnew( Control );
-	dock_select->set_custom_minimum_size(Size2(128,64));
+	dock_select->set_custom_minimum_size(Size2(128,64)*EDSCALE);
 	dock_select->connect("input_event",this,"_dock_select_input");
 	dock_select->connect("draw",this,"_dock_select_draw");
 	dock_select->connect("mouse_exit",this,"_dock_popup_exit");
@@ -5396,7 +5397,7 @@ EditorNode::EditorNode() {
 	//dock_select_popoup->set_(Size2(20,20));
 
 	for(int i=0;i<DOCK_SLOT_MAX;i++) {
-		dock_slot[i]->set_custom_minimum_size(Size2(230,220));
+		dock_slot[i]->set_custom_minimum_size(Size2(230,220)*EDSCALE);
 		dock_slot[i]->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		dock_slot[i]->set_popup(dock_select_popoup);
 		dock_slot[i]->connect("pre_popup_pressed",this,"_dock_pre_popup",varray(i));
@@ -5436,7 +5437,7 @@ EditorNode::EditorNode() {
 	srt->add_child(scene_tabs);
 
 	scene_root_parent = memnew( PanelContainer );
-	scene_root_parent->set_custom_minimum_size(Size2(0,80));
+	scene_root_parent->set_custom_minimum_size(Size2(0,80)*EDSCALE);
 
 
 	//Ref<StyleBox> sp = scene_root_parent->get_stylebox("panel","TabContainer");
@@ -5553,7 +5554,7 @@ EditorNode::EditorNode() {
 
 	{
 		Control *sp = memnew( Control );
-		sp->set_custom_minimum_size(Size2(30,0));
+		sp->set_custom_minimum_size(Size2(30,0)*EDSCALE);
 		menu_hb->add_child(sp);
 	}
 
@@ -5742,7 +5743,7 @@ EditorNode::EditorNode() {
 
 	{
 		Control *sp = memnew( Control );
-		sp->set_custom_minimum_size(Size2(30,0));
+		sp->set_custom_minimum_size(Size2(30,0)*EDSCALE);
 		menu_hb->add_child(sp);
 	}
 
@@ -5764,7 +5765,7 @@ EditorNode::EditorNode() {
 
 	{
 		Control *sp = memnew( Control );
-		sp->set_custom_minimum_size(Size2(30,0));
+		sp->set_custom_minimum_size(Size2(30,0)*EDSCALE);
 		menu_hb->add_child(sp);
 	}
 
@@ -5800,7 +5801,7 @@ EditorNode::EditorNode() {
 	layout_dialog = memnew( EditorNameDialog );
 	gui_base->add_child(layout_dialog);
 	layout_dialog->set_hide_on_ok(false);
-	layout_dialog->set_size(Size2(175, 70));
+	layout_dialog->set_size(Size2(175, 70)*EDSCALE);
 	layout_dialog->connect("name_confirmed", this,"_dialog_action");
 
 	sources_button = memnew( ToolButton );

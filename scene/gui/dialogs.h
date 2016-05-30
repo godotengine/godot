@@ -64,6 +64,8 @@ public:
 	void set_title(const String& p_title);
 	String get_title() const;
 
+	Size2 get_minimum_size() const;
+
 	WindowDialog();
 	~WindowDialog();
 
@@ -89,6 +91,7 @@ class AcceptDialog : public WindowDialog {
 
 	OBJ_TYPE(AcceptDialog,WindowDialog);
 
+	Control *child;
 	HBoxContainer *hbc;
 	Label *label;
 	Button *ok;
@@ -100,10 +103,12 @@ class AcceptDialog : public WindowDialog {
 	void _ok_pressed();
 	void _close_pressed();
 	void _builtin_text_entered(const String& p_text);
+	void _update_child_rect();
 
 	static bool swap_ok_cancel;
 
 
+	virtual void remove_child_notify(Node *p_child);
 
 
 protected:
@@ -115,6 +120,8 @@ protected:
 	virtual void cancel_pressed() {}
 	virtual void custom_action(const String&) {}
 public:
+
+	Size2 get_minimum_size() const;
 
 	Label *get_label() { return label; }
 	static void set_swap_ok_cancel(bool p_swap);

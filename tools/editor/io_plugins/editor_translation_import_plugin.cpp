@@ -65,7 +65,7 @@ public:
 		if (!f) {
 
 			error_dialog->set_text(TTR("Invalid source!"));
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 
 		}
@@ -76,7 +76,7 @@ public:
 		if (csvh.size()<2) {
 
 			error_dialog->set_text(TTR("Invalid translation source!"));
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 
 		}
@@ -171,7 +171,7 @@ public:
 
 	void popup_import(const String& p_from) {
 
-		popup_centered(Size2(400,400));
+		popup_centered(Size2(400,400)*EDSCALE);
 
 		if (p_from!="") {
 
@@ -232,12 +232,12 @@ public:
 
 		if (items.size()==0) {
 			error_dialog->set_text(TTR("No items to import!"));
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 		}
 
 		if (!save_path->get_text().begins_with("res://")) {
 			error_dialog->set_text(TTR("No target path!"));
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 		}
 
 		EditorProgress progress("import_xl",TTR("Import Translations"),items.size());
@@ -259,7 +259,7 @@ public:
 			Error err = plugin->import(savefile,imd);
 			if (err!=OK) {
 				error_dialog->set_text(TTR("Couldn't import!"));
-				error_dialog->popup_centered(Size2(200,100));
+				error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			} else if (add_to_project->is_pressed()) {
 
 				ProjectSettings::get_singleton()->add_translation(savefile);

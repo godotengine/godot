@@ -978,7 +978,7 @@ void ScriptEditor::_menu_option(int p_option) {
 	switch(p_option) {
 		case FILE_NEW: {
 			script_create_dialog->config("Node", ".gd");
-			script_create_dialog->popup_centered(Size2(300, 300));
+			script_create_dialog->popup_centered(Size2(300, 300)*EDSCALE);
 		} break;
 		case FILE_OPEN: {
 
@@ -1100,7 +1100,7 @@ void ScriptEditor::_menu_option(int p_option) {
 		switch(p_option) {
 			case FILE_NEW: {
 				script_create_dialog->config("Node", ".gd");
-				script_create_dialog->popup_centered(Size2(300, 300));
+				script_create_dialog->popup_centered(Size2(300, 300)*EDSCALE);
 			} break;
 			case FILE_SAVE: {
 
