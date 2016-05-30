@@ -1235,18 +1235,18 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 
 	/*
 	this_import = memnew( OptionButton );
-	this_import->add_item(TTR("Overwrite Existing Scene"));
-	this_import->add_item(TTR("Overwrite Existing, Keep Materials"));
-	this_import->add_item(TTR("Keep Existing, Merge with New"));
-	this_import->add_item(TTR("Keep Existing, Ignore New"));
-	vbc->add_margin_child(TTR("This Time:"),this_import);
+	this_import->add_item("Overwrite Existing Scene");
+	this_import->add_item("Overwrite Existing, Keep Materials");
+	this_import->add_item("Keep Existing, Merge with New");
+	this_import->add_item("Keep Existing, Ignore New");
+	vbc->add_margin_child("This Time:",this_import);
 
 	next_import = memnew( OptionButton );
-	next_import->add_item(TTR("Overwrite Existing Scene"));
-	next_import->add_item(TTR("Overwrite Existing, Keep Materials"));
-	next_import->add_item(TTR("Keep Existing, Merge with New"));
-	next_import->add_item(TTR("Keep Existing, Ignore New"));
-	vbc->add_margin_child(TTR("Next Time:"),next_import);
+	next_import->add_item("Overwrite Existing Scene");
+	next_import->add_item("Overwrite Existing, Keep Materials");
+	next_import->add_item("Keep Existing, Merge with New");
+	next_import->add_item("Keep Existing, Ignore New");
+	vbc->add_margin_child("Next Time:",next_import);
 */
 	set_hide_on_ok(false);
 
