@@ -249,7 +249,7 @@ public:
 		Object *obj = selection[p_node];
 		if (!obj)
 			return NULL;
-		return obj->cast_to<T>();
+		return Object::cast_to<T>(obj);
 	}
 
 	void add_editor_plugin(Object *p_object);

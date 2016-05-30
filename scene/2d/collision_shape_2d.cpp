@@ -42,7 +42,7 @@ void CollisionShape2D::_add_to_collision_object(Object *p_obj) {
 	if (unparenting)
 		return;
 
-	CollisionObject2D *co = p_obj->cast_to<CollisionObject2D>();
+	CollisionObject2D *co = Object::cast_to<CollisionObject2D>(p_obj);
 	ERR_FAIL_COND(!co);
 	update_shape_index=co->get_shape_count();
 	co->add_shape(shape,get_transform());
@@ -64,7 +64,7 @@ void CollisionShape2D::_update_parent() {
 	Node *parent = get_parent();
 	if (!parent)
 		return;
-	CollisionObject2D *co = parent->cast_to<CollisionObject2D>();
+	CollisionObject2D *co = Object::cast_to<CollisionObject2D>(parent);
 	if (!co)
 		return;
 	co->_update_shapes_from_children();
@@ -92,7 +92,7 @@ void CollisionShape2D::_notification(int p_what) {
 				_update_parent();
 			} else if (update_shape_index>=0){
 
-				CollisionObject2D *co = get_parent()->cast_to<CollisionObject2D>();
+				CollisionObject2D *co = Object::cast_to<CollisionObject2D>(get_parent());
 				if (co) {
 					co->set_shape_transform(update_shape_index,get_transform());
 				}
@@ -151,7 +151,7 @@ void CollisionShape2D::set_shape(const Ref<Shape2D>& p_shape) {
 	if (is_inside_tree() && can_update_body)
 		_update_parent();
 	if (is_inside_tree() && !can_update_body && update_shape_index>=0) {
-		CollisionObject2D *co = get_parent()->cast_to<CollisionObject2D>();
+		CollisionObject2D *co = Object::cast_to<CollisionObject2D>(get_parent());
 		if (co) {
 			co->set_shape(update_shape_index,p_shape);
 		}
@@ -177,7 +177,7 @@ void CollisionShape2D::set_trigger(bool p_trigger) {
 	if (can_update_body) {
 		_update_parent();
 	} else if (is_inside_tree() && update_shape_index>=0){
-		CollisionObject2D *co = get_parent()->cast_to<CollisionObject2D>();
+		CollisionObject2D *co = Object::cast_to<CollisionObject2D>(get_parent());
 		if (co) {
 			co->set_shape_as_trigger(update_shape_index,p_trigger);
 		}
@@ -203,7 +203,7 @@ int CollisionShape2D::_get_update_shape_index() const{
 
 String CollisionShape2D::get_configuration_warning() const {
 
-	if (!get_parent()->cast_to<CollisionObject2D>()) {
+	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
 		return TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
 	}
 

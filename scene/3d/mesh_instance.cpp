@@ -152,7 +152,7 @@ void MeshInstance::_resolve_skeleton_path(){
 	if (skeleton_path.is_empty())
 		return;
 
-	Skeleton *skeleton=get_node(skeleton_path)?get_node(skeleton_path)->cast_to<Skeleton>():NULL;
+	Skeleton *skeleton=Object::cast_to<Skeleton>(get_node(skeleton_path));
 	if (skeleton)
 		VisualServer::get_singleton()->instance_attach_skeleton( get_instance(), skeleton->get_skeleton() );
 }
@@ -208,7 +208,7 @@ Node* MeshInstance::create_trimesh_collision_node() {
 void MeshInstance::create_trimesh_collision() {
 
 
-	StaticBody* static_body = create_trimesh_collision_node()->cast_to<StaticBody>();
+	StaticBody* static_body = Object::cast_to<StaticBody>(create_trimesh_collision_node());
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name( String(get_name()) + "_col" );
 
@@ -242,7 +242,7 @@ Node* MeshInstance::create_convex_collision_node() {
 void MeshInstance::create_convex_collision() {
 
 
-	StaticBody* static_body = create_convex_collision_node()->cast_to<StaticBody>();
+	StaticBody* static_body = Object::cast_to<StaticBody>(create_convex_collision_node());
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name( String(get_name()) + "_col" );
 

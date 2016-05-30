@@ -225,7 +225,7 @@ Node *ArrayPropertyEdit::get_node() {
 	if (!o)
 		return NULL;
 
-	return o->cast_to<Node>();
+	return Object::cast_to<Node>(o);
 }
 
 void ArrayPropertyEdit::_bind_methods() {

@@ -161,7 +161,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 					Object *inst = ObjectTypeDB::instance( orig_type );
 
-					Ref<Resource> res = Ref<Resource>( inst->cast_to<Resource>() );
+					Ref<Resource> res = Ref<Resource>( Object::cast_to<Resource>(inst) );
 
 					ERR_FAIL_COND(res.is_null());
 
@@ -208,7 +208,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 					Object *obj = ObjectTypeDB::instance(intype);
 					ERR_BREAK( !obj );
-					Resource *res=obj->cast_to<Resource>();
+					Resource *res=Object::cast_to<Resource>(obj);
 					ERR_BREAK( !res );
 
 					v=Ref<Resource>(res).get_ref_ptr();
@@ -910,7 +910,7 @@ void CustomPropertyEditor::_type_create_selected(int p_idx) {
 		ERR_FAIL_COND( !obj );
 
 
-		Resource *res=obj->cast_to<Resource>();
+		Resource *res=Object::cast_to<Resource>(obj);
 		ERR_FAIL_COND( !res );
 
 		v=Ref<Resource>(res).get_ref_ptr();
@@ -935,9 +935,9 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 		Node *node=NULL;
 
 		if (owner->is_type("Node"))
-			node = owner->cast_to<Node>();
+			node = Object::cast_to<Node>(owner);
 		else if (owner->is_type("ArrayPropertyEdit"))
-			node = owner->cast_to<ArrayPropertyEdit>()->get_node();
+			node = Object::cast_to<ArrayPropertyEdit>(owner)->get_node();
 
 		if (!node) {
 			v=p_path;
@@ -1074,7 +1074,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 					Object *obj = ObjectTypeDB::instance(intype);
 					ERR_BREAK( !obj );
-					Resource *res=obj->cast_to<Resource>();
+					Resource *res=Object::cast_to<Resource>(obj);
 					ERR_BREAK( !res );
 
 					v=Ref<Resource>(res).get_ref_ptr();
@@ -1823,7 +1823,7 @@ bool PropertyEditor::_might_be_in_instance() {
 	if (!obj)
 		return false;
 
-	Node *node = obj->cast_to<Node>();
+	Node *node = Object::cast_to<Node>(obj);
 
 	Node* edited_scene =EditorNode::get_singleton()->get_edited_scene();
 
@@ -1852,7 +1852,7 @@ bool PropertyEditor::_might_be_in_instance() {
 
 bool PropertyEditor::_get_instanced_node_original_property(const StringName& p_prop, Variant& value) {
 
-	Node *node = obj->cast_to<Node>();
+	Node *node = Object::cast_to<Node>(obj);
 
 	if (!node)
 		return false;
@@ -1910,7 +1910,7 @@ bool PropertyEditor::_is_property_different(const Variant& p_current, const Vari
 
 
 	{
-		Node *node = obj->cast_to<Node>();
+		Node *node = Object::cast_to<Node>(obj);
 		if (!node)
 			return false;
 
@@ -2675,7 +2675,7 @@ void PropertyEditor::update_tree() {
 */
 
 	/*
-	if (obj->cast_to<Node>() || obj->cast_to<Resource>()) {
+	if (Object::cast_to<Node>(obj) || Object::cast_to<Resource>(obj)) {
 		TreeItem *type = tree->create_item(root);
 
 		type->set_text(0,"Type"); // todo, fetch name if ID exists in database
@@ -2693,9 +2693,9 @@ void PropertyEditor::update_tree() {
 
 		name->set_text(0,"Name"); // todo, fetch name if ID exists in database
 		if (obj->is_type("Resource"))
-			name->set_text(1,obj->cast_to<Resource>()->get_name());
+			name->set_text(1,Object::cast_to<Resource>(obj)->get_name());
 		else if (obj->is_type("Node"))
-			name->set_text(1,obj->cast_to<Node>()->get_name());
+			name->set_text(1,Object::cast_to<Node>(obj)->get_name());
 		name->set_selectable(0,false);
 		name->set_selectable(1,false);
 	}
@@ -2706,7 +2706,7 @@ void PropertyEditor::update_tree() {
 	bool draw_red=false;
 
 	{
-		Node *nod = obj->cast_to<Node>();
+		Node *nod = Object::cast_to<Node>(obj);
 		Node *es = EditorNode::get_singleton()->get_edited_scene();
 		if (nod && es!=nod && nod->get_owner()!=es) {
 			draw_red=true;
@@ -3460,7 +3460,7 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 		}
 	}
 
-	if (!undo_redo || obj->cast_to<MultiNodeEdit>() || obj->cast_to<ArrayPropertyEdit>()) { //kind of hacky
+	if (!undo_redo || Object::cast_to<MultiNodeEdit>(obj) || cast_to<ArrayPropertyEdit>(obj)) { //kind of hacky
 
 		obj->set(p_name,p_value);
 		_changed_callbacks(obj,p_name);
@@ -3476,7 +3476,7 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 		undo_redo->add_do_method(this,"_changed_callback",obj,p_name);
 		undo_redo->add_undo_method(this,"_changed_callback",obj,p_name);
 		undo_redo->add_undo_method(this,"_changed_callback",obj,p_name);
-		Resource *r = obj->cast_to<Resource>();
+		Resource *r = Object::cast_to<Resource>(obj);
 		if (r) {
 			if (!r->is_edited() && String(p_name)!="resource/edited") {
 				undo_redo->add_do_method(r,"set_edited",true);
@@ -3702,7 +3702,7 @@ void PropertyEditor::edit(Object* p_object) {
 
 void PropertyEditor::_set_range_def(Object *p_item, String prop,float p_frame) {
 
-	TreeItem *ti = p_item->cast_to<TreeItem>();
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!ti);
 
 	ti->call_deferred("set_range",1, p_frame);
@@ -3711,7 +3711,7 @@ void PropertyEditor::_set_range_def(Object *p_item, String prop,float p_frame) {
 }
 
 void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
-	TreeItem *ti = p_item->cast_to<TreeItem>();
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!ti);
 
 	Dictionary d = ti->get_metadata(0);
@@ -3838,7 +3838,7 @@ void PropertyEditor::set_keying(bool p_active) {
 
 void PropertyEditor::_draw_flags(Object *t,const Rect2& p_rect) {
 
-	TreeItem *ti = t->cast_to<TreeItem>();
+	TreeItem *ti = Object::cast_to<TreeItem>(t);
 	if (!ti)
 		return;
 
@@ -3894,7 +3894,7 @@ void PropertyEditor::_resource_preview_done(const String& p_path,const Ref<Textu
 	if (!obj)
 		return;
 
-	TreeItem *ti = obj->cast_to<TreeItem>();
+	TreeItem *ti = Object::cast_to<TreeItem>(obj);
 
 	ERR_FAIL_COND(!ti);
 
@@ -3990,7 +3990,7 @@ void PropertyEditor::set_use_filter(bool p_use) {
 void PropertyEditor::register_text_enter(Node* p_line_edit) {
 
 	ERR_FAIL_NULL(p_line_edit);
-	search_box=p_line_edit->cast_to<LineEdit>();
+	search_box=Object::cast_to<LineEdit>(p_line_edit);
 
 	if (search_box)
 		search_box->connect("text_changed",this,"_filter_changed");

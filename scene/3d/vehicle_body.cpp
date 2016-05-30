@@ -61,7 +61,7 @@ void VehicleWheel::_notification(int p_what) {
 
 		if (!get_parent())
 			return;
-		VehicleBody *cb = get_parent()->cast_to<VehicleBody>();
+		VehicleBody *cb = Object::cast_to<VehicleBody>(get_parent());
 		if (!cb)
 			return;
 		body=cb;
@@ -77,7 +77,7 @@ void VehicleWheel::_notification(int p_what) {
 
 		if (!get_parent())
 			return;
-		VehicleBody *cb = get_parent()->cast_to<VehicleBody>();
+		VehicleBody *cb = Object::cast_to<VehicleBody>(get_parent());
 		if (!cb)
 			return;
 		cb->wheels.erase(this);
@@ -398,7 +398,7 @@ real_t VehicleBody::_ray_cast(int p_idx,PhysicsDirectBodyState *s) {
 
 		wheel.m_raycastInfo.m_isInContact = true;
 		if (rr.collider)
-			wheel.m_raycastInfo.m_groundObject=rr.collider->cast_to<PhysicsBody>();
+			wheel.m_raycastInfo.m_groundObject=Object::cast_to<PhysicsBody>(rr.collider);
 
 
 		real_t hitDistance = param*raylen;
@@ -859,7 +859,7 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 void VehicleBody::_direct_state_changed(Object *p_state) {
 
 
-	PhysicsDirectBodyState *s = p_state->cast_to<PhysicsDirectBodyState>();
+	PhysicsDirectBodyState *s = Object::cast_to<PhysicsDirectBodyState>(p_state);
 
 	set_ignore_transform_notification(true);
 	set_global_transform(s->get_transform());

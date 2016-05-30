@@ -1532,7 +1532,7 @@ Error ResourceInteractiveLoaderXML::poll() {
 	}
 	ERR_FAIL_COND_V(!obj,ERR_FILE_CORRUPT);
 
-	Resource *r = obj->cast_to<Resource>();
+	Resource *r = Object::cast_to<Resource>(obj);
 	if (!r) {
 		error=ERR_FILE_CORRUPT;
 		memdelete(obj); //bye

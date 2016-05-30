@@ -469,7 +469,7 @@ void OSBB10::process_events() {
 		if (!event) break;
 
 		#ifdef BB10_SCORELOOP_ENABLED
-		ScoreloopBB10* sc = Globals::get_singleton()->get_singleton_object("Scoreloop")->cast_to<ScoreloopBB10>();
+		ScoreloopBB10* sc = Object::cast_to<ScoreloopBB10>(Globals::get_singleton()->get_singleton_object("Scoreloop"));
 		if (sc->handle_event(event))
 			continue;
 		#endif

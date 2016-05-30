@@ -519,7 +519,7 @@ void EditorAddonLibrary::_install_asset() {
 
 	for(int i=0;i<downloads_hb->get_child_count();i++) {
 
-		EditorAddonLibraryItemDownload *d  = downloads_hb->get_child(i)->cast_to<EditorAddonLibraryItemDownload>();
+		EditorAddonLibraryItemDownload *d  = Object::cast_to<EditorAddonLibraryItemDownload>(downloads_hb->get_child(i));
 		if (d && d->get_asset_id() == description->get_asset_id()) {
 
 			EditorNode::get_singleton()->show_warning("Download for this asset is already in progress!");

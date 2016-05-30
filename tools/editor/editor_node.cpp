@@ -1049,7 +1049,7 @@ void EditorNode::_save_scene(String p_file) {
 		// we must update it, but also let the previous scene state go, as
 		// old version still work for referencing changes in instanced or inherited scenes
 
-		sdata = Ref<PackedScene>( ResourceCache::get(p_file)->cast_to<PackedScene>() );
+		sdata = Ref<PackedScene>( Object::cast_to<PackedScene>(ResourceCache::get(p_file)) );
 		if (sdata.is_valid())
 			sdata->recreate_state();
 		else
@@ -1436,9 +1436,9 @@ void EditorNode::_dialog_action(String p_file) {
 			uint32_t current = editor_history.get_current();
 			Object *current_obj = current>0 ? ObjectDB::get_instance(current) : NULL;
 
-			ERR_FAIL_COND(!current_obj->cast_to<Resource>())
+			ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj))
 
-			RES current_res = RES(current_obj->cast_to<Resource>());
+			RES current_res = RES(Object::cast_to<Resource>(current_obj));
 
 			save_resource_in_path(current_res,p_file);
 
@@ -1577,8 +1577,8 @@ void EditorNode::_prepare_history() {
 			icon=base_icon;
 
 		String text;
-		if (obj->cast_to<Resource>()) {
-			Resource *r=obj->cast_to<Resource>();
+		if (Object::cast_to<Resource>(obj)) {
+			Resource *r=Object::cast_to<Resource>(obj);
 			if (r->get_path().is_resource_file())
 				text=r->get_path().get_file();
 			else if (r->get_name()!=String()) {
@@ -1586,8 +1586,8 @@ void EditorNode::_prepare_history() {
 			} else {
 				text=r->get_type();
 			}
-		} else if (obj->cast_to<Node>()) {
-			text=obj->cast_to<Node>()->get_name();
+		} else if (Object::cast_to<Node>(obj)) {
+			text=Object::cast_to<Node>(obj)->get_name();
 		} else {
 			text=obj->get_type();
 		}
@@ -1681,7 +1681,7 @@ void EditorNode::_edit_current() {
 	if (is_resource) {
 
 
-		Resource *current_res = current_obj->cast_to<Resource>();
+		Resource *current_res = Object::cast_to<Resource>(current_obj);
 		ERR_FAIL_COND(!current_res);
 		scene_tree_dock->set_selected(NULL);
 		property_editor->edit( current_res );
@@ -1693,7 +1693,7 @@ void EditorNode::_edit_current() {
 		//top_pallete->set_current_tab(1);
 	} else if (current_obj->is_type("Node")) {
 
-		Node * current_node = current_obj->cast_to<Node>();
+		Node * current_node = Object::cast_to<Node>(current_obj);
 		ERR_FAIL_COND(!current_node);
 		ERR_FAIL_COND(!current_node->is_inside_tree());
 
@@ -1824,7 +1824,7 @@ void EditorNode::_resource_created() {
 	Object *c = create_dialog->instance_selected();
 
 	ERR_FAIL_COND(!c);
-	Resource *r = c->cast_to<Resource>();
+	Resource *r = Object::cast_to<Resource>(c);
 	ERR_FAIL_COND(!r);
 
 	REF res( r );
@@ -2546,9 +2546,9 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			uint32_t current = editor_history.get_current();
 			Object *current_obj = current>0 ? ObjectDB::get_instance(current) : NULL;
 
-			ERR_FAIL_COND(!current_obj->cast_to<Resource>())
+			ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj))
 
-			RES current_res = RES(current_obj->cast_to<Resource>());
+			RES current_res = RES(Object::cast_to<Resource>(current_obj));
 
 			save_resource(current_res);
 
@@ -2558,9 +2558,9 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			uint32_t current = editor_history.get_current();
 			Object *current_obj = current>0 ? ObjectDB::get_instance(current) : NULL;
 
-			ERR_FAIL_COND(!current_obj->cast_to<Resource>())
+			ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj))
 
-			RES current_res = RES(current_obj->cast_to<Resource>());
+			RES current_res = RES(Object::cast_to<Resource>(current_obj));
 
 			save_resource_as(current_res);
 
@@ -2570,9 +2570,9 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			uint32_t current = editor_history.get_current();
 			Object *current_obj = current>0 ? ObjectDB::get_instance(current) : NULL;
 
-			ERR_FAIL_COND(!current_obj->cast_to<Resource>())
+			ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj))
 
-			RES current_res = RES(current_obj->cast_to<Resource>());
+			RES current_res = RES(Object::cast_to<Resource>(current_obj));
 			current_res->set_path("");
 			_edit_current();
 		} break;
@@ -2581,9 +2581,9 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			uint32_t current = editor_history.get_current();
 			Object *current_obj = current>0 ? ObjectDB::get_instance(current) : NULL;
 
-			ERR_FAIL_COND(!current_obj->cast_to<Resource>())
+			ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj))
 
-			RES current_res = RES(current_obj->cast_to<Resource>());
+			RES current_res = RES(Object::cast_to<Resource>(current_obj));
 
 			EditorSettings::get_singleton()->set_resource_clipboard(current_res);
 
@@ -3166,8 +3166,8 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 	}
 	get_editor_data().set_edited_scene_root(p_scene);
 
-	if (p_scene && p_scene->cast_to<Popup>())
-		p_scene->cast_to<Popup>()->show(); //show popups
+	if (Popup *p = Object::cast_to<Popup>(p_scene))
+		p->show(); //show popups
 	scene_tree_dock->set_edited_scene(p_scene);
 	if (get_tree())
 		get_tree()->set_edited_scene_root(p_scene);
@@ -3190,7 +3190,7 @@ void EditorNode::_fetch_translatable_strings(const Object *p_object,Set<StringNa
 
 
 
-	const Node * node = p_object->cast_to<Node>();
+	const Node * node = Object::cast_to<Node>(p_object);
 
 	if (!node)
 		return;
@@ -3540,8 +3540,8 @@ void EditorNode::set_current_scene(int p_idx) {
 
 	Node* new_scene = editor_data.get_edited_scene_root();
 
-	if (new_scene && new_scene->cast_to<Popup>())
-		new_scene->cast_to<Popup>()->show(); //show popups
+	if (Popup *p = Object::cast_to<Popup>(new_scene))
+		p->show(); //show popups
 
 	//print_line("set current 3 ");
 
@@ -3691,7 +3691,7 @@ Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bo
 
 	if (ResourceCache::has(lpath)) {
 		//used from somewhere else? no problem! update state and replace sdata
-		Ref<PackedScene> ps = Ref<PackedScene>( ResourceCache::get(lpath)->cast_to<PackedScene>() );
+		Ref<PackedScene> ps = Ref<PackedScene>( Object::cast_to<PackedScene>(ResourceCache::get(lpath)) );
 		if (ps.is_valid()) {
 			ps->replace_state( sdata->get_state() );
 			ps->set_last_modified_time( sdata->get_last_modified_time() );
@@ -3809,7 +3809,7 @@ void EditorNode::_property_keyed(const String& p_keyed,const Variant& p_value,bo
 
 void EditorNode::_transform_keyed(Object *sp,const String& p_sub,const Transform& p_key) {
 
-	Spatial *s=sp->cast_to<Spatial>();
+	Spatial *s=Object::cast_to<Spatial>(sp);
 	if (!s)
 		return;
 	AnimationPlayerEditor::singleton->get_key_editor()->insert_transform_key(s,p_sub,p_key);
@@ -3826,7 +3826,7 @@ void EditorNode::update_keying() {
 		if (editor_history.get_path_size()>=1) {
 
 			Object *obj = ObjectDB::get_instance(editor_history.get_path_object(0));
-			if (obj && obj->cast_to<Node>()) {
+			if (Object::cast_to<Node>(obj)) {
 
 				valid=true;
 			}
@@ -4563,7 +4563,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String&
 			for(int k=0;k<DOCK_SLOT_MAX;k++) {
 				if (!dock_slot[k]->has_node(name))
 					continue;
-				node=dock_slot[k]->get_node(name)->cast_to<Control>();
+				node=Object::cast_to<Control>(dock_slot[k]->get_node(name));
 				if (!node)
 					continue;
 				atidx=k;
@@ -5147,7 +5147,7 @@ EditorNode::EditorNode() {
 	editor_initialize_certificates(); //for asset sharing
 
 
-	InputDefault *id = Input::get_singleton()->cast_to<InputDefault>();
+	InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
 
 	if (id) {
 

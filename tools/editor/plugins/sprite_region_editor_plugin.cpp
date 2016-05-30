@@ -366,7 +366,7 @@ void SpriteRegionEditor::_bind_methods()
 void SpriteRegionEditor::edit(Node *p_sprite)
 {
 	if (p_sprite) {
-		node=p_sprite->cast_to<Sprite>();
+		node=Object::cast_to<Sprite>(p_sprite);
 		node->connect("exit_tree",this,"_node_removed",varray(p_sprite),CONNECT_ONESHOT);
 	} else {
 		if (node)
@@ -537,7 +537,7 @@ SpriteRegionEditor::SpriteRegionEditor(EditorNode* p_editor)
 
 void SpriteRegionEditorPlugin::edit(Object *p_node)
 {
-	region_editor->edit(p_node->cast_to<Node>());
+	region_editor->edit(Object::cast_to<Node>(p_node));
 }
 
 bool SpriteRegionEditorPlugin::handles(Object *p_node) const

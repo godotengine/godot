@@ -96,7 +96,7 @@ void RichTextEditor::_bind_methods() {
 
 void RichTextEditor::edit(Node *p_rich_text) {
 
-	node=p_rich_text->cast_to<RichTextLabel>();
+	node=Object::cast_to<RichTextLabel>(p_rich_text);
 
 }
 RichTextEditor::RichTextEditor() {
@@ -121,7 +121,7 @@ RichTextEditor::RichTextEditor() {
 
 void RichTextEditorPlugin::edit(Object *p_object) {
 
-	rich_text_editor->edit(p_object->cast_to<Node>());
+	rich_text_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool RichTextEditorPlugin::handles(Object *p_object) const {

@@ -67,7 +67,7 @@ Node *ScenePreloader::instance() const {
 
 		Object * obj = ObjectTypeDB::instance(snames[ n.type ]);
 		ERR_FAIL_COND_V(!obj,NULL);
-		Node *node = obj->cast_to<Node>();
+		Node *node = Object::cast_to<Node>(obj);
 		ERR_FAIL_COND_V(!node,NULL);
 
 		int nprop_count=n.properties.size();
@@ -194,7 +194,7 @@ void ScenePreloader::_parse_connections(Node *p_node, Map<StringName,int> &name_
 			const Node::Connection &c = F->get();
 			if (!(c.flags&CONNECT_PERSIST))
 				continue;
-			Node *n=c.target->cast_to<Node>();
+			Node *n=Object::cast_to<Node>(c.target);
 			if (!n)
 				continue;
 

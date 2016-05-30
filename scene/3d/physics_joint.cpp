@@ -58,8 +58,8 @@ void Joint::_update_joint(bool p_only_free) {
 	if (!node_a && !node_b)
 		return;
 
-	PhysicsBody *body_a=node_a ? node_a->cast_to<PhysicsBody>() : (PhysicsBody*)NULL;
-	PhysicsBody *body_b=node_b ? node_b->cast_to<PhysicsBody>() : (PhysicsBody*)NULL;
+	PhysicsBody *body_a=Object::cast_to<PhysicsBody>(node_a);
+	PhysicsBody *body_b=Object::cast_to<PhysicsBody>(node_b);
 
 	if (!body_a && !body_b)
 		return;
@@ -1263,8 +1263,8 @@ void PhysicsJoint::_disconnect() {
 	Node *nA = get_node(body_A);
 	Node *nB = get_node(body_B);
 
-	PhysicsBody *A = nA?nA->cast_to<PhysicsBody>():NULL;
-	PhysicsBody *B = nA?nB->cast_to<PhysicsBody>():NULL;
+	PhysicsBody *A = Object::cast_to<PhysicsBody>(nA);
+	PhysicsBody *B = Object::cast_to<PhysicsBody>(nB);
 
 	if (!A ||!B)
 		return;
@@ -1283,8 +1283,8 @@ void PhysicsJoint::_connect() {
 	Node *nA = get_node(body_A);
 	Node *nB = get_node(body_B);
 
-	PhysicsBody *A = nA?nA->cast_to<PhysicsBody>():NULL;
-	PhysicsBody *B = nA?nB->cast_to<PhysicsBody>():NULL;
+	PhysicsBody *A = Object::cast_to<PhysicsBody>(nA);
+	PhysicsBody *B = Object::cast_to<PhysicsBody>(nB);
 
 	if (!A && !B)
 		return;

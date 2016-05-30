@@ -146,7 +146,7 @@ void PathFollow2D::_notification(int p_what) {
 			Node *parent=get_parent();
 			if (parent) {
 
-				path=parent->cast_to<Path2D>();
+				path=Object::cast_to<Path2D>(parent);
 				if (path) {
 					_update_transform();
 				}
@@ -242,7 +242,7 @@ String PathFollow2D::get_configuration_warning() const {
 	if (!is_visible() || !is_inside_tree())
 		return String();
 
-	if (!get_parent() || !get_parent()->cast_to<Path2D>()) {
+	if (!get_parent() || !Object::cast_to<Path2D>(get_parent())) {
 		return TTR("PathFollow2D only works when set as a child of a Path2D node.");
 	}
 

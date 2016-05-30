@@ -160,7 +160,7 @@ void PopupMenu::_activate_submenu(int over) {
 	Node* n = get_node(items[over].submenu);
 	ERR_EXPLAIN("item subnode does not exist: "+items[over].submenu);
 	ERR_FAIL_COND(!n);
-	Popup *pm = n->cast_to<Popup>();
+	Popup *pm = Object::cast_to<Popup>(n);
 	ERR_EXPLAIN("item subnode is not a Popup: "+items[over].submenu);
 	ERR_FAIL_COND(!pm);
 	if (pm->is_visible())
@@ -180,7 +180,7 @@ void PopupMenu::_activate_submenu(int over) {
 	pm->set_pos(pos);
 	pm->popup();
 
-	PopupMenu *pum = pm->cast_to<PopupMenu>();
+	PopupMenu *pum = Object::cast_to<PopupMenu>(pm);
 	if (pum) {
 
 		pr.pos-=pum->get_global_pos();
@@ -757,7 +757,7 @@ bool PopupMenu::activate_item_by_accelerator(uint32_t p_accel) {
 			if(!n)
 				continue;
 
-			PopupMenu* pm = n->cast_to<PopupMenu>();
+			PopupMenu* pm = Object::cast_to<PopupMenu>(n);
 			if(!pm)
 				continue;
 
@@ -779,11 +779,11 @@ void PopupMenu::activate_item(int p_item) {
 
 	//hide all parent PopupMenue's
 	Node *next = get_parent();
-	PopupMenu *pop = next->cast_to<PopupMenu>();
+	PopupMenu *pop = Object::cast_to<PopupMenu>(next);
 	while (pop) {
 		pop->hide();
 		next = next->get_parent();
-		pop = next->cast_to<PopupMenu>();
+		pop = Object::cast_to<PopupMenu>(next);
 	}
 	hide();
 

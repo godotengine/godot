@@ -352,7 +352,7 @@ Matrix32 Node2D::get_relative_transform_to_parent(const Node *p_parent) const {
 	if (p_parent==this)
 		return Matrix32();
 
-	Node2D *parent_2d = get_parent()->cast_to<Node2D>();
+	Node2D *parent_2d = Object::cast_to<Node2D>(get_parent());
 
 	ERR_FAIL_COND_V(!parent_2d,Matrix32());
 	if (p_parent==parent_2d)

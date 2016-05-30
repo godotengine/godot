@@ -45,7 +45,7 @@ void SpriteBase3D::_notification(int p_what) {
 		Node *parent=get_parent();
 		if (parent) {
 
-			parent_sprite=parent->cast_to<SpriteBase3D>();
+			parent_sprite=Object::cast_to<SpriteBase3D>(parent);
 			if (parent_sprite) {
 				pI=parent_sprite->children.push_back(this);
 			}

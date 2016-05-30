@@ -83,7 +83,7 @@ void ParticleAttractor2D::_update_owner() {
 
 	Node *n = get_node(path);
 	ERR_FAIL_COND(!n);
-	Particles2D *pn = n->cast_to<Particles2D>();
+	Particles2D *pn = Object::cast_to<Particles2D>(n);
 	if (!pn) {
 		_set_owner(NULL);
 		return;
@@ -207,7 +207,7 @@ NodePath ParticleAttractor2D::get_particles_path() const {
 
 String ParticleAttractor2D::get_configuration_warning() const {
 
-	if (!has_node(path) || !get_node(path) || !get_node(path)->cast_to<Particles2D>()) {
+	if (!has_node(path) || !get_node(path) || !Object::cast_to<Particles2D>(get_node(path))) {
 		return TTR("Path property must point to a valid Particles2D node to work.");
 	}
 

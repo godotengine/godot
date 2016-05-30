@@ -41,7 +41,7 @@ void Container::_child_minsize_changed() {
 
 void Container::add_child_notify(Node *p_child) {
 
-	Control *control = p_child->cast_to<Control>();
+	Control *control = Object::cast_to<Control>(p_child);
 	if (!control)
 		return;
 
@@ -54,7 +54,7 @@ void Container::add_child_notify(Node *p_child) {
 
 void Container::move_child_notify(Node *p_child) {
 
-	if (!p_child->cast_to<Control>())
+	if (!Object::cast_to<Control>(p_child))
 		return;
 
 	queue_sort();
@@ -63,7 +63,7 @@ void Container::move_child_notify(Node *p_child) {
 void Container::remove_child_notify(Node *p_child) {
 
 
-	Control *control = p_child->cast_to<Control>();
+	Control *control = Object::cast_to<Control>(p_child);
 	if (!control)
 		return;
 

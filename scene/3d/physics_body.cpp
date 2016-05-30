@@ -116,7 +116,7 @@ bool PhysicsBody::get_layer_mask_bit(int p_bit) const{
 void PhysicsBody::add_collision_exception_with(Node* p_node) {
 
 	ERR_FAIL_NULL(p_node);
-	PhysicsBody *physics_body = p_node->cast_to<PhysicsBody>();
+	PhysicsBody *physics_body = Object::cast_to<PhysicsBody>(p_node);
 	if (!physics_body) {
 		ERR_EXPLAIN("Collision exception only works between two objects of PhysicsBody type");
 	}
@@ -128,7 +128,7 @@ void PhysicsBody::add_collision_exception_with(Node* p_node) {
 void PhysicsBody::remove_collision_exception_with(Node* p_node) {
 
 	ERR_FAIL_NULL(p_node);
-	PhysicsBody *physics_body = p_node->cast_to<PhysicsBody>();
+	PhysicsBody *physics_body = Object::cast_to<PhysicsBody>(p_node);
 	if (!physics_body) {
 		ERR_EXPLAIN("Collision exception only works between two objects of PhysicsBody type");
 	}
@@ -268,7 +268,7 @@ StaticBody::~StaticBody() {
 void RigidBody::_body_enter_tree(ObjectID p_id) {
 
 	Object *obj = ObjectDB::get_instance(p_id);
-	Node *node = obj ? obj->cast_to<Node>() : NULL;
+	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
 
 	Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.find(p_id);
@@ -294,7 +294,7 @@ void RigidBody::_body_enter_tree(ObjectID p_id) {
 void RigidBody::_body_exit_tree(ObjectID p_id) {
 
 	Object *obj = ObjectDB::get_instance(p_id);
-	Node *node = obj ? obj->cast_to<Node>() : NULL;
+	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_COND(!node);
 	Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
@@ -320,7 +320,7 @@ void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,
 	ObjectID objid=p_instance;
 
 	Object *obj = ObjectDB::get_instance(objid);
-	Node *node = obj ? obj->cast_to<Node>() : NULL;
+	Node *node = Object::cast_to<Node>(obj);
 
 	Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.find(objid);
 
@@ -392,7 +392,7 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 	//eh.. fuck
 #ifdef DEBUG_ENABLED
 
-	state=p_state->cast_to<PhysicsDirectBodyState>();
+	state=Object::cast_to<PhysicsDirectBodyState>(p_state);
 #else
 	state=(PhysicsDirectBodyState*)p_state; //trust it
 #endif
@@ -939,7 +939,7 @@ Variant KinematicBody::_get_collider() const {
 	if (!obj)
 		return Variant();
 
-	Reference *ref = obj->cast_to<Reference>();
+	Reference *ref = Object::cast_to<Reference>(obj);
 	if (ref) {
 		return Ref<Reference>(ref);
 	}

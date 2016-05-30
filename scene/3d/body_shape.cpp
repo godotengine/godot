@@ -47,8 +47,8 @@ void CollisionShape::_update_body() {
 		return;
 	if (!get_tree()->is_editor_hint())
 		return;
-	if (get_parent() && get_parent()->cast_to<CollisionObject>())
-		get_parent()->cast_to<CollisionObject>()->_update_shapes_from_children();
+	if (CollisionObject *co = Object::cast_to<CollisionObject>(get_parent()))
+		co->_update_shapes_from_children();
 
 }
 
@@ -61,9 +61,9 @@ void CollisionShape::make_convex_from_brothers() {
 	for(int i=0;i<p->get_child_count();i++) {
 
 		Node *n = p->get_child(i);
-		if (n->cast_to<MeshInstance>()) {
+		if (Object::cast_to<MeshInstance>(n)) {
 
-			MeshInstance *mi=n->cast_to<MeshInstance>();
+			MeshInstance *mi=Object::cast_to<MeshInstance>(n);
 			Ref<Mesh> m = mi->get_mesh();
 			if (m.is_valid()) {
 
@@ -89,16 +89,16 @@ void CollisionShape::_update_indicator() {
 
 	VS::PrimitiveType pt = VS::PRIMITIVE_TRIANGLES;
 
-	if (shape->cast_to<RayShape>()) {
+	if (Object::cast_to<RayShape>(shape)) {
 
-		RayShape *rs = shape->cast_to<RayShape>();
+		RayShape *rs = Object::cast_to<RayShape>(shape);
 		points.push_back(Vector3());
 		points.push_back(Vector3(0,0,rs->get_length()));
 		pt = VS::PRIMITIVE_LINES;
-	} else if (shape->cast_to<SphereShape>()) {
+	} else if (Object::cast_to<SphereShape>(shape)) {
 
 //		VisualServer *vs=VisualServer::get_singleton();
-		SphereShape *shapeptr=shape->cast_to<SphereShape>();
+		SphereShape *shapeptr=Object::cast_to<SphereShape>(shape);
 
 
 		Color col(0.4,1.0,1.0,0.5);
@@ -157,9 +157,9 @@ void CollisionShape::_update_indicator() {
 
 			}
 		}
-	} else if (shape->cast_to<BoxShape>()) {
+	} else if (Object::cast_to<BoxShape>(shape)) {
 
-		BoxShape *shapeptr=shape->cast_to<BoxShape>();
+		BoxShape *shapeptr=Object::cast_to<BoxShape>(shape);
 
 		for (int i=0;i<6;i++) {
 
@@ -201,9 +201,9 @@ void CollisionShape::_update_indicator() {
 
 		}
 
-	} else if (shape->cast_to<ConvexPolygonShape>()) {
+	} else if (Object::cast_to<ConvexPolygonShape>(shape)) {
 
-		ConvexPolygonShape *shapeptr=shape->cast_to<ConvexPolygonShape>();
+		ConvexPolygonShape *shapeptr=Object::cast_to<ConvexPolygonShape>(shape);
 
 		Geometry::MeshData md;
 		QuickHull::build(Variant(shapeptr->get_points()),md);
@@ -219,9 +219,9 @@ void CollisionShape::_update_indicator() {
 				normals.push_back(md.faces[i].plane.normal);
 			}
 		}
-	} else if (shape->cast_to<ConcavePolygonShape>()) {
+	} else if (Object::cast_to<ConcavePolygonShape>(shape)) {
 
-		ConcavePolygonShape *shapeptr=shape->cast_to<ConcavePolygonShape>();
+		ConcavePolygonShape *shapeptr=Object::cast_to<ConcavePolygonShape>(shape);
 
 		points = shapeptr->get_faces();
 		for(int i=0;i<points.size()/3;i++) {
@@ -232,9 +232,9 @@ void CollisionShape::_update_indicator() {
 			normals.push_back(n);
 		}
 
-	} else if (shape->cast_to<CapsuleShape>()) {
+	} else if (Object::cast_to<CapsuleShape>(shape)) {
 
-		CapsuleShape *shapeptr=shape->cast_to<CapsuleShape>();
+		CapsuleShape *shapeptr=Object::cast_to<CapsuleShape>(shape);
 
 		DVector<Plane> planes = Geometry::build_capsule_planes(shapeptr->get_radius(), shapeptr->get_height()/2.0, 12, Vector3::AXIS_Z);
 		Geometry::MeshData md = Geometry::build_convex_mesh(planes);
@@ -252,9 +252,9 @@ void CollisionShape::_update_indicator() {
 			}
 		}
 
-	} else if (shape->cast_to<PlaneShape>()) {
+	} else if (Object::cast_to<PlaneShape>(shape)) {
 
-		PlaneShape *shapeptr=shape->cast_to<PlaneShape>();
+		PlaneShape *shapeptr=Object::cast_to<PlaneShape>(shape);
 
 		Plane p = shapeptr->get_plane();
 		Vector3 n1 = p.get_any_perpendicular_normal();
@@ -308,7 +308,7 @@ void CollisionShape::_add_to_collision_object(Object* p_cshape) {
 	if (unparenting)
 		return;
 
-	CollisionObject *co=p_cshape->cast_to<CollisionObject>();
+	CollisionObject *co=Object::cast_to<CollisionObject>(p_cshape);
 	ERR_FAIL_COND(!co);
 
 	if (shape.is_valid()) {
@@ -368,7 +368,7 @@ void CollisionShape::_notification(int p_what) {
 
 			if (!can_update_body && update_shape_index>=0) {
 
-				CollisionObject *co = get_parent()->cast_to<CollisionObject>();
+				CollisionObject *co = Object::cast_to<CollisionObject>(get_parent());
 				if (co) {
 					co->set_shape_transform(update_shape_index,get_transform());
 				}
@@ -400,7 +400,7 @@ int CollisionShape::_get_update_shape_index() const{
 
 String CollisionShape::get_configuration_warning() const {
 
-	if (!get_parent()->cast_to<CollisionObject>()) {
+	if (!Object::cast_to<CollisionObject>(get_parent())) {
 		return TTR("CollisionShape only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
 	}
 
@@ -445,7 +445,7 @@ void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
 	if (updating_body) {
 		_update_body();
 	} else if (can_update_body && update_shape_index>=0 && is_inside_tree()){
-		CollisionObject *co = get_parent()->cast_to<CollisionObject>();
+		CollisionObject *co = Object::cast_to<CollisionObject>(get_parent());
 		if (co) {
 			co->set_shape(update_shape_index,p_shape);
 		}
@@ -474,7 +474,7 @@ void CollisionShape::set_trigger(bool p_trigger) {
     if (updating_body) {
         _update_body();
     } else if (can_update_body && update_shape_index>=0 && is_inside_tree()){
-	    CollisionObject *co = get_parent()->cast_to<CollisionObject>();
+	    CollisionObject *co = Object::cast_to<CollisionObject>(get_parent());
 	    if (co) {
 		    co->set_shape_as_trigger(update_shape_index,p_trigger);
 	    }
@@ -604,7 +604,7 @@ void CollisionShape::volume_changed() {
 	Object *parent=get_parent();
 	if (!parent)
 		return;
-	PhysicsBody *physics_body=parent->cast_to<PhysicsBody>();
+	PhysicsBody *physics_body=Object::cast_to<PhysicsBody>(parent);
 
 	ERR_EXPLAIN("CollisionShape parent is not of type PhysicsBody");
 	ERR_FAIL_COND(!physics_body);

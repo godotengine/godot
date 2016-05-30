@@ -175,7 +175,7 @@ void RayCast::add_exception_rid(const RID& p_rid) {
 void RayCast::add_exception(const Object* p_object){
 
 	ERR_FAIL_NULL(p_object);
-	CollisionObject *co=((Object*)p_object)->cast_to<CollisionObject>();
+	const CollisionObject *co=Object::cast_to<const CollisionObject>(p_object);
 	if (!co)
 		return;
 	add_exception_rid(co->get_rid());
@@ -189,7 +189,7 @@ void RayCast::remove_exception_rid(const RID& p_rid) {
 void RayCast::remove_exception(const Object* p_object){
 
 	ERR_FAIL_NULL(p_object);
-	CollisionObject *co=((Object*)p_object)->cast_to<CollisionObject>();
+	const CollisionObject *co=Object::cast_to<const CollisionObject>(p_object);
 	if (!co)
 		return;
 	remove_exception_rid(co->get_rid());

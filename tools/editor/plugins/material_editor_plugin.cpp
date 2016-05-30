@@ -337,7 +337,7 @@ MaterialEditor::MaterialEditor() {
 
 void MaterialEditorPlugin::edit(Object *p_object) {
 
-	Material * s = p_object->cast_to<Material>();
+	Material * s = Object::cast_to<Material>(p_object);
 	if (!s)
 		return;
 

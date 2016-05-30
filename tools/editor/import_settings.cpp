@@ -95,7 +95,7 @@ void ImportSettingsDialog::_item_edited() {
 
 void ImportSettingsDialog::_button_pressed(Object *p_button, int p_col, int p_id) {
 
-	TreeItem *ti=p_button->cast_to<TreeItem>();
+	TreeItem *ti=Object::cast_to<TreeItem>(p_button);
 	if (!ti)
 		return;
 	String path = ti->get_metadata(0);

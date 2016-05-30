@@ -9,7 +9,7 @@ void CollisionPolygon::_add_to_collision_object(Object *p_obj) {
 	if (!can_update_body)
 		return;
 
-	CollisionObject *co = p_obj->cast_to<CollisionObject>();
+	CollisionObject *co = Object::cast_to<CollisionObject>(p_obj);
 	ERR_FAIL_COND(!co);
 
 	if (polygon.size()==0)
@@ -85,7 +85,7 @@ void CollisionPolygon::_update_parent() {
 	Node *parent = get_parent();
 	if (!parent)
 		return;
-	CollisionObject *co = parent->cast_to<CollisionObject>();
+	CollisionObject *co = Object::cast_to<CollisionObject>(parent);
 	if (!co)
 		return;
 	co->_update_shapes_from_children();
@@ -128,7 +128,7 @@ void CollisionPolygon::_notification(int p_what) {
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
             if (!can_update_body && shape_from>=0 && shape_to>=0) {
 
-				CollisionObject *co = get_parent()->cast_to<CollisionObject>();
+				CollisionObject *co = Object::cast_to<CollisionObject>(get_parent());
 				if (co) {
 					for(int i=shape_from;i<=shape_to;i++) {
 						co->set_shape_transform(i,get_transform());
@@ -233,7 +233,7 @@ float CollisionPolygon::get_depth() const {
 
 String CollisionPolygon::get_configuration_warning() const {
 
-	if (!get_parent()->cast_to<CollisionObject>()) {
+	if (!Object::cast_to<CollisionObject>(get_parent())) {
 		return TTR("CollisionPolygon only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
 	}
 

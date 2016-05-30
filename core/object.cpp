@@ -585,7 +585,7 @@ void Object::call_multilevel(const StringName& p_method,const Variant** p_args,i
 
 	if (p_method==CoreStringNames::get_singleton()->_free) {
 #ifdef DEBUG_ENABLED
-		if (cast_to<Reference>()) {
+		if (Object::cast_to<Reference>(this)) {
 			ERR_EXPLAIN("Can't 'free' a reference.");
 			ERR_FAIL();
 			return;
@@ -710,7 +710,7 @@ Variant Object::call(const StringName& p_name, VARIANT_ARG_DECLARE) {
 #if 0
 	if (p_name==CoreStringNames::get_singleton()->_free) {
 #ifdef DEBUG_ENABLED
-		if (cast_to<Reference>()) {
+		if (Object::cast_to<Reference>(this)) {
 			ERR_EXPLAIN("Can't 'free' a reference.");
 			ERR_FAIL_V(Variant());
 		}
@@ -778,7 +778,7 @@ void Object::call_multilevel(const StringName& p_name, VARIANT_ARG_DECLARE) {
 #if 0
 	if (p_name==CoreStringNames::get_singleton()->_free) {
 #ifdef DEBUG_ENABLED
-		if (cast_to<Reference>()) {
+		if (Object::cast_to<Reference>(this)) {
 			ERR_EXPLAIN("Can't 'free' a reference.");
 			ERR_FAIL();
 			return;
@@ -847,7 +847,7 @@ Variant Object::call(const StringName& p_method,const Variant** p_args,int p_arg
 			r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			return Variant();
 		}
-		if (cast_to<Reference>()) {
+		if (Object::cast_to<Reference>(this)) {
 			r_error.argument=0;
 			r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
 			ERR_EXPLAIN("Can't 'free' a reference.");

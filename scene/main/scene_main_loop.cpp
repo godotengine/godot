@@ -1378,7 +1378,7 @@ void SceneTree::_live_edit_create_node_func(const NodePath& p_parent,const Strin
 		Object *o = ObjectTypeDB::instance(p_type);
 		if (!o)
 			continue;
-		Node *no=o->cast_to<Node>();
+		Node *no=Object::cast_to<Node>(o);
 		no->set_name(p_name);
 
 		n2->add_child(no);

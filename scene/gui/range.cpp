@@ -165,7 +165,7 @@ double Range::get_unit_value() const {
 
 void Range::_share(Node *p_range) {
 
-	Range * r = p_range->cast_to<Range>();
+	Range * r = Object::cast_to<Range>(p_range);
 	ERR_FAIL_COND(!r);
 	share(r);
 }

@@ -164,7 +164,7 @@ void PathFollow::_notification(int p_what) {
 			Node *parent=get_parent();
 			if (parent) {
 
-				path=parent->cast_to<Path>();
+				path=Object::cast_to<Path>(parent);
 				if (path) {
 					_update_transform();
 				}

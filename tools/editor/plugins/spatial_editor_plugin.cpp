@@ -122,7 +122,7 @@ int SpatialEditorViewport::get_selected_count() const {
 
 	for(Map<Node*,Object*>::Element *E=selection.front();E;E=E->next()) {
 
-		Spatial *sp = E->key()->cast_to<Spatial>();
+		Spatial *sp = Object::cast_to<Spatial>(E->key());
 		if (!sp)
 			continue;
 
@@ -226,7 +226,7 @@ void SpatialEditorViewport::_select_clicked(bool p_append,bool p_single) {
 		return;
 
 
-	Spatial *sp = obj->cast_to<Spatial>();
+	Spatial *sp = Object::cast_to<Spatial>(obj);
 	if (!sp)
 		return;
 
@@ -288,7 +288,7 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2& p_pos, bool p_append,b
 		if (!obj)
 			continue;
 
-		Spatial *spat=obj->cast_to<Spatial>();
+		Spatial *spat=Object::cast_to<Spatial>(obj);
 
 		if (!spat)
 			continue;
@@ -414,7 +414,7 @@ void SpatialEditorViewport::_find_items_at_pos(const Point2& p_pos,bool &r_inclu
 		if (!obj)
 			continue;
 
-		Spatial *spat=obj->cast_to<Spatial>();
+		Spatial *spat=Object::cast_to<Spatial>(obj);
 
 		if (!spat)
 			continue;
@@ -541,7 +541,7 @@ void SpatialEditorViewport::_select_region() {
 		Object *obj=ObjectDB::get_instance(id);
 		if (!obj)
 			continue;
-		Spatial *sp = obj->cast_to<Spatial>();
+		Spatial *sp = Object::cast_to<Spatial>(obj);
 		if (!sp)
 			continue;
 
@@ -584,7 +584,7 @@ void SpatialEditorViewport::_compute_edit(const Point2& p_point) {
 //	int nc=0;
 	for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
-		Spatial *sp = E->get()->cast_to<Spatial>();
+		Spatial *sp = Object::cast_to<Spatial>(E->get());
 		if (!sp)
 			continue;
 
@@ -901,7 +901,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 								if (!obj)
 									continue;
 
-								VisualInstance *vi=obj->cast_to<VisualInstance>();
+								VisualInstance *vi=Object::cast_to<VisualInstance>(obj);
 								if (!vi)
 									continue;
 
@@ -971,7 +971,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 						for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
-							Spatial *sp = E->get()->cast_to<Spatial>();
+							Spatial *sp = Object::cast_to<Spatial>(E->get());
 							if (!sp)
 								continue;
 
@@ -1146,7 +1146,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 							Object *obj=ObjectDB::get_instance(clicked);
 							if (obj) {
 
-								Spatial *spa = obj->cast_to<Spatial>();
+								Spatial *spa = Object::cast_to<Spatial>(obj);
 								if (spa) {
 
 									Ref<SpatialEditorGizmo> seg=spa->get_gizmo();
@@ -1203,7 +1203,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 							for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
-								Spatial *sp = E->get()->cast_to<Spatial>();
+								Spatial *sp = Object::cast_to<Spatial>(E->get());
 								if (!sp)
 									continue;
 
@@ -1363,7 +1363,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 							for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
-								Spatial *sp = E->get()->cast_to<Spatial>();
+								Spatial *sp = Object::cast_to<Spatial>(E->get());
 								if (!sp)
 									continue;
 
@@ -1437,7 +1437,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 							for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
-								Spatial *sp = E->get()->cast_to<Spatial>();
+								Spatial *sp = Object::cast_to<Spatial>(E->get());
 								if (!sp) {
 									continue;
 								}
@@ -1512,7 +1512,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 							for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
-								Spatial *sp = E->get()->cast_to<Spatial>();
+								Spatial *sp = Object::cast_to<Spatial>(E->get());
 								if (!sp)
 									continue;
 
@@ -1757,7 +1757,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 					for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
-						Spatial *sp = E->get()->cast_to<Spatial>();
+						Spatial *sp = Object::cast_to<Spatial>(E->get());
 						if (!sp)
 							continue;
 
@@ -1846,7 +1846,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 		for(Map<Node*,Object*>::Element *E=selection.front();E;E=E->next()) {
 
-			Spatial *sp = E->key()->cast_to<Spatial>();
+			Spatial *sp = Object::cast_to<Spatial>(E->key());
 			if (!sp)
 				continue;
 
@@ -1865,7 +1865,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 				continue;
 			}
 			*/
-			VisualInstance *vi=sp->cast_to<VisualInstance>();
+			VisualInstance *vi=Object::cast_to<VisualInstance>(sp);
 
 
 			if (se->aabb.has_no_surface()) {
@@ -2096,7 +2096,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
 			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
-				Spatial *sp = E->get()->cast_to<Spatial>();
+				Spatial *sp = Object::cast_to<Spatial>(E->get());
 				if (!sp)
 					continue;
 
@@ -2126,7 +2126,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			undo_redo->create_action(TTR("Align with view"));
 			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
-				Spatial *sp = E->get()->cast_to<Spatial>();
+				Spatial *sp = Object::cast_to<Spatial>(E->get());
 				if (!sp)
 					continue;
 
@@ -2368,8 +2368,8 @@ void SpatialEditorViewport::set_state(const Dictionary& p_state) {
 
 	if (p_state.has("previewing")) {
 		Node *pv = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["previewing"]);
-		if (pv && pv->cast_to<Camera>()) {
-			previewing=pv->cast_to<Camera>();
+		if (Object::cast_to<Camera>(pv)) {
+			previewing=Object::cast_to<Camera>(pv);
 			previewing->connect("exit_tree",this,"_preview_exited_scene");
 			VS::get_singleton()->viewport_attach_camera( viewport->get_viewport(), previewing->get_camera() ); //replace
 			view_menu->hide();
@@ -2565,7 +2565,7 @@ void SpatialEditor::update_transform_gizmo() {
 
 	for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
-		Spatial *sp = E->get()->cast_to<Spatial>();
+		Spatial *sp = Object::cast_to<Spatial>(E->get());
 		if (!sp)
 			continue;
 
@@ -2602,7 +2602,7 @@ void SpatialEditor::update_transform_gizmo() {
 
 Object *SpatialEditor::_get_editor_data(Object *p_what) {
 
-	Spatial *sp = p_what->cast_to<Spatial>();
+	Spatial *sp = Object::cast_to<Spatial>(p_what);
 	if (!sp)
 		return NULL;
 
@@ -2902,7 +2902,7 @@ void SpatialEditor::_xform_dialog_action() {
 
 	for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
-		Spatial *sp = E->get()->cast_to<Spatial>();
+		Spatial *sp = Object::cast_to<Spatial>(E->get());
 		if (!sp)
 			continue;
 
@@ -3513,7 +3513,7 @@ void SpatialEditor::_init_indicators() {
 	_generate_selection_box();
 
 
-	//get_scene()->get_root_node()->cast_to<EditorNode>()->get_scene_root()->add_child(camera);
+	//Object::cast_to<EditorNode>(get_scene()->get_root_node())->get_scene_root()->add_child(camera);
 
 	//current_camera=camera;
 
@@ -3541,7 +3541,7 @@ void SpatialEditor::_finish_indicators() {
 
 void SpatialEditor::_instance_scene() {
 #if 0
-	EditorNode *en = get_scene()->get_root_node()->cast_to<EditorNode>();
+	EditorNode *en = Object::cast_to<EditorNode>(get_scene()->get_root_node());
 	ERR_FAIL_COND(!en);
 	String path = en->get_scenes_dock()->get_selected_path();
 	if (path=="") {
@@ -3559,7 +3559,7 @@ void SpatialEditor::_instance_scene() {
 		return;
 	}
 
-	Spatial *s = scene->cast_to<Spatial>();
+	Spatial *s = Object::cast_to<Spatial>(scene);
 	if (s) {
 
 		undo_redo->add_do_method(s,"set_global_transform",Transform(Matrix3(),cursor.cursor_pos));
@@ -3689,7 +3689,7 @@ HSplitContainer *SpatialEditor::get_palette_split() {
 
 void SpatialEditor::_request_gizmo(Object* p_obj) {
 
-	Spatial *sp=p_obj->cast_to<Spatial>();
+	Spatial *sp=Object::cast_to<Spatial>(p_obj);
 	if (!sp)
 		return;
 	if (editor->get_edited_scene() && (sp==editor->get_edited_scene() || sp->get_owner()==editor->get_edited_scene() || editor->get_edited_scene()->is_editable_instance(sp->get_owner()))) {
@@ -3722,7 +3722,7 @@ void SpatialEditor::_request_gizmo(Object* p_obj) {
 
 void SpatialEditor::_toggle_maximize_view(Object* p_viewport) {
 	if (!p_viewport) return;
-	SpatialEditorViewport *current_viewport = p_viewport->cast_to<SpatialEditorViewport>();
+	SpatialEditorViewport *current_viewport = Object::cast_to<SpatialEditorViewport>(p_viewport);
 	if (!current_viewport) return;
 
 	int index=-1;
@@ -4222,7 +4222,7 @@ void SpatialEditorPlugin::make_visible(bool p_visible) {
 }
 void SpatialEditorPlugin::edit(Object *p_object) {
 
-	spatial_editor->edit(p_object->cast_to<Spatial>());
+	spatial_editor->edit(Object::cast_to<Spatial>(p_object));
 }
 
 bool SpatialEditorPlugin::handles(Object *p_object) const {

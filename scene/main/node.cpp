@@ -162,7 +162,7 @@ void Node::_propagate_enter_tree() {
 		data.depth=1;
 	}
 
-	data.viewport = cast_to<Viewport>();
+	data.viewport = Object::cast_to<Viewport>(this);
 	if (!data.viewport)
 		data.viewport = data.parent->data.viewport;
 
@@ -1492,9 +1492,9 @@ Node *Node::duplicate(bool p_use_instancing) const {
 
 	bool instanced=false;
 
-	if (cast_to<InstancePlaceholder>()) {
+	if (Object::cast_to<InstancePlaceholder>(this)) {
 
-		const InstancePlaceholder *ip = cast_to<const InstancePlaceholder>();
+		const InstancePlaceholder *ip = Object::cast_to<const InstancePlaceholder>(this);
 		InstancePlaceholder *nip = memnew( InstancePlaceholder );
 		nip->set_instance_path( ip->get_instance_path() );
 		node=nip;
@@ -1512,7 +1512,7 @@ Node *Node::duplicate(bool p_use_instancing) const {
 
 		Object *obj = ObjectTypeDB::instance(get_type());
 		ERR_FAIL_COND_V(!obj,NULL);
-		node = obj->cast_to<Node>();
+		node = Object::cast_to<Node>(obj);
 		if (!node)
 			memdelete(obj);
 		ERR_FAIL_COND_V(!node,NULL);
@@ -1588,7 +1588,7 @@ void Node::_duplicate_and_reown(Node* p_new_parent, const Map<Node*,Node*>& p_re
 			print_line("could not duplicate: "+String(get_type()));
 		}
 		ERR_FAIL_COND(!obj);
-		node = obj->cast_to<Node>();
+		node = Object::cast_to<Node>(obj);
 		if (!node)
 			memdelete(obj);
 	}
@@ -1649,7 +1649,7 @@ void Node::_duplicate_signals(const Node* p_original,Node* p_copy) const {
 			NodePath p = p_original->get_path_to(this);
 			Node *copy = p_copy->get_node(p);
 
-			Node *target = E->get().target->cast_to<Node>();
+			Node *target = Object::cast_to<Node>(E->get().target);
 			if (!target)
 				continue;
 			NodePath ptarget = p_original->get_path_to(target);
@@ -1680,7 +1680,7 @@ Node *Node::duplicate_and_reown(const Map<Node*,Node*>& p_reown_map) const {
 		print_line("could not duplicate: "+String(get_type()));
 	}
 	ERR_FAIL_COND_V(!obj,NULL);
-	node = obj->cast_to<Node>();
+	node = Object::cast_to<Node>(obj);
 	if (!node)
 		memdelete(obj);
 	ERR_FAIL_COND_V(!node,NULL);
@@ -1924,7 +1924,7 @@ void Node::_set_tree(SceneTree *p_tree) {
 
 static void _Node_debug_sn(Object *p_obj) {
 
-	Node *n = p_obj->cast_to<Node>();
+	Node *n = Object::cast_to<Node>(p_obj);
 	if (!n)
 		return;
 

@@ -100,7 +100,7 @@ void Popup::set_as_minsize() {
 
 	for(int i=0;i<get_child_count();i++) {
 
-		Control *c=get_child(i)->cast_to<Control>();
+		Control *c=Object::cast_to<Control>(get_child(i));
 		if (!c)
 			continue;
 		if (c->is_hidden())
@@ -143,7 +143,7 @@ void Popup::popup_centered_minsize(const Size2& p_minsize) {
 
 	for(int i=0;i<get_child_count();i++) {
 
-		Control *c=get_child(i)->cast_to<Control>();
+		Control *c=Object::cast_to<Control>(get_child(i));
 		if (!c)
 			continue;
 		if (c->is_hidden())

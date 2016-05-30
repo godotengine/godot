@@ -58,7 +58,7 @@ void ControlEditor::_visibility_changed(ObjectID p_control) {
 	Object *c = ObjectDB::get_instance(p_control);
 	if (!c)
 		return;
-	Control *ct = c->cast_to<Control>();
+	Control *ct = Object::cast_to<Control>(c);
 	if (!ct)
 		return;
 
@@ -88,7 +88,7 @@ Control* ControlEditor::_select_control_at_pos(const Point2& p_pos,Node* p_node)
 			return r;
 	}
 
-	Control *c=p_node->cast_to<Control>();
+	Control *c=Object::cast_to<Control>(p_node);
 
 	if (c) {
 		Rect2 rect = c->get_window_rect();
@@ -219,7 +219,7 @@ void ControlEditor::_input_event(InputEvent p_event) {
 		//multi control edit
 
 		Point2 click=Point2(b.x,b.y);
-		Node* scene = get_scene()->get_root_node()->cast_to<EditorNode>()->get_edited_scene();
+		Node* scene = Object::cast_to<EditorNode>(get_scene()->get_root_node())->get_edited_scene();
 		if (!scene)
 			return;
 		/*
@@ -233,7 +233,7 @@ void ControlEditor::_input_event(InputEvent p_event) {
 		while ((n && n != scene && n->get_owner() != scene) || (n && !n->is_type("Control"))) {
 			n = n->get_parent();
 		};
-		c = n->cast_to<Control>();
+		c = Object::cast_to<Control>(n);
 
 
 		if (b.mod.control) { //additive selection
@@ -255,26 +255,26 @@ void ControlEditor::_input_event(InputEvent p_event) {
 			}
 
 			//check parents!
-			Control *parent = c->get_parent()->cast_to<Control>();
+			Control *parent = Object::cast_to<Control>(c->get_parent());
 
 			while(parent) {
 
 				if (controls.has(parent))
 					return; //a parent is already selected, so this is pointless
-				parent=parent->get_parent()->cast_to<Control>();
+				parent=Object::cast_to<Control>(parent->get_parent());
 			}
 
 			//check childrens of everything!
 			List<Control*> to_erase;
 
 			for(ControlMap::Element *E=controls.front();E;E=E->next()) {
-				parent = E->key()->get_parent()->cast_to<Control>();
+				parent = Object::cast_to<Control>(E->key()->get_parent());
 				while(parent) {
 					if (parent==c) {
 						to_erase.push_back(E->key());
 						break;
 					}
-					parent=parent->get_parent()->cast_to<Control>();
+					parent=Object::cast_to<Control>(parent->get_parent());
 				}
 			}
 
@@ -595,8 +595,8 @@ void ControlEditor::_find_controls_span(Node *p_node, Rect2& r_rect) {
 	if (p_node!=editor->get_edited_scene() && p_node->get_owner()!=editor->get_edited_scene())
 		return;
 
-	if (p_node->cast_to<Control>()) {
-		Control *c = p_node->cast_to<Control>();
+	if (Object::cast_to<Control>(p_node)) {
+		Control *c = Object::cast_to<Control>(p_node);
 		if (c->get_viewport() != editor->get_viewport()->get_viewport())
 			return; //bye, it's in another viewport
 
@@ -783,7 +783,7 @@ ControlEditor::ControlEditor(EditorNode *p_editor) {
 void ControlEditorPlugin::edit(Object *p_object) {
 
 	control_editor->set_undo_redo(&get_undo_redo());
-	control_editor->edit(p_object->cast_to<Control>());
+	control_editor->edit(Object::cast_to<Control>(p_object));
 }
 
 bool ControlEditorPlugin::handles(Object *p_object) const {
