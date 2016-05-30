@@ -1384,7 +1384,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_images->set_column_expand(1,false);
 	group_images->set_column_min_width(1,100);
 	group_images->set_column_titles_visible(true);
-	group_images->set_column_title(0,"Image");
+	group_images->set_column_title(0,TTR("Images"));
 	group_images->set_column_title(1,TTR("Group"));
 	group_images->connect("item_edited",this,"_group_item_edited",varray(),CONNECT_DEFERRED);
 
