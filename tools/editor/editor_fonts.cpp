@@ -65,23 +65,62 @@ static Ref<BitmapFont> make_font(int p_height,int p_ascent, int p_valign, int p_
 }
 
 
+
+#define MAKE_DROID_SANS(m_name,m_size)	\
+	Ref<DynamicFont> m_name;\
+	m_name.instance();\
+	m_name->set_size(m_size);\
+	m_name->set_font_data(DroidSans);\
+	m_name->add_fallback(DroidSansFallback);\
+	m_name->add_fallback(DroidSansJapanese);\
+	m_name->add_fallback(DroidSansArabic);\
+	m_name->add_fallback(DroidSansHebrew);\
+	m_name->add_fallback(DroidSansThai);
+
+
+
 void editor_register_fonts(Ref<Theme> p_theme) {
 
-	Ref<DynamicFontData> dfd;
-	dfd.instance();
-	dfd->set_font_ptr(_font_droid_sans,_font_droid_sans_size);
-	dfd->set_force_autohinter(true); //just looks better..i think?
+	/* Droid Sans */
+
+	Ref<DynamicFontData> DroidSans;
+	DroidSans.instance();
+	DroidSans->set_font_ptr(_font_DroidSans,_font_DroidSans_size);
+	DroidSans->set_force_autohinter(true); //just looks better..i think?
+
+	Ref<DynamicFontData> DroidSansFallback;
+	DroidSansFallback.instance();
+	DroidSansFallback->set_font_ptr(_font_DroidSansFallback,_font_DroidSansFallback_size);
+	DroidSansFallback->set_force_autohinter(true); //just looks better..i think?
+
+	Ref<DynamicFontData> DroidSansJapanese;
+	DroidSansJapanese.instance();
+	DroidSansJapanese->set_font_ptr(_font_DroidSansJapanese,_font_DroidSansJapanese_size);
+	DroidSansJapanese->set_force_autohinter(true); //just looks better..i think?
+
+	Ref<DynamicFontData> DroidSansArabic;
+	DroidSansArabic.instance();
+	DroidSansArabic->set_font_ptr(_font_DroidSansArabic,_font_DroidSansArabic_size);
+	DroidSansArabic->set_force_autohinter(true); //just looks better..i think?
+
+	Ref<DynamicFontData> DroidSansHebrew;
+	DroidSansHebrew.instance();
+	DroidSansHebrew->set_font_ptr(_font_DroidSansHebrew,_font_DroidSansHebrew_size);
+	DroidSansHebrew->set_force_autohinter(true); //just looks better..i think?
+
+	Ref<DynamicFontData> DroidSansThai;
+	DroidSansThai.instance();
+	DroidSansThai->set_font_ptr(_font_DroidSansThai,_font_DroidSansThai_size);
+	DroidSansThai->set_force_autohinter(true); //just looks better..i think?
+
+	/* Source Code Pro */
 
 	Ref<DynamicFontData> dfmono;
 	dfmono.instance();
 	dfmono->set_font_ptr(_font_source_code_pro,_font_source_code_pro_size);
 	//dfd->set_force_autohinter(true); //just looks better..i think?
 
-	Ref<DynamicFont> df;
-	df.instance();
-	df->set_size(int(EditorSettings::get_singleton()->get("global/font_size")));
-	df->set_font_data(dfd);
-
+	MAKE_DROID_SANS(df,int(EditorSettings::get_singleton()->get("global/font_size")));
 
 	p_theme->set_default_theme_font(df);
 
@@ -89,15 +128,10 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 //	Ref<BitmapFont> doc_title_font = make_font(_bi_font_doc_title_font_height,_bi_font_doc_title_font_ascent,0,_bi_font_doc_title_font_charcount,_bi_font_doc_title_font_characters,p_theme->get_icon("DocTitleFont","EditorIcons"));
 //	Ref<BitmapFont> doc_code_font = make_font(_bi_font_doc_code_font_height,_bi_font_doc_code_font_ascent,0,_bi_font_doc_code_font_charcount,_bi_font_doc_code_font_characters,p_theme->get_icon("DocCodeFont","EditorIcons"));
 
-	Ref<DynamicFont> df_title;
-	df_title.instance();
-	df_title->set_size(int(EDITOR_DEF("help/help_title_font_size",18)));
-	df_title->set_font_data(dfd);
+	MAKE_DROID_SANS(df_title,int(EDITOR_DEF("help/help_title_font_size",18)));
 
-	Ref<DynamicFont> df_doc;
-	df_doc.instance();
-	df_doc->set_size(int(EDITOR_DEF("help/help_font_size",16)));
-	df_doc->set_font_data(dfd);
+	MAKE_DROID_SANS(df_doc,int(EDITOR_DEF("help/help_font_size",16)));
+
 
 	p_theme->set_font("doc","EditorFonts",df_doc);
 	p_theme->set_font("doc_title","EditorFonts",df_title);

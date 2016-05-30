@@ -156,7 +156,7 @@ float DynamicFontAtSize::get_descent() const {
 	return descent;
 }
 
-Size2 DynamicFontAtSize::get_char_size(CharType p_char,CharType p_next) const {
+Size2 DynamicFontAtSize::get_char_size(CharType p_char,CharType p_next,const Vector<Ref<DynamicFontAtSize> >& p_fallbacks) const {
 
 	if (!valid)
 		return Size2(1,1);
@@ -165,12 +165,66 @@ Size2 DynamicFontAtSize::get_char_size(CharType p_char,CharType p_next) const {
 	const Character *c = char_map.getptr(p_char);
 	ERR_FAIL_COND_V(!c,Size2());
 
-	Size2 ret( c->advance, get_height());
+	Size2 ret(0,get_height());
+
+	if (!c->found) {
+
+		//not found, try in fallbacks
+		for(int i=0;i<p_fallbacks.size();i++) {
+
+			DynamicFontAtSize *fb = const_cast<DynamicFontAtSize*>(p_fallbacks[i].ptr());
+			if (!fb->valid)
+				continue;
+
+			fb->_update_char(p_char);
+			const Character *ch = fb->char_map.getptr(p_char);
+			ERR_CONTINUE(!ch);
+
+			if (!ch->found)
+				continue;
+
+			c=ch;
+			break;
+		}
+		//not found, try 0xFFFD to display 'not found'.
+
+		if (!c->found) {
+
+			const_cast<DynamicFontAtSize*>(this)->_update_char(0xFFFD);
+			c = char_map.getptr(0xFFFD);
+			ERR_FAIL_COND_V(!c,Size2());
+
+		}
+	}
+
+	if (c->found) {
+		ret.x=c->advance;
+	}
+
 
 	if (p_next) {
 		FT_Vector  delta;
 		FT_Get_Kerning( face, p_char,p_next,  FT_KERNING_DEFAULT, &delta );
-		ret.x+=delta.x>>6;
+
+		if (delta.x==0) {
+			for(int i=0;i<p_fallbacks.size();i++) {
+
+				DynamicFontAtSize *fb = const_cast<DynamicFontAtSize*>(p_fallbacks[i].ptr());
+				if (!fb->valid)
+					continue;
+
+				FT_Get_Kerning( fb->face, p_char,p_next,  FT_KERNING_DEFAULT, &delta );
+
+				if (delta.x==0)
+					continue;
+
+				ret.x+=delta.x>>6;
+				break;
+			}
+		} else {
+			ret.x+=delta.x>>6;
+		}
+
 
 	}
 
@@ -178,7 +232,7 @@ Size2 DynamicFontAtSize::get_char_size(CharType p_char,CharType p_next) const {
 }
 
 
-float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_char,const CharType& p_next,const Color& p_modulate) const {
+float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_char,const CharType& p_next,const Color& p_modulate,const Vector<Ref<DynamicFontAtSize> >& p_fallbacks) const {
 
 	if (!valid)
 		return 0;
@@ -187,30 +241,88 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2& p_pos, const
 
 	const Character * c = char_map.getptr(p_char);
 
-	if (!c) {
-		return 0;
+	float advance=0;
+
+	if (!c->found) {
+
+		//not found, try in fallbacks
+		bool used_fallback=false;
+
+		for(int i=0;i<p_fallbacks.size();i++) {
+
+			DynamicFontAtSize *fb = const_cast<DynamicFontAtSize*>(p_fallbacks[i].ptr());
+			if (!fb->valid)
+				continue;
+
+			fb->_update_char(p_char);
+			const Character *ch = fb->char_map.getptr(p_char);
+			ERR_CONTINUE(!ch);
+
+			if (!ch->found)
+				continue;
+
+			Point2 cpos=p_pos;
+			cpos.x+=ch->h_align;
+			cpos.y-=get_ascent();
+			cpos.y+=ch->v_align;
+			ERR_FAIL_COND_V( ch->texture_idx<-1 || ch->texture_idx>=fb->textures.size(),0);
+			if (ch->texture_idx!=-1)
+				VisualServer::get_singleton()->canvas_item_add_texture_rect_region( p_canvas_item, Rect2( cpos, ch->rect.size ), fb->textures[ch->texture_idx].texture->get_rid(),ch->rect, p_modulate );
+			advance=ch->advance;
+			used_fallback=true;
+			break;
+		}
+		//not found, try 0xFFFD to display 'not found'.
+
+		if (!used_fallback) {
+
+			const_cast<DynamicFontAtSize*>(this)->_update_char(0xFFFD);
+			c = char_map.getptr(0xFFFD);
+
+		}
 	}
 
-	Point2 cpos=p_pos;
-	cpos.x+=c->h_align;
-	cpos.y-=get_ascent();
-	cpos.y+=c->v_align;
-	ERR_FAIL_COND_V( c->texture_idx<-1 || c->texture_idx>=textures.size(),0);
-	if (c->texture_idx!=-1)
-		VisualServer::get_singleton()->canvas_item_add_texture_rect_region( p_canvas_item, Rect2( cpos, c->rect.size ), textures[c->texture_idx].texture->get_rid(),c->rect, p_modulate );
+	if (c->found) {
 
-	//textures[c->texture_idx].texture->draw(p_canvas_item,Vector2());
 
-	float ret = c->advance;
+		Point2 cpos=p_pos;
+		cpos.x+=c->h_align;
+		cpos.y-=get_ascent();
+		cpos.y+=c->v_align;
+		ERR_FAIL_COND_V( c->texture_idx<-1 || c->texture_idx>=textures.size(),0);
+		if (c->texture_idx!=-1)
+			VisualServer::get_singleton()->canvas_item_add_texture_rect_region( p_canvas_item, Rect2( cpos, c->rect.size ), textures[c->texture_idx].texture->get_rid(),c->rect, p_modulate );
+		advance=c->advance;
+		//textures[c->texture_idx].texture->draw(p_canvas_item,Vector2());
+	}
+
+
 	if (p_next) {
 
 		FT_Vector  delta;
 		FT_Get_Kerning( face, p_char,p_next,  FT_KERNING_DEFAULT, &delta );
-		ret+=delta.x>>6;
 
+		if (delta.x==0) {
+			for(int i=0;i<p_fallbacks.size();i++) {
+
+				DynamicFontAtSize *fb = const_cast<DynamicFontAtSize*>(p_fallbacks[i].ptr());
+				if (!fb->valid)
+					continue;
+
+				FT_Get_Kerning( fb->face, p_char,p_next,  FT_KERNING_DEFAULT, &delta );
+
+				if (delta.x==0)
+					continue;
+
+				advance+=delta.x>>6;
+				break;
+			}
+		} else {
+			advance+=delta.x>>6;
+		}
 	}
 
-	return ret;
+	return advance;
 }
 
 unsigned long DynamicFontAtSize::_ft_stream_io(FT_Stream      stream,  unsigned long   offset,  unsigned char*  buffer,  unsigned long   count ) {
@@ -245,6 +357,18 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 
 	FT_GlyphSlot slot = face->glyph;
 
+	if (FT_Get_Char_Index( face, p_char)==0) {
+		//not found
+		Character ch;
+		ch.texture_idx=-1;
+		ch.advance=0;
+		ch.h_align=0;
+		ch.v_align=0;
+		ch.found=false;
+
+		char_map[p_char]=ch;
+		return;
+	}
 	int error = FT_Load_Char( face, p_char, FT_LOAD_RENDER|(font->force_autohinter?FT_LOAD_FORCE_AUTOHINT:0) );
 	if (!error) {
 		error = FT_Render_Glyph( face->glyph, ft_render_mode_normal );
@@ -259,6 +383,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 		ch.advance=advance;
 		ch.h_align=0;
 		ch.v_align=0;
+		ch.found=false;
 
 		char_map[p_char]=ch;
 
@@ -412,6 +537,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 	chr.v_align=ascent-yofs;// + ascent - descent;
 	chr.advance=advance;
 	chr.texture_idx=tex_index;
+	chr.found=true;
 
 
 	chr.rect=Rect2(tex_x+rect_margin,tex_y+rect_margin,w,h);
@@ -443,18 +569,6 @@ DynamicFontAtSize::~DynamicFontAtSize(){
 /////////////////////////
 
 
-void DynamicFont::_bind_methods() {
-
-	ObjectTypeDB::bind_method(_MD("set_font_data","data:DynamicFontData"),&DynamicFont::set_font_data);
-	ObjectTypeDB::bind_method(_MD("get_font_data:DynamicFontData"),&DynamicFont::get_font_data);
-
-	ObjectTypeDB::bind_method(_MD("set_size","data"),&DynamicFont::set_size);
-	ObjectTypeDB::bind_method(_MD("get_size"),&DynamicFont::get_size);
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"size"),_SCS("set_size"),_SCS("get_size"));
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"font",PROPERTY_HINT_RESOURCE_TYPE,"DynamicFontData"),_SCS("set_font_data"),_SCS("get_font_data"));
-}
-
 
 void DynamicFont::set_font_data(const Ref<DynamicFontData>& p_data) {
 
@@ -476,6 +590,9 @@ void DynamicFont::set_size(int p_size){
 	if (!data.is_valid())
 		return;
 	data_at_size=data->_get_dynamic_font_at_size(size);
+	for(int i=0;i<fallbacks.size();i++) {
+		fallback_data_at_size[i]=fallbacks[i]->_get_dynamic_font_at_size(size);
+	}
 
 }
 int DynamicFont::get_size() const{
@@ -513,7 +630,7 @@ Size2 DynamicFont::get_char_size(CharType p_char,CharType p_next) const{
 	if (!data_at_size.is_valid())
 		return Size2(1,1);
 
-	return data_at_size->get_char_size(p_char,p_next);
+	return data_at_size->get_char_size(p_char,p_next,fallback_data_at_size);
 
 }
 
@@ -527,8 +644,114 @@ float DynamicFont::draw_char(RID p_canvas_item, const Point2& p_pos, const CharT
 	if (!data_at_size.is_valid())
 		return 0;
 
-	return data_at_size->draw_char(p_canvas_item,p_pos,p_char,p_next,p_modulate);
+	return data_at_size->draw_char(p_canvas_item,p_pos,p_char,p_next,p_modulate,fallback_data_at_size);
 
+}
+void DynamicFont::set_fallback(int p_idx,const Ref<DynamicFontData>& p_data) {
+
+	ERR_FAIL_COND(p_data.is_null());
+	ERR_FAIL_INDEX(p_idx,fallbacks.size());
+	fallbacks[p_idx]=p_data;
+	fallback_data_at_size[p_idx]=fallbacks[p_idx]->_get_dynamic_font_at_size(size);
+
+}
+
+void DynamicFont::add_fallback(const Ref<DynamicFontData>& p_data) {
+
+	ERR_FAIL_COND(p_data.is_null());
+	fallbacks.push_back(p_data);
+	fallback_data_at_size.push_back(fallbacks[fallbacks.size()-1]->_get_dynamic_font_at_size(size)); //const..
+
+	_change_notify();
+}
+
+int DynamicFont::get_fallback_count() const {
+	return fallbacks.size();
+}
+Ref<DynamicFontData> DynamicFont::get_fallback(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx,fallbacks.size(),Ref<DynamicFontData>());
+
+	return fallbacks[p_idx];
+}
+void DynamicFont::remove_fallback(int p_idx) {
+
+	ERR_FAIL_INDEX(p_idx,fallbacks.size());
+	fallbacks.remove(p_idx);
+	fallback_data_at_size.remove(p_idx);
+	_change_notify();
+}
+
+bool DynamicFont::_set(const StringName& p_name, const Variant& p_value) {
+
+	String str = p_name;
+	if (str.begins_with("fallback/")) {
+		int idx = str.get_slicec('/',1).to_int();
+		Ref<DynamicFontData> fd = p_value;
+
+		if (fd.is_valid()) {
+			if (idx==fallbacks.size()) {
+				add_fallback(fd);
+				return true;
+			} else if (idx>=0 && idx<fallbacks.size()) {
+				set_fallback(idx,fd);
+				return true;
+			} else {
+				return false;
+			}
+		} else if (idx>=0 && idx<fallbacks.size()) {
+			remove_fallback(idx);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool DynamicFont::_get(const StringName& p_name,Variant &r_ret) const{
+
+	String str = p_name;
+	if (str.begins_with("fallback/")) {
+		int idx = str.get_slicec('/',1).to_int();
+
+		if (idx==fallbacks.size()) {
+			r_ret=Ref<DynamicFontData>();
+			return true;
+		} else if (idx>=0 && idx<fallbacks.size()) {
+			r_ret=get_fallback(idx);
+			return true;
+		}
+	}
+
+	return false;
+}
+void DynamicFont::_get_property_list( List<PropertyInfo> *p_list) const{
+
+	for(int i=0;i<fallbacks.size();i++) {
+		p_list->push_back(PropertyInfo(Variant::OBJECT,"fallback/"+itos(i),PROPERTY_HINT_RESOURCE_TYPE,"DynamicFontData"));
+	}
+
+	p_list->push_back(PropertyInfo(Variant::OBJECT,"fallback/"+itos(fallbacks.size()),PROPERTY_HINT_RESOURCE_TYPE,"DynamicFontData"));
+}
+
+
+void DynamicFont::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_font_data","data:DynamicFontData"),&DynamicFont::set_font_data);
+	ObjectTypeDB::bind_method(_MD("get_font_data:DynamicFontData"),&DynamicFont::get_font_data);
+
+	ObjectTypeDB::bind_method(_MD("set_size","data"),&DynamicFont::set_size);
+	ObjectTypeDB::bind_method(_MD("get_size"),&DynamicFont::get_size);
+
+	ObjectTypeDB::bind_method(_MD("add_fallback","data:DynamicFontData"),&DynamicFont::add_fallback);
+	ObjectTypeDB::bind_method(_MD("set_fallback","idx","data:DynamicFontData"),&DynamicFont::set_fallback);
+	ObjectTypeDB::bind_method(_MD("get_fallback:DynamicFontData","idx"),&DynamicFont::get_fallback);
+	ObjectTypeDB::bind_method(_MD("remove_fallback","idx"),&DynamicFont::remove_fallback);
+	ObjectTypeDB::bind_method(_MD("get_fallback_count"),&DynamicFont::get_fallback_count);
+
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"font/size"),_SCS("set_size"),_SCS("get_size"));
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"font/font",PROPERTY_HINT_RESOURCE_TYPE,"DynamicFontData"),_SCS("set_font_data"),_SCS("get_font_data"));
 }
 
 DynamicFont::DynamicFont() {
