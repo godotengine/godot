@@ -43,6 +43,8 @@ func _fixed_process(delta):
 	get_node("Label_Screen0_Resolution").set_text(str("Screen0 Resolution:\n", OS.get_screen_size()))
 	
 	get_node("Label_Screen0_Position").set_text(str("Screen0 Position:\n", OS.get_screen_position()))
+
+	get_node("Label_Screen0_DPI").set_text(str("Screen0 DPI:\n", OS.get_screen_dpi()))
 	
 	if(OS.get_screen_count() > 1):
 		get_node("Button_Screen0").show()
@@ -51,11 +53,13 @@ func _fixed_process(delta):
 		get_node("Label_Screen1_Position").show()
 		get_node("Label_Screen1_Resolution").set_text(str("Screen1 Resolution:\n", OS.get_screen_size(1)))
 		get_node("Label_Screen1_Position").set_text(str("Screen1 Position:\n", OS.get_screen_position(1)))
+		get_node("Label_Screen1_DPI").set_text(str("Screen1 DPI:\n", OS.get_screen_dpi(1)))
 	else:
 		get_node("Button_Screen0").hide()
 		get_node("Button_Screen1").hide()
 		get_node("Label_Screen1_Resolution").hide()
 		get_node("Label_Screen1_Position").hide()
+		get_node("Label_Screen1_DPI").hide()
 	
 	get_node("Button_Fullscreen").set_pressed(OS.is_window_fullscreen())
 	get_node("Button_FixedSize").set_pressed(!OS.is_window_resizable())
