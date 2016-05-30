@@ -9,7 +9,7 @@ var prev_shooting = false
 var killed = false
 
 
-func _process(delta):
+func _fixed_process(delta):
 	var motion = Vector2()
 	if Input.is_action_pressed("move_up"):
 		motion += Vector2(0, -1)
@@ -53,7 +53,7 @@ func _process(delta):
 
 func _ready():
 	screen_size = get_viewport().get_rect().size
-	set_process(true)
+	set_fixed_process(true)
 
 
 func _hit_something():
