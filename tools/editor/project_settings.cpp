@@ -81,10 +81,10 @@ void ProjectSettings::_notification(int p_what) {
 
 		translation_list->connect("button_pressed",this,"_translation_delete");
 		_update_actions();
-		popup_add->add_icon_item(get_icon("Keyboard","EditorIcons"),"Key",InputEvent::KEY);
-		popup_add->add_icon_item(get_icon("JoyButton","EditorIcons"),"Joy Button",InputEvent::JOYSTICK_BUTTON);
-		popup_add->add_icon_item(get_icon("JoyAxis","EditorIcons"),"Joy Axis",InputEvent::JOYSTICK_MOTION);
-		popup_add->add_icon_item(get_icon("Mouse","EditorIcons"),"Mouse Button",InputEvent::MOUSE_BUTTON);
+		popup_add->add_icon_item(get_icon("Keyboard","EditorIcons"),TTR("Key "),InputEvent::KEY);//"Key " - because the word 'key' has already been used as a key animation
+		popup_add->add_icon_item(get_icon("JoyButton","EditorIcons"),TTR("Joy Button"),InputEvent::JOYSTICK_BUTTON);
+		popup_add->add_icon_item(get_icon("JoyAxis","EditorIcons"),TTR("Joy Axis"),InputEvent::JOYSTICK_MOTION);
+		popup_add->add_icon_item(get_icon("Mouse","EditorIcons"),TTR("Mouse Button"),InputEvent::MOUSE_BUTTON);
 
 		List<String> tfn;
 		ResourceLoader::get_recognized_extensions_for_type("Translation",&tfn);
