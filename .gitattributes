@@ -1,3 +1,6 @@
+# Properly detect languages on Github
+*.h linguist-language=cpp
+
 *.cpp eol=lf
 *.h eol=lf
 *.py eol=lf
