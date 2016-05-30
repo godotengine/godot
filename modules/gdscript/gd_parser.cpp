@@ -1538,6 +1538,24 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 				}
 				StringName n = tokenizer->get_token_identifier();
 				tokenizer->advance();
+				if (current_function){
+					for (int i=0;i<current_function->arguments.size();i++){
+						if (n == current_function->arguments[i]){
+							_set_error("Variable '"+String(n)+"' already defined in the scope (at line: "+itos(current_function->line)+").");
+							return;
+						}
+					}
+				}
+				BlockNode *check_block = p_block;
+				while (check_block){
+					for (int i=0;i<check_block->variables.size();i++){
+						if (n == check_block->variables[i]){
+							_set_error("Variable '"+String(n)+"' already defined in the scope (at line: "+itos(check_block->variable_lines[i])+").");
+							return;
+						}
+					}
+					check_block = check_block->parent_block;
+				}
 
 				p_block->variables.push_back(n); //line?
 				p_block->variable_lines.push_back(tokenizer->get_token_line());
@@ -1796,7 +1814,14 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 				}
 
 				current_block=cf_for->body;
+
+				// this is for checking variable for redefining
+				// inside this _parse_block
+				cf_for->body->variables.push_back(id->name);
+				cf_for->body->variable_lines.push_back(id->line);
 				_parse_block(cf_for->body,p_static);
+				cf_for->body->variables.remove(0);
+				cf_for->body->variable_lines.remove(0);
 				current_block=p_block;
 
 				if (error_set)
