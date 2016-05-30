@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-05-30 13:28+0200\n"
+"PO-Revision-Date: 2016-05-30 23:12+0200\n"
 "Last-Translator: Sebastian Thewes <minzky@minzky.com>\n"
 "Language-Team: Sebastian Thewes <minzky@minzky.com>\n"
 "Language: de\n"
@@ -143,24 +143,33 @@ msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
+"Damit diese Node funktionieren kann muss eine NavigationPolygon Ressource "
+"definiert oder erzeugt werden. Bitte definiere eine Eigenschaft oder zeichne "
+"ein Polygon."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
 msgstr ""
+"NavigationPolygonInstance muss ein Unterobjekt oder Unterunterobjekt einer "
+"Navigation2D Node sein. Es liefert nur Navigations Daten."
 
 #: scene/2d/sprite.cpp
 msgid ""
 "Path property must point to a valid Viewport node to work. Such Viewport "
 "must be set to 'render target' mode."
 msgstr ""
+"Die Pfad Eigenschaft muss auf eine gültige Viewport Node verweisen um zu "
+"funktionieren. Dieser Viewport muss in 'render target' Modus gesetzt werden."
 
 #: scene/2d/sprite.cpp
 msgid ""
 "The Viewport set in the path property must be set as 'render target' in "
 "order for this sprite to work."
 msgstr ""
+"Der Viewport der in der Pfad Eigenschaft gesetzt wurde, muss als 'render "
+"target' definiert werden damit das Sprite funktioniert."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
