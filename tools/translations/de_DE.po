@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-05-30 11:19+0200\n"
-"Last-Translator: minzky <minzky@minzky.com>\n"
+"PO-Revision-Date: 2016-05-30 12:56+0200\n"
+"Last-Translator: minzky <minzky@minzky>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -114,18 +114,24 @@ msgstr "Pfad Eigenschaft muss auf eine gültige Particles2D Node verweisen."
 #: scene/2d/parallax_layer.cpp
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr "Pral"
+msgstr ""
+"Die ParallaxLayer Node funktioniert nur als Kind von einer "
+"ParallaxBackground Node."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
+"VisibilityEnable2D funktioniert am besten wenn es ein Unterobjekt der "
+"bearbeiteten Hauptszene ist."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
 msgstr ""
+"Ein Okkluder Polygon muss definiert oder gezeichnet werden damit der "
+"Okkluder funktioniert."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
