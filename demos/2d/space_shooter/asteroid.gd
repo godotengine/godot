@@ -10,7 +10,7 @@ var speed_y = 0.0
 var destroyed = false
 
 
-func _process(delta):
+func _fixed_process(delta):
 	translate(Vector2(SPEED, speed_y)*delta)
 
 
@@ -23,7 +23,7 @@ func destroy():
 		return
 	destroyed = true
 	get_node("anim").play("explode")
-	set_process(false)
+	set_fixed_process(false)
 	get_node("sfx").play("sound_explode")
 	# Accumulate points
 	get_node("/root/game_state").points += 1
@@ -34,7 +34,7 @@ func is_enemy():
 
 
 func _on_visibility_enter_screen():
-	set_process(true)
+	set_fixed_process(true)
 	# Make it spin!
 	get_node("anim").play("spin")
 
