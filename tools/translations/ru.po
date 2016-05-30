@@ -2772,6 +2772,11 @@ msgid "Quit to Project List"
 msgstr "Выйти в список проектов"
 
 #: tools/editor/editor_node.cpp
+msgid "Open Project Manager? \n(Unsaved changes will be lost)"
+msgstr "Открыть менеджер проектов? \n(Несохранённые изменения будут потеряны)"
+
+
+#: tools/editor/editor_node.cpp
 msgid "Import assets to the project."
 msgstr "Импортировать ассеты в проект."
 
