@@ -1227,7 +1227,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	custom_root_hb->add_child(root_type);
 
 	root_default = memnew(CheckBox);
-	root_default->set_text("Auto");
+	root_default->set_text(TTR("Auto"));
 	root_default->set_pressed(true);
 	root_default->connect("pressed",this,"_root_default_pressed");
 	custom_root_hb->add_child(root_default);
@@ -1324,7 +1324,7 @@ String EditorSceneImportPlugin::get_name() const {
 
 String EditorSceneImportPlugin::get_visible_name() const{
 
-	return "Scene";
+	return TTR("Scene");
 }
 
 void EditorSceneImportPlugin::import_dialog(const String& p_from){

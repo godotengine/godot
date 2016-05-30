@@ -553,9 +553,8 @@ msgid "Trailing Silence:"
 msgstr "Удаление тишины:"
 
 #: tools/editor/project_export.cpp
-#, fuzzy
 msgid "Script"
-msgstr "Запустить скрипт"
+msgstr "Скрипт"
 
 #: tools/editor/project_export.cpp
 msgid "Script Export Mode:"
@@ -618,28 +617,24 @@ msgid "Line Number:"
 msgstr "Номер строки:"
 
 #: tools/editor/code_editor.cpp
-#, fuzzy
 msgid "No Matches"
-msgstr "Совпадения:"
+msgstr "Нет совпадений"
 
 #: tools/editor/code_editor.cpp
-#, fuzzy
 msgid "Replaced %d Ocurrence(s)."
-msgstr "Заменено %d совпадений."
+msgstr "Заменено совпадений: %d."
 
 #: tools/editor/code_editor.cpp
 msgid "Replace"
 msgstr "Заменить"
 
 #: tools/editor/code_editor.cpp
-#, fuzzy
 msgid "Replace All"
-msgstr "Заменить"
+msgstr "Заменить всё"
 
 #: tools/editor/code_editor.cpp
-#, fuzzy
 msgid "Match Case"
-msgstr "Совпадения:"
+msgstr "Учитывать регистр"
 
 #: tools/editor/code_editor.cpp
 msgid "Whole Words"
@@ -883,15 +878,13 @@ msgid "Dependencies"
 msgstr "Зависимости"
 
 #: tools/editor/dependency_editor.cpp
-#, fuzzy
 msgid "Resource"
-msgstr "Ресурсы"
+msgstr "Ресурс"
 
 #: tools/editor/dependency_editor.cpp tools/editor/project_settings.cpp
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Path"
-msgstr "Путь:"
+msgstr "Путь"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Dependencies:"
@@ -919,6 +912,8 @@ msgid ""
 "work.\n"
 "Remove them anyway? (no undo)"
 msgstr ""
+"Удаляемый файл требуется для правильной работы других ресурсов.\n"
+"Всё равно удалить его? (нельзя отменить)"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (no undo)"
@@ -1513,6 +1508,18 @@ msgid "Remote Inspector"
 msgstr "Удалённый отладчик"
 
 #: tools/editor/script_editor_debugger.cpp
+msgid "Live Scene Tree:"
+msgstr "Дерево сцены в реальном времени:"
+
+#: tools/editor/script_editor_debugger.cpp
+msgid "Remote Object Properties: "
+msgstr "Параметры объекта:"
+
+#: tools/editor/script_editor_debugger.cpp
+msgid "Monitors"
+msgstr "Мониторинг"
+
+#: tools/editor/script_editor_debugger.cpp
 msgid "Monitor"
 msgstr "Параметр"
 
@@ -1548,6 +1555,10 @@ msgstr "Формат"
 #: tools/editor/script_editor_debugger.cpp
 msgid "Usage"
 msgstr "Использует"
+
+#: tools/editor/script_editor_debugger.cpp
+msgid "Misc"
+msgstr "Прочее"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Clicked Control:"
@@ -1615,6 +1626,22 @@ msgid "Add Input Action Event"
 msgstr "Добавить действие"
 
 #: tools/editor/project_settings.cpp
+msgid "Key "
+msgstr "Кнопка"
+
+#: tools/editor/project_settings.cpp
+msgid "Joy Button"
+msgstr "Кнопка геймпада"
+
+#: tools/editor/project_settings.cpp
+msgid "Joy Axis"
+msgstr "Ось геймпада"
+
+#: tools/editor/project_settings.cpp
+msgid "Mouse Button"
+msgstr "Кнопка мыши"
+
+#: tools/editor/project_settings.cpp
 msgid "Meta+"
 msgstr "Meta+"
 
@@ -1680,7 +1707,7 @@ msgstr "Индекс оси джойстика"
 
 #: tools/editor/project_settings.cpp
 msgid "Axis"
-msgstr "Оси"
+msgstr "Ось"
 
 #: tools/editor/project_settings.cpp
 msgid "Joystick Button Index:"
@@ -1809,7 +1836,7 @@ msgstr "Включить"
 
 #: tools/editor/project_settings.cpp
 msgid "Project Settings (engine.cfg)"
-msgstr "Настройки проекта(engine.cfg)"
+msgstr "Настройки проекта (engine.cfg)"
 
 #: tools/editor/project_settings.cpp tools/editor/addon_editor_plugin.cpp
 msgid "Category:"
@@ -1997,6 +2024,10 @@ msgstr "Сущность"
 msgid "Frame #:"
 msgstr "Кадр:"
 
+#: tools/editor/editor_profiler.cpp
+msgid "Profiler"
+msgstr "Профайлер"
+
 #: tools/editor/quick_open.cpp tools/editor/editor_help.cpp
 #: tools/editor/create_dialog.cpp tools/editor/plugins/script_editor_plugin.cpp
 msgid "Matches:"
@@ -2118,24 +2149,23 @@ msgstr "Переподчинить"
 
 #: tools/editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
-msgstr ""
+msgstr "Установленные плагины:"
 
 #: tools/editor/editor_plugin_settings.cpp tools/editor/editor_node.cpp
 msgid "Update"
 msgstr "Обновление"
 
 #: tools/editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Version:"
-msgstr "Описание:"
+msgstr "Версия:"
 
 #: tools/editor/editor_plugin_settings.cpp
 msgid "Author:"
-msgstr ""
+msgstr "Автор:"
 
 #: tools/editor/editor_plugin_settings.cpp
 msgid "Status:"
-msgstr ""
+msgstr "Статус:"
 
 #: tools/editor/scenes_dock.cpp tools/editor/editor_file_dialog.cpp
 msgid "Favorites:"
@@ -2744,6 +2774,14 @@ msgstr "Восстановить сцену"
 #: tools/editor/editor_node.cpp
 msgid "Quit to Project List"
 msgstr "Выйти в список проектов"
+
+#: tools/editor/editor_node.cpp
+msgid ""
+"Open Project Manager? \n"
+"(Unsaved changes will be lost)"
+msgstr ""
+"Открыть менеджер проектов? \n"
+"(Несохранённые изменения будут потеряны)"
 
 #: tools/editor/editor_node.cpp
 msgid "Import assets to the project."
@@ -3519,9 +3557,8 @@ msgid "Cross-Animation Blend Times"
 msgstr "Межанимационный инструмент смешивания"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Animation"
-msgstr "Анимации"
+msgstr "Анимация"
 
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
@@ -3649,8 +3686,8 @@ msgid ""
 "Show a list of all objects at the position clicked\n"
 "(same as Alt+RMB in select mode)."
 msgstr ""
-"Показывает список всех объектов на жатой позиции,\n"
-"так же как и Alt+ПКМ в режимы выделения"
+"Показывает список всех объектов нажатой позиции,\n"
+"так же как и Alt+ПКМ в режиме выделения"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Click to change object's rotation pivot."
@@ -3706,7 +3743,7 @@ msgstr "Использовать попиксельную привязку"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Expand to Parent"
-msgstr "Растянуть до родителей"
+msgstr "Растянуть до размера родителей"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton.."
@@ -3868,7 +3905,7 @@ msgstr "Сочетание"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Auto Restart:"
-msgstr "Авто запуск:"
+msgstr "Авто перезапуск:"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Restart (s):"
@@ -4096,7 +4133,7 @@ msgstr "Найти далее"
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Find Previous"
-msgstr ""
+msgstr "Найти предыдущее"
 
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -4449,6 +4486,10 @@ msgid "Scale Mode (R)"
 msgstr "Режим масштабирования (R)"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Transform"
+msgstr "Преобразование"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
 msgstr "Локальные координаты"
 
@@ -4465,20 +4506,44 @@ msgid "Use Default sRGB"
 msgstr "Использовать sRGB"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "1 Viewport"
+msgstr "1 Окно"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "2 Viewports"
+msgstr "2 Окна"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "2 Viewports (Alt)"
+msgstr "2 Окна (другой)"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "3 Viewports"
+msgstr "3 Окна"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "3 Viewports (Alt)"
+msgstr "3 Окна (другой)"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "4 Viewports"
+msgstr "4 Окна"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
-msgstr "Отображать нормали"
+msgstr "Режим нормалей"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Wireframe"
-msgstr "Отображать сетку"
+msgstr "Режим сетки"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Overdraw"
-msgstr "Отображать просвечивание"
+msgstr "Режим просвечивания"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Shadeless"
-msgstr "Отображать без теней"
+msgstr "Режим без теней"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "View Origin"
@@ -4645,19 +4710,16 @@ msgid "Toggle Breakpoint"
 msgstr "Точка останова"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All Breakpoints"
-msgstr "Точка останова"
+msgstr "Удалить все точки останова"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Goto Next Breakpoint"
-msgstr "Перейти к следующему шагу"
+msgstr "Перейти к следующей точке останова"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Goto Previous Breakpoint"
-msgstr "Точка останова"
+msgstr "Перейти к предыдущей точке останова"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Keep Debugger Open"
@@ -5084,7 +5146,7 @@ msgstr "Скорость (FPS):"
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Loop"
-msgstr "Закциклить"
+msgstr "Зациклить"
 
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animation Frames"
@@ -5444,7 +5506,7 @@ msgstr "Базовая текстура атласа"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Source Texture(s)"
-msgstr "Исходные текстура(ы)"
+msgstr "Исходная текстура(ы)"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Import Textures for 2D"
@@ -5503,9 +5565,8 @@ msgid "Accept"
 msgstr "Принять"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
-#, fuzzy
 msgid "Texture"
-msgstr "2D текстура"
+msgstr "Текстура"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Import Large Texture"
@@ -5593,7 +5654,7 @@ msgstr "Не удалось импортировать!"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Translation"
-msgstr "Импорт перевода"
+msgstr "Импортирование перевода"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Source CSV:"
@@ -5616,9 +5677,8 @@ msgid "Import Languages:"
 msgstr "Импортировать языки:"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
-#, fuzzy
 msgid "Translation"
-msgstr "Переводы"
+msgstr "Перевод"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "New Clip"
@@ -5634,7 +5694,7 @@ msgstr "Флаги"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Bake FPS:"
-msgstr "Запечь FPS:"
+msgstr "FPS:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Optimizer"
@@ -5642,15 +5702,15 @@ msgstr "Оптимизатор"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Max Linear Error"
-msgstr "Максимальная линейная погрешность"
+msgstr "Макс. линейная погрешность"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Max Angular Error"
-msgstr "Максимальная угловая погрешность"
+msgstr "Макс. угловая погрешность"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Max Angle"
-msgstr "Максимальный угол"
+msgstr "Макс. угол"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Clips"
@@ -5658,11 +5718,11 @@ msgstr "Клипы"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Start(s)"
-msgstr "Начало (сек)"
+msgstr "Нач(с.)"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "End(s)"
-msgstr "Конец (сек)"
+msgstr "Кон(с.)"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Filters"
@@ -5694,11 +5754,11 @@ msgstr "Исходная сцена:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Same as Target Scene"
-msgstr "То же, что и целевая сцена"
+msgstr "Та же, что и у сцены"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Shared"
-msgstr "Общий"
+msgstr "Раздельно"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Target Texture Folder:"
@@ -5718,6 +5778,10 @@ msgstr "Скрипт пост-процесса:"
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Custom Root Node Type:"
 msgstr "Настраиваемый тип корневого нода:"
+
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+msgid "Auto"
+msgstr "Авто"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
@@ -5774,9 +5838,8 @@ msgid "Saving.."
 msgstr "Сохранение.."
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#, fuzzy
 msgid "3D Scene Animation"
-msgstr "Переименовать анимацию"
+msgstr "Анимация 3D сцены"
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "No source font file!"
@@ -5854,9 +5917,8 @@ msgid "Source Sample(s):"
 msgstr "Исходный сэмпл (ы)"
 
 #: tools/editor/io_plugins/editor_sample_import_plugin.cpp
-#, fuzzy
 msgid "Audio Sample"
-msgstr "Добавить сэмпл"
+msgstr "Аудио сэмпл"
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 msgid "No meshes to import!"
@@ -5872,7 +5934,7 @@ msgstr "Исходный мэш(ы)"
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 msgid "Mesh"
-msgstr ""
+msgstr "Мэш"
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 msgid "Surface %d"

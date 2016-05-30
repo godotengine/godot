@@ -2723,7 +2723,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			if (!p_confirmed) {
 				confirmation->get_ok()->set_text(TTR("Yes"));
-				confirmation->set_text("Open Project Manager? \n(Unsaved changes will be lost)");
+				confirmation->set_text(TTR("Open Project Manager? \n(Unsaved changes will be lost)"));
 				confirmation->popup_centered_minsize();
 				break;
 			}
