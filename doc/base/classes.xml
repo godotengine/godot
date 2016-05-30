@@ -29861,13 +29861,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-			Set the path of the resource. This is useful mainly for editors when saving/loading, and shouldn't be changed by anything else.
+			Set the path of the resource. This is useful mainly for editors when saving/loading, and shouldn't be changed by anything else. Fails if another [Resource] already has path "path".
 			</description>
 		</method>
 		<method name="take_over_path">
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Set the path of the resource. Differs from set_path(), if another [Resource] exists with "path" it over-takes it, instead of failing.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">
@@ -30535,188 +30536,221 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="RigidBody" inherits="PhysicsBody" category="Core">
 	<brief_description>
+	Rigid body node.
 	</brief_description>
 	<description>
+	Rigid body node. This node is used for placing rigid bodies in the scene. It can contain a number of shapes, and also shift mode between regular Rigid body, Kinematic, Character or Static.
 	</description>
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
 			<argument index="0" name="state" type="PhysicsDirectBodyState">
 			</argument>
 			<description>
+			Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default it works in addition to the usual physics behavior, but [method set_use_custom_integrator] allows you to disable the default behavior and do fully custom force integration for a body.
 			</description>
 		</method>
 		<method name="set_mode">
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+			Set the body mode, from the MODE_* enum. This allows to change to a static body or a character body.
 			</description>
 		</method>
 		<method name="get_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the current body mode, see [method set_mode].
 			</description>
 		</method>
 		<method name="set_mass">
 			<argument index="0" name="mass" type="float">
 			</argument>
 			<description>
+			Set the body mass.
 			</description>
 		</method>
 		<method name="get_mass" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current body mass.
 			</description>
 		</method>
 		<method name="set_weight">
 			<argument index="0" name="weight" type="float">
 			</argument>
 			<description>
+			Set the body weight given standard earth-weight (gravity 9.8).
 			</description>
 		</method>
 		<method name="get_weight" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current body weight, given standard earth-weight (gravity 9.8).
 			</description>
 		</method>
 		<method name="set_friction">
 			<argument index="0" name="friction" type="float">
 			</argument>
 			<description>
+			Set the body friction, from 0 (frictionless) to 1 (max friction).
 			</description>
 		</method>
 		<method name="get_friction" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current body friction, from 0 (frictionless) to 1 (max friction).
 			</description>
 		</method>
 		<method name="set_bounce">
 			<argument index="0" name="bounce" type="float">
 			</argument>
 			<description>
+			Set the body bounciness, from 0 (no bounciness) to 1 (max bounciness).
 			</description>
 		</method>
 		<method name="get_bounce" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current body bounciness.
 			</description>
 		</method>
 		<method name="set_linear_velocity">
 			<argument index="0" name="linear_velocity" type="Vector3">
 			</argument>
 			<description>
+			Set the body linear velocity. Can be used sporadically, but [b]DON'T SET THIS IN EVERY FRAME[/b], because physics may be running in another thread and definitely runs at a different granularity. Use [method _integrate_forces] as your process loop if you want to have precise control of the body state.
 			</description>
 		</method>
 		<method name="get_linear_velocity" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+			Return the current body linear velocity.
 			</description>
 		</method>
 		<method name="set_angular_velocity">
 			<argument index="0" name="angular_velocity" type="Vector3">
 			</argument>
 			<description>
+			Set the body angular velocity. Can be used sporadically, but [b]DON'T SET THIS IN EVERY FRAME[/b], because physics may be running in another thread and definitely runs at a different granularity. Use [method _integrate_forces] as your process loop if you want to have precise control of the body state.
 			</description>
 		</method>
 		<method name="get_angular_velocity" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+			Return the current body angular velocity.
 			</description>
 		</method>
 		<method name="set_gravity_scale">
 			<argument index="0" name="gravity_scale" type="float">
 			</argument>
 			<description>
+			Set the gravity factor. This factor multiplies gravity intensity just for this body.
 			</description>
 		</method>
 		<method name="get_gravity_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current body gravity scale.
 			</description>
 		</method>
 		<method name="set_linear_damp">
 			<argument index="0" name="linear_damp" type="float">
 			</argument>
 			<description>
+			Set the linear damp for this body. Default of -1, cannot be less than -1. If this value is different from -1, any linear damp derived from the world or areas will be overridden.
 			</description>
 		</method>
 		<method name="get_linear_damp" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current body linear damp. Default is -1.
 			</description>
 		</method>
 		<method name="set_angular_damp">
 			<argument index="0" name="angular_damp" type="float">
 			</argument>
 			<description>
+			Set the angular damp for this body. Default of -1, cannot be less than -1. If this value is different from -1, any angular damp derived from the world or areas will be overridden.
 			</description>
 		</method>
 		<method name="get_angular_damp" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current body angular damp. Default is -1.
 			</description>
 		</method>
 		<method name="set_max_contacts_reported">
 			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
+			Set the maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
 			</description>
 		</method>
 		<method name="get_max_contacts_reported" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the maximum contacts that can be reported. See [method set_max_contacts_reported].
 			</description>
 		</method>
 		<method name="set_use_custom_integrator">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Pass true to disable the internal force integration (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
 			</description>
 		</method>
 		<method name="is_using_custom_integrator">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the body is using a custom integrator.
 			</description>
 		</method>
 		<method name="set_contact_monitor">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Enable contact monitoring. This allows the body to emit signals when it collides with another.
 			</description>
 		</method>
 		<method name="is_contact_monitor_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether contact monitoring is enabled.
 			</description>
 		</method>
 		<method name="set_use_continuous_collision_detection">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set the continuous collision detection mode from the enum CCD_MODE_*.
+			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fast-moving objects.
 			</description>
 		</method>
 		<method name="is_using_continuous_collision_detection" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this body is using continuous collision detection.
 			</description>
 		</method>
 		<method name="set_axis_velocity">
 			<argument index="0" name="axis_velocity" type="Vector3">
 			</argument>
 			<description>
+			Set an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
 		</method>
 		<method name="apply_impulse">
@@ -30725,48 +30759,57 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="impulse" type="Vector3">
 			</argument>
 			<description>
+			Apply a positioned impulse (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once. Both the impulse and the offset from the body origin are in global coordinates.
 			</description>
 		</method>
 		<method name="set_sleeping">
 			<argument index="0" name="sleeping" type="bool">
 			</argument>
 			<description>
+			Set whether a body is sleeping or not. Sleeping bodies are not affected by forces until a collision or an [method apply_impulse] wakes them up. Until then, they behave like a static body.
 			</description>
 		</method>
 		<method name="is_sleeping" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the body is sleeping.
 			</description>
 		</method>
 		<method name="set_can_sleep">
 			<argument index="0" name="able_to_sleep" type="bool">
 			</argument>
 			<description>
+			Set the body ability to fall asleep when not moving. This saves an enormous amount of processor time when there are plenty of rigid bodies (non static) in a scene.
+			Sleeping bodies are not affected by forces until a collision or an [method apply_impulse] / [method set_applied_force] wakes them up. Until then, they behave like a static body.
 			</description>
 		</method>
 		<method name="is_able_to_sleep" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the body has the ability to fall asleep when not moving. See [method set_can_sleep].
 			</description>
 		</method>
 		<method name="set_axis_lock">
 			<argument index="0" name="axis_lock" type="int">
 			</argument>
 			<description>
+			Set the axis lock of the body, from the AXIS_LOCK_* enum. Axis lock stops the body from moving along the specified axis(X/Y/Z) and rotating along the other two axes.
 			</description>
 		</method>
 		<method name="get_axis_lock" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+		    Return the current axis lock of the body. One of AXIS_LOCK_* enum.
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
+			Return a list of the bodies colliding with this one.
 			</description>
 		</method>
 	</methods>
@@ -30775,6 +30818,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="body" type="Object">
 			</argument>
 			<description>
+			Emitted when a body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
 			</description>
 		</signal>
 		<signal name="body_enter_shape">
@@ -30787,12 +30831,15 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
+			Emitted when a body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+			This signal not only receives the body that collided with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body collided with.
 			</description>
 		</signal>
 		<signal name="body_exit">
 			<argument index="0" name="body" type="Object">
 			</argument>
 			<description>
+			Emitted when a body shape exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
 			</description>
 		</signal>
 		<signal name="body_exit_shape">
@@ -30805,19 +30852,25 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
+			Emitted when a body shape exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+			This signal not only receives the body that stopped colliding with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body stopped colliding with.
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">
 			<description>
+			Emitted when the body changes it's sleeping state. Either by sleeping or waking up.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="MODE_STATIC" value="1">
+		Static mode. The body behaves like a [StaticBody], and can only move by user code.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3">
+		Kinematic body. The body behaves like a [KinematicBody], and can only move by user code.
 		</constant>
 		<constant name="MODE_RIGID" value="0">
+		Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
 		</constant>
 		<constant name="MODE_CHARACTER" value="2">
 		</constant>
@@ -30928,7 +30981,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="gravity_scale" type="float">
 			</argument>
 			<description>
-			Set The gravity factor. This factor multiplies gravity intensity just for this body.
+			Set the gravity factor. This factor multiplies gravity intensity just for this body.
 			</description>
 		</method>
 		<method name="get_gravity_scale" qualifiers="const">
@@ -31041,7 +31094,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<description>
 			Set the continuous collision detection mode from the enum CCD_MODE_*.
-			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fat-moving objects.
+			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fast-moving objects.
 			</description>
 		</method>
 		<method name="get_continuous_collision_detection_mode" qualifiers="const">
@@ -31199,6 +31252,7 @@ This method controls whether the position between two cached points is interpola
 		</signal>
 		<signal name="sleeping_state_changed">
 			<description>
+			Emitted when the body changes it's sleeping state. Either by sleeping or waking up.
 			</description>
 		</signal>
 	</signals>
