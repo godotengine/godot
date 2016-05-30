@@ -15,10 +15,10 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_packed_scene.png"
+   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_color_picker_button.png"
    inkscape:export-xdpi="45"
    inkscape:export-ydpi="45"
-   sodipodi:docname="icon_packed_scene.svg">
+   sodipodi:docname="icon_color_picker_button.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.627417"
-     inkscape:cx="16.749893"
-     inkscape:cy="16.875236"
+     inkscape:zoom="15.999999"
+     inkscape:cx="19.877474"
+     inkscape:cy="22.579326"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -39,7 +39,7 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:snap-bbox-midpoints="false"
+     inkscape:snap-bbox-midpoints="true"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
      inkscape:window-width="1920"
@@ -50,6 +50,22 @@
     <inkscape:grid
        type="xygrid"
        id="grid3336" />
+    <sodipodi:guide
+       position="4.0000001,28.000018"
+       orientation="24,0"
+       id="guide4140" />
+    <sodipodi:guide
+       position="4.0000001,4.0000175"
+       orientation="0,24"
+       id="guide4142" />
+    <sodipodi:guide
+       position="28.000001,4.0000175"
+       orientation="-24,0"
+       id="guide4144" />
+    <sodipodi:guide
+       position="28.000001,28.000018"
+       orientation="0,-24"
+       id="guide4146" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -59,7 +75,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -69,16 +85,14 @@
      id="layer1"
      transform="translate(0,-1020.3622)">
     <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 3.3666082,1027.4025 4,1032.3622 l 2.6484126,-0.3382 -1.9624417,-4.79 -1.3193627,0.1685 z m 5.2871381,-0.6752 1.9624417,4.79 3.967775,-0.5067 -1.962441,-4.79 -3.9677757,0.5067 z m 7.9355507,-1.0135 1.962442,4.79 3.967775,-0.5067 -1.962442,-4.79 -3.967775,0.5067 z m 7.935551,-1.0134 1.962442,4.79 1.319362,-0.1685 -0.633392,-4.9597 -2.648412,0.3382 z"
-       id="rect4137"
-       inkscape:connector-curvature="0"
-       inkscape:transform-center-x="-11.58663"
-       inkscape:transform-center-y="-4.0000001" />
-    <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 4 14 L 4 28 L 28 28 L 28 14 L 4 14 z M 8 18 L 24 18 L 24 21 L 8 21 L 8 18 z "
+       style="fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 2.5 8 L 2.5 24 L 2.6582031 24 L 3.7050781 19.808594 L 13.484375 10.029297 L 11.455078 8 L 2.5 8 z M 29.5 10.984375 L 28.333984 12.150391 L 29.5 13.316406 L 29.5 10.984375 z M 29.5 15.226562 L 24.091797 20.636719 L 21.970703 18.515625 L 16.484375 24 L 29.5 24 L 29.5 15.226562 z "
        transform="translate(0,1020.3622)"
-       id="rect4150" />
+       id="rect4141" />
+    <path
+       style="fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 23.384765,1024.7333 -3.535156,3.5371 -2.121094,-2.123 -2.121093,2.123 2.121093,2.1211 L 6.4140624,1041.704 5,1047.3622 l 5.65625,-1.4141 11.314453,-11.3144 2.121094,2.1211 2.121093,-2.1211 -2.121093,-2.1211 3.535156,-3.5352 -4.242188,-4.2441 z m -4.242187,7.0723 1.414062,1.414 -11.3144526,11.3125 -1.4140624,-1.414 11.314453,-11.3125 z"
+       id="rect4158"
+       inkscape:connector-curvature="0" />
   </g>
 </svg>

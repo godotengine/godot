@@ -15,10 +15,10 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_packed_scene.png"
+   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_collapse.png"
    inkscape:export-xdpi="45"
    inkscape:export-ydpi="45"
-   sodipodi:docname="icon_packed_scene.svg">
+   sodipodi:docname="icon_collapse.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.627417"
-     inkscape:cx="16.749893"
-     inkscape:cy="16.875236"
+     inkscape:zoom="22.627418"
+     inkscape:cx="16.396618"
+     inkscape:cy="14.887452"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -59,7 +59,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -69,16 +69,9 @@
      id="layer1"
      transform="translate(0,-1020.3622)">
     <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 3.3666082,1027.4025 4,1032.3622 l 2.6484126,-0.3382 -1.9624417,-4.79 -1.3193627,0.1685 z m 5.2871381,-0.6752 1.9624417,4.79 3.967775,-0.5067 -1.962441,-4.79 -3.9677757,0.5067 z m 7.9355507,-1.0135 1.962442,4.79 3.967775,-0.5067 -1.962442,-4.79 -3.967775,0.5067 z m 7.935551,-1.0134 1.962442,4.79 1.319362,-0.1685 -0.633392,-4.9597 -2.648412,0.3382 z"
-       id="rect4137"
-       inkscape:connector-curvature="0"
-       inkscape:transform-center-x="-11.58663"
-       inkscape:transform-center-y="-4.0000001" />
-    <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 4 14 L 4 28 L 28 28 L 28 14 L 4 14 z M 8 18 L 24 18 L 24 21 L 8 21 L 8 18 z "
+       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 6 9 L 6 16 L 16 25 L 26 16 L 26 9 L 6 9 z "
        transform="translate(0,1020.3622)"
-       id="rect4150" />
+       id="rect4174" />
   </g>
 </svg>
