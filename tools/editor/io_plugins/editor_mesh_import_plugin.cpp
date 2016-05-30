@@ -173,7 +173,7 @@ public:
 
 	void popup_import(const String& p_path) {
 
-		popup_centered(Size2(400,400));
+		popup_centered(Size2(400,400)*EDSCALE);
 
 		if (p_path!="") {
 

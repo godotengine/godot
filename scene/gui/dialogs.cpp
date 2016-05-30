@@ -118,6 +118,16 @@ void WindowDialog::set_title(const String& p_title) {
 	update();
 }
 
+Size2 WindowDialog::get_minimum_size() const {
+
+	Ref<Font> font = get_font("title_font","WindowDialog");
+	int msx=close_button->get_combined_minimum_size().x;
+	msx+=font->get_string_size(title).x;
+
+	return Size2(msx,1);
+}
+
+
 String WindowDialog::get_title() const {
 
 	return title;
@@ -192,11 +202,9 @@ void AcceptDialog::_notification(int p_what) {
 	if (p_what==NOTIFICATION_MODAL_CLOSE) {
 
 		cancel_pressed();
-	} if (p_what==NOTIFICATION_DRAW) {
+	} if (p_what==NOTIFICATION_RESIZED) {
 
-
-
-
+		_update_child_rect();
 	}
 }
 
@@ -244,12 +252,69 @@ void AcceptDialog::register_text_enter(Node *p_line_edit) {
 	p_line_edit->connect("text_entered", this,"_builtin_text_entered");
 }
 
+void AcceptDialog::_update_child_rect() {
+
+	int margin = get_constant("margin","Dialogs");
+	Size2 size = get_size();
+	Size2 hminsize = hbc->get_combined_minimum_size();
+
+	Vector2 cpos(margin,margin);
+	Vector2 csize(size.x-margin*2,size.y-margin*3-hminsize.y);
+	label->set_pos(cpos);
+	label->set_size(csize);
+
+	if (child) {
+
+		child->set_pos(cpos);
+		child->set_size(csize);
+	}
+
+	cpos.y+=csize.y+margin;
+	csize.y=hminsize.y;
+
+	hbc->set_pos(cpos);
+	hbc->set_size(csize);
+
+}
+
+Size2 AcceptDialog::get_minimum_size() const {
+
+	int margin = get_constant("margin","Dialogs");
+	Size2 minsize = label->get_combined_minimum_size();
+	if (child) {
+
+		Size2 cminsize = child->get_combined_minimum_size();
+		minsize.x=MAX(cminsize.x,minsize.x);
+		minsize.y=MAX(cminsize.y,minsize.y);
+	}
+
+	Size2 hminsize = hbc->get_combined_minimum_size();
+	minsize.x = MAX(hminsize.x,minsize.x);
+	minsize.y+=hminsize.y;
+	minsize.x+=margin*2;
+	minsize.y+=margin*3; //one as separation between hbc and child
+
+	Size2 wmsize = WindowDialog::get_minimum_size();
+	minsize.x=MAX(wmsize.x,minsize.x);
+	return minsize;
+}
+
+
 void AcceptDialog::set_child_rect(Control *p_child) {
 
 	ERR_FAIL_COND(p_child->get_parent()!=this);
 
-	p_child->set_area_as_parent_rect(get_constant("margin","Dialogs"));
-	p_child->set_margin(MARGIN_BOTTOM, get_constant("button_margin","Dialogs")+10);
+	//p_child->set_area_as_parent_rect(get_constant("margin","Dialogs"));
+	child=p_child;
+	minimum_size_changed();
+	_update_child_rect();
+}
+
+void AcceptDialog::remove_child_notify(Node *p_child) {
+
+	if (p_child==child) {
+		child=NULL;
+	}
 }
 
 void AcceptDialog::_custom_action(const String& p_action) {
@@ -284,7 +349,7 @@ Button* AcceptDialog::add_cancel(const String &p_cancel) {
 
 	String c = p_cancel;
 	if (p_cancel=="")
-		c="Cancel";
+		c=RTR("Cancel");
 	Button *b = swap_ok_cancel ? add_button(c,true) : add_button(c);
 	b->connect("pressed",this,"_closed");
 	return b;
@@ -341,7 +406,7 @@ AcceptDialog::AcceptDialog() {
 
 	hbc->add_spacer();
 	ok = memnew( Button );
-	ok->set_text("OK");
+	ok->set_text(RTR("OK"));
 	hbc->add_child(ok);
 	hbc->add_spacer();
 	//add_child(ok);
@@ -351,7 +416,9 @@ AcceptDialog::AcceptDialog() {
 	set_as_toplevel(true);
 
 	hide_on_ok=true;
-	set_title("Alert!");
+	set_title(RTR("Alert!"));
+
+	child=NULL;
 }
 
 
@@ -372,6 +439,6 @@ Button *ConfirmationDialog::get_cancel() {
 
 ConfirmationDialog::ConfirmationDialog() {
 
-	set_title("Please Confirm...");
+	set_title(RTR("Please Confirm..."));
 	cancel = add_cancel();
 }

@@ -352,7 +352,7 @@ void EditorTextureImportDialog::_import() {
 	if (!files.size()) {
 
 		error_dialog->set_text(TTR("Please specify some files!"));
-		error_dialog->popup_centered(Size2(200,100));
+		error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 		return;
 	}
 
@@ -382,7 +382,7 @@ void EditorTextureImportDialog::_import() {
 		if (files.size()==0) {
 
 			error_dialog->set_text(TTR("At least one file needed for Atlas."));
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 
 		}
@@ -406,7 +406,7 @@ void EditorTextureImportDialog::_import() {
 		if (err) {
 
 			error_dialog->set_text(TTR("Error importing:")+" "+dst_file.get_file());
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 
 		}
@@ -415,7 +415,7 @@ void EditorTextureImportDialog::_import() {
 		if (files.size()!=1) {
 
 			error_dialog->set_text(TTR("Only one file is required for large texture."));
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 
 		}
@@ -439,7 +439,7 @@ void EditorTextureImportDialog::_import() {
 		if (err) {
 
 			error_dialog->set_text(TTR("Error importing:")+" "+dst_file.get_file());
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 
 		}
@@ -464,7 +464,7 @@ void EditorTextureImportDialog::_import() {
 			if (err) {
 
 				error_dialog->set_text(TTR("Error importing:")+" "+dst_file.get_file());
-				error_dialog->popup_centered(Size2(200,100));
+				error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 				return;
 
 			}
@@ -492,7 +492,7 @@ void EditorTextureImportDialog::_browse_target() {
 
 void EditorTextureImportDialog::popup_import(const String& p_from) {
 
-	popup_centered(Size2(600,500));
+	popup_centered(Size2(600,500)*EDSCALE);
 	if (p_from!="") {
 		Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(p_from);
 		ERR_FAIL_COND(!rimd.is_valid());

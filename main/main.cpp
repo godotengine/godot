@@ -101,12 +101,13 @@ static bool init_fullscreen=false;
 static bool init_use_custom_pos=false;
 static bool debug_collisions=false;
 static bool debug_navigation=false;
+static bool allow_hidpi=true;
 static Vector2 init_custom_pos;
 static int video_driver_idx=-1;
 static int audio_driver_idx=-1;
 static String locale;
 static bool use_debug_profiler=false;
-
+static bool force_lowdpi=false;
 static int init_screen=-1;
 
 static String unescape_cmdline(const String& p_str) {
@@ -157,6 +158,8 @@ void Main::print_help(const char* p_binary) {
 		OS::get_singleton()->print("%s",OS::get_singleton()->get_video_driver_name(i));
 	}
 	OS::get_singleton()->print(")\n");
+	OS::get_singleton()->print("\t-ldpi\t : Force low-dpi mode (OSX Only)");
+
 	OS::get_singleton()->print("\t-ad DRIVER\t : Audio Driver (");
 	for (int i=0;i<OS::get_singleton()->get_audio_driver_count();i++) {
 
@@ -386,6 +389,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				goto error;
 
 			}
+		} else if (I->get()=="-ldpi") { // language
+
+			force_lowdpi=true;
 		} else if (I->get()=="-rfs") { // language
 
 			if (I->next()) {
@@ -691,6 +697,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		video_mode.width=globals->get("display/width");
 	if (!force_res &&use_custom_res && globals->has("display/height"))
 		video_mode.height=globals->get("display/height");
+	if (!editor && (!bool(globals->get("display/allow_hidpi")) || force_lowdpi)) {
+		OS::get_singleton()->_allow_hidpi=false;
+	}
 	if (use_custom_res && globals->has("display/fullscreen"))
 		video_mode.fullscreen=globals->get("display/fullscreen");
 	if (use_custom_res && globals->has("display/resizable"))
@@ -710,6 +719,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 	GLOBAL_DEF("display/width",video_mode.width);
 	GLOBAL_DEF("display/height",video_mode.height);
+	GLOBAL_DEF("display/allow_hidpi",false);
 	GLOBAL_DEF("display/fullscreen",video_mode.fullscreen);
 	GLOBAL_DEF("display/resizable",video_mode.resizable);
 	GLOBAL_DEF("display/borderless_window", video_mode.borderless_window);

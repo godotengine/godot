@@ -42293,8 +42293,10 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="VisibilityEnabler" inherits="VisibilityNotifier" category="Core">
 	<brief_description>
+	Enable certain nodes only when visible.
 	</brief_description>
 	<description>
+	The VisibilityEnabler will disable [RigidBody] and [AnimationPlayer] nodes when they are not visible. It will only affect other nodes within the same scene as the VisibilityEnabler itself.
 	</description>
 	<methods>
 		<method name="set_enabler">
@@ -42303,6 +42305,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+			Set an enabler to true for all nodes of its type to be disabled when the VisibilityEnabler is not in view. See the constants for enablers and what they affect.
 			</description>
 		</method>
 		<method name="is_enabler_enabled" qualifiers="const">
@@ -42311,13 +42314,16 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="enabler" type="int">
 			</argument>
 			<description>
+			Returns whether the specified enabler was set to true or not.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="ENABLER_FREEZE_BODIES" value="1">
+		This enabler will freeze [RigidBody] nodes.
 		</constant>
 		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0">
+		This enabler will pause [AnimationPlayer] nodes.
 		</constant>
 		<constant name="ENABLER_MAX" value="2">
 		</constant>
@@ -42325,8 +42331,10 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="VisibilityEnabler2D" inherits="VisibilityNotifier2D" category="Core">
 	<brief_description>
+	Enable certain nodes only when visible.
 	</brief_description>
 	<description>
+	The VisibilityEnabler2D will disable [RigidBody2D], [AnimationPlayer], and other nodes when they are not visible. It will only affect other nodes within the same scene as the VisibilityEnabler2D itself.
 	</description>
 	<methods>
 		<method name="set_enabler">
@@ -42335,6 +42343,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+			Set an enabler to true for all nodes of its type to be disabled when the VisibilityEnabler2D is not in view. See the constants for enablers and what they affect.
 			</description>
 		</method>
 		<method name="is_enabler_enabled" qualifiers="const">
@@ -42343,19 +42352,25 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="enabler" type="int">
 			</argument>
 			<description>
+			Returns whether the specified enabler was set to true or not.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="ENABLER_FREEZE_BODIES" value="1">
+		This enabler will freeze [RigidBody2D] nodes.
 		</constant>
 		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0">
+		This enabler will pause [AnimationPlayer] nodes.
 		</constant>
 		<constant name="ENABLER_PAUSE_PARTICLES" value="2">
+		This enabler will stop [Particles2D] nodes.
 		</constant>
 		<constant name="ENABLER_PARENT_PROCESS" value="3">
+		This enabler will stop the parent's _process function.
 		</constant>
 		<constant name="ENABLER_PARENT_FIXED_PROCESS" value="4">
+		This enabler will stop the parent's _fixed_process function.
 		</constant>
 		<constant name="ENABLER_MAX" value="5">
 		</constant>
@@ -42363,48 +42378,57 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="VisibilityNotifier" inherits="Spatial" category="Core">
 	<brief_description>
+	Detect when the node is visible on screen.
 	</brief_description>
 	<description>
+	The VisibilityNotifier is used to notify when its bounding box enters the screen, is visible on the screen, or when it exits the screen.
 	</description>
 	<methods>
 		<method name="set_aabb">
 			<argument index="0" name="rect" type="AABB">
 			</argument>
 			<description>
+			Set the visibility bounding box of the VisibilityNotifier.
 			</description>
 		</method>
 		<method name="get_aabb" qualifiers="const">
 			<return type="AABB">
 			</return>
 			<description>
+			Return the visibility bounding box of the VisibilityNotifier.
 			</description>
 		</method>
 		<method name="is_on_screen" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if any part of the bounding box is on the screen.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="enter_screen">
 			<description>
+			Emitted when the VisibilityNotifier enters the screen.
 			</description>
 		</signal>
 		<signal name="enter_camera">
 			<argument index="0" name="camera" type="Object">
 			</argument>
 			<description>
+			Emitted when the VisibilityNotifier enters a [Camera]'s view.
 			</description>
 		</signal>
 		<signal name="exit_screen">
 			<description>
+			Emitted when the VisibilityNotifier exits the screen.
 			</description>
 		</signal>
 		<signal name="exit_camera">
 			<argument index="0" name="camera" type="Object">
 			</argument>
 			<description>
+			Emitted when the VisibilityNotifier exits a [Camera]'s view.
 			</description>
 		</signal>
 	</signals>
@@ -42413,48 +42437,57 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="VisibilityNotifier2D" inherits="Node2D" category="Core">
 	<brief_description>
+	Detect when the node is visible on screen.
 	</brief_description>
 	<description>
+	The VisibilityNotifier2D is used to notify when its bounding rectangle enters the screen, is visible on the screen, or when it exits the screen.
 	</description>
 	<methods>
 		<method name="set_rect">
 			<argument index="0" name="rect" type="Rect2">
 			</argument>
 			<description>
+			Set the visibility bounding rectangle of the VisibilityNotifier2D.
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
+			Return the visibility bounding rectangle of the VisibilityNotifier2D.
 			</description>
 		</method>
 		<method name="is_on_screen" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return true if any part of the bounding rectangle is on the screen.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="enter_screen">
 			<description>
+			Emitted when the VisibilityNotifier2D enters the screen.
 			</description>
 		</signal>
 		<signal name="enter_viewport">
 			<argument index="0" name="viewport" type="Object">
 			</argument>
 			<description>
+			Emitted when the VisibilityNotifier2D enters a [Viewport].
 			</description>
 		</signal>
 		<signal name="exit_screen">
 			<description>
+			Emitted when the VisibilityNotifier2D exits the screen.
 			</description>
 		</signal>
 		<signal name="exit_viewport">
 			<argument index="0" name="viewport" type="Object">
 			</argument>
 			<description>
+			Emitted when the VisibilityNotifier2D exits a [Viewport].
 			</description>
 		</signal>
 	</signals>

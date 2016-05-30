@@ -7,7 +7,7 @@
 #include "editor_settings.h"
 #include "scene/gui/margin_container.h"
 #include "os/file_access.h"
-
+#include "editor_scale.h"
 EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func=NULL;
 EditorFileDialog::GetIconFunc EditorFileDialog::get_large_icon_func=NULL;
 
@@ -347,7 +347,7 @@ void EditorFileDialog::_action_pressed() {
 
 		if (!valid) {
 
-			exterr->popup_centered_minsize(Size2(250,80));
+			exterr->popup_centered_minsize(Size2(250,80)*EDSCALE);
 			return;
 
 		}
@@ -431,6 +431,7 @@ void EditorFileDialog::update_file_list() {
 
 
 	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+	thumbnail_size*=EDSCALE;
 	Ref<Texture> folder_thumbnail;
 	Ref<Texture> file_thumbnail;
 
@@ -840,7 +841,7 @@ void EditorFileDialog::_make_dir_confirm() {
 		_push_history();
 
 	} else {
-		mkdirerr->popup_centered_minsize(Size2(250,50));
+		mkdirerr->popup_centered_minsize(Size2(250,50)*EDSCALE);
 	}
 	makedirname->set_text(""); // reset label
 }
@@ -848,7 +849,7 @@ void EditorFileDialog::_make_dir_confirm() {
 
 void EditorFileDialog::_make_dir() {
 
-	makedialog->popup_centered_minsize(Size2(250,80));
+	makedialog->popup_centered_minsize(Size2(250,80)*EDSCALE);
 	makedirname->grab_focus();
 
 }

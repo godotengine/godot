@@ -33,6 +33,8 @@
 #include "builtin_fonts.h"
 #include "editor_settings.h"
 #include "scene/resources/dynamic_font.h"
+#include "editor_scale.h"
+#include "scene/resources/default_theme/default_theme.h"
 
 static Ref<BitmapFont> make_font(int p_height,int p_ascent, int p_valign, int p_charcount, const int *p_chars,const Ref<Texture> &p_texture) {
 
@@ -80,7 +82,6 @@ static Ref<BitmapFont> make_font(int p_height,int p_ascent, int p_valign, int p_
 
 
 void editor_register_fonts(Ref<Theme> p_theme) {
-
 	/* Droid Sans */
 
 	Ref<DynamicFontData> DroidSans;
@@ -115,12 +116,14 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	/* Source Code Pro */
 
+
 	Ref<DynamicFontData> dfmono;
 	dfmono.instance();
 	dfmono->set_font_ptr(_font_source_code_pro,_font_source_code_pro_size);
 	//dfd->set_force_autohinter(true); //just looks better..i think?
 
-	MAKE_DROID_SANS(df,int(EditorSettings::get_singleton()->get("global/font_size")));
+	MAKE_DROID_SANS(df,int(EditorSettings::get_singleton()->get("global/font_size"))*EDSCALE);
+
 
 	p_theme->set_default_theme_font(df);
 
@@ -128,9 +131,9 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 //	Ref<BitmapFont> doc_title_font = make_font(_bi_font_doc_title_font_height,_bi_font_doc_title_font_ascent,0,_bi_font_doc_title_font_charcount,_bi_font_doc_title_font_characters,p_theme->get_icon("DocTitleFont","EditorIcons"));
 //	Ref<BitmapFont> doc_code_font = make_font(_bi_font_doc_code_font_height,_bi_font_doc_code_font_ascent,0,_bi_font_doc_code_font_charcount,_bi_font_doc_code_font_characters,p_theme->get_icon("DocCodeFont","EditorIcons"));
 
-	MAKE_DROID_SANS(df_title,int(EDITOR_DEF("help/help_title_font_size",18)));
+	MAKE_DROID_SANS(df_title,int(EDITOR_DEF("help/help_title_font_size",18))*EDSCALE);
 
-	MAKE_DROID_SANS(df_doc,int(EDITOR_DEF("help/help_font_size",16)));
+	MAKE_DROID_SANS(df_doc,int(EDITOR_DEF("help/help_font_size",16))*EDSCALE);
 
 
 	p_theme->set_font("doc","EditorFonts",df_doc);
@@ -139,16 +142,25 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	Ref<DynamicFont> df_code;
 	df_code.instance();
-	df_code->set_size(int(EditorSettings::get_singleton()->get("global/source_font_size")));
+	df_code->set_size(int(EditorSettings::get_singleton()->get("global/source_font_size"))*EDSCALE);
 	df_code->set_font_data(dfmono);
 
 	p_theme->set_font("source","EditorFonts",df_code);
 
 	Ref<DynamicFont> df_doc_code;
 	df_doc_code.instance();
-	df_doc_code->set_size(int(EDITOR_DEF("help/help_source_font_size",14)));
+	df_doc_code->set_size(int(EDITOR_DEF("help/help_source_font_size",14))*EDSCALE);
 	df_doc_code->set_font_data(dfmono);
 
+
 	p_theme->set_font("doc_source","EditorFonts",df_doc_code);
+
+	if (editor_is_hidpi()) {
+		//replace default theme
+		Ref<Texture> di;
+		Ref<StyleBox> ds;
+		fill_default_theme(p_theme,df,df_doc,di,ds,true);
+
+	}
 
 }

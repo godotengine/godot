@@ -221,7 +221,7 @@ public:
 
 	void popup_import(const String& p_path) {
 
-		popup_centered(Size2(400,400));
+		popup_centered(Size2(400,400)*EDSCALE);
 		if (p_path!="") {
 
 			Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(p_path);
@@ -252,7 +252,7 @@ public:
 
 		if (samples.size()==0) {
 			error_dialog->set_text(TTR("No samples to import!"));
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 		}
 
 		if (save_path->get_text().strip_edges()=="") {
@@ -293,7 +293,7 @@ public:
 			String dst = save_path->get_text();
 			if (dst=="") {
 				error_dialog->set_text(TTR("Save path is empty!"));
-				error_dialog->popup_centered(Size2(200,100));
+				error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			}
 
 			dst = dst.plus_file(samples[i].get_file().basename()+".smp");

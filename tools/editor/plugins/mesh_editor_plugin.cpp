@@ -141,7 +141,7 @@ MeshEditor::MeshEditor() {
 
 
 
-	set_custom_minimum_size(Size2(1,150));
+	set_custom_minimum_size(Size2(1,150)*EDSCALE);
 
 	HBoxContainer *hb = memnew( HBoxContainer );
 	add_child(hb);

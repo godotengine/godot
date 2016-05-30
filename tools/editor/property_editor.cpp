@@ -306,14 +306,14 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 					slider->set_step((type==Variant::REAL) ? step : 1);
 					slider->set_val(v);
 					slider->show();
-					set_size(Size2(110,30));
+					set_size(Size2(110,30)*EDSCALE);
 				} else {
 					spinbox->set_min(min);
 					spinbox->set_max(max);
 					spinbox->set_step((type==Variant::REAL) ? step : 1);
 					spinbox->set_val(v);
 					spinbox->show();
-					set_size(Size2(70,35));
+					set_size(Size2(70,35)*EDSCALE);
 				}
 
 
@@ -339,7 +339,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 				}
 
-				set_size(checks20[19]->get_pos()+Size2(20,25));
+				set_size(checks20[19]->get_pos()+Size2(20,25)*EDSCALE);
 
 
 			} else if (hint==PROPERTY_HINT_EXP_EASING) {
@@ -365,7 +365,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 				type_button->show();
 				easing_draw->show();
-				set_size(Size2(200,150));
+				set_size(Size2(200,150)*EDSCALE);
 			} else if (hint==PROPERTY_HINT_FLAGS) {
 				menu->clear();
 				Vector<String> flags = hint_text.split(",");
@@ -600,7 +600,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 			color_picker->show();
 			color_picker->set_edit_alpha(hint!=PROPERTY_HINT_COLOR_NO_ALPHA);
 			color_picker->set_color(v);
-			set_size( Size2(300, color_picker->get_combined_minimum_size().height+10));
+			set_size( Size2(300*EDSCALE, color_picker->get_combined_minimum_size().height+10*EDSCALE));
 			/*
 			int ofs=80;
 			int m=10;
@@ -4286,7 +4286,7 @@ PropertyEditor *SectionedPropertyEditor::get_property_editor() {
 SectionedPropertyEditor::SectionedPropertyEditor() {
 
 	VBoxContainer *left_vb = memnew( VBoxContainer);
-	left_vb->set_custom_minimum_size(Size2(160,0));
+	left_vb->set_custom_minimum_size(Size2(160,0)*EDSCALE);
 	add_child(left_vb);
 
 	sections = memnew( ItemList );

@@ -4,7 +4,7 @@
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "globals.h"
-
+#include "editor_scale.h"
 
 Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(const String& p_path) {
 
@@ -91,6 +91,7 @@ Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem& p_item,co
 		if (generated.is_valid()) {
 			//print_line("was generated");
 			int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+			thumbnail_size*=EDSCALE;
 			//wow it generated a preview... save cache
 			ResourceSaver::save(cache_base+".png",generated);
 			FileAccess *f=FileAccess::open(cache_base+".txt",FileAccess::WRITE);
@@ -132,6 +133,7 @@ void EditorResourcePreview::_thread() {
 
 			uint64_t modtime = FileAccess::get_modified_time(item.path);
 			int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+			thumbnail_size*=EDSCALE;
 
 			if (cache.has(item.path)) {
 				//already has it because someone loaded it, just let it know it's ready

@@ -674,7 +674,7 @@ void EditorSceneImportDialog::_open_and_import() {
 
 	if (unsaved) {
 
-		confirm_open->popup_centered_minsize(Size2(300,80));
+		confirm_open->popup_centered_minsize(Size2(300,80)*EDSCALE);
 	} else {
 		_import(true);
 	}
@@ -735,7 +735,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 		Ref<Script> scr = ResourceLoader::load(script_path->get_text());
 		if (!scr.is_valid()) {
 			error_dialog->set_text(TTR("Couldn't load post-import script."));
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 		}
 
@@ -744,7 +744,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 		if (!pi->get_script_instance()) {
 
 			error_dialog->set_text(TTR("Invalid/broken script for post-import."));
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 		}
 
@@ -788,7 +788,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	if (err || !scene) {
 
 		error_dialog->set_text(TTR("Error importing scene."));
-		error_dialog->popup_centered(Size2(200,100));
+		error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 		return;
 	}
 
@@ -813,7 +813,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 		if (err) {
 
 			error_dialog->set_text(TTR("Error importing scene."));
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 		}
 		if (wip_open)
@@ -857,7 +857,7 @@ void EditorSceneImportDialog::_import_confirm() {
 
 		wip_save_file="";
 		error_dialog->set_text(TTR("Error importing scene."));
-		error_dialog->popup_centered(Size2(200,100));
+		error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 		return;
 	}
 
@@ -892,7 +892,7 @@ void EditorSceneImportDialog::_browse_script() {
 
 void EditorSceneImportDialog::popup_import(const String &p_from) {
 
-	popup_centered(Size2(750,550));
+	popup_centered(Size2(750,550)*EDSCALE);
 	if (p_from!="") {
 		Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(p_from);
 		if (rimd.is_null())
@@ -1227,7 +1227,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	custom_root_hb->add_child(root_type);
 
 	root_default = memnew(CheckBox);
-	root_default->set_text("Auto");
+	root_default->set_text(TTR("Auto"));
 	root_default->set_pressed(true);
 	root_default->connect("pressed",this,"_root_default_pressed");
 	custom_root_hb->add_child(root_default);
@@ -1235,18 +1235,18 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 
 	/*
 	this_import = memnew( OptionButton );
-	this_import->add_item(TTR("Overwrite Existing Scene"));
-	this_import->add_item(TTR("Overwrite Existing, Keep Materials"));
-	this_import->add_item(TTR("Keep Existing, Merge with New"));
-	this_import->add_item(TTR("Keep Existing, Ignore New"));
-	vbc->add_margin_child(TTR("This Time:"),this_import);
+	this_import->add_item("Overwrite Existing Scene");
+	this_import->add_item("Overwrite Existing, Keep Materials");
+	this_import->add_item("Keep Existing, Merge with New");
+	this_import->add_item("Keep Existing, Ignore New");
+	vbc->add_margin_child("This Time:",this_import);
 
 	next_import = memnew( OptionButton );
-	next_import->add_item(TTR("Overwrite Existing Scene"));
-	next_import->add_item(TTR("Overwrite Existing, Keep Materials"));
-	next_import->add_item(TTR("Keep Existing, Merge with New"));
-	next_import->add_item(TTR("Keep Existing, Ignore New"));
-	vbc->add_margin_child(TTR("Next Time:"),next_import);
+	next_import->add_item("Overwrite Existing Scene");
+	next_import->add_item("Overwrite Existing, Keep Materials");
+	next_import->add_item("Keep Existing, Merge with New");
+	next_import->add_item("Keep Existing, Ignore New");
+	vbc->add_margin_child("Next Time:",next_import);
 */
 	set_hide_on_ok(false);
 
@@ -1324,7 +1324,7 @@ String EditorSceneImportPlugin::get_name() const {
 
 String EditorSceneImportPlugin::get_visible_name() const{
 
-	return "Scene";
+	return TTR("Scene");
 }
 
 void EditorSceneImportPlugin::import_dialog(const String& p_from){

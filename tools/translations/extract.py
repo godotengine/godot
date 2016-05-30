@@ -59,11 +59,16 @@ for fname in matches:
 	lc = 1
 	while (l):
 
+		patterns = ['RTR(\"', 'TTR(\"']
+		idx = 0
 		pos = 0
 		while (pos >= 0):
-			pos = l.find('TTR(\"', pos)
+			pos = l.find(patterns[idx], pos)
 			if (pos == -1):
-				break
+				if (idx < len(patterns) - 1):
+					idx += 1
+					pos = 0
+				continue
 			pos += 5
 
 			msg = ""
@@ -83,7 +88,9 @@ for fname in matches:
 				unique_loc[msg] = [location]
 			elif (not location in unique_loc[msg]):
 				# Add additional location to previous occurence too
-				msg_pos = main_po.find('\nmsgid "' + msg)
+				msg_pos = main_po.find('\nmsgid "' + msg + '"')
+				if (msg_pos == -1):
+					print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")
 				main_po = main_po[:msg_pos] + ' ' + location + main_po[msg_pos:]
 				unique_loc[msg].append(location)
 

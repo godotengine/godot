@@ -441,6 +441,7 @@ void ScenesDock::_update_files(bool p_keep_selection) {
 		return;
 
 	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+	thumbnail_size*=EDSCALE;
 	Ref<Texture> folder_thumbnail;
 	Ref<Texture> file_thumbnail;
 
@@ -454,6 +455,7 @@ void ScenesDock::_update_files(bool p_keep_selection) {
 		files->set_fixed_column_width(thumbnail_size*3/2);
 		files->set_max_text_lines(2);
 		files->set_min_icon_size(Size2(thumbnail_size,thumbnail_size));
+		files->set_max_icon_size(Size2(thumbnail_size,thumbnail_size));
 
 		if (!has_icon("ResizedFolder","EditorIcons")) {
 			Ref<ImageTexture> folder = get_icon("FolderBig","EditorIcons");
@@ -1693,7 +1695,7 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 
 	tree->set_hide_root(true);
 	split_box->add_child(tree);
-	tree->set_custom_minimum_size(Size2(0,200));
+	tree->set_custom_minimum_size(Size2(0,200)*EDSCALE);
 	tree->set_drag_forwarding(this);
 
 

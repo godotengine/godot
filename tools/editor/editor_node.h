@@ -85,6 +85,7 @@
 
 #include "progress_dialog.h"
 
+#include "editor_scale.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

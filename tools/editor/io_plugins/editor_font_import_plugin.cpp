@@ -510,13 +510,13 @@ class EditorFontImportDialog : public ConfirmationDialog {
 
 		if (source->get_line_edit()->get_text()=="") {
 			error_dialog->set_text(TTR("No source font file!"));
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 		}
 
 		if (dest->get_line_edit()->get_text()=="") {
 			error_dialog->set_text(TTR("No target font resource!"));
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 		}
 
@@ -528,7 +528,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 
 		if (rimd.is_null()) {
 			error_dialog->set_text(TTR("Can't load/process source font."));
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 		}
 
@@ -536,7 +536,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 
 		if (err!=OK) {
 			error_dialog->set_text(TTR("Couldn't save font."));
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 		}
 
@@ -573,7 +573,7 @@ public:
 
 	void popup_import(const String& p_path) {
 
-		popup_centered(Size2(600,500));
+		popup_centered(Size2(600,500)*EDSCALE);
 
 		if (p_path!="") {
 
