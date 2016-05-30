@@ -192,6 +192,18 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 			case KEY_F6: _menu_option_confirm(RUN_PLAY_SCENE,true); break;
 			//case KEY_F7: _menu_option_confirm(RUN_PAUSE,true); break;
 			case KEY_F8: _menu_option_confirm(RUN_STOP,true); break;
+			case KEY_F11: {
+				if (p_event.key.mod.shift) {
+					if (p_event.key.mod.control) {
+						set_distraction_free_mode(!get_distraction_free_mode());
+					} else if (distraction_free_mode) {
+						distraction_free_mode = false;
+						_update_top_menu_visibility();
+					} else {
+						set_docks_visible(!get_docks_visible());
+					}
+				}
+			} break;
 		}
 
 	}
@@ -4518,32 +4530,59 @@ void EditorNode::_update_dock_slots_visibility() {
 		right_hsplit,
 	};
 
-	for(int i=0;i<DOCK_SLOT_MAX;i++) {
+	if (!docks_visible) {
 
-		if (dock_slot[i]->get_tab_count())
-			dock_slot[i]->show();
-		else
+		for(int i=0;i<DOCK_SLOT_MAX;i++) {
 			dock_slot[i]->hide();
-
-	}
-
-
-	for(int i=0;i<DOCK_SLOT_MAX/2;i++) {
-		bool in_use = dock_slot[i*2+0]->get_tab_count() || dock_slot[i*2+1]->get_tab_count();
-		if (in_use)
-			splits[i]->show();
-		else
-			splits[i]->hide();
-	}
-
-	for(int i=0;i<DOCK_SLOT_MAX;i++) {
-
-		if (!dock_slot[i]->is_hidden() && dock_slot[i]->get_tab_count()) {
-			dock_slot[i]->set_current_tab(0);
 		}
+
+		for(int i=0;i<DOCK_SLOT_MAX/2;i++) {
+			splits[i]->hide();
+		}
+
+		right_hsplit->hide();
+		bottom_panel->hide();
+	} else {
+		for(int i=0;i<DOCK_SLOT_MAX;i++) {
+
+			if (dock_slot[i]->get_tab_count())
+				dock_slot[i]->show();
+			else
+				dock_slot[i]->hide();
+
+		}
+
+
+		for(int i=0;i<DOCK_SLOT_MAX/2;i++) {
+			bool in_use = dock_slot[i*2+0]->get_tab_count() || dock_slot[i*2+1]->get_tab_count();
+			if (in_use)
+				splits[i]->show();
+			else
+				splits[i]->hide();
+		}
+
+		for(int i=0;i<DOCK_SLOT_MAX;i++) {
+
+			if (!dock_slot[i]->is_hidden() && dock_slot[i]->get_tab_count()) {
+				dock_slot[i]->set_current_tab(0);
+			}
+		}
+		bottom_panel->show();
+		right_hsplit->show();
 	}
 }
 
+void EditorNode::_update_top_menu_visibility() {
+	if (distraction_free_mode) {
+		play_cc->hide();
+		menu_hb->hide();
+		scene_tabs->hide();
+	} else {
+		play_cc->show();
+		menu_hb->show();
+		scene_tabs->show();
+	}
+}
 
 void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String& p_section) {
 
@@ -4909,6 +4948,31 @@ void EditorNode::_bottom_panel_switch(bool p_enable,int p_idx) {
 	}
 }
 
+void EditorNode::set_docks_visible(bool p_show) {
+	docks_visible = p_show;
+	_update_dock_slots_visibility();
+}
+
+bool EditorNode::get_docks_visible() const {
+	return docks_visible;
+}
+
+void EditorNode::set_distraction_free_mode(bool p_enter) {
+	distraction_free_mode = p_enter;
+
+	if (p_enter) {
+		if (docks_visible) {
+			set_docks_visible(false);
+		}
+	} else {
+		set_docks_visible(true);
+	}
+	_update_top_menu_visibility();
+}
+
+bool EditorNode::get_distraction_free_mode() const {
+	return distraction_free_mode;
+}
 
 void EditorNode::add_control_to_dock(DockSlot p_slot,Control* p_control) {
 	ERR_FAIL_INDEX(p_slot,DOCK_SLOT_MAX);
@@ -5163,6 +5227,8 @@ EditorNode::EditorNode() {
 	last_checked_version=0;
 	changing_scene=false;
 	_initializing_addons=false;
+	docks_visible = true;
+	distraction_free_mode=false;
 
 	FileAccess::set_backup_save(true);
 
@@ -5628,7 +5694,7 @@ EditorNode::EditorNode() {
 	//s1->set_size(Point2(10,15));
 
 
-	CenterContainer *play_cc = memnew( CenterContainer );
+	play_cc = memnew( CenterContainer );
 	play_cc->set_ignore_mouse(true);
 	gui_base->add_child( play_cc );
 	play_cc->set_area_as_parent_rect();
