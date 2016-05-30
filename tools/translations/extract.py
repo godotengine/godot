@@ -59,11 +59,16 @@ for fname in matches:
 	lc = 1
 	while (l):
 
+		patterns = ['RTR(\"', 'TTR(\"']
+		idx = 0
 		pos = 0
 		while (pos >= 0):
-			pos = l.find('TTR(\"', pos)
+			pos = l.find(patterns[idx], pos)
 			if (pos == -1):
-				break
+				if (idx < len(patterns) - 1):
+					idx += 1
+					pos = 0
+				continue
 			pos += 5
 
 			msg = ""

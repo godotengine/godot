@@ -190,6 +190,22 @@ msgid ""
 "upon running."
 msgstr ""
 
+#: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
+msgid "Cancel"
+msgstr ""
+
+#: scene/gui/dialogs.cpp
+msgid "OK"
+msgstr ""
+
+#: scene/gui/dialogs.cpp
+msgid "Alert!"
+msgstr ""
+
+#: scene/gui/dialogs.cpp
+msgid "Please Confirm..."
+msgstr ""
+
 #: scene/gui/text_edit.cpp scene/gui/line_edit.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -5594,10 +5610,6 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import Anyway"
-msgstr ""
-
-#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Cancel"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp

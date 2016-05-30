@@ -251,6 +251,22 @@ msgstr ""
 "popup() o qualsiasi altra funzione popup*(). Renderli visibili per la "
 "modifica nell'editor è okay, ma verranno nascosti una volta in esecuzione."
 
+#: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
+msgid "Cancel"
+msgstr "Cancella"
+
+#: scene/gui/dialogs.cpp
+msgid "OK"
+msgstr ""
+
+#: scene/gui/dialogs.cpp
+msgid "Alert!"
+msgstr ""
+
+#: scene/gui/dialogs.cpp
+msgid "Please Confirm..."
+msgstr ""
+
 #: scene/gui/text_edit.cpp scene/gui/line_edit.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -5739,10 +5755,6 @@ msgstr "I File Seguenti sono Mancanti:"
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import Anyway"
 msgstr "Importa ComunqueImporta Comunque"
-
-#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Cancel"
-msgstr "Cancella"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import & Open"

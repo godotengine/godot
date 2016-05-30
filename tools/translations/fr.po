@@ -234,6 +234,22 @@ msgstr ""
 "popup() ou une des fonctions popup*(). Les rendre visibles pour l'édition ne "
 "pose pas de problème, mais elles seront cachées lors de l'exécution."
 
+#: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
+msgid "Cancel"
+msgstr "Annuler"
+
+#: scene/gui/dialogs.cpp
+msgid "OK"
+msgstr ""
+
+#: scene/gui/dialogs.cpp
+msgid "Alert!"
+msgstr ""
+
+#: scene/gui/dialogs.cpp
+msgid "Please Confirm..."
+msgstr ""
+
 #: scene/gui/text_edit.cpp scene/gui/line_edit.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -5707,10 +5723,6 @@ msgstr "Les fichiers suivants sont manquants :"
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import Anyway"
 msgstr "Importer quand même"
-
-#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Cancel"
-msgstr "Annuler"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import & Open"

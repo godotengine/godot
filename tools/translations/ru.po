@@ -246,6 +246,22 @@ msgstr ""
 "или любой из popup*(). Делая их доступными для редактирования хорошая мысль, "
 "хотя они будут прятаться при запуске."
 
+#: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
+msgid "Cancel"
+msgstr "Отмена"
+
+#: scene/gui/dialogs.cpp
+msgid "OK"
+msgstr ""
+
+#: scene/gui/dialogs.cpp
+msgid "Alert!"
+msgstr ""
+
+#: scene/gui/dialogs.cpp
+msgid "Please Confirm..."
+msgstr ""
+
 #: scene/gui/text_edit.cpp scene/gui/line_edit.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -5710,10 +5726,6 @@ msgstr "Отсутствуют следующие файлы:"
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import Anyway"
 msgstr "Импорт в любом случае"
-
-#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Cancel"
-msgstr "Отмена"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import & Open"
