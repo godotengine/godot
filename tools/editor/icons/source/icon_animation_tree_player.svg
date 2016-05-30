@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="32"
+   height="32"
+   viewBox="0 0 32.000001 32.000001"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_animation_tree_player.png"
+   inkscape:export-xdpi="45"
+   inkscape:export-ydpi="45"
+   sodipodi:docname="icon_animation_tree_player.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="16"
+     inkscape:cx="7.7154985"
+     inkscape:cy="14.266641"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     units="px"
+     inkscape:snap-bbox="true"
+     inkscape:bbox-paths="true"
+     inkscape:bbox-nodes="true"
+     inkscape:snap-bbox-edge-midpoints="true"
+     inkscape:snap-bbox-midpoints="true"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-center="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3336" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-1020.3622)">
+    <path
+       style="fill:#e0cb50;fill-opacity:0.98431373;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 4 2.5 L 4 27.5 L 6 27.5 L 6 23.5 L 9 23.5 L 9 27.5 L 23 27.5 L 23 23.5 L 26 23.5 L 26 27.5 L 28 27.5 L 28 2.5 L 26 2.5 L 26 6.5 L 23 6.5 L 23 2.5 L 9 2.5 L 9 6.5 L 6 6.5 L 6 2.5 L 4 2.5 z M 16 7 A 2.0000174 2.0000174 0 0 1 18 9 A 2.0000174 2.0000174 0 0 1 16.5 10.935547 L 16.5 14.066406 A 2.0000174 2.0000174 0 0 1 18 16 A 2.0000174 2.0000174 0 0 1 17.597656 17.199219 L 19.181641 19.179688 A 2.0000174 2.0000174 0 0 1 20 19 A 2.0000174 2.0000174 0 0 1 22 21 A 2.0000174 2.0000174 0 0 1 20 23 A 2.0000174 2.0000174 0 0 1 18 21 A 2.0000174 2.0000174 0 0 1 18.402344 19.802734 L 16.818359 17.822266 A 2.0000174 2.0000174 0 0 1 16 18 A 2.0000174 2.0000174 0 0 1 15.181641 17.824219 L 13.599609 19.802734 A 2.0000174 2.0000174 0 0 1 14 21 A 2.0000174 2.0000174 0 0 1 12 23 A 2.0000174 2.0000174 0 0 1 10 21 A 2.0000174 2.0000174 0 0 1 12 19 A 2.0000174 2.0000174 0 0 1 12.818359 19.177734 L 14.402344 17.199219 A 2.0000174 2.0000174 0 0 1 14 16 A 2.0000174 2.0000174 0 0 1 15.5 14.064453 L 15.5 10.933594 A 2.0000174 2.0000174 0 0 1 14 9 A 2.0000174 2.0000174 0 0 1 16 7 z M 6 9.5 L 9 9.5 L 9 13.5 L 6 13.5 L 6 9.5 z M 23 9.5 L 26 9.5 L 26 13.5 L 23 13.5 L 23 9.5 z M 6 16.5 L 9 16.5 L 9 20.5 L 6 20.5 L 6 16.5 z M 23 16.5 L 26 16.5 L 26 20.5 L 23 20.5 L 23 16.5 z "
+       transform="translate(0,1020.3622)"
+       id="rect4135" />
+  </g>
+</svg>
