@@ -3554,6 +3554,7 @@ void TextEdit::set_search_flags(uint32_t p_flags) {
 void TextEdit::set_current_search_result(int line, int col) {
 	search_result_line = line;
 	search_result_col = col;
+	update();
 }
 
 void TextEdit::set_highlight_all_occurrences(const bool p_enabled) {
