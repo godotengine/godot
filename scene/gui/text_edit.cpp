@@ -700,15 +700,6 @@ void TextEdit::_notification(int p_what) {
 				if (highlighted_text.length() != 0 && highlighted_text != search_text)
 					highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE|SEARCH_WHOLE_WORDS, 0);
 
-				if (cache.line_number_w) {
-					String fc = String::num(line+1);
-					while (fc.length() < line_number_char_count) {
-						fc="0"+fc;
-					}
-
-					cache.font->draw(ci,Point2(cache.style_normal->get_margin(MARGIN_LEFT)+cache.breakpoint_gutter_width,ofs_y+cache.font->get_ascent()),fc,cache.line_number_color);
-				}
-
 				const Map<int,Text::ColorRegionInfo>& cri_map=text.get_color_region_info(line);
 
 
@@ -720,8 +711,14 @@ void TextEdit::_notification(int p_what) {
 				if (text.is_breakpoint(line)) {
 
 					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(xmargin_beg, ofs_y,xmargin_end-xmargin_beg,get_row_height()),cache.breakpoint_color);
+				}
 
-					// draw breakpoint marker
+				if (line==cursor.line) {
+					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(0, ofs_y,xmargin_end,get_row_height()),cache.current_line_color);
+				}
+
+				// draw breakpoint marker
+				if (text.is_breakpoint(line)) {
 					if (draw_breakpoint_gutter) {
 						int vertical_gap = cache.breakpoint_gutter_width / 2;
 						int marker_size = cache.breakpoint_gutter_width - vertical_gap;
@@ -731,10 +728,13 @@ void TextEdit::_notification(int p_what) {
 				}
 
 
-				if (line==cursor.line) {
+				if (cache.line_number_w) {
+					String fc = String::num(line+1);
+					while (fc.length() < line_number_char_count) {
+						fc="0"+fc;
+					}
 
-					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(xmargin_beg, ofs_y,xmargin_end-xmargin_beg,get_row_height()),cache.current_line_color);
-
+					cache.font->draw(ci,Point2(cache.style_normal->get_margin(MARGIN_LEFT)+cache.breakpoint_gutter_width,ofs_y+cache.font->get_ascent()),fc,cache.line_number_color);
 				}
 				for (int j=0;j<str.length();j++) {
 
