@@ -1439,11 +1439,28 @@ msgid "Remote Inspector"
 msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Live Scene Tree:"
+msgstr "儲存場景"
+
+#: tools/editor/script_editor_debugger.cpp
+msgid "Remote Object Properties: "
+msgstr ""
+
+#: tools/editor/script_editor_debugger.cpp
+msgid "Profiler"
+msgstr ""
+
+#: tools/editor/script_editor_debugger.cpp
 msgid "Monitor"
 msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Value"
+msgstr ""
+
+#: tools/editor/script_editor_debugger.cpp
+msgid "Monitors"
 msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
@@ -1473,6 +1490,10 @@ msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Usage"
+msgstr ""
+
+#: tools/editor/script_editor_debugger.cpp
+msgid "Misc"
 msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
@@ -1522,6 +1543,22 @@ msgstr ""
 
 #: tools/editor/run_settings_dialog.cpp
 msgid "Scene Run Settings"
+msgstr ""
+
+#: tools/editor/project_settings.cpp
+msgid "Key "
+msgstr ""
+
+#: tools/editor/project_settings.cpp
+msgid "Joy Button"
+msgstr ""
+
+#: tools/editor/project_settings.cpp
+msgid "Joy Axis"
+msgstr ""
+
+#: tools/editor/project_settings.cpp
+msgid "Mouse Button"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
@@ -2537,6 +2574,12 @@ msgstr ""
 msgid "Quick Run Scene.."
 msgstr ""
 
+#: tools/editor/editor_node.cpp
+msgid ""
+"Open Project Manager? \n"
+"(Unsaved changes will be lost)"
+msgstr ""
+
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr ""
@@ -2576,6 +2619,7 @@ msgid "%d more file(s) or folder(s)"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Scene"
 msgstr "場景"
 
@@ -4343,6 +4387,10 @@ msgid "Scale Mode (R)"
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Transform"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
 msgstr ""
 
@@ -4356,6 +4404,30 @@ msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Default sRGB"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "1 Viewport"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "2 Viewports"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "2 Viewports (Alt)"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "3 Viewports"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "3 Viewports (Alt)"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "4 Viewports"
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
@@ -5602,6 +5674,10 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Custom Root Node Type:"
+msgstr ""
+
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+msgid "Auto"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp

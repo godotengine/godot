@@ -1473,12 +1473,31 @@ msgid "Remote Inspector"
 msgstr "远程属性面板"
 
 #: tools/editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Live Scene Tree:"
+msgstr "场景树："
+
+#: tools/editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Remote Object Properties: "
+msgstr "对象属性。"
+
+#: tools/editor/script_editor_debugger.cpp
+msgid "Profiler"
+msgstr ""
+
+#: tools/editor/script_editor_debugger.cpp
 msgid "Monitor"
 msgstr "键名"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Value"
 msgstr "值"
+
+#: tools/editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Monitors"
+msgstr "键名"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "List of Video Memory Usage by Resource:"
@@ -1508,6 +1527,10 @@ msgstr "格式"
 #: tools/editor/script_editor_debugger.cpp
 msgid "Usage"
 msgstr "用量"
+
+#: tools/editor/script_editor_debugger.cpp
+msgid "Misc"
+msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Clicked Control:"
@@ -1557,6 +1580,25 @@ msgstr "主场景参数："
 #: tools/editor/run_settings_dialog.cpp
 msgid "Scene Run Settings"
 msgstr "场景运行设置"
+
+#: tools/editor/project_settings.cpp
+msgid "Key "
+msgstr ""
+
+#: tools/editor/project_settings.cpp
+#, fuzzy
+msgid "Joy Button"
+msgstr "按钮"
+
+#: tools/editor/project_settings.cpp
+#, fuzzy
+msgid "Joy Axis"
+msgstr "轴"
+
+#: tools/editor/project_settings.cpp
+#, fuzzy
+msgid "Mouse Button"
+msgstr "鼠标按键："
 
 #: tools/editor/project_settings.cpp
 msgid "Invalid action (anything goes but '/' or ':')."
@@ -2571,6 +2613,13 @@ msgstr "此操作无法撤销，确定要继续吗？"
 msgid "Quick Run Scene.."
 msgstr "快速运行场景"
 
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Open Project Manager? \n"
+"(Unsaved changes will be lost)"
+msgstr "确定要关闭场景吗，未保存的修改将丢失？"
+
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr "额"
@@ -2611,6 +2660,7 @@ msgid "%d more file(s) or folder(s)"
 msgstr "更多的%d个文件或目录"
 
 #: tools/editor/editor_node.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Scene"
 msgstr "场景"
 
@@ -4378,6 +4428,11 @@ msgid "Scale Mode (R)"
 msgstr "缩放模式（R）"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Transform"
+msgstr "变换类型"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
 msgstr "本地坐标"
 
@@ -4392,6 +4447,33 @@ msgstr "使用默认光照"
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Default sRGB"
 msgstr "使用默认sRGB"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "1 Viewport"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "2 Viewports"
+msgstr "Viewport设置"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "2 Viewports (Alt)"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "3 Viewports"
+msgstr "Viewport设置"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "3 Viewports (Alt)"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "4 Viewports"
+msgstr "Viewport设置"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
@@ -5646,6 +5728,11 @@ msgid "Custom Root Node Type:"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Auto"
+msgstr "AutoLoad"
+
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
 msgstr "找不到下列文件："
 
@@ -5803,9 +5890,6 @@ msgstr ""
 
 #~ msgid "Keep Existing, Ignore New"
 #~ msgstr "保留已有，忽略新的。"
-
-#~ msgid "Scene Tree:"
-#~ msgstr "场景树："
 
 #~ msgid ""
 #~ "NOTICE: You are not forced to import textures for 2D projects. Just copy "

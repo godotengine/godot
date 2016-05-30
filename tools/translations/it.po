@@ -1520,12 +1520,31 @@ msgid "Remote Inspector"
 msgstr "Inspector"
 
 #: tools/editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Live Scene Tree:"
+msgstr "Scene Tree:"
+
+#: tools/editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Remote Object Properties: "
+msgstr "Proprietà oggetto."
+
+#: tools/editor/script_editor_debugger.cpp
+msgid "Profiler"
+msgstr ""
+
+#: tools/editor/script_editor_debugger.cpp
 msgid "Monitor"
 msgstr "Monitor"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Value"
 msgstr "Valore"
+
+#: tools/editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Monitors"
+msgstr "Monitor"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "List of Video Memory Usage by Resource:"
@@ -1555,6 +1574,10 @@ msgstr "Formato"
 #: tools/editor/script_editor_debugger.cpp
 msgid "Usage"
 msgstr "Utilizzo"
+
+#: tools/editor/script_editor_debugger.cpp
+msgid "Misc"
+msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Clicked Control:"
@@ -1604,6 +1627,25 @@ msgstr "Argomenti Scena Principale"
 #: tools/editor/run_settings_dialog.cpp
 msgid "Scene Run Settings"
 msgstr "Impostazioni Esecuzione Scena"
+
+#: tools/editor/project_settings.cpp
+msgid "Key "
+msgstr ""
+
+#: tools/editor/project_settings.cpp
+#, fuzzy
+msgid "Joy Button"
+msgstr "Pulsante"
+
+#: tools/editor/project_settings.cpp
+#, fuzzy
+msgid "Joy Axis"
+msgstr "Asse"
+
+#: tools/editor/project_settings.cpp
+#, fuzzy
+msgid "Mouse Button"
+msgstr "Indice Pulsante Mouse:"
 
 #: tools/editor/project_settings.cpp
 msgid "Invalid action (anything goes but '/' or ':')."
@@ -2640,6 +2682,13 @@ msgstr "Questa azione non può essere annullata. Ripristinare comunque?"
 msgid "Quick Run Scene.."
 msgstr "Esegui Scena Rapido.."
 
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Open Project Manager? \n"
+"(Unsaved changes will be lost)"
+msgstr "Chiudi scena? (I cambiamenti non salvati saranno persi)"
+
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr "Ugh"
@@ -2682,6 +2731,7 @@ msgid "%d more file(s) or folder(s)"
 msgstr "% altri file o cartelle"
 
 #: tools/editor/editor_node.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Scene"
 msgstr "Scena"
 
@@ -4466,6 +4516,11 @@ msgid "Scale Mode (R)"
 msgstr "Modalità Scala (R)"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Transform"
+msgstr "Tipo Transform"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
 msgstr "Coordinate locali"
 
@@ -4480,6 +4535,33 @@ msgstr "Usa Luce Default"
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Default sRGB"
 msgstr "Usa sRGB Default"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "1 Viewport"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "2 Viewports"
+msgstr "Impostazioni Viewport"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "2 Viewports (Alt)"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "3 Viewports"
+msgstr "Impostazioni Viewport"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "3 Viewports (Alt)"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "4 Viewports"
+msgstr "Impostazioni Viewport"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
@@ -5749,6 +5831,11 @@ msgid "Custom Root Node Type:"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Auto"
+msgstr "AutoLoad"
+
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
 msgstr "I File Seguenti sono Mancanti:"
 
@@ -5903,9 +5990,6 @@ msgstr ""
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 msgid "Surface %d"
 msgstr "Superficie %d"
-
-#~ msgid "Scene Tree:"
-#~ msgstr "Scene Tree:"
 
 #~ msgid "Move Favorite Up"
 #~ msgstr "Sposta Preferito Su"

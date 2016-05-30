@@ -1443,7 +1443,7 @@ msgid "Remote Object Properties: "
 msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
-msgid "Monitors"
+msgid "Profiler"
 msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
@@ -1452,6 +1452,10 @@ msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Value"
+msgstr ""
+
+#: tools/editor/script_editor_debugger.cpp
+msgid "Monitors"
 msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
@@ -1537,22 +1541,6 @@ msgid "Scene Run Settings"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
-msgid "Invalid action (anything goes but '/' or ':')."
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Action '%s' already exists!"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Rename Input Action Event"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Add Input Action Event"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
 msgid "Key "
 msgstr ""
 
@@ -1566,6 +1554,22 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Mouse Button"
+msgstr ""
+
+#: tools/editor/project_settings.cpp
+msgid "Invalid action (anything goes but '/' or ':')."
+msgstr ""
+
+#: tools/editor/project_settings.cpp
+msgid "Action '%s' already exists!"
+msgstr ""
+
+#: tools/editor/project_settings.cpp
+msgid "Rename Input Action Event"
+msgstr ""
+
+#: tools/editor/project_settings.cpp
+msgid "Add Input Action Event"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
@@ -1942,10 +1946,6 @@ msgstr ""
 
 #: tools/editor/editor_profiler.cpp
 msgid "Frame #:"
-msgstr ""
-
-#: tools/editor/editor_profiler.cpp
-msgid "Profiler"
 msgstr ""
 
 #: tools/editor/quick_open.cpp tools/editor/editor_help.cpp
@@ -2569,6 +2569,12 @@ msgstr ""
 msgid "Quick Run Scene.."
 msgstr ""
 
+#: tools/editor/editor_node.cpp
+msgid ""
+"Open Project Manager? \n"
+"(Unsaved changes will be lost)"
+msgstr ""
+
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr ""
@@ -2608,6 +2614,7 @@ msgid "%d more file(s) or folder(s)"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Scene"
 msgstr ""
 
@@ -2686,10 +2693,6 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr ""
-
-#: tools/editor/editor_node.cpp
-msgid "Open Project Manager? \n(Unsaved changes will be lost)"
 msgstr ""
 
 #: tools/editor/editor_node.cpp

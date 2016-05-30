@@ -1516,8 +1516,8 @@ msgid "Remote Object Properties: "
 msgstr "Параметры объекта:"
 
 #: tools/editor/script_editor_debugger.cpp
-msgid "Monitors"
-msgstr "Мониторинг"
+msgid "Profiler"
+msgstr "Профайлер"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Monitor"
@@ -1526,6 +1526,10 @@ msgstr "Параметр"
 #: tools/editor/script_editor_debugger.cpp
 msgid "Value"
 msgstr "Значение"
+
+#: tools/editor/script_editor_debugger.cpp
+msgid "Monitors"
+msgstr "Мониторинг"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "List of Video Memory Usage by Resource:"
@@ -1610,22 +1614,6 @@ msgid "Scene Run Settings"
 msgstr "Параметры запуска сцены"
 
 #: tools/editor/project_settings.cpp
-msgid "Invalid action (anything goes but '/' or ':')."
-msgstr "Недопустимое название действия (подойдёт всё кроме '/' или ':')."
-
-#: tools/editor/project_settings.cpp
-msgid "Action '%s' already exists!"
-msgstr "Действие '%s' уже существует!"
-
-#: tools/editor/project_settings.cpp
-msgid "Rename Input Action Event"
-msgstr "Переименовать действие"
-
-#: tools/editor/project_settings.cpp
-msgid "Add Input Action Event"
-msgstr "Добавить действие"
-
-#: tools/editor/project_settings.cpp
 msgid "Key "
 msgstr "Кнопка"
 
@@ -1640,6 +1628,22 @@ msgstr "Ось геймпада"
 #: tools/editor/project_settings.cpp
 msgid "Mouse Button"
 msgstr "Кнопка мыши"
+
+#: tools/editor/project_settings.cpp
+msgid "Invalid action (anything goes but '/' or ':')."
+msgstr "Недопустимое название действия (подойдёт всё кроме '/' или ':')."
+
+#: tools/editor/project_settings.cpp
+msgid "Action '%s' already exists!"
+msgstr "Действие '%s' уже существует!"
+
+#: tools/editor/project_settings.cpp
+msgid "Rename Input Action Event"
+msgstr "Переименовать действие"
+
+#: tools/editor/project_settings.cpp
+msgid "Add Input Action Event"
+msgstr "Добавить действие"
 
 #: tools/editor/project_settings.cpp
 msgid "Meta+"
@@ -2023,10 +2027,6 @@ msgstr "Сущность"
 #: tools/editor/editor_profiler.cpp
 msgid "Frame #:"
 msgstr "Кадр:"
-
-#: tools/editor/editor_profiler.cpp
-msgid "Profiler"
-msgstr "Профайлер"
 
 #: tools/editor/quick_open.cpp tools/editor/editor_help.cpp
 #: tools/editor/create_dialog.cpp tools/editor/plugins/script_editor_plugin.cpp
@@ -2653,6 +2653,14 @@ msgstr "Это действие нельзя отменить. Восстано�
 msgid "Quick Run Scene.."
 msgstr "Быстро запустить сцену.."
 
+#: tools/editor/editor_node.cpp
+msgid ""
+"Open Project Manager? \n"
+"(Unsaved changes will be lost)"
+msgstr ""
+"Открыть менеджер проектов? \n"
+"(Несохранённые изменения будут потеряны)"
+
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr "Нууу блин((("
@@ -2695,6 +2703,7 @@ msgid "%d more file(s) or folder(s)"
 msgstr "Ещё %d файла(ов) или папка(ок)"
 
 #: tools/editor/editor_node.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Scene"
 msgstr "Сцена"
 
@@ -2774,14 +2783,6 @@ msgstr "Восстановить сцену"
 #: tools/editor/editor_node.cpp
 msgid "Quit to Project List"
 msgstr "Выйти в список проектов"
-
-#: tools/editor/editor_node.cpp
-msgid ""
-"Open Project Manager? \n"
-"(Unsaved changes will be lost)"
-msgstr ""
-"Открыть менеджер проектов? \n"
-"(Несохранённые изменения будут потеряны)"
 
 #: tools/editor/editor_node.cpp
 msgid "Import assets to the project."
