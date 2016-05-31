@@ -384,7 +384,7 @@ void ProjectSettings::_add_item(int p_item){
 
 void ProjectSettings::_action_button_pressed(Object* p_obj, int p_column,int p_id) {
 
-	TreeItem *ti=p_obj->cast_to<TreeItem>();
+	TreeItem *ti=Object::cast_to<TreeItem>(p_obj);
 
 	ERR_FAIL_COND(!ti);
 
@@ -942,7 +942,7 @@ void ProjectSettings::_autoload_add() {
 void ProjectSettings::_autoload_delete(Object *p_item,int p_column, int p_button) {
 
 
-	TreeItem *ti=p_item->cast_to<TreeItem>();
+	TreeItem *ti=Object::cast_to<TreeItem>(p_item);
 	String name = "autoload/"+ti->get_text(0);
 
 	if (p_button==0) {
@@ -993,7 +993,7 @@ void ProjectSettings::_autoload_delete(Object *p_item,int p_column, int p_button
 
 void ProjectSettings::_translation_delete(Object *p_item,int p_column, int p_button) {
 
-	TreeItem *ti = p_item->cast_to<TreeItem>();
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!ti);
 
 	int idx=ti->get_metadata(0);
@@ -1151,7 +1151,7 @@ void ProjectSettings::_translation_res_delete(Object *p_item,int p_column, int p
 
 	Dictionary remaps = Globals::get_singleton()->get("locale/translation_remaps");
 
-	TreeItem *k = p_item->cast_to<TreeItem>();
+	TreeItem *k = Object::cast_to<TreeItem>(p_item);
 
 	String key = k->get_metadata(0);
 	ERR_FAIL_COND(!remaps.has(key));
@@ -1181,7 +1181,7 @@ void ProjectSettings::_translation_res_option_delete(Object *p_item,int p_column
 
 	TreeItem *k = translation_remap->get_selected();
 	ERR_FAIL_COND(!k);
-	TreeItem *ed = p_item->cast_to<TreeItem>();
+	TreeItem *ed = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!ed);
 
 	String key = k->get_metadata(0);

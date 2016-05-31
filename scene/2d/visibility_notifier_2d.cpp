@@ -187,7 +187,7 @@ void VisibilityEnabler2D::_find_nodes(Node* p_node) {
 
 	if (enabler[ENABLER_FREEZE_BODIES]) {
 
-		RigidBody2D *rb2d = p_node->cast_to<RigidBody2D>();
+		RigidBody2D *rb2d = Object::cast_to<RigidBody2D>(p_node);
 		if (rb2d && ((rb2d->get_mode()==RigidBody2D::MODE_CHARACTER || (rb2d->get_mode()==RigidBody2D::MODE_RIGID && !rb2d->is_able_to_sleep())))) {
 
 
@@ -198,7 +198,7 @@ void VisibilityEnabler2D::_find_nodes(Node* p_node) {
 
 	if (enabler[ENABLER_PAUSE_ANIMATIONS]) {
 
-		AnimationPlayer *ap = p_node->cast_to<AnimationPlayer>();
+		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 		if (ap) {
 			add=true;
 		}
@@ -207,7 +207,7 @@ void VisibilityEnabler2D::_find_nodes(Node* p_node) {
 
 	if (enabler[ENABLER_PAUSE_ANIMATED_SPRITES]) {
 
-		AnimatedSprite *as = p_node->cast_to<AnimatedSprite>();
+		AnimatedSprite *as = Object::cast_to<AnimatedSprite>(p_node);
 		if (as) {
 			add=true;
 		}
@@ -217,7 +217,7 @@ void VisibilityEnabler2D::_find_nodes(Node* p_node) {
 
 	if (enabler[ENABLER_PAUSE_PARTICLES]) {
 
-		Particles2D *ps = p_node->cast_to<Particles2D>();
+		Particles2D *ps = Object::cast_to<Particles2D>(p_node);
 		if (ps) {
 			add=true;
 		}
@@ -290,7 +290,7 @@ void VisibilityEnabler2D::_change_node_state(Node* p_node,bool p_enabled) {
 	ERR_FAIL_COND(!nodes.has(p_node));
 
 	{
-		RigidBody2D *rb = p_node->cast_to<RigidBody2D>();
+		RigidBody2D *rb = Object::cast_to<RigidBody2D>(p_node);
 		if (rb) {
 
 			if (p_enabled) {
@@ -305,7 +305,7 @@ void VisibilityEnabler2D::_change_node_state(Node* p_node,bool p_enabled) {
 	}
 
 	{
-		AnimationPlayer *ap=p_node->cast_to<AnimationPlayer>();
+		AnimationPlayer *ap=Object::cast_to<AnimationPlayer>(p_node);
 
 		if (ap) {
 
@@ -313,7 +313,7 @@ void VisibilityEnabler2D::_change_node_state(Node* p_node,bool p_enabled) {
 		}
 	}
 	{
-		AnimatedSprite *as=p_node->cast_to<AnimatedSprite>();
+		AnimatedSprite *as=Object::cast_to<AnimatedSprite>(p_node);
 
 		if (as) {
 
@@ -325,7 +325,7 @@ void VisibilityEnabler2D::_change_node_state(Node* p_node,bool p_enabled) {
 	}
 
 	{
-		Particles2D *ps=p_node->cast_to<Particles2D>();
+		Particles2D *ps=Object::cast_to<Particles2D>(p_node);
 
 		if (ps) {
 

@@ -45,10 +45,10 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 		Node *child = scene->get_child(i);
 
 
-		if (!child->cast_to<Sprite>()) {
+		if (!Object::cast_to<Sprite>(child)) {
 			if (child->get_child_count()>0) {
 				child=child->get_child(0);
-				if (!child->cast_to<Sprite>()) {
+				if (!Object::cast_to<Sprite>(child)) {
 					continue;
 				}
 
@@ -58,7 +58,7 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 
 		}
 
-		Sprite *mi = child->cast_to<Sprite>();
+		Sprite *mi = Object::cast_to<Sprite>(child);
 		Ref<Texture> texture=mi->get_texture();
 		Ref<CanvasItemMaterial> material=mi->get_material();
 
@@ -101,15 +101,15 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 
 			Node *child2 = mi->get_child(j);
 
-			if (child2->cast_to<NavigationPolygonInstance>())
-				nav_poly=child2->cast_to<NavigationPolygonInstance>()->get_navigation_polygon();
+			if (Object::cast_to<NavigationPolygonInstance>(child2))
+				nav_poly=Object::cast_to<NavigationPolygonInstance>(child2)->get_navigation_polygon();
 
-			if (child2->cast_to<LightOccluder2D>())
-				occluder=child2->cast_to<LightOccluder2D>()->get_occluder_polygon();
+			if (Object::cast_to<LightOccluder2D>(child2))
+				occluder=Object::cast_to<LightOccluder2D>(child2)->get_occluder_polygon();
 
-			if (!child2->cast_to<StaticBody2D>())
+			if (!Object::cast_to<StaticBody2D>(child2))
 				continue;
-			StaticBody2D *sb = child2->cast_to<StaticBody2D>();
+			StaticBody2D *sb = Object::cast_to<StaticBody2D>(child2);
 			int shape_count = sb->get_shape_count();
 			if (shape_count==0)
 				continue;
@@ -259,8 +259,8 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 
 void TileSetEditorPlugin::edit(Object *p_node) {
 
-	if (p_node && p_node->cast_to<TileSet>()) {
-		tileset_editor->edit( p_node->cast_to<TileSet>() );
+	if (TileSet *ts = Object::cast_to<TileSet>(p_node)) {
+		tileset_editor->edit(ts);
 		tileset_editor->show();
 	} else
 		tileset_editor->hide();

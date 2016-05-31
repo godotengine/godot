@@ -263,7 +263,7 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 
 	for(int i=0;i<get_child_count();i++) {
 
-		CanvasItem *c=get_child(i)->cast_to<CanvasItem>();
+		CanvasItem *c=Object::cast_to<CanvasItem>(get_child(i));
 
 		if (c && !c->hidden) //should the toplevels stop propagation? i think so but..
 			c->_propagate_visibility_changed(p_visible);
@@ -431,12 +431,12 @@ void CanvasItem::_sort_children() {
 	for(int i=0;i<get_child_count();i++) {
 
 		Node *n = get_child(i);
-		CanvasItem *ci=n->cast_to<CanvasItem>();
+		CanvasItem *ci=Object::cast_to<CanvasItem>(n);
 
 		if (ci) {
 			if (ci->toplevel || ci->group!="")
 				continue;
-			VisualServer::get_singleton()->canvas_item_raise(n->cast_to<CanvasItem>()->canvas_item);
+			VisualServer::get_singleton()->canvas_item_raise(Object::cast_to<CanvasItem>(n)->canvas_item);
 		}
 	}
 }
@@ -452,7 +452,7 @@ void CanvasItem::_raise_self() {
 
 void CanvasItem::_enter_canvas() {
 
-	if ((!get_parent() || !get_parent()->cast_to<CanvasItem>()) || toplevel) {
+	if ((!get_parent() || !Object::cast_to<CanvasItem>(get_parent())) || toplevel) {
 
 		Node *n = this;
 		Viewport *viewport=NULL;
@@ -460,14 +460,14 @@ void CanvasItem::_enter_canvas() {
 
 		while(n) {
 
-			if (n->cast_to<Viewport>()) {
+			if (Object::cast_to<Viewport>(n)) {
 
-				viewport = n->cast_to<Viewport>();
+				viewport = Object::cast_to<Viewport>(n);
 				break;
 			}
-			if (!canvas_layer && n->cast_to<CanvasLayer>()) {
+			if (!canvas_layer && Object::cast_to<CanvasLayer>(n)) {
 
-				canvas_layer = n->cast_to<CanvasLayer>();
+				canvas_layer = Object::cast_to<CanvasLayer>(n);
 			}
 			n=n->get_parent();
 		}
@@ -518,7 +518,7 @@ void CanvasItem::_notification(int p_what) {
 			first_draw=true;
 			pending_children_sort=false;
 			if (get_parent()) {
-				CanvasItem *ci = get_parent()->cast_to<CanvasItem>();
+				CanvasItem *ci = Object::cast_to<CanvasItem>(get_parent());
 				if (ci)
 					C=ci->children_items.push_back(this);
 			}
@@ -545,7 +545,7 @@ void CanvasItem::_notification(int p_what) {
 				get_tree()->xform_change_list.remove(&xform_change);
 			_exit_canvas();
 			if (C) {
-				get_parent()->cast_to<CanvasItem>()->children_items.erase(C);
+				Object::cast_to<CanvasItem>(get_parent())->children_items.erase(C);
 				C=NULL;
 			}
 			global_invalid=true;
@@ -631,7 +631,7 @@ CanvasItem *CanvasItem::get_parent_item() const {
 	if (!parent)
 		return NULL;
 
-	return parent->cast_to<CanvasItem>();
+	return Object::cast_to<CanvasItem>(parent);
 }
 
 
@@ -878,8 +878,8 @@ RID CanvasItem::get_canvas() const {
 CanvasItem *CanvasItem::get_toplevel() const {
 
 	CanvasItem *ci=const_cast<CanvasItem*>(this);
-	while(!ci->toplevel && ci->get_parent() && ci->get_parent()->cast_to<CanvasItem>()) {
-		ci=ci->get_parent()->cast_to<CanvasItem>();
+	while(!ci->toplevel && ci->get_parent() && Object::cast_to<CanvasItem>(ci->get_parent())) {
+		ci=Object::cast_to<CanvasItem>(ci->get_parent());
 	}
 
 	return ci;
@@ -1157,8 +1157,8 @@ Matrix32 CanvasItem::get_canvas_transform() const {
 
 	if (canvas_layer)
 		return canvas_layer->get_transform();
-	else if (get_parent()->cast_to<CanvasItem>())
-		return get_parent()->cast_to<CanvasItem>()->get_canvas_transform();
+	else if (Object::cast_to<CanvasItem>(get_parent()))
+		return Object::cast_to<CanvasItem>(get_parent())->get_canvas_transform();
 	else
 		return get_viewport()->get_canvas_transform();
 

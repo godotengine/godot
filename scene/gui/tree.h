@@ -154,7 +154,7 @@ protected:
 
 		return d;
 	}
-	void _remove_child(Object *p_child) { remove_child( p_child->cast_to<TreeItem>() ); }
+	void _remove_child(Object *p_child) { remove_child( Object::cast_to<TreeItem>(p_child) ); }
 public:
 
 	/* cell mode */
@@ -452,9 +452,9 @@ protected:
 	static void _bind_methods();
 
 	//bind helpers
-	Object* _create_item(Object *p_parent) { return create_item(p_parent->cast_to<TreeItem>() ); }
-	TreeItem *_get_next_selected(Object *p_item) { return get_next_selected(p_item->cast_to<TreeItem>() ); }
-	Rect2 _get_item_rect(Object *p_item,int p_column) const { return get_item_rect(p_item->cast_to<TreeItem>(),p_column ); }
+	Object* _create_item(Object *p_parent) { return create_item(Object::cast_to<TreeItem>(p_parent) ); }
+	TreeItem *_get_next_selected(Object *p_item) { return get_next_selected(Object::cast_to<TreeItem>(p_item) ); }
+	Rect2 _get_item_rect(Object *p_item,int p_column) const { return get_item_rect(Object::cast_to<TreeItem>(p_item),p_column ); }
 
 
 public:

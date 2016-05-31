@@ -49,7 +49,7 @@ void SceneTreeEditor::_subscene_option(int p_idx) {
 	Object *obj = ObjectDB::get_instance(instance_node);
 	if (!obj)
 		return;
-	Node *node = obj->cast_to<Node>();
+	Node *node = Object::cast_to<Node>(obj);
 	if (!node)
 		return;
 
@@ -115,7 +115,7 @@ void SceneTreeEditor::_subscene_option(int p_idx) {
 
 void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id) {
 
-	TreeItem *item=p_item->cast_to<TreeItem>();
+	TreeItem *item=Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!item);
 
 	NodePath np = item->get_metadata(0);
@@ -166,7 +166,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 
 		if (n->is_type("Spatial")) {
 
-			Spatial *ci = n->cast_to<Spatial>();
+			Spatial *ci = Object::cast_to<Spatial>(n);
 			if (!ci->is_visible() && ci->get_parent_spatial() && !ci->get_parent_spatial()->is_visible()) {
 				error->set_text(TTR("This item cannot be made visible because the parent is hidden. Unhide the parent first."));
 				error->popup_centered_minsize();
@@ -180,7 +180,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 			undo_redo->commit_action();
 		} else if (n->is_type("CanvasItem")) {
 
-			CanvasItem *ci = n->cast_to<CanvasItem>();
+			CanvasItem *ci = Object::cast_to<CanvasItem>(n);
 			if (!ci->is_visible() && ci->get_parent_item() && !ci->get_parent_item()->is_visible()) {
 				error->set_text(TTR("This item cannot be made visible because the parent is hidden. Unhide the parent first."));
 				error->popup_centered_minsize();
@@ -544,7 +544,7 @@ void SceneTreeEditor::_selected_changed() {
 
 void SceneTreeEditor::_cell_multi_selected(Object *p_object,int p_cell,bool p_selected) {
 
-	TreeItem *item = p_object->cast_to<TreeItem>();
+	TreeItem *item = Object::cast_to<TreeItem>(p_object);
 	ERR_FAIL_COND(!item);
 
 	NodePath np = item->get_metadata(0);
@@ -653,7 +653,7 @@ void SceneTreeEditor::_rename_node(ObjectID p_node,const String& p_name) {
 
 	Object *o = ObjectDB::get_instance(p_node);
 	ERR_FAIL_COND(!o);
-	Node *n = o->cast_to<Node>();
+	Node *n = Object::cast_to<Node>(o);
 	ERR_FAIL_COND(!n);
 	TreeItem* item=_find(tree->get_root(),n->get_path());
 	ERR_FAIL_COND(!item);
@@ -809,7 +809,7 @@ void SceneTreeEditor::_cell_collapsed(Object *p_obj) {
 	if (!can_rename)
 		return;
 
-	TreeItem *ti=p_obj->cast_to<TreeItem>();
+	TreeItem *ti=Object::cast_to<TreeItem>(p_obj);
 	if (!ti)
 		return;
 

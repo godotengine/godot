@@ -67,8 +67,8 @@ void ColorPicker::_notification(int p_what) {
 			update_material(uv_material, color,h,s,v);
 			update_material(w_material, color,h,s,v);
 
-			uv_edit->get_child(0)->cast_to<Control>()->update();
-			w_edit->get_child(0)->cast_to<Control>()->update();
+			Object::cast_to<Control>(uv_edit->get_child(0))->update();
+			Object::cast_to<Control>(w_edit->get_child(0))->update();
 			_update_color();
 		}
 
@@ -109,8 +109,8 @@ void ColorPicker::set_color(const Color& p_color) {
 	update_material(uv_material, color,h,s,v);
 	update_material(w_material, color,h,s,v);
 
-	uv_edit->get_child(0)->cast_to<Control>()->update();
-	w_edit->get_child(0)->cast_to<Control>()->update();
+	Object::cast_to<Control>(uv_edit->get_child(0))->update();
+	Object::cast_to<Control>(w_edit->get_child(0))->update();
 	_update_color();
 
 }

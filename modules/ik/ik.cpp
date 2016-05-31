@@ -60,7 +60,7 @@ void InverseKinematics::_get_property_list( List<PropertyInfo>* p_list ) const
 
 	Skeleton *parent=NULL;
 	if(get_parent())
-		parent=get_parent()->cast_to<Skeleton>();
+		parent=Object::cast_to<Skeleton>(get_parent());
 
 	if (parent) {
 
@@ -83,8 +83,8 @@ void InverseKinematics::_get_property_list( List<PropertyInfo>* p_list ) const
 void InverseKinematics::_check_bind()
 {
 
-	if (get_parent() && get_parent()->cast_to<Skeleton>()) {
-		Skeleton *sk = get_parent()->cast_to<Skeleton>();
+	if (Object::cast_to<Skeleton>(get_parent())) {
+		Skeleton *sk = Object::cast_to<Skeleton>(get_parent());
 		int idx = sk->find_bone(ik_bone);
 		if (idx!=-1) {
 			ik_bone_no = idx;
@@ -99,8 +99,8 @@ void InverseKinematics::_check_unbind()
 
 	if (bound) {
 
-		if (get_parent() && get_parent()->cast_to<Skeleton>()) {
-			Skeleton *sk = get_parent()->cast_to<Skeleton>();
+		if (Object::cast_to<Skeleton>(get_parent())) {
+			Skeleton *sk = Object::cast_to<Skeleton>(get_parent());
 			int idx = sk->find_bone(ik_bone);
 			if (idx!=-1)
 				ik_bone_no = idx;
@@ -242,7 +242,7 @@ void InverseKinematics::_notification(int p_what)
 		} break;
 		case NOTIFICATION_PROCESS: {
 			float delta = get_process_delta_time();
-			Spatial *sksp = skel->cast_to<Spatial>();
+			Spatial *sksp = Object::cast_to<Spatial>(skel);
 			if (!bound)
 				break;
 			if (!sksp)

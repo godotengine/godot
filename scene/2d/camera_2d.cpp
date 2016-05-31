@@ -225,7 +225,7 @@ void Camera2D::_notification(int p_what) {
 			Node *n=this;
 			while(n){
 
-				viewport = n->cast_to<Viewport>();
+				viewport = Object::cast_to<Viewport>(n);
 				if (viewport)
 					break;
 				n=n->get_parent();

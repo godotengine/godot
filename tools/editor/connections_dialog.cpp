@@ -736,7 +736,7 @@ void ConnectionsDialog::update_tree() {
 				if (!(c.flags&CONNECT_PERSIST))
 					continue;
 
-				Node *target = c.target->cast_to<Node>();
+				Node *target = Object::cast_to<Node>(c.target);
 				if (!target)
 					continue;
 

@@ -36,7 +36,7 @@ void CollisionPolygon2D::_add_to_collision_object(Object *p_obj) {
 	if (unparenting || !can_update_body)
 		return;
 
-	CollisionObject2D *co = p_obj->cast_to<CollisionObject2D>();
+	CollisionObject2D *co = Object::cast_to<CollisionObject2D>(p_obj);
 	ERR_FAIL_COND(!co);
 
 	if (polygon.size()==0)
@@ -100,7 +100,7 @@ void CollisionPolygon2D::_update_parent() {
 	Node *parent = get_parent();
 	if (!parent)
 		return;
-	CollisionObject2D *co = parent->cast_to<CollisionObject2D>();
+	CollisionObject2D *co = Object::cast_to<CollisionObject2D>(parent);
 	if (!co)
 		return;
 	co->_update_shapes_from_children();
@@ -175,7 +175,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 			if (can_update_body) {
 				_update_parent();
 			} else if (shape_from>=0 && shape_to>=0) {
-				CollisionObject2D *co = get_parent()->cast_to<CollisionObject2D>();
+				CollisionObject2D *co = Object::cast_to<CollisionObject2D>(get_parent());
 				for(int i=shape_from;i<=shape_to;i++) {
 					co->set_shape_transform(i,get_transform());
 				}
@@ -272,7 +272,7 @@ void CollisionPolygon2D::set_trigger(bool p_trigger) {
 	trigger=p_trigger;
 	_update_parent();
 	if (!can_update_body && is_inside_tree() && shape_from>=0 && shape_to>=0) {
-		CollisionObject2D *co = get_parent()->cast_to<CollisionObject2D>();
+		CollisionObject2D *co = Object::cast_to<CollisionObject2D>(get_parent());
 		for(int i=shape_from;i<=shape_to;i++) {
 			co->set_shape_as_trigger(i,p_trigger);
 		}
@@ -299,7 +299,7 @@ Vector2 CollisionPolygon2D::_get_shape_range() const {
 
 String CollisionPolygon2D::get_configuration_warning() const {
 
-	if (!get_parent()->cast_to<CollisionObject2D>()) {
+	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
 		return TTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
 	}
 

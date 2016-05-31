@@ -238,7 +238,7 @@ void BaseButton::_notification(int p_what) {
 		CanvasItem *ci=this;
 		while(ci) {
 
-			ButtonGroup *bg = ci->cast_to<ButtonGroup>();
+			ButtonGroup *bg = Object::cast_to<ButtonGroup>(ci);
 			if (bg) {
 
 				group=bg;

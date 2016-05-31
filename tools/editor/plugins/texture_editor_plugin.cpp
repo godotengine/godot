@@ -46,8 +46,8 @@ void TextureEditor::_notification(int p_what) {
 		Ref<Font> font = get_font("font","Label");
 
 		String format;
-		if (texture->cast_to<ImageTexture>()) {
-			format = Image::get_format_name(texture->cast_to<ImageTexture>()->get_format());
+		if (Object::cast_to<ImageTexture>(*texture)) {
+			format = Image::get_format_name(Object::cast_to<ImageTexture>(*texture)->get_format());
 		} else {
 			format=texture->get_type();
 		}
@@ -97,7 +97,7 @@ TextureEditor::TextureEditor() {
 
 void TextureEditorPlugin::edit(Object *p_object) {
 
-	Texture * s = p_object->cast_to<Texture>();
+	Texture * s = Object::cast_to<Texture>(p_object);
 	if (!s)
 		return;
 

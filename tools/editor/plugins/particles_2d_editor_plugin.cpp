@@ -35,7 +35,7 @@
 void Particles2DEditorPlugin::edit(Object *p_object) {
 
 	if (p_object) {
-		particles=p_object->cast_to<Particles2D>();
+		particles=Object::cast_to<Particles2D>(p_object);
 	} else {
 		particles=NULL;
 	}

@@ -213,7 +213,7 @@ Error ResourceInteractiveLoaderText::poll() {
 			}
 
 
-			Resource *r = obj->cast_to<Resource>();
+			Resource *r = Object::cast_to<Resource>(obj);
 			if (!r) {
 
 				error_text+="Can't create sub resource of type, because not a resource: "+type;
@@ -283,7 +283,7 @@ Error ResourceInteractiveLoaderText::poll() {
 		}
 
 
-		Resource *r = obj->cast_to<Resource>();
+		Resource *r = Object::cast_to<Resource>(obj);
 		if (!r) {
 
 			error_text+="Can't create sub resource of type, because not a resource: "+res_type;

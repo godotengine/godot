@@ -859,7 +859,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 void SpriteFramesEditorPlugin::edit(Object *p_object) {
 
 	frames_editor->set_undo_redo(&get_undo_redo());
-	SpriteFrames * s = p_object->cast_to<SpriteFrames>();
+	SpriteFrames * s = Object::cast_to<SpriteFrames>(p_object);
 	if (!s)
 		return;
 

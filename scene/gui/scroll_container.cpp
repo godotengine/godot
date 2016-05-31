@@ -40,7 +40,7 @@ Size2 ScrollContainer::get_minimum_size() const {
 
 	for(int i=0;i<get_child_count();i++) {
 
-		Control *c = get_child(i)->cast_to<Control>();
+		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c)
 			continue;
 		if (c->is_set_as_toplevel())
@@ -217,7 +217,7 @@ void ScrollContainer::_notification(int p_what) {
 
 		for(int i=0;i<get_child_count();i++) {
 
-			Control *c = get_child(i)->cast_to<Control>();
+			Control *c = Object::cast_to<Control>(get_child(i));
 			if (!c)
 				continue;
 			if (c->is_set_as_toplevel())

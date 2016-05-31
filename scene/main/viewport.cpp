@@ -291,7 +291,7 @@ void Viewport::_test_new_mouseover(ObjectID new_collider) {
 		if (physics_object_over) {
 			Object *obj = ObjectDB::get_instance(physics_object_over);
 			if (obj) {
-				CollisionObject *co = obj->cast_to<CollisionObject>();
+				CollisionObject *co = Object::cast_to<CollisionObject>(obj);
 				if (co) {
 					co->_mouse_exit();
 				}
@@ -301,7 +301,7 @@ void Viewport::_test_new_mouseover(ObjectID new_collider) {
 		if (new_collider) {
 			Object *obj = ObjectDB::get_instance(new_collider);
 			if (obj) {
-				CollisionObject *co = obj->cast_to<CollisionObject>();
+				CollisionObject *co = Object::cast_to<CollisionObject>(obj);
 				if (co) {
 					co->_mouse_enter();
 
@@ -327,7 +327,7 @@ void Viewport::_notification(int p_what) {
 			if (get_parent()) {
 				Node *parent=get_parent();
 				if (parent) {
-					parent_control=parent->cast_to<Control>();
+					parent_control=Object::cast_to<Control>(parent);
 				}
 			}
 
@@ -338,7 +338,7 @@ void Viewport::_notification(int p_what) {
 
 			while(parent_node) {
 
-				parent = parent_node->cast_to<Viewport>();
+				parent = Object::cast_to<Viewport>(parent_node);
 				if (parent)
 					break;
 
@@ -537,7 +537,7 @@ void Viewport::_notification(int p_what) {
 						for(int i=0;i<rc;i++) {
 
 							if (res[i].collider_id && res[i].collider) {
-								CollisionObject2D *co=res[i].collider->cast_to<CollisionObject2D>();
+								CollisionObject2D *co=Object::cast_to<CollisionObject2D>(res[i].collider);
 								if (co) {
 
 									Map<ObjectID,uint64_t>::Element *E=physics_2d_mouseover.find(res[i].collider_id);
@@ -560,7 +560,7 @@ void Viewport::_notification(int p_what) {
 								Object *o=ObjectDB::get_instance(E->key());
 								if (o) {
 
-									CollisionObject2D *co=o->cast_to<CollisionObject2D>();
+									CollisionObject2D *co=Object::cast_to<CollisionObject2D>(o);
 									if (co) {
 										co->_mouse_exit();
 									}
@@ -586,7 +586,7 @@ void Viewport::_notification(int p_what) {
 
 						Object *obj = ObjectDB::get_instance(physics_object_capture);
 						if (obj) {
-							CollisionObject *co = obj->cast_to<CollisionObject>();
+							CollisionObject *co = Object::cast_to<CollisionObject>(obj);
 							if (co) {
 								co->_input_event(camera,ev,Vector3(),Vector3(),0);
 								captured=true;
@@ -637,7 +637,7 @@ void Viewport::_notification(int p_what) {
 
 									if (result.collider) {
 
-										CollisionObject *co = result.collider->cast_to<CollisionObject>();
+										CollisionObject *co = Object::cast_to<CollisionObject>(result.collider);
 										if (co) {
 
 											co->_input_event(camera,ev,result.position,result.normal,result.shape);
@@ -675,7 +675,7 @@ void Viewport::_notification(int p_what) {
 						ObjectID new_collider=0;
 						if (col) {
 							if (result.collider) {
-								CollisionObject *co = result.collider->cast_to<CollisionObject>();
+								CollisionObject *co = Object::cast_to<CollisionObject>(result.collider);
 								if (co) {
 									new_collider=result.collider_id;
 
@@ -740,7 +740,7 @@ Rect2 Viewport::get_rect() const {
 
 void Viewport::_update_listener() {
 
-	if (is_inside_tree() && audio_listener && camera && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))  {
+	if (is_inside_tree() && audio_listener && camera && (!get_parent() || (Object::cast_to<Control>(get_parent()) && cast_to<Control>(get_parent())->is_visible())))  {
 		SpatialSoundServer::get_singleton()->listener_set_space(listener,find_world()->get_sound_space());
 	} else {
 		SpatialSoundServer::get_singleton()->listener_set_space(listener,RID());
@@ -751,7 +751,7 @@ void Viewport::_update_listener() {
 
 void Viewport::_update_listener_2d() {
 
-	if (is_inside_tree() && audio_listener && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))
+	if (is_inside_tree() && audio_listener && (!get_parent() || (Object::cast_to<Control>(get_parent()) && cast_to<Control>(get_parent())->is_visible())))
 		SpatialSound2DServer::get_singleton()->listener_set_space(listener_2d,find_world_2d()->get_sound_space());
 	else
 		SpatialSound2DServer::get_singleton()->listener_set_space(listener_2d,RID());
@@ -964,12 +964,12 @@ void Viewport::_propagate_enter_world(Node *p_node) {
 		if (!p_node->is_inside_tree()) //may not have entered scene yet
 			return;
 
-		Spatial *s = p_node->cast_to<Spatial>();
+		Spatial *s = Object::cast_to<Spatial>(p_node);
 		if (s) {
 
 			s->notification(Spatial::NOTIFICATION_ENTER_WORLD);
 		} else {
-			Viewport *v = p_node->cast_to<Viewport>();
+			Viewport *v = Object::cast_to<Viewport>(p_node);
 			if (v) {
 
 				if (v->world.is_valid())
@@ -990,7 +990,7 @@ void Viewport::_propagate_viewport_notification(Node* p_node,int p_what) {
 	p_node->notification(p_what);
 	for(int i=0;i<p_node->get_child_count();i++) {
 		Node *c = p_node->get_child(i);
-		if (c->cast_to<Viewport>())
+		if (Object::cast_to<Viewport>(c))
 			continue;
 		_propagate_viewport_notification(c,p_what);
 	}
@@ -1003,12 +1003,12 @@ void Viewport::_propagate_exit_world(Node *p_node) {
 		if (!p_node->is_inside_tree()) //may have exited scene already
 			return;
 
-		Spatial *s = p_node->cast_to<Spatial>();
+		Spatial *s = Object::cast_to<Spatial>(p_node);
 		if (s) {
 
 			s->notification(Spatial::NOTIFICATION_EXIT_WORLD,false);
 		} else {
-			Viewport *v = p_node->cast_to<Viewport>();
+			Viewport *v = Object::cast_to<Viewport>(p_node);
 			if (v) {
 
 				if (v->world.is_valid())
@@ -1565,10 +1565,10 @@ Control* Viewport::_gui_find_control(const Point2& p_global)  {
 
 Control* Viewport::_gui_find_control_at_pos(CanvasItem* p_node,const Point2& p_global,const Matrix32& p_xform,Matrix32& r_inv_xform)  {
 
-	if (p_node->cast_to<Viewport>())
+	if (Object::cast_to<Viewport>(p_node))
 		return NULL;
 
-	Control *c=p_node->cast_to<Control>();
+	Control *c=Object::cast_to<Control>(p_node);
 
 	if (c) {
 	//	print_line("at "+String(c->get_path())+" POS "+c->get_pos()+" bt "+p_xform);
@@ -1590,7 +1590,7 @@ Control* Viewport::_gui_find_control_at_pos(CanvasItem* p_node,const Point2& p_g
 			if (p_node==gui.tooltip_popup)
 				continue;
 
-			CanvasItem *ci = p_node->get_child(i)->cast_to<CanvasItem>();
+			CanvasItem *ci = Object::cast_to<CanvasItem>(p_node->get_child(i));
 			if (!ci || ci->is_set_as_toplevel())
 				continue;
 
@@ -2060,7 +2060,7 @@ void Viewport::_gui_remove_from_modal_stack(List<Control*>::Element *MI,ObjectID
 		if (!next) { //top of stack
 
 			Object *pfo = ObjectDB::get_instance(p_prev_focus_owner);
-			Control *pfoc = pfo->cast_to<Control>();
+			Control *pfoc = Object::cast_to<Control>(pfo);
 			if (!pfoc)
 				return;
 
@@ -2087,7 +2087,7 @@ void Viewport::_gui_force_drag(Control *p_base, const Variant& p_data, Control *
 void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 
 	ERR_FAIL_NULL(p_control);
-	ERR_FAIL_COND( !((Object*)p_control)->cast_to<Control>());
+	ERR_FAIL_COND( !Object::cast_to<Control>(((Object*)p_control)));
 	ERR_FAIL_COND(p_control->is_inside_tree());
 	ERR_FAIL_COND(p_control->get_parent()!=NULL);
 
@@ -2405,7 +2405,7 @@ Variant Viewport::gui_get_drag_data() const {
 
 String Viewport::get_configuration_warning() const {
 
-	if (get_parent() && !get_parent()->cast_to<Control>() && !render_target) {
+	if (get_parent() && !Object::cast_to<Control>(get_parent()) && !render_target) {
 
 		return TTR("This viewport is not set as render target. If you intend for it to display its contents directly to the screen, make it a child of a Control so it can obtain a size. Otherwise, make it a RenderTarget and assign its internal texture to some node for display.");
 	}

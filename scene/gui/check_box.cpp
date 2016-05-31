@@ -59,7 +59,7 @@ bool CheckBox::is_radio()
     Node* parent = this;
     do {
         parent = parent->get_parent();
-	if (parent->cast_to<ButtonGroup>())
+	if (Object::cast_to<ButtonGroup>(parent))
             break;
     } while (parent);
 

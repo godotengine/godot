@@ -898,7 +898,7 @@ void ProjectExportDialog::_group_add() {
 
 void ProjectExportDialog::_group_del(Object *p_item, int p_column, int p_button){
 
-	TreeItem *item = p_item->cast_to<TreeItem>();
+	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	if (!item)
 		return;
 	String name = item->get_text(0);

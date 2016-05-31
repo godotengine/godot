@@ -51,12 +51,12 @@ void TileMap::_notification(int p_what) {
 			Node2D *c=this;
 			while(c) {
 
-				navigation=c->cast_to<Navigation2D>();
+				navigation=Object::cast_to<Navigation2D>(c);
 				if (navigation) {
 					break;
 				}
 
-				c=c->get_parent()->cast_to<Node2D>();
+				c=Object::cast_to<Node2D>(c->get_parent());
 			}
 
 			pending_update=true;
@@ -527,7 +527,7 @@ void TileMap::_update_dirty_quadrants() {
 
 	for(int i=0;i<get_child_count();i++) {
 
-		CanvasItem *c=get_child(i)->cast_to<CanvasItem>();
+		CanvasItem *c=Object::cast_to<CanvasItem>(get_child(i));
 
 		if (c)
 			VS::get_singleton()->canvas_item_raise(c->get_canvas_item());

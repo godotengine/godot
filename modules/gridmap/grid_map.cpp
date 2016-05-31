@@ -1056,12 +1056,12 @@ void GridMap::_notification(int p_what) {
 
 			Spatial *c=this;
 			while(c) {
-				navigation=c->cast_to<Navigation>();
+				navigation=Object::cast_to<Navigation>(c);
 				if (navigation) {
 					break;
 				}
 
-				c=c->get_parent()->cast_to<Spatial>();
+				c=Object::cast_to<Spatial>(c->get_parent());
 			}
 
 			if(navigation){
@@ -1677,8 +1677,8 @@ void GridMap::bake_geometry() {
 
 		for(int i=0;i<get_child_count();i++) {
 
-			if (get_child(i)->cast_to<Light>()) {
-				Light *l = get_child(i)->cast_to<Light>();
+			if (Object::cast_to<Light>(get_child(i))) {
+				Light *l = Object::cast_to<Light>(get_child(i));
 				BakeLight bl;
 				for(int i=0;i<Light::PARAM_MAX;i++) {
 					bl.param[i]=l->get_parameter(Light::Parameter(i));
@@ -1727,7 +1727,7 @@ void GridMap::_find_baked_light() {
 	Node *n=get_parent();
 	while(n) {
 
-		BakedLightInstance *bl=n->cast_to<BakedLightInstance>();
+		BakedLightInstance *bl=Object::cast_to<BakedLightInstance>(n);
 		if (bl) {
 
 			baked_light_instance=bl;

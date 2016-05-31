@@ -59,12 +59,12 @@ void SoundRoomParams::_notification(int p_what) {
 			Room *room_instance=NULL;
 			while(n) {
 
-				room_instance=n->cast_to<Room>();
+				room_instance=Object::cast_to<Room>(n);
 				if (room_instance) {
 
 					break;
 				}
-				if (n->cast_to<Viewport>())
+				if (Object::cast_to<Viewport>(n))
 					break;
 
 				n=n->get_parent();

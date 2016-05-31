@@ -21,7 +21,7 @@ ColorRampEditorPlugin::ColorRampEditorPlugin(EditorNode *p_node) {
 
 void ColorRampEditorPlugin::edit(Object *p_object) {
 
-	ColorRamp* color_ramp = p_object->cast_to<ColorRamp>();
+	ColorRamp* color_ramp = Object::cast_to<ColorRamp>(p_object);
 	if (!color_ramp)
 		return;
 	color_ramp_ref = Ref<ColorRamp>(color_ramp);

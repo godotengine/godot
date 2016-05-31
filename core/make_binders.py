@@ -23,7 +23,7 @@ public:
 
 	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Variant::CallError& r_error) {
 
-		T *instance=p_object->cast_to<T>();
+		T *instance=Object::cast_to<T>(p_object);
 		r_error.error=Variant::CallError::CALL_OK;
 #ifdef DEBUG_METHODS_ENABLED
 

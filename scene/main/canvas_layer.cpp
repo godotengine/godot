@@ -173,9 +173,9 @@ void CanvasLayer::_notification(int p_what) {
 
 			while(n) {
 
-				if (n->cast_to<Viewport>()) {
+				if (Object::cast_to<Viewport>(n)) {
 
-					vp = n->cast_to<Viewport>();
+					vp = Object::cast_to<Viewport>(n);
 					break;
 				}
 				n=n->get_parent();

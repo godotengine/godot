@@ -46,7 +46,7 @@ void ParallaxLayer::_update_mirroring() {
 	if (!get_parent())
 		return;
 
-	ParallaxBackground *pb = get_parent()->cast_to<ParallaxBackground>();
+	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
 	if (pb) {
 
 		RID c = pb->get_world_2d()->get_canvas();
@@ -121,7 +121,7 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2& p_offset,float p_sca
 
 String ParallaxLayer::get_configuration_warning() const {
 
-	if (!get_parent() || !get_parent()->cast_to<ParallaxBackground>()) {
+	if (!get_parent() || !Object::cast_to<ParallaxBackground>(get_parent())) {
 		return TTR("ParallaxLayer node only works when set as child of a ParallaxBackground node.");
 	}
 

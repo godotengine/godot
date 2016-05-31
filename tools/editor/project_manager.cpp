@@ -358,7 +358,7 @@ void ProjectManager::_notification(int p_what) {
 
 void ProjectManager::_panel_draw(Node *p_hb) {
 
-	HBoxContainer *hb = p_hb->cast_to<HBoxContainer>();
+	HBoxContainer *hb = Object::cast_to<HBoxContainer>(p_hb);
 
 	hb->draw_line(Point2(0,hb->get_size().y+1),Point2(hb->get_size().x-10,hb->get_size().y+1),get_color("guide_color","Tree"));
 
@@ -379,7 +379,7 @@ void ProjectManager::_panel_input(const InputEvent& p_ev,Node *p_hb) {
 			int clicked_id = -1;
 			int last_clicked_id = -1;
 			for(int i=0;i<scroll_childs->get_child_count();i++) {
-				HBoxContainer *hb = scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+				HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
 				if (!hb) continue;
 				if (hb->get_meta("name") == clicked) clicked_id = i;
 				if (hb->get_meta("name") == last_clicked) last_clicked_id = i;
@@ -389,7 +389,7 @@ void ProjectManager::_panel_input(const InputEvent& p_ev,Node *p_hb) {
 				int min = clicked_id < last_clicked_id? clicked_id : last_clicked_id;
 				int max = clicked_id > last_clicked_id? clicked_id : last_clicked_id;
 				for(int i=0; i<scroll_childs->get_child_count(); ++i) {
-					HBoxContainer *hb = scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+					HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
 					if (!hb) continue;
 					if (i!=clicked_id && (i<min || i>max) && !p_ev.key.mod.control) {
 						selected_list.erase(hb->get_meta("name"));
@@ -421,7 +421,7 @@ void ProjectManager::_panel_input(const InputEvent& p_ev,Node *p_hb) {
 
 		single_selected_main = "";
 		for(int i=0;i<scroll_childs->get_child_count();i++) {
-			CanvasItem *item = scroll_childs->get_child(i)->cast_to<CanvasItem>();
+			CanvasItem *item = Object::cast_to<CanvasItem>(scroll_childs->get_child(i));
 			item->update();
 
 			if (single_selected!="" && single_selected == item->get_meta("name"))
