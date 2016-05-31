@@ -252,15 +252,15 @@ msgstr "Отмена"
 
 #: scene/gui/dialogs.cpp
 msgid "OK"
-msgstr ""
+msgstr "Ок"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr ""
+msgstr "Тревога!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr ""
+msgstr "Подтверждение..."
 
 #: scene/gui/text_edit.cpp scene/gui/line_edit.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
@@ -359,11 +359,11 @@ msgstr "Название группы уже существует!"
 
 #: tools/editor/project_export.cpp
 msgid "Add Image Group"
-msgstr "Добавить изображение группы"
+msgstr "Добавлено изображение группы"
 
 #: tools/editor/project_export.cpp
 msgid "Delete Image Group"
-msgstr "Удалить изображение группы"
+msgstr "Удалено изображение группы"
 
 #: tools/editor/project_export.cpp tools/editor/editor_import_export.cpp
 msgid "Error saving atlas:"
@@ -562,7 +562,7 @@ msgstr "Режим экспортирования скриптов:"
 
 #: tools/editor/project_export.cpp
 msgid "Text"
-msgstr "Текст"
+msgstr "Текстовый"
 
 #: tools/editor/project_export.cpp
 msgid "Compiled"
@@ -970,39 +970,39 @@ msgstr "Удалить"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
-msgstr "Change Light Radius"
+msgstr "Изменён радиус света"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
-msgstr "Change Camera FOV"
+msgstr "Изменён FOV камеры"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Camera Size"
-msgstr "Change Camera Size"
+msgstr "Изменён размер камеры"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Sphere Shape Radius"
-msgstr "Change Sphere Shape Radius"
+msgstr "Изменён радиус сферы"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Box Shape Extents"
-msgstr "Change Box Shape Extents"
+msgstr "Изменены границы прямоугольника"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Capsule Shape Radius"
-msgstr "Change Box Shape Extents"
+msgstr "Изменён радиус капсулы"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Capsule Shape Height"
-msgstr "Change Capsule Shape Height"
+msgstr "Изменена высота капуслы"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Ray Shape Length"
-msgstr "Change Ray Shape Length"
+msgstr "Изменена длинна луча"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
-msgstr "Change Notifier Extents"
+msgstr "Изменены границы уведомителя"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Invalid parent class name"
@@ -1119,79 +1119,79 @@ msgstr "Все выбранные элементы"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Add Key"
-msgstr "Move Add Key"
+msgstr "Подвинут ключ"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Anim Change Transition"
+msgstr "Изменён переход анимации"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr "Anim Change Transform"
+msgstr "Изменено преобразование анимации"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Value"
-msgstr "Anim Change Value"
+msgstr "Изменено значение анимации"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Call"
-msgstr "Anim Change Call"
+msgstr "Изменён вызов анимации"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Track"
-msgstr "Anim Add Track"
+msgstr "Добавлен новый трек"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Anim Track Up"
-msgstr "Move Anim Track Up"
+msgstr "Трек передвинут вверх"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Anim Track Down"
-msgstr "Move Anim Track Down"
+msgstr "Трек передвинут вниз"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr "Remove Anim Track"
+msgstr "Трек удалён"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Anim Duplicate Keys"
+msgstr "Дублированы ключи анимации"
 
 #: tools/editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr "Set Transitions to:"
+msgstr "Установлен переход на:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr "Anim Track Rename"
+msgstr "Трэк переименован"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
-msgstr "Anim Track Change Interpolation"
+msgstr "Изменена интреполяция"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"
-msgstr "Anim Track Change Value Mode"
+msgstr "Изменён режим значений"
 
 #: tools/editor/animation_editor.cpp
 msgid "Edit Node Curve"
-msgstr "Edit Node Curve"
+msgstr "Кривая изменена"
 
 #: tools/editor/animation_editor.cpp
 msgid "Edit Selection Curve"
-msgstr "Edit Selection Curve"
+msgstr "Выбор кривой изменён"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Anim Delete Keys"
+msgstr "Ключ удалён"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Key"
-msgstr "Anim Add Key"
+msgstr "Ключ добавлен"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Move Keys"
-msgstr "Anim Move Keys"
+msgstr "Ключ передвинут"
 
 #: tools/editor/animation_editor.cpp
 msgid "Scale Selection"
@@ -1265,39 +1265,39 @@ msgstr "Создать %d новые дорожки и вставить ключ
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create & Insert"
-msgstr "Anim Create & Insert"
+msgstr "Анимация создать & вставить"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr "Anim Insert Track & Key"
+msgstr "Анимация вставка дорожки & ключа"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert Key"
-msgstr "Anim Insert Key"
+msgstr "Вставка ключа анимации"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Len"
-msgstr "Change Anim Len"
+msgstr "Изменена длинна анимации"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Loop"
-msgstr "Change Anim Loop"
+msgstr "Изменено зацикливание анимации"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
-msgstr "Anim Create Typed Value Key"
+msgstr "Создан ключ с вводимым значением"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert"
-msgstr "Anim Insert"
+msgstr "Вставка на анимацию"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Scale Keys"
-msgstr "Anim Scale Keys"
+msgstr "Масштабирование ключей анимации"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Call Track"
-msgstr "Anim Add Call Track"
+msgstr "Добавлен ключ вызова в анимацию"
 
 #: tools/editor/animation_editor.cpp
 msgid "Animation zoom."
@@ -1755,23 +1755,23 @@ msgstr "Колёсико вниз."
 
 #: tools/editor/project_settings.cpp
 msgid "Toggle Persisting"
-msgstr "Toggle Persisting"
+msgstr "Переключено настаивание"
 
 #: tools/editor/project_settings.cpp
 msgid "Error saving settings."
-msgstr "Error saving settings."
+msgstr "Ошибка сохранения настроек."
 
 #: tools/editor/project_settings.cpp
 msgid "Settings saved OK."
-msgstr "Settings saved OK."
+msgstr "Настройки сохранены нормально."
 
 #: tools/editor/project_settings.cpp
 msgid "Add Translation"
-msgstr "Add Translation"
+msgstr "Добавлен перевод"
 
 #: tools/editor/project_settings.cpp
 msgid "Toggle AutoLoad Globals"
-msgstr "Toggle AutoLoad Globals"
+msgstr "Переключена автозагрузка глобальных скриптов"
 
 #: tools/editor/project_settings.cpp
 msgid "Invalid name."
@@ -1800,39 +1800,39 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Add Autoload"
-msgstr "Add Autoload"
+msgstr "Добавлена автозагрузка"
 
 #: tools/editor/project_settings.cpp
 msgid "Remove Autoload"
-msgstr "Remove Autoload"
+msgstr "Удалена автозагрузка"
 
 #: tools/editor/project_settings.cpp
 msgid "Move Autoload"
-msgstr "Move Autoload"
+msgstr "Передвинута автозагрузка"
 
 #: tools/editor/project_settings.cpp
 msgid "Remove Translation"
-msgstr "Remove Translation"
+msgstr "Перевод удалён"
 
 #: tools/editor/project_settings.cpp
 msgid "Add Remapped Path"
-msgstr "Add Remapped Path"
+msgstr "Добавлен путь перенаправления"
 
 #: tools/editor/project_settings.cpp
 msgid "Resource Remap Add Remap"
-msgstr "Resource Remap Add Remap"
+msgstr "Перенаправлен ресурс перенаправления"
 
 #: tools/editor/project_settings.cpp
 msgid "Change Resource Remap Language"
-msgstr "Change Resource Remap Language"
+msgstr "Изменён язык перенаправления"
 
 #: tools/editor/project_settings.cpp
 msgid "Remove Resource Remap"
-msgstr "Remove Resource Remap"
+msgstr "Удалён ресурс перенаправления"
 
 #: tools/editor/project_settings.cpp
 msgid "Remove Resource Remap Option"
-msgstr "Remove Resource Remap Option"
+msgstr "Удалён параметр ресурса перенаправления"
 
 #: tools/editor/project_settings.cpp
 msgid "Enable"
@@ -1938,11 +1938,11 @@ msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
-msgstr "Toggle Spatial Visible"
+msgstr "Переключена видимость Spatial"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Toggle CanvasItem Visible"
-msgstr "Toggle CanvasItem Visible"
+msgstr "Переключена видимость CanvasItem"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Instance:"
@@ -1954,7 +1954,7 @@ msgstr "Недопустимые символы в названии нода:"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Rename Node"
-msgstr "Rename Node"
+msgstr "Нод переименован"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Scene Tree (Nodes):"
@@ -2347,11 +2347,11 @@ msgstr "Предустановка.."
 
 #: tools/editor/property_editor.cpp
 msgid "Ease In"
-msgstr "Ease In"
+msgstr "Легко в"
 
 #: tools/editor/property_editor.cpp
 msgid "Ease Out"
-msgstr "Ease Out"
+msgstr "Легко из"
 
 #: tools/editor/property_editor.cpp
 msgid "Zero"
@@ -2359,11 +2359,11 @@ msgstr "Ноль"
 
 #: tools/editor/property_editor.cpp
 msgid "Easing In-Out"
-msgstr "Easing In-Out"
+msgstr "Легко в-из"
 
 #: tools/editor/property_editor.cpp
 msgid "Easing Out-In"
-msgstr "Easing Out-In"
+msgstr "Легко из-в"
 
 #: tools/editor/property_editor.cpp
 msgid "File.."
@@ -2408,7 +2408,7 @@ msgstr "Вкл"
 
 #: tools/editor/property_editor.cpp
 msgid "Set"
-msgstr "Задать"
+msgstr "Задан"
 
 #: tools/editor/property_editor.cpp
 msgid "Properties:"
@@ -2643,7 +2643,7 @@ msgstr "Не возможно загрузить сцену, которая не
 
 #: tools/editor/editor_node.cpp
 msgid "Revert"
-msgstr "Вернуться"
+msgstr "Откатить"
 
 #: tools/editor/editor_node.cpp
 msgid "This action cannot be undone. Revert anyway?"
@@ -3186,7 +3186,7 @@ msgstr "Перемещение нодов в родительский"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Duplicate Node(s)"
-msgstr "Дублировать нод(ы)"
+msgstr "Дублирован нод(ы)"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
@@ -3219,16 +3219,16 @@ msgstr "Не могу работать с нодами из внешней сц�
 #: tools/editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes the current scene inherits from!"
 msgstr ""
-"Не могу работать с нодами текущей сцены наследуемой откуда то!\n"
+"Не могу работать с нодами текущей сцены, наследуемой откуда то!\n"
 "Очистите наследование, чтобы продолжить работу с ними."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
-msgstr "Удалить нод(ы)"
+msgstr "Удалён нод(ы)"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Create Node"
-msgstr "Создать нод"
+msgstr "Создан нод"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid ""
@@ -3380,7 +3380,7 @@ msgstr "Высота"
 
 #: tools/editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Create Poly3D"
-msgstr "Create Poly3D"
+msgstr "Создан Poly3D"
 
 #: tools/editor/plugins/collision_polygon_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -3389,7 +3389,7 @@ msgstr "Create Poly3D"
 #: tools/editor/plugins/navigation_polygon_editor_plugin.cpp
 #: tools/editor/plugins/path_2d_editor_plugin.cpp
 msgid "Edit Poly"
-msgstr "Edit Poly"
+msgstr "Изменён полигон"
 
 #: tools/editor/plugins/collision_polygon_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -3398,11 +3398,11 @@ msgstr "Edit Poly"
 #: tools/editor/plugins/navigation_polygon_editor_plugin.cpp
 #: tools/editor/plugins/path_2d_editor_plugin.cpp
 msgid "Edit Poly (Remove Point)"
-msgstr "Edit Poly (Remove Point)"
+msgstr "Удалена точка полигона"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
-msgstr "Toggle Autoplay"
+msgstr "Переключено автовоспроизведение"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Animation Name:"
@@ -3441,11 +3441,11 @@ msgstr "Добавить анимацию"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
-msgstr "Blend Next Changed"
+msgstr "изменена последующая анимация"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Blend Time"
-msgstr "Change Blend Time"
+msgstr "Изменено время \"смешивания\""
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
@@ -3566,11 +3566,11 @@ msgstr "Анимация"
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Create Poly"
-msgstr "Create Poly"
+msgstr "Создан полигон"
 
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
-msgstr "Create Occluder Polygon"
+msgstr "Создан затеняющий полигон"
 
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
@@ -4195,11 +4195,11 @@ msgstr "Создать шаблон"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "CheckBox Radio1"
-msgstr "CheckBox Radio1"
+msgstr "Чекбокс 1"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "CheckBox Radio2"
-msgstr "CheckBox Radio2"
+msgstr "Чекбокс 2"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Item"
@@ -4808,120 +4808,120 @@ msgstr "Длинна:"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Constant"
-msgstr "Change Scalar Constant"
+msgstr "Изменена числовая константа"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Vec Constant"
-msgstr "Change Vec Constant"
+msgstr "Изменена векторная константа"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change RGB Constant"
-msgstr "Change RGB Constant"
+msgstr "Изменён RGB"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Operator"
-msgstr "Change Scalar Operator"
+msgstr "Изменён числовой оператор"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Vec Operator"
-msgstr "Change Vec Operator"
+msgstr "Изменён векторный оператор"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Vec Scalar Operator"
-msgstr "Change Vec Scalar Operator"
+msgstr "Изменён векторно числовой оператор"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change RGB Operator"
-msgstr "Change RGB Operator"
+msgstr "Изменён RGB оператор"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Toggle Rot Only"
-msgstr "Toggle Rot Only"
+msgstr "Переключён - только поворот"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Function"
-msgstr "Change Scalar Function"
+msgstr "Изменена числовая функция"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Vec Function"
-msgstr "Change Vec Function"
+msgstr "Изменена векторная функция"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Uniform"
-msgstr "Change Scalar Uniform"
+msgstr "Изменена числовая единица"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Vec Uniform"
-msgstr "Change Vec Uniform"
+msgstr "Изменена векторная единица"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change RGB Uniform"
-msgstr "Change RGB Uniform"
+msgstr "Изменена RGB единица"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Default Value"
-msgstr "Change Default Value"
+msgstr "Изменено стандартное значение"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change XForm Uniform"
-msgstr "Change XForm Uniform"
+msgstr "Изменена XForm единица"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Texture Uniform"
-msgstr "Change Texture Uniform"
+msgstr "Изменена тектурная единица"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Cubemap Uniform"
-msgstr "Change Cubemap Uniform"
+msgstr "Изменена единица кубической карты"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Comment"
-msgstr "Change Comment"
+msgstr "Изменён комментарий"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Add/Remove to Color Ramp"
-msgstr "Add/Remove to Color Ramp"
+msgstr "Добавлено/удалено с Color Ramp"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 #: tools/editor/plugins/color_ramp_editor_plugin.cpp
 msgid "Modify Color Ramp"
-msgstr "Modify Color Ramp"
+msgstr "Изменена Color Ramp"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Add/Remove to Curve Map"
-msgstr "Add/Remove to Curve Map"
+msgstr "Добавлено/удалено с Curve Map"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Curve Map"
-msgstr "Modify Curve Map"
+msgstr "Изменена карта кривой"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Input Name"
-msgstr "Change Input Name"
+msgstr "Изменено входное имя"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Connect Graph Nodes"
-msgstr "Connect Graph Nodes"
+msgstr "Изменено имя графа"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Disconnect Graph Nodes"
-msgstr "Disconnect Graph Nodes"
+msgstr "Графы разъединены"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Remove Shader Graph Node"
-msgstr "Remove Shader Graph Node"
+msgstr "Удалён граф шейдера"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Move Shader Graph Node"
-msgstr "Move Shader Graph Node"
+msgstr "Передвинут граф шейдера"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Duplicate Graph Node(s)"
-msgstr "Duplicate Graph Node(s)"
+msgstr "Граф(ы) дублированы"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Delete Shader Graph Node(s)"
-msgstr "Delete Shader Graph Node(s)"
+msgstr "Удалён(ы) графы шейдера"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Error: Cyclic Connection Link"
@@ -4933,7 +4933,7 @@ msgstr "Ошибка: Отсутствует входное подключени
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Add Shader Graph Node"
-msgstr "Add Shader Graph Node"
+msgstr "Добавлен граф шейдера"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
@@ -4941,11 +4941,11 @@ msgstr "Мэш пустой!"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
-msgstr "Create Static Trimesh Body"
+msgstr "Создано вогнутое статичное тело"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Convex Body"
-msgstr "Create Static Convex Body"
+msgstr "Создано выпуклое статичное тело"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -4953,15 +4953,15 @@ msgstr "Это не работает на корне сцены!"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Shape"
-msgstr "Create Trimesh Shape"
+msgstr "Создано вогнутая форма"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Convex Shape"
-msgstr "Create Convex Shape"
+msgstr "Создано выгнутая форма"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
-msgstr "Create Navigation Mesh"
+msgstr "Создан меш навигации"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
@@ -5191,15 +5191,15 @@ msgstr "Никаких пикселей с прозрачностью > 128 в �
 
 #: tools/editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Set Emission Mask"
-msgstr "Set Emission Mask"
+msgstr "Установлена маска выброса"
 
 #: tools/editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
-msgstr "Clear Emission Mask"
+msgstr "Маска выброса очищена"
 
 #: tools/editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
-msgstr "Load Emission Mask"
+msgstr "Маска выброса загружена"
 
 #: tools/editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generated Point Count:"
@@ -5397,19 +5397,19 @@ msgstr "Слияние из сцены"
 
 #: tools/editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
-msgstr "Remove Point from Curve"
+msgstr "Удалена точка с кривой"
 
 #: tools/editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
-msgstr "Move Point in Curve"
+msgstr "Точка кривой передвинута"
 
 #: tools/editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move In-Control in Curve"
-msgstr "Move In-Control in Curve"
+msgstr "Передвинут входной луч у кривой"
 
 #: tools/editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Out-Control in Curve"
-msgstr "Move Out-Control in Curve"
+msgstr "Передвинут выходной луч у кривой"
 
 #: tools/editor/plugins/path_2d_editor_plugin.cpp
 msgid "Select Control Points (Shift+Drag)"
