@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_bone.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_bone.svg">
   <defs
      id="defs4" />
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="22.627417"
-     inkscape:cx="14.868841"
-     inkscape:cy="16.079737"
+     inkscape:cx="4.7029555"
+     inkscape:cy="10.983314"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -51,22 +51,6 @@
     <inkscape:grid
        type="xygrid"
        id="grid3336" />
-    <sodipodi:guide
-       position="4.0000001,28.000018"
-       orientation="24,0"
-       id="guide4140" />
-    <sodipodi:guide
-       position="4.0000001,4.0000175"
-       orientation="0,24"
-       id="guide4142" />
-    <sodipodi:guide
-       position="28.000001,4.0000175"
-       orientation="-24,0"
-       id="guide4144" />
-    <sodipodi:guide
-       position="28.000001,28.000018"
-       orientation="0,-24"
-       id="guide4146" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -84,11 +68,11 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <path
-       style="fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 5.0251,1038.8518 a 3.4999914,3.5 0 0 0 0,4.9497 3.4999914,3.5 0 0 0 2.5107816,1.022 3.5000086,3.5 0 0 0 1.0247523,2.5136 3.5000086,3.5 0 0 0 4.9497471,0 3.5000086,3.5 0 0 0 0.324551,-4.5672 l 8.541905,-8.5419 a 3.5000086,3.5 0 0 0 4.568573,-0.326 3.5000086,3.5 0 0 0 0,-4.9497 3.5000086,3.5 0 0 0 -2.512162,-1.0234 3.4999914,3.5 0 0 0 -1.023372,-2.5122 3.4999914,3.5 0 0 0 -4.949747,0 3.4999914,3.5 0 0 0 -0.324551,4.5672 l -8.5419053,8.5419 a 3.4999914,3.5 0 0 0 -4.5685727,0.326 z"
-       id="rect4352"
+       style="opacity:1;fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 10.477991,1037.3625 a 2.4664114,2.4663006 0 0 0 -1.780445,0.7205 2.4664114,2.4663006 0 0 0 -0.3140829,3.1041 l -3.5589636,3.5608 a 2.4664114,2.4663006 0 0 0 -3.1022911,0.3121 2.4664114,2.4663006 0 0 0 0,3.4876 2.4664114,2.4663006 0 0 0 1.3969945,0.6955 2.4664198,2.4663006 0 0 0 0.6956069,1.397 2.4664198,2.4663006 0 0 0 3.4876687,0 2.4664198,2.4663006 0 0 0 0.3140829,-3.1041 l 3.5608896,-3.5608 a 2.4664198,2.4663006 0 0 0 3.100365,-0.3102 2.4664198,2.4663006 0 0 0 0,-3.4875 2.4664198,2.4663006 0 0 0 -1.396994,-0.6974 2.4664114,2.4663006 0 0 0 -0.695607,-1.3971 2.4664114,2.4663006 0 0 0 -1.707224,-0.7205 z"
+       id="path4139"
        inkscape:connector-curvature="0" />
   </g>
 </svg>

@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_tool_scale.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_tool_scale.svg">
   <defs
      id="defs4" />
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="22.627417"
-     inkscape:cx="20.654397"
-     inkscape:cy="15.690769"
+     inkscape:cx="8.7380314"
+     inkscape:cy="11.043755"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -67,11 +67,11 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <path
-       style="fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-linecap:round;stroke-opacity:1"
-       d="M 6.0689655,1038.845 5.0344827,1043.6037 4,1048.3622 l 4.7586212,-1.0344 4.7586208,-1.0345 -2.48276,-2.4827 12.413794,-12.4138 2.482758,2.4827 1.034484,-4.7586 1.034482,-4.7586 -4.758621,1.0344 -4.758621,1.0345 2.48276,2.4827 -12.4137937,12.4138 -2.4827588,-2.4827 z"
-       id="rect4428"
+       style="opacity:1;fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 14.019532,1038.3427 -2.828125,0.707 -2.8281258,0.707 1.4140624,1.4141 -4.9492186,4.9492 -1.4140625,-1.4141 -0.7070313,2.8282 L 2,1050.3622 l 2.828125,-0.707 2.828125,-0.7071 -1.4140625,-1.414 4.9492195,-4.9492 1.414062,1.414 0.707031,-2.8281 0.707032,-2.8281 z"
+       id="rect4135"
        inkscape:connector-curvature="0" />
   </g>
 </svg>

@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_collision_shape.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_collision_shape.svg">
   <defs
      id="defs4" />
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="22.627417"
-     inkscape:cx="13.927026"
-     inkscape:cy="15.580475"
+     inkscape:cx="6.4675637"
+     inkscape:cy="11.072508"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -55,22 +55,6 @@
     <inkscape:grid
        type="xygrid"
        id="grid3336" />
-    <sodipodi:guide
-       position="4.0000001,28.000018"
-       orientation="24,0"
-       id="guide4140" />
-    <sodipodi:guide
-       position="4.0000001,4.0000175"
-       orientation="0,24"
-       id="guide4142" />
-    <sodipodi:guide
-       position="28.000001,4.0000175"
-       orientation="-24,0"
-       id="guide4144" />
-    <sodipodi:guide
-       position="28.000001,28.000018"
-       orientation="0,-24"
-       id="guide4146" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -88,11 +72,12 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <path
-       style="fill:#efa5a5;fill-opacity:0.99607843;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 15.5,1024.3622 -1.750329,1 -1.750329,1 -1.748355,1 -1.7503292,1 -1.7503289,1 -1.7503289,1 0,2 0,2 0,2 0,2 0,2 0,2 1.7503289,1 1.7503289,1 1.7503292,1 1.748355,1 1.750329,1 1.750329,1 1.750329,-1 1.750329,-1 1.748355,-1 1.750329,-1 1.750329,-1 1.750329,-1 0,-2 0,-2 0,-2 0,-2 0,-2 0,-2 -1.750329,-1 -1.750329,-1 -1.750329,-1 -1.748355,-1 -1.750329,-1 -1.750329,-1 z m 0,4 1.750329,1 1.750329,1 1.748355,1 1.750329,1 0,2 0,2 0,2 0,2 -1.750329,1 -1.748355,1 -1.750329,1 -1.750329,1 -1.750329,-1 -1.750329,-1 -1.748355,-1 -1.7503292,-1 0,-2 0,-2 0,-2 0,-2 1.7503292,-1 1.748355,-1 1.750329,-1 1.750329,-1 z"
-       id="path4285"
-       inkscape:connector-curvature="0" />
+       style="fill:none;fill-rule:evenodd;stroke:#efa5a5;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.99607843"
+       d="m 8,1050.3622 -6,-3 0,-6 6,-3 6,3 0,6 z"
+       id="path4139"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc" />
   </g>
 </svg>

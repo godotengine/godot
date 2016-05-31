@@ -9,27 +9,27 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_canvas_item_shader.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_canvas_item_shader.svg">
   <defs
      id="defs4">
     <clipPath
        clipPathUnits="userSpaceOnUse"
-       id="clipPath4144">
+       id="clipPath4148">
       <path
-         style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         d="m 6.6511514,1040.0598 c -0.4661114,0.5213 -0.7430143,1.2678 -0.7430143,2.1517 0,2.8284 -5.54636886,-0.3094 -0.5966213,4.6403 1.5620695,1.5621 4.6913802,1.1644 6.2534762,-0.3977 1.562095,-1.5621 1.562062,-4.0948 0,-5.6569 -1.9445363,-1.9445 -3.8883943,-1.8844 -4.9138406,-0.7374 z m 4.2067336,-2.7981 4.242641,4.2427 12.020815,-12.0209 c 1.171546,-1.1716 1.171546,-3.071 0,-4.2426 -1.171573,-1.1716 -3.071068,-1.1716 -4.242641,0 z"
-         id="path4146"
+         sodipodi:nodetypes="cscsccccsssc"
          inkscape:connector-curvature="0"
-         sodipodi:nodetypes="cscsccccsssc" />
+         id="path4150"
+         d="m 7.9288448,1039.4124 c -0.4450383,0.45 -0.7094221,1.0944 -0.7094221,1.8575 0,2.4415 -5.2956144,-0.2672 -0.5696477,4.0054 1.4914475,1.3485 4.47928,1.0052 5.970753,-0.3432 1.491472,-1.3485 1.49144,-3.5347 0,-4.8831 -1.856623,-1.6786 -3.7125978,-1.6267 -4.6916832,-0.6366 z m 4.0165442,-2.4154 4.05083,3.6624 11.477345,-10.3766 c 1.118582,-1.0113 1.118582,-2.6509 0,-3.6622 -1.118605,-1.0112 -2.932222,-1.0112 -4.050828,0 z"
+         style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     </clipPath>
   </defs>
   <sodipodi:namedview
@@ -39,9 +39,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.627417"
-     inkscape:cx="12.352478"
-     inkscape:cy="16.938108"
+     inkscape:zoom="32"
+     inkscape:cx="1.2934357"
+     inkscape:cy="8.7995586"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -83,15 +83,16 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <g
        id="g4181"
        mask="none"
-       clip-path="url(#clipPath4144)">
+       clip-path="url(#clipPath4148)"
+       transform="matrix(0.59259259,0,0,0.66666674,-1.7777777,353.454)">
       <rect
-         y="1024.3622"
+         y="1025.8622"
          x="3"
-         height="4"
+         height="3.0000043"
          width="27"
          id="rect4159"
          style="fill:#ff7070;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
@@ -99,37 +100,44 @@
          style="fill:#ffeb70;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          id="rect4161"
          width="27"
-         height="4"
+         height="3.0000041"
          x="3"
-         y="1028.3622" />
+         y="1028.8622" />
       <rect
          style="fill:#9dff70;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          id="rect4163"
          width="27"
-         height="4"
+         height="2.9999995"
          x="3"
-         y="1032.3622" />
+         y="1031.8622" />
       <rect
-         y="1036.3622"
+         y="1034.8622"
          x="3"
-         height="4"
+         height="3.0000031"
          width="27"
          id="rect4165"
-         style="fill:#70dbff;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+         style="fill:#70ffb9;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <rect
-         y="1040.3622"
+         y="1037.8622"
          x="3"
-         height="4"
+         height="3.0000029"
          width="27"
          id="rect4167"
-         style="fill:#a670ff;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+         style="fill:#70deff;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <rect
          style="fill:#ff70ac;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          id="rect4169"
          width="27"
-         height="4"
+         height="2.9999976"
          x="3"
-         y="1044.3622" />
+         y="1043.8622" />
+      <rect
+         style="fill:#9f70ff;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect4146"
+         width="27"
+         height="3.0000029"
+         x="3"
+         y="1040.8622" />
     </g>
   </g>
 </svg>

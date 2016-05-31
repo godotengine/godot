@@ -9,16 +9,16 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_animation.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
-   sodipodi:docname="icon_animation.svg">
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
+   sodipodi:docname="icon_animation (copy).svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="16"
-     inkscape:cx="14.233048"
-     inkscape:cy="13.303729"
+     inkscape:zoom="32"
+     inkscape:cx="6.4562535"
+     inkscape:cy="9.4467948"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -50,22 +50,6 @@
     <inkscape:grid
        type="xygrid"
        id="grid3336" />
-    <sodipodi:guide
-       position="4.0000001,28.000018"
-       orientation="24,0"
-       id="guide4140" />
-    <sodipodi:guide
-       position="4.0000001,4.0000175"
-       orientation="0,24"
-       id="guide4142" />
-    <sodipodi:guide
-       position="28.000001,4.0000175"
-       orientation="-24,0"
-       id="guide4144" />
-    <sodipodi:guide
-       position="28.000001,28.000018"
-       orientation="0,-24"
-       id="guide4146" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -83,16 +67,21 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 22 14 L 22 24 A 3 2.9999974 0 0 0 25 27 L 28 27 L 28 24 L 26 24 A 1 0.9999913 0 0 1 25 23 L 25 14 L 22 14 z "
-       transform="translate(0,1020.3622)"
-       id="rect4174" />
+       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 8 2 A 6 6 0 0 0 2 8 A 6 6 0 0 0 8 14 A 6 6 0 0 0 14 8 A 6 6 0 0 0 8 2 z M 8 3 A 1 1 0 0 1 9 4 A 1 1 0 0 1 8 5 A 1 1 0 0 1 7 4 A 1 1 0 0 1 8 3 z M 11.441406 5 A 1 1 0 0 1 12.330078 5.5 A 1 1 0 0 1 11.964844 6.8652344 A 1 1 0 0 1 10.597656 6.5 A 1 1 0 0 1 10.964844 5.1347656 A 1 1 0 0 1 11.441406 5 z M 4.4882812 5.0019531 A 1 1 0 0 1 5.0351562 5.1347656 A 1 1 0 0 1 5.4023438 6.5 A 1 1 0 0 1 4.0351562 6.8652344 A 1 1 0 0 1 3.6699219 5.5 A 1 1 0 0 1 4.4882812 5.0019531 z M 4.5117188 9 A 1 1 0 0 1 5.4023438 9.5 A 1 1 0 0 1 5.0351562 10.865234 A 1 1 0 0 1 3.6699219 10.5 A 1 1 0 0 1 4.0351562 9.1347656 A 1 1 0 0 1 4.5117188 9 z M 11.416016 9.0019531 A 1 1 0 0 1 11.964844 9.1347656 A 1 1 0 0 1 12.330078 10.5 A 1 1 0 0 1 10.964844 10.865234 A 1 1 0 0 1 10.597656 9.5 A 1 1 0 0 1 11.416016 9.0019531 z M 8 11 A 1 1 0 0 1 9 12 A 1 1 0 0 1 8 13 A 1 1 0 0 1 7 12 A 1 1 0 0 1 8 11 z "
+       transform="translate(0,1036.3622)"
+       id="path4140" />
     <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none"
-       d="M 13.998047 3 C 7.9230556 3.0005 2.9993789 7.9269531 3 14.001953 C 3.000583 20.076053 7.9239069 24.9996 13.998047 25 C 20.073241 25 24.999415 20.077053 25 14.001953 C 25.001 7.9256531 20.074335 2.999 13.998047 3 z M 14 5 A 2 2.0000074 0 0 1 16 7 A 2 2.0000074 0 0 1 14 9 A 2 2.0000074 0 0 1 12 7 A 2 2.0000074 0 0 1 14 5 z M 7.984375 8.5 A 2.0000074 2 0 0 1 8.9375 8.7675781 A 2.0000074 2 0 0 1 9.6699219 11.5 A 2.0000074 2 0 0 1 6.9375 12.232422 A 2.0000074 2 0 0 1 6.2050781 9.5 A 2.0000074 2 0 0 1 7.84375 8.5019531 A 2.0000074 2 0 0 1 7.984375 8.5 z M 20.015625 8.5 A 2 2.0000074 0 0 1 21.794922 9.5 A 2 2.0000074 0 0 1 21.0625 12.232422 A 2 2.0000074 0 0 1 18.330078 11.5 A 2 2.0000074 0 0 1 19.0625 8.7675781 A 2 2.0000074 0 0 1 20.015625 8.5 z M 7.890625 15.5 A 2 2.0000074 0 0 1 9.6699219 16.5 A 2 2.0000074 0 0 1 8.9375 19.232422 A 2 2.0000074 0 0 1 6.2050781 18.5 A 2 2.0000074 0 0 1 6.9375 15.767578 A 2 2.0000074 0 0 1 7.890625 15.5 z M 20.109375 15.5 A 2.0000074 2 0 0 1 21.0625 15.767578 A 2.0000074 2 0 0 1 21.794922 18.5 A 2.0000074 2 0 0 1 19.0625 19.232422 A 2.0000074 2 0 0 1 18.330078 16.5 A 2.0000074 2 0 0 1 19.96875 15.501953 A 2.0000074 2 0 0 1 20.109375 15.5 z M 14 19 A 2 2.0000074 0 0 1 16 21 A 2 2.0000074 0 0 1 14 23 A 2 2.0000074 0 0 1 12 21 A 2 2.0000074 0 0 1 14 19 z "
-       transform="translate(0,1020.3622)"
-       id="path4148" />
+       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 13 8 L 13 14 A 1 1 0 0 0 14 15 L 15 15 L 15 14 L 14 14 L 14 13 L 14 8 L 13 8 z "
+       transform="translate(0,1036.3622)"
+       id="rect4202" />
+    <path
+       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 14 13.5 L 14 14 L 14.5 14 A 0.5 0.4999913 0 0 1 14 13.5 z "
+       transform="translate(0,1036.3622)"
+       id="rect4215" />
   </g>
 </svg>

@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_bool.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_bool.svg">
   <defs
      id="defs4" />
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="16"
-     inkscape:cx="13.142614"
-     inkscape:cy="17.298753"
+     inkscape:cx="8.3344441"
+     inkscape:cy="12.390714"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -50,22 +50,6 @@
     <inkscape:grid
        type="xygrid"
        id="grid3336" />
-    <sodipodi:guide
-       position="4.0000001,28.000018"
-       orientation="24,0"
-       id="guide4140" />
-    <sodipodi:guide
-       position="4.0000001,4.0000175"
-       orientation="0,24"
-       id="guide4142" />
-    <sodipodi:guide
-       position="28.000001,4.0000175"
-       orientation="-24,0"
-       id="guide4144" />
-    <sodipodi:guide
-       position="28.000001,28.000018"
-       orientation="0,-24"
-       id="guide4146" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -83,11 +67,11 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <path
-       style="opacity:1;fill:#c67ad4;fill-opacity:0.96862745;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 7 4 L 7 7 L 4 7 L 4 10 L 7 10 L 7 25 L 4 25 L 4 28 L 13 28 L 13 25 L 10 25 L 10 10 L 10 7 L 10 4 L 7 4 z M 17 4 L 17 25 L 17 28 L 25 28 L 28 28 L 28 4 L 26 4 L 20 4 L 17 4 z M 20 7 L 25 7 L 25 25 L 20 25 L 20 7 z "
-       transform="translate(0,1020.3622)"
-       id="rect4139" />
+       style="opacity:1;fill:#b350c7;fill-opacity:0.94509804;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 3 1 L 3 3 L 4 3 L 4 13 L 3 13 L 3 15 L 11 15 L 11 13 L 6 13 L 6 3 L 9 3 L 9 1 L 3 1 z M 9 3 L 9 8 L 11 8 L 11 3 L 9 3 z M 11 8 L 11 13 L 13 13 L 13 8 L 11 8 z "
+       transform="translate(0,1036.3622)"
+       id="rect4140" />
   </g>
 </svg>

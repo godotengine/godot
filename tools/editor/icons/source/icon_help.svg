@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_help.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_help.svg">
   <defs
      id="defs4" />
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.627416"
-     inkscape:cx="12.132162"
-     inkscape:cy="15.791821"
+     inkscape:zoom="31.999999"
+     inkscape:cx="5.4018713"
+     inkscape:cy="8.2308388"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -50,22 +50,6 @@
     <inkscape:grid
        type="xygrid"
        id="grid3336" />
-    <sodipodi:guide
-       position="4.0000001,28.000018"
-       orientation="24,0"
-       id="guide4140" />
-    <sodipodi:guide
-       position="4.0000001,4.0000175"
-       orientation="0,24"
-       id="guide4142" />
-    <sodipodi:guide
-       position="28.000001,4.0000175"
-       orientation="-24,0"
-       id="guide4144" />
-    <sodipodi:guide
-       position="28.000001,28.000018"
-       orientation="0,-24"
-       id="guide4146" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -83,16 +67,44 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <path
-       style="fill:#f1f1f1;fill-opacity:1;stroke:none"
-       d="M 15.998047 4 C 9.3707839 4.0006 3.9993225 9.3747533 4 16.001953 C 4.000636 22.628253 9.3717126 27.9995 15.998047 28 C 22.625531 28 27.999363 22.629353 28 16.001953 C 28.0011 9.3732533 22.626725 3.9989 15.998047 4 z M 16 10 C 19.314338 9.9995 22.00055 12.687553 22 16.001953 C 21.999681 19.315653 19.313741 22 16 22 C 12.686832 21.9997 10.000318 19.315053 10 16.001953 C 9.9996614 12.688353 12.686368 10.0003 16 10 z "
-       transform="translate(0,1020.3622)"
-       id="path4148" />
+       style="opacity:1;fill:#f1f1f1;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 8 1 A 7 7 0 0 0 1 8 A 7 7 0 0 0 8 15 A 7 7 0 0 0 15 8 A 7 7 0 0 0 8 1 z M 8 4 A 4.0000172 4.0000172 0 0 1 12 8 A 4.0000172 4.0000172 0 0 1 8 12 A 4.0000172 4.0000172 0 0 1 4 8 A 4.0000172 4.0000172 0 0 1 8 4 z "
+       transform="translate(0,1036.3622)"
+       id="circle4160" />
     <path
-       style="fill:#ff8484;fill-opacity:1;stroke:none"
-       d="M 15.998047 4 L 16 10 C 17.657169 9.99975 19.15641 10.671562 20.242188 11.757812 L 24.484375 7.515625 C 22.312334 5.3435867 19.312386 3.99945 15.998047 4 z M 7.515625 7.5175781 C 5.3440179 9.6892469 3.9999839 12.688336 4 16.001953 L 10 16.001953 C 9.9997501 14.344753 10.671562 12.845566 11.757812 11.759766 L 7.515625 7.5175781 z M 22 15.998047 C 22.0002 17.655247 21.328387 19.154534 20.242188 20.240234 L 24.484375 24.482422 C 26.655944 22.310853 27.999966 19.311564 28 15.998047 L 22 15.998047 z M 11.757812 20.242188 L 7.515625 24.484375 C 9.687666 26.656375 12.687614 28.0005 16.001953 28 L 16 22 C 14.342831 22.0002 12.84359 21.328388 11.757812 20.242188 z "
-       transform="translate(0,1020.3622)"
-       id="path4172" />
+       style="opacity:1;fill:#ff8484;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 8,1 0,3 c 1.1045715,-4.8e-6 2.104267,0.4480167 2.828125,1.171875 L 12.949219,3.0507812 C 11.68247,1.7840321 9.9329986,1.0000047 8,1 Z"
+       transform="translate(0,1036.3622)"
+       id="circle4154"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:transform-center-x="-2.4746095"
+       inkscape:transform-center-y="-4.9140625" />
+    <path
+       inkscape:transform-center-y="2.4746"
+       inkscape:transform-center-x="-4.9140625"
+       sodipodi:nodetypes="ccccc"
+       inkscape:connector-curvature="0"
+       id="path4163"
+       d="m 15,1044.3622 -3,0 c 5e-6,1.1046 -0.448017,2.1043 -1.171875,2.8281 l 2.121094,2.1211 c 1.266749,-1.2667 2.050776,-3.0162 2.050781,-4.9492 z"
+       style="opacity:1;fill:#ff8484;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <path
+       style="opacity:1;fill:#ff8484;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 8,1051.3622 0,-3 c -1.1046,0 -2.1043,-0.448 -2.8281,-1.1719 l -2.1211,2.1211 c 1.2667,1.2668 3.0162,2.0508 4.9492,2.0508 z"
+       id="path4165"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:transform-center-x="2.4746"
+       inkscape:transform-center-y="4.91405" />
+    <path
+       inkscape:transform-center-y="-2.4746"
+       inkscape:transform-center-x="4.91405"
+       sodipodi:nodetypes="ccccc"
+       inkscape:connector-curvature="0"
+       id="path4167"
+       d="m 1,1044.3622 3,0 c 0,-1.1046 0.448,-2.1043 1.1719,-2.8281 L 3.0508,1039.413 C 1.784,1040.6797 1,1042.4292 1,1044.3622 Z"
+       style="opacity:1;fill:#ff8484;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
   </g>
 </svg>

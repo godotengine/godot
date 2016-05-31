@@ -10,15 +10,15 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    sodipodi:docname="icon_convex_polygon_shape.svg"
-   inkscape:export-ydpi="45"
-   inkscape:export-xdpi="45"
+   inkscape:export-ydpi="90"
+   inkscape:export-xdpi="90"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_convex_polygon_shape.png"
    inkscape:version="0.91 r13725"
    version="1.1"
    id="svg2"
-   viewBox="0 0 32.000001 32.000001"
-   height="32"
-   width="32">
+   viewBox="0 0 16 16"
+   height="16"
+   width="16">
   <sodipodi:namedview
      inkscape:snap-smooth-nodes="false"
      inkscape:object-nodes="false"
@@ -38,11 +38,11 @@
      inkscape:snap-bbox="true"
      units="px"
      showgrid="true"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer1-6"
      inkscape:document-units="px"
-     inkscape:cy="15.46328"
-     inkscape:cx="12.035027"
-     inkscape:zoom="15.999999"
+     inkscape:cy="10.815092"
+     inkscape:cx="5.572433"
+     inkscape:zoom="22.627416"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
      borderopacity="1.0"
@@ -52,18 +52,6 @@
     <inkscape:grid
        id="grid3336"
        type="xygrid" />
-    <sodipodi:guide
-       id="guide4140"
-       orientation="24,0"
-       position="4.0000001,28.000018" />
-    <sodipodi:guide
-       id="guide4144"
-       orientation="-24,0"
-       position="28.000001,4.0000175" />
-    <sodipodi:guide
-       id="guide4146"
-       orientation="0,-24"
-       position="28.000001,28.000018" />
   </sodipodi:namedview>
   <defs
      id="defs4" />
@@ -75,28 +63,36 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
-     transform="translate(0,-1020.3622)"
+     transform="translate(0,-1036.3622)"
      id="layer1"
      inkscape:groupmode="layer"
      inkscape:label="Layer 1">
-    <path
-       style="fill:#68b6ff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 4,9.2148438 4,23.072266 16,30 Z"
-       id="path4250"
-       transform="translate(0,1020.3622)"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cccc" />
-    <path
-       style="fill:#2998ff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 16,2.2871094 4,9.2148438 16,30 22,12.679688 Z M 22,12.679688 16,30 28,23.072266 Z"
-       id="path4266"
-       transform="translate(0,1020.3622)"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccccccccc" />
+    <g
+       inkscape:label="Layer 1"
+       id="layer1-6">
+      <path
+         style="fill:#2998ff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="M 8 1 L 1 4 L 1 12 L 8 15 L 15 12 L 8 1 z "
+         transform="translate(0,1036.3622)"
+         id="path4159" />
+      <path
+         sodipodi:nodetypes="ccccc"
+         inkscape:connector-curvature="0"
+         id="path4143"
+         d="m 8,1051.3622 -7,-3 0,-8 7,3 z"
+         style="fill:#68b6ff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         style="fill:#2998ff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="M 8,1 1,4 8,15 15,12 Z"
+         transform="translate(0,1036.3622)"
+         id="path4145"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="ccccc" />
+    </g>
   </g>
 </svg>

@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_canvas_modulate.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_canvas_modulate.svg">
   <defs
      id="defs4" />
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="16"
-     inkscape:cx="10.676276"
-     inkscape:cy="20.662639"
+     inkscape:cx="7.3785882"
+     inkscape:cy="11.139886"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -49,23 +49,8 @@
      inkscape:window-maximized="1">
     <inkscape:grid
        type="xygrid"
-       id="grid3336" />
-    <sodipodi:guide
-       position="4.0000001,28.000018"
-       orientation="24,0"
-       id="guide4140" />
-    <sodipodi:guide
-       position="4.0000001,4.0000175"
-       orientation="0,24"
-       id="guide4142" />
-    <sodipodi:guide
-       position="28.000001,4.0000175"
-       orientation="-24,0"
-       id="guide4144" />
-    <sodipodi:guide
-       position="28.000001,28.000018"
-       orientation="0,-24"
-       id="guide4146" />
+       id="grid3336"
+       empspacing="4" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -83,39 +68,40 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <rect
        style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect4159"
-       width="18"
-       height="18"
-       x="7"
-       y="1027.3622" />
+       width="10"
+       height="10.000017"
+       x="3"
+       y="1039.3622" />
     <path
        style="fill:#a5b7f1;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 4 4 L 4 7 L 4 28 L 7 28 L 28 28 L 28 25 L 28 4 L 25 4 L 7 4 L 4 4 z M 7 7 L 25 7 L 25 25 L 7 25 L 7 7 z "
-       transform="translate(0,1020.3622)"
-       id="rect4280" />
+       d="m 1,1037.3622 0,2 0,12 2,0 12,0 0,-2 0,-12 -2,0 -10,0 z m 2,2 10,0 0,10 -10,0 z"
+       id="rect4280"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccccccccccc" />
     <ellipse
-       style="fill:#ff0000;fill-opacity:0.78431374;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#ff0000;fill-opacity:0.78431373;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path4153"
-       cx="13.5"
-       cy="1038.8622"
-       rx="3.5"
-       ry="3.4999914" />
+       cx="6.5"
+       cy="1045.8622"
+       rx="2.5"
+       ry="2.4999871" />
     <ellipse
-       ry="3.4999914"
-       rx="3.5"
-       cy="1033.8622"
-       cx="16"
-       id="ellipse4155"
-       style="fill:#00ff00;fill-opacity:0.78431374;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-    <ellipse
-       style="fill:#0000ff;fill-opacity:0.78431374;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#0000ff;fill-opacity:0.78431373;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="ellipse4157"
-       cx="18.5"
-       cy="1038.8622"
-       rx="3.5"
-       ry="3.4999914" />
+       cx="8"
+       cy="1042.8622"
+       rx="2.5"
+       ry="2.4999938" />
+    <ellipse
+       ry="2.4999936"
+       rx="2.5"
+       cy="1045.8622"
+       cx="9.5"
+       id="ellipse4155"
+       style="fill:#00ff00;fill-opacity:0.78431373;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
   </g>
 </svg>

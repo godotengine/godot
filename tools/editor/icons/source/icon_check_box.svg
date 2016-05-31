@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_check_box.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_check_box.svg">
   <defs
      id="defs4" />
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="11.313708"
-     inkscape:cx="5.7038481"
-     inkscape:cy="17.140224"
+     inkscape:zoom="22.627417"
+     inkscape:cx="3.8008276"
+     inkscape:cy="9.8639842"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -50,22 +50,6 @@
     <inkscape:grid
        type="xygrid"
        id="grid3336" />
-    <sodipodi:guide
-       position="4.0000001,28.000018"
-       orientation="24,0"
-       id="guide4140" />
-    <sodipodi:guide
-       position="4.0000001,4.0000175"
-       orientation="0,24"
-       id="guide4142" />
-    <sodipodi:guide
-       position="28.000001,4.0000175"
-       orientation="-24,0"
-       id="guide4144" />
-    <sodipodi:guide
-       position="28.000001,28.000018"
-       orientation="0,-24"
-       id="guide4146" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -83,30 +67,18 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
-    <rect
-       style="fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4142"
-       width="3"
-       height="20.999966"
-       x="4"
-       y="1027.3622" />
-    <rect
-       y="1045.3622"
-       x="4"
-       height="2.9999654"
-       width="21"
-       id="rect4144"
-       style="fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+     transform="translate(0,-1036.3622)">
     <path
-       style="fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 4 7 L 4 10 L 18.625 10 L 21.625 7 L 4 7 z M 25 17.767578 L 22 20.767578 L 22 28 L 25 28 L 25 17.767578 z "
-       transform="translate(0,1020.3622)"
-       id="rect4146" />
+       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 3 2 C 1.8954305 2 1 2.8954305 1 4 L 1 13 C 1 14.104569 1.8954305 15 3 15 L 12 15 C 13.104569 15 14 14.104569 14 13 L 14 8.0722656 L 12 10.072266 L 12 13 L 3 13 L 3 4 L 9.5859375 4 L 11.585938 2 L 3 2 z "
+       transform="translate(0,1036.3622)"
+       id="rect4143" />
     <path
-       style="fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 24.717515,1028.5128 -9.192388,9.1924 -4.242641,-4.2426 -2.828427,2.8284 4.242641,4.2426 2.828427,2.8286 2.828426,-2.8286 9.192388,-9.1922 -2.828427,-2.8286 z"
-       id="rect4294"
-       inkscape:connector-curvature="0" />
+       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 4.5857864,1045.3622 6,1046.7764 l 1.4142136,1.4142 1.4142135,-1.4142 4.9497479,-4.9497 -1.414214,-1.4142 -4.9497474,4.9497 L 6,1043.948 l -1.4142136,1.4142 z"
+       id="rect4163"
+       inkscape:connector-curvature="0"
+       inkscape:transform-center-x="-3.1819807"
+       inkscape:transform-center-y="-1.06065" />
   </g>
 </svg>

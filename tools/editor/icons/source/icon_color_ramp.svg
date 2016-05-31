@@ -10,15 +10,15 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_color_ramp.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_color_ramp.svg">
   <defs
      id="defs4">
@@ -26,11 +26,11 @@
        inkscape:collect="always"
        id="linearGradient4139">
       <stop
-         style="stop-color:#68d0ff;stop-opacity:1"
+         style="stop-color:#afff68;stop-opacity:1"
          offset="0"
          id="stop4141" />
       <stop
-         style="stop-color:#ff6bf3;stop-opacity:1"
+         style="stop-color:#ff6b6b;stop-opacity:1"
          offset="1"
          id="stop4143" />
     </linearGradient>
@@ -43,7 +43,7 @@
        x2="30"
        y2="14"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(0,1022.3622)" />
+       gradientTransform="matrix(0.51851852,0,0,0.7,-0.55555555,1034.5622)" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -52,9 +52,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="16"
-     inkscape:cx="18.928951"
-     inkscape:cy="16.454014"
+     inkscape:zoom="32"
+     inkscape:cx="5.5771263"
+     inkscape:cy="10.144749"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -74,22 +74,6 @@
     <inkscape:grid
        type="xygrid"
        id="grid3336" />
-    <sodipodi:guide
-       position="4.0000001,28.000018"
-       orientation="24,0"
-       id="guide4140" />
-    <sodipodi:guide
-       position="4.0000001,4.0000175"
-       orientation="0,24"
-       id="guide4142" />
-    <sodipodi:guide
-       position="28.000001,4.0000175"
-       orientation="-24,0"
-       id="guide4144" />
-    <sodipodi:guide
-       position="28.000001,28.000018"
-       orientation="0,-24"
-       id="guide4146" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -107,10 +91,10 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <path
        style="fill:url(#linearGradient4145);fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 3,1046.3622 27,0 0,-20 z"
+       d="m 1,1051.3622 14,0 0,-14 z"
        id="rect4141"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cccc" />

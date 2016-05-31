@@ -10,15 +10,15 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    sodipodi:docname="icon_capsule_shape.svg"
-   inkscape:export-ydpi="45"
-   inkscape:export-xdpi="45"
+   inkscape:export-ydpi="90"
+   inkscape:export-xdpi="90"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_capsule_shape.png"
    inkscape:version="0.91 r13725"
    version="1.1"
    id="svg2"
-   viewBox="0 0 32.000001 32.000001"
-   height="32"
-   width="32">
+   viewBox="0 0 16 16"
+   height="16"
+   width="16">
   <sodipodi:namedview
      inkscape:snap-smooth-nodes="false"
      inkscape:object-nodes="false"
@@ -40,9 +40,9 @@
      showgrid="true"
      inkscape:current-layer="layer1"
      inkscape:document-units="px"
-     inkscape:cy="15.945025"
-     inkscape:cx="19.207124"
-     inkscape:zoom="22.627416"
+     inkscape:cy="11.868879"
+     inkscape:cx="-0.54664689"
+     inkscape:zoom="11.313708"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
      borderopacity="1.0"
@@ -52,22 +52,6 @@
     <inkscape:grid
        id="grid3336"
        type="xygrid" />
-    <sodipodi:guide
-       id="guide4140"
-       orientation="24,0"
-       position="4.0000001,28.000018" />
-    <sodipodi:guide
-       id="guide4142"
-       orientation="0,24"
-       position="4.0000001,4.0000175" />
-    <sodipodi:guide
-       id="guide4144"
-       orientation="-24,0"
-       position="28.000001,4.0000175" />
-    <sodipodi:guide
-       id="guide4146"
-       orientation="0,-24"
-       position="28.000001,28.000018" />
   </sodipodi:namedview>
   <defs
      id="defs4" />
@@ -84,20 +68,34 @@
     </rdf:RDF>
   </metadata>
   <g
-     transform="translate(0,-1020.3622)"
+     transform="translate(0,-1036.3622)"
      id="layer1"
      inkscape:groupmode="layer"
      inkscape:label="Layer 1">
-    <path
-       style="fill:#68b6ff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 16 3 A 5.9999995 6.0000234 0 0 0 10 9 L 10 23 A 5.9999995 6.0000234 0 0 0 16 29 A 5.9999995 6.0000234 0 0 0 22 23 L 22 9 A 5.9999995 6.0000234 0 0 0 16 3 z "
-       transform="translate(0,1020.3622)"
-       id="path4160" />
+    <rect
+       style="opacity:1;fill:#68b6ff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect4140"
+       width="6"
+       height="8.0000172"
+       x="5"
+       y="1040.3622" />
     <circle
-       style="fill:#a2d2ff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="path4167"
-       cx="15"
-       cy="1028.3622"
+       r="3"
+       cy="1040.3622"
+       cx="8"
+       id="circle4142"
+       style="fill:#68b6ff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <circle
+       style="fill:#68b6ff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="circle4144"
+       cx="8"
+       cy="1048.3622"
        r="3" />
+    <circle
+       r="1.0000174"
+       cy="1039.3622"
+       cx="7"
+       id="circle4146"
+       style="fill:#a2d2ff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
   </g>
 </svg>

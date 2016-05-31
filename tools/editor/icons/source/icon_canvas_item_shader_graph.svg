@@ -9,26 +9,26 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_canvas_item_shader_graph.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_canvas_item_shader_graph.svg">
   <defs
      id="defs4">
     <clipPath
        clipPathUnits="userSpaceOnUse"
-       id="clipPath4148">
+       id="clipPath4196">
       <path
-         inkscape:connector-curvature="0"
-         id="path4150"
-         d="m 8,1024.3622 a 4,4.0000043 0 0 0 -4,4 4,4.0000043 0 0 0 2.5,3.7051 l 0,8.5898 a 4,3.9999871 0 0 0 -2.5,3.7051 4,3.9999871 0 0 0 4,4 4,3.9999871 0 0 0 4,-4 4,3.9999871 0 0 0 -2.5,-3.7051 l 0,-8.5937 a 4,4.0000043 0 0 0 0.056641,-0.022 l 10.759765,10.7598 A 4,4.0000043 0 0 0 20,1044.3598 a 4,4.0000043 0 0 0 4,4 4,4.0000043 0 0 0 4,-4 4,4.0000043 0 0 0 -4,-4 4,4.0000043 0 0 0 -1.558594,0.3203 l -10.759765,-10.7598 a 4,4.0000043 0 0 1 0.002,0 4,4.0000043 0 0 0 0.02148,-0.059 l 8.589844,0 a 4,4.0000043 0 0 0 3.705078,2.5 4,4.0000043 0 0 0 4,-4 4,4.0000043 0 0 0 -4,-4 4,4.0000043 0 0 0 -3.705078,2.5 l -8.589844,0 A 4,4.0000043 0 0 0 8,1024.3622 Z"
-         style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+         style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         d="m 8.0624999,1025.8622 a 3.375,2.9999997 0 0 0 -3.375,3 3.375,2.9999997 0 0 0 1.6875,2.5957 l 0,9.8115 a 3.375,2.9999997 0 0 0 -1.6875,2.5928 3.375,2.9999997 0 0 0 3.375,3 3.375,2.9999997 0 0 0 3.3750001,-3 3.375,2.9999997 0 0 0 -1.6875001,-2.5957 l 0,-8.7832 11.9311511,10.6054 a 3.375,2.9999997 0 0 0 -0.118651,0.7735 3.375,2.9999997 0 0 0 3.375,3 3.375,2.9999997 0 0 0 3.375,-3 3.375,2.9999997 0 0 0 -3.375,-3 3.375,2.9999997 0 0 0 -0.873413,0.1025 l -11.927857,-10.6025 9.884399,0 a 3.375,2.9999997 0 0 0 2.916871,1.5 3.375,2.9999997 0 0 0 3.375,-3 3.375,2.9999997 0 0 0 -3.375,-3 3.375,2.9999997 0 0 0 -2.920166,1.5 l -11.037964,0 a 3.375,2.9999997 0 0 0 -2.9168701,-1.5 z"
+         id="path4198"
+         inkscape:connector-curvature="0" />
     </clipPath>
   </defs>
   <sodipodi:namedview
@@ -38,9 +38,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="15.999999"
-     inkscape:cx="6.4439633"
-     inkscape:cy="20.370338"
+     inkscape:zoom="11.313708"
+     inkscape:cx="-2.8222537"
+     inkscape:cy="15.541098"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -60,22 +60,6 @@
     <inkscape:grid
        type="xygrid"
        id="grid3336" />
-    <sodipodi:guide
-       position="4.0000001,28.000018"
-       orientation="24,0"
-       id="guide4140" />
-    <sodipodi:guide
-       position="4.0000001,4.0000175"
-       orientation="0,24"
-       id="guide4142" />
-    <sodipodi:guide
-       position="28.000001,4.0000175"
-       orientation="-24,0"
-       id="guide4144" />
-    <sodipodi:guide
-       position="28.000001,28.000018"
-       orientation="0,-24"
-       id="guide4146" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -85,7 +69,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -93,53 +77,67 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <g
-       id="g4254"
+       id="g4181"
        mask="none"
-       clip-path="url(#clipPath4148)">
+       clip-path="url(#clipPath4196)"
+       transform="matrix(0.59259259,0,0,0.66666674,-1.7777777,353.454)">
       <rect
-         y="1024.3622"
-         x="4"
-         height="4"
-         width="24"
-         id="rect4242"
-         style="fill:#ff7070;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+         y="1025.8622"
+         x="3"
+         height="3.0000043"
+         width="27"
+         id="rect4159"
+         style="fill:#ff7070;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <rect
-         style="fill:#ffeb70;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="rect4244"
-         width="24"
-         height="4"
-         x="4"
-         y="1028.3622" />
+         style="fill:#ffeb70;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect4161"
+         width="27"
+         height="3.0000041"
+         x="3"
+         y="1028.8622" />
       <rect
-         style="fill:#9dff70;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="rect4246"
-         width="24"
-         height="4"
-         x="4"
-         y="1032.3622" />
+         style="fill:#9dff70;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect4163"
+         width="27"
+         height="2.9999995"
+         x="3"
+         y="1031.8622" />
       <rect
-         y="1036.3622"
-         x="4"
-         height="4"
-         width="24"
-         id="rect4248"
-         style="fill:#70dbff;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+         y="1034.8622"
+         x="3"
+         height="3.0000031"
+         width="27"
+         id="rect4165"
+         style="fill:#70ffb9;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <rect
-         y="1040.3622"
-         x="4"
-         height="4"
-         width="24"
-         id="rect4250"
-         style="fill:#a670ff;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+         y="1037.8622"
+         x="3"
+         height="3.0000029"
+         width="27"
+         id="rect4167"
+         style="fill:#70deff;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
       <rect
-         style="fill:#ff70ac;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="rect4252"
-         width="24"
-         height="4"
-         x="4"
-         y="1044.3622" />
+         style="fill:#ff70ac;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect4169"
+         width="27"
+         height="2.9999976"
+         x="3"
+         y="1043.8622" />
+      <rect
+         style="fill:#9f70ff;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect4146"
+         width="27"
+         height="3.0000029"
+         x="3"
+         y="1040.8622" />
     </g>
+    <ellipse
+       r="2"
+       style="opacity:1;fill:#6e6e6e;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="ellipse4152"
+       cx="3"
+       cy="1039.3622" />
   </g>
 </svg>
