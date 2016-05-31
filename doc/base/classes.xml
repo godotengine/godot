@@ -3684,6 +3684,8 @@
 			<argument index="0" name="gravity" type="float">
 			</argument>
 			<description>
+			Set the gravity intensity. This is useful to alter the force of gravity without altering its direction.
+			This value multiplies the gravity vector, whether it is the given vector ([method set_gravity_vector]), or a calculated one (when using a center of gravity).
 			</description>
 		</method>
 		<method name="get_gravity" qualifiers="const">
