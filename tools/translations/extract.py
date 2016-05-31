@@ -31,6 +31,7 @@ for root, dirnames, filenames in os.walk('.'):
 		if (filename.find("collada") != -1):
 			continue
 		matches.append(os.path.join(root, filename))
+matches.sort()
 
 
 unique_str = []
