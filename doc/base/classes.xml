@@ -3612,8 +3612,10 @@
 </class>
 <class name="Area" inherits="CollisionObject" category="Core">
 	<brief_description>
+	General purpose area detection and influence for 3D physics.
 	</brief_description>
 	<description>
+	General purpose area detection for 3D physics. Areas can be used for detection of objects that enter/exit them, as well as overriding space parameters (changing gravity, damping, etc). For this, use any space override different from AREA_SPACE_OVERRIDE_DISABLE and point gravity at the center of mass.
 	</description>
 	<methods>
 		<method name="set_space_override_mode">
@@ -3632,42 +3634,50 @@
 			<return type="int">
 			</return>
 			<description>
+			Return the space override mode.
 			</description>
 		</method>
 		<method name="set_gravity_is_point">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			When overriding space parameters, this method sets whether this area has a center of gravity. To set/get the location of the center of gravity, use [method set_gravity_vector]/[method get_gravity_vector].
 			</description>
 		</method>
 		<method name="is_gravity_a_point" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether gravity is a point. A point gravity will attract objects towards it, as opposed to a gravity vector, which moves them in a given direction.
 			</description>
 		</method>
 		<method name="set_gravity_distance_scale">
 			<argument index="0" name="distance_scale" type="float">
 			</argument>
 			<description>
+			Set the falloff factor for point gravity. The greater this value is, the faster the strength of gravity decreases with the square of distance.
 			</description>
 		</method>
 		<method name="get_gravity_distance_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the falloff factor for point gravity.
 			</description>
 		</method>
 		<method name="set_gravity_vector">
 			<argument index="0" name="vector" type="Vector3">
 			</argument>
 			<description>
+			Set the gravity vector. This vector does not have to be normalized.
+			If gravity is a point (see [method is_gravity_a_point]), this will be the attraction center.
 			</description>
 		</method>
 		<method name="get_gravity_vector" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+			Return the gravity vector. If gravity is a point (see [method is_gravity_a_point]), this will be the attraction center.
 			</description>
 		</method>
 		<method name="set_gravity">
@@ -3680,66 +3690,82 @@
 			<return type="float">
 			</return>
 			<description>
+			Return the gravity intensity.
 			</description>
 		</method>
 		<method name="set_angular_damp">
 			<argument index="0" name="angular_damp" type="float">
 			</argument>
 			<description>
+			Set the rate at which objects stop spinning in this area, if there are not any other forces making it spin. The value is a fraction of its current speed, lost per second. Thus, a value of 1.0 should mean stopping immediately, and 0.0 means the object never stops.
+			In practice, as the fraction of speed lost gets smaller with each frame, a value of 1.0 does not mean the object will stop in exactly one second. Only when the physics calculations are done at 1 frame per second, it does stop in a second.
 			</description>
 		</method>
 		<method name="get_angular_damp" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the angular damp rate.
 			</description>
 		</method>
 		<method name="set_linear_damp">
 			<argument index="0" name="linear_damp" type="float">
 			</argument>
 			<description>
+			Set the rate at which objects stop moving in this area, if there are not any other forces moving it. The value is a fraction of its current speed, lost per second. Thus, a value of 1.0 should mean stopping immediately, and 0.0 means the object never stops.
+			In practice, as the fraction of speed lost gets smaller with each frame, a value of 1.0 does not mean the object will stop in exactly one second. Only when the physics calculations are done at 1 frame per second, it does stop in a second.
 			</description>
 		</method>
 		<method name="get_linear_damp" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the linear damp rate.
 			</description>
 		</method>
 		<method name="set_priority">
 			<argument index="0" name="priority" type="float">
 			</argument>
 			<description>
+			Set the order in which the area is processed. Greater values mean the area gets processed first. This is useful for areas which have an space override different from AREA_SPACE_OVERRIDE_DISABLED or AREA_SPACE_OVERRIDE_COMBINE, as they replace values, and are thus order-dependent.
+			Areas with the same priority value get evaluated in an unpredictable order, and should be differentiated if evaluation order is to be important.
 			</description>
 		</method>
 		<method name="get_priority" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the processing order of this area.
 			</description>
 		</method>
 		<method name="set_collision_mask">
 			<argument index="0" name="collision_mask" type="int">
 			</argument>
 			<description>
+			Set the physics layers this area can scan for collisions.
 			</description>
 		</method>
 		<method name="get_collision_mask" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the physics layers this area can scan for collisions.
 			</description>
 		</method>
 		<method name="set_layer_mask">
 			<argument index="0" name="layer_mask" type="int">
 			</argument>
 			<description>
+			Set the physics layers this area is in.
+			Collidable objects can exist in any of 32 different layers. These layers are not visual, but more of a tagging system instead. A collidable can use these layers/tags to select with which objects it can collide, using [method set_collision_mask].
+			A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A.
 			</description>
 		</method>
 		<method name="get_layer_mask" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the physics layer this area is in.
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">
@@ -3748,6 +3774,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
+			Set/clear individual bits on the collision mask. This makes selecting the areas scanned easier.
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
@@ -3756,6 +3783,7 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
+			Return an individual bit on the collision mask.
 			</description>
 		</method>
 		<method name="set_layer_mask_bit">
@@ -3764,6 +3792,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
+			Set/clear individual bits on the layer mask. This makes getting an area in/out of only one layer easier.
 			</description>
 		</method>
 		<method name="get_layer_mask_bit" qualifiers="const">
@@ -3772,58 +3801,67 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
+			Return an individual bit on the layer mask.
 			</description>
 		</method>
 		<method name="set_monitorable">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set whether this area can be detected by other, monitoring, areas. Only areas need to be marked as monitorable. Bodies are always so.
 			</description>
 		</method>
 		<method name="is_monitorable" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this area can be detected by other, monitoring, areas.
 			</description>
 		</method>
 		<method name="set_enable_monitoring">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set whether this area can detect bodies/areas entering/exiting it.
 			</description>
 		</method>
 		<method name="is_monitoring_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this area detects bodies/areas entering/exiting it.
 			</description>
 		</method>
 		<method name="get_overlapping_bodies" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
+			Return a list of the bodies ([PhysicsBody]) that are totally or partially inside this area.
 			</description>
 		</method>
 		<method name="get_overlapping_areas" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
+			Return a list of the areas that are totally or partially inside this area.
 			</description>
 		</method>
 		<method name="overlaps_body" qualifiers="const">
-			<return type="PhysicsBody">
+			<return type="bool">
 			</return>
 			<argument index="0" name="body" type="Object">
 			</argument>
 			<description>
+			Return whether the body passed is totally or partially inside this area.
 			</description>
 		</method>
 		<method name="overlaps_area" qualifiers="const">
-			<return type="Area">
+			<return type="bool">
 			</return>
 			<argument index="0" name="area" type="Object">
 			</argument>
 			<description>
+			Return whether the area passed is totally or partially inside this area.
 			</description>
 		</method>
 	</methods>
@@ -3832,6 +3870,7 @@
 			<argument index="0" name="body" type="Object">
 			</argument>
 			<description>
+			This signal is triggered only once when a body enters this area. The only parameter passed is the body that entered this area.
 			</description>
 		</signal>
 		<signal name="body_enter_shape">
@@ -3844,12 +3883,14 @@
 			<argument index="3" name="area_shape" type="int">
 			</argument>
 			<description>
+			This signal triggers only once when a body enters this area. The first parameter is the body's [RID]. The second one is the body as an object. The third one is the index of the shape of the body that entered this area, and the fourth one is the index of the shape in this area that reported the entering.
 			</description>
 		</signal>
 		<signal name="area_enter">
 			<argument index="0" name="area" type="Object">
 			</argument>
 			<description>
+			This signal is triggered only once when an area enters this area. The only parameter passed is the area that entered this area.
 			</description>
 		</signal>
 		<signal name="area_enter_shape">
@@ -3862,12 +3903,14 @@
 			<argument index="3" name="area_shape" type="int">
 			</argument>
 			<description>
+			This signal triggers only once when an area enters this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
 			</description>
 		</signal>
 		<signal name="body_exit">
 			<argument index="0" name="body" type="Object">
 			</argument>
 			<description>
+			This signal is triggered only once when a body exits this area. The only parameter passed is the body that exited this area.
 			</description>
 		</signal>
 		<signal name="body_exit_shape">
@@ -3880,12 +3923,14 @@
 			<argument index="3" name="area_shape" type="int">
 			</argument>
 			<description>
+			This signal triggers only once when a body exits this area. The first parameter is the body's [RID]. The second one is the body as an object. The third one is the index of the shape exiting this area, and the fourth one is the index of the shape in this area that reported the exit.
 			</description>
 		</signal>
 		<signal name="area_exit">
 			<argument index="0" name="area" type="Object">
 			</argument>
 			<description>
+			This signal is triggered only once when an area exits this area. The only parameter passed is the area that exited this area.
 			</description>
 		</signal>
 		<signal name="area_exit_shape">
@@ -3898,6 +3943,7 @@
 			<argument index="3" name="area_shape" type="int">
 			</argument>
 			<description>
+			This signal triggers only once when an area exits this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
 			</description>
 		</signal>
 	</signals>
@@ -4125,7 +4171,7 @@
 			<return type="bool">
 			</return>
 			<description>
-			Set whether this area can be detected by other, monitoring, areas.
+			Return whether this area can be detected by other, monitoring, areas.
 			</description>
 		</method>
 		<method name="get_overlapping_bodies" qualifiers="const">
