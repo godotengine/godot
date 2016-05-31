@@ -66,19 +66,19 @@ static Ref<BitmapFont> make_font(int p_height,int p_ascent, int p_valign, int p_
 	return font;
 }
 
-
-
-#define MAKE_DROID_SANS(m_name,m_size)	\
-	Ref<DynamicFont> m_name;\
-	m_name.instance();\
-	m_name->set_size(m_size);\
-	m_name->set_font_data(DroidSans);\
+#define MAKE_FALLBACKS(m_name)\
 	m_name->add_fallback(DroidSansFallback);\
 	m_name->add_fallback(DroidSansJapanese);\
 	m_name->add_fallback(DroidSansArabic);\
 	m_name->add_fallback(DroidSansHebrew);\
 	m_name->add_fallback(DroidSansThai);
 
+#define MAKE_DROID_SANS(m_name,m_size)	\
+	Ref<DynamicFont> m_name;\
+	m_name.instance();\
+	m_name->set_size(m_size);\
+	m_name->set_font_data(DroidSans);\
+	MAKE_FALLBACKS(m_name);
 
 
 void editor_register_fonts(Ref<Theme> p_theme) {
@@ -144,6 +144,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	df_code.instance();
 	df_code->set_size(int(EditorSettings::get_singleton()->get("global/source_font_size"))*EDSCALE);
 	df_code->set_font_data(dfmono);
+	MAKE_FALLBACKS(df_code);
 
 	p_theme->set_font("source","EditorFonts",df_code);
 
@@ -151,6 +152,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	df_doc_code.instance();
 	df_doc_code->set_size(int(EDITOR_DEF("help/help_source_font_size",14))*EDSCALE);
 	df_doc_code->set_font_data(dfmono);
+	MAKE_FALLBACKS(df_doc_code);
 
 
 	p_theme->set_font("doc_source","EditorFonts",df_doc_code);
