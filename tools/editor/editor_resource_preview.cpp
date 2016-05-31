@@ -131,7 +131,6 @@ void EditorResourcePreview::_thread() {
 
 			//print_line("pop from queue "+item.path);
 
-			uint64_t modtime = FileAccess::get_modified_time(item.path);
 			int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
 			thumbnail_size*=EDSCALE;
 
@@ -168,6 +167,7 @@ void EditorResourcePreview::_thread() {
 					texture=_generate_preview(item,cache_base);
 				} else {
 
+					uint64_t modtime = FileAccess::get_modified_time(item.path);
 					int tsize = f->get_line().to_int64();
 					uint64_t last_modtime = f->get_line().to_int64();
 
