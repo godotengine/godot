@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-05-30 00:04+0800\n"
+"PO-Revision-Date: 2016-05-31 23:28+0800\n"
 "Last-Translator: Geequlim <geequlim@gmail.com>\n"
-"Language-Team: Chinese (Simplified)\n"
+"Language-Team: 汉语 <geequlim@gmail.com>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -227,15 +227,15 @@ msgstr "取消"
 
 #: scene/gui/dialogs.cpp
 msgid "OK"
-msgstr ""
+msgstr "好的"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr ""
+msgstr "提示！"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr ""
+msgstr "请确认"
 
 #: scene/gui/text_edit.cpp scene/gui/line_edit.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
@@ -585,9 +585,8 @@ msgid "Line Number:"
 msgstr "行号："
 
 #: tools/editor/code_editor.cpp
-#, fuzzy
 msgid "No Matches"
-msgstr "匹配项："
+msgstr "无匹配项"
 
 #: tools/editor/code_editor.cpp
 msgid "Replaced %d Ocurrence(s)."
@@ -598,14 +597,12 @@ msgid "Replace"
 msgstr "替换"
 
 #: tools/editor/code_editor.cpp
-#, fuzzy
 msgid "Replace All"
-msgstr "替换"
+msgstr "全部替换"
 
 #: tools/editor/code_editor.cpp
-#, fuzzy
 msgid "Match Case"
-msgstr "匹配项："
+msgstr "大小写匹配"
 
 #: tools/editor/code_editor.cpp
 msgid "Whole Words"
@@ -1473,14 +1470,12 @@ msgid "Remote Inspector"
 msgstr "远程属性面板"
 
 #: tools/editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Live Scene Tree:"
-msgstr "场景树："
+msgstr "即时场景树："
 
 #: tools/editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Remote Object Properties: "
-msgstr "对象属性。"
+msgstr "远程对象属性。"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Profiler"
@@ -1488,16 +1483,15 @@ msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Monitor"
-msgstr "键名"
+msgstr "显示"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Value"
 msgstr "值"
 
 #: tools/editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Monitors"
-msgstr "键名"
+msgstr "显示"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "List of Video Memory Usage by Resource:"
@@ -1530,7 +1524,7 @@ msgstr "用量"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Misc"
-msgstr ""
+msgstr "杂项"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Clicked Control:"
@@ -1583,20 +1577,17 @@ msgstr "场景运行设置"
 
 #: tools/editor/project_settings.cpp
 msgid "Key "
-msgstr ""
+msgstr "键"
 
 #: tools/editor/project_settings.cpp
-#, fuzzy
 msgid "Joy Button"
-msgstr "按钮"
+msgstr "手柄按钮"
 
 #: tools/editor/project_settings.cpp
-#, fuzzy
 msgid "Joy Axis"
-msgstr "轴"
+msgstr "摇杆轴"
 
 #: tools/editor/project_settings.cpp
-#, fuzzy
 msgid "Mouse Button"
 msgstr "鼠标按键："
 
@@ -1822,7 +1813,7 @@ msgstr "删除"
 
 #: tools/editor/project_settings.cpp
 msgid "Copy To Platform.."
-msgstr ""
+msgstr "复制到平台.."
 
 #: tools/editor/project_settings.cpp
 msgid "Input Map"
@@ -2614,11 +2605,10 @@ msgid "Quick Run Scene.."
 msgstr "快速运行场景"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Open Project Manager? \n"
 "(Unsaved changes will be lost)"
-msgstr "确定要关闭场景吗，未保存的修改将丢失？"
+msgstr "退出到项目管理窗口(未保存的修改将丢失)？"
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
@@ -3831,23 +3821,23 @@ msgstr "缩放"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Fade In (s):"
-msgstr ""
+msgstr "淡入（秒）"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Fade Out (s):"
-msgstr ""
+msgstr "淡出（秒）"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend"
-msgstr ""
+msgstr "混合"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Mix"
-msgstr ""
+msgstr "混合"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Auto Restart:"
-msgstr ""
+msgstr "自动重新开始："
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Restart (s):"
@@ -3892,11 +3882,11 @@ msgstr "添加输入事件"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Clear Auto-Advance"
-msgstr ""
+msgstr "清除Auto-Advance"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Set Auto-Advance"
-msgstr ""
+msgstr "设置清除Auto-Advance"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Delete Input"
@@ -4075,7 +4065,7 @@ msgstr "查找下一项"
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Find Previous"
-msgstr ""
+msgstr "查找上一项"
 
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -4428,9 +4418,8 @@ msgid "Scale Mode (R)"
 msgstr "缩放模式（R）"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Transform"
-msgstr "变换类型"
+msgstr "变换"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
@@ -4450,30 +4439,27 @@ msgstr "使用默认sRGB"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
-msgstr ""
+msgstr "1个视口"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "2 Viewports"
-msgstr "Viewport设置"
+msgstr "2个视口"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports (Alt)"
-msgstr ""
+msgstr "2个视口（Alt）"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "3 Viewports"
-msgstr "Viewport设置"
+msgstr "3个视口（Alt）"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports (Alt)"
-msgstr ""
+msgstr "3个视口（Alt）"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "4 Viewports"
-msgstr "Viewport设置"
+msgstr "4个视口"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
@@ -4656,19 +4642,16 @@ msgid "Toggle Breakpoint"
 msgstr "切换断点"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All Breakpoints"
-msgstr "切换断点"
+msgstr "移除所有断点"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Goto Next Breakpoint"
-msgstr "前往下一步"
+msgstr "前往下一个断点"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Goto Previous Breakpoint"
-msgstr "切换断点"
+msgstr "前往上一个断点"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Keep Debugger Open"
@@ -4788,43 +4771,43 @@ msgstr "切换旋转模式"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Function"
-msgstr ""
+msgstr "修改Function Scalar"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Vec Function"
-msgstr ""
+msgstr "修改Function Vec"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Uniform"
-msgstr ""
+msgstr "修改Uniform Scalar"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Vec Uniform"
-msgstr ""
+msgstr "修改Uniform Vec"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change RGB Uniform"
-msgstr ""
+msgstr "修改Uniform RGB"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Default Value"
-msgstr ""
+msgstr "修改默认值"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change XForm Uniform"
-msgstr ""
+msgstr "修改Uniform XForm "
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Texture Uniform"
-msgstr ""
+msgstr "修改Uniform Texture "
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Cubemap Uniform"
-msgstr ""
+msgstr "修改Uniform Cubemap "
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Comment"
-msgstr "更改注释"
+msgstr "修改注释"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Add/Remove to Color Ramp"
@@ -4845,43 +4828,43 @@ msgstr ""
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Input Name"
-msgstr ""
+msgstr "更改输入名称"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Connect Graph Nodes"
-msgstr ""
+msgstr "连接Graph Node"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Disconnect Graph Nodes"
-msgstr ""
+msgstr "断开Graph Node连接"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Remove Shader Graph Node"
-msgstr ""
+msgstr "移除Graph Node节点"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Move Shader Graph Node"
-msgstr ""
+msgstr "移动Graph Node节点"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Duplicate Graph Node(s)"
-msgstr ""
+msgstr "复制Graph Node节点"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Delete Shader Graph Node(s)"
-msgstr ""
+msgstr "删除Graph Node节点"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Error: Cyclic Connection Link"
-msgstr ""
+msgstr "错误：循环的连接"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Error: Missing Input Connections"
-msgstr ""
+msgstr "错误：缺少输入连接"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Add Shader Graph Node"
-msgstr ""
+msgstr "添加着色器Graph Node"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
@@ -5151,7 +5134,7 @@ msgstr ""
 
 #: tools/editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generated Point Count:"
-msgstr ""
+msgstr "生成顶点计数："
 
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Creating Mesh Library"
@@ -5353,15 +5336,15 @@ msgstr "在曲线中移动顶点"
 
 #: tools/editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move In-Control in Curve"
-msgstr ""
+msgstr "移动曲线内控制点"
 
 #: tools/editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Out-Control in Curve"
-msgstr ""
+msgstr "移动曲线外控制点"
 
 #: tools/editor/plugins/path_2d_editor_plugin.cpp
 msgid "Select Control Points (Shift+Drag)"
-msgstr ""
+msgstr "选择控制点(Shift+拖动)"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Uncompressed"
@@ -5530,7 +5513,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Inserting"
-msgstr "插入中"
+msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Saving"
@@ -5728,9 +5711,8 @@ msgid "Custom Root Node Type:"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#, fuzzy
 msgid "Auto"
-msgstr "AutoLoad"
+msgstr "自动"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
