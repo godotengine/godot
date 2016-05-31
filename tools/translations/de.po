@@ -312,7 +312,7 @@ msgstr ""
 
 #: tools/editor/addon_editor_plugin.cpp tools/editor/project_settings.cpp
 msgid "Category:"
-msgstr ""
+msgstr "Kategorie:"
 
 #: tools/editor/addon_editor_plugin.cpp
 msgid "All"
@@ -332,7 +332,7 @@ msgstr "Deaktiviert"
 
 #: tools/editor/animation_editor.cpp
 msgid "All Selection"
-msgstr ""
+msgstr "Alle auswählen"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Add Key"
@@ -429,11 +429,11 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Goto Next Step"
-msgstr ""
+msgstr "Gehe zum nächsten Schritt"
 
 #: tools/editor/animation_editor.cpp
 msgid "Goto Prev Step"
-msgstr ""
+msgstr "Gehe zum vorherigen Schritt"
 
 #: tools/editor/animation_editor.cpp tools/editor/property_editor.cpp
 msgid "Linear"
@@ -663,15 +663,15 @@ msgstr ""
 
 #: tools/editor/code_editor.cpp
 msgid "Go to Line"
-msgstr ""
+msgstr "Gehe zu Zeile"
 
 #: tools/editor/code_editor.cpp
 msgid "Line Number:"
-msgstr ""
+msgstr "Zeilennummer:"
 
 #: tools/editor/code_editor.cpp
 msgid "No Matches"
-msgstr ""
+msgstr "Keine Übereinstimmung"
 
 #: tools/editor/code_editor.cpp
 msgid "Replaced %d Ocurrence(s)."
@@ -687,11 +687,11 @@ msgstr "Alles ersetzen"
 
 #: tools/editor/code_editor.cpp
 msgid "Match Case"
-msgstr ""
+msgstr "Übereinstimmung"
 
 #: tools/editor/code_editor.cpp
 msgid "Whole Words"
-msgstr ""
+msgstr "Gesamte Wörter"
 
 #: tools/editor/code_editor.cpp
 msgid "Selection Only"
@@ -703,7 +703,7 @@ msgstr "Finde"
 
 #: tools/editor/code_editor.cpp
 msgid "Next"
-msgstr ""
+msgstr "Nächste"
 
 #: tools/editor/code_editor.cpp
 msgid "Replaced %d ocurrence(s)."
@@ -711,11 +711,11 @@ msgstr ""
 
 #: tools/editor/code_editor.cpp
 msgid "Not found!"
-msgstr ""
+msgstr "Nicht gefunden!"
 
 #: tools/editor/code_editor.cpp
 msgid "Replace By"
-msgstr ""
+msgstr "Ersetzen durch"
 
 #: tools/editor/code_editor.cpp
 msgid "Case Sensitive"
@@ -731,15 +731,15 @@ msgstr ""
 
 #: tools/editor/code_editor.cpp
 msgid "Skip"
-msgstr ""
+msgstr "Überspringen"
 
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Line:"
-msgstr ""
+msgstr "Zeile"
 
 #: tools/editor/code_editor.cpp
 msgid "Col:"
-msgstr ""
+msgstr "Spalte:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -886,7 +886,7 @@ msgstr ""
 
 #: tools/editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (no undo)"
-msgstr ""
+msgstr "Lösche ausgewählte Dateien aus dem Projekt? (nicht umkehrbar)"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -906,7 +906,7 @@ msgstr ""
 
 #: tools/editor/dependency_editor.cpp
 msgid "Fix Dependencies"
-msgstr ""
+msgstr "Abhängigkeiten reparieren"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Errors loading!"
@@ -1003,7 +1003,7 @@ msgstr ""
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 #: tools/editor/project_settings.cpp tools/editor/script_create_dialog.cpp
 msgid "Path:"
-msgstr ""
+msgstr "Pfad:"
 
 #: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
 msgid "Favorites:"
@@ -1496,7 +1496,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Export"
-msgstr ""
+msgstr "Exportieren"
 
 #: tools/editor/editor_node.cpp
 msgid "Play the project (F5)."
@@ -1651,7 +1651,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Export Project"
-msgstr ""
+msgstr "Projekt exportieren"
 
 #: tools/editor/editor_node.cpp
 msgid "Export Library"
@@ -2514,7 +2514,7 @@ msgstr ""
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/script_create_dialog.cpp
 msgid "Error!"
-msgstr ""
+msgstr "Fehler!"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Times:"
@@ -4418,7 +4418,7 @@ msgstr ""
 #: tools/editor/project_settings.cpp tools/editor/scene_tree_editor.cpp
 #: tools/editor/script_editor_debugger.cpp
 msgid "Type:"
-msgstr ""
+msgstr "Typ:"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
@@ -4524,15 +4524,15 @@ msgstr "Fehler"
 
 #: tools/editor/project_export.cpp
 msgid "Edit Script Options"
-msgstr ""
+msgstr "Skriptoptionen bearbeiten"
 
 #: tools/editor/project_export.cpp
 msgid "Please export outside the project folder!"
-msgstr ""
+msgstr "Bitte außerhalb des Projektordners exportieren!"
 
 #: tools/editor/project_export.cpp
 msgid "Error exporting project!"
-msgstr ""
+msgstr "Fehler beim exportieren des Projekts!"
 
 #: tools/editor/project_export.cpp
 msgid "Error writing the project PCK!"
@@ -4580,7 +4580,7 @@ msgstr ""
 
 #: tools/editor/project_export.cpp
 msgid "Target"
-msgstr ""
+msgstr "Ziel"
 
 #: tools/editor/project_export.cpp
 msgid "Export to Platform"
@@ -4653,15 +4653,15 @@ msgstr ""
 
 #: tools/editor/project_export.cpp
 msgid "Shrink All Images:"
-msgstr ""
+msgstr "Alle Bilder verkleinern:"
 
 #: tools/editor/project_export.cpp
 msgid "Compress Formats:"
-msgstr ""
+msgstr "Komprimierungsformate:"
 
 #: tools/editor/project_export.cpp
 msgid "Image Groups"
-msgstr ""
+msgstr "Bildergruppen"
 
 #: tools/editor/project_export.cpp
 msgid "Groups:"
@@ -4769,15 +4769,15 @@ msgstr ""
 
 #: tools/editor/project_export.cpp
 msgid "Export.."
-msgstr ""
+msgstr "Exportieren.."
 
 #: tools/editor/project_export.cpp
 msgid "Project Export"
-msgstr ""
+msgstr "Projekt exportieren"
 
 #: tools/editor/project_export.cpp
 msgid "Export Preset:"
-msgstr ""
+msgstr "Exportvorlage"
 
 #: tools/editor/project_manager.cpp
 msgid "Invalid project path, the path must exist!"
@@ -4887,7 +4887,7 @@ msgstr ""
 #: tools/editor/project_settings.cpp
 #, fuzzy
 msgid "Mouse Button"
-msgstr "Mittlere Taste."
+msgstr "Mittlere Taste"
 
 #: tools/editor/project_settings.cpp
 msgid "Invalid action (anything goes but '/' or ':')."
@@ -4923,7 +4923,7 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Press a Key.."
-msgstr ""
+msgstr "Drück eine Taste"
 
 #: tools/editor/project_settings.cpp
 msgid "Mouse Button Index:"
@@ -4931,15 +4931,15 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Left Button"
-msgstr ""
+msgstr "Linke Taste"
 
 #: tools/editor/project_settings.cpp
 msgid "Right Button"
-msgstr ""
+msgstr "Rechte Taste"
 
 #: tools/editor/project_settings.cpp
 msgid "Middle Button"
-msgstr ""
+msgstr "Mittlere Taste"
 
 #: tools/editor/project_settings.cpp
 msgid "Wheel Up Button"
@@ -4951,19 +4951,19 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Button 6"
-msgstr ""
+msgstr "Taste 6"
 
 #: tools/editor/project_settings.cpp
 msgid "Button 7"
-msgstr ""
+msgstr "Taste 7"
 
 #: tools/editor/project_settings.cpp
 msgid "Button 8"
-msgstr ""
+msgstr "Taste 8"
 
 #: tools/editor/project_settings.cpp
 msgid "Button 9"
-msgstr ""
+msgstr "Taste 9"
 
 #: tools/editor/project_settings.cpp
 msgid "Joystick Axis Index:"
@@ -5103,7 +5103,7 @@ msgstr "Allgemein"
 
 #: tools/editor/project_settings.cpp tools/editor/property_editor.cpp
 msgid "Property:"
-msgstr ""
+msgstr "Eigenschaft:"
 
 #: tools/editor/project_settings.cpp
 msgid "Del"
@@ -5619,35 +5619,35 @@ msgstr "Gültiger Name"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "N/A"
-msgstr ""
+msgstr "Nicht verfügbar"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Class name is invalid!"
-msgstr ""
+msgstr "Name der Klasse ist ungültig!"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Parent class name is invalid!"
-msgstr ""
+msgstr "Name der Elternklasse ist ungültig!"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Invalid path!"
-msgstr ""
+msgstr "Ungültiger Pfad!"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Could not create script in filesystem."
-msgstr ""
+msgstr "Skript konnte nicht im Dateisystem erstellt werden!"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Path is empty"
-msgstr ""
+msgstr "Pfad ist leer"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Path is not local"
-msgstr ""
+msgstr "Pfad ist nicht lokal"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Invalid base path"
-msgstr ""
+msgstr "Ungültiger Pfad!"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "File exists"
@@ -5655,15 +5655,15 @@ msgstr "Datei existiert"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Invalid extension"
-msgstr ""
+msgstr "Ungültige Erweiterung"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Valid path"
-msgstr ""
+msgstr "Gültiger Pfad"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Class Name:"
-msgstr ""
+msgstr "Klassenname:"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Built-In Script"
@@ -5799,7 +5799,7 @@ msgstr ""
 
 #: tools/editor/settings_config_dialog.cpp
 msgid "Plugin List:"
-msgstr ""
+msgstr "Plugin Liste:"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
