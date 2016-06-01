@@ -682,7 +682,7 @@ msgstr "Подчистить все анимации"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "Подчистить анимацию (нельзя отменить!)"
+msgstr "Подчистить анимацию(и) (нельзя отменить!)"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up"
