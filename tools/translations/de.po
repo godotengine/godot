@@ -687,7 +687,7 @@ msgstr "Alles ersetzen"
 
 #: tools/editor/code_editor.cpp
 msgid "Match Case"
-msgstr "Übereinstimmung"
+msgstr "Groß-/Kleinschreibung berücksichtigen"
 
 #: tools/editor/code_editor.cpp
 msgid "Whole Words"
@@ -735,7 +735,7 @@ msgstr "Überspringen"
 
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Line:"
-msgstr "Zeile"
+msgstr "Zeile:"
 
 #: tools/editor/code_editor.cpp
 msgid "Col:"
@@ -4532,7 +4532,7 @@ msgstr "Bitte außerhalb des Projektordners exportieren!"
 
 #: tools/editor/project_export.cpp
 msgid "Error exporting project!"
-msgstr "Fehler beim exportieren des Projekts!"
+msgstr "Fehler beim Exportieren des Projekts!"
 
 #: tools/editor/project_export.cpp
 msgid "Error writing the project PCK!"
@@ -4923,7 +4923,7 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Press a Key.."
-msgstr "Drück eine Taste"
+msgstr "Drücke eine Taste"
 
 #: tools/editor/project_settings.cpp
 msgid "Mouse Button Index:"
