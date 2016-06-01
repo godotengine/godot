@@ -4215,6 +4215,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	hbc_menu_right->add_child(snap_translation_toggle_button);
 	snap_translation_toggle_button->set_toggle_mode(true);
 	snap_translation_toggle_button->set_flat(true);
+	snap_translation_toggle_button->set_tooltip(TTR("Toggle translation snap on and off"));
 	button_binds[0]=BUTTON_SNAP_TRANSLATION_TOGGLE;
 	snap_translation_toggle_button->connect("pressed", this,"_menu_item_pressed",button_binds);
 
@@ -4241,6 +4242,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	hbc_menu_right->add_child(snap_rotation_toggle_button);
 	snap_rotation_toggle_button->set_toggle_mode(true);
 	snap_rotation_toggle_button->set_flat(true);
+	snap_rotation_toggle_button->set_tooltip(TTR("Toggle rotation snap on and off"));
 	button_binds[0]=BUTTON_SNAP_ROTATION_TOGGLE;
 	snap_rotation_toggle_button->connect("pressed", this,"_menu_item_pressed",button_binds);
 
@@ -4289,6 +4291,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	hbc_menu_right->add_child(snap_scaling_toggle_button);
 	snap_scaling_toggle_button->set_toggle_mode(true);
 	snap_scaling_toggle_button->set_flat(true);
+	snap_scaling_toggle_button->set_tooltip("Toggle scaling snap on and off");
 	button_binds[0]=BUTTON_SNAP_SCALE_TOGGLE;
 	snap_scaling_toggle_button->connect("pressed", this,"_menu_item_pressed",button_binds);
 
@@ -4314,7 +4317,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	coords_toggle_button = memnew ( Button );
 	hbc_menu_right->add_child(coords_toggle_button);
 	coords_toggle_button->set_flat(true);
-	coords_toggle_button->set_tooltip("Toggle between global and local coordinates");
+	coords_toggle_button->set_tooltip(TTR("Toggle between global and local coordinates"));
 	button_binds[0]=BUTTON_GLOBAL_LOCAL_COORDS_TOGGLE;
 	coords_toggle_button->connect("pressed", this,"_menu_item_pressed",button_binds);
 
