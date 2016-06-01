@@ -87,7 +87,7 @@ public:
 	virtual bool has_source_code() const=0;
 	virtual String get_source_code() const=0;
 	virtual void set_source_code(const String& p_code)=0;
-	virtual Error reload()=0;
+	virtual Error reload(bool p_keep_state=false)=0;
 
 	virtual bool is_tool() const=0;
 
@@ -126,6 +126,8 @@ public:
 
 
 	virtual Ref<Script> get_script() const=0;
+
+	virtual bool is_placeholder() const { return false; }
 
 	virtual ScriptLanguage *get_language()=0;
 	virtual ~ScriptInstance();
@@ -189,6 +191,7 @@ public:
 
 	virtual Vector<StackInfo> debug_get_current_stack_info() { return Vector<StackInfo>(); }
 
+	virtual void reload_all_scripts()=0;
 	/* LOADER FUNCTIONS */
 
 	virtual void get_recognized_extensions(List<String> *p_extensions) const=0;
@@ -247,6 +250,8 @@ public:
 	Object *get_owner() { return owner; }
 
 	void update(const List<PropertyInfo> &p_properties,const Map<StringName,Variant>& p_values); //likely changed in editor
+
+	virtual bool is_placeholder() const { return true; }
 
 	PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script,Object *p_owner);
 	~PlaceHolderScriptInstance();

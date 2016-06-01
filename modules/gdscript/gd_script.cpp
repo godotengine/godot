@@ -101,6 +101,12 @@ GDInstance* GDScript::_create_instance(const Variant** p_args,int p_argcount,Obj
 	instance->members.resize(member_indices.size());
 	instance->script=Ref<GDScript>(this);
 	instance->owner=p_owner;
+#ifdef DEBUG_ENABLED
+	//needed for hot reloading
+	for(Map<StringName,MemberInfo>::Element *E=member_indices.front();E;E=E->next()) {
+		instance->member_indices_cache[E->key()]=E->get().index;
+	}
+#endif
 	instance->owner->set_script_instance(instance);
 
 	/* STEP 2, INITIALIZE AND CONSRTUCT */
@@ -500,10 +506,10 @@ void GDScript::_set_subclass_path(Ref<GDScript>& p_sc,const String& p_path) {
 	}
 }
 
-Error GDScript::reload() {
+Error GDScript::reload(bool p_keep_state) {
 
 
-	ERR_FAIL_COND_V(instances.size(),ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(!p_keep_state && instances.size(),ERR_ALREADY_IN_USE);
 
 	String basedir=path;
 
@@ -531,7 +537,7 @@ Error GDScript::reload() {
 	bool can_run = ScriptServer::is_scripting_enabled() || parser.is_tool_script();
 
 	GDCompiler compiler;
-	err = compiler.compile(&parser,this);
+	err = compiler.compile(&parser,this,p_keep_state);
 
 	if (err) {
 
@@ -837,7 +843,7 @@ void GDScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 }
 
 
-GDScript::GDScript() {
+GDScript::GDScript() : script_list(this) {
 
 
 	_static_ref=this;
@@ -851,12 +857,33 @@ GDScript::GDScript() {
 	source_changed_cache=false;
 #endif
 
+#ifdef DEBUG_ENABLED
+	if (GDScriptLanguage::get_singleton()->lock) {
+		GDScriptLanguage::get_singleton()->lock->lock();
+	}
+	GDScriptLanguage::get_singleton()->script_list.add(&script_list);
+
+	if (GDScriptLanguage::get_singleton()->lock) {
+		GDScriptLanguage::get_singleton()->lock->unlock();
+	}
+#endif
 }
 
 GDScript::~GDScript() {
 	for (Map<StringName,GDFunction*>::Element *E=member_functions.front();E;E=E->next()) {
 		memdelete( E->get() );
 	}
+
+#ifdef DEBUG_ENABLED
+	if (GDScriptLanguage::get_singleton()->lock) {
+		GDScriptLanguage::get_singleton()->lock->lock();
+	}
+	GDScriptLanguage::get_singleton()->script_list.remove(&script_list);
+
+	if (GDScriptLanguage::get_singleton()->lock) {
+		GDScriptLanguage::get_singleton()->lock->unlock();
+	}
+#endif
 }
 
 
@@ -1218,6 +1245,37 @@ ScriptLanguage *GDInstance::get_language() {
 	return GDScriptLanguage::get_singleton();
 }
 
+void GDInstance::reload_members() {
+
+#ifdef DEBUG_ENABLED
+
+	members.resize(script->member_indices.size()); //resize
+
+	Vector<Variant> new_members;
+	new_members.resize(script->member_indices.size());
+
+	//pass the values to the new indices
+	for(Map<StringName,GDScript::MemberInfo>::Element *E=script->member_indices.front();E;E=E->next()) {
+
+		if (member_indices_cache.has(E->key())) {
+			Variant value = members[member_indices_cache[E->key()]];
+			new_members[E->get().index]=value;
+		}
+
+	}
+
+	//apply
+	members=new_members;
+
+	//pass the values to the new indices
+	member_indices_cache.clear();
+	for(Map<StringName,GDScript::MemberInfo>::Element *E=script->member_indices.front();E;E=E->next()) {
+
+		member_indices_cache[E->key()]=E->get().index;
+	}
+
+#endif
+}
 
 GDInstance::GDInstance() {
 	owner=NULL;
@@ -1440,6 +1498,65 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr,int p_i
 
 }
 
+
+struct GDScriptDepSort {
+
+	//must support sorting so inheritance works properly (parent must be reloaded first)
+	bool operator()(const Ref<GDScript> &A, const Ref<GDScript>& B) const {
+
+		if (A==B)
+			return false; //shouldn't happen but..
+		const GDScript *I=B->get_base().ptr();
+		while(I) {
+			if (I==A.ptr()) {
+				// A is a base of B
+				return true;
+			}
+
+			I=I->get_base().ptr();
+		}
+
+		return false; //not a base
+	}
+};
+
+void GDScriptLanguage::reload_all_scripts() {
+
+
+
+#ifdef DEBUG_ENABLED
+	print_line("RELOAD ALL SCRIPTS");
+	if (lock) {
+		lock->lock();
+	}
+
+	List<Ref<GDScript> > scripts;
+
+	SelfList<GDScript> *elem=script_list.first();
+	while(elem) {
+		if (elem->self()->get_path().is_resource_file()) {
+			print_line("FOUND: "+elem->self()->get_path());
+			scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
+		}
+		elem=elem->next();
+	}
+
+	if (lock) {
+		lock->unlock();
+	}
+
+	//as scripts are going to be reloaded, must proceed without locking here
+
+	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
+
+	for(List<Ref<GDScript> >::Element *E=scripts.front();E;E=E->next()) {
+
+		print_line("RELOADING: "+E->get()->get_path());
+		E->get()->load_source_code(E->get()->get_path());
+		E->get()->reload(true);
+	}
+#endif
+}
 
 void GDScriptLanguage::frame() {
 

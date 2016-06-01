@@ -2795,6 +2795,10 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			run_native->set_debug_navigation(!ischecked);
 			editor_run.set_debug_navigation(!ischecked);
 		} break;
+		case RUN_RELOAD_SCRIPTS: {
+
+			ScriptEditor::get_singleton()->get_debugger()->reload_scripts();
+		} break;
 		case SETTINGS_UPDATE_ALWAYS: {
 
 			update_menu->get_popup()->set_item_checked(0,true);
@@ -5717,6 +5721,8 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_check_item(TTR("Visible Collision Shapes"),RUN_DEBUG_COLLISONS);
 	p->add_check_item(TTR("Visible Navigation"),RUN_DEBUG_NAVIGATION);
+	p->add_separator();
+	p->add_item(TTR("Reload Scripts"),RUN_RELOAD_SCRIPTS);
 	p->connect("item_pressed",this,"_menu_option");
 
 	/*

@@ -107,6 +107,7 @@ friend class GDScriptLanguage;
 	String source;
 	String path;
 	String name;
+	SelfList<GDScript> script_list;
 
 
 	GDInstance* _create_instance(const Variant** p_args,int p_argcount,Object *p_owner,bool p_isref,Variant::CallError &r_error);
@@ -165,7 +166,7 @@ public:
 	virtual void set_source_code(const String& p_code);
 	virtual void update_exports();
 
-	virtual Error reload();
+	virtual Error reload(bool p_keep_state=false);
 
 	virtual String get_node_type() const;
 	void set_script_path(const String& p_path) { path=p_path; } //because subclasses need a path too...
@@ -186,9 +187,13 @@ class GDInstance : public ScriptInstance {
 friend class GDScript;
 friend class GDFunction;
 friend class GDFunctions;
+friend class GDCompiler;
 
 	Object *owner;
 	Ref<GDScript> script;
+#ifdef DEBUG_ENABLED
+	Map<StringName,int> member_indices_cache; //used only for hot script reloading
+#endif
 	Vector<Variant> members;
 	bool base_ref;
 
@@ -209,7 +214,7 @@ public:
 	virtual void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount);
 	virtual void call_multilevel_reversed(const StringName& p_method,const Variant** p_args,int p_argcount);
 
-    Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
+	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
 
 	virtual void notification(int p_notification);
 
@@ -219,6 +224,7 @@ public:
 
 	void set_path(const String& p_path);
 
+	void reload_members();
 
 	GDInstance();
 	~GDInstance();
@@ -256,6 +262,10 @@ class GDScriptLanguage : public ScriptLanguage {
 
 
 	Mutex *lock;
+
+friend class GDScript;
+
+	SelfList<GDScript>::List script_list;
 friend class GDFunction;
 
 	SelfList<GDFunction>::List function_list;
@@ -377,6 +387,8 @@ public:
 	virtual void debug_get_stack_level_members(int p_level,List<String> *p_members, List<Variant> *p_values, int p_max_subitems=-1,int p_max_depth=-1);
 	virtual void debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems=-1,int p_max_depth=-1);
 	virtual String debug_parse_stack_level_expression(int p_level,const String& p_expression,int p_max_subitems=-1,int p_max_depth=-1);
+
+	virtual void reload_all_scripts();
 
 	virtual void frame();
 
