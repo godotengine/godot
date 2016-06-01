@@ -3945,7 +3945,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_LIST_SELECT]->set_flat(true);
 	button_binds[0]=MENU_TOOL_LIST_SELECT;
 	tool_button[TOOL_MODE_LIST_SELECT]->connect("pressed", this,"_menu_item_pressed",button_binds);
-	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip("Show a list of all objects at the position clicked\n(same as Alt+RMB in selet mode).");
+	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip(TTR("Show a list of all objects at the position clicked\n(same as Alt+RMB in select mode)."));
 
 	vs = memnew( VSeparator );
 	hbc_menu->add_child(vs);

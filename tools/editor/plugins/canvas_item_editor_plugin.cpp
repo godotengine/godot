@@ -3441,7 +3441,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	animation_hb->add_child(key_insert_button);
 
 	animation_menu = memnew( MenuButton );
-	animation_menu->set_text("Animation");
+	animation_menu->set_text(TTR("Animation"));
 	animation_hb->add_child(animation_menu);
 	animation_menu->get_popup()->connect("item_pressed", this,"_popup_callback");
 
