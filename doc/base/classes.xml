@@ -35675,58 +35675,68 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="StaticBody" inherits="PhysicsBody" category="Core">
 	<brief_description>
-	PhysicsBody for static collision objects.
+	Static body for 3D Physics.
 	</brief_description>
 	<description>
-	StaticBody implements a static collision [Node], by utilizing a rigid body in the [PhysicsServer]. Static bodies are used for static collision. For more information on physics body nodes, see [PhysicsBody].
+	Static body for 3D Physics. A static body is a simple body that is not intended to move. They don't consume any CPU resources in contrast to a [RigidBody3D] so they are great for scenario collision.
+	A static body can also be animated by using simulated motion mode. This is useful for implementing functionalities such as moving platforms. When this mode is active the body can be animated and automatically computes linear and angular velocity to apply in that frame and to influence other bodies.
+	Alternatively, a constant linear or angular velocity can be set for the static body, so even if it doesn't move, it affects other bodies as if it was moving (this is useful for simulating conveyor belts or conveyor wheels).
 	</description>
 	<methods>
 		<method name="set_constant_linear_velocity">
 			<argument index="0" name="vel" type="Vector3">
 			</argument>
 			<description>
+			Set a constant linear velocity for the body. This does not move the body, but affects other bodies touching it, as if it was moving.
 			</description>
 		</method>
 		<method name="set_constant_angular_velocity">
 			<argument index="0" name="vel" type="Vector3">
 			</argument>
 			<description>
+			Set a constant angular velocity for the body. This does not rotate the body, but affects other bodies touching it, as if it was rotating.
 			</description>
 		</method>
 		<method name="get_constant_linear_velocity" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+			Return the constant linear velocity for the body.
 			</description>
 		</method>
 		<method name="get_constant_angular_velocity" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+			Return the constant angular velocity for the body.
 			</description>
 		</method>
 		<method name="set_friction">
 			<argument index="0" name="friction" type="float">
 			</argument>
 			<description>
+			Set the body friction, from 0 (frictionless) to 1 (full friction).
 			</description>
 		</method>
 		<method name="get_friction" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the body friction.
 			</description>
 		</method>
 		<method name="set_bounce">
 			<argument index="0" name="bounce" type="float">
 			</argument>
 			<description>
+			Set the body bounciness, from 0 (not bouncy) to 1 (bouncy).
 			</description>
 		</method>
 		<method name="get_bounce" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the body bounciness.
 			</description>
 		</method>
 	</methods>
@@ -35754,14 +35764,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="vel" type="float">
 			</argument>
 			<description>
-			Set a constant angular velocity for the body.
+			Set a constant angular velocity for the body. This does not rotate the body, but affects other bodies touching it, as if it was rotating.
 			</description>
 		</method>
 		<method name="get_constant_linear_velocity" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-			Return the constant linear velocity for the body. This does not rotate the body, but affects other bodies touching it, as if it was rotating.
+			Return the constant linear velocity for the body.
 			</description>
 		</method>
 		<method name="get_constant_angular_velocity" qualifiers="const">
