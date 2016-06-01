@@ -3247,8 +3247,7 @@ msgstr "Не указана исходная полисетка (и мульти
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and MultiMesh contains no Mesh)."
-msgstr ""
-"Не указана исходная полисетка (и мульти полисетка не содержит полисетку)."
+msgstr "Не указана исходная полисетка (и в мульти полисетке нет полисетки)."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (invalid path)."
