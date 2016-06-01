@@ -1779,6 +1779,7 @@ Error GDCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDPa
 
 			ScriptInstance *si = E->get()->get_script_instance();
 			if (si->is_placeholder()) {
+#ifdef TOOLS_ENABLED
 				PlaceHolderScriptInstance *psi = static_cast<PlaceHolderScriptInstance*>(si);
 
 				if (p_script->is_tool()) {
@@ -1807,8 +1808,9 @@ Error GDCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDPa
 						//well, tough luck, not goinna do anything here
 					}
 				}
+#endif
 			} else {
-				print_line("RELOAD MEMBERS");
+
 				GDInstance *gi = static_cast<GDInstance*>(si);
 				gi->reload_members();
 			}
