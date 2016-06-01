@@ -21,17 +21,20 @@ def make_translations_header(target,source,env):
 	g.write("#ifndef _EDITOR_TRANSLATIONS_H\n")
 	g.write("#define _EDITOR_TRANSLATIONS_H\n")
 
+	import zlib
+	import os.path
+
+	paths = [node.srcnode().abspath for node in source]
+	sorted_paths = sorted(paths, key=lambda path: os.path.splitext(os.path.basename(path))[0])
+
 	xl_names=[]
-	for i in range(len(source)):
-		print("Appending translation: "+source[i].srcnode().abspath)
-		f = open(source[i].srcnode().abspath,"rb")
+	for i in range(len(sorted_paths)):
+		print("Appending translation: "+sorted_paths[i])
+		f = open(sorted_paths[i],"rb")
 		buf = f.read()
 		decomp_size = len(buf)
-		import zlib
-		import os.path
 		buf = zlib.compress(buf)
-
-		name =  os.path.splitext(os.path.basename(source[i].srcnode().abspath))[0]
+		name =  os.path.splitext(os.path.basename(sorted_paths[i]))[0]
 
 		#g.write("static const int _translation_"+name+"_compressed_size="+str(len(buf))+";\n")
 		#g.write("static const int _translation_"+name+"_uncompressed_size="+str(decomp_size)+";\n")
