@@ -3259,8 +3259,7 @@ msgstr "Источник полисетки является недействи�
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (contains no Mesh resource)."
-msgstr ""
-"Источник полисетки является недействительным (не содержит ресурс полисетки)."
+msgstr "Источник полисетки является недействительным (нет ресурса полисетки)."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "No surface source specified."
