@@ -1492,6 +1492,10 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 		while ((n && n != scene && n->get_owner() != scene) || (n && !n->is_type("CanvasItem"))) {
 			n = n->get_parent();
 		};
+
+		if(n == NULL){
+			return;
+		}
 		c = n->cast_to<CanvasItem>();
 #if 0
 		if ( b.pressed ) box_selection_start( click );

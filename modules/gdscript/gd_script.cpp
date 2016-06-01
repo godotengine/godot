@@ -394,6 +394,11 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				Object *obj_A = *a;
 				Object *obj_B = *b;
 
+				// Make sure never NULL when caling #cast_to
+				if(obj_B == NULL) {
+					err_text="Right operand of 'extends' is NULL.";
+					break;
+				}
 
 				GDScript *scr_B = obj_B->cast_to<GDScript>();
 
@@ -3105,12 +3110,12 @@ Error ResourceFormatSaverGDScript::save(const String &p_path,const RES& p_resour
 
 void ResourceFormatSaverGDScript::get_recognized_extensions(const RES& p_resource,List<String> *p_extensions) const {
 
-	if (p_resource->cast_to<GDScript>()) {
+	if (p_resource != NULL && p_resource->cast_to<GDScript>()) {
 		p_extensions->push_back("gd");
 	}
 
 }
 bool ResourceFormatSaverGDScript::recognize(const RES& p_resource) const {
 
-	return p_resource->cast_to<GDScript>()!=NULL;
+	return p_resource != NULL && p_resource->cast_to<GDScript>()!=NULL;
 }
