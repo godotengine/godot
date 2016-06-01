@@ -10552,6 +10552,40 @@ This approximation makes straight segments between each point, then subdivides t
 			<description>
 			</description>
 		</method>
+		<method name="add_fallback">
+			<argument index="0" name="data" type="DynamicFontData">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_fallback">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="data" type="DynamicFontData">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_fallback" qualifiers="const">
+			<return type="DynamicFontData">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_fallback">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_fallback_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -14403,7 +14437,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<argument index="2" name="headers" type="StringArray">
 			</argument>
-			<argument index="3" name="body" type="RawArray" default="&quot;&quot;">
+			<argument index="3" name="body" type="RawArray">
 			</argument>
 			<description>
 			</description>
@@ -30850,7 +30884,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<description>
-		    Return the current axis lock of the body. One of AXIS_LOCK_* enum.
+			Return the current axis lock of the body. One of AXIS_LOCK_* enum.
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
@@ -30912,13 +30946,13 @@ This method controls whether the position between two cached points is interpola
 	</signals>
 	<constants>
 		<constant name="MODE_STATIC" value="1">
-		Static mode. The body behaves like a [StaticBody], and can only move by user code.
+			Static mode. The body behaves like a [StaticBody], and can only move by user code.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3">
-		Kinematic body. The body behaves like a [KinematicBody], and can only move by user code.
+			Kinematic body. The body behaves like a [KinematicBody], and can only move by user code.
 		</constant>
 		<constant name="MODE_RIGID" value="0">
-		Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
+			Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
 		</constant>
 		<constant name="MODE_CHARACTER" value="2">
 		</constant>
@@ -32717,8 +32751,9 @@ This method controls whether the position between two cached points is interpola
 		<method name="reload">
 			<return type="int">
 			</return>
+			<argument index="0" name="keep_state" type="bool" default="false">
+			</argument>
 			<description>
-			Reload the script. This will fail if there are existing instances.
 			</description>
 		</method>
 	</methods>
@@ -42769,10 +42804,10 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<constants>
 		<constant name="ENABLER_FREEZE_BODIES" value="1">
-		This enabler will freeze [RigidBody] nodes.
+			This enabler will freeze [RigidBody] nodes.
 		</constant>
 		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0">
-		This enabler will pause [AnimationPlayer] nodes.
+			This enabler will pause [AnimationPlayer] nodes.
 		</constant>
 		<constant name="ENABLER_MAX" value="2">
 		</constant>
@@ -42807,21 +42842,21 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<constants>
 		<constant name="ENABLER_FREEZE_BODIES" value="1">
-		This enabler will freeze [RigidBody2D] nodes.
+			This enabler will freeze [RigidBody2D] nodes.
 		</constant>
 		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0">
-		This enabler will pause [AnimationPlayer] nodes.
+			This enabler will pause [AnimationPlayer] nodes.
 		</constant>
 		<constant name="ENABLER_PAUSE_PARTICLES" value="2">
-		This enabler will stop [Particles2D] nodes.
+			This enabler will stop [Particles2D] nodes.
 		</constant>
 		<constant name="ENABLER_PAUSE_ANIMATED_SPRITES" value="5">
 		</constant>
 		<constant name="ENABLER_PARENT_PROCESS" value="3">
-		This enabler will stop the parent's _process function.
+			This enabler will stop the parent's _process function.
 		</constant>
 		<constant name="ENABLER_PARENT_FIXED_PROCESS" value="4">
-		This enabler will stop the parent's _fixed_process function.
+			This enabler will stop the parent's _fixed_process function.
 		</constant>
 		<constant name="ENABLER_MAX" value="6">
 		</constant>
