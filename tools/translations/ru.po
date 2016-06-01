@@ -15,7 +15,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.7\n"
+"X-Generator: Poedit 1.8.8\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
@@ -549,11 +549,11 @@ msgstr "Создать"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create & Insert"
-msgstr "Анимация создать & вставить"
+msgstr "Анимация создать и вставить"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr "Анимация вставка дорожки & ключа"
+msgstr "Анимация вставка дорожки и ключа"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert Key"
@@ -990,7 +990,7 @@ msgstr "Ресурсы без явного владения:"
 
 #: tools/editor/dependency_editor.cpp tools/editor/editor_node.cpp
 msgid "Orphan Resource Explorer"
-msgstr "Обозреватель зависимостей ресурсов"
+msgstr "Обзор подключённых ресурсов"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Delete selected files?"
@@ -1079,7 +1079,7 @@ msgstr "Недавнее:"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Directories & Files:"
-msgstr "Каталоги & Файлы:"
+msgstr "Каталоги и файлы:"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Preview:"
@@ -1124,7 +1124,7 @@ msgstr "Наследует:"
 
 #: tools/editor/editor_help.cpp
 msgid "Inherited by:"
-msgstr "Унаследован им:"
+msgstr "Унаследован:"
 
 #: tools/editor/editor_help.cpp
 msgid "Brief Description:"
@@ -1132,7 +1132,7 @@ msgstr "Краткое описание:"
 
 #: tools/editor/editor_help.cpp
 msgid "Public Methods:"
-msgstr "Публичные методы:"
+msgstr "Список методов:"
 
 #: tools/editor/editor_help.cpp
 msgid "Members:"
@@ -1263,11 +1263,11 @@ msgstr "Не удалось загрузить ресурс."
 
 #: tools/editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
-msgstr "Невозможно загрузить библиотеку мэшей для слияния!"
+msgstr "Невозможно загрузить библиотеку полисеток для слияния!"
 
 #: tools/editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
-msgstr "Ошибка сохранения библиотеки мэшей!"
+msgstr "Ошибка сохранения библиотеки полисеток!"
 
 #: tools/editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
@@ -1380,7 +1380,7 @@ msgstr "Сохранить переводимые строки"
 
 #: tools/editor/editor_node.cpp
 msgid "Export Mesh Library"
-msgstr "Экспортировать библиотеку мэшей"
+msgstr "Экспортировать библиотеку полисеток"
 
 #: tools/editor/editor_node.cpp
 msgid "Export Tile Set"
@@ -1522,7 +1522,7 @@ msgstr "Переводимые строки.."
 
 #: tools/editor/editor_node.cpp
 msgid "MeshLibrary.."
-msgstr "Библиотека мэшей.."
+msgstr "Библиотека полисеток.."
 
 #: tools/editor/editor_node.cpp
 msgid "TileSet.."
@@ -1814,7 +1814,7 @@ msgstr "Текущая сцена должна быть сохранена дл�
 
 #: tools/editor/editor_reimport_dialog.cpp
 msgid "Save & Re-Import"
-msgstr "Сохранить & Переимпортировать"
+msgstr "Сохранить и переимпортировать"
 
 #: tools/editor/editor_reimport_dialog.cpp
 msgid "Re-Import Changed Resources"
@@ -1970,7 +1970,7 @@ msgstr "Шрифт"
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 msgid "No meshes to import!"
-msgstr "Нет мэша для импорта!"
+msgstr "Нет полисетки для импортирования!"
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 #: tools/editor/io_plugins/editor_sample_import_plugin.cpp
@@ -1979,11 +1979,11 @@ msgstr "Путь сохранения пуст!"
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 msgid "Single Mesh Import"
-msgstr "Импорт одиночного мэша"
+msgstr "Импорт одиночной полисетки"
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 msgid "Source Mesh(es):"
-msgstr "Исходный мэш(ы)"
+msgstr "Исходная полисетка(и)"
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 #: tools/editor/io_plugins/editor_sample_import_plugin.cpp
@@ -1995,7 +1995,7 @@ msgstr "Целевой путь:"
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 msgid "Mesh"
-msgstr "Мэш"
+msgstr "Полисетка"
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 msgid "Surface %d"
@@ -2152,7 +2152,7 @@ msgstr "Импорт в любом случае"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import & Open"
-msgstr "Импортировать & Открыть"
+msgstr "Импортировать и Открыть"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Edited scene has not been saved, open imported scene anyway?"
@@ -3109,7 +3109,7 @@ msgstr "Изменена Color Ramp"
 
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Creating Mesh Library"
-msgstr "Создание библиотеки мэшей"
+msgstr "Создание библиотеки полисеток"
 
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Thumbnail.."
@@ -3175,7 +3175,7 @@ msgstr "ПКМ: Удалить точку."
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
-msgstr "Мэш пустой!"
+msgstr "Полисетка пуста!"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -3191,19 +3191,19 @@ msgstr "Это не работает на корне сцены!"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Shape"
-msgstr "Создано вогнутая форма"
+msgstr "Создана вогнутая форма"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Convex Shape"
-msgstr "Создано выгнутая форма"
+msgstr "Создана выгнутая форма"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
-msgstr "Создан меш навигации"
+msgstr "Создать полисетку навигации"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
-msgstr "В MeshInstance нет сетки!"
+msgstr "В MeshInstance нет полисетки!"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -3215,27 +3215,27 @@ msgstr "Создать контур"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
-msgstr "Создать вогнутый Static Body"
+msgstr "Создать вогнутое статичное тело"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Convex Static Body"
-msgstr "Создать выпуклый Static Body"
+msgstr "Создать выпуклое статичное тело"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
-msgstr "Создать вогнутый Collision Sibling"
+msgstr "Создать вогнутую область столкновения"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Convex Collision Sibling"
-msgstr "Создать выпуклый Collision Sibling"
+msgstr "Создать выпуклую область столкновения"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh.."
-msgstr "Создать мэш обводки.."
+msgstr "Создать полисетку обводки.."
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh"
-msgstr "Создать мэш обводки"
+msgstr "Создать полисетку обводки"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Outline Size:"
@@ -3243,23 +3243,25 @@ msgstr "Размер обводки:"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
-msgstr "Не указан исходный мэш (и нету нода MultiMesh)."
+msgstr "Не указана исходная полисетка (и мульти полисетка не указана в ноде)."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and MultiMesh contains no Mesh)."
-msgstr "Не указан исходный мэш (и MultiMesh не содержит мэш)."
+msgstr ""
+"Не указана исходная полисетка (и мульти полисетка не содержит полисетку)."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (invalid path)."
-msgstr "Источник мэша является недействительным (неверный путь)."
+msgstr "Источник полисетки является недействительным (неверный путь)."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (not a MeshInstance)."
-msgstr "Источник мэша является недействительным (не MeshInstance)."
+msgstr "Источник полисетки является недействительным (не MeshInstance)."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (contains no Mesh resource)."
-msgstr "Источник мэша является недействительным (не содержит ресурс мэша)."
+msgstr ""
+"Источник полисетки является недействительным (не содержит ресурс полисетки)."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "No surface source specified."
@@ -3287,7 +3289,7 @@ msgstr "Не удалось отобразить область."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Source Mesh:"
-msgstr "Выберите источник мэша:"
+msgstr "Выберите источник полисетки:"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Target Surface:"
@@ -3299,7 +3301,7 @@ msgstr "Заполнить поверхность"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Populate MultiMesh"
-msgstr "Заполнить мультиМэш"
+msgstr "Заполнить мульти полисетку"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Target Surface:"
@@ -3307,7 +3309,7 @@ msgstr "Целевая поверхность:"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Source Mesh:"
-msgstr "Исходный мэш:"
+msgstr "Исходная полисетка:"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "X-Axis"
@@ -3395,7 +3397,7 @@ msgstr "Сгенерировать AABB"
 
 #: tools/editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter From Mesh"
-msgstr "Создать излучатель из мэша"
+msgstr "Создать излучатель из полисетки"
 
 #: tools/editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter From Node"
@@ -3707,11 +3709,11 @@ msgstr "Сохранить всё"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "History Prev"
-msgstr "История - назад"
+msgstr "Предыдущий файл"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "History Next"
-msgstr "История - вперёд"
+msgstr "Следующий файл"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
@@ -3798,19 +3800,19 @@ msgstr "Отладка"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Breakpoint"
-msgstr "Точка останова"
+msgstr "Точка остановки"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Remove All Breakpoints"
-msgstr "Удалить все точки останова"
+msgstr "Удалить все точки остановок"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Goto Next Breakpoint"
-msgstr "Перейти к следующей точке останова"
+msgstr "Перейти к следующей точке остановки"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Goto Previous Breakpoint"
-msgstr "Перейти к предыдущей точке останова"
+msgstr "Перейти к предыдущей точке остановки"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/script_editor_debugger.cpp
