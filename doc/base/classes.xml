@@ -205,22 +205,20 @@
 			Exponential logarithm.
 			</description>
 		</method>
-		<method name="isnan">
+		<method name="is_nan">
 			<return type="float">
 			</return>
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-			Return true if the float is not a number.
 			</description>
 		</method>
-		<method name="isinf">
+		<method name="is_inf">
 			<return type="float">
 			</return>
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-			Return true if the float is infinite.
 			</description>
 		</method>
 		<method name="ease">
@@ -2100,13 +2098,13 @@
 	</methods>
 	<members>
 		<member name="pos" type="Vector3">
-		Position (starting corner).
+			Position (starting corner).
 		</member>
 		<member name="size" type="Vector3">
-		Size from position to end.
+			Size from position to end.
 		</member>
 		<member name="end" type="Vector3">
-		Ending corner.
+			Ending corner.
 		</member>
 	</members>
 	<constants>
@@ -2232,6 +2230,34 @@
 			</return>
 			<description>
 			Get the [SpriteFrames] resource, which contains all frames.
+			</description>
+		</method>
+		<method name="set_animation">
+			<argument index="0" name="animation" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_animation" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="play">
+			<argument index="0" name="anim" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="stop">
+			<description>
+			</description>
+		</method>
+		<method name="is_playing" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="set_centered">
@@ -5208,13 +5234,13 @@
 	</methods>
 	<constants>
 		<constant name="COPY_MODE_DISABLED" value="0">
-		Disables the buffering mode. This means the BackBufferCopy node will directly use the portion of screen it covers.
+			Disables the buffering mode. This means the BackBufferCopy node will directly use the portion of screen it covers.
 		</constant>
 		<constant name="COPY_MODE_RECT" value="1">
-		Sets the copy mode to a region.
+			Sets the copy mode to a region.
 		</constant>
 		<constant name="COPY_MODE_VIEWPORT" value="2">
-		Sets the copy mode to the entire screen.
+			Sets the copy mode to the entire screen.
 		</constant>
 	</constants>
 </class>
@@ -8259,37 +8285,37 @@
 	</methods>
 	<members>
 		<member name="r" type="float">
-		Red (0 to 1)
+			Red (0 to 1)
 		</member>
 		<member name="g" type="float">
-		Green (0 to 1)
+			Green (0 to 1)
 		</member>
 		<member name="b" type="float">
-		Blue (0 to 1)
+			Blue (0 to 1)
 		</member>
 		<member name="a" type="float">
-		Alpha (0 to 1)
+			Alpha (0 to 1)
 		</member>
 		<member name="h" type="float">
-		Hue (0 to 1)
+			Hue (0 to 1)
 		</member>
 		<member name="s" type="float">
-		Saturation (0 to 1)
+			Saturation (0 to 1)
 		</member>
 		<member name="v" type="float">
-		Value (0 to 1)
+			Value (0 to 1)
 		</member>
 		<member name="r8" type="int">
-		Red (0 to 255)
+			Red (0 to 255)
 		</member>
 		<member name="g8" type="int">
-		Green (0 to 255)
+			Green (0 to 255)
 		</member>
 		<member name="b8" type="int">
-		Blue (0 to 255)
+			Blue (0 to 255)
 		</member>
 		<member name="a8" type="int">
-		Alpha (0 to 255)
+			Alpha (0 to 255)
 		</member>
 	</members>
 	<constants>
@@ -10743,6 +10769,12 @@ This approximation makes straight segments between each point, then subdivides t
 	to read the documentation, tutorials and examples.
 	</description>
 	<methods>
+		<method name="can_reimport_multiple_files" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="custom_export" qualifiers="virtual">
 			<return type="RawArray">
 			</return>
@@ -10832,6 +10864,20 @@ This approximation makes straight segments between each point, then subdivides t
 			confirmation, fill up a ResourceImportMetadata and
 			call the [EditorImportPlugin.import] function with
 			this information.
+			</description>
+		</method>
+		<method name="import_from_drop" qualifiers="virtual">
+			<argument index="0" name="files" type="StringArray">
+			</argument>
+			<argument index="1" name="dest_path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reimport_multiple_files" qualifiers="virtual">
+			<argument index="0" name="files" type="StringArray">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="validate_source_path">
@@ -11198,6 +11244,8 @@ This approximation makes straight segments between each point, then subdivides t
 		<constant name="CONTAINER_CANVAS_EDITOR_MENU" value="4">
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_SIDE" value="5">
+		</constant>
+		<constant name="CONTAINER_PROPERTY_EDITOR_BOTTOM" value="7">
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_UL" value="0">
 		</constant>
@@ -16878,6 +16926,18 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			</description>
 		</method>
+		<method name="set_same_column_width">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_same_column_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_max_text_lines">
 			<argument index="0" name="lines" type="int">
 			</argument>
@@ -16938,10 +16998,48 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			</description>
 		</method>
+		<method name="set_max_icon_size">
+			<argument index="0" name="size" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_max_icon_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_icon_scale">
+			<argument index="0" name="scale" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_icon_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_allow_rmb_select">
+			<argument index="0" name="allow" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_allow_rmb_select" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_item_at_pos" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<argument index="1" name="exact" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -16962,6 +17060,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="index" type="int">
 			</argument>
 			<argument index="1" name="selected" type="bool">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="item_rmb_selected">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="atpos" type="Vector2">
 			</argument>
 			<description>
 			</description>
@@ -17582,6 +17688,8 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	<theme_items>
 		<theme_item name="shadow_offset_x" type="int">
 		</theme_item>
+		<theme_item name="line_spacing" type="int">
+		</theme_item>
 		<theme_item name="shadow_offset_y" type="int">
 		</theme_item>
 		<theme_item name="shadow_as_outline" type="int">
@@ -18047,7 +18155,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="float">
 			</return>
 			<description>
-			Return the Exponential Shadow Multiplier (ESM) value of the Light2D. 
+			Return the Exponential Shadow Multiplier (ESM) value of the Light2D.
 			</description>
 		</method>
 		<method name="set_shadow_color">
@@ -18067,16 +18175,16 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</methods>
 	<constants>
 		<constant name="MODE_ADD" value="0">
-		Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behaviour of a light.
+			Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behaviour of a light.
 		</constant>
 		<constant name="MODE_SUB" value="1">
-		Substract the value of pixels corresponding to the Light2D to the values of pixels under it, resulting in inversed light effect.
+			Substract the value of pixels corresponding to the Light2D to the values of pixels under it, resulting in inversed light effect.
 		</constant>
 		<constant name="MODE_MIX" value="2">
-		Mix the value of pixels corresponding to the Light2D to the values of pixels under it by linear interpolation.
+			Mix the value of pixels corresponding to the Light2D to the values of pixels under it by linear interpolation.
 		</constant>
 		<constant name="MODE_MASK" value="3">
-		The light texture of the Light2D is used as a mask, hiding or revealing parts of the screen underneath depending on the value of each pixel of the light (mask) texture.
+			The light texture of the Light2D is used as a mask, hiding or revealing parts of the screen underneath depending on the value of each pixel of the light (mask) texture.
 		</constant>
 	</constants>
 </class>
@@ -18235,6 +18343,18 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			</description>
 		</method>
+		<method name="menu_option">
+			<argument index="0" name="option" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_menu" qualifiers="const">
+			<return type="PopupMenu">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="text_entered">
@@ -18260,6 +18380,20 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<constant name="ALIGN_RIGHT" value="2">
 		</constant>
 		<constant name="ALIGN_FILL" value="3">
+		</constant>
+		<constant name="MENU_CUT" value="0">
+		</constant>
+		<constant name="MENU_COPY" value="1">
+		</constant>
+		<constant name="MENU_PASTE" value="2">
+		</constant>
+		<constant name="MENU_CLEAR" value="3">
+		</constant>
+		<constant name="MENU_SELECT_ALL" value="4">
+		</constant>
+		<constant name="MENU_UNDO" value="5">
+		</constant>
+		<constant name="MENU_MAX" value="6">
 		</constant>
 	</constants>
 	<theme_items>
@@ -18389,6 +18523,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	Main loop is the abstract main loop base class. All other main loop classes are derived from it. Upon application start, a [MainLoop] has to be provided to OS, else the application will exit. This happens automatically (and a [SceneTree] is created), unless a main [Script] is supplied, which may or not create and return a [MainLoop].
 	</description>
 	<methods>
+		<method name="_drop_files" qualifiers="virtual">
+			<argument index="0" name="files" type="StringArray">
+			</argument>
+			<argument index="1" name="screen" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="_finalize" qualifiers="virtual">
 			<description>
 			</description>
@@ -18487,7 +18629,13 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	<constants>
 	</constants>
 	<theme_items>
-		<theme_item name="margin" type="int">
+		<theme_item name="margin_right" type="int">
+		</theme_item>
+		<theme_item name="margin_top" type="int">
+		</theme_item>
+		<theme_item name="margin_left" type="int">
+		</theme_item>
+		<theme_item name="margin_bottom" type="int">
 		</theme_item>
 	</theme_items>
 </class>
@@ -21381,6 +21529,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 			Returns the dimensions in pixels of the specified screen.
+			</description>
+		</method>
+		<method name="get_screen_dpi" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="screen" type="int" default="0">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_window_position" qualifiers="const">
@@ -27843,6 +27999,18 @@ This method controls whether the position between two cached points is interpola
 			Returns the polygon fill color
 			</description>
 		</method>
+		<method name="set_vertex_colors">
+			<argument index="0" name="vertex_colors" type="ColorArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_vertex_colors" qualifiers="const">
+			<return type="ColorArray">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_texture">
 			<argument index="0" name="texture" type="Object">
 			</argument>
@@ -29517,13 +29685,13 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="pos" type="Vector2">
-		Position (starting corner).
+			Position (starting corner).
 		</member>
 		<member name="size" type="Vector2">
-		Size from position to end.
+			Size from position to end.
 		</member>
 		<member name="end" type="Vector2">
-		Ending corner.
+			Ending corner.
 		</member>
 	</members>
 	<constants>
@@ -29741,13 +29909,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-			Set the path of the resource. This is useful mainly for editors when saving/loading, and shouldn't be changed by anything else.
+			Set the path of the resource. This is useful mainly for editors when saving/loading, and shouldn't be changed by anything else. Fails if another [Resource] already has path "path".
 			</description>
 		</method>
 		<method name="take_over_path">
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Set the path of the resource. Differs from set_path(), if another [Resource] exists with "path" it over-takes it, instead of failing.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">
@@ -30415,188 +30584,221 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="RigidBody" inherits="PhysicsBody" category="Core">
 	<brief_description>
+	Rigid body node.
 	</brief_description>
 	<description>
+	Rigid body node. This node is used for placing rigid bodies in the scene. It can contain a number of shapes, and also shift mode between regular Rigid body, Kinematic, Character or Static.
 	</description>
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
 			<argument index="0" name="state" type="PhysicsDirectBodyState">
 			</argument>
 			<description>
+			Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default it works in addition to the usual physics behavior, but [method set_use_custom_integrator] allows you to disable the default behavior and do fully custom force integration for a body.
 			</description>
 		</method>
 		<method name="set_mode">
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+			Set the body mode, from the MODE_* enum. This allows to change to a static body or a character body.
 			</description>
 		</method>
 		<method name="get_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the current body mode, see [method set_mode].
 			</description>
 		</method>
 		<method name="set_mass">
 			<argument index="0" name="mass" type="float">
 			</argument>
 			<description>
+			Set the body mass.
 			</description>
 		</method>
 		<method name="get_mass" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current body mass.
 			</description>
 		</method>
 		<method name="set_weight">
 			<argument index="0" name="weight" type="float">
 			</argument>
 			<description>
+			Set the body weight given standard earth-weight (gravity 9.8).
 			</description>
 		</method>
 		<method name="get_weight" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current body weight, given standard earth-weight (gravity 9.8).
 			</description>
 		</method>
 		<method name="set_friction">
 			<argument index="0" name="friction" type="float">
 			</argument>
 			<description>
+			Set the body friction, from 0 (frictionless) to 1 (max friction).
 			</description>
 		</method>
 		<method name="get_friction" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current body friction, from 0 (frictionless) to 1 (max friction).
 			</description>
 		</method>
 		<method name="set_bounce">
 			<argument index="0" name="bounce" type="float">
 			</argument>
 			<description>
+			Set the body bounciness, from 0 (no bounciness) to 1 (max bounciness).
 			</description>
 		</method>
 		<method name="get_bounce" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current body bounciness.
 			</description>
 		</method>
 		<method name="set_linear_velocity">
 			<argument index="0" name="linear_velocity" type="Vector3">
 			</argument>
 			<description>
+			Set the body linear velocity. Can be used sporadically, but [b]DON'T SET THIS IN EVERY FRAME[/b], because physics may be running in another thread and definitely runs at a different granularity. Use [method _integrate_forces] as your process loop if you want to have precise control of the body state.
 			</description>
 		</method>
 		<method name="get_linear_velocity" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+			Return the current body linear velocity.
 			</description>
 		</method>
 		<method name="set_angular_velocity">
 			<argument index="0" name="angular_velocity" type="Vector3">
 			</argument>
 			<description>
+			Set the body angular velocity. Can be used sporadically, but [b]DON'T SET THIS IN EVERY FRAME[/b], because physics may be running in another thread and definitely runs at a different granularity. Use [method _integrate_forces] as your process loop if you want to have precise control of the body state.
 			</description>
 		</method>
 		<method name="get_angular_velocity" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+			Return the current body angular velocity.
 			</description>
 		</method>
 		<method name="set_gravity_scale">
 			<argument index="0" name="gravity_scale" type="float">
 			</argument>
 			<description>
+			Set the gravity factor. This factor multiplies gravity intensity just for this body.
 			</description>
 		</method>
 		<method name="get_gravity_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current body gravity scale.
 			</description>
 		</method>
 		<method name="set_linear_damp">
 			<argument index="0" name="linear_damp" type="float">
 			</argument>
 			<description>
+			Set the linear damp for this body. Default of -1, cannot be less than -1. If this value is different from -1, any linear damp derived from the world or areas will be overridden.
 			</description>
 		</method>
 		<method name="get_linear_damp" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current body linear damp. Default is -1.
 			</description>
 		</method>
 		<method name="set_angular_damp">
 			<argument index="0" name="angular_damp" type="float">
 			</argument>
 			<description>
+			Set the angular damp for this body. Default of -1, cannot be less than -1. If this value is different from -1, any angular damp derived from the world or areas will be overridden.
 			</description>
 		</method>
 		<method name="get_angular_damp" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the current body angular damp. Default is -1.
 			</description>
 		</method>
 		<method name="set_max_contacts_reported">
 			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
+			Set the maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
 			</description>
 		</method>
 		<method name="get_max_contacts_reported" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the maximum contacts that can be reported. See [method set_max_contacts_reported].
 			</description>
 		</method>
 		<method name="set_use_custom_integrator">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Pass true to disable the internal force integration (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
 			</description>
 		</method>
 		<method name="is_using_custom_integrator">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the body is using a custom integrator.
 			</description>
 		</method>
 		<method name="set_contact_monitor">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+			Enable contact monitoring. This allows the body to emit signals when it collides with another.
 			</description>
 		</method>
 		<method name="is_contact_monitor_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether contact monitoring is enabled.
 			</description>
 		</method>
 		<method name="set_use_continuous_collision_detection">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set the continuous collision detection mode from the enum CCD_MODE_*.
+			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fast-moving objects.
 			</description>
 		</method>
 		<method name="is_using_continuous_collision_detection" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this body is using continuous collision detection.
 			</description>
 		</method>
 		<method name="set_axis_velocity">
 			<argument index="0" name="axis_velocity" type="Vector3">
 			</argument>
 			<description>
+			Set an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
 		</method>
 		<method name="apply_impulse">
@@ -30605,48 +30807,57 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="impulse" type="Vector3">
 			</argument>
 			<description>
+			Apply a positioned impulse (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once. Both the impulse and the offset from the body origin are in global coordinates.
 			</description>
 		</method>
 		<method name="set_sleeping">
 			<argument index="0" name="sleeping" type="bool">
 			</argument>
 			<description>
+			Set whether a body is sleeping or not. Sleeping bodies are not affected by forces until a collision or an [method apply_impulse] wakes them up. Until then, they behave like a static body.
 			</description>
 		</method>
 		<method name="is_sleeping" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the body is sleeping.
 			</description>
 		</method>
 		<method name="set_can_sleep">
 			<argument index="0" name="able_to_sleep" type="bool">
 			</argument>
 			<description>
+			Set the body ability to fall asleep when not moving. This saves an enormous amount of processor time when there are plenty of rigid bodies (non static) in a scene.
+			Sleeping bodies are not affected by forces until a collision or an [method apply_impulse] / [method set_applied_force] wakes them up. Until then, they behave like a static body.
 			</description>
 		</method>
 		<method name="is_able_to_sleep" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the body has the ability to fall asleep when not moving. See [method set_can_sleep].
 			</description>
 		</method>
 		<method name="set_axis_lock">
 			<argument index="0" name="axis_lock" type="int">
 			</argument>
 			<description>
+			Set the axis lock of the body, from the AXIS_LOCK_* enum. Axis lock stops the body from moving along the specified axis(X/Y/Z) and rotating along the other two axes.
 			</description>
 		</method>
 		<method name="get_axis_lock" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+		    Return the current axis lock of the body. One of AXIS_LOCK_* enum.
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
+			Return a list of the bodies colliding with this one.
 			</description>
 		</method>
 	</methods>
@@ -30655,6 +30866,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="body" type="Object">
 			</argument>
 			<description>
+			Emitted when a body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
 			</description>
 		</signal>
 		<signal name="body_enter_shape">
@@ -30667,12 +30879,15 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
+			Emitted when a body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+			This signal not only receives the body that collided with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body collided with.
 			</description>
 		</signal>
 		<signal name="body_exit">
 			<argument index="0" name="body" type="Object">
 			</argument>
 			<description>
+			Emitted when a body shape exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
 			</description>
 		</signal>
 		<signal name="body_exit_shape">
@@ -30685,19 +30900,25 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
+			Emitted when a body shape exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+			This signal not only receives the body that stopped colliding with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body stopped colliding with.
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">
 			<description>
+			Emitted when the body changes it's sleeping state. Either by sleeping or waking up.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="MODE_STATIC" value="1">
+		Static mode. The body behaves like a [StaticBody], and can only move by user code.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3">
+		Kinematic body. The body behaves like a [KinematicBody], and can only move by user code.
 		</constant>
 		<constant name="MODE_RIGID" value="0">
+		Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
 		</constant>
 		<constant name="MODE_CHARACTER" value="2">
 		</constant>
@@ -30808,7 +31029,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="gravity_scale" type="float">
 			</argument>
 			<description>
-			Set The gravity factor. This factor multiplies gravity intensity just for this body.
+			Set the gravity factor. This factor multiplies gravity intensity just for this body.
 			</description>
 		</method>
 		<method name="get_gravity_scale" qualifiers="const">
@@ -30921,7 +31142,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<description>
 			Set the continuous collision detection mode from the enum CCD_MODE_*.
-			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fat-moving objects.
+			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fast-moving objects.
 			</description>
 		</method>
 		<method name="get_continuous_collision_detection_mode" qualifiers="const">
@@ -31079,6 +31300,7 @@ This method controls whether the position between two cached points is interpola
 		</signal>
 		<signal name="sleeping_state_changed">
 			<description>
+			Emitted when the body changes it's sleeping state. Either by sleeping or waking up.
 			</description>
 		</signal>
 	</signals>
@@ -32385,12 +32607,26 @@ This method controls whether the position between two cached points is interpola
 		</method>
 	</methods>
 	<signals>
+		<signal name="node_configuration_warning_changed">
+			<argument index="0" name="node" type="Object">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="screen_resized">
 			<description>
 			</description>
 		</signal>
 		<signal name="node_removed">
 			<argument index="0" name="node" type="Object">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="files_dropped">
+			<argument index="0" name="files" type="StringArray">
+			</argument>
+			<argument index="1" name="screen" type="int">
 			</argument>
 			<description>
 			</description>
@@ -35317,49 +35553,120 @@ This method controls whether the position between two cached points is interpola
 	Sprite frame library for [AnimatedSprite].
 	</description>
 	<methods>
-		<method name="add_frame">
-			<argument index="0" name="frame" type="Object">
-			</argument>
-			<argument index="1" name="atpos" type="int" default="-1">
+		<method name="add_animation">
+			<argument index="0" name="anim" type="String">
 			</argument>
 			<description>
-			Add a frame (texture).
+			</description>
+		</method>
+		<method name="has_animation" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_animation">
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="rename_animation">
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<argument index="1" name="newname" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_animation_speed">
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<argument index="1" name="speed" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_animation_speed" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_animation_loop">
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<argument index="1" name="loop" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_animation_loop" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_frame">
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<argument index="1" name="frame" type="Object">
+			</argument>
+			<argument index="2" name="atpos" type="int" default="-1">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_frame_count" qualifiers="const">
 			<return type="int">
 			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
 			<description>
-			Return the amount of frames.
 			</description>
 		</method>
 		<method name="get_frame" qualifiers="const">
 			<return type="Object">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
 			</argument>
 			<description>
-			Return a texture (frame).
 			</description>
 		</method>
 		<method name="set_frame">
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="anim" type="String">
 			</argument>
-			<argument index="1" name="txt" type="Object">
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="txt" type="Object">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="remove_frame">
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
 			</argument>
 			<description>
-			Remove a frame
 			</description>
 		</method>
 		<method name="clear">
+			<argument index="0" name="anim" type="String">
+			</argument>
 			<description>
-			Clear the frames.
+			</description>
+		</method>
+		<method name="clear_all">
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -37606,6 +37913,18 @@ This method controls whether the position between two cached points is interpola
 			Clear all the syntax coloring information.
 			</description>
 		</method>
+		<method name="menu_option">
+			<argument index="0" name="arg0" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_menu" qualifiers="const">
+			<return type="PopupMenu">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="text_changed">
@@ -37633,6 +37952,20 @@ This method controls whether the position between two cached points is interpola
 		<constant name="SEARCH_BACKWARDS" value="4">
 			Search from end to beginning.
 		</constant>
+		<constant name="MENU_CUT" value="0">
+		</constant>
+		<constant name="MENU_COPY" value="1">
+		</constant>
+		<constant name="MENU_PASTE" value="2">
+		</constant>
+		<constant name="MENU_CLEAR" value="3">
+		</constant>
+		<constant name="MENU_SELECT_ALL" value="4">
+		</constant>
+		<constant name="MENU_UNDO" value="5">
+		</constant>
+		<constant name="MENU_MAX" value="6">
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="line_spacing" type="int">
@@ -37645,11 +37978,11 @@ This method controls whether the position between two cached points is interpola
 		</theme_item>
 		<theme_item name="symbol_color" type="Color">
 		</theme_item>
-		<theme_item name="cursor_color" type="Color">
-		</theme_item>
 		<theme_item name="selection_color" type="Color">
 		</theme_item>
 		<theme_item name="completion_existing" type="Color">
+		</theme_item>
+		<theme_item name="caret_color" type="Color">
 		</theme_item>
 		<theme_item name="breakpoint_color" type="Color">
 		</theme_item>
@@ -37953,8 +38286,30 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="set_stretch_mode">
+			<argument index="0" name="stretch_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_stretch_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
+		<constant name="STRETCH_SCALE_ON_EXPAND" value="0">
+		</constant>
+		<constant name="STRETCH_SCALE" value="1">
+		</constant>
+		<constant name="STRETCH_TILE" value="2">
+		</constant>
+		<constant name="STRETCH_KEEP" value="3">
+		</constant>
+		<constant name="STRETCH_KEEP_CENTERED" value="4">
+		</constant>
 	</constants>
 </class>
 <class name="TextureProgress" inherits="Range" category="Core">
@@ -39442,10 +39797,10 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="basis" type="Matrix3">
-		The basis contains 3 [Vector3]. X axis, Y axis, and Z axis.
+			The basis contains 3 [Vector3]. X axis, Y axis, and Z axis.
 		</member>
 		<member name="origin" type="Vector3">
-		The origin of the transform. Which is the translation offset.
+			The origin of the transform. Which is the translation offset.
 		</member>
 	</members>
 	<constants>
@@ -39766,6 +40121,30 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="set_allow_rmb_select">
+			<argument index="0" name="allow" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_allow_rmb_select" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_single_select_cell_editing_only_when_already_selected">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_single_select_cell_editing_only_when_already_selected" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="item_activated">
@@ -39795,6 +40174,18 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</signal>
 		<signal name="item_edited">
+			<description>
+			</description>
+		</signal>
+		<signal name="empty_tree_rmb_selected">
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="item_rmb_selected">
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
 			<description>
 			</description>
 		</signal>
@@ -41222,16 +41613,16 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="x" type="float">
-		X component of the vector.
+			X component of the vector.
 		</member>
 		<member name="y" type="float">
-		Y component of the vector.
+			Y component of the vector.
 		</member>
 		<member name="width" type="float">
-		Width of the vector (Same as X).
+			Width of the vector (Same as X).
 		</member>
 		<member name="height" type="float">
-		Height of the vector (Same as Y).
+			Height of the vector (Same as Y).
 		</member>
 	</members>
 	<constants>
@@ -41475,13 +41866,13 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="x" type="float">
-		X component of the vector.
+			X component of the vector.
 		</member>
 		<member name="y" type="float">
-		Y component of the vector.
+			Y component of the vector.
 		</member>
 		<member name="z" type="float">
-		Z component of the vector.
+			Z component of the vector.
 		</member>
 	</members>
 	<constants>
@@ -41613,7 +42004,7 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="get_linear_velocity" qualifiers="const">
+		<method name="get_linear_velocity">
 			<return type="Vector3">
 			</return>
 			<description>
@@ -42414,13 +42805,15 @@ This method controls whether the position between two cached points is interpola
 		<constant name="ENABLER_PAUSE_PARTICLES" value="2">
 		This enabler will stop [Particles2D] nodes.
 		</constant>
+		<constant name="ENABLER_PAUSE_ANIMATED_SPRITES" value="5">
+		</constant>
 		<constant name="ENABLER_PARENT_PROCESS" value="3">
 		This enabler will stop the parent's _process function.
 		</constant>
 		<constant name="ENABLER_PARENT_FIXED_PROCESS" value="4">
 		This enabler will stop the parent's _fixed_process function.
 		</constant>
-		<constant name="ENABLER_MAX" value="5">
+		<constant name="ENABLER_MAX" value="6">
 		</constant>
 	</constants>
 </class>
