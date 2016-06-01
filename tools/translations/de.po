@@ -8,13 +8,13 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: \n"
-"Last-Translator: \n"
+"Last-Translator: Sebastian Thewes <minzky@minzky.com>\n"
 "Language-Team: \n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.7\n"
+"X-Generator: Poedit 1.8.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: scene/2d/animated_sprite.cpp
@@ -52,6 +52,8 @@ msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
+"Damit CollisionShape funktionieren kann, muss eine Form angegeben werden. "
+"Bitte erzeuge eine shape Ressource dafür."
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -63,31 +65,41 @@ msgstr ""
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
 msgstr ""
+"Damit CollisionShape funktionieren kann, muss eine Form angegeben werden. "
+"Bitte erzeuge eine shape Ressource dafür."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
 msgstr ""
+"Damit CollisionShape funktionieren kann, muss eine Form angegeben werden. "
+"Bitte erzeuge eine shape Ressource dafür."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
+"Damit CollisionShape funktionieren kann, muss eine Form angegeben werden. "
+"Bitte erzeuge eine shape Ressource dafür."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
 msgstr ""
+"NavigationPolygonInstance muss ein Unterobjekt oder Unterunterobjekt einer "
+"Navigation2D Node sein. Es liefert nur Navigations Daten."
 
 #: scene/2d/parallax_layer.cpp
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
+"Die ParallaxLayer Node funktioniert nur als Kind von einer ParallaxBackground "
+"Node."
 
 #: scene/2d/particles_2d.cpp
 msgid "Path property must point to a valid Particles2D node to work."
-msgstr ""
+msgstr "Pfad Eigenschaft muss auf eine gültige Particles2D Node verweisen."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
@@ -102,24 +114,32 @@ msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SamplePlayer to play sound."
 msgstr ""
+"Eine SampleLibrary Ressource muss in der 'samples' Eigenschaft erzeugt oder "
+"definiert werden damit SpatialSamplePlayer einen Sound abspielen kann."
 
 #: scene/2d/sprite.cpp
 msgid ""
 "Path property must point to a valid Viewport node to work. Such Viewport must "
 "be set to 'render target' mode."
 msgstr ""
+"Die Pfad Eigenschaft muss auf eine gültige Viewport Node verweisen um zu "
+"funktionieren. Dieser Viewport muss in 'render target' Modus gesetzt werden."
 
 #: scene/2d/sprite.cpp
 msgid ""
 "The Viewport set in the path property must be set as 'render target' in order "
 "for this sprite to work."
 msgstr ""
+"Der Viewport der in der Pfad Eigenschaft gesetzt wurde, muss als 'render "
+"target' definiert werden damit das Sprite funktioniert."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
+"VisibilityEnable2D funktioniert am besten wenn es ein Unterobjekt der "
+"bearbeiteten Hauptszene ist."
 
 #: scene/3d/body_shape.cpp
 msgid ""
@@ -127,12 +147,18 @@ msgid ""
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
+"CollisionShape dient nur dazu einer dem CollisionObject abgeleiteten Node "
+"eine Kollisionsform bereit zu stellen. Bitte nutze es nur als eine "
+"Unterobjekt von Area, StaticBody, RigidBody, KinematicBody, usw. um diesen "
+"eine Form zu geben."
 
 #: scene/3d/body_shape.cpp
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it!"
 msgstr ""
+"Damit CollisionShape funktionieren kann, muss eine Form angegeben werden. "
+"Bitte erzeuge eine shape Ressource dafür."
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -140,6 +166,9 @@ msgid ""
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon liefert nur eine Kollisionsform für eine vom CollisionObject "
+"abgeleitete Node. Bitte nutze es nur als eine Unterobjekt von Area, "
+"StaticBody, RigidBody, KinematicBody, usw. um diesen eine Form zu geben."
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
@@ -148,23 +177,30 @@ msgstr ""
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
+"Damit diese Node funktionieren kann, muss eine NavigationMesh Ressource "
+"erzeugt oder definiert werden."
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. It "
 "only provides navigation data."
 msgstr ""
+"NavigationMeshinstance muss ein Unterobjekt oder Unterunterobjekt von einer "
+"Navigations Node sein. Es liefert nur navigationsdaten."
 
 #: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
 msgstr ""
+"Nur ein WorldEnvironment pro Szene oder (instanzierter Szene) ist erlaubt."
 
 #: scene/3d/spatial_sample_player.cpp
 msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SpatialSamplePlayer to play sound."
 msgstr ""
+"Eine SampleLibrary Ressource muss in der 'samples' Eigenschaft erzeugt oder "
+"definiert werden damit SpatialSamplePlayer einen Sound abspielen kann."
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Cancel"
@@ -206,7 +242,8 @@ msgstr "Einfügen"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp tools/editor/project_export.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "Select All"
 msgstr "Alles auswählen"
 
@@ -762,7 +799,8 @@ msgstr "Hinzufügen"
 
 #: tools/editor/connections_dialog.cpp tools/editor/dependency_editor.cpp
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
-#: tools/editor/plugins/theme_editor_plugin.cpp tools/editor/project_manager.cpp
+#: tools/editor/plugins/theme_editor_plugin.cpp
+#: tools/editor/project_manager.cpp
 msgid "Remove"
 msgstr "Entferne"
 
@@ -933,7 +971,8 @@ msgid "Delete selected files?"
 msgstr "Ausgewählten Dateien löschen?"
 
 #: tools/editor/dependency_editor.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/item_list_editor_plugin.cpp tools/editor/scenes_dock.cpp
+#: tools/editor/plugins/item_list_editor_plugin.cpp
+#: tools/editor/scenes_dock.cpp
 msgid "Delete"
 msgstr "Löschen"
 
@@ -3605,7 +3644,8 @@ msgstr ""
 msgid "Save Theme As.."
 msgstr ""
 
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/project_export.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "File"
 msgstr "Datei"
 
