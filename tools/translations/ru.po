@@ -2,6 +2,7 @@
 # Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 # DimOkGamer dimokgamer@gmail.com , 2016
+# Maxim toby3d Lebedev mail@toby3d.ru , 2016
 #
 #
 msgid ""
@@ -279,7 +280,7 @@ msgid ""
 "functions. Making them visible for editing is fine though, but they will hide "
 "upon running."
 msgstr ""
-"Всплывающие окна будут скрываться по умолчанию, если Вы не вызовете popup() "
+"Всплывающие окна будут скрываться по-умолчанию, если Вы не вызовете popup() "
 "или любой из popup*(). Делая их доступными для редактирования хорошая мысль, "
 "хотя они будут прятаться при запуске."
 
@@ -681,7 +682,7 @@ msgstr "Подчистить все анимации"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "Подчистить анимацию (нельзя отменить)"
+msgstr "Подчистить анимации (НЕЛЬЗЯ ОТМЕНИТЬ!)"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up"
@@ -709,7 +710,7 @@ msgstr "Вызов"
 
 #: tools/editor/call_dialog.cpp
 msgid "Method List:"
-msgstr "Список методов"
+msgstr "Список методов:"
 
 #: tools/editor/call_dialog.cpp
 msgid "Arguments:"
@@ -733,7 +734,7 @@ msgstr "Нет совпадений"
 
 #: tools/editor/code_editor.cpp
 msgid "Replaced %d Ocurrence(s)."
-msgstr "Заменено совпадений: %d."
+msgstr "Заменено %d совпадений."
 
 #: tools/editor/code_editor.cpp
 msgid "Replace"
@@ -826,7 +827,7 @@ msgstr "Удалить"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Path To Node:"
-msgstr "Путь к ноду"
+msgstr "Путь к ноду:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Method In Node:"
@@ -867,7 +868,7 @@ msgstr "Отсоединить"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Edit Connections.."
-msgstr "Изменить связи"
+msgstr "Изменить связи.."
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connections:"
@@ -904,7 +905,7 @@ msgid ""
 "Changes will take effect when reloaded."
 msgstr ""
 "Ресурсу '% s' используется.\n"
-"Изменения вступят в силу после  перезагрузке."
+"Изменения вступят в силу после перезагрузки."
 
 #: tools/editor/dependency_editor.cpp
 msgid "Dependencies"
@@ -950,7 +951,7 @@ msgstr ""
 
 #: tools/editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (no undo)"
-msgstr "Удалить выбранный файл из проекта? (нельзя отменить!)"
+msgstr "Удалить выбранный файл из проекта? (нельзя отменить)"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -966,7 +967,7 @@ msgstr "Всё равно открыть"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Which action should be taken?"
-msgstr "Какое действие следует выполнить"
+msgstr "Какое действие следует выполнить?"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Fix Dependencies"
@@ -978,7 +979,7 @@ msgstr "Ошибки загрузки!"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "Навсегда удалить %d элемент(ов)? (нельзя отменить!)"
+msgstr "Навсегда удалить %d элемент(ов)? (Нельзя отменить!)"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Owns"
@@ -1037,7 +1038,7 @@ msgstr "Выбрать"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "File Exists, Overwrite?"
-msgstr "Файл существует. Перезаписать?"
+msgstr "Файл существует, перезаписать?"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "All Recognized"
@@ -1224,7 +1225,7 @@ msgstr "Сохранить ресурс как.."
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "I see.."
-msgstr "Я понял"
+msgstr "Понимаю.."
 
 #: tools/editor/editor_node.cpp
 msgid "Can't open file for writing:"
@@ -1291,7 +1292,7 @@ msgstr "Ошибка при попытке сохранить макет!"
 
 #: tools/editor/editor_node.cpp
 msgid "Default editor layout overridden."
-msgstr "Переопределить макет по умолчанию."
+msgstr "Переопределить макет по-умолчанию."
 
 #: tools/editor/editor_node.cpp
 msgid "Layout name not found!"
@@ -1299,7 +1300,7 @@ msgstr "Название макета не найдено!"
 
 #: tools/editor/editor_node.cpp
 msgid "Restored default layout to base settings."
-msgstr "Вернуть макет по умолчанию к стандартному."
+msgstr "Вернуть макет по-умолчанию к стандартному."
 
 #: tools/editor/editor_node.cpp
 msgid "Copy Params"
@@ -1424,7 +1425,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
-msgstr "Нууу блин((("
+msgstr "Тьфу"
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -1453,7 +1454,7 @@ msgstr "Удалить макет"
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Default"
-msgstr "По умолчанию"
+msgstr "По-умолчанию"
 
 #: tools/editor/editor_node.cpp
 msgid "Switch Scene Tab"
@@ -1486,7 +1487,7 @@ msgstr "Новая сцена"
 
 #: tools/editor/editor_node.cpp
 msgid "New Inherited Scene.."
-msgstr "Новая унаследованная Сцена"
+msgstr "Новая унаследованная Сцена.."
 
 #: tools/editor/editor_node.cpp
 msgid "Open Scene.."
@@ -1802,7 +1803,7 @@ msgstr "Сущность"
 
 #: tools/editor/editor_profiler.cpp
 msgid "Frame #:"
-msgstr "Кадр:"
+msgstr "Кадр #:"
 
 #: tools/editor/editor_reimport_dialog.cpp
 msgid "Please wait for scan to complete."
@@ -1846,7 +1847,7 @@ msgstr "Быть может вы забыли метод _run()?"
 
 #: tools/editor/editor_settings.cpp
 msgid "Default (Same as Editor)"
-msgstr "По умолчанию (как редактор)"
+msgstr "По-умолчанию (как редактор)"
 
 #: tools/editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -1858,7 +1859,7 @@ msgstr "Путь к сцене:"
 
 #: tools/editor/editor_sub_scene.cpp
 msgid "Import From Node:"
-msgstr "Импортировать из нода"
+msgstr "Импортировать из нода:"
 
 #: tools/editor/file_type_cache.cpp
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
@@ -1983,7 +1984,7 @@ msgstr "Импорт одиночного мэша"
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 msgid "Source Mesh(es):"
-msgstr "Исходный мэш(ы)"
+msgstr "Исходный мэш(ы):"
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 #: tools/editor/io_plugins/editor_sample_import_plugin.cpp
@@ -2029,7 +2030,7 @@ msgstr "Импорт аудио сэмплов"
 
 #: tools/editor/io_plugins/editor_sample_import_plugin.cpp
 msgid "Source Sample(s):"
-msgstr "Исходный сэмпл (ы)"
+msgstr "Исходный сэмпл(ы):"
 
 #: tools/editor/io_plugins/editor_sample_import_plugin.cpp
 msgid "Audio Sample"
@@ -2663,7 +2664,7 @@ msgstr "Величина:"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend:"
-msgstr "Смешивание"
+msgstr "Смешивание:"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend 0:"
@@ -3017,7 +3018,7 @@ msgstr "Сбросить масштаб"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom Set.."
-msgstr "Установить масштаб"
+msgstr "Установить масштаб.."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -3267,15 +3268,15 @@ msgstr "Поверхность источника не определена."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (invalid path)."
-msgstr "Поверхность источника недопустима (неверный путь)"
+msgstr "Поверхность источника недопустима (неверный путь)."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (no geometry)."
-msgstr "Поверхность источника недопустима (нет геометрии)"
+msgstr "Поверхность источника недопустима (нет геометрии)."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (no faces)."
-msgstr "Поверхность источника недопустима (нет граней)"
+msgstr "Поверхность источника недопустима (нет граней)."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Parent has no solid faces to populate."
@@ -3745,7 +3746,7 @@ msgstr "Добавить отступ"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Comment"
-msgstr "Вкл/Выкл комментарий"
+msgstr "Переключить комментарий"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Clone Down"
@@ -3781,7 +3782,7 @@ msgstr "Найти предыдущее"
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Replace.."
-msgstr "Заменить"
+msgstr "Заменить.."
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Goto Function.."
@@ -4067,19 +4068,19 @@ msgstr "Вид преобразования плоскости."
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "X-Axis Transform."
-msgstr "Преобразование по X"
+msgstr "Преобразование по X."
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Y-Axis Transform."
-msgstr "Преобразование по Y"
+msgstr "Преобразование по Y."
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Z-Axis Transform."
-msgstr "Преобразование по Z"
+msgstr "Преобразование по Z."
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling to %s%%."
-msgstr "Масштабирование до %s%%"
+msgstr "Масштабирование до %s%%."
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
@@ -4227,7 +4228,7 @@ msgstr "Локальные координаты"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog.."
-msgstr "Окно преоброзования"
+msgstr "Окно преобразования.."
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Default Light"
@@ -4331,7 +4332,7 @@ msgstr "Изменение преобразования"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate:"
-msgstr "Преоброзования:"
+msgstr "Преобразования:"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate (deg.):"
@@ -4339,11 +4340,11 @@ msgstr "Поворот (градусы):"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale (ratio):"
-msgstr "Масштаб (соотношение)"
+msgstr "Масштаб (соотношение):"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Type"
-msgstr "Тип преоброзования"
+msgstr "Тип преобразования"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Pre"
@@ -4500,7 +4501,7 @@ msgstr "Вкладка 2"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 3"
-msgstr "Вкладка "
+msgstr "Вкладка 3"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 #: tools/editor/project_settings.cpp tools/editor/scene_tree_editor.cpp
@@ -4587,7 +4588,7 @@ msgstr "Невозможно найти тайл:"
 
 #: tools/editor/plugins/tile_set_editor_plugin.cpp
 msgid "Item name or ID:"
-msgstr "ID или имя элемента"
+msgstr "ID или имя элемента:"
 
 #: tools/editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from scene?"
@@ -4628,7 +4629,7 @@ msgstr "Ошибка записи PCK файла!"
 
 #: tools/editor/project_export.cpp
 msgid "No exporter for platform '%s' yet."
-msgstr "Данная платформа '%s' пока не поддерживается."
+msgstr "Платформа '%s' пока не поддерживается."
 
 #: tools/editor/project_export.cpp
 msgid "Include"
@@ -4684,15 +4685,15 @@ msgstr "Экспортировать выбранные ресурсы (вклю
 
 #: tools/editor/project_export.cpp
 msgid "Export all resources in the project."
-msgstr "Экспортировать все ресурсы проекта"
+msgstr "Экспортировать все ресурсы проекта."
 
 #: tools/editor/project_export.cpp
 msgid "Export all files in the project directory."
-msgstr "Экспортировать все файлы в папке проекта"
+msgstr "Экспортировать все файлы в папке проекта."
 
 #: tools/editor/project_export.cpp
 msgid "Export Mode:"
-msgstr "Режим экспортирования"
+msgstr "Режим экспортирования:"
 
 #: tools/editor/project_export.cpp
 msgid "Resources to Export:"
@@ -4727,7 +4728,7 @@ msgstr "Оставить исходными"
 
 #: tools/editor/project_export.cpp
 msgid "Compress for Disk (Lossy, WebP)"
-msgstr "Сжать для Диска (с потерями, WebP)"
+msgstr "Сжать для диска (с потерями, WebP)"
 
 #: tools/editor/project_export.cpp
 msgid "Compress for RAM (BC/PVRTC/ETC)"
@@ -4739,7 +4740,7 @@ msgstr "Преобразовать изображения (*.png):"
 
 #: tools/editor/project_export.cpp
 msgid "Compress for Disk (Lossy) Quality:"
-msgstr "Сжать для Диска (с потерями) - Качество:"
+msgstr "Сжать для диска (с потерями) Качество:"
 
 #: tools/editor/project_export.cpp
 msgid "Shrink All Images:"
@@ -4755,7 +4756,7 @@ msgstr "Группы изображений"
 
 #: tools/editor/project_export.cpp
 msgid "Groups:"
-msgstr "Группы"
+msgstr "Группы:"
 
 #: tools/editor/project_export.cpp
 msgid "Compress Disk"
@@ -4803,7 +4804,7 @@ msgstr "Сэмплы"
 
 #: tools/editor/project_export.cpp
 msgid "Sample Conversion Mode: (.wav files):"
-msgstr "Режим преобразования сэмплов ( .wav файлы)"
+msgstr "Режим преобразования сэмплов (файлы .wav)"
 
 #: tools/editor/project_export.cpp
 msgid "Keep"
@@ -5055,7 +5056,7 @@ msgstr "Кнопка 9"
 
 #: tools/editor/project_settings.cpp
 msgid "Joystick Axis Index:"
-msgstr "Индекс оси джойстика"
+msgstr "Индекс оси джойстика:"
 
 #: tools/editor/project_settings.cpp
 msgid "Axis"
@@ -5063,7 +5064,7 @@ msgstr "Ось"
 
 #: tools/editor/project_settings.cpp
 msgid "Joystick Button Index:"
-msgstr "Индекс кнопки джойстика"
+msgstr "Индекс кнопки джойстика:"
 
 #: tools/editor/project_settings.cpp
 msgid "Add Input Action"
@@ -5075,7 +5076,7 @@ msgstr "Удалить действие"
 
 #: tools/editor/project_settings.cpp
 msgid "Device"
-msgstr "Устройство:"
+msgstr "Устройство"
 
 #: tools/editor/project_settings.cpp
 msgid "Button"
@@ -5123,7 +5124,7 @@ msgstr "Переключена автозагрузка глобальных с�
 
 #: tools/editor/project_settings.cpp
 msgid "Invalid name."
-msgstr "Недопустимое имя"
+msgstr "Недопустимое имя."
 
 #: tools/editor/project_settings.cpp
 msgid "Valid characters:"
@@ -5312,7 +5313,7 @@ msgstr "Назначить"
 
 #: tools/editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
-msgstr "Ошибка загрузки файла: не ресурс!"
+msgstr "Ошибка загрузки файла: Это не ресурс!"
 
 #: tools/editor/property_editor.cpp
 msgid "Couldn't load image"
@@ -5362,7 +5363,7 @@ msgstr "Новое место (выберите нового Родителя):"
 
 #: tools/editor/reparent_dialog.cpp
 msgid "Keep Global Transform"
-msgstr "Сохранить Глобальные Преоброзования"
+msgstr "Сохранить Глобальные Преобразования"
 
 #: tools/editor/reparent_dialog.cpp tools/editor/scene_tree_dock.cpp
 msgid "Reparent"
@@ -5434,7 +5435,7 @@ msgid ""
 "its nodes."
 msgstr ""
 "Невозможно добавить сцену %s, потому что текущая сцена существует в одном из "
-"его Нодов."
+"его нодов."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Instance Scene(s)"
@@ -5487,7 +5488,7 @@ msgstr "Не могу работать с нодами из внешней сц�
 #: tools/editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes the current scene inherits from!"
 msgstr ""
-"Не могу работать с нодами текущей сцены, наследуемой откуда то!\n"
+"Не могу работать с нодами текущей сцены, наследуемой откуда-то!\n"
 "Очистите наследование, чтобы продолжить работу с ними."
 
 #: tools/editor/scene_tree_dock.cpp
@@ -5620,7 +5621,7 @@ msgstr "Очистить наследование"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Clear Inheritance? (No Undo!)"
-msgstr "Очистить наследование?? (нельзя отменить)"
+msgstr "Очистить наследование? (Нельзя отменить!)"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Clear!"
@@ -5632,11 +5633,11 @@ msgstr "Выберете нод"
 
 #: tools/editor/scenes_dock.cpp
 msgid "Same source and destination files, doing nothing."
-msgstr "Файл назначения и исходный файлы совпадают. Ничего не делать."
+msgstr "Файл назначения и исходный файлы совпадают, нечего делать."
 
 #: tools/editor/scenes_dock.cpp
 msgid "Same source and destination paths, doing nothing."
-msgstr "Путь назначения и исходный пути совпадают. Ничего не делать."
+msgstr "Путь назначения и исходный пути совпадают, нечего делать."
 
 #: tools/editor/scenes_dock.cpp
 msgid "Can't move directories to within themselves."
@@ -5652,7 +5653,7 @@ msgstr "Выберете новое имя и расположение для:"
 
 #: tools/editor/scenes_dock.cpp
 msgid "No files selected!"
-msgstr "Файлы не выбраны:"
+msgstr "Файлы не выбраны!"
 
 #: tools/editor/scenes_dock.cpp
 msgid "Instance"
@@ -5716,7 +5717,7 @@ msgstr "Допустимые символы:"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Invalid class name"
-msgstr "Недопустимое имя класса:"
+msgstr "Недопустимое имя класса"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Valid name"
@@ -5946,13 +5947,13 @@ msgstr "Изменены границы уведомителя"
 #~ msgstr "Перезаписать существующую сцену"
 
 #~ msgid "Overwrite Existing, Keep Materials"
-#~ msgstr "Перезаписать существующую сцену с сохранением материалов"
+#~ msgstr "Перезаписать существующую, сохранить материалы"
 
 #~ msgid "Keep Existing, Merge with New"
-#~ msgstr "Сохранить существующую сцену и объединить с новой"
+#~ msgstr "Сохранить существующую, объединить с новой"
 
 #~ msgid "Keep Existing, Ignore New"
-#~ msgstr "Сохранить существующую и игнорировать новую"
+#~ msgstr "Сохранить существующую, игнорировать новую"
 
 #~ msgid "This Time:"
 #~ msgstr "В этот раз:"
