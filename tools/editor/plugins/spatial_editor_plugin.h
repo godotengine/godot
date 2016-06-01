@@ -372,7 +372,9 @@ private:
 		MENU_TOOL_ROTATE,
 		MENU_TOOL_SCALE,
 		MENU_TOOL_LIST_SELECT,
-		MENU_TRANSFORM_USE_SNAP,
+		MENU_TRANSFORM_SNAP_TRANSLATION,
+		MENU_TRANSFORM_SNAP_ROTATION,
+   		     MENU_TRANSFORM_SNAP_SCALING,
 		MENU_TRANSFORM_CONFIGURE_SNAP,
 		MENU_TRANSFORM_LOCAL_COORDS,
 		MENU_TRANSFORM_DIALOG,
@@ -392,21 +394,74 @@ private:
 		MENU_VIEW_GRID,
 		MENU_VIEW_CAMERA_SETTINGS,
 
+		MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_0,
+		MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_1,
+		MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_2,
+		MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_3,
+		MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_4,
+		MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_5,
+		MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_6,
+		MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_7,
+		MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_8,
+		MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_9,
+		MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_10,
+
+		MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_0,
+		MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_1,
+		MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_2,
+		MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_3,
+		MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_4,
+		MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_5,
+		MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_6,
+		MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_7,
+		MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_8,
+		MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_9,
+		MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_10,
+		MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_11,
+		MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_12,
+		MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_13,
+		MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_14,
+
+		MENU_BUTTON_SNAP_SCALING_MENU_ITEM_0,
+		MENU_BUTTON_SNAP_SCALING_MENU_ITEM_1,
+		MENU_BUTTON_SNAP_SCALING_MENU_ITEM_2,
+		MENU_BUTTON_SNAP_SCALING_MENU_ITEM_3,
+		MENU_BUTTON_SNAP_SCALING_MENU_ITEM_4,
+		MENU_BUTTON_SNAP_SCALING_MENU_ITEM_5,
+		MENU_BUTTON_SNAP_SCALING_MENU_ITEM_6,
+		MENU_BUTTON_SNAP_SCALING_MENU_ITEM_7,
+		MENU_BUTTON_SNAP_SCALING_MENU_ITEM_8,
+		MENU_BUTTON_SNAP_SCALING_MENU_ITEM_9,
+
+		BUTTON_GLOBAL_LOCAL_COORDS_TOGGLE,
+		BUTTON_SNAP_TRANSLATION_TOGGLE,
+		BUTTON_SNAP_ROTATION_TOGGLE,
+		BUTTON_SNAP_SCALE_TOGGLE
 	};
 
 
 	Button *tool_button[TOOL_MAX];
 	Button *instance_button;
 
+	Button * coords_toggle_button;
+	Button * snap_translation_toggle_button;
+	Button * snap_rotation_toggle_button;
+	Button * snap_scaling_toggle_button;
 
 	MenuButton* transform_menu;
 	MenuButton* view_menu;
+
+	MenuButton *snap_translation_menu;
+	MenuButton *snap_rotation_menu;
+	MenuButton *snap_scaling_menu;
 
 	ConfirmationDialog *snap_dialog;
 	ConfirmationDialog *xform_dialog;
 	ConfirmationDialog *settings_dialog;
 
-	bool snap_enabled;
+	bool snap_translation_enabled;
+	bool snap_rotation_enabled;
+	bool snap_scaling_enabled;
 	LineEdit *snap_translate;
 	LineEdit *snap_rotate;
 	LineEdit *snap_scale;
@@ -432,16 +487,15 @@ private:
 	ColorPickerButton *settings_ambient_color;
 	Image settings_light_dir_image;
 
-
+	void _snap_dialog_action();
 	void _xform_dialog_action();
 	void _menu_item_pressed(int p_option);
+	void _update_snap_settings(int p_option);
 
-	HBoxContainer *hbc_menu;
+	HBoxContainer *hbc_menu_main;
+	HBoxContainer *hbc_menu_left;
+	HBoxContainer *hbc_menu_right;
 
-
-
-//
-//
 	void _generate_selection_box();
 	UndoRedo *undo_redo;
 
@@ -495,7 +549,9 @@ public:
 	bool is_gizmo_visible() const { return gizmo.visible; }
 
 	ToolMode get_tool_mode() const { return tool_mode; }
-	bool is_snap_enabled() const { return snap_enabled; }
+	bool is_snap_translation_enabled() const { return snap_translation_enabled; }
+	bool is_snap_rotation_enabled() const { return snap_rotation_enabled; }
+	bool is_snap_scaling_enabled() const { return snap_scaling_enabled; }
 	float get_translate_snap() const { return snap_translate->get_text().to_double(); }
 	float get_rotate_snap() const { return snap_rotate->get_text().to_double(); }
 	float get_scale_snap() const { return snap_scale->get_text().to_double(); }
