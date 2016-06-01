@@ -770,7 +770,7 @@ Size2 Control::get_minimum_size() const {
 
 Ref<Texture> Control::get_icon(const StringName& p_name,const StringName& p_type) const {
 
-	if (p_type==StringName()) {
+	if (p_type==StringName() || p_type=="") {
 
 		const Ref<Texture>* tex = data.icon_override.getptr(p_name);
 		if (tex)
@@ -800,7 +800,7 @@ Ref<Texture> Control::get_icon(const StringName& p_name,const StringName& p_type
 }
 
 Ref<Shader> Control::get_shader(const StringName& p_name,const StringName& p_type) const {
-	if (p_type==StringName()) {
+	if (p_type==StringName() || p_type=="") {
 
 		const Ref<Shader>* sdr = data.shader_override.getptr(p_name);
 		if (sdr)
@@ -830,7 +830,7 @@ Ref<Shader> Control::get_shader(const StringName& p_name,const StringName& p_typ
 
 Ref<StyleBox> Control::get_stylebox(const StringName& p_name,const StringName& p_type) const {
 
-	if (p_type==StringName()) {
+	if (p_type==StringName() || p_type=="") {
 		const Ref<StyleBox>* style = data.style_override.getptr(p_name);
 		if (style)
 			return *style;
@@ -858,7 +858,7 @@ Ref<StyleBox> Control::get_stylebox(const StringName& p_name,const StringName& p
 }
 Ref<Font> Control::get_font(const StringName& p_name,const StringName& p_type) const {
 
-	if (p_type==StringName()) {
+	if (p_type==StringName() || p_type=="") {
 		const Ref<Font>* font = data.font_override.getptr(p_name);
 		if (font)
 			return *font;
@@ -889,7 +889,7 @@ Ref<Font> Control::get_font(const StringName& p_name,const StringName& p_type) c
 }
 Color Control::get_color(const StringName& p_name,const StringName& p_type) const {
 
-	if (p_type==StringName()) {
+	if (p_type==StringName() || p_type=="") {
 		const Color* color = data.color_override.getptr(p_name);
 		if (color)
 			return *color;
@@ -918,7 +918,7 @@ Color Control::get_color(const StringName& p_name,const StringName& p_type) cons
 
 int Control::get_constant(const StringName& p_name,const StringName& p_type) const {
 
-	if (p_type==StringName()) {
+	if (p_type==StringName() || p_type=="") {
 		const int* constant = data.constant_override.getptr(p_name);
 		if (constant)
 			return *constant;
@@ -946,12 +946,64 @@ int Control::get_constant(const StringName& p_name,const StringName& p_type) con
 
 }
 
+bool Control::has_icon_override(const StringName& p_name) const {
+
+	const Ref<Texture>* tex = data.icon_override.getptr(p_name);
+	if (tex)
+		return true;
+	else
+		return false;
+}
+
+bool Control::has_shader_override(const StringName &p_name) const {
+
+	const Ref<Shader>* sdr = data.shader_override.getptr(p_name);
+	if (sdr)
+		return true;
+	else
+		return false;
+}
+
+bool Control::has_stylebox_override(const StringName& p_name) const {
+
+	const Ref<StyleBox>* style = data.style_override.getptr(p_name);
+	if (style)
+		return true;
+	else
+		return false;
+}
+
+bool Control::has_font_override(const StringName& p_name) const {
+
+	const Ref<Font>* font = data.font_override.getptr(p_name);
+	if (font)
+		return true;
+	else
+		return false;
+}
+
+bool Control::has_color_override(const StringName& p_name) const {
+
+	const Color* color = data.color_override.getptr(p_name);
+	if (color)
+		return true;
+	else
+		return false;
+}
+
+bool Control::has_constant_override(const StringName& p_name) const {
+
+	const int* constant = data.constant_override.getptr(p_name);
+	if (constant)
+		return true;
+	else
+		return false;
+}
 
 bool Control::has_icon(const StringName& p_name,const StringName& p_type) const {
 
-	if (p_type==StringName()) {
-		const Ref<Texture>* tex = data.icon_override.getptr(p_name);
-		if (tex)
+	if (p_type==StringName() || p_type=="") {
+		if (has_icon_override(p_name) == true)
 			return true;
 	}
 
@@ -977,11 +1029,10 @@ bool Control::has_icon(const StringName& p_name,const StringName& p_type) const 
 
 }
 
-bool Control::has_shader(const StringName &p_name, const StringName &p_type) const
-{
-	if (p_type==StringName()) {
-		const Ref<Shader>* sdr = data.shader_override.getptr(p_name);
-		if (sdr)
+bool Control::has_shader(const StringName &p_name, const StringName &p_type) const {
+
+	if (p_type==StringName() || p_type=="") {
+		if (has_shader_override(p_name)==true)
 			return true;
 	}
 
@@ -1008,10 +1059,8 @@ bool Control::has_shader(const StringName &p_name, const StringName &p_type) con
 }
 bool Control::has_stylebox(const StringName& p_name,const StringName& p_type) const {
 
-	if (p_type==StringName()) {
-		const Ref<StyleBox>* style = data.style_override.getptr(p_name);
-
-		if (style)
+	if (p_type==StringName() || p_type=="") {
+		if (has_stylebox_override(p_name)==true)
 			return true;
 	}
 
@@ -1038,9 +1087,8 @@ bool Control::has_stylebox(const StringName& p_name,const StringName& p_type) co
 }
 bool Control::has_font(const StringName& p_name,const StringName& p_type) const {
 
-	if (p_type==StringName()) {
-		const Ref<Font>* font = data.font_override.getptr(p_name);
-		if (font)
+	if (p_type==StringName() || p_type=="") {
+		if (has_font_override(p_name)==true)
 			return true;
 	}
 
@@ -1066,11 +1114,11 @@ bool Control::has_font(const StringName& p_name,const StringName& p_type) const 
 	return Theme::get_default()->has_font( p_name, type );
 
 }
-bool Control::has_color(const StringName& p_name,const StringName& p_type) const {
 
-	if (p_type==StringName()) {
-		const Color* color = data.color_override.getptr(p_name);
-		if (color)
+bool Control::has_color(const StringName& p_name, const StringName& p_type) const {
+
+	if (p_type==StringName() || p_type=="") {
+		if (has_color_override(p_name)==true)
 			return true;
 	}
 
@@ -1098,10 +1146,8 @@ bool Control::has_color(const StringName& p_name,const StringName& p_type) const
 
 bool Control::has_constant(const StringName& p_name,const StringName& p_type) const {
 
-	if (p_type==StringName()) {
-
-		const int* constant = data.constant_override.getptr(p_name);
-		if (constant)
+	if (p_type==StringName() || p_type=="") {
+		if (has_constant_override(p_name) == true)
 			return true;
 	}
 
@@ -2296,6 +2342,17 @@ void Control::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_color","name","type"),&Control::get_color,DEFVAL(""));
 	ObjectTypeDB::bind_method(_MD("get_constant","name","type"),&Control::get_constant,DEFVAL(""));
 
+	ObjectTypeDB::bind_method(_MD("has_icon_override", "name"), &Control::has_icon_override);
+	ObjectTypeDB::bind_method(_MD("has_stylebox_override", "name"), &Control::has_stylebox_override);
+	ObjectTypeDB::bind_method(_MD("has_font_override", "name"), &Control::has_font_override);
+	ObjectTypeDB::bind_method(_MD("has_color_override", "name"), &Control::has_color_override);
+	ObjectTypeDB::bind_method(_MD("has_constant_override", "name"), &Control::has_constant_override);
+
+	ObjectTypeDB::bind_method(_MD("has_icon", "name", "type"), &Control::has_icon, DEFVAL(""));
+	ObjectTypeDB::bind_method(_MD("has_stylebox", "name", "type"), &Control::has_stylebox, DEFVAL(""));
+	ObjectTypeDB::bind_method(_MD("has_font", "name", "type"), &Control::has_font, DEFVAL(""));
+	ObjectTypeDB::bind_method(_MD("has_color", "name", "type"), &Control::has_color, DEFVAL(""));
+	ObjectTypeDB::bind_method(_MD("has_constant", "name", "type"), &Control::has_constant, DEFVAL(""));
 
 	ObjectTypeDB::bind_method(_MD("get_parent_control:Control"),&Control::get_parent_control);
 
@@ -2325,6 +2382,7 @@ void Control::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("warp_mouse","to_pos"),&Control::warp_mouse);
 
+	ObjectTypeDB::bind_method(_MD("minimum_size_changed"), &Control::minimum_size_changed);
 
 	BIND_VMETHOD(MethodInfo("_input_event",PropertyInfo(Variant::INPUT_EVENT,"event")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2,"get_minimum_size"));

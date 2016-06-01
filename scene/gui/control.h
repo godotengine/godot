@@ -341,6 +341,13 @@ public:
 	Color get_color(const StringName& p_name,const StringName& p_type=StringName()) const;
 	int get_constant(const StringName& p_name,const StringName& p_type=StringName()) const;
 
+	bool has_icon_override(const StringName& p_name) const;
+	bool has_shader_override(const StringName& p_name) const;
+	bool has_stylebox_override(const StringName& p_name) const;
+	bool has_font_override(const StringName& p_name) const;
+	bool has_color_override(const StringName& p_name) const;
+	bool has_constant_override(const StringName& p_name) const;
+
 	bool has_icon(const StringName& p_name,const StringName& p_type=StringName()) const;
 	bool has_shader(const StringName& p_name,const StringName& p_type=StringName()) const;
 	bool has_stylebox(const StringName& p_name,const StringName& p_type=StringName()) const;
