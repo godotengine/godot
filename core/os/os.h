@@ -319,6 +319,7 @@ public:
 
 	virtual String get_locale() const;
 
+	String get_safe_application_name() const;
 	virtual String get_data_dir() const;
 	virtual String get_resource_dir() const;
 
