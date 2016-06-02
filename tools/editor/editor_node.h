@@ -238,6 +238,7 @@ private:
 
 	//HSplitContainer *editor_hsplit;
 	//VSplitContainer *editor_vsplit;
+	CenterContainer *play_cc;
 	HBoxContainer *menu_hb;
 	Control *viewport;
 	MenuButton *file_menu;
@@ -351,6 +352,8 @@ private:
 	ToolButton *dock_tab_move_right;
 	int dock_popup_selected;
 	Timer *dock_drag_timer;
+	bool docks_visible;
+	bool distraction_free_mode;
 
 	String _tmp_import_path;
 
@@ -557,7 +560,7 @@ private:
 	void _save_docks_to_config(Ref<ConfigFile> p_layout, const String& p_section);
 	void _load_docks_from_config(Ref<ConfigFile> p_layout, const String& p_section);
 	void _update_dock_slots_visibility();
-
+	void _update_top_menu_visibility();
 
 	void _update_layouts_menu();
 	void _layout_menu_option(int p_idx);
@@ -594,6 +597,11 @@ public:
 	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE,false); }
 
 
+	void set_docks_visible(bool p_show);
+	bool get_docks_visible() const;
+
+	void set_distraction_free_mode(bool p_enter);
+	bool get_distraction_free_mode() const;
 
 	void add_control_to_dock(DockSlot p_slot,Control* p_control);
 	void remove_control_from_dock(Control* p_control);
