@@ -36,6 +36,7 @@
 #if 1
 
 #include "os/keyboard.h"
+#include "editor_help.h"
 
 
 void CreateDialog::popup(bool p_dontclear) {
@@ -106,6 +107,9 @@ void CreateDialog::add_type(const String& p_type,HashMap<String,TreeItem*>& p_ty
 		}
 
 	}
+
+	const String& description = EditorHelp::get_doc_data()->class_list[p_type].brief_description;
+	item->set_tooltip(0,description);
 
 
 	if (has_icon(p_type,"EditorIcons")) {
