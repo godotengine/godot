@@ -1810,6 +1810,7 @@ void Control::_propagate_theme_changed(Control *p_owner) {
 
 void Control::set_theme(const Ref<Theme>& p_theme) {
 
+
 	data.theme=p_theme;
 	if (!p_theme.is_null()) {
 

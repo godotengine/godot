@@ -144,7 +144,7 @@ class GDCompiler {
 	int _parse_expression(CodeGen& codegen,const GDParser::Node *p_expression, int p_stack_level,bool p_root=false,bool p_initializer=false);
 	Error _parse_block(CodeGen& codegen,const GDParser::BlockNode *p_block,int p_stack_level=0,int p_break_addr=-1,int p_continue_addr=-1);
 	Error _parse_function(GDScript *p_script,const GDParser::ClassNode *p_class,const GDParser::FunctionNode *p_func,bool p_for_ready=false);
-	Error _parse_class(GDScript *p_script,GDScript *p_owner,const GDParser::ClassNode *p_class);
+	Error _parse_class(GDScript *p_script,GDScript *p_owner,const GDParser::ClassNode *p_class,bool p_keep_state);
 	int err_line;
 	int err_column;
 	StringName source;
@@ -152,7 +152,7 @@ class GDCompiler {
 
 public:
 
-	Error compile(const GDParser *p_parser,GDScript *p_script);
+	Error compile(const GDParser *p_parser, GDScript *p_script, bool p_keep_state=false);
 
 	String get_error() const;
 	int get_error_line() const;

@@ -889,7 +889,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 
 
-			Ref<EditorTextureImportPlugin> plugin = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture_atlas");
+			Ref<EditorTextureImportPlugin> plugin = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture");
 			Error err = plugin->import2(dst_file,imd,get_image_compression(),true);
 			if (err) {
 

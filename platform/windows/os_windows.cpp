@@ -57,13 +57,6 @@
 #include <regstr.h>
 #include <process.h>
 
-#if (_MSC_VER >= 1700)
-#define HIDPI_SUPPORT
-#endif
-
-#ifdef HIDPI_SUPPORT
-#include <ShellScalingAPI.h>
-#endif
 static const WORD MAX_CONSOLE_LINES = 1500;
 
 extern "C" {
@@ -781,6 +774,8 @@ LRESULT CALLBACK WndProc(HWND	hWnd,UINT uMsg,	WPARAM	wParam,	LPARAM	lParam)	{
 
 }
 
+
+
 void OS_Windows::process_key_events() {
 
 	for(int i=0;i<key_event_pos;i++) {
@@ -852,6 +847,75 @@ void OS_Windows::process_key_events() {
 	key_event_pos=0;
 }
 
+enum _MonitorDpiType
+{
+	MDT_Effective_DPI  = 0,
+	MDT_Angular_DPI    = 1,
+	MDT_Raw_DPI        = 2,
+	MDT_Default        = MDT_Effective_DPI
+};
+
+
+static int QueryDpiForMonitor(HMONITOR hmon, _MonitorDpiType dpiType= MDT_Default)
+{
+
+
+	int dpiX = 96, dpiY = 96;
+
+	static HMODULE Shcore = NULL;
+	typedef HRESULT (WINAPI* GetDPIForMonitor_t)(HMONITOR hmonitor, _MonitorDpiType dpiType, UINT *dpiX, UINT *dpiY);
+	static GetDPIForMonitor_t getDPIForMonitor = NULL;
+
+	if (Shcore == NULL)
+	{
+		Shcore = LoadLibraryW(L"Shcore.dll");
+		getDPIForMonitor = Shcore ? (GetDPIForMonitor_t)GetProcAddress(Shcore, "GetDpiForMonitor") : NULL;
+
+		if ((Shcore == NULL) || (getDPIForMonitor == NULL))
+		{
+			if (Shcore)
+				FreeLibrary(Shcore);
+			Shcore = (HMODULE)INVALID_HANDLE_VALUE;
+		}
+	}
+
+	UINT x = 0, y = 0;
+	HRESULT hr = E_FAIL;
+	bool bSet = false;
+	if (hmon && (Shcore != (HMODULE)INVALID_HANDLE_VALUE))
+	{
+		hr = getDPIForMonitor(hmon, dpiType/*MDT_Effective_DPI*/, &x, &y);
+		if (SUCCEEDED(hr) && (x > 0) && (y > 0))
+		{
+
+			dpiX = (int)x;
+			dpiY = (int)y;
+		}
+	}
+	else
+	{
+		static int overallX = 0, overallY = 0;
+		if (overallX <= 0 || overallY <= 0)
+		{
+			HDC hdc = GetDC(NULL);
+			if (hdc)
+			{
+				overallX = GetDeviceCaps(hdc, LOGPIXELSX);
+				overallY = GetDeviceCaps(hdc, LOGPIXELSY);
+				ReleaseDC(NULL, hdc);
+			}
+		}
+		if (overallX > 0 && overallY > 0)
+		{
+			dpiX = overallX; dpiY = overallY;
+		}
+	}
+
+
+	return (dpiX+dpiY)/2;
+}
+
+
 BOOL CALLBACK OS_Windows::MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor,  LPARAM dwData) {
 	OS_Windows *self=(OS_Windows*)OS::get_singleton();
 	MonitorInfo minfo;
@@ -861,13 +925,9 @@ BOOL CALLBACK OS_Windows::MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPR
 	minfo.rect.pos.y=lprcMonitor->top;
 	minfo.rect.size.x=lprcMonitor->right - lprcMonitor->left;
 	minfo.rect.size.y=lprcMonitor->bottom - lprcMonitor->top;
-#ifdef HIDPI_SUPPORT
-	UINT dpix,dpiy;
-	GetDpiForMonitor(hMonitor,MDT_EFFECTIVE_DPI,&dpix,&dpiy);
-	minfo.dpi=(dpix + dpiy)/2;
-#else
-	minfo.dpi=72;
-#endif
+
+	minfo.dpi = QueryDpiForMonitor(hMonitor);
+
 	self->monitor_info.push_back(minfo);
 
 	return TRUE;

@@ -574,7 +574,9 @@ void DynamicFont::set_font_data(const Ref<DynamicFontData>& p_data) {
 
 	data=p_data;
 	data_at_size=data->_get_dynamic_font_at_size(size);
+	emit_changed();
 }
+
 
 Ref<DynamicFontData> DynamicFont::get_font_data() const{
 
@@ -594,6 +596,8 @@ void DynamicFont::set_size(int p_size){
 		fallback_data_at_size[i]=fallbacks[i]->_get_dynamic_font_at_size(size);
 	}
 
+	emit_changed();
+	_change_notify();
 }
 int DynamicFont::get_size() const{
 
@@ -663,6 +667,9 @@ void DynamicFont::add_fallback(const Ref<DynamicFontData>& p_data) {
 	fallback_data_at_size.push_back(fallbacks[fallbacks.size()-1]->_get_dynamic_font_at_size(size)); //const..
 
 	_change_notify();
+	emit_changed();
+	_change_notify();
+
 }
 
 int DynamicFont::get_fallback_count() const {
@@ -679,6 +686,7 @@ void DynamicFont::remove_fallback(int p_idx) {
 	ERR_FAIL_INDEX(p_idx,fallbacks.size());
 	fallbacks.remove(p_idx);
 	fallback_data_at_size.remove(p_idx);
+	emit_changed();
 	_change_notify();
 }
 

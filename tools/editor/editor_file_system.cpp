@@ -161,7 +161,7 @@ int EditorFileSystemDirectory::get_source_count(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx,files.size(),0);
 	if (!files[p_idx]->meta.enabled)
 		return 0;
-
+	return files[p_idx]->meta.sources.size();
 }
 String EditorFileSystemDirectory::get_source_file(int p_idx,int p_source) const {
 

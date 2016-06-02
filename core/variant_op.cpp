@@ -1354,7 +1354,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 					return;
 				} else if (*str=="r8" ) {
 					valid=true;
-					v->g=float(p_value)/255.0;
+					v->r=float(p_value)/255.0;
 					return;
 				} else if (*str=="g8" ) {
 					valid=true;
@@ -2213,16 +2213,16 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 					return v->get_v();
 				} else if (*str=="r8") {
 					valid=true;
-					return v->r*255.0;
+					return (int)Math::round(v->r*255.0);
 				} else if (*str=="g8" ) {
 					valid=true;
-					return v->g*255.0;
+					return (int)Math::round(v->g*255.0);
 				} else if (*str=="b8" ) {
 					valid=true;
-					return v->b*255.0;
+					return (int)Math::round(v->b*255.0);
 				} else if (*str=="a8" ) {
 					valid=true;
-					return v->a*255.0;
+					return (int)Math::round(v->a*255.0);
 				}
 			}  else if (p_index.get_type()==Variant::INT) {
 

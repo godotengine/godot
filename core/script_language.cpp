@@ -51,7 +51,7 @@ void Script::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("has_source_code"),&Script::has_source_code);
 	ObjectTypeDB::bind_method(_MD("get_source_code"),&Script::get_source_code);
 	ObjectTypeDB::bind_method(_MD("set_source_code","source"),&Script::set_source_code);
-	ObjectTypeDB::bind_method(_MD("reload"),&Script::reload);
+	ObjectTypeDB::bind_method(_MD("reload","keep_state"),&Script::reload,DEFVAL(false));
 
 }
 

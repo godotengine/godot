@@ -291,15 +291,51 @@ static int button_mask=0;
     self = [super init];
     trackingArea = nil;
     [self updateTrackingAreas];
-
+    [self registerForDraggedTypes:[NSArray arrayWithObject:NSFilenamesPboardType]];
     return self;
 }
+
 
 -(void)dealloc
 {
     [trackingArea release];
     [super dealloc];
 }
+
+- (NSDragOperation)draggingEntered:(id < NSDraggingInfo >)sender {
+    return NSDragOperationCopy;
+}
+
+- (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
+    return NSDragOperationCopy;
+}
+
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
+
+
+    NSPasteboard *pboard = [sender draggingPasteboard];
+    NSArray *filenames = [pboard propertyListForType:NSFilenamesPboardType];
+
+    Vector<String> files;
+    for(int i=0;i<filenames.count;i++) {
+	    NSString *ns = [filenames objectAtIndex:i];
+	    char *utfs = strdup([ns UTF8String]);
+	    String ret;
+	    ret.parse_utf8(utfs);
+	    free(utfs);
+	    files.push_back(ret);
+
+
+    }
+
+    if (files.size()) {
+	    OS_OSX::singleton->main_loop->drop_files(files,0);
+	    OS_OSX::singleton->move_window_to_foreground();
+    }
+
+    return NO;
+}
+
 
 - (BOOL)isOpaque
 {
@@ -860,6 +896,7 @@ static int translateKey(unsigned int key)
 @end
 
 @implementation GodotWindow
+
 
 - (BOOL)canBecomeKeyWindow
 {

@@ -243,7 +243,7 @@ def configure(env):
 		env.Append(CCFLAGS=['/DGLES2_ENABLED'])
 
 		env.Append(CCFLAGS=['/DGLEW_ENABLED'])
-		LIBS=['winmm','opengl32','dsound','kernel32','ole32','oleaut32','user32','gdi32', 'IPHLPAPI','Shcore','Shlwapi', 'wsock32', 'shell32','advapi32','dinput8','dxguid']
+		LIBS=['winmm','opengl32','dsound','kernel32','ole32','oleaut32','user32','gdi32', 'IPHLPAPI','Shlwapi', 'wsock32', 'shell32','advapi32','dinput8','dxguid']
 		env.Append(LINKFLAGS=[p+env["LIBSUFFIX"] for p in LIBS])
 
 		env.Append(LIBPATH=[os.getenv("WindowsSdkDir")+"/Lib"])
