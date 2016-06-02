@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -116,6 +116,16 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2& p_offset,float p_sca
 	set_scale(Vector2(1,1)*p_scale);
 
 
+}
+
+
+String ParallaxLayer::get_configuration_warning() const {
+
+	if (!get_parent() || !get_parent()->cast_to<ParallaxBackground>()) {
+		return TTR("ParallaxLayer node only works when set as child of a ParallaxBackground node.");
+	}
+
+	return String();
 }
 
 void ParallaxLayer::_bind_methods() {

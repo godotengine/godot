@@ -10,5 +10,3 @@ Export('env')
 lib = env.Library("tests",env.tests_sources)
 
 env.Prepend(LIBS=[lib])
-
-

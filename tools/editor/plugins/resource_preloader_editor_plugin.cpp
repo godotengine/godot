@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ void ResourcePreloaderEditor::_notification(int p_what) {
 	}
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
-		load->set_icon( get_icon("Folder","EditorIcons") );		
+		load->set_icon( get_icon("Folder","EditorIcons") );
 		_delete->set_icon( get_icon("Del","EditorIcons") );
 	}
 
@@ -60,36 +60,40 @@ void ResourcePreloaderEditor::_notification(int p_what) {
 	}
 }
 
-void ResourcePreloaderEditor::_file_load_request(const String& p_path) {
+void ResourcePreloaderEditor::_files_load_request(const Vector<String>& p_paths) {
+
+	for(int i=0;i<p_paths.size();i++) {
+
+		String path = p_paths[i];
+
+		RES resource;
+		resource = ResourceLoader::load(path);
+
+		if (resource.is_null()) {
+			dialog->set_text(TTR("ERROR: Couldn't load resource!"));
+			dialog->set_title(TTR("Error!"));
+			//dialog->get_cancel()->set_text("Close");
+			dialog->get_ok()->set_text(TTR("Close"));
+			dialog->popup_centered_minsize();
+			return; ///beh should show an error i guess
+		}
 
 
-	RES resource;
+		String basename = path.get_file().basename();
+		String name=basename;
+		int counter=1;
+		while(preloader->has_resource(name)) {
+			counter++;
+			name=basename+" "+itos(counter);
+		}
 
-	resource = ResourceLoader::load(p_path);
-
-	if (resource.is_null()) {
-		dialog->set_text("ERROR: Couldn't load resource!");
-		dialog->set_title("Error!");
-		//dialog->get_cancel()->set_text("Close");
-		dialog->get_ok()->set_text("Close");
-		dialog->popup_centered(Size2(300,60));
-		return; ///beh should show an error i guess
+		undo_redo->create_action(TTR("Add Resource"));
+		undo_redo->add_do_method(preloader,"add_resource",name,resource);
+		undo_redo->add_undo_method(preloader,"remove_resource",name);
+		undo_redo->add_do_method(this,"_update_library");
+		undo_redo->add_undo_method(this,"_update_library");
+		undo_redo->commit_action();
 	}
-
-	String basename = p_path.get_file().basename();
-	String name=basename;
-	int counter=1;
-	while(preloader->has_resource(name)) {
-		counter++;
-		name=basename+" "+itos(counter);
-	}
-
-	undo_redo->create_action("Add Resource");
-	undo_redo->add_do_method(preloader,"add_resource",name,resource);
-	undo_redo->add_undo_method(preloader,"remove_resource",name);
-	undo_redo->add_do_method(this,"_update_library");
-	undo_redo->add_undo_method(this,"_update_library");
-	undo_redo->commit_action();
 }
 
 void ResourcePreloaderEditor::_load_pressed() {
@@ -102,7 +106,7 @@ void ResourcePreloaderEditor::_load_pressed() {
 	for(int i=0;i<extensions.size();i++)
 		file->add_filter("*."+extensions[i]);
 
-	file->set_mode(FileDialog::MODE_OPEN_FILE);
+	file->set_mode(EditorFileDialog::MODE_OPEN_FILES);
 
 	file->popup_centered_ratio();
 
@@ -130,7 +134,7 @@ void ResourcePreloaderEditor::_item_edited() {
 		}
 
 		RES samp = preloader->get_resource(old_name);
-		undo_redo->create_action("Rename Resource");
+		undo_redo->create_action(TTR("Rename Resource"));
 		undo_redo->add_do_method(preloader,"remove_resource",old_name);
 		undo_redo->add_do_method(preloader,"add_resource",new_name,samp);
 		undo_redo->add_undo_method(preloader,"remove_resource",new_name);
@@ -150,7 +154,7 @@ void ResourcePreloaderEditor::_delete_confirm_pressed() {
 		return;
 
 	String to_remove = tree->get_selected()->get_text(0);
-	undo_redo->create_action("Delete Resource");
+	undo_redo->create_action(TTR("Delete Resource"));
 	undo_redo->add_do_method(preloader,"remove_resource",to_remove);
 	undo_redo->add_undo_method(preloader,"add_resource",to_remove,preloader->get_resource(to_remove));
 	undo_redo->add_do_method(this,"_update_library");
@@ -163,11 +167,11 @@ void ResourcePreloaderEditor::_paste_pressed() {
 
 	RES r=EditorSettings::get_singleton()->get_resource_clipboard();
 	if (!r.is_valid()) {
-		dialog->set_text("Resource clipboard is empty!");
-		dialog->set_title("Error!");
+		dialog->set_text(TTR("Resource clipboard is empty!"));
+		dialog->set_title(TTR("Error!"));
 		//dialog->get_cancel()->set_text("Close");
-		dialog->get_ok()->set_text("Close");
-		dialog->popup_centered(Size2(300,60));
+		dialog->get_ok()->set_text(TTR("Close"));
+		dialog->popup_centered_minsize();
 		return; ///beh should show an error i guess
 	}
 
@@ -184,7 +188,7 @@ void ResourcePreloaderEditor::_paste_pressed() {
 		name=basename+" "+itos(counter);
 	}
 
-	undo_redo->create_action("Paste Resource");
+	undo_redo->create_action(TTR("Paste Resource"));
 	undo_redo->add_do_method(preloader,"add_resource",name,r);
 	undo_redo->add_undo_method(preloader,"remove_resource",name);
 	undo_redo->add_do_method(this,"_update_library");
@@ -275,6 +279,106 @@ void ResourcePreloaderEditor::edit(ResourcePreloader* p_preloader) {
 
 
 
+Variant ResourcePreloaderEditor::get_drag_data_fw(const Point2& p_point,Control* p_from) {
+
+	TreeItem*ti =tree->get_item_at_pos(p_point);
+	if (!ti)
+		return Variant();
+
+	String name = ti->get_metadata(0);
+
+	RES res = preloader->get_resource(name);
+	if (!res.is_valid())
+		return Variant();
+
+	return EditorNode::get_singleton()->drag_resource(res,p_from);
+
+}
+
+bool ResourcePreloaderEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const {
+
+
+
+	Dictionary d = p_data;
+
+	if (!d.has("type"))
+		return false;
+
+	if (d.has("from") && (Object*)(d["from"])==tree)
+		return false;
+
+	if (String(d["type"])=="resource" && d.has("resource")) {
+		RES r=d["resource"];
+
+		return r.is_valid();
+	}
+
+
+	if (String(d["type"])=="files") {
+
+		Vector<String> files = d["files"];
+
+		if (files.size()==0)
+			return false;
+
+		return true;
+
+	}
+	return false;
+}
+
+void ResourcePreloaderEditor::drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) {
+
+	if (!can_drop_data_fw(p_point,p_data,p_from))
+		return;
+
+	Dictionary d = p_data;
+
+	if (!d.has("type"))
+		return;
+
+
+	if (String(d["type"])=="resource" && d.has("resource")) {
+		RES r=d["resource"];
+
+		if (r.is_valid()) {
+
+			String basename;
+			if (r->get_name()!="") {
+				basename=r->get_name();
+			} else if (r->get_path().is_resource_file()) {
+				basename = r->get_path().basename();
+			} else {
+				basename="Resource";
+			}
+
+			String name=basename;
+			int counter=0;
+			while(preloader->has_resource(name)) {
+				counter++;
+				name=basename+"_"+itos(counter);
+			}
+
+			undo_redo->create_action(TTR("Add Resource"));
+			undo_redo->add_do_method(preloader,"add_resource",name,r);
+			undo_redo->add_undo_method(preloader,"remove_resource",name);
+			undo_redo->add_do_method(this,"_update_library");
+			undo_redo->add_undo_method(this,"_update_library");
+			undo_redo->commit_action();
+		}
+	}
+
+
+	if (String(d["type"])=="files") {
+
+		Vector<String> files = d["files"];
+
+		_files_load_request(files);
+	}
+}
+
+
+
 void ResourcePreloaderEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&ResourcePreloaderEditor::_input_event);
@@ -283,8 +387,15 @@ void ResourcePreloaderEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_delete_pressed"),&ResourcePreloaderEditor::_delete_pressed);
 	ObjectTypeDB::bind_method(_MD("_paste_pressed"),&ResourcePreloaderEditor::_paste_pressed);
 	ObjectTypeDB::bind_method(_MD("_delete_confirm_pressed"),&ResourcePreloaderEditor::_delete_confirm_pressed);
-	ObjectTypeDB::bind_method(_MD("_file_load_request"),&ResourcePreloaderEditor::_file_load_request);
+	ObjectTypeDB::bind_method(_MD("_files_load_request"),&ResourcePreloaderEditor::_files_load_request);
 	ObjectTypeDB::bind_method(_MD("_update_library"),&ResourcePreloaderEditor::_update_library);
+
+
+	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
+	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
+	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &ResourcePreloaderEditor::drop_data_fw);
+
+
 }
 
 ResourcePreloaderEditor::ResourcePreloaderEditor() {
@@ -298,7 +409,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	vbc->add_child(hbc);
 
 	load = memnew( Button );
-	load->set_tooltip("Load Resource");
+	load->set_tooltip(TTR("Load Resource"));
 	hbc->add_child(load);
 
 
@@ -307,10 +418,10 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	hbc->add_child(_delete);
 
 	paste = memnew( Button );
-	paste->set_text("Paste");
+	paste->set_text(TTR("Paste"));
 	hbc->add_child(paste);
 
-	file = memnew( FileDialog );
+	file = memnew( EditorFileDialog );
 	add_child(file);
 
 
@@ -322,6 +433,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	tree->set_column_expand(1,true);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	tree->set_drag_forwarding(this);
 	vbc->add_child(tree);
 
 	dialog = memnew( AcceptDialog );
@@ -330,7 +442,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	load->connect("pressed", this,"_load_pressed");
 	_delete->connect("pressed", this,"_delete_pressed");
 	paste->connect("pressed", this,"_paste_pressed");
-	file->connect("file_selected", this,"_file_load_request");
+	file->connect("files_selected", this,"_files_load_request");
 	//dialog->connect("confirmed", this,"_delete_confirm_pressed");
 	tree->connect("item_edited", this,"_item_edited");
 	loading_scene=false;
@@ -356,11 +468,16 @@ bool ResourcePreloaderEditorPlugin::handles(Object *p_object) const {
 void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		preloader_editor->show();
+		//preloader_editor->show();
+		button->show();
+		editor->make_bottom_panel_item_visible(preloader_editor);
 //		preloader_editor->set_process(true);
 	} else {
 
-		preloader_editor->hide();
+		if (preloader_editor->is_visible())
+			editor->hide_bottom_panel();
+		button->hide();
+		//preloader_editor->hide();
 //		preloader_editor->set_process(false);
 	}
 
@@ -370,11 +487,14 @@ ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin(EditorNode *p_node)
 
 	editor=p_node;
 	preloader_editor = memnew( ResourcePreloaderEditor );
-	editor->get_viewport()->add_child(preloader_editor);
-	preloader_editor->set_area_as_parent_rect();
+	preloader_editor->set_custom_minimum_size(Size2(0,250));
+
+	button=editor->add_bottom_panel_item("ResourcePreloader",preloader_editor);
+	button->hide();
+
 //	preloader_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
 //	preloader_editor->set_margin( MARGIN_TOP, 120 );
-	preloader_editor->hide();
+
 
 
 

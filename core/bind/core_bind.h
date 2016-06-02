@@ -21,11 +21,12 @@ public:
 
 	static _ResourceLoader *get_singleton() { return singleton; }
 	Ref<ResourceInteractiveLoader> load_interactive(const String& p_path,const String& p_type_hint="");
-	RES load(const String &p_path,const String& p_type_hint="");
+	RES load(const String &p_path,const String& p_type_hint="", bool p_no_cache = false);
 	DVector<String> get_recognized_extensions_for_type(const String& p_type);
 	void set_abort_on_missing_resources(bool p_abort);
 	StringArray get_dependencies(const String& p_path);
 	bool has(const String& p_path);
+	Ref<ResourceImportMetadata> load_import_metadata(const String& p_path);
 
 	_ResourceLoader();
 };
@@ -80,7 +81,9 @@ public:
 	};
 
 	enum Month {
-		MONTH_JANUARY,
+		/// Start at 1 to follow Windows SYSTEMTIME structure
+		/// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724950(v=vs.85).aspx
+		MONTH_JANUARY = 1,
 		MONTH_FEBRUARY,
 		MONTH_MARCH,
 		MONTH_APRIL,
@@ -108,9 +111,33 @@ public:
 	bool is_video_mode_resizable(int p_screen=0) const;
 	Array get_fullscreen_mode_list(int p_screen=0) const;
 
+
+	virtual int get_screen_count() const;
+	virtual int get_current_screen() const;
+	virtual void set_current_screen(int p_screen);
+	virtual Point2 get_screen_position(int p_screen=0) const;
+	virtual Size2 get_screen_size(int p_screen=0) const;
+	virtual int get_screen_dpi(int p_screen=0) const;
+	virtual Point2 get_window_position() const;
+	virtual void set_window_position(const Point2& p_position);
+	virtual Size2 get_window_size() const;
+	virtual void set_window_size(const Size2& p_size);
+	virtual void set_window_fullscreen(bool p_enabled);
+	virtual bool is_window_fullscreen() const;
+	virtual void set_window_resizable(bool p_enabled);
+	virtual bool is_window_resizable() const;
+	virtual void set_window_minimized(bool p_enabled);
+	virtual bool is_window_minimized() const;
+	virtual void set_window_maximized(bool p_enabled);
+	virtual bool is_window_maximized() const;
+
+	virtual void set_borderless_window(bool p_borderless);
+	virtual bool get_borderless_window() const;
+
 	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 	bool native_video_is_playing();
 	void native_video_pause();
+	void native_video_unpause();
 	void native_video_stop();
 
 	void set_iterations_per_second(int p_ips);
@@ -158,6 +185,11 @@ public:
 
 	String get_unique_ID() const;
 
+	String get_scancode_string(uint32_t p_code) const;
+	bool is_scancode_unicode(uint32_t p_unicode) const;
+	int find_scancode_from_string(const String& p_code) const;
+
+
 	/*
 	struct Date {
 
@@ -179,9 +211,14 @@ public:
 	void set_use_file_access_save_and_swap(bool p_enable);
 
 	void set_icon(const Image& p_icon);
-	Dictionary get_date() const;
-	Dictionary get_time() const;
+	Dictionary get_date(bool utc) const;
+	Dictionary get_time(bool utc) const;
+	Dictionary get_datetime(bool utc) const;
+	Dictionary get_datetime_from_unix_time(uint64_t unix_time_val) const;
+	uint64_t get_unix_time_from_datetime(Dictionary datetime) const;
+	Dictionary get_time_zone_info() const;
 	uint64_t get_unix_time() const;
+	uint64_t get_system_time_secs() const;
 
 	int get_static_memory_usage() const;
 	int get_static_memory_peak_usage() const;
@@ -190,6 +227,7 @@ public:
 	void delay_usec(uint32_t p_usec) const;
 	void delay_msec(uint32_t p_msec) const;
 	uint32_t get_ticks_msec() const;
+	uint32_t get_splash_tick_msec() const;
 
 	bool can_use_threads() const;
 
@@ -212,13 +250,37 @@ public:
 		SYSTEM_DIR_RINGTONES,
 	};
 
+	enum ScreenOrientation {
+
+		SCREEN_ORIENTATION_LANDSCAPE,
+		SCREEN_ORIENTATION_PORTRAIT,
+		SCREEN_ORIENTATION_REVERSE_LANDSCAPE,
+		SCREEN_ORIENTATION_REVERSE_PORTRAIT,
+		SCREEN_ORIENTATION_SENSOR_LANDSCAPE,
+		SCREEN_ORIENTATION_SENSOR_PORTRAIT,
+		SCREEN_ORIENTATION_SENSOR,
+	};
+
 	String get_system_dir(SystemDir p_dir) const;
 
 
 	String get_data_dir() const;
 
+	void alert(const String& p_alert,const String& p_title="ALERT!");
+
+
+	void set_screen_orientation(ScreenOrientation p_orientation);
+	ScreenOrientation get_screen_orientation() const;
+
+	void set_keep_screen_on(bool p_enabled);
+	bool is_keep_screen_on() const;
+
 	void set_time_scale(float p_scale);
 	float get_time_scale();
+
+	bool is_ok_left_and_cancel_right() const;
+
+	Error set_thread_name(const String& p_name);
 
 	static _OS *get_singleton() { return singleton; }
 
@@ -226,6 +288,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(_OS::SystemDir);
+VARIANT_ENUM_CAST(_OS::ScreenOrientation);
 
 
 class _Geometry : public Object {
@@ -248,6 +311,8 @@ public:
 	Vector3 get_closest_point_to_segment(const Vector3& p_point, const Vector3& p_a,const Vector3& p_b);
 	Variant ray_intersects_triangle( const Vector3& p_from, const Vector3& p_dir, const Vector3& p_v0,const Vector3& p_v1,const Vector3& p_v2);
 	Variant segment_intersects_triangle( const Vector3& p_from, const Vector3& p_to, const Vector3& p_v0,const Vector3& p_v1,const Vector3& p_v2);
+	bool point_is_inside_triangle(const Vector2& s, const Vector2& a, const Vector2& b, const Vector2& c) const;
+
 	DVector<Vector3> segment_intersects_sphere( const Vector3& p_from, const Vector3& p_to, const Vector3& p_sphere_pos,real_t p_sphere_radius);
 	DVector<Vector3> segment_intersects_cylinder( const Vector3& p_from, const Vector3& p_to, float p_height,float p_radius);
 	DVector<Vector3> segment_intersects_convex(const Vector3& p_from, const Vector3& p_to,const Vector<Plane>& p_planes);
@@ -279,6 +344,7 @@ public:
 		READ=1,
 		WRITE=2,
 		READ_WRITE=3,
+		WRITE_READ=7,
 	};
 
 	Error open_encrypted(const String& p_path, int p_mode_flags,const Vector<uint8_t>& p_key);
@@ -310,6 +376,7 @@ public:
 	DVector<uint8_t> get_buffer(int p_length) const; ///< get an array of bytes
 	String get_line() const;
 	String get_as_text() const;
+	String get_md5(const String& p_path) const;
 
 	/**< use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
 	 * It's not about the current CPU type but file formats.
@@ -336,7 +403,7 @@ public:
 	virtual void store_pascal_string(const String& p_string);
 	virtual String get_pascal_string();
 
-	Vector<String> get_csv_line() const;
+	Vector<String> get_csv_line(String delim=",") const;
 
 
 	void store_buffer(const DVector<uint8_t>& p_buffer); ///< store an array of bytes
@@ -404,6 +471,12 @@ public:
 
 	String variant_to_base64(const Variant& p_var);
 	Variant base64_to_variant(const String& p_str);
+
+	String raw_to_base64(const DVector<uint8_t>& p_arr);
+	DVector<uint8_t> base64_to_raw(const String& p_str);
+
+	String utf8_to_base64(const String& p_str);
+	String base64_to_utf8(const String& p_str);
 
 	_Marshalls() {};
 };

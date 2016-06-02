@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "step_2d_sw.h"
-
+#include "os/os.h"
 
 void Step2DSW::_populate_island(Body2DSW* p_body,Body2DSW** p_island,Constraint2DSW **p_constraint_island) {
 
@@ -35,7 +35,7 @@ void Step2DSW::_populate_island(Body2DSW* p_body,Body2DSW** p_island,Constraint2
 	p_body->set_island_next(*p_island);
 	*p_island=p_body;
 
-	for(Map<Constraint2DSW*,int>::Element *E=p_body->get_constraint_map().front();E;E=E->next()) {		
+	for(Map<Constraint2DSW*,int>::Element *E=p_body->get_constraint_map().front();E;E=E->next()) {
 
 		Constraint2DSW *c=(Constraint2DSW*)E->key();
 		if (c->get_island_step()==_step)
@@ -56,14 +56,29 @@ void Step2DSW::_populate_island(Body2DSW* p_body,Body2DSW** p_island,Constraint2
 	}
 }
 
-void Step2DSW::_setup_island(Constraint2DSW *p_island,float p_delta) {
+bool Step2DSW::_setup_island(Constraint2DSW *p_island,float p_delta) {
 
 	Constraint2DSW *ci=p_island;
+	Constraint2DSW *prev_ci=NULL;
+	bool removed_root=false;
 	while(ci) {
 		bool process = ci->setup(p_delta);
-		//todo remove from island if process fails
+
+		if (!process) {
+			//remove from island if process fails
+			if (prev_ci) {
+				prev_ci->set_island_next(ci->get_island_next());
+			} else {
+				removed_root=true;
+				prev_ci=ci;
+			}
+		} else {
+			prev_ci=ci;
+		}
 		ci=ci->get_island_next();
 	}
+
+	return removed_root;
 }
 
 void Step2DSW::_solve_island(Constraint2DSW *p_island,int p_iterations,float p_delta){
@@ -127,6 +142,11 @@ void Step2DSW::step(Space2DSW* p_space,float p_delta,int p_iterations) {
 	const SelfList<Body2DSW>::List * body_list = &p_space->get_active_body_list();
 
 	/* INTEGRATE FORCES */
+
+	uint64_t profile_begtime = OS::get_singleton()->get_ticks_usec();
+	uint64_t profile_endtime=0;
+
+
 	int active_count=0;
 
 	const SelfList<Body2DSW>*b = body_list->first();
@@ -138,6 +158,13 @@ void Step2DSW::step(Space2DSW* p_space,float p_delta,int p_iterations) {
 	}
 
 	p_space->set_active_objects(active_count);
+
+
+	{ //profile
+		profile_endtime=OS::get_singleton()->get_ticks_usec();
+		p_space->set_elapsed_time(Space2DSW::ELAPSED_TIME_INTEGRATE_FORCES,profile_endtime-profile_begtime);
+		profile_begtime=profile_endtime;
+	}
 
 	/* GENERATE CONSTRAINT ISLANDS */
 
@@ -175,7 +202,6 @@ void Step2DSW::step(Space2DSW* p_space,float p_delta,int p_iterations) {
 	const SelfList<Area2DSW>::List &aml = p_space->get_moved_area_list();
 
 
-
 	while(aml.first()) {
 		for(const Set<Constraint2DSW*>::Element *E=aml.first()->self()->get_constraints().front();E;E=E->next()) {
 
@@ -191,15 +217,59 @@ void Step2DSW::step(Space2DSW* p_space,float p_delta,int p_iterations) {
 	}
 
 //	print_line("island count: "+itos(island_count)+" active count: "+itos(active_count));
+
+	{ //profile
+		profile_endtime=OS::get_singleton()->get_ticks_usec();
+		p_space->set_elapsed_time(Space2DSW::ELAPSED_TIME_GENERATE_ISLANDS,profile_endtime-profile_begtime);
+		profile_begtime=profile_endtime;
+	}
+
 	/* SETUP CONSTRAINT ISLANDS */
 
 	{
 		Constraint2DSW *ci=constraint_island_list;
+		Constraint2DSW *prev_ci=NULL;
 		while(ci) {
 
-			_setup_island(ci,p_delta);
+			if (_setup_island(ci,p_delta)==true) {
+
+				//removed the root from the island graph because it is not to be processed
+
+				Constraint2DSW *next = ci->get_island_next();
+
+				if (next) {
+					//root from list being deleted no longer exists, replace by next
+					next->set_island_list_next(ci->get_island_list_next());
+					if (prev_ci) {
+						prev_ci->set_island_list_next(next);
+					} else {
+						constraint_island_list=next;
+
+					}
+					prev_ci=next;
+				} else {
+
+					//list is empty, just skip
+					if (prev_ci) {
+						prev_ci->set_island_list_next(ci->get_island_list_next());
+
+					} else {
+						constraint_island_list=ci->get_island_list_next();
+					}
+
+				}
+			} else {
+				prev_ci=ci;
+			}
+
 			ci=ci->get_island_list_next();
 		}
+	}
+
+	{ //profile
+		profile_endtime=OS::get_singleton()->get_ticks_usec();
+		p_space->set_elapsed_time(Space2DSW::ELAPSED_TIME_SETUP_CONSTRAINTS,profile_endtime-profile_begtime);
+		profile_begtime=profile_endtime;
 	}
 
 	/* SOLVE CONSTRAINT ISLANDS */
@@ -211,6 +281,12 @@ void Step2DSW::step(Space2DSW* p_space,float p_delta,int p_iterations) {
 			_solve_island(ci,p_iterations,p_delta);
 			ci=ci->get_island_list_next();
 		}
+	}
+
+	{ //profile
+		profile_endtime=OS::get_singleton()->get_ticks_usec();
+		p_space->set_elapsed_time(Space2DSW::ELAPSED_TIME_SOLVE_CONSTRAINTS,profile_endtime-profile_begtime);
+		profile_begtime=profile_endtime;
 	}
 
 	/* INTEGRATE VELOCITIES */
@@ -232,6 +308,12 @@ void Step2DSW::step(Space2DSW* p_space,float p_delta,int p_iterations) {
 			_check_suspend(bi,p_delta);
 			bi=bi->get_island_list_next();
 		}
+	}
+
+	{ //profile
+		profile_endtime=OS::get_singleton()->get_ticks_usec();
+		p_space->set_elapsed_time(Space2DSW::ELAPSED_TIME_INTEGRATE_VELOCITIES,profile_endtime-profile_begtime);
+		//profile_begtime=profile_endtime;
 	}
 
 	p_space->update();

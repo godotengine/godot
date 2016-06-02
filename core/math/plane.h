@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,9 +62,9 @@ public:
 	bool intersects_segment(Vector3 p_begin, Vector3 p_end, Vector3* p_intersection)  const;
 
 	_FORCE_INLINE_ Vector3 project(const Vector3& p_point) const {
-	
+
 		return p_point - normal * distance_to(p_point);
-	}	
+	}
 
         /* misc */
 

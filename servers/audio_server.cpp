@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,26 +48,51 @@ AudioServer *AudioServer::get_singleton() {
 
 void AudioServer::sample_set_signed_data(RID p_sample, const DVector<float>& p_buffer) {
 
+	SampleFormat format = sample_get_format(p_sample);
+
+	ERR_EXPLAIN("IMA ADPCM is not supported.");
+	ERR_FAIL_COND(format==SAMPLE_FORMAT_IMA_ADPCM);
+
 	int len = p_buffer.size();
 	ERR_FAIL_COND( len == 0 );
 
 	DVector<uint8_t> data;
-	data.resize(len*2);
-	DVector<uint8_t>::Write w=data.write();
-
-	int16_t *samples = (int16_t*)w.ptr();
-
+	DVector<uint8_t>::Write w;
 	DVector<float>::Read r = p_buffer.read();
 
-	for(int i=0;i<len;i++) {
+	switch(format) {
+		case SAMPLE_FORMAT_PCM8: {
+			data.resize(len);
+			w=data.write();
 
-		float sample = r[i];
-		sample = Math::floor( sample * (1<<16) );
-		if (sample<-32768)
-			sample=-32768;
-		else if (sample>32767)
-			sample=32767;
-		samples[i]=sample;
+			int8_t *samples8 = (int8_t*)w.ptr();
+
+			for(int i=0;i<len;i++) {
+
+				float sample = Math::floor( r[i] * (1<<8) );
+				if (sample<-128)
+					sample=-128;
+				else if (sample>127)
+					sample=127;
+				samples8[i]=sample;
+			}
+		} break;
+		case SAMPLE_FORMAT_PCM16: {
+			data.resize(len*2);
+			w=data.write();
+
+			int16_t *samples16 = (int16_t*)w.ptr();
+
+			for(int i=0;i<len;i++) {
+
+				float sample = Math::floor( r[i] * (1<<16) );
+				if (sample<-32768)
+					sample=-32768;
+				else if (sample>32767)
+					sample=32767;
+				samples16[i]=sample;
+			}
+		} break;
 	}
 
 	w = DVector<uint8_t>::Write();
@@ -88,7 +113,7 @@ void AudioServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("sample_get_length","sample"), &AudioServer::sample_get_length );
 
 	ObjectTypeDB::bind_method(_MD("sample_set_signed_data","sample","data"), &AudioServer::sample_set_signed_data );
-	ObjectTypeDB::bind_method(_MD("sample_set_data","sample"), &AudioServer::sample_set_data );
+	ObjectTypeDB::bind_method(_MD("sample_set_data","sample","data"), &AudioServer::sample_set_data );
 	ObjectTypeDB::bind_method(_MD("sample_get_data","sample"), &AudioServer::sample_get_data );
 
 	ObjectTypeDB::bind_method(_MD("sample_set_mix_rate","sample","mix_rate"), &AudioServer::sample_set_mix_rate );
@@ -132,7 +157,7 @@ void AudioServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("voice_stop","voice"), &AudioServer::voice_stop );
 
-	ObjectTypeDB::bind_method(_MD("free","rid"), &AudioServer::free );
+	ObjectTypeDB::bind_method(_MD("free_rid","rid"), &AudioServer::free );
 
 	ObjectTypeDB::bind_method(_MD("set_stream_global_volume_scale","scale"), &AudioServer::set_stream_global_volume_scale );
 	ObjectTypeDB::bind_method(_MD("get_stream_global_volume_scale"), &AudioServer::get_stream_global_volume_scale );
@@ -164,6 +189,7 @@ void AudioServer::_bind_methods() {
 	BIND_CONSTANT( REVERB_HALL );
 
 	GLOBAL_DEF("audio/stream_buffering_ms",500);
+	GLOBAL_DEF("audio/video_delay_compensation_ms",300);
 
 }
 

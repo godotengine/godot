@@ -158,12 +158,14 @@ public:
 //	~Sprite3D();
 };
 
+
 class AnimatedSprite3D : public SpriteBase3D {
 
 	OBJ_TYPE(AnimatedSprite3D,SpriteBase3D);
 	Ref<SpriteFrames> frames;
 
 
+	StringName animation;
 	int frame;
 
 protected:
@@ -185,6 +187,7 @@ public:
 	AnimatedSprite3D();
 //	~AnimatedSprite3D();
 };
+
 
 VARIANT_ENUM_CAST(SpriteBase3D::DrawFlags);
 VARIANT_ENUM_CAST(SpriteBase3D::AlphaCutMode);

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,6 +64,8 @@ protected:
 	
 	String stdin_buf;
 
+	String get_global_settings_path() const;
+
 public:
 
 
@@ -88,10 +90,12 @@ public:
 
 	virtual String get_name();
 		
-	virtual Date get_date() const;
-	virtual Time get_time() const;
+	virtual Date get_date(bool utc) const;
+	virtual Time get_time(bool utc) const;
+	virtual TimeZoneInfo get_time_zone_info() const;
 
 	virtual uint64_t get_unix_time() const;
+	virtual uint64_t get_system_time_secs() const;
 
 	virtual void delay_usec(uint32_t p_usec) const; 
 	virtual uint64_t get_ticks_usec() const;
@@ -109,6 +113,7 @@ public:
 
 	virtual void debug_break();
 
+	virtual String get_installed_templates_path() const;
 	virtual String get_executable_path() const;
 	virtual String get_data_dir() const;
 

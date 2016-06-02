@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,6 +88,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "func",
 "class",
 "extends",
+"onready",
 "tool",
 "static",
 "export",
@@ -97,6 +98,8 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "preload",
 "assert",
 "yield",
+"signal",
+"breakpoint",
 "'['",
 "']'",
 "'{'",
@@ -109,8 +112,10 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "'?'",
 "':'",
 "'\\n'",
+"PI",
 "Error",
-"EOF"};
+"EOF",
+"Cursor"};
 
 const char *GDTokenizer::get_token_name(Token p_token) {
 
@@ -257,6 +262,7 @@ void GDTokenizerText::_advance() {
 				}
 
 				INCPOS(1);
+				line++;
 
 				while(GETCHAR(0)==' ' || GETCHAR(0)=='\t') {
 					INCPOS(1);
@@ -535,10 +541,13 @@ void GDTokenizerText::_advance() {
 				}
 				INCPOS(1);
 				is_node_path=true;
-				
+
 			case '\'':
-				string_mode=STRING_SINGLE_QUOTE;
 			case '"': {
+
+				if (GETCHAR(0)=='\'')
+					string_mode=STRING_SINGLE_QUOTE;
+
 
 				int i=1;
 				if (string_mode==STRING_DOUBLE_QUOTE && GETCHAR(i)=='"' && GETCHAR(i+1)=='"') {
@@ -564,7 +573,10 @@ void GDTokenizerText::_advance() {
 					} else if( string_mode!=STRING_MULTILINE && CharType(GETCHAR(i))=='\n') {
 						_make_error("Unexpected EOL at String.");
 						return;
-
+					} else if( CharType(GETCHAR(i))==0xFFFF) {
+						//string ends here, next will be TK
+						i--;
+						break;
 					} else if (CharType(GETCHAR(i))=='\\') {
 						//escaped characters...
 						i++;
@@ -635,6 +647,11 @@ void GDTokenizerText::_advance() {
 						str+=res;
 
 					} else {
+						if (CharType(GETCHAR(i))=='\n') {
+							line++;
+							column=0;
+						}
+
 						str+=CharType(GETCHAR(i));
 					}
 					i++;
@@ -647,6 +664,9 @@ void GDTokenizerText::_advance() {
 					_make_constant(str);
 				}
 
+			} break;
+			case 0xFFFF: {
+				_make_token(TK_CURSOR);
 			} break;
 			default: {
 
@@ -663,19 +683,19 @@ void GDTokenizerText::_advance() {
 					while(true) {
 						if (GETCHAR(i)=='.') {
 							if (period_found || exponent_found) {
-                                _make_error("Invalid numeric constant at '.'");
+								_make_error("Invalid numeric constant at '.'");
 								return;
 							}
 							period_found=true;
 						} else if (GETCHAR(i)=='x') {
-                            if (hexa_found || str.length()!=1 || !( (i==1 && str[0]=='0') || (i==2 && str[1]=='0' && str[0]=='-') ) ) {
-                                _make_error("Invalid numeric constant at 'x'");
+							if (hexa_found || str.length()!=1 || !( (i==1 && str[0]=='0') || (i==2 && str[1]=='0' && str[0]=='-') ) ) {
+								_make_error("Invalid numeric constant at 'x'");
 								return;
 							}
 							hexa_found=true;
-                        } else if (!hexa_found && GETCHAR(i)=='e') {
+						} else if (!hexa_found && GETCHAR(i)=='e') {
 							if (hexa_found || exponent_found) {
-                                _make_error("Invalid numeric constant at 'e'");
+								_make_error("Invalid numeric constant at 'e'");
 								return;
 							}
 							exponent_found=true;
@@ -685,7 +705,7 @@ void GDTokenizerText::_advance() {
 
 						} else if ((GETCHAR(i)=='-' || GETCHAR(i)=='+') && exponent_found) {
 							if (sign_found) {
-                                _make_error("Invalid numeric constant at '-'");
+								_make_error("Invalid numeric constant at '-'");
 								return;
 							}
 							sign_found=true;
@@ -696,20 +716,20 @@ void GDTokenizerText::_advance() {
 						i++;
 					}
 
-                    if (!( _is_number(str[str.length()-1]) || (hexa_found && _is_hex(str[str.length()-1])))) {
-                        _make_error("Invalid numeric constant: "+str);
+					if (!( _is_number(str[str.length()-1]) || (hexa_found && _is_hex(str[str.length()-1])))) {
+						_make_error("Invalid numeric constant: "+str);
 						return;
 					}
 
 					INCPOS(str.length());
-                    if (hexa_found) {
-                        int val = str.hex_to_int();
-                        _make_constant(val);
-                    } else if (period_found) {
+					if (hexa_found) {
+						int val = str.hex_to_int();
+						_make_constant(val);
+					} else if (period_found) {
 						real_t val = str.to_double();
 						//print_line("*%*%*%*% to convert: "+str+" result: "+rtos(val));
 						_make_constant(val);
-                    } else {
+					} else {
 						int val = str.to_int();
 						_make_constant(val);
 
@@ -758,20 +778,15 @@ void GDTokenizerText::_advance() {
 							{Variant::INT,"int"},
 							{Variant::REAL,"float"},
 							{Variant::STRING,"String"},
-							{Variant::VECTOR2,"vec2"},
 							{Variant::VECTOR2,"Vector2"},
 							{Variant::RECT2,"Rect2"},
 							{Variant::MATRIX32,"Matrix32"},
-							{Variant::MATRIX32,"mat32"},
-							{Variant::VECTOR3,"vec3"},
 							{Variant::VECTOR3,"Vector3"},
 							{Variant::_AABB,"AABB"},
 							{Variant::_AABB,"Rect3"},
 							{Variant::PLANE,"Plane"},
 							{Variant::QUAT,"Quat"},
-							{Variant::MATRIX3,"mat3"},
 							{Variant::MATRIX3,"Matrix3"},
-							{Variant::TRANSFORM,"trn"},
 							{Variant::TRANSFORM,"Transform"},
 							{Variant::COLOR,"Color"},
 							{Variant::IMAGE,"Image"},
@@ -779,7 +794,6 @@ void GDTokenizerText::_advance() {
 							{Variant::OBJECT,"Object"},
 							{Variant::INPUT_EVENT,"InputEvent"},
 							{Variant::NODE_PATH,"NodePath"},
-							{Variant::DICTIONARY,"dict"},
 							{Variant::DICTIONARY,"Dictionary"},
 							{Variant::ARRAY,"Array"},
 							{Variant::RAW_ARRAY,"RawArray"},
@@ -818,7 +832,7 @@ void GDTokenizerText::_advance() {
 
 									_make_built_in_func(GDFunctions::Function(i));
 									found=true;
-									 break;
+									break;
 								}
 							}
 
@@ -838,9 +852,9 @@ void GDTokenizerText::_advance() {
 								{TK_OP_AND,"and"},
 								//func
 								{TK_PR_FUNCTION,"func"},
-								{TK_PR_FUNCTION,"function"},
 								{TK_PR_CLASS,"class"},
 								{TK_PR_EXTENDS,"extends"},
+								{TK_PR_ONREADY,"onready"},
 								{TK_PR_TOOL,"tool"},
 								{TK_PR_STATIC,"static"},
 								{TK_PR_EXPORT,"export"},
@@ -849,6 +863,8 @@ void GDTokenizerText::_advance() {
 								{TK_PR_PRELOAD,"preload"},
 								{TK_PR_ASSERT,"assert"},
 								{TK_PR_YIELD,"yield"},
+								{TK_PR_SIGNAL,"signal"},
+								{TK_PR_BREAKPOINT,"breakpoint"},
 								{TK_PR_CONST,"const"},
 								//controlflow
 								{TK_CF_IF,"if"},
@@ -863,6 +879,7 @@ void GDTokenizerText::_advance() {
 								{TK_CF_RETURN,"return"},
 								{TK_CF_PASS,"pass"},
 								{TK_SELF,"self"},
+								{TK_CONST_PI,"PI"},
 								{TK_ERROR,NULL}
 							};
 
@@ -1029,7 +1046,7 @@ void GDTokenizerText::advance(int p_amount) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define BYTECODE_VERSION 3
+#define BYTECODE_VERSION 10
 
 Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 
@@ -1037,7 +1054,7 @@ Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 	const uint8_t *buf=p_buffer.ptr();
 	int total_len=p_buffer.size();
 	ERR_FAIL_COND_V( p_buffer.size()<24 || p_buffer[0]!='G' || p_buffer[1]!='D' || p_buffer[2]!='S' || p_buffer[3]!='C',ERR_INVALID_DATA);
-	
+
 	int version = decode_uint32(&buf[4]);
 	if (version>BYTECODE_VERSION) {
 		ERR_EXPLAIN("Bytecode is too New! Please use a newer engine version.");
@@ -1049,13 +1066,13 @@ Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 	int token_count = decode_uint32(&buf[20]);
 
 	const uint8_t *b=buf;
-	
+
 	b=&buf[24];
 	total_len-=24;
-	
+
 	identifiers.resize(identifier_count);
 	for(int i=0;i<identifier_count;i++) {
-		
+
 		int len = decode_uint32(b);
 		ERR_FAIL_COND_V(len>total_len,ERR_INVALID_DATA);
 		b+=4;
@@ -1072,7 +1089,7 @@ Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 		total_len-=len+4;
 		identifiers[i]=s;
 	}
-	
+
 	constants.resize(constant_count);
 	for(int i=0;i<constant_count;i++) {
 

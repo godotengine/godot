@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "string_db.h"
 #include "print_string.h"
-
+#include "os/os.h"
 StaticCString StaticCString::create(const char *p_ptr) {
 	StaticCString scs; scs.ptr=p_ptr; return scs;
 }
@@ -43,37 +43,51 @@ StringName _scs_create(const char *p_chr) {
 bool StringName::configured=false;
 
 void StringName::setup() {
-	
+
 	ERR_FAIL_COND(configured);
 	for(int i=0;i<STRING_TABLE_LEN;i++) {
-		
+
 		_table[i]=NULL;
 	}
 	configured=true;
 }
 
 void StringName::cleanup() {
-	
-	_global_lock();	
+
+	_global_lock();
+	int lost_strings=0;
 	for(int i=0;i<STRING_TABLE_LEN;i++) {
-		
+
 		while(_table[i]) {
-			
+
 			_Data*d=_table[i];
+			lost_strings++;
+			if (OS::get_singleton()->is_stdout_verbose()) {
+
+				if (d->cname) {
+					print_line("Orphan StringName: "+String(d->cname));
+				} else {
+					print_line("Orphan StringName: "+String(d->name));
+				}
+			}
+
 			_table[i]=_table[i]->next;
 			memdelete(d);
 		}
 	}
-	_global_unlock();	
+	if (OS::get_singleton()->is_stdout_verbose() && lost_strings) {
+		print_line("StringName: "+itos(lost_strings)+" unclaimed string names at exit.");
+	}
+	_global_unlock();
 }
 
 void StringName::unref() {
-	
+
 	ERR_FAIL_COND(!configured);
 
 	if (_data && _data->refcount.unref()) {
-		
-		_global_lock();	
+
+		_global_lock();
 
 		if (_data->prev) {
 			_data->prev->next=_data->next;
@@ -83,26 +97,26 @@ void StringName::unref() {
 			}
 			_table[_data->idx]=_data->next;
 		}
-		
+
 		if (_data->next) {
 			_data->next->prev=_data->prev;
 
 		}
 		memdelete(_data);
-		_global_unlock();		
+		_global_unlock();
 	}
-	
+
 	_data=NULL;
-	
+
 }
 
 bool StringName::operator==(const String& p_name) const {
-	
+
 	if (!_data) {
-		
+
 		return (p_name.length()==0);
 	}
-	
+
 	return (_data->get_name()==p_name);
 }
 
@@ -117,50 +131,50 @@ bool StringName::operator==(const char* p_name) const {
 }
 
 bool StringName::operator!=(const String& p_name) const {
-	
+
 	return !(operator==(p_name));
 }
 
 
 
 bool StringName::operator!=(const StringName& p_name) const {
-	
-	// the real magic of all this mess happens here. 
+
+	// the real magic of all this mess happens here.
 	// this is why path comparisons are very fast
 	return _data!=p_name._data;
-	
+
 }
 
 
 void StringName::operator=(const StringName& p_name) {
-	
+
 	if (this==&p_name)
 		return;
-	
+
 	unref();
-	
+
 	if (p_name._data && p_name._data->refcount.ref()) {
-		
-		_data = p_name._data;		
+
+		_data = p_name._data;
 	}
 }
-
+/* was inlined
 StringName::operator String() const {
-	
+
 	if (_data)
 		return _data->get_name();
-	
+
 	return "";
 }
-
+*/
 StringName::StringName(const StringName& p_name) {
-	
+
 	ERR_FAIL_COND(!configured);
 	_data=NULL;
 	if (p_name._data && p_name._data->refcount.ref()) {
-		
-		_data = p_name._data;		
-	}	
+
+		_data = p_name._data;
+	}
 }
 
 StringName::StringName(const char *p_name) {
@@ -170,17 +184,17 @@ StringName::StringName(const char *p_name) {
 	ERR_FAIL_COND(!configured);
 
 	ERR_FAIL_COND( !p_name || !p_name[0]);
-	
-	_global_lock();	
-	
+
+	_global_lock();
+
 	uint32_t hash = String::hash(p_name);
-	
+
 	uint32_t idx=hash&STRING_TABLE_MASK;
-	
+
 	_data=_table[idx];
-	
+
 	while(_data) {
-		
+
 		// compare hash first
 		if (_data->hash==hash && _data->get_name()==p_name)
 			break;
@@ -212,7 +226,7 @@ StringName::StringName(const char *p_name) {
 
 
 	_global_unlock();
-	
+
 }
 
 StringName::StringName(const StaticCString& p_static_string) {
@@ -254,7 +268,7 @@ StringName::StringName(const StaticCString& p_static_string) {
 
 	_data->refcount.init();
 	_data->hash=hash;
-	_data->idx=idx;	
+	_data->idx=idx;
 	_data->cname=p_static_string.ptr;
 	_data->next=_table[idx];
 	_data->prev=NULL;
@@ -269,26 +283,26 @@ StringName::StringName(const StaticCString& p_static_string) {
 
 
 StringName::StringName(const String& p_name) {
-	
+
 	_data=NULL;
 
 	ERR_FAIL_COND(!configured);
 
-	_global_lock();	
-	
+	_global_lock();
+
 	uint32_t hash = p_name.hash();
-	
+
 	uint32_t idx=hash&STRING_TABLE_MASK;
 
 	_data=_table[idx];
-	
+
 	while(_data) {
-		
+
 		if (_data->hash==hash && _data->get_name()==p_name)
 			break;
 		_data=_data->next;
 	}
-		
+
 
 	if (_data) {
 		if (_data->refcount.ref()) {
@@ -315,7 +329,7 @@ StringName::StringName(const String& p_name) {
 	_table[idx]=_data;
 
 	_global_unlock();
-	
+
 }
 
 StringName StringName::search(const char *p_name) {
@@ -421,12 +435,12 @@ StringName StringName::search(const String &p_name) {
 
 
 StringName::StringName() {
-	
+
 	_data=NULL;
 }
 
 StringName::~StringName() {
-	
+
 	unref();
 }
 

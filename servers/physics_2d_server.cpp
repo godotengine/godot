@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,18 +39,22 @@ void Physics2DDirectBodyState::integrate_forces() {
 
 	real_t av = get_angular_velocity();
 
-	float damp = 1.0 - step * get_total_density();
+	float damp = 1.0 - step * get_total_linear_damp();
 
 	if (damp<0) // reached zero in the given time
 		damp=0;
 
 	lv*=damp;
+
+	damp = 1.0 - step * get_total_angular_damp();
+
+	if (damp<0) // reached zero in the given time
+		damp=0;
+
 	av*=damp;
 
 	set_linear_velocity(lv);
 	set_angular_velocity(av);
-
-
 
 
 }
@@ -70,7 +74,8 @@ Physics2DServer * Physics2DServer::get_singleton() {
 void Physics2DDirectBodyState::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_total_gravity"),&Physics2DDirectBodyState::get_total_gravity);
-	ObjectTypeDB::bind_method(_MD("get_total_density"),&Physics2DDirectBodyState::get_total_density);
+	ObjectTypeDB::bind_method(_MD("get_total_linear_damp"),&Physics2DDirectBodyState::get_total_linear_damp);
+	ObjectTypeDB::bind_method(_MD("get_total_angular_damp"),&Physics2DDirectBodyState::get_total_angular_damp);
 
 	ObjectTypeDB::bind_method(_MD("get_inverse_mass"),&Physics2DDirectBodyState::get_inverse_mass);
 	ObjectTypeDB::bind_method(_MD("get_inverse_inertia"),&Physics2DDirectBodyState::get_inverse_inertia);
@@ -97,7 +102,7 @@ void Physics2DDirectBodyState::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_contact_collider_id","contact_idx"),&Physics2DDirectBodyState::get_contact_collider_id);
 	ObjectTypeDB::bind_method(_MD("get_contact_collider_object","contact_idx"),&Physics2DDirectBodyState::get_contact_collider_object);
 	ObjectTypeDB::bind_method(_MD("get_contact_collider_shape","contact_idx"),&Physics2DDirectBodyState::get_contact_collider_shape);
-	ObjectTypeDB::bind_method(_MD("get_contact_collider_shape_metadata:var","contact_idx"),&Physics2DDirectBodyState::get_contact_collider_shape_metadata);
+	ObjectTypeDB::bind_method(_MD("get_contact_collider_shape_metadata:Variant","contact_idx"),&Physics2DDirectBodyState::get_contact_collider_shape_metadata);
 	ObjectTypeDB::bind_method(_MD("get_contact_collider_velocity_at_pos","contact_idx"),&Physics2DDirectBodyState::get_contact_collider_velocity_at_pos);
 	ObjectTypeDB::bind_method(_MD("get_step"),&Physics2DDirectBodyState::get_step);
 	ObjectTypeDB::bind_method(_MD("integrate_forces"),&Physics2DDirectBodyState::integrate_forces);
@@ -280,10 +285,40 @@ Array Physics2DDirectSpaceState::_cast_motion(const Ref<Physics2DShapeQueryParam
 	Array ret(true);
 	ret.resize(2);
 	ret[0]=closest_safe;
-	ret[0]=closest_unsafe;
+	ret[1]=closest_unsafe;
 	return ret;
 
 }
+
+Array Physics2DDirectSpaceState::_intersect_point(const Vector2& p_point,int p_max_results,const Vector<RID>& p_exclude,uint32_t p_layers,uint32_t p_object_type_mask) {
+
+	Set<RID> exclude;
+	for(int i=0;i<p_exclude.size();i++)
+		exclude.insert(p_exclude[i]);
+
+	Vector<ShapeResult> ret;
+	ret.resize(p_max_results);
+
+	int rc = intersect_point(p_point,ret.ptr(),ret.size(),exclude,p_layers,p_object_type_mask);
+	if (rc==0)
+		return Array();
+
+	Array r;
+	r.resize(rc);
+	for(int i=0;i<rc;i++) {
+
+		Dictionary d;
+		d["rid"]=ret[i].rid;
+		d["collider_id"]=ret[i].collider_id;
+		d["collider"]=ret[i].collider;
+		d["shape"]=ret[i].shape;
+		d["metadata"]=ret[i].metadata;
+		r[i]=d;
+	}
+	return r;
+
+}
+
 Array Physics2DDirectSpaceState::_collide_shape(const Ref<Physics2DShapeQueryParameters> &psq, int p_max_results){
 
 	Vector<Vector2> ret;
@@ -331,6 +366,7 @@ Physics2DDirectSpaceState::Physics2DDirectSpaceState() {
 void Physics2DDirectSpaceState::_bind_methods() {
 
 
+	ObjectTypeDB::bind_method(_MD("intersect_point","point","max_results","exclude","layer_mask","type_mask"),&Physics2DDirectSpaceState::_intersect_point,DEFVAL(32),DEFVAL(Array()),DEFVAL(0x7FFFFFFF),DEFVAL(TYPE_MASK_COLLISION));
 	ObjectTypeDB::bind_method(_MD("intersect_ray:Dictionary","from","to","exclude","layer_mask","type_mask"),&Physics2DDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0x7FFFFFFF),DEFVAL(TYPE_MASK_COLLISION));
 	ObjectTypeDB::bind_method(_MD("intersect_shape","shape:Physics2DShapeQueryParameters","max_results"),&Physics2DDirectSpaceState::_intersect_shape,DEFVAL(32));
 	ObjectTypeDB::bind_method(_MD("cast_motion","shape:Physics2DShapeQueryParameters"),&Physics2DDirectSpaceState::_cast_motion);
@@ -385,12 +421,85 @@ void Physics2DShapeQueryResult::_bind_methods() {
 
 }
 
+///////////////////////////////
 
+/*bool Physics2DTestMotionResult::is_colliding() const {
 
+	return colliding;
+}*/
+Vector2 Physics2DTestMotionResult::get_motion() const{
 
+	return result.motion;
+}
+Vector2 Physics2DTestMotionResult::get_motion_remainder() const{
+
+	return result.remainder;
+}
+
+Vector2 Physics2DTestMotionResult::get_collision_point() const{
+
+	return result.collision_point;
+}
+Vector2 Physics2DTestMotionResult::get_collision_normal() const{
+
+	return result.collision_normal;
+}
+Vector2 Physics2DTestMotionResult::get_collider_velocity() const{
+
+	return result.collider_velocity;
+}
+ObjectID Physics2DTestMotionResult::get_collider_id() const{
+
+	return result.collider_id;
+}
+RID Physics2DTestMotionResult::get_collider_rid() const{
+
+	return result.collider;
+}
+
+Object* Physics2DTestMotionResult::get_collider() const {
+	return ObjectDB::get_instance(result.collider_id);
+}
+
+int Physics2DTestMotionResult::get_collider_shape() const{
+
+	return result.collider_shape;
+}
+
+void Physics2DTestMotionResult::_bind_methods() {
+
+	//ObjectTypeDB::bind_method(_MD("is_colliding"),&Physics2DTestMotionResult::is_colliding);
+	ObjectTypeDB::bind_method(_MD("get_motion"),&Physics2DTestMotionResult::get_motion);
+	ObjectTypeDB::bind_method(_MD("get_motion_remainder"),&Physics2DTestMotionResult::get_motion_remainder);
+	ObjectTypeDB::bind_method(_MD("get_collision_point"),&Physics2DTestMotionResult::get_collision_point);
+	ObjectTypeDB::bind_method(_MD("get_collision_normal"),&Physics2DTestMotionResult::get_collision_normal);
+	ObjectTypeDB::bind_method(_MD("get_collider_velocity"),&Physics2DTestMotionResult::get_collider_velocity);
+	ObjectTypeDB::bind_method(_MD("get_collider_id"),&Physics2DTestMotionResult::get_collider_id);
+	ObjectTypeDB::bind_method(_MD("get_collider_rid"),&Physics2DTestMotionResult::get_collider_rid);
+	ObjectTypeDB::bind_method(_MD("get_collider"),&Physics2DTestMotionResult::get_collider);
+	ObjectTypeDB::bind_method(_MD("get_collider_shape"),&Physics2DTestMotionResult::get_collider_shape);
+
+}
+
+Physics2DTestMotionResult::Physics2DTestMotionResult(){
+
+	colliding=false;
+	result.collider_id=0;
+	result.collider_shape=0;
+}
 
 
 ///////////////////////////////////////
+
+
+
+bool Physics2DServer::_body_test_motion(RID p_body,const Vector2& p_motion,float p_margin,const Ref<Physics2DTestMotionResult>& p_result) {
+
+	MotionResult *r=NULL;
+	if (p_result.is_valid())
+		r=p_result->get_result_ptr();
+	return body_test_motion(p_body,p_motion,p_margin,r);
+}
 
 void Physics2DServer::_bind_methods() {
 
@@ -427,6 +536,8 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("area_remove_shape","area","shape_idx"),&Physics2DServer::area_remove_shape);
 	ObjectTypeDB::bind_method(_MD("area_clear_shapes","area"),&Physics2DServer::area_clear_shapes);
 
+	ObjectTypeDB::bind_method(_MD("area_set_layer_mask","area","mask"),&Physics2DServer::area_set_layer_mask);
+	ObjectTypeDB::bind_method(_MD("area_set_collision_mask","area","mask"),&Physics2DServer::area_set_collision_mask);
 
 	ObjectTypeDB::bind_method(_MD("area_set_param","area","param","value"),&Physics2DServer::area_set_param);
 	ObjectTypeDB::bind_method(_MD("area_set_transform","area","transform"),&Physics2DServer::area_set_transform);
@@ -437,7 +548,7 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("area_attach_object_instance_ID","area","id"),&Physics2DServer::area_attach_object_instance_ID);
 	ObjectTypeDB::bind_method(_MD("area_get_object_instance_ID","area"),&Physics2DServer::area_get_object_instance_ID);
 
-	ObjectTypeDB::bind_method(_MD("area_set_monitor_callback","receiver","method"),&Physics2DServer::area_set_monitor_callback);
+	ObjectTypeDB::bind_method(_MD("area_set_monitor_callback","area","receiver","method"),&Physics2DServer::area_set_monitor_callback);
 
 	ObjectTypeDB::bind_method(_MD("body_create","mode","init_sleeping"),&Physics2DServer::body_create,DEFVAL(BODY_MODE_RIGID),DEFVAL(false));
 
@@ -475,8 +586,8 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("body_set_layer_mask","body","mask"),&Physics2DServer::body_set_layer_mask);
 	ObjectTypeDB::bind_method(_MD("body_get_layer_mask","body"),&Physics2DServer::body_get_layer_mask);
 
-	ObjectTypeDB::bind_method(_MD("body_set_user_mask","body","mask"),&Physics2DServer::body_set_user_mask);
-	ObjectTypeDB::bind_method(_MD("body_get_user_mask","body"),&Physics2DServer::body_get_user_mask);
+	ObjectTypeDB::bind_method(_MD("body_set_collision_mask","body","mask"),&Physics2DServer::body_set_collision_mask);
+	ObjectTypeDB::bind_method(_MD("body_get_collision_mask","body"),&Physics2DServer::body_get_collision_mask);
 
 
 	ObjectTypeDB::bind_method(_MD("body_set_param","body","param","value"),&Physics2DServer::body_set_param);
@@ -486,6 +597,7 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("body_get_state","body","state"),&Physics2DServer::body_get_state);
 
 	ObjectTypeDB::bind_method(_MD("body_apply_impulse","body","pos","impulse"),&Physics2DServer::body_apply_impulse);
+	ObjectTypeDB::bind_method(_MD("body_add_force","body","offset","force"),&Physics2DServer::body_add_force);
 	ObjectTypeDB::bind_method(_MD("body_set_axis_velocity","body","axis_velocity"),&Physics2DServer::body_set_axis_velocity);
 
 	ObjectTypeDB::bind_method(_MD("body_add_collision_exception","body","excepted_body"),&Physics2DServer::body_add_collision_exception);
@@ -495,10 +607,19 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("body_set_max_contacts_reported","body","amount"),&Physics2DServer::body_set_max_contacts_reported);
 	ObjectTypeDB::bind_method(_MD("body_get_max_contacts_reported","body"),&Physics2DServer::body_get_max_contacts_reported);
 
+	ObjectTypeDB::bind_method(_MD("body_set_one_way_collision_direction","body","normal"),&Physics2DServer::body_set_one_way_collision_direction);
+	ObjectTypeDB::bind_method(_MD("body_get_one_way_collision_direction","body"),&Physics2DServer::body_get_one_way_collision_direction);
+
+	ObjectTypeDB::bind_method(_MD("body_set_one_way_collision_max_depth","body","depth"),&Physics2DServer::body_set_one_way_collision_max_depth);
+	ObjectTypeDB::bind_method(_MD("body_get_one_way_collision_max_depth","body"),&Physics2DServer::body_get_one_way_collision_max_depth);
+
+
 	ObjectTypeDB::bind_method(_MD("body_set_omit_force_integration","body","enable"),&Physics2DServer::body_set_omit_force_integration);
 	ObjectTypeDB::bind_method(_MD("body_is_omitting_force_integration","body"),&Physics2DServer::body_is_omitting_force_integration);
 
-	ObjectTypeDB::bind_method(_MD("body_set_force_integration_callback","body","receiver","method"),&Physics2DServer::body_set_force_integration_callback);
+	ObjectTypeDB::bind_method(_MD("body_set_force_integration_callback","body","receiver","method","userdata"),&Physics2DServer::body_set_force_integration_callback,DEFVAL(Variant()));
+
+	ObjectTypeDB::bind_method(_MD("body_test_motion","body","motion","margin","result:Physics2DTestMotionResult"),&Physics2DServer::_body_test_motion,DEFVAL(0.08),DEFVAL(Variant()));
 
 	/* JOINT API */
 
@@ -509,7 +630,7 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("groove_joint_create","groove1_a","groove2_a","anchor_b","body_a","body_b"),&Physics2DServer::groove_joint_create,DEFVAL(RID()),DEFVAL(RID()));
 	ObjectTypeDB::bind_method(_MD("damped_spring_joint_create","anchor_a","anchor_b","body_a","body_b"),&Physics2DServer::damped_spring_joint_create,DEFVAL(RID()));
 
-	ObjectTypeDB::bind_method(_MD("damped_string_joint_set_param","joint","param","value"),&Physics2DServer::damped_string_joint_set_param,DEFVAL(RID()));
+	ObjectTypeDB::bind_method(_MD("damped_string_joint_set_param","joint","param","value"),&Physics2DServer::damped_string_joint_set_param);
 	ObjectTypeDB::bind_method(_MD("damped_string_joint_get_param","joint","param"),&Physics2DServer::damped_string_joint_get_param);
 
 	ObjectTypeDB::bind_method(_MD("joint_get_type","joint"),&Physics2DServer::joint_get_type);
@@ -518,7 +639,7 @@ void Physics2DServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_active","active"),&Physics2DServer::set_active);
 
-	ObjectTypeDB::bind_method(_MD("get_process_info"),&Physics2DServer::get_process_info);
+	ObjectTypeDB::bind_method(_MD("get_process_info","process_info"),&Physics2DServer::get_process_info);
 
 //	ObjectTypeDB::bind_method(_MD("init"),&Physics2DServer::init);
 //	ObjectTypeDB::bind_method(_MD("step"),&Physics2DServer::step);
@@ -537,13 +658,17 @@ void Physics2DServer::_bind_methods() {
 	BIND_CONSTANT( AREA_PARAM_GRAVITY );
 	BIND_CONSTANT( AREA_PARAM_GRAVITY_VECTOR );
 	BIND_CONSTANT( AREA_PARAM_GRAVITY_IS_POINT );
+	BIND_CONSTANT( AREA_PARAM_GRAVITY_DISTANCE_SCALE );
 	BIND_CONSTANT( AREA_PARAM_GRAVITY_POINT_ATTENUATION );
-	BIND_CONSTANT( AREA_PARAM_DENSITY );
+	BIND_CONSTANT( AREA_PARAM_LINEAR_DAMP);
+	BIND_CONSTANT( AREA_PARAM_ANGULAR_DAMP);
 	BIND_CONSTANT( AREA_PARAM_PRIORITY );
 
-	BIND_CONSTANT( AREA_SPACE_OVERRIDE_COMBINE );
 	BIND_CONSTANT( AREA_SPACE_OVERRIDE_DISABLED );
+	BIND_CONSTANT( AREA_SPACE_OVERRIDE_COMBINE );
+	BIND_CONSTANT( AREA_SPACE_OVERRIDE_COMBINE_REPLACE );
 	BIND_CONSTANT( AREA_SPACE_OVERRIDE_REPLACE );
+	BIND_CONSTANT( AREA_SPACE_OVERRIDE_REPLACE_COMBINE );
 
 	BIND_CONSTANT( BODY_MODE_STATIC );
 	BIND_CONSTANT( BODY_MODE_KINEMATIC );
@@ -553,6 +678,10 @@ void Physics2DServer::_bind_methods() {
 	BIND_CONSTANT( BODY_PARAM_BOUNCE );
 	BIND_CONSTANT( BODY_PARAM_FRICTION );
 	BIND_CONSTANT( BODY_PARAM_MASS );
+	BIND_CONSTANT( BODY_PARAM_INERTIA );
+	BIND_CONSTANT( BODY_PARAM_GRAVITY_SCALE );
+	BIND_CONSTANT( BODY_PARAM_LINEAR_DAMP);
+	BIND_CONSTANT( BODY_PARAM_ANGULAR_DAMP);
 	BIND_CONSTANT( BODY_PARAM_MAX );
 
 	BIND_CONSTANT( BODY_STATE_TRANSFORM );
@@ -589,7 +718,7 @@ void Physics2DServer::_bind_methods() {
 
 Physics2DServer::Physics2DServer() {
 
-	ERR_FAIL_COND( singleton!=NULL );
+	//ERR_FAIL_COND( singleton!=NULL );
 	singleton=this;
 }
 

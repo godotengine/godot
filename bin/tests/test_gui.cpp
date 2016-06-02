@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,16 +62,16 @@ class TestMainLoop : public SceneTree {
 
 
 	Control *control;
-	
+
 public:
 
 	virtual void request_quit() {
-	
+
 		quit();
-		
+
 	}
 	virtual void init() {
-	
+
 		SceneTree::init();
 
 
@@ -109,7 +109,10 @@ public:
 		frame->set_anchor( MARGIN_RIGHT, Control::ANCHOR_END );
 		frame->set_anchor( MARGIN_BOTTOM, Control::ANCHOR_END );
 		frame->set_end( Point2(0,0) );
-		
+
+		Ref<Theme> t = memnew( Theme );
+		frame->set_theme(t);
+
 		get_root()->add_child( frame );
 
 		Label *label = memnew( Label );
@@ -140,10 +143,10 @@ public:
 
 		img.resize(512,512);
 		img.generate_mipmaps();
-		img.compress();
-		Ref<Texture> text = memnew( Texture );
-		text->create_from_image(img);
-		tf->set_texture(text);
+		img.compress(Image::COMPRESS_PVRTC4);
+		Ref<ImageTexture> tt = memnew( ImageTexture );
+		tt->create_from_image(img);
+		tf->set_texture(tt);
 		tf->set_pos(Point2(50,50));
 		//tf->set_scale(Point2(0.3,0.3));
 
@@ -195,21 +198,21 @@ public:
 		//root->add_child( control );
 
 
-		
+
 		LineEdit *line_edit = memnew( LineEdit );
-		
+
 		line_edit->set_pos( Point2( 30,190 ) );
 		line_edit->set_size( Point2( 180,1 ) );
-		
+
 		frame->add_child(line_edit);
-		
+
 		HScrollBar *hscroll = memnew( HScrollBar );
-		
+
 		hscroll->set_pos( Point2( 30,290 ) );
 		hscroll->set_size( Point2( 180,1 ) );
 		hscroll->set_max(10);
 		hscroll->set_page(4);
-		
+
 		frame->add_child(hscroll);
 
 
@@ -231,36 +234,36 @@ public:
 		hscroll->share(progress);
 
 		MenuButton *menu_button = memnew( MenuButton );
-		
+
 		menu_button->set_text("I'm a menu!");
 		menu_button->set_pos( Point2( 30,380 ) );
 		menu_button->set_size( Point2( 1,1 ) );
-		
-		frame->add_child(menu_button);		
-		
+
+		frame->add_child(menu_button);
+
 		PopupMenu *popup = menu_button->get_popup();
-		
+
 		popup->add_item("Hello, testing");
 		popup->add_item("My Dearest");
 		popup->add_separator();
 		popup->add_item("Popup");
 		popup->add_check_item("Check Popup");
-		popup->set_item_checked(4,true);		
-				
+		popup->set_item_checked(4,true);
+
 		OptionButton *options = memnew( OptionButton );
-		
+
 		options->add_item("Hello, testing");
 		options->add_item("My Dearest");
-		
+
 		options->set_pos( Point2( 230,180 ) );
 		options->set_size( Point2( 1,1 ) );
-		
-		frame->add_child(options);		
+
+		frame->add_child(options);
 
 		/*
 		Tree * tree = memnew( Tree );
 		tree->set_columns(2);
-		
+
 		tree->set_pos( Point2( 230,210 ) );
 		tree->set_size( Point2( 150,250 ) );
 
@@ -283,7 +286,7 @@ public:
 		item->set_editable(0,true);
 		item->set_text(0,"Have,Many,Several,Options!");
 		item->set_range(0,2);
-		
+
 		frame->add_child(tree);
 */
 
@@ -362,11 +365,11 @@ public:
 		tabc->add_child(ctl);
 
 		frame->add_child(tabc);
-		
+
 		tabc->set_pos( Point2( 400,210 ) );
 		tabc->set_size( Point2( 180,250 ) );
 
-		
+
 		Ref<ImageTexture> text = memnew( ImageTexture );
 		text->load("test_data/concave.png");
 
@@ -384,13 +387,13 @@ public:
 	}
 
 
-	
+
 };
 
 
 MainLoop* test() {
 
-	
+
 	return memnew( TestMainLoop );
 }
 

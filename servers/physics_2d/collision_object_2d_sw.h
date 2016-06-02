@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,7 @@ private:
 	Type type;
 	RID self;
 	ObjectID instance_id;
+	bool pickable;
 
 	struct Shape {
 
@@ -64,7 +65,7 @@ private:
 	Space2DSW *space;
 	Matrix32 transform;
 	Matrix32 inv_transform;
-	uint32_t user_mask;
+	uint32_t collision_mask;
 	uint32_t layer_mask;
 	bool _static;
 
@@ -116,8 +117,8 @@ public:
 	_FORCE_INLINE_ bool is_shape_set_as_trigger(int p_idx) const { return shapes[p_idx].trigger; }
 
 
-	void set_user_mask(uint32_t p_mask) {user_mask=p_mask;}
-	_FORCE_INLINE_ uint32_t get_user_mask() const { return user_mask; }
+	void set_collision_mask(uint32_t p_mask) {collision_mask=p_mask;}
+	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collision_mask; }
 
 	void set_layer_mask(uint32_t p_mask) {layer_mask=p_mask;}
 	_FORCE_INLINE_ uint32_t get_layer_mask() const { return layer_mask; }
@@ -128,6 +129,14 @@ public:
 	virtual void set_space(Space2DSW *p_space)=0;
 
 	_FORCE_INLINE_ bool is_static() const { return _static;  }
+
+	void set_pickable(bool p_pickable) { pickable=p_pickable; }
+	_FORCE_INLINE_ bool is_pickable() const { return pickable; }
+
+	_FORCE_INLINE_ bool test_collision_mask(CollisionObject2DSW* p_other) const {
+
+		return layer_mask&p_other->collision_mask || p_other->layer_mask&collision_mask;
+	}
 
 	virtual ~CollisionObject2DSW() {}
 

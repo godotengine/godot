@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "scene/3d/spatial.h"
 #include "scene/3d/skeleton.h"
 #include "scene/main/misc.h"
+#include "animation_player.h"
 
 
 class AnimationTreePlayer : public Node {
@@ -42,7 +43,10 @@ class AnimationTreePlayer : public Node {
 	OBJ_CATEGORY("Animation Nodes");
 
 public:
-
+	enum AnimationProcessMode {
+		ANIMATION_PROCESS_FIXED,
+		ANIMATION_PROCESS_IDLE,
+	};
 
 	enum NodeType {
 
@@ -95,7 +99,7 @@ private:
 
 	struct Track {
 		uint32_t id;
-		Node *node;
+		Object *object;
 		Spatial* spatial;
 		Skeleton *skeleton;
 		int bone_idx;
@@ -105,6 +109,9 @@ private:
 		Quat rot;
 		Vector3 scale;
 
+		Variant value;
+
+		bool skip;
 	};
 
 
@@ -156,6 +163,9 @@ private:
 		float step;
 		String from;
 		bool skip;
+
+		HashMap<NodePath,bool> filter;
+
 		AnimationNode() { type=NODE_ANIMATION;  next=NULL; last_version=0; skip=false; }
 	};
 
@@ -242,6 +252,7 @@ private:
 		float xfade;
 
 		TransitionNode() { type=NODE_TRANSITION;  xfade=0; inputs.resize(1); input_data.resize(1); current=0; prev=-1; prev_time=0; prev_xfading=0; switched=false; }
+		void set_current(int p_current);
 	};
 
 
@@ -256,13 +267,15 @@ private:
 
 	ConnectError last_error;
 	AnimationNode *active_list;
+	AnimationProcessMode animation_process_mode;
+	bool processing;
 	bool active;
 	bool dirty_caches;
 	Map<StringName,NodeBase*> node_map;
 
 	// return time left to finish animation
 	float _process_node(const StringName& p_node,AnimationNode **r_prev_anim, float p_weight,float p_step, bool p_seek=false,const HashMap<NodePath,bool> *p_filter=NULL, float p_reverse_weight=0);
-	void _process_animation();
+	void _process_animation(float p_delta);
 	bool reset_request;
 
 	ConnectError _cycle_test(const StringName &p_at_node);
@@ -300,6 +313,10 @@ public:
 	Ref<Animation> animation_node_get_animation(const StringName& p_node) const;
 	void animation_node_set_master_animation(const StringName& p_node,const String& p_master_animation);
 	String animation_node_get_master_animation(const StringName& p_node) const;
+
+	void animation_node_set_filter_path(const StringName& p_node,const NodePath& p_filter,bool p_enable);
+	void animation_node_set_get_filtered_paths(const StringName& p_node,List<NodePath> *r_paths) const;
+	bool animation_node_is_path_filtered(const StringName& p_node,const NodePath& p_path) const;
 
 	/* ONE SHOT NODE */
 
@@ -409,12 +426,21 @@ public:
 
 	ConnectError get_last_error() const;
 
+	void set_animation_process_mode(AnimationProcessMode p_mode);
+	AnimationProcessMode get_animation_process_mode() const;
+
+	void _set_process(bool p_process, bool p_force = false);
+
+	void advance(float p_time);
+
 	AnimationTreePlayer();
 	~AnimationTreePlayer();
 
 };
 
 VARIANT_ENUM_CAST( AnimationTreePlayer::NodeType );
+VARIANT_ENUM_CAST( AnimationTreePlayer::AnimationProcessMode );
+
 #endif // ANIMATION_TREE_PLAYER_H
 
 

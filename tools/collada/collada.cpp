@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -817,7 +817,7 @@ void Collada::_parse_camera(XMLParser& parser) {
 			if (name=="perspective") {
 
 				camera.mode=CameraData::MODE_PERSPECTIVE;
-			} else if (name=="orthogonal") {
+			} else if (name=="orthographic") {
 
 				camera.mode=CameraData::MODE_ORTHOGONAL;
 			} else if (name=="xfov") {
@@ -979,7 +979,7 @@ void Collada::_parse_curve_geometry(XMLParser& parser,String p_id,String p_name)
 				current_source=id;
 				COLLADA_PRINT("source data: "+id);
 
-			} else if (section=="float_array" || section=="array" || section=="float_array") {
+			} else if (section=="float_array" || section=="array") {
 				// create a new array and read it.
 				if (curvedata.sources.has(current_source)) {
 
@@ -1650,7 +1650,7 @@ Collada::Node* Collada::_parse_visual_scene_node(XMLParser& parser) {
 
 	String name;
 
-	String id = parser.get_attribute_value_safe("id");	
+	String id = parser.get_attribute_value_safe("id");
 
 	bool found_name=false;
 
@@ -1683,8 +1683,12 @@ Collada::Node* Collada::_parse_visual_scene_node(XMLParser& parser) {
 		if ( parser.has_attribute("sid") ) { //bones may not have sid
 			joint->sid=parser.get_attribute_value("sid");
 //			state.bone_map[joint->sid]=joint;
-		} else if (state.idref_joints.has(name))
+		} else if (state.idref_joints.has(name)) {
 			joint->sid=name; //kind of a cheat but..
+		} else if (parser.has_attribute("name")) {
+			joint->sid=parser.get_attribute_value_safe("name");
+		}
+
 
 		if (joint->sid!="") {
 			state.sid_to_node_map[joint->sid]=id;
@@ -2054,8 +2058,8 @@ void Collada::_parse_animation(XMLParser& parser) {
 			}
 
 			if (target.find("/")!=-1) { //transform component
-				track.target=target.get_slice("/",0);
-				track.param=target.get_slice("/",1);
+				track.target=target.get_slicec('/',0);
+				track.param=target.get_slicec('/',1);
 				if (track.param.find(".")!=-1)
 					track.component=track.param.get_slice(".",1).to_upper();
 				track.param=track.param.get_slice(".",0);

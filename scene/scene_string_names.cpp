@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,14 +41,18 @@ SceneStringNames::SceneStringNames() {
 	visibility_changed=StaticCString::create("visibility_changed");
 	input_event=StaticCString::create("input_event");
 	shader_shader=StaticCString::create("shader/shader");
+	shader_unshaded=StaticCString::create("shader/unshaded");
+	shading_mode=StaticCString::create("shader/shading_mode");
 	enter_tree=StaticCString::create("enter_tree");
 	exit_tree=StaticCString::create("exit_tree");
 	item_rect_changed=StaticCString::create("item_rect_changed");
 	size_flags_changed=StaticCString::create("size_flags_changed");
 	minimum_size_changed=StaticCString::create("minimum_size_changed");
+	sleeping_state_changed=StaticCString::create("sleeping_state_changed");
 
 	finished=StaticCString::create("finished");
 	animation_changed=StaticCString::create("animation_changed");
+	animation_started=StaticCString::create("animation_started");
 
 	mouse_enter=StaticCString::create("mouse_enter");
 	mouse_exit=StaticCString::create("mouse_exit");
@@ -63,10 +67,16 @@ SceneStringNames::SceneStringNames() {
 	body_exit_shape = StaticCString::create("body_exit_shape");
 	body_exit = StaticCString::create("body_exit");
 
+	area_enter_shape = StaticCString::create("area_enter_shape");
+	area_exit_shape = StaticCString::create("area_exit_shape");
+
+	_body_inout = StaticCString::create("_body_inout");
+	_area_inout = StaticCString::create("_area_inout");
 
 	idle=StaticCString::create("idle");
 	iteration=StaticCString::create("iteration");
 	update=StaticCString::create("update");
+	updated=StaticCString::create("updated");
 
 	_get_gizmo_geometry=StaticCString::create("_get_gizmo_geometry");
 	_can_gizmo_scale=StaticCString::create("_can_gizmo_scale");
@@ -100,6 +110,9 @@ SceneStringNames::SceneStringNames() {
 
 	_body_enter_tree = StaticCString::create("_body_enter_tree");
 	_body_exit_tree = StaticCString::create("_body_exit_tree");
+
+	_area_enter_tree = StaticCString::create("_area_enter_tree");
+	_area_exit_tree = StaticCString::create("_area_exit_tree");
 
 	_input_event=StaticCString::create("_input_event");
 
@@ -152,4 +165,22 @@ SceneStringNames::SceneStringNames() {
 
 	frame_changed=StaticCString::create("frame_changed");
 
+	playback_speed=StaticCString::create("playback/speed");
+	playback_active=StaticCString::create("playback/active");
+	autoplay=StaticCString::create("autoplay");
+	blend_times=StaticCString::create("blend_times");
+	speed=StaticCString::create("speed");
+
+	node_configuration_warning_changed = StaticCString::create("node_configuration_warning_changed");
+
+	path_pp=NodePath("..");
+
+	_default=StaticCString::create("default");
+
+	for(int i=0;i<MAX_MATERIALS;i++) {
+
+		mesh_materials[i]="material/"+itos(i);
+	}
+
+	_mesh_changed=StaticCString::create("_mesh_changed");
 }

@@ -5,5 +5,3 @@ env.add_source_files(env.servers_sources,"*.cpp")
 Export('env')
 
 SConscript("joints/SCsub")
-
-

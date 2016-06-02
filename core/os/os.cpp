@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include <stdarg.h>
 #include "dir_access.h"
 #include "globals.h"
-
+#include "input.h"
 
 OS* OS::singleton=NULL;
 
@@ -43,11 +43,16 @@ OS* OS::get_singleton() {
 uint32_t OS::get_ticks_msec() const
 { return get_ticks_usec()/1000; }
 
+uint64_t OS::get_splash_tick_msec() const {
+	return _msec_splash;
+}
 uint64_t OS::get_unix_time() const {
 
 	return 0;
 };
-
+uint64_t OS::get_system_time_secs() const {
+	return 0;
+}
 void OS::debug_break() {
 
 	// something
@@ -56,9 +61,16 @@ void OS::debug_break() {
 
 void OS::print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type) {
 
+	const char* err_type;
+	switch(p_type) {
+		case ERR_ERROR: err_type="**ERROR**"; break;
+		case ERR_WARNING: err_type="**WARNING**"; break;
+		case ERR_SCRIPT: err_type="**SCRIPT ERROR**"; break;
+	}
+
 	if (p_rationale && *p_rationale)
-		print("**ERROR**: %s\n ",p_rationale);
-	print("**ERROR**: At: %s:%i:%s() - %s\n",p_file,p_line,p_function,p_code);
+		print("%s: %s\n ",err_type,p_rationale);
+	print("%s: At: %s:%i:%s() - %s\n",err_type,p_file,p_line,p_function,p_code);
 }
 
 void OS::print(const char* p_format, ...) {
@@ -98,6 +110,14 @@ void OS::set_target_fps(int p_fps) {
 
 float OS::get_target_fps() const {
 	return _target_fps;
+}
+
+void OS::set_keep_screen_on(bool p_enabled) {
+	_keep_screen_on=p_enabled;
+}
+
+bool OS::is_keep_screen_on() const {
+	return _keep_screen_on;
 }
 
 void OS::set_low_processor_usage_mode(bool p_enabled) {
@@ -358,7 +378,7 @@ Error OS::set_cwd(const String& p_cwd) {
 bool OS::has_touchscreen_ui_hint() const {
 
 	//return false;
-	return GLOBAL_DEF("display/emulate_touchscreen",false);
+	return Input::get_singleton() && Input::get_singleton()->is_emulating_touchscreen();
 }
 
 int OS::get_free_static_memory() const {
@@ -458,6 +478,10 @@ void OS::native_video_pause() {
 
 };
 
+void OS::native_video_unpause() {
+
+};
+
 void OS::native_video_stop() {
 
 };
@@ -485,17 +509,34 @@ void OS::set_time_scale(float p_scale) {
 	_time_scale=p_scale;
 }
 
+OS::LatinKeyboardVariant OS::get_latin_keyboard_variant() const {
+
+	return LATIN_KEYBOARD_QWERTY;
+}
+
 float OS::get_time_scale() const {
 
 	return _time_scale;
 }
 
+bool OS::is_joy_known(int p_device) {
+	return true;
+}
+
+String OS::get_joy_guid(int p_device) const {
+	return "Default Joystick";
+}
+
+void OS::set_context(int p_context) {
+
+}
 
 OS::OS() {
 	last_error=NULL;
 	frames_drawn=0;
 	singleton=this;
 	ips=60;
+	_keep_screen_on=true; // set default value to true, because this had been true before godot 2.0.
 	low_processor_usage_mode=false;
 	_verbose_stdout=false;
 	_frame_delay=0;
@@ -506,6 +547,8 @@ OS::OS() {
 	_target_fps=0;
 	_render_thread_mode=RENDER_THREAD_SAFE;
 	_time_scale=1.0;
+	_pixel_snap=false;
+	_allow_hidpi=true;
 	Math::seed(1234567);
 }
 

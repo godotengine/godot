@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,40 +36,136 @@
 #include "scene/gui/tool_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/progress_bar.h"
+#include "scene/gui/split_container.h"
+
 #include "os/dir_access.h"
 #include "os/thread.h"
 
 #include "editor_file_system.h"
-
+#include "editor_dir_dialog.h"
+#include "dependency_editor.h"
 
 class EditorNode;
 
-class ScenesDockFilter;
+
 class ScenesDock : public VBoxContainer {
 	OBJ_TYPE( ScenesDock, VBoxContainer );
+
+	enum FileMenu {
+		FILE_OPEN,
+		FILE_INSTANCE,
+		FILE_DEPENDENCIES,
+		FILE_OWNERS,
+		FILE_MOVE,
+		FILE_REMOVE,
+		FILE_REIMPORT,
+		FILE_INFO,
+		FILE_SHOW_IN_EXPLORER
+	};
+
+
+	VBoxContainer *scanning_vb;
+	ProgressBar *scanning_progress;
+	VSplitContainer *split_box;
+	VBoxContainer *file_list_vb;
 
 	EditorNode *editor;
 	Set<String> favorites;
 
 	Button *button_reload;
-	Button *button_instance;
 	Button *button_favorite;
-	Button *button_open;
-	Timer *timer;
+	Button *button_back;
+	Button *display_mode;
+	Button *button_hist_next;
+	Button *button_hist_prev;
+	LineEdit *current_path;
+	LineEdit *search_box;
+	TextureFrame *search_icon;
+	HBoxContainer *path_hb;
 
-	ScenesDockFilter *tree_filter;
+	bool split_mode;
+
+	PopupMenu *file_options;
+
+	DependencyEditor *deps_editor;
+	DependencyEditorOwners *owners_editor;
+	DependencyRemoveDialog *remove_dialog;
+
+	EditorDirDialog *move_dialog;
+	EditorFileDialog *rename_dialog;
+
+	Vector<String> move_dirs;
+	Vector<String> move_files;
+
+
+	Vector<String> history;
+	int history_pos;
+
+	String path;
+
+	bool initialized;
 
 	bool updating_tree;
-	Tree * tree;
-	bool _create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir);
+	Tree * tree; //directories
+	ItemList *files;
 
+	void _go_to_tree();
+	void _go_to_dir(const String& p_dir);
+	void _select_file(int p_idx);
+
+	bool _create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir);
+	void _thumbnail_done(const String& p_path,const Ref<Texture>& p_preview, const Variant& p_udata);
+	void _find_inside_move_files(EditorFileSystemDirectory *efsd,Vector<String>& files);
+	void _find_remaps(EditorFileSystemDirectory *efsd,Map<String,String> &renames,List<String>& to_remaps);
+
+	void _rename_operation(const String& p_to_path);
+	void _move_operation(const String& p_to_path);
+
+
+	void _file_option(int p_option);
+	void _update_files(bool p_keep_selection);
+	void _change_file_display();
+
+	void _fs_changed();
+	void _fw_history();
+	void _bw_history();
+	void _push_to_history();
+
+
+	void _dir_selected();
 	void _update_tree();
 	void _rescan();
-	void _favorites_toggled(bool);
-	void _favorite_toggled();
-	void _instance_pressed();
+	void _set_scannig_mode();
+
+
+	void _favorites_pressed();
 	void _open_pressed();
-	void _save_favorites();
+	void _search_changed(const String& p_text);
+
+
+	void _files_list_rmb_select(int p_item,const Vector2& p_pos);
+
+
+	struct FileInfo {
+		String name;
+		String path;
+		StringName type;
+		int import_status; //0 not imported, 1 - ok, 2- must reimport, 3- broken
+		Vector<String> sources;
+
+		bool operator<(const FileInfo& fi) const {
+			return name < fi.name;
+		}
+	};
+
+	void _search(EditorFileSystemDirectory *p_path, List<FileInfo>* matches, int p_max_items);
+
+	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
+	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
+	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
 
 protected:
 	void _notification(int p_what);
@@ -78,47 +174,16 @@ public:
 
 	String get_selected_path() const;
 
+	String get_current_path() const;
+	void focus_on_filter();
+
+	void fix_dependencies(const String& p_for_file);
+
+	void set_use_thumbnails(bool p_use);
+
 	ScenesDock(EditorNode *p_editor);
 	~ScenesDock();
 };
 
-class ScenesDockFilter : public HBoxContainer {
-
-	OBJ_TYPE( ScenesDockFilter, HBoxContainer );
-
-private:
-	friend class ScenesDock;
-
-	enum Command {
-		CMD_CLEAR_FILTER,
-	};
-
-	Tree *tree;
-	OptionButton *filter_option;
-	LineEdit *search_box;
-	ToolButton *clear_search_button;
-
-	enum FilterOption {
-		FILTER_PATH, // NAME or Folder
-		FILTER_NAME,
-		FILTER_FOLDER,
-	};
-	FilterOption _current_filter;
-	//Vector<String> filters;
-
-	void _command(int p_command);
-	void _search_text_changed(const String& p_newtext);
-	void _setup_filters();
-	void _file_filter_selected(int p_idx);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	String get_search_term();
-	FilterOption get_file_filter();
-	ScenesDockFilter();
-};
 
 #endif // SCENES_DOCK_H

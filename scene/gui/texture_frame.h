@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,13 +36,22 @@
 class TextureFrame : public Control {
 
 	OBJ_TYPE(TextureFrame,Control);
-
+public:
+	enum StretchMode {
+		STRETCH_SCALE_ON_EXPAND, //default, for backwards compatibility
+		STRETCH_SCALE,
+		STRETCH_TILE,
+		STRETCH_KEEP,
+		STRETCH_KEEP_CENTERED,
+	};
+private:
 	bool expand;
 	Color modulate;
 	Ref<Texture> texture;
+	StretchMode stretch_mode;
 protected:
 
-	void _notification(int p_what);	
+	void _notification(int p_what);
 	virtual Size2 get_minimum_size() const;
 	static void _bind_methods();
 
@@ -57,9 +66,13 @@ public:
 	void set_expand(bool p_expand);
 	bool has_expand() const;
 
+	void set_stretch_mode(StretchMode p_mode);
+	StretchMode get_stretch_mode() const;
+
 	TextureFrame();
 	~TextureFrame();
 
 };
 
+VARIANT_ENUM_CAST( TextureFrame::StretchMode );
 #endif // TEXTURE_FRAME_H

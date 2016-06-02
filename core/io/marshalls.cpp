@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,10 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 	const uint8_t * buf=p_buffer;
 	int len=p_len;
 
-	ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
+	if (len<4) {
+
+		ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
+	}
 
 
 	uint32_t type=decode_uint32(buf);
@@ -92,7 +95,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 			str.parse_utf8((const char*)buf,strlen);
 			r_variant=str;
 
-			if (r_len) {				
+			if (r_len) {
 				if (strlen%4)
 					(*r_len)+=4-strlen%4;
 				(*r_len)+=4+strlen;
@@ -291,7 +294,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 		} break;
 		case Variant::NODE_PATH: {
 
-			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);			
+			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
 			uint32_t strlen = decode_uint32(buf);
 
 			if (strlen&0x80000000) {
@@ -299,10 +302,8 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 				ERR_FAIL_COND_V(len<12,ERR_INVALID_DATA);
 				Vector<StringName> names;
 				Vector<StringName> subnames;
-				bool absolute;
 				StringName prop;
 
-				int i=0;
 				uint32_t namecount=strlen&=0x7FFFFFFF;
 				uint32_t subnamecount = decode_uint32(buf+4);
 				uint32_t flags = decode_uint32(buf+8);
@@ -391,7 +392,6 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 
 			ie.type=decode_uint32(&buf[0]);
 			ie.device=decode_uint32(&buf[4]);
-			uint32_t len = decode_uint32(&buf[8])-12;
 
 			if (r_len)
 				(*r_len)+=12;
@@ -438,8 +438,9 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 				case InputEvent::JOYSTICK_MOTION: {
 
 					ie.joy_motion.axis=decode_uint32(&buf[12]);
+					ie.joy_motion.axis_value=decode_float(&buf[16]);
 					if (r_len)
-						(*r_len)+=4;
+						(*r_len)+=8;
 				} break;
 			}
 
@@ -1077,7 +1078,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 
 			r_len+=data.size()+5*4+pad;
 
-		} break;		
+		} break;
 		/*case Variant::RESOURCE: {
 
 			ERR_EXPLAIN("Can't marshallize resources");
@@ -1154,8 +1155,9 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 
 						int axis = ie.joy_motion.axis;
 						encode_uint32(axis,&buf[llen]);
+						encode_float(ie.joy_motion.axis_value, &buf[llen+4]);
 					}
-					llen+=4;
+					llen+=8;
 				} break;
 			}
 
@@ -1238,7 +1240,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			DVector<uint8_t> data = p_variant;
 			int datalen=data.size();
 			int datasize=sizeof(uint8_t);
-			
+
 			if (buf) {
 				encode_uint32(datalen,buf);
 				buf+=4;

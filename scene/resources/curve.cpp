@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -134,7 +134,7 @@ Vector2 Curve2D::interpolate(int p_index, float p_offset) const {
 Vector2 Curve2D::interpolatef(real_t p_findex) const {
 
 
-	if (p_findex>0)
+	if (p_findex<0)
 		p_findex=0;
 	else if (p_findex>=points.size())
 		p_findex=points.size();
@@ -485,7 +485,7 @@ Vector2 Curve2D::interpolate(int p_index, float p_offset) const {
 Vector2 Curve2D::interpolatef(real_t p_findex) const {
 
 
-	if (p_findex>0)
+	if (p_findex<0)
 		p_findex=0;
 	else if (p_findex>=points.size())
 		p_findex=points.size();
@@ -541,19 +541,13 @@ void Curve2D::_bake() const {
 
 
 	Vector2 pos=points[0].pos;
-	int point=0;
-	float ofs=0;
 	List<Vector2> pointlist;
 
+	pointlist.push_back(pos); //start always from origin
 
 	for(int i=0;i<points.size()-1;i++) {
 
-		float slen=points[i].pos.distance_to(points[i+1].pos);
-		float divs = slen / bake_interval;
-		if (divs>1)
-			divs=1;
-
-		float step = divs*0.1; // 10 substeps ought to be enough?
+		float step = 0.1; // at least 10 substeps ought to be enough?
 		float p = 0;
 
 		while(p<1.0) {
@@ -805,6 +799,7 @@ void Curve2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_baked_length"),&Curve2D::get_baked_length);
 	ObjectTypeDB::bind_method(_MD("interpolate_baked","offset","cubic"),&Curve2D::interpolate_baked,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_baked_points"),&Curve2D::get_baked_points);
+	ObjectTypeDB::bind_method(_MD("tesselate","max_stages","tolerance_degrees"),&Curve2D::tesselate,DEFVAL(5),DEFVAL(4));
 
 	ObjectTypeDB::bind_method(_MD("_get_data"),&Curve2D::_get_data);
 	ObjectTypeDB::bind_method(_MD("_set_data"),&Curve2D::_set_data);
@@ -956,7 +951,7 @@ Vector3 Curve3D::interpolate(int p_index, float p_offset) const {
 Vector3 Curve3D::interpolatef(real_t p_findex) const {
 
 
-	if (p_findex>0)
+	if (p_findex<0)
 		p_findex=0;
 	else if (p_findex>=points.size())
 		p_findex=points.size();
@@ -1014,19 +1009,12 @@ void Curve3D::_bake() const {
 
 
 	Vector3 pos=points[0].pos;
-	int point=0;
-	float ofs=0;
 	List<Plane> pointlist;
 	pointlist.push_back(Plane(pos,points[0].tilt));
 
 	for(int i=0;i<points.size()-1;i++) {
 
-		float slen=points[i].pos.distance_to(points[i+1].pos);
-		float divs = slen / bake_interval;
-		if (divs>1)
-			divs=1;
-
-		float step = divs*0.1; // 10 substeps ought to be enough?
+		float step = 0.1; // at least 10 substeps ought to be enough?
 		float p = 0;
 
 		while(p<1.0) {
@@ -1344,6 +1332,7 @@ void Curve3D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("interpolate_baked","offset","cubic"),&Curve3D::interpolate_baked,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_baked_points"),&Curve3D::get_baked_points);
 	ObjectTypeDB::bind_method(_MD("get_baked_tilts"),&Curve3D::get_baked_tilts);
+	ObjectTypeDB::bind_method(_MD("tesselate","max_stages","tolerance_degrees"),&Curve3D::tesselate,DEFVAL(5),DEFVAL(4));
 
 	ObjectTypeDB::bind_method(_MD("_get_data"),&Curve3D::_get_data);
 	ObjectTypeDB::bind_method(_MD("_set_data"),&Curve3D::_set_data);

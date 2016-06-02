@@ -15,14 +15,15 @@ static _FORCE_INLINE_ uint16_t le_short(uint16_t s)
 }
 
 
-void AudioStreamSpeex::update() {
+int AudioStreamPlaybackSpeex::mix(int16_t* p_buffer,int p_frames) {
 
-	_THREAD_SAFE_METHOD_;
+
+
 	//printf("update, loops %i, read ofs %i\n", (int)loops, read_ofs);
 	//printf("playing %i, paused %i\n", (int)playing, (int)paused);
 
-	if (!playing || paused || !data.size())
-		return;
+	if (!active || !playing || !data.size())
+		return 0;
 
 	/*
 	if (read_ofs >= data.size()) {
@@ -35,12 +36,13 @@ void AudioStreamSpeex::update() {
 	};
 	*/
 
-	int todo = get_todo();
+	int todo = p_frames;
 	if (todo < page_size) {
-		return;
+		return 0;
 	};
 
-	int eos = 0;
+	int eos = 0;	
+	bool reloaded=false;
 
 	while (todo > page_size) {
 
@@ -92,7 +94,7 @@ void AudioStreamSpeex::update() {
 				for (int j=0;j!=nframes;j++)
 				{
 
-					int16_t* out = get_write_buffer();
+					int16_t* out = p_buffer;
 
 					int ret;
 					/*Decode frame*/
@@ -120,7 +122,7 @@ void AudioStreamSpeex::update() {
 
 
 					/*Convert to short and save to output file*/
-					for (int i=0;i<frame_size*get_channel_count();i++) {
+					for (int i=0;i<frame_size*stream_channels;i++) {
 						out[i]=le_short(out[i]);
 					}
 
@@ -149,7 +151,7 @@ void AudioStreamSpeex::update() {
 						}
 
 
-						write(new_frame_size);
+						p_buffer+=new_frame_size*stream_channels;
 						todo-=new_frame_size;
 					}
 				}
@@ -175,6 +177,7 @@ void AudioStreamSpeex::update() {
 				if (loops) {					
 					reload();
 					++loop_count;
+					//break;
 				} else {
 					playing=false;
 					unload();
@@ -183,18 +186,22 @@ void AudioStreamSpeex::update() {
 			}
 		};
 	};
+
+	return p_frames-todo;
 };
 
 
-void AudioStreamSpeex::unload() {
+void AudioStreamPlaybackSpeex::unload() {
 
-	_THREAD_SAFE_METHOD_
+
 
 	if (!active) return;
 
 	speex_bits_destroy(&bits);
 	if (st)
 		speex_decoder_destroy(st);
+
+	ogg_sync_clear(&oy);
 	active = false;
 	//data.resize(0);
 	st = NULL;
@@ -204,7 +211,7 @@ void AudioStreamSpeex::unload() {
 	loop_count = 0;
 }
 
-void *AudioStreamSpeex::process_header(ogg_packet *op, int *frame_size, int *rate, int *nframes, int *channels, int *extra_headers) {
+void *AudioStreamPlaybackSpeex::process_header(ogg_packet *op, int *frame_size, int *rate, int *nframes, int *channels, int *extra_headers) {
 
 	void *st;
 	SpeexHeader *header;
@@ -276,9 +283,9 @@ void *AudioStreamSpeex::process_header(ogg_packet *op, int *frame_size, int *rat
 
 
 
-void AudioStreamSpeex::reload() {
+void AudioStreamPlaybackSpeex::reload() {
 
-	_THREAD_SAFE_METHOD_
+
 
 	if (active)
 		unload();
@@ -359,8 +366,10 @@ void AudioStreamSpeex::reload() {
 					};
 
 					page_size = nframes * frame_size;
+					stream_srate=rate;
+					stream_channels=channels;
+					stream_minbuff_size=page_size;
 
-					_setup(channels, rate,page_size);
 
 				} else if (packet_count==1)
 				{
@@ -374,23 +383,23 @@ void AudioStreamSpeex::reload() {
 
 	} while (packet_count <= extra_headers);
 
-	active = true;
+	active=true;
 
 }
 
-void AudioStreamSpeex::_bind_methods() {
+void AudioStreamPlaybackSpeex::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_file","file"),&AudioStreamSpeex::set_file);
-	ObjectTypeDB::bind_method(_MD("get_file"),&AudioStreamSpeex::get_file);
+	//ObjectTypeDB::bind_method(_MD("set_file","file"),&AudioStreamPlaybackSpeex::set_file);
+//	ObjectTypeDB::bind_method(_MD("get_file"),&AudioStreamPlaybackSpeex::get_file);
 
-	ObjectTypeDB::bind_method(_MD("_set_bundled"),&AudioStreamSpeex::_set_bundled);
-	ObjectTypeDB::bind_method(_MD("_get_bundled"),&AudioStreamSpeex::_get_bundled);
+	ObjectTypeDB::bind_method(_MD("_set_bundled"),&AudioStreamPlaybackSpeex::_set_bundled);
+	ObjectTypeDB::bind_method(_MD("_get_bundled"),&AudioStreamPlaybackSpeex::_get_bundled);
 
 	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"_bundled",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_BUNDLE),_SCS("_set_bundled"),_SCS("_get_bundled"));
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"file",PROPERTY_HINT_FILE,"*.spx"),_SCS("set_file"),_SCS("get_file"));
+	//ADD_PROPERTY( PropertyInfo(Variant::STRING,"file",PROPERTY_HINT_FILE,"*.spx"),_SCS("set_file"),_SCS("get_file"));
 };
 
-void AudioStreamSpeex::_set_bundled(const Dictionary& dict) {
+void AudioStreamPlaybackSpeex::_set_bundled(const Dictionary& dict) {
 
 	ERR_FAIL_COND( !dict.has("filename"));
 	ERR_FAIL_COND( !dict.has("data"));
@@ -399,7 +408,7 @@ void AudioStreamSpeex::_set_bundled(const Dictionary& dict) {
 	data = dict["data"];
 };
 
-Dictionary AudioStreamSpeex::_get_bundled() const {
+Dictionary AudioStreamPlaybackSpeex::_get_bundled() const {
 
 	Dictionary d;
 	d["filename"] = filename;
@@ -408,19 +417,103 @@ Dictionary AudioStreamSpeex::_get_bundled() const {
 };
 
 
-String AudioStreamSpeex::get_file() const {
 
-	return filename;
+void AudioStreamPlaybackSpeex::set_data(const Vector<uint8_t>& p_data) {
+
+	data=p_data;
+	reload();
+}
+
+
+void AudioStreamPlaybackSpeex::play(float p_from_pos) {
+
+
+
+	reload();
+	if (!active)
+		return;
+	playing = true;
+
+}
+void AudioStreamPlaybackSpeex::stop(){
+
+
+	unload();
+	playing = false;
+
+}
+bool AudioStreamPlaybackSpeex::is_playing() const{
+
+	return playing;
+}
+
+
+void AudioStreamPlaybackSpeex::set_loop(bool p_enable){
+
+	loops = p_enable;
+}
+bool AudioStreamPlaybackSpeex::has_loop() const{
+
+	return loops;
+}
+
+float AudioStreamPlaybackSpeex::get_length() const{
+
+	return 0;
+}
+
+String AudioStreamPlaybackSpeex::get_stream_name() const{
+
+	return "";
+}
+
+int AudioStreamPlaybackSpeex::get_loop_count() const{
+
+	return 0;
+}
+
+float AudioStreamPlaybackSpeex::get_pos() const{
+
+	return 0;
+}
+void AudioStreamPlaybackSpeex::seek_pos(float p_time){
+
+
 };
 
-void AudioStreamSpeex::set_file(const String& p_file){
 
-	if (filename == p_file)
+
+AudioStreamPlaybackSpeex::AudioStreamPlaybackSpeex() {
+
+	active=false;
+	st = NULL;
+	stream_channels=1;
+	stream_srate=1;
+	stream_minbuff_size=1;
+	playing=false;
+
+
+}
+
+AudioStreamPlaybackSpeex::~AudioStreamPlaybackSpeex() {
+
+	unload();
+}
+
+
+
+
+
+////////////////////////////////////////
+
+
+
+void AudioStreamSpeex::set_file(const String& p_file) {
+
+	if (this->file == p_file)
 		return;
 
-	if (active) {
-		unload();
-	}
+	this->file=p_file;
 
 	if (p_file == "") {
 		data.resize(0);
@@ -434,103 +527,17 @@ void AudioStreamSpeex::set_file(const String& p_file){
 	};
 	ERR_FAIL_COND(err != OK);
 
-	filename = p_file;
+	this->file = p_file;
 	data.resize(file->get_len());
 	int read = file->get_buffer(&data[0], data.size());
 	memdelete(file);
 
-	reload();
 }
 
-void AudioStreamSpeex::play() {
+RES ResourceFormatLoaderAudioStreamSpeex::load(const String &p_path, const String& p_original_path, Error *r_error) {
 
-	_THREAD_SAFE_METHOD_
-
-	reload();
-	if (!active)
-		return;
-	playing = true;
-
-}
-void AudioStreamSpeex::stop(){
-
-	_THREAD_SAFE_METHOD_
-	unload();
-	playing = false;
-	_clear();
-}
-bool AudioStreamSpeex::is_playing() const{
-
-	return _is_ready() && (playing || (get_total() - get_todo() -1 > 0));
-}
-
-void AudioStreamSpeex::set_paused(bool p_paused){
-
-	playing = !p_paused;
-	paused = p_paused;
-}
-bool AudioStreamSpeex::is_paused(bool p_paused) const{
-
-	return paused;
-}
-
-void AudioStreamSpeex::set_loop(bool p_enable){
-
-	loops = p_enable;
-}
-bool AudioStreamSpeex::has_loop() const{
-
-	return loops;
-}
-
-float AudioStreamSpeex::get_length() const{
-
-	return 0;
-}
-
-String AudioStreamSpeex::get_stream_name() const{
-
-	return "";
-}
-
-int AudioStreamSpeex::get_loop_count() const{
-
-	return 0;
-}
-
-float AudioStreamSpeex::get_pos() const{
-
-	return 0;
-}
-void AudioStreamSpeex::seek_pos(float p_time){
-
-
-};
-
-bool AudioStreamSpeex::_can_mix() const {
-
-	//return playing;
-	return data.size() != 0;
-};
-
-
-AudioStream::UpdateMode AudioStreamSpeex::get_update_mode() const {
-
-	return UPDATE_THREAD;
-}
-
-AudioStreamSpeex::AudioStreamSpeex() {
-
-	active=false;
-	st = NULL;
-}
-
-AudioStreamSpeex::~AudioStreamSpeex() {
-
-	unload();
-}
-
-RES ResourceFormatLoaderAudioStreamSpeex::load(const String &p_path,const String& p_original_path) {
+	if (r_error)
+		*r_error=OK;
 
 	AudioStreamSpeex *stream = memnew(AudioStreamSpeex);
 	stream->set_file(p_path);

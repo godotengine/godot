@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,37 +47,37 @@ namespace TestIO {
 
 
 class TestMainLoop : public MainLoop {
-	
-	
+
+
 	bool quit;
-	
+
 public:
 	virtual void input_event(const InputEvent& p_event) {
-		
-		
+
+
 	}
 	virtual bool idle(float p_time) {
 		return false;
 	}
 
 	virtual void request_quit() {
-		
+
 		quit=true;
-		
+
 	}
 	virtual void init() {
 
 		quit=true;
 	}
 	virtual bool iteration(float p_time) {
-		
+
 		return quit;
 	}
 	virtual void finish() {
-		
+
 	}
-	
-	
+
+
 };
 
 

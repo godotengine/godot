@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,6 +51,7 @@
 #include "packed_data_container.h"
 #include "func_ref.h"
 #include "input_map.h"
+#include "undo_redo.h"
 
 #ifdef XML_ENABLED
 static ResourceFormatSaverXML *resource_saver_xml=NULL;
@@ -80,7 +81,7 @@ extern void unregister_variant_methods();
 
 void register_core_types() {
 
-	
+
 	_global_mutex=Mutex::create();
 
 
@@ -91,7 +92,7 @@ void register_core_types() {
 
 
 	CoreStringNames::create();
-	
+
 	resource_format_po = memnew( TranslationLoaderPO );
 	ResourceLoader::add_resource_format_loader( resource_format_po );
 
@@ -101,15 +102,18 @@ void register_core_types() {
 	resource_loader_binary = memnew( ResourceFormatLoaderBinary );
 	ResourceLoader::add_resource_format_loader(resource_loader_binary);
 
+#ifdef XML_ENABLED
 	resource_saver_xml = memnew( ResourceFormatSaverXML );
 	ResourceSaver::add_resource_format_saver(resource_saver_xml);
 	resource_loader_xml = memnew( ResourceFormatLoaderXML );
 	ResourceLoader::add_resource_format_loader(resource_loader_xml);
+#endif
 
 	ObjectTypeDB::register_type<Object>();
 
 
 	ObjectTypeDB::register_type<Reference>();
+	ObjectTypeDB::register_type<WeakRef>();
 	ObjectTypeDB::register_type<ResourceImportMetadata>();
 	ObjectTypeDB::register_type<Resource>();
 	ObjectTypeDB::register_type<FuncRef>();
@@ -125,7 +129,7 @@ void register_core_types() {
 //	ObjectTypeDB::register_type<OptimizedSaver>();
 	ObjectTypeDB::register_type<Translation>();
 	ObjectTypeDB::register_type<PHashTranslation>();
-
+	ObjectTypeDB::register_type<UndoRedo>();
 	ObjectTypeDB::register_type<HTTPClient>();
 
 	ObjectTypeDB::register_virtual_type<ResourceInteractiveLoader>();
@@ -204,12 +208,14 @@ void unregister_core_types() {
 	if (ip)
 		memdelete(ip);
 
+
+	ObjectDB::cleanup();
+
 	unregister_variant_methods();
 
-	CoreStringNames::free();
 	ObjectTypeDB::cleanup();
 	ResourceCache::clear();
-	ObjectDB::cleanup();
+	CoreStringNames::free();
 	StringName::cleanup();
 
 	if (_global_mutex) {

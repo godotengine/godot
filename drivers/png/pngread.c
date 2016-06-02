@@ -1,8 +1,8 @@
 
 /* pngread.c - read a PNG file
  *
- * Last changed in libpng 1.5.7 [December 15, 2011]
- * Copyright (c) 1998-2011 Glenn Randers-Pehrson
+ * Last changed in libpng 1.5.23 [July 23, 2015]
+ * Copyright (c) 1998-2002,2004,2006-2015 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -67,15 +67,11 @@ png_create_read_struct_2,(png_const_charp user_png_ver, png_voidp error_ptr,
    png_ptr->user_width_max = PNG_USER_WIDTH_MAX;
    png_ptr->user_height_max = PNG_USER_HEIGHT_MAX;
 
-#  ifdef PNG_USER_CHUNK_CACHE_MAX
    /* Added at libpng-1.2.43 and 1.4.0 */
    png_ptr->user_chunk_cache_max = PNG_USER_CHUNK_CACHE_MAX;
-#  endif
 
-#  ifdef PNG_SET_USER_CHUNK_MALLOC_MAX
    /* Added at libpng-1.2.43 and 1.4.1 */
    png_ptr->user_chunk_malloc_max = PNG_USER_CHUNK_MALLOC_MAX;
-#  endif
 #endif
 
 #ifdef PNG_SETJMP_SUPPORTED
@@ -104,7 +100,7 @@ png_create_read_struct_2,(png_const_charp user_png_ver, png_voidp error_ptr,
    if (!png_user_version_check(png_ptr, user_png_ver))
       png_cleanup_needed = 1;
 
-   if (!png_cleanup_needed)
+   if (png_cleanup_needed == 0)
    {
    /* Initialize zbuf - compression buffer */
    png_ptr->zbuf_size = PNG_ZBUF_SIZE;
@@ -118,7 +114,7 @@ png_create_read_struct_2,(png_const_charp user_png_ver, png_voidp error_ptr,
    png_ptr->zstream.zfree = png_zfree;
    png_ptr->zstream.opaque = (voidpf)png_ptr;
 
-   if (!png_cleanup_needed)
+   if (png_cleanup_needed == 0)
    {
       switch (inflateInit(&png_ptr->zstream))
       {
@@ -145,7 +141,7 @@ png_create_read_struct_2,(png_const_charp user_png_ver, png_voidp error_ptr,
       }
    }
 
-   if (png_cleanup_needed)
+   if (png_cleanup_needed != 0)
    {
       /* Clean up PNG structure and deallocate any memory. */
       png_free(png_ptr, png_ptr->zbuf);
@@ -563,7 +559,7 @@ png_read_row(png_structp png_ptr, png_bytep row, png_bytep dsp_row)
       if (ret == Z_STREAM_END)
       {
          if (png_ptr->zstream.avail_out || png_ptr->zstream.avail_in ||
-            png_ptr->idat_size)
+             png_ptr->idat_size)
             png_benign_error(png_ptr, "Extra compressed data");
          png_ptr->mode |= PNG_AFTER_IDAT;
          png_ptr->flags |= PNG_FLAG_ZLIB_FINISHED;
@@ -621,7 +617,7 @@ png_read_row(png_structp png_ptr, png_bytep row, png_bytep dsp_row)
 #ifdef PNG_READ_INTERLACING_SUPPORTED
    /* Blow up interlaced rows to full size */
    if (png_ptr->interlaced &&
-      (png_ptr->transformations & PNG_INTERLACE))
+       (png_ptr->transformations & PNG_INTERLACE))
    {
       if (png_ptr->pass < 6)
          png_do_read_interlace(&row_info, png_ptr->row_buf + 1, png_ptr->pass,
@@ -804,6 +800,13 @@ png_read_end(png_structp png_ptr, png_infop info_ptr)
       return;
 
    png_crc_finish(png_ptr, 0); /* Finish off CRC from last IDAT chunk */
+
+#ifdef PNG_READ_CHECK_FOR_INVALID_INDEX_SUPPORTED
+   /* Report invalid palette index; added at libng-1.5.10 */
+   if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE &&
+      png_ptr->num_palette_max > png_ptr->num_palette)
+     png_benign_error(png_ptr, "Read palette index exceeding num_palette");
+#endif
 
    do
    {
@@ -1070,12 +1073,6 @@ png_read_destroy(png_structp png_ptr, png_infop info_ptr,
    png_free(png_ptr, png_ptr->save_buffer);
 #endif
 
-#ifdef PNG_PROGRESSIVE_READ_SUPPORTED
-#ifdef PNG_TEXT_SUPPORTED
-   png_free(png_ptr, png_ptr->current_text);
-#endif /* PNG_TEXT_SUPPORTED */
-#endif /* PNG_PROGRESSIVE_READ_SUPPORTED */
-
    /* Save the important info out of the png_struct, in case it is
     * being used again.
     */
@@ -1122,9 +1119,8 @@ png_set_read_status_fn(png_structp png_ptr, png_read_status_ptr read_row_fn)
 #ifdef PNG_SEQUENTIAL_READ_SUPPORTED
 #ifdef PNG_INFO_IMAGE_SUPPORTED
 void PNGAPI
-png_read_png(png_structp png_ptr, png_infop info_ptr,
-                           int transforms,
-                           voidp params)
+png_read_png(png_structp png_ptr, png_infop info_ptr, int transforms,
+    voidp params)
 {
    int row;
 
@@ -1194,7 +1190,7 @@ png_read_png(png_structp png_ptr, png_infop info_ptr,
    if (transforms & PNG_TRANSFORM_EXPAND)
       if ((png_ptr->bit_depth < 8) ||
           (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE) ||
-          (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)))
+          (info_ptr->valid & PNG_INFO_tRNS))
          png_set_expand(png_ptr);
 #endif
 
@@ -1213,14 +1209,8 @@ png_read_png(png_structp png_ptr, png_infop info_ptr,
     * [0,65535] to the original [0,7] or [0,31], or whatever range the
     * colors were originally in:
     */
-   if ((transforms & PNG_TRANSFORM_SHIFT)
-       && png_get_valid(png_ptr, info_ptr, PNG_INFO_sBIT))
-   {
-      png_color_8p sig_bit;
-
-      png_get_sBIT(png_ptr, info_ptr, &sig_bit);
-      png_set_shift(png_ptr, sig_bit);
-   }
+   if ((transforms & PNG_TRANSFORM_SHIFT) && (info_ptr->valid & PNG_INFO_sBIT))
+      png_set_shift(png_ptr, &info_ptr->sig_bit);
 #endif
 
 #ifdef PNG_READ_BGR_SUPPORTED
@@ -1290,7 +1280,7 @@ png_read_png(png_structp png_ptr, png_infop info_ptr,
 
       for (row = 0; row < (int)info_ptr->height; row++)
          info_ptr->row_pointers[row] = (png_bytep)png_malloc(png_ptr,
-            png_get_rowbytes(png_ptr, info_ptr));
+             png_get_rowbytes(png_ptr, info_ptr));
    }
 
    png_read_image(png_ptr, info_ptr->row_pointers);

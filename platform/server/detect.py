@@ -1,11 +1,11 @@
 
 import os
-import sys	
+import sys
 
 
 def is_active():
 	return True
-        
+
 def get_name():
 	return "Server"
 
@@ -16,21 +16,20 @@ def can_build():
 		return False
 
 	return True # enabled
-  
+
 def get_opts():
 
 	return [
 	('use_llvm','Use llvm compiler','no'),
 	('force_32_bits','Force 32 bits binary','no')
 	]
-  
+
 def get_flags():
 
 	return [
 	('builtin_zlib', 'no'),
-	('theora','no'), #use builtin openssl
 	]
-			
+
 
 
 def configure(env):
@@ -40,6 +39,9 @@ def configure(env):
 		env["CC"]="clang"
 		env["CXX"]="clang++"
 		env["LD"]="clang++"
+		if (env["colored"]=="yes"):
+			if sys.stdout.isatty():
+				env.Append(CXXFLAGS=["-fcolor-diagnostics"])
 
 	is64=sys.maxsize > 2**32
 

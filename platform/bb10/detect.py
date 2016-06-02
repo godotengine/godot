@@ -6,7 +6,7 @@ import methods
 
 def is_active():
 	return True
-	
+
 def get_name():
 	return "BlackBerry 10"
 
@@ -36,7 +36,7 @@ def get_flags():
 		('tools', 'no'),
 		('nedmalloc', 'no'),
 		('theora', 'no'),
-		
+
 	]
 
 def configure(env):
@@ -81,8 +81,6 @@ def configure(env):
 	if (env["target"]=="release"):
 
 		env.Append(CCFLAGS=['-O3','-DRELEASE_BUILD'])
-		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
 
 	elif (env["target"]=="debug"):
 

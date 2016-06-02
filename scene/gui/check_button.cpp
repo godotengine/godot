@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,9 +33,9 @@
 
 
 void CheckButton::_notification(int p_what) {
-	
+
 	if (p_what==NOTIFICATION_DRAW) {
-		
+
 		RID ci = get_canvas_item();
 
 		Ref<Texture> on=Control::get_icon("on");
@@ -50,17 +50,17 @@ void CheckButton::_notification(int p_what) {
 		else
 			off->draw(ci,ofs);
 
-	
+
 	}
 }
 
 
 CheckButton::CheckButton() {
-	
+
 	set_toggle_mode(true);
 	set_text_align(ALIGN_LEFT);
 
-	
+
 }
 
 

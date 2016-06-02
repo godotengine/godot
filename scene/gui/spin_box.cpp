@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "spin_box.h"
-
+#include "os/input.h"
 
 Size2 SpinBox::get_minimum_size() const {
 
@@ -62,6 +62,31 @@ LineEdit *SpinBox::get_line_edit() {
 }
 
 
+void SpinBox::_line_edit_input(const InputEvent& p_event) {
+
+
+
+}
+
+void SpinBox::_range_click_timeout() {
+
+	if (!drag.enabled && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+
+		bool up = get_local_mouse_pos().y < (get_size().height/2);
+		set_val( get_val() + (up?get_step():-get_step()));
+
+		if (range_click_timer->is_one_shot()) {
+			range_click_timer->set_wait_time(0.075);
+			range_click_timer->set_one_shot(false);
+			range_click_timer->start();
+		}
+
+	} else {
+		range_click_timer->stop();
+	}
+}
+
+
 void SpinBox::_input_event(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed) {
@@ -78,6 +103,10 @@ void SpinBox::_input_event(const InputEvent& p_event) {
 
 				set_val( get_val() + (up?get_step():-get_step()));
 
+				range_click_timer->set_wait_time(0.6);
+				range_click_timer->set_one_shot(true);
+				range_click_timer->start();
+
 			} break;
 			case BUTTON_RIGHT: {
 
@@ -92,6 +121,50 @@ void SpinBox::_input_event(const InputEvent& p_event) {
 
 				set_val( get_val() - get_step() );
 			} break;
+		}
+	}
+
+	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed && p_event.mouse_button.button_index==1) {
+
+		//set_default_cursor_shape(CURSOR_VSIZE);
+		Vector2 cpos = Vector2(p_event.mouse_button.x,p_event.mouse_button.y);
+		drag.mouse_pos=cpos;
+	}
+
+	if (p_event.type==InputEvent::MOUSE_BUTTON && !p_event.mouse_button.pressed && p_event.mouse_button.button_index==1) {
+
+		//set_default_cursor_shape(CURSOR_ARROW);
+		range_click_timer->stop();
+
+		if (drag.enabled) {
+			drag.enabled=false;
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+			warp_mouse(drag.capture_pos);
+		}
+	}
+
+	if (p_event.type==InputEvent::MOUSE_MOTION && p_event.mouse_button.button_mask&1) {
+
+		Vector2 cpos = Vector2(p_event.mouse_motion.x,p_event.mouse_motion.y);
+		if (drag.enabled) {
+
+			float diff_y = drag.mouse_pos.y - cpos.y;
+			diff_y=Math::pow(ABS(diff_y),1.8)*SGN(diff_y);
+			diff_y*=0.1;
+
+			drag.mouse_pos=cpos;
+			drag.base_val=CLAMP(drag.base_val + get_step() * diff_y, get_min(), get_max());
+
+			set_val( drag.base_val);
+
+		} else if (drag.mouse_pos.distance_to(cpos)>2) {
+
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+			drag.enabled=true;
+			drag.base_val=get_val();
+			drag.mouse_pos=cpos;
+			drag.capture_pos=cpos;
+
 		}
 	}
 }
@@ -118,6 +191,7 @@ void SpinBox::_notification(int p_what) {
 		Size2i size = get_size();
 
 		updown->draw(ci,Point2i(size.width-updown->get_width(),(size.height-updown->get_height())/2));
+
 	} else if (p_what==NOTIFICATION_FOCUS_EXIT) {
 
 
@@ -177,6 +251,8 @@ void SpinBox::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_editable"),&SpinBox::is_editable);
 	ObjectTypeDB::bind_method(_MD("_line_edit_focus_exit"),&SpinBox::_line_edit_focus_exit);
 	ObjectTypeDB::bind_method(_MD("get_line_edit"),&SpinBox::get_line_edit);
+	ObjectTypeDB::bind_method(_MD("_line_edit_input"),&SpinBox::_line_edit_input);
+	ObjectTypeDB::bind_method(_MD("_range_click_timeout"),&SpinBox::_range_click_timeout);
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"editable"),_SCS("set_editable"),_SCS("is_editable"));
@@ -196,4 +272,10 @@ SpinBox::SpinBox() {
 	//connect("value_changed",this,"_value_changed");
 	line_edit->connect("text_entered",this,"_text_entered",Vector<Variant>(),CONNECT_DEFERRED);
 	line_edit->connect("focus_exit",this,"_line_edit_focus_exit",Vector<Variant>(),CONNECT_DEFERRED);
+	line_edit->connect("input_event",this,"_line_edit_input");
+	drag.enabled=false;
+
+	range_click_timer = memnew( Timer );
+	range_click_timer->connect("timeout",this,"_range_click_timeout");
+	add_child(range_click_timer);
 }

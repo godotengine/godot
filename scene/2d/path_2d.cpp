@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,12 @@
 
 void Path2D::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_DRAW && curve.is_valid() && is_inside_tree() && get_tree()->is_editor_hint()) {
+	if (p_what==NOTIFICATION_DRAW && curve.is_valid()) {
 		//draw the curve!!
+
+		if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_navigation_hint()) {
+			return;
+		}
 
 		for(int i=0;i<curve->get_point_count();i++) {
 
@@ -69,6 +73,8 @@ void Path2D::set_curve(const Ref<Curve2D>& p_curve) {
 	if (curve.is_valid()) {
 		curve->connect("changed",this,"_curve_changed");
 	}
+
+	_curve_changed();
 
 }
 
@@ -118,7 +124,7 @@ void PathFollow2D::_update_transform() {
 		pos+=n*h_offset;
 		pos+=t*v_offset;
 
-		set_rot(t.atan2());
+		set_rot(t.angle());
 
 	} else {
 
@@ -230,6 +236,19 @@ void PathFollow2D::_get_property_list( List<PropertyInfo> *p_list) const{
 	p_list->push_back( PropertyInfo( Variant::REAL, "lookahead",PROPERTY_HINT_RANGE,"0.001,1024.0,0.001"));
 }
 
+
+String PathFollow2D::get_configuration_warning() const {
+
+	if (!is_visible() || !is_inside_tree())
+		return String();
+
+	if (!get_parent() || !get_parent()->cast_to<Path2D>()) {
+		return TTR("PathFollow2D only works when set as a child of a Path2D node.");
+	}
+
+	return String();
+
+}
 
 void PathFollow2D::_bind_methods() {
 

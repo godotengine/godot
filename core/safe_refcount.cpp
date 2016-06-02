@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,9 +40,9 @@ long atomic_conditional_increment( register long * pw ) {
 
 	while (true) {
 		long tmp = static_cast< long const volatile& >( *pw );
-		if( tmp == 0 ) 
+		if( tmp == 0 )
       return 0; // if zero, can't add to it anymore
-		if( InterlockedCompareExchange( pw, tmp + 1, tmp ) == tmp ) 
+		if( InterlockedCompareExchange( pw, tmp + 1, tmp ) == tmp )
 			return tmp+1;
 	}
 

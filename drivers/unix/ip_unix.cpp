@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,11 +50,16 @@
  #ifdef ANDROID_ENABLED
   #include "platform/android/ifaddrs_android.h"
  #else
+  #ifdef __FreeBSD__
+   #include <sys/types.h>
+  #endif
   #include <ifaddrs.h>
  #endif
  #include <arpa/inet.h>
  #include <sys/socket.h>
-
+ #ifdef __FreeBSD__
+  #include <netinet/in.h>
+ #endif
 #endif
 
 IP_Address IP_Unix::_resolve_hostname(const String& p_hostname) {

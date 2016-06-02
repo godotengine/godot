@@ -5,14 +5,14 @@
 /*                GODOT ENGINE                   */
 /*************************************************/
 /*       Source code within this file is:        */
-/*  (c) 2007-2010 Juan Linietsky, Ariel Manzur   */
+/*  (c) 2007-2016 Juan Linietsky, Ariel Manzur   */
 /*             All Rights Reserved.              */
 /*************************************************/
 
 #include "context_gl.h"
 
 
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED) || defined(GLES2_ENABLED) || defined(GLES1_ENABLED)
+#if defined(OPENGL_ENABLED)  || defined(GLES2_ENABLED)
 
 
 

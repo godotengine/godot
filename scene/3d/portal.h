@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,14 +45,14 @@
 class Portal : public VisualInstance {
 
 	OBJ_TYPE(Portal, VisualInstance);
-	
+
 	RID portal;
-	
+
 	bool enabled;
 	float disable_distance;
 	Color disabled_color;
 	float connect_range;
-	
+
 	AABB aabb;
 
 	virtual RES _get_gizmo_geometry() const;
@@ -62,9 +62,9 @@ protected:
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list( List<PropertyInfo> *p_list) const;
-	
+
 	static void _bind_methods();
-	
+
 public:
 
 	virtual AABB get_aabb() const;

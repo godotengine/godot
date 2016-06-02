@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,8 +56,8 @@ void Camera::_update_camera_mode() {
 		} break;
 		case PROJECTION_ORTHOGONAL: {
 			set_orthogonal(size,near,far);
-		} break;	
-	
+		} break;
+
 	}
 
 }
@@ -81,11 +81,15 @@ bool Camera::_set(const StringName& p_name, const Variant& p_value) {
 	else if (p_name=="near")
 		near=p_value;
 	else if (p_name=="far")
-		far=p_value;														
+		far=p_value;
 	else if (p_name=="keep_aspect")
 		set_keep_aspect_mode(KeepAspect(int(p_value)));
 	else if (p_name=="vaspect")
 		set_keep_aspect_mode(p_value?KEEP_WIDTH:KEEP_HEIGHT);
+	else if (p_name=="h_offset")
+		h_offset=p_value;
+	else if (p_name=="v_offset")
+		v_offset=p_value;
 	else if (p_name=="current") {
 		if (p_value.operator bool()) {
 			make_current();
@@ -98,7 +102,7 @@ bool Camera::_set(const StringName& p_name, const Variant& p_value) {
 		set_environment(p_value);
 	} else
 		return false;
-		
+
 	_update_camera_mode();
 	if (changed_all)
 		_change_notify();
@@ -121,13 +125,17 @@ bool Camera::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= int(keep_aspect);
 	else if (p_name=="current") {
 
-		if (is_inside_tree() && get_tree()->is_editor_hint()) {
+		if (is_inside_tree() && get_tree()->is_node_being_edited(this)) {
 			r_ret=current;
 		} else {
 			r_ret=is_current();
 		}
 	} else if (p_name=="visible_layers") {
 		r_ret=get_visible_layers();
+	} else if (p_name=="h_offset") {
+		r_ret=get_h_offset();
+	} else if (p_name=="v_offset") {
+		r_ret=get_v_offset();
 	} else if (p_name=="environment") {
 		r_ret=get_environment();
 	} else
@@ -139,21 +147,21 @@ bool Camera::_get(const StringName& p_name,Variant &r_ret) const {
 void Camera::_get_property_list( List<PropertyInfo> *p_list) const {
 
 	p_list->push_back( PropertyInfo( Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal") );
-	
-	switch(mode) {
-	
-		case PROJECTION_PERSPECTIVE: {
-		
-			p_list->push_back( PropertyInfo( Variant::REAL, "fov" , PROPERTY_HINT_RANGE, "1,89,0.1",PROPERTY_USAGE_NOEDITOR) );
-			if (keep_aspect==KEEP_WIDTH)
-				p_list->push_back( PropertyInfo( Variant::REAL, "fovx" , PROPERTY_HINT_RANGE, "1,89,0.1",PROPERTY_USAGE_EDITOR) );
-			else
-				p_list->push_back( PropertyInfo( Variant::REAL, "fovy" , PROPERTY_HINT_RANGE, "1,89,0.1",PROPERTY_USAGE_EDITOR) );
 
-			
+	switch(mode) {
+
+		case PROJECTION_PERSPECTIVE: {
+
+			p_list->push_back( PropertyInfo( Variant::REAL, "fov" , PROPERTY_HINT_RANGE, "1,179,0.1",PROPERTY_USAGE_NOEDITOR) );
+			if (keep_aspect==KEEP_WIDTH)
+				p_list->push_back( PropertyInfo( Variant::REAL, "fovx" , PROPERTY_HINT_RANGE, "1,179,0.1",PROPERTY_USAGE_EDITOR) );
+			else
+				p_list->push_back( PropertyInfo( Variant::REAL, "fovy" , PROPERTY_HINT_RANGE, "1,179,0.1",PROPERTY_USAGE_EDITOR) );
+
+
 		} break;
 		case PROJECTION_ORTHOGONAL: {
-		
+
 			p_list->push_back( PropertyInfo( Variant::REAL, "size" , PROPERTY_HINT_RANGE, "1,16384,0.01",PROPERTY_USAGE_NOEDITOR ) );
 			if (keep_aspect==KEEP_WIDTH)
 				p_list->push_back( PropertyInfo( Variant::REAL, "sizex" , PROPERTY_HINT_RANGE, "0.1,16384,0.01",PROPERTY_USAGE_EDITOR) );
@@ -161,31 +169,34 @@ void Camera::_get_property_list( List<PropertyInfo> *p_list) const {
 				p_list->push_back( PropertyInfo( Variant::REAL, "sizey" , PROPERTY_HINT_RANGE, "0.1,16384,0.01",PROPERTY_USAGE_EDITOR) );
 
 		} break;
-	
+
 	}
-	
+
 	p_list->push_back( PropertyInfo( Variant::REAL, "near" , PROPERTY_HINT_EXP_RANGE, "0.01,4096.0,0.01") );
 	p_list->push_back( PropertyInfo( Variant::REAL, "far" , PROPERTY_HINT_EXP_RANGE, "0.01,4096.0,0.01") );
 	p_list->push_back( PropertyInfo( Variant::INT, "keep_aspect",PROPERTY_HINT_ENUM,"Keep Width,Keep Height") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "current" ) );
 	p_list->push_back( PropertyInfo( Variant::INT, "visible_layers",PROPERTY_HINT_ALL_FLAGS ) );
 	p_list->push_back( PropertyInfo( Variant::OBJECT, "environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment" ) );
+	p_list->push_back( PropertyInfo( Variant::REAL, "h_offset" ) );
+	p_list->push_back( PropertyInfo( Variant::REAL, "v_offset" ) );
 
 }
 
 void Camera::_update_camera() {
 
 	Transform tr = get_camera_transform();
+	tr.origin+=tr.basis.get_axis(1)*v_offset;
+	tr.origin+=tr.basis.get_axis(0)*h_offset;
 	VisualServer::get_singleton()->camera_set_transform( camera, tr );
 
 // here goes listener stuff
 //	if (viewport_ptr && is_inside_scene() && is_current())
-//		viewport_ptr->_camera_transform_changed_notify();
+//		get_viewport()->_camera_transform_changed_notify();
 
 	if (is_inside_tree() && is_current()) {
-		if (viewport_ptr) {
-			viewport_ptr->_camera_transform_changed_notify();
-		}
+		get_viewport()->_camera_transform_changed_notify();
+
 	}
 
 	if (is_current() && get_world().is_valid()) {
@@ -198,53 +209,33 @@ void Camera::_update_camera() {
 void Camera::_notification(int p_what) {
 
 	switch(p_what) {
-	
+
 		case NOTIFICATION_ENTER_WORLD: {
 
-			viewport_ptr=NULL;
 
-			{ //find viewport stuff
-				Node *parent=get_parent();
-
-				while(parent) {
-
-					Viewport* viewport = parent->cast_to<Viewport>();
-
-					if (viewport) {
-						viewport_ptr=viewport;
-						break;
-					}
-					parent=parent->get_parent();
-				}
-
-			}
-
-			camera_group = "_vp_cameras"+itos(get_viewport()->get_instance_ID());
-			add_to_group(camera_group);
-			if (viewport_ptr)
-				viewport_ptr->cameras.insert(this);
-			if (current)
+			bool first_camera = get_viewport()->_camera_add(this);
+			if (!get_tree()->is_node_being_edited(this) && (current || first_camera))
 				make_current();
 
 
-		} break;			
+		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-		
+
 			_request_camera_update();
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
-		
-			if (is_current()) {
-				clear_current();
-				current=true; //keep it true
 
-			} else {
-				current=false;
+			if (!get_tree()->is_node_being_edited(this)) {
+				if (is_current()) {
+					clear_current();
+					current=true; //keep it true
+
+				} else {
+					current=false;
+				}
 			}
-			if (viewport_ptr)
-				viewport_ptr->cameras.erase(this);
-			viewport_ptr=NULL;
-			remove_from_group(camera_group);
+
+			get_viewport()->_camera_remove(this);
 
 
 		} break;
@@ -259,7 +250,7 @@ void Camera::_notification(int p_what) {
 			}
 		} break;
 
-	
+
 	}
 
 }
@@ -279,7 +270,7 @@ void Camera::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far
 	near=p_z_near;
 	far=p_z_far;
 	mode=PROJECTION_PERSPECTIVE;
-	
+
 	VisualServer::get_singleton()->camera_set_perspective(camera,fov,near,far);
 	update_gizmo();
 	force_change=false;
@@ -290,12 +281,12 @@ void Camera::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
 		return;
 
 	size = p_size;
-	
+
 	near=p_z_near;
 	far=p_z_far;
 	mode=PROJECTION_ORTHOGONAL;
 	force_change=false;
-	
+
 	VisualServer::get_singleton()->camera_set_orthogonal(camera,size,near,far);
 	update_gizmo();
 }
@@ -312,25 +303,12 @@ void Camera::make_current() {
 	if (!is_inside_tree())
 		return;
 
-	if (viewport_ptr) {
-		viewport_ptr->_set_camera(this);
-	}
+	get_viewport()->_camera_set(this);
 
 	//get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,camera_group,"_camera_make_current",this);
 }
 
 
-void Camera::_camera_make_next_current(Node *p_exclude) {
-
-	if (this==p_exclude)
-		return;
-	if (!is_inside_tree())
-		return;
-	if (get_viewport()->get_camera()!=NULL)
-		return;
-
-	make_current();
-}
 
 
 void Camera::clear_current() {
@@ -339,22 +317,18 @@ void Camera::clear_current() {
 	if (!is_inside_tree())
 		return;
 
-	if (viewport_ptr) {
-		if (viewport_ptr->get_camera()==this) {
-			viewport_ptr->_set_camera(NULL);
-			//a group is used beause this needs to be in order to be deterministic
-			get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,camera_group,"_camera_make_next_current",this);
-
-		}
+	if (get_viewport()->get_camera()==this) {
+		get_viewport()->_camera_set(NULL);
+		get_viewport()->_camera_make_next_current(this);
 	}
 
 }
 
 bool Camera::is_current() const {
 
-	if (is_inside_tree()) {
-		if (viewport_ptr)
-			return viewport_ptr->get_camera()==this;
+	if (is_inside_tree() && !get_tree()->is_node_being_edited(this)) {
+
+		return get_viewport()->get_camera()==this;
 	} else
 		return current;
 
@@ -469,12 +443,12 @@ Vector3 Camera::project_local_ray_normal(const Point2& p_pos) const {
 
 
 #if 0
-	Size2 viewport_size = viewport_ptr->get_visible_rect().size;
+	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 	Vector2 cpos = p_pos;
 #else
 
-	Size2 viewport_size = viewport_ptr->get_camera_rect_size();
-	Vector2 cpos = viewport_ptr->get_camera_coords(p_pos);
+	Size2 viewport_size = get_viewport()->get_camera_rect_size();
+	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
 #endif
 
 	Vector3 ray;
@@ -502,12 +476,12 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 	}
 
 #if 0
-	Size2 viewport_size = viewport_ptr->get_visible_rect().size;
+	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 	Vector2 cpos = p_pos;
 #else
 
-	Size2 viewport_size = viewport_ptr->get_camera_rect_size();
-	Vector2 cpos = viewport_ptr->get_camera_coords(p_pos);
+	Size2 viewport_size = get_viewport()->get_camera_rect_size();
+	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
 #endif
 
 	ERR_FAIL_COND_V( viewport_size.y == 0, Vector3() );
@@ -540,6 +514,13 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 	};
 };
 
+bool Camera::is_position_behind(const Vector3& p_pos) const {
+
+	Transform t = get_global_transform();
+	Vector3 eyedir = -get_global_transform().basis.get_axis(2).normalized();
+	return eyedir.dot(p_pos) < (eyedir.dot(t.origin)+near);
+}
+
 Point2 Camera::unproject_position(const Vector3& p_pos) const {
 
 	if (!is_inside_tree()) {
@@ -547,7 +528,7 @@ Point2 Camera::unproject_position(const Vector3& p_pos) const {
 		ERR_FAIL_COND_V(!is_inside_tree(),Vector2());
 	}
 
-	Size2 viewport_size = viewport_ptr->get_visible_rect().size;
+	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
 	CameraMatrix cm;
 
@@ -578,7 +559,7 @@ Vector3 Camera::project_position(const Point2& p_point) const {
 		ERR_FAIL_COND_V(!is_inside_tree(),Vector3());
 	}
 
-	Size2 viewport_size = viewport_ptr->get_visible_rect().size;
+	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
 	CameraMatrix cm;
 
@@ -592,7 +573,7 @@ Vector3 Camera::project_position(const Point2& p_point) const {
 
 	Vector2 point;
 	point.x = (p_point.x/viewport_size.x) * 2.0 - 1.0;
-	point.y = (p_point.y/viewport_size.y) * 2.0 - 1.0;
+	point.y = (1.0-(p_point.y/viewport_size.y)) * 2.0 - 1.0;
 	point*=vp_size;
 
 	Vector3 p(point.x,point.y,-near);
@@ -654,6 +635,7 @@ void Camera::_bind_methods() {
 	ObjectTypeDB::bind_method( _MD("project_local_ray_normal","screen_point"), &Camera::project_local_ray_normal);
 	ObjectTypeDB::bind_method( _MD("project_ray_origin","screen_point"), &Camera::project_ray_origin);
 	ObjectTypeDB::bind_method( _MD("unproject_position","world_point"), &Camera::unproject_position);
+	ObjectTypeDB::bind_method( _MD("is_position_behind","world_point"), &Camera::is_position_behind);
 	ObjectTypeDB::bind_method( _MD("project_position","screen_point"), &Camera::project_position);
 	ObjectTypeDB::bind_method( _MD("set_perspective","fov","z_near","z_far"),&Camera::set_perspective );
 	ObjectTypeDB::bind_method( _MD("set_orthogonal","size","z_near","z_far"),&Camera::set_orthogonal );
@@ -668,13 +650,10 @@ void Camera::_bind_methods() {
 	ObjectTypeDB::bind_method( _MD("get_projection"),&Camera::get_projection );
 	ObjectTypeDB::bind_method( _MD("set_visible_layers","mask"),&Camera::set_visible_layers );
 	ObjectTypeDB::bind_method( _MD("get_visible_layers"),&Camera::get_visible_layers );
-	ObjectTypeDB::bind_method( _MD("look_at","target","up"),&Camera::look_at );
-	ObjectTypeDB::bind_method( _MD("look_at_from_pos","pos","target","up"),&Camera::look_at_from_pos );
 	ObjectTypeDB::bind_method(_MD("set_environment","env:Environment"),&Camera::set_environment);
 	ObjectTypeDB::bind_method(_MD("get_environment:Environment"),&Camera::get_environment);
 	ObjectTypeDB::bind_method(_MD("set_keep_aspect_mode","mode"),&Camera::set_keep_aspect_mode);
 	ObjectTypeDB::bind_method(_MD("get_keep_aspect_mode"),&Camera::get_keep_aspect_mode);
-	ObjectTypeDB::bind_method(_MD("_camera_make_next_current"),&Camera::_camera_make_next_current);
 	//ObjectTypeDB::bind_method( _MD("_camera_make_current"),&Camera::_camera_make_current );
 
 	BIND_CONSTANT( PROJECTION_PERSPECTIVE );
@@ -727,7 +706,7 @@ Vector<Plane> Camera::get_frustum() const {
 
 	ERR_FAIL_COND_V(!is_inside_world(),Vector<Plane>());
 
-	Size2 viewport_size = viewport_ptr->get_visible_rect().size;
+	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 	CameraMatrix cm;
 	if (mode==PROJECTION_PERSPECTIVE)
 		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
@@ -740,21 +719,26 @@ Vector<Plane> Camera::get_frustum() const {
 
 
 
-void Camera::look_at(const Vector3& p_target, const Vector3& p_up_normal) {
 
-	Transform lookat;
-	lookat.origin=get_camera_transform().origin;
-	lookat=lookat.looking_at(p_target,p_up_normal);
-	set_global_transform(lookat);
+void Camera::set_v_offset(float p_offset) {
+
+	v_offset=p_offset;
+	_update_camera();;
 }
 
-void Camera::look_at_from_pos(const Vector3& p_pos,const Vector3& p_target, const Vector3& p_up_normal) {
+float Camera::get_v_offset() const {
 
-	Transform lookat;
-	lookat.origin=p_pos;
-	lookat=lookat.looking_at(p_target,p_up_normal);
-	set_global_transform(lookat);
+	return v_offset;
+}
 
+void Camera::set_h_offset(float p_offset) {
+	h_offset=p_offset;
+	_update_camera();
+}
+
+float Camera::get_h_offset() const {
+
+	return h_offset;
 }
 
 
@@ -766,12 +750,13 @@ Camera::Camera() {
 	near=0;
 	far=0;
 	current=false;
-	viewport_ptr=NULL;
 	force_change=false;
 	mode=PROJECTION_PERSPECTIVE;
 	set_perspective(60.0,0.1,100.0);
 	keep_aspect=KEEP_HEIGHT;
 	layers=0xfffff;
+	v_offset=0;
+	h_offset=0;
 	VisualServer::get_singleton()->camera_set_visible_layers(camera,layers);
 	//active=false;
 }

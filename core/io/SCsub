@@ -5,5 +5,3 @@ env.add_source_files(env.core_sources,"*.c")
 #env.core_sources.append("io/fastlz.c")
 
 Export('env')
-
-

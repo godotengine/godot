@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,9 +60,9 @@ protected:
 		String name;
 		int access_flags;
 	} file;
-	
+
 	mutable struct Cache {
-		
+
 		Vector<uint8_t> buffer;
 		int offset;
 	} cache;
@@ -71,7 +71,7 @@ protected:
 
 	void set_cache_size(int p_size);
 	int get_cache_size();
-	
+
 public:
 
 	virtual size_t get_pos() const; ///< get position in the file

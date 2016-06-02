@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -118,6 +118,16 @@ void WindowDialog::set_title(const String& p_title) {
 	update();
 }
 
+Size2 WindowDialog::get_minimum_size() const {
+
+	Ref<Font> font = get_font("title_font","WindowDialog");
+	int msx=close_button->get_combined_minimum_size().x;
+	msx+=font->get_string_size(title).x;
+
+	return Size2(msx,1);
+}
+
+
 String WindowDialog::get_title() const {
 
 	return title;
@@ -188,16 +198,14 @@ void AcceptDialog::_post_popup() {
 }
 
 void AcceptDialog::_notification(int p_what) {
-	
+
 	if (p_what==NOTIFICATION_MODAL_CLOSE) {
 
 		cancel_pressed();
-	} if (p_what==NOTIFICATION_DRAW) {
+	} if (p_what==NOTIFICATION_RESIZED) {
 
-
-
-
-	}	
+		_update_child_rect();
+	}
 }
 
 void AcceptDialog::_builtin_text_entered(const String& p_text) {
@@ -206,7 +214,7 @@ void AcceptDialog::_builtin_text_entered(const String& p_text) {
 }
 
 void AcceptDialog::_ok_pressed() {
-	
+
 	if (hide_on_ok)
 		hide();
 	ok_pressed();
@@ -214,7 +222,7 @@ void AcceptDialog::_ok_pressed() {
 
 }
 void AcceptDialog::_close_pressed() {
-	
+
 	cancel_pressed();
 }
 
@@ -223,7 +231,7 @@ String AcceptDialog::get_text() const {
 	return label->get_text();
 }
 void AcceptDialog::set_text(String p_text) {
-	
+
 	label->set_text(p_text);
 }
 
@@ -244,12 +252,69 @@ void AcceptDialog::register_text_enter(Node *p_line_edit) {
 	p_line_edit->connect("text_entered", this,"_builtin_text_entered");
 }
 
+void AcceptDialog::_update_child_rect() {
+
+	int margin = get_constant("margin","Dialogs");
+	Size2 size = get_size();
+	Size2 hminsize = hbc->get_combined_minimum_size();
+
+	Vector2 cpos(margin,margin);
+	Vector2 csize(size.x-margin*2,size.y-margin*3-hminsize.y);
+	label->set_pos(cpos);
+	label->set_size(csize);
+
+	if (child) {
+
+		child->set_pos(cpos);
+		child->set_size(csize);
+	}
+
+	cpos.y+=csize.y+margin;
+	csize.y=hminsize.y;
+
+	hbc->set_pos(cpos);
+	hbc->set_size(csize);
+
+}
+
+Size2 AcceptDialog::get_minimum_size() const {
+
+	int margin = get_constant("margin","Dialogs");
+	Size2 minsize = label->get_combined_minimum_size();
+	if (child) {
+
+		Size2 cminsize = child->get_combined_minimum_size();
+		minsize.x=MAX(cminsize.x,minsize.x);
+		minsize.y=MAX(cminsize.y,minsize.y);
+	}
+
+	Size2 hminsize = hbc->get_combined_minimum_size();
+	minsize.x = MAX(hminsize.x,minsize.x);
+	minsize.y+=hminsize.y;
+	minsize.x+=margin*2;
+	minsize.y+=margin*3; //one as separation between hbc and child
+
+	Size2 wmsize = WindowDialog::get_minimum_size();
+	minsize.x=MAX(wmsize.x,minsize.x);
+	return minsize;
+}
+
+
 void AcceptDialog::set_child_rect(Control *p_child) {
 
 	ERR_FAIL_COND(p_child->get_parent()!=this);
 
-	p_child->set_area_as_parent_rect(get_constant("margin","Dialogs"));
-	p_child->set_margin(MARGIN_BOTTOM, get_constant("button_margin","Dialogs")+10);
+	//p_child->set_area_as_parent_rect(get_constant("margin","Dialogs"));
+	child=p_child;
+	minimum_size_changed();
+	_update_child_rect();
+}
+
+void AcceptDialog::remove_child_notify(Node *p_child) {
+
+	if (p_child==child) {
+		child=NULL;
+	}
 }
 
 void AcceptDialog::_custom_action(const String& p_action) {
@@ -274,7 +339,7 @@ Button* AcceptDialog::add_button(const String& p_text,bool p_right,const String&
 	}
 
 	if (p_action!="") {
-		button->connect("pressed",this,"_custom_action",make_binds(p_action));
+		button->connect("pressed",this,"_custom_action",varray(p_action));
 	}
 
 	return button;
@@ -284,14 +349,14 @@ Button* AcceptDialog::add_cancel(const String &p_cancel) {
 
 	String c = p_cancel;
 	if (p_cancel=="")
-		c="Cancel";
-	Button *b = swap_ok_cancel ? add_button("Cancel",true) : add_button("Cancel");
+		c=RTR("Cancel");
+	Button *b = swap_ok_cancel ? add_button(c,true) : add_button(c);
 	b->connect("pressed",this,"_closed");
 	return b;
 }
 
 void AcceptDialog::_bind_methods() {
-	
+
 	ObjectTypeDB::bind_method(_MD("_ok"),&AcceptDialog::_ok_pressed);
 	ObjectTypeDB::bind_method(_MD("get_ok"),&AcceptDialog::get_ok);
 	ObjectTypeDB::bind_method(_MD("get_label"),&AcceptDialog::get_label);
@@ -308,7 +373,9 @@ void AcceptDialog::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("confirmed") );
 	ADD_SIGNAL( MethodInfo("custom_action",PropertyInfo(Variant::STRING,"action")) );
 
-	
+	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"dialog/text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL),_SCS("set_text"),_SCS("get_text"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "dialog/hide_on_ok"),_SCS("set_hide_on_ok"),_SCS("get_hide_on_ok") );
+
 }
 
 
@@ -319,17 +386,17 @@ void AcceptDialog::set_swap_ok_cancel(bool p_swap) {
 }
 
 AcceptDialog::AcceptDialog() {
-	
+
 	int margin = get_constant("margin","Dialogs");
 	int button_margin = get_constant("button_margin","Dialogs");
-	
-	
+
+
 	label = memnew( Label );
 	label->set_anchor(MARGIN_RIGHT,ANCHOR_END);
 	label->set_anchor(MARGIN_BOTTOM,ANCHOR_END);
 	label->set_begin( Point2( margin, margin) );
-	label->set_end( Point2( margin, button_margin) );
-	label->set_autowrap(true);
+	label->set_end( Point2( margin, button_margin+10) );
+	//label->set_autowrap(true);
 	add_child(label);
 
 	hbc = memnew( HBoxContainer );
@@ -339,17 +406,19 @@ AcceptDialog::AcceptDialog() {
 
 	hbc->add_spacer();
 	ok = memnew( Button );
-	ok->set_text("OK");
+	ok->set_text(RTR("OK"));
 	hbc->add_child(ok);
 	hbc->add_spacer();
 	//add_child(ok);
-	
-	
+
+
 	ok->connect("pressed", this,"_ok");
 	set_as_toplevel(true);
 
 	hide_on_ok=true;
-	set_title("Alert!");
+	set_title(RTR("Alert!"));
+
+	child=NULL;
 }
 
 
@@ -370,6 +439,6 @@ Button *ConfirmationDialog::get_cancel() {
 
 ConfirmationDialog::ConfirmationDialog() {
 
-	set_title("Please Confirm...");
+	set_title(RTR("Please Confirm..."));
 	cancel = add_cancel();
 }

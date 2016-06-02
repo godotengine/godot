@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,6 +52,7 @@ void add_print_handler(PrintHandlerList *p_handler);
 void remove_print_handler(PrintHandlerList *p_handler);
 
 extern bool _print_line_enabled;
+extern bool _print_error_enabled;
 extern void print_line(String p_string);
 
 #endif

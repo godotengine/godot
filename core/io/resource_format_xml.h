@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,13 +46,21 @@ class ResourceInteractiveLoaderXML : public ResourceInteractiveLoader {
 
 		String name;
 		HashMap<String,String> args;
+
 	};
 
 	_FORCE_INLINE_ Error _parse_array_element(Vector<char> &buff,bool p_number_only,FileAccess *f,bool *end);
 
 
+	struct ExtResource {
+		String path;
+		String type;
+	};
 
-	List<StringName> ext_resources;
+
+	Map<String,String> remaps;
+
+	Map<int,ExtResource> ext_resources;
 
 	int resources_total;
 	int resource_current;
@@ -66,7 +74,7 @@ friend class ResourceFormatLoaderXML;
 	List<Tag> tag_stack;
 
 	List<RES> resource_cache;
-	Tag* parse_tag(bool* r_exit=NULL,bool p_printerr=true);
+	Tag* parse_tag(bool* r_exit=NULL,bool p_printerr=true,List<String> *r_order=NULL);
 	Error close_tag(const String& p_name);
 	_FORCE_INLINE_ void unquote(String& p_str);
 	Error goto_end_of_tag();
@@ -87,7 +95,8 @@ public:
 
 	void open(FileAccess *p_f);
 	String recognize(FileAccess *p_f);
-	void get_dependencies(FileAccess *p_f,List<String> *p_dependencies);
+	void get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types);
+	Error rename_dependencies(FileAccess *p_f, const String &p_path,const Map<String,String>& p_map);
 
 
 	~ResourceInteractiveLoaderXML();
@@ -97,12 +106,13 @@ public:
 class ResourceFormatLoaderXML : public ResourceFormatLoader {
 public:
 
-	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path);
+	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path,Error *r_error=NULL);
 	virtual void get_recognized_extensions_for_type(const String& p_type,List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String& p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
-	virtual void get_dependencies(const String& p_path,List<String> *p_dependencies);
+	virtual void get_dependencies(const String& p_path, List<String> *p_dependencies, bool p_add_types=false);
+	virtual Error rename_dependencies(const String &p_path,const Map<String,String>& p_map);
 
 
 };
@@ -123,9 +133,9 @@ class ResourceFormatSaverXMLInstance  {
 	bool skip_editor;
 	FileAccess *f;
 	int depth;
-	Map<RES,int> resource_map;
+	Set<RES> resource_set;
 	List<RES> saved_resources;
-	Set<RES> external_resources;
+	Map<RES,int> external_resources;
 
 	void enter_tag(const char* p_tag,const String& p_args=String());
 	void exit_tag(const char* p_tag);
@@ -148,11 +158,12 @@ public:
 
 class ResourceFormatSaverXML : public ResourceFormatSaver {
 public:
+	static ResourceFormatSaverXML* singleton;
 	virtual Error save(const String &p_path,const RES& p_resource,uint32_t p_flags=0);
 	virtual bool recognize(const RES& p_resource) const;
 	virtual void get_recognized_extensions(const RES& p_resource,List<String> *p_extensions) const;
 
-
+	ResourceFormatSaverXML();
 };
 
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,7 +57,6 @@ void OS_Server::initialize(const VideoMode& p_desired,int p_video_driver,int p_a
 	current_videomode=p_desired;
 	main_loop=NULL;
 
-	
 	rasterizer = memnew( RasterizerDummy );
 
 	visual_server = memnew( VisualServerRaster(rasterizer) );
@@ -77,7 +76,7 @@ void OS_Server::initialize(const VideoMode& p_desired,int p_video_driver,int p_a
 	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
 	spatial_sound_2d_server->init();
 
-	
+
 	ERR_FAIL_COND(!visual_server);
 
 	visual_server->init();
@@ -91,7 +90,7 @@ void OS_Server::initialize(const VideoMode& p_desired,int p_video_driver,int p_a
 
 	_ensure_data_dir();
 
-		
+
 }
 void OS_Server::finalize() {
 
@@ -108,14 +107,15 @@ void OS_Server::finalize() {
 //		memdelete(debugger_connection_console);
 //}
 
+	memdelete(sample_manager);
+
 	audio_server->finish();
 	memdelete(audio_server);
-	memdelete(sample_manager);
 
 	visual_server->finish();
 	memdelete(visual_server);
 	memdelete(rasterizer);
-	
+
 	physics_server->finish();
 	memdelete(physics_server);
 
@@ -163,6 +163,12 @@ OS::VideoMode OS_Server::get_video_mode(int p_screen) const {
 
 	return current_videomode;
 }
+
+Size2 OS_Server::get_window_size() const {
+
+	return Vector2(current_videomode.width,current_videomode.height)	;
+}
+
 void OS_Server::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 
 
@@ -212,18 +218,18 @@ void OS_Server::set_cursor_shape(CursorShape p_shape) {
 void OS_Server::run() {
 
 	force_quit = false;
-	
+
 	if (!main_loop)
 		return;
-		
+
 	main_loop->init();
-		
+
 	while (!force_quit) {
-	
+
 		if (Main::iteration()==true)
 			break;
 	};
-	
+
 	main_loop->finish();
 }
 

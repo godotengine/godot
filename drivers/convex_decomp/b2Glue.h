@@ -20,7 +20,8 @@
 #define B2GLUE_H
 
 #include "math_2d.h"
-#include <limits>
+#include <limits.h>
+
 namespace b2ConvexDecomp {
 
 typedef real_t float32;

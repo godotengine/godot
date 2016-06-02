@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@ void StyleBox::set_default_margin(Margin p_margin, float p_value) {
 
 	margin[p_margin]=p_value;
 	emit_changed();
-	
+
 }
 float StyleBox::get_default_margin(Margin p_margin) const{
 
@@ -59,7 +59,7 @@ Size2 StyleBox::get_minimum_size() const {
 
 
 Point2 StyleBox::get_offset() const {
-	
+
 	return Point2( get_margin( MARGIN_LEFT), get_margin( MARGIN_TOP) );
 }
 
@@ -83,38 +83,44 @@ void StyleBox::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_center_size"),&StyleBox::get_center_size);
 	ObjectTypeDB::bind_method(_MD("get_offset"),&StyleBox::get_offset);
 
-	ObjectTypeDB::bind_method(_MD("draw"),&StyleBox::draw);
+	ObjectTypeDB::bind_method(_MD("draw","canvas_item","rect"),&StyleBox::draw);
+
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin/left", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_LEFT );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin/right", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_RIGHT );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin/top", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_TOP);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin/bottom", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_BOTTOM );
+
 
 }
 
 StyleBox::StyleBox() {
-	
+
 	for (int i=0;i<4;i++) {
-	
+
 		margin[i]=-1;
 	}
 }
 
 
 void StyleBoxTexture::set_texture(RES p_texture) {
-	
+
 	texture=p_texture;
 	emit_changed();
 
 }
 RES StyleBoxTexture::get_texture() const {
-	
+
 	return texture;
 }
 
 void StyleBoxTexture::set_margin_size(Margin p_margin,float p_size) {
-	
+
 	margin[p_margin]=p_size;
 	emit_changed();
 
 }
 float StyleBoxTexture::get_margin_size(Margin p_margin) const {
-	
+
 	return margin[p_margin];
 }
 
@@ -136,14 +142,14 @@ void StyleBoxTexture::draw(RID p_canvas_item,const Rect2& p_rect) const {
 }
 
 void StyleBoxTexture::set_draw_center(bool p_draw) {
-	
+
 	draw_center=p_draw;
 	emit_changed();
 
 }
 
 bool StyleBoxTexture::get_draw_center() const {
-	
+
 	return draw_center;
 }
 
@@ -176,10 +182,10 @@ void StyleBoxTexture::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_texture:Texture"),&StyleBoxTexture::get_texture);
 
 	ObjectTypeDB::bind_method(_MD("set_margin_size","margin","size"),&StyleBoxTexture::set_margin_size);
-	ObjectTypeDB::bind_method(_MD("get_margin_size"),&StyleBoxTexture::get_margin_size);
+	ObjectTypeDB::bind_method(_MD("get_margin_size","margin"),&StyleBoxTexture::get_margin_size);
 
 	ObjectTypeDB::bind_method(_MD("set_expand_margin_size","margin","size"),&StyleBoxTexture::set_expand_margin_size);
-	ObjectTypeDB::bind_method(_MD("get_expand_margin_size"),&StyleBoxTexture::get_expand_margin_size);
+	ObjectTypeDB::bind_method(_MD("get_expand_margin_size","margin"),&StyleBoxTexture::get_expand_margin_size);
 
 	ObjectTypeDB::bind_method(_MD("set_draw_center","enable"),&StyleBoxTexture::set_draw_center);
 	ObjectTypeDB::bind_method(_MD("get_draw_center"),&StyleBoxTexture::get_draw_center);
@@ -198,18 +204,18 @@ void StyleBoxTexture::_bind_methods() {
 }
 
 StyleBoxTexture::StyleBoxTexture() {
-	
-	
+
+
 	for (int i=0;i<4;i++) {
 		margin[i]=0;
 		expand_margin[i]=0;
 	}
 	draw_center=true;
-	
+
 }
 StyleBoxTexture::~StyleBoxTexture() {
-	
-	
+
+
 }
 
 ////////////////
@@ -386,7 +392,7 @@ void StyleBoxImageMask::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_expand","expand"),&StyleBoxImageMask::set_expand);
 	ObjectTypeDB::bind_method(_MD("get_expand"),&StyleBoxImageMask::get_expand);
 	ObjectTypeDB::bind_method(_MD("set_expand_margin_size","margin","size"),&StyleBoxImageMask::set_expand_margin_size);
-	ObjectTypeDB::bind_method(_MD("get_expand_margin_size"),&StyleBoxImageMask::get_expand_margin_size);
+	ObjectTypeDB::bind_method(_MD("get_expand_margin_size","margin"),&StyleBoxImageMask::get_expand_margin_size);
 
 	ADD_PROPERTY( PropertyInfo(Variant::IMAGE, "image"), _SCS("set_image"), _SCS("get_image"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "expand"), _SCS("set_expand"), _SCS("get_expand"));

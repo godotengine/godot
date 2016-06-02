@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,11 @@
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/alsa/audio_driver_alsa.h"
+#include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
+#include "servers/physics_2d/physics_2d_server_wrap_mt.h"
+#include "main/input_default.h"
+#include "joystick_linux.h"
 
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
@@ -66,6 +70,17 @@ typedef struct {
 class OS_X11 : public OS_Unix {
 
 	Atom wm_delete;
+	Atom xdnd_enter;
+	Atom xdnd_position;
+	Atom xdnd_status;
+	Atom xdnd_action_copy;
+	Atom xdnd_drop;
+	Atom xdnd_finished;
+	Atom xdnd_selection;
+	Atom requested;
+
+	int  xdnd_version;
+
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 	ContextGL_X11 *context_gl;
 #endif
@@ -74,7 +89,8 @@ class OS_X11 : public OS_Unix {
 	VideoMode current_videomode;
 	List<String> args;
 	Window x11_window;
-	MainLoop *main_loop;	
+	Window xdnd_source_window;
+	MainLoop *main_loop;
 	::Display* x11_display;
 	char *xmbstring;
 	int xmblen;
@@ -89,7 +105,7 @@ class OS_X11 : public OS_Unix {
 	uint64_t last_click_ms;
 	unsigned int event_id;
 	uint32_t last_button_state;
-	
+
 	PhysicsServer *physics_server;
 	unsigned int get_mouse_button_state(unsigned int p_x11_state);
 	InputModifierState get_key_modifier_state(unsigned int p_x11_state);
@@ -97,7 +113,7 @@ class OS_X11 : public OS_Unix {
 
 	MouseMode mouse_mode;
 	Point2i center;
-	
+
 	void handle_key_event(XKeyEvent *p_event,bool p_echo=false);
 	void process_xevents();
 	virtual void delete_main_loop();
@@ -110,16 +126,21 @@ class OS_X11 : public OS_Unix {
 
 	bool force_quit;
 	bool minimized;
-	int dpad_last[2];
 
+	bool do_mouse_warp;
 
 	const char *cursor_theme;
 	int cursor_size;
+	XcursorImage *img[CURSOR_MAX];
 	Cursor cursors[CURSOR_MAX];
 	Cursor null_cursor;
 	CursorShape current_cursor;
 
 	InputDefault *input;
+
+#ifdef JOYDEV_ENABLED
+	joystick_linux *joystick;
+#endif
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;
@@ -129,46 +150,33 @@ class OS_X11 : public OS_Unix {
 	AudioDriverALSA driver_alsa;
 #endif
 
-	enum {
-		JOYSTICKS_MAX = 8,
-		MAX_JOY_AXIS = 32768, // I've no idea
-	};
-
-	struct Joystick {
-
-		int fd;
-		int last_axis[JOY_AXIS_MAX];
-
-		Joystick() {
-			fd = -1;
-			for (int i=0; i<JOY_AXIS_MAX; i++) {
-
-				last_axis[i] = 0;
-			};
-		};
-	};
+#ifdef PULSEAUDIO_ENABLED
+	AudioDriverPulseAudio driver_pulseaudio;
+#endif
 
 	Atom net_wm_icon;
 
-
-	int joystick_count;
-	Joystick joysticks[JOYSTICKS_MAX];
+	int audio_driver_index;
+	unsigned int capture_idle;
+	bool maximized;
+	//void set_wm_border(bool p_enabled);
+	void set_wm_fullscreen(bool p_enabled);
 
 
 protected:
 
 	virtual int get_video_driver_count() const;
-	virtual const char * get_video_driver_name(int p_driver) const;	
+	virtual const char * get_video_driver_name(int p_driver) const;
 	virtual VideoMode get_default_video_mode() const;
-	
-	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);	
+
+	virtual int get_audio_driver_count() const;
+	virtual const char * get_audio_driver_name(int p_driver) const;
+
+	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);
 	virtual void finalize();
 
-	virtual void set_main_loop( MainLoop * p_main_loop );    
+	virtual void set_main_loop( MainLoop * p_main_loop );
 
-	void probe_joystick(int p_id = -1);
-	void process_joysticks();
-	void close_joystick(int p_id = -1);
 
 public:
 
@@ -187,7 +195,7 @@ public:
 	virtual void set_icon(const Image& p_icon);
 
 	virtual MainLoop *get_main_loop() const;
-	
+
 	virtual bool can_draw() const;
 
 	virtual void set_clipboard(const String& p_text);
@@ -205,7 +213,32 @@ public:
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
 
+
+	virtual int get_screen_count() const;
+	virtual int get_current_screen() const;
+	virtual void set_current_screen(int p_screen);
+	virtual Point2 get_screen_position(int p_screen=0) const;
+	virtual Size2 get_screen_size(int p_screen=0) const;
+	virtual Point2 get_window_position() const;
+	virtual void set_window_position(const Point2& p_position);
+	virtual Size2 get_window_size() const;
+	virtual void set_window_size(const Size2 p_size);
+	virtual void set_window_fullscreen(bool p_enabled);
+	virtual bool is_window_fullscreen() const;
+	virtual void set_window_resizable(bool p_enabled);
+	virtual bool is_window_resizable() const;
+	virtual void set_window_minimized(bool p_enabled);
+	virtual bool is_window_minimized() const;
+	virtual void set_window_maximized(bool p_enabled);
+	virtual bool is_window_maximized() const;
+
 	virtual void move_window_to_foreground();
+	virtual void alert(const String& p_alert,const String& p_title="ALERT!");
+
+	virtual bool is_joy_known(int p_device);
+	virtual String get_joy_guid(int p_device) const;
+
+	virtual void set_context(int p_context);
 
 	void run();
 

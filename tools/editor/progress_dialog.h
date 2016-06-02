@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,15 +84,18 @@ class ProgressDialog : public Popup {
 
 	Map<String,Task> tasks;
 	VBoxContainer *main;
+	uint64_t last_progress_tick;
 
+	static ProgressDialog *singleton;
 	void _popup();
 protected:
 
 	void _notification(int p_what);
 public:
 
+	static ProgressDialog *get_singleton() { return singleton; }
 	void add_task(const String& p_task,const String& p_label, int p_steps);
-	void task_step(const String& p_task,const String& p_state, int p_step=-1);
+	void task_step(const String& p_task, const String& p_state, int p_step=-1, bool p_force_redraw=true);
 	void end_task(const String& p_task);
 
 

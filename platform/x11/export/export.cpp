@@ -11,7 +11,7 @@ void register_x11_exporter() {
 
 	{
 		Ref<EditorExportPlatformPC> exporter = Ref<EditorExportPlatformPC>( memnew(EditorExportPlatformPC) );
-		exporter->set_binary_extension("bin");
+		exporter->set_binary_extension("");
 		exporter->set_release_binary32("linux_x11_32_release");
 		exporter->set_debug_binary32("linux_x11_32_debug");
 		exporter->set_release_binary64("linux_x11_64_release");

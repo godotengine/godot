@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -105,7 +105,7 @@ private:
 				int32_t loop_pos;
 				int32_t window_ofs;
 				const uint8_t *ptr;
-			} ima_adpcm;
+			} ima_adpcm[2];
 
 		} mix;
 
@@ -197,7 +197,7 @@ private:
 
 	void mix_channel(Channel& p_channel);
 	int mix_chunk_left;
-	void mix_chunk();	
+	void mix_chunk();
 
 	float channel_nrg;
 	int channel_id_count;

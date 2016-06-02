@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "editor_font_import_plugin.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/file_dialog.h"
+#include "tools/editor/editor_file_dialog.h"
 #include "tools/editor/editor_node.h"
 #include "os/file_access.h"
 #include "editor_atlas.h"
@@ -46,6 +46,12 @@ class _EditorFontImportOptions : public Object {
 
 	OBJ_TYPE(_EditorFontImportOptions,Object);
 public:
+
+	enum FontMode {
+
+		FONT_BITMAP,
+		FONT_DISTANCE_FIELD
+	};
 
 	enum ColorType {
 		COLOR_WHITE,
@@ -69,6 +75,9 @@ public:
 		CHARSET_CUSTOM_LATIN
 	};
 
+
+	FontMode font_mode;
+
 	CharacterSet character_set;
 	String custom_file;
 
@@ -91,7 +100,6 @@ public:
 	bool color_use_monochrome;
 	String gradient_image;
 
-
 	bool disable_filter;
 	bool round_advance;
 
@@ -100,7 +108,10 @@ public:
 	bool _set(const StringName& p_name, const Variant& p_value) {
 
 		String n = p_name;
-		if (n=="extra_space/char")
+		if (n=="mode/mode") {
+			font_mode=FontMode(int(p_value));
+			_change_notify();
+		} else if (n=="extra_space/char")
 			char_extra_spacing=p_value;
 		else if (n=="extra_space/space")
 			space_extra_spacing=p_value;
@@ -169,7 +180,9 @@ public:
 	bool _get(const StringName& p_name,Variant &r_ret) const{
 
 		String n = p_name;
-		if (n=="extra_space/char")
+		if (n=="mode/mode")
+			r_ret=font_mode;
+		else if (n=="extra_space/char")
 			r_ret=char_extra_spacing;
 		else if (n=="extra_space/space")
 			r_ret=space_extra_spacing;
@@ -231,6 +244,9 @@ public:
 
 	void _get_property_list( List<PropertyInfo> *p_list) const{
 
+
+		p_list->push_back(PropertyInfo(Variant::INT,"mode/mode",PROPERTY_HINT_ENUM,"Bitmap,Distance Field"));
+
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/char",PROPERTY_HINT_RANGE,"-64,64,1"));
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/space",PROPERTY_HINT_RANGE,"-64,64,1"));
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/top",PROPERTY_HINT_RANGE,"-64,64,1"));
@@ -238,37 +254,47 @@ public:
 		p_list->push_back(PropertyInfo(Variant::INT,"character_set/mode",PROPERTY_HINT_ENUM,"Ascii,Latin,Unicode,Custom,Custom&Latin"));
 
 		if (character_set>=CHARSET_CUSTOM)
-			p_list->push_back(PropertyInfo(Variant::STRING,"character_set/custom",PROPERTY_HINT_FILE));
+			p_list->push_back(PropertyInfo(Variant::STRING,"character_set/custom",PROPERTY_HINT_GLOBAL_FILE));
 
-		p_list->push_back(PropertyInfo(Variant::BOOL,"shadow/enabled"));
-		if (shadow) {
-			p_list->push_back(PropertyInfo(Variant::INT,"shadow/radius",PROPERTY_HINT_RANGE,"-64,64,1"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR2,"shadow/offset"));
-			p_list->push_back(PropertyInfo(Variant::COLOR,"shadow/color"));
-			p_list->push_back(PropertyInfo(Variant::REAL,"shadow/transition",PROPERTY_HINT_EXP_EASING));
+		int usage = PROPERTY_USAGE_DEFAULT;
+
+		if (font_mode==FONT_DISTANCE_FIELD) {
+			usage = PROPERTY_USAGE_NOEDITOR;
 		}
 
-		p_list->push_back(PropertyInfo(Variant::BOOL,"shadow2/enabled"));
-		if (shadow2) {
-			p_list->push_back(PropertyInfo(Variant::INT,"shadow2/radius",PROPERTY_HINT_RANGE,"-64,64,1"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR2,"shadow2/offset"));
-			p_list->push_back(PropertyInfo(Variant::COLOR,"shadow2/color"));
-			p_list->push_back(PropertyInfo(Variant::REAL,"shadow2/transition",PROPERTY_HINT_EXP_EASING));
+		{
+
+			p_list->push_back(PropertyInfo(Variant::BOOL,"shadow/enabled",PROPERTY_HINT_NONE,"",usage));
+			if (shadow) {
+				p_list->push_back(PropertyInfo(Variant::INT,"shadow/radius",PROPERTY_HINT_RANGE,"-64,64,1",usage));
+				p_list->push_back(PropertyInfo(Variant::VECTOR2,"shadow/offset",PROPERTY_HINT_NONE,"",usage));
+				p_list->push_back(PropertyInfo(Variant::COLOR,"shadow/color",PROPERTY_HINT_NONE,"",usage));
+				p_list->push_back(PropertyInfo(Variant::REAL,"shadow/transition",PROPERTY_HINT_EXP_EASING,"",usage));
+			}
+
+			p_list->push_back(PropertyInfo(Variant::BOOL,"shadow2/enabled",PROPERTY_HINT_NONE,"",usage));
+			if (shadow2) {
+				p_list->push_back(PropertyInfo(Variant::INT,"shadow2/radius",PROPERTY_HINT_RANGE,"-64,64,1",usage));
+				p_list->push_back(PropertyInfo(Variant::VECTOR2,"shadow2/offset",PROPERTY_HINT_NONE,"",usage));
+				p_list->push_back(PropertyInfo(Variant::COLOR,"shadow2/color",PROPERTY_HINT_NONE,"",usage));
+				p_list->push_back(PropertyInfo(Variant::REAL,"shadow2/transition",PROPERTY_HINT_EXP_EASING,"",usage));
+			}
+
+			p_list->push_back(PropertyInfo(Variant::INT,"color/mode",PROPERTY_HINT_ENUM,"White,Color,Gradient,Gradient Image",usage));
+			if (color_type==COLOR_CUSTOM) {
+				p_list->push_back(PropertyInfo(Variant::COLOR,"color/color",PROPERTY_HINT_NONE,"",usage));
+
+			}
+			if (color_type==COLOR_GRADIENT_RANGE) {
+				p_list->push_back(PropertyInfo(Variant::COLOR,"color/begin",PROPERTY_HINT_NONE,"",usage));
+				p_list->push_back(PropertyInfo(Variant::COLOR,"color/end",PROPERTY_HINT_NONE,"",usage));
+			}
+			if (color_type==COLOR_GRADIENT_IMAGE) {
+				p_list->push_back(PropertyInfo(Variant::STRING,"color/image",PROPERTY_HINT_GLOBAL_FILE,"",usage));
+			}
+			p_list->push_back(PropertyInfo(Variant::BOOL,"color/monochrome",PROPERTY_HINT_NONE,"",usage));
 		}
 
-		p_list->push_back(PropertyInfo(Variant::INT,"color/mode",PROPERTY_HINT_ENUM,"White,Color,Gradient,Gradient Image"));
-		if (color_type==COLOR_CUSTOM) {
-			p_list->push_back(PropertyInfo(Variant::COLOR,"color/color"));
-
-		}
-		if (color_type==COLOR_GRADIENT_RANGE) {
-			p_list->push_back(PropertyInfo(Variant::COLOR,"color/begin"));
-			p_list->push_back(PropertyInfo(Variant::COLOR,"color/end"));
-		}
-		if (color_type==COLOR_GRADIENT_IMAGE) {
-			p_list->push_back(PropertyInfo(Variant::STRING,"color/image",PROPERTY_HINT_FILE));
-		}
-		p_list->push_back(PropertyInfo(Variant::BOOL,"color/monochrome"));
 		p_list->push_back(PropertyInfo(Variant::BOOL,"advanced/round_advance"));
 		p_list->push_back(PropertyInfo(Variant::BOOL,"advanced/disable_filter"));
 
@@ -307,12 +333,15 @@ public:
 		gradient_end=Color(0.5,0.5,0.5,1);
 		color_use_monochrome=false;
 
+		font_mode=FONT_BITMAP;
 		round_advance=true;
 		disable_filter=false;
 
 	}
 
 	_EditorFontImportOptions() {
+
+		font_mode=FONT_BITMAP;
 
 		char_extra_spacing=0;
 		top_extra_spacing=0;
@@ -350,8 +379,8 @@ class EditorFontImportDialog : public ConfirmationDialog {
 	OBJ_TYPE(EditorFontImportDialog, ConfirmationDialog);
 
 
-	LineEditFileChooser *source;
-	LineEditFileChooser *dest;
+	EditorLineEditFileChooser *source;
+	EditorLineEditFileChooser *dest;
 	SpinBox *font_size;
 	LineEdit *test_string;
 	ColorPickerButton *test_color;
@@ -377,7 +406,10 @@ class EditorFontImportDialog : public ConfirmationDialog {
 			imd->set_option(opt,v);
 		}
 
-		imd->add_source(EditorImportPlugin::validate_source_path(source->get_line_edit()->get_text()));
+		String src_path = EditorImportPlugin::validate_source_path(source->get_line_edit()->get_text());
+		//print_line("pre src path "+source->get_line_edit()->get_text());
+		//print_line("src path "+src_path);
+		imd->add_source(src_path);
 		imd->set_option("font/size",font_size->get_val());
 
 		return imd;
@@ -405,7 +437,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 	void _update() {
 
 		Ref<ResourceImportMetadata> imd = get_rimd();
-		Ref<Font> font = plugin->generate_font(imd);
+		Ref<BitmapFont> font = plugin->generate_font(imd);
 		test_label->add_font_override("font",font);
 		_update_text();
 	}
@@ -422,7 +454,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 
 	void _import_inc(String p_font) {
 
-		Ref<Font> font = ResourceLoader::load(p_font);
+		Ref<BitmapFont> font = ResourceLoader::load(p_font);
 		if (!font.is_valid())
 			return;
 		Ref<ImageTexture> tex = font->get_texture(0);
@@ -439,12 +471,12 @@ class EditorFontImportDialog : public ConfirmationDialog {
 
 		for(int i=0;i<ck.size();i++) {
 			CharType k=ck[i];
-			Font::Character c=font->get_character(k);
+			BitmapFont::Character c=font->get_character(k);
 			f->store_line("{"+itos(k)+","+rtos(c.rect.pos.x)+","+rtos(c.rect.pos.y)+","+rtos(c.rect.size.x)+","+rtos(c.rect.size.y)+","+rtos(c.v_align)+","+rtos(c.h_align)+","+rtos(c.advance)+"},");
 		}
 		f->store_line("};");
 
-		Vector<Font::KerningPairKey> kp=font->get_kerning_pair_keys();
+		Vector<BitmapFont::KerningPairKey> kp=font->get_kerning_pair_keys();
 		f->store_line("static const int _builtin_font_kerning_pair_count="+itos(kp.size())+";");
 		f->store_line("static const int _builtin_font_kerning_pairs["+itos(kp.size())+"][3]={");
 		for(int i=0;i<kp.size();i++) {
@@ -477,34 +509,38 @@ class EditorFontImportDialog : public ConfirmationDialog {
 	void _import() {
 
 		if (source->get_line_edit()->get_text()=="") {
-			error_dialog->set_text("No source font file!");
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->set_text(TTR("No source font file!"));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 		}
 
 		if (dest->get_line_edit()->get_text()=="") {
-			error_dialog->set_text("No target font resource!");
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->set_text(TTR("No target font resource!"));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
+		}
+
+		if (dest->get_line_edit()->get_text().get_file()==".fnt") {
+			dest->get_line_edit()->set_text(dest->get_line_edit()->get_text().get_base_dir() + "/" + source->get_line_edit()->get_text().get_file().basename() + ".fnt" );
 		}
 
 		Ref<ResourceImportMetadata> rimd = get_rimd();
 
 		if (rimd.is_null()) {
-			error_dialog->set_text("Can't load/process source font");
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->set_text(TTR("Can't load/process source font."));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 		}
 
 		Error err = plugin->import(dest->get_line_edit()->get_text(),rimd);
 
 		if (err!=OK) {
-			error_dialog->set_text("Could't save font.");
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->set_text(TTR("Couldn't save font."));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 		}
 
-		//_import_inc(dest->get_line_edit()->get_text());
+		_import_inc(dest->get_line_edit()->get_text());
 
 		hide();
 	}
@@ -537,7 +573,7 @@ public:
 
 	void popup_import(const String& p_path) {
 
-		popup_centered(Size2(600,500));
+		popup_centered(Size2(600,500)*EDSCALE);
 
 		if (p_path!="") {
 
@@ -565,6 +601,13 @@ public:
 		}
 	}
 
+
+	void set_source_and_dest(const String& p_font,const String& p_dest) {
+		source->get_line_edit()->set_text(p_font);
+		dest->get_line_edit()->set_text(p_dest);
+		_prop_changed();
+	}
+
 	EditorFontImportDialog(EditorFontImportPlugin *p_plugin) {
 		plugin=p_plugin;
 		VBoxContainer *vbc = memnew( VBoxContainer );
@@ -580,34 +623,35 @@ public:
 		hbc->add_child(vbr);
 		vbr->set_h_size_flags(SIZE_EXPAND_FILL);
 
-		source = memnew( LineEditFileChooser );
-		source->get_file_dialog()->set_access(FileDialog::ACCESS_FILESYSTEM);
-		source->get_file_dialog()->set_mode(FileDialog::MODE_OPEN_FILE);
+		source = memnew( EditorLineEditFileChooser );
+		source->get_file_dialog()->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+		source->get_file_dialog()->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 		source->get_file_dialog()->add_filter("*.ttf;TrueType");
 		source->get_file_dialog()->add_filter("*.otf;OpenType");
+		source->get_file_dialog()->add_filter("*.fnt;BMFont");
 		source->get_line_edit()->connect("text_entered",this,"_src_changed");
 
-		vbl->add_margin_child("Source Font:",source);
+		vbl->add_margin_child(TTR("Source Font:"),source);
 		font_size = memnew( SpinBox );
-		vbl->add_margin_child("Source Font Size:",font_size);
+		vbl->add_margin_child(TTR("Source Font Size:"),font_size);
 		font_size->set_min(3);
 		font_size->set_max(256);
 		font_size->set_val(16);
 		font_size->connect("value_changed",this,"_font_size_changed");
-		dest = memnew( LineEditFileChooser );
+		dest = memnew( EditorLineEditFileChooser );
 		//
 		List<String> fl;
-		Ref<Font> font= memnew(Font);
+		Ref<BitmapFont> font= memnew(BitmapFont);
 		dest->get_file_dialog()->add_filter("*.fnt ; Font" );
 		//ResourceSaver::get_recognized_extensions(font,&fl);
 		//for(List<String>::Element *E=fl.front();E;E=E->next()) {
 		//	dest->get_file_dialog()->add_filter("*."+E->get());
 		//}
 
-		vbl->add_margin_child("Dest Resource:",dest);
+		vbl->add_margin_child(TTR("Dest Resource:"),dest);
 		HBoxContainer *testhb = memnew( HBoxContainer );
 		test_string = memnew( LineEdit );
-		test_string->set_text("The quick brown fox jumps over the lazy dog.");
+		test_string->set_text(TTR("The quick brown fox jumps over the lazy dog."));
 		test_string->set_h_size_flags(SIZE_EXPAND_FILL);
 		test_string->set_stretch_ratio(5);
 
@@ -620,7 +664,8 @@ public:
 		testhb->add_child(test_color);
 
 		vbl->add_spacer();
-		vbl->add_margin_child("Test: ",testhb);
+		vbl->add_margin_child(TTR("Test:")+" ",testhb);
+		/*
 		HBoxContainer *upd_hb = memnew( HBoxContainer );
 //		vbl->add_child(upd_hb);
 		upd_hb->add_spacer();
@@ -628,10 +673,10 @@ public:
 		upd_hb->add_child(update);
 		update->set_text("Update");
 		update->connect("pressed",this,"_update");
-
+*/
 		options = memnew( _EditorFontImportOptions );
 		prop_edit = memnew( PropertyEditor() );
-		vbr->add_margin_child("Options:",prop_edit,true);
+		vbr->add_margin_child(TTR("Options:"),prop_edit,true);
 		options->connect("changed",this,"_prop_changed");
 
 		prop_edit->hide_top_label();
@@ -644,7 +689,7 @@ public:
 		test_label->set_area_as_parent_rect();
 		panel->set_v_size_flags(SIZE_EXPAND_FILL);
 		test_string->connect("text_changed",this,"_update_text2");
-		set_title("Font Import");
+		set_title(TTR("Font Import"));
 		timer = memnew( Timer );
 		add_child(timer);
 		timer->connect("timeout",this,"_update");
@@ -652,11 +697,11 @@ public:
 		timer->set_one_shot(true);
 
 		get_ok()->connect("pressed", this,"_import");
-		get_ok()->set_text("Import");
+		get_ok()->set_text(TTR("Import"));
 
 		error_dialog = memnew ( ConfirmationDialog );
 		add_child(error_dialog);
-		error_dialog->get_ok()->set_text("Accept");
+		error_dialog->get_ok()->set_text(TTR("Accept"));
 		set_hide_on_ok(false);
 
 
@@ -706,12 +751,164 @@ struct _EditorKerningKey {
 
 };
 
-Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata>& p_from, const String &p_existing) {
+
+static unsigned char get_SDF_radial(
+		unsigned char *fontmap,
+		int w, int h,
+		int x, int y,
+		int max_radius )
+{
+	//	hideous brute force method
+	float d2 = max_radius*max_radius+1.0;
+	unsigned char v = fontmap[x+y*w];
+	for( int radius = 1; (radius <= max_radius) && (radius*radius < d2); ++radius )
+	{
+		int line, lo, hi;
+		//	north
+		line = y - radius;
+		if( (line >= 0) && (line < h) )
+		{
+			lo = x - radius;
+			hi = x + radius;
+			if( lo < 0 ) { lo = 0; }
+			if( hi >= w ) { hi = w-1; }
+			int idx = line * w + lo;
+			for( int i = lo; i <= hi; ++i )
+			{
+				//	check this pixel
+				if( fontmap[idx] != v )
+				{
+					float nx = i - x;
+					float ny = line - y;
+					float nd2 = nx*nx+ny*ny;
+					if( nd2 < d2 )
+					{
+						d2 = nd2;
+					}
+				}
+				//	move on
+				++idx;
+			}
+		}
+		//	south
+		line = y + radius;
+		if( (line >= 0) && (line < h) )
+		{
+			lo = x - radius;
+			hi = x + radius;
+			if( lo < 0 ) { lo = 0; }
+			if( hi >= w ) { hi = w-1; }
+			int idx = line * w + lo;
+			for( int i = lo; i <= hi; ++i )
+			{
+				//	check this pixel
+				if( fontmap[idx] != v )
+				{
+					float nx = i - x;
+					float ny = line - y;
+					float nd2 = nx*nx+ny*ny;
+					if( nd2 < d2 )
+					{
+						d2 = nd2;
+					}
+				}
+				//	move on
+				++idx;
+			}
+		}
+		//	west
+		line = x - radius;
+		if( (line >= 0) && (line < w) )
+		{
+			lo = y - radius + 1;
+			hi = y + radius - 1;
+			if( lo < 0 ) { lo = 0; }
+			if( hi >= h ) { hi = h-1; }
+			int idx = lo * w + line;
+			for( int i = lo; i <= hi; ++i )
+			{
+				//	check this pixel
+				if( fontmap[idx] != v )
+				{
+					float nx = line - x;
+					float ny = i - y;
+					float nd2 = nx*nx+ny*ny;
+					if( nd2 < d2 )
+					{
+						d2 = nd2;
+					}
+				}
+				//	move on
+				idx += w;
+			}
+		}
+		//	east
+		line = x + radius;
+		if( (line >= 0) && (line < w) )
+		{
+			lo = y - radius + 1;
+			hi = y + radius - 1;
+			if( lo < 0 ) { lo = 0; }
+			if( hi >= h ) { hi = h-1; }
+			int idx = lo * w + line;
+			for( int i = lo; i <= hi; ++i )
+			{
+				//	check this pixel
+				if( fontmap[idx] != v )
+				{
+					float nx = line - x;
+					float ny = i - y;
+					float nd2 = nx*nx+ny*ny;
+					if( nd2 < d2 )
+					{
+						d2 = nd2;
+					}
+				}
+				//	move on
+				idx += w;
+			}
+		}
+	}
+	d2 = sqrtf( d2 );
+	if( v==0 )
+	{
+		d2 = -d2;
+	}
+	d2 *= 127.5 / max_radius;
+	d2 += 127.5;
+	if( d2 < 0.0 ) d2 = 0.0;
+	if( d2 > 255.0 ) d2 = 255.0;
+	return (unsigned char)(d2 + 0.5);
+}
+
+
+Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata>& p_from, const String &p_existing) {
+
+
 
 	Ref<ResourceImportMetadata> from = p_from;
-	ERR_FAIL_COND_V(from->get_source_count()!=1,Ref<Font>());
+	ERR_FAIL_COND_V(from->get_source_count()!=1,Ref<BitmapFont>());
 
 	String src_path = EditorImportPlugin::expand_source_path(from->get_source_path(0));
+
+	if (src_path.extension().to_lower()=="fnt") {
+
+		if (ResourceLoader::load(src_path).is_valid()) {
+			EditorNode::get_singleton()->show_warning(TTR("Path:")+" "+src_path+"\n"+TTR("This file is already a Godot font file, please supply a BMFont type file instead."));
+			return Ref<BitmapFont>();
+		}
+
+		Ref<BitmapFont> font;
+		font.instance();
+		Error err = font->create_from_fnt(src_path);
+		if (err) {
+			EditorNode::get_singleton()->show_warning(TTR("Path:")+" "+src_path+"\n"+TTR("Failed opening as BMFont file."));
+			return Ref<BitmapFont>();
+		}
+
+		return font;
+	}
+
 	int size = from->get_option("font/size");
 
 #ifdef FREETYPE_ENABLED
@@ -722,23 +919,23 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 
 	int error = FT_Init_FreeType( &library );
 
-	ERR_EXPLAIN("Error initializing FreeType.");
-	ERR_FAIL_COND_V( error !=0, Ref<Font>() );
+	ERR_EXPLAIN(TTR("Error initializing FreeType."));
+	ERR_FAIL_COND_V( error !=0, Ref<BitmapFont>() );
 
 	print_line("loadfrom: "+src_path);
 	error = FT_New_Face( library, src_path.utf8().get_data(),0,&face );
 
 	if ( error == FT_Err_Unknown_File_Format ) {
-		ERR_EXPLAIN("Unknown font format.");
+		ERR_EXPLAIN(TTR("Unknown font format."));
 		FT_Done_FreeType( library );
 	} else if ( error ) {
 
-		ERR_EXPLAIN("Error loading font.");
+		ERR_EXPLAIN(TTR("Error loading font."));
 		FT_Done_FreeType( library );
 
 	}
 
-	ERR_FAIL_COND_V(error,Ref<Font>());
+	ERR_FAIL_COND_V(error,Ref<BitmapFont>());
 
 
 	int height=0;
@@ -749,12 +946,16 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 
 	if ( error ) {
 		FT_Done_FreeType( library );
-		ERR_EXPLAIN("Invalid font size. ");
-		ERR_FAIL_COND_V( error,Ref<Font>() );
+		ERR_EXPLAIN(TTR("Invalid font size."));
+		ERR_FAIL_COND_V( error,Ref<BitmapFont>() );
 
 	}
 
-	error = FT_Set_Pixel_Sizes(face,0,size);
+	int font_mode = from->get_option("mode/mode");
+
+	int scaler=(font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD)?16:1;
+
+	error = FT_Set_Pixel_Sizes(face,0,size*scaler);
 
 	FT_GlyphSlot slot = face->glyph;
 
@@ -792,8 +993,8 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 		if ( !fa ) {
 
 			FT_Done_FreeType( library );
-			ERR_EXPLAIN("Invalid font custom source. ");
-			ERR_FAIL_COND_V( !fa,Ref<Font>() );
+			ERR_EXPLAIN(TTR("Invalid font custom source."));
+			ERR_FAIL_COND_V( !fa,Ref<BitmapFont>() );
 
 		}
 
@@ -820,9 +1021,9 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	{
 
 		bool skip=false;
-		error = FT_Load_Char( face, charcode, FT_LOAD_RENDER );
+		error = FT_Load_Char( face, charcode, font_mode==_EditorFontImportOptions::FONT_BITMAP?FT_LOAD_RENDER:FT_LOAD_MONOCHROME );
 		if (error) skip=true;
-		else error = FT_Render_Glyph( face->glyph, ft_render_mode_normal );
+		else error = FT_Render_Glyph( face->glyph, font_mode==_EditorFontImportOptions::FONT_BITMAP?ft_render_mode_normal:ft_render_mode_mono );
 		if (error) {
 			skip=true;
 		} else if (!skip) {
@@ -847,27 +1048,35 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 		}
 
 		_EditorFontData * fdata = memnew( _EditorFontData );
-		fdata->bitmap.resize( slot->bitmap.width*slot->bitmap.rows );
-		fdata->width=slot->bitmap.width;
-		fdata->height=slot->bitmap.rows;
+
+
+		int w = slot->bitmap.width;
+		int h = slot->bitmap.rows;
+		int p = slot->bitmap.pitch;
+
+		//print_line("W: "+itos(w)+" P: "+itos(slot->bitmap.pitch));
+
+		if (font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD) {
+
+			//	oversize the holding buffer so I can smooth it!
+			int sw = w + scaler * 4;
+			int sh = h + scaler * 4;
+			//	do the SDF
+			int sdfw = sw / scaler;
+			int sdfh = sh / scaler;
+
+			fdata->width=sdfw;
+			fdata->height=sdfh;
+		} else {
+			fdata->width=w;
+			fdata->height=h;
+		}
+
 		fdata->character=charcode;
 		fdata->glyph=FT_Get_Char_Index(face,charcode);
 		if  (charcode=='x')
-			xsize=slot->bitmap.width;
+			xsize=w/scaler;
 
-
-		if (charcode<127) {
-			if (slot->bitmap_top>max_up) {
-
-				max_up=slot->bitmap_top;
-			}
-
-
-			if ( (slot->bitmap_top - fdata->height)<max_down ) {
-
-				max_down=slot->bitmap_top - fdata->height;
-			}
-		}
 
 
 		fdata->valign=slot->bitmap_top;
@@ -878,12 +1087,85 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 		else
 			fdata->advance=slot->advance.x/float(1<<6);
 
+		if (font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD) {
+
+			fdata->halign = fdata->halign / scaler - 1.5;
+			fdata->valign = fdata->valign / scaler + 1.5;
+			fdata->advance/=scaler;
+
+		}
+
 		fdata->advance+=font_spacing;
 
-		for (int i=0;i<slot->bitmap.width;i++) {
-			for (int j=0;j<slot->bitmap.rows;j++) {
 
-				fdata->bitmap[j*slot->bitmap.width+i]=slot->bitmap.buffer[j*slot->bitmap.width+i];
+		if (charcode<127) {
+			int top = fdata->valign;
+			int hmax = h/scaler;
+
+			if (top>max_up) {
+
+				max_up=top;
+			}
+
+
+			if ( (top - hmax)<max_down ) {
+
+				max_down=top - hmax;
+			}
+		}
+
+		if (font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD) {
+
+
+			//	oversize the holding buffer so I can smooth it!
+			int sw = w + scaler * 4;
+			int sh = h + scaler * 4;
+
+			unsigned char *smooth_buf = new unsigned char[sw*sh];
+
+			for( int i = 0; i < sw*sh; ++i ) {
+				smooth_buf[i] = 0;
+			}
+
+			// copy the glyph into the buffer to be smoothed
+			unsigned char *buf = slot->bitmap.buffer;
+			for( int j = 0; j < h; ++j ) {
+				for( int i = 0; i < w; ++i ) {
+					smooth_buf[scaler*2+i+(j+scaler*2)*sw] = 255 * ((buf[j*p+(i>>3)] >> (7 - (i & 7))) & 1);
+				}
+			}
+
+			// do the SDF
+			int sdfw = fdata->width;
+			int sdfh = fdata->height;
+
+			fdata->bitmap.resize( sdfw*sdfh );
+
+			for( int j = 0; j < sdfh; ++j )	{
+				for( int i = 0; i < sdfw; ++i )	{
+					int pd_idx = j*sdfw+i;
+
+					//fdata->bitmap[j*slot->bitmap.width+i]=slot->bitmap.buffer[j*slot->bitmap.width+i];
+
+					fdata->bitmap[pd_idx] =
+							//get_SDF
+							get_SDF_radial
+							( smooth_buf, sw, sh,
+							  i*scaler + (scaler >>1), j*scaler + (scaler >>1),
+							  2*scaler );
+
+				}
+			}
+
+			delete [] smooth_buf;
+
+		} else {
+			fdata->bitmap.resize( slot->bitmap.width*slot->bitmap.rows );
+			for (int i=0;i<slot->bitmap.width;i++) {
+				for (int j=0;j<slot->bitmap.rows;j++) {
+
+					fdata->bitmap[j*slot->bitmap.width+i]=slot->bitmap.buffer[j*slot->bitmap.width+i];
+				}
 			}
 		}
 
@@ -904,9 +1186,10 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	spd->ofs_x=0;
 	spd->ofs_y=0;
 
-	if (!FT_Load_Char( face, ' ', FT_LOAD_RENDER ) && !FT_Render_Glyph( face->glyph, ft_render_mode_normal )) {
+	if (!FT_Load_Char( face, ' ', FT_LOAD_RENDER ) && !FT_Render_Glyph( face->glyph, font_mode==_EditorFontImportOptions::FONT_BITMAP?ft_render_mode_normal:ft_render_mode_mono )) {
 
 		spd->advance = slot->advance.x>>6; //round to nearest or store as float
+		spd->advance/=scaler;
 		spd->advance+=font_spacing;
 	} else {
 
@@ -955,7 +1238,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 
 				if (kern==0)
 					continue;
-				kerning_map[kpk]=kern;
+				kerning_map[kpk]=kern/scaler;
 			}
 		}
 	}
@@ -1079,7 +1362,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 		pixels.resize(s.x*s.y*4);
 
 		DVector<uint8_t>::Write w = pixels.write();
-		print_line("val: "+itos(font_data_list[i]->valign));
+		//print_line("val: "+itos(font_data_list[i]->valign));
 		for(int y=0;y<s.height;y++) {
 
 			int yc=CLAMP(y-o.y+font_data_list[i]->valign,0,height-1);
@@ -1270,20 +1553,21 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	int bottom_space = from->get_option("extra_space/bottom");
 	bool disable_filter = from->get_option("advanced/disable_filter");
 
-	Ref<Font> font;
+	Ref<BitmapFont> font;
 
 	if (p_existing!=String() && ResourceCache::has(p_existing)) {
 
-		font = Ref<Font>( ResourceCache::get(p_existing)->cast_to<Font>());
+		font = Ref<BitmapFont>( ResourceCache::get(p_existing)->cast_to<BitmapFont>());
 	}
 
 	if (font.is_null()) {
-		 font = Ref<Font>( memnew( Font ) );
+		 font = Ref<BitmapFont>( memnew( BitmapFont ) );
 	}
 
 	font->clear();
 	font->set_height(height+bottom_space+top_space);
 	font->set_ascent(ascent+top_space);
+	font->set_distance_field_hint(font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD);
 
 	//register texures
 	{
@@ -1319,7 +1603,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	return font;
 #else
 
-	return Ref<Font>();
+	return Ref<BitmapFont>();
 #endif
 }
 
@@ -1330,7 +1614,7 @@ String EditorFontImportPlugin::get_name() const {
 }
 String EditorFontImportPlugin::get_visible_name() const{
 
-	return "Font";
+	return TTR("Font");
 }
 void EditorFontImportPlugin::import_dialog(const String& p_from){
 
@@ -1339,7 +1623,7 @@ void EditorFontImportPlugin::import_dialog(const String& p_from){
 Error EditorFontImportPlugin::import(const String& p_path, const Ref<ResourceImportMetadata>& p_from){
 
 
-	Ref<Font> font  = EditorFontImportPlugin::generate_font(p_from,p_path);
+	Ref<BitmapFont> font  = EditorFontImportPlugin::generate_font(p_from,p_path);
 	if (!font.is_valid())
 		return ERR_CANT_CREATE;
 
@@ -1350,6 +1634,20 @@ Error EditorFontImportPlugin::import(const String& p_path, const Ref<ResourceImp
 
 	return ResourceSaver::save(p_path,font);
 
+}
+
+void EditorFontImportPlugin::import_from_drop(const Vector<String>& p_drop, const String &p_dest_path) {
+
+	for(int i=0;i<p_drop.size();i++) {
+		String ext = p_drop[i].extension().to_lower();
+		String file = p_drop[i].get_file();
+		if (ext=="ttf" || ext=="otf" || ext=="fnt") {
+
+			import_dialog();
+			dialog->set_source_and_dest(p_drop[i],p_dest_path.plus_file(file.basename()+".fnt"));
+			break;
+		}
+	}
 }
 
 

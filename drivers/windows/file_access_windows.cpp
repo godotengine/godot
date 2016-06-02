@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,13 +28,19 @@
 /*************************************************************************/
 #ifdef WINDOWS_ENABLED
 
+#define WINVER 0x0500
+
+#include <windows.h>
+#include "shlwapi.h"
 #include "file_access_windows.h"
+
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <wchar.h>
 #include <tchar.h>
 #include "print_string.h"
+
 
 #ifdef _MSC_VER
  #define S_ISREG(m) ((m)&_S_IFREG)
@@ -65,6 +71,8 @@ Error FileAccessWindows::_open(const String& p_filename, int p_mode_flags) {
 	else if (p_mode_flags==WRITE)
 		mode_string=L"wb";
 	else if (p_mode_flags==READ_WRITE)
+		mode_string=L"rb+";
+	else if (p_mode_flags==WRITE_READ)
 		mode_string=L"wb+";
 	else
 		return ERR_INVALID_PARAMETER;
@@ -111,10 +119,20 @@ void FileAccessWindows::close() {
 
 		//unlink(save_path.utf8().get_data());
 		//print_line("renaming..");
-		_wunlink(save_path.c_str()); //unlink if exists
-		int rename_error = _wrename((save_path+".tmp").c_str(),save_path.c_str());
+		//_wunlink(save_path.c_str()); //unlink if exists
+		//int rename_error = _wrename((save_path+".tmp").c_str(),save_path.c_str());
+
+
+		bool rename_error;
+		if (!PathFileExistsW(save_path.c_str())) {
+			//creating new file
+			rename_error = _wrename((save_path+".tmp").c_str(),save_path.c_str())!=0;
+		} else {
+			//atomic replace for existing file
+			rename_error = !ReplaceFileW(save_path.c_str(), (save_path+".tmp").c_str(), NULL, 2|4, NULL, NULL);
+		}
 		save_path="";
-		ERR_FAIL_COND( rename_error != 0);
+		ERR_FAIL_COND( rename_error );
 	}
 
 

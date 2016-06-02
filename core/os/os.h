@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "vector.h"
 #include "os/main_loop.h"
 #include <stdarg.h>
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -45,17 +46,21 @@ class OS {
 	String _custom_level;
 	List<String> _cmdline;
 	int ips;
+	bool _keep_screen_on;
 	bool low_processor_usage_mode;
 	bool _verbose_stdout;
 	String _local_clipboard;
 	uint64_t frames_drawn;
 	uint32_t _frame_delay;
+	uint64_t _msec_splash;
 	bool _no_window;
 	int _exit_code;
 	int _orientation;
 	float _fps;
 	int _target_fps;
 	float _time_scale;
+	bool _pixel_snap;
+	bool _allow_hidpi;
 
 	char *last_error;
 
@@ -67,42 +72,43 @@ public:
 		RENDER_SEPARATE_THREAD
 	};
 	struct VideoMode {
-	
+
 		int width,height;
 		bool fullscreen;
 		bool resizable;
+		bool borderless_window;
 		float get_aspect() const { return (float)width/(float)height; }
-		VideoMode(int p_width=640,int p_height=480,bool p_fullscreen=false, bool p_resizable = true) { width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; }
+		VideoMode(int p_width=1024,int p_height=600,bool p_fullscreen=false, bool p_resizable = true,bool p_borderless_window=false) { width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; borderless_window=p_borderless_window; }
 	};
 protected:
 friend class Main;
-	
+
 	RenderThreadMode _render_thread_mode;
 
 	// functions used by main to initialize/deintialize the OS
 	virtual int get_video_driver_count() const=0;
 	virtual const char * get_video_driver_name(int p_driver) const=0;
-	
+
 	virtual VideoMode get_default_video_mode() const=0;
-	
+
 	virtual int get_audio_driver_count() const=0;
 	virtual const char * get_audio_driver_name(int p_driver) const=0;
-	
+
 	virtual void initialize_core()=0;
 	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver)=0;
-	
-	virtual void set_main_loop( MainLoop * p_main_loop )=0;    
+
+	virtual void set_main_loop( MainLoop * p_main_loop )=0;
 	virtual void delete_main_loop()=0;
-	
+
 	virtual void finalize()=0;
 	virtual void finalize_core()=0;
 
 	virtual void set_cmdline(const char* p_execpath, const List<String>& p_args);
 
 	void _ensure_data_dir();
-	
+
 public:
-	
+
 	typedef int64_t ProcessID;
 
 	static OS* get_singleton();
@@ -144,11 +150,36 @@ public:
 
 	virtual void set_clipboard(const String& p_text);
 	virtual String get_clipboard() const;
-	
+
 	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0)=0;
 	virtual VideoMode get_video_mode(int p_screen=0) const=0;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const=0;
-	
+
+
+	virtual int get_screen_count() const{ return 1; }
+	virtual int get_current_screen() const { return 0; }
+	virtual void set_current_screen(int p_screen) { }
+	virtual Point2 get_screen_position(int p_screen=0) const { return Point2(); }
+	virtual Size2 get_screen_size(int p_screen=0) const { return get_window_size(); }
+	virtual int get_screen_dpi(int p_screen=0) const { return 72; }
+	virtual Point2 get_window_position() const { return Vector2(); }
+	virtual void set_window_position(const Point2& p_position) {}
+	virtual Size2 get_window_size() const=0;
+	virtual void set_window_size(const Size2 p_size){}
+	virtual void set_window_fullscreen(bool p_enabled) {}
+	virtual bool is_window_fullscreen() const { return true; }
+	virtual void set_window_resizable(bool p_enabled) {}
+	virtual bool is_window_resizable() const { return false; }
+	virtual void set_window_minimized(bool p_enabled) {}
+	virtual bool is_window_minimized() const { return false; }
+	virtual void set_window_maximized(bool p_enabled) {}
+	virtual bool is_window_maximized() const { return true; }
+
+	virtual void set_borderless_window(int p_borderless) {}
+	virtual bool get_borderless_window() { return 0; }
+
+
+
 	virtual void set_iterations_per_second(int p_ips);
 	virtual int get_iterations_per_second() const;
 
@@ -157,10 +188,12 @@ public:
 
 	virtual float get_frames_per_second() const { return _fps; };
 
-
+	virtual void set_keep_screen_on(bool p_enabled);
+	virtual bool is_keep_screen_on() const;
 	virtual void set_low_processor_usage_mode(bool p_enabled);
 	virtual bool is_in_low_processor_usage_mode() const;
 
+	virtual String get_installed_templates_path() const { return ""; };
 	virtual String get_executable_path() const;
 	virtual Error execute(const String& p_path, const List<String>& p_arguments,bool p_blocking,ProcessID *r_child_id=NULL,String* r_pipe=NULL,int *r_exitcode=NULL)=0;
 	virtual Error kill(const ProcessID& p_pid)=0;
@@ -191,9 +224,11 @@ public:
 		DAY_FRIDAY,
 		DAY_SATURDAY
 	};
-	
+
 	enum Month {
-		MONTH_JANUARY,
+		/// Start at 1 to follow Windows SYSTEMTIME structure
+		/// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724950(v=vs.85).aspx
+		MONTH_JANUARY = 1,
 		MONTH_FEBRUARY,
 		MONTH_MARCH,
 		MONTH_APRIL,
@@ -208,7 +243,7 @@ public:
 	};
 
 	struct Date {
-		
+
 		int year;
 		Month month;
 		int day;
@@ -217,19 +252,27 @@ public:
 	};
 
 	struct Time {
-	
+
 		int hour;
 		int min;
 		int sec;
 	};
-	
-	virtual Date get_date() const=0;
-	virtual Time get_time() const=0;
-	virtual uint64_t get_unix_time() const;
 
-	virtual void delay_usec(uint32_t p_usec) const=0; 
+	struct TimeZoneInfo {
+		int bias;
+		String name;
+	};
+
+	virtual Date get_date(bool local=false) const=0;
+	virtual Time get_time(bool local=false) const=0;
+	virtual TimeZoneInfo get_time_zone_info() const=0;
+	virtual uint64_t get_unix_time() const;
+	virtual uint64_t get_system_time_secs() const;
+
+	virtual void delay_usec(uint32_t p_usec) const=0;
 	virtual uint64_t get_ticks_usec() const=0;
 	uint32_t get_ticks_msec() const;
+	uint64_t get_splash_tick_msec() const;
 
 	void set_frame_delay(uint32_t p_msec);
 	uint32_t get_frame_delay() const;
@@ -340,6 +383,7 @@ public:
 	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 	virtual bool native_video_is_playing() const;
 	virtual void native_video_pause();
+	virtual void native_video_unpause();
 	virtual void native_video_stop();
 
 	virtual bool can_use_threads() const;
@@ -348,10 +392,35 @@ public:
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, Object* p_obj, String p_callback);
 
 
+	enum LatinKeyboardVariant {
+		LATIN_KEYBOARD_QWERTY,
+		LATIN_KEYBOARD_QWERTZ,
+		LATIN_KEYBOARD_AZERTY,
+		LATIN_KEYBOARD_QZERTY,
+		LATIN_KEYBOARD_DVORAK,
+		LATIN_KEYBOARD_NEO,
+	};
+
+
+	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
+
 	void set_time_scale(float p_scale);
 	float get_time_scale() const;
 
-	OS();	
+	_FORCE_INLINE_ bool get_use_pixel_snap() const { return _pixel_snap; }
+
+	virtual bool is_joy_known(int p_device);
+	virtual String get_joy_guid(int p_device)const;
+
+	enum EngineContext {
+		CONTEXT_EDITOR,
+		CONTEXT_PROJECTMAN,
+	};
+
+	virtual void set_context(int p_context);
+
+	bool is_hidpi_allowed() const { return _allow_hidpi; }
+	OS();
 	virtual ~OS();
 
 };

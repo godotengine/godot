@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@ StreamPeerTCP* (*StreamPeerTCP::_create)()=NULL;
 
 void StreamPeerTCP::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("connect","host","ip"),&StreamPeerTCP::connect);
+	ObjectTypeDB::bind_method(_MD("connect","host","port"),&StreamPeerTCP::connect);
 	ObjectTypeDB::bind_method(_MD("is_connected"),&StreamPeerTCP::is_connected);
 	ObjectTypeDB::bind_method(_MD("get_status"),&StreamPeerTCP::get_status);
 	ObjectTypeDB::bind_method(_MD("get_connected_host"),&StreamPeerTCP::get_connected_host);

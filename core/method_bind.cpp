@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,8 +40,8 @@ PropertyInfo MethodBind::get_argument_info(int p_argument) const {
 		PropertyInfo pi( get_argument_type(p_argument), name );
 		if ((pi.type==Variant::OBJECT) && name.find(":")!=-1) {
 			pi.hint=PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string=name.get_slice(":",1);
-			pi.name=name.get_slice(":",0);
+			pi.hint_string=name.get_slicec(':',1);
+			pi.name=name.get_slicec(':',0);
 		}
 		return pi;
 
@@ -87,7 +87,9 @@ Vector<StringName> MethodBind::get_argument_names() const {
 
 
 void MethodBind::set_default_arguments(const Vector<Variant>& p_defargs) {
-	default_arguments=p_defargs; default_argument_count=default_arguments.size();
+	default_arguments=p_defargs;
+	default_argument_count=default_arguments.size();
+
 }
 
 #ifdef DEBUG_METHODS_ENABLED

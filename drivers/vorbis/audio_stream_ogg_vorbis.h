@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,17 +29,16 @@
 #ifndef AUDIO_STREAM_OGG_VORBIS_H
 #define AUDIO_STREAM_OGG_VORBIS_H
 
-#include "scene/resources/audio_stream_resampled.h"
+#include "scene/resources/audio_stream.h"
 #include "vorbis/vorbisfile.h"
 #include "os/file_access.h"
 #include "io/resource_loader.h"
 #include "os/thread_safe.h"
 
-class AudioStreamOGGVorbis : public AudioStreamResampled {
 
-	OBJ_TYPE(AudioStreamOGGVorbis,AudioStreamResampled);
-	_THREAD_SAFE_CLASS_
+class AudioStreamPlaybackOGGVorbis : public AudioStreamPlayback {
 
+	OBJ_TYPE(AudioStreamPlaybackOGGVorbis,AudioStreamPlayback);
 
 	enum {
 		MIN_MIX=1024
@@ -54,9 +53,6 @@ class AudioStreamOGGVorbis : public AudioStreamResampled {
 	static int _ov_close_func(void *_f);
 	static long _ov_tell_func(void *_f);
 
-
-	virtual bool _can_mix() const;
-
 	String file;
 	int64_t frames_mixed;
 
@@ -67,7 +63,7 @@ class AudioStreamOGGVorbis : public AudioStreamResampled {
 	int stream_srate;
 	int current_section;
 
-	volatile bool setting_up;
+
 	bool paused;
 	bool loops;
 	int repeats;
@@ -76,16 +72,20 @@ class AudioStreamOGGVorbis : public AudioStreamResampled {
 	void _clear_stream();
 	void _close_file();
 
+	bool stream_valid;
+	float loop_restart_time;
+
 
 public:
 
 
-	void set_file(const String& p_file);
+	Error set_file(const String& p_file);
 
-
-	virtual void play();
+	virtual void play(float p_from=0);
 	virtual void stop();
 	virtual bool is_playing() const;
+
+	virtual void set_loop_restart_time(float p_time) { loop_restart_time=p_time; }
 
 	virtual void set_paused(bool p_paused);
 	virtual bool is_paused(bool p_paused) const;
@@ -102,16 +102,37 @@ public:
 	virtual float get_pos() const;
 	virtual void seek_pos(float p_time);
 
-	virtual UpdateMode get_update_mode() const;
-	virtual void update();
+	virtual int get_channels() const { return stream_channels; }
+	virtual int get_mix_rate() const { return stream_srate; }
 
-	AudioStreamOGGVorbis();
-	~AudioStreamOGGVorbis();
+	virtual int get_minimum_buffer_size() const { return 0; }
+	virtual int mix(int16_t* p_bufer,int p_frames);
+
+	AudioStreamPlaybackOGGVorbis();
+	~AudioStreamPlaybackOGGVorbis();
+};
+
+
+class AudioStreamOGGVorbis : public AudioStream {
+
+	OBJ_TYPE(AudioStreamOGGVorbis,AudioStream);
+
+	String file;
+public:
+
+	Ref<AudioStreamPlayback> instance_playback() {
+		Ref<AudioStreamPlaybackOGGVorbis> pb = memnew( AudioStreamPlaybackOGGVorbis );
+		pb->set_file(file);
+		return pb;
+	}
+
+	void set_file(const String& p_file) { file=p_file; }
+
 };
 
 class ResourceFormatLoaderAudioStreamOGGVorbis : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path,const String& p_original_path="");
+	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String& p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

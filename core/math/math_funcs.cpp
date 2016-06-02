@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,8 +36,9 @@ uint32_t Math::default_seed=1;
 
 #define PHI 0x9e3779b9
 
-static uint32_t Q[4096], c = 362436;
-
+#if 0
+static uint32_t Q[4096];
+#endif
 
 uint32_t Math::rand_from_seed(uint32_t *seed) {
 
@@ -48,8 +49,8 @@ uint32_t Math::rand_from_seed(uint32_t *seed) {
 		s = 0x12345987;
 	k = s / 127773;
 	s = 16807 * (s - k * 127773) - 2836 * k;
-	if (s < 0)
-		s += 2147483647;
+//	if (s < 0)
+//		s += 2147483647;
 	(*seed) = s;
 	return (s & Math::RANDOM_MAX);
 #else
@@ -134,18 +135,20 @@ double Math::rad2deg(double p_y) {
 
 double Math::round(double p_val) {
 
-	if (p_val>0) {
+	if (p_val>=0) {
 		return ::floor(p_val+0.5);
 	} else {
 		p_val=-p_val;
 		return -::floor(p_val+0.5);
 	}
 }
+
 double Math::asin(double p_x) {
 
 	return ::asin(p_x);
 
 }
+
 double Math::acos(double p_x) {
 
 	return ::acos(p_x);
@@ -184,12 +187,12 @@ double Math::fmod(double p_x,double p_y) {
 double Math::fposmod(double p_x,double p_y) {
 
 	if (p_x>=0) {
-	
+
 		return Math::fmod(p_x,p_y);
-		
+
 	} else {
-	
-		return p_y-Math::fmod(-p_x,p_y); 
+
+		return p_y-Math::fmod(-p_x,p_y);
 	}
 
 }
@@ -204,16 +207,22 @@ double Math::ceil(double p_x) {
 }
 
 int Math::decimals(double p_step) {
-	
+
 	int max=4;
+	double llimit = Math::pow(0.1,max);
+	double ulimit = 1.0-llimit;
 	int i=0;
-	while( (p_step - Math::floor(p_step)) != 0.0 && max) {
-		
+	while( max) {
+
+		float d = absf(p_step) - Math::floor(absf(p_step));
+
+		if (d<llimit || d>ulimit)
+			break;
 		p_step*=10.0;
 		max--;
 		i++;
 	}
-	
+
 	return i;
 
 }
@@ -244,11 +253,11 @@ double Math::ease(double p_x, double p_c) {
 }
 
 double Math::stepify(double p_value,double p_step) {
-	
+
 	if (p_step!=0) {
-		
-		p_value=floor( p_value / p_step + 0.5 ) * p_step;		
-	}	
+
+		p_value=floor( p_value / p_step + 0.5 ) * p_step;
+	}
 	return p_value;
 }
 
@@ -269,7 +278,7 @@ bool Math::is_inf(double p_val) {
 
 uint32_t Math::larger_prime(uint32_t p_val) {
 
-	static const int primes[] = {
+	static const uint32_t primes[] = {
 		5,
 		13,
 		23,

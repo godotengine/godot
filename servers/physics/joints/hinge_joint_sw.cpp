@@ -420,7 +420,6 @@ float HingeJointSW::get_param(PhysicsServer::HingeJointParam p_param) const{
 
 void HingeJointSW::set_flag(PhysicsServer::HingeJointFlag p_flag, bool p_value){
 
-	print_line(p_flag+": "+itos(p_value));
 	switch (p_flag) {
 		case PhysicsServer::HINGE_JOINT_FLAG_USE_LIMIT: m_useLimit=p_value; break;
 		case PhysicsServer::HINGE_JOINT_FLAG_ENABLE_MOTOR: m_enableAngularMotor=p_value; break;

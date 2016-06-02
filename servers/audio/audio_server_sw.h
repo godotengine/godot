@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,7 +68,7 @@ class AudioServerSW : public AudioServer {
 	SelfList<Voice>::List active_list;
 
 	struct Stream {
-		bool active;		
+		bool active;
 		List<Stream*>::Element *E;
 		AudioStream *audio_stream;
 		EventStream *event_stream;
@@ -118,7 +118,7 @@ public:
 	virtual RID sample_create(SampleFormat p_format, bool p_stereo, int p_length);
 
 	virtual void sample_set_description(RID p_sample, const String& p_description);
-	virtual String sample_get_description(RID p_sample, const String& p_description) const;
+	virtual String sample_get_description(RID p_sample) const;
 
 	virtual SampleFormat sample_get_format(RID p_sample) const;
 	virtual bool sample_is_stereo(RID p_sample) const;
@@ -146,7 +146,7 @@ public:
 
 	virtual void voice_play(RID p_voice, RID p_sample);
 
-	virtual void voice_set_volume(RID p_voice, float p_db);
+	virtual void voice_set_volume(RID p_voice, float p_volume);
 	virtual void voice_set_pan(RID p_voice, float p_pan, float p_depth=0,float height=0); //pan and depth go from -1 to 1
 	virtual void voice_set_filter(RID p_voice, FilterType p_type, float p_cutoff, float p_resonance,float p_gain=0);
 	virtual void voice_set_chorus(RID p_voice, float p_chorus );
@@ -255,6 +255,8 @@ public:
 	virtual void lock()=0;
 	virtual void unlock()=0;
 	virtual void finish()=0;
+
+	virtual float get_latency() { return 0; }
 
 
 

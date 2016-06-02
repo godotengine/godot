@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,7 +60,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 			if (line.get_slice_count(" ")==1) {
 				print_line("*Frame "+itos(current_frame)+" - "+p_script->debug_get_stack_level_source(current_frame)+":"+itos(p_script->debug_get_stack_level_line(current_frame))+" in function '"+p_script->debug_get_stack_level_function(current_frame)+"'");
 			} else {
-				int frame = line.get_slice(" ",1).to_int();
+				int frame = line.get_slicec(' ',1).to_int();
 				if (frame<0 || frame >=total_frames) {
 					print_line("Error: Invalid frame.");
 				} else {
@@ -108,7 +108,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 				print_line("Usage: print <expre>");
 			} else {
 
-				String expr = line.get_slice(" ",2);
+				String expr = line.get_slicec(' ',2);
 				String res = p_script->debug_parse_stack_level_expression(current_frame,expr);
 				print_line(res);
 			}
@@ -130,9 +130,9 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 			} else {
 
 
-				String bppos=line.get_slice(" ",1);
-				String source=bppos.get_slice(":",0).strip_edges();
-				int line=bppos.get_slice(":",1).strip_edges().to_int();
+				String bppos=line.get_slicec(' ',1);
+				String source=bppos.get_slicec(':',0).strip_edges();
+				int line=bppos.get_slicec(':',1).strip_edges().to_int();
 
 				source = breakpoint_find_source(source);
 
@@ -147,9 +147,9 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 				clear_breakpoints();
 			} else {
 
-				String bppos=line.get_slice(" ",1);
-				String source=bppos.get_slice(":",0).strip_edges();
-				int line=bppos.get_slice(":",1).strip_edges().to_int();
+				String bppos=line.get_slicec(' ',1);
+				String source=bppos.get_slicec(':',0).strip_edges();
+				int line=bppos.get_slicec(':',1).strip_edges().to_int();
 
 				source = breakpoint_find_source(source);
 
@@ -179,6 +179,125 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 	}
 }
 
+struct _ScriptDebuggerLocalProfileInfoSort {
+
+	bool operator()(const ScriptLanguage::ProfilingInfo &A,const ScriptLanguage::ProfilingInfo &B) const {
+		return A.total_time > B.total_time;
+	}
+};
+
+void ScriptDebuggerLocal::profiling_set_frame_times(float p_frame_time,float p_idle_time,float p_fixed_time,float p_fixed_frame_time) {
+
+
+	frame_time=p_frame_time;
+	idle_time=p_idle_time;
+	fixed_time=p_fixed_time;
+	fixed_frame_time=p_fixed_frame_time;
+
+
+}
+
+void ScriptDebuggerLocal::idle_poll() {
+
+	if (!profiling)
+		return;
+
+	uint64_t diff = OS::get_singleton()->get_ticks_usec() - idle_accum;
+
+	if (diff<1000000) //show every one second
+		return;
+
+	idle_accum = OS::get_singleton()->get_ticks_usec();
+
+	int ofs=0;
+	for(int i=0;i<ScriptServer::get_language_count();i++) {
+		ofs+=ScriptServer::get_language(i)->profiling_get_frame_data(&pinfo[ofs],pinfo.size()-ofs);
+	}
+
+	SortArray<ScriptLanguage::ProfilingInfo,_ScriptDebuggerLocalProfileInfoSort> sort;
+	sort.sort(pinfo.ptr(),ofs);
+
+	//falta el frame time
+
+	uint64_t script_time_us=0;
+
+	for(int i=0;i<ofs;i++) {
+
+		script_time_us+=pinfo[i].self_time;
+	}
+
+
+	float script_time=USEC_TO_SEC(script_time_us);
+
+	float total_time=frame_time;
+
+	//print script total
+
+	print_line("FRAME: total: "+rtos(frame_time)+" script: "+rtos(script_time)+"/"+itos(script_time*100/total_time)+" %");
+
+	for(int i=0;i<ofs;i++) {
+
+		print_line(itos(i)+":"+pinfo[i].signature);
+		float tt=USEC_TO_SEC(pinfo[i].total_time);
+		float st=USEC_TO_SEC(pinfo[i].self_time);
+		print_line("\ttotal: "+rtos(tt)+"/"+itos(tt*100/total_time)+" % \tself: "+rtos(st)+"/"+itos(st*100/total_time)+" % tcalls: "+itos(pinfo[i].call_count));
+	}
+
+
+
+}
+
+void ScriptDebuggerLocal::profiling_start() {
+
+	for(int i=0;i<ScriptServer::get_language_count();i++) {
+		ScriptServer::get_language(i)->profiling_start();
+	}
+
+
+	print_line("BEGIN PROFILING");
+	profiling=true;
+	pinfo.resize(32768);
+	frame_time=0;
+	fixed_time=0;
+	idle_time=0;
+	fixed_frame_time=0;
+
+}
+
+
+void ScriptDebuggerLocal::profiling_end() {
+
+	int ofs=0;
+
+	for(int i=0;i<ScriptServer::get_language_count();i++) {
+		ofs+=ScriptServer::get_language(i)->profiling_get_accumulated_data(&pinfo[ofs],pinfo.size()-ofs);
+	}
+
+	SortArray<ScriptLanguage::ProfilingInfo,_ScriptDebuggerLocalProfileInfoSort> sort;
+	sort.sort(pinfo.ptr(),ofs);
+
+	uint64_t total_us=0;
+	for(int i=0;i<ofs;i++) {
+		total_us+=pinfo[i].self_time;
+	}
+
+	float total_time=total_us/1000000.0;
+
+	for(int i=0;i<ofs;i++) {
+
+		print_line(itos(i)+":"+pinfo[i].signature);
+		float tt=USEC_TO_SEC(pinfo[i].total_time);;
+		float st=USEC_TO_SEC(pinfo[i].self_time);
+		print_line("\ttotal_ms: "+rtos(tt)+"\tself_ms: "+rtos(st)+"total%: "+itos(tt*100/total_time)+"\tself%: "+itos(st*100/total_time)+"\tcalls: "+itos(pinfo[i].call_count));
+	}
+
+	for(int i=0;i<ScriptServer::get_language_count();i++) {
+		ScriptServer::get_language(i)->profiling_stop();
+	}
+
+	profiling=false;
+}
+
 void ScriptDebuggerLocal::send_message(const String& p_message, const Array &p_args) {
 
 	print_line("MESSAGE: '"+p_message+"' - "+String(Variant(p_args)));
@@ -186,4 +305,6 @@ void ScriptDebuggerLocal::send_message(const String& p_message, const Array &p_a
 
 ScriptDebuggerLocal::ScriptDebuggerLocal() {
 
+	profiling=false;
+	idle_accum=OS::get_singleton()->get_ticks_usec();
 }

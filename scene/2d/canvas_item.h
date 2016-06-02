@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,12 +32,57 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 #include "scene/main/scene_main_loop.h"
+#include "scene/resources/shader.h"
 
 class CanvasLayer;
 class Viewport;
 class Font;
 
 class StyleBox;
+
+class CanvasItemMaterial : public Resource{
+
+	OBJ_TYPE(CanvasItemMaterial,Resource);
+	RID material;
+	Ref<Shader> shader;
+public:
+	enum ShadingMode {
+		SHADING_NORMAL,
+		SHADING_UNSHADED,
+		SHADING_ONLY_LIGHT,
+	};
+
+protected:
+
+	ShadingMode shading_mode;
+
+	bool _set(const StringName& p_name, const Variant& p_value);
+	bool _get(const StringName& p_name,Variant &r_ret) const;
+	void _get_property_list( List<PropertyInfo> *p_list) const;
+
+	void _shader_changed();
+	static void _bind_methods();
+
+	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
+
+public:
+
+	void set_shader(const Ref<Shader>& p_shader);
+	Ref<Shader> get_shader() const;
+
+	void set_shader_param(const StringName& p_param,const Variant& p_value);
+	Variant get_shader_param(const StringName& p_param) const;
+
+	void set_shading_mode(ShadingMode p_mode);
+	ShadingMode get_shading_mode() const;
+
+	virtual RID get_rid() const;
+	CanvasItemMaterial();
+	~CanvasItemMaterial();
+};
+
+VARIANT_ENUM_CAST( CanvasItemMaterial::ShadingMode );
+
 
 class CanvasItem : public Node {
 
@@ -70,6 +115,7 @@ private:
 	List<CanvasItem*>::Element *C;
 
 	BlendMode blend_mode;
+	int light_mask;
 
 	bool first_draw;
 	bool hidden;
@@ -79,6 +125,10 @@ private:
 	bool drawing;
 	bool block_transform_notify;
 	bool behind;
+	bool use_parent_material;
+	bool notify_local_transform;
+
+	Ref<CanvasItemMaterial> material;
 
 	mutable Matrix32 global_transform;
 	mutable bool global_invalid;
@@ -99,8 +149,6 @@ private:
 	void _queue_sort_children();
 	void _sort_children();
 
-
-
 	void _notify_transform(CanvasItem *p_node);
 
 	void _set_on_top(bool p_on_top) { set_draw_behind_parent(!p_on_top); }
@@ -108,9 +156,7 @@ private:
 
 protected:
 
-
-
-	_FORCE_INLINE_ void _notify_transform() { if (!is_inside_tree()) return; _notify_transform(this); if (!block_transform_notify) notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED); }
+	_FORCE_INLINE_ void _notify_transform() { if (!is_inside_tree()) return; _notify_transform(this); if (!block_transform_notify && notify_local_transform) notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED); }
 
 	void item_rect_changed();
 
@@ -144,11 +190,15 @@ public:
 	bool is_hidden() const;
 	void show();
 	void hide();
+	void set_hidden(bool p_hidden);
 
 	void update();
 
 	void set_blend_mode(BlendMode p_blend_mode);
 	BlendMode get_blend_mode() const;
+
+	virtual void set_light_mask(int p_light_mask);
+	int get_light_mask() const;
 
 	void set_opacity(float p_opacity);
 	float get_opacity() const;
@@ -161,9 +211,9 @@ public:
 	void draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width=1.0);
 	void draw_rect(const Rect2& p_rect, const Color& p_color);
 	void draw_circle(const Point2& p_pos, float p_radius, const Color& p_color);
-	void draw_texture(const Ref<Texture>& p_texture,const Point2& p_pos);
-	void draw_texture_rect(const Ref<Texture>& p_texture, const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1));
-	void draw_texture_rect_region(const Ref<Texture>& p_texture,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1));
+	void draw_texture(const Ref<Texture>& p_texture, const Point2& p_pos, const Color &p_modulate=Color(1,1,1,1));
+	void draw_texture_rect(const Ref<Texture>& p_texture, const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1), bool p_transpose=false);
+	void draw_texture_rect_region(const Ref<Texture>& p_texture,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1), bool p_transpose=false);
 	void draw_style_box(const Ref<StyleBox>& p_style_box,const Rect2& p_rect);
 	void draw_primitive(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, Ref<Texture> p_texture=Ref<Texture>(),float p_width=1);
 	void draw_polygon(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs=Vector<Point2>(), Ref<Texture> p_texture=Ref<Texture>());
@@ -204,7 +254,21 @@ public:
 	RID get_canvas() const;
 	Ref<World2D> get_world_2d() const;
 
+	void set_material(const Ref<CanvasItemMaterial>& p_material);
+	Ref<CanvasItemMaterial> get_material() const;
 
+	void set_use_parent_material(bool p_use_parent_material);
+	bool get_use_parent_material() const;
+
+	InputEvent make_input_local(const InputEvent& pevent) const;
+
+	Vector2 get_global_mouse_pos() const;
+	Vector2 get_local_mouse_pos() const;
+
+	void set_notify_local_transform(bool p_enable);
+	bool is_local_transform_notification_enabled() const;
+
+	int get_canvas_layer() const;
 
 	CanvasItem();
 	~CanvasItem();

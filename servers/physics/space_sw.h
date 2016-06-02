@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ public:
 
 	SpaceSW *space;
 
-	virtual bool intersect_ray(const Vector3& p_from, const Vector3& p_to,RayResult &r_result,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
+	virtual bool intersect_ray(const Vector3& p_from, const Vector3& p_to,RayResult &r_result,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION,bool p_pick_ray=false);
 	virtual int intersect_shape(const RID& p_shape, const Transform& p_xform,float p_margin,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
 	virtual bool cast_motion(const RID& p_shape, const Transform& p_xform,const Vector3& p_motion,float p_margin,float &p_closest_safe,float &p_closest_unsafe, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION,ShapeRestInfo *r_info=NULL);
 	virtual bool collide_shape(RID p_shape, const Transform& p_shape_xform,float p_margin,Vector3 *r_results,int p_result_max,int &r_result_count, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
@@ -59,6 +59,20 @@ public:
 
 class SpaceSW {
 
+public:
+
+	enum ElapsedTime {
+		ELAPSED_TIME_INTEGRATE_FORCES,
+		ELAPSED_TIME_GENERATE_ISLANDS,
+		ELAPSED_TIME_SETUP_CONSTRAINTS,
+		ELAPSED_TIME_SOLVE_CONSTRAINTS,
+		ELAPSED_TIME_INTEGRATE_VELOCITIES,
+		ELAPSED_TIME_MAX
+
+	};
+private:
+
+	uint64_t elapsed_time[ELAPSED_TIME_MAX];
 
 	PhysicsDirectSpaceStateSW *direct_access;
 	RID self;
@@ -102,6 +116,9 @@ class SpaceSW {
 	int collision_pairs;
 
 	RID static_global_body;
+
+	Vector<Vector3> contact_debug;
+	int contact_debug_count;
 
 friend class PhysicsDirectSpaceStateSW;
 
@@ -166,10 +183,17 @@ public:
 
 	PhysicsDirectSpaceStateSW *get_direct_state();
 
+	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
+	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.empty(); }
+	_FORCE_INLINE_ void add_debug_contact(const Vector3& p_contact) { if (contact_debug_count<contact_debug.size()) contact_debug[contact_debug_count++]=p_contact; }
+	_FORCE_INLINE_ Vector<Vector3> get_debug_contacts() { return contact_debug; }
+	_FORCE_INLINE_ int get_debug_contact_count() { return contact_debug_count; }
 
 	void set_static_global_body(RID p_body) { static_global_body=p_body; }
 	RID get_static_global_body() { return static_global_body; }
 
+	void set_elapsed_time(ElapsedTime p_time,uint64_t p_msec) { elapsed_time[p_time]=p_msec; }
+	uint64_t get_elapsed_time(ElapsedTime p_time) const { return elapsed_time[p_time]; }
 
 	SpaceSW();
 	~SpaceSW();

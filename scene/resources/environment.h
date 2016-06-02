@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,13 +44,13 @@ public:
 		BG_COLOR=VS::ENV_BG_COLOR,
 		BG_TEXTURE=VS::ENV_BG_TEXTURE,
 		BG_CUBEMAP=VS::ENV_BG_CUBEMAP,
-		BG_TEXTURE_RGBE=VS::ENV_BG_TEXTURE_RGBE,
-		BG_CUBEMAP_RGBE=VS::ENV_BG_CUBEMAP_RGBE,
+		BG_CANVAS=VS::ENV_BG_CANVAS,
 		BG_MAX=VS::ENV_BG_MAX
 	};
 
 	enum BGParam {
 
+		BG_PARAM_CANVAS_MAX_LAYER=VS::ENV_BG_PARAM_CANVAS_MAX_LAYER,
 		BG_PARAM_COLOR=VS::ENV_BG_PARAM_COLOR,
 		BG_PARAM_TEXTURE=VS::ENV_BG_PARAM_TEXTURE,
 		BG_PARAM_CUBEMAP=VS::ENV_BG_PARAM_CUBEMAP,

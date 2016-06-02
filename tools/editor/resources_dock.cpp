@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -133,8 +133,8 @@ void ResourcesDock::save_resource(const String& p_path,const Ref<Resource>& p_re
 	Error err = ResourceSaver::save(path,p_resource,flg|ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	if (err!=OK) {
-		accept->set_text("Error saving resource!");
-		accept->popup_centered(Size2(300,100));
+		accept->set_text(TTR("Error saving resource!"));
+		accept->popup_centered_minsize();
         return;
 	}
 //	EditorFileSystem::get_singleton()->update_file(path,p_resource->get_type());
@@ -152,7 +152,7 @@ void ResourcesDock::save_resource_as(const Ref<Resource>& p_resource) {
 
 	List<String> extensions;
 	ResourceSaver::get_recognized_extensions(res,&extensions);
-	file->set_mode(FileDialog::MODE_SAVE_FILE);
+	file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 
 	if (p_resource->get_path()!="" && p_resource->get_path().find("::")==-1) {
 
@@ -351,21 +351,21 @@ ResourcesDock::ResourcesDock(EditorNode *p_editor) {
 
 	Button *b;
 	b = memnew( ToolButton );
-	b->set_tooltip("Create New Resource");
+	b->set_tooltip(TTR("Create New Resource"));
 	b->connect("pressed",this,"_tool_selected",make_binds(TOOL_NEW));
 	hbc->add_child( b );
 	button_new=b;
 
 	b = memnew( ToolButton );
-	b->set_tooltip("Open Resource");
+	b->set_tooltip(TTR("Open Resource"));
 	b->connect("pressed",this,"_tool_selected",make_binds(TOOL_OPEN));
 	hbc->add_child( b );
 	button_open=b;
 
 	MenuButton *mb = memnew( MenuButton );
-	mb->set_tooltip("Save Resource");
-	mb->get_popup()->add_item("Save Resource",TOOL_SAVE);
-	mb->get_popup()->add_item("Save Resource As..",TOOL_SAVE_AS);
+	mb->set_tooltip(TTR("Save Resource"));
+	mb->get_popup()->add_item(TTR("Save Resource"),TOOL_SAVE);
+	mb->get_popup()->add_item(TTR("Save Resource As.."),TOOL_SAVE_AS);
 	mb->get_popup()->connect("item_pressed",this,"_tool_selected" );
 	hbc->add_child( mb );
 	button_save=mb;
@@ -373,10 +373,10 @@ ResourcesDock::ResourcesDock(EditorNode *p_editor) {
 	hbc->add_spacer();
 
 	mb = memnew( MenuButton );
-	mb->set_tooltip("Resource Tools");
-	mb->get_popup()->add_item("Make Local",TOOL_MAKE_LOCAL);
-	mb->get_popup()->add_item("Copy",TOOL_COPY);
-	mb->get_popup()->add_item("Paste",TOOL_PASTE);
+	mb->set_tooltip(TTR("Resource Tools"));
+	mb->get_popup()->add_item(TTR("Make Local"),TOOL_MAKE_LOCAL);
+	mb->get_popup()->add_item(TTR("Copy"),TOOL_COPY);
+	mb->get_popup()->add_item(TTR("Paste"),TOOL_PASTE);
 	mb->get_popup()->connect("item_pressed",this,"_tool_selected" );
 	hbc->add_child( mb );
 	button_tools=mb;
@@ -396,7 +396,7 @@ ResourcesDock::ResourcesDock(EditorNode *p_editor) {
 	accept = memnew (AcceptDialog);
 	add_child(accept);
 
-	file = memnew( FileDialog );
+	file = memnew( EditorFileDialog );
 	add_child(file);
 	file->connect("file_selected",this,"_file_action");
 

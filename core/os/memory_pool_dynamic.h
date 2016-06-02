@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,10 +40,10 @@ friend class Memory;
 friend class MID;
 
 	enum {
-	
+
 		INVALID_ID=0xFFFFFFFF
 	};
-	
+
 	static MemoryPoolDynamic* get_singleton();
 
 	typedef uint64_t ID;
@@ -55,12 +55,12 @@ friend class MID;
 	virtual bool is_valid(ID p_id)=0;
 	virtual size_t get_size(ID p_id) const=0;
 	virtual const char* get_description(ID p_id) const=0;
-	
+
 	virtual Error lock(ID p_id)=0;
 	virtual void * get(ID p_ID)=0;
 	virtual Error unlock(ID p_id)=0;
 	virtual bool is_locked(ID p_id) const=0;
-	
+
 	virtual size_t get_available_mem() const=0;
 	virtual size_t get_total_usage() const=0;
 

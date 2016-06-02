@@ -6,9 +6,9 @@ etc_sources = [
 	"etc1/rg_etc1.cpp"
 ]
 
-env.drivers_sources+=etc_sources
+if (env["etc1"] != "no"):
+    env.drivers_sources+=etc_sources
 
 #env.add_source_files(env.drivers_sources, etc_sources)
 
 Export('env')
-

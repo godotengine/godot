@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@ bool ButtonArray::_set(const StringName& p_name, const Variant& p_value) {
 	String n=String(p_name);
 	if (n.begins_with("button/")) {
 
-		String what = n.get_slice("/",1);
+		String what = n.get_slicec('/',1);
 		if (what=="count") {
 			int new_size=p_value;
 			if (new_size>0 && buttons.size()==0) {
@@ -57,7 +57,7 @@ bool ButtonArray::_set(const StringName& p_name, const Variant& p_value) {
 		} else {
 			int idx=what.to_int();
 			ERR_FAIL_INDEX_V(idx,buttons.size(),false);
-			String f = n.get_slice("/",2);
+			String f = n.get_slicec('/',2);
 			if (f=="text")
 				buttons[idx].text=p_value;
 			else if (f=="icon")
@@ -80,7 +80,7 @@ bool ButtonArray::_get(const StringName& p_name,Variant &r_ret) const {
 	String n=String(p_name);
 	if (n.begins_with("button/")) {
 
-		String what = n.get_slice("/",1);
+		String what = n.get_slicec('/',1);
 		if (what=="count") {
 			r_ret=buttons.size();
 		} else if (what=="align") {
@@ -92,7 +92,7 @@ bool ButtonArray::_get(const StringName& p_name,Variant &r_ret) const {
 		} else {
 			int idx=what.to_int();
 			ERR_FAIL_INDEX_V(idx,buttons.size(),false);
-			String f = n.get_slice("/",2);
+			String f = n.get_slicec('/',2);
 			if (f=="text")
 				r_ret=buttons[idx].text;
 			else if (f=="icon")
@@ -171,9 +171,9 @@ void ButtonArray::_notification(int p_what) {
 		case NOTIFICATION_READY:{
 		        MethodInfo mi;
 			mi.name="mouse_sub_enter";
-		                
+
 			add_user_signal(mi);
-			
+
 		}break;
 		case NOTIFICATION_DRAW: {
 
@@ -362,10 +362,10 @@ ButtonArray::Align ButtonArray::get_align() const {
 }
 
 
-void ButtonArray::add_button(const String& p_button) {
+void ButtonArray::add_button(const String& p_text) {
 
 	Button button;
-	button.text=p_button;
+	button.text=p_text;
 	buttons.push_back(button);
 	update();
 
@@ -375,10 +375,10 @@ void ButtonArray::add_button(const String& p_button) {
 	minimum_size_changed();
 }
 
-void ButtonArray::add_icon_button(const Ref<Texture>& p_icon,const String& p_button) {
+void ButtonArray::add_icon_button(const Ref<Texture>& p_icon,const String& p_text) {
 
 	Button button;
-	button.text=p_button;
+	button.text=p_text;
 	button.icon=p_icon;
 	buttons.push_back(button);
 	if (selected==-1)
@@ -396,6 +396,7 @@ void ButtonArray::set_button_text(int p_button, const String& p_text) {
 	minimum_size_changed();
 
 }
+
 void ButtonArray::set_button_icon(int p_button, const Ref<Texture>& p_icon) {
 
 	ERR_FAIL_INDEX(p_button,buttons.size());
@@ -403,11 +404,13 @@ void ButtonArray::set_button_icon(int p_button, const Ref<Texture>& p_icon) {
 	update();
 	minimum_size_changed();
 }
+
 String ButtonArray::get_button_text(int p_button) const {
 
 	ERR_FAIL_INDEX_V(p_button,buttons.size(),"");
 	return buttons[p_button].text;
 }
+
 Ref<Texture> ButtonArray::get_button_icon(int p_button) const {
 
 	ERR_FAIL_INDEX_V(p_button,buttons.size(),Ref<Texture>());
@@ -470,16 +473,16 @@ void ButtonArray::get_translatable_strings(List<String> *p_strings) const {
 void ButtonArray::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("add_button","text"),&ButtonArray::add_button);
-	ObjectTypeDB::bind_method(_MD("add_icon_button","icon","text"),&ButtonArray::add_icon_button,DEFVAL(""));
-	ObjectTypeDB::bind_method(_MD("set_button_text","button","text"),&ButtonArray::set_button_text);
-	ObjectTypeDB::bind_method(_MD("set_button_icon","button","icon"),&ButtonArray::set_button_icon);
-	ObjectTypeDB::bind_method(_MD("get_button_text","button"),&ButtonArray::get_button_text);
-	ObjectTypeDB::bind_method(_MD("get_button_icon","button"),&ButtonArray::get_button_icon);
+	ObjectTypeDB::bind_method(_MD("add_icon_button","icon:Texture","text"),&ButtonArray::add_icon_button,DEFVAL(""));
+	ObjectTypeDB::bind_method(_MD("set_button_text","button_idx","text"),&ButtonArray::set_button_text);
+	ObjectTypeDB::bind_method(_MD("set_button_icon","button_idx","icon:Texture"),&ButtonArray::set_button_icon);
+	ObjectTypeDB::bind_method(_MD("get_button_text","button_idx"),&ButtonArray::get_button_text);
+	ObjectTypeDB::bind_method(_MD("get_button_icon:Texture","button_idx"),&ButtonArray::get_button_icon);
 	ObjectTypeDB::bind_method(_MD("get_button_count"),&ButtonArray::get_button_count);
 	ObjectTypeDB::bind_method(_MD("get_selected"),&ButtonArray::get_selected);
 	ObjectTypeDB::bind_method(_MD("get_hovered"),&ButtonArray::get_hovered);
-	ObjectTypeDB::bind_method(_MD("set_selected","button"),&ButtonArray::set_selected);
-	ObjectTypeDB::bind_method(_MD("erase_button","button"),&ButtonArray::erase_button);
+	ObjectTypeDB::bind_method(_MD("set_selected","button_idx"),&ButtonArray::set_selected);
+	ObjectTypeDB::bind_method(_MD("erase_button","button_idx"),&ButtonArray::erase_button);
 	ObjectTypeDB::bind_method(_MD("clear"),&ButtonArray::clear);
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&ButtonArray::_input_event);
@@ -490,7 +493,7 @@ void ButtonArray::_bind_methods() {
 	BIND_CONSTANT( ALIGN_FILL );
 	BIND_CONSTANT( ALIGN_EXPAND_FILL );
 
-	ADD_SIGNAL( MethodInfo("button_selected",PropertyInfo(Variant::INT,"button")));
+	ADD_SIGNAL( MethodInfo("button_selected",PropertyInfo(Variant::INT,"button_idx")));
 
 }
 

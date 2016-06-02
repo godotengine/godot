@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -233,7 +233,7 @@ int CPPlayer::get_channel_voice(int p_channel) {
 
 const char* CPPlayer::get_voice_sample_name(int p_voice) {
 
-	const char *name;
+	const char *name = NULL;
 
 
 
@@ -302,7 +302,7 @@ const char * CPPlayer::get_voice_instrument_name(int p_voice) {
 
 
 
-	const char *name;
+	const char *name = NULL;
 
 
 

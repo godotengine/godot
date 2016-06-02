@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,13 +62,14 @@ Error FileAccessJAndroid::_open(const String& p_path, int p_mode_flags) {
 
 	JNIEnv *env = ThreadAndroid::get_env();
 
-	//OS::get_singleton()->print("env: %p, io %p, fo: %p\n",env,io,_file_open);
 
 
 	jstring js = env->NewStringUTF(path.utf8().get_data());
 	int res = env->CallIntMethod(io,_file_open,js,p_mode_flags&WRITE?true:false);
-
 	env->DeleteLocalRef(js);
+
+	OS::get_singleton()->print("fopen: '%s' ret %i\n",path.utf8().get_data(),res);
+
 
 	if (res<=0)
 		return ERR_FILE_CANT_OPEN;
@@ -202,7 +203,7 @@ void FileAccessJAndroid::setup(  jobject p_io) {
 	__android_log_print(ANDROID_LOG_INFO,"godot","STEP6");
 	cls=(jclass)env->NewGlobalRef(c);
 
-	_file_open = env->GetMethodID(cls, "file_open", "(Ljava/lang/String;Z)I");	
+	_file_open = env->GetMethodID(cls, "file_open", "(Ljava/lang/String;Z)I");
 	if(_file_open != 0) {
 		__android_log_print(ANDROID_LOG_INFO,"godot","*******GOT METHOD _file_open ok!!");
 	}

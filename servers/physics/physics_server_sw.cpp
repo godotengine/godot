@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,8 @@
 #include "joints/slider_joint_sw.h"
 #include "joints/cone_twist_joint_sw.h"
 #include "joints/generic_6dof_joint_sw.h"
-
+#include "script_language.h"
+#include "os/os.h"
 
 RID PhysicsServerSW::shape_create(ShapeType p_shape) {
 
@@ -199,6 +200,30 @@ PhysicsDirectSpaceState* PhysicsServerSW::space_get_direct_state(RID p_space) {
 	}
 
 	return space->get_direct_state();
+}
+
+void PhysicsServerSW::space_set_debug_contacts(RID p_space,int p_max_contacts) {
+
+	SpaceSW *space = space_owner.get(p_space);
+	ERR_FAIL_COND(!space);
+	space->set_debug_contacts(p_max_contacts);
+
+}
+
+Vector<Vector3> PhysicsServerSW::space_get_contacts(RID p_space) const {
+
+	SpaceSW *space = space_owner.get(p_space);
+	ERR_FAIL_COND_V(!space,Vector<Vector3>());
+	return space->get_debug_contacts();
+
+}
+
+int PhysicsServerSW::space_get_contact_count(RID p_space) const {
+
+	SpaceSW *space = space_owner.get(p_space);
+	ERR_FAIL_COND_V(!space,0);
+	return space->get_debug_contact_count();
+
 }
 
 RID PhysicsServerSW::area_create() {
@@ -394,6 +419,30 @@ Transform PhysicsServerSW::area_get_transform(RID p_area) const {
 	return area->get_transform();
 };
 
+void PhysicsServerSW::area_set_layer_mask(RID p_area,uint32_t p_mask) {
+
+	AreaSW *area = area_owner.get(p_area);
+	ERR_FAIL_COND(!area);
+
+	area->set_layer_mask(p_mask);
+}
+
+void PhysicsServerSW::area_set_collision_mask(RID p_area,uint32_t p_mask) {
+
+	AreaSW *area = area_owner.get(p_area);
+	ERR_FAIL_COND(!area);
+
+	area->set_collision_mask(p_mask);
+}
+
+void PhysicsServerSW::area_set_monitorable(RID p_area,bool p_monitorable) {
+
+	AreaSW *area = area_owner.get(p_area);
+	ERR_FAIL_COND(!area);
+
+	area->set_monitorable(p_monitorable);
+}
+
 void PhysicsServerSW::area_set_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method) {
 
 	AreaSW *area = area_owner.get(p_area);
@@ -423,6 +472,14 @@ bool PhysicsServerSW::area_is_ray_pickable(RID p_area) const{
 }
 
 
+void PhysicsServerSW::area_set_area_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method) {
+
+
+	AreaSW *area = area_owner.get(p_area);
+	ERR_FAIL_COND(!area);
+
+	area->set_area_monitor_callback(p_receiver?p_receiver->get_instance_ID():0,p_method);
+}
 
 /* BODY API */
 
@@ -477,7 +534,7 @@ void PhysicsServerSW::body_set_mode(RID p_body, BodyMode p_mode) {
 	body->set_mode(p_mode);
 };
 
-PhysicsServer::BodyMode PhysicsServerSW::body_get_mode(RID p_body, BodyMode p_mode) const {
+PhysicsServer::BodyMode PhysicsServerSW::body_get_mode(RID p_body) const {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,BODY_MODE_STATIC);
@@ -551,7 +608,7 @@ bool PhysicsServerSW::body_is_shape_set_as_trigger(RID p_body, int p_shape_idx) 
 	ERR_FAIL_COND_V(!body,false);
 	ERR_FAIL_INDEX_V(p_shape_idx,body->get_shape_count(),false);
 
-	body->is_shape_set_as_trigger(p_shape_idx);
+	return body->is_shape_set_as_trigger(p_shape_idx);
 }
 
 
@@ -604,6 +661,7 @@ void PhysicsServerSW::body_set_layer_mask(RID p_body, uint32_t p_mask) {
 	ERR_FAIL_COND(!body);
 
 	body->set_layer_mask(p_mask);
+	body->wakeup();
 
 }
 
@@ -613,6 +671,25 @@ uint32_t PhysicsServerSW::body_get_layer_mask(RID p_body, uint32_t p_mask) const
 	ERR_FAIL_COND_V(!body,0);
 
 	return body->get_layer_mask();
+
+}
+
+void PhysicsServerSW::body_set_collision_mask(RID p_body, uint32_t p_mask) {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_collision_mask(p_mask);
+	body->wakeup();
+
+}
+
+uint32_t PhysicsServerSW::body_get_collision_mask(RID p_body, uint32_t p_mask) const{
+
+	const BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body,0);
+
+	return body->get_collision_mask();
 
 }
 
@@ -674,6 +751,7 @@ void PhysicsServerSW::body_set_state(RID p_body, BodyState p_state, const Varian
 	ERR_FAIL_COND(!body);
 
 	body->set_state(p_state,p_variant);
+
 };
 
 Variant PhysicsServerSW::body_get_state(RID p_body, BodyState p_state) const {
@@ -691,6 +769,7 @@ void PhysicsServerSW::body_set_applied_force(RID p_body, const Vector3& p_force)
 	ERR_FAIL_COND(!body);
 
 	body->set_applied_force(p_force);
+	body->wakeup();
 };
 
 Vector3 PhysicsServerSW::body_get_applied_force(RID p_body) const {
@@ -706,6 +785,7 @@ void PhysicsServerSW::body_set_applied_torque(RID p_body, const Vector3& p_torqu
 	ERR_FAIL_COND(!body);
 
 	body->set_applied_torque(p_torque);
+	body->wakeup();
 };
 
 Vector3 PhysicsServerSW::body_get_applied_torque(RID p_body) const {
@@ -722,6 +802,7 @@ void PhysicsServerSW::body_apply_impulse(RID p_body, const Vector3& p_pos, const
 	ERR_FAIL_COND(!body);
 
 	body->apply_impulse(p_pos,p_impulse);
+	body->wakeup();
 };
 
 void PhysicsServerSW::body_set_axis_velocity(RID p_body, const Vector3& p_axis_velocity) {
@@ -734,6 +815,7 @@ void PhysicsServerSW::body_set_axis_velocity(RID p_body, const Vector3& p_axis_v
 	v-=axis*axis.dot(v);
 	v+=p_axis_velocity;
 	body->set_linear_velocity(v);
+	body->wakeup();
 
 };
 
@@ -743,6 +825,7 @@ void PhysicsServerSW::body_set_axis_lock(RID p_body,BodyAxisLock p_lock) {
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 	body->set_axis_lock(p_lock);
+	body->wakeup();
 
 }
 
@@ -762,6 +845,7 @@ void PhysicsServerSW::body_add_collision_exception(RID p_body, RID p_body_b) {
 	ERR_FAIL_COND(!body);
 
 	body->add_exception(p_body_b);
+	body->wakeup();
 
 };
 
@@ -770,7 +854,8 @@ void PhysicsServerSW::body_remove_collision_exception(RID p_body, RID p_body_b) 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->remove_exception(p_body);
+	body->remove_exception(p_body_b);
+	body->wakeup();
 
 };
 
@@ -1425,12 +1510,51 @@ void PhysicsServerSW::flush_queries() {
 		return;
 
 	doing_sync=true;
+
+	uint64_t time_beg = OS::get_singleton()->get_ticks_usec();
+
 	for( Set<const SpaceSW*>::Element *E=active_spaces.front();E;E=E->next()) {
 
 		SpaceSW *space=(SpaceSW *)E->get();
 		space->call_queries();
 	}
 
+
+	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_profiling()) {
+
+		uint64_t total_time[SpaceSW::ELAPSED_TIME_MAX];
+		static const char* time_name[SpaceSW::ELAPSED_TIME_MAX]={
+			"integrate_forces",
+			"generate_islands",
+			"setup_constraints",
+			"solve_constraints",
+			"integrate_velocities"
+		};
+
+		for(int i=0;i<SpaceSW::ELAPSED_TIME_MAX;i++) {
+			total_time[i]=0;
+		}
+
+		for( Set<const SpaceSW*>::Element *E=active_spaces.front();E;E=E->next()) {
+
+			for(int i=0;i<SpaceSW::ELAPSED_TIME_MAX;i++) {
+				total_time[i]+=E->get()->get_elapsed_time(SpaceSW::ElapsedTime(i));
+			}
+
+		}
+
+		Array values;
+		values.resize(SpaceSW::ELAPSED_TIME_MAX*2);
+		for(int i=0;i<SpaceSW::ELAPSED_TIME_MAX;i++) {
+			values[i*2+0]=time_name[i];
+			values[i*2+1]=USEC_TO_SEC(total_time[i]);
+		}
+		values.push_back("flush_queries");
+		values.push_back(USEC_TO_SEC(OS::get_singleton()->get_ticks_usec()-time_beg));
+
+		ScriptDebugger::get_singleton()->add_profiling_frame_data("physics",values);
+
+	}
 };
 
 

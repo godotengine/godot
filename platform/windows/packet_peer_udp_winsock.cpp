@@ -121,7 +121,7 @@ Error PacketPeerUDPWinsock::_poll(bool p_wait) {
 	struct sockaddr_in from = {0};
 	int len = sizeof(struct sockaddr_in);
 	int ret;
-	while ( (ret = recvfrom(sockfd, (char*)recv_buffer, MIN(sizeof(recv_buffer),rb.data_left()-12), 0, (struct sockaddr*)&from, &len)) > 0) {
+	while ( (ret = recvfrom(sockfd, (char*)recv_buffer, MIN((int)sizeof(recv_buffer),MAX(rb.space_left()-12, 0)), 0, (struct sockaddr*)&from, &len)) > 0) {
 		rb.write((uint8_t*)&from.sin_addr, 4);
 		uint32_t port = ntohs(from.sin_port);
 		rb.write((uint8_t*)&port, 4);
@@ -132,8 +132,25 @@ Error PacketPeerUDPWinsock::_poll(bool p_wait) {
 		++queue_count;
 	};
 
+	if (ret == SOCKET_ERROR){
+		int error = WSAGetLastError();
 
-	if (ret == 0 || (ret == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) ) {
+		if (error == WSAEWOULDBLOCK){
+			// Expected when doing non-blocking sockets, retry later.
+		}
+		else if (error == WSAECONNRESET){
+			// If the remote target does not accept messages, this error may occur, but is harmless.
+			// Once the remote target gets available, this message will disappear for new messages.
+		}
+		else
+		{
+			close();
+			return FAILED;
+		}
+	}
+
+
+	if (ret == 0) {
 		close();
 		return FAILED;
 	};

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,15 +95,15 @@ DVector<Face3> Particles::get_faces(uint32_t p_usage_flags) const {
 
 void Particles::set_amount(int p_amount) {
 
-	ERR_FAIL_INDEX(p_amount,4096);
+	ERR_FAIL_INDEX(p_amount,1024);
 	amount=p_amount;
 	VisualServer::get_singleton()->particles_set_amount(particles,p_amount);
 }
 int Particles::get_amount() const {
-	
+
 	return amount;
 }
-	
+
 void Particles::set_emitting(bool p_emitting) {
 
 	emitting=p_emitting;
@@ -115,19 +115,19 @@ bool Particles::is_emitting() const {
 
 	return emitting;
 }
-	
+
 void Particles::set_visibility_aabb(const AABB& p_aabb) {
 
 	visibility_aabb=p_aabb;
 	VisualServer::get_singleton()->particles_set_visibility_aabb(particles,p_aabb);
 	update_gizmo();
-	
+
 }
 AABB Particles::get_visibility_aabb() const {
 
 	return visibility_aabb;
 }
-	
+
 
 void Particles::set_emission_points(const DVector<Vector3>& p_points) {
 
@@ -179,7 +179,7 @@ Vector3 Particles::get_gravity_normal() const {
 	return gravity_normal;
 
 }
-	
+
 void Particles::set_variable(Variable p_variable,float p_value) {
 
 	ERR_FAIL_INDEX(p_variable,VAR_MAX);
@@ -273,7 +273,7 @@ float Particles::get_emit_timeout() const {
 Ref<Material> Particles::get_material() const {
 
 	return material;
-}	
+}
 
 void Particles::set_height_from_velocity(bool p_enable) {
 
@@ -422,14 +422,14 @@ void Particles::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_variable","variable","value"),&Particles::set_variable);
 	ObjectTypeDB::bind_method(_MD("get_variable","variable"),&Particles::get_variable);
 	ObjectTypeDB::bind_method(_MD("set_randomness","variable","randomness"),&Particles::set_randomness);
-	ObjectTypeDB::bind_method(_MD("get_randomness"),&Particles::get_randomness);
+	ObjectTypeDB::bind_method(_MD("get_randomness","variable"),&Particles::get_randomness);
 	ObjectTypeDB::bind_method(_MD("set_color_phase_pos","phase","pos"),&Particles::set_color_phase_pos);
 	ObjectTypeDB::bind_method(_MD("get_color_phase_pos","phase"),&Particles::get_color_phase_pos);
 	ObjectTypeDB::bind_method(_MD("set_color_phase_color","phase","color"),&Particles::set_color_phase_color);
 	ObjectTypeDB::bind_method(_MD("get_color_phase_color","phase"),&Particles::get_color_phase_color);
 	ObjectTypeDB::bind_method(_MD("set_material","material:Material"),&Particles::set_material);
 	ObjectTypeDB::bind_method(_MD("get_material:Material"),&Particles::get_material);
-	ObjectTypeDB::bind_method(_MD("set_emit_timeout"),&Particles::set_emit_timeout);
+	ObjectTypeDB::bind_method(_MD("set_emit_timeout","timeout"),&Particles::set_emit_timeout);
 	ObjectTypeDB::bind_method(_MD("get_emit_timeout"),&Particles::get_emit_timeout);
 	ObjectTypeDB::bind_method(_MD("set_height_from_velocity","enable"),&Particles::set_height_from_velocity);
 	ObjectTypeDB::bind_method(_MD("has_height_from_velocity"),&Particles::has_height_from_velocity);
@@ -441,7 +441,7 @@ void Particles::_bind_methods() {
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "Material" ), _SCS("set_material"), _SCS("get_material") );
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,4096,1" ), _SCS("set_amount"), _SCS("get_amount") );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1024,1" ), _SCS("set_amount"), _SCS("get_amount") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "emitting" ), _SCS("set_emitting"), _SCS("is_emitting") );
 	ADD_PROPERTY( PropertyInfo( Variant::_AABB, "visibility" ), _SCS("set_visibility_aabb"), _SCS("get_visibility_aabb") );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "emission_extents" ), _SCS("set_emission_half_extents"), _SCS("get_emission_half_extents") );
@@ -507,11 +507,11 @@ Particles::Particles() {
 	set_amount(64);
 	set_emitting(true);
 	set_visibility_aabb(AABB( Vector3(-4,-4,-4), Vector3(8,8,8) ) );
-	
+
 	for (int i=0;i<VAR_MAX;i++) {
 		set_randomness((Variable)i,0.0);
 	}
-	
+
 	set_variable( VAR_LIFETIME, 5.0);
 	set_variable( VAR_SPREAD, 0.2);
 	set_variable( VAR_GRAVITY, 9.8);
@@ -523,7 +523,7 @@ Particles::Particles() {
 	set_variable( VAR_DAMPING, 0.0);
 	set_variable( VAR_INITIAL_SIZE, 1.0);
 	set_variable( VAR_FINAL_SIZE, 1.0);
-	set_variable( VAR_INITIAL_ANGLE, 0.0);			
+	set_variable( VAR_INITIAL_ANGLE, 0.0);
 	set_variable( VAR_HEIGHT, 1.0);
 	set_variable( VAR_HEIGHT_SPEED_SCALE, 0.0);
 

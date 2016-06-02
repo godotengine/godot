@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@
 
 
 class Globals : public Object {
-	
+
 	OBJ_TYPE( Globals, Object );
 	_THREAD_SAFE_CLASS_
 
@@ -54,6 +54,10 @@ public:
 
 protected:
 
+	enum {
+		NO_ORDER_BASE=1<<18
+	};
+
 	struct VariantContainer {
 		int order;
 		bool persist;
@@ -64,20 +68,22 @@ protected:
 		VariantContainer(const Variant& p_variant, int p_order, bool p_persist=false) { variant=p_variant; order=p_order; hide_from_editor=false; persist=p_persist; overrided=false; }
 	};
 
+	bool registering_order;
 	int last_order;
 	Map<StringName,VariantContainer> props;
 	String resource_path;
 	Map<StringName,PropertyInfo> custom_prop_info;
 	bool disable_platform_override;
 	bool using_datapack;
+	List<String> input_presets;
 
-	
+
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-	
+
 	static Globals *singleton;
-	
+
 	Error _load_settings(const String p_path);
 	Error _load_settings_binary(const String p_path);
 
@@ -86,6 +92,7 @@ protected:
 
 	List<Singleton> singletons;
 
+	Error _save_custom_bnd(const String& p_file);
 
 	bool _load_resource_pack(const String& p_pack);
 
@@ -94,7 +101,7 @@ protected:
 	static void _bind_methods();
 public:
 
-	
+
 	bool has(String p_var) const;
 	String localize_path(const String& p_path) const;
 	String globalize_path(const String& p_path) const;
@@ -103,13 +110,13 @@ public:
 	bool is_persisting(const String& p_name) const;
 
 	String get_resource_path() const;
-	
+
 	static Globals *get_singleton();
 
 	void clear(const String& p_name);
 	int get_order(const String& p_name) const;
 	void set_order(const String& p_name, int p_order);
-	
+
 	Error setup(const String& p_path, const String &p_main_pack);
 
 	Error save_custom(const String& p_path="",const CustomMap& p_custom=CustomMap(),const Set<String>& p_ignore_masks=Set<String>());
@@ -123,6 +130,8 @@ public:
 
 	Vector<String> get_optimizer_presets() const;
 
+	List<String> get_input_presets() const { return input_presets; }
+
 	void set_disable_platform_override(bool p_disable);
 	Object* get_singleton_object(const String& p_name) const;
 
@@ -130,7 +139,9 @@ public:
 
 	bool is_using_datapack() const;
 
-	Globals();	
+	void set_registering_order(bool p_registering);
+
+	Globals();
 	~Globals();
 
 };

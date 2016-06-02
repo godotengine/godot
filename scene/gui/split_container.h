@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,13 @@
 class SplitContainer : public Container {
 
 	OBJ_TYPE(SplitContainer,Container);
-
+public:
+	enum DraggerVisibility {
+		DRAGGER_VISIBLE,
+		DRAGGER_HIDDEN,
+		DRAGGER_HIDDEN_COLLAPSED
+	};
+private:
 	bool vertical;
 	int expand_ofs;
 	int middle_sep;
@@ -43,7 +49,7 @@ class SplitContainer : public Container {
 	int drag_from;
 	int drag_ofs;
 	bool collapsed;
-	bool dragger_visible;
+	DraggerVisibility dragger_visibility;
 	bool mouse_inside;
 
 
@@ -66,8 +72,8 @@ public:
 	void set_collapsed(bool p_collapsed);
 	bool is_collapsed() const;
 
-	void set_dragger_visible(bool p_true);
-	bool is_dragger_visible() const;
+	void set_dragger_visibility(DraggerVisibility p_visibility);
+	DraggerVisibility get_dragger_visibility() const;
 
 	virtual CursorShape get_cursor_shape(const Point2& p_pos=Point2i());
 
@@ -76,6 +82,7 @@ public:
 	SplitContainer(bool p_vertical=false);
 };
 
+VARIANT_ENUM_CAST(SplitContainer::DraggerVisibility);
 
 class HSplitContainer : public SplitContainer {
 

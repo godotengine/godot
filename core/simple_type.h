@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,61 +33,61 @@
 
 template<class T>
 struct GetSimpleType {
-	
+
 	T type;
 };
 
 template<class T>
 struct GetSimpleTypeT {
-	
+
 	typedef T type_t;
 };
 
 template<class T>
 struct GetSimpleType<T&> {
-	
+
 	T type;
-	
+
 };
 
 template<class T>
 struct GetSimpleTypeT<T&> {
-	
+
 	typedef T type_t;
 };
 
 template<class T>
 struct GetSimpleType<T const> {
-	
+
 	T type;
 	_FORCE_INLINE_ GetSimpleType() { }
-	
+
 };
 
 template<class T>
 struct GetSimpleTypeT<T const> {
-	
+
 	typedef T type_t;
 };
 
 template<class T>
 struct GetSimpleType<const T&> {
-	
+
 	T type;
 	_FORCE_INLINE_ GetSimpleType() { }
-	
+
 };
 
 template<class T>
 struct GetSimpleType<T*> {
-	
+
 	T *type;
 	_FORCE_INLINE_ GetSimpleType() { type=NULL; }
 };
 
 template<class T>
 struct GetSimpleType<const T*> {
-	
+
 	T *type;
 	_FORCE_INLINE_ GetSimpleType() { type=NULL; }
 };

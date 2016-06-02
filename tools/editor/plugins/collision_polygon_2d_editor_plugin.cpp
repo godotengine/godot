@@ -4,6 +4,7 @@
 #include "os/file_access.h"
 #include "tools/editor/editor_settings.h"
 
+
 void CollisionPolygon2DEditor::_notification(int p_what) {
 
 	switch(p_what) {
@@ -34,17 +35,6 @@ void CollisionPolygon2DEditor::_node_removed(Node *p_node) {
 }
 
 
-Vector2 CollisionPolygon2DEditor::snap_point(const Vector2& p_point) const {
-
-	if (canvas_item_editor->is_snap_active()) {
-
-		return p_point.snapped(Vector2(1,1)*canvas_item_editor->get_snap());
-
-	} else {
-		return p_point;
-	}
-}
-
 void CollisionPolygon2DEditor::_menu_option(int p_option) {
 
 	switch(p_option) {
@@ -67,7 +57,7 @@ void CollisionPolygon2DEditor::_menu_option(int p_option) {
 
 void CollisionPolygon2DEditor::_wip_close() {
 
-	undo_redo->create_action("Create Poly");
+	undo_redo->create_action(TTR("Create Poly"));
 	undo_redo->add_undo_method(node,"set_polygon",node->get_polygon());
 	undo_redo->add_do_method(node,"set_polygon",wip);
 	undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -98,7 +88,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
 			Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-			cpoint=snap_point(cpoint);
+			cpoint=canvas_item_editor->snap_point(cpoint);
 			cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
 
 			Vector<Vector2> poly = node->get_polygon();
@@ -159,7 +149,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 								if (poly.size() < 3) {
 
-									undo_redo->create_action("Edit Poly");
+									undo_redo->create_action(TTR("Edit Poly"));
 									undo_redo->add_undo_method(node,"set_polygon",poly);
 									poly.push_back(cpoint);
 									undo_redo->add_do_method(node,"set_polygon",poly);
@@ -239,7 +229,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 								ERR_FAIL_INDEX_V(edited_point,poly.size(),false);
 								poly[edited_point]=edited_point_pos;
-								undo_redo->create_action("Edit Poly");
+								undo_redo->create_action(TTR("Edit Poly"));
 								undo_redo->add_do_method(node,"set_polygon",poly);
 								undo_redo->add_undo_method(node,"set_polygon",pre_move_edit);
 								undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -273,7 +263,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 						if (closest_idx>=0) {
 
 
-							undo_redo->create_action("Edit Poly (Remove Point)");
+							undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
 							undo_redo->add_undo_method(node,"set_polygon",poly);
 							poly.remove(closest_idx);
 							undo_redo->add_do_method(node,"set_polygon",poly);
@@ -301,7 +291,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 				Vector2 gpoint = Point2(mm.x,mm.y);
 				Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-				cpoint=snap_point(cpoint);
+				cpoint=canvas_item_editor->snap_point(cpoint);
 				edited_point_pos = node->get_global_transform().affine_inverse().xform(cpoint);
 
 				canvas_item_editor->get_viewport_control()->update();
@@ -368,6 +358,7 @@ void CollisionPolygon2DEditor::edit(Node *p_collision_polygon) {
 		wip.clear();
 		wip_active=false;
 		edited_point=-1;
+		canvas_item_editor->get_viewport_control()->update();
 
 	} else {
 		node=NULL;
@@ -389,6 +380,7 @@ void CollisionPolygon2DEditor::_bind_methods() {
 
 CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) {
 
+	node=NULL;
 	canvas_item_editor=NULL;
 	editor=p_editor;
 	undo_redo = editor->get_undo_redo();
@@ -398,11 +390,13 @@ CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) {
 	add_child(button_create);
 	button_create->connect("pressed",this,"_menu_option",varray(MODE_CREATE));
 	button_create->set_toggle_mode(true);
+	button_create->set_tooltip(TTR("Create a new polygon from scratch."));
 
 	button_edit = memnew( ToolButton );
 	add_child(button_edit);
 	button_edit->connect("pressed",this,"_menu_option",varray(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
+	button_edit->set_tooltip("Edit existing polygon:\nLMB: Move Point.\nCtrl+LMB: Split Segment.\nRMB: Erase Point.");
 
 	//add_constant_override("separation",0);
 
@@ -411,7 +405,7 @@ CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) {
 	add_child(options);
 	options->set_area_as_parent_rect();
 	options->set_text("Polygon");
-	//options->get_popup()->add_item("Parse BBCODE",PARSE_BBCODE);
+	//options->get_popup()->add_item("Parse BBCode",PARSE_BBCODE);
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 #endif
 

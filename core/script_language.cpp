@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,7 +51,7 @@ void Script::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("has_source_code"),&Script::has_source_code);
 	ObjectTypeDB::bind_method(_MD("get_source_code"),&Script::get_source_code);
 	ObjectTypeDB::bind_method(_MD("set_source_code","source"),&Script::set_source_code);
-	ObjectTypeDB::bind_method(_MD("reload"),&Script::reload);
+	ObjectTypeDB::bind_method(_MD("reload","keep_state"),&Script::reload,DEFVAL(false));
 
 }
 
@@ -61,26 +61,26 @@ void ScriptServer::set_scripting_enabled(bool p_enabled) {
 }
 
 bool ScriptServer::is_scripting_enabled() {
-	
+
 	return scripting_enabled;
 }
 
 
 int ScriptServer::get_language_count() {
-	
+
 	return _language_count;
-	
+
 }
 
 ScriptLanguage* ScriptServer::get_language(int p_idx) {
 
 	ERR_FAIL_INDEX_V(p_idx,_language_count,NULL);
-	
+
 	return _languages[p_idx];
 }
 
 void ScriptServer::register_language(ScriptLanguage *p_language) {
-	
+
 	ERR_FAIL_COND( _language_count >= MAX_LANGUAGES );
 	_languages[_language_count++]=p_language;
 }
@@ -91,6 +91,22 @@ void ScriptServer::init_languages() {
 		_languages[i]->init();
 	}
 }
+
+void ScriptInstance::get_property_state(List<Pair<StringName, Variant> > &state) {
+
+	List<PropertyInfo> pinfo;
+	get_property_list(&pinfo);
+	for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+
+		if (E->get().usage&PROPERTY_USAGE_STORAGE) {
+			Pair<StringName,Variant> p;
+			p.first=E->get().name;
+			if (get(p.first,p.second))
+				state.push_back(p);
+		}
+	}
+}
+
 
 Variant ScriptInstance::call(const StringName& p_method,VARIANT_ARG_DECLARE) {
 
@@ -135,6 +151,14 @@ ScriptInstance::~ScriptInstance() {
 
 
 }
+
+
+ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton=NULL;
+ScriptCodeCompletionCache::ScriptCodeCompletionCache() {
+	singleton=this;
+}
+
+
 
 void ScriptLanguage::frame() {
 
@@ -258,6 +282,20 @@ void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properti
 		p_properties->push_back(E->get());
 	}
 }
+
+Variant::Type PlaceHolderScriptInstance::get_property_type(const StringName& p_name,bool *r_is_valid) const {
+
+	if (values.has(p_name))	{
+		if (r_is_valid)
+			*r_is_valid=true;
+		return values[p_name].get_type();
+	}
+	if (r_is_valid)
+		*r_is_valid=false;
+
+	return Variant::NIL;
+}
+
 
 void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties,const Map<StringName,Variant>& p_values) {
 

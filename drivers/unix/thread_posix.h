@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,7 +55,9 @@ class ThreadPosix : public Thread {
 	static Thread* create_func_posix(ThreadCreateCallback p_callback,void *,const Settings&);
 	static ID get_thread_ID_func_posix();
 	static void wait_to_finish_func_posix(Thread* p_thread);	
-	
+
+	static Error set_name_func_posix(const String& p_name);
+
 	ThreadPosix();	
 public:
 	

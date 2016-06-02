@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,7 +84,7 @@ void OutputStrings::_notification(int p_what) {
 			Ref<Texture> icon_warning = get_icon("Warning","EditorIcons");
 
 		//	int lines = (size_height-(int)margin.y) / font_height;
-			Point2 ofs=tree_st->get_offset();			
+			Point2 ofs=tree_st->get_offset();
 
 			LineMap::Element *E = line_map.find(v_scroll->get_val());
 			float h_ofs = (int)h_scroll->get_val();

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -91,7 +91,7 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 		scode+="uniform float fmp_normal;\n";
 		scode+="uniform texture fmp_normal_tex;\n";
 		String uv_str;
-		if ((p_key.texcoord_mask>>(VS::FIXED_MATERIAL_PARAM_NORMAL*2))&0x3==VS::FIXED_MATERIAL_TEXCOORD_SPHERE) {
+		if (((p_key.texcoord_mask>>(VS::FIXED_MATERIAL_PARAM_NORMAL*2))&0x3)==VS::FIXED_MATERIAL_TEXCOORD_SPHERE) {
 			uv_str="uv"; //sorry not supported
 		} else {
 			uv_str=_TEXUVSTR(VS::FIXED_MATERIAL_PARAM_NORMAL);
@@ -370,7 +370,7 @@ RID Rasterizer::fixed_material_create() {
 		material_set_param(mat,_fixed_material_param_names[i],fm.param[i]); //must be there
 	}
 	fixed_material_dirty_list.add(&fm.dirty_list);
-	//print_line("FMC: "+itos(mat.get_id()));	
+	//print_line("FMC: "+itos(mat.get_id()));
 	return mat;
 }
 
@@ -568,8 +568,9 @@ void Rasterizer::_update_fixed_materials() {
 			}
 
 			material_set_param(fm.self,_fixed_material_uv_xform_name,fm.uv_xform);
-			if (fm.use_pointsize)
+			if (fm.use_pointsize) {
 				material_set_param(fm.self,_fixed_material_point_size_name,fm.point_size);
+			}
 		}
 
 		fixed_material_dirty_list.remove(fixed_material_dirty_list.first());
@@ -619,6 +620,8 @@ Rasterizer::Rasterizer() {
 
 	_fixed_material_uv_xform_name="fmp_uv_xform";
 	_fixed_material_point_size_name="fmp_point_size";
+
+	draw_viewport_func=NULL;
 
 	ERR_FAIL_COND( sizeof(FixedMaterialShaderKey)!=4);
 

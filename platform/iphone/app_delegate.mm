@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,6 +43,11 @@
 #import <AdSupport/AdSupport.h>
 #endif
 
+#ifdef MODULE_PARSE_ENABLED
+#import <Parse/Parse.h>
+#import "FBSDKCoreKit/FBSDKCoreKit.h"
+#endif
+
 #define kFilteringFactor                        0.1
 #define kRenderingFrequency						60
 #define kAccelerometerFrequency         100.0 // Hz
@@ -50,6 +55,9 @@
 #ifdef APPIRATER_ENABLED
 #import "Appirater.h"
 #endif
+
+Error _shell_open(String);
+void _set_keep_screen_on(bool p_enabled);
 
 Error _shell_open(String p_uri) {
 	NSString* url = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
@@ -61,6 +69,10 @@ Error _shell_open(String p_uri) {
 	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:url]];
 	[url release];
 	return OK;
+};
+
+void _set_keep_screen_on(bool p_enabled) {
+	[[UIApplication sharedApplication] setIdleTimerDisabled:(BOOL)p_enabled];
 };
 
 @implementation AppDelegate
@@ -84,13 +96,11 @@ static int frame_count = 0;
 	switch (frame_count) {
 
 	case 0: {
+        int backingWidth;
+        int backingHeight;
+        glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
+        glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
 
-		int backingWidth;
-		int backingHeight;
-		glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-		glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
-
-		iphone_main(backingWidth, backingHeight, gargc, gargv);
 
 		OS::VideoMode vm;
 		vm.fullscreen = true;
@@ -108,7 +118,7 @@ static int frame_count = 0;
 		NSString *documentsDirectory = [paths objectAtIndex:0];
 		//NSString *documentsDirectory = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
 		OSIPhone::get_singleton()->set_data_dir(String::utf8([documentsDirectory UTF8String]));
-		
+
 		NSString *locale_code = [[[NSLocale preferredLanguages] objectAtIndex:0] substringToIndex:2];
 		OSIPhone::get_singleton()->set_locale(String::utf8([locale_code UTF8String]));
 
@@ -139,6 +149,30 @@ static int frame_count = 0;
 
 		Main::setup2();
 		++frame_count;
+
+		// this might be necessary before here
+		NSDictionary* dict = [[NSBundle mainBundle] infoDictionary];
+		for (NSString* key in dict) {
+			NSObject* value = [dict objectForKey:key];
+			String ukey = String::utf8([key UTF8String]);
+
+			// we need a NSObject to Variant conversor
+
+			if ([value isKindOfClass:[NSString class]]) {
+				NSString* str = (NSString*)value;
+				String uval = String::utf8([str UTF8String]);
+
+				Globals::get_singleton()->set("Info.plist/"+ukey, uval);
+
+			} else if ([value isKindOfClass:[NSNumber class]]) {
+
+				NSNumber* n = (NSNumber*)value;
+				double dval = [n doubleValue];
+
+				Globals::get_singleton()->set("Info.plist/"+ukey, dval);
+			};
+			// do stuff
+		}
 
 	} break;
 /*
@@ -183,7 +217,7 @@ static int frame_count = 0;
 
 	[application setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 	// disable idle timer
-	application.idleTimerDisabled = YES;
+	//application.idleTimerDisabled = YES;
 
 	//Create a full-screen window
 	window = [[UIWindow alloc] initWithFrame:rect];
@@ -198,13 +232,23 @@ static int frame_count = 0;
 	//glView.autoresizesSubviews = YES;
 	//[glView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleWidth];
 
+    int backingWidth;
+    int backingHeight;
+    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
+    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+
+    iphone_main(backingWidth, backingHeight, gargc, gargv);
+
 	view_controller = [[ViewController alloc] init];
 	view_controller.view = glView;
 	window.rootViewController = view_controller;
 
+	_set_keep_screen_on(bool(GLOBAL_DEF("display/keep_screen_on",true)) ? YES : NO);
+	glView.useCADisplayLink = bool(GLOBAL_DEF("display.iOS/use_cadisplaylink",true)) ? YES : NO;
+	printf("cadisaplylink: %d", glView.useCADisplayLink);
 	glView.animationInterval = 1.0 / kRenderingFrequency;
 	[glView startAnimation];
-	
+
 	//Show the window
 	[window makeKeyAndVisible];
 
@@ -217,9 +261,9 @@ static int frame_count = 0;
 
 	//OSIPhone::screen_width = rect.size.width - rect.origin.x;
 	//OSIPhone::screen_height = rect.size.height - rect.origin.y;
-	
+
 	mainViewController = view_controller;
-    
+
 #ifdef MODULE_GAME_ANALYTICS_ENABLED
     printf("********************* didFinishLaunchingWithOptions\n");
     if(!Globals::get_singleton()->has("mobileapptracker/advertiser_id"))
@@ -230,24 +274,24 @@ static int frame_count = 0;
     {
         return;
     }
-        
+
     String adid = GLOBAL_DEF("mobileapptracker/advertiser_id","");
     String convkey = GLOBAL_DEF("mobileapptracker/conversion_key","");
-        
+
     NSString * advertiser_id = [NSString stringWithUTF8String:adid.utf8().get_data()];
     NSString * conversion_key = [NSString stringWithUTF8String:convkey.utf8().get_data()];
-        
+
     // Account Configuration info - must be set
     [MobileAppTracker initializeWithMATAdvertiserId:advertiser_id
                                     MATConversionKey:conversion_key];
-        
+
     // Used to pass us the IFA, enables highly accurate 1-to-1 attribution.
     // Required for many advertising networks.
     [MobileAppTracker setAppleAdvertisingIdentifier:[[ASIdentifierManager sharedManager] advertisingIdentifier]
         advertisingTrackingEnabled:[[ASIdentifierManager sharedManager] isAdvertisingTrackingEnabled]];
-        
+
 #endif
-    
+
 };
 
 - (void)applicationWillTerminate:(UIApplication*)application {
@@ -313,10 +357,45 @@ static int frame_count = 0;
 
 // For 4.2+ support
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+#ifdef MODULE_PARSE_ENABLED
+	NSLog(@"Handling application openURL");
+	return [[FBSDKApplicationDelegate sharedInstance] application:application
+														  openURL:url
+												sourceApplication:sourceApplication
+													   annotation:annotation];
+#endif
+
+
 #ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED
 	return [[[FacebookScorer sharedInstance] facebook] handleOpenURL:url];
 #else
 	return false;
+#endif
+}
+
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+#ifdef MODULE_PARSE_ENABLED
+	// Store the deviceToken in the current installation and save it to Parse.
+	PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+	//NSString* token = [[NSString alloc] initWithData:deviceToken encoding:NSUTF8StringEncoding];
+	NSLog(@"Device Token : %@ ", deviceToken);
+	[currentInstallation setDeviceTokenFromData:deviceToken];
+	[currentInstallation saveInBackground];
+#endif
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
+#ifdef MODULE_PARSE_ENABLED
+	[PFPush handlePush:userInfo];
+	NSDictionary *aps = [userInfo objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
+	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+	NSLog(@"Push Notification Payload (app active) %@", aps);
+	[defaults setObject:aps forKey:@"notificationInfo"];
+	[defaults synchronize];
+	if (application.applicationState == UIApplicationStateInactive) {
+		[PFAnalytics trackAppOpenedWithRemoteNotificationPayload:userInfo];
+	}
 #endif
 }
 

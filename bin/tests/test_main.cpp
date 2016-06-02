@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,9 +61,10 @@ const char ** tests_get_names()  {
 		"gui",
 		"io",
 		"shaderlang",
+		"physics",
 		NULL
 	};
-	
+
 	return test_names;
 }
 
@@ -71,22 +72,22 @@ MainLoop* test_main(String p_test,const List<String>& p_args) {
 
 
 	if (p_test=="string") {
-	
+
 		return TestString::test();
 	}
-	
+
 	if (p_test=="containers") {
-	
+
 		return TestContainers::test();
 	}
-	
+
 	if (p_test=="math") {
-	
+
 		return TestMath::test();
 	}
-  
+
 	if (p_test=="physics") {
-	
+
 		return TestPhysics::test();
 	}
 
@@ -96,15 +97,15 @@ MainLoop* test_main(String p_test,const List<String>& p_args) {
 	}
 
   	if (p_test=="misc") {
-	
+
 		return TestMisc::test();
 	}
 
 	if (p_test=="render") {
-	
+
 		return TestRender::test();
 	}
-  
+
 	#ifndef _3D_DISABLED
 	if (p_test=="gui") {
 
@@ -118,17 +119,17 @@ MainLoop* test_main(String p_test,const List<String>& p_args) {
 	}
 
 	if (p_test=="io") {
-		
+
 		return TestIO::test();
 	}
-	
+
 	if (p_test=="particles") {
 
 		return TestParticles::test();
 	}
-	
+
 	if (p_test=="multimesh") {
-		
+
 		return TestMultiMesh::test();
 	}
 
@@ -170,7 +171,7 @@ MainLoop* test_main(String p_test,const List<String>& p_args) {
 #ifdef PYTHON_ENABLED
 
 	if (p_test=="python") {
-	
+
 		return TestPython::test();
 	}
 #endif

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,16 +30,16 @@
 
 #include "print_string.h"
 bool ImageFormatLoader::recognize(const String& p_extension) const {
-	
-	
+
+
 	List<String> extensions;
 	get_recognized_extensions(&extensions);
 	for (List<String>::Element *E=extensions.front();E;E=E->next()) {
-		
+
 		if (E->get().nocasecmp_to(p_extension.extension())==0)
 			return true;
 	}
-	
+
 	return false;
 }
 
@@ -50,41 +50,48 @@ Error ImageLoader::load_image(String p_file,Image *p_image, FileAccess *p_custom
 	if (!f) {
 		Error err;
 		f=FileAccess::open(p_file,FileAccess::READ,&err);
-		if (!f)
+		if (!f) {
+			print_line("ERROR OPENING FILE: "+p_file);
 			return err;
+		}
 	}
-				
+
 	String extension = p_file.extension();
 
 
 	for (int i=0;i<loader_count;i++) {
-	
+
 		if (!loader[i]->recognize(extension))
 			continue;
 		Error err = loader[i]->load_image(p_image,f);
+
 		if (err!=ERR_FILE_UNRECOGNIZED) {
+
+
 			if (!p_custom)
 				memdelete(f);
+
 			return err;
 		}
-			
-		
+
+
 	}
-	
+	print_line("NO LOADER?");
+
 	if (!p_custom)
-		memdelete(f);	
-		
+		memdelete(f);
+
 	return ERR_FILE_UNRECOGNIZED;
 
 }
 
 void ImageLoader::get_recognized_extensions(List<String> *p_extensions) {
-	
+
 	for (int i=0;i<loader_count;i++) {
-		
+
 		loader[i]->get_recognized_extensions(p_extensions);
-				
-	}	
+
+	}
 }
 
 bool ImageLoader::recognize(const String& p_extension) {

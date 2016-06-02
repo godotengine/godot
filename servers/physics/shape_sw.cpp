@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -997,6 +997,11 @@ DVector<Vector3> ConcavePolygonShapeSW::get_faces() const {
 void ConcavePolygonShapeSW::project_range(const Vector3& p_normal, const Transform& p_transform, real_t &r_min, real_t &r_max) const {
 
 	int count=vertices.size();
+	if (count==0) {
+		r_min=0;
+		r_max=0;
+		return;
+	}
 	DVector<Vector3>::Read r=vertices.read();
 	const Vector3 *vptr=r.ptr();
 
@@ -1016,6 +1021,9 @@ Vector3 ConcavePolygonShapeSW::get_support(const Vector3& p_normal) const {
 
 
 	int count=vertices.size();
+	if (count==0)
+		return Vector3();
+
 	DVector<Vector3>::Read r=vertices.read();
 	const Vector3 *vptr=r.ptr();
 
@@ -1103,6 +1111,9 @@ void ConcavePolygonShapeSW::_cull_segment(int p_idx,_SegmentCullParams *p_params
 
 bool ConcavePolygonShapeSW::intersect_segment(const Vector3& p_begin,const Vector3& p_end,Vector3 &r_result, Vector3 &r_normal) const {
 
+	if (faces.size()==0)
+		return false;
+
 	// unlock data
 	DVector<Face>::Read fr=faces.read();
 	DVector<Vector3>::Read vr=vertices.read();
@@ -1171,6 +1182,8 @@ void ConcavePolygonShapeSW::_cull(int p_idx,_CullParams *p_params) const {
 void ConcavePolygonShapeSW::cull(const AABB& p_local_aabb,Callback p_callback,void* p_userdata) const {
 
 	// make matrix local to concave
+	if (faces.size()==0)
+		return;
 
 	AABB local_aabb=p_local_aabb;
 
@@ -1341,6 +1354,10 @@ void ConcavePolygonShapeSW::_fill_bvh(_VolumeSW_BVH* p_bvh_tree,BVH* p_bvh_array
 void ConcavePolygonShapeSW::_setup(DVector<Vector3> p_faces) {
 
 	int src_face_count=p_faces.size();
+	if (src_face_count==0) {
+		configure(AABB());
+		return;
+	}
 	ERR_FAIL_COND(src_face_count%3);
 	src_face_count/=3;
 

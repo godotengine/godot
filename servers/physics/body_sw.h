@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,6 +50,10 @@ class BodySW : public CollisionObjectSW {
 	real_t bounce;
 	real_t friction;
 
+	real_t linear_damp;
+	real_t angular_damp;
+	real_t gravity_scale;
+
 	PhysicsServer::BodyAxisLock axis_lock;
 
 	real_t _inv_mass;
@@ -57,12 +61,15 @@ class BodySW : public CollisionObjectSW {
 	Matrix3 _inv_inertia_tensor;
 
 	Vector3 gravity;
-	real_t density;
 
 	real_t still_time;
 
 	Vector3 applied_force;
 	Vector3 applied_torque;
+
+	float area_angular_damp;
+	float area_linear_damp;
+
 
 	SelfList<BodySW> active_list;
 	SelfList<BodySW> inertia_update_list;
@@ -71,6 +78,8 @@ class BodySW : public CollisionObjectSW {
 	VSet<RID> exceptions;
 	bool omit_force_integration;
 	bool active;
+
+	bool first_integration;
 
 	bool continuous_cd;
 	bool can_sleep;
@@ -84,13 +93,14 @@ class BodySW : public CollisionObjectSW {
 	struct AreaCMP {
 
 		AreaSW *area;
-		_FORCE_INLINE_ bool operator<(const AreaCMP& p_cmp) const { return area->get_self() < p_cmp.area->get_self() ; }
+		int refCount;
+		_FORCE_INLINE_ bool operator==(const AreaCMP& p_cmp) const { return area->get_self() == p_cmp.area->get_self();}
+		_FORCE_INLINE_ bool operator<(const AreaCMP& p_cmp) const { return area->get_priority() < p_cmp.area->get_priority();}
 		_FORCE_INLINE_ AreaCMP() {}
-		_FORCE_INLINE_ AreaCMP(AreaSW *p_area) { area=p_area;}
+		_FORCE_INLINE_ AreaCMP(AreaSW *p_area) { area=p_area; refCount=1;}
 	};
 
-
-	VSet<AreaCMP> areas;
+	Vector<AreaCMP> areas;
 
 	struct Contact {
 
@@ -123,7 +133,7 @@ class BodySW : public CollisionObjectSW {
 	BodySW *island_next;
 	BodySW *island_list_next;
 
-	_FORCE_INLINE_ void _compute_area_gravity(const AreaSW *p_area);
+	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const AreaSW *p_area);
 
 	_FORCE_INLINE_ void _update_inertia_tensor();
 
@@ -134,9 +144,23 @@ public:
 
 	void set_force_integration_callback(ObjectID p_id,const StringName& p_method,const Variant& p_udata=Variant());
 
+	_FORCE_INLINE_ void add_area(AreaSW *p_area) {
+		int index = areas.find(AreaCMP(p_area));
+		if( index > -1 ) {
+			areas[index].refCount += 1;
+		} else {
+			areas.ordered_insert(AreaCMP(p_area));
+		}
+	}
 
-	_FORCE_INLINE_ void add_area(AreaSW *p_area) { areas.insert(AreaCMP(p_area)); }
-	_FORCE_INLINE_ void remove_area(AreaSW *p_area) { areas.erase(AreaCMP(p_area)); }
+	_FORCE_INLINE_ void remove_area(AreaSW *p_area) {
+		int index = areas.find(AreaCMP(p_area));
+		if( index > -1 ) {
+			areas[index].refCount -= 1;
+			if( areas[index].refCount < 1 )
+				areas.remove(index);
+		}
+	}
 
 	_FORCE_INLINE_ void set_max_contacts_reported(int p_size) { contacts.resize(p_size); contact_count=0; if (mode==PhysicsServer::BODY_MODE_KINEMATIC && p_size) set_active(true);}
 	_FORCE_INLINE_ int get_max_contacts_reported() const { return contacts.size(); }
@@ -201,6 +225,12 @@ public:
 	void set_active(bool p_active);
 	_FORCE_INLINE_ bool is_active() const { return active; }
 
+	_FORCE_INLINE_ void wakeup() {
+		if ((!get_space()) || mode==PhysicsServer::BODY_MODE_STATIC || mode==PhysicsServer::BODY_MODE_KINEMATIC)
+			return;
+		set_active(true);
+	}
+
 	void set_param(PhysicsServer::BodyParameter p_param, float);
 	float get_param(PhysicsServer::BodyParameter p_param) const;
 
@@ -228,7 +258,6 @@ public:
 	_FORCE_INLINE_ Matrix3 get_inv_inertia_tensor() const { return _inv_inertia_tensor; }
 	_FORCE_INLINE_ real_t get_friction() const { return friction; }
 	_FORCE_INLINE_ Vector3 get_gravity() const { return gravity; }
-	_FORCE_INLINE_ real_t get_density() const { return density; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
 
 	_FORCE_INLINE_ void set_axis_lock(PhysicsServer::BodyAxisLock p_lock) { axis_lock=p_lock; }
@@ -330,8 +359,9 @@ public:
 	BodySW *body;
 	real_t step;
 
-	virtual Vector3 get_total_gravity() const {  return body->get_gravity();  } // get gravity vector working on this body space/area
-	virtual float get_total_density() const {  return body->get_density();  } // get density of this body space/area
+	virtual Vector3 get_total_gravity() const {  return body->gravity;  } // get gravity vector working on this body space/area
+	virtual float get_total_angular_damp() const {  return body->area_angular_damp;  } // get density of this body space/area
+	virtual float get_total_linear_damp() const {  return body->area_linear_damp;  } // get density of this body space/area
 
 	virtual float get_inverse_mass() const {  return body->get_inv_mass();  } // get the mass
 	virtual Vector3 get_inverse_inertia() const { return body->get_inv_inertia();   } // get density of this body space

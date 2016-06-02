@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,13 +43,13 @@ class Light : public VisualInstance {
 	OBJ_CATEGORY("3D Light Nodes");
 
 public:
-	
+
 	enum Parameter {
 		PARAM_RADIUS=VisualServer::LIGHT_PARAM_RADIUS,
 		PARAM_ENERGY=VisualServer::LIGHT_PARAM_ENERGY,
 		PARAM_ATTENUATION=VisualServer::LIGHT_PARAM_ATTENUATION,
 		PARAM_SPOT_ANGLE=VisualServer::LIGHT_PARAM_SPOT_ANGLE,
-		PARAM_SPOT_ATTENUATION=VisualServer::LIGHT_PARAM_ATTENUATION,
+		PARAM_SPOT_ATTENUATION=VisualServer::LIGHT_PARAM_SPOT_ATTENUATION,
 		PARAM_SHADOW_DARKENING=VisualServer::LIGHT_PARAM_SHADOW_DARKENING,
 		PARAM_SHADOW_Z_OFFSET=VisualServer::LIGHT_PARAM_SHADOW_Z_OFFSET,
 		PARAM_SHADOW_Z_SLOPE_SCALE=VisualServer::LIGHT_PARAM_SHADOW_Z_SLOPE_SCALE,
@@ -57,10 +57,10 @@ public:
 		PARAM_SHADOW_BLUR_PASSES=VisualServer::LIGHT_PARAM_SHADOW_BLUR_PASSES,
 		PARAM_MAX=VisualServer::LIGHT_PARAM_MAX
 	};
-	
-	
+
+
 	enum LightColor {
-	
+
 		COLOR_DIFFUSE=VisualServer::LIGHT_COLOR_DIFFUSE,
 		COLOR_SPECULAR=VisualServer::LIGHT_COLOR_SPECULAR
 	};
@@ -81,13 +81,13 @@ public:
 		OPERATOR_SUB
 	};
 private:
-	
-	
+
+
 	Ref<Texture> projector;
 	float vars[PARAM_MAX];
 	Color colors[3];
-	
-	
+
+
 	BakeMode bake_mode;
 	VisualServer::LightType type;
 	bool shadows;
@@ -98,18 +98,18 @@ private:
 	void _update_visibility();
 // bind helpers
 
-protected:	
+protected:
 
 	RID light;
 
 	virtual bool _can_gizmo_scale() const;
 	virtual RES _get_gizmo_geometry() const;
-	
+
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	
-	Light(VisualServer::LightType p_type);	
+
+	Light(VisualServer::LightType p_type);
 public:
 
 	VS::LightType get_light_type() const { return type; }

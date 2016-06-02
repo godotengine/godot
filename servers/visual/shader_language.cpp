@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,6 +56,7 @@ const char * ShaderLanguage::token_names[TK_MAX]={
 	"TYPE_VEC2",
 	"TYPE_VEC3",
 	"TYPE_VEC4",
+	"TYPE_MAT2",
 	"TYPE_MAT3",
 	"TYPE_MAT4",
 	"TYPE_TEXTURE",
@@ -117,13 +118,17 @@ ShaderLanguage::Token ShaderLanguage::read_token(const CharType* p_text,int p_le
 
 
 					while(true) {
-						if (GETCHAR(r_chars+1)=='0')
+						if (GETCHAR(r_chars+1)==0) {
+							r_chars+=1;
 							break;
-						if (GETCHAR(r_chars+1)=='*' && GETCHAR(r_chars+2)=='/')
+						} if (GETCHAR(r_chars+1)=='*' && GETCHAR(r_chars+2)=='/') {
+							r_chars+=3;
 							break;
-						if (GETCHAR(r_chars+1)=='\n')
+						} if (GETCHAR(r_chars+1)=='\n') {
 							r_line++;
-							r_chars++;
+						}
+
+						r_chars++;
 					}
 
 					return Token();
@@ -403,9 +408,9 @@ ShaderLanguage::Token ShaderLanguage::read_token(const CharType* p_text,int p_le
 					{TK_TYPE_TEXTURE,"texture"},
 					{TK_TYPE_CUBEMAP,"cubemap"},
 					{TK_TYPE_COLOR,"color"},
-					/*
+
 					{TK_TYPE_MAT2,"mat2"},
-					{TK_TYPE_MAT3,"mat3"},
+					/*{TK_TYPE_MAT3,"mat3"},
 					{TK_TYPE_MAT4,"mat3"},*/
 					{TK_TYPE_MAT3,"mat3"},
 					{TK_TYPE_MAT4,"mat4"},
@@ -511,6 +516,7 @@ bool ShaderLanguage::is_token_datatype(TokenType p_type) {
 	(p_type==TK_TYPE_VEC3) ||
 	(p_type==TK_TYPE_VEC4) ||
 	(p_type==TK_TYPE_COLOR) ||
+	(p_type==TK_TYPE_MAT2) ||
 	(p_type==TK_TYPE_MAT3) ||
 	(p_type==TK_TYPE_MAT4) ||
 	(p_type==TK_TYPE_CUBEMAP) ||
@@ -529,6 +535,7 @@ ShaderLanguage::DataType ShaderLanguage::get_token_datatype(TokenType p_type) {
 		case TK_TYPE_VEC3: return TYPE_VEC3;
 		case TK_TYPE_VEC4: return TYPE_VEC4;
 		case TK_TYPE_COLOR: return TYPE_VEC4;
+		case TK_TYPE_MAT2: return TYPE_MAT2;
 		case TK_TYPE_MAT3: return TYPE_MAT3;
 		case TK_TYPE_MAT4: return TYPE_MAT4;
 		case TK_TYPE_TEXTURE: return TYPE_TEXTURE;
@@ -550,6 +557,7 @@ String ShaderLanguage::get_datatype_name(DataType p_type) {
 		case TYPE_VEC2: return "vec2";
 		case TYPE_VEC3: return "vec3";
 		case TYPE_VEC4: return "vec4";
+		case TYPE_MAT2: return "mat2";
 		case TYPE_MAT3: return "mat3";
 		case TYPE_MAT4: return "mat4";
 		case TYPE_TEXTURE: return "texture";
@@ -570,6 +578,7 @@ bool ShaderLanguage::is_token_nonvoid_datatype(TokenType p_type) {
 		(p_type==TK_TYPE_VEC3) ||
 		(p_type==TK_TYPE_VEC4) ||
 		(p_type==TK_TYPE_COLOR) ||
+		(p_type==TK_TYPE_MAT2) ||
 		(p_type==TK_TYPE_MAT3) ||
 		(p_type==TK_TYPE_MAT4) ||
 		(p_type==TK_TYPE_TEXTURE) ||
@@ -598,7 +607,7 @@ bool ShaderLanguage::test_existing_identifier(Node *p_node,const StringName p_id
 				return true;
 		} else if (node->type==Node::TYPE_PROGRAM) {
 
-			ProgramNode *program = (ProgramNode*)node;			
+			ProgramNode *program = (ProgramNode*)node;
 			for(int i=0;i<program->functions.size();i++) {
 
 				if (program->functions[i].name==p_identifier) {
@@ -768,16 +777,21 @@ const ShaderLanguage::IntrinsicFuncDef ShaderLanguage::intrinsic_func_defs[]={
 	//constructors
 	{"bool",TYPE_BOOL,{TYPE_BOOL,TYPE_VOID}},
 	{"float",TYPE_FLOAT,{TYPE_FLOAT,TYPE_VOID}},
+	{"vec2",TYPE_VEC2,{TYPE_FLOAT,TYPE_VOID}},
 	{"vec2",TYPE_VEC2,{TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
+	{"vec3",TYPE_VEC3,{TYPE_FLOAT,TYPE_VOID}},
 	{"vec3",TYPE_VEC3,{TYPE_FLOAT,TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
 	{"vec3",TYPE_VEC3,{TYPE_VEC2,TYPE_FLOAT,TYPE_VOID}},
 	{"vec3",TYPE_VEC3,{TYPE_FLOAT,TYPE_VEC2,TYPE_VOID}},
+	{"vec4",TYPE_VEC4,{TYPE_FLOAT,TYPE_VOID}},
 	{"vec4",TYPE_VEC4,{TYPE_FLOAT,TYPE_FLOAT,TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
 	{"vec4",TYPE_VEC4,{TYPE_FLOAT,TYPE_VEC2,TYPE_FLOAT,TYPE_VOID}},
 	{"vec4",TYPE_VEC4,{TYPE_VEC2,TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
 	{"vec4",TYPE_VEC4,{TYPE_FLOAT,TYPE_FLOAT,TYPE_VEC2,TYPE_VOID}},
 	{"vec4",TYPE_VEC4,{TYPE_FLOAT,TYPE_VEC3,TYPE_VOID}},
 	{"vec4",TYPE_VEC4,{TYPE_VEC3,TYPE_FLOAT,TYPE_VOID}},
+	{"vec4",TYPE_VEC4,{TYPE_VEC2,TYPE_VEC2,TYPE_VOID}},
+	{"mat2",TYPE_MAT2,{TYPE_VEC2,TYPE_VEC2,TYPE_VOID}},
 	{"mat3",TYPE_MAT3,{TYPE_VEC3,TYPE_VEC3,TYPE_VEC3,TYPE_VOID}},
 	{"mat4",TYPE_MAT4,{TYPE_VEC4,TYPE_VEC4,TYPE_VEC4,TYPE_VEC4,TYPE_VOID}},
 	//intrinsics - trigonometry
@@ -856,6 +870,9 @@ const ShaderLanguage::IntrinsicFuncDef ShaderLanguage::intrinsic_func_defs[]={
 	{"clamp",TYPE_VEC2,{TYPE_VEC2,TYPE_VEC2,TYPE_VEC2,TYPE_VOID}},
 	{"clamp",TYPE_VEC3,{TYPE_VEC3,TYPE_VEC3,TYPE_VEC3,TYPE_VOID}},
 	{"clamp",TYPE_VEC4,{TYPE_VEC4,TYPE_VEC4,TYPE_VEC4,TYPE_VOID}},
+	{"clamp",TYPE_VEC2,{TYPE_VEC2,TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
+	{"clamp",TYPE_VEC3,{TYPE_VEC3,TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
+	{"clamp",TYPE_VEC4,{TYPE_VEC4,TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
 	{"mix",TYPE_FLOAT,{TYPE_FLOAT,TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
 	{"mix",TYPE_VEC2,{TYPE_VEC2,TYPE_VEC2,TYPE_FLOAT,TYPE_VOID}},
 	{"mix",TYPE_VEC2,{TYPE_VEC2,TYPE_VEC2,TYPE_VEC2,TYPE_VOID}},
@@ -893,6 +910,7 @@ const ShaderLanguage::IntrinsicFuncDef ShaderLanguage::intrinsic_func_defs[]={
 	{"normalize",TYPE_VEC3,{TYPE_VEC3,TYPE_VOID}},
 	{"normalize",TYPE_VEC4,{TYPE_VEC4,TYPE_VOID}},
 	{"reflect",TYPE_VEC3,{TYPE_VEC3,TYPE_VEC3,TYPE_VOID}},
+	{"refract",TYPE_VEC3,{TYPE_VEC3,TYPE_VEC3,TYPE_FLOAT,TYPE_VOID}},
 	//intrinsics - texture
 	{"tex",TYPE_VEC4,{TYPE_TEXTURE,TYPE_VEC2,TYPE_VOID}},
 	{"texcube",TYPE_VEC4,{TYPE_CUBEMAP,TYPE_VEC3,TYPE_VOID}},
@@ -910,6 +928,7 @@ const ShaderLanguage::OperatorDef ShaderLanguage::operator_defs[]={
 	{OP_ASSIGN,TYPE_VOID,{TYPE_VEC2,TYPE_VEC2}},
 	{OP_ASSIGN,TYPE_VOID,{TYPE_VEC3,TYPE_VEC3}},
 	{OP_ASSIGN,TYPE_VOID,{TYPE_VEC4,TYPE_VEC4}},
+	{OP_ASSIGN,TYPE_VOID,{TYPE_MAT2,TYPE_MAT2}},
 	{OP_ASSIGN,TYPE_VOID,{TYPE_MAT3,TYPE_MAT3}},
 	{OP_ASSIGN,TYPE_VOID,{TYPE_MAT4,TYPE_MAT4}},
 	{OP_ADD,TYPE_FLOAT,{TYPE_FLOAT,TYPE_FLOAT}},
@@ -925,6 +944,8 @@ const ShaderLanguage::OperatorDef ShaderLanguage::operator_defs[]={
 	{OP_MUL,TYPE_VEC2,{TYPE_VEC2,TYPE_FLOAT}},
 	{OP_MUL,TYPE_VEC2,{TYPE_FLOAT,TYPE_VEC2}},
 	{OP_MUL,TYPE_VEC2,{TYPE_VEC2,TYPE_MAT3}},
+	{OP_MUL,TYPE_VEC2,{TYPE_MAT2,TYPE_VEC2}},
+	{OP_MUL,TYPE_VEC2,{TYPE_VEC2,TYPE_MAT2}},
 	{OP_MUL,TYPE_VEC2,{TYPE_MAT3,TYPE_VEC2}},
 	{OP_MUL,TYPE_VEC2,{TYPE_VEC2,TYPE_MAT4}},
 	{OP_MUL,TYPE_VEC2,{TYPE_MAT4,TYPE_VEC2}},
@@ -939,6 +960,7 @@ const ShaderLanguage::OperatorDef ShaderLanguage::operator_defs[]={
 	{OP_MUL,TYPE_VEC4,{TYPE_FLOAT,TYPE_VEC4}},
 	{OP_MUL,TYPE_VEC4,{TYPE_MAT4,TYPE_VEC4}},
 	{OP_MUL,TYPE_VEC4,{TYPE_VEC4,TYPE_MAT4}},
+	{OP_MUL,TYPE_MAT2,{TYPE_MAT2,TYPE_MAT2}},
 	{OP_MUL,TYPE_MAT3,{TYPE_MAT3,TYPE_MAT3}},
 	{OP_MUL,TYPE_MAT4,{TYPE_MAT4,TYPE_MAT4}},
 	{OP_DIV,TYPE_FLOAT,{TYPE_FLOAT,TYPE_FLOAT}},
@@ -968,15 +990,15 @@ const ShaderLanguage::OperatorDef ShaderLanguage::operator_defs[]={
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_FLOAT,TYPE_FLOAT}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC2,TYPE_VEC2}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC2,TYPE_FLOAT}},
-	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT3,TYPE_VEC2}},
-	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT4,TYPE_VEC2}},
+	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC2,TYPE_MAT2}},
+	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT2,TYPE_MAT2}},
+	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC3,TYPE_MAT3}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC3,TYPE_VEC3}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC3,TYPE_FLOAT}},
-	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT3,TYPE_VEC3}},
-	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT4,TYPE_VEC3}},
+	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC3,TYPE_MAT4}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC4,TYPE_VEC4}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC4,TYPE_FLOAT}},
-	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT4,TYPE_VEC4}},
+	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC4,TYPE_MAT4}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT3,TYPE_MAT3}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT4,TYPE_MAT4}},
 	{OP_ASSIGN_DIV,TYPE_VOID,{TYPE_FLOAT,TYPE_FLOAT}},
@@ -1021,6 +1043,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::vertex_builtins_defs[]={
 	{ "SRC_TANGENT", TYPE_VEC3},
 	{ "SRC_BINORMALF", TYPE_FLOAT},
 
+	{ "POSITION", TYPE_VEC4 },
 	{ "VERTEX", TYPE_VEC3},
 	{ "NORMAL", TYPE_VEC3},
 	{ "TANGENT", TYPE_VEC3},
@@ -1047,7 +1070,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::vertex_builtins_defs[]={
 const ShaderLanguage::BuiltinsDef ShaderLanguage::fragment_builtins_defs[]={
 
 	{ "VERTEX", TYPE_VEC3},
-	{ "POSITION", TYPE_VEC3},
+	{ "POSITION", TYPE_VEC4},
 	{ "NORMAL", TYPE_VEC3},
 	{ "TANGENT", TYPE_VEC3},
 	{ "BINORMAL", TYPE_VEC3},
@@ -1090,6 +1113,75 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::light_builtins_defs[]={
 	{ "SPECULAR_EXP", TYPE_FLOAT},
 	{ "SHADE_PARAM", TYPE_FLOAT},
 	{ "LIGHT", TYPE_VEC3},
+	{ "SHADOW", TYPE_VEC3 },
+	{ "POINT_COORD", TYPE_VEC2 },
+//	{ "SCREEN_POS", TYPE_VEC2},
+//	{ "SCREEN_TEXEL_SIZE", TYPE_VEC2},
+	{ "TIME", TYPE_FLOAT},
+	{ NULL, TYPE_VOID}
+
+};
+
+
+
+const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_vertex_builtins_defs[]={
+
+	{ "SRC_VERTEX", TYPE_VEC2},
+	{ "VERTEX", TYPE_VEC2},
+	{ "WORLD_VERTEX", TYPE_VEC2},
+	{ "UV", TYPE_VEC2},
+	{ "COLOR", TYPE_VEC4},
+	{ "VAR1", TYPE_VEC4},
+	{ "VAR2", TYPE_VEC4},
+	{ "POINT_SIZE", TYPE_FLOAT},
+
+	//builtins
+	{ "WORLD_MATRIX", TYPE_MAT4},
+	{ "PROJECTION_MATRIX", TYPE_MAT4},
+	{ "EXTRA_MATRIX", TYPE_MAT4},
+	{ "TIME", TYPE_FLOAT},
+	{ NULL, TYPE_VOID},
+};
+const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_fragment_builtins_defs[]={
+
+	{ "SRC_COLOR", TYPE_VEC4},
+	{ "POSITION", TYPE_VEC4},
+	{ "NORMAL", TYPE_VEC3},
+	{ "NORMALMAP", TYPE_VEC3},
+	{ "NORMALMAP_DEPTH", TYPE_FLOAT},
+	{ "UV", TYPE_VEC2},
+	{ "COLOR", TYPE_VEC4},
+	{ "TEXTURE", TYPE_TEXTURE},
+	{ "TEXTURE_PIXEL_SIZE", TYPE_VEC2},
+	{ "VAR1", TYPE_VEC4},
+	{ "VAR2", TYPE_VEC4},
+	{ "SCREEN_UV", TYPE_VEC2},
+	{ "POINT_COORD", TYPE_VEC2},
+
+//	{ "SCREEN_POS", TYPE_VEC2},
+//	{ "SCREEN_TEXEL_SIZE", TYPE_VEC2},
+	{ "TIME", TYPE_FLOAT},
+	{ NULL, TYPE_VOID}
+
+};
+
+const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_light_builtins_defs[]={
+
+	{ "POSITION", TYPE_VEC4},
+	{ "NORMAL", TYPE_VEC3},
+	{ "UV", TYPE_VEC2},
+	{ "COLOR", TYPE_VEC4},
+	{ "TEXTURE", TYPE_TEXTURE},
+	{ "TEXTURE_PIXEL_SIZE", TYPE_VEC2},
+	{ "VAR1", TYPE_VEC4},
+	{ "VAR2", TYPE_VEC4},
+	{ "SCREEN_UV", TYPE_VEC2},
+	{ "LIGHT_VEC", TYPE_VEC2},
+	{ "LIGHT_HEIGHT", TYPE_FLOAT},
+	{ "LIGHT_COLOR", TYPE_VEC4},
+	{ "LIGHT_UV", TYPE_VEC2},
+	{ "LIGHT", TYPE_VEC4},
+	{ "SHADOW", TYPE_VEC4},
 	{ "POINT_COORD", TYPE_VEC2},
 //	{ "SCREEN_POS", TYPE_VEC2},
 //	{ "SCREEN_TEXEL_SIZE", TYPE_VEC2},
@@ -1189,7 +1281,7 @@ ShaderLanguage::Node* ShaderLanguage::validate_function_call(Parser&parser, Oper
 
 		if (p_func->op==OP_CONSTRUCT && all_const) {
 
-			bool all_const=false;
+
 			Vector<float> cdata;
 			for(int i=0;i<argcount;i++) {
 
@@ -1210,9 +1302,25 @@ ShaderLanguage::Node* ShaderLanguage::validate_function_call(Parser&parser, Oper
 			Variant data;
 			switch(p_func->return_cache) {
 				case TYPE_FLOAT: data = cdata[0]; break;
-				case TYPE_VEC2: data = Vector2(cdata[0],cdata[1]); break;
-				case TYPE_VEC3: data = Vector3(cdata[0],cdata[1],cdata[2]); break;
-				case TYPE_VEC4: data = Plane(cdata[0],cdata[1],cdata[2],cdata[3]); break;
+				case TYPE_VEC2:
+					if (cdata.size()==1)
+						data = Vector2(cdata[0],cdata[0]);
+					else
+						data = Vector2(cdata[0],cdata[1]);
+
+					break;
+				case TYPE_VEC3:
+					if (cdata.size()==1)
+						data = Vector3(cdata[0],cdata[0],cdata[0]);
+					else
+						data = Vector3(cdata[0],cdata[1],cdata[2]);
+					break;
+				case TYPE_VEC4:
+					if (cdata.size()==1)
+						data = Plane(cdata[0],cdata[0],cdata[0],cdata[0]);
+					else
+						data = Plane(cdata[0],cdata[1],cdata[2],cdata[3]);
+					break;
 			}
 
 			cn->datatype=p_func->return_cache;
@@ -1262,7 +1370,7 @@ ShaderLanguage::Node* ShaderLanguage::validate_function_call(Parser&parser, Oper
 			}
 		}
 
-		if (!fail) {
+		if (!fail && name == program->functions[i].name) {
 			p_func->return_cache=pfunc->return_type;
 			return p_func;
 		}
@@ -1478,6 +1586,7 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 				   case TYPE_VEC2: name="vec2"; break;
 				   case TYPE_VEC3: name="vec3"; break;
 				   case TYPE_VEC4: name="vec4"; break;
+				   case TYPE_MAT2: name="mat2"; break;
 				   case TYPE_MAT3: name="mat3"; break;
 				   case TYPE_MAT4: name="mat4"; break;
 				   default: ERR_FAIL_V(ERR_BUG);
@@ -1607,7 +1716,7 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 
 			if (!existing) {
 
-				parser.set_error("Unexisting identifier in expression: "+identifier);
+				parser.set_error("Nonexistent identifier in expression: "+identifier);
 				return ERR_PARSE_ERROR;
 
 			}
@@ -1772,6 +1881,7 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 					}
 
 				} break;
+				case TYPE_MAT2: ok=(ident=="x" || ident=="y"); member_type=TYPE_VEC2; break;
 				case TYPE_MAT3: ok=(ident=="x" || ident=="y" || ident=="z" ); member_type=TYPE_VEC3; break;
 				case TYPE_MAT4: ok=(ident=="x" || ident=="y" || ident=="z" || ident=="w"); member_type=TYPE_VEC4; break;
 				default: {}
@@ -1979,7 +2089,9 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 					at+=get_datatype_name(compute_node_type(op->arguments[i]));
 
 				}
-				parser.set_error("Invalid arguments to operator "+String(token_names[op->op])+": "+at);
+				static const char *op_names[OP_MAX]={"=","+","-","*","/","+=","-=","*=","/=","-","!","==","!=","<=",">=","<",">","||","&&","call","()"};
+
+				parser.set_error("Invalid arguments to operator "+String(op_names[op->op])+": "+at);
 				return ERR_PARSE_ERROR;
 			}
 			expression.remove(next_op);
@@ -2156,6 +2268,7 @@ Error ShaderLanguage::parse_variable_declaration(Parser& parser,BlockNode *p_blo
 				case TYPE_VEC2: con->value=Vector2(); break;
 				case TYPE_VEC3: con->value=Vector3(); break;
 				case TYPE_VEC4: con->value=iscolor?Variant(Color()):Variant(Plane()); break;
+				case TYPE_MAT2: con->value=Matrix32(); break;
 				case TYPE_MAT3: con->value=Matrix3(); break;
 				case TYPE_MAT4: con->value=Transform(); break;
 				case TYPE_TEXTURE:
@@ -2228,19 +2341,27 @@ Error ShaderLanguage::parse_flow_if(Parser& parser,Node *p_parent,Node **r_state
 
 	parser.advance();
 
+	if (parser.get_token_type()!=TK_CURLY_BRACKET_OPEN) {
+		parser.set_error("Expected statement block after 'if()'");
+		return ERR_PARSE_ERROR;
+	}
+
 	Node *substatement=NULL;
 	err = parse_statement(parser,cf,&substatement);
 	if (err)
 		return err;
 
-
 	cf->statements.push_back(substatement);
-
-
 
 	if (parser.get_token_type()==TK_CF_ELSE) {
 
 		parser.advance();
+
+		if (parser.get_token_type()!=TK_CURLY_BRACKET_OPEN) {
+			parser.set_error("Expected statement block after 'else'");
+			return ERR_PARSE_ERROR;
+		}
+
 		substatement=NULL;
 		err = parse_statement(parser,cf,&substatement);
 		if (err)
@@ -2448,6 +2569,27 @@ Error ShaderLanguage::parse(const Vector<Token>& p_tokens,ShaderType p_type,Comp
 				idx++;
 			}
 		} break;
+		case SHADER_CANVAS_ITEM_VERTEX: {
+			int idx=0;
+			while (ci_vertex_builtins_defs[idx].name) {
+				parser.program->builtin_variables[ci_vertex_builtins_defs[idx].name]=ci_vertex_builtins_defs[idx].type;
+				idx++;
+			}
+		} break;
+		case SHADER_CANVAS_ITEM_FRAGMENT: {
+			int idx=0;
+			while (ci_fragment_builtins_defs[idx].name) {
+				parser.program->builtin_variables[ci_fragment_builtins_defs[idx].name]=ci_fragment_builtins_defs[idx].type;
+				idx++;
+			}
+		} break;
+		case SHADER_CANVAS_ITEM_LIGHT: {
+			int idx=0;
+			while (ci_light_builtins_defs[idx].name) {
+				parser.program->builtin_variables[ci_light_builtins_defs[idx].name]=ci_light_builtins_defs[idx].type;
+				idx++;
+			}
+		} break;
 		case SHADER_POST_PROCESS: {
 			int idx=0;
 			while (postprocess_fragment_builtins_defs[idx].name) {
@@ -2517,11 +2659,19 @@ void ShaderLanguage::get_keyword_list(ShaderType p_type, List<String> *p_keyword
 
 	int idx=0;
 
+	p_keywords->push_back("uniform");
+	p_keywords->push_back("texture");
+	p_keywords->push_back("cubemap");
+	p_keywords->push_back("color");
+	p_keywords->push_back("if");
+	p_keywords->push_back("else");
+
 	while(intrinsic_func_defs[idx].name) {
 
 		p_keywords->push_back(intrinsic_func_defs[idx].name);
 		idx++;
 	}
+
 
 	switch(p_type)	{
 		case SHADER_MATERIAL_VERTEX: {
@@ -2545,6 +2695,28 @@ void ShaderLanguage::get_keyword_list(ShaderType p_type, List<String> *p_keyword
 				idx++;
 			}
 		} break;
+		case SHADER_CANVAS_ITEM_VERTEX: {
+			idx=0;
+			while (ci_vertex_builtins_defs[idx].name) {
+				p_keywords->push_back(ci_vertex_builtins_defs[idx].name);
+				idx++;
+			}
+		} break;
+		case SHADER_CANVAS_ITEM_FRAGMENT: {
+			idx=0;
+			while (ci_fragment_builtins_defs[idx].name) {
+				p_keywords->push_back(ci_fragment_builtins_defs[idx].name);
+				idx++;
+			}
+		} break;
+		case SHADER_CANVAS_ITEM_LIGHT: {
+			idx=0;
+			while (ci_light_builtins_defs[idx].name) {
+				p_keywords->push_back(ci_light_builtins_defs[idx].name);
+				idx++;
+			}
+		} break;
+
 		case SHADER_POST_PROCESS: {
 			idx=0;
 			while (postprocess_fragment_builtins_defs[idx].name) {

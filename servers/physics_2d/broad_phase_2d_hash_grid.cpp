@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -467,9 +467,10 @@ int BroadPhase2DHashGrid::cull_segment(const Vector2& p_from, const Vector2& p_t
 	delta.x=cell_size/delta.x;
 	delta.y=cell_size/delta.y;
 
-	Point2i pos = p_from.floor() / cell_size;
-	Point2i end = p_to.floor() / cell_size;
-	Point2i step = Vector2( SGN(dir.x), SGN(dir.y));
+	Point2i pos = (p_from/cell_size).floor();
+	Point2i end = (p_to/cell_size).floor();
+
+	Point2i step = Vector2( SGN(dir.x), SGN(dir.y) );
 
 	Vector2 max;
 

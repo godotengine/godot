@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,7 +77,7 @@ void BodyPair2DSW::_contact_added_callback(const Vector2& p_point_A,const Vector
 			contact.acc_normal_impulse=c.acc_normal_impulse;
 			contact.acc_tangent_impulse=c.acc_tangent_impulse;
 			contact.acc_bias_impulse=c.acc_bias_impulse;
-			new_index=i;			
+			new_index=i;
 			break;
 		}
 	}
@@ -190,7 +190,7 @@ bool BodyPair2DSW::_test_ccd(float p_step,Body2DSW *p_A, int p_shape_A,const Mat
 	p_A->get_shape(p_shape_A)->project_rangev(mnormal,p_xform_A,min,max);
 	bool fast_object = mlen > (max-min)*0.3; //going too fast in that direction
 
-	if (fast_object) { //did it move enough in this direction to even attempt raycast? let's say it should move more than 1/3 the size of the object in that axis
+	if (!fast_object) { //did it move enough in this direction to even attempt raycast? let's say it should move more than 1/3 the size of the object in that axis
 		return false;
 	}
 
@@ -234,7 +234,7 @@ bool BodyPair2DSW::setup(float p_step) {
 
 
 	//cannot collide
-	if ((A->get_layer_mask()&B->get_layer_mask())==0 || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=Physics2DServer::BODY_MODE_KINEMATIC && B->get_mode()<=Physics2DServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported()==0 && B->get_max_contacts_reported()==0)) {
+	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=Physics2DServer::BODY_MODE_KINEMATIC && B->get_mode()<=Physics2DServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported()==0 && B->get_max_contacts_reported()==0)) {
 		collided=false;
 		return false;
 	}
@@ -259,11 +259,13 @@ bool BodyPair2DSW::setup(float p_step) {
 
 	if (A->get_continuous_collision_detection_mode()==Physics2DServer::CCD_MODE_CAST_SHAPE) {
 		motion_A=A->get_motion();
-	} 
+	}
 	if (B->get_continuous_collision_detection_mode()==Physics2DServer::CCD_MODE_CAST_SHAPE) {
 		motion_B=B->get_motion();
-	} 
+	}
 	//faster to set than to check..
+
+	//bool prev_collided=collided;
 
 	collided = CollisionSolver2DSW::solve(shape_A_ptr,xform_A,motion_A,shape_B_ptr,xform_B,motion_B,_add_contact,this,&sep_axis);
 	if (!collided) {
@@ -280,9 +282,68 @@ bool BodyPair2DSW::setup(float p_step) {
 				collided=true;
 		}
 
-		if (!collided)
+		if (!collided) {
+			oneway_disabled=false;
 			return false;
+		}
 
+	}
+
+	if (oneway_disabled)
+		return false;
+
+	//if (!prev_collided) {
+	{
+
+		if (A->is_using_one_way_collision()) {
+			Vector2 direction = A->get_one_way_collision_direction();
+			bool valid=false;
+			for(int i=0;i<contact_count;i++) {
+				Contact& c = contacts[i];
+
+				if (c.normal.dot(direction)<0)
+					continue;
+				if (B->get_linear_velocity().dot(direction)<0)
+					continue;
+
+				if (!c.reused) {
+					continue;
+				}
+
+				valid=true;
+			}
+
+			if (!valid) {
+				collided=false;
+				oneway_disabled=true;
+				return false;
+			}
+		}
+
+		if (B->is_using_one_way_collision()) {
+			Vector2 direction = B->get_one_way_collision_direction();
+			bool valid=false;
+			for(int i=0;i<contact_count;i++) {
+
+				Contact& c = contacts[i];
+
+				if (c.normal.dot(direction)<0)
+					continue;
+				if (A->get_linear_velocity().dot(direction)<0)
+					continue;
+
+				if (!c.reused) {
+					continue;
+				}
+
+				valid=true;
+			}
+			if (!valid) {
+				collided=false;
+				oneway_disabled=true;
+				return false;
+			}
+		}
 	}
 
 	real_t max_penetration = space->get_contact_max_allowed_penetration();
@@ -303,6 +364,9 @@ bool BodyPair2DSW::setup(float p_step) {
 
 
 	real_t inv_dt = 1.0/p_step;
+
+	bool do_process=false;
+
 	for (int i = 0; i < contact_count; i++) {
 
 		Contact& c = contacts[i];
@@ -318,7 +382,12 @@ bool BodyPair2DSW::setup(float p_step) {
 		}
 
 		c.active=true;
-
+#ifdef DEBUG_ENABLED
+		if (space->is_debugging_contacts()) {
+			space->add_debug_contact(global_A+offset_A);
+			space->add_debug_contact(global_B+offset_A);
+		}
+#endif
 		int gather_A = A->can_report_contacts();
 		int gather_B = B->can_report_contacts();
 
@@ -393,10 +462,11 @@ bool BodyPair2DSW::setup(float p_step) {
 			c.bounce = c.bounce * dv.dot(c.normal);
 		}
 
+		do_process=true;
 
 	}
 
-	return true;
+	return do_process;
 }
 
 void BodyPair2DSW::solve(float p_step) {
@@ -472,6 +542,7 @@ BodyPair2DSW::BodyPair2DSW(Body2DSW *p_A, int p_shape_A,Body2DSW *p_B, int p_sha
 	B->add_constraint(this,1);
 	contact_count=0;
 	collided=false;
+	oneway_disabled=false;
 
 }
 

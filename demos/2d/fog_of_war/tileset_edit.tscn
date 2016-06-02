@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=1]
+
+[ext_resource path="res://fog.png" type="Texture" id=1]
+[ext_resource path="res://floor.png" type="Texture" id=2]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="fog opaque" type="Sprite" parent="."]
+
+texture = ExtResource( 1 )
+centered = false
+offset = Vector2( -48, -48 )
+region = true
+region_rect = Rect2( 0, 0, 144, 144 )
+
+[node name="fog transparent" type="Sprite" parent="."]
+
+transform/pos = Vector2( 144, 0 )
+texture = ExtResource( 1 )
+centered = false
+offset = Vector2( -48, -48 )
+region = true
+region_rect = Rect2( 144, 0, 144, 144 )
+
+[node name="floor" type="Sprite" parent="."]
+
+transform/pos = Vector2( 264, 24 )
+texture = ExtResource( 2 )
+
+

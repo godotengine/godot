@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,6 +67,7 @@ public:
 		MATH_RAND,
 		MATH_RANDF,
 		MATH_RANDOM,
+		MATH_SEED,
 		MATH_RANDSEED,
 		MATH_DEG2RAD,
 		MATH_RAD2DEG,
@@ -83,14 +84,21 @@ public:
 		TEXT_STR,
 		TEXT_PRINT,
 		TEXT_PRINT_TABBED,
+		TEXT_PRINT_SPACED,
 		TEXT_PRINTERR,
 		TEXT_PRINTRAW,
+		VAR_TO_STR,
+		STR_TO_VAR,
+		VAR_TO_BYTES,
+		BYTES_TO_VAR,
 		GEN_RANGE,
 		RESOURCE_LOAD,
 		INST2DICT,
 		DICT2INST,
 		HASH,
+		COLOR8,
 		PRINT_STACK,
+		INSTANCE_FROM_ID,
 		FUNC_MAX
 
 	};

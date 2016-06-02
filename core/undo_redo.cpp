@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -234,11 +234,22 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 			ERR_FAIL_COND(!obj);
 
 		}
+
 		switch(op.type) {
 
 			case Operation::TYPE_METHOD: {
 
 				obj->call(op.name,VARIANT_ARGS_FROM_ARRAY(op.args));
+#ifdef TOOLS_ENABLED
+				Resource* res = obj->cast_to<Resource>();
+				if (res)
+					res->set_edited(true);
+
+#endif
+
+				if (method_callback) {
+					method_callback(method_callbck_ud,obj,op.name,VARIANT_ARGS_FROM_ARRAY(op.args));
+				}
 			} break;
 			case Operation::TYPE_PROPERTY: {
 
@@ -248,6 +259,9 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 				if (res)
 					res->set_edited(true);
 #endif
+				if (property_callback) {
+					property_callback(prop_callback_ud,obj,op.name,op.args[0]);
+				}
 			} break;
 			case Operation::TYPE_REFERENCE: {
 				//do nothing
@@ -276,6 +290,7 @@ void UndoRedo::undo() {
 		return; //nothing to redo
 	_process_operation_list(actions[current_action].undo_ops.front());
 	current_action--;
+	version--;
 }
 
 void UndoRedo::clear_history() {
@@ -286,7 +301,7 @@ void UndoRedo::clear_history() {
 	while(actions.size())
 		_pop_history_tail();
 
-	version++;
+	//version++;
 }
 
 String UndoRedo::get_current_action_name() const {
@@ -318,18 +333,160 @@ void UndoRedo::set_commit_notify_callback(CommitNotifyCallback p_callback,void* 
 	callback_ud=p_ud;
 }
 
+void UndoRedo::set_method_notify_callback(MethodNotifyCallback p_method_callback,void* p_ud) {
+
+	method_callback=p_method_callback;
+	method_callbck_ud=p_ud;
+}
+
+void UndoRedo::set_property_notify_callback(PropertyNotifyCallback p_property_callback,void* p_ud){
+
+	property_callback=p_property_callback;
+	prop_callback_ud=p_ud;
+}
+
+
 UndoRedo::UndoRedo() {
 
-	version=0;
+	version=1;
 	action_level=0;
 	current_action=-1;
 	max_steps=-1;
 	merging=true;
 	callback=NULL;
 	callback_ud=NULL;
+
+	method_callbck_ud=NULL;
+	prop_callback_ud=NULL;
+	method_callback=NULL;
+	property_callback=NULL;
+
 }
 
 UndoRedo::~UndoRedo() {
 
 	clear_history();
+}
+
+Variant UndoRedo::_add_do_method(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+
+	if (p_argcount<2) {
+		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument=0;
+		return Variant();
+	}
+
+	if (p_args[0]->get_type()!=Variant::OBJECT) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=0;
+		r_error.expected=Variant::OBJECT;
+		return Variant();
+	}
+
+	if (p_args[1]->get_type()!=Variant::STRING) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=1;
+		r_error.expected=Variant::STRING;
+		return Variant();
+	}
+
+	r_error.error=Variant::CallError::CALL_OK;
+
+	Object* object = *p_args[0];
+	String method = *p_args[1];
+
+	Variant v[VARIANT_ARG_MAX];
+
+
+	for(int i=0;i<MIN(VARIANT_ARG_MAX,p_argcount-2);++i) {
+
+		v[i]=*p_args[i+2];
+	}
+
+	add_do_method(object,method,v[0],v[1],v[2],v[3],v[4]);
+	return Variant();
+}
+
+Variant UndoRedo::_add_undo_method(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+
+	if (p_argcount<2) {
+		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument=0;
+		return Variant();
+	}
+
+	if (p_args[0]->get_type()!=Variant::OBJECT) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=0;
+		r_error.expected=Variant::OBJECT;
+		return Variant();
+	}
+
+	if (p_args[1]->get_type()!=Variant::STRING) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=1;
+		r_error.expected=Variant::STRING;
+		return Variant();
+	}
+
+	r_error.error=Variant::CallError::CALL_OK;
+
+	Object* object = *p_args[0];
+	String method = *p_args[1];
+
+	Variant v[VARIANT_ARG_MAX];
+
+
+	for(int i=0;i<MIN(VARIANT_ARG_MAX,p_argcount-2);++i) {
+
+		v[i]=*p_args[i+2];
+	}
+
+	add_undo_method(object,method,v[0],v[1],v[2],v[3],v[4]);
+	return Variant();
+}
+
+void UndoRedo::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("create_action","name","mergeable"),&UndoRedo::create_action, DEFVAL(false) );
+	ObjectTypeDB::bind_method(_MD("commit_action"),&UndoRedo::commit_action);
+
+	//ObjectTypeDB::bind_method(_MD("add_do_method","p_object", "p_method", "VARIANT_ARG_LIST"),&UndoRedo::add_do_method);
+	//ObjectTypeDB::bind_method(_MD("add_undo_method","p_object", "p_method", "VARIANT_ARG_LIST"),&UndoRedo::add_undo_method);
+
+	{
+		MethodInfo mi;
+		mi.name="add_do_method";
+		mi.arguments.push_back( PropertyInfo( Variant::OBJECT, "object"));
+		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
+		Vector<Variant> defargs;
+		for(int i=0;i<VARIANT_ARG_MAX;++i) {
+			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
+			defargs.push_back(Variant());
+		}
+
+		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"add_do_method",&UndoRedo::_add_do_method,mi,defargs);
+	}
+
+	{
+		MethodInfo mi;
+		mi.name="add_undo_method";
+		mi.arguments.push_back( PropertyInfo( Variant::OBJECT, "object"));
+		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
+		Vector<Variant> defargs;
+		for(int i=0;i<VARIANT_ARG_MAX;++i) {
+			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
+			defargs.push_back(Variant());
+		}
+
+		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"add_undo_method",&UndoRedo::_add_undo_method,mi,defargs);
+	}
+
+	ObjectTypeDB::bind_method(_MD("add_do_property","object", "property", "value:Variant"),&UndoRedo::add_do_property);
+	ObjectTypeDB::bind_method(_MD("add_undo_property","object", "property", "value:Variant"),&UndoRedo::add_undo_property);
+	ObjectTypeDB::bind_method(_MD("add_do_reference","object"),&UndoRedo::add_do_reference);
+	ObjectTypeDB::bind_method(_MD("add_undo_reference","object"),&UndoRedo::add_undo_reference);
+	ObjectTypeDB::bind_method(_MD("clear_history"),&UndoRedo::clear_history);
+	ObjectTypeDB::bind_method(_MD("get_current_action_name"),&UndoRedo::get_current_action_name);
+	ObjectTypeDB::bind_method(_MD("get_version"),&UndoRedo::get_version);
 }

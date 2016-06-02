@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@
 class MeshInstance : public GeometryInstance {
 
 	OBJ_TYPE( MeshInstance, GeometryInstance );
-	
+
 	Ref<Mesh> mesh;
 	NodePath skeleton_path;
 
@@ -50,7 +50,9 @@ class MeshInstance : public GeometryInstance {
 	};
 
 	Map<StringName,MorphTrack> morph_tracks;
+	Vector<Ref<Material> > materials;
 
+	void _mesh_changed();
 	void _resolve_skeleton_path();
 
 protected:
@@ -68,7 +70,10 @@ public:
 
 	void set_skeleton_path(const NodePath& p_skeleton);
 	NodePath get_skeleton_path();
-	
+
+	void set_surface_material(int p_surface,const Ref<Material>& p_material);
+	Ref<Material> get_surface_material(int p_surface) const;
+
 	Node* create_trimesh_collision_node();
 	void create_trimesh_collision();
 
@@ -78,7 +83,7 @@ public:
 	virtual AABB get_aabb() const;
 	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
-	MeshInstance();	
+	MeshInstance();
 	~MeshInstance();
 };
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -96,6 +96,8 @@ private:
 	static PackedData *singleton;
 	bool disabled;
 
+	void _free_packed_dirs(PackedDir *p_dir);
+
 public:
 
 	void add_pack_source(PackSource* p_source);
@@ -111,6 +113,7 @@ public:
 	_FORCE_INLINE_ bool has_path(const String& p_path);
 
 	PackedData();
+	~PackedData();
 };
 
 class PackSource {
@@ -119,6 +122,7 @@ public:
 
 	virtual bool try_open_pack(const String& p_path)=0;
 	virtual FileAccess* get_file(const String& p_path, PackedData::PackedFile* p_file)=0;
+	virtual ~PackSource() {}
 };
 
 class PackedSourcePCK : public PackSource {
@@ -208,6 +212,7 @@ public:
 	virtual bool list_dir_begin();
 	virtual String get_next();
 	virtual bool current_is_dir() const;
+	virtual bool current_is_hidden() const;
 	virtual void list_dir_end();
 
 	virtual int get_drive_count();

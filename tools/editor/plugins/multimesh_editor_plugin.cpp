@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,7 @@
 #include "multimesh_editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/3d/mesh_instance.h"
-
-
+#include "spatial_editor_plugin.h"
 
 void MultiMeshEditor::_node_removed(Node *p_node) {
 
@@ -56,14 +55,14 @@ void MultiMeshEditor::_populate() {
 		multimesh = node->get_multimesh();
 		if (multimesh.is_null()) {
 
-			err_dialog->set_text("No mesh source specified (and no MultiMesh set in node).");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->set_text(TTR("No mesh source specified (and no MultiMesh set in node)."));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 		if (multimesh->get_mesh().is_null()) {
 
-			err_dialog->set_text("No mesh source specified (and MultiMesh contains no Mesh).");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->set_text(TTR("No mesh source specified (and MultiMesh contains no Mesh)."));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -74,8 +73,8 @@ void MultiMeshEditor::_populate() {
 
 		if (!ms_node) {
 
-			err_dialog->set_text("Mesh source is invalid (Invalid Path).");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->set_text(TTR("Mesh source is invalid (invalid path)."));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -83,8 +82,8 @@ void MultiMeshEditor::_populate() {
 
 		if (!ms_instance) {
 
-			err_dialog->set_text("Mesh source is invalid (Not a MeshInstance).");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->set_text(TTR("Mesh source is invalid (not a MeshInstance)."));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -92,8 +91,8 @@ void MultiMeshEditor::_populate() {
 
 		if (mesh.is_null()) {
 
-			err_dialog->set_text("Mesh source is invalid (Contains no Mesh resource).");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->set_text(TTR("Mesh source is invalid (contains no Mesh resource)."));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -101,8 +100,8 @@ void MultiMeshEditor::_populate() {
 
 	if (surface_source->get_text()=="") {
 
-		err_dialog->set_text("No surface source specified.");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->set_text(TTR("No surface source specified."));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -110,8 +109,8 @@ void MultiMeshEditor::_populate() {
 
 	if (!ss_node) {
 
-		err_dialog->set_text("Surface source is invalid (Invalid Path).");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->set_text(TTR("Surface source is invalid (invalid path)."));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -119,8 +118,8 @@ void MultiMeshEditor::_populate() {
 
 	if (!ss_instance) {
 
-		err_dialog->set_text("Surface source is invalid (Not Geometry).");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->set_text(TTR("Surface source is invalid (no geometry)."));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -130,8 +129,8 @@ void MultiMeshEditor::_populate() {
 
 	if (geometry.size()==0) {
 
-		err_dialog->set_text("Surface source is invalid (No Faces).");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->set_text(TTR("Surface source is invalid (no faces)."));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -157,7 +156,7 @@ void MultiMeshEditor::_populate() {
 	ERR_EXPLAIN("Parent is not of type VisualInstance.");
 	ERR_FAIL_COND(!get_parent() || !get_parent()->is_type("VisualInstance"));
 
-	ERR_EXPLAIN("Multimesh not present");
+	ERR_EXPLAIN("Multimesh not present.");
 	ERR_FAIL_COND(multimesh.is_null());
 
 	VisualInstance *vi = get_parent()->cast_to<VisualInstance>();
@@ -166,7 +165,7 @@ void MultiMeshEditor::_populate() {
 
 #endif
 	DVector<Face3> faces = geometry;
-	ERR_EXPLAIN("Parent has no solid faces to populate.");
+	ERR_EXPLAIN(TTR("Parent has no solid faces to populate."));
 	int facecount=faces.size();
 	ERR_FAIL_COND(!facecount);
 
@@ -185,9 +184,9 @@ void MultiMeshEditor::_populate() {
 		area_accum+=area;
 	}
 
-	ERR_EXPLAIN("Couldn't map area");
+	ERR_EXPLAIN(TTR("Couldn't map area."));
 	ERR_FAIL_COND(triangle_area_map.size()==0);
-	ERR_EXPLAIN("Couldn't map area");
+	ERR_EXPLAIN(TTR("Couldn't map area."));
 	ERR_FAIL_COND(area_accum==0);
 
 
@@ -290,7 +289,7 @@ void MultiMeshEditor::_menu_option(int p_option) {
 
 				_last_pp_node=node;
 			}
-			populate_dialog->popup_centered(Size2(250,395));
+			populate_dialog->popup_centered(Size2(250,380));
 
 		} break;
 	}
@@ -299,19 +298,19 @@ void MultiMeshEditor::_menu_option(int p_option) {
 
 void MultiMeshEditor::edit(MultiMeshInstance *p_multimesh) {
 
-	node=p_multimesh;	
+	node=p_multimesh;
 
 }
 
 void MultiMeshEditor::_browse(bool p_source) {
 
 	browsing_source=p_source;
-	std->get_tree()->set_marked(node,false);
+	std->get_scene_tree()->set_marked(node,false);
 	std->popup_centered_ratio();
 	if (p_source)
-		std->set_title("Select a Source Mesh:");
+		std->set_title(TTR("Select a Source Mesh:"));
 	else
-		std->set_title("Select a Target Surface:");
+		std->set_title(TTR("Select a Target Surface:"));
 }
 
 void MultiMeshEditor::_bind_methods() {
@@ -326,21 +325,21 @@ MultiMeshEditor::MultiMeshEditor() {
 
 
 	options = memnew( MenuButton );
-	add_child(options);
-	options->set_area_as_parent_rect();
+	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text("MultiMesh");
-	options->get_popup()->add_item("Populate Surface");
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MultiMeshInstance","EditorIcons"));
+
+	options->get_popup()->add_item(TTR("Populate Surface"));
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 
 	populate_dialog = memnew( ConfirmationDialog );
-	populate_dialog->set_title("Populate MultiMesh");
+	populate_dialog->set_title(TTR("Populate MultiMesh"));
 	add_child(populate_dialog);
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	populate_dialog->add_child(vbc);
 	populate_dialog->set_child_rect(vbc);
-
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 
@@ -352,7 +351,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	b->set_text("..");
 	b->connect("pressed",this,"_browse",make_binds(false));
 
-	vbc->add_margin_child("Target Surface:",hbc);
+	vbc->add_margin_child(TTR("Target Surface:"),hbc);
 
 	hbc = memnew( HBoxContainer );
 	mesh_source = memnew( LineEdit );
@@ -361,26 +360,26 @@ MultiMeshEditor::MultiMeshEditor() {
 	b = memnew( Button );
 	hbc->add_child(b);
 	b->set_text("..");
-	vbc->add_margin_child("Source Mesh:",hbc);
+	vbc->add_margin_child(TTR("Source Mesh:"),hbc);
 	b->connect("pressed",this,"_browse",make_binds(true));
 
 
 	populate_axis = memnew( OptionButton );
-	populate_axis->add_item("X-Axis");
-	populate_axis->add_item("Y-Axis");
-	populate_axis->add_item("Z-Axis");
+	populate_axis->add_item(TTR("X-Axis"));
+	populate_axis->add_item(TTR("Y-Axis"));
+	populate_axis->add_item(TTR("Z-Axis"));
 	populate_axis->select(2);
-	vbc->add_margin_child("Mesh Up Axis:",populate_axis);
+	vbc->add_margin_child(TTR("Mesh Up Axis:"),populate_axis);
 
-	populate_rotate_random = memnew( HScrollBar );
+	populate_rotate_random = memnew( HSlider );
 	populate_rotate_random->set_max(1);
 	populate_rotate_random->set_step(0.01);
-	vbc->add_margin_child("Random Rotation:",populate_rotate_random);
+	vbc->add_margin_child(TTR("Random Rotation:"),populate_rotate_random);
 
-	populate_tilt_random = memnew( HScrollBar );
+	populate_tilt_random = memnew( HSlider );
 	populate_tilt_random->set_max(1);
 	populate_tilt_random->set_step(0.01);
-	vbc->add_margin_child("Random Tilt:",populate_tilt_random);
+	vbc->add_margin_child(TTR("Random Tilt:"),populate_tilt_random);
 
 
 	populate_scale_random = memnew( SpinBox );
@@ -388,14 +387,14 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_scale_random->set_max(1);
 	populate_scale_random->set_val(0);
 
-	vbc->add_margin_child("Random Scale:",populate_scale_random);
+	vbc->add_margin_child(TTR("Random Scale:"),populate_scale_random);
 
 	populate_scale = memnew( SpinBox );
 	populate_scale->set_min(0.001);
 	populate_scale->set_max(4096);
 	populate_scale->set_val(1);
 
-	vbc->add_margin_child("Scale:",populate_scale);
+	vbc->add_margin_child(TTR("Scale:"),populate_scale);
 
 
 	populate_amount = memnew( SpinBox );
@@ -405,9 +404,9 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_amount->set_min(1);
 	populate_amount->set_max(65536);
 	populate_amount->set_val(128);
-	vbc->add_margin_child("Amount:",populate_amount);
+	vbc->add_margin_child(TTR("Amount:"),populate_amount);
 
-	populate_dialog->get_ok()->set_text("Populate");
+	populate_dialog->get_ok()->set_text(TTR("Populate"));
 
 	populate_dialog->get_ok()->connect("pressed", this,"_populate");
 	std = memnew( SceneTreeDialog );
@@ -415,8 +414,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	std->connect("selected",this,"_browsed");
 
 	_last_pp_node=NULL;
-	//options->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
-	//options->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);
+
 	err_dialog = memnew( AcceptDialog );
 	add_child(err_dialog);
 }
@@ -435,10 +433,10 @@ bool MultiMeshEditorPlugin::handles(Object *p_object) const {
 void MultiMeshEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		multimesh_editor->show();
+		multimesh_editor->options->show();
 	} else {
 
-		multimesh_editor->hide();
+		multimesh_editor->options->hide();
 		multimesh_editor->edit(NULL);
 	}
 
@@ -450,16 +448,7 @@ MultiMeshEditorPlugin::MultiMeshEditorPlugin(EditorNode *p_node) {
 	multimesh_editor = memnew( MultiMeshEditor );
 	editor->get_viewport()->add_child(multimesh_editor);
 
-//	multimesh_editor->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
-//	multimesh_editor->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);
-	multimesh_editor->set_margin(MARGIN_LEFT,253);
-	multimesh_editor->set_margin(MARGIN_RIGHT,310);
-	multimesh_editor->set_margin(MARGIN_TOP,0);
-	multimesh_editor->set_margin(MARGIN_BOTTOM,10);
-
-
-
-	multimesh_editor->hide();
+	multimesh_editor->options->hide();
 }
 
 

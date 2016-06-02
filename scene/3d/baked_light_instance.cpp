@@ -13,7 +13,7 @@ RID BakedLightInstance::get_baked_light_instance() const {
 
 void BakedLightInstance::set_baked_light(const Ref<BakedLight>& p_baked_light) {
 
-	baked_light=p_baked_light;	
+	baked_light=p_baked_light;
 
 	RID base_rid;
 
@@ -81,7 +81,7 @@ float BakedLightSampler::get_param(Param p_param) const{
 
 void BakedLightSampler::set_resolution(int p_resolution){
 
-	ERR_FAIL_COND(p_resolution<4 && p_resolution>32);
+    ERR_FAIL_COND(p_resolution<4 || p_resolution>32);
 	resolution=p_resolution;
 	VS::get_singleton()->baked_light_sampler_set_resolution(base,resolution);
 }

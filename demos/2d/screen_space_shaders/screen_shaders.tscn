@@ -1,0 +1,512 @@
+[gd_scene load_steps=34 format=1]
+
+[ext_resource path="res://screen_shaders.gd" type="Script" id=1]
+[ext_resource path="res://art/burano.jpg" type="Texture" id=2]
+[ext_resource path="res://art/platformer.jpg" type="Texture" id=3]
+[ext_resource path="res://art/mountains.jpg" type="Texture" id=4]
+[ext_resource path="res://art/forest.jpg" type="Texture" id=5]
+[ext_resource path="res://art/vignette.png" type="Texture" id=6]
+[ext_resource path="res://art/white.png" type="Texture" id=7]
+[ext_resource path="res://art/filmgrain.png" type="Texture" id=8]
+
+[sub_resource type="CanvasItemShader" id=1]
+
+_code = { "fragment":"uniform texture vignette;\n\nCOLOR.rgb = texscreen(SCREEN_UV);\nCOLOR.rgb*= tex(vignette,UV).rgb;\n\n", "fragment_ofs":0, "light":"", "light_ofs":0, "vertex":"", "vertex_ofs":0 }
+
+[sub_resource type="CanvasItemMaterial" id=2]
+
+shader/shader = SubResource( 1 )
+shader/shading_mode = 0
+shader_param/vignette = ExtResource( 6 )
+
+[sub_resource type="CanvasItemShader" id=3]
+
+_code = { "fragment":"uniform texture vignette;\nfloat radius = 0.003;\nvec3 col = vec3(0);\n\ncol+= texscreen(SCREEN_UV+vec2(-radius,-radius));\ncol+= texscreen(SCREEN_UV+vec2(0,-radius));\ncol+= texscreen(SCREEN_UV+vec2(radius,-radius));\n\ncol+= texscreen(SCREEN_UV+vec2(-radius,0));\ncol+= texscreen(SCREEN_UV+vec2(0,0));\ncol+= texscreen(SCREEN_UV+vec2(radius,0));\n\n\ncol+= texscreen(SCREEN_UV+vec2(-radius,radius));\ncol+= texscreen(SCREEN_UV+vec2(0,radius));\ncol+= texscreen(SCREEN_UV+vec2(radius,radius));\n\ncol/=9.0;\nCOLOR.rgb=col;\n\n", "fragment_ofs":0, "light":"", "light_ofs":0, "vertex":"", "vertex_ofs":0 }
+
+[sub_resource type="CanvasItemMaterial" id=4]
+
+shader/shader = SubResource( 3 )
+shader/shading_mode = 0
+shader_param/vignette = ExtResource( 6 )
+
+[sub_resource type="CanvasItemShader" id=5]
+
+_code = { "fragment":"uniform texture vignette;\nuniform float radius=0.005;\nuniform float etching=2.0;\nuniform float edge_darken=0.5;\n\nfloat d = length(UV-vec2(0.5,0.5))*etching;\nmat2 rot = mat2( vec2(cos(d),-sin(d)), vec2(sin(d),cos(d)) );\n\nvec3 col = vec3(0);\n\ncol+= texscreen(SCREEN_UV+rot*vec2(-radius,-radius));\ncol+= texscreen(SCREEN_UV+rot*vec2(0,-radius));\ncol+= texscreen(SCREEN_UV+rot*vec2(radius,-radius));\n\ncol+= texscreen(SCREEN_UV+rot*vec2(-radius,0));\nvec3 scol = texscreen(SCREEN_UV+vec2(0,0));\ncol+= scol;\ncol+= texscreen(SCREEN_UV+rot*vec2(radius,0));\n\n\ncol+= texscreen(SCREEN_UV+rot*vec2(-radius,radius));\ncol+= texscreen(SCREEN_UV+rot*vec2(0,radius));\ncol+= texscreen(SCREEN_UV+vec2(radius,radius));\n\ncol/=9.0;\nfloat v = tex(vignette,UV).r;\nCOLOR.rgb=mix(col,scol,v)*mix(1.0,v,edge_darken);\n\n", "fragment_ofs":0, "light":"", "light_ofs":0, "vertex":"", "vertex_ofs":0 }
+
+[sub_resource type="CanvasItemMaterial" id=6]
+
+shader/shader = SubResource( 5 )
+shader/shading_mode = 0
+shader_param/vignette = ExtResource( 6 )
+shader_param/radius = 0.005
+shader_param/etching = 2.0
+shader_param/edge_darken = 0.5
+
+[sub_resource type="CanvasItemMaterial" id=7]
+
+shader/shader = SubResource( 5 )
+shader/shading_mode = 0
+shader_param/vignette = ExtResource( 6 )
+shader_param/radius = 0.02
+shader_param/etching = 100.0
+shader_param/edge_darken = -0.5
+
+[sub_resource type="CanvasItemShader" id=8]
+
+_code = { "fragment":"uniform float size_x=0.008;\nuniform float size_y=0.008;\n\nvec2 uv = SCREEN_UV;\nuv-=mod(uv,vec2(size_x,size_y));\n\nCOLOR.rgb= texscreen(uv);\n", "fragment_ofs":0, "light":"", "light_ofs":0, "vertex":"", "vertex_ofs":0 }
+
+[sub_resource type="CanvasItemMaterial" id=9]
+
+shader/shader = SubResource( 8 )
+shader/shading_mode = 0
+shader_param/size_x = 0.01
+shader_param/size_y = 0.01
+
+[sub_resource type="CanvasItemShader" id=10]
+
+_code = { "fragment":"uniform float rotation=3.0;\n\nvec2 uv = SCREEN_UV;\nvec2 rel = uv-vec2(0.5,0.5);\nfloat angle = length(rel)*rotation;\nmat2 rot = mat2(vec2(cos(angle),-sin(angle)),vec2(sin(angle),cos(angle)));\nrel = rot * rel;\nuv = clamp(rel + vec2(0.5,0.5),vec2(0,0),vec2(1,1));\nCOLOR.rgb= texscreen(uv);\n", "fragment_ofs":0, "light":"", "light_ofs":0, "vertex":"", "vertex_ofs":0 }
+
+[sub_resource type="CanvasItemMaterial" id=11]
+
+shader/shader = SubResource( 10 )
+shader/shading_mode = 0
+shader_param/rotation = 3.0
+
+[sub_resource type="CanvasItemShader" id=12]
+
+_code = { "fragment":"uniform color base=color(0.75,0.6,0.6,1.0);\nvec3 c = texscreen(SCREEN_UV);\n\n//float v = max(c.r,max(c.g,c.b));\nfloat v = dot(c,vec3(0.33333,0.33333,0.33333));\nv=sqrt(v);\n//v*=v;\nCOLOR.rgb= base.rgb*v;\n", "fragment_ofs":0, "light":"", "light_ofs":0, "vertex":"", "vertex_ofs":0 }
+
+[sub_resource type="CanvasItemMaterial" id=13]
+
+shader/shader = SubResource( 12 )
+shader/shading_mode = 0
+shader_param/base = Color( 0.75, 0.566284, 0.6, 1 )
+
+[sub_resource type="CanvasItemShader" id=14]
+
+_code = { "fragment":"vec3 c = texscreen(SCREEN_UV);\nc=vec3(1.0)-c;\nCOLOR.rgb=c;\n", "fragment_ofs":0, "light":"", "light_ofs":0, "vertex":"", "vertex_ofs":0 }
+
+[sub_resource type="CanvasItemMaterial" id=15]
+
+shader/shader = SubResource( 14 )
+shader/shading_mode = 0
+
+[sub_resource type="CanvasItemShader" id=16]
+
+_code = { "fragment":"vec3 c = texscreen(SCREEN_UV);\nc=mod(c+vec3(0.5),vec3(1.0));\nCOLOR.rgb=c;\n", "fragment_ofs":0, "light":"", "light_ofs":0, "vertex":"", "vertex_ofs":0 }
+
+[sub_resource type="CanvasItemMaterial" id=17]
+
+shader/shader = SubResource( 16 )
+shader/shading_mode = 0
+
+[sub_resource type="CanvasItemShader" id=18]
+
+_code = { "fragment":"vec3 c = texscreen(SCREEN_UV);\nCOLOR.rgb=normalize(c);\n", "fragment_ofs":0, "light":"", "light_ofs":0, "vertex":"", "vertex_ofs":0 }
+
+[sub_resource type="CanvasItemMaterial" id=19]
+
+shader/shader = SubResource( 18 )
+shader/shading_mode = 0
+
+[sub_resource type="CanvasItemShader" id=20]
+
+_code = { "fragment":"uniform float brightness=0.8;\nuniform float contrast=1.5;\nuniform float saturation=1.8;\n\nvec3 c = texscreen(SCREEN_UV);\n\nc.rgb = mix(vec3(0.0),c.rgb,brightness);\nc.rgb = mix(vec3(0.5),c.rgb,contrast);\nc.rgb = mix(vec3(dot(vec3(1.0),c.rgb)*0.33333),c.rgb,saturation);\n\nCOLOR.rgb=c;\n", "fragment_ofs":0, "light":"", "light_ofs":0, "vertex":"", "vertex_ofs":0 }
+
+[sub_resource type="CanvasItemMaterial" id=21]
+
+shader/shader = SubResource( 20 )
+shader/shading_mode = 0
+shader_param/brightness = 0.8
+shader_param/contrast = 1.5
+shader_param/saturation = 1.8
+
+[sub_resource type="CanvasItemShader" id=22]
+
+_code = { "fragment":"uniform float frequency=60;\nuniform float depth = 0.005;\n\nvec2 uv = SCREEN_UV;\nuv.x += sin(uv.y*frequency+TIME)*depth;\nuv.x = clamp(uv.x,0,1);\nvec3 c = texscreen(uv);\n\n\nCOLOR.rgb=c;\n", "fragment_ofs":0, "light":"", "light_ofs":0, "vertex":"", "vertex_ofs":0 }
+
+[sub_resource type="CanvasItemMaterial" id=23]
+
+shader/shader = SubResource( 22 )
+shader/shading_mode = 0
+shader_param/frequency = 60.0
+shader_param/depth = 0.005
+
+[sub_resource type="CanvasItemShader" id=24]
+
+_code = { "fragment":"uniform color base=color(0.75,0.6,0.6,1.0);\nuniform texture grain;\nuniform float grain_strength=0.3;\nuniform texture vignette;\nuniform float fps=12;\nuniform float stretch = 0.5;\nuniform float flashing=0.01;\n\nvec3 c = texscreen(SCREEN_UV);\n\n//float v = max(c.r,max(c.g,c.b));\nfloat v = dot(c,vec3(0.33333,0.33333,0.33333));\nv=sqrt(v);\n//v*=v;\nfloat make_grain(float time) {\n\n\tvec2 ofs = vec2(sin(41*time*sin(time*123)),sin(27*time*sin(time*312)));\n\treturn tex(grain,(UV+mod(ofs,vec2(1,1)))*stretch).r;\n}\n\nfloat f = 1.0/fps;\nfloat g = make_grain(TIME-mod(TIME,f));\ng=max(g,make_grain(TIME-mod(TIME,f)+f)*0.5);\ng=max(g,make_grain(TIME-mod(TIME,f)+f*2.0)*0.25);\n\n\nCOLOR.rgb= base.rgb*v-vec3(g)*grain_strength;\nCOLOR.rgb*=tex(vignette,UV).r;\nfloat ft = TIME * 0.002;\nCOLOR.rgb+=vec3(sin(75*ft*sin(ft*123)))*flashing;\n", "fragment_ofs":0, "light":"", "light_ofs":0, "vertex":"", "vertex_ofs":0 }
+
+[sub_resource type="CanvasItemMaterial" id=25]
+
+shader/shader = SubResource( 24 )
+shader/shading_mode = 0
+shader_param/base = Color( 0.75, 0.566284, 0.6, 1 )
+shader_param/grain = ExtResource( 8 )
+shader_param/grain_strength = 0.3
+shader_param/vignette = ExtResource( 6 )
+shader_param/fps = 12.0
+shader_param/stretch = 0.5
+shader_param/flashing = 0.01
+
+[node name="Control" type="Control"]
+
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 0.0
+margin/bottom = 0.0
+script/script = ExtResource( 1 )
+
+[node name="pictures" type="Control" parent="."]
+
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 0.0
+margin/bottom = 0.0
+
+[node name="burano" type="TextureFrame" parent="pictures"]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 40.0
+margin/bottom = 40.0
+texture = ExtResource( 2 )
+
+[node name="roby" type="TextureFrame" parent="pictures"]
+
+visibility/visible = false
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 40.0
+margin/bottom = 40.0
+texture = ExtResource( 3 )
+
+[node name="mountains" type="TextureFrame" parent="pictures"]
+
+visibility/visible = false
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 40.0
+margin/bottom = 40.0
+texture = ExtResource( 4 )
+
+[node name="forest" type="TextureFrame" parent="pictures"]
+
+visibility/visible = false
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 40.0
+margin/bottom = 40.0
+texture = ExtResource( 5 )
+
+[node name="effects" type="Control" parent="."]
+
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = -20.0
+margin/bottom = 0.0
+
+[node name="disabled" type="Control" parent="effects"]
+
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 40.0
+margin/bottom = 40.0
+
+[node name="vignette" type="TextureFrame" parent="effects"]
+
+visibility/visible = false
+material/material = SubResource( 2 )
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 0.0
+margin/bottom = 0.0
+texture = ExtResource( 7 )
+expand = true
+
+[node name="blur" type="TextureFrame" parent="effects"]
+
+visibility/visible = false
+material/material = SubResource( 4 )
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 0.0
+margin/bottom = 0.0
+texture = ExtResource( 7 )
+expand = true
+
+[node name="radial_blur" type="TextureFrame" parent="effects"]
+
+visibility/visible = false
+material/material = SubResource( 6 )
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = -1.0
+margin/top = 0.0
+margin/right = 1.0
+margin/bottom = 0.0
+texture = ExtResource( 7 )
+expand = true
+
+[node name="radial_etch" type="TextureFrame" parent="effects"]
+
+visibility/visible = false
+material/material = SubResource( 7 )
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = -1.0
+margin/top = 0.0
+margin/right = 1.0
+margin/bottom = 0.0
+texture = ExtResource( 7 )
+expand = true
+
+[node name="pixelize" type="TextureFrame" parent="effects"]
+
+visibility/visible = false
+material/material = SubResource( 9 )
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 0.0
+margin/bottom = 0.0
+texture = ExtResource( 7 )
+expand = true
+
+[node name="whirl" type="TextureFrame" parent="effects"]
+
+visibility/visible = false
+material/material = SubResource( 11 )
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 0.0
+margin/bottom = 0.0
+texture = ExtResource( 7 )
+expand = true
+
+[node name="sepia" type="TextureFrame" parent="effects"]
+
+visibility/visible = false
+material/material = SubResource( 13 )
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 0.0
+margin/bottom = 0.0
+texture = ExtResource( 7 )
+expand = true
+
+[node name="negative" type="TextureFrame" parent="effects"]
+
+visibility/visible = false
+material/material = SubResource( 15 )
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 0.0
+margin/bottom = 0.0
+texture = ExtResource( 7 )
+expand = true
+
+[node name="contrasted" type="TextureFrame" parent="effects"]
+
+visibility/visible = false
+material/material = SubResource( 17 )
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 0.0
+margin/bottom = 0.0
+texture = ExtResource( 7 )
+expand = true
+
+[node name="normalized" type="TextureFrame" parent="effects"]
+
+visibility/visible = false
+material/material = SubResource( 19 )
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 0.0
+margin/bottom = 0.0
+texture = ExtResource( 7 )
+expand = true
+
+[node name="BCS" type="TextureFrame" parent="effects"]
+
+visibility/visible = false
+material/material = SubResource( 21 )
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 3.0
+margin/right = 0.0
+margin/bottom = -3.0
+texture = ExtResource( 7 )
+expand = true
+
+[node name="mirage" type="TextureFrame" parent="effects"]
+
+visibility/visible = false
+material/material = SubResource( 23 )
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 0.0
+margin/bottom = 0.0
+texture = ExtResource( 7 )
+expand = true
+
+[node name="old_film" type="TextureFrame" parent="effects"]
+
+visibility/visible = false
+material/material = SubResource( 25 )
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = -3.0
+margin/top = 0.0
+margin/right = 3.0
+margin/bottom = 0.0
+texture = ExtResource( 7 )
+expand = true
+
+[node name="picture" type="OptionButton" parent="."]
+
+visibility/opacity = 0.8
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 8.0
+margin/top = 7.0
+margin/right = 131.0
+margin/bottom = 28.0
+toggle_mode = false
+flat = false
+align = 0
+selected = -1
+items = [  ]
+
+[node name="effect" type="OptionButton" parent="."]
+
+visibility/opacity = 0.8
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 137.0
+margin/top = 7.0
+margin/right = 260.0
+margin/bottom = 28.0
+toggle_mode = false
+flat = false
+align = 0
+selected = -1
+items = [  ]
+
+[connection signal="item_selected" from="picture" to="." method="_on_picture_item_selected"]
+
+[connection signal="item_selected" from="effect" to="." method="_on_effect_item_selected"]
+
+

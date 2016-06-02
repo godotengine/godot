@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 #include "input_map.h"
 #include "os/keyboard.h"
 /**
- * 
+ *
  */
 
 bool InputEvent::operator==(const InputEvent &p_event) const {
@@ -40,15 +40,15 @@ bool InputEvent::operator==(const InputEvent &p_event) const {
 InputEvent::operator String() const {
 
 	String str="Device "+itos(device)+" ID "+itos(ID)+" ";
-	
+
 	switch(type) {
-	
+
 		case NONE: {
-		
+
 			return "Event: None";
 		} break;
 		case KEY: {
-			
+
 			str+= "Event: Key ";
 			str=str+"Unicode: "+String::chr(key.unicode)+" Scan: "+itos( key.scancode )+" Echo: "+String(key.echo?"True":"False")+" Pressed"+String(key.pressed?"True":"False")+" Mod: ";
 			if (key.mod.shift)
@@ -59,15 +59,15 @@ InputEvent::operator String() const {
 				str+="A";
 			if (key.mod.meta)
 				str+="M";
-				
+
 			return str;
 		} break;
 		case MOUSE_MOTION: {
-		
+
 			str+= "Event: Motion ";
 			str=str+" Pos: " +itos(mouse_motion.x)+","+itos(mouse_motion.y)+" Rel: "+itos(mouse_motion.relative_x)+","+itos(mouse_motion.relative_y)+" Mask: ";
 			for (int i=0;i<8;i++) {
-			
+
 				if ((1<<i)&mouse_motion.button_mask)
 					str+=itos(i+1);
 			}
@@ -87,7 +87,7 @@ InputEvent::operator String() const {
 			str+= "Event: Button ";
 			str=str+"Pressed: "+itos(mouse_button.pressed)+" Pos: " +itos(mouse_button.x)+","+itos(mouse_button.y)+" Button: "+itos(mouse_button.button_index)+" Mask: ";
 			for (int i=0;i<8;i++) {
-			
+
 				if ((1<<i)&mouse_button.button_mask)
 					str+=itos(i+1);
 			}
@@ -102,18 +102,18 @@ InputEvent::operator String() const {
 				str+="M";
 
 			str+=String(" DoubleClick: ")+(mouse_button.doubleclick?"Yes":"No");
-			
+
 			return str;
-		
+
 		} break;
 		case JOYSTICK_MOTION: {
-			str+= "Event: JoyMotion ";
+			str+= "Event: JoystickMotion ";
 			str=str+"Axis: "+itos(joy_motion.axis)+" Value: " +rtos(joy_motion.axis_value);
 			return str;
 
 		} break;
 		case JOYSTICK_BUTTON: {
-			str+= "Event: JoyButton ";
+			str+= "Event: JoystickButton ";
 			str=str+"Pressed: "+itos(joy_button.pressed)+" Index: " +itos(joy_button.button_index)+" pressure "+rtos(joy_button.pressure);
 			return str;
 
@@ -137,7 +137,7 @@ InputEvent::operator String() const {
 		} break;
 
 	}
-	
+
 	return "";
 }
 
@@ -156,6 +156,7 @@ bool InputEvent::is_pressed() const {
 		case MOUSE_BUTTON: return mouse_button.pressed;
 		case JOYSTICK_BUTTON: return joy_button.pressed;
 		case SCREEN_TOUCH: return screen_touch.pressed;
+		case JOYSTICK_MOTION: return InputMap::get_singleton()->event_is_joy_motion_action_pressed(*this);
 		case ACTION: return action.pressed;
 		default: {}
 	}
@@ -171,6 +172,16 @@ bool InputEvent::is_echo() const {
 bool InputEvent::is_action(const String& p_action) const {
 
 	return InputMap::get_singleton()->event_is_action(*this,p_action);
+}
+
+bool InputEvent::is_action_pressed(const String& p_action) const {
+
+	return is_action(p_action) && is_pressed() && !is_echo();
+}
+
+bool InputEvent::is_action_released(const String& p_action) const {
+
+	return is_action(p_action) && !is_pressed();
 }
 
 uint32_t InputEventKey::get_scancode_with_modifiers() const {

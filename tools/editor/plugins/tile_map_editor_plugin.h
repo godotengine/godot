@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,85 +31,143 @@
 
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
+
 #include "scene/2d/tile_map.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/tool_button.h"
-#include "scene/gui/button_group.h"
-#include "tools/editor/pane_drag.h"
+#include "scene/gui/menu_button.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class CanvasItemEditor;
 
-class TileMapEditor : public HBoxContainer {
+class TileMapEditor : public VBoxContainer {
 
-	OBJ_TYPE(TileMapEditor, BoxContainer );
-
-	UndoRedo *undo_redo;
+	OBJ_TYPE(TileMapEditor, VBoxContainer );
 
 	enum Tool {
 
 		TOOL_NONE,
 		TOOL_PAINTING,
-		TOOL_SELECTING,
 		TOOL_ERASING,
-		TOOL_DUPLICATING
+		TOOL_RECTANGLE_PAINT,
+		TOOL_RECTANGLE_ERASE,
+		TOOL_LINE_PAINT,
+		TOOL_LINE_ERASE,
+		TOOL_SELECTING,
+		TOOL_BUCKET,
+		TOOL_PICKING,
+		TOOL_DUPLICATING,
 	};
 
-	Tool tool;
+	enum Options {
+
+		OPTION_BUCKET,
+		OPTION_PICK_TILE,
+		OPTION_SELECT,
+		OPTION_DUPLICATE,
+		OPTION_ERASE_SELECTION
+	};
+
+	TileMap *node;
+
+	EditorNode *editor;
+	UndoRedo *undo_redo;
 	Control *canvas_item_editor;
 
-	Tree *palette;
-	EditorNode *editor;
-	Panel *panel;
-	TileMap *node;
+	LineEdit *search_box;
+	HSlider  *size_slider;
+	ItemList *palette;
+
+	HBoxContainer *toolbar;
+
 	MenuButton *options;
-	PaneDrag *pane_drag;
-
-	bool selection_active;
-	Point2i selection_begin;
-	Rect2i selection;
-	Point2i over_tile;
-	bool mouse_over;
-
-	Label *mirror_label;
+	ToolButton *transp;
 	ToolButton *mirror_x;
 	ToolButton *mirror_y;
+	ToolButton *rotate_0;
+	ToolButton *rotate_90;
+	ToolButton *rotate_180;
+	ToolButton *rotate_270;
 
+	Tool tool;
+
+	bool selection_active;
+	bool mouse_over;
+
+	bool flip_h;
+	bool flip_v;
+	bool transpose;
+
+	Point2i rectangle_begin;
+	Rect2i rectangle;
+
+	Point2i over_tile;
 
 	struct CellOp {
 		int idx;
 		bool xf;
 		bool yf;
-		CellOp() { idx=-1; xf=false; yf=false; }
+		bool tr;
+
+		CellOp() { idx=-1; xf=false; yf=false; tr=false; }
 	};
 
-	Map<Point2i,CellOp> paint_undo;
+	Map<Point2i, CellOp> paint_undo;
+
+	struct TileData {
+		Point2i pos;
+		int cell;
+		bool flip_h;
+		bool flip_v;
+		bool transpose;
+	};
+
+	List<TileData> copydata;
+
+	void _pick_tile(const Point2& p_pos);
+
+	DVector<Vector2> _bucket_fill(const Point2i& p_start);
+
+	void _fill_points(const DVector<Vector2> p_points, const Dictionary& p_op);
+	void _erase_points(const DVector<Vector2> p_points);
+
+	void _select(const Point2i& p_from, const Point2i& p_to);
+
+	void _draw_cell(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Matrix32& p_xform);
+	void _update_copydata();
 
 	int get_selected_tile() const;
+	void set_selected_tile(int p_tile);
 
+	void _text_entered(const String& p_text);
+	void _text_changed(const String& p_text);
+	void _sbox_input(const InputEvent& p_ie);
 	void _update_palette();
-	void _pane_drag(const Point2& p_to);
 	void _canvas_draw();
 	void _menu_option(int p_option);
 
-	void _set_cell(const Point2i& p_pos, int p_value, bool p_flip_h=false, bool p_flip_v=false, bool p_with_undo=false);
+	void _set_cell(const Point2i& p_pos, int p_value, bool p_flip_h=false, bool p_flip_v=false, bool p_transpose=false, bool p_with_undo=false);
 
 	void _canvas_mouse_enter();
 	void _canvas_mouse_exit();
 	void _tileset_settings_changed();
+	void _icon_size_changed(float p_value);
 
-
-friend class TileMapEditorPlugin;
-	Panel *theme_panel;
 protected:
+
 	void _notification(int p_what);
-	void _node_removed(Node *p_node);
 	static void _bind_methods();
+	CellOp _get_op_from_cell(const Point2i& p_pos);
+	void _update_transform_buttons(Object *p_button=NULL);
+
 public:
 
-	Vector2 snap_point(const Vector2& p_point) const;
+	HBoxContainer *get_toolbar() const { return toolbar; }
+
 	bool forward_input_event(const InputEvent& p_event);
 	void edit(Node *p_tile_map);
+
 	TileMapEditor(EditorNode *p_editor);
 };
 
@@ -118,7 +176,6 @@ class TileMapEditorPlugin : public EditorPlugin {
 	OBJ_TYPE( TileMapEditorPlugin, EditorPlugin );
 
 	TileMapEditor *tile_map_editor;
-	EditorNode *editor;
 
 public:
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,11 +41,10 @@
 
 typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
 
-struct ContextGL_X11_Private { 
+struct ContextGL_X11_Private {
 
 	::GLXContext glx_context;
 };
-
 
 void ContextGL_X11::release_current() {
 
@@ -56,10 +55,12 @@ void ContextGL_X11::make_current() {
 
 	glXMakeCurrent(x11_display, x11_window, p->glx_context);
 }
+
 void ContextGL_X11::swap_buffers() {
 
 	glXSwapBuffers(x11_display,x11_window);
 }
+
 /*
 static GLWrapperFuncPtr wrapper_get_proc_address(const char* p_function) {
 
@@ -75,13 +76,13 @@ static GLWrapperFuncPtr wrapper_get_proc_address(const char* p_function) {
 
 Error ContextGL_X11::initialize() {
 
-	
+
 	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = NULL;
-	
+
 //	const char *extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
-	
+
 	glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
-	
+
 	ERR_FAIL_COND_V( !glXCreateContextAttribsARB, ERR_UNCONFIGURED );
 
 
@@ -93,13 +94,13 @@ Error ContextGL_X11::initialize() {
 	    GLX_GREEN_SIZE, 1,
 	    GLX_BLUE_SIZE, 1,
 	    GLX_DEPTH_SIZE, 24,
-	    None 
+	    None
 	};
 
 	int fbcount;
 	GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs, &fbcount);
 	ERR_FAIL_COND_V(!fbc,ERR_UNCONFIGURED);
-	
+
 	XVisualInfo *vi = glXGetVisualFromFBConfig(x11_display, fbc[0]);
 
 	XSetWindowAttributes swa;
@@ -139,7 +140,7 @@ Error ContextGL_X11::initialize() {
 			GLX_CONTEXT_MINOR_VERSION_ARB, 0,
 			None
 		};
-	
+
 		p->glx_context = glXCreateContextAttribsARB(x11_display, fbc[0], NULL, true, context_attribs);
 		ERR_FAIL_COND_V(!p->glx_context,ERR_UNCONFIGURED);
 	}
@@ -149,10 +150,13 @@ Error ContextGL_X11::initialize() {
 	/*
 	glWrapperInit(wrapper_get_proc_address);
 	glFlush();
-	
+
 	glXSwapBuffers(x11_display,x11_window);
 */
 	//glXMakeCurrent(x11_display, None, NULL);
+
+	XFree( vi );
+	XFree( fbc );
 
 	return OK;
 }
@@ -161,15 +165,15 @@ int ContextGL_X11::get_window_width() {
 
 	XWindowAttributes xwa;
 	XGetWindowAttributes(x11_display,x11_window,&xwa);
-	
+
 	return xwa.width;
 }
+
 int ContextGL_X11::get_window_height() {
 	XWindowAttributes xwa;
 	XGetWindowAttributes(x11_display,x11_window,&xwa);
-	
-	return xwa.height;
 
+	return xwa.height;
 }
 
 
@@ -177,9 +181,9 @@ ContextGL_X11::ContextGL_X11(::Display *p_x11_display,::Window &p_x11_window,con
 
 	default_video_mode=p_default_video_mode;
 	x11_display=p_x11_display;
-	
+
 	opengl_3_context=p_opengl_3_context;
-	
+
 	double_buffer=false;
 	direct_render=false;
 	glx_minor=glx_major=0;
@@ -189,6 +193,8 @@ ContextGL_X11::ContextGL_X11(::Display *p_x11_display,::Window &p_x11_window,con
 
 
 ContextGL_X11::~ContextGL_X11() {
+	release_current();
+	glXDestroyContext( x11_display, p->glx_context );
 
 	memdelete( p );
 }

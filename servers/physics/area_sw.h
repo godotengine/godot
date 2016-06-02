@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,12 +45,18 @@ class AreaSW : public CollisionObjectSW{
 	float gravity;
 	Vector3 gravity_vector;
 	bool gravity_is_point;
+	float gravity_distance_scale;
 	float point_attenuation;
-	float density;
+	float linear_damp;
+	float angular_damp;
 	int priority;
+	bool monitorable;
 
 	ObjectID monitor_callback_id;
 	StringName monitor_callback_method;
+
+	ObjectID area_monitor_callback_id;
+	StringName area_monitor_callback_method;
 
 	SelfList<AreaSW> monitor_query_list;
 	SelfList<AreaSW> moved_list;
@@ -78,6 +84,8 @@ class AreaSW : public CollisionObjectSW{
 
 		_FORCE_INLINE_ BodyKey() {}
 		BodyKey(BodySW *p_body, uint32_t p_body_shape,uint32_t p_area_shape);
+		BodyKey(AreaSW *p_body, uint32_t p_body_shape,uint32_t p_area_shape);
+
 	};
 
 	struct BodyState {
@@ -89,6 +97,7 @@ class AreaSW : public CollisionObjectSW{
 	};
 
 	Map<BodyKey,BodyState> monitored_bodies;
+	Map<BodyKey,BodyState> monitored_areas;
 
 	//virtual void shape_changed_notify(ShapeSW *p_shape);
 	//virtual void shape_deleted_notify(ShapeSW *p_shape);
@@ -107,8 +116,14 @@ public:
 	void set_monitor_callback(ObjectID p_id, const StringName& p_method);
 	_FORCE_INLINE_ bool has_monitor_callback() const { return monitor_callback_id; }
 
+	void set_area_monitor_callback(ObjectID p_id, const StringName& p_method);
+	_FORCE_INLINE_ bool has_area_monitor_callback() const { return area_monitor_callback_id; }
+
 	_FORCE_INLINE_ void add_body_to_query(BodySW *p_body, uint32_t p_body_shape,uint32_t p_area_shape);
 	_FORCE_INLINE_ void remove_body_from_query(BodySW *p_body, uint32_t p_body_shape,uint32_t p_area_shape);
+
+	_FORCE_INLINE_ void add_area_to_query(AreaSW *p_area, uint32_t p_area_shape,uint32_t p_self_shape);
+	_FORCE_INLINE_ void remove_area_from_query(AreaSW *p_area, uint32_t p_area_shape,uint32_t p_self_shape);
 
 	void set_param(PhysicsServer::AreaParameter p_param, const Variant& p_value);
 	Variant get_param(PhysicsServer::AreaParameter p_param) const;
@@ -125,11 +140,17 @@ public:
 	_FORCE_INLINE_ void set_gravity_as_point(bool p_enable) { gravity_is_point=p_enable; }
 	_FORCE_INLINE_ bool is_gravity_point() const { return gravity_is_point; }
 
+	_FORCE_INLINE_ void set_gravity_distance_scale(float scale) { gravity_distance_scale=scale; }
+	_FORCE_INLINE_ float get_gravity_distance_scale() const { return gravity_distance_scale; }
+
 	_FORCE_INLINE_ void set_point_attenuation(float p_point_attenuation) { point_attenuation=p_point_attenuation; }
 	_FORCE_INLINE_ float get_point_attenuation() const { return point_attenuation; }
 
-	_FORCE_INLINE_ void set_density(float p_density) { density=p_density; }
-	_FORCE_INLINE_ float get_density() const { return density; }
+	_FORCE_INLINE_ void set_linear_damp(float p_linear_damp) { linear_damp=p_linear_damp; }
+	_FORCE_INLINE_ float get_linear_damp() const { return linear_damp; }
+
+	_FORCE_INLINE_ void set_angular_damp(float p_angular_damp) { angular_damp=p_angular_damp; }
+	_FORCE_INLINE_ float get_angular_damp() const { return angular_damp; }
 
 	_FORCE_INLINE_ void set_priority(int p_priority) { priority=p_priority; }
 	_FORCE_INLINE_ int get_priority() const { return priority; }
@@ -138,8 +159,8 @@ public:
 	_FORCE_INLINE_ void remove_constraint( ConstraintSW* p_constraint) { constraints.erase(p_constraint); }
 	_FORCE_INLINE_ const Set<ConstraintSW*>& get_constraints() const { return constraints; }
 
-
-
+	void set_monitorable(bool p_monitorable);
+	_FORCE_INLINE_ bool is_monitorable() const { return monitorable; }
 
 	void set_transform(const Transform& p_transform);
 
@@ -165,6 +186,27 @@ void AreaSW::remove_body_from_query(BodySW *p_body, uint32_t p_body_shape,uint32
 	monitored_bodies[bk].dec();
 	if (!monitor_query_list.in_list())
 		_queue_monitor_update();
+}
+
+
+void AreaSW::add_area_to_query(AreaSW *p_area, uint32_t p_area_shape,uint32_t p_self_shape) {
+
+
+	BodyKey bk(p_area,p_area_shape,p_self_shape);
+	monitored_areas[bk].inc();
+	if (!monitor_query_list.in_list())
+		_queue_monitor_update();
+
+
+}
+void AreaSW::remove_area_from_query(AreaSW *p_area, uint32_t p_area_shape,uint32_t p_self_shape) {
+
+
+	BodyKey bk(p_area,p_area_shape,p_self_shape);
+	monitored_areas[bk].dec();
+	if (!monitor_query_list.in_list())
+		_queue_monitor_update();
+
 }
 
 

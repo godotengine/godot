@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,6 +97,8 @@ void RemoteTransform2D::set_remote_node(const NodePath& p_remote_node) {
 	remote_node=p_remote_node;
 	if (is_inside_tree())
 		_update_cache();
+
+	update_configuration_warning();
 }
 
 NodePath RemoteTransform2D::get_remote_node() const{
@@ -104,6 +106,15 @@ NodePath RemoteTransform2D::get_remote_node() const{
 	return remote_node;
 }
 
+
+String RemoteTransform2D::get_configuration_warning() const {
+
+	if (!has_node(remote_node) || !get_node(remote_node) || !get_node(remote_node)->cast_to<Node2D>()) {
+		return TTR("Path property must point to a valid Node2D node to work.");
+	}
+
+	return String();
+}
 
 void RemoteTransform2D::_bind_methods() {
 

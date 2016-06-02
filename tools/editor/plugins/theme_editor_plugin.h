@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,8 @@
 #include "scene/gui/texture_frame.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/button_group.h"
 
 #include "tools/editor/editor_node.h"
 
@@ -46,7 +48,7 @@ class ThemeEditor : public Control {
 	VBoxContainer *main_vb;
 	Ref<Theme> theme;
 
-	FileDialog *file_dialog;
+	EditorFileDialog *file_dialog;
 
 	double time_left;
 
@@ -65,6 +67,7 @@ class ThemeEditor : public Control {
 		POPUP_ADD,
 		POPUP_CLASS_ADD,
 		POPUP_REMOVE,
+		POPUP_CLASS_REMOVE,
 		POPUP_CREATE_TEMPLATE
 	};
 
@@ -100,6 +103,7 @@ class ThemeEditorPlugin : public EditorPlugin {
 
 	ThemeEditor *theme_editor;
 	EditorNode *editor;
+	Button *button;
 
 public:
 

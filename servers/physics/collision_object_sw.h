@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,8 +34,10 @@
 #include "self_list.h"
 #include "broad_phase_sw.h"
 
-#define MAX_OBJECT_DISTANCE 10000000
+#ifdef DEBUG_ENABLED
+#define MAX_OBJECT_DISTANCE 10000000.0
 #define MAX_OBJECT_DISTANCE_X2 (MAX_OBJECT_DISTANCE*MAX_OBJECT_DISTANCE)
+#endif
 
 class SpaceSW;
 
@@ -51,6 +53,7 @@ private:
 	RID self;
 	ObjectID instance_id;
 	uint32_t layer_mask;
+	uint32_t collision_mask;
 
 	struct Shape {
 
@@ -133,6 +136,13 @@ public:
 
 	_FORCE_INLINE_ void set_layer_mask(uint32_t p_mask) { layer_mask=p_mask; }
 	_FORCE_INLINE_ uint32_t get_layer_mask() const { return layer_mask; }
+
+	_FORCE_INLINE_ void set_collision_mask(uint32_t p_mask) { collision_mask=p_mask; }
+	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collision_mask; }
+
+	_FORCE_INLINE_ bool test_collision_mask(CollisionObjectSW* p_other) const {
+		return layer_mask&p_other->collision_mask || p_other->layer_mask&collision_mask;
+	}
 
 	void remove_shape(ShapeSW *p_shape);
 	void remove_shape(int p_index);

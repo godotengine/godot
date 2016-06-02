@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "shader_editor_plugin.h"
 #include "tools/editor/editor_settings.h"
- 
+
 #include "spatial_editor_plugin.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
@@ -52,14 +52,14 @@ Ref<Shader> ShaderTextEditor::get_edited_shader() const {
 }
 void ShaderTextEditor::set_edited_shader(const Ref<Shader>& p_shader,ShaderLanguage::ShaderType p_type) {
 
-	shader=p_shader;	
+	shader=p_shader;
 	type=p_type;
 
 	_load_theme_settings();
 
-	if (p_type==ShaderLanguage::SHADER_MATERIAL_LIGHT)
+	if (p_type==ShaderLanguage::SHADER_MATERIAL_LIGHT || p_type==ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT)
 		get_text_edit()->set_text(shader->get_light_code());
-	else if (p_type==ShaderLanguage::SHADER_MATERIAL_VERTEX)
+	else if (p_type==ShaderLanguage::SHADER_MATERIAL_VERTEX || p_type==ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX)
 		get_text_edit()->set_text(shader->get_vertex_code());
 	else
 		get_text_edit()->set_text(shader->get_fragment_code());
@@ -78,12 +78,22 @@ void ShaderTextEditor::_load_theme_settings() {
 
 	get_text_edit()->set_custom_bg_color(EDITOR_DEF("text_editor/background_color",Color(0,0,0,0)));
 	get_text_edit()->add_color_override("font_color",EDITOR_DEF("text_editor/text_color",Color(0,0,0)));
+	get_text_edit()->add_color_override("line_number_color",EDITOR_DEF("text_editor/line_number_color",Color(0,0,0)));
+	get_text_edit()->add_color_override("caret_color",EDITOR_DEF("text_editor/caret_color",Color(0,0,0)));
 	get_text_edit()->add_color_override("font_selected_color",EDITOR_DEF("text_editor/text_selected_color",Color(1,1,1)));
 	get_text_edit()->add_color_override("selection_color",EDITOR_DEF("text_editor/selection_color",Color(0.2,0.2,1)));
+	get_text_edit()->add_color_override("brace_mismatch_color",EDITOR_DEF("text_editor/brace_mismatch_color",Color(1,0.2,0.2)));
+	get_text_edit()->add_color_override("current_line_color",EDITOR_DEF("text_editor/current_line_color",Color(0.3,0.5,0.8,0.15)));
+	get_text_edit()->add_color_override("word_highlighted_color",EDITOR_DEF("text_editor/word_highlighted_color",Color(0.8,0.9,0.9,0.15)));
+	get_text_edit()->add_color_override("number_color",EDITOR_DEF("text_editor/number_color",Color(0.9,0.6,0.0,2)));
+	get_text_edit()->add_color_override("function_color",EDITOR_DEF("text_editor/function_color",Color(0.4,0.6,0.8)));
+	get_text_edit()->add_color_override("member_variable_color",EDITOR_DEF("text_editor/member_variable_color",Color(0.9,0.3,0.3)));
+	get_text_edit()->add_color_override("mark_color", EDITOR_DEF("text_editor/mark_color", Color(1.0,0.4,0.4,0.4)));
+	get_text_edit()->add_color_override("breakpoint_color", EDITOR_DEF("text_editor/breakpoint_color", Color(0.8,0.8,0.4,0.2)));
+	get_text_edit()->add_color_override("search_result_color",EDITOR_DEF("text_editor/search_result_color",Color(0.05,0.25,0.05,1)));
+	get_text_edit()->add_color_override("search_result_border_color",EDITOR_DEF("text_editor/search_result_border_color",Color(0.1,0.45,0.1,1)));
 
 	Color keyword_color= EDITOR_DEF("text_editor/keyword_color",Color(0.5,0.0,0.2));
-
-	get_text_edit()->set_syntax_coloring(true);
 
 
 	List<String> keywords;
@@ -130,16 +140,11 @@ void ShaderTextEditor::_validate_script() {
 	String errortxt;
 	int line,col;
 
-	String code;
-	if (type==ShaderLanguage::SHADER_MATERIAL_LIGHT)
-		code=get_text_edit()->get_text();
-	else if (type==ShaderLanguage::SHADER_MATERIAL_VERTEX)
-		code=get_text_edit()->get_text();
-	else
-		code=get_text_edit()->get_text();
-
+	String code=get_text_edit()->get_text();
 	//List<StringName> params;
 	//shader->get_param_list(&params);
+
+	print_line("compile: type: "+itos(type)+" code:\n"+code);
 
 	Error err = ShaderLanguage::compile(code,type,NULL,NULL,&errortxt,&line,&col);
 
@@ -175,11 +180,8 @@ ShaderTextEditor::ShaderTextEditor() {
 
 void ShaderEditor::_menu_option(int p_option) {
 
-	int selected = tab_container->get_current_tab();
-	if (selected<0 || selected>=tab_container->get_child_count())
-		return;
 
-	ShaderTextEditor *current = tab_container->get_child(selected)->cast_to<ShaderTextEditor>();
+	ShaderTextEditor *current = tab_container->get_current_tab_control()->cast_to<ShaderTextEditor>();
 	if (!current)
 		return;
 
@@ -212,18 +214,19 @@ void ShaderEditor::_menu_option(int p_option) {
 		} break;
 		case SEARCH_FIND: {
 
-			find_replace_dialog->set_text_edit(current->get_text_edit());
-			find_replace_dialog->popup_search();
+			current->get_find_replace_bar()->popup_search();
 		} break;
 		case SEARCH_FIND_NEXT: {
 
-			find_replace_dialog->set_text_edit(current->get_text_edit());
-			 find_replace_dialog->search_next();
+			current->get_find_replace_bar()->search_next();
+		} break;
+		case SEARCH_FIND_PREV: {
+
+			current->get_find_replace_bar()->search_prev();
 		} break;
 		case SEARCH_REPLACE: {
 
-			find_replace_dialog->set_text_edit(current->get_text_edit());
-			find_replace_dialog->popup_replace();
+			current->get_find_replace_bar()->popup_replace();
 		} break;
 //		case SEARCH_LOCATE_SYMBOL: {
 
@@ -232,29 +235,16 @@ void ShaderEditor::_menu_option(int p_option) {
 
 			goto_line_dialog->popup_find_line(current->get_text_edit());
 		} break;
-		case SHADER_POST_PROCESS_MODE:{
 
-			fragment_editor->set_edited_shader(shader,ShaderLanguage::SHADER_POST_PROCESS);
-			fragment_editor->_validate_script();
-			apply_shaders();
-			settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_MATERIAL_MODE), false);
-			settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_POST_PROCESS_MODE), true);
-
-
-		} break;
-		case SHADER_MATERIAL_MODE: {
-
-			fragment_editor->set_edited_shader(shader,ShaderLanguage::SHADER_MATERIAL_FRAGMENT);
-			fragment_editor->_validate_script();
-			apply_shaders();
-			settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_MATERIAL_MODE), true);
-			settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_POST_PROCESS_MODE), false);
-
-		} break;
 	}
 }
 
 void ShaderEditor::_tab_changed(int p_which) {
+
+	ShaderTextEditor *shader_editor = tab_container->get_tab_control(p_which)->cast_to<ShaderTextEditor>();
+
+	if (shader_editor && is_inside_tree())
+		shader_editor->get_text_edit()->grab_focus();
 
 	ensure_select_current();
 }
@@ -374,9 +364,42 @@ void ShaderEditor::_params_changed() {
 	light_editor->_validate_script();
 }
 
+void ShaderEditor::_editor_settings_changed() {
+
+		vertex_editor->get_text_edit()->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/auto_brace_complete"));
+		vertex_editor->get_text_edit()->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/scroll_past_end_of_file"));
+		vertex_editor->get_text_edit()->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
+		vertex_editor->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
+		vertex_editor->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
+		vertex_editor->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
+		vertex_editor->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
+		vertex_editor->get_text_edit()->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/caret_blink"));
+		vertex_editor->get_text_edit()->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/caret_blink_speed"));
+
+		fragment_editor->get_text_edit()->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/auto_brace_complete"));
+		fragment_editor->get_text_edit()->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/scroll_past_end_of_file"));
+		fragment_editor->get_text_edit()->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
+		fragment_editor->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
+		fragment_editor->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
+		fragment_editor->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
+		fragment_editor->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
+		fragment_editor->get_text_edit()->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/caret_blink"));
+		fragment_editor->get_text_edit()->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/caret_blink_speed"));
+
+		light_editor->get_text_edit()->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/auto_brace_complete"));
+		light_editor->get_text_edit()->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/scroll_past_end_of_file"));
+		light_editor->get_text_edit()->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
+		light_editor->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
+		light_editor->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
+		light_editor->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
+		light_editor->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
+		light_editor->get_text_edit()->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/caret_blink"));
+		light_editor->get_text_edit()->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/caret_blink_speed"));
+}
 
 void ShaderEditor::_bind_methods() {
 
+	ObjectTypeDB::bind_method("_editor_settings_changed",&ShaderEditor::_editor_settings_changed);
 	ObjectTypeDB::bind_method("_tab_changed",&ShaderEditor::_tab_changed);
 	ObjectTypeDB::bind_method("_menu_option",&ShaderEditor::_menu_option);
 	ObjectTypeDB::bind_method("_params_changed",&ShaderEditor::_params_changed);
@@ -407,18 +430,17 @@ void ShaderEditor::edit(const Ref<Shader>& p_shader) {
 	shader=p_shader;
 
 	if (shader->get_mode()==Shader::MODE_MATERIAL) {
+		vertex_editor->set_edited_shader(p_shader,ShaderLanguage::SHADER_MATERIAL_VERTEX);
 		fragment_editor->set_edited_shader(p_shader,ShaderLanguage::SHADER_MATERIAL_FRAGMENT);
 		light_editor->set_edited_shader(shader,ShaderLanguage::SHADER_MATERIAL_LIGHT);
-		settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_MATERIAL_MODE), true);
-		settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_POST_PROCESS_MODE), false);
-	} else {
+	} else if (shader->get_mode()==Shader::MODE_CANVAS_ITEM) {
 
-		fragment_editor->set_edited_shader(p_shader,ShaderLanguage::SHADER_POST_PROCESS);
-		settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_MATERIAL_MODE), false);
-		settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_POST_PROCESS_MODE), true);
+		vertex_editor->set_edited_shader(p_shader,ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX);
+		fragment_editor->set_edited_shader(p_shader,ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT);
+		light_editor->set_edited_shader(shader,ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT);
 	}
 
-	vertex_editor->set_edited_shader(shader,ShaderLanguage::SHADER_MATERIAL_VERTEX);
+	//vertex_editor->set_edited_shader(shader,ShaderLanguage::SHADER_MATERIAL_VERTEX);
 	// see if already has it
 
 
@@ -470,44 +492,33 @@ ShaderEditor::ShaderEditor() {
 	edit_menu = memnew( MenuButton );
 	add_child(edit_menu);
 	edit_menu->set_pos(Point2(5,-1));
-	edit_menu->set_text("Edit");
-	edit_menu->get_popup()->add_item("Undo",EDIT_UNDO,KEY_MASK_CMD|KEY_Z);
-	edit_menu->get_popup()->add_item("Redo",EDIT_REDO,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_Z);
+	edit_menu->set_text(TTR("Edit"));
+	edit_menu->get_popup()->add_item(TTR("Undo"),EDIT_UNDO,KEY_MASK_CMD|KEY_Z);
+	edit_menu->get_popup()->add_item(TTR("Redo"),EDIT_REDO,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_Z);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_item("Cut",EDIT_CUT,KEY_MASK_CMD|KEY_X);
-	edit_menu->get_popup()->add_item("Copy",EDIT_COPY,KEY_MASK_CMD|KEY_C);
-	edit_menu->get_popup()->add_item("Paste",EDIT_PASTE,KEY_MASK_CMD|KEY_V);
+	edit_menu->get_popup()->add_item(TTR("Cut"),EDIT_CUT,KEY_MASK_CMD|KEY_X);
+	edit_menu->get_popup()->add_item(TTR("Copy"),EDIT_COPY,KEY_MASK_CMD|KEY_C);
+	edit_menu->get_popup()->add_item(TTR("Paste"),EDIT_PASTE,KEY_MASK_CMD|KEY_V);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_item("Select All",EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
+	edit_menu->get_popup()->add_item(TTR("Select All"),EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
 	edit_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 
 	search_menu = memnew( MenuButton );
 	add_child(search_menu);
 	search_menu->set_pos(Point2(38,-1));
-	search_menu->set_text("Search");
-	search_menu->get_popup()->add_item("Find..",SEARCH_FIND,KEY_MASK_CMD|KEY_F);
-	search_menu->get_popup()->add_item("Find Next",SEARCH_FIND_NEXT,KEY_F3);
-	search_menu->get_popup()->add_item("Replace..",SEARCH_REPLACE,KEY_MASK_CMD|KEY_R);
+	search_menu->set_text(TTR("Search"));
+	search_menu->get_popup()->add_item(TTR("Find.."),SEARCH_FIND,KEY_MASK_CMD|KEY_F);
+	search_menu->get_popup()->add_item(TTR("Find Next"),SEARCH_FIND_NEXT,KEY_F3);
+	search_menu->get_popup()->add_item(TTR("Find Previous"),SEARCH_FIND_PREV,KEY_MASK_SHIFT|KEY_F3);
+	search_menu->get_popup()->add_item(TTR("Replace.."),SEARCH_REPLACE,KEY_MASK_CMD|KEY_R);
 	search_menu->get_popup()->add_separator();
 //	search_menu->get_popup()->add_item("Locate Symbol..",SEARCH_LOCATE_SYMBOL,KEY_MASK_CMD|KEY_K);
-	search_menu->get_popup()->add_item("Goto Line..",SEARCH_GOTO_LINE,KEY_MASK_CMD|KEY_G);
+	search_menu->get_popup()->add_item(TTR("Goto Line.."),SEARCH_GOTO_LINE,KEY_MASK_CMD|KEY_G);
 	search_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
-	settings_menu = memnew( MenuButton );
-	add_child(settings_menu);
-	settings_menu->set_pos(Point2(90,-1));
-	settings_menu->set_text("Shader");
-	settings_menu->get_popup()->add_check_item("Material Mode",SHADER_MATERIAL_MODE);
-	settings_menu->get_popup()->set_item_checked(settings_menu->get_popup()->get_item_index(SHADER_MATERIAL_MODE),true);
-	settings_menu->get_popup()->add_check_item("Post Process Mode",SHADER_POST_PROCESS_MODE);
-
-	settings_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 	tab_container->connect("tab_changed", this,"_tab_changed");
-
-	find_replace_dialog = memnew(FindReplaceDialog);
-	add_child(find_replace_dialog);
 
 	erase_tab_confirm = memnew( ConfirmationDialog );
 	add_child(erase_tab_confirm);
@@ -519,15 +530,15 @@ ShaderEditor::ShaderEditor() {
 
 	vertex_editor = memnew( ShaderTextEditor );
 	tab_container->add_child(vertex_editor);
-	vertex_editor->set_name("Vertex");
+	vertex_editor->set_name(TTR("Vertex"));
 
 	fragment_editor = memnew( ShaderTextEditor );
 	tab_container->add_child(fragment_editor);
-	fragment_editor->set_name("Fragment");
+	fragment_editor->set_name(TTR("Fragment"));
 
 	light_editor = memnew( ShaderTextEditor );
 	tab_container->add_child(light_editor);
-	light_editor->set_name("Lighting");
+	light_editor->set_name(TTR("Lighting"));
 
 	tab_container->set_current_tab(1);
 
@@ -535,6 +546,9 @@ ShaderEditor::ShaderEditor() {
 	vertex_editor->connect("script_changed", this,"apply_shaders");
 	fragment_editor->connect("script_changed", this,"apply_shaders");
 	light_editor->connect("script_changed", this,"apply_shaders");
+	EditorSettings::get_singleton()->connect("settings_changed",this,"_editor_settings_changed");
+
+	_editor_settings_changed();
 }
 
 
@@ -549,7 +563,13 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 
 bool ShaderEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Shader");
+	Shader *shader=p_object->cast_to<Shader>();
+	if (!shader)
+		return false;
+	if (_2d)
+		return shader->get_mode()==Shader::MODE_CANVAS_ITEM;
+	else
+		return shader->get_mode()==Shader::MODE_MATERIAL;
 }
 
 void ShaderEditorPlugin::make_visible(bool p_visible) {
@@ -595,12 +615,15 @@ void ShaderEditorPlugin::apply_changes() {
 	shader_editor->apply_shaders();
 }
 
-ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node) {
+ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node, bool p_2d) {
 
 	editor=p_node;
 	shader_editor = memnew( ShaderEditor );
-
-	SpatialEditor::get_singleton()->get_shader_split()->add_child(shader_editor);
+	_2d=p_2d;
+	if (p_2d)
+		add_control_to_container(CONTAINER_CANVAS_EDITOR_BOTTOM,shader_editor);
+	else
+		add_control_to_container(CONTAINER_SPATIAL_EDITOR_BOTTOM,shader_editor);
 //	editor->get_viewport()->add_child(shader_editor);
 //	shader_editor->set_area_as_parent_rect();
 

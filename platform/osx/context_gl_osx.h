@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,8 +48,8 @@ class ContextGL_OSX : public ContextGL {
 
 public:
 
-	virtual void release_current();	
-	virtual void make_current();	
+	virtual void release_current();
+	virtual void make_current();
 	virtual void swap_buffers();
 
 	virtual Error initialize();

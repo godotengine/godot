@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -360,7 +360,7 @@ void AudioServerSW::sample_set_description(RID p_sample, const String& p_descrip
 	AUDIO_LOCK
 	sample_manager->sample_set_description(p_sample,p_description);
 }
-String AudioServerSW::sample_get_description(RID p_sample, const String& p_description) const {
+String AudioServerSW::sample_get_description(RID p_sample) const {
 
 	AUDIO_LOCK
 	return sample_manager->sample_get_description(p_sample);
@@ -455,12 +455,12 @@ void AudioServerSW::voice_play(RID p_voice, RID p_sample) {
 
 }
 
-void AudioServerSW::voice_set_volume(RID p_voice, float p_db) {
+void AudioServerSW::voice_set_volume(RID p_voice, float p_volume) {
 
 	VoiceRBSW::Command cmd;
 	cmd.type=VoiceRBSW::Command::CMD_SET_VOLUME;
 	cmd.voice=p_voice;
-	cmd.volume.volume=p_db;
+	cmd.volume.volume=p_volume;
 	voice_rb.push_command(cmd);
 
 }
@@ -659,7 +659,7 @@ bool AudioServerSW::voice_is_active(RID p_voice) const {
 
 RID AudioServerSW::audio_stream_create(AudioStream *p_stream) {
 
-	AUDIO_LOCK		
+	AUDIO_LOCK
 	Stream *s = memnew(Stream);
 	s->audio_stream=p_stream;
 	s->event_stream=NULL;
@@ -693,11 +693,11 @@ void AudioServerSW::stream_set_active(RID p_stream, bool p_active) {
 
 	Stream *s = stream_owner.get(p_stream);
 	ERR_FAIL_COND(!s);
+	_THREAD_SAFE_METHOD_
 
 	if (s->active==p_active)
 		return;
 	AUDIO_LOCK;
-	_THREAD_SAFE_METHOD_
 	s->active=p_active;
 	if (p_active)
 		s->E=active_audio_streams.push_back(s);
@@ -705,6 +705,8 @@ void AudioServerSW::stream_set_active(RID p_stream, bool p_active) {
 		active_audio_streams.erase(s->E);
 		s->E=NULL;
 	}
+
+
 }
 
 bool AudioServerSW::stream_is_active(RID p_stream) const {
@@ -763,6 +765,7 @@ void AudioServerSW::free(RID p_id) {
 
 void AudioServerSW::_thread_func(void *self) {
 
+	Thread::set_name("AudioServerSW");
 
 	AudioServerSW *as=(AudioServerSW *)self;
 
@@ -830,10 +833,14 @@ void AudioServerSW::finish() {
 void AudioServerSW::_update_streams(bool p_thread) {
 
 	_THREAD_SAFE_METHOD_
-	for(List<Stream*>::Element *E=active_audio_streams.front();E;E=E->next()) {
+	for(List<Stream*>::Element *E=active_audio_streams.front();E;) { //stream might be removed durnig this callback
+
+		List<Stream*>::Element *N=E->next();
 
 		if (E->get()->audio_stream && p_thread == E->get()->audio_stream->can_update_mt())
 			E->get()->audio_stream->update();
+
+		E=N;
 	}
 
 }
@@ -916,7 +923,7 @@ float AudioServerSW::get_event_voice_global_volume_scale() const {
 
 double AudioServerSW::get_output_delay() const {
 
-	return _output_delay;
+	return _output_delay+AudioDriverSW::get_singleton()->get_latency();
 }
 
 double AudioServerSW::get_mix_time() const {

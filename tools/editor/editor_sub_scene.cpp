@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -147,7 +147,7 @@ void EditorSubScene::move(Node* p_new_parent, Node* p_new_owner) {
 	}
 	TreeItem *s = tree->get_selected();
 	if (!s) {
-		return;		
+		return;
 	}
 
 	Node *selnode = s->get_metadata(0);
@@ -196,7 +196,11 @@ void EditorSubScene::_bind_methods() {
 
 EditorSubScene::EditorSubScene() {
 
-	set_title("Select Sub-Scene..");
+	scene=NULL;
+
+	set_title(TTR("Select Node(s) to Import"));
+	set_hide_on_ok(false);
+
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
 	set_child_rect(vb);
@@ -210,12 +214,14 @@ EditorSubScene::EditorSubScene() {
 	b->set_text(" .. ");
 	hb->add_child(b);
 	b->connect("pressed",this,"_path_browse");
-	vb->add_margin_child("Scene Path:",hb);
+	vb->add_margin_child(TTR("Scene Path:"),hb);
+
 	tree = memnew( Tree );
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
-	vb->add_margin_child("Import From Node:",tree)->set_v_size_flags(SIZE_EXPAND_FILL);
+	vb->add_margin_child(TTR("Import From Node:"),tree,true);
+	tree->connect("item_activated",this,"_ok",make_binds(),CONNECT_DEFERRED);
 
-	file_dialog = memnew( FileDialog );
+	file_dialog = memnew( EditorFileDialog );
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene",&extensions);
 
@@ -224,12 +230,8 @@ EditorSubScene::EditorSubScene() {
 		file_dialog->add_filter("*."+E->get());
 	}
 
-	file_dialog->set_mode(FileDialog::MODE_OPEN_FILE);
+	file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	add_child(file_dialog);
 	file_dialog->connect("file_selected",this,"_path_selected");
-
-	scene=NULL;
-
-	set_hide_on_ok(false);
 
 }

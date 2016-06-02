@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,16 +40,20 @@
  * so BE CAREFUL!
  */
 
-
 void* MemoryPoolStaticMalloc::alloc(size_t p_bytes,const char *p_description) {
 
-	#if DFAULT_ALIGNMENT == 1
+	#if DEFAULT_ALIGNMENT == 1
 
 		return _alloc(p_bytes, p_description);
 
 	#else
 
-		int total = p_bytes + DEFAULT_ALIGNMENT;
+		size_t total;
+		#if defined(_add_overflow)
+			if (_add_overflow(p_bytes, DEFAULT_ALIGNMENT, &total)) return NULL;
+		#else
+			total = p_bytes + DEFAULT_ALIGNMENT;
+		#endif
 		uint8_t* ptr = (uint8_t*)_alloc(total, p_description);
 		ERR_FAIL_COND_V( !ptr, ptr );
 		int ofs = (DEFAULT_ALIGNMENT - ((uintptr_t)ptr & (DEFAULT_ALIGNMENT - 1)));
@@ -65,11 +69,18 @@ void* MemoryPoolStaticMalloc::_alloc(size_t p_bytes,const char *p_description) {
 	MutexLock lock(mutex);
 	
 #ifdef DEBUG_MEMORY_ENABLED
-	void *mem=malloc(p_bytes+sizeof(RingPtr)); /// add for size and ringlist
+
+	size_t total;
+	#if defined(_add_overflow)
+		if (_add_overflow(p_bytes, sizeof(RingPtr), &total)) return NULL;
+	#else
+		total = p_bytes + sizeof(RingPtr);
+	#endif
+	void *mem=malloc(total); /// add for size and ringlist
 
 	if (!mem) {
-		printf("**ERROR: out of memory while allocating %i bytes by %s?\n",(int) p_bytes, p_description);
-		printf("**ERROR: memory usage is %i\n", (int)get_total_usage());
+		printf("**ERROR: out of memory while allocating %lu bytes by %s?\n", (unsigned long) p_bytes, p_description);
+		printf("**ERROR: memory usage is %lu\n", (unsigned long) get_total_usage());
 	};
 	
 	ERR_FAIL_COND_V(!mem,0); //out of memory, or unreasonable request
@@ -123,14 +134,19 @@ void* MemoryPoolStaticMalloc::_alloc(size_t p_bytes,const char *p_description) {
 
 void* MemoryPoolStaticMalloc::realloc(void *p_memory,size_t p_bytes) {
 
-	#if DFAULT_ALIGNMENT == 1
+	#if DEFAULT_ALIGNMENT == 1
 
 		return _realloc(p_memory,p_bytes);
 	#else
 		if (!p_memory)
 			return alloc(p_bytes);
 
-		int total = p_bytes + DEFAULT_ALIGNMENT;
+		size_t total;
+		#if defined(_add_overflow)
+			if (_add_overflow(p_bytes, DEFAULT_ALIGNMENT, &total)) return NULL;
+		#else
+			total = p_bytes + DEFAULT_ALIGNMENT;
+		#endif
 		uint8_t* mem = (uint8_t*)p_memory;
 		int ofs = *(mem-1);
 		mem = mem - ofs;
@@ -154,7 +170,7 @@ void* MemoryPoolStaticMalloc::_realloc(void *p_memory,size_t p_bytes) {
 		return alloc( p_bytes );
 	}
 		
-	if (p_bytes<=0) {
+	if (p_bytes==0) {
 		
 		this->free(p_memory);
 		ERR_FAIL_COND_V( p_bytes < 0 , NULL );
@@ -171,7 +187,6 @@ void* MemoryPoolStaticMalloc::_realloc(void *p_memory,size_t p_bytes) {
 	
 	bool single_element = (ringptr->next == ringptr) && (ringptr->prev == ringptr);
 	bool is_list = ( ringlist == ringptr );
-	
 	
 	RingPtr *new_ringptr=(RingPtr*)::realloc(ringptr, p_bytes+sizeof(RingPtr));
 	
@@ -213,7 +228,7 @@ void MemoryPoolStaticMalloc::free(void *p_ptr) {
 
 	ERR_FAIL_COND( !MemoryPoolStatic::get_singleton());
 
-	#if DFAULT_ALIGNMENT == 1
+	#if DEFAULT_ALIGNMENT == 1
 
 		_free(p_ptr);
 	#else
@@ -323,7 +338,7 @@ size_t MemoryPoolStaticMalloc::get_max_usage() {
 /* Most likely available only if memory debugger was compiled in */
 int MemoryPoolStaticMalloc::get_alloc_count() {
 	
-	return 0;
+	return total_pointers;
 }
 void * MemoryPoolStaticMalloc::get_alloc_ptr(int p_alloc_idx) {
 	

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #include "globals.h"
 #include "io/file_access_compressed.h"
 #include "io/marshalls.h"
+#include "os/dir_access.h"
 //#define print_bl(m_what) print_line(m_what)
 #define print_bl(m_what)
 
@@ -99,7 +100,9 @@ enum {
 	OBJECT_EMPTY=0,
 	OBJECT_EXTERNAL_RESOURCE=1,
 	OBJECT_INTERNAL_RESOURCE=2,
-	FORMAT_VERSION=0
+	OBJECT_EXTERNAL_RESOURCE_INDEX=3,
+	FORMAT_VERSION=1,
+	FORMAT_VERSION_CAN_RENAME_DEPS=1
 
 
 };
@@ -384,14 +387,19 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 
 				} break;
 				case OBJECT_EXTERNAL_RESOURCE: {
+					//old file format, still around for compatibility
 
 					String type = get_unicode_string();
 					String path = get_unicode_string();
 
 					if (path.find("://")==-1 && path.is_rel_path()) {
 						// path is relative to file being loaded, so convert to a resource path
-						path=Globals::get_singleton()->localize_path(res_path.get_base_dir()+"/"+path);
+						path=Globals::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 
+					}
+
+					if (remaps.find(path)) {
+						path=remaps[path];
 					}
 
 					RES res=ResourceLoader::load(path,type);
@@ -400,6 +408,34 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 						WARN_PRINT(String("Couldn't load resource: "+path).utf8().get_data());
 					}
 					r_v=res;
+
+				} break;
+				case OBJECT_EXTERNAL_RESOURCE_INDEX: {
+					//new file format, just refers to an index in the external list
+					uint32_t erindex = f->get_32();
+
+					if (erindex>=external_resources.size()) {
+						WARN_PRINT("Broken external resource! (index out of size");
+						r_v=Variant();
+					} else {
+
+						String type = external_resources[erindex].type;
+						String path = external_resources[erindex].path;
+
+						if (path.find("://")==-1 && path.is_rel_path()) {
+							// path is relative to file being loaded, so convert to a resource path
+							path=Globals::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
+
+						}
+
+						RES res=ResourceLoader::load(path,type);
+
+						if (res.is_null()) {
+							WARN_PRINT(String("Couldn't load resource: "+path).utf8().get_data());
+						}
+						r_v=res;
+					}
+
 
 				} break;
 				default: {
@@ -628,17 +664,20 @@ Error ResourceInteractiveLoaderBinary::poll(){
 
 	if (s<external_resources.size()) {
 
-		RES res = ResourceLoader::load(external_resources[s].path,external_resources[s].type);
+		String path = external_resources[s].path;
+		if (remaps.has(path)) {
+			path=remaps[path];
+		}
+		RES res = ResourceLoader::load(path,external_resources[s].type);
 		if (res.is_null()) {
 
 			if (!ResourceLoader::get_abort_on_missing_resources()) {
 
-				ResourceLoader::notify_load_error("Resource Not Found: "+external_resources[s].path);
+				ResourceLoader::notify_dependency_error(local_path,path,external_resources[s].type);
 			} else {
 
-
-				error=ERR_FILE_CORRUPT;
-				ERR_EXPLAIN("Can't load dependency: "+external_resources[s].path);
+				error=ERR_FILE_MISSING_DEPENDENCIES;
+				ERR_EXPLAIN("Can't load dependency: "+path);
 				ERR_FAIL_V(error);
 			}
 
@@ -663,14 +702,18 @@ Error ResourceInteractiveLoaderBinary::poll(){
 
 	//maybe it is loaded already
 	String path;
+	int subindex=0;
 
 
 
 	if (!main) {
 
 		path=internal_resources[s].path;
-		if (path.begins_with("local://"))
-			path=path.replace("local://",res_path+"::");
+		if (path.begins_with("local://")) {
+			path=path.replace_first("local://","");
+			subindex = path.to_int();
+			path=res_path+"::"+path;
+		}
 
 
 
@@ -682,7 +725,8 @@ Error ResourceInteractiveLoaderBinary::poll(){
 		}
 	} else {
 
-		path=res_path;
+		if (!ResourceCache::has(res_path))
+			path=res_path;
 	}
 
 	uint64_t offset = internal_resources[s].offset;
@@ -709,6 +753,7 @@ Error ResourceInteractiveLoaderBinary::poll(){
 	RES res = RES( r );
 
 	r->set_path(path);
+	r->set_subindex(subindex);
 
 	int pc = f->get_32();
 
@@ -782,12 +827,35 @@ int ResourceInteractiveLoaderBinary::get_stage_count() const {
 	return external_resources.size()+internal_resources.size();
 }
 
+
+static void save_ustring(FileAccess* f,const String& p_string) {
+
+
+	CharString utf8 = p_string.utf8();
+	f->store_32(utf8.length()+1);
+	f->store_buffer((const uint8_t*)utf8.get_data(),utf8.length()+1);
+}
+
+
+static String get_ustring(FileAccess *f) {
+
+	int len = f->get_32();
+	Vector<char> str_buf;
+	str_buf.resize(len);
+	f->get_buffer((uint8_t*)&str_buf[0],len);
+	String s;
+	s.parse_utf8(&str_buf[0]);
+	return s;
+}
+
 String ResourceInteractiveLoaderBinary::get_unicode_string() {
 
 	int len = f->get_32();
 	if (len>str_buf.size()) {
 		str_buf.resize(len);
 	}
+	if (len==0)
+		return String();
 	f->get_buffer((uint8_t*)&str_buf[0],len);
 	String s;
 	s.parse_utf8(&str_buf[0]);
@@ -796,7 +864,7 @@ String ResourceInteractiveLoaderBinary::get_unicode_string() {
 
 
 
-void ResourceInteractiveLoaderBinary::get_dependencies(FileAccess *p_f,List<String> *p_dependencies) {
+void ResourceInteractiveLoaderBinary::get_dependencies(FileAccess *p_f,List<String> *p_dependencies,bool p_add_types) {
 
 	open(p_f);
 	if (error)
@@ -807,6 +875,10 @@ void ResourceInteractiveLoaderBinary::get_dependencies(FileAccess *p_f,List<Stri
 		String dep=external_resources[i].path;
 		if (dep.ends_with("*")) {
 			dep=ResourceLoader::guess_full_filename(dep,external_resources[i].type);
+		}
+
+		if (p_add_types && external_resources[i].type!=String()) {
+			dep+="::"+external_resources[i].type;
 		}
 
 		p_dependencies->push_back(dep);
@@ -836,7 +908,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 
 		error=ERR_FILE_UNRECOGNIZED;
 		ERR_EXPLAIN("Unrecognized binary resource file: "+local_path);
-		ERR_FAIL_V();
+		ERR_FAIL();
 	}
 
 	bool big_endian = f->get_32();
@@ -861,7 +933,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	print_bl("minor: "+itos(ver_minor));
 	print_bl("format: "+itos(ver_format));
 
-	if (ver_format<FORMAT_VERSION ||  ver_major>VERSION_MAJOR || (ver_major==VERSION_MAJOR && ver_minor>VERSION_MINOR)) {
+	if (ver_format>FORMAT_VERSION ||  ver_major>VERSION_MAJOR) {
 
 		f->close();
 		ERR_EXPLAIN("File Format '"+itos(FORMAT_VERSION)+"."+itos(ver_major)+"."+itos(ver_minor)+"' is too new! Please upgrade to a a new engine version: "+local_path);
@@ -898,6 +970,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	}
 
 	//see if the exporter has different set of external resources for more efficient loading
+	/*
 	String preload_depts = "deps/"+res_path.md5_text();
 	if (Globals::get_singleton()->has(preload_depts)) {
 		external_resources.clear();
@@ -908,7 +981,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 			external_resources[i].path=depts.get_name(i);
 		}
 		print_line(res_path+" - EXTERNAL RESOURCES: "+itos(external_resources.size()));
-	}
+	}*/
 
 	print_bl("ext resources: "+itos(ext_resources_size));
 	uint32_t int_resources_size=f->get_32();
@@ -968,7 +1041,7 @@ String ResourceInteractiveLoaderBinary::recognize(FileAccess *p_f) {
 	uint32_t ver_minor=f->get_32();
 	uint32_t ver_format=f->get_32();
 
-	if (ver_format<FORMAT_VERSION ||  ver_major>VERSION_MAJOR || (ver_major==VERSION_MAJOR && ver_minor>VERSION_MINOR)) {
+	if (ver_format>FORMAT_VERSION ||  ver_major>VERSION_MAJOR) {
 
 		f->close();
 		return "";
@@ -995,8 +1068,10 @@ ResourceInteractiveLoaderBinary::~ResourceInteractiveLoaderBinary() {
 }
 
 
-Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(const String &p_path) {
+Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(const String &p_path, Error *r_error) {
 
+	if (r_error)
+		*r_error=ERR_FILE_CANT_OPEN;
 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path,FileAccess::READ,&err);
@@ -1109,7 +1184,7 @@ Error ResourceFormatLoaderBinary::load_import_metadata(const String &p_path, Ref
 }
 
 
-void ResourceFormatLoaderBinary::get_dependencies(const String& p_path,List<String> *p_dependencies) {
+void ResourceFormatLoaderBinary::get_dependencies(const String& p_path,List<String> *p_dependencies,bool p_add_types) {
 
 	FileAccess *f = FileAccess::open(p_path,FileAccess::READ);
 	ERR_FAIL_COND(!f);
@@ -1118,7 +1193,217 @@ void ResourceFormatLoaderBinary::get_dependencies(const String& p_path,List<Stri
 	ria->local_path=Globals::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
 //	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
-	ria->get_dependencies(f,p_dependencies);
+	ria->get_dependencies(f,p_dependencies,p_add_types);
+}
+
+Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path,const Map<String,String>& p_map) {
+
+
+//	Error error=OK;
+
+
+	FileAccess *f=FileAccess::open(p_path,FileAccess::READ);
+	ERR_FAIL_COND_V(!f,ERR_CANT_OPEN);
+
+	FileAccess* fw=NULL;//=FileAccess::open(p_path+".depren");
+
+	String local_path=p_path.get_base_dir();
+
+	uint8_t header[4];
+	f->get_buffer(header,4);
+	if (header[0]=='R' && header[1]=='S' && header[2]=='C' && header[3]=='C') {
+		//compressed
+		FileAccessCompressed *fac = memnew( FileAccessCompressed );
+		fac->open_after_magic(f);
+		f=fac;
+
+		FileAccessCompressed *facw = memnew( FileAccessCompressed );
+		facw->configure("RSCC");
+		Error err = facw->_open(p_path+".depren",FileAccess::WRITE);
+		if (err) {
+			memdelete(fac);
+			memdelete(facw);
+			ERR_FAIL_COND_V(err,ERR_FILE_CORRUPT);
+		}
+
+		fw=facw;
+
+
+	} else if (header[0]!='R' || header[1]!='S' || header[2]!='R' || header[3]!='C') {
+		//not normal
+
+		//error=ERR_FILE_UNRECOGNIZED;
+		memdelete(f);
+		ERR_EXPLAIN("Unrecognized binary resource file: "+local_path);
+		ERR_FAIL_V(ERR_FILE_UNRECOGNIZED);
+	} else {
+		fw = FileAccess::open(p_path+".depren",FileAccess::WRITE);
+		if (!fw) {
+			memdelete(f);
+		}
+		ERR_FAIL_COND_V(!fw,ERR_CANT_CREATE);
+	}
+
+	bool big_endian = f->get_32();
+#ifdef BIG_ENDIAN_ENABLED
+	endian_swap = !big_endian;
+#else
+	bool endian_swap = big_endian;
+#endif
+
+	bool use_real64 = f->get_32();
+
+	f->set_endian_swap(big_endian!=0); //read big endian if saved as big endian
+	fw->store_32(endian_swap);
+	fw->set_endian_swap(big_endian!=0);
+	fw->store_32(use_real64); //use real64
+
+	uint32_t ver_major=f->get_32();
+	uint32_t ver_minor=f->get_32();
+	uint32_t ver_format=f->get_32();
+
+	if (ver_format<FORMAT_VERSION_CAN_RENAME_DEPS) {
+
+		memdelete(f);
+		memdelete(fw);
+		DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		da->remove(p_path+".depren");
+		memdelete(da);
+		//fuck it, use the old approach;
+
+		WARN_PRINT(("This file is old, so it can't refactor dependencies, opening and resaving: "+p_path).utf8().get_data());
+
+		Error err;
+		f = FileAccess::open(p_path,FileAccess::READ,&err);
+		if (err!=OK) {
+			ERR_FAIL_COND_V(err!=OK,ERR_FILE_CANT_OPEN);
+		}
+
+		Ref<ResourceInteractiveLoaderBinary> ria = memnew( ResourceInteractiveLoaderBinary );
+		ria->local_path=Globals::get_singleton()->localize_path(p_path);
+		ria->res_path=ria->local_path;
+		ria->remaps=p_map;
+	//	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
+		ria->open(f);
+
+		err = ria->poll();
+
+		while(err==OK) {
+			err=ria->poll();
+		}
+
+		ERR_FAIL_COND_V(err!=ERR_FILE_EOF,ERR_FILE_CORRUPT);
+		RES res = ria->get_resource();
+		ERR_FAIL_COND_V(!res.is_valid(),ERR_FILE_CORRUPT);
+
+		return ResourceFormatSaverBinary::singleton->save(p_path,res);
+	}
+
+	if (ver_format>FORMAT_VERSION ||  ver_major>VERSION_MAJOR) {
+
+		memdelete(f);
+		memdelete(fw);
+		ERR_EXPLAIN("File Format '"+itos(FORMAT_VERSION)+"."+itos(ver_major)+"."+itos(ver_minor)+"' is too new! Please upgrade to a a new engine version: "+local_path);
+		ERR_FAIL_V(ERR_FILE_UNRECOGNIZED);
+
+	}
+
+	fw->store_32( VERSION_MAJOR ); //current version
+	fw->store_32( VERSION_MINOR );
+	fw->store_32( FORMAT_VERSION );
+
+	save_ustring(fw,get_ustring(f)); //type
+
+
+	size_t md_ofs = f->get_pos();
+	size_t importmd_ofs = f->get_64();
+	fw->store_64(0); //metadata offset
+
+	for(int i=0;i<14;i++) {
+		fw->store_32(0);
+		f->get_32();
+	}
+
+	//string table
+	uint32_t string_table_size=f->get_32();
+
+	fw->store_32(string_table_size);
+
+	for(uint32_t i=0;i<string_table_size;i++) {
+
+		String s = get_ustring(f);
+		save_ustring(fw,s);
+	}
+
+	//external resources
+	uint32_t ext_resources_size=f->get_32();
+	fw->store_32(ext_resources_size);
+	for(uint32_t i=0;i<ext_resources_size;i++) {
+
+		String type = get_ustring(f);
+		String path = get_ustring(f);
+
+		bool relative=false;
+		if (!path.begins_with("res://")) {
+			path=local_path.plus_file(path).simplify_path();
+			relative=true;
+		}
+
+
+		if (p_map.has(path)) {
+			String np=p_map[path];
+			path=np;
+		}
+
+		if (relative) {
+			//restore relative
+			path=local_path.path_to_file(path);
+		}
+
+		save_ustring(fw,type);
+		save_ustring(fw,path);
+	}
+
+	int64_t size_diff = (int64_t)fw->get_pos() - (int64_t)f->get_pos();
+
+	//internal resources
+	uint32_t int_resources_size=f->get_32();
+	fw->store_32(int_resources_size);
+
+	for(uint32_t i=0;i<int_resources_size;i++) {
+
+
+		String path=get_ustring(f);
+		uint64_t offset=f->get_64();
+		save_ustring(fw,path);
+		fw->store_64(offset+size_diff);
+	}
+
+	//rest of file
+	uint8_t b = f->get_8();
+	while(!f->eof_reached()) {
+		fw->store_8(b);
+		b = f->get_8();
+	}
+
+	bool all_ok = fw->get_error()==OK;
+
+	fw->seek(md_ofs);
+	fw->store_64(importmd_ofs+size_diff);
+
+
+	memdelete(f);
+	memdelete(fw);
+
+	if (!all_ok) {
+		return ERR_CANT_CREATE;
+	}
+
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	da->remove(p_path);
+	da->rename(p_path+".depren",p_path);
+	memdelete(da);
+	return OK;
 }
 
 
@@ -1428,20 +1713,18 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 			}
 
 			if (res->get_path().length() && res->get_path().find("::")==-1) {
-				f->store_32(OBJECT_EXTERNAL_RESOURCE);
-				save_unicode_string(res->get_save_type());
-				String path=relative_paths?local_path.path_to_file(res->get_path()):res->get_path();
-				save_unicode_string(path);
+				f->store_32(OBJECT_EXTERNAL_RESOURCE_INDEX);
+				f->store_32(external_resources[res]);
 			} else {
 
-				if (!resource_map.has(res)) {
+				if (!resource_set.has(res)) {
 					f->store_32(OBJECT_EMPTY);
 					ERR_EXPLAIN("Resource was not pre cached for the resource section, bug?");
 					ERR_FAIL();
 				}
 
 				f->store_32(OBJECT_INTERNAL_RESOURCE);
-				f->store_32(resource_map[res]);
+				f->store_32(res->get_subindex());
 				//internal resource
 			}
 
@@ -1589,16 +1872,17 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant& p_variant
 
 			RES res = p_variant.operator RefPtr();
 
-			if (res.is_null())
+			if (res.is_null() || external_resources.has(res))
 				return;
 
 			if (!p_main && (!bundle_resources ) && res->get_path().length() && res->get_path().find("::") == -1 ) {
-				external_resources.insert(res);
+				int idx = external_resources.size();
+				external_resources[res]=idx;
 				return;
 			}
 
 
-			if (resource_map.has(res))
+			if (resource_set.has(res))
 				return;
 
 			List<PropertyInfo> property_list;
@@ -1613,7 +1897,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant& p_variant
 				}
 			}
 
-			resource_map[ res ] = saved_resources.size();
+			resource_set.insert(res);
 			saved_resources.push_back(res);
 
 		} break;
@@ -1778,6 +2062,11 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 	f->store_32(VERSION_MINOR);
 	f->store_32(FORMAT_VERSION);
 
+	if (f->get_error()!=OK && f->get_error()!=ERR_FILE_EOF) {
+		f->close();
+		return ERR_CANT_CREATE;
+	}
+
 	//f->store_32(saved_resources.size()+external_resources.size()); // load steps -not needed
 	save_unicode_string(p_resource->get_type());
 	uint64_t md_at = f->get_pos();
@@ -1809,9 +2098,9 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 					Property p;
 					p.name_idx=get_string_index(F->get().name);
 					p.value=E->get()->get(F->get().name);
-					if (F->get().usage&PROPERTY_USAGE_STORE_IF_NONZERO && p.value.is_zero())
+					if ((F->get().usage&PROPERTY_USAGE_STORE_IF_NONZERO && p.value.is_zero())||(F->get().usage&PROPERTY_USAGE_STORE_IF_NONONE && p.value.is_one()) )
 						continue;
-					p.pi=F->get();										
+					p.pi=F->get();
 
 					rd.properties.push_back(p);
 
@@ -1832,25 +2121,65 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 
 	// save external resource table
 	f->store_32(external_resources.size()); //amount of external resources
-	for(Set<RES>::Element *E=external_resources.front();E;E=E->next()) {
+	Vector<RES> save_order;
+	save_order.resize(external_resources.size());
 
-		save_unicode_string(E->get()->get_save_type());
-		String path = E->get()->get_path();
+	for(Map<RES,int>::Element *E=external_resources.front();E;E=E->next()) {
+		save_order[E->get()]=E->key();
+	}
+
+	for(int i=0;i<save_order.size();i++) {
+
+		save_unicode_string(save_order[i]->get_save_type());
+		String path = save_order[i]->get_path();
+		path=relative_paths?local_path.path_to_file(path):path;
 		save_unicode_string(path);
 	}
 	// save internal resource table
 	f->store_32(saved_resources.size()); //amount of internal resources
 	Vector<uint64_t> ofs_pos;
+	Set<int> used_indices;
+
 	for(List<RES>::Element *E=saved_resources.front();E;E=E->next()) {
 
 		RES r = E->get();
 		if (r->get_path()=="" || r->get_path().find("::")!=-1) {
-			save_unicode_string("local://"+itos(ofs_pos.size()));
-			if (takeover_paths) {
-				r->set_path(p_path+"::"+itos(ofs_pos.size()),true);
+
+			if (r->get_subindex()!=0) {
+				if (used_indices.has(r->get_subindex())) {
+					r->set_subindex(0); //repeated
+				} else {
+					used_indices.insert(r->get_subindex());
+				}
 			}
-		} else
+		}
+
+	}
+
+
+	for(List<RES>::Element *E=saved_resources.front();E;E=E->next()) {
+
+
+		RES r = E->get();
+		if (r->get_path()=="" || r->get_path().find("::")!=-1) {
+			if (r->get_subindex()==0) {
+				int new_subindex=1;
+				if (used_indices.size()) {
+					new_subindex=used_indices.back()->get()+1;
+				}
+
+				r->set_subindex(new_subindex);
+				used_indices.insert(new_subindex);
+
+			}
+
+			save_unicode_string("local://"+itos(r->get_subindex()));
+			if (takeover_paths) {
+				r->set_path(p_path+"::"+itos(r->get_subindex()),true);
+			}
+		} else {
 			save_unicode_string(r->get_path()); //actual external
+		}
 		ofs_pos.push_back(f->get_pos());
 		f->store_64(0); //offset in 64 bits
 	}
@@ -1910,6 +2239,11 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 
 	f->store_buffer((const uint8_t*)"RSRC",4); //magic at end
 
+	if (f->get_error()!=OK && f->get_error()!=ERR_FILE_EOF) {
+		f->close();
+		return ERR_CANT_CREATE;
+	}
+
 	f->close();
 
 
@@ -1949,3 +2283,9 @@ void ResourceFormatSaverBinary::get_recognized_extensions(const RES& p_resource,
 
 }
 
+ResourceFormatSaverBinary* ResourceFormatSaverBinary::singleton=NULL;
+
+ResourceFormatSaverBinary::ResourceFormatSaverBinary() {
+
+	singleton=this;
+}

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,17 +62,6 @@ void Path2DEditor::_node_removed(Node *p_node) {
 }
 
 
-Vector2 Path2DEditor::snap_point(const Vector2& p_point) const {
-
-	if (canvas_item_editor->is_snap_active()) {
-
-		return p_point.snapped(Vector2(1,1)*canvas_item_editor->get_snap());
-
-	} else {
-		return p_point;
-	}
-}
-
 bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 	if (!node)
@@ -93,8 +82,8 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 			Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
-			Vector2 cpoint = !mb.mod.alt? snap_point(xform.affine_inverse().xform(gpoint))
-										: node->get_global_transform().affine_inverse().xform( snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)) );
+			Vector2 cpoint = !mb.mod.alt? canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint))
+										: node->get_global_transform().affine_inverse().xform( canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)) );
 
 			//first check if a point is to be added (segment split)
 			real_t grab_treshold=EDITOR_DEF("poly_editor/point_grab_radius",8);
@@ -124,7 +113,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 								return true;
 							} else if  ((mb.button_index==BUTTON_RIGHT && mode==MODE_EDIT) || (mb.button_index==BUTTON_LEFT && mode==MODE_DELETE)) {
 
-								undo_redo->create_action("Remove Point from Curve");
+								undo_redo->create_action(TTR("Remove Point from Curve"));
 								undo_redo->add_do_method(curve.ptr(),"remove_point",i);
 								undo_redo->add_undo_method(curve.ptr(),"add_point",curve->get_point_pos(i),curve->get_point_in(i),curve->get_point_out(i),i);
 								undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -173,7 +162,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 				Ref<Curve2D> curve = node->get_curve();
 
-				undo_redo->create_action("Add Point to Curve");
+				undo_redo->create_action(TTR("Add Point to Curve"));
 				undo_redo->add_do_method(curve.ptr(),"add_point",cpoint);
 				undo_redo->add_undo_method(curve.ptr(),"remove_point",curve->get_point_count());
 				undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -195,13 +184,13 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 				Ref<Curve2D> curve = node->get_curve();
 
-				Vector2 new_pos = moving_from + xform.basis_xform( gpoint - moving_screen_from );
+				Vector2 new_pos = moving_from + xform.affine_inverse().basis_xform(gpoint - moving_screen_from);
 				switch(action) {
 
 					case ACTION_MOVING_POINT: {
 
 
-						undo_redo->create_action("Move Point in Curve");
+						undo_redo->create_action(TTR("Move Point in Curve"));
 						undo_redo->add_do_method(curve.ptr(),"set_point_pos",action_point,cpoint);
 						undo_redo->add_undo_method(curve.ptr(),"set_point_pos",action_point,moving_from);
 						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -211,7 +200,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 					} break;
 					case ACTION_MOVING_IN: {
 
-						undo_redo->create_action("Move In-Control in Curve");
+						undo_redo->create_action(TTR("Move In-Control in Curve"));
 						undo_redo->add_do_method(curve.ptr(),"set_point_in",action_point,new_pos);
 						undo_redo->add_undo_method(curve.ptr(),"set_point_in",action_point,moving_from);
 						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -221,7 +210,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 					} break;
 					case ACTION_MOVING_OUT: {
 
-						undo_redo->create_action("Move Out-Control in Curve");
+						undo_redo->create_action(TTR("Move Out-Control in Curve"));
 						undo_redo->add_do_method(curve.ptr(),"set_point_out",action_point,new_pos);
 						undo_redo->add_undo_method(curve.ptr(),"set_point_out",action_point,moving_from);
 						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -250,9 +239,9 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 						if (!wip_active) {
 
 							wip.clear();
-							wip.push_back( snap_point(cpoint) );
+							wip.push_back( canvas_item_editor->snap_point(cpoint) );
 							wip_active=true;
-							edited_point_pos=snap_point(cpoint);
+							edited_point_pos=canvas_item_editor->snap_point(cpoint);
 							canvas_item_editor->update();
 							edited_point=1;
 							return true;
@@ -265,7 +254,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 								return true;
 							} else {
 
-								wip.push_back( snap_point(cpoint) );
+								wip.push_back( canvas_item_editor->snap_point(cpoint) );
 								edited_point=wip.size();
 								canvas_item_editor->update();
 								return true;
@@ -291,7 +280,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 								if (poly.size() < 3) {
 
-									undo_redo->create_action("Edit Poly");
+									undo_redo->create_action(TTR("Edit Poly"));
 									undo_redo->add_undo_method(node,"set_polygon",poly);
 									poly.push_back(cpoint);
 									undo_redo->add_do_method(node,"set_polygon",poly);
@@ -327,9 +316,9 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 								if (closest_idx>=0) {
 
 									pre_move_edit=poly;
-									poly.insert(closest_idx+1,snap_point(xform.affine_inverse().xform(closest_pos)));
+									poly.insert(closest_idx+1,canvas_item_editor->snap_point(xform.affine_inverse().xform(closest_pos)));
 									edited_point=closest_idx+1;
-									edited_point_pos=snap_point(xform.affine_inverse().xform(closest_pos));
+									edited_point_pos=canvas_item_editor->snap_point(xform.affine_inverse().xform(closest_pos));
 									node->set_polygon(poly);
 									canvas_item_editor->update();
 									return true;
@@ -371,7 +360,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 								ERR_FAIL_INDEX_V(edited_point,poly.size(),false);
 								poly[edited_point]=edited_point_pos;
-								undo_redo->create_action("Edit Poly");
+								undo_redo->create_action(TTR("Edit Poly"));
 								undo_redo->add_do_method(node,"set_polygon",poly);
 								undo_redo->add_undo_method(node,"set_polygon",pre_move_edit);
 								undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -405,7 +394,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 						if (closest_idx>=0) {
 
 
-							undo_redo->create_action("Edit Poly (Remove Point)");
+							undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
 							undo_redo->add_undo_method(node,"set_polygon",poly);
 							poly.remove(closest_idx);
 							undo_redo->add_do_method(node,"set_polygon",poly);
@@ -434,12 +423,12 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 				Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 				Vector2 gpoint = Point2(mm.x,mm.y);
-				Vector2 cpoint = !mm.mod.alt? snap_point(xform.affine_inverse().xform(gpoint))
-											: node->get_global_transform().affine_inverse().xform( snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)) );
+				Vector2 cpoint = !mm.mod.alt? canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint))
+											: node->get_global_transform().affine_inverse().xform( canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)) );
 
 				Ref<Curve2D> curve = node->get_curve();
 
-				Vector2 new_pos = moving_from + xform.basis_xform( gpoint - moving_screen_from );
+				Vector2 new_pos = moving_from + xform.affine_inverse().basis_xform(gpoint - moving_screen_from);
 
 				switch(action) {
 
@@ -471,7 +460,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 				Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 				Vector2 gpoint = Point2(mm.x,mm.y);
-				edited_point_pos = snap_point(xform.affine_inverse().xform(gpoint));
+				edited_point_pos = canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint));
 				canvas_item_editor->update();
 
 			}
@@ -545,6 +534,7 @@ void Path2DEditor::edit(Node *p_path2d) {
 		if (!node->is_connected("visibility_changed", this, "_node_visibility_changed"))
 			node->connect("visibility_changed", this, "_node_visibility_changed");
 
+
 	} else {
 
 		if (canvas_item_editor->get_viewport_control()->is_connected("draw",this,"_canvas_draw"))
@@ -606,7 +596,7 @@ void Path2DEditor::_mode_selected(int p_mode) {
 		if (begin.distance_to(end)<CMP_EPSILON)
 			return;
 
-		undo_redo->create_action("Remove Point from Curve");
+		undo_redo->create_action(TTR("Remove Point from Curve"));
 		undo_redo->add_do_method(node->get_curve().ptr(),"add_point",begin);
 		undo_redo->add_undo_method(node->get_curve().ptr(),"remove_point",node->get_curve()->get_point_count());
 		undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -625,6 +615,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	editor=p_editor;
 	undo_redo = editor->get_undo_redo();
 
+	mode=MODE_EDIT;
 
 	action=ACTION_NONE;
 #if 0
@@ -632,7 +623,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	add_child(options);
 	options->set_area_as_parent_rect();
 	options->set_text("Polygon");
-	//options->get_popup()->add_item("Parse BBCODE",PARSE_BBCODE);
+	//options->get_popup()->add_item("Parse BBCode",PARSE_BBCODE);
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 #endif
 
@@ -645,34 +636,34 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	curve_edit->set_icon(CanvasItemEditor::get_singleton()->get_icon("CurveEdit","EditorIcons"));
 	curve_edit->set_toggle_mode(true);
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
-	curve_edit->set_tooltip("Select Points\nShift+Drag: Select Control Points\n"+keycode_get_string(KEY_MASK_CMD)+"Click: Add Point\nRight Click: Delete Point.");
+	curve_edit->set_tooltip(TTR("Select Points")+"\n"+TTR("Shift+Drag: Select Control Points")+"\n"+keycode_get_string(KEY_MASK_CMD)+TTR("Click: Add Point")+"\n"+TTR("Right Click: Delete Point"));
 	curve_edit->connect("pressed",this,"_mode_selected",varray(MODE_EDIT));
 	base_hb->add_child(curve_edit);
 	curve_edit_curve = memnew( ToolButton );
 	curve_edit_curve->set_icon(CanvasItemEditor::get_singleton()->get_icon("CurveCurve","EditorIcons"));
 	curve_edit_curve->set_toggle_mode(true);
 	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
-	curve_edit_curve->set_tooltip("Select Control Points (Shift+Drag)");
+	curve_edit_curve->set_tooltip(TTR("Select Control Points (Shift+Drag)"));
 	curve_edit_curve->connect("pressed",this,"_mode_selected",varray(MODE_EDIT_CURVE));
 	base_hb->add_child(curve_edit_curve);
 	curve_create = memnew( ToolButton );
 	curve_create->set_icon(CanvasItemEditor::get_singleton()->get_icon("CurveCreate","EditorIcons"));
 	curve_create->set_toggle_mode(true);
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
-	curve_create->set_tooltip("Add Point (in empty space)\nSplit Segment (in curve).");
+	curve_create->set_tooltip(TTR("Add Point (in empty space)")+"\n"+TTR("Split Segment (in curve)"));
 	curve_create->connect("pressed",this,"_mode_selected",varray(MODE_CREATE));
 	base_hb->add_child(curve_create);
 	curve_del = memnew( ToolButton );
 	curve_del->set_icon(CanvasItemEditor::get_singleton()->get_icon("CurveDelete","EditorIcons"));
 	curve_del->set_toggle_mode(true);
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
-	curve_del->set_tooltip("Delete Point.");
+	curve_del->set_tooltip(TTR("Delete Point"));
 	curve_del->connect("pressed",this,"_mode_selected",varray(MODE_DELETE));
 	base_hb->add_child(curve_del);
 	curve_close = memnew( ToolButton );
 	curve_close->set_icon(CanvasItemEditor::get_singleton()->get_icon("CurveClose","EditorIcons"));
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
-	curve_close->set_tooltip("Close Curve");
+	curve_close->set_tooltip(TTR("Close Curve"));
 	curve_close->connect("pressed",this,"_mode_selected",varray(ACTION_CLOSE));
 	base_hb->add_child(curve_close);
 	base_hb->hide();

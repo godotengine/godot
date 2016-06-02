@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,22 +42,22 @@
 
 class ResourceFormatSaver {
 public:
-	
+
 	virtual Error save(const String &p_path,const RES& p_resource,uint32_t p_flags=0)=0;
 	virtual bool recognize(const RES& p_resource) const=0;
 	virtual void get_recognized_extensions(const RES& p_resource,List<String> *p_extensions) const=0;
-		
+
 	virtual ~ResourceFormatSaver() {}
 };
 
 typedef void (*ResourceSavedCallback)(const String& p_path);
 
-class ResourceSaver {	
-	
+class ResourceSaver {
+
 	enum {
 		MAX_SAVERS=64
 	};
-	
+
 	static ResourceFormatSaver *saver[MAX_SAVERS];
 	static int saver_count;
 	static bool timestamp_on_save;
@@ -86,7 +86,7 @@ public:
 	static void set_save_callback(ResourceSavedCallback p_callback);
 
 
-	
+
 };
 
 

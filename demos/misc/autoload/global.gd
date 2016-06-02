@@ -1,23 +1,36 @@
 extends Node
 
 
-var current_scene = null
+# Changing scenes is most easily done using the functions `change_scene`
+# and `change_scene_to` of the SceneTree. This script demonstrates how to
+# change scenes without those helpers.
 
 
-func goto_scene(scene):
-	#load new scene
-	var s = ResourceLoader.load(scene)
-	#queue erasing old (don't use free because that scene is calling this method)
-	current_scene.queue_free()
-	#instance the new scene
-	current_scene = s.instance()
-	#add it to the active scene, as child of root
-	get_tree().get_root().add_child(current_scene)
+func goto_scene(path):
+	# This function will usually be called from a signal callback,
+	# or some other function from the running scene.
+	# Deleting the current scene at this point might be
+	# a bad idea, because it may be inside of a callback or function of it.
+	# The worst case will be a crash or unexpected behavior.
+	
+	# The way around this is deferring the load to a later time, when
+	# it is ensured that no code from the current scene is running:
+	
+	call_deferred("_deferred_goto_scene",path)
 
 
-func _ready():
-	# get the current scene
-	# it is always the last child of root,
-	# after the autoloaded nodes
-	var root = get_tree().get_root()
-	current_scene = root.get_child( root.get_child_count() -1 )
+func _deferred_goto_scene(path):
+	# Immediately free the current scene, there is no risk here.
+	get_tree().get_current_scene().free()
+	
+	# Load new scene
+	var packed_scene = ResourceLoader.load(path)
+	
+	# Instance the new scene
+	var instanced_scene = packed_scene.instance()
+	
+	# Add it to the scene tree, as direct child of root
+	get_tree().get_root().add_child(instanced_scene)
+	
+	# Set it as the current scene, only after it has been added to the tree
+	get_tree().set_current_scene(instanced_scene)

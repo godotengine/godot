@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -94,6 +94,7 @@ void SamplePlayerEditor::_update_sample_library() {
 
 	List<StringName> samplenames;
 	sl->get_sample_list(&samplenames);
+	samplenames.sort_custom<StringName::AlphCompare>();
 	for(List<StringName>::Element *E=samplenames.front();E;E=E->next()) {
 		samples->add_item(E->get());
 	}

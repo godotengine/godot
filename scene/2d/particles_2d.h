@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/texture.h"
+#include "scene/resources/color_ramp.h"
 
 class Particles2D;
 class ParticleAttractor2D : public Node2D {
@@ -74,6 +75,8 @@ public:
 	void set_particles_path(NodePath p_path);
 	NodePath get_particles_path() const;
 
+	virtual String get_configuration_warning() const;
+
 	ParticleAttractor2D();
 };
 
@@ -87,7 +90,7 @@ public:
 	enum Parameter {
 		PARAM_DIRECTION,
 		PARAM_SPREAD,
-		PARAM_LINEAR_VELOCITY,		
+		PARAM_LINEAR_VELOCITY,
 		PARAM_SPIN_VELOCITY,
 		PARAM_ORBIT_VELOCITY,
 		PARAM_GRAVITY_DIRECTION,
@@ -125,11 +128,6 @@ private:
 	};
 
 	Vector<Particle> particles;
-	int color_phase_count;
-	struct ColorPhase {
-		Color color;
-		float pos;
-	} color_phases[MAX_COLOR_PHASES];
 
 	struct AttractorCache {
 
@@ -154,13 +152,16 @@ private:
 	Point2 emissor_offset;
 	Vector2 initial_velocity;
 	Vector2 extents;
-	DVector<Vector2> emission_points;	
+	DVector<Vector2> emission_points;
 
 	float time;
 	int active_count;
 
 	Ref<Texture> texture;
 
+	//If no color ramp is set then default color is used. Created as simple alternative to color_ramp.
+	Color default_color;
+	Ref<ColorRamp> color_ramp;
 
 	void testee(int a, int b, int c, int d, int e);
 	void _process_particles(float p_delta);
@@ -230,6 +231,12 @@ public:
 	void set_texture(const Ref<Texture>& p_texture);
 	Ref<Texture> get_texture() const;
 
+	void set_color(const Color& p_color);
+	Color get_color() const;
+
+	void set_color_ramp(const Ref<ColorRamp>& p_texture);
+	Ref<ColorRamp> get_color_ramp() const;
+
 	void set_emissor_offset(const Point2& p_offset);
 	Point2 get_emissor_offset() const;
 
@@ -243,6 +250,7 @@ public:
 	DVector<Vector2> get_emission_points() const;
 
 	void pre_process(float p_delta);
+	void reset();
 
 	Particles2D();
 };

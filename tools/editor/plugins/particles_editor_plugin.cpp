@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,8 +57,8 @@ void ParticlesEditor::_node_selected(const NodePath& p_path){
 	VisualInstance *vi = sel->cast_to<VisualInstance>();
 	if (!vi) {
 
-		err_dialog->set_text("Node does not contain geometry.");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->set_text(TTR("Node does not contain geometry."));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -66,8 +66,8 @@ void ParticlesEditor::_node_selected(const NodePath& p_path){
 
 	if (geometry.size()==0) {
 
-		err_dialog->set_text("Node does not contain geometry (faces).");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->set_text(TTR("Node does not contain geometry (faces)."));
+		err_dialog->popup_centered_minsize();
 		return;
 
 	}
@@ -111,6 +111,7 @@ void ParticlesEditor::_populate() {
 void ParticlesEditor::_notification(int p_notification) {
 
 	if (p_notification==NOTIFICATION_ENTER_TREE) {
+		options->set_icon(options->get_popup()->get_icon("Particles","EditorIcons"));
 
 	}
 }
@@ -218,8 +219,8 @@ void ParticlesEditor::_generate_emission_points() {
 
 		if (!triangle_area_map.size() || area_accum==0) {
 
-			err_dialog->set_text("Faces contain no area!");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->set_text(TTR("Faces contain no area!"));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -248,8 +249,8 @@ void ParticlesEditor::_generate_emission_points() {
 
 		if (gcount==0) {
 
-			err_dialog->set_text("No Faces!");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->set_text(TTR("No faces!"));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -348,20 +349,20 @@ ParticlesEditor::ParticlesEditor() {
 	particles_editor_hb->hide();
 
 	options->set_text("Particles");
-	options->get_popup()->add_item("Generate AABB",MENU_OPTION_GENERATE_AABB);
+	options->get_popup()->add_item(TTR("Generate AABB"),MENU_OPTION_GENERATE_AABB);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Create Emitter From Mesh",MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH);
-	options->get_popup()->add_item("Create Emitter From Node",MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
-	options->get_popup()->add_item("Clear Emitter",MENU_OPTION_CLEAR_EMISSION_VOLUME);
+	options->get_popup()->add_item(TTR("Create Emitter From Mesh"),MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH);
+	options->get_popup()->add_item(TTR("Create Emitter From Node"),MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
+	options->get_popup()->add_item(TTR("Clear Emitter"),MENU_OPTION_CLEAR_EMISSION_VOLUME);
 
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 
 	emission_dialog = memnew( ConfirmationDialog );
-	emission_dialog->set_title("Create Emitter");
+	emission_dialog->set_title(TTR("Create Emitter"));
 	add_child(emission_dialog);
 	Label *l = memnew(Label);
 	l->set_pos(Point2(5,5));
-	l->set_text("Emission Positions:");
+	l->set_text(TTR("Emission Positions:"));
 	emission_dialog->add_child(l);
 
 
@@ -373,20 +374,20 @@ ParticlesEditor::ParticlesEditor() {
 	emission_amount->set_max(65536);
 	emission_amount->set_val(512);
 	emission_dialog->add_child(emission_amount);
-	emission_dialog->get_ok()->set_text("Create");
+	emission_dialog->get_ok()->set_text(TTR("Create"));
 	emission_dialog->connect("confirmed",this,"_generate_emission_points");
 
 	l = memnew(Label);
 	l->set_pos(Point2(5,50));
-	l->set_text("Emission Fill:");
+	l->set_text(TTR("Emission Fill:"));
 	emission_dialog->add_child(l);
 
 	emission_fill = memnew( OptionButton );
 	emission_fill->set_anchor(MARGIN_RIGHT,ANCHOR_END);
 	emission_fill->set_begin( Point2(20,70));
 	emission_fill->set_end( Point2(5,75));
-	emission_fill->add_item("Surface");
-	emission_fill->add_item("Volume");
+	emission_fill->add_item(TTR("Surface"));
+	emission_fill->add_item(TTR("Volume"));
 	emission_dialog->add_child(emission_fill);
 
 	err_dialog = memnew( ConfirmationDialog );
@@ -394,7 +395,7 @@ ParticlesEditor::ParticlesEditor() {
 	add_child(err_dialog);
 
 
-	emission_file_dialog = memnew( FileDialog );
+	emission_file_dialog = memnew( EditorFileDialog );
 	add_child(emission_file_dialog);
 	emission_file_dialog->connect("file_selected",this,"_resource_seleted");
 	emission_tree_dialog = memnew( SceneTreeDialog );
@@ -410,7 +411,7 @@ ParticlesEditor::ParticlesEditor() {
 		emission_file_dialog->add_filter("*."+extensions[i]+" ; "+extensions[i].to_upper());
 	}
 
-	emission_file_dialog->set_mode(FileDialog::MODE_OPEN_FILE);
+	emission_file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 
 	//options->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
 	//options->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);

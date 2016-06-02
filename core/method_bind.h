@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,6 +50,7 @@ enum MethodFlags {
 	METHOD_FLAG_CONST=8,
 	METHOD_FLAG_REVERSE=16, // used for events
 	METHOD_FLAG_VIRTUAL=32,
+	METHOD_FLAG_FROM_SCRIPT=64,
 	METHOD_FLAGS_DEFAULT=METHOD_FLAG_NORMAL,
 };
 
@@ -57,8 +58,8 @@ template<class T>
 struct VariantCaster {
 
 	static _FORCE_INLINE_ T cast(const Variant& p_variant) {
-	
-		return p_variant;			
+
+		return p_variant;
 	}
 };
 
@@ -66,8 +67,8 @@ template<class T>
 struct VariantCaster<T&> {
 
 	static _FORCE_INLINE_ T cast(const Variant& p_variant) {
-	
-		return p_variant;			
+
+		return p_variant;
 	}
 };
 
@@ -75,8 +76,8 @@ template<class T>
 struct VariantCaster<const T&> {
 
 	static _FORCE_INLINE_ T cast(const Variant& p_variant) {
-	
-		return p_variant;			
+
+		return p_variant;
 	}
 };
 
@@ -98,7 +99,7 @@ struct VariantCaster<m_enum> {\
 #define CHECK_ARG(m_arg)\
 	if ((m_arg-1)<p_arg_count) {\
 		Variant::Type argtype=get_argument_type(m_arg-1);\
-		if (!Variant::can_convert(p_args[m_arg-1]->get_type(),argtype)) {\
+		if (!Variant::can_convert_strict(p_args[m_arg-1]->get_type(),argtype)) {\
 			r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;\
 			r_error.argument=m_arg-1;\
 			r_error.expected=argtype;\
@@ -178,6 +179,7 @@ public:
 #ifdef DEBUG_METHODS_ENABLED
 
 	_FORCE_INLINE_ void set_return_type(const StringName& p_type) { ret_type=p_type; }
+	_FORCE_INLINE_ StringName get_return_type() const { return ret_type; }
 
 	_FORCE_INLINE_ Variant::Type get_argument_type(int p_argument) const {
 
@@ -297,7 +299,7 @@ MethodBind* create_native_method_bind( Variant (T::*p_method)(const Variant**,in
 
 // tale of an amazing hack.. //
 
-// if you declare an unexisting class..
+// if you declare an nonexistent class..
 class __UnexistingClass;
 
 

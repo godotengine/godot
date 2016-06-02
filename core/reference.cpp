@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,6 +57,10 @@ void Reference::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("init_ref"),&Reference::init_ref);
 	ObjectTypeDB::bind_method(_MD("reference"),&Reference::reference);
 	ObjectTypeDB::bind_method(_MD("unreference"),&Reference::unreference);
+}
+
+int Reference::reference_get_count() const {
+	return refcount.get();
 }
 
 void Reference::reference(){

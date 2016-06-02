@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -94,6 +94,9 @@ public:
 	// this function only works on fixed process, errors and returns null otherwise
 	virtual PhysicsDirectSpaceState* space_get_direct_state(RID p_space);
 
+	virtual void space_set_debug_contacts(RID p_space,int p_max_contacts);
+	virtual Vector<Vector3> space_get_contacts(RID p_space) const;
+	virtual int space_get_contact_count(RID p_space) const;
 
 	/* AREA API */
 
@@ -128,7 +131,13 @@ public:
 	virtual void area_set_ray_pickable(RID p_area,bool p_enable);
 	virtual bool area_is_ray_pickable(RID p_area) const;
 
+	virtual void area_set_collision_mask(RID p_area,uint32_t p_mask);
+	virtual void area_set_layer_mask(RID p_area,uint32_t p_mask);
+
+	virtual void area_set_monitorable(RID p_area,bool p_monitorable);
+
 	virtual void area_set_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method);
+	virtual void area_set_area_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method);
 
 
 	/* BODY API */
@@ -140,7 +149,7 @@ public:
 	virtual RID body_get_space(RID p_body) const;
 
 	virtual void body_set_mode(RID p_body, BodyMode p_mode);
-	virtual BodyMode body_get_mode(RID p_body, BodyMode p_mode) const;
+	virtual BodyMode body_get_mode(RID p_body) const;
 
 	virtual void body_add_shape(RID p_body, RID p_shape, const Transform& p_transform=Transform());
 	virtual void body_set_shape(RID p_body, int p_shape_idx,RID p_shape);
@@ -164,6 +173,9 @@ public:
 
 	virtual void body_set_layer_mask(RID p_body, uint32_t p_mask);
 	virtual uint32_t body_get_layer_mask(RID p_body, uint32_t p_mask) const;
+
+	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask);
+	virtual uint32_t body_get_collision_mask(RID p_body, uint32_t p_mask) const;
 
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags);
 	virtual uint32_t body_get_user_flags(RID p_body, uint32_t p_flags) const;

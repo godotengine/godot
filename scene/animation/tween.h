@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,15 +54,17 @@ public:
         TRANS_CIRC,
         TRANS_BOUNCE,
         TRANS_BACK,
-	TRANS_COUNT,
+
+		TRANS_COUNT,
     };
-        
+
     enum EaseType {
         EASE_IN,
         EASE_OUT,
         EASE_IN_OUT,
-	EASE_OUT_IN,
-	EASE_COUNT,
+		EASE_OUT_IN,
+
+		EASE_COUNT,
     };
 
 private:
@@ -81,19 +83,21 @@ private:
 		bool active;
 		InterpolateType type;
 		bool finish;
+		bool call_deferred;
 		real_t elapsed;
-		NodePath path;
+		ObjectID id;
 		StringName key;
 		Variant initial_val;
 		Variant delta_val;
 		Variant final_val;
-		NodePath target;
+		ObjectID target_id;
 		StringName target_key;
 		real_t times_in_sec;
 		TransitionType trans_type;
 		EaseType ease_type;
 		real_t delay;
-		Variant arg;
+		int args;
+		Variant arg[5];
 	};
 
 	String autoplay;
@@ -102,8 +106,30 @@ private:
 	bool active;
 	bool repeat;
 	float speed_scale;
+	mutable int pending_update;
 
 	List<InterpolateData> interpolates;
+
+	struct PendingCommand {
+		StringName key;
+		int args;
+		Variant arg[10];
+	};
+	List<PendingCommand> pending_commands;
+
+	void _add_pending_command(StringName p_key
+		,const Variant& p_arg1=Variant()
+		,const Variant& p_arg2=Variant()
+		,const Variant& p_arg3=Variant()
+		,const Variant& p_arg4=Variant()
+		,const Variant& p_arg5=Variant()
+		,const Variant& p_arg6=Variant()
+		,const Variant& p_arg7=Variant()
+		,const Variant& p_arg8=Variant()
+		,const Variant& p_arg9=Variant()
+		,const Variant& p_arg10=Variant()
+	);
+	void _process_pending_commands();
 
 	typedef real_t (*interpolater)(real_t t, real_t b, real_t c, real_t d);
 	static interpolater interpolaters[TRANS_COUNT][EASE_COUNT];
@@ -142,20 +168,20 @@ public:
 	float get_speed() const;
 
 	bool start();
-	bool reset(Node *p_node, String p_key);
+	bool reset(Object *p_node, String p_key);
 	bool reset_all();
-	bool stop(Node *p_node, String p_key);
+	bool stop(Object *p_node, String p_key);
 	bool stop_all();
-	bool resume(Node *p_node, String p_key);
+	bool resume(Object *p_node, String p_key);
 	bool resume_all();
-	bool remove(Node *p_node, String p_key);
+	bool remove(Object *p_node, String p_key);
 	bool remove_all();
 
 	bool seek(real_t p_time);
 	real_t tell() const;
 	real_t get_runtime() const;
 
-	bool interpolate_property(Node *p_node
+	bool interpolate_property(Object *p_node
 		, String p_property
 		, Variant p_initial_val
 		, Variant p_final_val
@@ -165,7 +191,7 @@ public:
 		, real_t p_delay = 0
 	);
 
-	bool interpolate_method(Node *p_node
+	bool interpolate_method(Object *p_node
 		, String p_method
 		, Variant p_initial_val
 		, Variant p_final_val
@@ -175,16 +201,22 @@ public:
 		, real_t p_delay = 0
 	);
 
-	bool interpolate_callback(Node *p_node
-		, String p_callback
+	bool interpolate_callback(Object *p_object
 		, real_t p_times_in_sec
-		, Variant p_arg = Variant()
+		, String p_callback
+		, VARIANT_ARG_DECLARE
 	);
 
-	bool follow_property(Node *p_node
+	bool interpolate_deferred_callback(Object *p_object
+		, real_t p_times_in_sec
+		, String p_callback
+		, VARIANT_ARG_DECLARE
+	);
+
+	bool follow_property(Object *p_node
 		, String p_property
 		, Variant p_initial_val
-		, Node *p_target
+		, Object *p_target
 		, String p_target_property
 		, real_t p_times_in_sec
 		, TransitionType p_trans_type
@@ -192,10 +224,10 @@ public:
 		, real_t p_delay = 0
 	);
 
-	bool follow_method(Node *p_node
+	bool follow_method(Object *p_node
 		, String p_method
 		, Variant p_initial_val
-		, Node *p_target
+		, Object *p_target
 		, String p_target_method
 		, real_t p_times_in_sec
 		, TransitionType p_trans_type
@@ -203,9 +235,9 @@ public:
 		, real_t p_delay = 0
 	);
 
-	bool targeting_property(Node *p_node
+	bool targeting_property(Object *p_node
 		, String p_property
-		, Node *p_initial
+		, Object *p_initial
 		, String p_initial_property
 		, Variant p_final_val
 		, real_t p_times_in_sec
@@ -214,9 +246,9 @@ public:
 		, real_t p_delay = 0
 	);
 
-	bool targeting_method(Node *p_node
+	bool targeting_method(Object *p_node
 		, String p_method
-		, Node *p_initial
+		, Object *p_initial
 		, String p_initial_method
 		, Variant p_final_val
 		, real_t p_times_in_sec

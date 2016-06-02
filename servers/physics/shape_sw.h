@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -438,7 +438,7 @@ struct MotionShapeSW : public ShapeSW {
 		}
 		return support;
 	}
-	virtual void get_supports(const Vector3& p_normal,int p_max,Vector3 *r_supports,int & r_amount) const {}
+	virtual void get_supports(const Vector3& p_normal,int p_max,Vector3 *r_supports,int & r_amount) const { r_amount=0; }
 	bool intersect_segment(const Vector3& p_begin,const Vector3& p_end,Vector3 &r_result, Vector3 &r_normal) const { return false; }
 
 	Vector3 get_moment_of_inertia(float p_mass) const { return Vector3(); }

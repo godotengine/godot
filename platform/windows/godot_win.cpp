@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -115,32 +115,32 @@ PCHAR*
         return argv;
     }
 
-char* mb_to_utf8(const char* mbs) {
-
-	int wlen = MultiByteToWideChar(CP_ACP,0,mbs,-1,NULL,0); // returns 0 if failed
-	wchar_t *wbuf = new wchar_t[wlen + 1];
-	MultiByteToWideChar(CP_ACP,0,mbs,-1,wbuf,wlen);
-	wbuf[wlen]=0;
-
-	int ulen = WideCharToMultiByte(CP_UTF8,0,wbuf,-1,NULL,0,NULL,NULL);
+char* wc_to_utf8(const wchar_t* wc) {
+	int ulen = WideCharToMultiByte(CP_UTF8,0,wc,-1,NULL,0,NULL,NULL);
 	char * ubuf = new char[ulen + 1];
-	WideCharToMultiByte(CP_UTF8,0,wbuf,-1,ubuf,ulen,NULL,NULL);
+	WideCharToMultiByte(CP_UTF8,0,wc,-1,ubuf,ulen,NULL,NULL);
 	ubuf[ulen] = 0;
 	return ubuf;
 }
 
-int main(int argc, char** argv) {
+int widechar_main(int argc, wchar_t** argv) {
 
 	OS_Windows os(NULL);
 
 	setlocale(LC_CTYPE, "");
 
 	char ** argv_utf8 = new char*[argc];
+
 	for(int i=0; i<argc; ++i) {
-		argv_utf8[i] = mb_to_utf8(argv[i]);
+		argv_utf8[i] = wc_to_utf8(argv[i]);
 	}
 
-	Main::setup(argv_utf8[0], argc - 1, &argv_utf8[1]);
+	Error err = Main::setup(argv_utf8[0], argc - 1, &argv_utf8[1]);
+
+	if (err!=OK)
+		return 255;
+
+
 	if (Main::start())
 		os.run();
 	Main::cleanup();
@@ -154,82 +154,30 @@ int main(int argc, char** argv) {
 	return os.get_exit_code();
 };
 
+int main(int _argc, char** _argv) {
+	// _argc and _argv are ignored
+	// we are going to use the WideChar version of them instead
+
+	LPWSTR *wc_argv;
+	int    argc;
+	int    result;
+
+	wc_argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+
+	if( NULL == wc_argv )	{
+		wprintf(L"CommandLineToArgvW failed\n");
+		return 0;
+	}
+
+	result = widechar_main(argc, wc_argv);
+
+	LocalFree(wc_argv);
+	return result;
+}
+
 HINSTANCE godot_hinstance = NULL;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)	{
-
-    int    argc;
-    char** argv;
-
-    char*  arg;
-    int    index;
-    int    result;
-
-    // count the arguments
-
-    argc = 1;
-    arg  = lpCmdLine;
-
-    while (arg[0] != 0) {
-
-        while (arg[0] != 0 && arg[0] == ' ') {
-            arg++;
-        }
-
-        if (arg[0] != 0) {
-
-            argc++;
-
-            while (arg[0] != 0 && arg[0] != ' ') {
-                arg++;
-            }
-
-        }
-
-    }
-
-    // tokenize the arguments
-
-    argv = (char**)malloc(argc * sizeof(char*));
-
-    arg = lpCmdLine;
-    index = 1;
-
-    while (arg[0] != 0) {
-
-        while (arg[0] != 0 && arg[0] == ' ') {
-            arg++;
-        }
-
-        if (arg[0] != 0) {
-
-            argv[index] = arg;
-            index++;
-
-            while (arg[0] != 0 && arg[0] != ' ') {
-                arg++;
-            }
-
-            if (arg[0] != 0) {
-                arg[0] = 0;
-                arg++;
-            }
-
-        }
-
-    }
-
-    // put the program name into argv[0]
-
-    char filename[_MAX_PATH];
-
-    GetModuleFileName(NULL, filename, _MAX_PATH);
-    argv[0] = filename;
-
-    // call the user specified main function
-
-    result = main(argc, argv);
-
-    free(argv);
-    return result;
+	godot_hinstance = hInstance;
+	return main(0,NULL);
 }

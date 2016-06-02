@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
-#include "scene/gui/file_dialog.h"
+#include "tools/editor/editor_file_dialog.h"
 
 class EditorSubScene : public ConfirmationDialog {
 
@@ -42,7 +42,7 @@ class EditorSubScene : public ConfirmationDialog {
 	Tree *tree;
 	Node *scene;
 
-	FileDialog *file_dialog;
+	EditorFileDialog *file_dialog;
 
 	void _fill_tree(Node* p_node,TreeItem *p_parent);
 	void _reown(Node* p_node,List<Node*> *p_to_reown);

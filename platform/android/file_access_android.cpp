@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,16 +29,16 @@
 #include "file_access_android.h"
 #include "print_string.h"
 
-#ifdef ANDROID_NATIVE_ACTIVITY
+
 
 
 AAssetManager *FileAccessAndroid::asset_manager=NULL;
 
 
-void FileAccessAndroid::make_default() {
+/*void FileAccessAndroid::make_default() {
 
 	create_func=create_android;
-}
+}*/
 
 FileAccess* FileAccessAndroid::create_android() {
 
@@ -46,14 +46,13 @@ FileAccess* FileAccessAndroid::create_android() {
 }
 
 
-Error FileAccessAndroid::open(const String& p_path, int p_mode_flags) {
+Error FileAccessAndroid::_open(const String& p_path, int p_mode_flags) {
 
 	String path=fix_path(p_path).simplify_path();
 	if (path.begins_with("/"))
 		path=path.substr(1,path.length());
 	else if (path.begins_with("res://"))
 		path=path.substr(6,path.length());
-
 
 
 	ERR_FAIL_COND_V(p_mode_flags&FileAccess::WRITE,ERR_UNAVAILABLE); //can't write on android..
@@ -123,7 +122,7 @@ uint8_t FileAccessAndroid::get_8() const {
 	}
 
 
-	uint8_t byte;	
+	uint8_t byte;
 	AAsset_read(a,&byte,1);
 	pos++;
 	return byte;
@@ -133,12 +132,18 @@ int FileAccessAndroid::get_buffer(uint8_t *p_dst, int p_length) const {
 
 
 	off_t r = AAsset_read(a,p_dst,p_length);
+
+	if (pos+p_length >len ) {
+		eof=true;
+	}
+
 	if (r>=0) {
+
 		pos+=r;
 		if (pos>len) {
 			pos=len;
-			eof=true;
 		}
+
 	}
 	return r;
 
@@ -184,4 +189,4 @@ FileAccessAndroid::~FileAccessAndroid()
 {
 	close();
 }
-#endif
+

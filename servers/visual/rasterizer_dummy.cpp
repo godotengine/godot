@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -219,6 +219,21 @@ void RasterizerDummy::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_
 	Shader *shader=shader_owner.get(p_shader);
 	ERR_FAIL_COND(!shader);
 
+}
+
+
+void RasterizerDummy::shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture) {
+
+}
+
+RID RasterizerDummy::shader_get_default_texture_param(RID p_shader, const StringName& p_name) const {
+
+	return RID();
+}
+
+Variant RasterizerDummy::shader_get_default_param(RID p_shader, const StringName& p_name) {
+
+	return Variant();
 }
 
 /* COMMON MATERIAL API */
@@ -1482,7 +1497,7 @@ void RasterizerDummy::begin_shadow_map( RID p_light_instance, int p_shadow_pass 
 
 }
 
-void RasterizerDummy::set_camera(const Transform& p_world,const CameraMatrix& p_projection) {
+void RasterizerDummy::set_camera(const Transform& p_world, const CameraMatrix& p_projection, bool p_ortho_hint) {
 
 
 }
@@ -1530,9 +1545,36 @@ void RasterizerDummy::end_frame() {
 
 }
 
+RID RasterizerDummy::canvas_light_occluder_create() {
+	return RID();
+}
+
+void RasterizerDummy::canvas_light_occluder_set_polylines(RID p_occluder, const DVector<Vector2>& p_lines) {
+
+
+}
+
+RID RasterizerDummy::canvas_light_shadow_buffer_create(int p_width) {
+
+	return RID();
+}
+
+void RasterizerDummy::canvas_light_shadow_buffer_update(RID p_buffer, const Matrix32& p_light_xform, int p_light_mask,float p_near, float p_far, CanvasLightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache) {
+
+
+}
+
+void RasterizerDummy::canvas_debug_viewport_shadows(CanvasLight* p_lights_with_shadow) {
+
+
+}
+
 /* CANVAS API */
 
 
+void RasterizerDummy::begin_canvas_bg() {
+
+}
 void RasterizerDummy::canvas_begin() {
 
 
@@ -1603,6 +1645,11 @@ void RasterizerDummy::canvas_draw_polygon(int p_vertex_count, const int* p_indic
 }
 
 void RasterizerDummy::canvas_set_transform(const Matrix32& p_transform) {
+
+
+}
+
+void RasterizerDummy::canvas_render_items(CanvasItem *p_item_list,int p_z,const Color& p_modulate,CanvasLight *p_light) {
 
 
 }
@@ -1739,6 +1786,11 @@ bool RasterizerDummy::is_skeleton(const RID& p_rid) const {
 bool RasterizerDummy::is_environment(const RID& p_rid) const {
 
 	return environment_owner.owns(p_rid);
+}
+
+bool RasterizerDummy::is_canvas_light_occluder(const RID& p_rid) const {
+
+	return false;
 }
 
 bool RasterizerDummy::is_shader(const RID& p_rid) const {
@@ -1896,6 +1948,9 @@ bool RasterizerDummy::has_feature(VS::Features p_feature) const {
 
 }
 
+void RasterizerDummy::restore_framebuffer() {
+
+}
 
 RasterizerDummy::RasterizerDummy() {
 

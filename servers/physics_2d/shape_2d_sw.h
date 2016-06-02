@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,6 +78,8 @@ public:
 
 	virtual bool is_concave() const { return false; }
 
+	virtual bool contains_point(const Vector2& p_point) const=0;
+
 	virtual void project_rangev(const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const=0;
 	virtual void project_range_castv(const Vector2& p_cast, const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const=0;
 	virtual Vector2 get_support(const Vector2& p_normal) const;
@@ -85,7 +87,6 @@ public:
 
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const=0;
 	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const=0;
-
 	virtual void set_data(const Variant& p_data)=0;
 	virtual Variant get_data() const=0;
 
@@ -172,6 +173,7 @@ public:
 	virtual void project_rangev(const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal,p_transform,r_min,r_max); }
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
+	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
 	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const;
 
@@ -214,6 +216,7 @@ public:
 	virtual void project_rangev(const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal,p_transform,r_min,r_max); }
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
+	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
 	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const;
 
@@ -261,6 +264,7 @@ public:
 	virtual void project_rangev(const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal,p_transform,r_min,r_max); }
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
+	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
 	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const;
 
@@ -298,6 +302,7 @@ public:
 	virtual void project_rangev(const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal,p_transform,r_min,r_max); }
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
+	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
 	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const;
 
@@ -337,6 +342,7 @@ public:
 	virtual void project_rangev(const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal,p_transform,r_min,r_max); }
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
+	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
 	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const;
 
@@ -424,6 +430,7 @@ public:
 	virtual void project_rangev(const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal,p_transform,r_min,r_max); }
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
+	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
 	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const;
 
@@ -486,6 +493,7 @@ public:
 	virtual void project_rangev(const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal,p_transform,r_min,r_max); }
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
+	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
 	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const;
 
@@ -573,6 +581,7 @@ public:
 	virtual void project_range(const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const { /*project_range(p_normal,p_transform,r_min,r_max);*/ }
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
+	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
 
 	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const { return 0; }

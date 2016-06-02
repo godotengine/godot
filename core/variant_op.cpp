@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -165,6 +165,12 @@ r_valid=false;\
 return;}
 
 #define DEFAULT_OP_ARRAY_EQ(m_name,m_type)\
+DEFAULT_OP_ARRAY_OP(m_name,m_type,!=,!=,true,false,false)
+
+#define DEFAULT_OP_ARRAY_LT(m_name,m_type)\
+DEFAULT_OP_ARRAY_OP(m_name,m_type,<,!=,false,a_len<array_b.size(),true)
+
+#define DEFAULT_OP_ARRAY_OP(m_name,m_type,m_opa,m_opb,m_ret_def,m_ret_s,m_ret_f)\
 case m_name: {	\
 	if (p_a.type!=p_b.type) {\
 		r_valid=false;\
@@ -174,19 +180,19 @@ case m_name: {	\
 	const DVector<m_type> &array_b=*reinterpret_cast<const DVector<m_type> *>(p_b._data._mem);\
 \
 	int a_len = array_a.size();\
-	if (a_len!=array_b.size()){\
-		_RETURN( false);\
+	if (a_len m_opa array_b.size()){\
+		_RETURN( m_ret_s);\
 	}else {\
 \
 		DVector<m_type>::Read ra = array_a.read();\
 		DVector<m_type>::Read rb = array_b.read();\
 \
 		for(int i=0;i<a_len;i++) {\
-			if (ra[i]!=rb[i])\
-				_RETURN( false);\
+			if (ra[i] m_opb rb[i])\
+				_RETURN( m_ret_f);\
 		}\
 \
-		_RETURN( true);\
+		_RETURN( m_ret_def);\
 	}\
 }
 
@@ -290,8 +296,9 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 					if (arr_b->size()!=l)
 						_RETURN( false );
 					for(int i=0;i<l;i++) {
-						if (!(arr_a[i]==arr_b[i]))
+						if (!((*arr_a)[i]==(*arr_b)[i])) {
 							_RETURN( false );
+						}
 					}
 
 					_RETURN( true );
@@ -356,14 +363,33 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				} break;
 				DEFAULT_OP_FAIL(INPUT_EVENT);
 				DEFAULT_OP_FAIL(DICTIONARY);
-				DEFAULT_OP_FAIL(ARRAY);
-				DEFAULT_OP_FAIL(RAW_ARRAY);
-				DEFAULT_OP_FAIL(INT_ARRAY);
-				DEFAULT_OP_FAIL(REAL_ARRAY);
-				DEFAULT_OP_FAIL(STRING_ARRAY);
-				DEFAULT_OP_FAIL(VECTOR2_ARRAY);
-				DEFAULT_OP_FAIL(VECTOR3_ARRAY);
-				DEFAULT_OP_FAIL(COLOR_ARRAY);
+				case ARRAY: {
+
+					if (p_b.type!=ARRAY)
+						_RETURN( false );
+
+					const Array *arr_a=reinterpret_cast<const Array*>(p_a._data._mem);
+					const Array *arr_b=reinterpret_cast<const Array*>(p_b._data._mem);
+
+					int l = arr_a->size();
+					if (arr_b->size()<l)
+						_RETURN( false );
+					for(int i=0;i<l;i++) {
+						if (!((*arr_a)[i]<(*arr_b)[i])) {
+							_RETURN( true );
+						}
+					}
+
+					_RETURN( false );
+
+				} break;
+				DEFAULT_OP_ARRAY_LT(RAW_ARRAY,uint8_t);
+				DEFAULT_OP_ARRAY_LT(INT_ARRAY,int);
+				DEFAULT_OP_ARRAY_LT(REAL_ARRAY,real_t);
+				DEFAULT_OP_ARRAY_LT(STRING_ARRAY,String);
+				DEFAULT_OP_ARRAY_LT(VECTOR2_ARRAY,Vector3);
+				DEFAULT_OP_ARRAY_LT(VECTOR3_ARRAY,Vector3);
+				DEFAULT_OP_ARRAY_LT(COLOR_ARRAY,Color);
 				case VARIANT_MAX: {
 					r_valid=false;
 					return;
@@ -471,7 +497,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 						}
 						const Array &array_a=*reinterpret_cast<const Array *>(p_a._data._mem);
 						const Array &array_b=*reinterpret_cast<const Array *>(p_b._data._mem);
-						Array sum;
+						Array sum(array_a.is_shared() || array_b.is_shared());
 						int asize=array_a.size();
 						int bsize=array_b.size();
 						sum.resize(asize+bsize);
@@ -552,12 +578,29 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 					if (p_b.type==MATRIX32) {
 						_RETURN( *p_a._data._matrix32 * *p_b._data._matrix32 );
 					};
+					if (p_b.type==VECTOR2) {
+						_RETURN( p_a._data._matrix32->xform( *(const Vector2*)p_b._data._mem) );
+					};
 					r_valid=false;
 					return;
 				} break;
 				DEFAULT_OP_LOCALMEM_NUM(*,VECTOR3,Vector3);
 				DEFAULT_OP_FAIL(PLANE);
-				DEFAULT_OP_FAIL(QUAT);
+				case QUAT: {
+
+					switch(p_b.type) {
+						case VECTOR3: {
+
+							_RETURN( reinterpret_cast<const Quat*>(p_a._data._mem)->xform( *(const Vector3*)p_b._data._mem) );
+						} break;
+						case QUAT: {
+
+							_RETURN( *reinterpret_cast<const Quat*>(p_a._data._mem) * *reinterpret_cast<const Quat*>(p_b._data._mem) );
+						} break;
+					};
+					r_valid=false;
+					return;
+				} break;
 				DEFAULT_OP_FAIL(_AABB);
 				case MATRIX3: {
 
@@ -619,7 +662,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 		case OP_DIVIDE: {
 			switch(p_a.type) {
 
-				DEFAULT_OP_FAIL(NIL);				
+				DEFAULT_OP_FAIL(NIL);
 				DEFAULT_OP_NUM(/,BOOL,_bool);
 				case INT: {
 					switch(p_b.type) {
@@ -736,6 +779,24 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				}
 #endif
 				_RETURN( p_a._data._int % p_b._data._int );
+
+			} else if (p_a.type==STRING) {
+				const String* format=reinterpret_cast<const String*>(p_a._data._mem);
+
+				String result;
+				bool error;
+				if (p_b.type==ARRAY) {
+					// e.g. "frog %s %d" % ["fish", 12]
+					const Array* args=reinterpret_cast<const Array*>(p_b._data._mem);
+					result=format->sprintf(*args, &error);
+				} else {
+					// e.g. "frog %d" % 12
+					Array args;
+					args.push_back(p_b);
+					result=format->sprintf(args, &error);
+				}
+				r_valid = !error;
+				_RETURN(result);
 			}
 
 			r_valid=false;
@@ -922,20 +983,30 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 		case REAL: {  return;  } break;
 		case STRING: {
 
-			if (p_value.type!=Variant::STRING)
-				return;
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-				//string index
 
-				int idx=p_index;
-				String *str=reinterpret_cast<String*>(_data._mem);
-				if (idx >=0 && idx<str->length()) {
-					String chr = p_value;
-					*str = str->substr(0,idx-1)+chr+str->substr(idx+1,str->length());
-					valid=true;
-					return;
-				}
+			if (p_index.type!=Variant::INT && p_index.type!=Variant::REAL)
+				return;
+
+			int idx=p_index;
+			String *str=reinterpret_cast<String*>(_data._mem);
+			if (idx <0 || idx>=str->length())
+				return;
+
+			String chr;
+			if (p_value.type==Variant::INT || p_value.type==Variant::REAL) {
+
+				chr = String::chr(p_value);
+			} else if (p_value.type==Variant::STRING) {
+
+				chr = p_value;
+			} else {
+				return;
 			}
+
+			*str = str->substr(0,idx)+chr+str->substr(idx+1,str->length());
+			valid=true;
+			return;
+
 
 		} break;
 		case VECTOR2: {
@@ -951,7 +1022,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 					Vector2 *v=reinterpret_cast<Vector2*>(_data._mem);
 					valid=true;
-					v[idx]=p_value;
+					(*v)[idx]=p_value;
 					return;
 				}
 			} else if (p_index.get_type()==Variant::STRING) {
@@ -1045,7 +1116,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 					Vector3 *v=reinterpret_cast<Vector3*>(_data._mem);
 					valid=true;
-					v[idx]=p_value;
+					(*v)[idx]=p_value;
 					return;
 				}
 			} else if (p_index.get_type()==Variant::STRING) {
@@ -1280,6 +1351,22 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 				} else if (*str=="v" ) {
 					valid=true;
 					v->set_hsv(v->get_h(),v->get_s(),p_value);
+					return;
+				} else if (*str=="r8" ) {
+					valid=true;
+					v->r=float(p_value)/255.0;
+					return;
+				} else if (*str=="g8" ) {
+					valid=true;
+					v->g=float(p_value)/255.0;
+					return;
+				} else if (*str=="b8" ) {
+					valid=true;
+					v->b=float(p_value)/255.0;
+					return;
+				} else if (*str=="a8" ) {\
+					valid=true;
+					v->a=float(p_value)/255.0;
 					return;
 				}
 			} else if (p_index.get_type()==Variant::INT) {
@@ -1674,6 +1761,19 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 					Vector2 v=p_value;
 					ie.screen_drag.speed_x=v.x;
 					ie.screen_drag.speed_y=v.y;
+					return;
+				}
+			}
+			if (ie.type == InputEvent::ACTION) {
+
+				if (str =="action") {
+					valid=true;
+					ie.action.action=p_value;
+					return;
+				}
+				else if (str == "pressed") {
+					valid=true;
+					ie.action.pressed=p_value;
 					return;
 				}
 			}
@@ -2111,6 +2211,18 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				} else if (*str=="v" ) {
 					valid=true;
 					return v->get_v();
+				} else if (*str=="r8") {
+					valid=true;
+					return (int)Math::round(v->r*255.0);
+				} else if (*str=="g8" ) {
+					valid=true;
+					return (int)Math::round(v->g*255.0);
+				} else if (*str=="b8" ) {
+					valid=true;
+					return (int)Math::round(v->b*255.0);
+				} else if (*str=="a8" ) {
+					valid=true;
+					return (int)Math::round(v->a*255.0);
 				}
 			}  else if (p_index.get_type()==Variant::INT) {
 
@@ -2297,7 +2409,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				} if (str=="value") {
 					valid=true;
 					return ie.joy_motion.axis_value;
-				}				
+				}
 			}
 
 			if (ie.type==InputEvent::SCREEN_TOUCH) {
@@ -2353,6 +2465,17 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				} if (str=="speed") {
 					valid=true;
 					return Vector2(ie.screen_drag.speed_x,ie.screen_drag.speed_y);
+				}
+			}
+			if (ie.type == InputEvent::ACTION) {
+
+				if (str =="action") {
+					valid=true;
+					return ie.action.action;
+				}
+				else if (str == "pressed") {
+					valid=true;
+					return ie.action.pressed;
 				}
 			}
 
@@ -2492,7 +2615,7 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 				String idx=p_index;
 				const String *str=reinterpret_cast<const String*>(_data._mem);
 
-				return str->find("idx")!=-1;
+				return str->find(idx)!=-1;
 			}
 
 		} break;
@@ -2540,7 +2663,7 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 			if (l) {
 				for(int i=0;i<l;i++) {
 
-					if ((*arr)[i]==p_index)
+					if (evaluate(OP_EQUAL,(*arr)[i],p_index))
 						return true;
 				}
 
@@ -2723,9 +2846,9 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		} break;
 		case MATRIX32: {
 
-			p_list->push_back( PropertyInfo(Variant::REAL,"x"));
-			p_list->push_back( PropertyInfo(Variant::REAL,"y"));
-			p_list->push_back( PropertyInfo(Variant::REAL,"o"));
+			p_list->push_back( PropertyInfo(Variant::VECTOR2,"x"));
+			p_list->push_back( PropertyInfo(Variant::VECTOR2,"y"));
+			p_list->push_back( PropertyInfo(Variant::VECTOR2,"o"));
 
 		} break;
 		case PLANE: {
@@ -2771,6 +2894,10 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back( PropertyInfo(Variant::REAL,"h"));
 			p_list->push_back( PropertyInfo(Variant::REAL,"s"));
 			p_list->push_back( PropertyInfo(Variant::REAL,"v"));
+			p_list->push_back( PropertyInfo(Variant::INT,"r8"));
+			p_list->push_back( PropertyInfo(Variant::INT,"g8"));
+			p_list->push_back( PropertyInfo(Variant::INT,"b8"));
+			p_list->push_back( PropertyInfo(Variant::INT,"a8"));
 
 		} break;
 		case IMAGE: {	} break;
@@ -3304,10 +3431,77 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 
 }
 
+void Variant::blend(const Variant& a, const Variant& b, float c, Variant &r_dst) {
+	if (a.type!=b.type) {
+		if(a.is_num() && b.is_num()) {
+			real_t va=a;
+			real_t vb=b;
+			r_dst=va + vb * c;
+		} else {
+			r_dst=a;
+		}
+		return;
+	}
+
+	switch(a.type) {
+		case NIL: { r_dst=Variant(); } return;
+		case INT:{
+			int va=a._data._int;
+			int vb=b._data._int;
+			r_dst=int(va + vb * c + 0.5);
+		} return;
+		case REAL:{
+			double ra=a._data._real;
+			double rb=b._data._real;
+			r_dst=ra + rb * c;
+		} return;
+		case VECTOR2:{ r_dst=*reinterpret_cast<const Vector2*>(a._data._mem)+*reinterpret_cast<const Vector2*>(b._data._mem)*c; } return;
+		case RECT2:{
+					   const Rect2 *ra = reinterpret_cast<const Rect2*>(a._data._mem);
+					   const Rect2 *rb = reinterpret_cast<const Rect2*>(b._data._mem);
+					   r_dst=Rect2(ra->pos + rb->pos * c, ra->size + rb->size * c);
+				   } return;
+		case VECTOR3:{ r_dst=*reinterpret_cast<const Vector3*>(a._data._mem)+*reinterpret_cast<const Vector3*>(b._data._mem)*c; } return;
+		case _AABB:{
+					   const AABB *ra = reinterpret_cast<const AABB*>(a._data._mem);
+					   const AABB *rb = reinterpret_cast<const AABB*>(b._data._mem);
+					   r_dst=AABB(ra->pos + rb->pos * c, ra->size + rb->size * c);
+				   } return;
+		case QUAT:{
+					  Quat empty_rot;
+					  const Quat *qa = reinterpret_cast<const Quat*>(a._data._mem);
+					  const Quat *qb = reinterpret_cast<const Quat*>(b._data._mem);
+					  r_dst=*qa * empty_rot.slerp(*qb,c);
+				   } return;
+		case COLOR:{
+					   const Color *ca = reinterpret_cast<const Color*>(a._data._mem);
+					   const Color *cb = reinterpret_cast<const Color*>(b._data._mem);
+					   float r = ca->r + cb->r * c;
+					   float g = ca->g + cb->g * c;
+					   float b = ca->b + cb->b * c;
+					   float a = ca->a + cb->a * c;
+					   r = r > 1.0 ? 1.0 : r;
+					   g = g > 1.0 ? 1.0 : g;
+					   b = b > 1.0 ? 1.0 : b;
+					   a = a > 1.0 ? 1.0 : a;
+					   r_dst=Color(r, g, b, a);
+				   } return;
+		default:{ r_dst = c<0.5 ? a : b; } return;
+	}
+}
+
 void Variant::interpolate(const Variant& a, const Variant& b, float c,Variant &r_dst) {
 
 	if (a.type!=b.type) {
-		r_dst=a;
+		if (a.is_num() && b.is_num()) {
+			//not as efficient but..
+			real_t va=a;
+			real_t vb=b;
+			r_dst=(1.0-c) * va + vb * c;
+
+		} else {
+			r_dst=a;
+		}
 		return;
 	}
 
@@ -3319,7 +3513,7 @@ void Variant::interpolate(const Variant& a, const Variant& b, float c,Variant &r
 		case INT:{
 			int va=a._data._int;
 			int vb=b._data._int;
-			r_dst=int((1.0-c) * va + vb * c + 0.5);
+			r_dst=int((1.0-c) * va + vb * c);
 		} return;
 		case REAL:{
 			real_t va=a._data._real;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,7 @@ struct _IP_ResolverPrivate {
 			response = IP_Address();
 			hostname="";
 		};
-		
+
 		QueueItem() {
 			clear();
 		};
@@ -183,7 +183,7 @@ void IP::erase_resolve_item(ResolverID p_id) {
 
 	GLOBAL_LOCK_FUNCTION;
 
-	resolver->queue[p_id].status=IP::RESOLVER_STATUS_DONE;
+	resolver->queue[p_id].status=IP::RESOLVER_STATUS_NONE;
 
 }
 

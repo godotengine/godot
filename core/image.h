@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ typedef Error (*SavePNGFunc)(const String &p_path, Image& p_img);
 
 class Image {
 
-	enum { 
+	enum {
 		MAX_WIDTH=16384, // force a limit somehow
 		MAX_HEIGHT=16384// force a limit somehow
 	};
@@ -55,12 +55,12 @@ public:
 	static SavePNGFunc save_png_func;
 
 	enum Format {
-		FORMAT_GRAYSCALE, ///< one byte per pixel, 0-255 
-		FORMAT_INTENSITY, ///< one byte per pixel, 0-255 
-		FORMAT_GRAYSCALE_ALPHA, ///< two bytes per pixel, 0-255. alpha 0-255 
-		FORMAT_RGB, ///< one byte R, one byte G, one byte B 
-		FORMAT_RGBA, ///< one byte R, one byte G, one byte B, one byte A 
-		FORMAT_INDEXED, ///< index byte 0-256, and after image end, 256*3 bytes of palette 
+		FORMAT_GRAYSCALE, ///< one byte per pixel, 0-255
+		FORMAT_INTENSITY, ///< one byte per pixel, 0-255
+		FORMAT_GRAYSCALE_ALPHA, ///< two bytes per pixel, 0-255. alpha 0-255
+		FORMAT_RGB, ///< one byte R, one byte G, one byte B
+		FORMAT_RGBA, ///< one byte R, one byte G, one byte B, one byte A
+		FORMAT_INDEXED, ///< index byte 0-256, and after image end, 256*3 bytes of palette
 		FORMAT_INDEXED_ALPHA, ///< index byte 0-256, and after image end, 256*4 bytes of palette (alpha)
 		FORMAT_YUV_422,
 		FORMAT_YUV_444,
@@ -87,14 +87,17 @@ public:
 		FORMAT_MAX
 	};
 
+	static const char* format_names[FORMAT_MAX];
 	enum Interpolation {
-	
+
 		INTERPOLATE_NEAREST,
 		INTERPOLATE_BILINEAR,
+		INTERPOLATE_CUBIC,
 		/* INTERPOLATE GAUSS */
 	};
 
-	static Image (*_png_mem_loader_func)(const uint8_t* p_png);
+	static Image (*_png_mem_loader_func)(const uint8_t* p_png,int p_size);
+	static Image (*_jpg_mem_loader_func)(const uint8_t* p_png,int p_size);
 	static void (*_image_compress_bc_func)(Image *);
 	static void (*_image_compress_pvrtc2_func)(Image *);
 	static void (*_image_compress_pvrtc4_func)(Image *);
@@ -184,7 +187,7 @@ private:
 	DVector<uint8_t> data;
 	int width,height,mipmaps;
 
-	
+
 
 	_FORCE_INLINE_ BColor _get_pixel(int p_x,int p_y,const unsigned char *p_data,int p_data_size) const;
 	_FORCE_INLINE_ BColor _get_pixelw(int p_x,int p_y,int p_width,const unsigned char *p_data,int p_data_size) const;
@@ -205,7 +208,7 @@ public:
 	int get_width() const; ///< Get image width
 	int get_height() const; ///< Get image height
 	int get_mipmaps() const;
-	
+
 	/**
 	 * Get a pixel from the image. for grayscale or indexed formats, use Color::gray to obtain the actual
 	 * value.
@@ -215,7 +218,7 @@ public:
 	 * Set a pixel into the image. for grayscale or indexed formats, a suitable Color constructor.
 	 */
 	void put_pixel(int p_x,int p_y, const Color& p_color,int p_mipmap=0); /* alpha and index are averaged */
-	
+
 	/**
 	 * Convert the image to another format, as close as it can be done.
 	 */
@@ -228,7 +231,7 @@ public:
 		ret.convert((Format)p_new_format);
 		return ret;
 	};
-	
+
 	/**
 	 * Get the current image format.
 	 */
@@ -236,35 +239,38 @@ public:
 
 	int get_mipmap_offset(int p_mipmap) const; //get where the mipmap begins in data
 	void get_mipmap_offset_and_size(int p_mipmap,int &r_ofs, int &r_size) const; //get where the mipmap begins in data
+	void get_mipmap_offset_size_and_dimensions(int p_mipmap,int &r_ofs, int &r_size,int &w, int& h) const; //get where the mipmap begins in data
 
 	/**
 	 * Resize the image, using the prefered interpolation method.
 	 * Indexed-Color images always use INTERPOLATE_NEAREST.
-	 */ 
+	 */
 
 	void resize_to_po2(bool p_square=false);
 	void resize( int p_width, int p_height, Interpolation p_interpolation=INTERPOLATE_BILINEAR );
 	Image resized( int p_width, int p_height, int p_interpolation=INTERPOLATE_BILINEAR );
+	void shrink_x2();
+	void expand_x2_hq2x();
 	/**
 	 * Crop the image to a specific size, if larger, then the image is filled by black
 	 */
 	void crop( int p_width, int p_height );
-	
-	
+
+
 	void flip_x();
 	void flip_y();
 	/**
-	 * Generate a mipmap to an image (creates an image 1/4 the size, with averaging of 4->1) 
+	 * Generate a mipmap to an image (creates an image 1/4 the size, with averaging of 4->1)
 	 */
 	Error generate_mipmaps(int p_amount=-1,bool p_keep_existing=false);
 
 	void clear_mipmaps();
 
-	
+
 	/**
 	 * Generate a normal map from a grayscale image
 	 */
-	 
+
 	void make_normalmap(float p_height_scale=1.0);
 
 	/**
@@ -273,26 +279,26 @@ public:
 	void create(int p_width, int p_height, bool p_use_mipmaps, Format p_format);
 	void create(int p_width, int p_height, int p_mipmaps, Format p_format, const DVector<uint8_t>& p_data);
 
-	void create( const char ** p_xpm );	
+	void create( const char ** p_xpm );
 	/**
 	 * returns true when the image is empty (0,0) in size
 	 */
 	bool empty() const;
-	
+
 	DVector<uint8_t> get_data() const;
-	
+
 	Error load(const String& p_path);
 	Error save_png(const String& p_path);
-	
-	/** 
+
+	/**
 	 * create an empty image
 	 */
 	Image();
-	/** 
+	/**
 	 * create an empty image of a specific size and format
 	 */
 	Image(int p_width, int p_height, bool p_use_mipmaps, Format p_format);
-	/** 
+	/**
 	 * import an image of a specific size and format from a pointer
 	 */
 	Image(int p_width, int p_height, int p_mipmaps, Format p_format, const DVector<uint8_t>& p_data);
@@ -304,12 +310,13 @@ public:
 	};
 
 	AlphaMode detect_alpha() const;
+	bool is_invisible() const;
 
 	void put_indexed_pixel(int p_x, int p_y, uint8_t p_idx,int p_mipmap=0);
 	uint8_t get_indexed_pixel(int p_x, int p_y,int p_mipmap=0) const;
 	void set_pallete(const DVector<uint8_t>& p_data);
 
-	
+
 	static int get_format_pixel_size(Format p_format);
 	static int get_format_pixel_rshift(Format p_format);
 	static int get_format_pallete_size(Format p_format);
@@ -334,6 +341,7 @@ public:
 	Image compressed(int p_mode); /* from the Image::CompressMode enum */
 	Error decompress();
 	Image decompressed() const;
+	bool is_compressed() const;
 
 	void fix_alpha_edges();
 	void premultiply_alpha();
@@ -348,7 +356,9 @@ public:
 	Image get_rect(const Rect2& p_area) const;
 
 	static void set_compress_bc_func(void (*p_compress_func)(Image *));
-	Image(const uint8_t* p_mem_png);
+	static String get_format_name(Format p_format);
+
+	Image(const uint8_t* p_mem_png_jpg, int p_len=-1);
 	Image(const char **p_xpm);
 	~Image();
 

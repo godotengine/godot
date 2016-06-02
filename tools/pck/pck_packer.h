@@ -1,10 +1,10 @@
-#include "core/object.h"
+#include "core/reference.h"
 
 class FileAccess;
 
-class PCKPacker : public Object {
+class PCKPacker : public Reference {
 
-	OBJ_TYPE(PCKPacker, Object);
+	OBJ_TYPE(PCKPacker, Reference);
 
 	FileAccess* file;
 	int alignment;

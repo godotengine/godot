@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,54 +32,78 @@
 
 
 void Popup::_input_event(InputEvent p_event) {
-	
+
 
 }
 
 void Popup::_notification(int p_what) {
-	
+
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 		if (popped_up && !is_visible()) {
 			popped_up=false;
 			notification(NOTIFICATION_POPUP_HIDE);
 			emit_signal("popup_hide");
 		}
+
+		update_configuration_warning();
 	}
+
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+		//small helper to make editing of these easier in editor
+#ifdef TOOLS_ENABLED
+		if (get_tree()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
+			set_as_toplevel(false);
+		}
+#endif
+	}
+
 }
 
 void Popup::_fix_size() {
-	
-	Control *window = get_window();
-	ERR_FAIL_COND(!window);
-	
-	Point2 pos = get_pos();
-	Size2 size = get_size();		
-	Point2 window_size = window==this ? get_parent_area_size()  :window->get_size();
 
+
+#if 0
+	Point2 pos = get_pos();
+	Size2 size = get_size();
+	Point2 window_size = window==this ? get_parent_area_size()  :window->get_size();
+#else
+
+	Point2 pos = get_global_pos();
+	Size2 size = get_size();
+	Point2 window_size = get_viewport_rect().size;
+
+#endif
 	if (pos.x+size.width > window_size.width)
 		pos.x=window_size.width-size.width;
 	if (pos.x<0)
 		pos.x=0;
-	
+
 	if (pos.y+size.height > window_size.height)
 		pos.y=window_size.height-size.height;
 	if (pos.y<0)
 		pos.y=0;
+#if 0
 	if (pos!=get_pos())
 		set_pos(pos);
+#else
+	if (pos!=get_pos())
+		set_global_pos(pos);
+
+#endif
 
 }
 
 
-void Popup::popup_centered_minsize(const Size2& p_minsize) {
+void Popup::set_as_minsize() {
 
-
-	Size2 total_minsize=p_minsize;
+	Size2 total_minsize;
 
 	for(int i=0;i<get_child_count();i++) {
 
 		Control *c=get_child(i)->cast_to<Control>();
 		if (!c)
+			continue;
+		if (c->is_hidden())
 			continue;
 
 		Size2 minsize = c->get_combined_minimum_size();
@@ -101,6 +125,51 @@ void Popup::popup_centered_minsize(const Size2& p_minsize) {
 
 		}
 
+		print_line(String(c->get_type())+": "+minsize);
+
+		total_minsize.width = MAX( total_minsize.width, minsize.width );
+		total_minsize.height = MAX( total_minsize.height, minsize.height );
+	}
+
+	set_size(total_minsize);
+
+}
+
+
+void Popup::popup_centered_minsize(const Size2& p_minsize) {
+
+
+	Size2 total_minsize=p_minsize;
+
+	for(int i=0;i<get_child_count();i++) {
+
+		Control *c=get_child(i)->cast_to<Control>();
+		if (!c)
+			continue;
+		if (c->is_hidden())
+			continue;
+
+		Size2 minsize = c->get_combined_minimum_size();
+
+		for(int j=0;j<2;j++) {
+
+			Margin m_beg = Margin(0+j);
+			Margin m_end = Margin(2+j);
+
+			float margin_begin = c->get_margin(m_beg);
+			float margin_end = c->get_margin(m_end);
+			AnchorType anchor_begin = c->get_anchor(m_beg);
+			AnchorType anchor_end = c->get_anchor(m_end);
+
+			if (anchor_begin == ANCHOR_BEGIN)
+				minsize[j]+=margin_begin;
+			if (anchor_end == ANCHOR_END)
+				minsize[j]+=margin_end;
+
+		}
+
+		print_line(String(c->get_type())+": "+minsize);
+
 		total_minsize.width = MAX( total_minsize.width, minsize.width );
 		total_minsize.height = MAX( total_minsize.height, minsize.height );
 	}
@@ -112,15 +181,13 @@ void Popup::popup_centered_minsize(const Size2& p_minsize) {
 }
 
 void Popup::popup_centered(const Size2& p_size) {
-	
-	Control *window = get_window();
-	ERR_FAIL_COND(!window);
 
+	Point2 window_size = get_viewport_rect().size;
 
 	emit_signal("about_to_show");
 	Rect2 rect;
 	rect.size = p_size==Size2()?get_size():p_size;
-	Point2 window_size = window==this ? get_parent_area_size()  :window->get_size();
+
 	rect.pos = ((window_size-rect.size)/2.0).floor();
 	set_pos( rect.pos );
 	set_size( rect.size );
@@ -138,20 +205,18 @@ void Popup::popup_centered(const Size2& p_size) {
 }
 
 void Popup::popup_centered_ratio(float p_screen_ratio) {
-	
-	
-	Control *window = get_window();
-	ERR_FAIL_COND(!window);
-	
+
+
+
 	emit_signal("about_to_show");
 
 	Rect2 rect;
-	Point2 window_size = window==this ? get_parent_area_size()  :window->get_size();
+	Point2 window_size = get_viewport_rect().size;
 	rect.size = (window_size * p_screen_ratio).floor();
 	rect.pos = ((window_size-rect.size)/2.0).floor();
 	set_pos( rect.pos );
 	set_size( rect.size );
-	
+
 	show_modal(exclusive);
 	_fix_size();
 
@@ -219,6 +284,14 @@ Popup::Popup() {
 	hide();
 }
 
+String Popup::get_configuration_warning() const {
+
+	if (is_visible()) {
+		return TTR("Popups will hide by default unless you call popup() or any of the popup*() functions. Making them visible for editing is fine though, but they will hide upon running.");
+	}
+
+	return String();
+}
 
 Popup::~Popup()
 {

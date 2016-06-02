@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,7 @@ IP_Address::IP_Address(const String& p_string) {
 	}
 	for(int i=0;i<4;i++) {
 
-		field[i]=p_string.get_slice(".",i).to_int();
+		field[i]=p_string.get_slicec('.',i).to_int();
 	}
 }
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,13 +108,14 @@ void Environment::_bind_methods() {
 
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"fxaa/enabled"),_SCS("set_enable_fx"),_SCS("is_fx_enabled"), FX_FXAA);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"background/mode",PROPERTY_HINT_ENUM,"Keep,Default Color,Color,Texture,Cubemap,Texture RGBE,Cubemap RGBE"),_SCS("set_background"),_SCS("get_background"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"background/mode",PROPERTY_HINT_ENUM,"Keep,Default Color,Color,Texture,Cubemap,Canvas"),_SCS("set_background"),_SCS("get_background"));
 	ADD_PROPERTYI( PropertyInfo(Variant::COLOR,"background/color"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_COLOR);
 	ADD_PROPERTYI( PropertyInfo(Variant::OBJECT,"background/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_TEXTURE);
-	ADD_PROPERTYI( PropertyInfo(Variant::OBJECT,"background/cubemap",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_CUBEMAP);
+	ADD_PROPERTYI( PropertyInfo(Variant::OBJECT,"background/cubemap",PROPERTY_HINT_RESOURCE_TYPE,"CubeMap"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_CUBEMAP);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"background/energy",PROPERTY_HINT_RANGE,"0,128,0.01"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_ENERGY);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"background/scale",PROPERTY_HINT_RANGE,"0.001,16,0.001"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_SCALE);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"background/glow",PROPERTY_HINT_RANGE,"0.00,8,0.01"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_GLOW);
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"background/canvas_max_layer"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_CANVAS_MAX_LAYER);
 
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"glow/enabled"),_SCS("set_enable_fx"),_SCS("is_fx_enabled"), FX_GLOW);
 	ADD_PROPERTYI( PropertyInfo(Variant::INT,"glow/blur_passes",PROPERTY_HINT_RANGE,"1,4,1"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_GLOW_BLUR_PASSES);
@@ -182,10 +183,10 @@ void Environment::_bind_methods() {
 	BIND_CONSTANT( BG_COLOR );
 	BIND_CONSTANT( BG_TEXTURE );
 	BIND_CONSTANT( BG_CUBEMAP );
-	BIND_CONSTANT( BG_TEXTURE_RGBE );
-	BIND_CONSTANT( BG_CUBEMAP_RGBE );
+	BIND_CONSTANT( BG_CANVAS );
 	BIND_CONSTANT( BG_MAX );
 
+	BIND_CONSTANT( BG_PARAM_CANVAS_MAX_LAYER );
 	BIND_CONSTANT( BG_PARAM_COLOR );
 	BIND_CONSTANT( BG_PARAM_TEXTURE );
 	BIND_CONSTANT( BG_PARAM_CUBEMAP );

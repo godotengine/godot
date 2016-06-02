@@ -59,7 +59,7 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
     # List of operator properties, the attributes will be assigned
     # to the class instance from the operator settings before calling.
 
-   
+
     object_types = EnumProperty(
             name="Object Types",
             options={'ENUM_FLAG'},
@@ -81,7 +81,7 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
     use_mesh_modifiers = BoolProperty(
             name="Apply Modifiers",
             description="Apply modifiers to mesh objects (on a copy!).",
-            default=True,
+	    default=False,
             )
     use_tangent_arrays = BoolProperty(
 	    name="Tangent Arrays",
@@ -102,11 +102,6 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
     use_active_layers = BoolProperty(
             name="Active Layers",
             description="Export only objects on the active layers.",
-            default=True,
-            )
-    use_exclude_ctrl_bones = BoolProperty(
-            name="Exclude Control Bones",
-            description="Exclude skeleton bones with names that begin with 'ctrl'.",
             default=True,
             )
     use_anim = BoolProperty(

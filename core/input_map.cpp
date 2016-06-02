@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,11 +38,11 @@ void InputMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_action_from_id","id"),&InputMap::get_action_from_id);
 	ObjectTypeDB::bind_method(_MD("add_action","action"),&InputMap::add_action);
 	ObjectTypeDB::bind_method(_MD("erase_action","action"),&InputMap::erase_action);
-	
+
 	ObjectTypeDB::bind_method(_MD("action_add_event","action","event"),&InputMap::action_add_event);
 	ObjectTypeDB::bind_method(_MD("action_has_event","action","event"),&InputMap::action_has_event);
 	ObjectTypeDB::bind_method(_MD("action_erase_event","action","event"),&InputMap::action_erase_event);
-	ObjectTypeDB::bind_method(_MD("get_action_list","action"),&InputMap::get_action_list);
+	ObjectTypeDB::bind_method(_MD("get_action_list","action"),&InputMap::_get_action_list);
 	ObjectTypeDB::bind_method(_MD("event_is_action","event","action"),&InputMap::event_is_action);
 	ObjectTypeDB::bind_method(_MD("load_from_globals"),&InputMap::load_from_globals);
 
@@ -106,7 +106,7 @@ List<InputEvent>::Element *InputMap::_find_event(List<InputEvent> &p_list,const 
 			} break;
 			case InputEvent::JOYSTICK_MOTION: {
 
-				same=(e.joy_motion.axis==p_event.joy_motion.axis);
+				same=(e.joy_motion.axis==p_event.joy_motion.axis && (e.joy_motion.axis_value < 0) == (p_event.joy_motion.axis_value < 0));
 
 			} break;
 		}
@@ -156,9 +156,22 @@ void InputMap::action_erase_event(const StringName& p_action,const InputEvent& p
 
 	List<InputEvent>::Element *E=_find_event(input_map[p_action].inputs,p_event);
 	if (E)
-		return; //already gots
+		input_map[p_action].inputs.erase(E);
+}
 
-	input_map[p_action].inputs.erase(E);
+
+Array InputMap::_get_action_list(const StringName& p_action) {
+
+	Array ret;
+	const List<InputEvent> *al = get_action_list(p_action);
+	if (al) {
+		for(const List<InputEvent>::Element *E=al->front();E;E=E->next()) {
+
+			ret.push_back(E->get());;
+		}
+	}
+
+	return ret;
 
 }
 
@@ -176,7 +189,7 @@ bool InputMap::event_is_action(const InputEvent& p_event, const StringName& p_ac
 
 	Map<StringName,Action >::Element *E=input_map.find(p_action);
 	if(!E) {
-		ERR_EXPLAIN("Request for unexisting InputMap action: "+String(p_action));
+		ERR_EXPLAIN("Request for nonexistent InputMap action: "+String(p_action));
 		ERR_FAIL_COND_V(!E,false);
 	}
 
@@ -186,6 +199,64 @@ bool InputMap::event_is_action(const InputEvent& p_event, const StringName& p_ac
 	}
 
 	return _find_event(E->get().inputs,p_event)!=NULL;
+}
+
+bool InputMap::event_is_joy_motion_action_pressed(const InputEvent& p_event) const {
+
+	ERR_FAIL_COND_V(p_event.type!=InputEvent::JOYSTICK_MOTION,false);
+	bool pressed=false;
+
+	//this could be optimized by having a separate list of joymotions?
+
+	for (Map<StringName, Action>::Element *A=input_map.front();A;A=A->next()) {
+
+		for (List<InputEvent>::Element *E=A->get().inputs.front();E;E=E->next()) {
+
+			const InputEvent& e=E->get();
+			if(e.type!=p_event.type)
+				continue;
+			if (e.type!=InputEvent::KEY && e.device!=p_event.device)
+				continue;
+
+			switch(p_event.type) {
+
+				case InputEvent::KEY: {
+
+					if (e.key.scancode==p_event.key.scancode && e.key.mod == p_event.key.mod)
+						return e.key.pressed;
+
+				} break;
+				case InputEvent::JOYSTICK_BUTTON: {
+
+					if (e.joy_button.button_index==p_event.joy_button.button_index) {
+						return e.joy_button.pressed;
+					}
+
+				} break;
+				case InputEvent::MOUSE_BUTTON: {
+
+					if (e.mouse_button.button_index==p_event.mouse_button.button_index) {
+						return e.mouse_button.pressed;
+					}
+
+				} break;
+				case InputEvent::JOYSTICK_MOTION: {
+
+					if (e.joy_motion.axis==p_event.joy_motion.axis) {
+						if (
+								(e.joy_motion.axis_value * p_event.joy_motion.axis_value >0) && //same axis
+								ABS(e.joy_motion.axis_value)>0.5 && ABS(p_event.joy_motion.axis_value)>0.5 )
+							pressed=true;
+					}
+
+				} break;
+			}
+
+		}
+	}
+
+	return pressed;
+
 }
 
 void InputMap::load_from_globals() {

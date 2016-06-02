@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,7 +92,9 @@ void PackedData::add_path(const String& pkg_path, const String& path, uint64_t o
 
 void PackedData::add_pack_source(PackSource *p_source) {
 
-	sources.push_back(p_source);
+	if (p_source != NULL) {
+		sources.push_back(p_source);
+	}
 };
 
 PackedData *PackedData::singleton=NULL;
@@ -105,6 +107,21 @@ PackedData::PackedData() {
 	disabled=false;
 
 	add_pack_source(memnew(PackedSourcePCK));
+}
+
+void PackedData::_free_packed_dirs(PackedDir *p_dir) {
+
+	for (Map<String,PackedDir*>::Element *E=p_dir->subdirs.front();E;E=E->next())
+		_free_packed_dirs(E->get());
+	memdelete(p_dir);
+}
+
+PackedData::~PackedData() {
+
+	for(int i=0;i<sources.size();i++) {
+		memdelete(sources[i]);
+	}
+	_free_packed_dirs(root);
 }
 
 
@@ -361,6 +378,10 @@ String DirAccessPack::get_next(){
 bool DirAccessPack::current_is_dir() const{
 
 	return cdir;
+}
+bool DirAccessPack::current_is_hidden() const{
+
+	return false;
 }
 void DirAccessPack::list_dir_end() {
 

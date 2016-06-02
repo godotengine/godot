@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 
 #include "typedefs.h"
 #include "vector.h"
+#include "array.h"
 
 /**
 	@author red <red@killy>
@@ -39,7 +40,7 @@
 
 
 class CharString : public Vector<char> {
-public:	
+public:
 	int length() const { return size() ? size()-1 : 0; }
 	const char *get_data() const;
 	operator const char*() {return get_data();};
@@ -119,7 +120,7 @@ public:
 	bool match(const String& p_wildcard) const;
 	bool matchn(const String& p_wildcard) const;
 	bool begins_with(const String& p_string) const;
-	bool begins_with(const char* p_string) const;	
+	bool begins_with(const char* p_string) const;
 	bool ends_with(const String& p_string) const;
 	String replace_first(String p_key,String p_with) const;
 	String replace(String p_key,String p_with) const;
@@ -127,10 +128,13 @@ public:
 	String insert(int p_at_pos,String p_string) const;
 	String pad_decimals(int p_digits) const;
 	String pad_zeros(int p_digits) const;
+	String lpad(int min_length,const String& character=" ") const;
+	String rpad(int min_length,const String& character=" ") const;
+	String sprintf(const Array& values, bool* error) const;
 	static String num(double p_num,int p_decimals=-1);
 	static String num_scientific(double p_num);
 	static String num_real(double p_num);
-	static String num_int64(int64_t p_num);
+	static String num_int64(int64_t p_num,int base=10,bool capitalize_hex=false);
 	static String chr(CharType p_char);
 	static String md5(const uint8_t *p_md5);
 	bool is_numeric() const;
@@ -140,14 +144,16 @@ public:
 	int to_int() const;
 
 	int64_t to_int64() const;
-	static int to_int(const char* p_str);
+	static int to_int(const char* p_str, int p_len=-1);
 	static double to_double(const char* p_str);
-	static double to_double(const CharType* p_str, int p_len=-1, const CharType **r_end=NULL);
+	static double to_double(const CharType* p_str, const CharType **r_end=NULL);
 	static int64_t to_int(const CharType* p_str,int p_len=-1);
 	String capitalize() const;
+	String camelcase_to_underscore(bool lowercase=true) const;
 
 	int get_slice_count(String p_splitter) const;
 	String get_slice(String p_splitter,int p_slice) const;
+	String get_slicec(CharType splitter,int p_slice) const;
 
 	Vector<String> split(const String &p_splitter,bool p_allow_empty=true) const;
 	Vector<String> split_spaces() const;
@@ -163,7 +169,7 @@ public:
 
 	String left(int p_pos) const;
 	String right(int p_pos) const;
-	String strip_edges() const;
+	String strip_edges(bool left = true, bool right = true) const;
 	String strip_escapes() const;
 	String extension() const;
 	String basename() const;
@@ -176,17 +182,17 @@ public:
 	CharString utf8() const;
 	bool parse_utf8(const char* p_utf8,int p_len=-1); //return true on error
 	static String utf8(const char* p_utf8,int p_len=-1);
-	
+
 	static uint32_t hash(const CharType* p_str,int p_len); /* hash the string */
 	static uint32_t hash(const CharType* p_str); /* hash the string */
 	static uint32_t hash(const char* p_cstr,int p_len); /* hash the string */
 	static uint32_t hash(const char* p_cstr); /* hash the string */
 	uint32_t hash() const; /* hash the string */
-	uint64_t hash64() const; /* hash the string */	
+	uint64_t hash64() const; /* hash the string */
 	String md5_text() const;
 	Vector<uint8_t> md5_buffer() const;
 
-	inline bool empty() const { return length() == 0; }	
+	inline bool empty() const { return length() == 0; }
 
 	// path functions
 	bool is_abs_path() const;
@@ -201,8 +207,12 @@ public:
 
 	String xml_escape(bool p_escape_quotes=false) const;
 	String xml_unescape() const;
+    String http_escape() const;
+    String http_unescape() const;
 	String c_escape() const;
 	String c_unescape() const;
+	String json_escape() const;
+	String world_wrap(int p_chars_per_line) const;
 
 	String percent_encode() const;
 	String percent_decode() const;
@@ -237,14 +247,27 @@ String rtoss(double p_val); //scientific version
 
 
 struct NoCaseComparator {
-		
+
 	bool operator()(const String& p_a, const String& p_b) const {
-		
+
 		return p_a.nocasecmp_to(p_b)<0;
 	}
 };
 
  /* end of namespace */
 
+//tool translate
+#ifdef TOOLS_ENABLED
+
+String TTR(const String&);
+
+#else
+
+#define TTR(m_val) (String())
+
+#endif
+
+//tool or regular translate
+String RTR(const String&);
 
 #endif

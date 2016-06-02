@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,28 +49,30 @@
 
 enum PropertyHint {
 	PROPERTY_HINT_NONE, ///< no hint provided.
-	PROPERTY_HINT_RANGE, ///< hint_text = "min,max,step"
+	PROPERTY_HINT_RANGE, ///< hint_text = "min,max,step,slider; //slider is optional"
 	PROPERTY_HINT_EXP_RANGE, ///< hint_text = "min,max,step", exponential edit
 	PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
 	PROPERTY_HINT_EXP_EASING, /// exponential easing funciton (Math::ease)
 	PROPERTY_HINT_LENGTH, ///< hint_text= "length" (as integer)
+	PROPERTY_HINT_SPRITE_FRAME,
 	PROPERTY_HINT_KEY_ACCEL, ///< hint_text= "length" (as integer)
 	PROPERTY_HINT_FLAGS, ///< hint_text= "flag1,flag2,etc" (as bit flags)
 	PROPERTY_HINT_ALL_FLAGS,
-	PROPERTY_HINT_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc," 
+	PROPERTY_HINT_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
 	PROPERTY_HINT_DIR, ///< a directort path must be passed
 	PROPERTY_HINT_GLOBAL_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
 	PROPERTY_HINT_GLOBAL_DIR, ///< a directort path must be passed
 	PROPERTY_HINT_RESOURCE_TYPE, ///< a resource object type
-	PROPERTY_HINT_MULTILINE_TEXT, ///< used for string properties that can contain multiple lines	
+	PROPERTY_HINT_MULTILINE_TEXT, ///< used for string properties that can contain multiple lines
 	PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
 	PROPERTY_HINT_IMAGE_COMPRESS_LOSSY,
 	PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS,
+	PROPERTY_HINT_OBJECT_ID,
 	PROPERTY_HINT_MAX,
 };
 
 enum PropertyUsageFlags {
-	
+
 	PROPERTY_USAGE_STORAGE=1,
 	PROPERTY_USAGE_EDITOR=2,
 	PROPERTY_USAGE_NETWORK=4,
@@ -81,7 +83,9 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_BUNDLE=128, //used for optimized bundles
 	PROPERTY_USAGE_CATEGORY=256,
 	PROPERTY_USAGE_STORE_IF_NONZERO=512, //only store if nonzero
-	PROPERTY_USAGE_NO_INSTANCE_STATE=1024,
+	PROPERTY_USAGE_STORE_IF_NONONE=1024, //only store if false
+	PROPERTY_USAGE_NO_INSTANCE_STATE=2048,
+	PROPERTY_USAGE_RESTART_IF_CHANGED=4096,
 
 	PROPERTY_USAGE_DEFAULT=PROPERTY_USAGE_STORAGE|PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_NETWORK,
 	PROPERTY_USAGE_DEFAULT_INTL=PROPERTY_USAGE_STORAGE|PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_NETWORK|PROPERTY_USAGE_INTERNATIONALIZED,
@@ -96,20 +100,25 @@ enum PropertyUsageFlags {
 #define ADD_PROPERTYI( m_property, m_setter, m_getter, m_index ) ObjectTypeDB::add_property( get_type_static(), m_property, m_setter, m_getter, m_index )
 #define ADD_PROPERTYNZ( m_property, m_setter, m_getter ) ObjectTypeDB::add_property( get_type_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONZERO), m_setter, m_getter )
 #define ADD_PROPERTYINZ( m_property, m_setter, m_getter, m_index ) ObjectTypeDB::add_property( get_type_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONZERO), m_setter, m_getter, m_index )
+#define ADD_PROPERTYNO( m_property, m_setter, m_getter ) ObjectTypeDB::add_property( get_type_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONONE), m_setter, m_getter )
+#define ADD_PROPERTYINO( m_property, m_setter, m_getter, m_index ) ObjectTypeDB::add_property( get_type_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONONE), m_setter, m_getter, m_index )
 
 struct PropertyInfo {
-	
-	Variant::Type type;	
+
+	Variant::Type type;
 	String name;
 	PropertyHint hint;
-	String hint_string;	
+	String hint_string;
 	uint32_t usage;
 
 	_FORCE_INLINE_ PropertyInfo added_usage(int p_fl) const { PropertyInfo pi=*this; pi.usage|=p_fl; return pi; }
-	
+
 	PropertyInfo() { type=Variant::NIL; hint=PROPERTY_HINT_NONE; usage = PROPERTY_USAGE_DEFAULT; }
 	PropertyInfo( Variant::Type p_type, const String p_name, PropertyHint p_hint=PROPERTY_HINT_NONE, const String& p_hint_string="",uint32_t p_usage=PROPERTY_USAGE_DEFAULT) {
 		type=p_type; name=p_name; hint=p_hint; hint_string=p_hint_string; usage=p_usage;
+	}
+	bool operator<(const PropertyInfo& p_info) const {
+		return name<p_info.name;
 	}
 };
 
@@ -118,23 +127,23 @@ struct PropertyInfo {
 Array convert_property_list(const List<PropertyInfo> * p_list);
 
 struct MethodInfo {
-	
+
 	String name;
 	List<PropertyInfo> arguments;
 	Vector<Variant> default_arguments;
 	PropertyInfo return_val;
 	uint32_t flags;
 	int id;
-	
+
 	inline bool  operator<(const MethodInfo& p_method) const { return id==p_method.id?(name < p_method.name):(id<p_method.id); }
-	
+
 	MethodInfo();
 	MethodInfo(const String& p_name);
 	MethodInfo(const String& p_name, const PropertyInfo& p_param1);
 	MethodInfo(const String& p_name, const PropertyInfo& p_param1,const PropertyInfo& p_param2);
 	MethodInfo(const String& p_name, const PropertyInfo& p_param1,const PropertyInfo& p_param2,const PropertyInfo& p_param3);
 	MethodInfo(const String& p_name, const PropertyInfo& p_param1,const PropertyInfo& p_param2,const PropertyInfo& p_param3,const PropertyInfo& p_param4);
-	MethodInfo(const String& p_name, const PropertyInfo& p_param1,const PropertyInfo& p_param2,const PropertyInfo& p_param3,const PropertyInfo& p_param4,const PropertyInfo& p_param5);															
+	MethodInfo(const String& p_name, const PropertyInfo& p_param1,const PropertyInfo& p_param2,const PropertyInfo& p_param3,const PropertyInfo& p_param4,const PropertyInfo& p_param5);
 	MethodInfo(Variant::Type ret);
 	MethodInfo(Variant::Type ret,const String& p_name);
 	MethodInfo(Variant::Type ret,const String& p_name, const PropertyInfo& p_param1);
@@ -151,7 +160,7 @@ struct MethodInfo {
 //return NULL;
 
 /*
-   the following is an uncomprehensible blob of hacks and workarounds to compensate for many of the fallencies in C++. As a plus, this macro pretty much alone defines the object model. 
+   the following is an uncomprehensible blob of hacks and workarounds to compensate for many of the fallencies in C++. As a plus, this macro pretty much alone defines the object model.
 */
 
 #define REVERSE_GET_PROPERTY_LIST \
@@ -175,10 +184,10 @@ public:\
 virtual String get_type() const { \
 	return String(#m_type);\
 }\
-virtual StringName get_type_name() const { \
+virtual const StringName* _get_type_namev() const { \
 	if (!_type_name)\
 		_type_name=get_type_static();\
-	return _type_name;\
+	return &_type_name;\
 }\
 static _FORCE_INLINE_ void* get_type_ptr_static() { \
 	static int ptr;\
@@ -267,12 +276,12 @@ virtual void _get_property_listv(List<PropertyInfo> *p_list,bool p_reversed) con
 	}\
 	p_list->push_back( PropertyInfo(Variant::NIL,get_type_static(),PROPERTY_HINT_NONE,String(),PROPERTY_USAGE_CATEGORY));\
 	if (!_is_gpl_reversed())\
-		ObjectTypeDB::get_property_list(#m_type,p_list,true);\
+		ObjectTypeDB::get_property_list(#m_type,p_list,true,this);\
 	if (m_type::_get_get_property_list() != m_inherits::_get_get_property_list()) {\
 		_get_property_list(p_list);\
 	}\
 	if (_is_gpl_reversed())\
-		ObjectTypeDB::get_property_list(#m_type,p_list,true);\
+		ObjectTypeDB::get_property_list(#m_type,p_list,true,this);\
 	if (p_reversed) {\
 		m_inherits::_get_property_listv(p_list,p_reversed);\
 	}\
@@ -307,7 +316,7 @@ private:
 class ScriptInstance;
 typedef uint32_t ObjectID;
 
-class Object {		
+class Object {
 public:
 
 	enum ConnectFlags {
@@ -380,12 +389,16 @@ friend void postinitialize_handler(Object*);
 	bool _can_translate;
 #ifdef TOOLS_ENABLED
 	bool _edited;
+	uint32_t _edited_version;
 #endif
 	ScriptInstance *script_instance;
 	RefPtr script;
 	Dictionary metadata;
+	mutable StringName _type_name;
+	mutable const StringName* _type_ptr;
 
 	void _add_user_signal(const String& p_name, const Array& p_pargs=Array());
+	bool _has_user_signal(const StringName& p_name) const;
 	Variant _emit_signal(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
 	Array _get_signal_list() const;
 	Array _get_signal_connection_list(const String& p_signal) const;
@@ -394,8 +407,7 @@ friend void postinitialize_handler(Object*);
 
 	void property_list_changed_notify();
 
-protected:	
-
+protected:
 
 	virtual bool _use_builtin_script() const { return false; }
 	virtual void _initialize_typev() { initialize_type(); }
@@ -403,14 +415,14 @@ protected:
 	virtual bool _getv(const StringName& p_name,Variant &r_property) const { return false; };
 	virtual void _get_property_listv(List<PropertyInfo> *p_list,bool p_reversed) const {};
 	virtual void _notificationv(int p_notification,bool p_reversed) {};
-	
+
 	static String _get_category() { return ""; }
 	static void _bind_methods();
 	bool _set(const StringName& p_name,const Variant &p_property) { return false; };
 	bool _get(const StringName& p_name,Variant &r_property) const { return false;  };
 	void _get_property_list(List<PropertyInfo> *p_list) const {};
 	void _notification(int p_notification) {};
-	
+
 	_FORCE_INLINE_ static void (*_get_bind_methods())() {
 		return &Object::_bind_methods;
 	}
@@ -422,13 +434,13 @@ protected:
 	}
 	_FORCE_INLINE_ void (Object::* (_get_get_property_list() const))(List<PropertyInfo> *p_list) const{
 			return &Object::_get_property_list;
-	}	
+	}
 	_FORCE_INLINE_ void (Object::* (_get_notification() const))(int){
 			return &Object::_notification;
-	}	
+	}
 	static void get_valid_parents_static(List<String> *p_parents);
 	static void _get_valid_parents_static(List<String> *p_parents);
-		
+
 
 	void cancel_delete();
 
@@ -441,10 +453,20 @@ protected:
 	Variant _call_deferred_bind(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
 
 
-
+	virtual const StringName* _get_type_namev() const {
+		if (!_type_name)
+			_type_name=get_type_static();
+		return &_type_name;
+	}
 
 	DVector<String> _get_meta_list_bind() const;
 	Array _get_property_list_bind() const;
+	Array _get_method_list_bind() const;
+
+	void _clear_internal_resource_paths(const Variant &p_var);
+
+friend class ObjectTypeDB;
+	virtual void _validate_property(PropertyInfo& property) const;
 
 public: //should be protected, but bug in clang++
 	static void initialize_type();
@@ -469,7 +491,7 @@ public:
 
 	void add_change_receptor( Object *p_receptor );
 	void remove_change_receptor( Object *p_receptor );
-	
+
 	template<class T>
 	T *cast_to() {
 
@@ -484,7 +506,7 @@ public:
 			return NULL;
 #endif
 	}
-		
+
 	template<class T>
 	const T *cast_to() const {
 
@@ -501,11 +523,11 @@ public:
 	}
 
 	enum {
-		
+
 		NOTIFICATION_POSTINITIALIZE=0,
 		NOTIFICATION_PREDELETE=1
 	};
-	
+
 	/* TYPE API */
 	static void get_inheritance_list_static(List<String>* p_inheritance_list) {  p_inheritance_list->push_back("Object"); }
 
@@ -516,12 +538,20 @@ public:
 
 	virtual String get_type() const { return "Object"; }
 	virtual String get_save_type() const { return get_type(); } //type stored when saving
-	virtual StringName get_type_name() const { return StringName("Object"); }
+
+
+
 	virtual bool is_type(const String& p_type) const { return (p_type=="Object"); }
 	virtual bool is_type_ptr(void *p_ptr) const { return get_type_ptr_static()==p_ptr; }
 
+	_FORCE_INLINE_ const StringName& get_type_name() const {
+		if (!_type_ptr) {
+			return *_get_type_namev();
+		} else {
+			return *_type_ptr;
+		}
+	}
 
-	
 	/* IAPI */
 //	void set(const String& p_name, const Variant& p_value);
 //	Variant get(const String& p_name) const;
@@ -530,7 +560,7 @@ public:
 	Variant get(const StringName& p_name, bool *r_valid=NULL) const;
 
 	void get_property_list(List<PropertyInfo> *p_list,bool p_reversed=false) const;
-	
+
 	bool has_method(const StringName& p_method) const;
 	void get_method_list(List<MethodInfo> *p_list) const;
 	Variant callv(const StringName& p_method,const Array& p_args);
@@ -540,14 +570,14 @@ public:
 	Variant call(const StringName& p_name, VARIANT_ARG_LIST); // C++ helper
 	void call_multilevel(const StringName& p_name, VARIANT_ARG_LIST); // C++ helper
 
-	void notification(int p_notification,bool p_reversed=false);	
+	void notification(int p_notification,bool p_reversed=false);
 
 	//used mainly by script, get and set all INCLUDING string
 	virtual Variant getvar(const Variant& p_key, bool *r_valid=NULL) const;
 	virtual void setvar(const Variant& p_key, const Variant& p_value,bool *r_valid=NULL);
 
 	/* SCRIPT */
-	
+
 	void set_script(const RefPtr& p_script);
 	RefPtr get_script() const;
 
@@ -561,6 +591,7 @@ public:
 #ifdef TOOLS_ENABLED
 	void set_edited(bool p_edited);
 	bool is_edited() const;
+	uint32_t get_edited_version() const; //this function is used to check when something changed beyond a point, it's used mainly for generating previews
 #endif
 
 	void set_script_instance(ScriptInstance *p_instance);
@@ -569,8 +600,10 @@ public:
 
 	void add_user_signal(const MethodInfo& p_signal);
 	void emit_signal(const StringName& p_name,VARIANT_ARG_LIST);
+	void emit_signal(const StringName& p_name, const Variant** p_args, int p_argcount);
 	void get_signal_list(List<MethodInfo> *p_signals ) const;
 	void get_signal_connection_list(const StringName& p_signal,List<Connection> *p_connections) const;
+	void get_all_signal_connections(List<Connection> *p_connections) const;
 
 	Error connect(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method,const Vector<Variant>& p_binds=Vector<Variant>(),uint32_t p_flags=0);
 	void disconnect(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method);
@@ -581,15 +614,24 @@ public:
 	void set_block_signals(bool p_block);
 	bool is_blocking_signals() const;
 
+	Variant::Type get_static_property_type(const StringName& p_property,bool *r_valid=NULL) const;
+
 	virtual void get_translatable_strings(List<String> *p_strings) const;
 
+	virtual void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
 
 	StringName XL_MESSAGE(const StringName& p_message) const; //translate message (internationalization)
 	StringName tr(const StringName& p_message) const; //translate message (alternative)
 
+	bool _is_queued_for_deletion; // set to true by SceneTree::queue_delete()
+	bool is_queued_for_deletion() const;
+
 	_FORCE_INLINE_ void set_message_translation(bool p_enable) { _can_translate=p_enable; }
 	_FORCE_INLINE_ bool can_translate_messages() const { return _can_translate; }
-	Object();	
+
+	void clear_internal_resource_paths();
+
+	Object();
 	virtual ~Object();
 
 };
@@ -617,13 +659,13 @@ class ObjectDB {
 	static HashMap<Object*,ObjectID,ObjectPtrHash> instance_checks;
 
 	static uint32_t instance_counter;
-friend class Object;	
+friend class Object;
 friend void unregister_core_types();
 
 	static void cleanup();
 	static uint32_t add_instance(Object *p_object);
 	static void remove_instance(Object *p_object);
-public:	
+public:
 
 	typedef void (*DebugFunc)(Object *p_obj);
 
@@ -640,6 +682,8 @@ public:
 	_FORCE_INLINE_ static bool instance_validate(Object* p_ptr) { return true; }
 
 #endif
+
+
 
 };
 

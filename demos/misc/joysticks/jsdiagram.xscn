@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="PackedScene" subresource_count="3" version="2.0" version_name="Godot Engine v2.0.alpha.custom_build">
+	<ext_resource path="res://indicators.png" type="Texture" index="1"></ext_resource>
+	<ext_resource path="res://diagram.png" type="Texture" index="0"></ext_resource>
+	<main_resource>
+		<dictionary name="_bundled" shared="false">
+			<string> "conn_count" </string>
+			<int> 0 </int>
+			<string> "conns" </string>
+			<int_array  len="0"> 				 </int_array>
+			<string> "editable_instances" </string>
+			<array  len="0" shared="false">
+			</array>
+			<string> "names" </string>
+			<string_array  len="37">
+				<string> "diagram" </string>
+				<string> "transform/pos" </string>
+				<string> "transform/scale" </string>
+				<string> "texture" </string>
+				<string> "__meta__" </string>
+				<string> "Sprite" </string>
+				<string> "buttons" </string>
+				<string> "Node2D" </string>
+				<string> "0" </string>
+				<string> "region" </string>
+				<string> "region_rect" </string>
+				<string> "1" </string>
+				<string> "2" </string>
+				<string> "3" </string>
+				<string> "4" </string>
+				<string> "5" </string>
+				<string> "6" </string>
+				<string> "flip_h" </string>
+				<string> "7" </string>
+				<string> "8" </string>
+				<string> "9" </string>
+				<string> "10" </string>
+				<string> "11" </string>
+				<string> "12" </string>
+				<string> "13" </string>
+				<string> "flip_v" </string>
+				<string> "14" </string>
+				<string> "15" </string>
+				<string> "axes" </string>
+				<string> "0-" </string>
+				<string> "0+" </string>
+				<string> "1-" </string>
+				<string> "1+" </string>
+				<string> "3-" </string>
+				<string> "3+" </string>
+				<string> "2-" </string>
+				<string> "2+" </string>
+			</string_array>
+			<string> "node_count" </string>
+			<int> 27 </int>
+			<string> "node_paths" </string>
+			<array  len="0" shared="false">
+			</array>
+			<string> "nodes" </string>
+			<int_array  len="453"> 				-1, -1, 5, 0, -1, 4, 1, 0, 2, 1, 3, 2, 4, 3, 0, 0, 0, 7, 6, -1, 1, 4, 4, 0, 1, 0, 5, 8, -1, 5, 1, 5, 2, 6, 3, 7, 9, 8, 10, 9, 0, 1, 0, 5, 11, -1, 5, 1, 10, 2, 6, 3, 7, 9, 8, 10, 9, 0, 1, 0, 5, 12, -1, 5, 1, 11, 2, 6, 3, 7, 9, 8, 10, 9, 0, 1, 0, 5, 13, -1, 5, 1, 12, 2, 6, 3, 7, 9, 8, 10, 9, 0, 1, 0, 5, 14, -1, 5, 1, 13, 2, 14, 3, 7, 9, 8, 10, 15, 0, 1, 0, 5, 15, -1, 5, 1, 16, 2, 14, 3, 7, 9, 8, 10, 15, 0, 1, 0, 5, 16, -1, 6, 1, 17, 2, 18, 3, 7, 17, 8, 9, 8, 10, 19, 0, 1, 0, 5, 18, -1, 5, 1, 20, 2, 18, 3, 7, 9, 8, 10, 19, 0, 1, 0, 5, 19, -1, 5, 1, 21, 2, 6, 3, 7, 9, 8, 10, 9, 0, 1, 0, 5, 20, -1, 5, 1, 22, 2, 6, 3, 7, 9, 8, 10, 9, 0, 1, 0, 5, 21, -1, 5, 1, 23, 2, 24, 3, 7, 9, 8, 10, 9, 0, 1, 0, 5, 22, -1, 5, 1, 25, 2, 24, 3, 7, 9, 8, 10, 9, 0, 1, 0, 5, 23, -1, 5, 1, 26, 2, 6, 3, 7, 9, 8, 10, 27, 0, 1, 0, 5, 24, -1, 6, 1, 28, 2, 6, 3, 7, 25, 8, 9, 8, 10, 27, 0, 1, 0, 5, 26, -1, 5, 1, 29, 2, 6, 3, 7, 9, 8, 10, 30, 0, 1, 0, 5, 27, -1, 6, 1, 31, 2, 6, 3, 7, 17, 8, 9, 8, 10, 30, 0, 0, 0, 7, 28, -1, 0, 0, 18, 0, 5, 29, -1, 5, 1, 32, 2, 6, 3, 7, 9, 8, 10, 30, 0, 18, 0, 5, 30, -1, 6, 1, 33, 2, 6, 3, 7, 17, 8, 9, 8, 10, 30, 0, 18, 0, 5, 31, -1, 5, 1, 34, 2, 6, 3, 7, 9, 8, 10, 27, 0, 18, 0, 5, 32, -1, 6, 1, 35, 2, 6, 3, 7, 25, 8, 9, 8, 10, 27, 0, 18, 0, 5, 33, -1, 5, 1, 36, 2, 6, 3, 7, 9, 8, 10, 27, 0, 18, 0, 5, 34, -1, 6, 1, 37, 2, 6, 3, 7, 25, 8, 9, 8, 10, 27, 0, 18, 0, 5, 35, -1, 5, 1, 38, 2, 6, 3, 7, 9, 8, 10, 30, 0, 18, 0, 5, 36, -1, 6, 1, 39, 2, 6, 3, 7, 17, 8, 9, 8, 10, 30, 0 </int_array>
+			<string> "variants" </string>
+			<array  len="40" shared="false">
+				<vector2> 368.635, 155.289 </vector2>
+				<vector2> 0.432859, 0.446287 </vector2>
+				<resource  external="0">  </resource>
+				<dictionary  shared="false">
+					<string> "__editor_plugin_screen__" </string>
+					<string> "2D" </string>
+				</dictionary>
+				<dictionary  shared="false">
+					<string> "_editor_collapsed" </string>
+					<bool> True </bool>
+				</dictionary>
+				<vector2> 147.73, 120.925 </vector2>
+				<vector2> 0.9, 0.9 </vector2>
+				<resource  external="1">  </resource>
+				<bool> True </bool>
+				<rect2> 0, 0, 45, 45 </rect2>
+				<vector2> 185.769, 82.4874 </vector2>
+				<vector2> 112.377, 82.4874 </vector2>
+				<vector2> 149.073, 47.3293 </vector2>
+				<vector2> -161.038, -158.037 </vector2>
+				<vector2> 5.3348, 3.35512 </vector2>
+				<rect2> 10, 10, 10, 10 </rect2>
+				<vector2> 159.362, -156.977 </vector2>
+				<vector2> -159.349, -221.878 </vector2>
+				<vector2> 1.0458, 2.16952 </vector2>
+				<rect2> 0, 0, 45, 22 </rect2>
+				<vector2> 156.677, -220.11 </vector2>
+				<vector2> -67.5308, 164.422 </vector2>
+				<vector2> 75.8825, 167.363 </vector2>
+				<vector2> -46.6707, 52.702 </vector2>
+				<vector2> 0.810497, 0.57205 </vector2>
+				<vector2> 56.2581, 54.4382 </vector2>
+				<vector2> -139.402, 46.8295 </vector2>
+				<rect2> 50, 0, 54, 14 </rect2>
+				<vector2> -139.838, 115.789 </vector2>
+				<vector2> -172.262, 81.8793 </vector2>
+				<rect2> 50, 0, 14, 54 </rect2>
+				<vector2> -105.085, 81.0326 </vector2>
+				<vector2> -94.4295, 164.932 </vector2>
+				<vector2> -40.3475, 164.509 </vector2>
+				<vector2> -67.6802, 137.926 </vector2>
+				<vector2> -67.4618, 192.915 </vector2>
+				<vector2> 76.6557, 140.986 </vector2>
+				<vector2> 76.0009, 195.339 </vector2>
+				<vector2> 48.8152, 167.145 </vector2>
+				<vector2> 102.899, 167.857 </vector2>
+			</array>
+			<string> "version" </string>
+			<int> 2 </int>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,8 +41,12 @@
 #define _MKSTR(m_x) _STR(m_x)
 #endif
 // have to include version.h for this to work, include it in the .cpp not the .h
-#define VERSION_MKSTRING _MKSTR(VERSION_MAJOR)"."_MKSTR(VERSION_MINOR)"."_MKSTR(VERSION_STATUS)"."_MKSTR(VERSION_REVISION)
-#define VERSION_FULL_NAME _MKSTR(VERSION_NAME)" v"VERSION_MKSTRING
+#ifdef VERSION_PATCH
+#define VERSION_MKSTRING _MKSTR(VERSION_MAJOR)"." _MKSTR(VERSION_MINOR)"." _MKSTR(VERSION_PATCH)"." _MKSTR(VERSION_STATUS)"." _MKSTR(VERSION_REVISION)
+#else
+#define VERSION_MKSTRING _MKSTR(VERSION_MAJOR)"." _MKSTR(VERSION_MINOR)"." _MKSTR(VERSION_STATUS)"." _MKSTR(VERSION_REVISION)
+#endif // VERSION_PATCH
+#define VERSION_FULL_NAME _MKSTR(VERSION_NAME)" v" VERSION_MKSTRING
 
 
 #ifndef _ALWAYS_INLINE_
@@ -74,7 +78,7 @@
 #endif
 
 #ifndef DEFAULT_ALIGNMENT
-#define DEFAULT_ALIGNMENT 16
+#define DEFAULT_ALIGNMENT 1
 #endif
 
 
@@ -154,6 +158,23 @@ inline void __swap_tmpl(T &x, T &y ) {
 	((m_hex>='A' && m_hex<='F')?(10+m_hex-'A'):\
 	((m_hex>='a' && m_hex<='f')?(10+m_hex-'a'):0)))
 
+// Macro to check whether we are compiled by clang
+// and we have a specific builtin
+#if defined(__llvm__) && defined(__has_builtin)
+	#define _llvm_has_builtin(x) __has_builtin(x)
+#else
+	#define _llvm_has_builtin(x) 0
+#endif
+
+#if (defined(__GNUC__) && (__GNUC__ >= 5)) || _llvm_has_builtin(__builtin_mul_overflow)
+#    define _mul_overflow __builtin_mul_overflow
+#endif
+
+#if (defined(__GNUC__) && (__GNUC__ >= 5)) || _llvm_has_builtin(__builtin_add_overflow)
+#    define _add_overflow __builtin_add_overflow
+#endif
+
+
 
 
 
@@ -167,6 +188,28 @@ static _FORCE_INLINE_ unsigned int nearest_power_of_2(unsigned int x) {
 	x |= x >> 4;
 	x |= x >> 8;
 	x |= x >> 16;
+
+	return ++x;
+}
+
+// We need this definition inside the function below.
+static inline int get_shift_from_power_of_2(unsigned int p_pixel);
+
+template<class T>
+static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
+
+	--x;
+
+	// The number of operations on x is the base two logarithm
+	// of the p_number of bits in the type. Add three to account
+	// for sizeof(T) being in bytes.
+	size_t num = get_shift_from_power_of_2(sizeof(T)) + 3;
+
+	// If the compiler is smart, it unrolls this loop
+	// If its dumb, this is a bit slow.
+	for (size_t i = 0; i < num; i++)
+		x |= x >> (1 << i);
+
 	return ++x;
 }
 
@@ -197,9 +240,21 @@ static inline int get_shift_from_power_of_2( unsigned int p_pixel ) {
 	return -1;
 }
 
+/** Swap 16 bits value for endianness */
+static inline uint16_t BSWAP16(uint16_t x) {
+	return (x>>8)|(x<<8);
+}
 /** Swap 32 bits value for endianness */
 static inline uint32_t BSWAP32(uint32_t x) {
 	return((x<<24)|((x<<8)&0x00FF0000)|((x>>8)&0x0000FF00)|(x>>24));
+}
+/** Swap 64 bits value for endianness */
+
+static inline uint64_t BSWAP64(uint64_t x) {
+	x = (x & 0x00000000FFFFFFFF) << 32 | (x & 0xFFFFFFFF00000000) >> 32;
+	x = (x & 0x0000FFFF0000FFFF) << 16 | (x & 0xFFFF0000FFFF0000) >> 16;
+	x = (x & 0x00FF00FF00FF00FF) << 8  | (x & 0xFF00FF00FF00FF00) >> 8;
+	return x;
 }
 
 /** When compiling with RTTI, we can add an "extra"
@@ -219,7 +274,7 @@ void _global_lock();
 void _global_unlock();
 
 struct _GlobalLock {
-	
+
 	_GlobalLock() { _global_lock(); }
 	~_GlobalLock() { _global_unlock(); }
 };

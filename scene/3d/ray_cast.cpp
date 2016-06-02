@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 void RayCast::set_cast_to(const Vector3& p_point) {
 
 	cast_to=p_point;
-	if (is_inside_tree() && get_tree()->is_editor_hint())
+	if (is_inside_tree() && (get_tree()->is_editor_hint() || get_tree()->is_debugging_collisions_hint()))
 		update_gizmo();
 
 }
@@ -41,6 +41,26 @@ void RayCast::set_cast_to(const Vector3& p_point) {
 Vector3 RayCast::get_cast_to() const{
 
 	return cast_to;
+}
+
+void RayCast::set_layer_mask(uint32_t p_mask) {
+
+	layer_mask=p_mask;
+}
+
+uint32_t RayCast::get_layer_mask() const {
+
+	return layer_mask;
+}
+
+void RayCast::set_type_mask(uint32_t p_mask) {
+
+	type_mask=p_mask;
+}
+
+uint32_t RayCast::get_type_mask() const {
+
+	return type_mask;
 }
 
 bool RayCast::is_colliding() const{
@@ -95,18 +115,6 @@ void RayCast::_notification(int p_what) {
 
 			if (enabled && !get_tree()->is_editor_hint()) {
 				set_fixed_process(true);
-				Node *p = get_parent();
-				while( p && p->cast_to<Spatial>() ) {
-
-					CollisionObject *co = p->cast_to<CollisionObject>();
-					if (co) {
-
-						exception=co->get_rid();
-						exceptions.insert(exception);
-					}
-
-					p=p->get_parent();
-				}
 			} else
 				set_fixed_process(false);
 
@@ -119,7 +127,6 @@ void RayCast::_notification(int p_what) {
 				set_fixed_process(false);
 			}
 
-			exceptions.erase(exception);
 
 		} break;
 		case NOTIFICATION_FIXED_PROCESS: {
@@ -143,7 +150,7 @@ void RayCast::_notification(int p_what) {
 
 			PhysicsDirectSpaceState::RayResult rr;
 
-			if (dss->intersect_ray(gt.get_origin(),gt.xform(to),rr,exceptions)) {
+			if (dss->intersect_ray(gt.get_origin(),gt.xform(to),rr,exclude, layer_mask, type_mask)) {
 
 				collided=true;
 				against=rr.collider_id;
@@ -159,6 +166,41 @@ void RayCast::_notification(int p_what) {
 		} break;
 	}
 }
+
+void RayCast::add_exception_rid(const RID& p_rid) {
+
+	exclude.insert(p_rid);
+}
+
+void RayCast::add_exception(const Object* p_object){
+
+	ERR_FAIL_NULL(p_object);
+	CollisionObject *co=((Object*)p_object)->cast_to<CollisionObject>();
+	if (!co)
+		return;
+	add_exception_rid(co->get_rid());
+}
+
+void RayCast::remove_exception_rid(const RID& p_rid) {
+
+	exclude.erase(p_rid);
+}
+
+void RayCast::remove_exception(const Object* p_object){
+
+	ERR_FAIL_NULL(p_object);
+	CollisionObject *co=((Object*)p_object)->cast_to<CollisionObject>();
+	if (!co)
+		return;
+	remove_exception_rid(co->get_rid());
+}
+
+
+void RayCast::clear_exceptions(){
+
+	exclude.clear();
+}
+
 
 void RayCast::_bind_methods() {
 
@@ -176,8 +218,24 @@ void RayCast::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_collision_point"),&RayCast::get_collision_point);
 	ObjectTypeDB::bind_method(_MD("get_collision_normal"),&RayCast::get_collision_normal);
 
+	ObjectTypeDB::bind_method(_MD("add_exception_rid","rid"),&RayCast::add_exception_rid);
+	ObjectTypeDB::bind_method(_MD("add_exception","node"),&RayCast::add_exception);
+
+	ObjectTypeDB::bind_method(_MD("remove_exception_rid","rid"),&RayCast::remove_exception_rid);
+	ObjectTypeDB::bind_method(_MD("remove_exception","node"),&RayCast::remove_exception);
+
+	ObjectTypeDB::bind_method(_MD("clear_exceptions"),&RayCast::clear_exceptions);
+
+	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"),&RayCast::set_layer_mask);
+	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&RayCast::get_layer_mask);
+
+	ObjectTypeDB::bind_method(_MD("set_type_mask","mask"),&RayCast::set_type_mask);
+	ObjectTypeDB::bind_method(_MD("get_type_mask"),&RayCast::get_type_mask);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3,"cast_to"),_SCS("set_cast_to"),_SCS("get_cast_to"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"layer_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"type_mask",PROPERTY_HINT_FLAGS,"Static,Kinematic,Rigid,Character,Area"),_SCS("set_type_mask"),_SCS("get_type_mask"));
 }
 
 RayCast::RayCast() {
@@ -186,5 +244,7 @@ RayCast::RayCast() {
 	against=0;
 	collided=false;
 	against_shape=0;
+	layer_mask=1;
+	type_mask=PhysicsDirectSpaceState::TYPE_MASK_COLLISION;
 	cast_to=Vector3(0,-1,0);
 }

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,6 +42,7 @@ class Physics2DServerSW : public Physics2DServer {
 	OBJ_TYPE( Physics2DServerSW, Physics2DServer );
 
 friend class Physics2DDirectSpaceStateSW;
+friend class Physics2DDirectBodyStateSW;
 	bool active;
 	int iterations;
 	bool doing_sync;
@@ -50,6 +51,9 @@ friend class Physics2DDirectSpaceStateSW;
 	int island_count;
 	int active_objects;
 	int collision_pairs;
+
+	bool using_threads;
+
 
 
 	Step2DSW *stepper;
@@ -63,7 +67,7 @@ friend class Physics2DDirectSpaceStateSW;
 	mutable RID_Owner<Body2DSW> body_owner;
 	mutable RID_Owner<Joint2DSW> joint_owner;
 
-
+	static Physics2DServerSW *singletonsw;
 
 
 //	void _clear_query(Query2DSW *p_query);
@@ -71,6 +75,8 @@ public:
 
 	struct CollCbkData {
 
+		Vector2 valid_dir;
+		float valid_depth;
 		int max;
 		int amount;
 		Vector2 *ptr;
@@ -97,6 +103,11 @@ public:
 
 	virtual void space_set_param(RID p_space,SpaceParameter p_param, real_t p_value);
 	virtual real_t space_get_param(RID p_space,SpaceParameter p_param) const;
+
+	virtual void space_set_debug_contacts(RID p_space,int p_max_contacts);
+	virtual Vector<Vector2> space_get_contacts(RID p_space) const;
+	virtual int space_get_contact_count(RID p_space) const;
+
 
 	// this function only works on fixed process, errors and returns null otherwise
 	virtual Physics2DDirectSpaceState* space_get_direct_state(RID p_space);
@@ -131,8 +142,14 @@ public:
 
 	virtual Variant area_get_param(RID p_parea,AreaParameter p_param) const;
 	virtual Matrix32 area_get_transform(RID p_area) const;
+	virtual void area_set_monitorable(RID p_area,bool p_monitorable);
+	virtual void area_set_collision_mask(RID p_area,uint32_t p_mask);
+	virtual void area_set_layer_mask(RID p_area,uint32_t p_mask);
 
 	virtual void area_set_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method);
+	virtual void area_set_area_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method);
+
+	virtual void area_set_pickable(RID p_area,bool p_pickable);
 
 
 	/* BODY API */
@@ -171,10 +188,10 @@ public:
 	virtual CCDMode body_get_continuous_collision_detection_mode(RID p_body) const;
 
 	virtual void body_set_layer_mask(RID p_body, uint32_t p_mask);
-	virtual uint32_t body_get_layer_mask(RID p_body, uint32_t p_mask) const;
+	virtual uint32_t body_get_layer_mask(RID p_body) const;
 
-	virtual void body_set_user_mask(RID p_body, uint32_t p_mask);
-	virtual uint32_t body_get_user_mask(RID p_body, uint32_t p_mask) const;
+	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask);
+	virtual uint32_t body_get_collision_mask(RID p_) const;
 
 	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value);
 	virtual float body_get_param(RID p_body, BodyParameter p_param) const;
@@ -188,6 +205,8 @@ public:
 
 	virtual void body_set_applied_torque(RID p_body, float p_torque);
 	virtual float body_get_applied_torque(RID p_body) const;
+
+	virtual void body_add_force(RID p_body, const Vector2& p_offset, const Vector2& p_force);
 
 	virtual void body_apply_impulse(RID p_body, const Vector2& p_pos, const Vector2& p_impulse);
 	virtual void body_set_axis_velocity(RID p_body, const Vector2& p_axis_velocity);
@@ -205,8 +224,20 @@ public:
 	virtual void body_set_max_contacts_reported(RID p_body, int p_contacts);
 	virtual int body_get_max_contacts_reported(RID p_body) const;
 
+	virtual void body_set_one_way_collision_direction(RID p_body,const Vector2& p_direction);
+	virtual Vector2 body_get_one_way_collision_direction(RID p_body) const;
+
+	virtual void body_set_one_way_collision_max_depth(RID p_body,float p_max_depth);
+	virtual float body_get_one_way_collision_max_depth(RID p_body) const;
+
+
 	virtual void body_set_force_integration_callback(RID p_body,Object *p_receiver,const StringName& p_method,const Variant& p_udata=Variant());
 	virtual bool body_collide_shape(RID p_body, int p_body_shape,RID p_shape, const Matrix32& p_shape_xform,const Vector2& p_motion,Vector2 *r_results,int p_result_max,int &r_result_count);
+
+	virtual void body_set_pickable(RID p_body,bool p_pickable);
+
+	virtual bool body_test_motion(RID p_body,const Vector2& p_motion,float p_margin=0.001,MotionResult *r_result=NULL);
+
 
 	/* JOINT API */
 
@@ -216,6 +247,8 @@ public:
 	virtual RID pin_joint_create(const Vector2& p_pos,RID p_body_a,RID p_body_b=RID());
 	virtual RID groove_joint_create(const Vector2& p_a_groove1,const Vector2& p_a_groove2, const Vector2& p_b_anchor, RID p_body_a,RID p_body_b);
 	virtual RID damped_spring_joint_create(const Vector2& p_anchor_a,const Vector2& p_anchor_b,RID p_body_a,RID p_body_b=RID());
+	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value);
+	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const;
 	virtual void damped_string_joint_set_param(RID p_joint, DampedStringParam p_param, real_t p_value);
 	virtual real_t damped_string_joint_get_param(RID p_joint, DampedStringParam p_param) const;
 
@@ -230,6 +263,7 @@ public:
 	virtual void step(float p_step);
 	virtual void sync();
 	virtual void flush_queries();
+	virtual void end_sync();
 	virtual void finish();
 
 	int get_process_info(ProcessInfo p_info);

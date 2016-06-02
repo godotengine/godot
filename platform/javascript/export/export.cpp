@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,6 +50,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 		PACK_MULTIPLE_FILES
 	};
 
+	void _fix_html(Vector<uint8_t>& p_html, const String& p_name, bool p_debug);
 
 	PackMode pack_mode;
 
@@ -57,6 +58,12 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 
 	int max_memory;
 	int version_code;
+
+	String html_title;
+	String html_head_include;
+	String html_font_family;
+	String html_style_include;
+	bool html_controls_enabled;
 
 	Ref<ImageTexture> logo;
 
@@ -77,11 +84,11 @@ public:
 	virtual int get_device_count() const { return show_run?1:0; };
 	virtual String get_device_name(int p_device) const  { return "Run in Browser"; }
 	virtual String get_device_info(int p_device) const { return "Run exported HTML in the system's default browser."; }
-	virtual Error run(int p_device,bool p_dumb=false);
+	virtual Error run(int p_device,int p_flags=0);
 
-	virtual bool requieres_password(bool p_debug) const { return false; }
+	virtual bool requires_password(bool p_debug) const { return false; }
 	virtual String get_binary_extension() const { return "html"; }
-	virtual Error export_project(const String& p_path,bool p_debug,bool p_dumb=false);
+	virtual Error export_project(const String& p_path,bool p_debug,int p_flags=0);
 
 	virtual bool can_export(String *r_error=NULL) const;
 
@@ -101,6 +108,16 @@ bool EditorExportPlatformJavaScript::_set(const StringName& p_name, const Varian
 		show_run=p_value;
 	else if (n=="options/memory_size")
 		max_memory=p_value;
+	else if (n=="html/title")
+		html_title=p_value;
+	else if (n=="html/head_include")
+		html_head_include=p_value;
+	else if (n=="html/font_family")
+		html_font_family=p_value;
+	else if (n=="html/style_include")
+		html_style_include=p_value;
+	else if (n=="html/controls_enabled")
+		html_controls_enabled=p_value;
 	else
 		return false;
 
@@ -119,6 +136,16 @@ bool EditorExportPlatformJavaScript::_get(const StringName& p_name,Variant &r_re
 		r_ret=show_run;
 	else if (n=="options/memory_size")
 		r_ret=max_memory;
+	else if (n=="html/title")
+		r_ret=html_title;
+	else if (n=="html/head_include")
+		r_ret=html_head_include;
+	else if (n=="html/font_family")
+		r_ret=html_font_family;
+	else if (n=="html/style_include")
+		r_ret=html_style_include;
+	else if (n=="html/controls_enabled")
+		r_ret=html_controls_enabled;
 	else
 		return false;
 
@@ -130,35 +157,47 @@ void EditorExportPlatformJavaScript::_get_property_list( List<PropertyInfo> *p_l
 	p_list->push_back( PropertyInfo( Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE,"zip"));
 	p_list->push_back( PropertyInfo( Variant::INT, "options/memory_size",PROPERTY_HINT_ENUM,"32mb,64mb,128mb,256mb,512mb,1024mb"));
 	p_list->push_back( PropertyInfo( Variant::BOOL, "browser/enable_run"));
+	p_list->push_back( PropertyInfo( Variant::STRING, "html/title"));
+	p_list->push_back( PropertyInfo( Variant::STRING, "html/head_include",PROPERTY_HINT_MULTILINE_TEXT));
+	p_list->push_back( PropertyInfo( Variant::STRING, "html/font_family"));
+	p_list->push_back( PropertyInfo( Variant::STRING, "html/style_include",PROPERTY_HINT_MULTILINE_TEXT));
+	p_list->push_back( PropertyInfo( Variant::BOOL, "html/controls_enabled"));
+
 
 	//p_list->push_back( PropertyInfo( Variant::INT, "resources/pack_mode", PROPERTY_HINT_ENUM,"Copy,Single Exec.,Pack (.pck),Bundles (Optical)"));
 
 }
 
 
-static void _fix_html(Vector<uint8_t>& html,const String& name,int max_memory) {
+void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t>& p_html, const String& p_name, bool p_debug) {
 
 
 	String str;
 	String strnew;
-	str.parse_utf8((const char*)html.ptr(),html.size());
+	str.parse_utf8((const char*)p_html.ptr(),p_html.size());
 	Vector<String> lines=str.split("\n");
 	for(int i=0;i<lines.size();i++) {
-		if (lines[i].find("godot.js")!=-1) {
-			strnew+="<script type=\"text/javascript\" src=\""+name+"_filesystem.js\"></script>\n";
-			strnew+="<script async type=\"text/javascript\" src=\""+name+".js\"></script>\n";
-		} else if (lines[i].find("var Module")!=-1) {
-			strnew+=lines[i];
-			strnew+="TOTAL_MEMORY:"+itos(max_memory*1024*1024)+",";
-		} else {
-			strnew+=lines[i]+"\n";
-		}
+
+		String current_line = lines[i];
+		current_line = current_line.replace("$GODOT_TMEM",itos((1<<(max_memory+5))*1024*1024));
+		current_line = current_line.replace("$GODOT_FS",p_name+"fs.js");
+		current_line = current_line.replace("$GODOT_MEM",p_name+".mem");
+		current_line = current_line.replace("$GODOT_JS",p_name+".js");
+		current_line = current_line.replace("$GODOT_CANVAS_WIDTH",Globals::get_singleton()->get("display/width"));
+		current_line = current_line.replace("$GODOT_CANVAS_HEIGHT",Globals::get_singleton()->get("display/height"));
+		current_line = current_line.replace("$GODOT_HEAD_TITLE",!html_title.empty()?html_title:(String) Globals::get_singleton()->get("application/name"));
+		current_line = current_line.replace("$GODOT_HEAD_INCLUDE",html_head_include);
+		current_line = current_line.replace("$GODOT_STYLE_FONT_FAMILY",html_font_family);
+		current_line = current_line.replace("$GODOT_STYLE_INCLUDE",html_style_include);
+		current_line = current_line.replace("$GODOT_CONTROLS_ENABLED",html_controls_enabled?"true":"false");
+		current_line = current_line.replace("$GODOT_DEBUG_ENABLED",p_debug?"true":"false");
+		strnew += current_line+"\n";
 	}
 
 	CharString cs = strnew.utf8();
-	html.resize(cs.size());
+	p_html.resize(cs.size());
 	for(int i=9;i<cs.size();i++) {
-		html[i]=cs[i];
+		p_html[i]=cs[i];
 	}
 }
 
@@ -194,24 +233,30 @@ struct JSExportData {
 
 
 
-Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool p_debug, bool p_dumb) {
+Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool p_debug, int p_flags) {
 
 
 	String src_template;
 
 	EditorProgress ep("export","Exporting for javascript",104);
 
-	String template_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
+	if (p_debug)
+		src_template=custom_debug_package;
+	else
+		src_template=custom_release_package;
 
-	if (p_debug) {
-
-		src_template=custom_debug_package!=""?custom_debug_package:template_path+"javascript_debug.zip";
-	} else {
-
-		src_template=custom_release_package!=""?custom_release_package:template_path+"javascript_release.zip";
-
+	if (src_template=="") {
+		String err;
+		if (p_debug) {
+			src_template=find_export_template("javascript_debug.zip", &err);
+		} else {
+			src_template=find_export_template("javascript_release.zip", &err);
+		}
+		if (src_template=="") {
+			EditorNode::add_io_error(err);
+			return ERR_FILE_NOT_FOUND;
+		}
 	}
-
 
 	FileAccess *src_f=NULL;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
@@ -264,18 +309,24 @@ Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool 
 
 		if (file=="godot.html") {
 
-			_fix_html(data,p_path.get_file().basename(),1<<(max_memory+5));
+			_fix_html(data,p_path.get_file().basename(), p_debug);
 			file=p_path.get_file();
 		}
-		if (file=="filesystem.js") {
+		if (file=="godotfs.js") {
 
 			_fix_files(data,len);
-			file=p_path.get_file().basename()+"_filesystem.js";
+			file=p_path.get_file().basename()+"fs.js";
 		}
 		if (file=="godot.js") {
 
 			//_fix_godot(data);
 			file=p_path.get_file().basename()+".js";
+		}
+
+		if (file=="godot.mem") {
+
+			//_fix_godot(data);
+			file=p_path.get_file().basename()+".mem";
 		}
 
 		String dst = p_path.get_base_dir().plus_file(file);
@@ -299,10 +350,10 @@ Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool 
 }
 
 
-Error EditorExportPlatformJavaScript::run(int p_device, bool p_dumb) {
+Error EditorExportPlatformJavaScript::run(int p_device, int p_flags) {
 
 	String path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmp_export.html";
-	Error err = export_project(path,true,"");
+	Error err = export_project(path,true,p_flags);
 	if (err)
 		return err;
 
@@ -319,6 +370,9 @@ EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 	logo = Ref<ImageTexture>( memnew( ImageTexture ));
 	logo->create_from_image(img);
 	max_memory=3;
+	html_title="";
+	html_font_family="arial,sans-serif";
+	html_controls_enabled=true;
 	pack_mode=PACK_SINGLE_FILE;
 }
 
@@ -327,9 +381,8 @@ bool EditorExportPlatformJavaScript::can_export(String *r_error) const {
 
 	bool valid=true;
 	String err;
-	String exe_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
 
-	if (!FileAccess::exists(exe_path+"javascript_debug.zip") || !FileAccess::exists(exe_path+"javascript_release.zip")) {
+	if (!exists_export_template("javascript_debug.zip") || !exists_export_template("javascript_release.zip")) {
 		valid=false;
 		err+="No export templates found.\nDownload and install export templates.\n";
 	}

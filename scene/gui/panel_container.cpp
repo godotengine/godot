@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,12 @@
 
 Size2 PanelContainer::get_minimum_size() const {
 
-	Ref<StyleBox> style=get_stylebox("panel");
+	Ref<StyleBox> style;
+
+	if (has_stylebox("panel"))
+		style=get_stylebox("panel");
+	else
+		style=get_stylebox("panel","PanelContainer");
 
 
 	Size2 ms;

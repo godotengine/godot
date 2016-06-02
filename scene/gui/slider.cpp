@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,9 +50,9 @@ void Slider::_input_event(InputEvent p_event) {
 				grab.pos=orientation==VERTICAL?mb.y:mb.x;
 				double max = orientation==VERTICAL ? get_size().height : get_size().width ;
 				if (orientation==VERTICAL)
-					set_val( ( ( -(double)grab.pos / max) * ( get_max() - get_min() ) ) + get_max() );
+					set_unit_value( 1 - ((double)grab.pos / max) );
 				else
-					set_val( ( ( (double)grab.pos / max) * ( get_max() - get_min() ) ) + get_min() );
+					set_unit_value((double)grab.pos / max);
 				grab.active=true;
 				grab.uvalue=get_unit_value();
 			} else {
@@ -231,13 +231,13 @@ void Slider::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_input_event"),&Slider::_input_event);
 	ObjectTypeDB::bind_method(_MD("set_ticks","count"),&Slider::set_ticks);
 	ObjectTypeDB::bind_method(_MD("get_ticks"),&Slider::get_ticks);
-	
-	ObjectTypeDB::bind_method(_MD("get_ticks_on_borders"),&Slider::get_ticks_on_borders);          
+
+	ObjectTypeDB::bind_method(_MD("get_ticks_on_borders"),&Slider::get_ticks_on_borders);
 	ObjectTypeDB::bind_method(_MD("set_ticks_on_borders","ticks_on_border"),&Slider::set_ticks_on_borders);
-	
+
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "tick_count", PROPERTY_HINT_RANGE,"0,4096,1"), _SCS("set_ticks"), _SCS("get_ticks") );
         ADD_PROPERTY( PropertyInfo( Variant::BOOL, "ticks_on_borders" ), _SCS("set_ticks_on_borders"), _SCS("get_ticks_on_borders") );
-        
+
 }
 
 Slider::Slider(Orientation p_orientation) {

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,7 +87,7 @@ CameraEditor::CameraEditor() {
 	preview = memnew( Button );
 	add_child(preview);
 
-	preview->set_text("Preview");
+	preview->set_text(TTR("Preview"));
 	preview->set_toggle_mode(true);
 	preview->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
 	preview->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);

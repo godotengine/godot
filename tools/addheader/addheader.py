@@ -6,7 +6,7 @@ header="""\
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@ while (fname!=""):
   l = fr.readline()
   bc=False
   fsingle = fname.strip()
-   
+
   if (fsingle.find("/")!=-1):
     fsingle=fsingle[fsingle.rfind("/")+1:]
   rep_fl="$filename"
@@ -51,19 +51,19 @@ while (fname!=""):
   elif (len_fl<len_fi):
     for x in range(len_fi-len_fl):
       rep_fl+=" "
-  if (header.find(rep_fl)!=-1):     
+  if (header.find(rep_fl)!=-1):
     text=header.replace(rep_fl,rep_fi)
   else:
     text=header.replace("$filename",fsingle)
-  
-   
+
+
   while (l!=""):
     if ((l.find("//")!=0 and  l.find("/*")!=0 and l.strip()!="") or bc):
       text+=l
       bc=True
     l=fr.readline()
 
-  fr.close()      
+  fr.close()
   fr=open(fname.strip(),"wb")
   fr.write(text)
   fr.close()

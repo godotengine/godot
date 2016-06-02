@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,16 +88,16 @@ void Memory::dump_static_mem_to_file(const char* p_file) {
 MID Memory::alloc_dynamic(size_t p_bytes, const char *p_descr) {
 
 	MemoryPoolDynamic::ID id = MemoryPoolDynamic::get_singleton()->alloc(p_bytes,p_descr);
-	
+
 	return MID(id);
 }
 Error Memory::realloc_dynamic(MID p_mid,size_t p_bytes) {
 
 	MemoryPoolDynamic::ID id = p_mid.data?p_mid.data->id:MemoryPoolDynamic::INVALID_ID;
-	
+
 	if (id==MemoryPoolDynamic::INVALID_ID)
 		return ERR_INVALID_PARAMETER;
-		
+
 	return MemoryPoolDynamic::get_singleton()->realloc(p_mid, p_bytes);
 
 }
@@ -112,13 +112,6 @@ size_t Memory::get_dynamic_mem_usage() {
 	return MemoryPoolDynamic::get_singleton()->get_total_usage();
 }
 
-void * operator new(size_t p_size,void *p_pointer,size_t check, const char *p_description) {
-
-	void *failptr=0;
-	ERR_FAIL_COND_V( check < p_size , failptr); /** bug, or strange compiler, most likely */
-
-	return p_pointer;
-}
 
 
 

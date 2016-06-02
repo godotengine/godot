@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,6 +56,7 @@ public:
 		TK_TYPE_VEC2,
 		TK_TYPE_VEC3,
 		TK_TYPE_VEC4,
+		TK_TYPE_MAT2,
 		TK_TYPE_MAT3,
 		TK_TYPE_MAT4,
 		TK_TYPE_TEXTURE,
@@ -105,6 +106,9 @@ public:
 		SHADER_MATERIAL_VERTEX,
 		SHADER_MATERIAL_FRAGMENT,
 		SHADER_MATERIAL_LIGHT,
+		SHADER_CANVAS_ITEM_VERTEX,
+		SHADER_CANVAS_ITEM_FRAGMENT,
+		SHADER_CANVAS_ITEM_LIGHT,
 		SHADER_POST_PROCESS,
 	};
 
@@ -115,6 +119,7 @@ public:
 		TYPE_VEC2,
 		TYPE_VEC3,
 		TYPE_VEC4,
+		TYPE_MAT2,
 		TYPE_MAT3,
 		TYPE_MAT4,
 		TYPE_TEXTURE,
@@ -376,6 +381,12 @@ private:
 	static const BuiltinsDef vertex_builtins_defs[];
 	static const BuiltinsDef fragment_builtins_defs[];
 	static const BuiltinsDef light_builtins_defs[];
+
+	static const BuiltinsDef ci_vertex_builtins_defs[];
+	static const BuiltinsDef ci_fragment_builtins_defs[];
+	static const BuiltinsDef ci_light_builtins_defs[];
+
+
 	static const BuiltinsDef postprocess_fragment_builtins_defs[];
 
 	static DataType get_token_datatype(TokenType p_type);

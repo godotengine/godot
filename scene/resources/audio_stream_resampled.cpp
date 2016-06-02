@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,6 +28,9 @@
 /*************************************************************************/
 #include "audio_stream_resampled.h"
 #include "globals.h"
+
+
+#if 0
 int AudioStreamResampled::get_channel_count() const {
 
 	if (!rb)
@@ -230,6 +233,51 @@ bool AudioStreamResampled::mix(int32_t *p_dest, int p_frames) {
 			case 4: read=_resample<4>(p_dest,todo,increment); break;
 			case 6: read=_resample<6>(p_dest,todo,increment); break;
 		}
+#if 1
+		//end of stream, fadeout
+		int remaining = p_frames-todo;
+		if (remaining && todo>0) {
+
+			//print_line("fadeout");
+			for(int c=0;c<channels;c++) {
+
+				for(int i=0;i<todo;i++) {
+
+					int32_t samp = p_dest[i*channels+c]>>8;
+					uint32_t mul = (todo-i) * 256 /todo;
+					//print_line("mul: "+itos(i)+" "+itos(mul));
+					p_dest[i*channels+c]=samp*mul;
+				}
+
+			}
+
+		}
+
+#else
+		int remaining = p_frames-todo;
+		if (remaining && todo>0) {
+
+
+			for(int c=0;c<channels;c++) {
+
+				int32_t from = p_dest[(todo-1)*channels+c]>>8;
+
+				for(int i=0;i<remaining;i++) {
+
+					uint32_t mul = (remaining-i) * 256 /remaining;
+					p_dest[(todo+i)*channels+c]=from*mul;
+				}
+
+			}
+
+		}
+#endif
+
+		//zero out what remains there to avoid glitches
+		for(int i=todo*channels;i<int(p_frames)*channels;i++) {
+
+			p_dest[i]=0;
+		}
 
 		if (read>rb_todo)
 			read=rb_todo;
@@ -316,6 +364,16 @@ AudioStreamResampled::AudioStreamResampled() {
 	rb=NULL;
 	offset=0;
 	read_buf=NULL;
+	rb_read_pos=0;
+	rb_write_pos=0;
+
+	rb_bits=0;
+	rb_len=0;
+	rb_mask=0;
+	read_buff_len=0;
+	channels=0;
+	mix_rate=0;
+
 }
 
 AudioStreamResampled::~AudioStreamResampled() {
@@ -327,3 +385,4 @@ AudioStreamResampled::~AudioStreamResampled() {
 
 }
 
+#endif

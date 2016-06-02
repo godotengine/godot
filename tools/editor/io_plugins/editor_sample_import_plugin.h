@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,13 +43,30 @@ class EditorSampleImportPlugin : public EditorImportPlugin {
 	void _compress_ima_adpcm(const Vector<float>& p_data,DVector<uint8_t>& dst_data);
 public:
 
+	static EditorSampleImportPlugin *singleton;
+
 	virtual String get_name() const;
 	virtual String get_visible_name() const;
 	virtual void import_dialog(const String& p_from="");
 	virtual Error import(const String& p_path, const Ref<ResourceImportMetadata>& p_from);
+	void import_from_drop(const Vector<String>& p_drop, const String &p_dest_path);
+	virtual void reimport_multiple_files(const Vector<String>& p_list);
+	virtual bool can_reimport_multiple_files() const;
 
 
 	EditorSampleImportPlugin(EditorNode* p_editor);
+};
+
+class EditorSampleExportPlugin : public EditorExportPlugin {
+
+	OBJ_TYPE( EditorSampleExportPlugin, EditorExportPlugin);
+
+
+public:
+
+	virtual Vector<uint8_t> custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform);
+
+	EditorSampleExportPlugin();
 };
 
 #endif // EDITOR_SAMPLE_IMPORT_PLUGIN_H

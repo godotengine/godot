@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@
 class Geometry {
 	Geometry();
 public:
-	
+
 
 
 
@@ -201,37 +201,37 @@ public:
 		real_t a =e1.dot(h);
 		if (a>-CMP_EPSILON && a < CMP_EPSILON) // parallel test
 			return false;
-				
+
 		real_t f=1.0/a;
-		
+
 		Vector3 s=p_from-p_v0;
 		real_t u = f * s.dot(h);
-		
+
 		if ( u< 0.0 || u > 1.0)
 			return false;
-		
+
 		Vector3 q=s.cross(e1);
-		
+
 		real_t v = f * p_dir.dot(q);
-		
+
 		if (v < 0.0 || u + v > 1.0)
 			return false;
-		
-		// at this stage we can compute t to find out where 
+
+		// at this stage we can compute t to find out where
 		// the intersection point is on the line
 		real_t t = f * e2.dot(q);
-		
+
 		if (t > 0.00001) {// ray intersection
 			if (r_res)
 				*r_res=p_from+p_dir*t;
 			return true;
-		} else // this means that there is a line intersection  
+		} else // this means that there is a line intersection
 			// but not a ray intersection
 			return false;
-	}	
-	
+	}
+
 	static inline bool segment_intersects_triangle( const Vector3& p_from, const Vector3& p_to, const Vector3& p_v0,const Vector3& p_v1,const Vector3& p_v2,Vector3* r_res=0) {
-	
+
 		Vector3 rel=p_to-p_from;
 		Vector3 e1=p_v1-p_v0;
 		Vector3 e2=p_v2-p_v0;
@@ -239,34 +239,34 @@ public:
 		real_t a =e1.dot(h);
 		if (a>-CMP_EPSILON && a < CMP_EPSILON) // parallel test
 			return false;
-				
+
 		real_t f=1.0/a;
-		
+
 		Vector3 s=p_from-p_v0;
 		real_t u = f * s.dot(h);
-		
+
 		if ( u< 0.0 || u > 1.0)
 			return false;
-		
+
 		Vector3 q=s.cross(e1);
-		
+
 		real_t v = f * rel.dot(q);
-		
+
 		if (v < 0.0 || u + v > 1.0)
 			return false;
-		
-		// at this stage we can compute t to find out where 
+
+		// at this stage we can compute t to find out where
 		// the intersection point is on the line
 		real_t t = f * e2.dot(q);
-		
+
 		if (t > CMP_EPSILON && t<=1.0) {// ray intersection
 			if (r_res)
 				*r_res=p_from+rel*t;
 			return true;
-		} else // this means that there is a line intersection  
+		} else // this means that there is a line intersection
 			// but not a ray intersection
 			return false;
-	}	
+	}
 
 	static inline bool segment_intersects_sphere( const Vector3& p_from, const Vector3& p_to, const Vector3& p_sphere_pos,real_t p_sphere_radius,Vector3* r_res=0,Vector3 *r_norm=0) {
 
@@ -356,24 +356,24 @@ public:
 			real_t box_end=size[i];
 			real_t cmin,cmax;
 
-	
+
 			if (seg_from < seg_to) {
-	
+
 				if (seg_from > box_end || seg_to < box_begin)
 					return false;
 				real_t length=seg_to-seg_from;
 				cmin = (seg_from < box_begin)?((box_begin - seg_from)/length):0;
 				cmax = (seg_to > box_end)?((box_end - seg_from)/length):1;
-	
+
 			} else {
-	
+
 				if (seg_to > box_end || seg_from < box_begin)
 					return false;
 				real_t length=seg_to-seg_from;
 				cmin = (seg_from > box_end)?(box_end - seg_from)/length:0;
 				cmax = (seg_to < box_begin)?(box_begin - seg_from)/length:1;
 			}
-	
+
 			if (cmin > min) {
 				min = cmin;
 				axis=i;
@@ -468,9 +468,9 @@ public:
 		if (l<1e-10)
 			return p_segment[0]; // both points are the same, just give any
 		n/=l;
-	
+
 		float d=n.dot(p);
-	
+
 		if (d<=0.0)
 			return p_segment[0]; // before first point
 		else if (d>=l)
@@ -510,6 +510,20 @@ public:
 			return p_segment[1]; // after first point
 		else
 			return p_segment[0]+n*d; // inside
+	}
+
+	static bool is_point_in_triangle(const Vector2& s, const Vector2& a, const Vector2& b, const Vector2& c)
+	{
+	    int as_x = s.x-a.x;
+	    int as_y = s.y-a.y;
+
+	    bool s_ab = (b.x-a.x)*as_y-(b.y-a.y)*as_x > 0;
+
+	    if(((c.x-a.x)*as_y-(c.y-a.y)*as_x > 0) == s_ab) return false;
+
+	    if(((c.x-b.x)*(s.y-b.y)-(c.y-b.y)*(s.x-b.x) > 0) != s_ab) return false;
+
+	    return true;
 	}
 	static Vector2 get_closest_point_to_segment_uncapped_2d(const Vector2& p_point, const Vector2 *p_segment) {
 
@@ -556,27 +570,27 @@ public:
 
 
 	static inline bool point_in_projected_triangle(const Vector3& p_point,const Vector3& p_v1,const Vector3& p_v2,const Vector3& p_v3) {
-	
-	
-		Vector3 face_n =  (p_v1-p_v3).cross(p_v1-p_v2);		
-		
-		Vector3 n1 =  (p_point-p_v3).cross(p_point-p_v2);		
-		
+
+
+		Vector3 face_n =  (p_v1-p_v3).cross(p_v1-p_v2);
+
+		Vector3 n1 =  (p_point-p_v3).cross(p_point-p_v2);
+
 		if (face_n.dot(n1)<0)
 			return false;
-			
-		Vector3 n2 =  (p_v1-p_v3).cross(p_v1-p_point);		
-		
+
+		Vector3 n2 =  (p_v1-p_v3).cross(p_v1-p_point);
+
 		if (face_n.dot(n2)<0)
 			return false;
-		
-		Vector3 n3 =  (p_v1-p_point).cross(p_v1-p_v2);		
-	
+
+		Vector3 n3 =  (p_v1-p_point).cross(p_v1-p_v2);
+
 		if (face_n.dot(n3)<0)
 			return false;
-	
+
 		return true;
-	
+
 	}
 
 	static inline bool triangle_sphere_intersection_test(const Vector3 *p_triangle,const Vector3& p_normal,const Vector3& p_sphere_pos, real_t p_sphere_radius,Vector3& r_triangle_contact,Vector3& r_sphere_contact) {
@@ -800,21 +814,21 @@ public:
 
 
 	struct MeshData {
-		
+
 		struct Face {
 			Plane plane;
 			Vector<int> indices;
 		};
-		
+
 		Vector<Face> faces;
-		
+
 		struct Edge {
-		
+
 			int a,b;
 		};
-		
+
 		Vector<Edge> edges;
-		
+
 		Vector< Vector3 > vertices;
 
 		void optimize_vertices();
@@ -872,7 +886,38 @@ public:
 	}
 
 
+	static double vec2_cross(const Point2 &O, const Point2 &A, const Point2 &B)
+	{
+		return (double)(A.x - O.x) * (B.y - O.y) - (double)(A.y - O.y) * (B.x - O.x);
+	}
 
+	// Returns a list of points on the convex hull in counter-clockwise order.
+	// Note: the last point in the returned list is the same as the first one.
+	static Vector<Point2> convex_hull_2d(Vector<Point2> P)
+	{
+		int n = P.size(), k = 0;
+		Vector<Point2> H;
+		H.resize(2*n);
+
+		// Sort points lexicographically
+		P.sort();
+
+
+		// Build lower hull
+		for (int i = 0; i < n; ++i) {
+			while (k >= 2 && vec2_cross(H[k-2], H[k-1], P[i]) <= 0) k--;
+			H[k++] = P[i];
+		}
+
+		// Build upper hull
+		for (int i = n-2, t = k+1; i >= 0; i--) {
+			while (k >= t && vec2_cross(H[k-2], H[k-1], P[i]) <= 0) k--;
+			H[k++] = P[i];
+		}
+
+		H.resize(k);
+		return H;
+	}
 
 	static MeshData build_convex_mesh(const DVector<Plane> &p_planes);
 	static DVector<Plane> build_sphere_planes(float p_radius, int p_lats, int p_lons, Vector3::Axis p_axis=Vector3::AXIS_Z);
@@ -882,7 +927,7 @@ public:
 
 	static void make_atlas(const Vector<Size2i>& p_rects,Vector<Point2i>& r_result, Size2i& r_size);
 
-	
+
 };
 
 

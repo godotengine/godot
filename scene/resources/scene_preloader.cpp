@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -407,7 +407,7 @@ Dictionary ScenePreloader::_get_bundled_scene() const {
 		rconns.push_back(cd.signal);
 		rconns.push_back(cd.method);
 		rconns.push_back(cd.binds.size());
-		for(int j=0;j<cd.binds.size();i++)
+		for(int j=0;j<cd.binds.size();j++)
 			rconns.push_back(cd.binds[j]);
 
 	}

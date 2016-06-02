@@ -127,7 +127,7 @@ void ImmediateGeometry::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_color","color"),&ImmediateGeometry::set_color);
 	ObjectTypeDB::bind_method(_MD("set_uv","uv"),&ImmediateGeometry::set_uv);
 	ObjectTypeDB::bind_method(_MD("set_uv2","uv"),&ImmediateGeometry::set_uv2);
-	ObjectTypeDB::bind_method(_MD("add_vertex","color"),&ImmediateGeometry::add_vertex);
+	ObjectTypeDB::bind_method(_MD("add_vertex","pos"),&ImmediateGeometry::add_vertex);
 	ObjectTypeDB::bind_method(_MD("add_sphere","lats","lons","radius"),&ImmediateGeometry::add_sphere);
 	ObjectTypeDB::bind_method(_MD("end"),&ImmediateGeometry::end);
 	ObjectTypeDB::bind_method(_MD("clear"),&ImmediateGeometry::clear);

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,14 +31,14 @@
 #include "scene/scene_string_names.h"
 void CollisionObject::_update_shapes_from_children() {
 
-	shapes.resize(0);
+	shapes.clear();
 	for(int i=0;i<get_child_count();i++) {
 
 		Node* n = get_child(i);
 		n->call("_add_to_collision_object",this);
 	}
 
-//	_update_shapes();
+	_update_shapes();
 }
 
 void CollisionObject::_notification(int p_what) {
@@ -46,6 +46,11 @@ void CollisionObject::_notification(int p_what) {
 	switch(p_what) {
 
 		case NOTIFICATION_ENTER_WORLD: {
+
+			if (area)
+				PhysicsServer::get_singleton()->area_set_transform(rid,get_global_transform());
+			else
+				PhysicsServer::get_singleton()->body_set_state(rid,PhysicsServer::BODY_STATE_TRANSFORM,get_global_transform());
 
 			RID space = get_world()->get_space();
 			if (area) {
@@ -117,8 +122,8 @@ bool CollisionObject::_set(const StringName& p_name, const Variant& p_value) {
 
 	} else if (name.begins_with("shapes/")) {
 
-		int idx=name.get_slice("/",1).to_int();
-		String what=name.get_slice("/",2);
+		int idx=name.get_slicec('/',1).to_int();
+		String what=name.get_slicec('/',2);
 		if (what=="shape")
 			set_shape(idx,RefPtr(p_value));
 		else if (what=="transform")
@@ -143,8 +148,8 @@ bool CollisionObject::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= shapes.size();
 	} else if (name.begins_with("shapes/")) {
 
-		int idx=name.get_slice("/",1).to_int();
-		String what=name.get_slice("/",2);
+		int idx=name.get_slicec('/',1).to_int();
+		String what=name.get_slicec('/',2);
 		if (what=="shape")
 			r_ret= get_shape(idx);
 		else if (what=="transform")

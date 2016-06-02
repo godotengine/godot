@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,9 +47,9 @@
 class ConnectDialogBinds;
 
 class ConnectDialog : public ConfirmationDialog {
-	
+
 	OBJ_TYPE( ConnectDialog, ConfirmationDialog );
-	
+
 
 	ConfirmationDialog *error;
 	LineEdit *dst_path;
@@ -58,6 +58,7 @@ class ConnectDialog : public ConfirmationDialog {
 	//MenuButton *dst_method_list;
 	OptionButton *type_list;
 	CheckButton *deferred;
+	CheckButton *oneshot;
 	CheckButton *make_callback;
 	PropertyEditor *bind_editor;
 	Node *node;
@@ -68,33 +69,34 @@ class ConnectDialog : public ConfirmationDialog {
 	void _dst_method_list_selected(int p_idx);
 	void _add_bind();
 	void _remove_bind();
-	
+
 protected:
 
 	void _notification(int p_what);
-	static void _bind_methods();	
+	static void _bind_methods();
 public:
-	
+
 
 	bool get_make_callback() { return !make_callback->is_hidden() && make_callback->is_pressed(); }
 	NodePath get_dst_path() const;
-	StringName get_dst_method() const;	
+	StringName get_dst_method() const;
 	bool get_deferred() const;
+	bool get_oneshot() const;
 	Vector<Variant> get_binds() const;
 	void set_dst_method(const StringName& p_method);
 	void set_dst_node(Node* p_node);
-	
+
 //	Button *get_ok() { return ok; }
 //	Button *get_cancel() { return cancel; }
 	void edit(Node *p_node);
-	
+
 	ConnectDialog();
 	~ConnectDialog();
-	
+
 };
 
 class ConnectionsDialog : public ConfirmationDialog {
-	
+
 	OBJ_TYPE( ConnectionsDialog , ConfirmationDialog );
 
 	EditorNode *editor;
@@ -102,7 +104,7 @@ class ConnectionsDialog : public ConfirmationDialog {
 	Tree *tree;
 	ConfirmationDialog *remove_confirm;
 	ConnectDialog *connect_dialog;
-	
+
 	void update_tree();
 
 	void _close();
@@ -111,20 +113,20 @@ class ConnectionsDialog : public ConfirmationDialog {
 	UndoRedo *undo_redo;
 
 protected:
-	
+
 	virtual void ok_pressed();
 	void _notification(int p_what);
 	static void _bind_methods();
 public:
-	
+
 	void set_undoredo(UndoRedo *p_undo_redo) { undo_redo=p_undo_redo; }
 
 	void set_node(Node* p_node);
 	String get_selected_type();
-	
+
 	ConnectionsDialog(EditorNode *p_editor=NULL);
 	~ConnectionsDialog();
-	
+
 };
 
 #endif

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,7 +65,7 @@ public:
 	RID get_instance() const;
 	virtual AABB get_aabb() const=0;
 	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const=0;
-	
+
 	virtual AABB get_transformed_aabb() const; // helper
 
 	void set_base(const RID& p_base);
@@ -74,7 +74,7 @@ public:
 	uint32_t get_layer_mask() const;
 
 
-	VisualInstance();	
+	VisualInstance();
 	~VisualInstance();
 
 };
@@ -98,16 +98,24 @@ public:
 		FLAG_MAX=VS::INSTANCE_FLAG_MAX,
 	};
 
+	enum ShadowCastingSetting {
+		SHADOW_CASTING_SETTING_OFF=VS::SHADOW_CASTING_SETTING_OFF,
+		SHADOW_CASTING_SETTING_ON = VS::SHADOW_CASTING_SETTING_ON,
+		SHADOW_CASTING_SETTING_DOUBLE_SIDED=VS::SHADOW_CASTING_SETTING_DOUBLE_SIDED,
+		SHADOW_CASTING_SETTING_SHADOWS_ONLY=VS::SHADOW_CASTING_SETTING_SHADOWS_ONLY
+	};
 
 private:
 
 	bool flags[FLAG_MAX];
+	ShadowCastingSetting shadow_casting_setting;
 	Ref<Material> material_override;
 	float draw_begin;
 	float draw_end;
 	void _find_baked_light();
 	BakedLightInstance *baked_light_instance;
 	int baked_light_texture_id;
+	float extra_cull_margin;
 
 	void _baked_light_changed();
 	void _update_visibility();
@@ -119,6 +127,9 @@ public:
 
 	void set_flag(Flags p_flag,bool p_value);
 	bool get_flag(Flags p_flag) const;
+
+	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
+	ShadowCastingSetting get_cast_shadows_setting() const;
 
 	void set_draw_range_begin(float p_dist);
 	float get_draw_range_begin() const;
@@ -132,9 +143,14 @@ public:
 	void set_baked_light_texture_id(int p_id);
 	int get_baked_light_texture_id() const;
 
+	void set_extra_cull_margin(float p_margin);
+	float get_extra_cull_margin() const;
+
 	GeometryInstance();
 };
 
 VARIANT_ENUM_CAST( GeometryInstance::Flags );
+VARIANT_ENUM_CAST( GeometryInstance::ShadowCastingSetting );
+
 
 #endif

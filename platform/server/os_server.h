@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 #define OS_SERVER_H
 
 
-#include "os/input.h"
+#include "main/input_default.h"
 #include "drivers/unix/os_unix.h"
 #include "servers/visual_server.h"
 #include "servers/visual/rasterizer.h"
@@ -55,11 +55,11 @@ class OS_Server : public OS_Unix {
 	VisualServer *visual_server;
 	VideoMode current_videomode;
 	List<String> args;
-	MainLoop *main_loop;	
+	MainLoop *main_loop;
 
 	AudioDriverDummy driver_dummy;
 	bool grab;
-	
+
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
 
@@ -80,13 +80,13 @@ class OS_Server : public OS_Unix {
 protected:
 
 	virtual int get_video_driver_count() const;
-	virtual const char * get_video_driver_name(int p_driver) const;	
+	virtual const char * get_video_driver_name(int p_driver) const;
 	virtual VideoMode get_default_video_mode() const;
-	
-	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);	
+
+	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);
 	virtual void finalize();
 
-	virtual void set_main_loop( MainLoop * p_main_loop );    
+	virtual void set_main_loop( MainLoop * p_main_loop );
 
 public:
 
@@ -102,12 +102,14 @@ public:
 	virtual void set_window_title(const String& p_title);
 
 	virtual MainLoop *get_main_loop() const;
-	
+
 	virtual bool can_draw() const;
 
 	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0);
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
+
+	virtual Size2 get_window_size() const;
 
 	virtual void move_window_to_foreground();
 

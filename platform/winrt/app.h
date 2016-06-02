@@ -46,7 +46,7 @@ namespace $ext_safeprojectname$
         bool mWindowVisible;
         GLsizei mWindowWidth;
         GLsizei mWindowHeight;
-        
+
         EGLDisplay mEglDisplay;
         EGLContext mEglContext;
         EGLSurface mEglSurface;

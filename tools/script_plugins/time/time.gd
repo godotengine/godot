@@ -21,12 +21,12 @@ func _init():
 	timer.set_one_shot(false)
 	timer.connect("timeout",self,"_timeout")
  
-func _enter_scene():
+func _enter_tree():
 	label = Label.new()
 	add_custom_control(CONTAINER_TOOLBAR,label)
 	timer.start()
 	
-func _exit_scene():
+func _exit_tree():
 	timer.stop()
 	label.free()
 	label=null

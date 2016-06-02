@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,9 @@ class EditorRunNative : public HBoxContainer {
 	Map<StringName,MenuButton*> menus;
 	bool first;
 	bool deploy_dumb;
+	bool deploy_debug_remote;
+	bool debug_collisions;
+	bool debug_navigation;
 
 	void _run_native(int p_idx,const String& p_platform);
 
@@ -50,6 +53,16 @@ public:
 
 	void set_deploy_dumb(bool p_enabled);
 	bool is_deploy_dumb_enabled() const;
+
+	void set_deploy_debug_remote(bool p_enabled);
+	bool is_deploy_debug_remote_enabled() const;
+
+	void set_debug_collisions(bool p_debug);
+	bool get_debug_collisions() const;
+
+	void set_debug_navigation(bool p_debug);
+	bool get_debug_navigation() const;
+
 	EditorRunNative();
 };
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 //
 // C++ Interface: context_gl_x11
 //
-// Description: 
+// Description:
 //
 //
 // Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
@@ -62,14 +62,14 @@ public:
 	virtual void release_current();
 
 	virtual void make_current();
-	
+
 	virtual int get_window_width();
 	virtual int get_window_height();
 	virtual void swap_buffers();
-	
+
 	virtual Error initialize();
-		
-	
+
+
 	ContextGL_Win(HWND hwnd,bool p_opengl_3_context);
 	~ContextGL_Win();
 

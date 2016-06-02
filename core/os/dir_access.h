@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,12 +78,14 @@ public:
 	virtual String get_next(bool* p_is_dir); // compatibility
 	virtual String get_next()=0;
 	virtual bool current_is_dir() const=0;
-	
-	virtual void list_dir_end()=0; ///< 
-	
+	virtual bool current_is_hidden() const=0;
+
+	virtual void list_dir_end()=0; ///<
+
 	virtual int get_drive_count()=0;
 	virtual String get_drive(int p_drive)=0;
-	
+	virtual int get_current_drive();
+
 	virtual Error change_dir(String p_dir)=0; ///< can be relative or absolute, return false on success
 	virtual String get_current_dir()=0; ///< return current dir location
 	virtual Error make_dir(String p_dir)=0;
@@ -92,13 +94,13 @@ public:
 
 	virtual bool file_exists(String p_file)=0;
 	virtual bool dir_exists(String p_dir)=0;
-
+	static bool exists(String p_dir);
 	virtual size_t get_space_left()=0;
 
 	virtual Error copy(String p_from,String p_to);
 	virtual Error rename(String p_from, String p_to)=0;
 	virtual Error remove(String p_name)=0;
-	
+
 	static String get_full_path(const String& p_path,AccessType p_access);
 	static DirAccess *create_for_path(const String& p_path);
 
@@ -109,7 +111,7 @@ public:
 		FILE_TYPE_FILE,
 		FILE_TYPE_DIR,
 	};
-	
+
 	//virtual DirType get_file_type() const=0;
 */
 	static DirAccess *create(AccessType p_access);

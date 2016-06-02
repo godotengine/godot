@@ -1,44 +1,37 @@
 
 extends Spatial
 
-# member variables here, example:
-# var a=2
-# var b="textvar"
+# Member variables
+var prev_pos = null
 
-var prev_pos=null
 
-func _input(ev):
-	if (ev.type in [InputEvent.MOUSE_BUTTON,InputEvent.MOUSE_MOTION]):
-		var pos = ev.pos
-		var rfrom = get_node("camera").project_ray_origin(pos)
-		var rnorm = get_node("camera").project_ray_normal(pos)
-		
-		#simple collision test against aligned plane
-		#for game UIs of this kind consider more complex collision against plane
-		var p = Plane(Vector3(0,0,1),0).intersects_ray(rfrom,rnorm)
-		if (p==null):
-			return
-			
-		pos.x=(p.x+1.5)*100
-		pos.y=(-p.y+0.75)*100
-		ev.pos=pos
-		ev.global_pos=pos
-		if (prev_pos==null):
-			prev_pos=pos
-		if (ev.type==InputEvent.MOUSE_MOTION):
-			ev.relative_pos=pos-prev_pos
-		prev_pos=pos
-		
-	get_node("viewport").input(ev)
-		
-		
-	
+func _input(event):
+	# All other (non-mouse) events
+	if (not event.type in [InputEvent.MOUSE_BUTTON, InputEvent.MOUSE_MOTION, InputEvent.SCREEN_DRAG, InputEvent.SCREEN_TOUCH]):
+		get_node("viewport").input(event)
+
+
+# Mouse events for Area
+func _on_area_input_event(camera, event, click_pos, click_normal, shape_idx):
+	# Use click pos (click in 3d space, convert to area space)
+	var pos = get_node("area").get_global_transform().affine_inverse()*click_pos
+	# Convert to 2D
+	pos = Vector2(pos.x, pos.y)
+	# Convert to viewport coordinate system
+	pos.x = (pos.x + 1.5)*100
+	pos.y = (-pos.y + 0.75)*100
+	# Set to event
+	event.pos = pos
+	event.global_pos = pos
+	if (prev_pos == null):
+		prev_pos = pos
+	if (event.type == InputEvent.MOUSE_MOTION):
+		event.relative_pos = pos - prev_pos
+	prev_pos = pos
+	# Send the event to the viewport
+	get_node("viewport").input(event)
+
 
 func _ready():
-	# Initalization here
-	get_node("quad").get_material_override().set_texture(FixedMaterial.PARAM_DIFFUSE, get_node("viewport").get_render_target_texture() )
+	get_node("area/quad").get_material_override().set_texture(FixedMaterial.PARAM_DIFFUSE, get_node("viewport").get_render_target_texture())
 	set_process_input(true)
-	
-	pass
-
-

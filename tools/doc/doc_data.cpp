@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,6 +59,30 @@ void DocData::merge_from(const DocData& p_data) {
 
 				if (cf.methods[j].name!=m.name)
 					continue;
+				if (cf.methods[j].arguments.size()!=m.arguments.size())
+					continue;
+				// since polymorphic functions are allowed we need to check the type of
+				// the arguments so we make sure they are different.
+				int arg_count = cf.methods[j].arguments.size();
+				Vector<bool> arg_used;
+				arg_used.resize(arg_count);
+				for (int l = 0; l < arg_count; ++l) arg_used[l] = false;
+				// also there is no guarantee that argument ordering will match, so we
+				// have to check one by one so we make sure we have an exact match
+				for (int k = 0; k < arg_count; ++k) {
+					for (int l = 0; l < arg_count; ++l)
+						if (cf.methods[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
+							arg_used[l] = true;
+							break;
+						}
+				}
+				bool not_the_same = false;
+				for (int l = 0; l < arg_count; ++l)
+					if (!arg_used[l]) // at least one of the arguments was different
+						not_the_same = true;
+				if (not_the_same)
+					continue;
+
 				const MethodDoc &mf = cf.methods[j];
 
 				m.description=mf.description;
@@ -134,9 +158,9 @@ void DocData::merge_from(const DocData& p_data) {
 void DocData::generate(bool p_basic_types) {
 
 
-	List<String> classes;
+	List<StringName> classes;
 	ObjectTypeDB::get_type_list(&classes);
-	classes.sort();
+	classes.sort_custom<StringName::AlphCompare>();
 
 	while(classes.size()) {
 
@@ -184,10 +208,17 @@ void DocData::generate(bool p_basic_types) {
 
 
 					arginfo=E->get().return_val;
-					if (arginfo.type==Variant::NIL)
-						continue;
+#ifdef DEBUG_METHODS_ENABLED
+					if (m && m->get_return_type()!=StringName())
+						method.return_type=m->get_return_type();
+					else if (method.name.find(":")!=-1) {
+						method.return_type=method.name.get_slice(":",1);
+						method.name=method.name.get_slice(":",0);
 
-					method.return_type=(arginfo.hint==PROPERTY_HINT_RESOURCE_TYPE)?arginfo.hint_string:Variant::get_type_name(arginfo.type);
+					} else if (arginfo.type!=Variant::NIL) // {
+#endif
+						method.return_type=(arginfo.hint==PROPERTY_HINT_RESOURCE_TYPE)?arginfo.hint_string:Variant::get_type_name(arginfo.type);
+//					}
 
 				} else {
 
@@ -204,7 +235,7 @@ void DocData::generate(bool p_basic_types) {
 					} else if (arginfo.hint==PROPERTY_HINT_RESOURCE_TYPE) {
 						type_name=arginfo.hint_string;
 					} else if (arginfo.type==Variant::NIL)
-						type_name="var";
+						type_name="Variant";
 					else
 						type_name=Variant::get_type_name(arginfo.type);
 
@@ -257,6 +288,7 @@ void DocData::generate(bool p_basic_types) {
 							case Variant::INT_ARRAY:
 							case Variant::REAL_ARRAY:
 							case Variant::STRING_ARRAY:	//25
+							case Variant::VECTOR2_ARRAY:
 							case Variant::VECTOR3_ARRAY:
 							case Variant::COLOR_ARRAY:
 								default_arg_text=Variant::get_type_name(default_arg.get_type())+"("+default_arg_text+")";
@@ -427,7 +459,7 @@ void DocData::generate(bool p_basic_types) {
 
 			if (i==Variant::INPUT_EVENT) {
 				static const char* ie_type[InputEvent::TYPE_MAX]={
-					"","Key","MouseMotion","MouseButton","JoyMotion","JoyButton","ScreenTouch","ScreenDrag","Action"
+					"","Key","MouseMotion","MouseButton","JoystickMotion","JoystickButton","ScreenTouch","ScreenDrag","Action"
 				};
 				cname+=ie_type[j];
 			}
@@ -542,7 +574,7 @@ void DocData::generate(bool p_basic_types) {
 			Globals::Singleton &s=E->get();
 			pd.name=s.name;
 			pd.type=s.ptr->get_type();
-			while (ObjectTypeDB::type_inherits_from(pd.type)!="Object")
+			while (String(ObjectTypeDB::type_inherits_from(pd.type))!="Object")
 				pd.type=ObjectTypeDB::type_inherits_from(pd.type);
 			if (pd.type.begins_with("_"))
 				pd.type=pd.type.substr(1,pd.type.length());
@@ -578,7 +610,10 @@ void DocData::generate(bool p_basic_types) {
 				md.name=mi.name;
 				if (mi.return_val.name!="")
 					md.return_type=mi.return_val.name;
-				else
+				else if (mi.name.find(":")!=-1) {
+					md.return_type=mi.name.get_slice(":",1);
+					md.name=mi.name.get_slice(":",0);
+				} else
 					md.return_type=Variant::get_type_name(mi.return_val.type);
 
 				for(int i=0;i<mi.arguments.size();i++) {
@@ -588,8 +623,9 @@ void DocData::generate(bool p_basic_types) {
 					ArgumentDoc ad;
 					ad.name=pi.name;
 
+
 					if (pi.type==Variant::NIL)
-						ad.type="var";
+						ad.type="Variant";
 					else
 						ad.type=Variant::get_type_name( pi.type );
 
@@ -912,9 +948,9 @@ Error DocData::save(const String& p_path) {
 
 			String qualifiers;
 			if (m.qualifiers!="")
-				qualifiers+="qualifiers=\""+m.qualifiers.xml_escape()+"\"";
+				qualifiers+=" qualifiers=\""+m.qualifiers.xml_escape()+"\"";
 
-			_write_string(f,2,"<method name=\""+m.name+"\" "+qualifiers+" >");
+			_write_string(f,2,"<method name=\""+m.name+"\""+qualifiers+">");
 
 			if (m.return_type!="") {
 
@@ -953,6 +989,8 @@ Error DocData::save(const String& p_path) {
 
 				PropertyDoc &p=c.properties[i];
 				_write_string(f,2,"<member name=\""+p.name+"\" type=\""+p.type+"\">");
+				if (p.description!="")
+					_write_string(f,3,p.description.xml_escape());
 				_write_string(f,2,"</member>");
 
 			}

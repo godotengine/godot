@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,8 @@
 #include "progress_dialog.h"
 #include "main/main.h"
 #include "message_queue.h"
-#include "scene/gui/empty_control.h"
-
+#include "os/os.h"
+#include "editor_scale.h"
 void BackgroundProgress::_add_task(const String& p_task,const String& p_label, int p_steps) {
 
 	_THREAD_SAFE_METHOD_
@@ -43,12 +43,12 @@ void BackgroundProgress::_add_task(const String& p_task,const String& p_label, i
 	t.progress = memnew( ProgressBar );
 	t.progress->set_max(p_steps);
 	t.progress->set_val(p_steps);
-	EmptyControl *ec = memnew( EmptyControl );
+	Control *ec = memnew( Control );
 	ec->set_h_size_flags(SIZE_EXPAND_FILL);
 	ec->set_v_size_flags(SIZE_EXPAND_FILL);
 	t.progress->set_area_as_parent_rect();
 	ec->add_child(t.progress);
-	ec->set_minsize(Size2(80,5));
+	ec->set_custom_minimum_size(Size2(80,5)*EDSCALE);
 	t.hb->add_child(ec);
 
 	add_child(t.hb);
@@ -140,6 +140,9 @@ void BackgroundProgress::end_task(const String& p_task){
 
 ////////////////////////////////////////////////
 
+
+ProgressDialog *ProgressDialog::singleton=NULL;
+
 void ProgressDialog::_notification(int p_what) {
 
 	switch(p_what) {
@@ -157,7 +160,7 @@ void ProgressDialog::_notification(int p_what) {
 void ProgressDialog::_popup() {
 
 	Size2 ms = main->get_combined_minimum_size();
-	ms.width = MAX(500,ms.width);
+	ms.width = MAX(500*EDSCALE,ms.width);
 
 
 	Ref<StyleBox> style = get_stylebox("panel","PopupMenu");
@@ -191,9 +194,15 @@ void ProgressDialog::add_task(const String& p_task,const String& p_label,int p_s
 
 }
 
-void ProgressDialog::task_step(const String& p_task, const String& p_state, int p_step){
+void ProgressDialog::task_step(const String& p_task, const String& p_state, int p_step,bool p_force_redraw){
 
 	ERR_FAIL_COND(!tasks.has(p_task));
+
+	if (!p_force_redraw) {
+		uint64_t tus = OS::get_singleton()->get_ticks_usec();
+		if (tus-last_progress_tick < 50000) //50ms
+			return;
+	}
 
 	Task &t=tasks[p_task];
 	if (p_step<0)
@@ -202,6 +211,7 @@ void ProgressDialog::task_step(const String& p_task, const String& p_state, int 
 		t.progress->set_val(p_step);
 
 	t.state->set_text(p_state);
+	last_progress_tick=OS::get_singleton()->get_ticks_usec();
 	Main::iteration(); // this will not work on a lot of platforms, so it's only meant for the editor
 
 }
@@ -229,4 +239,6 @@ ProgressDialog::ProgressDialog() {
 	add_child(main);
 	main->set_area_as_parent_rect();
 	set_exclusive(true);
+	last_progress_tick=0;
+	singleton=this;
 }

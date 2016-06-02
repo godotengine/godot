@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,9 +34,9 @@
 
 
 
-#define DEBUG_PRINT(m_p) print_line(m_p)
+//#define DEBUG_PRINT(m_p) print_line(m_p)
 //#define DEBUG_TIME(m_what) printf("MS: %s - %lli\n",m_what,OS::get_singleton()->get_ticks_usec());
-//#define DEBUG_PRINT(m_p)
+#define DEBUG_PRINT(m_p)
 #define DEBUG_TIME(m_what)
 
 
@@ -217,7 +217,7 @@ Error FileAccessNetworkClient::connect(const String& p_host,int p_port,const Str
 		return ERR_CANT_CONNECT;
 	}
 
-	CharString cs = p_password.utf8();	
+	CharString cs = p_password.utf8();
 	put_32(cs.length());
 	client->put_data((const uint8_t*)cs.ptr(),cs.length());
 
@@ -254,6 +254,7 @@ FileAccessNetworkClient::~FileAccessNetworkClient() {
 		quit=true;
 		sem->post();
 		Thread::wait_to_finish(thread);
+		memdelete(thread);
 	}
 
 	memdelete(blockrequest_mutex);

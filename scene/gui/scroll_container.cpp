@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,37 @@ bool ScrollContainer::clips_input() const {
 
 Size2 ScrollContainer::get_minimum_size() const {
 
-	return Size2(1, 1);
+
+	Size2 min_size;
+
+	for(int i=0;i<get_child_count();i++) {
+
+		Control *c = get_child(i)->cast_to<Control>();
+		if (!c)
+			continue;
+		if (c->is_set_as_toplevel())
+			continue;
+		if (c == h_scroll || c == v_scroll)
+			continue;
+		Size2 minsize = c->get_combined_minimum_size();
+
+
+		if (!scroll_h) {
+			min_size.x = MAX(min_size.x, minsize.x);
+		}
+		if (!scroll_v) {
+			min_size.y = MAX(min_size.y, minsize.y);
+
+		}
+	}
+
+	if (h_scroll->is_visible()) {
+		min_size.y+=h_scroll->get_minimum_size().y;
+	}
+	if (v_scroll->is_visible()) {
+		min_size.x+=v_scroll->get_minimum_size().x;
+	}
+	return min_size;
 };
 
 
@@ -179,6 +209,12 @@ void ScrollContainer::_notification(int p_what) {
 
 		child_max_size = Size2(0, 0);
 		Size2 size = get_size();
+		if (h_scroll->is_visible())
+			size.y-=h_scroll->get_minimum_size().y;
+
+		if (v_scroll->is_visible())
+			size.x-=h_scroll->get_minimum_size().x;
+
 		for(int i=0;i<get_child_count();i++) {
 
 			Control *c = get_child(i)->cast_to<Control>();
@@ -195,11 +231,19 @@ void ScrollContainer::_notification(int p_what) {
 			Rect2 r = Rect2(-scroll,minsize);
 			if (!scroll_h) {
 				r.pos.x=0;
-				r.size.width=size.width;
+				if (c->get_h_size_flags()&SIZE_EXPAND)
+					r.size.width=MAX(size.width,minsize.width);
+				else
+					r.size.width=minsize.width;
 			}
 			if (!scroll_v) {
 				r.pos.y=0;
 				r.size.height=size.height;
+				if (c->get_v_size_flags()&SIZE_EXPAND)
+					r.size.height=MAX(size.height,minsize.height);
+				else
+					r.size.height=minsize.height;
+
 			}
 			fit_child_in_rect(c,r);
 		}

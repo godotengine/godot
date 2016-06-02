@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,7 +27,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles1/rasterizer_gles1.h"
 #include "os_winrt.h"
 #include "drivers/nedmalloc/memory_pool_static_nedmalloc.h"
 #include "drivers/unix/memory_pool_static_malloc.h"
@@ -44,7 +43,6 @@
 #include "servers/audio/audio_server_sw.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
-#include "os/pc_joystick_map.h"
 #include "os/memory_pool_dynamic_prealloc.h"
 #include "globals.h"
 #include "io/marshalls.h"
@@ -62,11 +60,11 @@ using namespace Microsoft::WRL;
 
 int OSWinrt::get_video_driver_count() const {
 
-	return 2;
+	return 1;
 }
 const char * OSWinrt::get_video_driver_name(int p_driver) const {
 
-	return p_driver==0?"GLES2":"GLES1";
+	return "GLES2";
 }
 
 OS::VideoMode OSWinrt::get_default_video_mode() const {
@@ -97,7 +95,7 @@ void OSWinrt::initialize_core() {
 
 	ThreadWinrt::make_default();
 	//SemaphoreWindows::make_default();
-	MutexWindows::make_default();	
+	MutexWindows::make_default();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
@@ -109,7 +107,7 @@ void OSWinrt::initialize_core() {
 
 	//TCPServerWinsock::make_default();
 	//StreamPeerWinsock::make_default();
-	
+
 	mempool_static = new MemoryPoolStaticMalloc;
 #if 1
 	mempool_dynamic = memnew( MemoryPoolDynamicStatic );
@@ -119,7 +117,7 @@ void OSWinrt::initialize_core() {
 	mempool_dynamic = memnew( MemoryPoolDynamicPrealloc(buffer,DYNPOOL_SIZE) );
 
 #endif
-	
+
 	   // We need to know how often the clock is updated
 	if( !QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second) )
 		ticks_per_second = 1000;
@@ -140,6 +138,11 @@ bool OSWinrt::can_draw() const {
 void OSWinrt::set_gl_context(ContextEGL* p_context) {
 
 	gl_context = p_context;
+};
+
+void OSWinrt::screen_size_changed() {
+
+	gl_context->reset();
 };
 
 void OSWinrt::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
@@ -172,7 +175,7 @@ void OSWinrt::initialize(const VideoMode& p_desired,int p_video_driver,int p_aud
 	physics_2d_server = memnew( Physics2DServerSW );
 	physics_2d_server->init();
 
-	visual_server->init();	
+	visual_server->init();
 
 	input = memnew( InputDefault );
 
@@ -304,7 +307,7 @@ void OSWinrt::finalize() {
 		memdelete(main_loop);
 
 	main_loop=NULL;
-	
+
 	visual_server->finish();
 	memdelete(visual_server);
 #ifdef OPENGL_ENABLED
@@ -323,9 +326,10 @@ void OSWinrt::finalize() {
 //		memdelete(debugger_connection_console);
 //}
 
+	memdelete(sample_manager);
+
 	audio_server->finish();
 	memdelete(audio_server);
-	memdelete(sample_manager);
 
 	memdelete(input);
 
@@ -340,8 +344,7 @@ void OSWinrt::finalize_core() {
 
 	if (mempool_dynamic)
 		memdelete( mempool_dynamic );
-	if (mempool_static)
-		delete mempool_static;
+	delete mempool_static;
 
 }
 
@@ -415,20 +418,30 @@ OS::VideoMode OSWinrt::get_video_mode(int p_screen) const {
 }
 void OSWinrt::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 
-	
+
 }
 
-void OSWinrt::print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type) {
+void OSWinrt::print_error(const char* p_function, const char* p_file, int p_line, const char* p_code, const char* p_rationale, ErrorType p_type) {
 
-	if (p_rationale && p_rationale[0]) {
+	const char* err_details;
+	if (p_rationale && p_rationale[0])
+		err_details = p_rationale;
+	else
+		err_details = p_code;
 
-		print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_rationale);
-		print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
-
-	} else {
-		print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_code);
-		print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
-
+	switch(p_type) {
+		case ERR_ERROR:
+			print("ERROR: %s: %s\n", p_function, err_details);
+			print("   At: %s:%i\n", p_file, p_line);
+			break;
+		case ERR_WARNING:
+			print("WARNING: %s: %s\n", p_function, err_details);
+			print("     At: %s:%i\n", p_file, p_line);
+			break;
+		case ERR_SCRIPT:
+			print("SCRIPT ERROR: %s: %s\n", p_function, err_details);
+			print("          At: %s:%i\n", p_file, p_line);
+			break;
 	}
 }
 
@@ -438,10 +451,14 @@ String OSWinrt::get_name() {
 	return "WinRT";
 }
 
-OS::Date OSWinrt::get_date() const {
+OS::Date OSWinrt::get_date(bool utc) const {
 
 	SYSTEMTIME systemtime;
-	GetSystemTime(&systemtime);
+	if (utc)
+		GetSystemTime(&systemtime);
+	else
+		GetLocalTime(&systemtime);
+
 	Date date;
 	date.day=systemtime.wDay;
 	date.month=Month(systemtime.wMonth);
@@ -450,10 +467,13 @@ OS::Date OSWinrt::get_date() const {
 	date.dst=false;
 	return date;
 }
-OS::Time OSWinrt::get_time() const {
+OS::Time OSWinrt::get_time(bool utc) const {
 
 	SYSTEMTIME systemtime;
-	GetSystemTime(&systemtime);
+	if (utc)
+		GetSystemTime(&systemtime);
+	else
+		GetLocalTime(&systemtime);
 
 	Time time;
 	time.hour=systemtime.wHour;
@@ -462,11 +482,28 @@ OS::Time OSWinrt::get_time() const {
 	return time;
 }
 
+OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
+	TIME_ZONE_INFORMATION info;
+	bool daylight = false;
+	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT)
+		daylight = true;
+
+	TimeZoneInfo ret;
+	if (daylight) {
+		ret.name = info.DaylightName;
+	} else {
+		ret.name = info.StandardName;
+	}
+
+	ret.bias = info.Bias;
+	return ret;
+}
+
 uint64_t OSWinrt::get_unix_time() const {
 
 	FILETIME ft;
 	SYSTEMTIME st;
-	GetSystemTime(&st);
+	GetSystemTime(&systemtime);
 	SystemTimeToFileTime(&st, &ft);
 
 	SYSTEMTIME ep;
@@ -490,7 +527,7 @@ void OSWinrt::delay_usec(uint32_t p_usec) const {
 
 	// no Sleep()
 	WaitForSingleObjectEx(GetCurrentThread(), msec, false);
-	
+
 }
 uint64_t OSWinrt::get_ticks_usec() const {
 
@@ -568,8 +605,12 @@ Error OSWinrt::shell_open(String p_uri) {
 
 String OSWinrt::get_locale() const {
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP // this should work on phone 8.1, but it doesn't
+	return "en";
+#else
 	Platform::String ^language = Windows::Globalization::Language::CurrentInputMethodLanguageTag;
 	return language->Data();
+#endif
 }
 
 void OSWinrt::release_rendering_thread() {
@@ -592,22 +633,22 @@ void OSWinrt::run() {
 
 	if (!main_loop)
 		return;
-		
+
 	main_loop->init();
-		
+
 	uint64_t last_ticks=get_ticks_usec();
-	
+
 	int frames=0;
 	uint64_t frame=0;
-	
+
 	while (!force_quit) {
-	
+
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 		process_events(); // get rid of pending events
 		if (Main::iteration()==true)
 			break;
 	};
-	
+
 	main_loop->finish();
 
 }

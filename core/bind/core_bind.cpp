@@ -5,6 +5,29 @@
 #include "io/base64.h"
 #include "core/globals.h"
 #include "io/file_access_encrypted.h"
+#include "os/keyboard.h"
+
+/**
+ *  Time constants borrowed from loc_time.h
+ */
+#define EPOCH_YR  1970    /* EPOCH = Jan 1 1970 00:00:00 */
+#define SECS_DAY  (24L * 60L * 60L)
+#define LEAPYEAR(year)  (!((year) % 4) && (((year) % 100) || !((year) % 400)))
+#define YEARSIZE(year)  (LEAPYEAR(year) ? 366 : 365)
+#define SECOND_KEY "second"
+#define MINUTE_KEY "minute"
+#define HOUR_KEY "hour"
+#define DAY_KEY "day"
+#define MONTH_KEY "month"
+#define YEAR_KEY "year"
+#define WEEKDAY_KEY "weekday"
+#define DST_KEY "dst"
+
+/// Table of number of days in each month (for regular year and leap year)
+static const unsigned int MONTH_DAYS_TABLE[2][12] = {
+	{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
+	{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+};
 
 _ResourceLoader *_ResourceLoader::singleton=NULL;
 
@@ -12,9 +35,9 @@ Ref<ResourceInteractiveLoader> _ResourceLoader::load_interactive(const String& p
 	return ResourceLoader::load_interactive(p_path,p_type_hint);
 }
 
-RES _ResourceLoader::load(const String &p_path,const String& p_type_hint) {
+RES _ResourceLoader::load(const String &p_path,const String& p_type_hint, bool p_no_cache) {
 
-	RES ret =  ResourceLoader::load(p_path,p_type_hint);
+	RES ret =  ResourceLoader::load(p_path,p_type_hint, p_no_cache);
 	return ret;
 }
 
@@ -55,15 +78,21 @@ bool _ResourceLoader::has(const String &p_path) {
 	return ResourceCache::has(local_path);
 };
 
+Ref<ResourceImportMetadata> _ResourceLoader::load_import_metadata(const String& p_path) {
+
+	return ResourceLoader::load_import_metadata(p_path);
+}
+
 void _ResourceLoader::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("load_interactive:ResourceInteractiveLoader","path","type_hint"),&_ResourceLoader::load_interactive,DEFVAL(""));
-	ObjectTypeDB::bind_method(_MD("load:Resource","path","type_hint"),&_ResourceLoader::load,DEFVAL(""));
+	ObjectTypeDB::bind_method(_MD("load:Resource","path","type_hint", "p_no_cache"),&_ResourceLoader::load,DEFVAL(""), DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("load_import_metadata:ResourceImportMetadata","path"),&_ResourceLoader::load_import_metadata);
 	ObjectTypeDB::bind_method(_MD("get_recognized_extensions_for_type","type"),&_ResourceLoader::get_recognized_extensions_for_type);
 	ObjectTypeDB::bind_method(_MD("set_abort_on_missing_resources","abort"),&_ResourceLoader::set_abort_on_missing_resources);
-	ObjectTypeDB::bind_method(_MD("get_dependencies"),&_ResourceLoader::get_dependencies);
-	ObjectTypeDB::bind_method(_MD("has"),&_ResourceLoader::has);
+	ObjectTypeDB::bind_method(_MD("get_dependencies","path"),&_ResourceLoader::get_dependencies);
+	ObjectTypeDB::bind_method(_MD("has","path"),&_ResourceLoader::has);
 }
 
 _ResourceLoader::_ResourceLoader() {
@@ -96,7 +125,7 @@ _ResourceSaver *_ResourceSaver::singleton=NULL;
 
 void _ResourceSaver::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("save","path","resource:Resource"),&_ResourceSaver::save, DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("save","path","resource:Resource","flags"),&_ResourceSaver::save,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_recognized_extensions","type"),&_ResourceSaver::get_recognized_extensions);
 
 	BIND_CONSTANT(FLAG_RELATIVE_PATHS);
@@ -176,6 +205,88 @@ bool _OS::is_video_mode_fullscreen(int p_screen) const {
 
 }
 
+
+int _OS::get_screen_count() const {
+	return OS::get_singleton()->get_screen_count();
+}
+
+int _OS::get_current_screen() const {
+	return OS::get_singleton()->get_current_screen();
+}
+
+void _OS::set_current_screen(int p_screen) {
+	OS::get_singleton()->set_current_screen(p_screen);
+}
+
+Point2 _OS::get_screen_position(int p_screen) const {
+	return OS::get_singleton()->get_screen_position(p_screen);
+}
+
+Size2 _OS::get_screen_size(int p_screen) const {
+	return OS::get_singleton()->get_screen_size(p_screen);
+}
+
+int _OS::get_screen_dpi(int p_screen) const {
+
+	return  OS::get_singleton()->get_screen_dpi(p_screen);
+}
+
+Point2 _OS::get_window_position() const {
+	return OS::get_singleton()->get_window_position();
+}
+
+void _OS::set_window_position(const Point2& p_position) {
+	OS::get_singleton()->set_window_position(p_position);
+}
+
+Size2 _OS::get_window_size() const {
+	return OS::get_singleton()->get_window_size();
+}
+
+void _OS::set_window_size(const Size2& p_size) {
+	OS::get_singleton()->set_window_size(p_size);
+}
+
+void _OS::set_window_fullscreen(bool p_enabled) {
+	OS::get_singleton()->set_window_fullscreen(p_enabled);
+}
+
+bool _OS::is_window_fullscreen() const {
+	return OS::get_singleton()->is_window_fullscreen();
+}
+
+void _OS::set_window_resizable(bool p_enabled) {
+	OS::get_singleton()->set_window_resizable(p_enabled);
+}
+
+bool _OS::is_window_resizable() const {
+	return OS::get_singleton()->is_window_resizable();
+}
+
+void _OS::set_window_minimized(bool p_enabled) {
+	OS::get_singleton()->set_window_minimized(p_enabled);
+}
+
+bool _OS::is_window_minimized() const {
+	return OS::get_singleton()->is_window_minimized();
+}
+
+void _OS::set_window_maximized(bool p_enabled) {
+	OS::get_singleton()->set_window_maximized(p_enabled);
+}
+
+bool _OS::is_window_maximized() const {
+	return OS::get_singleton()->is_window_maximized();
+}
+
+void _OS::set_borderless_window(bool p_borderless) {
+	OS::get_singleton()->set_borderless_window(p_borderless);
+}
+
+bool _OS::get_borderless_window() const {
+	return OS::get_singleton()->get_borderless_window();
+}
+
 void _OS::set_use_file_access_save_and_swap(bool p_enable) {
 
 	FileAccess::set_backup_save(p_enable);
@@ -186,7 +297,6 @@ bool _OS::is_video_mode_resizable(int p_screen) const {
 	OS::VideoMode vm;
 	vm = OS::get_singleton()->get_video_mode(p_screen);
 	return vm.resizable;
-
 }
 
 Array _OS::get_fullscreen_mode_list(int p_screen) const {
@@ -316,6 +426,17 @@ float _OS::get_time_scale() {
 	return OS::get_singleton()->get_time_scale();
 }
 
+bool _OS::is_ok_left_and_cancel_right() const {
+
+	return OS::get_singleton()->get_swap_ok_cancel();
+}
+
+Error _OS::set_thread_name(const String& p_name) {
+
+	return Thread::set_name(p_name);
+};
+
+
 /*
 enum Weekday {
 	DAY_SUNDAY,
@@ -383,33 +504,216 @@ void _OS::set_icon(const Image& p_icon) {
 	OS::get_singleton()->set_icon(p_icon);
 }
 
-Dictionary _OS::get_date() const {
+/**
+ *  Get current datetime with consideration for utc and
+ *     dst
+ */
+Dictionary _OS::get_datetime(bool utc) const {
 
-	OS::Date date = OS::get_singleton()->get_date();
-	Dictionary dated;
-	dated["year"]=date.year;
-	dated["month"]=date.month;
-	dated["day"]=date.day;
-	dated["weekday"]=date.weekday;
-	dated["dst"]=date.dst;
+	Dictionary dated = get_date(utc);
+	Dictionary timed = get_time(utc);
+
+	List<Variant> keys;
+	timed.get_key_list(&keys);
+
+	for(int i = 0; i < keys.size(); i++) {
+		dated[keys[i]] = timed[keys[i]];
+	}
+
 	return dated;
-
-
 }
-Dictionary _OS::get_time() const {
 
-	OS::Time time = OS::get_singleton()->get_time();
+Dictionary _OS::get_date(bool utc) const {
+
+	OS::Date date = OS::get_singleton()->get_date(utc);
+	Dictionary dated;
+	dated[YEAR_KEY]=date.year;
+	dated[MONTH_KEY]=date.month;
+	dated[DAY_KEY]=date.day;
+	dated[WEEKDAY_KEY]=date.weekday;
+	dated[DST_KEY]=date.dst;
+	return dated;
+}
+
+Dictionary _OS::get_time(bool utc) const {
+
+	OS::Time time = OS::get_singleton()->get_time(utc);
 	Dictionary timed;
-	timed["hour"]=time.hour;
-	timed["minute"]=time.min;
-	timed["second"]=time.sec;
+	timed[HOUR_KEY]=time.hour;
+	timed[MINUTE_KEY]=time.min;
+	timed[SECOND_KEY]=time.sec;
 	return timed;
+}
+
+/**
+ *  Get a epoch time value from a dictionary of time values
+ *  @p datetime must be populated with the following keys:
+ *    day, hour, minute, month, second, year. (dst is ignored).
+ *
+ *    You can pass the output from
+ *   get_datetime_from_unix_time directly into this function
+ *
+ * @param datetime dictionary of date and time values to convert
+ *
+ * @return epoch calculated
+ */
+uint64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
+
+	// Bunch of conversion constants
+	static const unsigned int SECONDS_PER_MINUTE = 60;
+	static const unsigned int MINUTES_PER_HOUR = 60;
+	static const unsigned int HOURS_PER_DAY = 24;
+	static const unsigned int SECONDS_PER_HOUR = MINUTES_PER_HOUR *
+		SECONDS_PER_MINUTE;
+	static const unsigned int SECONDS_PER_DAY = SECONDS_PER_HOUR * HOURS_PER_DAY;
+
+	// Get all time values from the dictionary, set to zero if it doesn't exist.
+	//   Risk incorrect calculation over throwing errors
+	unsigned int second = ((datetime.has(SECOND_KEY))?
+			static_cast<unsigned int>(datetime[SECOND_KEY]): 0);
+	unsigned int minute = ((datetime.has(MINUTE_KEY))?
+			static_cast<unsigned int>(datetime[MINUTE_KEY]): 0);
+	unsigned int hour = ((datetime.has(HOUR_KEY))?
+			static_cast<unsigned int>(datetime[HOUR_KEY]): 0);
+	unsigned int day = ((datetime.has(DAY_KEY))?
+			static_cast<unsigned int>(datetime[DAY_KEY]): 0);
+	unsigned int month = ((datetime.has(MONTH_KEY))?
+			static_cast<unsigned int>(datetime[MONTH_KEY]) -1: 0);
+	unsigned int year = ((datetime.has(YEAR_KEY))?
+			static_cast<unsigned int>(datetime[YEAR_KEY]):0);
+
+	/// How many days come before each month (0-12)
+	static const unsigned short int DAYS_PAST_THIS_YEAR_TABLE[2][13] =
+	{
+		/* Normal years.  */
+		{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
+		/* Leap years.  */
+		{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
+	};
+
+	ERR_EXPLAIN("Invalid second value of: " + itos(second));
+	ERR_FAIL_COND_V( second > 59, 0);
+
+	ERR_EXPLAIN("Invalid minute value of: " + itos(minute));
+	ERR_FAIL_COND_V( minute > 59, 0);
+
+	ERR_EXPLAIN("Invalid hour value of: " + itos(hour));
+	ERR_FAIL_COND_V( hour > 23, 0);
+
+	ERR_EXPLAIN("Invalid month value of: " + itos(month+1));
+	ERR_FAIL_COND_V( month+1 > 12, 0);
+
+	// Do this check after month is tested as valid
+	ERR_EXPLAIN("Invalid day value of: " + itos(day) + " which is larger "
+			"than "+ itos(MONTH_DAYS_TABLE[LEAPYEAR(year)][month]));
+	ERR_FAIL_COND_V( day > MONTH_DAYS_TABLE[LEAPYEAR(year)][month], 0);
+
+	// Calculate all the seconds from months past in this year
+	uint64_t SECONDS_FROM_MONTHS_PAST_THIS_YEAR =
+		DAYS_PAST_THIS_YEAR_TABLE[LEAPYEAR(year)][month] * SECONDS_PER_DAY;
+
+	uint64_t SECONDS_FROM_YEARS_PAST = 0;
+	for(unsigned int iyear = EPOCH_YR; iyear < year; iyear++) {
+
+		SECONDS_FROM_YEARS_PAST += YEARSIZE(iyear) *
+			SECONDS_PER_DAY;
+	}
+
+	uint64_t epoch =
+		second +
+		minute * SECONDS_PER_MINUTE +
+		hour * SECONDS_PER_HOUR +
+		// Subtract 1 from day, since the current day isn't over yet
+		//   and we cannot count all 24 hours.
+		(day-1) * SECONDS_PER_DAY +
+		SECONDS_FROM_MONTHS_PAST_THIS_YEAR +
+		SECONDS_FROM_YEARS_PAST;
+	return epoch;
 
 }
+
+/**
+ *  Get a dictionary of time values when given epoch time
+ *
+ *  Dictionary Time values will be a union if values from #get_time
+ *    and #get_date dictionaries (with the exception of dst =
+ *    day light standard time, as it cannot be determined from epoch)
+ *
+ * @param unix_time_val epoch time to convert
+ *
+ * @return dictionary of date and time values
+ */
+Dictionary _OS::get_datetime_from_unix_time( uint64_t unix_time_val) const {
+
+	// Just fail if unix time is negative (when interpreted as an int).
+	//  This means the user passed in a negative value by accident
+	ERR_EXPLAIN("unix_time_val was really huge!"+ itos(unix_time_val) +
+			" You probably passed in a negative value!");
+	ERR_FAIL_COND_V( (int64_t)unix_time_val < 0, Dictionary());
+
+	OS::Date date;
+	OS::Time time;
+
+	unsigned long dayclock, dayno;
+	int year = EPOCH_YR;
+
+	dayclock = (unsigned long)unix_time_val % SECS_DAY;
+	dayno = (unsigned long)unix_time_val / SECS_DAY;
+
+	time.sec = dayclock % 60;
+	time.min = (dayclock % 3600) / 60;
+	time.hour = dayclock / 3600;
+
+	/* day 0 was a thursday */
+	date.weekday = static_cast<OS::Weekday>((dayno + 4) % 7);
+
+	while (dayno >= YEARSIZE(year)) {
+		dayno -= YEARSIZE(year);
+		year++;
+	}
+
+	date.year = year;
+
+	size_t imonth = 0;
+
+	while (dayno >= MONTH_DAYS_TABLE[LEAPYEAR(year)][imonth]) {
+		dayno -= MONTH_DAYS_TABLE[LEAPYEAR(year)][imonth];
+		imonth++;
+	}
+
+	/// Add 1 to month to make sure months are indexed starting at 1
+	date.month = static_cast<OS::Month>(imonth+1);
+
+	date.day = dayno + 1;
+
+	Dictionary timed;
+	timed[HOUR_KEY]=time.hour;
+	timed[MINUTE_KEY]=time.min;
+	timed[SECOND_KEY]=time.sec;
+	timed[YEAR_KEY]=date.year;
+	timed[MONTH_KEY]=date.month;
+	timed[DAY_KEY]=date.day;
+	timed[WEEKDAY_KEY]=date.weekday;
+
+	return timed;
+}
+
+Dictionary _OS::get_time_zone_info() const {
+	OS::TimeZoneInfo info = OS::get_singleton()->get_time_zone_info();
+	Dictionary infod;
+	infod["bias"] = info.bias;
+	infod["name"] = info.name;
+	return infod;
+}
+
 uint64_t _OS::get_unix_time() const {
 
 	return OS::get_singleton()->get_unix_time();
-};
+}
+
+uint64_t _OS::get_system_time_secs() const {
+	return OS::get_singleton()->get_system_time_secs();
+}
 
 void _OS::delay_usec(uint32_t p_usec) const {
 
@@ -426,6 +730,10 @@ uint32_t _OS::get_ticks_msec() const {
 	return OS::get_singleton()->get_ticks_msec();
 }
 
+uint32_t _OS::get_splash_tick_msec() const {
+
+	return OS::get_singleton()->get_splash_tick_msec();
+}
 
 bool _OS::can_use_threads() const {
 
@@ -592,6 +900,10 @@ void _OS::native_video_pause() {
 	OS::get_singleton()->native_video_pause();
 };
 
+void _OS::native_video_unpause() {
+	OS::get_singleton()->native_video_unpause();
+};
+
 void _OS::native_video_stop() {
 
 	OS::get_singleton()->native_video_stop();
@@ -607,6 +919,26 @@ bool _OS::is_debug_build() const {
 
 }
 
+void _OS::set_screen_orientation(ScreenOrientation p_orientation) {
+
+	OS::get_singleton()->set_screen_orientation(OS::ScreenOrientation(p_orientation));
+}
+
+_OS::ScreenOrientation _OS::get_screen_orientation() const {
+
+	return ScreenOrientation(OS::get_singleton()->get_screen_orientation());
+}
+
+void _OS::set_keep_screen_on(bool p_enabled) {
+
+	OS::get_singleton()->set_keep_screen_on(p_enabled);
+}
+
+bool _OS::is_keep_screen_on() const {
+
+	return OS::get_singleton()->is_keep_screen_on();
+}
+
 String _OS::get_system_dir(SystemDir p_dir) const {
 
 	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir));
@@ -616,6 +948,25 @@ String _OS::get_custom_level() const {
 
 	return OS::get_singleton()->get_custom_level();
 }
+
+String _OS::get_scancode_string(uint32_t p_code) const {
+
+	return keycode_get_string(p_code);
+}
+bool _OS::is_scancode_unicode(uint32_t p_unicode) const {
+
+	return keycode_has_unicode(p_unicode);
+}
+int _OS::find_scancode_from_string(const String& p_code) const {
+
+	return find_keycode(p_code);
+}
+
+void _OS::alert(const String& p_alert,const String& p_title) {
+
+	OS::get_singleton()->alert(p_alert,p_title);
+}
+
 _OS *_OS::singleton=NULL;
 
 void _OS::_bind_methods() {
@@ -632,6 +983,35 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_video_mode_resizable","screen"),&_OS::is_video_mode_resizable,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_fullscreen_mode_list","screen"),&_OS::get_fullscreen_mode_list,DEFVAL(0));
 
+
+	ObjectTypeDB::bind_method(_MD("get_screen_count"),&_OS::get_screen_count);
+	ObjectTypeDB::bind_method(_MD("get_current_screen"),&_OS::get_current_screen);
+	ObjectTypeDB::bind_method(_MD("set_current_screen","screen"),&_OS::set_current_screen);
+	ObjectTypeDB::bind_method(_MD("get_screen_position","screen"),&_OS::get_screen_position,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("get_screen_size","screen"),&_OS::get_screen_size,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("get_screen_dpi","screen"),&_OS::get_screen_dpi,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("get_window_position"),&_OS::get_window_position);
+	ObjectTypeDB::bind_method(_MD("set_window_position","position"),&_OS::set_window_position);
+	ObjectTypeDB::bind_method(_MD("get_window_size"),&_OS::get_window_size);
+	ObjectTypeDB::bind_method(_MD("set_window_size","size"),&_OS::set_window_size);
+	ObjectTypeDB::bind_method(_MD("set_window_fullscreen","enabled"),&_OS::set_window_fullscreen);
+	ObjectTypeDB::bind_method(_MD("is_window_fullscreen"),&_OS::is_window_fullscreen);
+	ObjectTypeDB::bind_method(_MD("set_window_resizable","enabled"),&_OS::set_window_resizable);
+	ObjectTypeDB::bind_method(_MD("is_window_resizable"),&_OS::is_window_resizable);
+	ObjectTypeDB::bind_method(_MD("set_window_minimized", "enabled"),&_OS::set_window_minimized);
+	ObjectTypeDB::bind_method(_MD("is_window_minimized"),&_OS::is_window_minimized);
+	ObjectTypeDB::bind_method(_MD("set_window_maximized", "enabled"),&_OS::set_window_maximized);
+	ObjectTypeDB::bind_method(_MD("is_window_maximized"),&_OS::is_window_maximized);
+
+	ObjectTypeDB::bind_method(_MD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
+	ObjectTypeDB::bind_method(_MD("get_borderless_window"), &_OS::get_borderless_window);
+
+	ObjectTypeDB::bind_method(_MD("set_screen_orientation","orientation"),&_OS::set_screen_orientation);
+	ObjectTypeDB::bind_method(_MD("get_screen_orientation"),&_OS::get_screen_orientation);
+
+	ObjectTypeDB::bind_method(_MD("set_keep_screen_on","enabled"),&_OS::set_keep_screen_on);
+	ObjectTypeDB::bind_method(_MD("is_keep_screen_on"),&_OS::is_keep_screen_on);
+
 	ObjectTypeDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_OS::set_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("get_iterations_per_second"),&_OS::get_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("set_target_fps","target_fps"),&_OS::set_target_fps);
@@ -642,7 +1022,7 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("has_touchscreen_ui_hint"),&_OS::has_touchscreen_ui_hint);
 
-
+	ObjectTypeDB::bind_method(_MD("set_window_title","title"),&_OS::set_window_title);
 
 	ObjectTypeDB::bind_method(_MD("set_low_processor_usage_mode","enable"),&_OS::set_low_processor_usage_mode);
 	ObjectTypeDB::bind_method(_MD("is_in_low_processor_usage_mode"),&_OS::is_in_low_processor_usage_mode);
@@ -662,15 +1042,23 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_cmdline_args"),&_OS::get_cmdline_args);
 	ObjectTypeDB::bind_method(_MD("get_main_loop"),&_OS::get_main_loop);
 
-	ObjectTypeDB::bind_method(_MD("get_date"),&_OS::get_date);
-	ObjectTypeDB::bind_method(_MD("get_time"),&_OS::get_time);
+	ObjectTypeDB::bind_method(_MD("get_datetime","utc"),&_OS::get_datetime,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("get_date","utc"),&_OS::get_date,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("get_time","utc"),&_OS::get_time,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("get_time_zone_info"),&_OS::get_time_zone_info);
 	ObjectTypeDB::bind_method(_MD("get_unix_time"),&_OS::get_unix_time);
+	ObjectTypeDB::bind_method(_MD("get_datetime_from_unix_time", "unix_time_val"),
+			&_OS::get_datetime_from_unix_time);
+	ObjectTypeDB::bind_method(_MD("get_unix_time_from_datetime", "datetime"),
+			&_OS::get_unix_time_from_datetime);
+	ObjectTypeDB::bind_method(_MD("get_system_time_secs"), &_OS::get_system_time_secs);
 
-	ObjectTypeDB::bind_method(_MD("set_icon"),&_OS::set_icon);
+	ObjectTypeDB::bind_method(_MD("set_icon","icon"),&_OS::set_icon);
 
 	ObjectTypeDB::bind_method(_MD("delay_usec","usec"),&_OS::delay_usec);
 	ObjectTypeDB::bind_method(_MD("delay_msec","msec"),&_OS::delay_msec);
 	ObjectTypeDB::bind_method(_MD("get_ticks_msec"),&_OS::get_ticks_msec);
+	ObjectTypeDB::bind_method(_MD("get_splash_tick_msec"),&_OS::get_splash_tick_msec);
 	ObjectTypeDB::bind_method(_MD("get_locale"),&_OS::get_locale);
 	ObjectTypeDB::bind_method(_MD("get_model_name"),&_OS::get_model_name);
 
@@ -699,19 +1087,28 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_system_dir","dir"),&_OS::get_system_dir);
 	ObjectTypeDB::bind_method(_MD("get_unique_ID"),&_OS::get_unique_ID);
 
+	ObjectTypeDB::bind_method(_MD("is_ok_left_and_cancel_right"),&_OS::is_ok_left_and_cancel_right);
+
 	ObjectTypeDB::bind_method(_MD("get_frames_per_second"),&_OS::get_frames_per_second);
 
 	ObjectTypeDB::bind_method(_MD("print_all_textures_by_size"),&_OS::print_all_textures_by_size);
-	ObjectTypeDB::bind_method(_MD("print_resources_by_type"),&_OS::print_resources_by_type);
+	ObjectTypeDB::bind_method(_MD("print_resources_by_type","types"),&_OS::print_resources_by_type);
 
-	ObjectTypeDB::bind_method(_MD("native_video_play"),&_OS::native_video_play);
+	ObjectTypeDB::bind_method(_MD("native_video_play","path","volume","audio_track","subtitle_track"),&_OS::native_video_play);
 	ObjectTypeDB::bind_method(_MD("native_video_is_playing"),&_OS::native_video_is_playing);
 	ObjectTypeDB::bind_method(_MD("native_video_stop"),&_OS::native_video_stop);
 	ObjectTypeDB::bind_method(_MD("native_video_pause"),&_OS::native_video_pause);
+	ObjectTypeDB::bind_method(_MD("native_video_unpause"),&_OS::native_video_unpause);
 
+	ObjectTypeDB::bind_method(_MD("get_scancode_string","code"),&_OS::get_scancode_string);
+	ObjectTypeDB::bind_method(_MD("is_scancode_unicode","code"),&_OS::is_scancode_unicode);
+	ObjectTypeDB::bind_method(_MD("find_scancode_from_string","string"),&_OS::find_scancode_from_string);
 
 	ObjectTypeDB::bind_method(_MD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
 
+	ObjectTypeDB::bind_method(_MD("alert","text","title"),&_OS::alert,DEFVAL("Alert!"));
+
+	ObjectTypeDB::bind_method(_MD("set_thread_name","name"),&_OS::set_thread_name);
 
 
 	BIND_CONSTANT( DAY_SUNDAY );
@@ -734,6 +1131,14 @@ void _OS::_bind_methods() {
 	BIND_CONSTANT( MONTH_OCTOBER );
 	BIND_CONSTANT( MONTH_NOVEMBER );
 	BIND_CONSTANT( MONTH_DECEMBER );
+
+	BIND_CONSTANT( SCREEN_ORIENTATION_LANDSCAPE );
+	BIND_CONSTANT( SCREEN_ORIENTATION_PORTRAIT );
+	BIND_CONSTANT( SCREEN_ORIENTATION_REVERSE_LANDSCAPE );
+	BIND_CONSTANT( SCREEN_ORIENTATION_REVERSE_PORTRAIT );
+	BIND_CONSTANT( SCREEN_ORIENTATION_SENSOR_LANDSCAPE );
+	BIND_CONSTANT( SCREEN_ORIENTATION_SENSOR_PORTRAIT );
+	BIND_CONSTANT( SCREEN_ORIENTATION_SENSOR );
 
 	BIND_CONSTANT( SYSTEM_DIR_DESKTOP);
 	BIND_CONSTANT( SYSTEM_DIR_DCIM );
@@ -838,6 +1243,12 @@ Variant _Geometry::segment_intersects_triangle( const Vector3& p_from, const Vec
 		return Variant();
 
 }
+
+bool _Geometry::point_is_inside_triangle(const Vector2& s, const Vector2& a, const Vector2& b, const Vector2& c) const {
+
+	return Geometry::is_point_in_triangle(s,a,b,c);
+}
+
 DVector<Vector3> _Geometry::segment_intersects_sphere( const Vector3& p_from, const Vector3& p_to, const Vector3& p_sphere_pos,real_t p_sphere_radius) {
 
 	DVector<Vector3> r;
@@ -938,6 +1349,7 @@ void _Geometry::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("segment_intersects_sphere","from","to","spos","sradius"),&_Geometry::segment_intersects_sphere);
 	ObjectTypeDB::bind_method(_MD("segment_intersects_cylinder","from","to","height","radius"),&_Geometry::segment_intersects_cylinder);
 	ObjectTypeDB::bind_method(_MD("segment_intersects_convex","from","to","planes"),&_Geometry::segment_intersects_convex);
+	ObjectTypeDB::bind_method(_MD("point_is_inside_triangle","point","a","b","c"),&_Geometry::point_is_inside_triangle);
 
 	ObjectTypeDB::bind_method(_MD("triangulate_polygon","polygon"),&_Geometry::triangulate_polygon);
 
@@ -1121,11 +1533,21 @@ String _File::get_as_text() const {
 		text+=l+"\n";
 		l = get_line();
 	}
+	text+=l;
 
 	return text;
 
 
 }
+
+
+String _File::get_md5(const String& p_path) const {
+
+	return FileAccess::get_md5(p_path);
+
+}
+
+
 String _File::get_line() const{
 
 	ERR_FAIL_COND_V(!f,String());
@@ -1133,9 +1555,9 @@ String _File::get_line() const{
 
 }
 
-Vector<String> _File::get_csv_line() const {
+Vector<String> _File::get_csv_line(String delim) const {
 	ERR_FAIL_COND_V(!f,Vector<String>());
-	return f->get_csv_line();
+	return f->get_csv_line(delim);
 }
 
 /**< use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
@@ -1314,11 +1736,12 @@ void _File::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_buffer","len"),&_File::get_buffer);
 	ObjectTypeDB::bind_method(_MD("get_line"),&_File::get_line);
 	ObjectTypeDB::bind_method(_MD("get_as_text"),&_File::get_as_text);
+	ObjectTypeDB::bind_method(_MD("get_md5","path"),&_File::get_md5);
 	ObjectTypeDB::bind_method(_MD("get_endian_swap"),&_File::get_endian_swap);
 	ObjectTypeDB::bind_method(_MD("set_endian_swap","enable"),&_File::set_endian_swap);
 	ObjectTypeDB::bind_method(_MD("get_error:Error"),&_File::get_error);
 	ObjectTypeDB::bind_method(_MD("get_var"),&_File::get_var);
-	ObjectTypeDB::bind_method(_MD("get_csv_line"),&_File::get_csv_line);
+	ObjectTypeDB::bind_method(_MD("get_csv_line","delim"),&_File::get_csv_line,DEFVAL(","));
 
 	ObjectTypeDB::bind_method(_MD("store_8","value"),&_File::store_8);
 	ObjectTypeDB::bind_method(_MD("store_16","value"),&_File::store_16);
@@ -1340,6 +1763,7 @@ void _File::_bind_methods() {
 	BIND_CONSTANT( READ );
 	BIND_CONSTANT( WRITE );
 	BIND_CONSTANT( READ_WRITE );
+	BIND_CONSTANT( WRITE_READ );
 }
 
 _File::_File(){
@@ -1475,15 +1899,15 @@ void _Directory::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_drive","idx"),&_Directory::get_drive);
 	ObjectTypeDB::bind_method(_MD("change_dir:Error","todir"),&_Directory::change_dir);
 	ObjectTypeDB::bind_method(_MD("get_current_dir"),&_Directory::get_current_dir);
-	ObjectTypeDB::bind_method(_MD("make_dir:Error","name"),&_Directory::make_dir);
-	ObjectTypeDB::bind_method(_MD("make_dir_recursive:Error","name"),&_Directory::make_dir_recursive);
-	ObjectTypeDB::bind_method(_MD("file_exists","name"),&_Directory::file_exists);
-	ObjectTypeDB::bind_method(_MD("dir_exists","name"),&_Directory::dir_exists);
+	ObjectTypeDB::bind_method(_MD("make_dir:Error","path"),&_Directory::make_dir);
+	ObjectTypeDB::bind_method(_MD("make_dir_recursive:Error","path"),&_Directory::make_dir_recursive);
+	ObjectTypeDB::bind_method(_MD("file_exists","path"),&_Directory::file_exists);
+	ObjectTypeDB::bind_method(_MD("dir_exists","path"),&_Directory::dir_exists);
 //	ObjectTypeDB::bind_method(_MD("get_modified_time","file"),&_Directory::get_modified_time);
 	ObjectTypeDB::bind_method(_MD("get_space_left"),&_Directory::get_space_left);
 	ObjectTypeDB::bind_method(_MD("copy:Error","from","to"),&_Directory::copy);
 	ObjectTypeDB::bind_method(_MD("rename:Error","from","to"),&_Directory::rename);
-	ObjectTypeDB::bind_method(_MD("remove:Error","file"),&_Directory::remove);
+	ObjectTypeDB::bind_method(_MD("remove:Error","path"),&_Directory::remove);
 
 }
 
@@ -1542,11 +1966,88 @@ Variant _Marshalls::base64_to_variant(const String& p_str) {
 	return v;
 };
 
+String _Marshalls::raw_to_base64(const DVector<uint8_t> &p_arr) {
+
+	int len = p_arr.size();
+	DVector<uint8_t>::Read r = p_arr.read();
+
+	int b64len = len / 3 * 4 + 4 + 1;
+	DVector<uint8_t> b64buff;
+	b64buff.resize(b64len);
+	DVector<uint8_t>::Write w64 = b64buff.write();
+
+	int strlen = base64_encode((char*)(&w64[0]), (char*)(&r[0]), len);
+	w64[strlen] = 0;
+	String ret = (char*)&w64[0];
+
+	return ret;
+};
+
+DVector<uint8_t> _Marshalls::base64_to_raw(const String &p_str) {
+
+	int strlen = p_str.length();
+	CharString cstr = p_str.ascii();
+
+	int arr_len;
+	DVector<uint8_t> buf;
+	{
+		buf.resize(strlen / 4 * 3 + 1);
+		DVector<uint8_t>::Write w = buf.write();
+
+		arr_len = base64_decode((char*)(&w[0]), (char*)cstr.get_data(), strlen);
+	};
+	buf.resize(arr_len);
+
+	// conversion from DVector<uint8_t> to raw array?
+	return buf;
+};
+
+String _Marshalls::utf8_to_base64(const String& p_str) {
+
+	CharString cstr = p_str.utf8();
+	int len = cstr.length();
+
+	int b64len = len / 3 * 4 + 4 + 1;
+	DVector<uint8_t> b64buff;
+	b64buff.resize(b64len);
+	DVector<uint8_t>::Write w64 = b64buff.write();
+
+	int strlen = base64_encode((char*)(&w64[0]), (char*)cstr.get_data(), len);
+
+	w64[strlen] = 0;
+	String ret = (char*)&w64[0];
+
+	return ret;
+};
+
+String _Marshalls::base64_to_utf8(const String& p_str) {
+
+	int strlen = p_str.length();
+	CharString cstr = p_str.ascii();
+
+	DVector<uint8_t> buf;
+	buf.resize(strlen / 4 * 3 + 1 + 1);
+	DVector<uint8_t>::Write w = buf.write();
+
+	int len = base64_decode((char*)(&w[0]), (char*)cstr.get_data(), strlen);
+
+	w[len] = 0;
+	String ret = String::utf8((char*)&w[0]);
+
+	return ret;
+};
+
 
 void _Marshalls::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("variant_to_base64:String","variant"),&_Marshalls::variant_to_base64);
 	ObjectTypeDB::bind_method(_MD("base64_to_variant:Variant","base64_str"),&_Marshalls::base64_to_variant);
+
+	ObjectTypeDB::bind_method(_MD("raw_to_base64:String","array"),&_Marshalls::raw_to_base64);
+	ObjectTypeDB::bind_method(_MD("base64_to_raw:RawArray","base64_str"),&_Marshalls::base64_to_raw);
+
+	ObjectTypeDB::bind_method(_MD("utf8_to_base64:String","utf8_str"),&_Marshalls::utf8_to_base64);
+	ObjectTypeDB::bind_method(_MD("base64_to_utf8:String","base64_str"),&_Marshalls::base64_to_utf8);
 
 };
 
@@ -1631,9 +2132,14 @@ _Mutex::~_Mutex(){
 
 void _Thread::_start_func(void *ud) {
 
-	_Thread *t=(_Thread*)ud;
+	Ref<_Thread>* tud=(Ref<_Thread>*)ud;
+	Ref<_Thread> t=*tud;
+	memdelete(tud);
 	Variant::CallError ce;
 	const Variant* arg[1]={&t->userdata};
+
+	Thread::set_name(t->target_method);
+
 	t->ret=t->target_instance->call(t->target_method,arg,1,ce);
 	if (ce.error!=Variant::CallError::CALL_OK) {
 
@@ -1658,6 +2164,7 @@ void _Thread::_start_func(void *ud) {
 			default: {}
 		}
 
+
 		ERR_EXPLAIN("Could not call function '"+t->target_method.operator String()+"'' starting thread ID: "+t->get_id()+" Reason: "+reason);
 		ERR_FAIL();
 	}
@@ -1678,9 +2185,11 @@ Error _Thread::start(Object *p_instance,const StringName& p_method,const Variant
 	userdata=p_userdata;
 	active=true;
 
+	Ref<_Thread> *ud = memnew( Ref<_Thread>(this) );
+
 	Thread::Settings s;
 	s.priority=(Thread::Priority)p_priority;
-	thread = Thread::create(_start_func,this,s);
+	thread = Thread::create(_start_func,ud,s);
 	if (!thread) {
 		active=false;
 		target_method=StringName();
@@ -1699,7 +2208,6 @@ String _Thread::get_id() const {
 
 	return itos(thread->get_ID());
 }
-
 
 bool _Thread::is_active() const {
 
@@ -1725,7 +2233,7 @@ void _Thread::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("start:Error","instance","method","userdata","priority"),&_Thread::start,DEFVAL(Variant()),DEFVAL(PRIORITY_NORMAL));
 	ObjectTypeDB::bind_method(_MD("get_id"),&_Thread::get_id);
 	ObjectTypeDB::bind_method(_MD("is_active"),&_Thread::is_active);
-	ObjectTypeDB::bind_method(_MD("wait_to_finish:var"),&_Thread::wait_to_finish);
+	ObjectTypeDB::bind_method(_MD("wait_to_finish:Variant"),&_Thread::wait_to_finish);
 
 	BIND_CONSTANT( PRIORITY_LOW );
 	BIND_CONSTANT( PRIORITY_NORMAL );
@@ -1741,5 +2249,8 @@ _Thread::_Thread() {
 
 _Thread::~_Thread() {
 
+	if (active) {
+		ERR_EXPLAIN("Reference to a Thread object object was lost while the thread is still running..");
+	}
 	ERR_FAIL_COND(active==true);
 }

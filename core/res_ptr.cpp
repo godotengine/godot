@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ RefPtr::RefPtr(const RefPtr& p_other) {
 
 	Ref<Resource> *ref = reinterpret_cast<Ref<Resource>*>( &data[0] );
 	Ref<Resource> *ref_other = reinterpret_cast<Ref<Resource>*>( const_cast<char*>(&p_other.data[0]) );
-	
+
 	*ref = *ref_other;
 }
 

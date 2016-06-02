@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,11 +75,11 @@ float Color::get_h() const {
 		h = 2 + ( b - r ) / delta;	// between cyan & yellow
 	else
 		h = 4 + ( r - g ) / delta;	// between magenta & cyan
-	
+
 	h/=6.0;
 	if (h<0)
 		h+=1.0;
-		
+
 	return h;
 }
 
@@ -117,19 +117,21 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 	}
 
 	p_h *=6.0;
+	p_h = Math::fmod(p_h,6);
 	i = Math::floor( p_h );
+
 	f = p_h - i;
 	p = p_v * ( 1 - p_s );
 	q = p_v * ( 1 - p_s * f );
 	t = p_v * ( 1 - p_s * ( 1 - f ) );
 
 	switch( i ) {
-		case 0:
+		case 0: // Red is the dominant color
 			r = p_v;
 			g = t;
 			b = p;
 			break;
-		case 1:
+		case 1: // Green is the dominant color
 			r = q;
 			g = p_v;
 			b = p;
@@ -139,7 +141,7 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 			g = p_v;
 			b = t;
 			break;
-		case 3:
+		case 3: // Blue is the dominant color
 			r = p;
 			g = q;
 			b = p_v;
@@ -149,7 +151,7 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 			g = p;
 			b = p_v;
 			break;
-		default:		// cap_se 5:
+		default: // (5) Red is the dominant color
 			r = p_v;
 			g = p;
 			b = q;
@@ -160,8 +162,8 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 void Color::invert() {
 
 	r=1.0-r;
-	g=1.0-g;	
-	g=1.0-b;	
+	g=1.0-g;
+	b=1.0-b;
 }
 void Color::contrast() {
 
@@ -225,7 +227,7 @@ Color Color::inverted() const {
 Color Color::contrasted() const {
 
 	Color c=*this;
-	c.contrasted();
+	c.contrast();
 	return c;
 }
 
@@ -366,7 +368,7 @@ String Color::to_html(bool p_alpha) const {
 
 float Color::gray() const {
 
-	return (r+g+b)/3.0;	
+	return (r+g+b)/3.0;
 }
 
 Color::operator String() const {

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,6 +54,7 @@ public:
 			TYPE_CONTROL_FLOW,
 			TYPE_LOCAL_VAR,
 			TYPE_ASSERT,
+			TYPE_BREAKPOINT,
 			TYPE_NEWLINE,
 		};
 
@@ -76,6 +77,7 @@ public:
 		StringName extends_file;
 		Vector<StringName> extends_class;
 
+
 		struct Member {
 			PropertyInfo _export;
 #ifdef TOOLS_ENABLED
@@ -84,10 +86,17 @@ public:
 			StringName identifier;
 			StringName setter;
 			StringName getter;
+			int line;
+			Node *expression;
 		};
 		struct Constant {
 			StringName identifier;
 			Node *expression;
+		};
+
+		struct Signal {
+			StringName name;
+			Vector<StringName> arguments;
 		};
 
 		Vector<ClassNode*> subclasses;
@@ -95,11 +104,14 @@ public:
 		Vector<Constant> constant_expressions;
 		Vector<FunctionNode*> functions;
 		Vector<FunctionNode*> static_functions;
+		Vector<Signal> _signals;
 		BlockNode *initializer;
+		BlockNode *ready;
+		ClassNode *owner;
 		//Vector<Node*> initializers;
 		int end_line;
 
-		ClassNode() { tool=false; type=TYPE_CLASS; extends_used=false; end_line=-1;}
+		ClassNode() { tool=false; type=TYPE_CLASS; extends_used=false; end_line=-1; owner=NULL;}
 	};
 
 
@@ -118,6 +130,8 @@ public:
 
 	struct BlockNode : public Node {
 
+		ClassNode *parent_class;
+		BlockNode *parent_block;
 		Map<StringName,int> locals;
 		List<Node*> statements;
 		Vector<StringName> variables;
@@ -126,7 +140,7 @@ public:
 		//the following is useful for code completion
 		List<BlockNode*> sub_blocks;
 		int end_line;
-		BlockNode() { type=TYPE_BLOCK; end_line=-1;}
+		BlockNode() { type=TYPE_BLOCK; end_line=-1; parent_block=NULL; parent_class=NULL; }
 	};
 
 	struct TypeNode : public Node {
@@ -263,8 +277,11 @@ public:
 		AssertNode() { type=TYPE_ASSERT; }
 	};
 
+	struct BreakpointNode : public Node {
+		BreakpointNode() { type=TYPE_BREAKPOINT; }
+	};
+
 	struct NewLineNode : public Node {
-		int line;
 		NewLineNode() { type=TYPE_NEWLINE; }
 	};
 
@@ -349,6 +366,19 @@ public:
 	};
 */
 
+	enum CompletionType {
+		COMPLETION_NONE,
+		COMPLETION_BUILT_IN_TYPE_CONSTANT,
+		COMPLETION_FUNCTION,
+		COMPLETION_IDENTIFIER,
+		COMPLETION_PARENT_FUNCTION,
+		COMPLETION_METHOD,
+		COMPLETION_CALL_ARGUMENTS,
+		COMPLETION_INDEX,
+		COMPLETION_VIRTUAL_FUNC
+	};
+
+
 
 private:
 
@@ -362,6 +392,7 @@ private:
 	T* alloc_node();
 
 	bool validating;
+	bool for_completion;
 	int parenthesis;
 	bool error_set;
 	String error;
@@ -375,12 +406,33 @@ private:
 	String base_path;
 	String self_path;
 
+
+	ClassNode *current_class;
+	FunctionNode *current_function;
+	BlockNode *current_block;
+
+	bool _get_completable_identifier(CompletionType p_type,StringName& identifier);
+	void _make_completable_call(int p_arg);
+
+	CompletionType completion_type;
+	StringName completion_cursor;
+	bool completion_static;
+	Variant::Type completion_built_in_constant;
+	Node *completion_node;
+	ClassNode *completion_class;
+	FunctionNode *completion_function;
+	BlockNode *completion_block;
+	int completion_line;
+	int completion_argument;
+	bool completion_found;
+
 	PropertyInfo current_export;
 
 	void _set_error(const String& p_error, int p_line=-1, int p_column=-1);
+	bool _recover_from_completion();
 
 
-	bool _parse_arguments(Node* p_parent,Vector<Node*>& p_args,bool p_static);
+	bool _parse_arguments(Node* p_parent, Vector<Node*>& p_args, bool p_static, bool p_can_codecomplete=false);
 	bool _enter_indent_block(BlockNode *p_block=NULL);
 	bool _parse_newline();
 	Node* _parse_expression(Node *p_parent,bool p_static,bool p_allow_assign=false);
@@ -399,10 +451,24 @@ public:
 	String get_error() const;
 	int get_error_line() const;
 	int get_error_column() const;
-	Error parse(const String& p_code, const String& p_base_path="", bool p_just_validate=false,const String& p_self_path="");
+	Error parse(const String& p_code, const String& p_base_path="", bool p_just_validate=false,const String& p_self_path="",bool p_for_completion=false);
 	Error parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p_base_path="",const String& p_self_path="");
 
+	bool is_tool_script() const;
 	const Node *get_parse_tree() const;
+
+	//completion info
+
+	CompletionType get_completion_type();
+	StringName get_completion_cursor();
+	int get_completion_line();
+	Variant::Type get_completion_built_in_constant();
+	Node *get_completion_node();
+	ClassNode *get_completion_class();
+	BlockNode *get_completion_block();
+	FunctionNode *get_completion_function();
+	int get_completion_argument_index();
+
 
 	void clear();
 	GDParser();

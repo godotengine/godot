@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 #define GLOBALS_LIST_H
 
 #include "os/memory.h"
-
+#include "sort.h"
 
 /**
  * Generic Templatized Linked List Implementation.
@@ -245,7 +245,7 @@ public:
 			_data->first=n;
 
 		_data->size_cache++;
-		
+
 		return n;
 	};
 
@@ -285,7 +285,7 @@ public:
 			_data->last=n;
 
 		_data->size_cache++;
-		
+
 		return n;
 	};
 
@@ -363,30 +363,30 @@ public:
 	}
 
 	void swap(Element* p_A, Element *p_B) {
-		
+
 		ERR_FAIL_COND(!p_A || !p_B);
 		ERR_FAIL_COND(p_A->data!=_data);
 		ERR_FAIL_COND(p_B->data!=_data);
-		
+
 		Element* A_prev=p_A->prev_ptr;
 		Element* A_next=p_A->next_ptr;
-		
+
 		p_A->next_ptr=p_B->next_ptr;
 		p_A->prev_ptr=p_B->prev_ptr;
-		
+
 		p_B->next_ptr=A_next;
-		p_B->prev_ptr=A_prev;	
-		
+		p_B->prev_ptr=A_prev;
+
 		if (p_A->prev_ptr)
 			p_A->prev_ptr->next_ptr=p_A;
 		if (p_A->next_ptr)
-			p_A->next_ptr->prev_ptr=p_A;		
-		
+			p_A->next_ptr->prev_ptr=p_A;
+
 		if (p_B->prev_ptr)
 			p_B->prev_ptr->next_ptr=p_B;
 		if (p_B->next_ptr)
-			p_B->next_ptr->prev_ptr=p_B;		
-		
+			p_B->next_ptr->prev_ptr=p_B;
+
 	}
 	/**
 	 * copy the list
@@ -518,10 +518,16 @@ public:
 
 		if (value->prev_ptr) {
 			value->prev_ptr->next_ptr = value->next_ptr;
-		};
+		}
+		else {
+			_data->first = value->next_ptr;
+		}
 		if (value->next_ptr) {
 			value->next_ptr->prev_ptr = value->prev_ptr;
-		};
+		}
+		else {
+			_data->last = value->prev_ptr;
+		}
 
 		value->next_ptr = where;
 		if (!where) {
@@ -546,12 +552,12 @@ public:
 	 */
 
 	void sort() {
-		
+
 		sort_custom< Comparator<T> >();
 	}
-			
+
 	template<class C>
-	void sort_custom() {
+	void sort_custom_inplace() {
 
 		if(size()<2)
 			return;
@@ -559,49 +565,101 @@ public:
 		Element *from=front();
 		Element *current=from;
 		Element *to=from;
-		
+
 		while(current) {
-			
+
 			Element *next=current->next_ptr;
-			
+
 			//disconnect
 			current->next_ptr=NULL;
-			
+
 			if (from!=current) {
-				
+
 				current->prev_ptr=NULL;
 				current->next_ptr=from;
-				
+
 				Element *find=from;
 				C less;
 				while( find && less(find->value,current->value) ) {
-				
+
 					current->prev_ptr=find;
 					current->next_ptr=find->next_ptr;
 					find=find->next_ptr;
 				}
-								
+
 				if (current->prev_ptr)
 					current->prev_ptr->next_ptr=current;
 				else
 					from=current;
-				
+
 				if (current->next_ptr)
 					current->next_ptr->prev_ptr=current;
 				else
 					to=current;
 			} else {
-				
+
 				current->prev_ptr=NULL;
 				current->next_ptr=NULL;
-				
+
 			}
-			
+
 			current=next;
 		}
 		_data->first=from;
 		_data->last=to;
 	}
+
+	template<class C>
+	struct AuxiliaryComparator {
+
+		C compare;
+		_FORCE_INLINE_ bool operator()(const Element *a,const Element* b) const {
+
+			return compare(a->value,b->value);
+		}
+	};
+
+	template<class C>
+	void sort_custom() {
+
+		//this version uses auxiliary memory for speed.
+		//if you don't want to use auxiliary memory, use the in_place version
+
+		int s = size();
+		if(s<2)
+			return;
+
+
+		Element **aux_buffer = memnew_arr(Element*,s);
+
+		int idx=0;
+		for(Element *E=front();E;E=E->next_ptr) {
+
+			aux_buffer[idx]=E;
+			idx++;
+		}
+
+		SortArray<Element*,AuxiliaryComparator<C> > sort;
+		sort.sort(aux_buffer,s);
+
+		_data->first=aux_buffer[0];
+		aux_buffer[0]->prev_ptr=NULL;
+		aux_buffer[0]->next_ptr=aux_buffer[1];
+
+		_data->last=aux_buffer[s-1];
+		aux_buffer[s-1]->prev_ptr=aux_buffer[s-2];
+		aux_buffer[s-1]->next_ptr=NULL;
+
+		for(int i=1;i<s-1;i++) {
+
+			aux_buffer[i]->prev_ptr=aux_buffer[i-1];
+			aux_buffer[i]->next_ptr=aux_buffer[i+1];
+
+		}
+
+		memdelete_arr(aux_buffer);
+	}
+
 
 	/**
 	 * copy constructor for the list

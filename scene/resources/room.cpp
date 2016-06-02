@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,7 +48,7 @@ BSP_Tree RoomBounds::get_bounds() const {
 }
 
 void RoomBounds::set_geometry_hint(const DVector<Face3>& p_geometry_hint) {
-	
+
 	geometry_hint=p_geometry_hint;
 }
 
