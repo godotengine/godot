@@ -8,13 +8,13 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: \n"
-"Last-Translator: Hugo Locurcio <hugo.l@openmailbox.org>\n"
+"Last-Translator: derderder <derderder77380@gmail.com>\n"
 "Language-Team: French\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.7.1\n"
+"X-Generator: Poedit 1.6.10\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: scene/2d/animated_sprite.cpp
@@ -210,7 +210,7 @@ msgstr "Annuler"
 
 #: scene/gui/dialogs.cpp
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -218,7 +218,7 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr ""
+msgstr "Veuillez confirmer..."
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -244,7 +244,8 @@ msgstr "Coller"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp tools/editor/project_export.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "Select All"
 msgstr "Tout sélectionner"
 
@@ -807,7 +808,8 @@ msgstr "Ajouter"
 
 #: tools/editor/connections_dialog.cpp tools/editor/dependency_editor.cpp
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
-#: tools/editor/plugins/theme_editor_plugin.cpp tools/editor/project_manager.cpp
+#: tools/editor/plugins/theme_editor_plugin.cpp
+#: tools/editor/project_manager.cpp
 msgid "Remove"
 msgstr "Supprimer"
 
@@ -945,7 +947,7 @@ msgstr ""
 
 #: tools/editor/dependency_editor.cpp
 msgid "Scene failed to load due to missing dependencies:"
-msgstr ""
+msgstr "La scène n'a pas pu être chargée à cause de dépendences manquantes."
 
 #: tools/editor/dependency_editor.cpp
 msgid "Open Anyway"
@@ -986,7 +988,8 @@ msgid "Delete selected files?"
 msgstr "Supprimer les fichiers sélectionnés ?"
 
 #: tools/editor/dependency_editor.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/item_list_editor_plugin.cpp tools/editor/scenes_dock.cpp
+#: tools/editor/plugins/item_list_editor_plugin.cpp
+#: tools/editor/scenes_dock.cpp
 msgid "Delete"
 msgstr "Supprimer"
 
@@ -1677,7 +1680,7 @@ msgstr "Aller à l'objet modifié suivant dans l'historique."
 
 #: tools/editor/editor_node.cpp
 msgid "History of recently edited objects."
-msgstr ""
+msgstr "Historique des objets récemment édités."
 
 #: tools/editor/editor_node.cpp
 msgid "Object properties."
@@ -1738,7 +1741,7 @@ msgstr "Erreurs de chargement"
 
 #: tools/editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
-msgstr ""
+msgstr "Extensions Installées :"
 
 #: tools/editor/editor_plugin_settings.cpp
 #, fuzzy
@@ -1747,11 +1750,11 @@ msgstr "Description :"
 
 #: tools/editor/editor_plugin_settings.cpp
 msgid "Author:"
-msgstr ""
+msgstr "Auteur :"
 
 #: tools/editor/editor_plugin_settings.cpp
 msgid "Status:"
-msgstr ""
+msgstr "État :"
 
 #: tools/editor/editor_profiler.cpp
 msgid "Stop Profiling"
@@ -1859,6 +1862,8 @@ msgstr "Importer à partir d'un nœud :"
 #: tools/editor/file_type_cache.cpp
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
 msgstr ""
+"Impossible d'ouvrir file_type_cache.cch en écriture, le fichier de cache ne "
+"sera pas sauvé !"
 
 #: tools/editor/groups_editor.cpp
 msgid "Add to Group"
@@ -2157,8 +2162,9 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp
+#, fuzzy
 msgid "Import Scene"
-msgstr ""
+msgstr "Importer la scène"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Importing Scene.."
@@ -2311,6 +2317,8 @@ msgid ""
 "NOTICE: Importing 2D textures is not mandatory. Just copy png/jpg files to "
 "the project."
 msgstr ""
+"REMARQUE: Il n'est pas obligatoire d'importer les textures 2D. Copiez "
+"directement les fichiers png/jpeg dans le projet."
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Source Texture(s):"
@@ -2556,7 +2564,7 @@ msgstr ""
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load an animation from disk."
-msgstr ""
+msgstr "Charger une animation depuis le disque."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save the current animation"
@@ -2576,7 +2584,7 @@ msgstr ""
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
-msgstr ""
+msgstr "Outils d'animation"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Copy Animation"
@@ -2584,11 +2592,11 @@ msgstr ""
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
-msgstr ""
+msgstr "Créer une nouvelle animation"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
-msgstr ""
+msgstr "Nom de l'animation :"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #: tools/editor/plugins/resource_preloader_editor_plugin.cpp
@@ -2683,7 +2691,7 @@ msgstr "Actuel :"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Add Input"
-msgstr ""
+msgstr "Ajouter une entrée"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Clear Auto-Advance"
@@ -2695,7 +2703,7 @@ msgstr ""
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Delete Input"
-msgstr ""
+msgstr "Supprimer l'entrée"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Rename"
@@ -2912,7 +2920,7 @@ msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Click to change object's rotation pivot."
-msgstr ""
+msgstr "Cliquer pour changer le pivot de rotation de l'objet."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Pan Mode"
@@ -3127,11 +3135,11 @@ msgstr ""
 
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Import from Scene"
-msgstr ""
+msgstr "Importer depuis la scène"
 
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
-msgstr ""
+msgstr "Mettre à jour depuis la scène"
 
 #: tools/editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -3694,7 +3702,8 @@ msgstr "Improter des textures"
 msgid "Save Theme As.."
 msgstr "Enregistrer la scène sous..."
 
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/project_export.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "File"
 msgstr "Fichier"
 
@@ -5903,7 +5912,7 @@ msgstr "Utilisation"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Misc"
-msgstr ""
+msgstr "Divers"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Clicked Control:"
