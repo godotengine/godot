@@ -3776,7 +3776,7 @@ msgstr "Найти.."
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Find Next"
-msgstr "Найти далее"
+msgstr "Найти следующее"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
