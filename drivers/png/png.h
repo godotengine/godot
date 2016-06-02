@@ -1,9 +1,9 @@
 
 /* png.h - header file for PNG reference library
  *
- * libpng version 1.5.26, December 17, 2015
+ * libpng version 1.5.27, May 26, 2016
  *
- * Copyright (c) 1998-2002,2004,2006-2015 Glenn Randers-Pehrson
+ * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -12,7 +12,7 @@
  * Authors and maintainers:
  *   libpng versions 0.71, May 1995, through 0.88, January 1996: Guy Schalnat
  *   libpng versions 0.89c, June 1996, through 0.96, May 1997: Andreas Dilger
- *   libpng versions 0.97, January 1998, through 1.5.26, December 17, 2015:
+ *   libpng versions 0.97, January 1998, through 1.5.27, May 26, 2016:
  *     Glenn Randers-Pehrson.
  *   See also "Contributing Authors", below.
  */
@@ -25,8 +25,8 @@
  *
  * This code is released under the libpng license.
  *
- * libpng versions 1.0.7, July 1, 2000, through 1.5.26, December 17, 2015, are
- * Copyright (c) 2000-2002, 2004, 2006-2015 Glenn Randers-Pehrson, are
+ * libpng versions 1.0.7, July 1, 2000, through 1.5.27, May 26, 2016, are
+ * Copyright (c) 2000-2002, 2004, 2006-2016 Glenn Randers-Pehrson, are
  * derived from libpng-1.0.6, and are distributed according to the same
  * disclaimer and license as libpng-1.0.6 with the following individuals
  * added to the list of Contributing Authors:
@@ -108,6 +108,29 @@
  * appreciated.
  *
  * END OF COPYRIGHT NOTICE, DISCLAIMER, and LICENSE.
+ *
+ * TRADEMARK:
+ *
+ * The name "libpng" has not been registered by the Copyright owner
+ * as a trademark in any jurisdiction.  However, because libpng has
+ * been distributed and maintained world-wide, continually since 1995,
+ * the Copyright owner claims "common-law trademark protection" in any
+ * jurisdiction where common-law trademark is recognized.
+ *
+ * OSI CERTIFICATION:
+ *
+ * Libpng is OSI Certified Open Source Software.  OSI Certified Open Source is
+ * a certification mark of the Open Source Initiative. OSI has not addressed
+ * the additional disclaimers inserted at version 1.0.7.
+ *
+ * EXPORT CONTROL:
+ *
+ * The Copyright owner believes that the Export Control Classification
+ * Number (ECCN) for libpng is EAR99, which means not subject to export
+ * controls or International Traffic in Arms Regulations (ITAR) because
+ * it is open source, publicly available software, that does not contain
+ * any encryption software.  See the EAR, paragraphs 734.3(b)(3) and
+ * 734.7(b).
  */
 
 /*
@@ -118,12 +141,6 @@
  *
  * Also, the PNG logo (in PNG format, of course) is supplied in the
  * files "pngbar.png" and "pngbar.jpg (88x31) and "pngnow.png" (98x31).
- */
-
-/*
- * Libpng is OSI Certified Open Source Software.  OSI Certified Open Source is
- * a certification mark of the Open Source Initiative. OSI has not addressed
- * the additional disclaimers inserted at version 1.0.7.
  */
 
 /*
@@ -181,9 +198,9 @@
  *    ...
  *    1.0.19                  10    10019  10.so.0.19[.0]
  *    ...
- *    1.2.53                  13    10253  12.so.0.53[.0]
+ *    1.2.56                  13    10256  12.so.0.56[.0]
  *    ...
- *    1.5.25                  15    10525  15.so.15.25[.0]
+ *    1.5.27                  15    10527  15.so.15.27[.0]
  *
  *    Henceforth the source version will match the shared-library major
  *    and minor numbers; the shared-library major version number will be
@@ -211,13 +228,13 @@
  * Y2K compliance in libpng:
  * =========================
  *
- *    December 17, 2015
+ *    May 26, 2016
  *
  *    Since the PNG Development group is an ad-hoc body, we can't make
  *    an official declaration.
  *
  *    This is your unofficial assurance that libpng from version 0.71 and
- *    upward through 1.5.26 are Y2K compliant.  It is my belief that
+ *    upward through 1.5.27 are Y2K compliant.  It is my belief that
  *    earlier versions were also Y2K compliant.
  *
  *    Libpng only has two year fields.  One is a 2-byte unsigned integer
@@ -278,9 +295,9 @@
  */
 
 /* Version information for png.h - this should match the version in png.c */
-#define PNG_LIBPNG_VER_STRING "1.5.26"
+#define PNG_LIBPNG_VER_STRING "1.5.27"
 #define PNG_HEADER_VERSION_STRING \
-     " libpng version 1.5.26 - December 17, 2015\n"
+     " libpng version 1.5.27 - May 26, 2016\n"
 
 #define PNG_LIBPNG_VER_SONUM   15
 #define PNG_LIBPNG_VER_DLLNUM  15
@@ -288,7 +305,7 @@
 /* These should match the first 3 components of PNG_LIBPNG_VER_STRING: */
 #define PNG_LIBPNG_VER_MAJOR   1
 #define PNG_LIBPNG_VER_MINOR   5
-#define PNG_LIBPNG_VER_RELEASE 26
+#define PNG_LIBPNG_VER_RELEASE 27
 
 /* This should match the numeric part of the final component of
  * PNG_LIBPNG_VER_STRING, omitting any leading zero:
@@ -319,7 +336,7 @@
  * version 1.0.0 was mis-numbered 100 instead of 10000).  From
  * version 1.0.1 it's    xxyyzz, where x=major, y=minor, z=release
  */
-#define PNG_LIBPNG_VER 10526 /* 1.5.26 */
+#define PNG_LIBPNG_VER 10527 /* 1.5.27 */
 
 /* Library configuration: these options cannot be changed after
  * the library has been built.
@@ -441,7 +458,7 @@ extern "C" {
 /* This triggers a compiler error in png.c, if png.c and png.h
  * do not agree upon the version number.
  */
-typedef char* png_libpng_version_1_5_26;
+typedef char* png_libpng_version_1_5_27;
 
 /* Three color definitions.  The order of the red, green, and blue, (and the
  * exact size) is not important, although the size of the fields need to
@@ -705,22 +722,22 @@ typedef png_info FAR * FAR * png_infopp;
  * data in the info_struct to be written into the output file.  The values
  * of the PNG_INFO_<chunk> defines should NOT be changed.
  */
-#define PNG_INFO_gAMA 0x0001
-#define PNG_INFO_sBIT 0x0002
-#define PNG_INFO_cHRM 0x0004
-#define PNG_INFO_PLTE 0x0008
-#define PNG_INFO_tRNS 0x0010
-#define PNG_INFO_bKGD 0x0020
-#define PNG_INFO_hIST 0x0040
-#define PNG_INFO_pHYs 0x0080
-#define PNG_INFO_oFFs 0x0100
-#define PNG_INFO_tIME 0x0200
-#define PNG_INFO_pCAL 0x0400
-#define PNG_INFO_sRGB 0x0800   /* GR-P, 0.96a */
-#define PNG_INFO_iCCP 0x1000   /* ESR, 1.0.6 */
-#define PNG_INFO_sPLT 0x2000   /* ESR, 1.0.6 */
-#define PNG_INFO_sCAL 0x4000   /* ESR, 1.0.6 */
-#define PNG_INFO_IDAT 0x8000   /* ESR, 1.0.6 */
+#define PNG_INFO_gAMA 0x0001U
+#define PNG_INFO_sBIT 0x0002U
+#define PNG_INFO_cHRM 0x0004U
+#define PNG_INFO_PLTE 0x0008U
+#define PNG_INFO_tRNS 0x0010U
+#define PNG_INFO_bKGD 0x0020U
+#define PNG_INFO_hIST 0x0040U
+#define PNG_INFO_pHYs 0x0080U
+#define PNG_INFO_oFFs 0x0100U
+#define PNG_INFO_tIME 0x0200U
+#define PNG_INFO_pCAL 0x0400U
+#define PNG_INFO_sRGB 0x0800U  /* GR-P, 0.96a */
+#define PNG_INFO_iCCP 0x1000U  /* ESR, 1.0.6 */
+#define PNG_INFO_sPLT 0x2000U  /* ESR, 1.0.6 */
+#define PNG_INFO_sCAL 0x4000U  /* ESR, 1.0.6 */
+#define PNG_INFO_IDAT 0x8000U  /* ESR, 1.0.6 */
 
 /* This is used for the transformation routines, as some of them
  * change these values for the row.  It also should enable using
@@ -1365,7 +1382,7 @@ PNG_EXPORT(229, void, png_set_scale_16, (png_structp png_ptr));
 #endif
 
 #ifdef PNG_READ_STRIP_16_TO_8_SUPPORTED
-#define PNG_READ_16_TO_8 SUPPORTED /* Name prior to 1.5.4 */
+#define PNG_READ_16_TO_8_SUPPORTED /* Name prior to 1.5.4 */
 /* Strip the second byte of information from a 16-bit depth file. */
 PNG_EXPORT(48, void, png_set_strip_16, (png_structp png_ptr));
 #endif
@@ -1517,8 +1534,8 @@ PNG_EXPORT(67, void, png_set_filter,
 #define PNG_FILTER_UP      0x20
 #define PNG_FILTER_AVG     0x40
 #define PNG_FILTER_PAETH   0x80
-#define PNG_ALL_FILTERS (PNG_FILTER_NONE | PNG_FILTER_SUB | PNG_FILTER_UP | \
-                         PNG_FILTER_AVG | PNG_FILTER_PAETH)
+#define PNG_FAST_FILTERS (PNG_FILTER_NONE | PNG_FILTER_SUB | PNG_FILTER_UP)
+#define PNG_ALL_FILTERS (PNG_FAST_FILTERS | PNG_FILTER_AVG | PNG_FILTER_PAETH)
 
 /* Filter values (not flags) - used in pngwrite.c, pngwutil.c for now.
  * These defines should NOT be changed.
