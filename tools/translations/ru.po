@@ -682,7 +682,7 @@ msgstr "Подчистить все анимации"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "Подчистить анимацию(и) (нельзя отменить!)"
+msgstr "Подчистить анимацию(и) (Нельзя отменить!)"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up"
@@ -734,7 +734,7 @@ msgstr "Нет совпадений"
 
 #: tools/editor/code_editor.cpp
 msgid "Replaced %d Ocurrence(s)."
-msgstr "Заменено совпадений: %d."
+msgstr "Заменено %d совпадений."
 
 #: tools/editor/code_editor.cpp
 msgid "Replace"
@@ -766,7 +766,7 @@ msgstr "Следующий"
 
 #: tools/editor/code_editor.cpp
 msgid "Replaced %d ocurrence(s)."
-msgstr "Заменено совпадений: %d."
+msgstr "Заменено %d совпадений."
 
 #: tools/editor/code_editor.cpp
 msgid "Not found!"
@@ -810,7 +810,7 @@ msgstr "Присоединить к ноду:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Binds (Extra Params):"
-msgstr "Связи (Необязательные параметры):"
+msgstr "Связи (необязательные параметры):"
 
 #: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
@@ -947,11 +947,11 @@ msgid ""
 "Remove them anyway? (no undo)"
 msgstr ""
 "Удаляемый файл требуется для правильной работы других ресурсов.\n"
-"Всё равно удалить его? (нельзя отменить)"
+"Всё равно удалить его? (Нельзя отменить!)"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (no undo)"
-msgstr "Удалить выбранный файл из проекта? (нельзя отменить)"
+msgstr "Удалить выбранный файл из проекта? (Нельзя отменить!)"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -979,7 +979,7 @@ msgstr "Ошибки загрузки!"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "Навсегда удалить %d элемент(ов)? (нельзя отменить!)"
+msgstr "Навсегда удалить %d элемент(ов)? (Нельзя отменить!)"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Owns"
@@ -1361,7 +1361,7 @@ msgstr "Да"
 
 #: tools/editor/editor_node.cpp
 msgid "Close scene? (Unsaved changes will be lost)"
-msgstr "Закрыть сцену? (Несохранённые изменения будут потеряны)"
+msgstr "Закрыть сцену? (Несохранённые изменения будут потеряны.)"
 
 #: tools/editor/editor_node.cpp
 msgid "Save Scene As.."
@@ -1421,7 +1421,7 @@ msgid ""
 "(Unsaved changes will be lost)"
 msgstr ""
 "Открыть менеджер проектов? \n"
-"(Несохранённые изменения будут потеряны)"
+"(Несохранённые изменения будут потеряны.)"
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
@@ -1618,6 +1618,10 @@ msgstr "Видимые области соприкосновения"
 msgid "Visible Navigation"
 msgstr "Видимые области навигации"
 
+#: tools/editor/editor_node.cpp
+msgid "Reload Scripts"
+msgstr "Перезагрузить скрипты"
+
 #: tools/editor/editor_node.cpp tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Settings"
 msgstr "Настройки"
@@ -1775,11 +1779,11 @@ msgstr "Единица измерения:"
 
 #: tools/editor/editor_profiler.cpp
 msgid "Frame Time (sec)"
-msgstr "Время кадра (сек)"
+msgstr "Время кадра (сек.)"
 
 #: tools/editor/editor_profiler.cpp
 msgid "Average Time (sec)"
-msgstr "Среднее время (сек)"
+msgstr "Среднее время (сек.)"
 
 #: tools/editor/editor_profiler.cpp
 msgid "Frame %"
@@ -1885,7 +1889,7 @@ msgstr "Группа"
 
 #: tools/editor/groups_editor.cpp
 msgid "Node Group(s)"
-msgstr "Группы нода"
+msgstr "Группа(ы) нода"
 
 #: tools/editor/import_settings.cpp
 msgid "Imported Resources"
@@ -2627,11 +2631,11 @@ msgstr "Масштаб:"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Fade In (s):"
-msgstr "Проявление (сек):"
+msgstr "Проявление (сек.):"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Fade Out (s):"
-msgstr "Исчезновение (сек):"
+msgstr "Исчезновение (сек.):"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend"
@@ -2647,11 +2651,11 @@ msgstr "Авто перезапуск:"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Restart (s):"
-msgstr "Перезапуск (сек):"
+msgstr "Перезапуск (сек.):"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Random Restart (s):"
-msgstr "Случайность рестарта (с):"
+msgstr "Случайность рестарта (сек.):"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Start!"
@@ -2676,7 +2680,7 @@ msgstr "Смешивание 1:"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "X-Fade Time (s):"
-msgstr "Время X-Fade (сек):"
+msgstr "Время X-Fade (сек.):"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Current:"
@@ -2877,7 +2881,7 @@ msgstr "Вставить позу"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode (Q)"
-msgstr "Режим выделения"
+msgstr "Режим выделения (Q)"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -2890,7 +2894,7 @@ msgstr "Alt+Тащить: Перемещение"
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving)."
 msgstr ""
-"Нажмите 'v' чтобы изменить точку вращения, 'Shift+v' чтобы перемещать точку "
+"Нажмите 'V' чтобы изменить точку вращения, 'Shift+V' чтобы перемещать точку "
 "вращения."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -2913,7 +2917,7 @@ msgid ""
 "(same as Alt+RMB in select mode)."
 msgstr ""
 "Показывает список всех объектов нажатой позиции,\n"
-"так же как и Alt+ПКМ в режиме выделения"
+"так же как и Alt+ПКМ в режиме выделения."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Click to change object's rotation pivot."
@@ -3469,7 +3473,7 @@ msgstr "ПКМ: Удалить точку"
 
 #: tools/editor/plugins/path_2d_editor_plugin.cpp
 msgid "Select Control Points (Shift+Drag)"
-msgstr "Выбор точек управления (Shift+Drag)"
+msgstr "Выбор точек управления (Shift+Тащить)"
 
 #: tools/editor/plugins/path_2d_editor_plugin.cpp
 #: tools/editor/plugins/path_editor_plugin.cpp
@@ -3772,7 +3776,7 @@ msgstr "Найти.."
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Find Next"
-msgstr "Найти далее"
+msgstr "Найти следующее"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
@@ -4804,7 +4808,7 @@ msgstr "Сэмплы"
 
 #: tools/editor/project_export.cpp
 msgid "Sample Conversion Mode: (.wav files):"
-msgstr "Режим преобразования сэмплов ( .wav файлы):"
+msgstr "Режим преобразования сэмплов (.wav файлы):"
 
 #: tools/editor/project_export.cpp
 msgid "Keep"
@@ -4888,7 +4892,7 @@ msgstr "Импортированный проект"
 
 #: tools/editor/project_manager.cpp
 msgid "Invalid project path (changed anything?)."
-msgstr "Неверный путь к проекту (что-то изменили?)."
+msgstr "Неверный путь к проекту (Что-то изменили?)."
 
 #: tools/editor/project_manager.cpp
 msgid "Couldn't create engine.cfg in project path."
@@ -5363,7 +5367,7 @@ msgstr "Новое место (выберите нового Родителя):"
 
 #: tools/editor/reparent_dialog.cpp
 msgid "Keep Global Transform"
-msgstr "Сохранить глобальные преоброзования"
+msgstr "Сохранить глобальные преобразования"
 
 #: tools/editor/reparent_dialog.cpp tools/editor/scene_tree_dock.cpp
 msgid "Reparent"
@@ -5621,7 +5625,7 @@ msgstr "Очистить наследование"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Clear Inheritance? (No Undo!)"
-msgstr "Очистить наследование? (нельзя отменить!)"
+msgstr "Очистить наследование? (Нельзя отменить!)"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Clear!"
