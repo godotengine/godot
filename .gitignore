@@ -18,7 +18,6 @@ drivers/unix/os_unix_global_settings_path.cpp
 tools/editor/register_exporters.cpp
 tools/editor/doc_data_compressed.h
 tools/editor/editor_icons.cpp
--fpic
 .fscache
 make.bat
 log.txt
@@ -30,6 +29,7 @@ doc/_build/
 *.bc
 
 # Android specific
+platform/android/java/build.gradle
 platform/android/java/.gradle
 platform/android/java/.gradletasknamecache
 platform/android/java/local.properties
