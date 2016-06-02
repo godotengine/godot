@@ -71,6 +71,13 @@ class NewProjectDialog : public ConfirmationDialog {
 			return false;
 		}
 
+		String invalid_char("\\ / : * ? \" < > |");
+		if (project_name->get_text().findmk(invalid_char.split(" "))>=0) {
+			error->set_text(vformat(TTR("Invalid project name, can't contains %s"),invalid_char));
+			memdelete(d);
+			return false;
+		}
+
 		if (!import_mode) {
 
 			if (d->file_exists("engine.cfg")) {
