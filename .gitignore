@@ -21,7 +21,6 @@ tools/editor/certs_compressed.h
 tools/editor/editor_icons.cpp
 tools/editor/translations.h
 tools/editor/builtin_fonts.h
--fpic
 .fscache
 make.bat
 log.txt
@@ -33,6 +32,7 @@ doc/_build/
 *.bc
 
 # Android specific
+platform/android/java/build.gradle
 platform/android/java/.gradle
 platform/android/java/.gradletasknamecache
 platform/android/java/local.properties
