@@ -1834,7 +1834,7 @@ EditorTextureImportPlugin::EditorTextureImportPlugin(EditorNode *p_editor) {
 	} else if (EditorImportExport::get_singleton()->image_get_export_group(p_path)) {
 
 
-		Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture_2d");
+		Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture");
 		if (pl.is_valid()) {
 			Vector<uint8_t> ce = pl->custom_export(p_path,p_platform);
 			if (ce.size()) {
@@ -1848,7 +1848,7 @@ EditorTextureImportPlugin::EditorTextureImportPlugin(EditorNode *p_editor) {
 		String xt = p_path.extension().to_lower();
 		if (EditorImportExport::get_singleton()->get_image_formats().has(xt)) { //should check for more I guess?
 
-			Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture_2d");
+			Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture");
 			if (pl.is_valid()) {
 				Vector<uint8_t> ce = pl->custom_export(p_path,p_platform);
 				if (ce.size()) {

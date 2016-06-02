@@ -1057,7 +1057,7 @@ void ProjectExportDialog::_group_atlas_preview() {
 	imd->set_option("atlas",true);
 	imd->set_option("crop",true);
 
-	Ref<EditorTextureImportPlugin> plugin = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture_atlas");
+	Ref<EditorTextureImportPlugin> plugin = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture");
 	Error err = plugin->import2(dst_file,imd,EditorExportPlatform::IMAGE_COMPRESSION_NONE,true);
 	if (err) {
 
