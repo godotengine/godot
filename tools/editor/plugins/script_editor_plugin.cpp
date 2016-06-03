@@ -887,7 +887,18 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource>& p_res) {
 
 	_update_script_names();
 
+
+	if (!pending_auto_reload && auto_reload_running_scripts) {
+		call_deferred("_live_auto_reload_running_scripts");
+		pending_auto_reload=true;
+	}
 }
+
+void ScriptEditor::_live_auto_reload_running_scripts() {
+	pending_auto_reload=false;
+	debugger->reload_scripts();
+}
+
 
 bool ScriptEditor::_test_script_times_on_disk() {
 
@@ -2475,6 +2486,11 @@ void ScriptEditor::set_scene_root_script( Ref<Script> p_script ) {
 	}
 }
 
+void ScriptEditor::set_live_auto_reload_running_scripts(bool p_enabled) {
+
+	auto_reload_running_scripts=p_enabled;
+}
+
 void ScriptEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_file_dialog_action",&ScriptEditor::_file_dialog_action);
@@ -2505,6 +2521,8 @@ void ScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_request_help",&ScriptEditor::_help_class_open);
 	ObjectTypeDB::bind_method("_history_forward",&ScriptEditor::_history_forward);
 	ObjectTypeDB::bind_method("_history_back",&ScriptEditor::_history_back);
+	ObjectTypeDB::bind_method("_live_auto_reload_running_scripts",&ScriptEditor::_live_auto_reload_running_scripts);
+
 }
 
 ScriptEditor::ScriptEditor(EditorNode *p_editor) {
@@ -2514,6 +2532,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	completion_cache = memnew( EditorScriptCodeCompletionCache );
 	restoring_layout=false;
 	waiting_update_names=false;
+	auto_reload_running_scripts=false;
 	editor=p_editor;
 
 	menu_hb = memnew( HBoxContainer );
@@ -2874,6 +2893,8 @@ void ScriptEditorPlugin::edited_scene_changed() {
 
 	script_editor->edited_scene_changed();
 }
+
+
 
 ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 

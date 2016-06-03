@@ -2760,10 +2760,12 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			if (ischecked) {
 				file_server->stop();
+				run_native->set_deploy_dumb(false);
 				//debug_button->set_icon(gui_base->get_icon("FileServer","EditorIcons"));
 				//debug_button->get_popup()->set_item_text( debug_button->get_popup()->get_item_index(RUN_FILE_SERVER),"Enable File Server");
 			} else {
 				file_server->start();
+				run_native->set_deploy_dumb(true);
 				//debug_button->set_icon(gui_base->get_icon("FileServerActive","EditorIcons"));
 				//debug_button->get_popup()->set_item_text( debug_button->get_popup()->get_item_index(RUN_FILE_SERVER),"Disable File Server");
 			}
@@ -2779,13 +2781,13 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			ScriptEditor::get_singleton()->get_debugger()->set_live_debugging(!ischecked);
 		} break;
 
-		case RUN_DEPLOY_DUMB_CLIENTS: {
+		/*case RUN_DEPLOY_DUMB_CLIENTS: {
 
 			bool ischecked = debug_button->get_popup()->is_item_checked( debug_button->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS));
 			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),!ischecked);
 			run_native->set_deploy_dumb(!ischecked);
 
-		} break;
+		} break;*/
 		case RUN_DEPLOY_REMOTE_DEBUG: {
 
 			bool ischecked = debug_button->get_popup()->is_item_checked( debug_button->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG));
@@ -2809,7 +2811,11 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		} break;
 		case RUN_RELOAD_SCRIPTS: {
 
-			ScriptEditor::get_singleton()->get_debugger()->reload_scripts();
+
+			bool ischecked = debug_button->get_popup()->is_item_checked( debug_button->get_popup()->get_item_index(RUN_RELOAD_SCRIPTS));
+			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_RELOAD_SCRIPTS),!ischecked);
+
+			ScriptEditor::get_singleton()->set_live_auto_reload_running_scripts(!ischecked);
 		} break;
 		case SETTINGS_UPDATE_ALWAYS: {
 
@@ -5200,7 +5206,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("play_pressed") );
 	ADD_SIGNAL( MethodInfo("pause_pressed") );
 	ADD_SIGNAL( MethodInfo("stop_pressed") );
-	ADD_SIGNAL( MethodInfo("request_help") );
+	ADD_SIGNAL( MethodInfo("request_help") );	
 	ADD_SIGNAL( MethodInfo("script_add_function_request",PropertyInfo(Variant::OBJECT,"obj"),PropertyInfo(Variant::STRING,"function"),PropertyInfo(Variant::STRING_ARRAY,"args")) );
 	ADD_SIGNAL( MethodInfo("resource_saved",PropertyInfo(Variant::OBJECT,"obj")) );
 
@@ -5779,16 +5785,14 @@ EditorNode::EditorNode() {
 	debug_button->set_tooltip(TTR("Debug options"));
 
 	p=debug_button->get_popup();
-	p->add_check_item(TTR("Live Editing"),RUN_LIVE_DEBUG);
-	p->add_check_item(TTR("File Server"),RUN_FILE_SERVER);
-	p->add_separator();
-	p->add_check_item(TTR("Deploy Remote Debug"),RUN_DEPLOY_REMOTE_DEBUG);
-	p->add_check_item(TTR("Deploy File Server Clients"),RUN_DEPLOY_DUMB_CLIENTS);
+	p->add_check_item(TTR("Remote Debug Deploys"),RUN_DEPLOY_REMOTE_DEBUG);
+	p->add_check_item(TTR("Use PC Filesystem for Deploys"),RUN_FILE_SERVER);
 	p->add_separator();
 	p->add_check_item(TTR("Visible Collision Shapes"),RUN_DEBUG_COLLISONS);
 	p->add_check_item(TTR("Visible Navigation"),RUN_DEBUG_NAVIGATION);
 	p->add_separator();
-	p->add_item(TTR("Reload Scripts"),RUN_RELOAD_SCRIPTS);
+	p->add_check_item(TTR("Mirror Scene Editing"),RUN_LIVE_DEBUG);
+	p->add_check_item(TTR("Mirror Script Changes"),RUN_RELOAD_SCRIPTS);
 	p->connect("item_pressed",this,"_menu_option");
 
 	/*
