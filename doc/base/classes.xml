@@ -13434,8 +13434,11 @@ This approximation makes straight segments between each point, then subdivides t
 </class>
 <class name="HTTPClient" inherits="Reference" category="Core">
 	<brief_description>
+	Hyper-text transfer protocol client.
 	</brief_description>
 	<description>
+	Hyper-text transfer protocol client. Supports SSL and SSL server certificate verification. 
+	Can be reused to connect to different hosts and make many requests.
 	</description>
 	<methods>
 		<method name="connect">
@@ -13459,6 +13462,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="connection" type="StreamPeer">
 			</argument>
 			<description>
+			Set connection to use, for this client.
 			</description>
 		</method>
 		<method name="request">
@@ -13504,30 +13508,35 @@ This approximation makes straight segments between each point, then subdivides t
 		</method>
 		<method name="close">
 			<description>
+			Cloces the current connection, allows for reusal of [HTTPClient].
 			</description>
 		</method>
 		<method name="has_response" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this [HTTPClient] has a response available.
 			</description>
 		</method>
 		<method name="is_response_chunked" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this [HTTPClient] has a response that is chunked.
 			</description>
 		</method>
 		<method name="get_response_code" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the HTTP status code of the response.
 			</description>
 		</method>
 		<method name="get_response_headers">
 			<return type="StringArray">
 			</return>
 			<description>
+			Return the response headers.
 			</description>
 		</method>
 		<method name="get_response_headers_as_dictionary">
@@ -13543,32 +13552,35 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="int">
 			</return>
 			<description>
+			Return the response's body length.
 			</description>
 		</method>
 		<method name="read_response_body_chunk">
 			<return type="RawArray">
 			</return>
 			<description>
+			Reads one chunk from the response.
 			</description>
 		</method>
 		<method name="set_read_chunk_size">
 			<argument index="0" name="bytes" type="int">
 			</argument>
 			<description>
-			Sets the size of the buffer used and maximum bytes to read per iteration
+			Sets the size of the buffer used and maximum bytes to read per iteration. see [method read_response_body_chunk]
 			</description>
 		</method>
 		<method name="set_blocking_mode">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-			If set to true, execute will wait until all data is read from the response.
+			If set to true, execution will block until all data is read from the response.
 			</description>
 		</method>
 		<method name="is_blocking_mode_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether blocking mode is enabled.
 			</description>
 		</method>
 		<method name="get_status" qualifiers="const">
