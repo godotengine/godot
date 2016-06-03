@@ -56,17 +56,21 @@ func import(path,metadata):
 
 	if (use_red_anyway):
 		color=Color8(255,0,0)
-	
-	material.set_parameter(FixedMaterial.PARAM_DIFFUSE,color)	
+
+	material.set_parameter(FixedMaterial.PARAM_DIFFUSE,color)
 
 	# Make sure import metadata links to this plugin
-	
+
 	metadata.set_editor("silly_material")
+
+	# Update the md5 value of the source file
+
+	metadata.set_source_md5(0, f.get_md5(source))
 
 	# Update the import metadata
 
 	material.set_import_metadata(metadata)
-	
+
 
 	# Save
 	err = ResourceSaver.save(path,material)
@@ -78,4 +82,3 @@ func config(base_control):
 
 	dialog = preload("res://addons/custom_import_plugin/material_dialog.tscn").instance()
 	base_control.add_child(dialog)
-
