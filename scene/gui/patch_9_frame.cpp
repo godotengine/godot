@@ -95,6 +95,20 @@ void Patch9Frame::set_patch_margin(Margin p_margin,int p_size) {
 	margin[p_margin]=p_size;
 	update();
 	minimum_size_changed();
+	switch (p_margin) {
+		case MARGIN_LEFT:
+			_change_notify("patch_margin/left");
+			break;
+		case MARGIN_TOP:
+			_change_notify("patch_margin/top");
+			break;
+		case MARGIN_RIGHT:
+			_change_notify("patch_margin/right");
+			break;
+		case MARGIN_BOTTOM:
+			_change_notify("patch_margin/bottom");
+			break;
+	}
 }
 
 int Patch9Frame::get_patch_margin(Margin p_margin) const{
