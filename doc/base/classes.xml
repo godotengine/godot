@@ -4340,6 +4340,15 @@
 			Clear the array (resize to 0).
 			</description>
 		</method>
+		<method name="count">
+			<return type="int">
+			</return>
+			<argument index="0" name="value" type="var">
+			</argument>
+			<description>
+			Return the amount of times an element is in the array.
+			</description>
+		</method>
 		<method name="empty">
 			<return type="bool">
 			</return>
@@ -4361,6 +4370,15 @@
 			</argument>
 			<description>
 			Searches the array for a value and returns its index or -1 if not found.
+			</description>
+		</method>
+		<method name="find_last">
+			<return type="int">
+			</return>
+			<argument index="0" name="value" type="var">
+			</argument>
+			<description>
+			Searches the array in reverse order for a value and returns its index or -1 if not found.
 			</description>
 		</method>
 		<method name="hash">
