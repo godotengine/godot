@@ -6497,7 +6497,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			if (!*e->additive_ptr) {
 
 				additive=false;
-				*e->additive_ptr=true;				
+				*e->additive_ptr=true;
 			} else {
 				additive=true;
 			}
@@ -6684,7 +6684,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			}
 			rebind=true;
 		}
-		
+
 		if  (use_hw_skeleton_xform && (skeleton!=prev_skeleton||morph_values!=prev_morph_values)) {
 			if (!prev_skeleton || !skeleton)
 				rebind=true; //went from skeleton <-> no skeleton, needs rebind
@@ -6718,7 +6718,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			DEBUG_TEST_ERROR("Setup geometry");
 		};
 
-		if (i==0 || light!=prev_light || rebind) {			
+		if (i==0 || light!=prev_light || rebind) {
 			if (e->light!=0xFFFF) {
 				_setup_light(e->light);
 
@@ -6958,7 +6958,7 @@ void RasterizerGLES2::_process_glow_bloom() {
 	_copy_screen_quad();
 
 	copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW_COPY,false);
-	copy_shader.set_conditional(CopyShaderGLES2::USE_HDR,false);	
+	copy_shader.set_conditional(CopyShaderGLES2::USE_HDR,false);
 	int passes = current_env->fx_param[VS::ENV_FX_PARAM_GLOW_BLUR_PASSES];
 	Vector2 psize(1.0/framebuffer.blur_size,1.0/framebuffer.blur_size);
 	float pscale = current_env->fx_param[VS::ENV_FX_PARAM_GLOW_BLUR_SCALE];
@@ -7427,7 +7427,7 @@ void RasterizerGLES2::end_scene() {
 			_process_hdr();
 		}
 		if (current_env && current_env->fx_enabled[VS::ENV_FX_GLOW]) {
-			_process_glow_bloom();			
+			_process_glow_bloom();
 			int glow_transfer_mode=current_env->fx_param[VS::ENV_FX_PARAM_GLOW_BLUR_BLEND_MODE];
 			if (glow_transfer_mode==1)
 				copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW_SCREEN,true);
@@ -8438,7 +8438,7 @@ void RasterizerGLES2::canvas_draw_rect(const Rect2& p_rect, int p_flags, const R
 
 }
 
-void RasterizerGLES2::canvas_draw_style_box(const Rect2& p_rect, RID p_texture,const float *p_margin, bool p_draw_center,const Color& p_modulate) {
+void RasterizerGLES2::canvas_draw_style_box(const Rect2& p_rect, const Rect2& p_src_region, RID p_texture,const float *p_margin, bool p_draw_center,const Color& p_modulate) {
 
 	Color m = p_modulate;
 	m.a*=canvas_opacity;
@@ -8446,52 +8446,57 @@ void RasterizerGLES2::canvas_draw_style_box(const Rect2& p_rect, RID p_texture,c
 
 	Texture* texture=_bind_canvas_texture(p_texture);
 	ERR_FAIL_COND(!texture);
-	/* CORNERS */
 
+	Rect2 region = p_src_region;
+	if (region.size.width <= 0 )
+	    region.size.width = texture->width;
+	if (region.size.height <= 0)
+	    region.size.height = texture->height;
+	/* CORNERS */
 	_draw_textured_quad( // top left
 		Rect2( p_rect.pos, Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_TOP])),
-		Rect2( Point2(), Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_TOP])),
+		Rect2( region.pos, Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_TOP])),
 		Size2( texture->width, texture->height ) );
 
 	_draw_textured_quad( // top right
 		Rect2( Point2( p_rect.pos.x + p_rect.size.width - p_margin[MARGIN_RIGHT], p_rect.pos.y), Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_TOP])),
-		Rect2( Point2(texture->width-p_margin[MARGIN_RIGHT],0), Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_TOP])),
+		Rect2( Point2(region.pos.x+region.size.width-p_margin[MARGIN_RIGHT], region.pos.y), Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_TOP])),
 		Size2( texture->width, texture->height ) );
 
 
 	_draw_textured_quad( // bottom left
 		Rect2( Point2(p_rect.pos.x,p_rect.pos.y + p_rect.size.height - p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_BOTTOM])),
-		Rect2( Point2(0,texture->height-p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_BOTTOM])),
+		Rect2( Point2(region.pos.x, region.pos.y+region.size.height-p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_BOTTOM])),
 		Size2( texture->width, texture->height ) );
 
 	_draw_textured_quad( // bottom right
 		Rect2( Point2( p_rect.pos.x + p_rect.size.width - p_margin[MARGIN_RIGHT], p_rect.pos.y + p_rect.size.height - p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_BOTTOM])),
-		Rect2( Point2(texture->width-p_margin[MARGIN_RIGHT],texture->height-p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_BOTTOM])),
+		Rect2( Point2(region.pos.x+region.size.width-p_margin[MARGIN_RIGHT], region.pos.y+region.size.height-p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_BOTTOM])),
 		Size2( texture->width, texture->height ) );
 
 	Rect2 rect_center( p_rect.pos+Point2( p_margin[MARGIN_LEFT], p_margin[MARGIN_TOP]), Size2( p_rect.size.width - p_margin[MARGIN_LEFT] - p_margin[MARGIN_RIGHT], p_rect.size.height - p_margin[MARGIN_TOP] - p_margin[MARGIN_BOTTOM] ));
 
-	Rect2 src_center( Point2( p_margin[MARGIN_LEFT], p_margin[MARGIN_TOP]), Size2( texture->width - p_margin[MARGIN_LEFT] - p_margin[MARGIN_RIGHT], texture->height - p_margin[MARGIN_TOP] - p_margin[MARGIN_BOTTOM] ));
+	Rect2 src_center( Point2(region.pos.x+p_margin[MARGIN_LEFT], region.pos.y+p_margin[MARGIN_TOP]), Size2(region.size.width - p_margin[MARGIN_LEFT] - p_margin[MARGIN_RIGHT], region.size.height - p_margin[MARGIN_TOP] - p_margin[MARGIN_BOTTOM] ));
 
 
 	_draw_textured_quad( // top
 		Rect2( Point2(rect_center.pos.x,p_rect.pos.y),Size2(rect_center.size.width,p_margin[MARGIN_TOP])),
-		Rect2( Point2(p_margin[MARGIN_LEFT],0), Size2(src_center.size.width,p_margin[MARGIN_TOP])),
+		Rect2( Point2(src_center.pos.x,region.pos.y), Size2(src_center.size.width,p_margin[MARGIN_TOP])),
 		Size2( texture->width, texture->height ) );
 
 	_draw_textured_quad( // bottom
 		Rect2( Point2(rect_center.pos.x,rect_center.pos.y+rect_center.size.height),Size2(rect_center.size.width,p_margin[MARGIN_BOTTOM])),
-		Rect2( Point2(p_margin[MARGIN_LEFT],src_center.pos.y+src_center.size.height), Size2(src_center.size.width,p_margin[MARGIN_BOTTOM])),
+		Rect2( Point2(src_center.pos.x,src_center.pos.y+src_center.size.height), Size2(src_center.size.width,p_margin[MARGIN_BOTTOM])),
 		Size2( texture->width, texture->height ) );
 
 	_draw_textured_quad( // left
 		Rect2( Point2(p_rect.pos.x,rect_center.pos.y),Size2(p_margin[MARGIN_LEFT],rect_center.size.height)),
-		Rect2( Point2(0,p_margin[MARGIN_TOP]), Size2(p_margin[MARGIN_LEFT],src_center.size.height)),
+		Rect2( Point2(region.pos.x,region.pos.y+p_margin[MARGIN_TOP]), Size2(p_margin[MARGIN_LEFT],src_center.size.height)),
 		Size2( texture->width, texture->height ) );
 
 	_draw_textured_quad( // right
 		Rect2( Point2(rect_center.pos.x+rect_center.size.width,rect_center.pos.y),Size2(p_margin[MARGIN_RIGHT],rect_center.size.height)),
-		Rect2( Point2(src_center.pos.x+src_center.size.width,p_margin[MARGIN_TOP]), Size2(p_margin[MARGIN_RIGHT],src_center.size.height)),
+		Rect2( Point2(src_center.pos.x+src_center.size.width,region.pos.y+p_margin[MARGIN_TOP]), Size2(p_margin[MARGIN_RIGHT],src_center.size.height)),
 		Size2( texture->width, texture->height ) );
 
 	if (p_draw_center) {
@@ -8569,7 +8574,7 @@ void RasterizerGLES2::canvas_draw_polygon(int p_vertex_count, const int* p_indic
 
 
 #else //WebGL specific impl.
-	glBindBuffer(GL_ARRAY_BUFFER, gui_quad_buffer);    
+	glBindBuffer(GL_ARRAY_BUFFER, gui_quad_buffer);
     float *b = GlobalVertexBuffer;
     int ofs = 0;
     if(p_vertex_count > MAX_POLYGON_VERTICES){
@@ -9184,7 +9189,7 @@ void RasterizerGLES2::_canvas_item_render_commands(CanvasItem *p_item,CanvasItem
 				CanvasItem::CommandStyle* style = static_cast<CanvasItem::CommandStyle*>(c);
 				if (use_normalmap)
 					_canvas_normal_set_flip(Vector2(1,1));
-				canvas_draw_style_box(style->rect,style->texture,style->margin,style->draw_center,style->color);
+				canvas_draw_style_box(style->rect,style->source,style->texture,style->margin,style->draw_center,style->color);
 
 			} break;
 			case CanvasItem::Command::TYPE_PRIMITIVE: {
@@ -9430,7 +9435,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 				draw_viewport_func(ci->vp_render->owner,ci->vp_render->udata,ci->vp_render->rect);
 			}
 			memdelete(ci->vp_render);
-			ci->vp_render=NULL;			
+			ci->vp_render=NULL;
 			canvas_last_material=NULL;
 			canvas_use_modulate=p_modulate!=Color(1,1,1,1);
 			canvas_modulate=p_modulate;
@@ -11424,7 +11429,7 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,boo
 void RasterizerGLES2::restore_framebuffer() {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, base_framebuffer);
-	
+
 }
 
 RasterizerGLES2::~RasterizerGLES2() {

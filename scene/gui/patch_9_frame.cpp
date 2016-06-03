@@ -9,10 +9,9 @@ void Patch9Frame::_notification(int p_what) {
 		if (texture.is_null())
 			return;
 
-
 		Size2 s=get_size();
 		RID ci = get_canvas_item();
-		VS::get_singleton()->canvas_item_add_style_box(ci,Rect2(Point2(),s),texture->get_rid(),Vector2(margin[MARGIN_LEFT],margin[MARGIN_TOP]),Vector2(margin[MARGIN_RIGHT],margin[MARGIN_BOTTOM]),draw_center,modulate);
+		VS::get_singleton()->canvas_item_add_style_box(ci,Rect2(Point2(),s),Rect2(),texture->get_rid(),Vector2(margin[MARGIN_LEFT],margin[MARGIN_TOP]),Vector2(margin[MARGIN_RIGHT],margin[MARGIN_BOTTOM]),draw_center,modulate);
 //		draw_texture_rect(texture,Rect2(Point2(),s),false,modulate);
 
 /*
@@ -128,5 +127,3 @@ Patch9Frame::Patch9Frame() {
 Patch9Frame::~Patch9Frame()
 {
 }
-
-
