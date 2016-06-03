@@ -481,7 +481,7 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	file->connect("files_selected", this,"_file_load_request");
 	tree->connect("item_edited", this,"_item_edited");
 
-
+	is_playing = false;
 }
 
 
