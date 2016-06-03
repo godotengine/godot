@@ -14395,8 +14395,11 @@ This approximation makes straight segments between each point, then subdivides t
 </class>
 <class name="HTTPClient" inherits="Reference" category="Core">
 	<brief_description>
+	Hyper-text transfer protocol client.
 	</brief_description>
 	<description>
+	Hyper-text transfer protocol client. Supports SSL and SSL server certificate verification. 
+	Can be reused to connect to different hosts and make many requests.
 	</description>
 	<methods>
 		<method name="connect">
@@ -14420,12 +14423,14 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="connection" type="StreamPeer">
 			</argument>
 			<description>
+			Set connection to use, for this client.
 			</description>
 		</method>
 		<method name="get_connection" qualifiers="const">
 			<return type="StreamPeer">
 			</return>
 			<description>
+			Return current connection.
 			</description>
 		</method>
 		<method name="request_raw">
@@ -14440,6 +14445,9 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="3" name="body" type="RawArray">
 			</argument>
 			<description>
+			Sends a raw request to the connected host. The url is what is normally behind the hostname, i.e. in [code]http://somehost.com/index.php[/code], url would be "index.php".
+			Headers are HTTP request headers.
+			Sends body raw, as a byte array, does not encode it in any way.
 			</description>
 		</method>
 		<method name="request">
@@ -14485,30 +14493,35 @@ This approximation makes straight segments between each point, then subdivides t
 		</method>
 		<method name="close">
 			<description>
+			Cloces the current connection, allows for reusal of [HTTPClient].
 			</description>
 		</method>
 		<method name="has_response" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this [HTTPClient] has a response available.
 			</description>
 		</method>
 		<method name="is_response_chunked" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this [HTTPClient] has a response that is chunked.
 			</description>
 		</method>
 		<method name="get_response_code" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the HTTP status code of the response.
 			</description>
 		</method>
 		<method name="get_response_headers">
 			<return type="StringArray">
 			</return>
 			<description>
+			Return the response headers.
 			</description>
 		</method>
 		<method name="get_response_headers_as_dictionary">
@@ -14524,32 +14537,35 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="int">
 			</return>
 			<description>
+			Return the response's body length.
 			</description>
 		</method>
 		<method name="read_response_body_chunk">
 			<return type="RawArray">
 			</return>
 			<description>
+			Reads one chunk from the response.
 			</description>
 		</method>
 		<method name="set_read_chunk_size">
 			<argument index="0" name="bytes" type="int">
 			</argument>
 			<description>
-			Sets the size of the buffer used and maximum bytes to read per iteration
+			Sets the size of the buffer used and maximum bytes to read per iteration. see [method read_response_body_chunk]
 			</description>
 		</method>
 		<method name="set_blocking_mode">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-			If set to true, execute will wait until all data is read from the response.
+			If set to true, execution will block until all data is read from the response.
 			</description>
 		</method>
 		<method name="is_blocking_mode_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether blocking mode is enabled.
 			</description>
 		</method>
 		<method name="get_status" qualifiers="const">
@@ -14722,8 +14738,11 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="HTTPRequest" inherits="Node" category="Core">
 	<brief_description>
+	A Node with the ability to send HTTP requests.
 	</brief_description>
 	<description>
+	A Node with the ability to send HTTP requests. Uses a [HTTPClient] internally, supports HTTPS. 
+	Can be used to make HTTP requests or download files via HTTP.
 	</description>
 	<methods>
 		<method name="request">
@@ -14736,76 +14755,91 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
 			</argument>
 			<description>
+			Make a HTTP GET request. The url is the complete url including "http://" or "https://" which will be parsed for a host and a port.
+			The custom_headers are HTTP request headers which will be used. If User-Agent is not specified a Godot specific will be used.
+			The ssl_validate_domain specifies if in case of HTTPS the server certificate should be verified.
 			</description>
 		</method>
 		<method name="cancel_request">
 			<description>
+			Cancel the current request.
 			</description>
 		</method>
 		<method name="get_http_client_status" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the current status of the underlying [HTTPClient].
 			</description>
 		</method>
 		<method name="set_use_threads">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Make this HTTPRequest use threads.
 			</description>
 		</method>
 		<method name="is_using_threads" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Whether this request is using threads.
 			</description>
 		</method>
 		<method name="set_body_size_limit">
 			<argument index="0" name="bytes" type="int">
 			</argument>
 			<description>
+			Set the response body size limit.
 			</description>
 		</method>
 		<method name="get_body_size_limit" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return current body size limit.
 			</description>
 		</method>
 		<method name="set_max_redirects">
 			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
+			Set the maximum amount of redirects the request will follow.
 			</description>
 		</method>
 		<method name="get_max_redirects" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the maximum amount of redirects that will be followed.
 			</description>
 		</method>
 		<method name="set_download_file">
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Set the file to download into. Outputs the response body into the file.
 			</description>
 		</method>
 		<method name="get_download_file" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+			Return the file this request will download into.
 			</description>
 		</method>
 		<method name="get_downloaded_bytes" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the amount of bytes this HTTPRequest downloaded.
 			</description>
 		</method>
 		<method name="get_body_size" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the response body length.
 			</description>
 		</method>
 	</methods>
@@ -14820,31 +14854,45 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="3" name="body" type="RawArray">
 			</argument>
 			<description>
+			This signal is emitted upon request completion.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="RESULT_SUCCESS" value="0">
+			Request successful.
 		</constant>
 		<constant name="RESULT_CHUNKED_BODY_SIZE_MISMATCH" value="1">
 		</constant>
 		<constant name="RESULT_CANT_CONNECT" value="2">
+			Request failed while connecting.
 		</constant>
 		<constant name="RESULT_CANT_RESOLVE" value="3">
+			Request failed while resolving.
 		</constant>
 		<constant name="RESULT_CONNECTION_ERROR" value="4">
+			Request failed due to connection(read/write) error.
 		</constant>
 		<constant name="RESULT_SSL_HANDSHAKE_ERROR" value="5">
+			Request failed on SSL handshake.
 		</constant>
 		<constant name="RESULT_NO_RESPONSE" value="6">
+			Request does not have a response(yet).
 		</constant>
 		<constant name="RESULT_BODY_SIZE_LIMIT_EXCEEDED" value="7">
+			Request exceded it's maximum size limit, see [method set_body_size_limit].
 		</constant>
 		<constant name="RESULT_REQUEST_FAILED" value="8">
+			Request failed. (unused)
 		</constant>
-		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="11">
+		<constant name="RESULT_DOWNLOAD_FILE_CANT_OPEN" value="9">
+			HTTPRequest couldn't open the download file.
 		</constant>
 		<constant name="RESULT_DOWNLOAD_FILE_WRITE_ERROR" value="10">
+			HTTPRequest couldn't write to the download file.
+		</constant>
+		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="11">
+			Request reached it's maximum redirect limit, see [method set_max_redirects].
 		</constant>
 	</constants>
 </class>
@@ -30049,6 +30097,14 @@ This method controls whether the position between two cached points is interpola
 			<return type="String">
 			</return>
 			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_source_md5">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="md5" type="String">
 			</argument>
 			<description>
 			</description>
