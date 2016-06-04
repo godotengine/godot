@@ -772,20 +772,48 @@ static int translateKey(unsigned int key)
 
 - (void)flagsChanged:(NSEvent *)event
 {
-   /* int action;
-    unsigned int newModifierFlags =
-	[event modifierFlags] & NSDeviceIndependentModifierFlagsMask;
+	InputEvent ev;
+	int key = [event keyCode];
+	int mod = [event modifierFlags];
 
-    if (newModifierFlags > window->ns.modifierFlags)
-	action = GLFW_PRESS;
-    else
-	action = GLFW_RELEASE;
+	ev.type=InputEvent::KEY;
 
-    window->ns.modifierFlags = newModifierFlags;
+	if (key == 0x36 || key == 0x37) {
+		if (mod & NSCommandKeyMask) {
+			mod&= ~NSCommandKeyMask;
+			ev.key.pressed = true;
+		} else {
+			ev.key.pressed = false;
+		}
+	} else if (key == 0x38 || key == 0x3c) {
+		if (mod & NSShiftKeyMask) {
+			mod&= ~NSShiftKeyMask;
+			ev.key.pressed = true;
+		} else {
+			ev.key.pressed = false;
+		}
+	} else if (key == 0x3a || key == 0x3d) {
+		if (mod & NSAlternateKeyMask) {
+			mod&= ~NSAlternateKeyMask;
+			ev.key.pressed = true;
+		} else {
+			ev.key.pressed = false;
+		}
+	} else if (key == 0x3b || key == 0x3e) {
+		if (mod & NSControlKeyMask) {
+			mod&= ~NSControlKeyMask;
+			ev.key.pressed = true;
+		} else {
+			ev.key.pressed = false;
+		}
+	} else {
+		return;
+	}
 
-    const int key = translateKey([event keyCode]);
-    const int mods = translateFlags([event modifierFlags]);
-    _glfwInputKey(window, key, [event keyCode], action, mods);*/
+	ev.key.mod=translateFlags(mod);
+	ev.key.scancode = latin_keyboard_keycode_convert(translateKey(key));
+
+	OS_OSX::singleton->push_input(ev);
 }
 
 - (void)keyUp:(NSEvent *)event
