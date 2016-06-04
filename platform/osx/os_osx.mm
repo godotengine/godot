@@ -139,12 +139,10 @@ static int button_mask=0;
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-/*    _Godotwindow* window;
+	if (OS_OSX::singleton->get_main_loop())
+		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 
-    for (window = _Godot.windowListHead;  window;  window = window->next)
-	_GodotInputWindowCloseRequest(window);
-*/
-    return NSTerminateCancel;
+	return NSTerminateCancel;
 }
 
 - (void)applicationDidHide:(NSNotification *)notification
@@ -1463,6 +1461,7 @@ Point2 OS_OSX::get_window_position() const {
 
 	Size2 wp([window_object frame].origin.x, [window_object frame].origin.y);
 	wp*=display_scale;
+	return wp;
 };
 
 
