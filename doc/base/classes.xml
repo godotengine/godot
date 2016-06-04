@@ -16566,6 +16566,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Whether this InputMap has an action with name "action".
 			</description>
 		</method>
 		<method name="get_action_id" qualifiers="const">
@@ -16574,6 +16575,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return the id of an action.
 			</description>
 		</method>
 		<method name="get_action_from_id" qualifiers="const">
@@ -16582,18 +16584,28 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+			Return the action from an id.
+			</description>
+		</method>
+		<method name="get_actions">
+			<return type="Array">
+			</return>
+			<description>
+			Return an [Array] of all actions in the [InputMap].
 			</description>
 		</method>
 		<method name="add_action">
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Add an action to the [InputMap].
 			</description>
 		</method>
 		<method name="erase_action">
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Remove an action from the [InputMap].
 			</description>
 		</method>
 		<method name="action_add_event">
@@ -16602,6 +16614,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<description>
+			Add an [InputEvent] to action. This [InputEvent] will trigger the action.
 			</description>
 		</method>
 		<method name="action_has_event">
@@ -16612,6 +16625,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<description>
+			Whether an action has an [InputEvent] associated with it.
 			</description>
 		</method>
 		<method name="action_erase_event">
@@ -16620,6 +16634,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<description>
+			Remove an [InputEvent] from an action.
 			</description>
 		</method>
 		<method name="get_action_list">
@@ -16628,6 +16643,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return an [Array] of [InputEvent]s associated with an action.
 			</description>
 		</method>
 		<method name="event_is_action" qualifiers="const">
@@ -16642,6 +16658,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</method>
 		<method name="load_from_globals">
 			<description>
+			Clears the [InputMap] and loads it from [Globals].
 			</description>
 		</method>
 	</methods>
