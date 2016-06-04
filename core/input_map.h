@@ -47,6 +47,7 @@ class InputMap : public Object {
 	List<InputEvent>::Element *_find_event(List<InputEvent> &p_list,const InputEvent& p_event) const;
 
 	Array _get_action_list(const StringName& p_action);
+	Array _get_actions();
 
 protected:
 
@@ -59,6 +60,7 @@ public:
 	bool has_action(const StringName& p_action) const;
 	int get_action_id(const StringName& p_action) const;
 	StringName get_action_from_id(int p_id) const;
+	List<StringName> get_actions() const;
 	void add_action(const StringName& p_action);
 	void erase_action(const StringName& p_action);
 
