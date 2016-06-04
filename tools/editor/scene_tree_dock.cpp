@@ -260,8 +260,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			//if (!_validate_no_foreign())
 			//	break;
-			connect_dialog->popup_centered_ratio();
-			connect_dialog->set_node(current);
+			//connect_dialog->popup_centered_ratio();
+			//connect_dialog->set_node(current);
 
 		} break;
 		case TOOL_GROUP: {
@@ -1663,8 +1663,8 @@ void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
 	if (!EditorNode::get_singleton()->get_edited_scene()) {
 
 		menu->clear();
-		menu->add_item(TTR("New Scene Root"),TOOL_NEW,KEY_MASK_CMD|KEY_A);
-		menu->add_item(TTR("Inherit Scene"),TOOL_INSTANCE);
+		menu->add_icon_item(get_icon("Add","EditorIcons"),TTR("New Scene Root"),TOOL_NEW,KEY_MASK_CMD|KEY_A);
+		menu->add_icon_item(get_icon("Instance","EditorIcons"),TTR("Inherit Scene"),TOOL_INSTANCE);
 
 		menu->set_size(Size2(1,1));
 		menu->set_pos(p_menu_pos);
@@ -1681,31 +1681,31 @@ void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
 
 
 	if (selection.size()==1) {
-		menu->add_item(TTR("Add Child Node"),TOOL_NEW,KEY_MASK_CMD|KEY_A);
-		menu->add_item(TTR("Instance Child Scene"),TOOL_INSTANCE);
+		menu->add_icon_item(get_icon("Add","EditorIcons"),TTR("Add Child Node"),TOOL_NEW,KEY_MASK_CMD|KEY_A);
+		menu->add_icon_item(get_icon("Instance","EditorIcons"),TTR("Instance Child Scene"),TOOL_INSTANCE);
 		menu->add_separator();
-		menu->add_item(TTR("Change Type"),TOOL_REPLACE);
+		menu->add_icon_item(get_icon("Reload","EditorIcons"),TTR("Change Type"),TOOL_REPLACE);
 		menu->add_separator();
-		menu->add_item(TTR("Edit Groups"),TOOL_GROUP);
-		menu->add_item(TTR("Edit Connections"),TOOL_CONNECT);
+		menu->add_icon_item(get_icon("Groups","EditorIcons"),TTR("Edit Groups"),TOOL_GROUP);
+		//menu->add_icon_item(get_icon("Connect","EditorIcons"),TTR("Edit Connections"),TOOL_CONNECT);
 		menu->add_separator();
-		menu->add_item(TTR("Add Script"),TOOL_SCRIPT);
+		menu->add_icon_item(get_icon("Script","EditorIcons"),TTR("Add Script"),TOOL_SCRIPT);
 		menu->add_separator();
 	}
 
-	menu->add_item(TTR("Move Up"),TOOL_MOVE_UP,KEY_MASK_CMD|KEY_UP);
-	menu->add_item(TTR("Move Down"),TOOL_MOVE_DOWN,KEY_MASK_CMD|KEY_DOWN);
-	menu->add_item(TTR("Duplicate"),TOOL_DUPLICATE,KEY_MASK_CMD|KEY_D);
-	menu->add_item(TTR("Reparent"),TOOL_REPARENT);
+	menu->add_icon_item(get_icon("Up","EditorIcons"),TTR("Move Up"),TOOL_MOVE_UP,KEY_MASK_CMD|KEY_UP);
+	menu->add_icon_item(get_icon("Down","EditorIcons"),TTR("Move Down"),TOOL_MOVE_DOWN,KEY_MASK_CMD|KEY_DOWN);
+	menu->add_icon_item(get_icon("Duplicate","EditorIcons"),TTR("Duplicate"),TOOL_DUPLICATE,KEY_MASK_CMD|KEY_D);
+	menu->add_icon_item(get_icon("Reparent","EditorIcons"),TTR("Reparent"),TOOL_REPARENT);
 
 	if (selection.size()==1) {
 		menu->add_separator();
-		menu->add_item(TTR("Merge From Scene"),TOOL_MERGE_FROM_SCENE);
-		menu->add_item(TTR("Save Branch as Scene"),TOOL_NEW_SCENE_FROM);
+		menu->add_icon_item(get_icon("Blend","EditorIcons"),TTR("Merge From Scene"),TOOL_MERGE_FROM_SCENE);
+		menu->add_icon_item(get_icon("Save","EditorIcons"),TTR("Save Branch as Scene"),TOOL_NEW_SCENE_FROM);
 	}
 	menu->add_separator();
 
-	menu->add_item(TTR("Delete Node(s)"),TOOL_ERASE,KEY_DELETE);
+	menu->add_icon_item(get_icon("Remove","EditorIcons"),TTR("Delete Node(s)"),TOOL_ERASE,KEY_DELETE);
 
 	menu->set_size(Size2(1,1));
 	menu->set_pos(p_menu_pos);
@@ -1824,9 +1824,9 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	add_child(groups_editor);
 	groups_editor->set_undo_redo(&editor_data->get_undo_redo());
 
-	connect_dialog = memnew( ConnectionsDialog(p_editor) );
-	add_child(connect_dialog);
-	connect_dialog->set_undoredo(&editor_data->get_undo_redo());
+	//connect_dialog = memnew( ConnectionsDialog(p_editor) );
+	//add_child(connect_dialog);
+	//connect_dialog->set_undoredo(&editor_data->get_undo_redo());
 
 	script_create_dialog = memnew( ScriptCreateDialog );
 	add_child(script_create_dialog);

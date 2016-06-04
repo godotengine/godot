@@ -87,7 +87,7 @@ class SceneTreeDock : public VBoxContainer {
 	EditorSelection *editor_selection;
 
 	GroupsEditor *groups_editor;
-	ConnectionsDialog *connect_dialog;
+	//ConnectionsDialog *connect_dialog;
 	ScriptCreateDialog *script_create_dialog;
 	AcceptDialog *accept;
 	ConfirmationDialog *delete_dialog;

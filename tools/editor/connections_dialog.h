@@ -95,10 +95,11 @@ public:
 
 };
 
-class ConnectionsDialog : public ConfirmationDialog {
+class ConnectionsDock : public VBoxContainer {
 
-	OBJ_TYPE( ConnectionsDialog , ConfirmationDialog );
+	OBJ_TYPE( ConnectionsDock , VBoxContainer );
 
+	Button *connect_button;
 	EditorNode *editor;
 	Node *node;
 	Tree *tree;
@@ -114,7 +115,7 @@ class ConnectionsDialog : public ConfirmationDialog {
 
 protected:
 
-	virtual void ok_pressed();
+	void _connect_pressed();
 	void _notification(int p_what);
 	static void _bind_methods();
 public:
@@ -124,8 +125,8 @@ public:
 	void set_node(Node* p_node);
 	String get_selected_type();
 
-	ConnectionsDialog(EditorNode *p_editor=NULL);
-	~ConnectionsDialog();
+	ConnectionsDock(EditorNode *p_editor=NULL);
+	~ConnectionsDock();
 
 };
 
