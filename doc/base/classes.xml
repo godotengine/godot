@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="2.0.2.stable.custom_build" name="Engine Types">
+<doc version="2.0.3.stable.custom_build" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 	Built-in GDScript functions.
@@ -205,7 +205,7 @@
 			Exponential logarithm.
 			</description>
 		</method>
-		<method name="isnan">
+		<method name="is_nan">
 			<return type="float">
 			</return>
 			<argument index="0" name="s" type="float">
@@ -214,7 +214,7 @@
 			Return true if the float is not a number.
 			</description>
 		</method>
-		<method name="isinf">
+		<method name="is_inf">
 			<return type="float">
 			</return>
 			<argument index="0" name="s" type="float">
@@ -2098,13 +2098,13 @@
 	</methods>
 	<members>
 		<member name="pos" type="Vector3">
-		Position (starting corner).
+			Position (starting corner).
 		</member>
 		<member name="size" type="Vector3">
-		Size from position to end.
+			Size from position to end.
 		</member>
 		<member name="end" type="Vector3">
-		Ending corner.
+			Ending corner.
 		</member>
 	</members>
 	<constants>
@@ -5123,13 +5123,13 @@
 	</methods>
 	<constants>
 		<constant name="COPY_MODE_DISABLED" value="0">
-		Disables the buffering mode. This means the BackBufferCopy node will directly use the portion of screen it covers.
+			Disables the buffering mode. This means the BackBufferCopy node will directly use the portion of screen it covers.
 		</constant>
 		<constant name="COPY_MODE_RECT" value="1">
-		Sets the copy mode to a region.
+			Sets the copy mode to a region.
 		</constant>
 		<constant name="COPY_MODE_VIEWPORT" value="2">
-		Sets the copy mode to the entire screen.
+			Sets the copy mode to the entire screen.
 		</constant>
 	</constants>
 </class>
@@ -8014,37 +8014,37 @@
 	</methods>
 	<members>
 		<member name="r" type="float">
-		Red (0 to 1)
+			Red (0 to 1)
 		</member>
 		<member name="g" type="float">
-		Green (0 to 1)
+			Green (0 to 1)
 		</member>
 		<member name="b" type="float">
-		Blue (0 to 1)
+			Blue (0 to 1)
 		</member>
 		<member name="a" type="float">
-		Alpha (0 to 1)
+			Alpha (0 to 1)
 		</member>
 		<member name="h" type="float">
-		Hue (0 to 1)
+			Hue (0 to 1)
 		</member>
 		<member name="s" type="float">
-		Saturation (0 to 1)
+			Saturation (0 to 1)
 		</member>
 		<member name="v" type="float">
-		Value (0 to 1)
+			Value (0 to 1)
 		</member>
 		<member name="r8" type="int">
-		Red (0 to 255)
+			Red (0 to 255)
 		</member>
 		<member name="g8" type="int">
-		Green (0 to 255)
+			Green (0 to 255)
 		</member>
 		<member name="b8" type="int">
-		Blue (0 to 255)
+			Blue (0 to 255)
 		</member>
 		<member name="a8" type="int">
-		Alpha (0 to 255)
+			Alpha (0 to 255)
 		</member>
 	</members>
 	<constants>
@@ -16948,7 +16948,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="float">
 			</return>
 			<description>
-			Return the Exponential Shadow Multiplier (ESM) value of the Light2D. 
+			Return the Exponential Shadow Multiplier (ESM) value of the Light2D.
 			</description>
 		</method>
 		<method name="set_shadow_color">
@@ -16968,16 +16968,16 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</methods>
 	<constants>
 		<constant name="MODE_ADD" value="0">
-		Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behaviour of a light.
+			Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behaviour of a light.
 		</constant>
 		<constant name="MODE_SUB" value="1">
-		Substract the value of pixels corresponding to the Light2D to the values of pixels under it, resulting in inversed light effect.
+			Substract the value of pixels corresponding to the Light2D to the values of pixels under it, resulting in inversed light effect.
 		</constant>
 		<constant name="MODE_MIX" value="2">
-		Mix the value of pixels corresponding to the Light2D to the values of pixels under it by linear interpolation.
+			Mix the value of pixels corresponding to the Light2D to the values of pixels under it by linear interpolation.
 		</constant>
 		<constant name="MODE_MASK" value="3">
-		The light texture of the Light2D is used as a mask, hiding or revealing parts of the screen underneath depending on the value of each pixel of the light (mask) texture.
+			The light texture of the Light2D is used as a mask, hiding or revealing parts of the screen underneath depending on the value of each pixel of the light (mask) texture.
 		</constant>
 	</constants>
 </class>
@@ -28163,13 +28163,13 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="pos" type="Vector2">
-		Position (starting corner).
+			Position (starting corner).
 		</member>
 		<member name="size" type="Vector2">
-		Size from position to end.
+			Size from position to end.
 		</member>
 		<member name="end" type="Vector2">
-		Ending corner.
+			Ending corner.
 		</member>
 	</members>
 	<constants>
@@ -29320,7 +29320,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<description>
-		    Return the current axis lock of the body. One of AXIS_LOCK_* enum.
+			Return the current axis lock of the body. One of AXIS_LOCK_* enum.
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
@@ -29382,13 +29382,13 @@ This method controls whether the position between two cached points is interpola
 	</signals>
 	<constants>
 		<constant name="MODE_STATIC" value="1">
-		Static mode. The body behaves like a [StaticBody], and can only move by user code.
+			Static mode. The body behaves like a [StaticBody], and can only move by user code.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3">
-		Kinematic body. The body behaves like a [KinematicBody], and can only move by user code.
+			Kinematic body. The body behaves like a [KinematicBody], and can only move by user code.
 		</constant>
 		<constant name="MODE_RIGID" value="0">
-		Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
+			Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
 		</constant>
 		<constant name="MODE_CHARACTER" value="2">
 		</constant>
@@ -36276,11 +36276,11 @@ This method controls whether the position between two cached points is interpola
 		</theme_item>
 		<theme_item name="symbol_color" type="Color">
 		</theme_item>
-		<theme_item name="cursor_color" type="Color">
-		</theme_item>
 		<theme_item name="selection_color" type="Color">
 		</theme_item>
 		<theme_item name="completion_existing" type="Color">
+		</theme_item>
+		<theme_item name="caret_color" type="Color">
 		</theme_item>
 		<theme_item name="breakpoint_color" type="Color">
 		</theme_item>
@@ -38052,10 +38052,10 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="basis" type="Matrix3">
-		The basis contains 3 [Vector3]. X axis, Y axis, and Z axis.
+			The basis contains 3 [Vector3]. X axis, Y axis, and Z axis.
 		</member>
 		<member name="origin" type="Vector3">
-		The origin of the transform. Which is the translation offset.
+			The origin of the transform. Which is the translation offset.
 		</member>
 	</members>
 	<constants>
@@ -39757,16 +39757,16 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="x" type="float">
-		X component of the vector.
+			X component of the vector.
 		</member>
 		<member name="y" type="float">
-		Y component of the vector.
+			Y component of the vector.
 		</member>
 		<member name="width" type="float">
-		Width of the vector (Same as X).
+			Width of the vector (Same as X).
 		</member>
 		<member name="height" type="float">
-		Height of the vector (Same as Y).
+			Height of the vector (Same as Y).
 		</member>
 	</members>
 	<constants>
@@ -40010,13 +40010,13 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<members>
 		<member name="x" type="float">
-		X component of the vector.
+			X component of the vector.
 		</member>
 		<member name="y" type="float">
-		Y component of the vector.
+			Y component of the vector.
 		</member>
 		<member name="z" type="float">
-		Z component of the vector.
+			Z component of the vector.
 		</member>
 	</members>
 	<constants>
@@ -40886,10 +40886,10 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<constants>
 		<constant name="ENABLER_FREEZE_BODIES" value="1">
-		This enabler will freeze [RigidBody] nodes.
+			This enabler will freeze [RigidBody] nodes.
 		</constant>
 		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0">
-		This enabler will pause [AnimationPlayer] nodes.
+			This enabler will pause [AnimationPlayer] nodes.
 		</constant>
 		<constant name="ENABLER_MAX" value="2">
 		</constant>
@@ -40924,19 +40924,19 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<constants>
 		<constant name="ENABLER_FREEZE_BODIES" value="1">
-		This enabler will freeze [RigidBody2D] nodes.
+			This enabler will freeze [RigidBody2D] nodes.
 		</constant>
 		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0">
-		This enabler will pause [AnimationPlayer] nodes.
+			This enabler will pause [AnimationPlayer] nodes.
 		</constant>
 		<constant name="ENABLER_PAUSE_PARTICLES" value="2">
-		This enabler will stop [Particles2D] nodes.
+			This enabler will stop [Particles2D] nodes.
 		</constant>
 		<constant name="ENABLER_PARENT_PROCESS" value="3">
-		This enabler will stop the parent's _process function.
+			This enabler will stop the parent's _process function.
 		</constant>
 		<constant name="ENABLER_PARENT_FIXED_PROCESS" value="4">
-		This enabler will stop the parent's _fixed_process function.
+			This enabler will stop the parent's _fixed_process function.
 		</constant>
 		<constant name="ENABLER_MAX" value="5">
 		</constant>
