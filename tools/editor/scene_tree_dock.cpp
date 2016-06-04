@@ -271,8 +271,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			//if (!_validate_no_foreign())
 			//	break;
-			groups_editor->set_current(current);
-			groups_editor->popup_centered_ratio();
+			//groups_editor->set_current(current);
+			//groups_editor->popup_centered_ratio();
 		} break;
 		case TOOL_SCRIPT: {
 
@@ -1685,8 +1685,8 @@ void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
 		menu->add_icon_item(get_icon("Instance","EditorIcons"),TTR("Instance Child Scene"),TOOL_INSTANCE);
 		menu->add_separator();
 		menu->add_icon_item(get_icon("Reload","EditorIcons"),TTR("Change Type"),TOOL_REPLACE);
-		menu->add_separator();
-		menu->add_icon_item(get_icon("Groups","EditorIcons"),TTR("Edit Groups"),TOOL_GROUP);
+		//menu->add_separator(); moved to their own dock
+		//menu->add_icon_item(get_icon("Groups","EditorIcons"),TTR("Edit Groups"),TOOL_GROUP);
 		//menu->add_icon_item(get_icon("Connect","EditorIcons"),TTR("Edit Connections"),TOOL_CONNECT);
 		menu->add_separator();
 		menu->add_icon_item(get_icon("Script","EditorIcons"),TTR("Add Script"),TOOL_SCRIPT);
@@ -1820,9 +1820,9 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	add_child(create_dialog);
 	create_dialog->connect("create",this,"_create");
 
-	groups_editor = memnew( GroupsEditor );
-	add_child(groups_editor);
-	groups_editor->set_undo_redo(&editor_data->get_undo_redo());
+	//groups_editor = memnew( GroupsEditor );
+	//add_child(groups_editor);
+	//groups_editor->set_undo_redo(&editor_data->get_undo_redo());
 
 	//connect_dialog = memnew( ConnectionsDialog(p_editor) );
 	//add_child(connect_dialog);

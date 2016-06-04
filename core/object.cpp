@@ -1383,6 +1383,24 @@ void Object::get_signal_connection_list(const StringName& p_signal,List<Connecti
 
 }
 
+bool Object::has_persistent_signal_connections() const {
+
+	const StringName *S=NULL;
+
+	while((S=signal_map.next(S))) {
+
+		const Signal *s=&signal_map[*S];
+
+		for(int i=0;i<s->slot_map.size();i++) {
+
+			if (s->slot_map.getv(i).conn.flags&CONNECT_PERSIST)
+				return true;
+		}
+	}
+
+	return false;
+}
+
 
 Error Object::connect(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method,const Vector<Variant>& p_binds,uint32_t p_flags) {
 

@@ -516,6 +516,9 @@ void ConnectionsDock::_connect() {
 	undo_redo->add_undo_method(node,"disconnect",signal,target,dst_method);
 	undo_redo->add_do_method(this,"update_tree");
 	undo_redo->add_undo_method(this,"update_tree");
+	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(),"update_tree"); //to force redraw of scene tree
+	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(),"update_tree"); //to force redraw of scene tree
+
 	undo_redo->commit_action();
 
 
@@ -577,6 +580,8 @@ void ConnectionsDock::_connect_pressed() {
 		undo_redo->add_undo_method(node,"connect",c.signal,c.target,c.method,Vector<Variant>(),c.flags);
 		undo_redo->add_do_method(this,"update_tree");
 		undo_redo->add_undo_method(this,"update_tree");
+		undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(),"update_tree"); //to force redraw of scene tree
+		undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(),"update_tree"); //to force redraw of scene tree
 		undo_redo->commit_action();
 
 		c.source->disconnect(c.signal,c.target,c.method);
@@ -629,7 +634,7 @@ struct _ConnectionsDockMethodInfoSort {
 
 void ConnectionsDock::update_tree() {
 
-	tree->clear();
+	tree->clear();	
 
 	if (!node)
 		return;

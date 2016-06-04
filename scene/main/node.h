@@ -223,6 +223,7 @@ public:
 	};
 
 	void get_groups(List<GroupInfo> *p_groups) const;
+	bool has_persistent_groups() const;
 
 	void move_child(Node *p_child,int p_pos);
 	void raise();

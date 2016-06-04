@@ -1533,7 +1533,7 @@ void EditorNode::push_item(Object *p_object,const String& p_property) {
 
 	if (!p_object) {
 		property_editor->edit(NULL);
-		connections_dock->set_node(NULL);
+		node_dock->set_node(NULL);
 		scene_tree_dock->set_selected(NULL);
 		return;
 	}
@@ -1679,7 +1679,7 @@ void EditorNode::_edit_current() {
 
 		scene_tree_dock->set_selected(NULL);
 		property_editor->edit( NULL );
-		connections_dock->set_node(NULL);
+		node_dock->set_node(NULL);
 		object_menu->set_disabled(true);
 
 		_display_top_editors(false);
@@ -1699,7 +1699,7 @@ void EditorNode::_edit_current() {
 		ERR_FAIL_COND(!current_res);
 		scene_tree_dock->set_selected(NULL);
 		property_editor->edit( current_res );
-		connections_dock->set_node(NULL);
+		node_dock->set_node(NULL);
 		object_menu->set_disabled(false);
 
 		//resources_dock->add_resource(Ref<Resource>(current_res));
@@ -1716,7 +1716,7 @@ void EditorNode::_edit_current() {
 
 
 		property_editor->edit( current_node );
-		connections_dock->set_node( current_node );
+		node_dock->set_node( current_node );
 		scene_tree_dock->set_selected(current_node);
 		object_menu->get_popup()->clear();
 
@@ -1725,7 +1725,7 @@ void EditorNode::_edit_current() {
 	} else {
 
 		property_editor->edit( current_obj );
-		connections_dock->set_node(NULL);
+		node_dock->set_node(NULL);
 		//scene_tree_dock->set_selected(current_node);
 		//object_menu->get_popup()->clear();
 
@@ -3822,6 +3822,10 @@ ScenesDock *EditorNode::get_scenes_dock() {
 
 	return scenes_dock;
 }
+SceneTreeDock *EditorNode::get_scene_tree_dock() {
+
+	return scene_tree_dock;
+}
 
 void EditorNode::_instance_request(const String& p_path){
 
@@ -5793,7 +5797,7 @@ EditorNode::EditorNode() {
 	p->add_check_item(TTR("Deploy with Remote Debug"),RUN_DEPLOY_REMOTE_DEBUG);
 	p->set_item_tooltip(p->get_item_count()-1,TTR("When exporting or deploying, the resulting executable will attempt to connect to the IP of this computer in order to be debugged."));
 	p->add_check_item(TTR("Small Deploy with Network FS"),RUN_FILE_SERVER);
-	p->set_item_tooltip(p->get_item_count()-1,TTR("When this option is enabled, export or deploy will produce a minimal executable.\nThe filesystem will be provided from the project by the editor over the network. On Android, deploy will use the USB cable for faster performance. This option speeds up testing for games with a large footprint."));
+	p->set_item_tooltip(p->get_item_count()-1,TTR("When this option is enabled, export or deploy will produce a minimal executable.\nThe filesystem will be provided from the project by the editor over the network.\nOn Android, deploy will use the USB cable for faster performance. This option speeds up testing for games with a large footprint."));
 	p->add_separator();
 	p->add_check_item(TTR("Visible Collision Shapes"),RUN_DEBUG_COLLISONS);
 	p->set_item_tooltip(p->get_item_count()-1,TTR("Collision shapes and raycast nodes (for 2D and 3D) will be visible on the running game if this option is turned on."));
@@ -5801,9 +5805,9 @@ EditorNode::EditorNode() {
 	p->set_item_tooltip(p->get_item_count()-1,TTR("Navigation meshes and polygons will be visible on the running game if this option is turned on."));
 	p->add_separator();
 	p->add_check_item(TTR("Sync Scene Changes"),RUN_LIVE_DEBUG);
-	p->set_item_tooltip(p->get_item_count()-1,TTR("When this option is turned on, any changes made to the scene in the editor will be replicated in the running game.\nThis works remotely, and is more efficient with networked filesystem."));
+	p->set_item_tooltip(p->get_item_count()-1,TTR("When this option is turned on, any changes made to the scene in the editor will be replicated in the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
 	p->add_check_item(TTR("Sync Script Changes"),RUN_RELOAD_SCRIPTS);
-	p->set_item_tooltip(p->get_item_count()-1,TTR("When this option is turned on, any script that is saved will be reloaded on the running game.\nThis works remotely, and is more efficient with networked filesystem."));
+	p->set_item_tooltip(p->get_item_count()-1,TTR("When this option is turned on, any script that is saved will be reloaded on the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
 	p->connect("item_pressed",this,"_menu_option");
 
 	/*
@@ -6070,9 +6074,9 @@ EditorNode::EditorNode() {
 	property_editor->set_undo_redo(&editor_data.get_undo_redo());
 
 
-	connections_dock = memnew( ConnectionsDock(this) );
-	connections_dock->set_undoredo(&editor_data.get_undo_redo());
-	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(connections_dock);
+	node_dock = memnew( NodeDock );
+	//node_dock->set_undoredo(&editor_data.get_undo_redo());
+	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(node_dock);
 
 	scenes_dock = memnew( ScenesDock(this) );
 	scenes_dock->set_name(TTR("FileSystem"));
