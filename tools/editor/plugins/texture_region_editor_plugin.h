@@ -37,6 +37,7 @@
 #include "tools/editor/editor_node.h"
 #include "scene/2d/sprite.h"
 #include "scene/gui/patch_9_frame.h"
+#include "scene/resources/style_box.h"
 
 class TextureRegionEditor : public HBoxContainer {
 
@@ -80,6 +81,8 @@ class TextureRegionEditor : public HBoxContainer {
 	String node_type;
 	Patch9Frame *node_patch9;
 	Sprite *node_sprite;
+	StyleBoxTexture *obj_styleBox;
+
 	int editing_region;
 	Rect2 rect;
 	Rect2 rect_prev;
@@ -102,14 +105,13 @@ class TextureRegionEditor : public HBoxContainer {
 protected:
 
 	void _notification(int p_what);
-	void _node_removed(Node *p_node);
+	void _node_removed(Object *p_obj);
 	static void _bind_methods();
 
 	Vector2 snap_point(Vector2 p_target) const;
 
 public:
 
-	void edit();
 	void _edit_node(int tex_region);
 	void _edit_region();
 	void _edit_margin();
@@ -117,7 +119,7 @@ public:
 	void _region_input(const InputEvent &p_input);
 	void _scroll_changed(float);
 
-	void edit(Node *p_sprite);
+	void edit(Object *p_obj);
 	TextureRegionEditor(EditorNode* p_editor);
 
 };

@@ -138,7 +138,7 @@ void StyleBoxTexture::draw(RID p_canvas_item,const Rect2& p_rect) const {
 	r.pos.y-=expand_margin[MARGIN_TOP];
 	r.size.x+=expand_margin[MARGIN_LEFT]+expand_margin[MARGIN_RIGHT];
 	r.size.y+=expand_margin[MARGIN_TOP]+expand_margin[MARGIN_BOTTOM];
-	VisualServer::get_singleton()->canvas_item_add_style_box( p_canvas_item,r,Rect2(),texture->get_rid(),Vector2(margin[MARGIN_LEFT],margin[MARGIN_TOP]),Vector2(margin[MARGIN_RIGHT],margin[MARGIN_BOTTOM]),draw_center);
+	VisualServer::get_singleton()->canvas_item_add_style_box( p_canvas_item,r,region_rect,texture->get_rid(),Vector2(margin[MARGIN_LEFT],margin[MARGIN_TOP]),Vector2(margin[MARGIN_RIGHT],margin[MARGIN_BOTTOM]),draw_center);
 }
 
 void StyleBoxTexture::set_draw_center(bool p_draw) {
@@ -175,6 +175,20 @@ float StyleBoxTexture::get_expand_margin_size(Margin p_expand_margin) const {
 	return expand_margin[p_expand_margin];
 }
 
+void StyleBoxTexture::set_region_rect(const Rect2& p_region_rect) {
+
+	if (region_rect==p_region_rect)
+		return;
+
+	region_rect=p_region_rect;
+	emit_changed();
+}
+
+Rect2 StyleBoxTexture::get_region_rect() const {
+
+	return region_rect;
+}
+
 
 void StyleBoxTexture::_bind_methods() {
 
@@ -187,10 +201,14 @@ void StyleBoxTexture::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_expand_margin_size","margin","size"),&StyleBoxTexture::set_expand_margin_size);
 	ObjectTypeDB::bind_method(_MD("get_expand_margin_size","margin"),&StyleBoxTexture::get_expand_margin_size);
 
+	ObjectTypeDB::bind_method(_MD("set_region_rect","region"),&StyleBoxTexture::set_region_rect);
+	ObjectTypeDB::bind_method(_MD("get_region_rect"),&StyleBoxTexture::get_region_rect);
+
 	ObjectTypeDB::bind_method(_MD("set_draw_center","enable"),&StyleBoxTexture::set_draw_center);
 	ObjectTypeDB::bind_method(_MD("get_draw_center"),&StyleBoxTexture::get_draw_center);
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture" ), _SCS("set_texture"),_SCS("get_texture") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::RECT2, "region_rect"), _SCS("set_region_rect"),_SCS("get_region_rect"));
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "margin/left", PROPERTY_HINT_RANGE,"0,2048,1" ), _SCS("set_margin_size"),_SCS("get_margin_size"), MARGIN_LEFT );
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "margin/right", PROPERTY_HINT_RANGE,"0,2048,1" ), _SCS("set_margin_size"),_SCS("get_margin_size"), MARGIN_RIGHT );
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "margin/top", PROPERTY_HINT_RANGE,"0,2048,1" ), _SCS("set_margin_size"),_SCS("get_margin_size"), MARGIN_TOP);
