@@ -8,8 +8,8 @@ from os.path import isfile, join
 import subprocess
 
 SVGS_PATH = 'source/'
-OUT_DIR = 'out/'
-DPI = 90
+OUT_DIR = '2x/'
+DPI = 180
 
 
 def export_all(svgs_path=SVGS_PATH, out_dir=OUT_DIR, dpi=DPI):
