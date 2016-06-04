@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import codecs
 import sys
 import xml.etree.ElementTree as ET
 
@@ -32,7 +33,7 @@ def ul_string(str,ul):
 
 def make_class_list(class_list, columns):
 
-	f = open('class_list.rst', 'wb')
+	f = codecs.open('class_list.rst', 'wb', 'utf-8')
 	prev = 0
 	col_max = len(class_list) / columns + 1
 	print ('col max is ', col_max)
@@ -347,7 +348,7 @@ def make_rst_class(node):
 
 	name = node.attrib['name']
 
-	f = open("class_"+name.lower() + '.rst', 'wb')
+	f = codecs.open("class_"+name.lower() + '.rst', 'wb', 'utf-8')
 
 	# Warn contributors not to edit this file directly
 	f.write(".. Generated automatically by doc/tools/makerst.py in Godot's source tree.\n")
