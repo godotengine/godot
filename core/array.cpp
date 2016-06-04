@@ -155,6 +155,37 @@ int Array::find(const Variant& p_value) const {
 	return _p->array.find(p_value);
 }
 
+int Array::find_last(const Variant& p_value) const {
+
+	if(_p->array.size() == 0)
+		return -1;
+
+	for (int i=_p->array.size()-1; i>=0; i--) {
+
+		if(_p->array[i] == p_value){
+			return i;
+		};
+	};
+
+	return -1;
+}
+
+int Array::count(const Variant& p_value) const {
+
+	if(_p->array.size() == 0)
+		return 0;
+
+	int amount=0;
+	for (int i=0; i<_p->array.size(); i++) {
+
+		if(_p->array[i] == p_value){
+			amount++;
+		};
+	};
+
+	return amount;
+}
+
 void Array::remove(int p_pos) {
 
 	_p->array.remove(p_pos);
