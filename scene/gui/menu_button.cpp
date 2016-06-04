@@ -123,7 +123,7 @@ MenuButton::MenuButton() {
 
 
 	set_flat(true);
-	set_focus_mode(FOCUS_NONE);
+	set_enabled_focus_mode(FOCUS_NONE);
 	popup = memnew( PopupMenu );
 	popup->hide();
 	add_child(popup);

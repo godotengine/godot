@@ -289,7 +289,7 @@ void BaseButton::set_disabled(bool p_disabled) {
 	if (p_disabled)
 		set_focus_mode(FOCUS_NONE);
 	else
-		set_focus_mode(FOCUS_ALL);
+		set_focus_mode(enabled_focus_mode);
 }
 
 bool BaseButton::is_disabled() const {
@@ -377,7 +377,18 @@ bool BaseButton::get_click_on_press() const {
 	return status.click_on_press;
 }
 
+void BaseButton::set_enabled_focus_mode(FocusMode p_mode) {
 
+	enabled_focus_mode = p_mode;
+	if (!status.disabled) {
+		set_focus_mode( p_mode );
+	}
+}
+
+Control::FocusMode BaseButton::get_enabled_focus_mode() const {
+
+	return enabled_focus_mode;
+}
 
 
 void BaseButton::_bind_methods() {
@@ -393,6 +404,8 @@ void BaseButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_click_on_press","enable"),&BaseButton::set_click_on_press);
 	ObjectTypeDB::bind_method(_MD("get_click_on_press"),&BaseButton::get_click_on_press);
 	ObjectTypeDB::bind_method(_MD("get_draw_mode"),&BaseButton::get_draw_mode);
+	ObjectTypeDB::bind_method(_MD("set_enabled_focus_mode","mode"),&BaseButton::set_enabled_focus_mode);
+	ObjectTypeDB::bind_method(_MD("get_enabled_focus_mode"),&BaseButton::get_enabled_focus_mode);
 
 	BIND_VMETHOD(MethodInfo("_pressed"));
 	BIND_VMETHOD(MethodInfo("_toggled",PropertyInfo(Variant::BOOL,"pressed")));
@@ -404,6 +417,7 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "toggle_mode"), _SCS("set_toggle_mode"), _SCS("is_toggle_mode"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "is_pressed"), _SCS("set_pressed"), _SCS("is_pressed"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "click_on_press"), _SCS("set_click_on_press"), _SCS("get_click_on_press"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT,"enabled_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All" ), _SCS("set_enabled_focus_mode"), _SCS("get_enabled_focus_mode") );
 
 
 	BIND_CONSTANT( DRAW_NORMAL );
@@ -424,6 +438,7 @@ BaseButton::BaseButton() {
 	status.click_on_press=false;
 	status.pressing_button=0;
 	set_focus_mode( FOCUS_ALL );
+	enabled_focus_mode = FOCUS_ALL;
 	group=NULL;
 
 

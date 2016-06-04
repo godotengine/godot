@@ -2266,6 +2266,7 @@ void Control::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_area_as_parent_rect","margin"),&Control::set_area_as_parent_rect,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("show_modal","exclusive"),&Control::show_modal,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("set_focus_mode","mode"),&Control::set_focus_mode);
+	ObjectTypeDB::bind_method(_MD("get_focus_mode"),&Control::get_focus_mode);
 	ObjectTypeDB::bind_method(_MD("has_focus"),&Control::has_focus);
 	ObjectTypeDB::bind_method(_MD("grab_focus"),&Control::grab_focus);
 	ObjectTypeDB::bind_method(_MD("release_focus"),&Control::release_focus);
