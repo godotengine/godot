@@ -36,6 +36,7 @@ void InputMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("has_action","action"),&InputMap::has_action);
 	ObjectTypeDB::bind_method(_MD("get_action_id","action"),&InputMap::get_action_id);
 	ObjectTypeDB::bind_method(_MD("get_action_from_id","id"),&InputMap::get_action_from_id);
+	ObjectTypeDB::bind_method(_MD("get_actions"),&InputMap::_get_actions);
 	ObjectTypeDB::bind_method(_MD("add_action","action"),&InputMap::add_action);
 	ObjectTypeDB::bind_method(_MD("erase_action","action"),&InputMap::erase_action);
 
@@ -73,6 +74,35 @@ StringName InputMap::get_action_from_id(int p_id) const {
 
 	ERR_FAIL_COND_V(!input_id_map.has(p_id),StringName());
 	return input_id_map[p_id];
+}
+
+Array InputMap::_get_actions() {
+
+	Array ret;
+	List<StringName> actions = get_actions();
+	if(actions.empty())
+		return ret;
+
+	for(const List<StringName>::Element *E=actions.front();E;E=E->next()) {
+
+		ret.push_back(E->get());
+	}
+
+	return ret;
+}
+
+List<StringName> InputMap::get_actions() const {
+
+	List<StringName> actions = List<StringName>();
+	if(input_map.empty()){
+		return actions;
+	}
+
+	for (Map<StringName, Action>::Element *E=input_map.front();E;E=E->next()) {
+		actions.push_back(E->key());
+	}
+
+	return actions;
 }
 
 List<InputEvent>::Element *InputMap::_find_event(List<InputEvent> &p_list,const InputEvent& p_event) const {
