@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_save.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_save.svg">
   <defs
      id="defs4" />
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="11.313708"
-     inkscape:cx="16.296301"
-     inkscape:cy="16.595685"
+     inkscape:cx="2.0254101"
+     inkscape:cy="14.320474"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -59,7 +59,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -67,12 +67,11 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 6.1818182,1024.3622 c -1.2049852,0 -2.1818186,0.9768 -2.1818182,2.1818 l 0,19.6364 c -4e-7,1.205 0.976833,2.1818 2.1818182,2.1818 l 19.6363638,0 c 1.204985,0 2.181818,-0.9768 2.181818,-2.1818 l 0,-16.3637 -5.454545,-5.4545 z m 0.8181818,3 13,0 0,7 -13,0 z m 9,9 c 2.409951,0 4.363606,1.9536 4.363636,4.3636 2.5e-5,2.41 -1.953646,4.3637 -4.363636,4.3637 -2.40999,0 -4.363661,-1.9537 -4.363636,-4.3637 3e-5,-2.41 1.953685,-4.3636 4.363636,-4.3636 z"
-       id="rect4234"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ssssssccscccccsssss" />
+       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 3 1 A 2 2 0 0 0 1 3 L 1 13 A 2 2 0 0 0 3 15 L 13 15 A 2 2 0 0 0 15 13 L 15 5 L 11 1 L 3 1 z M 3 3 L 11 3 L 11 7 L 3 7 L 3 3 z M 8 9 A 2 2 0 0 1 10 11 A 2 2 0 0 1 8 13 A 2 2 0 0 1 6 11 A 2 2 0 0 1 8 9 z "
+       transform="translate(0,1036.3622)"
+       id="rect4135" />
   </g>
 </svg>

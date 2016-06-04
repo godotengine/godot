@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_remove.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_remove.svg">
   <defs
      id="defs4" />
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="22.627416"
-     inkscape:cx="13.549314"
-     inkscape:cy="13.811435"
+     inkscape:cx="7.6907159"
+     inkscape:cy="8.3329344"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -59,7 +59,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -67,18 +67,25 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 13,1023.3622 0,2 -8,0 0,3 22,0 0,-3 -8,0 0,-2 -6,0 z"
-       id="path4143"
-       inkscape:connector-curvature="0" />
-    <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 7,10 0,16 c 0,1.656854 1.3431458,3 3,3 l 12,0 c 1.656854,0 3,-1.343146 3,-3 l 0,-16 z m 3,3 2,0 0,13 -2,0 z m 5,0 2,0 0,13 -2,0 z m 5,0 2,0 0,13 -2,0 z"
-       transform="translate(0,1020.3622)"
-       id="path4141"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cssssccccccccccccccccc" />
+       style="opacity:1;fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 2 5 L 2 13 A 2 2 0 0 0 4 15 L 12 15 A 2 2 0 0 0 14 13 L 14 5 L 2 5 z M 3 7 L 5 7 L 5 13 L 3 13 L 3 7 z M 7 7 L 9 7 L 9 13 L 7 13 L 7 7 z M 11 7 L 13 7 L 13 13 L 11 13 L 11 7 z "
+       transform="translate(0,1036.3622)"
+       id="rect4136" />
+    <rect
+       y="1038.3622"
+       x="1"
+       height="2.0000174"
+       width="14"
+       id="rect4138"
+       style="opacity:1;fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <rect
+       style="opacity:1;fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect4140"
+       width="6"
+       height="2.0000174"
+       x="5"
+       y="1037.3622" />
   </g>
 </svg>

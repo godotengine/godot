@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="32"
+   height="32"
+   viewBox="0 0 32 32"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_dependency_changed_hl.png"
+   inkscape:export-xdpi="45"
+   inkscape:export-ydpi="45"
+   sodipodi:docname="icon_gizmo_directional_light.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="11.313708"
+     inkscape:cx="13.90442"
+     inkscape:cy="22.349302"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     units="px"
+     inkscape:snap-bbox="true"
+     inkscape:bbox-paths="true"
+     inkscape:bbox-nodes="true"
+     inkscape:snap-bbox-edge-midpoints="true"
+     inkscape:snap-bbox-midpoints="false"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-center="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3336"
+       empspacing="4" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-1020.3622)">
+    <circle
+       style="opacity:1;fill:#f7f5cf;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path4156"
+       cx="16"
+       cy="1036.3622"
+       r="7.0000172" />
+    <rect
+       style="opacity:1;fill:#f7f5cf;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect4169"
+       width="4"
+       height="5.0000172"
+       x="14"
+       y="1021.3622"
+       rx="0"
+       ry="0"
+       inkscape:transform-center-y="-12.500009" />
+    <rect
+       inkscape:transform-center-y="-8.8388501"
+       ry="0"
+       rx="0"
+       y="706.505"
+       x="742.13245"
+       height="5.0000172"
+       width="4"
+       id="rect4171"
+       style="opacity:1;fill:#f7f5cf;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       transform="matrix(0.70710678,0.70710678,-0.70710678,0.70710678,0,0)"
+       inkscape:transform-center-x="-8.8388459" />
+    <rect
+       inkscape:transform-center-x="-12.500018"
+       transform="matrix(0,1,-1,0,0,0)"
+       style="opacity:1;fill:#f7f5cf;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect4173"
+       width="4"
+       height="5.0000172"
+       x="1034.3622"
+       y="-31.000027"
+       rx="0"
+       ry="0"
+       inkscape:transform-center-y="-1.754751e-05" />
+    <rect
+       inkscape:transform-center-y="8.8388073"
+       ry="0"
+       rx="0"
+       y="-759.13245"
+       x="719.505"
+       height="5.0000172"
+       width="4"
+       id="rect4175"
+       style="opacity:1;fill:#f7f5cf;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       transform="matrix(-0.70710678,0.70710678,-0.70710678,-0.70710678,0,0)"
+       inkscape:transform-center-x="-8.8388458" />
+    <rect
+       inkscape:transform-center-x="-2.6589615e-05"
+       transform="scale(-1,-1)"
+       style="opacity:1;fill:#f7f5cf;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect4177"
+       width="4"
+       height="5.0000172"
+       x="-18.000027"
+       y="-1051.3622"
+       rx="0"
+       ry="0"
+       inkscape:transform-center-y="12.499974" />
+    <rect
+       inkscape:transform-center-y="8.8388074"
+       ry="0"
+       rx="0"
+       y="-736.505"
+       x="-746.13245"
+       height="5.0000172"
+       width="4"
+       id="rect4179"
+       style="opacity:1;fill:#f7f5cf;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       transform="matrix(-0.70710678,-0.70710678,0.70710678,-0.70710678,0,0)"
+       inkscape:transform-center-x="8.8388116" />
+    <rect
+       inkscape:transform-center-x="12.499964"
+       transform="matrix(0,-1,1,0,0,0)"
+       style="opacity:1;fill:#f7f5cf;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect4181"
+       width="4"
+       height="5.0000172"
+       x="-1038.3622"
+       y="1.0000273"
+       rx="0"
+       ry="0"
+       inkscape:transform-center-y="-1.7409218e-05" />
+    <rect
+       inkscape:transform-center-y="-8.83885"
+       ry="0"
+       rx="0"
+       y="729.13245"
+       x="-723.505"
+       height="5.0000172"
+       width="4"
+       id="rect4183"
+       style="opacity:1;fill:#f7f5cf;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       transform="matrix(0.70710678,-0.70710678,0.70710678,0.70710678,0,0)"
+       inkscape:transform-center-x="8.8388113" />
+  </g>
+</svg>

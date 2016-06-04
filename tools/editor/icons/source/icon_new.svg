@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_new.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_new.svg">
   <defs
      id="defs4" />
@@ -28,11 +28,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="11.313708"
-     inkscape:cx="4.2769908"
-     inkscape:cy="20.326394"
+     inkscape:zoom="31.999999"
+     inkscape:cx="7.9365607"
+     inkscape:cy="9.3818162"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer1-8"
      showgrid="true"
      units="px"
      inkscape:snap-bbox="true"
@@ -59,7 +59,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -67,11 +67,17 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
-    <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 6 4 L 6 28 L 26 28 L 26 12 L 20 12 L 18 12 L 18 10 L 18 4 L 6 4 z M 20 4 L 20 10 L 26 10 L 20 4 z "
-       transform="translate(0,1020.3622)"
-       id="rect4178" />
+     transform="translate(0,-1036.3622)">
+    <g
+       id="layer1-8"
+       inkscape:label="Layer 1"
+       transform="translate(0,-1.6949463e-5)">
+      <path
+         sodipodi:nodetypes="ccccccccccc"
+         inkscape:connector-curvature="0"
+         id="rect4158"
+         d="m 2,1037.3622 0,14 12,0 0,-10 -4,0 0,-4 z m 9,0 0,3 3,0 z"
+         style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    </g>
   </g>
 </svg>
