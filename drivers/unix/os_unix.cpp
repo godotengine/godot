@@ -464,7 +464,7 @@ int OS_Unix::get_processor_count() const {
 
 String OS_Unix::get_data_dir() const {
 
-	String an = Globals::get_singleton()->get("application/name");
+	String an = get_safe_application_name();
 	if (an!="") {
 
 
