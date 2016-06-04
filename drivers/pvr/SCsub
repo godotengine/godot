@@ -12,4 +12,4 @@ pvr_sources = [
 
 env.drivers_sources+=pvr_sources
 
-#env.add_source_files(env.drivers_sources, pvr_sources)
+#env_drivers.add_source_files(env.drivers_sources, pvr_sources)

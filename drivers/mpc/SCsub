@@ -1,4 +1,5 @@
 Import('env')
+Import('env_drivers')
 
 
 mpc_sources = [
@@ -14,8 +15,9 @@ mpc_sources = [
 
 env.drivers_sources+=mpc_sources
 
-env.add_source_files(env.drivers_sources,"*.cpp")
+env_drivers.add_source_files(env.drivers_sources,"*.cpp")
 
-#env.add_source_files(env.drivers_sources, mpc_sources)
+#env_drivers.add_source_files(env.drivers_sources, mpc_sources)
 
+Export('env_drivers')
 Export('env')

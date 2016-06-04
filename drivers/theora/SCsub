@@ -1,4 +1,5 @@
 Import('env')
+Import('env_drivers')
 
 sources = [
 	"theora/analyze.c",
@@ -55,13 +56,13 @@ sources_x86_vc = [
 env.drivers_sources += sources
 
 if (env["x86_opt_gcc"]):
-	env.Append(CCFLAGS=["-DOC_X86_ASM"])
+	env_drivers.Append(CCFLAGS=["-DOC_X86_ASM"])
 	env.drivers_sources += sources_x86
 
 if (env["x86_opt_vc"]):
-	env.Append(CCFLAGS=["-DOC_X86_ASM"])
+	env_drivers.Append(CCFLAGS=["-DOC_X86_ASM"])
 	env.drivers_sources += sources_x86_vc
 
-	
+
 
 
