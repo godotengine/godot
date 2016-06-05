@@ -5770,6 +5770,18 @@
 			Returns focus access mode used when switching between enabled/disabled (see [method Control.set_focus_mode] and [method set_disabled]).
 			</description>
 		</method>
+		<method name="set_shortcut">
+			<argument index="0" name="shortcut" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_shortcut" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="released">
@@ -28472,6 +28484,42 @@ This method controls whether the position between two cached points is interpola
 			Adds an item with a submenu. The submenu is the name of a child PopupMenu node that would be shown when the item is clicked. An id can optionally be provided, but if is isn't provided, one will be created from the index.
 			</description>
 		</method>
+		<method name="add_icon_shortcut">
+			<argument index="0" name="texture" type="Object">
+			</argument>
+			<argument index="1" name="shortcut" type="ShortCut">
+			</argument>
+			<argument index="2" name="id" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_shortcut">
+			<argument index="0" name="shortcut" type="ShortCut">
+			</argument>
+			<argument index="1" name="id" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_icon_check_shortcut">
+			<argument index="0" name="texture" type="Object">
+			</argument>
+			<argument index="1" name="shortcut" type="ShortCut">
+			</argument>
+			<argument index="2" name="id" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_check_shortcut">
+			<argument index="0" name="shortcut" type="ShortCut">
+			</argument>
+			<argument index="1" name="id" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_item_text">
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -28524,6 +28572,14 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<description>
 			Sets whether the item at index "idx" is disabled or not. When it is disabled it can't be selected, or its action invoked.
+			</description>
+		</method>
+		<method name="set_item_shortcut">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="shortcut" type="ShortCut">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_item_submenu">
@@ -28594,6 +28650,14 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<description>
 			Return the accelerator of the item at index "idx". Accelerators are special combinations of keys that activate the item, no matter which control is focused.
+			</description>
+		</method>
+		<method name="get_item_shortcut" qualifiers="const">
+			<return type="ShortCut">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_item_submenu" qualifiers="const">
@@ -34121,6 +34185,48 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			Return a list of the points where this shape would touch another, if a given movement was applied. If there are no collisions, the list is empty.
 			This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="ShortCut" inherits="Resource" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="set_shortcut">
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_shortcut" qualifiers="const">
+			<return type="InputEvent">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_valid" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_shortcut" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_as_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
 			</description>
 		</method>
 	</methods>
