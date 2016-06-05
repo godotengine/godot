@@ -327,56 +327,56 @@ void InputMap::load_default() {
 	InputEvent key;
 	key.type=InputEvent::KEY;
 
-	add_action("input/ui_accept");
+	add_action("ui_accept");
 	key.key.scancode=KEY_RETURN;
-	action_add_event("input/ui_accept",key);
+	action_add_event("ui_accept",key);
 	key.key.scancode=KEY_ENTER;
-	action_add_event("input/ui_accept",key);
+	action_add_event("ui_accept",key);
 	key.key.scancode=KEY_SPACE;
-	action_add_event("input/ui_accept",key);
+	action_add_event("ui_accept",key);
 
-	add_action("input/ui_select");
+	add_action("ui_select");
 	key.key.scancode=KEY_SPACE;
-	action_add_event("input/ui_select",key);
+	action_add_event("ui_select",key);
 
-	add_action("input/ui_cancel");
+	add_action("ui_cancel");
 	key.key.scancode=KEY_ESCAPE;
-	action_add_event("input/ui_cancel",key);
+	action_add_event("ui_cancel",key);
 
-	add_action("input/ui_focus_next");
+	add_action("ui_focus_next");
 	key.key.scancode=KEY_TAB;
-	action_add_event("input/ui_focus_next",key);
+	action_add_event("ui_focus_next",key);
 
-	add_action("input/ui_focus_prev");
+	add_action("ui_focus_prev");
 	key.key.scancode=KEY_TAB;
 	key.key.mod.shift=true;
-	action_add_event("input/ui_focus_prev",key);
+	action_add_event("ui_focus_prev",key);
 	key.key.mod.shift=false;
 
-	add_action("input/ui_left");
+	add_action("ui_left");
 	key.key.scancode=KEY_LEFT;
-	action_add_event("input/ui_left",key);
+	action_add_event("ui_left",key);
 
-	add_action("input/ui_right");
+	add_action("ui_right");
 	key.key.scancode=KEY_RIGHT;
-	action_add_event("input/ui_right",key);
+	action_add_event("ui_right",key);
 
-	add_action("input/ui_up");
+	add_action("ui_up");
 	key.key.scancode=KEY_UP;
-	action_add_event("input/ui_up",key);
+	action_add_event("ui_up",key);
 
-	add_action("input/ui_down");
+	add_action("ui_down");
 	key.key.scancode=KEY_DOWN;
-	action_add_event("input/ui_down",key);
+	action_add_event("ui_down",key);
 
 
-	add_action("input/ui_page_up");
+	add_action("ui_page_up");
 	key.key.scancode=KEY_PAGEUP;
-	action_add_event("input/ui_page_up",key);
+	action_add_event("ui_page_up",key);
 
-	add_action("input/ui_page_down");
+	add_action("ui_page_down");
 	key.key.scancode=KEY_PAGEDOWN;
-	action_add_event("input/ui_page_down",key);
+	action_add_event("ui_page_down",key);
 
 //	set("display/orientation", "landscape");
 
