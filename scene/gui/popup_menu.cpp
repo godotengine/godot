@@ -771,7 +771,7 @@ String PopupMenu::get_item_tooltip(int p_idx) const {
 
 Ref<ShortCut> PopupMenu::get_item_shortcut(int p_idx) const {
 
-	ERR_FAIL_INDEX_V(p_idx,items.size(),"");
+	ERR_FAIL_INDEX_V(p_idx,items.size(),Ref<ShortCut>());
 	return items[p_idx].shortcut;
 }
 
