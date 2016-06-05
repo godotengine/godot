@@ -293,6 +293,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
+	ObjectTypeDB::register_type<ShortCut>();
 	ObjectTypeDB::register_type<Control>();
 //	ObjectTypeDB::register_type<EmptyControl>();
 	ObjectTypeDB::add_compatibility_type("EmptyControl","Control");

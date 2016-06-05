@@ -45,6 +45,7 @@
 #include "io/file_access_memory.h"
 #include "io/translation_loader_po.h"
 #include "io/compression.h"
+#include "os/keyboard.h"
 
 Ref<EditorSettings> EditorSettings::singleton=NULL;
 
@@ -57,6 +58,26 @@ EditorSettings *EditorSettings::get_singleton() {
 bool EditorSettings::_set(const StringName& p_name, const Variant& p_value) {
 
 	_THREAD_SAFE_METHOD_
+
+	if (p_name.operator String()=="shortcuts") {
+
+		Array arr=p_value;
+		ERR_FAIL_COND_V(arr.size() && arr.size()&1,true);
+		print_line("shortcuts: "+Variant(arr).get_construct_string());
+		for(int i=0;i<arr.size();i+=2) {
+
+			String name = arr[i];
+			InputEvent shortcut = arr[i+1];
+
+			Ref<ShortCut> sc;
+			sc.instance();
+			sc->set_shortcut(shortcut);
+			add_shortcut(name,sc);
+		}
+
+		return true;
+	}
+
 	if (p_value.get_type()==Variant::NIL)
 		props.erase(p_name);
 	else {
@@ -73,6 +94,25 @@ bool EditorSettings::_set(const StringName& p_name, const Variant& p_value) {
 bool EditorSettings::_get(const StringName& p_name,Variant &r_ret) const {
 
 	_THREAD_SAFE_METHOD_
+
+	if (p_name.operator String()=="shortcuts") {
+
+		Array arr;
+		for (const Map<String,Ref<ShortCut> >::Element *E=shortcuts.front();E;E=E->next()) {
+
+			Ref<ShortCut> sc=E->get();
+			if (!sc->has_meta("original"))
+				continue; //this came from settings but is not any longer used
+
+			InputEvent original = sc->get_meta("original");
+			if (sc->is_shortcut(original) || (original.type==InputEvent::NONE && sc->get_shortcut().type==InputEvent::NONE))
+				continue; //not changed from default, don't save
+			arr.push_back(E->key());
+			arr.push_back(sc->get_shortcut());
+		}
+		r_ret=arr;
+		return true;
+	}
 
 	const VariantContainer *v=props.getptr(p_name);
 	if (!v)
@@ -126,6 +166,8 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		p_list->push_back( pi );
 	}
+
+	p_list->push_back(PropertyInfo(Variant::ARRAY,"shortcuts",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR)); //do not edit
 }
 
 bool EditorSettings::has(String p_var) const {
@@ -173,7 +215,7 @@ void EditorSettings::create() {
 
 	String config_path;
 	String config_dir;
-	String config_file="editor_settings.xml";
+	//String config_file="editor_settings.xml";
 	Ref<ConfigFile> extra_config = memnew(ConfigFile);
 
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
@@ -263,17 +305,26 @@ void EditorSettings::create() {
 		// path at least is validated, so validate config file
 
 
-		config_file_path = config_path+"/"+config_dir+"/"+config_file;
+		config_file_path = config_path+"/"+config_dir+"/editor_settings.tres";
 
-		if (!dir->file_exists(config_file)) {
-			memdelete(dir);
-			WARN_PRINT("Config file does not exist, creating.");
-			goto fail;
+		String open_path = config_file_path;
+
+		if (!dir->file_exists("editor_settings.tres")) {
+
+			open_path = config_path+"/"+config_dir+"/editor_settings.xml";
+
+			if (!dir->file_exists("editor_settings.xml")) {
+
+				memdelete(dir);
+				WARN_PRINT("Config file does not exist, creating.");
+				goto fail;
+			}
 		}
 
 		memdelete(dir);
 
-		singleton = ResourceLoader::load(config_file_path,"EditorSettings");
+		singleton = ResourceLoader::load(open_path,"EditorSettings");
+
 		if (singleton.is_null()) {
 			WARN_PRINT("Could not open config file.");
 			goto fail;
@@ -865,6 +916,42 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	return false;
 }
 
+
+void EditorSettings::add_shortcut(const String& p_name, Ref<ShortCut> &p_shortcut) {
+
+	shortcuts[p_name]=p_shortcut;
+}
+
+bool EditorSettings::is_shortcut(const String&p_name, const InputEvent &p_event) const{
+
+	const Map<String,Ref<ShortCut> >::Element *E=shortcuts.find(p_name);
+	if (!E) {
+		ERR_EXPLAIN("Unknown Shortcut: "+p_name);
+		ERR_FAIL_V(false);
+	}
+
+	return E->get()->is_shortcut(p_event);
+
+}
+
+Ref<ShortCut> EditorSettings::get_shortcut(const String&p_name) const{
+
+	const Map<String,Ref<ShortCut> >::Element *E=shortcuts.find(p_name);
+	if (!E)
+		return Ref<ShortCut>();
+
+	return E->get();
+}
+
+void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
+
+	for (const Map<String,Ref<ShortCut> >::Element*E=shortcuts.front();E;E=E->next()) {
+
+		r_shortcuts->push_back(E->key());
+	}
+}
+
+
 void EditorSettings::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("erase","property"),&EditorSettings::erase);
@@ -920,4 +1007,44 @@ EditorSettings::~EditorSettings() {
 //	singleton=NULL;
 }
 
+Ref<ShortCut> ED_GET_SHORTCUT(const String& p_path) {
 
+	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
+	if (!sc.is_valid()) {
+		ERR_EXPLAIN("Used ED_GET_SHORTCUT with invalid shortcut: "+p_path);
+		ERR_FAIL_COND_V(!sc.is_valid(),sc);
+	}
+
+	return sc;
+}
+
+Ref<ShortCut> ED_SHORTCUT(const String& p_path,const String& p_name,uint32_t p_keycode) {
+
+	InputEvent ie;
+	if (p_keycode) {
+		ie.type=InputEvent::KEY;
+		ie.key.unicode=p_keycode&KEY_CODE_MASK;
+		ie.key.scancode=p_keycode&KEY_CODE_MASK;
+		ie.key.mod.shift=bool(p_keycode&KEY_MASK_SHIFT);
+		ie.key.mod.alt=bool(p_keycode&KEY_MASK_ALT);
+		ie.key.mod.control=bool(p_keycode&KEY_MASK_CTRL);
+		ie.key.mod.meta=bool(p_keycode&KEY_MASK_META);
+
+	}
+
+	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
+	if (sc.is_valid()) {
+
+		sc->set_name(p_name); //keep name (the ones that come from disk have no name)
+		sc->set_meta("original",ie); //to compare against changes
+		return sc;
+	}
+
+	sc.instance();
+	sc->set_name(p_name);
+	sc->set_shortcut(ie);
+	sc->set_meta("original",ie); //to compare against changes
+	EditorSettings::get_singleton()->add_shortcut(p_path,sc);
+
+	return sc;
+}

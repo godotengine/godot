@@ -2011,7 +2011,44 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::INPUT_EVENT: {
 
-			p_store_string_func(p_store_string_ud,"InputEvent()"); //will be added later
+			String str="InputEvent(";
+
+			InputEvent ev=p_variant;
+			switch(ev.type) {
+				case InputEvent::KEY: {
+
+					str+="KEY,"+itos(ev.key.scancode);
+					String mod;
+					if (ev.key.mod.alt)
+						mod+="A";
+					if (ev.key.mod.shift)
+						mod+="S";
+					if (ev.key.mod.control)
+						mod+="C";
+					if (ev.key.mod.meta)
+						mod+="M";
+
+					if (mod!=String())
+						str+=","+mod;
+				} break;
+				case InputEvent::MOUSE_BUTTON: {
+
+					str+="MBUTTON,"+itos(ev.mouse_button.button_index);
+				} break;
+				case InputEvent::JOYSTICK_BUTTON: {
+					str+="JBUTTON,"+itos(ev.joy_button.button_index);
+
+				} break;
+				case InputEvent::JOYSTICK_MOTION: {
+					str+="JAXIS,"+itos(ev.joy_motion.axis)+","+itos(ev.joy_motion.axis_value);
+				} break;
+				default: {}
+			}
+
+			str+=")";
+
+			p_store_string_func(p_store_string_ud,str); //will be added later
+
 		} break;
 		case Variant::DICTIONARY: {
 

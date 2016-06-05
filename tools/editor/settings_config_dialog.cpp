@@ -31,6 +31,9 @@
 #include "scene/gui/margin_container.h"
 #include "globals.h"
 #include "editor_file_system.h"
+#include "editor_node.h"
+#include "os/keyboard.h"
+
 void EditorSettingsDialog::ok_pressed() {
 
 	if (!EditorSettings::get_singleton())
@@ -79,6 +82,7 @@ void EditorSettingsDialog::popup_edit_settings() {
 	search_box->select_all();
 	search_box->grab_focus();
 
+	_update_shortcuts();
 	popup_centered_ratio(0.7);
 }
 
@@ -101,11 +105,171 @@ void EditorSettingsDialog::_notification(int p_what) {
 	}
 }
 
+
+void EditorSettingsDialog::_update_shortcuts() {
+
+	shortcuts->clear();
+
+	List<String> slist;
+	EditorSettings::get_singleton()->get_shortcut_list(&slist);
+	TreeItem *root = shortcuts->create_item();
+
+	Map<String,TreeItem*> sections;
+
+	for(List<String>::Element *E=slist.front();E;E=E->next()) {
+
+		Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(E->get());
+		if (!sc->has_meta("original"))
+			continue;
+
+		InputEvent original = sc->get_meta("original");
+
+		String section_name = E->get().get_slice("/",0);
+
+		TreeItem *section;
+
+		if (sections.has(section_name)) {
+			section=sections[section_name];
+		} else {
+			section = shortcuts->create_item(root);
+			section->set_text(0,section_name.capitalize());
+
+			sections[section_name]=section;
+			section->set_custom_bg_color(0,get_color("prop_subsection","Editor"));
+			section->set_custom_bg_color(1,get_color("prop_subsection","Editor"));
+
+		}
+
+		TreeItem *item = shortcuts->create_item(section);
+
+
+		item->set_text(0,sc->get_name());
+		item->set_text(1,sc->get_as_text());
+		if (!sc->is_shortcut(original) && !(sc->get_shortcut().type==InputEvent::NONE && original.type==InputEvent::NONE)) {
+			item->add_button(1,get_icon("Reload","EditorIcons"),2);
+		}
+		item->add_button(1,get_icon("Edit","EditorIcons"),0);
+		item->add_button(1,get_icon("Close","EditorIcons"),1);
+		item->set_tooltip(0,E->get());
+		item->set_metadata(0,E->get());
+	}
+
+
+
+
+}
+
+void EditorSettingsDialog::_shortcut_button_pressed(Object* p_item,int p_column,int p_idx) {
+
+	TreeItem *ti=p_item->cast_to<TreeItem>();
+	ERR_FAIL_COND(!ti);
+
+	String item = ti->get_metadata(0);
+	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(item);
+
+	if (p_idx==0) {
+		press_a_key_label->set_text(TTR("Press a Key.."));
+		last_wait_for_key=InputEvent();
+		press_a_key->popup_centered(Size2(250,80)*EDSCALE);
+		press_a_key->grab_focus();
+		press_a_key->get_ok()->set_focus_mode(FOCUS_NONE);
+		press_a_key->get_cancel()->set_focus_mode(FOCUS_NONE);
+		shortcut_configured=item;
+
+	} else if (p_idx==1) {//erase
+		if (!sc.is_valid())
+			return; //pointless, there is nothing
+
+		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+		ur->create_action("Erase Shortcut");
+		ur->add_do_method(sc.ptr(),"set_shortcut",InputEvent());
+		ur->add_undo_method(sc.ptr(),"set_shortcut",sc->get_shortcut());
+		ur->add_do_method(this,"_update_shortcuts");
+		ur->add_undo_method(this,"_update_shortcuts");
+		ur->add_do_method(this,"_settings_changed");
+		ur->add_undo_method(this,"_settings_changed");
+		ur->commit_action();
+	} else if (p_idx==2) {//revert to original
+		if (!sc.is_valid())
+			return; //pointless, there is nothing
+
+		InputEvent original = sc->get_meta("original");
+
+		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+		ur->create_action("Restore Shortcut");
+		ur->add_do_method(sc.ptr(),"set_shortcut",original);
+		ur->add_undo_method(sc.ptr(),"set_shortcut",sc->get_shortcut());
+		ur->add_do_method(this,"_update_shortcuts");
+		ur->add_undo_method(this,"_update_shortcuts");
+		ur->add_do_method(this,"_settings_changed");
+		ur->add_undo_method(this,"_settings_changed");
+		ur->commit_action();
+	}
+}
+
+
+void EditorSettingsDialog::_wait_for_key(const InputEvent& p_event) {
+
+
+	if (p_event.type==InputEvent::KEY && p_event.key.pressed && p_event.key.scancode!=0) {
+
+		last_wait_for_key=p_event;
+		String str=keycode_get_string(p_event.key.scancode).capitalize();
+		if (p_event.key.mod.meta)
+			str=TTR("Meta+")+str;
+		if (p_event.key.mod.shift)
+			str=TTR("Shift+")+str;
+		if (p_event.key.mod.alt)
+			str=TTR("Alt+")+str;
+		if (p_event.key.mod.control)
+			str=TTR("Control+")+str;
+
+
+		press_a_key_label->set_text(str);
+		press_a_key->accept_event();
+
+	}
+}
+
+
+
+
+void EditorSettingsDialog::_press_a_key_confirm() {
+
+	if (last_wait_for_key.type!=InputEvent::KEY)
+		return;
+
+	InputEvent ie;
+	ie.type=InputEvent::KEY;
+	ie.key.scancode=last_wait_for_key.key.scancode;
+	ie.key.mod=last_wait_for_key.key.mod;
+
+	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(shortcut_configured);
+
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action("Change Shortcut '"+shortcut_configured+"'");
+	ur->add_do_method(sc.ptr(),"set_shortcut",ie);
+	ur->add_undo_method(sc.ptr(),"set_shortcut",sc->get_shortcut());
+	ur->add_do_method(this,"_update_shortcuts");
+	ur->add_undo_method(this,"_update_shortcuts");
+	ur->add_do_method(this,"_settings_changed");
+	ur->add_undo_method(this,"_settings_changed");
+	ur->commit_action();
+
+
+
+}
+
 void EditorSettingsDialog::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_settings_save"),&EditorSettingsDialog::_settings_save);
 	ObjectTypeDB::bind_method(_MD("_settings_changed"),&EditorSettingsDialog::_settings_changed);
 	ObjectTypeDB::bind_method(_MD("_clear_search_box"),&EditorSettingsDialog::_clear_search_box);
+	ObjectTypeDB::bind_method(_MD("_shortcut_button_pressed"),&EditorSettingsDialog::_shortcut_button_pressed);
+	ObjectTypeDB::bind_method(_MD("_update_shortcuts"),&EditorSettingsDialog::_update_shortcuts);
+	ObjectTypeDB::bind_method(_MD("_press_a_key_confirm"),&EditorSettingsDialog::_press_a_key_confirm);
+	ObjectTypeDB::bind_method(_MD("_wait_for_key"),&EditorSettingsDialog::_wait_for_key);
+
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
@@ -145,13 +309,34 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	vbc = memnew( VBoxContainer );
 	tabs->add_child(vbc);
-	vbc->set_name(TTR("Plugins"));
+	vbc->set_name(TTR("Shortcuts"));
 
-	hbc = memnew( HBoxContainer );
-	vbc->add_child(hbc);
-	hbc->add_child( memnew( Label(TTR("Plugin List:")+" ") ));
-	hbc->add_spacer();
+	shortcuts = memnew( Tree );
+	vbc->add_margin_child("Shortcut List:",shortcuts,true);
+	shortcuts->set_columns(2);
+	shortcuts->set_hide_root(true);
+	//shortcuts->set_hide_folding(true);
+	shortcuts->set_column_titles_visible(true);
+	shortcuts->set_column_title(0,"Name");
+	shortcuts->set_column_title(1,"Binding");
+	shortcuts->connect("button_pressed",this,"_shortcut_button_pressed");
+
+	press_a_key = memnew( ConfirmationDialog );
+	press_a_key->set_focus_mode(FOCUS_ALL);
+	add_child(press_a_key);
+
+	l = memnew( Label );
+	l->set_text(TTR("Press a Key.."));
+	l->set_area_as_parent_rect();
+	l->set_align(Label::ALIGN_CENTER);
+	l->set_margin(MARGIN_TOP,20);
+	l->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_BEGIN,30);
+	press_a_key_label=l;
+	press_a_key->add_child(l);
+	press_a_key->connect("input_event",this,"_wait_for_key");
+	press_a_key->connect("confirmed",this,"_press_a_key_confirm");
 	//Button *load = memnew( Button );
+
 	//load->set_text("Load..");
 	//hbc->add_child(load);
 

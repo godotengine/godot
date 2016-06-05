@@ -43,6 +43,7 @@ class BaseButton : public Control {
 
 	bool toggle_mode;
 	FocusMode enabled_focus_mode;
+	Ref<ShortCut> shortcut;
 
 	struct Status {
 
@@ -57,6 +58,7 @@ class BaseButton : public Control {
 
 	} status;
 
+
 	ButtonGroup *group;
 
 
@@ -69,6 +71,7 @@ protected:
 	virtual void toggled(bool p_pressed);
 	static void _bind_methods();
 	virtual void _input_event(InputEvent p_event);
+	virtual void _unhandled_input(InputEvent p_event);
 	void _notification(int p_what);
 
 public:
@@ -101,6 +104,10 @@ public:
 	void set_enabled_focus_mode(FocusMode p_mode);
 	FocusMode get_enabled_focus_mode() const;
 
+	void set_shortcut(const Ref<ShortCut>& p_shortcut);
+	Ref<ShortCut> get_shortcut() const;
+
+	virtual String get_tooltip(const Point2& p_pos) const;
 
 	BaseButton();
 	~BaseButton();

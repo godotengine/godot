@@ -32,30 +32,15 @@
 
 void MenuButton::_unhandled_key_input(InputEvent p_event) {
 
-	//check accelerators
 
-	if (p_event.type==InputEvent::KEY && p_event.key.pressed) {
+	if (p_event.is_pressed() && !p_event.is_echo() && (p_event.type==InputEvent::KEY || p_event.type==InputEvent::ACTION || p_event.type==InputEvent::JOYSTICK_BUTTON)) {
 
 		if (!get_parent() || !is_visible() || is_disabled())
 			return;
 
-		uint32_t code=p_event.key.scancode;
-		if (code==0)
-			code=p_event.key.unicode;
 
-		if (p_event.key.mod.control)
-			code|=KEY_MASK_CTRL;
-		if (p_event.key.mod.alt)
-			code|=KEY_MASK_ALT;
-		if (p_event.key.mod.meta)
-			code|=KEY_MASK_META;
-		if (p_event.key.mod.shift)
-			code|=KEY_MASK_SHIFT;
-
-
-		int item = popup->activate_item_by_accelerator(code);
+		int item = popup->activate_item_by_event(p_event);
 	}
-
 }
 
 

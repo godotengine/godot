@@ -50,6 +50,13 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	Timer *timer;
 
+	Tree *shortcuts;
+
+	ConfirmationDialog *press_a_key;
+	Label *press_a_key_label;
+	InputEvent last_wait_for_key;
+	String shortcut_configured;
+
 	virtual void cancel_pressed();
 	virtual void ok_pressed();
 
@@ -59,7 +66,13 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _notification(int p_what);
 
 
+	void _press_a_key_confirm();
+	void _wait_for_key(const InputEvent& p_event);
+
 	void _clear_search_box();
+
+	void _update_shortcuts();
+	void _shortcut_button_pressed(Object* p_item,int p_column,int p_idx);
 
 protected:
 

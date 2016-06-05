@@ -188,10 +188,10 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 				if (!p_event.key.mod.shift && !p_event.key.mod.command)
 					_editor_select(EDITOR_SCRIPT);
 			break;
-			case KEY_F5: _menu_option_confirm((p_event.key.mod.control&&p_event.key.mod.shift)?RUN_PLAY_CUSTOM_SCENE:RUN_PLAY,true); break;
+		/*	case KEY_F5: _menu_option_confirm((p_event.key.mod.control&&p_event.key.mod.shift)?RUN_PLAY_CUSTOM_SCENE:RUN_PLAY,true); break;
 			case KEY_F6: _menu_option_confirm(RUN_PLAY_SCENE,true); break;
 			//case KEY_F7: _menu_option_confirm(RUN_PAUSE,true); break;
-			case KEY_F8: _menu_option_confirm(RUN_STOP,true); break;
+			case KEY_F8: _menu_option_confirm(RUN_STOP,true); break;*/
 			case KEY_F11: {
 				if (p_event.key.mod.shift) {
 					if (p_event.key.mod.control) {
@@ -1794,18 +1794,18 @@ void EditorNode::_edit_current() {
 	PopupMenu *p=object_menu->get_popup();
 
 	p->clear();
-	p->add_item(TTR("Copy Params"),OBJECT_COPY_PARAMS);
-	p->add_item(TTR("Set Params"),OBJECT_PASTE_PARAMS);
+	p->add_shortcut(ED_SHORTCUT("property_editor/copy_params",TTR("Copy Params")),OBJECT_COPY_PARAMS);
+	p->add_shortcut(ED_SHORTCUT("property_editor/paste_params",TTR("Paste Params")),OBJECT_PASTE_PARAMS);
 	p->add_separator();
-	p->add_item(TTR("Paste Resource"),RESOURCE_PASTE);
+	p->add_shortcut(ED_SHORTCUT("property_editor/paste_resource",TTR("Paste Resource")),RESOURCE_PASTE);
 	if (is_resource) {
-		p->add_item(TTR("Copy Resource"),RESOURCE_COPY);
-		p->add_item(TTR("Make Built-In"),RESOURCE_UNREF);
+		p->add_shortcut(ED_SHORTCUT("property_editor/copy_resource",TTR("Copy Resource")),RESOURCE_COPY);
+		p->add_shortcut(ED_SHORTCUT("property_editor/unref_resource",TTR("Make Built-In")),RESOURCE_UNREF);
 	}
 	p->add_separator();
-	p->add_item(TTR("Make Sub-Resources Unique"),OBJECT_UNIQUE_RESOURCES);
+	p->add_shortcut(ED_SHORTCUT("property_editor/make_subresources_unique",TTR("Make Sub-Resources Unique")),OBJECT_UNIQUE_RESOURCES);
 	p->add_separator();
-	p->add_icon_item(gui_base->get_icon("Help","EditorIcons"),"Class Reference",OBJECT_REQUEST_HELP);
+	p->add_icon_shortcut(gui_base->get_icon("Help","EditorIcons"),ED_SHORTCUT("property_editor/open_help",TTR("Open in Help")),OBJECT_REQUEST_HELP);
 	List<MethodInfo> methods;
 	current_obj->get_method_list(&methods);
 
@@ -4700,10 +4700,10 @@ void EditorNode::_update_layouts_menu() {
 	overridden_default_layout=-1;
 
 	editor_layouts->set_size(Vector2());
-	editor_layouts->add_item(TTR("Save Layout"), SETTINGS_LAYOUT_SAVE);
-	editor_layouts->add_item(TTR("Delete Layout"), SETTINGS_LAYOUT_DELETE);
+	editor_layouts->add_shortcut(ED_SHORTCUT("layout/save",TTR("Save Layout")), SETTINGS_LAYOUT_SAVE);
+	editor_layouts->add_shortcut(ED_SHORTCUT("layout/load",TTR("Load Layout")), SETTINGS_LAYOUT_DELETE);
 	editor_layouts->add_separator();
-	editor_layouts->add_item(TTR("Default"), SETTINGS_LAYOUT_DEFAULT);
+	editor_layouts->add_shortcut(ED_SHORTCUT("property_editor/reset",TTR("Default")), SETTINGS_LAYOUT_DEFAULT);
 
 	Ref<ConfigFile> config;
 	config.instance();
@@ -5588,21 +5588,21 @@ EditorNode::EditorNode() {
 
 	file_menu->set_tooltip(TTR("Operations with scene files."));
 	p=file_menu->get_popup();
-	p->add_item(TTR("New Scene"),FILE_NEW_SCENE);
-	p->add_item(TTR("New Inherited Scene.."),FILE_NEW_INHERITED_SCENE);
-	p->add_item(TTR("Open Scene.."),FILE_OPEN_SCENE,KEY_MASK_CMD+KEY_O);
+	p->add_shortcut(ED_SHORTCUT("editor/new_scene",TTR("New Scene")),FILE_NEW_SCENE);
+	p->add_shortcut(ED_SHORTCUT("editor/new_inherited_scene",TTR("New Inherited Scene..")),FILE_NEW_INHERITED_SCENE);
+	p->add_shortcut(ED_SHORTCUT("editor/open_scene",TTR("Open Scene.."),KEY_MASK_CMD+KEY_O),FILE_OPEN_SCENE);
 	p->add_separator();
-	p->add_item(TTR("Save Scene"),FILE_SAVE_SCENE,KEY_MASK_CMD+KEY_S);
-	p->add_item(TTR("Save Scene As.."),FILE_SAVE_AS_SCENE,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_S);
+	p->add_shortcut(ED_SHORTCUT("editor/save_scene",TTR("Save Scene"),KEY_MASK_CMD+KEY_S),FILE_SAVE_SCENE);
+	p->add_shortcut(ED_SHORTCUT("editor/save_scene_as",TTR("Save Scene As.."),KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_S),FILE_SAVE_AS_SCENE);
 	p->add_separator();
-	p->add_item(TTR("Close Scene"),FILE_CLOSE,KEY_MASK_SHIFT+KEY_MASK_CTRL+KEY_W);
+	p->add_shortcut(ED_SHORTCUT("editor/close_scene",TTR("Close Scene"),KEY_MASK_SHIFT+KEY_MASK_CTRL+KEY_W),FILE_CLOSE);
 	p->add_separator();
-	p->add_item(TTR("Close Goto Prev. Scene"),FILE_OPEN_PREV,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_P);
+	//p->add_shortcut(ED_SHORTCUT("editor/save_scene",TTR("Close Goto Prev. Scene")),FILE_OPEN_PREV,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_P);
 	p->add_submenu_item(TTR("Open Recent"),"RecentScenes",FILE_OPEN_RECENT);
 	p->add_separator();
-	p->add_item(TTR("Quick Open Scene.."),FILE_QUICK_OPEN_SCENE,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_O);
-	p->add_item(TTR("Quick Open Script.."),FILE_QUICK_OPEN_SCRIPT,KEY_MASK_ALT+KEY_MASK_CMD+KEY_O);
-	p->add_item(TTR("Quick Search File.."),FILE_QUICK_OPEN_FILE,KEY_MASK_ALT+KEY_MASK_CMD+KEY_P);
+	p->add_shortcut(ED_SHORTCUT("editor/quick_open_scene",TTR("Quick Open Scene.."),KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_O),FILE_QUICK_OPEN_SCENE);
+	p->add_shortcut(ED_SHORTCUT("editor/quick_open_script",TTR("Quick Open Script.."),KEY_MASK_ALT+KEY_MASK_CMD+KEY_O),FILE_QUICK_OPEN_SCRIPT);
+	p->add_shortcut(ED_SHORTCUT("editor/quick_filter_files",TTR("Quick Filter Files.."),KEY_MASK_ALT+KEY_MASK_CMD+KEY_P),FILE_QUICK_OPEN_FILE);
 	p->add_separator();
 
 	PopupMenu *pm_export = memnew(PopupMenu );
@@ -5733,7 +5733,8 @@ EditorNode::EditorNode() {
 	play_button->set_icon(gui_base->get_icon("MainPlay","EditorIcons"));
 	play_button->set_focus_mode(Control::FOCUS_NONE);
 	play_button->connect("pressed", this,"_menu_option",make_binds(RUN_PLAY));
-	play_button->set_tooltip(TTR("Play the project (F5)."));
+	play_button->set_tooltip(TTR("Play the project."));
+	play_button->set_shortcut(ED_SHORTCUT("editor/play",TTR("Play"),KEY_F5));
 
 
 
@@ -5746,6 +5747,7 @@ EditorNode::EditorNode() {
 	pause_button->set_tooltip(TTR("Pause the scene"));
 	pause_button->set_disabled(true);
 	play_hb->add_child(pause_button);
+	pause_button->set_shortcut(ED_SHORTCUT("editor/pause_scene",TTR("Pause Scene"),KEY_F7));
 
 
 	stop_button = memnew( ToolButton );
@@ -5754,7 +5756,8 @@ EditorNode::EditorNode() {
 	stop_button->set_focus_mode(Control::FOCUS_NONE);
 	stop_button->set_icon(gui_base->get_icon("MainStop","EditorIcons"));
 	stop_button->connect("pressed", this,"_menu_option",make_binds(RUN_STOP));
-	stop_button->set_tooltip(TTR("Stop the scene (F8)."));
+	stop_button->set_tooltip(TTR("Stop the scene."));
+	stop_button->set_shortcut(ED_SHORTCUT("editor/stop",TTR("Stop"),KEY_F8));
 
 	run_native = memnew( EditorRunNative);
 	play_hb->add_child(run_native);
@@ -5774,7 +5777,8 @@ EditorNode::EditorNode() {
 	play_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_scene_button->set_icon(gui_base->get_icon("PlayScene","EditorIcons"));
 	play_scene_button->connect("pressed", this,"_menu_option",make_binds(RUN_PLAY_SCENE));
-	play_scene_button->set_tooltip(TTR("Play the edited scene (F6)."));
+	play_scene_button->set_tooltip(TTR("Play the edited scene."));
+	play_scene_button->set_shortcut(ED_SHORTCUT("editor/play_scene",TTR("Play Scene"),KEY_F6));
 
 	play_custom_scene_button = memnew( ToolButton );
 	play_hb->add_child(play_custom_scene_button);

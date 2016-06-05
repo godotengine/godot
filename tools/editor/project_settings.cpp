@@ -330,7 +330,7 @@ void ProjectSettings::_add_item(int p_item){
 
 			press_a_key_label->set_text(TTR("Press a Key.."));
 			last_wait_for_key=InputEvent();
-			press_a_key->popup_centered(Size2(250,80));
+			press_a_key->popup_centered(Size2(250,80)*EDSCALE);
 			press_a_key->grab_focus();
 		} break;
 		case InputEvent::MOUSE_BUTTON: {

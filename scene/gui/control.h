@@ -35,7 +35,7 @@
 #include "scene/2d/canvas_item.h"
 #include "math_2d.h"
 #include "rid.h"
-
+#include "scene/gui/input_action.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

@@ -390,10 +390,43 @@ Control::FocusMode BaseButton::get_enabled_focus_mode() const {
 	return enabled_focus_mode;
 }
 
+void BaseButton::set_shortcut(const Ref<ShortCut>& p_shortcut) {
+
+	if (shortcut.is_null() == p_shortcut.is_null())
+		return;
+
+	shortcut=p_shortcut;
+	set_process_unhandled_input(shortcut.is_valid());
+}
+
+Ref<ShortCut> BaseButton:: get_shortcut() const {
+	return shortcut;
+}
+
+void BaseButton::_unhandled_input(InputEvent p_event) {
+
+	if (!is_disabled() && is_visible() && shortcut.is_valid() && shortcut->is_shortcut(p_event)) {
+		if (is_toggle_mode()) {
+			set_pressed(!is_pressed());
+			emit_signal("toggled",is_pressed());
+		}
+
+		emit_signal("pressed");
+	}
+}
+
+String BaseButton::get_tooltip(const Point2& p_pos) const {
+
+	String tooltip=Control::get_tooltip(p_pos);
+	if (shortcut.is_valid() && shortcut->is_valid())
+		tooltip+=" ("+shortcut->get_as_text()+")";
+	return tooltip;
+}
 
 void BaseButton::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&BaseButton::_input_event);
+	ObjectTypeDB::bind_method(_MD("_unhandled_input"),&BaseButton::_unhandled_input);
 	ObjectTypeDB::bind_method(_MD("set_pressed","pressed"),&BaseButton::set_pressed);
 	ObjectTypeDB::bind_method(_MD("is_pressed"),&BaseButton::is_pressed);
 	ObjectTypeDB::bind_method(_MD("is_hovered"),&BaseButton::is_hovered);
@@ -406,6 +439,8 @@ void BaseButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_draw_mode"),&BaseButton::get_draw_mode);
 	ObjectTypeDB::bind_method(_MD("set_enabled_focus_mode","mode"),&BaseButton::set_enabled_focus_mode);
 	ObjectTypeDB::bind_method(_MD("get_enabled_focus_mode"),&BaseButton::get_enabled_focus_mode);
+	ObjectTypeDB::bind_method(_MD("set_shortcut","shortcut"),&BaseButton::set_shortcut);
+	ObjectTypeDB::bind_method(_MD("get_shortcut"),&BaseButton::get_shortcut);
 
 	BIND_VMETHOD(MethodInfo("_pressed"));
 	BIND_VMETHOD(MethodInfo("_toggled",PropertyInfo(Variant::BOOL,"pressed")));
@@ -418,6 +453,7 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "is_pressed"), _SCS("set_pressed"), _SCS("is_pressed"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "click_on_press"), _SCS("set_click_on_press"), _SCS("get_click_on_press"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT,"enabled_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All" ), _SCS("set_enabled_focus_mode"), _SCS("get_enabled_focus_mode") );
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "shortcut",PROPERTY_HINT_RESOURCE_TYPE,"ShortCut"), _SCS("set_shortcut"), _SCS("get_shortcut"));
 
 
 	BIND_CONSTANT( DRAW_NORMAL );
