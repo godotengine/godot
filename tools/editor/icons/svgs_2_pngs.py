@@ -6,10 +6,20 @@ import os.path
 from os import listdir
 from os.path import isfile, join
 import subprocess
+import sys
 
 SVGS_PATH = 'source/'
-OUT_DIR = '2x/'
-DPI = 180
+OUT_DIR = './'
+DPI = 90
+
+if len(sys.argv) >= 2:
+    try:
+        scale = int(sys.argv[1])
+        if scale > 1:
+            OUT_DIR = '%sx/' % scale
+            DPI *= scale
+    except:
+        pass
 
 
 def export_all(svgs_path=SVGS_PATH, out_dir=OUT_DIR, dpi=DPI):
