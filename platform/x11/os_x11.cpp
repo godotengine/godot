@@ -169,6 +169,11 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	//print_line("def videomode "+itos(current_videomode.width)+","+itos(current_videomode.height));
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 
+	if(current_videomode.maximized || current_videomode.fullscreen) {
+		current_videomode.width = get_screen_size().width;
+		current_videomode.height = get_screen_size().height;
+	}
+
 	context_gl = memnew( ContextGL_X11( x11_display, x11_window,current_videomode, false ) );
 	context_gl->initialize();
 
@@ -916,8 +921,8 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 	//current_videomode.width=ss.width;
 	//current_videomode.height=ss.height;
 
-
-	maximized = p_enabled;
+	current_videomode.maximized = p_enabled;
+	XMoveWindow(x11_display, x11_window, get_window_position().x, get_window_position().y);
 }
 
 bool OS_X11::is_window_maximized() const {
