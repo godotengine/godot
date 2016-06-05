@@ -36,6 +36,8 @@
 class BitMap : public Resource {
 
 	OBJ_TYPE(BitMap,Resource);
+	OBJ_SAVE_TYPE(BitMap);
+	RES_BASE_EXTENSION("pbm");
 
 	Vector<uint8_t> bitmask;
 	int width;
