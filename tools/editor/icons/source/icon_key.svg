@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_key.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_key.svg">
   <defs
      id="defs4" />
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="11.313709"
-     inkscape:cx="16.372028"
-     inkscape:cy="15.091481"
+     inkscape:zoom="45.254836"
+     inkscape:cx="8.7548948"
+     inkscape:cy="9.2532814"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -67,25 +67,25 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 22 9 A 7 7 0 0 0 15 16 A 7 7 0 0 0 22 23 A 7 7 0 0 0 29 16 A 7 7 0 0 0 22 9 z M 22 13 A 3.0000174 3.0000174 0 0 1 25 16 A 3.0000174 3.0000174 0 0 1 22 19 A 3.0000174 3.0000174 0 0 1 19 16 A 3.0000174 3.0000174 0 0 1 22 13 z "
-       transform="translate(0,1020.3622)"
-       id="path4157" />
+       style="opacity:1;fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 11 4 A 4 4.0000024 0 0 0 7 8 A 4 4.0000024 0 0 0 11 12 A 4 4.0000024 0 0 0 15 8 A 4 4.0000024 0 0 0 11 4 z M 11 6 A 2.0000174 2.0000174 0 0 1 13 8 A 2.0000174 2.0000174 0 0 1 11 10 A 2.0000174 2.0000174 0 0 1 9 8 A 2.0000174 2.0000174 0 0 1 11 6 z "
+       transform="translate(0,1036.3622)"
+       id="path4137" />
     <rect
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4161"
-       width="13"
-       height="4.0000172"
-       x="3"
-       y="1034.3622" />
+       style="opacity:1;fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect4141"
+       width="8"
+       height="2"
+       x="1"
+       y="1043.3622" />
     <rect
-       y="1037.3622"
-       x="5"
-       height="5.0000172"
-       width="5"
-       id="rect4165"
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+       y="1045.3622"
+       x="2"
+       height="2"
+       width="3"
+       id="rect4144"
+       style="opacity:1;fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
   </g>
 </svg>

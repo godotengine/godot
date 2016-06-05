@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_unlock.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_unlock.svg">
   <defs
      id="defs4" />
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="22.627417"
-     inkscape:cx="19.05136"
-     inkscape:cy="17.179909"
+     inkscape:cx="6.9526998"
+     inkscape:cy="6.9680614"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -68,28 +68,30 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <g
        transform="matrix(0.63636994,0,0,0.63636994,11.81847,382.85245)"
        inkscape:label="Layer 1"
        id="g4515"
-       style="stroke:#ffffff;stroke-opacity:1;stroke-width:6.28565202;stroke-miterlimit:4;stroke-dasharray:none;stroke-linejoin:miter" />
+       style="stroke:#ffffff;stroke-width:6.28565216;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 6 14 L 6 29 L 26 29 L 26 14 L 6 14 z M 14 18 L 18 18 L 18 25 L 14 25 L 14 18 z "
-       transform="translate(0,1020.3622)"
-       id="rect4625" />
+       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 2 8 L 2 15 L 14 15 L 14 8 L 2 8 z M 7 10 L 9 10 L 9 13 L 7 13 L 7 10 z "
+       id="rect4139"
+       transform="translate(0,1036.3622)" />
     <path
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 16.166016 3.0019531 A 7 7 0 0 0 12.5 3.9375 A 7 7 0 0 0 10.503906 5.6738281 L 13.148438 7.1992188 A 4 4 0 0 1 16 6 A 4 4 0 0 1 20 10 L 23 10 A 7 7 0 0 0 19.5 3.9375 A 7 7 0 0 0 16.166016 3.0019531 z "
-       transform="translate(0,1020.3622)"
-       id="path4629" />
+       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 8,1 C 7.1226197,1.001545 6.2610925,1.233935 5.5019531,1.6738281 l 1,1.7324219 C 6.9570181,3.1417636 7.4736593,3.0016575 8,3 c 1.6568542,0 3,1.3431458 3,3 l 2,0 C 13,3.2385763 10.761424,1 8,1 Z"
+       transform="translate(0,1036.3622)"
+       id="path4141"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc" />
     <rect
-       y="1030.3622"
-       x="20"
-       height="3.9999483"
-       width="3"
-       id="rect4631"
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+       y="1042.3622"
+       x="11"
+       height="2"
+       width="2"
+       id="rect4147"
+       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
   </g>
 </svg>
