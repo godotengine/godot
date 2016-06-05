@@ -67,6 +67,11 @@ public:
 	virtual void remove_joy_mapping(String p_guid)=0;
 	virtual bool is_joy_known(int p_device)=0;
 	virtual String get_joy_guid(int p_device) const=0;
+	virtual Vector2 get_joy_vibration_strength(int p_device)=0;
+	virtual float get_joy_vibration_duration(int p_device)=0;
+	virtual uint64_t get_joy_vibration_timestamp(int p_device)=0;
+	virtual void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration)=0;
+	virtual void stop_joy_vibration(int p_device)=0;
 
 	virtual Point2 get_mouse_pos() const=0;
 	virtual Point2 get_mouse_speed() const=0;
