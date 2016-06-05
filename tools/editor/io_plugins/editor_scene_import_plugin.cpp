@@ -41,6 +41,10 @@
 #include "scene/3d/physics_body.h"
 #include "scene/3d/portal.h"
 #include "scene/3d/vehicle_body.h"
+#include "scene/resources/sphere_shape.h"
+#include <scene/resources/box_shape.h>
+#include <scene/resources/ray_shape.h>
+#include <scene/resources/plane_shape.h>
 #include "tools/editor/create_dialog.h"
 #include "os/os.h"
 
@@ -1685,28 +1689,61 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		mi->set_baked_light_texture_id(layer);
 	}
 
-	if (p_flags&SCENE_FLAG_CREATE_COLLISIONS && _teststr(name,"colonly") && p_node->cast_to<MeshInstance>()) {
+	if (p_flags&SCENE_FLAG_CREATE_COLLISIONS && _teststr(name,"colonly")) {
 
 		if (isroot)
 			return p_node;
+		
+		if (p_node->cast_to<MeshInstance>()) {
+			MeshInstance *mi = p_node->cast_to<MeshInstance>();
+			Node * col = mi->create_trimesh_collision_node();
+			ERR_FAIL_COND_V(!col,NULL);
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
-		Node * col = mi->create_trimesh_collision_node();
-		ERR_FAIL_COND_V(!col,NULL);
+			col->set_name(_fixstr(name,"colonly"));
+			col->cast_to<Spatial>()->set_transform(mi->get_transform());
+			p_node->replace_by(col);
+			memdelete(p_node);
+			p_node=col;
 
-		col->set_name(_fixstr(name,"colonly"));
-		col->cast_to<Spatial>()->set_transform(mi->get_transform());
-		p_node->replace_by(col);
-		memdelete(p_node);
-		p_node=col;
-
-		StaticBody *sb = col->cast_to<StaticBody>();
-		CollisionShape *colshape = memnew( CollisionShape);
-		colshape->set_shape(sb->get_shape(0));
-		colshape->set_name("shape");
-		sb->add_child(colshape);
-		colshape->set_owner(p_node->get_owner());
-
+			StaticBody *sb = col->cast_to<StaticBody>();
+			CollisionShape *colshape = memnew( CollisionShape);
+			colshape->set_shape(sb->get_shape(0));
+			colshape->set_name("shape");
+			sb->add_child(colshape);
+			colshape->set_owner(p_node->get_owner());
+		} else if (p_node->has_meta("empty_draw_type")) {
+			String empty_draw_type = String(p_node->get_meta("empty_draw_type"));
+			print_line(empty_draw_type);
+			StaticBody *sb = memnew( StaticBody);
+			sb->set_name(_fixstr(name,"colonly"));
+			sb->cast_to<Spatial>()->set_transform(p_node->cast_to<Spatial>()->get_transform());
+			p_node->replace_by(sb);
+			memdelete(p_node);
+			CollisionShape *colshape = memnew( CollisionShape);
+			if (empty_draw_type == "CUBE") {
+				BoxShape *boxShape = memnew( BoxShape);
+				boxShape->set_extents(Vector3(1, 1, 1));
+				colshape->set_shape(boxShape);
+				colshape->set_name("BoxShape");
+			} else if (empty_draw_type == "SINGLE_ARROW") {
+				RayShape *rayShape = memnew( RayShape);
+				rayShape->set_length(1);
+				colshape->set_shape(rayShape);
+				colshape->set_name("RayShape");
+				sb->cast_to<Spatial>()->rotate_x(Math_PI / 2);
+			} else if (empty_draw_type == "IMAGE") {
+				PlaneShape *planeShape = memnew( PlaneShape);
+				colshape->set_shape(planeShape);
+				colshape->set_name("PlaneShape");
+			} else {
+				SphereShape *sphereShape = memnew( SphereShape);
+				sphereShape->set_radius(1);
+				colshape->set_shape(sphereShape);
+				colshape->set_name("SphereShape");
+			}
+			sb->add_child(colshape);
+			colshape->set_owner(sb->get_owner());
+		}
 
 	} else if (p_flags&SCENE_FLAG_CREATE_COLLISIONS &&_teststr(name,"col") && p_node->cast_to<MeshInstance>()) {
 
