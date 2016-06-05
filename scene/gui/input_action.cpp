@@ -57,13 +57,13 @@ String ShortCut::get_as_text() const {
 
 			String str;
 			if (shortcut.key.mod.shift)
-				str+=TTR("Shift+");
+				str+=RTR("Shift+");
 			if (shortcut.key.mod.alt)
-				str+=TTR("Alt+");
+				str+=RTR("Alt+");
 			if (shortcut.key.mod.control)
-				str+=TTR("Ctrl+");
+				str+=RTR("Ctrl+");
 			if (shortcut.key.mod.meta)
-				str+=TTR("Meta+");
+				str+=RTR("Meta+");
 
 			str+=keycode_get_string(shortcut.key.scancode).capitalize();
 
@@ -71,21 +71,21 @@ String ShortCut::get_as_text() const {
 		} break;
 		case InputEvent::JOYSTICK_BUTTON: {
 
-			String str = TTR("Device")+" "+itos(shortcut.device)+", "+TTR("Button")+" "+itos(shortcut.joy_button.button_index);
+			String str = RTR("Device")+" "+itos(shortcut.device)+", "+RTR("Button")+" "+itos(shortcut.joy_button.button_index);
 			str+=".";
 
 			return str;
 		} break;
 		case InputEvent::MOUSE_BUTTON: {
 
-			String str = TTR("Device")+" "+itos(shortcut.device)+", ";
+			String str = RTR("Device")+" "+itos(shortcut.device)+", ";
 			switch (shortcut.mouse_button.button_index) {
-				case BUTTON_LEFT: str+=TTR("Left Button."); break;
-				case BUTTON_RIGHT: str+=TTR("Right Button."); break;
-				case BUTTON_MIDDLE: str+=TTR("Middle Button."); break;
-				case BUTTON_WHEEL_UP: str+=TTR("Wheel Up."); break;
-				case BUTTON_WHEEL_DOWN: str+=TTR("Wheel Down."); break;
-				default: str+=TTR("Button")+" "+itos(shortcut.mouse_button.button_index)+".";
+				case BUTTON_LEFT: str+=RTR("Left Button."); break;
+				case BUTTON_RIGHT: str+=RTR("Right Button."); break;
+				case BUTTON_MIDDLE: str+=RTR("Middle Button."); break;
+				case BUTTON_WHEEL_UP: str+=RTR("Wheel Up."); break;
+				case BUTTON_WHEEL_DOWN: str+=RTR("Wheel Down."); break;
+				default: str+=RTR("Button")+" "+itos(shortcut.mouse_button.button_index)+".";
 			}
 
 			return str;
@@ -93,7 +93,7 @@ String ShortCut::get_as_text() const {
 		case InputEvent::JOYSTICK_MOTION: {
 
 			int ax = shortcut.joy_motion.axis;
-			String str = TTR("Device")+" "+itos(shortcut.device)+", "+TTR("Axis")+" "+itos(ax)+".";
+			String str = RTR("Device")+" "+itos(shortcut.device)+", "+RTR("Axis")+" "+itos(ax)+".";
 
 			return str;
 		} break;
