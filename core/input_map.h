@@ -74,6 +74,7 @@ public:
 
 
 	void load_from_globals();
+	void load_default();
 
 	InputMap();
 };

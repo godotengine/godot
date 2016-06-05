@@ -688,7 +688,10 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 #endif
 
-	input_map->load_from_globals();
+	if (editor)
+		input_map->load_default(); //keys for editor
+	else
+		input_map->load_from_globals(); //keys for game
 
 	if (video_driver=="") // specified in engine.cfg
 		video_driver=_GLOBAL_DEF("display/driver",Variant((const char*)OS::get_singleton()->get_video_driver_name(0)));
