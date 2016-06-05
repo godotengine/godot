@@ -403,6 +403,7 @@ public:
 
 		String name;
 		String id;
+		String empty_draw_type;
 		bool noname;
 		Vector<XForm> xform_list;
 		Transform default_transform;
@@ -635,6 +636,7 @@ private: // private stuff
 	Vector<float> _read_float_array(XMLParser& parser);
 	Vector<String> _read_string_array(XMLParser& parser);
 	Transform _read_transform(XMLParser& parser);
+	String _read_empty_draw_type(XMLParser& parser);
 
 	void _joint_set_owner(Collada::Node *p_node, NodeSkeleton *p_owner);
 	void _create_skeletons(Collada::Node **p_node, NodeSkeleton *p_skeleton=NULL);

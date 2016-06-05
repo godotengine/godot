@@ -355,6 +355,10 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 	p_parent->add_child(node);
 	node->set_owner(scene);
 
+	if (p_node->empty_draw_type!="") {
+		node->set_meta("empty_draw_type", Variant(p_node->empty_draw_type));
+	}
+	
 	for(int i=0;i<p_node->children.size();i++) {
 
 		Error err = _create_scene(p_node->children[i],node);
