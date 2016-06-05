@@ -539,6 +539,14 @@ String OS::get_joy_guid(int p_device) const {
 void OS::set_context(int p_context) {
 
 }
+void OS::set_use_vsync(bool p_enable) {
+
+}
+
+bool OS::is_vsnc_enabled() const{
+
+	return true;
+}
 
 OS::OS() {
 	last_error=NULL;

@@ -2269,6 +2269,21 @@ String OS_Windows::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
 
+void OS_Windows::set_use_vsync(bool p_enable) {
+
+	if (gl_context)
+		gl_context->set_use_vsync(p_enable);
+}
+
+bool OS_Windows::is_vsnc_enabled() const{
+
+	if (gl_context)
+		return gl_context->is_using_vsync();
+
+	return true;
+}
+
+
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
 	key_event_pos=0;

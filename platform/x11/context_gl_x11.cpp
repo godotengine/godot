@@ -176,6 +176,16 @@ int ContextGL_X11::get_window_height() {
 	return xwa.height;
 }
 
+void ContextGL_X11::set_use_vsync(bool p_use) {
+	GLXDrawable drawable = glXGetCurrentDrawable();
+	glXSwapIntervalEXT(x11_display, drawable, p_use?1:0);
+	use_vsync=p_use;
+}
+bool ContextGL_X11::is_using_vsync() const {
+
+	return use_vsync;
+}
+
 
 ContextGL_X11::ContextGL_X11(::Display *p_x11_display,::Window &p_x11_window,const OS::VideoMode& p_default_video_mode,bool p_opengl_3_context) : x11_window(p_x11_window) {
 
@@ -189,6 +199,7 @@ ContextGL_X11::ContextGL_X11(::Display *p_x11_display,::Window &p_x11_window,con
 	glx_minor=glx_major=0;
 	p = memnew( ContextGL_X11_Private );
 	p->glx_context=0;
+	use_vsync=false;
 }
 
 

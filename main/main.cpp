@@ -109,6 +109,7 @@ static String locale;
 static bool use_debug_profiler=false;
 static bool force_lowdpi=false;
 static int init_screen=-1;
+static bool use_vsync=true;
 
 static String unescape_cmdline(const String& p_str) {
 
@@ -726,6 +727,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	GLOBAL_DEF("display/fullscreen",video_mode.fullscreen);
 	GLOBAL_DEF("display/resizable",video_mode.resizable);
 	GLOBAL_DEF("display/borderless_window", video_mode.borderless_window);
+	use_vsync = GLOBAL_DEF("display/use_vsync", use_vsync);
 	GLOBAL_DEF("display/test_width",0);
 	GLOBAL_DEF("display/test_height",0);
 	OS::get_singleton()->_pixel_snap=GLOBAL_DEF("display/use_2d_pixel_snap",false);
@@ -876,6 +878,7 @@ Error Main::setup2() {
 		OS::get_singleton()->set_window_position(init_custom_pos);
 	}
 
+	OS::get_singleton()->set_use_vsync(use_vsync);
 
 	register_core_singletons();
 

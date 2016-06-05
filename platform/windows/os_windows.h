@@ -283,6 +283,9 @@ public:
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device) const;
 
+	virtual void set_use_vsync(bool p_enable);
+	virtual bool is_vsnc_enabled() const;
+
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();
 
