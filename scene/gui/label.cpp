@@ -488,9 +488,9 @@ void Label::regenerate_word_cache() {
 	if (!autowrap) {
 		minsize.width=width;
 		if (max_lines_visible > 0 && line_count > max_lines_visible) {
-			minsize.height=(font->get_height() * max_lines_visible) + (line_spacing * (max_lines_visible - 1));
+			minsize.height=(font->get_height()+line_spacing)*max_lines_visible;
 		} else {
-			minsize.height=(font->get_height() * line_count)+(line_spacing * (line_count - 1));
+			minsize.height=(font->get_height()+line_spacing)*line_count;
 		}
 	}
 
