@@ -708,7 +708,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		case WM_SETCURSOR: {
 
 			if(LOWORD(lParam) == HTCLIENT) {
-				if(mouse_mode == MOUSE_MODE_HIDDEN) {
+				if(mouse_mode == MOUSE_MODE_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED) {
 					//Hide the cursor
 					if(hCursor == NULL)
 						hCursor = SetCursor(NULL);
