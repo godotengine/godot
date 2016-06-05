@@ -45,8 +45,9 @@
 #include "io/resource_saver.h"
 
 #include "editor_icons.h"
+#include "editor_fonts.h"
 
-
+#include "editor_scale.h"
 
 class NewProjectDialog : public ConfirmationDialog {
 
@@ -829,6 +830,17 @@ ProjectManager::ProjectManager() {
 	if (!EditorSettings::get_singleton())
 		EditorSettings::create();
 
+	{
+		int dpi_mode = EditorSettings::get_singleton()->get("global/hdpi_mode");
+		if (dpi_mode==0) {
+			editor_set_hidpi( OS::get_singleton()->get_screen_dpi(0) > 150 );
+		} else if (dpi_mode==2) {
+			editor_set_hidpi(true);
+		} else {
+			editor_set_hidpi(false);
+		}
+	}
+
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 
 	set_area_as_parent_rect();
@@ -836,6 +848,7 @@ ProjectManager::ProjectManager() {
 	Ref<Theme> theme = Ref<Theme>( memnew( Theme ) );
 	set_theme(theme);
 	editor_register_icons(theme);
+	editor_register_fonts(theme);
 
 	String global_font = EditorSettings::get_singleton()->get("global/font");
 	if (global_font!="") {

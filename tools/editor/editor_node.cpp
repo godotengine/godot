@@ -5256,6 +5256,19 @@ EditorNode::EditorNode() {
 	// load settings
 	if (!EditorSettings::get_singleton())
 		EditorSettings::create();
+	{
+		int dpi_mode = EditorSettings::get_singleton()->get("global/hdpi_mode");
+		print_line("DPI MODE: "+itos(dpi_mode));
+		if (dpi_mode==0) {
+			editor_set_hidpi( OS::get_singleton()->get_screen_dpi(0) > 150 );
+		} else if (dpi_mode==2) {
+			editor_set_hidpi(true);
+		} else {
+			editor_set_hidpi(false);
+		}
+	}
+
+
 
 	ResourceLoader::set_abort_on_missing_resources(false);
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
