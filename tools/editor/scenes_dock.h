@@ -63,7 +63,8 @@ class ScenesDock : public VBoxContainer {
 		FILE_REMOVE,
 		FILE_REIMPORT,
 		FILE_INFO,
-		FILE_SHOW_IN_EXPLORER
+		FILE_SHOW_IN_EXPLORER,
+		FILE_COPY_PATH
 	};
 
 
