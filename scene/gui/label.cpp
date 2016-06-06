@@ -91,22 +91,28 @@ void Label::_notification(int p_what) {
 
 		VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(),font.is_valid() && font->is_distance_field_hint());
 
-		int font_h = font->get_height()+line_spacing;
-		int lines_visible = size.y/font_h;
+		// calc drawn line height and visible lines count
+		int lines_height = 0;
+		int lines_visible = 0;
+		for(;;) {
+
+			if(lines_height + font->get_height() >= size.y)
+				break;
+			if(lines_visible >= line_count)
+				break;
+			if (max_lines_visible >= 0 && lines_visible > max_lines_visible)
+				break;
+
+			// add line_spacing after first line
+			if(lines_height > 0)
+				lines_height += line_spacing;
+			lines_height += font->get_height();
+			lines_visible ++;
+		}
 		int space_w=font->get_char_size(' ').width;
 		int chars_total=0;
 
 		int vbegin=0,vsep=0;
-
-		if (lines_visible > line_count) {
-			lines_visible = line_count;
-
-		}
-
-		if (max_lines_visible >= 0 && lines_visible > max_lines_visible) {
-			lines_visible = max_lines_visible;
-
-		}
 
 		if (lines_visible > 0) {
 
@@ -116,19 +122,19 @@ void Label::_notification(int p_what) {
 					//nothing
 				} break;
 				case VALIGN_CENTER: {
-					vbegin=(size.y - lines_visible * font_h) / 2;
+					vbegin=(size.y - lines_height) / 2;
 					vsep=0;
 
 				} break;
 				case VALIGN_BOTTOM: {
-					vbegin=size.y - lines_visible * font_h;
+					vbegin=size.y - lines_height;
 					vsep=0;
 
 				} break;
 				case VALIGN_FILL: {
 					vbegin=0;
 					if (lines_visible>1) {
-						vsep=(size.y - lines_visible * font_h) / (lines_visible - 1);
+						vsep=(size.y - lines_height) / (lines_visible - 1);
 					} else {
 						vsep=0;
 					}
@@ -206,7 +212,8 @@ void Label::_notification(int p_what) {
 				} break;
 				}
 
-			int y_ofs=(line-lines_skipped)*font_h + font->get_ascent();
+			int lines_drawn = line-lines_skipped;
+			int y_ofs=(lines_drawn * font->get_height() + (lines_drawn - 1) * line_spacing) + font->get_ascent();
 			y_ofs+=vbegin + line*vsep;
 
 			while(from!=to) {
