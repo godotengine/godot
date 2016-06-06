@@ -9,16 +9,16 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="64"
-   height="64"
-   viewBox="0 0 64 64"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_new.png"
-   inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90"
-   sodipodi:docname="icon_file_big.svg">
+   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_add_track.png"
+   inkscape:export-xdpi="45"
+   inkscape:export-ydpi="45"
+   sodipodi:docname="icon_quat.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -28,11 +28,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="11.313708"
-     inkscape:cx="32.899003"
-     inkscape:cy="32.88081"
+     inkscape:zoom="22.627418"
+     inkscape:cx="2.0756935"
+     inkscape:cy="11.847423"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1-8"
+     inkscape:current-layer="layer1"
      showgrid="true"
      units="px"
      inkscape:snap-bbox="true"
@@ -46,10 +46,7 @@
      inkscape:window-height="1016"
      inkscape:window-x="0"
      inkscape:window-y="27"
-     inkscape:window-maximized="1"
-     inkscape:object-paths="false"
-     inkscape:snap-intersection-paths="false"
-     inkscape:object-nodes="false">
+     inkscape:window-maximized="1">
     <inkscape:grid
        type="xygrid"
        id="grid3336" />
@@ -62,7 +59,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -70,18 +67,16 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-988.3622)">
-    <g
-       id="layer1-8"
-       inkscape:label="Layer 1"
-       transform="translate(0,-1.6949463e-5)">
-      <path
-         style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         d="m 10,5 0,54 44,0 0,-36 -18,0 0,-18 z m 31,0 0,13 13,0 z"
-         transform="translate(0,988.36222)"
-         id="rect4158"
-         inkscape:connector-curvature="0"
-         sodipodi:nodetypes="ccccccccccc" />
-    </g>
+     transform="translate(0,-1036.3622)">
+    <path
+       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 7 1 L 7 7 L 9 7 L 9 1 L 7 1 z M 7 13 L 7 15 L 9 15 L 9 13 L 7 13 z "
+       transform="translate(0,1036.3622)"
+       id="rect4137" />
+    <path
+       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 11,1039.7528 0,2.0137 a 5,2.0000043 0 0 1 2,1.5957 5,2.0000043 0 0 1 -5,2 5,2.0000043 0 0 1 -5,-2 5,2.0000043 0 0 1 2,-1.5977 l 0,-2.0097 a 7,3.9999957 0 0 0 -4,3.6074 7,3.9999957 0 0 0 7,4 7,3.9999957 0 0 0 7,-4 7,3.9999957 0 0 0 -4,-3.6094 z"
+       id="path4190"
+       inkscape:connector-curvature="0" />
   </g>
 </svg>
