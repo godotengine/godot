@@ -179,14 +179,38 @@ int ContextGL_X11::get_window_height() {
 }
 
 void ContextGL_X11::set_use_vsync(bool p_use) {
-	GLXDrawable drawable = glXGetCurrentDrawable();
-	//GLXSwapIntervalEXT(x11_display, drawable, p_use?1:0);
-	use_vsync=p_use;
+	static bool setup = false;
+	static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = NULL;
+	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalMESA = NULL;
+	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalSGI = NULL;
+
+	if (!setup) {
+		setup = true;
+		String extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
+		if (extensions.find("GLX_EXT_swap_control") != -1)
+			glXSwapIntervalEXT  = (PFNGLXSWAPINTERVALEXTPROC) glXGetProcAddressARB((const GLubyte*)"glXSwapIntervalEXT");
+		if (extensions.find("GLX_MESA_swap_control") != -1)
+			glXSwapIntervalMESA = (PFNGLXSWAPINTERVALSGIPROC) glXGetProcAddressARB((const GLubyte*)"glXSwapIntervalMESA");
+		if (extensions.find("GLX_SGI_swap_control") != -1)
+			glXSwapIntervalSGI  = (PFNGLXSWAPINTERVALSGIPROC) glXGetProcAddressARB((const GLubyte*)"glXSwapIntervalSGI");
+	}
+	int val = p_use ? 1:0;
+	if (glXSwapIntervalMESA) {
+		glXSwapIntervalMESA(val);
+	}
+	else if (glXSwapIntervalSGI) {
+		glXSwapIntervalSGI(val);
+	}
+	else if (glXSwapIntervalEXT) {
+		GLXDrawable drawable = glXGetCurrentDrawable();
+		glXSwapIntervalEXT(x11_display, drawable, val);
+	}
+	else return;
+	use_vsync = p_use;
 }
 bool ContextGL_X11::is_using_vsync() const {
 
-	return false;
-	//return use_vsync;
+	return use_vsync;
 }
 
 
