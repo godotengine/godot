@@ -1401,6 +1401,13 @@ bool Object::has_persistent_signal_connections() const {
 	return false;
 }
 
+void Object::get_signals_connected_to_this(List<Connection> *p_connections) const {
+
+    for (const List<Connection>::Element *E=connections.front();E;E=E->next()) {
+        p_connections->push_back(E->get());
+    }
+}
+
 
 Error Object::connect(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method,const Vector<Variant>& p_binds,uint32_t p_flags) {
 
