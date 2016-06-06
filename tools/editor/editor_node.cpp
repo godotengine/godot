@@ -5257,7 +5257,7 @@ EditorNode::EditorNode() {
 	if (!EditorSettings::get_singleton())
 		EditorSettings::create();
 	{
-		int dpi_mode = EditorSettings::get_singleton()->get("global/hdpi_mode");
+		int dpi_mode = EditorSettings::get_singleton()->get("global/hidpi_mode");
 		print_line("DPI MODE: "+itos(dpi_mode));
 		if (dpi_mode==0) {
 			editor_set_hidpi( OS::get_singleton()->get_screen_dpi(0) > 150 );

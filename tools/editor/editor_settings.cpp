@@ -493,8 +493,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		hints["global/editor_language"]=PropertyInfo(Variant::STRING,"global/editor_language",PROPERTY_HINT_ENUM,lang_hint,PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED);
 	}
 
-	set("global/hdpi_mode",0);
-	hints["global/hdpi_mode"]=PropertyInfo(Variant::INT,"global/hdpi_mode",PROPERTY_HINT_ENUM,"Auto,LoDPI,HiDPI",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED);
+	set("global/hidpi_mode",0);
+	hints["global/hidpi_mode"]=PropertyInfo(Variant::INT,"global/hidpi_mode",PROPERTY_HINT_ENUM,"Auto,LoDPI,HiDPI",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED);
 	set("global/show_script_in_scene_tabs",false);
 	set("global/font_size",14);
 	hints["global/font_size"]=PropertyInfo(Variant::INT,"global/font_size",PROPERTY_HINT_RANGE,"10,40,1",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED);
