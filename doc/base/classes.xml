@@ -9015,7 +9015,7 @@
 			</argument>
 			<description>
 			Change the anchor (ANCHOR_BEGIN, ANCHOR_END, ANCHOR_RATIO) type for a margin (MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM). Changing the anchor mode converts the current margin offset from the previous anchor mode to the new one, so margin offsets ([method set_margin]) must be done after setting anchors, or at the same time ([method set_anchor_and_margin])
-			
+
 			Additionally, [code]keep_margin[/code] controls whether margins should be left the same, or changed to keep the same position and size on-screen.
 			</description>
 		</method>
@@ -10312,7 +10312,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<return type="Array">
 			</return>
 			<description>
-			Return the list of keys in the dictionary.
+			Return the list of keys in the [Dictionary].
 			</description>
 		</method>
 		<method name="parse_json">
@@ -10336,6 +10336,13 @@ This approximation makes straight segments between each point, then subdivides t
 			</return>
 			<description>
 			Return the dictionary as json text.
+			</description>
+		</method>
+		<method name="values">
+			<return type="Array">
+			</return>
+			<description>
+			Return the list of values in the [Dictionary].
 			</description>
 		</method>
 	</methods>
@@ -10671,14 +10678,14 @@ This approximation makes straight segments between each point, then subdivides t
 			This function is called for each file exported and
 			depending from the return value one of many things
 			might happen.
-			
+
 			1) If returned value is null, the file is exported
 			as is.
-			
+
 			2) If the returned value is a RawAray (array of
 			bytes), the content of that array becomes the new
 			file being exported.
-			
+
 			3) If the file must also change it's name when
 			exported, then a [Dictionary] must be returned with
 			two fields: 'name' with the new filename and 'data'
@@ -10848,8 +10855,8 @@ This approximation makes straight segments between each point, then subdivides t
 	</brief_description>
 	<description>
 	Import plugins make it easy to handle importing of external assets
-	into a project. 
-	
+	into a project.
+
 	They way they work is not that obvious though, so please make sure
 	to read the documentation, tutorials and examples.
 	</description>
@@ -10872,7 +10879,7 @@ This approximation makes straight segments between each point, then subdivides t
 			when exported. The only exception is in some cases
 			when the file must be re-imported for different
 			platforms (ie. texture compression).
-			
+
 			If you want to customize the export process, it's
 			recommended to use [EditorExportPlugin.custom_export]
 			instead.
@@ -10884,7 +10891,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<description>
 			Get the name of the import plugin, which will be
 			used to identify content imported by this plugin.
-			
+
 			Try to use lowecase and underscores if possible.
 			</description>
 		</method>
@@ -10909,23 +10916,23 @@ This approximation makes straight segments between each point, then subdivides t
 			(from the dialog) or re-import
 			(manual or automatic when external source files
 			changed).
-			
+
 			An import process generally works like this:
-			
+
 			1) Check the metadata for source files and options.
 			Metadata is either generated in the import dialog or
 			taken from an existing resource upon reimport.
-			
+
 			2) Perform the import process into a new resource.
 			Some times the resource being re-imported may be already loaded
 			and in use, so checking for this by using
 			[ResourceLoader.has] is recommended. Otherwise
 			create a new resource.
-			
+
 			3) Set the metadata from the argument into the existing or new
 			resource being created using
 			[Resource.set_import_metadata].
-			
+
 			4) Save the resource into 'path' (function argument)
 			</description>
 		</method>
@@ -10938,12 +10945,12 @@ This approximation makes straight segments between each point, then subdivides t
 			when the user chooses to re-import the resource
 			(from filesystem). In the later case, the path for
 			the existing file is supplied in the argument.
-			
+
 			If the path is supplied, it is recommended to read
 			the import metadata with
 			[ResourceLoader.load_import_metadata] and fill in
 			the fields with the values contained there.
-			
+
 			The dialog can be shown in any way (just use a
 			ConfirmationDialog and pop it up). Upon
 			confirmation, fill up a ResourceImportMetadata and
@@ -11000,8 +11007,8 @@ This approximation makes straight segments between each point, then subdivides t
 			This method is called when the editor is about to
 			save the project, switch to another tab, etc. It
 			asks the plugin to apply any pending state changes
-			to ensure consistency. 
-			
+			to ensure consistency.
+
 			This is used, for example, in shader editors to let
 			the plugin know that it must apply the shader code
 			being written by the user to the object.
@@ -11045,7 +11052,7 @@ This approximation makes straight segments between each point, then subdivides t
 			object type derived from CanvasItem to capture the input in the 2D editor
 			viewport. The function is only being called if your
 			object is being edited.
-			
+
 			Return true if you want to capture the input,
 			otherwise false.
 			</description>
@@ -11062,11 +11069,11 @@ This approximation makes straight segments between each point, then subdivides t
 			given objet type derived from Spatial to capture the
 			input of the viewport. The function is only being
 			called if your object is being edited.
-			
+
 			By using the [InputEvent] and the [Camera] arguments
 			it's pretty easy to do raycasts into space using
 			Camera functions.
-			
+
 			Return true if you want to capture the input,
 			otherwise false.
 			</description>
@@ -11128,7 +11135,7 @@ This approximation makes straight segments between each point, then subdivides t
 			This function will be called when the editor is
 			requested to become visible. It is used for plugins
 			that edit a specific object type.
-			
+
 			Remember that you have to manage the visibility of
 			all your editor controls manually.
 			</description>
@@ -11149,11 +11156,11 @@ This approximation makes straight segments between each point, then subdivides t
 			Add a custom control to a container (see
 			CONTAINER_* enum). There are many locations where
 			custom controls can be added in the editor UI.
-			
+
 			Please remember that you have to manage the
 			visibility of your custom controls yourself (and likely
 			hide it after adding it).
-			
+
 			If your plugin is being removed, also make sure to
 			remove your custom controls too.
 			</description>
@@ -11166,7 +11173,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<description>
 			Add a control to the bottom panel (together with
 			Output, Debug, Animation, etc).
-			
+
 			If your plugin is being removed, also make sure to
 			remove your control by calling [method
 			remove_control_from_bottom_panel].
@@ -11179,12 +11186,12 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 			Add the control to a specific dock slot (see DOCK_*
-			enum for options). 
-			
+			enum for options).
+
 			If the dock is repositioned and as long as the
 			plugin is active, the editor will save the dock
 			position on further sessions.
-			
+
 			If your plugin is being removed, also make sure to
 			remove your control by calling [method
 			remove_control_from_docks].
@@ -11221,16 +11228,16 @@ This approximation makes straight segments between each point, then subdivides t
 			Add a custom type, which will appear in the list of
 			nodes or resources. An icon can be optionally
 			passed.
-			
+
 			When given node or resource is selected, the base
 			type will be instanced (ie, "Spatial", "Control",
 			"Resource"), then the script will be loaded and set
 			to this object.
-			
+
 			You can use the [EditorPlugin.handles] to check if
 			your custom object is being edited by checking the
-			script or using 'extends' keyword.			
-			
+			script or using 'extends' keyword.
+
 			During run-time, this will be a simple object with a
 			script so this function does not need to be called
 			then.
@@ -11251,7 +11258,7 @@ This approximation makes straight segments between each point, then subdivides t
 			Add an import plugin. These plugins manage importing
 			external content (from outside the project) into
 			formats the engine can understand.
-			
+
 			On exit, don't forget to remove the plugin by
 			calling [method remove_import_plugin]
 			</description>
@@ -11367,7 +11374,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<description>
 			This function is called upon import with the
 			imported scene.
-			
+
 			Just do any changes desired to the scene and return
 			it. If null is returned, import will fail and throw
 			an error to the user.
@@ -11457,14 +11464,14 @@ This approximation makes straight segments between each point, then subdivides t
 	<description>
 	Object that holds the project-independent editor settings. These
 	settings are generally visible in the Editor Settings menu.
-	
+
 	Accessing the settings is done by using the regular [Object] API,
 	such as.
-	
+
 	settings.set(prop,value)
-	
+
 	settings.get(prop)
-	
+
 	list_of_settings = settings.get_property_list()
 	</description>
 	<methods>
@@ -11481,9 +11488,9 @@ This approximation makes straight segments between each point, then subdivides t
 			<description>
 			Get the global settings path for the engine. Inside
 			this path you can find some standard paths such as:
-			
+
 			settings/tmp - used for temporary storage of files
-			
+
 			settings/templates - where export templates are
 			located
 			</description>
@@ -11559,7 +11566,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<description>
 			Commit a handle being edited (handles must have been
 			prevously added by [method add_handles]).
-			
+
 			If the cancel parameter is true, an option to
 			restore the edited value to the original is
 			provided.
@@ -11573,7 +11580,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<description>
 			Get the name of an edited handle (handles must have
 			been previously added by [method add_handles]).
-			
+
 			Handles can be named for reference to the user when editing.
 			</description>
 		</method>
@@ -11605,8 +11612,8 @@ This approximation makes straight segments between each point, then subdivides t
 			<description>
 			This function is used when the user drags a gizmo
 			handle (previously added with [method add_handles])
-			in screen coordinates. 
-			
+			in screen coordinates.
+
 			The [Camera] is also provided
 			so screen coordinates can be converted to raycasts.
 			</description>
@@ -11622,7 +11629,7 @@ This approximation makes straight segments between each point, then subdivides t
 			Add lines to the gizmo (as sets of 2 points), with a
 			given material. The lines are used for visualizing
 			the gizmo.
-			
+
 			Call this function during [method redraw].
 			</description>
 		</method>
@@ -11636,7 +11643,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<description>
 			Add a mesh to the gizmo, this is used for
 			visualization.
-			
+
 			Call this function during [method redraw].
 			</description>
 		</method>
@@ -11653,7 +11660,7 @@ This approximation makes straight segments between each point, then subdivides t
 			Add collision triangles to the gizmo for picking. A
 			[TriangleMesh] can be generated from a regular
 			[Mesh] too.
-			
+
 			Call this function during [method redraw].
 			</description>
 		</method>
@@ -11664,7 +11671,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 			Add an unscaled billboard for visualization.
-			
+
 			Call this function during [method redraw].
 			</description>
 		</method>
@@ -11678,10 +11685,10 @@ This approximation makes straight segments between each point, then subdivides t
 			<description>
 			Add a list of handles (points) which can be used to
 			deform the object being edited.
-			
+
 			There are virtual functions which will be called
 			upon editing of these handles.
-			
+
 			Call this function during [method redraw].
 			</description>
 		</method>
@@ -11691,7 +11698,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<description>
 			Call this function once and upon creation of the
 			gizmo, otherwise no other function will work.
-			
+
 			The argument is the node being edited by the gizmo.
 			</description>
 		</method>
@@ -14449,7 +14456,7 @@ This approximation makes straight segments between each point, then subdivides t
 	Hyper-text transfer protocol client.
 	</brief_description>
 	<description>
-	Hyper-text transfer protocol client. Supports SSL and SSL server certificate verification. 
+	Hyper-text transfer protocol client. Supports SSL and SSL server certificate verification.
 	Can be reused to connect to different hosts and make many requests.
 	</description>
 	<methods>
@@ -14792,7 +14799,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	A Node with the ability to send HTTP requests.
 	</brief_description>
 	<description>
-	A Node with the ability to send HTTP requests. Uses a [HTTPClient] internally, supports HTTPS. 
+	A Node with the ability to send HTTP requests. Uses a [HTTPClient] internally, supports HTTPS.
 	Can be used to make HTTP requests or download files via HTTP.
 	</description>
 	<methods>
@@ -41413,7 +41420,7 @@ This method controls whether the position between two cached points is interpola
 	<description>
 	Helper to maange UndoRedo in the editor or custom tools. It works by
 	storing calls to functions in both 'do' an 'undo' lists.
-	
+
 	Common behavior is to create an action, then add do/undo calls to
 	functions or property changes, then commiting the action.
 	</description>
@@ -41537,8 +41544,8 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			Get the version, each time a new action is commited,
 			the version number of the UndoRedo is increased
-			automatically. 
-			
+			automatically.
+
 			This is useful mostly to check if something changed
 			from a saved version.
 			</description>

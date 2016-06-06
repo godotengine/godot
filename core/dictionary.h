@@ -81,6 +81,7 @@ public:
 	const Variant* next(const Variant* p_key=NULL) const;
 
 	Array keys() const;
+	Array values() const;
 
 	Dictionary(const Dictionary& p_from);
 	Dictionary(bool p_shared=false);

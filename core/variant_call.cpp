@@ -445,6 +445,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1(Dictionary,erase);
 	VCALL_LOCALMEM0R(Dictionary,hash);
 	VCALL_LOCALMEM0R(Dictionary,keys);
+	VCALL_LOCALMEM0R(Dictionary,values);
 	VCALL_LOCALMEM1R(Dictionary,parse_json);
 	VCALL_LOCALMEM0R(Dictionary,to_json);
 
@@ -1434,6 +1435,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(DICTIONARY,NIL,Dictionary,erase,NIL,"value",varray());
 	ADDFUNC0(DICTIONARY,INT,Dictionary,hash,varray());
 	ADDFUNC0(DICTIONARY,ARRAY,Dictionary,keys,varray());
+	ADDFUNC0(DICTIONARY,ARRAY,Dictionary,values,varray());
 
 	ADDFUNC1(DICTIONARY,INT,Dictionary,parse_json,STRING,"json",varray());
 	ADDFUNC0(DICTIONARY,STRING,Dictionary,to_json,varray());
