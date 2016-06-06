@@ -63,14 +63,9 @@ elif (os.name=="nt"):
 	if (os.getenv("VSINSTALLDIR")==None or platform_arg=="android"):
 		custom_tools=['mingw']
 
-env_base=Environment(
-	tools=custom_tools,
-	ENV={
-		'PATH' : os.getenv('PATH'),
-		'PKG_CONFIG_PATH' : os.getenv('PKG_CONFIG_PATH')
-});
-
-#env_base=Environment(tools=custom_tools);
+env_base=Environment(tools=custom_tools);
+env_base.AppendENVPath('PATH', os.getenv('PATH'))
+env_base.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
 env_base.global_defaults=global_defaults
 env_base.android_maven_repos=[]
 env_base.android_dependencies=[]
