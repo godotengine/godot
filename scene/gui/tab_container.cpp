@@ -411,7 +411,6 @@ void TabContainer::_notification(int p_what) {
 			panel->draw(ci, Rect2( 0, top_size.height, size.width, size.height-top_size.height));
 
 		} break;
-		case NOTIFICATION_READY:
 		case NOTIFICATION_THEME_CHANGED: {
 
 			call_deferred("set_current_tab",get_current_tab()); //wait until all changed theme
