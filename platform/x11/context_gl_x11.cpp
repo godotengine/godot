@@ -34,7 +34,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#define GLX_GLXEXT_PROTOTYPES
 #include <GL/glx.h>
+#include <GL/glxext.h>
 
 #define GLX_CONTEXT_MAJOR_VERSION_ARB		0x2091
 #define GLX_CONTEXT_MINOR_VERSION_ARB		0x2092
@@ -178,12 +180,13 @@ int ContextGL_X11::get_window_height() {
 
 void ContextGL_X11::set_use_vsync(bool p_use) {
 	GLXDrawable drawable = glXGetCurrentDrawable();
-	glXSwapIntervalEXT(x11_display, drawable, p_use?1:0);
+	//GLXSwapIntervalEXT(x11_display, drawable, p_use?1:0);
 	use_vsync=p_use;
 }
 bool ContextGL_X11::is_using_vsync() const {
 
-	return use_vsync;
+	return false;
+	//return use_vsync;
 }
 
 
