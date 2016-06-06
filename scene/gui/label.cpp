@@ -96,7 +96,7 @@ void Label::_notification(int p_what) {
 		int lines_visible = 0;
 		for(;;) {
 
-			if(lines_height + font->get_height() >= size.y)
+			if(lines_height + font->get_height() > size.y)
 				break;
 			if(lines_visible >= line_count)
 				break;
@@ -213,7 +213,7 @@ void Label::_notification(int p_what) {
 				}
 
 			int lines_drawn = line-lines_skipped;
-			int y_ofs=(lines_drawn * font->get_height() + (lines_drawn - 1) * line_spacing) + font->get_ascent();
+			int y_ofs=(lines_drawn * font->get_height() + lines_drawn * line_spacing) + font->get_ascent();
 			y_ofs+=vbegin + line*vsep;
 
 			while(from!=to) {
