@@ -106,6 +106,7 @@
 #include "tools/editor/io_plugins/editor_font_import_plugin.h"
 #include "tools/editor/io_plugins/editor_sample_import_plugin.h"
 #include "tools/editor/io_plugins/editor_translation_import_plugin.h"
+#include "tools/editor/io_plugins/editor_bitmask_import_plugin.h"
 #include "tools/editor/io_plugins/editor_mesh_import_plugin.h"
 #include "tools/editor/io_plugins/editor_export_scene.h"
 
@@ -6365,6 +6366,8 @@ EditorNode::EditorNode() {
 	editor_import_export->add_import_plugin( Ref<EditorFontImportPlugin>( memnew(EditorFontImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorSampleImportPlugin>( memnew(EditorSampleImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorTranslationImportPlugin>( memnew(EditorTranslationImportPlugin(this))));
+	editor_import_export->add_import_plugin( Ref<EditorBitMaskImportPlugin>( memnew(EditorBitMaskImportPlugin(this))));
+
 
 	editor_import_export->add_export_plugin( Ref<EditorTextureExportPlugin>( memnew(EditorTextureExportPlugin)));
 	editor_import_export->add_export_plugin( Ref<EditorSampleExportPlugin>( memnew(EditorSampleExportPlugin)));
