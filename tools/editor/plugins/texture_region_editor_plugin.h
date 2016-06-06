@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  sprite_region_editor_plugin.h                                        */
+/*  texture_region_editor_plugin.h                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -29,22 +29,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SPRITE_REGION_EDITOR_PLUGIN_H
-#define SPRITE_REGION_EDITOR_PLUGIN_H
+#ifndef TEXTURE_REGION_EDITOR_PLUGIN_H
+#define TEXTURE_REGION_EDITOR_PLUGIN_H
 
 #include "canvas_item_editor_plugin.h"
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
 #include "scene/2d/sprite.h"
+#include "scene/gui/patch_9_frame.h"
+#include "scene/resources/style_box.h"
 
-class SpriteRegionEditor : public HBoxContainer {
+class TextureRegionEditor : public HBoxContainer {
 
-	OBJ_TYPE(SpriteRegionEditor, HBoxContainer );
+	OBJ_TYPE(TextureRegionEditor, HBoxContainer );
+	enum RegionType {
+		REGION_TEXTURE_REGION,
+		REGION_PATCH_MARGIN
+	};
 
-	friend class SpriteRegionEditorPlugin;
-
-	ToolButton *edit_node;
-//	Button *use_region;
+	friend class TextureRegionEditorPlugin;
+	ToolButton *region_button;
+	ToolButton *margin_button;
 	ToolButton *b_snap_enable;
 	ToolButton *b_snap_grid;
 	TextureFrame *icon_zoom;
@@ -59,7 +64,6 @@ class SpriteRegionEditor : public HBoxContainer {
 	VScrollBar *vscroll;
 	HScrollBar *hscroll;
 
-	Sprite *node;
 	EditorNode *editor;
 	AcceptDialog *dlg_editor;
 	UndoRedo* undo_redo;
@@ -73,8 +77,17 @@ class SpriteRegionEditor : public HBoxContainer {
 	Vector2 snap_offset;
 	Vector2 snap_step;
 
+
+	String node_type;
+	Patch9Frame *node_patch9;
+	Sprite *node_sprite;
+	StyleBoxTexture *obj_styleBox;
+
+	int editing_region;
 	Rect2 rect;
 	Rect2 rect_prev;
+	Rect2 tex_region;
+
 	bool drag;
 	bool creating;
 	Vector2 drag_from;
@@ -88,34 +101,34 @@ class SpriteRegionEditor : public HBoxContainer {
 	void _set_snap_off_y(float p_val);
 	void _set_snap_step_x(float p_val);
 	void _set_snap_step_y(float p_val);
-
+	void apply_rect(const Rect2& rect);
 protected:
 
 	void _notification(int p_what);
-	void _node_removed(Node *p_node);
+	void _node_removed(Object *p_obj);
 	static void _bind_methods();
 
 	Vector2 snap_point(Vector2 p_target) const;
 
 public:
 
-	void edit();
-	void _edit_node();
+	void _edit_node(int tex_region);
+	void _edit_region();
+	void _edit_margin();
 	void _region_draw();
 	void _region_input(const InputEvent &p_input);
 	void _scroll_changed(float);
 
-	void edit(Node *p_sprite);
-	SpriteRegionEditor(EditorNode* p_editor);
+	void edit(Object *p_obj);
+	TextureRegionEditor(EditorNode* p_editor);
 
 };
 
-class SpriteRegionEditorPlugin : public EditorPlugin
+class TextureRegionEditorPlugin : public EditorPlugin
 {
+	OBJ_TYPE( TextureRegionEditorPlugin, EditorPlugin );
 
-	OBJ_TYPE( SpriteRegionEditorPlugin, EditorPlugin );
-
-	SpriteRegionEditor *region_editor;
+	TextureRegionEditor *region_editor;
 	EditorNode *editor;
 public:
 
@@ -127,7 +140,7 @@ public:
 	void set_state(const Dictionary &p_state);
 	Dictionary get_state() const;
 
-	SpriteRegionEditorPlugin(EditorNode *p_node);
+	TextureRegionEditorPlugin(EditorNode *p_node);
 };
 
-#endif // SPRITE_REGION_EDITOR_PLUGIN_H
+#endif // TEXTURE_REGION_EDITOR_PLUGIN_H

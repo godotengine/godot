@@ -59,7 +59,7 @@
 
 // plugins
 #include "plugins/sprite_frames_editor_plugin.h"
-#include "plugins/sprite_region_editor_plugin.h"
+#include "plugins/texture_region_editor_plugin.h"
 #include "plugins/canvas_item_editor_plugin.h"
 #include "addon_editor_plugin.h"
 #include "plugins/spatial_editor_plugin.h"
@@ -5216,7 +5216,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("play_pressed") );
 	ADD_SIGNAL( MethodInfo("pause_pressed") );
 	ADD_SIGNAL( MethodInfo("stop_pressed") );
-	ADD_SIGNAL( MethodInfo("request_help") );	
+	ADD_SIGNAL( MethodInfo("request_help") );
 	ADD_SIGNAL( MethodInfo("script_add_function_request",PropertyInfo(Variant::OBJECT,"obj"),PropertyInfo(Variant::STRING,"function"),PropertyInfo(Variant::STRING_ARRAY,"args")) );
 	ADD_SIGNAL( MethodInfo("resource_saved",PropertyInfo(Variant::OBJECT,"obj")) );
 
@@ -6407,7 +6407,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( TileSetEditorPlugin(this) ) );
 	add_editor_plugin( memnew( TileMapEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SpriteFramesEditorPlugin(this) ) );
-	add_editor_plugin( memnew( SpriteRegionEditorPlugin(this) ) );
+	add_editor_plugin( memnew( TextureRegionEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Particles2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Path2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( PathEditorPlugin(this) ) );
@@ -6639,6 +6639,3 @@ EditorPluginList::EditorPluginList() {
 
 EditorPluginList::~EditorPluginList() {
 }
-
-
-
