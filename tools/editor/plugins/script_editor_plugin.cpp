@@ -584,7 +584,6 @@ void ScriptTextEditor::_bind_methods() {
 }
 
 ScriptTextEditor::ScriptTextEditor() {
-	get_text_edit()->set_breakpoint_gutter_width(12);
 }
 
 /*** SCRIPT EDITOR ******/
