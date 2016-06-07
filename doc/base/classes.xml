@@ -15237,6 +15237,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="2" name="dest" type="Vector2" default="0">
 			</argument>
 			<description>
+			Copy a "src_rect" [Rect2] from "src" [Image] to this [Image] on coordinates "dest".
 			</description>
 		</method>
 		<method name="brush_transfer">
@@ -15247,6 +15248,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="2" name="pos" type="Vector2" default="0">
 			</argument>
 			<description>
+			Transfer data from "src" to this [Image] using a "brush" as a mask/brush on coordinates "pos".
 			</description>
 		</method>
 		<method name="brushed">
@@ -15259,6 +15261,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="2" name="pos" type="Vector2" default="0">
 			</argument>
 			<description>
+			Return a new [Image] from this [Image] that is created by brushhing see [method brush_transfer].
 			</description>
 		</method>
 		<method name="compressed">
@@ -15267,6 +15270,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="format" type="int" default="0">
 			</argument>
 			<description>
+			Return a new compressed [Image] from this [Image] using one of [Image].COMPRESS_*.
 			</description>
 		</method>
 		<method name="converted">
@@ -15275,18 +15279,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="format" type="int" default="0">
 			</argument>
 			<description>
+			Return a new [Image] from this [Image] with a different format.
 			</description>
 		</method>
 		<method name="decompressed">
 			<return type="Image">
 			</return>
 			<description>
+			Return a new decompressed [Image].
 			</description>
 		</method>
 		<method name="empty">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this [Image] is empty(no data).
 			</description>
 		</method>
 		<method name="fix_alpha_edges">
@@ -15297,18 +15304,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="RawArray">
 			</return>
 			<description>
+			Return the raw data of the [Image].
 			</description>
 		</method>
 		<method name="get_format">
 			<return type="int">
 			</return>
 			<description>
+			Return the format of the [Image], one of [Image].FORMAT_*.
 			</description>
 		</method>
 		<method name="get_height">
 			<return type="int">
 			</return>
 			<description>
+			Return the height of the [Image].
 			</description>
 		</method>
 		<method name="get_pixel">
@@ -15321,6 +15331,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="2" name="mipmap_level" type="int" default="0">
 			</argument>
 			<description>
+			Return the color of the pixel in the [Image] on coordinates "x,y" on mipmap level "mipmap_level".
 			</description>
 		</method>
 		<method name="get_rect">
@@ -15329,18 +15340,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="area" type="Rect2" default="0">
 			</argument>
 			<description>
+			Return a new [Image] that is a copy of "area" in this [Image].
 			</description>
 		</method>
 		<method name="get_used_rect">
 			<return type="Rect2">
 			</return>
 			<description>
+			Return the area of this [Image] that is used/visibly colored/opaque.
 			</description>
 		</method>
 		<method name="get_width">
 			<return type="int">
 			</return>
 			<description>
+			Return the width of the [Image].
 			</description>
 		</method>
 		<method name="load">
@@ -15349,6 +15363,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="path" type="String" default="0">
 			</argument>
 			<description>
+			Load an [Image].
 			</description>
 		</method>
 		<method name="put_pixel">
@@ -15361,6 +15376,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="3" name="mipmap_level" type="int" default="0">
 			</argument>
 			<description>
+			Put a pixel of "color" on coordinates "x,y" on mipmap level "mipmap_level".
 			</description>
 		</method>
 		<method name="resized">
@@ -15373,6 +15389,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="2" name="interpolation" type="int" default="1">
 			</argument>
 			<description>
+			Return a new [Image] from this [Image] that is resized to size "x,y" using [Image].INTERPOLATE_*.
 			</description>
 		</method>
 		<method name="save_png">
@@ -15381,6 +15398,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="path" type="String" default="0">
 			</argument>
 			<description>
+			Save this [Image] as a png.
 			</description>
 		</method>
 		<method name="Image">
@@ -15454,12 +15472,20 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="FORMAT_CUSTOM" value="22">
 		</constant>
+		<constant name="INTERPOLATE_NEAREST" value="0">
+		</constant>
+		<constant name="INTERPOLATE_BILINEAR" value="1">
+		</constant>
+		<constant name="INTERPOLATE_CUBIC" value="2">
+		</constant>
 	</constants>
 </class>
 <class name="ImageTexture" inherits="Texture" category="Core">
 	<brief_description>
+	A [Texture] based on an [Image].
 	</brief_description>
 	<description>
+	A [Texture] based on an [Image]. Can be created from an [Image].
 	</description>
 	<methods>
 		<method name="create">
@@ -15472,6 +15498,9 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="3" name="flags" type="int" default="7">
 			</argument>
 			<description>
+			Create a new [ImageTexture] with "width" and "height".
+			"format" one of [Image].FORMAT_*.
+			"flags" one or more of [Texture].FLAG_*.
 			</description>
 		</method>
 		<method name="create_from_image">
@@ -15480,54 +15509,63 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="flags" type="int" default="7">
 			</argument>
 			<description>
+			Create a new [ImageTexture] from an [Image] with "flags" from [Texture].FLAG_*.
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the format of the [ImageTexture], one of [Image].FORMAT_*.
 			</description>
 		</method>
 		<method name="load">
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+			Load an [ImageTexure].
 			</description>
 		</method>
 		<method name="set_data">
 			<argument index="0" name="image" type="Image">
 			</argument>
 			<description>
+			Set the [Image] of this [ImageTexture].
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">
 			<return type="Image">
 			</return>
 			<description>
+			Return the [Image] of this [ImageTexture].
 			</description>
 		</method>
 		<method name="set_storage">
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+			Set the storage type. One of [ImageTexture].STORAGE_*.
 			</description>
 		</method>
 		<method name="get_storage" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the storage type. One of [ImageTexture].STORAGE_*.
 			</description>
 		</method>
 		<method name="set_lossy_storage_quality">
 			<argument index="0" name="quality" type="float">
 			</argument>
 			<description>
+			Set the storage quality in case of [ImageTexture].STORAGE_COMPRESS_LOSSY.
 			</description>
 		</method>
 		<method name="get_lossy_storage_quality" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the storage quality for [ImageTexture].STORAGE_COMPRESS_LOSSY.
 			</description>
 		</method>
 		<method name="fix_alpha_edges">
@@ -15555,10 +15593,13 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</methods>
 	<constants>
 		<constant name="STORAGE_RAW" value="0">
+			[Image] data is stored raw and unaltered.
 		</constant>
 		<constant name="STORAGE_COMPRESS_LOSSY" value="1">
+			[Image] data is compressed with a lossy algorithm. You can set the storage quality with [method set_lossy_storage_quality].
 		</constant>
 		<constant name="STORAGE_COMPRESS_LOSSLESS" value="2">
+			[Image] data is compressed with a lossless algorithm.
 		</constant>
 	</constants>
 </class>
@@ -17979,8 +18020,11 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="LargeTexture" inherits="Texture" category="Core">
 	<brief_description>
+	A Texture capable of storing many smaller Textures with offsets.
 	</brief_description>
 	<description>
+	A Texture capable of storing many smaller Textures with offsets.
+	You can dynamically add pieces(Textures) to this fLargeTexture] using different offsets.
 	</description>
 	<methods>
 		<method name="add_piece">
@@ -17991,6 +18035,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="texture" type="Texture">
 			</argument>
 			<description>
+			Add another [Texture] to this [LargeTexture], starting on offset "ofs".
 			</description>
 		</method>
 		<method name="set_piece_offset">
@@ -17999,6 +18044,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="ofs" type="Vector2">
 			</argument>
 			<description>
+			Set the offset of the piece with index "idx" to "ofs".
 			</description>
 		</method>
 		<method name="set_piece_texture">
@@ -18007,22 +18053,26 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="texture" type="Texture">
 			</argument>
 			<description>
+			Set the [Texture] of the piece with index "idx" to  "ofs".
 			</description>
 		</method>
 		<method name="set_size">
 			<argument index="0" name="size" type="Vector2">
 			</argument>
 			<description>
+			Set the size of this [LargeTexture].
 			</description>
 		</method>
 		<method name="clear">
 			<description>
+			Clear the [LargeTexture].
 			</description>
 		</method>
 		<method name="get_piece_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the number of pieces currently in this [LargeTexture].
 			</description>
 		</method>
 		<method name="get_piece_offset" qualifiers="const">
@@ -18031,6 +18081,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Return the offset of the piece with index "idx".
 			</description>
 		</method>
 		<method name="get_piece_texture" qualifiers="const">
@@ -18039,6 +18090,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Return the [Texture] of the piece with index "idx".
 			</description>
 		</method>
 	</methods>
