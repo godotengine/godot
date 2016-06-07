@@ -1809,8 +1809,32 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_NETWORK" value="4">
 		</constant>
+		<constant name="PROPERTY_USAGE_EDITOR_HELPER" value="8">
+		</constant>
+		<constant name="PROPERTY_USAGE_CHECKABLE" value="16">
+		</constant>
+		<constant name="PROPERTY_USAGE_CHECKED" value="32">
+		</constant>
+		<constant name="PROPERTY_USAGE_INTERNATIONALIZED" value="64">
+		</constant>
+		<constant name="PROPERTY_USAGE_BUNDLE" value="128">
+		</constant>
+		<constant name="PROPERTY_USAGE_CATEGORY" value="256">
+		</constant>
+		<constant name="PROPERTY_USAGE_STORE_IF_NONZERO" value="512">
+		</constant>
+		<constant name="PROPERTY_USAGE_STORE_IF_NONONE" value="1024">
+		</constant>
+		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="2048">
+		</constant>
+		<constant name="PROPERTY_USAGE_RESTART_IF_CHANGED" value="4096">
+		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="7">
 			Default usage (storage and editor).
+		</constant>
+		<constant name="PROPERTY_USAGE_DEFAULT_INTL" value="71">
+		</constant>
+		<constant name="PROPERTY_USAGE_NOEDITOR" value="5">
 		</constant>
 		<constant name="METHOD_FLAG_NORMAL" value="1">
 		</constant>
@@ -9404,6 +9428,96 @@
 			<description>
 			</description>
 		</method>
+		<method name="has_icon_override" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_stylebox_override" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_font_override" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_color_override" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_constant_override" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_icon" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_stylebox" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_font" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_color" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_constant" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_parent_control" qualifiers="const">
 			<return type="Control">
 			</return>
@@ -9520,6 +9634,10 @@
 		<method name="warp_mouse">
 			<argument index="0" name="to_pos" type="Vector2">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="minimum_size_changed">
 			<description>
 			</description>
 		</method>
@@ -18672,6 +18790,36 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</theme_item>
 	</theme_items>
 </class>
+<class name="Listener" inherits="Spatial" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="make_current">
+			<description>
+			</description>
+		</method>
+		<method name="clear_current">
+			<description>
+			</description>
+		</method>
+		<method name="is_current" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_listener_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="MainLoop" inherits="Object" category="Core">
 	<brief_description>
 	Main loop is the abstract main loop base class.
@@ -22296,6 +22444,18 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			</description>
 		</method>
+		<method name="set_use_vsync">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_vsnc_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="DAY_SUNDAY" value="0">
@@ -24236,6 +24396,18 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</return>
 			<argument index="0" name="margin" type="int">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_region_rect">
+			<argument index="0" name="rect" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_region_rect" qualifiers="const">
+			<return type="Rect2">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -36652,6 +36824,14 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
+		<method name="erase">
+			<argument index="0" name="pos" type="int">
+			</argument>
+			<argument index="1" name="chars" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="extension">
 			<return type="String">
 			</return>
@@ -37370,6 +37550,18 @@ This method controls whether the position between two cached points is interpola
 			</return>
 			<argument index="0" name="margin" type="int">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_region_rect">
+			<argument index="0" name="region" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_region_rect" qualifiers="const">
+			<return type="Rect2">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -41705,6 +41897,12 @@ This method controls whether the position between two cached points is interpola
 	2-element structure that can be used to represent positions in 2d-space, or any other pair of numeric values.
 	</description>
 	<methods>
+		<method name="abs">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="angle">
 			<return type="float">
 			</return>
@@ -44551,11 +44749,13 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<argument index="1" name="arg1" type="Rect2">
 			</argument>
-			<argument index="2" name="arg2" type="RID">
+			<argument index="2" name="arg2" type="Rect2">
 			</argument>
-			<argument index="3" name="arg3" type="RealArray">
+			<argument index="3" name="arg3" type="RID">
 			</argument>
-			<argument index="4" name="arg4" type="Color" default="Color(1,1,1,1)">
+			<argument index="4" name="arg4" type="RealArray">
+			</argument>
+			<argument index="5" name="arg5" type="Color" default="Color(1,1,1,1)">
 			</argument>
 			<description>
 			</description>
