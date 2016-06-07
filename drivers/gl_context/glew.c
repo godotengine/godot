@@ -1,7 +1,3 @@
-#ifdef __HAIKU__
-	#undef GLEW_ENABLED
-#endif
-
 #ifdef GLEW_ENABLED
 /*
 ** The OpenGL Extension Wrangler Library
