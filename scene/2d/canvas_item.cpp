@@ -455,19 +455,14 @@ void CanvasItem::_enter_canvas() {
 	if ((!get_parent() || !get_parent()->cast_to<CanvasItem>()) || toplevel) {
 
 		Node *n = this;
-		Viewport *viewport=NULL;
+
 		canvas_layer=NULL;
 
 		while(n) {
 
-			if (n->cast_to<Viewport>()) {
-
-				viewport = n->cast_to<Viewport>();
-				break;
-			}
-			if (!canvas_layer && n->cast_to<CanvasLayer>()) {
-
-				canvas_layer = n->cast_to<CanvasLayer>();
+            canvas_layer = n->cast_to<CanvasLayer>();
+            if (canvas_layer) {
+                break;
 			}
 			n=n->get_parent();
 		}
@@ -476,7 +471,7 @@ void CanvasItem::_enter_canvas() {
 		if (canvas_layer)
 			canvas=canvas_layer->get_world_2d()->get_canvas();
 		else
-			canvas=viewport->find_world_2d()->get_canvas();
+            canvas=get_viewport()->find_world_2d()->get_canvas();
 
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item,canvas);
 
@@ -487,7 +482,9 @@ void CanvasItem::_enter_canvas() {
 
 	} else {
 
+
 		CanvasItem *parent = get_parent_item();
+        canvas_layer=parent->canvas_layer;
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item,parent->get_canvas_item());
 		parent->_queue_sort_children();
 	}
@@ -1176,11 +1173,9 @@ Matrix32 CanvasItem::get_viewport_transform() const {
 			return canvas_layer->get_transform();
 		}
 
-	} else if (get_viewport()) {
+    } else {
 		return get_viewport()->get_final_transform() * get_viewport()->get_canvas_transform();
 	}
-
-	return Matrix32();
 
 }
 
