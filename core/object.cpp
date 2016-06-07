@@ -1403,9 +1403,9 @@ bool Object::has_persistent_signal_connections() const {
 
 void Object::get_signals_connected_to_this(List<Connection> *p_connections) const {
 
-    for (const List<Connection>::Element *E=connections.front();E;E=E->next()) {
-        p_connections->push_back(E->get());
-    }
+	for (const List<Connection>::Element *E=connections.front();E;E=E->next()) {
+		p_connections->push_back(E->get());
+	}
 }
 
 

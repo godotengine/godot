@@ -1574,30 +1574,29 @@ void Viewport::_gui_call_input(Control *p_control,const InputEvent& p_input) {
 
 //	_block();
 
-    CanvasItem *ci=p_control;
-    while(ci) {
+	CanvasItem *ci=p_control;
+	while(ci) {
 
-        Control *control = ci->cast_to<Control>();
-        if (control) {
-            control->call_multilevel(SceneStringNames::get_singleton()->_input_event,p_input);
-            if (gui.key_event_accepted)
-                break;
-            if (!control->is_inside_tree())
-                break;
-            control->emit_signal(SceneStringNames::get_singleton()->input_event,p_input);
-            if (!control->is_inside_tree() || control->is_set_as_toplevel()) {
-                break;
-            }
-            if (gui.key_event_accepted)
-                break;
-            if (control->data.stop_mouse && (p_input.type==InputEvent::MOUSE_BUTTON || p_input.type==InputEvent::MOUSE_MOTION))
-                break;
-        }
+		Control *control = ci->cast_to<Control>();
+		if (control) {
+			control->call_multilevel(SceneStringNames::get_singleton()->_input_event,p_input);
+			if (gui.key_event_accepted)
+				break;
+			if (!control->is_inside_tree())
+				break;
+			control->emit_signal(SceneStringNames::get_singleton()->input_event,p_input);
+			if (!control->is_inside_tree() || control->is_set_as_toplevel())
+				break;
+			if (gui.key_event_accepted)
+				break;
+			if (control->data.stop_mouse && (p_input.type==InputEvent::MOUSE_BUTTON || p_input.type==InputEvent::MOUSE_MOTION))
+				break;
+		}
 
-        if (ci->is_set_as_toplevel())
-            break;
+		if (ci->is_set_as_toplevel())
+			break;
 
-        ci=ci->get_parent_item();
+		ci=ci->get_parent_item();
 	}
 
 	//_unblock();

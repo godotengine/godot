@@ -460,9 +460,9 @@ void CanvasItem::_enter_canvas() {
 
 		while(n) {
 
-            canvas_layer = n->cast_to<CanvasLayer>();
-            if (canvas_layer) {
-                break;
+			canvas_layer = n->cast_to<CanvasLayer>();
+			if (canvas_layer) {
+				break;
 			}
 			n=n->get_parent();
 		}
@@ -471,7 +471,7 @@ void CanvasItem::_enter_canvas() {
 		if (canvas_layer)
 			canvas=canvas_layer->get_world_2d()->get_canvas();
 		else
-            canvas=get_viewport()->find_world_2d()->get_canvas();
+			canvas=get_viewport()->find_world_2d()->get_canvas();
 
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item,canvas);
 
@@ -482,9 +482,8 @@ void CanvasItem::_enter_canvas() {
 
 	} else {
 
-
 		CanvasItem *parent = get_parent_item();
-        canvas_layer=parent->canvas_layer;
+		canvas_layer=parent->canvas_layer;
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item,parent->get_canvas_item());
 		parent->_queue_sort_children();
 	}
@@ -1173,7 +1172,7 @@ Matrix32 CanvasItem::get_viewport_transform() const {
 			return canvas_layer->get_transform();
 		}
 
-    } else {
+	} else {
 		return get_viewport()->get_final_transform() * get_viewport()->get_canvas_transform();
 	}
 
