@@ -702,6 +702,7 @@ public:
 		struct CommandStyle : public Command {
 
 			Rect2 rect;
+			Rect2 source;
 			RID texture;
 			float margin[4];
 			bool draw_center;
@@ -944,12 +945,12 @@ public:
 	virtual void canvas_disable_blending()=0;
 	virtual void canvas_set_opacity(float p_opacity)=0;
 	virtual void canvas_set_blend_mode(VS::MaterialBlendMode p_mode)=0;
-	virtual void canvas_begin_rect(const Matrix32& p_transform)=0;;
+	virtual void canvas_begin_rect(const Matrix32& p_transform)=0;
 	virtual void canvas_set_clip(bool p_clip, const Rect2& p_rect)=0;
 	virtual void canvas_end_rect()=0;
 	virtual void canvas_draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width)=0;
 	virtual void canvas_draw_rect(const Rect2& p_rect, int p_flags, const Rect2& p_source,RID p_texture,const Color& p_modulate)=0;
-	virtual void canvas_draw_style_box(const Rect2& p_rect, RID p_texture,const float *p_margins, bool p_draw_center=true,const Color& p_modulate=Color(1,1,1))=0;
+	virtual void canvas_draw_style_box(const Rect2& p_rect, const Rect2& p_src_region, RID p_texture,const float *p_margins, bool p_draw_center=true,const Color& p_modulate=Color(1,1,1))=0;
 	virtual void canvas_draw_primitive(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width)=0;
 	virtual void canvas_draw_polygon(int p_vertex_count, const int* p_indices, const Vector2* p_vertices, const Vector2* p_uvs, const Color* p_colors,const RID& p_texture,bool p_singlecolor)=0;
 	virtual void canvas_set_transform(const Matrix32& p_transform)=0;

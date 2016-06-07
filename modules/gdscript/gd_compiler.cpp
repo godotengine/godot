@@ -1588,6 +1588,12 @@ Error GDCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDPa
 		}
 
 
+	} else {
+		// without extends, implicitly extend Reference
+		int native_idx = GDScriptLanguage::get_singleton()->get_global_map()["Reference"];
+		native = GDScriptLanguage::get_singleton()->get_global_array()[native_idx];
+		ERR_FAIL_COND_V(native.is_null(), ERR_BUG);
+		p_script->native=native;
 	}
 
 

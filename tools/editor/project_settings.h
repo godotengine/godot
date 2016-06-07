@@ -91,6 +91,7 @@ class ProjectSettings : public AcceptDialog {
 
 
 	Tree *autoload_list;
+	String selected_autoload;
 	EditorFileDialog *autoload_file_open;
 	LineEdit *autoload_add_name;
 	LineEdit *autoload_add_path;
@@ -104,6 +105,7 @@ class ProjectSettings : public AcceptDialog {
 	void _autoload_edited();
 	void _autoload_file_open();
 	void _autoload_delete(Object *p_item,int p_column, int p_button);
+	void _autoload_selected();
 	bool updating_autoload;
 
 

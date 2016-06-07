@@ -3745,7 +3745,7 @@ void VisualServerRaster::canvas_item_add_texture_rect_region(RID p_item, const R
 
 }
 
-void VisualServerRaster::canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector2& p_topleft, const Vector2& p_bottomright, bool p_draw_center,const Color& p_modulate) {
+void VisualServerRaster::canvas_item_add_style_box(RID p_item, const Rect2& p_rect, const Rect2& p_source, RID p_texture, const Vector2& p_topleft, const Vector2& p_bottomright, bool p_draw_center,const Color& p_modulate) {
 
 	VS_CHANGED;
 	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
@@ -3755,6 +3755,7 @@ void VisualServerRaster::canvas_item_add_style_box(RID p_item, const Rect2& p_re
 	ERR_FAIL_COND(!style);
 	style->texture=p_texture;
 	style->rect=p_rect;
+	style->source=p_source;
 	style->draw_center=p_draw_center;
 	style->color=p_modulate;
 	style->margin[MARGIN_LEFT]=p_topleft.x;

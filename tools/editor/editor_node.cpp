@@ -59,7 +59,7 @@
 
 // plugins
 #include "plugins/sprite_frames_editor_plugin.h"
-#include "plugins/sprite_region_editor_plugin.h"
+#include "plugins/texture_region_editor_plugin.h"
 #include "plugins/canvas_item_editor_plugin.h"
 #include "addon_editor_plugin.h"
 #include "plugins/spatial_editor_plugin.h"
@@ -106,6 +106,7 @@
 #include "tools/editor/io_plugins/editor_font_import_plugin.h"
 #include "tools/editor/io_plugins/editor_sample_import_plugin.h"
 #include "tools/editor/io_plugins/editor_translation_import_plugin.h"
+#include "tools/editor/io_plugins/editor_bitmask_import_plugin.h"
 #include "tools/editor/io_plugins/editor_mesh_import_plugin.h"
 #include "tools/editor/io_plugins/editor_export_scene.h"
 
@@ -5215,7 +5216,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("play_pressed") );
 	ADD_SIGNAL( MethodInfo("pause_pressed") );
 	ADD_SIGNAL( MethodInfo("stop_pressed") );
-	ADD_SIGNAL( MethodInfo("request_help") );	
+	ADD_SIGNAL( MethodInfo("request_help") );
 	ADD_SIGNAL( MethodInfo("script_add_function_request",PropertyInfo(Variant::OBJECT,"obj"),PropertyInfo(Variant::STRING,"function"),PropertyInfo(Variant::STRING_ARRAY,"args")) );
 	ADD_SIGNAL( MethodInfo("resource_saved",PropertyInfo(Variant::OBJECT,"obj")) );
 
@@ -6365,6 +6366,8 @@ EditorNode::EditorNode() {
 	editor_import_export->add_import_plugin( Ref<EditorFontImportPlugin>( memnew(EditorFontImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorSampleImportPlugin>( memnew(EditorSampleImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorTranslationImportPlugin>( memnew(EditorTranslationImportPlugin(this))));
+	editor_import_export->add_import_plugin( Ref<EditorBitMaskImportPlugin>( memnew(EditorBitMaskImportPlugin(this))));
+
 
 	editor_import_export->add_export_plugin( Ref<EditorTextureExportPlugin>( memnew(EditorTextureExportPlugin)));
 	editor_import_export->add_export_plugin( Ref<EditorSampleExportPlugin>( memnew(EditorSampleExportPlugin)));
@@ -6404,7 +6407,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( TileSetEditorPlugin(this) ) );
 	add_editor_plugin( memnew( TileMapEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SpriteFramesEditorPlugin(this) ) );
-	add_editor_plugin( memnew( SpriteRegionEditorPlugin(this) ) );
+	add_editor_plugin( memnew( TextureRegionEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Particles2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Path2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( PathEditorPlugin(this) ) );
@@ -6636,6 +6639,3 @@ EditorPluginList::EditorPluginList() {
 
 EditorPluginList::~EditorPluginList() {
 }
-
-
-
