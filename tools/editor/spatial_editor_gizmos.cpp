@@ -1024,6 +1024,28 @@ LightSpatialGizmo::LightSpatialGizmo(Light* p_light){
 	set_spatial_node(p_light);
 
 }
+//////
+
+void ListenerSpatialGizmo::redraw() {
+
+	clear();
+
+	add_unscaled_billboard(SpatialEditorGizmos::singleton->listener_icon, 0.05);
+
+	add_mesh(SpatialEditorGizmos::singleton->listener_line_mesh);
+	Vector<Vector3> cursor_points;
+	cursor_points.push_back(Vector3(0, 0, 0));
+	cursor_points.push_back(Vector3(0, 0, -1.0));
+	add_collision_segments(cursor_points);
+
+}
+
+ListenerSpatialGizmo::ListenerSpatialGizmo(Listener* p_listener){
+
+	set_spatial_node(p_listener);
+	listener = p_listener;
+}
+
 
 //////
 
@@ -2907,6 +2929,12 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 		return lsg;
 	}
 
+	if (p_spatial->cast_to<Listener>()) {
+
+		Ref<ListenerSpatialGizmo> misg = memnew(ListenerSpatialGizmo(p_spatial->cast_to<Listener>()));
+		return misg;
+	}
+
 	if (p_spatial->cast_to<Camera>()) {
 
 		Ref<CameraSpatialGizmo> lsg = memnew( CameraSpatialGizmo(p_spatial->cast_to<Camera>()) );
@@ -3141,6 +3169,29 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 		pos3d_mesh->surface_set_material(0,mat);
 	}
 
+	listener_line_mesh = Ref<Mesh>(memnew(Mesh));
+	{
+
+		DVector<Vector3> cursor_points;
+		DVector<Color> cursor_colors;
+		cursor_points.push_back(Vector3(0, 0, 0));
+		cursor_points.push_back(Vector3(0, 0, -1.0));
+		cursor_colors.push_back(Color(0.5, 0.5, 0.5, 0.7));
+		cursor_colors.push_back(Color(0.5, 0.5, 0.5, 0.7));
+
+		Ref<FixedMaterial> mat = memnew(FixedMaterial);
+		mat->set_flag(Material::FLAG_UNSHADED, true);
+		mat->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY, true);
+		mat->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+		mat->set_line_width(3);
+		Array d;
+		d.resize(VS::ARRAY_MAX);
+		d[Mesh::ARRAY_VERTEX] = cursor_points;
+		d[Mesh::ARRAY_COLOR] = cursor_colors;
+		listener_line_mesh->add_surface(Mesh::PRIMITIVE_LINES, d);
+		listener_line_mesh->surface_set_material(0, mat);
+	}
+
 
 	sample_player_icon = Ref<FixedMaterial>( memnew( FixedMaterial ));
 	sample_player_icon->set_flag(Material::FLAG_UNSHADED, true);
@@ -3172,6 +3223,14 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	visibility_notifier_icon->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
 	visibility_notifier_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,0.9));
 	visibility_notifier_icon->set_texture(FixedMaterial::PARAM_DIFFUSE,SpatialEditor::get_singleton()->get_icon("Visible","EditorIcons"));
+
+	listener_icon = Ref<FixedMaterial>(memnew(FixedMaterial));
+	listener_icon->set_flag(Material::FLAG_UNSHADED, true);
+	listener_icon->set_flag(Material::FLAG_DOUBLE_SIDED, true);
+	listener_icon->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
+	listener_icon->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+	listener_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE, Color(1, 1, 1, 0.9));
+	listener_icon->set_texture(FixedMaterial::PARAM_DIFFUSE, SpatialEditor::get_singleton()->get_icon("GizmoListener", "EditorIcons"));
 
 	{
 

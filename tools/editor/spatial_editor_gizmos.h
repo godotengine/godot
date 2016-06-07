@@ -32,6 +32,7 @@
 
 #include "tools/editor/plugins/spatial_editor_plugin.h"
 #include "scene/3d/light.h"
+#include "scene/3d/listener.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/position_3d.h"
 #include "scene/3d/spatial_sample_player.h"
@@ -140,6 +141,19 @@ public:
 
 	void redraw();
 	LightSpatialGizmo(Light* p_light=NULL);
+
+};
+
+class ListenerSpatialGizmo : public EditorSpatialGizmo {
+
+	OBJ_TYPE(ListenerSpatialGizmo, EditorSpatialGizmo);
+
+	Listener* listener;
+
+public:
+
+	void redraw();
+	ListenerSpatialGizmo(Listener* p_listener = NULL);
 
 };
 
@@ -471,6 +485,7 @@ public:
 	Ref<FixedMaterial> navmesh_edge_material_disabled;
 	Ref<FixedMaterial> navmesh_solid_material_disabled;
 
+	Ref<FixedMaterial> listener_icon;
 
 	Ref<FixedMaterial> sample_player_icon;
 	Ref<FixedMaterial> stream_player_icon;
@@ -480,6 +495,7 @@ public:
 	Ref<Texture> handle_t;
 
 	Ref<Mesh> pos3d_mesh;
+	Ref<Mesh> listener_line_mesh;
 	static SpatialEditorGizmos *singleton;
 
 	Ref<TriangleMesh> test_cube_tm;
