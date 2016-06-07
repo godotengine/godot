@@ -25,6 +25,6 @@ public class CustomNotificationFactory {
         if (android.os.Build.VERSION.SDK_INT > 13)
             return new V14CustomNotification();
         else
-            return new V3CustomNotification();
+            throw new RuntimeException();
     }
 }
