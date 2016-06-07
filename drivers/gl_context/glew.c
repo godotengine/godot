@@ -1,4 +1,3 @@
-#ifdef GLEW_ENABLED
 /*
 ** The OpenGL Extension Wrangler Library
 ** Copyright (C) 2002-2008, Milan Ikits <milan ikits[]ieee org>
@@ -30,11 +29,11 @@
 ** THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "drivers/gl_context/glew.h"
+#include <GL/glew.h>
 #if defined(_WIN32)
-#  include "drivers/gl_context/wglew.h"
+#  include <GL/wglew.h>
 #elif !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
-#  include "drivers/gl_context/glxew.h"
+#  include <GL/glxew.h>
 #endif
 
 /*
@@ -15156,5 +15155,3 @@ GLboolean glxewIsSupported (const char* name)
 }
 
 #endif /* _WIN32 */
-
-#endif
