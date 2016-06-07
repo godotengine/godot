@@ -499,6 +499,7 @@ HTTPRequest::HTTPRequest()
 	use_ssl=false;
 	response_code=0;
 	request_sent=false;
+	requesting=false;
 	client.instance();
 	use_threads=false;
 	body_size_limit=-1;
