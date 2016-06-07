@@ -149,12 +149,6 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 		return true;
 	}
 
-	if (what=="custom_aabb") {
-
-		surface_set_custom_aabb(idx,p_value);
-		return true;
-	}
-
 	return false;
 }
 
