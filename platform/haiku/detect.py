@@ -52,9 +52,10 @@ def configure(env):
 
 	#env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
 	env.Append(CPPFLAGS = ['-DPTHREAD_NO_RENAME']) # TODO: enable when we have pthread_setname_np
-	env.Append(CPPFLAGS = ['-DGLEW_ENABLED', '-DOPENGL_ENABLED', '-DMEDIA_KIT_ENABLED'])
+	#env.Append(CPPFLAGS = ['-DGLEW_ENABLED']) # TODO: investigate the GLEW situation on Haiku
+	env.Append(CPPFLAGS = ['-DOPENGL_ENABLED', '-DMEDIA_KIT_ENABLED'])
 	env.Append(CPPFLAGS = ['-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DGLES_OVER_GL'])
-	env.Append(LIBS = ['be', 'game', 'media', 'network', 'bnetapi', 'z', 'GL', 'GLEW'])
+	env.Append(LIBS = ['be', 'game', 'media', 'network', 'bnetapi', 'z', 'GL'])
 
 	import methods
 	env.Append(BUILDERS = {'GLSL120' : env.Builder(action = methods.build_legacygl_headers, suffix = 'glsl.h',src_suffix = '.glsl')})
