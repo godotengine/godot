@@ -65,6 +65,7 @@ def get_flags():
 
 	return [
 	('builtin_zlib', 'no'),
+	('glew', 'yes'),
 	("openssl", "yes"),
 	#("theora","no"),
         ]
@@ -147,7 +148,7 @@ def configure(env):
 			env.Append(CPPPATH=['#drivers/freetype/freetype/include'])
 
 
-	env.Append(CPPFLAGS=['-DOPENGL_ENABLED','-DGLEW_ENABLED'])
+	env.Append(CPPFLAGS=['-DOPENGL_ENABLED'])
 
 	if os.system("pkg-config --exists alsa")==0:
 		print("Enabling ALSA")

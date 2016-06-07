@@ -23,7 +23,8 @@ def get_opts():
 
 def get_flags():
 	return [
-		('builtin_zlib', 'no')
+		('builtin_zlib', 'no'),
+		#('glew', 'yes'), # TODO: investigate the GLEW situation on Haiku
 	]
 
 def configure(env):
@@ -52,7 +53,6 @@ def configure(env):
 
 	#env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
 	env.Append(CPPFLAGS = ['-DPTHREAD_NO_RENAME']) # TODO: enable when we have pthread_setname_np
-	#env.Append(CPPFLAGS = ['-DGLEW_ENABLED']) # TODO: investigate the GLEW situation on Haiku
 	env.Append(CPPFLAGS = ['-DOPENGL_ENABLED', '-DMEDIA_KIT_ENABLED'])
 	env.Append(CPPFLAGS = ['-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DGLES_OVER_GL'])
 	env.Append(LIBS = ['be', 'game', 'media', 'network', 'bnetapi', 'z', 'GL'])

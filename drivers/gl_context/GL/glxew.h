@@ -80,8 +80,6 @@
 #define __glxew_h__
 #define __GLXEW_H__
 
-#define GLEW_STATIC
-
 #ifdef __glxext_h_
 #error glxext.h included before glxew.h
 #endif
@@ -99,7 +97,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xmd.h>
-#include "drivers/gl_context/glew.h"
+#include <GL/glew.h>
 
 #ifdef __cplusplus
 extern "C" {
