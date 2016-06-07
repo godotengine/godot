@@ -75,6 +75,7 @@ public:
 		float shininess;
 		bool found_double_sided;
 		bool double_sided;
+		bool unshaded;
 
 		String get_texture_path(const String& p_source,Collada& state) const;
 
@@ -83,7 +84,7 @@ public:
 			double_sided=true;
 			found_double_sided=false;
 			shininess=40;
-
+			unshaded=false;
 		}
 	};
 
