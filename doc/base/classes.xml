@@ -4349,7 +4349,7 @@
 	Generic array datatype.
 	</brief_description>
 	<description>
-	Generic array, contains several elements of any type, accessible by numerical index starting at 0. Arrays are always passed by reference.
+	Generic array, contains several elements of any type, accessible by numerical index starting at 0. Negative indices can be used to count from the right, like in Python. Arrays are always passed by reference.
 	</description>
 	<methods>
 		<method name="append">

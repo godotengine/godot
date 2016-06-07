@@ -861,7 +861,6 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 		} break;
 		//logic
 		case OP_AND: {
-
 			bool l = p_a.booleanize(r_valid);
 			if (!r_valid)
 				return;
@@ -969,6 +968,30 @@ Variant Variant::get_named(const StringName& p_index, bool *r_valid) const {
 	return get(p_index.operator String(),r_valid);
 }
 
+
+#define DEFAULT_OP_ARRAY_CMD(m_name, m_type, skip_test, cmd)\
+	case m_name: {\
+		skip_test;\
+\
+		if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {\
+			int index = p_index;\
+			m_type *arr=reinterpret_cast<m_type* >(_data._mem);\
+\
+			if (index<0)\
+				index += arr->size();\
+			if (index>=0 && index<arr->size()) {\
+				valid=true;\
+				cmd;\
+			}\
+		}\
+	} break;
+
+#define DEFAULT_OP_DVECTOR_SET(m_name, dv_type, skip_cond)\
+	DEFAULT_OP_ARRAY_CMD(m_name, DVector<dv_type>, if(skip_cond) return;, arr->set(index, p_value);return)
+
+#define DEFAULT_OP_DVECTOR_GET(m_name, dv_type)\
+	DEFAULT_OP_ARRAY_CMD(m_name, const DVector<dv_type>, 0, return arr->get(index))
+
 void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid) {
 
 	static bool _dummy=false;
@@ -989,7 +1012,10 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 			int idx=p_index;
 			String *str=reinterpret_cast<String*>(_data._mem);
-			if (idx <0 || idx>=str->length())
+			int len = str->length();
+			if (idx<0)
+				idx += len;
+			if (idx<0 || idx>=len)
 				return;
 
 			String chr;
@@ -1003,7 +1029,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 				return;
 			}
 
-			*str = str->substr(0,idx)+chr+str->substr(idx+1,str->length());
+			*str = str->substr(0,idx)+chr+str->substr(idx+1, len);
 			valid=true;
 			return;
 
@@ -1018,6 +1044,8 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 				// scalar index
 				int idx=p_index;
 
+				if (idx<0)
+					idx += 2;
 				if (idx>=0 && idx<2) {
 
 					Vector2 *v=reinterpret_cast<Vector2*>(_data._mem);
@@ -1076,6 +1104,8 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 				int index = p_index;
 
+				if (index<0)
+					index += 3;
 				if (index>=0 && index<3) {
 					Matrix32 *v=_data._matrix32;
 
@@ -1112,6 +1142,8 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 				//scalar index
 				int idx=p_index;
+				if (idx<0)
+					idx += 3;
 				if (idx>=0 && idx<3) {
 
 					Vector3 *v=reinterpret_cast<Vector3*>(_data._mem);
@@ -1246,6 +1278,8 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 				int index = p_index;
 
+				if (index<0)
+					index += 3;
 				if (index>=0 && index<3) {
 					Matrix3 *v=_data._matrix3;
 
@@ -1284,6 +1318,8 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 				int index = p_index;
 
+				if (index<0)
+					index += 4;
 				if (index>=0 && index<4) {
 					Transform *v=_data._transform;
 					valid=true;
@@ -1372,6 +1408,8 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 			} else if (p_index.get_type()==Variant::INT) {
 
 				int idx = p_index;
+				if (idx<0)
+					idx += 4;
 				if (idx>=0 || idx<4) {
 					Color *v=reinterpret_cast<Color*>(_data._mem);
 					(*v)[idx]=p_value;
@@ -1786,145 +1824,14 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 			valid=true; //always valid, i guess? should this really be ok?
 			return;
 		} break;		// 20
-		case ARRAY: {
-
-
-				if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-					int index = p_index;
-					Array *arr=reinterpret_cast<Array* >(_data._mem);
-
-					if (index >=0 && index <arr->size()) {
-						valid=true;
-						(*arr)[index]=p_value;
-						return;
-					}
-				}
-
-		} break;
-		case RAW_ARRAY: {
-
-			if (p_value.type!=Variant::REAL && p_value.type!=Variant::INT)
-				return;
-
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-				int index = p_index;
-				DVector<uint8_t> *arr=reinterpret_cast<DVector<uint8_t>* >(_data._mem);
-
-				if (index >=0 && index <arr->size()) {
-					valid=true;
-					arr->set(index,p_value);
-					return;
-				}
-			}
-
-		} break;
-		case INT_ARRAY: {
-			if (p_value.type!=Variant::REAL && p_value.type!=Variant::INT)
-				return;
-
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-				int index = p_index;
-				DVector<int> *arr=reinterpret_cast<DVector<int>* >(_data._mem);
-
-				if (index >=0 && index <arr->size()) {
-					valid=true;
-					arr->set(index,p_value);
-					return;
-				}
-			}
-		} break;
-		case REAL_ARRAY: {
-
-			if (p_value.type!=Variant::REAL && p_value.type!=Variant::INT)
-				return;
-
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-				int index = p_index;
-				DVector<real_t> *arr=reinterpret_cast<DVector<real_t>* >(_data._mem);
-
-				if (index >=0 && index <arr->size()) {
-					valid=true;
-					arr->set(index,p_value);
-					return;
-				}
-			}
-
-		} break;
-		case STRING_ARRAY: {
-
-			if (p_value.type!=Variant::STRING)
-				return;
-
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-				int index = p_index;
-				DVector<String> *arr=reinterpret_cast<DVector<String>* >(_data._mem);
-
-				if (index >=0 && index <arr->size()) {
-					valid=true;
-					arr->set(index,p_value);
-					return;
-				}
-			}
-
-		} break;	//25
-		case VECTOR2_ARRAY: {
-
-			if (p_value.type!=Variant::VECTOR2)
-				return;
-
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-				int index = p_index;
-				DVector<Vector2> *arr=reinterpret_cast<DVector<Vector2>* >(_data._mem);
-
-				if (index >=0 && index <arr->size()) {
-					valid=true;
-					arr->set(index,p_value);
-					return;
-				}
-			}
-
-		} break;
-		case VECTOR3_ARRAY: {
-
-			if (p_value.type!=Variant::VECTOR3)
-				return;
-
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-				int index = p_index;
-				DVector<Vector3> *arr=reinterpret_cast<DVector<Vector3>* >(_data._mem);
-
-				if (index >=0 && index <arr->size()) {
-					valid=true;
-					arr->set(index,p_value);
-					return;
-				}
-			}
-
-		} break;
-		case COLOR_ARRAY: {
-
-			if (p_value.type!=Variant::COLOR)
-				return;
-
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-				int index = p_index;
-				DVector<Color> *arr=reinterpret_cast<DVector<Color>* >(_data._mem);
-
-				if (index >=0 && index <arr->size()) {
-					valid=true;
-					arr->set(index,p_value);
-					return;
-				}
-			}
-		} break;
+		DEFAULT_OP_ARRAY_CMD(ARRAY, Array, ;, (*arr)[index]=p_value;return)
+		DEFAULT_OP_DVECTOR_SET(RAW_ARRAY, uint8_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
+		DEFAULT_OP_DVECTOR_SET(INT_ARRAY, int, p_value.type != Variant::REAL && p_value.type != Variant::INT)
+		DEFAULT_OP_DVECTOR_SET(REAL_ARRAY, real_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
+		DEFAULT_OP_DVECTOR_SET(STRING_ARRAY, String, p_value.type != Variant::STRING) // 25
+		DEFAULT_OP_DVECTOR_SET(VECTOR2_ARRAY, Vector2, p_value.type != Variant::VECTOR2)
+		DEFAULT_OP_DVECTOR_SET(VECTOR3_ARRAY, Vector3, p_value.type != Variant::VECTOR3)
+		DEFAULT_OP_DVECTOR_SET(COLOR_ARRAY, Color, p_value.type != Variant::COLOR)
 		default: return;
 	}
 
@@ -1950,6 +1857,8 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 
 				int idx=p_index;
 				const String *str=reinterpret_cast<const String*>(_data._mem);
+				if (idx<0)
+					idx += str->length();
 				if (idx >=0 && idx<str->length()) {
 
 					valid=true;
@@ -1963,6 +1872,8 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 				// scalar index
 				int idx=p_index;
+				if (idx<0)
+					idx += 2;
 				if (idx>=0 && idx<2) {
 
 					const Vector2 *v=reinterpret_cast<const Vector2*>(_data._mem);
@@ -2008,6 +1919,8 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 				//scalar index
 				int idx=p_index;
+				if (idx<0)
+					idx += 3;
 				if (idx>=0 && idx<3) {
 
 					const Vector3 *v=reinterpret_cast<const Vector3*>(_data._mem);
@@ -2038,6 +1951,8 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 
 				int index = p_index;
 
+				if (index<0)
+					index += 3;
 				if (index>=0 && index<3) {
 					const Matrix32 *v=_data._matrix32;
 
@@ -2133,7 +2048,8 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 
 				int index = p_index;
-
+				if (index<0)
+					index += 3;
 				if (index>=0 && index<3) {
 					const Matrix3 *v=_data._matrix3;
 
@@ -2163,7 +2079,8 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 
 				int index = p_index;
-
+				if (index<0)
+					index += 4;
 				if (index>=0 && index<4) {
 					const Transform *v=_data._transform;
 					valid=true;
@@ -2227,6 +2144,8 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 			}  else if (p_index.get_type()==Variant::INT) {
 
 				int idx = p_index;
+				if (idx<0)
+					idx += 4;
 				if (idx>=0 || idx<4) {
 					const Color *v=reinterpret_cast<const Color*>(_data._mem);
 					valid=true;
@@ -2489,110 +2408,14 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				return *res;
 			}
 		} break;		// 20
-		case ARRAY: {
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-				int index = p_index;
-				const Array *arr=reinterpret_cast<const Array* >(_data._mem);
-
-				if (index >=0 && index <arr->size()) {
-					valid=true;
-					return (*arr)[index];
-				}
-			}
-
-		} break;
-		case RAW_ARRAY: {
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-				int index = p_index;
-				const DVector<uint8_t> *arr=reinterpret_cast<const DVector<uint8_t>* >(_data._mem);
-
-				if (index >=0 && index <arr->size()) {
-					valid=true;
-					return arr->get(index);
-				}
-			}
-
-		} break;
-		case INT_ARRAY: {
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-				int index = p_index;
-				const DVector<int> *arr=reinterpret_cast<const DVector<int>* >(_data._mem);
-
-				if (index >=0 && index <arr->size()) {
-					valid=true;
-					return arr->get(index);
-				}
-			}
-		} break;
-		case REAL_ARRAY: {
-
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-				int index = p_index;
-				const DVector<real_t> *arr=reinterpret_cast<const DVector<real_t>* >(_data._mem);
-
-				if (index >=0 && index <arr->size()) {
-					valid=true;
-					return arr->get(index);
-				}
-			}
-
-		} break;
-		case STRING_ARRAY: {
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-				int index = p_index;
-				const DVector<String> *arr=reinterpret_cast<const DVector<String>* >(_data._mem);
-
-				if (index >=0 && index <arr->size()) {
-					valid=true;
-					return arr->get(index);
-				}
-			}
-
-		} break;	//25
-		case VECTOR2_ARRAY: {
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-				int index = p_index;
-				const DVector<Vector2> *arr=reinterpret_cast<const DVector<Vector2>* >(_data._mem);
-
-				if (index >=0 && index <arr->size()) {
-					valid=true;
-					return arr->get(index);
-				}
-			}
-
-		} break;
-		case VECTOR3_ARRAY: {
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-				int index = p_index;
-				const DVector<Vector3> *arr=reinterpret_cast<const DVector<Vector3>* >(_data._mem);
-
-				if (index >=0 && index <arr->size()) {
-					valid=true;
-					return arr->get(index);
-				}
-			}
-
-		} break;
-		case COLOR_ARRAY: {
-
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-
-				int index = p_index;
-				const DVector<Color> *arr=reinterpret_cast<const DVector<Color>* >(_data._mem);
-
-				if (index >=0 && index <arr->size()) {
-					valid=true;
-					return arr->get(index);
-				}
-			}
-		} break;
+		DEFAULT_OP_ARRAY_CMD(ARRAY, const Array, 0, return (*arr)[index])
+		DEFAULT_OP_DVECTOR_GET(RAW_ARRAY, uint8_t)
+		DEFAULT_OP_DVECTOR_GET(INT_ARRAY, int)
+		DEFAULT_OP_DVECTOR_GET(REAL_ARRAY, real_t)
+		DEFAULT_OP_DVECTOR_GET(STRING_ARRAY, String)
+		DEFAULT_OP_DVECTOR_GET(VECTOR2_ARRAY, Vector2)
+		DEFAULT_OP_DVECTOR_GET(VECTOR3_ARRAY, Vector3)
+		DEFAULT_OP_DVECTOR_GET(COLOR_ARRAY, Color)
 		default: return Variant();
 	}
 
