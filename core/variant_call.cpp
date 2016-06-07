@@ -1663,6 +1663,9 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	_VariantCall::constant_data[Variant::IMAGE].value["FORMAT_ATC_ALPHA_INTERPOLATED"]=Image::FORMAT_ATC_ALPHA_INTERPOLATED;
 	_VariantCall::constant_data[Variant::IMAGE].value["FORMAT_CUSTOM"]=Image::FORMAT_CUSTOM;
 
+	_VariantCall::constant_data[Variant::IMAGE].value["INTERPOLATE_NEAREST"]=Image::INTERPOLATE_NEAREST;
+	_VariantCall::constant_data[Variant::IMAGE].value["INTERPOLATE_BILINEAR"]=Image::INTERPOLATE_BILINEAR;
+	_VariantCall::constant_data[Variant::IMAGE].value["INTERPOLATE_CUBIC"]=Image::INTERPOLATE_CUBIC;
 }
 
 void unregister_variant_methods() {
