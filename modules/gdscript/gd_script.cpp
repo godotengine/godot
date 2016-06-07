@@ -145,8 +145,11 @@ Variant GDScript::_new(const Variant** p_args,int p_argcount,Variant::CallError&
 		_baseptr=_baseptr->_base;
 	}
 
-	ERR_FAIL_COND_V(_baseptr->native.is_null(), Variant());
-	owner=_baseptr->native->instance();
+	if (_baseptr->native.ptr()) {
+		owner=_baseptr->native->instance();
+	} else {
+		owner=memnew( Reference ); //by default, no base means use reference
+	}
 
 	Reference *r=owner->cast_to<Reference>();
 	if (r) {
