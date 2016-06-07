@@ -903,7 +903,10 @@ Error Main::setup2() {
 
 	path_remap->load_remaps();
 
-	if (show_logo) { //boot logo!
+	List<String> args = OS::get_singleton()->get_cmdline_args();
+	bool editor = args.size()>0 && (args.find("-e")>=0 || args.find("-editor")>=0);
+
+	if (show_logo && !editor) { //boot logo!
 		String boot_logo_path=GLOBAL_DEF("application/boot_splash",String());
 		bool boot_logo_scale=GLOBAL_DEF("application/boot_splash_fullsize",true);
 		Globals::get_singleton()->set_custom_property_info("application/boot_splash",PropertyInfo(Variant::STRING,"application/boot_splash",PROPERTY_HINT_FILE,"*.png"));
@@ -952,7 +955,7 @@ Error Main::setup2() {
 	GLOBAL_DEF("application/icon",String());
 	Globals::get_singleton()->set_custom_property_info("application/icon",PropertyInfo(Variant::STRING,"application/icon",PROPERTY_HINT_FILE,"*.png,*.webp"));
 
-	if (bool(GLOBAL_DEF("display/emulate_touchscreen",false))) {
+	if (bool(GLOBAL_DEF("display/emulate_touchscreen",false)) && !editor) {
 		if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton()) {
 			//only if no touchscreen ui hint, set emulation
 			InputDefault *id = Input::get_singleton()->cast_to<InputDefault>();
