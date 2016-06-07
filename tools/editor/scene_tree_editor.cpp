@@ -216,6 +216,17 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 		warning->set_text(config_err);
 		warning->popup_centered_minsize();
 
+	} else if (p_id==BUTTON_SIGNALS) {
+
+		item->select(0);
+		NodeDock::singleton->get_parent()->call("set_current_tab",NodeDock::singleton->get_index());
+		NodeDock::singleton->show_connections();
+
+	} else if (p_id==BUTTON_GROUPS) {
+
+		item->select(0);
+		NodeDock::singleton->get_parent()->call("set_current_tab",NodeDock::singleton->get_index());
+		NodeDock::singleton->show_groups();
 	}
 }
 
@@ -285,10 +296,25 @@ bool SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 		}
 	}
 
-	String warning = p_node->get_configuration_warning();
 
-	if (warning!=String()) {
-		item->add_button(0,get_icon("NodeWarning","EditorIcons"),BUTTON_WARNING);
+
+	if (can_rename) { //should be can edit..
+
+		String warning = p_node->get_configuration_warning();
+		if (warning!=String()) {
+			item->add_button(0,get_icon("NodeWarning","EditorIcons"),BUTTON_WARNING);
+		}
+
+		bool has_connections = p_node->has_persistent_signal_connections();
+		bool has_groups = p_node->has_persistent_groups();
+
+		if (has_connections && has_groups) {
+			item->add_button(0,get_icon("ConnectionAndGroups","EditorIcons"),BUTTON_SIGNALS);
+		} else if (has_connections) {
+			item->add_button(0,get_icon("Connect","EditorIcons"),BUTTON_SIGNALS);
+		} else if (has_groups) {
+			item->add_button(0,get_icon("Groups","EditorIcons"),BUTTON_GROUPS);
+		}
 	}
 
 	if (p_node==get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
@@ -999,6 +1025,7 @@ void SceneTreeEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &SceneTreeEditor::can_drop_data_fw);
 	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &SceneTreeEditor::drop_data_fw);
 
+	ObjectTypeDB::bind_method(_MD("update_tree"), &SceneTreeEditor::update_tree);
 
 	ADD_SIGNAL( MethodInfo("node_selected") );
 	ADD_SIGNAL( MethodInfo("node_renamed") );

@@ -86,8 +86,8 @@ class SceneTreeDock : public VBoxContainer {
 	EditorData *editor_data;
 	EditorSelection *editor_selection;
 
-	GroupsEditor *groups_editor;
-	ConnectionsDialog *connect_dialog;
+	//GroupsEditor *groups_editor;
+	//ConnectionsDialog *connect_dialog;
 	ScriptCreateDialog *script_create_dialog;
 	AcceptDialog *accept;
 	ConfirmationDialog *delete_dialog;
@@ -165,6 +165,7 @@ public:
 	void fill_path_renames(Node* p_node, Node *p_new_parent, List<Pair<NodePath,NodePath> > *p_renames);
 	void perform_node_renames(Node* p_base,List<Pair<NodePath,NodePath> > *p_renames, Map<Ref<Animation>, Set<int> > *r_rem_anims=NULL);
 	SceneTreeEditor *get_tree_editor() { return scene_tree; }
+
 
 	SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelection *p_editor_selection,EditorData &p_editor_data);
 };

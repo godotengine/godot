@@ -454,7 +454,7 @@ void LineEdit::_notification(int p_what) {
 				} break;
 			}
 
-			int ofs_max=width-style->get_minimum_size().width;
+			int ofs_max=width-style->get_minimum_size().width+x_ofs;
 			int char_ofs=window_pos;
 
 			int y_area=height-style->get_minimum_size().height;
@@ -799,8 +799,7 @@ Size2 LineEdit::get_minimum_size() const {
 	Ref<Font> font=get_font("font");
 
 	Size2 min=style->get_minimum_size();
-	min.height+=font->get_height();
-	min.width+=get_constant("minimum_spaces")*font->get_char_size(' ').x;
+	min+=font->get_string_size(this->text);
 
 	return min;
 }
@@ -1027,7 +1026,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "max_length" ), _SCS("set_max_length"),_SCS("get_max_length") );
 	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "editable" ), _SCS("set_editable"),_SCS("is_editable") );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "secret" ), _SCS("set_secret"),_SCS("is_secret") );
-
+	ADD_PROPERTY( PropertyInfo( Variant::INT,"focus_mode", PROPERTY_HINT_ENUM, "None,Click,All" ), _SCS("set_focus_mode"), _SCS("get_focus_mode") );
 
 }
 

@@ -282,6 +282,9 @@ public:
 
 	Error set_thread_name(const String& p_name);
 
+	void set_use_vsync(bool p_enable);
+	bool is_vsnc_enabled() const;
+
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();

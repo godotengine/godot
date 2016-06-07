@@ -326,6 +326,7 @@ public:
 
 	virtual String get_locale() const;
 
+	String get_safe_application_name() const;
 	virtual String get_data_dir() const;
 	virtual String get_resource_dir() const;
 
@@ -418,6 +419,9 @@ public:
 	};
 
 	virtual void set_context(int p_context);
+
+	virtual void set_use_vsync(bool p_enable);
+	virtual bool is_vsnc_enabled() const;
 
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
 	OS();

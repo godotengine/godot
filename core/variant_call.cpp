@@ -262,7 +262,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0R(String,basename);
 	VCALL_LOCALMEM1R(String,plus_file);
 	VCALL_LOCALMEM1R(String,ord_at);
-	//VCALL_LOCALMEM2R(String,erase);
+	VCALL_LOCALMEM2(String,erase);
 	VCALL_LOCALMEM0R(String,hash);
 	VCALL_LOCALMEM0R(String,md5_text);
 	VCALL_LOCALMEM0R(String,md5_buffer);
@@ -339,6 +339,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(Vector2,reflect);
 	VCALL_LOCALMEM0R(Vector2,angle);
 //	VCALL_LOCALMEM1R(Vector2,cross);
+	VCALL_LOCALMEM0R(Vector2,abs);
 
 	VCALL_LOCALMEM0R(Rect2,get_area);
 	VCALL_LOCALMEM1R(Rect2,intersects);
@@ -445,6 +446,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1(Dictionary,erase);
 	VCALL_LOCALMEM0R(Dictionary,hash);
 	VCALL_LOCALMEM0R(Dictionary,keys);
+	VCALL_LOCALMEM0R(Dictionary,values);
 	VCALL_LOCALMEM1R(Dictionary,parse_json);
 	VCALL_LOCALMEM0R(Dictionary,to_json);
 
@@ -463,6 +465,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM2(Array,insert);
 	VCALL_LOCALMEM1(Array,remove);
 	VCALL_LOCALMEM1R(Array,find);
+	VCALL_LOCALMEM1R(Array,find_last);
+	VCALL_LOCALMEM1R(Array,count);
 	VCALL_LOCALMEM1(Array,erase);
 	VCALL_LOCALMEM0(Array,sort);
 	VCALL_LOCALMEM2(Array,sort_custom);
@@ -1282,7 +1286,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(STRING,STRING,String,basename,varray());
 	ADDFUNC1(STRING,STRING,String,plus_file,STRING,"file",varray());
 	ADDFUNC1(STRING,STRING,String,ord_at,INT,"at",varray());
-//	ADDFUNC2(STRING,String,erase,INT,INT,varray());
+	ADDFUNC2(STRING,NIL,String,erase,INT,"pos",INT,"chars", varray());
 	ADDFUNC0(STRING,INT,String,hash,varray());
 	ADDFUNC0(STRING,STRING,String,md5_text,varray());
 	ADDFUNC0(STRING,RAW_ARRAY,String,md5_buffer,varray());
@@ -1333,6 +1337,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(VECTOR2,VECTOR2,Vector2,slide,VECTOR2,"vec",varray());
 	ADDFUNC1(VECTOR2,VECTOR2,Vector2,reflect,VECTOR2,"vec",varray());
 	//ADDFUNC1(VECTOR2,REAL,Vector2,cross,VECTOR2,"with",varray());
+	ADDFUNC0(VECTOR2,VECTOR2,Vector2,abs,varray());
 
 	ADDFUNC0(RECT2,REAL,Rect2,get_area,varray());
 	ADDFUNC1(RECT2,BOOL,Rect2,intersects,RECT2,"b",varray());
@@ -1432,6 +1437,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(DICTIONARY,NIL,Dictionary,erase,NIL,"value",varray());
 	ADDFUNC0(DICTIONARY,INT,Dictionary,hash,varray());
 	ADDFUNC0(DICTIONARY,ARRAY,Dictionary,keys,varray());
+	ADDFUNC0(DICTIONARY,ARRAY,Dictionary,values,varray());
 
 	ADDFUNC1(DICTIONARY,INT,Dictionary,parse_json,STRING,"json",varray());
 	ADDFUNC0(DICTIONARY,STRING,Dictionary,to_json,varray());
@@ -1448,6 +1454,8 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(ARRAY,NIL,Array,remove,INT,"pos",varray());
 	ADDFUNC1(ARRAY,NIL,Array,erase,NIL,"value",varray());
 	ADDFUNC1(ARRAY,INT,Array,find,NIL,"value",varray());
+	ADDFUNC1(ARRAY,INT,Array,find_last,NIL,"value",varray());
+	ADDFUNC1(ARRAY,INT,Array,count,NIL,"value",varray());
 	ADDFUNC0(ARRAY,NIL,Array,pop_back,varray());
 	ADDFUNC0(ARRAY,NIL,Array,pop_front,varray());
 	ADDFUNC0(ARRAY,NIL,Array,sort,varray());
@@ -1655,6 +1663,9 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	_VariantCall::constant_data[Variant::IMAGE].value["FORMAT_ATC_ALPHA_INTERPOLATED"]=Image::FORMAT_ATC_ALPHA_INTERPOLATED;
 	_VariantCall::constant_data[Variant::IMAGE].value["FORMAT_CUSTOM"]=Image::FORMAT_CUSTOM;
 
+	_VariantCall::constant_data[Variant::IMAGE].value["INTERPOLATE_NEAREST"]=Image::INTERPOLATE_NEAREST;
+	_VariantCall::constant_data[Variant::IMAGE].value["INTERPOLATE_BILINEAR"]=Image::INTERPOLATE_BILINEAR;
+	_VariantCall::constant_data[Variant::IMAGE].value["INTERPOLATE_CUBIC"]=Image::INTERPOLATE_CUBIC;
 }
 
 void unregister_variant_methods() {

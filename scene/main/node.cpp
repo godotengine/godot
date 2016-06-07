@@ -1244,7 +1244,19 @@ void Node::get_groups(List<GroupInfo> *p_groups) const {
 
 }
 
+bool Node::has_persistent_groups() const {
 
+	const StringName *K=NULL;
+
+	while ((K=data.grouped.next(K))) {
+
+		if (data.grouped[*K].persistent)
+			return true;
+	}
+
+	return false;
+
+}
 void Node::_print_tree(const Node *p_node) {
 
 	print_line(String(p_node->get_path_to(this)));

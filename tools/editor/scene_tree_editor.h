@@ -49,7 +49,9 @@ class SceneTreeEditor : public Control {
 		BUTTON_SCRIPT=2,
 		BUTTON_LOCK=3,
 		BUTTON_GROUP=4,
-		BUTTON_WARNING=5
+		BUTTON_WARNING=5,
+		BUTTON_SIGNALS=6,
+		BUTTON_GROUPS=7,
 	};
 
 	enum {

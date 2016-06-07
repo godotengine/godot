@@ -49,6 +49,7 @@
 #include "tools/editor/call_dialog.h"
 #include "tools/editor/reparent_dialog.h"
 #include "tools/editor/connections_dialog.h"
+#include "tools/editor/node_dock.h"
 #include "tools/editor/settings_config_dialog.h"
 #include "tools/editor/groups_editor.h"
 #include "tools/editor/editor_data.h"
@@ -169,7 +170,7 @@ private:
 		RUN_SETTINGS,
 		RUN_PROJECT_MANAGER,
 		RUN_FILE_SERVER,
-		RUN_DEPLOY_DUMB_CLIENTS,
+		//RUN_DEPLOY_DUMB_CLIENTS,
 		RUN_LIVE_DEBUG,
 		RUN_DEBUG_COLLISONS,
 		RUN_DEBUG_NAVIGATION,
@@ -272,6 +273,7 @@ private:
 	SceneTreeDock *scene_tree_dock;
 	//ResourcesDock *resources_dock;
 	PropertyEditor *property_editor;
+	NodeDock *node_dock;
 	VBoxContainer *prop_editor_vb;
 	ScenesDock *scenes_dock;
 	EditorRunNative *run_native;
@@ -664,6 +666,7 @@ public:
 
 	void request_instance_scene(const String &p_path);
 	ScenesDock *get_scenes_dock();
+	SceneTreeDock *get_scene_tree_dock();
 	static UndoRedo* get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 
 	EditorSelection *get_editor_selection() { return editor_selection; }

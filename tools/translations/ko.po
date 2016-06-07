@@ -39,9 +39,9 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon2D는 CollisionObject2D에 충돌 모양을 지정하는 데에만 사용됩니"
-"다. Area2D, StaticBody2D, RigidBody2D, KinematicBody2D 등에 자식 노드로 추가"
-"하여 사용합니다."
+"CollisionPolygon2D는 CollisionObject2D에 충돌 모양을 지정하기 위해서만 사용됩"
+"니다. Area2D, StaticBody2D, RigidBody2D, KinematicBody2D 등에 자식 노드로 추"
+"가하여 사용합니다."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
@@ -53,7 +53,7 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D는 CollisionObject2D에 충돌 모양을 지정하는 데에만 사용됩니"
+"CollisionShape2D는 CollisionObject2D에 충돌 모양을 지정하기 위해서만 사용됩니"
 "다. Area2D, StaticBody2D, RigidBody2D, KinematicBody2D 등에 자식 노드로 추가"
 "하여 사용합니다."
 
@@ -153,7 +153,7 @@ msgid ""
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionShape은 CollisionObject에 충돌 모양을 지정하는 데에만 사용됩니다. "
+"CollisionShape은 CollisionObject에 충돌 모양을 지정하기 위해서만 사용됩니다. "
 "Area, StaticBody, RigidBody, KinematicBody 등에 자식 노드로 추가하여 사용합니"
 "다."
 
@@ -171,9 +171,9 @@ msgid ""
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon은 CollisionObject에 충돌 모양을 지정하는 데에만 사용됩니다. "
-"Area, StaticBody, RigidBody, KinematicBody 등에 자식 노드로 추가하여 사용합니"
-"다."
+"CollisionPolygon은 CollisionObject에 충돌 모양을 지정하기 위해서만 사용됩니"
+"다. Area, StaticBody, RigidBody, KinematicBody 등에 자식 노드로 추가하여 사용"
+"합니다."
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
@@ -1382,7 +1382,7 @@ msgstr "종료"
 
 #: tools/editor/editor_node.cpp
 msgid "Exit the editor?"
-msgstr "데이터를 종료하시겠습니까?"
+msgstr "에디터를 종료하시겠습니까?"
 
 #: tools/editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
@@ -3677,7 +3677,7 @@ msgstr "파일"
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/property_editor.cpp
 msgid "New"
-msgstr "새 파일"
+msgstr "새로운"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -4001,11 +4001,11 @@ msgstr "그래프 노드 연결 해제"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Remove Shader Graph Node"
-msgstr "쉐이더 그래프 노드 삭제"
+msgstr "셰이더 그래프 노드 삭제"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Move Shader Graph Node"
-msgstr "쉐이더 그래프 노드 이동"
+msgstr "셰이더 그래프 노드 이동"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Duplicate Graph Node(s)"
@@ -4013,7 +4013,7 @@ msgstr "그래프 노드 복제"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Delete Shader Graph Node(s)"
-msgstr "쉐이더 그래프 노드 삭제"
+msgstr "셰이더 그래프 노드 삭제"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Error: Cyclic Connection Link"
@@ -4025,7 +4025,7 @@ msgstr "에러: 입력 연결 누락"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Add Shader Graph Node"
-msgstr "쉐이더 그래프 노드 추가"
+msgstr "셰이더 그래프 노드 추가"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Orthogonal"
@@ -5310,7 +5310,7 @@ msgstr "속성:"
 
 #: tools/editor/property_editor.cpp
 msgid "Global"
-msgstr "글로벌"
+msgstr ""
 
 #: tools/editor/property_editor.cpp
 msgid "Sections:"

@@ -35,6 +35,8 @@
 #include "os/thread_safe.h"
 #include "core/io/config_file.h"
 #include "translation.h"
+#include "scene/gui/input_action.h"
+
 class EditorPlugin;
 
 class EditorSettings : public Resource {
@@ -95,6 +97,8 @@ private:
 
 	Vector<Ref<Translation> > translations;
 
+	Map<String,Ref<ShortCut> > shortcuts;
+
 protected:
 
 	static void _bind_methods();
@@ -142,6 +146,11 @@ public:
 	bool save_text_editor_theme();
 	bool save_text_editor_theme_as(String p_file);
 
+	void add_shortcut(const String& p_name,Ref<ShortCut>& p_shortcut);
+	bool is_shortcut(const String&p_name,const InputEvent& p_event) const;
+	Ref<ShortCut> get_shortcut(const String&p_name) const;
+	void get_shortcut_list(List<String> *r_shortcuts);
+
 	EditorSettings();
 	~EditorSettings();
 
@@ -151,5 +160,9 @@ public:
 
 #define EDITOR_DEF(m_var,m_val) _EDITOR_DEF(m_var,Variant(m_val))
 Variant _EDITOR_DEF( const String& p_var, const Variant& p_default);
+
+#define ED_IS_SHORTCUT(p_name,p_ev) (EditorSettings::get_singleton()->is_shortcut(p_name,p_ev))
+Ref<ShortCut> ED_SHORTCUT(const String& p_path,const String& p_name,uint32_t p_keycode=0);
+Ref<ShortCut> ED_GET_SHORTCUT(const String& p_path);
 
 #endif // EDITOR_SETTINGS_H

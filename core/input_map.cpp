@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "input_map.h"
 #include "globals.h"
+#include "os/keyboard.h"
 
 InputMap *InputMap::singleton=NULL;
 
@@ -36,6 +37,7 @@ void InputMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("has_action","action"),&InputMap::has_action);
 	ObjectTypeDB::bind_method(_MD("get_action_id","action"),&InputMap::get_action_id);
 	ObjectTypeDB::bind_method(_MD("get_action_from_id","id"),&InputMap::get_action_from_id);
+	ObjectTypeDB::bind_method(_MD("get_actions"),&InputMap::_get_actions);
 	ObjectTypeDB::bind_method(_MD("add_action","action"),&InputMap::add_action);
 	ObjectTypeDB::bind_method(_MD("erase_action","action"),&InputMap::erase_action);
 
@@ -73,6 +75,35 @@ StringName InputMap::get_action_from_id(int p_id) const {
 
 	ERR_FAIL_COND_V(!input_id_map.has(p_id),StringName());
 	return input_id_map[p_id];
+}
+
+Array InputMap::_get_actions() {
+
+	Array ret;
+	List<StringName> actions = get_actions();
+	if(actions.empty())
+		return ret;
+
+	for(const List<StringName>::Element *E=actions.front();E;E=E->next()) {
+
+		ret.push_back(E->get());
+	}
+
+	return ret;
+}
+
+List<StringName> InputMap::get_actions() const {
+
+	List<StringName> actions = List<StringName>();
+	if(input_map.empty()){
+		return actions;
+	}
+
+	for (Map<StringName, Action>::Element *E=input_map.front();E;E=E->next()) {
+		actions.push_back(E->key());
+	}
+
+	return actions;
 }
 
 List<InputEvent>::Element *InputMap::_find_event(List<InputEvent> &p_list,const InputEvent& p_event) const {
@@ -288,6 +319,67 @@ void InputMap::load_from_globals() {
 		}
 
 	}
+
+}
+
+void InputMap::load_default() {
+
+	InputEvent key;
+	key.type=InputEvent::KEY;
+
+	add_action("ui_accept");
+	key.key.scancode=KEY_RETURN;
+	action_add_event("ui_accept",key);
+	key.key.scancode=KEY_ENTER;
+	action_add_event("ui_accept",key);
+	key.key.scancode=KEY_SPACE;
+	action_add_event("ui_accept",key);
+
+	add_action("ui_select");
+	key.key.scancode=KEY_SPACE;
+	action_add_event("ui_select",key);
+
+	add_action("ui_cancel");
+	key.key.scancode=KEY_ESCAPE;
+	action_add_event("ui_cancel",key);
+
+	add_action("ui_focus_next");
+	key.key.scancode=KEY_TAB;
+	action_add_event("ui_focus_next",key);
+
+	add_action("ui_focus_prev");
+	key.key.scancode=KEY_TAB;
+	key.key.mod.shift=true;
+	action_add_event("ui_focus_prev",key);
+	key.key.mod.shift=false;
+
+	add_action("ui_left");
+	key.key.scancode=KEY_LEFT;
+	action_add_event("ui_left",key);
+
+	add_action("ui_right");
+	key.key.scancode=KEY_RIGHT;
+	action_add_event("ui_right",key);
+
+	add_action("ui_up");
+	key.key.scancode=KEY_UP;
+	action_add_event("ui_up",key);
+
+	add_action("ui_down");
+	key.key.scancode=KEY_DOWN;
+	action_add_event("ui_down",key);
+
+
+	add_action("ui_page_up");
+	key.key.scancode=KEY_PAGEUP;
+	action_add_event("ui_page_up",key);
+
+	add_action("ui_page_down");
+	key.key.scancode=KEY_PAGEDOWN;
+	action_add_event("ui_page_down",key);
+
+//	set("display/orientation", "landscape");
+
 
 }
 

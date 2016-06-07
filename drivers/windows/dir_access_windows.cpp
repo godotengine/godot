@@ -69,7 +69,7 @@ bool DirAccessWindows::list_dir_begin() {
 
 	_cisdir=false;
 	_cishidden=false;
-	
+
 	list_dir_end();
 	p->h = FindFirstFileExW((current_dir+"\\*").c_str(), FindExInfoStandard, &p->fu, FindExSearchNameMatch, NULL, 0);
 
@@ -83,7 +83,7 @@ String DirAccessWindows::get_next() {
 	if (p->h==INVALID_HANDLE_VALUE)
 		return "";
 
-	
+
 	_cisdir=(p->fu.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 	_cishidden=(p->fu.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN);
 
@@ -192,7 +192,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 #else
 
 	p_dir=fix_path(p_dir);
-	
+
 	//p_dir.replace("/","\\");
 
 	bool success;
@@ -249,7 +249,7 @@ bool DirAccessWindows::file_exists(String p_file) {
 		p_file=get_current_dir().plus_file(p_file);
 
 	p_file=fix_path(p_file);
-	
+
 	//p_file.replace("/","\\");
 
 	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
@@ -359,8 +359,12 @@ FileType DirAccessWindows::get_file_type(const String& p_file) const {
 */
 size_t  DirAccessWindows::get_space_left() {
 
-	return -1;
-};
+	uint64_t bytes = 0;
+	GetDiskFreeSpaceEx(NULL,(PULARGE_INTEGER)&bytes,NULL,NULL);
+
+	//this is either 0 or a value in bytes.
+	return (size_t)bytes;
+}
 
 DirAccessWindows::DirAccessWindows() {
 

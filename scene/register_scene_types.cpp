@@ -193,6 +193,7 @@
 
 #ifndef _3D_DISABLED
 #include "scene/3d/camera.h"
+#include "scene/3d/listener.h"
 
 #include "scene/3d/interpolated_camera.h"
 #include "scene/3d/position_3d.h"
@@ -293,6 +294,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
+	ObjectTypeDB::register_type<ShortCut>();
 	ObjectTypeDB::register_type<Control>();
 //	ObjectTypeDB::register_type<EmptyControl>();
 	ObjectTypeDB::add_compatibility_type("EmptyControl","Control");
@@ -386,6 +388,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<BoneAttachment>();
 	ObjectTypeDB::register_virtual_type<VisualInstance>();
 	ObjectTypeDB::register_type<Camera>();
+	ObjectTypeDB::register_type<Listener>();
 	ObjectTypeDB::register_type<InterpolatedCamera>();
 	ObjectTypeDB::register_type<TestCube>();
 	ObjectTypeDB::register_type<MeshInstance>();

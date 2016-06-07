@@ -236,6 +236,10 @@ class ScriptEditor : public VBoxContainer {
 
 	bool grab_focus_block;
 
+	bool pending_auto_reload;
+	bool auto_reload_running_scripts;
+	void _live_auto_reload_running_scripts();
+
 	ScriptEditorQuickOpen *quick_open;
 
 	EditorScriptCodeCompletionCache *completion_cache;
@@ -322,6 +326,7 @@ public:
 	virtual void edited_scene_changed();
 
 	ScriptEditorDebugger *get_debugger() { return debugger; }
+	void set_live_auto_reload_running_scripts(bool p_enabled);
 
 	ScriptEditor(EditorNode *p_editor);
 	~ScriptEditor();
@@ -356,6 +361,7 @@ public:
 	virtual void get_window_layout(Ref<ConfigFile> p_layout);
 
 	virtual void get_breakpoints(List<String> *p_breakpoints);
+
 
 	virtual void edited_scene_changed();
 

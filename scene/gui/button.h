@@ -54,7 +54,6 @@ private:
 	TextAlign align;
 
 
-
 protected:
 
 	virtual Size2 get_minimum_size() const;
@@ -62,6 +61,8 @@ protected:
 	static void _bind_methods();
 public:
 //
+
+
 	void set_text(const String& p_text);
 	String get_text() const;
 
@@ -76,6 +77,7 @@ public:
 
 	void set_text_align(TextAlign p_align);
 	TextAlign get_text_align() const;
+
 
 	Button(const String& p_text=String());
 	~Button();

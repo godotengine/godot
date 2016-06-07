@@ -698,3 +698,64 @@
 		}\
 	}
 
+#define FUNC8R(m_r,m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) { \
+		if (Thread::get_caller_ID()!=server_thread) {\
+			m_r ret;\
+			command_queue.push_and_ret( server_name, &ServerName::m_type,p1, p2, p3, p4, p5, p6, p7, p8, &ret);\
+			SYNC_DEBUG\
+			return ret;\
+		} else {\
+			return server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);\
+		}\
+	}
+
+#define FUNC8RC(m_r,m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) const { \
+		if (Thread::get_caller_ID()!=server_thread) {\
+			m_r ret;\
+			command_queue.push_and_ret( server_name, &ServerName::m_type,p1, p2, p3, p4, p5, p6, p7, p8, &ret);\
+			SYNC_DEBUG\
+			return ret;\
+		} else {\
+			return server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);\
+		}\
+	}
+
+
+#define FUNC8S(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) { \
+		if (Thread::get_caller_ID()!=server_thread) {\
+			command_queue.push_and_sync( server_name, &ServerName::m_type,p1, p2, p3, p4, p5, p6, p7, p8);\
+		} else {\
+			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);\
+		}\
+	}
+
+#define FUNC8SC(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) const { \
+		if (Thread::get_caller_ID()!=server_thread) {\
+			command_queue.push_and_sync( server_name, &ServerName::m_type,p1, p2, p3, p4, p5, p6, p7, p8);\
+		} else {\
+			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);\
+		}\
+	}
+
+
+#define FUNC8(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) { \
+		if (Thread::get_caller_ID()!=server_thread) {\
+			command_queue.push( server_name, &ServerName::m_type,p1, p2, p3, p4, p5, p6, p7, p8);\
+		} else {\
+			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);\
+		}\
+	}
+
+#define FUNC8C(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) const { \
+		if (Thread::get_caller_ID()!=server_thread) {\
+			command_queue.push( server_name, &ServerName::m_type,p1, p2, p3, p4, p5, p6, p7, p8);\
+		} else {\
+			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);\
+		}\
+	}

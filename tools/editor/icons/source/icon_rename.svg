@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_rename.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_rename.svg">
   <defs
      id="defs4" />
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.627418"
-     inkscape:cx="13.510214"
-     inkscape:cy="18.196354"
+     inkscape:zoom="32.000001"
+     inkscape:cx="8.1124598"
+     inkscape:cy="7.4898959"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -67,28 +67,11 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
-    <rect
+     transform="translate(0,-1036.3622)">
+    <path
        style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4137"
-       width="12"
-       height="3.9999826"
-       x="10"
-       y="1025.3622" />
-    <rect
-       y="-17.99999"
-       x="1025.3622"
-       height="3.9999826"
-       width="22"
-       id="rect4158"
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       transform="matrix(0,1,-1,0,0,0)" />
-    <rect
-       y="1043.3622"
-       x="10"
-       height="3.9999826"
-       width="12"
-       id="rect4136"
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+       d="M 5 2 L 5 4 L 7 4 L 7 12 L 5 12 L 5 14 L 7 14 C 7.5522847 14 8 13.5523 8 13 C 8 13.5523 8.4477153 14 9 14 L 11 14 L 11 12 L 9 12 L 9 4 L 11 4 L 11 2 L 9 2 C 8.4477153 2 8 2.4477153 8 3 C 8 2.4477153 7.5522847 2 7 2 L 5 2 z "
+       transform="translate(0,1036.3622)"
+       id="rect4138" />
   </g>
 </svg>

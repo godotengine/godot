@@ -644,6 +644,13 @@ void EditorHelp::_class_desc_select(const String& p_select) {
 
 }
 
+void EditorHelp::_class_desc_input(const InputEvent& p_input) {
+	if (p_input.type==InputEvent::MOUSE_BUTTON && p_input.mouse_button.pressed && p_input.mouse_button.button_index==1) {
+		class_desc->set_selection_enabled(false);
+		class_desc->set_selection_enabled(true);
+	}
+}
+
 void EditorHelp::_add_type(const String& p_type) {
 
 	String t = p_type;
@@ -1625,6 +1632,7 @@ void EditorHelp::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_class_list_select",&EditorHelp::_class_list_select);
 	ObjectTypeDB::bind_method("_class_desc_select",&EditorHelp::_class_desc_select);
+	ObjectTypeDB::bind_method("_class_desc_input",&EditorHelp::_class_desc_input);
 //	ObjectTypeDB::bind_method("_button_pressed",&EditorHelp::_button_pressed);
 	ObjectTypeDB::bind_method("_scroll_changed",&EditorHelp::_scroll_changed);
 	ObjectTypeDB::bind_method("_request_help",&EditorHelp::_request_help);
@@ -1659,6 +1667,7 @@ EditorHelp::EditorHelp() {
 		pc->add_child(class_desc);
 		class_desc->set_area_as_parent_rect(8);
 		class_desc->connect("meta_clicked",this,"_class_desc_select");
+		class_desc->connect("input_event",this,"_class_desc_input");
 	}
 
 	class_desc->get_v_scroll()->connect("value_changed",this,"_scroll_changed");

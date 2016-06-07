@@ -1952,6 +1952,20 @@ String OS_X11::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
 
+void OS_X11::set_use_vsync(bool p_enable) {
+	if (context_gl)
+		return context_gl->set_use_vsync(p_enable);
+}
+
+bool OS_X11::is_vsnc_enabled() const {
+
+	if (context_gl)
+		return context_gl->is_using_vsync();
+
+	return true;
+}
+
+
 void OS_X11::set_context(int p_context) {
 
 	XClassHint* classHint = NULL;

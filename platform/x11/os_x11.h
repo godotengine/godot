@@ -240,6 +240,9 @@ public:
 
 	virtual void set_context(int p_context);
 
+	virtual void set_use_vsync(bool p_enable);
+	virtual bool is_vsnc_enabled() const;
+
 	void run();
 
 	OS_X11();

@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32.000001 32.000001"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_tool_rotate.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
    sodipodi:docname="icon_tool_rotate.svg">
   <defs
      id="defs4" />
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="22.627417"
-     inkscape:cx="18.626121"
-     inkscape:cy="15.452245"
+     inkscape:cx="3.9785059"
+     inkscape:cy="10.426966"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -67,28 +67,29 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1036.3622)">
     <path
-       style="fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-linecap:round;stroke-opacity:1"
-       d="m 17,1024.3622 a 12,12.000012 0 0 0 -12,12 l 3,0 a 9,9.0000095 0 0 1 9,-9 9,9.0000095 0 0 1 9,9 9,9.0000095 0 0 1 -9,9 9,9.0000095 0 0 1 -4.496094,-1.2129 l -1.496094,2.5938 A 12,12.000012 0 0 0 17,1048.3622 a 12,12.000012 0 0 0 12,-12 12,12.000012 0 0 0 -12,-12 z m -11.9550781,12.8926 a 12,12.000012 0 0 0 0.054687,0.5683 12,12.000012 0 0 1 -0.054687,-0.5683 z m 0.1464843,1.1758 a 12,12.000012 0 0 0 0.1230469,0.6152 12,12.000012 0 0 1 -0.1230469,-0.6152 z m 0.2578126,1.1386 a 12,12.000012 0 0 0 0.1914062,0.6289 12,12.000012 0 0 1 -0.1914062,-0.6289 z m 0.3847656,1.1563 a 12,12.000012 0 0 0 0.2382812,0.5683 12,12.000012 0 0 1 -0.2382812,-0.5683 z m 0.4960937,1.1035 a 12,12.000012 0 0 0 0.2871094,0.5293 12,12.000012 0 0 1 -0.2871094,-0.5293 z m 0.6054688,1.0488 a 12,12.000012 0 0 0 0.3183593,0.4688 12,12.000012 0 0 1 -0.3183593,-0.4688 z m 0.7070312,0.9785 a 12,12.000012 0 0 0 0.3730469,0.4434 12,12.000012 0 0 1 -0.3730469,-0.4434 z m 0.7714844,0.8711 a 12,12.000012 0 0 0 0.4453125,0.4375 12,12.000012 0 0 1 -0.4453125,-0.4375 z m 0.8847656,0.8223 a 12,12.000012 0 0 0 0.46875,0.375 12,12.000012 0 0 1 -0.46875,-0.375 z m 0.9648439,0.7305 a 12,12.000012 0 0 0 0.5,0.3222 12,12.000012 0 0 1 -0.5,-0.3222 z"
-       id="path4368"
-       inkscape:connector-curvature="0" />
+       style="opacity:1;fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 9 2 A 6.0000172 6.0000172 0 0 0 3 8 L 5 8 A 4 4 0 0 1 9 4 A 4 4 0 0 1 13 8 A 4 4 0 0 1 9 12 L 9 14 A 6.0000172 6.0000172 0 0 0 15 8 A 6.0000172 6.0000172 0 0 0 9 2 z "
+       transform="translate(0,1036.3622)"
+       id="path4138" />
     <path
        sodipodi:type="star"
-       style="fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-linecap:round;stroke-opacity:1"
-       id="path4382"
+       style="opacity:1;fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path4142"
        sodipodi:sides="3"
-       sodipodi:cx="5"
-       sodipodi:cy="-1038.3622"
-       sodipodi:r1="3.6055512"
-       sodipodi:r2="1.8027756"
-       sodipodi:arg1="0.52359878"
-       sodipodi:arg2="1.5707963"
+       sodipodi:cx="3"
+       sodipodi:cy="1046.3622"
+       sodipodi:r1="2.236068"
+       sodipodi:r2="1.118034"
+       sodipodi:arg1="1.0471976"
+       sodipodi:arg2="2.0943951"
        inkscape:flatsided="false"
        inkscape:rounded="0"
        inkscape:randomized="0"
-       d="m 8.122499,-1036.5594 -3.122499,0 -3.122499,0 1.5612495,-2.7042 L 5,-1041.9677 l 1.5612495,2.7041 z"
-       inkscape:transform-center-y="1.1667105"
-       transform="matrix(1.4411534,0,0,-1.2942882,-0.70576687,-305.24439)" />
+       d="m 4.1180339,1048.2987 -1.6770509,-0.9683 -1.67705101,-0.9682 1.67705101,-0.9683 1.6770511,-0.9682 -1e-7,1.9365 z"
+       inkscape:transform-center-x="0.00013164169"
+       transform="matrix(0,-1.1925797,1.5491989,0,-1617.0232,1049.2732)"
+       inkscape:transform-center-y="0.66664316" />
   </g>
 </svg>

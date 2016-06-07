@@ -795,7 +795,7 @@ void OS_Windows::process_key_events() {
 				    k.mod=ke.mod_state;
 				    k.pressed=true;
 				    k.scancode=KeyMappingWindows::get_keysym(ke.wParam);
-                    k.unicode=ke.wParam;
+				    k.unicode=ke.wParam;
 				    if (k.unicode && gr_mem) {
 					    k.mod.alt=false;
 					    k.mod.control=false;
@@ -2243,7 +2243,7 @@ String OS_Windows::get_system_dir(SystemDir p_dir) const {
 }
 String OS_Windows::get_data_dir() const {
 
-	String an = Globals::get_singleton()->get("application/name");
+	String an = get_safe_application_name();
 	if (an!="") {
 
 		if (has_environment("APPDATA")) {
@@ -2268,6 +2268,21 @@ bool OS_Windows::is_joy_known(int p_device) {
 String OS_Windows::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
+
+void OS_Windows::set_use_vsync(bool p_enable) {
+
+	if (gl_context)
+		gl_context->set_use_vsync(p_enable);
+}
+
+bool OS_Windows::is_vsnc_enabled() const{
+
+	if (gl_context)
+		return gl_context->is_using_vsync();
+
+	return true;
+}
+
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 

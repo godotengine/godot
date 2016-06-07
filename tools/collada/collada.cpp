@@ -482,6 +482,24 @@ Transform Collada::_read_transform(XMLParser& parser) {
 	return _read_transform_from_array(array);
 }
 
+String Collada::_read_empty_draw_type(XMLParser& parser) {
+
+	String empty_draw_type = "";
+	
+	if (parser.is_empty())
+		return empty_draw_type;
+	
+	while (parser.read()==OK) {
+		if (parser.get_node_type() == XMLParser::NODE_TEXT) {
+			empty_draw_type = parser.get_node_data();
+		}
+		else
+		if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END)
+			break; // end parsing text
+	}
+	return empty_draw_type;
+}
+
 Variant Collada::_parse_param(XMLParser& parser) {
 
 	if (parser.is_empty())
@@ -1664,6 +1682,8 @@ Collada::Node* Collada::_parse_visual_scene_node(XMLParser& parser) {
 
 	Vector<Node::XForm> xform_list;
 	Vector<Node*> children;
+	
+	String empty_draw_type="";
 
 	Node *node=NULL;
 
@@ -1771,7 +1791,9 @@ Collada::Node* Collada::_parse_visual_scene_node(XMLParser& parser) {
 
 				   xform_list.push_back(xf);
 
-			} else if (section=="technique" || section=="extra") {
+			} else if (section=="empty_draw_type") {
+				empty_draw_type = _read_empty_draw_type(parser);
+			} else if (section == "technique" || section=="extra") {
 
 			} else if (section!="node") {
 				//usually what defines the type of node
@@ -1817,6 +1839,7 @@ Collada::Node* Collada::_parse_visual_scene_node(XMLParser& parser) {
 
 	node->name=name;
 	node->id=id;
+	node->empty_draw_type=empty_draw_type;
 
 	if (node->children.size()==1) {
 		if (node->children[0]->noname && !node->noname) {

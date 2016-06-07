@@ -467,7 +467,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 				// Build the full path to the app's expansion files
 				try {
-					expansion_pack_path = Environment.getExternalStorageDirectory().toString() + "/Android/obb/"+this.getPackageName();
+					expansion_pack_path = Helpers.getSaveFilePath(getApplicationContext());
 					expansion_pack_path+="/"+"main."+getPackageManager().getPackageInfo(getPackageName(), 0).versionCode+"."+this.getPackageName()+".obb";
 				} catch (Exception e) {
 					e.printStackTrace();
