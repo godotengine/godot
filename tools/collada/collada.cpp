@@ -736,6 +736,9 @@ void Collada::_parse_effect_material(XMLParser& parser,Effect &effect,String &id
 				effect.found_double_sided=true;
 				effect.double_sided=parser.get_node_data().to_int();
 				COLLADA_PRINT("double sided: "+itos(parser.get_node_data().to_int()));
+			} else if (parser.get_node_name()=="unshaded") {
+				parser.read();
+				effect.unshaded=parser.get_node_data().to_int();
 			} else if (parser.get_node_name()=="bump") {
 
 				// color or texture types

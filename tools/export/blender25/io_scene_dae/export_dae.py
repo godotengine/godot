@@ -351,6 +351,12 @@ class DaeExporter:
 		self.writel(S_FX,5,'<technique profile="GOOGLEEARTH">')
 		self.writel(S_FX,6,'<double_sided>'+["0","1"][double_sided_hint]+"</double_sided>")
 		self.writel(S_FX,5,'</technique>')
+
+		if (material.use_shadeless):
+			self.writel(S_FX,5,'<technique profile="GODOT">')
+			self.writel(S_FX,6,'<unshaded>1</unshaded>')
+			self.writel(S_FX,5,'</technique>')
+
 		self.writel(S_FX,4,'</extra>')
 
 		self.writel(S_FX,3,'</technique>')
