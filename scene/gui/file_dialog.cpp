@@ -258,7 +258,7 @@ void FileDialog::_action_pressed() {
 		}
 
 		if (dir_access->file_exists(f)) {
-			confirm_save->set_text("File Exists, Overwrite?");
+			confirm_save->set_text(TTR("File Exists, Overwrite?"));
 			confirm_save->popup_centered(Size2(200,80));
 		} else {
 
@@ -463,7 +463,7 @@ void FileDialog::update_filters() {
 		if (max_filters<filters.size())
 			all_filters+=", ...";
 
-		filter->add_item("All Recognized ( "+all_filters+" )");
+		filter->add_item(TTR("All Recognized")+" ( "+all_filters+" )");
 	}
 	for(int i=0;i<filters.size();i++) {
 
@@ -475,7 +475,7 @@ void FileDialog::update_filters() {
 			filter->add_item("( "+flt+" )");
 	}
 
-	filter->add_item("All Files (*)");
+	filter->add_item(TTR("All Files (*)"));
 
 }
 
@@ -548,11 +548,11 @@ void FileDialog::set_mode(Mode p_mode) {
 	mode=p_mode;
 	switch(mode) {
 
-		case MODE_OPEN_FILE: get_ok()->set_text("Open"); set_title("Open a File"); makedir->hide(); break;
-		case MODE_OPEN_FILES: get_ok()->set_text("Open"); set_title("Open File(s)"); makedir->hide(); break;
-		case MODE_OPEN_DIR: get_ok()->set_text("Open"); set_title("Open a Directory"); makedir->show(); break;
-		case MODE_OPEN_ANY: get_ok()->set_text("Open"); set_title("Open a File or Directory"); makedir->show(); break;
-		case MODE_SAVE_FILE: get_ok()->set_text("Save"); set_title("Save a File"); makedir->show(); break;
+		case MODE_OPEN_FILE: get_ok()->set_text(TTR("Open")); set_title(TTR("Open a File")); makedir->hide(); break;
+		case MODE_OPEN_FILES: get_ok()->set_text(TTR("Open")); set_title(TTR("Open File(s)")); makedir->hide(); break;
+		case MODE_OPEN_DIR: get_ok()->set_text(TTR("Open")); set_title(TTR("Open a Directory")); makedir->show(); break;
+		case MODE_OPEN_ANY: get_ok()->set_text(TTR("Open")); set_title(TTR("Open a File or Directory")); makedir->show(); break;
+		case MODE_SAVE_FILE: get_ok()->set_text(TTR("Save")); set_title(TTR("Save a File")); makedir->show(); break;
 	}
 
 	if (mode==MODE_OPEN_FILES) {
@@ -742,7 +742,7 @@ FileDialog::FileDialog() {
 	set_child_rect(vbc);
 
 	mode=MODE_SAVE_FILE;
-	set_title("Save a File");
+	set_title(TTR("Save a File"));
 
 	dir = memnew(LineEdit);
 	HBoxContainer *pathhb = memnew( HBoxContainer );
@@ -758,24 +758,24 @@ FileDialog::FileDialog() {
 	drives->connect("item_selected",this,"_select_drive");
 
 	makedir = memnew( Button );
-	makedir->set_text("Create Folder");
+	makedir->set_text(TTR("Create Folder"));
 	makedir->connect("pressed",this,"_make_dir");
 	pathhb->add_child(makedir);
 
-	vbc->add_margin_child("Path:",pathhb);
+	vbc->add_margin_child(TTR("Path:"),pathhb);
 
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
-	vbc->add_margin_child("Directories & Files:",tree,true);
+	vbc->add_margin_child(TTR("Directories & Files:"),tree,true);
 
 	file = memnew(LineEdit);
 	//add_child(file);
-	vbc->add_margin_child("File:",file);
+	vbc->add_margin_child(TTR("File:"),file);
 
 
 	filter = memnew( OptionButton );
 	//add_child(filter);
-	vbc->add_margin_child("Filter:",filter);
+	vbc->add_margin_child(TTR("Filter:"),filter);
 	filter->set_clip_text(true);//too many extensions overflow it
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -800,21 +800,21 @@ FileDialog::FileDialog() {
 	confirm_save->connect("confirmed", this,"_save_confirm_pressed");
 
 	makedialog = memnew( ConfirmationDialog );
-	makedialog->set_title("Create Folder");
+	makedialog->set_title(TTR("Create Folder"));
 	VBoxContainer *makevb= memnew( VBoxContainer );
 	makedialog->add_child(makevb);
 	makedialog->set_child_rect(makevb);
 	makedirname = memnew( LineEdit );
-	makevb->add_margin_child("Name:",makedirname);
+	makevb->add_margin_child(TTR("Name:"),makedirname);
 	add_child(makedialog);
 	makedialog->register_text_enter(makedirname);
 	makedialog->connect("confirmed",this,"_make_dir_confirm");
 	mkdirerr = memnew( AcceptDialog );
-	mkdirerr->set_text("Could not create folder.");
+	mkdirerr->set_text(TTR("Could not create folder."));
 	add_child(mkdirerr);
 
 	exterr = memnew( AcceptDialog );
-	exterr->set_text("Must use a valid extension.");
+	exterr->set_text(TTR("Must use a valid extension."));
 	add_child(exterr);
 
 
