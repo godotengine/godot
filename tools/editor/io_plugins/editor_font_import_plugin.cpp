@@ -622,6 +622,7 @@ public:
 		VBoxContainer *vbr = memnew( VBoxContainer );
 		hbc->add_child(vbr);
 		vbr->set_h_size_flags(SIZE_EXPAND_FILL);
+		vbr->set_custom_minimum_size(Size2(240,240));
 
 		source = memnew( EditorLineEditFileChooser );
 		source->get_file_dialog()->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
@@ -653,18 +654,18 @@ public:
 		test_string = memnew( LineEdit );
 		test_string->set_text(TTR("The quick brown fox jumps over the lazy dog."));
 		test_string->set_h_size_flags(SIZE_EXPAND_FILL);
-		test_string->set_stretch_ratio(5);
 
 		testhb->add_child(test_string);
 		test_color = memnew( ColorPickerButton );
 		test_color->set_color(get_color("font_color","Label"));
-		test_color->set_h_size_flags(SIZE_EXPAND_FILL);
-		test_color->set_stretch_ratio(1);
+		test_color->set_text("Color");
+		test_color->set_h_size_flags(SIZE_FILL);
 		test_color->connect("color_changed",this,"_update_text3");
 		testhb->add_child(test_color);
 
 		vbl->add_spacer();
-		vbl->add_margin_child(TTR("Test:")+" ",testhb);
+		vbl->add_margin_child(TTR("Test:"),testhb);
+		testhb->set_h_size_flags(SIZE_EXPAND_FILL);
 		/*
 		HBoxContainer *upd_hb = memnew( HBoxContainer );
 //		vbl->add_child(upd_hb);
