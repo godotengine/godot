@@ -16,7 +16,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_vu_full.png"
+   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_vu_empty.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    sodipodi:docname="icon_vu_full.svg">
@@ -56,8 +56,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="8"
-     inkscape:cx="37.328607"
-     inkscape:cy="1.9176337"
+     inkscape:cx="67.735572"
+     inkscape:cy="8.9854683"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -74,8 +74,8 @@
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
-     inkscape:object-paths="true"
-     inkscape:snap-intersection-paths="true"
+     inkscape:object-paths="false"
+     inkscape:snap-intersection-paths="false"
      inkscape:object-nodes="false"
      inkscape:snap-smooth-nodes="false"
      inkscape:snap-midpoints="false">
@@ -92,7 +92,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -103,7 +103,7 @@
      transform="translate(0,-1048.3622)">
     <path
        style="opacity:1;fill:url(#linearGradient4219);fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 2 0 A 2 2 0 0 0 0 2 A 2 2 0 0 0 2 4 L 80 4 L 80 0 L 2 0 z M 82 0 L 82 4 L 126 4 A 2 2 0 0 0 128 2 A 2 2 0 0 0 126 0 L 82 0 z "
+       d="M 2 0 A 2 2 0 0 0 0 2 A 2 2 0 0 0 2 4 L 77 4 L 80 4 L 82 4 L 85 4 L 100 4 L 100 0 L 85 0 L 82 0 L 80 0 L 77 0 L 2 0 z M 102 0 L 102 4 L 126 4 A 2 2 0 0 0 128 2 A 2 2 0 0 0 126 0 L 102 0 z "
        transform="translate(0,1048.3622)"
        id="rect4204" />
   </g>
