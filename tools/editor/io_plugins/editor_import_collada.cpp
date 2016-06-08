@@ -467,6 +467,7 @@ Error ColladaImport::_create_material(const String& p_target) {
 
 	material->set_parameter(FixedMaterial::PARAM_SPECULAR_EXP,effect.shininess);
 	material->set_flag(Material::FLAG_DOUBLE_SIDED,effect.double_sided);
+	material->set_flag(Material::FLAG_UNSHADED,effect.unshaded);
 
 
 
