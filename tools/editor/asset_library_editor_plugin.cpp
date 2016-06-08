@@ -537,6 +537,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 	if (p_what==NOTIFICATION_READY) {
 		TextureFrame *tf = memnew(TextureFrame);
 		tf->set_texture(get_icon("Error","EditorIcons"));
+		reverse->set_icon(get_icon("Updown","EditorIcons"));
+
 		error_hb->add_child(tf);
 		error_label->raise();
 
@@ -1295,8 +1297,9 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	sort->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	reverse = memnew( CheckBox);
-	reverse->set_text(TTR("Reverse"));
+	reverse = memnew( ToolButton );
+	reverse->set_toggle_mode(true);
+	//reverse->set_text(TTR("Reverse"));
 	search_hb2->add_child(reverse);
 
 	search_hb2->add_child(memnew(VSeparator));
@@ -1323,6 +1326,18 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	search_hb2->add_child(repository);
 	repository->set_h_size_flags(SIZE_EXPAND_FILL);
+
+
+	search_hb2->add_child(memnew(VSeparator));
+
+	support = memnew( MenuButton );
+	search_hb2->add_child(support);
+	support->set_text(TTR("Support.."));
+	support->get_popup()->add_check_item(TTR("Official"),SUPPORT_OFFICIAL);
+	support->get_popup()->add_check_item(TTR("Community"),SUPPORT_COMMUNITY);
+	support->get_popup()->add_check_item(TTR("Testing"),SUPPORT_TESTING);
+	support->get_popup()->set_item_checked(SUPPORT_OFFICIAL,true);
+	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY,true);
 
 	/////////
 
