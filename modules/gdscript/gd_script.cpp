@@ -1558,6 +1558,113 @@ void GDScriptLanguage::reload_all_scripts() {
 #endif
 }
 
+
+void GDScriptLanguage::reload_tool_script(const Ref<Script>& p_script,bool p_soft_reload) {
+
+
+#ifdef DEBUG_ENABLED
+
+	if (lock) {
+		lock->lock();
+	}
+
+	List<Ref<GDScript> > scripts;
+
+	SelfList<GDScript> *elem=script_list.first();
+	while(elem) {
+		if (elem->self()->get_path().is_resource_file()) {
+
+			scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
+		}
+		elem=elem->next();
+	}
+
+	if (lock) {
+		lock->unlock();
+	}
+
+	//when someone asks you why dynamically typed languages are easier to write....
+
+	Map< Ref<GDScript>, Map<ObjectID,List<Pair<StringName,Variant> > > > to_reload;
+
+	//as scripts are going to be reloaded, must proceed without locking here
+
+	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
+
+	for(List<Ref<GDScript> >::Element *E=scripts.front();E;E=E->next()) {
+
+		bool reload = E->get()==p_script || to_reload.has(E->get()->get_base());
+
+		if (!reload)
+			continue;
+
+		to_reload.insert(E->get(),Map<ObjectID,List<Pair<StringName,Variant> > >());
+
+		if (!p_soft_reload) {
+
+			//save state and remove script from instances
+			Map<ObjectID,List<Pair<StringName,Variant> > >& map = to_reload[E->get()];
+
+			while(E->get()->instances.front()) {
+				Object *obj = E->get()->instances.front()->get();
+				//save instance info
+				List<Pair<StringName,Variant> > state;
+				if (obj->get_script_instance()) {
+
+					obj->get_script_instance()->get_property_state(state);
+					map[obj->get_instance_ID()]=state;
+					obj->set_script(RefPtr());
+				}
+			}
+
+			//same thing for placeholders
+#ifdef TOOLS_ENABLED
+
+			while(E->get()->placeholders.size()) {
+
+				Object *obj = E->get()->placeholders.front()->get()->get_owner();
+				//save instance info
+				List<Pair<StringName,Variant> > state;
+				if (obj->get_script_instance()) {
+
+					obj->get_script_instance()->get_property_state(state);
+					map[obj->get_instance_ID()]=state;
+					obj->set_script(RefPtr());
+				}
+			}
+#endif
+
+		}
+	}
+
+	for(Map< Ref<GDScript>, Map<ObjectID,List<Pair<StringName,Variant> > > >::Element *E=to_reload.front();E;E=E->next()) {
+
+		Ref<GDScript> scr = E->key();
+		scr->reload(true);
+
+		//restore state if saved
+		for (Map<ObjectID,List<Pair<StringName,Variant> > >::Element *F=E->get().front();F;F=F->next()) {
+
+			Object *obj = ObjectDB::get_instance(F->key());
+			if (!obj)
+				continue;
+
+			obj->set_script(scr.get_ref_ptr());
+			if (!obj->get_script_instance())
+				continue;
+
+			for (List<Pair<StringName,Variant> >::Element *G=F->get().front();G;G=G->next()) {
+				obj->get_script_instance()->set(G->get().first,G->get().second);
+			}
+		}
+
+		//if instance states were saved, set them!
+	}
+
+
+#endif
+}
+
 void GDScriptLanguage::frame() {
 
 	//	print_line("calls: "+itos(calls));
