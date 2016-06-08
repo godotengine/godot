@@ -420,6 +420,7 @@ void TextEdit::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 
 			if (draw_breakpoint_gutter) {
+				breakpoint_gutter_width = (get_row_height() * 55) / 100;
 				cache.breakpoint_gutter_width = breakpoint_gutter_width;
 			} else {
 				cache.breakpoint_gutter_width = 0;
@@ -720,10 +721,12 @@ void TextEdit::_notification(int p_what) {
 				// draw breakpoint marker
 				if (text.is_breakpoint(line)) {
 					if (draw_breakpoint_gutter) {
-						int vertical_gap = cache.breakpoint_gutter_width / 2;
-						int marker_size = cache.breakpoint_gutter_width - vertical_gap;
+						int vertical_gap = (get_row_height() * 40) / 100;
+						int horizontal_gap = (cache.breakpoint_gutter_width * 30) / 100;
+						int marker_height = get_row_height() - (vertical_gap * 2);
+						int marker_width = cache.breakpoint_gutter_width - (horizontal_gap * 2);
 						// no transparency on marker
-						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cache.style_normal->get_margin(MARGIN_LEFT) + 1, ofs_y + vertical_gap ,marker_size, marker_size),Color(cache.breakpoint_color.r, cache.breakpoint_color.g, cache.breakpoint_color.b));
+						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cache.style_normal->get_margin(MARGIN_LEFT) + horizontal_gap - 2, ofs_y + vertical_gap ,marker_width, marker_height),Color(cache.breakpoint_color.r, cache.breakpoint_color.g, cache.breakpoint_color.b));
 					}
 				}
 
