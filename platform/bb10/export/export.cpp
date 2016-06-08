@@ -532,95 +532,99 @@ void EditorExportPlatformBB10::_device_poll_thread(void *ud) {
 		if (windows)
 			bb_deploy+=".bat";
 
-		if (!FileAccess::exists(bb_deploy)) {
-			OS::get_singleton()->delay_usec(3000000);
-			continue; //adb not configured
-		}
+		if (FileAccess::exists(bb_deploy)) {
 
-		Vector<Device> devices;
+			Vector<Device> devices;
 
 
-		for (int i=0;i<MAX_DEVICES;i++) {
+			for (int i=0;i<MAX_DEVICES;i++) {
 
-			String host = EditorSettings::get_singleton()->get("blackberry/device_"+itos(i+1)+"/host");
-			if (host==String())
-				continue;
-			String pass = EditorSettings::get_singleton()->get("blackberry/device_"+itos(i+1)+"/password");
-			if (pass==String())
-				continue;
+				String host = EditorSettings::get_singleton()->get("blackberry/device_"+itos(i+1)+"/host");
+				if (host==String())
+					continue;
+				String pass = EditorSettings::get_singleton()->get("blackberry/device_"+itos(i+1)+"/password");
+				if (pass==String())
+					continue;
 
-			List<String> args;
-			args.push_back("-listDeviceInfo");
-			args.push_back(host);
-			args.push_back("-password");
-			args.push_back(pass);
+				List<String> args;
+				args.push_back("-listDeviceInfo");
+				args.push_back(host);
+				args.push_back("-password");
+				args.push_back(pass);
 
 
-			int ec;
-			String dp;
+				int ec;
+				String dp;
 
-			Error err = OS::get_singleton()->execute(bb_deploy,args,true,NULL,&dp,&ec);
+				Error err = OS::get_singleton()->execute(bb_deploy,args,true,NULL,&dp,&ec);
 
-			if (err==OK && ec==0) {
+				if (err==OK && ec==0) {
 
-				Device dev;
-				dev.index=i;
-				String descr;
-				Vector<String> ls=dp.split("\n");
+					Device dev;
+					dev.index=i;
+					String descr;
+					Vector<String> ls=dp.split("\n");
 
-				for(int i=0;i<ls.size();i++) {
+					for(int i=0;i<ls.size();i++) {
 
-					String l = ls[i].strip_edges();
-					if (l.begins_with("modelfullname::")) {
-						dev.name=l.get_slice("::",1);
-						descr+="Model: "+dev.name+"\n";
+						String l = ls[i].strip_edges();
+						if (l.begins_with("modelfullname::")) {
+							dev.name=l.get_slice("::",1);
+							descr+="Model: "+dev.name+"\n";
+						}
+						if (l.begins_with("modelnumber::")) {
+							String s = l.get_slice("::",1);
+							dev.name+=" ("+s+")";
+							descr+="Model Number: "+s+"\n";
+						}
+						if (l.begins_with("scmbundle::"))
+							descr+="OS Version: "+l.get_slice("::",1)+"\n";
+						if (l.begins_with("[n]debug_token_expiration::"))
+							descr+="Debug Token Expires:: "+l.get_slice("::",1)+"\n";
+
 					}
-					if (l.begins_with("modelnumber::")) {
-						String s = l.get_slice("::",1);
-						dev.name+=" ("+s+")";
-						descr+="Model Number: "+s+"\n";
-					}
-					if (l.begins_with("scmbundle::"))
-						descr+="OS Version: "+l.get_slice("::",1)+"\n";
-					if (l.begins_with("[n]debug_token_expiration::"))
-						descr+="Debug Token Expires:: "+l.get_slice("::",1)+"\n";
 
+					dev.description=descr;
+					devices.push_back(dev);
 				}
 
-				dev.description=descr;
-				devices.push_back(dev);
 			}
 
-		}
-
-		bool changed=false;
+			bool changed=false;
 
 
-		ea->device_lock->lock();
+			ea->device_lock->lock();
 
-		if (ea->devices.size()!=devices.size()) {
-			changed=true;
-		} else {
+			if (ea->devices.size()!=devices.size()) {
+				changed=true;
+			} else {
 
-			for(int i=0;i<ea->devices.size();i++) {
+				for(int i=0;i<ea->devices.size();i++) {
 
-				if (ea->devices[i].index!=devices[i].index) {
-					changed=true;
-					break;
+					if (ea->devices[i].index!=devices[i].index) {
+						changed=true;
+						break;
+					}
 				}
 			}
+
+			if (changed) {
+
+				ea->devices=devices;
+				ea->devices_changed=true;
+			}
+
+			ea->device_lock->unlock();
 		}
 
-		if (changed) {
 
-			ea->devices=devices;
-			ea->devices_changed=true;
+		uint64_t wait = 3000000;
+		uint64_t time = OS::get_singleton()->get_ticks_usec();
+		while(OS::get_singleton()->get_ticks_usec() - time < wait ) {
+			OS::get_singleton()->delay_usec(1000);
+			if (ea->quit_request)
+				break;
 		}
-
-		ea->device_lock->unlock();
-
-		OS::get_singleton()->delay_usec(3000000);
-
 	}
 
 }

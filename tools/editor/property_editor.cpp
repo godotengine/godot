@@ -247,7 +247,8 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 	hint=p_hint;
 	hint_text=p_hint_text;
 	type_button->hide();
-	color_picker->hide();
+	if (color_picker)
+		color_picker->hide();
 	texture_preview->hide();
 	inheritors_array.clear();
 	text_edit->hide();
@@ -596,6 +597,16 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 		} break;
 		case Variant::COLOR: {
 
+			if (!color_picker) {
+				//late init for performance
+				color_picker = memnew( ColorPicker );
+				add_child(color_picker);
+				color_picker->hide();
+				color_picker->set_area_as_parent_rect();
+				for(int i=0;i<4;i++)
+					color_picker->set_margin((Margin)i,5);
+				color_picker->connect("color_changed",this,"_color_changed");
+			}
 
 			color_picker->show();
 			color_picker->set_edit_alpha(hint!=PROPERTY_HINT_COLOR_NO_ALPHA);
@@ -1757,13 +1768,9 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		action_buttons[i]->connect("pressed", this,"_action_pressed",binds);
 	}
 
-	color_picker = memnew( ColorPicker );
-	add_child(color_picker);
-	color_picker->hide();
-	color_picker->set_area_as_parent_rect();
-	for(int i=0;i<4;i++)
-		color_picker->set_margin((Margin)i,5);
-	color_picker->connect("color_changed",this,"_color_changed");
+	color_picker=NULL;
+
+
 
 	set_as_toplevel(true);
 	file = memnew ( EditorFileDialog );

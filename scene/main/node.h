@@ -64,6 +64,7 @@ private:
 	struct GroupData {
 
 		bool persistent;
+		SceneTree::Group *group;
 		GroupData() { persistent=false; }
 	};
 
@@ -91,7 +92,7 @@ private:
 		Viewport *viewport;
 
 
-		HashMap< StringName, GroupData,StringNameHasher>  grouped;
+		Map< StringName, GroupData>  grouped;
 		List<Node*>::Element *OW; // owned element
 		List<Node*> owned;
 

@@ -461,6 +461,9 @@ void SceneTreeEditor::_node_script_changed(Node *p_node) {
 
 void SceneTreeEditor::_node_removed(Node *p_node) {
 
+	if (EditorNode::get_singleton()->is_exiting())
+		return; //speed up exit
+
 	if (p_node->is_connected("script_changed",this,"_node_script_changed"))
 		p_node->disconnect("script_changed",this,"_node_script_changed");
 
@@ -534,6 +537,8 @@ void SceneTreeEditor::_test_update_tree() {
 
 void SceneTreeEditor::_tree_changed() {
 
+	if (EditorNode::get_singleton()->is_exiting())
+		return; //speed up exit
 	if (pending_test_update)
 		return;
 	if (tree_dirty)

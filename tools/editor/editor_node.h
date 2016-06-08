@@ -227,6 +227,7 @@ private:
 	Tabs *scene_tabs;
 	int tab_closing;
 
+	bool exiting;
 
 	int old_split_ofs;
 	VSplitContainer *top_split;
@@ -711,6 +712,8 @@ public:
 	void save_layout();
 
 	void update_keying();
+
+	bool is_exiting() const { return exiting; }
 
 	ToolButton *get_pause_button() { return pause_button; }
 
