@@ -1937,7 +1937,7 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 			current_option=-1;
 			//accept->get_cancel()->hide();
 			accept->get_ok()->set_text(TTR("I see.."));
-			accept->set_text("No main scene has ever been defined.\nSelect one from \"Project Settings\" under the 'application' category.");
+			accept->set_text(TTR("No main scene has ever been defined.\nSelect one from \"Project Settings\" under the 'application' category."));
 			accept->popup_centered_minsize();
 			return;
 		}

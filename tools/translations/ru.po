@@ -227,7 +227,7 @@ msgstr "Ок"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr "Тревога!"
+msgstr "Внимание!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
@@ -1225,7 +1225,7 @@ msgstr "Сохранить ресурс как.."
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "I see.."
-msgstr "Понимаю.."
+msgstr "Ясно.."
 
 #: tools/editor/editor_node.cpp
 msgid "Can't open file for writing:"
