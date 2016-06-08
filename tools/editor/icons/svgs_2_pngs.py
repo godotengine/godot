@@ -8,6 +8,9 @@ from os.path import isfile, join
 import subprocess
 import sys
 
+import rsvg
+import cairo
+
 SVGS_PATH = 'source/'
 OUT_DIR = './'
 DPI = 90
@@ -20,6 +23,31 @@ if len(sys.argv) >= 2:
             DPI *= scale
     except:
         pass
+
+rsvg.set_default_dpi(DPI)
+
+last_svg_path = None
+last_svg_data = None
+
+def svg_to_png(svg_path, png_path, dpi):
+    global last_svg_path, last_svg_data
+
+    zoom = int(dpi / 90)
+    if last_svg_path != svg_path:
+        last_svg_data = open(svg_path, 'r').read()
+        last_svg_path = svg_path
+    svg = rsvg.Handle(data=last_svg_data)
+    img = cairo.ImageSurface(
+        cairo.FORMAT_ARGB32,
+        svg.props.width * zoom,
+        svg.props.height * zoom
+    )
+    ctx = cairo.Context(img)
+    ctx.set_antialias(cairo.ANTIALIAS_DEFAULT)
+    ctx.scale(zoom, zoom)
+    svg.render_cairo(ctx)
+    img.write_to_png('%s.png' % png_path)
+    svg.close()
 
 
 def export_all(svgs_path=SVGS_PATH, out_dir=OUT_DIR, dpi=DPI):
@@ -47,12 +75,7 @@ def export_all(svgs_path=SVGS_PATH, out_dir=OUT_DIR, dpi=DPI):
         svg_file_path = '%s%s.svg' % (svgs_path, icon_from_name)
 
         for index, out_icon_name in enumerate(out_icon_names):
-            subprocess.call(
-                'inkscape -z -f {input} -d {dpi} -e{output}'.format(
-                input=svg_file_path,
-                dpi=dpi,
-                output='%s%s.png' % (out_dir, out_icon_name)
-            ), shell=True)
+            svg_to_png(svg_file_path, out_dir + out_icon_name, dpi)
 
 
 # special cases for icons that will be exported to multiple target pngs or that require transforms.
