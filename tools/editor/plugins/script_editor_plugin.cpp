@@ -302,6 +302,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	get_text_edit()->add_color_override("breakpoint_color", EDITOR_DEF("text_editor/breakpoint_color", Color(0.8,0.8,0.4,0.2)));
 	get_text_edit()->add_color_override("search_result_color",EDITOR_DEF("text_editor/search_result_color",Color(0.05,0.25,0.05,1)));
 	get_text_edit()->add_color_override("search_result_border_color",EDITOR_DEF("text_editor/search_result_border_color",Color(0.1,0.45,0.1,1)));
+	get_text_edit()->add_constant_override("line_spacing", EDITOR_DEF("text_editor/line_spacing",4));
 
 	Color keyword_color= EDITOR_DEF("text_editor/keyword_color",Color(0.5,0.0,0.2));
 
