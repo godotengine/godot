@@ -86,9 +86,9 @@ public:
 };
 
 
-class EditorAddonLibraryItemDescription : public ConfirmationDialog {
+class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 
-	OBJ_TYPE(EditorAddonLibraryItemDescription, ConfirmationDialog);
+	OBJ_TYPE(EditorAssetLibraryItemDescription, ConfirmationDialog);
 
 	EditorAssetLibraryItem *item;
 	RichTextLabel *description;
@@ -127,13 +127,13 @@ public:
 	Ref<Texture> get_preview_icon() { return icon; }
 	String get_download_url() { return download_url; }
 	int get_asset_id() { return asset_id; }
-	EditorAddonLibraryItemDescription();
+	EditorAssetLibraryItemDescription();
 
 };
 
-class EditorAddonLibraryItemDownload : public PanelContainer {
+class EditorAssetLibraryItemDownload : public PanelContainer {
 
-	OBJ_TYPE(EditorAddonLibraryItemDownload, PanelContainer);
+	OBJ_TYPE(EditorAssetLibraryItemDownload, PanelContainer);
 
 
 	TextureFrame *icon;
@@ -167,12 +167,12 @@ public:
 
 	int get_asset_id() { return asset_id; }
 	void configure(const String& p_title,int p_asset_id,const Ref<Texture>& p_preview, const String& p_download_url);
-	EditorAddonLibraryItemDownload();
+	EditorAssetLibraryItemDownload();
 
 };
 
-class EditorAddonLibrary : public PanelContainer {
-	OBJ_TYPE(EditorAddonLibrary,PanelContainer);
+class EditorAssetLibrary : public PanelContainer {
+	OBJ_TYPE(EditorAssetLibrary,PanelContainer);
 
 	String host;
 
@@ -203,6 +203,8 @@ class EditorAddonLibrary : public PanelContainer {
 	HBoxContainer *asset_bottom_page;
 
 	HTTPRequest *request;
+
+	bool templates_only;
 
 
 	enum SortOrder {
@@ -251,7 +253,7 @@ class EditorAddonLibrary : public PanelContainer {
 	HBoxContainer* _make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items);
 
 	//
-	EditorAddonLibraryItemDescription *description;
+	EditorAssetLibraryItemDescription *description;
 	//
 
 	enum RequestType {
@@ -286,26 +288,26 @@ class EditorAddonLibrary : public PanelContainer {
 
 	void _repository_changed(int p_repository_id);
 
-friend class EditorAddonLibraryItemDescription;
+friend class EditorAssetLibraryItemDescription;
 friend class EditorAssetLibraryItem;
 protected:
 
 	static void _bind_methods();
 	void _notification(int p_what);
 public:
-	EditorAddonLibrary();
+	EditorAssetLibrary(bool p_templates_only=false);
 };
 
 class AssetLibraryEditorPlugin : public EditorPlugin {
 
 	OBJ_TYPE( AssetLibraryEditorPlugin, EditorPlugin );
 
-	EditorAddonLibrary *addon_library;
+	EditorAssetLibrary *addon_library;
 	EditorNode *editor;
 
 public:
 
-	virtual String get_name() const { return "Addons"; }
+	virtual String get_name() const { return "AssetLib"; }
 	bool has_main_screen() const { return true; }
 	virtual void edit(Object *p_object) {}
 	virtual bool handles(Object *p_object) const { return false; }
