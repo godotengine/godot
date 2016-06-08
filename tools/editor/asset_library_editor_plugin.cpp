@@ -1318,10 +1318,10 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child( memnew( Label(TTR("Site:")+" ")));
 	repository = memnew( OptionButton );
 
-	repository->add_item("Localhost"); // TODO: Maybe remove?
-	repository->set_item_metadata(0, "http://127.0.0.1/addonlib/api");
 	repository->add_item("Godot");
-	repository->set_item_metadata(1, "http://godotengine.org/addonlib/api");
+	repository->set_item_metadata(0, "http://godotengine.org/asset-library/api");
+	repository->add_item("Localhost"); // TODO: Maybe remove?
+	repository->set_item_metadata(1, "http://127.0.0.1/asset-library/api");
 	repository->connect("item_selected",this,"_repository_changed");
 
 	search_hb2->add_child(repository);
