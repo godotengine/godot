@@ -3261,7 +3261,9 @@ void TextEdit::_reset_caret_blink_timer() {
 
 void TextEdit::_toggle_draw_caret() {
 	draw_caret = !draw_caret;
-	update();
+	if (is_visible()) {
+		update();
+	}
 }
 
 void TextEdit::_update_caches() {
