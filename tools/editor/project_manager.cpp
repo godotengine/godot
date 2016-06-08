@@ -1022,9 +1022,6 @@ ProjectManager::ProjectManager() {
 
 
 
-
-
-
 	OS::get_singleton()->set_low_processor_usage_mode(true);
 
 	npdialog = memnew( NewProjectDialog );

@@ -190,11 +190,12 @@ class EditorAssetLibrary : public PanelContainer {
 	OptionButton *categories;
 	OptionButton *repository;
 	OptionButton *sort;
-	CheckBox *reverse;
+	ToolButton *reverse;
 	Button *search;
 	ProgressBar *load_status;
 	HBoxContainer *error_hb;
 	Label *error_label;
+	MenuButton *support;
 
 	HBoxContainer *contents;
 
@@ -206,6 +207,11 @@ class EditorAssetLibrary : public PanelContainer {
 
 	bool templates_only;
 
+	enum Support {
+		SUPPORT_OFFICIAL,
+		SUPPORT_COMMUNITY,
+		SUPPORT_TESTING
+	};
 
 	enum SortOrder {
 		SORT_RATING,
