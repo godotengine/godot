@@ -6025,8 +6025,10 @@
 </class>
 <class name="BoneAttachment" inherits="Spatial" category="Core">
 	<brief_description>
+	A node that will attach to a bone.
 	</brief_description>
 	<description>
+	This node must be the child of a [Skeleton] node. You can then select a bone for this node to attach to. The BoneAttachment node will copy the transform of the selected bone.
 	</description>
 	<methods>
 	</methods>
@@ -17560,8 +17562,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="KinematicBody" inherits="PhysicsBody" category="Core">
 	<brief_description>
+	Kinematic body 3D node.
 	</brief_description>
 	<description>
+	Kinematic bodies are special types of bodies that are meant to be user-controlled. They are not affected by physics at all (to other types of bodies, such a character or a rigid body, these are the same as a static body). They have however, two main uses:
+	Simulated Motion: When these bodies are moved manually, either from code or from an AnimationPlayer (with process mode set to fixed), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
+	Kinematic Characters: KinematicBody also has an api for moving objects (the [method move] method) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
 	</description>
 	<methods>
 		<method name="move">
@@ -17570,6 +17576,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="rel_vec" type="Vector3">
 			</argument>
 			<description>
+			Move the body in the given direction, stopping if there is an obstacle. The returned vector is how much movement was remaining before being stopped.
 			</description>
 		</method>
 		<method name="move_to">
@@ -17578,6 +17585,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="position" type="Vector3">
 			</argument>
 			<description>
+			Move the body to the given position. This is not a teleport, and the body will stop if there is an obstacle. The returned vector is how much movement was remaining before being stopped.
 			</description>
 		</method>
 		<method name="can_teleport_to">
@@ -17593,96 +17601,112 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the body is colliding with another.
 			</description>
 		</method>
 		<method name="get_collision_pos" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+			Return the point in space where the body is touching another. If there is no collision, this method will return (0,0,0), so collisions must be checked first with [method is_colliding].
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+			Return the normal of the surface the body collided with. This is useful to implement sliding along a surface.
 			</description>
 		</method>
 		<method name="get_collider_velocity" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+			Return the velocity of the body that collided with this one.
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
 			<return type="Object">
 			</return>
 			<description>
+			Return the body that collided with this one.
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the shape index from the body that collided with this one. If there is no collision, this method will return 0, so collisions must be checked first with [method is_colliding].
 			</description>
 		</method>
 		<method name="set_collide_with_static_bodies">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set if this body should collide with static bodies.
 			</description>
 		</method>
 		<method name="can_collide_with_static_bodies" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this body can collide with static bodies.
 			</description>
 		</method>
 		<method name="set_collide_with_kinematic_bodies">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set if this body should collide with kinematic bodies.
 			</description>
 		</method>
 		<method name="can_collide_with_kinematic_bodies" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this body can collide with kinematic bodies.
 			</description>
 		</method>
 		<method name="set_collide_with_rigid_bodies">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set if this body should collide with rigid bodies.
 			</description>
 		</method>
 		<method name="can_collide_with_rigid_bodies" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this body can collide with rigid bodies.
 			</description>
 		</method>
 		<method name="set_collide_with_character_bodies">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set if this body should collide with character bodies.
 			</description>
 		</method>
 		<method name="can_collide_with_character_bodies" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this body can collide with character bodies.
 			</description>
 		</method>
 		<method name="set_collision_margin">
 			<argument index="0" name="pixels" type="float">
 			</argument>
 			<description>
+			Set the collision margin for this object. A collision margin is an amount that all shapes will grow when computing collisions, to account for numerical imprecision.
 			</description>
 		</method>
 		<method name="get_collision_margin" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			Return the collision margin for this object.
 			</description>
 		</method>
 	</methods>
@@ -17705,7 +17729,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="rel_vec" type="Vector2">
 			</argument>
 			<description>
-			Move the body in the given direction, stopping if there is an obstacle.
+			Move the body in the given direction, stopping if there is an obstacle. The returned vector is how much movement was remaining before being stopped.
 			</description>
 		</method>
 		<method name="move_to">
@@ -17714,7 +17738,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-			Move the body to the given position. This is not a teleport, and the body will stop if there is an obstacle.
+			Move the body to the given position. This is not a teleport, and the body will stop if there is an obstacle. The returned vector is how much movement was remaining before being stopped.
 			</description>
 		</method>
 		<method name="test_move">
@@ -23541,8 +23565,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="ParallaxBackground" inherits="CanvasLayer" category="Core">
 	<brief_description>
+	A node used to create a parallax scrolling background.
 	</brief_description>
 	<description>
+	A ParallaxBackground will use one or more [ParallaxLayer] nodes to create a parallax scrolling background. Each [ParallaxLayer] can be set to move at different speeds relative to the camera movement, this can be used to create an illusion of depth in a 2D game.
 	</description>
 	<methods>
 		<method name="set_scroll_offset">
@@ -23561,60 +23587,70 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="ofs" type="Vector2">
 			</argument>
 			<description>
+			Set the base offset in pixels of all children [ParallaxLayer] nodes.
 			</description>
 		</method>
 		<method name="get_scroll_base_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the base offset.
 			</description>
 		</method>
 		<method name="set_scroll_base_scale">
 			<argument index="0" name="scale" type="Vector2">
 			</argument>
 			<description>
+			Set the base motion scale of all children [ParallaxLayer] nodes.
 			</description>
 		</method>
 		<method name="get_scroll_base_scale" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the base motion scale.
 			</description>
 		</method>
 		<method name="set_limit_begin">
 			<argument index="0" name="ofs" type="Vector2">
 			</argument>
 			<description>
+			Set the left and top limits in pixels for scrolling to begin. If the camera is outside of this limit the background will not continue to scroll. If an axis is greater than or equal to the corresponding axis of limit_end, then it will not limit scrolling for that axis.
 			</description>
 		</method>
 		<method name="get_limit_begin" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the beginning limit.
 			</description>
 		</method>
 		<method name="set_limit_end">
 			<argument index="0" name="ofs" type="Vector2">
 			</argument>
 			<description>
+			Set the right and bottom limits in pixels for scrolling to end. If the camera is outside of this limit the background will not continue to scroll. If an axis is less than or equal to the corresponding axis of limit_begin, then it will not limit scrolling for that axis.
 			</description>
 		</method>
 		<method name="get_limit_end" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the ending limit.
 			</description>
 		</method>
 		<method name="set_ignore_camera_zoom">
 			<argument index="0" name="ignore" type="bool">
 			</argument>
 			<description>
+			Set to true for all child [ParallaxLayer] nodes to not be affected by the zoom level of the camera.
 			</description>
 		</method>
 		<method name="is_ignore_camera_zoom">
 			<return type="bool">
 			</return>
 			<description>
+			Return ignoring camera zoom.
 			</description>
 		</method>
 	</methods>
@@ -23623,32 +23659,38 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="ParallaxLayer" inherits="Node2D" category="Core">
 	<brief_description>
+	A parallax scrolling layer to be used with [ParallaxBackground].
 	</brief_description>
 	<description>
+	A ParallaxLayer must be the child of a [ParallaxBackground] node. All child nodes will be affected by the parallax scrolling of this layer.
 	</description>
 	<methods>
 		<method name="set_motion_scale">
 			<argument index="0" name="scale" type="Vector2">
 			</argument>
 			<description>
+			Set the motion scale of the ParallaxLayer. If an axis is set to 0 then it will not move at all, it will stick with the camera.
 			</description>
 		</method>
 		<method name="get_motion_scale" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the motion scale of the ParallaxLayer.
 			</description>
 		</method>
 		<method name="set_mirroring">
 			<argument index="0" name="mirror" type="Vector2">
 			</argument>
 			<description>
+			Set the mirroring of the ParallaxLayer. If an axis is set to 0 then that axis will have no mirroring.
 			</description>
 		</method>
 		<method name="get_mirroring" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the mirroring of the ParallaxLayer.
 			</description>
 		</method>
 	</methods>
@@ -38129,8 +38171,10 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="TestCube" inherits="GeometryInstance" category="Core">
 	<brief_description>
+	A simple cube used for testing in 3D.
 	</brief_description>
 	<description>
+	The TestCube is a simple 2x2x2 cube with a basic texture. It can be used as a placeholder, to verify how the lighting looks, to test shaders, or any other task you may need a textured model to test with.
 	</description>
 	<methods>
 	</methods>
