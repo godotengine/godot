@@ -2414,6 +2414,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 
 			_menu_option_confirm(RUN_STOP,true);
+			exiting=true;
 			get_tree()->quit();
 
 		} break;
@@ -2747,6 +2748,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			}
 
 			_menu_option_confirm(RUN_STOP,true);
+			exiting=true;
 			get_tree()->quit();
 			String exec = OS::get_singleton()->get_executable_path();
 
@@ -5244,6 +5246,7 @@ EditorNode::EditorNode() {
 
 
 	singleton=this;
+	exiting=false;
 	last_checked_version=0;
 	changing_scene=false;
 	_initializing_addons=false;

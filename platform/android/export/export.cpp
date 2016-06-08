@@ -1377,120 +1377,125 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 	while(!ea->quit_request) {
 
 		String adb=EditorSettings::get_singleton()->get("android/adb");
-		if (!FileAccess::exists(adb)) {
-			OS::get_singleton()->delay_usec(3000000);
-			continue; //adb not configured
-		}
+		if (FileAccess::exists(adb)) {
 
-		String devices;
-		List<String> args;
-		args.push_back("devices");
-		int ec;
-		Error err = OS::get_singleton()->execute(adb,args,true,NULL,&devices,&ec);
-		Vector<String> ds = devices.split("\n");
-		Vector<String> ldevices;
-		for(int i=1;i<ds.size();i++) {
+			String devices;
+			List<String> args;
+			args.push_back("devices");
+			int ec;
+			Error err = OS::get_singleton()->execute(adb,args,true,NULL,&devices,&ec);
+			Vector<String> ds = devices.split("\n");
+			Vector<String> ldevices;
+			for(int i=1;i<ds.size();i++) {
 
-			String d = ds[i];
-			int dpos = d.find("device");
-			if (dpos==-1)
-				continue;
-			d=d.substr(0,dpos).strip_edges();
-//			print_line("found devuce: "+d);
-			ldevices.push_back(d);
-		}
-
-		ea->device_lock->lock();
-
-		bool different=false;
-
-		if (devices.size()!=ldevices.size()) {
-
-			different=true;
-		} else {
-
-			for(int i=0;i<ea->devices.size();i++) {
-
-				if (ea->devices[i].id!=ldevices[i]) {
-					different=true;
-					break;
-				}
+				String d = ds[i];
+				int dpos = d.find("device");
+				if (dpos==-1)
+					continue;
+				d=d.substr(0,dpos).strip_edges();
+	//			print_line("found devuce: "+d);
+				ldevices.push_back(d);
 			}
-		}
 
-		if (different) {
+			ea->device_lock->lock();
 
+			bool different=false;
 
-			Vector<Device> ndevices;
+			if (devices.size()!=ldevices.size()) {
 
-			for(int i=0;i<ldevices.size();i++) {
+				different=true;
+			} else {
 
-				Device d;
-				d.id=ldevices[i];
-				for(int j=0;j<ea->devices.size();j++) {
-					if (ea->devices[j].id==ldevices[i]) {
-						d.description=ea->devices[j].description;
-						d.name=ea->devices[j].name;
+				for(int i=0;i<ea->devices.size();i++) {
+
+					if (ea->devices[i].id!=ldevices[i]) {
+						different=true;
+						break;
 					}
 				}
+			}
 
-				if (d.description=="") {
-					//in the oven, request!
-					args.clear();
-					args.push_back("-s");
-					args.push_back(d.id);
-					args.push_back("shell");
-					args.push_back("cat");
-					args.push_back("/system/build.prop");
-					int ec;
-					String dp;
+			if (different) {
 
-					Error err = OS::get_singleton()->execute(adb,args,true,NULL,&dp,&ec);
-					print_line("RV: "+itos(ec));
-					Vector<String> props = dp.split("\n");
-					String vendor;
-					String device;
-					d.description+"Device ID: "+d.id+"\n";
-					for(int j=0;j<props.size();j++) {
 
-						String p = props[j];
-						if (p.begins_with("ro.product.model=")) {
-							device=p.get_slice("=",1).strip_edges();
-						} else if (p.begins_with("ro.product.brand=")) {
-							vendor=p.get_slice("=",1).strip_edges().capitalize();
-						} else if (p.begins_with("ro.build.display.id=")) {
-							d.description+="Build: "+p.get_slice("=",1).strip_edges()+"\n";
-						} else if (p.begins_with("ro.build.version.release=")) {
-							d.description+="Release: "+p.get_slice("=",1).strip_edges()+"\n";
-						} else if (p.begins_with("ro.product.cpu.abi=")) {
-							d.description+="CPU: "+p.get_slice("=",1).strip_edges()+"\n";
-						} else if (p.begins_with("ro.product.manufacturer=")) {
-							d.description+="Manufacturer: "+p.get_slice("=",1).strip_edges()+"\n";
-						} else if (p.begins_with("ro.board.platform=")) {
-							d.description+="Chipset: "+p.get_slice("=",1).strip_edges()+"\n";
-						} else if (p.begins_with("ro.opengles.version=")) {
-							uint32_t opengl = p.get_slice("=",1).to_int();
-							d.description+="OpenGL: "+itos(opengl>>16)+"."+itos((opengl>>8)&0xFF)+"."+itos((opengl)&0xFF)+"\n";
+				Vector<Device> ndevices;
+
+				for(int i=0;i<ldevices.size();i++) {
+
+					Device d;
+					d.id=ldevices[i];
+					for(int j=0;j<ea->devices.size();j++) {
+						if (ea->devices[j].id==ldevices[i]) {
+							d.description=ea->devices[j].description;
+							d.name=ea->devices[j].name;
 						}
 					}
 
-					d.name=vendor+" "+device;
-//					print_line("name: "+d.name);
-//					print_line("description: "+d.description);
+					if (d.description=="") {
+						//in the oven, request!
+						args.clear();
+						args.push_back("-s");
+						args.push_back(d.id);
+						args.push_back("shell");
+						args.push_back("cat");
+						args.push_back("/system/build.prop");
+						int ec;
+						String dp;
+
+						Error err = OS::get_singleton()->execute(adb,args,true,NULL,&dp,&ec);
+						print_line("RV: "+itos(ec));
+						Vector<String> props = dp.split("\n");
+						String vendor;
+						String device;
+						d.description+"Device ID: "+d.id+"\n";
+						for(int j=0;j<props.size();j++) {
+
+							String p = props[j];
+							if (p.begins_with("ro.product.model=")) {
+								device=p.get_slice("=",1).strip_edges();
+							} else if (p.begins_with("ro.product.brand=")) {
+								vendor=p.get_slice("=",1).strip_edges().capitalize();
+							} else if (p.begins_with("ro.build.display.id=")) {
+								d.description+="Build: "+p.get_slice("=",1).strip_edges()+"\n";
+							} else if (p.begins_with("ro.build.version.release=")) {
+								d.description+="Release: "+p.get_slice("=",1).strip_edges()+"\n";
+							} else if (p.begins_with("ro.product.cpu.abi=")) {
+								d.description+="CPU: "+p.get_slice("=",1).strip_edges()+"\n";
+							} else if (p.begins_with("ro.product.manufacturer=")) {
+								d.description+="Manufacturer: "+p.get_slice("=",1).strip_edges()+"\n";
+							} else if (p.begins_with("ro.board.platform=")) {
+								d.description+="Chipset: "+p.get_slice("=",1).strip_edges()+"\n";
+							} else if (p.begins_with("ro.opengles.version=")) {
+								uint32_t opengl = p.get_slice("=",1).to_int();
+								d.description+="OpenGL: "+itos(opengl>>16)+"."+itos((opengl>>8)&0xFF)+"."+itos((opengl)&0xFF)+"\n";
+							}
+						}
+
+						d.name=vendor+" "+device;
+	//					print_line("name: "+d.name);
+	//					print_line("description: "+d.description);
+
+					}
+
+					ndevices.push_back(d);
 
 				}
 
-				ndevices.push_back(d);
-
+				ea->devices=ndevices;
+				ea->devices_changed=true;
 			}
 
-			ea->devices=ndevices;
-			ea->devices_changed=true;
+			ea->device_lock->unlock();
 		}
 
-		ea->device_lock->unlock();
+		uint64_t wait = 3000000;
+		uint64_t time = OS::get_singleton()->get_ticks_usec();
+		while(OS::get_singleton()->get_ticks_usec() - time < wait ) {
+			OS::get_singleton()->delay_usec(1000);
+			if (ea->quit_request)
+				break;
+		}
 
-		OS::get_singleton()->delay_usec(3000000);
 	}
 
 	if (EditorSettings::get_singleton()->get("android/shutdown_adb_on_exit")) {
