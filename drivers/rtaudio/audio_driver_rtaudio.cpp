@@ -32,8 +32,14 @@ const char* AudioDriverRtAudio::get_name() const {
 int AudioDriverRtAudio::callback( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
 	double streamTime, RtAudioStreamStatus status, void *userData ) {
 
-	if (status)
-		print_line("lost?");
+	if (status) {
+		if (status & RTAUDIO_INPUT_OVERFLOW) {
+			WARN_PRINT("RtAudio input overflow!");
+		}
+		if (status & RTAUDIO_OUTPUT_UNDERFLOW) {
+			WARN_PRINT("RtAudio output underflow!");
+		}
+	}
 	int32_t *buffer = (int32_t *) outputBuffer;
 
 	AudioDriverRtAudio *self = (AudioDriverRtAudio*)userData;
