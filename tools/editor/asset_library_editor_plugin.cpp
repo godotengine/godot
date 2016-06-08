@@ -55,7 +55,7 @@ void EditorAssetLibraryItem::configure(const String& p_title,int p_asset_id,cons
 
 void EditorAssetLibraryItem::set_image(int p_type,int p_index,const Ref<Texture>& p_image) {
 
-	ERR_FAIL_COND(p_type!=EditorAddonLibrary::IMAGE_QUEUE_ICON);
+	ERR_FAIL_COND(p_type!=EditorAssetLibrary::IMAGE_QUEUE_ICON);
 	ERR_FAIL_COND(p_index!=0);
 
 	icon->set_normal_texture(p_image);
@@ -163,16 +163,16 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 //////////////////////////////////////////////////////////////////////////////
 
 
-void EditorAddonLibraryItemDescription::set_image(int p_type,int p_index,const Ref<Texture>& p_image) {
+void EditorAssetLibraryItemDescription::set_image(int p_type,int p_index,const Ref<Texture>& p_image) {
 
 	switch(p_type) {
 
-		case EditorAddonLibrary::IMAGE_QUEUE_ICON: {
+		case EditorAssetLibrary::IMAGE_QUEUE_ICON: {
 
 			item->call("set_image",p_type,p_index,p_image);
 			icon=p_image;
 		} break;
-		case EditorAddonLibrary::IMAGE_QUEUE_THUMBNAIL: {
+		case EditorAssetLibrary::IMAGE_QUEUE_THUMBNAIL: {
 
 			for(int i=0;i<preview_images.size();i++) {
 				if (preview_images[i].id==p_index) {
@@ -182,7 +182,7 @@ void EditorAddonLibraryItemDescription::set_image(int p_type,int p_index,const R
 			}
 			//item->call("set_image",p_type,p_index,p_image);
 		} break;
-		case EditorAddonLibrary::IMAGE_QUEUE_SCREENSHOT: {
+		case EditorAssetLibrary::IMAGE_QUEUE_SCREENSHOT: {
 
 			for(int i=0;i<preview_images.size();i++) {
 				if (preview_images[i].id==p_index) {
@@ -198,19 +198,19 @@ void EditorAddonLibraryItemDescription::set_image(int p_type,int p_index,const R
 	}
 }
 
-void EditorAddonLibraryItemDescription::_bind_methods() {
-	ObjectTypeDB::bind_method(_MD("set_image"),&EditorAddonLibraryItemDescription::set_image);
-	ObjectTypeDB::bind_method(_MD("_link_click"),&EditorAddonLibraryItemDescription::_link_click);
-	ObjectTypeDB::bind_method(_MD("_preview_click"),&EditorAddonLibraryItemDescription::_preview_click);
+void EditorAssetLibraryItemDescription::_bind_methods() {
+	ObjectTypeDB::bind_method(_MD("set_image"),&EditorAssetLibraryItemDescription::set_image);
+	ObjectTypeDB::bind_method(_MD("_link_click"),&EditorAssetLibraryItemDescription::_link_click);
+	ObjectTypeDB::bind_method(_MD("_preview_click"),&EditorAssetLibraryItemDescription::_preview_click);
 
 }
 
-void EditorAddonLibraryItemDescription::_link_click(const String& p_url) {
+void EditorAssetLibraryItemDescription::_link_click(const String& p_url) {
 	ERR_FAIL_COND(!p_url.begins_with("http"));
 	OS::get_singleton()->shell_open(p_url);
 }
 
-void EditorAddonLibraryItemDescription::_preview_click(int p_id) {
+void EditorAssetLibraryItemDescription::_preview_click(int p_id) {
 	for(int i=0;i<preview_images.size();i++) {
 		if(preview_images[i].id==p_id) {
 			preview_images[i].button->set_pressed(true);
@@ -227,7 +227,7 @@ void EditorAddonLibraryItemDescription::_preview_click(int p_id) {
 	}
 }
 
-void EditorAddonLibraryItemDescription::configure(const String& p_title,int p_asset_id,const String& p_category,int p_category_id,const String& p_author,int p_author_id,int p_rating,const String& p_cost,int p_version,const String& p_version_string,const String& p_description,const String& p_download_url,const String& p_browse_url) {
+void EditorAssetLibraryItemDescription::configure(const String& p_title,int p_asset_id,const String& p_category,int p_category_id,const String& p_author,int p_author_id,int p_rating,const String& p_cost,int p_version,const String& p_version_string,const String& p_description,const String& p_download_url,const String& p_browse_url) {
 
 	asset_id=p_asset_id;
 	title=p_title;
@@ -244,7 +244,7 @@ void EditorAddonLibraryItemDescription::configure(const String& p_title,int p_as
 	set_title(p_title);
 }
 
-void EditorAddonLibraryItemDescription::add_preview(int p_id, bool p_video,const String& p_url){
+void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video,const String& p_url){
 
 	Preview preview;
 	preview.id=p_id;
@@ -265,7 +265,7 @@ void EditorAddonLibraryItemDescription::add_preview(int p_id, bool p_video,const
 	preview_images.push_back(preview);
 }
 
-EditorAddonLibraryItemDescription::EditorAddonLibraryItemDescription() {
+EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 
 	VBoxContainer *vbox = memnew( VBoxContainer );
 	add_child(vbox);
@@ -320,7 +320,7 @@ EditorAddonLibraryItemDescription::EditorAddonLibraryItemDescription() {
 }
 ///////////////////////////////////////////////////////////////////////////////////
 
-void EditorAddonLibraryItemDownload::_http_download_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data) {
+void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data) {
 
 
 	String error_text;
@@ -384,7 +384,7 @@ void EditorAddonLibraryItemDownload::_http_download_completed(int p_status, int 
 }
 
 
-void EditorAddonLibraryItemDownload::configure(const String& p_title,int p_asset_id,const Ref<Texture>& p_preview, const String& p_download_url) {
+void EditorAssetLibraryItemDownload::configure(const String& p_title,int p_asset_id,const Ref<Texture>& p_preview, const String& p_download_url) {
 
 	title->set_text(p_title);
 	icon->set_texture(p_preview);
@@ -399,7 +399,7 @@ void EditorAddonLibraryItemDownload::configure(const String& p_title,int p_asset
 }
 
 
-void EditorAddonLibraryItemDownload::_notification(int p_what) {
+void EditorAssetLibraryItemDownload::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_PROCESS) {
 
@@ -429,7 +429,7 @@ void EditorAddonLibraryItemDownload::_notification(int p_what) {
 
 	}
 }
-void EditorAddonLibraryItemDownload::_close() {
+void EditorAssetLibraryItemDownload::_close() {
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	da->remove(download->get_download_file()); //clean up removed file
@@ -437,13 +437,13 @@ void EditorAddonLibraryItemDownload::_close() {
 	queue_delete();
 }
 
-void EditorAddonLibraryItemDownload::_install() {
+void EditorAssetLibraryItemDownload::_install() {
 
 	String file = download->get_download_file();
 	asset_installer->open(file,1);
 }
 
-void EditorAddonLibraryItemDownload::_make_request() {
+void EditorAssetLibraryItemDownload::_make_request() {
 	download->cancel_request();
 	download->set_download_file(EditorSettings::get_singleton()->get_settings_path().plus_file("tmp").plus_file("tmp_asset_"+itos(asset_id))+".zip");
 	Error err = download->request(host);
@@ -454,16 +454,16 @@ void EditorAddonLibraryItemDownload::_make_request() {
 	}
 }
 
-void EditorAddonLibraryItemDownload::_bind_methods() {
+void EditorAssetLibraryItemDownload::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_http_download_completed",&EditorAddonLibraryItemDownload::_http_download_completed);
-	ObjectTypeDB::bind_method("_install",&EditorAddonLibraryItemDownload::_install);
-	ObjectTypeDB::bind_method("_close",&EditorAddonLibraryItemDownload::_close);
-	ObjectTypeDB::bind_method("_make_request",&EditorAddonLibraryItemDownload::_make_request);
+	ObjectTypeDB::bind_method("_http_download_completed",&EditorAssetLibraryItemDownload::_http_download_completed);
+	ObjectTypeDB::bind_method("_install",&EditorAssetLibraryItemDownload::_install);
+	ObjectTypeDB::bind_method("_close",&EditorAssetLibraryItemDownload::_close);
+	ObjectTypeDB::bind_method("_make_request",&EditorAssetLibraryItemDownload::_make_request);
 
 }
 
-EditorAddonLibraryItemDownload::EditorAddonLibraryItemDownload() {
+EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	HBoxContainer *hb = memnew( HBoxContainer);
 	add_child(hb);
@@ -532,7 +532,7 @@ EditorAddonLibraryItemDownload::EditorAddonLibraryItemDownload() {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-void EditorAddonLibrary::_notification(int p_what) {
+void EditorAssetLibrary::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_READY) {
 		TextureFrame *tf = memnew(TextureFrame);
@@ -581,13 +581,13 @@ void EditorAddonLibrary::_notification(int p_what) {
 }
 
 
-void EditorAddonLibrary::_install_asset() {
+void EditorAssetLibrary::_install_asset() {
 
 	ERR_FAIL_COND(!description);
 
 	for(int i=0;i<downloads_hb->get_child_count();i++) {
 
-		EditorAddonLibraryItemDownload *d  = downloads_hb->get_child(i)->cast_to<EditorAddonLibraryItemDownload>();
+		EditorAssetLibraryItemDownload *d  = downloads_hb->get_child(i)->cast_to<EditorAssetLibraryItemDownload>();
 		if (d && d->get_asset_id() == description->get_asset_id()) {
 
 			EditorNode::get_singleton()->show_warning("Download for this asset is already in progress!");
@@ -596,13 +596,13 @@ void EditorAddonLibrary::_install_asset() {
 	}
 
 
-	EditorAddonLibraryItemDownload * download = memnew( EditorAddonLibraryItemDownload );
+	EditorAssetLibraryItemDownload * download = memnew( EditorAssetLibraryItemDownload );
 	downloads_hb->add_child(download);
 	download->configure(description->get_title(),description->get_asset_id(),description->get_preview_icon(),description->get_download_url());
 
 }
 
-const char* EditorAddonLibrary::sort_key[SORT_MAX]={
+const char* EditorAssetLibrary::sort_key[SORT_MAX]={
 	"rating",
 	"downloads",
 	"name",
@@ -610,7 +610,7 @@ const char* EditorAddonLibrary::sort_key[SORT_MAX]={
 	"updated"
 };
 
-const char* EditorAddonLibrary::sort_text[SORT_MAX]={
+const char* EditorAssetLibrary::sort_text[SORT_MAX]={
 	"Rating",
 	"Downloads",
 	"Name",
@@ -619,12 +619,12 @@ const char* EditorAddonLibrary::sort_text[SORT_MAX]={
 };
 
 
-void EditorAddonLibrary::_select_author(int p_id) {
+void EditorAssetLibrary::_select_author(int p_id) {
 
 	//opemn author window
 }
 
-void EditorAddonLibrary::_select_category(int p_id){
+void EditorAssetLibrary::_select_category(int p_id){
 
 	for(int i=0;i<categories->get_item_count();i++) {
 
@@ -638,7 +638,7 @@ void EditorAddonLibrary::_select_category(int p_id){
 		}
 	}
 }
-void EditorAddonLibrary::_select_asset(int p_id){
+void EditorAssetLibrary::_select_asset(int p_id){
 
 	_api_request("asset/"+itos(p_id), REQUESTING_ASSET);
 
@@ -648,12 +648,12 @@ void EditorAddonLibrary::_select_asset(int p_id){
 	}
 
 
-	description = memnew( EditorAddonLibraryItemDescription );
+	description = memnew( EditorAssetLibraryItemDescription );
 	add_child(description);
 	description->popup_centered_minsize();*/
 }
 
-void EditorAddonLibrary::_image_update(bool use_cache, bool final, const ByteArray& p_data, int p_queue_id) {
+void EditorAssetLibrary::_image_update(bool use_cache, bool final, const ByteArray& p_data, int p_queue_id) {
 	Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 
 	if (obj) {
@@ -707,7 +707,7 @@ void EditorAddonLibrary::_image_update(bool use_cache, bool final, const ByteArr
 	}
 }
 
-void EditorAddonLibrary::_image_request_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data,int p_queue_id) {
+void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data,int p_queue_id) {
 
 	ERR_FAIL_COND( !image_queue.has(p_queue_id) );
 
@@ -758,7 +758,7 @@ void EditorAddonLibrary::_image_request_completed(int p_status, int p_code, cons
 
 }
 
-void EditorAddonLibrary::_update_image_queue() {
+void EditorAssetLibrary::_update_image_queue() {
 
 	int max_images=2;
 	int current_images=0;
@@ -798,7 +798,7 @@ void EditorAddonLibrary::_update_image_queue() {
 	}
 }
 
-void EditorAddonLibrary::_request_image(ObjectID p_for,String p_image_url,ImageType p_type,int p_image_index) {
+void EditorAssetLibrary::_request_image(ObjectID p_for,String p_image_url,ImageType p_type,int p_image_index) {
 
 
 	ImageQueue iq;
@@ -823,13 +823,13 @@ void EditorAddonLibrary::_request_image(ObjectID p_for,String p_image_url,ImageT
 
 }
 
-void EditorAddonLibrary::_repository_changed(int p_repository_id) {
+void EditorAssetLibrary::_repository_changed(int p_repository_id) {
 	host=repository->get_item_metadata(p_repository_id);
 	print_line(".." + host);
 	_api_request("configure", REQUESTING_CONFIG);
 }
 
-void EditorAddonLibrary::_search(int p_page) {
+void EditorAssetLibrary::_search(int p_page) {
 
 	String args;
 
@@ -856,7 +856,7 @@ void EditorAddonLibrary::_search(int p_page) {
 	_api_request("asset",REQUESTING_SEARCH,args);
 }
 
-HBoxContainer* EditorAddonLibrary::_make_pages(int p_page,int p_page_count,int p_page_len,int p_total_items,int p_current_items) {
+HBoxContainer* EditorAssetLibrary::_make_pages(int p_page,int p_page_count,int p_page_len,int p_total_items,int p_current_items) {
 
 	HBoxContainer * hbc = memnew( HBoxContainer );
 
@@ -940,7 +940,7 @@ HBoxContainer* EditorAddonLibrary::_make_pages(int p_page,int p_page_count,int p
 }
 
 
-void EditorAddonLibrary::_api_request(const String& p_request, RequestType p_request_type, const String& p_arguments) {
+void EditorAssetLibrary::_api_request(const String& p_request, RequestType p_request_type, const String& p_arguments) {
 
 	if (requesting!=REQUESTING_NONE) {
 		request->cancel_request();
@@ -953,7 +953,7 @@ void EditorAddonLibrary::_api_request(const String& p_request, RequestType p_req
 
 
 
-void EditorAddonLibrary::_http_request_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data) {
+void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data) {
 
 
 	String str;
@@ -1134,7 +1134,7 @@ void EditorAddonLibrary::_http_request_completed(int p_status, int p_code, const
 				memdelete(description);
 			}
 
-			description = memnew( EditorAddonLibraryItemDescription );
+			description = memnew( EditorAssetLibraryItemDescription );
 			add_child(description);
 			description->popup_centered_minsize();
 			description->connect("confirmed",this,"_install_asset");
@@ -1185,7 +1185,7 @@ void EditorAddonLibrary::_http_request_completed(int p_status, int p_code, const
 }
 
 
-void EditorAddonLibrary::_asset_file_selected(const String& p_file) {
+void EditorAssetLibrary::_asset_file_selected(const String& p_file) {
 
 	if (asset_installer) {
 		memdelete( asset_installer );
@@ -1199,12 +1199,12 @@ void EditorAddonLibrary::_asset_file_selected(const String& p_file) {
 
 }
 
-void EditorAddonLibrary::_asset_open() {
+void EditorAssetLibrary::_asset_open() {
 
 	asset_open->popup_centered_ratio();
 }
 
-void EditorAddonLibrary::_manage_plugins() {
+void EditorAssetLibrary::_manage_plugins() {
 
 	ProjectSettings::get_singleton()->popup_project_settings();
 	ProjectSettings::get_singleton()->set_plugins_page();
@@ -1212,24 +1212,25 @@ void EditorAddonLibrary::_manage_plugins() {
 
 
 
-void EditorAddonLibrary::_bind_methods() {
+void EditorAssetLibrary::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_http_request_completed",&EditorAddonLibrary::_http_request_completed);
-	ObjectTypeDB::bind_method("_select_asset",&EditorAddonLibrary::_select_asset);
-	ObjectTypeDB::bind_method("_select_author",&EditorAddonLibrary::_select_author);
-	ObjectTypeDB::bind_method("_select_category",&EditorAddonLibrary::_select_category);
-	ObjectTypeDB::bind_method("_image_request_completed",&EditorAddonLibrary::_image_request_completed);
-	ObjectTypeDB::bind_method("_search",&EditorAddonLibrary::_search,DEFVAL(0));
-	ObjectTypeDB::bind_method("_install_asset",&EditorAddonLibrary::_install_asset);
-	ObjectTypeDB::bind_method("_manage_plugins",&EditorAddonLibrary::_manage_plugins);
-	ObjectTypeDB::bind_method("_asset_open",&EditorAddonLibrary::_asset_open);
-	ObjectTypeDB::bind_method("_asset_file_selected",&EditorAddonLibrary::_asset_file_selected);
-	ObjectTypeDB::bind_method("_repository_changed",&EditorAddonLibrary::_repository_changed);
+	ObjectTypeDB::bind_method("_http_request_completed",&EditorAssetLibrary::_http_request_completed);
+	ObjectTypeDB::bind_method("_select_asset",&EditorAssetLibrary::_select_asset);
+	ObjectTypeDB::bind_method("_select_author",&EditorAssetLibrary::_select_author);
+	ObjectTypeDB::bind_method("_select_category",&EditorAssetLibrary::_select_category);
+	ObjectTypeDB::bind_method("_image_request_completed",&EditorAssetLibrary::_image_request_completed);
+	ObjectTypeDB::bind_method("_search",&EditorAssetLibrary::_search,DEFVAL(0));
+	ObjectTypeDB::bind_method("_install_asset",&EditorAssetLibrary::_install_asset);
+	ObjectTypeDB::bind_method("_manage_plugins",&EditorAssetLibrary::_manage_plugins);
+	ObjectTypeDB::bind_method("_asset_open",&EditorAssetLibrary::_asset_open);
+	ObjectTypeDB::bind_method("_asset_file_selected",&EditorAssetLibrary::_asset_file_selected);
+	ObjectTypeDB::bind_method("_repository_changed",&EditorAssetLibrary::_repository_changed);
 
 }
 
-EditorAddonLibrary::EditorAddonLibrary() {
+EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
+	templates_only=p_templates_only;
 
 	Ref<StyleBoxEmpty> border;
 	border.instance();
@@ -1260,7 +1261,8 @@ EditorAddonLibrary::EditorAddonLibrary() {
 	search->connect("pressed",this,"_search");
 	search_hb->add_child(search);
 
-	search_hb->add_child(memnew( VSeparator ));
+	if (!p_templates_only)
+		search_hb->add_child(memnew( VSeparator ));
 
 	Button * open_asset = memnew( Button );
 	open_asset->set_text("Import");
@@ -1271,6 +1273,11 @@ EditorAddonLibrary::EditorAddonLibrary() {
 	plugins->set_text("Plugins");
 	search_hb->add_child(plugins);
 	plugins->connect("pressed",this,"_manage_plugins");
+
+	if (p_templates_only) {
+		open_asset->hide();
+		plugins->hide();
+	}
 
 
 	library_vb->add_child(search_hb);
@@ -1428,7 +1435,7 @@ void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
 AssetLibraryEditorPlugin::AssetLibraryEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
-	addon_library = memnew( EditorAddonLibrary );
+	addon_library = memnew( EditorAssetLibrary );
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	editor->get_viewport()->add_child(addon_library);
 	addon_library->set_area_as_parent_rect();

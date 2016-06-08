@@ -38,6 +38,7 @@
 
 #include "scene/gui/line_edit.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/center_container.h"
 
 
 #include "scene/gui/texture_frame.h"
@@ -864,26 +865,46 @@ ProjectManager::ProjectManager() {
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	panel->add_child(vb);
-	vb->set_area_as_parent_rect(20);
+	vb->set_area_as_parent_rect(20*EDSCALE);
+	vb->set_margin(MARGIN_TOP,4*EDSCALE);
+	vb->set_margin(MARGIN_BOTTOM,4*EDSCALE);
+	vb->add_constant_override("separation",15*EDSCALE);
 
-	OS::get_singleton()->set_window_title(_MKSTR(VERSION_NAME)+TTR(" - Project Manager"));
+	String cp;
+	cp.push_back(0xA9);
+	cp.push_back(0);
+	OS::get_singleton()->set_window_title(_MKSTR(VERSION_NAME)+String(" - ")+TTR("Project Manager")+" - "+cp+" 2008-2016 Juan Linietsky, Ariel Manzur.");
 
+	HBoxContainer *top_hb = memnew( HBoxContainer);
+	vb->add_child(top_hb);
+	TextureFrame *logo = memnew( TextureFrame );
+	logo->set_texture(theme->get_icon("LogoSmall","EditorIcons"));
+	//top_hb->add_child( logo );
+	CenterContainer *ccl = memnew( CenterContainer );
 	Label *l = memnew( Label );
-	l->set_text(_MKSTR(VERSION_NAME)+TTR(" - Project Manager"));
-	l->add_font_override("font",get_font("large","Fonts"));
-	l->set_align(Label::ALIGN_CENTER);
-	vb->add_child(l);
+	l->set_text(_MKSTR(VERSION_NAME)+String(" - ")+TTR("Project Manager"));
+	l->add_font_override("font",get_font("doc","EditorFonts"));
+	ccl->add_child(l);
+	top_hb->add_child(ccl);
+	top_hb->add_spacer();
 	l = memnew( Label );
 	l->set_text("v" VERSION_MKSTRING);
 	//l->add_font_override("font",get_font("bold","Fonts"));
 	l->set_align(Label::ALIGN_CENTER);
-	vb->add_child(l);
-	vb->add_child(memnew(HSeparator));
-	vb->add_margin_child("\n",memnew(Control));
+	top_hb->add_child(l);
+	//vb->add_child(memnew(HSeparator));
+	//vb->add_margin_child("\n",memnew(Control));
 
+	tabs = memnew( TabContainer );
+	vb->add_child(tabs);
+	tabs->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	HBoxContainer *tree_hb = memnew( HBoxContainer);
-	vb->add_margin_child(TTR("Recent Projects:"),tree_hb,true);
+	projects_hb = tree_hb;
+
+	projects_hb->set_name(TTR("Project List"));
+
+	tabs->add_child(tree_hb);
 
 	VBoxContainer *search_tree_vb = memnew(VBoxContainer);
 	search_tree_vb->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -964,23 +985,22 @@ ProjectManager::ProjectManager() {
 
 	tree_vb->add_spacer();
 
+
+
+	asset_library = memnew( EditorAssetLibrary(true) );
+	asset_library->set_name("Templates");
+	tabs->add_child(asset_library);
+
+
+	CenterContainer *cc = memnew( CenterContainer );
 	Button * cancel = memnew( Button );
 	cancel->set_text(TTR("Exit"));
-	tree_vb->add_child(cancel);
+	cancel->set_custom_minimum_size(Size2(100,1)*EDSCALE);
+	cc->add_child(cancel);
 	cancel->connect("pressed", this,"_exit_dialog");
+	vb->add_child(cc);
 
-
-	vb->add_margin_child("\n",memnew(Control));
-	vb->add_child(memnew(HSeparator));
-
-	l = memnew( Label );
-	String cp;
-	cp.push_back(0xA9);
-	cp.push_back(0);
-	l->set_text(cp+" 2008-2016 Juan Linietsky, Ariel Manzur.");
-	l->set_align(Label::ALIGN_CENTER);
-	vb->add_child(l);
-
+	//
 
 	erase_ask = memnew( ConfirmationDialog );
 	erase_ask->get_ok()->set_text(TTR("Remove"));
@@ -999,6 +1019,11 @@ ProjectManager::ProjectManager() {
 	multi_run_ask->get_ok()->connect("pressed", this, "_run_project_confirm");
 
 	add_child(multi_run_ask);
+
+
+
+
+
 
 	OS::get_singleton()->set_low_processor_usage_mode(true);
 
