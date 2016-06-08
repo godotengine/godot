@@ -14,6 +14,8 @@ def make_editor_icons_action(target, source, env):
  	s.write("#include \"editor_scale.h\"\n\n")
 	s.write("#include \"scene/resources/theme.h\"\n\n")
 
+	hidpi_list=[]
+
 	for x in pixmaps:
 
 		x=str(x)
@@ -31,13 +33,39 @@ def make_editor_icons_action(target, source, env):
 			if (len(b)==1):
 				s.write(",")
 
-		s.write("\n};\n\n\n");
-		pngf.close();
+		s.write("\n};\n\n");
 
-	s.write("static Ref<ImageTexture> make_icon(const uint8_t* p_png) {\n")
+		pngf.close();
+		var_str=os.path.basename(x)[:-4]+"_hidpi_png";
+#print("TRY OPEN: "+os.path.dirname(x)+"/2x/"+os.path.basename(x)+"\n")
+		try:
+
+			pngf = open(os.path.dirname(x)+"/2x/"+os.path.basename(x))
+
+			#print(var_str)
+
+			s.write("static const unsigned char "+ var_str +"[]={\n");
+
+			b=pngf.read(1);
+			while(len(b)==1):
+				s.write(hex(ord(b)))
+				b=pngf.read(1);
+				if (len(b)==1):
+					s.write(",")
+
+			s.write("\n};\n\n\n");
+			hidpi_list.append(x)
+
+		except:
+			s.write("static const unsigned char* "+ var_str +"=NULL;\n\n\n");
+
+
+
+
+	s.write("static Ref<ImageTexture> make_icon(const uint8_t* p_png,const uint8_t* p_hidpi_png) {\n")
 	s.write("\tRef<ImageTexture> texture( memnew( ImageTexture ) );\n")
-	s.write("\tImage img(p_png);\n")
-	s.write("\tif (editor_is_hidpi()) img.expand_x2_hq2x();\n")
+	s.write("\tImage img((editor_is_hidpi()&&p_hidpi_png)?p_hidpi_png:p_png);\n")
+	s.write("\tif (editor_is_hidpi() && !p_hidpi_png) img.expand_x2_hq2x();\n")
 	s.write("\ttexture->create_from_image( img,ImageTexture::FLAG_FILTER );\n")
 	s.write("\treturn texture;\n")
 	s.write("}\n\n")
@@ -49,7 +77,8 @@ def make_editor_icons_action(target, source, env):
 		x=os.path.basename(str(x))
 		type=x[5:-4].title().replace("_","");
 		var_str=x[:-4]+"_png";
-		s.write("\tp_theme->set_icon(\""+type+"\",\"EditorIcons\",make_icon("+var_str+"));\n");
+		var_str_hidpi=x[:-4]+"_hidpi_png";
+		s.write("\tp_theme->set_icon(\""+type+"\",\"EditorIcons\",make_icon("+var_str+","+var_str_hidpi+"));\n");
 
 	s.write("\n\n}\n\n");
 
