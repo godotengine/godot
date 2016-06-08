@@ -1,5 +1,11 @@
 Import('env')
-Export('env');
 
 env.add_source_files(env.drivers_sources,"*.cpp")
-env.add_source_files(env.drivers_sources,"*.c")
+
+if (env.get('glew') == 'yes'):
+	env.add_source_files(env.drivers_sources,"glew.c")
+	env.Append(CPPFLAGS = ['-DGLEW_ENABLED'])
+	env.Append(CPPFLAGS = ['-DGLEW_STATIC'])
+	env.Append(CPPPATH = ['.'])
+
+Export('env')
