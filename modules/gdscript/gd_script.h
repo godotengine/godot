@@ -389,6 +389,7 @@ public:
 	virtual String debug_parse_stack_level_expression(int p_level,const String& p_expression,int p_max_subitems=-1,int p_max_depth=-1);
 
 	virtual void reload_all_scripts();
+	virtual void reload_tool_script(const Ref<Script>& p_script,bool p_soft_reload);
 
 	virtual void frame();
 

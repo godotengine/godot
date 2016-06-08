@@ -1412,6 +1412,16 @@ void ScriptEditor::_menu_option(int p_option) {
 
 
 			} break;
+			case FILE_TOOL_RELOAD:
+			case FILE_TOOL_RELOAD_SOFT: {
+
+				TextEdit *te = current->get_text_edit();
+				Ref<Script> scr = current->get_edited_script();
+				if (scr.is_null())
+					return;
+				scr->set_source_code(te->get_text());
+				scr->get_language()->reload_tool_script(scr,p_option==FILE_TOOL_RELOAD_SOFT);
+			} break;
 			case EDIT_TRIM_TRAILING_WHITESAPCE: {
 				_trim_trailing_whitespace(current->get_text_edit());
 			} break;
@@ -2602,6 +2612,9 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	edit_menu->get_popup()->add_item(TTR("Trim Trailing Whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE, KEY_MASK_CTRL|KEY_MASK_ALT|KEY_T);
 	edit_menu->get_popup()->add_item(TTR("Auto Indent"),EDIT_AUTO_INDENT,KEY_MASK_CMD|KEY_I);
 	edit_menu->get_popup()->connect("item_pressed", this,"_menu_option");
+	edit_menu->get_popup()->add_separator();
+	edit_menu->get_popup()->add_item(TTR("Reload Tool Script"),FILE_TOOL_RELOAD,KEY_MASK_CMD|KEY_R);
+	edit_menu->get_popup()->add_item(TTR("Reload Tool Script (Soft)"),FILE_TOOL_RELOAD_SOFT,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_R);
 
 
 	search_menu = memnew( MenuButton );
