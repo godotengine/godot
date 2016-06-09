@@ -207,13 +207,12 @@ msgstr ""
 "SampleLibrary 리소스를 생성하거나, 지정해야합니다."
 
 #: scene/3d/sprite_3d.cpp
-#, fuzzy
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
-"AnimatedSprite이 프레임을 보여주기 위해서는 'Frames' 속성에 SpriteFrames 리소"
-"스 만들거나 지정해야 합니다."
+"AnimatedSprite3D가 프레임을 보여주기 위해서는 'Frames' 속성에 SpriteFrames 리"
+"소스 만들거나 지정해야 합니다."
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Cancel"
@@ -251,24 +250,20 @@ msgid "Open"
 msgstr "열기"
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Open a File"
-msgstr "샘플 파일 열기"
+msgstr "파일 열기"
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Open File(s)"
-msgstr "샘플 파일 열기"
+msgstr "파일 열기"
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Open a Directory"
-msgstr "디렉토리 선택"
+msgstr "디렉토리 열기"
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Open a File or Directory"
-msgstr "디렉토리 선택"
+msgstr "디렉토리 또는 파일 열기"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_node.cpp
@@ -332,7 +327,7 @@ msgstr "알트+"
 
 #: scene/gui/input_action.cpp
 msgid "Ctrl+"
-msgstr ""
+msgstr "컨트롤+"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
@@ -797,22 +792,20 @@ msgid "Site:"
 msgstr "사이트:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Support.."
-msgstr "내보내기.."
+msgstr "지원.."
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Official"
-msgstr ""
+msgstr "공식"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "커뮤니티"
 
 #: tools/editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Testing"
-msgstr "설정"
+msgstr "테스팅"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -1005,9 +998,8 @@ msgid "Disconnect"
 msgstr "연결해제"
 
 #: tools/editor/connections_dialog.cpp tools/editor/node_dock.cpp
-#, fuzzy
 msgid "Signals"
-msgstr "시그널:"
+msgstr "시그널"
 
 #: tools/editor/create_dialog.cpp
 msgid "Create New"
@@ -1200,7 +1192,7 @@ msgstr "상속한 클래스:"
 
 #: tools/editor/editor_help.cpp
 msgid "Brief Description:"
-msgstr "짧은 설명:"
+msgstr "간단한 설명:"
 
 #: tools/editor/editor_help.cpp
 msgid "Public Methods:"
@@ -1267,9 +1259,8 @@ msgid "Setting Up.."
 msgstr "설정 중.."
 
 #: tools/editor/editor_log.cpp
-#, fuzzy
 msgid " Output:"
-msgstr "출력"
+msgstr "출력:"
 
 #: tools/editor/editor_node.cpp tools/editor/editor_reimport_dialog.cpp
 msgid "Re-Importing"
@@ -1382,9 +1373,8 @@ msgid "Copy Params"
 msgstr "속성 복사"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Paste Params"
-msgstr "프레임 붙여넣기"
+msgstr "속성 붙여넣기"
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/resource_preloader_editor_plugin.cpp
@@ -1404,9 +1394,8 @@ msgid "Make Sub-Resources Unique"
 msgstr "하위 리소스를 유일하게 만들기"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Open in Help"
-msgstr "씬 열기"
+msgstr "도움말에서 열기"
 
 #: tools/editor/editor_node.cpp
 msgid "There is no defined scene to run."
@@ -1417,6 +1406,8 @@ msgid ""
 "No main scene has ever been defined.\n"
 "Select one from \"Project Settings\" under the 'application' category."
 msgstr ""
+"메인 씬이 지정되지 않았습니다.\n"
+"\"프로젝트 설정\"의 'Application' 항목에서 씬을 하나 선택해 주세요."
 
 #: tools/editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
@@ -1535,9 +1526,8 @@ msgid "Save Layout"
 msgstr "레이아웃 저장"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Load Layout"
-msgstr "레이아웃 저장"
+msgstr "레이아웃 로드"
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Default"
@@ -1601,9 +1591,8 @@ msgid "Open Recent"
 msgstr "최근 열었던 항목"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Quick Filter Files.."
-msgstr "빠른 파일 검색.."
+msgstr "빠른 파일 필터링.."
 
 #: tools/editor/editor_node.cpp
 msgid "Convert To.."
@@ -1675,9 +1664,8 @@ msgid "Export"
 msgstr "내보내기"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Play the project."
-msgstr "프로젝트 실행 (F5)."
+msgstr "프로젝트 실행."
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/sample_library_editor_plugin.cpp
@@ -1689,14 +1677,12 @@ msgid "Pause the scene"
 msgstr "씬 일시 정지"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Pause Scene"
 msgstr "씬 일시 정지"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Stop the scene."
-msgstr "씬 정지 (F8)."
+msgstr "씬 정지"
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/sample_library_editor_plugin.cpp
@@ -1704,14 +1690,12 @@ msgid "Stop"
 msgstr "정지"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Play the edited scene."
-msgstr "편집 중인 씬 실행 (F6)."
+msgstr "편집 중인 씬 실행"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Play Scene"
-msgstr "씬 저장"
+msgstr "씬 실행"
 
 #: tools/editor/editor_node.cpp
 msgid "Play custom scene"
@@ -1722,7 +1706,6 @@ msgid "Debug options"
 msgstr "디버그 옵션"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Deploy with Remote Debug"
 msgstr "원격 디버그 배포"
 
@@ -1731,10 +1714,12 @@ msgid ""
 "When exporting or deploying, the resulting executable will attempt to connect "
 "to the IP of this computer in order to be debugged."
 msgstr ""
+"내보내기나 배포를 할 때, 실행 파일이 디버깅을 위해서 이 컴퓨터의 IP로 연결을 "
+"시도합니다."
 
 #: tools/editor/editor_node.cpp
 msgid "Small Deploy with Network FS"
-msgstr ""
+msgstr "네트워크 파일 시스템을 갖는 작은 배포"
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -1745,6 +1730,11 @@ msgid ""
 "On Android, deploy will use the USB cable for faster performance. This option "
 "speeds up testing for games with a large footprint."
 msgstr ""
+"이 옵션이 활성화 되어 있을 경우, 내보내기나 배포는 최소한의 실행파일을 생성합"
+"니다.\n"
+"파일 시스템은 네트워크를 통해서 에디터 상의 프로젝트가 제공합니다.\n"
+"안드로이드의 경우, USB 케이블을 사용하여 배포할 경우 더 빠른 퍼포먼스를 제공합"
+"니다. 이 옵션은 큰 설치 용량을 요구하는 게임의 테스트를 빠르게 할 수 있습니다."
 
 #: tools/editor/editor_node.cpp
 msgid "Visible Collision Shapes"
@@ -1755,6 +1745,8 @@ msgid ""
 "Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
 "running game if this option is turned on."
 msgstr ""
+"이 옵션이 활성화 되어 있을 경우, 게임이 실행되는 동안 (2D와 3D의) 충돌 모양과 "
+"Raycast 노드가 표시됩니다."
 
 #: tools/editor/editor_node.cpp
 msgid "Visible Navigation"
@@ -1765,10 +1757,12 @@ msgid ""
 "Navigation meshes and polygons will be visible on the running game if this "
 "option is turned on."
 msgstr ""
+"이 옵션이 활성화 되어 있을 경우, 게임이 실행되는 동안 네비게이션 메쉬가 표시됩"
+"니다."
 
 #: tools/editor/editor_node.cpp
 msgid "Sync Scene Changes"
-msgstr ""
+msgstr "씬 변경사항 동기화"
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -1777,11 +1771,14 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
+"이 옵션이 활성화 되어 있을 경우, 에디터상의 씬의 변경사항이 실행중인 게임에 반"
+"영됩니다.\n"
+"기기에 원격으로 사용되는 경우, 네트워크 파일 시스템과 함께하면 더욱 효과적입니"
+"다."
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Sync Script Changes"
-msgstr "변경사항만 갱신"
+msgstr "스크립트 변경사항 동기화"
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -1790,6 +1787,10 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
+"이 옵션이 활성화 되어 있을 경우, 스크립트를 수정하고 저장하면 실행중인 게임에"
+"서 다시 읽어 들입니다.\n"
+"기기에 원격으로 사용되는 경우, 네트워크 파일 시스템과 함께하면 더욱 효과적입니"
+"다."
 
 #: tools/editor/editor_node.cpp tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Settings"
@@ -2051,9 +2052,8 @@ msgid "Imported Resources"
 msgstr "가져온 리소스"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
-#, fuzzy
 msgid "No bit masks to import!"
-msgstr "가져올 항목이 없습니다!"
+msgstr "가져올 비트 마스크가 없습니다!"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
 #: tools/editor/io_plugins/editor_sample_import_plugin.cpp
@@ -2083,9 +2083,8 @@ msgid "Save path is empty!"
 msgstr "저장 경로가 없습니다!"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
-#, fuzzy
 msgid "Import BitMasks"
-msgstr "텍스쳐 가져오기"
+msgstr "비트마스크 가져오기"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
@@ -2112,7 +2111,7 @@ msgstr "수락"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
 msgid "Bit Mask"
-msgstr ""
+msgstr "비트 마스크"
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "No source font file!"
@@ -2623,18 +2622,16 @@ msgid "MultiNode Set"
 msgstr "다중 노드 설정"
 
 #: tools/editor/node_dock.cpp
-#, fuzzy
 msgid "Node"
-msgstr "믹스 노드"
+msgstr "노드"
 
 #: tools/editor/node_dock.cpp
-#, fuzzy
 msgid "Groups"
-msgstr "그룹:"
+msgstr "그룹"
 
 #: tools/editor/node_dock.cpp
 msgid "Select a Node to edit Signals and Groups."
-msgstr ""
+msgstr "시그널과 그룹을 편집할 노드를 선택하세요."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -3944,13 +3941,12 @@ msgid "Auto Indent"
 msgstr "자동 들여쓰기"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Reload Tool Script"
-msgstr "노드 스크립트 생성"
+msgstr "툴 스크립트 다시 로드"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Reload Tool Script (Soft)"
-msgstr ""
+msgstr "툴 스크립트 다시 로드 (소프트)"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
@@ -4607,20 +4603,20 @@ msgid "StyleBox Preview:"
 msgstr "StyleBox 미리보기:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Texture Region Editor"
-msgstr "Sprite 구역 편집기"
+msgstr "텍스쳐 구역 편집기"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Region Editor"
-msgstr "Sprite 구역 편집기"
+msgstr "스케일 구역 편집기"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid ""
 "No texture in this node.\n"
 "Set a texture to be able to edit region."
 msgstr ""
+"이 노드에 텍스쳐가 없습니다.\n"
+"구역을 편집하기 위해서는 텍스쳐를 지정해야합니다."
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Can't save theme to file:"
@@ -5142,14 +5138,12 @@ msgstr ""
 "목록에서 프로젝트를 제거하시겠습니까? (폴더와 파일들은 남아있게 됩니다.)"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Project Manager"
-msgstr "프로젝트 명:"
+msgstr "프로젝트 매니저"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Project List"
-msgstr "종료하고 프로젝트 목록으로 돌아가기"
+msgstr "프로젝트 목록"
 
 #: tools/editor/project_manager.cpp
 msgid "Run"
@@ -5302,14 +5296,12 @@ msgid "Invalid name. Must not collide with an existing global constant name."
 msgstr "유효하지 않은 이름입니다. 전역 상수 이름과 충돌하지 않아야 합니다."
 
 #: tools/editor/project_settings.cpp
-#, fuzzy
 msgid "Autoload '%s' already exists!"
-msgstr "'%s' 액션이 이미 존재합니다!"
+msgstr "자동로드에 '%s'이(가) 이미 존재합니다!"
 
 #: tools/editor/project_settings.cpp
-#, fuzzy
 msgid "Rename Autoload"
-msgstr "자동 로드 삭제"
+msgstr "자동 로드 이름 변경"
 
 #: tools/editor/project_settings.cpp
 msgid "Toggle AutoLoad Globals"
@@ -5832,9 +5824,8 @@ msgid "View Owners.."
 msgstr "소유자 보기.."
 
 #: tools/editor/scenes_dock.cpp
-#, fuzzy
 msgid "Copy Path"
-msgstr "속성 복사"
+msgstr "경로 복사"
 
 #: tools/editor/scenes_dock.cpp
 msgid "Rename or Move.."
@@ -6074,7 +6065,7 @@ msgstr "트리로부터 설정"
 
 #: tools/editor/settings_config_dialog.cpp
 msgid "Shortcuts"
-msgstr ""
+msgstr "단축키"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
