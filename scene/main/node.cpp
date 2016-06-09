@@ -1770,6 +1770,8 @@ void Node::replace_by(Node* p_node,bool p_keep_data) {
 		}
 	}
 
+	_replace_connections_target(p_node);
+
 	if (data.owner) {
 		for(int i=0;i<get_child_count();i++)
 			find_owned_by(data.owner,get_child(i),&owned_by_owner);
@@ -1806,6 +1808,20 @@ void Node::replace_by(Node* p_node,bool p_keep_data) {
 		p_node->set(E->get().name,E->get().value);
 	}
 
+}
+
+void Node::_replace_connections_target(Node* p_new_target) {
+
+	List<Connection> cl;
+	get_signals_connected_to_this(&cl);
+
+	for(List<Connection>::Element *E=cl.front();E;E=E->next()) {
+
+		Connection &c=E->get();
+
+		c.source->disconnect(c.signal,this,c.method);
+		c.source->connect(c.signal,p_new_target,c.method,c.binds,c.flags);
+	}
 }
 
 Vector<Variant> Node::make_binds(VARIANT_ARG_DECLARE) {
