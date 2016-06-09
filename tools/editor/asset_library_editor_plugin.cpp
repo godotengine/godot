@@ -541,8 +541,12 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 		error_hb->add_child(tf);
 		error_label->raise();
+	}
 
-		_repository_changed(0);
+	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+		if(!is_hidden()) {
+			_repository_changed(0); // Update when shown for the first time
+		}
 	}
 
 	if (p_what==NOTIFICATION_PROCESS) {
