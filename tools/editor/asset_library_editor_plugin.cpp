@@ -1282,8 +1282,6 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	}
 
 
-	library_vb->add_child(search_hb);
-
 	HBoxContainer *search_hb2 = memnew( HBoxContainer );
 	library_main->add_child(search_hb2);
 
