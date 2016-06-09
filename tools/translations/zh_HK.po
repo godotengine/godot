@@ -163,6 +163,12 @@ msgid ""
 "order for SpatialSamplePlayer to play sound."
 msgstr ""
 
+#: scene/3d/sprite_3d.cpp
+msgid ""
+"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"order for AnimatedSprite3D to display frames."
+msgstr ""
+
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Cancel"
 msgstr ""
@@ -177,6 +183,145 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+msgid "File Exists, Overwrite?"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+msgid "All Recognized"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+msgid "All Files (*)"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/scenes_dock.cpp
+msgid "Open"
+msgstr "開啟"
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Open a File"
+msgstr "儲存檔案"
+
+#: scene/gui/file_dialog.cpp
+msgid "Open File(s)"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Open a Directory"
+msgstr "選擇資料夾"
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Open a File or Directory"
+msgstr "選擇資料夾"
+
+#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/animation_player_editor_plugin.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+msgid "Save"
+msgstr "儲存"
+
+#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+msgid "Save a File"
+msgstr "儲存檔案"
+
+#: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
+#: tools/editor/editor_file_dialog.cpp
+msgid "Create Folder"
+msgstr "新增資料夾"
+
+#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: tools/editor/io_plugins/editor_font_import_plugin.cpp
+#: tools/editor/project_settings.cpp tools/editor/script_create_dialog.cpp
+msgid "Path:"
+msgstr "路徑"
+
+#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+msgid "Directories & Files:"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: tools/editor/script_editor_debugger.cpp
+msgid "File:"
+msgstr "檔案"
+
+#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+msgid "Filter:"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
+#: tools/editor/editor_file_dialog.cpp tools/editor/editor_plugin_settings.cpp
+#: tools/editor/plugins/theme_editor_plugin.cpp
+msgid "Name:"
+msgstr "名稱"
+
+#: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
+#: tools/editor/editor_file_dialog.cpp
+msgid "Could not create folder."
+msgstr "無法新增資料夾"
+
+#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr ""
+
+#: scene/gui/input_action.cpp tools/editor/project_settings.cpp
+#: tools/editor/settings_config_dialog.cpp
+msgid "Shift+"
+msgstr ""
+
+#: scene/gui/input_action.cpp tools/editor/project_settings.cpp
+#: tools/editor/settings_config_dialog.cpp
+msgid "Alt+"
+msgstr ""
+
+#: scene/gui/input_action.cpp
+msgid "Ctrl+"
+msgstr ""
+
+#: scene/gui/input_action.cpp tools/editor/project_settings.cpp
+#: tools/editor/settings_config_dialog.cpp
+msgid "Meta+"
+msgstr ""
+
+#: scene/gui/input_action.cpp tools/editor/project_settings.cpp
+msgid "Device"
+msgstr ""
+
+#: scene/gui/input_action.cpp tools/editor/project_settings.cpp
+msgid "Button"
+msgstr ""
+
+#: scene/gui/input_action.cpp tools/editor/project_settings.cpp
+msgid "Left Button."
+msgstr ""
+
+#: scene/gui/input_action.cpp tools/editor/project_settings.cpp
+msgid "Right Button."
+msgstr ""
+
+#: scene/gui/input_action.cpp tools/editor/project_settings.cpp
+msgid "Middle Button."
+msgstr ""
+
+#: scene/gui/input_action.cpp tools/editor/project_settings.cpp
+msgid "Wheel Up."
+msgstr ""
+
+#: scene/gui/input_action.cpp tools/editor/project_settings.cpp
+msgid "Wheel Down."
+msgstr ""
+
+#: scene/gui/input_action.cpp tools/editor/project_settings.cpp
+msgid "Axis"
 msgstr ""
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -254,74 +399,6 @@ msgstr "載入字形出現錯誤"
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Invalid font size."
 msgstr "無效字型"
-
-#: tools/editor/addon_editor_plugin.cpp tools/editor/call_dialog.cpp
-#: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
-#: tools/editor/import_settings.cpp
-#: tools/editor/plugins/animation_player_editor_plugin.cpp
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/resource_preloader_editor_plugin.cpp
-#: tools/editor/plugins/sample_library_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/sprite_frames_editor_plugin.cpp
-#: tools/editor/project_settings.cpp tools/editor/property_editor.cpp
-#: tools/editor/run_settings_dialog.cpp tools/editor/settings_config_dialog.cpp
-msgid "Close"
-msgstr "關閉"
-
-#: tools/editor/addon_editor_plugin.cpp tools/editor/create_dialog.cpp
-#: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
-#: tools/editor/settings_config_dialog.cpp
-msgid "Search:"
-msgstr ""
-
-#: tools/editor/addon_editor_plugin.cpp tools/editor/code_editor.cpp
-#: tools/editor/editor_help.cpp tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-#: tools/editor/project_settings.cpp
-msgid "Search"
-msgstr ""
-
-#: tools/editor/addon_editor_plugin.cpp tools/editor/editor_node.cpp
-#: tools/editor/io_plugins/editor_font_import_plugin.cpp
-#: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
-#: tools/editor/io_plugins/editor_sample_import_plugin.cpp
-#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#: tools/editor/io_plugins/editor_texture_import_plugin.cpp
-#: tools/editor/io_plugins/editor_translation_import_plugin.cpp
-#: tools/editor/project_manager.cpp
-msgid "Import"
-msgstr "導入"
-
-#: tools/editor/addon_editor_plugin.cpp tools/editor/project_settings.cpp
-#: tools/editor/settings_config_dialog.cpp
-msgid "Plugins"
-msgstr "插件"
-
-#: tools/editor/addon_editor_plugin.cpp
-msgid "Sort:"
-msgstr ""
-
-#: tools/editor/addon_editor_plugin.cpp
-msgid "Reverse"
-msgstr ""
-
-#: tools/editor/addon_editor_plugin.cpp tools/editor/project_settings.cpp
-msgid "Category:"
-msgstr ""
-
-#: tools/editor/addon_editor_plugin.cpp
-msgid "All"
-msgstr "全部"
-
-#: tools/editor/addon_editor_plugin.cpp
-msgid "Site:"
-msgstr ""
-
-#: tools/editor/addon_editor_plugin.cpp
-msgid "Assets ZIP File"
-msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Disabled"
@@ -638,6 +715,55 @@ msgstr ""
 msgid "Change Array Value"
 msgstr ""
 
+#: tools/editor/asset_library_editor_plugin.cpp tools/editor/create_dialog.cpp
+#: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/settings_config_dialog.cpp
+msgid "Search:"
+msgstr ""
+
+#: tools/editor/asset_library_editor_plugin.cpp
+msgid "Sort:"
+msgstr ""
+
+#: tools/editor/asset_library_editor_plugin.cpp
+msgid "Reverse"
+msgstr ""
+
+#: tools/editor/asset_library_editor_plugin.cpp
+#: tools/editor/project_settings.cpp
+msgid "Category:"
+msgstr ""
+
+#: tools/editor/asset_library_editor_plugin.cpp
+msgid "All"
+msgstr "全部"
+
+#: tools/editor/asset_library_editor_plugin.cpp
+msgid "Site:"
+msgstr ""
+
+#: tools/editor/asset_library_editor_plugin.cpp
+msgid "Support.."
+msgstr ""
+
+#: tools/editor/asset_library_editor_plugin.cpp
+msgid "Official"
+msgstr ""
+
+#: tools/editor/asset_library_editor_plugin.cpp
+msgid "Community"
+msgstr ""
+
+#: tools/editor/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Testing"
+msgstr "設定"
+
+#: tools/editor/asset_library_editor_plugin.cpp
+msgid "Assets ZIP File"
+msgstr ""
+
 #: tools/editor/call_dialog.cpp
 msgid "Method List For '%s':"
 msgstr ""
@@ -645,6 +771,19 @@ msgstr ""
 #: tools/editor/call_dialog.cpp
 msgid "Call"
 msgstr ""
+
+#: tools/editor/call_dialog.cpp tools/editor/connections_dialog.cpp
+#: tools/editor/import_settings.cpp
+#: tools/editor/plugins/animation_player_editor_plugin.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/plugins/resource_preloader_editor_plugin.cpp
+#: tools/editor/plugins/sample_library_editor_plugin.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/sprite_frames_editor_plugin.cpp
+#: tools/editor/project_settings.cpp tools/editor/property_editor.cpp
+#: tools/editor/run_settings_dialog.cpp tools/editor/settings_config_dialog.cpp
+msgid "Close"
+msgstr "關閉"
 
 #: tools/editor/call_dialog.cpp
 msgid "Method List:"
@@ -693,6 +832,13 @@ msgstr ""
 #: tools/editor/code_editor.cpp
 msgid "Selection Only"
 msgstr "只限選中"
+
+#: tools/editor/code_editor.cpp tools/editor/editor_help.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+#: tools/editor/project_settings.cpp
+msgid "Search"
+msgstr ""
 
 #: tools/editor/code_editor.cpp tools/editor/editor_help.cpp
 msgid "Find"
@@ -804,13 +950,9 @@ msgstr "連到..."
 msgid "Disconnect"
 msgstr "中斷"
 
-#: tools/editor/connections_dialog.cpp
-msgid "Edit Connections.."
-msgstr "編輯連接"
-
-#: tools/editor/connections_dialog.cpp
-msgid "Connections:"
-msgstr "連接"
+#: tools/editor/connections_dialog.cpp tools/editor/node_dock.cpp
+msgid "Signals"
+msgstr ""
 
 #: tools/editor/create_dialog.cpp
 msgid "Create New"
@@ -950,57 +1092,9 @@ msgstr ""
 msgid "Choose a Directory"
 msgstr "選擇資料夾"
 
-#: tools/editor/editor_dir_dialog.cpp tools/editor/editor_file_dialog.cpp
-msgid "Create Folder"
-msgstr "新增資料夾"
-
-#: tools/editor/editor_dir_dialog.cpp tools/editor/editor_file_dialog.cpp
-#: tools/editor/editor_plugin_settings.cpp
-#: tools/editor/plugins/theme_editor_plugin.cpp
-msgid "Name:"
-msgstr "名稱"
-
-#: tools/editor/editor_dir_dialog.cpp tools/editor/editor_file_dialog.cpp
-msgid "Could not create folder."
-msgstr "無法新增資料夾"
-
 #: tools/editor/editor_dir_dialog.cpp
 msgid "Choose"
 msgstr "選擇"
-
-#: tools/editor/editor_file_dialog.cpp
-msgid "File Exists, Overwrite?"
-msgstr ""
-
-#: tools/editor/editor_file_dialog.cpp
-msgid "All Recognized"
-msgstr ""
-
-#: tools/editor/editor_file_dialog.cpp
-msgid "All Files (*)"
-msgstr ""
-
-#: tools/editor/editor_file_dialog.cpp tools/editor/editor_help.cpp
-#: tools/editor/editor_node.cpp tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/quick_open.cpp tools/editor/scenes_dock.cpp
-msgid "Open"
-msgstr "開啟"
-
-#: tools/editor/editor_file_dialog.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/animation_player_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Save"
-msgstr "儲存"
-
-#: tools/editor/editor_file_dialog.cpp
-msgid "Save a File"
-msgstr "儲存檔案"
-
-#: tools/editor/editor_file_dialog.cpp
-#: tools/editor/io_plugins/editor_font_import_plugin.cpp
-#: tools/editor/project_settings.cpp tools/editor/script_create_dialog.cpp
-msgid "Path:"
-msgstr "路徑"
 
 #: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
 msgid "Favorites:"
@@ -1011,24 +1105,8 @@ msgid "Recent:"
 msgstr "最近:"
 
 #: tools/editor/editor_file_dialog.cpp
-msgid "Directories & Files:"
-msgstr ""
-
-#: tools/editor/editor_file_dialog.cpp
 msgid "Preview:"
 msgstr "預覽"
-
-#: tools/editor/editor_file_dialog.cpp tools/editor/script_editor_debugger.cpp
-msgid "File:"
-msgstr "檔案"
-
-#: tools/editor/editor_file_dialog.cpp
-msgid "Filter:"
-msgstr ""
-
-#: tools/editor/editor_file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr ""
 
 #: tools/editor/editor_file_system.cpp
 msgid "Cannot go into subdir:"
@@ -1125,6 +1203,10 @@ msgstr ""
 
 #: tools/editor/editor_import_export.cpp
 msgid "Setting Up.."
+msgstr ""
+
+#: tools/editor/editor_log.cpp
+msgid " Output:"
 msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/editor_reimport_dialog.cpp
@@ -1237,7 +1319,7 @@ msgid "Copy Params"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-msgid "Set Params"
+msgid "Paste Params"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -1258,7 +1340,18 @@ msgid "Make Sub-Resources Unique"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Open in Help"
+msgstr "開啓場景"
+
+#: tools/editor/editor_node.cpp
 msgid "There is no defined scene to run."
+msgstr ""
+
+#: tools/editor/editor_node.cpp
+msgid ""
+"No main scene has ever been defined.\n"
+"Select one from \"Project Settings\" under the 'application' category."
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -1374,12 +1467,16 @@ msgid "Save Layout"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-msgid "Delete Layout"
+msgid "Load Layout"
 msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Default"
 msgstr "預設"
+
+#: tools/editor/editor_node.cpp
+msgid "Delete Layout"
+msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Switch Scene Tab"
@@ -1435,7 +1532,7 @@ msgid "Open Recent"
 msgstr "開啓最近的"
 
 #: tools/editor/editor_node.cpp
-msgid "Quick Search File.."
+msgid "Quick Filter Files.."
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -1480,6 +1577,18 @@ msgid "Import assets to the project."
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+#: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: tools/editor/io_plugins/editor_font_import_plugin.cpp
+#: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
+#: tools/editor/io_plugins/editor_sample_import_plugin.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#: tools/editor/io_plugins/editor_texture_import_plugin.cpp
+#: tools/editor/io_plugins/editor_translation_import_plugin.cpp
+#: tools/editor/project_manager.cpp
+msgid "Import"
+msgstr "導入"
+
+#: tools/editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr ""
 
@@ -1496,7 +1605,12 @@ msgid "Export"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-msgid "Play the project (F5)."
+msgid "Play the project."
+msgstr ""
+
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/sample_library_editor_plugin.cpp
+msgid "Play"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -1504,12 +1618,28 @@ msgid "Pause the scene"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-msgid "Stop the scene (F8)."
+#, fuzzy
+msgid "Pause Scene"
+msgstr "儲存場景"
+
+#: tools/editor/editor_node.cpp
+msgid "Stop the scene."
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-msgid "Play the edited scene (F6)."
+#: tools/editor/plugins/sample_library_editor_plugin.cpp
+msgid "Stop"
 msgstr ""
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Play the edited scene."
+msgstr "請先儲存場景"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Play Scene"
+msgstr "儲存場景"
 
 #: tools/editor/editor_node.cpp
 msgid "Play custom scene"
@@ -1520,19 +1650,27 @@ msgid "Debug options"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-msgid "Live Editing"
-msgstr "即時編輯"
-
-#: tools/editor/editor_node.cpp
-msgid "File Server"
+msgid "Deploy with Remote Debug"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-msgid "Deploy Remote Debug"
+msgid ""
+"When exporting or deploying, the resulting executable will attempt to connect "
+"to the IP of this computer in order to be debugged."
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-msgid "Deploy File Server Clients"
+msgid "Small Deploy with Network FS"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
+msgid ""
+"When this option is enabled, export or deploy will produce a minimal "
+"executable.\n"
+"The filesystem will be provided from the project by the editor over the "
+"network.\n"
+"On Android, deploy will use the USB cable for faster performance. This option "
+"speeds up testing for games with a large footprint."
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -1540,7 +1678,44 @@ msgid "Visible Collision Shapes"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+msgid ""
+"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
+"running game if this option is turned on."
+msgstr ""
+
+#: tools/editor/editor_node.cpp
 msgid "Visible Navigation"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
+msgid ""
+"Navigation meshes and polygons will be visible on the running game if this "
+"option is turned on."
+msgstr ""
+
+#: tools/editor/editor_node.cpp
+msgid "Sync Scene Changes"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
+msgid ""
+"When this option is turned on, any changes made to the scene in the editor "
+"will be replicated in the running game.\n"
+"When used remotely on a device, this is more efficient with network "
+"filesystem."
+msgstr ""
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Sync Script Changes"
+msgstr "當改變時更新"
+
+#: tools/editor/editor_node.cpp
+msgid ""
+"When this option is turned on, any script that is saved will be reloaded on "
+"the running game.\n"
+"When used remotely on a device, this is more efficient with network "
+"filesystem."
 msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/plugins/spatial_editor_plugin.cpp
@@ -1798,20 +1973,70 @@ msgstr ""
 msgid "Remove from Group"
 msgstr ""
 
-#: tools/editor/groups_editor.cpp
-msgid "Group Editor"
-msgstr ""
-
-#: tools/editor/groups_editor.cpp tools/editor/project_export.cpp
-msgid "Group"
-msgstr ""
-
-#: tools/editor/groups_editor.cpp
-msgid "Node Group(s)"
-msgstr ""
-
 #: tools/editor/import_settings.cpp
 msgid "Imported Resources"
+msgstr ""
+
+#: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
+msgid "No bit masks to import!"
+msgstr ""
+
+#: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: tools/editor/io_plugins/editor_sample_import_plugin.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#: tools/editor/io_plugins/editor_texture_import_plugin.cpp
+msgid "Target path is empty."
+msgstr ""
+
+#: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: tools/editor/io_plugins/editor_sample_import_plugin.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#: tools/editor/io_plugins/editor_texture_import_plugin.cpp
+msgid "Target path must be a complete resource path."
+msgstr ""
+
+#: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: tools/editor/io_plugins/editor_sample_import_plugin.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#: tools/editor/io_plugins/editor_texture_import_plugin.cpp
+msgid "Target path must exist."
+msgstr ""
+
+#: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
+#: tools/editor/io_plugins/editor_sample_import_plugin.cpp
+msgid "Save path is empty!"
+msgstr ""
+
+#: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
+msgid "Import BitMasks"
+msgstr ""
+
+#: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: tools/editor/io_plugins/editor_texture_import_plugin.cpp
+msgid "Source Texture(s):"
+msgstr ""
+
+#: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
+#: tools/editor/io_plugins/editor_sample_import_plugin.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#: tools/editor/io_plugins/editor_texture_import_plugin.cpp
+#: tools/editor/io_plugins/editor_translation_import_plugin.cpp
+msgid "Target Path:"
+msgstr ""
+
+#: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: tools/editor/io_plugins/editor_font_import_plugin.cpp
+#: tools/editor/io_plugins/editor_sample_import_plugin.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#: tools/editor/io_plugins/editor_texture_import_plugin.cpp
+#: tools/editor/io_plugins/editor_translation_import_plugin.cpp
+msgid "Accept"
+msgstr ""
+
+#: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
+msgid "Bit Mask"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
@@ -1862,14 +2087,6 @@ msgid "Font Import"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
-#: tools/editor/io_plugins/editor_sample_import_plugin.cpp
-#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#: tools/editor/io_plugins/editor_texture_import_plugin.cpp
-#: tools/editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Accept"
-msgstr ""
-
-#: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid ""
 "This file is already a Godot font file, please supply a BMFont type file "
 "instead."
@@ -1893,11 +2110,6 @@ msgid "No meshes to import!"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
-#: tools/editor/io_plugins/editor_sample_import_plugin.cpp
-msgid "Save path is empty!"
-msgstr ""
-
-#: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 msgid "Single Mesh Import"
 msgstr ""
 
@@ -1906,14 +2118,7 @@ msgid "Source Mesh(es):"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
-#: tools/editor/io_plugins/editor_sample_import_plugin.cpp
-#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#: tools/editor/io_plugins/editor_texture_import_plugin.cpp
-#: tools/editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Target Path:"
-msgstr ""
-
-#: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
+#: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh"
 msgstr ""
 
@@ -1923,24 +2128,6 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_sample_import_plugin.cpp
 msgid "No samples to import!"
-msgstr ""
-
-#: tools/editor/io_plugins/editor_sample_import_plugin.cpp
-#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#: tools/editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Target path is empty."
-msgstr ""
-
-#: tools/editor/io_plugins/editor_sample_import_plugin.cpp
-#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#: tools/editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Target path must be a complete resource path."
-msgstr ""
-
-#: tools/editor/io_plugins/editor_sample_import_plugin.cpp
-#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#: tools/editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Target path must exist."
 msgstr ""
 
 #: tools/editor/io_plugins/editor_sample_import_plugin.cpp
@@ -2230,10 +2417,6 @@ msgid ""
 msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Source Texture(s):"
-msgstr ""
-
-#: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Crop empty space."
 msgstr ""
 
@@ -2360,6 +2543,18 @@ msgstr ""
 
 #: tools/editor/multi_node_edit.cpp
 msgid "MultiNode Set"
+msgstr ""
+
+#: tools/editor/node_dock.cpp
+msgid "Node"
+msgstr ""
+
+#: tools/editor/node_dock.cpp
+msgid "Groups"
+msgstr ""
+
+#: tools/editor/node_dock.cpp
+msgid "Select a Node to edit Signals and Groups."
 msgstr ""
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
@@ -2526,6 +2721,7 @@ msgid "Cross-Animation Blend Times"
 msgstr ""
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr ""
 
@@ -2742,13 +2938,13 @@ msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/sprite_region_editor_plugin.cpp
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Offset:"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/sprite_region_editor_plugin.cpp
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Step:"
 msgstr ""
 
@@ -2819,6 +3015,7 @@ msgid "Rotate Mode (E)"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Show a list of all objects at the position clicked\n"
 "(same as Alt+RMB in select mode)."
@@ -2863,7 +3060,7 @@ msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/sprite_region_editor_plugin.cpp
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Show Grid"
 msgstr ""
 
@@ -3477,17 +3674,17 @@ msgid "Clear UV"
 msgstr ""
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/sprite_region_editor_plugin.cpp
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap"
 msgstr ""
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/sprite_region_editor_plugin.cpp
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Enable Snap"
 msgstr ""
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/sprite_region_editor_plugin.cpp
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid"
 msgstr ""
 
@@ -3535,14 +3732,6 @@ msgstr ""
 
 #: tools/editor/plugins/sample_library_editor_plugin.cpp
 msgid "Add Sample"
-msgstr ""
-
-#: tools/editor/plugins/sample_library_editor_plugin.cpp
-msgid "Stop"
-msgstr ""
-
-#: tools/editor/plugins/sample_library_editor_plugin.cpp
-msgid "Play"
 msgstr ""
 
 #: tools/editor/plugins/sample_library_editor_plugin.cpp
@@ -3671,6 +3860,14 @@ msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Auto Indent"
+msgstr ""
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+msgid "Reload Tool Script"
+msgstr ""
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+msgid "Reload Tool Script (Soft)"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -4321,16 +4518,22 @@ msgstr ""
 msgid "Down"
 msgstr ""
 
-#: tools/editor/plugins/sprite_region_editor_plugin.cpp
-msgid "Set region_rect"
-msgstr ""
-
-#: tools/editor/plugins/sprite_region_editor_plugin.cpp
-msgid "Sprite Region Editor"
-msgstr ""
-
 #: tools/editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox Preview:"
+msgstr ""
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+msgid "Texture Region Editor"
+msgstr ""
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+msgid "Scale Region Editor"
+msgstr ""
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+msgid ""
+"No texture in this node.\n"
+"Set a texture to be able to edit region."
 msgstr ""
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
@@ -4704,6 +4907,10 @@ msgid "Select None"
 msgstr "不選"
 
 #: tools/editor/project_export.cpp
+msgid "Group"
+msgstr ""
+
+#: tools/editor/project_export.cpp
 msgid "Samples"
 msgstr ""
 
@@ -4848,7 +5055,11 @@ msgid "Remove project from the list? (Folder contents will not be modified)"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
-msgid "Recent Projects:"
+msgid "Project Manager"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
+msgid "Project List"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
@@ -4899,23 +5110,11 @@ msgstr ""
 msgid "Add Input Action Event"
 msgstr ""
 
-#: tools/editor/project_settings.cpp
-msgid "Meta+"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Shift+"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Alt+"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
+#: tools/editor/project_settings.cpp tools/editor/settings_config_dialog.cpp
 msgid "Control+"
 msgstr ""
 
-#: tools/editor/project_settings.cpp
+#: tools/editor/project_settings.cpp tools/editor/settings_config_dialog.cpp
 msgid "Press a Key.."
 msgstr ""
 
@@ -4964,10 +5163,6 @@ msgid "Joystick Axis Index:"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
-msgid "Axis"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
 msgid "Joystick Button Index:"
 msgstr ""
 
@@ -4977,34 +5172,6 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Erase Input Action Event"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Device"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Button"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Left Button."
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Right Button."
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Middle Button."
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Wheel Up."
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Wheel Down."
 msgstr ""
 
 #: tools/editor/project_settings.cpp
@@ -5021,10 +5188,6 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Add Translation"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Toggle AutoLoad Globals"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
@@ -5045,6 +5208,18 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Invalid name. Must not collide with an existing global constant name."
+msgstr ""
+
+#: tools/editor/project_settings.cpp
+msgid "Autoload '%s' already exists!"
+msgstr ""
+
+#: tools/editor/project_settings.cpp
+msgid "Rename Autoload"
+msgstr ""
+
+#: tools/editor/project_settings.cpp
+msgid "Toggle AutoLoad Globals"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
@@ -5170,6 +5345,10 @@ msgstr ""
 #: tools/editor/project_settings.cpp
 msgid "Singleton"
 msgstr ""
+
+#: tools/editor/project_settings.cpp
+msgid "Plugins"
+msgstr "插件"
 
 #: tools/editor/property_editor.cpp
 msgid "Preset.."
@@ -5556,6 +5735,11 @@ msgid "View Owners.."
 msgstr ""
 
 #: tools/editor/scenes_dock.cpp
+#, fuzzy
+msgid "Copy Path"
+msgstr "複製"
+
+#: tools/editor/scenes_dock.cpp
 msgid "Rename or Move.."
 msgstr ""
 
@@ -5793,8 +5977,8 @@ msgid "Set From Tree"
 msgstr ""
 
 #: tools/editor/settings_config_dialog.cpp
-msgid "Plugin List:"
-msgstr "插件列表:"
+msgid "Shortcuts"
+msgstr ""
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
@@ -5831,3 +6015,15 @@ msgstr ""
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#~ msgid "Edit Connections.."
+#~ msgstr "編輯連接"
+
+#~ msgid "Connections:"
+#~ msgstr "連接"
+
+#~ msgid "Live Editing"
+#~ msgstr "即時編輯"
+
+#~ msgid "Plugin List:"
+#~ msgstr "插件列表:"
