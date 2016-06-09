@@ -218,12 +218,11 @@ msgstr ""
 "ресурс SampleLibrary в параметре 'samples'."
 
 #: scene/3d/sprite_3d.cpp
-#, fuzzy
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
-"Чтобы AnimatedSprite отображал кадры, пожалуйста установите или создайте "
+"Чтобы AnimatedSprite3D отображал кадры, пожалуйста установите или создайте "
 "ресурс SpriteFrames в параметре 'Frames'"
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
@@ -262,24 +261,20 @@ msgid "Open"
 msgstr "Открыть"
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Open a File"
-msgstr "Открыть сэмпл(ы)"
+msgstr "Открыть файл"
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Open File(s)"
-msgstr "Открыть сэмпл(ы)"
+msgstr "Открыть файл(ы)"
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Open a Directory"
-msgstr "Выбрать каталог"
+msgstr "Открыть каталог"
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Open a File or Directory"
-msgstr "Выбрать каталог"
+msgstr "Открыть каталог или файл"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_node.cpp
@@ -343,7 +338,7 @@ msgstr "Alt+"
 
 #: scene/gui/input_action.cpp
 msgid "Ctrl+"
-msgstr ""
+msgstr "Ctrl+"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
@@ -810,22 +805,20 @@ msgid "Site:"
 msgstr "Сайт:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Support.."
-msgstr "Экспортировать.."
+msgstr "Поддержка.."
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Official"
-msgstr ""
+msgstr "Официально"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "Сообщество"
 
 #: tools/editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Testing"
-msgstr "Настройки"
+msgstr "Тестируемые"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -1018,9 +1011,8 @@ msgid "Disconnect"
 msgstr "Отсоединить"
 
 #: tools/editor/connections_dialog.cpp tools/editor/node_dock.cpp
-#, fuzzy
 msgid "Signals"
-msgstr "Сигналы:"
+msgstr "Сигналы"
 
 #: tools/editor/create_dialog.cpp
 msgid "Create New"
@@ -1280,9 +1272,8 @@ msgid "Setting Up.."
 msgstr "Настройка.."
 
 #: tools/editor/editor_log.cpp
-#, fuzzy
 msgid " Output:"
-msgstr "Вывод"
+msgstr " Вывод:"
 
 #: tools/editor/editor_node.cpp tools/editor/editor_reimport_dialog.cpp
 msgid "Re-Importing"
@@ -1396,9 +1387,8 @@ msgid "Copy Params"
 msgstr "Копировать параметры"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Paste Params"
-msgstr "Вставить кадр"
+msgstr "Вставить параметры"
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/resource_preloader_editor_plugin.cpp
@@ -1418,9 +1408,8 @@ msgid "Make Sub-Resources Unique"
 msgstr "Сделать вложенные ресурсы уникальными"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Open in Help"
-msgstr "Открыть сцену"
+msgstr "Открыть в справке"
 
 #: tools/editor/editor_node.cpp
 msgid "There is no defined scene to run."
@@ -1431,6 +1420,9 @@ msgid ""
 "No main scene has ever been defined.\n"
 "Select one from \"Project Settings\" under the 'application' category."
 msgstr ""
+"Не назначена главная сцена.\n"
+"Укажите её в параметре \"main_scene\" расположенном\n"
+"в \"Настройки проекта - Основное - application\"."
 
 #: tools/editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
@@ -1550,9 +1542,8 @@ msgid "Save Layout"
 msgstr "Сохранить макет"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Load Layout"
-msgstr "Сохранить макет"
+msgstr "Загрузить макет"
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Default"
@@ -1616,9 +1607,8 @@ msgid "Open Recent"
 msgstr "Открыть последнее"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Quick Filter Files.."
-msgstr "Быстрый поиск файлов.."
+msgstr "Быстро отсортировать файлы.."
 
 #: tools/editor/editor_node.cpp
 msgid "Convert To.."
@@ -1690,9 +1680,8 @@ msgid "Export"
 msgstr "Экспорт"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Play the project."
-msgstr "Запустить проект (F5)."
+msgstr "Запустить проект."
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/sample_library_editor_plugin.cpp
@@ -1704,14 +1693,12 @@ msgid "Pause the scene"
 msgstr "Приостановить сцену"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Pause Scene"
 msgstr "Приостановить сцену"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Stop the scene."
-msgstr "Остановить проект (F8)."
+msgstr "Остановить сцену."
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/sample_library_editor_plugin.cpp
@@ -1719,14 +1706,12 @@ msgid "Stop"
 msgstr "Остановить"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Play the edited scene."
-msgstr "Запустить текущую сцену (F6)."
+msgstr "Запустить текущую сцену."
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Play Scene"
-msgstr "Сохранить сцену"
+msgstr "Запустить сцену"
 
 #: tools/editor/editor_node.cpp
 msgid "Play custom scene"
@@ -1737,19 +1722,20 @@ msgid "Debug options"
 msgstr "Параметры отладки"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Deploy with Remote Debug"
-msgstr "Развернуть удалённую отладку"
+msgstr "Развернуть с удалённой отладкой"
 
 #: tools/editor/editor_node.cpp
 msgid ""
 "When exporting or deploying, the resulting executable will attempt to connect "
 "to the IP of this computer in order to be debugged."
 msgstr ""
+"При экспорте или развёртывании, полученный исполняемый файл будет пытаться "
+"подключиться к IP этого компьютера с целью отладки."
 
 #: tools/editor/editor_node.cpp
 msgid "Small Deploy with Network FS"
-msgstr ""
+msgstr "Небольшое развёртывание через сеть"
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -1760,6 +1746,11 @@ msgid ""
 "On Android, deploy will use the USB cable for faster performance. This option "
 "speeds up testing for games with a large footprint."
 msgstr ""
+"Когда эта опция включена, экспорт или развёртывание будет создавать "
+"минимальный исполняемый файл.\n"
+"Файловая система проекта будет предоставляться редактором через сеть.\n"
+"На Android развёртывание будет быстрее при подключении через USB.\n"
+"Эта опция ускоряет тестирование больших проектов."
 
 #: tools/editor/editor_node.cpp
 msgid "Visible Collision Shapes"
@@ -1770,6 +1761,8 @@ msgid ""
 "Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
 "running game if this option is turned on."
 msgstr ""
+"Когда эта опция включена, области соприкосновений и ноды Raycast(в 2D и 3D) "
+"будут видимыми в запущенной игре."
 
 #: tools/editor/editor_node.cpp
 msgid "Visible Navigation"
@@ -1780,10 +1773,12 @@ msgid ""
 "Navigation meshes and polygons will be visible on the running game if this "
 "option is turned on."
 msgstr ""
+"Когда эта опция включена, навигационные полисетки и полигоны будут видимыми в "
+"запущенной игре."
 
 #: tools/editor/editor_node.cpp
 msgid "Sync Scene Changes"
-msgstr ""
+msgstr "Синхронизация изменений на сцене"
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -1792,11 +1787,14 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
+"Когда эта опция включена, все изменения, внесённые на сцену, в редакторе "
+"будут перенесены в запущенную игру.\n"
+"При удалённом использовании на устройстве, это работает более эффективно с "
+"сетевой файловой системой."
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Sync Script Changes"
-msgstr "Обновлять при изменениях"
+msgstr "Синхронизация изменений в скриптах"
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -1805,6 +1803,10 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
+"Когда эта опция включена, любой сохранённый скрипт будет перезагружен в "
+"запущенную игру.\n"
+"При удалённом использовании на устройстве, это работает более эффективно с "
+"сетевой файловой системой."
 
 #: tools/editor/editor_node.cpp tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Settings"
@@ -2068,9 +2070,8 @@ msgid "Imported Resources"
 msgstr "Импортированные ресурсы"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
-#, fuzzy
 msgid "No bit masks to import!"
-msgstr "Нет элементов для импорта!"
+msgstr "Нет битовой маски для импорта!"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
 #: tools/editor/io_plugins/editor_sample_import_plugin.cpp
@@ -2100,9 +2101,8 @@ msgid "Save path is empty!"
 msgstr "Путь сохранения пуст!"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
-#, fuzzy
 msgid "Import BitMasks"
-msgstr "Импорт текстур"
+msgstr "Импорт битовой маски"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
@@ -2129,7 +2129,7 @@ msgstr "Принять"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
 msgid "Bit Mask"
-msgstr ""
+msgstr "Битовая маска"
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "No source font file!"
@@ -2646,18 +2646,18 @@ msgid "MultiNode Set"
 msgstr "Мульти нодовый набор"
 
 #: tools/editor/node_dock.cpp
-#, fuzzy
 msgid "Node"
-msgstr "Mix Node"
+msgstr "Нод"
 
 #: tools/editor/node_dock.cpp
-#, fuzzy
 msgid "Groups"
-msgstr "Группы:"
+msgstr "Группы"
 
 #: tools/editor/node_dock.cpp
 msgid "Select a Node to edit Signals and Groups."
 msgstr ""
+"Выберите нод для редактирования\n"
+"сигналов и групп."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -3971,14 +3971,12 @@ msgid "Auto Indent"
 msgstr "Автоотступ"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Reload Tool Script"
-msgstr "Перезагрузить скрипты"
+msgstr "Перезагрузить инструм. скрипт"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Reload Tool Script (Soft)"
-msgstr "Перезагрузить скрипты"
+msgstr "Перезагрузить инструм. скрипт (мягко)"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
@@ -4635,20 +4633,20 @@ msgid "StyleBox Preview:"
 msgstr "StyleBox предпросмотр:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Texture Region Editor"
-msgstr "Редактор Области Спрайта"
+msgstr "Редактор области текстуры"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Region Editor"
-msgstr "Редактор Области Спрайта"
+msgstr "Редактор масштабируемой области текстуры"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid ""
 "No texture in this node.\n"
 "Set a texture to be able to edit region."
 msgstr ""
+"В этом ноде нет текстуры.\n"
+"Выберите текстуру, чтобы редактировать область."
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Can't save theme to file:"
@@ -5171,14 +5169,12 @@ msgid "Remove project from the list? (Folder contents will not be modified)"
 msgstr "Удалить проект из списка? (Содержимое папки не будет изменено)"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Project Manager"
-msgstr "Название проекта:"
+msgstr "Менеджер проектов"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Project List"
-msgstr "Выйти в список проектов"
+msgstr "Список проектов"
 
 #: tools/editor/project_manager.cpp
 msgid "Run"
@@ -5334,14 +5330,12 @@ msgstr ""
 "константы."
 
 #: tools/editor/project_settings.cpp
-#, fuzzy
 msgid "Autoload '%s' already exists!"
-msgstr "Действие '%s' уже существует!"
+msgstr "Автозагрузка '%s' уже существует!"
 
 #: tools/editor/project_settings.cpp
-#, fuzzy
 msgid "Rename Autoload"
-msgstr "Удалена автозагрузка"
+msgstr "Переименовать автозагрузку"
 
 #: tools/editor/project_settings.cpp
 msgid "Toggle AutoLoad Globals"
@@ -5861,7 +5855,7 @@ msgstr "Файлы не выбраны!"
 
 #: tools/editor/scenes_dock.cpp
 msgid "Instance"
-msgstr "Экземпляр"
+msgstr "Добавить экземпляр"
 
 #: tools/editor/scenes_dock.cpp
 msgid "Edit Dependencies.."
@@ -5872,9 +5866,8 @@ msgid "View Owners.."
 msgstr "Просмотреть владельцев.."
 
 #: tools/editor/scenes_dock.cpp
-#, fuzzy
 msgid "Copy Path"
-msgstr "Копировать параметры"
+msgstr "Копировать путь"
 
 #: tools/editor/scenes_dock.cpp
 msgid "Rename or Move.."
@@ -6114,7 +6107,7 @@ msgstr "Установить из дерева нодов"
 
 #: tools/editor/settings_config_dialog.cpp
 msgid "Shortcuts"
-msgstr ""
+msgstr "Горячие клавиши"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
