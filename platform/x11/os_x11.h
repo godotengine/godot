@@ -52,6 +52,7 @@
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xcursor/Xcursor.h>
+#include <X11/extensions/Xrandr.h>
 
 // Hints for X11 fullscreen
 typedef struct {
@@ -61,6 +62,20 @@ typedef struct {
 	long inputMode;
 	unsigned long status;
 } Hints;
+
+typedef struct _xrr_monitor_info {
+    Atom name;
+    Bool primary;
+    Bool automatic;
+    int noutput;
+    int x;
+    int y;
+    int width;
+    int height;
+    int mwidth;
+    int mheight;
+    RROutput *outputs;
+} xrr_monitor_info;
 
 #undef CursorShape
 /**
@@ -162,6 +177,9 @@ class OS_X11 : public OS_Unix {
 	//void set_wm_border(bool p_enabled);
 	void set_wm_fullscreen(bool p_enabled);
 
+	typedef xrr_monitor_info* (*xrr_get_monitors_t)(Display *dpy, Window window, Bool get_active, int *nmonitors);
+	xrr_get_monitors_t xrr_get_monitors;
+	void *xrandr_handle;
 
 protected:
 
@@ -219,6 +237,7 @@ public:
 	virtual void set_current_screen(int p_screen);
 	virtual Point2 get_screen_position(int p_screen=0) const;
 	virtual Size2 get_screen_size(int p_screen=0) const;
+	virtual int get_screen_dpi(int p_screen=0) const;
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2& p_position);
 	virtual Size2 get_window_size() const;

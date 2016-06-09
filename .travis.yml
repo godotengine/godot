@@ -54,7 +54,7 @@ addons:
       - libglu1-mesa-dev
       - libssl-dev
       - libxinerama-dev
-      - libudev-dev
+      - libxrandr-dev
 
       # For cross-compiling to Windows.
       - binutils-mingw-w64-i686
