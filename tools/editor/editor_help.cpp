@@ -649,6 +649,7 @@ void EditorHelp::_class_desc_input(const InputEvent& p_input) {
 		class_desc->set_selection_enabled(false);
 		class_desc->set_selection_enabled(true);
 	}
+	set_focused();
 }
 
 void EditorHelp::_add_type(const String& p_type) {
