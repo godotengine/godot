@@ -1118,7 +1118,7 @@ void Viewport::set_size_override_stretch(bool p_enable) {
 
 bool Viewport::is_size_override_stretch_enabled() const {
 
-	return size_override;
+	return size_override_stretch;
 }
 
 void Viewport::set_as_render_target(bool p_enable){
