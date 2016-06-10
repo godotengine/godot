@@ -454,7 +454,7 @@ void LineEdit::_notification(int p_what) {
 				} break;
 			}
 
-			int ofs_max=width-style->get_minimum_size().width+x_ofs;
+			int ofs_max=width-style->get_minimum_size().width;
 			int char_ofs=window_pos;
 
 			int y_area=height-style->get_minimum_size().height;
@@ -799,8 +799,8 @@ Size2 LineEdit::get_minimum_size() const {
 	Ref<Font> font=get_font("font");
 
 	Size2 min=style->get_minimum_size();
-	min+=font->get_string_size(this->text);
-
+	min.height+=font->get_height();
+	min.width+=get_constant("minimum_spaces")*font->get_char_size(' ').x;
 	return min;
 }
 
