@@ -399,6 +399,7 @@ void DependencyRemoveDialog::show(const Vector<String> &to_erase) {
 
 	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem());
 
+
 	if (exist) {
 		owners->show();
 		text->set_text(TTR("The files being removed are required by other resources in order for them to work.\nRemove them anyway? (no undo)"));
@@ -417,6 +418,10 @@ void DependencyRemoveDialog::ok_pressed() {
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	for (Map<String,TreeItem*>::Element *E=files.front();E;E=E->next()) {
 
+		if (ResourceCache::has(E->key())) {
+			Resource *res = ResourceCache::get(E->key());
+			res->set_path(""); //clear reference to path
+		}
 		da->remove(E->key());
 		EditorFileSystem::get_singleton()->update_file(E->key());
 	}
