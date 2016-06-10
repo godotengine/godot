@@ -915,6 +915,7 @@ void ScenesDock::_file_option(int p_option) {
 				if (path.ends_with("/") || !files->is_selected(i))
 					continue;
 				torem.push_back(path);
+
 			}
 
 			if (torem.empty()) {
