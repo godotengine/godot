@@ -38,6 +38,7 @@
 #include "scene/2d/sprite.h"
 #include "scene/gui/patch_9_frame.h"
 #include "scene/resources/style_box.h"
+#include "scene/resources/texture.h"
 
 class TextureRegionEditor : public HBoxContainer {
 
@@ -82,6 +83,7 @@ class TextureRegionEditor : public HBoxContainer {
 	Patch9Frame *node_patch9;
 	Sprite *node_sprite;
 	StyleBoxTexture *obj_styleBox;
+	AtlasTexture *atlas_tex;
 
 	int editing_region;
 	Rect2 rect;
