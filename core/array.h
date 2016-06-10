@@ -72,6 +72,7 @@ public:
 	void invert();
 
 	int find(const Variant& p_value, int p_from=0) const;
+	int rfind(const Variant& p_value, int p_from=-1) const;
 	int find_last(const Variant& p_value) const;
 	int count(const Variant& p_value) const;
 
