@@ -150,9 +150,9 @@ void Array::erase(const Variant& p_value) {
 	_p->array.erase(p_value);
 }
 
-int Array::find(const Variant& p_value) const {
+int Array::find(const Variant& p_value, int p_from) const {
 
-	return _p->array.find(p_value);
+	return _p->array.find(p_value, p_from);
 }
 
 int Array::find_last(const Variant& p_value) const {

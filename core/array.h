@@ -71,7 +71,7 @@ public:
 	void sort_custom(Object *p_obj,const StringName& p_function);
 	void invert();
 
-	int find(const Variant& p_value) const;
+	int find(const Variant& p_value, int p_from=0) const;
 	int find_last(const Variant& p_value) const;
 	int count(const Variant& p_value) const;
 
