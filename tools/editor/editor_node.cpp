@@ -6381,7 +6381,11 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( CanvasItemEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SpatialEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ScriptEditorPlugin(this) ) );
+#ifdef OPENSSL_ENABLED
 	add_editor_plugin( memnew( AssetLibraryEditorPlugin(this) ) );
+#else
+#warning Asset Library will not compile without SSL
+#endif
 
 	//more visually meaningful to have this later
 	raise_bottom_panel_item(AnimationPlayerEditor::singleton);

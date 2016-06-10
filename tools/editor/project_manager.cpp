@@ -986,11 +986,15 @@ ProjectManager::ProjectManager() {
 	tree_vb->add_spacer();
 
 
+#ifdef OPENSSL_ENABLED
 
 	asset_library = memnew( EditorAssetLibrary(true) );
 	asset_library->set_name("Templates");
 	tabs->add_child(asset_library);
 
+#else
+#warning Asset Library will not compile without SSL
+#endif
 
 	CenterContainer *cc = memnew( CenterContainer );
 	Button * cancel = memnew( Button );
