@@ -30,7 +30,6 @@ def get_flags():
 	return [
 	('legacygl', 'yes'),
 	('builtin_zlib', 'no'),
-	('freetype','builtin'), #use builtin freetype
 	('glew', 'yes'),
 	]
 
@@ -54,12 +53,6 @@ def configure(env):
 	elif (env["target"]=="debug"):
 
 		env.Append(CCFLAGS=['-g3', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
-
-
-	if (env["freetype"]!="no"):
-		env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
-		env.Append(CPPPATH=['#drivers/freetype'])
-		env.Append(CPPPATH=['#drivers/freetype/freetype/include'])
 
 
 

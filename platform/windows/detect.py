@@ -168,7 +168,6 @@ def get_opts():
 def get_flags():
 
 	return [
-		('freetype','builtin'), #use builtin freetype
 		('glew','yes'),
 		('openssl','builtin'), #use builtin openssl
 	]
@@ -203,10 +202,6 @@ def configure(env):
 		env.Append(CPPPATH=['#platform/windows/include'])
 		env.Append(LIBPATH=['#platform/windows/lib'])
 
-		if (env["freetype"]!="no"):
-			env.Append(CCFLAGS=['/DFREETYPE_ENABLED'])
-			env.Append(CPPPATH=['#drivers/freetype'])
-			env.Append(CPPPATH=['#drivers/freetype/freetype/include'])
 
 		if (env["target"]=="release"):
 
@@ -350,10 +345,6 @@ def configure(env):
 
 			env.Append(CCFLAGS=['-g', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
 
-		if (env["freetype"]!="no"):
-			env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
-			env.Append(CPPPATH=['#drivers/freetype'])
-			env.Append(CPPPATH=['#drivers/freetype/freetype/include'])
 
 
 		env["CC"]=mingw_prefix+"gcc"

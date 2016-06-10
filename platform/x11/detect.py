@@ -67,6 +67,8 @@ def get_flags():
 	('builtin_zlib', 'no'),
 	('glew', 'yes'),
 	("openssl", "yes"),
+	('freetype','yes'), #use system freetype
+
 	#("theora","no"),
         ]
 
@@ -141,11 +143,6 @@ def configure(env):
 		env.ParseConfig('pkg-config freetype2 --cflags --libs')
 
 
-	if (env["freetype"]!="no"):
-		env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
-		if (env["freetype"]=="builtin"):
-			env.Append(CPPPATH=['#drivers/freetype'])
-			env.Append(CPPPATH=['#drivers/freetype/freetype/include'])
 
 
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED'])
