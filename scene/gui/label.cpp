@@ -92,7 +92,9 @@ void Label::_notification(int p_what) {
 		VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(),font.is_valid() && font->is_distance_field_hint());
 
 		int font_h = font->get_height()+line_spacing;
-		int lines_visible = size.y/font_h;
+
+		int lines_visible = (size.y+line_spacing)/font_h;
+
 		int space_w=font->get_char_size(' ').width;
 		int chars_total=0;
 
