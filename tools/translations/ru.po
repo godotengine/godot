@@ -26,7 +26,7 @@ msgid ""
 "order for AnimatedSprite to display frames."
 msgstr ""
 "Чтобы AnimatedSprite отображал кадры, пожалуйста установите или создайте "
-"ресурс SpriteFrames в параметре 'Frames'"
+"ресурс SpriteFrames в параметре 'Frames'."
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
@@ -223,7 +223,7 @@ msgid ""
 "order for AnimatedSprite3D to display frames."
 msgstr ""
 "Чтобы AnimatedSprite3D отображал кадры, пожалуйста установите или создайте "
-"ресурс SpriteFrames в параметре 'Frames'"
+"ресурс SpriteFrames в параметре 'Frames'."
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Cancel"
@@ -710,7 +710,7 @@ msgstr "Включить индивидуальное редактировани
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Оптимизатор анимации."
+msgstr "Оптимизатор анимации"
 
 #: tools/editor/animation_editor.cpp
 msgid "Max. Linear Error:"
@@ -1237,7 +1237,7 @@ msgstr "Описание методов:"
 
 #: tools/editor/editor_help.cpp
 msgid "Search Text"
-msgstr "Искать текст:"
+msgstr "Искать текст"
 
 #: tools/editor/editor_import_export.cpp
 msgid "Added:"
@@ -1773,8 +1773,8 @@ msgid ""
 "Navigation meshes and polygons will be visible on the running game if this "
 "option is turned on."
 msgstr ""
-"Когда эта опция включена, навигационные полисетки и полигоны будут видимыми в "
-"запущенной игре."
+"Когда эта опция включена, навигационные полисетки и полигоны будут видимыми "
+"в запущенной игре."
 
 #: tools/editor/editor_node.cpp
 msgid "Sync Scene Changes"
@@ -2164,7 +2164,7 @@ msgid "The quick brown fox jumps over the lazy dog."
 msgstr ""
 "Съешь ещё этих мягких французских булок да выпей чаю. \n"
 "The quick brown fox jumps over the lazy dog.\n"
-"0123456789`!@#$%^&*()_+-=\\/"
+"0123456789`!@#$%^&*()_+-=\\/."
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Test:"
@@ -2774,7 +2774,7 @@ msgstr "Загрузить анимацию с диска."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save the current animation"
-msgstr "Сохранить текущую анимацию."
+msgstr "Сохранить текущую анимацию"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
@@ -2925,39 +2925,39 @@ msgstr "Дерево анимации не действительно."
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Animation Node"
-msgstr "Animation Node"
+msgstr "Animation нод"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "OneShot Node"
-msgstr "OneShot Node"
+msgstr "OneShot нод"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Mix Node"
-msgstr "Mix Node"
+msgstr "Mix нод"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend2 Node"
-msgstr "Blend2 Node"
+msgstr "Blend2 нод"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend3 Node"
-msgstr "Blend3 Node"
+msgstr "Blend3 нод"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend4 Node"
-msgstr "Blend4 Node"
+msgstr "Blend4 нод"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr "TimeScale Node"
+msgstr "TimeScale нод"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeSeek Node"
-msgstr "TimeSeek Node"
+msgstr "TimeSeek нод"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Transition Node"
-msgstr "Transition Node"
+msgstr "Transition нод"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Import Animations.."
@@ -5194,7 +5194,7 @@ msgstr "Выход"
 
 #: tools/editor/project_settings.cpp
 msgid "Key "
-msgstr "Кнопка"
+msgstr "Кнопка "
 
 #: tools/editor/project_settings.cpp
 msgid "Joy Button"
@@ -5685,9 +5685,7 @@ msgstr "Не могу работать с нодами из внешней сц�
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes the current scene inherits from!"
-msgstr ""
-"Не могу работать с нодами текущей сцены, наследуемой откуда-то!\n"
-"Очистите наследование, чтобы продолжить работу с ними."
+msgstr "Невозможно работать с нодами текущей сцены, наследуемой откуда-то!"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
@@ -6043,7 +6041,7 @@ msgstr "Дерево сцены в реальном времени:"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Remote Object Properties: "
-msgstr "Параметры объекта:"
+msgstr "Параметры объекта: "
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Profiler"
