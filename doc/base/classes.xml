@@ -4390,10 +4390,12 @@
 		<method name="find">
 			<return type="int">
 			</return>
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="what" type="var">
+			</argument>
+			<argument index="1" name="from" type="int" default="0">
 			</argument>
 			<description>
-			Searches the array for a value and returns its index or -1 if not found.
+			Searches the array for a value and returns its index or -1 if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
 		<method name="find_last">
@@ -4469,6 +4471,15 @@
 			</argument>
 			<description>
 			Resize the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are Null.
+			</description>
+		</method>
+		<method name="rfind">
+			<argument index="0" name="what" type="var">
+			</argument>
+			<argument index="1" name="from" type="int">
+			</argument>
+			<description>
+			Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
 			</description>
 		</method>
 		<method name="size">

@@ -120,7 +120,7 @@ public:
 
 
 	template <class T_val>
-	int find(const T_val& p_val) const;
+	int find(const T_val& p_val, int p_from=0) const;
 
 	void set(int p_index,T p_elem);
 	T get(int p_index) const;
@@ -238,13 +238,13 @@ void Vector<T>::_copy_on_write() {
 }
 
 template<class T> template<class T_val>
-int Vector<T>::find(const T_val &p_val) const {
+int Vector<T>::find(const T_val &p_val, int p_from) const {
 
 	int ret = -1;
-	if (size() == 0)
+	if (p_from < 0 || size() == 0)
 		return ret;
 
-	for (int i=0; i<size(); i++) {
+	for (int i=p_from; i<size(); i++) {
 
 		if (operator[](i) == p_val) {
 			ret = i;
@@ -253,7 +253,7 @@ int Vector<T>::find(const T_val &p_val) const {
 	};
 
 	return ret;
-};
+}
 
 template<class T>
 Error Vector<T>::resize(int p_size) {
