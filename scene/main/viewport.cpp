@@ -500,7 +500,7 @@ void Viewport::_notification(int p_what) {
 
 
 
-			if (physics_object_picking) {
+			if (physics_object_picking && (render_target || Input::get_singleton()->get_mouse_mode()!=Input::MOUSE_MODE_CAPTURED)) {
 
 				Vector2 last_pos(1e20,1e20);
 				CollisionObject *last_object;
