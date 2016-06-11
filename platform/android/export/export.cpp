@@ -1381,7 +1381,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 		err = OS::get_singleton()->execute(jarsigner,args,true,NULL,NULL,&retval);
 		if (retval) {
-			EditorNode::add_io_error("'jarsigner' verificaiton of APK failed. Make sure to use jarsigner from Java 6.");
+			EditorNode::add_io_error("'jarsigner' verification of APK failed. Make sure to use jarsigner from Java 6.");
 			return ERR_CANT_CREATE;
 		}
 
