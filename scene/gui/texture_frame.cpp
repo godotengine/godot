@@ -60,6 +60,29 @@ void TextureFrame::_notification(int p_what) {
 				Vector2 ofs = (get_size() - texture->get_size())/2;
 				draw_texture_rect(texture,Rect2(ofs,texture->get_size()),false,modulate);
 			} break;
+			case STRETCH_KEEP_ASPECT_CENTERED:
+			case STRETCH_KEEP_ASPECT: {
+
+				Size2 size=get_size();
+				int tex_width = texture->get_width() * size.height / texture ->get_height();
+				int tex_height = size.height;
+
+				if (tex_width>size.width) {
+					tex_width=size.width;
+					tex_height=texture->get_height() * tex_width / texture->get_width();
+				}
+
+				int ofs_x = 0;
+				int ofs_y = 0;
+
+				if (stretch_mode==STRETCH_KEEP_ASPECT_CENTERED) {
+					ofs_x+=(size.width - tex_width)/2;
+					ofs_y+=(size.height - tex_height)/2;
+				}
+
+				draw_texture_rect(texture,Rect2(ofs_x,ofs_y,tex_width,tex_height));
+			} break;
+
 		}
 
 
@@ -104,13 +127,16 @@ void TextureFrame::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), _SCS("set_texture"),_SCS("get_texture") );
 	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate") );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
-	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "stretch_mode",PROPERTY_HINT_ENUM,"Scale On Expand (Compat),Scale,Tile,Keep,Keep Centered"), _SCS("set_stretch_mode"),_SCS("get_stretch_mode") );
+	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "stretch_mode",PROPERTY_HINT_ENUM,"Scale On Expand (Compat),Scale,Tile,Keep,Keep Centered,Scale Keep Aspect,Scale Keep Aspect Centered"), _SCS("set_stretch_mode"),_SCS("get_stretch_mode") );
 
 	BIND_CONSTANT( STRETCH_SCALE_ON_EXPAND );
 	BIND_CONSTANT( STRETCH_SCALE );
 	BIND_CONSTANT( STRETCH_TILE );
 	BIND_CONSTANT( STRETCH_KEEP );
 	BIND_CONSTANT( STRETCH_KEEP_CENTERED );
+	BIND_CONSTANT( STRETCH_KEEP_ASPECT );
+	BIND_CONSTANT( STRETCH_KEEP_ASPECT_CENTERED );
+
 }
 
 
