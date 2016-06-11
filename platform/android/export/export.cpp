@@ -231,6 +231,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	void _fix_manifest(Vector<uint8_t>& p_manifest, bool p_give_internet);
 	void _fix_resources(Vector<uint8_t>& p_manifest);
 	static Error save_apk_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total);
+	static bool _should_compress_asset(const String& p_path);
 
 protected:
 
@@ -1001,7 +1002,7 @@ Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata,const String& 
 		NULL,
 		0,
 		NULL,
-		Z_DEFLATED,
+		_should_compress_asset(p_path) ? Z_DEFLATED : 0,
 		Z_DEFAULT_COMPRESSION);
 
 
@@ -1010,6 +1011,56 @@ Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata,const String& 
 	ed->ep->step("File: "+p_path,3+p_file*100/p_total);
 	return OK;
 
+}
+
+bool EditorExportPlatformAndroid::_should_compress_asset(const String& p_path) {
+
+	/*
+	 *  By not compressing files with little or not benefit in doing so,
+	 *  a performance gain is expected at runtime. Moreover, if the APK is
+	 *  zip-aligned, assets stored as they are can be efficiently read by
+	 *  Android by memory-mapping them.
+	 */
+
+	// -- Unconditional uncompress to mimic AAPT plus some other
+
+	static const char* unconditional_compress_ext[] = {
+		// From https://github.com/android/platform_frameworks_base/blob/master/tools/aapt/Package.cpp
+		// These formats are already compressed, or don't compress well:
+		".jpg", ".jpeg", ".png", ".gif",
+		".wav", ".mp2", ".mp3", ".ogg", ".aac",
+		".mpg", ".mpeg", ".mid", ".midi", ".smf", ".jet",
+		".rtttl", ".imy", ".xmf", ".mp4", ".m4a",
+		".m4v", ".3gp", ".3gpp", ".3g2", ".3gpp2",
+		".amr", ".awb", ".wma", ".wmv",
+		// Godot-specific:
+		".webp", // Same reasoning as .png
+		".cfb", // Don't let small config files slow-down startup
+		// Trailer for easier processing
+		NULL
+	};
+
+	for (const char** ext=unconditional_compress_ext; *ext; ++ext) {
+		if (p_path.to_lower().ends_with(String(*ext))) {
+			return false;
+		}
+	}
+
+	// -- Compressed resource?
+
+	FileAccess *f=FileAccess::open(p_path,FileAccess::READ);
+	ERR_FAIL_COND_V(!f,true);
+
+	uint8_t header[4];
+	f->get_buffer(header,4);
+	if (header[0]=='R' && header[1]=='S' && header[2]=='C' && header[3]=='C') {
+		// Already compressed
+		return false;
+	}
+
+	// --- TODO: Decide on texture resources according to their image compression setting
+
+	return true;
 }
 
 
@@ -1137,6 +1188,10 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		print_line("ADDING: "+file);
 
 		if (!skip) {
+
+			// Respect decision on compression made by AAPT for the export template
+			const bool uncompressed = info.compression_method == 0;
+
 			zipOpenNewFileInZip(apk,
 				file.utf8().get_data(),
 				NULL,
@@ -1145,7 +1200,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 				NULL,
 				0,
 				NULL,
-				Z_DEFLATED,
+				uncompressed ? 0 : Z_DEFLATED,
 				Z_DEFAULT_COMPRESSION);
 
 			zipWriteInFileInZip(apk,data.ptr(),data.size());
@@ -1243,7 +1298,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 			NULL,
 			0,
 			NULL,
-			Z_DEFLATED,
+			0, // No compress (little size gain and potentially slower startup)
 			Z_DEFAULT_COMPRESSION);
 
 		zipWriteInFileInZip(apk,clf.ptr(),clf.size());
