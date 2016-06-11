@@ -374,6 +374,8 @@ if (m_height > line_height) {\
 								int cw=0;
 
 								bool visible = visible_characters<0 || p_char_count<visible_characters;
+								if (c[i]=='\t')
+									visible=false;
 
 								if (selected) {
 
