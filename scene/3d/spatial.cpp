@@ -718,7 +718,7 @@ void Spatial::look_at(const Vector3& p_target, const Vector3& p_up_normal) {
 	}
 
 	if (p_up_normal.cross(p_target-lookat.origin)==Vector3()) {
-		ERR_EXPLAIN("Up vector and direction between node origin and target align, look_at() failed");
+		ERR_EXPLAIN("Up vector and direction between node origin and target are aligned, look_at() failed");
 		ERR_FAIL();
 	}
 	lookat=lookat.looking_at(p_target,p_up_normal);
