@@ -730,7 +730,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 
 			//find list [ or find dictionary {
 
-			print_line("found bug?");
+			//print_line("found bug?");
 
 			_set_error("Error parsing expression, misplaced: "+String(tokenizer->get_token_name(tokenizer->get_token())));
 			return NULL;		//nothing
