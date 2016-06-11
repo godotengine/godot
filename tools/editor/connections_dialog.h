@@ -111,6 +111,7 @@ class ConnectionsDock : public VBoxContainer {
 	void _close();
 	void _connect();
 	void _something_selected();
+	void _something_activated();
 	UndoRedo *undo_redo;
 
 protected:

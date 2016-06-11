@@ -325,6 +325,8 @@ public:
 
 	void set_scene_root_script( Ref<Script> p_script );
 
+	bool script_go_to_method(Ref<Script> p_script, const String& p_method);
+
 	virtual void edited_scene_changed();
 
 	ScriptEditorDebugger *get_debugger() { return debugger; }

@@ -2495,6 +2495,51 @@ void ScriptEditor::set_scene_root_script( Ref<Script> p_script ) {
 	}
 }
 
+bool ScriptEditor::script_go_to_method(Ref<Script> p_script, const String& p_method) {
+
+	Vector<String> functions;
+	bool found=false;
+
+	for (int i=0;i<tab_container->get_child_count();i++) {
+		ScriptTextEditor *current = tab_container->get_child(i)->cast_to<ScriptTextEditor>();
+
+		if (current && current->get_edited_script()==p_script) {
+			functions=current->get_functions();
+			found=true;
+			break;
+		}
+	}
+
+	if (!found) {
+		String errortxt;
+		int line=-1,col;
+		String text=p_script->get_source_code();
+		List<String> fnc;
+
+		if (p_script->get_language()->validate(text,line,col,errortxt,p_script->get_path(),&fnc)) {
+
+			for (List<String>::Element *E=fnc.front();E;E=E->next())
+				functions.push_back(E->get());
+		}
+	}
+
+	String method_search = p_method + ":";
+
+	for (int i=0;i<functions.size();i++) {
+		String function=functions[i];
+
+		if (function.begins_with(method_search)) {
+
+			edit(p_script);
+			int line=function.get_slice(":",1).to_int();
+			_goto_script_line2(line-1);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void ScriptEditor::set_live_auto_reload_running_scripts(bool p_enabled) {
 
 	auto_reload_running_scripts=p_enabled;
