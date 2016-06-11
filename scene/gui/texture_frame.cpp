@@ -127,7 +127,7 @@ void TextureFrame::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), _SCS("set_texture"),_SCS("get_texture") );
 	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate") );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
-	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "stretch_mode",PROPERTY_HINT_ENUM,"Scale On Expand (Compat),Scale,Tile,Keep,Keep Centered,Scale Keep Aspect,Scale Keep Aspect Centered"), _SCS("set_stretch_mode"),_SCS("get_stretch_mode") );
+	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "stretch_mode",PROPERTY_HINT_ENUM,"Scale On Expand (Compat),Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered"), _SCS("set_stretch_mode"),_SCS("get_stretch_mode") );
 
 	BIND_CONSTANT( STRETCH_SCALE_ON_EXPAND );
 	BIND_CONSTANT( STRETCH_SCALE );

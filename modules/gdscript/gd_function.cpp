@@ -727,7 +727,12 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 
 					String methodstr = GDFunctions::get_func_name(func);
-					err_text=_get_call_error(err,"built-in function '"+methodstr+"'",(const Variant**)argptrs);
+					if (dst->get_type()==Variant::STRING) {
+						//call provided error string
+						err_text="Error calling built-in function '"+methodstr+"': "+String(*dst);
+					} else {
+						err_text=_get_call_error(err,"built-in function '"+methodstr+"'",(const Variant**)argptrs);
+					}
 					break;
 				}
 				ip+=argc+1;
