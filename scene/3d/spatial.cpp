@@ -712,6 +712,15 @@ void Spatial::look_at(const Vector3& p_target, const Vector3& p_up_normal) {
 
 	Transform lookat;
 	lookat.origin=get_global_transform().origin;
+	if (lookat.origin==p_target) {
+		ERR_EXPLAIN("Node origin and target are in the same position, look_at() failed");
+		ERR_FAIL();
+	}
+
+	if (p_up_normal.cross(p_target-lookat.origin)==Vector3()) {
+		ERR_EXPLAIN("Up vector and direction between node origin and target align, look_at() failed");
+		ERR_FAIL();
+	}
 	lookat=lookat.looking_at(p_target,p_up_normal);
 	set_global_transform(lookat);
 }
