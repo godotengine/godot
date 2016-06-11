@@ -3089,6 +3089,7 @@ void EditorNode::set_addon_plugin_enabled(const String& p_addon,bool p_enabled) 
 	if (!p_enabled) {
 
 		EditorPlugin *addon = plugin_addons[p_addon];
+		editor_data.remove_editor_plugin( addon );
 		memdelete(addon); //bye
 		plugin_addons.erase(p_addon);
 		_update_addon_config();
