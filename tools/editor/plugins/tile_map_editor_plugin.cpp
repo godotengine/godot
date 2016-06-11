@@ -893,45 +893,38 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 			if (tool!=TOOL_NONE || !mouse_over)
 				return false;
 
-			if (k.scancode==KEY_DELETE) {
-
+			if (ED_IS_SHORTCUT("tile_map_editor/erase_selection", p_event)) {
 				_menu_option(OPTION_ERASE_SELECTION);
 
 				return true;
 			}
+			if (ED_IS_SHORTCUT("tile_map_editor/select", p_event)) {
+				tool=TOOL_SELECTING;
+				selection_active=false;
 
-			if (k.mod.command) {
+				canvas_item_editor->update();
 
-				if (k.scancode==KEY_F) {
+				return true;
+			}
+			if (ED_IS_SHORTCUT("tile_map_editor/duplicate_selection", p_event)) {
+				_update_copydata();
 
-					search_box->select_all();
-					search_box->grab_focus();
-
-					return true;
-				}
-				if (k.scancode==KEY_B) {
-
-					tool=TOOL_SELECTING;
-					selection_active=false;
+				if (selection_active) {
+					tool=TOOL_DUPLICATING;
 
 					canvas_item_editor->update();
 
 					return true;
 				}
-				if (k.scancode==KEY_D) {
+			}
+			if (ED_IS_SHORTCUT("tile_map_editor/find_tile", p_event)) {
+				search_box->select_all();
+				search_box->grab_focus();
 
-					_update_copydata();
+				return true;
+			}
 
-					if (selection_active) {
-						tool=TOOL_DUPLICATING;
-
-						canvas_item_editor->update();
-
-						return true;
-					}
-				}
-			} else {
-
+			if (!k.mod.command) {
 				if (k.scancode==KEY_A) {
 
 					flip_h=!flip_h;
@@ -1308,6 +1301,9 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	flip_v=false;
 	transpose=false;
 
+	ED_SHORTCUT("tile_map_editor/erase_selection", TTR("Erase selection"), KEY_DELETE);
+	ED_SHORTCUT("tile_map_editor/find_tile", TTR("Find tile"), KEY_MASK_CMD+KEY_F);
+
 	search_box = memnew( LineEdit );
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_box->connect("text_entered", this, "_text_entered");
@@ -1349,8 +1345,8 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_item(TTR("Pick Tile"), OPTION_PICK_TILE, KEY_CONTROL);
 	p->add_separator();
-	p->add_item(TTR("Select"), OPTION_SELECT, KEY_MASK_CMD+KEY_B);
-	p->add_item(TTR("Duplicate Selection"), OPTION_DUPLICATE, KEY_MASK_CMD+KEY_D);
+	p->add_shortcut(ED_SHORTCUT("tile_map_editor/select", TTR("Select"), KEY_MASK_CMD+KEY_B), OPTION_SELECT);
+	p->add_shortcut(ED_SHORTCUT("tile_map_editor/duplicate_selection", TTR("Duplicate Selection"), KEY_MASK_CMD+KEY_D), OPTION_DUPLICATE);
 	p->add_item(TTR("Erase Selection"), OPTION_ERASE_SELECTION, KEY_DELETE);
 
 	p->connect("item_pressed", this, "_menu_option");
