@@ -351,7 +351,7 @@ void SplitContainer::_input_event(const InputEvent& p_event) {
 
 }
 
-Control::CursorShape SplitContainer::get_cursor_shape(const Point2& p_pos) {
+Control::CursorShape SplitContainer::get_cursor_shape(const Point2& p_pos) const {
 
 	if (collapsed)
 		return Control::get_cursor_shape(p_pos);

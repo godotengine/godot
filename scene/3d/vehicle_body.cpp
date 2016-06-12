@@ -990,7 +990,7 @@ float VehicleBody::get_steering() const{
 	return m_steeringValue;
 }
 
-Vector3 VehicleBody::get_linear_velocity()
+Vector3 VehicleBody::get_linear_velocity() const
 {
 	return linear_velocity;
 }
