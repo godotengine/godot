@@ -1186,7 +1186,8 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 
 						Ref<Texture> updown = cache.updown;
 
-						String valtext = String::num( p_item->cells[i].val, Math::decimals( p_item->cells[i].step ) );
+						//String valtext = String::num( p_item->cells[i].val, Math::decimals( p_item->cells[i].step ) );
+						String valtext = rtos( p_item->cells[i].val );
 						font->draw( ci, text_pos, valtext, col, item_rect.size.x-updown->get_width());
 
 						if (!p_item->cells[i].editable)
