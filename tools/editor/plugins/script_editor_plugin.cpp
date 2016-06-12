@@ -2147,9 +2147,12 @@ void ScriptEditor::save_all_scripts() {
 			continue;
 
 		Ref<Script> script = ste->get_edited_script();
+		if (script.is_valid())
+			ste->apply_code();
+
 		if (script->get_path()!="" && script->get_path().find("local://")==-1 &&script->get_path().find("::")==-1) {
 			//external script, save it
-			ste->apply_code();
+
 			editor->save_resource(script);
 			//ResourceSaver::save(script->get_path(),script);
 		}
