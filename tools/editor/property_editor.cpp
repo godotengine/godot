@@ -1963,6 +1963,13 @@ bool PropertyEditor::_is_property_different(const Variant& p_current, const Vari
 			return false;
 	}
 
+	if (p_current.get_type()==Variant::REAL && p_orig.get_type()==Variant::REAL) {
+		float a = p_current;
+		float b = p_orig;
+
+		return Math::abs(a-b)>CMP_EPSILON; //this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
+	}
+
 	return bool(Variant::evaluate(Variant::OP_NOT_EQUAL,p_current,p_orig));
 }
 
@@ -2231,6 +2238,7 @@ void PropertyEditor::_check_reload_status(const String&p_name, TreeItem* item) {
 
 		if (_get_instanced_node_original_property(p_name,vorig) || usage) {
 			Variant v = obj->get(p_name);
+
 
 			bool changed = _is_property_different(v,vorig,usage);
 

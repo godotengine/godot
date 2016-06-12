@@ -545,9 +545,19 @@ https://github.com/godotengine/godot/issues/3127
 			}
 
 #endif
-			if (exists && bool(Variant::evaluate(Variant::OP_EQUAL,value,original))) {
-				//exists and did not change
-				continue;
+			if (exists) {
+
+				//check if already exists and did not change
+				if (value.get_type()==Variant::REAL && original.get_type()==Variant::REAL) {
+					//this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
+					float a = value;
+					float b = original;
+
+					if (Math::abs(a-b)<CMP_EPSILON)
+						continue;
+				} else if (bool(Variant::evaluate(Variant::OP_EQUAL,value,original))) {
+					continue;
+				}
 			}
 
 			if (!exists && isdefault) {
