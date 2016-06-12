@@ -208,8 +208,13 @@ void TileMapEditor::_update_palette() {
 
 	palette->set_max_columns(0);
 	palette->add_constant_override("hseparation", 6);
+
+	float min_size = EDITOR_DEF("tile_map/preview_size",64);
+	palette->set_fixed_icon_size(Size2(min_size, min_size));
+	palette->set_fixed_column_width(min_size*3/2);
 	palette->set_icon_mode(ItemList::ICON_MODE_TOP);
 	palette->set_max_text_lines(2);
+
 
 	String filter = search_box->get_text().strip_edges();
 
@@ -1434,6 +1439,7 @@ void TileMapEditorPlugin::make_visible(bool p_visible) {
 
 TileMapEditorPlugin::TileMapEditorPlugin(EditorNode *p_node) {
 
+	EDITOR_DEF("tile_map/preview_size",64);
 	tile_map_editor = memnew( TileMapEditor(p_node) );
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_SIDE, tile_map_editor);
 	tile_map_editor->hide();

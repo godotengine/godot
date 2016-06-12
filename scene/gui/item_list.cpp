@@ -729,7 +729,7 @@ static Rect2 _adjust_to_max_size(Size2 p_size, Size2 p_max_size) {
 
 	if (tex_width>size.width) {
 		tex_width=size.width;
-		tex_height=p_size.height * tex_width / p_size.height;
+		tex_height=p_size.height * tex_width / p_size.width;
 	}
 
 	int ofs_x=(size.width - tex_width)/2;
