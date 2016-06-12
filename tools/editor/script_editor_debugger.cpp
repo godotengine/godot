@@ -1731,15 +1731,17 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 		docontinue->set_tooltip(TTR("Continue"));
 		docontinue->connect("pressed",this,"debug_continue");
 
-		hbc->add_child( memnew( VSeparator) );
+		//hbc->add_child( memnew( VSeparator) );
 
 		back = memnew( Button );
 		hbc->add_child(back);
 		back->set_tooltip(TTR("Inspect Previous Instance"));
+		back->hide();
 
 		forward = memnew( Button );
 		hbc->add_child(forward);
 		forward->set_tooltip(TTR("Inspect Next Instance"));
+		forward->hide();
 
 
 		HSplitContainer *sc = memnew( HSplitContainer );
