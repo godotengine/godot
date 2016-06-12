@@ -290,7 +290,7 @@ void SamplePlayer::stop_all() {
 
 #define _GET_VOICE\
 	uint32_t voice=p_voice&0xFFFF;\
-	ERR_FAIL_COND(voice > (uint32_t)voices.size());\
+	ERR_FAIL_COND(voice >= (uint32_t)voices.size());\
 	Voice &v=voices[voice];\
 	if (v.check!=uint32_t(p_voice>>16))\
 		return;\
@@ -381,7 +381,7 @@ void SamplePlayer::set_reverb(VoiceID p_voice,ReverbRoomType p_room,float p_send
 
 #define _GET_VOICE_V(m_ret)\
 	uint32_t voice=p_voice&0xFFFF;\
-	ERR_FAIL_COND_V(voice > (uint32_t)voices.size(),m_ret);\
+	ERR_FAIL_COND_V(voice >= (uint32_t)voices.size(),m_ret);\
 	const Voice &v=voices[voice];\
 	if (v.check!=(p_voice>>16))\
 		return m_ret;\
