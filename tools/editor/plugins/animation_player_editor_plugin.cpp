@@ -1350,19 +1350,23 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 
 	add_anim = memnew( ToolButton );
+	ED_SHORTCUT("animation_player_editor/add_animation", TTR("Create new animation in player."));
+	add_anim->set_shortcut(ED_GET_SHORTCUT("animation_player_editor/add_animation"));
 	add_anim->set_tooltip(TTR("Create new animation in player."));
 
 	hb->add_child(add_anim);
 
 
 	load_anim = memnew( ToolButton );
+	ED_SHORTCUT("animation_player_editor/load_from_disk", TTR("Load animation from disk."));
+	add_anim->set_shortcut(ED_GET_SHORTCUT("animation_player_editor/load_from_disk"));
 	load_anim->set_tooltip(TTR("Load an animation from disk."));
 	hb->add_child(load_anim);
 
 	save_anim = memnew(MenuButton);
 	save_anim->set_tooltip(TTR("Save the current animation"));
-	save_anim->get_popup()->add_item(TTR("Save"), ANIM_SAVE);
-	save_anim->get_popup()->add_item(TTR("Save As.."), ANIM_SAVE_AS);
+	save_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/save", TTR("Save")), ANIM_SAVE);
+	save_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/save_as", TTR("Save As")), ANIM_SAVE_AS);
 	save_anim->set_focus_mode(Control::FOCUS_NONE);
 	hb->add_child(save_anim);
 
@@ -1372,15 +1376,21 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 	duplicate_anim = memnew( ToolButton );
 	hb->add_child(duplicate_anim);
+	ED_SHORTCUT("animation_player_editor/duplicate_animation", TTR("Duplicate Animation"));
+	duplicate_anim->set_shortcut(ED_GET_SHORTCUT("animation_player_editor/duplicate_animation"));
 	duplicate_anim->set_tooltip(TTR("Duplicate Animation"));
 
 	rename_anim = memnew( ToolButton );
 	hb->add_child(rename_anim);
+	ED_SHORTCUT("animation_player_editor/rename_animation", TTR("Rename Animation"));
+	rename_anim->set_shortcut(ED_GET_SHORTCUT("animation_player_editor/rename_animation"));
 	rename_anim->set_tooltip(TTR("Rename Animation"));
 
 	remove_anim = memnew( ToolButton );
 
 	hb->add_child(remove_anim);
+	ED_SHORTCUT("animation_player_editor/remove_animation", TTR("Remove Animation"));
+	remove_anim->set_shortcut(ED_GET_SHORTCUT("animation_player_editor/remove_animation"));
 	remove_anim->set_tooltip(TTR("Remove Animation"));
 
 
@@ -1402,8 +1412,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	tool_anim = memnew( MenuButton);
 	//tool_anim->set_flat(false);
 	tool_anim->set_tooltip(TTR("Animation Tools"));
-	tool_anim->get_popup()->add_item(TTR("Copy Animation"),TOOL_COPY_ANIM);
-	tool_anim->get_popup()->add_item(TTR("Paste Animation"),TOOL_PASTE_ANIM);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/copy_animation", TTR("Copy Animation")),TOOL_COPY_ANIM);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation", TTR("Paste Animation")),TOOL_PASTE_ANIM);
 	//tool_anim->get_popup()->add_separator();
 	//tool_anim->get_popup()->add_item("Edit Anim Resource",TOOL_PASTE_ANIM);
 	hb->add_child(tool_anim);
@@ -1487,8 +1497,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	animation->connect("item_selected", this,"_animation_selected",Vector<Variant>(),true);
 	resource_edit_anim->connect("pressed", this,"_animation_resource_edit");
 	file->connect("file_selected", this,"_dialog_action");
-	 frame->connect("value_changed", this, "_seek_value_changed",Vector<Variant>(),true);
-	 scale->connect("text_entered", this, "_scale_changed",Vector<Variant>(),true);
+	frame->connect("value_changed", this, "_seek_value_changed",Vector<Variant>(),true);
+	scale->connect("text_entered", this, "_scale_changed",Vector<Variant>(),true);
 
 
 
