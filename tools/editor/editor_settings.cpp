@@ -166,7 +166,7 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 			pinfo|=PROPERTY_USAGE_STORAGE;
 		}
 
-		if (!E->get().name.begins_with("_")) {
+		if (!E->get().name.begins_with("_") && !E->get().name.begins_with("projects/")) {
 			pinfo|=PROPERTY_USAGE_EDITOR;
 		} else {
 			pinfo|=PROPERTY_USAGE_STORAGE; //hiddens must always be saved
