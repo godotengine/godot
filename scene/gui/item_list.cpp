@@ -384,27 +384,16 @@ ItemList::IconMode ItemList::get_icon_mode() const{
 	return icon_mode;
 }
 
-void ItemList::set_min_icon_size(const Size2& p_size) {
 
-	min_icon_size=p_size;
+void ItemList::set_fixed_icon_size(const Size2& p_size) {
+
+	fixed_icon_size=p_size;
 	update();
 }
 
-Size2 ItemList::get_min_icon_size() const {
+Size2 ItemList::get_fixed_icon_size() const {
 
-	return min_icon_size;
-}
-
-
-void ItemList::set_max_icon_size(const Size2& p_size) {
-
-	max_icon_size=p_size;
-	update();
-}
-
-Size2 ItemList::get_max_icon_size() const {
-
-	return max_icon_size;
+	return fixed_icon_size;
 }
 Size2 ItemList::Item::get_icon_size() const {
 
@@ -732,51 +721,21 @@ void ItemList::ensure_current_is_visible() {
 	update();
 }
 
-static Size2 _adjust_to_max_size(Size2 p_size, Size2 p_max_size) {
+static Rect2 _adjust_to_max_size(Size2 p_size, Size2 p_max_size) {
 
-	if (p_max_size.x<=0)
-		p_max_size.x=1e20;
-	if (p_max_size.y<=0)
-		p_max_size.y=1e20;
+	Size2 size=p_max_size;
+	int tex_width = p_size.width * size.height / p_size.height;
+	int tex_height = size.height;
 
-
-	Size2 new_size;
-
-	if (p_size.x > p_max_size.x) {
-
-		new_size.width=p_max_size.x;
-		new_size.height=p_size.height * p_max_size.width / p_size.width;
-
-		if (new_size.height > p_max_size.height) {
-			new_size=Size2(); //invalid
-		}
+	if (tex_width>size.width) {
+		tex_width=size.width;
+		tex_height=p_size.height * tex_width / p_size.height;
 	}
 
+	int ofs_x=(size.width - tex_width)/2;
+	int ofs_y=(size.height - tex_height)/2;
 
-	if (p_size.y > p_max_size.y) {
-
-		Size2 new_size2;
-		new_size2.height=p_max_size.y;
-		new_size2.width=p_size.width * p_max_size.height / p_size.height;
-
-		if (new_size2.width < p_max_size.width) {
-
-			if (new_size!=Size2()) {
-
-				if (new_size2.x*new_size2.y > new_size.x*new_size.y) {
-					new_size=new_size2;
-				}
-			} else {
-				new_size=new_size2;
-			}
-		}
-
-	}
-
-	if (new_size==Size2())
-		return p_size;
-	else
-		return new_size;
+	return Rect2(ofs_x,ofs_y,tex_width,tex_height);
 
 
 }
@@ -845,7 +804,11 @@ void ItemList::_notification(int p_what) {
 				Size2 minsize;
 				if (items[i].icon.is_valid()) {
 
-					minsize=_adjust_to_max_size(items[i].get_icon_size(),max_icon_size) * icon_scale;
+					if (fixed_icon_size.x>0 && fixed_icon_size.y>0) {
+						minsize=fixed_icon_size* icon_scale;
+					} else {
+						minsize=items[i].get_icon_size() *icon_scale;
+					}
 
 					if (items[i].text!="") {
 						if (icon_mode==ICON_MODE_TOP) {
@@ -1001,12 +964,17 @@ void ItemList::_notification(int p_what) {
 			Vector2 text_ofs;
 			if (items[i].icon.is_valid()) {
 
-				Size2 icon_size = _adjust_to_max_size(items[i].get_icon_size(),max_icon_size) * icon_scale;
+				Size2 icon_size;
+				//= _adjust_to_max_size(items[i].get_icon_size(),fixed_icon_size) * icon_scale;
+
+				if (fixed_icon_size.x>0 && fixed_icon_size.y>0) {
+					icon_size=fixed_icon_size* icon_scale;
+				} else {
+					icon_size=items[i].get_icon_size() *icon_scale;
+
+				}
 
 				Vector2 icon_ofs;
-				if (min_icon_size!=Vector2()) {
-					icon_ofs = (min_icon_size - icon_size)/2;
-				}
 
 				Point2 pos = items[i].rect_cache.pos + icon_ofs + base_ofs;
 
@@ -1017,18 +985,26 @@ void ItemList::_notification(int p_what) {
 						Math::floor((items[i].rect_cache.size.height - icon_size.height)/2),
 						items[i].rect_cache.size.height - items[i].min_rect_cache.size.height
 					);
-					text_ofs.y = MAX(icon_size.height, min_icon_size.y) + icon_margin;
+					text_ofs.y = icon_size.height + icon_margin;
 					text_ofs.y += items[i].rect_cache.size.height - items[i].min_rect_cache.size.height;
 				} else {
 
 					pos.y += Math::floor((items[i].rect_cache.size.height - icon_size.height)/2);
-					text_ofs.x = MAX(icon_size.width, min_icon_size.x) + icon_margin;
+					text_ofs.x = icon_size.width + icon_margin;
+				}
+
+				Rect2 draw_rect=Rect2(pos,icon_size);
+
+				if (fixed_icon_size.x>0 && fixed_icon_size.y>0) {
+					Rect2 adj = _adjust_to_max_size(items[i].get_icon_size() * icon_scale,icon_size);
+					draw_rect.pos+=adj.pos;
+					draw_rect.size=adj.size;
 				}
 
 				if (items[i].icon_region.has_no_area())
-					draw_texture_rect(items[i].icon, Rect2(pos,icon_size) );
+					draw_texture_rect(items[i].icon, draw_rect );
 				else
-					draw_texture_rect_region(items[i].icon, Rect2(pos, icon_size), items[i].icon_region);
+					draw_texture_rect_region(items[i].icon, draw_rect, items[i].icon_region);
 
 			}
 
@@ -1298,11 +1274,9 @@ void ItemList::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("set_icon_mode","mode"),&ItemList::set_icon_mode);
 	ObjectTypeDB::bind_method(_MD("get_icon_mode"),&ItemList::get_icon_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_min_icon_size","size"),&ItemList::set_min_icon_size);
-	ObjectTypeDB::bind_method(_MD("get_min_icon_size"),&ItemList::get_min_icon_size);
 
-	ObjectTypeDB::bind_method(_MD("set_max_icon_size","size"),&ItemList::set_max_icon_size);
-	ObjectTypeDB::bind_method(_MD("get_max_icon_size"),&ItemList::get_max_icon_size);
+	ObjectTypeDB::bind_method(_MD("set_fixed_icon_size","size"),&ItemList::set_fixed_icon_size);
+	ObjectTypeDB::bind_method(_MD("get_fixed_icon_size"),&ItemList::get_fixed_icon_size);
 
 	ObjectTypeDB::bind_method(_MD("set_icon_scale","scale"),&ItemList::set_icon_scale);
 	ObjectTypeDB::bind_method(_MD("get_icon_scale"),&ItemList::get_icon_scale);

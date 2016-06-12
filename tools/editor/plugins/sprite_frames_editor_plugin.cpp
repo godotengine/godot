@@ -825,7 +825,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	tree->set_icon_mode(ItemList::ICON_MODE_TOP);
 	tree->set_fixed_column_width(thumbnail_size*3/2);
 	tree->set_max_text_lines(2);
-	tree->set_max_icon_size(Size2(thumbnail_size,thumbnail_size));
+	tree->set_fixed_icon_size(Size2(thumbnail_size,thumbnail_size));
 	//tree->set_min_icon_size(Size2(thumbnail_size,thumbnail_size));
 	tree->set_drag_forwarding(this);
 

@@ -454,8 +454,7 @@ void ScenesDock::_update_files(bool p_keep_selection) {
 		files->set_icon_mode(ItemList::ICON_MODE_TOP);
 		files->set_fixed_column_width(thumbnail_size*3/2);
 		files->set_max_text_lines(2);
-		files->set_min_icon_size(Size2(thumbnail_size,thumbnail_size));
-		files->set_max_icon_size(Size2(thumbnail_size,thumbnail_size));
+		files->set_fixed_icon_size(Size2(thumbnail_size,thumbnail_size));
 
 		if (!has_icon("ResizedFolder","EditorIcons")) {
 			Ref<ImageTexture> folder = get_icon("FolderBig","EditorIcons");
@@ -485,7 +484,7 @@ void ScenesDock::_update_files(bool p_keep_selection) {
 		files->set_max_columns(1);
 		files->set_max_text_lines(1);
 		files->set_fixed_column_width(0);
-		files->set_min_icon_size(Size2());
+		files->set_fixed_icon_size(Size2());
 
 	}
 

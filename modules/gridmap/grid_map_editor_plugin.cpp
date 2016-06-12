@@ -741,7 +741,7 @@ void GridMapEditor::update_pallete()  {
 	}
 
 	float min_size = EDITOR_DEF("grid_map/preview_size",64);
-	theme_pallete->set_min_icon_size(Size2(min_size, min_size));
+	theme_pallete->set_fixed_icon_size(Size2(min_size, min_size));
 	theme_pallete->set_fixed_column_width(min_size*3/2);
 	theme_pallete->set_max_text_lines(2);
 
