@@ -2804,7 +2804,7 @@ void PropertyEditor::update_tree() {
 			if (capitalize_paths)
 				cat = cat.capitalize();
 
-			if (cat.findn(filter)==-1 && name.findn(filter)==-1)
+			if (!filter.is_subsequence_ofi(cat) && !filter.is_subsequence_ofi(name))
 				continue;
 		}
 
