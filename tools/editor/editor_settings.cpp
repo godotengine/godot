@@ -86,6 +86,10 @@ bool EditorSettings::_set(const StringName& p_name, const Variant& p_value) {
 			props[p_name].variant=p_value;
 		else
 			props[p_name]=VariantContainer(p_value,last_order++);
+
+		if (save_changed_setting) {
+			props[p_name].save=true;
+		}
 	}
 
 	emit_signal("settings_changed");
@@ -126,6 +130,7 @@ struct _EVCSort {
 	String name;
 	Variant::Type type;
 	int order;
+	bool save;
 
 	bool operator<(const _EVCSort& p_vcs) const{ return order< p_vcs.order; }
 };
@@ -148,15 +153,24 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		vc.name=*k;
 		vc.order=v->order;
 		vc.type=v->variant.get_type();
+		vc.save=v->save;
+
 
 		vclist.insert(vc);
 	}
 
 	for(Set<_EVCSort>::Element *E=vclist.front();E;E=E->next()) {
 
-		int pinfo = PROPERTY_USAGE_STORAGE;
-		if (!E->get().name.begins_with("_"))
+		int pinfo = 0;
+		if (E->get().save) {
+			pinfo|=PROPERTY_USAGE_STORAGE;
+		}
+
+		if (!E->get().name.begins_with("_")) {
 			pinfo|=PROPERTY_USAGE_EDITOR;
+		} else {
+			pinfo|=PROPERTY_USAGE_STORAGE; //hiddens must always be saved
+		}
 
 		PropertyInfo pi(E->get().type, E->get().name);
 		pi.usage=pinfo;
@@ -330,6 +344,7 @@ void EditorSettings::create() {
 			goto fail;
 		}
 
+		singleton->save_changed_setting=true;
 		singleton->config_file_path=config_file_path;
 		singleton->project_config_path=pcp;
 		singleton->settings_path=config_path+"/"+config_dir;
@@ -363,6 +378,7 @@ void EditorSettings::create() {
 	};
 
 	singleton = Ref<EditorSettings>( memnew( EditorSettings ) );
+	singleton->save_changed_setting=true;
 	singleton->config_file_path=config_file_path;
 	singleton->settings_path=config_path+"/"+config_dir;
 	singleton->_load_defaults(extra_config);	
@@ -975,6 +991,7 @@ EditorSettings::EditorSettings() {
 
 	//singleton=this;
 	last_order=0;
+	save_changed_setting=true;
 
 	EditorTranslationList *etl=_editor_translations;
 
@@ -999,6 +1016,7 @@ EditorSettings::EditorSettings() {
 	}
 
 	_load_defaults();
+	save_changed_setting=false;
 
 
 }

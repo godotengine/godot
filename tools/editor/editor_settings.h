@@ -64,7 +64,8 @@ private:
 		int order;
 		Variant variant;
 		bool hide_from_editor;
-		VariantContainer(){ order=0; hide_from_editor=false; }
+		bool save;
+		VariantContainer(){ order=0; hide_from_editor=false; save=false;}
 		VariantContainer(const Variant& p_variant, int p_order) { variant=p_variant; order=p_order; hide_from_editor=false; }
 	};
 
@@ -83,6 +84,9 @@ private:
 	String settings_path;
 
 	Ref<Resource> clipboard;
+
+
+	bool save_changed_setting;
 
 
 	void _load_defaults(Ref<ConfigFile> p_extra_config = NULL);
