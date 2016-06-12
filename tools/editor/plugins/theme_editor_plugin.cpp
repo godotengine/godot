@@ -583,6 +583,7 @@ ThemeEditor::ThemeEditor() {
 	add_child(panel);
 	panel->set_area_as_parent_rect(0);
 	panel->set_margin(MARGIN_TOP,25);
+	panel->set_theme(Theme::get_default());
 
 	main_vb= memnew( VBoxContainer );
 	panel->add_child(main_vb);

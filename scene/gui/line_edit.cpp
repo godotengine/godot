@@ -731,14 +731,21 @@ void LineEdit::set_cursor_pos(int p_pos) {
 		int width_to_cursor=0;
 		int wp=window_pos;
 
-		if (font != NULL) {
-			for (int i=window_pos;i<cursor_pos;i++)
-				width_to_cursor+=font->get_char_size( text[i] ).width;
+		if (font.is_valid()) {
 
-			while (width_to_cursor >= window_width && wp < text.length()) {
+			int accum_width=0;
 
-				width_to_cursor -= font->get_char_size(text[wp]).width;
-				wp++;
+			for(int i=cursor_pos;i>=window_pos;i--) {
+
+				if (i>=text.length()) {
+					accum_width=font->get_char_size(' ').width; //anything should do
+				} else {
+					accum_width+=font->get_char_size(text[i],i+1<text.length()?text[i+1]:0).width; //anything should do
+				}
+				if (accum_width>=window_width)
+					break;
+
+				wp=i;
 			}
 		}
 
