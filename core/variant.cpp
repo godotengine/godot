@@ -3029,9 +3029,9 @@ String Variant::get_call_error_text(Object* p_base, const StringName& p_method,c
 		int errorarg=ce.argument;
 		err_text="Cannot convert argument "+itos(errorarg+1)+" from "+Variant::get_type_name(p_argptrs[errorarg]->get_type())+" to "+Variant::get_type_name(ce.expected)+".";
 	} else if (ce.error==Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
-		err_text="Expected "+itos(ce.argument)+" arguments.";
+		err_text="Method expected "+itos(ce.argument)+" arguments, but called with "+itos(p_argcount)+".";
 	} else if (ce.error==Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
-		err_text="Expected "+itos(ce.argument)+" arguments.";
+		err_text="Method expected "+itos(ce.argument)+" arguments, but called with "+itos(p_argcount)+".";
 	} else if (ce.error==Variant::CallError::CALL_ERROR_INVALID_METHOD) {
 		err_text="Method not found.";
 	} else if (ce.error==Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
