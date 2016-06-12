@@ -223,7 +223,7 @@ bool Control::_get(const StringName& p_name,Variant &r_ret) const {
 
 	String sname=p_name;
 
-	if (!sname.begins_with("custom"))
+	if (!sname.begins_with("custom")) {
 		if (sname.begins_with("margin/")) {
 			String dname = sname.get_slicec('/', 1);
 			if (dname == "left") {
@@ -248,6 +248,7 @@ bool Control::_get(const StringName& p_name,Variant &r_ret) const {
 		} else {
 			return false;
 		}
+	}
 
 	if (sname.begins_with("custom_icons/")) {
 		String name = sname.get_slicec('/',1);
@@ -489,6 +490,10 @@ void Control::_notification(int p_notification) {
 			}
 
 
+			if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
+				data.theme_owner=data.parent->data.theme_owner;
+				notification(NOTIFICATION_THEME_CHANGED);
+			}
 
 		} break;
 		case NOTIFICATION_EXIT_CANVAS: {
@@ -520,26 +525,9 @@ void Control::_notification(int p_notification) {
 
 			data.parent=NULL;
 			data.parent_canvas_item=NULL;
-
-		} break;
-
-
-		case NOTIFICATION_PARENTED: {
-
-			Control * parent = get_parent()->cast_to<Control>();
-
-			//make children reference them theme
-
-			if (parent && data.theme.is_null() && parent->data.theme_owner) {
-				_propagate_theme_changed(parent->data.theme_owner);
-			}
-
-		} break;
-		case NOTIFICATION_UNPARENTED: {
-
-			//make children unreference the theme
-			if (data.theme.is_null() && data.theme_owner) {
-				_propagate_theme_changed(NULL);
+			if (data.theme_owner && data.theme.is_null()) {
+				data.theme_owner=NULL;
+				//notification(NOTIFICATION_THEME_CHANGED);
 			}
 
 		} break;
@@ -785,7 +773,7 @@ Ref<Texture> Control::get_icon(const StringName& p_name,const StringName& p_type
 	while(theme_owner) {
 
 		if (theme_owner->data.theme->has_icon(p_name, type ) )
-			return data.theme_owner->data.theme->get_icon(p_name, type );
+			return theme_owner->data.theme->get_icon(p_name, type );
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)
@@ -815,7 +803,7 @@ Ref<Shader> Control::get_shader(const StringName& p_name,const StringName& p_typ
 	while(theme_owner) {
 
 		if (theme_owner->data.theme->has_shader(p_name, type))
-			return data.theme_owner->data.theme->get_shader(p_name, type );
+			return theme_owner->data.theme->get_shader(p_name, type );
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)
@@ -843,8 +831,9 @@ Ref<StyleBox> Control::get_stylebox(const StringName& p_name,const StringName& p
 
 	while(theme_owner) {
 
-		if (theme_owner->data.theme->has_stylebox(p_name, type ) )
-			return data.theme_owner->data.theme->get_stylebox(p_name, type );
+		if (theme_owner->data.theme->has_stylebox(p_name, type ) ) {
+			return theme_owner->data.theme->get_stylebox(p_name, type );
+		}
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)
@@ -872,7 +861,7 @@ Ref<Font> Control::get_font(const StringName& p_name,const StringName& p_type) c
 	while(theme_owner) {
 
 		if (theme_owner->data.theme->has_font(p_name, type ) )
-			return data.theme_owner->data.theme->get_font(p_name, type );
+			return theme_owner->data.theme->get_font(p_name, type );
 		if (theme_owner->data.theme->get_default_theme_font().is_valid())
 			return theme_owner->data.theme->get_default_theme_font();
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
@@ -902,7 +891,7 @@ Color Control::get_color(const StringName& p_name,const StringName& p_type) cons
 	while(theme_owner) {
 
 		if (theme_owner->data.theme->has_color(p_name, type ) )
-			return data.theme_owner->data.theme->get_color(p_name, type );
+			return theme_owner->data.theme->get_color(p_name, type );
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)
@@ -931,7 +920,7 @@ int Control::get_constant(const StringName& p_name,const StringName& p_type) con
 	while(theme_owner) {
 
 		if (theme_owner->data.theme->has_constant(p_name, type ) )
-			return data.theme_owner->data.theme->get_constant(p_name, type );
+			return theme_owner->data.theme->get_constant(p_name, type );
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)

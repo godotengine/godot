@@ -240,7 +240,7 @@ Ref<Texture> Theme::get_icon(const StringName& p_name,const StringName& p_type) 
 
 bool Theme::has_icon(const StringName& p_name,const StringName& p_type) const {
 
-	return (icon_map.has(p_type) && icon_map[p_type].has(p_name));
+	return (icon_map.has(p_type) && icon_map[p_type].has(p_name) && icon_map[p_type][p_name].is_valid());
 }
 
 
@@ -337,12 +337,13 @@ Ref<StyleBox> Theme::get_stylebox(const StringName& p_name,const StringName& p_t
 		return style_map[p_type][p_name];
 	} else {
 		return default_style;
+
 	}
 }
 
 bool Theme::has_stylebox(const StringName& p_name,const StringName& p_type) const {
 
-	return (style_map.has(p_type) && style_map[p_type].has(p_name) );
+	return (style_map.has(p_type) && style_map[p_type].has(p_name) && style_map[p_type][p_name].is_valid());
 }
 
 void Theme::clear_stylebox(const StringName& p_name,const StringName& p_type) {
@@ -402,7 +403,7 @@ Ref<Font> Theme::get_font(const StringName& p_name,const StringName& p_type) con
 
 bool Theme::has_font(const StringName& p_name,const StringName& p_type) const {
 
-	return (font_map.has(p_type) && font_map[p_type].has(p_name));
+	return (font_map.has(p_type) && font_map[p_type].has(p_name) && font_map[p_type][p_name].is_valid());
 }
 
 void Theme::clear_font(const StringName& p_name,const StringName& p_type) {
