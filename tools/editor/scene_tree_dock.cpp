@@ -201,6 +201,7 @@ static String _get_name_num_separator() {
 	return " ";
 }
 
+
 void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 	current_option=p_tool;
@@ -519,6 +520,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			EditorNode::get_singleton()->push_item(mne.ptr());
 
 		} break;
+
 		case TOOL_ERASE: {
 
 			List<Node*> remove_list = editor_selection->get_selected_node_list();

@@ -94,6 +94,29 @@ void SceneTreeEditor::_subscene_option(int p_idx) {
 		case SCENE_MENU_CLEAR_INHERITANCE: {
 			clear_inherit_confirm->popup_centered_minsize();
 		} break;
+		case SCENE_MENU_CLEAR_INSTANCING: {
+
+			Node*root=EditorNode::get_singleton()->get_edited_scene();
+			if (!root)
+				break;
+
+
+			ERR_FAIL_COND(node->get_filename()==String());
+
+			undo_redo->create_action("Discard Instancing");
+
+			undo_redo->add_do_method(node,"set_filename","");
+			undo_redo->add_undo_method(node,"set_filename",node->get_filename());
+
+			_node_replace_owner(node,node,root);
+
+			undo_redo->add_do_method(this,"update_tree");
+			undo_redo->add_undo_method(this,"update_tree");
+
+			undo_redo->commit_action();
+
+
+		} break;
 		case SCENE_MENU_OPEN_INHERITED: {
 			if (node && node->get_scene_inherited_state().is_valid()) {
 				emit_signal("open",node->get_scene_inherited_state()->get_path());
@@ -108,8 +131,27 @@ void SceneTreeEditor::_subscene_option(int p_idx) {
 
 		} break;
 
+
 	}
 
+}
+
+
+void SceneTreeEditor::_node_replace_owner(Node* p_base,Node* p_node,Node* p_root) {
+
+	if (p_base!=p_node) {
+
+		if (p_node->get_owner()==p_base) {
+
+			undo_redo->add_do_method(p_node,"set_owner",p_root);
+			undo_redo->add_undo_method(p_node,"set_owner",p_base);
+		}
+	}
+
+	for(int i=0;i<p_node->get_child_count();i++) {
+
+		_node_replace_owner(p_base,p_node->get_child(i),p_root);
+	}
 }
 
 
@@ -606,7 +648,7 @@ void SceneTreeEditor::_notification(int p_what) {
 		get_tree()->connect("node_removed",this,"_node_removed");
 		get_tree()->connect("node_configuration_warning_changed",this,"_warning_changed");
 
-		instance_menu->set_item_icon(3,get_icon("Load","EditorIcons"));
+		instance_menu->set_item_icon(5,get_icon("Load","EditorIcons"));
 		tree->connect("item_collapsed",this,"_cell_collapsed");
 		inheritance_menu->set_item_icon(2,get_icon("Load","EditorIcons"));
 		clear_inherit_confirm->connect("confirmed",this,"_subscene_option",varray(SCENE_MENU_CLEAR_INHERITANCE_CONFIRM));
@@ -1108,6 +1150,8 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	instance_menu = memnew( PopupMenu );
 	instance_menu->add_check_item(TTR("Editable Children"),SCENE_MENU_EDITABLE_CHILDREN);
 	instance_menu->add_check_item(TTR("Load As Placeholder"),SCENE_MENU_USE_PLACEHOLDER);
+	instance_menu->add_separator();
+	instance_menu->add_item(TTR("Discard Instancing"),SCENE_MENU_CLEAR_INSTANCING);
 	instance_menu->add_separator();
 	instance_menu->add_item(TTR("Open in Editor"),SCENE_MENU_OPEN);
 	instance_menu->connect("item_pressed",this,"_subscene_option");
