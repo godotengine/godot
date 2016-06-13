@@ -521,6 +521,9 @@ FindReplaceBar::FindReplaceBar() {
 
 	error_label = memnew(Label);
 	search_options->add_child(error_label);
+	error_label->add_color_override("font_color", Color(1,1,0,1));
+	error_label->add_color_override("font_color_shadow", Color(0,0,0,1));
+	error_label->add_constant_override("shadow_as_outline", 1);
 
 	search_options->add_spacer();
 
