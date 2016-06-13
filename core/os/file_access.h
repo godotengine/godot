@@ -47,6 +47,8 @@ public:
 		ACCESS_MAX
 	};
 
+	typedef void (*FileCloseFailNotify)(const String&);
+
 	typedef FileAccess*(*CreateFunc)();
 	bool endian_swap;
 	bool real_is_double;
@@ -56,7 +58,7 @@ protected:
 	virtual Error _open(const String& p_path, int p_mode_flags)=0; ///< open a file
 	virtual uint64_t _get_modified_time(const String& p_file)=0;
 
-
+	static FileCloseFailNotify close_fail_notify;
 private:
 
 	static bool backup_save;
@@ -69,7 +71,11 @@ private:
 		return memnew( T );
 	}
 
+
+
 public:
+
+	static void set_file_close_fail_notify_callback(FileCloseFailNotify p_cbk) { close_fail_notify=p_cbk; }
 
 	virtual void _set_access_type(AccessType p_access);
 

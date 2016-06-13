@@ -574,6 +574,7 @@ private:
 
 	void _update_addon_config();
 
+	static void _file_access_close_error_notify(const String& p_str);
 
 protected:
 	void _notification(int p_what);

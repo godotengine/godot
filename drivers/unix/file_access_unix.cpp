@@ -124,6 +124,11 @@ void FileAccessUnix::close() {
 		//unlink(save_path.utf8().get_data());
 		//print_line("renaming..");
 		int rename_error = rename((save_path+".tmp").utf8().get_data(),save_path.utf8().get_data());
+
+		if (rename_error && close_fail_notify) {
+			close_fail_notify(save_path);
+		}
+
 		save_path="";
 		ERR_FAIL_COND( rename_error != 0);
 	}

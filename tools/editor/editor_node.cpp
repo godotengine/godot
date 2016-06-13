@@ -217,7 +217,7 @@ void EditorNode::_notification(int p_what) {
 	if (p_what==NOTIFICATION_EXIT_TREE) {
 
 		editor_data.save_editor_external_data();
-
+		FileAccess::set_file_close_fail_notify_callback(NULL);
 		log->deinit(); // do not get messages anymore
 	}
 	if (p_what==NOTIFICATION_PROCESS) {
@@ -5138,6 +5138,10 @@ void EditorNode::_dropped_files(const Vector<String>& p_files,int p_screen) {
 		EditorImportExport::get_singleton()->get_import_plugin(i)->import_from_drop(p_files,cur_path);
 	}
 }
+void EditorNode::_file_access_close_error_notify(const String& p_str) {
+
+	add_io_error("Unable to write to file '"+p_str+"', file in use, locked or lacking permissions.");
+}
 
 void EditorNode::_bind_methods() {
 
@@ -5232,7 +5236,6 @@ EditorNode::EditorNode() {
 	EditorHelp::generate_doc(); //before any editor classes are crated
 	SceneState::set_disable_placeholders(true);
 	editor_initialize_certificates(); //for asset sharing
-
 
 	InputDefault *id = Input::get_singleton()->cast_to<InputDefault>();
 
@@ -6575,12 +6578,14 @@ EditorNode::EditorNode() {
 
 	_load_docks();
 
+	FileAccess::set_file_close_fail_notify_callback(_file_access_close_error_notify);
 
 
 }
 
 
 EditorNode::~EditorNode() {
+
 
 	memdelete( EditorHelp::get_doc_data() );
 	memdelete(editor_selection);

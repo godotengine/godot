@@ -35,6 +35,8 @@
 
 FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX]={0,0};
 
+FileAccess::FileCloseFailNotify FileAccess::close_fail_notify=NULL;
+
 
 bool FileAccess::backup_save=false;
 
