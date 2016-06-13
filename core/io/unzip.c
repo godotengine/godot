@@ -1031,10 +1031,19 @@ local int unz64local_GetCurrentFileInfoInternal (unzFile file,
 
         if (lSeek!=0)
         {
-            if (ZSEEK64(s->z_filefunc, s->filestream,lSeek,ZLIB_FILEFUNC_SEEK_CUR)==0)
-                lSeek=0;
-            else
-                err=UNZ_ERRNO;
+			if (lSeek<0) {
+				// WORKAROUND for backwards seeking
+				z_off_t pos = ZTELL64(s->z_filefunc, s->filestream);
+				if (ZSEEK64(s->z_filefunc, s->filestream,pos+lSeek,ZLIB_FILEFUNC_SEEK_SET)==0)
+					lSeek=0;
+				else
+					err=UNZ_ERRNO;
+			} else {
+				if (ZSEEK64(s->z_filefunc, s->filestream,lSeek,ZLIB_FILEFUNC_SEEK_CUR)==0)
+					lSeek=0;
+				else
+					err=UNZ_ERRNO;
+			}
         }
 
         while(acc < file_info.size_file_extra)
