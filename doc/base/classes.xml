@@ -9947,7 +9947,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</description>
 		</method>
 		<method name="erase">
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="key" type="var">
 			</argument>
 			<description>
 			Erase a dictionary key/value pair by key.
@@ -9956,7 +9956,7 @@ This approximation makes straight segments between each point, then subdivides t
 		<method name="has">
 			<return type="bool">
 			</return>
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="key" type="var">
 			</argument>
 			<description>
 			Return true if the dictionary has a given key.
@@ -9965,7 +9965,7 @@ This approximation makes straight segments between each point, then subdivides t
 		<method name="has_all">
 			<return type="bool">
 			</return>
-			<argument index="0" name="values" type="Array">
+			<argument index="0" name="keys" type="Array">
 			</argument>
 			<description>
 			</description>
