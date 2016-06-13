@@ -45,8 +45,7 @@
 #include "scene/gui/margin_container.h"
 #include "io/resource_saver.h"
 
-#include "editor_icons.h"
-#include "editor_fonts.h"
+#include "editor_themes.h"
 
 #include "editor_scale.h"
 
@@ -846,18 +845,8 @@ ProjectManager::ProjectManager() {
 
 	set_area_as_parent_rect();
 
-	Ref<Theme> theme = Ref<Theme>( memnew( Theme ) );
+	Ref<Theme> theme = editor_create_theme();
 	set_theme(theme);
-	editor_register_icons(theme);
-	editor_register_fonts(theme);
-
-	String global_font = EditorSettings::get_singleton()->get("global/font");
-	if (global_font!="") {
-		Ref<Font> fnt = ResourceLoader::load(global_font);
-		if (fnt.is_valid()) {
-			theme->set_default_theme_font(fnt);
-		}
-	}
 
 	Panel *panel = memnew( Panel );
 	add_child(panel);
