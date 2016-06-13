@@ -178,8 +178,11 @@ class OS_X11 : public OS_Unix {
 	void set_wm_fullscreen(bool p_enabled);
 
 	typedef xrr_monitor_info* (*xrr_get_monitors_t)(Display *dpy, Window window, Bool get_active, int *nmonitors);
+	typedef void (*xrr_free_monitors_t)(xrr_monitor_info* monitors);
 	xrr_get_monitors_t xrr_get_monitors;
+	xrr_free_monitors_t xrr_free_monitors;
 	void *xrandr_handle;
+	Bool xrandr_ext_ok;
 
 protected:
 
