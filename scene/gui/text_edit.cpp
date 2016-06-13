@@ -3840,6 +3840,7 @@ void TextEdit::undo() {
 	if (undo_stack_pos->get().type == TextOperation::TYPE_REMOVE) {
 		cursor_set_line(undo_stack_pos->get().to_line);
 		cursor_set_column(undo_stack_pos->get().to_column);
+		_cancel_code_hint();
 	} else {
 		cursor_set_line(undo_stack_pos->get().from_line);
 		cursor_set_column(undo_stack_pos->get().from_column);
@@ -3986,27 +3987,18 @@ void TextEdit::set_completion(bool p_enabled,const Vector<String>& p_prefixes) {
 
 void TextEdit::_confirm_completion() {
 
-	String remaining=completion_current.substr(completion_base.length(),completion_current.length()-completion_base.length());
-	String l = text[cursor.line];
-	bool same=true;
-	//if what is going to be inserted is the same as what it is, don't change it
-	for(int i=0;i<remaining.length();i++) {
-		int c=i+cursor.column;
-		if (c>=l.length() || l[c]!=remaining[i]) {
-			same=false;
-			break;
-		}
+	begin_complex_operation();
+
+	_remove_text(cursor.line, cursor.column - completion_base.length(), cursor.line, cursor.column);
+	cursor_set_column(cursor.column - completion_base.length(), false);
+	insert_text_at_cursor(completion_current);
+
+	if (completion_current.ends_with("(") && auto_brace_completion_enabled) {
+		insert_text_at_cursor(")");
+		cursor.column--;
 	}
 
-	if (same)
-		cursor_set_column(cursor.column+remaining.length());
-	else {
-		insert_text_at_cursor(remaining);
-		if (remaining.ends_with("(") && auto_brace_completion_enabled) {
-			insert_text_at_cursor(")");
-			cursor.column--;
-		}
-	}
+	end_complex_operation();
 
 	_cancel_completion();
 }
@@ -4110,30 +4102,29 @@ void TextEdit::_update_completion_candidates() {
 	completion_index=0;
 	completion_base=s;
 	int ci_match=0;
+	Vector<float> sim_cache;
 	for(int i=0;i<completion_strings.size();i++) {
-		if (completion_strings[i].begins_with(s)) {
+		if (s.is_subsequence_ofi(completion_strings[i])) {
 			// don't remove duplicates if no input is provided
-			if (completion_options.find(completion_strings[i]) != -1 && s != "") {
+			if (s != "" && completion_options.find(completion_strings[i]) != -1) {
 				continue;
 			}
-			completion_options.push_back(completion_strings[i]);
-			int m=0;
-			int max=MIN(completion_current.length(),completion_strings[i].length());
-			if (max<ci_match)
-				continue;
-			for(int j=0;j<max;j++) {
-
-				if (j>=completion_strings[i].length())
-					break;
-				if (completion_current[j]!=completion_strings[i][j])
-					break;
-				m++;
+			// Calculate the similarity to keep completions in good order
+			float similarity = s.similarity(completion_strings[i]);
+			int comp_size = completion_options.size();
+			if (comp_size == 0) {
+				completion_options.push_back(completion_strings[i]);
+				sim_cache.push_back(similarity);
+			} else {
+				float comp_sim;
+				int pos = 0;
+				do {
+					comp_sim = sim_cache[pos++];
+				} while(pos < comp_size && similarity <= comp_sim);
+				pos--; // Pos will be off by one
+				completion_options.insert(pos, completion_strings[i]);
+				sim_cache.insert(pos, similarity);
 			}
-			if (m>ci_match) {
-				ci_match=m;
-				completion_index=completion_options.size()-1;
-			}
-
 		}
 	}
 
@@ -4146,7 +4137,8 @@ void TextEdit::_update_completion_candidates() {
 
 	}
 
-	completion_current=completion_options[completion_index];
+	// The top of the list is the best match
+	completion_current=completion_options[0];
 
 #if 0	// even there's only one option, user still get the chance to choose using it or not
 	if (completion_options.size()==1) {
@@ -4158,8 +4150,6 @@ void TextEdit::_update_completion_candidates() {
 
 	}
 #endif
-	if (completion_options.size()==1 && s==completion_options[0])
-		_cancel_completion();
 
 	completion_enabled=true;
 }
