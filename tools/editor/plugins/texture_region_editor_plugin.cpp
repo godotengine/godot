@@ -43,6 +43,8 @@ void TextureRegionEditor::_region_draw()
 		base_tex = node_patch9->get_texture();
 	else if(node_type == "StyleBoxTexture" && obj_styleBox)
 		base_tex = obj_styleBox->get_texture();
+	else if(node_type == "AtlasTexture" && atlas_tex)
+		base_tex = atlas_tex->get_atlas();
 	if (base_tex.is_null())
 		return;
 
@@ -164,6 +166,8 @@ void TextureRegionEditor::_region_input(const InputEvent& p_input)
 				drag=true;
 				if(node_type == "Sprite" && node_sprite )
 					rect_prev=node_sprite->get_region_rect();
+				else if(node_type == "AtlasTexture" && atlas_tex)
+					rect_prev=atlas_tex->get_region();
 				else if(node_type == "Patch9Frame" && node_patch9)
 					rect_prev=node_patch9->get_region_rect();
 				else if(node_type == "StyleBoxTexture" && obj_styleBox)
@@ -191,9 +195,17 @@ void TextureRegionEditor::_region_input(const InputEvent& p_input)
 						undo_redo->add_do_method(node_sprite ,"set_region_rect",node_sprite->get_region_rect());
 						undo_redo->add_undo_method(node_sprite,"set_region_rect",rect_prev);
 					}
+					else if(node_type == "AtlasTexture" && atlas_tex ){
+						undo_redo->add_do_method(atlas_tex ,"set_region",atlas_tex->get_region());
+						undo_redo->add_undo_method(atlas_tex,"set_region",rect_prev);
+					}
 					else if(node_type == "Patch9Frame" && node_patch9){
 						undo_redo->add_do_method(node_patch9 ,"set_region_rect",node_patch9->get_region_rect());
 						undo_redo->add_undo_method(node_patch9,"set_region_rect",rect_prev);
+					}
+					else if(node_type == "StyleBoxTexture" && obj_styleBox){
+						undo_redo->add_do_method(obj_styleBox ,"set_region_rect",obj_styleBox->get_region_rect());
+						undo_redo->add_undo_method(obj_styleBox,"set_region_rect",rect_prev);
 					}
 					undo_redo->add_do_method(edit_draw,"update");
 					undo_redo->add_undo_method(edit_draw,"update");
@@ -355,6 +367,8 @@ void TextureRegionEditor::apply_rect(const Rect2& rect){
 			node_patch9->set_region_rect(rect);
 		else if(obj_styleBox)
 			obj_styleBox->set_region_rect(rect);
+		else if(atlas_tex)
+			atlas_tex->set_region(rect);
 	}
 	else if(this->editing_region == REGION_PATCH_MARGIN) {
 		if(node_patch9) {
@@ -387,10 +401,11 @@ void TextureRegionEditor::_notification(int p_what)
 
 void TextureRegionEditor::_node_removed(Object *p_obj)
 {
-	if(p_obj == node_sprite || p_obj == node_patch9 || p_obj == obj_styleBox) {
-		node_patch9 = NULL;
-		node_sprite = NULL;
+	if(p_obj == node_sprite || p_obj == node_patch9 || p_obj == obj_styleBox || p_obj == atlas_tex) {
+		node_patch9  = NULL;
+		node_sprite  = NULL;
 		obj_styleBox = NULL;
+		atlas_tex    = NULL;
 		hide();
 	}
 }
@@ -421,30 +436,42 @@ void TextureRegionEditor::edit(Object *p_obj)
 			node_sprite = p_obj->cast_to<Sprite>();
 			node_patch9 = NULL;
 			obj_styleBox = NULL;
+			atlas_tex   = NULL;
+		}
+		else if(node_type == "AtlasTexture") {
+			atlas_tex   = p_obj->cast_to<AtlasTexture>();
+			node_sprite = NULL;
+			node_patch9 = NULL;
+			obj_styleBox = NULL;
 		}
 		else if(node_type == "Patch9Frame") {
 			node_patch9 = p_obj->cast_to<Patch9Frame>();
 			node_sprite = NULL;
 			obj_styleBox = NULL;
+			atlas_tex = NULL;
 			margin_button->show();
 		}
 		else if(node_type == "StyleBoxTexture") {
 			obj_styleBox = p_obj->cast_to<StyleBoxTexture>();
 			node_sprite = NULL;
 			node_patch9 = NULL;
+			atlas_tex = NULL;
 			margin_button->show();
 		}
 		p_obj->connect("exit_tree",this,"_node_removed",varray(p_obj),CONNECT_ONESHOT);
 	} else {
 		if(node_sprite)
 			node_sprite->disconnect("exit_tree",this,"_node_removed");
+		else if(atlas_tex)
+			atlas_tex->disconnect("exit_tree",this,"_node_removed");
 		else if(node_patch9)
 			node_patch9->disconnect("exit_tree",this,"_node_removed");
 		else if(obj_styleBox)
 			obj_styleBox->disconnect("exit_tree",this,"_node_removed");
-		node_sprite = NULL;
-		node_patch9 = NULL;
+		node_sprite  = NULL;
+		node_patch9  = NULL;
 		obj_styleBox = NULL;
+		atlas_tex    = NULL;
 	}
 }
 
@@ -469,6 +496,8 @@ void TextureRegionEditor::_edit_node(int region)
 		texture = node_patch9->get_texture();
 	else if(node_type == "StyleBoxTexture" && obj_styleBox)
 		texture = obj_styleBox->get_texture();
+	else if(node_type == "AtlasTexture" && atlas_tex)
+		texture = atlas_tex->get_atlas();
 
 	if (texture.is_null()) {
 		error->set_text(TTR("No texture in this node.\nSet a texture to be able to edit region."));
@@ -482,6 +511,8 @@ void TextureRegionEditor::_edit_node(int region)
 		tex_region = node_patch9->get_region_rect();
 	else if(node_type == "StyleBoxTexture" && obj_styleBox)
 		tex_region = obj_styleBox->get_region_rect();
+	else if(node_type == "AtlasTexture" && atlas_tex)
+		tex_region = atlas_tex->get_region();
 	rect = tex_region;
 
 	if(region == REGION_PATCH_MARGIN) {
@@ -521,6 +552,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode* p_editor)
 {
 	node_sprite = NULL;
 	node_patch9 = NULL;
+	atlas_tex   = NULL;
 	editor=p_editor;
 	undo_redo = editor->get_undo_redo();
 
@@ -661,7 +693,7 @@ void TextureRegionEditorPlugin::edit(Object *p_node)
 
 bool TextureRegionEditorPlugin::handles(Object *p_obj) const
 {
-	return p_obj->is_type("Sprite") || p_obj->is_type("Patch9Frame") || p_obj->is_type("StyleBoxTexture");
+	return p_obj->is_type("Sprite") || p_obj->is_type("Patch9Frame") || p_obj->is_type("StyleBoxTexture") || p_obj->is_type("AtlasTexture");
 }
 
 void TextureRegionEditorPlugin::make_visible(bool p_visible)
