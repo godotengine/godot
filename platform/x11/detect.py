@@ -122,19 +122,19 @@ def configure(env):
 	if (env["target"]=="release"):
 
 		if (env["debug_release"]=="yes"):
-			env.Append(CCFLAGS=['-g2'])
+			env.Prepend(CCFLAGS=['-g2'])
 		else:
-			env.Append(CCFLAGS=['-O3','-ffast-math'])
+			env.Prepend(CCFLAGS=['-O3','-ffast-math'])
 
 	elif (env["target"]=="release_debug"):
 
-		env.Append(CCFLAGS=['-O2','-ffast-math','-DDEBUG_ENABLED'])
+		env.Prepend(CCFLAGS=['-O2','-ffast-math','-DDEBUG_ENABLED'])
 		if (env["debug_release"]=="yes"):
-			env.Append(CCFLAGS=['-g2'])
+			env.Prepend(CCFLAGS=['-g2'])
 
 	elif (env["target"]=="debug"):
 
-		env.Append(CCFLAGS=['-g2', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
+		env.Prepend(CCFLAGS=['-g2', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
 
 	env.ParseConfig('pkg-config x11 --cflags --libs')
 	env.ParseConfig('pkg-config xinerama --cflags --libs')
