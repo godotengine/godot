@@ -121,7 +121,7 @@ private:
 	Node *_get_node(const NodePath& p_path) const;
 	Node *_get_child_by_name(const StringName& p_name) const;
 
-
+	void _replace_connections_target(Node* p_new_target);
 
 	void _validate_child_name(Node *p_name, bool p_force_human_readable=false);
 
