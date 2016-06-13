@@ -136,6 +136,9 @@ def configure(env):
 
 		env.Prepend(CCFLAGS=['-g2', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
 
+	env.Prepend(CCFLAGS=['-pipe'])
+	env.Prepend(LINKFLAGS=['-pipe'])
+
 	env.ParseConfig('pkg-config x11 --cflags --libs')
 	env.ParseConfig('pkg-config xinerama --cflags --libs')
 	env.ParseConfig('pkg-config xcursor --cflags --libs')
