@@ -1791,8 +1791,9 @@ Error VariantParser::parse(Stream *p_stream, Variant& r_ret, String &r_err_str, 
 
 static String rtosfix(double p_value) {
 
+
 	if (p_value==0.0)
-		return "0"; //avoid negative zero being written, which may annoy git, svn, etc. for changes when they don't exist.
+		return "0"; //avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
 	else
 		return rtoss(p_value);
 }

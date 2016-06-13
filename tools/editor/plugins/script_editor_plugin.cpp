@@ -2155,7 +2155,9 @@ void ScriptEditor::save_all_scripts() {
 
 			editor->save_resource(script);
 			//ResourceSaver::save(script->get_path(),script);
+
 		}
+
 	}
 
 }
@@ -2275,6 +2277,8 @@ void ScriptEditor::_editor_settings_changed() {
 		ste->get_text_edit()->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/caret_blink_speed"));
 		ste->get_text_edit()->set_draw_breakpoint_gutter(EditorSettings::get_singleton()->get("text_editor/show_breakpoint_gutter"));
 	}
+
+	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/auto_reload_and_parse_scripts_on_save",true));
 
 }
 
@@ -2617,8 +2621,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	edit_menu->get_popup()->add_item(TTR("Auto Indent"),EDIT_AUTO_INDENT,KEY_MASK_CMD|KEY_I);
 	edit_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_item(TTR("Reload Tool Script"),FILE_TOOL_RELOAD,KEY_MASK_CMD|KEY_R);
-	edit_menu->get_popup()->add_item(TTR("Reload Tool Script (Soft)"),FILE_TOOL_RELOAD_SOFT,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_R);
+	edit_menu->get_popup()->add_item(TTR("Soft Reload Script"),FILE_TOOL_RELOAD_SOFT,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_R);
 
 
 	search_menu = memnew( MenuButton );
@@ -2922,6 +2925,7 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	script_editor->hide();
 
 	EDITOR_DEF("text_editor/auto_reload_scripts_on_external_change",true);
+	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/auto_reload_and_parse_scripts_on_save",true));
 	EDITOR_DEF("text_editor/open_dominant_script_on_scene_change",true);
 	EDITOR_DEF("external_editor/use_external_editor",false);
 	EDITOR_DEF("external_editor/exec_path","");
@@ -2932,6 +2936,7 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("text_editor/group_help_pages",true);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"external_editor/exec_path",PROPERTY_HINT_GLOBAL_FILE));
 	EDITOR_DEF("external_editor/exec_flags","");
+
 
 }
 

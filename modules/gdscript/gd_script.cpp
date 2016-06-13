@@ -1898,6 +1898,11 @@ Error ResourceFormatSaverGDScript::save(const String &p_path,const RES& p_resour
 	}
 	file->close();
 	memdelete(file);
+
+	if (ScriptServer::is_reload_scripts_on_save_enabled()) {
+		GDScriptLanguage::get_singleton()->reload_tool_script(p_resource,false);
+	}
+
 	return OK;
 }
 
