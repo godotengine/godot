@@ -118,11 +118,15 @@ def configure(env):
 	#	env['OBJSUFFIX'] = ".nt"+env['OBJSUFFIX']
 	#	env['LIBSUFFIX'] = ".nt"+env['LIBSUFFIX']
 
-
+	supports_Og = (
+		os.system('{} --help=optimizers 2>&1 | grep -- -Og'.format(env['CXX'])) == 0
+	)
 	if (env["target"]=="release"):
 
 		if (env["debug_release"]=="yes"):
 			env.Prepend(CCFLAGS=['-g2'])
+			if supports_Og:
+				env.Prepend(CCFLAGS=['-Og'])
 		else:
 			env.Prepend(CCFLAGS=['-O3','-ffast-math'])
 
@@ -131,10 +135,14 @@ def configure(env):
 		env.Prepend(CCFLAGS=['-O2','-ffast-math','-DDEBUG_ENABLED'])
 		if (env["debug_release"]=="yes"):
 			env.Prepend(CCFLAGS=['-g2'])
+			if supports_Og:
+				env.Prepend(CCFLAGS=['-Og'])
 
 	elif (env["target"]=="debug"):
 
 		env.Prepend(CCFLAGS=['-g2', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
+		if supports_Og:
+			env.Prepend(CCFLAGS=['-Og'])
 
 	env.Prepend(CCFLAGS=['-pipe'])
 	env.Prepend(LINKFLAGS=['-pipe'])
