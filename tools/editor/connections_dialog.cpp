@@ -35,6 +35,7 @@
 #include "print_string.h"
 #include "editor_settings.h"
 #include "editor_node.h"
+#include "plugins/script_editor_plugin.h"
 
 class ConnectDialogBinds : public Object {
 
@@ -766,11 +767,58 @@ void ConnectionsDock::_something_selected() {
 
 }
 
+void ConnectionsDock::_something_activated() {
+
+	TreeItem *item = tree->get_selected();
+
+	if (!item)
+		return;
+
+	if (item->get_parent()==tree->get_root() || item->get_parent()->get_parent()==tree->get_root()) {
+		// a signal - connect
+		String signal=item->get_metadata(0).operator Dictionary()["name"];
+		String midname=node->get_name();
+		for(int i=0;i<midname.length();i++) {
+			CharType c = midname[i];
+			if  ((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9') || c=='_') {
+				//all good
+			} else if (c==' ') {
+				c='_';
+			} else {
+				midname.remove(i);
+				i--;
+				continue;
+			}
+
+			midname[i]=c;
+		}
+
+		connect_dialog->edit(node);
+		connect_dialog->popup_centered_ratio();
+		connect_dialog->set_dst_method("_on_"+midname+"_"+signal);
+		connect_dialog->set_dst_node(node->get_owner()?node->get_owner():node);
+	} else {
+		// a slot - go to target method
+		Connection c=item->get_metadata(0);
+		ERR_FAIL_COND(c.source!=node); //shouldn't happen but...bugcheck
+
+		if (!c.target)
+			return;
+
+		Ref<Script> script = c.target->get_script();
+
+		if (script.is_valid() && ScriptEditor::get_singleton()->script_go_to_method(script,c.method)) {
+			editor->call("_editor_select",EditorNode::EDITOR_SCRIPT);
+		}
+	}
+}
+
 void ConnectionsDock::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method("_connect",&ConnectionsDock::_connect);
 	ObjectTypeDB::bind_method("_something_selected",&ConnectionsDock::_something_selected);
+	ObjectTypeDB::bind_method("_something_activated",&ConnectionsDock::_something_activated);
 	ObjectTypeDB::bind_method("_close",&ConnectionsDock::_close);
 	ObjectTypeDB::bind_method("_connect_pressed",&ConnectionsDock::_connect_pressed);
 	ObjectTypeDB::bind_method("update_tree",&ConnectionsDock::update_tree);
@@ -823,6 +871,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	remove_confirm->connect("confirmed", this,"_remove_confirm");
 	connect_dialog->connect("connected", this,"_connect");
 	tree->connect("item_selected", this,"_something_selected");
+	tree->connect("item_activated", this,"_something_activated");
 
 	add_constant_override("separation",3*EDSCALE);
 }
