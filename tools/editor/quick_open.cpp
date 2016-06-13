@@ -126,7 +126,7 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd) {
 			path+="/";
 		if (path!="res://") {
 			path=path.substr(6,path.length());
-			if (path.findn(search_box->get_text())!=-1) {
+			if (search_box->get_text().is_subsequence_ofi(path)) {
 				TreeItem *ti = search_options->create_item(root);
 				ti->set_text(0,path);
 				Ref<Texture> icon = get_icon("folder","FileDialog");
@@ -138,7 +138,7 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd) {
 
 		String file = efsd->get_file_path(i);
 		file=file.substr(6,file.length());
-		if (ObjectTypeDB::is_type(efsd->get_file_type(i),base_type) && (search_box->get_text()=="" || file.findn(search_box->get_text())!=-1)) {
+		if (ObjectTypeDB::is_type(efsd->get_file_type(i),base_type) && (search_box->get_text().is_subsequence_ofi(file))) {
 
 			TreeItem *ti = search_options->create_item(root);
 			ti->set_text(0,file);

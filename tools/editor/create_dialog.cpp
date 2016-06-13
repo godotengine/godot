@@ -103,7 +103,7 @@ void CreateDialog::add_type(const String& p_type,HashMap<String,TreeItem*>& p_ty
 		item->set_selectable(0,false);
 	} else {
 
-		if (!*to_select && (search_box->get_text()=="" || p_type.findn(search_box->get_text())!=-1)) {
+		if (!*to_select && (search_box->get_text().is_subsequence_ofi(p_type))) {
 			*to_select=item;
 		}
 
@@ -172,7 +172,7 @@ void CreateDialog::_update_search() {
 			bool found=false;
 			String type=I->get();
 			while(type!="" && ObjectTypeDB::is_type(type,base_type) && type!=base_type) {
-				if (type.findn(search_box->get_text())!=-1) {
+				if (search_box->get_text().is_subsequence_ofi(type)) {
 
 					found=true;
 					break;
@@ -194,7 +194,7 @@ void CreateDialog::_update_search() {
 			const Vector<EditorData::CustomType> &ct = EditorNode::get_editor_data().get_custom_types()[type];
 			for(int i=0;i<ct.size();i++) {
 
-				bool show = search_box->get_text()=="" || ct[i].name.findn(search_box->get_text())!=-1;
+				bool show = search_box->get_text().is_subsequence_ofi(ct[i].name);
 
 				if (!show)
 					continue;

@@ -453,7 +453,7 @@ void EditorHelpIndex::_update_class_list() {
 			String type = E->key();
 
 			while(type != "") {
-				if (type.findn(filter)!=-1) {
+				if (filter.is_subsequence_ofi(type)) {
 
 					if (to_select.empty()) {
 						to_select = type;

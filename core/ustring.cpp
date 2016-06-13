@@ -2752,6 +2752,50 @@ bool String::begins_with(const char* p_string) const {
 
 }
 
+bool String::is_subsequence_of(const String& p_string) const {
+
+	return _base_is_subsequence_of(p_string, false);
+}
+
+bool String::is_subsequence_ofi(const String& p_string) const {
+
+	return _base_is_subsequence_of(p_string, true);
+}
+
+bool String::_base_is_subsequence_of(const String& p_string, bool case_insensitive) const {
+
+	int len=length();
+	if (len == 0) {
+		// Technically an empty string is subsequence of any string
+		return true;
+	}
+
+	if (len > p_string.length()) {
+		return false;
+	}
+
+	const CharType *src = &operator[](0);
+	const CharType *tgt = &p_string[0];
+
+	for (;*src && *tgt;tgt++) {
+		bool match = false;
+		if (case_insensitive) {
+			CharType srcc = _find_lower(*src);
+			CharType tgtc = _find_lower(*tgt);
+			match = srcc == tgtc;
+		} else {
+			match = *src == *tgt;
+		}
+		if (match) {
+			src++;
+			if(!*src) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
 
 static bool _wildcard_match(const CharType* p_pattern, const CharType* p_string,bool p_case_sensitive) {
 	switch (*p_pattern) {

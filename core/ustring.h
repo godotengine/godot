@@ -66,6 +66,7 @@ class String : public Vector<CharType> {
 	void copy_from(const char *p_cstr);
 	void copy_from(const CharType* p_cstr, int p_clip_to=-1);
 	void copy_from(const CharType& p_char);
+	bool _base_is_subsequence_of(const String& p_string, bool case_insensitive) const;
 
 
 public:
@@ -122,6 +123,8 @@ public:
 	bool begins_with(const String& p_string) const;
 	bool begins_with(const char* p_string) const;
 	bool ends_with(const String& p_string) const;
+	bool is_subsequence_of(const String& p_string) const;
+	bool is_subsequence_ofi(const String& p_string) const;
 	String replace_first(String p_key,String p_with) const;
 	String replace(String p_key,String p_with) const;
 	String replacen(String p_key,String p_with) const;

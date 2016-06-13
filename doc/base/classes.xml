@@ -37271,6 +37271,24 @@ This method controls whether the position between two cached points is interpola
 			If the string is a path to a file or directory, return true if the path is relative.
 			</description>
 		</method>
+		<method name="is_subsequence_of">
+			<return type="bool">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+			Checked whether this string is a subsequence of the given string.
+			</description>
+		</method>
+		<method name="is_subsequence_ofi">
+			<return type="bool">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+			Checked whether this string is a subsequence of the given string, without considering case.
+			</description>
+		</method>
 		<method name="is_valid_float">
 			<return type="bool">
 			</return>
