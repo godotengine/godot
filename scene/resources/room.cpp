@@ -31,7 +31,7 @@
 #include "servers/visual_server.h"
 
 
-RID RoomBounds::get_rid() {
+RID RoomBounds::get_rid() const {
 
 	return area;
 }
