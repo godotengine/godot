@@ -3748,8 +3748,13 @@ void TextEdit::undo() {
 		}
 	}
 
-	cursor_set_line(undo_stack_pos->get().from_line);
-	cursor_set_column(undo_stack_pos->get().from_column);
+	if (undo_stack_pos->get().type == TextOperation::TYPE_REMOVE) {
+		cursor_set_line(undo_stack_pos->get().to_line);
+		cursor_set_column(undo_stack_pos->get().to_column);
+	} else {
+		cursor_set_line(undo_stack_pos->get().from_line);
+		cursor_set_column(undo_stack_pos->get().from_column);
+	}
 	update();
 }
 
