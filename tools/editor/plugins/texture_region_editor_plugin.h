@@ -48,18 +48,27 @@ class TextureRegionEditor : public HBoxContainer {
 		REGION_PATCH_MARGIN
 	};
 
+	enum SnapMode {
+		SNAP_NONE,
+		SNAP_PIXEL,
+		SNAP_GRID,
+		SNAP_AUTOSLICE
+	};
+
 	friend class TextureRegionEditorPlugin;
 	ToolButton *region_button;
-	ToolButton *margin_button;
-	ToolButton *b_snap_enable;
-	ToolButton *b_snap_grid;
+	MenuButton *snap_mode_button;
 	TextureFrame *icon_zoom;
-	HSlider *zoom;
-	SpinBox *zoom_value;
+	Button *zoom_in;
+	Button *zoom_reset;
+	Button *zoom_out;
+	HBoxContainer * hb_grid; //For showing/hiding the grid controls when changing the SnapMode
 	SpinBox *sb_step_y;
 	SpinBox *sb_step_x;
 	SpinBox *sb_off_y;
 	SpinBox *sb_off_x;
+	SpinBox *sb_sep_y;
+	SpinBox *sb_sep_x;
 	Control *edit_draw;
 
 	VScrollBar *vscroll;
@@ -73,10 +82,10 @@ class TextureRegionEditor : public HBoxContainer {
 	float draw_zoom;
 	bool updating_scroll;
 
-	bool use_snap;
-	bool snap_show_grid;
+	int snap_mode;
 	Vector2 snap_offset;
 	Vector2 snap_step;
+	Vector2 snap_separation;
 
 
 	String node_type;
@@ -89,6 +98,7 @@ class TextureRegionEditor : public HBoxContainer {
 	Rect2 rect;
 	Rect2 rect_prev;
 	Rect2 tex_region;
+	List<Rect2> autoslice_cache;
 
 	bool drag;
 	bool creating;
@@ -97,12 +107,16 @@ class TextureRegionEditor : public HBoxContainer {
 
 	AcceptDialog *error;
 
-	void _set_use_snap(bool p_use);
-	void _set_show_grid(bool p_show);
+	void _set_snap_mode(int p_mode);
 	void _set_snap_off_x(float p_val);
 	void _set_snap_off_y(float p_val);
 	void _set_snap_step_x(float p_val);
 	void _set_snap_step_y(float p_val);
+	void _set_snap_sep_x(float p_val);
+	void _set_snap_sep_y(float p_val);
+	void _zoom_in();
+	void _zoom_reset();
+	void _zoom_out();
 	void apply_rect(const Rect2& rect);
 protected:
 
