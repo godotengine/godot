@@ -573,7 +573,11 @@ DynamicFontAtSize::~DynamicFontAtSize(){
 void DynamicFont::set_font_data(const Ref<DynamicFontData>& p_data) {
 
 	data=p_data;
-	data_at_size=data->_get_dynamic_font_at_size(size);
+	if (data.is_valid())
+		data_at_size=data->_get_dynamic_font_at_size(size);
+	else
+		data_at_size=Ref<DynamicFontAtSize>();
+
 	emit_changed();
 }
 

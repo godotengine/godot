@@ -1844,7 +1844,7 @@ void Control::_propagate_theme_changed(CanvasItem *p_at,Control *p_owner) {
 
 	Control *c = p_at->cast_to<Control>();
 
-	if (c && c->data.theme.is_valid())	// has a theme, this can't be propagated
+	if (c && c!=p_owner && c->data.theme.is_valid())	// has a theme, this can't be propagated
 		return;
 
 	for(int i=0;i<p_at->get_child_count();i++) {
