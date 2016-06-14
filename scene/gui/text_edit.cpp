@@ -3825,12 +3825,16 @@ void TextEdit::undo() {
 	_do_text_op(op, true);
 	current_op.version=op.prev_version;
 	if(undo_stack_pos->get().chain_backward) {
-		do {
+		while(true) {
+			ERR_BREAK(!undo_stack_pos->prev());
 			undo_stack_pos = undo_stack_pos->prev();
 			op = undo_stack_pos->get();
 			_do_text_op(op, true);
 			current_op.version = op.prev_version;
-		} while(!undo_stack_pos->get().chain_forward);
+			if (undo_stack_pos->get().chain_forward) {
+				break;
+			}
+		}
 	}
 
 	cursor_set_line(undo_stack_pos->get().from_line);
@@ -3849,12 +3853,16 @@ void TextEdit::redo() {
 	_do_text_op(op, false);
 	current_op.version = op.version;
 	if(undo_stack_pos->get().chain_forward) {
-		do {
+
+		while(true) {
+			ERR_BREAK(!undo_stack_pos->next());
 			undo_stack_pos=undo_stack_pos->next();
 			op = undo_stack_pos->get();
 			_do_text_op(op, false);
 			current_op.version = op.version;
-		} while(!undo_stack_pos->get().chain_backward);
+			if (undo_stack_pos->get().chain_backward)
+				break;
+		}
 	}
 	cursor_set_line(undo_stack_pos->get().to_line);
 	cursor_set_column(undo_stack_pos->get().to_column);
