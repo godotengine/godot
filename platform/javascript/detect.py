@@ -44,6 +44,9 @@ def get_flags():
 
 
 def configure(env):
+	env['ENV'] = os.environ;
+	env.use_windows_spawn_fix('javascript')
+
 	env.Append(CPPPATH=['#platform/javascript'])
 
 	em_path=os.environ["EMSCRIPTEN_ROOT"]
