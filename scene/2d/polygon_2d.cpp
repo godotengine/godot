@@ -146,15 +146,17 @@ void Polygon2D::_notification(int p_what) {
 
 			Vector<Color> colors;
 			int color_len=vertex_colors.size();
-			colors.resize(len);
-			{
+			if (color_len>0){
 				DVector<Color>::Read color_r=vertex_colors.read();
+				colors.resize(len);
 				for(int i=0;i<color_len && i<len;i++){
 					colors[i]=color_r[i];
 				}
 				for(int i=color_len;i<len;i++){
 					colors[i]=color;
 				}
+			}else{
+				colors.push_back(color);
 			}
 
 			Vector<int> indices = Geometry::triangulate_polygon(points);

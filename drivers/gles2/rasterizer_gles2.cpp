@@ -8527,7 +8527,7 @@ void RasterizerGLES2::canvas_draw_polygon(int p_vertex_count, const int* p_indic
     Color m;
     if (p_singlecolor) {
         m = *p_colors;
-        m.a*=canvas_opacity;
+        m.a *= canvas_opacity;
         _set_color_attrib(m);
     } else if (!p_colors) {
         m = Color(1, 1, 1, canvas_opacity);
