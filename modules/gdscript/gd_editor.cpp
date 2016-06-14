@@ -1024,7 +1024,7 @@ static bool _guess_identifier_type_in_block(GDCompletionContext& context,int p_l
 }
 
 
-static bool _guess_identifier_from_assignment_in_function(GDCompletionContext& context,const StringName& p_identifier, const StringName& p_function,GDCompletionIdentifier &r_type) {
+static bool _guess_identifier_from_assignment_in_function(GDCompletionContext& context, int p_src_line, const StringName& p_identifier, const StringName& p_function,GDCompletionIdentifier &r_type) {
 
 	const GDParser::FunctionNode* func=NULL;
 	for(int i=0;i<context._class->functions.size();i++) {
@@ -1039,7 +1039,9 @@ static bool _guess_identifier_from_assignment_in_function(GDCompletionContext& c
 
 	for(int i=0;i<func->body->statements.size();i++) {
 
-
+		if (func->body->statements[i]->line == p_src_line) {
+			break;
+		}
 
 		if (func->body->statements[i]->type==GDParser::BlockNode::TYPE_OPERATOR) {
 			const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(func->body->statements[i]);
@@ -1160,11 +1162,11 @@ static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const
 				}
 
 				//try to guess from assignment in construtor or _ready
-				if (_guess_identifier_from_assignment_in_function(context,p_identifier,"_ready",r_type))
+				if (_guess_identifier_from_assignment_in_function(context,p_line+1,p_identifier,"_ready",r_type))
 					return true;
-				if (_guess_identifier_from_assignment_in_function(context,p_identifier,"_enter_tree",r_type))
+				if (_guess_identifier_from_assignment_in_function(context,p_line+1,p_identifier,"_enter_tree",r_type))
 					return true;
-				if (_guess_identifier_from_assignment_in_function(context,p_identifier,"_init",r_type))
+				if (_guess_identifier_from_assignment_in_function(context,p_line+1,p_identifier,"_init",r_type))
 					return true;
 
 				return false;
