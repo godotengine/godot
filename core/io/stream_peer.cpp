@@ -357,7 +357,6 @@ String StreamPeer::get_string(int p_bytes){
 String StreamPeer::get_utf8_string(int p_bytes){
 
 	ERR_FAIL_COND_V(p_bytes<0,String());
-	ERR_FAIL_COND_V(p_bytes<0,String());
 
 	Vector<uint8_t> buf;
 	buf.resize(p_bytes);
