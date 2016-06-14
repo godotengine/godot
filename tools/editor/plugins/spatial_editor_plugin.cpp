@@ -996,26 +996,26 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 							case TRANSFORM_VIEW: {
 
 								_edit.plane=TRANSFORM_X_AXIS;
-								set_message(TTR("View Plane Transform."),2);
+								set_message(TTR("X-Axis Transform."),2);
 								name="";
 								_update_name();
 							} break;
 							case TRANSFORM_X_AXIS: {
 
 								_edit.plane=TRANSFORM_Y_AXIS;
-								set_message(TTR("X-Axis Transform."),2);
+								set_message(TTR("Y-Axis Transform."),2);
 
 							} break;
 							case TRANSFORM_Y_AXIS: {
 
 								_edit.plane=TRANSFORM_Z_AXIS;
-								set_message(TTR("Y-Axis Transform."),2);
+								set_message(TTR("Z-Axis Transform."),2);
 
 							} break;
 							case TRANSFORM_Z_AXIS: {
 
 								_edit.plane=TRANSFORM_VIEW;
-								set_message(TTR("Z-Axis Transform."),2);
+								set_message(TTR("View Plane Transform."),2);
 
 							} break;
 						}
