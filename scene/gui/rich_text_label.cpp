@@ -278,6 +278,11 @@ if (m_height > line_height) {\
 						if (c[end]=='\t') {
 							cw=tab_size*font->get_char_size(' ').width;
 						}
+
+						if (end>0 && w+cw+begin > p_width ) {
+							break; //don't allow lines longer than assigned width
+						}
+
 						w+=cw;
 
 						if (c[end]==' ') {
@@ -340,9 +345,11 @@ if (m_height > line_height) {\
 
 
 								int cw=font->get_char_size(c[i],c[i+1]).x;
+
 								if (c[i]=='\t') {
 									cw=tab_size*font->get_char_size(' ').width;
 								}
+
 
 								if (p_click_pos.x-cw/2>p_ofs.x+align_ofs+pofs) {
 
