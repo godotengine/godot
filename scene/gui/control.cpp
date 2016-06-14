@@ -447,7 +447,7 @@ void Control::_notification(int p_notification) {
 
 
 				Node *parent=this; //meh
-				Node *parent_control=NULL;
+				Control *parent_control=NULL;
 				bool subwindow=false;
 
 				while(parent) {
@@ -463,8 +463,9 @@ void Control::_notification(int p_notification) {
 						break;
 					}
 
-					if (parent->cast_to<Control>()) {
-						parent_control=parent->cast_to<Control>();
+					parent_control=parent->cast_to<Control>();
+
+					if (parent_control) {
 						break;
 					} else if (ci) {
 

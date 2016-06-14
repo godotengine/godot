@@ -1042,7 +1042,9 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("edit_rotate","degrees"),&CanvasItem::edit_rotate);
 
 	ObjectTypeDB::bind_method(_MD("get_item_rect"),&CanvasItem::get_item_rect);
+	ObjectTypeDB::bind_method(_MD("get_item_and_children_rect"),&CanvasItem::get_item_and_children_rect);
 	//ObjectTypeDB::bind_method(_MD("get_transform"),&CanvasItem::get_transform);
+
 	ObjectTypeDB::bind_method(_MD("get_canvas_item"),&CanvasItem::get_canvas_item);
 
 	ObjectTypeDB::bind_method(_MD("is_visible"),&CanvasItem::is_visible);
@@ -1193,6 +1195,23 @@ int CanvasItem::get_canvas_layer() const {
 		return canvas_layer->get_layer();
 	else
 		return 0;
+}
+
+
+Rect2 CanvasItem::get_item_and_children_rect() const {
+
+	Rect2 rect = get_item_rect();
+
+
+	for(int i=0;i<get_child_count();i++) {
+		CanvasItem *c=get_child(i)->cast_to<CanvasItem>();
+		if (c) {
+			Rect2 sir = c->get_transform().xform(c->get_item_and_children_rect());
+			rect = rect.merge(sir);
+		}
+	}
+
+	return rect;
 }
 
 CanvasItem::CanvasItem() : xform_change(this) {

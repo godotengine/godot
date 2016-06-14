@@ -240,6 +240,8 @@ public:
 	virtual Matrix32 get_global_transform() const;
 	virtual Matrix32 get_global_transform_with_canvas() const;
 
+	Rect2 get_item_and_children_rect() const;
+
 	CanvasItem *get_toplevel() const;
 	_FORCE_INLINE_ RID get_canvas_item() const { return canvas_item; }
 
