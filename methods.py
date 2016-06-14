@@ -1343,7 +1343,7 @@ def android_add_to_attributes(self,file):
 def disable_module(self):
 	self.disabled_modules.append(self.current_module)
 
-def use_windows_spawn_fix(self):
+def use_windows_spawn_fix(self, platform=None):
 
     if (os.name!="nt"):
 	return #not needed, only for windows
@@ -1353,10 +1353,13 @@ def use_windows_spawn_fix(self):
     import subprocess
 
     def mySubProcess(cmdline,env):
-	    #print "SPAWNED : " + cmdline
+	    prefix = ""
+	    if(platform == 'javascript'):
+	        prefix = "python.exe "
+
 	    startupinfo = subprocess.STARTUPINFO()
 	    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-	    proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+	    proc = subprocess.Popen(prefix + cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
 		    stderr=subprocess.PIPE, startupinfo=startupinfo, shell = False, env = env)
 	    data, err = proc.communicate()
 	    rv = proc.wait()
