@@ -169,7 +169,7 @@ private:
 	float _get_range(int p_idx) const;
 	float _s2a(float p_val, AnchorType p_anchor,float p_range) const;
 	float _a2s(float p_val, AnchorType p_anchor,float p_range) const;
-	void _propagate_theme_changed(Control *p_owner);
+	void _propagate_theme_changed(CanvasItem *p_at, Control *p_owner);
 
 	void _change_notify_margins();
 	void _update_minimum_size();

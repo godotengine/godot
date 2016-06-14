@@ -437,6 +437,12 @@ void Control::_notification(int p_notification) {
 
 			if (is_set_as_toplevel()) {
 				data.SI=get_viewport()->_gui_add_subwindow_control(this);
+
+				if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
+					data.theme_owner=data.parent->data.theme_owner;
+					notification(NOTIFICATION_THEME_CHANGED);
+				}
+
 			} else {
 
 
@@ -470,6 +476,10 @@ void Control::_notification(int p_notification) {
 
 				if (parent_control) {
 					//do nothing, has a parent control
+					if (data.theme.is_null() && parent_control->data.theme_owner) {
+						data.theme_owner=parent_control->data.theme_owner;
+						notification(NOTIFICATION_THEME_CHANGED);
+					}
 				} else if (subwindow) {
 					//is a subwindow (process input before other controls for that canvas)
 					data.SI=get_viewport()->_gui_add_subwindow_control(this);
@@ -1829,18 +1839,29 @@ void Control::_modal_stack_remove() {
 
 }
 
-void Control::_propagate_theme_changed(Control *p_owner) {
+void Control::_propagate_theme_changed(CanvasItem *p_at,Control *p_owner) {
 
-	for(int i=0;i<get_child_count();i++) {
+	Control *c = p_at->cast_to<Control>();
 
-		Control *child = get_child(i)->cast_to<Control>();
-		if (child && child->data.theme.is_null()) //has no theme, propagate
-			child->_propagate_theme_changed(p_owner);
+	if (c && c->data.theme.is_valid())	// has a theme, this can't be propagated
+		return;
+
+	for(int i=0;i<p_at->get_child_count();i++) {
+
+		CanvasItem *child = p_at->get_child(i)->cast_to<CanvasItem>();
+		if (child) {
+			_propagate_theme_changed(child,p_owner);
+		}
+
 	}
 
-	data.theme_owner=p_owner;
-	_notification(NOTIFICATION_THEME_CHANGED);
-	update();
+
+	if (c) {
+
+		c->data.theme_owner=p_owner;
+		c->_notification(NOTIFICATION_THEME_CHANGED);
+		c->update();
+	}
 }
 
 void Control::set_theme(const Ref<Theme>& p_theme) {
@@ -1849,15 +1870,15 @@ void Control::set_theme(const Ref<Theme>& p_theme) {
 	data.theme=p_theme;
 	if (!p_theme.is_null()) {
 
-		_propagate_theme_changed(this);
+		_propagate_theme_changed(this,this);
 	} else {
 
 		Control *parent = get_parent()?get_parent()->cast_to<Control>():NULL;
 		if (parent && parent->data.theme_owner) {
-			_propagate_theme_changed(parent->data.theme_owner);
+			_propagate_theme_changed(this,parent->data.theme_owner);
 		} else {
 
-			_propagate_theme_changed(NULL);
+			_propagate_theme_changed(this,NULL);
 		}
 
 	}
