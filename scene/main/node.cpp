@@ -283,7 +283,11 @@ void Node::move_child(Node *p_child,int p_pos) {
 	ERR_FAIL_INDEX( p_pos, data.children.size()+1 );
 	ERR_EXPLAIN("child is not a child of this node.");
 	ERR_FAIL_COND(p_child->data.parent!=this);
-	ERR_FAIL_COND(data.blocked>0);
+	if (data.blocked>0) {
+		ERR_EXPLAIN("Parent node is busy setting up children, move_child() failed. Consider using call_deferred(\"move_child\") instead (or \"popup\" if this is from a popup).");
+		ERR_FAIL_COND(data.blocked>0);
+	}
+
 
 	data.children.remove( p_child->data.pos );
 	data.children.insert( p_pos, p_child );
@@ -739,6 +743,12 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 	}
 	ERR_EXPLAIN("Can't add child, already has a parent");
 	ERR_FAIL_COND( p_child->data.parent );
+
+	if (data.blocked>0) {
+		ERR_EXPLAIN("Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\",child) instead.");
+		ERR_FAIL_COND(data.blocked>0);
+	}
+
 	ERR_EXPLAIN("Can't add child while a notification is happening");
 	ERR_FAIL_COND( data.blocked > 0 );
 
@@ -800,7 +810,10 @@ void Node::_propagate_validate_owner() {
 void Node::remove_child(Node *p_child) {
 
 	ERR_FAIL_NULL(p_child);
-	ERR_FAIL_COND( data.blocked > 0 );
+	if (data.blocked>0) {
+		ERR_EXPLAIN("Parent node is busy setting up children, remove_node() failed. Consider using call_deferred(\"remove_child\",child) instead.");
+		ERR_FAIL_COND(data.blocked>0);
+	}
 
 	int idx=-1;
 	for (int i=0;i<data.children.size();i++) {
