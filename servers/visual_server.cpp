@@ -560,7 +560,7 @@ void VisualServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("draw"),&VisualServer::draw);
 	ObjectTypeDB::bind_method(_MD("sync"),&VisualServer::sync);
-	ObjectTypeDB::bind_method(_MD("free"),&VisualServer::free);
+	ObjectTypeDB::bind_method(_MD("free_rid"),&VisualServer::free);
 
 	ObjectTypeDB::bind_method(_MD("set_default_clear_color"),&VisualServer::set_default_clear_color);
 
