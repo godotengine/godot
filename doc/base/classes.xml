@@ -6883,6 +6883,12 @@
 			Return a rect containing the editable contents of the item.
 			</description>
 		</method>
+		<method name="get_item_and_children_rect" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_canvas_item" qualifiers="const">
 			<return type="RID">
 			</return>
@@ -15837,6 +15843,27 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			Returns the duration of the current vibration effect in seconds.
 			</description>
+		</method>
+		<method name="start_joy_vibration">
+			<argument index="0" name="device" type="int">
+			</argument>
+			<argument index="1" name="weak_magnitude" type="float">
+			</argument>
+			<argument index="2" name="strong_magnitude" type="float">
+			</argument>
+			<argument index="3" name="duration" type="float">
+			</argument>
+			<description>
+			Starts to vibrate the joystick. Joysticks usually come with two rumble motors, a strong and a weak one. weak_magnitude is the strength of the weak motor (between 0 and 1) and strong_magnitude is the strength of the strong motor (between 0 and 1). duration is the duration of the effect in seconds (a duration of 0 will play the vibration indefinitely).
+			</description>
+		</method>
+		<method name="stop_joy_vibration">
+			<argument index="0" name="device" type="int">
+			</argument>
+			<description>
+			Stops the vibration of the joystick.
+			</description>
+		</method>
 		<method name="get_accelerometer">
 			<return type="Vector3">
 			</return>
@@ -15877,26 +15904,6 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</return>
 			<description>
 			Return the mouse mode. See the constants for more information.
-			</description>
-		</method>
-		<method name="start_joy_vibration">
-			<argument index="0" name="device" type="int">
-			</argument>
-			<argument index="1" name="weak_magnitude" type="float">
-			</argument>
-			<argument index="2" name="strong_magnitude" type="float">
-			</argument>
-			<argument index="3" name="duration" type="float">
-			</argument>
-			<description>
-			Starts to vibrate the joystick. Joysticks usually come with two rumble motors, a strong and a weak one. weak_magnitude is the strength of the weak motor (between 0 and 1) and strong_magnitude is the strength of the strong motor (between 0 and 1). duration is the duration of the effect in seconds (a duration of 0 will play the vibration indefinitely).
-			</description>
-		</method>
-		<method name="stop_joy_vibration">
-			<argument index="0" name="device" type="int">
-			</argument>
-			<description>
-			Stops the vibration of the joystick.
 			</description>
 		</method>
 		<method name="warp_mouse_pos">
@@ -36925,16 +36932,16 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<constants>
 		<constant name="STATUS_DISCONNECTED" value="0">
-		A status representing a [StreamPeerSSL] that is disconnected.
+			A status representing a [StreamPeerSSL] that is disconnected.
 		</constant>
 		<constant name="STATUS_CONNECTED" value="1">
-		A status representing a [StreamPeerSSL] that is connected to a host.
+			A status representing a [StreamPeerSSL] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR_NO_CERTIFICATE" value="2">
-		An errot status that shows the peer did not present a SSL certificate and validation was requested.
+			An errot status that shows the peer did not present a SSL certificate and validation was requested.
 		</constant>
 		<constant name="STATUS_ERROR_HOSTNAME_MISMATCH" value="3">
-		An error status that shows a mismatch in the SSL certificate domain presented by the host and the domain requested for validation.
+			An error status that shows a mismatch in the SSL certificate domain presented by the host and the domain requested for validation.
 		</constant>
 	</constants>
 </class>
@@ -36993,16 +37000,16 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<constants>
 		<constant name="STATUS_NONE" value="0">
-		The initial status of the [StreamPeerTCP], also the status after a disconnect.
+			The initial status of the [StreamPeerTCP], also the status after a disconnect.
 		</constant>
 		<constant name="STATUS_CONNECTING" value="1">
-		A status representing a [StreamPeerTCP] that is connecting to a host.
+			A status representing a [StreamPeerTCP] that is connecting to a host.
 		</constant>
 		<constant name="STATUS_CONNECTED" value="2">
-		A status representing a [StreamPeerTCP] that is connected to a host.
+			A status representing a [StreamPeerTCP] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR" value="3">
-		A staus representing a [StreamPeerTCP] in error state.
+			A staus representing a [StreamPeerTCP] in error state.
 		</constant>
 	</constants>
 </class>
@@ -42931,7 +42938,7 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="get_linear_velocity">
+		<method name="get_linear_velocity" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
@@ -45339,7 +45346,7 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="free">
+		<method name="free_rid">
 			<argument index="0" name="arg0" type="RID">
 			</argument>
 			<description>
