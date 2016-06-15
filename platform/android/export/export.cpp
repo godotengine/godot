@@ -232,7 +232,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	void _fix_manifest(Vector<uint8_t>& p_manifest, bool p_give_internet);
 	void _fix_resources(Vector<uint8_t>& p_manifest);
 	static Error save_apk_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total);
-	static bool _should_compress_asset(const String& p_path);
+	static bool _should_compress_asset(const String& p_path, const Vector<uint8_t>& p_data);
 
 protected:
 
@@ -1003,7 +1003,7 @@ Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata,const String& 
 		NULL,
 		0,
 		NULL,
-		_should_compress_asset(p_path) ? Z_DEFLATED : 0,
+		_should_compress_asset(p_path,p_data) ? Z_DEFLATED : 0,
 		Z_DEFAULT_COMPRESSION);
 
 
@@ -1014,7 +1014,7 @@ Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata,const String& 
 
 }
 
-bool EditorExportPlatformAndroid::_should_compress_asset(const String& p_path) {
+bool EditorExportPlatformAndroid::_should_compress_asset(const String& p_path, const Vector<uint8_t>& p_data) {
 
 	/*
 	 *  By not compressing files with little or not benefit in doing so,
@@ -1049,12 +1049,7 @@ bool EditorExportPlatformAndroid::_should_compress_asset(const String& p_path) {
 
 	// -- Compressed resource?
 
-	FileAccess *f=FileAccess::open(p_path,FileAccess::READ);
-	ERR_FAIL_COND_V(!f,true);
-
-	uint8_t header[4];
-	f->get_buffer(header,4);
-	if (header[0]=='R' && header[1]=='S' && header[2]=='C' && header[3]=='C') {
+	if (p_data.size() >= 4 && p_data[0]=='R' && p_data[1]=='S' && p_data[2]=='C' && p_data[3]=='C') {
 		// Already compressed
 		return false;
 	}
