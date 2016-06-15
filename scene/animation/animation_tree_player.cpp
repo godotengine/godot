@@ -669,7 +669,7 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 			}
 			tsn->seek_pos=-1;
 
-			return _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time,p_seek);
+			return _process_node(tsn->inputs[0].node,r_prev_anim,p_weight,p_time,p_seek, p_filter, p_reverse_weight);
 
 		}   break;
 		case NODE_TRANSITION: {
