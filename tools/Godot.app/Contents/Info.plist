@@ -34,7 +34,7 @@
 		<string>10.6.0</string>
 	</dict>
 	<key>NSHighResolutionCapable</key>
-	<false/>
+	<true/>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
