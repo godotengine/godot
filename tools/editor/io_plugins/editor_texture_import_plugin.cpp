@@ -1144,6 +1144,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 		if (!p_external) {
 			from->set_editor(get_name());
+			from->set_source_md5(0,FileAccess::get_md5(src_path));
 			existing->set_path(p_path);
 			existing->set_import_metadata(from);
 		}
