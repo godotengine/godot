@@ -37,6 +37,7 @@
 #endif
 
 DWORD WINAPI _xinput_get_state(DWORD dwUserIndex, XINPUT_STATE* pState) { return ERROR_DEVICE_NOT_CONNECTED; }
+DWORD WINAPI _xinput_set_state(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration) { return ERROR_DEVICE_NOT_CONNECTED; }
 
 joystick_windows::joystick_windows() {
 
@@ -50,6 +51,7 @@ joystick_windows::joystick_windows(InputDefault* _input, HWND* hwnd) {
 	dinput = NULL;
 	xinput_dll = NULL;
 	xinput_get_state = NULL;
+	xinput_set_state = NULL;
 
 	load_xinput();
 
@@ -300,6 +302,9 @@ void joystick_windows::probe_joysticks() {
 
 				x_joysticks[i].attached = true;
 				x_joysticks[i].id = id;
+				x_joysticks[i].ff_timestamp = 0;
+				x_joysticks[i].ff_end_timestamp = 0;
+				x_joysticks[i].vibrating = false;
 				attached_joysticks[id] = true;
 				input->joy_connection_changed(id, true, "XInput Gamepad","__XINPUT_DEVICE__");
 			}
@@ -358,6 +363,20 @@ unsigned int joystick_windows::process_joysticks(unsigned int p_last_id) {
 			p_last_id = input->joy_axis(p_last_id, joy.id, JOY_AXIS_5,  axis_correct(joy.state.Gamepad.bRightTrigger, true, true));
 			joy.last_packet = joy.state.dwPacketNumber;
 		}
+		uint64_t timestamp = input->get_joy_vibration_timestamp(joy.id);
+		if (timestamp > joy.ff_timestamp) {
+			Vector2 strength = input->get_joy_vibration_strength(joy.id);
+			float duration = input->get_joy_vibration_duration(joy.id);
+			if (strength.x == 0 && strength.y == 0) {
+				joystick_vibration_stop_xinput(i, timestamp);
+			} else {
+				joystick_vibration_start_xinput(i, strength.x, strength.y, duration, timestamp);
+			}
+		} else if (joy.vibrating && joy.ff_end_timestamp != 0) {
+			uint64_t current_time = OS::get_singleton()->get_ticks_usec();
+			if (current_time >= joy.ff_end_timestamp)
+				joystick_vibration_stop_xinput(i, current_time);
+		}
 	}
 
 	for (int i = 0; i < JOYSTICKS_MAX; i++) {
@@ -401,7 +420,7 @@ unsigned int joystick_windows::process_joysticks(unsigned int p_last_id) {
 			}
 		}
 
-        // on mingw, these constants are not constants
+		// on mingw, these constants are not constants
 		int count = 6;
 		int axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_Z, DIJOFS_RX, DIJOFS_RY, DIJOFS_RZ };
 		int values[] = { js.lX, js.lY, js.lZ, js.lRx, js.lRy, js.lRz };
@@ -500,9 +519,38 @@ InputDefault::JoyAxis joystick_windows::axis_correct(int p_val, bool p_xinput, b
 	return jx;
 }
 
+void joystick_windows::joystick_vibration_start_xinput(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp) {
+	xinput_gamepad &joy = x_joysticks[p_device];
+	if (joy.attached) {
+		XINPUT_VIBRATION effect;
+		effect.wLeftMotorSpeed = (65535 * p_strong_magnitude);
+		effect.wRightMotorSpeed = (65535 * p_weak_magnitude);
+		if (xinput_set_state(p_device, &effect) == ERROR_SUCCESS) {
+			joy.ff_timestamp = p_timestamp;
+			joy.ff_end_timestamp = p_duration == 0 ? 0 : p_timestamp + (uint64_t)(p_duration * 1000000.0);
+			joy.vibrating = true;
+		}
+	}
+}
+
+void joystick_windows::joystick_vibration_stop_xinput(int p_device, uint64_t p_timestamp) {
+	xinput_gamepad &joy = x_joysticks[p_device];
+	if (joy.attached) {
+		XINPUT_VIBRATION effect;
+		effect.wLeftMotorSpeed  = 0;
+		effect.wRightMotorSpeed = 0;
+		if (xinput_set_state(p_device, &effect) == ERROR_SUCCESS) {
+			joy.ff_timestamp = p_timestamp;
+			joy.vibrating = false;
+		}
+	}
+}
+
+
 void joystick_windows::load_xinput() {
 
 	xinput_get_state = &_xinput_get_state;
+	xinput_set_state = &_xinput_set_state;
 	xinput_dll = LoadLibrary( "XInput1_4.dll" );
 	if (!xinput_dll) {
 		xinput_dll = LoadLibrary("XInput1_3.dll");
@@ -519,12 +567,13 @@ void joystick_windows::load_xinput() {
 	}
 
 	XInputGetState_t func = (XInputGetState_t)GetProcAddress((HMODULE)xinput_dll, "XInputGetState");
-	if (!func) {
+	XInputSetState_t set_func = (XInputSetState_t)GetProcAddress((HMODULE)xinput_dll, "XInputSetState");
+	if (!func || !set_func) {
 		unload_xinput();
 		return;
 	}
 	xinput_get_state = func;
-	return;
+	xinput_set_state = set_func;
 }
 
 void joystick_windows::unload_xinput() {

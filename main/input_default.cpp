@@ -327,7 +327,7 @@ void InputDefault::start_joy_vibration(int p_device, float p_weak_magnitude, flo
 	vibration.weak_magnitude = p_weak_magnitude;
 	vibration.strong_magnitude = p_strong_magnitude;
 	vibration.duration = p_duration;
-	vibration.timestamp = OS::get_singleton()->get_unix_time();
+	vibration.timestamp = OS::get_singleton()->get_ticks_usec();
 	joy_vibration[p_device] = vibration;
 }
 
