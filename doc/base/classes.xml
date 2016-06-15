@@ -36681,150 +36681,175 @@ This method controls whether the position between two cached points is interpola
 			<return type="int">
 			</return>
 			<description>
+			Return the amount of bytes this [StreamPeer] has available.
 			</description>
 		</method>
 		<method name="set_big_endian">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set this [StreamPeer] to use big-endian format. Default is false.
 			</description>
 		</method>
 		<method name="is_big_endian_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this [StreamPeer] is using big-endian format.
 			</description>
 		</method>
 		<method name="put_8">
 			<argument index="0" name="val" type="int">
 			</argument>
 			<description>
+			Put a signed byte into the stream.
 			</description>
 		</method>
 		<method name="put_u8">
 			<argument index="0" name="val" type="int">
 			</argument>
 			<description>
+			Put an unsigned byte into the stream.
 			</description>
 		</method>
 		<method name="put_16">
 			<argument index="0" name="val" type="int">
 			</argument>
 			<description>
+			Put a signed 16 bit value into the stream.
 			</description>
 		</method>
 		<method name="put_u16">
 			<argument index="0" name="val" type="int">
 			</argument>
 			<description>
+			Put an unsigned 16 bit value into the stream.
 			</description>
 		</method>
 		<method name="put_32">
 			<argument index="0" name="val" type="int">
 			</argument>
 			<description>
+			Put a signed 32 bit value into the stream.
 			</description>
 		</method>
 		<method name="put_u32">
 			<argument index="0" name="val" type="int">
 			</argument>
 			<description>
+			Put an unsigned 32 bit value into the stream.
 			</description>
 		</method>
 		<method name="put_64">
 			<argument index="0" name="val" type="int">
 			</argument>
 			<description>
+			Put a signed 64 bit value into the stream.
 			</description>
 		</method>
 		<method name="put_u64">
 			<argument index="0" name="val" type="int">
 			</argument>
 			<description>
+			Put an unsigned 64 bit value into the stream.
 			</description>
 		</method>
 		<method name="put_float">
 			<argument index="0" name="val" type="float">
 			</argument>
 			<description>
+			Put a single-precision float into the stream.
 			</description>
 		</method>
 		<method name="put_double">
 			<argument index="0" name="val" type="float">
 			</argument>
 			<description>
+			Put a double-precision float into the stream.
 			</description>
 		</method>
 		<method name="put_utf8_string">
 			<argument index="0" name="val" type="String">
 			</argument>
 			<description>
+			Put a zero-terminated utf8 string into the stream.
 			</description>
 		</method>
 		<method name="put_var">
 			<argument index="0" name="val" type="Variant">
 			</argument>
 			<description>
+			Put a variable into the stream.
 			</description>
 		</method>
 		<method name="get_8">
 			<return type="int">
 			</return>
 			<description>
+			Get a signed byte from the stream.
 			</description>
 		</method>
 		<method name="get_u8">
 			<return type="int">
 			</return>
 			<description>
+			Get an unsigned byte from the stream.
 			</description>
 		</method>
 		<method name="get_16">
 			<return type="int">
 			</return>
 			<description>
+			Get a signed 16 bit value from the stream.
 			</description>
 		</method>
 		<method name="get_u16">
 			<return type="int">
 			</return>
 			<description>
+			Get an unsigned 16 bit value from the stream.
 			</description>
 		</method>
 		<method name="get_32">
 			<return type="int">
 			</return>
 			<description>
+			Get a signed 32 bit value from the stream.
 			</description>
 		</method>
 		<method name="get_u32">
 			<return type="int">
 			</return>
 			<description>
+			Get an unsigned 32 bit value from the stream.
 			</description>
 		</method>
 		<method name="get_64">
 			<return type="int">
 			</return>
 			<description>
+			Get a signed 64 bit value from the stream.
 			</description>
 		</method>
 		<method name="get_u64">
 			<return type="int">
 			</return>
 			<description>
+			Get an unsigned 16 bit value from the stream.
 			</description>
 		</method>
 		<method name="get_float">
 			<return type="float">
 			</return>
 			<description>
+			Get a single-precision float from the stream.
 			</description>
 		</method>
 		<method name="get_double">
 			<return type="float">
 			</return>
 			<description>
+			Get a double-precision float from the stream.
 			</description>
 		</method>
 		<method name="get_string">
@@ -36833,6 +36858,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="bytes" type="int">
 			</argument>
 			<description>
+			Get a string with byte-length "bytes" from the stream.
 			</description>
 		</method>
 		<method name="get_utf8_string">
@@ -36841,12 +36867,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="bytes" type="int">
 			</argument>
 			<description>
+			Get an utf8 string with byte-length "bytes" from the stream (this decodes the string sent as utf8).
 			</description>
 		</method>
 		<method name="get_var">
 			<return type="Variant">
 			</return>
 			<description>
+			Get a variable from the stream.
 			</description>
 		</method>
 	</methods>
@@ -36855,8 +36883,10 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="StreamPeerSSL" inherits="StreamPeer" category="Core">
 	<brief_description>
+	SSL Stream peer.
 	</brief_description>
 	<description>
+	SSL Stream peer. This object can be used to connect to SSL servers.
 	</description>
 	<methods>
 		<method name="accept">
@@ -36877,27 +36907,34 @@ This method controls whether the position between two cached points is interpola
 			<argument index="2" name="for_hostname" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
+			Connect to a peer using an underlying [StreamPeer] "stream", when "validate_certs" is true, [StreamPeerSSL] will validate that the certificate presented by the peer matches the "for_hostname".
 			</description>
 		</method>
 		<method name="get_status" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the status of the connection, one of STATUS_* enum.
 			</description>
 		</method>
 		<method name="disconnect">
 			<description>
+			Disconnect from host.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="STATUS_DISCONNECTED" value="0">
+		A status representing a [StreamPeerSSL] that is disconnected.
 		</constant>
 		<constant name="STATUS_CONNECTED" value="1">
+		A status representing a [StreamPeerSSL] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR_NO_CERTIFICATE" value="2">
+		An errot status that shows the peer did not present a SSL certificate and validation was requested.
 		</constant>
 		<constant name="STATUS_ERROR_HOSTNAME_MISMATCH" value="3">
+		An error status that shows a mismatch in the SSL certificate domain presented by the host and the domain requested for validation.
 		</constant>
 	</constants>
 </class>
@@ -36917,45 +36954,55 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="port" type="int">
 			</argument>
 			<description>
+			Connect to the specified IP:port pair. Returns [OK] on success or [FAILED] on failure.
 			</description>
 		</method>
 		<method name="is_connected" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this peer is connected. Returns true while connecting and connected.
 			</description>
 		</method>
 		<method name="get_status" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the status of the connection, one of STATUS_* enum.
 			</description>
 		</method>
 		<method name="get_connected_host" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+			Return the IP of this peer.
 			</description>
 		</method>
 		<method name="get_connected_port" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the port of this peer.
 			</description>
 		</method>
 		<method name="disconnect">
 			<description>
+			Disconnect from host.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="STATUS_NONE" value="0">
+		The initial status of the [StreamPeerTCP], also the status after a disconnect.
 		</constant>
 		<constant name="STATUS_CONNECTING" value="1">
+		A status representing a [StreamPeerTCP] that is connecting to a host.
 		</constant>
 		<constant name="STATUS_CONNECTED" value="2">
+		A status representing a [StreamPeerTCP] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR" value="3">
+		A staus representing a [StreamPeerTCP] in error state.
 		</constant>
 	</constants>
 </class>
