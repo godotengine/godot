@@ -37,17 +37,10 @@ platform/android/java/.gradle
 platform/android/java/.gradletasknamecache
 platform/android/java/local.properties
 platform/android/java/project.properties
+platform/android/java/build.gradle
 platform/android/java/AndroidManifest.xml
-platform/android/java/bin/*
 platform/android/java/libs/*
-platform/android/java/gen/*
 platform/android/java/assets
-platform/android/libs/apk_expansion/bin/*
-platform/android/libs/apk_expansion/gen/*
-platform/android/libs/google_play_services/bin/*
-platform/android/libs/google_play_services/gen/*
-platform/android/libs/play_licensing/bin/*
-platform/android/libs/play_licensing/gen/*
 
 # General c++ generated files
 *.lib

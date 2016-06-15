@@ -1166,7 +1166,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 			skip=true;
 		}
 
-		if (file=="lib/armeabi/libgodot_android.so" && !export_arm) {
+		if (file.match("lib/armeabi*/libgodot_android.so") && !export_arm) {
 			skip=true;
 		}
 
