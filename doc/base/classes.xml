@@ -1829,6 +1829,8 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_RESTART_IF_CHANGED" value="4096">
 		</constant>
+		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="8192">
+		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="7">
 			Default usage (storage and editor).
 		</constant>
@@ -2392,7 +2394,35 @@
 			</description>
 		</method>
 		<method name="get_sprite_frames" qualifiers="const">
-			<return type="Texture">
+			<return type="SpriteFrames">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_animation">
+			<argument index="0" name="animation" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_animation" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="play">
+			<argument index="0" name="anim" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="stop">
+			<description>
+			</description>
+		</method>
+		<method name="is_playing" qualifiers="const">
+			<return type="bool">
 			</return>
 			<description>
 			</description>
@@ -4474,9 +4504,11 @@
 			</description>
 		</method>
 		<method name="rfind">
+			<return type="int">
+			</return>
 			<argument index="0" name="what" type="var">
 			</argument>
-			<argument index="1" name="from" type="int">
+			<argument index="1" name="from" type="int" default="-1">
 			</argument>
 			<description>
 			Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
@@ -10408,7 +10440,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</description>
 		</method>
 		<method name="erase">
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="key" type="var">
 			</argument>
 			<description>
 			Erase a dictionary key/value pair by key.
@@ -10417,7 +10449,7 @@ This approximation makes straight segments between each point, then subdivides t
 		<method name="has">
 			<return type="bool">
 			</return>
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="key" type="var">
 			</argument>
 			<description>
 			Return true if the dictionary has a given key.
@@ -10426,7 +10458,7 @@ This approximation makes straight segments between each point, then subdivides t
 		<method name="has_all">
 			<return type="bool">
 			</return>
-			<argument index="0" name="values" type="Array">
+			<argument index="0" name="keys" type="Array">
 			</argument>
 			<description>
 			Return true if the dictionary has all of the keys in the given array.
@@ -17352,25 +17384,13 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			</description>
 		</method>
-		<method name="set_min_icon_size">
+		<method name="set_fixed_icon_size">
 			<argument index="0" name="size" type="Vector2">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="get_min_icon_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_max_icon_size">
-			<argument index="0" name="size" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_max_icon_size" qualifiers="const">
+		<method name="get_fixed_icon_size" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
@@ -25390,8 +25410,6 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="shape_get_data" qualifiers="const">
-			<return type="Variant">
-			</return>
 			<argument index="0" name="shape" type="RID">
 			</argument>
 			<description>
@@ -25616,8 +25634,6 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="area_get_param" qualifiers="const">
-			<return type="Variant">
-			</return>
 			<argument index="0" name="area" type="RID">
 			</argument>
 			<argument index="1" name="param" type="int">
@@ -25792,8 +25808,6 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="body_get_shape_metadata" qualifiers="const">
-			<return type="Variant">
-			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<argument index="1" name="shape_idx" type="int">
@@ -25947,8 +25961,6 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="body_get_state" qualifiers="const">
-			<return type="Variant">
-			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<argument index="1" name="state" type="int">
@@ -26372,15 +26384,6 @@ This method controls whether the position between two cached points is interpola
 		</constant>
 		<constant name="JOINT_DAMPED_SPRING" value="2">
 			Constant to create damped spring joints.
-		</constant>
-		<constant name="JOINT_PARAM_BIAS" value="0">
-			Constant to set/get the solver bias for a joint.
-		</constant>
-		<constant name="JOINT_PARAM_MAX_BIAS" value="1">
-			Constant to set/get the maximum speed at which a joint can correct its bodies.
-		</constant>
-		<constant name="JOINT_PARAM_MAX_FORCE" value="2">
-			Constant to set the maximum force a joint can exert on its bodies.
 		</constant>
 		<constant name="DAMPED_STRING_REST_LENGTH" value="0">
 			Set the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.
@@ -39176,6 +39179,10 @@ This method controls whether the position between two cached points is interpola
 		<constant name="STRETCH_KEEP" value="3">
 		</constant>
 		<constant name="STRETCH_KEEP_CENTERED" value="4">
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT" value="5">
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT_CENTERED" value="6">
 		</constant>
 	</constants>
 </class>

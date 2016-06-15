@@ -1437,9 +1437,9 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(DICTIONARY,INT,Dictionary,size,varray());
 	ADDFUNC0(DICTIONARY,BOOL,Dictionary,empty,varray());
 	ADDFUNC0(DICTIONARY,NIL,Dictionary,clear,varray());
-	ADDFUNC1(DICTIONARY,BOOL,Dictionary,has,NIL,"value",varray());
-	ADDFUNC1(DICTIONARY,BOOL,Dictionary,has_all,ARRAY,"values",varray());
-	ADDFUNC1(DICTIONARY,NIL,Dictionary,erase,NIL,"value",varray());
+	ADDFUNC1(DICTIONARY,BOOL,Dictionary,has,NIL,"key",varray());
+	ADDFUNC1(DICTIONARY,BOOL,Dictionary,has_all,ARRAY,"keys",varray());
+	ADDFUNC1(DICTIONARY,NIL,Dictionary,erase,NIL,"key",varray());
 	ADDFUNC0(DICTIONARY,INT,Dictionary,hash,varray());
 	ADDFUNC0(DICTIONARY,ARRAY,Dictionary,keys,varray());
 	ADDFUNC0(DICTIONARY,ARRAY,Dictionary,values,varray());
