@@ -513,7 +513,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 	}
 
 	bool frame_done=false;
-	bool audio_done=false;
+	bool audio_done=!vorbis_p;
 
 	bool theora_done=false;
 

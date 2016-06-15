@@ -208,10 +208,17 @@ void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 		playback->set_paused(paused);
 		texture=playback->get_texture();
 
+		const int channels = playback->get_channels();
+
 		AudioServer::get_singleton()->lock();
-		resampler.setup(playback->get_channels(),playback->get_mix_rate(),server_mix_rate,buffering_ms,0);
+		if (channels > 0)
+			resampler.setup(channels,playback->get_mix_rate(),server_mix_rate,buffering_ms,0);
+		else
+			resampler.clear();
 		AudioServer::get_singleton()->unlock();
-		playback->set_mix_callback(_audio_mix_callback,this);
+
+		if (channels > 0)
+			playback->set_mix_callback(_audio_mix_callback,this);
 
 	} else {
 		texture.unref();
