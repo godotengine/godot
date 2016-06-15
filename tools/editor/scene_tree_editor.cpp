@@ -653,6 +653,8 @@ void SceneTreeEditor::_notification(int p_what) {
 		inheritance_menu->set_item_icon(2,get_icon("Load","EditorIcons"));
 		clear_inherit_confirm->connect("confirmed",this,"_subscene_option",varray(SCENE_MENU_CLEAR_INHERITANCE_CONFIRM));
 
+		EditorSettings::get_singleton()->connect("settings_changed",this,"_editor_settings_changed");
+
 
 //		get_scene()->connect("tree_changed",this,"_tree_changed",Vector<Variant>(),CONNECT_DEFERRED);
 //		get_scene()->connect("node_removed",this,"_node_removed",Vector<Variant>(),CONNECT_DEFERRED);
@@ -665,6 +667,7 @@ void SceneTreeEditor::_notification(int p_what) {
 		tree->disconnect("item_collapsed",this,"_cell_collapsed");
 		clear_inherit_confirm->disconnect("confirmed",this,"_subscene_option");
 		get_tree()->disconnect("node_configuration_warning_changed",this,"_warning_changed");
+		EditorSettings::get_singleton()->disconnect("settings_changed",this,"_editor_settings_changed");
 	}
 
 }
@@ -1048,6 +1051,21 @@ void SceneTreeEditor::_warning_changed(Node* p_for_node) {
 
 }
 
+
+void SceneTreeEditor::_editor_settings_changed() {
+	bool enable_rl = EditorSettings::get_singleton()->get("scenetree_editor/draw_relationship_lines");
+	Color rl_color = EditorSettings::get_singleton()->get("scenetree_editor/relationship_line_color");
+
+	if (enable_rl) {
+		tree->add_constant_override("draw_relationship_lines",1);
+		tree->add_color_override("relationship_line_color", rl_color);
+	}
+	else
+		tree->add_constant_override("draw_relationship_lines",0);
+
+}
+
+
 void SceneTreeEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_tree_changed",&SceneTreeEditor::_tree_changed);
@@ -1067,6 +1085,8 @@ void SceneTreeEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_node_script_changed",&SceneTreeEditor::_node_script_changed);
 	ObjectTypeDB::bind_method("_node_visibility_changed",&SceneTreeEditor::_node_visibility_changed);
+
+	ObjectTypeDB::bind_method("_editor_settings_changed", &SceneTreeEditor::_editor_settings_changed);
 
 	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &SceneTreeEditor::get_drag_data_fw);
 	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &SceneTreeEditor::can_drop_data_fw);
@@ -1252,4 +1272,3 @@ SceneTreeDialog::SceneTreeDialog() {
 SceneTreeDialog::~SceneTreeDialog()
 {
 }
-

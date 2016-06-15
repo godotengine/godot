@@ -381,7 +381,7 @@ void EditorSettings::create() {
 	singleton->save_changed_setting=true;
 	singleton->config_file_path=config_file_path;
 	singleton->settings_path=config_path+"/"+config_dir;
-	singleton->_load_defaults(extra_config);	
+	singleton->_load_defaults(extra_config);
 	singleton->setup_language();
 	singleton->setup_network();
 	singleton->list_text_editor_themes();
@@ -563,6 +563,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["scenetree_editor/duplicate_node_name_num_separator"]=PropertyInfo(Variant::INT,"scenetree_editor/duplicate_node_name_num_separator",PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash");
 	//set("scenetree_editor/display_old_action_buttons",false);
 	set("scenetree_editor/start_create_dialog_fully_expanded",false);
+	set("scenetree_editor/draw_relationship_lines",false);
+	set("scenetree_editor/relationship_line_color",Color::html("464646"));
 
 	set("gridmap_editor/pick_distance", 5000.0);
 

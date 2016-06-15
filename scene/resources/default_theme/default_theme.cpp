@@ -661,12 +661,14 @@ void fill_default_theme(Ref<Theme>& t,const Ref<Font> & default_font,const Ref<F
 	t->set_color("cursor_color","Tree", Color(0,0,0) );
 	t->set_color("guide_color","Tree", Color(0,0,0,0.1) );
 	t->set_color("drop_position_color","Tree", Color(1,0.3,0.2) );
+	t->set_color("relationship_line_color", "Tree", Color::html("464646") );
 
 	t->set_constant("hseparation","Tree",4 *scale);
 	t->set_constant("vseparation","Tree",4 *scale);
 	t->set_constant("guide_width","Tree",2 *scale);
 	t->set_constant("item_margin","Tree",12 *scale);
 	t->set_constant("button_margin","Tree",4 *scale);
+	t->set_constant("draw_relationship_lines", "Tree", 0);
 
 
 	// ItemList
@@ -950,6 +952,3 @@ void clear_default_theme() {
 	Theme::set_default_font( Ref< Font >() );
 
 }
-
-
-

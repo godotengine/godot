@@ -811,6 +811,8 @@ void Tree::update_cache() {
 	cache.item_margin=get_constant("item_margin");
 	cache.button_margin=get_constant("button_margin");
 	cache.guide_width=get_constant("guide_width");
+	cache.draw_relationship_lines=get_constant("draw_relationship_lines");
+	cache.relationship_line_color=get_color("relationship_line_color");
 
 	cache.title_button = get_stylebox("title_button_normal");
 	cache.title_button_pressed = get_stylebox("title_button_pressed");
@@ -1295,9 +1297,21 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 
 		while (c) {
 
+			if (cache.draw_relationship_lines == 1){
+				int root_ofs = children_pos.x + (hide_folding?cache.hseparation:cache.item_margin);
+				int parent_ofs = p_pos.x + (hide_folding?cache.hseparation:cache.item_margin);
+				Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h/2)-cache.offset+p_draw_ofs;
+				if (c->get_children() > 0)
+					root_pos -= Point2i(cache.arrow->get_width(),0);
+
+				Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width()/2, p_pos.y + label_h/2 + cache.arrow->get_height()/2)-cache.offset+p_draw_ofs;
+				VisualServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x, root_pos.y), cache.relationship_line_color);
+				VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y), parent_pos, cache.relationship_line_color);
+			}
+
 			int child_h=draw_item(children_pos, p_draw_ofs, p_draw_size, c );
 
-			if (child_h<0)
+			if (child_h<0 && cache.draw_relationship_lines == 0)
 				return -1; // break, stop drawing, no need to anymore
 
 			htotal+=child_h;
@@ -3674,4 +3688,3 @@ Tree::~Tree() {
 	}
 
 }
-
