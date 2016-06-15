@@ -37422,7 +37422,7 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="ord_at">
-			<return type="String">
+			<return type="int">
 			</return>
 			<argument index="0" name="at" type="int">
 			</argument>
