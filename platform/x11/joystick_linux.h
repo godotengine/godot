@@ -61,6 +61,10 @@ private:
 		String devpath;
 		input_absinfo *abs_info[MAX_ABS];
 
+		bool force_feedback;
+		int ff_effect_id;
+		uint64_t ff_effect_timestamp;
+
 		Joystick();
 		~Joystick();
 		void reset();
@@ -87,6 +91,9 @@ private:
 	void monitor_joysticks();
 	void run_joystick_thread();
 	void open_joystick(const char* path);
+
+	void joystick_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
+	void joystick_vibration_stop(int p_id, uint64_t p_timestamp);
 
 	InputDefault::JoyAxis axis_correct(const input_absinfo *abs, int value) const;
 };

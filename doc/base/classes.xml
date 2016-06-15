@@ -15788,6 +15788,23 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Returns a SDL2 compatible device guid on platforms that use gamepad remapping. Returns "Default Gamepad" otherwise.
 			</description>
 		</method>
+		<method name="get_joy_vibration_strength">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="device" type="int">
+			</argument>
+			<description>
+			Returns the strength of the joystick vibration: x is the strength of the weak motor, and y is the strength of the strong motor.
+			</description>
+		</method>
+		<method name="get_joy_vibration_duration">
+			<return type="float">
+			</return>
+			<argument index="0" name="device" type="int">
+			</argument>
+			<description>
+			Returns the duration of the current vibration effect in seconds.
+			</description>
 		<method name="get_accelerometer">
 			<return type="Vector3">
 			</return>
@@ -15828,6 +15845,26 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</return>
 			<description>
 			Return the mouse mode. See the constants for more information.
+			</description>
+		</method>
+		<method name="start_joy_vibration">
+			<argument index="0" name="device" type="int">
+			</argument>
+			<argument index="1" name="weak_magnitude" type="float">
+			</argument>
+			<argument index="2" name="strong_magnitude" type="float">
+			</argument>
+			<argument index="3" name="duration" type="float">
+			</argument>
+			<description>
+			Starts to vibrate the joystick. Joysticks usually come with two rumble motors, a strong and a weak one. weak_magnitude is the strength of the weak motor (between 0 and 1) and strong_magnitude is the strength of the strong motor (between 0 and 1). duration is the duration of the effect in seconds (a duration of 0 will play the vibration indefinitely).
+			</description>
+		</method>
+		<method name="stop_joy_vibration">
+			<argument index="0" name="device" type="int">
+			</argument>
+			<description>
+			Stops the vibration of the joystick.
 			</description>
 		</method>
 		<method name="warp_mouse_pos">

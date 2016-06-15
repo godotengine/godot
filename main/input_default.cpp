@@ -137,6 +137,30 @@ String InputDefault::get_joy_name(int p_idx) {
 	return joy_names[p_idx].name;
 };
 
+Vector2 InputDefault::get_joy_vibration_strength(int p_device) {
+	if (joy_vibration.has(p_device)) {
+		return Vector2(joy_vibration[p_device].weak_magnitude, joy_vibration[p_device].strong_magnitude);
+	} else {
+		return Vector2(0, 0);
+	}
+}
+
+uint64_t InputDefault::get_joy_vibration_timestamp(int p_device) {
+	if (joy_vibration.has(p_device)) {
+		return joy_vibration[p_device].timestamp;
+	} else {
+		return 0;
+	}
+}
+
+float InputDefault::get_joy_vibration_duration(int p_device) {
+	if (joy_vibration.has(p_device)) {
+		return joy_vibration[p_device].duration;
+	} else {
+		return 0.f;
+	}
+}
+
 static String _hex_str(uint8_t p_byte) {
 
 	static const char* dict = "0123456789abcdef";
@@ -292,6 +316,29 @@ void InputDefault::set_joy_axis(int p_device,int p_axis,float p_value) {
 	_THREAD_SAFE_METHOD_
 	int c = _combine_device(p_axis,p_device);
 	_joy_axis[c]=p_value;
+}
+
+void InputDefault::start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration) {
+	_THREAD_SAFE_METHOD_
+	if (p_weak_magnitude < 0.f || p_weak_magnitude > 1.f || p_strong_magnitude < 0.f || p_strong_magnitude > 1.f) {
+		return;
+	}
+	VibrationInfo vibration;
+	vibration.weak_magnitude = p_weak_magnitude;
+	vibration.strong_magnitude = p_strong_magnitude;
+	vibration.duration = p_duration;
+	vibration.timestamp = OS::get_singleton()->get_unix_time();
+	joy_vibration[p_device] = vibration;
+}
+
+void InputDefault::stop_joy_vibration(int p_device) {
+	_THREAD_SAFE_METHOD_
+	VibrationInfo vibration;
+	vibration.weak_magnitude = 0;
+	vibration.strong_magnitude = 0;
+	vibration.duration = 0;
+	vibration.timestamp = OS::get_singleton()->get_unix_time();
+	joy_vibration[p_device] = vibration;
 }
 
 void InputDefault::set_accelerometer(const Vector3& p_accel) {
