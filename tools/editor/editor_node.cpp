@@ -171,6 +171,19 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::KEY && p_event.key.pressed && !p_event.key.echo && !gui_base->get_viewport()->gui_has_modal_stack()) {
 
+
+		if (ED_IS_SHORTCUT("editor/fullscreen_mode", p_event)) {
+			if (distraction_free_mode) {
+				distraction_free_mode = false;
+				_update_top_menu_visibility();
+			} else {
+				set_docks_visible(!get_docks_visible());
+			}
+		}
+		if (ED_IS_SHORTCUT("editor/distraction_free_mode", p_event)) {
+			set_distraction_free_mode(!get_distraction_free_mode());
+		}
+
 		switch(p_event.key.scancode) {
 
 			/*case KEY_F1:
@@ -193,18 +206,6 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 			case KEY_F6: _menu_option_confirm(RUN_PLAY_SCENE,true); break;
 			//case KEY_F7: _menu_option_confirm(RUN_PAUSE,true); break;
 			case KEY_F8: _menu_option_confirm(RUN_STOP,true); break;*/
-			case KEY_F11: {
-				if (p_event.key.mod.shift) {
-					if (p_event.key.mod.control) {
-						set_distraction_free_mode(!get_distraction_free_mode());
-					} else if (distraction_free_mode) {
-						distraction_free_mode = false;
-						_update_top_menu_visibility();
-					} else {
-						set_docks_visible(!get_docks_visible());
-					}
-				}
-			} break;
 		}
 
 	}
@@ -5604,6 +5605,8 @@ EditorNode::EditorNode() {
 	prev_scene->set_pos(Point2(3,24));
 	prev_scene->hide();
 
+	ED_SHORTCUT("editor/fullscreen_mode",TTR("Fullscreen Mode"),KEY_MASK_SHIFT|KEY_F11);
+	ED_SHORTCUT("editor/distraction_free_mode",TTR("Distraction Free Mode"),KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_F11);
 
 	Separator *vs=NULL;
 
