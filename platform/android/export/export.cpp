@@ -794,40 +794,6 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 						}*/
 					}
 
-					if (tname=="application" && /*nspace=="android" &&*/ attrname=="label") {
-
-						print_line("FOUND application");
-						if (attr_value==0xFFFFFFFF) {
-							WARN_PRINT("Application name in a resource, should be plaintext (but you can ignore this).")
-						} else {
-
-							String aname = get_project_name();
-							string_table[attr_value]=aname;
-						}
-					}
-					if (tname=="activity" && /*nspace=="android" &&*/ attrname=="label") {
-
-						print_line("FOUND activity name");
-						if (attr_value==0xFFFFFFFF) {
-							WARN_PRINT("Activity name in a resource, should be plaintext (but you can ignore this)")
-						} else {
-							String aname;
-							if (this->name!="") {
-								aname=this->name;
-							} else {
-								aname = Globals::get_singleton()->get("application/name");
-
-							}
-
-							if (aname=="") {
-								aname=_MKSTR(VERSION_NAME);
-							}
-
-							print_line("APP NAME IS..."+aname);
-							string_table[attr_value]=aname;
-						}
-					}
-
 					if (tname=="uses-permission" && /*nspace=="android" &&*/ attrname=="name") {
 
 						if (value.begins_with("godot.custom")) {
@@ -852,13 +818,11 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 
 					if (tname=="supports-screens" ) {
 
-						if (attr_value==0xFFFFFFFF) {
-							WARN_PRINT("Screen res name in a resource, should be plaintext")
-						} else if (attrname=="smallScreens") {
+						if (attrname=="smallScreens") {
 
 							encode_uint32(screen_support[SCREEN_SMALL]?0xFFFFFFFF:0,&p_manifest[iofs+16]);
 
-						} else if (attrname=="mediumScreens") {
+						} else if (attrname=="normalScreens") {
 
 							encode_uint32(screen_support[SCREEN_NORMAL]?0xFFFFFFFF:0,&p_manifest[iofs+16]);
 
