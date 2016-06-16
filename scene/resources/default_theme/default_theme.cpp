@@ -16,14 +16,8 @@
 #include "theme_data.h"
 #include "os/os.h"
 
-
-#include "normal_font.inc"
-#include "bold_font.inc"
-#include "mono_font.inc"
-
-#include "font_normal.inc"
-#include "font_source.inc"
-#include "font_large.inc"
+#include "font_lodpi.inc"
+#include "font_hidpi.inc"
 
 typedef Map<const void*,Ref<ImageTexture> > TexCacheMap;
 
@@ -124,21 +118,14 @@ static Ref<BitmapFont> make_font(int p_height,int p_ascent, int p_valign, int p_
 	return font;
 }
 
+
+
 static Ref<BitmapFont> make_font2(int p_height,int p_ascent, int p_charcount, const int *p_char_rects,int p_kerning_count,const int *p_kernings,int p_w, int p_h, const unsigned char *p_img) {
 
 
 	Ref<BitmapFont> font( memnew( BitmapFont ) );
 
-	DVector<uint8_t> img;
-	img.resize(p_w*p_h*2);
-	{
-		DVector<uint8_t>::Write w = img.write();
-		for(int i=0;i<(p_w*p_h*2);i++) {
-			w[i]=p_img[i];
-		}
-	}
-
-	Image image(p_w,p_h,0,Image::FORMAT_GRAYSCALE_ALPHA,img);
+	Image image(p_img);
 	Ref<ImageTexture> tex = memnew( ImageTexture );
 	tex->create_from_image(image);
 
@@ -926,16 +913,23 @@ void fill_default_theme(Ref<Theme>& t,const Ref<Font> & default_font,const Ref<F
 
 }
 
-void make_default_theme() {
+void make_default_theme(bool p_hidpi,Ref<Font> p_font) {
 
 	Ref<Theme> t;
 	t.instance();
 
 	Ref<StyleBox> default_style;
 	Ref<Texture> default_icon;
-	Ref<BitmapFont> default_font=make_font2(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,_builtin_normal_font_img_data);
-	Ref<BitmapFont> large_font=make_font2(_builtin_large_font_height,_builtin_large_font_ascent,_builtin_large_font_charcount,&_builtin_large_font_charrects[0][0],_builtin_large_font_kerning_pair_count,&_builtin_large_font_kerning_pairs[0][0],_builtin_large_font_img_width,_builtin_large_font_img_height,_builtin_large_font_img_data);
-	fill_default_theme(t,default_font,large_font,default_icon,default_style,false);
+	Ref<BitmapFont> default_font;
+	if (p_font.is_valid()) {
+		default_font=p_font;
+	} if (p_hidpi) {
+		default_font=make_font2(_hidpi_font_height,_hidpi_font_ascent,_hidpi_font_charcount,&_hidpi_font_charrects[0][0],_hidpi_font_kerning_pair_count,&_hidpi_font_kerning_pairs[0][0],_hidpi_font_img_width,_hidpi_font_img_height,_hidpi_font_img_data);
+	} else {
+		default_font=make_font2(_lodpi_font_height,_lodpi_font_ascent,_lodpi_font_charcount,&_lodpi_font_charrects[0][0],_lodpi_font_kerning_pair_count,&_lodpi_font_kerning_pairs[0][0],_lodpi_font_img_width,_lodpi_font_img_height,_lodpi_font_img_data);
+	}
+	Ref<BitmapFont> large_font=default_font;
+	fill_default_theme(t,default_font,large_font,default_icon,default_style,p_hidpi);
 
 	Theme::set_default( t );
 	Theme::set_default_icon( default_icon );

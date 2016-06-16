@@ -489,18 +489,22 @@ class EditorFontImportDialog : public ConfirmationDialog {
 		Image img  = tex->get_data();
 
 		f->store_line("static const int _builtin_font_img_width="+itos(img.get_width())+";");
-		f->store_line("static const int _builtin_font_img_height="+itos(img.get_height())+";");
-		f->store_line("static const unsigned char _builtin_font_img_data["+itos(img.get_width()*img.get_height()*2)+"]={");
-		for(int i=0;i<img.get_height();i++) {
+		f->store_line("static const int _builtin_font_img_height="+itos(img.get_height())+";");		
 
-			for(int j=0;j<img.get_width();j++) {
+		String fname = p_font.basename()+".sv.png";
+		ResourceSaver::save(fname,tex);
+		Vector<uint8_t> data=FileAccess::get_file_as_array(fname);
 
-				Color c = img.get_pixel(j,i);
-				int v = CLAMP(((c.r+c.g+c.b)/3.0)*255,0,255);
-				int a = CLAMP(c.a*255,0,255);
 
-				f->store_line(itos(v)+","+itos(a)+",");
-			}
+		f->store_line("static const int _builtin_font_img_data_size="+itos(data.size())+";");
+		f->store_line("static const unsigned char _builtin_font_img_data["+itos(data.size())+"]={");
+
+
+
+		for(int i=0;i<data.size();i++) {
+
+			f->store_line(itos(data[i])+",");
+
 		}
 		f->store_line("};");
 

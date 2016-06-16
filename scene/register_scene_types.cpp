@@ -271,7 +271,28 @@ void register_scene_types() {
 	resource_loader_shader = memnew( ResourceFormatLoaderShader );
 	ResourceLoader::add_resource_format_loader( resource_loader_shader );
 
-	make_default_theme();
+	bool default_theme_hidpi=GLOBAL_DEF("display/use_hidpi_theme",false);
+	Globals::get_singleton()->set_custom_property_info("display/use_hidpi_theme",PropertyInfo(Variant::BOOL,"display/use_hidpi_theme",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED));
+	String theme_path = GLOBAL_DEF("display/custom_theme","");
+	Globals::get_singleton()->set_custom_property_info("display/custom_theme",PropertyInfo(Variant::STRING,"display/custom_theme",PROPERTY_HINT_FILE,"*.tres,*.res",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED));
+	String font_path = GLOBAL_DEF("display/custom_theme_font","");
+	Globals::get_singleton()->set_custom_property_info("display/custom_theme_font",PropertyInfo(Variant::STRING,"display/custom_theme_font",PROPERTY_HINT_FILE,"*.tres,*.res,*.fnt",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED));
+
+
+	if (theme_path!=String()) {
+		Ref<Theme> theme = ResourceLoader::load(theme_path);
+		if (theme.is_valid()) {
+			Theme::set_default(theme);
+		}
+	} else {
+
+		Ref<Font> font;
+		if (font_path!=String()) {
+			font=ResourceLoader::load(font_path);
+		}
+		make_default_theme(default_theme_hidpi,font);
+	}
+
 
 	OS::get_singleton()->yield(); //may take time to init
 
