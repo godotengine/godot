@@ -377,6 +377,7 @@ friend class TreeItem;
 		Color font_color_selected;
 		Color guide_color;
 		Color drop_position_color;
+		Color relationship_line_color;
 
 		int hseparation;
 		int vseparation;
@@ -384,6 +385,7 @@ friend class TreeItem;
 		int guide_width;
 		int button_margin;
 		Point2 offset;
+		int draw_relationship_lines;
 
 		enum ClickType {
 			CLICK_NONE,
@@ -532,4 +534,3 @@ public:
 
 VARIANT_ENUM_CAST( Tree::SelectMode );
 #endif
-
