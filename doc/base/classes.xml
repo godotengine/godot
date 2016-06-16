@@ -6883,6 +6883,12 @@
 			Return a rect containing the editable contents of the item.
 			</description>
 		</method>
+		<method name="get_item_and_children_rect" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_canvas_item" qualifiers="const">
 			<return type="RID">
 			</return>
@@ -15837,6 +15843,27 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			Returns the duration of the current vibration effect in seconds.
 			</description>
+		</method>
+		<method name="start_joy_vibration">
+			<argument index="0" name="device" type="int">
+			</argument>
+			<argument index="1" name="weak_magnitude" type="float">
+			</argument>
+			<argument index="2" name="strong_magnitude" type="float">
+			</argument>
+			<argument index="3" name="duration" type="float">
+			</argument>
+			<description>
+			Starts to vibrate the joystick. Joysticks usually come with two rumble motors, a strong and a weak one. weak_magnitude is the strength of the weak motor (between 0 and 1) and strong_magnitude is the strength of the strong motor (between 0 and 1). duration is the duration of the effect in seconds (a duration of 0 will play the vibration indefinitely).
+			</description>
+		</method>
+		<method name="stop_joy_vibration">
+			<argument index="0" name="device" type="int">
+			</argument>
+			<description>
+			Stops the vibration of the joystick.
+			</description>
+		</method>
 		<method name="get_accelerometer">
 			<return type="Vector3">
 			</return>
@@ -15877,26 +15904,6 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</return>
 			<description>
 			Return the mouse mode. See the constants for more information.
-			</description>
-		</method>
-		<method name="start_joy_vibration">
-			<argument index="0" name="device" type="int">
-			</argument>
-			<argument index="1" name="weak_magnitude" type="float">
-			</argument>
-			<argument index="2" name="strong_magnitude" type="float">
-			</argument>
-			<argument index="3" name="duration" type="float">
-			</argument>
-			<description>
-			Starts to vibrate the joystick. Joysticks usually come with two rumble motors, a strong and a weak one. weak_magnitude is the strength of the weak motor (between 0 and 1) and strong_magnitude is the strength of the strong motor (between 0 and 1). duration is the duration of the effect in seconds (a duration of 0 will play the vibration indefinitely).
-			</description>
-		</method>
-		<method name="stop_joy_vibration">
-			<argument index="0" name="device" type="int">
-			</argument>
-			<description>
-			Stops the vibration of the joystick.
 			</description>
 		</method>
 		<method name="warp_mouse_pos">
@@ -23471,7 +23478,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</description>
 	<methods>
 		<method name="get_var" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<description>
+			Get a Variant.
 			</description>
 		</method>
 		<method name="put_var">
@@ -23480,12 +23490,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
+			Send a Variant as a packet.
 			</description>
 		</method>
 		<method name="get_packet" qualifiers="const">
 			<return type="RawArray">
 			</return>
 			<description>
+			Get a raw packet.
 			</description>
 		</method>
 		<method name="put_packet">
@@ -23494,18 +23506,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="buffer" type="RawArray">
 			</argument>
 			<description>
+			Send a raw packet.
 			</description>
 		</method>
 		<method name="get_packet_error" qualifiers="const">
 			<return type="Error">
 			</return>
 			<description>
+			Return the error state of the last packet received (via [method get_packet] and [method get_var]).
 			</description>
 		</method>
 		<method name="get_available_packet_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the number of packets currently available in the ring-buffer.
 			</description>
 		</method>
 	</methods>
@@ -23533,8 +23548,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="PacketPeerUDP" inherits="PacketPeer" category="Core">
 	<brief_description>
+		UDP packet peer.
 	</brief_description>
 	<description>
+		UDP packet peer. Can be used to send raw UDP packets as well as [Variant]s.
 	</description>
 	<methods>
 		<method name="listen">
@@ -23545,40 +23562,47 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="recv_buf_size" type="int" default="65536">
 			</argument>
 			<description>
+			Make this [PacketPeerUDP] listen on the "port" using a buffer size "recv_buf_size". Listens on all available adresses.
 			</description>
 		</method>
 		<method name="close">
 			<description>
+			Close the UDP socket the [PacketPeerUDP] is currently listening on.
 			</description>
 		</method>
 		<method name="wait">
 			<return type="Error">
 			</return>
 			<description>
+			Wait for a packet to arrive on the listening port, see [method listen].
 			</description>
 		</method>
 		<method name="is_listening" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Return whether this [PacketPeerUDP] is listening.
 			</description>
 		</method>
 		<method name="get_packet_ip" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+			Return the IP of the remote peer that sent the last packet(that was received with [method get_packet] or [method get_var]).
 			</description>
 		</method>
 		<method name="get_packet_address" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the address of the remote peer(as a 32bit integer) that sent the last packet(that was received with [method get_packet] or [method get_var]).
 			</description>
 		</method>
 		<method name="get_packet_port" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Return the port of the remote peer that sent the last packet(that was received with [method get_packet] or [method get_var]).
 			</description>
 		</method>
 		<method name="set_send_address">
@@ -23589,6 +23613,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="port" type="int">
 			</argument>
 			<description>
+			Set the destination address and port for sending packets and variables, a hostname will be resolved if valid.
 			</description>
 		</method>
 	</methods>
@@ -36779,7 +36804,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="val" type="Variant">
 			</argument>
 			<description>
-			Put a variable into the stream.
+			Put a Variant into the stream.
 			</description>
 		</method>
 		<method name="get_8">
@@ -36874,7 +36899,7 @@ This method controls whether the position between two cached points is interpola
 			<return type="Variant">
 			</return>
 			<description>
-			Get a variable from the stream.
+			Get a Variant from the stream.
 			</description>
 		</method>
 	</methods>
@@ -36925,16 +36950,16 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<constants>
 		<constant name="STATUS_DISCONNECTED" value="0">
-		A status representing a [StreamPeerSSL] that is disconnected.
+			A status representing a [StreamPeerSSL] that is disconnected.
 		</constant>
 		<constant name="STATUS_CONNECTED" value="1">
-		A status representing a [StreamPeerSSL] that is connected to a host.
+			A status representing a [StreamPeerSSL] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR_NO_CERTIFICATE" value="2">
-		An errot status that shows the peer did not present a SSL certificate and validation was requested.
+			An errot status that shows the peer did not present a SSL certificate and validation was requested.
 		</constant>
 		<constant name="STATUS_ERROR_HOSTNAME_MISMATCH" value="3">
-		An error status that shows a mismatch in the SSL certificate domain presented by the host and the domain requested for validation.
+			An error status that shows a mismatch in the SSL certificate domain presented by the host and the domain requested for validation.
 		</constant>
 	</constants>
 </class>
@@ -36993,16 +37018,16 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<constants>
 		<constant name="STATUS_NONE" value="0">
-		The initial status of the [StreamPeerTCP], also the status after a disconnect.
+			The initial status of the [StreamPeerTCP], also the status after a disconnect.
 		</constant>
 		<constant name="STATUS_CONNECTING" value="1">
-		A status representing a [StreamPeerTCP] that is connecting to a host.
+			A status representing a [StreamPeerTCP] that is connecting to a host.
 		</constant>
 		<constant name="STATUS_CONNECTED" value="2">
-		A status representing a [StreamPeerTCP] that is connected to a host.
+			A status representing a [StreamPeerTCP] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR" value="3">
-		A staus representing a [StreamPeerTCP] in error state.
+			A staus representing a [StreamPeerTCP] in error state.
 		</constant>
 	</constants>
 </class>
@@ -42931,7 +42956,7 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="get_linear_velocity">
+		<method name="get_linear_velocity" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
@@ -45339,7 +45364,7 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="free">
+		<method name="free_rid">
 			<argument index="0" name="arg0" type="RID">
 			</argument>
 			<description>
