@@ -2266,7 +2266,7 @@ void  Control::_ref_font( Ref<Font> p_sc) {
 	}
 }
 
-void  Control::_unref_font(Ref<Font> p_sc) {
+void Control::_unref_font(Ref<Font> p_sc) {
 
 	ERR_FAIL_COND(!data.font_refcount.has(p_sc));
 	data.font_refcount[p_sc]--;

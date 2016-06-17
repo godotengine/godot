@@ -158,6 +158,7 @@ void GridContainer::set_columns(int p_columns) {
 
 	columns=p_columns;
 	queue_sort();
+	minimum_size_changed();
 
 }
 
