@@ -704,13 +704,13 @@ Size2 TabContainer::get_minimum_size() const {
 		if (c->is_set_as_toplevel())
 			continue;
 
-		if (!c->has_meta("_tab_name"))
-			continue;
+		//if (!c->has_meta("_tab_name"))
+		//	continue;
 
 		if (!c->is_visible())
 			continue;
 
-		Size2 cms = c->get_minimum_size();
+		Size2 cms = c->get_combined_minimum_size();
 		ms.x=MAX(ms.x,cms.x);
 		ms.y=MAX(ms.y,cms.y);
 	}
@@ -721,6 +721,9 @@ Size2 TabContainer::get_minimum_size() const {
 
 	ms.y+=MAX(tab_bg->get_minimum_size().y,tab_fg->get_minimum_size().y);
 	ms.y+=font->get_height();
+
+	Ref<StyleBox> sb = get_stylebox("panel");
+	ms+=sb->get_minimum_size();
 
 	return ms;
 }
