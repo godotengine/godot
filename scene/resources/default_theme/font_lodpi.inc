@@ -196,7 +196,8 @@ static const int _lodpi_font_charrects[191][8]={
 {95,92,148,6,1,12,0,6},
 };
 static const int _lodpi_font_kerning_pair_count=0;
-static const int _lodpi_font_kerning_pairs[0][3]={
+static const int _lodpi_font_kerning_pairs[1][3]={
+{0,0,0},
 };
 static const int _lodpi_font_img_width=128;
 static const int _lodpi_font_img_height=256;

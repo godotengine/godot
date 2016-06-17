@@ -196,7 +196,8 @@ static const int _hidpi_font_charrects[191][8]={
 {95,218,166,10,2,21,0,10},
 };
 static const int _hidpi_font_kerning_pair_count=0;
-static const int _hidpi_font_kerning_pairs[0][3]={
+static const int _hidpi_font_kerning_pairs[1][3]={
+{0,0,0}
 };
 static const int _hidpi_font_img_width=256;
 static const int _hidpi_font_img_height=512;
