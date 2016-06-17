@@ -46,6 +46,15 @@ class Theme : public Resource {
 
 	static Ref<Theme> default_theme;
 
+
+	//keep a reference count to font, so each time the font changes, we emit theme changed too
+	Map< Ref<Font>, int> font_refcount;
+
+	void _ref_font(Ref<Font> p_sc);
+	void _unref_font( Ref<Font> p_sc);
+	void _emit_theme_changed();
+
+
 	HashMap<StringName,HashMap<StringName,Ref<Texture>,StringNameHasher >, StringNameHasher >  icon_map;
 	HashMap<StringName,HashMap<StringName,Ref<StyleBox>,StringNameHasher >,StringNameHasher > style_map;
 	HashMap<StringName,HashMap<StringName,Ref<Font>,StringNameHasher >,StringNameHasher > font_map;

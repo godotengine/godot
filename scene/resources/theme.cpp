@@ -34,6 +34,32 @@
 Ref<Theme> Theme::default_theme;
 
 
+void Theme::_emit_theme_changed() {
+
+	emit_changed();
+}
+
+void  Theme::_ref_font( Ref<Font> p_sc) {
+
+	if (!font_refcount.has(p_sc)) {
+		font_refcount[p_sc]=1;
+		p_sc->connect("changed",this,"_emit_theme_changed");
+	} else {
+		font_refcount[p_sc]+=1;
+	}
+}
+
+void  Theme::_unref_font(Ref<Font> p_sc) {
+
+	ERR_FAIL_COND(!font_refcount.has(p_sc));
+	font_refcount[p_sc]--;
+	if (font_refcount[p_sc]==0) {
+		p_sc->disconnect("changed",this,"_emit_theme_changed");
+		font_refcount.erase(p_sc);
+	}
+}
+
+
 bool Theme::_set(const StringName& p_name, const Variant& p_value) {
 
 	String sname=p_name;
@@ -392,7 +418,17 @@ void Theme::set_font(const StringName& p_name,const StringName& p_type,const Ref
 //	ERR_FAIL_COND(p_font.is_null());
 
 	bool new_value=!font_map.has(p_type) || !font_map[p_type].has(p_name);
+
+	if (!new_value) {
+		if (font_map[p_type][p_name].is_valid()) {
+			_unref_font(font_map[p_type][p_name]);
+		}
+	}
 	font_map[p_type][p_name]=p_font;
+
+	if (p_font.is_valid()) {
+		_ref_font(p_font);
+	}
 
 	if (new_value) {
 		_change_notify();
@@ -419,6 +455,10 @@ void Theme::clear_font(const StringName& p_name,const StringName& p_type) {
 
 	ERR_FAIL_COND(!font_map.has(p_type));
 	ERR_FAIL_COND(!font_map[p_type].has(p_name));
+
+	if (font_map.has(p_type) && font_map[p_type].has(p_name) && font_map[p_type][p_name].is_valid()) {
+		_unref_font(font_map[p_type][p_name]);
+	}
 
 	font_map[p_type].erase(p_name);
 	_change_notify();
@@ -644,6 +684,11 @@ void Theme::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_default_font"),&Theme::get_default_theme_font);
 
 	ObjectTypeDB::bind_method(_MD("get_type_list","type"),&Theme::_get_type_list);
+
+	ObjectTypeDB::bind_method(_MD("_emit_theme_changed"),&Theme::_emit_theme_changed);
+
+
+
 
 	ObjectTypeDB::bind_method("copy_default_theme",&Theme::copy_default_theme);
 

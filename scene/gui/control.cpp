@@ -153,6 +153,9 @@ bool Control::_set(const StringName& p_name, const Variant& p_value) {
 			update();
 		} else if (name.begins_with("custom_fonts/")) {
 			String dname = name.get_slicec('/',1);
+			if (data.font_override.has(dname)) {
+				_unref_font(data.font_override[dname]);
+			}
 			data.font_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 			update();
@@ -1551,7 +1554,15 @@ void Control::add_style_override(const StringName& p_name, const Ref<StyleBox>& 
 void Control::add_font_override(const StringName& p_name, const Ref<Font>& p_font) {
 
 	ERR_FAIL_COND(p_font.is_null());
+	if (data.font_override.has(p_name)) {
+		_unref_font(data.font_override[p_name]);
+	}
 	data.font_override[p_name]=p_font;
+
+	if (p_font.is_valid()) {
+		_ref_font(p_font);
+	}
+
 	notification(NOTIFICATION_THEME_CHANGED);
 	update();
 }
@@ -2244,6 +2255,33 @@ float Control::_get_rotation_deg() const {
 	WARN_PRINT("Deprecated method Control._get_rotation_deg(): This method was renamed to get_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
 	return get_rotation_deg();
 }
+//needed to update the control if the font changes..
+void  Control::_ref_font( Ref<Font> p_sc) {
+
+	if (!data.font_refcount.has(p_sc)) {
+		data.font_refcount[p_sc]=1;
+		p_sc->connect("changed",this,"_font_changed");
+	} else {
+		data.font_refcount[p_sc]+=1;
+	}
+}
+
+void  Control::_unref_font(Ref<Font> p_sc) {
+
+	ERR_FAIL_COND(!data.font_refcount.has(p_sc));
+	data.font_refcount[p_sc]--;
+	if (data.font_refcount[p_sc]==0) {
+		p_sc->disconnect("changed",this,"_font_changed");
+		data.font_refcount.erase(p_sc);
+	}
+}
+
+void Control::_font_changed(){
+
+	update();
+	notification(NOTIFICATION_THEME_CHANGED);
+	minimum_size_changed(); //fonts affect minimum size pretty much almost always
+}
 
 void Control::set_scale(const Vector2& p_scale){
 
@@ -2395,6 +2433,8 @@ void Control::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("warp_mouse","to_pos"),&Control::warp_mouse);
 
 	ObjectTypeDB::bind_method(_MD("minimum_size_changed"), &Control::minimum_size_changed);
+
+	ObjectTypeDB::bind_method(_MD("_font_changed"), &Control::_font_changed);
 
 	BIND_VMETHOD(MethodInfo("_input_event",PropertyInfo(Variant::INPUT_EVENT,"event")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2,"get_minimum_size"));
