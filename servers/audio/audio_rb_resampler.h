@@ -37,6 +37,7 @@ public:
 	_FORCE_INLINE_ void flush() {
 		rb_read_pos=0;
 		rb_write_pos=0;
+		offset=0;
 	}
 
 	_FORCE_INLINE_ bool is_ready() const{
